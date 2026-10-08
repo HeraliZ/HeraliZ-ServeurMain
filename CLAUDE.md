@@ -389,6 +389,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   couteau dans le cristal) ; hitbox = vraie forme de chaque modèle en cubes de 2 px (`python outils/formes_caisses.py`
   après tout changement de modèle de caisse), contour noir visible seulement en créatif ; nom flottant sans fond
   (rareté entre deux traits, nom de la caisse, clé · clic droit) ;
+- barricade en bois (heralisz_bunker) : modèle « mur de rondins couchés » choisi par le propriétaire (rondins entre trois
+  poteaux, agrafes de fer, jambes de force), même taille, pose et collision qu'avant ; modèle et textures (4 états
+  d'usure) refaits par `python outils/barricade_modele.py` (modèle : `mods/heralisz-bunker/outils/BarricadeModele.java`) ;
 - Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
   I, menu =, abandon Retour arrière ;
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;

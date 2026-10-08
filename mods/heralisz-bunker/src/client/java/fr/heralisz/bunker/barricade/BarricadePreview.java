@@ -4,11 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import fr.heralisz.bunker.HeraliszBunker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -24,8 +22,6 @@ import net.minecraftforge.fml.common.Mod;
  */
 @Mod.EventBusSubscriber(modid = HeraliszBunker.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class BarricadePreview {
-   private static ModelPart model;
-
    private BarricadePreview() {
    }
 
@@ -45,8 +41,9 @@ public final class BarricadePreview {
       if (!(mc.hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK) {
          return;
       }
-      if (model == null) {
-         model = mc.getEntityModels().bakeLayer(BarricadeRenderer.LAYER);
+      float[] mesh = BarricadeMesh.get(true);   // fantome : la version allegee suffit (moins de faces superposees)
+      if (mesh == null) {
+         return;
       }
       BarricadePlacement.Result where = BarricadePlacement.compute(mc.level, player, hit);
       Vec3 cam = event.getCamera().getPosition();
@@ -57,7 +54,7 @@ public final class BarricadePreview {
       MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
       RenderType type = RenderType.entityTranslucent(BarricadeRenderer.TEXTURES[0]);
       float r = where.valid() ? 0.35F : 1.0F, g = where.valid() ? 1.0F : 0.25F, b = where.valid() ? 0.4F : 0.25F;
-      model.render(ps, buffers.getBuffer(type), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, r, g, b, 0.45F);
+      BarricadeMesh.render(mesh, ps.last(), buffers.getBuffer(type), LightTexture.FULL_BRIGHT, r, g, b, 0.45F);
       buffers.endBatch(type);
       ps.popPose();
    }

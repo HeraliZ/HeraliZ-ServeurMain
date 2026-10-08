@@ -92,6 +92,7 @@ public final class ClientSetup {
    public static void onReload(RegisterClientReloadListenersEvent event) {
       event.registerReloadListener(DoorModelRegistry.getInstance());
       event.registerReloadListener(new DaeModelReloader());
+      event.registerReloadListener(fr.heralisz.bunker.barricade.BarricadeMesh.RELOAD);
    }
 
    @SubscribeEvent

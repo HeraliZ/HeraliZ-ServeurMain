@@ -117,6 +117,15 @@ public class BarricadeEntity extends Entity {
       return true;
    }
 
+   /**
+    * Boite de visibilite : toute la barricade (l'entite elle-meme ne fait que 0,4 bloc, la barricade disparaissait au bord
+    * de l'ecran).
+    */
+   @Override
+   public net.minecraft.world.phys.AABB getBoundingBoxForCulling() {
+      return new net.minecraft.world.phys.AABB(this.getX() - 1.7, this.getY(), this.getZ() - 1.7, this.getX() + 1.7, this.getY() + 3.0, this.getZ() + 1.7);
+   }
+
    @Override
    public boolean isPickable() {
       return !this.isRemoved();
