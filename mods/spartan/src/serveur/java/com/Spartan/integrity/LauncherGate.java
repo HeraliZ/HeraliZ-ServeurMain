@@ -24,6 +24,8 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class LauncherGate {
     private static final Pattern HEX64 = Pattern.compile("^[0-9a-f]{64}$");
+    /** Empreinte d'un dossier mods vide (aucune ligne). */
+    private static final String SHA256_VIDE = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     private static final Map<UUID, String> STATUS = new ConcurrentHashMap<>();
     private static boolean warnedNoSecret = false;
 
@@ -80,7 +82,10 @@ public final class LauncherGate {
         // Sans liste à la main : le dossier mods doit être EXACTEMENT le modpack officiel fabriqué avec le serveur
         // (mod ajouté, retiré, modifié ou renommé : le contrôle d'intégrité dira lequel).
         String officiel = ScanManager.official().empreinteDossier;
-        if (allowed.isEmpty() && officiel != null && !officiel.isEmpty() && !officiel.equalsIgnoreCase(hash)) {
+        // Dossier mods vide : mods chargés par le launcher depuis son propre dossier (Helios) ; jugés un par un par le
+        // contrôle d'intégrité.
+        if (allowed.isEmpty() && officiel != null && !officiel.isEmpty() && !officiel.equalsIgnoreCase(hash)
+                && !SHA256_VIDE.equals(hash)) {
             return "dossier mods différent du modpack officiel (mod ajouté, retiré ou modifié)";
         }
         return null;

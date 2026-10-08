@@ -37,8 +37,25 @@ La détection et les sanctions nécessitent des contrôles serveur. Une IP ou em
 
 Référence : [recommandations de sécurité Electron](https://www.electronjs.org/docs/latest/tutorial/security).
 
+## Anticheat Spartan
+
+Le launcher lance le jeu sans porte d'entrée pour les injecteurs (`app/assets/js/spartan.js`, testé par
+`test/spartan.test.js`) :
+
+- `-XX:+DisableAttachMechanism` à chaque lancement, après les options du joueur : aucun programme ne peut s'attacher au
+  jeu lancé (injecteurs « à chaud ») ;
+- les options Java du joueur qui servent à injecter du code sont retirées : `-javaagent`, `-agentlib`, `-agentpath`,
+  `-Xbootclasspath`, chargeur de classes remplacé, attache autorisée, vérification du code désactivée.
+
+Dans le jeu, Spartan (mods/spartan du dépôt) compare chaque jar chargé au modpack officiel fabriqué avec le serveur,
+y compris les jars du dossier du launcher (`common/modstore`, options `--fml.mavenRoots` / `--fml.modLists`). Le pack
+du launcher doit donc contenir exactement les jars de `livraison/mods client`, dont `spartan-<version>-client.jar` de
+la MÊME fabrication que le jar serveur. Quand tous les joueurs passent par le launcher, le réglage serveur
+`requireHardenedJvm = true` signale ceux qui lancent le jeu sans ces protections. Le jeton signé du launcher
+(`mods/spartan/docs/LAUNCHER.md`) demande un serveur d'authentification : pas encore en place.
+
 ## Limites restantes
 
-Cette refonte n’ajoute pas d’authentification serveur, d’anti-triche, de bannissement automatique, de certificat Windows ni de signature cryptographique du manifeste. HTTPS et les empreintes n’empêchent pas un hébergeur compromis de publier ensemble un manifeste et des fichiers malveillants.
+Cette refonte n’ajoute pas d’authentification serveur, de bannissement automatique, de certificat Windows ni de signature cryptographique du manifeste. HTTPS et les empreintes n’empêchent pas un hébergeur compromis de publier ensemble un manifeste et des fichiers malveillants.
 
 Les mises à jour du launcher sont manuelles via les releases HeraliZ ; le pack est actualisé au lancement. Avant diffusion, tester le serveur réel, signer l’installeur et protéger les comptes pouvant modifier le pack et les releases.

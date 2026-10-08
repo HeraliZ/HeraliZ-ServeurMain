@@ -9,6 +9,7 @@ const os                    = require('os')
 const path                  = require('path')
 
 const ConfigManager            = require('./configmanager')
+const Spartan                  = require('./spartan')
 
 const logger = LoggerUtil.getLogger('ProcessBuilder')
 
@@ -377,7 +378,9 @@ class ProcessBuilder {
         }
         args.push('-Xmx' + ConfigManager.getMaxRAM(this.server.rawServer.id))
         args.push('-Xms' + ConfigManager.getMinRAM(this.server.rawServer.id))
-        args = args.concat(ConfigManager.getJVMOptions(this.server.rawServer.id))
+        // Spartan : options du joueur sans porte d'entrée pour les injecteurs, puis les protections (voir spartan.js)
+        args = args.concat(Spartan.optionsSures(ConfigManager.getJVMOptions(this.server.rawServer.id)))
+        args = args.concat(Spartan.protections())
         args.push('-Djava.library.path=' + tempNativePath)
 
         // Main Java Class
@@ -428,7 +431,9 @@ class ProcessBuilder {
         }
         args.push('-Xmx' + ConfigManager.getMaxRAM(this.server.rawServer.id))
         args.push('-Xms' + ConfigManager.getMinRAM(this.server.rawServer.id))
-        args = args.concat(ConfigManager.getJVMOptions(this.server.rawServer.id))
+        // Spartan : options du joueur sans porte d'entrée pour les injecteurs, puis les protections (voir spartan.js)
+        args = args.concat(Spartan.optionsSures(ConfigManager.getJVMOptions(this.server.rawServer.id)))
+        args = args.concat(Spartan.protections())
 
         // Main Java Class
         args.push(this.modManifest.mainClass)

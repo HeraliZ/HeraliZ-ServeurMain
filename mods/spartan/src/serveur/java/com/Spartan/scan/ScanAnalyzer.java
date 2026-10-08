@@ -92,7 +92,7 @@ public final class ScanAnalyzer {
         List<Finding> out = new ArrayList<>();
         boolean hasRef = ref != null && !ref.isEmpty();
         OfficialProfile official = off != null && !off.isEmpty() ? off : null;
-        jvm(r, ref, hasRef, s, out);
+        jvm(r, ref, hasRef, official != null, s, out);
         if (r.attachListener) {
             out.add(new Finding(Severity.STRONG, "attach",
                     "un programme s'est attaché au jeu en cours de partie (injecteur ?)"));
@@ -118,7 +118,7 @@ public final class ScanAnalyzer {
             out.add(new Finding(Severity.SUSPECT, "threads:unnamed",
                     r.unnamedThreads + " thread(s) sans nom dans le jeu (trace fréquente d'un injecteur)"));
         }
-        providers(r, ref, hasRef, s, out);
+        providers(r, ref, hasRef, official != null, s, out);
         files(r, ref, hasRef, official, out);
         modules(r, ref, hasRef, out);
         mixins(r, ref, hasRef, official, out);
@@ -160,7 +160,11 @@ public final class ScanAnalyzer {
         return max;
     }
 
-    private static void jvm(ScanReport r, ReferenceProfile ref, boolean hasRef, Settings s, List<Finding> out) {
+    /** Options du launcher qui chargent les mods hors du dossier mods : chaque jar chargé est alors jugé un par un. */
+    private static final Set<String> LAUNCHER_FML_ARGS = Set.of("arg:--fml.mavenroots", "arg:--fml.modlists", "arg:--fml.mods");
+
+    private static void jvm(ScanReport r, ReferenceProfile ref, boolean hasRef, boolean official, Settings s,
+                            List<Finding> out) {
         for (String flag : r.jvmFlags) {
             String key = "jvm:" + flag.toLowerCase(Locale.ROOT);
             if (flag.startsWith("-javaagent:")) {
@@ -176,6 +180,9 @@ public final class ScanAnalyzer {
                 out.add(new Finding(Severity.STRONG, key, "chargeur de classes remplacé au lancement : " + flag));
             } else if (flag.equals("-Djdk.attach.allowAttachSelf")) {
                 out.add(new Finding(Severity.STRONG, key, "le jeu s'autorise à s'injecter du code lui-même (allowAttachSelf)"));
+            } else if (official && LAUNCHER_FML_ARGS.contains(flag.toLowerCase(Locale.ROOT))) {
+                out.add(new Finding(Severity.INFO, key, "mods chargés par le launcher hors du dossier mods ("
+                        + flag.substring(4) + ") : chaque jar est comparé au modpack officiel"));
             } else if (flag.startsWith("arg:--fml.")) {
                 out.add(new Finding(Severity.STRONG, key, "option de lancement qui charge du code hors du dossier mods : "
                         + flag.substring(4)));
@@ -208,7 +215,8 @@ public final class ScanAnalyzer {
         }
     }
 
-    private static void providers(ScanReport r, ReferenceProfile ref, boolean hasRef, Settings s, List<Finding> out) {
+    private static void providers(ScanReport r, ReferenceProfile ref, boolean hasRef, boolean official, Settings s,
+                                  List<Finding> out) {
         for (String lf : r.loadedFiles) {
             String[] parts = lf.split("\\|", -1);
             String provider = parts[0];
@@ -219,7 +227,9 @@ public final class ScanAnalyzer {
                     out.add(new Finding(Severity.STRONG, "banned:" + id, "mod interdit chargé : " + id + " (" + file + ")"));
                 }
             }
-            if (NORMAL_PROVIDERS.contains(provider) || (hasRef && ref.providers.contains(provider))) {
+            // « maven libs » : dossier de mods du launcher (Helios) ; ses jars sont jugés un par un avec le modpack officiel
+            if (NORMAL_PROVIDERS.contains(provider) || (hasRef && ref.providers.contains(provider))
+                    || (official && "maven libs".equals(provider))) {
                 continue;
             }
             Severity sev = DEV_PROVIDERS.contains(provider) ? Severity.INFO : Severity.STRONG;
@@ -237,15 +247,17 @@ public final class ScanAnalyzer {
                     || (hasRef && ref.fileHashes.contains(f.sha256())) || (off != null && off.knowsFile(f.sha256()))) {
                 continue;
             }
-            boolean inMods = f.origin().equals("mods");
+            boolean inMods = f.origin().equals("mods") || f.origin().equals("modlist");
             if (!inMods && !hasRef) {
                 continue; // bibliothèques du lanceur : seul le client de référence appris les connaît
             }
-            String where = inMods ? "dans le dossier mods" : "du jeu (" + f.origin().substring(f.origin().indexOf(':') + 1) + ")";
+            String where = f.origin().equals("mods") ? "dans le dossier mods"
+                    : f.origin().equals("modlist") ? "chargé par le launcher (hors du dossier mods)"
+                    : "du jeu (" + f.origin().substring(f.origin().indexOf(':') + 1) + ")";
             String bare = f.name().endsWith("/") ? f.name().substring(0, f.name().length() - 1) : f.name();
             boolean modified = (hasRef && ref.fileNames.contains(ReferenceProfile.fileKey(f)))
                     || (inMods && off != null && off.knowsName(bare));
-            Severity sev = modified || !f.origin().equals("mods") ? Severity.STRONG : Severity.SUSPECT;
+            Severity sev = modified || !f.origin().equals("mods") ? Severity.STRONG : Severity.SUSPECT;  // hors dossier : fort
             String what = modified ? "jar MODIFIÉ " : "jar inconnu ";
             out.add(new Finding(sev, "file:" + f.sha256(), what + where + " : " + f.name() + " ("
                     + human(f.size()) + ", sha256 " + shortSha(f.sha256()) + ")"));
