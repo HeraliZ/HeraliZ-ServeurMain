@@ -369,6 +369,10 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   - fabriquer, vérifier (noms perso compris), puis commit et push.
 - **Un mod d'un autre auteur** : son jar dans `serveur/mods-tiers/` (ou `client/mods-tiers/` s'il ne sert qu'aux
   joueurs), en retirant l'ancienne version.
+- **Un gunpack TaCZ (nouveau ou mis à jour)** : son dossier dans `serveur/tacz/`, puis `python outils/silencieux.py`
+  (portée du son de ses silencieux, `verifier.py` le réclame) et `python outils/icones_sans_contour.py` (retire le
+  contour noir de ses icônes d'inventaire). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
+  redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur.
 - **Un pack de textures** : il est imposé par heraliz_interface
   (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
   par celui du nouveau pack, puis refabriquer heraliz_interface.
