@@ -41,6 +41,8 @@ jobs:
       SPARTAN_DISCORD_ALERTES: ${{ secrets.SPARTAN_DISCORD_ALERTES }}
       SPARTAN_DISCORD_SANCTIONS: ${{ secrets.SPARTAN_DISCORD_SANCTIONS }}
       SPARTAN_LAUNCHER_SECRET: ${{ secrets.SPARTAN_LAUNCHER_SECRET }}
+      LITEBANS_DB_USER: ${{ secrets.LITEBANS_DB_USER }}
+      LITEBANS_DB_PASSWORD: ${{ secrets.LITEBANS_DB_PASSWORD }}
       PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
@@ -97,17 +99,26 @@ jobs:
             livraison/mods client/dayzhotbar-*.jar
           retention-days: 3
 
-      # webhooks Discord et secret du launcher de Spartan : écrits dans la config envoyée, jamais dans le dépôt
-      - name: Secrets de Spartan
+      # secrets écrits dans les fichiers envoyés, jamais dans le dépôt : webhooks Discord et secret du launcher de
+      # Spartan ; base de données de LiteBans (sans ses secrets : base locale H2, sans historique des sanctions)
+      - name: Secrets (Spartan, LiteBans)
         if: env.PTERO_SFTP_HOST != ''
         run: |
           python - <<'EOF'
-          import os, pathlib
+          import os, pathlib, re
           p = pathlib.Path("serveur/config/spartan-common.toml")
           s = p.read_text(encoding="utf-8")
           for marque in ("SPARTAN_DISCORD_ALERTES", "SPARTAN_DISCORD_SANCTIONS", "SPARTAN_LAUNCHER_SECRET"):
               valeur = os.environ.get(marque, "").strip().replace("\\", "\\\\").replace('"', '\\"')
               s = s.replace("__%s__" % marque, valeur)
+          p.write_text(s, encoding="utf-8")
+          p = pathlib.Path("livraison/plugins/LiteBans/config.yml")
+          s = p.read_text(encoding="utf-8")
+          user, mdp = os.environ.get("LITEBANS_DB_USER", "").strip(), os.environ.get("LITEBANS_DB_PASSWORD", "").strip()
+          if not (user and mdp):
+              s = re.sub(r"(?m)^(\s*driver\s*:\s*).+$", lambda m: m.group(1) + "H2", s)
+          for marque, valeur in (("LITEBANS_DB_USER", user), ("LITEBANS_DB_PASSWORD", mdp)):
+              s = s.replace("__%s__" % marque, valeur.replace("'", "''"))
           p.write_text(s, encoding="utf-8")
           EOF
 
@@ -115,11 +126,25 @@ jobs:
         if: env.PTERO_SFTP_HOST != ''
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          # plugins retirés du dépôt : on supprime leur JAR du Ptero, un par un (jamais leurs dossiers de données)
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "${PTERO_SFTP_PORT:-2022}" "sftp://$PTERO_SFTP_HOST" -e "set sftp:auto-confirm yes; cls -1 /plugins/; bye" > plugins_ptero.txt || true
+          python - <<'EOF'
+          import pathlib
+          garder = {p.name for p in pathlib.Path("livraison/plugins").glob("*.jar")}
+          distants = [l.strip().rstrip("/").split("/")[-1] for l in open("plugins_ptero.txt", encoding="utf-8", errors="replace")]
+          retirer = sorted(n for n in distants if n.lower().endswith(".jar") and n not in garder)
+          with open("retirer.lftp", "w", encoding="utf-8") as f:
+              for n in retirer:
+                  f.write('rm -f "/plugins/%s"' % n.replace('"', '') + chr(10))
+          print("plugins retirés du Ptero :", ", ".join(retirer) or "aucun")
+          EOF
           MONDE=$(grep -E '^level-name=' serveur/server.properties | cut -d= -f2)
           lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "${PTERO_SFTP_PORT:-2022}" "sftp://$PTERO_SFTP_HOST" -e "
             set sftp:auto-confirm yes; set net:max-retries 3;
+            source retirer.lftp;
             mirror -R --delete --verbose 'livraison/mods serveur' /mods;
-            mirror -R --verbose --exclude-glob *.db --exclude-glob *.sqlite livraison/plugins /plugins;
+            mirror -R --verbose --exclude-glob *.jar --exclude-glob *.db --exclude-glob *.sqlite livraison/plugins /plugins;
+            mput -O /plugins livraison/plugins/*.jar;
             mirror -R --verbose serveur/config /config;
             mkdir -p -f /config/spartan; put -O /config/spartan livraison/spartan/officiel.json;
             mirror -R --verbose serveur/defaultconfigs /defaultconfigs;
