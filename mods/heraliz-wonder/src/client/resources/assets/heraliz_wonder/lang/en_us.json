@@ -70,5 +70,6 @@
   "subtitles.heraliz_wonder.paralyseur_pret": "Paralyzer recharged",
   "subtitles.heraliz_wonder.paralyseur_gel": "Creature frozen",
   "subtitles.heraliz_wonder.paralyseur_poussiere": "Creature turns to dust",
-  "heraliz_wonder.gun.paralyzer.pap": "Petrifier"
+  "heraliz_wonder.gun.paralyzer.pap": "Petrifier",
+  "itemGroup.heraliz_wonder": "Wonder Weapons"
 }

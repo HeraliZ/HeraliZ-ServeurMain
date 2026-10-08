@@ -5,6 +5,7 @@ import fr.heraliz.wonder.net.Reseau;
 import fr.heraliz.wonder.pont.Parties;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -46,6 +47,8 @@ public final class HeralizWonder {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, WonderConfig.SPEC, MODID + "-server.toml");
         Sons.REGISTRE.register(mod);
         Reseau.init();
+        // onglet creatif « Wonder Weapons » (les armes quittent les onglets de TaCZ)
+        if (ModList.get().isLoaded("tacz")) Onglet.brancher(mod);
         IEventBus forge = MinecraftForge.EVENT_BUS;
         // Partie commune de chaque arme (sons, canal reseau), dans l'ordre d'origine. La logique (cibles, degats, commandes,
         // TaCZ cote serveur) est branchee par la partie serveur, les effets (rendus, sons, TaCZ cote client) par la partie
