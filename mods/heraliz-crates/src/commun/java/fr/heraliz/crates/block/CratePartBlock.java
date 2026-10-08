@@ -24,8 +24,8 @@ import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import java.util.function.Consumer;
 
 /**
- * Bloc invisible qui occupe l'espace autour du coffre (le coffre fait 2x2x1.5 blocs).
- * Il transmet les clics au bloc principal et donne la bonne collision.
+ * Bloc invisible qui occupe l'espace autour de la caisse (jusqu'a 3 x 3 x 3 blocs). Il transmet les clics au bloc
+ * principal ; sa forme est celle de la caisse (CrateShapes) : contour complet a la selection, son morceau en collision.
  */
 public class CratePartBlock extends Block {
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, CrateShapes.COUNT - 1);
@@ -86,26 +86,28 @@ public class CratePartBlock extends Block {
         return ItemStack.EMPTY;
     }
 
-    /** Caisse a laquelle appartient cette partie (null si le bloc principal a disparu). */
+    /** Etat du bloc principal de la caisse a laquelle appartient cette partie (null s'il a disparu). */
     @javax.annotation.Nullable
-    private static fr.heraliz.crates.crate.CrateType owner(BlockState state, BlockGetter level, BlockPos pos) {
+    private static BlockState owner(BlockState state, BlockGetter level, BlockPos pos) {
         BlockState ms = level.getBlockState(masterPos(pos, state));
-        return ms.getBlock() instanceof CrateBlock cb ? cb.type : null;
+        return ms.getBlock() instanceof CrateBlock ? ms : null;
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        fr.heraliz.crates.crate.CrateType type = owner(state, level, pos);
+        BlockState ms = owner(state, level, pos);
         // partie orpheline : un bloc plein qu'on peut viser et casser
-        return type == null ? net.minecraft.world.phys.shapes.Shapes.block() : CrateShapes.outline(type, state.getValue(PART));
+        return ms == null ? net.minecraft.world.phys.shapes.Shapes.block()
+                : CrateShapes.outline(((CrateBlock) ms.getBlock()).type, ms.getValue(CrateBlock.FACING), state.getValue(PART));
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        fr.heraliz.crates.crate.CrateType type = owner(state, level, pos);
-        return type == null ? net.minecraft.world.phys.shapes.Shapes.empty() : CrateShapes.collision(type, state.getValue(PART));
+        BlockState ms = owner(state, level, pos);
+        return ms == null ? net.minecraft.world.phys.shapes.Shapes.empty()
+                : CrateShapes.collision(((CrateBlock) ms.getBlock()).type, ms.getValue(CrateBlock.FACING), state.getValue(PART));
     }
 
     @Override

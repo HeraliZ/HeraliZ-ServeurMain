@@ -9,7 +9,7 @@ modId="heralizcrates"
 version="${mod_version}"
 displayName="Heraliz Crates"
 authors="${mod_authors}"
-description='''Caisses animées HD du serveur HERALIZ : caisses 3D (boss, vote, quêtes, événement, gemme, camos, pendentifs, stickers, chantier, trauma, largage), cadenas et clés 3D, roue de butin, interface d'ouverture épurée façon CS:GO (accroupi + clic droit), éditeur de butin en jeu pour les opérateurs, effets et sons custom.'''
+description='''Caisses animées HD du serveur HERALIZ : caisses 3D (boss, vote, quêtes, événement, gemme, camos, stickers, chantier, trauma, largage), cadenas et clés 3D, roue de butin, interface d'ouverture épurée façon CS:GO (accroupi + clic droit), éditeur de butin en jeu pour les opérateurs, effets et sons custom.'''
 
 [[dependencies.heralizcrates]]
     modId="forge"

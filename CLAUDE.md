@@ -384,6 +384,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - CRac : aucun sac de couchage (retour à la base par la commande de téléportation, lits normaux) ; seuls les C4
   abîment les constructions ;
 - casino : revente avec 5 % de commission, échanges d'objets coupés, entrée non payable avec le compte ;
+- caisses (heraliz_crates) : Vulkhar, Chevalier sans visage, Kraken et Pendentifs supprimées (Glacivore aussi), et
+  plus aucun pendentif (charm) d'arme dans Tactique ; la caisse Gemme montre une gemme qui change de couleur (plus de
+  couteau dans le cristal) ; hitbox = vraie forme de chaque modèle en cubes de 2 px (`python outils/formes_caisses.py`
+  après tout changement de modèle de caisse), contour noir visible seulement en créatif ; nom flottant sans fond
+  (rareté entre deux traits, nom de la caisse, clé · clic droit) ;
 - Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
   I, menu =, abandon Retour arrière ;
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;

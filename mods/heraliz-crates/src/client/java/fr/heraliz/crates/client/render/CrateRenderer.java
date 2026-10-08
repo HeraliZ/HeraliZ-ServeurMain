@@ -51,8 +51,6 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
     public static final double RING_ITEMS_DISTANCE = 20.0;
     /** Nom flottant : visible jusqu'a cette distance (blocs), estompe sur les 4 derniers. */
     public static final double HOLOGRAM_DISTANCE = 14.0;
-    /** Hauteur du nom flottant (px). */
-    public static final float LABEL_Y = 36f;
     /** Periode de l'horloge des animations (ticks) : garde une bonne precision en virgule flottante. */
     public static final long CLOCK_PERIOD = 240_000L;
 
@@ -78,14 +76,28 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
         boolean shaking = sh >= 0 && sh < 10;
 
         if (!be.isActive() && !shaking) {
-            // au repos : caisse figee, cuite une fois (en arriere-plan) et gardee par la carte graphique. Rien ne bouge,
-            // rien n'est recalcule : trois appels de dessin par caisse.
+            // au repos : caisse figee, cuite une fois (en arriere-plan) et gardee par la carte graphique. Rien n'est
+            // recalcule : trois appels de dessin par caisse, plus les quelques pieces animees au repos (Coeur de la Gemme).
             Design d = dist > IDLE_LOD_DISTANCE ? Designs.getLod(type.id) : Designs.get(type.id);
             StaticCrate.Baked baked = StaticCrate.getAsync(d, yRot);
             // version detaillee encore en cuisson : la version allegee en attendant
             if (baked == null && d.detail >= 1f) baked = StaticCrate.getAsync(Designs.getLod(type.id), yRot);
+            SceneRenderer.Frame idle = null;
+            if (baked != null && d.animatedAtRest() && d.isBuilt()) {
+                // pieces animees : l'opaque avant la caisse (derriere son verre), les lueurs apres (cachees par ses pieces)
+                list.clear();
+                d.idle(idleState(level, partial), list);
+                idle = frame(pose, buf, d, yRot, pos);
+                idle.gpu = true;
+                SceneRenderer.solid(idle, list);
+            }
             if (baked != null) {
                 StaticCrate.draw(baked, pose, buf);
+                if (idle != null) {
+                    SceneRenderer.translucent(idle, list);
+                    SceneRenderer.glow(idle, list);
+                    SceneRenderer.sprites(idle, list);
+                }
                 if (baked.sprites().size() > 0) {
                     SceneRenderer.Frame f = frame(pose, buf, d, yRot, pos);
                     SceneRenderer.sprites(f, baked.sprites());
@@ -134,11 +146,21 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
     }
 
     // =================================================================== etat
+    /** Etat des pieces animees d'une caisse au repos (reutilise : fil de rendu seulement). */
+    private final CrateState idleState = new CrateState();
+
+    private CrateState idleState(Level level, float partial) {
+        CrateState s = idleState;
+        s.time = s.clock = (level.getGameTime() % CLOCK_PERIOD) + partial;
+        return s;
+    }
+
     /** Etat d'animation d'une caisse pour cette image. */
     public static CrateState state(CrateBlockEntity be, Level level, float partial, float yRot, Vec3 cam) {
         CrateState s = new CrateState();
         long gt = level.getGameTime();
         s.time = (gt % CLOCK_PERIOD) + partial;
+        s.clock = s.time;
         s.seed = 0;
         s.active = be.isActive();
         if (s.active) {
@@ -373,17 +395,102 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
         text(pose, buf, tp[0], tp[1] - 0.3f, tp[2], sub, 0.02f, alpha, false);
     }
 
-    /** Nom de la caisse et indication de la cle, au-dessus du modele, immobile ; s'efface pendant l'ouverture et de loin. */
+    /**
+     * Nom flottant au-dessus de la caisse, sans fond, toujours face au joueur : rarete de la caisse en petites capitales
+     * espacees entre deux traits (couleur de la rarete), nom de la caisse (sa couleur), puis la cle et le clic droit en
+     * gris. Police DM Sans du mod. S'efface pendant l'ouverture et de loin.
+     */
     private void hologramText(CrateType type, float fade, PoseStack pose, MultiBufferSource buf, double dist) {
         if (!ClientConfig.HOLOGRAM_TEXT.get() || dist > HOLOGRAM_DISTANCE) return;
         float near = 1f - Ease.smooth((float) ((dist - (HOLOGRAM_DISTANCE - 4)) / 4));
         float alpha = fade * near;
         if (alpha < 0.05f) return;
-        float y = Math.max(LABEL_Y, fr.heraliz.crates.block.CrateShapes.height(type) + 7f) / 16f;
-        Component title = type.crateName().withStyle(ChatFormatting.BOLD);
-        text(pose, buf, 0.5f, y, 0.5f, title, 0.03f, alpha, true);
-        Component hint = Component.translatable("hologram.heralizcrates.hint", type.keyName()).withStyle(ChatFormatting.GRAY);
-        text(pose, buf, 0.5f, y - 0.3f, 0.5f, hint, 0.016f, alpha, false);
+        Font font = Minecraft.getInstance().font;
+        Plate plate = PLATES.computeIfAbsent(type, Plate::new);
+        float y = (fr.heraliz.crates.block.CrateShapes.height(type) + LABEL_GAP) / 16f;
+        pose.pushPose();
+        pose.translate(0.5f, y, 0.5f);
+        pose.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+        pose.scale(-PLATE_SCALE, -PLATE_SCALE, PLATE_SCALE);
+        org.joml.Matrix4f m = pose.last().pose();
+        int a = Math.max(5, Math.min(255, (int) (alpha * 255)));
+        // ligne du haut : rarete espacee, centree, entre deux traits
+        float rx = -plate.rarityWidth / 2f, ry = -PLATE_TITLE_Y - PLATE_RARITY_H;
+        for (int i = 0; i < plate.rarity.length; i++) {
+            font.drawInBatch(plate.rarity[i], rx + plate.rarityX[i], ry, (a << 24) | type.tier.color, false, m, buf,
+                    Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
+        }
+        float ly = ry + 5.2f, gap = 5f;
+        rule(m, buf, rx - gap - PLATE_RULE, rx - gap, ly, type.tier.color, a, true);
+        rule(m, buf, -rx + gap, -rx + gap + PLATE_RULE, ly, type.tier.color, a, false);
+        // nom de la caisse, en grand
+        pose.pushPose();
+        pose.scale(PLATE_TITLE_K, PLATE_TITLE_K, 1f);
+        font.drawInBatch(plate.title, -plate.titleWidth / 2f, -PLATE_TITLE_Y / PLATE_TITLE_K, (a << 24) | type.glow, false,
+                pose.last().pose(), buf, Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
+        pose.popPose();
+        // cle et clic droit
+        font.drawInBatch(plate.hint, -plate.hintWidth / 2f, PLATE_HINT_Y, (a << 24) | 0xA9AEB8, false, m, buf,
+                Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
+        pose.popPose();
+    }
+
+    /** Ecart entre le haut de la caisse et le bas du nom (px), taille d'un pixel de texte (blocs). */
+    private static final float LABEL_GAP = 9f, PLATE_SCALE = 0.0125f;
+    /** Mise en page (pixels de texte) : hauteur de la rarete, haut du nom, echelle du nom, ligne de la cle, longueur des traits. */
+    private static final float PLATE_RARITY_H = 12f, PLATE_TITLE_Y = 22f, PLATE_TITLE_K = 1.85f, PLATE_HINT_Y = 2f, PLATE_RULE = 34f;
+    /** Espacement des lettres de la rarete (pixels de texte). */
+    private static final float PLATE_TRACKING = 2.2f;
+    private static final net.minecraft.resources.ResourceLocation FONT = fr.heraliz.crates.HeralizCrates.id("ui"),
+            FONT_BOLD = fr.heraliz.crates.HeralizCrates.id("ui_bold"), FONT_SMALL = fr.heraliz.crates.HeralizCrates.id("ui_small");
+
+    /** Textes et largeurs d'un nom flottant, calcules une fois par caisse (et par langue). */
+    private static final class Plate {
+        final net.minecraft.util.FormattedCharSequence[] rarity;
+        final float[] rarityX;
+        final float rarityWidth, titleWidth, hintWidth;
+        final net.minecraft.util.FormattedCharSequence title, hint;
+
+        Plate(CrateType type) {
+            Font font = Minecraft.getInstance().font;
+            String r = type.tier.displayName().getString().toUpperCase(java.util.Locale.ROOT);
+            rarity = new net.minecraft.util.FormattedCharSequence[r.length()];
+            rarityX = new float[r.length()];
+            float x = 0;
+            for (int i = 0; i < r.length(); i++) {
+                Component c = Component.literal(String.valueOf(r.charAt(i))).withStyle(st -> st.withFont(FONT_SMALL));
+                rarity[i] = c.getVisualOrderText();
+                rarityX[i] = x;
+                x += font.width(rarity[i]) + (i < r.length() - 1 ? PLATE_TRACKING : 0);
+            }
+            rarityWidth = x;
+            Component t = Component.translatable("block.heralizcrates." + type.blockId()).withStyle(st -> st.withFont(FONT_BOLD));
+            title = t.getVisualOrderText();
+            titleWidth = font.width(title);
+            Component h = Component.translatable("hologram.heralizcrates.hint",
+                    Component.translatable("item.heralizcrates." + type.keyId())).withStyle(st -> st.withFont(FONT));
+            hint = h.getVisualOrderText();
+            hintWidth = font.width(hint);
+        }
+    }
+
+    private static final java.util.Map<CrateType, Plate> PLATES = new java.util.EnumMap<>(CrateType.class);
+
+    /** Vide les textes gardes (changement de langue, rechargement des ressources). */
+    public static void clearPlates() {
+        PLATES.clear();
+    }
+
+    /** Trait horizontal fin, qui s'estompe vers l'exterieur. */
+    private static void rule(org.joml.Matrix4f m, MultiBufferSource buf, float x0, float x1, float y, int rgb, int alpha, boolean fadeLeft) {
+        com.mojang.blaze3d.vertex.VertexConsumer vc = buf.getBuffer(net.minecraft.client.renderer.RenderType.textBackground());
+        int r = (rgb >> 16) & 255, g = (rgb >> 8) & 255, b = rgb & 255;
+        int a0 = fadeLeft ? alpha / 6 : alpha, a1 = fadeLeft ? alpha : alpha / 6;
+        float h = 0.55f;
+        vc.vertex(m, x0, y - h, 0).color(r, g, b, a0).uv2(LightTexture.FULL_BRIGHT).endVertex();
+        vc.vertex(m, x0, y + h, 0).color(r, g, b, a0).uv2(LightTexture.FULL_BRIGHT).endVertex();
+        vc.vertex(m, x1, y + h, 0).color(r, g, b, a1).uv2(LightTexture.FULL_BRIGHT).endVertex();
+        vc.vertex(m, x1, y - h, 0).color(r, g, b, a1).uv2(LightTexture.FULL_BRIGHT).endVertex();
     }
 
     private static void text(PoseStack pose, MultiBufferSource buf, float x, float y, float z, Component text, float scale,

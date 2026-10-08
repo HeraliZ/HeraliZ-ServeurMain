@@ -4,8 +4,12 @@ package fr.heraliz.crates.client.render.scene;
  * Etat d'un coffre pour une image : horloge, sequence d'ouverture, informations de la roue.
  */
 public final class CrateState {
-    /** Horloge continue (ticks). */
+    /** Horloge des animations (ticks) : repart de 0 a l'ouverture (la caisse part de sa pose figee). */
     public float time;
+    /** Horloge du monde (ticks), continue meme pendant l'ouverture : parties animees au repos (Design.idle). */
+    public float clock;
+    /** Pose figee (caisse cuite au repos) : les parties animees au repos n'y sont pas, Design.idle les dessine. */
+    public boolean frozen;
     /** Sequence d'ouverture en cours. */
     public boolean active;
     /** Ticks depuis le debut de la sequence. */
@@ -45,6 +49,8 @@ public final class CrateState {
     public CrateState copy() {
         CrateState c = new CrateState();
         c.time = time;
+        c.clock = clock;
+        c.frozen = frozen;
         c.active = active;
         c.t = t;
         c.seed = seed;

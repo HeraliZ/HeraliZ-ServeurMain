@@ -67,20 +67,6 @@ final class DefaultLoot {
                 l.add(e("minecraft:elytra", 1, 2, LEGENDARY));
                 l.add(e("minecraft:enchanted_golden_apple", 2, 1, MYTHIC));
             }
-            case VULKHAR -> {
-                l.add(e("minecraft:blaze_rod", 8, 16, COMMON));
-                l.add(e("minecraft:fire_charge", 8, 14, COMMON));
-                l.add(e("minecraft:magma_cream", 8, 12, UNCOMMON));
-                l.add(e("minecraft:potion", 1, 12, UNCOMMON).nbt("{Potion:\"minecraft:long_fire_resistance\"}"));
-                l.add(e("minecraft:gold_block", 3, 12, RARE));
-                l.add(e("minecraft:diamond", 6, 12, RARE));
-                l.add(e("minecraft:netherite_scrap", 3, 8, EPIC));
-                l.add(e("minecraft:diamond_sword", 1, 6, EPIC).nbt("{Enchantments:[{id:\"minecraft:sharpness\",lvl:5s},{id:\"minecraft:fire_aspect\",lvl:2s},{id:\"minecraft:unbreaking\",lvl:3s}]}").name("&6Croc de Vulkhar"));
-                l.add(e("minecraft:netherite_ingot", 2, 5, LEGENDARY));
-                l.add(e("minecraft:netherite_chestplate", 1, 3, LEGENDARY).nbt("{Enchantments:[{id:\"minecraft:fire_protection\",lvl:4s},{id:\"minecraft:unbreaking\",lvl:3s}]}").name("&6&lÉcailles de Vulkhar"));
-                l.add(e("minecraft:dragon_head", 1, 2, LEGENDARY));
-                l.add(e("minecraft:enchanted_golden_apple", 2, 1, MYTHIC));
-            }
             case PORTEUR_DE_PESTE -> {
                 l.add(e("minecraft:milk_bucket", 1, 16, COMMON).name("&fRemède du Médecin"));
                 l.add(e("minecraft:bread", 12, 16, COMMON));
@@ -93,34 +79,6 @@ final class DefaultLoot {
                 l.add(e("minecraft:diamond_axe", 1, 5, EPIC).nbt("{Enchantments:[{id:\"minecraft:sharpness\",lvl:4s},{id:\"minecraft:unbreaking\",lvl:3s}]}").name("&eFaux de la Peste"));
                 l.add(e("minecraft:totem_of_undying", 1, 3, LEGENDARY));
                 l.add(e("minecraft:enchanted_golden_apple", 1, 1, MYTHIC));
-            }
-            case CHEVALIER_SANS_VISAGE -> {
-                l.add(e("minecraft:iron_ingot", 16, 16, COMMON));
-                l.add(e("minecraft:shield", 1, 14, UNCOMMON));
-                l.add(e("minecraft:iron_chestplate", 1, 12, UNCOMMON).nbt(String.format(PROT, 3)));
-                l.add(e("minecraft:saddle", 1, 10, UNCOMMON));
-                l.add(e("minecraft:diamond_horse_armor", 1, 8, RARE));
-                l.add(e("minecraft:diamond", 5, 12, RARE));
-                l.add(e("minecraft:golden_apple", 4, 10, RARE));
-                l.add(e("minecraft:diamond_helmet", 1, 6, EPIC).nbt(String.format(PROT, 4)).name("&5Heaume Sans Visage"));
-                l.add(e("minecraft:totem_of_undying", 1, 5, EPIC));
-                l.add(e("minecraft:netherite_sword", 1, 3, LEGENDARY).nbt("{Enchantments:[{id:\"minecraft:sharpness\",lvl:5s},{id:\"minecraft:sweeping\",lvl:3s},{id:\"minecraft:unbreaking\",lvl:3s}]}").name("&5&lLame du Chevalier"));
-                l.add(e("minecraft:netherite_ingot", 1, 3, LEGENDARY));
-                l.add(e("minecraft:enchanted_golden_apple", 2, 1, MYTHIC));
-            }
-            case KRAKEN -> {
-                l.add(e("minecraft:prismarine_crystals", 16, 16, COMMON));
-                l.add(e("minecraft:ink_sac", 16, 14, COMMON));
-                l.add(e("minecraft:glow_ink_sac", 8, 12, UNCOMMON));
-                l.add(e("minecraft:nautilus_shell", 2, 12, UNCOMMON));
-                l.add(e("minecraft:potion", 1, 12, UNCOMMON).nbt("{Potion:\"minecraft:long_water_breathing\"}"));
-                l.add(e("minecraft:turtle_helmet", 1, 8, RARE));
-                l.add(e("minecraft:diamond", 6, 12, RARE));
-                l.add(e("minecraft:heart_of_the_sea", 1, 5, EPIC));
-                l.add(e("minecraft:totem_of_undying", 1, 5, EPIC));
-                l.add(e("minecraft:trident", 1, 3, LEGENDARY).nbt("{Enchantments:[{id:\"minecraft:loyalty\",lvl:3s},{id:\"minecraft:impaling\",lvl:5s},{id:\"minecraft:unbreaking\",lvl:3s}]}").name("&3&lTrident du Kraken"));
-                l.add(e("minecraft:netherite_ingot", 1, 3, LEGENDARY));
-                l.add(e("minecraft:enchanted_golden_apple", 2, 1, MYTHIC));
             }
             case VOTE -> {
                 l.add(e("minecraft:experience_bottle", 8, 20, COMMON));
@@ -176,18 +134,6 @@ final class DefaultLoot {
                 }
                 for (String c : new String[]{"seraphin", "chaines_enfer", "texture_manquante", "money_gun", "surchauffe", "trophee"}) {
                     l.add(e("heralisz_camo:skinx_" + c, 1, 1, MYTHIC));
-                }
-            }
-            // caisse Pendentifs : les repliques miniatures d'armes et de couteaux de heralisz_camo (gemmes les plus rares)
-            case PENDENTIF -> {
-                for (String c : new String[]{"deagle_gold", "vector_toxic", "scar_plasma", "m200_black_ice"}) l.add(charm(c, 110, COMMON));
-                for (String c : new String[]{"ak47_dark_matter", "awp_dragon"}) l.add(charm(c, 80, UNCOMMON));
-                for (String c : new String[]{"butterfly_fade", "butterfly_marble_fade", "karambit_crimson_web", "karambit_tiger_tooth",
-                        "karambit_case_hardened", "m9_lore", "m9_autotronic", "m9_slaughter"}) {
-                    l.add(charm(c, 40, EPIC));
-                }
-                for (String c : new String[]{"butterfly_ruby", "butterfly_sapphire", "butterfly_gamma_emerald", "butterfly_black_pearl"}) {
-                    l.add(charm(c, 20, LEGENDARY));
                 }
             }
             // caisse Stickers : les 32 stickers de heralisz_camo en papier, une partie en holo, metallises et en or, + le module
@@ -363,10 +309,6 @@ final class DefaultLoot {
     /** Munitions TaCZ du pack par defaut. */
     private static LootEntry ammo(String id, int count, int weight, LootRarity rarity) {
         return e("tacz:ammo", count, weight, rarity).nbt("{AmmoId:\"tacz:" + id + "\"}");
-    }
-
-    private static LootEntry charm(String id, int weight, LootRarity rarity) {
-        return e("heralisz_camo:charm_" + id, 1, weight, rarity);
     }
 
     private static LootEntry camo(String id, int weight, LootRarity rarity) {

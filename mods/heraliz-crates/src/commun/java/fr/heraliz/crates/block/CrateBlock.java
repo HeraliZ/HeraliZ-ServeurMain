@@ -62,8 +62,9 @@ public class CrateBlock extends BaseEntityBlock {
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
         Level level = ctx.getLevel();
         BlockPos pos = ctx.getClickedPos();
+        Direction facing = ctx.getHorizontalDirection().getOpposite();
         for (int i = 0; i < CrateShapes.COUNT; i++) {
-            if (i == CrateShapes.MASTER || !CrateShapes.needed(type, i)) continue;
+            if (i == CrateShapes.MASTER || !CrateShapes.needed(type, facing, i)) continue;
             BlockPos p = pos.offset(CrateShapes.dx(i), CrateShapes.dy(i), CrateShapes.dz(i));
             if (!level.isInWorldBounds(p) || !level.getBlockState(p).canBeReplaced(ctx)) {
                 if (!level.isClientSide && ctx.getPlayer() != null) {
@@ -73,14 +74,14 @@ public class CrateBlock extends BaseEntityBlock {
                 return null;
             }
         }
-        return defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
+        return defaultBlockState().setValue(FACING, facing);
     }
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!level.isClientSide) {
-            placeParts(level, pos, type);
+            placeParts(level, pos, type, state.getValue(FACING));
         }
     }
 
@@ -88,22 +89,22 @@ public class CrateBlock extends BaseEntityBlock {
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moving) {
         super.onPlace(state, level, pos, oldState, moving);
         if (!level.isClientSide && !oldState.is(state.getBlock())) {
-            placeParts(level, pos, type);
+            placeParts(level, pos, type, state.getValue(FACING));
         }
     }
 
     /**
      * Pose les blocs "parties" des cellules traversees par la caisse et retire ceux qui ne servent plus (caisse posee avec
-     * une ancienne version, dont la taille a change).
+     * une ancienne version, dont la forme a change).
      */
-    public static void placeParts(Level level, BlockPos pos, CrateType type) {
+    public static void placeParts(Level level, BlockPos pos, CrateType type, Direction facing) {
         for (int i = 0; i < CrateShapes.COUNT; i++) {
             if (i == CrateShapes.MASTER) continue;
             BlockPos p = pos.offset(CrateShapes.dx(i), CrateShapes.dy(i), CrateShapes.dz(i));
-            if (!level.isInWorldBounds(p)) continue;
+            if (!level.isInWorldBounds(p) || !level.isLoaded(p)) continue;
             BlockState cur = level.getBlockState(p);
             boolean mine = cur.getBlock() instanceof CratePartBlock && cur.getValue(CratePartBlock.PART) == i;
-            if (!CrateShapes.needed(type, i)) {
+            if (!CrateShapes.needed(type, facing, i)) {
                 if (mine) level.setBlock(p, Blocks.AIR.defaultBlockState(), 35);
                 continue;
             }
@@ -171,13 +172,13 @@ public class CrateBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return CrateShapes.outline(type, CrateShapes.MASTER);
+        return CrateShapes.outline(type, state.getValue(FACING), CrateShapes.MASTER);
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return CrateShapes.collision(type, CrateShapes.MASTER);
+        return CrateShapes.collision(type, state.getValue(FACING), CrateShapes.MASTER);
     }
 
     @Override
