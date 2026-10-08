@@ -1,0 +1,42 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_rpk"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 208
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:carbon"
+            },
+            "count": 192
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:aluminum"
+            },
+            "count": 160
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 26
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "tacz:rpk",
+        "attachments": {
+            "stock": "tacz:oem_stock_heavy"
+        }
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

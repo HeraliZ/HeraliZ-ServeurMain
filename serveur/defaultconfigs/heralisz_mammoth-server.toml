@@ -1,0 +1,29 @@
+
+[ymirak]
+	#PV « réels » d'Ymirak : les dégâts des armes sont ramenés à cette échelle. Réglé pour ~6 min à 3-4 joueurs moyens armés.
+	#Range: 500 ~ 10000000
+	virtualHp = 36000
+	#Dégâts max retenus par impact (anti one-shot).
+	#Range: 1.0 ~ 10000.0
+	hitCap = 40.0
+	#Au-delà de ces dégâts bruts par seconde, le surplus ne compte qu'à 25 %.
+	#Range: 10.0 ~ 100000.0
+	dpsCap = 900.0
+	#Multiplicateur des dégâts infligés par Ymirak.
+	#Range: 0.1 ~ 10.0
+	damageMultiplier = 1.0
+	#Délai avant que l'autel accepte un nouveau cor après sa mort.
+	#Range: 0 ~ 10080
+	respawnMinutes = 60
+	#Distance max à l'autel : au-delà (ou sans joueur autour), il rentre dans sa glace et se soigne.
+	#Range: 12 ~ 128
+	leashRadius = 44
+	#Jusqu'à ce nombre de joueurs engagés, ses PV ne bougent pas.
+	#Range: 1 ~ 100
+	playersBeforeScaling = 6
+	#Au-delà, chaque joueur en plus ajoute cette part de PV (0.15 = +15 %).
+	#Range: 0.0 ~ 2.0
+	hpPerExtraPlayer = 0.15
+	#Cinématiques (caméra) à l'apparition, aux changements de phase et à la mort.
+	cinematics = true
+

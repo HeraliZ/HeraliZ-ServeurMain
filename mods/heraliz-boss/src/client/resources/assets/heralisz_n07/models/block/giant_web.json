@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/block", "ambientocclusion": false, "render_type": "minecraft:cutout", "textures": {"0": "heralisz_n07:block/giant_web", "particle": "heralisz_n07:block/giant_web"}, "elements": [{"from": [-16, -16, 15.95], "to": [32, 32, 15.95], "faces": {"north": {"uv": [0, 0, 16, 16], "texture": "#0"}}}]}

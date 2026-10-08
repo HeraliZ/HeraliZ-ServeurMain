@@ -1,0 +1,27 @@
+{
+  "weight": 0.4,
+  "ads": {
+    "addend": 0.05
+  },
+  "inaccuracy": {
+    "multiplier": 1.15
+  },
+  "aim_inaccuracy": {
+    "multiplier": 0.85
+  },
+  "recoil": {
+    "pitch": {
+      "multiplier": 0.8
+    }
+  },
+  "effective_range": {
+    "multiplier": 1.2
+  },
+  "head_shot":{
+    "function": "if (x <= 1.5) then y = x + 0.5 else y = 2 end"
+  },
+  "silence": {
+    "distance_addend": -24,
+    "use_silence_sound": true
+  }
+}

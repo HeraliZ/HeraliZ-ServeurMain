@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=south": {
+   "model": "heraliz_loot:block/ark/loot_military_33"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/ark/loot_military_33",
+   "y": 90
+  },
+  "facing=north": {
+   "model": "heraliz_loot:block/ark/loot_military_33",
+   "y": 180
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/ark/loot_military_33",
+   "y": 270
+  }
+ }
+}

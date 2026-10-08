@@ -1,0 +1,40 @@
+{
+ "variants": {
+  "facing=north,power=0": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=north,power=1": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=north,power=2": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=south,power=0": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=south,power=1": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=south,power=2": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=west,power=0": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=west,power=1": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=west,power=2": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=east,power=0": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=east,power=1": {
+   "model": "heralisz_n07:block/cage_lamp"
+  },
+  "facing=east,power=2": {
+   "model": "heralisz_n07:block/cage_lamp"
+  }
+ }
+}

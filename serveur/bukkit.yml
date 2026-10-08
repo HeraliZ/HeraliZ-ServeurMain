@@ -1,0 +1,30 @@
+settings:
+  allow-end: false
+  warn-on-overload: false
+  permissions-file: permissions.yml
+  update-folder: update
+  plugin-profiling: false
+  connection-throttle: -1
+  query-plugins: true
+  deprecated-verbose: default
+  shutdown-message: Le serveur redémarre ! Voir Discord si besoin
+  minimum-api: none
+  use-map-color-cache: true
+spawn-limits:
+  monsters: 250
+  animals: 10
+  water-animals: 0
+  water-ambient: 0
+  water-underground-creature: 0
+  ambient: 15
+chunk-gc:
+  period-in-ticks: 1200
+ticks-per:
+  animal-spawns: 800
+  monster-spawns: 3
+  water-spawns: 0
+  water-ambient-spawns: 0
+  water-underground-creature-spawns: 1
+  ambient-spawns: 1
+  autosave: 6000
+aliases: now-in-commands.yml

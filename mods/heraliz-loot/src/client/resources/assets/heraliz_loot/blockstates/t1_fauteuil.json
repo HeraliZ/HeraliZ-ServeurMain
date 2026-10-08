@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_fauteuil"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_fauteuil"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_fauteuil"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_fauteuil"
+  }
+ }
+}

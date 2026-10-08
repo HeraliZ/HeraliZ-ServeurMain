@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/roue_aubes"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/roue_aubes",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/roue_aubes",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/roue_aubes",
+   "y": 270
+  }
+ }
+}

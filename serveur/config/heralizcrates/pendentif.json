@@ -1,0 +1,113 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add pendentif <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "heralisz_camo:charm_deagle_gold",
+      "count": 1,
+      "weight": 110,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:charm_vector_toxic",
+      "count": 1,
+      "weight": 110,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:charm_scar_plasma",
+      "count": 1,
+      "weight": 110,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:charm_m200_black_ice",
+      "count": 1,
+      "weight": 110,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:charm_ak47_dark_matter",
+      "count": 1,
+      "weight": 80,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_camo:charm_awp_dragon",
+      "count": 1,
+      "weight": 80,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_camo:charm_butterfly_fade",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:charm_butterfly_marble_fade",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:charm_karambit_crimson_web",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:charm_karambit_tiger_tooth",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:charm_karambit_case_hardened",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:charm_m9_lore",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:charm_m9_autotronic",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:charm_m9_slaughter",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:charm_butterfly_ruby",
+      "count": 1,
+      "weight": 20,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:charm_butterfly_sapphire",
+      "count": 1,
+      "weight": 20,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:charm_butterfly_gamma_emerald",
+      "count": 1,
+      "weight": 20,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:charm_butterfly_black_pearl",
+      "count": 1,
+      "weight": 20,
+      "rarity": "legendary"
+    }
+  ]
+}

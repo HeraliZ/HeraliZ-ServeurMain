@@ -1,0 +1,39 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_p90"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 224
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:carbon"
+            },
+            "count": 240
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:aluminum"
+            },
+            "count": 240
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 33
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "tacz:p90"
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

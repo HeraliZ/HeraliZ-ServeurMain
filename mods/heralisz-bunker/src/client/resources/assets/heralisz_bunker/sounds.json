@@ -1,0 +1,104 @@
+{
+ "block.alarm_6": {
+  "subtitle": "sounds.hbm_m.subtitle.alarm_6",
+  "sounds": [
+   "heralisz_bunker:block/door/alarm_6"
+  ]
+ },
+ "block.door_move_2": {
+  "subtitle": "sounds.hbm_m.subtitle.door_move_2",
+  "sounds": [
+   "heralisz_bunker:block/door/door_move_2"
+  ]
+ },
+ "block.door_wgh_big_start": {
+  "subtitle": "sounds.hbm_m.subtitle.door_wgh_big_start",
+  "sounds": [
+   "heralisz_bunker:block/door/door_wgh_big_start"
+  ]
+ },
+ "block.door_wgh_big_stop": {
+  "subtitle": "sounds.hbm_m.subtitle.door_wgh_big_stop",
+  "sounds": [
+   "heralisz_bunker:block/door/door_wgh_big_stop"
+  ]
+ },
+ "block.garage_move": {
+  "subtitle": "sounds.hbm_m.subtitle.garage_move",
+  "sounds": [
+   "heralisz_bunker:block/door/garage_move"
+  ]
+ },
+ "block.garage_stop": {
+  "subtitle": "sounds.hbm_m.subtitle.garage_stop",
+  "sounds": [
+   "heralisz_bunker:block/door/garage_stop"
+  ]
+ },
+ "block.lever_1": {
+  "subtitle": "sounds.hbm_m.subtitle.lever_1",
+  "sounds": [
+   "heralisz_bunker:block/door/lever_1"
+  ]
+ },
+ "block.metal_stop_1": {
+  "subtitle": "sounds.hbm_m.subtitle.metal_stop_1",
+  "sounds": [
+   "heralisz_bunker:block/door/metal_stop_1"
+  ]
+ },
+ "block.sliding_door_opened": {
+  "subtitle": "sounds.hbm_m.subtitle.sliding_door_opened",
+  "sounds": [
+   "heralisz_bunker:block/door/sliding_door_opened"
+  ]
+ },
+ "block.sliding_door_opening": {
+  "subtitle": "sounds.hbm_m.subtitle.sliding_door_opening",
+  "sounds": [
+   "heralisz_bunker:block/door/sliding_door_opening"
+  ]
+ },
+ "block.sliding_door_shut": {
+  "subtitle": "sounds.hbm_m.subtitle.sliding_door_shut",
+  "sounds": [
+   "heralisz_bunker:block/door/sliding_door_shut"
+  ]
+ },
+ "block.transition_seal_close": {
+  "subtitle": "sounds.hbm_m.subtitle.transition_seal_close",
+  "sounds": [
+   "heralisz_bunker:block/door/transition_seal_close"
+  ]
+ },
+ "block.transition_seal_open": {
+  "subtitle": "sounds.hbm_m.subtitle.transition_seal_open",
+  "sounds": [
+   "heralisz_bunker:block/door/transition_seal_open"
+  ]
+ },
+ "block.vault_scrape": {
+  "subtitle": "sounds.hbm_m.subtitle.vault_scrape",
+  "sounds": [
+   "heralisz_bunker:block/door/vault_scrape"
+  ]
+ },
+ "block.vault_thud": {
+  "subtitle": "sounds.hbm_m.subtitle.vault_thud",
+  "sounds": [
+   "heralisz_bunker:block/door/vault_thud"
+  ]
+ },
+ "block.wgh_start": {
+  "subtitle": "sounds.hbm_m.subtitle.wgh_start",
+  "sounds": [
+   "heralisz_bunker:block/door/wgh_start"
+  ]
+ },
+ "block.wgh_stop": {
+  "subtitle": "sounds.hbm_m.subtitle.wgh_stop",
+  "sounds": [
+   "heralisz_bunker:block/door/wgh_stop"
+  ]
+ }
+}

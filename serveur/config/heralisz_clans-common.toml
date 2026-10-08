@@ -1,0 +1,73 @@
+
+#Regles des clans HeraliZ
+[clans]
+	#Cout de creation d'un clan (hérals, HeraliZ Economie)
+	#Range: 0 ~ 9223372036854775807
+	cout_creation = 2500
+	#Heures a attendre apres avoir quitte (ou ete exclu d') un clan avant d'en rejoindre un autre
+	#Range: 0 ~ 720
+	delai_rejoindre_h = 12
+	#Heures entre deux modifications d'un meme champ (nom, tag, description, banniere)
+	#Range: 0 ~ 8760
+	cooldown_modif_h = 72
+
+#Territoires
+[territoires]
+	#Bonus de loot (%) des membres presents dans une zone tenue : noeud LuckPerms phatloots.bonus.<n>
+	#Range: 0 ~ 100
+	loot_bonus = 10
+	#Secondes pour capturer une zone tenue par un autre clan (un seul capteur)
+	#Range: 5 ~ 3600
+	duree_capture_s = 90
+	#Secondes pour capturer une zone libre
+	#Range: 5 ~ 3600
+	duree_capture_neutre_s = 60
+	#Minutes de protection apres une capture
+	#Range: 0 ~ 1440
+	protection_min = 10
+	#Minutes entre deux signaux de ravitaillement sur une meme zone
+	#Range: 1 ~ 1440
+	ravitaillement_min = 90
+	#true : seule l'equipe qui a lance le signal ouvre la caisse larguee
+	caisse_verrouillee_clan = false
+
+#Sources d'XP (les quetes sont dans config/heralisz_clans/quetes.json, les paliers dans niveaux.json)
+[xp]
+	#Range: 0 ~ 100000
+	capture = 150
+	#Range: 0 ~ 100000
+	ravitaillement = 100
+	#Range: 0 ~ 100000
+	kill_joueur = 5
+	#Range: 0 ~ 100000
+	kill_zombie = 1
+	#Range: 0 ~ 100000
+	boss = 50
+
+#Quetes de clan (catalogue dans config/heralisz_clans/quetes.json)
+[quetes]
+	#Heure du serveur (0-23) du tirage quotidien et hebdomadaire
+	#Range: 0 ~ 23
+	heure_tirage = 6
+	#Jour du tirage hebdomadaire (1 = lundi ... 7 = dimanche)
+	#Range: 1 ~ 7
+	jour_tirage_semaine = 1
+	#Nombre de quetes « jour » tirees
+	#Range: 1 ~ 8
+	par_jour = 3
+	#Nombre de quetes « semaine » tirees
+	#Range: 1 ~ 8
+	par_semaine = 2
+
+#Statistiques
+[stats]
+	#Minutes avant qu'un meme bloc de loot (cfm:loot_*) compte a nouveau pour un joueur
+	#Range: 0 ~ 1440
+	loot_delai_min = 5
+	#Anti-boost : minutes avant qu'un kill du meme tueur sur la meme victime compte a nouveau (stats, XP, quetes)
+	#Range: 0 ~ 1440
+	anti_boost_couple_min = 10
+	#Anti-boost : un joueur tue moins de N secondes apres sa reapparition (ou sa connexion) ne compte pas
+	#Range: 0 ~ 3600
+	anti_boost_reapparition_s = 60
+

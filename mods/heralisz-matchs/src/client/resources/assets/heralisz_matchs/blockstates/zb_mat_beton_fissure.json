@@ -1,0 +1,40 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_fissure_0",
+    "weight": 3
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_fissure_0",
+    "y": 90,
+    "weight": 3
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_fissure_0",
+    "y": 180,
+    "weight": 3
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_fissure_0",
+    "y": 270,
+    "weight": 3
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_0"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_0",
+    "y": 90
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_0",
+    "y": 180
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_0",
+    "y": 270
+   }
+  ]
+ }
+}

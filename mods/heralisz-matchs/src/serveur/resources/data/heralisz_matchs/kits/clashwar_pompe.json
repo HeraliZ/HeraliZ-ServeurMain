@@ -1,0 +1,40 @@
+{
+  "id": "clashwar_pompe",
+  "nom_fr": "Pompe",
+  "nom_en": "Shotgun",
+  "classe": "pompe",
+  "modes": [
+    "clashwar"
+  ],
+  "principale": {
+    "gun": "tacz:m870",
+    "accessoires": {
+      "extended_mag": "tacz:extended_mag_1"
+    },
+    "reserve": 32
+  },
+  "secondaire": {
+    "gun": "tacz:glock_17",
+    "reserve": 51
+  },
+  "melee": "heralisz_melee:tac_dagger",
+  "soins": [
+    {
+      "id": "heralisz_heal:ai2",
+      "nombre": 2
+    },
+    {
+      "id": "heralisz_heal:blood_pack",
+      "nombre": 1
+    }
+  ],
+  "grenades": [],
+  "armure": {
+    "kit": "kit_siberie"
+  },
+  "jauges": {
+    "portee": 0.2,
+    "cadence": 0.3,
+    "mobilite": 0.7
+  }
+}

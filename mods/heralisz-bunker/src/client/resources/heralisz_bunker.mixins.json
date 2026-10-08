@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heralisz.bunker.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heralisz_bunker.refmap.json",
+  "client": [
+    "CameraMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

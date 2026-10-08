@@ -1,0 +1,528 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/scorpion.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "right_leg": [
+   {
+    "name": "genouillere_sangle_haut",
+    "uv": [
+     43,
+     72
+    ],
+    "from": [
+     -2.724609375,
+     4.900390625,
+     -2.849609375
+    ],
+    "size": [
+     5.125,
+     0.5,
+     5.625
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "genouillere_sangle_bas",
+    "uv": [
+     65,
+     72
+    ],
+    "from": [
+     -2.724609375,
+     7.150390625,
+     -2.849609375
+    ],
+    "size": [
+     5.125,
+     0.5,
+     5.625
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "genouillere_coque",
+    "uv": [
+     39,
+     90
+    ],
+    "from": [
+     -1.725,
+     5.125,
+     -3.4
+    ],
+    "size": [
+     2.75,
+     2.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -4.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     -0.35,
+     6.25,
+     -3.15
+    ]
+   },
+   {
+    "name": "genouillere_coque_haut",
+    "uv": [
+     99,
+     96
+    ],
+    "from": [
+     -1.6,
+     4.3625,
+     -3.1
+    ],
+    "size": [
+     2.5,
+     0.875,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     40.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     -0.35,
+     4.8,
+     -2.85
+    ]
+   },
+   {
+    "name": "genouillere_coque_bas",
+    "uv": [
+     111,
+     96
+    ],
+    "from": [
+     -1.6,
+     7.2625,
+     -3.1
+    ],
+    "size": [
+     2.5,
+     0.8749999999999991,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -40.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     -0.35,
+     7.7,
+     -2.85
+    ]
+   },
+   {
+    "name": "genouillere_coque_d",
+    "uv": [
+     18,
+     90
+    ],
+    "from": [
+     -2.2,
+     5.25,
+     -3.2375
+    ],
+    "size": [
+     0.5,
+     2.0,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     40.0,
+     0.0
+    ],
+    "origin": [
+     -1.9500000000000002,
+     6.25,
+     -2.8
+    ]
+   },
+   {
+    "name": "genouillere_coque_g",
+    "uv": [
+     24,
+     90
+    ],
+    "from": [
+     1.0,
+     5.25,
+     -3.2375
+    ],
+    "size": [
+     0.5,
+     2.0,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     -40.0,
+     0.0
+    ],
+    "origin": [
+     1.25,
+     6.25,
+     -2.8
+    ]
+   },
+   {
+    "name": "genouillere_mousse",
+    "uv": [
+     110,
+     85
+    ],
+    "from": [
+     -2.224609375,
+     4.775390625,
+     -2.724609375
+    ],
+    "size": [
+     3.875,
+     3.0,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_leg": [
+   {
+    "name": "genouillere_sangle_haut_m",
+    "uv": [
+     95,
+     64
+    ],
+    "from": [
+     -2.400390625,
+     4.712890625,
+     -3.037109375
+    ],
+    "size": [
+     5.125,
+     0.5,
+     6.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "genouillere_sangle_bas_m",
+    "uv": [
+     0,
+     72
+    ],
+    "from": [
+     -2.400390625,
+     6.962890625,
+     -3.037109375
+    ],
+    "size": [
+     5.125,
+     0.5,
+     6.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "genouillere_coque_m",
+    "uv": [
+     46,
+     90
+    ],
+    "from": [
+     -1.025,
+     5.0,
+     -3.4
+    ],
+    "size": [
+     2.75,
+     2.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -4.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     0.35,
+     6.125,
+     -3.15
+    ]
+   },
+   {
+    "name": "genouillere_coque_haut_m",
+    "uv": [
+     105,
+     96
+    ],
+    "from": [
+     -0.9,
+     4.2375,
+     -3.1
+    ],
+    "size": [
+     2.5,
+     0.875,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     40.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     0.35,
+     4.675,
+     -2.85
+    ]
+   },
+   {
+    "name": "genouillere_coque_bas_m",
+    "uv": [
+     117,
+     96
+    ],
+    "from": [
+     -0.9,
+     7.1375,
+     -3.1
+    ],
+    "size": [
+     2.5,
+     0.8749999999999991,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -40.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     0.35,
+     7.575,
+     -2.85
+    ]
+   },
+   {
+    "name": "genouillere_coque_d_m",
+    "uv": [
+     21,
+     90
+    ],
+    "from": [
+     1.7000000000000002,
+     5.125,
+     -3.2375
+    ],
+    "size": [
+     0.5,
+     2.0,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     -40.0,
+     0.0
+    ],
+    "origin": [
+     1.9500000000000002,
+     6.125,
+     -2.8
+    ]
+   },
+   {
+    "name": "genouillere_coque_g_m",
+    "uv": [
+     27,
+     90
+    ],
+    "from": [
+     -1.5,
+     5.125,
+     -3.2375
+    ],
+    "size": [
+     0.5,
+     2.0,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     40.0,
+     0.0
+    ],
+    "origin": [
+     -1.25,
+     6.125,
+     -2.8
+    ]
+   },
+   {
+    "name": "genouillere_mousse_m",
+    "uv": [
+     119,
+     85
+    ],
+    "from": [
+     -1.650390625,
+     4.587890625,
+     -2.912109375
+    ],
+    "size": [
+     3.875,
+     3.0,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH"
+    ],
+    "detail": true
+   }
+  ]
+ },
+ "slim_parts": {}
+}

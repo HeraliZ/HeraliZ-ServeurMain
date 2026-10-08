@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab",
+ "textures": {
+  "bottom": "heralisz_mammoth:block/rime_bricks",
+  "top": "heralisz_mammoth:block/rime_bricks",
+  "side": "heralisz_mammoth:block/rime_bricks"
+ }
+}

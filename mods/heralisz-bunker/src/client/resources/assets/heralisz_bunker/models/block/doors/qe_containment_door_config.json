@@ -1,0 +1,13 @@
+{
+    "door_id":"qe_containment_door",
+    "legacy_model":"heralisz_bunker:block/doors/qe_containment_door_legacy",
+    "modern_model":{
+        "model":"heralisz_bunker:block/doors/qe_containment_door_modern",
+        "skins":[
+            {"id":"default","name":"Standard","texture":"heralisz_bunker:block/doors/qe_containment_door"},
+            {"id":"trefoil","name":"Trefoil","texture":"heralisz_bunker:block/doors/qe_containment_door_trefoil","model":"heralisz_bunker:block/doors/qe_containment_door_modern_trefoil"},
+            {"id":"trefoil_yellow","name":"Trefoil Yellow","texture":"heralisz_bunker:block/doors/qe_containment_door_trefoil_yellow","model":"heralisz_bunker:block/doors/qe_containment_door_modern_trefoil_yellow"}
+        ]
+    },
+    "default":{"type":"modern","skin":"default"}
+}

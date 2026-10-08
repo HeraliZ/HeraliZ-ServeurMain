@@ -1,0 +1,20 @@
+{
+  "ping": {
+    "subtitle": "heraliz_ping.sous_titre.ping",
+    "sounds": [
+      {
+        "name": "heraliz_ping:ping",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "alerte": {
+    "subtitle": "heraliz_ping.sous_titre.alerte",
+    "sounds": [
+      {
+        "name": "heraliz_ping:alerte",
+        "attenuation_distance": 24
+      }
+    ]
+  }
+}

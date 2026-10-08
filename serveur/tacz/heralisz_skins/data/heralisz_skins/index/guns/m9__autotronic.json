@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.m9__autotronic.name",
+  "display": "heralisz_skins:m9__autotronic_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.m9__autotronic.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 214
+}

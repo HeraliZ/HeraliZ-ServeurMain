@@ -1,0 +1,44 @@
+
+[worldevents]
+	#是否启用全局空投事件
+	enable = false
+	#每次空投的时间间隔
+	gap = 10.0
+	#空投的最大等级（需要和对应空投文件的数量一致）
+	maxlevel = 5.0
+	#全局空投是否需要密码解锁？
+	enablelock = false
+	#空投预计位置距离玩家的距离范围
+	drift = "50,100"
+	#可以触发空投的世界
+	availableworld = "minecraft:overworld"
+	#当输入密码错误时，受到的魔法伤害
+	attemptpunishment = 2.0
+
+[chestevents]
+	#空投是否会吸引敌人？
+	enableenemies = false
+	#敌人将会多快（分钟）找到空投？
+	enemyarrivetime = 1.0
+	#空投将多快（分钟）被窃取？
+	airdropstolentime = 5.0
+	#玩家至少距离空投多远时，空投会被窃取
+	distance = 50.0
+	enemylist = "minecraft:pillager,minecraft:zombie,minecraft:husk"
+
+[Performance]
+	#是否强制加载空投路径区域？此法可以允许玩家在未加载的区块召唤空投，但是可能会破坏已有的常加载区域，服务器慎用。
+	forceload = false
+	#飞机起始飞行距离空投预计位置的距离，如果未开启强制加载，不允许超过（16*加载距离）。该参数范围[0，270}
+	startposition = 100.0
+	#飞机飞行的高度。范围[100,320]
+	height = 150.0
+
+[FlaregunEvents]
+	#信号枪召唤武器空投的权重
+	WeaponairdropWeight = 4.0
+	#信号枪召唤医疗空投的权重
+	MedicalairdropWeight = 4.0
+	#信号枪召唤小型空投的权重
+	SmallairdropWeight = 2.0
+

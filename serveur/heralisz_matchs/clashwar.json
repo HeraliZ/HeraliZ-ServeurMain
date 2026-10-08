@@ -1,0 +1,50 @@
+{
+  "_aide": "ClashWar HeraliZ : jours (MONDAY..SUNDAY ou lundi..dimanche), heure HH:MM de depart, rotation des formats (1v1, 2v2, 3v3, 4v4), format_fixe vide = rotation ; /clashwar recharger pour relire.",
+  "jours": [
+    "WEDNESDAY",
+    "SUNDAY"
+  ],
+  "heure": "20:30",
+  "fuseau": "",
+  "rotation": [
+    "2v2",
+    "3v3",
+    "4v4",
+    "1v1"
+  ],
+  "format_fixe": "",
+  "min_equipes": 2,
+  "max_equipes": 32,
+  "annonce_minutes": 15,
+  "inscription_minutes": 10,
+  "choix_secondes": 10,
+  "preparation_secondes": 10,
+  "combat_secondes": 240,
+  "mort_subite_secondes": 60,
+  "limite_secondes": 90,
+  "pause_tours_secondes": 20,
+  "retour_secondes": 6,
+  "fin_secondes": 12,
+  "attente_arene_secondes": 90,
+  "degats_zone": 2.0,
+  "limites": {
+    "sniper": 1,
+    "pompe": 1
+  },
+  "kits": [
+    "clashwar_assaut",
+    "clashwar_smg",
+    "clashwar_pompe",
+    "clashwar_sniper",
+    "clashwar_tactique"
+  ],
+  "kit_defaut": "clashwar_assaut",
+  "recompenses": {
+    "vainqueur": 5000,
+    "finaliste": 2000,
+    "demi_finaliste": 750,
+    "cle_event": "heralizcrates:event_key",
+    "cles_par_joueur": 1
+  },
+  "salle": "lobby_clashwar"
+}

@@ -1,0 +1,66 @@
+{
+ "format": 1,
+ "structure": "heralisz_n07:n07_lift",
+ "taille": [
+  7,
+  36,
+  7
+ ],
+ "conventions": "coordonnees locales non tournees ; face nord (z=0) = cote porte de confinement (haut), face sud (z=6) = cote hall (bas)",
+ "chute": 28,
+ "reperes": {
+  "haut_pieds": [
+   3,
+   29,
+   2
+  ],
+  "haut_ouverture": {
+   "min": [
+    1,
+    29,
+    0
+   ],
+   "max": [
+    4,
+    32,
+    0
+   ]
+  },
+  "bas_pieds": [
+   3,
+   1,
+   3
+  ],
+  "bas_ouverture": {
+   "min": [
+    1,
+    1,
+    6
+   ],
+   "max": [
+    5,
+    4,
+    6
+   ]
+  },
+  "cabine": {
+   "min": [
+    1,
+    0,
+    1
+   ],
+   "max": [
+    5,
+    5,
+    5
+   ]
+  }
+ },
+ "pose_the_giant": {
+  "note": "porte de confinement (119,5,42) face ouest : rotation COUNTERCLOCKWISE_90, origine carte (120,-24,45) ; hall : meme rotation, origine carte (127,-26,74)"
+ },
+ "stats": {
+  "entrees": 1764,
+  "palette": 11
+ }
+}

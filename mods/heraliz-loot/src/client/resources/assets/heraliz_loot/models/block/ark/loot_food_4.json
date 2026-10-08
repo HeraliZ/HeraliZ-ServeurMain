@@ -1,0 +1,87 @@
+{
+ "credit": "Made with Blockbench",
+ "textures": {
+  "1": "heraliz_loot:block/ark/blocks/food/canned_tactical_bacon",
+  "particle": "heraliz_loot:block/ark/blocks/food/rice"
+ },
+ "elements": [
+  {
+   "from": [
+    8,
+    0,
+    4
+   ],
+   "to": [
+    12,
+    6,
+    8
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     16,
+     8,
+     12
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "east": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "south": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "west": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "up": {
+     "uv": [
+      0,
+      2,
+      6,
+      8
+     ],
+     "texture": "#1"
+    },
+    "down": {
+     "uv": [
+      0,
+      2,
+      6,
+      8
+     ],
+     "texture": "#1"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

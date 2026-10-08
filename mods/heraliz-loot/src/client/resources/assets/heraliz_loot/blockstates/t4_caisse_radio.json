@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t4_caisse_radio"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t4_caisse_radio",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t4_caisse_radio",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t4_caisse_radio",
+   "y": 270
+  }
+ }
+}

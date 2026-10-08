@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/research_case"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/research_case",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/research_case",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/research_case",
+   "y": 270
+  }
+ }
+}

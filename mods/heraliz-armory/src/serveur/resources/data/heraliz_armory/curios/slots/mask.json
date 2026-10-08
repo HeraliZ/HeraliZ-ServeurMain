@@ -1,0 +1,10 @@
+{
+  "size": 1,
+  "order": 30,
+  "icon": "heraliz_armory:slot/face",
+  "add_cosmetic": false,
+  "validators": [
+    "curios:tag",
+    "heraliz_armory:piece"
+  ]
+}

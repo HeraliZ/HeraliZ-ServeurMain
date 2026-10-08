@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heralisz.n07.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_boss.refmap.json",
+  "client": [
+    "CameraMixin",
+    "HumanoidModelMixin",
+    "MouseHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

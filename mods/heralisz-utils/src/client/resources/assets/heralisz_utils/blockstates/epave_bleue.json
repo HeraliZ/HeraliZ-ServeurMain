@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/epave_bleue"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/epave_bleue",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/epave_bleue",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/epave_bleue",
+   "y": 270
+  }
+ }
+}

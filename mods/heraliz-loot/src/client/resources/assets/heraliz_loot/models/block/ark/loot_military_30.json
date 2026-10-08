@@ -1,0 +1,180 @@
+{
+ "credit": "Made with Blockbench",
+ "texture_size": [
+  128,
+  128
+ ],
+ "textures": {
+  "0": "heraliz_loot:block/ark/police_station_decoration/loot_military_28",
+  "particle": "heraliz_loot:block/ark/police_station_decoration/loot_military_28"
+ },
+ "elements": [
+  {
+   "from": [
+    -0.08,
+    0,
+    0.02
+   ],
+   "to": [
+    15.98,
+    25.92,
+    12.98
+   ],
+   "rotation": {
+    "angle": 0,
+    "axis": "y",
+    "origin": [
+     1.52,
+     0,
+     12.98
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      6,
+      0,
+      4,
+      6
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      2,
+      6
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      2,
+      0,
+      0,
+      6
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      2,
+      6,
+      0,
+      12
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      8,
+      0,
+      6,
+      2
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      4,
+      8,
+      2,
+      6
+     ],
+     "texture": "#0"
+    }
+   }
+  }
+ ],
+ "gui_light": "front",
+ "display": {
+  "thirdperson_righthand": {
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ]
+  },
+  "thirdperson_lefthand": {
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ]
+  },
+  "firstperson_righthand": {
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ]
+  },
+  "firstperson_lefthand": {
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ]
+  },
+  "ground": {
+   "translation": [
+    0,
+    5.75,
+    0
+   ],
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ]
+  },
+  "gui": {
+   "rotation": [
+    -135,
+    45,
+    -180
+   ],
+   "scale": [
+    0.21,
+    0.21,
+    0.21
+   ]
+  },
+  "head": {
+   "rotation": [
+    0,
+    180,
+    0
+   ],
+   "translation": [
+    0,
+    -4.75,
+    0
+   ],
+   "scale": [
+    1.6,
+    1.6,
+    1.6
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    -90,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    -48.25
+   ],
+   "scale": [
+    2,
+    2,
+    2
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
+}

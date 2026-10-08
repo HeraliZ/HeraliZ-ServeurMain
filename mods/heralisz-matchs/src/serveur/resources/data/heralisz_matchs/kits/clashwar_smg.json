@@ -1,0 +1,45 @@
+{
+  "id": "clashwar_smg",
+  "nom_fr": "SMG",
+  "nom_en": "SMG",
+  "classe": "smg",
+  "modes": [
+    "clashwar"
+  ],
+  "principale": {
+    "gun": "tacz:vector45",
+    "accessoires": {
+      "scope": "tacz:sight_coyote",
+      "extended_mag": "tacz:light_extended_mag_2"
+    },
+    "mode_tir": "AUTO",
+    "reserve": 180
+  },
+  "secondaire": {
+    "gun": "tacz:glock_17",
+    "accessoires": {
+      "muzzle": "tacz:muzzle_silencer_mirage"
+    },
+    "reserve": 51
+  },
+  "melee": "heralisz_melee:tac_dagger",
+  "soins": [
+    {
+      "id": "heralisz_heal:ai2",
+      "nombre": 2
+    },
+    {
+      "id": "heralisz_heal:blood_pack",
+      "nombre": 1
+    }
+  ],
+  "grenades": [],
+  "armure": {
+    "kit": "kit_siberie"
+  },
+  "jauges": {
+    "portee": 0.4,
+    "cadence": 0.95,
+    "mobilite": 0.85
+  }
+}

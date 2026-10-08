@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:air",
+    "geckolib:hood_black",
+    "geckolib:hood_blue",
+    "geckolib:hood_red",
+    "geckolib:hood_white"
+  ]
+}

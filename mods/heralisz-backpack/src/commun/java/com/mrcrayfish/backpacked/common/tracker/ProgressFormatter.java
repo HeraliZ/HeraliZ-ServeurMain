@@ -1,0 +1,97 @@
+package com.mrcrayfish.backpacked.common.tracker;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import java.util.function.BiFunction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+
+public record ProgressFormatter(ResourceLocation id, BiFunction<Integer, Integer, Component> formatter) {
+   public static final BiMap<ResourceLocation, ProgressFormatter> REGISTERED_FORMATTERS = HashBiMap.create();
+   public static final Codec<ProgressFormatter> CODEC = ResourceLocation.CODEC.flatXmap(id -> {
+      ProgressFormatter type = (ProgressFormatter)REGISTERED_FORMATTERS.get(id);
+      return type != null ? DataResult.success(type) : DataResult.error(() -> "Formatter does not exist: " + id);
+   }, type -> {
+      ResourceLocation id = (ResourceLocation)REGISTERED_FORMATTERS.inverse().get(type);
+      return id != null ? DataResult.success(id) : DataResult.error(() -> "Unregistered formatter");
+   });
+   public static final ProgressFormatter COMPLETED_X_OF_X = register("completed_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.completed_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter COLLECT_X_OF_X = register("collect_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.collected_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter FED_X_OF_X = register("fed_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.fed_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter FOUND_X_OF_X = register("found_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.found_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter USED_X_TIMES = register(
+      "used_x_times", (count, unused) -> Component.translatable("backpacked.formatter.used_x_times", new Object[]{count})
+   );
+   public static final ProgressFormatter BRED_X_OF_X = register(
+      "bred_x_of_x", (count, maxCount) -> Component.translatable("backpacked.formatter.bred_x_of_x", new Object[]{count, maxCount})
+   );
+   public static final ProgressFormatter CUT_X_OF_X = register(
+      "cut_x_of_x", (count, maxCount) -> Component.translatable("backpacked.formatter.cut_x_of_x", new Object[]{count, maxCount})
+   );
+   public static final ProgressFormatter SHEARED_X_OF_X = register(
+      "shear_x_of_x", (count, maxCount) -> Component.translatable("backpacked.formatter.shear_x_of_x", new Object[]{count, maxCount})
+   );
+   public static final ProgressFormatter INT_PERCENT = register("percentage", (numerator, denominator) -> {
+      int percent = (int)(100.0 * numerator.intValue() / denominator.intValue());
+      return Component.translatable("backpacked.formatter.int_percent", new Object[]{percent, "%"});
+   });
+   public static final ProgressFormatter CRAFT_X_OF_X = register("craft_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.craft_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter PICKPOCKETED_X_OF_X = register("pickpocketed_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.pickpocketed_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter EXPLORED_X_OF_X = register("explored_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.explored_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter KILLED_X_OF_X = register("killed_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.killed_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter MINED_X_OF_X = register("mined_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.mined_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter TRADED_X_OF_X = register("traded_x_of_x", (count, maxCount) -> {
+      count = Mth.clamp(count, 0, maxCount);
+      return Component.translatable("backpacked.formatter.traded_x_of_x", new Object[]{count, maxCount});
+   });
+   public static final ProgressFormatter INCOMPLETE_COMPLETE = register(
+      "incomplete_complete",
+      (count, maxCount) -> count < maxCount ? Component.translatable("backpacked.formatter.incomplete") : Component.translatable("backpacked.formatter.complete")
+   );
+   public static final ProgressFormatter TRAVELLED_BLOCKS = register(
+      "travelled_blocks",
+      (count, maxCount) -> {
+         count = Mth.clamp(count, 0, maxCount);
+         return Component.translatable(
+            "backpacked.formatter.travelled_blocks", new Object[]{Math.round(count.intValue() / 100.0F), Math.round(maxCount.intValue() / 100.0F)}
+         );
+      }
+   );
+
+   private static ProgressFormatter register(String name, BiFunction<Integer, Integer, Component> function) {
+      ResourceLocation id = new ResourceLocation("backpacked", name);
+      ProgressFormatter formatter = new ProgressFormatter(id, function);
+      REGISTERED_FORMATTERS.put(id, formatter);
+      return formatter;
+   }
+}

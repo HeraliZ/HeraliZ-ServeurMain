@@ -1,0 +1,252 @@
+{
+ "name": "Violoniste",
+ "author": "Heraliz",
+ "description": "Le violon calé sous le menton, l'archet glisse lentement, les yeux fermés.",
+ "uuid": "c72745fb-26f5-5bdc-ad11-13a90a6f488f",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 43,
+  "stopTick": 44,
+  "isLoop": true,
+  "returnTick": 4,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": 0.03,
+     "roll": 3.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 18.0,
+     "yaw": 12.0,
+     "roll": 16.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -42.31,
+     "roll": -108.56
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -125.75,
+     "roll": 34.41
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": -1.36
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": -9.53
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": -0.03,
+     "roll": -3.0
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 18.0,
+     "yaw": 12.0,
+     "roll": 16.0
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -126.88,
+     "roll": -60.09
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -125.75,
+     "roll": 34.41
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": 9.53
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": 1.36
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": 0.03,
+     "roll": 3.0
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 18.0,
+     "yaw": 12.0,
+     "roll": 16.0
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -42.31,
+     "roll": -108.56
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -125.75,
+     "roll": 34.41
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": -1.36
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": -9.53
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": -0.03,
+     "roll": -3.0
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 18.0,
+     "yaw": 12.0,
+     "roll": 16.0
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -126.88,
+     "roll": -60.09
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -125.75,
+     "roll": 34.41
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": 9.53
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": 1.36
+    }
+   }
+  ]
+ }
+}

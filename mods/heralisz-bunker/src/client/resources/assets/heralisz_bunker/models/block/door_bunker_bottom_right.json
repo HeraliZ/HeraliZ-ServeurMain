@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_bottom_right",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bottom": "heralisz_bunker:block/door_bunker_bottom",
+    "top": "heralisz_bunker:block/door_bunker_top"
+  }
+}

@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t3_mirador_coffre"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t3_mirador_coffre"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t3_mirador_coffre"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t3_mirador_coffre"
+  }
+ }
+}

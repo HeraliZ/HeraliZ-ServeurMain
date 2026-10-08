@@ -1,0 +1,157 @@
+{
+ "id": "clashwar_4v4",
+ "nom_fr": "Berezka, village en ruine",
+ "nom_en": "Berezka, ruined village",
+ "type": "clashwar_4v4",
+ "dimension": "heralisz_matchs:arenes",
+ "taille": [
+  88,
+  30,
+  88
+ ],
+ "bornes": [
+  3,
+  3,
+  3,
+  85,
+  34,
+  85
+ ],
+ "points": {
+  "spawn_a": [
+   [
+    46.5,
+    4.0,
+    6.5,
+    0.0
+   ],
+   [
+    49.5,
+    4.0,
+    6.5,
+    0.0
+   ],
+   [
+    46.5,
+    4.0,
+    9.5,
+    0.0
+   ],
+   [
+    49.5,
+    4.0,
+    9.5,
+    0.0
+   ]
+  ],
+  "spawn_b": [
+   [
+    41.5,
+    4.0,
+    81.5,
+    180.0
+   ],
+   [
+    38.5,
+    4.0,
+    81.5,
+    180.0
+   ],
+   [
+    41.5,
+    4.0,
+    78.5,
+    180.0
+   ],
+   [
+    38.5,
+    4.0,
+    78.5,
+    180.0
+   ]
+  ],
+  "barriere_a": [
+   [
+    44.0,
+    4.0,
+    4.0,
+    0.0
+   ],
+   [
+    53.0,
+    8.0,
+    11.0,
+    0.0
+   ]
+  ],
+  "barriere_b": [
+   [
+    35.0,
+    4.0,
+    77.0,
+    0.0
+   ],
+   [
+    44.0,
+    8.0,
+    84.0,
+    0.0
+   ]
+  ],
+  "zone_centre": [
+   [
+    44.0,
+    4.0,
+    44.0,
+    0.0
+   ]
+  ],
+  "spectateur": [
+   [
+    44.0,
+    20.0,
+    3.5,
+    0.0
+   ],
+   [
+    44.0,
+    20.0,
+    84.5,
+    180.0
+   ]
+  ]
+ },
+ "format": "4v4",
+ "joueurs_par_equipe": 4,
+ "theme": "village en ruine",
+ "barrieres": {
+  "a": [
+   44,
+   4,
+   4,
+   53,
+   8,
+   11
+  ],
+  "b": [
+   35,
+   4,
+   77,
+   44,
+   8,
+   84
+  ]
+ },
+ "zone": {
+  "centre": [
+   44.0,
+   4.0,
+   44.0
+  ],
+  "rayon_depart": 61.6,
+  "rayon_min": 6.0
+ },
+ "symetrie": "centrale (rotation 180° autour de x = 44, z = 44)",
+ "blocs": 35130,
+ "generateur": "tools/matchs/cartes/clashwar_3v3_4v4.py"
+}

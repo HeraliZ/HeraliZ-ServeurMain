@@ -1,0 +1,42 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "geckolib:plan_honeybadger"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:carbon"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:aluminum"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 22
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "maxstuff:honey_badger",
+        "attachments": {
+            "muzzle": "tacz:muzzle_silencer_phantom_s1"
+        }
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

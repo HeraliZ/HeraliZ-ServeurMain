@@ -1,0 +1,153 @@
+{
+ "multipart": [
+  {
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_base"
+   }
+  },
+  {
+   "when": {
+    "alert": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_center"
+   }
+  },
+  {
+   "when": {
+    "alert": "true"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_alert_center"
+   }
+  },
+  {
+   "when": {
+    "north": "true",
+    "alert": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_arm",
+    "y": 0,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "north": "true",
+    "alert": "true"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_alert_arm",
+    "y": 0,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "north": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_rim",
+    "y": 0,
+    "uvlock": true
+   }
+  },
+  {
+   "when": {
+    "east": "true",
+    "alert": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_arm",
+    "y": 90,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "east": "true",
+    "alert": "true"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_alert_arm",
+    "y": 90,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "east": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_rim",
+    "y": 90,
+    "uvlock": true
+   }
+  },
+  {
+   "when": {
+    "south": "true",
+    "alert": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_arm",
+    "y": 180,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "south": "true",
+    "alert": "true"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_alert_arm",
+    "y": 180,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "south": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_rim",
+    "y": 180,
+    "uvlock": true
+   }
+  },
+  {
+   "when": {
+    "west": "true",
+    "alert": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_arm",
+    "y": 270,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "west": "true",
+    "alert": "true"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_alert_arm",
+    "y": 270,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "west": "false"
+   },
+   "apply": {
+    "model": "heralisz_mammoth:block/meltwater_rim",
+    "y": 270,
+    "uvlock": true
+   }
+  }
+ ]
+}

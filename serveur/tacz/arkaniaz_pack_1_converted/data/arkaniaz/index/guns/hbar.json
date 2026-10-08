@@ -1,0 +1,8 @@
+{
+    "name": "arkaniaz.gun.hbar.name",
+    "display": "arkaniaz:hbar_display",
+    "data": "arkaniaz:hbar_data",
+    "tooltip": "Fusil automatique à haute cadence.",
+    "type": "mg",
+    "sort": 3
+}

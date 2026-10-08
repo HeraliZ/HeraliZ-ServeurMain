@@ -1,0 +1,25 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 2.0,
+        " ": 3.0
+      }
+    },
+    {
+      "type": "ttf",
+      "file": "heraliz_armory:dmsans_medium.ttf",
+      "size": 11.0,
+      "oversample": 4.0,
+      "shift": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

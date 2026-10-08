@@ -1,0 +1,41 @@
+
+[plague]
+	#PV « réels » du Porteur de Peste : les dégâts des armes sont ramenés à cette échelle. Réglé pour ~7 min à 3-4 joueurs moyens armés.
+	#Range: 500 ~ 10000000
+	virtualHp = 34000
+	#Dégâts max retenus par impact (anti one-shot).
+	#Range: 1.0 ~ 10000.0
+	hitCap = 40.0
+	#Au-delà de ces dégâts bruts par seconde, le surplus ne compte qu'à 25 %.
+	#Range: 10.0 ~ 100000.0
+	dpsCap = 900.0
+	#Multiplicateur des dégâts infligés par le Porteur de Peste et ses infectés.
+	#Range: 0.1 ~ 10.0
+	damageMultiplier = 1.0
+	#Part des dégâts encaissés pendant qu'elle est suspendue à son fil (0 = intouchable).
+	#Range: 0.0 ~ 1.0
+	hangingDamage = 0.0
+	#Délai avant qu'le Porteur ne remonte du bassin après sa mort.
+	#Range: 0 ~ 10080
+	respawnMinutes = 60
+	#Distance max au bassin : au-delà (ou sans joueur autour), il y redescend et se soigne.
+	#Range: 12 ~ 200
+	leashRadius = 96
+	#(inutilisé : la vanne de purge le réveille)
+	#Range: 6 ~ 80
+	triggerDistance = 34
+	#Phase 3 : une grappe d'œufs de la voûte crève sur un joueur toutes les N secondes.
+	#Range: 5 ~ 600
+	clusterSeconds = 24
+	#Jusqu'à ce nombre de joueurs engagés, ses PV ne bougent pas.
+	#Range: 1 ~ 100
+	playersBeforeScaling = 6
+	#Au-delà, chaque joueur en plus ajoute cette part de PV (0.15 = +15 %).
+	#Range: 0.0 ~ 2.0
+	hpPerExtraPlayer = 0.15
+	#Dégâts d'une grappe qui s'écrase (par joueur touché).
+	#Range: 0.0 ~ 1000.0
+	clusterDamage = 12.0
+	#Cinématiques (caméra) à l'entrée, au réveil, aux changements de phase et à la mort.
+	cinematics = true
+

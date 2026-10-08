@@ -1,0 +1,54 @@
+modLoader="javafml"
+loaderVersion="[39,)"
+license="GNU Lesser General Public License v2.1"
+issueTrackerURL="https://github.com/MrCrayfish/Backpacked/issues"
+
+[[mods]]
+modId="backpacked"
+version="3.0.0-beta.4"
+displayName="HeraliZ Backpack"
+displayURL="https://mrcrayfish.com/mods?id=backpacked"
+logoFile="backpacked_logo.png"
+logoBlur=false
+authors="MrCrayfish, HeraliZ"
+credits="Basé sur Backpacked de MrCrayfish (GNU LGPL 2.1)"
+description="Backpacked is simple backpack mod with a focus on customisation. It features a data-driven cosmetics system that allows players to unlock new looks for their backpack. It also features special enchantments that you can apply to your backpack to enhance your adventures."
+
+[[dependencies."backpacked"]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47.1.47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies."backpacked"]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies."backpacked"]]
+    modId="framework"
+    mandatory=true
+    versionRange="[0.7.6,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies."backpacked"]]
+    modId="curios"
+    mandatory=true
+    versionRange="[5.2.0-beta.3+1.20.1,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies."backpacked"]]
+    modId="controllable"
+    mandatory=false
+    versionRange="[0.17.0,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+[modproperties."backpacked"]
+    catalogueImageIcon="backpacked_icon.png"
+    configuredBackground="minecraft:textures/block/stone.png"

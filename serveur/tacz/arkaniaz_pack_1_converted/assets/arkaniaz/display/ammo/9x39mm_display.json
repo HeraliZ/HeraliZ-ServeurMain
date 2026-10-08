@@ -1,0 +1,28 @@
+{
+  "model": "arkaniaz:ammo/9x39mm_geo",
+  "texture": "arkaniaz:ammo/uv/9x39mm",
+  "slot": "arkaniaz:ammo/slot/9x39mm",
+  "shell": {
+    "model": "arkaniaz:shell/9x39mm_shell",
+    "texture": "arkaniaz:shell/9x39mm_shell"
+  },
+  "transform": {
+    "scale": {
+      "thirdperson": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "ground": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "fixed": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    }
+  }
+}

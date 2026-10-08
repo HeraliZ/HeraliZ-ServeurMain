@@ -1,0 +1,642 @@
+[
+  {
+    "id": 0,
+    "cle": "loup",
+    "categorie": "EMBLEME",
+    "nom_fr": "Loup",
+    "nom_en": "Wolf",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 1,
+    "cle": "corbeau",
+    "categorie": "EMBLEME",
+    "nom_fr": "Corbeau",
+    "nom_en": "Raven",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 2,
+    "cle": "crane",
+    "categorie": "EMBLEME",
+    "nom_fr": "Crâne",
+    "nom_en": "Skull",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 3,
+    "cle": "crane_casque",
+    "categorie": "EMBLEME",
+    "nom_fr": "Crâne casqué",
+    "nom_en": "Helmet Skull",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 4,
+    "cle": "masque_gaz",
+    "categorie": "EMBLEME",
+    "nom_fr": "Masque à gaz",
+    "nom_en": "Gas Mask",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 5,
+    "cle": "dragon",
+    "categorie": "EMBLEME",
+    "nom_fr": "Dragon",
+    "nom_en": "Dragon",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 6,
+    "cle": "kraken",
+    "categorie": "EMBLEME",
+    "nom_fr": "Kraken",
+    "nom_en": "Kraken",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 7,
+    "cle": "serpent",
+    "categorie": "EMBLEME",
+    "nom_fr": "Serpent",
+    "nom_en": "Serpent",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 8,
+    "cle": "ours",
+    "categorie": "EMBLEME",
+    "nom_fr": "Ours",
+    "nom_en": "Bear",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 9,
+    "cle": "cerf",
+    "categorie": "EMBLEME",
+    "nom_fr": "Cerf",
+    "nom_en": "Stag",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 10,
+    "cle": "aigle",
+    "categorie": "EMBLEME",
+    "nom_fr": "Aigle",
+    "nom_en": "Eagle",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 11,
+    "cle": "faucon",
+    "categorie": "EMBLEME",
+    "nom_fr": "Faucon",
+    "nom_en": "Falcon",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 12,
+    "cle": "requin",
+    "categorie": "EMBLEME",
+    "nom_fr": "Requin",
+    "nom_en": "Shark",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 13,
+    "cle": "scorpion",
+    "categorie": "EMBLEME",
+    "nom_fr": "Scorpion",
+    "nom_en": "Scorpion",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 14,
+    "cle": "araignee",
+    "categorie": "EMBLEME",
+    "nom_fr": "Araignée",
+    "nom_en": "Spider",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 15,
+    "cle": "lion",
+    "categorie": "EMBLEME",
+    "nom_fr": "Lion",
+    "nom_en": "Lion",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 16,
+    "cle": "biohazard",
+    "categorie": "EMBLEME",
+    "nom_fr": "Risque biologique",
+    "nom_en": "Biohazard",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 17,
+    "cle": "radioactif",
+    "categorie": "EMBLEME",
+    "nom_fr": "Radioactif",
+    "nom_en": "Radioactive",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 18,
+    "cle": "eclair",
+    "categorie": "EMBLEME",
+    "nom_fr": "Éclair",
+    "nom_en": "Lightning",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 19,
+    "cle": "flamme",
+    "categorie": "EMBLEME",
+    "nom_fr": "Flamme",
+    "nom_en": "Flame",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 20,
+    "cle": "flocon",
+    "categorie": "EMBLEME",
+    "nom_fr": "Flocon",
+    "nom_en": "Snowflake",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 21,
+    "cle": "etoile",
+    "categorie": "EMBLEME",
+    "nom_fr": "Étoile",
+    "nom_en": "Star",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 22,
+    "cle": "croix",
+    "categorie": "EMBLEME",
+    "nom_fr": "Croix",
+    "nom_en": "Cross",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 23,
+    "cle": "epees",
+    "categorie": "EMBLEME",
+    "nom_fr": "Épées croisées",
+    "nom_en": "Crossed Swords",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 24,
+    "cle": "fusils",
+    "categorie": "EMBLEME",
+    "nom_fr": "Fusils croisés",
+    "nom_en": "Crossed Rifles",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 25,
+    "cle": "couronne",
+    "categorie": "EMBLEME",
+    "nom_fr": "Couronne",
+    "nom_en": "Crown",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 26,
+    "cle": "ancre",
+    "categorie": "EMBLEME",
+    "nom_fr": "Ancre",
+    "nom_en": "Anchor",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 27,
+    "cle": "bouclier",
+    "categorie": "EMBLEME",
+    "nom_fr": "Bouclier",
+    "nom_en": "Shield",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 28,
+    "cle": "oeil",
+    "categorie": "EMBLEME",
+    "nom_fr": "Œil",
+    "nom_en": "Eye",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 29,
+    "cle": "lune",
+    "categorie": "EMBLEME",
+    "nom_fr": "Lune",
+    "nom_en": "Moon",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 30,
+    "cle": "soleil",
+    "categorie": "EMBLEME",
+    "nom_fr": "Soleil",
+    "nom_en": "Sun",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 31,
+    "cle": "poing",
+    "categorie": "EMBLEME",
+    "nom_fr": "Poing",
+    "nom_en": "Fist",
+    "ratio": true,
+    "w": 44,
+    "h": 44
+  },
+  {
+    "id": 32,
+    "cle": "carre",
+    "categorie": "FORME",
+    "nom_fr": "Carré",
+    "nom_en": "Square",
+    "ratio": false,
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": 33,
+    "cle": "carre_arrondi",
+    "categorie": "FORME",
+    "nom_fr": "Carré arrondi",
+    "nom_en": "Rounded Square",
+    "ratio": false,
+    "w": 16,
+    "h": 16
+  },
+  {
+    "id": 34,
+    "cle": "cercle",
+    "categorie": "FORME",
+    "nom_fr": "Cercle",
+    "nom_en": "Circle",
+    "ratio": false,
+    "w": 24,
+    "h": 24
+  },
+  {
+    "id": 35,
+    "cle": "anneau",
+    "categorie": "FORME",
+    "nom_fr": "Anneau",
+    "nom_en": "Ring",
+    "ratio": false,
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": 36,
+    "cle": "demi_disque",
+    "categorie": "FORME",
+    "nom_fr": "Demi-disque",
+    "nom_en": "Half Disc",
+    "ratio": false,
+    "w": 32,
+    "h": 16
+  },
+  {
+    "id": 37,
+    "cle": "quart_disque",
+    "categorie": "FORME",
+    "nom_fr": "Quart de disque",
+    "nom_en": "Quarter Disc",
+    "ratio": false,
+    "w": 24,
+    "h": 24
+  },
+  {
+    "id": 38,
+    "cle": "triangle",
+    "categorie": "FORME",
+    "nom_fr": "Triangle",
+    "nom_en": "Triangle",
+    "ratio": false,
+    "w": 28,
+    "h": 24
+  },
+  {
+    "id": 39,
+    "cle": "triangle_rect",
+    "categorie": "FORME",
+    "nom_fr": "Triangle rectangle",
+    "nom_en": "Right Triangle",
+    "ratio": false,
+    "w": 24,
+    "h": 24
+  },
+  {
+    "id": 40,
+    "cle": "losange",
+    "categorie": "FORME",
+    "nom_fr": "Losange",
+    "nom_en": "Diamond",
+    "ratio": false,
+    "w": 23,
+    "h": 32
+  },
+  {
+    "id": 41,
+    "cle": "pentagone",
+    "categorie": "FORME",
+    "nom_fr": "Pentagone",
+    "nom_en": "Pentagon",
+    "ratio": true,
+    "w": 28,
+    "h": 27
+  },
+  {
+    "id": 42,
+    "cle": "hexagone",
+    "categorie": "FORME",
+    "nom_fr": "Hexagone",
+    "nom_en": "Hexagon",
+    "ratio": true,
+    "w": 28,
+    "h": 32
+  },
+  {
+    "id": 43,
+    "cle": "octogone",
+    "categorie": "FORME",
+    "nom_fr": "Octogone",
+    "nom_en": "Octagon",
+    "ratio": true,
+    "w": 28,
+    "h": 28
+  },
+  {
+    "id": 44,
+    "cle": "etoile4",
+    "categorie": "FORME",
+    "nom_fr": "Étoile à 4 branches",
+    "nom_en": "Four-Pointed Star",
+    "ratio": true,
+    "w": 28,
+    "h": 28
+  },
+  {
+    "id": 45,
+    "cle": "etoile6",
+    "categorie": "FORME",
+    "nom_fr": "Étoile à 6 branches",
+    "nom_en": "Six-Pointed Star",
+    "ratio": true,
+    "w": 28,
+    "h": 32
+  },
+  {
+    "id": 46,
+    "cle": "croix_plus",
+    "categorie": "FORME",
+    "nom_fr": "Croix grecque",
+    "nom_en": "Plus Cross",
+    "ratio": false,
+    "w": 28,
+    "h": 28
+  },
+  {
+    "id": 47,
+    "cle": "sautoir",
+    "categorie": "FORME",
+    "nom_fr": "Sautoir",
+    "nom_en": "Saltire",
+    "ratio": false,
+    "w": 32,
+    "h": 32
+  },
+  {
+    "id": 48,
+    "cle": "chevron",
+    "categorie": "FORME",
+    "nom_fr": "Chevron",
+    "nom_en": "Chevron",
+    "ratio": false,
+    "w": 40,
+    "h": 24
+  },
+  {
+    "id": 49,
+    "cle": "fleche",
+    "categorie": "FORME",
+    "nom_fr": "Flèche",
+    "nom_en": "Arrow",
+    "ratio": false,
+    "w": 20,
+    "h": 32
+  },
+  {
+    "id": 50,
+    "cle": "croissant",
+    "categorie": "FORME",
+    "nom_fr": "Croissant",
+    "nom_en": "Crescent",
+    "ratio": true,
+    "w": 25,
+    "h": 32
+  },
+  {
+    "id": 51,
+    "cle": "coeur",
+    "categorie": "FORME",
+    "nom_fr": "Cœur",
+    "nom_en": "Heart",
+    "ratio": true,
+    "w": 30,
+    "h": 28
+  },
+  {
+    "id": 52,
+    "cle": "goutte",
+    "categorie": "FORME",
+    "nom_fr": "Goutte",
+    "nom_en": "Drop",
+    "ratio": true,
+    "w": 19,
+    "h": 30
+  },
+  {
+    "id": 53,
+    "cle": "ecu",
+    "categorie": "FORME",
+    "nom_fr": "Écu",
+    "nom_en": "Shield",
+    "ratio": false,
+    "w": 29,
+    "h": 36
+  },
+  {
+    "id": 54,
+    "cle": "cadre",
+    "categorie": "FORME",
+    "nom_fr": "Cadre",
+    "nom_en": "Frame",
+    "ratio": false,
+    "w": 40,
+    "h": 40
+  },
+  {
+    "id": 55,
+    "cle": "vague",
+    "categorie": "FORME",
+    "nom_fr": "Vague",
+    "nom_en": "Wave",
+    "ratio": false,
+    "w": 64,
+    "h": 20
+  },
+  {
+    "id": 56,
+    "cle": "dents",
+    "categorie": "FORME",
+    "nom_fr": "Dents",
+    "nom_en": "Zigzag",
+    "ratio": false,
+    "w": 48,
+    "h": 18
+  },
+  {
+    "id": 57,
+    "cle": "griffes",
+    "categorie": "FORME",
+    "nom_fr": "Griffes",
+    "nom_en": "Claws",
+    "ratio": true,
+    "w": 28,
+    "h": 32
+  },
+  {
+    "id": 58,
+    "cle": "os",
+    "categorie": "FORME",
+    "nom_fr": "Os",
+    "nom_en": "Bone",
+    "ratio": true,
+    "w": 40,
+    "h": 15
+  },
+  {
+    "id": 59,
+    "cle": "croc",
+    "categorie": "FORME",
+    "nom_fr": "Croc",
+    "nom_en": "Fang",
+    "ratio": true,
+    "w": 14,
+    "h": 28
+  },
+  {
+    "id": 60,
+    "cle": "pique",
+    "categorie": "FORME",
+    "nom_fr": "Pique",
+    "nom_en": "Spade",
+    "ratio": true,
+    "w": 28,
+    "h": 32
+  },
+  {
+    "id": 61,
+    "cle": "trefle",
+    "categorie": "FORME",
+    "nom_fr": "Trèfle",
+    "nom_en": "Club",
+    "ratio": true,
+    "w": 30,
+    "h": 32
+  },
+  {
+    "id": 62,
+    "cle": "cible",
+    "categorie": "FORME",
+    "nom_fr": "Cible",
+    "nom_en": "Target",
+    "ratio": true,
+    "w": 36,
+    "h": 36
+  },
+  {
+    "id": 63,
+    "cle": "eclat",
+    "categorie": "FORME",
+    "nom_fr": "Éclat",
+    "nom_en": "Burst",
+    "ratio": true,
+    "w": 32,
+    "h": 36
+  }
+]

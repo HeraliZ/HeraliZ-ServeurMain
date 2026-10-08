@@ -1,0 +1,531 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/nomade.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "rig_panneau",
+    "uv": [
+     0,
+     67
+    ],
+    "from": [
+     -4.486328125,
+     5.263671875,
+     -3.486328125
+    ],
+    "size": [
+     9.0,
+     4.5,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_bretelle_d",
+    "uv": [
+     0,
+     37
+    ],
+    "from": [
+     -2.986328125,
+     -0.736328125,
+     -3.236328125
+    ],
+    "size": [
+     1.5,
+     1.5,
+     6.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_bretelle_av_d",
+    "uv": [
+     36,
+     67
+    ],
+    "from": [
+     -2.986328125,
+     0.763671875,
+     -3.361328125
+    ],
+    "size": [
+     1.5,
+     4.5,
+     0.25
+    ],
+    "faces": [
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_bretelle_ar_d",
+    "uv": [
+     120,
+     60
+    ],
+    "from": [
+     -2.986328125,
+     0.763671875,
+     3.138671875
+    ],
+    "size": [
+     1.5,
+     5.5,
+     0.25
+    ],
+    "faces": [
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_bretelle_g",
+    "uv": [
+     16,
+     37
+    ],
+    "from": [
+     1.513671875,
+     -0.736328125,
+     -3.236328125
+    ],
+    "size": [
+     1.5,
+     1.5,
+     6.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_bretelle_av_g",
+    "uv": [
+     40,
+     67
+    ],
+    "from": [
+     1.513671875,
+     0.763671875,
+     -3.361328125
+    ],
+    "size": [
+     1.5,
+     4.5,
+     0.25
+    ],
+    "faces": [
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_bretelle_ar_g",
+    "uv": [
+     124,
+     60
+    ],
+    "from": [
+     1.513671875,
+     0.763671875,
+     3.138671875
+    ],
+    "size": [
+     1.5,
+     5.5,
+     0.25
+    ],
+    "faces": [
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_traverse",
+    "uv": [
+     59,
+     80
+    ],
+    "from": [
+     -2.986328125,
+     6.263671875,
+     3.138671875
+    ],
+    "size": [
+     6.0,
+     0.75,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_ceinture",
+    "uv": [
+     32,
+     53
+    ],
+    "from": [
+     -5.111328125,
+     6.263671875,
+     -2.861328125
+    ],
+    "size": [
+     10.25,
+     0.75,
+     5.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "rig_porte_chargeur_0",
+    "uv": [
+     44,
+     67
+    ],
+    "from": [
+     -4.111328125,
+     6.013671875,
+     -4.486328125
+    ],
+    "size": [
+     2.0,
+     3.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_porte_chargeur_0_rabat",
+    "uv": [
+     71,
+     73
+    ],
+    "from": [
+     -4.125,
+     5.8,
+     -4.775
+    ],
+    "size": [
+     2.0,
+     1.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -8.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     -3.125,
+     6.55,
+     -4.65
+    ]
+   },
+   {
+    "name": "rig_porte_chargeur_1",
+    "uv": [
+     50,
+     67
+    ],
+    "from": [
+     -1.986328125,
+     6.013671875,
+     -4.486328125
+    ],
+    "size": [
+     2.0,
+     3.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_porte_chargeur_1_rabat",
+    "uv": [
+     76,
+     73
+    ],
+    "from": [
+     -2.0,
+     5.8,
+     -4.775
+    ],
+    "size": [
+     2.0,
+     1.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -8.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     -1.0,
+     6.55,
+     -4.65
+    ]
+   },
+   {
+    "name": "rig_porte_chargeur_2",
+    "uv": [
+     56,
+     67
+    ],
+    "from": [
+     0.138671875,
+     6.013671875,
+     -4.486328125
+    ],
+    "size": [
+     2.0,
+     3.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_porte_chargeur_2_rabat",
+    "uv": [
+     81,
+     73
+    ],
+    "from": [
+     0.125,
+     5.8,
+     -4.775
+    ],
+    "size": [
+     2.0,
+     1.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -8.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     1.125,
+     6.55,
+     -4.65
+    ]
+   },
+   {
+    "name": "rig_porte_chargeur_3",
+    "uv": [
+     62,
+     67
+    ],
+    "from": [
+     2.263671875,
+     6.013671875,
+     -4.486328125
+    ],
+    "size": [
+     2.0,
+     3.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_porte_chargeur_3_rabat",
+    "uv": [
+     86,
+     73
+    ],
+    "from": [
+     2.25,
+     5.8,
+     -4.775
+    ],
+    "size": [
+     2.0,
+     1.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -8.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     3.25,
+     6.55,
+     -4.65
+    ]
+   },
+   {
+    "name": "rig_poche_cote_d",
+    "uv": [
+     110,
+     53
+    ],
+    "from": [
+     -6.111328125,
+     6.263671875,
+     -2.361328125
+    ],
+    "size": [
+     1.0,
+     3.25,
+     3.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "rig_poche_cote_g",
+    "uv": [
+     118,
+     53
+    ],
+    "from": [
+     5.138671875,
+     6.263671875,
+     -2.361328125
+    ],
+    "size": [
+     1.0,
+     3.25,
+     3.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {}
+}

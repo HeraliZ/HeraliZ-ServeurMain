@@ -1,0 +1,14 @@
+{
+ "parent": "heralisz_bunker:block/keycard/card_reader",
+ "textures": {
+  "body": "heralisz_bunker:block/keycard/body_green",
+  "rim": "heralisz_bunker:block/keycard/rim",
+  "bezel": "heralisz_bunker:block/keycard/bezel",
+  "head": "heralisz_bunker:block/keycard/head_green",
+  "screw": "heralisz_bunker:block/keycard/screw",
+  "screen": "heralisz_bunker:block/keycard/screen_green_reading",
+  "led": "heralisz_bunker:block/keycard/led_green_reading",
+  "panel": "heralisz_bunker:block/keycard/panel_green",
+  "slot": "heralisz_bunker:block/keycard/slot"
+ }
+}

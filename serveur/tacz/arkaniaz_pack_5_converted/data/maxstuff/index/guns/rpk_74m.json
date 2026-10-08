@@ -1,0 +1,8 @@
+{
+    "name": "maxstuff.gun.rpk_74m.name",
+    "display": "maxstuff:rpk_74m_display",
+    "data": "maxstuff:rpk_74_data",
+    "type": "mg",
+    "sort": 2,
+    "tooltip": "maxstuff.gun.rpk_74m.desc"
+}

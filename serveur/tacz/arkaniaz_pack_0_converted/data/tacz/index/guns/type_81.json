@@ -1,0 +1,9 @@
+{
+    "name": "tacz.gun.type_81.name",
+    "display": "tacz:type_81_display",
+    "data": "tacz:type_81_data",
+    "tooltip": "tacz.gun.type_81.desc",
+    "type": "rifle",
+    "item_type": "modern_kinetic",
+    "sort": 1
+}

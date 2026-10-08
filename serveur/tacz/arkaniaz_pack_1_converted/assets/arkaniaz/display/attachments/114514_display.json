@@ -1,0 +1,9 @@
+{
+  "slot": "arkaniaz:attachment/slot/123",
+  "model": "arkaniaz:attachment/114514_geo",
+  "texture": "arkaniaz:attachment/uv/123",
+  "sounds": {
+    "install": "tacz:attachments/attachment_general_b",
+    "uninstall": "tacz:attachments/attachment_general_uninstall"
+  }
+}

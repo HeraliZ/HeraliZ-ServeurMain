@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/vent_fan"
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/vent_fan"
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/vent_fan"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/vent_fan"
+  }
+ }
+}

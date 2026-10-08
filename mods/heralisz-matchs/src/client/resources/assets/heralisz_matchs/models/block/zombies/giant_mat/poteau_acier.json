@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/cube_column",
+ "textures": {
+  "side": "heralisz_matchs:block/zombies/giant_mat/poteau_acier_cote",
+  "end": "heralisz_matchs:block/zombies/giant_mat/poteau_acier_bout"
+ }
+}

@@ -1,0 +1,39 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:leather"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "minecraft:gold_nugget"
+      },
+      "count": 3
+    },
+    {
+      "item": {
+        "item": "minecraft:paper"
+      },
+      "count": 3
+    },
+    {
+      "item": {
+        "item": "minecraft:magma_cream"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:consumable",
+    "item": {
+      "item": "heralisz_tactical:consumable",
+      "nbt": {
+        "ConsumableId": "heralisz_heal:surv12"
+      }
+    }
+  }
+}

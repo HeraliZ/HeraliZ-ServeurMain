@@ -1,0 +1,27 @@
+
+#HeraliZ Ping : regles du serveur (modifiables en jeu : /ping admin)
+[pings]
+	#Interrupteur general des pings
+	actif = true
+	#Duree d'un ping a l'ecran, en secondes
+	#Range: 3 ~ 60
+	duree_s = 10
+	#Portee maximale d'un ping depuis les yeux, en blocs
+	#Range: 16 ~ 1024
+	portee = 300
+	#Refuser un ping dont la cible n'est pas en vue (a travers un mur)
+	verifier_vue = true
+	#Pings d'affilee permis avant de devoir attendre (anti-spam)
+	#Range: 1 ~ 20
+	rafale = 3
+	#Temps pour regagner un ping, en millisecondes
+	#Range: 100 ~ 10000
+	recharge_ms = 900
+	#Pings actifs au plus par joueur (le plus ancien s'efface)
+	#Range: 1 ~ 10
+	max_par_joueur = 3
+	#Les spectateurs (mode spectateur, elimines en match) voient les pings de leur equipe ou clan
+	spectateurs_voient = false
+	#Hors match, un joueur sans clan envoie ses pings a son groupe (/groupe) s'il en a un
+	groupe_hors_match = true
+

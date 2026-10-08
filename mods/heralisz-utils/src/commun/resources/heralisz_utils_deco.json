@@ -1,0 +1,3386 @@
+{
+ "blocs": [
+  {
+   "id": "lampadaire_pied",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    5,
+    0,
+    5,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "lampadaire_mat",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6.5,
+    0,
+    6.5,
+    9.5,
+    16,
+    9.5
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "lampadaire_tete",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6.5,
+    0,
+    6.5,
+    9.5,
+    16,
+    9.5
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "lampadaire_tete_allumee",
+   "kind": "deco",
+   "lumiere": 12,
+   "collision": true,
+   "boite": [
+    6.5,
+    0,
+    6.5,
+    9.5,
+    16,
+    9.5
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "lampadaire_tete_penchee",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6.5,
+    0,
+    6.5,
+    9.5,
+    16,
+    9.5
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "lampadaire_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6.5,
+    0,
+    6.5,
+    9.5,
+    8,
+    9.5
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "lampadaire_tete_au_sol",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    2,
+    0,
+    1,
+    14,
+    4,
+    12
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_tcherno_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_tcherno_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_tcherno_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_tcherno_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_nord_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_nord_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_nord_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_nord_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_foret_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_foret_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_foret_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_foret_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_carrefour_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_carrefour_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_carrefour_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_carrefour_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_baie_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_baie_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_baie_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_baie_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_plateau_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_plateau_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_plateau_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_plateau_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_lest_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_lest_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_lest_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_lest_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_abandonnee_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_abandonnee_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_abandonnee_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_abandonnee_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_miniere_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_miniere_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_miniere_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_miniere_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_montagne_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_montagne_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_montagne_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_montagne_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_port_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_port_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_port_tordu",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_port_casse",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_00_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_00_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_01_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_01_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_02_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_02_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_03_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_03_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_04_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_04_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_05_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_05_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_06_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_06_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_07_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_07_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_08_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_08_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_09_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_09_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_10_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_10_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_11_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_11_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_12_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_12_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_13_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_13_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_14_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_14_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_15_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_15_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_16_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_16_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_17_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_17_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_18_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_18_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_19_droit",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_village_19_penche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "cadavre_panneau",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    3,
+    0,
+    3,
+    13,
+    10,
+    13
+   ],
+   "son": "chair"
+  },
+  {
+   "id": "corps_a_travers",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    3,
+    0,
+    3,
+    13,
+    16,
+    16
+   ],
+   "son": "chair"
+  },
+  {
+   "id": "echaf_croix",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    3
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "echaf_diagonale",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    3
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "echaf_plancher",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    3,
+    16
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "poulie",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    5,
+    0,
+    4,
+    11,
+    16,
+    12
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "corde",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    6,
+    0,
+    6,
+    10,
+    16,
+    10
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "corde_crochet",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    6,
+    0,
+    6,
+    11,
+    16,
+    11
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "seau_corde",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    4,
+    0,
+    4,
+    12,
+    16,
+    12
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "treuil",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    2,
+    16,
+    13,
+    14
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "noeud_corde",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    5,
+    0,
+    5,
+    11,
+    7,
+    11
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "bitte",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    4,
+    0,
+    4,
+    12,
+    10,
+    12
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "bouee",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    3,
+    3,
+    0,
+    13,
+    13,
+    3
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "filet_camouflage",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    0,
+    9,
+    0,
+    16,
+    11,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "herisson",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    1,
+    0,
+    1,
+    15,
+    16,
+    15
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "moulin_corps_0",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    5,
+    0,
+    5,
+    11,
+    16,
+    11
+   ],
+   "son": "pierre"
+  },
+  {
+   "id": "moulin_corps_1",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    5,
+    0,
+    5,
+    11,
+    16,
+    11
+   ],
+   "son": "pierre"
+  },
+  {
+   "id": "moulin_corps_2",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    5,
+    0,
+    5,
+    11,
+    16,
+    11
+   ],
+   "son": "pierre"
+  },
+  {
+   "id": "moulin_corps_use_0",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    5,
+    0,
+    5,
+    11,
+    16,
+    11
+   ],
+   "son": "pierre"
+  },
+  {
+   "id": "moulin_corps_use_1",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    5,
+    0,
+    5,
+    11,
+    16,
+    11
+   ],
+   "son": "pierre"
+  },
+  {
+   "id": "moulin_corps_use_2",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    5,
+    0,
+    5,
+    11,
+    16,
+    11
+   ],
+   "son": "pierre"
+  },
+  {
+   "id": "rambarde_corde",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    12,
+    16,
+    16,
+    16
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "barbeles",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    2,
+    16,
+    13,
+    14
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "barbeles_piquet",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    1,
+    16,
+    16,
+    15
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "filet_charge",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    3,
+    0,
+    3,
+    13,
+    16,
+    13
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "cordage_rouleau",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": false,
+   "boite": [
+    2,
+    0,
+    2,
+    14,
+    5,
+    14
+   ],
+   "son": "bois"
+  },
+  {
+   "id": "fleche_000_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_001_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_002_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_003_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_004_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_005_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_006_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_007_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_008_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_009_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_010_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_011_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_012_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_013_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_014_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_015_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_016_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_017_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_018_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_019_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_020_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_021_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_022_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_023_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_025_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_026_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_027_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_028_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_029_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_030_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_031_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_032_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_033_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_034_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_035_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_036_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_037_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_038_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_039_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_040_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_041_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_042_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_043_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_044_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_045_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_046_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_047_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_048_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_049_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_050_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_051_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_052_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_053_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_054_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_055_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_056_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_057_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_058_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_059_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_060_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_061_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_062_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_063_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_064_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_065_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_066_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_067_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_068_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_069_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_070_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_071_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_072_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_073_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_074_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_075_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_076_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_077_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_079_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_080_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "fleche_081_g",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "poteau_panneau",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    7,
+    0,
+    7,
+    10,
+    16,
+    11
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "epave_brulee",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    10,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "epave_bleue",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    10,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "epave_rouge",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    10,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "epave_retournee",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    14,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "collision_invisible",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    10,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "camion_couche",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "voiture_couchee",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    14,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_carrosserie",
+   "kind": "plein",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_bande",
+   "kind": "plein",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_rouge",
+   "kind": "plein",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_phare",
+   "kind": "plein",
+   "lumiere": 12,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_roue",
+   "kind": "plein",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_paroi",
+   "kind": "plein",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_plancher",
+   "kind": "plein",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_plafond",
+   "kind": "plein",
+   "lumiere": 11,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "train_fenetre",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "siege_train",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    1,
+    0,
+    2,
+    15,
+    8,
+    14
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "tableau_bord",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    6,
+    16,
+    12,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "heurtoir",
+   "kind": "deco",
+   "lumiere": 8,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    4,
+    16,
+    14,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "liquide_radioactif",
+   "kind": "liquide",
+   "lumiere": 10,
+   "collision": true,
+   "son": "liquide"
+  },
+  {
+   "id": "turbine_corps",
+   "kind": "axis",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "turbine_bout",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "generateur",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    0,
+    0,
+    0,
+    16,
+    16,
+    16
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "tuyau",
+   "kind": "axis",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    3,
+    0,
+    3,
+    13,
+    16,
+    13
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "tuyau_coude",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    3,
+    0,
+    0,
+    13,
+    13,
+    13
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "vanne",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    3,
+    0,
+    3,
+    13,
+    6,
+    13
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_radiation",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    6,
+    0,
+    6,
+    10,
+    16,
+    10
+   ],
+   "son": "metal"
+  },
+  {
+   "id": "panneau_radiation_mural",
+   "kind": "deco",
+   "lumiere": 0,
+   "collision": true,
+   "boite": [
+    1,
+    2,
+    15,
+    15,
+    16,
+    16
+   ],
+   "son": "metal"
+  }
+ ]
+}

@@ -1,0 +1,390 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/ranger.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "gilet_terrain_pan_-1",
+    "uv": [
+     56,
+     20
+    ],
+    "from": [
+     -4.236328125,
+     0.763671875,
+     -3.361328125
+    ],
+    "size": [
+     3.5,
+     9.5,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_poche_-1_00",
+    "uv": [
+     92,
+     50
+    ],
+    "from": [
+     -3.986328125,
+     1.513671875,
+     -3.861328125
+    ],
+    "size": [
+     2.875,
+     2.75,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_poche_-1_10",
+    "uv": [
+     106,
+     50
+    ],
+    "from": [
+     -3.986328125,
+     5.013671875,
+     -3.861328125
+    ],
+    "size": [
+     1.375,
+     2.5,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_poche_-1_11",
+    "uv": [
+     110,
+     50
+    ],
+    "from": [
+     -2.486328125,
+     5.013671875,
+     -3.861328125
+    ],
+    "size": [
+     1.375,
+     2.5,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_poche_-1_20",
+    "uv": [
+     0,
+     57
+    ],
+    "from": [
+     -3.986328125,
+     7.763671875,
+     -3.861328125
+    ],
+    "size": [
+     1.375,
+     2.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "gilet_terrain_poche_-1_21",
+    "uv": [
+     4,
+     57
+    ],
+    "from": [
+     -2.486328125,
+     7.763671875,
+     -3.861328125
+    ],
+    "size": [
+     1.375,
+     2.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "gilet_terrain_pan_1",
+    "uv": [
+     64,
+     20
+    ],
+    "from": [
+     0.763671875,
+     0.763671875,
+     -3.361328125
+    ],
+    "size": [
+     3.5,
+     9.5,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_poche_1_00",
+    "uv": [
+     99,
+     50
+    ],
+    "from": [
+     1.013671875,
+     1.513671875,
+     -3.861328125
+    ],
+    "size": [
+     2.875,
+     2.75,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_poche_1_10",
+    "uv": [
+     114,
+     50
+    ],
+    "from": [
+     1.013671875,
+     5.013671875,
+     -3.861328125
+    ],
+    "size": [
+     1.375,
+     2.5,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_poche_1_11",
+    "uv": [
+     118,
+     50
+    ],
+    "from": [
+     2.513671875,
+     5.013671875,
+     -3.861328125
+    ],
+    "size": [
+     1.375,
+     2.5,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_poche_1_20",
+    "uv": [
+     8,
+     57
+    ],
+    "from": [
+     1.013671875,
+     7.763671875,
+     -3.861328125
+    ],
+    "size": [
+     1.375,
+     2.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "gilet_terrain_poche_1_21",
+    "uv": [
+     12,
+     57
+    ],
+    "from": [
+     2.513671875,
+     7.763671875,
+     -3.861328125
+    ],
+    "size": [
+     1.375,
+     2.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "gilet_terrain_dos",
+    "uv": [
+     38,
+     20
+    ],
+    "from": [
+     -4.236328125,
+     0.513671875,
+     2.888671875
+    ],
+    "size": [
+     8.5,
+     10.0,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_epaule_-1",
+    "uv": [
+     30,
+     33
+    ],
+    "from": [
+     -2.986328125,
+     -0.736328125,
+     -3.236328125
+    ],
+    "size": [
+     2.0,
+     1.5,
+     6.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gilet_terrain_epaule_1",
+    "uv": [
+     47,
+     33
+    ],
+    "from": [
+     1.013671875,
+     -0.736328125,
+     -3.236328125
+    ],
+    "size": [
+     2.0,
+     1.5,
+     6.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {}
+}

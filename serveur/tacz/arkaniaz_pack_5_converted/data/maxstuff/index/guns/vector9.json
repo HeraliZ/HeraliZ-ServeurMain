@@ -1,0 +1,7 @@
+{
+    "name": "maxstuff.gun.vector9.name",
+    "display": "maxstuff:vector9_display",
+    "data": "maxstuff:vector9_data",
+    "type": "smg",
+    "tooltip": "maxstuff.gun.vector9.desc"
+}

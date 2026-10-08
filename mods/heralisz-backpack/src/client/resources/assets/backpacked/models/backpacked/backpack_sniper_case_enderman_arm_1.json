@@ -1,0 +1,167 @@
+{
+ "credit": "HeralisZ",
+ "texture_size": [
+  512,
+  512
+ ],
+ "textures": {
+  "enderman": "backpacked:backpack/backpack_sniper_case_enderman",
+  "particle": "backpacked:backpack/backpack_sniper_case_enderman"
+ },
+ "elements": [
+  {
+   "from": [
+    10.251,
+    1.0,
+    11.0
+   ],
+   "to": [
+    11.751,
+    16.0,
+    12.5
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      8.09375,
+      0.09375,
+      8.1875,
+      1.03125
+     ],
+     "texture": "#enderman"
+    },
+    "north": {
+     "uv": [
+      8.28125,
+      0.09375,
+      8.375,
+      1.03125
+     ],
+     "texture": "#enderman"
+    },
+    "east": {
+     "uv": [
+      8.1875,
+      0.09375,
+      8.28125,
+      1.03125
+     ],
+     "texture": "#enderman"
+    },
+    "west": {
+     "uv": [
+      8.0,
+      0.09375,
+      8.09375,
+      1.03125
+     ],
+     "texture": "#enderman"
+    },
+    "up": {
+     "uv": [
+      8.09375,
+      0.0,
+      8.1875,
+      0.09375
+     ],
+     "texture": "#enderman"
+    },
+    "down": {
+     "uv": [
+      8.1875,
+      0.0,
+      8.28125,
+      0.09375
+     ],
+     "texture": "#enderman"
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "z",
+    "origin": [
+     7.68788,
+     9.20754,
+     11.6304
+    ]
+   }
+  },
+  {
+   "from": [
+    9.501,
+    -2.0,
+    10.25
+   ],
+   "to": [
+    12.501,
+    1.0,
+    13.25
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      8.59375,
+      0.1875,
+      8.78125,
+      0.375
+     ],
+     "texture": "#enderman"
+    },
+    "north": {
+     "uv": [
+      8.96875,
+      0.1875,
+      9.15625,
+      0.375
+     ],
+     "texture": "#enderman"
+    },
+    "east": {
+     "uv": [
+      8.78125,
+      0.1875,
+      8.96875,
+      0.375
+     ],
+     "texture": "#enderman"
+    },
+    "west": {
+     "uv": [
+      8.40625,
+      0.1875,
+      8.59375,
+      0.375
+     ],
+     "texture": "#enderman"
+    },
+    "up": {
+     "uv": [
+      8.59375,
+      0.0,
+      8.78125,
+      0.1875
+     ],
+     "texture": "#enderman"
+    },
+    "down": {
+     "uv": [
+      8.78125,
+      0.0,
+      8.96875,
+      0.1875
+     ],
+     "texture": "#enderman"
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "z",
+    "origin": [
+     7.68788,
+     9.20754,
+     11.6304
+    ]
+   }
+  }
+ ]
+}

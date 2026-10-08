@@ -1,0 +1,14 @@
+{
+  "item.heralisz_melee.baseball_bat": "Baseball Bat",
+  "item.heralisz_melee.baseball_bat.desc": "Solid baseball bat, hits hard.",
+  "item.heralisz_melee.executor": "§4Executor",
+  "item.heralisz_melee.mercy": "§rMercy",
+  "item.heralisz_melee.desmoulins_edge": "§bDesmoulins' Edge",
+  "item.heralisz_melee.dragons_fang": "§6Dragon's Fang",
+  "item.heralisz_melee.tac_dagger": "§7TAC Dagger",
+  "item.heralisz_melee.sea_gleam": "§9Sea Gleam",
+  "item.heralisz_melee.creed": "§cCreed",
+  "item.heralisz_melee.smite_hammer": "§rSmite Hammer",
+  "pack.heralisz_melee.default_pack.name": "§cHeraliZ §7- §fMêlée",
+  "pack.heralisz_melee.name": "§cHeraliZ §7- §fMêlée"
+}

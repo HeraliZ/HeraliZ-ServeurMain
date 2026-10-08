@@ -1,0 +1,21 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "item": "heralisz_utils:glass"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "maxstuff:sight_okp7_ak"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

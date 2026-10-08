@@ -1,0 +1,65 @@
+{
+  "model": "heralisz_heal:consumable/vaseline_geo",
+  "animation": "heralisz_heal:consumable/vaseline",
+  "state_machine": "heralisz_heal:consumable_state_machine",
+  "texture": "heralisz_heal:consumable/vaseline_uv",
+  "slot_texture": "heralisz_heal:consumable/slot/vaseline",
+  "display_offset": [0, 0.5, 0],
+  "transforms": {
+    "fixed": {
+      "translation": [
+        0,
+        -15.5,
+        -5
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        2,
+        2,
+        2
+      ]
+    },
+    "thirdperson_righthand": {
+      "translation": [
+        1.5,
+        -7.5,
+        0
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        -2.5,
+        -7.5,
+        0
+      ]
+    },
+    "head": {
+      "translation": [
+        3,
+        -3.25,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    },
+    "ground": {
+      "translation": [
+        3,
+        -10,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    }
+  }
+}

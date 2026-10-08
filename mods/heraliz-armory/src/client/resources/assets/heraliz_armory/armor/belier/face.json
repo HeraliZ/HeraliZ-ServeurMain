@@ -1,0 +1,39 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/belier.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "head": [
+   {
+    "name": "cagoule",
+    "uv": [
+     52,
+     0
+    ],
+    "from": [
+     -4.1875,
+     -8.1875,
+     -4.1875
+    ],
+    "size": [
+     8.375,
+     8.375,
+     8.375
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {},
+ "hide_hat": true
+}

@@ -1,0 +1,20 @@
+{
+  "ui_clic": {
+    "sounds": [
+      "heraliz_interface:ui_clic"
+    ],
+    "subtitle": "subtitles.heraliz_interface.ui_clic"
+  },
+  "ui_ouvrir": {
+    "sounds": [
+      "heraliz_interface:ui_ouvrir"
+    ],
+    "subtitle": "subtitles.heraliz_interface.ui_ouvrir"
+  },
+  "ui_fermer": {
+    "sounds": [
+      "heraliz_interface:ui_fermer"
+    ],
+    "subtitle": "subtitles.heraliz_interface.ui_fermer"
+  }
+}

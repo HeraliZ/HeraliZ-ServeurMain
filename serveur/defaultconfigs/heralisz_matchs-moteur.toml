@@ -1,0 +1,18 @@
+
+[combat]
+	#Duree du tag de combat en secondes (degats infliges ou recus d'un autre joueur)
+	#Range: 1 ~ 300
+	tag_secondes = 15
+	#Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur)
+	mort_deconnexion = true
+	#Refuser au joueur tague les commandes de teleportation de la liste commandes_bloquees
+	refus_commandes = true
+	#Les operateurs (niveau 2) tagues gardent leurs commandes de teleportation
+	operateurs_exemptes = false
+	#Commandes refusees au joueur tague (racine en minuscules, sans / ni espace de noms : "spawn" couvre aussi /essentials:spawn)
+	commandes_bloquees = ["spawn", "home", "homes", "warp", "warps", "tpa", "tpahere", "tpask", "tpaccept", "tpyes", "back", "rtp", "wild", "randomtp", "tp", "teleport", "tphere", "tpo", "top", "hub", "lobby", "ehome", "espawn", "ewarp", "etpa", "etpahere", "etpaccept", "eback", "etop", "etp"]
+
+[matchs]
+	#Masquer la mini-carte de Xaero et refuser l'ouverture de sa carte du monde pendant les matchs
+	masquer_cartes = true
+

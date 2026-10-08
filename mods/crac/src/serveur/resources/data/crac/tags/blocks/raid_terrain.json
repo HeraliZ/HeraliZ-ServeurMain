@@ -1,0 +1,34 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:dirt",
+    "#minecraft:sand",
+    "#minecraft:base_stone_overworld",
+    "#minecraft:base_stone_nether",
+    "#minecraft:terracotta",
+    "#minecraft:nylium",
+    {
+      "id": "#forge:ores",
+      "required": false
+    },
+    "minecraft:gravel",
+    "minecraft:suspicious_gravel",
+    "minecraft:clay",
+    "minecraft:sandstone",
+    "minecraft:red_sandstone",
+    "minecraft:calcite",
+    "minecraft:dripstone_block",
+    "minecraft:smooth_basalt",
+    "minecraft:magma_block",
+    "minecraft:end_stone",
+    "minecraft:soul_sand",
+    "minecraft:soul_soil",
+    "minecraft:snow_block",
+    "minecraft:powder_snow",
+    "minecraft:farmland",
+    "minecraft:dirt_path",
+    "minecraft:infested_stone",
+    "minecraft:infested_deepslate",
+    "minecraft:bedrock"
+  ]
+}

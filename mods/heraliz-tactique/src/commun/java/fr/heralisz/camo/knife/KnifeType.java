@@ -1,0 +1,93 @@
+package fr.heralisz.camo.knife;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+
+/**
+ * Couteaux de base (modèles du pack ArkaniaZ) et rôle de leurs pièces : lame, manche caoutchouc, pièces métal, manche métal sombre.
+ * Une pièce prend le rôle de son ancêtre listé le plus proche ; par défaut c'est de la lame.
+ */
+public enum KnifeType {
+   // Butterfly (comme dans CS) : manches en métal noir (plaques fines), insert lisse d'une teinte plus sombre que la lame
+   // (cubes plus épais au milieu des manches) ; les cubes épais près du pivot du manche (disques des pivots, dents du
+   // ressort) et le loquet (bing) sont noirs
+   BUTTERFLY("butterfly", 0.27F, 2.6F, Map.of("danger_grip", Part.HANDLE, "safe_grip", Part.HANDLE, "bing", Part.PIN)),
+   // Karambit : manche caoutchouc ; l'anneau est le prolongement de la lame qui ressort sous le manche -> finition de la lame
+   KARAMBIT("karambit", 0F, 0F, Map.of("bone2", Part.GRIP, "bone3", Part.GRIP, "bone4", Part.GRIP, "bone5", Part.GRIP, "bone8", Part.GRIP,
+      "bone6", Part.METAL)),
+   M9("m9", 0F, 0F, Map.of("daozhu", Part.GRIP, "daobing", Part.METAL, "daowei", Part.METAL)),
+   // couteaux CS par défaut (pack ArkaniaZ) : manche = grip assorti à la finition
+   CT_KNIFE("ct_knife", Map.of("daoba", Part.GRIP, "daobing", Part.GRIP), 0F, 0),
+   T_KNIFE("t_knife", Map.of("bone4", Part.GRIP, "bone", Part.GRIP), 0F, 0),
+   // lames de mêlée HeralisZ (moteur HeralisZ Tactical) : manche = grip assorti à la finition ; modèles d'un seul bloc -> coupe
+   DAGGER("dagger", Map.of(), 0.55F, -1),
+   TAC_DAGGER("tac_dagger", Map.of(), 0.4F, -1),
+   CREED("creed", Map.of(), 0.5F, -1),
+   DESMOULINS_EDGE("desmoulins_edge", Map.of("hand", Part.GRIP), 0F, 0),
+   DRAGONS_FANG("dragons_fang", Map.of(), 0.3F, -1),
+   EXECUTOR("executor", Map.of("handle", Part.GRIP), 0F, 0),
+   FIERY_OWL("fiery_owl", Map.of(), 0.5F, -1),
+   MERCY("mercy", Map.of("body", Part.GRIP), 0F, 0),
+   SEA_GLEAM("sea_gleam", Map.of("h2", Part.GRIP, "h4", Part.GRIP, "h5", Part.GRIP), 0F, 0);
+
+   public final String id;
+   private final Map<String, Part> parts;
+   /** Cubes de manche plus fins que ça (en x, pixels du modèle) = métal sombre, les plus épais = insert lisse ; 0 = aucun. */
+   public final float inlayWidth;
+   /** Cubes épais à moins de cette distance (pixels) du pivot de leur manche = métal noir (pivots) au lieu de l'insert. */
+   public final float pivotRadius;
+   /**
+    * Modèles d'un seul bloc (lame et manche dans le même os) : ce qui se trouve avant cette fraction de la longueur, depuis
+    * le pommeau, est le manche (texture d'origine) ; 0 = pas de coupe.
+    */
+   public final float cut;
+   /** Côté de la pointe sur l'axe long, dans le repère de l'outil d'aperçu (tools/camo_preview/export_gun.py) : +1 / -1. */
+   public final int tip;
+
+   KnifeType(String id, float inlayWidth, float pivotRadius, Map<String, Part> parts) {
+      this(id, inlayWidth, pivotRadius, parts, 0F, 0);
+   }
+
+   KnifeType(String id, Map<String, Part> parts, float cut, int tip) {
+      this(id, 0F, 0F, parts, cut, tip);
+   }
+
+   KnifeType(String id, float inlayWidth, float pivotRadius, Map<String, Part> parts, float cut, int tip) {
+      this.id = id;
+      this.inlayWidth = inlayWidth;
+      this.pivotRadius = pivotRadius;
+      this.parts = parts;
+      this.cut = cut;
+      this.tip = tip;
+   }
+
+   @Nullable
+   public Part partOf(String bone) {
+      return this.parts.get(bone);
+   }
+
+   @Nullable
+   public static KnifeType byId(String id) {
+      for (KnifeType k : values()) {
+         if (k.id.equals(id)) {
+            return k;
+         }
+      }
+      return null;
+   }
+
+   /** Valeur écrite dans le canal A de la carte de positions (même codage que les parties d'arme). */
+   public enum Part {
+      /** lame ; manche caoutchouc ; métal de la couleur du skin (garde, anneau du M9) ; métal noir (pivots, anneau) ;
+       *  insert lisse du manche ; manche métal noir. */
+      BLADE(1.0F), GRIP(0.75F), METAL(0.5F), PIN(0.42F), INLAY(0.31F), HANDLE(0.25F),
+      /** texture d'origine (jamais camouflée : sous le seuil du shader), mais repère le côté du manche. */
+      ORIGINAL(0.1F);
+
+      public final float code;
+
+      Part(float code) {
+         this.code = code;
+      }
+   }
+}

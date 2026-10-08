@@ -1,0 +1,155 @@
+{
+ "name": "Réflexion",
+ "author": "Heraliz",
+ "description": "La main au menton, les yeux au ciel... des petites bulles de pensée s'envolent.",
+ "uuid": "db1c937e-8881-58d8-a467-aeff988020a4",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 27,
+  "stopTick": 28,
+  "isLoop": true,
+  "returnTick": 4,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "body": {
+     "roll": 2.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -16.0,
+     "yaw": -6.0,
+     "roll": -2.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -120.03,
+     "roll": 69.66
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -30.59,
+     "roll": 60.28
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": 1.25
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": -3.63
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "body": {
+     "roll": -2.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -16.0,
+     "yaw": -18.0,
+     "roll": -10.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -120.03,
+     "roll": 69.66
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -30.59,
+     "roll": 60.28
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": 5.26
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": -2.86
+    }
+   }
+  ]
+ }
+}

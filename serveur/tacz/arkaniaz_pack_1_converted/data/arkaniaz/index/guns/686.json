@@ -1,0 +1,9 @@
+{
+    "name": "arkaniaz.gun.686.name",
+    "display": "arkaniaz:686_display",
+    "data": "arkaniaz:686_data",
+    "type": "shotgun",
+    "item_type": "modern_kinetic",
+    "tooltip": "Fusil à double canon, précis.",
+    "sort": 10
+}

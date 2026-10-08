@@ -1,0 +1,252 @@
+[
+  {
+    "id": "j_rodeurs_150",
+    "type": "KILL_ZOMBIES",
+    "objectif": 150,
+    "xp": 300,
+    "argent": 400,
+    "periode": "jour",
+    "titre_fr": "Abattre 150 rôdeurs",
+    "titre_en": "Kill 150 walkers"
+  },
+  {
+    "id": "j_rodeurs_300",
+    "type": "KILL_ZOMBIES",
+    "objectif": 300,
+    "xp": 500,
+    "argent": 700,
+    "periode": "jour",
+    "titre_fr": "Abattre 300 rôdeurs",
+    "titre_en": "Kill 300 walkers"
+  },
+  {
+    "id": "j_joueurs_5",
+    "type": "KILL_JOUEURS",
+    "objectif": 5,
+    "xp": 350,
+    "argent": 500,
+    "periode": "jour",
+    "titre_fr": "Tuer 5 joueurs",
+    "titre_en": "Kill 5 players"
+  },
+  {
+    "id": "j_joueurs_10",
+    "type": "KILL_JOUEURS",
+    "objectif": 10,
+    "xp": 600,
+    "argent": 900,
+    "periode": "jour",
+    "titre_fr": "Tuer 10 joueurs",
+    "titre_en": "Kill 10 players"
+  },
+  {
+    "id": "j_boss_1",
+    "type": "KILL_BOSS",
+    "objectif": 1,
+    "xp": 400,
+    "argent": 600,
+    "periode": "jour",
+    "titre_fr": "Vaincre un boss",
+    "titre_en": "Defeat a boss"
+  },
+  {
+    "id": "j_loot_60",
+    "type": "LOOT_OUVERTS",
+    "objectif": 60,
+    "xp": 250,
+    "argent": 300,
+    "periode": "jour",
+    "titre_fr": "Fouiller 60 caches",
+    "titre_en": "Search 60 loot spots"
+  },
+  {
+    "id": "j_loot_120",
+    "type": "LOOT_OUVERTS",
+    "objectif": 120,
+    "xp": 400,
+    "argent": 500,
+    "periode": "jour",
+    "titre_fr": "Fouiller 120 caches",
+    "titre_en": "Search 120 loot spots"
+  },
+  {
+    "id": "j_temps_180",
+    "type": "TEMPS_JEU_MIN",
+    "objectif": 180,
+    "xp": 200,
+    "argent": 250,
+    "periode": "jour",
+    "titre_fr": "Jouer 180 minutes",
+    "titre_en": "Play 180 minutes"
+  },
+  {
+    "id": "j_degats_5000",
+    "type": "DEGATS",
+    "objectif": 5000,
+    "xp": 300,
+    "argent": 400,
+    "periode": "jour",
+    "titre_fr": "Infliger 5 000 dégâts",
+    "titre_en": "Deal 5,000 damage"
+  },
+  {
+    "id": "j_capture_1",
+    "type": "CAPTURES",
+    "objectif": 1,
+    "xp": 350,
+    "argent": 500,
+    "periode": "jour",
+    "titre_fr": "Capturer une zone",
+    "titre_en": "Capture a zone"
+  },
+  {
+    "id": "j_tenir_60",
+    "type": "TENIR_ZONE_MIN",
+    "objectif": 60,
+    "xp": 300,
+    "argent": 400,
+    "periode": "jour",
+    "titre_fr": "Tenir une zone 60 minutes",
+    "titre_en": "Hold a zone for 60 minutes"
+  },
+  {
+    "id": "j_ravito_1",
+    "type": "RAVITAILLEMENTS",
+    "objectif": 1,
+    "xp": 300,
+    "argent": 400,
+    "periode": "jour",
+    "titre_fr": "Lancer un ravitaillement",
+    "titre_en": "Call a supply drop"
+  },
+  {
+    "id": "j_depot_1500",
+    "type": "DEPOTS_BANQUE",
+    "objectif": 1500,
+    "xp": 200,
+    "argent": 300,
+    "periode": "jour",
+    "titre_fr": "Déposer 1 500 hérals",
+    "titre_en": "Deposit 1,500 herals"
+  },
+  {
+    "id": "j_distance_10000",
+    "type": "DISTANCE_M",
+    "objectif": 10000,
+    "xp": 200,
+    "argent": 250,
+    "periode": "jour",
+    "titre_fr": "Parcourir 10 km",
+    "titre_en": "Travel 10 km"
+  },
+  {
+    "id": "s_rodeurs_2000",
+    "type": "KILL_ZOMBIES",
+    "objectif": 2000,
+    "xp": 2500,
+    "argent": 3000,
+    "periode": "semaine",
+    "titre_fr": "Abattre 2 000 rôdeurs",
+    "titre_en": "Kill 2,000 walkers"
+  },
+  {
+    "id": "s_joueurs_25",
+    "type": "KILL_JOUEURS",
+    "objectif": 25,
+    "xp": 2000,
+    "argent": 2500,
+    "periode": "semaine",
+    "titre_fr": "Tuer 25 joueurs",
+    "titre_en": "Kill 25 players"
+  },
+  {
+    "id": "s_boss_5",
+    "type": "KILL_BOSS",
+    "objectif": 5,
+    "xp": 2500,
+    "argent": 3000,
+    "periode": "semaine",
+    "titre_fr": "Vaincre 5 boss",
+    "titre_en": "Defeat 5 bosses"
+  },
+  {
+    "id": "s_loot_600",
+    "type": "LOOT_OUVERTS",
+    "objectif": 600,
+    "xp": 1800,
+    "argent": 2200,
+    "periode": "semaine",
+    "titre_fr": "Fouiller 600 caches",
+    "titre_en": "Search 600 loot spots"
+  },
+  {
+    "id": "s_temps_1500",
+    "type": "TEMPS_JEU_MIN",
+    "objectif": 1500,
+    "xp": 1500,
+    "argent": 1800,
+    "periode": "semaine",
+    "titre_fr": "Jouer 1 500 minutes",
+    "titre_en": "Play 1,500 minutes"
+  },
+  {
+    "id": "s_degats_40000",
+    "type": "DEGATS",
+    "objectif": 40000,
+    "xp": 2000,
+    "argent": 2500,
+    "periode": "semaine",
+    "titre_fr": "Infliger 40 000 dégâts",
+    "titre_en": "Deal 40,000 damage"
+  },
+  {
+    "id": "s_captures_3",
+    "type": "CAPTURES",
+    "objectif": 3,
+    "xp": 2200,
+    "argent": 2800,
+    "periode": "semaine",
+    "titre_fr": "Capturer 3 zones",
+    "titre_en": "Capture 3 zones"
+  },
+  {
+    "id": "s_tenir_120",
+    "type": "TENIR_ZONE_MIN",
+    "objectif": 120,
+    "xp": 1500,
+    "argent": 2000,
+    "periode": "semaine",
+    "titre_fr": "Tenir une zone 120 minutes",
+    "titre_en": "Hold a zone for 120 minutes"
+  },
+  {
+    "id": "s_ravito_4",
+    "type": "RAVITAILLEMENTS",
+    "objectif": 4,
+    "xp": 2000,
+    "argent": 2500,
+    "periode": "semaine",
+    "titre_fr": "Lancer 4 ravitaillements",
+    "titre_en": "Call 4 supply drops"
+  },
+  {
+    "id": "s_depot_15000",
+    "type": "DEPOTS_BANQUE",
+    "objectif": 15000,
+    "xp": 1500,
+    "argent": 2000,
+    "periode": "semaine",
+    "titre_fr": "Déposer 15 000 hérals",
+    "titre_en": "Deposit 15,000 herals"
+  },
+  {
+    "id": "s_distance_80000",
+    "type": "DISTANCE_M",
+    "objectif": 80000,
+    "xp": 1200,
+    "argent": 1500,
+    "periode": "semaine",
+    "titre_fr": "Parcourir 80 km",
+    "titre_en": "Travel 80 km"
+  }
+]

@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/moulin_ailes"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/moulin_ailes",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/moulin_ailes",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/moulin_ailes",
+   "y": 270
+  }
+ }
+}

@@ -1,0 +1,42 @@
+# Projet fusionné : UN jar, PLUSIEURS mods. Chaque mod d'origine garde son modId (objets, blocs, entités, sons, structures,
+# configs et canaux réseau inchangés) ; le mod porteur (« heraliz_gabarit », en PREMIER) porte le code partagé.
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+# Chaque [[mods]] a SA classe @Mod (FML 47 : ModLoader.buildMods), et inversement. Mettre le porteur en premier
+# (le premier modId donne le nom du module Java du jar).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heraliz_gabarit"
+version="${mod_version}"
+displayName="HeraliZ Gabarit"
+authors="${mod_authors}"
+description='''Mod porteur du jar fusionné : pont client / serveur, onglet créatif commun.'''
+[[dependencies.heraliz_gabarit]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_gabarit]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# ---- un bloc par mod fusionné (modId D'ORIGINE), par exemple :
+# [[mods]]
+# modId="heralisz_melee"
+# version="${mod_version}"
+# displayName="HeraliZ Tactique · Mêlée"
+# authors="${mod_authors}"
+# description='''...'''
+# [[dependencies.heralisz_melee]]
+#     modId="heraliz_gabarit"
+#     mandatory=true
+#     versionRange="[${mod_version}]"
+#     ordering="AFTER"
+#     side="BOTH"
+# (+ forge, minecraft, et les dépendances d'origine du mod : geckolib, curios...)

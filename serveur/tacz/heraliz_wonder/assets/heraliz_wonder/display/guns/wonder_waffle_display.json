@@ -1,0 +1,84 @@
+{
+  "model": "heraliz_wonder:gun/wonder_waffle_geo",
+  "texture": "heraliz_wonder:gun/uv/wonder_waffle",
+  "hud": "heraliz_wonder:gun/hud/wonder_waffle",
+  "slot": "heraliz_wonder:gun/slot/wonder_waffle",
+  "lod": {
+    "model": "heraliz_wonder:gun/lod/wonder_waffe",
+    "texture": "heraliz_wonder:gun/lod/wonder_waffe"
+  },
+  "animation": "heraliz_wonder:wonder_waffle",
+  "use_default_animation": "rifle",
+  "transform": {
+    "scale": {
+      "thirdperson": [
+        0.3,
+        0.3,
+        0.3
+      ],
+      "ground": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "fixed": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "muzzle_flash": {
+    "texture": "heraliz_wonder:flash/waffe_muzzle_flash",
+    "scale": 2.5
+  },
+  "sounds": {
+    "shoot": "heraliz_wonder:wonder_weapons/wonder_waffle/wonder_waffle_fire",
+    "shoot_3p": "heraliz_wonder:wonder_weapons/wonder_waffle/wonder_waffle_fire_3p",
+    "reload_empty": "heraliz_wonder:wonder_weapons/wonder_waffle/wonder_waffle_reload_empty",
+    "reload_tactical": "heraliz_wonder:wonder_weapons/wonder_waffle/wonder_waffle_reload_normal",
+    "inspect": "heraliz_wonder:wonder_weapons/wonder_waffle/wonder_waffle_inspect",
+    "inspect_empty": "heraliz_wonder:wonder_weapons/wonder_waffle/wonder_waffle_inspect_empty",
+    "draw": "heraliz_wonder:wonder_weapons/wonder_waffle/wonder_waffle_draw",
+    "put_away": "heraliz_wonder:wonder_weapons/wonder_waffle/wonder_waffle_put_away"
+  },
+  "offhand_show": {
+    "pos": [
+      4,
+      13,
+      -1
+    ],
+    "rotate": [
+      -90,
+      -35,
+      90
+    ],
+    "scale": [
+      0.2,
+      0.2,
+      0.2
+    ]
+  },
+  "hotbar_show": {
+    "0": {
+      "pos": [
+        -5,
+        13,
+        -1
+      ],
+      "rotate": [
+        -90,
+        -35,
+        90
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "ammo": {
+    "tracer_color": "#6CB8FF"
+  }
+}

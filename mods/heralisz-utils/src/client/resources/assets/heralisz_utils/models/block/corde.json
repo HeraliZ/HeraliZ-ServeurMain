@@ -1,0 +1,80 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "corde": "heralisz_utils:block/corde",
+  "bois": "heralisz_utils:block/echaf_bois",
+  "fer": "heralisz_utils:block/fonte",
+  "particle": "heralisz_utils:block/corde"
+ },
+ "elements": [
+  {
+   "from": [
+    7.3,
+    0.0,
+    7.3
+   ],
+   "to": [
+    8.7,
+    16.0,
+    8.7
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      1.4,
+      16.0
+     ],
+     "texture": "#corde"
+    },
+    "south": {
+     "uv": [
+      4.38,
+      0.0,
+      5.78,
+      16.0
+     ],
+     "texture": "#corde"
+    },
+    "east": {
+     "uv": [
+      8.76,
+      0.0,
+      10.16,
+      16.0
+     ],
+     "texture": "#corde"
+    },
+    "west": {
+     "uv": [
+      13.14,
+      0.0,
+      14.54,
+      16.0
+     ],
+     "texture": "#corde"
+    },
+    "up": {
+     "uv": [
+      1.46,
+      2.43,
+      2.86,
+      3.83
+     ],
+     "texture": "#corde"
+    },
+    "down": {
+     "uv": [
+      5.84,
+      10.95,
+      7.24,
+      12.35
+     ],
+     "texture": "#corde"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

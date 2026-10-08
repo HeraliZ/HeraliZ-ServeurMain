@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_bac_recyclage"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_bac_recyclage"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_bac_recyclage"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_bac_recyclage"
+  }
+ }
+}

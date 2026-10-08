@@ -1,0 +1,17 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/brique_abimee_0",
+    "weight": 2
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/brique_abimee_1",
+    "weight": 2
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/brique_0"
+   }
+  ]
+ }
+}

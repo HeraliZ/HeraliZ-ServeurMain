@@ -1,0 +1,260 @@
+{
+ "credit": "Made with Blockbench",
+ "textures": {
+  "0": "heraliz_loot:block/ark/custom/block/hopital_loot_1",
+  "particle": "heraliz_loot:block/ark/custom/block/hopital_loot_1"
+ },
+ "elements": [
+  {
+   "from": [
+    5,
+    0,
+    5
+   ],
+   "to": [
+    7,
+    2,
+    10
+   ],
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     13,
+     8,
+     13
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      4.16,
+      3.2,
+      7.92
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      3.2,
+      4.08,
+      7.44,
+      8
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      0,
+      4.16,
+      3.2,
+      8
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      3.2,
+      4.16,
+      7.28,
+      7.92
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      7.28,
+      4.08,
+      10.96,
+      8
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      7.28,
+      4.08,
+      10.96,
+      8
+     ],
+     "texture": "#0"
+    }
+   }
+  },
+  {
+   "from": [
+    5,
+    0,
+    2
+   ],
+   "to": [
+    7,
+    1,
+    4
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     13,
+     8,
+     10
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      8,
+      3.2,
+      11.84
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      0,
+      8,
+      3.2,
+      11.84
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      3.2,
+      8,
+      7.36,
+      11.84
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      0,
+      8,
+      3.2,
+      11.76
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      7.36,
+      8,
+      11.2,
+      11.52
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      7.36,
+      8,
+      11.2,
+      11.52
+     ],
+     "texture": "#0"
+    }
+   }
+  },
+  {
+   "from": [
+    7,
+    0,
+    5
+   ],
+   "to": [
+    11,
+    1,
+    10
+   ],
+   "rotation": {
+    "angle": 0,
+    "axis": "y",
+    "origin": [
+     17,
+     8,
+     13
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      3.2,
+      0,
+      7.36,
+      4.16
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      3.2,
+      0,
+      7.36,
+      4.16
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      3.2,
+      0,
+      7.36,
+      4.16
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      3.2,
+      0,
+      7.36,
+      4.16
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      7.44,
+      0,
+      10.72,
+      4.16
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      3.2,
+      0,
+      7.36,
+      4.16
+     ],
+     "texture": "#0"
+    }
+   }
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    -35,
+    -104,
+    -82
+   ],
+   "translation": [
+    -3.5,
+    5,
+    0.25
+   ],
+   "scale": [
+    1.19,
+    1.19,
+    1.05
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
+}

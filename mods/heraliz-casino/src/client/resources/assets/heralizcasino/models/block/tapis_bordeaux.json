@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/carpet",
+  "textures": {
+    "wool": "heralizcasino:block/tapis_bordeaux",
+    "particle": "heralizcasino:block/tapis_bordeaux"
+  }
+}

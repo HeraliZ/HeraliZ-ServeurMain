@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.karambit__crimson_web.name",
+  "display": "heralisz_skins:karambit__crimson_web_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.karambit__crimson_web.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 206
+}

@@ -1,0 +1,89 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add gemme <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 121,
+      "rarity": "legendary",
+      "nbt": "{GunId:\"heralisz_skins:butterfly__doppler_black_pearl\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 107,
+      "rarity": "legendary",
+      "nbt": "{GunId:\"heralisz_skins:butterfly__doppler_ruby\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 67,
+      "rarity": "mythic",
+      "nbt": "{GunId:\"heralisz_skins:butterfly__doppler_sapphire\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 39,
+      "rarity": "mythic",
+      "nbt": "{GunId:\"heralisz_skins:butterfly__gamma_emerald\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 120,
+      "rarity": "legendary",
+      "nbt": "{GunId:\"heralisz_skins:karambit__doppler_black_pearl\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 107,
+      "rarity": "legendary",
+      "nbt": "{GunId:\"heralisz_skins:karambit__doppler_ruby\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 67,
+      "rarity": "mythic",
+      "nbt": "{GunId:\"heralisz_skins:karambit__doppler_sapphire\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 39,
+      "rarity": "mythic",
+      "nbt": "{GunId:\"heralisz_skins:karambit__gamma_emerald\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 120,
+      "rarity": "legendary",
+      "nbt": "{GunId:\"heralisz_skins:m9__doppler_black_pearl\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 107,
+      "rarity": "legendary",
+      "nbt": "{GunId:\"heralisz_skins:m9__doppler_ruby\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 67,
+      "rarity": "mythic",
+      "nbt": "{GunId:\"heralisz_skins:m9__doppler_sapphire\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "weight": 39,
+      "rarity": "mythic",
+      "nbt": "{GunId:\"heralisz_skins:m9__gamma_emerald\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/antler_totem"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/antler_totem",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/antler_totem",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/antler_totem",
+   "y": 270
+  }
+ }
+}

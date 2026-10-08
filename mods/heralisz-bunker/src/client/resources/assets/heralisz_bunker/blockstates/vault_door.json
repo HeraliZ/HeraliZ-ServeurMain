@@ -1,0 +1,388 @@
+{
+  "variants": {
+    "door_moving=false,facing=east,open=false,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=false,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=false,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=false,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=false,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=false,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=false,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=false,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=true,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=true,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=true,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=true,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=true,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=true,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=true,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=east,open=true,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=false,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=false,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=false,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=false,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=false,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=false,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=false,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=false,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=true,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=true,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=true,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=true,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=true,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=true,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=true,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=north,open=true,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=false,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=false,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=false,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=false,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=false,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=false,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=false,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=false,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=true,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=true,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=true,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=true,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=true,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=true,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=true,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=south,open=true,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=false,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=false,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=false,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=false,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=false,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=false,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=false,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=false,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=true,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=true,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=true,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=true,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=true,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=true,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=true,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=false,facing=west,open=true,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=false,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=false,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=false,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=false,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=false,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=false,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=false,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=false,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=true,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=true,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=true,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=true,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=true,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=true,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=true,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=east,open=true,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=false,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=false,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=false,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=false,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=false,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=false,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=false,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=false,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=true,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=true,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=true,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=true,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=true,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=true,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=true,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=north,open=true,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=false,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=false,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=false,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=false,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=false,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=false,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=false,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=false,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=true,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=true,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=true,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=true,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=true,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=true,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=true,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=south,open=true,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=false,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=false,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=false,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=false,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=false,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=false,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=false,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=false,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=true,part_role=controller": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=true,part_role=default": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=true,part_role=energy_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=true,part_role=fluid_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=true,part_role=item_input": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=true,part_role=item_output": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=true,part_role=ladder": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    },
+    "door_moving=true,facing=west,open=true,part_role=universal_connector": {
+      "model": "heralisz_bunker:block/doors/vault_door"
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add porteur_de_peste <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "minecraft:milk_bucket",
+      "count": 1,
+      "weight": 16,
+      "rarity": "common",
+      "name": "&fRemède du Médecin"
+    },
+    {
+      "item": "minecraft:bread",
+      "count": 12,
+      "weight": 16,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:splash_potion",
+      "count": 3,
+      "weight": 14,
+      "rarity": "uncommon",
+      "nbt": "{Potion:\"minecraft:strong_poison\"}"
+    },
+    {
+      "item": "minecraft:splash_potion",
+      "count": 2,
+      "weight": 12,
+      "rarity": "uncommon",
+      "nbt": "{Potion:\"minecraft:strong_healing\"}"
+    },
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 16,
+      "weight": 12,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:experience_bottle",
+      "count": 16,
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:golden_apple",
+      "count": 3,
+      "weight": 8,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 4,
+      "weight": 6,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:diamond_axe",
+      "count": 1,
+      "weight": 5,
+      "rarity": "epic",
+      "nbt": "{Enchantments:[{id:\"minecraft:sharpness\",lvl:4s},{id:\"minecraft:unbreaking\",lvl:3s}]}",
+      "name": "&eFaux de la Peste"
+    },
+    {
+      "item": "minecraft:totem_of_undying",
+      "count": 1,
+      "weight": 3,
+      "rarity": "legendary"
+    },
+    {
+      "item": "minecraft:enchanted_golden_apple",
+      "count": 1,
+      "weight": 1,
+      "rarity": "mythic"
+    }
+  ]
+}

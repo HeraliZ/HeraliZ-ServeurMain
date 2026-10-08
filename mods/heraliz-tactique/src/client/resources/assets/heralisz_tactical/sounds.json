@@ -1,0 +1,56 @@
+{
+  "entity.grenade.bounce": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.bounce",
+    "sounds": [
+      "heralisz_tactical:entity/grenade_bounce_1",
+      "heralisz_tactical:entity/grenade_bounce_2",
+      "heralisz_tactical:entity/grenade_bounce_3",
+      "heralisz_tactical:entity/grenade_bounce_4"
+    ]
+  },
+  "entity.grenade.flash.explode": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.flash.explode",
+    "sounds": [
+      "heralisz_tactical:entity/grenade_exp_flash"
+    ]
+  },
+  "entity.grenade.m67.explode": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.m67.explode",
+    "sounds": [
+      "heralisz_tactical:entity/grenade_exp_m67"
+    ]
+  },
+  "entity.grenade.rgn.explode": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.rgn.explode",
+    "sounds": [
+      "heralisz_tactical:entity/grenade_exp_rgn"
+    ]
+  },
+  "entity.grenade.smoke.start": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.smoke.start",
+    "sounds": [
+      "heralisz_tactical:entity/grenade_exp_smoke_start"
+    ]
+  },
+  "entity.grenade.smoke.loop": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.smoke.loop",
+    "sounds": [
+      "heralisz_tactical:entity/grenade_exp_smoke_loop"
+    ]
+  },
+  "entity.grenade.smoke.end": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.smoke.end",
+    "sounds": [
+      "heralisz_tactical:entity/grenade_exp_smoke_end"
+    ]
+  },
+  "player.ring": {
+    "sounds": [
+      {
+        "name": "heralisz_tactical:player/ring",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitle.heralisz_tactical.player.ring"
+  }
+}

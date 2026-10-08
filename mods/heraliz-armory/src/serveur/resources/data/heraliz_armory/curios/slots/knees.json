@@ -1,0 +1,10 @@
+{
+  "size": 1,
+  "order": 43,
+  "icon": "heraliz_armory:slot/knees",
+  "add_cosmetic": false,
+  "validators": [
+    "curios:tag",
+    "heraliz_armory:piece"
+  ]
+}

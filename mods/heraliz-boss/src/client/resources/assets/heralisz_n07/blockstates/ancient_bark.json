@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "axis=y": {
+   "model": "heralisz_n07:block/ancient_bark"
+  },
+  "axis=z": {
+   "model": "heralisz_n07:block/ancient_bark",
+   "x": 90
+  },
+  "axis=x": {
+   "model": "heralisz_n07:block/ancient_bark",
+   "x": 90,
+   "y": 90
+  }
+ }
+}

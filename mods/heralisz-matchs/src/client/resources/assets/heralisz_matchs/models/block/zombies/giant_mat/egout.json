@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/cube_bottom_top",
+ "textures": {
+  "side": "heralisz_matchs:block/zombies/giant_mat/beton_0",
+  "top": "heralisz_matchs:block/zombies/giant_mat/egout",
+  "bottom": "heralisz_matchs:block/zombies/giant_mat/beton_0"
+ }
+}

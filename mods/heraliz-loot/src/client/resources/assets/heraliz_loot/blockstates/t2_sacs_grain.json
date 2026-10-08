@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t2_sacs_grain"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t2_sacs_grain",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t2_sacs_grain",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t2_sacs_grain",
+   "y": 270
+  }
+ }
+}

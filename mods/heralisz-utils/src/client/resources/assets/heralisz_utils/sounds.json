@@ -1,0 +1,502 @@
+{
+ "train.klaxon": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/klaxon",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.klaxon"
+ },
+ "train.roulement": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/roulement",
+    "stream": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.roulement"
+ },
+ "train.freins": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/freins",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.freins"
+ },
+ "train.moteur": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/moteur",
+    "stream": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.moteur"
+ },
+ "train.carillon": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/carillon",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.carillon"
+ },
+ "cine.pas": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/pas_1",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/pas_2",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/pas_3",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/pas_4",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.pas"
+ },
+ "cine.frappe_vitre": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/frappe_vitre_1",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/frappe_vitre_2",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/frappe_vitre_3",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.frappe_vitre"
+ },
+ "cine.impact_vitre": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/impact_vitre_1",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/impact_vitre_2",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.impact_vitre"
+ },
+ "cine.vitre_fissure": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/vitre_fissure",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.vitre_fissure"
+ },
+ "cine.goule_hurlement": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/goule_hurlement",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.goule_hurlement"
+ },
+ "cine.goule_rale": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/goule_rale_1",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/goule_rale_2",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.goule_rale"
+ },
+ "cine.raclement_vitre": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/raclement_vitre",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.raclement_vitre"
+ },
+ "cine.dechirement": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/dechirement",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.dechirement"
+ },
+ "cine.choc_pilier": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/choc_pilier",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.choc_pilier"
+ },
+ "cine.chute_banquette": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/chute_banquette",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.chute_banquette"
+ },
+ "cine.coeur_rapide": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/coeur_rapide",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.coeur_rapide"
+ },
+ "cine.coeur_lent": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/coeur_lent",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.coeur_lent"
+ },
+ "cine.souffle_panique": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/souffle_panique",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.souffle_panique"
+ },
+ "cine.souffle_reveil": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/souffle_reveil",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.souffle_reveil"
+ },
+ "cine.tissu": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/tissu",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.tissu"
+ },
+ "cine.porte_coulissante": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/porte_coulissante",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.porte_coulissante"
+ },
+ "cine.porte_cabine": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/porte_cabine",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.porte_cabine"
+ },
+ "cine.mastication": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/mastication",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.mastication"
+ },
+ "cine.lampe_gresille": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/lampe_gresille",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.lampe_gresille"
+ },
+ "cine.craquement_cou": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/craquement_cou",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.craquement_cou"
+ },
+ "cine.hurlement_chauffeur": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/hurlement_chauffeur",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.hurlement_chauffeur"
+ },
+ "cine.grave_terminus": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/grave_terminus",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.grave_terminus"
+ },
+ "cine.klaxon_proche": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/klaxon_proche",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.klaxon_proche"
+ },
+ "cine.deraillement": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/deraillement",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.deraillement"
+ },
+ "cine.crash": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/crash",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.crash"
+ },
+ "cine.explosion": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/explosion",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.explosion"
+ },
+ "cine.debris": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/debris",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.debris"
+ },
+ "cine.ejection": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/ejection",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.ejection"
+ },
+ "cine.acouphene": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/acouphene",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.acouphene"
+ },
+ "cine.carillon_titre": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/carillon_titre",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.carillon_titre"
+ },
+ "cine.horde": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/horde",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.horde"
+ },
+ "cine.pas_course": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/pas_course_1",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/pas_course_2",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/pas_course_3",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/pas_course_4",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.pas_course"
+ },
+ "cine.essoufflement": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/essoufflement",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.essoufflement"
+ },
+ "cine.porte_pneumatique": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/porte_pneumatique",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.porte_pneumatique"
+ },
+ "cine.demarrage": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/demarrage",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.demarrage"
+ },
+ "cine.saut_zombie": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/saut_zombie",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.saut_zombie"
+ },
+ "cine.souffle_course": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/souffle_course",
+    "stream": true,
+    "preload": false
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.souffle_course"
+ },
+ "cine.battement": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/battement",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.battement"
+ },
+ "cine.goule_vitre_cri": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/goule_vitre_cri",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.goule_vitre_cri"
+ },
+ "cine.goule_vitre_rale": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:cine/goule_vitre_rale_1",
+    "stream": false,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:cine/goule_vitre_rale_2",
+    "stream": false,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.cine.goule_vitre_rale"
+ }
+}

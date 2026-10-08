@@ -1,0 +1,6 @@
+{
+  "name": "arkaniaz.attachment.phone.name",
+  "display": "arkaniaz:phone_display",
+  "data": "arkaniaz:phone_data",
+  "type": "scope"
+}

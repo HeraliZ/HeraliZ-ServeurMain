@@ -1,0 +1,149 @@
+{
+ "credit": "HeralisZ",
+ "texture_size": [
+  128,
+  128
+ ],
+ "textures": {
+  "cow": "backpacked:backpack/backpack_military_sport_bag_cow",
+  "particle": "backpacked:backpack/backpack_military_sport_bag_cow"
+ },
+ "elements": [
+  {
+   "from": [
+    17.851,
+    -2.42,
+    10.45
+   ],
+   "to": [
+    18.351,
+    1.08,
+    10.95
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      12.125,
+      11.625,
+      12.25,
+      12.5
+     ],
+     "texture": "#cow"
+    },
+    "north": {
+     "uv": [
+      12.375,
+      11.625,
+      12.5,
+      12.5
+     ],
+     "texture": "#cow"
+    },
+    "east": {
+     "uv": [
+      12.25,
+      11.625,
+      12.375,
+      12.5
+     ],
+     "texture": "#cow"
+    },
+    "west": {
+     "uv": [
+      12.0,
+      11.625,
+      12.125,
+      12.5
+     ],
+     "texture": "#cow"
+    },
+    "up": {
+     "uv": [
+      12.125,
+      11.5,
+      12.25,
+      11.625
+     ],
+     "texture": "#cow"
+    },
+    "down": {
+     "uv": [
+      12.25,
+      11.5,
+      12.375,
+      11.625
+     ],
+     "texture": "#cow"
+    }
+   }
+  },
+  {
+   "from": [
+    17.351,
+    -3.82,
+    9.95
+   ],
+   "to": [
+    18.851,
+    -2.32,
+    11.45
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      13.125,
+      11.875,
+      13.5,
+      12.25
+     ],
+     "texture": "#cow"
+    },
+    "north": {
+     "uv": [
+      13.875,
+      11.875,
+      14.25,
+      12.25
+     ],
+     "texture": "#cow"
+    },
+    "east": {
+     "uv": [
+      13.5,
+      11.875,
+      13.875,
+      12.25
+     ],
+     "texture": "#cow"
+    },
+    "west": {
+     "uv": [
+      12.75,
+      11.875,
+      13.125,
+      12.25
+     ],
+     "texture": "#cow"
+    },
+    "up": {
+     "uv": [
+      13.125,
+      11.5,
+      13.5,
+      11.875
+     ],
+     "texture": "#cow"
+    },
+    "down": {
+     "uv": [
+      13.5,
+      11.5,
+      13.875,
+      11.875
+     ],
+     "texture": "#cow"
+    }
+   }
+  }
+ ]
+}

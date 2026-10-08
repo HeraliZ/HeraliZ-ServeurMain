@@ -1,0 +1,769 @@
+{
+  "kc_debut": {
+    "sounds": [
+      "heralisz_matchs:kc_debut"
+    ],
+    "subtitle": "killcam.son.debut"
+  },
+  "kc_tir": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:kc_tir",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "killcam.son.tir"
+  },
+  "kc_fin": {
+    "sounds": [
+      "heralisz_matchs:kc_fin"
+    ],
+    "subtitle": "killcam.son.fin"
+  },
+  "zb_manche_debut": {
+    "sounds": [
+      "heralisz_matchs:zb_manche_debut"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_manche_debut"
+  },
+  "zb_manche_fin": {
+    "sounds": [
+      "heralisz_matchs:zb_manche_fin"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_manche_fin"
+  },
+  "zb_speciale_debut": {
+    "sounds": [
+      "heralisz_matchs:zb_speciale_debut"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_speciale_debut"
+  },
+  "zb_partie_fin": {
+    "sounds": [
+      "heralisz_matchs:zb_partie_fin"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_partie_fin"
+  },
+  "zb_achat": {
+    "sounds": [
+      "heralisz_matchs:zb_achat"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_achat"
+  },
+  "zb_refus": {
+    "sounds": [
+      "heralisz_matchs:zb_refus"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_refus"
+  },
+  "zb_porte": {
+    "sounds": [
+      "heralisz_matchs:zb_porte"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_porte"
+  },
+  "zb_eboulis": {
+    "sounds": [
+      "heralisz_matchs:zb_eboulis"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_eboulis"
+  },
+  "zb_planche_pose": {
+    "sounds": [
+      "heralisz_matchs:zb_planche_pose"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_planche_pose"
+  },
+  "zb_planche_arrache": {
+    "sounds": [
+      "heralisz_matchs:zb_planche_arrache"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_planche_arrache"
+  },
+  "zb_boite_roulette": {
+    "sounds": [
+      "heralisz_matchs:zb_boite_roulette"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boite_roulette"
+  },
+  "zb_boite_peluche": {
+    "sounds": [
+      "heralisz_matchs:zb_boite_peluche"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boite_peluche"
+  },
+  "zb_boite_arrivee": {
+    "sounds": [
+      "heralisz_matchs:zb_boite_arrivee"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boite_arrivee"
+  },
+  "zb_arme_prise": {
+    "sounds": [
+      "heralisz_matchs:zb_arme_prise"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_arme_prise"
+  },
+  "zb_bonus_apparition": {
+    "sounds": [
+      "heralisz_matchs:zb_bonus_apparition"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_bonus_apparition"
+  },
+  "zb_bonus_pris": {
+    "sounds": [
+      "heralisz_matchs:zb_bonus_pris"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_bonus_pris"
+  },
+  "zb_bonus_fin": {
+    "sounds": [
+      "heralisz_matchs:zb_bonus_fin"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_bonus_fin"
+  },
+  "zb_atomique": {
+    "sounds": [
+      "heralisz_matchs:zb_atomique"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_atomique"
+  },
+  "zb_atout_bu": {
+    "sounds": [
+      "heralisz_matchs:zb_atout_bu"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_atout_bu"
+  },
+  "zb_courant": {
+    "sounds": [
+      "heralisz_matchs:zb_courant"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_courant"
+  },
+  "zb_a_terre": {
+    "sounds": [
+      "heralisz_matchs:zb_a_terre"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_a_terre"
+  },
+  "zb_reanime": {
+    "sounds": [
+      "heralisz_matchs:zb_reanime"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_reanime"
+  },
+  "zb_mort": {
+    "sounds": [
+      "heralisz_matchs:zb_mort"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_mort"
+  },
+  "zb_ambiance": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:zb_ambiance",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_ambiance"
+  },
+  "zb_zombie_cri": {
+    "sounds": [
+      "heralisz_matchs:zombies/cri_01",
+      "heralisz_matchs:zombies/cri_02",
+      "heralisz_matchs:zombies/cri_03",
+      "heralisz_matchs:zombies/cri_04",
+      "heralisz_matchs:zombies/cri_05",
+      "heralisz_matchs:zombies/cri_06",
+      "heralisz_matchs:zombies/cri_07",
+      "heralisz_matchs:zombies/cri_08",
+      "heralisz_matchs:zombies/cri_09",
+      "heralisz_matchs:zombies/cri_10",
+      "heralisz_matchs:zombies/cri_11",
+      "heralisz_matchs:zombies/cri_12",
+      "heralisz_matchs:zombies/cri_13",
+      "heralisz_matchs:zombies/cri_14",
+      "heralisz_matchs:zombies/cri_15",
+      "heralisz_matchs:zombies/cri_16",
+      "heralisz_matchs:zombies/cri_17",
+      "heralisz_matchs:zombies/cri_18",
+      "heralisz_matchs:zombies/cri_19",
+      "heralisz_matchs:zombies/cri_20",
+      "heralisz_matchs:zombies/cri_21",
+      "heralisz_matchs:zombies/cri_22",
+      "heralisz_matchs:zombies/cri_23"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_zombie_cri"
+  },
+  "zb_zombie_attaque": {
+    "sounds": [
+      "heralisz_matchs:zb_zombie_attaque"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_zombie_attaque"
+  },
+  "zb_zombie_touche": {
+    "sounds": [
+      "heralisz_matchs:zb_zombie_touche"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_zombie_touche"
+  },
+  "zb_zombie_mort": {
+    "sounds": [
+      "heralisz_matchs:zb_zombie_mort"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_zombie_mort"
+  },
+  "zb_rodeur_grogne": {
+    "sounds": [
+      "heralisz_matchs:zb_rodeur_grogne"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_rodeur_grogne"
+  },
+  "zb_rodeur_attaque": {
+    "sounds": [
+      "heralisz_matchs:zb_rodeur_attaque"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_rodeur_attaque"
+  },
+  "zb_rodeur_mort": {
+    "sounds": [
+      "heralisz_matchs:zb_rodeur_mort"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_rodeur_mort"
+  },
+  "zb_rodeur_apparition": {
+    "sounds": [
+      "heralisz_matchs:zb_rodeur_apparition"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_rodeur_apparition"
+  },
+  "zb_sortie_terre": {
+    "sounds": [
+      "heralisz_matchs:zb_sortie_terre"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_sortie_terre"
+  },
+  "zb_machine_blindage": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_blindage"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_blindage"
+  },
+  "zb_machine_reanimation": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_reanimation"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_reanimation"
+  },
+  "zb_machine_vigueur": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_vigueur"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_vigueur"
+  },
+  "zb_machine_double_impact": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_double_impact"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_double_impact"
+  },
+  "zb_machine_allumage": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_allumage"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_allumage"
+  },
+  "zb_zombie_grogne": {
+    "sounds": [
+      "heralisz_matchs:zombies/cri_01",
+      "heralisz_matchs:zombies/cri_02",
+      "heralisz_matchs:zombies/cri_03",
+      "heralisz_matchs:zombies/cri_04",
+      "heralisz_matchs:zombies/cri_05",
+      "heralisz_matchs:zombies/cri_06",
+      "heralisz_matchs:zombies/cri_07",
+      "heralisz_matchs:zombies/cri_08",
+      "heralisz_matchs:zombies/cri_09",
+      "heralisz_matchs:zombies/cri_10",
+      "heralisz_matchs:zombies/cri_11",
+      "heralisz_matchs:zombies/cri_12",
+      "heralisz_matchs:zombies/cri_13",
+      "heralisz_matchs:zombies/cri_14",
+      "heralisz_matchs:zombies/cri_15",
+      "heralisz_matchs:zombies/cri_16",
+      "heralisz_matchs:zombies/cri_17",
+      "heralisz_matchs:zombies/cri_18",
+      "heralisz_matchs:zombies/cri_19",
+      "heralisz_matchs:zombies/cri_20",
+      "heralisz_matchs:zombies/cri_21",
+      "heralisz_matchs:zombies/cri_22",
+      "heralisz_matchs:zombies/cri_23"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_zombie_grogne"
+  },
+  "zb_zombie_pas": {
+    "sounds": [
+      "heralisz_matchs:zb_zombie_pas_1",
+      "heralisz_matchs:zb_zombie_pas_2"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_zombie_pas"
+  },
+  "moteur_annonce": {
+    "sounds": [
+      "heralisz_matchs:moteur_annonce"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_annonce"
+  },
+  "moteur_victoire": {
+    "sounds": [
+      "heralisz_matchs:moteur_victoire"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_victoire"
+  },
+  "moteur_defaite": {
+    "sounds": [
+      "heralisz_matchs:moteur_defaite"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_defaite"
+  },
+  "moteur_finale": {
+    "sounds": [
+      "heralisz_matchs:moteur_finale"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_finale"
+  },
+  "moteur_manche": {
+    "sounds": [
+      "heralisz_matchs:moteur_manche"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_manche"
+  },
+  "moteur_compte": {
+    "sounds": [
+      "heralisz_matchs:moteur_compte"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_compte"
+  },
+  "moteur_depart": {
+    "sounds": [
+      "heralisz_matchs:moteur_depart"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_depart"
+  },
+  "moteur_elimination": {
+    "sounds": [
+      "heralisz_matchs:moteur_elimination"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_elimination"
+  },
+  "moteur_invitation": {
+    "sounds": [
+      "heralisz_matchs:moteur_invitation"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_invitation"
+  },
+  "moteur_choix": {
+    "sounds": [
+      "heralisz_matchs:moteur_choix"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_choix"
+  },
+  "moteur_fin": {
+    "sounds": [
+      "heralisz_matchs:moteur_fin"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.moteur_fin"
+  },
+  "duel_bip": {
+    "sounds": [
+      "heralisz_matchs:duel_bip"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_bip"
+  },
+  "duel_pose": {
+    "sounds": [
+      "heralisz_matchs:duel_pose"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_pose"
+  },
+  "duel_desamorce": {
+    "sounds": [
+      "heralisz_matchs:duel_desamorce"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_desamorce"
+  },
+  "duel_explosion": {
+    "sounds": [
+      "heralisz_matchs:duel_explosion"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_explosion"
+  },
+  "duel_manche": {
+    "sounds": [
+      "heralisz_matchs:duel_manche"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_manche"
+  },
+  "duel_defi": {
+    "sounds": [
+      "heralisz_matchs:duel_defi"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_defi"
+  },
+  "duel_victoire": {
+    "sounds": [
+      "heralisz_matchs:duel_victoire"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_victoire"
+  },
+  "duel_defaite": {
+    "sounds": [
+      "heralisz_matchs:duel_defaite"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_defaite"
+  },
+  "duel_ramasse": {
+    "sounds": [
+      "heralisz_matchs:duel_ramasse"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_ramasse"
+  },
+  "cw_annonce": {
+    "sounds": [
+      "heralisz_matchs:cw_annonce"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_annonce"
+  },
+  "cw_inscription": {
+    "sounds": [
+      "heralisz_matchs:cw_inscription"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_inscription"
+  },
+  "cw_appel": {
+    "sounds": [
+      "heralisz_matchs:cw_appel"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_appel"
+  },
+  "cw_combat": {
+    "sounds": [
+      "heralisz_matchs:cw_combat"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_combat"
+  },
+  "cw_elimination": {
+    "sounds": [
+      "heralisz_matchs:cw_elimination"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_elimination"
+  },
+  "cw_zone": {
+    "sounds": [
+      "heralisz_matchs:cw_zone"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_zone"
+  },
+  "cw_victoire": {
+    "sounds": [
+      "heralisz_matchs:cw_victoire"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_victoire"
+  },
+  "cw_defaite": {
+    "sounds": [
+      "heralisz_matchs:cw_defaite"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_defaite"
+  },
+  "cw_finale": {
+    "sounds": [
+      "heralisz_matchs:cw_finale"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_finale"
+  },
+  "cw_sacre": {
+    "sounds": [
+      "heralisz_matchs:cw_sacre"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_sacre"
+  },
+  "cw_choix": {
+    "sounds": [
+      "heralisz_matchs:cw_choix"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.cw_choix"
+  },
+  "zb_boisson_decapsule": {
+    "sounds": [
+      "heralisz_matchs:zb_boisson_decapsule"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boisson_decapsule"
+  },
+  "zb_boisson_gorgee": {
+    "sounds": [
+      "heralisz_matchs:zb_boisson_gorgee"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boisson_gorgee"
+  },
+  "zb_boisson_rot": {
+    "sounds": [
+      "heralisz_matchs:zb_boisson_rot"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boisson_rot"
+  },
+  "zb_boisson_verre": {
+    "sounds": [
+      "heralisz_matchs:zb_boisson_verre"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boisson_verre"
+  },
+  "zb_machine_servir": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_servir"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_servir"
+  },
+  "zb_machine_rechargement": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_rechargement"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_rechargement"
+  },
+  "zb_pap_jingle": {
+    "sounds": [
+      "heralisz_matchs:zb_pap_jingle"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_pap_jingle"
+  },
+  "zb_grille": {
+    "sounds": [
+      "heralisz_matchs:zb_grille"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_grille"
+  },
+  "zb_zombie_enjambe": {
+    "sounds": [
+      "heralisz_matchs:zb_zombie_enjambe"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_zombie_enjambe"
+  },
+  "zb_pap_amelioration": {
+    "sounds": [
+      "heralisz_matchs:zb_pap_amelioration"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_pap_amelioration"
+  },
+  "zb_pap_prete": {
+    "sounds": [
+      "heralisz_matchs:zb_pap_prete"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_pap_prete"
+  },
+  "zb_atelier": {
+    "sounds": [
+      "heralisz_matchs:zb_atelier"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_atelier"
+  },
+  "zb_materiau": {
+    "sounds": [
+      "heralisz_matchs:zb_materiau"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_materiau"
+  },
+  "zb_easter_egg_etape": {
+    "sounds": [
+      "heralisz_matchs:zb_easter_egg_etape"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_easter_egg_etape"
+  },
+  "zb_easter_egg_fin": {
+    "sounds": [
+      "heralisz_matchs:zb_easter_egg_fin"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_easter_egg_fin"
+  },
+  "zb_objectif": {
+    "sounds": [
+      "heralisz_matchs:zb_objectif"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_objectif"
+  },
+  "zb_griffe_fenetre": {
+    "sounds": [
+      "heralisz_matchs:zb_griffe_fenetre"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_griffe_fenetre"
+  },
+  "zombies.musique_115": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:zombies/musique_115",
+        "stream": true
+      }
+    ]
+  },
+  "zombies.jingle_manche_debut": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:zombies/jingle_manche_debut",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_manche_debut"
+  },
+  "zombies.jingle_manche_fin": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:zombies/jingle_manche_fin",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_manche_fin"
+  },
+  "zombies.jingle_boite": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:zombies/jingle_boite",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boite_roulette"
+  },
+  "zombies.peluche": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:zombies/peluche",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_boite_peluche"
+  },
+  "zb_machine_mule_kick": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_mule_kick"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_mule_kick"
+  },
+  "zb_machine_deadshot": {
+    "sounds": [
+      "heralisz_matchs:zb_machine_deadshot"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_machine_deadshot"
+  },
+  "zb_teleporteur": {
+    "sounds": [
+      "heralisz_matchs:zb_teleporteur"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_teleporteur"
+  },
+  "zb_teleporteur_arrivee": {
+    "sounds": [
+      "heralisz_matchs:zb_teleporteur_arrivee"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_teleporteur_arrivee"
+  },
+  "zb_fusible_ramasse": {
+    "sounds": [
+      "heralisz_matchs:zb_fusible_ramasse"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_fusible_ramasse"
+  },
+  "zb_fusible": {
+    "sounds": [
+      "heralisz_matchs:zb_fusible"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_fusible"
+  },
+  "zb_levier_courant": {
+    "sounds": [
+      "heralisz_matchs:zb_levier_courant"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_levier_courant"
+  },
+  "zb_ame": {
+    "sounds": [
+      "heralisz_matchs:zb_ame"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_ame"
+  },
+  "zb_cuve_pleine": {
+    "sounds": [
+      "heralisz_matchs:zb_cuve_pleine"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_cuve_pleine"
+  },
+  "zb_liaison_debut": {
+    "sounds": [
+      "heralisz_matchs:zb_liaison_debut"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_liaison_debut"
+  },
+  "zb_liaison_tic": {
+    "sounds": [
+      "heralisz_matchs:zb_liaison_tic"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_liaison_tic"
+  },
+  "zb_liaison_ok": {
+    "sounds": [
+      "heralisz_matchs:zb_liaison_ok"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_liaison_ok"
+  },
+  "zb_rideau": {
+    "sounds": [
+      "heralisz_matchs:zb_rideau"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_rideau"
+  },
+  "zb_tour_eclairs": {
+    "sounds": [
+      "heralisz_matchs:zb_tour_eclairs"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_tour_eclairs"
+  },
+  "zb_piege": {
+    "sounds": [
+      "heralisz_matchs:zb_piege"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_piege"
+  },
+  "zb_piege_mort": {
+    "sounds": [
+      "heralisz_matchs:zb_piege_mort"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_piege_mort"
+  },
+  "zb_eclair": {
+    "sounds": [
+      "heralisz_matchs:zb_eclair"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_eclair"
+  },
+  "zb_bowie": {
+    "sounds": [
+      "heralisz_matchs:zb_bowie"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_bowie"
+  },
+  "zb_quete_objet": {
+    "sounds": [
+      "heralisz_matchs:zb_quete_objet"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_quete_objet"
+  },
+  "zb_phare": {
+    "sounds": [
+      "heralisz_matchs:zb_phare"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_phare"
+  },
+  "zb_bocal": {
+    "sounds": [
+      "heralisz_matchs:zb_bocal"
+    ],
+    "subtitle": "subtitles.heralisz_matchs.zb_bocal"
+  }
+}

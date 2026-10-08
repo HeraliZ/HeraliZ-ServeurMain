@@ -1,0 +1,18 @@
+{
+  "slot": "arkaniaz:attachment/slot/1p87",
+  "model": "arkaniaz:attachment/1p87_geo",
+  "texture": "arkaniaz:attachment/uv/1p87",
+  "lod": {
+    "model": "arkaniaz:attachment/lod/1p87",
+    "texture": "arkaniaz:attachment/lod/1p87"
+  },
+  "zoom": [
+    1.35
+  ],
+  "sight": true,
+  "fov": 50.0,
+  "sounds": {
+    "install": "tacz:attachments/scope_general_c",
+    "uninstall": "tacz:attachments/scope_general_c"
+  }
+}

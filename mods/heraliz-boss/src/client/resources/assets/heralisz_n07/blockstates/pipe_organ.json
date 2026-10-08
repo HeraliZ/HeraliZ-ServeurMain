@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/pipe_organ"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/pipe_organ",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/pipe_organ",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/pipe_organ",
+   "y": 270
+  }
+ }
+}

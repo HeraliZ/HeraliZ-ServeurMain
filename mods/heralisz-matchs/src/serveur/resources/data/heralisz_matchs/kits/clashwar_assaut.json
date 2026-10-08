@@ -1,0 +1,43 @@
+{
+  "id": "clashwar_assaut",
+  "nom_fr": "Assaut",
+  "nom_en": "Assault",
+  "classe": "assaut",
+  "modes": [
+    "clashwar"
+  ],
+  "principale": {
+    "gun": "tacz:ak47",
+    "accessoires": {
+      "scope": "tacz:sight_552",
+      "extended_mag": "tacz:extended_mag_2",
+      "muzzle": "tacz:muzzle_brake_cyclone_d2"
+    },
+    "mode_tir": "AUTO",
+    "reserve": 120
+  },
+  "secondaire": {
+    "gun": "tacz:glock_17",
+    "reserve": 51
+  },
+  "melee": "heralisz_melee:tac_dagger",
+  "soins": [
+    {
+      "id": "heralisz_heal:ai2",
+      "nombre": 2
+    },
+    {
+      "id": "heralisz_heal:blood_pack",
+      "nombre": 1
+    }
+  ],
+  "grenades": [],
+  "armure": {
+    "kit": "kit_siberie"
+  },
+  "jauges": {
+    "portee": 0.65,
+    "cadence": 0.7,
+    "mobilite": 0.55
+  }
+}

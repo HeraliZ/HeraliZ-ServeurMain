@@ -1,0 +1,631 @@
+{
+	"credit": "Designed by Optimus0812 with Cubik Studio - https://cubik.studio",
+	"textures": {
+		"wandering_bag": "backpacked:backpack/backpack_military_sport_bag_snow"
+	},
+	"elements": [
+		{
+			"name": "millitary_tent",
+			"from": [-3.66873, 3.5904, 8.60741],
+			"to": [15.79687, 11.9328, 12.77861],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [2.5, 2, 9.5, 5], "texture": "#wandering_bag"},
+				"east": {"uv": [0.25, 2, 1.75, 5], "texture": "#wandering_bag"},
+				"south": {"uv": [2.5, 2, 9.5, 5], "texture": "#wandering_bag"},
+				"west": {"uv": [10.25, 2, 11.75, 5], "texture": "#wandering_bag"},
+				"up": {"uv": [2.5, 0.25, 9.5, 1.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [2.5, 5.25, 9.5, 6.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent1",
+			"from": [-3.66866, 4.2856, 7.91214],
+			"to": [15.79694, 11.2376, 8.60734],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [2.49998, 2.25, 9.49998, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [1.75, 2.25, 2, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [2.5, 2.25, 9.5, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [10, 2.25, 10.25, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [2.5, 1.75, 9.5, 2], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [2.5, 4.25, 9.5, 4.5], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent2",
+			"from": [-3.66873, 4.2856, 12.77861],
+			"to": [15.79687, 11.2376, 13.47381],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [2.5, 2.25, 9.5, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [0, 2.25, 0.25, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [2.5, 2.25, 9.5, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [11.75, 2.25, 12, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [2.5, 0, 9.5, 0.25], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [2.5, 4.5, 9.5, 4.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent3",
+			"from": [-4.364, 4.2856, 8.6072],
+			"to": [-3.6688, 11.2376, 12.7784],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [9.5, 2.25, 9.75, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [10.25, 2.25, 11.75, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [9.5, 2.25, 9.75, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [10.25, 2.25, 11.75, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [9.5, 0.25, 9.75, 1.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [9.5, 5.25, 9.75, 6.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent4",
+			"from": [-4.364, 11.2376, 9.3024],
+			"to": [-3.6688, 11.9328, 12.0832],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [9.5, 1.25, 9.75, 1.5], "texture": "#wandering_bag"},
+				"east": {"uv": [9.5, 0.5, 9.75, 1.5], "rotation": 270, "texture": "#wandering_bag"},
+				"south": {"uv": [9.75, 0.75, 9.5, 0.5], "texture": "#wandering_bag"},
+				"west": {"uv": [9.75, 0.5, 9.5, 1.5], "rotation": 90, "texture": "#wandering_bag"},
+				"up": {"uv": [9.5, 0.5, 9.75, 1.5], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [9.5, 1.5, 9.75, 0.5], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent5",
+			"from": [-4.364, 4.9808, 12.7784],
+			"to": [-3.6688, 10.5424, 13.4736],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [9.5, 2.5, 9.75, 4.5], "texture": "#wandering_bag"},
+				"east": {"uv": [11.5, 2.5, 11.75, 4.5], "texture": "#wandering_bag"},
+				"south": {"uv": [9.5, 2.5, 9.75, 4.5], "texture": "#wandering_bag"},
+				"west": {"uv": [11.5, 2.5, 11.75, 4.5], "texture": "#wandering_bag"},
+				"up": {"uv": [9.5, 0.25, 9.75, 0.5], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [9.5, 5, 9.75, 5.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent6",
+			"from": [-4.36414, 4.9808, 7.912],
+			"to": [-3.66894, 10.5424, 8.6072],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [9.50006, 2.5, 9.75006, 4.5], "texture": "#wandering_bag"},
+				"east": {"uv": [9.50006, 2.5, 9.75006, 4.5], "texture": "#wandering_bag"},
+				"south": {"uv": [9.75006, 2.5, 9.50006, 4.5], "texture": "#wandering_bag"},
+				"west": {"uv": [10.25, 2.5, 10, 4.5], "texture": "#wandering_bag"},
+				"up": {"uv": [9.5, 2, 9.75, 1.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [9.5, 5, 9.75, 5.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent7",
+			"from": [-5.05941, 5.676, 7.912],
+			"to": [-4.36421, 9.8472, 8.6072],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [9.75008, 2.75, 10.00008, 4.25], "texture": "#wandering_bag"},
+				"east": {"uv": [9.75008, 2.75, 10.00008, 4.25], "texture": "#wandering_bag"},
+				"south": {"uv": [10.00008, 2.75, 9.75008, 4.25], "texture": "#wandering_bag"},
+				"west": {"uv": [10.25, 2.75, 10, 4.25], "texture": "#wandering_bag"},
+				"up": {"uv": [9.75, 2, 10, 1.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [9.75, 5, 10, 5.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent8",
+			"from": [-5.0592, 5.676, 12.7784],
+			"to": [-4.364, 9.8472, 13.4736],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [9.75, 2.75, 10, 4.25], "texture": "#wandering_bag"},
+				"east": {"uv": [9.75, 2.75, 10, 4.25], "texture": "#wandering_bag"},
+				"south": {"uv": [10, 2.75, 9.75, 4.25], "texture": "#wandering_bag"},
+				"west": {"uv": [12, 2.75, 11.75, 4.25], "texture": "#wandering_bag"},
+				"up": {"uv": [9.75, 0.25, 10, 0], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [9.75, 6.75, 10, 7], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent9",
+			"from": [-5.0592, 10.5424, 9.3024],
+			"to": [-4.364, 11.2376, 12.0832],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [9.75, 1.25, 10, 1.5], "texture": "#wandering_bag"},
+				"east": {"uv": [9.75, 0.5, 10, 1.5], "rotation": 270, "texture": "#wandering_bag"},
+				"south": {"uv": [10, 0.75, 9.75, 0.5], "texture": "#wandering_bag"},
+				"west": {"uv": [10, 0.5, 9.75, 1.5], "rotation": 90, "texture": "#wandering_bag"},
+				"up": {"uv": [9.75, 0.5, 10, 1.5], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [9.75, 1.5, 10, 0.5], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent10",
+			"from": [-5.0592, 4.2856, 9.3024],
+			"to": [-4.364, 4.9808, 12.0832],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [9.75, 11.25, 10.75, 12.25], "texture": "#wandering_bag"},
+				"east": {"uv": [2, 11.25, 6, 12.25], "texture": "#wandering_bag"},
+				"south": {"uv": [5.25, 11.25, 6.25, 12.25], "texture": "#wandering_bag"},
+				"west": {"uv": [10, 11.25, 14, 12.25], "texture": "#wandering_bag"},
+				"up": {"uv": [9.75, 2, 10.75, 6], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [9.75, 10, 10.75, 14], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent11",
+			"from": [-5.0592, 4.9808, 8.6072],
+			"to": [-4.364, 10.5424, 12.7784],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [11.75, 2.5, 11.5, 4.5], "texture": "#wandering_bag"},
+				"east": {"uv": [10.25, 2.5, 11.75, 4.5], "texture": "#wandering_bag"},
+				"south": {"uv": [10.25, 2.5, 10.5, 4.5], "texture": "#wandering_bag"},
+				"west": {"uv": [11.75, 2.5, 10.25, 4.5], "texture": "#wandering_bag"},
+				"up": {"uv": [10.25, 2.75, 11.75, 2.5], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [10.25, 4.25, 11.75, 4.5], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent12",
+			"from": [-4.364, 3.5904, 9.3024],
+			"to": [-3.6688, 4.2856, 12.0832],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [11.5, 4.75, 11.25, 5], "texture": "#wandering_bag"},
+				"east": {"uv": [10.5, 4.75, 11.5, 5], "texture": "#wandering_bag"},
+				"south": {"uv": [10.5, 4.75, 10.75, 5], "texture": "#wandering_bag"},
+				"west": {"uv": [11.5, 4.75, 10.5, 5], "texture": "#wandering_bag"},
+				"up": {"uv": [10.5, 5, 11.5, 4.75], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [10.5, 4.75, 11.5, 5], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent13",
+			"from": [15.7968, 11.2376, 9.30205],
+			"to": [16.492, 11.9328, 12.08286],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [1.5, 2, 1.25, 2.25], "texture": "#wandering_bag"},
+				"east": {"uv": [0.5, 2, 1.5, 2.25], "texture": "#wandering_bag"},
+				"south": {"uv": [0.5, 2, 0.75, 2.25], "texture": "#wandering_bag"},
+				"west": {"uv": [1.5, 2, 0.5, 2.25], "texture": "#wandering_bag"},
+				"up": {"uv": [0.5, 2.25, 1.5, 2], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [0.5, 2, 1.5, 2.25], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent14",
+			"from": [16.492, 10.5424, 9.30205],
+			"to": [17.1872, 11.2376, 12.08286],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [1.5, 2.25, 1.25, 2.5], "texture": "#wandering_bag"},
+				"east": {"uv": [0.5, 2.25, 1.5, 2.5], "texture": "#wandering_bag"},
+				"south": {"uv": [0.5, 2.25, 0.75, 2.5], "texture": "#wandering_bag"},
+				"west": {"uv": [1.5, 2.25, 0.5, 2.5], "texture": "#wandering_bag"},
+				"up": {"uv": [0.5, 2.5, 1.5, 2.25], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [0.5, 2.25, 1.5, 2.5], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent15",
+			"from": [16.492, 5.676, 7.91159],
+			"to": [17.1872, 9.8472, 8.60679],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [2, 2.75, 2.25, 4.25], "texture": "#wandering_bag"},
+				"east": {"uv": [2, 2.75, 2.25, 4.25], "texture": "#wandering_bag"},
+				"south": {"uv": [2.25, 2.75, 2, 4.25], "texture": "#wandering_bag"},
+				"west": {"uv": [2.25, 2.75, 2, 4.25], "texture": "#wandering_bag"},
+				"up": {"uv": [2, 3, 2.25, 2.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [2, 4, 2.25, 4.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent16",
+			"from": [16.492, 5.676, 12.77812],
+			"to": [17.1872, 9.8472, 13.47332],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [2, 2.75, 2.25, 4.25], "texture": "#wandering_bag"},
+				"east": {"uv": [2, 2.75, 2.25, 4.25], "texture": "#wandering_bag"},
+				"south": {"uv": [2.25, 2.75, 2, 4.25], "texture": "#wandering_bag"},
+				"west": {"uv": [2.25, 2.75, 2, 4.25], "texture": "#wandering_bag"},
+				"up": {"uv": [2, 3, 2.25, 2.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [2, 4, 2.25, 4.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent17",
+			"from": [15.7968, 4.9808, 12.77812],
+			"to": [16.492, 10.5424, 13.47332],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [1.75018, 2.5, 1.50018, 4.5], "texture": "#wandering_bag"},
+				"east": {"uv": [1.50018, 2.5, 1.75018, 4.5], "texture": "#wandering_bag"},
+				"south": {"uv": [1.50018, 2.5, 1.75018, 4.5], "texture": "#wandering_bag"},
+				"west": {"uv": [1.75018, 2.5, 1.50018, 4.5], "texture": "#wandering_bag"},
+				"up": {"uv": [1.50018, 2.75, 1.75018, 2.5], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [1.50018, 4.25, 1.75018, 4.5], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent18",
+			"from": [15.7968, 4.9808, 7.91159],
+			"to": [16.492, 10.5424, 8.60679],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [3.50021, 2.5, 3.25021, 4.5], "texture": "#wandering_bag"},
+				"east": {"uv": [3.25021, 2.5, 3.50021, 4.5], "texture": "#wandering_bag"},
+				"south": {"uv": [3.25021, 2.5, 3.50021, 4.5], "texture": "#wandering_bag"},
+				"west": {"uv": [3.50021, 2.5, 3.25021, 4.5], "texture": "#wandering_bag"},
+				"up": {"uv": [3.25021, 2.75, 3.50021, 2.5], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [3.25021, 4.25, 3.50021, 4.5], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent19",
+			"from": [16.492, 4.9808, 8.60692],
+			"to": [17.1872, 10.5424, 12.77812],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [2.25, 2.5, 2, 4.5], "texture": "#wandering_bag"},
+				"east": {"uv": [0.25, 2.5, 1.75, 4.5], "texture": "#wandering_bag"},
+				"south": {"uv": [2, 2.5, 2.25, 4.5], "texture": "#wandering_bag"},
+				"west": {"uv": [1.75, 2.5, 0.25, 4.5], "texture": "#wandering_bag"},
+				"up": {"uv": [0.25, 2.75, 1.75, 2.5], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [0.25, 4.25, 1.75, 4.5], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent20",
+			"from": [15.7968, 4.2856, 8.60692],
+			"to": [16.492, 11.2376, 12.77812],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [1.75, 2.25, 1.5, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [0.25, 2.25, 1.75, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [0.25, 2.25, 0.5, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [1.75, 2.25, 0.25, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [0.25, 2.5, 1.75, 2.25], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [0.25, 4.5, 1.75, 4.75], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent21",
+			"from": [16.492, 4.2856, 9.30205],
+			"to": [17.1872, 4.9808, 12.08286],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [1.5, 4.5, 1.25, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [0.5, 4.5, 1.5, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [0.5, 4.5, 0.75, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [1.5, 4.5, 0.5, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [0.5, 4.75, 1.5, 4.5], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [0.5, 4.5, 1.5, 4.75], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent22",
+			"from": [15.7968, 3.5904, 9.30212],
+			"to": [16.492, 4.2856, 12.08292],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [1.5, 4.75, 1.25, 5], "texture": "#wandering_bag"},
+				"east": {"uv": [0.5, 4.75, 1.5, 5], "texture": "#wandering_bag"},
+				"south": {"uv": [0.5, 4.75, 0.75, 5], "texture": "#wandering_bag"},
+				"west": {"uv": [1.5, 4.75, 0.5, 5], "texture": "#wandering_bag"},
+				"up": {"uv": [0.5, 5, 1.5, 4.75], "rotation": 270, "texture": "#wandering_bag"},
+				"down": {"uv": [0.5, 4.75, 1.5, 5], "rotation": 90, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent23",
+			"from": [-0.888, 4.2856, 13.47367],
+			"to": [0.5024, 11.2376, 14.16887],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [8, 2.25, 8.5, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [8, 2.25, 8.25, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [8.5, 2.25, 8, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [8.5, 2.25, 8.25, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [8, 2.5, 8.5, 2.25], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [8, 4.5, 8.5, 4.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent24",
+			"from": [-0.88786, 4.2856, 7.21659],
+			"to": [0.50254, 11.2376, 7.91179],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [7.99998, 2.25, 8.49998, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [7.99998, 2.25, 8.24998, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [8.49998, 2.25, 7.99998, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [8.49998, 2.25, 8.24998, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [7.99998, 2.5, 8.49998, 2.25], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [7.99998, 4.5, 8.49998, 4.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent25",
+			"from": [-0.888, 4.2856, 13.47367],
+			"to": [0.5024, 11.2376, 14.16887],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [8, 2.25, 8.5, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [8, 2.25, 8.25, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [8.5, 2.25, 8, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [8.5, 2.25, 8.25, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [8, 2.5, 8.5, 2.25], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [8, 4.5, 8.5, 4.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent26",
+			"from": [11.6256, 4.2856, 13.47346],
+			"to": [13.016, 11.2376, 14.16866],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [3.5, 2.25, 4, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [3.5, 2.25, 3.75, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [4, 2.25, 3.5, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [4, 2.25, 3.75, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [3.5, 2.5, 4, 2.25], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [3.5, 4.5, 4, 4.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent27",
+			"from": [11.6256, 4.2856, 7.21659],
+			"to": [13.016, 11.2376, 7.91179],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [3.50001, 2.25, 4.00001, 4.75], "texture": "#wandering_bag"},
+				"east": {"uv": [3.50001, 2.25, 3.75001, 4.75], "texture": "#wandering_bag"},
+				"south": {"uv": [4.00001, 2.25, 3.50001, 4.75], "texture": "#wandering_bag"},
+				"west": {"uv": [4.00001, 2.25, 3.75001, 4.75], "texture": "#wandering_bag"},
+				"up": {"uv": [3.50001, 2.5, 4.00001, 2.25], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [3.50001, 4.5, 4.00001, 4.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent28",
+			"from": [-0.888, 11.2376, 12.77847],
+			"to": [0.5024, 11.9328, 13.47367],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [8, 2, 8.5, 2.25], "texture": "#wandering_bag"},
+				"east": {"uv": [8, 2, 8.25, 2.25], "texture": "#wandering_bag"},
+				"south": {"uv": [8.5, 2, 8, 2.25], "texture": "#wandering_bag"},
+				"west": {"uv": [8.5, 2, 8.25, 2.25], "texture": "#wandering_bag"},
+				"up": {"uv": [8, 2.25, 8.5, 2], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [8, 2, 8.5, 2.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent29",
+			"from": [-0.88793, 11.2376, 7.91186],
+			"to": [0.50247, 11.9328, 8.60706],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [8, 2, 8.5, 2.25], "texture": "#wandering_bag"},
+				"east": {"uv": [8, 2, 8.25, 2.25], "texture": "#wandering_bag"},
+				"south": {"uv": [8.5, 2, 8, 2.25], "texture": "#wandering_bag"},
+				"west": {"uv": [8.5, 2, 8.25, 2.25], "texture": "#wandering_bag"},
+				"up": {"uv": [8, 2.25, 8.5, 2], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [8, 2, 8.5, 2.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent30",
+			"from": [11.6256, 11.2376, 7.91179],
+			"to": [13.016, 11.9328, 8.60699],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [3.50002, 2, 4.00002, 2.25], "texture": "#wandering_bag"},
+				"east": {"uv": [3.50002, 2, 3.75002, 2.25], "texture": "#wandering_bag"},
+				"south": {"uv": [4.00002, 2, 3.50002, 2.25], "texture": "#wandering_bag"},
+				"west": {"uv": [4.00002, 2, 3.75002, 2.25], "texture": "#wandering_bag"},
+				"up": {"uv": [3.50002, 2.25, 4.00002, 2], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [3.50002, 2, 4.00002, 2.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent31",
+			"from": [11.6256, 11.2376, 12.77819],
+			"to": [13.016, 11.9328, 13.47339],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [3.5, 2, 4, 2.25], "texture": "#wandering_bag"},
+				"east": {"uv": [3.5, 2, 3.75, 2.25], "texture": "#wandering_bag"},
+				"south": {"uv": [4, 2, 3.5, 2.25], "texture": "#wandering_bag"},
+				"west": {"uv": [4, 2, 3.75, 2.25], "texture": "#wandering_bag"},
+				"up": {"uv": [3.5, 2.25, 4, 2], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [3.5, 2, 4, 2.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent32",
+			"from": [11.6256, 3.5904, 7.91179],
+			"to": [13.016, 4.2856, 8.60699],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [3.50002, 4.75, 4.00002, 5], "texture": "#wandering_bag"},
+				"east": {"uv": [3.50002, 4.75, 3.75002, 5], "texture": "#wandering_bag"},
+				"south": {"uv": [4.00002, 4.75, 3.50002, 5], "texture": "#wandering_bag"},
+				"west": {"uv": [4.00002, 4.75, 3.75002, 5], "texture": "#wandering_bag"},
+				"up": {"uv": [3.50002, 5, 4.00002, 4.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [3.50002, 4.75, 4.00002, 5], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent33",
+			"from": [11.6256, 3.5904, 12.77826],
+			"to": [13.016, 4.2856, 13.47346],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [3.5, 4.75, 4, 5], "texture": "#wandering_bag"},
+				"east": {"uv": [3.5, 4.75, 3.75, 5], "texture": "#wandering_bag"},
+				"south": {"uv": [4, 4.75, 3.5, 5], "texture": "#wandering_bag"},
+				"west": {"uv": [4, 4.75, 3.75, 5], "texture": "#wandering_bag"},
+				"up": {"uv": [3.5, 5, 4, 4.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [3.5, 4.75, 4, 5], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent34",
+			"from": [-0.888, 3.5904, 12.77847],
+			"to": [0.5024, 4.2856, 13.47367],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [8, 4.75, 8.5, 5], "texture": "#wandering_bag"},
+				"east": {"uv": [8, 4.75, 8.25, 5], "texture": "#wandering_bag"},
+				"south": {"uv": [8.5, 4.75, 8, 5], "texture": "#wandering_bag"},
+				"west": {"uv": [8.5, 4.75, 8.25, 5], "texture": "#wandering_bag"},
+				"up": {"uv": [8, 5, 8.5, 4.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [8, 4.75, 8.5, 5], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent35",
+			"from": [-0.88793, 3.5904, 7.91186],
+			"to": [0.50247, 4.2856, 8.60706],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [8, 4.75, 8.5, 5], "texture": "#wandering_bag"},
+				"east": {"uv": [8, 4.75, 8.25, 5], "texture": "#wandering_bag"},
+				"south": {"uv": [8.5, 4.75, 8, 5], "texture": "#wandering_bag"},
+				"west": {"uv": [8.5, 4.75, 8.25, 5], "texture": "#wandering_bag"},
+				"up": {"uv": [8, 5, 8.5, 4.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [8, 4.75, 8.5, 5], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent36",
+			"from": [-0.888, 11.9328, 8.6072],
+			"to": [0.5024, 12.628, 12.7784],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [8, 1.5, 8.5, 1.75], "texture": "#wandering_bag"},
+				"east": {"uv": [8, 0.25, 8.25, 1.75], "rotation": 270, "texture": "#wandering_bag"},
+				"south": {"uv": [8.5, 0.5, 8, 0.25], "texture": "#wandering_bag"},
+				"west": {"uv": [8.5, 0.25, 8.25, 1.75], "rotation": 90, "texture": "#wandering_bag"},
+				"up": {"uv": [8, 0.25, 8.5, 1.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [8, 1.75, 8.5, 0.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent37",
+			"from": [11.6256, 11.9328, 8.60706],
+			"to": [13.016, 12.628, 12.77826],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [3.5, 1.5, 4, 1.75], "texture": "#wandering_bag"},
+				"east": {"uv": [3.5, 0.25, 3.75, 1.75], "rotation": 270, "texture": "#wandering_bag"},
+				"south": {"uv": [4, 0.5, 3.5, 0.25], "texture": "#wandering_bag"},
+				"west": {"uv": [4, 0.25, 3.75, 1.75], "rotation": 90, "texture": "#wandering_bag"},
+				"up": {"uv": [3.5, 0.25, 4, 1.75], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [3.5, 1.75, 4, 0.25], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent38",
+			"from": [-0.1928, 11.9328, 9.99774],
+			"to": [11.6256, 12.628, 11.38814],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [4, 1, 8, 1.25], "texture": "#wandering_bag"},
+				"east": {"uv": [4, 0.75, 4.25, 1.25], "rotation": 270, "texture": "#wandering_bag"},
+				"south": {"uv": [8, 1, 4, 0.75], "texture": "#wandering_bag"},
+				"west": {"uv": [8, 0.75, 7.75, 1.25], "rotation": 90, "texture": "#wandering_bag"},
+				"up": {"uv": [4, 0.75, 8, 1.25], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [4, 1.25, 8, 0.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent39",
+			"from": [-0.888, 12.628, 9.9976],
+			"to": [-0.1928, 13.3232, 11.388],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [15.75, 0.75, 16, 1], "texture": "#wandering_bag"},
+				"east": {"uv": [15.75, 0.75, 16, 1], "rotation": 270, "texture": "#wandering_bag"},
+				"south": {"uv": [16, 1, 15.75, 0.75], "texture": "#wandering_bag"},
+				"west": {"uv": [16, 0.75, 15.75, 1], "rotation": 90, "texture": "#wandering_bag"},
+				"up": {"uv": [15.75, 0.75, 16, 1], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [15.75, 1, 16, 0.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent40",
+			"from": [12.32087, 12.628, 9.99739],
+			"to": [13.01607, 13.3232, 11.38779],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [11.25, 0.75, 11.5, 1], "texture": "#wandering_bag"},
+				"east": {"uv": [11.25, 0.75, 11.5, 1], "rotation": 270, "texture": "#wandering_bag"},
+				"south": {"uv": [11.5, 1, 11.25, 0.75], "texture": "#wandering_bag"},
+				"west": {"uv": [11.5, 0.75, 11.25, 1], "rotation": 90, "texture": "#wandering_bag"},
+				"up": {"uv": [11.25, 0.75, 11.5, 1], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [11.25, 1, 11.5, 0.75], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		},
+		{
+			"name": "millitary_tent41",
+			"from": [-0.88793, 13.3232, 9.99774],
+			"to": [13.01607, 14.0184, 11.38814],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [0.5024, 2.2, 16.2544]},
+			"faces": {
+				"north": {"uv": [11.25, 0.25, 16, 0.5], "texture": "#wandering_bag"},
+				"east": {"uv": [11.25, 0, 11.5, 0.5], "rotation": 270, "texture": "#wandering_bag"},
+				"south": {"uv": [16, 0.25, 11.25, 0], "texture": "#wandering_bag"},
+				"west": {"uv": [16, 0, 15.75, 0.5], "rotation": 90, "texture": "#wandering_bag"},
+				"up": {"uv": [11.25, 0, 16, 0.5], "rotation": 180, "texture": "#wandering_bag"},
+				"down": {"uv": [11.25, 0.5, 16, 0], "rotation": 180, "texture": "#wandering_bag"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [90, 0, 0],
+			"translation": [0, -2, -5.25],
+			"scale": [0.75, 0.75, 0.75]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [75, -90, -5],
+			"translation": [-6, -8, 9],
+			"scale": [0.75, 0.75, 0.75]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, -90, 0],
+			"translation": [-9, 0, -4.5],
+			"scale": [0.0001, 1, 1]
+		},
+		"firstperson_lefthand": {
+			"scale": [0.0001, 0.0001, 0.0001]
+		},
+		"ground": {
+			"rotation": [0, 0, -90],
+			"scale": [0.75, 0.75, 0.75]
+		},
+		"gui": {
+			"rotation": [30, -45, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"head": {
+			"scale": [0.0001, 0.0001, 0.0001]
+		},
+		"fixed": {
+			"rotation": [0, 90, 0],
+			"scale": [1.5, 1.5, 1.5]
+		}
+	}
+}

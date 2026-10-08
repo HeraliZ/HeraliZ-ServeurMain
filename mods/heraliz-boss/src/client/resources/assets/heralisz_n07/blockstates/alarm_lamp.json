@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "lit=false": {
+   "model": "heralisz_n07:block/alarm_lamp"
+  },
+  "lit=true": {
+   "model": "heralisz_n07:block/alarm_lamp_lit"
+  }
+ }
+}

@@ -1,0 +1,42 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_rpk_74"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:iron_plate"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:steel_plate"
+            },
+            "count": 36
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:wood_plate"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 40
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "maxstuff:rpk_74",
+        "attachments": {
+            "stock": "tacz:oem_stock_tactical"
+        }
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

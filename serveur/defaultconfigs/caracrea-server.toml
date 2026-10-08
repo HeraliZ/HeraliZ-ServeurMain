@@ -1,0 +1,65 @@
+
+#Character creator rules
+[creator]
+	#Players may reopen the creator themselves (/caracrea or the key) and change their look whenever they want.
+	#When false, only operators can open it for them (/caracrea open <player>) and the first-join creator.
+	freeEdit = true
+	#Open the creator automatically the first time a player joins.
+	openOnFirstJoin = true
+	#Minimum delay between two saves by the same player, in seconds (0 = none).
+	#Range: 0 ~ 86400
+	editCooldownSeconds = 0
+
+#Chat vocal de proximite integre (CaraCrea 1.1). Voir docs/specs/VOIX_SPEC.md.
+[voix]
+	#AUTO : le chat vocal s'allume tout seul si Simple Voice Chat n'est pas installe (sinon il reste eteint et
+	#c'est SVC qui transporte les voix). OUI : allume meme avec SVC (deconseille). NON : eteint.
+	#Allowed Values: AUTO, OUI, NON
+	actif = "AUTO"
+	#Distance, en blocs, a laquelle on entend encore quelqu'un (de plus en plus bas avec la distance).
+	#Range: 4.0 ~ 256.0
+	portee = 48.0
+	#Portee d'un chuchotement, en blocs.
+	#Range: 1.0 ~ 128.0
+	porteeChuchotement = 24.0
+	#Portee de la voix accroupi, en part de la portee normale (1 = pas de changement, 0.5 = moitie).
+	#Range: 0.0 ~ 1.0
+	accroupi = 1.0
+	#Les joueurs peuvent creer et rejoindre des groupes vocaux (parler au groupe ou qu'il soit).
+	groupes = true
+	#Les joueurs peuvent enregistrer sur leur ordinateur ce qu'ils entendent (fichiers WAV).
+	enregistrement = false
+	#Spectateurs (hors match) : MUETS (ne parlent pas, entendent tout), ENTRE_EUX (ne sont entendus que par les
+	#autres spectateurs), TOUS (comme les autres joueurs).
+	#Allowed Values: MUETS, ENTRE_EUX, TOUS
+	spectateurs = "ENTRE_EUX"
+	#Un joueur a terre (Reanimation) peut parler, avec une voix etouffee.
+	aTerreEtouffe = true
+	#Debit de la voix (Opus), en bits par seconde : 16000 economise la bande passante, 32000 est plus clair.
+	#Range: 12000 ~ 64000
+	debit = 24000
+
+	#Reseau de la voix
+	[voix.reseau]
+		#Canal UDP dedie (comme Simple Voice Chat) : la voix ne passe plus par la connexion du jeu et ne saccade pas
+		#quand celle-ci rame. Si un joueur ne peut pas l'atteindre, il passe tout seul par la connexion du jeu.
+		udp = true
+		#Port UDP de la voix, a ouvrir chez l'hebergeur (UDP). 24454 = celui de Simple Voice Chat.
+		#-1 = le meme numero que le port du jeu (deconseille si enable-query=true).
+		#Range: -1 ~ 65535
+		port = 24454
+		#Adresse d'ecoute du port UDP (vide = toutes les adresses de la machine).
+		adresseEcoute = ""
+		#Adresse que les joueurs utilisent pour la voix (vide = celle avec laquelle ils se connectent au jeu).
+		#A remplir seulement si la voix passe par une autre adresse (ex. proxy). Exemple : voix.monserveur.fr
+		adressePublique = ""
+
+	#Matchs HeraliZ (heralisz_matchs)
+	[voix.matchs]
+		#En match, on n'entend que les joueurs du meme match (et les groupes vocaux sont suspendus).
+		isoler = true
+		#En match, on n'entend que son equipe.
+		equipeSeulement = false
+		#Les spectateurs d'un match ne s'entendent qu'entre eux, partout dans le match ; les joueurs ne les entendent pas.
+		spectateursEntreEux = true
+

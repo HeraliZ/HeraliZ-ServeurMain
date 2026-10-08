@@ -1,0 +1,42 @@
+{
+  "filter": "tacz:default",
+  "tabs": [
+    {
+      "id": "heralisz_tactical:melee",
+      "name": "heralisz_tactical.type.melee.name",
+      "icon": {
+        "item": "heralisz_tactical:melee",
+        "nbt": {
+          "MeleeWeaponId": "heralisz_tactical:karambit"
+        }
+      }
+    },
+    {
+      "id": "heralisz_tactical:throwable",
+      "name": "heralisz_tactical.type.throwable.name",
+      "icon": {
+        "item": "heralisz_tactical:throwable",
+        "nbt": {
+          "ThrowableId": "heralisz_tactical:flash_grenade"
+        }
+      }
+    },
+    {
+      "id": "heralisz_tactical:consumable",
+      "name": "heralisz_tactical.type.consumable.name",
+      "icon": {
+        "item": "heralisz_tactical:consumable",
+        "nbt": {
+          "ConsumableId": "heralisz_tactical:blood_pack"
+        }
+      }
+    },
+    {
+      "id": "heralisz_tactical:misc",
+      "name": "heralisz_tactical.type.misc.name",
+      "icon": {
+        "item": "heralisz_tactical:flash_shield"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/charred_corpse"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/charred_corpse",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/charred_corpse",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/charred_corpse",
+   "y": 270
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "axis=y": {
+   "model": "heralisz_utils:block/turbine_corps"
+  },
+  "axis=x": {
+   "model": "heralisz_utils:block/turbine_corps",
+   "x": 90,
+   "y": 90
+  },
+  "axis=z": {
+   "model": "heralisz_utils:block/turbine_corps",
+   "x": 90
+  }
+ }
+}

@@ -1,0 +1,42 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_quatro15"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:carbon"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:aluminum"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 35
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "maxstuff:quatro15",
+        "attachments": {
+            "stock": "tacz:stock_tactical_ar"
+        }
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

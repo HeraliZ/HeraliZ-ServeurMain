@@ -1,0 +1,41 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "particle": "heralisz_mammoth:block/rime_flagstone",
+  "s": "heralisz_mammoth:block/rime_flagstone"
+ },
+ "elements": [
+  {
+   "from": [
+    6,
+    13,
+    0
+   ],
+   "to": [
+    10,
+    16,
+    6
+   ],
+   "faces": {
+    "north": {
+     "texture": "#s"
+    },
+    "south": {
+     "texture": "#s"
+    },
+    "east": {
+     "texture": "#s"
+    },
+    "west": {
+     "texture": "#s"
+    },
+    "up": {
+     "texture": "#s"
+    },
+    "down": {
+     "texture": "#s"
+    }
+   }
+  }
+ ]
+}

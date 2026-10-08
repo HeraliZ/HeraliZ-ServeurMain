@@ -1,0 +1,200 @@
+{
+ "jet_engine": {
+  "subtitle": "subtitles.airstrike.jet_engine",
+  "sounds": [
+   {
+    "name": "airstrike:jet_engine",
+    "attenuation_distance": 320
+   }
+  ]
+ },
+ "prop_engine": {
+  "subtitle": "subtitles.airstrike.prop_engine",
+  "sounds": [
+   {
+    "name": "airstrike:prop_engine",
+    "attenuation_distance": 260
+   }
+  ]
+ },
+ "bomb_whistle": {
+  "subtitle": "subtitles.airstrike.bomb_whistle",
+  "sounds": [
+   {
+    "name": "airstrike:bomb_whistle",
+    "attenuation_distance": 110
+   }
+  ]
+ },
+ "explosion_near": {
+  "subtitle": "subtitles.airstrike.explosion_near",
+  "sounds": [
+   {
+    "name": "airstrike:explosion_near",
+    "attenuation_distance": 96
+   }
+  ]
+ },
+ "explosion_far": {
+  "subtitle": "subtitles.airstrike.explosion_far",
+  "sounds": [
+   {
+    "name": "airstrike:explosion_far",
+    "attenuation_distance": 420
+   }
+  ]
+ },
+ "gun_brrrt": {
+  "subtitle": "subtitles.airstrike.gun_brrrt",
+  "sounds": [
+   {
+    "name": "airstrike:gun_brrrt",
+    "attenuation_distance": 450
+   }
+  ]
+ },
+ "bullet_impact": {
+  "subtitle": "subtitles.airstrike.bullet_impact",
+  "sounds": [
+   {
+    "name": "airstrike:bullet_impact",
+    "attenuation_distance": 32
+   }
+  ]
+ },
+ "radio_confirm": {
+  "subtitle": "subtitles.airstrike.radio_confirm",
+  "sounds": [
+   {
+    "name": "airstrike:radio_confirm",
+    "attenuation_distance": 16
+   }
+  ]
+ },
+ "radio_denied": {
+  "subtitle": "subtitles.airstrike.radio_denied",
+  "sounds": [
+   {
+    "name": "airstrike:radio_denied",
+    "attenuation_distance": 16
+   }
+  ]
+ },
+ "designator_raise": {
+  "subtitle": "subtitles.airstrike.designator_raise",
+  "sounds": [
+   {
+    "name": "airstrike:designator_raise",
+    "attenuation_distance": 12
+   }
+  ]
+ },
+ "designator_zoom": {
+  "subtitle": "subtitles.airstrike.designator_zoom",
+  "sounds": [
+   {
+    "name": "airstrike:designator_zoom",
+    "attenuation_distance": 8
+   }
+  ]
+ },
+ "designator_beep": {
+  "subtitle": "subtitles.airstrike.designator_beep",
+  "sounds": [
+   {
+    "name": "airstrike:designator_beep",
+    "attenuation_distance": 8
+   }
+  ]
+ },
+ "designator_lock": {
+  "subtitle": "subtitles.airstrike.designator_lock",
+  "sounds": [
+   {
+    "name": "airstrike:designator_lock",
+    "attenuation_distance": 8
+   }
+  ]
+ },
+ "smoke_hiss": {
+  "subtitle": "subtitles.airstrike.smoke_hiss",
+  "sounds": [
+   {
+    "name": "airstrike:smoke_hiss",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "parachute_open": {
+  "subtitle": "subtitles.airstrike.parachute_open",
+  "sounds": [
+   {
+    "name": "airstrike:parachute_open",
+    "attenuation_distance": 64
+   }
+  ]
+ },
+ "canister_pop": {
+  "subtitle": "subtitles.airstrike.canister_pop",
+  "sounds": [
+   {
+    "name": "airstrike:canister_pop",
+    "attenuation_distance": 64
+   }
+  ]
+ },
+ "crate_land": {
+  "subtitle": "subtitles.airstrike.crate_land",
+  "sounds": [
+   {
+    "name": "airstrike:crate_land",
+    "attenuation_distance": 32
+   }
+  ]
+ },
+ "napalm_whoosh": {
+  "subtitle": "subtitles.airstrike.napalm_whoosh",
+  "sounds": [
+   {
+    "name": "airstrike:napalm_whoosh",
+    "attenuation_distance": 64
+   }
+  ]
+ },
+ "designator_reload": {
+  "subtitle": "subtitles.airstrike.designator_reload",
+  "sounds": [
+   {
+    "name": "airstrike:designator_reload",
+    "attenuation_distance": 16
+   }
+  ]
+ },
+ "crate_reveal": {
+  "subtitle": "subtitles.airstrike.crate_reveal",
+  "sounds": [
+   {
+    "name": "airstrike:crate_reveal",
+    "attenuation_distance": 24
+   }
+  ]
+ },
+ "tinnitus": {
+  "subtitle": "subtitles.airstrike.tinnitus",
+  "sounds": [
+   {
+    "name": "airstrike:tinnitus",
+    "attenuation_distance": 16
+   }
+  ]
+ },
+ "flares": {
+  "subtitle": "subtitles.airstrike.flares",
+  "sounds": [
+   {
+    "name": "airstrike:flares",
+    "attenuation_distance": 180
+   }
+  ]
+ }
+}

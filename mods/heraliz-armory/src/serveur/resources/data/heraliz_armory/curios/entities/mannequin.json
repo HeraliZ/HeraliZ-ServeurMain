@@ -1,0 +1,13 @@
+{
+  "entities": [
+    "heraliz_armory:mannequin"
+  ],
+  "slots": [
+    "mask",
+    "belt",
+    "hands",
+    "knees",
+    "body",
+    "bracelet"
+  ]
+}

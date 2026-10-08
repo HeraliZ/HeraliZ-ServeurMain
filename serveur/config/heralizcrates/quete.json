@@ -1,0 +1,77 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add quete <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "minecraft:experience_bottle",
+      "count": 12,
+      "weight": 20,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:cooked_beef",
+      "count": 16,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:compass",
+      "count": 1,
+      "weight": 10,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:emerald",
+      "count": 12,
+      "weight": 15,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:name_tag",
+      "count": 2,
+      "weight": 10,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 3,
+      "weight": 12,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:golden_apple",
+      "count": 2,
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:paper",
+      "count": 1,
+      "weight": 5,
+      "rarity": "rare",
+      "name": "&6+1 Clé de Quêtes",
+      "give_item": false,
+      "commands": [
+        "heraliz givekey {player} quete 1"
+      ]
+    },
+    {
+      "item": "minecraft:enchanted_book",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic",
+      "nbt": "{StoredEnchantments:[{id:\"minecraft:mending\",lvl:1s}]}"
+    },
+    {
+      "item": "minecraft:totem_of_undying",
+      "count": 1,
+      "weight": 3,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:netherite_ingot",
+      "count": 1,
+      "weight": 1,
+      "rarity": "legendary"
+    }
+  ]
+}

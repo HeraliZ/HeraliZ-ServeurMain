@@ -1,0 +1,36 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.model.blinking": {
+      "loop": true,
+      "animation_length": 0.5,
+      "bones": {
+        "led": {
+          "scale": {
+            "0.0": {
+              "vector": [
+                1,
+                1,
+                1
+              ]
+            },
+            "0.25": {
+              "vector": [
+                1.12,
+                1.12,
+                1.12
+              ]
+            },
+            "0.5": {
+              "vector": [
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

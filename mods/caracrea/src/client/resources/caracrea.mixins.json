@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.caracrea.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "caracrea.refmap.json",
+  "client": [
+    "AbstractClientPlayerMixin",
+    "PlayerInfoMixin",
+    "PlayerTabOverlayMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

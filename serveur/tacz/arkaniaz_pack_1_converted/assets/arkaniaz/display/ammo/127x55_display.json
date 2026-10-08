@@ -1,0 +1,9 @@
+{
+  "model": "arkaniaz:ammo/127x55",
+  "texture": "arkaniaz:ammo/uv/127x55",
+    "slot": "arkaniaz:ammo/slot/127x55",
+    "shell": {
+      "model": "arkaniaz:shell/127x55",
+      "texture": "arkaniaz:shell/127x55"
+    }
+  }

@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/cube_all",
+ "textures": {
+  "all": "heralisz_mammoth:block/glacier_ice"
+ }
+}

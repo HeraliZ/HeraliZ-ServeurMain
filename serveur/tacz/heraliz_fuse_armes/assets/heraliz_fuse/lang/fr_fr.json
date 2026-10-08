@@ -1,0 +1,18 @@
+{
+  "pack.heraliz_fuse.name": "HeraliZ · Armes Fuse",
+  "pack.heraliz_fuse.desc": "Armes du mod Fuse, sur les munitions du serveur.",
+  "heraliz_fuse.gun.olympia.name": "Olympia",
+  "heraliz_fuse.gun.olympia.desc": "Fusil de chasse à deux canons : deux cartouches, puis on recharge.",
+  "heraliz_fuse.gun.stakeout.name": "Stakeout",
+  "heraliz_fuse.gun.stakeout.desc": "Fusil à pompe compact, à canon court.",
+  "heraliz_fuse.gun.m14.name": "M14",
+  "heraliz_fuse.gun.m14.desc": "Fusil de combat en 7,62 OTAN (.308), précis à longue distance.",
+  "heraliz_fuse.gun.mp5k.name": "MP5K",
+  "heraliz_fuse.gun.mp5k.desc": "Pistolet-mitrailleur compact en 9 mm.",
+  "heraliz_fuse.gun.mp5_classic.name": "MP5 Classique",
+  "heraliz_fuse.gun.mp5_classic.desc": "Le MP5 de HK : classique, fiable et léger.",
+  "heraliz_fuse.gun.mp7r.name": "PXFR 40",
+  "heraliz_fuse.gun.mp7r.desc": "Pistolet-mitrailleur à forte cadence.",
+  "heraliz_fuse.gun.ro635v3.name": "Ro635 v3",
+  "heraliz_fuse.gun.ro635v3.desc": "Pistolet-mitrailleur Ro635 de nouvelle génération."
+}

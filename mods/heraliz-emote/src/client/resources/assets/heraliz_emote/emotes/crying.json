@@ -1,0 +1,293 @@
+{
+ "name": "Pleurer",
+ "author": "Heraliz",
+ "description": "Le visage dans les mains, les épaules qui sautent : des torrents de larmes !",
+ "uuid": "af4b3eaa-0f1b-5acb-8312-034502769fe8",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 25,
+  "stopTick": 26,
+  "isLoop": true,
+  "returnTick": 4,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "body": {
+     "y": -0.06,
+     "pitch": -14.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "head": {
+     "pitch": 28.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "rightArm": {
+     "pitch": -124.44,
+     "roll": 48.19
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "leftArm": {
+     "pitch": -124.44,
+     "roll": -48.19
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "rightLeg": {
+     "pitch": -13.91
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "leftLeg": {
+     "pitch": -13.91
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTQUAD",
+    "body": {
+     "y": -0.02,
+     "pitch": -10.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTQUAD",
+    "head": {
+     "pitch": 20.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTQUAD",
+    "rightArm": {
+     "pitch": -124.44,
+     "roll": 48.19
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTQUAD",
+    "leftArm": {
+     "pitch": -124.44,
+     "roll": -48.19
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTQUAD",
+    "rightLeg": {
+     "pitch": -9.94
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTQUAD",
+    "leftLeg": {
+     "pitch": -9.94
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "body": {
+     "y": -0.06,
+     "pitch": -14.0
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "head": {
+     "pitch": 28.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "rightArm": {
+     "pitch": -124.44,
+     "roll": 48.19
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "leftArm": {
+     "pitch": -124.44,
+     "roll": -48.19
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "rightLeg": {
+     "pitch": -13.91
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "leftLeg": {
+     "pitch": -13.91
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "OUTQUAD",
+    "body": {
+     "y": -0.02,
+     "pitch": -10.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "OUTQUAD",
+    "head": {
+     "pitch": 20.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "OUTQUAD",
+    "rightArm": {
+     "pitch": -124.44,
+     "roll": 48.19
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "OUTQUAD",
+    "leftArm": {
+     "pitch": -124.44,
+     "roll": -48.19
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "OUTQUAD",
+    "rightLeg": {
+     "pitch": -9.94
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "OUTQUAD",
+    "leftLeg": {
+     "pitch": -9.94
+    }
+   },
+   {
+    "tick": 22,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": -0.01,
+     "pitch": -8.0
+    }
+   },
+   {
+    "tick": 22,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 18.0,
+     "roll": 8.0
+    }
+   },
+   {
+    "tick": 22,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -124.44,
+     "roll": 48.19
+    }
+   },
+   {
+    "tick": 22,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -124.44,
+     "roll": -48.19
+    }
+   },
+   {
+    "tick": 22,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": -7.95
+    }
+   },
+   {
+    "tick": 22,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -7.95
+    }
+   }
+  ]
+ }
+}

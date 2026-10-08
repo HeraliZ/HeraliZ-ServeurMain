@@ -1,0 +1,12 @@
+{
+    "mod_loaded": "create",
+    "unlock_challenge": {
+        "type": "backpacked:craft_item",
+        "crafted_item": {
+            "items": [
+                "minecraft:barrier"
+            ]
+        },
+        "count": 10
+    }
+}

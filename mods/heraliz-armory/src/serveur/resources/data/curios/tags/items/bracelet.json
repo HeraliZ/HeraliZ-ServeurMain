@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_armory:armband_black",
+    "heraliz_armory:armband_blue",
+    "heraliz_armory:armband_gray",
+    "heraliz_armory:armband_orange",
+    "heraliz_armory:armband_pink",
+    "heraliz_armory:armband_white",
+    "heraliz_armory:armband_yellow"
+  ]
+}

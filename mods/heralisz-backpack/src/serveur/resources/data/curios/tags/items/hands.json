@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "geckolib:glove_latex",
+    "geckolib:armsband_black",
+    "geckolib:armsband_gray",
+    "geckolib:armsband_pink",
+    "geckolib:armsband_orange",
+    "geckolib:armsband_blue",
+    "geckolib:armsband_white",
+    "geckolib:armsband_yellow",
+    "geckolib:glove_hopital"
+  ]
+}

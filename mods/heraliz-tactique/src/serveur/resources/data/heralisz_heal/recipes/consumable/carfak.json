@@ -1,0 +1,39 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:leather"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:paper"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "tag": "forge:dusts/redstone"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:ink_sac"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:consumable",
+    "item": {
+      "item": "heralisz_tactical:consumable",
+      "nbt": {
+        "ConsumableId": "heralisz_heal:carfak"
+      }
+    }
+  }
+}

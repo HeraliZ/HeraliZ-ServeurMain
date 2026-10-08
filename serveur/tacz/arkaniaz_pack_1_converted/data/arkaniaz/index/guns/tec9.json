@@ -1,0 +1,7 @@
+{
+  "name": "arkaniaz.gun.tec9.name",
+  "tooltip": "arkaniaz.gun.tec9.desc",
+  "display": "arkaniaz:tec9_display",
+  "data": "arkaniaz:tec9_data",
+  "type": "pistol"
+}

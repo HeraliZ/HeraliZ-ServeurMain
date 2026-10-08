@@ -1,0 +1,40 @@
+{
+  "door_id": "vault_door",
+  "legacy_model": "heralisz_bunker:block/doors/vault_door",
+  "modern_model": {
+    "model": "heralisz_bunker:block/doors/vault_door_skin_101",
+    "skins": [
+      {
+        "id": "default", 
+        "name": "Vault 87", 
+        "model": "heralisz_bunker:block/doors/vault_door_skin_87"
+      },
+      {
+        "id": "skin_106", 
+        "name": "Vault 106", 
+        "model": "heralisz_bunker:block/doors/vault_door_skin_106"
+      },
+      {
+        "id": "skin_2", 
+        "name": "Vault 2", 
+        "model": "heralisz_bunker:block/doors/vault_door_skin_2"
+      },
+      {
+        "id": "skin_99", 
+        "name": "Vault 99", 
+        "model": "heralisz_bunker:block/doors/vault_door_skin_99"
+      },
+      {
+        "id": "skin_81", 
+        "name": "Vault 81", 
+        "model": "heralisz_bunker:block/doors/vault_door_skin_81"
+      },
+      {
+        "id": "skin_111", 
+        "name": "Vault 111", 
+        "model": "heralisz_bunker:block/doors/vault_door_skin_111"
+      }
+    ]
+  },
+  "default": {"type": "modern", "skin": "skin_101"}
+}

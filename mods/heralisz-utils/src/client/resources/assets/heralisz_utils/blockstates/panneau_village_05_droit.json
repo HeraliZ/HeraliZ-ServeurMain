@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/panneau_village_05_droit"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/panneau_village_05_droit",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/panneau_village_05_droit",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/panneau_village_05_droit",
+   "y": 270
+  }
+ }
+}

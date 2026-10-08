@@ -1,0 +1,26 @@
+{
+  "tag_spray": {
+    "sounds": [
+      "heralisz_tags:tag_spray"
+    ],
+    "subtitle": "subtitles.heralisz_tags.tag_spray"
+  },
+  "roue_ouvrir": {
+    "sounds": [
+      "heralisz_tags:roue_ouvrir"
+    ],
+    "subtitle": "subtitles.heralisz_tags.roue_ouvrir"
+  },
+  "roue_choisir": {
+    "sounds": [
+      "heralisz_tags:roue_choisir"
+    ],
+    "subtitle": "subtitles.heralisz_tags.roue_choisir"
+  },
+  "tag_debloque": {
+    "sounds": [
+      "heralisz_tags:tag_debloque"
+    ],
+    "subtitle": "subtitles.heralisz_tags.tag_debloque"
+  }
+}

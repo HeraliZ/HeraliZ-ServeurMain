@@ -1,0 +1,9 @@
+
+#Ambiance de la map HeraliZ (côté client)
+[ambiance]
+	#Filtre d'image : étalonnage des couleurs, vignette et grain de pellicule (coût très faible).
+	#Le désactiver ne rend pas les nuits plus claires : seul l'aspect « film » disparaît.
+	filtre_image = true
+	#Étoiles filantes les nuits dégagées.
+	etoiles_filantes = true
+

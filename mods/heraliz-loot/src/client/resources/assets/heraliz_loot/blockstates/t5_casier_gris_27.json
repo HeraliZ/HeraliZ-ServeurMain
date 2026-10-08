@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=south": {
+   "model": "heraliz_loot:block/ark/storage_cabinet_metal_27_closed"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/ark/storage_cabinet_metal_27_closed",
+   "y": 90
+  },
+  "facing=north": {
+   "model": "heraliz_loot:block/ark/storage_cabinet_metal_27_closed",
+   "y": 180
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/ark/storage_cabinet_metal_27_closed",
+   "y": 270
+  }
+ }
+}

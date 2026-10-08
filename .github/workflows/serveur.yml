@@ -1,0 +1,112 @@
+# Fabrication et mise en ligne du serveur HeraliZ (voir CLAUDE.md, section 8).
+# À chaque envoi sur main : fabrique les mods modifiés, contrôle, garde les jars à télécharger et, si les secrets du
+# Ptero sont réglés, met à jour les fichiers du serveur par SFTP. Redémarrage seulement sur demande (Run workflow).
+name: Serveur HeraliZ
+
+on:
+  push:
+    branches: [main]
+    paths: ["mods/**", "serveur/**", "client/**", "outils/**", ".github/workflows/**"]
+  workflow_dispatch:
+    inputs:
+      redemarrer:
+        description: "Redémarrer le serveur après la mise à jour"
+        type: boolean
+        default: false
+
+concurrency:
+  group: serveur
+  cancel-in-progress: false
+
+jobs:
+  serveur:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+      NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # caches : Gradle (Minecraft, Forge, bibliothèques) et jars déjà fabriqués (seuls les mods modifiés sont refaits)
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('mods/*/build.gradle', 'mods/*/gradle.properties') }}
+          restore-keys: gradle-
+
+      - uses: actions/cache@v4
+        with:
+          path: mods/*/build/libs
+          key: jars-${{ github.sha }}
+          restore-keys: jars-
+
+      - name: Fabriquer les mods modifiés
+        run: python outils/construire.py --si-change
+
+      # liste des noms perso interdits (un par ligne), gardée dans un secret : jamais écrite dans le dépôt
+      - name: Noms interdits
+        if: env.NOMS_INTERDITS != ''
+        run: printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
+
+      - name: Contrôles (GeckoLib, noms perso)
+        run: python outils/verifier.py --sans-split
+
+      - name: Garder nos jars serveur
+        uses: actions/upload-artifact@v4
+        with:
+          name: mods-serveur
+          path: livraison/mods serveur/*-serveur.jar
+          retention-days: 3
+
+      - name: Garder nos jars joueurs
+        uses: actions/upload-artifact@v4
+        with:
+          name: mods-client
+          path: |
+            livraison/mods client/*-client.jar
+            livraison/mods client/heraliz_interface-*.jar
+            livraison/mods client/dayzhotbar-*.jar
+          retention-days: 3
+
+      - name: Mettre à jour le Ptero (SFTP)
+        if: env.PTERO_SFTP_HOST != ''
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          MONDE=$(grep -E '^level-name=' serveur/server.properties | cut -d= -f2)
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "${PTERO_SFTP_PORT:-2022}" "sftp://$PTERO_SFTP_HOST" -e "
+            set sftp:auto-confirm yes; set net:max-retries 3;
+            mirror -R --delete --verbose 'livraison/mods serveur' /mods;
+            mirror -R --verbose --exclude-glob *.db --exclude-glob *.sqlite livraison/plugins /plugins;
+            mirror -R --verbose serveur/config /config;
+            mirror -R --verbose serveur/defaultconfigs /defaultconfigs;
+            mirror -R --verbose serveur/defaultconfigs /$MONDE/serverconfig;
+            mirror -R --verbose serveur/tacz /tacz;
+            mirror -R --verbose serveur/heralisz_matchs /heralisz_matchs;
+            mirror -R --verbose serveur/mohist-config /mohist-config;
+            bye"
+
+      - name: Redémarrer le serveur
+        if: env.PTERO_API_KEY != '' && github.event_name == 'workflow_dispatch' && inputs.redemarrer
+        run: |
+          curl -sS -f -X POST "$PTERO_URL/api/client/servers/$PTERO_SERVER_ID/power" \
+            -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \
+            -H "Accept: Application/vnd.pterodactyl.v1+json" -d '{"signal":"restart"}'

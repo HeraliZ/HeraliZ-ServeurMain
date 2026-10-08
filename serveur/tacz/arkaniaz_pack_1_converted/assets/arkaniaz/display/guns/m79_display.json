@@ -1,0 +1,35 @@
+{
+  "model": "arkaniaz:gun/m79_geo",
+  "texture": "arkaniaz:gun/uv/m79",
+  "hud": "arkaniaz:gun/hud/m79_hud",
+  "slot": "arkaniaz:gun/slot/m79",
+  "animation": "arkaniaz:m79",
+  "use_default_animation": "rifle",
+  "transform": {
+    "scale": {
+      "thirdperson": [0.6, 0.6, 0.6],
+      "ground": [0.6, 0.6, 0.6],
+      "fixed": [1.2, 1.2, 1.2]
+    }
+  },
+  "sounds": {
+    "reload_empty": "arkaniaz:m79/m79_reload_empty",
+    "inspect": "arkaniaz:m79/m79_inspect",
+    "inspect_empty": "arkaniaz:m79/m79_inspect_empty",
+    "draw": "tacz:hk_mp5a5/hk_mp5a5_draw",
+    "shoot": "arkaniaz:m79/m79_fire",
+    "shoot_3p": "arkaniaz:m79/m79_fire"
+  },
+  "offhand_show": {
+    "pos": [1, 20, 4],
+    "rotate": [0, 0, 45],
+    "scale": [0.5, 0.5, 0.5]
+  },
+  "hotbar_show": {
+    "0": {
+      "pos": [1, 16, -2],
+    "rotate": [0, 0, 20],
+    "scale": [0.5, 0.5, 0.5]
+    }
+  }
+}

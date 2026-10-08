@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/panneau_radiation"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/panneau_radiation",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/panneau_radiation",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/panneau_radiation",
+   "y": 270
+  }
+ }
+}

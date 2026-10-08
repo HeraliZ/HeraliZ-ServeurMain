@@ -1,0 +1,39 @@
+{
+  "model": "arkaniaz:gun/galilace_geo",
+  "texture": "arkaniaz:gun/uv/galilace",
+  "slot": "arkaniaz:gun/slot/galilace",
+  "hud": "arkaniaz:gun/hud/galilace",
+  "animation": "arkaniaz:galilace",
+  "use_default_animation": "rifle",
+  "third_person_animation": "default",
+  "transform": {
+    "scale": {
+      "thirdperson": [0.6, 0.6, 0.6],
+      "ground": [0.6, 0.6, 0.6],
+      "fixed": [1.0, 1.0, 1.0]
+    }
+  },
+  "muzzle_flash": {
+    "texture": "tacz:flash/common_muzzle_flash",
+    "scale": 1
+  },
+  "shell": {
+    "initial_velocity": [5, 2, 1],
+    "random_velocity": [1, 1, 0.25],
+    "acceleration": [0.0, -10, 0.0],
+    "angular_velocity": [360, -1200, 90],
+    "living_time": 1.0
+  },
+  "sounds": {
+    "shoot": "arkaniaz:galilace/galilace_shoot",
+    "shoot_3p": "arkaniaz:galilace/galilace_shoot_3p",
+    "silence": "arkaniaz:galilace/galilace_silence",
+    "silence_3p": "arkaniaz:galilace/galilace_silence_3p",
+    "draw": "arkaniaz:galilace/galilace_draw",
+    "put_away": "arkaniaz:galilace/galilace_put_away",
+    "reload_empty": "arkaniaz:galilace/galilace_reload_empty",
+    "reload_tactical": "arkaniaz:galilace/galilace_reload_tactical",
+    "inspect": "arkaniaz:galilace/galilace_inspect",
+    "inspect_empty": "arkaniaz:galilace/galilace_inspect_empty"
+  }
+}

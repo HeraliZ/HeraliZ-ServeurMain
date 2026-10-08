@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.m9__doppler_sapphire.name",
+  "display": "heralisz_skins:m9__doppler_sapphire_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.m9__doppler_sapphire.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 217
+}

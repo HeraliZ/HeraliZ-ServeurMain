@@ -1,0 +1,70 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add event <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "minecraft:firework_rocket",
+      "count": 32,
+      "weight": 20,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:cake",
+      "count": 1,
+      "weight": 15,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:name_tag",
+      "count": 3,
+      "weight": 12,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 6,
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:music_disc_pigstep",
+      "count": 1,
+      "weight": 6,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:shulker_shell",
+      "count": 2,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:totem_of_undying",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:enchanted_golden_apple",
+      "count": 1,
+      "weight": 3,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:paper",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic",
+      "name": "&d+1 Clé d'Événement",
+      "give_item": false,
+      "commands": [
+        "heraliz givekey {player} event 1"
+      ]
+    },
+    {
+      "item": "minecraft:elytra",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    }
+  ]
+}

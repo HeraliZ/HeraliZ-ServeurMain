@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "geckolib:vest_assault_military_snow",
+    "geckolib:vest_assault_military_black",
+    "geckolib:vest_assault_military_beige",
+   	"geckolib:tactical_vest_black",
+   	"geckolib:tactical_vest_red",
+   	"geckolib:tactical_vest_yellow",
+   	"geckolib:tactical_vest_white",
+   	"geckolib:tactical_vest_green",
+   	"geckolib:tactical_vest_blue",
+   	"geckolib:work_vest_blue",
+   	"geckolib:work_vest_red",
+   	"geckolib:work_vest_orange",
+   	"geckolib:work_vest_yellow",
+   	"geckolib:press_vest",
+   	"geckolib:police_vest"
+  ]
+}

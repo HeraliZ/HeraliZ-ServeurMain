@@ -1,0 +1,223 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/siberie.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "right_arm": [
+   {
+    "name": "gant_main",
+    "uv": [
+     24,
+     47
+    ],
+    "from": [
+     -3.625,
+     8.375,
+     -2.75
+    ],
+    "size": [
+     5.25,
+     2.25,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gant_coque",
+    "uv": [
+     16,
+     76
+    ],
+    "from": [
+     -3.857421875,
+     9.017578125,
+     -1.732421875
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "gant_main_m",
+    "uv": [
+     46,
+     47
+    ],
+    "from": [
+     -1.625,
+     8.375,
+     -2.75
+    ],
+    "size": [
+     5.25,
+     2.25,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gant_coque_m",
+    "uv": [
+     24,
+     76
+    ],
+    "from": [
+     3.607421875,
+     9.017578125,
+     -1.732421875
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ },
+ "slim_parts": {
+  "right_arm": [
+   {
+    "name": "gant_main_slim",
+    "uv": [
+     68,
+     47
+    ],
+    "from": [
+     -2.625,
+     8.375,
+     -2.75
+    ],
+    "size": [
+     4.25,
+     2.25,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gant_coque_slim",
+    "uv": [
+     32,
+     76
+    ],
+    "from": [
+     -2.857421875,
+     9.017578125,
+     -1.732421875
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "gant_main_m_slim",
+    "uv": [
+     88,
+     47
+    ],
+    "from": [
+     -1.625,
+     8.375,
+     -2.75
+    ],
+    "size": [
+     4.25,
+     2.25,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gant_coque_m_slim",
+    "uv": [
+     40,
+     76
+    ],
+    "from": [
+     2.607421875,
+     9.017578125,
+     -1.732421875
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ }
+}

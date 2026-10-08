@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t2_sac_randonnee"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t2_sac_randonnee"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t2_sac_randonnee"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t2_sac_randonnee"
+  }
+ }
+}

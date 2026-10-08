@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "heralisz_mere:block/nest_spider_idol"}, "facing=east": {"model": "heralisz_mere:block/nest_spider_idol", "y": 90}, "facing=south": {"model": "heralisz_mere:block/nest_spider_idol", "y": 180}, "facing=west": {"model": "heralisz_mere:block/nest_spider_idol", "y": 270}}}

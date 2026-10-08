@@ -1,0 +1,88 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "particle": "heralisz_matchs:block/zombies/giant_mat/neon",
+  "t": "heralisz_matchs:block/zombies/giant_mat/neon"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#t",
+     "cullface": "north"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#t",
+     "cullface": "south"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#t",
+     "cullface": "east"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#t",
+     "cullface": "west"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#t",
+     "cullface": "up"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#t",
+     "cullface": "down"
+    }
+   },
+   "forge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

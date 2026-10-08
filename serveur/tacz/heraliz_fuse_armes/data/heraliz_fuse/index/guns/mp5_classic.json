@@ -1,0 +1,7 @@
+{
+  "name": "heraliz_fuse.gun.mp5_classic.name",
+  "display": "heraliz_fuse:mp5_classic_display",
+  "data": "heraliz_fuse:mp5_classic_data",
+  "tooltip": "heraliz_fuse.gun.mp5_classic.desc",
+  "type": "smg"
+}

@@ -1,0 +1,146 @@
+# HeraliZ Clans et bases : UN jar, CINQ mods. Chaque mod garde son modId d'origine (objets, blocs, entités, sons, dimension,
+# configs, données des serveurs et canaux réseau inchangés) ; « heraliz_clansetbases » porte le code partagé (pont
+# client/serveur, onglet créatif commun). Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+# Chaque [[mods]] a sa classe @Mod (FML 47 : ModLoader.buildMods exige une classe @Mod par modId, et inversement).
+# Les autres mods (matchs, casino, crac, corps, ping...) dépendent de heralisz_economie / heralisz_clans en « [0.1.0,) » :
+# la version 2.0.0 leur convient.
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heraliz_clansetbases"
+version="${mod_version}"
+displayName="HeraliZ Clans et bases"
+authors="${mod_authors}"
+description='''L'économie, les clans, les bases de clan et les tags HeraliZ réunis en un seul fichier. Onglet créatif commun « HeraliZ · Clans et bases ».'''
+[[dependencies.heraliz_clansetbases]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_clansetbases]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_economie"
+version="${mod_version}"
+displayName="HeraliZ Clans et bases · Économie"
+authors="${mod_authors}"
+description='''Monnaie du serveur HeraliZ : les hérals (singulier héral). Comptes des joueurs, paiements, classement, journal des transactions, HUD discret, API pour les autres mods et pont Vault pour les plugins.'''
+[[dependencies.heralisz_economie]]
+    modId="heraliz_clansetbases"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_economie]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_economie]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_clans"
+version="${mod_version}"
+displayName="HeraliZ Clans et bases · Clans"
+authors="${mod_authors}"
+description='''Clans du serveur HeraliZ : création avec bannière personnalisée, membres et grades, banque de clan, niveaux et quêtes, classement, territoires à capturer et largages de ravitaillement. Interface épurée (touche K).'''
+[[dependencies.heralisz_clans]]
+    modId="heraliz_clansetbases"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_clans]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_clans]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_clans]]
+    modId="heralisz_economie"
+    mandatory=true
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_bases"
+version="${mod_version}"
+displayName="HeraliZ Clans et bases · Bases"
+authors="${mod_authors}"
+description='''Bases de clan du serveur HeraliZ : un bunker souterrain par clan dans une dimension dédiée, salles à débloquer avec la banque du clan, permissions de base, pillages de 18 h à 23 h, blindage.'''
+[[dependencies.heralisz_bases]]
+    modId="heraliz_clansetbases"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_bases]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_bases]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_bases]]
+    modId="heralisz_clans"
+    mandatory=true
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_bases]]
+    modId="heralisz_economie"
+    mandatory=true
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_tags"
+version="${mod_version}"
+displayName="HeraliZ Clans et bases · Tags"
+authors="${mod_authors}"
+description='''Tags (sprays) du serveur HeraliZ : 48 tags peints à la bombe (pochoirs de survivants, lettrages graff, street art, boss) à débloquer, roue de 4 tags (touche J), collection, pose sur les murs pendant 30 s.'''
+[[dependencies.heralisz_tags]]
+    modId="heraliz_clansetbases"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_tags]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_tags]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

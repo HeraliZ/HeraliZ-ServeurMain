@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IIN",
+    "IIN"
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "N": { "item": "crac:nail" }
+  },
+  "result": { "item": "crac:sheet_metal_panel", "count": 1 }
+}

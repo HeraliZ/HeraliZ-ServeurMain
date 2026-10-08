@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/cube_all",
+ "textures": {
+  "all": "heralisz_n07:block/lab_panel_stained"
+ }
+}

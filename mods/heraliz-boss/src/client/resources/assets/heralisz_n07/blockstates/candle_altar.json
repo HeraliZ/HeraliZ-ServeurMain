@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/candle_altar"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/candle_altar",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/candle_altar",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/candle_altar",
+   "y": 270
+  }
+ }
+}

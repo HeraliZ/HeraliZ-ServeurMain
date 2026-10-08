@@ -1,0 +1,39 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_scar_h"
+            },
+            "count": 2
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:carbon"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:aluminum"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 45
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "tacz:scar_h"
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

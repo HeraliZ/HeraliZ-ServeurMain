@@ -1,0 +1,15 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/brique_0"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/brique_1"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/brique_2"
+   }
+  ]
+ }
+}

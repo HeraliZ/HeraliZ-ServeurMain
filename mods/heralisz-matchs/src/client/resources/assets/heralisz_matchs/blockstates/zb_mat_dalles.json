@@ -1,0 +1,21 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/dalles_0"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/dalles_0",
+    "y": 90
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/dalles_0",
+    "y": 180
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/dalles_0",
+    "y": 270
+   }
+  ]
+ }
+}

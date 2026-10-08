@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_cagettes_marche"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_cagettes_marche"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_cagettes_marche"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_cagettes_marche"
+  }
+ }
+}

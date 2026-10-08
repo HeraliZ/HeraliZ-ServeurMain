@@ -1,0 +1,146 @@
+{
+ "parent": "block/block",
+ "textures": {
+  "particle": "heralisz_utils:block/anim_fer",
+  "mat": "heralisz_utils:block/anim_mat",
+  "fer": "heralisz_utils:block/anim_fer"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    2
+   ],
+   "to": [
+    14,
+    3,
+    14
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      2,
+      13,
+      14,
+      16
+     ],
+     "texture": "#fer"
+    },
+    "south": {
+     "uv": [
+      2,
+      13,
+      14,
+      16
+     ],
+     "texture": "#fer"
+    },
+    "east": {
+     "uv": [
+      2,
+      13,
+      14,
+      16
+     ],
+     "texture": "#fer"
+    },
+    "west": {
+     "uv": [
+      2,
+      13,
+      14,
+      16
+     ],
+     "texture": "#fer"
+    },
+    "up": {
+     "uv": [
+      2,
+      2,
+      14,
+      14
+     ],
+     "texture": "#fer"
+    },
+    "down": {
+     "uv": [
+      2,
+      2,
+      14,
+      14
+     ],
+     "texture": "#fer"
+    }
+   }
+  },
+  {
+   "from": [
+    5,
+    3,
+    5
+   ],
+   "to": [
+    11,
+    4,
+    11
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      5,
+      12,
+      11,
+      13
+     ],
+     "texture": "#mat"
+    },
+    "south": {
+     "uv": [
+      5,
+      12,
+      11,
+      13
+     ],
+     "texture": "#mat"
+    },
+    "east": {
+     "uv": [
+      5,
+      12,
+      11,
+      13
+     ],
+     "texture": "#mat"
+    },
+    "west": {
+     "uv": [
+      5,
+      12,
+      11,
+      13
+     ],
+     "texture": "#mat"
+    },
+    "up": {
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ],
+     "texture": "#mat"
+    },
+    "down": {
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ],
+     "texture": "#mat"
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,287 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add camo <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "heralisz_camo:camo_crimson",
+      "count": 1,
+      "weight": 90,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:camo_navy",
+      "count": 1,
+      "weight": 90,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:camo_arctic",
+      "count": 1,
+      "weight": 90,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:camo_olive",
+      "count": 1,
+      "weight": 90,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:camo_sand",
+      "count": 1,
+      "weight": 90,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:camo_sakura",
+      "count": 1,
+      "weight": 90,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:camo_carbon",
+      "count": 1,
+      "weight": 45,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_camo:camo_woodland",
+      "count": 1,
+      "weight": 45,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_camo:camo_digital",
+      "count": 1,
+      "weight": 45,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_camo:camo_tiger",
+      "count": 1,
+      "weight": 45,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_camo:camo_rust",
+      "count": 1,
+      "weight": 45,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_camo:camo_damascus",
+      "count": 1,
+      "weight": 45,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_camo:camo_ice",
+      "count": 1,
+      "weight": 25,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:camo_toxic",
+      "count": 1,
+      "weight": 25,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:camo_plasma",
+      "count": 1,
+      "weight": 25,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:camo_circuit",
+      "count": 1,
+      "weight": 25,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:camo_gold",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_honeycomb",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_lava",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_galaxy",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_solar",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_borealis",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_afterlife",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_bioluminescence",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_genesis",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_dark_aether",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_infestation",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_atomic",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_obsidian",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_glitch",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_amethyst",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_diamond",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_black_ice",
+      "count": 1,
+      "weight": 4,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_orion",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_singularity",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_nexus_horizon",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_dark_matter_nuclear",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_liquid_chrome",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_dragon",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_storm",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_dark_matter",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:skinx_seraphin",
+      "count": 1,
+      "weight": 1,
+      "rarity": "mythic"
+    },
+    {
+      "item": "heralisz_camo:skinx_chaines_enfer",
+      "count": 1,
+      "weight": 1,
+      "rarity": "mythic"
+    },
+    {
+      "item": "heralisz_camo:skinx_texture_manquante",
+      "count": 1,
+      "weight": 1,
+      "rarity": "mythic"
+    },
+    {
+      "item": "heralisz_camo:skinx_money_gun",
+      "count": 1,
+      "weight": 1,
+      "rarity": "mythic"
+    },
+    {
+      "item": "heralisz_camo:skinx_surchauffe",
+      "count": 1,
+      "weight": 1,
+      "rarity": "mythic"
+    },
+    {
+      "item": "heralisz_camo:skinx_trophee",
+      "count": 1,
+      "weight": 1,
+      "rarity": "mythic"
+    }
+  ]
+}

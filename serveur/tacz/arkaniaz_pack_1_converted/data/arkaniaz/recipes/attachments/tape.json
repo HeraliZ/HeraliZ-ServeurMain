@@ -1,0 +1,15 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:dyes/blue"
+      },
+      "count": 3
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "arkaniaz:tapeb"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

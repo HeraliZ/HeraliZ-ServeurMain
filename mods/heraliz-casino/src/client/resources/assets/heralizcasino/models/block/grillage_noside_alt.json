@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/template_glass_pane_noside_alt",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "pane": "heralizcasino:block/grillage",
+    "edge": "heralizcasino:block/grillage_edge"
+  }
+}

@@ -1,0 +1,7 @@
+{
+ "parent": "heralisz_utils:custom/glass",
+ "textures": {
+  "1": "heralisz_utils:item/glass",
+  "particle": "heralisz_utils:item/3345"
+ }
+}

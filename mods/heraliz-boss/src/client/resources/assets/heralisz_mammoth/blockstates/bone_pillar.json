@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "axis=y": {
+   "model": "heralisz_mammoth:block/bone_pillar"
+  },
+  "axis=z": {
+   "model": "heralisz_mammoth:block/bone_pillar",
+   "x": 90
+  },
+  "axis=x": {
+   "model": "heralisz_mammoth:block/bone_pillar",
+   "x": 90,
+   "y": 90
+  }
+ }
+}

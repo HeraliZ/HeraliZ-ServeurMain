@@ -1,0 +1,9 @@
+{
+    "name": "maxstuff.gun.saiga12.name",
+    "display": "maxstuff:saiga12_display",
+    "data": "maxstuff:saiga12_data",
+    "type": "shotgun",
+    "item_type": "modern_kinetic",
+    "sort": 1,
+    "tooltip": "maxstuff.gun.saiga12.desc"
+}

@@ -1,0 +1,222 @@
+{
+ "shelf_offset": [
+  0,
+  0,
+  0
+ ],
+ "gui_display": {
+  "rotation": [
+   30,
+   30,
+   0
+  ],
+  "translation": [
+   -2,
+   4,
+   0
+  ],
+  "scale": [
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ "renderer": [
+  {
+   "type": "minecraft:draw_model",
+   "model": "backpacked:backpacked/backpack_mountain_zombie"
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": -0.36875,
+     "y": -0.09375,
+     "z": 0.15625
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 30,
+       "amplitude": 6,
+       "phase": 0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "y": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 40,
+       "amplitude": 4,
+       "phase": 0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -12
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": 0.36875,
+     "y": 0.09375,
+     "z": -0.15625
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_mountain_zombie_arm_0"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": 0.36875,
+     "y": -0.09375,
+     "z": 0.15625
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 30,
+       "amplitude": 6,
+       "phase": 9
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "y": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 40,
+       "amplitude": 4,
+       "phase": 5
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -12
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": -0.36875,
+     "y": 0.09375,
+     "z": -0.15625
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_mountain_zombie_arm_1"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": -0.14375,
+     "y": -0.50625,
+     "z": 0.325
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 22,
+       "amplitude": 9,
+       "phase": 0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -20
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": 0.14375,
+     "y": 0.50625,
+     "z": -0.325
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_mountain_zombie_leg_0"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": 0.14375,
+     "y": -0.50625,
+     "z": 0.325
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 22,
+       "amplitude": 9,
+       "phase": 11
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": 20
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": -0.14375,
+     "y": 0.50625,
+     "z": -0.325
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_mountain_zombie_leg_1"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,241 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "fer": "heralisz_utils:block/fonte",
+  "particle": "heralisz_utils:block/fonte"
+ },
+ "elements": [
+  {
+   "from": [
+    -2.0,
+    7.0,
+    7.0
+   ],
+   "to": [
+    18.0,
+    9.0,
+    9.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      2.0
+     ],
+     "texture": "#fer"
+    },
+    "south": {
+     "uv": [
+      0.0,
+      8.17,
+      16.0,
+      10.17
+     ],
+     "texture": "#fer"
+    },
+    "east": {
+     "uv": [
+      8.4,
+      1.17,
+      10.4,
+      3.17
+     ],
+     "texture": "#fer"
+    },
+    "west": {
+     "uv": [
+      12.6,
+      9.33,
+      14.6,
+      11.33
+     ],
+     "texture": "#fer"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      2.33,
+      16.0,
+      4.33
+     ],
+     "texture": "#fer"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      10.5,
+      16.0,
+      12.5
+     ],
+     "texture": "#fer"
+    }
+   },
+   "rotation": {
+    "axis": "z",
+    "angle": 45,
+    "origin": [
+     8.0,
+     8.0,
+     8.0
+    ]
+   }
+  },
+  {
+   "from": [
+    -2.0,
+    7.0,
+    7.0
+   ],
+   "to": [
+    18.0,
+    9.0,
+    9.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      5.83,
+      16.0,
+      7.83
+     ],
+     "texture": "#fer"
+    },
+    "south": {
+     "uv": [
+      0.0,
+      14.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#fer"
+    },
+    "east": {
+     "uv": [
+      2.8,
+      7.0,
+      4.8,
+      9.0
+     ],
+     "texture": "#fer"
+    },
+    "west": {
+     "uv": [
+      7.0,
+      0.0,
+      9.0,
+      2.0
+     ],
+     "texture": "#fer"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      8.17,
+      16.0,
+      10.17
+     ],
+     "texture": "#fer"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      1.17,
+      16.0,
+      3.17
+     ],
+     "texture": "#fer"
+    }
+   },
+   "rotation": {
+    "axis": "z",
+    "angle": -45,
+    "origin": [
+     8.0,
+     8.0,
+     8.0
+    ]
+   }
+  },
+  {
+   "from": [
+    7.0,
+    7.0,
+    -2.0
+   ],
+   "to": [
+    9.0,
+    9.0,
+    18.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4.2,
+      11.67,
+      6.2,
+      13.67
+     ],
+     "texture": "#fer"
+    },
+    "south": {
+     "uv": [
+      8.4,
+      4.67,
+      10.4,
+      6.67
+     ],
+     "texture": "#fer"
+    },
+    "east": {
+     "uv": [
+      0.0,
+      12.83,
+      16.0,
+      14.83
+     ],
+     "texture": "#fer"
+    },
+    "west": {
+     "uv": [
+      0.0,
+      5.83,
+      16.0,
+      7.83
+     ],
+     "texture": "#fer"
+    },
+    "up": {
+     "uv": [
+      5.6,
+      0.0,
+      7.6,
+      16.0
+     ],
+     "texture": "#fer"
+    },
+    "down": {
+     "uv": [
+      9.8,
+      0.0,
+      11.8,
+      16.0
+     ],
+     "texture": "#fer"
+    }
+   },
+   "rotation": {
+    "axis": "x",
+    "angle": 45,
+    "origin": [
+     8.0,
+     8.0,
+     8.0
+    ]
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,185 @@
+# HeraliZ Tactique : UN jar, SIX mods. Chaque mod d'origine garde son modId (objets, entités, effets, sons, données des
+# packs, configs et canaux réseau inchangés) ; le mod porteur « heraliz_tactique » (en PREMIER) porte le code partagé
+# (pont client / serveur, onglet créatif unique « HeraliZ · Tactique »).
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+# Chaque [[mods]] a SA classe @Mod (FML 47 : ModLoader.buildMods), et inversement.
+# heralisz_tactical est un fork de LesRaisins Tactical Equipments 0.4.3 (LesRaisins Studio), sous licence GNU GPL 3.0.
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+# ------------------------------------------------------------------ porteur
+[[mods]]
+modId="heraliz_tactique"
+version="${mod_version}"
+displayName="HeraliZ Tactique"
+authors="${mod_authors}"
+description='''Mod porteur du jar fusionné HeraliZ Tactique : pont client / serveur, onglet créatif unique « HeraliZ · Tactique » (Mêlée, Soins, Grenades, Camos, Décorations).'''
+[[dependencies.heraliz_tactique]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_tactique]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# ------------------------------------------------------------------ moteur (fork GPL-3.0 de LR Tactical)
+[[mods]]
+modId="heralisz_tactical"
+version="${mod_version}"
+displayName="HeraliZ Tactique · Moteur"
+authors="${mod_authors}"
+credits="Base sur LesRaisins Tactical Equipments de LesRaisins Studio (GNU GPL 3.0)"
+description='''Moteur tactique HeraliZ : armes de melee, soins et lancers (contenu dans heralisz_melee, heralisz_heal, heralisz_grenade). Base sur LesRaisins Tactical Equipments 0.4.3 (LesRaisins Studio), sous licence GNU GPL 3.0.'''
+[[dependencies.heralisz_tactical]]
+    modId="heraliz_tactique"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_tactical]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_tactical]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_tactical]]
+    modId="tacz"
+    mandatory=true
+    versionRange="[1.1.5,)"
+    ordering="AFTER"
+    side="BOTH"
+# compatibilités facultatives d'origine (animations 3e personne, écran de configuration) : déclarées pour les contrôles
+[[dependencies.heralisz_tactical]]
+    modId="playeranimator"
+    mandatory=false
+    versionRange="*"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_tactical]]
+    modId="cloth_config"
+    mandatory=false
+    versionRange="*"
+    ordering="AFTER"
+    side="BOTH"
+
+# ------------------------------------------------------------------ contenu (anciens mods de données lowcodefml)
+[[mods]]
+modId="heralisz_melee"
+version="${mod_version}"
+displayName="HeraliZ Tactique · Mêlée"
+authors="${mod_authors}"
+description='''Armes de melee HeraliZ : dague, batte, Dark Star, Executor, Mercy, Desmoulins Edge, Dragon's Fang, Fiery Owl, TAC Dagger, Sea Gleam, Creed, Smite Hammer (sans skins).'''
+[[dependencies.heralisz_melee]]
+    modId="heraliz_tactique"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_melee]]
+    modId="heralisz_tactical"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_heal"
+version="${mod_version}"
+displayName="HeraliZ Tactique · Soins"
+authors="${mod_authors}"
+description='''Soins HeraliZ : trousses, poches de sang, medicaments.'''
+[[dependencies.heralisz_heal]]
+    modId="heraliz_tactique"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_heal]]
+    modId="heralisz_tactical"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_grenade"
+version="${mod_version}"
+displayName="HeraliZ Tactique · Grenades"
+authors="${mod_authors}"
+description='''Lancers HeraliZ : grenades, flash, fumigene, molotov, C4.'''
+[[dependencies.heralisz_grenade]]
+    modId="heraliz_tactique"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_grenade]]
+    modId="heralisz_tactical"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# ------------------------------------------------------------------ camos des armes TaCZ
+[[mods]]
+modId="heralisz_camo"
+version="${mod_version}"
+displayName="HeraliZ Tactique · Camos"
+authors="${mod_authors}"
+description='''Camouflages universels pour les armes TaCZ : 30 camos en 5 raretes (couleurs, motifs, animes, collection inspiree des legendes COD). S appliquent dans le menu de modification, definitivement.'''
+[[dependencies.heralisz_camo]]
+    modId="heraliz_tactique"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_camo]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_camo]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_camo]]
+    modId="tacz"
+    mandatory=true
+    versionRange="[1.1.8,)"
+    ordering="AFTER"
+    side="BOTH"
+# skins animés des lames de mêlée : point d'accroche du moteur HeraliZ Tactical
+[[dependencies.heralisz_camo]]
+    modId="heralisz_tactical"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
+# camo des sacs (facultatif d'origine : rien ne se charge sans ces mods) : déclarées pour les contrôles
+[[dependencies.heralisz_camo]]
+    modId="backpacked"
+    mandatory=false
+    versionRange="*"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_camo]]
+    modId="curios"
+    mandatory=false
+    versionRange="*"
+    ordering="AFTER"
+    side="BOTH"

@@ -1,0 +1,1703 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/corbeau.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "operateur_avant",
+    "uv": [
+     0,
+     47
+    ],
+    "from": [
+     -4.875,
+     2.25,
+     -4.25
+    ],
+    "size": [
+     9.75,
+     7.0,
+     1.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_avant_haut",
+    "uv": [
+     48,
+     99
+    ],
+    "from": [
+     -3.0,
+     0.75,
+     -4.25
+    ],
+    "size": [
+     6.0,
+     1.5,
+     1.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_dos",
+    "uv": [
+     102,
+     37
+    ],
+    "from": [
+     -4.875,
+     2.25,
+     2.75
+    ],
+    "size": [
+     9.75,
+     7.25,
+     1.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_dos_haut",
+    "uv": [
+     63,
+     99
+    ],
+    "from": [
+     -3.0,
+     0.75,
+     2.75
+    ],
+    "size": [
+     6.0,
+     1.5,
+     1.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_bretelle_d",
+    "uv": [
+     93,
+     20
+    ],
+    "from": [
+     -2.75,
+     -0.75,
+     -4.25
+    ],
+    "size": [
+     1.5,
+     1.5,
+     8.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_bretelle_g",
+    "uv": [
+     0,
+     37
+    ],
+    "from": [
+     1.25,
+     -0.75,
+     -4.25
+    ],
+    "size": [
+     1.5,
+     1.5,
+     8.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_cummerbund",
+    "uv": [
+     59,
+     20
+    ],
+    "from": [
+     -5.125,
+     4.25,
+     -3.375
+    ],
+    "size": [
+     10.25,
+     4.75,
+     6.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_bretelle_epaule_d",
+    "uv": [
+     23,
+     47
+    ],
+    "from": [
+     -4.486328125,
+     -0.236328125,
+     -3.736328125
+    ],
+    "size": [
+     1.875,
+     0.75,
+     7.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_bretelle_av_d",
+    "uv": [
+     21,
+     93
+    ],
+    "from": [
+     -4.486328125,
+     0.138671875,
+     -4.611328125
+    ],
+    "size": [
+     1.875,
+     4.125,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_bretelle_ar_d",
+    "uv": [
+     0,
+     93
+    ],
+    "from": [
+     -4.486328125,
+     0.138671875,
+     3.763671875
+    ],
+    "size": [
+     1.875,
+     4.625,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_bretelle_epaule_g",
+    "uv": [
+     42,
+     47
+    ],
+    "from": [
+     2.638671875,
+     -0.236328125,
+     -3.736328125
+    ],
+    "size": [
+     1.875,
+     0.75,
+     7.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_bretelle_av_g",
+    "uv": [
+     27,
+     93
+    ],
+    "from": [
+     2.638671875,
+     0.138671875,
+     -4.611328125
+    ],
+    "size": [
+     1.875,
+     4.125,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_bretelle_ar_g",
+    "uv": [
+     6,
+     93
+    ],
+    "from": [
+     2.638671875,
+     0.138671875,
+     3.763671875
+    ],
+    "size": [
+     1.875,
+     4.625,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_placard",
+    "uv": [
+     33,
+     93
+    ],
+    "from": [
+     -4.736328125,
+     5.263671875,
+     -4.986328125
+    ],
+    "size": [
+     9.5,
+     4.25,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_0",
+    "uv": [
+     54,
+     93
+    ],
+    "from": [
+     -4.611328125,
+     5.763671875,
+     -6.236328125
+    ],
+    "size": [
+     2.125,
+     3.75,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_0_chargeur",
+    "uv": [
+     106,
+     99
+    ],
+    "from": [
+     -4.236328125,
+     4.638671875,
+     -6.111328125
+    ],
+    "size": [
+     1.375,
+     1.875,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_0_semelle",
+    "uv": [
+     63,
+     107
+    ],
+    "from": [
+     -4.361328125,
+     4.513671875,
+     -6.236328125
+    ],
+    "size": [
+     1.625,
+     0.375,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_chargeur_0_sandow",
+    "uv": [
+     91,
+     107
+    ],
+    "from": [
+     -3.736328125,
+     4.513671875,
+     -6.361328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_chargeur_1",
+    "uv": [
+     61,
+     93
+    ],
+    "from": [
+     -2.236328125,
+     5.763671875,
+     -6.236328125
+    ],
+    "size": [
+     2.125,
+     3.75,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_1_chargeur",
+    "uv": [
+     111,
+     99
+    ],
+    "from": [
+     -1.861328125,
+     4.638671875,
+     -6.111328125
+    ],
+    "size": [
+     1.375,
+     1.875,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_1_semelle",
+    "uv": [
+     69,
+     107
+    ],
+    "from": [
+     -1.986328125,
+     4.513671875,
+     -6.236328125
+    ],
+    "size": [
+     1.625,
+     0.375,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_chargeur_1_sandow",
+    "uv": [
+     92,
+     107
+    ],
+    "from": [
+     -1.361328125,
+     4.513671875,
+     -6.361328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_chargeur_2",
+    "uv": [
+     68,
+     93
+    ],
+    "from": [
+     0.138671875,
+     5.763671875,
+     -6.236328125
+    ],
+    "size": [
+     2.125,
+     3.75,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_2_chargeur",
+    "uv": [
+     116,
+     99
+    ],
+    "from": [
+     0.513671875,
+     4.638671875,
+     -6.111328125
+    ],
+    "size": [
+     1.375,
+     1.875,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_2_semelle",
+    "uv": [
+     75,
+     107
+    ],
+    "from": [
+     0.388671875,
+     4.513671875,
+     -6.236328125
+    ],
+    "size": [
+     1.625,
+     0.375,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_chargeur_2_sandow",
+    "uv": [
+     93,
+     107
+    ],
+    "from": [
+     1.013671875,
+     4.513671875,
+     -6.361328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_chargeur_3",
+    "uv": [
+     75,
+     93
+    ],
+    "from": [
+     2.513671875,
+     5.763671875,
+     -6.236328125
+    ],
+    "size": [
+     2.125,
+     3.75,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_3_chargeur",
+    "uv": [
+     121,
+     99
+    ],
+    "from": [
+     2.888671875,
+     4.638671875,
+     -6.111328125
+    ],
+    "size": [
+     1.375,
+     1.875,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_chargeur_3_semelle",
+    "uv": [
+     81,
+     107
+    ],
+    "from": [
+     2.763671875,
+     4.513671875,
+     -6.236328125
+    ],
+    "size": [
+     1.625,
+     0.375,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_chargeur_3_sandow",
+    "uv": [
+     94,
+     107
+    ],
+    "from": [
+     3.388671875,
+     4.513671875,
+     -6.361328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_flash_0",
+    "uv": [
+     0,
+     104
+    ],
+    "from": [
+     -2.361328125,
+     2.263671875,
+     -5.111328125
+    ],
+    "size": [
+     1.125,
+     2.0,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_flash_0_corps",
+    "uv": [
+     110,
+     104
+    ],
+    "from": [
+     -2.236328125,
+     1.888671875,
+     -4.986328125
+    ],
+    "size": [
+     0.75,
+     1.25,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_flash_1",
+    "uv": [
+     4,
+     104
+    ],
+    "from": [
+     -1.111328125,
+     2.263671875,
+     -5.111328125
+    ],
+    "size": [
+     1.125,
+     2.0,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_flash_1_corps",
+    "uv": [
+     113,
+     104
+    ],
+    "from": [
+     -0.986328125,
+     1.888671875,
+     -4.986328125
+    ],
+    "size": [
+     0.75,
+     1.25,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_flash_2",
+    "uv": [
+     8,
+     104
+    ],
+    "from": [
+     0.138671875,
+     2.263671875,
+     -5.111328125
+    ],
+    "size": [
+     1.125,
+     2.0,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_flash_2_corps",
+    "uv": [
+     116,
+     104
+    ],
+    "from": [
+     0.263671875,
+     1.888671875,
+     -4.986328125
+    ],
+    "size": [
+     0.75,
+     1.25,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_flash_3",
+    "uv": [
+     12,
+     104
+    ],
+    "from": [
+     1.388671875,
+     2.263671875,
+     -5.111328125
+    ],
+    "size": [
+     1.125,
+     2.0,
+     0.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_flash_3_corps",
+    "uv": [
+     119,
+     104
+    ],
+    "from": [
+     1.513671875,
+     1.888671875,
+     -4.986328125
+    ],
+    "size": [
+     0.75,
+     1.25,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_poche_bras_-1",
+    "uv": [
+     67,
+     79
+    ],
+    "from": [
+     -6.861328125,
+     5.513671875,
+     -5.111328125
+    ],
+    "size": [
+     2.0,
+     3.875,
+     2.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_poche_bras_-1_chargeur",
+    "uv": [
+     78,
+     99
+    ],
+    "from": [
+     -6.611328125,
+     4.388671875,
+     -4.861328125
+    ],
+    "size": [
+     1.375,
+     1.875,
+     1.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_poche_bras_-1_semelle",
+    "uv": [
+     7,
+     107
+    ],
+    "from": [
+     -6.736328125,
+     4.263671875,
+     -4.986328125
+    ],
+    "size": [
+     1.625,
+     0.375,
+     1.375
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_poche_bras_-1_sandow",
+    "uv": [
+     95,
+     107
+    ],
+    "from": [
+     -5.986328125,
+     4.263671875,
+     -5.236328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_poche_bras_1",
+    "uv": [
+     76,
+     79
+    ],
+    "from": [
+     4.888671875,
+     5.513671875,
+     -5.111328125
+    ],
+    "size": [
+     2.0,
+     3.875,
+     2.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_poche_bras_1_chargeur",
+    "uv": [
+     83,
+     99
+    ],
+    "from": [
+     5.138671875,
+     4.388671875,
+     -4.861328125
+    ],
+    "size": [
+     1.375,
+     1.875,
+     1.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_poche_bras_1_semelle",
+    "uv": [
+     13,
+     107
+    ],
+    "from": [
+     5.013671875,
+     4.263671875,
+     -4.986328125
+    ],
+    "size": [
+     1.625,
+     0.375,
+     1.375
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_poche_bras_1_sandow",
+    "uv": [
+     96,
+     107
+    ],
+    "from": [
+     5.763671875,
+     4.263671875,
+     -5.236328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_ceinturon",
+    "uv": [
+     65,
+     37
+    ],
+    "from": [
+     -5.361328125,
+     9.513671875,
+     -3.736328125
+    ],
+    "size": [
+     10.75,
+     1.5,
+     7.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_ceinturon_boucle",
+    "uv": [
+     122,
+     104
+    ],
+    "from": [
+     -0.736328125,
+     9.388671875,
+     -3.986328125
+    ],
+    "size": [
+     1.5,
+     1.75,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_ceinturon_poche_0",
+    "uv": [
+     28,
+     104
+    ],
+    "from": [
+     -4.486328125,
+     9.763671875,
+     -4.736328125
+    ],
+    "size": [
+     2.0,
+     1.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_ceinturon_poche_0_rabat",
+    "uv": [
+     19,
+     107
+    ],
+    "from": [
+     -4.5,
+     9.55,
+     -5.025
+    ],
+    "size": [
+     2.0,
+     1.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     -8.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     -3.5,
+     10.3,
+     -4.9
+    ]
+   },
+   {
+    "name": "operateur_ceinturon_poche_1",
+    "uv": [
+     34,
+     104
+    ],
+    "from": [
+     2.513671875,
+     9.763671875,
+     -4.736328125
+    ],
+    "size": [
+     2.0,
+     1.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_ceinturon_poche_1_rabat",
+    "uv": [
+     24,
+     107
+    ],
+    "from": [
+     2.5,
+     9.55,
+     -5.025
+    ],
+    "size": [
+     2.0,
+     1.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     -8.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     3.5,
+     10.3,
+     -4.9
+    ]
+   },
+   {
+    "name": "operateur_vide_poche",
+    "uv": [
+     12,
+     93
+    ],
+    "from": [
+     -5.875,
+     10.25,
+     -2.75
+    ],
+    "size": [
+     2.25,
+     3.5,
+     2.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     12.0,
+     -4.0
+    ],
+    "origin": [
+     -4.75,
+     12.0,
+     -1.75
+    ]
+   },
+   {
+    "name": "operateur_radio_poche",
+    "uv": [
+     8,
+     99
+    ],
+    "from": [
+     4.888671875,
+     0.763671875,
+     -4.361328125
+    ],
+    "size": [
+     1.5,
+     3.125,
+     1.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_radio_boitier",
+    "uv": [
+     75,
+     104
+    ],
+    "from": [
+     5.263671875,
+     -0.736328125,
+     -4.111328125
+    ],
+    "size": [
+     0.75,
+     1.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_radio_antenne0",
+    "uv": [
+     56,
+     72
+    ],
+    "from": [
+     5.6,
+     -6.975,
+     -3.75
+    ],
+    "size": [
+     0.25,
+     6.25,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     -6.0,
+     0.0,
+     -6.0
+    ],
+    "origin": [
+     5.725,
+     -3.8499999999999996,
+     -3.625
+    ]
+   },
+   {
+    "name": "operateur_radio_antenne1",
+    "uv": [
+     20,
+     99
+    ],
+    "from": [
+     5.9,
+     -4.725,
+     -3.15
+    ],
+    "size": [
+     0.25,
+     4.25,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     8.0,
+     0.0,
+     -6.0
+    ],
+    "origin": [
+     6.025,
+     -2.5999999999999996,
+     -3.025
+    ]
+   },
+   {
+    "name": "operateur_radio2_poche",
+    "uv": [
+     14,
+     99
+    ],
+    "from": [
+     -6.361328125,
+     0.763671875,
+     -4.361328125
+    ],
+    "size": [
+     1.5,
+     3.125,
+     1.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_radio2_boitier",
+    "uv": [
+     79,
+     104
+    ],
+    "from": [
+     -5.986328125,
+     -0.736328125,
+     -4.111328125
+    ],
+    "size": [
+     0.75,
+     1.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_radio2_antenne0",
+    "uv": [
+     57,
+     72
+    ],
+    "from": [
+     -5.85,
+     -6.975,
+     -3.75
+    ],
+    "size": [
+     0.25,
+     6.25,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     -6.0,
+     0.0,
+     6.0
+    ],
+    "origin": [
+     -5.725,
+     -3.8499999999999996,
+     -3.625
+    ]
+   },
+   {
+    "name": "operateur_garrot",
+    "uv": [
+     54,
+     104
+    ],
+    "from": [
+     -4.236328125,
+     1.013671875,
+     -5.236328125
+    ],
+    "size": [
+     1.0,
+     2.0,
+     0.625
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_garrot2",
+    "uv": [
+     58,
+     104
+    ],
+    "from": [
+     3.263671875,
+     1.013671875,
+     -5.236328125
+    ],
+    "size": [
+     1.0,
+     2.0,
+     0.625
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "operateur_dos_assaut",
+    "uv": [
+     0,
+     56
+    ],
+    "from": [
+     -3.236328125,
+     2.013671875,
+     4.263671875
+    ],
+    "size": [
+     6.5,
+     6.5,
+     1.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "operateur_dos_assaut_tuyau",
+    "uv": [
+     62,
+     104
+    ],
+    "from": [
+     -2.111328125,
+     0.263671875,
+     4.388671875
+    ],
+    "size": [
+     0.625,
+     2.0,
+     0.625
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {}
+}

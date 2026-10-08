@@ -1,0 +1,48 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_rpk16"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:iron_plate"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:steel_plate"
+            },
+            "count": 36
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:titanium_plate"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 36
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "maxstuff:rpk16",
+        "attachments": {
+            "stock": "maxstuff:stock_ak_ar"
+        }
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

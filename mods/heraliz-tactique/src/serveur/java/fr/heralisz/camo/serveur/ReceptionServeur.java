@@ -1,0 +1,162 @@
+package fr.heralisz.camo.serveur;
+
+import com.tacz.guns.api.item.IGun;
+import fr.heralisz.camo.CamoData;
+import fr.heralisz.camo.decor.DecorCatalog;
+import fr.heralisz.camo.decor.DecorData;
+import fr.heralisz.camo.decor.DecorItems;
+import fr.heralisz.camo.item.CamoItem;
+import fr.heralisz.camo.knife.KnifeSkins;
+import fr.heralisz.camo.network.ApplyCamoPacket;
+import fr.heralisz.camo.network.CamoNetwork;
+import fr.heralisz.camo.network.DecorPacket;
+import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import static fr.heralisz.camo.network.DecorPacket.ADD_STICKER;
+import static fr.heralisz.camo.network.DecorPacket.MOVE_CHARM;
+import static fr.heralisz.camo.network.DecorPacket.MOVE_STATTRACK;
+import static fr.heralisz.camo.network.DecorPacket.MOVE_STICKER;
+import static fr.heralisz.camo.network.DecorPacket.REMOVE_CHARM;
+import static fr.heralisz.camo.network.DecorPacket.SCRAPE_STICKER;
+import static fr.heralisz.camo.network.DecorPacket.SET_CHARM;
+import static fr.heralisz.camo.network.DecorPacket.SET_STATTRACK;
+
+/**
+ * Partie SERVEUR des paquets client -> serveur de heralisz_camo (docs/METHODE_CLIENT_SERVEUR.md §6) : appliquer un camo sur
+ * l'arme tenue (définitif), poser / déplacer / gratter les stickers, pendentifs et module StatTrack. Code d'origine des
+ * méthodes handle des paquets (tout est revérifié ici), avec « p.champ » devenu « p.champ() ».
+ */
+public final class ReceptionServeur {
+   private ReceptionServeur() {
+   }
+
+   // ApplyCamoPacket.handle (d'origine)
+   static void appliquerCamo(CamoNetwork.Recu<ApplyCamoPacket> r) {
+      ApplyCamoPacket p = r.paquet();
+      ServerPlayer player = r.joueur();
+      if (player == null || p.camoSlot() < 0 || p.camoSlot() >= player.getInventory().getContainerSize()) {
+         return;
+      }
+      ItemStack gun = player.getMainHandItem();
+      if (IGun.getIGunOrNull(gun) == null || CamoData.get(gun) != null || KnifeSkins.of(gun) != null) {
+         return; // pas une arme, déjà un camo (définitif), ou couteau à skin unique
+      }
+      ItemStack camoStack = player.getInventory().getItem(p.camoSlot());
+      if (!(camoStack.getItem() instanceof CamoItem item)) {
+         return;
+      }
+      if (!item.camo().fits(IGun.getIGunOrNull(gun).getGunId(gun))) {
+         player.displayClientMessage(Component.translatable("msg.heralisz_camo.wrong_gun",
+            Component.translatable("item.heralisz_camo.camo.gun." + item.camo().id)).withStyle(ChatFormatting.RED), true);
+         return; // skin de boss réservé à une autre arme
+      }
+      CamoData.set(gun, item.camo());
+      camoStack.shrink(1);
+      player.getInventory().setChanged();
+      player.inventoryMenu.broadcastChanges();
+      player.level().playSound(null, player.blockPosition(), SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.2F);
+      player.displayClientMessage(Component.translatable("msg.heralisz_camo.applied",
+         Component.translatable(item.camo().nameKey()).withStyle(item.camo().tier.color)).withStyle(ChatFormatting.GRAY), true);
+   }
+
+   // DecorPacket.handle (d'origine)
+   static void decor(CamoNetwork.Recu<DecorPacket> r) {
+      DecorPacket p = r.paquet();
+      ServerPlayer player = r.joueur();
+      if (player == null) return;
+      ItemStack gun = player.getMainHandItem();
+      if (IGun.getIGunOrNull(gun) == null) return;
+      DecorData.Placement at = p.at() != null ? p.at().sanitized() : null;
+      ItemStack item = p.slot() >= 0 && p.slot() < player.getInventory().getContainerSize() ? player.getInventory().getItem(p.slot()) : ItemStack.EMPTY;
+      List<DecorData.Sticker> stickers = DecorData.stickers(gun);
+      boolean done = false;
+      switch (p.action()) {
+         case ADD_STICKER -> {
+            if (at != null && item.getItem() instanceof DecorItems.StickerItem si && stickers.size() < DecorData.MAX_STICKERS) {
+               stickers.add(new DecorData.Sticker(si.design.id(), si.finish.ordinal(), at));
+               DecorData.setStickers(gun, stickers);
+               item.shrink(1);
+               done = true;
+            }
+         }
+         case MOVE_STICKER -> {
+            if (at != null && p.index() >= 0 && p.index() < stickers.size()) {
+               DecorData.Sticker s = stickers.get(p.index());
+               stickers.set(p.index(), new DecorData.Sticker(s.id(), s.finish(), at));
+               DecorData.setStickers(gun, stickers);
+               done = true;
+            }
+         }
+         case SCRAPE_STICKER -> {
+            if (p.index() >= 0 && p.index() < stickers.size()) {
+               stickers.remove(p.index());
+               DecorData.setStickers(gun, stickers);
+               done = true;
+            }
+         }
+         case SET_CHARM -> {
+            if (at != null && item.getItem() instanceof DecorItems.CharmItem ci) {
+               DecorData.Charm old = DecorData.charm(gun);
+               DecorData.setCharm(gun, new DecorData.Charm(ci.design.id(), at));
+               item.shrink(1);
+               if (old != null) giveCharm(player, old.id());
+               done = true;
+            }
+         }
+         case MOVE_CHARM -> {
+            DecorData.Charm old = DecorData.charm(gun);
+            if (at != null && old != null) {
+               DecorData.setCharm(gun, new DecorData.Charm(old.id(), at));
+               done = true;
+            }
+         }
+         case REMOVE_CHARM -> {
+            DecorData.Charm old = DecorData.charm(gun);
+            if (old != null) {
+               DecorData.setCharm(gun, null);
+               giveCharm(player, old.id());
+               done = true;
+            }
+         }
+         case SET_STATTRACK -> {
+            if (at != null && item.getItem() instanceof DecorItems.StatTrakItem && !DecorData.hasStatTrak(gun)) {
+               DecorData.setStatTrak(gun, at);
+               item.shrink(1);
+               done = true;
+            }
+         }
+         case MOVE_STATTRACK -> {
+            if (at != null && DecorData.hasStatTrak(gun)) {
+               DecorData.setStatTrak(gun, at);
+               done = true;
+            }
+         }
+         default -> {
+         }
+      }
+      if (done) {
+         player.getInventory().setChanged();
+         player.inventoryMenu.broadcastChanges();
+         player.level().playSound(null, player.blockPosition(), p.action() == SCRAPE_STICKER ? SoundEvents.BRUSH_GENERIC : SoundEvents.ITEM_FRAME_ADD_ITEM,
+            SoundSource.PLAYERS, 0.8F, 1.2F);
+      }
+   }
+
+   // DecorPacket.giveCharm (d'origine)
+   private static void giveCharm(ServerPlayer player, String id) {
+      DecorCatalog.Charm c = DecorCatalog.Charm.byId(id);
+      if (c == null) return;
+      var item = ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("heralisz_camo", "charm_" + c.id()));
+      if (item == null) return;
+      ItemStack stack = new ItemStack(item);
+      if (!player.getInventory().add(stack)) player.drop(stack, false);
+      player.displayClientMessage(Component.translatable("msg.heralisz_camo.charm_back"), true);
+   }
+}

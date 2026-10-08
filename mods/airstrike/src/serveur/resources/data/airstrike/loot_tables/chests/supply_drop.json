@@ -1,0 +1,235 @@
+{
+ "type": "minecraft:chest",
+ "pools": [
+  {
+   "rolls": {
+    "type": "minecraft:uniform",
+    "min": 5,
+    "max": 8
+   },
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:bread",
+     "weight": 20,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 6
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:cooked_beef",
+     "weight": 15,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 5
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:baked_potato",
+     "weight": 12,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 3,
+        "max": 8
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:golden_apple",
+     "weight": 5,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:arrow",
+     "weight": 12,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 8,
+        "max": 24
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:iron_ingot",
+     "weight": 10,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 6
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:gold_ingot",
+     "weight": 5,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:potion",
+     "weight": 8,
+     "functions": [
+      {
+       "function": "minecraft:set_potion",
+       "id": "minecraft:strong_healing"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:potion",
+     "weight": 4,
+     "functions": [
+      {
+       "function": "minecraft:set_potion",
+       "id": "minecraft:regeneration"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:iron_helmet",
+     "weight": 4
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:iron_chestplate",
+     "weight": 3
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:iron_leggings",
+     "weight": 3
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:crossbow",
+     "weight": 3
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:bow",
+     "weight": 3
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:shield",
+     "weight": 3
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:ender_pearl",
+     "weight": 4,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:torch",
+     "weight": 8,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 8,
+        "max": 16
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "minecraft:diamond",
+     "weight": 1,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rolls": 1,
+   "entries": [
+    {
+     "type": "minecraft:empty",
+     "weight": 6
+    },
+    {
+     "type": "minecraft:item",
+     "name": "airstrike:payload_smoke",
+     "weight": 3
+    },
+    {
+     "type": "minecraft:item",
+     "name": "airstrike:payload_supply",
+     "weight": 1
+    }
+   ]
+  }
+ ]
+}

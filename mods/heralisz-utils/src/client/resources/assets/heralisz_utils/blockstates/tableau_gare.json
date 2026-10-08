@@ -1,0 +1,36 @@
+{
+ "variants": {
+  "facing=north,genre=horaire": {
+   "model": "heralisz_utils:block/tableau_gare",
+   "y": 0
+  },
+  "facing=east,genre=horaire": {
+   "model": "heralisz_utils:block/tableau_gare",
+   "y": 90
+  },
+  "facing=south,genre=horaire": {
+   "model": "heralisz_utils:block/tableau_gare",
+   "y": 180
+  },
+  "facing=west,genre=horaire": {
+   "model": "heralisz_utils:block/tableau_gare",
+   "y": 270
+  },
+  "facing=north,genre=nom": {
+   "model": "heralisz_utils:block/tableau_gare",
+   "y": 0
+  },
+  "facing=east,genre=nom": {
+   "model": "heralisz_utils:block/tableau_gare",
+   "y": 90
+  },
+  "facing=south,genre=nom": {
+   "model": "heralisz_utils:block/tableau_gare",
+   "y": 180
+  },
+  "facing=west,genre=nom": {
+   "model": "heralisz_utils:block/tableau_gare",
+   "y": 270
+  }
+ }
+}

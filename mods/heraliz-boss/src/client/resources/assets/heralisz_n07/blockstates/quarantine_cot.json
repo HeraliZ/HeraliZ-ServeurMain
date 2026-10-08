@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/quarantine_cot"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/quarantine_cot",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/quarantine_cot",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/quarantine_cot",
+   "y": 270
+  }
+ }
+}

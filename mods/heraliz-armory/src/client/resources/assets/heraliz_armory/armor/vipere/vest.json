@@ -1,0 +1,768 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/vipere.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "pc_avant",
+    "uv": [
+     89,
+     37
+    ],
+    "from": [
+     -4.5,
+     2.25,
+     -3.5
+    ],
+    "size": [
+     9.0,
+     7.5,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_avant_haut",
+    "uv": [
+     29,
+     96
+    ],
+    "from": [
+     -3.0,
+     0.75,
+     -3.5
+    ],
+    "size": [
+     6.0,
+     1.5,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_dos",
+    "uv": [
+     33,
+     37
+    ],
+    "from": [
+     -4.5,
+     2.25,
+     2.75
+    ],
+    "size": [
+     9.0,
+     7.75,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_dos_haut",
+    "uv": [
+     43,
+     96
+    ],
+    "from": [
+     -3.0,
+     0.75,
+     2.75
+    ],
+    "size": [
+     6.0,
+     1.5,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_bretelle_d",
+    "uv": [
+     53,
+     37
+    ],
+    "from": [
+     -3.0,
+     -0.75,
+     -3.5
+    ],
+    "size": [
+     2.0,
+     1.5,
+     7.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_bretelle_g",
+    "uv": [
+     71,
+     37
+    ],
+    "from": [
+     1.0,
+     -0.75,
+     -3.5
+    ],
+    "size": [
+     2.0,
+     1.5,
+     7.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_cummerbund",
+    "uv": [
+     38,
+     20
+    ],
+    "from": [
+     -5.125,
+     4.5,
+     -3.375
+    ],
+    "size": [
+     10.25,
+     5.0,
+     6.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_epaule_d",
+    "uv": [
+     72,
+     85
+    ],
+    "from": [
+     -3.111328125,
+     -1.236328125,
+     -2.486328125
+    ],
+    "size": [
+     2.25,
+     0.5,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_epaule_g",
+    "uv": [
+     87,
+     85
+    ],
+    "from": [
+     0.888671875,
+     -1.236328125,
+     -2.486328125
+    ],
+    "size": [
+     2.25,
+     0.5,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_porte_chargeur_0",
+    "uv": [
+     24,
+     91
+    ],
+    "from": [
+     -3.861328125,
+     6.263671875,
+     -4.486328125
+    ],
+    "size": [
+     2.5,
+     3.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_porte_chargeur_0_chargeur",
+    "uv": [
+     14,
+     96
+    ],
+    "from": [
+     -3.486328125,
+     5.138671875,
+     -4.361328125
+    ],
+    "size": [
+     1.75,
+     1.875,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_porte_chargeur_0_semelle",
+    "uv": [
+     58,
+     99
+    ],
+    "from": [
+     -3.611328125,
+     5.013671875,
+     -4.486328125
+    ],
+    "size": [
+     2.0,
+     0.375,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_porte_chargeur_0_sandow",
+    "uv": [
+     3,
+     99
+    ],
+    "from": [
+     -2.736328125,
+     5.013671875,
+     -4.611328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_porte_chargeur_1",
+    "uv": [
+     31,
+     91
+    ],
+    "from": [
+     -1.236328125,
+     6.263671875,
+     -4.486328125
+    ],
+    "size": [
+     2.5,
+     3.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_porte_chargeur_1_chargeur",
+    "uv": [
+     19,
+     96
+    ],
+    "from": [
+     -0.861328125,
+     5.138671875,
+     -4.361328125
+    ],
+    "size": [
+     1.75,
+     1.875,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_porte_chargeur_1_semelle",
+    "uv": [
+     64,
+     99
+    ],
+    "from": [
+     -0.986328125,
+     5.013671875,
+     -4.486328125
+    ],
+    "size": [
+     2.0,
+     0.375,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_porte_chargeur_1_sandow",
+    "uv": [
+     4,
+     99
+    ],
+    "from": [
+     -0.111328125,
+     5.013671875,
+     -4.611328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_porte_chargeur_2",
+    "uv": [
+     38,
+     91
+    ],
+    "from": [
+     1.388671875,
+     6.263671875,
+     -4.486328125
+    ],
+    "size": [
+     2.5,
+     3.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_porte_chargeur_2_chargeur",
+    "uv": [
+     24,
+     96
+    ],
+    "from": [
+     1.763671875,
+     5.138671875,
+     -4.361328125
+    ],
+    "size": [
+     1.75,
+     1.875,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_porte_chargeur_2_semelle",
+    "uv": [
+     70,
+     99
+    ],
+    "from": [
+     1.638671875,
+     5.013671875,
+     -4.486328125
+    ],
+    "size": [
+     2.0,
+     0.375,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_porte_chargeur_2_sandow",
+    "uv": [
+     5,
+     99
+    ],
+    "from": [
+     2.513671875,
+     5.013671875,
+     -4.611328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_admin",
+    "uv": [
+     106,
+     91
+    ],
+    "from": [
+     -2.236328125,
+     2.263671875,
+     -3.986328125
+    ],
+    "size": [
+     4.5,
+     2.375,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_radio_poche",
+    "uv": [
+     16,
+     63
+    ],
+    "from": [
+     5.138671875,
+     5.013671875,
+     -1.236328125
+    ],
+    "size": [
+     1.25,
+     4.25,
+     2.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_radio",
+    "uv": [
+     55,
+     91
+    ],
+    "from": [
+     5.388671875,
+     3.513671875,
+     -0.986328125
+    ],
+    "size": [
+     0.75,
+     1.5,
+     2.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_antenne",
+    "uv": [
+     113,
+     63
+    ],
+    "from": [
+     5.725,
+     -2.725,
+     0.42500000000000004
+    ],
+    "size": [
+     0.25,
+     6.25,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     -10.0,
+     0.0,
+     -5.0
+    ],
+    "origin": [
+     5.85,
+     0.4,
+     0.55
+    ]
+   },
+   {
+    "name": "pc_trousse",
+    "uv": [
+     24,
+     63
+    ],
+    "from": [
+     -6.361328125,
+     5.263671875,
+     -1.486328125
+    ],
+    "size": [
+     1.25,
+     3.75,
+     3.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_poche_eau",
+    "uv": [
+     18,
+     37
+    ],
+    "from": [
+     -2.986328125,
+     1.763671875,
+     3.513671875
+    ],
+    "size": [
+     6.0,
+     7.25,
+     1.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_tuyau",
+    "uv": [
+     0,
+     37
+    ],
+    "from": [
+     -2.575,
+     -0.024999999999999994,
+     -5.475
+    ],
+    "size": [
+     0.25,
+     0.25,
+     8.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     8.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     -2.45,
+     0.1,
+     -1.1
+    ]
+   },
+   {
+    "name": "pc_poignee",
+    "uv": [
+     6,
+     99
+    ],
+    "from": [
+     -1.236328125,
+     0.763671875,
+     3.513671875
+    ],
+    "size": [
+     2.5,
+     0.75,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ },
+ "slim_parts": {}
+}

@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t2_etabli"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t2_etabli"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t2_etabli"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t2_etabli"
+  }
+ }
+}

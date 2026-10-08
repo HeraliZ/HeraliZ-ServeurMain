@@ -1,0 +1,12 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/acier_rouille_0"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/acier_rouille_1"
+   }
+  ]
+ }
+}

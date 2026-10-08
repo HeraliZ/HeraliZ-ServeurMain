@@ -1,0 +1,114 @@
+{
+ "coffre.volant": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_volant"
+   }
+  ]
+ },
+ "coffre.verrous": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_verrous"
+   }
+  ]
+ },
+ "coffre.porte_lourde": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_porte_lourde"
+   }
+  ]
+ },
+ "coffre.loquets": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_loquets"
+   }
+  ]
+ },
+ "coffre.hydraulique": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_hydraulique"
+   }
+  ]
+ },
+ "coffre.panneaux": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_panneaux"
+   }
+  ]
+ },
+ "coffre.scan": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_scan"
+   }
+  ]
+ },
+ "coffre.runes": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_runes"
+   }
+  ]
+ },
+ "coffre.glace": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:coffre_glace"
+   }
+  ]
+ },
+ "identif.tic": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:identif_tic"
+   }
+  ]
+ },
+ "identif.commun": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:identif_commun"
+   }
+  ]
+ },
+ "identif.rare": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:identif_rare"
+   }
+  ]
+ },
+ "identif.epique": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:identif_epique"
+   }
+  ]
+ },
+ "identif.legendaire": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:identif_legendaire"
+   }
+  ]
+ },
+ "identif.mythique": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:identif_mythique"
+   }
+  ]
+ },
+ "identif.unique": {
+  "sounds": [
+   {
+    "name": "heraliz_loot:identif_unique"
+   }
+  ]
+ }
+}

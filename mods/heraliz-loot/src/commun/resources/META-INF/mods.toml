@@ -1,0 +1,26 @@
+# HeraliZ Loot coupé en trois jars (-client, -serveur, -complet) : UN mod, modId d'origine inchangé.
+# Ce fichier est IDENTIQUE dans les trois jars (docs/METHODE_CLIENT_SERVEUR.md).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heraliz_loot"
+version="${mod_version}"
+displayName="HeraliZ Loot"
+authors="${mod_authors}"
+description='''Loot de HeraliZ : conteneurs de loot par tiers (T1 commun à T7 unique), chacun reconnaissable à son style ; rotation du loot par zones (1 conteneur sur 5 actif, étoiles blanches).'''
+
+[[dependencies.heraliz_loot]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heraliz_loot]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

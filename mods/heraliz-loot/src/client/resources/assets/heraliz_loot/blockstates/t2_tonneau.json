@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t2_tonneau"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t2_tonneau"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t2_tonneau"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t2_tonneau"
+  }
+ }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/carpet",
+  "textures": {
+    "wool": "heralizcasino:block/carton",
+    "particle": "heralizcasino:block/carton"
+  }
+}

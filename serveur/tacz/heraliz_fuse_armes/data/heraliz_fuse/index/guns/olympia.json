@@ -1,0 +1,7 @@
+{
+  "name": "heraliz_fuse.gun.olympia.name",
+  "display": "heraliz_fuse:olympia_display",
+  "data": "heraliz_fuse:olympia_data",
+  "tooltip": "heraliz_fuse.gun.olympia.desc",
+  "type": "shotgun"
+}

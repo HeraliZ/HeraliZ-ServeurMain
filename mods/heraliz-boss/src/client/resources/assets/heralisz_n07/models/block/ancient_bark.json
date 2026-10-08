@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/cube_column",
+ "textures": {
+  "end": "heralisz_n07:block/ancient_bark_top",
+  "side": "heralisz_n07:block/ancient_bark"
+ }
+}

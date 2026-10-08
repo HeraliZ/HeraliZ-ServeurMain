@@ -1,0 +1,7 @@
+{
+  "name": "heraliz_wonder.gun.sliquifier.name",
+  "display": "heraliz_wonder:sliquifier_display",
+  "data": "heraliz_wonder:sliquifier_data",
+  "type": "rifle",
+  "tooltip": "heraliz_wonder.gun.sliquifier.desc"
+}

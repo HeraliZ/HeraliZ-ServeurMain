@@ -1,0 +1,262 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/gardien.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "right_leg": [
+   {
+    "name": "botte_tige",
+    "uv": [
+     97,
+     20
+    ],
+    "from": [
+     -2.85,
+     7.5,
+     -2.75
+    ],
+    "size": [
+     5.5,
+     4.0,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "botte_bout",
+    "uv": [
+     63,
+     75
+    ],
+    "from": [
+     -2.85,
+     10.25,
+     -3.25
+    ],
+    "size": [
+     5.5,
+     1.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "botte_semelle",
+    "uv": [
+     54,
+     54
+    ],
+    "from": [
+     -3.1,
+     11.5,
+     -3.5
+    ],
+    "size": [
+     5.5,
+     1.0,
+     6.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "botte_bas",
+    "uv": [
+     78,
+     54
+    ],
+    "from": [
+     -2.970703125,
+     9.779296875,
+     -2.845703125
+    ],
+    "size": [
+     5.75,
+     1.75,
+     5.75
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "botte_talon",
+    "uv": [
+     41,
+     75
+    ],
+    "from": [
+     -2.595703125,
+     9.529296875,
+     2.904296875
+    ],
+    "size": [
+     5.125,
+     2.0,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_leg": [
+   {
+    "name": "botte_tige_m",
+    "uv": [
+     74,
+     20
+    ],
+    "from": [
+     -2.65,
+     7.375,
+     -2.875
+    ],
+    "size": [
+     5.5,
+     4.0,
+     5.75
+    ],
+    "faces": [
+     "DOWN",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "botte_bout_m",
+    "uv": [
+     75,
+     75
+    ],
+    "from": [
+     -2.65,
+     10.125,
+     -3.375
+    ],
+    "size": [
+     5.5,
+     1.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "EAST",
+     "WEST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "botte_semelle_m",
+    "uv": [
+     20,
+     54
+    ],
+    "from": [
+     -2.4,
+     11.375,
+     -3.625
+    ],
+    "size": [
+     5.5,
+     1.0,
+     6.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "botte_bas_m",
+    "uv": [
+     98,
+     37
+    ],
+    "from": [
+     -2.779296875,
+     9.591796875,
+     -3.033203125
+    ],
+    "size": [
+     5.75,
+     1.75,
+     6.125
+    ],
+    "faces": [
+     "DOWN",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "botte_talon_m",
+    "uv": [
+     52,
+     75
+    ],
+    "from": [
+     -2.529296875,
+     9.341796875,
+     3.091796875
+    ],
+    "size": [
+     5.125,
+     2.0,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "EAST",
+     "WEST",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ },
+ "slim_parts": {}
+}

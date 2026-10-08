@@ -1,0 +1,14 @@
+{
+ "loader": "forge:obj",
+ "model": "heralisz_mere:models/block/nest_giant_web.obj",
+ "flip_v": false,
+ "emissive_ambient": true,
+ "shade_quads": true,
+ "automatic_culling": false,
+ "ambientocclusion": false,
+ "render_type": "minecraft:translucent",
+ "textures": {
+  "0": "heralisz_mere:block/nest_giant_web",
+  "particle": "heralisz_mere:block/nest_giant_web"
+ }
+}

@@ -1,0 +1,1 @@
+{"format_version":"1.8.0","animations":{"animation.hero_barrels.idle":{"animation_length":3.5,"bones":{"glow":{"scale":{"0":{"vector":[0.98,0.98,0.98]},"0.6":{"vector":[0.996,0.996,0.996]},"1.5":{"vector":[1.037,1.037,1.037]},"2.05":{"vector":[1.036,1.036,1.036]},"3.3":{"vector":[0.982,0.982,0.982]},"3.5":{"vector":[0.98,0.98,0.98]}}}},"loop":true}}}

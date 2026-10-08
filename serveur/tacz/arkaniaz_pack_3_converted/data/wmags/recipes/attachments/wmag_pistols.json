@@ -1,0 +1,27 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 12
+    },
+    {
+      "item": {
+        "tag": "forge:gems/lapis"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "tag": "forge:gems/quartz"
+      },
+      "count": 4
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "wmags:wmag_pistols"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

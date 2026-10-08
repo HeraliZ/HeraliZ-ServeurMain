@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/drapeau_blanc"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/drapeau_blanc",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/drapeau_blanc",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/drapeau_blanc",
+   "y": 270
+  }
+ }
+}

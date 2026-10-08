@@ -1,0 +1,212 @@
+# HeraliZ Utils : UN jar, CINQ mods. Chaque mod garde son modId d'origine (objets, blocs, entités, sons, configs, données
+# des mondes, canaux réseau inchangés). « heralisz_utils » (en PREMIER : il donne le nom du module Java du jar) est à la fois
+# un mod de contenu (carte, train, cinématique, ambiance, plans) et le PORTEUR du jar : pont client/serveur
+# (fr.heralisz.utils.pont), onglet créatif commun « HeraliZ · Utils » et son panneau (fr.heralisz.utils.onglet). Pas de
+# modId porteur en plus : un « heraliz_utils » à côté de « heralisz_utils » aurait prêté à confusion.
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+# Chaque [[mods]] a sa classe @Mod (FML 47 : ModLoader.buildMods exige une classe @Mod par modId, et inversement).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heralisz_utils"
+version="${mod_version}"
+displayName="HeraliZ Utils"
+authors="${mod_authors}"
+description='''Utilitaires HeraliZ : plans de fabrication d'armes, composants de craft, document de loot bonus, blocs et décors 3D de la map, ambiance (ciel étoilé, nuits sombres, brouillard, filtre d'image). Porte aussi les pings, les corps, l'usure des armes et les véhicules (même fichier) et l'onglet créatif commun « HeraliZ · Utils ».'''
+[[dependencies.heralisz_utils]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_utils]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+# chargé après ces mods : nos traductions (« HeraliZ » au lieu d'« ArkaniaZ ») et données passent au-dessus des leurs
+[[dependencies.heralisz_utils]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_utils]]
+    modId="cfm"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_utils]]
+    modId="backpacked"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heraliz_ping"
+version="${mod_version}"
+displayName="HeraliZ Utils · Ping"
+authors="${mod_authors}"
+description='''Pings du serveur HeraliZ (remplace Ping Wheel) : appui bref pour marquer ce qu on vise, maintien pour la roue (Ennemi, Danger, Loot, On y va, Defendre, Besoin d aide). Marqueurs visibles a travers les murs avec distance et nom, fleches au bord de l ecran, suivi des entites. Seuls le clan (ou l equipe en match, ou le groupe) recoivent les pings : jamais diffuses a tout le monde.'''
+[[dependencies.heraliz_ping]]
+    modId="heralisz_utils"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_ping]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_ping]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+# liens doux : les pings vont au clan (heralisz_clans) et, en match, a l'equipe ou au groupe (heralisz_matchs)
+[[dependencies.heraliz_ping]]
+    modId="heralisz_clans"
+    mandatory=false
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_ping]]
+    modId="heralisz_matchs"
+    mandatory=false
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heraliz_corps"
+version="${mod_version}"
+displayName="HeraliZ Utils · Corps"
+authors="${mod_authors}"
+description='''Corps des joueurs morts (remplace le mod corpse) : tout l'inventaire reste sur un corps allonge au sol, avec le skin du joueur (CaraCrea), fouille au style des clans, minuteur de disparition, lien avec Reanimation (executions), les matchs et les clans.'''
+[[dependencies.heraliz_corps]]
+    modId="heralisz_utils"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_corps]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_corps]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+# liens souples : rien n'est obligatoire, chaque lien s'active si le mod est present
+[[dependencies.heraliz_corps]]
+    modId="curios"
+    mandatory=false
+    versionRange="[5.0,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_corps]]
+    modId="caracrea"
+    mandatory=false
+    versionRange="[1.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_corps]]
+    modId="heralisz_clans"
+    mandatory=false
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_corps]]
+    modId="reanimation"
+    mandatory=false
+    versionRange="[1.8.0,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_corps]]
+    modId="heralisz_matchs"
+    mandatory=false
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_corps]]
+    modId="backpacked"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heraliz_usure"
+version="${mod_version}"
+displayName="HeraliZ Utils · Usure des armes"
+authors="${mod_authors}"
+description='''Usure des armes TaCZ du serveur HeraliZ (remplace Gun Durability) : etats Neuf / Bon / Use / Abime / Ruine (une arme ruinee ne tire plus avant d'etre reparee), sans enrayage ni malus de degats ou de precision, kits de reparation par niveau, barre d'usure sur l'objet et petit affichage pres des munitions. Aucune usure en match ni en mode zombies. Tout se regle cote serveur (fichier et ecran /usure config).'''
+[[dependencies.heraliz_usure]]
+    modId="heralisz_utils"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_usure]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_usure]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+# Armes : TaCZ 1.1.8 (jar du serveur)
+[[dependencies.heraliz_usure]]
+    modId="tacz"
+    mandatory=true
+    versionRange="[1.1,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heraliz_vehicules"
+version="${mod_version}"
+displayName="HeraliZ Utils · Véhicules"
+authors="${mod_authors}"
+description='''Vehicules du serveur HeraliZ (repris de Fuse) : buggy MRZR4, moto, camion benne et fourgon Hiace avec leur essence (jerrican), le chalumeau de reparation et le parachute dorsal. Moteur : Limitless Vehicle (ywzj_vehicle), installe a cote. Interdits dans les matchs et les bunkers ; ne cassent aucun bloc.'''
+[[dependencies.heraliz_vehicules]]
+    modId="heralisz_utils"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_vehicules]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_vehicules]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+# Moteur des vehicules : Limitless Vehicle 0.5.10 (reduit par Fuse), jar installe a cote du notre (pas fusionne)
+[[dependencies.heraliz_vehicules]]
+    modId="ywzj_vehicle"
+    mandatory=true
+    versionRange="[0.5.10,)"
+    ordering="AFTER"
+    side="BOTH"

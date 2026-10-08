@@ -1,0 +1,27 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 26
+    },
+    {
+      "item": {
+        "tag": "forge:leather"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "tag": "forge:dusts/redstone"
+      },
+      "count": 4
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "arkaniaz:sr25s"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

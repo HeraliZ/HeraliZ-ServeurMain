@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_clans:block/drapeau_territoire"
+  },
+  "facing=east": {
+   "model": "heralisz_clans:block/drapeau_territoire",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_clans:block/drapeau_territoire",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_clans:block/drapeau_territoire",
+   "y": 270
+  }
+ }
+}

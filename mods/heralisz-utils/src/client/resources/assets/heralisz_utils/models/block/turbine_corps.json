@@ -1,0 +1,283 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "peint": "heralisz_utils:block/turbine_peinture",
+  "nerv": "heralisz_utils:block/turbine_nervure",
+  "particle": "heralisz_utils:block/turbine_peinture"
+ },
+ "elements": [
+  {
+   "from": [
+    -10.0,
+    0.0,
+    -14.0
+   ],
+   "to": [
+    26.0,
+    16.0,
+    30.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "south": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "east": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "west": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    }
+   }
+  },
+  {
+   "from": [
+    -14.0,
+    0.0,
+    -10.0
+   ],
+   "to": [
+    30.0,
+    16.0,
+    26.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "south": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "east": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "west": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#peint"
+    }
+   }
+  },
+  {
+   "from": [
+    -11.0,
+    13.5,
+    -15.0
+   ],
+   "to": [
+    27.0,
+    16.0,
+    31.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      11.25,
+      16.0,
+      13.75
+     ],
+     "texture": "#nerv"
+    },
+    "south": {
+     "uv": [
+      0.0,
+      4.5,
+      16.0,
+      7.0
+     ],
+     "texture": "#nerv"
+    },
+    "east": {
+     "uv": [
+      0.0,
+      12.38,
+      16.0,
+      14.88
+     ],
+     "texture": "#nerv"
+    },
+    "west": {
+     "uv": [
+      0.0,
+      5.62,
+      16.0,
+      8.12
+     ],
+     "texture": "#nerv"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#nerv"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#nerv"
+    }
+   }
+  },
+  {
+   "from": [
+    -15.0,
+    13.5,
+    -11.0
+   ],
+   "to": [
+    31.0,
+    16.0,
+    27.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      2.25,
+      16.0,
+      4.75
+     ],
+     "texture": "#nerv"
+    },
+    "south": {
+     "uv": [
+      0.0,
+      10.12,
+      16.0,
+      12.62
+     ],
+     "texture": "#nerv"
+    },
+    "east": {
+     "uv": [
+      0.0,
+      3.38,
+      16.0,
+      5.88
+     ],
+     "texture": "#nerv"
+    },
+    "west": {
+     "uv": [
+      0.0,
+      11.25,
+      16.0,
+      13.75
+     ],
+     "texture": "#nerv"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#nerv"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#nerv"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,77 @@
+{
+ "parent": "block/block",
+ "textures": {
+  "particle": "heralisz_utils:block/anim_fer",
+  "fer": "heralisz_utils:block/anim_fer"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    0,
+    3
+   ],
+   "to": [
+    13,
+    4,
+    13
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ],
+     "texture": "#fer"
+    },
+    "south": {
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ],
+     "texture": "#fer"
+    },
+    "east": {
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ],
+     "texture": "#fer"
+    },
+    "west": {
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ],
+     "texture": "#fer"
+    },
+    "up": {
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ],
+     "texture": "#fer"
+    },
+    "down": {
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ],
+     "texture": "#fer"
+    }
+   }
+  }
+ ]
+}

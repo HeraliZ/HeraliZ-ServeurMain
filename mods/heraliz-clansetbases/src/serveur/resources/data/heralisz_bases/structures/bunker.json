@@ -1,0 +1,133 @@
+{
+ "id": "bunker",
+ "version": 1,
+ "coque_provisoire": "minecraft:obsidian",
+ "coque": "heralisz_bases:coque",
+ "taille": [67, 12, 71],
+ "aabb": "blocs inclusifs [x0, y0, z0, x1, y1, z1], relatifs au coin de la structure",
+ "sol_y": 1,
+ "hauteur_utile": 7,
+ "salles": [
+  {
+   "id": 1,
+   "nom_fr": "Salle 1",
+   "nom_en": "Room 1",
+   "position": "ouest",
+   "interieur": [
+    [2, 2, 28, 16, 8, 42],
+    [17, 2, 33, 19, 6, 37]
+   ],
+   "cloison": [],
+   "cout": 0,
+   "depart": true
+  },
+  {
+   "id": 2,
+   "nom_fr": "Salle 2",
+   "nom_en": "Room 2",
+   "position": "est",
+   "interieur": [
+    [50, 2, 28, 64, 8, 42],
+    [47, 2, 33, 49, 6, 37]
+   ],
+   "cloison": [
+    [47, 2, 33, 49, 6, 37]
+   ],
+   "cout": 5000,
+   "depart": false
+  },
+  {
+   "id": 3,
+   "nom_fr": "Salle 3",
+   "nom_en": "Room 3",
+   "position": "nord-ouest",
+   "interieur": [
+    [12, 2, 8, 26, 8, 22],
+    [27, 2, 13, 29, 6, 17]
+   ],
+   "cloison": [
+    [27, 2, 13, 29, 6, 17]
+   ],
+   "cout": 10000,
+   "depart": false
+  },
+  {
+   "id": 4,
+   "nom_fr": "Salle 4",
+   "nom_en": "Room 4",
+   "position": "nord-est",
+   "interieur": [
+    [40, 2, 8, 54, 8, 22],
+    [37, 2, 13, 39, 6, 17]
+   ],
+   "cloison": [
+    [37, 2, 13, 39, 6, 17]
+   ],
+   "cout": 20000,
+   "depart": false
+  },
+  {
+   "id": 5,
+   "nom_fr": "Salle 5",
+   "nom_en": "Room 5",
+   "position": "sud-ouest",
+   "interieur": [
+    [12, 2, 48, 26, 8, 62],
+    [27, 2, 53, 29, 6, 57]
+   ],
+   "cloison": [
+    [27, 2, 53, 29, 6, 57]
+   ],
+   "cout": 35000,
+   "depart": false
+  },
+  {
+   "id": 6,
+   "nom_fr": "Salle 6",
+   "nom_en": "Room 6",
+   "position": "sud-est",
+   "interieur": [
+    [40, 2, 48, 54, 8, 62],
+    [37, 2, 53, 39, 6, 57]
+   ],
+   "cloison": [
+    [37, 2, 53, 39, 6, 57]
+   ],
+   "cout": 50000,
+   "depart": false
+  }
+ ],
+ "entrees": {
+  "nord": {
+   "arrivee": [33.5, 2.0, 3.5, 0.0],
+   "porte": [32, 2, 6, 34, 4, 7],
+   "sas": [31, 2, 1, 35, 6, 5],
+   "sortie": [33, 2, 1]
+  },
+  "sud": {
+   "arrivee": [33.5, 2.0, 67.5, 180.0],
+   "porte": [32, 2, 63, 34, 4, 64],
+   "sas": [31, 2, 65, 35, 6, 69],
+   "sortie": [33, 2, 69]
+  }
+ },
+ "interieur": [
+  [20, 2, 26, 46, 8, 44],
+  [30, 2, 8, 36, 8, 25],
+  [30, 2, 45, 36, 8, 62],
+  [32, 2, 6, 34, 4, 7],
+  [32, 2, 63, 34, 4, 64]
+ ],
+ "interieur_regle": "parties communes toujours constructibles (hall, couloirs, ouvertures des portes d'entrée) ; volume constructible = interieur + interieur de chaque salle débloquée (salle 1 dès la création)",
+ "plan": {
+  "hall": [20, 2, 26, 46, 8, 44],
+  "couloirs": {
+   "nord": [30, 2, 8, 36, 8, 25],
+   "sud": [30, 2, 45, 36, 8, 62]
+  },
+  "sas": {
+   "nord": [31, 2, 1, 35, 6, 5],
+   "sud": [31, 2, 65, 35, 6, 69]
+  }
+ }
+}

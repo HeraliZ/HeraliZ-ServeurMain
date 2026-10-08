@@ -1,0 +1,287 @@
+{
+ "name": "Révérence",
+ "author": "Heraliz",
+ "description": "Une main sur le ventre, l'autre dans le dos : la révérence du gentleman.",
+ "uuid": "fc60552e-0805-5cd7-b5ed-d0cb8d7da4b6",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 50,
+  "stopTick": 54,
+  "isLoop": false,
+  "returnTick": 0,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "body": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -4.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -27.22,
+     "roll": -50.81
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 21.16,
+     "roll": 42.56
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 9.67,
+     "roll": 1.63
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "body": {
+     "pitch": -38.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "head": {
+     "pitch": 14.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "rightArm": {
+     "pitch": -27.22,
+     "roll": -50.81
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "leftArm": {
+     "pitch": 21.16,
+     "roll": 42.56
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "rightLeg": {
+     "pitch": -28.11,
+     "roll": 1.82
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "leftLeg": {
+     "pitch": -37.8
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "body": {
+     "pitch": -38.0
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 18.0
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -27.22,
+     "roll": -50.81
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 21.16,
+     "roll": 42.56
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": -28.11,
+     "roll": 1.82
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -37.8
+    }
+   },
+   {
+    "tick": 42,
+    "easing": "INOUTSINE",
+    "body": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 42,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -4.0
+    }
+   },
+   {
+    "tick": 42,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -27.22,
+     "roll": -50.81
+    }
+   },
+   {
+    "tick": 42,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 21.16,
+     "roll": 42.56
+    }
+   },
+   {
+    "tick": 42,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 9.67,
+     "roll": 1.63
+    }
+   },
+   {
+    "tick": 42,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 50,
+    "easing": "INOUTSINE",
+    "body": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 50,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 50,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 50,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 50,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 50,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0
+    }
+   }
+  ]
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_sac_a_main"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_sac_a_main"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_sac_a_main"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_sac_a_main"
+  }
+ }
+}

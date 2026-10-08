@@ -1,0 +1,89 @@
+{
+  "ui_clic": {
+    "sounds": [
+      "heralisz_clans:ui_clic"
+    ],
+    "subtitle": "subtitles.heralisz_clans.ui_clic"
+  },
+  "ui_ouvrir": {
+    "sounds": [
+      "heralisz_clans:ui_ouvrir"
+    ],
+    "subtitle": "subtitles.heralisz_clans.ui_ouvrir"
+  },
+  "ui_fermer": {
+    "sounds": [
+      "heralisz_clans:ui_fermer"
+    ],
+    "subtitle": "subtitles.heralisz_clans.ui_fermer"
+  },
+  "invitation": {
+    "sounds": [
+      "heralisz_clans:invitation"
+    ],
+    "subtitle": "subtitles.heralisz_clans.invitation"
+  },
+  "quete_finie": {
+    "sounds": [
+      "heralisz_clans:quete_finie"
+    ],
+    "subtitle": "subtitles.heralisz_clans.quete_finie"
+  },
+  "niveau_sup": {
+    "sounds": [
+      "heralisz_clans:niveau_sup"
+    ],
+    "subtitle": "subtitles.heralisz_clans.niveau_sup"
+  },
+  "capture_debut": {
+    "sounds": [
+      "heralisz_clans:capture_debut"
+    ],
+    "subtitle": "subtitles.heralisz_clans.capture_debut"
+  },
+  "capture_reussie": {
+    "sounds": [
+      "heralisz_clans:capture_reussie"
+    ],
+    "subtitle": "subtitles.heralisz_clans.capture_reussie"
+  },
+  "zone_perdue": {
+    "sounds": [
+      "heralisz_clans:zone_perdue"
+    ],
+    "subtitle": "subtitles.heralisz_clans.zone_perdue"
+  },
+  "signal_fusee": {
+    "sounds": [
+      "heralisz_clans:signal_fusee"
+    ],
+    "subtitle": "subtitles.heralisz_clans.signal_fusee"
+  },
+  "avion_moteur": {
+    "sounds": [
+      {
+        "name": "heralisz_clans:avion_moteur",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.heralisz_clans.avion_moteur"
+  },
+  "parachute_ouvert": {
+    "sounds": [
+      "heralisz_clans:parachute_ouvert"
+    ],
+    "subtitle": "subtitles.heralisz_clans.parachute_ouvert"
+  },
+  "caisse_atterrit": {
+    "sounds": [
+      "heralisz_clans:caisse_atterrit"
+    ],
+    "subtitle": "subtitles.heralisz_clans.caisse_atterrit"
+  },
+  "banque": {
+    "sounds": [
+      "heralisz_clans:banque"
+    ],
+    "subtitle": "subtitles.heralisz_clans.banque"
+  }
+}

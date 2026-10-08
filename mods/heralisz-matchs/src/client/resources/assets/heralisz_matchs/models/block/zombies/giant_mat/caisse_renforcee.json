@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/cube_bottom_top",
+ "textures": {
+  "side": "heralisz_matchs:block/zombies/giant_mat/caisse_renforcee_cote",
+  "top": "heralisz_matchs:block/zombies/giant_mat/caisse_dessus",
+  "bottom": "heralisz_matchs:block/zombies/giant_mat/caisse_dessus"
+ }
+}

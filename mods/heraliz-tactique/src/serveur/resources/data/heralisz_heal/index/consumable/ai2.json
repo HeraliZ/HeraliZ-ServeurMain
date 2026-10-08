@@ -1,0 +1,20 @@
+{
+  "name": "item.heralisz_heal.ai2",
+  "tooltip": "item.heralisz_heal.ai2.desc",
+  "base_item": "heralisz_tactical:consumable",
+  "data": {
+    "use_duration": 93,
+    "cooldown": 60,
+    "cooldown_category": "heralisz_tactical:medical",
+    "stack_size": 2,
+    "max_durability": 0,
+    "draw_time": 14,
+    "put_away_time": 6,
+    "heal": 12.0,
+    "use_mode": "toggle",
+    "effects": [],
+    "remove_effects": [
+      "geckolib:bleeding"
+    ]
+  }
+}

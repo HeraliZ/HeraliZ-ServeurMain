@@ -1,0 +1,21 @@
+{
+  "type": "heralisz_tactical:smoke",
+  "name": "item.heralisz_grenade.smoke_grenade",
+  "tooltip": "item.heralisz_grenade.smoke_grenade.desc",
+  "data": {
+    "prepare_time": 16,
+    "initial_speed": 1.1,
+    "cooldown": 40,
+    "cooldown_category": "heralisz_tactical:grenade",
+    "put_away_time": 380,
+    "stack_size": 2,
+    "entity" : {
+      "life_time": 600,
+      "gravity": 0.07,
+      "should_bounce": true,
+      "bounce_factor": 0.7,
+      "hit_damage": 1.0,
+      "tail_particles": "minecraft:cloud"
+    }
+  }
+}

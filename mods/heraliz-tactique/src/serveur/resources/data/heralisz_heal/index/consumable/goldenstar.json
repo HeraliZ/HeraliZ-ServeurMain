@@ -1,0 +1,38 @@
+{
+  "name": "item.heralisz_heal.goldenstar",
+  "tooltip": "item.heralisz_heal.goldenstar.desc",
+  "base_item": "heralisz_tactical:consumable",
+  "data": {
+    "use_duration": 112,
+    "cooldown": 60,
+    "cooldown_category": "heralisz_tactical:medical",
+    "stack_size": 1,
+    "max_durability": 8,
+    "durability_damage": 1,
+    "draw_time": 19,
+    "put_away_time": 17,
+    "heal": 1.0,
+    "effects": [
+      {
+        "id": "geckolib:insensitive",
+        "duration": 2400,
+        "amplifier": 0,
+        "chance": 1.0,
+        "ambient": false,
+        "visible": true,
+        "show_icon": true
+      },
+      {
+        "id": "minecraft:regeneration",
+        "duration": 200,
+        "amplifier": 0,
+        "chance": 1.0,
+        "ambient": false,
+        "visible": true,
+        "show_icon": true
+      }
+    ],
+    "use_mode": "toggle",
+    "remove_effects": []
+  }
+}

@@ -1,0 +1,13 @@
+{
+ "loader": "forge:obj",
+ "model": "heralisz_utils:models/block/moulin_corps_2.obj",
+ "flip_v": false,
+ "automatic_culling": false,
+ "shade_quads": true,
+ "emissive_ambient": false,
+ "ambientocclusion": false,
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "particle": "heralisz_utils:block/moulin_corps"
+ }
+}

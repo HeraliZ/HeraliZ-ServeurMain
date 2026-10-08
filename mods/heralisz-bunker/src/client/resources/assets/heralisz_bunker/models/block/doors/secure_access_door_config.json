@@ -1,0 +1,14 @@
+{
+    "door_id":"secure_access_door",
+    "legacy_model":"heralisz_bunker:block/doors/secure_access_door_legacy",
+    "modern_model":{
+        "model":"heralisz_bunker:block/doors/secure_access_door_modern",
+        "skins":[
+            {"id":"default","name":"Standard","texture":"heralisz_bunker:block/doors/secure_access_door"},
+            {"id":"gray","name":"Gray","texture":"heralisz_bunker:block/doors/secure_access_door_gray","model":"heralisz_bunker:block/doors/secure_access_door_modern_gray"},
+            {"id":"black","name":"Black","texture":"heralisz_bunker:block/doors/secure_access_door_black","model":"heralisz_bunker:block/doors/secure_access_door_modern_black"},
+            {"id":"yellow","name":"Yellow","texture":"heralisz_bunker:block/doors/secure_access_door_yellow","model":"heralisz_bunker:block/doors/secure_access_door_modern_yellow"}
+        ]
+    },
+    "default":{"type":"modern","skin":"default"}
+}

@@ -1,0 +1,9 @@
+{
+    "name": "arkaniaz.gun.type20.name",
+    "display": "arkaniaz:type20_display",
+    "data": "arkaniaz:type20_data",
+    "tooltip": "Fusil d'assaut moderne.",
+    "type": "rifle",
+    "item_type": "modern_kinetic",
+    "sort": 10
+}

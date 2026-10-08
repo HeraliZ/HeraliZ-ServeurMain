@@ -1,0 +1,78 @@
+{
+ "parent": "block/block",
+ "textures": {
+  "particle": "heralisz_utils:block/ascenseur_palier",
+  "face": "heralisz_utils:block/ascenseur_palier",
+  "bord": "heralisz_utils:block/anim_bois"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    1,
+    14
+   ],
+   "to": [
+    14,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#face"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#face"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      2,
+      16
+     ],
+     "texture": "#bord"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      2,
+      16
+     ],
+     "texture": "#bord"
+    },
+    "up": {
+     "uv": [
+      2,
+      14,
+      14,
+      16
+     ],
+     "texture": "#bord"
+    },
+    "down": {
+     "uv": [
+      2,
+      14,
+      14,
+      16
+     ],
+     "texture": "#bord"
+    }
+   }
+  }
+ ]
+}

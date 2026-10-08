@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/cube_all",
+ "textures": {
+  "all": "heralisz_utils:block/sable_desert_ombre_2"
+ }
+}

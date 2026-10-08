@@ -1,0 +1,367 @@
+{
+ "name": "Ballerine",
+ "author": "Heraliz",
+ "description": "La ballerine : pirouettes sur les pointes, bras en couronne, puis l'arabesque.",
+ "uuid": "e2fe8cca-88cf-5364-aec5-f6cc06e9b045",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 63,
+  "stopTick": 64,
+  "isLoop": true,
+  "returnTick": 4,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0,
+     "z": 0.0,
+     "pitch": 0.0,
+     "yaw": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.08,
+     "z": 0.0,
+     "pitch": 0.0,
+     "yaw": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -167.84,
+     "roll": 19.31
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -167.84,
+     "roll": -19.31
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -40.0,
+     "roll": -34.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.08,
+     "z": 0.0,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "turn": 1,
+    "body": {
+     "yaw": -360.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -167.84,
+     "roll": 19.31
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -167.84,
+     "roll": -19.31
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -40.0,
+     "roll": -34.0
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.08,
+     "z": 0.0,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "turn": 1,
+    "body": {
+     "yaw": -360.0
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -167.84,
+     "roll": 19.31
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -167.84,
+     "roll": -19.31
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 32,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -40.0,
+     "roll": -34.0
+    }
+   },
+   {
+    "tick": 38,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0178,
+     "z": -0.2391,
+     "pitch": -20.0,
+     "yaw": 0.0
+    }
+   },
+   {
+    "tick": 38,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -24.0
+    }
+   },
+   {
+    "tick": 38,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -100.0,
+     "roll": -6.0
+    }
+   },
+   {
+    "tick": 38,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 40.0,
+     "roll": -50.0
+    }
+   },
+   {
+    "tick": 38,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": -1.57
+    }
+   },
+   {
+    "tick": 38,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 70.0,
+     "roll": -4.0
+    }
+   },
+   {
+    "tick": 52,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0178,
+     "z": -0.2391,
+     "pitch": -20.0,
+     "yaw": 0.0
+    }
+   },
+   {
+    "tick": 52,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -24.0
+    }
+   },
+   {
+    "tick": 52,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -100.0,
+     "roll": -6.0
+    }
+   },
+   {
+    "tick": 52,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 40.0,
+     "roll": -50.0
+    }
+   },
+   {
+    "tick": 52,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": -1.57
+    }
+   },
+   {
+    "tick": 52,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 70.0,
+     "roll": -4.0
+    }
+   },
+   {
+    "tick": 60,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.04,
+     "z": 0.0,
+     "pitch": 0.0,
+     "yaw": 0.0
+    }
+   },
+   {
+    "tick": 60,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 60,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -167.84,
+     "roll": 19.31
+    }
+   },
+   {
+    "tick": 60,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -167.84,
+     "roll": -19.31
+    }
+   },
+   {
+    "tick": 60,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 60,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   }
+  ]
+ }
+}

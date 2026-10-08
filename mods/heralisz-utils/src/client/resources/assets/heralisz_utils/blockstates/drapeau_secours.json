@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/drapeau_secours"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/drapeau_secours",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/drapeau_secours",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/drapeau_secours",
+   "y": 270
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_bureau_ecolier"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_bureau_ecolier"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_bureau_ecolier"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_bureau_ecolier"
+  }
+ }
+}

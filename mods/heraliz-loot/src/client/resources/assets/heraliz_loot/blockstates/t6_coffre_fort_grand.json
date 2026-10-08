@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t6_coffre_fort_grand"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t6_coffre_fort_grand"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t6_coffre_fort_grand"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t6_coffre_fort_grand"
+  }
+ }
+}

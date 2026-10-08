@@ -1,0 +1,10 @@
+{
+  "pack.wmags.name": "Windowed Magazines Pack",
+  "pack.wmags.desc": "Hell YEAH",
+  "wmags.attachment.wmag_pistols.name": "Glock Windowed Magazine",
+  "wmags.attachment.wmag_smg.name": "SMGs Windowed Magazine",
+  "wmags.attachment.wmag_556.name": "5.56x45mm Windowed Magazine",
+  "wmags.attachment.wmag_762.name": "7.62x39mm Windowed Magazine",
+  "wmags.attachment.wmag_12g.name": "12 Gauge Windowed Drum",
+  "wmags.attachment.wmag_rpk.name": "RPK Windowed Magazine"
+}

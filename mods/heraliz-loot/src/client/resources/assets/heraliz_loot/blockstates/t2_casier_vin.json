@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t2_casier_vin"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t2_casier_vin"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t2_casier_vin"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t2_casier_vin"
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "heralisz_matchs:block/cw_tableau"
+    },
+    "facing=south": {
+      "model": "heralisz_matchs:block/cw_tableau"
+    },
+    "facing=east": {
+      "model": "heralisz_matchs:block/cw_tableau"
+    },
+    "facing=west": {
+      "model": "heralisz_matchs:block/cw_tableau"
+    }
+  }
+}

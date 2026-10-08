@@ -1,0 +1,209 @@
+{
+ "name": "Une rose pour toi",
+ "author": "Heraliz",
+ "description": "Un genou à terre, la main sur le cœur, on offre une rose. Romantique !",
+ "uuid": "fedd3afb-39ff-54b4-ba0e-b58315a0ce74",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 41,
+  "stopTick": 42,
+  "isLoop": true,
+  "returnTick": 18,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "body": {
+     "y": -0.4,
+     "pitch": -4.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "head": {
+     "pitch": -6.0,
+     "roll": 6.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "rightArm": {
+     "pitch": -82.0,
+     "yaw": 4.0,
+     "roll": -4.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "leftArm": {
+     "pitch": -61.53,
+     "roll": 66.94
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "rightLeg": {
+     "pitch": 64.3829
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "leftLeg": {
+     "pitch": -64.38,
+     "roll": -6.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": -0.4,
+     "pitch": -4.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -10.0,
+     "roll": 10.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -82.0,
+     "yaw": 4.0,
+     "roll": -4.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -61.53,
+     "roll": 66.94
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 64.3829
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -64.38,
+     "roll": -6.0
+    }
+   },
+   {
+    "tick": 30,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": -0.4,
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 30,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -8.0,
+     "roll": 2.0
+    }
+   },
+   {
+    "tick": 30,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -82.0,
+     "yaw": 4.0,
+     "roll": -4.0
+    }
+   },
+   {
+    "tick": 30,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -61.53,
+     "roll": 66.94
+    }
+   },
+   {
+    "tick": 30,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 64.3829
+    }
+   },
+   {
+    "tick": 30,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -64.38,
+     "roll": -6.0
+    }
+   }
+  ]
+ }
+}

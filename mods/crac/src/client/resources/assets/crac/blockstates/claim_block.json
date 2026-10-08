@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "tier=1": { "model": "crac:block/claim_block_tier1" },
+    "tier=2": { "model": "crac:block/claim_block_tier2" },
+    "tier=3": { "model": "crac:block/claim_block_tier3" }
+  }
+}

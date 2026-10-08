@@ -1,0 +1,28 @@
+{
+ "variants": {
+  "closed=false,facing=north": {
+   "model": "heralisz_mammoth:block/gate_ice"
+  },
+  "closed=false,facing=east": {
+   "model": "heralisz_mammoth:block/gate_ice"
+  },
+  "closed=false,facing=south": {
+   "model": "heralisz_mammoth:block/gate_ice"
+  },
+  "closed=false,facing=west": {
+   "model": "heralisz_mammoth:block/gate_ice"
+  },
+  "closed=true,facing=north": {
+   "model": "heralisz_mammoth:block/gate_ice"
+  },
+  "closed=true,facing=east": {
+   "model": "heralisz_mammoth:block/gate_ice"
+  },
+  "closed=true,facing=south": {
+   "model": "heralisz_mammoth:block/gate_ice"
+  },
+  "closed=true,facing=west": {
+   "model": "heralisz_mammoth:block/gate_ice"
+  }
+ }
+}

@@ -1,0 +1,176 @@
+{
+ "name": "Floss",
+ "author": "Heraliz",
+ "description": "Le floss : bras tendus qui passent devant puis derrière les hanches pendant que le bassin part dans l'autre sens.",
+ "uuid": "ca7be62b-b20d-50a5-bacd-f27bc43400d4",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 15,
+  "stopTick": 16,
+  "isLoop": true,
+  "returnTick": 4,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": 0.0,
+     "y": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": 0.13,
+     "y": 0.01,
+     "yaw": -6.0,
+     "roll": 7.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 4.0,
+     "yaw": 6.0,
+     "roll": -7.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -36.0,
+     "yaw": 6.0,
+     "roll": -50.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 38.0,
+     "yaw": -6.0,
+     "roll": -48.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.85,
+     "roll": -16.99
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 2.74,
+     "roll": -17.4
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": -0.13,
+     "y": 0.01,
+     "yaw": 6.0,
+     "roll": -7.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 4.0,
+     "yaw": -6.0,
+     "roll": 7.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 38.0,
+     "yaw": 6.0,
+     "roll": 48.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -36.0,
+     "yaw": -6.0,
+     "roll": 50.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 2.74,
+     "roll": 17.4
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.85,
+     "roll": 16.99
+    }
+   }
+  ]
+ }
+}

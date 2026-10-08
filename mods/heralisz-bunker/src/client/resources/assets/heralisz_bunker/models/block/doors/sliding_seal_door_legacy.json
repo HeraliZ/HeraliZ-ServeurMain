@@ -1,0 +1,31 @@
+{
+    "loader":"heralisz_bunker:door",
+    "model":"heralisz_bunker:models/block/doors/sliding_seal_door_old.obj",
+    "parts":["door","frame"],
+    "textures":{
+        "default":"heralisz_bunker:block/doors/sliding_seal_door_old",
+        "particle":"heralisz_bunker:block/doors/sliding_seal_door_old"
+    },
+    "display":{
+        "gui":{
+            "rotation":[30,225,0],
+            "translation":[-5.0, -3, 0],
+            "scale":[0.43,0.43,0.43]
+        },
+        "ground":{
+            "rotation":[0,0,0],
+            "translation":[0,3,0],
+            "scale":[0.25,0.25,0.25]
+        },
+        "thirdperson_righthand":{
+            "rotation":[75,45,0],
+            "translation":[0,2.5,0],
+            "scale":[0.2,0.2,0.2]
+        },
+        "firstperson_righthand":{
+            "rotation":[0,45,0],
+            "translation":[3,-1,0],
+            "scale":[0.3,0.3,0.3]
+        }
+    }
+}

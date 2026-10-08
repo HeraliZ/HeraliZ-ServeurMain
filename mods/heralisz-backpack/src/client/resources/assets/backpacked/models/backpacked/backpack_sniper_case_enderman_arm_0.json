@@ -1,0 +1,90 @@
+{
+ "credit": "HeralisZ",
+ "texture_size": [
+  512,
+  512
+ ],
+ "textures": {
+  "enderman": "backpacked:backpack/backpack_sniper_case_enderman",
+  "particle": "backpacked:backpack/backpack_sniper_case_enderman"
+ },
+ "elements": [
+  {
+   "from": [
+    2.9485,
+    1.0,
+    11.0
+   ],
+   "to": [
+    4.4485,
+    16.0,
+    12.5
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      8.09375,
+      0.09375,
+      8.1875,
+      1.03125
+     ],
+     "texture": "#enderman"
+    },
+    "north": {
+     "uv": [
+      8.28125,
+      0.09375,
+      8.375,
+      1.03125
+     ],
+     "texture": "#enderman"
+    },
+    "east": {
+     "uv": [
+      8.1875,
+      0.09375,
+      8.28125,
+      1.03125
+     ],
+     "texture": "#enderman"
+    },
+    "west": {
+     "uv": [
+      8.0,
+      0.09375,
+      8.09375,
+      1.03125
+     ],
+     "texture": "#enderman"
+    },
+    "up": {
+     "uv": [
+      8.09375,
+      0.0,
+      8.1875,
+      0.09375
+     ],
+     "texture": "#enderman"
+    },
+    "down": {
+     "uv": [
+      8.1875,
+      0.0,
+      8.28125,
+      0.09375
+     ],
+     "texture": "#enderman"
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "z",
+    "origin": [
+     7.68788,
+     9.20754,
+     11.6304
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+	"door_id":"large_vehicle_door",
+	"legacy_model":"heralisz_bunker:block/doors/large_vehicle_door_legacy",
+	"modern_model":{
+		"model":"heralisz_bunker:block/doors/large_vehicle_door_modern",
+		"skins":[
+			{"id":"default","name":"Standard","texture":"heralisz_bunker:block/doors/large_vehicle_door"},
+			{"id":"rad","name":"Rad","texture":"heralisz_bunker:block/doors/large_vehicle_door_rad", "model":"heralisz_bunker:block/doors/large_vehicle_door_modern_rad"},
+			{"id":"clear","name":"Clear","texture":"heralisz_bunker:block/doors/large_vehicle_door_clean", "model":"heralisz_bunker:block/doors/large_vehicle_door_modern_clean"}
+		]
+	},
+	"default":{"type":"modern","skin":"default"}
+}

@@ -1,0 +1,105 @@
+{
+ "credit": "Made with Blockbench",
+ "textures": {
+  "1": "heraliz_loot:block/ark/blocks/equipment/container/supply_box"
+ },
+ "elements": [
+  {
+   "from": [
+    -5,
+    0,
+    5
+   ],
+   "to": [
+    17,
+    5,
+    15
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     10,
+     8,
+     13
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      4,
+      4,
+      7.25
+     ],
+     "texture": "#1"
+    },
+    "east": {
+     "uv": [
+      12.25,
+      4,
+      16,
+      7.25
+     ],
+     "texture": "#1"
+    },
+    "south": {
+     "uv": [
+      4,
+      4,
+      12,
+      7.25
+     ],
+     "texture": "#1"
+    },
+    "west": {
+     "uv": [
+      0,
+      4,
+      4,
+      7.25
+     ],
+     "texture": "#1"
+    },
+    "up": {
+     "uv": [
+      4,
+      0,
+      12,
+      4
+     ],
+     "texture": "#1"
+    },
+    "down": {
+     "uv": [
+      0,
+      5.25,
+      4,
+      7.25
+     ],
+     "texture": "#1"
+    }
+   }
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    38,
+    4,
+    37
+   ],
+   "translation": [
+    -1.5,
+    1.5,
+    0
+   ],
+   "scale": [
+    0.59,
+    0.57,
+    0.52
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
+}

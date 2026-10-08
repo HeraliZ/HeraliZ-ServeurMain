@@ -1,0 +1,9 @@
+{
+    "name": "arkaniaz.gun.p250.name",
+    "display": "arkaniaz:p250_display",
+    "data": "arkaniaz:p250_data",
+    "type": "pistol",
+    "item_type": "modern_kinetic",
+    "tooltip": "Pistolet modulable et fiable.",
+    "sort": 10
+}

@@ -1,0 +1,33 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/netherite"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 3
+    },
+    {
+      "item": {
+        "tag": "forge:dyes/light_blue"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:melee",
+    "item": {
+      "item": "heralisz_tactical:melee",
+      "nbt": {
+        "MeleeWeaponId": "heralisz_melee:desmoulins_edge"
+      }
+    }
+  }
+}

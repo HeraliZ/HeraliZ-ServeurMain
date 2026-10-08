@@ -1,0 +1,6 @@
+{
+  "name": "wmags.attachment.wmag_pistols.name",
+  "display": "wmags:wmag_pistols_display",
+  "data": "wmags:wmag_pistols_data",
+  "type": "extended_mag"
+}

@@ -1,0 +1,36 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/gravats_0"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/gravats_0",
+    "y": 90
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/gravats_0",
+    "y": 180
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/gravats_0",
+    "y": 270
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/gravats_1"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/gravats_1",
+    "y": 90
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/gravats_1",
+    "y": 180
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/gravats_1",
+    "y": 270
+   }
+  ]
+ }
+}

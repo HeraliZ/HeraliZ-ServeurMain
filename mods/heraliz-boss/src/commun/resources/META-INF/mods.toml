@@ -1,0 +1,181 @@
+# HeraliZ Boss : UN jar, SIX mods. Chaque boss garde son modId d'origine (objets, blocs, entités, sons, structures,
+# configs et canaux réseau inchangés) ; « heraliz_boss » porte le code partagé (pont client/serveur, onglet créatif).
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet) : client et serveur se reconnaissent.
+# Chaque [[mods]] a sa classe @Mod (FML 47 : ModLoader.buildMods exige une classe @Mod par modId, et inversement).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heraliz_boss"
+version="${mod_version}"
+displayName="HeraliZ Boss"
+authors="${mod_authors}"
+description='''Les boss HeraliZ réunis en un seul fichier : Ymirak le Mammouth, la Mère des Ruines, le Sujet N-07, le Porteur de Peste et Sylvorn. Onglet créatif commun « HeraliZ · Boss ».'''
+[[dependencies.heraliz_boss]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_boss]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_mammoth"
+version="${mod_version}"
+displayName="HeraliZ Boss · Mammouth"
+authors="${mod_authors}"
+description='''Ymirak, le Mammouth du Blizzard : boss à 3 phases, son arène (cimetière des mammouths), rituel du cor, décors 3D.'''
+[[dependencies.heralisz_mammoth]]
+    modId="heraliz_boss"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_mammoth]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_mammoth]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_mammoth]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_mere"
+version="${mod_version}"
+displayName="HeraliZ Boss · Mère des Ruines"
+authors="${mod_authors}"
+description='''La Mère des Ruines : boss araignée à 3 phases, son temple englouti (donjon), cinématiques, décors 3D.'''
+[[dependencies.heralisz_mere]]
+    modId="heraliz_boss"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_mere]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_mere]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_mere]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_n07"
+version="${mod_version}"
+displayName="HeraliZ Boss · Sujet N-07"
+authors="${mod_authors}"
+description='''Sujet N-07, le Chimiste Irradié : boss à 3 phases, le Laboratoire du Secteur 7 (donjon), cinématiques, décors 3D et décors du spawn. API publique fr.heralisz.n07.api (contrat N07Api.VERSION 1).'''
+[[dependencies.heralisz_n07]]
+    modId="heraliz_boss"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_n07]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_n07]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_n07]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_plague"
+version="${mod_version}"
+displayName="HeraliZ Boss · Porteur de Peste"
+authors="${mod_authors}"
+description='''Le Porteur de Peste : boss à 3 phases, la Station de Quarantaine (donjon), cinématiques, décors 3D.'''
+[[dependencies.heralisz_plague]]
+    modId="heraliz_boss"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_plague]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_plague]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_plague]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heralisz_sylvorn"
+version="${mod_version}"
+displayName="HeraliZ Boss · Sylvorn"
+authors="${mod_authors}"
+description='''Sylvorn, le Wendigo de l'Arbre-Monde : boss à 3 phases, l'intérieur de l'Arbre-Monde (donjon), cinématiques, décors 3D.'''
+[[dependencies.heralisz_sylvorn]]
+    modId="heraliz_boss"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heralisz_sylvorn]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_sylvorn]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heralisz_sylvorn]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"

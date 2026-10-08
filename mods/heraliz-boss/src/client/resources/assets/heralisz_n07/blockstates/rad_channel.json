@@ -1,0 +1,105 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "dry": "true"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_dry"
+   }
+  },
+  {
+   "when": {
+    "flow": "none",
+    "dry": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_still"
+   }
+  },
+  {
+   "when": {
+    "flow": "north",
+    "dry": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_flow",
+    "y": 0
+   }
+  },
+  {
+   "when": {
+    "flow": "east",
+    "dry": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_flow",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "flow": "south",
+    "dry": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_flow",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "flow": "west",
+    "dry": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_flow",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "north": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_rim",
+    "y": 0
+   }
+  },
+  {
+   "when": {
+    "east": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_rim",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "south": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_rim",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "west": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_rim",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "covered": "true"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_grate"
+   }
+  }
+ ]
+}

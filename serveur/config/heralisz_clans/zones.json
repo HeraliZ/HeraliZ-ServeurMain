@@ -1,0 +1,102 @@
+[
+  {
+    "id": "tcherno",
+    "nom": "Tcherno",
+    "x": 261,
+    "z": 1483,
+    "rayon": 400,
+    "drapeau": null
+  },
+  {
+    "id": "novodar",
+    "nom": "Novodar",
+    "x": -150,
+    "z": -700,
+    "rayon": 250,
+    "drapeau": null
+  },
+  {
+    "id": "lesnoi",
+    "nom": "Lesnoi",
+    "x": -850,
+    "z": 450,
+    "rayon": 140,
+    "drapeau": null
+  },
+  {
+    "id": "krestovo",
+    "nom": "Krestovo",
+    "x": 850,
+    "z": 620,
+    "rayon": 150,
+    "drapeau": null
+  },
+  {
+    "id": "zalivka",
+    "nom": "Zalivka",
+    "x": 1260,
+    "z": 1120,
+    "rayon": 140,
+    "drapeau": null
+  },
+  {
+    "id": "nagorny",
+    "nom": "Nagorny",
+    "x": -620,
+    "z": -250,
+    "rayon": 130,
+    "drapeau": null
+  },
+  {
+    "id": "vostok",
+    "nom": "Vostok",
+    "x": 1320,
+    "z": -150,
+    "rayon": 130,
+    "drapeau": null
+  },
+  {
+    "id": "pristan",
+    "nom": "Pristan",
+    "x": 1850,
+    "z": 250,
+    "rayon": 170,
+    "drapeau": null
+  },
+  {
+    "id": "pustovo",
+    "nom": "Pustovo",
+    "x": 870,
+    "z": -660,
+    "rayon": 140,
+    "drapeau": null
+  },
+  {
+    "id": "rudnik",
+    "nom": "Rudnik",
+    "x": -1950,
+    "z": -180,
+    "rayon": 130,
+    "drapeau": null
+  },
+  {
+    "id": "gorny",
+    "nom": "Gorny",
+    "x": -120,
+    "z": -1700,
+    "rayon": 100,
+    "drapeau": null
+  },
+  {
+    "id": "test",
+    "nom": "Zone de test",
+    "x": 0,
+    "z": 0,
+    "rayon": 30,
+    "drapeau": [
+      0,
+      88,
+      1
+    ]
+  }
+]

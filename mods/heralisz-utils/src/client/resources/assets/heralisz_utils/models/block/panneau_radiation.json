@@ -1,0 +1,148 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "face": "heralisz_utils:block/panneau_radiation",
+  "poteau": "heralisz_utils:block/panneau_poteau",
+  "metal": "heralisz_utils:block/panneau_metal",
+  "particle": "heralisz_utils:block/panneau_radiation"
+ },
+ "elements": [
+  {
+   "from": [
+    7.25,
+    -16.0,
+    8.5
+   ],
+   "to": [
+    8.75,
+    16.0,
+    10.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      1.5,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "south": {
+     "uv": [
+      4.35,
+      0.0,
+      5.85,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "east": {
+     "uv": [
+      8.7,
+      0.0,
+      10.2,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "west": {
+     "uv": [
+      13.05,
+      0.0,
+      14.55,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "up": {
+     "uv": [
+      1.45,
+      2.42,
+      2.95,
+      3.92
+     ],
+     "texture": "#poteau"
+    },
+    "down": {
+     "uv": [
+      5.8,
+      10.88,
+      7.3,
+      12.38
+     ],
+     "texture": "#poteau"
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    4.0,
+    7.0
+   ],
+   "to": [
+    16.0,
+    20.0,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#face"
+    },
+    "south": {
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      2.9,
+      0.0,
+      4.4,
+      16.0
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      7.25,
+      0.0,
+      8.75,
+      16.0
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      8.46,
+      16.0,
+      9.96
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      1.21,
+      16.0,
+      2.71
+     ],
+     "texture": "#metal"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

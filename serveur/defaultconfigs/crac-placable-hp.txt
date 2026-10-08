@@ -1,0 +1,54 @@
+# CRac placable blocks
+# This file, not the crac:placable tag, decides what counts as placable.
+# The tag only seeds it: blocks new to the tag are appended on server start.
+# Format: modid:block = hp     (a leading '-' disables the block)
+# format 2
+crac:claim_block = 100
+crac:metal_crate = 100
+minecraft:lectern = 100
+minecraft:crafting_table = 100
+minecraft:furnace = 100
+minecraft:blast_furnace = 100
+minecraft:smoker = 100
+minecraft:anvil = 100
+minecraft:chipped_anvil = 100
+minecraft:damaged_anvil = 100
+minecraft:enchanting_table = 100
+minecraft:brewing_stand = 100
+minecraft:cauldron = 100
+minecraft:smithing_table = 100
+minecraft:stonecutter = 100
+minecraft:grindstone = 100
+minecraft:loom = 100
+minecraft:cartography_table = 100
+minecraft:fletching_table = 100
+minecraft:composter = 100
+minecraft:barrel = 100
+minecraft:chest = 100
+minecraft:trapped_chest = 100
+minecraft:hopper = 100
+minecraft:dispenser = 100
+minecraft:dropper = 100
+minecraft:shulker_box = 100
+minecraft:black_shulker_box = 100
+minecraft:blue_shulker_box = 100
+minecraft:brown_shulker_box = 100
+minecraft:cyan_shulker_box = 100
+minecraft:gray_shulker_box = 100
+minecraft:green_shulker_box = 100
+minecraft:light_blue_shulker_box = 100
+minecraft:light_gray_shulker_box = 100
+minecraft:lime_shulker_box = 100
+minecraft:magenta_shulker_box = 100
+minecraft:orange_shulker_box = 100
+minecraft:pink_shulker_box = 100
+minecraft:purple_shulker_box = 100
+minecraft:red_shulker_box = 100
+minecraft:white_shulker_box = 100
+minecraft:yellow_shulker_box = 100
+minecraft:beacon = 100
+minecraft:bell = 100
+minecraft:campfire = 100
+minecraft:soul_campfire = 100
+minecraft:jukebox = 100
+minecraft:note_block = 100

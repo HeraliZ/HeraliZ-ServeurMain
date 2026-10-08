@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/radar_antenne"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/radar_antenne",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/radar_antenne",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/radar_antenne",
+   "y": 270
+  }
+ }
+}

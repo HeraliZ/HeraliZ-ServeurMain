@@ -1,0 +1,164 @@
+{
+ "credit": "Made with Blockbench",
+ "textures": {
+  "0": "heraliz_loot:block/ark/custom/block/boxe_ammo",
+  "particle": "heraliz_loot:block/ark/custom/block/boxe_ammo"
+ },
+ "elements": [
+  {
+   "from": [
+    5,
+    0,
+    5
+   ],
+   "to": [
+    13,
+    4,
+    9
+   ],
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     12,
+     8,
+     9
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      5.33333,
+      0,
+      16,
+      7.2
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      0,
+      7.46667,
+      10.13333,
+      16
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      6.66667,
+      6.4
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      8,
+      11.2
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#0"
+    }
+   }
+  },
+  {
+   "from": [
+    4.9,
+    4,
+    4.9
+   ],
+   "to": [
+    13.1,
+    4.7,
+    9.1
+   ],
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     12,
+     12,
+     9
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      8.8,
+      8.2,
+      9.5
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      0,
+      8.8,
+      8.26667,
+      13.06667
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      0,
+      8.8,
+      8.2,
+      9.5
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      0,
+      8.8,
+      4.2,
+      9.5
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0,
+      8.8,
+      8.26667,
+      13.06667
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      0,
+      8.8,
+      8.26667,
+      13.06667
+     ],
+     "texture": "#0"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

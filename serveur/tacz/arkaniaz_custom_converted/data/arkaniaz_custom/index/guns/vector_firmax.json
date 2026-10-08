@@ -1,0 +1,7 @@
+{
+  "name": "arkaniaz_custom.gun.vector_firmax.name",
+  "display": "arkaniaz_custom:vector_firmax_display",
+  "data": "tacz:vector45_data",
+  "tooltip": "arkaniaz_custom.gun.vector_firmax.desc",
+  "type": "smg"
+}

@@ -1,0 +1,25 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 3.0,
+        " ": 4.0
+      }
+    },
+    {
+      "type": "ttf",
+      "file": "caracrea:dmsans_bold.ttf",
+      "size": 11.0,
+      "oversample": 4.0,
+      "shift": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

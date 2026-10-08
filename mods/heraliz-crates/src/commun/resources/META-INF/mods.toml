@@ -1,0 +1,26 @@
+# Heraliz Crates coupé en trois jars (-client, -serveur, -complet) : UN mod, modId d'origine inchangé.
+# Ce fichier est IDENTIQUE dans les trois jars (docs/METHODE_CLIENT_SERVEUR.md).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heralizcrates"
+version="${mod_version}"
+displayName="Heraliz Crates"
+authors="${mod_authors}"
+description='''Caisses animées HD du serveur HERALIZ : caisses 3D (boss, vote, quêtes, événement, gemme, camos, pendentifs, stickers, chantier, trauma, largage), cadenas et clés 3D, roue de butin, interface d'ouverture épurée façon CS:GO (accroupi + clic droit), éditeur de butin en jeu pour les opérateurs, effets et sons custom.'''
+
+[[dependencies.heralizcrates]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heralizcrates]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

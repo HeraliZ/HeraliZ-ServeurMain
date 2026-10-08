@@ -1,0 +1,79 @@
+{
+ "textures": {
+  "particle": "heralisz_matchs:block/zombies/giant_mat/fut_cote",
+  "c": "heralisz_matchs:block/zombies/giant_mat/fut_cote",
+  "d": "heralisz_matchs:block/zombies/giant_mat/fut_dessus"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    1
+   ],
+   "to": [
+    15,
+    16,
+    15
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#c"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#c"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#c"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#c"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#d",
+     "cullface": "up"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#d",
+     "cullface": "down"
+    }
+   }
+  }
+ ]
+}

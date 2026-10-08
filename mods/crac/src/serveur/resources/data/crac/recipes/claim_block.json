@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " II",
+    " S ",
+    " S "
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_block" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": { "item": "crac:claim_block", "count": 1 }
+}

@@ -1,0 +1,1069 @@
+{
+ "items": [
+  {
+   "id": "plan_aa50beowulf",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_adar2",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ai_aws",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak107",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak108",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak109",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak12",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak15",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak19",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak22",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak308",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak63e",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak74",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aks74ub",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak_alpha",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak_delta",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ar10",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ar10b",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ar18",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ar338",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ar57",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ar762",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_arp",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aug_a2",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aug_a3",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aug_a3_para",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aug_a5",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aug_hbar",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_beowulf_ecr",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_beowulf_tcr",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_blicky",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_brn10",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_can_cannon",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_colt_933",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_colt_mars",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_cursed15",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_db_50",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_db_long_d",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_db_short_d",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_db_short_tactical",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_deagle_12g",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_deagle_50bmg",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_dragonuv_svd",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_dragonuv_svdm",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_dragonuv_svds",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_excaliber",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_g36",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_genesis12",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_genesis12_dragons_breath",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_genesis12_fl",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_glock_18c",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_glock_54",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_glock_bulpup",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_gm6_lynx",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_hk417",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_hk_g33",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_hk_mp5k",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_hk_mp5sd",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_honey_badger",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_luty",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m16a2",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m16a3",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m17",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m231",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m320t",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m82a2",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m870t",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mini_fix",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mk11",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mk18",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mk18_auto",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mk18_burst",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mk18_mjolnir",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mk23",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mk47",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mojave223",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mrad",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_msr",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_potassium_power",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_quatro15",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_rpk16",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_rpk_74",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_rpk_74m",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_saiga12",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_saiga9",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_scar_15p",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_scar_hamr",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_scar_pdw",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_scar_sbr",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_scar_ssr",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sks_golden",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sks_wooden",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sr15",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sr16",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_thunderbird",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_thunderbird_short",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_vector9",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_vityas",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_xm177",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_z15",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_z15_a",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m107",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_p90",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m870",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m700",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_vector45",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_uzi",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ump45",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sks_tactical",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_scar_h",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_rpk",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_rpg7",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m249",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m95",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m16a4",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m16a1",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m4a1",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_hk_mp5a5",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_hk_g3",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_glock_17",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_deagle_golden",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_deagle",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_db_short",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_db_long",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_cz75",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak47",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ai_awp",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aa12",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_686",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_882",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_9a91",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak101",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak102",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak103",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak104",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak105",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak200",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak201",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak202",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak203",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak204",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak205",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ak74m",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aks74u",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_an94",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ar2",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_asval",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_as_val",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_berthier",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_colt_python",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_cs_awp",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_evo3",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_g18c",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_galil",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_galilace",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_gew98",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_gras1874",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_hbar",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_lebel1886",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m1879revolver",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m1911",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m200",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m4urgi",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m4urgi10",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m723",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m727",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m727bhd",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m733",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_m82a3",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_martinihenry",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mg3",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_n4",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_negev",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_origin12",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_origin12db",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_p250",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_pkp",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_pp19",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_python",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_qbz191",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_qbz951",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_r8",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ro635",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ro991",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_rsh_12",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sharps",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sig556",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sr25",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_sr_2m",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ssg08",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_tti2011",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_tti_g34",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_type20",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_udp_9",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_ump9",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_usp",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_aug",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_scar_l",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plan_mk14",
+   "kind": "plan",
+   "rarity": "rare"
+  },
+  {
+   "id": "plastic",
+   "kind": "component",
+   "rarity": "common"
+  },
+  {
+   "id": "wood_plate",
+   "kind": "component",
+   "rarity": "common"
+  },
+  {
+   "id": "glass",
+   "kind": "component",
+   "rarity": "common"
+  },
+  {
+   "id": "black_powder",
+   "kind": "component",
+   "rarity": "common"
+  },
+  {
+   "id": "iron_plate",
+   "kind": "component",
+   "rarity": "uncommon"
+  },
+  {
+   "id": "aluminum",
+   "kind": "component",
+   "rarity": "uncommon"
+  },
+  {
+   "id": "polyethylene",
+   "kind": "component",
+   "rarity": "uncommon"
+  },
+  {
+   "id": "propane",
+   "kind": "component",
+   "rarity": "uncommon"
+  },
+  {
+   "id": "copper_coil",
+   "kind": "component",
+   "rarity": "uncommon"
+  },
+  {
+   "id": "steel_plate",
+   "kind": "component",
+   "rarity": "rare"
+  },
+  {
+   "id": "carbon",
+   "kind": "component",
+   "rarity": "rare"
+  },
+  {
+   "id": "aramid",
+   "kind": "component",
+   "rarity": "rare"
+  },
+  {
+   "id": "titanium_plate",
+   "kind": "component",
+   "rarity": "epic"
+  },
+  {
+   "id": "document_lootbonus",
+   "kind": "document",
+   "rarity": "epic"
+  }
+ ]
+}

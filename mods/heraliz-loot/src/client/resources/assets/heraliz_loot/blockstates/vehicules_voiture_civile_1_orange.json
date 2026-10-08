@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=south": {
+   "model": "heraliz_loot:block/ark/civilian_vehicle_1_orange"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/ark/civilian_vehicle_1_orange",
+   "y": 90
+  },
+  "facing=north": {
+   "model": "heraliz_loot:block/ark/civilian_vehicle_1_orange",
+   "y": 180
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/ark/civilian_vehicle_1_orange",
+   "y": 270
+  }
+ }
+}

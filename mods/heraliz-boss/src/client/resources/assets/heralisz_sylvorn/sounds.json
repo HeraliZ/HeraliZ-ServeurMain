@@ -1,0 +1,150 @@
+{
+ "sylvorn.breath": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/breath"
+  ]
+ },
+ "sylvorn.chimes": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/chimes"
+  ]
+ },
+ "sylvorn.howl": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/howl"
+  ]
+ },
+ "sylvorn.hurt": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/hurt_1",
+   "heralisz_sylvorn:sylvorn/hurt_2"
+  ]
+ },
+ "sylvorn.petrify": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/petrify"
+  ]
+ },
+ "sylvorn.roar": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/roar_1",
+   "heralisz_sylvorn:sylvorn/roar_2"
+  ]
+ },
+ "sylvorn.roots": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/roots"
+  ]
+ },
+ "sylvorn.step": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/step_1",
+   "heralisz_sylvorn:sylvorn/step_2"
+  ]
+ },
+ "sylvorn.thorns": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/thorns"
+  ]
+ },
+ "sylvorn.whisper": {
+  "sounds": [
+   "heralisz_sylvorn:sylvorn/whisper"
+  ]
+ },
+ "music.sylvorn": {
+  "sounds": [
+   {
+    "name": "heralisz_sylvorn:music/sylvorn",
+    "stream": true
+   }
+  ]
+ },
+ "ambience.bed": {
+  "sounds": [
+   {
+    "name": "heralisz_sylvorn:ambience/bed_sylvorn",
+    "stream": true
+   }
+  ]
+ },
+ "foley.heartbeat": {
+  "sounds": [
+   "heralisz_sylvorn:foley/heartbeat"
+  ]
+ },
+ "foley.wood_break": {
+  "sounds": [
+   "heralisz_sylvorn:foley/wood_break_1",
+   "heralisz_sylvorn:foley/wood_break_2",
+   "heralisz_sylvorn:foley/wood_break_3"
+  ]
+ },
+ "foley.bone_crack": {
+  "sounds": [
+   "heralisz_sylvorn:foley/bone_crack_1",
+   "heralisz_sylvorn:foley/bone_crack_2"
+  ]
+ },
+ "foley.earth_break": {
+  "sounds": [
+   "heralisz_sylvorn:foley/earth_break_1",
+   "heralisz_sylvorn:foley/earth_break_2"
+  ]
+ },
+ "foley.goo": {
+  "sounds": [
+   "heralisz_sylvorn:foley/goo_1",
+   "heralisz_sylvorn:foley/goo_2"
+  ]
+ },
+ "foley.heavy_step": {
+  "sounds": [
+   "heralisz_sylvorn:foley/heavy_step_1",
+   "heralisz_sylvorn:foley/heavy_step_2",
+   "heralisz_sylvorn:foley/heavy_step_3"
+  ]
+ },
+ "foley.swipe": {
+  "sounds": [
+   "heralisz_sylvorn:foley/swipe_1",
+   "heralisz_sylvorn:foley/swipe_2",
+   "heralisz_sylvorn:foley/swipe_3"
+  ]
+ },
+ "dungeon.creak": {
+  "sounds": [
+   "heralisz_sylvorn:dungeon/amb_creak"
+  ]
+ },
+ "dungeon.roots": {
+  "sounds": [
+   "heralisz_sylvorn:dungeon/roots"
+  ]
+ },
+ "dungeon.horn": {
+  "sounds": [
+   "heralisz_sylvorn:dungeon/forest_horn"
+  ]
+ },
+ "dungeon.whisper": {
+  "sounds": [
+   "heralisz_sylvorn:dungeon/amb_whisper"
+  ]
+ },
+ "dungeon.groan": {
+  "sounds": [
+   "heralisz_sylvorn:dungeon/amb_groan"
+  ]
+ },
+ "dungeon.drip": {
+  "sounds": [
+   "heralisz_sylvorn:dungeon/amb_drip"
+  ]
+ },
+ "dungeon.plant": {
+  "sounds": [
+   "heralisz_sylvorn:dungeon/plant"
+  ]
+ }
+}

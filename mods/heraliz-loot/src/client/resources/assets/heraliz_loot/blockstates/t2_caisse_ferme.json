@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t2_caisse_ferme"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t2_caisse_ferme",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t2_caisse_ferme",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t2_caisse_ferme",
+   "y": 270
+  }
+ }
+}

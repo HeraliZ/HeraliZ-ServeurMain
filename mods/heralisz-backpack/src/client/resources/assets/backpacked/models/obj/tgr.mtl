@@ -1,0 +1,4 @@
+# texture donnée par le modèle JSON du sac (#texture)
+newmtl sac
+Kd 1 1 1
+map_Kd #texture

@@ -1,0 +1,352 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "moteur": "heralisz_utils:block/jaune_ecaille",
+  "metal": "heralisz_utils:block/metal_sombre",
+  "grille": "heralisz_utils:block/grille",
+  "particle": "heralisz_utils:block/jaune_ecaille"
+ },
+ "elements": [
+  {
+   "from": [
+    2.0,
+    0.0,
+    2.0
+   ],
+   "to": [
+    14.0,
+    1.5,
+    14.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      1.5
+     ],
+     "texture": "#grille"
+    },
+    "south": {
+     "uv": [
+      1.2,
+      8.46,
+      13.2,
+      9.96
+     ],
+     "texture": "#grille"
+    },
+    "east": {
+     "uv": [
+      2.4,
+      1.21,
+      14.4,
+      2.71
+     ],
+     "texture": "#grille"
+    },
+    "west": {
+     "uv": [
+      3.6,
+      9.67,
+      15.6,
+      11.17
+     ],
+     "texture": "#grille"
+    },
+    "up": {
+     "uv": [
+      0.4,
+      0.67,
+      12.4,
+      12.67
+     ],
+     "texture": "#grille"
+    },
+    "down": {
+     "uv": [
+      1.6,
+      3.0,
+      13.6,
+      15.0
+     ],
+     "texture": "#grille"
+    }
+   }
+  },
+  {
+   "from": [
+    4.0,
+    1.5,
+    4.0
+   ],
+   "to": [
+    12.0,
+    9.5,
+    12.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      5.6,
+      3.33,
+      13.6,
+      11.33
+     ],
+     "texture": "#moteur"
+    },
+    "south": {
+     "uv": [
+      8.0,
+      8.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#moteur"
+    },
+    "east": {
+     "uv": [
+      1.6,
+      4.0,
+      9.6,
+      12.0
+     ],
+     "texture": "#moteur"
+    },
+    "west": {
+     "uv": [
+      4.0,
+      0.0,
+      12.0,
+      8.0
+     ],
+     "texture": "#moteur"
+    },
+    "up": {
+     "uv": [
+      6.4,
+      4.67,
+      14.4,
+      12.67
+     ],
+     "texture": "#moteur"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      0.67,
+      8.0,
+      8.67
+     ],
+     "texture": "#moteur"
+    }
+   }
+  },
+  {
+   "from": [
+    5.0,
+    9.5,
+    5.0
+   ],
+   "to": [
+    11.0,
+    12.5,
+    11.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      3.0,
+      10.83,
+      9.0,
+      13.83
+     ],
+     "texture": "#metal"
+    },
+    "south": {
+     "uv": [
+      6.0,
+      4.33,
+      12.0,
+      7.33
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      9.0,
+      11.92,
+      15.0,
+      14.92
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      1.0,
+      5.42,
+      7.0,
+      8.42
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      4.0,
+      10.0,
+      10.0,
+      16.0
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      7.0,
+      5.0,
+      13.0,
+      11.0
+     ],
+     "texture": "#metal"
+    }
+   }
+  },
+  {
+   "from": [
+    3.5,
+    3.0,
+    3.5
+   ],
+   "to": [
+    12.5,
+    4.0,
+    12.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      7.0,
+      2.5,
+      16.0,
+      3.5
+     ],
+     "texture": "#metal"
+    },
+    "south": {
+     "uv": [
+      1.4,
+      11.25,
+      10.4,
+      12.25
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      3.5,
+      3.75,
+      12.5,
+      4.75
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      5.6,
+      12.5,
+      14.6,
+      13.5
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      2.33,
+      9.0,
+      11.33
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      2.1,
+      6.42,
+      11.1,
+      15.42
+     ],
+     "texture": "#metal"
+    }
+   }
+  },
+  {
+   "from": [
+    7.0,
+    -4.0,
+    7.0
+   ],
+   "to": [
+    9.0,
+    0.0,
+    9.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      8.4,
+      7.0,
+      10.4,
+      11.0
+     ],
+     "texture": "#metal"
+    },
+    "south": {
+     "uv": [
+      12.6,
+      1.0,
+      14.6,
+      5.0
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      1.4,
+      8.0,
+      3.4,
+      12.0
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      5.6,
+      2.0,
+      7.6,
+      6.0
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      9.8,
+      10.5,
+      11.8,
+      12.5
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      14.0,
+      3.5,
+      16.0,
+      5.5
+     ],
+     "texture": "#metal"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

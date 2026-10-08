@@ -1,0 +1,5 @@
+{
+  "slot": "knife:attachment/slot/perk_attack",
+  "model": "knife:attachment/perk_attack",
+  "texture": "knife:attachment/uv/perk_attack",
+"show_muzzle": "false"}

@@ -1,0 +1,215 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "tuyau": "heralisz_utils:block/tuyau_peint",
+  "bride": "heralisz_utils:block/metal_sombre",
+  "particle": "heralisz_utils:block/tuyau_peint"
+ },
+ "elements": [
+  {
+   "from": [
+    3.0,
+    0.0,
+    5.0
+   ],
+   "to": [
+    13.0,
+    16.0,
+    11.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      16.0
+     ],
+     "texture": "#tuyau"
+    },
+    "south": {
+     "uv": [
+      1.8,
+      0.0,
+      11.8,
+      16.0
+     ],
+     "texture": "#tuyau"
+    },
+    "east": {
+     "uv": [
+      6.0,
+      0.0,
+      12.0,
+      16.0
+     ],
+     "texture": "#tuyau"
+    },
+    "west": {
+     "uv": [
+      9.0,
+      0.0,
+      15.0,
+      16.0
+     ],
+     "texture": "#tuyau"
+    },
+    "up": {
+     "uv": [
+      0.6,
+      1.67,
+      10.6,
+      7.67
+     ],
+     "texture": "#tuyau"
+    },
+    "down": {
+     "uv": [
+      2.4,
+      7.5,
+      12.4,
+      13.5
+     ],
+     "texture": "#tuyau"
+    }
+   }
+  },
+  {
+   "from": [
+    5.0,
+    0.0,
+    3.0
+   ],
+   "to": [
+    11.0,
+    16.0,
+    13.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      7.0,
+      0.0,
+      13.0,
+      16.0
+     ],
+     "texture": "#tuyau"
+    },
+    "south": {
+     "uv": [
+      10.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#tuyau"
+    },
+    "east": {
+     "uv": [
+      1.2,
+      0.0,
+      11.2,
+      16.0
+     ],
+     "texture": "#tuyau"
+    },
+    "west": {
+     "uv": [
+      3.0,
+      0.0,
+      13.0,
+      16.0
+     ],
+     "texture": "#tuyau"
+    },
+    "up": {
+     "uv": [
+      8.0,
+      3.5,
+      14.0,
+      13.5
+     ],
+     "texture": "#tuyau"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      0.5,
+      6.0,
+      10.5
+     ],
+     "texture": "#tuyau"
+    }
+   }
+  },
+  {
+   "from": [
+    2.0,
+    0.0,
+    2.0
+   ],
+   "to": [
+    14.0,
+    1.5,
+    14.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      1.2,
+      12.08,
+      13.2,
+      13.58
+     ],
+     "texture": "#bride"
+    },
+    "south": {
+     "uv": [
+      2.4,
+      4.83,
+      14.4,
+      6.33
+     ],
+     "texture": "#bride"
+    },
+    "east": {
+     "uv": [
+      3.6,
+      13.29,
+      15.6,
+      14.79
+     ],
+     "texture": "#bride"
+    },
+    "west": {
+     "uv": [
+      0.4,
+      6.04,
+      12.4,
+      7.54
+     ],
+     "texture": "#bride"
+    },
+    "up": {
+     "uv": [
+      1.6,
+      4.0,
+      13.6,
+      16.0
+     ],
+     "texture": "#bride"
+    },
+    "down": {
+     "uv": [
+      2.8,
+      2.0,
+      14.8,
+      14.0
+     ],
+     "texture": "#bride"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

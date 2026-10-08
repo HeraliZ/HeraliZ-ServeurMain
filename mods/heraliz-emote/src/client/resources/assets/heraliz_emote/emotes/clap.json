@@ -1,0 +1,449 @@
+{
+ "name": "Applaudir",
+ "author": "Heraliz",
+ "description": "Bravo ! Des applaudissements chaleureux, avec un petit sautillement.",
+ "uuid": "abe92492-21f7-504b-9945-0735434ce395",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 19,
+  "stopTick": 20,
+  "isLoop": true,
+  "returnTick": 4,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "body": {
+     "y": 0.01,
+     "pitch": 2.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "head": {
+     "pitch": -6.0,
+     "roll": -3.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "rightArm": {
+     "pitch": -84.31,
+     "roll": -26.44
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "leftArm": {
+     "pitch": -84.31,
+     "roll": 26.44
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "rightLeg": {
+     "pitch": 1.98,
+     "roll": 4.01
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INQUAD",
+    "leftLeg": {
+     "pitch": 1.98,
+     "roll": -4.01
+    }
+   },
+   {
+    "tick": 6,
+    "easing": "OUTQUAD",
+    "body": {
+     "y": -0.01,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 6,
+    "easing": "OUTQUAD",
+    "head": {
+     "pitch": -4.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 6,
+    "easing": "OUTQUAD",
+    "rightArm": {
+     "pitch": -66.41,
+     "roll": -92.34
+    }
+   },
+   {
+    "tick": 6,
+    "easing": "OUTQUAD",
+    "leftArm": {
+     "pitch": -66.41,
+     "roll": 92.34
+    }
+   },
+   {
+    "tick": 6,
+    "easing": "OUTQUAD",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 4.12
+    }
+   },
+   {
+    "tick": 6,
+    "easing": "OUTQUAD",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": -4.12
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INQUAD",
+    "body": {
+     "y": 0.01,
+     "pitch": 2.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INQUAD",
+    "head": {
+     "pitch": -6.0,
+     "roll": 3.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INQUAD",
+    "rightArm": {
+     "pitch": -84.31,
+     "roll": -26.44
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INQUAD",
+    "leftArm": {
+     "pitch": -84.31,
+     "roll": 26.44
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INQUAD",
+    "rightLeg": {
+     "pitch": 1.98,
+     "roll": 4.01
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INQUAD",
+    "leftLeg": {
+     "pitch": 1.98,
+     "roll": -4.01
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "body": {
+     "y": -0.01,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "head": {
+     "pitch": -4.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "rightArm": {
+     "pitch": -66.41,
+     "roll": -92.34
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "leftArm": {
+     "pitch": -66.41,
+     "roll": 92.34
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 4.12
+    }
+   },
+   {
+    "tick": 10,
+    "easing": "OUTQUAD",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": -4.12
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "body": {
+     "y": 0.01,
+     "pitch": 2.0
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "head": {
+     "pitch": -6.0,
+     "roll": -3.0
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "rightArm": {
+     "pitch": -84.31,
+     "roll": -26.44
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "leftArm": {
+     "pitch": -84.31,
+     "roll": 26.44
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "rightLeg": {
+     "pitch": 1.98,
+     "roll": 4.01
+    }
+   },
+   {
+    "tick": 12,
+    "easing": "INQUAD",
+    "leftLeg": {
+     "pitch": 1.98,
+     "roll": -4.01
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "OUTQUAD",
+    "body": {
+     "y": -0.01,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "OUTQUAD",
+    "head": {
+     "pitch": -4.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "OUTQUAD",
+    "rightArm": {
+     "pitch": -66.41,
+     "roll": -92.34
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "OUTQUAD",
+    "leftArm": {
+     "pitch": -66.41,
+     "roll": 92.34
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "OUTQUAD",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 4.12
+    }
+   },
+   {
+    "tick": 14,
+    "easing": "OUTQUAD",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": -4.12
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INQUAD",
+    "body": {
+     "y": 0.01,
+     "pitch": 2.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INQUAD",
+    "head": {
+     "pitch": -6.0,
+     "roll": 3.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INQUAD",
+    "rightArm": {
+     "pitch": -84.31,
+     "roll": -26.44
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INQUAD",
+    "leftArm": {
+     "pitch": -84.31,
+     "roll": 26.44
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INQUAD",
+    "rightLeg": {
+     "pitch": 1.98,
+     "roll": 4.01
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INQUAD",
+    "leftLeg": {
+     "pitch": 1.98,
+     "roll": -4.01
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "body": {
+     "y": -0.01,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "head": {
+     "pitch": -4.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "rightArm": {
+     "pitch": -66.41,
+     "roll": -92.34
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "leftArm": {
+     "pitch": -66.41,
+     "roll": 92.34
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 4.12
+    }
+   },
+   {
+    "tick": 18,
+    "easing": "OUTQUAD",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": -4.12
+    }
+   }
+  ]
+ }
+}

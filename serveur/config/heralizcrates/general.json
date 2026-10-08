@@ -1,0 +1,7 @@
+{
+  "_aide": "consume_key_in_creative: consommer la cle en creatif | broadcast_min_rarity: rarete annoncee a tout le serveur | title_min_rarity: rarete affichee en grand titre | ring_size: nombre d'objets dans la roue (4-12). Raretes: common, uncommon, rare, epic, legendary, mythic",
+  "consume_key_in_creative": false,
+  "broadcast_min_rarity": "legendary",
+  "title_min_rarity": "epic",
+  "ring_size": 8
+}

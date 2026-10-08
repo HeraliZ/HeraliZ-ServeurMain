@@ -1,0 +1,30 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_armory:citadin_face",
+    "heraliz_armory:rescape_face",
+    "heraliz_armory:ranger_face",
+    "heraliz_armory:woodland_face",
+    "heraliz_armory:nomade_face",
+    "heraliz_armory:cobra_face",
+    "heraliz_armory:scorpion_face",
+    "heraliz_armory:contrat_face",
+    "heraliz_armory:belier_face",
+    "heraliz_armory:fennec_face",
+    "heraliz_armory:blizzard_face",
+    "heraliz_armory:barricade_face",
+    "heraliz_armory:beton_face",
+    "heraliz_armory:meute_face",
+    "heraliz_armory:corbeau_face",
+    "heraliz_armory:ours_face",
+    "heraliz_armory:titan_face",
+    "heraliz_armory:gas_mask_black",
+    "heraliz_armory:gas_mask_white",
+    "heraliz_armory:gas_mask_military_black",
+    "heraliz_armory:gas_mask_military_white",
+    "heraliz_armory:gas_mask_military_green",
+    "heraliz_armory:gas_mask_military_red",
+    "heraliz_armory:gas_mask_military_purple",
+    "heraliz_armory:gas_mask_military_gold"
+  ]
+}

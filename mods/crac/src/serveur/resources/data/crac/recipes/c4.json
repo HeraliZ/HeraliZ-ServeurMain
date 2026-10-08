@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "RNR",
+    "TTT"
+  ],
+  "key": {
+    "R": { "item": "minecraft:redstone" },
+    "N": { "item": "minecraft:netherite_ingot" },
+    "T": { "item": "minecraft:tnt" }
+  },
+  "result": { "item": "crac:c4", "count": 1 }
+}

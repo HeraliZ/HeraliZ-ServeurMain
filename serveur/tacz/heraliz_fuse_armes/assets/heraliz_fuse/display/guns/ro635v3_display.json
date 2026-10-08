@@ -1,0 +1,57 @@
+{
+  "model": "heraliz_fuse:gun/ro635v3_geo",
+  "texture": "heraliz_fuse:gun/uv/ro635v3",
+  "hud": "heraliz_fuse:gun/hud/ro635v3",
+  "slot": "heraliz_fuse:gun/slot/ro635v3",
+  "animation": "heraliz_fuse:ro635v3",
+  "use_default_animation": "rifle",
+  "third_person_animation": "default",
+  "transform": {
+    "scale": {
+      "thirdperson": [0.7, 0.7, 0.7],
+      "ground": [0.6, 0.6, 0.6],
+      "fixed": [1, 1, 1]
+    }
+  },
+  "muzzle_flash": {
+    "texture": "tacz:flash/common_muzzle_flash",
+    "scale": 1.2
+  },
+  "iron_zoom": 0.9,
+  "shell": {
+    "initial_velocity": [5, 2, 1],
+    "random_velocity": [1, 1, 0.25],
+    "acceleration": [0.0, -10, 0.0],
+    "angular_velocity": [360, -1200, 90],
+    "living_time": 2.1
+  },
+  "sounds": {
+    "shoot": "heraliz_fuse:smgs/ro635v3/ro635v3_fire",
+    "shoot_3p": "heraliz_fuse:smgs/ro635v3/ro635v3_fire_3p",
+    "reload_empty": "heraliz_fuse:smgs/ro635v3/ro635v3_reload_empty",
+    "reload_tactical": "heraliz_fuse:smgs/ro635v3/ro635v3_reload",
+    "inspect": "heraliz_fuse:smgs/ro635v3/ro635v3_inspect",
+    "inspect_empty": "heraliz_fuse:smgs/ro635v3/ro635v3_inspect_empty",
+    "draw": "heraliz_fuse:smgs/ro635v3/ro635v3_draw",
+    "put_away": "heraliz_fuse:smgs/ro635v3/ro635v3_put_away",
+    "silence": "heraliz_fuse:smgs/ro635v3/ro635v3_suppressed",
+    "silence_3p": "heraliz_fuse:smgs/ro635v3/ro635v3_suppressed_3p",
+    "dry_fire":  "heraliz_fuse:platform_sound_sfx/smgs_platform_sfx/smgs_dry_fire",
+    "fire_select": "heraliz_fuse:platform_sound_sfx/smgs_platform_sfx/smgs_fire_mode_switch",
+    "head_hit": "tacz:head_hit",
+    "flesh_hit": "tacz:flesh_hit",
+    "kill": "tacz:kill"
+  },
+  "offhand_show": {
+    "pos": [1, 20, 3.5],
+    "rotate": [0, 0, 60],
+    "scale": [0.5, 0.5, 0.5]
+  },
+  "hotbar_show": {
+    "0": {
+      "pos": [-1, 20, 3],
+      "rotate": [-180, 0, 120],
+      "scale": [0.5, 0.5, 0.5]
+    }
+  }
+}

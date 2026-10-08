@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/moulin_corps_use_1"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/moulin_corps_use_1",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/moulin_corps_use_1",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/moulin_corps_use_1",
+   "y": 270
+  }
+ }
+}

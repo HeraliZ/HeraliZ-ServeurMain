@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t3_caisse_preuves"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t3_caisse_preuves",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t3_caisse_preuves",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t3_caisse_preuves",
+   "y": 270
+  }
+ }
+}

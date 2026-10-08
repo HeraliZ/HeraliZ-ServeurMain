@@ -1,0 +1,9 @@
+{
+    "unlock_challenge": {
+        "type": "backpacked:breed_animal",
+        "formatter": "backpacked:incomplete_complete",
+        "animal": {
+            "type": "minecraft:turtle"
+        }
+    }
+}

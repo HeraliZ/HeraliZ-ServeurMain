@@ -1,0 +1,323 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/blizzard.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "right_arm": [
+   {
+    "name": "gant_main",
+    "uv": [
+     62,
+     37
+    ],
+    "from": [
+     -3.625,
+     8.375,
+     -2.75
+    ],
+    "size": [
+     5.25,
+     2.25,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gant_coque",
+    "uv": [
+     112,
+     68
+    ],
+    "from": [
+     -3.857421875,
+     9.017578125,
+     -1.732421875
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "gant_poignet",
+    "uv": [
+     88,
+     54
+    ],
+    "from": [
+     -3.857421875,
+     7.642578125,
+     -2.857421875
+    ],
+    "size": [
+     5.75,
+     0.75,
+     5.75
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "gant_main_m",
+    "uv": [
+     84,
+     37
+    ],
+    "from": [
+     -1.625,
+     8.375,
+     -2.75
+    ],
+    "size": [
+     5.25,
+     2.25,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gant_coque_m",
+    "uv": [
+     120,
+     68
+    ],
+    "from": [
+     3.607421875,
+     9.017578125,
+     -1.732421875
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "gant_poignet_m",
+    "uv": [
+     0,
+     61
+    ],
+    "from": [
+     -1.892578125,
+     7.642578125,
+     -2.857421875
+    ],
+    "size": [
+     5.75,
+     0.75,
+     5.75
+    ],
+    "faces": [
+     "DOWN",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ },
+ "slim_parts": {
+  "right_arm": [
+   {
+    "name": "gant_main_slim",
+    "uv": [
+     106,
+     37
+    ],
+    "from": [
+     -2.625,
+     8.375,
+     -2.75
+    ],
+    "size": [
+     4.25,
+     2.25,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gant_coque_slim",
+    "uv": [
+     0,
+     74
+    ],
+    "from": [
+     -2.857421875,
+     9.017578125,
+     -1.732421875
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "gant_poignet_slim",
+    "uv": [
+     23,
+     61
+    ],
+    "from": [
+     -2.857421875,
+     7.642578125,
+     -2.857421875
+    ],
+    "size": [
+     4.75,
+     0.75,
+     5.75
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "gant_main_m_slim",
+    "uv": [
+     0,
+     46
+    ],
+    "from": [
+     -1.625,
+     8.375,
+     -2.75
+    ],
+    "size": [
+     4.25,
+     2.25,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "gant_coque_m_slim",
+    "uv": [
+     8,
+     74
+    ],
+    "from": [
+     2.607421875,
+     9.017578125,
+     -1.732421875
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "gant_poignet_m_slim",
+    "uv": [
+     44,
+     61
+    ],
+    "from": [
+     -1.892578125,
+     7.642578125,
+     -2.857421875
+    ],
+    "size": [
+     4.75,
+     0.75,
+     5.75
+    ],
+    "faces": [
+     "DOWN",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ }
+}

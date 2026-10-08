@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/blood_drag"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/blood_drag",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/blood_drag",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/blood_drag",
+   "y": 270
+  }
+ }
+}

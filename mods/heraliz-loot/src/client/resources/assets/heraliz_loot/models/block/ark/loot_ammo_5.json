@@ -1,0 +1,183 @@
+{
+ "credit": "Made with Blockbench",
+ "textures": {
+  "0": "heraliz_loot:block/ark/blocks/weapon/ammo/5.54mm_rounds",
+  "particle": "heraliz_loot:block/ark/blocks/weapon/ammo/5.54mm_rounds"
+ },
+ "elements": [
+  {
+   "from": [
+    10,
+    0,
+    7
+   ],
+   "to": [
+    14,
+    2,
+    10
+   ],
+   "rotation": {
+    "angle": -45,
+    "axis": "y",
+    "origin": [
+     11,
+     8,
+     7
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      10,
+      6,
+      13
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      0,
+      6.5,
+      10,
+      9.5
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      0,
+      6.5,
+      10,
+      9.5
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      0,
+      6.5,
+      10,
+      9.5
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      10,
+      6
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      10,
+      6
+     ],
+     "texture": "#0"
+    }
+   }
+  },
+  {
+   "from": [
+    4,
+    0,
+    7
+   ],
+   "to": [
+    8,
+    2,
+    10
+   ],
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     5,
+     8,
+     7
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      10,
+      6,
+      13
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      0,
+      10,
+      6,
+      13
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      0,
+      6.5,
+      9.5,
+      9.5
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      6.5,
+      10,
+      12,
+      13
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      10,
+      6
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      10,
+      6
+     ],
+     "texture": "#0"
+    }
+   }
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    90,
+    1,
+    0
+   ],
+   "translation": [
+    -0.5,
+    0,
+    0
+   ],
+   "scale": [
+    0.67,
+    0.69,
+    0.69
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
+}

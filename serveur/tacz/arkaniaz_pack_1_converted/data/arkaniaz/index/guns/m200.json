@@ -1,0 +1,7 @@
+{
+    "name": "arkaniaz.gun.m200.name",
+    "display": "arkaniaz:m200_display",
+    "data": "arkaniaz:m200_data",
+    "type": "sniper",
+    "tooltip": "Fusil de précision long portée."
+}

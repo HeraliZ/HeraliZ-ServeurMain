@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t7_coffre"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t7_coffre"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t7_coffre"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t7_coffre"
+  }
+ }
+}

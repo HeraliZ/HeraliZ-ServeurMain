@@ -1,0 +1,75 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "tile": "heralisz_n07:block/lab_tile",
+  "liquid": "heralisz_n07:block/rad_still",
+  "particle": "heralisz_n07:block/lab_tile"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    12,
+    16
+   ],
+   "faces": {
+    "down": {
+     "texture": "#tile",
+     "cullface": "down"
+    },
+    "up": {
+     "texture": "#liquid",
+     "forge_data": {
+      "block_light": 15,
+      "sky_light": 15
+     }
+    },
+    "north": {
+     "texture": "#tile",
+     "uv": [
+      0,
+      4,
+      16,
+      16
+     ],
+     "cullface": "north"
+    },
+    "south": {
+     "texture": "#tile",
+     "uv": [
+      0,
+      4,
+      16,
+      16
+     ],
+     "cullface": "south"
+    },
+    "west": {
+     "texture": "#tile",
+     "uv": [
+      0,
+      4,
+      16,
+      16
+     ],
+     "cullface": "west"
+    },
+    "east": {
+     "texture": "#tile",
+     "uv": [
+      0,
+      4,
+      16,
+      16
+     ],
+     "cullface": "east"
+    }
+   }
+  }
+ ]
+}

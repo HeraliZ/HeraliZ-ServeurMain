@@ -1,0 +1,8 @@
+{
+  "name": "heraliz_fuse.gun.m14.name",
+  "display": "heraliz_fuse:m14_display",
+  "data": "heraliz_fuse:m14_data",
+  "tooltip": "heraliz_fuse.gun.m14.desc",
+  "type": "rifle",
+  "sort": 4
+}

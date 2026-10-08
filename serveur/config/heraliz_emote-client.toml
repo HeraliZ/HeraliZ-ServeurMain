@@ -1,0 +1,28 @@
+
+#Borrowing the emote of another player (Shift + right click on them by default)
+[borrow]
+	#Turns borrowing on or off. The keys stay bound but do nothing when off.
+	enabled = true
+	#Borrow only with an empty main hand, so the click still uses the item you hold.
+	emptyHandOnly = true
+	#Looping emotes start at the same moment as the other player's, so you dance in step.
+	syncEmote = true
+	#Keep the music of borrowed emotes. Holding the Reverse sound key flips this for one borrow.
+	borrowSound = true
+	#Show a message above the hotbar when you borrow an emote.
+	showMessages = true
+	#How long a borrowed emote waits for you to stop crouching before it is dropped (seconds).
+	#Range: 1 ~ 10
+	holdSeconds = 3
+	#How far away the player you borrow from can be (blocks).
+	#Range: 2 ~ 16
+	reach = 6
+
+#The Heraliz emotes
+[emotes]
+	#Hear the music and sound effects of the emotes other players play (off: only yours).
+	otherPlayersSounds = true
+	#Leave out the emotes that come with Emotecraft (waving, clap, backflip...): only your own
+	#emotes and the Heraliz ones are listed. Takes effect when Emotecraft loads its emotes again (restart).
+	hideEmotecraftEmotes = true
+

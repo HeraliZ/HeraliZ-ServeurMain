@@ -1,0 +1,7 @@
+{
+    "name": "maxstuff.gun.mk23.name",
+    "display": "maxstuff:mk23_display",
+    "data": "maxstuff:mk23_data",
+    "type": "pistol",
+    "tooltip": "maxstuff.gun.mk23.desc"
+}

@@ -1,0 +1,6 @@
+{
+  "validators": [
+    "curios:tag",
+    "heraliz_armory:piece"
+  ]
+}

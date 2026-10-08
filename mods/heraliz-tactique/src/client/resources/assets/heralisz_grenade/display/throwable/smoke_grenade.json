@@ -1,0 +1,37 @@
+{
+  "model": "heralisz_grenade:throwable/smoke_grenade_geo",
+  "animation": "heralisz_grenade:throwable/smoke_grenade",
+  "state_machine": "heralisz_grenade:default_grenade_state_machine",
+  "texture": "heralisz_grenade:throwable/smoke_grenade_uv",
+  "slot_texture": "heralisz_grenade:throwable/slot/smoke_grenade",
+  "sounds": {
+    "release": "heralisz_grenade:entity.grenade.smoke.start",
+    "death": "heralisz_grenade:entity.grenade.smoke.end"
+  },
+  "transforms": {
+    "thirdperson_righthand": {
+      "translation": [0, 5, 0]
+    },
+    "thirdperson_lefthand": {
+      "translation": [0, 5, 0]
+    },
+    "ground": {
+      "rotation": [45, 0, 0],
+      "translation": [0, 6.5, 0],
+      "scale": [1.5, 1.5, 1.5]
+    },
+    "gui": {
+      "rotation": [0, 135, 0],
+      "translation": [-1.25, 9.5, 0],
+      "scale": [1.5, 1.5, 1.5]
+    },
+    "head": {
+      "translation": [0, 6, 0]
+    },
+    "fixed": {
+      "rotation": [0, 90, 0],
+      "translation": [0, 10, 0],
+      "scale": [1.5, 1.5, 1.5]
+    }
+  }
+}

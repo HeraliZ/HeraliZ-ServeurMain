@@ -1,0 +1,165 @@
+{
+ "credit": "Made with Blockbench",
+ "textures": {
+  "0": "heraliz_loot:block/ark/blocks/food/canned_sardines",
+  "1": "heraliz_loot:block/ark/blocks/food/canned_peaches",
+  "particle": "heraliz_loot:block/ark/blocks/food/canned_sardines"
+ },
+ "elements": [
+  {
+   "from": [
+    8,
+    0,
+    4
+   ],
+   "to": [
+    12,
+    6,
+    8
+   ],
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     16,
+     8,
+     12
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "east": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "south": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "west": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "up": {
+     "uv": [
+      0,
+      2,
+      6,
+      8
+     ],
+     "texture": "#1"
+    },
+    "down": {
+     "uv": [
+      0,
+      2,
+      6,
+      8
+     ],
+     "texture": "#1"
+    }
+   }
+  },
+  {
+   "from": [
+    9,
+    0,
+    -1
+   ],
+   "to": [
+    12,
+    2,
+    4
+   ],
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     19,
+     8,
+     7
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      13,
+      7,
+      16
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      0,
+      13,
+      7,
+      16
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      0,
+      13,
+      7,
+      16
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      0,
+      13,
+      7,
+      16
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0,
+      8,
+      7,
+      13
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      7,
+      8,
+      14,
+      13
+     ],
+     "texture": "#0"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

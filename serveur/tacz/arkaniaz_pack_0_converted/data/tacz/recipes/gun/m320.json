@@ -1,0 +1,45 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "geckolib:plan_m320"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 64
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:carbon"
+            },
+            "count": 80
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:aluminum"
+            },
+            "count": 80
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:steel_plate"
+            },
+            "count": 320
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 26
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "tacz:m320"
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

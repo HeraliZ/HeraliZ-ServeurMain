@@ -1,0 +1,6 @@
+{
+  "name": "wmags.attachment.wmag_556.name",
+  "display": "wmags:wmag_556_display",
+  "data": "wmags:wmag_556_data",
+  "type": "extended_mag"
+}

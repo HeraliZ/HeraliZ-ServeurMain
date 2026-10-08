@@ -1,0 +1,19 @@
+{
+    "replace":  false,
+    "values":  [
+                   "heralizcasino:carrelage_sale",
+                   "heralizcasino:beton_bunker",
+                   "heralizcasino:tole_ondulee",
+                   "heralizcasino:grillage",
+                   "heralizcasino:beton_tache",
+                   "heralizcasino:parpaing_tague",
+                   "heralizcasino:tole_rouillee",
+                   "heralizcasino:blindage",
+                   "heralizcasino:enduit_creme",
+                   "heralizcasino:parpaing",
+                   "heralizcasino:briques_sales",
+                   "heralizcasino:carrelage_metro",
+                   "heralizcasino:marbre_noir",
+                   "heralizcasino:damier_marbre"
+               ]
+}

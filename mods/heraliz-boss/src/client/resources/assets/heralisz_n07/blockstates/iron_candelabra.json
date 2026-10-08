@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/iron_candelabra"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/iron_candelabra",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/iron_candelabra",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/iron_candelabra",
+   "y": 270
+  }
+ }
+}

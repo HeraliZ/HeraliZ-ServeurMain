@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/corps_a_travers"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/corps_a_travers",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/corps_a_travers",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/corps_a_travers",
+   "y": 270
+  }
+ }
+}

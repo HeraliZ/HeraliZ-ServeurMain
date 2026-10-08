@@ -1,0 +1,25 @@
+{
+  "weight": 0.5,
+  "ads": {
+    "addend": 0.05
+  },
+  "aim_inaccuracy": {
+    "multiplier": 0.9
+  },
+  "recoil": {
+    "pitch": {
+      "multiplier": 0.75
+    },
+    "yaw": {
+      "multiplier": 0.6
+    }
+  },
+  "melee": {
+    "distance": 2,
+    "range_angle": 40,
+    "cooldown": 0.4,
+    "damage": 5,
+    "knockback": 0.8,
+    "prep": 0.1
+  }
+}

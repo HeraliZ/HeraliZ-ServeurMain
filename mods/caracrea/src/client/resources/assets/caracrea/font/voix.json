@@ -1,0 +1,13 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "caracrea:font/voix.png",
+      "ascent": 7,
+      "height": 8,
+      "chars": [
+        "\ue100\ue101\ue102\ue103\ue104\ue105"
+      ]
+    }
+  ]
+}

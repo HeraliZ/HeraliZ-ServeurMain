@@ -1,0 +1,21 @@
+
+#Effets visuels du casino Heraliz
+[visuals]
+	#Densite des particules (0 = aucune, 1 = normal, 2 = beaucoup)
+	#Range: 0.0 ~ 2.0
+	particles = 1.0
+	#Grand bandeau anime a l'ecran quand vous gagnez
+	winOverlay = true
+	#Volume des sons des machines (multiplicateur)
+	#Range: 0.0 ~ 2.0
+	machineVolume = 1.0
+	#Volume de la musique d'ambiance des machines a sous (0 = coupee)
+	#Range: 0.0 ~ 2.0
+	slotMusicVolume = 1.0
+
+#Performances
+[performance]
+	#Carrosserie des machines envoyee une seule fois a la carte graphique (tres rapide).
+	#Desactive automatiquement avec un pack de shaders. Mettre false en cas de souci d'affichage.
+	staticGpuBuffers = true
+

@@ -1,0 +1,12 @@
+{
+    "door_id":"water_door",
+    "legacy_model":"heralisz_bunker:block/doors/water_door_legacy",
+    "modern_model":{
+        "model":"heralisz_bunker:block/doors/water_door_modern",
+        "skins":[
+            {"id":"default","name":"Standard","texture":"heralisz_bunker:block/doors/water_door"},
+            {"id":"clean","name":"Clean","texture":"heralisz_bunker:block/doors/water_door_clean","model":"heralisz_bunker:block/doors/water_door_clean"}
+        ]
+    },
+    "default":{"type":"modern","skin":"default"}
+}

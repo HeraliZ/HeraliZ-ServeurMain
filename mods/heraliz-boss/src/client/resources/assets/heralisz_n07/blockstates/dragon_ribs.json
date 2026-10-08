@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/dragon_ribs"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/dragon_ribs",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/dragon_ribs",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/dragon_ribs",
+   "y": 270
+  }
+ }
+}

@@ -1,0 +1,7 @@
+{
+ "variants": {
+  "": {
+   "model": "heralisz_utils:block/train_roue"
+  }
+ }
+}

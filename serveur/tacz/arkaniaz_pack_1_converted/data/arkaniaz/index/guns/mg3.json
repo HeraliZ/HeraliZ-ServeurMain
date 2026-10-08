@@ -1,0 +1,9 @@
+{
+    "name": "arkaniaz.gun.mg3.name",
+    "display": "arkaniaz:mg3_display",
+    "data": "arkaniaz:mg3_data",
+    "type": "mg",
+    "item_type": "modern_kinetic",
+    "tooltip": "Mitrailleuse automatique robuste.",
+    "sort": 10
+}

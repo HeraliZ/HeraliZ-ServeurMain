@@ -1,0 +1,240 @@
+{
+ "plague_bearer.bile": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/bile"
+  ]
+ },
+ "plague_bearer.breath": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/breath"
+  ]
+ },
+ "plague_bearer.chain": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/chain"
+  ]
+ },
+ "plague_bearer.clang": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/clang_1",
+   "heralisz_plague:plague_bearer/clang_2"
+  ]
+ },
+ "plague_bearer.death": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/death"
+  ]
+ },
+ "plague_bearer.flies": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/flies"
+  ]
+ },
+ "plague_bearer.gas_burst": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/gas_burst"
+  ]
+ },
+ "plague_bearer.hiss": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/hiss"
+  ]
+ },
+ "plague_bearer.hook_hit": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/hook_hit"
+  ]
+ },
+ "plague_bearer.hurt": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/hurt_1",
+   "heralisz_plague:plague_bearer/hurt_2"
+  ]
+ },
+ "plague_bearer.mask_rip": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/mask_rip"
+  ]
+ },
+ "plague_bearer.roar": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/roar_1",
+   "heralisz_plague:plague_bearer/roar_2"
+  ]
+ },
+ "plague_bearer.roar_open": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/roar_open_1",
+   "heralisz_plague:plague_bearer/roar_open_2"
+  ]
+ },
+ "plague_bearer.spores": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/spores"
+  ]
+ },
+ "plague_bearer.step": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/step_1",
+   "heralisz_plague:plague_bearer/step_2"
+  ]
+ },
+ "plague_bearer.tank_burst": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/tank_burst"
+  ]
+ },
+ "plague_bearer.wave": {
+  "sounds": [
+   "heralisz_plague:plague_bearer/wave"
+  ]
+ },
+ "music.plague_bearer": {
+  "sounds": [
+   {
+    "name": "heralisz_plague:music/plague_bearer",
+    "stream": true
+   }
+  ]
+ },
+ "dungeon.alarm": {
+  "sounds": [
+   "heralisz_plague:dungeon/alarm"
+  ]
+ },
+ "dungeon.amb_drone": {
+  "sounds": [
+   "heralisz_plague:dungeon/amb_drone"
+  ]
+ },
+ "dungeon.amb_drip": {
+  "sounds": [
+   "heralisz_plague:dungeon/amb_drip"
+  ]
+ },
+ "dungeon.amb_groan": {
+  "sounds": [
+   "heralisz_plague:dungeon/amb_groan"
+  ]
+ },
+ "dungeon.amb_thump": {
+  "sounds": [
+   "heralisz_plague:dungeon/amb_thump"
+  ]
+ },
+ "dungeon.amb_cough": {
+  "sounds": [
+   "heralisz_plague:dungeon/amb_cough"
+  ]
+ },
+ "dungeon.amb_moan": {
+  "sounds": [
+   "heralisz_plague:dungeon/amb_moan_1",
+   "heralisz_plague:dungeon/amb_moan_2",
+   "heralisz_plague:dungeon/amb_moan_3"
+  ]
+ },
+ "dungeon.amb_scream": {
+  "sounds": [
+   "heralisz_plague:dungeon/amb_scream_1",
+   "heralisz_plague:dungeon/amb_scream_2",
+   "heralisz_plague:dungeon/amb_scream_3"
+  ]
+ },
+ "dungeon.deny": {
+  "sounds": [
+   "heralisz_plague:dungeon/deny"
+  ]
+ },
+ "dungeon.steam": {
+  "sounds": [
+   "heralisz_plague:dungeon/steam"
+  ]
+ },
+ "dungeon.valve_mount": {
+  "sounds": [
+   "heralisz_plague:dungeon/valve_mount"
+  ]
+ },
+ "dungeon.valve_turn": {
+  "sounds": [
+   "heralisz_plague:dungeon/valve_turn"
+  ]
+ },
+ "dungeon.vat": {
+  "sounds": [
+   "heralisz_plague:dungeon/vat"
+  ]
+ },
+ "dungeon.vent": {
+  "sounds": [
+   "heralisz_plague:dungeon/vent"
+  ]
+ },
+ "dungeon.swarm": {
+  "sounds": [
+   "heralisz_plague:dungeon/swarm"
+  ]
+ },
+ "dungeon.pour": {
+  "sounds": [
+   "heralisz_plague:dungeon/pour"
+  ]
+ },
+ "dungeon.ignite": {
+  "sounds": [
+   "heralisz_plague:dungeon/ignite"
+  ]
+ },
+ "dungeon.spark": {
+  "sounds": [
+   "heralisz_plague:dungeon/spark_1",
+   "heralisz_plague:dungeon/spark_2",
+   "heralisz_plague:dungeon/spark_3"
+  ]
+ },
+ "foley.explode": {
+  "sounds": [
+   "heralisz_plague:foley/explode_1",
+   "heralisz_plague:foley/explode_2",
+   "heralisz_plague:foley/explode_3"
+  ]
+ },
+ "foley.metal_land": {
+  "sounds": [
+   "heralisz_plague:foley/metal_land_1",
+   "heralisz_plague:foley/metal_land_2"
+  ]
+ },
+ "foley.swipe": {
+  "sounds": [
+   "heralisz_plague:foley/swipe_1",
+   "heralisz_plague:foley/swipe_2",
+   "heralisz_plague:foley/swipe_3"
+  ]
+ },
+ "foley.hiss": {
+  "sounds": [
+   "heralisz_plague:foley/hiss"
+  ]
+ },
+ "foley.bone_crack": {
+  "sounds": [
+   "heralisz_plague:foley/bone_crack_1",
+   "heralisz_plague:foley/bone_crack_2"
+  ]
+ },
+ "foley.earth_break": {
+  "sounds": [
+   "heralisz_plague:foley/earth_break_1",
+   "heralisz_plague:foley/earth_break_2"
+  ]
+ },
+ "foley.heavy_step": {
+  "sounds": [
+   "heralisz_plague:foley/heavy_step_1",
+   "heralisz_plague:foley/heavy_step_2",
+   "heralisz_plague:foley/heavy_step_3"
+  ]
+ }
+}

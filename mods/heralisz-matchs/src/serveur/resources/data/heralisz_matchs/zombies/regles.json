@@ -1,0 +1,117 @@
+{
+  "_doc": "Regles du mode zombies (ZOMBIES_V2_SPEC §2), lues par ConfigZombies ; une valeur absente garde son defaut. Rechargees avec /reload.",
+  "points": {
+    "touche": 10,
+    "corps": 60,
+    "tete": 100,
+    "couteau": 130,
+    "planche": 10,
+    "planches_max_manche": 50
+  },
+  "couteau": {
+    "_doc": "degats_cod : degats minimum d'un coup de melee en points CoD (x 0,12 = PV Minecraft) ; 150 = un coup tue en manche 1. portee_fenetre : portee du coup donne a un zombie colle a une fenetre.",
+    "degats_cod": 150,
+    "portee_fenetre": 2.6
+  },
+  "degats": {
+    "_doc": "0.2.3 : degats d'un coup de zombie selon la manche (Manches.degats) : min + (max - min) * t^1,2 avec t = (manche - 1) / (manche_plafond - 1), borne a 1. Zombie 4 -> 10 (5 coups a terre en manche 1, 2 au plafond, 5 avec Blindage), Rodeur 3 -> 7. Au-dela du plafond, ce sont la vie et la vitesse qui montent.",
+    "zombie_min": 4.0,
+    "zombie_max": 10.0,
+    "rodeur_min": 3.0,
+    "rodeur_max": 7.0,
+    "manche_plafond": 20
+  },
+  "achat": {
+    "_doc": "arme_mur_distance : distance maximale (blocs) entre l'oeil et le dessin a la craie, qu'il faut regarder.",
+    "arme_mur_distance": 1.6
+  },
+  "garde_fou": {
+    "_doc": "sans_kill_secondes : la manche passe si personne ne tue pendant ce temps. Un zombie plus loin que distance_max (chemin ou ligne droite) pendant 5 s, sans ligne de vue vers un joueur depuis sans_ligne_secondes, ou bloque depuis bloque_secondes est replace pres des joueurs.",
+    "sans_kill_secondes": 120,
+    "distance_max": 48,
+    "sans_ligne_secondes": 20,
+    "bloque_secondes": 15
+  },
+  "apparitions": {
+    "_doc": "Points d'apparition actifs (fenetres et sorties de terre des zones ouvertes) ponderes par 1 / (1 + (d/14)^2), d = distance au joueur debout le plus proche. 0.2.3 : poids_salle 1.0 (comme une fenetre) et part_salle_min = part minimale des apparitions qui sortent DANS une salle quand un point de salle est candidat (tirage d'abord salle ou fenetre, puis pondere dans la famille). distance_min : pas de sortie de terre plus pres d'un joueur.",
+    "distance_min": 6,
+    "distance_max": 48,
+    "poids_fenetre": 1.0,
+    "poids_salle": 1.0,
+    "part_salle_min": 0.35
+  },
+  "pack_a_punch": {
+    "_doc": "3 niveaux facon CoD Cold War : chaque passage monte l'arme d'un niveau (refus au-dela du dernier). niveaux[i] = cout en points, degats (multiplicateur cote serveur), chargeurs_reserve (reserve remplie a chaque niveau). camos[i] = camo heralisz_camo du niveau (lueur d'enchantement si le mod est absent ou ne le connait pas). secondes d'amelioration, delai pour reprendre l'arme (sinon rendue d'office), courant requis.",
+    "niveaux": [
+      {
+        "cout": 5000,
+        "degats": 2.0,
+        "chargeurs_reserve": 8
+      },
+      {
+        "cout": 15000,
+        "degats": 3.0,
+        "chargeurs_reserve": 10
+      },
+      {
+        "cout": 30000,
+        "degats": 4.0,
+        "chargeurs_reserve": 12
+      }
+    ],
+    "camos": [
+      "pap_1",
+      "pap_2",
+      "pap_3"
+    ],
+    "secondes": 3,
+    "offre_secondes": 15,
+    "courant_requis": true
+  },
+  "materiaux": {
+    "_doc": "Materiaux de recuperation laches par les zombies (un tas par mort au plus) : chance d'un tas de 1, chance d'un gros tas, chance pour un Rodeur (2), duree au sol.",
+    "chance": 0.18,
+    "chance_gros": 0.04,
+    "gros": 3,
+    "chance_rodeur": 0.35,
+    "duree_secondes": 60
+  },
+  "arme_carte": [
+    "heraliz_wonder:wonder_waffle",
+    "cis:at_rpg_7_lvd",
+    "tacz:minigun"
+  ],
+  "arme_carte_accessoires": {
+    "cis:at_rpg_7_lvd": {
+      "extended_mag": "tacz:extended_mag_1",
+      "scope": "tacz:sight_exp3"
+    }
+  },
+  "_doc_arme_carte": "Arme unique de la carte (mythique, seulement dans la boite) : le premier id installe gagne ; la carte (arme_carte.gunId) n'est consultee que si aucun ne l'est. heraliz_wonder:wonder_waffle = Wunderwaffe DG-2 (Wonder Weapon du gunpack heraliz_fuse_armes, reservee aux zombies), cis:at_rpg_7_lvd = AirTrionic RPG-7 « LuvDuck » (pack Cislumen) si le gunpack manque, tacz:minigun en secours (client de dev).",
+  "easter_egg": {
+    "_doc": "Recompense si la carte n'en donne pas une reconnue : mort_instantanee_<n>_manches, arme_carte, ou un gunId.",
+    "recompense": "mort_instantanee_2_manches"
+  },
+  "atouts": {
+    "_doc": "v3 (D-051) : deadshot_tete = multiplicateur des degats de base d'un tir a la tete avec Tir d'elite (Deadshot).",
+    "deadshot_tete": 1.5
+  },
+  "the_giant": {
+    "_doc": "v3 (D-051), regles de The Giant : annihilator = arme TaCZ donnee par le fourneau du Fly Trap (remplace l'Annihilator de BO3) ; recharge_teleporteur_s ; chance_bonus_teleporteur et chance_chiens_teleporteur (apres la manche 25) ; degats_piege = degats a un joueur dans un piege electrique toutes les 12 ticks (PV Minecraft, 20 = a terre sans Blindage) ; bowie_manche_max = derniere manche ou le Bowie Knife tue d'un coup ; bowie_objet = objet de melee qui remplace le couteau a l'achat (vide = le couteau actuel devient mortel).",
+    "annihilator": "tacz:rhino357",
+    "recharge_teleporteur_s": 30,
+    "chance_bonus_teleporteur": 0.12,
+    "chance_chiens_teleporteur": 0.25,
+    "degats_piege": 10,
+    "bowie_manche_max": 10,
+    "bowie_objet": "",
+    "_doc_acte_iv": "acte IV, boss N-07 (D-057) : boss_points = points donnes a chaque joueur a la victoire ; boss_renforts_max = zombies au plus dans le hall pendant le combat (0 = aucun), boss_renforts_cadence_s et boss_renforts_premier_s = rythme et premier renfort ; boss_chiens_p2 / boss_chiens_p3 = chiens en eclair a la fin des phases 2 et 3 (avec un Max Ammo) ; retour_max_s = delai apres l'outro avant d'evacuer ceux qui ne sont pas montes sur le teleporteur 935.",
+    "boss_points": 2000,
+    "boss_renforts_max": 3,
+    "boss_renforts_cadence_s": 9,
+    "boss_renforts_premier_s": 12,
+    "boss_chiens_p2": 4,
+    "boss_chiens_p3": 6,
+    "retour_max_s": 90
+  }
+}

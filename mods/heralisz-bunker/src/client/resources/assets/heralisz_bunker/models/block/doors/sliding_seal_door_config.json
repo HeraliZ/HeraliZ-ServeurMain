@@ -1,0 +1,11 @@
+{
+    "door_id":"sliding_seal_door",
+    "legacy_model":"heralisz_bunker:block/doors/sliding_seal_door_legacy",
+    "modern_model":{
+        "model":"heralisz_bunker:block/doors/sliding_seal_door_modern",
+        "skins":[
+            {"id":"default","name":"Standard","texture":"heralisz_bunker:block/doors/sliding_seal_door"}
+        ]
+    },
+    "default":{"type":"modern","skin":"default"}
+}

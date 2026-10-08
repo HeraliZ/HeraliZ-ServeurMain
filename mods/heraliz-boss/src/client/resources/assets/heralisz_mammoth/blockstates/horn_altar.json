@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_mammoth:block/horn_altar"
+  },
+  "facing=east": {
+   "model": "heralisz_mammoth:block/horn_altar"
+  },
+  "facing=south": {
+   "model": "heralisz_mammoth:block/horn_altar"
+  },
+  "facing=west": {
+   "model": "heralisz_mammoth:block/horn_altar"
+  }
+ }
+}

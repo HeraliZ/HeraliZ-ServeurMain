@@ -1,0 +1,8 @@
+{
+    "unlock_challenge": {
+        "type": "backpacked:travel_distance",
+        "formatter": "backpacked:percentage",
+        "movement": "walking",
+        "total_distance": 12000
+    }
+}

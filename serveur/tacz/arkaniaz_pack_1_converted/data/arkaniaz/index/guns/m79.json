@@ -1,0 +1,7 @@
+{
+  "name": "arkaniaz.gun.m79.name",
+  "tooltip": "arkaniaz.gun.m79.desc",
+  "display": "arkaniaz:m79_display",
+  "data": "arkaniaz:m79_data",
+  "type": "rpg"
+}

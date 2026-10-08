@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "heralisz_mere:block/nest_bone_candles"}, "facing=east": {"model": "heralisz_mere:block/nest_bone_candles", "y": 90}, "facing=south": {"model": "heralisz_mere:block/nest_bone_candles", "y": 180}, "facing=west": {"model": "heralisz_mere:block/nest_bone_candles", "y": 270}}}

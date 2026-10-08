@@ -1,0 +1,17 @@
+
+[admin]
+	#Password of the in-game admin console (~ key). Empty = console disabled (default).
+	#Either the password itself or "sha256:<64 hex digits>", the SHA-256 of the UTF-8 password
+	#(for example: printf '%s' 'my password' | sha256sum). Changing it logs every admin out.
+	consolePassword = ""
+	#Operator level a player needs to log in to the console, checked again on every admin action.
+	#4 = full operator (default). 0 lets any player try the password.
+	#Range: 0 ~ 4
+	permissionLevel = 4
+	#Wrong passwords allowed per player before a lockout.
+	#Range: 1 ~ 100
+	maxFailedLogins = 5
+	#How long a player is locked out of the console after too many wrong passwords.
+	#Range: 1 ~ 86400
+	lockoutSeconds = 300
+

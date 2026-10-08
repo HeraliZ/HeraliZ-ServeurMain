@@ -1,0 +1,7 @@
+{
+  "name": "arkaniaz.ammo.melee_weapon.name",
+  "display": "arkaniaz:melee_weapon_display",
+  "tooltip": "arkaniaz.ammo.melee_weapon.tooltip",
+  "stack_size": 1
+}
+    

@@ -1,0 +1,80 @@
+{
+  "model": "heraliz_fuse:gun/olympia_geo",
+  "texture": "heraliz_fuse:gun/uv/olympia_texture",
+  "hud": "heraliz_fuse:gun/hud/olympia_hud",
+  "slot": "heraliz_fuse:gun/slot/olympia_slot",
+  "animation": "heraliz_fuse:olympia",
+  "use_default_animation": "rifle",
+  "third_person_animation": "default",
+  "transform": {
+    "scale": {
+      "thirdperson": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "ground": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "fixed": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    }
+  },
+  "muzzle_flash": {
+    "texture": "tacz:flash/common_muzzle_flash",
+    "scale": 0.75
+  },
+  "sounds": {
+    "reload_empty": "heraliz_fuse:olympia/olympia_reload_empty",
+    "reload_tactical": "heraliz_fuse:olympia/olympia_reload",
+    "inspect": "heraliz_fuse:olympia/olympia_inspect",
+    "inspect_empty": "heraliz_fuse:olympia/olympia_inspect",
+    "draw": "heraliz_fuse:olympia/olympia_draw",
+    "put_away": "tacz:db_short/db_short_put_away",
+    "shoot": "heraliz_fuse:olympia/olympia_shoot",
+    "shoot_3p": "heraliz_fuse:olympia/olympia_shoot_3p",
+    "melee_push": "tacz:melee_stock/melee_stock_01",
+    "melee_stock": "tacz:melee_stock/melee_stock_03"
+  },
+  "offhand_show": {
+    "pos": [
+      0,
+      20,
+      4
+    ],
+    "rotate": [
+      0,
+      0,
+      60
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ]
+  },
+  "hotbar_show": {
+    "0": {
+      "pos": [
+        0,
+        20,
+        3
+      ],
+      "rotate": [
+        -180,
+        0,
+        120
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

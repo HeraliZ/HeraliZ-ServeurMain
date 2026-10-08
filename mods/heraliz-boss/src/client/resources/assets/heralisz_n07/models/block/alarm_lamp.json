@@ -1,0 +1,49 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "top": "heralisz_n07:block/alarm_lamp",
+  "side": "heralisz_n07:block/alarm_lamp",
+  "bottom": "heralisz_n07:block/alarm_lamp",
+  "particle": "heralisz_n07:block/alarm_lamp"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "down": {
+     "texture": "#bottom",
+     "cullface": "down"
+    },
+    "up": {
+     "texture": "#top",
+     "cullface": "up"
+    },
+    "north": {
+     "texture": "#side",
+     "cullface": "north"
+    },
+    "south": {
+     "texture": "#side",
+     "cullface": "south"
+    },
+    "west": {
+     "texture": "#side",
+     "cullface": "west"
+    },
+    "east": {
+     "texture": "#side",
+     "cullface": "east"
+    }
+   }
+  }
+ ]
+}

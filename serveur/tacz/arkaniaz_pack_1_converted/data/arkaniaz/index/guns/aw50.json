@@ -1,0 +1,7 @@
+{
+  "name": "arkaniaz.gun.aw50.name",
+  "tooltip": "arkaniaz.gun.aw50.desc",
+  "display": "arkaniaz:aw50_display",
+  "data": "arkaniaz:aw50_data",
+  "type": "sniper"
+}

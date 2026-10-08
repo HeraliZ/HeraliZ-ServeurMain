@@ -1,0 +1,27 @@
+{
+  "name": "item.heralisz_heal.condensed_milk",
+  "tooltip": "item.heralisz_heal.condensed_milk.desc",
+  "base_item": "heralisz_tactical:consumable",
+  "data": {
+    "use_duration": 109,
+    "cooldown": 60,
+    "cooldown_category": "heralisz_tactical:food",
+    "stack_size": 4,
+    "draw_time": 10,
+    "put_away_time": 6,
+    "food": 6,
+    "saturation": 1.6,
+    "effects": [
+      {
+        "id": "minecraft:speed",
+        "duration": 1200,
+        "amplifier": 0,
+        "chance": 1.0,
+        "ambient": false,
+        "visible": true,
+        "show_icon": true
+      }
+    ],
+    "use_mode": "toggle"
+  }
+}

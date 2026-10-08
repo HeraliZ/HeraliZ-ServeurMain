@@ -1,0 +1,7 @@
+{
+ "parent": "heralisz_utils:custom/cuprum",
+ "textures": {
+  "0": "heralisz_utils:item/cuprum",
+  "particle": "heralisz_utils:item/3345"
+ }
+}

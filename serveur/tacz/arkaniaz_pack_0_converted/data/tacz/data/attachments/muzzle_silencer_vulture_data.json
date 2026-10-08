@@ -1,0 +1,36 @@
+{
+  "weight": 0.55,
+  "ads": {
+    "addend": 0.1
+  },
+  "inaccuracy": {
+    "multiplier": 1.25
+  },
+  "aim_inaccuracy": {
+    "multiplier": 0.8
+  },
+  "effective_range": {
+    "multiplier": 1.25
+  },
+  "ammo_speed": {
+    "multiplier":1.1
+  },
+  "rpm": {
+    "multiplier":0.75
+  },
+  "head_shot":{
+    "addend": 0.5
+  },
+  "recoil": {
+    "pitch": {
+      "multiplier": 0.8
+    },
+    "yaw": {
+      "multiplier": 0.9
+    }
+  },
+  "silence": {
+    "distance_addend": -20,
+    "use_silence_sound": true
+  }
+}

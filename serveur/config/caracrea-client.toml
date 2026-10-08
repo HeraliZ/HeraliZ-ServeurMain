@@ -1,0 +1,63 @@
+
+#Appearance
+[model]
+	#Draw characters with the 3D body (shaped torso, hands, feet, hair and clothes in volume).
+	#When false, characters use the classic cubic Minecraft body with the same painted skin.
+	detailedBody = true
+	#Hide the 3D hair when a helmet is worn (otherwise it can poke through).
+	hideHairUnderHelmet = true
+
+#Face animation
+[animation]
+	#Characters blink.
+	blink = true
+	#Mouths take the shape of the words spoken in the voice chat.
+	voiceMouth = true
+	#Faces further than this many blocks from the camera are not animated.
+	#Range: 4 ~ 128
+	animationDistance = 24
+	#How wide the mouth opens for a given voice volume (1 = normal).
+	#Range: 0.2 ~ 5.0
+	voiceSensitivity = 1.0
+
+#Built-in proximity voice chat (also in game: the voice settings key)
+[voice]
+	#Talk to and hear the players around (when the server has the voice chat on).
+	enabled = true
+	#true: talk while holding the push-to-talk key. false: the microphone sends as soon as you speak.
+	pushToTalk = true
+	#Voice activation: how loud you must speak for the microphone to send (0 to 1).
+	#Range: 0.0 ~ 1.0
+	activationThreshold = 0.35
+	#Name of the microphone to use; empty for the system's default.
+	microphone = ""
+	#Microphone amplification (1 = unchanged).
+	#Range: 0.0 ~ 4.0
+	micGain = 1.0
+	#Volume of the other players' voices (also follows the game's master and voice volumes).
+	#Range: 0.0 ~ 2.0
+	volume = 1.0
+	#Microphone muted (key M).
+	muted = false
+	#Remove the steady background noise (fan, computer, street) from your microphone.
+	denoise = true
+	#Bring your voice to a steady level whatever the microphone's volume.
+	automaticGain = true
+	#Voice activation: detect your voice by itself instead of using the threshold.
+	automaticActivation = true
+	#Name of the sound output for the voices; empty for the system's default.
+	speaker = ""
+	#Strength of the noise suppression: 1 light, 2 normal, 3 strong.
+	#Range: 1 ~ 3
+	denoiseStrength = 2
+	#Jitter buffer: 0 = automatic (adapts to your connection), otherwise a fixed delay in milliseconds (40 to 200).
+	#Range: 0 ~ 200
+	jitterBufferMs = 0
+	#Walls muffle the voices behind them.
+	occlusion = false
+	#AUTO: dedicated UDP channel, the game connection when UDP is blocked. TCP: always the game connection.
+	#Allowed Values: AUTO, TCP
+	transport = "AUTO"
+	#Show the voice icons above heads and in the player list.
+	icons = true
+

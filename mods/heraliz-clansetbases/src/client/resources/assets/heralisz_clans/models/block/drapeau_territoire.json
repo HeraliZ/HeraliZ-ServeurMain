@@ -1,0 +1,307 @@
+{
+ "parent": "block/block",
+ "ambientocclusion": true,
+ "textures": {
+  "particle": "heralisz_clans:block/socle_drapeau",
+  "dessus": "heralisz_clans:block/socle_drapeau",
+  "cote": "heralisz_clans:block/socle_drapeau_cote"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    5.1
+   ],
+   "to": [
+    15,
+    3,
+    10.9
+   ],
+   "faces": {
+    "up": {
+     "uv": [
+      1,
+      5.1,
+      15,
+      10.9
+     ],
+     "texture": "#dessus"
+    },
+    "down": {
+     "uv": [
+      1,
+      5.1,
+      15,
+      10.9
+     ],
+     "texture": "#cote",
+     "cullface": "down"
+    },
+    "north": {
+     "uv": [
+      1,
+      0,
+      15,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "south": {
+     "uv": [
+      1,
+      0,
+      15,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "east": {
+     "uv": [
+      5.1,
+      0,
+      10.9,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "west": {
+     "uv": [
+      5.1,
+      0,
+      10.9,
+      3
+     ],
+     "texture": "#cote"
+    }
+   }
+  },
+  {
+   "from": [
+    5.1,
+    0,
+    1
+   ],
+   "to": [
+    10.9,
+    3,
+    15
+   ],
+   "faces": {
+    "up": {
+     "uv": [
+      5.1,
+      1,
+      10.9,
+      15
+     ],
+     "texture": "#dessus"
+    },
+    "down": {
+     "uv": [
+      5.1,
+      1,
+      10.9,
+      15
+     ],
+     "texture": "#cote",
+     "cullface": "down"
+    },
+    "north": {
+     "uv": [
+      5.1,
+      0,
+      10.9,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "south": {
+     "uv": [
+      5.1,
+      0,
+      10.9,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "east": {
+     "uv": [
+      1,
+      0,
+      15,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "west": {
+     "uv": [
+      1,
+      0,
+      15,
+      3
+     ],
+     "texture": "#cote"
+    }
+   }
+  },
+  {
+   "from": [
+    1,
+    0.05,
+    5.1
+   ],
+   "to": [
+    15,
+    2.9,
+    10.9
+   ],
+   "faces": {
+    "up": {
+     "uv": [
+      1,
+      5.1,
+      15,
+      10.9
+     ],
+     "texture": "#dessus"
+    },
+    "down": {
+     "uv": [
+      1,
+      5.1,
+      15,
+      10.9
+     ],
+     "texture": "#cote",
+     "cullface": "down"
+    },
+    "north": {
+     "uv": [
+      1,
+      0,
+      15,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "south": {
+     "uv": [
+      1,
+      0,
+      15,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "east": {
+     "uv": [
+      5.1,
+      0,
+      10.9,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "west": {
+     "uv": [
+      5.1,
+      0,
+      10.9,
+      3
+     ],
+     "texture": "#cote"
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 45,
+    "rescale": false
+   }
+  },
+  {
+   "from": [
+    1,
+    0.05,
+    5.1
+   ],
+   "to": [
+    15,
+    2.9,
+    10.9
+   ],
+   "faces": {
+    "up": {
+     "uv": [
+      1,
+      5.1,
+      15,
+      10.9
+     ],
+     "texture": "#dessus"
+    },
+    "down": {
+     "uv": [
+      1,
+      5.1,
+      15,
+      10.9
+     ],
+     "texture": "#cote",
+     "cullface": "down"
+    },
+    "north": {
+     "uv": [
+      1,
+      0,
+      15,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "south": {
+     "uv": [
+      1,
+      0,
+      15,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "east": {
+     "uv": [
+      5.1,
+      0,
+      10.9,
+      3
+     ],
+     "texture": "#cote"
+    },
+    "west": {
+     "uv": [
+      5.1,
+      0,
+      10.9,
+      3
+     ],
+     "texture": "#cote"
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45,
+    "rescale": false
+   }
+  }
+ ]
+}

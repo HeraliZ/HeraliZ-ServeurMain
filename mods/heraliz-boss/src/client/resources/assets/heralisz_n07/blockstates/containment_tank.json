@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/containment_tank"
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/containment_tank"
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/containment_tank"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/containment_tank"
+  }
+ }
+}

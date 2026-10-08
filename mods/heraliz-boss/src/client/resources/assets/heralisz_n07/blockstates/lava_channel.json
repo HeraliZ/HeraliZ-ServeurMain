@@ -1,0 +1,92 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "flow": "none"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_still"
+   }
+  },
+  {
+   "when": {
+    "flow": "north"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_flow",
+    "y": 0
+   }
+  },
+  {
+   "when": {
+    "flow": "east"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_flow",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "flow": "south"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_flow",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "flow": "west"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_flow",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "north": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_rim",
+    "y": 0
+   }
+  },
+  {
+   "when": {
+    "east": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_rim",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "south": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_rim",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "west": "false"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/lava_channel_rim",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "covered": "true"
+   },
+   "apply": {
+    "model": "heralisz_n07:block/rad_channel_grate"
+   }
+  }
+ ]
+}

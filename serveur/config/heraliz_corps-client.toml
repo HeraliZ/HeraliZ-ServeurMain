@@ -1,0 +1,16 @@
+
+[affichage]
+	#Distance (blocs) au-dela de laquelle les corps ne sont plus dessines
+	#Range: 8 ~ 128
+	distance_rendu = 48
+	#Corps dessines au plus en meme temps (les plus proches)
+	#Range: 1 ~ 512
+	max_rendus = 32
+	#Corps dessines au plus par chunk
+	#Range: 1 ~ 256
+	max_rendus_par_chunk = 8
+	#Petit panneau (nom, cause, minuteur) quand on regarde un corps
+	panneau = true
+	#Petit losange a la couleur du clan au-dessus des corps des membres de son clan
+	marqueur_clan = true
+

@@ -1,0 +1,9 @@
+{
+    "unlock_challenge": {
+        "type": "backpacked:explore_biome",
+        "biome": [
+            "minecraft:snowy_tundra"
+        ],
+        "formatter": "explored_x_of_x"
+    }
+}

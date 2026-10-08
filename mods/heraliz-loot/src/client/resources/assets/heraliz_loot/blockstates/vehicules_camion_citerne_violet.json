@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=south": {
+   "model": "heraliz_loot:block/ark/tanker_purple"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/ark/tanker_purple",
+   "y": 90
+  },
+  "facing=north": {
+   "model": "heraliz_loot:block/ark/tanker_purple",
+   "y": 180
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/ark/tanker_purple",
+   "y": 270
+  }
+ }
+}

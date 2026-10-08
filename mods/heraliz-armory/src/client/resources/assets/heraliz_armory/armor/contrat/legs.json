@@ -1,0 +1,400 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/contrat.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "pantalon_ceinture",
+    "uv": [
+     56,
+     31
+    ],
+    "from": [
+     -4.625,
+     10.75,
+     -2.875
+    ],
+    "size": [
+     9.25,
+     2.5,
+     5.75
+    ],
+    "faces": [
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pantalon_ceinture",
+    "uv": [
+     63,
+     48
+    ],
+    "from": [
+     -4.853515625,
+     10.896484375,
+     -3.103515625
+    ],
+    "size": [
+     9.75,
+     0.75,
+     6.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pantalon_boucle",
+    "uv": [
+     119,
+     79
+    ],
+    "from": [
+     -0.853515625,
+     10.771484375,
+     -3.353515625
+    ],
+    "size": [
+     1.75,
+     1.0,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   }
+  ],
+  "right_leg": [
+   {
+    "name": "pantalon_jambe",
+    "uv": [
+     52,
+     0
+    ],
+    "from": [
+     -2.6,
+     -0.5,
+     -2.5
+    ],
+    "size": [
+     5.0,
+     11.75,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pantalon_cargo",
+    "uv": [
+     47,
+     48
+    ],
+    "from": [
+     -2.978515625,
+     2.521484375,
+     -1.853515625
+    ],
+    "size": [
+     0.375,
+     3.75,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pantalon_cargo_rabat",
+    "uv": [
+     11,
+     70
+    ],
+    "from": [
+     -3.225,
+     2.025,
+     -2.0
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     0.0,
+     0.0,
+     -4.0
+    ],
+    "origin": [
+     -3.1,
+     2.65,
+     -0.125
+    ]
+   },
+   {
+    "name": "cuisse_plateforme",
+    "uv": [
+     118,
+     40
+    ],
+    "from": [
+     -3.3,
+     2.0,
+     -1.4
+    ],
+    "size": [
+     0.5,
+     4.5,
+     3.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     0.0,
+     -4.0
+    ],
+    "origin": [
+     -3.05,
+     4.25,
+     0.1
+    ]
+   },
+   {
+    "name": "cuisse_etui",
+    "uv": [
+     72,
+     63
+    ],
+    "from": [
+     -3.9749999999999996,
+     2.7249999999999996,
+     -1.225
+    ],
+    "size": [
+     0.75,
+     3.75,
+     2.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     0.0,
+     -4.0
+    ],
+    "origin": [
+     -3.5999999999999996,
+     4.6,
+     -0.1
+    ]
+   },
+   {
+    "name": "cuisse_crosse",
+    "uv": [
+     84,
+     76
+    ],
+    "from": [
+     -3.9,
+     1.725,
+     -1.125
+    ],
+    "size": [
+     0.5,
+     1.25,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     14.0,
+     0.0,
+     -4.0
+    ],
+    "origin": [
+     -3.65,
+     2.35,
+     -0.75
+    ]
+   },
+   {
+    "name": "cuisse_sangle",
+    "uv": [
+     78,
+     63
+    ],
+    "from": [
+     -2.853515625,
+     3.521484375,
+     -2.728515625
+    ],
+    "size": [
+     5.0,
+     0.5,
+     5.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_leg": [
+   {
+    "name": "pantalon_jambe_m",
+    "uv": [
+     31,
+     0
+    ],
+    "from": [
+     -2.4,
+     -0.625,
+     -2.625
+    ],
+    "size": [
+     5.0,
+     11.75,
+     5.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pantalon_cargo_m",
+    "uv": [
+     109,
+     40
+    ],
+    "from": [
+     2.603515625,
+     2.333984375,
+     -2.041015625
+    ],
+    "size": [
+     0.375,
+     3.75,
+     3.875
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pantalon_cargo_rabat_m",
+    "uv": [
+     19,
+     70
+    ],
+    "from": [
+     2.975,
+     1.9,
+     -2.0
+    ],
+    "size": [
+     0.25,
+     1.25,
+     3.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     0.0,
+     0.0,
+     4.0
+    ],
+    "origin": [
+     3.1,
+     2.525,
+     -0.125
+    ]
+   }
+  ]
+ },
+ "slim_parts": {}
+}

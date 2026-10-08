@@ -1,0 +1,194 @@
+[
+  {
+    "id": "loup",
+    "index": 0,
+    "nom_fr": "Loup",
+    "nom_en": "Wolf"
+  },
+  {
+    "id": "corbeau",
+    "index": 1,
+    "nom_fr": "Corbeau",
+    "nom_en": "Raven"
+  },
+  {
+    "id": "crane",
+    "index": 2,
+    "nom_fr": "Crâne",
+    "nom_en": "Skull"
+  },
+  {
+    "id": "crane_casque",
+    "index": 3,
+    "nom_fr": "Crâne casqué",
+    "nom_en": "Helmet Skull"
+  },
+  {
+    "id": "masque_gaz",
+    "index": 4,
+    "nom_fr": "Masque à gaz",
+    "nom_en": "Gas Mask"
+  },
+  {
+    "id": "dragon",
+    "index": 5,
+    "nom_fr": "Dragon",
+    "nom_en": "Dragon"
+  },
+  {
+    "id": "kraken",
+    "index": 6,
+    "nom_fr": "Kraken",
+    "nom_en": "Kraken"
+  },
+  {
+    "id": "serpent",
+    "index": 7,
+    "nom_fr": "Serpent",
+    "nom_en": "Serpent"
+  },
+  {
+    "id": "ours",
+    "index": 8,
+    "nom_fr": "Ours",
+    "nom_en": "Bear"
+  },
+  {
+    "id": "cerf",
+    "index": 9,
+    "nom_fr": "Cerf",
+    "nom_en": "Stag"
+  },
+  {
+    "id": "aigle",
+    "index": 10,
+    "nom_fr": "Aigle",
+    "nom_en": "Eagle"
+  },
+  {
+    "id": "faucon",
+    "index": 11,
+    "nom_fr": "Faucon",
+    "nom_en": "Falcon"
+  },
+  {
+    "id": "requin",
+    "index": 12,
+    "nom_fr": "Requin",
+    "nom_en": "Shark"
+  },
+  {
+    "id": "scorpion",
+    "index": 13,
+    "nom_fr": "Scorpion",
+    "nom_en": "Scorpion"
+  },
+  {
+    "id": "araignee",
+    "index": 14,
+    "nom_fr": "Araignée",
+    "nom_en": "Spider"
+  },
+  {
+    "id": "lion",
+    "index": 15,
+    "nom_fr": "Lion",
+    "nom_en": "Lion"
+  },
+  {
+    "id": "biohazard",
+    "index": 16,
+    "nom_fr": "Risque biologique",
+    "nom_en": "Biohazard"
+  },
+  {
+    "id": "radioactif",
+    "index": 17,
+    "nom_fr": "Radioactif",
+    "nom_en": "Radioactive"
+  },
+  {
+    "id": "eclair",
+    "index": 18,
+    "nom_fr": "Éclair",
+    "nom_en": "Lightning"
+  },
+  {
+    "id": "flamme",
+    "index": 19,
+    "nom_fr": "Flamme",
+    "nom_en": "Flame"
+  },
+  {
+    "id": "flocon",
+    "index": 20,
+    "nom_fr": "Flocon",
+    "nom_en": "Snowflake"
+  },
+  {
+    "id": "etoile",
+    "index": 21,
+    "nom_fr": "Étoile",
+    "nom_en": "Star"
+  },
+  {
+    "id": "croix",
+    "index": 22,
+    "nom_fr": "Croix",
+    "nom_en": "Cross"
+  },
+  {
+    "id": "epees",
+    "index": 23,
+    "nom_fr": "Épées croisées",
+    "nom_en": "Crossed Swords"
+  },
+  {
+    "id": "fusils",
+    "index": 24,
+    "nom_fr": "Fusils croisés",
+    "nom_en": "Crossed Rifles"
+  },
+  {
+    "id": "couronne",
+    "index": 25,
+    "nom_fr": "Couronne",
+    "nom_en": "Crown"
+  },
+  {
+    "id": "ancre",
+    "index": 26,
+    "nom_fr": "Ancre",
+    "nom_en": "Anchor"
+  },
+  {
+    "id": "bouclier",
+    "index": 27,
+    "nom_fr": "Bouclier",
+    "nom_en": "Shield"
+  },
+  {
+    "id": "oeil",
+    "index": 28,
+    "nom_fr": "Œil",
+    "nom_en": "Eye"
+  },
+  {
+    "id": "lune",
+    "index": 29,
+    "nom_fr": "Lune",
+    "nom_en": "Moon"
+  },
+  {
+    "id": "soleil",
+    "index": 30,
+    "nom_fr": "Soleil",
+    "nom_en": "Sun"
+  },
+  {
+    "id": "poing",
+    "index": 31,
+    "nom_fr": "Poing",
+    "nom_en": "Fist"
+  }
+]

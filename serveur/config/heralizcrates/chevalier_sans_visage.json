@@ -1,0 +1,82 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add chevalier_sans_visage <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 16,
+      "weight": 16,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:shield",
+      "count": 1,
+      "weight": 14,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:iron_chestplate",
+      "count": 1,
+      "weight": 12,
+      "rarity": "uncommon",
+      "nbt": "{Enchantments:[{id:\"minecraft:protection\",lvl:3s},{id:\"minecraft:unbreaking\",lvl:3s}]}"
+    },
+    {
+      "item": "minecraft:saddle",
+      "count": 1,
+      "weight": 10,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:diamond_horse_armor",
+      "count": 1,
+      "weight": 8,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 5,
+      "weight": 12,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:golden_apple",
+      "count": 4,
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:diamond_helmet",
+      "count": 1,
+      "weight": 6,
+      "rarity": "epic",
+      "nbt": "{Enchantments:[{id:\"minecraft:protection\",lvl:4s},{id:\"minecraft:unbreaking\",lvl:3s}]}",
+      "name": "&5Heaume Sans Visage"
+    },
+    {
+      "item": "minecraft:totem_of_undying",
+      "count": 1,
+      "weight": 5,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:netherite_sword",
+      "count": 1,
+      "weight": 3,
+      "rarity": "legendary",
+      "nbt": "{Enchantments:[{id:\"minecraft:sharpness\",lvl:5s},{id:\"minecraft:sweeping\",lvl:3s},{id:\"minecraft:unbreaking\",lvl:3s}]}",
+      "name": "&5&lLame du Chevalier"
+    },
+    {
+      "item": "minecraft:netherite_ingot",
+      "count": 1,
+      "weight": 3,
+      "rarity": "legendary"
+    },
+    {
+      "item": "minecraft:enchanted_golden_apple",
+      "count": 2,
+      "weight": 1,
+      "rarity": "mythic"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/citadin.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "pantalon_ceinture",
+    "uv": [
+     0,
+     37
+    ],
+    "from": [
+     -4.625,
+     10.75,
+     -2.875
+    ],
+    "size": [
+     9.25,
+     2.5,
+     5.75
+    ],
+    "faces": [
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pantalon_ceinture",
+    "uv": [
+     33,
+     46
+    ],
+    "from": [
+     -4.853515625,
+     10.896484375,
+     -3.103515625
+    ],
+    "size": [
+     9.75,
+     0.75,
+     6.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pantalon_boucle",
+    "uv": [
+     7,
+     59
+    ],
+    "from": [
+     -0.853515625,
+     10.771484375,
+     -3.353515625
+    ],
+    "size": [
+     1.75,
+     1.0,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   }
+  ],
+  "right_leg": [
+   {
+    "name": "pantalon_jambe",
+    "uv": [
+     52,
+     0
+    ],
+    "from": [
+     -2.6,
+     -0.5,
+     -2.5
+    ],
+    "size": [
+     5.0,
+     11.75,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ],
+  "left_leg": [
+   {
+    "name": "pantalon_jambe_m",
+    "uv": [
+     31,
+     0
+    ],
+    "from": [
+     -2.4,
+     -0.625,
+     -2.625
+    ],
+    "size": [
+     5.0,
+     11.75,
+     5.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {}
+}

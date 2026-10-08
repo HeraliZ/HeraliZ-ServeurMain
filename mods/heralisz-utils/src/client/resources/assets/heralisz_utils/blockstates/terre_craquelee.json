@@ -1,0 +1,54 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_utils:block/terre_craquelee_0",
+    "y": 0
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_0",
+    "y": 90
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_0",
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_0",
+    "y": 270
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_1",
+    "y": 0
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_1",
+    "y": 90
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_1",
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_1",
+    "y": 270
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_2",
+    "y": 0
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_2",
+    "y": 90
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_2",
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/terre_craquelee_2",
+    "y": 270
+   }
+  ]
+ }
+}

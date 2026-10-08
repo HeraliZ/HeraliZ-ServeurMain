@@ -1,0 +1,24 @@
+{
+  "name": "item.heralisz_heal.surv12",
+  "tooltip": "item.heralisz_heal.surv12.desc",
+  "base_item": "heralisz_tactical:consumable",
+  "data": {
+    "use_duration": 160,
+    "cooldown": 120,
+    "cooldown_category": "heralisz_tactical:medical",
+    "stack_size": 1,
+    "max_durability": 15,
+    "durability_damage": 1,
+    "draw_time": 12,
+    "put_away_time": 6,
+    "heal": 10.0,
+    "remove_effects": [
+      "geckolib:broken_bone",
+      "geckolib:bleeding",
+      "minecraft:slowness",
+      "minecraft:weakness"
+    ],
+    "use_mode": "toggle",
+    "effects": []
+  }
+}

@@ -1,0 +1,64 @@
+{
+    "model": "arkaniaz:gun/sr_2m_geo",
+    "texture": "arkaniaz:gun/uv/sr_2m",
+    "slot": "arkaniaz:gun/slot/sr_2m",
+    "third_person_animation": "default",
+    "hud": "arkaniaz:gun/hud/sr_2m",
+    "animation": "arkaniaz:sr_2m",
+    "use_default_animation": "rifle",
+    "sounds": {
+    "draw": "tacz:uzi/uzi_draw",
+    "put_away": "tacz:uzi/uzi_put_away",
+    "shoot": "arkaniaz:sr_2m/sr_2m_shoot",
+    "shoot_3p": "arkaniaz:sr_2m/sr_2m_shoot_3p",
+    "dry_fire":"arkaniaz:sr_2m/sr_2m_dry_fire",
+    "inspect": "arkaniaz:sr_2m/sr_2m_inspect",
+    "inspect_empty": "arkaniaz:sr_2m/sr_2m_inspect_empty",
+    "silence": "arkaniaz:sr_2m/sr_2m_silence",
+    "silence_3p": "arkaniaz:sr_2m/sr_2m_silence_3p",
+    "reload_empty": "arkaniaz:sr_2m/sr_2m_reload_empty",
+    "reload_tactical": "arkaniaz:sr_2m/sr_2m_reload_tactical"
+    },
+    "offhand_show": {
+      "pos": [1, 19, 4],
+      "rotate": [0, 0, 30],
+      "scale": [0.5, 0.5, 0.5]
+    },
+    "hotbar_show": {
+      "0": {
+        "pos": [1, 16, -2],
+      "rotate": [0, 0, 20],
+      "scale": [0.5, 0.5, 0.5]
+      }
+    },
+    "shell": {
+        "initial_velocity": [5, 2, 1],
+        "random_velocity": [1, 1, 0.25],
+        "acceleration": [0.0, -10, 0.0],
+        "angular_velocity": [360, -1200, 90],
+        "living_time": 1.0
+    },
+    "muzzle_flash": {
+		"texture": "tacz:flash/common_muzzle_flash",
+		"scale": 1
+    },
+    "transform": {
+        "scale": {
+            "thirdperson": [
+                0.6,
+                0.6,
+                0.6
+            ],
+            "ground": [
+                0.6,
+                0.6,
+                0.6
+            ],
+            "fixed": [
+                1.2,
+                1.2,
+                1.2
+            ]
+        }
+    }
+}

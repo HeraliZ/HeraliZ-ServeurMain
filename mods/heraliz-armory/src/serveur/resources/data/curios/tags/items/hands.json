@@ -1,0 +1,26 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_armory:rescape_hands",
+    "heraliz_armory:woodland_hands",
+    "heraliz_armory:nomade_hands",
+    "heraliz_armory:gardien_hands",
+    "heraliz_armory:cobra_hands",
+    "heraliz_armory:sentinelle_hands",
+    "heraliz_armory:rempart_hands",
+    "heraliz_armory:vipere_hands",
+    "heraliz_armory:siberie_hands",
+    "heraliz_armory:scorpion_hands",
+    "heraliz_armory:contrat_hands",
+    "heraliz_armory:belier_hands",
+    "heraliz_armory:fennec_hands",
+    "heraliz_armory:blizzard_hands",
+    "heraliz_armory:barricade_hands",
+    "heraliz_armory:beton_hands",
+    "heraliz_armory:meute_hands",
+    "heraliz_armory:corbeau_hands",
+    "heraliz_armory:ours_hands",
+    "heraliz_armory:mastodonte_hands",
+    "heraliz_armory:titan_hands"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+ "parent": "heralisz_utils:custom/politen",
+ "textures": {
+  "1": "heralisz_utils:item/politen",
+  "particle": "heralisz_utils:item/3345"
+ }
+}

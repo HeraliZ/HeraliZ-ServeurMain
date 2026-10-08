@@ -1,0 +1,7 @@
+{
+    "name": "maxstuff.gun.thunderbird_short.name",
+    "display": "maxstuff:thunderbird_short_display",
+    "data": "maxstuff:thunderbird_short_data",
+    "type": "pistol",
+    "tooltip": "maxstuff.gun.thunderbird_short.desc"
+}

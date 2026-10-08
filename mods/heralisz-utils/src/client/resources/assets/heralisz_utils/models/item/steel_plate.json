@@ -1,0 +1,7 @@
+{
+ "parent": "heralisz_utils:custom/steal",
+ "textures": {
+  "0": "heralisz_utils:item/steal1",
+  "particle": "heralisz_utils:item/3345"
+ }
+}

@@ -1,0 +1,153 @@
+
+#Rust-style building rules.
+[rules]
+	#Pieces a building may have before a Claim Block (tool cupboard) is placed on it.
+	#1 = only the first foundation: everything else must be connected to a claimed building.
+	#Range: 1 ~ 1000
+	maxPiecesWithoutClaim = 1
+	#Max blocks between a foundation slab and the ground (filled with a solid skirt).
+	#Range: 0 ~ 16
+	foundationMaxHeight = 3
+	#Stability lost per vertical support (floor on walls, wall on wall).
+	#Range: 1 ~ 100
+	verticalLoss = 5
+	#Stability lost per floor hanging off a neighbouring floor.
+	#Range: 1 ~ 100
+	cantileverLoss = 35
+	#Minimum stability (0-100) to place a piece.
+	#Range: 1 ~ 100
+	minStability = 10
+	#Seconds after placement / upgrade during which the owner can demolish a piece. -1 = always.
+	#Range: -1 ~ 1000000
+	demolishWindowSeconds = 600
+	#Max distance between the player's eyes and a piece to build, upgrade or repair it.
+	#Range: 2.0 ~ 32.0
+	reach = 8.0
+	#Building data saved by an older version of the mod (v2 grid) cannot be used: by default the
+	#buildings of such a world are left untouched (not usable, nothing saved) and an error is logged. true = copy the old
+	#file aside (crac_buildings.dat.v2-<time>) and start with no buildings. The old structure blocks then clean themselves up.
+	discardOldBuildings = false
+
+#Twig pieces can be broken by hand, like in Rust.
+[twig]
+	meleeDamage = true
+	#HP removed by one full-strength melee hit on a twig piece.
+	#Range: 1 ~ 1000
+	meleeHit = 3
+
+#Health per tier, multiplied by the piece multiplier below.
+[health]
+	#Range: 1 ~ 1000000
+	twig = 10
+	#Range: 1 ~ 1000000
+	wood = 250
+	#Range: 1 ~ 1000000
+	stone = 500
+	#Range: 1 ~ 1000000
+	metal = 1000
+	#Range: 1 ~ 1000000
+	armored = 2000
+	#If true, upgrading restores full health of the new tier.
+	upgradeHeals = true
+
+	[health.multiplier]
+		#Range: 0.05 ~ 20.0
+		foundation = 1.0
+		#Range: 0.05 ~ 20.0
+		triangle_foundation = 1.0
+		#Range: 0.05 ~ 20.0
+		floor = 1.0
+		#Range: 0.05 ~ 20.0
+		triangle_floor = 1.0
+		#Range: 0.05 ~ 20.0
+		roof = 1.0
+		#Range: 0.05 ~ 20.0
+		triangle_roof = 1.0
+		#Range: 0.05 ~ 20.0
+		wall = 1.0
+		#Range: 0.05 ~ 20.0
+		half_wall = 0.5
+		#Range: 0.05 ~ 20.0
+		doorway = 0.6
+		#Range: 0.05 ~ 20.0
+		double_doorway = 0.6
+		#Range: 0.05 ~ 20.0
+		window = 0.8
+		#Range: 0.05 ~ 20.0
+		l_stairs = 0.5
+		#Range: 0.05 ~ 20.0
+		ramp = 0.5
+
+#Costs. Format "modid:item=count" or "#tag=count". An empty list [] makes the action free.
+#An entry naming an unknown item or an empty tag blocks the action (logged at server start), it is never skipped.
+[cost]
+
+	#Twig cost to place each piece.
+	[cost.place]
+		foundation = ["minecraft:stick=16"]
+		triangle_foundation = ["minecraft:stick=8"]
+		floor = ["minecraft:stick=16"]
+		triangle_floor = ["minecraft:stick=8"]
+		roof = ["minecraft:stick=16"]
+		triangle_roof = ["minecraft:stick=8"]
+		wall = ["minecraft:stick=16"]
+		half_wall = ["minecraft:stick=8"]
+		doorway = ["minecraft:stick=12"]
+		double_doorway = ["minecraft:stick=16"]
+		window = ["minecraft:stick=12"]
+		l_stairs = ["minecraft:stick=24"]
+		ramp = ["minecraft:stick=16"]
+
+	#Cost to upgrade a full piece to each tier; multiplied per piece below (rounded up).
+	[cost.upgrade]
+		wood = ["#minecraft:planks=16"]
+		stone = ["#forge:cobblestone=24"]
+		metal = ["crac:sheet_metal_panel=4"]
+		armored = ["crac:armored_metal_panel=4"]
+
+		[cost.upgrade.multiplier]
+			#Range: 0.0 ~ 20.0
+			foundation = 1.0
+			#Range: 0.0 ~ 20.0
+			triangle_foundation = 0.5
+			#Range: 0.0 ~ 20.0
+			floor = 1.0
+			#Range: 0.0 ~ 20.0
+			triangle_floor = 0.5
+			#Range: 0.0 ~ 20.0
+			roof = 1.0
+			#Range: 0.0 ~ 20.0
+			triangle_roof = 0.5
+			#Range: 0.0 ~ 20.0
+			wall = 1.0
+			#Range: 0.0 ~ 20.0
+			half_wall = 0.5
+			#Range: 0.0 ~ 20.0
+			doorway = 0.75
+			#Range: 0.0 ~ 20.0
+			double_doorway = 0.75
+			#Range: 0.0 ~ 20.0
+			window = 0.75
+			#Range: 0.0 ~ 20.0
+			l_stairs = 1.5
+			#Range: 0.0 ~ 20.0
+			ramp = 1.0
+
+	#Items consumed by one repair, per tier.
+	[cost.repair]
+		twig = ["minecraft:stick=2"]
+		wood = ["#minecraft:planks=3"]
+		stone = ["#forge:cobblestone=4"]
+		metal = ["minecraft:iron_ingot=2"]
+		armored = ["minecraft:netherite_scrap=1"]
+
+[repair]
+	#Percent of max health restored by one repair.
+	#Range: 1 ~ 100
+	percent = 20
+	#Seconds of holding the hammer on a piece to complete one repair.
+	#Range: 0.2 ~ 60.0
+	seconds = 3.0
+	#If true, repairing is blocked while the claim is under raid block.
+	blockedDuringRaid = true
+

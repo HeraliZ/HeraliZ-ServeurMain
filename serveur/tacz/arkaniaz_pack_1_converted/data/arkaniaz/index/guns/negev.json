@@ -1,0 +1,9 @@
+{
+    "name": "arkaniaz.gun.negev.name",
+    "display": "arkaniaz:negev_display",
+    "data": "arkaniaz:negev_data",
+    "type": "mg",
+    "item_type": "modern_kinetic",
+    "tooltip": "Mitrailleuse légère moderne.",
+    "sort": 10
+}

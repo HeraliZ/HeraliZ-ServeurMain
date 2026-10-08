@@ -1,0 +1,351 @@
+{
+  "rayon_impact": {
+    "subtitle": "subtitles.heraliz_wonder.rayon_impact",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:rayon_impact"
+      }
+    ]
+  },
+  "mk2_impact": {
+    "subtitle": "subtitles.heraliz_wonder.mk2_impact",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:mk2_impact"
+      }
+    ]
+  },
+  "foudre_tonnerre": {
+    "subtitle": "subtitles.heraliz_wonder.foudre_tonnerre",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:foudre_tonnerre"
+      }
+    ]
+  },
+  "foudre_arc": {
+    "subtitle": "subtitles.heraliz_wonder.foudre_arc",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:foudre_arc_1"
+      },
+      {
+        "name": "heraliz_wonder:foudre_arc_2"
+      },
+      {
+        "name": "heraliz_wonder:foudre_arc_3"
+      }
+    ]
+  },
+  "electrocution": {
+    "subtitle": "subtitles.heraliz_wonder.electrocution",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:electrocution"
+      }
+    ]
+  },
+  "souffle": {
+    "subtitle": "subtitles.heraliz_wonder.souffle",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:souffle",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "souffle_corps": {
+    "subtitle": "subtitles.heraliz_wonder.souffle_corps",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:souffle_corps_1"
+      },
+      {
+        "name": "heraliz_wonder:souffle_corps_2"
+      },
+      {
+        "name": "heraliz_wonder:souffle_corps_3"
+      }
+    ]
+  },
+  "jetgun_moteur": {
+    "subtitle": "subtitles.heraliz_wonder.jetgun_moteur",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:jetgun_moteur",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "jetgun_demarrage": {
+    "subtitle": "subtitles.heraliz_wonder.jetgun_demarrage",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:jetgun_demarrage",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "jetgun_arret": {
+    "subtitle": "subtitles.heraliz_wonder.jetgun_arret",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:jetgun_arret",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "jetgun_surchauffe": {
+    "subtitle": "subtitles.heraliz_wonder.jetgun_surchauffe",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:jetgun_surchauffe",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "jetgun_broyage": {
+    "subtitle": "subtitles.heraliz_wonder.jetgun_broyage",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:jetgun_broyage_1"
+      },
+      {
+        "name": "heraliz_wonder:jetgun_broyage_2"
+      },
+      {
+        "name": "heraliz_wonder:jetgun_broyage_3"
+      }
+    ]
+  },
+  "blundergat_impact": {
+    "subtitle": "subtitles.heraliz_wonder.blundergat_impact",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:blundergat_impact_1"
+      },
+      {
+        "name": "heraliz_wonder:blundergat_impact_2"
+      }
+    ]
+  },
+  "blundergat_chair": {
+    "subtitle": "subtitles.heraliz_wonder.blundergat_chair",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:blundergat_chair"
+      }
+    ]
+  },
+  "acide_colle": {
+    "subtitle": "subtitles.heraliz_wonder.acide_colle",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:acide_colle"
+      }
+    ]
+  },
+  "acide_bip": {
+    "subtitle": "subtitles.heraliz_wonder.acide_bip",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:acide_bip"
+      }
+    ]
+  },
+  "acide_explosion": {
+    "subtitle": "subtitles.heraliz_wonder.acide_explosion",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:acide_explosion_1",
+        "attenuation_distance": 40
+      },
+      {
+        "name": "heraliz_wonder:acide_explosion_2",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "acide_gresille": {
+    "subtitle": "subtitles.heraliz_wonder.acide_gresille",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:acide_gresille"
+      }
+    ]
+  },
+  "givre_souffle": {
+    "subtitle": "subtitles.heraliz_wonder.givre_souffle",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:givre_souffle",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "givre_gel": {
+    "subtitle": "subtitles.heraliz_wonder.givre_gel",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:givre_gel_1"
+      },
+      {
+        "name": "heraliz_wonder:givre_gel_2"
+      },
+      {
+        "name": "heraliz_wonder:givre_gel_3"
+      }
+    ]
+  },
+  "givre_eclat": {
+    "subtitle": "subtitles.heraliz_wonder.givre_eclat",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:givre_eclat_1"
+      },
+      {
+        "name": "heraliz_wonder:givre_eclat_2"
+      },
+      {
+        "name": "heraliz_wonder:givre_eclat_3"
+      }
+    ]
+  },
+  "givre_craque": {
+    "subtitle": "subtitles.heraliz_wonder.givre_craque",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:givre_craque"
+      }
+    ]
+  },
+  "sliq_splat": {
+    "subtitle": "subtitles.heraliz_wonder.sliq_splat",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:sliq_splat_1"
+      },
+      {
+        "name": "heraliz_wonder:sliq_splat_2"
+      },
+      {
+        "name": "heraliz_wonder:sliq_splat_3"
+      }
+    ]
+  },
+  "sliq_flaque": {
+    "subtitle": "subtitles.heraliz_wonder.sliq_flaque",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:sliq_flaque"
+      }
+    ]
+  },
+  "sliq_glisse": {
+    "subtitle": "subtitles.heraliz_wonder.sliq_glisse",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:sliq_glisse_1"
+      },
+      {
+        "name": "heraliz_wonder:sliq_glisse_2"
+      }
+    ]
+  },
+  "sliq_liquefie": {
+    "subtitle": "subtitles.heraliz_wonder.sliq_liquefie",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:sliq_liquefie_1"
+      },
+      {
+        "name": "heraliz_wonder:sliq_liquefie_2"
+      }
+    ]
+  },
+  "sliq_pas": {
+    "subtitle": "subtitles.heraliz_wonder.sliq_pas",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:sliq_pas_1"
+      },
+      {
+        "name": "heraliz_wonder:sliq_pas_2"
+      },
+      {
+        "name": "heraliz_wonder:sliq_pas_3"
+      }
+    ]
+  },
+  "paralyseur_rayon": {
+    "subtitle": "subtitles.heraliz_wonder.paralyseur_rayon",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:paralyseur_rayon",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "paralyseur_debut": {
+    "subtitle": "subtitles.heraliz_wonder.paralyseur_debut",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:paralyseur_debut",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "paralyseur_fin": {
+    "subtitle": "subtitles.heraliz_wonder.paralyseur_fin",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:paralyseur_fin",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "paralyseur_surchauffe": {
+    "subtitle": "subtitles.heraliz_wonder.paralyseur_surchauffe",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:paralyseur_surchauffe",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "paralyseur_pret": {
+    "subtitle": "subtitles.heraliz_wonder.paralyseur_pret",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:paralyseur_pret",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "paralyseur_gel": {
+    "subtitle": "subtitles.heraliz_wonder.paralyseur_gel",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:paralyseur_gel",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "paralyseur_poussiere": {
+    "subtitle": "subtitles.heraliz_wonder.paralyseur_poussiere",
+    "sounds": [
+      {
+        "name": "heraliz_wonder:paralyseur_poussiere_1",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "heraliz_wonder:paralyseur_poussiere_2",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "heraliz_wonder:paralyseur_poussiere_3",
+        "attenuation_distance": 32
+      }
+    ]
+  }
+}

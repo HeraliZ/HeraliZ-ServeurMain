@@ -1,0 +1,28 @@
+{
+ "variants": {
+  "closed=false,facing=north": {
+   "model": "heralisz_n07:block/gate_web"
+  },
+  "closed=true,facing=north": {
+   "model": "heralisz_n07:block/gate_web"
+  },
+  "closed=false,facing=east": {
+   "model": "heralisz_n07:block/gate_web"
+  },
+  "closed=true,facing=east": {
+   "model": "heralisz_n07:block/gate_web"
+  },
+  "closed=false,facing=south": {
+   "model": "heralisz_n07:block/gate_web"
+  },
+  "closed=true,facing=south": {
+   "model": "heralisz_n07:block/gate_web"
+  },
+  "closed=false,facing=west": {
+   "model": "heralisz_n07:block/gate_web"
+  },
+  "closed=true,facing=west": {
+   "model": "heralisz_n07:block/gate_web"
+  }
+ }
+}

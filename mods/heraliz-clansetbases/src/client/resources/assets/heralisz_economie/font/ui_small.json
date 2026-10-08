@@ -1,0 +1,34 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 2.0,
+        " ": 3.0
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "heralisz_economie:font/jeton.png",
+      "ascent": 6,
+      "height": 7,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "ttf",
+      "file": "heralisz_economie:dmsans_medium.ttf",
+      "size": 9.0,
+      "oversample": 4.0,
+      "shift": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

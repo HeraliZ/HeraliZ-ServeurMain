@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t2_materiel_camping"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t2_materiel_camping"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t2_materiel_camping"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t2_materiel_camping"
+  }
+ }
+}

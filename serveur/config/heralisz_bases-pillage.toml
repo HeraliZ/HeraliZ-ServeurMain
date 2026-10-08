@@ -1,0 +1,18 @@
+
+[pillage]
+	#Un pillard sorti VIVANT peut revenir le meme jour dans la MEME base (jamais dans une autre ; jamais apres une mort)
+	retour_apres_sortie = true
+	#Secondes avant la fin de la fenetre ou les pillards sont prevenus qu'ils vont etre renvoyes
+	#Range: 10 ~ 1800
+	avertissement_s = 120
+
+[blindage]
+	#Les blocs heralisz_bases:blindage_1..8 valent PARTOUT (N C4 pour les casser, insensibles aux autres explosions). false : les AUTRES blocs de la table (cfm, portes HBM) ne sont proteges que dans la dimension des bases (la carte n'est jamais touchee). true : toute la table dans toutes les dimensions
+	blindage_partout = false
+	#Un C4 pose dans une base garde son chunk charge (il ne disparait pas au dechargement) tant que la fenetre de pillage est ouverte ou qu'un joueur est dans la base, au plus ce nombre de minutes
+	#Range: 1 ~ 1440
+	c4_maintien_min = 120
+	#Periode de renvoi des fissures aux joueurs proches (le client les oublie apres 20 s)
+	#Range: 2 ~ 19
+	fissures_rafraichir_s = 10
+

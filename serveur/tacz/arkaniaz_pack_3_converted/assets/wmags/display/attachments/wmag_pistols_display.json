@@ -1,0 +1,7 @@
+{
+  "slot": "wmags:attachment/slot/wmag_pistols",
+  "sounds": {
+    "install": "tacz:attachments/extended_mag_install",
+    "uninstall": "tacz:attachments/extended_mag_uninstall"
+  }
+}

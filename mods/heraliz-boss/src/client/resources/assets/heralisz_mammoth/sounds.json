@@ -1,0 +1,137 @@
+{
+ "mammoth.amb_moan": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/amb_moan"
+  ]
+ },
+ "mammoth.amb_wind": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/amb_wind"
+  ]
+ },
+ "mammoth.blizzard": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/blizzard"
+  ]
+ },
+ "mammoth.bone_hit": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/bone_hit"
+  ]
+ },
+ "mammoth.charge_loop": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/charge_loop"
+  ]
+ },
+ "mammoth.death": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/death"
+  ]
+ },
+ "mammoth.heartbeat": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/heartbeat"
+  ]
+ },
+ "mammoth.hurt": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/hurt_1",
+   "heralisz_mammoth:mammoth/hurt_2"
+  ]
+ },
+ "mammoth.ice_crack": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/ice_crack_1",
+   "heralisz_mammoth:mammoth/ice_crack_2",
+   "heralisz_mammoth:mammoth/ice_crack_3"
+  ]
+ },
+ "mammoth.ice_shatter": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/ice_shatter"
+  ]
+ },
+ "mammoth.icicle_hit": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/icicle_hit"
+  ]
+ },
+ "mammoth.lash": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/lash"
+  ]
+ },
+ "mammoth.maw_open": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/maw_open"
+  ]
+ },
+ "mammoth.nova": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/nova"
+  ]
+ },
+ "mammoth.rip": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/rip"
+  ]
+ },
+ "mammoth.roar": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/roar"
+  ]
+ },
+ "mammoth.skull_crack": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/skull_crack"
+  ]
+ },
+ "mammoth.spikes": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/spikes"
+  ]
+ },
+ "mammoth.step": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/step_1",
+   "heralisz_mammoth:mammoth/step_2",
+   "heralisz_mammoth:mammoth/step_3"
+  ]
+ },
+ "mammoth.stomp": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/stomp"
+  ]
+ },
+ "mammoth.trumpet": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/trumpet_1",
+   "heralisz_mammoth:mammoth/trumpet_2",
+   "heralisz_mammoth:mammoth/trumpet_3"
+  ]
+ },
+ "mammoth.tusk_swing": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/tusk_swing"
+  ]
+ },
+ "mammoth.vortex": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/vortex"
+  ]
+ },
+ "mammoth.whoosh": {
+  "sounds": [
+   "heralisz_mammoth:mammoth/whoosh"
+  ]
+ },
+ "music.mammoth": {
+  "sounds": [
+   {
+    "name": "heralisz_mammoth:music/mammoth",
+    "stream": true
+   }
+  ]
+ }
+}

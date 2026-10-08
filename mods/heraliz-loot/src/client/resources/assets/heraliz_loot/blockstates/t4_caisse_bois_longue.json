@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t4_caisse_bois_longue"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t4_caisse_bois_longue"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t4_caisse_bois_longue"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t4_caisse_bois_longue"
+  }
+ }
+}

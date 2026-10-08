@@ -1,0 +1,14 @@
+{
+  "c4_beep": {
+    "subtitle": "subtitles.crac.c4_beep",
+    "sounds": [
+      "crac:c4_beep"
+    ]
+  },
+  "sheet_metal_upgrade": {
+    "subtitle": "subtitles.crac.sheet_metal_upgrade",
+    "sounds": [
+      "crac:sheet_metal_upgrade"
+    ]
+  }
+}

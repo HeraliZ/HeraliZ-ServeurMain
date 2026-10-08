@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=south": {
+   "model": "heraliz_loot:block/ark/t34_tank_destroyed"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/ark/t34_tank_destroyed",
+   "y": 90
+  },
+  "facing=north": {
+   "model": "heraliz_loot:block/ark/t34_tank_destroyed",
+   "y": 180
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/ark/t34_tank_destroyed",
+   "y": 270
+  }
+ }
+}

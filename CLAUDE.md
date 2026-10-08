@@ -1,0 +1,376 @@
+# HeraliZ — dépôt du serveur
+
+Ce dépôt contient **tout le serveur Minecraft HeraliZ** : les sources de nos mods, les mods des autres auteurs, les
+plugins, les configs, les gunpacks TaCZ et les outils. Deux personnes y travaillent, chacune avec sa session Claude.
+Ce fichier est lu automatiquement par Claude au début de chaque session : il contient les règles, la méthode et tout
+ce qu'il faut savoir du projet. **Le lire en entier avant toute modification.**
+
+Les propriétaires ne sont pas développeurs : leur répondre en français simple, sans jargon, avec des questions courtes
+quand un choix leur revient.
+
+---
+
+## 0. Règles d'or
+
+1. **On modifie toujours les sources** (`mods/<projet>/src/...`), puis on refabrique les jars. Jamais de retouche à la
+   main dans un jar, jamais un jar « bricolé » déposé sur le serveur.
+2. **Avant toute demande : récupérer la dernière version** (`git pull --rebase`). **Après : fabriquer, vérifier,
+   enregistrer, envoyer** (section 7). L'autre personne doit retrouver le travail à jour à sa prochaine demande.
+3. **Un changement = un commit**, avec un message clair en français (« Boss : Ymirak frappe 20 % moins fort »).
+   Jamais de `git push --force`, jamais de réécriture de l'historique.
+4. **Aucun prénom, ancien pseudo, adresse mail, chemin de PC, nom de compte ou identifiant de session** dans le code,
+   les fichiers, les commentaires ou les messages de commit. L'auteur de nos mods est toujours **HeraliZ**.
+   `python outils/verifier.py` le contrôle (liste locale `outils/noms_interdits.txt`, hors Git, à demander au
+   propriétaire).
+5. **Jamais notre nom sur le code des autres** (liste section 3.2). On ne retire pas non plus leurs crédits ni leurs
+   licences. Pour qu'un de ces mods devienne « à nous », on le refait nous-mêmes.
+6. **Ne pas toucher** aux jars de `serveur/mods-tiers/` et `client/mods-tiers/` sans demande explicite.
+7. **Aucun mot de passe, clé, jeton ou adresse de serveur dans le dépôt.** Les accès au Ptero sont dans les
+   « Secrets » GitHub (section 8), jamais dans un fichier.
+8. **Pas de test en jeu par Claude** : les propriétaires testent eux-mêmes. Chaque compte rendu dit clairement ce qui
+   n'a PAS été testé en jeu.
+9. **Contenu visuel nouveau** (modèle, arme, machine, interface importante) : d'abord des rendus à valider par le
+   propriétaire, ensuite seulement le code et les jars.
+10. **La carte (map) se fait hors de ce dépôt.** Quand le propriétaire fournit un mod, un pack de textures ou un monde
+    modifié (jar + sources), on l'ajoute ici (section 9).
+
+---
+
+## 1. Le serveur en bref
+
+- Minecraft **1.20.1**, Forge **47** ; sur le Ptero : **Mohist 1.20.1-916** (`mohist-1.20.1-916-server.jar`), Java 17.
+- Joueurs en version crackée : `online-mode=false` + plugin **AuthMe** (comptes par mot de passe). Plugins : AuthMe,
+  spark.
+- Armes : **TaCZ** (mod de base, jamais à notre nom) + nos gunpacks dans `serveur/tacz/`.
+- Monnaie du serveur : les **hérals** (« 1 héral », « 1 500 hérals »). Identifiants internes inchangés
+  (`heralisz_economie`, `EconomieApi`). Les objets du casino s'appellent « jetons ».
+- Dimensions à part : `heralisz_matchs:arenes` (ClashWar, duels) et `heralisz_matchs:zombies`.
+- Style de toutes les interfaces : celui des **écrans de clan** (panneaux de verre, police DM Sans, échelle 640×360,
+  jamais de fond uni). Kit à copier : `python outils/copier_kit_ui.py mods/<projet>`. Exceptions : l'inventaire et les
+  écrans à thème (machines du casino).
+- Menu Échap (heraliz_interface) : Reprendre, Discord, Boutique, Informations, boutons vanilla.
+
+---
+
+## 2. Organisation du dépôt
+
+```
+CLAUDE.md                 ce fichier
+docs/METHODE_CLIENT_SERVEUR.md   la méthode détaillée de séparation client / serveur (à lire avant de découper du code)
+mods/<projet>/            les sources de NOS mods (un projet Gradle par jar)
+mods/_gabarit/            modèle de projet coupé, pour créer un nouveau mod (outils/fusion_nouveau.py)
+serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
+  mods-tiers/             mods des autres auteurs (aussi chez les joueurs)
+  plugins/                AuthMe, spark et leurs réglages
+  config/                 configs des mods
+  defaultconfigs/         configs « serveur » des mods (copiées par Forge dans chaque nouveau monde)
+  tacz/                   gunpacks TaCZ
+  heralisz_matchs/, mohist-config/, server.properties, bukkit.yml, spigot.yml, commands.yml, eula.txt, server-icon.png
+client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (EntityCulling)
+outils/                   fabrication et contrôles (Python 3.11+)
+.github/workflows/        fabrication et mise en ligne automatiques
+```
+
+Jamais dans Git (voir `.gitignore`) : `build/`, `run/`, `dist/`, `livraison/`, le monde, Mohist et ses `libraries/`,
+`outils/chemins_local.json`, `outils/noms_interdits.txt`.
+
+---
+
+## 3. Les mods
+
+### 3.1 Nos mods (sources dans `mods/`)
+
+Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueurs), `-complet` (jeu solo).
+
+| Projet | Jar | modIds dedans | Rôle |
+|---|---|---|---|
+| heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
+| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases, heralisz_tags | hérals, clans, bunkers et pillage, tags |
+| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules | train, ascenseur, carte, plans, ambiance, cadavres, roue de ping, usure des armes, véhicules |
+| heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
+| heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
+| heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
+| heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7), rotation par zones |
+| heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons |
+| heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
+| heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) |
+| heralisz-bunker | heralisz_bunker | heralisz_bunker | portes animées (reprises de HBM Modernized, GPL), cartes d'accès, barricades |
+| reanimation | reanimation | reanimation | joueurs à terre, réanimation, fouille, exécutions |
+| airstrike | airstrike | airstrike | jumelles et frappes aériennes |
+| caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
+| heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
+| crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
+| heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : menu Échap, pack de textures du serveur imposé |
+| dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
+
+Les modIds ne changent JAMAIS (mondes, configs, gunpacks et autres mods en dépendent). Même règle pour les noms de
+classes et les signatures des API (section 5).
+
+### 3.2 Mods des autres auteurs (`serveur/mods-tiers/`, `client/mods-tiers/`)
+
+Jamais notre nom dessus, jamais de retouche sans demande. Les sources ne sont pas dans le dépôt.
+
+TaCZ (Serene Wave Studio) et TaCZ Addon (Mafuyu404) ; cfm « PATCH » (Furniture Mod de MrCrayfish, avec nos props
+dedans) ; Framework (MrCrayfish) ; geckolib222 (GeckoLib de l'équipe Gecko, avec du contenu ArkaniaZ dedans : c'est
+le SEUL GeckoLib du serveur) ; ywzj_vehicle « fuse » (YWZJ, moteur des véhicules) ; Simple Farming « heralisz1 »
+(enemeez) ; Mutants & Zombies (Pete MC Mods) ; Zombie Awareness et CoroUtil (Corosus) ; MAtmos et TCTcore (The_TCT) ;
+Passable Foliage et Kiwi (Snownee) ; Curios (TheIllusiveC4) ; Cloth Config (shedaniel) ; Player Animation Lib (KosmX) ;
+ModernFix, FerriteCore, MemoryLeakFix, PacketFixer (optimisation) ; EntityCulling (joueurs seulement).
+Spartan : à nous, mais sans sources (le propriétaire le refait).
+
+Les versions modifiées (cfm PATCH, geckolib222, ywzj fuse, simplefarming heralisz1) ont été retouchées directement
+dans les jars : il n'existe pas de sources.
+
+---
+
+## 4. Modifier un mod : la séparation client / serveur
+
+Nos mods sont coupés en deux pour que le code qui « décide » ne quitte jamais le serveur : les joueurs n'ont que
+l'affichage. Chaque projet a **trois dossiers de sources** :
+
+| Dossier | Ce qui y va | Jar |
+|---|---|---|
+| `src/commun` | enregistrements (blocs, objets, entités, sons), configs, paquets réseau, état synchronisé que lit l'affichage (`EntityDataAccessor`, état d'une entité de bloc), API lues des deux côtés | les trois |
+| `src/serveur` | ce qui décide : IA, attaques, dégâts, phases, butin, règles, commandes, sauvegardes, traitement des paquets reçus des joueurs, `data/` | `-serveur`, `-complet` |
+| `src/client` | l'affichage : rendus, modèles, HUD, écrans, sons d'ambiance, musiques, effets, mixins client, `assets/` | `-client`, `-complet` |
+
+Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux-là ne se voient pas.
+
+**Où toucher :**
+- changer une attaque, des dégâts, du butin, une règle → `src/serveur` (seul le jar `-serveur` change ; les joueurs
+  n'ont rien à retélécharger) ;
+- changer un modèle, une texture, un effet, le HUD → `src/client` (nouveau jar `-client` pour les joueurs) ;
+- ajouter un objet, un bloc, une entité, un paquet ou une donnée synchronisée → `src/commun` (**les deux** jars).
+
+**Les briques à connaître** (paquet `pont` de chaque projet, détails dans `docs/METHODE_CLIENT_SERVEUR.md`) :
+- `Parties.serveur(...)` / `Parties.client(...)` à la fin du constructeur `@Mod` : chargent `serveur.PartieServeur` /
+  `client.PartieClient` si elles sont dans le jar ;
+- une classe qui a de la logique est coupée en `X` (commun) + `XServeur` (serveur, même paquet). On la crée par son
+  type (`TYPE.get().create(level)`) ou son usine (`UsineEntite`, `UsineBlocEntite`, `Usine`), **jamais par `new X(...)`**
+  (on obtiendrait la version sans logique) ;
+- `Crochet` : point d'accroche que l'autre côté branche (paquets reçus, rendus d'objets, tickers client) ;
+- façades communes branchées par le serveur : `pont/Services` (Matchs), `pont/Serveur` (CRac) ; sans partie serveur,
+  elles rendent un résultat neutre.
+
+**Les pièges les plus courants** (liste complète dans la doc, §9, §15, §16) :
+1. `@Mod.EventBusSubscriber` sans `modid` dans un jar à plusieurs mods : écouteur appelé plusieurs fois.
+2. `new X(...)` d'une classe qui a une version `XServeur`.
+3. `EntityDataAccessor` déclaré ailleurs que dans la classe commune : désynchronisation.
+4. `DistExecutor` ou `Minecraft.getInstance()` dans `src/commun` : interdit, passer par un `Crochet`.
+5. Un fichier de `assets/` lu par le serveur (`getResourceAsStream`) : le mettre dans `src/commun/resources`.
+6. Une constante d'une classe serveur lue par le client : la déclarer dans une classe commune.
+7. Ordre des groupes d'un onglet créatif : les déclarer dans le mod porteur (FML construit les mods en parallèle).
+8. GeckoLib : `compileOnly` contre `libs/geckolib222-...jar`, **jamais embarqué** (sinon tout le contenu ArkaniaZ
+   disparaît).
+
+---
+
+## 5. Relier les mods entre eux
+
+Nos mods se parlent par des API stables. **Ne jamais renommer ces classes ni changer leurs signatures** : d'autres mods
+les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que le compilateur ne voit pas.
+
+| API | Où (côté) | Pour quoi |
+|---|---|---|
+| `fr.heralisz.economie.api.EconomieApi` | clansetbases (commun) | soldes en hérals, paiements |
+| `fr.heralisz.clans.api.ClansApi`, `ClanInfo`, événements `ClanDissousEvent` / `MembreQuitteEvent` | clansetbases (commun) | clan d'un joueur, membres, droits |
+| `fr.heralisz.bases.api.BasesApi`, `PillageHooks` | clansetbases (serveur) | bunkers, pillage |
+| `fr.heralisz.matchs.moteur.api.MatchApi` | matchs (commun) | `partieDe(ServerPlayer)`, `partie(id)`, en match ou pas |
+| `fr.heralisz.matchs.moteur.api.Partie`, `Equipe`, `CombatTag` (`restantMs(UUID)`), `Coffre`, `Arenes`, `Kit` | matchs (commun) | parties, équipes, tag de combat, coffre de match, arènes |
+| `fr.heralisz.matchs.zombies.jeu.api.ZombiesApi` | matchs (commun) | `TAG_PARTIE`, `partieDe(Entity)`, `planches(...)`, `interagir(...)`, Pack-a-Punch, sons |
+| `fr.heralisz.matchs.zombies.jeu.api.HudZombies.actif()` | matchs (commun, lu par le client) | HUD zombies affiché |
+| `fr.heralisz.matchs.moteur.client.MoteurClient.enMatch()`, `combatRestantMs()` | matchs (client) | états du joueur côté client |
+| `fr.heralisz.n07.api.N07Api` | boss (serveur) | boss final de The Giant (utilisé par Matchs) |
+| `fr.heraliz.reanimation.core.Downed.isDowned(Entity)`, `DownedManager` | reanimation (commun) | joueur à terre |
+| `fr.heraliz.reanimation.execution.Executions` | reanimation (serveur) | exécutions |
+| `com.caracrea.api.voice.CaraCreaVoice` | caracrea (serveur) | voix : couper un joueur, portée, routage |
+| `fr.heralisz.tactical.api.HeraliszTacticalAPI` | tactique (commun) | index des objets tactiques |
+
+**Pour qu'un nouveau mod utilise un des nôtres :**
+- dépendance obligatoire : la déclarer dans son `mods.toml` et compiler contre une copie du jar dans son `libs/`
+  (`compileOnly fg.deobf("blank:<nom>:<version>-<suffixe du projet>")`, suffixe unique par projet) ;
+- dépendance facultative : appel par réflexion, en tolérant l'absence du mod (exemples : `Busy` de CaraCrea,
+  `Regles` de Wonder) ;
+- appeler une API **du bon côté** : une API rangée dans `src/serveur` n'existe pas dans le jar des joueurs.
+Après un changement d'API : `python outils/verif_dependants.py` (doc dans le fichier) sur les jars des mods qui
+l'appellent.
+
+---
+
+## 6. Fabriquer, vérifier, livrer
+
+**Une fois par PC :**
+- JDK 17, Python 3.11 ou plus, Git ;
+- un profil CurseForge Forge 1.20.1 lancé au moins une fois (les contrôles lisent Minecraft dans le dossier `Install`) ;
+- une copie du dossier `libraries/` du serveur (par SFTP depuis le Ptero) dans un dossier local ;
+- `outils/chemins_local.json` (modèle dans `outils/chemins.py`) et `outils/noms_interdits.txt` (demander la liste au
+  propriétaire). Ces deux fichiers ne vont jamais dans Git.
+
+**À chaque modification :**
+```
+python outils/construire.py heraliz-boss      fabrique ce mod (sans nom : tous les mods) et range les jars dans livraison/
+python outils/verifier.py heraliz-boss        tous les contrôles (0 problème exigé avant d'envoyer)
+```
+Les contrôles :
+- `verif_split` : séparation client / serveur correcte (rien de client dans `-serveur`, rien qui manque d'un côté) ;
+- `check_geckolib_api` : compatible geckolib222 4.4.7, aucun GeckoLib embarqué ;
+- `verif_reobf` : noms de Minecraft réobfusqués (sinon plantage au chargement) ; chaque nom est cherché dans
+  Minecraft + Forge du lanceur CurseForge ;
+- noms perso : aucun mot interdit dans les sources ni les jars.
+
+**Où va quoi** (dossier `livraison/`, recréé à chaque fois) :
+- `mods serveur/` → `mods/` du Ptero ;
+- `mods client/` → `mods/` des joueurs ;
+- `mods solo/` → jeu solo et tests ;
+- `plugins/` → `plugins/` du Ptero.
+Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
+
+---
+
+## 7. Travailler à deux avec Git
+
+Pour chaque demande, dans cet ordre :
+1. `git pull --rebase` (récupère ce que l'autre a fait) ;
+2. faire la modification dans les sources ;
+3. `python outils/construire.py <projets touchés>` puis `python outils/verifier.py <projets touchés>` : 0 problème ;
+4. `git add` des fichiers modifiés (jamais de `build/`, `livraison/`, fichiers locaux), `git commit -m "..."` ;
+5. `git push`. S'il est refusé (l'autre a envoyé entre-temps) : `git pull --rebase`, régler les conflits en gardant
+   les deux changements, refabriquer, revérifier, puis `git push`.
+
+Règles :
+- identité de chaque PC, dans ce dépôt : `git config user.name "HeraliZ"` et
+  `git config user.email "heraliz@users.noreply.github.com"` ;
+- petits commits ; un message par changement ; dire dans le message si les joueurs doivent mettre à jour leurs mods ;
+- deux demandes en même temps, c'est possible : Git assemble les fichiers différents ; si le même endroit a été
+  modifié des deux côtés, Claude assemble à la main et revérifie.
+
+---
+
+## 8. Mise en ligne automatique (GitHub Actions)
+
+`.github/workflows/serveur.yml`, à chaque envoi sur la branche `main` :
+1. fabrique les mods dont les sources ont changé (les autres jars sont repris du cache) et range les jars ;
+2. lance les contrôles possibles sans Minecraft (GeckoLib, noms perso si le secret `NOMS_INTERDITS` existe) ; un
+   échec arrête tout : rien n'est envoyé au Ptero ;
+3. garde nos jars (paquets « mods-serveur » et « mods-client », 3 jours) à télécharger dans l'onglet Actions ;
+4. **si les secrets du Ptero sont réglés**, il met à jour le serveur par SFTP :
+   - `mods/` devient la copie exacte de `livraison/mods serveur` : les anciennes versions sont retirées ;
+   - les plugins (jars et réglages, jamais leurs bases de données), `config/`, `tacz/`, `heralisz_matchs/` et
+     `mohist-config/` sont complétés ou mis à jour, sans rien supprimer ;
+   - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde : **les configs du dépôt font foi**, un réglage
+     changé à la main sur le serveur est écrasé au prochain envoi ;
+   - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
+     racine du serveur se mettent à jour à la main) ;
+5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ».
+
+Secrets à créer par le propriétaire (Settings → Secrets and variables → Actions) : `PTERO_SFTP_HOST`,
+`PTERO_SFTP_PORT` (souvent 2022), `PTERO_SFTP_USER`, `PTERO_SFTP_PASSWORD`, et pour le redémarrage `PTERO_URL`,
+`PTERO_SERVER_ID`, `PTERO_API_KEY` (clé « client » du compte Ptero), et `NOMS_INTERDITS` (le contenu de
+`outils/noms_interdits.txt`, un mot par ligne). Personne ne doit les écrire ailleurs.
+
+Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SRG : ils ne tournent que sur les PC
+(section 6), pas sur GitHub. C'est pour ça qu'on vérifie AVANT d'envoyer.
+
+---
+
+## 9. Ajouter ce que le propriétaire fournit
+
+- **Un de nos mods modifié ou nouveau (jar + sources)** :
+  - s'il est déjà coupé (dossiers `src/commun`, `src/client`, `src/serveur`), le mettre dans `mods/<projet>` ;
+  - sinon : `python outils/fusion_nouveau.py <dossier> <groupe> "<Nom>"` (nouveau projet depuis `mods/_gabarit`),
+    `python outils/fusion_copier.py <sources reçues> mods/<dossier>`, puis la méthode (section 4 et la doc) ;
+  - ne jamais mettre ses dossiers `build/`, `run/`, ni de README contenant des noms perso ;
+  - fabriquer, vérifier (noms perso compris), puis commit et push.
+- **Un mod d'un autre auteur** : son jar dans `serveur/mods-tiers/` (ou `client/mods-tiers/` s'il ne sert qu'aux
+  joueurs), en retirant l'ancienne version.
+- **Un pack de textures** : il est imposé par heraliz_interface
+  (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
+  par celui du nouveau pack, puis refabriquer heraliz_interface.
+- **Le monde** : jamais dans Git (trop gros, changé par les joueurs). Il va directement sur le Ptero.
+
+---
+
+## 10. Décisions et préférences du propriétaire (à respecter)
+
+**Cap général** : à terme, tous les mods du serveur seront les nôtres, avec leurs sources, reliés entre eux, au style
+des écrans de clan, « full opti » (zéro lag, même sur les petits PC). On ne retire un mod tiers qu'une fois son
+remplaçant prêt. Projets maison prévus : ambiance sonore (remplacera MAtmos et TCTcore), traverser les feuillages
+(remplacera Passable Foliage et Kiwi), zombies de la survie (remplaceront Mutants & Zombies, Zombie Awareness,
+CoroUtil), véhicules et parachute sans ywzj, carte du monde « AAA », optimisation des 5 boss, nouveau Spartan,
+« HeraliZ Décors » (nos props sans le code de MrCrayfish, pour remplacer cfm).
+
+**Fabrication** :
+- GeckoLib = geckolib222 4.4.7 seul, jamais embarqué ;
+- réponses des commandes en message direct au joueur ; les tests audio sont muets ;
+- armes et modèles « niveau AAA » façon TaCZ : formes lisses, textures HD propres, cadrans lisibles sans scintillement,
+  main placée comme TaCZ ;
+- rien de nouveau dans les caisses ni en plans de craft : le loot et le craft seront refaits d'un bloc. En attente :
+  les 7 armes de Fuse, les 4 véhicules, le jerrican, le parachute, les 7 sacs de Fuse.
+
+**Boss** : gardés Ymirak, Mère des Ruines, Sujet N-07, Porteur de Peste, Sylvorn. Glacivore supprimé partout ;
+Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss rament : les optimiser.
+
+**Zombies (heralisz_matchs, `/zombies`)** :
+- première carte The Giant (refonte de Der Riese, BO3), le plus fidèle possible ; ensuite Kino der Toten ;
+- fin de carte : boss Sujet N-07 dans sa salle sous l'usine C (descente en monte-charge, intro passable, téléporteur
+  de retour après sa mort, pas de récompense pour l'instant) ;
+- HUD façon Black Ops 6 (barre de vie seulement après des dégâts, PV ×5, manche à la craie rouge, grosse annonce aux
+  manches 5, 10, 15, 20 puis toutes les 10) ;
+- dégâts des zombies qui montent avec les manches, plafond à la manche 20 ; zombies qui escaladent ; quête longue
+  (fusibles, âmes…), objets de quête placés au hasard, guidage vers les objectifs, secrets cachés ; atouts mélangés à
+  chaque partie ; camos du Pack-a-Punch réservés aux zombies ;
+- sons d'origine fournis par le propriétaire : lui demander ses fichiers plutôt que d'en synthétiser.
+
+**Autres choix** :
+- CRac : aucun sac de couchage (retour à la base par la commande de téléportation, lits normaux) ; seuls les C4
+  abîment les constructions ;
+- casino : revente avec 5 % de commission, échanges d'objets coupés, entrée non payable avec le compte ;
+- Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
+  I, menu =, abandon Retour arrière ;
+- Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
+- Armurerie : les combinaisons intégrales (Hazmat, froid, plongée) se portent seules (sac à dos permis) ;
+- chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
+- refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
+- retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
+  Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,
+  Architectury, Magazine & Casing, Thirst Was Taken, PlayerRevive, heralisz_armor (remplacé par l'Armurerie),
+  Heraliz Drugs, Chunky, immersivemessages.
+
+---
+
+## 11. Points ouverts et bugs connus
+
+- **Loot** : 618 des 1 853 entrées des tables de HeraliZ Loot citent encore `heralisz_armor:*` (retiré) : les
+  vêtements n'apparaissent plus dans le loot. À régénérer avec les objets de l'Armurerie (avec la refonte du loot).
+- **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : suivent l'ancienne carte, à refaire pour la
+  nouvelle.
+- **Bugs repérés, non corrigés** (attendre l'accord du propriétaire) :
+  - Sylvorn : les attributs de `SapNode` ne sont pas déclarés (risque de plantage à l'attaque CHANNEL ; correction d'une
+    ligne dans `HeraliszSylvorn.attributes`) ;
+  - Tactique : le C4 posé disparaît au redémarrage du serveur ; le feu au sol des molotovs dure toujours 2 s ;
+    l'éclaboussure des grenades à effet est limitée à 4 blocs.
+- **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
+  Si on retire ywzj, vérifier qu'il reste fourni.
+- **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
+  leurs comptes dès le premier démarrage. `ops.json` n'est pas dans le dépôt.
+- **Monde** : `server.properties` → `level-name=HeraliZ`. Le dossier du monde doit porter ce nom. Les configs de
+  `serveur/defaultconfigs/` sont copiées par Forge dans tout nouveau monde.
+- **Rien n'a été testé en jeu** depuis la séparation client / serveur (version 2.x des groupes, Matchs 0.3.0, pack
+  imposé de heraliz_interface 1.1.0).
+- **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
+  LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur.
+
+---
+
+## 12. Le serveur Ptero
+
+- Docker Image : `ghcr.io/pterodactyl/yolks:java_17` ; Server Jar File : `mohist-1.20.1-916-server.jar`.
+- Mémoire « illimitée » dans le panel → la mémoire est fixée dans la commande de démarrage :
+  ```
+  java -Xms12G -Xmx12G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=40 -XX:G1MaxNewSizePercent=50 -XX:G1HeapRegionSize=16M -XX:G1ReservePercent=15 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=20 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}} nogui
+  ```
+- Chat vocal de CaraCrea : port UDP dédié (24454 par défaut). Ajouter une allocation au serveur dans le panel et mettre
+  son numéro dans `serveur/defaultconfigs/caracrea-server.toml` (`port = ...`) ainsi que dans le `serverconfig` du
+  monde. Sans ça, la voix passe par la connexion du jeu et peut saccader.
+- Un mod changé n'est pris en compte qu'au redémarrage du serveur.

@@ -1,0 +1,395 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/blizzard.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "haut_torse",
+    "uv": [
+     0,
+     0
+    ],
+    "from": [
+     -4.75,
+     -0.5,
+     -3.0
+    ],
+    "size": [
+     9.5,
+     13.25,
+     6.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poche_bras_d",
+    "uv": [
+     48,
+     74
+    ],
+    "from": [
+     -3.65,
+     1.5750000000000002,
+     -3.245
+    ],
+    "size": [
+     2.5,
+     3.25,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     0.0,
+     0.0,
+     12.0
+    ],
+    "origin": [
+     -2.4,
+     3.2,
+     -3.12
+    ]
+   },
+   {
+    "name": "haut_poche_bras_g",
+    "uv": [
+     54,
+     74
+    ],
+    "from": [
+     1.15,
+     1.5750000000000002,
+     -3.245
+    ],
+    "size": [
+     2.5,
+     3.25,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     0.0,
+     0.0,
+     -12.0
+    ],
+    "origin": [
+     2.4,
+     3.2,
+     -3.12
+    ]
+   },
+   {
+    "name": "haut_capuche",
+    "uv": [
+     16,
+     74
+    ],
+    "from": [
+     -3.25,
+     -1.1,
+     3.025
+    ],
+    "size": [
+     6.5,
+     3.0,
+     1.2500000000000004
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     -12.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     0.0,
+     0.4,
+     3.65
+    ]
+   },
+   {
+    "name": "haut_capuche_pli",
+    "uv": [
+     69,
+     74
+    ],
+    "from": [
+     -2.25,
+     1.15,
+     3.675
+    ],
+    "size": [
+     4.5,
+     1.5,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true,
+    "rotation": [
+     -20.0,
+     0.0,
+     0.0
+    ],
+    "origin": [
+     0.0,
+     1.9,
+     4.05
+    ]
+   }
+  ],
+  "right_arm": [
+   {
+    "name": "haut_manche",
+    "uv": [
+     106,
+     0
+    ],
+    "from": [
+     -3.75,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     5.25,
+     11.25,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poignet",
+    "uv": [
+     81,
+     61
+    ],
+    "from": [
+     -3.5,
+     8.5,
+     -2.5
+    ],
+    "size": [
+     5.0,
+     0.75,
+     5.0
+    ],
+    "faces": [
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "haut_manche_m",
+    "uv": [
+     0,
+     20
+    ],
+    "from": [
+     -1.5,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     5.25,
+     11.25,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poignet_m",
+    "uv": [
+     101,
+     61
+    ],
+    "from": [
+     -1.5,
+     8.5,
+     -2.5
+    ],
+    "size": [
+     5.0,
+     0.75,
+     5.0
+    ],
+    "faces": [
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {
+  "right_arm": [
+   {
+    "name": "haut_manche_slim",
+    "uv": [
+     21,
+     20
+    ],
+    "from": [
+     -2.75,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     4.25,
+     11.25,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poignet_slim",
+    "uv": [
+     0,
+     68
+    ],
+    "from": [
+     -2.5,
+     8.5,
+     -2.5
+    ],
+    "size": [
+     4.0,
+     0.75,
+     5.0
+    ],
+    "faces": [
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "haut_manche_m_slim",
+    "uv": [
+     40,
+     20
+    ],
+    "from": [
+     -1.5,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     4.25,
+     11.25,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poignet_m_slim",
+    "uv": [
+     18,
+     68
+    ],
+    "from": [
+     -1.5,
+     8.5,
+     -2.5
+    ],
+    "size": [
+     4.0,
+     0.75,
+     5.0
+    ],
+    "faces": [
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ }
+}

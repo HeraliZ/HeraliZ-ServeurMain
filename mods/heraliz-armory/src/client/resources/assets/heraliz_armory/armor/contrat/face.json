@@ -1,0 +1,89 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/contrat.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "head": [
+   {
+    "name": "lunettes_verres",
+    "uv": [
+     91,
+     76
+    ],
+    "from": [
+     -4.244140625,
+     -4.994140625,
+     -4.869140625
+    ],
+    "size": [
+     8.5,
+     1.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "lunettes_branche_d",
+    "uv": [
+     115,
+     63
+    ],
+    "from": [
+     -4.744140625,
+     -4.744140625,
+     -4.619140625
+    ],
+    "size": [
+     0.25,
+     0.5,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "lunettes_branche_g",
+    "uv": [
+     0,
+     70
+    ],
+    "from": [
+     4.505859375,
+     -4.744140625,
+     -4.619140625
+    ],
+    "size": [
+     0.25,
+     0.5,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ },
+ "slim_parts": {}
+}

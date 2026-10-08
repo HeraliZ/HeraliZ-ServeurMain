@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t3_caisse_police"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t3_caisse_police",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t3_caisse_police",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t3_caisse_police",
+   "y": 270
+  }
+ }
+}

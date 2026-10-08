@@ -1,0 +1,262 @@
+{
+ "credit": "Made with Blockbench",
+ "textures": {
+  "0": "heraliz_loot:block/ark/blocks/weapon/ammo/.380_auto_rounds",
+  "particle": "heraliz_loot:block/ark/blocks/weapon/ammo/.380_auto_rounds"
+ },
+ "elements": [
+  {
+   "from": [
+    9,
+    0,
+    10
+   ],
+   "to": [
+    12,
+    2,
+    14
+   ],
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     9,
+     8,
+     13
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      6.5,
+      7,
+      10.5
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      12,
+      0,
+      16,
+      6
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      0,
+      6.5,
+      4,
+      10.5
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      7.5,
+      0,
+      11.5,
+      6
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      7,
+      6
+     ],
+     "rotation": 270,
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      10,
+      6
+     ],
+     "rotation": 90,
+     "texture": "#0"
+    }
+   }
+  },
+  {
+   "from": [
+    8,
+    0,
+    5
+   ],
+   "to": [
+    12,
+    2,
+    8
+   ],
+   "rotation": {
+    "angle": 0,
+    "axis": "y",
+    "origin": [
+     9,
+     8,
+     5
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      7.5,
+      0,
+      11.5,
+      6
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      0,
+      6.5,
+      7,
+      10.5
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      12,
+      0,
+      16,
+      6
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      0,
+      6.5,
+      4,
+      10.5
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      7,
+      6
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      10,
+      6
+     ],
+     "texture": "#0"
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    0,
+    5
+   ],
+   "to": [
+    6,
+    2,
+    8
+   ],
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     3,
+     8,
+     5
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      7.5,
+      0,
+      11.5,
+      6
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      0,
+      6.5,
+      7,
+      10.5
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      12,
+      0,
+      16,
+      6
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      0,
+      6.5,
+      4,
+      10.5
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      7,
+      6
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      10,
+      6
+     ],
+     "texture": "#0"
+    }
+   }
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    90,
+    1,
+    0
+   ],
+   "translation": [
+    -0.5,
+    0,
+    0
+   ],
+   "scale": [
+    0.67,
+    0.69,
+    0.69
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
+}

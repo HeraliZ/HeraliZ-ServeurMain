@@ -1,0 +1,9 @@
+{
+  "name": "arkaniaz.knife.ct_knife.name",
+  "display": "arkaniaz:ct_knife_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "arkaniaz.knife.ct_knife.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort":10
+}

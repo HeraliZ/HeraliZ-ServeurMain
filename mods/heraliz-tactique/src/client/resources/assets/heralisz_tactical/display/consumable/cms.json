@@ -1,0 +1,75 @@
+{
+  "model": "heralisz_tactical:consumable/cms_geo",
+  "animation": "heralisz_tactical:consumable/cms",
+  "state_machine": "heralisz_tactical:consumable_state_machine",
+  "texture": "heralisz_tactical:consumable/cms_uv",
+  "slot_texture": "heralisz_tactical:consumable/slot/cms",
+  "display_offset": [0, 0.5, 0],
+  "transforms": {
+    "fixed": {
+      "translation": [
+        0,
+        -16,
+        0
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "scale": [
+        2,
+        2,
+        2
+      ]
+    },
+    "thirdperson_righthand": {
+      "translation": [
+        0,
+        -7,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        0,
+        -7,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "head": {
+      "translation": [
+        -7.75,
+        7.25,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -90
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        -9,
+        0
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    }
+  }
+}

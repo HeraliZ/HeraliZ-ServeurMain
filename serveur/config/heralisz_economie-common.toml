@@ -1,0 +1,38 @@
+
+#Monnaie du serveur HeraliZ
+[monnaie]
+	#Nom de l'unite au singulier, aussi pour 0 (« 0 héral », « 1 héral »), 32 caracteres max
+	nom_singulier = "héral"
+	#Nom de l'unite au pluriel, a partir de 2 (« 250 hérals »), 32 caracteres max
+	nom_pluriel = "hérals"
+	#Symbole affiche apres les montants (8 caracteres max) ; vide = le mot (héral/hérals)
+	symbole = ""
+	#Solde d'un nouveau compte
+	#Range: 0 ~ 2305843009213693951
+	solde_depart = 0
+	#Plafond d'un compte (les depots au-dela sont tronques)
+	#Range: 1 ~ 2305843009213693951
+	max_solde = 10000000
+
+#Paiements entre joueurs (/payer)
+[paiements]
+	#Montant minimal d'un paiement
+	#Range: 1 ~ 2305843009213693951
+	payer_min = 1
+	#Secondes minimales entre deux paiements d'un meme joueur
+	#Range: 0 ~ 3600
+	payer_cadence_s = 2
+
+#Affichage
+[affichage]
+	#true : le solde reste affiche en petit dans le coin (sinon seulement 3 s a chaque changement)
+	hud_permanent = false
+
+#Stockage et integration
+[systeme]
+	#Toute transaction d'un montant superieur ou egal declenche une sauvegarde immediate (sinon autosave 60 s)
+	#Range: 0 ~ 2305843009213693951
+	sauvegarde_immediate = 1000
+	#true : sur Mohist, enregistre cette economie comme fournisseur Vault pour les plugins
+	pont_vault = true
+

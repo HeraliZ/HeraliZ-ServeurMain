@@ -1,0 +1,19 @@
+{
+ "_note": "Table d'essai : objets vanilla en attendant la liste definitive (armes TaCZ...). Raretes hautes volontairement frequentes pour voir les animations.",
+ "emplacements": [5, 9],
+ "objets": [
+  {"item": "minecraft:bread", "nombre": [2, 5], "poids": 14, "rarete": "commun"},
+  {"item": "minecraft:arrow", "nombre": [8, 16], "poids": 12, "rarete": "commun"},
+  {"item": "minecraft:iron_ingot", "nombre": [2, 6], "poids": 12, "rarete": "peu_commun"},
+  {"item": "minecraft:golden_carrot", "nombre": [3, 6], "poids": 10, "rarete": "peu_commun"},
+  {"item": "minecraft:diamond", "nombre": [1, 3], "poids": 10, "rarete": "rare"},
+  {"item": "minecraft:ender_pearl", "nombre": [2, 4], "poids": 8, "rarete": "rare"},
+  {"item": "minecraft:diamond_chestplate", "nombre": [1, 1], "poids": 7, "rarete": "epique"},
+  {"item": "minecraft:totem_of_undying", "nombre": [1, 1], "poids": 6, "rarete": "epique"},
+  {"item": "minecraft:netherite_ingot", "nombre": [1, 2], "poids": 5, "rarete": "legendaire"},
+  {"item": "minecraft:enchanted_golden_apple", "nombre": [1, 1], "poids": 5, "rarete": "legendaire"},
+  {"item": "minecraft:netherite_sword", "nombre": [1, 1], "poids": 3, "rarete": "mythique", "nom": "Lame du Néant", "nbt": "{Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}"},
+  {"item": "minecraft:elytra", "nombre": [1, 1], "poids": 3, "rarete": "mythique"},
+  {"item": "minecraft:nether_star", "nombre": [1, 1], "poids": 2, "rarete": "unique", "nom": "Cœur d'HeraliZ"}
+ ]
+}

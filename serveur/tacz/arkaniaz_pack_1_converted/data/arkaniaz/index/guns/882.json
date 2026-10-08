@@ -1,0 +1,9 @@
+{
+    "name": "arkaniaz.gun.882.name",
+    "display": "arkaniaz:882_display",
+    "data": "arkaniaz:882_data",
+    "tooltip": "Pistolet compact et puissant.",
+    "type": "rifle",
+    "item_type": "modern_kinetic",
+    "sort": 10
+}

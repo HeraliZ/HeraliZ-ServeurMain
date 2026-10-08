@@ -1,0 +1,18 @@
+{
+  "pack.heraliz_fuse.name": "HeraliZ · Fuse guns",
+  "pack.heraliz_fuse.desc": "Guns from the Fuse mod, using the server ammo.",
+  "heraliz_fuse.gun.olympia.name": "Olympia",
+  "heraliz_fuse.gun.olympia.desc": "Double-barrel shotgun: two shells, then reload.",
+  "heraliz_fuse.gun.stakeout.name": "Stakeout",
+  "heraliz_fuse.gun.stakeout.desc": "Compact short-barrel pump-action shotgun.",
+  "heraliz_fuse.gun.m14.name": "M14",
+  "heraliz_fuse.gun.m14.desc": "7.62 NATO (.308) battle rifle, accurate at long range.",
+  "heraliz_fuse.gun.mp5k.name": "MP5K",
+  "heraliz_fuse.gun.mp5k.desc": "Compact 9 mm submachine gun.",
+  "heraliz_fuse.gun.mp5_classic.name": "MP5 Classic",
+  "heraliz_fuse.gun.mp5_classic.desc": "HK's MP5: classic, reliable and light.",
+  "heraliz_fuse.gun.mp7r.name": "PXFR 40",
+  "heraliz_fuse.gun.mp7r.desc": "High rate of fire submachine gun.",
+  "heraliz_fuse.gun.ro635v3.name": "Ro635 v3",
+  "heraliz_fuse.gun.ro635v3.desc": "Next generation Ro635 submachine gun."
+}

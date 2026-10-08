@@ -1,0 +1,13 @@
+{
+    "door_id": "round_airlock_door",
+    "legacy_model": "heralisz_bunker:block/doors/round_airlock_door_legacy",
+    "modern_model": {
+        "model": "heralisz_bunker:block/doors/round_airlock_door_modern",
+        "skins": [
+        {"id": "default", "name": "Standard", "texture": "heralisz_bunker:block/doors/round_airlock_door"},
+        {"id": "clean", "name": "Clean", "texture": "heralisz_bunker:block/doors/round_airlock_door_clean", "model": "heralisz_bunker:block/doors/round_airlock_door_modern_clean"},
+        {"id": "green", "name": "Green", "texture": "heralisz_bunker:block/doors/round_airlock_door_green", "model": "heralisz_bunker:block/doors/round_airlock_door_modern_green"}
+        ]
+    },
+    "default": {"type": "modern", "skin": "default"}
+}

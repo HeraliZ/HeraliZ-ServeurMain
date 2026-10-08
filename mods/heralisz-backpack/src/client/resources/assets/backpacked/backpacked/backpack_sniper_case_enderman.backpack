@@ -1,0 +1,138 @@
+{
+ "shelf_offset": [
+  0,
+  0,
+  0
+ ],
+ "gui_display": {
+  "rotation": [
+   30,
+   30,
+   0
+  ],
+  "translation": [
+   -2,
+   4,
+   0
+  ],
+  "scale": [
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ "renderer": [
+  {
+   "type": "minecraft:draw_model",
+   "model": "backpacked:backpacked/backpack_sniper_case_enderman"
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": -0.09936,
+     "y": 0.53423,
+     "z": 0.23438
+    },
+    {
+     "type": "minecraft:rotate",
+     "z": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 46,
+       "amplitude": -3,
+       "phase": 0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 38,
+       "amplitude": 5,
+       "phase": 0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -14
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": 0.09936,
+     "y": -0.53423,
+     "z": -0.23438
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_sniper_case_enderman_arm_0"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": 0.3223,
+     "y": 0.35957,
+     "z": 0.23438
+    },
+    {
+     "type": "minecraft:rotate",
+     "z": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 46,
+       "amplitude": 3,
+       "phase": 13
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 38,
+       "amplitude": 5,
+       "phase": 7
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -14
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": -0.3223,
+     "y": -0.35957,
+     "z": -0.23438
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_sniper_case_enderman_arm_1"
+    }
+   ]
+  }
+ ]
+}

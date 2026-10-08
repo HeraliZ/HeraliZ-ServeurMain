@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/spore_pod"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/spore_pod",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/spore_pod",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/spore_pod",
+   "y": 270
+  }
+ }
+}

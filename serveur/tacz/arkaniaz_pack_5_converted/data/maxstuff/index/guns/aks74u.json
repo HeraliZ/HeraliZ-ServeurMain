@@ -1,0 +1,9 @@
+{
+    "name": "maxstuff.gun.aks74u.name",
+    "display": "maxstuff:aks74u_display",
+    "data": "maxstuff:aks74u_data",
+    "type": "rifle",
+    "item_type": "modern_kinetic",
+    "sort": 1,
+    "tooltip": "maxstuff.gun.aks74u.desc"
+}

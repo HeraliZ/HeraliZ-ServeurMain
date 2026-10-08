@@ -1,0 +1,42 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_sr16"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:carbon"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:aluminum"
+            },
+            "count": 20
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 30
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "maxstuff:sr16",
+        "attachments": {
+            "stock": "tacz:stock_tactical_ar"
+        }
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

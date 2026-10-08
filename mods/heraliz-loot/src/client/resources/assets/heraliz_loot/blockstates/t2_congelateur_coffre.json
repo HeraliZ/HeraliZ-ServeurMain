@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t2_congelateur_coffre"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t2_congelateur_coffre"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t2_congelateur_coffre"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t2_congelateur_coffre"
+  }
+ }
+}

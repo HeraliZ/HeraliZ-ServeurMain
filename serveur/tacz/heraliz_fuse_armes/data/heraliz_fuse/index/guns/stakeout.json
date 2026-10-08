@@ -1,0 +1,9 @@
+{
+  "name": "heraliz_fuse.gun.stakeout.name",
+  "display": "heraliz_fuse:stakeout_display",
+  "data": "heraliz_fuse:stakeout_data",
+  "type": "shotgun",
+  "item_type": "modern_kinetic",
+  "sort": 2,
+  "tooltip": "heraliz_fuse.gun.stakeout.desc"
+}

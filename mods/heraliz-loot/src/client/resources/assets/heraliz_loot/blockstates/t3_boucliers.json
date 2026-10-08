@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t3_boucliers"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t3_boucliers"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t3_boucliers"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t3_boucliers"
+  }
+ }
+}

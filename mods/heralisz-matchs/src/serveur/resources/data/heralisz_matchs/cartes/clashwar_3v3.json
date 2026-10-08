@@ -1,0 +1,145 @@
+{
+ "id": "clashwar_3v3",
+ "nom_fr": "Carrière abandonnée",
+ "nom_en": "Abandoned quarry",
+ "type": "clashwar_3v3",
+ "dimension": "heralisz_matchs:arenes",
+ "taille": [
+  68,
+  30,
+  68
+ ],
+ "bornes": [
+  3,
+  3,
+  3,
+  65,
+  34,
+  65
+ ],
+ "points": {
+  "spawn_a": [
+   [
+    27.5,
+    7.0,
+    7.5,
+    0.0
+   ],
+   [
+    31.5,
+    7.0,
+    7.5,
+    0.0
+   ],
+   [
+    35.5,
+    7.0,
+    7.5,
+    0.0
+   ]
+  ],
+  "spawn_b": [
+   [
+    40.5,
+    7.0,
+    60.5,
+    180.0
+   ],
+   [
+    36.5,
+    7.0,
+    60.5,
+    180.0
+   ],
+   [
+    32.5,
+    7.0,
+    60.5,
+    180.0
+   ]
+  ],
+  "barriere_a": [
+   [
+    25.0,
+    7.0,
+    5.0,
+    0.0
+   ],
+   [
+    37.0,
+    11.0,
+    10.0,
+    0.0
+   ]
+  ],
+  "barriere_b": [
+   [
+    31.0,
+    7.0,
+    58.0,
+    0.0
+   ],
+   [
+    43.0,
+    11.0,
+    63.0,
+    0.0
+   ]
+  ],
+  "zone_centre": [
+   [
+    34.0,
+    4.0,
+    34.0,
+    0.0
+   ]
+  ],
+  "spectateur": [
+   [
+    34.0,
+    22.0,
+    3.5,
+    0.0
+   ],
+   [
+    34.0,
+    22.0,
+    64.5,
+    180.0
+   ]
+  ]
+ },
+ "format": "3v3",
+ "joueurs_par_equipe": 3,
+ "theme": "carrière abandonnée",
+ "barrieres": {
+  "a": [
+   25,
+   7,
+   5,
+   37,
+   11,
+   10
+  ],
+  "b": [
+   31,
+   7,
+   58,
+   43,
+   11,
+   63
+  ]
+ },
+ "zone": {
+  "centre": [
+   34.0,
+   4.0,
+   34.0
+  ],
+  "rayon_depart": 47.6,
+  "rayon_min": 5.0
+ },
+ "symetrie": "centrale (rotation 180° autour de x = 34, z = 34)",
+ "blocs": 11508,
+ "generateur": "tools/matchs/cartes/clashwar_3v3_4v4.py"
+}

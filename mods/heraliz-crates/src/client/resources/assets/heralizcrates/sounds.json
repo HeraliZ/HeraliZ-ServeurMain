@@ -1,0 +1,453 @@
+{
+  "crate.locked": {
+    "sounds": [
+      "heralizcrates:crate/locked"
+    ],
+    "subtitle": "subtitles.heralizcrates.crate.locked"
+  },
+  "key.insert": {
+    "sounds": [
+      "heralizcrates:crate/key_insert"
+    ],
+    "subtitle": "subtitles.heralizcrates.key.insert"
+  },
+  "key.turn": {
+    "sounds": [
+      "heralizcrates:crate/key_turn"
+    ],
+    "subtitle": "subtitles.heralizcrates.key.turn"
+  },
+  "crate.unlock": {
+    "sounds": [
+      "heralizcrates:crate/unlock"
+    ],
+    "subtitle": "subtitles.heralizcrates.crate.unlock"
+  },
+  "crate.open": {
+    "sounds": [
+      "heralizcrates:crate/open"
+    ],
+    "subtitle": "subtitles.heralizcrates.crate.open"
+  },
+  "crate.close": {
+    "sounds": [
+      "heralizcrates:crate/close"
+    ],
+    "subtitle": "subtitles.heralizcrates.crate.close"
+  },
+  "crate.place": {
+    "sounds": [
+      "heralizcrates:crate/place"
+    ],
+    "subtitle": "subtitles.heralizcrates.crate.place"
+  },
+  "crate.ambient": {
+    "sounds": [
+      "heralizcrates:crate/ambient1",
+      "heralizcrates:crate/ambient2"
+    ],
+    "subtitle": "subtitles.heralizcrates.crate.ambient"
+  },
+  "roll.start": {
+    "sounds": [
+      "heralizcrates:roll/start"
+    ],
+    "subtitle": "subtitles.heralizcrates.roll.start"
+  },
+  "roll.tick": {
+    "sounds": [
+      "heralizcrates:roll/tick1",
+      "heralizcrates:roll/tick2"
+    ],
+    "subtitle": "subtitles.heralizcrates.roll.tick"
+  },
+  "roll.stop": {
+    "sounds": [
+      "heralizcrates:roll/stop"
+    ],
+    "subtitle": "subtitles.heralizcrates.roll.stop"
+  },
+  "reward.common": {
+    "sounds": [
+      "heralizcrates:reward/common"
+    ],
+    "subtitle": "subtitles.heralizcrates.reward"
+  },
+  "reward.rare": {
+    "sounds": [
+      "heralizcrates:reward/rare"
+    ],
+    "subtitle": "subtitles.heralizcrates.reward"
+  },
+  "reward.legendary": {
+    "sounds": [
+      "heralizcrates:reward/legendary"
+    ],
+    "subtitle": "subtitles.heralizcrates.reward.legendary"
+  },
+  "reward.receive": {
+    "sounds": [
+      "heralizcrates:reward/receive"
+    ],
+    "subtitle": "subtitles.heralizcrates.reward.receive"
+  },
+  "crate.padlock_drop": {
+    "sounds": [
+      "heralizcrates:crate/padlock_drop1",
+      "heralizcrates:crate/padlock_drop2"
+    ],
+    "subtitle": "subtitles.heralizcrates.crate.padlock_drop"
+  },
+  "fx.whoosh": {
+    "sounds": [
+      "heralizcrates:fx/whoosh1",
+      "heralizcrates:fx/whoosh2"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.whoosh"
+  },
+  "theme.fire": {
+    "sounds": [
+      "heralizcrates:theme/fire"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.fire"
+  },
+  "theme.water": {
+    "sounds": [
+      "heralizcrates:theme/water"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.water"
+  },
+  "theme.ice": {
+    "sounds": [
+      "heralizcrates:theme/ice"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.ice"
+  },
+  "theme.forest": {
+    "sounds": [
+      "heralizcrates:theme/forest"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.forest"
+  },
+  "theme.spider": {
+    "sounds": [
+      "heralizcrates:theme/spider"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.spider"
+  },
+  "theme.toxic": {
+    "sounds": [
+      "heralizcrates:theme/toxic"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.toxic"
+  },
+  "theme.sewer": {
+    "sounds": [
+      "heralizcrates:theme/sewer"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.sewer"
+  },
+  "theme.knight": {
+    "sounds": [
+      "heralizcrates:theme/knight"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.knight"
+  },
+  "theme.paper": {
+    "sounds": [
+      "heralizcrates:theme/paper1",
+      "heralizcrates:theme/paper2",
+      "heralizcrates:theme/paper3"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.paper"
+  },
+  "theme.book": {
+    "sounds": [
+      "heralizcrates:theme/book"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.book"
+  },
+  "theme.cosmic": {
+    "sounds": [
+      "heralizcrates:theme/cosmic"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.cosmic"
+  },
+  "theme.firework": {
+    "sounds": [
+      "heralizcrates:theme/firework1",
+      "heralizcrates:theme/firework2"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.firework"
+  },
+  "theme.firework_launch": {
+    "sounds": [
+      "heralizcrates:theme/firework_launch"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.firework_launch"
+  },
+  "fx.heartbeat": {
+    "sounds": [
+      "heralizcrates:fx/heartbeat"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.heartbeat"
+  },
+  "fx.curtain": {
+    "sounds": [
+      "heralizcrates:fx/curtain"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.curtain"
+  },
+  "fx.counter": {
+    "sounds": [
+      "heralizcrates:fx/counter"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.counter"
+  },
+  "fx.lever": {
+    "sounds": [
+      "heralizcrates:fx/lever"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.lever"
+  },
+  "fx.stamp": {
+    "sounds": [
+      "heralizcrates:fx/stamp"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.stamp"
+  },
+  "theme.fanfare": {
+    "sounds": [
+      "heralizcrates:theme/fanfare"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.fanfare"
+  },
+  "theme.cheer": {
+    "sounds": [
+      "heralizcrates:theme/cheer"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.cheer"
+  },
+  "fx.cannon": {
+    "sounds": [
+      "heralizcrates:fx/cannon"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.cannon"
+  },
+  "theme.drumroll": {
+    "sounds": [
+      "heralizcrates:theme/drumroll"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.drumroll"
+  },
+  "fx.roller": {
+    "sounds": [
+      "heralizcrates:fx/roller"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.roller"
+  },
+  "fx.scratch": {
+    "sounds": [
+      "heralizcrates:fx/scratch"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.scratch"
+  },
+  "fx.fulton": {
+    "sounds": [
+      "heralizcrates:fx/fulton"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.fulton"
+  },
+  "fx.bolts": {
+    "sounds": [
+      "heralizcrates:fx/bolts"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.bolts"
+  },
+  "fx.parachute": {
+    "sounds": [
+      "heralizcrates:fx/parachute"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.parachute"
+  },
+  "fx.radio": {
+    "sounds": [
+      "heralizcrates:fx/radio"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.radio"
+  },
+  "theme.plane": {
+    "sounds": [
+      "heralizcrates:theme/plane"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.plane"
+  },
+  "fx.zap": {
+    "sounds": [
+      "heralizcrates:fx/zap"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.zap"
+  },
+  "fx.defib_charge": {
+    "sounds": [
+      "heralizcrates:fx/defib_charge"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.defib_charge"
+  },
+  "fx.flatline": {
+    "sounds": [
+      "heralizcrates:fx/flatline"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.flatline"
+  },
+  "fx.beep": {
+    "sounds": [
+      "heralizcrates:fx/beep"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.beep"
+  },
+  "theme.vault": {
+    "sounds": [
+      "heralizcrates:theme/vault"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.vault"
+  },
+  "theme.hologram": {
+    "sounds": [
+      "heralizcrates:theme/hologram"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.hologram"
+  },
+  "fx.block": {
+    "sounds": [
+      "heralizcrates:fx/block1",
+      "heralizcrates:fx/block2",
+      "heralizcrates:fx/block3"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.block"
+  },
+  "fx.clang": {
+    "sounds": [
+      "heralizcrates:fx/clang"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.clang"
+  },
+  "fx.crane": {
+    "sounds": [
+      "heralizcrates:fx/crane"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.crane"
+  },
+  "theme.holo": {
+    "sounds": [
+      "heralizcrates:theme/holo"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.holo"
+  },
+  "fx.slap": {
+    "sounds": [
+      "heralizcrates:fx/slap1",
+      "heralizcrates:fx/slap2",
+      "heralizcrates:fx/slap3"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.slap"
+  },
+  "fx.rip": {
+    "sounds": [
+      "heralizcrates:fx/rip"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.rip"
+  },
+  "fx.foil": {
+    "sounds": [
+      "heralizcrates:fx/foil"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.foil"
+  },
+  "fx.capsule_pop": {
+    "sounds": [
+      "heralizcrates:fx/capsule_pop"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.capsule_pop"
+  },
+  "fx.capsule_roll": {
+    "sounds": [
+      "heralizcrates:fx/capsule_roll"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.capsule_roll"
+  },
+  "fx.capsules": {
+    "sounds": [
+      "heralizcrates:fx/capsules"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.capsules"
+  },
+  "fx.ratchet": {
+    "sounds": [
+      "heralizcrates:fx/ratchet"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.ratchet"
+  },
+  "fx.coin": {
+    "sounds": [
+      "heralizcrates:fx/coin"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.coin"
+  },
+  "fx.splat": {
+    "sounds": [
+      "heralizcrates:fx/splat"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.splat"
+  },
+  "fx.spray": {
+    "sounds": [
+      "heralizcrates:fx/spray"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.spray"
+  },
+  "fx.can_rattle": {
+    "sounds": [
+      "heralizcrates:fx/can_rattle"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.can_rattle"
+  },
+  "fx.servo": {
+    "sounds": [
+      "heralizcrates:fx/servo"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.servo"
+  },
+  "fx.blade": {
+    "sounds": [
+      "heralizcrates:fx/blade1",
+      "heralizcrates:fx/blade2",
+      "heralizcrates:fx/blade3"
+    ],
+    "subtitle": "subtitles.heralizcrates.fx.blade"
+  },
+  "theme.gem_reform": {
+    "sounds": [
+      "heralizcrates:theme/gem_reform"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.gem_reform"
+  },
+  "theme.gem_chime": {
+    "sounds": [
+      "heralizcrates:theme/gem_chime"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.gem_chime"
+  },
+  "theme.gem_shatter": {
+    "sounds": [
+      "heralizcrates:theme/gem_shatter"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.gem_shatter"
+  },
+  "theme.gem_charge": {
+    "sounds": [
+      "heralizcrates:theme/gem_charge"
+    ],
+    "subtitle": "subtitles.heralizcrates.theme.gem_charge"
+  }
+}

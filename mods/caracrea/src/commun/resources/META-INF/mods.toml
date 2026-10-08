@@ -1,0 +1,33 @@
+# CaraCrea coupé en trois jars (-client, -serveur, -complet) : UN mod, modId d'origine inchangé.
+# Ce fichier est IDENTIQUE dans les trois jars (docs/METHODE_CLIENT_SERVEUR.md).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="caracrea"
+version="${mod_version}"
+displayName="CaraCrea"
+authors="${mod_authors}"
+description='''Createur de personnage : skins composes en haute resolution a partir de presets (visage, cheveux, vetements), clignement des yeux et bouche animee par la voix. Chat vocal de proximite integre (UDP chiffre, debruitage, groupes).'''
+
+[[dependencies.caracrea]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.caracrea]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.caracrea]]
+    modId="voicechat"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"

@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.karambit__tiger_tooth.name",
+  "display": "heralisz_skins:karambit__tiger_tooth_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.karambit__tiger_tooth.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 207
+}

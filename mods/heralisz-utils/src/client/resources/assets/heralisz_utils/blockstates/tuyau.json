@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "axis=y": {
+   "model": "heralisz_utils:block/tuyau"
+  },
+  "axis=x": {
+   "model": "heralisz_utils:block/tuyau",
+   "x": 90,
+   "y": 90
+  },
+  "axis=z": {
+   "model": "heralisz_utils:block/tuyau",
+   "x": 90
+  }
+ }
+}

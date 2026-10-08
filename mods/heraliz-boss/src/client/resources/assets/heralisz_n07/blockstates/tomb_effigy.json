@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/tomb_effigy"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/tomb_effigy",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/tomb_effigy",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/tomb_effigy",
+   "y": 270
+  }
+ }
+}

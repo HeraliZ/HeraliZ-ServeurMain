@@ -1,0 +1,16 @@
+
+#Cartes d'accès (lecteurs de cartes façon Rust)
+[keycards]
+	#Passages avant que la carte verte casse (0 = illimité)
+	#Range: 0 ~ 10000
+	usesGreen = 10
+	#Passages avant que la carte bleue casse (0 = illimité)
+	#Range: 0 ~ 10000
+	usesBlue = 8
+	#Passages avant que la carte rouge casse (0 = illimité)
+	#Range: 0 ~ 10000
+	usesRed = 6
+	#Durée du signal redstone après un accès accordé (ticks, 20 = 1 s)
+	#Range: 10 ~ 12000
+	pulseTicks = 100
+

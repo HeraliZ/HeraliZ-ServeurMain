@@ -1,0 +1,50 @@
+{
+  "model": "heralisz_tactical:consumable/condensed_milk_geo",
+  "animation": "heralisz_tactical:consumable/condensed_milk",
+  "state_machine": "heralisz_tactical:consumable_state_machine",
+  "texture": "heralisz_tactical:consumable/condensed_milk_uv",
+  "slot_texture": "heralisz_tactical:consumable/slot/condensed_milk",
+  "display_offset": [0, 0.5, 0],
+  "transforms": {
+    "fixed": {
+      "translation": [
+        0,
+        -5.75,
+        0
+      ],
+      "scale": [
+        2,
+        2,
+        2
+      ]
+    },
+    "thirdperson_righthand": {
+      "translation": [
+        0,
+        -4,
+        0
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        0,
+        -4,
+        0
+      ]
+    },
+    "head": {
+      "translation": [
+        0,
+        6.25,
+        0
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        -3,
+        0
+      ]
+    }
+  }
+}

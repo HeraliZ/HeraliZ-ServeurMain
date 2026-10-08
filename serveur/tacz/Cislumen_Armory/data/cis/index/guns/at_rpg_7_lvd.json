@@ -1,0 +1,9 @@
+{
+  "name": "cis.gun.at_rpg_7_lvd.name",
+  "tooltip": "cis.gun.at_rpg_7_lvd.desc",
+  "data": "cis:at_rpg_7_lvd_data",
+  "display": "cis:at_rpg_7_lvd_display",
+  "type": "rpg",
+  "sort": 1,
+  "item_type": "modern_kinetic"
+}

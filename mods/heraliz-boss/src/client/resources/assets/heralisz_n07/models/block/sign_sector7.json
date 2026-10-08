@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/block", "ambientocclusion": false, "render_type": "minecraft:cutout", "textures": {"0": "heralisz_n07:block/sign_sector7", "particle": "heralisz_n07:block/sign_sector7"}, "elements": [{"from": [-8, 2, 15.95], "to": [24, 14, 15.95], "faces": {"north": {"uv": [0, 0, 16, 16], "texture": "#0"}}}]}

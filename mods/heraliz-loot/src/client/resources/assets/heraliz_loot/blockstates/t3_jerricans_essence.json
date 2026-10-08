@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t3_jerricans_essence"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t3_jerricans_essence"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t3_jerricans_essence"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t3_jerricans_essence"
+  }
+ }
+}

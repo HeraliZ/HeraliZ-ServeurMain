@@ -1,0 +1,952 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/scorpion.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "pc_harnais_avant",
+    "uv": [
+     18,
+     47
+    ],
+    "from": [
+     -4.25,
+     2.25,
+     -3.5
+    ],
+    "size": [
+     8.5,
+     7.5,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_avant_haut",
+    "uv": [
+     22,
+     93
+    ],
+    "from": [
+     -3.0,
+     0.75,
+     -3.5
+    ],
+    "size": [
+     6.0,
+     1.5,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_dos",
+    "uv": [
+     79,
+     37
+    ],
+    "from": [
+     -4.25,
+     2.25,
+     2.75
+    ],
+    "size": [
+     8.5,
+     7.75,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_dos_haut",
+    "uv": [
+     36,
+     93
+    ],
+    "from": [
+     -3.0,
+     0.75,
+     2.75
+    ],
+    "size": [
+     6.0,
+     1.5,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_bretelle_d",
+    "uv": [
+     98,
+     37
+    ],
+    "from": [
+     -3.0,
+     -0.75,
+     -3.5
+    ],
+    "size": [
+     2.0,
+     1.5,
+     7.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_bretelle_g",
+    "uv": [
+     0,
+     47
+    ],
+    "from": [
+     1.0,
+     -0.75,
+     -3.5
+    ],
+    "size": [
+     2.0,
+     1.5,
+     7.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_cummerbund",
+    "uv": [
+     38,
+     20
+    ],
+    "from": [
+     -5.125,
+     4.5,
+     -3.375
+    ],
+    "size": [
+     10.25,
+     5.0,
+     6.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_rig",
+    "uv": [
+     0,
+     85
+    ],
+    "from": [
+     -4.486328125,
+     5.388671875,
+     -4.361328125
+    ],
+    "size": [
+     9.0,
+     4.5,
+     0.375
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_rig_epaule_-1",
+    "uv": [
+     101,
+     20
+    ],
+    "from": [
+     -3.361328125,
+     -0.986328125,
+     -3.986328125
+    ],
+    "size": [
+     1.25,
+     1.5,
+     8.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_rig_av_-1",
+    "uv": [
+     105,
+     79
+    ],
+    "from": [
+     -3.361328125,
+     0.513671875,
+     -4.236328125
+    ],
+    "size": [
+     1.25,
+     4.875,
+     0.25
+    ],
+    "faces": [
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_rig_x_-1",
+    "uv": [
+     72,
+     20
+    ],
+    "from": [
+     -0.825,
+     -0.25,
+     4.0
+    ],
+    "size": [
+     1.25,
+     9.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     0.0,
+     -32.0
+    ],
+    "origin": [
+     -0.2,
+     4.5,
+     4.125
+    ]
+   },
+   {
+    "name": "pc_harnais_rig_epaule_1",
+    "uv": [
+     0,
+     37
+    ],
+    "from": [
+     2.138671875,
+     -0.986328125,
+     -3.986328125
+    ],
+    "size": [
+     1.25,
+     1.5,
+     8.0
+    ],
+    "faces": [
+     "DOWN",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_rig_av_1",
+    "uv": [
+     108,
+     79
+    ],
+    "from": [
+     2.138671875,
+     0.513671875,
+     -4.236328125
+    ],
+    "size": [
+     1.25,
+     4.875,
+     0.25
+    ],
+    "faces": [
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_rig_x_1",
+    "uv": [
+     75,
+     20
+    ],
+    "from": [
+     -0.425,
+     -0.25,
+     4.0
+    ],
+    "size": [
+     1.25,
+     9.5,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     0.0,
+     32.0
+    ],
+    "origin": [
+     0.2,
+     4.5,
+     4.125
+    ]
+   },
+   {
+    "name": "pc_harnais_rig_sangle",
+    "uv": [
+     41,
+     37
+    ],
+    "from": [
+     -5.361328125,
+     6.763671875,
+     -3.986328125
+    ],
+    "size": [
+     10.75,
+     0.75,
+     8.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_chargeur_0",
+    "uv": [
+     19,
+     85
+    ],
+    "from": [
+     -4.236328125,
+     5.888671875,
+     -5.361328125
+    ],
+    "size": [
+     2.0,
+     3.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_chargeur_0_chargeur",
+    "uv": [
+     53,
+     90
+    ],
+    "from": [
+     -3.861328125,
+     4.763671875,
+     -5.236328125
+    ],
+    "size": [
+     1.25,
+     1.875,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_chargeur_0_semelle",
+    "uv": [
+     79,
+     96
+    ],
+    "from": [
+     -3.986328125,
+     4.638671875,
+     -5.361328125
+    ],
+    "size": [
+     1.5,
+     0.375,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_chargeur_0_sandow",
+    "uv": [
+     20,
+     96
+    ],
+    "from": [
+     -3.361328125,
+     4.638671875,
+     -5.486328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_chargeur_1",
+    "uv": [
+     25,
+     85
+    ],
+    "from": [
+     -2.111328125,
+     5.888671875,
+     -5.361328125
+    ],
+    "size": [
+     2.0,
+     3.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_chargeur_1_chargeur",
+    "uv": [
+     57,
+     90
+    ],
+    "from": [
+     -1.736328125,
+     4.763671875,
+     -5.236328125
+    ],
+    "size": [
+     1.25,
+     1.875,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_chargeur_1_semelle",
+    "uv": [
+     84,
+     96
+    ],
+    "from": [
+     -1.861328125,
+     4.638671875,
+     -5.361328125
+    ],
+    "size": [
+     1.5,
+     0.375,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_chargeur_1_sandow",
+    "uv": [
+     21,
+     96
+    ],
+    "from": [
+     -1.236328125,
+     4.638671875,
+     -5.486328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_chargeur_2",
+    "uv": [
+     31,
+     85
+    ],
+    "from": [
+     0.138671875,
+     5.888671875,
+     -5.361328125
+    ],
+    "size": [
+     2.0,
+     3.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_chargeur_2_chargeur",
+    "uv": [
+     61,
+     90
+    ],
+    "from": [
+     0.513671875,
+     4.763671875,
+     -5.236328125
+    ],
+    "size": [
+     1.25,
+     1.875,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_chargeur_2_semelle",
+    "uv": [
+     89,
+     96
+    ],
+    "from": [
+     0.388671875,
+     4.638671875,
+     -5.361328125
+    ],
+    "size": [
+     1.5,
+     0.375,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_chargeur_2_sandow",
+    "uv": [
+     22,
+     96
+    ],
+    "from": [
+     1.013671875,
+     4.638671875,
+     -5.486328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_chargeur_3",
+    "uv": [
+     37,
+     85
+    ],
+    "from": [
+     2.263671875,
+     5.888671875,
+     -5.361328125
+    ],
+    "size": [
+     2.0,
+     3.75,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_chargeur_3_chargeur",
+    "uv": [
+     65,
+     90
+    ],
+    "from": [
+     2.638671875,
+     4.763671875,
+     -5.236328125
+    ],
+    "size": [
+     1.25,
+     1.875,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_chargeur_3_semelle",
+    "uv": [
+     94,
+     96
+    ],
+    "from": [
+     2.513671875,
+     4.638671875,
+     -5.361328125
+    ],
+    "size": [
+     1.5,
+     0.375,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_chargeur_3_sandow",
+    "uv": [
+     23,
+     96
+    ],
+    "from": [
+     3.138671875,
+     4.638671875,
+     -5.486328125
+    ],
+    "size": [
+     0.25,
+     1.375,
+     0.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_poche_cote_-1",
+    "uv": [
+     27,
+     72
+    ],
+    "from": [
+     -6.111328125,
+     6.013671875,
+     -2.361328125
+    ],
+    "size": [
+     1.0,
+     3.5,
+     2.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_poche_cote_1",
+    "uv": [
+     35,
+     72
+    ],
+    "from": [
+     5.138671875,
+     6.013671875,
+     -2.361328125
+    ],
+    "size": [
+     1.0,
+     3.5,
+     2.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "pc_harnais_vide_poche",
+    "uv": [
+     96,
+     79
+    ],
+    "from": [
+     3.625,
+     9.5,
+     -2.75
+    ],
+    "size": [
+     2.25,
+     3.5,
+     2.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     -12.0,
+     4.0
+    ],
+    "origin": [
+     4.75,
+     11.25,
+     -1.75
+    ]
+   },
+   {
+    "name": "pc_harnais_garrot",
+    "uv": [
+     69,
+     90
+    ],
+    "from": [
+     -3.236328125,
+     1.513671875,
+     -4.861328125
+    ],
+    "size": [
+     1.0,
+     2.0,
+     0.625
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "pc_harnais_admin",
+    "uv": [
+     30,
+     90
+    ],
+    "from": [
+     -1.986328125,
+     2.013671875,
+     -3.986328125
+    ],
+    "size": [
+     4.0,
+     2.25,
+     0.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {}
+}

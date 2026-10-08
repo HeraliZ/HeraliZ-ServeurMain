@@ -1,0 +1,101 @@
+{
+  "ammo": "tacz:50ae",
+  "ammo_amount": 100,
+  "extended_mag_ammo_amount": [
+    100,
+    100,
+    100
+  ],
+  "bolt": "open_bolt",
+  "rpm": 600,
+  "bullet": {
+    "life": 0.25,
+    "damage": 1,
+    "tracer_count_interval": -1,
+    "speed": 120,
+    "gravity": 0,
+    "knockback": 0,
+    "friction": 0,
+    "ignite": false,
+    "pierce": 1
+  },
+  "heat": {
+    "max": 100,
+    "per_shot": 1.25,
+    "cooling_multiplier": 15,
+    "cooling_delay": 450,
+    "over_heat_time": 1100,
+    "min_inaccuracy": 1,
+    "max_inaccuracy": 1,
+    "min_rpm_mod": 1,
+    "max_rpm_mod": 1
+  },
+  "reload": {
+    "type": "magazine",
+    "infinite": true,
+    "feed": {
+      "empty": 3.02,
+      "tactical": 1.72
+    },
+    "cooldown": {
+      "empty": 3.7,
+      "tactical": 2.35
+    }
+  },
+  "draw_time": 1.0,
+  "put_away_time": 0.6,
+  "aim_time": 0.3,
+  "sprint_time": 0.35,
+  "fire_mode": [
+    "auto"
+  ],
+  "recoil": {
+    "pitch": [
+      {
+        "time": 0,
+        "value": [
+          0.04,
+          0.07
+        ]
+      },
+      {
+        "time": 0.1,
+        "value": [
+          0,
+          0
+        ]
+      }
+    ],
+    "yaw": [
+      {
+        "time": 0,
+        "value": [
+          -0.04,
+          0.04
+        ]
+      },
+      {
+        "time": 0.1,
+        "value": [
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "inaccuracy": {
+    "stand": 0.0,
+    "move": 0.0,
+    "sneak": 0.0,
+    "lie": 0.0,
+    "aim": 0.0
+  },
+  "movement_speed": {
+    "base": -0.05,
+    "aim": -0.15
+  },
+  "allow_attachment_types": [
+    "extended_mag"
+  ],
+  "script": "heraliz_wonder:paralyzer_logic"
+}

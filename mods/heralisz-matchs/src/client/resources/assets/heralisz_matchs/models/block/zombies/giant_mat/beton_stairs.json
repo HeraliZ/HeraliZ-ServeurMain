@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/stairs",
+ "textures": {
+  "bottom": "heralisz_matchs:block/zombies/giant_mat/beton_0",
+  "top": "heralisz_matchs:block/zombies/giant_mat/beton_0",
+  "side": "heralisz_matchs:block/zombies/giant_mat/beton_0"
+ }
+}

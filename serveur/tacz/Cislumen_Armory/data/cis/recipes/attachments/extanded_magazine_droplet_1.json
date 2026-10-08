@@ -1,0 +1,21 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "minecraft:lily_of_the_valley"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:potion"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "cis:extanded_magazine_droplet_1"
+  }
+}

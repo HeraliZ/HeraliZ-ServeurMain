@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t5_caisse_medicale_onu"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t5_caisse_medicale_onu"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t5_caisse_medicale_onu"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t5_caisse_medicale_onu"
+  }
+ }
+}

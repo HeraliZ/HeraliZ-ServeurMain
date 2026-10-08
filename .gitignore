@@ -1,0 +1,38 @@
+# fabrication (toujours refaite à partir des sources)
+# (ancrés : des paquets Java s'appellent aussi « build »)
+/mods/*/build/
+/mods/*/run/
+/mods/*/.gradle/
+/mods/*/out/
+/.gradle/
+/dist/
+/livraison/
+*.log
+__pycache__/
+*.pyc
+# travail local
+/work/
+/_retires/
+/_serveur_local/
+mods/_chantier/
+outils/chemins_local.json
+outils/noms_interdits.txt
+# le serveur en marche (jamais dans Git) : monde, Mohist et ses bibliothèques, données des joueurs
+serveur/libraries/
+serveur/HeraliZ/
+serveur/world*/
+serveur/logs/
+serveur/crash-reports/
+serveur/*.jar
+serveur/ops.json
+serveur/whitelist.json
+serveur/banned-*.json
+serveur/usercache.json
+serveur/plugins/AuthMe/*.db
+serveur/plugins/AuthMe/*.sqlite
+# éditeurs
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

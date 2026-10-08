@@ -1,0 +1,22 @@
+{
+ "_note": "Famille soins (soins1_... à soins3_...) : PhatLoots medical, soins HeralisZ (heralisz_heal). Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
+ "emplacements": [1, 3],
+ "niveaux": {"1": [1, 2], "2": [1, 3], "3": [2, 4], "4": [2, 5], "5": [3, 6], "6": [4, 7]},
+ "objets": [
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 2], "poids": 1905, "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 1524, "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 1143, "nbt": "{ConsumableId:\"heralisz_heal:amoxycillin\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 952, "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 2], "poids": 762, "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 2], "poids": 762, "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 667, "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 571, "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 571, "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 143, "nbt": "{ConsumableId:\"heralisz_heal:cms\"}", "_cat": "soins_famille"},
+  {"item": "heralisz_armor:hospital_mask", "nombre": [1, 1], "poids": 286, "_cat": "vetements_medicaux"},
+  {"item": "heralisz_armor:gloves_latex", "nombre": [1, 1], "poids": 214, "_cat": "vetements_medicaux"},
+  {"item": "heralisz_armor:gloves_medical", "nombre": [1, 1], "poids": 214, "_cat": "vetements_medicaux"},
+  {"item": "heralisz_armor:hospital_chest", "nombre": [1, 1], "poids": 143, "_cat": "vetements_medicaux"},
+  {"item": "heralisz_armor:hospital_legs", "nombre": [1, 1], "poids": 143, "_cat": "vetements_medicaux"}
+ ]
+}

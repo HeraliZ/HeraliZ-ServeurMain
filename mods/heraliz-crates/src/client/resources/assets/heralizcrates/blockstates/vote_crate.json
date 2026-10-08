@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "heralizcrates:block/vote_crate"
+    }
+  }
+}

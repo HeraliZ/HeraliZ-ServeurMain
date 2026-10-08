@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "heraliz_usure:item/kit_fortune"
+  }
+}

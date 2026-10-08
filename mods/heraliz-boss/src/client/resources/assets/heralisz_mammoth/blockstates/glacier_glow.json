@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "alert=false": {
+   "model": "heralisz_mammoth:block/glacier_glow"
+  },
+  "alert=true": {
+   "model": "heralisz_mammoth:block/glacier_glow_alert"
+  }
+ }
+}

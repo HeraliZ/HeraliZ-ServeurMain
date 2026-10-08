@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "heralisz_bunker:block/doors/transition_seal",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "heralisz_bunker:block/doors/transition_seal"
+    },
+    "facing=south": {
+      "model": "heralisz_bunker:block/doors/transition_seal",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "heralisz_bunker:block/doors/transition_seal",
+      "y": 270
+    }
+  }
+}

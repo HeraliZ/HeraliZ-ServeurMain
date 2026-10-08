@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/corbeaux"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/corbeaux",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/corbeaux",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/corbeaux",
+   "y": 270
+  }
+ }
+}

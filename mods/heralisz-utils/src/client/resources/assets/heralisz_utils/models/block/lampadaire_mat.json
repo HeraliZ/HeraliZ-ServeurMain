@@ -1,0 +1,149 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "poteau": "heralisz_utils:block/lampe_poteau",
+  "beton": "heralisz_utils:block/beton_socle",
+  "carter": "heralisz_utils:block/lampe_carter",
+  "verre": "heralisz_utils:block/lampe_verre_eteint",
+  "particle": "heralisz_utils:block/lampe_poteau"
+ },
+ "elements": [
+  {
+   "from": [
+    6.75,
+    0.0,
+    6.75
+   ],
+   "to": [
+    9.25,
+    16.0,
+    9.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      2.5,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "south": {
+     "uv": [
+      4.05,
+      0.0,
+      6.55,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "east": {
+     "uv": [
+      8.1,
+      0.0,
+      10.6,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "west": {
+     "uv": [
+      12.15,
+      0.0,
+      14.65,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "up": {
+     "uv": [
+      1.35,
+      2.25,
+      3.85,
+      4.75
+     ],
+     "texture": "#poteau"
+    },
+    "down": {
+     "uv": [
+      5.4,
+      10.12,
+      7.9,
+      12.62
+     ],
+     "texture": "#poteau"
+    }
+   }
+  },
+  {
+   "from": [
+    6.5,
+    7.0,
+    6.5
+   ],
+   "to": [
+    9.5,
+    7.8,
+    9.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      9.1,
+      6.33,
+      12.1,
+      7.13
+     ],
+     "texture": "#carter"
+    },
+    "south": {
+     "uv": [
+      13.0,
+      15.2,
+      16.0,
+      16.0
+     ],
+     "texture": "#carter"
+    },
+    "east": {
+     "uv": [
+      2.6,
+      7.6,
+      5.6,
+      8.4
+     ],
+     "texture": "#carter"
+    },
+    "west": {
+     "uv": [
+      6.5,
+      0.0,
+      9.5,
+      0.8
+     ],
+     "texture": "#carter"
+    },
+    "up": {
+     "uv": [
+      10.4,
+      7.58,
+      13.4,
+      10.58
+     ],
+     "texture": "#carter"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      1.08,
+      3.0,
+      4.08
+     ],
+     "texture": "#carter"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,8 @@
+{
+  "entity.player.flash.hit": {
+    "subtitle": "subtitle.delta.entity.player.flash.hit",
+    "sounds": [
+      "heralisz_melee:hit"
+    ]
+  }
+}

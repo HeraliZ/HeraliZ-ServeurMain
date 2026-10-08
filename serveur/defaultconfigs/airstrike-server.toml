@@ -1,0 +1,102 @@
+#Internal, do not edit: lets new versions of the mod update values left at their old defaults.
+#Range: 1 ~ 1000
+configVersion = 2
+
+#Designator (binoculars)
+[designator]
+	#Maximum designation range in blocks.
+	#Range: 16 ~ 1024
+	maxRange = 150
+	#Cooldown of the binoculars after calling a strike (seconds).
+	#Range: 0 ~ 3600
+	cooldownSeconds = 30
+	#Delay between the designation and the aircraft passing over the target (seconds).
+	#Range: 6 ~ 120
+	strikeDelaySeconds = 12
+	#Maximum number of simultaneous strikes called by one player.
+	#Range: 1 ~ 16
+	maxActivePerPlayer = 1
+	#Maximum number of simultaneous strikes on the server.
+	#Range: 1 ~ 64
+	maxActiveTotal = 6
+	#Consume one payload item per strike (never in creative).
+	consumePayload = true
+	#Pop a coloured signal smoke on the target when a strike is called (warns everybody).
+	targetMarker = true
+	#Warn players close to the target (60 blocks) with a radio message.
+	announceNearby = false
+
+#Damage
+[damage]
+	#Bombs destroy blocks (set to false for base-protected servers).
+	destroyBlocks = false
+	#Napalm places fire blocks (only if destroyBlocks is true).
+	napalmPlacesFire = true
+	#Explosion power of each bomb of a bombing run (TNT = 4).
+	#Range: 0.0 ~ 12.0
+	bombPower = 4.5
+	#Explosion power of the guided bomb.
+	#Range: 0.0 ~ 16.0
+	precisionPower = 9.5
+	#Explosion power of each cluster bomblet.
+	#Range: 0.0 ~ 8.0
+	bombletPower = 2.0
+	#Damage of each cannon round (strafing run).
+	#Range: 0.0 ~ 100.0
+	gunDamage = 9.0
+	#Bombs dropped by a bombing run.
+	#Range: 1 ~ 8
+	bombCount = 8
+	#Bomblets released by the cluster bomb.
+	#Range: 4 ~ 64
+	bombletCount = 24
+	#Players close to an explosion hear their ears ring and the world muffled for a few seconds.
+	deafening = true
+
+#Area effects
+[areas]
+	#Duration of the smoke screen (seconds).
+	#Range: 5 ~ 600
+	smokeSeconds = 30
+	#Duration of the toxic gas cloud (seconds).
+	#Range: 5 ~ 600
+	gasSeconds = 30
+	#Duration of the napalm fire (seconds).
+	#Range: 2 ~ 120
+	napalmSeconds = 30
+	#Players inside the smoke screen are blinded.
+	smokeBlinds = true
+	#Monsters lose their target when it hides inside the smoke.
+	smokeBreaksAggro = true
+	#Explosions and cannon fire attract idle monsters (zombies...) within this radius, 0 = off.
+	#Range: 0 ~ 256
+	noiseAttractsMonsters = 48
+
+#Aircraft
+[aircraft]
+	#Altitude of the attack jet above the target (blocks).
+	#Range: 20.0 ~ 200.0
+	jetAltitude = 44.0
+	#Speed of the attack jet (blocks per tick).
+	#Range: 0.5 ~ 8.0
+	jetSpeed = 3.0
+	#Altitude of the cargo plane above the target (blocks).
+	#Range: 20.0 ~ 200.0
+	cargoAltitude = 56.0
+	#Speed of the cargo plane (blocks per tick).
+	#Range: 0.5 ~ 6.0
+	cargoSpeed = 1.9
+	#Aircraft release decoy flares on their way out.
+	flares = true
+
+#Supply drop
+[supply]
+	#Loot table used to fill the supply crate.
+	lootTable = "airstrike:chests/supply_drop"
+	#Signal smoke duration once the crate has landed (seconds).
+	#Range: 0 ~ 3600
+	signalSmokeSeconds = 90
+	#Crates disappear after this many minutes (0 = never).
+	#Range: 0 ~ 10000
+	despawnMinutes = 20
+

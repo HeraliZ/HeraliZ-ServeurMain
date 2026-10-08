@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_cartons_ecrases"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_cartons_ecrases"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_cartons_ecrases"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_cartons_ecrases"
+  }
+ }
+}

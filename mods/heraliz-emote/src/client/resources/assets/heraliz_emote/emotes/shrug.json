@@ -1,0 +1,149 @@
+{
+ "name": "Bof...",
+ "author": "Heraliz",
+ "description": "Les épaules qui se lèvent, les mains ouvertes : aucune idée !",
+ "uuid": "82740a81-5df8-5e7d-befa-fd0bfea3668c",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 34,
+  "stopTick": 38,
+  "isLoop": false,
+  "returnTick": 0,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTBACK",
+    "body": {
+     "y": 0.05
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTBACK",
+    "head": {
+     "pitch": 4.0,
+     "roll": 14.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTBACK",
+    "rightArm": {
+     "pitch": -28.0,
+     "yaw": -30.0,
+     "roll": 30.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "OUTBACK",
+    "leftArm": {
+     "pitch": -28.0,
+     "yaw": 30.0,
+     "roll": -30.0
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.04
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 4.0,
+     "roll": 18.0
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -28.0,
+     "yaw": -30.0,
+     "roll": 30.0
+    }
+   },
+   {
+    "tick": 24,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -28.0,
+     "yaw": 30.0,
+     "roll": -30.0
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 34,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "yaw": 0.0,
+     "roll": 0.0
+    }
+   }
+  ]
+ }
+}

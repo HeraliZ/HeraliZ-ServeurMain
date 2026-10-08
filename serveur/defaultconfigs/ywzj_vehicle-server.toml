@@ -1,0 +1,7 @@
+#允许看向载具时展示信息的最大距离（单位：block）
+#Range: 0.0 ~ 1024.0
+showVehicleInfoDistance = 512.0
+#服务端向玩家广播其所在世界超视距实体的时间间隔（单位：tick）
+#Range: 1 ~ 72000
+serverBroadcastEntitiesInterval = 5
+

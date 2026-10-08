@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "crac:nail"
+  },
+  "base": {
+    "item": "crac:reinforced_metal_panel"
+  },
+  "addition": {
+    "item": "minecraft:diamond_block"
+  },
+  "result": {
+    "item": "crac:armored_metal_panel"
+  }
+}

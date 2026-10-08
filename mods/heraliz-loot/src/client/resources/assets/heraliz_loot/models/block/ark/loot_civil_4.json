@@ -1,0 +1,665 @@
+{
+ "credit": "Designed by Optimus0812 with Cubik Studio - https://cubik.studio",
+ "textures": {
+  "school_backpack": "backpacked:backpack/arkaniaz.backpack_school"
+ },
+ "elements": [
+  {
+   "name": "school_backpack1",
+   "from": [
+    0.66324,
+    0,
+    1.25345
+   ],
+   "to": [
+    8.66324,
+    3,
+    8.25345
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     -3.33676,
+     -6,
+     13.25345
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0.75,
+      0,
+      2.75,
+      0.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    },
+    "east": {
+     "uv": [
+      2.75,
+      0.75,
+      3.5,
+      2.5
+     ],
+     "rotation": 90,
+     "texture": "#school_backpack"
+    },
+    "south": {
+     "uv": [
+      3.5,
+      0,
+      5.5,
+      0.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "west": {
+     "uv": [
+      0,
+      0.75,
+      0.75,
+      2.5
+     ],
+     "rotation": 270,
+     "texture": "#school_backpack"
+    },
+    "up": {
+     "uv": [
+      0.75,
+      0.75,
+      2.75,
+      2.5
+     ],
+     "texture": "#school_backpack"
+    },
+    "down": {
+     "uv": [
+      3.5,
+      0.75,
+      5.5,
+      2.5
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    }
+   }
+  },
+  {
+   "name": "school_backpack2",
+   "from": [
+    0.66324,
+    3,
+    1.25345
+   ],
+   "to": [
+    8.66324,
+    4,
+    5.25345
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     -3.33676,
+     -6,
+     13.25345
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0.75,
+      1,
+      2.75,
+      0.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    },
+    "east": {
+     "uv": [
+      2.75,
+      0.75,
+      2.5,
+      1.75
+     ],
+     "rotation": 90,
+     "texture": "#school_backpack"
+    },
+    "south": {
+     "uv": [
+      0.75,
+      1.5,
+      2.75,
+      1.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "west": {
+     "uv": [
+      0.75,
+      0.75,
+      1,
+      1.75
+     ],
+     "rotation": 270,
+     "texture": "#school_backpack"
+    },
+    "up": {
+     "uv": [
+      0.75,
+      0.75,
+      2.75,
+      1.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "down": {
+     "uv": [
+      2.75,
+      0.75,
+      0.75,
+      1.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    }
+   }
+  },
+  {
+   "name": "school_backpack3",
+   "from": [
+    1.66324,
+    3,
+    5.25345
+   ],
+   "to": [
+    7.66324,
+    4,
+    8.25345
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     -3.33676,
+     -6,
+     13.25345
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      1,
+      2,
+      2.5,
+      1.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    },
+    "east": {
+     "uv": [
+      2.5,
+      1.75,
+      2.25,
+      2.5
+     ],
+     "rotation": 90,
+     "texture": "#school_backpack"
+    },
+    "south": {
+     "uv": [
+      1,
+      2.25,
+      2.5,
+      2.5
+     ],
+     "texture": "#school_backpack"
+    },
+    "west": {
+     "uv": [
+      1,
+      1.75,
+      1.25,
+      2.5
+     ],
+     "rotation": 270,
+     "texture": "#school_backpack"
+    },
+    "up": {
+     "uv": [
+      1,
+      1.75,
+      2.5,
+      2.5
+     ],
+     "texture": "#school_backpack"
+    },
+    "down": {
+     "uv": [
+      2.5,
+      1.75,
+      1,
+      2.5
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    }
+   }
+  },
+  {
+   "name": "school_backpack4",
+   "from": [
+    2.66324,
+    1,
+    0.25345
+   ],
+   "to": [
+    3.66324,
+    2,
+    1.25345
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     -3.33676,
+     -6,
+     13.25345
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      5.5,
+      0.75,
+      5.75,
+      0.5
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    },
+    "east": {
+     "uv": [
+      5.75,
+      0.5,
+      5.5,
+      0.75
+     ],
+     "rotation": 90,
+     "texture": "#school_backpack"
+    },
+    "south": {
+     "uv": [
+      5.5,
+      0.5,
+      5.75,
+      0.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "west": {
+     "uv": [
+      5.5,
+      0.5,
+      5.75,
+      0.75
+     ],
+     "rotation": 270,
+     "texture": "#school_backpack"
+    },
+    "up": {
+     "uv": [
+      5.5,
+      0.5,
+      5.75,
+      0.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "down": {
+     "uv": [
+      5.75,
+      0.5,
+      5.5,
+      0.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    }
+   }
+  },
+  {
+   "name": "school_backpack5",
+   "from": [
+    5.66324,
+    1,
+    0.25345
+   ],
+   "to": [
+    6.66324,
+    2,
+    1.25345
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     -3.33676,
+     -6,
+     13.25345
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      6.25,
+      0.75,
+      6.5,
+      0.5
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    },
+    "east": {
+     "uv": [
+      6.5,
+      0.5,
+      6.25,
+      0.75
+     ],
+     "rotation": 90,
+     "texture": "#school_backpack"
+    },
+    "south": {
+     "uv": [
+      6.25,
+      0.5,
+      6.5,
+      0.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "west": {
+     "uv": [
+      6.25,
+      0.5,
+      6.5,
+      0.75
+     ],
+     "rotation": 270,
+     "texture": "#school_backpack"
+    },
+    "up": {
+     "uv": [
+      6.25,
+      0.5,
+      6.5,
+      0.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "down": {
+     "uv": [
+      6.5,
+      0.5,
+      6.25,
+      0.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    }
+   }
+  },
+  {
+   "name": "school_backpack6",
+   "from": [
+    2.66324,
+    1,
+    -0.74655
+   ],
+   "to": [
+    6.66324,
+    2,
+    0.25345
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     -3.33676,
+     -6,
+     13.25345
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      5.5,
+      0.5,
+      6.5,
+      0.25
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    },
+    "east": {
+     "uv": [
+      6.5,
+      0.25,
+      6.25,
+      0.5
+     ],
+     "rotation": 90,
+     "texture": "#school_backpack"
+    },
+    "south": {
+     "uv": [
+      5.5,
+      0.25,
+      6.5,
+      0.5
+     ],
+     "texture": "#school_backpack"
+    },
+    "west": {
+     "uv": [
+      5.5,
+      0.25,
+      5.75,
+      0.5
+     ],
+     "rotation": 270,
+     "texture": "#school_backpack"
+    },
+    "up": {
+     "uv": [
+      5.5,
+      0.25,
+      6.5,
+      0.5
+     ],
+     "texture": "#school_backpack"
+    },
+    "down": {
+     "uv": [
+      6.5,
+      0.25,
+      5.5,
+      0.5
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    }
+   }
+  },
+  {
+   "name": "school_backpack7",
+   "from": [
+    1.66324,
+    2,
+    8.25345
+   ],
+   "to": [
+    7.66324,
+    3,
+    9.25345
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     -3.33676,
+     -6,
+     13.25345
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      1,
+      2.5,
+      2.5,
+      2.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    },
+    "east": {
+     "uv": [
+      3.25,
+      2.5,
+      3.5,
+      2.75
+     ],
+     "rotation": 90,
+     "texture": "#school_backpack"
+    },
+    "south": {
+     "uv": [
+      3.75,
+      0.5,
+      5.25,
+      0.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "west": {
+     "uv": [
+      0.5,
+      2.5,
+      0.75,
+      2.75
+     ],
+     "rotation": 270,
+     "texture": "#school_backpack"
+    },
+    "up": {
+     "uv": [
+      1,
+      2.5,
+      2.5,
+      2.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "down": {
+     "uv": [
+      3.75,
+      2.5,
+      5.25,
+      2.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    }
+   }
+  },
+  {
+   "name": "school_backpack",
+   "from": [
+    0.66324,
+    0,
+    8.25345
+   ],
+   "to": [
+    8.66324,
+    2,
+    9.25345
+   ],
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     -3.33676,
+     -6,
+     13.25345
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      3.5,
+      0,
+      5.5,
+      0.5
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    },
+    "east": {
+     "uv": [
+      3,
+      2.5,
+      3.5,
+      2.75
+     ],
+     "rotation": 90,
+     "texture": "#school_backpack"
+    },
+    "south": {
+     "uv": [
+      3.5,
+      0,
+      5.5,
+      0.5
+     ],
+     "texture": "#school_backpack"
+    },
+    "west": {
+     "uv": [
+      0,
+      2.5,
+      0.5,
+      2.75
+     ],
+     "rotation": 270,
+     "texture": "#school_backpack"
+    },
+    "up": {
+     "uv": [
+      0.75,
+      2.5,
+      2.75,
+      2.75
+     ],
+     "texture": "#school_backpack"
+    },
+    "down": {
+     "uv": [
+      3.5,
+      2.5,
+      5.5,
+      2.75
+     ],
+     "rotation": 180,
+     "texture": "#school_backpack"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

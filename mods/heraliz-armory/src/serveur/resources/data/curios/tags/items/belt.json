@@ -1,0 +1,26 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_armory:ranger_vest",
+    "heraliz_armory:woodland_vest",
+    "heraliz_armory:nomade_vest",
+    "heraliz_armory:gardien_vest",
+    "heraliz_armory:cobra_vest",
+    "heraliz_armory:sentinelle_vest",
+    "heraliz_armory:rempart_vest",
+    "heraliz_armory:vipere_vest",
+    "heraliz_armory:siberie_vest",
+    "heraliz_armory:scorpion_vest",
+    "heraliz_armory:contrat_vest",
+    "heraliz_armory:belier_vest",
+    "heraliz_armory:fennec_vest",
+    "heraliz_armory:blizzard_vest",
+    "heraliz_armory:barricade_vest",
+    "heraliz_armory:beton_vest",
+    "heraliz_armory:meute_vest",
+    "heraliz_armory:corbeau_vest",
+    "heraliz_armory:ours_vest",
+    "heraliz_armory:mastodonte_vest",
+    "heraliz_armory:titan_vest"
+  ]
+}

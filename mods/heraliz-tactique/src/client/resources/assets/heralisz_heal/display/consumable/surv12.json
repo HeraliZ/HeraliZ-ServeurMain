@@ -1,0 +1,60 @@
+{
+  "model": "heralisz_heal:consumable/surv12_geo",
+  "animation": "heralisz_heal:consumable/surv12",
+  "state_machine": "heralisz_heal:consumable_state_machine",
+  "texture": "heralisz_heal:consumable/surv12_uv",
+  "slot_texture": "heralisz_heal:consumable/slot/surv12",
+  "display_offset": [0, 0.5, 0],
+  "transforms": {
+    "fixed": {
+      "translation": [
+        0,
+        -4,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    },
+    "thirdperson_righthand": {
+      "translation": [
+        0,
+        -3.5,
+        0
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        0,
+        -3.5,
+        0
+      ]
+    },
+    "head": {
+      "translation": [
+        0,
+        7.75,
+        -3
+      ],
+      "rotation": [
+        90,
+        0,
+        0
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        -2,
+        0
+      ]
+    }
+  }
+}

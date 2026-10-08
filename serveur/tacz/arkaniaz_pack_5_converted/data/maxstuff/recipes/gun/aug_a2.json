@@ -1,0 +1,39 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_aug_a2"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:iron_plate"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:steel_plate"
+            },
+            "count": 36
+        },
+        {
+            "item": {
+                "item": "heralisz_utils:plastic"
+            },
+            "count": 16
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 32
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "maxstuff:aug_a2"
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

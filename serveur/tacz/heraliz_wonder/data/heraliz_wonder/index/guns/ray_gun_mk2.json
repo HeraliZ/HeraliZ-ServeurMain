@@ -1,0 +1,7 @@
+{
+  "name": "heraliz_wonder.gun.ray_gun_mk2.name",
+  "display": "heraliz_wonder:ray_gun_mk2_display",
+  "data": "heraliz_wonder:ray_gun_mk2_data",
+  "type": "pistol",
+  "tooltip": "heraliz_wonder.gun.ray_gun_mk2.desc"
+}

@@ -1,0 +1,909 @@
+{
+	"credit": "Designed by Optimus0812 with Cubik Studio - https://cubik.studio",
+	"textures": {
+		"hunting_backpack": "backpacked:backpack/arkaniaz.backpack_hunting"
+	},
+	"elements": [
+		{
+			"name": "hunting_backpack",
+			"from": [3, 2, 5],
+			"to": [13, 14, 10],
+			"faces": {
+				"north": {"uv": [5.5, 2.5, 8, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.25, 2.5, 5.5, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.5, 2.5, 4, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [0, 2.5, 1.25, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.5, 0, 4, 1.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [5.5, 0.75, 8, 2], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack44",
+			"from": [4, 2, 10],
+			"to": [12, 14, 11],
+			"faces": {
+				"north": {"uv": [3.75, 2.5, 1.75, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.25, 2.5, 4, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 2.5, 3.75, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.25, 2.5, 1.5, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.75, 1.5, 3.75, 1.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.75, 5.25, 3.75, 5.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack1",
+			"from": [4, 14, 5],
+			"to": [12, 15, 10],
+			"faces": {
+				"north": {"uv": [7.75, 2.5, 5.75, 2.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [3.75, 0, 3.5, 1.25], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 2.25, 3.75, 2.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.75, 0, 2, 1.25], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [1.75, 0, 3.75, 1.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.75, 1.25, 3.75, 0], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack53",
+			"from": [5, 12, 11],
+			"to": [11, 13, 12],
+			"faces": {
+				"north": {"uv": [3.5, 2.75, 2, 3], "texture": "#hunting_backpack"},
+				"east": {"uv": [3.5, 2.75, 3.25, 3], "texture": "#hunting_backpack"},
+				"south": {"uv": [2, 2.75, 3.5, 3], "texture": "#hunting_backpack"},
+				"west": {"uv": [2, 2.75, 2.25, 3], "texture": "#hunting_backpack"},
+				"up": {"uv": [2, 3, 3.5, 2.75], "texture": "#hunting_backpack"},
+				"down": {"uv": [2, 2.75, 3.5, 3], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack54",
+			"from": [4, 8, 11],
+			"to": [12, 12, 12],
+			"faces": {
+				"north": {"uv": [3.75, 3, 1.75, 4], "texture": "#hunting_backpack"},
+				"east": {"uv": [3.75, 3, 3.5, 4], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 3, 3.75, 4], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.75, 3, 2, 4], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.75, 3.25, 3.75, 3], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.75, 3.75, 3.75, 4], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack2",
+			"from": [4, 1, 5],
+			"to": [12, 2, 11],
+			"faces": {
+				"north": {"uv": [7.75, 5.75, 5.75, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [7.75, 0.75, 7.5, 2.25], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 5.5, 3.75, 5.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [5.75, 0.75, 6, 2.25], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [5.75, 0.75, 7.75, 2.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [5.75, 2.25, 7.75, 0.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack7",
+			"from": [3, 14, 6],
+			"to": [4, 15, 9],
+			"faces": {
+				"north": {"uv": [0.25, 2.25, 0.5, 2.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [1, 2.25, 0.25, 2.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1, 2.25, 0.75, 2.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [0.25, 2.25, 1, 2.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [0.25, 2.5, 1, 2.25], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [0.25, 2.25, 1, 2.5], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack38",
+			"from": [12, 14, 6],
+			"to": [13, 15, 9],
+			"faces": {
+				"north": {"uv": [5, 2.5, 5.25, 2.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [5.25, 2.25, 4.5, 2.5], "rotation": 180, "texture": "#hunting_backpack"},
+				"south": {"uv": [4.75, 2.5, 4.5, 2.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [4.5, 2.25, 5.25, 2.5], "rotation": 180, "texture": "#hunting_backpack"},
+				"up": {"uv": [4.5, 2.25, 5.25, 2.5], "rotation": 270, "texture": "#hunting_backpack"},
+				"down": {"uv": [4.5, 2.5, 5.25, 2.25], "rotation": 90, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack39",
+			"from": [12, 1, 6],
+			"to": [13, 2, 10],
+			"faces": {
+				"north": {"uv": [5, 5.75, 5.25, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [5.25, 5.5, 4.25, 5.75], "rotation": 180, "texture": "#hunting_backpack"},
+				"south": {"uv": [4.5, 5.75, 4.25, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [4.25, 5.5, 5.25, 5.75], "rotation": 180, "texture": "#hunting_backpack"},
+				"up": {"uv": [4.25, 5.5, 5.25, 5.75], "rotation": 270, "texture": "#hunting_backpack"},
+				"down": {"uv": [4.25, 5.75, 5.25, 5.5], "rotation": 90, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack8",
+			"from": [3, 1, 6],
+			"to": [4, 2, 10],
+			"faces": {
+				"north": {"uv": [0.25, 5.5, 0.5, 5.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [1.25, 5.5, 0.25, 5.75], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.25, 5.5, 1, 5.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [0.25, 5.5, 1.25, 5.75], "texture": "#hunting_backpack"},
+				"up": {"uv": [0.25, 5.75, 1.25, 5.5], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [0.25, 5.5, 1.25, 5.75], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack45",
+			"from": [3, 2, 10],
+			"to": [4, 13, 11],
+			"faces": {
+				"north": {"uv": [1.75, 2.75, 1.5, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [1.75, 2.75, 1.5, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.5, 2.75, 1.75, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.5, 2.75, 1.75, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.5, 3, 1.75, 2.75], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.5, 5.25, 1.75, 5.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack46",
+			"from": [12, 2, 10],
+			"to": [13, 13, 11],
+			"faces": {
+				"north": {"uv": [4, 2.75, 3.75, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [4, 2.75, 3.75, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [3.75, 2.75, 4, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [3.75, 2.75, 4, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [3.75, 3, 4, 2.75], "texture": "#hunting_backpack"},
+				"down": {"uv": [3.75, 5.25, 4, 5.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack55",
+			"from": [3, 2, 11],
+			"to": [13, 6, 12],
+			"faces": {
+				"north": {"uv": [4, 4.5, 1.5, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [4, 4.5, 3.75, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.5, 4.5, 4, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.5, 4.5, 1.75, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.5, 4.75, 4, 4.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.5, 5.25, 4, 5.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack56",
+			"from": [4, 6, 11],
+			"to": [12, 7, 12],
+			"faces": {
+				"north": {"uv": [3.75, 4.25, 1.75, 4.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [3.75, 4.25, 3.5, 4.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 4.25, 3.75, 4.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.75, 4.25, 2, 4.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.75, 4.5, 3.75, 4.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.75, 4.25, 3.75, 4.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack9",
+			"from": [2, 2, 6],
+			"to": [3, 9, 10],
+			"faces": {
+				"north": {"uv": [0.25, 3.75, 0.5, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [1.25, 3.75, 0.25, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.25, 3.75, 1, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [0.25, 3.75, 1.25, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [0.25, 4, 1.25, 3.75], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [0.25, 5.25, 1.25, 5.5], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack10",
+			"from": [2, 10, 6],
+			"to": [3, 13, 10],
+			"faces": {
+				"north": {"uv": [0.25, 2.75, 0.5, 3.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [1.25, 2.75, 0.25, 3.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.25, 2.75, 1, 3.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [0.25, 2.75, 1.25, 3.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [0.25, 3, 1.25, 2.75], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [0.25, 3.25, 1.25, 3.5], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack40",
+			"from": [13, 10, 6],
+			"to": [14, 13, 10],
+			"faces": {
+				"north": {"uv": [5.25, 2.75, 5.5, 3.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.25, 2.75, 5.25, 3.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [4.25, 2.75, 4, 3.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [5.25, 2.75, 4.25, 3.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [5.25, 3, 4.25, 2.75], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [5.25, 3.25, 4.25, 3.5], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack41",
+			"from": [13, 2, 6],
+			"to": [14, 9, 10],
+			"faces": {
+				"north": {"uv": [5.25, 3.75, 5.5, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.25, 3.75, 5.25, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [4.25, 3.75, 4, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [5.25, 3.75, 4.25, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [5.25, 4, 4.25, 3.75], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [5.25, 5.25, 4.25, 5.5], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack11",
+			"from": [6, 15, 5],
+			"to": [10, 18, 8],
+			"faces": {
+				"north": {"uv": [2.25, 1.5, 3.25, 2.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [4, 1.5, 4.75, 2.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [2.25, 1.5, 3.25, 2.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [0.75, 1.5, 1.5, 2.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [2.25, 1.5, 3.25, 2.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [2.25, 1.5, 3.25, 2.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack19",
+			"from": [2, -3, 8],
+			"to": [14, -2, 10],
+			"faces": {
+				"north": {"uv": [4.5, 6.25, 1.5, 6], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.5, 6, 4.25, 6.5], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [1.5, 6.25, 4.5, 6.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.5, 6, 1.75, 6.5], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [1.5, 6, 4.5, 6.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.5, 6.5, 4.5, 6], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack12",
+			"from": [2, -2, 7],
+			"to": [14, 0, 8],
+			"faces": {
+				"north": {"uv": [4.5, 6, 1.5, 6.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.5, 6, 4.25, 6.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.5, 6, 4.5, 6.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.5, 6, 1.75, 6.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.5, 6.25, 4.5, 6], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.5, 6.25, 4.5, 6.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack47",
+			"from": [2, -2, 10],
+			"to": [14, 0, 11],
+			"faces": {
+				"north": {"uv": [4.25, 6, 1.25, 6.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.25, 6, 4, 6.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.25, 6, 4.25, 6.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.25, 6, 1.5, 6.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.25, 6.25, 4.25, 6], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.25, 6.25, 4.25, 6.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack20",
+			"from": [2, 0, 8],
+			"to": [14, 1, 10],
+			"faces": {
+				"north": {"uv": [4.5, 6, 1.5, 5.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.5, 5.75, 4.25, 6.25], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [1.5, 6, 4.5, 6.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.5, 5.75, 1.75, 6.25], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [1.5, 5.75, 4.5, 6.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.5, 6.25, 4.5, 5.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack21",
+			"from": [3, -2, 8],
+			"to": [13, 0, 10],
+			"faces": {
+				"north": {"uv": [0.75, 6, 1, 6.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [1.25, 6, 0.75, 6.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.25, 6, 1, 6.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [0.75, 6, 1.25, 6.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [0.75, 6.25, 1.25, 6], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [0.75, 6.25, 1.25, 6.5], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack3",
+			"from": [3, 15, 5],
+			"to": [6, 17, 8],
+			"faces": {
+				"north": {"uv": [1.5, 1.75, 2.25, 2.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [0.75, 1.75, 1.5, 2.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.5, 1.75, 2.25, 2.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [0.75, 1.75, 1.5, 2.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.5, 1.75, 2.25, 2.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.5, 1.75, 2.25, 2.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack13",
+			"from": [3, 17, 6],
+			"to": [6, 18, 7],
+			"faces": {
+				"north": {"uv": [2.25, 2, 1.5, 1.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [2.25, 1.75, 2, 2], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [1.5, 1.75, 2.25, 2], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.5, 1.75, 1.75, 2], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [1.5, 1.75, 2.25, 2], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.5, 2, 2.25, 1.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack22",
+			"from": [10, 15, 5],
+			"to": [13, 17, 8],
+			"faces": {
+				"north": {"uv": [3.25, 1.75, 4, 2.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [4, 1.75, 4.75, 2.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [3.25, 1.75, 4, 2.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [4, 1.75, 4.75, 2.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [3.25, 1.75, 4, 2.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [3.25, 1.75, 4, 2.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack23",
+			"from": [10, 17, 6],
+			"to": [13, 18, 7],
+			"faces": {
+				"north": {"uv": [4, 2, 3.25, 1.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [4, 1.75, 3.75, 2], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [3.25, 1.75, 4, 2], "texture": "#hunting_backpack"},
+				"west": {"uv": [3.25, 1.75, 3.5, 2], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [3.25, 1.75, 4, 2], "texture": "#hunting_backpack"},
+				"down": {"uv": [3.25, 2, 4, 1.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack4",
+			"from": [4, 17, 5],
+			"to": [6, 18, 6],
+			"faces": {
+				"north": {"uv": [2.25, 1.75, 1.75, 1.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [2.25, 1.5, 2, 1.75], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 1.5, 2.25, 1.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.75, 1.5, 2, 1.75], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [1.75, 1.5, 2.25, 1.75], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.75, 1.75, 2.25, 1.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack24",
+			"from": [10, 17, 5],
+			"to": [12, 18, 6],
+			"faces": {
+				"north": {"uv": [3.75, 1.75, 3.25, 1.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [3.75, 1.5, 3.5, 1.75], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [3.25, 1.5, 3.75, 1.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [3.25, 1.5, 3.5, 1.75], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [3.25, 1.5, 3.75, 1.75], "texture": "#hunting_backpack"},
+				"down": {"uv": [3.25, 1.75, 3.75, 1.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack14",
+			"from": [4, 17, 7],
+			"to": [6, 18, 8],
+			"faces": {
+				"north": {"uv": [2.25, 2.25, 1.75, 2], "texture": "#hunting_backpack"},
+				"east": {"uv": [2.25, 2, 2, 2.25], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 2, 2.25, 2.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.75, 2, 2, 2.25], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [1.75, 2, 2.25, 2.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.75, 2.25, 2.25, 2], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack25",
+			"from": [10, 17, 7],
+			"to": [12, 18, 8],
+			"faces": {
+				"north": {"uv": [3.75, 2.25, 3.25, 2], "texture": "#hunting_backpack"},
+				"east": {"uv": [3.75, 2, 3.5, 2.25], "rotation": 90, "texture": "#hunting_backpack"},
+				"south": {"uv": [3.25, 2, 3.75, 2.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [3.25, 2, 3.5, 2.25], "rotation": 270, "texture": "#hunting_backpack"},
+				"up": {"uv": [3.25, 2, 3.75, 2.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [3.25, 2.25, 3.75, 2], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack26",
+			"from": [6, 15, 8],
+			"to": [10, 16, 9],
+			"faces": {
+				"north": {"uv": [15.5, 0.5, 14.5, 0.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.5, 0.5, 15.25, 0.75], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.5, 0.5, 15.5, 0.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.5, 0.5, 14.75, 0.75], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.5, 0.75, 15.5, 0.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.5, 0.5, 15.5, 0.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack42",
+			"from": [7, 15, 9],
+			"to": [9, 16, 10],
+			"faces": {
+				"north": {"uv": [15.25, 0.5, 14.75, 0.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.25, 0.5, 15, 0.75], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.75, 0.5, 15.25, 0.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.75, 0.5, 15, 0.75], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.75, 0.75, 15.25, 0.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.75, 0.5, 15.25, 0.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack48",
+			"from": [7, 14, 10],
+			"to": [9, 15, 11],
+			"faces": {
+				"north": {"uv": [15.25, 0.75, 14.75, 1], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.25, 0.75, 15, 1], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.75, 0.75, 15.25, 1], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.75, 0.75, 15, 1], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.75, 1, 15.25, 0.75], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.75, 0.75, 15.25, 1], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack57",
+			"from": [7, 13, 11],
+			"to": [9, 14, 12],
+			"faces": {
+				"north": {"uv": [15.25, 1, 14.75, 1.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.25, 1, 15, 1.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.75, 1, 15.25, 1.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.75, 1, 15, 1.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.75, 1.25, 15.25, 1], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.75, 1, 15.25, 1.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack27",
+			"from": [5, 16, 8],
+			"to": [7, 17, 9],
+			"faces": {
+				"north": {"uv": [14.75, 0.25, 14.25, 0.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.75, 0.25, 14.5, 0.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.25, 0.25, 14.75, 0.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.25, 0.25, 14.5, 0.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.25, 0.5, 14.75, 0.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.25, 0.25, 14.75, 0.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack28",
+			"from": [4, 17, 8],
+			"to": [6, 18, 9],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack29",
+			"from": [9, 16, 8],
+			"to": [11, 17, 9],
+			"faces": {
+				"north": {"uv": [15.75, 0.25, 15.25, 0.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.75, 0.25, 15.5, 0.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.25, 0.25, 15.75, 0.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.25, 0.25, 15.5, 0.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.25, 0.5, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.25, 0.25, 15.75, 0.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack30",
+			"from": [10, 17, 8],
+			"to": [12, 18, 9],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack31",
+			"from": [10, 18, 5],
+			"to": [12, 19, 8],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack5",
+			"from": [4, 18, 5],
+			"to": [6, 19, 8],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack15",
+			"from": [2, 13, 7],
+			"to": [3, 14, 9],
+			"faces": {
+				"north": {"uv": [0.5, 2.5, 0.75, 2.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [1, 2.5, 0.5, 2.75], "texture": "#hunting_backpack"},
+				"south": {"uv": [1, 2.5, 0.75, 2.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [0.5, 2.5, 1, 2.75], "texture": "#hunting_backpack"},
+				"up": {"uv": [0.5, 2.75, 1, 2.5], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [0.5, 2.5, 1, 2.75], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack43",
+			"from": [13, 13, 7],
+			"to": [14, 14, 9],
+			"faces": {
+				"north": {"uv": [5, 2.5, 5.25, 2.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [4.5, 2.5, 5, 2.75], "texture": "#hunting_backpack"},
+				"south": {"uv": [4.5, 2.5, 4.25, 2.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [5, 2.5, 4.5, 2.75], "texture": "#hunting_backpack"},
+				"up": {"uv": [5, 2.75, 4.5, 2.5], "rotation": 90, "texture": "#hunting_backpack"},
+				"down": {"uv": [5, 2.5, 4.5, 2.75], "rotation": 270, "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack32",
+			"from": [10, 14, 4],
+			"to": [12, 17, 5],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack6",
+			"from": [4, 14, 4],
+			"to": [6, 18, 5],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack63",
+			"from": [4, 2, 12],
+			"to": [7, 6, 13],
+			"faces": {
+				"north": {"uv": [2.5, 4.5, 1.75, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [2.5, 4.5, 2.25, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 4.5, 2.5, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.75, 4.5, 2, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.75, 4.75, 2.5, 4.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.75, 5.25, 2.5, 5.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack64",
+			"from": [9, 2, 12],
+			"to": [12, 6, 13],
+			"faces": {
+				"north": {"uv": [3.75, 4.5, 3, 5.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [3.75, 4.5, 3.5, 5.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [3, 4.5, 3.75, 5.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [3, 4.5, 3.25, 5.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [3, 4.75, 3.75, 4.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [3, 5.25, 3.75, 5.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack58",
+			"from": [4, 1, 11],
+			"to": [7, 2, 12],
+			"faces": {
+				"north": {"uv": [2.5, 5.5, 1.75, 5.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [2.5, 5.5, 2.25, 5.75], "texture": "#hunting_backpack"},
+				"south": {"uv": [1.75, 5.5, 2.5, 5.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [1.75, 5.5, 2, 5.75], "texture": "#hunting_backpack"},
+				"up": {"uv": [1.75, 5.75, 2.5, 5.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [1.75, 5.5, 2.5, 5.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack59",
+			"from": [9, 1, 11],
+			"to": [12, 2, 12],
+			"faces": {
+				"north": {"uv": [3.75, 5.5, 3, 5.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [3.75, 5.5, 3.5, 5.75], "texture": "#hunting_backpack"},
+				"south": {"uv": [3, 5.5, 3.75, 5.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [3, 5.5, 3.25, 5.75], "texture": "#hunting_backpack"},
+				"up": {"uv": [3, 5.75, 3.75, 5.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [3, 5.5, 3.75, 5.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack65",
+			"from": [7, 2, 12],
+			"to": [9, 7, 13],
+			"faces": {
+				"north": {"uv": [15.25, 1, 14.75, 1.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.25, 1, 15, 1.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.75, 1, 15.25, 1.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.75, 1, 15, 1.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.75, 1.25, 15.25, 1], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.75, 1, 15.25, 1.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack60",
+			"from": [7, 7, 11],
+			"to": [9, 8, 12],
+			"faces": {
+				"north": {"uv": [15.25, 1, 14.75, 1.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.25, 1, 15, 1.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.75, 1, 15.25, 1.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.75, 1, 15, 1.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.75, 1.25, 15.25, 1], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.75, 1, 15.25, 1.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack66",
+			"from": [6, 1, 12],
+			"to": [10, 2, 13],
+			"faces": {
+				"north": {"uv": [15.5, 0.5, 14.5, 0.75], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.5, 0.5, 15.25, 0.75], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.5, 0.5, 15.5, 0.75], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.5, 0.5, 14.75, 0.75], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.5, 0.75, 15.5, 0.5], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.5, 0.5, 15.5, 0.75], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack49",
+			"from": [5, 0, 10],
+			"to": [7, 1, 12],
+			"faces": {
+				"north": {"uv": [14.75, 0.25, 14.25, 0.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.75, 0.25, 14.5, 0.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [14.25, 0.25, 14.75, 0.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [14.25, 0.25, 14.5, 0.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [14.25, 0.5, 14.75, 0.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [14.25, 0.25, 14.75, 0.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack50",
+			"from": [9, 0, 10],
+			"to": [11, 1, 12],
+			"faces": {
+				"north": {"uv": [15.75, 0.25, 15.25, 0.5], "texture": "#hunting_backpack"},
+				"east": {"uv": [15.75, 0.25, 15.5, 0.5], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.25, 0.25, 15.75, 0.5], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.25, 0.25, 15.5, 0.5], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.25, 0.5, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.25, 0.25, 15.75, 0.5], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack61",
+			"from": [4, -2, 11],
+			"to": [6, 0, 12],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack62",
+			"from": [10, -2, 11],
+			"to": [12, 0, 12],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack51",
+			"from": [4, -3, 10],
+			"to": [6, -2, 11],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack52",
+			"from": [10, -3, 10],
+			"to": [12, -2, 11],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack33",
+			"from": [4, -4, 8],
+			"to": [6, -3, 10],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack34",
+			"from": [10, -4, 8],
+			"to": [12, -3, 10],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack16",
+			"from": [4, -3, 7],
+			"to": [6, -2, 8],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack35",
+			"from": [10, -3, 7],
+			"to": [12, -2, 8],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack17",
+			"from": [4, -2, 6],
+			"to": [6, 0, 7],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack36",
+			"from": [10, -2, 6],
+			"to": [12, 0, 7],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack18",
+			"from": [4, 0, 7],
+			"to": [6, 1, 8],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [14.5, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [14, 0, 14.25, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [14, 0.25, 14.5, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [14, 0, 14.5, 0.25], "texture": "#hunting_backpack"}
+			}
+		},
+		{
+			"name": "hunting_backpack37",
+			"from": [10, 0, 7],
+			"to": [12, 1, 8],
+			"faces": {
+				"north": {"uv": [16, 0, 15.5, 0.25], "texture": "#hunting_backpack"},
+				"east": {"uv": [16, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"south": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"},
+				"west": {"uv": [15.5, 0, 15.75, 0.25], "texture": "#hunting_backpack"},
+				"up": {"uv": [15.5, 0.25, 16, 0], "texture": "#hunting_backpack"},
+				"down": {"uv": [15.5, 0, 16, 0.25], "texture": "#hunting_backpack"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [60, -30, 0],
+			"translation": [0, 4, 4]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [75, 0, -5],
+			"translation": [-6, -9, 9]
+		},
+		"firstperson_righthand": {
+			"translation": [-9, 0, 0]
+		},
+		"firstperson_lefthand": {
+			"scale": [0.0001, 0.0001, 0.0001]
+		},
+		"ground": {
+			"rotation": [-90, 0, 0]
+		},
+		"gui": {
+			"rotation": [30, -45, 0],
+			"scale": [0.625, 0.625, 0.625]
+		},
+		"head": {
+			"scale": [0.0001, 0.0001, 0.0001]
+		},
+		"fixed": {
+			"rotation": [0, 180, 0],
+			"scale": [2, 2, 2]
+		}
+	}
+}

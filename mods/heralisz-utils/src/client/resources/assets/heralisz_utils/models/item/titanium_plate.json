@@ -1,0 +1,7 @@
+{
+ "parent": "heralisz_utils:custom/titann",
+ "textures": {
+  "0": "heralisz_utils:item/titan",
+  "particle": "heralisz_utils:item/3345"
+ }
+}

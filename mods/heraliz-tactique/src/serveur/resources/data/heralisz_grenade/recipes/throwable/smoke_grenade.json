@@ -1,0 +1,40 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item" : "minecraft:sugar"
+      },
+      "count": 3
+    },
+    {
+      "item": {
+        "item" : "minecraft:flint"
+      },
+      "count": 3
+    },
+    {
+      "item": {
+        "tag": "forge:gems/quartz"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:throwable",
+    "item": {
+      "item": "heralisz_tactical:throwable",
+      "nbt": {
+        "ThrowableId": "heralisz_grenade:smoke_grenade"
+      },
+      "count" : 2
+    }
+  }
+}

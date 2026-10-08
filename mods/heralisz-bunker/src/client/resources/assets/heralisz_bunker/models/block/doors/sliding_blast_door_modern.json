@@ -1,0 +1,56 @@
+{
+    "loader":"heralisz_bunker:door",
+    "model":"heralisz_bunker:models/block/doors/sliding_blast_door.obj",
+    "parts":["Frame","LeftDoor","RightDoor","LeftLock","RightLock"],
+    "textures":{
+        "default":"heralisz_bunker:block/doors/sliding_blast_door",
+        "particle":"heralisz_bunker:block/doors/sliding_blast_door"
+    },
+    "transform":{
+        "rotation":[0,0,0],
+        "translation":[0,0,0],
+        "scale":1
+    },
+    "display": {
+    "thirdperson_righthand": {
+        "rotation": [ 75, 45, 0 ],
+        "translation": [ 0.00, 2.50, 0.00 ],
+        "scale": [ 0.20, 0.20, 0.20 ]
+    },
+    "thirdperson_lefthand": {
+        "rotation": [ 75, 45, 0 ],
+        "translation": [ 0.00, 2.50, 0.00 ],
+        "scale": [ 0.20, 0.20, 0.20 ]
+    },
+    "firstperson_righthand": {
+        "rotation": [ 0, 225, 0 ],
+        "translation": [ 1.00, -0.25, 0.00 ],
+        "scale": [ 0.10, 0.10, 0.10 ]
+    },
+    "firstperson_lefthand": {
+        "rotation": [ 0, 135, 0 ],
+        "translation": [ 2.00, -1.00, 0.00 ],
+        "scale": [ 0.10, 0.10, 0.10 ]
+    },
+    "gui": {
+        "rotation": [ 30, 225, 0 ],
+        "translation": [ -0.50, -2.40, 0.00 ],
+        "scale": [ 0.10, 0.10, 0.10 ]
+    },
+    "head": {
+        "rotation": [ 0, 0, 0 ],
+        "translation": [ 0.00, 0.00, 0.00 ],
+        "scale": [ 1.00, 1.00, 1.00 ]
+    },
+    "fixed": {
+        "rotation": [ 0, 0, 0 ],
+        "translation": [ 0.00, 0.00, 0.00 ],
+        "scale": [ 1.00, 1.00, 1.00 ]
+    },
+    "ground": {
+        "rotation": [ 0, 0, 0 ],
+        "translation": [ 0.00, 3.00, 0.00 ],
+        "scale": [ 0.25, 0.25, 0.25 ]
+    }
+}
+}

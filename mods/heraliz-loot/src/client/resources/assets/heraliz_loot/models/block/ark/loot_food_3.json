@@ -1,0 +1,171 @@
+{
+ "credit": "Made with Blockbench",
+ "textures": {
+  "1": "heraliz_loot:block/ark/blocks/food/canned_baked_beans",
+  "2": "heraliz_loot:block/ark/blocks/food/rice",
+  "particle": "heraliz_loot:block/ark/blocks/food/rice"
+ },
+ "elements": [
+  {
+   "from": [
+    8,
+    0,
+    4
+   ],
+   "to": [
+    12,
+    6,
+    8
+   ],
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     16,
+     8,
+     12
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "east": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "south": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "west": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "texture": "#1"
+    },
+    "up": {
+     "uv": [
+      0,
+      2,
+      6,
+      8
+     ],
+     "texture": "#1"
+    },
+    "down": {
+     "uv": [
+      0,
+      2,
+      6,
+      8
+     ],
+     "texture": "#1"
+    }
+   }
+  },
+  {
+   "from": [
+    5,
+    0,
+    2
+   ],
+   "to": [
+    12,
+    4,
+    6
+   ],
+   "rotation": {
+    "angle": 0,
+    "axis": "z",
+    "origin": [
+     13,
+     -4,
+     10
+    ]
+   },
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "rotation": 90,
+     "texture": "#2"
+    },
+    "east": {
+     "uv": [
+      0,
+      2,
+      6,
+      9
+     ],
+     "rotation": 90,
+     "texture": "#2"
+    },
+    "south": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "rotation": 90,
+     "texture": "#2"
+    },
+    "west": {
+     "uv": [
+      0,
+      2,
+      6,
+      9
+     ],
+     "rotation": 90,
+     "texture": "#2"
+    },
+    "up": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "rotation": 90,
+     "texture": "#2"
+    },
+    "down": {
+     "uv": [
+      0,
+      8,
+      6,
+      16
+     ],
+     "rotation": 90,
+     "texture": "#2"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/cross",
+ "textures": {
+  "cross": "heralisz_matchs:block/zombies/giant_mat/barbeles",
+  "particle": "heralisz_matchs:block/zombies/giant_mat/barbeles"
+ },
+ "render_type": "minecraft:cutout"
+}

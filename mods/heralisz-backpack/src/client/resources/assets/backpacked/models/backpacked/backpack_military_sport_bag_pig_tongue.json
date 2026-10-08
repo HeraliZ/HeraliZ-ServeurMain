@@ -1,0 +1,81 @@
+{
+ "credit": "HeralisZ",
+ "texture_size": [
+  128,
+  128
+ ],
+ "textures": {
+  "pig": "backpacked:backpack/backpack_military_sport_bag_pig",
+  "particle": "backpacked:backpack/backpack_military_sport_bag_pig"
+ },
+ "elements": [
+  {
+   "from": [
+    -6.7303,
+    4.0912,
+    15.05
+   ],
+   "to": [
+    -5.2303,
+    7.5912,
+    15.55
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      3.625,
+      11.625,
+      4.0,
+      12.5
+     ],
+     "texture": "#pig"
+    },
+    "north": {
+     "uv": [
+      4.125,
+      11.625,
+      4.5,
+      12.5
+     ],
+     "texture": "#pig"
+    },
+    "east": {
+     "uv": [
+      4.0,
+      11.625,
+      4.125,
+      12.5
+     ],
+     "texture": "#pig"
+    },
+    "west": {
+     "uv": [
+      3.5,
+      11.625,
+      3.625,
+      12.5
+     ],
+     "texture": "#pig"
+    },
+    "up": {
+     "uv": [
+      3.625,
+      11.5,
+      4.0,
+      11.625
+     ],
+     "texture": "#pig"
+    },
+    "down": {
+     "uv": [
+      4.0,
+      11.5,
+      4.375,
+      11.625
+     ],
+     "texture": "#pig"
+    }
+   }
+  }
+ ]
+}

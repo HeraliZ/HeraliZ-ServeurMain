@@ -1,0 +1,33 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "minecraft:slime_ball"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:honey_bottle"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:sugar"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:consumable",
+    "item": {
+      "item": "heralisz_tactical:consumable",
+      "nbt": {
+        "ConsumableId": "heralisz_heal:vaseline"
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t4_caisses_munitions"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t4_caisses_munitions",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t4_caisses_munitions",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t4_caisses_munitions",
+   "y": 270
+  }
+ }
+}

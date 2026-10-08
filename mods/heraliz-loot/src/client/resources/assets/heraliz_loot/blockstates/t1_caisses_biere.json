@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_caisses_biere"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_caisses_biere"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_caisses_biere"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_caisses_biere"
+  }
+ }
+}

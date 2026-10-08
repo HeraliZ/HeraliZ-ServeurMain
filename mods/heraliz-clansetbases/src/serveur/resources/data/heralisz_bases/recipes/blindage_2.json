@@ -1,0 +1,30 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "heralisz_utils"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "IYI",
+    "YBY",
+    "IYI"
+  ],
+  "key": {
+    "I": {
+      "item": "heralisz_utils:iron_plate"
+    },
+    "Y": {
+      "item": "heralisz_utils:polyethylene"
+    },
+    "B": {
+      "item": "heralisz_bases:blindage_1"
+    }
+  },
+  "result": {
+    "item": "heralisz_bases:blindage_2",
+    "count": 1
+  }
+}

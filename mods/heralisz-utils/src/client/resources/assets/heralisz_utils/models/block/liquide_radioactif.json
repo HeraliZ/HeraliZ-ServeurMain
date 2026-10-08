@@ -1,0 +1,84 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "liq": "heralisz_utils:block/liquide_radioactif",
+  "particle": "heralisz_utils:block/liquide_radioactif"
+ },
+ "elements": [
+  {
+   "from": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "to": [
+    16.0,
+    16.0,
+    16.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#liq",
+     "cullface": "north"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#liq",
+     "cullface": "south"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#liq",
+     "cullface": "east"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#liq",
+     "cullface": "west"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#liq",
+     "cullface": "up"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#liq",
+     "cullface": "down"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:translucent"
+}

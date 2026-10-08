@@ -1,0 +1,33 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 5
+    },
+    {
+      "item": {
+        "tag": "forge:gems/lapis"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "tag": "forge:gems/diamond"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:melee",
+    "item": {
+      "item": "heralisz_tactical:melee",
+      "nbt": {
+        "MeleeWeaponId": "heralisz_melee:smite_hammer"
+      }
+    }
+  }
+}

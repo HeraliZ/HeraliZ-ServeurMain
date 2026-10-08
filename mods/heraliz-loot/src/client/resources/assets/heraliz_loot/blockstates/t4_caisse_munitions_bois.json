@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t4_caisse_munitions_bois"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t4_caisse_munitions_bois"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t4_caisse_munitions_bois"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t4_caisse_munitions_bois"
+  }
+ }
+}

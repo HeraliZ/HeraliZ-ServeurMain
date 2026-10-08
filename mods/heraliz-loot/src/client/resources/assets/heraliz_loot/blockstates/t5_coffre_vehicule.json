@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t5_coffre_vehicule"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t5_coffre_vehicule"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t5_coffre_vehicule"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t5_coffre_vehicule"
+  }
+ }
+}

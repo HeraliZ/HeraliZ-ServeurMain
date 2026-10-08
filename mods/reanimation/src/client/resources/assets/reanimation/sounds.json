@@ -1,0 +1,694 @@
+{
+  "fx.whoosh": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/whoosh_0"
+      },
+      {
+        "name": "reanimation:fx/whoosh_1"
+      },
+      {
+        "name": "reanimation:fx/whoosh_2"
+      }
+    ]
+  },
+  "fx.whoosh_heavy": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/whoosh_heavy_0"
+      },
+      {
+        "name": "reanimation:fx/whoosh_heavy_1"
+      }
+    ]
+  },
+  "fx.dash": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/dash_0"
+      },
+      {
+        "name": "reanimation:fx/dash_1"
+      }
+    ]
+  },
+  "fx.impact": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/impact_0"
+      },
+      {
+        "name": "reanimation:fx/impact_1"
+      },
+      {
+        "name": "reanimation:fx/impact_2"
+      }
+    ]
+  },
+  "fx.impact_heavy": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/impact_heavy_0"
+      }
+    ]
+  },
+  "fx.slam": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/slam_0"
+      }
+    ]
+  },
+  "fx.shockwave": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/shockwave_0"
+      }
+    ]
+  },
+  "fx.crit": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/crit_0"
+      }
+    ]
+  },
+  "fx.bone_crack": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/bone_crack_0"
+      },
+      {
+        "name": "reanimation:fx/bone_crack_1"
+      }
+    ]
+  },
+  "fx.body_fall": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/body_fall_0"
+      }
+    ]
+  },
+  "fx.flesh": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/flesh_0"
+      },
+      {
+        "name": "reanimation:fx/flesh_1"
+      }
+    ]
+  },
+  "fx.heartbeat": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/heartbeat_0"
+      }
+    ]
+  },
+  "fx.riser": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/riser_0"
+      }
+    ]
+  },
+  "fx.drop_boom": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/drop_boom_0"
+      }
+    ]
+  },
+  "fx.reverse_swell": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/reverse_swell_0"
+      }
+    ]
+  },
+  "fx.glitch": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/glitch_0"
+      },
+      {
+        "name": "reanimation:fx/glitch_1"
+      }
+    ]
+  },
+  "fx.sparkle": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/sparkle_0"
+      },
+      {
+        "name": "reanimation:fx/sparkle_1"
+      }
+    ]
+  },
+  "fx.chime": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/chime_0"
+      }
+    ]
+  },
+  "fx.hum": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/hum_0"
+      }
+    ]
+  },
+  "fx.charge": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/charge_0"
+      }
+    ]
+  },
+  "fx.blast": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/blast_0"
+      }
+    ]
+  },
+  "fx.beam": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/beam_0"
+      }
+    ]
+  },
+  "fx.zap": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/zap_0"
+      },
+      {
+        "name": "reanimation:fx/zap_1"
+      },
+      {
+        "name": "reanimation:fx/zap_2"
+      }
+    ]
+  },
+  "fx.thunder": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/thunder_0"
+      },
+      {
+        "name": "reanimation:fx/thunder_1"
+      }
+    ]
+  },
+  "fx.crackle": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/crackle_0"
+      }
+    ]
+  },
+  "fx.fire_whoosh": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/fire_whoosh_0"
+      },
+      {
+        "name": "reanimation:fx/fire_whoosh_1"
+      }
+    ]
+  },
+  "fx.fire_roar": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/fire_roar_0"
+      }
+    ]
+  },
+  "fx.ice_crack": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/ice_crack_0"
+      },
+      {
+        "name": "reanimation:fx/ice_crack_1"
+      }
+    ]
+  },
+  "fx.ice_shatter": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/ice_shatter_0"
+      }
+    ]
+  },
+  "fx.freeze": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/freeze_0"
+      }
+    ]
+  },
+  "fx.blade_draw": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/blade_draw_0"
+      }
+    ]
+  },
+  "fx.blade_slash": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/blade_slash_0"
+      },
+      {
+        "name": "reanimation:fx/blade_slash_1"
+      },
+      {
+        "name": "reanimation:fx/blade_slash_2"
+      }
+    ]
+  },
+  "fx.sheath_click": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/sheath_click_0"
+      }
+    ]
+  },
+  "fx.card_shuffle": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/card_shuffle_0"
+      }
+    ]
+  },
+  "fx.card_flick": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/card_flick_0"
+      },
+      {
+        "name": "reanimation:fx/card_flick_1"
+      },
+      {
+        "name": "reanimation:fx/card_flick_2"
+      }
+    ]
+  },
+  "fx.card_thud": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/card_thud_0"
+      },
+      {
+        "name": "reanimation:fx/card_thud_1"
+      }
+    ]
+  },
+  "fx.string_pluck": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/string_pluck_0"
+      },
+      {
+        "name": "reanimation:fx/string_pluck_1"
+      },
+      {
+        "name": "reanimation:fx/string_pluck_2"
+      }
+    ]
+  },
+  "fx.string_snap": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/string_snap_0"
+      }
+    ]
+  },
+  "fx.portal_open": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/portal_open_0"
+      }
+    ]
+  },
+  "fx.portal_close": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/portal_close_0"
+      }
+    ]
+  },
+  "fx.warp": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/warp_0"
+      }
+    ]
+  },
+  "fx.blackhole": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/blackhole_0"
+      }
+    ]
+  },
+  "fx.implosion": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/implosion_0"
+      }
+    ]
+  },
+  "fx.rune": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/rune_0"
+      }
+    ]
+  },
+  "fx.chain": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/chain_0"
+      },
+      {
+        "name": "reanimation:fx/chain_1"
+      }
+    ]
+  },
+  "fx.choir": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/choir_0"
+      }
+    ]
+  },
+  "fx.sword_fall": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/sword_fall_0"
+      }
+    ]
+  },
+  "fx.holy_impact": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/holy_impact_0"
+      }
+    ]
+  },
+  "fx.rock_rumble": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/rock_rumble_0"
+      }
+    ]
+  },
+  "fx.rock_hit": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/rock_hit_0"
+      },
+      {
+        "name": "reanimation:fx/rock_hit_1"
+      }
+    ]
+  },
+  "fx.clone_split": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/clone_split_0"
+      },
+      {
+        "name": "reanimation:fx/clone_split_1"
+      }
+    ]
+  },
+  "fx.petal_gust": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/petal_gust_0"
+      },
+      {
+        "name": "reanimation:fx/petal_gust_1"
+      }
+    ]
+  },
+  "fx.spray": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/spray_0"
+      }
+    ]
+  },
+  "fx.can_rattle": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/can_rattle_0"
+      }
+    ]
+  },
+  "fx.neon_ignite": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/neon_ignite_0"
+      }
+    ]
+  },
+  "fx.scratch": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/scratch_0"
+      },
+      {
+        "name": "reanimation:fx/scratch_1"
+      }
+    ]
+  },
+  "fx.sleigh_bells": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/sleigh_bells_0"
+      }
+    ]
+  },
+  "fx.confetti_pop": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/confetti_pop_0"
+      }
+    ]
+  },
+  "fx.gift_shake": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/gift_shake_0"
+      }
+    ]
+  },
+  "fx.ribbon": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/ribbon_0"
+      }
+    ]
+  },
+  "fx.candy_crack": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/candy_crack_0"
+      }
+    ]
+  },
+  "fx.snow_crunch": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/snow_crunch_0"
+      },
+      {
+        "name": "reanimation:fx/snow_crunch_1"
+      }
+    ]
+  },
+  "fx.snow_burst": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/snow_burst_0"
+      }
+    ]
+  },
+  "fx.jingle_chord": {
+    "sounds": [
+      {
+        "name": "reanimation:fx/jingle_chord_0"
+      }
+    ]
+  },
+  "music.mille_coupes": {
+    "sounds": [
+      {
+        "name": "reanimation:music/mille_coupes",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.singularite": {
+    "sounds": [
+      {
+        "name": "reanimation:music/singularite",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.courroux_ciel": {
+    "sounds": [
+      {
+        "name": "reanimation:music/courroux_ciel",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.souffle_dragon": {
+    "sounds": [
+      {
+        "name": "reanimation:music/souffle_dragon",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.zero_absolu": {
+    "sounds": [
+      {
+        "name": "reanimation:music/zero_absolu",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.danse_ombres": {
+    "sounds": [
+      {
+        "name": "reanimation:music/danse_ombres",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.main_joker": {
+    "sounds": [
+      {
+        "name": "reanimation:music/main_joker",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.faille": {
+    "sounds": [
+      {
+        "name": "reanimation:music/faille",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.onde_celeste": {
+    "sounds": [
+      {
+        "name": "reanimation:music/onde_celeste",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.apesanteur": {
+    "sounds": [
+      {
+        "name": "reanimation:music/apesanteur",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.marionnettiste": {
+    "sounds": [
+      {
+        "name": "reanimation:music/marionnettiste",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.freestyle_combo": {
+    "sounds": [
+      {
+        "name": "reanimation:music/freestyle_combo",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.tempete_sakura": {
+    "sounds": [
+      {
+        "name": "reanimation:music/tempete_sakura",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.tag_final": {
+    "sounds": [
+      {
+        "name": "reanimation:music/tag_final",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.jugement_runique": {
+    "sounds": [
+      {
+        "name": "reanimation:music/jugement_runique",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.cadeau_surprise": {
+    "sounds": [
+      {
+        "name": "reanimation:music/cadeau_surprise",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.sucre_d_orge": {
+    "sounds": [
+      {
+        "name": "reanimation:music/sucre_d_orge",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.bonhomme_de_neige": {
+    "sounds": [
+      {
+        "name": "reanimation:music/bonhomme_de_neige",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.lames_fantomes": {
+    "sounds": [
+      {
+        "name": "reanimation:music/lames_fantomes",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "music.pantin": {
+    "sounds": [
+      {
+        "name": "reanimation:music/pantin",
+        "attenuation_distance": 32
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+    "name": "arkaniaz.gun.berthier.name",
+    "display": "arkaniaz:berthier_display",
+    "data": "arkaniaz:berthier_data",
+    "tooltip": "Carabine à verrou classique.",
+    "type": "sniper"
+}

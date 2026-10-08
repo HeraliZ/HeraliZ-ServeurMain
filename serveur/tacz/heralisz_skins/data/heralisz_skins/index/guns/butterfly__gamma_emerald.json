@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.butterfly__gamma_emerald.name",
+  "display": "heralisz_skins:butterfly__gamma_emerald_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.butterfly__gamma_emerald.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 204
+}

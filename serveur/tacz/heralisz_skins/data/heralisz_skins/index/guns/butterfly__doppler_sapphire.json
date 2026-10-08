@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.butterfly__doppler_sapphire.name",
+  "display": "heralisz_skins:butterfly__doppler_sapphire_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.butterfly__doppler_sapphire.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 203
+}

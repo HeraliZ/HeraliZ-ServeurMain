@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t2_caisses_pommes"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t2_caisses_pommes",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t2_caisses_pommes",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t2_caisses_pommes",
+   "y": 270
+  }
+ }
+}

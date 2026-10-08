@@ -1,0 +1,6 @@
+{
+  "model": "tacz:ammo/450",
+  "texture": "tacz:ammo/uv/450",
+  "slot": "tacz:ammo/slot/450",
+  "tracer_color": "#FF4732"
+  }

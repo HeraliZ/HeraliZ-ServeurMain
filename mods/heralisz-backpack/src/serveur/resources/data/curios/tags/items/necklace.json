@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "geckolib:bandana_blue",
+    "geckolib:bandana_black",
+    "geckolib:bandana_green",
+    "geckolib:bandana_red",
+    "geckolib:bandana_blue",
+    "geckolib:bandana_white",
+    "geckolib:hood_white",
+    "geckolib:hood_beige",
+    "geckolib:hood_camo_1",
+    "geckolib:hood_camo_2",
+    "geckolib:hood_snow",
+    "geckolib:hood_desert",
+    "geckolib:hood_green",
+    "geckolib:hood_pink",
+    "geckolib:hood_hunting"
+  ]
+}

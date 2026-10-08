@@ -1,0 +1,13 @@
+{
+  "multipart": [
+    {"when": {"partie": "0", "allumee": "true", "facing": "south"}, "apply": {"model": "heralisz_matchs:block/zb_boite_socle"}},
+    {"when": {"partie": "0", "allumee": "true", "facing": "west"}, "apply": {"model": "heralisz_matchs:block/zb_boite_socle", "y": 90}},
+    {"when": {"partie": "0", "allumee": "true", "facing": "north"}, "apply": {"model": "heralisz_matchs:block/zb_boite_socle", "y": 180}},
+    {"when": {"partie": "0", "allumee": "true", "facing": "east"}, "apply": {"model": "heralisz_matchs:block/zb_boite_socle", "y": 270}},
+    {"when": {"partie": "0", "allumee": "false", "facing": "south"}, "apply": {"model": "heralisz_matchs:block/zb_boite_vide"}},
+    {"when": {"partie": "0", "allumee": "false", "facing": "west"}, "apply": {"model": "heralisz_matchs:block/zb_boite_vide", "y": 90}},
+    {"when": {"partie": "0", "allumee": "false", "facing": "north"}, "apply": {"model": "heralisz_matchs:block/zb_boite_vide", "y": 180}},
+    {"when": {"partie": "0", "allumee": "false", "facing": "east"}, "apply": {"model": "heralisz_matchs:block/zb_boite_vide", "y": 270}},
+    {"when": {"partie": "1|2"}, "apply": {"model": "heralisz_matchs:block/zb_vide"}}
+  ]
+}

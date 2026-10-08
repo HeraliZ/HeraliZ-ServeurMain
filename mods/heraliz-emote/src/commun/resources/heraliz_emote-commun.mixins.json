@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.emote.mixin.commun",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_emote-commun.refmap.json",
+  "mixins": [
+    "ServerEmotePlayMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

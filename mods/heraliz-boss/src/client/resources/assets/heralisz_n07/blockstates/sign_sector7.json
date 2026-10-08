@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/sign_sector7"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/sign_sector7",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/sign_sector7",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/sign_sector7",
+   "y": 270
+  }
+ }
+}

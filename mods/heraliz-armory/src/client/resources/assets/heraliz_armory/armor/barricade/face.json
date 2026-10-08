@@ -1,0 +1,379 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/barricade.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "head": [
+   {
+    "name": "masque_jupe",
+    "uv": [
+     63,
+     72
+    ],
+    "from": [
+     -3.244140625,
+     -5.494140625,
+     -5.119140625
+    ],
+    "size": [
+     6.5,
+     5.75,
+     0.75
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "masque_joue_d",
+    "uv": [
+     34,
+     64
+    ],
+    "from": [
+     -3.8,
+     -5.225,
+     -5.425
+    ],
+    "size": [
+     0.5,
+     5.25,
+     2.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     -38.0,
+     0.0
+    ],
+    "origin": [
+     -3.55,
+     -2.6,
+     -4.3
+    ]
+   },
+   {
+    "name": "masque_oculaire_d",
+    "uv": [
+     68,
+     99
+    ],
+    "from": [
+     -2.744140625,
+     -4.994140625,
+     -5.369140625
+    ],
+    "size": [
+     2.25,
+     2.0,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "masque_cartouche_d0",
+    "uv": [
+     36,
+     99
+    ],
+    "from": [
+     -4.15,
+     -1.25,
+     -5.25
+    ],
+    "size": [
+     1.5000000000000004,
+     1.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     40.0,
+     0.0
+    ],
+    "origin": [
+     -3.4,
+     -0.5,
+     -4.75
+    ]
+   },
+   {
+    "name": "masque_cartouche_d1",
+    "uv": [
+     42,
+     99
+    ],
+    "from": [
+     -4.15,
+     -1.25,
+     -5.25
+    ],
+    "size": [
+     1.5000000000000004,
+     1.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     40.0,
+     45.0
+    ],
+    "origin": [
+     -3.4,
+     -0.5,
+     -4.75
+    ]
+   },
+   {
+    "name": "masque_joue_g",
+    "uv": [
+     40,
+     64
+    ],
+    "from": [
+     3.3,
+     -5.225,
+     -5.425
+    ],
+    "size": [
+     0.5,
+     5.25,
+     2.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     38.0,
+     0.0
+    ],
+    "origin": [
+     3.55,
+     -2.6,
+     -4.3
+    ]
+   },
+   {
+    "name": "masque_oculaire_g",
+    "uv": [
+     73,
+     99
+    ],
+    "from": [
+     0.505859375,
+     -4.994140625,
+     -5.369140625
+    ],
+    "size": [
+     2.25,
+     2.0,
+     0.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "masque_cartouche_g0",
+    "uv": [
+     48,
+     99
+    ],
+    "from": [
+     2.65,
+     -1.25,
+     -5.25
+    ],
+    "size": [
+     1.5000000000000004,
+     1.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     -40.0,
+     0.0
+    ],
+    "origin": [
+     3.4,
+     -0.5,
+     -4.75
+    ]
+   },
+   {
+    "name": "masque_cartouche_g1",
+    "uv": [
+     54,
+     99
+    ],
+    "from": [
+     2.65,
+     -1.25,
+     -5.25
+    ],
+    "size": [
+     1.5000000000000004,
+     1.5,
+     1.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false,
+    "rotation": [
+     0.0,
+     -40.0,
+     45.0
+    ],
+    "origin": [
+     3.4,
+     -0.5,
+     -4.75
+    ]
+   },
+   {
+    "name": "masque_valve",
+    "uv": [
+     20,
+     99
+    ],
+    "from": [
+     -0.994140625,
+     -2.369140625,
+     -5.744140625
+    ],
+    "size": [
+     2.0,
+     2.0,
+     0.625
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "masque_sangle0",
+    "uv": [
+     18,
+     47
+    ],
+    "from": [
+     -4.369140625,
+     -6.494140625,
+     -3.744140625
+    ],
+    "size": [
+     8.75,
+     0.5,
+     8.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": true
+   },
+   {
+    "name": "masque_sangle1",
+    "uv": [
+     52,
+     47
+    ],
+    "from": [
+     -4.369140625,
+     -3.494140625,
+     -3.744140625
+    ],
+    "size": [
+     8.75,
+     0.5,
+     8.125
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {},
+ "hide_hat": true
+}

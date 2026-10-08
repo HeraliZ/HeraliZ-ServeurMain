@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "heralizcrates:block/event_crate"
+    }
+  }
+}

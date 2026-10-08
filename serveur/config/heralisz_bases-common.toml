@@ -1,0 +1,46 @@
+
+#Bases de clan HeraliZ (bunkers)
+[bases]
+	#Cout de creation d'une base (hérals pris dans la banque du clan)
+	#Range: 0 ~ 1000000000
+	cout_creation = 10000
+	#Cout de deblocage des salles fermees au depart, dans l'ordre du modele (salles 2 a 6) ;
+	#une salle au-dela de la liste garde le cout ecrit dans bunker.json
+	couts_salles = [5000, 10000, 20000, 35000, 50000]
+	#Secondes immobile avant la teleportation d'entree (annulee si mouvement ou degat)
+	#Range: 0 ~ 120
+	delai_entree_s = 10
+	#Blocs poses ou effaces au plus par tick serveur (pose du bunker par tranches)
+	#Range: 500 ~ 200000
+	budget_blocs_tick = 20000
+	#Pas de la grille des parcelles (blocs). Ne JAMAIS changer une fois des bases posees.
+	#Range: 128 ~ 1024
+	pas_grille = 192
+	#Altitude du coin bas du bunker dans la dimension (0 a 200)
+	#Range: 0 ~ 200
+	y_bunker = 64
+	#Blocs du modele remplaces par heralisz_bases:coque a la pose (coque provisoire du dessin) ;
+	#s'ajoute a la liste « coque_provisoire » de bunker.json
+	coque_provisoire = ["minecraft:obsidian"]
+
+#Tag de combat local (remplace par celui du moteur de matchs quand il est present)
+[combat]
+	#Secondes de tag apres avoir inflige ou subi des degats d'un autre joueur
+	#Range: 1 ~ 300
+	combat_tag_s = 15
+
+#Pillage (heure du serveur)
+[pillage]
+	#Heure d'ouverture des pillages (0-23)
+	#Range: 0 ~ 23
+	fenetre_debut = 18
+	#Heure de fin des pillages (1-24, apres fenetre_debut)
+	#Range: 1 ~ 24
+	fenetre_fin = 23
+	#Heure de remise a zero des entrees de pillage du jour
+	#Range: 0 ~ 23
+	reset_heure = 6
+	#Pillards au plus en meme temps dans une base
+	#Range: 1 ~ 64
+	pillards_max = 8
+

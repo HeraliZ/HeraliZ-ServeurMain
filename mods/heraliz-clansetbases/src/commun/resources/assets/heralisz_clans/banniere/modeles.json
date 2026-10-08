@@ -1,0 +1,1039 @@
+[
+  {
+    "id": "creeper",
+    "nom_fr": "Creeper",
+    "nom_en": "Creeper",
+    "fond": {
+      "a": "#4FA63A",
+      "b": "#4FA63A",
+      "degrade": "UNI"
+    },
+    "calques": [
+      {
+        "forme": "carre",
+        "cx": 16,
+        "cy": 24,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#0E1A0C",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 48,
+        "cy": 24,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#0E1A0C",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 32,
+        "cy": 44,
+        "w": 16,
+        "h": 24,
+        "rot": 0,
+        "couleur": "#0E1A0C",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 20,
+        "cy": 52,
+        "w": 8,
+        "h": 24,
+        "rot": 0,
+        "couleur": "#0E1A0C",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 44,
+        "cy": 52,
+        "w": 8,
+        "h": 24,
+        "rot": 0,
+        "couleur": "#0E1A0C",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "crane_os",
+    "nom_fr": "Crâne et os",
+    "nom_en": "Skull and Bones",
+    "fond": {
+      "a": "#121316",
+      "b": "#2A2D34",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "os",
+        "cx": 32,
+        "cy": 50,
+        "w": 54,
+        "h": 19,
+        "rot": 35,
+        "couleur": "#E9E2D0",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "os",
+        "cx": 32,
+        "cy": 50,
+        "w": 54,
+        "h": 19,
+        "rot": 145,
+        "couleur": "#E9E2D0",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "crane",
+        "cx": 32,
+        "cy": 34,
+        "w": 40,
+        "h": 40,
+        "rot": 0,
+        "couleur": "#F2ECDD",
+        "contour": 3,
+        "couleurContour": "#121316",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "bouclier_chevron",
+    "nom_fr": "Bouclier au chevron",
+    "nom_en": "Chevron Shield",
+    "fond": {
+      "a": "#14233F",
+      "b": "#284A7E",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "ecu",
+        "cx": 32,
+        "cy": 38,
+        "w": 44,
+        "h": 53,
+        "rot": 0,
+        "couleur": "#E3B653",
+        "contour": 2,
+        "couleurContour": "#0D1626",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "chevron",
+        "cx": 32,
+        "cy": 40,
+        "w": 34,
+        "h": 20,
+        "rot": 0,
+        "couleur": "#14233F",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile",
+        "cx": 32,
+        "cy": 22,
+        "w": 12,
+        "h": 12,
+        "rot": 0,
+        "couleur": "#14233F",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile4",
+        "cx": 32,
+        "cy": 56,
+        "w": 8,
+        "h": 8,
+        "rot": 0,
+        "couleur": "#14233F",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "soleil_levant",
+    "nom_fr": "Soleil levant",
+    "nom_en": "Rising Sun",
+    "fond": {
+      "a": "#4A1538",
+      "b": "#F2843A",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "soleil",
+        "cx": 32,
+        "cy": 50,
+        "w": 58,
+        "h": 58,
+        "rot": 0,
+        "couleur": "#FFD45E",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 32,
+        "cy": 74,
+        "w": 64,
+        "h": 44,
+        "rot": 0,
+        "couleur": "#1A2546",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "vague",
+        "cx": 32,
+        "cy": 59,
+        "w": 64,
+        "h": 10,
+        "rot": 0,
+        "couleur": "#35508F",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "vague",
+        "cx": 32,
+        "cy": 70,
+        "w": 64,
+        "h": 10,
+        "rot": 0,
+        "couleur": "#2A3F74",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "croissant_etoile",
+    "nom_fr": "Croissant et étoile",
+    "nom_en": "Crescent and Star",
+    "fond": {
+      "a": "#0E3B3A",
+      "b": "#1C6B60",
+      "degrade": "DIAGONAL"
+    },
+    "calques": [
+      {
+        "forme": "croissant",
+        "cx": 27,
+        "cy": 38,
+        "w": 30,
+        "h": 40,
+        "rot": 0,
+        "couleur": "#F1E9D2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile",
+        "cx": 46,
+        "cy": 36,
+        "w": 16,
+        "h": 16,
+        "rot": 18,
+        "couleur": "#F1E9D2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "epees_bouclier",
+    "nom_fr": "Épées et bouclier",
+    "nom_en": "Swords and Shield",
+    "fond": {
+      "a": "#5A0F14",
+      "b": "#9E1E24",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "epees",
+        "cx": 32,
+        "cy": 38,
+        "w": 68,
+        "h": 68,
+        "rot": 0,
+        "couleur": "#D9DDE3",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "ecu",
+        "cx": 32,
+        "cy": 41,
+        "w": 24,
+        "h": 29,
+        "rot": 0,
+        "couleur": "#2B2F37",
+        "contour": 2,
+        "couleurContour": "#D9DDE3",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile",
+        "cx": 32,
+        "cy": 38,
+        "w": 11,
+        "h": 11,
+        "rot": 0,
+        "couleur": "#E3B653",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "oeil_triangle",
+    "nom_fr": "Œil dans le triangle",
+    "nom_en": "Eye in the Triangle",
+    "fond": {
+      "a": "#2A1446",
+      "b": "#0D0718",
+      "degrade": "RADIAL"
+    },
+    "calques": [
+      {
+        "forme": "eclat",
+        "cx": 32,
+        "cy": 38,
+        "w": 62,
+        "h": 62,
+        "rot": 0,
+        "couleur": "#4B2C74",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "triangle",
+        "cx": 32,
+        "cy": 38,
+        "w": 48,
+        "h": 41,
+        "rot": 0,
+        "couleur": "#E8C062",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "triangle",
+        "cx": 32,
+        "cy": 42,
+        "w": 32,
+        "h": 27,
+        "rot": 0,
+        "couleur": "#22113A",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "oeil",
+        "cx": 32,
+        "cy": 45,
+        "w": 20,
+        "h": 20,
+        "rot": 0,
+        "couleur": "#E8C062",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "cible",
+    "nom_fr": "Cible",
+    "nom_en": "Target",
+    "fond": {
+      "a": "#1D2024",
+      "b": "#1D2024",
+      "degrade": "UNI"
+    },
+    "calques": [
+      {
+        "forme": "carre",
+        "cx": 32,
+        "cy": 38,
+        "w": 2,
+        "h": 66,
+        "rot": 0,
+        "couleur": "#F0ECE2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 32,
+        "cy": 38,
+        "w": 60,
+        "h": 2,
+        "rot": 0,
+        "couleur": "#F0ECE2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "cible",
+        "cx": 32,
+        "cy": 38,
+        "w": 42,
+        "h": 42,
+        "rot": 0,
+        "couleur": "#E2483A",
+        "contour": 2,
+        "couleurContour": "#1D2024",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "damier",
+    "nom_fr": "Damier",
+    "nom_en": "Checkerboard",
+    "fond": {
+      "a": "#EDE7D9",
+      "b": "#EDE7D9",
+      "degrade": "UNI"
+    },
+    "calques": [
+      {
+        "forme": "carre",
+        "cx": 8,
+        "cy": 8,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 40,
+        "cy": 8,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 24,
+        "cy": 24,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 56,
+        "cy": 24,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 8,
+        "cy": 40,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 40,
+        "cy": 40,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 24,
+        "cy": 56,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 56,
+        "cy": 56,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 8,
+        "cy": 72,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 40,
+        "cy": 72,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 24,
+        "cy": 88,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 56,
+        "cy": 88,
+        "w": 16,
+        "h": 16,
+        "rot": 0,
+        "couleur": "#1B1C20",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "loup_lune",
+    "nom_fr": "Loup et lune",
+    "nom_en": "Wolf and Moon",
+    "fond": {
+      "a": "#0B1230",
+      "b": "#2B3F72",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "cercle",
+        "cx": 32,
+        "cy": 36,
+        "w": 50,
+        "h": 50,
+        "rot": 0,
+        "couleur": "#F2E6C2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "loup",
+        "cx": 32,
+        "cy": 40,
+        "w": 36,
+        "h": 36,
+        "rot": 0,
+        "couleur": "#0E1633",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile4",
+        "cx": 9,
+        "cy": 10,
+        "w": 6,
+        "h": 6,
+        "rot": 0,
+        "couleur": "#F2E6C2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile4",
+        "cx": 56,
+        "cy": 66,
+        "w": 5,
+        "h": 5,
+        "rot": 0,
+        "couleur": "#F2E6C2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile4",
+        "cx": 8,
+        "cy": 70,
+        "w": 4,
+        "h": 4,
+        "rot": 0,
+        "couleur": "#F2E6C2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "triple_bande",
+    "nom_fr": "Triple bande",
+    "nom_en": "Triple Band",
+    "fond": {
+      "a": "#1E2A22",
+      "b": "#33473A",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "carre",
+        "cx": 32,
+        "cy": 24,
+        "w": 120,
+        "h": 8,
+        "rot": 325,
+        "couleur": "#E9E2CF",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 32,
+        "cy": 40,
+        "w": 120,
+        "h": 8,
+        "rot": 325,
+        "couleur": "#C8452F",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "carre",
+        "cx": 32,
+        "cy": 56,
+        "w": 120,
+        "h": 8,
+        "rot": 325,
+        "couleur": "#E9E2CF",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "radioactif",
+    "nom_fr": "Radioactif",
+    "nom_en": "Radioactive",
+    "fond": {
+      "a": "#F1C531",
+      "b": "#E3A51F",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "anneau",
+        "cx": 32,
+        "cy": 38,
+        "w": 54,
+        "h": 54,
+        "rot": 0,
+        "couleur": "#16161A",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "radioactif",
+        "cx": 32,
+        "cy": 38,
+        "w": 40,
+        "h": 40,
+        "rot": 0,
+        "couleur": "#16161A",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "couronne_etoiles",
+    "nom_fr": "Couronne étoilée",
+    "nom_en": "Starred Crown",
+    "fond": {
+      "a": "#2B1748",
+      "b": "#5A2A86",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "couronne",
+        "cx": 32,
+        "cy": 44,
+        "w": 44,
+        "h": 44,
+        "rot": 0,
+        "couleur": "#E8C062",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile",
+        "cx": 16,
+        "cy": 18,
+        "w": 10,
+        "h": 10,
+        "rot": 0,
+        "couleur": "#E8C062",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile",
+        "cx": 32,
+        "cy": 14,
+        "w": 12,
+        "h": 12,
+        "rot": 0,
+        "couleur": "#E8C062",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile",
+        "cx": 48,
+        "cy": 18,
+        "w": 10,
+        "h": 10,
+        "rot": 0,
+        "couleur": "#E8C062",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "ancre_anneau",
+    "nom_fr": "Ancre et anneau",
+    "nom_en": "Anchor and Ring",
+    "fond": {
+      "a": "#0D2238",
+      "b": "#1E4E78",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "anneau",
+        "cx": 32,
+        "cy": 38,
+        "w": 54,
+        "h": 54,
+        "rot": 0,
+        "couleur": "#E8EEF2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "ancre",
+        "cx": 32,
+        "cy": 38,
+        "w": 36,
+        "h": 36,
+        "rot": 0,
+        "couleur": "#E8EEF2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "etoile4",
+        "cx": 32,
+        "cy": 76,
+        "w": 8,
+        "h": 8,
+        "rot": 0,
+        "couleur": "#E8EEF2",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "flamme_double",
+    "nom_fr": "Double flamme",
+    "nom_en": "Twin Flame",
+    "fond": {
+      "a": "#170C09",
+      "b": "#4A160A",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "flamme",
+        "cx": 32,
+        "cy": 36,
+        "w": 54,
+        "h": 54,
+        "rot": 0,
+        "couleur": "#D8341F",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "flamme",
+        "cx": 32,
+        "cy": 45,
+        "w": 34,
+        "h": 34,
+        "rot": 0,
+        "couleur": "#FFC646",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  },
+  {
+    "id": "croc_sang",
+    "nom_fr": "Crocs sanglants",
+    "nom_en": "Bloody Fangs",
+    "fond": {
+      "a": "#120A0C",
+      "b": "#3A0A10",
+      "degrade": "VERTICAL"
+    },
+    "calques": [
+      {
+        "forme": "dents",
+        "cx": 32,
+        "cy": 20,
+        "w": 52,
+        "h": 12,
+        "rot": 0,
+        "couleur": "#EFE8DA",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "croc",
+        "cx": 19,
+        "cy": 32,
+        "w": 12,
+        "h": 24,
+        "rot": 0,
+        "couleur": "#EFE8DA",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "croc",
+        "cx": 45,
+        "cy": 32,
+        "w": 12,
+        "h": 24,
+        "rot": 0,
+        "couleur": "#EFE8DA",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": true,
+        "miroirY": false
+      },
+      {
+        "forme": "goutte",
+        "cx": 17,
+        "cy": 52,
+        "w": 7,
+        "h": 11,
+        "rot": 0,
+        "couleur": "#C0141E",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "goutte",
+        "cx": 47,
+        "cy": 58,
+        "w": 6,
+        "h": 9,
+        "rot": 0,
+        "couleur": "#C0141E",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      },
+      {
+        "forme": "goutte",
+        "cx": 21,
+        "cy": 64,
+        "w": 4,
+        "h": 6,
+        "rot": 0,
+        "couleur": "#C0141E",
+        "contour": 0,
+        "couleurContour": "#000000",
+        "miroirX": false,
+        "miroirY": false
+      }
+    ]
+  }
+]

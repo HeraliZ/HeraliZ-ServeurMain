@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_grand_cabas"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_grand_cabas"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_grand_cabas"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_grand_cabas"
+  }
+ }
+}

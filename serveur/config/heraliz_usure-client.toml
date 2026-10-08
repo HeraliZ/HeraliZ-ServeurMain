@@ -1,0 +1,7 @@
+#Petit affichage de l'etat de l'arme pres des munitions : TOUJOURS, SI_USEE (pas quand elle est neuve) ou JAMAIS.
+#L'alerte « ruinee » reste toujours affichee.
+#Allowed Values: TOUJOURS, SI_USEE, JAMAIS
+hud = "TOUJOURS"
+#Barre d'usure sur l'icone des armes (inventaire, barre d'objets).
+barre = true
+

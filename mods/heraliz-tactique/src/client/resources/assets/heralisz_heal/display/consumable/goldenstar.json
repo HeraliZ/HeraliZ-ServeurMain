@@ -1,0 +1,75 @@
+{
+  "model": "heralisz_heal:consumable/goldenstar_geo",
+  "animation": "heralisz_heal:consumable/goldenstar",
+  "state_machine": "heralisz_heal:consumable_state_machine",
+  "texture": "heralisz_heal:consumable/goldenstar_uv",
+  "slot_texture": "heralisz_heal:consumable/slot/goldenstar",
+  "display_offset": [0, 0.5, 0],
+  "transforms": {
+    "fixed": {
+      "translation": [
+        7.5,
+        0,
+        0
+      ],
+      "rotation": [
+        -90,
+        0,
+        0
+      ],
+      "scale": [
+        2.5,
+        2.5,
+        2.5
+      ]
+    },
+    "thirdperson_righthand": {
+      "translation": [
+        3,
+        0,
+        0
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        -4,
+        0,
+        0
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    },
+    "head": {
+      "translation": [
+        4.5,
+        6.75,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    },
+    "ground": {
+      "translation": [
+        5.5,
+        -3,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+ "replace": false,
+ "values": [
+  "heralisz_bunker:large_vehicle_door",
+  "heralisz_bunker:round_airlock_door",
+  "heralisz_bunker:fire_door",
+  "heralisz_bunker:sliding_seal_door",
+  "heralisz_bunker:secure_access_door",
+  "heralisz_bunker:qe_containment_door",
+  "heralisz_bunker:qe_sliding_door",
+  "heralisz_bunker:water_door",
+  "heralisz_bunker:silo_hatch",
+  "heralisz_bunker:silo_hatch_large",
+  "heralisz_bunker:vault_door",
+  "heralisz_bunker:sliding_blast_door",
+  "heralisz_bunker:cargo_door",
+  "heralisz_bunker:transition_seal",
+  "heralisz_bunker:universal_machine_part",
+  "heralisz_bunker:door_office",
+  "heralisz_bunker:door_bunker",
+  "heralisz_bunker:metal_door"
+ ]
+}

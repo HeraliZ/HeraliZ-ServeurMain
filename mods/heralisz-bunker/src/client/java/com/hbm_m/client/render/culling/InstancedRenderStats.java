@@ -1,0 +1,58 @@
+package com.hbm_m.client.render.culling;
+
+import com.hbm_m.client.render.InstancedStaticPartRenderer;
+import com.hbm_m.config.ModClothConfig;
+import com.hbm_m.main.MainRegistry;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+@OnlyIn(Dist.CLIENT)
+public final class InstancedRenderStats {
+   private static int chunkSlicesDeferred;
+   private static int duplicatePresentAttempts;
+   private static int overflowAdds;
+   private static long presentStartNanos;
+
+   private InstancedRenderStats() {
+   }
+
+   public static void beginPresent(int chunkSlices) {
+      chunkSlicesDeferred = chunkSlices;
+      duplicatePresentAttempts = 0;
+      overflowAdds = InstancedStaticPartRenderer.drainOverflowAddCount();
+      presentStartNanos = System.nanoTime();
+   }
+
+   public static void recordDuplicatePresentAttempt() {
+      duplicatePresentAttempts++;
+   }
+
+   public static void endPresent() {
+      if (shouldLog()) {
+         int overflow = InstancedStaticPartRenderer.drainOverflowAddCount();
+         long ms = (System.nanoTime() - presentStartNanos) / 1000000L;
+         MainRegistry.LOGGER
+            .debug(
+               "[HBM-M Instanced] present chunkSlices={} tookMs={} overflowAdds={} dupFlushBlocked={}",
+               new Object[]{chunkSlicesDeferred, ms, overflow, duplicatePresentAttempts}
+            );
+      }
+   }
+
+   private static boolean shouldLog() {
+      try {
+         ModClothConfig c = ModClothConfig.get();
+         return c != null && (c.enableDebugLogging || c.mdiDebugLogDispatch);
+      } catch (Throwable ignored) {
+         return false;
+      }
+   }
+
+   public static void clear() {
+      chunkSlicesDeferred = 0;
+      duplicatePresentAttempts = 0;
+      overflowAdds = 0;
+      presentStartNanos = 0L;
+      InstancedStaticPartRenderer.drainOverflowAddCount();
+   }
+}

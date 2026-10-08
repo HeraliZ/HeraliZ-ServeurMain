@@ -1,0 +1,17 @@
+
+#HeraliZ Ping : affichage (ecran Reglages : Mods > HeraliZ Ping > Config, ou la touche Reglages des pings)
+[affichage]
+	#Volume du son d'un ping, en %
+	#Range: 0 ~ 100
+	volume = 60
+	#Taille des marqueurs, en %
+	#Range: 50 ~ 160
+	taille = 100
+	#Toujours afficher le nom de l'auteur (sinon au debut et sous le viseur)
+	noms_toujours = false
+	#Fleches au bord de l'ecran pour les pings hors champ
+	fleches_bord = true
+	#Pings affiches au plus (les plus proches)
+	#Range: 4 ~ 32
+	max_visibles = 12
+

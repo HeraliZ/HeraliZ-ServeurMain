@@ -1,0 +1,14 @@
+
+[protection]
+	#Multiplicateur des protections des pieces (balles, corps a corps, morsure, radiation) :
+	#1.0 = valeurs du catalogue (meme echelle que HeralisZ Armor, plafond 75 %), 0 = desactive
+	#Range: 0.0 ~ 2.0
+	multiplier = 1.0
+	#Types de degats traites comme des balles, en plus des projectiles et des balles TaCZ (tag tacz:bullets)
+	bullet_damage_types = []
+	#Multiplicateur de la protection contre les explosions (0 = desactive)
+	#Range: 0.0 ~ 2.0
+	explosion_multiplier = 1.0
+	#Effets bloques par un masque filtrant (piece portee au visage ou sur la tete), ex. "minecraft:poison"
+	gas_effects = ["minecraft:poison"]
+

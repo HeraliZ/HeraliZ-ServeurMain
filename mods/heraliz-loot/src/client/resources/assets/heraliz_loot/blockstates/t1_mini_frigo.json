@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_mini_frigo"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_mini_frigo"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_mini_frigo"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_mini_frigo"
+  }
+ }
+}

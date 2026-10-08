@@ -1,0 +1,7 @@
+{
+ "parent": "heralisz_utils:custom/aramid",
+ "textures": {
+  "0": "heralisz_utils:item/aramid",
+  "particle": "heralisz_utils:item/3345"
+ }
+}

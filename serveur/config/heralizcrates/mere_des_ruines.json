@@ -1,0 +1,79 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add mere_des_ruines <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "minecraft:string",
+      "count": 24,
+      "weight": 16,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:spider_eye",
+      "count": 8,
+      "weight": 14,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:cobweb",
+      "count": 4,
+      "weight": 12,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:ender_pearl",
+      "count": 8,
+      "weight": 12,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:fermented_spider_eye",
+      "count": 4,
+      "weight": 10,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 5,
+      "weight": 12,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:golden_apple",
+      "count": 4,
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "item": "minecraft:netherite_scrap",
+      "count": 2,
+      "weight": 7,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:totem_of_undying",
+      "count": 1,
+      "weight": 6,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:netherite_sword",
+      "count": 1,
+      "weight": 3,
+      "rarity": "legendary",
+      "nbt": "{Enchantments:[{id:\"minecraft:sharpness\",lvl:5s},{id:\"minecraft:bane_of_arthropods\",lvl:5s},{id:\"minecraft:unbreaking\",lvl:3s}]}",
+      "name": "&4&lCrochet de la Mère"
+    },
+    {
+      "item": "minecraft:elytra",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "minecraft:enchanted_golden_apple",
+      "count": 2,
+      "weight": 1,
+      "rarity": "mythic"
+    }
+  ]
+}

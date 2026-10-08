@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_utils:block/herisson"
+  },
+  "facing=east": {
+   "model": "heralisz_utils:block/herisson",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_utils:block/herisson",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_utils:block/herisson",
+   "y": 270
+  }
+ }
+}

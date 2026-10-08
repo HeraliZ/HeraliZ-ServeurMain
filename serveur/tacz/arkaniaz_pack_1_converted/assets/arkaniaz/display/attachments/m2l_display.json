@@ -1,0 +1,19 @@
+{
+  "slot": "arkaniaz:attachment/slot/m2l",
+  "model": "arkaniaz:attachment/m2l_geo",
+  "texture": "arkaniaz:attachment/uv/m2l",
+  "lod": {
+    "model": "arkaniaz:attachment/lod/m2",
+    "texture": "arkaniaz:attachment/lod/m2"
+  },
+  "zoom": [
+    2.0
+  ],
+  "scope": true,
+  "sight": false,
+  "fov": 50.0,
+  "sounds": {
+    "install": "tacz:attachments/scope_general_c",
+    "uninstall": "tacz:attachments/scope_general_c"
+  }
+}

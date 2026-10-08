@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_canape"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_canape"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_canape"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_canape"
+  }
+ }
+}

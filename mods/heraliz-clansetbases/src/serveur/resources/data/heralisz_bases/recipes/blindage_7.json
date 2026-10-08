@@ -1,0 +1,30 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "heralisz_utils"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "KTK",
+    "TBT",
+    "KTK"
+  ],
+  "key": {
+    "K": {
+      "item": "heralisz_utils:carbon"
+    },
+    "T": {
+      "item": "heralisz_utils:titanium_plate"
+    },
+    "B": {
+      "item": "heralisz_bases:blindage_6"
+    }
+  },
+  "result": {
+    "item": "heralisz_bases:blindage_7",
+    "count": 1
+  }
+}

@@ -1,0 +1,154 @@
+{
+ "variants": {
+  "facing=north,powered=false,status=idle": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_idle"
+  },
+  "facing=north,powered=true,status=idle": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_idle"
+  },
+  "facing=north,powered=false,status=reading_ok": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading"
+  },
+  "facing=north,powered=true,status=reading_ok": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading"
+  },
+  "facing=north,powered=false,status=reading_ko": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading"
+  },
+  "facing=north,powered=true,status=reading_ko": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading"
+  },
+  "facing=north,powered=false,status=granted": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_granted"
+  },
+  "facing=north,powered=true,status=granted": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_granted"
+  },
+  "facing=north,powered=false,status=denied": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_denied"
+  },
+  "facing=north,powered=true,status=denied": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_denied"
+  },
+  "facing=east,powered=false,status=idle": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_idle",
+   "y": 90
+  },
+  "facing=east,powered=true,status=idle": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_idle",
+   "y": 90
+  },
+  "facing=east,powered=false,status=reading_ok": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 90
+  },
+  "facing=east,powered=true,status=reading_ok": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 90
+  },
+  "facing=east,powered=false,status=reading_ko": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 90
+  },
+  "facing=east,powered=true,status=reading_ko": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 90
+  },
+  "facing=east,powered=false,status=granted": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_granted",
+   "y": 90
+  },
+  "facing=east,powered=true,status=granted": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_granted",
+   "y": 90
+  },
+  "facing=east,powered=false,status=denied": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_denied",
+   "y": 90
+  },
+  "facing=east,powered=true,status=denied": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_denied",
+   "y": 90
+  },
+  "facing=south,powered=false,status=idle": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_idle",
+   "y": 180
+  },
+  "facing=south,powered=true,status=idle": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_idle",
+   "y": 180
+  },
+  "facing=south,powered=false,status=reading_ok": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 180
+  },
+  "facing=south,powered=true,status=reading_ok": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 180
+  },
+  "facing=south,powered=false,status=reading_ko": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 180
+  },
+  "facing=south,powered=true,status=reading_ko": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 180
+  },
+  "facing=south,powered=false,status=granted": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_granted",
+   "y": 180
+  },
+  "facing=south,powered=true,status=granted": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_granted",
+   "y": 180
+  },
+  "facing=south,powered=false,status=denied": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_denied",
+   "y": 180
+  },
+  "facing=south,powered=true,status=denied": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_denied",
+   "y": 180
+  },
+  "facing=west,powered=false,status=idle": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_idle",
+   "y": 270
+  },
+  "facing=west,powered=true,status=idle": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_idle",
+   "y": 270
+  },
+  "facing=west,powered=false,status=reading_ok": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 270
+  },
+  "facing=west,powered=true,status=reading_ok": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 270
+  },
+  "facing=west,powered=false,status=reading_ko": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 270
+  },
+  "facing=west,powered=true,status=reading_ko": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_reading",
+   "y": 270
+  },
+  "facing=west,powered=false,status=granted": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_granted",
+   "y": 270
+  },
+  "facing=west,powered=true,status=granted": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_granted",
+   "y": 270
+  },
+  "facing=west,powered=false,status=denied": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_denied",
+   "y": 270
+  },
+  "facing=west,powered=true,status=denied": {
+   "model": "heralisz_bunker:block/keycard/card_reader_red_denied",
+   "y": 270
+  }
+ }
+}

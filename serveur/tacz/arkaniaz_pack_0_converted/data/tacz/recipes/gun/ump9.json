@@ -1,0 +1,39 @@
+{
+    "materials": [
+        {
+            "item": {
+                "item": "heralisz_utils:plan_ump9"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "tag": "forge:ingots/copper"
+            },
+            "count": 3
+        },
+        {
+            "item": {
+                "tag": "forge:ingots/iron"
+            },
+            "count": 10
+        },
+        {
+            "item": {
+                "tag": "forge:gems/diamond"
+            },
+            "count": 1
+        },
+        {
+            "item": {
+                "item": "minecraft:experience_bottle"
+            },
+            "count": 22
+        }
+    ],
+    "result": {
+        "type": "gun",
+        "id": "arkaniaz:ump9"
+    },
+    "type": "tacz:gun_smith_table_crafting"
+}

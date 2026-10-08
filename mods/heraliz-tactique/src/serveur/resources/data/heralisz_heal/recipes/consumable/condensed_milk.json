@@ -1,0 +1,27 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "minecraft:milk_bucket"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:sugar"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:consumable",
+    "item": {
+      "item": "heralisz_tactical:consumable",
+      "nbt": {
+        "ConsumableId": "heralisz_heal:condensed_milk"
+      }
+    }
+  }
+}

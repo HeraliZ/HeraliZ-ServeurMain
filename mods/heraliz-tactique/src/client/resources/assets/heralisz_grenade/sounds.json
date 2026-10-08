@@ -1,0 +1,32 @@
+{
+  "entity.grenade.m67.explode": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.m67.explode",
+    "sounds": [
+      "heralisz_grenade:entity/grenade_exp_m67"
+    ]
+  },
+  "entity.grenade.flash.explode": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.flash.explode",
+    "sounds": [
+      "heralisz_grenade:entity/grenade_exp_flash"
+    ]
+  },
+  "entity.grenade.rgn.explode": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.rgn.explode",
+    "sounds": [
+      "heralisz_grenade:entity/grenade_exp_rgn"
+    ]
+  },
+  "entity.grenade.smoke.start": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.smoke.start",
+    "sounds": [
+      "heralisz_grenade:entity/grenade_exp_smoke_start"
+    ]
+  },
+  "entity.grenade.smoke.end": {
+    "subtitle": "subtitle.heralisz_tactical.entity.grenade.smoke.end",
+    "sounds": [
+      "heralisz_grenade:entity/grenade_exp_smoke_end"
+    ]
+  }
+}

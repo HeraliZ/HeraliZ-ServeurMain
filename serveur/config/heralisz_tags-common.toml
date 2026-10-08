@@ -1,0 +1,22 @@
+
+#Tags (sprays) HeraliZ
+[tags]
+	#Duree d'un tag pose, en secondes
+	#Range: 5 ~ 600
+	duree_s = 30
+	#Delai minimal entre deux tags d'un meme joueur, en secondes
+	#Range: 0 ~ 120
+	cadence_s = 3
+	#Portee de pose depuis les yeux, en blocs
+	#Range: 1.0 ~ 16.0
+	portee = 6.0
+	#Nombre maximal de tags actifs sur le serveur (le plus ancien est remplace)
+	#Range: 1 ~ 2000
+	max_actifs = 300
+	#Nombre maximal de tags actifs par joueur
+	#Range: 1 ~ 50
+	max_par_joueur = 3
+	#Distance a laquelle un tag pose est envoye aux autres joueurs, en blocs
+	#Range: 16.0 ~ 512.0
+	distance_diffusion = 96.0
+

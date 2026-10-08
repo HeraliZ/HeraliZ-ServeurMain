@@ -1,0 +1,7 @@
+{
+    "name": "maxstuff.gun.ump9.name",
+    "display": "maxstuff:ump9_display",
+    "data": "maxstuff:ump9_data",
+    "type": "smg",
+    "tooltip": "maxstuff.gun.ump9.desc"
+}

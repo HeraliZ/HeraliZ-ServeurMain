@@ -1,0 +1,10 @@
+{
+  "size": 1,
+  "order": 41,
+  "icon": "heraliz_armory:slot/vest",
+  "add_cosmetic": false,
+  "validators": [
+    "curios:tag",
+    "heraliz_armory:piece"
+  ]
+}

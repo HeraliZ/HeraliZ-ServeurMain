@@ -1,0 +1,351 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/meute.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "haut_torse",
+    "uv": [
+     0,
+     0
+    ],
+    "from": [
+     -4.75,
+     -0.5,
+     -3.0
+    ],
+    "size": [
+     9.5,
+     13.25,
+     6.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ],
+  "right_arm": [
+   {
+    "name": "haut_manche",
+    "uv": [
+     72,
+     0
+    ],
+    "from": [
+     -3.75,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     5.25,
+     11.25,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poignet",
+    "uv": [
+     81,
+     87
+    ],
+    "from": [
+     -3.5,
+     8.5,
+     -2.5
+    ],
+    "size": [
+     5.0,
+     0.75,
+     5.0
+    ],
+    "faces": [
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poche_epaule",
+    "uv": [
+     96,
+     64
+    ],
+    "from": [
+     -3.990234375,
+     -1.490234375,
+     -1.740234375
+    ],
+    "size": [
+     0.25,
+     3.75,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "haut_manche_m",
+    "uv": [
+     93,
+     0
+    ],
+    "from": [
+     -1.5,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     5.25,
+     11.25,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poignet_m",
+    "uv": [
+     101,
+     87
+    ],
+    "from": [
+     -1.5,
+     8.5,
+     -2.5
+    ],
+    "size": [
+     5.0,
+     0.75,
+     5.0
+    ],
+    "faces": [
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poche_epaule_m",
+    "uv": [
+     104,
+     64
+    ],
+    "from": [
+     3.740234375,
+     -1.490234375,
+     -1.740234375
+    ],
+    "size": [
+     0.25,
+     3.75,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ },
+ "slim_parts": {
+  "right_arm": [
+   {
+    "name": "haut_manche_slim",
+    "uv": [
+     0,
+     20
+    ],
+    "from": [
+     -2.75,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     4.25,
+     11.25,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poignet_slim",
+    "uv": [
+     0,
+     94
+    ],
+    "from": [
+     -2.5,
+     8.5,
+     -2.5
+    ],
+    "size": [
+     4.0,
+     0.75,
+     5.0
+    ],
+    "faces": [
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poche_epaule_slim",
+    "uv": [
+     112,
+     64
+    ],
+    "from": [
+     -2.990234375,
+     -1.490234375,
+     -1.740234375
+    ],
+    "size": [
+     0.25,
+     3.75,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "haut_manche_m_slim",
+    "uv": [
+     19,
+     20
+    ],
+    "from": [
+     -1.5,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     4.25,
+     11.25,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poignet_m_slim",
+    "uv": [
+     18,
+     94
+    ],
+    "from": [
+     -1.5,
+     8.5,
+     -2.5
+    ],
+    "size": [
+     4.0,
+     0.75,
+     5.0
+    ],
+    "faces": [
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_poche_epaule_m_slim",
+    "uv": [
+     120,
+     64
+    ],
+    "from": [
+     2.740234375,
+     -1.490234375,
+     -1.740234375
+    ],
+    "size": [
+     0.25,
+     3.75,
+     3.5
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": true
+   }
+  ]
+ }
+}

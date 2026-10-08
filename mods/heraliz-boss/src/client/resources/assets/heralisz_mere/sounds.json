@@ -1,0 +1,129 @@
+{
+ "ruin_mother.bite": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/bite"
+  ]
+ },
+ "ruin_mother.burst": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/burst"
+  ]
+ },
+ "ruin_mother.chitter": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/chitter"
+  ]
+ },
+ "ruin_mother.cocoon": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/cocoon"
+  ]
+ },
+ "ruin_mother.death": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/death"
+  ]
+ },
+ "ruin_mother.hiss": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/hiss"
+  ]
+ },
+ "ruin_mother.hurt": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/hurt_1",
+   "heralisz_mere:ruin_mother/hurt_2"
+  ]
+ },
+ "ruin_mother.land": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/land"
+  ]
+ },
+ "ruin_mother.screech": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/screech_1",
+   "heralisz_mere:ruin_mother/screech_2"
+  ]
+ },
+ "ruin_mother.silk": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/silk"
+  ]
+ },
+ "ruin_mother.spit": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/spit"
+  ]
+ },
+ "ruin_mother.squelch": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/squelch"
+  ]
+ },
+ "ruin_mother.step": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/step_1",
+   "heralisz_mere:ruin_mother/step_2"
+  ]
+ },
+ "ruin_mother.swoop": {
+  "sounds": [
+   "heralisz_mere:ruin_mother/swoop"
+  ]
+ },
+ "dungeon.cocoon_tear": {
+  "sounds": [
+   "heralisz_mere:dungeon/cocoon_tear"
+  ]
+ },
+ "dungeon.egg_pulse": {
+  "sounds": [
+   "heralisz_mere:dungeon/egg_pulse"
+  ]
+ },
+ "dungeon.silk_strain": {
+  "sounds": [
+   "heralisz_mere:dungeon/silk_strain"
+  ]
+ },
+ "dungeon.egg_place": {
+  "sounds": [
+   "heralisz_mere:dungeon/egg_place"
+  ]
+ },
+ "foley.goo": {
+  "sounds": [
+   "heralisz_mere:foley/goo_1",
+   "heralisz_mere:foley/goo_2"
+  ]
+ },
+ "foley.swipe": {
+  "sounds": [
+   "heralisz_mere:foley/swipe_1",
+   "heralisz_mere:foley/swipe_2"
+  ]
+ },
+ "ambience.spider_scream": {
+  "sounds": [
+   "heralisz_mere:ambience/spider_scream_1",
+   "heralisz_mere:ambience/spider_scream_2"
+  ]
+ },
+ "ambience.bed_ruin": {
+  "sounds": [
+   {
+    "name": "heralisz_mere:ambience/bed_ruin",
+    "stream": true
+   }
+  ]
+ },
+ "music.ruin_mother": {
+  "sounds": [
+   {
+    "name": "heralisz_mere:music/ruin_mother",
+    "stream": true
+   }
+  ]
+ }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "heraliz_wonder.gun.wonder_waffle.name",
+  "display": "heraliz_wonder:wonder_waffle_display",
+  "data": "heraliz_wonder:wonder_waffle_data",
+  "type": "rifle",
+  "tooltip": "heraliz_wonder.gun.wonder_waffle.desc"
+}

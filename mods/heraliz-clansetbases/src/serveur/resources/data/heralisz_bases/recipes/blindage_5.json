@@ -1,0 +1,30 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "heralisz_utils"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SCS",
+    "SBS",
+    "SCS"
+  ],
+  "key": {
+    "S": {
+      "item": "heralisz_utils:steel_plate"
+    },
+    "C": {
+      "item": "heralisz_utils:copper_coil"
+    },
+    "B": {
+      "item": "heralisz_bases:blindage_4"
+    }
+  },
+  "result": {
+    "item": "heralisz_bases:blindage_5",
+    "count": 1
+  }
+}

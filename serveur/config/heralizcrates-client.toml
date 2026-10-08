@@ -1,0 +1,21 @@
+
+#Effets visuels des coffres Heraliz
+[visuals]
+	#Faisceau de lumiere vertical pendant une ouverture
+	beams = true
+	#Cercle runique lumineux au sol pendant une ouverture
+	runeCircle = true
+	#Nom du coffre affiche au-dessus (de pres)
+	hologramText = true
+	#Densite des particules (0 = aucune, 1 = normal, 2 = beaucoup)
+	#Range: 0.0 ~ 2.0
+	particles = 1.0
+	#La camera tremble aux impacts quand une caisse s'ouvre pres de vous
+	cameraShake = true
+
+#Performances
+[performance]
+	#Caisses (au repos et pendant l'ouverture) envoyees une seule fois a la carte graphique (tres rapide).
+	#Desactive automatiquement avec un pack de shaders. Mettre false en cas de souci d'affichage.
+	staticGpuBuffers = true
+

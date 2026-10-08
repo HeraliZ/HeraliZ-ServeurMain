@@ -1,0 +1,36 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_tache_0"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_tache_0",
+    "y": 90
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_tache_0",
+    "y": 180
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_tache_0",
+    "y": 270
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_tache_1"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_tache_1",
+    "y": 90
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_tache_1",
+    "y": 180
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/beton_tache_1",
+    "y": 270
+   }
+  ]
+ }
+}

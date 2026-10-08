@@ -1,0 +1,57 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:raw_iron"
+      },
+      "count": 19
+    },
+    {
+      "item": {
+        "item": "minecraft:cobblestone"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "item": "minecraft:lava_bucket"
+      },
+      "count": 3
+    },
+    {
+      "item": {
+        "item": "minecraft:black_dye"
+      },
+      "count": 10
+    },
+    {
+      "item": {
+        "item": "minecraft:blue_dye"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "item": "minecraft:lime_dye"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:blue_ice"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "cis:at_rpg_7_lvd"
+  }
+}

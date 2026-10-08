@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/cube_all",
+ "textures": {
+  "all": "heralisz_matchs:block/zombies/giant_mat/vitre_sombre"
+ },
+ "render_type": "minecraft:translucent"
+}

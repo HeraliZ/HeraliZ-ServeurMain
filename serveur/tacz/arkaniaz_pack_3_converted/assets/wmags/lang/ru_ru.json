@@ -1,0 +1,10 @@
+{
+  "pack.wmags.name": "Windowed Magazines Pack",
+  "pack.wmags.desc": "Hell YEAH",
+  "wmags.attachment.wmag_pistols.name": "Магазин с окном на Glock",
+  "wmags.attachment.wmag_smg.name": "Магазин с окном для ПП",
+  "wmags.attachment.wmag_556.name": "Магазин с окном калибра 5.56x45мм",
+  "wmags.attachment.wmag_762.name": "Магазин с окном калибра 7.62x39мм",
+  "wmags.attachment.wmag_12g.name": "Барабанный магазин с окном 12 калибра",
+  "wmags.attachment.wmag_rpk.name": "Магазин с окном на РПК"
+}

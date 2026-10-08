@@ -1,0 +1,34 @@
+{
+ "variants": {
+  "facing=north,lit=false": {
+   "model": "heralisz_mammoth:block/bone_totem"
+  },
+  "facing=north,lit=true": {
+   "model": "heralisz_mammoth:block/bone_totem_on"
+  },
+  "facing=east,lit=false": {
+   "model": "heralisz_mammoth:block/bone_totem",
+   "y": 90
+  },
+  "facing=east,lit=true": {
+   "model": "heralisz_mammoth:block/bone_totem_on",
+   "y": 90
+  },
+  "facing=south,lit=false": {
+   "model": "heralisz_mammoth:block/bone_totem",
+   "y": 180
+  },
+  "facing=south,lit=true": {
+   "model": "heralisz_mammoth:block/bone_totem_on",
+   "y": 180
+  },
+  "facing=west,lit=false": {
+   "model": "heralisz_mammoth:block/bone_totem",
+   "y": 270
+  },
+  "facing=west,lit=true": {
+   "model": "heralisz_mammoth:block/bone_totem_on",
+   "y": 270
+  }
+ }
+}

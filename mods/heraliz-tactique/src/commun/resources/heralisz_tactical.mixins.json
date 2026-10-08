@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heralisz.tactical.mixin.common",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "heraliz_tactique-commun.refmap.json",
+  "mixins": [
+    "AnvilMenuMixin",
+    "LivingEntityMixin",
+    "PlayerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

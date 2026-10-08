@@ -1,0 +1,27 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "tag": "forge:leather"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:melee",
+    "item": {
+      "item": "heralisz_tactical:melee",
+      "nbt": {
+        "MeleeWeaponId": "heralisz_melee:tac_dagger"
+      }
+    }
+  }
+}

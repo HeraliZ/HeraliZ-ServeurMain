@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.karambit__doppler_black_pearl.name",
+  "display": "heralisz_skins:karambit__doppler_black_pearl_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.karambit__doppler_black_pearl.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 212
+}

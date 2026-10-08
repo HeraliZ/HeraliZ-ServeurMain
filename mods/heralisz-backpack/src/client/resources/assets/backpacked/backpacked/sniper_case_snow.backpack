@@ -1,0 +1,8 @@
+{
+    "shelf_offset": [0, 0, 0],
+    "gui_display": {
+        "rotation": [30, 30, 0],
+        "translation": [-2, 0, 0],
+        "scale": [0.6, 0.6, 0.6]
+    }
+}

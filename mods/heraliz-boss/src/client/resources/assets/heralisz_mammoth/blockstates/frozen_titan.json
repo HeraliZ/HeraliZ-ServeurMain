@@ -1,0 +1,28 @@
+{
+ "variants": {
+  "alert=false,facing=north": {
+   "model": "heralisz_mammoth:block/frozen_titan_particle"
+  },
+  "alert=false,facing=south": {
+   "model": "heralisz_mammoth:block/frozen_titan_particle"
+  },
+  "alert=false,facing=east": {
+   "model": "heralisz_mammoth:block/frozen_titan_particle"
+  },
+  "alert=false,facing=west": {
+   "model": "heralisz_mammoth:block/frozen_titan_particle"
+  },
+  "alert=true,facing=north": {
+   "model": "heralisz_mammoth:block/frozen_titan_particle"
+  },
+  "alert=true,facing=south": {
+   "model": "heralisz_mammoth:block/frozen_titan_particle"
+  },
+  "alert=true,facing=east": {
+   "model": "heralisz_mammoth:block/frozen_titan_particle"
+  },
+  "alert=true,facing=west": {
+   "model": "heralisz_mammoth:block/frozen_titan_particle"
+  }
+ }
+}

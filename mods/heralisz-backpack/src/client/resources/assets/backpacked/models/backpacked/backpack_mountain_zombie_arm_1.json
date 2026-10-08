@@ -1,0 +1,81 @@
+{
+ "credit": "HeralisZ",
+ "texture_size": [
+  256,
+  256
+ ],
+ "textures": {
+  "zombie": "backpacked:backpack/backpack_mountain_zombie",
+  "particle": "backpacked:backpack/backpack_mountain_zombie"
+ },
+ "elements": [
+  {
+   "from": [
+    12.4,
+    5.0,
+    10.5
+   ],
+   "to": [
+    15.4,
+    8.0,
+    18.5
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      9.0,
+      1.0,
+      9.375,
+      1.375
+     ],
+     "texture": "#zombie"
+    },
+    "north": {
+     "uv": [
+      10.375,
+      1.0,
+      10.75,
+      1.375
+     ],
+     "texture": "#zombie"
+    },
+    "east": {
+     "uv": [
+      9.375,
+      1.0,
+      10.375,
+      1.375
+     ],
+     "texture": "#zombie"
+    },
+    "west": {
+     "uv": [
+      8.0,
+      1.0,
+      9.0,
+      1.375
+     ],
+     "texture": "#zombie"
+    },
+    "up": {
+     "uv": [
+      9.0,
+      0.0,
+      9.375,
+      1.0
+     ],
+     "texture": "#zombie"
+    },
+    "down": {
+     "uv": [
+      9.375,
+      0.0,
+      9.75,
+      1.0
+     ],
+     "texture": "#zombie"
+    }
+   }
+  }
+ ]
+}

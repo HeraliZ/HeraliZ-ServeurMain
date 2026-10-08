@@ -1,0 +1,11 @@
+{
+  "nvg_hum": {
+    "sounds": [
+      {
+        "name": "heraliz_armory:nvg_hum",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.heraliz_armory.nvg_hum"
+  }
+}

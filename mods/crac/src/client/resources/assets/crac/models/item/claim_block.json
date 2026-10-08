@@ -1,0 +1,20 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "crac:block/claim_block"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "crac:item/claim_block"
+      }
+    },
+    "fixed": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "crac:item/claim_block"
+      }
+    }
+  }
+}

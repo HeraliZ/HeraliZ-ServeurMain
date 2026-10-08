@@ -1,0 +1,39 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "minecraft:nether_wart"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "minecraft:blaze_powder"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "minecraft:sugar"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "minecraft:glass_bottle"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "group": "heralisz_tactical:consumable",
+    "item": {
+      "item": "heralisz_tactical:consumable",
+      "nbt": {
+        "ConsumableId": "heralisz_heal:ibuprofen"
+      }
+    }
+  }
+}

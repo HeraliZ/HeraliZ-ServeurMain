@@ -1,0 +1,40 @@
+{
+	"credit": "Model by MrCrayfish (https://x.com/MrCrayfish) using Blockbench. All Rights Reserved.",
+	"textures": {
+		"cardboard_box": "backpacked:backpack/cardboard_box"
+	},
+	"elements": [
+		{
+			"from": [5, 1, 4],
+			"to": [6, 9, 8],
+			"faces": {
+				"north": {"uv": [14, 0, 14.5, 8], "texture": "#cardboard_box"},
+				"up": {"uv": [8.5, 13, 8, 9], "texture": "#cardboard_box"}
+			}
+		},
+		{
+			"from": [4, 1, 4],
+			"to": [5, 2, 8],
+			"faces": {
+				"north": {"uv": [10.5, 8, 10, 9], "texture": "#cardboard_box"},
+				"west": {"uv": [10, 8, 8, 9], "texture": "#cardboard_box"}
+			}
+		},
+		{
+			"from": [10, 1, 4],
+			"to": [11, 9, 8],
+			"faces": {
+				"north": {"uv": [14.5, 0, 14, 8], "texture": "#cardboard_box"},
+				"up": {"uv": [8, 13, 8.5, 9], "texture": "#cardboard_box"}
+			}
+		},
+		{
+			"from": [11, 1, 4],
+			"to": [12, 2, 8],
+			"faces": {
+				"north": {"uv": [10, 8, 10.5, 9], "texture": "#cardboard_box"},
+				"east": {"uv": [8, 8, 10, 9], "texture": "#cardboard_box"}
+			}
+		}
+	]
+}

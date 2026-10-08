@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_cuisiniere"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_cuisiniere"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_cuisiniere"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_cuisiniere"
+  }
+ }
+}

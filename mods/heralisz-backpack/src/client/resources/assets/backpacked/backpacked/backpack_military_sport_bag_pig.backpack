@@ -1,0 +1,429 @@
+{
+ "shelf_offset": [
+  0,
+  0,
+  0
+ ],
+ "gui_display": {
+  "rotation": [
+   30,
+   30,
+   0
+  ],
+  "translation": [
+   -2,
+   4,
+   0
+  ],
+  "scale": [
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ "renderer": [
+  {
+   "type": "minecraft:draw_model",
+   "model": "backpacked:backpacked/backpack_military_sport_bag_pig"
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": -0.44516,
+     "y": -0.1422,
+     "z": 0.3375
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 16,
+       "amplitude": 11,
+       "phase": 0.0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "y": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 22,
+       "amplitude": 7,
+       "phase": 3.0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -18
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": 0.44516,
+     "y": 0.1422,
+     "z": -0.3375
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_military_sport_bag_pig_leg_fl_low"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": -0.33992,
+     "y": 0.11187,
+     "z": 0.3375
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 16,
+       "amplitude": 11,
+       "phase": 2.1
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "y": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 22,
+       "amplitude": 7,
+       "phase": 5.1
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -18
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": 0.33992,
+     "y": -0.11187,
+     "z": -0.3375
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_military_sport_bag_pig_leg_fl_high"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": 0.30549,
+     "y": -0.45313,
+     "z": 0.3375
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 16,
+       "amplitude": 11,
+       "phase": 4.2
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "y": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 22,
+       "amplitude": 7,
+       "phase": 7.2
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -18
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": -0.30549,
+     "y": 0.45313,
+     "z": -0.3375
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_military_sport_bag_pig_leg_hl_low"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": 0.41073,
+     "y": -0.19906,
+     "z": 0.3375
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 16,
+       "amplitude": 11,
+       "phase": 6.3
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "y": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 22,
+       "amplitude": 7,
+       "phase": 9.3
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -18
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": -0.41073,
+     "y": 0.19906,
+     "z": -0.3375
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_military_sport_bag_pig_leg_hl_high"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": -0.90069,
+     "y": 0.43209,
+     "z": 0.21875
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 20,
+       "amplitude": 12,
+       "phase": 0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": 25
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": 0.90069,
+     "y": -0.43209,
+     "z": -0.21875
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_military_sport_bag_pig_ear_l"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": -0.67549,
+     "y": 0.33881,
+     "z": 0.21875
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 20,
+       "amplitude": 12,
+       "phase": 4
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": 25
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": 0.67549,
+     "y": -0.33881,
+     "z": -0.21875
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_military_sport_bag_pig_ear_r"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": -0.87377,
+     "y": -0.02555,
+     "z": 0.45625
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:walk_speed"
+      },
+      "multiplier": -55
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "x": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 26,
+       "amplitude": 14,
+       "phase": 0.0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "z": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 34,
+       "amplitude": 11,
+       "phase": 7
+      }
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": 0.87377,
+     "y": 0.02555,
+     "z": -0.45625
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_military_sport_bag_pig_tongue"
+    }
+   ]
+  },
+  {
+   "type": "minecraft:stack",
+   "functions": [
+    {
+     "type": "minecraft:translate",
+     "x": 0.63131,
+     "y": -0.4325,
+     "z": 0.16875
+    },
+    {
+     "type": "minecraft:rotate",
+     "z": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 12,
+       "amplitude": 16,
+       "phase": 0.0
+      }
+     }
+    },
+    {
+     "type": "minecraft:rotate",
+     "y": {
+      "source": {
+       "type": "backpacked:waveform",
+       "waveform": "sine",
+       "wavelength": 17,
+       "amplitude": 10,
+       "phase": 3
+      }
+     }
+    },
+    {
+     "type": "minecraft:translate",
+     "x": -0.63131,
+     "y": 0.4325,
+     "z": -0.16875
+    },
+    {
+     "type": "minecraft:draw_model",
+     "model": "backpacked:backpacked/backpack_military_sport_bag_pig_tail"
+    }
+   ]
+  }
+ ]
+}

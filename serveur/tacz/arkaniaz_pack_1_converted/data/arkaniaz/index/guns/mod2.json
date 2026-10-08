@@ -1,0 +1,8 @@
+{
+    "name": "arkaniaz.gun.mod2.name",
+    "display": "arkaniaz:mod2_display",
+    "data": "arkaniaz:mod2_data",
+    "tooltip": "arkaniaz.gun.mod2.desc",
+    "type": "rifle",
+    "sort": 1
+}

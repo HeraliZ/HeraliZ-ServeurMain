@@ -1,0 +1,98 @@
+{
+  "cloison": {
+    "sounds": [
+      "heralisz_bases:cloison"
+    ],
+    "subtitle": "subtitles.heralisz_bases.cloison"
+  },
+  "tp_charge": {
+    "sounds": [
+      "heralisz_bases:tp_charge"
+    ],
+    "subtitle": "subtitles.heralisz_bases.tp_charge"
+  },
+  "tp_arrivee": {
+    "sounds": [
+      "heralisz_bases:tp_arrivee"
+    ],
+    "subtitle": "subtitles.heralisz_bases.tp_arrivee"
+  },
+  "refus": {
+    "sounds": [
+      "heralisz_bases:refus"
+    ],
+    "subtitle": "subtitles.heralisz_bases.refus"
+  },
+  "alerte": {
+    "sounds": [
+      "heralisz_bases:alerte"
+    ],
+    "subtitle": "subtitles.heralisz_bases.alerte"
+  },
+  "succes": {
+    "sounds": [
+      "heralisz_bases:succes"
+    ],
+    "subtitle": "subtitles.heralisz_bases.succes"
+  },
+  "coque_pas": {
+    "sounds": [
+      "heralisz_bases:coque_pas"
+    ],
+    "subtitle": "subtitles.heralisz_bases.coque_pas"
+  },
+  "coque_coup": {
+    "sounds": [
+      "heralisz_bases:coque_coup"
+    ],
+    "subtitle": "subtitles.heralisz_bases.coque_coup"
+  },
+  "ui_clic": {
+    "sounds": [
+      "heralisz_bases:ui_clic"
+    ],
+    "subtitle": "subtitles.heralisz_bases.ui_clic"
+  },
+  "ui_ouvrir": {
+    "sounds": [
+      "heralisz_bases:ui_ouvrir"
+    ],
+    "subtitle": "subtitles.heralisz_bases.ui_ouvrir"
+  },
+  "ui_fermer": {
+    "sounds": [
+      "heralisz_bases:ui_fermer"
+    ],
+    "subtitle": "subtitles.heralisz_bases.ui_fermer"
+  },
+  "tp_tic": {
+    "sounds": [
+      "heralisz_bases:tp_tic"
+    ],
+    "subtitle": "subtitles.heralisz_bases.tp_tic"
+  },
+  "blindage_pas": {
+    "sounds": [
+      "heralisz_bases:blindage_pas"
+    ],
+    "subtitle": "subtitles.heralisz_bases.blindage_pas"
+  },
+  "blindage_coup": {
+    "sounds": [
+      "heralisz_bases:blindage_coup"
+    ],
+    "subtitle": "subtitles.heralisz_bases.blindage_coup"
+  },
+  "blindage_fissure": {
+    "sounds": [
+      "heralisz_bases:blindage_fissure"
+    ],
+    "subtitle": "subtitles.heralisz_bases.blindage_fissure"
+  },
+  "blindage_rupture": {
+    "sounds": [
+      "heralisz_bases:blindage_rupture"
+    ],
+    "subtitle": "subtitles.heralisz_bases.blindage_rupture"
+  }
+}

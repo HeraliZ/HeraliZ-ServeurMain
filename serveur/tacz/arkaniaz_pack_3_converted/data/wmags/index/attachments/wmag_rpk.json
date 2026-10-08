@@ -1,0 +1,6 @@
+{
+  "name": "wmags.attachment.wmag_rpk.name",
+  "display": "wmags:wmag_rpk_display",
+  "data": "wmags:wmag_rpk_data",
+  "type": "extended_mag"
+}

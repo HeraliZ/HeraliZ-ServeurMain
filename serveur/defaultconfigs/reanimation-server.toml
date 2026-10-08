@@ -1,0 +1,60 @@
+
+[downed]
+	#Les joueurs tombent au sol au lieu de mourir.
+	enabled = true
+	#Vie au sol (8 = 4 cœurs). Tout dégât reçu au sol peut achever le joueur.
+	#Range: 1.0 ~ 40.0
+	downedHealth = 8.0
+	#Secondes au sol avant de se vider de son sang.
+	#Range: 5 ~ 600
+	bleedOutSeconds = 30
+	#Vitesse de reptation, par rapport au ramper vanilla (1.0 = vanilla, 0 = immobile).
+	#Range: 0.0 ~ 2.0
+	crawlSpeed = 0.7
+	#Un joueur qui se déconnecte au sol meurt (anti déco-combat).
+	#Si false, il est toujours au sol à son retour. Un redémarrage du serveur ne tue jamais.
+	dieOnDisconnect = true
+	#Les monstres arrêtent d'attaquer les joueurs au sol.
+	#false (défaut) : un zombie peut achever un joueur au sol (vraie mort, un seul corps).
+	mobsIgnoreDowned = false
+
+[interaction]
+	#Distance max (en blocs) pour fouiller ou réanimer un joueur au sol.
+	#Range: 1.5 ~ 6.0
+	range = 3.0
+	#Clic droit sur un joueur au sol : ouvre son inventaire.
+	allowSearch = true
+	#Un joueur en train d'être fouillé ne peut plus ramper.
+	searchFreezesTarget = true
+
+[revive]
+	#Durée de la réanimation (Maj + clic droit), en secondes.
+	#Range: 2 ~ 60
+	reviveSeconds = 6
+	#Vie après la réanimation.
+	#Range: 1.0 ~ 40.0
+	reviveHealth = 6.0
+	#Le chrono s'arrête pendant la réanimation.
+	pauseBleedWhileReviving = true
+	#Lenteur et faiblesse après une réanimation, en secondes (0 = aucune).
+	#Range: 0 ~ 120
+	groggySeconds = 8
+
+[execution]
+	#Autorise les exécutions (touche Exécuter, I par défaut, maintenue en regardant un joueur au sol).
+	#Une exécution n'est possible que là où un coup normal du bourreau blesserait la victime (PvP, zones protégées).
+	enabled = true
+	#Distance max (en blocs) pour lancer une exécution.
+	#Range: 1.5 ~ 6.0
+	range = 3.0
+	#Exécutions accessibles à tous les joueurs. Retirez-en une de cette liste pour la vendre :
+	#elle se débloque alors joueur par joueur avec /reanimation execution unlock <joueur> <id>.
+	#Mains nues (menu des exécutions, touche = par défaut) : coup_de_grace, frappe_orbitale, chute_meteore, combo_aerien, arrache_ame
+	#Armes (automatiques quand le bourreau tient l'arme) : karambit, sea_gleam, butterfly, m9, home_run
+	#Finishers : mille_coupes, singularite, courroux_ciel, souffle_dragon, zero_absolu, danse_ombres, main_joker, faille, onde_celeste,
+	#apesanteur, marionnettiste, freestyle_combo, tempete_sakura, tag_final, jugement_runique ; Noël : cadeau_surprise, sucre_d_orge, bonhomme_de_neige
+	freeExecutions = ["coup_de_grace", "frappe_orbitale", "chute_meteore", "combo_aerien", "arrache_ame", "karambit", "sea_gleam", "butterfly", "m9", "home_run"]
+	#Les finishers (et ceux de Noël) sont accessibles à tous. Mettez false pour les vendre un par un
+	#(ils se débloquent alors avec /reanimation execution unlock <joueur> <id>, ou en les ajoutant à freeExecutions).
+	freeFinishers = true
+

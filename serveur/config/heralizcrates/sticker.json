@@ -1,0 +1,395 @@
+{
+  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add sticker <poids> <rarete>. Puis /heraliz reload.",
+  "rewards": [
+    {
+      "item": "heralisz_camo:sticker_ace",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_headshot",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_clutch",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_one_tap",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_no_scope",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_glhf",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_reaper",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_wolf",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_viper",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_boom",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_frag",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_skull_king",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_biohazard",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_radioactive",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_survivor",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_outbreak",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_dead_zone",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_lock_n_load",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_elite",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_phoenix",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_oni",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_kitsune",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_katana",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_volt",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_diamond",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_toxic",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_rage_quit",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_last_hp",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_rng",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_blood_money",
+      "count": 1,
+      "weight": 18,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_wallbang",
+      "count": 1,
+      "weight": 17,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_ggwp",
+      "count": 1,
+      "weight": 17,
+      "rarity": "common"
+    },
+    {
+      "item": "heralisz_camo:sticker_ace_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_headshot_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_clutch_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_one_tap_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_no_scope_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_reaper_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_wolf_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_boom_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_skull_king_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_biohazard_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_phoenix_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_oni_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_kitsune_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_volt_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_diamond_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_ggwp_holo",
+      "count": 1,
+      "weight": 14,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:sticker_ace_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_reaper_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_wolf_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_skull_king_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_phoenix_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_oni_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_katana_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_volt_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_diamond_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_blood_money_foil",
+      "count": 1,
+      "weight": 12,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:sticker_ace_gold",
+      "count": 1,
+      "weight": 7,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:sticker_skull_king_gold",
+      "count": 1,
+      "weight": 7,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:sticker_phoenix_gold",
+      "count": 1,
+      "weight": 7,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:sticker_diamond_gold",
+      "count": 1,
+      "weight": 7,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:sticker_ggwp_gold",
+      "count": 1,
+      "weight": 7,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:sticker_oni_gold",
+      "count": 1,
+      "weight": 7,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:stattrack_module",
+      "count": 1,
+      "weight": 40,
+      "rarity": "epic"
+    }
+  ]
+}

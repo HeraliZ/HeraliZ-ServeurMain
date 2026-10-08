@@ -1,0 +1,147 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "poteau": "heralisz_utils:block/panneau_poteau",
+  "metal": "heralisz_utils:block/panneau_metal",
+  "particle": "heralisz_utils:block/panneau_poteau"
+ },
+ "elements": [
+  {
+   "from": [
+    7.0,
+    0.0,
+    8.5
+   ],
+   "to": [
+    9.5,
+    16.0,
+    11.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      2.5,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "south": {
+     "uv": [
+      4.05,
+      0.0,
+      6.55,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "east": {
+     "uv": [
+      8.1,
+      0.0,
+      10.6,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "west": {
+     "uv": [
+      12.15,
+      0.0,
+      14.65,
+      16.0
+     ],
+     "texture": "#poteau"
+    },
+    "up": {
+     "uv": [
+      1.35,
+      2.25,
+      3.85,
+      4.75
+     ],
+     "texture": "#poteau"
+    },
+    "down": {
+     "uv": [
+      5.4,
+      10.12,
+      7.9,
+      12.62
+     ],
+     "texture": "#poteau"
+    }
+   }
+  },
+  {
+   "from": [
+    6.5,
+    0.0,
+    8.0
+   ],
+   "to": [
+    10.0,
+    1.0,
+    11.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      8.75,
+      6.25,
+      12.25,
+      7.25
+     ],
+     "texture": "#metal"
+    },
+    "south": {
+     "uv": [
+      12.5,
+      15.0,
+      16.0,
+      16.0
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      2.5,
+      7.5,
+      6.0,
+      8.5
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      6.25,
+      0.0,
+      9.75,
+      1.0
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      10.0,
+      7.29,
+      13.5,
+      10.79
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      1.04,
+      3.5,
+      4.54
+     ],
+     "texture": "#metal"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,36 @@
+
+[sujet_n07]
+	#PV « réels » du Sujet N-07 (les dégâts des armes sont ramenés à cette échelle, comme pour tous les boss).
+	#Réglé pour ~5 min à 3-4 joueurs moyens armés.
+	#Range: 500 ~ 10000000
+	virtualHp = 30000
+	#Dégâts max retenus par impact (anti lance-roquettes / sniper one-shot).
+	#Range: 1.0 ~ 10000.0
+	hitCap = 40.0
+	#Au-delà de ces dégâts bruts par seconde, le surplus ne compte qu'à 25 % (anti armes à cadence délirante).
+	#Range: 10.0 ~ 100000.0
+	dpsCap = 900.0
+	#Multiplicateur des dégâts infligés par le boss.
+	#Range: 0.1 ~ 10.0
+	damageMultiplier = 1.0
+	#Délai avant qu'une cuve de confinement relâche un nouveau boss après sa mort.
+	#Range: 0 ~ 10080
+	respawnMinutes = 60
+	#Distance à laquelle un joueur réveille le boss de sa cuve.
+	#Range: 4 ~ 64
+	activationRadius = 18
+	#Distance max à sa cuve : au-delà (ou sans joueur autour), il rentre et se soigne.
+	#Range: 8 ~ 128
+	leashRadius = 34
+
+[groupe]
+	#Jusqu'à ce nombre de joueurs engagés, les PV des boss ne bougent pas (le combat est prévu pour 2 à 6 joueurs).
+	#Range: 1 ~ 100
+	playersBeforeScaling = 6
+	#Au-delà, chaque joueur engagé en plus ajoute cette part de PV (0.15 = +15 %) : contre les raids à 15 joueurs.
+	#Range: 0.0 ~ 2.0
+	hpPerExtraPlayer = 0.15
+	#Durée pendant laquelle la dépouille d'un boss reste sur place (Sujet N-07 : sa statue de trinitite).
+	#Range: 1 ~ 60
+	remainsMinutes = 5
+

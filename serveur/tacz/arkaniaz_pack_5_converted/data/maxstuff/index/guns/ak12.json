@@ -1,0 +1,9 @@
+{
+    "name": "maxstuff.gun.ak12.name",
+    "display": "maxstuff:ak12_display",
+    "data": "maxstuff:ak12_data",
+    "type": "rifle",
+    "item_type": "modern_kinetic",
+    "sort": 1,
+    "tooltip": "maxstuff.gun.ak12.desc"
+}

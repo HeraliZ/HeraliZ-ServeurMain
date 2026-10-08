@@ -1,0 +1,462 @@
+{
+ "dungeon.alarm": {
+  "sounds": [
+   "heralisz_n07:dungeon/alarm"
+  ]
+ },
+ "dungeon.amb_bell": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_bell"
+  ]
+ },
+ "dungeon.amb_chains": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_chains"
+  ]
+ },
+ "dungeon.amb_cough": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_cough"
+  ]
+ },
+ "dungeon.amb_creak": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_creak"
+  ]
+ },
+ "dungeon.amb_drip": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_drip"
+  ]
+ },
+ "dungeon.amb_drone": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_drone"
+  ]
+ },
+ "dungeon.amb_groan": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_groan"
+  ]
+ },
+ "dungeon.amb_ice": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_ice"
+  ]
+ },
+ "dungeon.amb_lava": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_lava"
+  ]
+ },
+ "dungeon.amb_moan": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_moan_1",
+   "heralisz_n07:dungeon/amb_moan_2",
+   "heralisz_n07:dungeon/amb_moan_3"
+  ]
+ },
+ "dungeon.amb_scream": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_scream_1",
+   "heralisz_n07:dungeon/amb_scream_2",
+   "heralisz_n07:dungeon/amb_scream_3"
+  ]
+ },
+ "dungeon.amb_skitter": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_skitter"
+  ]
+ },
+ "dungeon.amb_thump": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_thump"
+  ]
+ },
+ "dungeon.amb_whisper": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_whisper"
+  ]
+ },
+ "dungeon.amb_wind": {
+  "sounds": [
+   "heralisz_n07:dungeon/amb_wind"
+  ]
+ },
+ "dungeon.anvil_strike": {
+  "sounds": [
+   "heralisz_n07:dungeon/anvil_strike_1",
+   "heralisz_n07:dungeon/anvil_strike_2",
+   "heralisz_n07:dungeon/anvil_strike_3"
+  ]
+ },
+ "dungeon.arc_zap": {
+  "sounds": [
+   "heralisz_n07:dungeon/arc_zap_1",
+   "heralisz_n07:dungeon/arc_zap_2",
+   "heralisz_n07:dungeon/arc_zap_3"
+  ]
+ },
+ "dungeon.bell_toll": {
+  "sounds": [
+   "heralisz_n07:dungeon/bell_toll"
+  ]
+ },
+ "dungeon.charge_arm": {
+  "sounds": [
+   "heralisz_n07:dungeon/charge_arm"
+  ]
+ },
+ "dungeon.cocoon_tear": {
+  "sounds": [
+   "heralisz_n07:dungeon/cocoon_tear"
+  ]
+ },
+ "dungeon.coil_charge": {
+  "sounds": [
+   "heralisz_n07:dungeon/coil_charge"
+  ]
+ },
+ "dungeon.core_place": {
+  "sounds": [
+   "heralisz_n07:dungeon/core_place"
+  ]
+ },
+ "dungeon.deny": {
+  "sounds": [
+   "heralisz_n07:dungeon/deny"
+  ]
+ },
+ "dungeon.drill_spin": {
+  "sounds": [
+   "heralisz_n07:dungeon/drill_spin"
+  ]
+ },
+ "dungeon.egg_place": {
+  "sounds": [
+   "heralisz_n07:dungeon/egg_place"
+  ]
+ },
+ "dungeon.egg_pulse": {
+  "sounds": [
+   "heralisz_n07:dungeon/egg_pulse"
+  ]
+ },
+ "dungeon.ember_drop": {
+  "sounds": [
+   "heralisz_n07:dungeon/ember_drop"
+  ]
+ },
+ "dungeon.fire_run": {
+  "sounds": [
+   "heralisz_n07:dungeon/fire_run"
+  ]
+ },
+ "dungeon.forest_horn": {
+  "sounds": [
+   "heralisz_n07:dungeon/forest_horn"
+  ]
+ },
+ "dungeon.forge_roar": {
+  "sounds": [
+   "heralisz_n07:dungeon/forge_roar"
+  ]
+ },
+ "dungeon.glass_burst": {
+  "sounds": [
+   "heralisz_n07:dungeon/glass_burst"
+  ]
+ },
+ "dungeon.ice_crack": {
+  "sounds": [
+   "heralisz_n07:dungeon/ice_crack_1",
+   "heralisz_n07:dungeon/ice_crack_2",
+   "heralisz_n07:dungeon/ice_crack_3"
+  ]
+ },
+ "dungeon.ice_shatter": {
+  "sounds": [
+   "heralisz_n07:dungeon/ice_shatter"
+  ]
+ },
+ "dungeon.ignite": {
+  "sounds": [
+   "heralisz_n07:dungeon/ignite"
+  ]
+ },
+ "dungeon.key_beep": {
+  "sounds": [
+   "heralisz_n07:dungeon/key_beep"
+  ]
+ },
+ "dungeon.key_denied": {
+  "sounds": [
+   "heralisz_n07:dungeon/key_denied"
+  ]
+ },
+ "dungeon.key_granted": {
+  "sounds": [
+   "heralisz_n07:dungeon/key_granted"
+  ]
+ },
+ "dungeon.key_swipe": {
+  "sounds": [
+   "heralisz_n07:dungeon/key_swipe"
+  ]
+ },
+ "dungeon.lamp_buzz": {
+  "sounds": [
+   "heralisz_n07:dungeon/lamp_buzz_1",
+   "heralisz_n07:dungeon/lamp_buzz_2",
+   "heralisz_n07:dungeon/lamp_buzz_3"
+  ]
+ },
+ "dungeon.lava_surge": {
+  "sounds": [
+   "heralisz_n07:dungeon/lava_surge"
+  ]
+ },
+ "dungeon.plant": {
+  "sounds": [
+   "heralisz_n07:dungeon/plant"
+  ]
+ },
+ "dungeon.pour": {
+  "sounds": [
+   "heralisz_n07:dungeon/pour"
+  ]
+ },
+ "dungeon.roots": {
+  "sounds": [
+   "heralisz_n07:dungeon/roots"
+  ]
+ },
+ "dungeon.runes": {
+  "sounds": [
+   "heralisz_n07:dungeon/runes"
+  ]
+ },
+ "dungeon.silk_strain": {
+  "sounds": [
+   "heralisz_n07:dungeon/silk_strain"
+  ]
+ },
+ "dungeon.spark": {
+  "sounds": [
+   "heralisz_n07:dungeon/spark_1",
+   "heralisz_n07:dungeon/spark_2",
+   "heralisz_n07:dungeon/spark_3"
+  ]
+ },
+ "dungeon.steam": {
+  "sounds": [
+   "heralisz_n07:dungeon/steam"
+  ]
+ },
+ "dungeon.swarm": {
+  "sounds": [
+   "heralisz_n07:dungeon/swarm"
+  ]
+ },
+ "dungeon.tank_refill": {
+  "sounds": [
+   "heralisz_n07:dungeon/tank_refill"
+  ]
+ },
+ "dungeon.valve_mount": {
+  "sounds": [
+   "heralisz_n07:dungeon/valve_mount"
+  ]
+ },
+ "dungeon.valve_turn": {
+  "sounds": [
+   "heralisz_n07:dungeon/valve_turn"
+  ]
+ },
+ "dungeon.vat": {
+  "sounds": [
+   "heralisz_n07:dungeon/vat"
+  ]
+ },
+ "dungeon.vent": {
+  "sounds": [
+   "heralisz_n07:dungeon/vent"
+  ]
+ },
+ "music.sujet_n07": {
+  "sounds": [
+   {
+    "name": "heralisz_n07:music/sujet_n07",
+    "stream": true
+   }
+  ]
+ },
+ "sujet_n07.alarm": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/alarm"
+  ]
+ },
+ "sujet_n07.arc": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/arc"
+  ]
+ },
+ "sujet_n07.beam_charge": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/beam_charge"
+  ]
+ },
+ "sujet_n07.beam_fire": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/beam_fire"
+  ]
+ },
+ "sujet_n07.bones": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/bones"
+  ]
+ },
+ "sujet_n07.breath": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/breath"
+  ]
+ },
+ "sujet_n07.bubble": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/bubble"
+  ]
+ },
+ "sujet_n07.charge_up": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/charge_up"
+  ]
+ },
+ "sujet_n07.crack": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/crack"
+  ]
+ },
+ "sujet_n07.death": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/death"
+  ]
+ },
+ "sujet_n07.geiger": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/geiger"
+  ]
+ },
+ "sujet_n07.geyser": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/geyser"
+  ]
+ },
+ "sujet_n07.growl": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/growl"
+  ]
+ },
+ "sujet_n07.hurt": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/hurt_1",
+   "heralisz_n07:sujet_n07/hurt_2"
+  ]
+ },
+ "sujet_n07.isotope": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/isotope"
+  ]
+ },
+ "sujet_n07.isotope_boom": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/isotope_boom"
+  ]
+ },
+ "sujet_n07.mask_rip": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/mask_rip"
+  ]
+ },
+ "sujet_n07.meltdown": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/meltdown"
+  ]
+ },
+ "sujet_n07.mortar": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/mortar"
+  ]
+ },
+ "sujet_n07.pulse": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/pulse"
+  ]
+ },
+ "sujet_n07.rip": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/rip"
+  ]
+ },
+ "sujet_n07.rip_flesh": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/rip_flesh"
+  ]
+ },
+ "sujet_n07.roar": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/roar_1",
+   "heralisz_n07:sujet_n07/roar_2"
+  ]
+ },
+ "sujet_n07.roar_raw": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/roar_raw"
+  ]
+ },
+ "sujet_n07.slam": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/slam"
+  ]
+ },
+ "sujet_n07.splash": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/splash"
+  ]
+ },
+ "sujet_n07.spray": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/spray"
+  ]
+ },
+ "sujet_n07.stab": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/stab"
+  ]
+ },
+ "sujet_n07.step": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/step_1",
+   "heralisz_n07:sujet_n07/step_2"
+  ]
+ },
+ "sujet_n07.swipe": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/swipe"
+  ]
+ },
+ "sujet_n07.throw": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/throw"
+  ]
+ },
+ "sujet_n07.vat_burst": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/vat_burst"
+  ]
+ },
+ "sujet_n07.vitrify": {
+  "sounds": [
+   "heralisz_n07:sujet_n07/vitrify"
+  ]
+ }
+}

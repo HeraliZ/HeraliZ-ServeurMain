@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "heralisz_mere:block/nest_hanging_cocoon"}, "facing=east": {"model": "heralisz_mere:block/nest_hanging_cocoon", "y": 90}, "facing=south": {"model": "heralisz_mere:block/nest_hanging_cocoon", "y": 180}, "facing=west": {"model": "heralisz_mere:block/nest_hanging_cocoon", "y": 270}}}

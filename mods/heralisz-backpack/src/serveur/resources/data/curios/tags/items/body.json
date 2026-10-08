@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "geckolib:ghillie_autumn",
+    "geckolib:ghillie_snow",
+    "geckolib:ghillie_black",
+    "geckolib:ghillie_forest",
+    "geckolib:ghillie_summer"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "item.heralisz_heal.carfak",
+  "tooltip": "item.heralisz_heal.carfak.desc",
+  "base_item": "heralisz_tactical:consumable",
+  "data": {
+    "use_duration": 121,
+    "cooldown": 80,
+    "cooldown_category": "heralisz_tactical:medical",
+    "stack_size": 1,
+    "max_durability": 0,
+    "draw_time": 12,
+    "put_away_time": 6,
+    "heal": 12.0,
+    "remove_effects": [
+      "geckolib:bleeding"
+    ],
+    "use_mode": "toggle",
+    "effects": [
+      {
+        "id": "minecraft:regeneration",
+        "duration": 100,
+        "amplifier": 0,
+        "chance": 1.0,
+        "ambient": false,
+        "visible": true,
+        "show_icon": true
+      }
+    ]
+  }
+}

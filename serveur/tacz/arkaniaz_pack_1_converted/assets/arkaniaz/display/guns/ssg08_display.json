@@ -1,0 +1,40 @@
+{
+  "model": "arkaniaz:gun/ssg08_geo",
+  "texture": "arkaniaz:gun/uv/ssg08",
+  "slot": "arkaniaz:gun/slot/ssg08",
+  "hud": "arkaniaz:gun/hud/ssg08",
+  "animation": "arkaniaz:ssg08",
+  "use_default_animation": "rifle",
+  "third_person_animation": "default",
+  "transform": {
+    "scale": {
+      "thirdperson": [0.6, 0.6, 0.6],
+      "ground": [0.6, 0.6, 0.6],
+      "fixed": [1.0, 1.0, 1.0]
+    }
+  },
+  "muzzle_flash": {
+    "texture": "tacz:flash/common_muzzle_flash",
+    "scale": 1
+  },
+  "shell": {
+    "initial_velocity": [5, 2, 1],
+    "random_velocity": [1, 1, 0.25],
+    "acceleration": [0.0, -10, 0.0],
+    "angular_velocity": [360, -1200, 90],
+    "living_time": 1.0
+  },
+  "sounds": {
+    "shoot": "arkaniaz:ssg08/ssg08_shoot",
+    "shoot_3p": "arkaniaz:ssg08/ssg08_shoot_3p",
+    "silence": "arkaniaz:ssg08/ssg08_silence",
+    "silence_3p": "arkaniaz:ssg08/ssg08_silence_3p",
+    "draw": "arkaniaz:ssg08/ssg08_draw",
+    "put_away": "arkaniaz:ssg08/ssg08_put_away",
+    "reload_empty": "arkaniaz:ssg08/ssg08_reload_empty",
+    "reload_tactical": "arkaniaz:ssg08/ssg08_reload_tactical",
+    "inspect": "arkaniaz:ssg08/ssg08_inspect",
+    "bolt": "arkaniaz:ssg08/ssg08_bolt",
+    "inspect_empty": "arkaniaz:ssg08/ssg08_inspect_empty"
+  }
+}

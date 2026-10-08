@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_fut_brule"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_fut_brule"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_fut_brule"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_fut_brule"
+  }
+ }
+}

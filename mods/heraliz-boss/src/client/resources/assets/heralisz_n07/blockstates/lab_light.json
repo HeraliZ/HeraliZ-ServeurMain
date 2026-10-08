@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "lit=true": {
+   "model": "heralisz_n07:block/lab_light"
+  },
+  "lit=false": {
+   "model": "heralisz_n07:block/lab_light_off"
+  }
+ }
+}

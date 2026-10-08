@@ -1,0 +1,11 @@
+
+[regles]
+	#Dimensions sans aucun vehicule (matchs ClashWar/Duels, mode Zombies, bunkers des bases) :
+	#on ne peut pas y poser de vehicule et un vehicule qui y arrive est retire (rendu en objet).
+	dimensions_interdites = ["heralisz_matchs:arenes", "heralisz_matchs:zombies", "heralisz_bases:bunkers"]
+	#Refuser de sortir (poser) un vehicule pendant le tag de combat (cle heralisz:combat_jusqua de HeraliZ Matchs).
+	refus_en_combat = true
+	#Les explosions de vehicules ne cassent aucun bloc (bases, bunkers) : force canDestroyBlock et
+	#explosionDropBlock a false dans la config de Limitless Vehicle.
+	proteger_blocs = true
+

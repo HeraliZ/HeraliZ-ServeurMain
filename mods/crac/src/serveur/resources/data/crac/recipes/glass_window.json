@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "GGG",
+    "GIG",
+    "GGG"
+  ],
+  "key": {
+    "G": { "item": "minecraft:glass" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "result": { "item": "crac:glass_window", "count": 4 }
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:ladder",
+    "minecraft:scaffolding",
+    "minecraft:vine",
+    "#minecraft:wooden_trapdoors"
+  ]
+}

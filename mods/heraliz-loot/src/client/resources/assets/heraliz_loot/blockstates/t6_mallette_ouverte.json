@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/t6_mallette_ouverte"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/t6_mallette_ouverte",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/t6_mallette_ouverte",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/t6_mallette_ouverte",
+   "y": 270
+  }
+ }
+}

@@ -1,0 +1,40 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''${mod_description}'''
+
+[[dependencies.${mod_id}]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# TaCZ : les armes elles-memes (gunpack heraliz_wonder). Facultatif : sans TaCZ le mod ne fait rien.
+[[dependencies.${mod_id}]]
+    modId="tacz"
+    mandatory=false
+    versionRange="[1.1,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# HeraliZ Matchs (mode zombies) : lu par reflexion douce (partie en cours). Facultatif.
+[[dependencies.${mod_id}]]
+    modId="heralisz_matchs"
+    mandatory=false
+    versionRange="[0.1.5,)"
+    ordering="AFTER"
+    side="BOTH"

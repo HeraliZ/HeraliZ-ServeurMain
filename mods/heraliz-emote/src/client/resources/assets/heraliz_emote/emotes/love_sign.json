@@ -1,0 +1,155 @@
+{
+ "name": "Je t'aime",
+ "author": "Heraliz",
+ "description": "On brandit une grande pancarte en forme de cœur en se balançant. Plein d'amour !",
+ "uuid": "3f567c10-6a95-5222-aa57-786a6fcf6366",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 27,
+  "stopTick": 28,
+  "isLoop": true,
+  "returnTick": 4,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": 0.05,
+     "roll": 6.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -4.0,
+     "roll": -10.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -150.0,
+     "roll": -2.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -30.0,
+     "roll": -20.0
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": -5.92
+    }
+   },
+   {
+    "tick": 4,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": -14.23
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "body": {
+     "x": -0.05,
+     "roll": -6.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -4.0,
+     "roll": 10.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -150.0,
+     "roll": -18.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -30.0,
+     "roll": -20.0
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "roll": 14.23
+    }
+   },
+   {
+    "tick": 16,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "roll": 5.92
+    }
+   }
+  ]
+ }
+}

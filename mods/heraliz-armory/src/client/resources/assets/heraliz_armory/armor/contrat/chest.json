@@ -1,0 +1,255 @@
+{
+ "texture": "heraliz_armory:textures/models/armor/contrat.png",
+ "texture_size": [
+  128,
+  128
+ ],
+ "parts": {
+  "body": [
+   {
+    "name": "haut_torse",
+    "uv": [
+     0,
+     0
+    ],
+    "from": [
+     -4.75,
+     -0.5,
+     -3.0
+    ],
+    "size": [
+     9.5,
+     13.25,
+     6.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ],
+  "right_arm": [
+   {
+    "name": "haut_manche",
+    "uv": [
+     106,
+     0
+    ],
+    "from": [
+     -3.75,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     5.25,
+     5.5,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_revers",
+    "uv": [
+     95,
+     48
+    ],
+    "from": [
+     -3.865234375,
+     2.509765625,
+     -2.615234375
+    ],
+    "size": [
+     5.5,
+     1.25,
+     5.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "haut_manche_m",
+    "uv": [
+     0,
+     20
+    ],
+    "from": [
+     -1.5,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     5.25,
+     5.5,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_revers_m",
+    "uv": [
+     0,
+     56
+    ],
+    "from": [
+     -1.634765625,
+     2.509765625,
+     -2.615234375
+    ],
+    "size": [
+     5.5,
+     1.25,
+     5.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ },
+ "slim_parts": {
+  "right_arm": [
+   {
+    "name": "haut_manche_slim",
+    "uv": [
+     21,
+     20
+    ],
+    "from": [
+     -2.75,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     4.25,
+     5.5,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_revers_slim",
+    "uv": [
+     22,
+     56
+    ],
+    "from": [
+     -2.865234375,
+     2.509765625,
+     -2.615234375
+    ],
+    "size": [
+     4.5,
+     1.25,
+     5.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "WEST",
+     "EAST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ],
+  "left_arm": [
+   {
+    "name": "haut_manche_m_slim",
+    "uv": [
+     40,
+     20
+    ],
+    "from": [
+     -1.5,
+     -2.75,
+     -2.5
+    ],
+    "size": [
+     4.25,
+     5.5,
+     5.0
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   },
+   {
+    "name": "haut_revers_m_slim",
+    "uv": [
+     42,
+     56
+    ],
+    "from": [
+     -1.634765625,
+     2.509765625,
+     -2.615234375
+    ],
+    "size": [
+     4.5,
+     1.25,
+     5.25
+    ],
+    "faces": [
+     "DOWN",
+     "UP",
+     "EAST",
+     "WEST",
+     "NORTH",
+     "SOUTH"
+    ],
+    "detail": false
+   }
+  ]
+ }
+}

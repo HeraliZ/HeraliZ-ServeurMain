@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "type=bottom": {
+   "model": "heralisz_matchs:block/zombies/giant_mat/paves_slab"
+  },
+  "type=top": {
+   "model": "heralisz_matchs:block/zombies/giant_mat/paves_slab_top"
+  },
+  "type=double": {
+   "model": "heralisz_matchs:block/zombies/giant_mat/paves_0"
+  }
+ }
+}

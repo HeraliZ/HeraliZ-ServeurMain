@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "active=false": {
+   "model": "heralisz_n07:block/teleporter_935"
+  },
+  "active=true": {
+   "model": "heralisz_n07:block/teleporter_935_on"
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t1_meuble_tv"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t1_meuble_tv"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t1_meuble_tv"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t1_meuble_tv"
+  }
+ }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "item.heralisz_heal.vaseline",
+  "tooltip": "item.heralisz_heal.vaseline.desc",
+  "base_item": "heralisz_tactical:consumable",
+  "data": {
+    "use_duration": 57,
+    "cooldown": 60,
+    "cooldown_category": "heralisz_tactical:medical",
+    "stack_size": 1,
+    "max_durability": 6,
+    "durability_damage": 1,
+    "draw_time": 14,
+    "put_away_time": 13,
+    "heal": 1.0,
+    "effects": [
+      {
+        "id": "minecraft:absorption",
+        "duration": 400,
+        "amplifier": 0,
+        "chance": 1.0
+      }
+    ],
+    "use_mode": "toggle"
+  }
+}

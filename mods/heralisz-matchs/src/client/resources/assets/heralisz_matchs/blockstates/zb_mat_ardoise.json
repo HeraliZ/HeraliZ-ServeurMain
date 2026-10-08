@@ -1,0 +1,12 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/ardoise_0"
+   },
+   {
+    "model": "heralisz_matchs:block/zombies/giant_mat/ardoise_1"
+   }
+  ]
+ }
+}

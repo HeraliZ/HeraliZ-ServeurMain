@@ -1,0 +1,9 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "vide": "heralisz_utils:block/panneau_metal",
+  "particle": "heralisz_utils:block/panneau_metal"
+ },
+ "elements": [],
+ "render_type": "minecraft:cutout"
+}

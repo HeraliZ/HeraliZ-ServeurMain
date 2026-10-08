@@ -1,0 +1,141 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "textures": {
+      "sheet": "crac:item/plan/sheet",
+      "particle": "crac:item/building_plan"
+    },
+    "elements": [
+      {
+        "from": [
+          0,
+          0,
+          7.8
+        ],
+        "to": [
+          16,
+          12,
+          8.2
+        ],
+        "faces": {
+          "north": {
+            "uv": [
+              16,
+              0,
+              0,
+              12
+            ],
+            "texture": "#sheet"
+          },
+          "south": {
+            "uv": [
+              0,
+              0,
+              16,
+              12
+            ],
+            "texture": "#sheet"
+          },
+          "up": {
+            "uv": [
+              0,
+              0,
+              16,
+              0.4
+            ],
+            "texture": "#sheet"
+          },
+          "down": {
+            "uv": [
+              0,
+              11.6,
+              16,
+              12
+            ],
+            "texture": "#sheet"
+          },
+          "east": {
+            "uv": [
+              0,
+              0,
+              0.4,
+              12
+            ],
+            "texture": "#sheet"
+          },
+          "west": {
+            "uv": [
+              15.6,
+              0,
+              16,
+              12
+            ],
+            "texture": "#sheet"
+          }
+        }
+      }
+    ],
+    "display": {
+      "thirdperson_righthand": {
+        "rotation": [
+          -75,
+          180,
+          0
+        ],
+        "translation": [
+          -4,
+          2,
+          -2
+        ],
+        "scale": [
+          1.1,
+          1.1,
+          1.1
+        ]
+      },
+      "thirdperson_lefthand": {
+        "rotation": [
+          -75,
+          180,
+          0
+        ],
+        "translation": [
+          4,
+          2,
+          -2
+        ],
+        "scale": [
+          1.1,
+          1.1,
+          1.1
+        ]
+      }
+    }
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "crac:item/building_plan"
+      }
+    },
+    "ground": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "crac:item/building_plan"
+      }
+    },
+    "fixed": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "crac:item/building_plan"
+      }
+    },
+    "head": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "crac:item/building_plan"
+      }
+    }
+  }
+}

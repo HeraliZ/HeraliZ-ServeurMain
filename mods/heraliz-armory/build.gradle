@@ -1,0 +1,143 @@
+// HeraliZ Armurerie (heraliz_armory) séparée client / serveur (docs/METHODE_CLIENT_SERVEUR.md). Pas de fusion : un seul mod,
+// son modId, sa classe @Mod ; trois ensembles de sources :
+//   commun  (sourceSets.main, src/commun)  : registres, config, catalogue, objets réduits (infobulles, règle des combinaisons
+//                                            pour la prédiction du client), mannequin (état), menu, paquets, mixins communs ;
+//   client  (src/client)                   : modèles en relief, rendus GeckoLib, superpositions, bras 1re personne, nages,
+//                                            HUD de la bouteille, vision nocturne, panneau Protection, écrans, assets/ ;
+//   serveur (src/serveur)                  : protections et dégâts, gaz / radiation / gel, garde-fous des combinaisons,
+//                                            bouteille de plongée, lunettes, remappage heralisz_armor, /armory, mannequin, data/.
+// Trois jars réobfusqués : -client (commun + client), -serveur (commun + serveur), -complet (tout, pour le solo).
+// Construire : PYTHONIOENCODING=utf-8 python outils/lancer.py build mods/heraliz-armory build livrer
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = jar_name
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    // Aucune configuration de lancement : pas de client ni de serveur de dev, le propriétaire teste lui-même en jeu.
+}
+
+sourceSets {
+    main {                                   // = « commun »
+        java.srcDirs = ['src/commun/java']
+        resources.srcDirs = ['src/commun/resources']
+    }
+    client {
+        java.srcDirs = ['src/client/java']
+        resources.srcDirs = ['src/client/resources']
+        compileClasspath += main.output + main.compileClasspath
+    }
+    serveur {
+        java.srcDirs = ['src/serveur/java']
+        resources.srcDirs = ['src/serveur/resources']
+        compileClasspath += main.output + main.compileClasspath
+    }
+}
+
+// Mixins : comme l'original, aucune table de correspondance (remap = false, noms vanilla et SRG cités tous les deux).
+//   commun (src/commun/resources/heraliz_armory.mixins.json : ancien gestionnaire ArkaniaZ coupé, slots d'armure) -> 3 jars ;
+//   client (src/client/resources/heraliz_armory_client.mixins.json : nages) -> -client et -complet.
+
+repositories {
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // Curios (slots Visage, Gilet, Gants, Genouilleres) : obligatoire en jeu
+    compileOnly fg.deobf("blank:curios-forge:5.14.1-${libs_suffixe}")
+    // TaCZ (tirs a la tete) : facultatif en jeu
+    compileOnly fg.deobf("blank:tacz-1.20.1:1.1.8-hotfix-${libs_suffixe}")
+    // GeckoLib = geckolib222 4.4.7 du modpack : compilé contre lui, JAMAIS embarqué (aucun jar-in-jar)
+    compileOnly fg.deobf("blank:geckolib222:4.4.7-${libs_suffixe}")
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var props = [minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+                 forge_version: forge_version, forge_version_range: forge_version_range, loader_version_range: loader_version_range,
+                 mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+                 mod_authors: mod_authors, mod_description: mod_description]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand props + [project: project]
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:-removal', '-Xlint:-deprecation', '-Xmaxerrs', '1000']
+}
+
+// ------------------------------------------------------------------ les trois jars
+def manifeste = [
+        'Specification-Title'     : mod_id,
+        'Specification-Vendor'    : mod_authors,
+        'Specification-Version'   : '1',
+        'Implementation-Title'    : project.name,
+        'Implementation-Version'  : mod_version,
+        'Implementation-Vendor'   : mod_authors,
+]
+// Configs de mixins : communes (src/commun/resources) dans les trois jars, client (src/client/resources) dans -client et -complet.
+def mixinsCommun = fileTree('src/commun/resources') { include '*.mixins.json' }.files*.name.sort()
+def mixinsClient = fileTree('src/client/resources') { include '*.mixins.json' }.files*.name.sort()
+def manifesteServeur = manifeste + (mixinsCommun ? ['MixinConfigs': mixinsCommun.join(',')] : [:])
+def manifesteClient = manifeste + ((mixinsCommun + mixinsClient) ? ['MixinConfigs': (mixinsCommun + mixinsClient).join(',')] : [:])
+
+// -complet : commun + client + serveur (solo, profil de test)
+tasks.named('jar', Jar).configure {
+    archiveClassifier = 'complet'
+    from sourceSets.client.output
+    from sourceSets.serveur.output
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(manifesteClient) }
+    finalizedBy 'reobfJar'
+}
+
+// -client : commun + client + assets (pour les joueurs)
+tasks.register('clientJar', Jar) {
+    group = 'build'
+    archiveClassifier = 'client'
+    from sourceSets.main.output
+    from sourceSets.client.output
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(manifesteClient) }
+    finalizedBy 'reobfClientJar'
+}
+
+// -serveur : commun + serveur + data (pour le serveur) : mixins communs seulement
+tasks.register('serveurJar', Jar) {
+    group = 'build'
+    archiveClassifier = 'serveur'
+    from sourceSets.main.output
+    from sourceSets.serveur.output
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(manifesteServeur) }
+    finalizedBy 'reobfServeurJar'
+}
+
+// une tâche reobf<Nom> par jar (sinon le jar garde les noms de développement et plante au chargement)
+reobf {
+    create('clientJar')
+    create('serveurJar')
+}
+
+tasks.named('build').configure { dependsOn 'clientJar', 'serveurJar' }
+
+// Copie des trois jars réobfusqués dans dist/fusion/
+tasks.register('livrer', Copy) {
+    group = 'build'
+    dependsOn 'reobfJar', 'reobfClientJar', 'reobfServeurJar'
+    from(layout.buildDirectory.dir('libs')) { include "${jar_name}-${mod_version}-complet.jar", "${jar_name}-${mod_version}-client.jar", "${jar_name}-${mod_version}-serveur.jar" }
+    into rootProject.file('../../dist/fusion')
+}

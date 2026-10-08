@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heralisz_n07:block/graffiti_face"
+  },
+  "facing=east": {
+   "model": "heralisz_n07:block/graffiti_face",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heralisz_n07:block/graffiti_face",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heralisz_n07:block/graffiti_face",
+   "y": 270
+  }
+ }
+}

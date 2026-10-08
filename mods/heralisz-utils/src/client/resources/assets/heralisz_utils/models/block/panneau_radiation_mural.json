@@ -1,0 +1,79 @@
+{
+ "ambientocclusion": false,
+ "textures": {
+  "face": "heralisz_utils:block/panneau_radiation",
+  "metal": "heralisz_utils:block/panneau_metal",
+  "particle": "heralisz_utils:block/panneau_radiation"
+ },
+ "elements": [
+  {
+   "from": [
+    1.0,
+    2.0,
+    15.0
+   ],
+   "to": [
+    15.0,
+    16.0,
+    16.0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#face"
+    },
+    "south": {
+     "uv": [
+      0.6,
+      1.17,
+      14.6,
+      15.17
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      9.0,
+      0.17,
+      10.0,
+      14.17
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      13.5,
+      1.33,
+      14.5,
+      15.33
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      0.2,
+      2.5,
+      14.2,
+      3.5
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      0.8,
+      11.25,
+      14.8,
+      12.25
+     ],
+     "texture": "#metal"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

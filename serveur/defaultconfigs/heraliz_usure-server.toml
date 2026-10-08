@@ -1,0 +1,133 @@
+
+# HeraliZ Usure des armes : reglages du serveur. Ce fichier se modifie a la main (il est relu tout seul
+# quelques secondes apres l'enregistrement) ou en jeu avec /usure config (op 2), qui le reecrit.
+[general]
+    # false = aucune usure nulle part.
+    actif = true
+    # Les armes s'usent aussi en mode creatif.
+    usure_creatif = false
+    # Aucune usure pendant un match (duels, ClashWar, zombies : armes pretees).
+    sans_usure_en_match = true
+    # Petite pastille d'etat sous les munitions (chaque joueur peut aussi la couper).
+    hud_autorise = true
+    # Dimensions ou les armes ne s'usent pas.
+    dimensions_sans_usure = [
+        "heralisz_matchs:arenes",
+        "heralisz_matchs:zombies"
+]
+    # Munitions des armes de corps a corps (couteaux faits en armes TaCZ) : categorie melee.
+    munitions_corps_a_corps = [
+        "arkaniaz:melee_weapon"
+]
+
+# Etats (en % d'etat) : Neuf a partir de seuil_neuf, Bon a partir de seuil_bon, Use a partir de seuil_use,
+# Abime en dessous, Ruine a 0 % (l'arme ne tire plus avant d'etre reparee). Aucun enrayage, aucun malus :
+# l'usure ne change ni les degats ni la precision.
+[etats]
+    seuil_neuf = 90
+    seuil_bon = 65
+    seuil_use = 35
+
+# Valeurs par categorie d'arme.
+# usure_par_tir : % d'etat perdu a chaque tir (0.1 = 1000 tirs de 100 % a 0 %).
+# pluie / eau / silencieux : usure en plus (%) en tirant sous la pluie, dans l'eau, avec un silencieux.
+# Categories : pistolet, pm (pistolet-mitrailleur), fusil (d'assaut), dmr, precision, pompe, mitrailleuse,
+# lanceur, melee (corps a corps).
+[categories]
+
+    [categories.pistolet]
+        usure_par_tir = 0.1
+        pluie = 25
+        eau = 100
+        silencieux = 30
+
+    [categories.pm]
+        usure_par_tir = 0.07
+        pluie = 25
+        eau = 100
+        silencieux = 30
+
+    [categories.fusil]
+        usure_par_tir = 0.08
+        pluie = 25
+        eau = 100
+        silencieux = 30
+
+    [categories.dmr]
+        usure_par_tir = 0.12
+        pluie = 25
+        eau = 100
+        silencieux = 30
+
+    [categories.precision]
+        usure_par_tir = 0.18
+        pluie = 25
+        eau = 100
+        silencieux = 30
+
+    [categories.pompe]
+        usure_par_tir = 0.14
+        pluie = 25
+        eau = 100
+        silencieux = 30
+
+    [categories.mitrailleuse]
+        usure_par_tir = 0.04
+        pluie = 25
+        eau = 100
+        silencieux = 30
+
+    [categories.lanceur]
+        usure_par_tir = 0.4
+        pluie = 25
+        eau = 100
+        silencieux = 0
+
+    [categories.melee]
+        usure_par_tir = 0
+        pluie = 0
+        eau = 0
+        silencieux = 0
+
+# Reparation avec les kits (dans l'inventaire : prendre le kit, puis clic droit sur l'arme).
+# perte_max_par_reparation : l'etat maximal de l'arme baisse d'autant (points de %) a chaque reparation (0 = jamais).
+# max_minimum : il ne descend jamais en dessous.
+# Par kit : gain = % d'etat rendu ; plafond = le kit ne monte pas l'arme au-dessus ; utilisations = reparations
+# par kit ; arme_ruinee = le kit peut reparer une arme ruinee.
+[reparation]
+    perte_max_par_reparation = 4
+    max_minimum = 40
+
+    [reparation.kit_fortune]
+        gain = 15
+        plafond = 65
+        utilisations = 2
+        arme_ruinee = false
+
+    [reparation.kit_standard]
+        gain = 35
+        plafond = 90
+        utilisations = 3
+        arme_ruinee = true
+
+    [reparation.kit_armurier]
+        gain = 60
+        plafond = 100
+        utilisations = 5
+        arme_ruinee = true
+
+# surcharges : reglages par arme (ou groupe d'armes avec *). Le premier qui correspond s'applique (un nom
+# exact passe avant un groupe). Forme : "<id d'arme> = categorie:dmr ; usure:0.2 ; pluie:30 ; eau:100 ;
+# silencieux:20", ou "<id> = exclue" (aucune usure). Valeur absente = celle de la
+# categorie.
+# accessoires : usure en plus (%) quand l'accessoire TaCZ est monte : "<id d'accessoire> = 20".
+[armes]
+    surcharges = [
+        "heralisz_skins:*__* = exclue",
+        "heraliz_wonder:* = exclue",
+        "tacz:mk14 = categorie:dmr",
+        "tacz:spr15hb = categorie:dmr",
+        "maxstuff:hk417 = categorie:dmr"
+]
+    accessoires = []
+

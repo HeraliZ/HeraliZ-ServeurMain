@@ -1,0 +1,35 @@
+# HeraliZ Casino coupé en trois jars (-client, -serveur, -complet) : UN mod, modId d'origine inchangé.
+# Ce fichier est IDENTIQUE dans les trois jars (docs/METHODE_CLIENT_SERVEUR.md).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heralizcasino"
+version="${mod_version}"
+displayName="Heraliz Casino"
+authors="${mod_authors}"
+description='''Le casino du serveur HERALIZ : machines 3D animees (machines a sous, Grande Roue, Plinko, Blackjack, Roulette, Crash, Des, Mines, Pile ou Face, Course de chevaux, Video Poker), jetons et caisse de change. La maison garde toujours l'avantage.'''
+
+[[dependencies.heralizcasino]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heralizcasino]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# HeraliZ Economie (les herals, monnaie du serveur) : facultatif. Present, la caisse vend et rachete les jetons contre
+# les herals du compte du joueur ; absent, le casino fonctionne comme avant (objets seulement).
+[[dependencies.heralizcasino]]
+    modId="heralisz_economie"
+    mandatory=false
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"

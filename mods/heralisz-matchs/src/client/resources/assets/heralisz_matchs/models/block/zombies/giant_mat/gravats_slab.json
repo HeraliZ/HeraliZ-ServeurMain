@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab",
+ "textures": {
+  "bottom": "heralisz_matchs:block/zombies/giant_mat/gravats_0",
+  "top": "heralisz_matchs:block/zombies/giant_mat/gravats_0",
+  "side": "heralisz_matchs:block/zombies/giant_mat/gravats_0"
+ }
+}

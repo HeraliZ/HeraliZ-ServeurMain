@@ -1,0 +1,305 @@
+{
+ "name": "Caddie",
+ "author": "Heraliz",
+ "description": "On pousse son caddie entre les rayons en regardant les étagères. (on peut marcher tout droit, doucement ; aller sur le côté arrête l'emote)",
+ "uuid": "11cb85db-2f1f-5e52-86f2-2204e6e86895",
+ "emote": {
+  "beginTick": 0,
+  "endTick": 47,
+  "stopTick": 48,
+  "isLoop": true,
+  "returnTick": 8,
+  "degrees": true,
+  "nsfw": false,
+  "moves": [
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0,
+     "pitch": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 0.0,
+     "yaw": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 0,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 0.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0,
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 6.0,
+     "yaw": 0.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -59.09,
+     "roll": -19.69
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -59.09,
+     "roll": 19.69
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": -5.97,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 8,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -5.97,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 13,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0,
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 13,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -2.0,
+     "yaw": -26.0
+    }
+   },
+   {
+    "tick": 13,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -59.09,
+     "roll": -19.69
+    }
+   },
+   {
+    "tick": 13,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -59.09,
+     "roll": 19.69
+    }
+   },
+   {
+    "tick": 13,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": -18.0,
+     "roll": 2.0
+    }
+   },
+   {
+    "tick": 13,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 12.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 23,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.02,
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 23,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 4.0,
+     "yaw": 8.0
+    }
+   },
+   {
+    "tick": 23,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -59.09,
+     "roll": -19.69
+    }
+   },
+   {
+    "tick": 23,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -59.09,
+     "roll": 19.69
+    }
+   },
+   {
+    "tick": 23,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 12.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 23,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -18.0,
+     "roll": -2.0
+    }
+   },
+   {
+    "tick": 33,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.0,
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 33,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": -2.0,
+     "yaw": 26.0
+    }
+   },
+   {
+    "tick": 33,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -59.09,
+     "roll": -19.69
+    }
+   },
+   {
+    "tick": 33,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -59.09,
+     "roll": 19.69
+    }
+   },
+   {
+    "tick": 33,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": -18.0,
+     "roll": 2.0
+    }
+   },
+   {
+    "tick": 33,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": 12.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 43,
+    "easing": "INOUTSINE",
+    "body": {
+     "y": 0.02,
+     "pitch": -6.0
+    }
+   },
+   {
+    "tick": 43,
+    "easing": "INOUTSINE",
+    "head": {
+     "pitch": 4.0,
+     "yaw": -8.0
+    }
+   },
+   {
+    "tick": 43,
+    "easing": "INOUTSINE",
+    "rightArm": {
+     "pitch": -59.09,
+     "roll": -19.69
+    }
+   },
+   {
+    "tick": 43,
+    "easing": "INOUTSINE",
+    "leftArm": {
+     "pitch": -59.09,
+     "roll": 19.69
+    }
+   },
+   {
+    "tick": 43,
+    "easing": "INOUTSINE",
+    "rightLeg": {
+     "pitch": 12.0,
+     "roll": 0.0
+    }
+   },
+   {
+    "tick": 43,
+    "easing": "INOUTSINE",
+    "leftLeg": {
+     "pitch": -18.0,
+     "roll": -2.0
+    }
+   }
+  ]
+ }
+}

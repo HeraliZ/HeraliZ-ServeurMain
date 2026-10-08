@@ -1,0 +1,15 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 14
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "wmags:wmag_556"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

@@ -1,0 +1,10 @@
+{
+    "door_id":"qe_sliding_door",
+    "legacy_model":"heralisz_bunker:block/doors/qe_sliding_door_legacy",
+    "modern_model":{"model":"heralisz_bunker:block/doors/qe_sliding_door_modern",
+    "skins":[
+        {"id":"default","name":"Standard","texture":"heralisz_bunker:block/doors/qe_sliding_door"}
+    ]
+    },
+    "default":{"type":"modern","skin":"default"}
+}

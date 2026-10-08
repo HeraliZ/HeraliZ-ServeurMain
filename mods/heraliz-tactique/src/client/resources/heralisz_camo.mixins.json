@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heralisz.camo.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_tactique.refmap.json",
+  "client": [
+    "BedrockGunModelMixin",
+    "BedrockModelFxMixin",
+    "GunRefitScreenMixin",
+    "LeftHandRenderMixin",
+    "AnimationControllerMixin",
+    "SoundPlayManagerMixin",
+    "BedrockPartMixin",
+    "FunctionalBedrockPartMixin",
+    "BedrockCubeBoxAccessor",
+    "BedrockCubePerFaceAccessor",
+    "ItemRendererBagMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
