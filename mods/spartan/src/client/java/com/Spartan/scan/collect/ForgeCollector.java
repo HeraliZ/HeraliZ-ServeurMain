@@ -130,6 +130,36 @@ public final class ForgeCollector {
         r.modules.addAll(entries);
     }
 
+    /**
+     * Jars de mods chargés par Forge HORS du dossier mods (launcher Helios : fournisseur « maven libs » et options
+     * --fml.mavenRoots / --fml.modLists ; ou tout autre moyen) : hachés et jugés un par un comme ceux du dossier mods
+     * (origine « modlist »). Un jar de triche glissé dans le dossier du launcher est donc vu comme les autres.
+     */
+    public static void modsHorsDossier(ScanReport r, Path modsDir) {
+        Path mods = modsDir.toAbsolutePath().normalize();
+        long[] budget = {MAX_HASHED_TOTAL};
+        Set<Path> vus = new HashSet<>();
+        ModList.get().getModFiles().forEach(info -> {
+            IModFile f = info.getFile();
+            String provider = f.getProvider() == null ? "?" : f.getProvider().name();
+            if ("minecraft".equals(provider) || provider.toLowerCase(Locale.ROOT).contains("jarinjar")) {
+                return; // Minecraft / Forge eux-mêmes, jars imbriqués (jugés avec leur jar)
+            }
+            Path p = f.getFilePath();
+            if (p == null || !Files.isRegularFile(p)) {
+                return;
+            }
+            Path abs = p.toAbsolutePath().normalize();
+            if (abs.startsWith(mods) || !vus.add(abs)) {
+                return;
+            }
+            String sha = hash(p, budget);
+            if (sha != null) {
+                r.files.add(new ScanReport.FileEntry("modlist", JvmCollector.fileName(p.toString()), size(p), sha));
+            }
+        });
+    }
+
     /** Fichiers de mods vus par FML : provenance (dossier mods, JarInJar…), nom, identifiants. */
     public static void loadedFiles(ScanReport r) {
         List<String> out = new ArrayList<>();

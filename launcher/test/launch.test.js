@@ -119,6 +119,7 @@ test('Minecraft 1.20.1 receives offline identity, quick play and no unresolved t
     assert.equal(args[args.indexOf('--accessToken') + 1], '0')
     assert.equal(args[args.indexOf('--quickPlayMultiplayer') + 1], 'play.example.com:25565')
     assert.equal(args.some(arg => String(arg).includes('${')), false)
+    assert.ok(args.includes('-XX:+DisableAttachMechanism'), 'protection anti-injection de Spartan')
     assert.equal(JSON.stringify(vanilla), before)
     assert.deepEqual(builder.constructJVMArguments([], directory), args)
 })

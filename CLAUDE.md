@@ -39,8 +39,11 @@ quand un choix leur revient.
 ## 1. Le serveur en bref
 
 - Minecraft **1.20.1**, Forge **47** ; sur le Ptero : **Mohist 1.20.1-916** (`mohist-1.20.1-916-server.jar`), Java 17.
-- Joueurs en version crackée : `online-mode=false` + plugin **AuthMe** (comptes par mot de passe). Plugins : AuthMe,
-  spark.
+- Joueurs en version crackée : `online-mode=false` + plugin **AuthMe** (comptes par mot de passe).
+- Plugins (triés le 08/10, seulement l'utile ; tout le reste a été retiré) : AuthMe, spark, LuckPerms (grades du staff,
+  base locale), KauriVPN (anti-VPN), LiteBans (mutes, avertissements, historique ; les bans pour triche passent par
+  Spartan), WorldEdit + WorldGuard + WorldGuardExtraFlags (outils du staff, protection du spawn), ConsoleSpamFix.
+  Pas de plugin anti-duplication ni « ClearLag » (ils voient mal les mods / suppriment leurs entités).
 - Armes : **TaCZ** (mod de base, jamais à notre nom) + nos gunpacks dans `serveur/tacz/`.
 - Monnaie du serveur : les **hérals** (« 1 héral », « 1 500 hérals »). Identifiants internes inchangés
   (`heralisz_economie`, `EconomieApi`). Les objets du casino s'appellent « jetons ».
@@ -61,7 +64,7 @@ mods/<projet>/            les sources de NOS mods (un projet Gradle par jar)
 mods/_gabarit/            modèle de projet coupé, pour créer un nouveau mod (outils/fusion_nouveau.py)
 serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
   mods-tiers/             mods des autres auteurs (aussi chez les joueurs)
-  plugins/                AuthMe, spark et leurs réglages
+  plugins/                les plugins gardés (section 1) et leurs réglages, sans données ni secrets
   config/                 configs des mods
   defaultconfigs/         configs « serveur » des mods (copiées par Forge dans chaque nouveau monde)
   tacz/                   gunpacks TaCZ
@@ -260,6 +263,20 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
 - Branchements HeraliZ (`mods/spartan/src/serveur/java/com/Spartan/serveur/compat/HeralizCompat.java`, par réflexion,
   sans dépendance) : alliés de l'anti-ESP = même équipe de match, même partie de zombies, sinon même clan ; voix de
   CaraCrea (un joueur caché qui parle est montré à ceux qui l'entendent). Si une de ces API change, ce fichier aussi.
+- **Launcher** (`launcher/`, Helios) : il charge les mods depuis son dossier (`common/modstore`, fournisseur Forge
+  « maven libs », options `--fml.mavenRoots` / `--fml.modLists`) ; Spartan hache et juge chacun de ces jars comme ceux
+  du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism` et retire les options d'injection du joueur
+  (`launcher/app/assets/js/spartan.js`). Son pack doit être exactement `livraison/mods client` de la même fabrication.
+- **Jeton du launcher** (on ne joue que depuis le launcher HeraliZ) : à chaque lancement, `spartan.js` fabrique un
+  jeton signé, valable **6 h**, lié au pseudo et aux mods (`-Dspartan.launchToken=…`, masqué dans le journal du
+  launcher). Clé : secret GitHub `SPARTAN_LAUNCHER_SECRET` (au moins 32 caractères aléatoires), injecté côté serveur
+  par la mise en ligne et côté launcher par `launcher/outils/spartan-cle.js` au moment de fabriquer le launcher
+  (`npm run dist:win` avec la variable d'environnement `SPARTAN_LAUNCHER_SECRET`) ; `spartan-cle.json` n'est JAMAIS
+  dans Git. Réglage `tokenRequired` (`serveur/config/spartan-common.toml`) : `false` = alerte seulement ; `true` =
+  connexion REFUSÉE sans jeton valide (CurseForge, autre launcher, jeton expiré), même en détection silencieuse. Ne le
+  passer à `true` qu'une fois le launcher distribué à tous. Changer la clé à chaque nouvelle version du launcher.
+  Vérifié : un jeton fabriqué par le launcher est accepté par `LaunchToken.verify` (Java) ; autre pseudo ou autre clé
+  refusés.
 - Un mod qui déplace un joueur doit passer par une vraie téléportation (`teleportTo`, `connection.teleport`) ou un recul
   (`setDeltaMovement` + `hurtMarked`) : Spartan les suit. Un `setPos` / `moveTo` seul sur un joueur peut être pris pour
   de la triche (cas connus : projection du Draugr, remontée de la Mère des Ruines : à surveiller dans les alertes).
@@ -294,8 +311,9 @@ Règles :
 3. garde nos jars (paquets « mods-serveur » et « mods-client », 3 jours) à télécharger dans l'onglet Actions ;
 4. **si les secrets du Ptero sont réglés**, il met à jour le serveur par SFTP :
    - `mods/` devient la copie exacte de `livraison/mods serveur` : les anciennes versions sont retirées ;
-   - les plugins (jars et réglages, jamais leurs bases de données), `config/`, `tacz/`, `heralisz_matchs/` et
-     `mohist-config/` sont complétés ou mis à jour, sans rien supprimer ; `config/spartan/officiel.json` est remplacé
+   - plugins : les jars du Ptero qui ne sont pas dans le dépôt sont SUPPRIMÉS un par un (leurs dossiers de données
+     restent), ceux du dépôt sont envoyés avec leurs réglages (jamais de base de données) ;
+   - `config/`, `tacz/`, `heralisz_matchs/` et `mohist-config/` sont complétés ou mis à jour, sans rien supprimer ; `config/spartan/officiel.json` est remplacé
      (les bans et preuves de Spartan, dans `config/spartan/`, ne sont jamais touchés) ;
    - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde : **les configs du dépôt font foi**, un réglage
      changé à la main sur le serveur est écrasé au prochain envoi ;
@@ -315,7 +333,9 @@ Secrets à créer par le propriétaire (Settings → Secrets and variables → A
 `PTERO_SERVER_ID`, `PTERO_API_KEY` (clé « client » du compte Ptero), et `NOMS_INTERDITS` (le contenu de
 `outils/noms_interdits.txt`, un mot par ligne). Pour Spartan : `SPARTAN_DISCORD_ALERTES` (webhook du salon PRIVÉ du
 staff : alertes et rapports), `SPARTAN_DISCORD_SANCTIONS` (webhook du salon public des sanctions : pseudo, durée,
-raison), `SPARTAN_LAUNCHER_SECRET` (quand le launcher existera). Personne ne doit les écrire ailleurs.
+raison), `SPARTAN_LAUNCHER_SECRET` (quand le launcher signera les lancements). LiteBans : `LITEBANS_DB_USER` et
+`LITEBANS_DB_PASSWORD` (base MySQL du Ptero, onglet « Databases » du panel) ; sans eux, LiteBans passe en base locale
+(H2) et repart sans historique. Personne ne doit les écrire ailleurs.
 
 Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SRG : ils ne tournent que sur les PC
 (section 6), pas sur GitHub. C'est pour ça qu'on vérifie AVANT d'envoyer.
@@ -408,8 +428,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   imposé de heraliz_interface 1.1.0).
 - **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
   LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur.
-- **Spartan** (08/10) : rien testé en jeu. Launcher : en attente des infos du propriétaire (jeton signé prévu, voir
-  `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
+- **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé pas encore
+  (il faut un serveur d'authentification, voir `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
 
 ---

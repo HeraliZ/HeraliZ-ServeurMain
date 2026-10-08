@@ -24,6 +24,8 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class LauncherGate {
     private static final Pattern HEX64 = Pattern.compile("^[0-9a-f]{64}$");
+    /** Empreinte d'un dossier mods vide (aucune ligne). */
+    private static final String SHA256_VIDE = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     private static final Map<UUID, String> STATUS = new ConcurrentHashMap<>();
     private static boolean warnedNoSecret = false;
 
@@ -47,22 +49,28 @@ public final class LauncherGate {
         Spartan.LOGGER.info("[Spartan] Empreinte du dossier mods de {} : {}", name,
                 hashError ? "illisible côté client" : hash.isEmpty() ? "invalide" : hash);
 
-        String problem = checkHash(raw, hash, hashError);
-        if (problem == null) {
-            problem = checkToken(p, token, name, hash);
-        }
-        if (problem == null) {
+        // Mods différents du modpack officiel : signal du jeu du joueur, alerte seulement (détection silencieuse).
+        String hashProblem = checkHash(raw, hash, hashError);
+        // Jeton du launcher absent ou invalide : règle d'ACCÈS au serveur. Avec tokenRequired, refus de connexion,
+        // même en détection silencieuse (on ne joue que depuis le launcher HeraliZ).
+        String tokenProblem = checkToken(p, token, name, hash);
+        if (hashProblem == null && tokenProblem == null) {
             return;
         }
+        String problem = hashProblem != null ? hashProblem : tokenProblem;
         STATUS.put(p.getUUID(), problem);
         CheckManager.flag("Launcher", p, problem);
-        // Détection silencieuse : alerte seulement, même avec tokenRequired.
-        if (SpartanConfig.LAUNCHER_TOKEN_REQUIRED.get() && !SpartanConfig.SILENT_CLIENT.get()) {
-            AlertManager.info(p.server, "Launcher", name + " expulsé : " + problem, AlertManager.COLOR_INFO);
-            p.connection.disconnect(Component.literal(
-                    "Connexion refusée : relancez le jeu depuis le launcher officiel du serveur,\n"
-                            + "sans ajouter ni modifier de mods."));
+        if (tokenProblem != null && SpartanConfig.LAUNCHER_TOKEN_REQUIRED.get()) {
+            AlertManager.info(p.server, "Launcher", name + " refusé : " + tokenProblem, AlertManager.COLOR_INFO);
+            refuser(p);
         }
+    }
+
+    /** Refus de connexion : jeu lancé hors du launcher HeraliZ (CurseForge, autre launcher, jeton expiré). */
+    public static void refuser(ServerPlayer p) {
+        p.connection.disconnect(Component.literal(
+                "Connexion refusée : lancez le jeu depuis le launcher HeraliZ.\n"
+                        + "(Le jeu lancé autrement, ou depuis plus de 6 heures, n'est pas accepté.)"));
     }
 
     /** Empreinte invalide, illisible, ou hors des modpacks autorisés. */
@@ -80,7 +88,10 @@ public final class LauncherGate {
         // Sans liste à la main : le dossier mods doit être EXACTEMENT le modpack officiel fabriqué avec le serveur
         // (mod ajouté, retiré, modifié ou renommé : le contrôle d'intégrité dira lequel).
         String officiel = ScanManager.official().empreinteDossier;
-        if (allowed.isEmpty() && officiel != null && !officiel.isEmpty() && !officiel.equalsIgnoreCase(hash)) {
+        // Dossier mods vide : mods chargés par le launcher depuis son propre dossier (Helios) ; jugés un par un par le
+        // contrôle d'intégrité.
+        if (allowed.isEmpty() && officiel != null && !officiel.isEmpty() && !officiel.equalsIgnoreCase(hash)
+                && !SHA256_VIDE.equals(hash)) {
             return "dossier mods différent du modpack officiel (mod ajouté, retiré ou modifié)";
         }
         return null;

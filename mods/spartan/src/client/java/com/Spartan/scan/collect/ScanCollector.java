@@ -51,6 +51,7 @@ public final class ScanCollector {
 
         Map<ModuleLayer, String> layers = ForgeCollector.layers();
         Set<String> known = ForgeCollector.knownModuleNames(layers);
+        step(r, "modlist", () -> ForgeCollector.modsHorsDossier(r, c.modsDir()));
         step(r, "modules", () -> ForgeCollector.modules(r, layers, c.modsDir()));
         step(r, "modlist", () -> ForgeCollector.loadedFiles(r));
         step(r, "mixins", () -> ForgeCollector.mixins(r, c.knownMixins(), c.referenceKnown(), c.watchClasses()));

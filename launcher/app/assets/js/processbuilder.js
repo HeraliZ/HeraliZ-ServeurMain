@@ -9,6 +9,7 @@ const os                    = require('os')
 const path                  = require('path')
 
 const ConfigManager            = require('./configmanager')
+const Spartan                  = require('./spartan')
 
 const logger = LoggerUtil.getLogger('ProcessBuilder')
 
@@ -75,7 +76,7 @@ class ProcessBuilder {
         const loggableArgs = [...args]
         loggableArgs[loggableArgs.findIndex(x => x === this.authUser.accessToken)] = '**********'
 
-        logger.info('Launch Arguments:', loggableArgs)
+        logger.info('Launch Arguments:', Spartan.masquerJeton(loggableArgs))
 
         const child = child_process.spawn(ConfigManager.getJavaExecutable(this.server.rawServer.id), args, {
             cwd: this.gameDir,
@@ -377,7 +378,11 @@ class ProcessBuilder {
         }
         args.push('-Xmx' + ConfigManager.getMaxRAM(this.server.rawServer.id))
         args.push('-Xms' + ConfigManager.getMinRAM(this.server.rawServer.id))
-        args = args.concat(ConfigManager.getJVMOptions(this.server.rawServer.id))
+        // Spartan : options du joueur sans porte d'entrée pour les injecteurs, puis les protections (voir spartan.js)
+        args = args.concat(Spartan.optionsSures(ConfigManager.getJVMOptions(this.server.rawServer.id)))
+        args = args.concat(Spartan.protections())
+        const jeton = Spartan.argumentJeton(this.authUser.displayName, path.join(this.gameDir, 'mods'))
+        if (jeton) args.push(jeton)
         args.push('-Djava.library.path=' + tempNativePath)
 
         // Main Java Class
@@ -428,7 +433,11 @@ class ProcessBuilder {
         }
         args.push('-Xmx' + ConfigManager.getMaxRAM(this.server.rawServer.id))
         args.push('-Xms' + ConfigManager.getMinRAM(this.server.rawServer.id))
-        args = args.concat(ConfigManager.getJVMOptions(this.server.rawServer.id))
+        // Spartan : options du joueur sans porte d'entrée pour les injecteurs, puis les protections (voir spartan.js)
+        args = args.concat(Spartan.optionsSures(ConfigManager.getJVMOptions(this.server.rawServer.id)))
+        args = args.concat(Spartan.protections())
+        const jeton = Spartan.argumentJeton(this.authUser.displayName, path.join(this.gameDir, 'mods'))
+        if (jeton) args.push(jeton)
 
         // Main Java Class
         args.push(this.modManifest.mainClass)

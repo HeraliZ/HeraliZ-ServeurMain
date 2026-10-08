@@ -352,9 +352,10 @@
 	#Empreintes de dossier mods autorisées (vide = non vérifié). L'empreinte de chaque joueur
 	#est écrite dans la console à sa connexion : ajoutez ici celle(s) de votre modpack officiel.
 	allowedModsHashes = []
-	#false : un jeton absent/invalide ou des mods modifiés donnent une ALERTE seulement.
-	#true  : expulsion (« lancez le jeu depuis le launcher officiel »). Activer une fois le
-	#launcher mis à jour et distribué à tous les joueurs.
+	#false : un jeton absent/invalide donne une ALERTE seulement.
+	#true  : connexion REFUSÉE sans jeton valide du launcher HeraliZ (CurseForge, autre launcher,
+	#jeton de plus de 6 h), même en détection silencieuse : c'est une règle d'accès. Activer une fois le
+	#launcher distribué à tous les joueurs. Des mods différents du modpack restent une simple alerte.
 	tokenRequired = false
 	#Secret partagé avec le launcher (ou son serveur d'authentification) pour signer les jetons.
 	#Vide = vérification désactivée. Au moins 32 caractères aléatoires. NE JAMAIS LE PUBLIER.

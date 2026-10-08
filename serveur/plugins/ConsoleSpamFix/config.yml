@@ -1,0 +1,25 @@
+# default config.yml for ConsoleSpamFix
+# config version 1.10.0
+
+# Add here the messages you want to hide from your console and logs.
+# Each line represents a new message.
+# NOTE! You dont need to add the full message!
+# The plugin will hide all messages that contain the text added below.
+
+Messages-To-Hide-Filter:
+  # Existing filters
+  - 'Failed to handle packet net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket'
+  - 'Received invalid message com.atsuishio.superbwarfare.network.ModVariables$PlayerVariablesSyncMessage on channel'
+
+  # Combat tick spam filter (YOUR ISSUE)
+  - '[Tick] Joueurs en combat'
+  - 'Joueurs en combat'
+  - 'M1A1Abrams: ?????????? ?????? ????????'
+
+
+# Chat messages with color and format codes support.
+# Minecraft Color and Format Codes: http://minecraft.gamepedia.com/Formatting_codes
+ChatMessages:
+  NoPermission: '&4[System] &cYou don''t have permission!'
+  CmdHelp: '&4[System] &cAvailable commands:&6 /csf reload'
+  CmdReload: '&2[System] &aConfig reload complete!'

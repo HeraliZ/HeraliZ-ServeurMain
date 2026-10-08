@@ -4,3 +4,5 @@
 /target/
 /logs/
 /dist/
+# clé des jetons Spartan : écrite au moment de fabriquer le launcher, jamais dans Git
+/app/assets/js/spartan-cle.json

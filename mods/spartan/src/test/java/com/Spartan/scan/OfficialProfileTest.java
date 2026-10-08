@@ -110,6 +110,40 @@ class OfficialProfileTest {
         assertEquals(Severity.SUSPECT, find(fs, "inject:hook:gdi32").severity());
     }
 
+    /** Launcher Helios : mods chargés depuis son dossier (« maven libs », --fml.mavenRoots / --fml.modLists). */
+    private static ScanReport launcherClient() {
+        ScanReport r = ScanTestData.clean();
+        r.files.removeIf(f -> f.origin().equals("mods"));
+        r.files.add(new ScanReport.FileEntry("modlist", "jei-1.20.1-11.jar", 1_000_000, ScanTestData.JEI_SHA));
+        r.files.add(new ScanReport.FileEntry("modlist", "create-1.20.1-0.5.jar", 15_000_000, ScanTestData.CREATE_SHA));
+        r.jvmFlags.add("arg:--fml.mavenRoots");
+        r.jvmFlags.add("arg:--fml.modLists");
+        r.loadedFiles.add("maven libs|jei-1.20.1-11.jar|jei");
+        return r;
+    }
+
+    @Test
+    void cleanLauncherClientRaisesNothing() {
+        List<Finding> fs = analyze(launcherClient());
+        assertNull(ScanAnalyzer.verdict(fs) == Severity.INFO ? null : ScanAnalyzer.verdict(fs), fs.toString());
+    }
+
+    @Test
+    void cheatJarAddedToTheLauncherFolderIsStrong() {
+        ScanReport r = launcherClient();
+        r.files.add(new ScanReport.FileEntry("modlist", "meteor-client.jar", 3_000_000, "f".repeat(64)));
+        Finding f = find(analyze(r), "file:");
+        assertNotNull(f);
+        assertEquals(Severity.STRONG, f.severity());
+        assertTrue(f.text().contains("launcher"), f.text());
+    }
+
+    @Test
+    void launcherArgsStayStrongWithoutOfficialModpack() {
+        List<Finding> fs = ScanAnalyzer.analyze(launcherClient(), new ReferenceProfile(), null, null, ScanTestData.settings());
+        assertEquals(Severity.STRONG, ScanAnalyzer.verdict(fs), fs.toString());
+    }
+
     @Test
     void mixinFingerprintsAreSentToTheClient() {
         assertEquals(2, official().mixinFingerprints().length);
