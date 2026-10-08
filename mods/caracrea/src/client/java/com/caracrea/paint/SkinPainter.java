@@ -111,6 +111,7 @@ public final class SkinPainter {
         BodyPainter.paint(canvas, appearance);
         ScarPainter.paint(canvas, appearance);
         ClothesPainter.paint(canvas, appearance);
+        BodyPainter.shadeLimbs(canvas, appearance);
         FacePainter.paint(canvas, appearance, state);
         MarksPainter.paint(canvas, appearance);
         BeardPainter.paint(canvas, appearance, state);

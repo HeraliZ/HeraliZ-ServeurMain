@@ -69,9 +69,10 @@ public final class CaraCreaClient {
 
     /**
      * The vanilla cubes and outer layers are hidden so the 3D body (head
-     * included, with its high-definition face) takes their place. The
-     * vanilla renderer makes them visible again before every render, so
-     * first-person hands and other uses of the model are unaffected.
+     * included, with its high-definition face) takes their place, except the
+     * arms: they stay the vanilla arms, drawn with the painted skin (the same
+     * as in first person). The vanilla renderer makes the parts visible again
+     * before every render, so other uses of the model are unaffected.
      */
     private static void hideCubicBody(RenderPlayerEvent.Pre event) {
         if (!CaraCreaConfig.CLIENT.detailedBody.get() || event.getEntity().isSpectator()) {
@@ -82,10 +83,6 @@ public final class CaraCreaClient {
         model.hat.visible = false;
         model.body.visible = false;
         model.jacket.visible = false;
-        model.rightArm.visible = false;
-        model.leftArm.visible = false;
-        model.rightSleeve.visible = false;
-        model.leftSleeve.visible = false;
         model.rightLeg.visible = false;
         model.leftLeg.visible = false;
         model.rightPants.visible = false;

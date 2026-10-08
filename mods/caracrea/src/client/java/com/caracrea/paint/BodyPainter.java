@@ -44,7 +44,6 @@ final class BodyPainter {
             }
         }
         contourFace(canvas, appearance, skin);
-        shadeLimbs(canvas, type, skin);
     }
 
     /** Forehead highlight, jaw and temple shadows on the front of the head. */
@@ -84,21 +83,65 @@ final class BodyPainter {
         }
     }
 
-    /** Hands slightly darker at the knuckles, a hint of shading at the elbows and knees. */
-    private static void shadeLimbs(Canvas canvas, BodyType type, int skin) {
-        for (Part part : new Part[]{Part.RIGHT_ARM, Part.LEFT_ARM}) {
+    /**
+     * After the clothes: the arms and legs of the skin shaded like rounded limbs (darker towards the edges of each
+     * face, the inner side in shadow), with the creases of the elbow, the wrist and the knee, and the hands detailed
+     * (knuckles, fingers, nails, a lighter palm). This skin is what the arms seen in first person, the
+     * classic cubic body and the corpses show.
+     */
+    static void shadeLimbs(Canvas canvas, Appearance appearance) {
+        BodyType type = appearance.bodyType();
+        for (Part part : new Part[]{Part.RIGHT_ARM, Part.LEFT_ARM, Part.RIGHT_LEG, Part.LEFT_LEG}) {
+            boolean arm = part.isArm();
+            boolean left = part.isLeft();
             for (Face face : Face.SIDES) {
                 Pen pen = Pen.of(canvas, part, face, type);
-                pen.shade(0, 36, pen.width(), 12, (lx, ly, current) -> {
-                    float light = ly == 39 || ly == 40 ? 0.93F : 1.0F;
-                    if (ly >= 44 && face == Face.FRONT && (lx % 4) == 1) {
-                        light *= 0.95F; // fingers
+                int w = pen.width();
+                boolean inner = left ? face == Face.RIGHT : face == Face.LEFT;
+                boolean outer = left ? face == Face.LEFT : face == Face.RIGHT;
+                pen.shade((lx, ly, current) -> {
+                    if (Colors.alpha(current) == 0) {
+                        return current;
                     }
-                    return Colors.shade(current, light);
+                    float across = (lx + 0.5F) / w;
+                    float c = Math.abs(across * 2 - 1);
+                    float light = (1 - 0.13F * c * c * c) * (1.03F - 0.06F * ly / 48F) * (inner ? 0.9F : 1);
+                    int color = current;
+                    if (arm) {
+                        if (face == Face.FRONT && ly >= 23 && ly <= 24) {
+                            light *= 0.97F;   // the crease of the elbow
+                        }
+                        if (ly >= 36 && ly <= 37) {
+                            light *= 0.95F;   // the wrist
+                        }
+                        if (ly >= 38) {
+                            // The hand: palm towards the body, four fingers from the front to the back of the hand.
+                            boolean gap = (lx % 4) == 0 && lx > 0;
+                            if (outer && ly == 40) {
+                                light *= gap ? 0.86F : 1.05F;   // knuckles
+                            }
+                            if ((outer || inner) && ly > 40 && gap) {
+                                light *= 0.84F;                 // between the fingers
+                            }
+                            if (inner && ly < 41) {
+                                color = Colors.tint(Colors.lighten(color, 0.04F), Colors.rgb(225, 150, 140), 0.1F);   // the palm
+                            }
+                        }
+                    } else if (face == Face.BACK && ly >= 23 && ly <= 24) {
+                        light *= 0.93F;       // behind the knee
+                    }
+                    return Colors.shade(color, light);
                 });
             }
-            Pen bottom = Pen.of(canvas, part, Face.BOTTOM, type);
-            bottom.shade((lx, ly, current) -> Colors.shade(current, (lx % 4) == 0 ? 0.88F : 1.0F));
+            if (arm) {
+                // Fingertips under the hand, with their nails.
+                Pen bottom = Pen.of(canvas, part, Face.BOTTOM, type);
+                bottom.shade((lx, ly, current) -> {
+                    boolean gap = (ly % 4) == 0 && ly > 0;
+                    int color = Colors.shade(current, gap ? 0.82F : 0.95F);
+                    return !gap && (ly % 4) == 2 ? Colors.lerp(color, Colors.rgb(236, 200, 190), 0.25F) : color;
+                });
+            }
         }
     }
 }

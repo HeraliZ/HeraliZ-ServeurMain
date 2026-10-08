@@ -1,26 +1,32 @@
 package com.caracrea.paint;
 
 import com.caracrea.character.Appearance;
-import com.caracrea.character.BodyType;
 import com.caracrea.character.Catalog;
-import com.caracrea.character.HairStyle;
 import com.caracrea.character.Trait;
 import com.caracrea.model.Bone;
 import com.caracrea.model.BoxSpec;
 import com.caracrea.model.CharacterModelSpec;
+import com.caracrea.model.CharacterModelSpec.HairShape;
 import com.caracrea.model.Material;
 import com.caracrea.paint.SkinLayout.Face;
 
 /**
- * Paints the faces of the 3D detail boxes into the detail atlas. Each
- * face is painted from a material shader that knows where the pixel sits
- * on the box (and on the body), so shirts, trousers and hair stay
- * continuous across the boxes that make up a limb.
+ * Paints the faces of the 3D detail boxes into the detail atlas. Each face is painted from a material shader that
+ * knows where the pixel sits on the box (and on the body), so shirts, trousers and hair stay continuous across the
+ * boxes that make up a part.
+ *
+ * <p>Volumes are painted in: every face is shaded like a rounded surface (darker towards its edges, and in the
+ * creases where parts meet: under the arms, under the chest, the neck, the crotch, the knee), clothes get their seams,
+ * hems, plackets and folds. Hair is painted lock by lock, with crisp tips: calm on top of the head, the locks showing
+ * more towards their tips, a sheen where the light catches them.
  */
 final class DetailPainter {
     private static final int BUCKLE = Colors.rgb(196, 176, 124);
     private static final int BELT = Colors.rgb(58, 40, 26);
     private static final int LACE = Colors.rgb(228, 226, 220);
+    private static final int BUTTON = Colors.rgb(232, 228, 216);
+    /** Warmth mixed into shadowed skin, so creases look alive rather than grey. */
+    private static final int SKIN_SHADOW = Colors.rgb(150, 70, 60);
 
     private DetailPainter() {
     }
@@ -51,14 +57,16 @@ final class DetailPainter {
         final int pants;
         final int shoes;
         final String hairId;
-        final HairStyle hairStyle;
+        final HairShape hairShape;
+        final HairLook look;
         final String shirtId;
         final String pantsId;
         final String shoesId;
         final int wear;
-        final float sleeveLength;
         final float shirtBottom;
         final float pantsBottom;
+        /** Hair ramp: deep shadow, shadow, base, light, highlight. */
+        final int[] ramp;
 
         Context(Appearance a) {
             this.a = a;
@@ -72,26 +80,20 @@ final class DetailPainter {
             this.shirt2 = Catalog.swatch(a, Trait.SHIRT_COLOR2).argb();
             this.pants = Catalog.swatch(a, Trait.PANTS_COLOR).argb();
             this.shoes = Catalog.swatch(a, Trait.SHOES_COLOR).argb();
-            this.hairStyle = Catalog.hair(a);
-            this.hairId = hairStyle.id();
+            this.hairId = Catalog.hair(a).id();
+            this.hairShape = CharacterModelSpec.hairShape(hairId);
+            this.look = HairLook.of(hairId);
             this.shirtId = Catalog.optionId(a, Trait.SHIRT_STYLE);
             this.pantsId = Catalog.optionId(a, Trait.PANTS_STYLE);
             this.shoesId = Catalog.optionId(a, Trait.SHOES_STYLE);
             this.wear = a.get(Trait.WEAR);
-            this.sleeveLength = switch (shirtId) {
-                case "tank_top" -> -3;
-                case "crop_top" -> 3.25F;
-                case "tshirt", "vneck", "striped", "polo", "camo" -> 4.25F;
-                case "flannel" -> 8.0F;
-                default -> 10.0F;
-            };
-            this.shirtBottom = shirtId.equals("crop_top") ? 7.5F : 12.5F;
+            this.shirtBottom = 12.5F;
             this.pantsBottom = switch (pantsId) {
                 case "shorts" -> 6.0F;
-                case "skirt" -> -1;
                 case "joggers", "track" -> 11.5F;
                 default -> 12.5F;
             };
+            this.ramp = hairRamp(hair);
         }
     }
 
@@ -169,17 +171,103 @@ final class DetailPainter {
     private static FaceShader shader(Context ctx, BoxSpec box, Face face) {
         return switch (box.material()) {
             case HEAD -> (fx, fy, lx, ly, lz, px, py) -> 0;
-            case SKIN -> (fx, fy, lx, ly, lz, px, py) -> skin(ctx, box, face, lx, ly, lz, px, py);
-            case HAIR -> (fx, fy, lx, ly, lz, px, py) -> hair(ctx, box, face, fx, fy, lx, ly, lz, px, py);
-            case SHIRT -> (fx, fy, lx, ly, lz, px, py) -> shirt(ctx, box, face, lx, ly, lz, px, py);
+            case HAIR -> (fx, fy, lx, ly, lz, px, py) -> hair(ctx, box, face, lx, ly, lz);
+            case SHIRT -> (fx, fy, lx, ly, lz, px, py) -> torso(ctx, box, face, lx, ly, lz, px, py);
             case SHIRT_TRIM -> (fx, fy, lx, ly, lz, px, py) -> trim(ctx, box, face, lx, ly, lz, px, py);
             case PANTS -> (fx, fy, lx, ly, lz, px, py) -> pants(ctx, box, face, lx, ly, lz, px, py);
             case SHOE -> (fx, fy, lx, ly, lz, px, py) -> shoe(ctx, box, face, lx, ly, lz, px, py);
             case SOLE -> (fx, fy, lx, ly, lz, px, py) -> sole(ctx, box, face, lx, ly, lz, px, py);
             case BELT -> (fx, fy, lx, ly, lz, px, py) -> belt(ctx, box, face, lx, ly, lz, px, py);
-            case SKIRT -> (fx, fy, lx, ly, lz, px, py) -> skirt(ctx, box, face, lx, ly, lz, px, py);
         };
     }
+
+    // ---------------------------------------------------------------- volume
+
+    /** Smooth step from 0 (at {@code a}) to 1 (at {@code b}). */
+    private static float step(float a, float b, float x) {
+        float t = Colors.clamp01((x - a) / (b - a));
+        return t * t * (3 - 2 * t);
+    }
+
+    /** Light from the shape of a box face: rounded towards its vertical edges, so boxes read as rounded limbs. */
+    private static float round(BoxSpec box, Face face, float lx, float lz, float strength) {
+        if (face == Face.TOP || face == Face.BOTTOM) {
+            return 1;
+        }
+        float t = face == Face.FRONT || face == Face.BACK ? lx / box.w() : lz / box.d();
+        float c = Math.abs(t * 2 - 1);
+        return 1 - strength * c * c * c;
+    }
+
+    /** Whether a face of a leg faces the other leg. */
+    private static boolean inner(BoxSpec box, Face face) {
+        return switch (box.bone()) {
+            case RIGHT_LEG -> face == Face.LEFT;
+            case LEFT_LEG -> face == Face.RIGHT;
+            default -> false;
+        };
+    }
+
+    /** Light from top to bottom along a part of the body: the shoulders catch more light than the waist. */
+    private static float height(BoxSpec box, float ly) {
+        float y = box.y() + ly;
+        return switch (box.bone()) {
+            case RIGHT_LEG, LEFT_LEG -> 1.02F - 0.07F * y / 12;
+            case BODY -> 1.03F - 0.06F * y / 12;
+            default -> 1;
+        };
+    }
+
+    /** Shadow where parts of the body meet: under the arms, the neck, under the chest, the crotch, the knee. */
+    private static float crease(BoxSpec box, Face face, float lx, float ly) {
+        String n = box.name();
+        float ao = 1;
+        switch (box.bone()) {
+            case BODY -> {
+                boolean side = face == Face.LEFT || face == Face.RIGHT;
+                if (n.equals("chest") && side) {
+                    ao *= 1 - 0.2F * (1 - step(0.4F, 3.2F, ly));
+                }
+                if (n.equals("chest") && (face == Face.FRONT || face == Face.BACK)) {
+                    float bx = Math.abs(box.x() + lx);
+                    ao *= 1 - 0.1F * (1 - step(0, 0.8F, ly)) * (1 - step(1.6F, 3.0F, bx));
+                }
+                if ((n.equals("waist") || n.equals("hips")) && face != Face.TOP && face != Face.BOTTOM) {
+                    ao *= 1 - 0.1F * (1 - step(0, 0.45F, ly));
+                }
+            }
+            case RIGHT_LEG, LEFT_LEG -> {
+                if (inner(box, face)) {
+                    ao *= 0.9F;
+                }
+                if (n.startsWith("leg_lower")) {
+                    ao *= 1 - 0.07F * (1 - step(0, 0.4F, ly));
+                }
+            }
+            default -> {
+            }
+        }
+        return ao;
+    }
+
+    /** All the volume shading of a body box face (roundness, light from above, creases). */
+    private static float volume(BoxSpec box, Face face, float lx, float ly, float lz, float roundness) {
+        return round(box, face, lx, lz, roundness) * height(box, ly) * crease(box, face, lx, ly) * ledge(box, face);
+    }
+
+    /**
+     * The top of a block that sits under a wider one (the waist under the chest, the lower leg...): a thin step that
+     * would catch the light like an edge, painted in the shadow of the block above so it reads as a crease.
+     */
+    private static float ledge(BoxSpec box, Face face) {
+        if (face != Face.TOP) {
+            return 1;
+        }
+        String n = box.name();
+        return n.equals("waist") || n.equals("hips") || n.startsWith("leg_lower") ? 0.68F : 1;
+    }
+
+    // ------------------------------------------------------------------ skin
 
     /** Bare skin at a pixel of a box face, with the scars that cross it (front and back faces). */
     private static int skinAt(Context ctx, BoxSpec box, Face face, float lx, float ly, int px, int py) {
@@ -192,233 +280,25 @@ final class DetailPainter {
     }
 
     private static int grain(int color, int px, int py, long seed) {
-        return Colors.shade(color, 1 + 0.016F * (Noise.fbm(px, py, 6, seed) - 0.5F) * 2 + 0.01F * Noise.signed(px, py, seed + 1));
+        return Colors.shade(color, 1 + 0.012F * (Noise.fbm(px, py, 6, seed) - 0.5F) * 2 + 0.006F * Noise.signed(px, py, seed + 1));
     }
 
-    // ------------------------------------------------------------------ skin
-
-    private static int skin(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
-        int color = skinAt(ctx, box, face, lx, ly, px, py);
-        if (box.name().startsWith("hand")) {
-            // Faint finger lines on the back of the hand (its outer side), towards the fingertips.
-            boolean outer = box.name().equals("hand_right") ? face == Face.RIGHT : face == Face.LEFT;
-            if (outer && ly > box.h() * 0.45F) {
-                float t = lz / box.d() * 4;
-                float frac = t - (float) Math.floor(t);
-                if (Math.abs(frac - 0.5F) > 0.44F && t > 0.6F && t < 3.4F) {
-                    color = Colors.shade(color, 0.93F);
-                }
-            }
-            if (face == Face.BOTTOM) {
-                color = Colors.shade(color, 0.94F);
-            }
-        }
-        return color;
+    /** Shading applied to skin: darker means a little warmer too. */
+    private static int lit(int skin, float light) {
+        int color = Colors.shade(skin, light);
+        return light < 1 ? Colors.tint(color, SKIN_SHADOW, Math.min(0.3F, (1 - light) * 0.6F)) : color;
     }
 
-    // ------------------------------------------------------------------ hair
-
-    private static int hair(Context ctx, BoxSpec box, Face face, float fx, float fy, float lx, float ly, float lz, int px, int py) {
-        String name = box.name();
-        long seed = ctx.hairSeed;
-        HairStyle.Texture texture = ctx.hairStyle.texture();
-        // Tie of the ponytail: a dark band.
-        if (name.equals("hair_tie")) {
-            return Colors.shade(ctx.hair, 0.55F + 0.06F * Noise.signed(px, py, seed));
-        }
-        // Coverage: 1 inside the hair, 0 where the box is cut away (parting, feathered tips, dread gaps).
-        float cover = hairCover(ctx, box, face, fx, fy, lx, ly, lz, seed);
-        if (cover <= 0) {
-            return 0;
-        }
-        // Strand lightness: streaks along the direction the hair falls. Coordinates are taken
-        // in head space (centred across the face, absolute height), so the streaks run on
-        // without a seam where the cap meets the fringe or the sides.
-        float across = face == Face.FRONT || face == Face.BACK ? box.x() + lx : box.z() + lz;
-        float along = across * 4;
-        float down = (face == Face.TOP || face == Face.BOTTOM ? box.x() + lx : box.y() + ly) * 4;
-        int gx = (int) Math.floor(along);
-        int gy = (int) Math.floor(down);
-        // Seen from above, combed hair shows softer lines than on the sides.
-        float streak = face == Face.TOP ? 0.5F : 1;
-        float light;
-        switch (texture) {
-            case WAVY -> {
-                int column = Math.round(along + 2 * (float) Math.sin(down * 0.45F + Noise.hash(0, 0, seed) * 6));
-                light = 1 + 0.11F * streak * Noise.signed(column, 0, seed + 31) + 0.05F * (Noise.smooth(gx, gy, 3, seed + 32) - 0.5F) * 2;
-            }
-            case CURLY -> light = 1 + 0.2F * (Noise.smooth(gx, gy, 2.4F, seed + 33) - 0.5F) * 2 + 0.05F * Noise.signed(gx, gy, seed + 34);
-            case DREADS -> {
-                float gap = dreadGap(along);
-                light = (1.05F - 0.4F * gap * gap) * (1 + 0.1F * Noise.signed((int) Math.floor(along / 3.6F), 0, seed + 35));
-            }
-            default -> light = 1 + 0.09F * streak * Noise.signed(Math.round(along), 0, seed + 37)
-                    + 0.05F * (Noise.smooth(gx, gy, 3, seed + 38) - 0.5F) * 2 + 0.02F * Noise.signed(gx, gy, seed + 39);
-        }
-        int color = Colors.shade(ctx.hair, light);
-        // Highlights: a ring around the crown of the cap; the tops of the thin slabs stay dark
-        // (where they show, under the cap's edge, a bright line would read as a seam).
-        boolean cap = name.startsWith("hair_cap") || name.equals("hair_afro") || name.equals("hair_bun") || name.equals("hair_mohawk");
-        if (face == Face.TOP) {
-            if (cap) {
-                // A soft sheen across the front half of the crown, as light catches combed hair.
-                float t = lz / Math.max(0.1F, box.d());          // 0 at the back, 1 at the front
-                float band = 1 - Math.abs(t - 0.62F) / 0.3F;
-                if (band > 0) {
-                    color = Colors.lighten(color, 0.09F * band * band);
-                }
-            } else {
-                color = Colors.shade(color, 0.78F);
-            }
-        } else if (ly < 0.6F && face != Face.BOTTOM && cap) {
-            color = Colors.lighten(color, 0.06F);
-        }
-        if (name.equals("hair_braid")) {
-            int segment = (int) Math.floor(ly / 0.8F) + (lx > box.w() / 2 ? 1 : 0);
-            color = Colors.shade(color, segment % 2 == 0 ? 0.82F : 1.1F);
-            if (ly > box.h() - 0.8F) {
-                color = Colors.shade(color, 0.6F);
-            }
-        }
-        if (name.equals("hair_bun")) {
-            // A coiled bun: a spiral of strands, lit in the middle and shaded at its rim.
-            float cx = (lx - box.w() / 2) / (box.w() / 2);
-            float cy = (ly - box.h() / 2) / (box.h() / 2);
-            float r = (float) Math.sqrt(cx * cx + cy * cy);
-            float angle = (float) Math.atan2(cy, cx);
-            float spiral = (float) Math.sin(angle * 2 + r * 9);
-            color = Colors.shade(color, (1.12F - 0.38F * r * r) * (1 + 0.1F * spiral));
-        }
-        if ((name.startsWith("hair_long") || name.equals("hair_tail_body") || name.equals("hair_braid")) && ly < 1.2F) {
-            color = Colors.shade(color, 0.72F + 0.28F * ly / 1.2F);
-        }
-        // Tips are darker.
-        float tip = tipDepth(box, face, ly);
-        if (tip > 0) {
-            color = Colors.shade(color, 1 - 0.12F * tip);
-        }
-        return cover >= 1 ? color : Colors.fade(color, cover);
-    }
-
-    /** How far into the feathered tip region a pixel is (0 outside, 1 at the very end). */
-    private static float tipDepth(BoxSpec box, Face face, float ly) {
-        if (face == Face.TOP || face == Face.BOTTOM || box.name().startsWith("hair_cap") || box.name().equals("hair_afro")) {
-            return 0;
-        }
-        float tipLength = Math.min(1.4F, box.h() * 0.35F);
-        float fromEnd = box.h() - ly;
-        return fromEnd >= tipLength ? 0 : 1 - fromEnd / tipLength;
-    }
-
-    private static float dreadGap(float along) {
-        float pos = along / 3.6F;
-        float frac = pos - (float) Math.floor(pos);
-        return Math.abs(frac - 0.5F) * 2;
-    }
-
-    private static float hairCover(Context ctx, BoxSpec box, Face face, float fx, float fy, float lx, float ly, float lz, long seed) {
-        String name = box.name();
-        String id = ctx.hairId;
-        HairStyle.Texture texture = ctx.hairStyle.texture();
-        int column = Math.round((face == Face.TOP || face == Face.BOTTOM ? lx : (face == Face.FRONT || face == Face.BACK ? lx : lz)) * 4);
-        float h = box.h();
-        // The slabs around the head start under the cap; their lengths are measured from the
-        // top of the head as if they started there.
-        if (name.startsWith("hair_front") || name.startsWith("hair_right") || name.startsWith("hair_left") || name.startsWith("hair_back")) {
-            float hidden = box.y() + 8.0F;
-            h += hidden;
-            ly += hidden;
-        }
-        // The length of this column (model units from the top of the box), shaped by the style.
-        float limit = h;
-        if (name.startsWith("hair_front")) {
-            float t = lx / box.w();          // 0 at the player's right, 1 at the left
-            float center = Math.abs(t - 0.5F) * 2;
-            limit = switch (ctx.hairStyle.fringeShape()) {
-                case SIDE_SWEPT -> h * (0.3F + 0.7F * t);
-                case MIDDLE_PART -> h * Math.max(0.2F, Math.min(1, center * 1.6F));
-                case CURTAIN -> center > 0.6F ? h : h * (0.3F + 0.7F * (float) Math.sqrt(center / 0.6F));
-                case MESSY -> h * (0.65F + 0.35F * Noise.smooth(column, 0, 3.5F, seed + 10));
-                case SPIKY -> h * (0.55F + 0.45F * Math.abs(((column * 0.37F) % 1F) * 2 - 1));
-                default -> h;
-            };
-            if (id.equals("side_shave")) {
-                limit = h * (0.4F + 0.6F * t);
-            }
-        } else if (name.startsWith("hair_right") || name.startsWith("hair_left")) {
-            // Sides: a little shorter next to the face (the temple) for short styles.
-            float front = name.startsWith("hair_right") ? 1 - lz / box.d() : lz / box.d();
-            if (h < 4.5F && front > 0.75F) {
-                limit = h * 0.8F;
-            }
-            if (ctx.hairStyle.texture() == HairStyle.Texture.WAVY) {
-                limit += 0.4F * (float) Math.sin(column * 0.8F);
-            }
-        } else if (name.startsWith("hair_back") || name.startsWith("hair_long")) {
-            if (ctx.hairStyle.texture() == HairStyle.Texture.WAVY) {
-                limit += 0.4F * (float) Math.sin(column * 0.7F + 1);
-            }
-            if (name.startsWith("hair_long")) {
-                // Hair falling down the back: narrower towards the tips, ending in a soft V.
-                float t = ly / h;
-                float edge = Math.min(lx, box.w() - lx);
-                if (edge < t * 0.9F) {
-                    return 0;
-                }
-                float center = Math.abs(lx - box.w() / 2) / (box.w() / 2);
-                limit = h * (1 - 0.32F * center * center);
-            }
-        } else if (name.equals("hair_tail_body") || name.equals("hair_braid")) {
-            // A rounded tip.
-            float center = Math.abs(lx - box.w() / 2) / (box.w() / 2);
-            limit = h - 0.9F * center * center;
-        }
-        // Dread gaps (transparent on the thin slabs, dark on the cap).
-        if (texture == HairStyle.Texture.DREADS && !name.startsWith("hair_cap")) {
-            float along = face == Face.FRONT || face == Face.BACK ? lx * 4 : lz * 4;
-            if (dreadGap(along) > 0.78F) {
-                return 0;
-            }
-        }
-        // The cap is solid: the hair goes on below it (slabs, or hair painted on the head), so
-        // feathered tips at its lower edge would only show as a see-through line.
-        if (name.startsWith("hair_cap") && face != Face.TOP) {
-            return 1;
-        }
-        if (face == Face.TOP) {
-            if (texture == HairStyle.Texture.CURLY && Noise.hash(px(fx), px(fy), seed + 40) < 0.1F) {
-                return 0.6F;
-            }
-            return 1;
-        }
-        if (face == Face.BOTTOM) {
-            // The underside of a slab is its tips: mostly see-through.
-            return name.startsWith("hair_cap") || name.equals("hair_afro") || name.equals("hair_bun") || name.equals("hair_tie") ? 1 : 0.35F;
-        }
-        float jitter = Noise.hash(column, 1, seed + 41) < 0.35F ? 0.25F : 0;
-        float edge = limit + jitter - ly;
-        if (edge <= 0) {
-            return 0;
-        }
-        // Feathered tips over the last pixel and a half.
-        if (edge < 0.4F) {
-            return 0.45F + (Noise.hash(column, 2, seed + 42) < 0.5F ? 0.3F : 0);
-        }
-        if (texture == HairStyle.Texture.CURLY && Noise.hash(px(fx), px(fy), seed + 43) < 0.12F) {
-            return 0.7F;
-        }
-        return 1;
-    }
-
-    private static int px(float units) {
-        return Math.round(units * 4);
+    /** Bare skin on the body and the legs, with their volume. */
+    private static int bareSkin(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
+        return lit(skinAt(ctx, box, face, lx, ly, px, py), volume(box, face, lx, ly, lz, 0.16F));
     }
 
     // ---------------------------------------------------------------- cloth
 
     private static int fabric(int base, int px, int py, long seed) {
-        float folds = 1 + 0.045F * (Noise.fbm(px, py, 5, seed) - 0.5F) * 2;
-        float grain = 1 + 0.012F * Noise.signed(px, py, seed + 1);
+        float folds = 1 + 0.025F * (Noise.fbm(px, py, 6, seed) - 0.5F) * 2;
+        float grain = 1 + 0.01F * Noise.signed(px, py, seed + 1);
         return Colors.shade(base, folds * grain);
     }
 
@@ -464,131 +344,197 @@ final class DetailPainter {
         return result;
     }
 
+    /** Whether the shirt is knitted with ribs at its ends (collar, hem). */
+    private static boolean ribbed(String id) {
+        return switch (id) {
+            case "sweater", "hoodie", "long_sleeve" -> true;
+            default -> false;
+        };
+    }
+
     /** Shirt colour at a point of the body, {@code bodyX} across the chest (0 = centre), {@code bodyY} down from the neck. */
-    private static int shirtPixel(Context ctx, Face face, float bodyX, float bodyY, int px, int py, boolean sleeve) {
+    private static int shirtPixel(Context ctx, Face face, float bodyX, float bodyY, int px, int py) {
         String id = ctx.shirtId;
-        int base = id.equals("jacket") && !sleeve ? ctx.shirt2 : ctx.shirt;
         int color;
         switch (id) {
             case "camo" -> color = camo(ctx.shirt, ctx.shirt2, px, py, ctx.seed);
             case "flannel" -> {
                 color = fabric(ctx.shirt, px, py, ctx.seed);
-                boolean v = (px / 4 % 9) < 3;
-                boolean h = (py / 4 % 9) < 3;
-                color = v && h ? Colors.lerp(color, ctx.shirt2, 0.85F) : v || h ? Colors.lerp(color, ctx.shirt2, 0.55F) : color;
+                // Plaid in quarter units, the same as on the skin (ClothesPainter), so the sleeves match the torso.
+                int x = (int) Math.floor((bodyX + 8) * 4);
+                int y = (int) Math.floor(bodyY * 4);
+                color = plaid(color, ctx.shirt2, x, y);
             }
             case "striped" -> {
                 color = fabric(ctx.shirt, px, py, ctx.seed);
-                if (((int) Math.floor(bodyY) & 1) == 1) {
+                if (((int) Math.floor(bodyY * 1.25F) & 1) == 1) {
                     color = Colors.lerp(color, ctx.shirt2, 0.9F);
                 }
             }
-            case "sweater" -> color = Colors.shade(fabric(ctx.shirt, px, py, ctx.seed), 0.965F + 0.07F * ((px + py) & 1));
-            default -> color = fabric(base, px, py, ctx.seed);
-        }
-        if (id.equals("jacket") && !sleeve && face == Face.FRONT) {
-            // Open jacket over a tee: panels on both sides, a dark zip edge.
-            float open = 1.4F - Math.min(bodyY, 10) * 0.06F;
-            if (Math.abs(bodyX) > open) {
+            case "sweater" -> {
                 color = fabric(ctx.shirt, px, py, ctx.seed);
-                if (Math.abs(bodyX) < open + 0.3F) {
-                    color = Colors.shade(color, 0.8F);
-                }
+                // Knit: fine vertical ribs.
+                float rib = (bodyX * 4) - (float) Math.floor(bodyX * 4);
+                color = Colors.shade(color, rib < 0.5F ? 0.965F : 1.02F);
             }
-        } else if (id.equals("jacket") && !sleeve) {
-            color = fabric(ctx.shirt, px, py, ctx.seed);
+            default -> color = fabric(id.equals("jacket") ? ctx.shirt2 : ctx.shirt, px, py, ctx.seed);
+        }
+        if (id.equals("jacket")) {
+            if (face == Face.FRONT) {
+                // Open jacket over a tee: panels on both sides of the opening, a zip along their edges.
+                float open = 1.3F - Math.min(bodyY, 10) * 0.05F;
+                float ax = Math.abs(bodyX);
+                if (ax > open) {
+                    color = fabric(ctx.shirt, px, py, ctx.seed);
+                    if (ax < open + 0.22F) {
+                        float tooth = bodyY * 5 - (float) Math.floor(bodyY * 5);
+                        color = tooth < 0.5F ? Colors.rgb(150, 150, 150) : Colors.shade(color, 0.7F);
+                    } else if (ax < open + 0.45F) {
+                        color = Colors.shade(color, 0.86F);
+                    }
+                    // Side pockets with their flaps.
+                    if (bodyY > 7.3F && bodyY < 7.55F && ax > 1.9F && ax < 3.5F) {
+                        color = Colors.shade(color, 0.72F);
+                    }
+                } else {
+                    color = Colors.shade(color, 0.9F);   // the tee, in the jacket's shadow
+                }
+            } else {
+                color = fabric(ctx.shirt, px, py, ctx.seed);
+            }
         }
         return color;
     }
 
-    private static int shirt(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
-        boolean torso = box.bone() == Bone.BODY;
-        int skin = skinAt(ctx, box, face, lx, ly, px, py);
-        if (torso) {
-            float bodyY = box.y() + ly;
-            float bodyX = box.x() + lx;            // -4..4 across the body
-            if (face == Face.BACK) {
-                bodyX = -bodyX;
-            }
-            if (bodyY > ctx.shirtBottom) {
-                return skin;
-            }
-            String id = ctx.shirtId;
-            if (id.equals("tank_top")) {
-                if (face == Face.RIGHT || face == Face.LEFT) {
-                    if (bodyY < 2.75F) {
-                        return skin;      // armholes
-                    }
-                } else if (bodyY < 1.0F) {
-                    if (Math.abs(Math.abs(bodyX) - 1.9F) > 0.55F) {
-                        return skin;      // straps only
-                    }
-                } else if (bodyY < 2.5F && Math.abs(bodyX) > 2.4F + (bodyY - 1.0F) * 1.1F) {
-                    return skin;
-                } else if (face == Face.FRONT && bodyY < 0.8F) {
-                    return skin;
+    /** Flannel plaid at a point in quarter units: wide bands of the second colour, a thin light line between them. */
+    static int plaid(int color, int second, int x, int y) {
+        boolean v = Math.floorMod(x, 9) < 3;
+        boolean h = Math.floorMod(y, 9) < 3;
+        color = v && h ? Colors.lerp(color, second, 0.85F) : v || h ? Colors.lerp(color, second, 0.55F) : color;
+        if (Math.floorMod(x, 9) == 6 || Math.floorMod(y, 9) == 6) {
+            color = Colors.lerp(color, Colors.rgb(230, 226, 214), 0.22F);
+        }
+        return color;
+    }
+
+    /** Front placket with its buttons, for the shirts that have one (y down from the neck). */
+    private static int placket(Context ctx, int color, float bodyX, float bodyY) {
+        float end = switch (ctx.shirtId) {
+            case "polo" -> 2.8F;
+            case "henley" -> 3.2F;
+            case "dress_shirt", "flannel" -> 12;
+            default -> -1;
+        };
+        float ax = Math.abs(bodyX);
+        if (bodyY < 0.4F || bodyY > end || ax > 0.5F) {
+            return color;
+        }
+        if (ax > 0.38F) {
+            return Colors.shade(color, 0.82F);
+        }
+        float pitch = ctx.shirtId.equals("polo") || ctx.shirtId.equals("henley") ? 0.9F : 1.7F;
+        float t = (bodyY - 0.6F) / pitch;
+        float frac = t - (float) Math.floor(t);
+        if (ax < 0.2F && Math.abs(frac - 0.5F) < 0.12F && bodyY < end - 0.2F) {
+            return Colors.lerp(BUTTON, color, 0.25F);
+        }
+        return Colors.shade(color, 0.97F);
+    }
+
+    /** Soft folds of a loose top: from the armpits towards the waist, and gathered above the belt. */
+    private static float folds(Context ctx, Face face, float bodyX, float bodyY) {
+        if (face != Face.FRONT && face != Face.BACK) {
+            return 1;
+        }
+        if (ctx.shirtId.equals("tank_top") || ctx.shirtId.equals("dress_shirt")) {
+            return 1;
+        }
+        float ax = Math.abs(bodyX);
+        float light = 1;
+        // Diagonal folds from under the arms.
+        float d = (bodyY - 2.6F) - (3.9F - ax) * 0.9F;
+        if (ax > 1.6F && bodyY > 1.5F && bodyY < 7.5F) {
+            light *= 1 - 0.05F * Math.max(0, 1 - Math.abs(d) / 0.45F) + 0.02F * Math.max(0, 1 - Math.abs(d + 0.5F) / 0.4F);
+        }
+        // Gathered above the belt.
+        if (bodyY > 9.0F && bodyY < 10.6F) {
+            float wave = (float) Math.sin(bodyX * 2.3F + 1.1F) * 0.35F;
+            float line = Math.abs(bodyY - 9.9F - wave);
+            light *= 1 - 0.05F * Math.max(0, 1 - line / 0.25F);
+        }
+        return light;
+    }
+
+    private static int torso(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
+        float bodyY = box.y() + ly;
+        float bodyX = box.x() + lx;            // -4..4 across the body
+        if (face == Face.BACK) {
+            bodyX = -bodyX;
+        }
+        if (bodyY > ctx.shirtBottom) {
+            return bareSkin(ctx, box, face, lx, ly, lz, px, py);
+        }
+        String id = ctx.shirtId;
+        float ax = Math.abs(bodyX);
+        // Bare skin: the tank top's armholes and straps, and the necklines.
+        if (id.equals("tank_top")) {
+            if (face == Face.RIGHT || face == Face.LEFT) {
+                if (bodyY < 2.9F) {
+                    return bareSkin(ctx, box, face, lx, ly, lz, px, py);
                 }
-            } else if (face == Face.FRONT) {
-                // Necklines.
-                switch (id) {
-                    case "vneck" -> {
-                        if (bodyY < 1.7F - Math.abs(bodyX) * 1.3F) {
-                            return skin;
-                        }
-                    }
-                    case "polo", "dress_shirt", "jacket", "henley" -> {
-                        if (bodyY < 0.9F && Math.abs(bodyX) < 0.45F) {
-                            return skin;
-                        }
-                    }
-                    case "crop_top" -> {
-                        if (bodyY < 0.6F && Math.abs(bodyX) < 1.2F) {
-                            return skin;
-                        }
-                    }
-                    default -> {
-                        if (bodyY < 0.5F && Math.abs(bodyX) < 1.1F) {
-                            return skin;
-                        }
-                    }
+            } else if (face == Face.TOP || bodyY < 1.0F) {
+                if (Math.abs(ax - 1.9F) > 0.55F || face == Face.TOP) {
+                    return face == Face.TOP && Math.abs(ax - 1.9F) <= 0.55F
+                            ? Colors.shade(fabric(ctx.shirt, px, py, ctx.seed), 1.02F) : bareSkin(ctx, box, face, lx, ly, lz, px, py);
                 }
+            } else if (bodyY < 2.6F && ax > 2.4F + (bodyY - 1.0F) * 1.1F) {
+                return bareSkin(ctx, box, face, lx, ly, lz, px, py);
+            } else if (face == Face.FRONT && bodyY < 0.9F + 0.25F * (1 - ax / 1.4F) && ax < 1.4F) {
+                return bareSkin(ctx, box, face, lx, ly, lz, px, py);
             }
-            int color = shirtPixel(ctx, face, bodyX, bodyY, px, py, false);
-            if (box.name().equals("bust")) {
-                // The wedge faces slightly upward and catches more light than the chest: tone it down,
-                // and shade its underside like the fold of the fabric.
-                color = Colors.shade(color, face == Face.BOTTOM ? 0.72F : face == Face.FRONT ? 0.9F : 0.94F);
-            }
-            if (face == Face.FRONT && (id.equals("henley") || id.equals("dress_shirt")) && Math.abs(bodyX) < 0.4F && bodyY > 0.9F
-                    && (id.equals("dress_shirt") || bodyY < 3.2F)) {
-                color = ((int) Math.floor(bodyY) % 1 == 0 && Math.abs(bodyY - Math.floor(bodyY) - 0.5F) < 0.15F) ? Colors.shade(color, 0.7F) : Colors.shade(color, 0.94F);
-            }
-            if (bodyY > ctx.shirtBottom - 0.3F) {
-                color = Colors.shade(color, 0.85F);   // hem
-            }
-            if (face != Face.TOP && face != Face.BOTTOM && (lx < 0.25F || lx > box.w() - 0.25F)) {
-                color = Colors.shade(color, 0.94F);
-            }
-            return wear(ctx, color, px, py, bodyY / 12);
         }
-        // Arms: sleeves down to the sleeve length, skin below.
-        float armY = box.y() + ly;                 // -2 (shoulder) .. 10 (hand)
-        if (armY > ctx.sleeveLength) {
-            return skin;
+        float neck = -1;      // depth of the neckline at this x, for the rib around it
+        if (face == Face.FRONT && !id.equals("tank_top")) {
+            switch (id) {
+                case "vneck" -> neck = 1.9F - ax * 1.3F;
+                case "polo", "dress_shirt", "jacket", "henley", "flannel" -> neck = ax < 0.45F ? 0.85F : -1;
+                default -> neck = ax < 1.25F ? 0.55F - 0.35F * (ax / 1.25F) * (ax / 1.25F) : -1;
+            }
+            if (bodyY < neck) {
+                return bareSkin(ctx, box, face, lx, ly, lz, px, py);
+            }
+        } else if (face == Face.BACK && ax < 1.1F && bodyY < 0.25F) {
+            return bareSkin(ctx, box, face, lx, ly, lz, px, py);
         }
-        boolean left = box.bone() == Bone.LEFT_ARM;
-        float bodyX = (left ? 1 : -1) * (5 + lx - box.w() / 2);
-        int color = shirtPixel(ctx, face, bodyX, armY + 2, px, py, true);
-        if (armY < -1.75F) {
-            color = Colors.shade(color, 0.88F);    // shoulder seam
+        int color = shirtPixel(ctx, face, bodyX, bodyY, px, py);
+        if (face == Face.FRONT) {
+            color = placket(ctx, color, bodyX, bodyY);
+            // Neck rib (crew and V necks).
+            if (neck > 0 && !id.equals("polo") && !id.equals("dress_shirt") && !id.equals("jacket") && !id.equals("henley")
+                    && !id.equals("flannel") && bodyY < neck + 0.35F) {
+                color = Colors.shade(color, bodyY < neck + 0.08F ? 0.85F : 1.05F);
+            }
+            // Hoodie drawstrings.
+            if (id.equals("hoodie") && Math.abs(ax - 0.75F) < 0.1F && bodyY > 0.3F && bodyY < 3.1F) {
+                color = bodyY > 2.75F ? Colors.rgb(205, 205, 200) : Colors.lighten(ctx.shirt, 0.35F);
+            }
         }
-        if (armY > ctx.sleeveLength - 0.5F) {
-            color = Colors.shade(color, ctx.shirtId.equals("sweater") || ctx.shirtId.equals("hoodie") ? (px % 2 == 0 ? 0.88F : 0.98F) : 0.88F);
-        }
-        if (ctx.shirtId.equals("flannel") && armY > ctx.sleeveLength - 1.0F) {
+        // Side seams and the shoulder seams on top.
+        if ((face == Face.LEFT || face == Face.RIGHT) && Math.abs(lz - box.d() / 2) < 0.08F) {
             color = Colors.shade(color, 0.9F);
         }
-        return wear(ctx, color, px, py, (armY + 2) / 12);
+        if (face == Face.TOP && Math.abs(lz - box.d() / 2) < 0.08F) {
+            color = Colors.shade(color, 0.88F);
+        }
+        // Hem and ribbed waistband.
+        if (ribbed(id) && bodyY > 11.2F) {
+            float rib = bodyX * 4 - (float) Math.floor(bodyX * 4);
+            color = Colors.shade(color, (rib < 0.5F ? 0.9F : 0.98F) * (bodyY < 11.32F ? 0.9F : 1));
+        } else if (bodyY > 11.75F) {
+            color = Colors.shade(color, 0.85F);
+        }
+        float light = volume(box, face, lx, ly, lz, 0.12F) * folds(ctx, face, bodyX, bodyY);
+        return wear(ctx, Colors.shade(color, light), px, py, bodyY / 12);
     }
 
     private static int trim(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
@@ -598,15 +544,25 @@ final class DetailPainter {
                 if (face == Face.TOP && Math.abs(lx - box.w() / 2) < box.w() * 0.32F && lz < box.d() * 0.65F) {
                     color = Colors.shade(color, 0.5F);   // the hollow of the hood
                 } else if (face == Face.TOP || face == Face.FRONT) {
-                    color = Colors.shade(color, 0.9F);
+                    color = Colors.shade(color, 0.88F);
                 }
-                if (face == Face.BACK && ly > box.h() - 0.4F) {
-                    color = Colors.shade(color, 0.85F);
+                if (face == Face.BACK) {
+                    // The hood lying flat: a seam down its middle, folds at the bottom.
+                    if (Math.abs(lx - box.w() / 2) < 0.08F) {
+                        color = Colors.shade(color, 0.86F);
+                    }
+                    color = Colors.shade(color, 1.03F - 0.12F * ly / box.h());
                 }
             }
             case "pocket" -> {
-                if (face == Face.FRONT && (ly < 0.3F || lx < 0.3F || lx > box.w() - 0.3F)) {
-                    color = Colors.shade(color, 0.8F);
+                if (face == Face.FRONT) {
+                    boolean opening = (lx < 0.9F || lx > box.w() - 0.9F) && ly > 0.5F;
+                    if (opening) {
+                        color = Colors.shade(color, 0.86F);
+                    }
+                    if (Math.abs(lx - 0.9F) < 0.08F || Math.abs(lx - (box.w() - 0.9F)) < 0.08F || ly < 0.1F) {
+                        color = Colors.shade(color, 0.78F);   // seams of the pocket
+                    }
                 }
                 if (face == Face.TOP) {
                     color = Colors.shade(color, 0.7F);
@@ -614,9 +570,12 @@ final class DetailPainter {
             }
             default -> {
                 // Collars: lighter, with a dark fold at the bottom.
-                color = Colors.lighten(color, 0.08F);
+                color = Colors.lighten(color, 0.06F);
                 if (face == Face.BOTTOM || (face == Face.FRONT && ly > box.h() - 0.3F)) {
-                    color = Colors.shade(color, 0.8F);
+                    color = Colors.shade(color, 0.78F);
+                }
+                if (face == Face.FRONT && ly < 0.2F) {
+                    color = Colors.shade(color, 0.9F);
                 }
             }
         }
@@ -627,9 +586,8 @@ final class DetailPainter {
 
     private static int pants(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
         float legY = box.y() + ly;                 // 0 (hip) .. 11.2 (ankle)
-        int skin = skinAt(ctx, box, face, lx, ly, px, py);
         if (legY > ctx.pantsBottom) {
-            return skin;
+            return bareSkin(ctx, box, face, lx, ly, lz, px, py);
         }
         String id = ctx.pantsId;
         boolean left = box.bone() == Bone.LEFT_LEG;
@@ -639,17 +597,20 @@ final class DetailPainter {
         float center = lx - box.w() / 2;
         switch (id) {
             case "jeans", "ripped_jeans", "cargo" -> {
-                if (outerSide && Math.abs(lz - box.d() / 2) < 0.25F) {
-                    color = Colors.shade(color, 1.1F);
+                if (outerSide && Math.abs(lz - box.d() / 2) < 0.22F) {
+                    color = Colors.shade(color, Math.abs(lz - box.d() / 2) < 0.07F ? 0.85F : 1.08F);   // outer seam, double stitched
                 }
-                if (innerSide && Math.abs(lz - box.d() / 2) < 0.2F) {
-                    color = Colors.shade(color, 0.9F);
+                if (innerSide && Math.abs(lz - box.d() / 2) < 0.1F) {
+                    color = Colors.shade(color, 0.88F);
                 }
                 if (face == Face.FRONT) {
-                    float knee = 1 - Math.abs(legY - 6) / 1.5F;
-                    if (knee > 0) {
-                        color = Colors.lighten(color, 0.06F * knee);
+                    // Front pocket opening, a faded thigh and knee.
+                    float pocket = (left ? 1 : -1) * center;
+                    if (legY < 1.6F && Math.abs(pocket - (1.6F - legY * 0.9F)) < 0.09F) {
+                        color = Colors.shade(color, 0.8F);
                     }
+                    float fade = 1 - Math.min(1, Math.abs(legY - 4.5F) / 3.5F);
+                    color = Colors.lighten(color, 0.05F * fade * (1 - Math.abs(center) / 2));
                 }
                 if (face == Face.BACK && legY > 0.8F && legY < 2.8F && Math.abs(center) < 1.3F
                         && (legY < 1.1F || legY > 2.5F || Math.abs(center) > 1.0F)) {
@@ -662,13 +623,13 @@ final class DetailPainter {
                 if (id.equals("ripped_jeans") && face == Face.FRONT) {
                     boolean hole = left ? (legY > 5.0F && legY < 6.4F && Math.abs(center) < 1.3F) : (legY > 7.6F && legY < 8.4F && Math.abs(center) < 1.0F);
                     if (hole) {
-                        return Noise.hash(px, py, ctx.seed + 5) < 0.2F ? Colors.lighten(ctx.pants, 0.45F) : skin;
+                        return Noise.hash(px, py, ctx.seed + 5) < 0.2F ? Colors.lighten(ctx.pants, 0.45F) : bareSkin(ctx, box, face, lx, ly, lz, px, py);
                     }
                 }
             }
             case "trousers" -> {
-                if (face == Face.FRONT && Math.abs(center) < 0.25F) {
-                    color = Colors.lighten(color, 0.08F);
+                if (face == Face.FRONT && Math.abs(center) < 0.2F) {
+                    color = Colors.lighten(color, 0.08F);   // the crease
                 }
             }
             case "joggers", "track" -> {
@@ -690,29 +651,34 @@ final class DetailPainter {
         if (legY > ctx.pantsBottom - 0.3F && !id.equals("leggings")) {
             color = Colors.shade(color, 0.86F);   // hem
         }
-        return wear(ctx, color, px, py, legY / 12);
+        // Folds behind the knee.
+        float light = volume(box, face, lx, ly, lz, 0.13F);
+        if (face == Face.BACK && legY > 5.4F && legY < 6.8F) {
+            float wave = (float) Math.sin(lx * 3.1F) * 0.15F;
+            light *= 1 - 0.07F * Math.max(0, 1 - Math.abs(legY - 6.1F - wave) / 0.25F);
+        }
+        return wear(ctx, Colors.shade(color, light), px, py, legY / 12);
     }
 
     // ----------------------------------------------------------------- shoes
 
     private static int shoe(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
         String id = ctx.shoesId;
-        int skin = skinAt(ctx, box, face, lx, ly, px, py);
         boolean boot = box.name().startsWith("boot");
         float center = lx - box.w() / 2;
         switch (id) {
             case "barefoot" -> {
-                int color = skin;
+                int color = skinAt(ctx, box, face, lx, ly, px, py);
                 if ((face == Face.TOP || face == Face.FRONT) && lz < box.d() * 0.35F) {
                     float t = lx / box.w() * 5;
                     if (Math.abs(t - Math.round(t)) < 0.14F && t > 0.4F && t < 4.6F) {
                         color = Colors.shade(color, 0.84F);   // toes
                     }
                 }
-                return color;
+                return lit(color, round(box, face, lx, lz, 0.1F));
             }
             case "sandals" -> {
-                int color = skin;
+                int color = skinAt(ctx, box, face, lx, ly, px, py);
                 if (face == Face.TOP && Math.abs(lz - box.d() * 0.42F) < 0.35F) {
                     return fabric(ctx.shoes, px, py, ctx.seed);   // strap across the foot
                 }
@@ -791,6 +757,7 @@ final class DetailPainter {
             default -> {
             }
         }
+        color = Colors.shade(color, round(box, face, lx, lz, 0.08F));
         return ctx.wear >= 2 ? wear(ctx, color, px, py, 1) : color;
     }
 
@@ -811,34 +778,293 @@ final class DetailPainter {
         return color;
     }
 
-    // ------------------------------------------------------------ belt, skirt
+    // ------------------------------------------------------------------ belt
 
     private static int belt(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
-        int color = Colors.shade(BELT, 1 + 0.06F * Noise.signed(px, py, ctx.seed + 12));
+        int color = Colors.shade(BELT, 1 + 0.05F * Noise.signed(px, py, ctx.seed + 12));
+        float center = Math.abs(lx - box.w() / 2);
         if (face == Face.TOP) {
-            color = Colors.shade(color, 1.15F);
-        } else if (face == Face.FRONT && Math.abs(lx - box.w() / 2) < 0.65F) {
-            color = Math.abs(lx - box.w() / 2) < 0.45F && ly > 0.2F && ly < box.h() - 0.2F ? Colors.shade(BUCKLE, 0.8F) : BUCKLE;
-        } else if (face != Face.BOTTOM && (ly < 0.15F || ly > box.h() - 0.15F)) {
-            color = Colors.shade(color, 0.8F);
-        }
-        return color;
-    }
-
-    private static int skirt(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz, int px, int py) {
-        int color = fabric(ctx.pants, px, py, ctx.seed);
-        if (face == Face.BOTTOM) {
-            return Colors.shade(color, 0.6F);
-        }
-        float across = face == Face.FRONT || face == Face.BACK ? lx : lz;
-        if (face != Face.TOP) {
-            color = Colors.shade(color, ((int) Math.floor(across) & 1) == 0 ? 0.94F : 1.0F);   // pleats
-            if (ly < 0.5F) {
-                color = Colors.shade(color, 0.8F);   // waistband
-            } else if (ly > box.h() - 0.35F) {
-                color = Colors.shade(color, 0.85F);  // hem
+            color = Colors.shade(color, 1.12F);
+        } else if (face == Face.FRONT && center < 0.7F) {
+            // The buckle: a frame with the strap through it.
+            boolean frame = center > 0.5F || ly < 0.18F || ly > box.h() - 0.18F;
+            color = frame ? BUCKLE : Colors.shade(BELT, 0.8F);
+            if (!frame && Math.abs(lx - box.w() / 2 + 0.15F) < 0.06F) {
+                color = Colors.shade(BUCKLE, 0.75F);   // the prong
+            }
+        } else if (face != Face.BOTTOM) {
+            if (ly < 0.12F || ly > box.h() - 0.12F) {
+                color = Colors.shade(color, 0.78F);
+            } else if (Math.abs(ly - 0.24F) < 0.04F || Math.abs(ly - (box.h() - 0.24F)) < 0.04F) {
+                color = Colors.shade(color, 1.12F);   // stitching
+            }
+            // Belt loops of the trousers.
+            float across = face == Face.FRONT || face == Face.BACK ? lx : lz;
+            if (face != Face.FRONT || center > 1.5F) {
+                float t = (across + 0.6F) / 2.2F;
+                if (Math.abs(t - Math.round(t)) * 2.2F < 0.18F) {
+                    color = Colors.shade(ctx.pants, 0.9F);
+                }
             }
         }
-        return wear(ctx, color, px, py, ly / box.h());
+        return Colors.shade(color, round(box, face, lx, lz, 0.1F));
+    }
+
+    // ------------------------------------------------------------------ hair
+
+    /** How a cut is painted: lock width and tips, how messy, the slant of the fringe, the flow on top, the shine. */
+    private record HairLook(float lock, float tip, float messy, float sweep, Flow flow, float sheen, Kind kind, float fringeTip) {
+        enum Flow { CROWN, PART, MIDDLE, BACK }
+
+        enum Kind { STRAIGHT, CURLY, DREADS }
+
+        static HairLook of(String id) {
+            return switch (id) {
+                case "crew" -> new HairLook(0.85F, 0.35F, 0.25F, 0.1F, Flow.CROWN, 0.12F, Kind.STRAIGHT, 0.3F);
+                case "short_messy" -> new HairLook(1.15F, 0.85F, 0.7F, 0.25F, Flow.CROWN, 0.12F, Kind.STRAIGHT, 0.85F);
+                case "side_part" -> new HairLook(1.35F, 0.5F, 0.15F, 0.75F, Flow.PART, 0.17F, Kind.STRAIGHT, 0.5F);
+                case "quiff" -> new HairLook(1.2F, 0.4F, 0.2F, 0, Flow.BACK, 0.17F, Kind.STRAIGHT, 0.3F);
+                case "slicked_back" -> new HairLook(1.5F, 0.3F, 0.05F, 0, Flow.BACK, 0.24F, Kind.STRAIGHT, 0.2F);
+                case "undercut" -> new HairLook(1.4F, 0.6F, 0.25F, 0.65F, Flow.PART, 0.16F, Kind.STRAIGHT, 0.6F);
+                case "fade" -> new HairLook(0.85F, 0.3F, 0.15F, 0, Flow.CROWN, 0.1F, Kind.STRAIGHT, 0.25F);
+                case "curly_short", "afro" -> new HairLook(0.9F, 0.35F, 0.3F, 0, Flow.CROWN, 0.1F, Kind.CURLY, 0.35F);
+                case "dreads" -> new HairLook(1.1F, 0.4F, 0.3F, 0, Flow.CROWN, 0.08F, Kind.DREADS, 0.4F);
+                case "shoulder_length" -> new HairLook(1.4F, 0.8F, 0.3F, 0, Flow.MIDDLE, 0.15F, Kind.STRAIGHT, 0.3F);
+                default -> new HairLook(1.0F, 0.4F, 0.2F, 0, Flow.CROWN, 0.12F, Kind.STRAIGHT, 0.4F);
+            };
+        }
+    }
+
+    /** Five tones of a hair colour, from the deep shadow between locks to the highlight. */
+    private static int[] hairRamp(int base) {
+        float lum = Colors.luminance(base);
+        // Dark hair gets a cool, visible sheen; light hair keeps its warmth in the shadows.
+        int highlight = lum < 0.25F ? Colors.lerp(base, Colors.rgb(150, 150, 160), 0.38F) : Colors.lighten(base, 0.3F);
+        return new int[]{
+                Colors.shade(base, 0.42F),
+                Colors.shade(base, 0.7F),
+                base,
+                Colors.lerp(base, highlight, 0.45F),
+                highlight};
+    }
+
+    /** Colour on the hair ramp for a value 0 (deep shadow) .. 1 (highlight); 0.5 is the base colour. */
+    private static int rampAt(int[] ramp, float value) {
+        float v = Colors.clamp01(value) * (ramp.length - 1);
+        int i = Math.min(ramp.length - 2, (int) Math.floor(v));
+        return Colors.lerp(ramp[i], ramp[i + 1], v - i);
+    }
+
+    /**
+     * A hair pixel. {@code lx, ly, lz} place it in the box (model units). Returns 0 where the slab is cut away
+     * (between the tips of the locks), the colour otherwise (a little transparent on the very edge of a tip).
+     *
+     * <p>Surfaces stay calm and the edges are crisp: on top of the head the hair is one smooth mass with a sheen; down
+     * the sides the locks show more and more towards their tips, each lit along one edge and in shadow along the
+     * other (as if overlapping the next), and the slabs are cut out along the tips.
+     */
+    private static int hair(Context ctx, BoxSpec box, Face face, float lx, float ly, float lz) {
+        HairLook look = ctx.look;
+        String name = box.name();
+        long seed = ctx.hairSeed;
+        float hx = box.x() + lx;
+        float hy = box.y() + ly;
+        float hz = box.z() + lz;
+        if (face == Face.TOP) {
+            return Colors.opaque(hairTop(ctx, box, hx, hz));
+        }
+        if (face == Face.BOTTOM) {
+            return rampAt(ctx.ramp, 0.16F);
+        }
+        boolean slab = name.startsWith("hair_front") || name.startsWith("hair_right") || name.startsWith("hair_left")
+                || name.startsWith("hair_back");
+        boolean quiff = name.startsWith("hair_quiff");
+        // Locks falling down the sides: "across" runs across them, "down" from the top of the hair.
+        float across = face == Face.FRONT || face == Face.BACK ? hx : hz;
+        float down = quiff ? hy - box.y() : hy + 8.6F;
+        if (name.startsWith("hair_front")) {
+            // The fringe: the locks slant towards one side, or part in the middle and open outwards.
+            float below = Math.max(0, hy + 8.15F);
+            if (look.flow() == HairLook.Flow.MIDDLE) {
+                across += Math.signum(hx) * 0.55F * below;
+            } else {
+                across -= look.sweep() * below;
+            }
+        }
+        // Locks of uneven widths: the position across them is warped by a slow noise.
+        float warp = across / look.lock() + 0.45F * (Noise.smooth(across / look.lock() * 0.8F, 0, 1, seed + 1) - 0.5F) * 2;
+        int lockIndex = (int) Math.floor(warp);
+        float t = warp - lockIndex;                          // 0..1 across the lock
+        float lockTone = Noise.signed(lockIndex, 3, seed);
+        // Coverage: the bottom edge of a slab follows the tips of its locks.
+        float alpha = 1;
+        float tipDepth = 99;
+        if (slab) {
+            float limit = slabLength(ctx, name, face, hx, hz);
+            if (limit <= 0) {
+                return 0;
+            }
+            boolean fringe = name.startsWith("hair_front");
+            float variation = look.messy() * Noise.signed(lockIndex, 7, seed) * (fringe && look.flow() == HairLook.Flow.MIDDLE ? 0.3F : 0.8F);
+            float tip = look.kind() == HairLook.Kind.CURLY
+                    ? 0.35F * (float) Math.sqrt(Math.max(0, 1 - (2 * t - 1) * (2 * t - 1)))
+                    : (fringe ? look.fringeTip() : look.tip()) * (1 - Math.abs(2 * t - 1));
+            tipDepth = limit + variation + tip - (hy + 8);
+            if (tipDepth <= 0) {
+                return 0;
+            }
+            alpha = Math.min(1, tipDepth / 0.12F);
+        }
+        // Between the ropes of dreads: the hair underneath, in shadow.
+        boolean between = look.kind() == HairLook.Kind.DREADS && slab && hy + 8 > 1.2F && Math.abs(t * 2 - 1) > 0.8F;
+        float value;
+        switch (look.kind()) {
+            case CURLY -> value = curls(across, down, seed);
+            case DREADS -> {
+                float rope = 1 - (2 * t - 1) * (2 * t - 1);
+                float twist = (down * 2.2F + t * 1.4F) - (float) Math.floor(down * 2.2F + t * 1.4F);
+                value = 0.3F + 0.26F * rope + 0.06F * (twist < 0.5F ? 1 : -1) * rope + 0.04F * lockTone;
+            }
+            default -> {
+                // Each lock overlaps the next: lit along one edge, in shadow along the other. Just under the top
+                // of the head the locks lie together; they show more and more towards their tips.
+                float lit = 1 - step(0.0F, 0.55F, t);
+                float shadow = step(0.62F, 1.0F, t);
+                float contrast = quiff ? 0.7F : 0.35F + 0.65F * step(0.2F, 1.6F, down);
+                value = 0.5F + contrast * (0.1F * lit - 0.2F * shadow + 0.05F * lockTone)
+                        + 0.012F * Noise.signed((int) Math.floor(across * 8), 11, seed);
+            }
+        }
+        // Lighter on top, darker towards the tips (the front of the quiff is lit, its underside in shadow).
+        value += quiff ? 0.08F - 0.22F * step(box.h() * 0.6F, box.h(), down) : 0.07F - 0.14F * Colors.clamp01(down / 6);
+        if (slab) {
+            value -= 0.12F * (1 - step(0, 0.25F, ly));     // in the shadow of the ring above
+            if (tipDepth < 0.25F) {
+                value -= 0.07F;                               // a fine dark line along the tips
+            }
+        }
+        // Sheen: a soft band just under the top of the head, with strokes along the lit locks.
+        float band = quiff ? 0 : 1 - Math.min(1, Math.abs(down - 1.0F) / 0.75F);
+        if (look.kind() == HairLook.Kind.STRAIGHT) {
+            boolean shiny = Noise.hash(lockIndex, 13, seed) < 0.65F;
+            float stroke = 1 - Math.min(1, Math.abs(t - 0.3F) / 0.18F);
+            value += (shiny ? look.sheen() * 2.0F * band * stroke : 0) + look.sheen() * 0.4F * band;
+        } else {
+            value += look.sheen() * 0.8F * band;
+        }
+        // The afro is a big soft mass: lit from above, shaded underneath.
+        if (name.startsWith("hair_afro")) {
+            value += 0.1F - 0.28F * step(0, box.h(), ly);
+        }
+        if (between) {
+            value = 0.12F;
+        }
+        int color = rampAt(ctx.ramp, value);
+        return alpha >= 1 ? color : Colors.fade(color, alpha);
+    }
+
+    /**
+     * Value of curly hair: a tangle of small curls (smooth noise at two scales, so no rows or grid show), lit in
+     * small spots where a curl catches the light.
+     */
+    private static float curls(float across, float along, long seed) {
+        float x = across * 4;
+        float y = along * 4;
+        float coarse = Noise.smooth(x, y, 3.1F, seed + 5);
+        float fine = Noise.smooth(x + 17, y - 9, 1.7F, seed + 6);
+        float value = 0.42F + 0.2F * (coarse - 0.5F) * 2 + 0.1F * (fine - 0.5F) * 2;
+        if (fine > 0.78F && coarse > 0.45F) {
+            value += 0.08F;   // a curl catching the light
+        }
+        return value + 0.025F * Noise.signed((int) Math.floor(x), (int) Math.floor(y), seed + 7);
+    }
+
+    /**
+     * The top of the head: one calm mass, combed in the direction of the cut (fine strokes, low contrast), a sheen
+     * where the light catches the curve of the head, darker as it rolls over the edges; the parting for the cuts
+     * that have one.
+     */
+    private static int hairTop(Context ctx, BoxSpec box, float hx, float hz) {
+        HairLook look = ctx.look;
+        long seed = ctx.hairSeed;
+        float across;
+        float along;
+        switch (look.flow()) {
+            case BACK -> {
+                across = hx;
+                along = hz + 4.5F;
+            }
+            case PART, MIDDLE -> {
+                float part = look.flow() == HairLook.Flow.PART ? 1.6F : 0;
+                across = hz + (hx > part ? 20 : 0);
+                along = Math.abs(hx - part);
+            }
+            default -> {
+                // Radiating from the crown, at the back of the head, with a little twist.
+                float cz = hz - 1.8F;
+                float r = (float) Math.sqrt(hx * hx + cz * cz);
+                across = ((float) Math.atan2(cz, hx) + 0.7F / (r + 0.8F)) * 2.2F;
+                along = r;
+            }
+        }
+        float value;
+        if (look.kind() == HairLook.Kind.CURLY) {
+            value = 0.52F + 0.6F * (curls(hx * 1.0F, hz * 1.0F, seed) - 0.5F);
+        } else {
+            float warp = across / look.lock() + 0.45F * (Noise.smooth(across / look.lock() * 0.8F, 0, 1, seed + 1) - 0.5F) * 2;
+            float t = warp - (float) Math.floor(warp);
+            float strokes = 0.04F * (1 - step(0, 0.55F, t)) - 0.07F * step(0.62F, 1, t);
+            if (look.flow() == HairLook.Flow.CROWN) {
+                strokes *= step(0.5F, 2.4F, along);   // calm around the crown
+            }
+            value = 0.54F + strokes + 0.01F * Noise.signed((int) Math.floor(across * 8), (int) Math.floor(along * 2), seed + 11);
+        }
+        // Sheen across the front half of the top.
+        float sheen = 1 - Math.min(1, Math.abs(hz + 1.2F) / 2.2F);
+        value += look.sheen() * 1.3F * sheen * sheen;
+        // Rolling over the edges.
+        float edge = Math.max(Math.abs(hx) / (box.w() / 2), Math.abs(hz - (box.z() + box.d() / 2)) / (box.d() / 2));
+        value -= 0.06F * step(0.75F, 1.0F, edge);
+        if (look.flow() == HairLook.Flow.PART || look.flow() == HairLook.Flow.MIDDLE) {
+            value -= 0.22F * (1 - step(0.05F, 0.22F, along));   // the parting: a thin line where the scalp shows
+        }
+        if (box.name().startsWith("hair_afro")) {
+            value += 0.08F;
+        }
+        return rampAt(ctx.ramp, value);
+    }
+
+    /**
+     * How far down a hair slab goes at a point of its face, in model units from the top of the head (the painted
+     * locks add their tips below this). 0 where the slab is cut away entirely.
+     */
+    private static float slabLength(Context ctx, String name, Face face, float hx, float hz) {
+        HairShape shape = ctx.hairShape;
+        if (shape == null) {
+            return 0;
+        }
+        if (name.startsWith("hair_front")) {
+            float ax = Math.abs(hx);
+            float length = shape.front();
+            // Framing the face: the fringe joins the temples at its ends.
+            if (ax > 3.4F) {
+                length = Math.max(length, shape.temple() * step(3.4F, 4.4F, ax));
+            }
+            if (ctx.look.flow() == HairLook.Flow.MIDDLE) {
+                length *= 0.55F + 0.45F * step(0, 2.8F, ax);
+            }
+            return length;
+        }
+        if (name.startsWith("hair_back")) {
+            // The nape: a little rounded.
+            float ax = Math.abs(hx) / 4.4F;
+            return shape.back() - 0.5F * ax * ax;
+        }
+        // Sides: shorter by the face (temple), longer behind the ear.
+        float front = Colors.clamp01((-hz + 4.4F) / 8.8F);   // 1 at the face, 0 at the back
+        float temple = shape.temple();
+        float side = shape.side();
+        float t = step(0.55F, 0.85F, front);
+        return side + (temple - side) * t;
     }
 }

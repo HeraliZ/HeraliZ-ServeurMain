@@ -4,9 +4,8 @@ package com.caracrea.model;
 public enum Material {
     /** The head cube: painted with the high-definition face, not by the detail painter. */
     HEAD,
-    SKIN,
     HAIR,
-    /** Torso and sleeves: the shirt, or skin where the shirt does not reach. */
+    /** The torso: the shirt, or skin where the shirt does not reach. */
     SHIRT,
     /** Legs: trousers, or skin where they do not reach. */
     PANTS,
@@ -14,6 +13,5 @@ public enum Material {
     SOLE,
     BELT,
     /** Collar, hood, pocket: the shirt's main colour. */
-    SHIRT_TRIM,
-    SKIRT
+    SHIRT_TRIM
 }

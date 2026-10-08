@@ -30,7 +30,12 @@ final class HairPainter {
         int skin = BodyPainter.skinColor(a);
         long seed = a.seed(Trait.HAIR_STYLE);
         BodyType type = a.bodyType();
+        // The high-definition head is only ever seen inside the 3D hair: the faces the 3D hair covers are left to it
+        // (painted hair there would only show as a second, rougher outline around the 3D locks); shaved parts stay.
+        com.caracrea.model.CharacterModelSpec.HairShape shape = canvas.scale() == Canvas.HD_SCALE
+                ? com.caracrea.model.CharacterModelSpec.hairShape(style.id()) : null;
         Painter inner = new Painter(canvas, style, base, skin, seed, type, false);
+        inner.covered = shape;
         inner.head();
         inner.torso();
         if (style.volume()) {
@@ -51,6 +56,8 @@ final class HairPainter {
         private final boolean outer;
         /** Lengths shrink a little on the outer layer so the inner layer shows at the edges. */
         private final float trim;
+        /** The 3D hair around the high-definition head, whose faces it covers (null on the skin). */
+        private com.caracrea.model.CharacterModelSpec.HairShape covered;
 
         Painter(Canvas canvas, HairStyle style, int base, int skin, long seed, BodyType type, boolean outer) {
             this.canvas = canvas;
@@ -75,8 +82,9 @@ final class HairPainter {
                     continue;
                 }
                 Pen pen = Pen.of(canvas, headPart(), face, type);
+                boolean underHair = coveredBy3d(face);
                 pen.shade((lx, ly, current) -> {
-                    float cover = coverHead(face, lx, ly);
+                    float cover = underHair ? 0 : coverHead(face, lx, ly);
                     float shaved = outer ? 0 : shavedHead(face, lx, ly);
                     int result = current;
                     if (shaved > 0) {
@@ -92,6 +100,20 @@ final class HairPainter {
                     return Colors.over(result, Colors.fade(color, cover));
                 });
             }
+        }
+
+        /** Whether the 3D hair covers this face of the high-definition head. */
+        private boolean coveredBy3d(Face face) {
+            if (covered == null) {
+                return false;
+            }
+            return switch (face) {
+                case TOP -> true;
+                case FRONT -> covered.front() > 0;
+                case RIGHT, LEFT -> covered.sideMax() > 0;
+                case BACK -> covered.back() > 0;
+                default -> false;
+            };
         }
 
         /** 1 where this layer has hair on a head face, 0 elsewhere (fractional at feathered edges). */

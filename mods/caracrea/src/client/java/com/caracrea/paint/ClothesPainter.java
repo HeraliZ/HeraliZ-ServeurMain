@@ -199,14 +199,7 @@ final class ClothesPainter {
             int x = pen.ux() + lx;
             int y = pen.uy() + ly;
             return switch (id) {
-                case "flannel" -> {
-                    boolean v = (x % 9) < 3;
-                    boolean h = (y % 9) < 3;
-                    if (v && h) {
-                        yield Colors.lerp(color, shirt2, 0.85F);
-                    }
-                    yield v || h ? Colors.lerp(color, shirt2, 0.55F) : color;
-                }
+                case "flannel" -> DetailPainter.plaid(color, shirt2, x, y);
                 case "striped" -> ((ly / 4) % 2 == 1) ? Colors.lerp(color, shirt2, 0.9F) : color;
                 case "sweater" -> Colors.shade(color, 0.965F + 0.07F * ((lx + ly) & 1));
                 default -> color;
