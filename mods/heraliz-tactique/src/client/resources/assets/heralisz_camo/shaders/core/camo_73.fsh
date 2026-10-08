@@ -1,13 +1,14 @@
 #version 150
 #define CAMO_ID 73
-// fichier généré par tools/gen_camo_shaders.py, ne pas modifier
+// fichier généré par outils/generer_camos.py depuis outils/camo_gabarit.fsh (dossier du mod) : ne pas modifier ici
 
 #moj_import <fog.glsl>
 
-// Camouflages HeralisZ. Gabarit : tools/gen_camo_shaders.py en tire un programme par camo (CAMO_ID) -> petits shaders rapides.
+// Camouflages HeralisZ. Gabarit : outils/camo_gabarit.fsh, dont outils/generer_camos.py tire un programme par camo (CAMO_ID)
+// -> petits shaders rapides.
 // Règle d'or : la couleur ne dépend que de la position 3D sur l'arme (lue dans la carte
 // de positions Sampler3), jamais de la pièce -> motif continu, pas de mosaïque. CamoTime anime les camos.
-// La partie entre CAMO LIB BEGIN / END est aussi chargée telle quelle par l'aperçu WebGL (tools/camo_preview).
+// La partie entre CAMO LIB BEGIN / END est aussi chargée telle quelle par l'aperçu WebGL (outils/apercu_camos).
 
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler3;
@@ -27,6 +28,8 @@ uniform float CamoLevel;
 // coordonnées de texture -> carte de positions : (u0, v0, largeur, hauteur). Armes : (0, 0, 1, 1) ; sacs : leur texture
 // dans l'atlas des blocs. Hors du rectangle (autre texture du même modèle) : pas de camo.
 uniform vec4 CamoUvRect;
+// rotation du repère de la vue vers celui du monde (posée par Minecraft) : reflets liés au monde des camos refaits
+uniform mat3 IViewRotMat;
 
 in float vertexDistance;
 in vec4 vertexColor;
@@ -34,10 +37,16 @@ in vec4 lightMapColor;
 in vec4 overlayColor;
 in vec2 texCoord0;
 in vec3 viewNormal;
+// position du fragment dans le repère de la vue (reflets en perspective)
+in vec3 viewPos;
 
 out vec4 fragColor;
 
 // === CAMO LIB BEGIN ===
+// camos refaits en 2026-10 : relief de l'arme gardé et reflets liés au monde (voir « refonte 2026-10 »)
+#if CAMO_ID == 1 || CAMO_ID == 43 || CAMO_ID == 44 || (CAMO_ID >= 20 && CAMO_ID <= 25)
+#define CAMO_RELIEF
+#endif
 const float TAU = 6.2831853;
 
 // ------------------------------------------------------------------ bruit
@@ -1776,7 +1785,210 @@ vec3 skinSurface(vec3 p, out vec3 em) {
 #endif
 }
 
-// ------------------------------------------------------------------ couleurs simples (céramique mate légèrement satinée)
+// ================================================================== refonte 2026-10 : Gold, Obsidian, Liquid Chrome, Amethyst et
+// couleurs simples (validés par le propriétaire). Deux nouveautés, réservées aux camos CAMO_RELIEF :
+// - le relief de l'arme : la texture d'origine sert de carte d'ombrage (gravures, vis, rails, arêtes) ; RELIEF = 1 au ton
+//   moyen du voisinage, < 1 dans les creux sombres, > 1 sur les arêtes claires ;
+// - des reflets liés au monde : le décor reflété (ciel, horizon, panneaux lumineux, soleil) est fixé dans le monde
+//   (IViewRotMat) et vu en perspective (viewPos) : il glisse sur l'arme quand le joueur se retourne ou lève la tête.
+const float PI = 3.14159265;
+float RELIEF = 1.0;
+
+float lum3(vec3 c) {
+    return dot(c, vec3(0.299, 0.587, 0.114));
+}
+
+// texel voisin de la texture d'origine, pris dans le rectangle de la carte (sacs : leur place dans l'atlas) ;
+// rend (luminance, 1) ou (0, 0) s'il est transparent. Niveau de détail fixe : lu dans une branche (pas de dérivées)
+vec2 reliefTap(vec2 uv, vec2 d) {
+    vec4 c = textureLod(Sampler0, clamp(uv + d, CamoUvRect.xy, CamoUvRect.xy + CamoUvRect.zw), 0.0);
+    float a = step(0.1, c.a);
+    return vec2(lum3(c.rgb) * a, a);
+}
+
+float baseRelief(vec4 base, vec2 uv) {
+    vec2 ts = 1.0 / vec2(textureSize(Sampler0, 0));
+    vec2 s = reliefTap(uv, vec2(2.0, 0.0) * ts) + reliefTap(uv, vec2(-2.0, 0.0) * ts)
+           + reliefTap(uv, vec2(0.0, 2.0) * ts) + reliefTap(uv, vec2(0.0, -2.0) * ts)
+           + reliefTap(uv, vec2(1.5, 1.5) * ts) + reliefTap(uv, vec2(-1.5, 1.5) * ts)
+           + reliefTap(uv, vec2(1.5, -1.5) * ts) + reliefTap(uv, vec2(-1.5, -1.5) * ts);
+    float l = lum3(base.rgb);
+    float m = s.y > 0.5 ? s.x / s.y : l;
+    // détail fin (lignes gravées, vis, arêtes) : écart au voisinage ; ombrage large (pièces claires / sombres) : atténué
+    float fine = clamp((l + 0.025) / (m + 0.025), 0.28, 1.9);
+    float broad = clamp(pow((m + 0.025) / 0.22, 0.2), 0.8, 1.25);
+    return fine * broad;
+}
+
+vec3 eyeDir() {
+    float l = length(viewPos);
+    return l > 1e-6 ? viewPos / l : vec3(0.0, 0.0, -1.0);
+}
+
+// reflet de la direction regardée sur la normale n (repère de la vue), rendu dans le repère du monde
+vec3 reflWorld(vec3 n) {
+    return normalize(IViewRotMat * reflect(eyeDir(), n));
+}
+
+float facing(vec3 n) {
+    return clamp(-dot(eyeDir(), n), 0.0, 1.0);
+}
+
+float softBox(float az, float el, float a0, float e0, float wa, float we, float soft) {
+    float da = abs(mod(az - a0 + PI, TAU) - PI);
+    return smoothstep(wa + soft, wa - soft, da) * smoothstep(we + soft, we - soft, abs(el - e0));
+}
+
+// décor reflété, direction r dans le repère du monde (y vers le haut) ; rough : 0 miroir net .. 1 reflet très flou.
+// Ciel clair en dégradé, grands panneaux lumineux à azimuts fixes, ligne d'horizon soulignée d'une bande sombre (le
+// « trait » des chromes), sol gris neutre plus ou moins éclairé selon la direction, soleil : les métaux ont des reflets
+// contrastés dans toutes les directions, et ils changent quand le joueur se retourne
+vec3 envWorld(vec3 r, float rough) {
+    float el = asin(clamp(r.y, -1.0, 1.0));
+    float az = atan(r.z, r.x);
+    float b = 0.02 + 0.3 * rough;
+    vec3 sky = mix(vec3(1.0, 0.98, 0.95), vec3(0.56, 0.62, 0.74), smoothstep(0.0, 1.1, el));
+    float zone = 0.5 + 0.5 * sin(az * 3.0 + 1.0) * sin(az * 2.0 - 0.5 + el * 3.0);
+    vec3 ground = vec3(0.30, 0.30, 0.32) * mix(0.45, 1.35, mix(zone, 0.5, rough));
+    ground *= 1.0 - (0.72 - 0.5 * rough) * exp(-pow((el + 0.08) / (0.06 + 0.2 * rough), 2.0));     // bande sombre
+    vec3 col = mix(ground, sky, smoothstep(-b, b, el));
+    col += (1.2 - 0.9 * rough) * exp(-pow(el / (0.018 + 0.25 * rough), 2.0)) * vec3(1.0, 0.97, 0.92);  // ligne d'horizon
+    float sb = 0.04 + 0.3 * rough;
+    float panels = softBox(az, el, 0.6, 0.42, 0.30, 0.22, sb) + softBox(az, el, 2.4, 0.30, 0.22, 0.30, sb)
+                 + softBox(az, el, -1.9, 0.62, 0.42, 0.14, sb) + softBox(az, el, -0.5, 0.16, 0.10, 0.12, sb)
+                 + 0.6 * softBox(az, el, 1.5, -0.32, 0.5, 0.08, sb) + 0.6 * softBox(az, el, -2.6, -0.38, 0.35, 0.1, sb);
+    col += panels * (2.0 - 1.4 * rough) * vec3(1.0, 0.99, 0.97);
+    float sd = max(dot(r, normalize(vec3(0.42, 0.68, -0.6))), 0.0);
+    col += pow(sd, mix(1500.0, 30.0, rough)) * mix(9.0, 1.2, rough) * vec3(1.0, 0.94, 0.82);           // soleil
+    return col;
+}
+
+// relief « métal » : on ne garde que les vrais détails (gravures, arêtes), pas le grain fin de la texture
+float reliefMetal(float k) {
+    float d = RELIEF - 1.0;
+    // creux (gravures, vis, jours) gardés ; points clairs isolés (rayures, grain) très atténués
+    return 1.0 + k * d * smoothstep(0.2, 0.42, abs(d)) * (d < 0.0 ? 1.0 : 0.35);
+}
+
+// champ lisse dans le repère de l'arme (-0.5..0.5) : fausse courbure des surfaces polies
+vec3 softWarp(vec3 p, float f) {
+    return vec3(vnoise(p * f + vec3(1.3, 7.1, 3.3)), vnoise(p * f + vec3(8.2, 2.4, 5.9)), vnoise(p * f + vec3(4.6, 9.7, 0.8))) - 0.5;
+}
+
+// bosse de hauteur h (unités de l'arme : 1 = longueur de l'arme) sur la normale n, gradient pris sur les dérivées écran
+// (Mikkelsen 2010) : aucun calcul de plus du motif
+vec3 bumpNormal(vec3 n, float h, vec3 p) {
+    vec3 sx = dFdx(viewPos);
+    vec3 sy = dFdy(viewPos);
+    vec3 r1 = cross(sy, n);
+    vec3 r2 = cross(n, sx);
+    float det = dot(sx, r1);
+    float k = length(sx) / max(length(dFdx(p)), 1e-7);
+    vec3 grad = sign(det) * (dFdx(h) * r1 + dFdy(h) * r2) * k;
+    // pente bornée : sur une arête, le voisin d'écran tombe sur une autre face (saut de hauteur) -> pas de pixel aberrant
+    float gmax = 1.5 * abs(det);
+    float gl = length(grad);
+    grad *= gl > gmax ? gmax / gl : 1.0;
+    return normalize(abs(det) * n - grad);
+}
+
+// ------------------------------------------------------------------ Or (Gold) : or poli façon Call of Duty
+// reflets nets du décor lié au monde (ils glissent sur l'arme quand on se retourne), surfaces très légèrement bombées,
+// relief de l'arme bien lisible ; plus de reflet qui balaie l'arme
+vec3 goldCod(vec3 p, out vec3 em) {
+    vec3 n = normalize(normalize(viewNormal) + 0.20 * softWarp(p, 2.2));
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 F0 = vec3(1.0, 0.76, 0.33);
+    vec3 F = F0 + (vec3(1.0) - F0) * pow(1.0 - ndv, 5.0);
+    // reflet net (vernis poli) + reflet adouci (corps du métal) : jamais tout noir, jamais plat
+    vec3 env = envWorld(r, 0.04) * 0.5 + envWorld(r, 0.5) * 0.5;
+    float brush = 0.96 + 0.04 * vnoise(vec3(p.x * 24.0, p.y * 700.0, p.z * 700.0));
+    vec3 col = (env * F * brush * 1.1 + F0 * 0.2) * vec3(1.0, 0.98, 0.94);
+    em = vec3(0.0);
+    return col * reliefMetal(0.85);
+}
+
+// ------------------------------------------------------------------ Chrome liquide : mercure qui coule le long de l'arme
+// grande houle lente qui file vers la bouche, vaguelettes, miroir chromé net (horizon, panneaux, soleil du décor)
+vec3 liquidChromeCod(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    // coulées de mercure étirées le long de l'arme, qui filent vers la bouche ; domaine tordu -> formes de liquide ;
+    // vaguelettes parallèles qui suivent la coulée
+    vec3 q = p * vec3(2.4, 7.0, 7.0);
+    vec3 w = vec3(fbm(q * 0.8 + vec3(-t * 0.14, 0.0, 0.0), 3), fbm(q * 0.8 + vec3(3.1, -t * 0.07, 5.2), 3), 0.0);
+    float swell = fbm(q + 1.6 * w + vec3(-t * 0.2, 0.0, t * 0.03), 4);
+    float ripple = sin(p.x * 80.0 + swell * 5.0 + w.y * 9.0 - t * 2.6);
+    float h = swell * 0.014 + ripple * 0.0010 * (0.3 + 0.7 * smoothstep(0.35, 0.7, swell));
+    vec3 n = bumpNormal(normalize(viewNormal), h, p);
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 F0 = vec3(0.93, 0.94, 0.96);
+    vec3 F = F0 + (vec3(1.0) - F0) * pow(1.0 - ndv, 5.0);
+    vec3 col = envWorld(r, 0.012) * F + vec3(0.012);
+    // légère irisation (film d'huile) au bord des coulées
+    col += spectrum(fract(swell * 2.2 + r.y * 0.5 + t * 0.03)) * smoothstep(0.45, 0.6, swell) * smoothstep(0.75, 0.6, swell) * 0.07;
+    em = vec3(0.0);
+    return col * reliefMetal(0.7);
+}
+
+// ------------------------------------------------------------------ Obsidienne : verre volcanique noir poli
+// éclats conchoïdaux (cuvettes aux arêtes vives et ondes concentriques) qui accrochent des reflets nets, reflet violet
+// profond qui suit l'angle, paillettes violettes dans la masse
+vec3 obsidianCod(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    float f1, f2; vec3 cell, fp;
+    vec3 q = p * vec3(6.0, 10.0, 10.0);
+    worley(q, f1, f2, cell, fp);
+    vec3 hc = hash3(cell);
+    // éclat conchoïdal (verre taillé) : cuvette, ondes concentriques, arêtes vives entre éclats
+    float ring = sin(f1 * 24.0 + hc.x * 6.0);
+    float h = -0.016 * f1 * f1 + 0.0012 * ring * f1;
+    vec3 n = bumpNormal(normalize(normalize(viewNormal) + 0.3 * (hc - 0.5)), h, p);
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    // verre noir très poli : noir profond, reflets nets et francs (contraste renforcé : le gris du décor s'efface,
+    // les panneaux, l'horizon et le soleil restent)
+    float F = 0.22 + 0.78 * pow(1.0 - ndv, 4.0);
+    vec3 env = envWorld(r, 0.015);
+    vec3 refl = env * env * 0.75;
+    vec3 deep = mix(hexc(0x030206), hexc(0x110a1c), fbm(p * vec3(6.0, 10.0, 10.0), 3));
+    vec3 col = deep + refl * F * vec3(0.9, 0.88, 1.0);
+    // reflet violet profond (obsidienne de Minecraft) qui suit l'angle, paillettes violettes dans la masse
+    float sheen = pow(1.0 - ndv, 2.0) * (0.5 + 0.5 * hc.y);
+    col += hexc(0x4a1f86) * sheen * 0.28;
+    vec3 sc = floor(p * 300.0);
+    float speck = step(0.992, hash(sc)) * (0.5 + 0.5 * sin(t * 1.3 + hash(sc + 3.0) * 30.0));
+    col += speck * hexc(0xb07cff) * 0.45;
+    float edge = 1.0 - smoothstep(0.0, 0.025, f2 - f1);
+    col += edge * hexc(0x8f6ad0) * 0.14;
+    em = speck * hexc(0x9a60ff) * 0.25;
+    return col * reliefMetal(0.8);
+}
+
+// ------------------------------------------------------------------ Améthyste : la même gemme que l'Emerald (Genesis,
+// Gamma Doppler), en violet : nuages améthyste, volutes violet profond, couche en parallaxe, qui bouge
+vec3 amethystGem(vec3 p, out vec3 em) {
+    return gemDoppler(p, hexc(0x1a0030), hexc(0x6a1cc0), hexc(0xb05cff), hexc(0xe8ccff), 0.12, vec3(19.3, 8.7, 4.1), em);
+}
+
+// ------------------------------------------------------------------ couleurs simples : peinture satinée façon Cerakote
+// posée SUR l'arme : le relief de la texture d'origine (gravures, vis, rails, arêtes) reste lisible ; grain fin de la
+// peinture et reflet doux du décor
+vec3 solidPaint(int id, vec3 p, out vec3 em) {
+    vec3 c = id == 20 ? hexc(0x8e1119) : id == 21 ? hexc(0x14234a) : id == 22 ? hexc(0xdfe3e6)
+           : id == 23 ? hexc(0x4b5330) : id == 24 ? hexc(0xb89a6a) : hexc(0xe6a4b8);
+    vec3 n = normalize(viewNormal);
+    float ndv = facing(n);
+    vec3 env = envWorld(reflWorld(n), 0.7);
+    float grain = vnoise(p * 230.0);
+    vec3 col = c * (0.92 + 0.12 * grain) * RELIEF;
+    col += env * (0.035 + 0.25 * pow(1.0 - ndv, 4.0)) * mix(vec3(1.0), c, 0.35) * clamp(RELIEF, 0.5, 1.2);
+    em = vec3(0.0);
+    return col;
+}
+
+// ------------------------------------------------------------------ couleurs simples (avant 2026-10 : céramique mate)
 vec3 solid(int id, vec3 p, out vec3 em) {
     vec3 c = id == 20 ? hexc(0x8e1119) : id == 21 ? hexc(0x14234a) : id == 22 ? hexc(0xdfe3e6)
            : id == 23 ? hexc(0x4b5330) : id == 24 ? hexc(0xb89a6a) : hexc(0xe6a4b8);
@@ -1789,7 +2001,7 @@ vec3 solid(int id, vec3 p, out vec3 em) {
 vec3 camoColor(int id, vec3 p, out vec3 em) {
     em = vec3(0.0);
 #if CAMO_ID == 1
-    return gold(p, em);
+    return goldCod(p, em);
 #elif CAMO_ID == 5
     return diamondShards(p, em);
 #elif CAMO_ID == 71
@@ -1841,9 +2053,9 @@ vec3 camoColor(int id, vec3 p, out vec3 em) {
 #elif CAMO_ID == 42
     return atomic(p, em);
 #elif CAMO_ID == 43
-    return obsidian(p, em);
+    return obsidianCod(p, em);
 #elif CAMO_ID == 44
-    return liquidChrome(p, em);
+    return liquidChromeCod(p, em);
 #elif CAMO_ID == 45
     return glitch(p, em);
 #elif CAMO_ID == 46
@@ -1853,7 +2065,7 @@ vec3 camoColor(int id, vec3 p, out vec3 em) {
 #elif CAMO_ID == 48
     return rust(p, em);
 #elif CAMO_ID == 49
-    return amethyst(p, em);
+    return amethystGem(p, em);
 #elif CAMO_ID == 70
     return storm(p, em);
 #elif CAMO_ID == 73
@@ -1867,7 +2079,7 @@ vec3 camoColor(int id, vec3 p, out vec3 em) {
 #elif (CAMO_ID >= 50 && CAMO_ID < 70) || (CAMO_ID >= 100 && CAMO_ID < 200)
     return knifeFinish(p, em);
 #elif CAMO_ID >= 20
-    return solid(id, p, em);
+    return solidPaint(id, p, em);
 #else
     return darkMatter(p, em);
 #endif
@@ -1917,11 +2129,17 @@ void main() {
     if (CamoId > 0 && inRect && camoCovers(pm.a, CamoParts)) {
         PART = pm.a;
         KEEP_BASE = 0.0;
+#ifdef CAMO_RELIEF
+        // camos refaits : le camo pose lui-même le relief de la texture d'origine (gravures, vis, arêtes)
+        RELIEF = baseRelief(base, texCoord0);
+        color = vec4(camoColor(CamoId, pm.xyz, em), 1.0);
+#else
         vec3 camo = camoColor(CamoId, pm.xyz, em);
         // garde un soupçon des détails gravés de la texture d'origine
         float lum = dot(base.rgb, vec3(0.299, 0.587, 0.114));
         camo *= mix(1.0, clamp(lum * 2.0, 0.45, 1.15), 0.12);
         color = vec4(mix(camo, base.rgb, KEEP_BASE), 1.0);
+#endif
     }
     color *= vertexColor * ColorModulator;
     color.rgb = mix(overlayColor.rgb, color.rgb, overlayColor.a);

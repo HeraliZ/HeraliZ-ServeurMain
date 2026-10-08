@@ -158,6 +158,9 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   n'ont rien à retélécharger) ;
 - changer un modèle, une texture, un effet, le HUD → `src/client` (nouveau jar `-client` pour les joueurs) ;
 - ajouter un objet, un bloc, une entité, un paquet ou une donnée synchronisée → `src/commun` (**les deux** jars).
+- les camos des armes (tactique) : les 62 shaders `camo_<id>.fsh` sont **générés** depuis
+  `mods/heraliz-tactique/outils/camo_gabarit.fsh` par `python mods/heraliz-tactique/outils/generer_camos.py` ; on modifie
+  le gabarit, jamais les fichiers générés.
 
 **Les briques à connaître** (paquet `pont` de chaque projet, détails dans `docs/METHODE_CLIENT_SERVEUR.md`) :
 - `Parties.serveur(...)` / `Parties.client(...)` à la fin du constructeur `@Mod` : chargent `serveur.PartieServeur` /

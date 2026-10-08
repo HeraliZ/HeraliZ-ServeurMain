@@ -27,9 +27,13 @@ out vec4 lightMapColor;
 out vec4 overlayColor;
 out vec2 texCoord0;
 out vec3 viewNormal;
+// position dans le repère de la vue : reflets en perspective des camos refaits (voir camo_gabarit.fsh)
+out vec3 viewPos;
 
 void main() {
+    // même calcul qu'avant pour la position à l'écran (profondeur identique : décors et stickers posés dessus)
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+    viewPos = (ModelViewMat * vec4(Position, 1.0)).xyz;
 
     vertexDistance = fog_distance(ModelViewMat, IViewRotMat * Position, FogShape);
     vertexColor = minecraft_mix_light(Light0_Direction, Light1_Direction, Normal, Color);
