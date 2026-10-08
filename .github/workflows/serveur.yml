@@ -46,6 +46,27 @@ jobs:
       PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # chaque fichier reprend la date de son dernier changement dans Git (et non celle du téléchargement) : la mise en
+      # ligne ne renvoie au Ptero que ce qui a vraiment changé
+      - name: Dates des fichiers (celles de Git)
+        run: |
+          python - <<'EOF'
+          import os, subprocess
+          sortie = subprocess.run(["git", "-c", "core.quotepath=false", "log", "--name-only", "--no-renames", "--format=@%ct"],
+                                  capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
+          date, vus = None, set()
+          for l in sortie.splitlines():
+              if l.startswith("@"):
+                  date = int(l[1:])
+              elif l and l not in vus:
+                  vus.add(l)
+                  if os.path.isfile(l):
+                      os.utime(l, (date, date))
+          print(len(vus), "fichiers datés")
+          EOF
 
       - uses: actions/setup-java@v4
         with:
@@ -122,12 +143,33 @@ jobs:
           p.write_text(s, encoding="utf-8")
           EOF
 
-      - name: Mettre à jour le Ptero (SFTP)
+      # Adresse du SFTP nettoyée (« sftp:// » ou port collés par erreur) et testée AVANT tout envoi : un Ptero
+      # injoignable fait échouer la mise en ligne en quelques secondes, avec un message clair (au lieu d'attendre 2 h).
+      - name: Accès au Ptero
         if: env.PTERO_SFTP_HOST != ''
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp netcat-openbsd
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          if ! timeout 20 nc -z -w 15 "$HOTE" "$PORT"; then
+            echo "::error::Le SFTP du Ptero ne répond pas depuis GitHub (port $PORT). Vérifier PTERO_SFTP_HOST (adresse seule, sans sftp:// ni :port), PTERO_SFTP_PORT, et que le SFTP est ouvert sur internet."
+            exit 1
+          fi
+          echo "SFTP du Ptero joignable (port $PORT)."
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+          echo "LFTP_REGLAGES=set sftp:auto-confirm yes; set net:max-retries 2; set net:timeout 30; set net:reconnect-interval-base 5;" >> "$GITHUB_ENV"
+
+      - name: Mettre à jour le Ptero (SFTP)
+        if: env.PTERO_SFTP_HOST != ''
+        timeout-minutes: 60
+        run: |
           # plugins retirés du dépôt : on supprime leur JAR du Ptero, un par un (jamais leurs dossiers de données)
-          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "${PTERO_SFTP_PORT:-2022}" "sftp://$PTERO_SFTP_HOST" -e "set sftp:auto-confirm yes; cls -1 /plugins/; bye" > plugins_ptero.txt || true
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$LFTP_REGLAGES cls -1 /plugins/; bye" > plugins_ptero.txt
           python - <<'EOF'
           import pathlib
           garder = {p.name for p in pathlib.Path("livraison/plugins").glob("*.jar")}
@@ -139,20 +181,21 @@ jobs:
           print("plugins retirés du Ptero :", ", ".join(retirer) or "aucun")
           EOF
           MONDE=$(grep -E '^level-name=' serveur/server.properties | cut -d= -f2)
-          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "${PTERO_SFTP_PORT:-2022}" "sftp://$PTERO_SFTP_HOST" -e "
-            set sftp:auto-confirm yes; set net:max-retries 3;
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "
+            $LFTP_REGLAGES
             source retirer.lftp;
-            mirror -R --delete --verbose 'livraison/mods serveur' /mods;
-            mirror -R --verbose --exclude-glob *.jar --exclude-glob *.db --exclude-glob *.sqlite livraison/plugins /plugins;
+            mirror -R -P 8 --delete 'livraison/mods serveur' /mods;
+            mirror -R -P 8 --exclude-glob *.jar --exclude-glob *.db --exclude-glob *.sqlite livraison/plugins /plugins;
             mput -O /plugins livraison/plugins/*.jar;
-            mirror -R --verbose serveur/config /config;
+            mirror -R -P 8 serveur/config /config;
             mkdir -p -f /config/spartan; put -O /config/spartan livraison/spartan/officiel.json;
-            mirror -R --verbose serveur/defaultconfigs /defaultconfigs;
-            mirror -R --verbose serveur/defaultconfigs /$MONDE/serverconfig;
-            mirror -R --verbose serveur/tacz /tacz;
-            mirror -R --verbose serveur/heralisz_matchs /heralisz_matchs;
-            mirror -R --verbose serveur/mohist-config /mohist-config;
+            mirror -R -P 8 serveur/defaultconfigs /defaultconfigs;
+            mirror -R -P 8 serveur/defaultconfigs /$MONDE/serverconfig;
+            mirror -R -P 8 serveur/tacz /tacz;
+            mirror -R -P 8 serveur/heralisz_matchs /heralisz_matchs;
+            mirror -R -P 8 serveur/mohist-config /mohist-config;
             bye"
+          echo "Mise à jour du Ptero terminée."
 
       # Première installation (ou serveur à remettre à neuf) : Mohist, pris dans la Release « base-serveur » et contrôlé
       # par serveur/mohist.sha256, + les fichiers de la racine. Le monde, ops.json et libraries/ ne sont jamais envoyés
@@ -164,8 +207,8 @@ jobs:
         run: |
           gh release download base-serveur --pattern "$(cut -d' ' -f3 serveur/mohist.sha256)" --dir serveur
           (cd serveur && sha256sum -c mohist.sha256)
-          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "${PTERO_SFTP_PORT:-2022}" "sftp://$PTERO_SFTP_HOST" -e "
-            set sftp:auto-confirm yes; set net:max-retries 3;
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "
+            $LFTP_REGLAGES
             mput -O / serveur/mohist-*.jar serveur/server.properties serveur/bukkit.yml serveur/spigot.yml serveur/commands.yml serveur/eula.txt serveur/server-icon.png;
             bye"
 
