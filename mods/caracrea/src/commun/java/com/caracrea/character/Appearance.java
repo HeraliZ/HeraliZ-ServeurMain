@@ -22,12 +22,20 @@ public final class Appearance {
         this.hash = Arrays.hashCode(values);
     }
 
-    /** Builds an appearance, clamping every value to the catalog ranges. */
+    /**
+     * Builds an appearance, bringing every value back to what can be chosen ({@link Catalog#sanitize}): whatever a
+     * client sends or an old save holds, the result can be painted as is.
+     */
     public static Appearance of(int[] values) {
         byte[] bytes = new byte[Trait.VALUES.length];
+        // A woman saved before 1.3.0 comes back as a man (body type clamped), without the lipstick.
+        boolean female = Trait.BODY_TYPE.ordinal() < values.length && values[Trait.BODY_TYPE.ordinal()] == 1;
         for (Trait trait : Trait.VALUES) {
             int value = trait.ordinal() < values.length ? values[trait.ordinal()] : 0;
-            bytes[trait.ordinal()] = (byte) Catalog.clamp(trait, value);
+            if (female && trait == Trait.LIP_COLOR) {
+                value = 0;
+            }
+            bytes[trait.ordinal()] = (byte) Catalog.sanitize(trait, value);
         }
         return new Appearance(bytes);
     }
@@ -59,7 +67,7 @@ public final class Appearance {
 
     public Appearance with(Trait trait, int value) {
         byte[] copy = values.clone();
-        copy[trait.ordinal()] = (byte) Catalog.clamp(trait, value);
+        copy[trait.ordinal()] = (byte) Catalog.sanitize(trait, value);
         return new Appearance(copy);
     }
 

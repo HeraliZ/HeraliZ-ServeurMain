@@ -5,7 +5,7 @@ package com.caracrea.character;
  * {@link Appearance}; {@link Catalog#count(Trait)} gives the number of values.
  */
 public enum Trait {
-    /** Male (classic 4px arms) or female (slim 3px arms). */
+    /** Always male since 1.3.0 (the female body, with slim 3px arms, was retired); kept so saved bytes keep their place. */
     BODY_TYPE(Kind.OPTION),
     SKIN_TONE(Kind.OPTION),
     EYE_SHAPE(Kind.OPTION),

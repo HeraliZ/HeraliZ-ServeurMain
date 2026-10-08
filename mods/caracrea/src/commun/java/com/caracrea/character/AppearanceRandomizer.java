@@ -27,7 +27,9 @@ public final class AppearanceRandomizer {
     }
 
     public static Appearance random(Random random) {
-        return random(random, BodyType.of(random.nextInt(2)));
+        // Draw kept from the time of the female body, so the default look of every player stays the same.
+        random.nextInt(2);
+        return random(random, BodyType.MALE);
     }
 
     public static Appearance random(Random random, BodyType type) {

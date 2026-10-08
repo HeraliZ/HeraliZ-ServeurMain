@@ -1,5 +1,6 @@
 package com.caracrea.character;
 
+/** Body types. Characters are all male since 1.3.0; FEMALE stays for the code and mods that still ask for it. */
 public enum BodyType {
     MALE("default"),
     FEMALE("slim");

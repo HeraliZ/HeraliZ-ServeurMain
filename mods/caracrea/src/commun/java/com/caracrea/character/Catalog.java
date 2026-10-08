@@ -166,7 +166,11 @@ public final class Catalog {
     public static final List<Option> WEAR = List.of(
             Option.both("clean"), Option.both("dusty"), Option.both("dirty"), Option.both("bloody"));
 
-    public static final List<Option> BODY_TYPES = List.of(Option.both("male"), Option.both("female"));
+    /**
+     * Body types. The female body was retired in 1.3.0 (the server only has men): an old female save reads as male (the
+     * value is clamped) and {@link Appearance#of} turns what only women could wear into the closest choice for men.
+     */
+    public static final List<Option> BODY_TYPES = List.of(Option.both("male"));
 
     // ----------------------------------------------------------------- lookups
 
@@ -257,6 +261,40 @@ public final class Catalog {
         }
         List<Option> options = options(trait);
         return options == null || options.get(clamp(trait, value)).pool().suits(type);
+    }
+
+    /**
+     * Whether a preset can still be chosen. The presets made for women only (long and tied-up hairstyles, crop top,
+     * skirt) were retired with the female body; they stay in the lists, whose indices are saved.
+     */
+    public static boolean offered(Trait trait, int value) {
+        return switch (trait) {
+            case HAIR_STYLE, SHIRT_STYLE, PANTS_STYLE -> suits(trait, value, BodyType.MALE);
+            default -> true;
+        };
+    }
+
+    /** A value of the trait that can still be chosen: clamped, and a retired preset becomes the closest one for men. */
+    public static int sanitize(Trait trait, int value) {
+        int clamped = clamp(trait, value);
+        if (offered(trait, clamped)) {
+            return clamped;
+        }
+        String replacement = switch (trait) {
+            case HAIR_STYLE -> switch (id(trait, clamped)) {
+                case "pixie" -> "short_messy";
+                case "ponytail", "bun" -> "slicked_back";
+                default -> "shoulder_length";
+            };
+            case SHIRT_STYLE -> "tshirt";
+            default -> "jeans";
+        };
+        for (int i = 0; i < count(trait); i++) {
+            if (id(trait, i).equals(replacement)) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     public static HairStyle hair(Appearance appearance) {

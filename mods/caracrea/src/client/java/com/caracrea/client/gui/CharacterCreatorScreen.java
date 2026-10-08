@@ -2,7 +2,6 @@ package com.caracrea.client.gui;
 
 import com.caracrea.character.Appearance;
 import com.caracrea.character.AppearanceRandomizer;
-import com.caracrea.character.BodyType;
 import com.caracrea.character.Catalog;
 import com.caracrea.character.Option;
 import com.caracrea.character.Scar;
@@ -39,7 +38,7 @@ public class CharacterCreatorScreen extends Screen {
 
     /** Groups of traits shown together, with where the camera looks. */
     enum Category {
-        BODY("body", 0.95F, 2.3F, Trait.BODY_TYPE, Trait.SKIN_TONE),
+        BODY("body", 0.95F, 2.3F, Trait.SKIN_TONE),
         FACE("face", 1.72F, 0.82F, Trait.NOSE_STYLE, Trait.MOUTH_STYLE, Trait.MOUTH_WIDTH, Trait.LIP_COLOR, Trait.BROW_STYLE, Trait.FACIAL_HAIR),
         EYES("eyes", 1.74F, 0.66F, Trait.EYE_SHAPE, Trait.EYE_COLOR, Trait.EYE_SIZE, Trait.EYE_SPACING, Trait.EYE_HEIGHT, Trait.IRIS_SIZE),
         HAIR("hair", 1.66F, 1.1F, Trait.HAIR_STYLE, Trait.HAIR_COLOR),
@@ -174,9 +173,7 @@ public class CharacterCreatorScreen extends Screen {
             rows.add(new ScarRow());
         }
         for (Trait trait : category.traits) {
-            if (trait == Trait.BODY_TYPE) {
-                rows.add(new SegmentRow(trait));
-            } else if (trait.kind() == Trait.Kind.SLIDER) {
+            if (trait.kind() == Trait.Kind.SLIDER) {
                 rows.add(new SliderRow(trait));
             } else if (trait.kind() == Trait.Kind.FLAGS) {
                 rows.add(new ToggleRow(trait));
@@ -222,9 +219,7 @@ public class CharacterCreatorScreen extends Screen {
         Appearance sample = AppearanceRandomizer.random(random, current.bodyType());
         Appearance next = current;
         for (Trait trait : category.traits) {
-            if (trait != Trait.BODY_TYPE) {
-                next = next.with(trait, sample.get(trait));
-            }
+            next = next.with(trait, sample.get(trait));
         }
         set(next);
     }
@@ -236,17 +231,6 @@ public class CharacterCreatorScreen extends Screen {
             for (Trait trait : Scar.traits(i)) {
                 next = next.with(trait, current.get(trait));
             }
-        }
-        set(next);
-    }
-
-    /** Switching body type keeps every choice; only facial hair and lipstick follow the usual defaults. */
-    private void switchBodyType(BodyType type) {
-        Appearance next = current.with(Trait.BODY_TYPE, type.ordinal());
-        if (type == BodyType.FEMALE) {
-            next = next.with(Trait.FACIAL_HAIR, 0);
-        } else {
-            next = next.with(Trait.LIP_COLOR, 0);
         }
         set(next);
     }
@@ -710,61 +694,19 @@ public class CharacterCreatorScreen extends Screen {
         }
     }
 
-    /** Two large segments (body type). */
-    private final class SegmentRow extends Row {
-        private final Trait trait;
-
-        SegmentRow(Trait trait) {
-            this.trait = trait;
-        }
-
-        @Override
-        int height(int w) {
-            return LABEL + 22;
-        }
-
-        @Override
-        void render(GuiGraphics g, int x, int y, int w, int mx, int my, float alpha) {
-            label(g, traitName(trait), x, y, alpha);
-            int sy = y + LABEL;
-            Ui.round(g, x, sy, w, 22, 4, Ui.alpha(Ui.SUNKEN, alpha));
-            int half = (w - 4) / 2;
-            for (int i = 0; i < 2; i++) {
-                int sx = x + 2 + i * half;
-                boolean on = current.get(trait) == i;
-                boolean hovered = Ui.inside(mx, my, sx, sy + 2, half, 18);
-                float h = hover("seg" + i, hovered && !on);
-                if (on) {
-                    Ui.round(g, sx, sy + 2, half, 18, 3, Ui.alpha(Ui.ACCENT, alpha));
-                } else if (h > 0.01F) {
-                    Ui.round(g, sx, sy + 2, half, 18, 3, Ui.alpha(Ui.SURFACE_HOVER, h * alpha));
-                }
-                Ui.textCentered(g, font, valueName(trait, i), sx, sy + 2, half, 18, Ui.alpha(on ? Ui.ON_ACCENT : Ui.TEXT_DIM, alpha));
-            }
-        }
-
-        @Override
-        boolean click(double mx, double my, int x, int y, int w) {
-            int half = (w - 4) / 2;
-            for (int i = 0; i < 2; i++) {
-                if (Ui.inside(mx, my, x + 2 + i * half, y + LABEL + 2, half, 18)) {
-                    if (current.get(trait) != i) {
-                        switchBodyType(BodyType.of(i));
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /** Presets as a grid of chips. */
+    /** Presets as a grid of chips (only those that can still be chosen: the retired ones are not shown). */
     private final class ChipRow extends Row {
         private static final int CHIP_H = 17;
         private final Trait trait;
+        private final List<Integer> values = new ArrayList<>();
 
         ChipRow(Trait trait) {
             this.trait = trait;
+            for (int i = 0; i < Catalog.count(trait); i++) {
+                if (Catalog.offered(trait, i)) {
+                    values.add(i);
+                }
+            }
         }
 
         int columns(int w) {
@@ -773,7 +715,7 @@ public class CharacterCreatorScreen extends Screen {
 
         @Override
         int height(int w) {
-            int rows = (Catalog.count(trait) + columns(w) - 1) / columns(w);
+            int rows = (values.size() + columns(w) - 1) / columns(w);
             return LABEL + rows * (CHIP_H + 3) - 3;
         }
 
@@ -789,17 +731,16 @@ public class CharacterCreatorScreen extends Screen {
             g.pose().popPose();
             int cols = columns(w);
             int cw = (w - (cols - 1) * 3) / cols;
-            int count = Catalog.count(trait);
-            for (int i = 0; i < count; i++) {
-                int cx = x + (i % cols) * (cw + 3);
-                int cy = y + LABEL + (i / cols) * (CHIP_H + 3);
+            for (int n = 0; n < values.size(); n++) {
+                int i = values.get(n);
+                int cx = x + (n % cols) * (cw + 3);
+                int cy = y + LABEL + (n / cols) * (CHIP_H + 3);
                 boolean on = current.get(trait) == i;
                 boolean hovered = Ui.inside(mx, my, cx, cy, cw, CHIP_H);
                 float h = hover(trait.key() + i, hovered && !on);
                 int fill = on ? Ui.ACCENT : Ui.mix(Ui.SURFACE, Ui.SURFACE_HOVER, h);
                 Ui.round(g, cx, cy, cw, CHIP_H, 3, Ui.alpha(fill, alpha));
-                boolean suits = Catalog.suits(trait, i, current.bodyType());
-                int color = on ? Ui.ON_ACCENT : suits ? Ui.mix(Ui.TEXT_DIM, Ui.TEXT, h) : Ui.MUTED;
+                int color = on ? Ui.ON_ACCENT : Ui.mix(Ui.TEXT_DIM, Ui.TEXT, h);
                 Component name = Ui.clip(font, valueName(trait, i), cw - 8);
                 Ui.textCentered(g, font, name, cx, cy, cw, CHIP_H, Ui.alpha(color, alpha));
                 if (hovered && font.width(valueName(trait, i)) > cw - 8) {
@@ -812,9 +753,9 @@ public class CharacterCreatorScreen extends Screen {
         boolean click(double mx, double my, int x, int y, int w) {
             int cols = columns(w);
             int cw = (w - (cols - 1) * 3) / cols;
-            for (int i = 0; i < Catalog.count(trait); i++) {
-                if (Ui.inside(mx, my, x + (i % cols) * (cw + 3), y + LABEL + (i / cols) * (CHIP_H + 3), cw, CHIP_H)) {
-                    change(trait, i);
+            for (int n = 0; n < values.size(); n++) {
+                if (Ui.inside(mx, my, x + (n % cols) * (cw + 3), y + LABEL + (n / cols) * (CHIP_H + 3), cw, CHIP_H)) {
+                    change(trait, values.get(n));
                     return true;
                 }
             }
