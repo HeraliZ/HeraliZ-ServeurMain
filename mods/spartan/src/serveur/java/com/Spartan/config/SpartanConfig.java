@@ -362,9 +362,10 @@ public class SpartanConfig {
                 "Vide = vérification désactivée. Au moins 32 caractères aléatoires. NE JAMAIS LE PUBLIER.")
                 .define("launcherSecret", "");
         LAUNCHER_TOKEN_REQUIRED = b.comment(
-                "false : un jeton absent/invalide ou des mods modifiés donnent une ALERTE seulement.",
-                "true  : expulsion (« lancez le jeu depuis le launcher officiel »). Activer une fois le",
-                "launcher mis à jour et distribué à tous les joueurs.")
+                "false : un jeton absent/invalide donne une ALERTE seulement.",
+                "true  : connexion REFUSÉE sans jeton valide du launcher HeraliZ (CurseForge, autre launcher,",
+                "jeton de plus de 6 h), même en détection silencieuse : c'est une règle d'accès. Activer une fois le",
+                "launcher distribué à tous les joueurs. Des mods différents du modpack restent une simple alerte.")
                 .define("tokenRequired", false);
         ALLOWED_MODS_HASHES = b.comment(
                 "Empreintes de dossier mods autorisées (vide = non vérifié). L'empreinte de chaque joueur",

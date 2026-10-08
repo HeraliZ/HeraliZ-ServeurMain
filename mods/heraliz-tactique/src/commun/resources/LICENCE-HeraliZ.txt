@@ -1,0 +1,9 @@
+HeraliZ — Tactique
+Ce mod contient du code repris sous licence GPL-3.0 (partie heralisz_tactical) : ces parties restent sous cette licence, dont le texte est
+joint dans ce jar ; elles peuvent être copiées et modifiées selon ses conditions.
+Le reste (le nom HeraliZ, et les modèles, textures, sons et textes créés par HeraliZ) : © HeraliZ, tous droits
+réservés ; ne pas les reprendre, les redistribuer ni les utiliser à des fins commerciales sans l'accord de HeraliZ.
+
+This mod contains code under the GPL-3.0 (partie heralisz_tactical) license: those parts stay under that license (text included in this
+jar). Everything else (the HeraliZ name, and the models, textures, sounds and texts made by HeraliZ): © HeraliZ, all
+rights reserved.
