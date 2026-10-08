@@ -8,15 +8,15 @@ import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 /**
- * Client -> serveur : personnaliser l'arme tenue (stickers, pendentif, StatTrack). Tout est revérifié ici : objet présent dans
+ * Client -> serveur : personnaliser l'arme tenue (stickers, StatTrack). Tout est revérifié ici : objet présent dans
  * l'emplacement, limites, valeurs de pose bornées.
  */
 public record DecorPacket(int action, int slot, int index, @Nullable DecorData.Placement at) {
    /** Fusion (heraliz_tactique) : traitement côté serveur (code d'origine), branché par fr.heralisz.camo.serveur.PartieServeur. */
    public static final Crochet<CamoNetwork.Recu<DecorPacket>> RECEPTION_SERVEUR = new Crochet<>();
 
-   public static final int ADD_STICKER = 0, MOVE_STICKER = 1, SCRAPE_STICKER = 2, SET_CHARM = 3, MOVE_CHARM = 4, REMOVE_CHARM = 5,
-      SET_STATTRACK = 6, MOVE_STATTRACK = 7;
+   /** 3 à 5 : anciens pendentifs (retirés), numéros gardés libres. */
+   public static final int ADD_STICKER = 0, MOVE_STICKER = 1, SCRAPE_STICKER = 2, SET_STATTRACK = 6, MOVE_STATTRACK = 7;
 
    public static void encode(DecorPacket p, FriendlyByteBuf buf) {
       buf.writeVarInt(p.action);

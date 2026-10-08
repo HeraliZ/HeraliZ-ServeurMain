@@ -176,7 +176,7 @@ public final class DecorPick {
     * Place automatique du StatTrack (comme dans CS, il se pose tout seul) : on vise l'arme sur une grille de l'écran du menu, on
     * ajuste une plaquette à chaque surface plane trouvée et on garde la meilleure : grande, sur le flanc tourné vers la caméra
     * (celui qu'on voit en 1re personne), vers le milieu de l'arme (carcasse plutôt que crosse ou canon), sans recouvrir un
-    * sticker ou le pendentif déjà posés.
+    * sticker déjà posé.
     */
    @Nullable
    public static Fit autoPlate(int guiW, int guiH, List<DecorData.Placement> avoid) {

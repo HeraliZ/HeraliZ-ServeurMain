@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Objets de personnalisation : stickers (dessin × finition), pendentifs, module StatTrack ; groupe Décorations de l'onglet HeraliZ · Tactique. */
+/** Objets de personnalisation : stickers (dessin × finition), module StatTrack ; groupe Décorations de l'onglet HeraliZ · Tactique. */
 public final class DecorItems {
    public static final List<RegistryObject<Item>> ALL = new ArrayList<>();
    public static final RegistryObject<Item> STATTRAK = reg("stattrack_module", StatTrakItem::new);
@@ -23,9 +23,6 @@ public final class DecorItems {
          for (DecorCatalog.Finish f : DecorCatalog.Finish.values()) {
             reg("sticker_" + s.id() + (f == DecorCatalog.Finish.PAPER ? "" : "_" + f.id()), () -> new StickerItem(s, f));
          }
-      }
-      for (DecorCatalog.Charm c : DecorCatalog.Charm.values()) {
-         reg("charm_" + c.id(), () -> new CharmItem(c));
       }
    }
 
@@ -72,32 +69,6 @@ public final class DecorItems {
       @Override
       public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
          tooltip.add(Component.translatable("item.heralisz_camo.sticker.desc").withStyle(ChatFormatting.GRAY));
-         howto(tooltip);
-      }
-   }
-
-   public static final class CharmItem extends Item {
-      public final DecorCatalog.Charm design;
-
-      CharmItem(DecorCatalog.Charm design) {
-         super(new Properties().stacksTo(1).rarity(Rarity.EPIC));
-         this.design = design;
-      }
-
-      /** Mobs : icône et objet en 3D (le vrai mob) ; les répliques d'armes gardent leur icône plate. Fusion (heraliz_tactique) : le
-       *  rendu (CharmItemRenderer, code client) est fourni par fr.heralisz.camo.client.PartieClient par ce crochet. */
-      public static final fr.heraliz.tactique.pont.Crochet<java.util.function.Consumer<net.minecraftforge.client.extensions.common.IClientItemExtensions>> RENDU_CLIENT =
-         new fr.heraliz.tactique.pont.Crochet<>();
-
-      @Override
-      public void initializeClient(java.util.function.Consumer<net.minecraftforge.client.extensions.common.IClientItemExtensions> consumer) {
-         RENDU_CLIENT.accept(consumer);
-      }
-
-      @Override
-      public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-         tooltip.add(Component.translatable(this.design.kind == DecorCatalog.Charm.Kind.MOB ? "item.heralisz_camo.charm_mob.desc"
-            : "item.heralisz_camo.charm.desc").withStyle(ChatFormatting.GRAY));
          howto(tooltip);
       }
    }

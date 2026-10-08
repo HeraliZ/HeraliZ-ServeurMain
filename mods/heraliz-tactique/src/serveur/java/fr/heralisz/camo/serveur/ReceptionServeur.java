@@ -2,7 +2,6 @@ package fr.heralisz.camo.serveur;
 
 import com.tacz.guns.api.item.IGun;
 import fr.heralisz.camo.CamoData;
-import fr.heralisz.camo.decor.DecorCatalog;
 import fr.heralisz.camo.decor.DecorData;
 import fr.heralisz.camo.decor.DecorItems;
 import fr.heralisz.camo.item.CamoItem;
@@ -17,20 +16,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import static fr.heralisz.camo.network.DecorPacket.ADD_STICKER;
-import static fr.heralisz.camo.network.DecorPacket.MOVE_CHARM;
 import static fr.heralisz.camo.network.DecorPacket.MOVE_STATTRACK;
 import static fr.heralisz.camo.network.DecorPacket.MOVE_STICKER;
-import static fr.heralisz.camo.network.DecorPacket.REMOVE_CHARM;
 import static fr.heralisz.camo.network.DecorPacket.SCRAPE_STICKER;
-import static fr.heralisz.camo.network.DecorPacket.SET_CHARM;
 import static fr.heralisz.camo.network.DecorPacket.SET_STATTRACK;
 
 /**
  * Partie SERVEUR des paquets client -> serveur de heralisz_camo (docs/METHODE_CLIENT_SERVEUR.md §6) : appliquer un camo sur
- * l'arme tenue (définitif), poser / déplacer / gratter les stickers, pendentifs et module StatTrack. Code d'origine des
+ * l'arme tenue (définitif), poser / déplacer / gratter les stickers et le module StatTrack. Code d'origine des
  * méthodes handle des paquets (tout est revérifié ici), avec « p.champ » devenu « p.champ() ».
  */
 public final class ReceptionServeur {
@@ -101,30 +96,6 @@ public final class ReceptionServeur {
                done = true;
             }
          }
-         case SET_CHARM -> {
-            if (at != null && item.getItem() instanceof DecorItems.CharmItem ci) {
-               DecorData.Charm old = DecorData.charm(gun);
-               DecorData.setCharm(gun, new DecorData.Charm(ci.design.id(), at));
-               item.shrink(1);
-               if (old != null) giveCharm(player, old.id());
-               done = true;
-            }
-         }
-         case MOVE_CHARM -> {
-            DecorData.Charm old = DecorData.charm(gun);
-            if (at != null && old != null) {
-               DecorData.setCharm(gun, new DecorData.Charm(old.id(), at));
-               done = true;
-            }
-         }
-         case REMOVE_CHARM -> {
-            DecorData.Charm old = DecorData.charm(gun);
-            if (old != null) {
-               DecorData.setCharm(gun, null);
-               giveCharm(player, old.id());
-               done = true;
-            }
-         }
          case SET_STATTRACK -> {
             if (at != null && item.getItem() instanceof DecorItems.StatTrakItem && !DecorData.hasStatTrak(gun)) {
                DecorData.setStatTrak(gun, at);
@@ -147,16 +118,5 @@ public final class ReceptionServeur {
          player.level().playSound(null, player.blockPosition(), p.action() == SCRAPE_STICKER ? SoundEvents.BRUSH_GENERIC : SoundEvents.ITEM_FRAME_ADD_ITEM,
             SoundSource.PLAYERS, 0.8F, 1.2F);
       }
-   }
-
-   // DecorPacket.giveCharm (d'origine)
-   private static void giveCharm(ServerPlayer player, String id) {
-      DecorCatalog.Charm c = DecorCatalog.Charm.byId(id);
-      if (c == null) return;
-      var item = ForgeRegistries.ITEMS.getValue(new net.minecraft.resources.ResourceLocation("heralisz_camo", "charm_" + c.id()));
-      if (item == null) return;
-      ItemStack stack = new ItemStack(item);
-      if (!player.getInventory().add(stack)) player.drop(stack, false);
-      player.displayClientMessage(Component.translatable("msg.heralisz_camo.charm_back"), true);
    }
 }

@@ -48,7 +48,7 @@ public class HeralizTactique {
       ONGLET.ajouter("grenades", "onglet.heraliz_tactique.grenades", () -> ModItems.getThrowableIcon(), out -> ModItems.remplirGrenades(out));
       // camos et skins X des armes TaCZ (heralisz_camo)
       ONGLET.ajouter("camos", "onglet.heraliz_tactique.camos", () -> HeraliszCamo.iconeCamos(), out -> HeraliszCamo.remplirCamos(out));
-      // stickers, pendentifs, module StatTrack (heralisz_camo) : ~170 objets d'une autre nature que les camos
+      // stickers et module StatTrack (heralisz_camo) : ~130 objets d'une autre nature que les camos
       ONGLET.ajouter("decor", "onglet.heraliz_tactique.decor", () -> HeraliszCamo.iconeDecor(), out -> HeraliszCamo.remplirDecor(out));
    }
 

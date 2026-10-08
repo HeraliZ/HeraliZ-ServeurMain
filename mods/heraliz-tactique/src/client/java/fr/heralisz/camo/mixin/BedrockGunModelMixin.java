@@ -83,8 +83,7 @@ public abstract class BedrockGunModelMixin {
    }
 
    /**
-    * Personnalisation (stickers, StatTrack, pendentif) : dessinée quand TaCZ a entièrement fini l'arme, pour qu'une réplique
-    * en pendentif (même modèle possible : un mini AK sur un AK) ne dérange pas le rendu en cours.
+    * Personnalisation (stickers, StatTrack) : dessinée quand TaCZ a entièrement fini l'arme.
     */
    @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lnet/minecraft/client/renderer/RenderType;II)V",
       at = @At("RETURN"))

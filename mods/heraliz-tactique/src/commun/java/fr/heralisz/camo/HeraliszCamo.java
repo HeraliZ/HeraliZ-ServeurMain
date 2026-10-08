@@ -55,7 +55,7 @@ public final class HeraliszCamo {
       return new ItemStack(fr.heralisz.camo.decor.DecorItems.STATTRAK.get());
    }
 
-   /** Groupe Décorations : contenu de l'ancien onglet « decor » (stickers, pendentifs, module StatTrack). */
+   /** Groupe Décorations : contenu de l'ancien onglet « decor » (stickers, module StatTrack). */
    public static void remplirDecor(CreativeModeTab.Output out) {
       fr.heralisz.camo.decor.DecorItems.ALL.forEach(i -> out.accept(i.get()));
    }
