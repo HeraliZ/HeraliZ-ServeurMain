@@ -26,7 +26,7 @@
     "shoot": "arkaniaz:m200/m200_fire",
     "shoot_3p": "arkaniaz:m200/m200_fire_3p",
     "silence": "arkaniaz:m200/m200_silence",
-    "silence_3p": "arkaniaz:m200/m200_silence_3p",
+    "silence_3p": "arkaniaz:m200/m200_silence",
     "bolt": "arkaniaz:m200/m200_bolt",
     "put_away": "tacz:ai_awp/awp_put_away"
   },

@@ -63,7 +63,7 @@
   // 枪械音效，在包目录下 sounds 文件夹内寻找，不建议为空
   "sounds": {
     "shoot": "maxstuff:ak_alpha/ak_alpha_shoot",
-    "shoot_3p": "maxstuff:ak_alpha/ak_alpha_shoot_3p",
+    "shoot_3p": "maxstuff:ak_alpha/ak_alpha_shoot3p",
     "reload_empty": "maxstuff:ak47/ak47_reload_empty",
     "reload_tactical": "maxstuff:ak47/ak47_reload_tactical",
     "inspect": "maxstuff:ak47/ak47_inspect",

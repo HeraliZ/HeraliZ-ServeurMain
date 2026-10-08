@@ -56,6 +56,8 @@
   "sounds": {
     "shoot": "heraliz_fuse:m14/m14_shoot",
     "shoot_3p": "heraliz_fuse:m14/m14_shoot_3p",
+    "silence": "tacz:mk14/mk14_silence",
+    "silence_3p": "tacz:mk14/mk14_silence_3p",
     "reload_empty": "heraliz_fuse:m14/m14_reload_empty",
     "reload_tactical": "heraliz_fuse:m14/m14_reload_tactical",
     "inspect": "heraliz_fuse:m14/m14_inspect",

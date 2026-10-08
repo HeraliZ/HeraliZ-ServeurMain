@@ -19,6 +19,8 @@
   "sounds": {
     "shoot": "arkaniaz:gm6/gm6_shoot",
     "shoot_3p": "arkaniaz:gm6/gm6_shoot",
+    "silence": "tacz:m95/m95_silence",
+    "silence_3p": "tacz:m95/m95_silence_3p",
     "melee_push": "tacz:melee_stock/melee_stock_02",
     "draw": "tacz:aa12/aa12_draw",
     "reload_empty": "arkaniaz:gm6/gm6_empty",

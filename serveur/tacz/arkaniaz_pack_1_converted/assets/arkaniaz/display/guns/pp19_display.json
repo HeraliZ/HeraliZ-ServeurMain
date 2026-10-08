@@ -38,7 +38,7 @@
     },
     "sounds": {
         "shoot": "arkaniaz:pp19/pp19_fire",
-        "shoot_3p": "arkaniaz:hk_mp5a5/hk_mp5a5_shoot_3p",
+        "shoot_3p": "arkaniaz:pp19/pp19_fire",
         "reload_empty": "arkaniaz:pp19/pp19_reloadempty",
         "reload_tactical": "arkaniaz:pp19/pp19_reload",
         "inspect": "arkaniaz:pp19/pp19_inspect",
