@@ -355,6 +355,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   - sinon : `python outils/fusion_nouveau.py <dossier> <groupe> "<Nom>"` (nouveau projet depuis `mods/_gabarit`),
     `python outils/fusion_copier.py <sources reçues> mods/<dossier>`, puis la méthode (section 4 et la doc) ;
   - ne jamais mettre ses dossiers `build/`, `run/`, ni de README contenant des noms perso ;
+  - mettre `LICENCE-HeraliZ.txt` (copie de `mods/_gabarit/src/commun/resources/`) dans ses ressources communes :
+    `verifier.py` refuse un jar de nos mods sans cette mention de propriété (version « licence libre » pour un mod
+    qui reprend du code GPL / LGPL, voir celles de CaraCrea, Bunker, Backpack, Tactique) ;
   - fabriquer, vérifier (noms perso compris), puis commit et push.
 - **Un mod d'un autre auteur** : son jar dans `serveur/mods-tiers/` (ou `client/mods-tiers/` s'il ne sert qu'aux
   joueurs), en retirant l'ancienne version.
