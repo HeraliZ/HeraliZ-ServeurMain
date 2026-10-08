@@ -39,6 +39,9 @@ public class SpartanConfig {
     // --- détections ---
     public static final ForgeConfigSpec.BooleanValue CHECK_FLY;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> FLY_HOVER_ITEMS;
+    public static final ForgeConfigSpec.BooleanValue ANTIDUPE_ENABLED;
+    public static final ForgeConfigSpec.IntValue ANTIDUPE_SECONDS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ANTIDUPE_ITEMS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> FLY_EXEMPT_KEYWORDS;
     public static final ForgeConfigSpec.DoubleValue FLY_TOLERANCE;
     public static final ForgeConfigSpec.DoubleValue FLY_GEAR_MIN_FALL_PER_SECOND;
@@ -564,11 +567,23 @@ public class SpartanConfig {
         ESP_SHOT_REVEAL_TICKS = b.comment("Durée (ticks) pendant laquelle un tireur reste envoyé après un son.")
                 .defineInRange("shotRevealTicks", 40, 5, 400);
         ESP_REVEAL_VOICE = b.comment(
-                "Simple Voice Chat : un joueur qui parle en proximité est envoyé aux joueurs à portée de voix,",
-                "sinon ils ne l'entendraient pas. Les groupes fermés ne révèlent rien.")
+                "Voix de CaraCrea : un joueur qui parle est envoyé aux joueurs à portée de sa voix (portée normale",
+                "ou chuchotement de la config de CaraCrea), sinon ils l'entendraient sans le voir.")
                 .define("revealOnVoice", true);
         ESP_VOICE_REVEAL_TICKS = b.comment("Durée (ticks) pendant laquelle un joueur reste envoyé après avoir parlé.")
                 .defineInRange("voiceRevealTicks", 20, 5, 400);
+        b.pop();
+
+        b.comment("Anti-duplication : chaque objet de valeur non empilable reçoit un numéro unique invisible ; si le même",
+                "numéro se trouve à deux endroits AU MÊME INSTANT (inventaires des joueurs connectés, coffre de l'Ender,",
+                "slots Curios, contenu des sacs), c'est une copie : alerte au staff avec la preuve. Rien n'est supprimé.")
+                .push("antidupe");
+        ANTIDUPE_ENABLED = b.comment("Active l'anti-duplication.").define("enabled", true);
+        ANTIDUPE_SECONDS = b.comment("Intervalle entre deux relevés (secondes). Un relevé lit tout en une fois (~1 ms).")
+                .defineInRange("scanSeconds", 20, 5, 300);
+        ANTIDUPE_ITEMS = b.comment("Objets suivis (identifiants exacts, ou « mod:* » pour tout un mod). Seuls les objets",
+                        "NON empilables reçoivent un numéro (un numéro empêcherait d'empiler).")
+                .defineList("trackedItems", List.of("tacz:*", "backpacked:*", "heraliz_armory:*"), o -> o instanceof String);
         b.pop();
 
         SPEC = b.build();
@@ -620,6 +635,10 @@ public class SpartanConfig {
 
     public static List<String> getNoSlowIgnoredItems() {
         return lowerList(NOSLOW_IGNORED_ITEMS.get());
+    }
+
+    public static List<String> getAntidupeItems() {
+        return lowerList(ANTIDUPE_ITEMS.get());
     }
 
     public static List<String> getFlyHoverItems() {

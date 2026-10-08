@@ -277,6 +277,12 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   passer à `true` qu'une fois le launcher distribué à tous. Changer la clé à chaque nouvelle version du launcher.
   Vérifié : un jeton fabriqué par le launcher est accepté par `LaunchToken.verify` (Java) ; autre pseudo ou autre clé
   refusés.
+- **Anti-duplication** (`check/item/AntiDupe`, section `[antidupe]`) : les objets de valeur NON empilables (`tacz:*`,
+  `backpacked:*`, `heraliz_armory:*` par défaut) reçoivent un numéro unique invisible (donnée `spartan_uid`) quand ils
+  sont rangés dans l'inventaire ; toutes les 20 s, un relevé en une fois (inventaires, souris, coffre de l'Ender,
+  Curios, contenu des sacs) : même numéro à deux endroits = copie, alerte au staff avec preuve, rien de supprimé.
+  Jamais numéroté : objet en main, porté, dans un sac ; joueurs en créatif ignorés. Un mod qui COPIE un objet suivi
+  (au lieu de le déplacer) doit retirer `spartan_uid` de la copie, sinon fausse alerte.
 - Un mod qui déplace un joueur doit passer par une vraie téléportation (`teleportTo`, `connection.teleport`) ou un recul
   (`setDeltaMovement` + `hurtMarked`) : Spartan les suit. Un `setPos` / `moveTo` seul sur un joueur peut être pris pour
   de la triche (cas connus : projection du Draugr, remontée de la Mère des Ruines : à surveiller dans les alertes).

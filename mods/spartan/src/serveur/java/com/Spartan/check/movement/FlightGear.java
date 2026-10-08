@@ -71,8 +71,8 @@ public final class FlightGear {
         return key != null && test.test(key.toString().toLowerCase(Locale.ROOT));
     }
 
-    /** Objets équipés dans les slots Curios (dépendance optionnelle, par réflexion). */
-    private static List<ItemStack> curios(ServerPlayer p) {
+    /** Objets équipés dans les slots Curios (dépendance optionnelle, par réflexion). Sert aussi à l'anti-duplication. */
+    public static List<ItemStack> curios(ServerPlayer p) {
         if (!resolveCurios()) {
             return List.of();
         }
