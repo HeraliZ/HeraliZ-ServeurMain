@@ -2,9 +2,7 @@ package com.Spartan.scan;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -32,11 +30,12 @@ public final class OfficialProfile {
     public String empreinteDossier = "";
     /** Nom du jar (minuscules) → sha256. */
     public Map<String, String> mods = new TreeMap<>();
-    /** Configs Mixin déclarées par les jars officiels. */
-    public List<String> mixins = new ArrayList<>();
+    /** Configs Mixin déclarées par les jars officiels → paquet de leurs classes Mixin. */
+    public Map<String, String> mixins = new TreeMap<>();
 
     private transient Set<String> hashes;
     private transient Set<String> mixinFingerprints;
+    private transient Map<String, String> packages;
 
     public boolean isEmpty() {
         return mods == null || mods.isEmpty();
@@ -56,6 +55,14 @@ public final class OfficialProfile {
         return index().mixinFingerprints.contains(fingerprintHex);
     }
 
+    /**
+     * Paquet officiel de la config Mixin de cette empreinte ("" si inconnu). Une config qui porte le nom d'une config
+     * officielle avec un AUTRE paquet est une triche déguisée.
+     */
+    public String mixinPackage(String fingerprintHex) {
+        return index().packages.getOrDefault(fingerprintHex, "");
+    }
+
     public long[] mixinFingerprints() {
         return index().mixinFingerprints.stream().mapToLong(h -> Long.parseUnsignedLong(h, 16)).toArray();
     }
@@ -65,7 +72,13 @@ public final class OfficialProfile {
             Set<String> h = new HashSet<>();
             mods.values().forEach(v -> h.add(v.toLowerCase(Locale.ROOT)));
             Set<String> m = new HashSet<>();
-            mixins.forEach(n -> m.add(ScanReport.hex(ScanReport.mixinFingerprint(n))));
+            Map<String, String> pk = new TreeMap<>();
+            mixins.forEach((n, pkg) -> {
+                String fp = ScanReport.hex(ScanReport.mixinFingerprint(n));
+                m.add(fp);
+                pk.put(fp, pkg == null ? "" : pkg);
+            });
+            packages = pk;
             mixinFingerprints = m;
             hashes = h;
         }
@@ -93,7 +106,7 @@ public final class OfficialProfile {
             p.mods = lower;
         }
         if (p.mixins == null) {
-            p.mixins = new ArrayList<>();
+            p.mixins = new TreeMap<>();
         }
         if (p.genere == null) {
             p.genere = "";

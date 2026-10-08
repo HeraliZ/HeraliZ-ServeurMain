@@ -18,7 +18,7 @@ class OfficialProfileTest {
         return OfficialProfile.fromJson("""
                 {"genere": "2026-10-08T00:00:00Z", "empreinteDossier": "%s",
                  "mods": {"JEI-1.20.1.jar": "%s", "create-1.20.1.jar": "%s"},
-                 "mixins": ["jei.mixins.json", "create.mixins.json"]}
+                 "mixins": {"jei.mixins.json": "mezz.jei.mixin", "create.mixins.json": "com.simibubi.create.foundation.mixin"}}
                 """.formatted("9".repeat(64), ScanTestData.JEI_SHA, ScanTestData.CREATE_SHA));
     }
 
@@ -71,6 +71,16 @@ class OfficialProfileTest {
         Finding f = find(analyze(r), "mixin:");
         assertNotNull(f);
         assertEquals(Severity.STRONG, f.severity());
+    }
+
+    @Test
+    void cheatHidingBehindAnOfficialMixinNameIsStrong() {
+        ScanReport r = ScanTestData.clean();
+        r.mixins.set(0, new ScanReport.MixinEntry("jei.mixins.json", "cheat.client.mixin", "", 4, List.of()));
+        Finding f = find(analyze(r), "mixin:");
+        assertNotNull(f);
+        assertEquals(Severity.STRONG, f.severity());
+        assertTrue(f.text().contains("déguisée"), f.text());
     }
 
     @Test

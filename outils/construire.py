@@ -137,8 +137,17 @@ def _sha256(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def _paquet(z, nom):
+    """Paquet déclaré par une config Mixin du jar ("" si illisible)."""
+    try:
+        d = json.loads(z.read(nom).decode("utf-8", "replace"))
+        return d.get("package", "") if isinstance(d, dict) else ""
+    except (KeyError, ValueError):
+        return ""
+
+
 def _mixins(z, out, profondeur=0):
-    """Configs Mixin d'un jar (et de ses jars imbriqués) : manifeste MixinConfigs + fichiers de config Mixin."""
+    """Configs Mixin d'un jar (et de ses jars imbriqués) -> paquet : manifeste MixinConfigs + fichiers de config."""
     noms = z.namelist()
     if "META-INF/MANIFEST.MF" in noms:
         attrs, cle = {}, None
@@ -150,7 +159,7 @@ def _mixins(z, out, profondeur=0):
                 attrs[cle.strip()] = v.strip()
         for c in attrs.get("MixinConfigs", "").split(","):
             if c.strip():
-                out.add(c.strip())
+                out[c.strip()] = out.get(c.strip()) or _paquet(z, c.strip())
     for n in noms:
         if n.endswith(".json") and not n.startswith(("assets/", "data/")) and z.getinfo(n).file_size < 65536:
             try:
@@ -158,7 +167,7 @@ def _mixins(z, out, profondeur=0):
             except ValueError:
                 continue
             if isinstance(d, dict) and "package" in d and any(isinstance(d.get(k), list) for k in ("mixins", "client", "server")):
-                out.add(n)
+                out[n] = out.get(n) or str(d.get("package", ""))
         elif n.startswith("META-INF/jarjar/") and n.endswith(".jar") and profondeur < 3:
             import io
             with zipfile.ZipFile(io.BytesIO(z.read(n))) as zi:
@@ -167,9 +176,9 @@ def _mixins(z, out, profondeur=0):
 
 def officiel(dossier, sortie):
     """Modpack officiel des joueurs pour Spartan (config/spartan/officiel.json sur le serveur) : empreinte de chaque jar,
-    configs Mixin connues, empreinte du dossier (même calcul que LaunchToken.modsHash du mod). Spartan signale tout jar
+    configs Mixin connues (nom -> paquet), empreinte du dossier (même calcul que LaunchToken.modsHash du mod). Spartan signale tout jar
     ou toute config Mixin en plus, sans rien apprendre à la main."""
-    mods, mixins = {}, set()
+    mods, mixins = {}, {}
     for j in sorted(dossier.glob("*.jar")):
         data = j.read_bytes()
         mods[j.name.lower()] = _sha256(data)
@@ -180,7 +189,7 @@ def officiel(dossier, sortie):
         "genere": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "empreinteDossier": _sha256("\n".join(lignes).encode("utf-8")),
         "mods": mods,
-        "mixins": sorted(mixins),
+        "mixins": dict(sorted(mixins.items())),
     }
     sortie.parent.mkdir(parents=True, exist_ok=True)
     sortie.write_text(json.dumps(doc, indent=2, ensure_ascii=False), encoding="utf-8")

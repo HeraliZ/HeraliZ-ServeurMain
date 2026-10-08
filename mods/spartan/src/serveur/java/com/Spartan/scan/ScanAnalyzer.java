@@ -289,6 +289,13 @@ public final class ScanAnalyzer {
         }
         for (ScanReport.MixinEntry m : r.mixins) {
             String fp = ScanReport.hex(ScanReport.mixinFingerprint(m.name()));
+            if (off != null && off.knowsMixin(fp) && !m.pkg().isEmpty() && !off.mixinPackage(fp).isEmpty()
+                    && !off.mixinPackage(fp).equals(m.pkg())) {
+                out.add(new Finding(Severity.STRONG, "mixin:" + fp + ":paquet",
+                        "config Mixin au nom d'une config officielle mais d'un autre paquet : " + m.name() + " ("
+                                + m.pkg() + " au lieu de " + off.mixinPackage(fp) + ") — triche déguisée"));
+                continue;
+            }
             if ((hasRef && ref.mixins.containsKey(fp)) || (off != null && off.knowsMixin(fp)) || isSpartanOwn(m)) {
                 continue;
             }
