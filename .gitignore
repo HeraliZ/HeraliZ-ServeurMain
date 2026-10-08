@@ -23,6 +23,7 @@ serveur/HeraliZ/
 serveur/world*/
 serveur/logs/
 serveur/crash-reports/
+# Mohist (139 Mo, trop gros pour Git) : dans la Release « base-serveur » du dépôt, voir serveur/mohist.sha256
 serveur/*.jar
 serveur/ops.json
 serveur/whitelist.json

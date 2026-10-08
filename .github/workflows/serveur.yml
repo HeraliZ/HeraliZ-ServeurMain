@@ -13,6 +13,13 @@ on:
         description: "Redémarrer le serveur après la mise à jour"
         type: boolean
         default: false
+      installation_complete:
+        description: "Installation complète : envoyer aussi Mohist et les fichiers de la racine (server.properties...)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
 
 concurrency:
   group: serveur
@@ -102,6 +109,21 @@ jobs:
             mirror -R --verbose serveur/tacz /tacz;
             mirror -R --verbose serveur/heralisz_matchs /heralisz_matchs;
             mirror -R --verbose serveur/mohist-config /mohist-config;
+            bye"
+
+      # Première installation (ou serveur à remettre à neuf) : Mohist, pris dans la Release « base-serveur » et contrôlé
+      # par serveur/mohist.sha256, + les fichiers de la racine. Le monde, ops.json et libraries/ ne sont jamais envoyés
+      # (Mohist télécharge ses bibliothèques au premier démarrage).
+      - name: Installation complète (Mohist et racine du serveur)
+        if: env.PTERO_SFTP_HOST != '' && github.event_name == 'workflow_dispatch' && inputs.installation_complete
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download base-serveur --pattern "$(cut -d' ' -f3 serveur/mohist.sha256)" --dir serveur
+          (cd serveur && sha256sum -c mohist.sha256)
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "${PTERO_SFTP_PORT:-2022}" "sftp://$PTERO_SFTP_HOST" -e "
+            set sftp:auto-confirm yes; set net:max-retries 3;
+            mput -O / serveur/mohist-*.jar serveur/server.properties serveur/bukkit.yml serveur/spigot.yml serveur/commands.yml serveur/eula.txt serveur/server-icon.png;
             bye"
 
       - name: Redémarrer le serveur

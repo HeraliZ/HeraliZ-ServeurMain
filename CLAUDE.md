@@ -66,13 +66,24 @@ serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
   defaultconfigs/         configs « serveur » des mods (copiées par Forge dans chaque nouveau monde)
   tacz/                   gunpacks TaCZ
   heralisz_matchs/, mohist-config/, server.properties, bukkit.yml, spigot.yml, commands.yml, eula.txt, server-icon.png
+  mohist.sha256           empreinte du jar Mohist (le jar lui-même est dans la Release « base-serveur »)
 client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (EntityCulling)
 outils/                   fabrication et contrôles (Python 3.11+)
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
-Jamais dans Git (voir `.gitignore`) : `build/`, `run/`, `dist/`, `livraison/`, le monde, Mohist et ses `libraries/`,
-`outils/chemins_local.json`, `outils/noms_interdits.txt`.
+Le dépôt contient le serveur COMPLET : les 22 mods des autres auteurs + nos 19 mods (sources, fabriqués en 17 jars
+`-serveur` pour le Ptero) = les 39 jars du dossier `mods/` du serveur, et les 42 jars des joueurs.
+
+Jamais dans Git (voir `.gitignore`) :
+- `build/`, `run/`, `dist/`, `livraison/` (refaits à chaque fabrication) ;
+- **Mohist** (139 Mo, GitHub refuse les fichiers de plus de 100 Mo) : il est dans la **Release « base-serveur »** du
+  dépôt (onglet Releases), contrôlé par `serveur/mohist.sha256`. Pour changer de version : nouvelle Release, nouvelle
+  empreinte ;
+- ses `libraries/` : Mohist les télécharge seul au premier démarrage ;
+- le **monde** (la carte est refaite hors de ce dépôt ; il va directement sur le Ptero) ;
+- `ops.json`, `whitelist.json`, `usercache.json`, les bases de données des plugins (données des joueurs) ;
+- `outils/chemins_local.json`, `outils/noms_interdits.txt` (propres à chaque PC).
 
 ---
 
@@ -263,6 +274,13 @@ Règles :
    - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
      racine du serveur se mettent à jour à la main) ;
 5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ».
+
+**Installation complète** (serveur Ptero neuf ou à remettre à neuf) : « Run workflow » avec la case
+« installation_complete » (et « redemarrer »). En plus de ce qui précède, il envoie Mohist (pris dans la Release
+« base-serveur », empreinte contrôlée) et les fichiers de la racine : `server.properties`, `bukkit.yml`, `spigot.yml`,
+`commands.yml`, `eula.txt`, `server-icon.png`. Il ne reste alors qu'à déposer le monde (dossier `HeraliZ`) et à
+démarrer. Attention : `server.properties` du dépôt remplace celui du serveur (port 25565 : vérifier que le panel
+remet bien le port de l'allocation, sinon l'y changer).
 
 Secrets à créer par le propriétaire (Settings → Secrets and variables → Actions) : `PTERO_SFTP_HOST`,
 `PTERO_SFTP_PORT` (souvent 2022), `PTERO_SFTP_USER`, `PTERO_SFTP_PASSWORD`, et pour le redémarrage `PTERO_URL`,
