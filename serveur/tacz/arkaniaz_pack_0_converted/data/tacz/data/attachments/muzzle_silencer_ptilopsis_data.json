@@ -21,7 +21,9 @@
     "function": "if (x <= 1.5) then y = x + 0.5 else y = 2 end"
   },
   "silence": {
-    "distance_addend": -24,
+    "distance": {
+      "multiplier": 0.0625
+    },
     "use_silence_sound": true
   }
 }

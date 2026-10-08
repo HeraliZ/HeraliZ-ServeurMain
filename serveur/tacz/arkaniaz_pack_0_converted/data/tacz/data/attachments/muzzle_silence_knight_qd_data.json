@@ -24,7 +24,9 @@
     "multiplier": 1.2
   },
   "silence": {
-    "distance_addend": -18,
+    "distance": {
+      "multiplier": 0.09375
+    },
     "use_silence_sound": true
   }
 }

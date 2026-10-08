@@ -161,6 +161,10 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
 - les camos des armes (tactique) : les 62 shaders `camo_<id>.fsh` sont **générés** depuis
   `mods/heraliz-tactique/outils/camo_gabarit.fsh` par `python mods/heraliz-tactique/outils/generer_camos.py` ; on modifie
   le gabarit, jamais les fichiers générés.
+- la portée du son des silencieux TaCZ (gunpacks de `serveur/tacz/`) : tableau `PORTEES` de `outils/silencieux.py`, puis
+  `python outils/silencieux.py` (jamais à la main dans les fichiers des silencieux ; à relancer si la portée d'un tir
+  normal change dans `serveur/config/tacz-common.toml`). Un tir silencieux part aussi deux fois moins fort pour les autres
+  joueurs (mixin commun `TaczSonSilencieuxMixin` du mod tactique).
 
 **Les briques à connaître** (paquet `pont` de chaque projet, détails dans `docs/METHODE_CLIENT_SERVEUR.md`) :
 - `Parties.serveur(...)` / `Parties.client(...)` à la fin du constructeur `@Mod` : chargent `serveur.PartieServeur` /
@@ -236,7 +240,8 @@ Les contrôles :
 - `check_geckolib_api` : compatible geckolib222 4.4.7, aucun GeckoLib embarqué ;
 - `verif_reobf` : noms de Minecraft réobfusqués (sinon plantage au chargement) ; chaque nom est cherché dans
   Minecraft + Forge du lanceur CurseForge ;
-- noms perso : aucun mot interdit dans les sources ni les jars.
+- noms perso : aucun mot interdit dans les sources ni les jars ;
+- silencieux : chaque silencieux des gunpacks a sa portée de son (`outils/silencieux.py`).
 
 **Où va quoi** (dossier `livraison/`, recréé à chaque fois) :
 - `mods serveur/` → `mods/` du Ptero ;

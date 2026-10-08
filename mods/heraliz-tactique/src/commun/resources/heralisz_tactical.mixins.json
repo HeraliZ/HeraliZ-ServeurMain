@@ -7,7 +7,8 @@
   "mixins": [
     "AnvilMenuMixin",
     "LivingEntityMixin",
-    "PlayerMixin"
+    "PlayerMixin",
+    "TaczSonSilencieuxMixin"
   ],
   "injectors": {
     "defaultRequire": 1
