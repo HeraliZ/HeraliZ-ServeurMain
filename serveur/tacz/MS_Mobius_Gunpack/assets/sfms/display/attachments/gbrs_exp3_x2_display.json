@@ -1,0 +1,34 @@
+{
+  "slot": "sfms:attachment/slot/gbrs_exp3_x2",
+  // 配件的默认模型，不可为空
+  "model": "sfms:attachment/gbrs_exp3_x2_geo",
+  // 配件默认模型使用的材质，不可为空
+  "texture": "sfms:attachment/uv/gbrs_exp3_x2",
+//  "lod": {
+//    "model": "tacz:attachment/lod/sight_exp3",
+//    "texture": "tacz:attachment/lod/sight_exp3"
+//  },
+  "zoom": [
+    1.2,
+	2.2
+  ],
+  // 如果配件是瞄具，且为筒状放大瞄具，此选项应为true
+  "scope": false,
+  // 如果配件是瞄具，且为红点或全息瞄具，此选项应为true
+  "sight": true,
+  // 只有 瞄具 配件需要设置这个属性，表示开镜后，枪身和瞄具渲染的fov。
+  // 默认情况下，mc 渲染手部模型的 fov 为 70。
+  "fov": 25.0,
+  "sounds": {
+    "install": "tacz:attachments/scope_general_c",
+    "uninstall": "tacz:attachments/scope_general_c"
+  },
+  "laser": {
+    // 默认的镭射颜色 default laser color, 0x = #
+    "default_color": "0x58ff1d",
+    // 是否允许在改装界面自定义该镭射的颜色 can be customized
+    "can_edit": true,
+    // 激光的长度（因为是渐变，末端可能实际完全看不见）laser length
+    "length": 75
+  }
+}

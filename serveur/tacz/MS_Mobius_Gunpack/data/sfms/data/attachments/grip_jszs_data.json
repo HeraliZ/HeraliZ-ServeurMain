@@ -1,0 +1,18 @@
+{
+  "weight": 0.12,
+  "ads": {
+    // 加数（多个配件的数值相加，作为第一个乘区）
+    "percent": -0.3
+  },
+  "aim_inaccuracy": {
+    "percent": -0.03
+  },
+  "recoil": {
+    "pitch": {
+      "percent": 0.05
+    },
+    "yaw": {
+      "percent": 0.05
+    }
+  }
+}

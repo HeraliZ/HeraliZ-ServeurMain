@@ -1,0 +1,22 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "minecraft:coal"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "ammo",
+    "id": "sfms:arrow117",
+    "count": 48
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

@@ -1,0 +1,8 @@
+{
+	"name": "sfms.attachment.grip_c8tsar.name",
+	"tooltip": "sfms.attachment.grip_c8tsar.tooltip",
+	"display": "sfms:grip_c8tsar_display",
+	"data": "sfms:grip_c8tsar_data",
+	"type": "grip",
+    "sort": 24080
+}

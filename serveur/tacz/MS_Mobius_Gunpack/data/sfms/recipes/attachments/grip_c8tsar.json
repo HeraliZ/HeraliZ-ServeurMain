@@ -1,0 +1,27 @@
+{
+  "materials": [
+    {
+      "item": {
+        "item": "minecraft:glass"
+      },
+      "count": 40
+    },
+    {
+      "item": {
+        "item": "minecraft:netherite_ingot"
+      },
+      "count": 5
+    },
+    {
+      "item": {
+        "tag": "forge:gems/diamond"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "sfms:grip_c8tsar"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

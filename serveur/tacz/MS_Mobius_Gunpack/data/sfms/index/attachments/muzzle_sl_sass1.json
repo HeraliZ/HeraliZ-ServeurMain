@@ -1,0 +1,8 @@
+{
+	"name": "sfms.attachment.muzzle_sl_sass1.name",
+	"tooltip": "sfms.attachment.muzzle_sl_sass1.tooltip",
+	"display": "sfms:muzzle_sl_sass1_display",
+	"data": "sfms:muzzle_sl_sass_data",
+	"type": "muzzle",
+    "sort": 24080
+}

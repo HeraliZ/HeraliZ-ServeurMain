@@ -1,0 +1,8 @@
+{
+	"name": "sfms.attachment.gbrs_exp3_x2.name",
+	"tooltip": "sfms.attachment.gbrs_exp3_x2.tooltip",
+	"display": "sfms:gbrs_exp3_x2_display",
+	"data": "sfms:gbrs_exp3_x2_data",
+	"type": "scope",
+    "sort": 24080
+}

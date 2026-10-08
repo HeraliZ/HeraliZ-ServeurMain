@@ -1,0 +1,102 @@
+{
+  "apotheosis_modern_ragnarok": {
+    "enchantment_value": 18,
+    "force_melee_weapon": -1,
+    "loot_category_override": "apotheosis_modern_ragnarok:bolt_action",
+    "disabled_affixes": [
+      "apotheosis_modern_ragnarok:all_gun/attribute/lightweight"
+    ]
+  },
+  "ammo": "sfms:arrow117",
+  "ammo_amount": 1,
+  "extended_mag_ammo_amount": [
+    1,
+    1,
+    1
+  ],
+  "can_crawl": true,
+  "can_slide": false,
+  "bolt": "manual_action",
+  "script": "sfms:tactical_bow_logic",
+  "script_param": {
+    "bolt_time": 1,
+    "bolt_feed_time": 0.25
+  },
+  "rpm": 1200,
+  "bullet": {
+    "life": 2,
+    "bullet_amount": 1,
+    "damage": 20,
+    "extra_damage": {
+      "armor_ignore": 0.15,
+      "head_shot_multiplier": 1.75,
+      "damage_adjust": [
+        {"distance": 50, "damage": 20},
+        {"distance": "infinite", "damage": 15}
+      ]
+    },
+    "speed": 140,
+    "gravity": 0.15,
+    "knockback": 0.05,
+    "friction": 0.05,
+    "ignite": {
+      "entity": false,
+      "block": false
+    },
+    "ignite_entity_time": 24,
+    "pierce": 1
+  },
+  "fire_sound": {
+    "fire_multiplier": 0.1,
+    "silence_multiplier": 0.1
+  },
+  "reload": {
+    "type": "inventory",
+    "feed": {
+      "empty": 2.58,
+      "tactical": 3.13
+    },
+    "cooldown": {
+      "empty": 3.63,
+      "tactical": 3.75
+    }
+  },
+  "draw_time": 0.25,
+  "put_away_time": 0,
+  "bolt_action_time": 1,
+  "aim_time": 0.5,
+  "sprint_time": 0.2,
+  "weight": 2.7,
+  "movement_speed": {
+    "base": 0.0,
+    "aim": -0.1,
+    "reload": -0.1
+  },
+  "fire_mode": [
+    "semi"
+  ],
+  "crawl_recoil_multiplier": 0.5,
+  "recoil": {
+    "pitch": [
+      {"time": 0, "value": [0, 0]},
+      {"time": 0.2, "value": [0, 0]}
+    ],
+    "yaw": [
+      {"time": 0, "value": [0, 0]},
+      {"time": 0.2, "value": [0, 0]}
+    ]
+  },
+  "hurt_bob_tweak_multiplier": 0,
+  "inaccuracy": {
+    "stand": 0,
+    "move": 0,
+    "sneak": 0,
+    "lie": 0,
+    "aim": 0
+  },
+  "allow_attachment_types": [
+    "muzzle",
+	"extended_mag",
+	"laser"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "sfms.attachment.grip_laser_wireframedb.name",
+	"tooltip": "sfms.attachment.grip_laser_wireframedb.tooltip",
+	"display": "sfms:grip_laser_wireframedb_display",
+	"data": "sfms:grip_laser_wireframedb_data",
+	"type": "grip",
+    "sort": 24080
+}

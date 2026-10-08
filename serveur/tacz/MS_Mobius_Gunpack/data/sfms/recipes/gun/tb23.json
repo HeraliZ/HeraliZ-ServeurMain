@@ -1,0 +1,27 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/copper"
+      },
+      "count": 24
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 24
+    },
+    {
+      "item": {
+        "item": "minecraft:coal"
+      },
+      "count": 16
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "sfms:tb23"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

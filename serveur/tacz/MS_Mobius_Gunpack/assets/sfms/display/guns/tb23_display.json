@@ -1,0 +1,68 @@
+{
+  "show_crosshair": "true",
+  "model": "sfms:gun/tb23_geo",
+  "texture": "sfms:gun/uv/tb23",
+  "hud": "sfms:gun/hud/tb23",
+  "slot": "sfms:gun/slot/tb23",
+  "animation": "sfms:tb23",
+  "use_default_animation": "rifle",
+  "damage_style": "total",
+  "third_person_animation": "default",
+  "iron_zoom": 1,
+  "state_machine": "sfms:tactical_bow_state_machine",
+  "transform": {
+    "scale": {
+      "thirdperson": [0.6, 0.6, 0.6],
+      "ground": [0.6, 0.6, 0.6],
+      "fixed": [1.2, 1.2, 1.2]
+    }
+  },
+  // 子弹相关渲染参数。ammo display 里也有，但是会被这里的参数覆盖掉
+  "ammo": {
+    // 曳光弹颜色，没有则为 #FFFFFF，没有此字段时，会调用 ammo 的相关字段
+    // 严格遵循 RGB 颜色代码
+    "tracer_color": "#FF7900",
+    // 粒子效果，部分参数和原版指令完全一致，具体可参考 wiki：https://minecraft.fandom.com/zh/wiki/%E5%91%BD%E4%BB%A4/particle
+    // 没有此字段时，会调用 ammo 的相关字段
+        "particle": {
+    //      // 名称，具体可选粒子可参考 wiki：https://minecraft.fandom.com/zh/wiki/%E7%B2%92%E5%AD%90
+          "name": "crit",
+    //      // 生成的区域，默认为 0 0 0
+          "delta": [
+            0,
+            0,
+            0
+          ],
+    //      // 速度，默认为0，必须至少为 0
+          "speed": 0,
+    //      // 粒子存在时间，单位 tick，默认为 20 tick
+          "life_time": 5,
+    //      // 粒子数量，当子弹速度过快时，可以增大此数量，能够填满子弹路径的空隙
+          "count": 6
+        }
+  },
+  "sounds": {
+    "dry_fire": "exception_armorer:misc/empty",
+    "fire_select": "exception_armorer:misc/empty",
+    //"flesh_hit": "sfms:tb23/hit",
+    "draw": "sfms:tb23/draw",
+    "shoot_3p": "sfms:tb23/tb_shoot3",
+    //"kill": "sfms:tb23/kill",
+    "head_hit": "sfms:sfms_guns/awmmog1",
+    "flesh_hit": "sfms:sfms_guns/awmmog2",
+    "melee_push": "exception_armorer:misc/empty"
+    //"head_hit": "sfms:tb23/head_hit"
+  },
+  "offhand_show": {
+    "pos": [1, 19, 4],
+    "rotate": [0, 0, 50],
+    "scale": [0.5, 0.5, 0.5]
+  },
+  "hotbar_show": {
+    "0": {
+      "pos": [-1, 19, 3],
+      "rotate": [-180, 0, 130],
+      "scale": [0.5, 0.5, 0.5]
+    }
+  }
+}

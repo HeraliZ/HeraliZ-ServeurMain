@@ -1,0 +1,15 @@
+{
+  "weight": 1.35,
+  "ads": {
+    "addend": 0.03
+  },
+  // 腰射精度配置，最终数值越小越精准（新方法，推荐使用）
+   "inaccuracy": {
+     "addend": -0.95
+   },
+  // 护甲穿透配置
+   "armor_ignore":{
+   "addend": 0.05
+  // "multiplier": 1.5
+   }
+}

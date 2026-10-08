@@ -1,0 +1,39 @@
+{
+  "materials": [
+    {
+      "item": {
+        "tag": "forge:ingots/netherite"
+      },
+      "count": 6
+    },
+    {
+      "item": {
+        "tag": "forge:ingots/iron"
+      },
+      "count": 140
+    },
+    {
+      "item": {
+        "tag": "forge:gems/diamond"
+      },
+      "count": 6
+    },
+    {
+      "item": {
+        "tag": "forge:rods/blaze"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "item": "minecraft:nether_star"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "sfms:c8msw"
+  },
+  "type": "tacz:gun_smith_table_crafting"
+}

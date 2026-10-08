@@ -1,0 +1,9 @@
+{
+  "name": "sfms.gun.tb23.name",
+  "tooltip": "sfms.gun.tb23.desc",
+  "display": "sfms:tb23_display",
+  "data": "sfms:tb23_data",
+  //mg，sniper，rifle，pistol，smg，rpg，shotgun
+  "type": "pistol",
+  "sort": 24080
+}

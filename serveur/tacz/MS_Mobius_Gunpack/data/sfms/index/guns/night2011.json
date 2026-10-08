@@ -1,0 +1,9 @@
+{
+  "name": "sfms.gun.night2011.name",
+  "tooltip": "sfms.gun.night2011.desc",
+  "display": "sfms:night2011_display",
+  "data": "sfms:night2011_data",
+  //mg，sniper，rifle，pistol，smg，rpg，shotgun
+  "type": "pistol",
+  "sort": 24080
+}
