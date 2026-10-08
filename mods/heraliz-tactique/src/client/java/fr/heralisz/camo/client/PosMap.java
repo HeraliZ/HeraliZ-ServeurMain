@@ -55,6 +55,26 @@ public final class PosMap {
    private static final Pattern BARREL = Pattern.compile("barrel|muzzle|suppress|silenc|canon", Pattern.CASE_INSENSITIVE);
    private static final float BODY = 1.0F, MAGAZINE = 0.75F, BARREL_PART = 0.5F, NONE = 0.0F;
    /**
+    * Carcasse de l'arme (Diamond : pavé de diamants) : pièces du corps nommées comme la carcasse (upper, lower, receiver,
+    * body, frame, slide…) et leurs sous-pièces, sauf les petites pièces rapportées (détente, sûreté, rail, organes de
+    * visée…) ; à défaut de noms, les pièces sans rôle entre l'avant de la crosse et l'arrière du garde-main, à hauteur du
+    * haut du chargeur (carcasseParDefaut). Code 0.94 : reste « corps » pour tous les autres camos (seuil 0.9 du shader).
+    * Même règle dans l'aperçu des camos (outils/apercu_camos/prep.py).
+    */
+   static final float RECEIVER = 0.94F;
+   private static final Pattern RECEIVER_NAME = Pattern.compile(
+      "^(upper|lower|receiver|upper_?receiver|lower_?receiver|body|gun_?body|upper_?body|lower_?body|frame|slide|slide_?base)\\d*$",
+      Pattern.CASE_INSENSITIVE);
+   private static final Pattern NOT_RECEIVER = Pattern.compile(
+      "grip|stock|butt|cheek|sight|scope|rail|mount|carry|handle|trigger|safety|selector|switch|hammer|bolt|charg|release|catch|latch|lever"
+         + "|pin|ping|screw|button|guard|gaurd|gas|barrel|muzzle", Pattern.CASE_INSENSITIVE);
+   /** Rôle d'une pièce (hérité des parents) pour placer le pavé quand la carcasse n'est pas nommée. */
+   static final byte R_NONE = 0, R_STOCK = 1, R_FRONT = 2, R_OTHER = 3;
+   private static final Pattern STOCK_NAME = Pattern.compile("stock|butt", Pattern.CASE_INSENSITIVE);
+   private static final Pattern FRONT_NAME = Pattern.compile(
+      "handguard|hand_guard|^hg$|foregrip|fore_grip|forend|gas|barrel|muzzle|suppress|silenc", Pattern.CASE_INSENSITIVE);
+   private static final Pattern OTHER_NAME = Pattern.compile("grip|sight|scope|carry|handle|rail|mount", Pattern.CASE_INSENSITIVE);
+   /**
     * Taille de la carte (bornée 256..1024, voir mapSize). Dans une face, la position varie linéairement avec les coordonnées de
     * texture et le filtrage la restitue exactement ; mais au bord d'une face, il mélange les texels de la face voisine sur la
     * texture : il faut donc que les faces couvrent plusieurs texels (FACE_TEXELS). Mémoire vidéo par carte : 256² 0,5 Mo,
@@ -142,11 +162,15 @@ public final class PosMap {
 
    /**
     * Un quadrilatère du modèle : 4 sommets (x, y, z, u, v), sa partie (0 = jamais camouflé), la partie qu'il aurait s'il
-    * prenait le camo (pièces lumineuses ternes) et son genre (K_NORMAL, K_EXCLU, K_LUMIERE).
+    * prenait le camo (pièces lumineuses ternes), son genre (K_NORMAL, K_EXCLU, K_LUMIERE) et le rôle de sa pièce (R_*).
     */
-   record Quad(float[][] v, float part, float alt, byte kind) {
+   record Quad(float[][] v, float part, float alt, byte kind, byte role) {
+      Quad(float[][] v, float part, float alt, byte kind) {
+         this(v, part, alt, kind, R_NONE);
+      }
+
       Quad(float[][] v, float part) {
-         this(v, part, part, K_NORMAL);
+         this(v, part, part, K_NORMAL, R_NONE);
       }
    }
 
@@ -166,7 +190,7 @@ public final class PosMap {
       List<Vector3f> muzzles = new ArrayList<>();
       PoseStack ps = new PoseStack();
       for (BedrockPart root : model.getShouldRender()) {
-         walk(root, ps, BODY, BODY, K_NORMAL, knife, null, quads, muzzles);
+         walk(root, ps, BODY, BODY, K_NORMAL, R_NONE, knife, null, quads, muzzles);
       }
       if (knife != null && knife.cut > 0) {
          quads = cut(quads, knife);
@@ -182,7 +206,7 @@ public final class PosMap {
       // couteaux : toujours la carte pleine. Les modèles ArkaniaZ déclarent une texture 64² / 128² mais leurs faces ont des UV
       // de fractions de pixel (textures réelles 2048-4096 px) : à 256², la moitié de la surface du Butterfly tombe sur des faces
       // de moins d'un texel -> positions et rôles mélangés entre faces voisines, finitions en taches (régression de la 0.9.9).
-      PosMap map = build(quads, muzzles, knife, knife != null ? MAX_SIZE : mapSize(model, quads), null, 0, 0);
+      PosMap map = build(quads, muzzles, knife, knife != null ? MAX_SIZE : mapSize(model, quads), null, 0, 0, knife == null);
       SHARED.put(key, map);
       return map;
    }
@@ -212,10 +236,12 @@ public final class PosMap {
     * mask (mw x mh, 0 = pas de camo) : le tissu seul reçoit le camo ; boucles, têtes et visages d'animaux gardent leur texture.
     */
    static PosMap bakeQuads(List<Quad> quads, int n, @Nullable byte[] mask, int mw, int mh) {
-      return build(quads, List.of(), null, n, mask, mw, mh);
+      return build(quads, List.of(), null, n, mask, mw, mh, false);
    }
 
-   private static PosMap build(List<Quad> quads, List<Vector3f> muzzles, @Nullable KnifeType knife, int n, @Nullable byte[] mask, int mw, int mh) {
+   /** @param gun arme à feu (carcasse à repérer pour le Diamond) ; ni couteau ni sac */
+   private static PosMap build(List<Quad> quads, List<Vector3f> muzzles, @Nullable KnifeType knife, int n, @Nullable byte[] mask, int mw, int mh,
+                               boolean gun) {
       // repère de l'arme : axe le plus long = longueur, orienté vers le canon
       float[] min = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
       float[] max = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
@@ -256,6 +282,9 @@ public final class PosMap {
          sa = m / muzzles.size() >= c[a] ? 1 : -1;
       }
       float sb = b == 1 ? -1 : 1; // dans TaCZ, y descend
+      if (gun) {
+         quads = carcasseParDefaut(quads, a, b, c, ext, len, sa, sb);
+      }
 
       float[] px = new float[n * n * 4];
       boolean[] filled = new boolean[n * n];
@@ -452,8 +481,8 @@ public final class PosMap {
    }
 
    /** Parcourt les pièces dans leur pose de repos (rotations initiales), sans dépendre de l'animation en cours. */
-   private static void walk(BedrockPart part, PoseStack ps, float parentPart, float parentAlt, byte parentKind, @Nullable KnifeType knife,
-                            @Nullable Vector3f anchor, List<Quad> out, List<Vector3f> muzzles) {
+   private static void walk(BedrockPart part, PoseStack ps, float parentPart, float parentAlt, byte parentKind, byte parentRole,
+                            @Nullable KnifeType knife, @Nullable Vector3f anchor, List<Quad> out, List<Vector3f> muzzles) {
       ps.pushPose();
       ps.translate(part.x / 16.0F, part.y / 16.0F, part.z / 16.0F);
       if (part.getInitRotZ() != 0) ps.mulPose(Axis.ZP.rotation(part.getInitRotZ()));
@@ -462,6 +491,7 @@ public final class PosMap {
       String name = part.name == null ? "" : part.name;
       float cls = parentPart, alt = parentAlt;
       byte kind = parentKind;
+      byte role = knife == null ? roleOf(parentRole, name) : R_NONE;
       KnifeType.Part kp = knife == null ? null : knife.partOf(name);
       boolean lum = ILLUM.matcher(name).find() || (knife == null && part.illuminated);
       if (cls != NONE && EXCLUDE.matcher(name).find()) {
@@ -485,10 +515,8 @@ public final class PosMap {
             Vector4f o = new Vector4f(0, 0, 0, 1).mul(ps.last().pose());   // pivot de la pièce nommée (manche…)
             anchor = new Vector3f(o.x, o.y, o.z);
          }
-      } else if (cls == BODY && MAG.matcher(name).find()) {
-         cls = MAGAZINE;
-      } else if (cls == BODY && BARREL.matcher(name).find() && !name.toLowerCase().contains("muzzle_flash")) {
-         cls = BARREL_PART;
+      } else {
+         cls = classe(cls, name);
       }
       if (name.toLowerCase().contains("muzzle")) {
          Vector4f o = new Vector4f(0, 0, 0, 1).mul(ps.last().pose());
@@ -506,22 +534,130 @@ public final class PosMap {
                   if (new Vector3f(w.x, w.y, w.z).distance(anchor) < knife.pivotRadius / 16F) code = KnifeType.Part.PIN.code;
                }
             }
-            cube.compile(ps.last(), new Recorder(out, code, code, K_NORMAL), 0, 0, 1, 1, 1, 1);
+            cube.compile(ps.last(), new Recorder(out, code, code, K_NORMAL, R_NONE), 0, 0, 1, 1, 1, 1);
          }
       } else {
-         part.compile(ps.last(), new Recorder(out, cls, alt, kind), 0, 0, 1, 1, 1, 1);
+         part.compile(ps.last(), new Recorder(out, cls, alt, kind, role), 0, 0, 1, 1, 1, 1);
       }
       for (BedrockPart child : part.children) {
-         walk(child, ps, cls, alt, kind, knife, anchor, out, muzzles);
+         walk(child, ps, cls, alt, kind, role, knife, anchor, out, muzzles);
       }
       ps.popPose();
    }
 
-   /** Partie d'une pièce d'après son nom (chargeur, canon) quand elle descend du corps. */
+   /**
+    * Partie d'une pièce d'après son nom quand elle descend du corps : chargeur, canon, carcasse (et, sous la carcasse, les
+    * petites pièces rapportées qui redeviennent du corps).
+    */
    private static float classe(float parent, String name) {
-      if (parent == BODY && MAG.matcher(name).find()) return MAGAZINE;
-      if (parent == BODY && BARREL.matcher(name).find() && !name.toLowerCase().contains("muzzle_flash")) return BARREL_PART;
+      boolean corps = parent == BODY || parent == RECEIVER;
+      if (corps && MAG.matcher(name).find()) return MAGAZINE;
+      if (corps && BARREL.matcher(name).find() && !name.toLowerCase().contains("muzzle_flash")) return BARREL_PART;
+      if (parent == BODY && RECEIVER_NAME.matcher(name).matches()) return RECEIVER;
+      if (parent == RECEIVER && !RECEIVER_NAME.matcher(name).matches() && NOT_RECEIVER.matcher(name).find()) return BODY;
       return parent;
+   }
+
+   /** Surface d'un quad (parallélogramme sur ses deux côtés au sommet 0). */
+   private static double aire(float[][] v) {
+      double ux = v[1][0] - v[0][0], uy = v[1][1] - v[0][1], uz = v[1][2] - v[0][2];
+      double wx = v[3][0] - v[0][0], wy = v[3][1] - v[0][1], wz = v[3][2] - v[0][2];
+      double cx = uy * wz - uz * wy, cy = uz * wx - ux * wz, cz = ux * wy - uy * wx;
+      return Math.sqrt(cx * cx + cy * cy + cz * cz);
+   }
+
+   /** Rôle d'une pièce pour la carcasse par défaut : crosse, avant (garde-main, canon), autre (poignée, visée, rail). */
+   private static byte roleOf(byte parent, String name) {
+      if (STOCK_NAME.matcher(name).find()) return R_STOCK;
+      if (FRONT_NAME.matcher(name).find()) return R_FRONT;
+      if (OTHER_NAME.matcher(name).find()) return R_OTHER;
+      return parent;
+   }
+
+   /**
+    * Carcasse d'une arme à feu, après le classement par noms :
+    * <ul>
+    *    <li>une « carcasse » qui couvre plus de 45 % de la surface d'une arme longue (pièce « body » qui contient toute
+    *    l'arme) n'en est pas une : elle redevient du corps ;</li>
+    *    <li>sans carcasse nommée (ex. modèles en « boneNN ») : les pièces du corps sans rôle dont la longueur tombe surtout entre
+    *    l'avant de la crosse et l'arrière du garde-main, et dont le centre est à hauteur du haut du chargeur (± 0.075 longueur
+    *    d'arme), deviennent la carcasse.</li>
+    * </ul>
+    * Repère de la carte : x vers la bouche, y vers le haut. Même règle dans l'aperçu (outils/apercu_camos/prep.py).
+    */
+   static List<Quad> carcasseParDefaut(List<Quad> quads, int a, int b, float[] c, float[] ext, float len, float sa, float sb) {
+      double aRec = 0, aTout = 0;
+      for (Quad q : quads) {
+         if (q.part == NONE) continue;
+         double s = aire(q.v);
+         aTout += s;
+         if (q.part == RECEIVER) aRec += s;
+      }
+      if (aRec > 0.45 * aTout && ext[b] / ext[a] < 0.5F) {
+         List<Quad> corps = new ArrayList<>(quads.size());
+         for (Quad q : quads) {
+            corps.add(q.part == RECEIVER || q.alt == RECEIVER
+               ? new Quad(q.v, q.part == RECEIVER ? BODY : q.part, q.alt == RECEIVER ? BODY : q.alt, q.kind, q.role) : q);
+         }
+         quads = corps;
+      }
+      for (Quad q : quads) {
+         if (q.part == RECEIVER) return quads;
+      }
+      float mx0 = Float.MAX_VALUE, mx1 = -Float.MAX_VALUE, my1 = -Float.MAX_VALUE;
+      for (Quad q : quads) {
+         if (q.part != MAGAZINE) continue;
+         for (float[] vx : q.v) {
+            float x = sa * (vx[a] - c[a]) / len, y = sb * (vx[b] - c[b]) / len;
+            mx0 = Math.min(mx0, x);
+            mx1 = Math.max(mx1, x);
+            my1 = Math.max(my1, y);
+         }
+      }
+      float rear, front, y0, y1;
+      if (mx0 <= mx1) {
+         float w = mx1 - mx0, mxc = (mx0 + mx1) / 2;
+         float stock = -Float.MAX_VALUE, avant = Float.MAX_VALUE;
+         for (Quad q : quads) {
+            if (q.part == NONE || (q.role != R_STOCK && q.role != R_FRONT)) continue;
+            float qx0 = Float.MAX_VALUE, qx1 = -Float.MAX_VALUE;
+            for (float[] vx : q.v) {
+               float x = sa * (vx[a] - c[a]) / len;
+               qx0 = Math.min(qx0, x);
+               qx1 = Math.max(qx1, x);
+            }
+            if (q.role == R_STOCK && qx1 < mxc) stock = Math.max(stock, qx1);
+            if (q.role == R_FRONT && qx0 > mxc) avant = Math.min(avant, qx0);
+         }
+         rear = stock > -Float.MAX_VALUE ? stock : mx0 - 1.3F * w - 0.03F;
+         front = avant < Float.MAX_VALUE ? Math.min(avant, mx1 + 0.03F + 0.5F * w) : mx1 + 0.03F + 0.25F * w;
+         y0 = my1 - 0.075F;
+         y1 = my1 + 0.075F;
+      } else {
+         rear = -0.12F;
+         front = 0.08F;
+         y0 = -0.05F;
+         y1 = 0.08F;
+      }
+      List<Quad> out = new ArrayList<>(quads.size());
+      for (Quad q : quads) {
+         if (q.part == BODY && q.role == R_NONE) {
+            float qx0 = Float.MAX_VALUE, qx1 = -Float.MAX_VALUE, cy = 0;
+            for (float[] vx : q.v) {
+               float x = sa * (vx[a] - c[a]) / len;
+               qx0 = Math.min(qx0, x);
+               qx1 = Math.max(qx1, x);
+               cy += sb * (vx[b] - c[b]) / len / q.v.length;
+            }
+            float dedans = (Math.min(qx1, front) - Math.max(qx0, rear)) / Math.max(qx1 - qx0, 1e-6F);
+            if (dedans >= 0.6F && cy >= y0 && cy <= y1) {
+               out.add(new Quad(q.v, RECEIVER, q.alt == BODY ? RECEIVER : q.alt, q.kind, q.role));
+               continue;
+            }
+         }
+         out.add(q);
+      }
+      return out;
    }
 
    /**
@@ -542,7 +678,7 @@ public final class PosMap {
             umin = Math.min(umin, vx[3]); umax = Math.max(umax, vx[3]);
             vmin = Math.min(vmin, vx[4]); vmax = Math.max(vmax, vx[4]);
          }
-         out.add(tex.vive(umin, vmin, umax, vmax) ? q : new Quad(q.v, q.alt, q.alt, K_NORMAL));
+         out.add(tex.vive(umin, vmin, umax, vmax) ? q : new Quad(q.v, q.alt, q.alt, K_NORMAL, q.role));
       }
       return out;
    }
@@ -672,22 +808,23 @@ public final class PosMap {
    private static final class Recorder implements VertexConsumer {
       private final List<Quad> out;
       private final float part, alt;
-      private final byte kind;
+      private final byte kind, role;
       private final float[][] cur = new float[4][];
       private int k;
 
-      Recorder(List<Quad> out, float part, float alt, byte kind) {
+      Recorder(List<Quad> out, float part, float alt, byte kind, byte role) {
          this.out = out;
          this.part = part;
          this.alt = alt;
          this.kind = kind;
+         this.role = role;
       }
 
       @Override
       public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz) {
          this.cur[this.k++] = new float[]{x, y, z, u, v};
          if (this.k == 4) {
-            this.out.add(new Quad(this.cur.clone(), this.part, this.alt, this.kind));
+            this.out.add(new Quad(this.cur.clone(), this.part, this.alt, this.kind, this.role));
             this.k = 0;
          }
       }

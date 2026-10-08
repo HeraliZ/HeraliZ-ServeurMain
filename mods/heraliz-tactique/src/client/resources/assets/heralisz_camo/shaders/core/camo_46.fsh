@@ -44,7 +44,7 @@ out vec4 fragColor;
 
 // === CAMO LIB BEGIN ===
 // camos refaits en 2026-10 : relief de l'arme gardé et reflets liés au monde (voir « refonte 2026-10 »)
-#if CAMO_ID == 1 || CAMO_ID == 43 || CAMO_ID == 44 || (CAMO_ID >= 20 && CAMO_ID <= 25)
+#if CAMO_ID == 1 || CAMO_ID == 5 || CAMO_ID == 43 || CAMO_ID == 44 || (CAMO_ID >= 20 && CAMO_ID <= 25)
 #define CAMO_RELIEF
 #endif
 const float TAU = 6.2831853;
@@ -1785,8 +1785,8 @@ vec3 skinSurface(vec3 p, out vec3 em) {
 #endif
 }
 
-// ================================================================== refonte 2026-10 : Gold, Obsidian, Liquid Chrome, Amethyst et
-// couleurs simples (validés par le propriétaire). Deux nouveautés, réservées aux camos CAMO_RELIEF :
+// ================================================================== refonte 2026-10 : Gold, Diamond, Obsidian, Liquid Chrome,
+// Amethyst et couleurs simples. Deux nouveautés, réservées aux camos CAMO_RELIEF :
 // - le relief de l'arme : la texture d'origine sert de carte d'ombrage (gravures, vis, rails, arêtes) ; RELIEF = 1 au ton
 //   moyen du voisinage, < 1 dans les creux sombres, > 1 sur les arêtes claires ;
 // - des reflets liés au monde : le décor reflété (ciel, horizon, panneaux lumineux, soleil) est fixé dans le monde
@@ -1972,6 +1972,129 @@ vec3 amethystGem(vec3 p, out vec3 em) {
     return gemDoppler(p, hexc(0x1a0030), hexc(0x6a1cc0), hexc(0xb05cff), hexc(0xe8ccff), 0.12, vec3(19.3, 8.7, 4.1), em);
 }
 
+// ------------------------------------------------------------------ Diamant façon Call of Duty : or champagne poli et, sur la
+// carcasse de l'arme (partie 0.94 de la carte de positions, voir PosMap.RECEIVER : de la crosse au garde-main), un pavage
+// de petits diamants blancs sertis : pierres rondes taille brillant en relief sur un réseau hexagonal régulier, griffes
+// dorées entre les pierres. Les pierres scintillent quand le joueur bouge (décor lié au monde) ; de loin elles se fondent
+// en un pavé brillant.
+vec3 champagne(vec3 n) {
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 F0 = vec3(0.97, 0.87, 0.66);
+    vec3 F = F0 + (vec3(1.0) - F0) * pow(1.0 - ndv, 5.0);
+    vec3 env = envWorld(r, 0.1) * 0.45 + envWorld(r, 0.55) * 0.55;
+    return env * F * 0.95 + F0 * 0.17;
+}
+
+// repère de la face dans la vue, aligné sur les coordonnées uv du motif (dérivées écran : constant sur une face) :
+// sert à pencher les normales des pierres pour de vrai (relief 3D) sans bruit
+mat3 faceFrame(vec3 n, vec2 uv) {
+    vec3 dp1 = dFdx(viewPos);
+    vec3 dp2 = dFdy(viewPos);
+    vec2 du1 = dFdx(uv);
+    vec2 du2 = dFdy(uv);
+    vec3 dp2perp = cross(dp2, n);
+    vec3 dp1perp = cross(n, dp1);
+    vec3 T = dp2perp * du1.x + dp1perp * du2.x;
+    vec3 B = dp2perp * du1.y + dp1perp * du2.y;
+    float im = inversesqrt(max(max(dot(T, T), dot(B, B)), 1e-24));
+    return mat3(T * im, B * im, n);
+}
+
+vec3 diamondCod(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    vec3 nv = normalize(viewNormal);
+    vec3 n0 = normalize(nv + 0.14 * softWarp(p, 2.2));
+    vec3 metal = champagne(n0);
+    // réseau hexagonal des pierres (voisines à distance 1)
+    vec3 fnl = faceNormal(p);
+    vec2 uv = surf2d(p, fnl) * 150.0;
+    vec2 S = vec2(1.0, 1.7320508);
+    vec2 ga = mod(uv, S) - 0.5 * S;
+    vec2 gb = mod(uv - 0.5 * S, S) - 0.5 * S;
+    vec2 g = dot(ga, ga) < dot(gb, gb) ? ga : gb;
+    vec2 cid = floor((uv - g) * 2.0 + 0.5);
+    float rr = length(g);
+    float fin = clamp(1.6 - 2.2 * length(fwidth(uv)), 0.0, 1.0);
+    mat3 tbn = faceFrame(nv, uv);
+    // lumière du ciel (repère du monde, venant d'en haut) ramenée dans la vue puis sur la face
+    vec3 lv = normalize(transpose(IViewRotMat) * normalize(vec3(0.25, 1.0, 0.35)));
+    vec3 lt = transpose(tbn) * lv;
+    // pierre taille brillant en relief : table octogonale plate au sommet, 8 facettes de couronne qui descendent vers
+    // le serti, le tout légèrement bombé ; chaque facette est un petit miroir penché
+    float R = 0.43;
+    float hc = hash(vec3(cid, 5.0));
+    float a0 = hc * TAU;
+    float ang = atan(g.y, g.x) - a0;
+    float sec = floor(fract(ang / TAU) * 8.0);
+    float am = a0 + (sec + 0.5) * (TAU / 8.0);
+    float oct = 0.0;
+    for (int i = 0; i < 8; i++) {
+        float a = a0 + float(i) * (TAU / 8.0);
+        oct = max(oct, dot(g, vec2(cos(a), sin(a))));
+    }
+    float isTable = 1.0 - step(0.2, oct);
+    vec3 nt = normalize(vec3(vec2(cos(am), sin(am)) * 0.8 * (1.0 - isTable) + g / R * 0.3, 1.0));
+    nt = normalize(mix(vec3(0.0, 0.0, 1.0), nt, fin));
+    vec3 ns = normalize(tbn * nt);
+    vec3 rs = reflWorld(ns);
+    float v = lum3(envWorld(rs, 0.02));
+    float fh = hash(vec3(cid * 1.31, sec + isTable * 9.0 + 3.0));
+    // éclat : reflets internes (presque toujours clair) + décor + angle ; côté tourné vers la lumière plus clair,
+    // côté opposé plus sombre : la pierre sort du serti
+    float flick = 0.5 + 0.5 * sin(dot(rs, vec3(5.1, 3.7, 4.3)) * 2.6 + fh * TAU + t * 0.5);
+    float ndl = dot(ns, lv);
+    // taille brillant : facettes alternées claires / plus sombres (dessin en flèches), comme une vraie pierre
+    float alt = mod(sec, 2.0) * (1.0 - isTable);
+    float b = 0.5 + 0.26 * smoothstep(0.1, 1.2, v) + 0.3 * flick + 0.36 * ndl + 0.1 * isTable - 0.16 * alt;
+    vec3 stone = mix(hexc(0x8e98aa), vec3(1.0), smoothstep(0.3, 0.98, b));
+    vec3 fire = spectrum(fract(fh * 3.0 + dot(rs, vec3(0.6, 0.3, 0.75)) * 2.0));
+    stone = mix(stone, stone * (0.6 + 0.55 * fire), smoothstep(1.0, 1.3, b) * 0.4);
+    // reflet net de la lumière sur les facettes qui lui font face
+    float spec = pow(max(dot(reflect(-lv, ns), -eyeDir()), 0.0), 24.0);
+    stone += spec * 0.6;
+    // arêtes des facettes : traits fins (dessin net de la taille brillant)
+    float fa = fract(ang / TAU * 8.0);
+    float edgeF = (1.0 - smoothstep(0.0, 0.09, min(fa, 1.0 - fa))) * (1.0 - isTable) + (1.0 - smoothstep(0.0, 0.025, abs(oct - 0.2)));
+    stone *= 1.0 - 0.16 * clamp(edgeF, 0.0, 1.0) * fin;
+    float aa = fwidth(rr) + 1e-4;
+    float inside = 1.0 - smoothstep(R - aa, R + aa, rr);
+    stone *= 1.0 - 0.4 * smoothstep(R - 0.05, R - 0.005, rr);             // liseré du serti autour de la pierre
+    // serti : métal champagne dans le creux, ombre portée de chaque pierre à l'opposé de la lumière, occlusion
+    // autour des pierres, griffes (billes) en relief là où trois pierres se touchent
+    float hgt = 0.16;
+    vec2 off = lt.xy * hgt / max(lt.z, 0.25);
+    float shadow = 1.0 - smoothstep(R - 0.04, R + 0.06, length(g + off));
+    float ao = mix(0.68, 1.0, smoothstep(R, R + 0.12, rr));
+    vec3 setting = metal * 0.92 * ao * (1.0 - 0.45 * shadow * fin);
+    float bead = 9.0;
+    vec2 bc = vec2(0.0);
+    for (int k = 0; k < 6; k++) {
+        float a = 0.5235988 + float(k) * 1.0471976;
+        vec2 c = 0.57735 * vec2(cos(a), sin(a));
+        float d = length(g - c);
+        if (d < bead) { bead = d; bc = c; }
+    }
+    float rb = 0.085;
+    float bm = 1.0 - smoothstep(rb - aa, rb + aa, bead);
+    vec2 bd = (g - bc) / rb;
+    vec3 nb = normalize(tbn * vec3(bd, sqrt(max(1.0 - dot(bd, bd), 0.0)) + 0.15));
+    float bl = 0.55 + 0.55 * max(dot(nb, lv), 0.0) + 0.8 * pow(max(dot(reflect(-lv, nb), -eyeDir()), 0.0), 30.0);
+    setting = mix(setting, champagne(nb) * bl, bm);
+    vec3 pave = mix(setting, stone, inside);
+    vec3 paveFar = mix(metal * 0.8, vec3(0.93, 0.95, 0.99), 0.7) * (0.9 + 0.2 * flick);
+    pave = mix(paveFar, pave, fin);
+    // pavage sur la carcasse seulement (partie 0.94, des deux côtés, dessus et dessous) ; le reste en or champagne
+    float m = 1.0 - smoothstep(0.012, 0.03, abs(PART - 0.94));
+    vec3 col = mix(metal * reliefMetal(0.85), pave, m);
+    // étincelles : des facettes renvoient le soleil, d'autres s'allument un instant
+    float glint = pow(max(dot(rs, normalize(vec3(0.42, 0.68, -0.6))), 0.0), 30.0);
+    float tw = pow(max(0.0, sin(t * 1.9 + fh * 50.0)), 30.0) * step(0.8, fh);
+    // les pierres renvoient la lumière même à l'ombre : un peu de leur éclat ne dépend pas de l'éclairage
+    em = ((glint * 1.0 + tw * 0.8) * fin * vec3(1.0, 0.98, 0.95) + stone * 0.2) * inside * m;
+    return col;
+}
+
 // ------------------------------------------------------------------ couleurs simples : peinture satinée façon Cerakote
 // posée SUR l'arme : le relief de la texture d'origine (gravures, vis, rails, arêtes) reste lisible ; grain fin de la
 // peinture et reflet doux du décor
@@ -2003,7 +2126,7 @@ vec3 camoColor(int id, vec3 p, out vec3 em) {
 #if CAMO_ID == 1
     return goldCod(p, em);
 #elif CAMO_ID == 5
-    return diamondShards(p, em);
+    return diamondCod(p, em);
 #elif CAMO_ID == 71
     return blackIceEpic(p, em);
 #elif CAMO_ID == 7
