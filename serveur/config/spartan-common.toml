@@ -5,6 +5,173 @@
 # fabriquer Spartan, puis partir de mods/spartan/build/config-modele/spartan-common.toml.
 
 
+#Anti-duplication : chaque objet de valeur non empilable reçoit un numéro unique invisible ; si le même
+#numéro se trouve à deux endroits AU MÊME INSTANT (inventaires des joueurs connectés, coffre de l'Ender,
+#slots Curios, contenu des sacs), c'est une copie : alerte au staff avec la preuve. Rien n'est supprimé.
+[antidupe]
+	#Objets suivis (identifiants exacts, ou « mod:* » pour tout un mod). Seuls les objets
+	#NON empilables reçoivent un numéro (un numéro empêcherait d'empiler).
+	trackedItems = ["tacz:*", "backpacked:*", "heraliz_armory:*"]
+	#Intervalle entre deux relevés (secondes). Un relevé lit tout en une fois (~1 ms).
+	#Range: 5 ~ 300
+	scanSeconds = 20
+	#Active l'anti-duplication.
+	enabled = true
+
+#Correction instantanée : le tricheur détecté ne profite pas de sa triche.
+#Indépendant de alertOnly : ne bannit personne, annule seulement l'avantage.
+[mitigation]
+	#Fly / Speed : renvoie le joueur à sa dernière position au sol.
+	movementSetback = true
+	#Après une détection de minage, casse bloquée pendant N secondes (0 = non).
+	#Range: 0 ~ 300
+	blockLockSeconds = 3
+	#Reach / KillAura / AutoClicker : annule le coup.
+	cancelCombat = true
+	#Nuker / FastBreak : le bloc n'est pas cassé.
+	cancelBlocks = true
+	#Après une détection de combat, coups bloqués pendant N secondes (0 = non).
+	#Range: 0 ~ 300
+	combatLockSeconds = 3
+	#IllegalEffect : retire l'effet illégal immédiatement.
+	removeIllegalEffects = true
+
+[evidence]
+	#Nombre de ticks conservés (20 ticks = 1 seconde).
+	#Range: 20 ~ 2000
+	ticks = 200
+	#Enregistre une « boîte noire » des actions du joueur pour les alertes.
+	enabled = true
+	#Nombre max de fichiers de preuve conservés (les plus anciens sont supprimés).
+	#Range: 10 ~ 100000
+	maxFiles = 500
+
+#Anti-ESP / anti-wallhack : le serveur n'envoie plus un joueur à un autre tant qu'aucune ligne
+#de vue n'existe entre eux (murs, bâtiments, sous-sols). Un ESP ou un wallhack, même injecté et
+#indétectable, n'a alors rien à afficher. Les cas où le jeu a besoin du joueur sont gérés : tirs TaCZ
+#et voix (Simple Voice Chat) le montrent aux joueurs à portée d'oreille, coéquipiers toujours visibles.
+#Coût mesurable avec /spartan esp.
+[antiEsp]
+	#Le staff (op 2+) voit tout le monde même en survie. Laisser false : le staff observe en spectateur.
+	staffSeesAll = false
+	#TaCZ : un joueur qui tire (recharge, arme la culasse…) est envoyé aux joueurs à portée du son,
+	#sinon ils n'entendraient pas son tir. Ne désactiver qu'en connaissance de cause.
+	revealOnShot = true
+	#Durée (ticks) pendant laquelle un tireur reste envoyé après un son.
+	#Range: 5 ~ 400
+	shotRevealTicks = 40
+	#Paire cachée non revérifiée depuis autant de ticks (serveur saturé) : montrée.
+	#Range: 2 ~ 100
+	failOpenTicks = 10
+	#Blocs non pleins qui cachent aussi (forme de collision : une porte fermée cache, ouverte non).
+	#Tags (#minecraft:doors) ou identifiants (mod:bloc). Le verre, les feuilles, les vitres et les
+	#clôtures ne cachent jamais ; les blocs pleins et opaques (y compris de mods) cachent toujours.
+	opaqueBlocks = ["#minecraft:doors"]
+	#Threads de calcul des lignes de vue, en parallèle du tick du serveur (le thread principal ne
+	#fait que préparer et appliquer : quasi aucun lag). -1 = automatique (1 thread par 4 cœurs, max 4),
+	#0 = calcul sur le thread principal avec budgetMicrosPerTick (petites machines).
+	#Range: -1 ~ 16
+	threads = -1
+	#Un joueur aperçu reste envoyé autant de ticks après avoir disparu derrière un obstacle
+	#(20 = 1 s) : évite les clignotements en courant le long des fenêtres ou des poteaux.
+	#Range: 2 ~ 200
+	hideDelayTicks = 20
+	#Active l'anti-ESP.
+	enabled = true
+	#Coéquipiers toujours visibles : équipes vanilla, et mod de clan via IMC (voir README).
+	revealAllies = true
+	#En dessous de cette distance (blocs), toujours envoyé.
+	#Range: 0.0 ~ 16.0
+	minDistance = 2.5
+	#Les joueurs en créatif voient tout le monde (les spectateurs aussi, toujours).
+	creativeSeesAll = true
+	#Voix de CaraCrea : un joueur qui parle est envoyé aux joueurs à portée de sa voix (portée normale
+	#ou chuchotement de la config de CaraCrea), sinon ils l'entendraient sans le voir.
+	revealOnVoice = true
+	#Anticipation des « peek » : un joueur est envoyé dès qu'un pas de côté de cette longueur (blocs)
+	#le rendrait visible, pour qu'il apparaisse à temps à l'angle d'un mur malgré le ping.
+	#Range: 0.0 ~ 2.0
+	peekBlocks = 0.6
+	#Durée (ticks) pendant laquelle un joueur reste envoyé après avoir parlé.
+	#Range: 5 ~ 400
+	voiceRevealTicks = 20
+	#Idem pour un saut (hauteur d'œil supplémentaire testée, blocs).
+	#Range: 0.0 ~ 1.5
+	jumpBlocks = 0.6
+	#Uniquement si threads = 0 : temps de calcul maximal par tick (microsecondes ; un tick dure 50 000).
+	#Au-delà, les vérifications restantes attendent le tick suivant ; une paire cachée non revérifiée
+	#à temps est montrée (jamais d'invisibilité injuste).
+	#Range: 200 ~ 40000
+	budgetMicrosPerTick = 3000
+
+#Contrôle d'intégrité du client : à la connexion puis à intervalle aléatoire, le jeu du
+#joueur envoie ce qu'il a VRAIMENT chargé (jars, modules, configs Mixin, agents Java, code
+#d'origine inconnue, DLL injectées…). Comparé au client de référence (/spartan reference learn).
+#Alerte silencieuse au staff, jamais d'expulsion (voir integrity.silentClientDetections).
+[scan]
+	#Premier contrôle après la connexion : délai minimum (secondes).
+	#Range: 3 ~ 600
+	firstScanMinSeconds = 10
+	#Contrôles suivants : intervalle aléatoire minimum (secondes).
+	#Range: 30 ~ 86400
+	intervalMinSeconds = 180
+	#Classes sensibles du jeu : le contrôle relève chaque Mixin qui les modifie (rendu = ESP / X-ray,
+	#mouvement = fly / speed / NoSlow, réseau, souris = aimbot…). Une config Mixin inconnue qui en
+	#touche une est un indice fort. Ajoutez les classes de TaCZ ou d'autres mods à protéger.
+	mixinWatchClasses = ["net.minecraft.client.renderer.LevelRenderer", "net.minecraft.client.renderer.GameRenderer", "net.minecraft.client.renderer.LightTexture", "net.minecraft.client.renderer.FogRenderer", "net.minecraft.client.renderer.ItemBlockRenderTypes", "net.minecraft.client.renderer.ScreenEffectRenderer", "net.minecraft.client.renderer.entity.EntityRenderer", "net.minecraft.client.renderer.entity.LivingEntityRenderer", "net.minecraft.client.renderer.entity.EntityRenderDispatcher", "net.minecraft.client.renderer.entity.player.PlayerRenderer", "net.minecraft.client.renderer.culling.Frustum", "net.minecraft.client.renderer.block.BlockRenderDispatcher", "net.minecraft.client.renderer.block.ModelBlockRenderer", "net.minecraft.client.renderer.block.LiquidBlockRenderer", "net.minecraft.client.player.LocalPlayer", "net.minecraft.client.player.KeyboardInput", "net.minecraft.client.multiplayer.MultiPlayerGameMode", "net.minecraft.client.multiplayer.ClientPacketListener", "net.minecraft.client.multiplayer.ClientLevel", "net.minecraft.client.Minecraft", "net.minecraft.client.MouseHandler", "net.minecraft.client.KeyboardHandler", "net.minecraft.client.Timer", "net.minecraft.client.gui.Gui", "net.minecraft.network.Connection", "net.minecraft.world.entity.Entity", "net.minecraft.world.entity.LivingEntity", "net.minecraft.world.entity.player.Player", "net.minecraft.world.level.block.Block", "net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase"]
+	#Délai de réponse d'un contrôle (secondes). Deux absences de suite = alerte.
+	#Range: 15 ~ 600
+	responseTimeoutSeconds = 90
+	#Classes de clients de triche connus, cherchées dans le jeu du joueur. Cette liste n'est
+	#jamais dans le jar : les développeurs de cheats ne la voient pas. À compléter avec les
+	#classes trouvées dans les preuves des tricheurs attrapés.
+	classProbes = ["baritone.api.BaritoneAPI", "net.wurstclient.WurstClient", "meteordevelopment.meteorclient.MeteorClient", "meteordevelopment.orbit.EventBus", "net.ccbluex.liquidbounce.LiquidBounce", "pro.mikey.xray.XRay"]
+	#Premier contrôle après la connexion : délai maximum (secondes).
+	#Range: 3 ~ 600
+	firstScanMaxSeconds = 30
+	#Contrôles suivants : intervalle aléatoire maximum (secondes).
+	#Range: 30 ~ 86400
+	intervalMaxSeconds = 480
+	#Programmes de triche / d'injection : signalés s'ils tournent sur le PC du joueur (morceau du
+	#nom de l'exécutable, minuscules). Seuls les programmes correspondants sont envoyés au serveur.
+	processPatterns = ["cheatengine", "processhacker", "systeminformer", "x64dbg", "x32dbg", "ollydbg", "injector", "xenos", "recaf", "jd-gui", "bytecode-viewer"]
+	#Échantillons de la pile du thread de rendu par contrôle (~50 ms chacun) : un ESP injecté
+	#s'exécute à chaque image et finit par y apparaître. 0 = désactivé.
+	#Range: 0 ~ 200
+	renderSamples = 40
+	#Morceaux de noms de DLL suspectes chargées dans le jeu (une DLL chargée depuis le dossier
+	#temporaire, Téléchargements ou le Bureau est signalée dans tous les cas).
+	nativePatterns = ["inject", "cheat", "hack", "aimbot", "xray", "vape"]
+	#Active le contrôle d'intégrité du client.
+	enabled = true
+
+[resources]
+	#Packs de ressources autorisés en plus de ceux du serveur et du jeu.
+	allowedResourcePacks = []
+	#Shaderpacks autorisés (identifiant en minuscules). Vide = aucun.
+	allowedShaderpacks = []
+	#Interdit les shaders (Iris / Oculus / OptiFine). Détection best-effort côté client.
+	#Le plus sûr : ne pas inclure de mod de shaders dans le modpack officiel — le launcher
+	#empêche alors d'en ajouter un.
+	blockShaders = true
+	#Interdit les packs de ressources (textures) ajoutés par le joueur.
+	#Le pack du serveur reste autorisé. Pour IMPOSER le pack du serveur, mettez aussi
+	#require-resource-pack=true dans server.properties.
+	blockCustomResourcePacks = true
+
+[bans]
+	#Alerte le staff quand un joueur se connecte avec l'IP d'un joueur banni (sans l'expulser).
+	alertSameIp = true
+	#RGPD : les IP et identifiants matériels des joueurs NON bannis sont supprimés
+	#après N jours sans connexion. Les joueurs bannis sont conservés tant que le ban est actif.
+	#Range: 7 ~ 3650
+	playerDataRetentionDays = 180
+	#Durée max (heures) du ban d'IP qui accompagne un /sban. 0 = ne jamais bannir l'IP.
+	#Une IP est souvent partagée (4G, box familiale, lycée) : un ban d'IP long bannit des innocents.
+	#Le ban de compte et le ban matériel, eux, gardent la durée demandée.
+	#Range: 0 ~ 87600
+	ipBanHours = 72
+
 [alerts]
 	#Salon PUBLIC des sanctions (facultatif) : chaque ban y est annoncé avec le
 	#pseudo, la durée et la raison seulement (jamais d'IP, de PC ni de détail de détection). Vide = rien.
@@ -76,24 +243,6 @@
 	#Le client signale des traces d'injection (agents Java, threads anonymes).
 	#Best-effort : un client modifié peut ne rien signaler.
 	clientIntegrity = true
-
-#Correction instantanée : le tricheur détecté ne profite pas de sa triche.
-#Indépendant de alertOnly : ne bannit personne, annule seulement l'avantage.
-[mitigation]
-	#Fly / Speed : renvoie le joueur à sa dernière position au sol.
-	movementSetback = true
-	#Après une détection de minage, casse bloquée pendant N secondes (0 = non).
-	#Range: 0 ~ 300
-	blockLockSeconds = 3
-	#Reach / KillAura / AutoClicker : annule le coup.
-	cancelCombat = true
-	#Nuker / FastBreak : le bloc n'est pas cassé.
-	cancelBlocks = true
-	#Après une détection de combat, coups bloqués pendant N secondes (0 = non).
-	#Range: 0 ~ 300
-	combatLockSeconds = 3
-	#IllegalEffect : retire l'effet illégal immédiatement.
-	removeIllegalEffects = true
 
 [checks]
 	#Identifiants exacts d'items qui permettent de VOLER sur place ou de monter (jetpacks…)
@@ -205,146 +354,10 @@
 	#doit être mis dans flyHoverItems (identifiant exact), pas ici.
 	flyExemptKeywords = ["parachute", "glider"]
 
-[evidence]
-	#Nombre de ticks conservés (20 ticks = 1 seconde).
-	#Range: 20 ~ 2000
-	ticks = 200
-	#Enregistre une « boîte noire » des actions du joueur pour les alertes.
-	enabled = true
-	#Nombre max de fichiers de preuve conservés (les plus anciens sont supprimés).
-	#Range: 10 ~ 100000
-	maxFiles = 500
-
-#Anti-ESP / anti-wallhack : le serveur n'envoie plus un joueur à un autre tant qu'aucune ligne
-#de vue n'existe entre eux (murs, bâtiments, sous-sols). Un ESP ou un wallhack, même injecté et
-#indétectable, n'a alors rien à afficher. Les cas où le jeu a besoin du joueur sont gérés : tirs TaCZ
-#et voix (Simple Voice Chat) le montrent aux joueurs à portée d'oreille, coéquipiers toujours visibles.
-#Coût mesurable avec /spartan esp.
-[antiEsp]
-	#Le staff (op 2+) voit tout le monde même en survie. Laisser false : le staff observe en spectateur.
-	staffSeesAll = false
-	#TaCZ : un joueur qui tire (recharge, arme la culasse…) est envoyé aux joueurs à portée du son,
-	#sinon ils n'entendraient pas son tir. Ne désactiver qu'en connaissance de cause.
-	revealOnShot = true
-	#Durée (ticks) pendant laquelle un tireur reste envoyé après un son.
-	#Range: 5 ~ 400
-	shotRevealTicks = 40
-	#Paire cachée non revérifiée depuis autant de ticks (serveur saturé) : montrée.
-	#Range: 2 ~ 100
-	failOpenTicks = 10
-	#Blocs non pleins qui cachent aussi (forme de collision : une porte fermée cache, ouverte non).
-	#Tags (#minecraft:doors) ou identifiants (mod:bloc). Le verre, les feuilles, les vitres et les
-	#clôtures ne cachent jamais ; les blocs pleins et opaques (y compris de mods) cachent toujours.
-	opaqueBlocks = ["#minecraft:doors"]
-	#Threads de calcul des lignes de vue, en parallèle du tick du serveur (le thread principal ne
-	#fait que préparer et appliquer : quasi aucun lag). -1 = automatique (1 thread par 4 cœurs, max 4),
-	#0 = calcul sur le thread principal avec budgetMicrosPerTick (petites machines).
-	#Range: -1 ~ 16
-	threads = -1
-	#Un joueur aperçu reste envoyé autant de ticks après avoir disparu derrière un obstacle
-	#(20 = 1 s) : évite les clignotements en courant le long des fenêtres ou des poteaux.
-	#Range: 2 ~ 200
-	hideDelayTicks = 20
-	#Active l'anti-ESP.
-	enabled = true
-	#Coéquipiers toujours visibles : équipes vanilla, et mod de clan via IMC (voir README).
-	revealAllies = true
-	#En dessous de cette distance (blocs), toujours envoyé.
-	#Range: 0.0 ~ 16.0
-	minDistance = 2.5
-	#Les joueurs en créatif voient tout le monde (les spectateurs aussi, toujours).
-	creativeSeesAll = true
-	#Simple Voice Chat : un joueur qui parle en proximité est envoyé aux joueurs à portée de voix,
-	#sinon ils ne l'entendraient pas. Les groupes fermés ne révèlent rien.
-	revealOnVoice = true
-	#Anticipation des « peek » : un joueur est envoyé dès qu'un pas de côté de cette longueur (blocs)
-	#le rendrait visible, pour qu'il apparaisse à temps à l'angle d'un mur malgré le ping.
-	#Range: 0.0 ~ 2.0
-	peekBlocks = 0.6
-	#Durée (ticks) pendant laquelle un joueur reste envoyé après avoir parlé.
-	#Range: 5 ~ 400
-	voiceRevealTicks = 20
-	#Idem pour un saut (hauteur d'œil supplémentaire testée, blocs).
-	#Range: 0.0 ~ 1.5
-	jumpBlocks = 0.6
-	#Uniquement si threads = 0 : temps de calcul maximal par tick (microsecondes ; un tick dure 50 000).
-	#Au-delà, les vérifications restantes attendent le tick suivant ; une paire cachée non revérifiée
-	#à temps est montrée (jamais d'invisibilité injuste).
-	#Range: 200 ~ 40000
-	budgetMicrosPerTick = 3000
-
 [modscan]
 	#Mods interdits détectés à la connexion (identifiants en minuscules).
 	#ATTENTION : best-effort. Un client modifié peut cacher ses mods. À compléter.
 	blacklistedMods = ["wurst", "meteor", "meteorclient", "impact", "aristois", "future", "inertia", "liquidbounce", "sigma", "rise", "novoline", "doomsday", "vape", "autoaim", "cheatutils", "xray", "xraymod"]
-
-#Contrôle d'intégrité du client : à la connexion puis à intervalle aléatoire, le jeu du
-#joueur envoie ce qu'il a VRAIMENT chargé (jars, modules, configs Mixin, agents Java, code
-#d'origine inconnue, DLL injectées…). Comparé au client de référence (/spartan reference learn).
-#Alerte silencieuse au staff, jamais d'expulsion (voir integrity.silentClientDetections).
-[scan]
-	#Premier contrôle après la connexion : délai minimum (secondes).
-	#Range: 3 ~ 600
-	firstScanMinSeconds = 10
-	#Contrôles suivants : intervalle aléatoire minimum (secondes).
-	#Range: 30 ~ 86400
-	intervalMinSeconds = 180
-	#Classes sensibles du jeu : le contrôle relève chaque Mixin qui les modifie (rendu = ESP / X-ray,
-	#mouvement = fly / speed / NoSlow, réseau, souris = aimbot…). Une config Mixin inconnue qui en
-	#touche une est un indice fort. Ajoutez les classes de TaCZ ou d'autres mods à protéger.
-	mixinWatchClasses = ["net.minecraft.client.renderer.LevelRenderer", "net.minecraft.client.renderer.GameRenderer", "net.minecraft.client.renderer.LightTexture", "net.minecraft.client.renderer.FogRenderer", "net.minecraft.client.renderer.ItemBlockRenderTypes", "net.minecraft.client.renderer.ScreenEffectRenderer", "net.minecraft.client.renderer.entity.EntityRenderer", "net.minecraft.client.renderer.entity.LivingEntityRenderer", "net.minecraft.client.renderer.entity.EntityRenderDispatcher", "net.minecraft.client.renderer.entity.player.PlayerRenderer", "net.minecraft.client.renderer.culling.Frustum", "net.minecraft.client.renderer.block.BlockRenderDispatcher", "net.minecraft.client.renderer.block.ModelBlockRenderer", "net.minecraft.client.renderer.block.LiquidBlockRenderer", "net.minecraft.client.player.LocalPlayer", "net.minecraft.client.player.KeyboardInput", "net.minecraft.client.multiplayer.MultiPlayerGameMode", "net.minecraft.client.multiplayer.ClientPacketListener", "net.minecraft.client.multiplayer.ClientLevel", "net.minecraft.client.Minecraft", "net.minecraft.client.MouseHandler", "net.minecraft.client.KeyboardHandler", "net.minecraft.client.Timer", "net.minecraft.client.gui.Gui", "net.minecraft.network.Connection", "net.minecraft.world.entity.Entity", "net.minecraft.world.entity.LivingEntity", "net.minecraft.world.entity.player.Player", "net.minecraft.world.level.block.Block", "net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase"]
-	#Délai de réponse d'un contrôle (secondes). Deux absences de suite = alerte.
-	#Range: 15 ~ 600
-	responseTimeoutSeconds = 90
-	#Classes de clients de triche connus, cherchées dans le jeu du joueur. Cette liste n'est
-	#jamais dans le jar : les développeurs de cheats ne la voient pas. À compléter avec les
-	#classes trouvées dans les preuves des tricheurs attrapés.
-	classProbes = ["baritone.api.BaritoneAPI", "net.wurstclient.WurstClient", "meteordevelopment.meteorclient.MeteorClient", "meteordevelopment.orbit.EventBus", "net.ccbluex.liquidbounce.LiquidBounce", "pro.mikey.xray.XRay"]
-	#Premier contrôle après la connexion : délai maximum (secondes).
-	#Range: 3 ~ 600
-	firstScanMaxSeconds = 30
-	#Contrôles suivants : intervalle aléatoire maximum (secondes).
-	#Range: 30 ~ 86400
-	intervalMaxSeconds = 480
-	#Programmes de triche / d'injection : signalés s'ils tournent sur le PC du joueur (morceau du
-	#nom de l'exécutable, minuscules). Seuls les programmes correspondants sont envoyés au serveur.
-	processPatterns = ["cheatengine", "processhacker", "systeminformer", "x64dbg", "x32dbg", "ollydbg", "injector", "xenos", "recaf", "jd-gui", "bytecode-viewer"]
-	#Échantillons de la pile du thread de rendu par contrôle (~50 ms chacun) : un ESP injecté
-	#s'exécute à chaque image et finit par y apparaître. 0 = désactivé.
-	#Range: 0 ~ 200
-	renderSamples = 40
-	#Morceaux de noms de DLL suspectes chargées dans le jeu (une DLL chargée depuis le dossier
-	#temporaire, Téléchargements ou le Bureau est signalée dans tous les cas).
-	nativePatterns = ["inject", "cheat", "hack", "aimbot", "xray", "vape"]
-	#Active le contrôle d'intégrité du client.
-	enabled = true
-
-[resources]
-	#Packs de ressources autorisés en plus de ceux du serveur et du jeu.
-	allowedResourcePacks = []
-	#Shaderpacks autorisés (identifiant en minuscules). Vide = aucun.
-	allowedShaderpacks = []
-	#Interdit les shaders (Iris / Oculus / OptiFine). Détection best-effort côté client.
-	#Le plus sûr : ne pas inclure de mod de shaders dans le modpack officiel — le launcher
-	#empêche alors d'en ajouter un.
-	blockShaders = true
-	#Interdit les packs de ressources (textures) ajoutés par le joueur.
-	#Le pack du serveur reste autorisé. Pour IMPOSER le pack du serveur, mettez aussi
-	#require-resource-pack=true dans server.properties.
-	blockCustomResourcePacks = true
-
-[bans]
-	#Alerte le staff quand un joueur se connecte avec l'IP d'un joueur banni (sans l'expulser).
-	alertSameIp = true
-	#RGPD : les IP et identifiants matériels des joueurs NON bannis sont supprimés
-	#après N jours sans connexion. Les joueurs bannis sont conservés tant que le ban est actif.
-	#Range: 7 ~ 3650
-	playerDataRetentionDays = 180
-	#Durée max (heures) du ban d'IP qui accompagne un /sban. 0 = ne jamais bannir l'IP.
-	#Une IP est souvent partagée (4G, box familiale, lycée) : un ban d'IP long bannit des innocents.
-	#Le ban de compte et le ban matériel, eux, gardent la durée demandée.
-	#Range: 0 ~ 87600
-	ipBanHours = 72
 
 #Launcher officiel : jeton de lancement signé + empreinte du dossier mods.
 #Voir docs/LAUNCHER.md pour l'intégration côté launcher.

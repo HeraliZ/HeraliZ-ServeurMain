@@ -10,6 +10,7 @@ Contrôles :
                        client et serveur en noms SRG ; voir outils/chemins.py) ;
   - check_geckolib   : API de geckolib222 4.4.7 respectée, aucun GeckoLib embarqué ;
   - verif_reobf      : noms de Minecraft réobfusqués (sinon plantage au chargement) ;
+  - mention          : LICENCE-HeraliZ.txt dans chaque jar de nos mods (propriété HeraliZ) ;
   - noms perso       : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
                        dans nos sources ni dans nos jars.
 Code de sortie 1 au moindre problème.
@@ -124,6 +125,14 @@ def main():
             if code != 0 and not any("suspecte" in l for l in lignes):
                 print("[verif_reobf] " + out[-500:])
                 erreurs += 1
+    # mention de propriété HeraliZ (LICENCE-HeraliZ.txt à la racine de chaque jar de nos mods)
+    for p in choisis:
+        for j in construire.jars(p).values():
+            if j.exists():
+                with zipfile.ZipFile(j) as z:
+                    if "LICENCE-HeraliZ.txt" not in z.namelist():
+                        print("[mention]     %s : LICENCE-HeraliZ.txt absent (le copier depuis mods/_gabarit/src/commun/resources)" % j.name)
+                        erreurs += 1
     pat = noms_interdits()
     if pat:
         for p in choisis:

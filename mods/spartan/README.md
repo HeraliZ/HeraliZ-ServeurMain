@@ -246,6 +246,7 @@ rame n'envoie rien : il n'est jamais pris pour un tricheur.
 | **AutoClicker** | Clics de machine | Trop de coups par seconde, ou intervalles trop réguliers (un humain varie toujours). |
 | **Nuker** | Blocs cassés en masse | Plusieurs blocs **cliqués** cassés dans le même tick (un humain : 1 max). Les mods de minage en chaîne (FTB Ultimine, abattage d'arbres…) ne déclenchent pas : le joueur n'a cliqué que le premier bloc. |
 | **FastBreak** | Speedmine | Temps réel de minage comparé au temps attendu pour CE joueur (outil, enchantements, Célérité, eau…), plusieurs blocs de suite. |
+| **Duplication** | Objets copiés (exploit de duplication) | Chaque objet de valeur non empilable reçoit un numéro unique invisible ; un relevé périodique (inventaires, coffre de l'Ender, Curios, contenu des sacs, en une fois) repère un même numéro à deux endroits au même instant. Alerte seulement, rien n'est supprimé. |
 | **IllegalEffect** | « Se donne des effets » | Effet de niveau ou de durée impossible. Un client ne peut pas se donner un vrai effet : s'il en a un, c'est une commande ou une faille de mod → à investiguer en priorité. Staff ignoré. |
 
 **Reculs, explosions et lag : les transactions.** Le serveur envoie à chaque
@@ -564,6 +565,7 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 
 ## 10. Historique
 
+- **2.1.0 (HeraliZ)** — **Anti-duplication** (section `[antidupe]`). **Jeton du launcher HeraliZ** (6 h) et `tokenRequired` qui refuse la connexion sans jeton, même en détection silencieuse.
 - **2.0.0 (HeraliZ)** — **Coupé client / serveur** : le jar des joueurs ne contient plus aucune détection serveur ;
   le jar serveur embarque une copie du jar joueur pour les défis. **Défi lié au code réellement chargé** : en plus des
   octets des classes, chaque réponse mêle la forme vivante de chaque classe (champs, méthodes, constructeurs vus par
