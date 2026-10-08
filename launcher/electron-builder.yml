@@ -1,0 +1,64 @@
+appId: 'fr.heraliz.launcher'
+productName: 'HeraliZ Launcher'
+artifactName: '${productName}-setup-${version}.${ext}'
+
+copyright: 'Copyright © 2018-2024 Daniel Scalzi'
+
+asar: true
+compression: 'maximum'
+
+files:
+  - 'index.js'
+  - 'package.json'
+  - 'LICENSE.txt'
+  - 'app/index.html'
+  - 'app/preload.js'
+  - 'app/heraliz.json'
+  - 'app/assets/css/heraliz.css'
+  - 'app/assets/fonts/**'
+  - 'app/assets/images/heraliz-*.{png,jpg,ico}'
+  - 'app/assets/images/minecraft.icns'
+  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,renderer}.js'
+
+extraResources:
+  - 'libraries'
+
+# Windows Configuration
+win: 
+  icon: 'app/assets/images/heraliz-icon.ico'
+  target: 
+    - target: 'nsis'
+      arch: 'x64'
+
+# Windows Installer Configuration
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+
+# macOS Configuration
+mac:
+  icon: 'app/assets/images/heraliz-emblem.png'
+  target:
+    - target: 'dmg'
+      arch:
+        - 'x64'
+        - 'arm64'
+  artifactName: '${productName}-setup-${version}-${arch}.${ext}'
+  category: 'public.app-category.games'
+
+# Linux Configuration
+linux:
+  icon: 'app/assets/images/heraliz-emblem.png'
+  target: 'AppImage'
+  maintainer: 'HeraliZ'
+  vendor: 'HeraliZ'
+  synopsis: 'Launcher Minecraft DayZ HeraliZ'
+  description: 'Launcher HeraliZ pour Minecraft Forge 1.20.1.'
+  category: 'Game'
+
+
+directories:
+  buildResources: 'build'
+  output: 'dist'

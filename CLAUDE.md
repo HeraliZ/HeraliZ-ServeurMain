@@ -68,6 +68,8 @@ serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
   heralisz_matchs/, mohist-config/, server.properties, bukkit.yml, spigot.yml, commands.yml, eula.txt, server-icon.png
   mohist.sha256           empreinte du jar Mohist (le jar lui-même est dans la Release « base-serveur »)
 client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (EntityCulling)
+launcher/                 le launcher des joueurs (Electron, Node.js) : `npm install` puis `npm start` dans ce dossier ;
+                          doc dans launcher/README.md et launcher/docs/
 outils/                   fabrication et contrôles (Python 3.11+)
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
