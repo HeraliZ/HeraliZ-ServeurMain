@@ -125,6 +125,7 @@ jobs:
             mirror -R --verbose serveur/defaultconfigs /defaultconfigs;
             mirror -R --verbose serveur/defaultconfigs /$MONDE/serverconfig;
             mirror -R --verbose serveur/tacz /tacz;
+            rm -f /tacz/arkaniaz_pack_0_converted/data/tacz/index/blocks/ammo_workbench.json /tacz/arkaniaz_pack_0_converted/data/tacz/index/blocks/attachment_workbench.json /tacz/arkaniaz_pack_0_converted/data/tacz/data/blocks/ammo_workbench.json /tacz/arkaniaz_pack_0_converted/data/tacz/data/blocks/attachment_workbench.json;
             mirror -R --verbose serveur/heralisz_matchs /heralisz_matchs;
             mirror -R --verbose serveur/mohist-config /mohist-config;
             bye"

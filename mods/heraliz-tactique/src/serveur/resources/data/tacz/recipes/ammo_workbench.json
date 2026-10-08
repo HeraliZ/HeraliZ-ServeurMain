@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "conditions": [
+  {
+   "type": "forge:false"
+  }
+ ],
+ "ingredients": [
+  {
+   "item": "minecraft:stick"
+  }
+ ],
+ "result": {
+  "item": "minecraft:stick"
+ }
+}
