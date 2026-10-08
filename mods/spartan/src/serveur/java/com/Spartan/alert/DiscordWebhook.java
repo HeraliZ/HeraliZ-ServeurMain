@@ -112,7 +112,7 @@ public class DiscordWebhook {
         if (!SpartanConfig.DISCORD_ENABLED.get()) {
             return;
         }
-        String url = SpartanConfig.DISCORD_WEBHOOK.get();
+        String url = SpartanConfig.secret(SpartanConfig.DISCORD_WEBHOOK);
         if (url == null || url.isBlank()) {
             return;
         }
@@ -152,7 +152,7 @@ public class DiscordWebhook {
         if (!SpartanConfig.DISCORD_ENABLED.get()) {
             return;
         }
-        String url = SpartanConfig.DISCORD_WEBHOOK.get();
+        String url = SpartanConfig.secret(SpartanConfig.DISCORD_WEBHOOK);
         if (url == null || url.isBlank()) {
             return;
         }
@@ -193,7 +193,7 @@ public class DiscordWebhook {
         if (!SpartanConfig.DISCORD_ENABLED.get()) {
             return;
         }
-        String url = SpartanConfig.DISCORD_WEBHOOK.get();
+        String url = SpartanConfig.secret(SpartanConfig.DISCORD_WEBHOOK);
         if (url == null || url.isBlank()) {
             return;
         }
@@ -214,6 +214,42 @@ public class DiscordWebhook {
             post(url, payload);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Annonce publique d'une sanction (salon des sanctions, discordSanctionsWebhookUrl) : pseudo, durée, raison. Rien
+     * qui aide un tricheur (pas de détection, pas de preuve) ni donnée personnelle (pas d'IP, pas de PC).
+     */
+    public static void sendSanction(String joueur, String duree, String raison) {
+        if (!SpartanConfig.DISCORD_ENABLED.get()) {
+            return;
+        }
+        String url = SpartanConfig.secret(SpartanConfig.DISCORD_SANCTIONS_WEBHOOK);
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        try {
+            JsonObject embed = new JsonObject();
+            embed.addProperty("title", "Sanction");
+            embed.addProperty("description", "**" + Text.discord(joueur) + "** a été banni du serveur.");
+            embed.addProperty("color", AlertManager.COLOR_BAN);
+            embed.addProperty("timestamp", Instant.now().toString());
+            JsonArray fields = new JsonArray();
+            fields.add(field("Durée", Text.discord(duree), true));
+            fields.add(field("Raison", Text.discord(raison == null || raison.isBlank() ? "non précisée" : raison), true));
+            embed.add("fields", fields);
+            JsonObject footer = new JsonObject();
+            footer.addProperty("text", "HeraliZ");
+            embed.add("footer", footer);
+            JsonArray embeds = new JsonArray();
+            embeds.add(embed);
+            JsonObject payload = new JsonObject();
+            payload.add("embeds", embeds);
+            denyMentions(payload);
+            post(url, payload);
+        } catch (Exception e) {
+            Spartan.LOGGER.warn("[Spartan] Webhook Discord des sanctions invalide : {}", e.getMessage());
         }
     }
 

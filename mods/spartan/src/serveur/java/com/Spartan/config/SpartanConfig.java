@@ -29,6 +29,7 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.IntValue ALERT_COOLDOWN;
     public static final ForgeConfigSpec.BooleanValue DISCORD_ENABLED;
     public static final ForgeConfigSpec.ConfigValue<String> DISCORD_WEBHOOK;
+    public static final ForgeConfigSpec.ConfigValue<String> DISCORD_SANCTIONS_WEBHOOK;
 
     // --- preuves (boîte noire) ---
     public static final ForgeConfigSpec.BooleanValue EVIDENCE_ENABLED;
@@ -170,6 +171,9 @@ public class SpartanConfig {
                 .define("discordEnabled", false);
         DISCORD_WEBHOOK = b.comment("URL du webhook Discord. Laisser vide si discordEnabled=false.")
                 .define("discordWebhookUrl", "");
+        DISCORD_SANCTIONS_WEBHOOK = b.comment("Salon PUBLIC des sanctions (facultatif) : chaque ban y est annoncé avec le",
+                        "pseudo, la durée et la raison seulement (jamais d'IP, de PC ni de détail de détection). Vide = rien.")
+                .define("discordSanctionsWebhookUrl", "");
         b.pop();
 
         b.push("evidence");
@@ -643,5 +647,14 @@ public class SpartanConfig {
             out.add(String.valueOf(o).toLowerCase(Locale.ROOT));
         }
         return out;
+    }
+
+    /**
+     * Valeur secrète (webhook, secret du launcher) : vide si absente ou si c'est encore la marque « __SPARTAN_…__ » du
+     * fichier du dépôt (remplacée par les secrets GitHub à la mise en ligne).
+     */
+    public static String secret(ForgeConfigSpec.ConfigValue<String> v) {
+        String s = v.get();
+        return s == null || s.isBlank() || s.startsWith("__SPARTAN_") ? "" : s.trim();
     }
 }

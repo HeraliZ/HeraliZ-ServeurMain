@@ -4,6 +4,7 @@
 /mods/*/run/
 /mods/*/.gradle/
 /mods/*/out/
+/mods/*/logs/
 /.gradle/
 /dist/
 /livraison/

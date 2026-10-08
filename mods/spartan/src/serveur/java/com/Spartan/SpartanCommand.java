@@ -31,6 +31,7 @@ import net.minecraft.server.level.ServerPlayer;
  *   /spartan report <joueur> indices du dernier contrôle d'intégrité
  *   /spartan suspects        joueurs en ligne dont le dernier contrôle est suspect
  *   /spartan reference learn|add <joueur> | info | clear   client de référence (op 3)
+ *   /spartan officiel        relit config/spartan/officiel.json (modpack officiel, op 3)
  *   /spartan selfscan        contrôle du serveur lui-même (diagnostic, op 3)
  *   /spartan esp [joueur]    anti-ESP : coût et activité, ou ce que ce joueur reçoit des autres
  *   /spartan esp bench [n] [rayon]  coût de l'anti-ESP sur la carte avec n joueurs fictifs (op 3)
@@ -105,9 +106,15 @@ public class SpartanCommand {
                             .withStyle(list.isEmpty() ? ChatFormatting.GREEN : ChatFormatting.GOLD), false);
                     return list.size();
                 }))
+                .then(Commands.literal("officiel").requires(src -> src.hasPermission(3)).executes(ctx -> {
+                    String resume = ScanManager.reloadOfficial();
+                    ctx.getSource().sendSuccess(() -> Component.literal("Modpack officiel relu : " + resume)
+                            .withStyle(ChatFormatting.AQUA), true);
+                    return 1;
+                }))
                 .then(Commands.literal("reference")
                         .then(Commands.literal("info").executes(ctx -> {
-                            ctx.getSource().sendSuccess(() -> Component.literal("Client de référence : "
+                            ctx.getSource().sendSuccess(() -> Component.literal("Références : "
                                     + ScanManager.referenceSummary()).withStyle(ChatFormatting.AQUA), false);
                             return 1;
                         }))

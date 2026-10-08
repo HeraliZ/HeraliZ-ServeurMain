@@ -74,7 +74,7 @@ outils/                   fabrication et contrôles (Python 3.11+)
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
-Le dépôt contient le serveur COMPLET : les 22 mods des autres auteurs + nos 19 mods (sources, fabriqués en 17 jars
+Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 20 mods (sources, fabriqués en 18 jars
 `-serveur` pour le Ptero) = les 39 jars du dossier `mods/` du serveur, et les 42 jars des joueurs.
 
 Jamais dans Git (voir `.gitignore`) :
@@ -116,6 +116,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : menu Échap, pack de textures du serveur imposé |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
+| spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
 
 Les modIds ne changent JAMAIS (mondes, configs, gunpacks et autres mods en dépendent). Même règle pour les noms de
 classes et les signatures des API (section 5).
@@ -130,7 +131,6 @@ le SEUL GeckoLib du serveur) ; ywzj_vehicle « fuse » (YWZJ, moteur des véhicu
 (enemeez) ; Mutants & Zombies (Pete MC Mods) ; Zombie Awareness et CoroUtil (Corosus) ; MAtmos et TCTcore (The_TCT) ;
 Passable Foliage et Kiwi (Snownee) ; Curios (TheIllusiveC4) ; Cloth Config (shedaniel) ; Player Animation Lib (KosmX) ;
 ModernFix, FerriteCore, MemoryLeakFix, PacketFixer (optimisation) ; EntityCulling (joueurs seulement).
-Spartan : à nous, mais sans sources (le propriétaire le refait).
 
 Les versions modifiées (cfm PATCH, geckolib222, ywzj fuse, simplefarming heralisz1) ont été retouchées directement
 dans les jars : il n'existe pas de sources.
@@ -241,6 +241,31 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
 
 ---
 
+## 6 bis. L'anticheat Spartan
+
+- **Deux jars de la MÊME fabrication** : `-serveur` sur le Ptero, `-client` chez les joueurs. Le jar serveur contient une
+  copie du jar joueur (`META-INF/spartan/client.bin`) et calcule dessus les réponses attendues aux défis : un joueur
+  avec un autre jar joueur est signalé. Après toute modification de Spartan, redonner le nouveau jar joueur.
+- Le jar joueur ne contient AUCUNE détection serveur, aucun seuil, aucune signature : ne jamais déplacer de code de
+  détection vers `src/commun` ou `src/client`.
+- **Modpack officiel automatique** : `outils/construire.py` écrit `livraison/spartan/officiel.json` (empreinte de chaque
+  jar des joueurs, configs Mixin connues, empreinte du dossier) ; la mise en ligne le dépose dans
+  `config/spartan/officiel.json`. Tout jar ou toute config Mixin en plus chez un joueur est signalé. Rien à apprendre
+  à la main ; `/spartan officiel` relit le fichier sans redémarrer.
+- **Détection silencieuse** (choix du propriétaire) : ce qui vient du jeu du joueur n'expulse jamais, le staff reçoit
+  l'alerte sur Discord avec le rapport et décide (`/sban`). `alertOnly = true` les premières semaines : régler les
+  seuils sur les vraies alertes avant toute sanction automatique.
+- Réglages : `serveur/config/spartan-common.toml` (fait foi). Webhooks et secret du launcher : JAMAIS dans le dépôt,
+  marques `__SPARTAN_…__` remplacées par les secrets GitHub à l'envoi (section 8).
+- Branchements HeraliZ (`mods/spartan/src/serveur/java/com/Spartan/serveur/compat/HeralizCompat.java`, par réflexion,
+  sans dépendance) : alliés de l'anti-ESP = même équipe de match, même partie de zombies, sinon même clan ; voix de
+  CaraCrea (un joueur caché qui parle est montré à ceux qui l'entendent). Si une de ces API change, ce fichier aussi.
+- Un mod qui déplace un joueur doit passer par une vraie téléportation (`teleportTo`, `connection.teleport`) ou un recul
+  (`setDeltaMovement` + `hurtMarked`) : Spartan les suit. Un `setPos` / `moveTo` seul sur un joueur peut être pris pour
+  de la triche (cas connus : projection du Draugr, remontée de la Mère des Ruines : à surveiller dans les alertes).
+
+---
+
 ## 7. Travailler à deux avec Git
 
 Pour chaque demande, dans cet ordre :
@@ -270,7 +295,8 @@ Règles :
 4. **si les secrets du Ptero sont réglés**, il met à jour le serveur par SFTP :
    - `mods/` devient la copie exacte de `livraison/mods serveur` : les anciennes versions sont retirées ;
    - les plugins (jars et réglages, jamais leurs bases de données), `config/`, `tacz/`, `heralisz_matchs/` et
-     `mohist-config/` sont complétés ou mis à jour, sans rien supprimer ;
+     `mohist-config/` sont complétés ou mis à jour, sans rien supprimer ; `config/spartan/officiel.json` est remplacé
+     (les bans et preuves de Spartan, dans `config/spartan/`, ne sont jamais touchés) ;
    - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde : **les configs du dépôt font foi**, un réglage
      changé à la main sur le serveur est écrasé au prochain envoi ;
    - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
@@ -287,7 +313,9 @@ remet bien le port de l'allocation, sinon l'y changer).
 Secrets à créer par le propriétaire (Settings → Secrets and variables → Actions) : `PTERO_SFTP_HOST`,
 `PTERO_SFTP_PORT` (souvent 2022), `PTERO_SFTP_USER`, `PTERO_SFTP_PASSWORD`, et pour le redémarrage `PTERO_URL`,
 `PTERO_SERVER_ID`, `PTERO_API_KEY` (clé « client » du compte Ptero), et `NOMS_INTERDITS` (le contenu de
-`outils/noms_interdits.txt`, un mot par ligne). Personne ne doit les écrire ailleurs.
+`outils/noms_interdits.txt`, un mot par ligne). Pour Spartan : `SPARTAN_DISCORD_ALERTES` (webhook du salon PRIVÉ du
+staff : alertes et rapports), `SPARTAN_DISCORD_SANCTIONS` (webhook du salon public des sanctions : pseudo, durée,
+raison), `SPARTAN_LAUNCHER_SECRET` (quand le launcher existera). Personne ne doit les écrire ailleurs.
 
 Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SRG : ils ne tournent que sur les PC
 (section 6), pas sur GitHub. C'est pour ça qu'on vérifie AVANT d'envoyer.
@@ -317,7 +345,7 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 des écrans de clan, « full opti » (zéro lag, même sur les petits PC). On ne retire un mod tiers qu'une fois son
 remplaçant prêt. Projets maison prévus : ambiance sonore (remplacera MAtmos et TCTcore), traverser les feuillages
 (remplacera Passable Foliage et Kiwi), zombies de la survie (remplaceront Mutants & Zombies, Zombie Awareness,
-CoroUtil), véhicules et parachute sans ywzj, carte du monde « AAA », optimisation des 5 boss, nouveau Spartan,
+CoroUtil), véhicules et parachute sans ywzj, carte du monde « AAA », optimisation des 5 boss,
 « HeraliZ Décors » (nos props sans le code de MrCrayfish, pour remplacer cfm).
 
 **Fabrication** :
@@ -380,6 +408,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   imposé de heraliz_interface 1.1.0).
 - **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
   LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur.
+- **Spartan** (08/10) : rien testé en jeu. Launcher : en attente des infos du propriétaire (jeton signé prévu, voir
+  `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
+  mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
 
 ---
 

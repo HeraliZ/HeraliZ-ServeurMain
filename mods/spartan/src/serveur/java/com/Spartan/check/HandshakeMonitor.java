@@ -35,7 +35,7 @@ public final class HandshakeMonitor {
             return;
         }
         boolean buildNeeded = SpartanConfig.CHECK_CHALLENGE.get() || SpartanConfig.CHECK_BUILD.get();
-        boolean launchNeeded = !SpartanConfig.LAUNCHER_SECRET.get().isBlank();
+        boolean launchNeeded = !SpartanConfig.secret(SpartanConfig.LAUNCHER_SECRET).isEmpty();
         if (PacketGuard.hasSeen(uuid, "mods")
                 && (!buildNeeded || PacketGuard.hasSeen(uuid, "build"))
                 && (!launchNeeded || PacketGuard.hasSeen(uuid, "launch"))) {

@@ -36,20 +36,21 @@ rapport complet en pièce jointe, surveille le joueur en spectateur, puis décid
 
 ## 1. Installation (serveur + joueurs)
 
-Le mod doit être installé **sur le serveur ET chez chaque joueur** (même jar).
-Un joueur sans le mod, ou avec une autre version, ne peut pas se connecter.
+Spartan est **coupé en deux** (méthode HeraliZ, `docs/METHODE_CLIENT_SERVEUR.md` du dépôt) :
 
-1. Compiler : `./gradlew build` → `build/libs/spartan-<version>.jar`
-2. Serveur (Pterodactyl) : déposer le jar dans `mods/`, redémarrer.
-3. Joueurs : distribuer le même jar (via le launcher).
-4. Au premier démarrage, le serveur crée `config/spartan-common.toml`.
-5. Launcher : intégrer la vérification des mods et le jeton (voir
-   [docs/LAUNCHER.md](docs/LAUNCHER.md) et `docs/launcher/spartan-launcher.js`).
+| Jar | Pour qui | Contenu |
+|---|---|---|
+| `spartan-<version>-client.jar` | les joueurs | infos de connexion, réponses aux défis, contrôle d'intégrité. **Aucune** détection serveur, aucun seuil, aucune signature : rien à étudier pour contourner |
+| `spartan-<version>-serveur.jar` | le Ptero | toutes les détections, l'anti-ESP, les bans, la config, les Mixins serveur, et une **copie du jar joueur** (`META-INF/spartan/client.bin`) sur laquelle le serveur calcule les réponses attendues aux défis |
+| `spartan-<version>-complet.jar` | le solo | tout |
 
-⚠️ Le serveur exige **exactement le même build** de Spartan que les joueurs : à
-chaque mise à jour du jar, le redistribuer via le launcher.
+1. Fabriquer : `python outils/construire.py spartan` (dans le dépôt), puis `python outils/verifier.py spartan`.
+2. La mise en ligne GitHub envoie le jar `-serveur` sur le Ptero, la config `serveur/config/spartan-common.toml` et la
+   liste officielle des mods `config/spartan/officiel.json` (voir section 5).
+3. Les joueurs reçoivent le jar `-client` **de la même fabrication** (paquet « mods-client » de GitHub).
 
-Prérequis de compilation : Java 17+ (Gradle télécharge un JDK 17 si besoin).
+⚠️ Le jar joueur et le jar serveur doivent venir de la **même fabrication** : le serveur compare chaque réponse au
+défi avec sa copie du jar joueur. Un joueur avec un autre jar joueur (pas à jour, ou modifié) est signalé au staff.
 
 ## 2. Configuration — `config/spartan-common.toml`
 
@@ -314,6 +315,8 @@ ne sent rien et ne voit rien.
 | Programme **attaché au jeu en cours de partie** | 🔴 | Signature d'un injecteur |
 | **Code d'origine inconnue** en cours d'exécution (piles de threads + thread de rendu échantillonné) | 🔴 | Un client injecté exécute des classes hors de tout module chargé normalement ; un ESP tourne à chaque image |
 | Anticheat modifié en mémoire (Mixin appliqué à Spartan) | 🔴 | Le cheat neutralise l'anticheat |
+| **Thread démarré hors de tout module** (Windows) | 🔴 | Code natif posé en mémoire par un injecteur, même quand la DLL est cachée (« manual map ») : aucune DLL chargée normalement ne contient son adresse de départ |
+| **Affichage détourné** (wglSwapBuffers / SwapBuffers) | 🔴 / 🟠 | Saut vers du code sans module (ESP / menu natif injecté) ou vers un module inconnu ; Discord, Steam, OBS, NVIDIA, RivaTuner… sont reconnus et ignorés |
 | Classe d'un cheat connu (`classProbes`) | 🔴 | Signatures gardées sur le serveur, jamais dans le jar |
 | DLL chargée depuis Temp / Téléchargements / Bureau, ou au nom suspect | 🟠 | Injection de DLL |
 | Logiciel de triche ouvert (Cheat Engine, injecteurs…) | 🟠 | Seuls les programmes de la liste sont envoyés, jamais la liste complète |
@@ -322,17 +325,24 @@ ne sent rien et ne voit rien.
 Tout ce qui **apparaît en cours de partie** (absent du premier contrôle) est
 aggravé : c'est la signature d'une injection après le lancement.
 
-### Mise en place (à faire une fois, puis à chaque mise à jour du modpack)
-1. Lancer le jeu avec le **modpack officiel propre** (idéalement via le launcher).
-2. En jeu : `/spartan reference learn <ton pseudo>` → la référence est apprise
-   (fichiers, modules, configs Mixin…) et écrite dans `config/spartan/reference.json`.
-3. Optionnel : `/spartan reference add <pseudo>` depuis un 2e PC propre (autre
-   version de Windows ou de Java) pour couvrir les petites différences.
-4. Sans référence, seuls les indices universels sont relevés (agents, injection,
-   code d'origine inconnue, DLL, logiciels, signatures).
+### Mise en place : rien à faire à la main
 
-⚠️ Ne jamais apprendre la référence depuis le PC d'un joueur inconnu : sa triche
-deviendrait « normale ».
+**Modpack officiel automatique (HeraliZ 2.0)** : à chaque fabrication, `outils/construire.py` écrit
+`livraison/spartan/officiel.json` à partir des jars réellement distribués aux joueurs :
+- l'empreinte (sha256) de chaque jar : un jar en plus est relevé (renommer ne sert à rien), un jar officiel modifié
+  est un indice fort ;
+- toutes les configs Mixin que ces jars déclarent (manifeste, jars imbriqués, fichiers de config) : toute autre config
+  Mixin (mod ESP / X-ray / fly, client injecté qui passe par Mixin) est inconnue, et le rapport dit ce qu'elle modifie ;
+- l'empreinte du dossier mods officiel, comparée dès la connexion (mod ajouté, retiré ou modifié).
+
+La mise en ligne la dépose dans `config/spartan/officiel.json` ; `/spartan officiel` la relit sans redémarrer.
+
+**Client de référence (facultatif, en plus)** : `/spartan reference learn <ton pseudo>` depuis un jeu PROPRE apprend
+aussi ce qui ne se voit qu'en jeu (modules et composants de lancement, chargeurs de classes, origines du code,
+bibliothèques du lanceur). À refaire après une mise à jour du modpack ; `/spartan reference add <pseudo>` depuis un
+2e PC propre (autre Java / Windows) pour couvrir les petites différences.
+
+⚠️ Ne jamais apprendre la référence depuis le PC d'un joueur inconnu : sa triche deviendrait « normale ».
 
 ### Quand une alerte tombe
 1. Discord : pseudo, verdict (🔴 indice fort / 🟠 suspect), liste des indices, et
@@ -373,14 +383,13 @@ réelle contre l'ESP, et elle est entièrement côté serveur.
   temps, pas une fraction de seconde trop tard.
 - Un joueur aperçu reste envoyé 1 s après avoir disparu derrière un obstacle
   (`hideDelayTicks`) : pas de clignotement le long des fenêtres.
-- Toujours visibles : **coéquipiers** (équipes vanilla ou mod de clan, voir plus
-  bas), joueurs en surbrillance (effet Glowing), même véhicule, joueurs à moins de
+- Toujours visibles : **coéquipiers** (équipes vanilla, équipes de match HeraliZ, mode zombies, clans), joueurs en surbrillance (effet Glowing), même véhicule, joueurs à moins de
   2,5 blocs. Les **spectateurs** et les joueurs en **créatif** voient tout le monde
   (le staff qui surveille un suspect en spectateur voit tout).
 - **Bruits** : un joueur qui **tire avec TaCZ** (ou recharge, arme la culasse…) est
   envoyé aux joueurs à portée du son, à la distance exacte de TaCZ (silencieux
   compris), sinon ils n'entendraient pas son tir. Idem pour un joueur qui **parle
-  avec Simple Voice Chat** (voix de proximité ; un groupe fermé ne révèle rien).
+  avec la voix de CaraCrea** (portée normale ou chuchotement de sa config).
   Comme dans n'importe quel jeu : qui fait du bruit se fait repérer, par ceux qui
   l'entendent.
 - Serveur saturé : une paire cachée qui n'a pas pu être revérifiée à temps est
@@ -434,6 +443,17 @@ Le test est appelé sur le thread serveur ; il doit être rapide (résultat gard
 
 ## 8. Architecture du code
 
+Sources coupées en trois (le compilateur interdit les liens interdits) :
+- `src/commun` : `Spartan` (@Mod : canal réseau + chargement des parties), `pont/` (Parties, Partie, Crochet),
+  `Networks/` (lecture / écriture des paquets ; leur traitement est branché par les parties), `scan/ScanReport`,
+  `ScanTransfer`, `CollecteLocale`, `integrity/Fingerprint` (empreinte, forme vivante / forme du fichier), `LaunchToken` ;
+- `src/client` : `Client/` (PartieClient, ClientEvents, ClientScanService…), `scan/collect/` (collecteurs, dont
+  `InjectionCollector`), `integrity/ModsHasher`, `Utils/` ;
+- `src/serveur` : tout le reste — `serveur/` (PartieServeur, ReceptionServeur, `compat/HeralizCompat`), détections,
+  anti-ESP, bans, alertes, config, `scan/` (analyse, `OfficialProfile`, référence), Mixins.
+
+Arborescence d'origine (avant la coupe) :
+
 ```
 com.Spartan
 ├── Spartan.java              @Mod : config, détections, réseau, commandes
@@ -481,9 +501,8 @@ com.Spartan
 │   ├── EspWorkers            Threads de calcul en parallèle du tick
 │   ├── Occluders, ChunkTable, LevelVoxels   Blocs qui cachent, lecture des chunks hors du thread serveur
 │   ├── TrackerAccess         Application immédiate d'une décision au suivi des entités vanilla
-│   ├── Allies, Noise         Coéquipiers (IMC) ; tirs TaCZ et voix Simple Voice Chat
+│   ├── Allies, Noise         Coéquipiers (IMC + HeraliZ) ; tirs TaCZ et voix de CaraCrea
 │   ├── EspBenchmark          /spartan esp bench
-│   └── compat/SpartanVoicePlugin   Plugin Simple Voice Chat (chargé seulement s'il est installé)
 ├── mixin/                    ServerPlayer.broadcastToPlayer, ServerLevel.sendBlockUpdated,
 │                             ServerPlayer.doCheckFallDamage (NoFall), SoundManager de TaCZ (si
 │                             présent) — refmap écrite à la main (noms SRG)
@@ -544,6 +563,18 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
   le filet serveur pour attraper ceux qui passent.
 
 ## 10. Historique
+
+- **2.0.0 (HeraliZ)** — **Coupé client / serveur** : le jar des joueurs ne contient plus aucune détection serveur ;
+  le jar serveur embarque une copie du jar joueur pour les défis. **Défi lié au code réellement chargé** : en plus des
+  octets des classes, chaque réponse mêle la forme vivante de chaque classe (champs, méthodes, constructeurs vus par
+  réflexion dans le jeu) ; le serveur la compare à celle lue dans sa copie : un Spartan neutralisé en mémoire (Mixin,
+  ASM, agent) répond faux, même avec un jar intact gardé de côté. Protocole `"7"`. **Modpack officiel automatique**
+  (jars, configs Mixin, empreinte du dossier) : jars et configs Mixin inconnus relevés sans référence apprise.
+  **Injection native** : threads démarrés hors de tout module et crochets sur l'affichage (testé sur Windows avec une
+  injection simulée : repérée ; JVM propre : aucune trace). **Salon Discord des sanctions** (pseudo, durée, raison).
+  Branchements HeraliZ : voix de CaraCrea (à la place de Simple Voice Chat), alliés (équipes de match, zombies, clans).
+  Forge 47.4.0 comme le modpack (`EventPriority.MONITOR`, absent de l'eventbus 6.0.5 de nos Forge, remplacé).
+  Config dans le dépôt (`serveur/config/spartan-common.toml`), secrets injectés par GitHub.
 
 - **1.8.0** — **Mouvement : physique de vanilla tick par tick.**
   Enveloppes horizontale et verticale recalculées à chaque position (Speed, Fly,

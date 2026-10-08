@@ -38,6 +38,9 @@ jobs:
       PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
       PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
       NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
+      SPARTAN_DISCORD_ALERTES: ${{ secrets.SPARTAN_DISCORD_ALERTES }}
+      SPARTAN_DISCORD_SANCTIONS: ${{ secrets.SPARTAN_DISCORD_SANCTIONS }}
+      SPARTAN_LAUNCHER_SECRET: ${{ secrets.SPARTAN_LAUNCHER_SECRET }}
       PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
@@ -94,6 +97,20 @@ jobs:
             livraison/mods client/dayzhotbar-*.jar
           retention-days: 3
 
+      # webhooks Discord et secret du launcher de Spartan : écrits dans la config envoyée, jamais dans le dépôt
+      - name: Secrets de Spartan
+        if: env.PTERO_SFTP_HOST != ''
+        run: |
+          python - <<'EOF'
+          import os, pathlib
+          p = pathlib.Path("serveur/config/spartan-common.toml")
+          s = p.read_text(encoding="utf-8")
+          for marque in ("SPARTAN_DISCORD_ALERTES", "SPARTAN_DISCORD_SANCTIONS", "SPARTAN_LAUNCHER_SECRET"):
+              valeur = os.environ.get(marque, "").strip().replace("\\", "\\\\").replace('"', '\\"')
+              s = s.replace("__%s__" % marque, valeur)
+          p.write_text(s, encoding="utf-8")
+          EOF
+
       - name: Mettre à jour le Ptero (SFTP)
         if: env.PTERO_SFTP_HOST != ''
         run: |
@@ -104,6 +121,7 @@ jobs:
             mirror -R --delete --verbose 'livraison/mods serveur' /mods;
             mirror -R --verbose --exclude-glob *.db --exclude-glob *.sqlite livraison/plugins /plugins;
             mirror -R --verbose serveur/config /config;
+            mkdir -p -f /config/spartan; put -O /config/spartan livraison/spartan/officiel.json;
             mirror -R --verbose serveur/defaultconfigs /defaultconfigs;
             mirror -R --verbose serveur/defaultconfigs /$MONDE/serverconfig;
             mirror -R --verbose serveur/tacz /tacz;

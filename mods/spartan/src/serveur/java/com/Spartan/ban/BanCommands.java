@@ -1,6 +1,7 @@
 package com.Spartan.ban;
 
 import com.Spartan.alert.AlertManager;
+import com.Spartan.alert.DiscordWebhook;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -124,6 +125,7 @@ public final class BanCommands {
                 r.name, r.describeExpiry(), r.by, r.reason, ipPart, r.serials.size());
         src.sendSuccess(() -> Component.literal(summary).withStyle(ChatFormatting.GREEN), false);
         AlertManager.info(server, "Ban", summary, AlertManager.COLOR_BAN);
+        DiscordWebhook.sendSanction(r.name, r.describeExpiry(), r.reason);
         return 1;
     }
 

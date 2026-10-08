@@ -67,6 +67,7 @@ public final class ScanCollector {
         ThreadCollector.Origins origins = new ThreadCollector.Origins(known);
         step(r, "threads", () -> ThreadCollector.collect(r, Thread.getAllStackTraces(), origins));
         step(r, "natives", () -> NativeCollector.collect(r, c.nativePatterns(), c.processPatterns(), c.gameDir()));
+        step(r, "injection", () -> InjectionCollector.collect(r));
         step(r, "classes", () -> probe(r, c.classProbes(), c.watchedThread()));
         step(r, "render", () -> ThreadCollector.sample(c.watchedThread(), c.samples(), origins));
         origins.into(r);

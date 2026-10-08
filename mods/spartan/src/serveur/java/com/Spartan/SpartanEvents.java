@@ -14,6 +14,7 @@ import com.Spartan.evidence.EvidenceRecorder;
 import com.Spartan.integrity.ChallengeManager;
 import com.Spartan.integrity.LauncherGate;
 import com.Spartan.scan.ScanManager;
+import com.Spartan.serveur.compat.HeralizCompat;
 import com.Spartan.util.AsyncIO;
 import com.Spartan.util.PacketGuard;
 import net.minecraft.server.level.ServerPlayer;
@@ -241,6 +242,7 @@ public class SpartanEvents {
             LauncherGate.clear(player.getUUID());
             ScanManager.clear(player.getUUID());
             VisibilityEngine.forget(player);
+            HeralizCompat.oublier(player.getUUID());
         }
     }
 }

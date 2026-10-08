@@ -57,6 +57,7 @@ public final class ScanManager {
     private static final int MISSES_TO_ALERT = 2;
 
     private static ReferenceProfile reference = new ReferenceProfile();
+    private static OfficialProfile official = new OfficialProfile();
     private static long[] knownMixins = new long[0];
     private static boolean warnedNoReference;
 
@@ -100,8 +101,14 @@ public final class ScanManager {
         return FMLPaths.CONFIGDIR.get().resolve("spartan").resolve("reference.json");
     }
 
-    /** Démarrage du serveur : charge le client de référence. */
+    /** Modpack officiel, fabriqué avec le serveur (outils/construire.py) et déposé par la mise en ligne. */
+    private static Path officialFile() {
+        return FMLPaths.CONFIGDIR.get().resolve("spartan").resolve("officiel.json");
+    }
+
+    /** Démarrage du serveur : charge le modpack officiel et le client de référence. */
     public static void load() {
+        official = loadOfficial();
         Path f = referenceFile();
         try {
             String json = JsonFiles.readOrNull(f);
@@ -110,16 +117,46 @@ public final class ScanManager {
             JsonFiles.quarantine(f, e);
             setReference(new ReferenceProfile());
         }
+        Spartan.LOGGER.info("[Spartan] Modpack officiel : {}", official.summary());
         Spartan.LOGGER.info("[Spartan] Client de référence : {}", reference.summary());
+    }
+
+    /** Relit config/spartan/officiel.json (après une mise à jour du modpack, sans redémarrer). */
+    public static String reloadOfficial() {
+        official = loadOfficial();
+        setReference(reference);
+        return official.summary();
+    }
+
+    private static OfficialProfile loadOfficial() {
+        try {
+            String json = JsonFiles.readOrNull(officialFile());
+            return json == null ? new OfficialProfile() : OfficialProfile.fromJson(json);
+        } catch (IOException | JsonParseException e) {
+            Spartan.LOGGER.error("[Spartan] config/spartan/officiel.json illisible ({}) : modpack officiel ignoré.", e.toString());
+            return new OfficialProfile();
+        }
+    }
+
+    /** Modpack officiel chargé (vide si absent). */
+    public static OfficialProfile official() {
+        return official;
     }
 
     private static void setReference(ReferenceProfile p) {
         reference = p;
-        knownMixins = p.knownMixins();
+        java.util.Set<Long> all = new java.util.TreeSet<>();
+        for (long v : p.knownMixins()) {
+            all.add(v);
+        }
+        for (long v : official.mixinFingerprints()) {
+            all.add(v);
+        }
+        knownMixins = all.stream().mapToLong(Long::longValue).toArray();
     }
 
     public static String referenceSummary() {
-        return reference.summary();
+        return "modpack officiel : " + official.summary() + " | client de référence : " + reference.summary();
     }
 
     public static void clearReference() {
@@ -186,7 +223,8 @@ public final class ScanManager {
         s.pendingTick = p.server.getTickCount();
         s.pendingTrigger = trigger;
         s.assembly = null;
-        ModMessages.sendToPlayer(new ScanRequestPacket(id, SpartanConfig.SCAN_RENDER_SAMPLES.get(), !reference.isEmpty(),
+        ModMessages.sendToPlayer(new ScanRequestPacket(id, SpartanConfig.SCAN_RENDER_SAMPLES.get(),
+                !reference.isEmpty() || !official.isEmpty(),
                 knownMixins, SpartanConfig.getScanMixinWatch(), SpartanConfig.getScanClassProbes(),
                 SpartanConfig.getScanProcessPatterns(), SpartanConfig.getScanNativePatterns()), p);
     }
@@ -263,13 +301,13 @@ public final class ScanManager {
             s.lastAt = System.currentTimeMillis();
             return;
         }
-        if (reference.isEmpty() && !warnedNoReference) {
+        if (reference.isEmpty() && official.isEmpty() && !warnedNoReference) {
             warnedNoReference = true;
-            Spartan.LOGGER.warn("[Spartan] Aucun client de référence : seuls les indices universels sont relevés. "
-                    + "Connectez-vous avec le modpack officiel propre puis faites /spartan reference learn <pseudo>.");
+            Spartan.LOGGER.warn("[Spartan] Ni modpack officiel (config/spartan/officiel.json) ni client de référence : "
+                    + "seuls les indices universels sont relevés.");
         }
 
-        List<Finding> findings = ScanAnalyzer.analyze(r, reference, s.baseline, settings());
+        List<Finding> findings = ScanAnalyzer.analyze(r, reference, official, s.baseline, settings());
         if (s.baseline == null) {
             s.baseline = ScanAnalyzer.inventory(r);
         }
@@ -486,7 +524,7 @@ public final class ScanManager {
                     SpartanConfig.getScanMixinWatch(), SpartanConfig.getScanClassProbes(),
                     SpartanConfig.getScanProcessPatterns(), SpartanConfig.getScanNativePatterns());
             server.execute(() -> {
-                List<Finding> findings = ScanAnalyzer.analyze(r, reference, null, settings());
+                List<Finding> findings = ScanAnalyzer.analyze(r, reference, official, null, settings());
                 JsonObject root = new JsonObject();
                 root.addProperty("type", "autocontrole-serveur");
                 JsonArray arr = new JsonArray();

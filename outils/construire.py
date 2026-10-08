@@ -15,11 +15,15 @@ Un mod « coupé » (tâches clientJar / serveurJar dans son build.gradle) donne
 (heraliz-interface, dayzhotbar) donne un jar, mis côté client et solo.
 Code de sortie 1 si un mod ne compile pas.
 """
+import datetime
+import hashlib
+import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -123,9 +127,64 @@ def ranger():
         (shutil.copytree if f.is_dir() else shutil.copy2)(f, pl / f.name)
     for d in (ms, mc, mo):
         print("[construire] %-12s %d jars" % (d.name, len(list(d.glob("*.jar")))))
+    officiel(mc, L / "spartan" / "officiel.json")
     for j in manquants:
         print("[construire] ATTENTION : jar absent (mod pas encore fabriqué ?) :", j)
     return not manquants
+
+
+def _sha256(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def _mixins(z, out, profondeur=0):
+    """Configs Mixin d'un jar (et de ses jars imbriqués) : manifeste MixinConfigs + fichiers de config Mixin."""
+    noms = z.namelist()
+    if "META-INF/MANIFEST.MF" in noms:
+        attrs, cle = {}, None
+        for l in z.read("META-INF/MANIFEST.MF").decode("utf-8", "replace").splitlines():
+            if l.startswith(" ") and cle:
+                attrs[cle] += l[1:]
+            elif ":" in l:
+                cle, v = l.split(":", 1)
+                attrs[cle.strip()] = v.strip()
+        for c in attrs.get("MixinConfigs", "").split(","):
+            if c.strip():
+                out.add(c.strip())
+    for n in noms:
+        if n.endswith(".json") and not n.startswith(("assets/", "data/")) and z.getinfo(n).file_size < 65536:
+            try:
+                d = json.loads(z.read(n).decode("utf-8", "replace"))
+            except ValueError:
+                continue
+            if isinstance(d, dict) and "package" in d and any(isinstance(d.get(k), list) for k in ("mixins", "client", "server")):
+                out.add(n)
+        elif n.startswith("META-INF/jarjar/") and n.endswith(".jar") and profondeur < 3:
+            import io
+            with zipfile.ZipFile(io.BytesIO(z.read(n))) as zi:
+                _mixins(zi, out, profondeur + 1)
+
+
+def officiel(dossier, sortie):
+    """Modpack officiel des joueurs pour Spartan (config/spartan/officiel.json sur le serveur) : empreinte de chaque jar,
+    configs Mixin connues, empreinte du dossier (même calcul que LaunchToken.modsHash du mod). Spartan signale tout jar
+    ou toute config Mixin en plus, sans rien apprendre à la main."""
+    mods, mixins = {}, set()
+    for j in sorted(dossier.glob("*.jar")):
+        data = j.read_bytes()
+        mods[j.name.lower()] = _sha256(data)
+        with zipfile.ZipFile(j) as z:
+            _mixins(z, mixins)
+    lignes = sorted("%s:%s" % (n, h) for n, h in mods.items())
+    doc = {
+        "genere": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "empreinteDossier": _sha256("\n".join(lignes).encode("utf-8")),
+        "mods": mods,
+        "mixins": sorted(mixins),
+    }
+    sortie.parent.mkdir(parents=True, exist_ok=True)
+    sortie.write_text(json.dumps(doc, indent=2, ensure_ascii=False), encoding="utf-8")
+    print("[construire] spartan/officiel.json : %d jars, %d configs Mixin" % (len(mods), len(mixins)))
 
 
 def main():

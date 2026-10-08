@@ -4,6 +4,7 @@ import com.Spartan.Spartan;
 import com.Spartan.alert.AlertManager;
 import com.Spartan.check.CheckManager;
 import com.Spartan.config.SpartanConfig;
+import com.Spartan.scan.ScanManager;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -76,12 +77,18 @@ public final class LauncherGate {
         if (!allowed.isEmpty() && !allowed.contains(hash)) {
             return "dossier mods non autorisé (empreinte " + hash.substring(0, 12) + "…)";
         }
+        // Sans liste à la main : le dossier mods doit être EXACTEMENT le modpack officiel fabriqué avec le serveur
+        // (mod ajouté, retiré, modifié ou renommé : le contrôle d'intégrité dira lequel).
+        String officiel = ScanManager.official().empreinteDossier;
+        if (allowed.isEmpty() && officiel != null && !officiel.isEmpty() && !officiel.equalsIgnoreCase(hash)) {
+            return "dossier mods différent du modpack officiel (mod ajouté, retiré ou modifié)";
+        }
         return null;
     }
 
     /** Jeton du launcher (si un secret est configuré). */
     private static String checkToken(ServerPlayer p, String token, String name, String hash) {
-        String secret = SpartanConfig.LAUNCHER_SECRET.get();
+        String secret = SpartanConfig.secret(SpartanConfig.LAUNCHER_SECRET);
         if (secret == null || secret.isBlank()) {
             STATUS.put(p.getUUID(), "jeton non vérifié (launcherSecret vide)");
             if (SpartanConfig.LAUNCHER_TOKEN_REQUIRED.get() && !warnedNoSecret) {

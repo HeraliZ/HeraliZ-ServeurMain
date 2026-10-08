@@ -20,7 +20,7 @@ import net.minecraft.network.FriendlyByteBuf;
  * c'est le client qui l'envoie, il peut contenir n'importe quoi.
  */
 public final class ScanReport {
-    public static final int FORMAT = 2;
+    public static final int FORMAT = 3;
 
     public static final int NAME = 128;
     public static final int TEXT = 256;
@@ -38,6 +38,7 @@ public final class ScanReport {
     public static final int MAX_NATIVES = 1024;
     public static final int MAX_HITS = 256;
     public static final int MAX_ERRORS = 32;
+    public static final int MAX_INJECTION = 32;
 
     private static final Pattern SHA256 = Pattern.compile("^([0-9a-f]{64})?$");
 
@@ -87,6 +88,8 @@ public final class ScanReport {
     public final List<String> processHits = new ArrayList<>();
     public final List<String> classHits = new ArrayList<>();
     public final List<String> errors = new ArrayList<>();
+    /** Traces de code natif injecté : « thread|0x… » (thread démarré hors de tout module), « hook|fonction|0x…|module ». */
+    public final List<String> injection = new ArrayList<>();
 
     /**
      * Empreinte stable d'une config Mixin, identique client et serveur. Seul le nom compte : le
@@ -154,6 +157,7 @@ public final class ScanReport {
         strings(b, processHits, MAX_HITS, NAME);
         strings(b, classHits, MAX_HITS, TEXT);
         strings(b, errors, MAX_ERRORS, TEXT);
+        strings(b, injection, MAX_INJECTION, TEXT);
     }
 
     public static ScanReport read(FriendlyByteBuf b) {
@@ -207,6 +211,7 @@ public final class ScanReport {
         readStrings(b, MAX_HITS, NAME, r.processHits);
         readStrings(b, MAX_HITS, TEXT, r.classHits);
         readStrings(b, MAX_ERRORS, TEXT, r.errors);
+        readStrings(b, MAX_INJECTION, TEXT, r.injection);
         if (r.threadCount < 0 || r.unnamedThreads < 0 || r.durationMs < 0) {
             throw new DecoderException("Spartan: compteur négatif");
         }

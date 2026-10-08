@@ -80,8 +80,18 @@ public final class ScanAnalyzer {
      * @param baseline inventaire du premier contrôle de la session, ou null pour le premier
      */
     public static List<Finding> analyze(ScanReport r, ReferenceProfile ref, Set<String> baseline, Settings s) {
+        return analyze(r, ref, null, baseline, s);
+    }
+
+    /**
+     * @param off modpack officiel fabriqué avec le serveur (peut être null ou vide) : juge les jars du dossier mods et
+     *            les configs Mixin même sans client de référence appris
+     */
+    public static List<Finding> analyze(ScanReport r, ReferenceProfile ref, OfficialProfile off, Set<String> baseline,
+                                        Settings s) {
         List<Finding> out = new ArrayList<>();
         boolean hasRef = ref != null && !ref.isEmpty();
+        OfficialProfile official = off != null && !off.isEmpty() ? off : null;
         jvm(r, ref, hasRef, s, out);
         if (r.attachListener) {
             out.add(new Finding(Severity.STRONG, "attach",
@@ -103,14 +113,15 @@ public final class ScanAnalyzer {
                         "bibliothèque native chargée dans le jeu : " + n.name() + " (" + n.place() + ", " + n.reason() + ")"));
             }
         }
+        injection(r, out);
         if (r.unnamedThreads > 0) {
             out.add(new Finding(Severity.SUSPECT, "threads:unnamed",
                     r.unnamedThreads + " thread(s) sans nom dans le jeu (trace fréquente d'un injecteur)"));
         }
         providers(r, ref, hasRef, s, out);
-        files(r, ref, hasRef, out);
+        files(r, ref, hasRef, official, out);
         modules(r, ref, hasRef, out);
-        mixins(r, ref, hasRef, out);
+        mixins(r, ref, hasRef, official, out);
         code(r, ref, hasRef, out);
         if (baseline != null) {
             sessionChanges(r, baseline, out);
@@ -120,6 +131,22 @@ public final class ScanAnalyzer {
         }
         out.sort(Comparator.comparing(Finding::severity).reversed());
         return out;
+    }
+
+    /** Code natif injecté (relevé sous Windows par le jeu du joueur, voir InjectionCollector). */
+    private static void injection(ScanReport r, List<Finding> out) {
+        for (String e : r.injection) {
+            String[] p = e.split("\\|", -1);
+            if (p[0].equals("thread") && p.length >= 2) {
+                out.add(new Finding(Severity.STRONG, "inject:thread:" + p[1],
+                        "thread démarré hors de tout module (" + p[1] + ") : code natif injecté en mémoire (DLL cachée)"));
+            } else if (p[0].equals("hook") && p.length >= 4) {
+                boolean cache = p[3].isEmpty();
+                out.add(new Finding(cache ? Severity.STRONG : Severity.SUSPECT, "inject:hook:" + p[1] + ":" + p[3],
+                        "affichage détourné : " + p[1] + " saute vers " + (cache ? "du code injecté sans module (" + p[2] + ")"
+                                : "le module " + p[3] + " (overlay inconnu ou ESP)")));
+            }
+        }
     }
 
     /** Plus haute gravité, ou null si aucun indice. */
@@ -201,16 +228,23 @@ public final class ScanAnalyzer {
         }
     }
 
-    private static void files(ScanReport r, ReferenceProfile ref, boolean hasRef, List<Finding> out) {
-        if (!hasRef) {
+    private static void files(ScanReport r, ReferenceProfile ref, boolean hasRef, OfficialProfile off, List<Finding> out) {
+        if (!hasRef && off == null) {
             return;
         }
         for (ScanReport.FileEntry f : r.files) {
-            if (f.origin().equals("agent") || f.sha256().isEmpty() || ref.fileHashes.contains(f.sha256())) {
+            if (f.origin().equals("agent") || f.sha256().isEmpty()
+                    || (hasRef && ref.fileHashes.contains(f.sha256())) || (off != null && off.knowsFile(f.sha256()))) {
                 continue;
             }
-            String where = f.origin().equals("mods") ? "dans le dossier mods" : "du jeu (" + f.origin().substring(f.origin().indexOf(':') + 1) + ")";
-            boolean modified = ref.fileNames.contains(ReferenceProfile.fileKey(f));
+            boolean inMods = f.origin().equals("mods");
+            if (!inMods && !hasRef) {
+                continue; // bibliothèques du lanceur : seul le client de référence appris les connaît
+            }
+            String where = inMods ? "dans le dossier mods" : "du jeu (" + f.origin().substring(f.origin().indexOf(':') + 1) + ")";
+            String bare = f.name().endsWith("/") ? f.name().substring(0, f.name().length() - 1) : f.name();
+            boolean modified = (hasRef && ref.fileNames.contains(ReferenceProfile.fileKey(f)))
+                    || (inMods && off != null && off.knowsName(bare));
             Severity sev = modified || !f.origin().equals("mods") ? Severity.STRONG : Severity.SUSPECT;
             String what = modified ? "jar MODIFIÉ " : "jar inconnu ";
             out.add(new Finding(sev, "file:" + f.sha256(), what + where + " : " + f.name() + " ("
@@ -249,13 +283,13 @@ public final class ScanAnalyzer {
                 && m.targetCount() <= OWN_MIXIN_TARGETS.size() && OWN_MIXIN_TARGETS.containsAll(m.targets());
     }
 
-    private static void mixins(ScanReport r, ReferenceProfile ref, boolean hasRef, List<Finding> out) {
-        if (!hasRef) {
+    private static void mixins(ScanReport r, ReferenceProfile ref, boolean hasRef, OfficialProfile off, List<Finding> out) {
+        if (!hasRef && off == null) {
             return;
         }
         for (ScanReport.MixinEntry m : r.mixins) {
             String fp = ScanReport.hex(ScanReport.mixinFingerprint(m.name()));
-            if (ref.mixins.containsKey(fp) || isSpartanOwn(m)) {
+            if ((hasRef && ref.mixins.containsKey(fp)) || (off != null && off.knowsMixin(fp)) || isSpartanOwn(m)) {
                 continue;
             }
             Set<String> touched = new TreeSet<>();
