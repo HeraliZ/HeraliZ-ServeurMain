@@ -955,12 +955,18 @@ public class CharacterCreatorScreen extends Screen {
     }
 
     /**
-     * Scars: three slots, a front and back silhouette to click where the
-     * selected scar goes, and buttons to turn, resize or remove it.
+     * Scars: three slots, a front and a back silhouette to click (or drag on) where the selected scar goes, then its
+     * size, bend and orientation. A change that would bring two scars too close together is refused (see Scar).
      */
     private final class ScarRow extends Row {
         private static final int TAB_H = 16;
         private static final int ACTION_H = 16;
+        private static final int SLIDER_H = 16;
+        /** How long the "too close" warning stays, in milliseconds. */
+        private static final long WARNING_MS = 2500;
+        /** What the mouse drags: -1 nothing, 0 the scar on a silhouette, 1 + i the slider i. */
+        private int dragging = -1;
+        private long refusedAt;
 
         /** Pixel size of one model unit on the silhouettes, for a row width. */
         private int unit(int w) {
@@ -971,9 +977,28 @@ public class CharacterCreatorScreen extends Screen {
             return unit(w) * 32;
         }
 
+        private int mapTop(int y) {
+            return y + LABEL + TAB_H + 6 + 10;
+        }
+
+        private int slidersTop(int y, int w) {
+            return mapTop(y) + mapH(w) + 6;
+        }
+
+        private int actionsTop(int y, int w) {
+            return slidersTop(y, w) + 3 * SLIDER_H + 2;
+        }
+
+        private Component hint() {
+            return System.currentTimeMillis() - refusedAt < WARNING_MS
+                    ? Component.translatable("caracrea.scar.too_close") : Component.translatable("caracrea.scar.hint");
+        }
+
         @Override
         int height(int w) {
-            return LABEL + TAB_H + 6 + 10 + mapH(w) + 6 + ACTION_H + 4 + font.lineHeight * 2 + 2;
+            int lines = Math.max(font.split(Component.translatable("caracrea.scar.hint"), w).size(),
+                    font.split(Component.translatable("caracrea.scar.too_close"), w).size());
+            return actionsTop(0, w) + ACTION_H + 5 + lines * font.lineHeight + 2;
         }
 
         /** {x, y, w, h} of a body part on a silhouette; view 0 = front, 1 = back. */
@@ -998,8 +1023,35 @@ public class CharacterCreatorScreen extends Screen {
             return new int[]{start, start + 16 * u + 20};
         }
 
-        private int mapTop(int y) {
-            return y + LABEL + TAB_H + 6 + 10;
+        /** The selected scar, brought to the 1.3.0 settings if it was saved before (straight, nearest size and angle). */
+        private Appearance modern(Appearance a) {
+            Trait[] t = Scar.traits(selectedScar);
+            Scar scar = Scar.get(a, selectedScar);
+            if (scar == null || a.get(t[Scar.SIZE]) != 0) {
+                return a;
+            }
+            int size = Math.round((scar.length() - Scar.MIN_LENGTH) / (Scar.MAX_LENGTH - Scar.MIN_LENGTH) * (Scar.SIZES - 1)) + 1;
+            int angle = Math.round(scar.angle() / (float) Math.PI * Scar.ANGLES) % Scar.ANGLES;
+            return a.with(t[Scar.ANGLE], angle).with(t[Scar.SIZE], size).with(t[Scar.BEND], Scar.BENDS);
+        }
+
+        /** Applies a change unless two scars would come too close; then the warning shows instead. */
+        private void tryApply(Appearance next) {
+            if (Scar.valid(next)) {
+                set(next);
+            } else {
+                refusedAt = System.currentTimeMillis();
+            }
+        }
+
+        /** The three settings of the selected scar: trait field, first and last value, label key. */
+        private static final int[][] SETTINGS = {{Scar.SIZE, 1, Scar.SIZES}, {Scar.BEND, 0, 2 * Scar.BENDS}, {Scar.ANGLE, 0, Scar.ANGLES - 1}};
+        private static final String[] SETTING_KEYS = {"caracrea.scar.size", "caracrea.scar.bend", "caracrea.scar.angle"};
+
+        /** Track of setting {@code i}: {x, y, w} (the knob moves along y + SLIDER_H / 2). */
+        private int[] track(int i, int x, int y, int w) {
+            int labelW = Math.min(76, w / 3);
+            return new int[]{x + labelW + 6, slidersTop(y, w) + i * SLIDER_H, w - labelW - 12};
         }
 
         @Override
@@ -1009,7 +1061,7 @@ public class CharacterCreatorScreen extends Screen {
             for (int i = 0; i < Scar.COUNT; i++) {
                 int tx = x + i * 52;
                 boolean on = i == selectedScar;
-                boolean used = current.get(Scar.traits(i)[0]) != 0;
+                boolean used = current.get(Scar.traits(i)[Scar.ZONE]) != 0;
                 boolean hovered = Ui.inside(mx, my, tx, y + LABEL, 48, TAB_H);
                 float h = hover("scarTab" + i, hovered && !on);
                 Ui.round(g, tx, y + LABEL, 48, TAB_H, 3, Ui.alpha(on ? Ui.ACCENT : Ui.mix(Ui.SURFACE, Ui.SURFACE_HOVER, h), alpha));
@@ -1040,55 +1092,131 @@ public class CharacterCreatorScreen extends Screen {
                     g.fill(head[0] + 5 * u, head[1] + 4 * u, head[0] + 6 * u, head[1] + 5 * u, Ui.alpha(0x90000000, alpha));
                 }
             }
-            // Scars on the silhouettes.
+            // Scars on the silhouettes, as they are drawn on the body.
             for (int i = 0; i < Scar.COUNT; i++) {
-                Trait[] t = Scar.traits(i);
-                int zone = current.get(t[0]);
-                if (zone == 0) {
+                Scar scar = Scar.get(current, i);
+                if (scar == null) {
                     continue;
                 }
-                Scar.Zone z = Scar.Zone.VALUES[zone - 1];
-                int view = z.back ? 1 : 0;
-                int[] r = partRect(z.part, view, origins[view], top, u);
-                float cx = r[0] + (current.get(t[1]) + 0.5F) / Scar.POSITIONS * r[2];
-                float cy = r[1] + (current.get(t[2]) + 0.5F) / Scar.POSITIONS * r[3];
-                int shape = current.get(t[3]);
-                double angle = Scar.angleStep(shape) * Math.PI / Scar.ANGLES;
-                float half = new float[]{1.3F, 2.2F, 3.2F}[Scar.lengthStep(shape)] / 2 * u;
-                float dx = (float) Math.cos(angle) * half;
-                float dy = (float) Math.sin(angle) * half;
-                Ui.line(g, cx - dx, cy - dy, cx + dx, cy + dy, i == selectedScar ? 2 : 1,
-                        Ui.alpha(i == selectedScar ? Ui.ACCENT : Ui.SCAR, alpha));
+                int view = scar.zone().back ? 1 : 0;
+                int[] r = partRect(scar.zone().part, view, origins[view], top, u);
+                float[] cube = Scar.cube(scar.zone().part, current.bodyType());
+                float[] p = scar.stroke(current.bodyType());
+                int color = Ui.alpha(i == selectedScar ? Ui.ACCENT : Ui.SCAR, alpha);
+                for (int k = 0; k + 3 < p.length; k += 2) {
+                    Ui.line(g, onMapX(p[k], cube, r, scar.zone().back), onMapY(p[k + 1], cube, r),
+                            onMapX(p[k + 2], cube, r, scar.zone().back), onMapY(p[k + 3], cube, r), i == selectedScar ? 2 : 1, color);
+                }
             }
-            // Actions for the selected scar.
+            // Settings of the selected scar.
+            Appearance shown = modern(current);
             Trait[] t = Scar.traits(selectedScar);
-            boolean placed = current.get(t[0]) != 0;
-            int ay = top + mapH(w) + 6;
-            int ax = x;
-            int lengthStep = Scar.lengthStep(current.get(t[3]));
-            Component[] labels = {
-                    Component.translatable("caracrea.scar.rotate"),
-                    Component.translatable("caracrea.scar.size", Component.translatable("caracrea.scar.size." + lengthStep)),
-                    Component.translatable("caracrea.scar.remove")};
-            for (int i = 0; i < labels.length; i++) {
-                int bw = font.width(labels[i]) + 14;
-                boolean hovered = placed && Ui.inside(mx, my, ax, ay, bw, ACTION_H);
-                float h = hover("scarAct" + i, hovered);
-                Ui.round(g, ax, ay, bw, ACTION_H, 3, Ui.alpha(Ui.mix(Ui.SURFACE, Ui.SURFACE_HOVER, h), placed ? alpha : alpha * 0.5F));
-                Ui.textCentered(g, font, labels[i], ax, ay, bw, ACTION_H, Ui.alpha(placed ? Ui.mix(Ui.TEXT_DIM, Ui.TEXT, h) : Ui.MUTED, alpha));
-                ax += bw + 3;
+            boolean placed = current.get(t[Scar.ZONE]) != 0;
+            for (int i = 0; i < SETTINGS.length; i++) {
+                int[] tr = track(i, x, y, w);
+                int cy = tr[1] + SLIDER_H / 2;
+                Ui.label(g, font, Component.translatable(SETTING_KEYS[i]), x, cy - 3, tr[0] - x - 6, Ui.alpha(placed ? Ui.MUTED : Ui.BORDER, alpha));
+                int min = SETTINGS[i][1];
+                int max = SETTINGS[i][2];
+                int value = placed ? shown.get(t[SETTINGS[i][0]]) : SETTINGS[i][0] == Scar.BEND ? Scar.BENDS : min;
+                Ui.round(g, tr[0], cy - 2, tr[2], 4, 2, Ui.alpha(Ui.SUNKEN, alpha));
+                int knob = tr[0] + Math.round(tr[2] * (value - min) / (float) (max - min));
+                if (placed) {
+                    // The bend fills from the middle (straight) towards its side; the others from the left.
+                    int from = SETTINGS[i][0] == Scar.BEND ? tr[0] + tr[2] / 2 : tr[0];
+                    Ui.round(g, Math.min(from, knob), cy - 2, Math.abs(knob - from) + 2, 4, 2, Ui.alpha(Ui.ACCENT_SOFT, alpha));
+                    if (SETTINGS[i][0] == Scar.BEND) {
+                        g.fill(from, cy - 3, from + 1, cy + 3, Ui.alpha(Ui.BORDER, alpha));
+                    }
+                }
+                boolean hovered = placed && (Ui.inside(mx, my, tr[0] - 6, tr[1], tr[2] + 12, SLIDER_H) || dragging == 1 + i);
+                float h = hover("scarSet" + i, hovered);
+                Ui.disc(g, knob, cy, 5 + Math.round(h), Ui.alpha(placed ? Ui.ACCENT : Ui.BORDER, alpha));
+                Ui.disc(g, knob, cy, 2, Ui.alpha(placed ? Ui.ON_ACCENT : Ui.SURFACE, alpha));
             }
-            g.drawWordWrap(font, Component.translatable("caracrea.scar.hint"), x, ay + ACTION_H + 5, w, Ui.alpha(Ui.MUTED, alpha));
+            // Remove.
+            int ay = actionsTop(y, w);
+            Component remove = Component.translatable("caracrea.scar.remove");
+            int bw = font.width(remove) + 14;
+            boolean hovered = placed && Ui.inside(mx, my, x, ay, bw, ACTION_H);
+            float h = hover("scarRemove", hovered);
+            Ui.round(g, x, ay, bw, ACTION_H, 3, Ui.alpha(Ui.mix(Ui.SURFACE, Ui.SURFACE_HOVER, h), placed ? alpha : alpha * 0.5F));
+            Ui.textCentered(g, font, remove, x, ay, bw, ACTION_H, Ui.alpha(placed ? Ui.mix(Ui.TEXT_DIM, Ui.TEXT, h) : Ui.MUTED, alpha));
+            boolean warning = System.currentTimeMillis() - refusedAt < WARNING_MS;
+            g.drawWordWrap(font, hint(), x, ay + ACTION_H + 5, w, Ui.alpha(warning ? Ui.SCAR : Ui.MUTED, alpha));
+        }
+
+        /** Silhouette x of a bone-space x on a face (seen from behind on the back view). */
+        private float onMapX(float bx, float[] cube, int[] r, boolean back) {
+            float t = (bx - cube[0]) / cube[3];
+            return r[0] + (back ? 1 - t : t) * r[2];
+        }
+
+        private float onMapY(float by, float[] cube, int[] r) {
+            return r[1] + (by - cube[1]) / cube[4] * r[3];
         }
 
         @Override
         boolean click(double mx, double my, int x, int y, int w) {
+            dragging = -1;
             for (int i = 0; i < Scar.COUNT; i++) {
                 if (Ui.inside(mx, my, x + i * 52, y + LABEL, 48, TAB_H)) {
                     selectedScar = i;
                     return true;
                 }
             }
+            if (place(mx, my, x, y, w, true)) {
+                dragging = 0;
+                return true;
+            }
+            Trait[] t = Scar.traits(selectedScar);
+            if (current.get(t[Scar.ZONE]) == 0) {
+                return false;
+            }
+            for (int i = 0; i < SETTINGS.length; i++) {
+                int[] tr = track(i, x, y, w);
+                if (Ui.inside(mx, my, tr[0] - 6, tr[1], tr[2] + 12, SLIDER_H)) {
+                    dragging = 1 + i;
+                    drag(mx, my, x, y, w);
+                    return true;
+                }
+            }
+            Component remove = Component.translatable("caracrea.scar.remove");
+            if (Ui.inside(mx, my, x, actionsTop(y, w), font.width(remove) + 14, ACTION_H)) {
+                Appearance next = current;
+                for (Trait trait : t) {
+                    next = next.with(trait, 0);
+                }
+                set(next);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        void drag(double mx, double my, int x, int y, int w) {
+            if (dragging == 0) {
+                place(mx, my, x, y, w, false);
+            } else if (dragging > 0) {
+                int i = dragging - 1;
+                int[] tr = track(i, x, y, w);
+                int min = SETTINGS[i][1];
+                int max = SETTINGS[i][2];
+                float f = Mth.clamp((float) (mx - tr[0]) / tr[2], 0, 1);
+                int value = min + Math.round(f * (max - min));
+                Trait trait = Scar.traits(selectedScar)[SETTINGS[i][0]];
+                Appearance next = modern(current);
+                if (next.get(trait) != value || next != current) {
+                    tryApply(next.with(trait, value));
+                }
+            }
+        }
+
+        /**
+         * Puts the selected scar where the mouse is on a silhouette (a new scar starts small, straight and slanted).
+         * Returns false when the mouse is not over the body. {@code turn}: also turn the character to that side.
+         */
+        private boolean place(double mx, double my, int x, int y, int w, boolean turn) {
             Trait[] t = Scar.traits(selectedScar);
             int u = unit(w);
             int top = mapTop(y);
@@ -1096,43 +1224,24 @@ public class CharacterCreatorScreen extends Screen {
             for (int view = 0; view < 2; view++) {
                 for (Scar.Part part : Scar.Part.values()) {
                     int[] r = partRect(part, view, origins[view], top, u);
-                    if (Ui.inside(mx, my, r[0], r[1], r[2], r[3])) {
-                        int px = Mth.clamp((int) ((mx - r[0]) / r[2] * Scar.POSITIONS), 0, Scar.POSITIONS - 1);
-                        int py = Mth.clamp((int) ((my - r[1]) / r[3] * Scar.POSITIONS), 0, Scar.POSITIONS - 1);
-                        boolean wasPlaced = current.get(t[0]) != 0;
-                        Appearance next = current.with(t[0], Scar.Zone.of(part, view == 1).ordinal() + 1).with(t[1], px).with(t[2], py);
-                        if (!wasPlaced) {
-                            next = next.with(t[3], Scar.shape(1, 1));
-                        }
-                        set(next);
+                    if (!Ui.inside(mx, my, r[0], r[1], r[2], r[3])) {
+                        continue;
+                    }
+                    int px = Mth.clamp((int) ((mx - r[0]) / r[2] * Scar.POSITIONS), 0, Scar.POSITIONS - 1);
+                    int py = Mth.clamp((int) ((my - r[1]) / r[3] * Scar.POSITIONS), 0, Scar.POSITIONS - 1);
+                    Appearance next = modern(current).with(t[Scar.ZONE], Scar.Zone.of(part, view == 1).ordinal() + 1)
+                            .with(t[Scar.X], px).with(t[Scar.Y], py);
+                    if (current.get(t[Scar.ZONE]) == 0) {
+                        next = next.with(t[Scar.ANGLE], Scar.ANGLES / 6).with(t[Scar.SIZE], 3).with(t[Scar.BEND], Scar.BENDS);
+                    }
+                    tryApply(next);
+                    if (turn) {
                         // Show the side where the scar went.
                         float facing = view == 1 ? 180 : 0;
                         yawTarget = facing + Math.round((yawTarget - facing) / 360F) * 360F;
-                        return true;
-                    }
-                }
-            }
-            if (current.get(t[0]) == 0) {
-                return false;
-            }
-            int ay = top + mapH(w) + 6;
-            int ax = x;
-            int shape = current.get(t[3]);
-            String[] keys = {"caracrea.scar.rotate", "caracrea.scar.size", "caracrea.scar.remove"};
-            for (int i = 0; i < keys.length; i++) {
-                Component label = i == 1
-                        ? Component.translatable(keys[i], Component.translatable("caracrea.scar.size." + Scar.lengthStep(shape)))
-                        : Component.translatable(keys[i]);
-                int bw = font.width(label) + 14;
-                if (Ui.inside(mx, my, ax, ay, bw, ACTION_H)) {
-                    switch (i) {
-                        case 0 -> change(t[3], Scar.shape(Scar.angleStep(shape) + 1, Scar.lengthStep(shape)));
-                        case 1 -> change(t[3], Scar.shape(Scar.angleStep(shape), (Scar.lengthStep(shape) + 1) % Scar.LENGTHS));
-                        default -> set(current.with(t[0], 0).with(t[1], 0).with(t[2], 0).with(t[3], 0));
                     }
                     return true;
                 }
-                ax += bw + 3;
             }
             return false;
         }

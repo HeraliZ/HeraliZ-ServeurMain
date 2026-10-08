@@ -27,7 +27,7 @@ public final class Appearance {
      * client sends or an old save holds, the result can be painted as is.
      */
     public static Appearance of(int[] values) {
-        byte[] bytes = new byte[Trait.VALUES.length];
+        int[] clean = new int[Trait.VALUES.length];
         // A woman saved before 1.3.0 comes back as a man (body type clamped), without the lipstick.
         boolean female = Trait.BODY_TYPE.ordinal() < values.length && values[Trait.BODY_TYPE.ordinal()] == 1;
         for (Trait trait : Trait.VALUES) {
@@ -35,7 +35,13 @@ public final class Appearance {
             if (female && trait == Trait.LIP_COLOR) {
                 value = 0;
             }
-            bytes[trait.ordinal()] = (byte) Catalog.sanitize(trait, value);
+            clean[trait.ordinal()] = Catalog.sanitize(trait, value);
+        }
+        // Scars too close to one another are dropped (see Scar): nobody can draw shapes with them.
+        Scar.sanitize(clean);
+        byte[] bytes = new byte[clean.length];
+        for (int i = 0; i < clean.length; i++) {
+            bytes[i] = (byte) clean[i];
         }
         return new Appearance(bytes);
     }

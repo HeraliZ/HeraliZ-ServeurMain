@@ -45,7 +45,14 @@ public enum Trait {
     SCAR3_ZONE(Kind.SCAR),
     SCAR3_X(Kind.SCAR),
     SCAR3_Y(Kind.SCAR),
-    SCAR3_SHAPE(Kind.SCAR);
+    SCAR3_SHAPE(Kind.SCAR),
+    // 1.3.0: size and bend of each scar (see Scar). Appended last: older saves read them as 0, "the old straight scar".
+    SCAR1_SIZE(Kind.SCAR),
+    SCAR1_BEND(Kind.SCAR),
+    SCAR2_SIZE(Kind.SCAR),
+    SCAR2_BEND(Kind.SCAR),
+    SCAR3_SIZE(Kind.SCAR),
+    SCAR3_BEND(Kind.SCAR);
 
     public enum Kind { OPTION, SLIDER, FLAGS, SCAR }
 

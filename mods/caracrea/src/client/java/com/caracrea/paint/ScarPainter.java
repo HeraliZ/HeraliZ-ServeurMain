@@ -20,15 +20,32 @@ final class ScarPainter {
     private ScarPainter() {
     }
 
-    /** A scar ready to draw: centre, direction and half-length in bone space. */
-    record Line(Scar.Part part, boolean back, float x, float y, float dx, float dy, float half) {
+    /**
+     * A scar ready to draw: its stroke in bone space ({@link Scar#SEGMENTS} + 1 points, ends first and last), its
+     * length, and the box around it where it can change a pixel.
+     */
+    record Line(Scar.Part part, boolean back, float[] points, float length, float minX, float minY, float maxX, float maxY) {
     }
+
+    /** Reach of the brush around the stroke, in model units. */
+    private static final float REACH = 0.5F;
 
     static List<Line> lines(Appearance a) {
         List<Line> lines = new ArrayList<>(Scar.COUNT);
         for (Scar scar : Scar.of(a)) {
-            float[] l = scar.line(a.bodyType());
-            lines.add(new Line(scar.zone().part, scar.zone().back, l[0], l[1], l[2], l[3], scar.length() / 2));
+            float[] p = scar.stroke(a.bodyType());
+            float minX = Float.MAX_VALUE;
+            float minY = Float.MAX_VALUE;
+            float maxX = -Float.MAX_VALUE;
+            float maxY = -Float.MAX_VALUE;
+            for (int i = 0; i < p.length; i += 2) {
+                minX = Math.min(minX, p[i]);
+                maxX = Math.max(maxX, p[i]);
+                minY = Math.min(minY, p[i + 1]);
+                maxY = Math.max(maxY, p[i + 1]);
+            }
+            lines.add(new Line(scar.zone().part, scar.zone().back, p, scar.length(),
+                    minX - REACH, minY - REACH, maxX + REACH, maxY + REACH));
         }
         return lines;
     }
@@ -66,21 +83,33 @@ final class ScarPainter {
     }
 
     private static int over(int color, int skin, Line line, float bx, float by) {
-        float rx = bx - line.x();
-        float ry = by - line.y();
-        float along = rx * line.dx() + ry * line.dy();
-        if (Math.abs(along) > line.half() + 0.4F) {
+        if (bx < line.minX() || bx > line.maxX() || by < line.minY() || by > line.maxY()) {
             return color;
         }
-        float t = Math.max(-line.half(), Math.min(line.half(), along));
-        float px = rx - t * line.dx();
-        float py = ry - t * line.dy();
-        float dist = (float) Math.sqrt(px * px + py * py);
-        if (dist > 0.5F) {
+        // Nearest point of the stroke: its distance, and how far along the stroke it is (from the middle).
+        float[] p = line.points();
+        float segment = line.length() / Scar.SEGMENTS;
+        float dist = Float.MAX_VALUE;
+        float along = 0;
+        for (int i = 0; i + 3 < p.length; i += 2) {
+            float vx = p[i + 2] - p[i];
+            float vy = p[i + 3] - p[i + 1];
+            float len = vx * vx + vy * vy;
+            float t = len == 0 ? 0 : Math.max(0, Math.min(1, ((bx - p[i]) * vx + (by - p[i + 1]) * vy) / len));
+            float dx = p[i] + t * vx - bx;
+            float dy = p[i + 1] + t * vy - by;
+            float d = (float) Math.sqrt(dx * dx + dy * dy);
+            if (d < dist) {
+                dist = d;
+                along = (i / 2 + t) * segment - line.length() / 2;
+            }
+        }
+        if (dist > REACH) {
             return color;
         }
+        float half = line.length() / 2;
         // Thinner towards the ends.
-        float end = Math.abs(t) / line.half();
+        float end = Math.min(1, Math.abs(along) / half);
         float width = 1 - end * end * end * end * 0.7F;
         int pale = Colors.tint(Colors.shade(skin, 1.1F), Colors.rgb(225, 130, 130), 0.5F);
         int edge = Colors.shade(skin, 0.72F);
@@ -92,7 +121,7 @@ final class ScarPainter {
             result = Colors.over(result, Colors.fade(pale, 0.95F * Colors.clamp01((0.17F * width - dist) / 0.07F)));
         }
         // Stitch marks across the scar.
-        if (Math.abs(along) < line.half() - 0.15F) {
+        if (Math.abs(along) < half - 0.15F) {
             float phase = along / 0.55F;
             float frac = phase - (float) Math.floor(phase);
             if (Math.abs(frac - 0.5F) < 0.09F && dist < 0.42F) {

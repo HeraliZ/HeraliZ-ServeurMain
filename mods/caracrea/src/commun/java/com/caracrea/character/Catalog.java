@@ -196,7 +196,8 @@ public final class Catalog {
             case MARKS -> 1 << MARKS.size();
             case WEAR -> WEAR.size();
             case SCAR1_ZONE, SCAR1_X, SCAR1_Y, SCAR1_SHAPE, SCAR2_ZONE, SCAR2_X, SCAR2_Y, SCAR2_SHAPE,
-                    SCAR3_ZONE, SCAR3_X, SCAR3_Y, SCAR3_SHAPE -> Scar.count(trait);
+                    SCAR3_ZONE, SCAR3_X, SCAR3_Y, SCAR3_SHAPE,
+                    SCAR1_SIZE, SCAR1_BEND, SCAR2_SIZE, SCAR2_BEND, SCAR3_SIZE, SCAR3_BEND -> Scar.count(trait);
         };
     }
 
