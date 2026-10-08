@@ -1974,9 +1974,9 @@ vec3 amethystGem(vec3 p, out vec3 em) {
 
 // ------------------------------------------------------------------ Diamant façon Call of Duty : or champagne poli et, sur la
 // carcasse de l'arme (partie 0.94 de la carte de positions, voir PosMap.RECEIVER : de la crosse au garde-main), un pavage
-// de petits diamants blancs sertis : pierres rondes taille brillant en relief sur un réseau hexagonal régulier, griffes
-// dorées entre les pierres. Les pierres scintillent quand le joueur bouge (décor lié au monde) ; de loin elles se fondent
-// en un pavé brillant.
+// de petits diamants blancs sertis : pierres rondes taille brillant en relief réel (parallaxe : elles dépassent du serti)
+// sur un réseau hexagonal régulier, griffes dorées entre les pierres. Les pierres scintillent quand le joueur bouge (décor
+// lié au monde) ; de loin elles se fondent en un pavé brillant.
 vec3 champagne(vec3 n) {
     vec3 r = reflWorld(n);
     float ndv = facing(n);
@@ -2001,6 +2001,56 @@ mat3 faceFrame(vec3 n, vec2 uv) {
     return mat3(T * im, B * im, n);
 }
 
+// cellule du pavé : vecteur depuis le centre de la pierre la plus proche (réseau hexagonal, voisines à distance 1)
+vec2 paveCell(vec2 uv, out vec2 cid) {
+    vec2 S = vec2(1.0, 1.7320508);
+    vec2 ga = mod(uv, S) - 0.5 * S;
+    vec2 gb = mod(uv - 0.5 * S, S) - 0.5 * S;
+    vec2 g = dot(ga, ga) < dot(gb, gb) ? ga : gb;
+    cid = floor((uv - g) * 2.0 + 0.5);
+    return g;
+}
+
+// relief du pavé (unités de cellule) : 0 = table des pierres = surface de l'arme ; la couronne descend vers le serti,
+// creusé à -0.38 ; les griffes remontent un peu entre les pierres
+float paveHeight(vec2 uv) {
+    vec2 cid;
+    vec2 g = paveCell(uv, cid);
+    float rr = length(g);
+    float h = rr < 0.43 ? -0.24 * smoothstep(0.17, 0.43, rr) : -0.38;
+    float bead = 9.0;
+    for (int k = 0; k < 6; k++) {
+        float a = 0.5235988 + float(k) * 1.0471976;
+        bead = min(bead, length(g - 0.57735 * vec2(cos(a), sin(a))));
+    }
+    return max(h, -0.38 + 0.2 * sqrt(max(1.0 - bead * bead / 0.0072, 0.0)));
+}
+
+// parallaxe : le rayon regardé (vt, repère de la face, vers l'intérieur) descend sous la surface jusqu'au pavé ; rend le
+// point du pavé réellement vu -> les pierres dépassent, le serti est en creux, elles se masquent entre elles de biais.
+// Au plus 15 lectures de paveHeight par pixel, et seulement de près (fin > 0) : coût négligeable
+vec2 pavePom(vec2 uv, vec3 vt) {
+    vec2 dir = vt.xy / max(-vt.z, 0.22);
+    float d = 0.0;
+    float prev = 0.0;
+    vec2 q = uv;
+    float h = paveHeight(q);
+    for (int i = 0; i < 12; i++) {
+        if (d >= -h) break;
+        prev = d;
+        d += 0.034;
+        q = uv + dir * d;
+        h = paveHeight(q);
+    }
+    // affinage entre les deux derniers pas
+    float lo = prev, hi = d;
+    for (int i = 0; i < 3; i++) {
+        float m = 0.5 * (lo + hi);
+        if (m >= -paveHeight(uv + dir * m)) hi = m; else lo = m;
+    }
+    return uv + dir * hi;
+}
+
 vec3 diamondCod(vec3 p, out vec3 em) {
     float t = CamoTime;
     vec3 nv = normalize(viewNormal);
@@ -2008,15 +2058,14 @@ vec3 diamondCod(vec3 p, out vec3 em) {
     vec3 metal = champagne(n0);
     // réseau hexagonal des pierres (voisines à distance 1)
     vec3 fnl = faceNormal(p);
-    vec2 uv = surf2d(p, fnl) * 150.0;
-    vec2 S = vec2(1.0, 1.7320508);
-    vec2 ga = mod(uv, S) - 0.5 * S;
-    vec2 gb = mod(uv - 0.5 * S, S) - 0.5 * S;
-    vec2 g = dot(ga, ga) < dot(gb, gb) ? ga : gb;
-    vec2 cid = floor((uv - g) * 2.0 + 0.5);
+    vec2 uv0 = surf2d(p, fnl) * 150.0;
+    float fin = clamp(1.6 - 2.2 * length(fwidth(uv0)), 0.0, 1.0);
+    mat3 tbn = faceFrame(nv, uv0);
+    // relief réel : on suit le regard sous la surface jusqu'au pavé (pierres en saillie, serti en creux)
+    vec2 uv = fin > 0.0 ? mix(uv0, pavePom(uv0, transpose(tbn) * eyeDir()), fin) : uv0;
+    vec2 cid;
+    vec2 g = paveCell(uv, cid);
     float rr = length(g);
-    float fin = clamp(1.6 - 2.2 * length(fwidth(uv)), 0.0, 1.0);
-    mat3 tbn = faceFrame(nv, uv);
     // lumière du ciel (repère du monde, venant d'en haut) ramenée dans la vue puis sur la face
     vec3 lv = normalize(transpose(IViewRotMat) * normalize(vec3(0.25, 1.0, 0.35)));
     vec3 lt = transpose(tbn) * lv;
