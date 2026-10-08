@@ -5,7 +5,8 @@
     --ref : jars de plus pour trouver les références (API d'un mod facultatif absent du modpack, ex. l'API de Simple
             Voice Chat pour CaraCrea : ses classes ne sont chargées que si ce mod est installé).
     --embarque : contenu recopié exprès dans le jar par le build (bibliothèque relogée, sa licence) : toléré par le
-            contrôle 7 (pas « en trop »). Pour un .jar : toutes ses entrées (sauf son manifeste), ex. META-INF/jarjar/ ; sinon : le fichier à la racine.
+            contrôle 7 (pas « en trop »). Pour un .jar : toutes ses entrées (sauf son manifeste), ex. META-INF/jarjar/ ;
+            « META-INF/… » : cette entrée du jar ; sinon : le fichier à la racine.
     ex. python outils/verif_split.py dist/fusion/heraliz_boss-2.0.1-*.jar --mods "livraison/mods client" --projet mods/heraliz-boss
     (le plus simple : python outils/verifier.py, qui lance tous les contrôles avec les bonnes options)
 
@@ -601,7 +602,8 @@ def verifier(jar, cote, mondes, dossier_mods, projet, refs=(), embarques=frozens
         rs_att = set().union(*(ens[e][1] for e in attendu))
         cl_jar = {n for n in noms if n.endswith(".class")}
         rs_jar = {n for n in noms if not n.endswith(".class") and not n.endswith("/") and not n.startswith("META-INF/MANIFEST")}
-        rs_jar -= {n for n in rs_jar if n.endswith("refmap.json")}  # refmap : ajoutée par MixinGradle
+        # refmap ajoutée par MixinGradle (absente des sources) ; une refmap écrite à la main (Spartan) reste comparée
+        rs_jar -= {n for n in rs_jar if n.endswith("refmap.json") and n not in rs_att}
         for n in sorted(cl_att - cl_jar)[:20]:
             erreurs.append(f"classe attendue absente du jar : {n}")
         n_emb = len((cl_jar | rs_jar) & embarques)
@@ -655,6 +657,8 @@ def main():
         if x.endswith(".jar"):
             with zipfile.ZipFile(x) as zz:
                 embarques |= {n for n in zz.namelist() if not n.endswith("/") and n != "META-INF/MANIFEST.MF"}
+        elif x.startswith("META-INF/"):
+            embarques.add(x)  # entrée du jar donnée par son chemin (ex. META-INF/spartan/client.bin)
         else:
             embarques.add(Path(x).name)
     embarques = frozenset(embarques)

@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.Spartan.mixin",
+  "plugin": "com.Spartan.mixin.SpartanMixinPlugin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "spartan.refmap.json",
+  "mixins": [
+    "ServerPlayerTrackingMixin",
+    "ServerLevelBlockMixin",
+    "ServerPlayerFallMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

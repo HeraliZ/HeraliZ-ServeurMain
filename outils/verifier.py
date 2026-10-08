@@ -48,6 +48,8 @@ def options_split(p, cote):
                     t.write_bytes(z.read(n))
                     refs.append(str(t))
         o += ["--embarque", str(jj), "--ref", ",".join(refs)]
+    if p.name == "spartan" and cote == "serveur":
+        o += ["--embarque", "META-INF/spartan/client.bin"]   # copie du jar joueur (défi d'intégrité)
     if p.name == "heralisz-matchs":
         boss = construire.jars(chemins.MODS / "heraliz-boss")[cote]
         curios = sorted(chemins.MODS_TIERS.glob("curios-*.jar"))
@@ -130,10 +132,14 @@ def main():
                     if pat.search(f.read_text(encoding="utf-8", errors="replace")):
                         print("[noms perso]  %s" % f.relative_to(D))
                         erreurs += 1
-            for nom in ("build.gradle", "gradle.properties"):
-                if (p / nom).exists() and pat.search((p / nom).read_text(encoding="utf-8", errors="replace")):
-                    print("[noms perso]  %s" % (p / nom).relative_to(D))
-                    erreurs += 1
+            # fichiers du projet hors sources (README, docs, scripts du launcher, fabrication)
+            for f in p.rglob("*"):
+                rel = f.relative_to(p)
+                if (f.is_file() and rel.parts[0] not in ("src", "build", "run", ".gradle", "out", "libs", "gradle")
+                        and f.suffix in (".md", ".txt", ".js", ".json", ".gradle", ".properties", ".toml", "")):
+                    if pat.search(f.read_text(encoding="utf-8", errors="replace")):
+                        print("[noms perso]  %s" % f.relative_to(D))
+                        erreurs += 1
         for j in jars_a_voir:
             with zipfile.ZipFile(j) as z:
                 for n in z.namelist():

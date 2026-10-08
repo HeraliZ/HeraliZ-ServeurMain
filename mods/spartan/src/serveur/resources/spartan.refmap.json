@@ -1,0 +1,26 @@
+{
+  "mappings": {
+    "com/Spartan/mixin/ServerPlayerTrackingMixin": {
+      "broadcastToPlayer": "Lnet/minecraft/server/level/ServerPlayer;m_6459_(Lnet/minecraft/server/level/ServerPlayer;)Z"
+    },
+    "com/Spartan/mixin/ServerLevelBlockMixin": {
+      "sendBlockUpdated": "Lnet/minecraft/server/level/ServerLevel;m_7260_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V"
+    },
+    "com/Spartan/mixin/ServerPlayerFallMixin": {
+      "doCheckFallDamage": "Lnet/minecraft/server/level/ServerPlayer;m_289599_(DDDZ)V"
+    }
+  },
+  "data": {
+    "searge": {
+      "com/Spartan/mixin/ServerPlayerTrackingMixin": {
+        "broadcastToPlayer": "Lnet/minecraft/server/level/ServerPlayer;m_6459_(Lnet/minecraft/server/level/ServerPlayer;)Z"
+      },
+      "com/Spartan/mixin/ServerLevelBlockMixin": {
+        "sendBlockUpdated": "Lnet/minecraft/server/level/ServerLevel;m_7260_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V"
+      },
+      "com/Spartan/mixin/ServerPlayerFallMixin": {
+        "doCheckFallDamage": "Lnet/minecraft/server/level/ServerPlayer;m_289599_(DDDZ)V"
+      }
+    }
+  }
+}

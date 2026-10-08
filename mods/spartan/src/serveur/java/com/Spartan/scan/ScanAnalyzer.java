@@ -1,0 +1,396 @@
+package com.Spartan.scan;
+
+import com.Spartan.scan.Finding.Severity;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+/**
+ * Transforme un rapport de contrôle en indices, sans dépendance à Minecraft
+ * (testé unitairement).
+ *
+ * Deux familles :
+ * - indices universels, valables sans référence : agent Java ou natif,
+ *   programme attaché au jeu, anticheat modifié en mémoire, classe de triche
+ *   connue, DLL chargée depuis le dossier temporaire, mods chargés hors du
+ *   dossier mods ;
+ * - écarts au client de référence (modpack officiel) : jar inconnu ou modifié,
+ *   module, config Mixin, chargeur de classes ou code d'origine inconnus.
+ *
+ * Tout ce qui APPARAÎT en cours de partie (absent du premier contrôle de la
+ * session) est aggravé : c'est la signature d'une injection après le lancement.
+ */
+public final class ScanAnalyzer {
+    /** Fournisseurs de mods d'un lancement normal. */
+    private static final Set<String> NORMAL_PROVIDERS = Set.of("mods folder", "minecraft", "JarInJar");
+    /** Fournisseurs propres à l'environnement de développement. */
+    private static final Set<String> DEV_PROVIDERS = Set.of("userdev classpath", "exploded directory");
+    /** Chargeurs de classes d'un jeu Forge normal. */
+    private static final Set<String> NORMAL_LOADERS = Set.of(
+            "jdk.internal.loader.ClassLoaders$AppClassLoader",
+            "jdk.internal.loader.ClassLoaders$PlatformClassLoader",
+            "jdk.internal.loader.ClassLoaders$BootClassLoader",
+            "cpw.mods.modlauncher.TransformingClassLoader",
+            "cpw.mods.cl.ModuleClassLoader",
+            "jdk.internal.reflect.DelegatingClassLoader");
+
+    /** Classes visées par Mixin qui servent aux triches, et ce qu'elles permettent. */
+    private static final Map<String, String> SENSITIVE = new LinkedHashMap<>();
+
+    static {
+        SENSITIVE.put("com.Spartan.", "l'anticheat");
+        SENSITIVE.put("net.minecraft.client.renderer.LevelRenderer", "le rendu du monde (ESP / X-ray)");
+        SENSITIVE.put("net.minecraft.client.renderer.entity.", "le rendu des entités (ESP)");
+        SENSITIVE.put("net.minecraft.client.renderer.GameRenderer", "le rendu (ESP / FOV)");
+        SENSITIVE.put("net.minecraft.client.renderer.LightTexture", "la luminosité (fullbright)");
+        SENSITIVE.put("net.minecraft.client.renderer.FogRenderer", "le brouillard (no-fog)");
+        SENSITIVE.put("net.minecraft.client.renderer.ItemBlockRenderTypes", "la transparence des blocs (X-ray)");
+        SENSITIVE.put("net.minecraft.client.renderer.block.", "le rendu des blocs (X-ray)");
+        SENSITIVE.put("net.minecraft.client.renderer.culling.", "la visibilité des objets (ESP)");
+        SENSITIVE.put("net.minecraft.client.renderer.chunk.", "le rendu des blocs (X-ray)");
+        SENSITIVE.put("net.minecraft.client.player.LocalPlayer", "le mouvement du joueur (fly / speed / NoSlow)");
+        SENSITIVE.put("net.minecraft.client.player.KeyboardInput", "les entrées clavier (NoSlow / bots)");
+        SENSITIVE.put("net.minecraft.client.player.Input", "les entrées clavier (NoSlow / bots)");
+        SENSITIVE.put("net.minecraft.world.entity.Entity", "le mouvement / les collisions");
+        SENSITIVE.put("net.minecraft.world.entity.LivingEntity", "le mouvement / l'usage des objets");
+        SENSITIVE.put("net.minecraft.world.entity.player.Player", "le joueur (portée, mouvement)");
+        SENSITIVE.put("net.minecraft.client.multiplayer.MultiPlayerGameMode", "les attaques et le minage");
+        SENSITIVE.put("net.minecraft.client.multiplayer.ClientPacketListener", "les paquets reçus (anti-recul)");
+        SENSITIVE.put("net.minecraft.network.Connection", "les paquets réseau");
+        SENSITIVE.put("net.minecraft.client.Minecraft", "la boucle du jeu (clics, timer)");
+        SENSITIVE.put("net.minecraft.client.MouseHandler", "la souris (aimbot)");
+        SENSITIVE.put("net.minecraft.client.Timer", "la vitesse du jeu (timer)");
+        SENSITIVE.put("com.tacz.", "les armes TaCZ (recul, visée)");
+    }
+
+    /** Réglages venant de la config du serveur. */
+    public record Settings(List<String> allowedAgents, List<String> blacklistedMods) {
+    }
+
+    private ScanAnalyzer() {
+    }
+
+    /**
+     * @param ref      client de référence (peut être vide)
+     * @param baseline inventaire du premier contrôle de la session, ou null pour le premier
+     */
+    public static List<Finding> analyze(ScanReport r, ReferenceProfile ref, Set<String> baseline, Settings s) {
+        List<Finding> out = new ArrayList<>();
+        boolean hasRef = ref != null && !ref.isEmpty();
+        jvm(r, ref, hasRef, s, out);
+        if (r.attachListener) {
+            out.add(new Finding(Severity.STRONG, "attach",
+                    "un programme s'est attaché au jeu en cours de partie (injecteur ?)"));
+        }
+        for (String t : r.tamper) {
+            out.add(new Finding(Severity.STRONG, "tamper:" + t, "anticheat modifié en mémoire : " + t));
+        }
+        for (String c : r.classHits) {
+            out.add(new Finding(Severity.STRONG, "class:" + c, "classe de triche connue présente : " + c));
+        }
+        for (String p : r.processHits) {
+            out.add(new Finding(Severity.SUSPECT, "proc:" + p.toLowerCase(Locale.ROOT),
+                    "programme de triche / d'injection ouvert sur le PC : " + p));
+        }
+        for (ScanReport.NativeEntry n : r.natives) {
+            if (!n.reason().isEmpty()) {
+                out.add(new Finding(Severity.SUSPECT, "dll:" + n.name().toLowerCase(Locale.ROOT),
+                        "bibliothèque native chargée dans le jeu : " + n.name() + " (" + n.place() + ", " + n.reason() + ")"));
+            }
+        }
+        if (r.unnamedThreads > 0) {
+            out.add(new Finding(Severity.SUSPECT, "threads:unnamed",
+                    r.unnamedThreads + " thread(s) sans nom dans le jeu (trace fréquente d'un injecteur)"));
+        }
+        providers(r, ref, hasRef, s, out);
+        files(r, ref, hasRef, out);
+        modules(r, ref, hasRef, out);
+        mixins(r, ref, hasRef, out);
+        code(r, ref, hasRef, out);
+        if (baseline != null) {
+            sessionChanges(r, baseline, out);
+        }
+        for (String e : r.errors) {
+            out.add(new Finding(Severity.INFO, "error:" + e, "étape du contrôle en échec : " + e));
+        }
+        out.sort(Comparator.comparing(Finding::severity).reversed());
+        return out;
+    }
+
+    /** Plus haute gravité, ou null si aucun indice. */
+    public static Severity verdict(List<Finding> findings) {
+        Severity max = null;
+        for (Finding f : findings) {
+            if (max == null || f.severity().compareTo(max) > 0) {
+                max = f.severity();
+            }
+        }
+        return max;
+    }
+
+    private static void jvm(ScanReport r, ReferenceProfile ref, boolean hasRef, Settings s, List<Finding> out) {
+        for (String flag : r.jvmFlags) {
+            String key = "jvm:" + flag.toLowerCase(Locale.ROOT);
+            if (flag.startsWith("-javaagent:")) {
+                String name = flag.substring("-javaagent:".length());
+                agent(r, name, key, ref, hasRef, s, out);
+            } else if (flag.startsWith("-agentlib:jdwp")) {
+                out.add(new Finding(Severity.STRONG, key, "débogueur Java activé (permet de modifier le jeu en direct)"));
+            } else if (flag.startsWith("-agentpath:") || flag.startsWith("-agentlib:")) {
+                out.add(new Finding(Severity.STRONG, key, "agent natif chargé au lancement : " + flag));
+            } else if (flag.startsWith("-Xbootclasspath")) {
+                out.add(new Finding(Severity.STRONG, key, "code ajouté au chargeur de démarrage de Java (-Xbootclasspath)"));
+            } else if (flag.startsWith("-Djava.system.class.loader")) {
+                out.add(new Finding(Severity.STRONG, key, "chargeur de classes remplacé au lancement : " + flag));
+            } else if (flag.equals("-Djdk.attach.allowAttachSelf")) {
+                out.add(new Finding(Severity.STRONG, key, "le jeu s'autorise à s'injecter du code lui-même (allowAttachSelf)"));
+            } else if (flag.startsWith("arg:--fml.")) {
+                out.add(new Finding(Severity.STRONG, key, "option de lancement qui charge du code hors du dossier mods : "
+                        + flag.substring(4)));
+            } else if (flag.equals("-XX:+EnableDynamicAgentLoading") || flag.equals("-XX:+StartAttachListener")) {
+                out.add(new Finding(Severity.SUSPECT, key, "injection à chaud explicitement autorisée (" + flag + ")"));
+            } else if (flag.equals("-Xverify:none")) {
+                out.add(new Finding(Severity.SUSPECT, key, "vérification du code Java désactivée (-Xverify:none)"));
+            } else if (flag.startsWith("env:")) {
+                out.add(new Finding(Severity.INFO, key, "variable d'environnement Java définie : " + flag.substring(4)));
+            }
+        }
+    }
+
+    private static void agent(ScanReport r, String name, String key, ReferenceProfile ref, boolean hasRef,
+                              Settings s, List<Finding> out) {
+        String lower = name.toLowerCase(Locale.ROOT);
+        boolean allowedName = s.allowedAgents().stream().anyMatch(a -> !a.isBlank() && lower.contains(a));
+        if (!allowedName) {
+            out.add(new Finding(Severity.STRONG, key, "agent Java chargé au lancement : " + name));
+            return;
+        }
+        if (!hasRef || ref.agents.isEmpty()) {
+            return; // autorisé par son nom, rien à comparer
+        }
+        String sha = r.files.stream().filter(f -> f.origin().equals("agent") && f.name().equalsIgnoreCase(name))
+                .map(ScanReport.FileEntry::sha256).findFirst().orElse("");
+        if (!ref.agents.contains(lower + ":" + sha)) {
+            out.add(new Finding(Severity.STRONG, key + ":" + sha, "agent Java au nom autorisé mais différent de celui du launcher : "
+                    + name + (sha.isEmpty() ? "" : " (sha256 " + shortSha(sha) + ")")));
+        }
+    }
+
+    private static void providers(ScanReport r, ReferenceProfile ref, boolean hasRef, Settings s, List<Finding> out) {
+        for (String lf : r.loadedFiles) {
+            String[] parts = lf.split("\\|", -1);
+            String provider = parts[0];
+            String file = parts.length > 1 ? parts[1] : "?";
+            String ids = parts.length > 2 ? parts[2] : "";
+            for (String id : ids.split(",")) {
+                if (!id.isBlank() && s.blacklistedMods().contains(id.toLowerCase(Locale.ROOT))) {
+                    out.add(new Finding(Severity.STRONG, "banned:" + id, "mod interdit chargé : " + id + " (" + file + ")"));
+                }
+            }
+            if (NORMAL_PROVIDERS.contains(provider) || (hasRef && ref.providers.contains(provider))) {
+                continue;
+            }
+            Severity sev = DEV_PROVIDERS.contains(provider) ? Severity.INFO : Severity.STRONG;
+            out.add(new Finding(sev, "provider:" + provider + "|" + file,
+                    "mod chargé hors du dossier mods (" + provider + ") : " + file + (ids.isEmpty() ? "" : " [" + ids + "]")));
+        }
+    }
+
+    private static void files(ScanReport r, ReferenceProfile ref, boolean hasRef, List<Finding> out) {
+        if (!hasRef) {
+            return;
+        }
+        for (ScanReport.FileEntry f : r.files) {
+            if (f.origin().equals("agent") || f.sha256().isEmpty() || ref.fileHashes.contains(f.sha256())) {
+                continue;
+            }
+            String where = f.origin().equals("mods") ? "dans le dossier mods" : "du jeu (" + f.origin().substring(f.origin().indexOf(':') + 1) + ")";
+            boolean modified = ref.fileNames.contains(ReferenceProfile.fileKey(f));
+            Severity sev = modified || !f.origin().equals("mods") ? Severity.STRONG : Severity.SUSPECT;
+            String what = modified ? "jar MODIFIÉ " : "jar inconnu ";
+            out.add(new Finding(sev, "file:" + f.sha256(), what + where + " : " + f.name() + " ("
+                    + human(f.size()) + ", sha256 " + shortSha(f.sha256()) + ")"));
+        }
+    }
+
+    private static void modules(ScanReport r, ReferenceProfile ref, boolean hasRef, List<Finding> out) {
+        if (!hasRef) {
+            return;
+        }
+        for (String m : r.modules) {
+            String key = ReferenceProfile.moduleKey(m);
+            if (ref.modules.contains(key)) {
+                continue;
+            }
+            String layer = key.contains("/") ? key.substring(0, key.indexOf('/')) : "?";
+            boolean launchLayer = !layer.equals("GAME");
+            out.add(new Finding(launchLayer ? Severity.STRONG : Severity.SUSPECT, "module:" + key,
+                    (launchLayer ? "composant de lancement inconnu (transformateur / coremod) : " : "module de code inconnu chargé : ") + m));
+        }
+    }
+
+    /** Classes que la config Mixin de Spartan lui-même modifie (anti-ESP). */
+    private static final Set<String> OWN_MIXIN_TARGETS = Set.of("net.minecraft.server.level.ServerPlayer",
+            "net.minecraft.server.level.ServerLevel", "com.tacz.guns.sound.SoundManager");
+
+    /**
+     * La config Mixin de Spartan (même nom, même paquet, mêmes cibles) : connue d'office,
+     * pour qu'une mise à jour de Spartan n'alerte pas sur tout le monde avant que la
+     * référence soit réapprise. Une config qui prendrait son nom pour viser autre chose
+     * reste signalée.
+     */
+    static boolean isSpartanOwn(ScanReport.MixinEntry m) {
+        return "spartan.mixins.json".equals(m.name()) && "com.Spartan.mixin".equals(m.pkg())
+                && m.targetCount() <= OWN_MIXIN_TARGETS.size() && OWN_MIXIN_TARGETS.containsAll(m.targets());
+    }
+
+    private static void mixins(ScanReport r, ReferenceProfile ref, boolean hasRef, List<Finding> out) {
+        if (!hasRef) {
+            return;
+        }
+        for (ScanReport.MixinEntry m : r.mixins) {
+            String fp = ScanReport.hex(ScanReport.mixinFingerprint(m.name()));
+            if (ref.mixins.containsKey(fp) || isSpartanOwn(m)) {
+                continue;
+            }
+            Set<String> touched = new TreeSet<>();
+            for (String t : m.targets()) {
+                String what = sensitive(t);
+                if (what != null) {
+                    touched.add(what);
+                }
+            }
+            String detail = (m.pkg().isEmpty() ? "" : m.pkg() + ", ")
+                    + (m.source().isEmpty() ? "" : "déclarée par " + m.source() + ", ")
+                    + (m.targetCount() > 0 ? m.targetCount() + " classe(s) visée(s)" : "classes visées inconnues");
+            String targets = m.targets().isEmpty() ? "" : " → modifie " + String.join(", ", shortNames(m.targets(), 6));
+            out.add(new Finding(touched.isEmpty() ? Severity.SUSPECT : Severity.STRONG, "mixin:" + fp,
+                    "config Mixin inconnue : " + m.name() + " (" + detail + ")"
+                            + targets + (touched.isEmpty() ? "" : " — touche " + String.join(", ", touched))));
+        }
+    }
+
+    private static void code(ScanReport r, ReferenceProfile ref, boolean hasRef, List<Finding> out) {
+        for (ScanReport.OriginEntry o : r.origins) {
+            if (hasRef && ref.origins.contains(o.key())) {
+                continue;
+            }
+            out.add(new Finding(hasRef ? Severity.STRONG : Severity.SUSPECT, "origin:" + o.key(),
+                    "code d'origine inconnue en cours d'exécution (" + o.key() + ") : "
+                            + String.join(", ", o.classes()) + " — threads : " + String.join(", ", o.threads())));
+        }
+        for (String l : r.loaders) {
+            if (NORMAL_LOADERS.contains(l) || (hasRef && ref.loaders.contains(l))) {
+                continue;
+            }
+            out.add(new Finding(Severity.SUSPECT, "loader:" + l, "chargeur de classes inhabituel : " + l));
+        }
+    }
+
+    /** Ce qui n'était pas là au premier contrôle de la session. */
+    private static void sessionChanges(ScanReport r, Set<String> baseline, List<Finding> out) {
+        Set<String> now = inventory(r);
+        Set<String> appeared = new TreeSet<>(now);
+        appeared.removeAll(baseline);
+        if (appeared.isEmpty()) {
+            return;
+        }
+        // Les indices déjà relevés pour ces éléments sont aggravés…
+        for (int i = 0; i < out.size(); i++) {
+            Finding f = out.get(i);
+            if (appeared.contains(inventoryKeyOf(f.key()))) {
+                out.set(i, f.withSeverity(Severity.STRONG, " (apparu en cours de partie)"));
+                appeared.remove(inventoryKeyOf(f.key()));
+            }
+        }
+        // … et le reste est signalé : modules et configs Mixin ne changent jamais après le
+        // lancement ; une DLL ordinaire (pilote, overlay) peut se charger plus tard : soupçon.
+        Map<String, String> mixinNames = new LinkedHashMap<>();
+        for (ScanReport.MixinEntry m : r.mixins) {
+            mixinNames.put("x:" + ScanReport.hex(ScanReport.mixinFingerprint(m.name())), m.name() + " (" + m.pkg() + ")");
+        }
+        for (String item : appeared) {
+            String what = mixinNames.getOrDefault(item, item.substring(item.indexOf(':') + 1));
+            if (item.startsWith("d:")) {
+                out.add(new Finding(Severity.SUSPECT, "late:" + item, "bibliothèque native chargée en cours de partie : " + what));
+            } else if (item.startsWith("m:")) {
+                out.add(new Finding(Severity.STRONG, "late:" + item, "module de code chargé en cours de partie : " + what));
+            } else {
+                out.add(new Finding(Severity.STRONG, "late:" + item, "config Mixin ajoutée en cours de partie : " + what));
+            }
+        }
+    }
+
+    /**
+     * Inventaire comparable d'un contrôle à l'autre : modules et configs Mixin (figés
+     * après le lancement dans un jeu normal) et bibliothèques natives.
+     */
+    public static Set<String> inventory(ScanReport r) {
+        Set<String> out = new TreeSet<>();
+        for (String m : r.modules) {
+            out.add("m:" + ReferenceProfile.moduleKey(m));
+        }
+        for (ScanReport.MixinEntry m : r.mixins) {
+            out.add("x:" + ScanReport.hex(ScanReport.mixinFingerprint(m.name())));
+        }
+        for (ScanReport.NativeEntry n : r.natives) {
+            out.add("d:" + n.name().toLowerCase(Locale.ROOT));
+        }
+        return out;
+    }
+
+    /** Lien entre la clé d'un indice et la clé d'inventaire correspondante. */
+    private static String inventoryKeyOf(String findingKey) {
+        if (findingKey.startsWith("module:")) {
+            return "m:" + findingKey.substring(7);
+        }
+        if (findingKey.startsWith("mixin:")) {
+            return "x:" + findingKey.substring(6);
+        }
+        if (findingKey.startsWith("dll:")) {
+            return "d:" + findingKey.substring(4);
+        }
+        return "";
+    }
+
+    static String sensitive(String target) {
+        for (Map.Entry<String, String> en : SENSITIVE.entrySet()) {
+            String k = en.getKey();
+            if (k.endsWith(".") ? target.startsWith(k) : target.equals(k) || target.startsWith(k + "$")) {
+                return en.getValue();
+            }
+        }
+        return null;
+    }
+
+    private static List<String> shortNames(List<String> classes, int max) {
+        List<String> out = new ArrayList<>();
+        for (String c : classes) {
+            if (out.size() >= max) {
+                out.add("…");
+                break;
+            }
+            out.add(c.substring(c.lastIndexOf('.') + 1));
+        }
+        return out;
+    }
+
+    static String shortSha(String sha) {
+        return sha.length() > 12 ? sha.substring(0, 12) + "…" : sha;
+    }
+
+    static String human(long bytes) {
+        if (bytes >= 1 << 20) {
+            return String.format(Locale.ROOT, "%.1f Mo", bytes / 1048576.0);
+        }
+        if (bytes >= 1024) {
+            return (bytes / 1024) + " Ko";
+        }
+        return bytes + " o";
+    }
+}
