@@ -39,6 +39,7 @@ import io
 import json
 import re
 import struct
+import subprocess
 import sys
 import tomllib
 import zipfile
@@ -218,6 +219,33 @@ def _dist_client(ann):
     return v is not None and v.get("value", ("enum", "", ""))[2] == "CLIENT"
 
 
+_JAVA_CLASSES = {}
+
+
+def classe_java(cls):
+    """(noms des membres, ascendants) d'une classe du JDK, lus par javap. Sert aux membres hérités de Java par une classe
+    de Minecraft ou d'un mod (NonNullList.iterator, Direction.ordinal...). Classe inconnue : (None, [])."""
+    if cls not in _JAVA_CLASSES:
+        r = subprocess.run([chemins.javap(), "-p", cls.replace("/", ".")], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        membres, parents = set(), []
+        for l in r.stdout.splitlines():
+            l = l.strip()
+            while re.search(r"<[^<>]*>", l):
+                l = re.sub(r"<[^<>]*>", "", l)
+            if l.endswith("{"):
+                for mot in ("extends", "implements"):
+                    m = re.search(r"\b%s\s+([\w.$, ]+?)(?=\s+implements|\s*\{)" % mot, l)
+                    if m:
+                        parents += [x.strip().replace(".", "/") for x in m.group(1).split(",") if x.strip()]
+            elif l.endswith(";"):
+                m = re.search(r"([\w$]+)\(", l) or re.search(r"([\w$]+)\s*(=.*)?;$", l)
+                if m:
+                    membres.add(m.group(1))
+        _JAVA_CLASSES[cls] = (membres if r.returncode == 0 else None, parents)
+    return _JAVA_CLASSES[cls]
+
+
 # ------------------------------------------------------------------ le « monde » : Minecraft + Forge + bibliothèques
 class Monde:
     """Index paresseux : nom de classe -> (jar, entrée) ; une classe n'est lue que si on en a besoin."""
@@ -393,9 +421,22 @@ def verifier(jar, cote, mondes, dossier_mods, projet, refs=(), embarques=frozens
         return classe(nom) is not None
 
     def a_membre(nom, membre, desc, genre, vus=None):
-        vus = vus or set()
-        if nom.startswith("[") or nom.startswith(JAVA):
+        racine = vus is None
+        vus = set() if racine else vus
+        if nom.startswith("["):
             return True
+        if nom.startswith(JAVA):
+            # référence directe à Java : supposée juste ; membre HÉRITÉ de Java (ascendant d'une classe de Minecraft ou
+            # d'un mod) : cherché pour de vrai, par son nom (sinon tout membre absent passait pour hérité d'Object)
+            if racine:
+                return True
+            if nom in vus:
+                return False
+            vus.add(nom)
+            membres, parents = classe_java(nom)
+            if membres is None:
+                return True
+            return membre in membres or any(a_membre(x, membre, desc, genre, vus) for x in parents + ["java/lang/Object"])
         if nom in vus:
             return False
         vus.add(nom)

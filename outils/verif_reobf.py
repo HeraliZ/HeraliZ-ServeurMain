@@ -15,13 +15,11 @@ les noms officiels et plante au chargement (ex. NoSuchFieldError: CREATIVE_MODE_
 Code de sortie 1 si une référence suspecte est trouvée.
 """
 import re
-import subprocess
 import sys
 import zipfile
 from pathlib import Path
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parent))
-import chemins  # noqa: E402
 import verif_split as vs  # noqa: E402
 
 MC = ("net/minecraft/", "com/mojang/blaze3d/")
@@ -49,33 +47,6 @@ def references(jar):
     return out
 
 
-_JAVA = {}
-
-
-def classe_java(cls):
-    """(membres, ascendants) d'une classe du JDK, lus par javap (les classes de Minecraft héritent parfois de Java :
-    NonNullList.iterator, Direction.ordinal...)."""
-    if cls not in _JAVA:
-        r = subprocess.run([chemins.javap(), "-p", cls.replace("/", ".")], capture_output=True, text=True,
-                           encoding="utf-8", errors="replace")
-        membres, parents = set(), []
-        for l in r.stdout.splitlines():
-            l = l.strip()
-            while re.search(r"<[^<>]*>", l):
-                l = re.sub(r"<[^<>]*>", "", l)
-            if l.endswith("{"):
-                for mot in ("extends", "implements"):
-                    m = re.search(r"\b%s\s+([\w.$, ]+?)(?=\s+implements|\s*\{)" % mot, l)
-                    if m:
-                        parents += [x.strip().replace(".", "/") for x in m.group(1).split(",") if x.strip()]
-            elif l.endswith(";"):
-                m = re.search(r"([\w$]+)\(", l) or re.search(r"([\w$]+)\s*(=.*)?;$", l)
-                if m:
-                    membres.add(m.group(1))
-        _JAVA[cls] = (membres, parents)
-    return _JAVA[cls]
-
-
 def existe(monde, cls, membre, vus=None):
     """Le membre (n'importe quel descripteur) est déclaré dans la classe ou un de ses ascendants."""
     vus = set() if vus is None else vus
@@ -83,7 +54,9 @@ def existe(monde, cls, membre, vus=None):
         return False
     vus.add(cls)
     if cls.startswith(vs.JAVA):
-        membres, parents = classe_java(cls)
+        membres, parents = vs.classe_java(cls)
+        if membres is None:
+            return True
         return membre in membres or any(existe(monde, x, membre, vus) for x in parents + ["java/lang/Object"])
     c = monde.classe(cls)
     if c is None:
