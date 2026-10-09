@@ -442,6 +442,7 @@ public final class ClanEvents {
         }
         ClanService.ajouterXp(c, xp, null);
         Quetes.progresser(c, QueteEtat.Type.CAPTURES, 1);
+        c.statZone(e.zoneId).captures++;
         c.ajouterEvenement(new Evenement(now, Evenement.Genre.CAPTURE, e.nomZone));
         store.marquerDirty();
         Sync.marquer(c);
@@ -486,12 +487,35 @@ public final class ClanEvents {
         ClansNet.toAll(notice);
     }
 
+    /**
+     * Chaque minute, pour un clan qui tient des zones : quete TENIR_ZONE_MIN, minutes tenues par zone, points de
+     * territoire, revenu (ClansConfig.REVENU_HEURE herals par heure et par zone, verses a la banque a chaque heure-zone
+     * complete) et XP (ClansConfig.XP_HEURE_VALEUR par heure et par point de valeur : une ville riche en loot rapporte
+     * plus). Les restes sont gardes dans le clan : rien n'est perdu a un redemarrage.
+     */
     @SubscribeEvent
     public static void onTenueMinute(TerritoireEvents.TenueMinute e) {
         ClanStore store = ClanStore.get();
         Clan c = store == null ? null : store.get(e.clanId);
         if (c == null || e.zonesTenues <= 0) return;
         Quetes.progresser(c, QueteEtat.Type.TENIR_ZONE_MIN, 1);
+        for (String zoneId : e.zones) c.statZone(zoneId).minutes++;
+        c.pointsTerritoire += e.valeurTenue;
+        c.minutesZonesAPayer += e.zonesTenues;
+        c.minutesValeurAConvertir += e.valeurTenue;
+        store.marquerDirty();
+        long heures = c.minutesZonesAPayer / 60;
+        if (heures > 0) {
+            c.minutesZonesAPayer -= heures * 60;
+            long montant = heures * ClansConfig.REVENU_HEURE.get();
+            if (montant > 0) ClansApi.crediterBanque(c.id, montant, "territoires");
+        }
+        long heuresValeur = c.minutesValeurAConvertir / 60;
+        if (heuresValeur > 0) {
+            c.minutesValeurAConvertir -= heuresValeur * 60;
+            long xp = heuresValeur * ClansConfig.XP_HEURE_VALEUR.get();
+            if (xp > 0) ClanService.ajouterXp(c, xp, null);
+        }
     }
 
     /** /clan admin : vide la table des loots d'un joueur (re-tester un bloc). */

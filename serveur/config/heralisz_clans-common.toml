@@ -16,6 +16,13 @@
 	#Bonus de loot (%) des membres presents dans une zone tenue (HeraliZ Loot : objets plus rares, quantites)
 	#Range: 0 ~ 100
 	loot_bonus = 10
+	#Herals verses a la banque du clan par heure et par zone tenue (a chaque heure complete)
+	#Range: 0 ~ 1000000
+	revenu_heure = 100
+	#XP du clan par heure tenue et par point de valeur de la zone (valeur = niveau de loot de la ville,
+	#1 a 7, cle « valeur » de zones.json : l'aerodrome T6 rapporte 6 fois plus qu'un village T1)
+	#Range: 0 ~ 100000
+	xp_heure_valeur = 10
 	#Secondes pour capturer une zone tenue par un autre clan (un seul capteur)
 	#Range: 5 ~ 3600
 	duree_capture_s = 90

@@ -74,10 +74,10 @@ public final class Niveaux {
         return t;
     }
 
-    /** 1 (1-2), 2 (3-5), 3 (6-9), 4 (10+). */
+    /** 1 (1-2), 2 (3-5), 3 (6+) : un clan ne tient jamais plus de 3 zones (choix du proprietaire). */
     static int[] defautTerritoires() {
         int[] t = new int[MAX];
-        for (int n = 1; n <= MAX; n++) t[n - 1] = n <= 2 ? 1 : n <= 5 ? 2 : n <= 9 ? 3 : 4;
+        for (int n = 1; n <= MAX; n++) t[n - 1] = n <= 2 ? 1 : n <= 5 ? 2 : 3;
         return t;
     }
 

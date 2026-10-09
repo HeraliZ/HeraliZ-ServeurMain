@@ -29,6 +29,8 @@ public final class Zone {
     public static final int DEMI_HAUTEUR = 40;
     /** Bornes d'une demi-hauteur reglee a la main dans zones.json. */
     public static final int DEMI_HAUTEUR_MIN = 8, DEMI_HAUTEUR_MAX = 512;
+    /** Bornes de la valeur d'une zone (niveau de loot de la ville : T1 a T7). */
+    public static final int VALEUR_MIN = 1, VALEUR_MAX = 7;
 
     public final String id;
     public final String nom;
@@ -43,6 +45,12 @@ public final class Zone {
      * (faux), le centre suit le drapeau a chaque pose : la zone est le cercle autour de son drapeau.
      */
     public boolean centreFixe;
+    /**
+     * Valeur de la zone (cle « valeur » de zones.json, 1 a 7) : le niveau de loot de la ville (Tcherno T3-T4 = 3 ou 4,
+     * aerodrome T6 = 6). Plus elle vaut, plus la tenir rapporte d'XP et de points de territoire au clan (le revenu en
+     * herals, lui, est le meme pour toutes les zones).
+     */
+    public int valeur = VALEUR_MIN;
     /** Hauteur de la surface au centre, calee par le moteur quand la zone n'a pas de drapeau (null = inconnue). */
     @Nullable
     private Integer hauteurSurface;
@@ -150,6 +158,7 @@ public final class Zone {
         }
         if (demiHauteurFixe != null) o.addProperty("demiHauteur", demiHauteurFixe);
         if (centreFixe) o.addProperty("centreFixe", true);
+        o.addProperty("valeur", valeur);
         return o;
     }
 
@@ -173,6 +182,7 @@ public final class Zone {
             if (h > 0) zo.demiHauteurFixe = Math.max(DEMI_HAUTEUR_MIN, Math.min(DEMI_HAUTEUR_MAX, h));
         }
         zo.centreFixe = Json.bool(o, "centreFixe", false);
+        zo.valeur = Math.max(VALEUR_MIN, Math.min(VALEUR_MAX, Json.integer(o, "valeur", VALEUR_MIN)));
         return zo;
     }
 }

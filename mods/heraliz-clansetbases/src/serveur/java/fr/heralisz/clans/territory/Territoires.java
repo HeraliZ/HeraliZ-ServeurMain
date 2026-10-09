@@ -50,7 +50,7 @@ import java.util.UUID;
 
 /**
  * Moteur des territoires (serveur, monde principal) : zones de zones.json, etat persistant (SavedData), presence et
- * capture toutes les 10 ticks, barre de capture (TerritoireHudS2C) aux joueurs presents, bonus de loot LuckPerms,
+ * capture toutes les 10 ticks, barre de capture (TerritoireHudS2C) aux joueurs presents, bonus de loot (HeraliZ Loot),
  * drapeaux synchronises, signal de ravitaillement, commandes admin. API statique pour les autres modules ; les
  * changements importants sont postes sur le bus Forge ({@link TerritoireEvents}).
  *
@@ -466,13 +466,20 @@ public final class Territoires {
     }
 
     private void tenueMinute() {
-        Map<UUID, Integer> parClan = new HashMap<>();
+        Map<UUID, List<Zone>> parClan = new HashMap<>();
         for (Zone z : zones.values()) {
             EtatTerritoire e = data.tous().get(z.id);
-            if (e != null && e.proprio != null) parClan.merge(e.proprio, 1, Integer::sum);
+            if (e != null && e.proprio != null) parClan.computeIfAbsent(e.proprio, k -> new ArrayList<>(3)).add(z);
         }
-        for (Map.Entry<UUID, Integer> en : parClan.entrySet()) {
-            MinecraftForge.EVENT_BUS.post(new TerritoireEvents.TenueMinute(en.getKey(), en.getValue()));
+        for (Map.Entry<UUID, List<Zone>> en : parClan.entrySet()) {
+            List<Zone> l = en.getValue();
+            int valeur = 0;
+            List<String> ids = new ArrayList<>(l.size());
+            for (Zone z : l) {
+                valeur += z.valeur;
+                ids.add(z.id);
+            }
+            MinecraftForge.EVENT_BUS.post(new TerritoireEvents.TenueMinute(en.getKey(), l.size(), valeur, ids));
         }
     }
 

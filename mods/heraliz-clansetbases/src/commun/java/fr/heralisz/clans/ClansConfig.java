@@ -16,6 +16,8 @@ public final class ClansConfig {
     public static final ForgeConfigSpec.IntValue DELAI_REJOINDRE_H;
     public static final ForgeConfigSpec.IntValue COOLDOWN_MODIF_H;
     public static final ForgeConfigSpec.IntValue LOOT_BONUS;
+    public static final ForgeConfigSpec.LongValue REVENU_HEURE;
+    public static final ForgeConfigSpec.IntValue XP_HEURE_VALEUR;
     public static final ForgeConfigSpec.IntValue DUREE_CAPTURE_S;
     public static final ForgeConfigSpec.IntValue DUREE_CAPTURE_NEUTRE_S;
     public static final ForgeConfigSpec.IntValue PROTECTION_MIN;
@@ -49,6 +51,11 @@ public final class ClansConfig {
         b.comment("Territoires").push("territoires");
         LOOT_BONUS = b.comment("Bonus de loot (%) des membres presents dans une zone tenue (HeraliZ Loot : objets plus rares, quantites)")
                 .defineInRange("loot_bonus", 10, 0, 100);
+        REVENU_HEURE = b.comment("Herals verses a la banque du clan par heure et par zone tenue (a chaque heure complete)")
+                .defineInRange("revenu_heure", 100L, 0L, 1_000_000L);
+        XP_HEURE_VALEUR = b.comment("XP du clan par heure tenue et par point de valeur de la zone (valeur = niveau de loot de la ville,",
+                        "1 a 7, cle « valeur » de zones.json : l'aerodrome T6 rapporte 6 fois plus qu'un village T1)")
+                .defineInRange("xp_heure_valeur", 10, 0, 100000);
         DUREE_CAPTURE_S = b.comment("Secondes pour capturer une zone tenue par un autre clan (un seul capteur)").defineInRange("duree_capture_s", 90, 5, 3600);
         DUREE_CAPTURE_NEUTRE_S = b.comment("Secondes pour capturer une zone libre").defineInRange("duree_capture_neutre_s", 60, 5, 3600);
         PROTECTION_MIN = b.comment("Minutes de protection apres une capture").defineInRange("protection_min", 10, 0, 24 * 60);

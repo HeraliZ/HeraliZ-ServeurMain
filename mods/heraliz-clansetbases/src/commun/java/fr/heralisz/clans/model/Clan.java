@@ -51,6 +51,21 @@ public final class Clan {
     public final List<Evenement> journal = new ArrayList<>();
     /** ClashWar (HeraliZ Matchs, via ClansApi.ajouterClashWar) : participations et victoires du clan. */
     public int clashwarJoues, clashwarGagnes;
+    /**
+     * Territoires (serveur) : minutes-zones pas encore payees (revenu verse a chaque heure-zone complete) et
+     * minutes-valeur pas encore converties en XP (valeur = niveau de loot de la zone).
+     */
+    public long minutesZonesAPayer, minutesValeurAConvertir;
+    /** Points de territoire : somme, minute par minute, des valeurs des zones tenues (60 = une zone T1 tenue 1 h). */
+    public long pointsTerritoire;
+    /** Par zone (identifiant) : captures et minutes tenues par le clan. */
+    public final Map<String, StatZone> statsZones = new LinkedHashMap<>();
+
+    /** Captures et minutes tenues d'une zone par le clan. */
+    public static final class StatZone {
+        public int captures;
+        public long minutes;
+    }
 
     public Clan(UUID id, String tag, String nom, UUID chef, long creeLe) {
         this.id = id;
@@ -198,6 +213,11 @@ public final class Clan {
         return invitations.removeIf(i -> i.expiree(maintenant));
     }
 
+    /** Statistiques du clan sur une zone (creees au besoin). */
+    public StatZone statZone(String zoneId) {
+        return statsZones.computeIfAbsent(zoneId, k -> new StatZone());
+    }
+
     public void ajouterMouvement(Mouvement m) {
         journalBanque.add(0, m);
         while (journalBanque.size() > Mouvement.MAX) journalBanque.remove(journalBanque.size() - 1);
@@ -252,6 +272,17 @@ public final class Clan {
         o.add("journal", liste(journal, Evenement::toJson));
         o.addProperty("clashwarJoues", clashwarJoues);
         o.addProperty("clashwarGagnes", clashwarGagnes);
+        o.addProperty("minutesZonesAPayer", minutesZonesAPayer);
+        o.addProperty("minutesValeurAConvertir", minutesValeurAConvertir);
+        o.addProperty("pointsTerritoire", pointsTerritoire);
+        JsonObject sz = new JsonObject();
+        for (Map.Entry<String, StatZone> e : statsZones.entrySet()) {
+            JsonObject z = new JsonObject();
+            z.addProperty("captures", e.getValue().captures);
+            z.addProperty("minutes", e.getValue().minutes);
+            sz.add(e.getKey(), z);
+        }
+        o.add("statsZones", sz);
         return o;
     }
 
@@ -319,6 +350,17 @@ public final class Clan {
         for (JsonElement e : Json.arr(o, "journal")) if (e.isJsonObject()) c.journal.add(Evenement.fromJson(e.getAsJsonObject()));
         c.clashwarJoues = Math.max(0, Json.integer(o, "clashwarJoues", 0));
         c.clashwarGagnes = Math.max(0, Math.min(c.clashwarJoues, Json.integer(o, "clashwarGagnes", 0)));
+        c.minutesZonesAPayer = Math.max(0, Json.lng(o, "minutesZonesAPayer", 0));
+        c.minutesValeurAConvertir = Math.max(0, Json.lng(o, "minutesValeurAConvertir", 0));
+        c.pointsTerritoire = Math.max(0, Json.lng(o, "pointsTerritoire", 0));
+        JsonObject sz = Json.obj(o, "statsZones");
+        for (Map.Entry<String, JsonElement> e : sz.entrySet()) {
+            if (!e.getValue().isJsonObject()) continue;
+            StatZone s = new StatZone();
+            s.captures = Math.max(0, Json.integer(e.getValue().getAsJsonObject(), "captures", 0));
+            s.minutes = Math.max(0, Json.lng(e.getValue().getAsJsonObject(), "minutes", 0));
+            c.statsZones.put(e.getKey(), s);
+        }
         // le chef est toujours membre avec le grade CHEF (et n'a pas de reglages individuels : il a tout)
         Membre chefM = c.membres.get(chef);
         if (chefM != null) {

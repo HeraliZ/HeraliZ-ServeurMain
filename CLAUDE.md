@@ -426,6 +426,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   dans une zone tenue par son clan, objet « Bonus de loot » de la boutique (`heralisz_utils:document_lootbonus`, 2 h de
   jeu décomptées seulement en ligne, gardé à la mort) ;
 - extractions de la carte : 3 zones ouvertes à la fois, 30 à 60 min chacune, 30 s à tenir, retour au spawn ;
+- territoires des clans : 3 zones au plus par clan ; chaque zone tenue verse 100 hérals par heure à la banque du clan ;
+  une ville vaut son niveau de loot (1 à 7, `/territoire valeur <zone> <1-7>`, clé « valeur » de zones.json) et
+  rapporte au clan 10 XP par heure et par point de valeur (l'aérodrome T6 fait monter le clan plus vite dans le
+  classement que Tcherno T3-T4) ; captures et temps tenu par ville sont gardés pour les statistiques du clan.
+  Récompense à la capture : à décider plus tard (« pas abusé ») ;
 - caisses (heraliz_crates) : Vulkhar, Chevalier sans visage, Kraken et Pendentifs supprimées (Glacivore aussi), et
   plus aucun pendentif (charm) d'arme dans Tactique ; la caisse Gemme montre une gemme qui change de couleur (plus de
   couteau dans le cristal) ; hitbox = vraie forme de chaque modèle en cubes de 2 px (`python outils/formes_caisses.py`
@@ -452,7 +457,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Loot** : 618 des 1 853 entrées des tables de HeraliZ Loot citent encore `heralisz_armor:*` (retiré) : les
   vêtements n'apparaissent plus dans le loot. À régénérer avec les objets de l'Armurerie (avec la refonte du loot).
 - **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : suivent l'ancienne carte, à refaire pour la
-  nouvelle.
+  nouvelle, en donnant sa valeur (niveau de loot) à chaque ville. Les statistiques par ville (captures, temps tenu)
+  sont enregistrées mais pas encore affichées dans l'écran du clan (interface à valider d'abord).
 - **Bugs repérés, non corrigés** (attendre l'accord du propriétaire) :
   - Sylvorn : les attributs de `SapNode` ne sont pas déclarés (risque de plantage à l'attaque CHANNEL ; correction d'une
     ligne dans `HeraliszSylvorn.attributes`) ;

@@ -38,7 +38,8 @@ import java.util.List;
 /**
  * Commandes op (niveau 2) : /territoire creer &lt;id&gt; &lt;rayon&gt; &lt;nom...&gt; (centre = ma position), supprimer &lt;id&gt;,
  * drapeau &lt;id&gt; (sur le bloc vise, sinon a mes pieds ; le centre de la zone suit le drapeau), liste, info [id],
- * reset &lt;id&gt;, capturer &lt;id&gt; &lt;tag&gt;, ravitailler &lt;id&gt; (largage immediat), recharger (zones.json + table de butin).
+ * reset &lt;id&gt;, capturer &lt;id&gt; &lt;tag&gt;, ravitailler &lt;id&gt; (largage immediat), valeur &lt;id&gt; &lt;1-7&gt; (niveau de loot de la
+ * ville : XP et points de territoire du clan qui la tient), recharger (zones.json + table de butin).
  * <p>Reponses : chaque commande repond, et directement au joueur ({@link #ok}) : un {@code sendSuccess} ne s'affiche
  * pas quand la regle {@code sendCommandFeedback} est a false (cas du monde de test de l'utilisateur : creer et drapeau
  * semblaient muets). Les erreurs passent par {@code sendFailure}, toujours affiche.
@@ -84,6 +85,8 @@ public final class TerritoireCommands {
                 .then(lit("capturer").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES)
                         .then(Commands.argument("tag", StringArgumentType.word()).suggests(TAGS).executes(TerritoireCommands::capturer))))
                 .then(lit("ravitailler").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(TerritoireCommands::ravitailler)))
+                .then(lit("valeur").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES)
+                        .then(Commands.argument("valeur", IntegerArgumentType.integer(Zone.VALEUR_MIN, Zone.VALEUR_MAX)).executes(TerritoireCommands::valeur))))
                 .then(lit("recharger").executes(TerritoireCommands::recharger)));
     }
 
@@ -316,6 +319,19 @@ public final class TerritoireCommands {
         return null;
     }
 
+    // ------------------------------------------------------------------ valeur
+    /** Valeur de la zone (niveau de loot de la ville, 1 a 7) : XP et points de territoire du clan qui la tient. */
+    private static int valeur(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        Territoires t = moteur(ctx);
+        Zone z = t == null ? null : zone(ctx);
+        if (z == null) return 0;
+        z.valeur = IntegerArgumentType.getInteger(ctx, "valeur");
+        t.sauvegarderZones();
+        ok(src, tr("zone.cmd.valeur", z.nom, z.id, z.valeur));
+        return 1;
+    }
+
     // ------------------------------------------------------------------ liste et info
     private static int liste(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack src = ctx.getSource();
@@ -388,6 +404,7 @@ public final class TerritoireCommands {
             ligne(src, tr("zone.cmd.info_sans_drapeau", lien("/territoire drapeau " + z.id)));
         }
         ligne(src, tr("zone.cmd.info_etat", proprioTexte(e), etatTexte(t, z, e, now), Math.round(e.progression * 100)));
+        ligne(src, tr("zone.cmd.info_valeur", z.valeur));
         if (e.proprio != null) {
             Ravitaillement r = Territoires.ravitaillement();
             Component signal = r != null && r.enCours(z.id) ? tr("zone.cmd.info_signal.en_cours")

@@ -64,14 +64,27 @@ public final class TerritoireEvents {
         }
     }
 
-    /** Toutes les minutes, pour chaque clan qui tient au moins une zone (quete TENIR_ZONE_MIN). */
+    /**
+     * Toutes les minutes, pour chaque clan qui tient au moins une zone : quete TENIR_ZONE_MIN, revenu des territoires,
+     * XP et points de territoire (somme des valeurs des zones tenues).
+     */
     public static class TenueMinute extends Event {
         public final UUID clanId;
         public final int zonesTenues;
+        /** Somme des valeurs (niveaux de loot) des zones tenues. */
+        public final int valeurTenue;
+        /** Zones tenues (identifiants). */
+        public final List<String> zones;
 
         public TenueMinute(UUID clanId, int zonesTenues) {
+            this(clanId, zonesTenues, zonesTenues, List.of());
+        }
+
+        public TenueMinute(UUID clanId, int zonesTenues, int valeurTenue, List<String> zones) {
             this.clanId = clanId;
             this.zonesTenues = zonesTenues;
+            this.valeurTenue = valeurTenue;
+            this.zones = List.copyOf(zones);
         }
     }
 }
