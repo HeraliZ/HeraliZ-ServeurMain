@@ -77,8 +77,8 @@ outils/                   fabrication et contrôles (Python 3.11+)
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
-Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 20 mods (sources, fabriqués en 18 jars
-`-serveur` pour le Ptero) = les 39 jars du dossier `mods/` du serveur, et les 42 jars des joueurs.
+Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 21 mods (sources, fabriqués en 19 jars
+`-serveur` pour le Ptero) = les 40 jars du dossier `mods/` du serveur, et les 43 jars des joueurs.
 
 Jamais dans Git (voir `.gitignore`) :
 - `build/`, `run/`, `dist/`, `livraison/` (refaits à chaque fabrication) ;
@@ -118,6 +118,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
 | crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : menu Échap, pack de textures du serveur imposé |
+| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes des admins (`/extraction`) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
 
@@ -418,6 +419,14 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - CRac : aucun sac de couchage (retour à la base par la commande de téléportation, lits normaux) ; seuls les C4
   abîment les constructions ;
 - casino : revente avec 5 % de commission, échanges d'objets coupés, entrée non payable avec le compte ;
+- caisses (heraliz_crates) : Vulkhar, Chevalier sans visage, Kraken et Pendentifs supprimées (Glacivore aussi), et
+  plus aucun pendentif (charm) d'arme dans Tactique ; la caisse Gemme montre une gemme qui change de couleur (plus de
+  couteau dans le cristal) ; hitbox = vraie forme de chaque modèle en cubes de 2 px (`python outils/formes_caisses.py`
+  après tout changement de modèle de caisse), contour noir visible seulement en créatif ; nom flottant sans fond
+  (rareté entre deux traits, nom de la caisse, clé · clic droit) ;
+- barricade en bois (heralisz_bunker) : modèle « mur de rondins couchés » choisi par le propriétaire (rondins entre trois
+  poteaux, agrafes de fer, jambes de force), même taille, pose et collision qu'avant ; modèle et textures (4 états
+  d'usure) refaits par `python outils/barricade_modele.py` (modèle : `mods/heralisz-bunker/outils/BarricadeModele.java`) ;
 - Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
   I, menu =, abandon Retour arrière ;
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;

@@ -44,6 +44,7 @@ public final class CrateClientTicker {
 
         CrateState s = new CrateState();
         s.time = gt % CrateRenderer.CLOCK_PERIOD;
+        s.clock = s.time;
         s.seed = 0;
         {
             long t = gt - be.getStartTick();

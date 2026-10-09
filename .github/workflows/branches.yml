@@ -1,0 +1,78 @@
+# Contrôle des branches de travail (toutes sauf main) : fabrique les mods modifiés et lance les contrôles possibles sans
+# Minecraft, exactement comme la mise en ligne, mais N'ENVOIE RIEN au Ptero (aucun secret du Ptero ici).
+# Les jars fabriqués sont gardés 3 jours dans l'onglet Actions (paquets « test-mods-serveur » et « test-mods-client ») :
+# le propriétaire peut les essayer en jeu avant de faire passer la branche sur main.
+name: Contrôle de branche
+
+on:
+  push:
+    branches-ignore: [main]
+    paths: ["mods/**", "serveur/**", "client/**", "outils/**", ".github/workflows/**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: branche-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fabrication:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # caches de la mise en ligne (main) : seuls les mods modifiés sur la branche sont refabriqués
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('mods/*/build.gradle', 'mods/*/gradle.properties') }}
+          restore-keys: gradle-
+
+      - uses: actions/cache@v4
+        with:
+          path: mods/*/build/libs
+          key: jars-${{ github.sha }}
+          restore-keys: jars-
+
+      - name: Fabriquer les mods modifiés
+        run: python outils/construire.py --si-change
+
+      - name: Noms interdits
+        if: env.NOMS_INTERDITS != ''
+        run: printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
+
+      - name: Contrôles (GeckoLib, noms perso)
+        run: python outils/verifier.py --sans-split
+
+      - name: Garder les jars serveur de la branche
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-mods-serveur
+          path: livraison/mods serveur/*-serveur.jar
+          retention-days: 3
+
+      - name: Garder les jars joueurs de la branche
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-mods-client
+          path: |
+            livraison/mods client/*-client.jar
+            livraison/mods client/heraliz_interface-*.jar
+            livraison/mods client/dayzhotbar-*.jar
+          retention-days: 3

@@ -75,6 +75,18 @@ public abstract class Design {
     /** Place la pose au point d'accroche du cadenas (sommet de l'anse, face avant vers +Z). */
     protected abstract void lockPose(CrateState s, Pose p);
 
+    /**
+     * La caisse a-t-elle des parties animees au repos ? Au repos la caisse est figee (cuite une fois) ; ces parties-la
+     * sont exclues de la cuisson (CrateState.frozen) et dessinees a chaque image par idle.
+     */
+    public boolean animatedAtRest() {
+        return false;
+    }
+
+    /** Parties animees au repos (repere du bloc, echelle de la caisse a appliquer), dessinees par-dessus la caisse figee. */
+    public void idle(CrateState s, DrawList out) {
+    }
+
     /** Effets lumineux propres a la caisse (sprites, decors en orbite...). */
     protected void effects(CrateState s, Pose p, DrawList out) {
     }

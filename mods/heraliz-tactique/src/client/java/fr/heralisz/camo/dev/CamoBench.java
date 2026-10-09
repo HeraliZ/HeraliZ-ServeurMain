@@ -77,7 +77,7 @@ final class CamoBench {
 
     /**
      * Coût du rendu d'une arme (celle en main, copiée) en 3e personne : skin donné (ou aucun), personnalisation gardée ou non.
-     * Passe par le vrai rendu d'objet de TaCZ, donc par tous les ajouts du mod (camo, effets 3D, stickers, pendentif).
+     * Passe par le vrai rendu d'objet de TaCZ, donc par tous les ajouts du mod (camo, effets 3D, stickers).
      */
     static void gun(Minecraft mc, String label, String camo, boolean decor, int n) {
         ItemStack stack = mc.player.getMainHandItem().copy();

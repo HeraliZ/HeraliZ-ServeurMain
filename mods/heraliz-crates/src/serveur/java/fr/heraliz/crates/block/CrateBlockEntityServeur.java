@@ -136,7 +136,7 @@ public class CrateBlockEntityServeur extends CrateBlockEntity {
         CrateBlockEntityServeur be = this;
         if (!be.partsChecked) {
             be.partsChecked = true;
-            CrateBlock.placeParts(level, pos, be.type);
+            CrateBlock.placeParts(level, pos, be.type, state.getValue(CrateBlock.FACING));
         }
         if (!be.active) return;
         long t = level.getGameTime() - be.startTick;

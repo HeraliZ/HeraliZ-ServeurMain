@@ -159,8 +159,9 @@ public class CrateBlockEntity extends BlockEntity {
             return activeBox;
         }
         if (restBox == null) {
-            double half = Math.min(CrateShapes.MAX_HALF, CrateShapes.dims(type)[0]) / 16.0 + 0.1;
-            double top = Math.max(CrateShapes.height(type) + 7f, 36f) / 16.0 + 0.5;
+            double half = CrateShapes.halfWidth(type) / 16.0 + 0.1;
+            // caisse et nom flottant au-dessus
+            double top = (CrateShapes.height(type) + 26f) / 16.0;
             double cx = worldPosition.getX() + 0.5, cz = worldPosition.getZ() + 0.5;
             restBox = new AABB(cx - half, worldPosition.getY(), cz - half, cx + half, worldPosition.getY() + top, cz + half);
         }

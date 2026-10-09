@@ -461,7 +461,7 @@ HeralizBoss.ONGLET.ajouter("mammoth", "onglet.heraliz_boss.mammoth", () -> new I
 - Style des écrans de clan : kit `client/kit` (`Ui`, `SonsUi`, polices `assets/<porteur>/font`), copié par
   `outils/copier_kit_ui.py`.
 - Noms des groupes : clés `onglet.<porteur>.<id>` dans `assets/<porteur>/lang/{fr_fr,en_us}.json`.
-- Tactique : groupes Mêlée / Soins / Grenades / Camos / Décorations (stickers, pendentifs), même composant, déclarés
+- Tactique : groupes Mêlée / Soins / Grenades / Camos / Décorations (stickers, StatTrack), même composant, déclarés
   dans le porteur pour un ordre fixe (§16, piège n°24).
 
 ---

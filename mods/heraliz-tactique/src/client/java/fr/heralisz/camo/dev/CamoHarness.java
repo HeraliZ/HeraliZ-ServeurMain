@@ -212,7 +212,7 @@ public final class CamoHarness {
          if (hit != null) {
             var at = d.has("auto") ? new fr.heralisz.camo.decor.DecorData.Placement(hit.bone(), hit.point().x, hit.point().y, hit.point().z, hit.normal().x,
                hit.normal().y, hit.normal().z, hit.up().x, hit.up().y, hit.up().z, d.get("scale").getAsFloat(), 0)
-               : fr.heralisz.camo.decor.client.RefitDecorTab.placementFor(kind.equals("sticker") ? 0 : kind.equals("charm") ? 1 : 2, hit,
+               : fr.heralisz.camo.decor.client.RefitDecorTab.placementFor(kind.equals("sticker") ? 0 : 2, hit,
                d.has("scale") ? d.get("scale").getAsFloat() : 1, d.has("rot") ? d.get("rot").getAsFloat() : 0);
             LOG.info("[decor] pose {} -> {}", kind, at);
             String item = d.get("item").getAsString();
@@ -222,7 +222,7 @@ public final class CamoHarness {
                if (!st.isEmpty() && net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem()).toString().equals(item)) slot = i;
             }
             int action = kind.equals("sticker") ? fr.heralisz.camo.network.DecorPacket.ADD_STICKER
-               : kind.equals("charm") ? fr.heralisz.camo.network.DecorPacket.SET_CHARM : fr.heralisz.camo.network.DecorPacket.SET_STATTRACK;
+               : fr.heralisz.camo.network.DecorPacket.SET_STATTRACK;
             if (at != null) fr.heralisz.camo.network.CamoNetwork.CHANNEL.sendToServer(new fr.heralisz.camo.network.DecorPacket(action, slot, -1, at));
          }
       }

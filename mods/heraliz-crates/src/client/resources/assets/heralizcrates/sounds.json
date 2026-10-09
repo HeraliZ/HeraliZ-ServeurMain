@@ -105,24 +105,6 @@
     ],
     "subtitle": "subtitles.heralizcrates.fx.whoosh"
   },
-  "theme.fire": {
-    "sounds": [
-      "heralizcrates:theme/fire"
-    ],
-    "subtitle": "subtitles.heralizcrates.theme.fire"
-  },
-  "theme.water": {
-    "sounds": [
-      "heralizcrates:theme/water"
-    ],
-    "subtitle": "subtitles.heralizcrates.theme.water"
-  },
-  "theme.ice": {
-    "sounds": [
-      "heralizcrates:theme/ice"
-    ],
-    "subtitle": "subtitles.heralizcrates.theme.ice"
-  },
   "theme.forest": {
     "sounds": [
       "heralizcrates:theme/forest"
@@ -146,12 +128,6 @@
       "heralizcrates:theme/sewer"
     ],
     "subtitle": "subtitles.heralizcrates.theme.sewer"
-  },
-  "theme.knight": {
-    "sounds": [
-      "heralizcrates:theme/knight"
-    ],
-    "subtitle": "subtitles.heralizcrates.theme.knight"
   },
   "theme.paper": {
     "sounds": [
@@ -370,29 +346,11 @@
     ],
     "subtitle": "subtitles.heralizcrates.fx.capsule_pop"
   },
-  "fx.capsule_roll": {
-    "sounds": [
-      "heralizcrates:fx/capsule_roll"
-    ],
-    "subtitle": "subtitles.heralizcrates.fx.capsule_roll"
-  },
-  "fx.capsules": {
-    "sounds": [
-      "heralizcrates:fx/capsules"
-    ],
-    "subtitle": "subtitles.heralizcrates.fx.capsules"
-  },
   "fx.ratchet": {
     "sounds": [
       "heralizcrates:fx/ratchet"
     ],
     "subtitle": "subtitles.heralizcrates.fx.ratchet"
-  },
-  "fx.coin": {
-    "sounds": [
-      "heralizcrates:fx/coin"
-    ],
-    "subtitle": "subtitles.heralizcrates.fx.coin"
   },
   "fx.splat": {
     "sounds": [

@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Personnalisation d'une arme (NBT « HeraliszDecor », suit l'arme comme le camo) : stickers collés (5 au plus), un pendentif,
- * et le compteur StatTrack (le nombre de kills est dans CamoData.KILLS). Chaque élément est posé sur une pièce du modèle (os)
+ * Personnalisation d'une arme (NBT « HeraliszDecor », suit l'arme comme le camo) : stickers collés (5 au plus) et le
+ * compteur StatTrack (le nombre de kills est dans CamoData.KILLS). Chaque élément est posé sur une pièce du modèle (os)
  * avec son point, sa normale et son « haut », dans le repère de la pièce (pixels) : il suit ainsi les animations (un sticker sur
  * le chargeur part avec lui au rechargement).
  */
@@ -67,9 +67,6 @@ public final class DecorData {
    public record Sticker(String id, int finish, Placement at) {
    }
 
-   public record Charm(String id, Placement at) {
-   }
-
    private DecorData() {
    }
 
@@ -113,26 +110,6 @@ public final class DecorData {
          list.add(c);
       }
       tagOrCreate(gun).put("Stickers", list);
-   }
-
-   @Nullable
-   public static Charm charm(ItemStack gun) {
-      CompoundTag t = tag(gun);
-      if (t == null || !t.contains("Charm", Tag.TAG_COMPOUND)) return null;
-      CompoundTag c = t.getCompound("Charm");
-      return new Charm(c.getString("Id"), Placement.load(c.getCompound("At")));
-   }
-
-   public static void setCharm(ItemStack gun, @Nullable Charm charm) {
-      CompoundTag t = tagOrCreate(gun);
-      if (charm == null) {
-         t.remove("Charm");
-         return;
-      }
-      CompoundTag c = new CompoundTag();
-      c.putString("Id", charm.id());
-      c.put("At", charm.at().save());
-      t.put("Charm", c);
    }
 
    /** Pose du compteur StatTrack, null si l'arme n'en a pas. */

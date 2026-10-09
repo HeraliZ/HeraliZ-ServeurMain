@@ -49,7 +49,7 @@ public final class CommonFx {
         cavity(s, p, out, d, x, y, z, width, d.glow);
     }
 
-    /** Lumiere de la cavite d'une autre couleur que la caisse (ame de feu du Chevalier...). */
+    /** Lumiere de la cavite d'une autre couleur que la caisse. */
     public static void cavity(CrateState s, Pose p, DrawList out, Design d, float x, float y, float z, float width, int rgb) {
         float c = Seq.cavity(s);
         if (c <= 0.01f) return;

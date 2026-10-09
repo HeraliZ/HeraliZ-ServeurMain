@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.Mod;
 /**
  * Evenements de rendu cote client : pendant les interfaces du mod, le HUD (chat, barre d'objets, vie...) et la main du
  * joueur sont caches (seul le monde assombri reste visible derriere) ; a chaque image, le budget d'envoi des caisses a
- * la carte graphique est remis a zero.
+ * la carte graphique est remis a zero ; le contour noir des caisses visees n'est montre qu'en creatif.
  */
 @Mod.EventBusSubscriber(modid = HeralizCrates.MODID, value = Dist.CLIENT)
 public final class GuiEvents {
@@ -32,6 +32,15 @@ public final class GuiEvents {
     @SubscribeEvent
     public static void onHand(RenderHandEvent event) {
         if (ours()) event.setCanceled(true);
+    }
+
+    /** Contour de selection d'une caisse (bloc principal ou partie) : seulement en creatif, rien en survie. */
+    @SubscribeEvent
+    public static void onHighlight(net.minecraftforge.client.event.RenderHighlightEvent.Block event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.player == null || mc.player.isCreative()) return;
+        net.minecraft.world.level.block.Block b = mc.level.getBlockState(event.getTarget().getBlockPos()).getBlock();
+        if (b instanceof fr.heraliz.crates.block.CrateBlock || b instanceof fr.heraliz.crates.block.CratePartBlock) event.setCanceled(true);
     }
 
     /** Debut d'image : budget d'envoi a la carte graphique des caisses (voir GpuScene). */

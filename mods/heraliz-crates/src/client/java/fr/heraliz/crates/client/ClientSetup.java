@@ -53,6 +53,8 @@ public final class ClientSetup {
         event.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
             GlowFilter.clear();
             fr.heraliz.crates.client.render.StaticCrate.clear();
+            // noms flottants (langue changee)
+            CrateRenderer.clearPlates();
         });
         // textures HD des caisses preparees pendant l'ecran de chargement (pas au premier regard en jeu)
         event.registerReloadListener(new fr.heraliz.crates.client.render.CrateTextures());

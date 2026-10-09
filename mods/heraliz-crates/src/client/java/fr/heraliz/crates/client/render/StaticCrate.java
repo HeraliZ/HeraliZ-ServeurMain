@@ -62,7 +62,7 @@ public final class StaticCrate {
         final int nSolid, nTrans, nGlow;
         /** Sprites figes (halos, lueurs...) dessines a chaque image. */
         final DrawList sprites = new DrawList();
-        /** Vrais objets du decor (couteau de la caisse Gemme...), immobiles. */
+        /** Vrais objets du decor (DrawList.ITEM), immobiles. */
         final DrawList items = new DrawList();
         VertexBuffer vSolid, vTrans, vGlow;
 
@@ -122,6 +122,8 @@ public final class StaticCrate {
         s.time = 0;
         s.seed = 0;
         s.item = item;
+        // caisse posee : les parties animees au repos sont dessinees a part (Design.idle) ; icone : tout est fige
+        s.frozen = !item;
         s.runes = false;
         s.beams = false;
         return s;

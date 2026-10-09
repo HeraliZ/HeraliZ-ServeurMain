@@ -3,8 +3,6 @@ package fr.heralisz.camo.decor.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.tacz.guns.api.TimelessAPI;
-import com.tacz.guns.api.item.builder.GunItemBuilder;
-import com.tacz.guns.client.model.BedrockGunModel;
 import com.tacz.guns.client.model.bedrock.BedrockCube;
 import com.tacz.guns.client.resource.GunDisplayInstance;
 import com.tacz.guns.client.model.bedrock.BedrockCubeBox;
@@ -23,7 +21,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
@@ -35,13 +32,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Rendu de la personnalisation des armes (stickers, pendentif, StatTrack), pour toute arme TaCZ, skinnée ou non.
+ * Rendu de la personnalisation des armes (stickers, StatTrack), pour toute arme TaCZ, skinnée ou non.
  * <p>Pendant que TaCZ dessine l'arme (BedrockGunModelMixin : début, BedrockPartMixin : chaque pièce), on relève la matrice de
  * chaque pièce et ses cubes ; quand le modèle est fini (BedrockModelFxMixin, fin du rendu, le lot de l'arme est déjà envoyé)
  * on dessine par-dessus :
  * <ul>
  * <li>stickers : de vrais décalques, projetés sur les faces des cubes de la pièce (ils épousent les arêtes) ;</li>
- * <li>pendentif : l'objet de Minecraft au bout d'une chaînette, balancé par les mouvements de l'arme (pendule amorti) ;</li>
  * <li>StatTrack : plaquette noire et chiffres orange lumineux (kills de l'arme, 10 000 au plus).</li>
  * </ul>
  * La dernière image en 1re personne est gardée (poses et cubes) pour viser l'arme à la souris dans le menu (DecorPick).
@@ -50,7 +46,6 @@ public final class DecorRender {
    public static final ResourceLocation STICKERS = new ResourceLocation("heralisz_camo", "textures/decor/stickers.png");
    public static final ResourceLocation DIGITS = new ResourceLocation("heralisz_camo", "textures/decor/stattrack_digits.png");
    public static final ResourceLocation PLATE = new ResourceLocation("heralisz_camo", "textures/decor/stattrack_plate.png");
-   public static final ResourceLocation CHAIN = new ResourceLocation("heralisz_camo", "textures/decor/chain.png");
    /** Planche des stickers : cases de 128 px, 8 par ligne, 1024 x 512. */
    private static final int COLS = 8, ROWS = 4;
    /** Taille d'un sticker d'échelle 1 (pixels du modèle). */
@@ -102,7 +97,7 @@ public final class DecorRender {
    /** Aperçu au menu (placement en cours) : élément fantôme dessiné en plus sur l'arme tenue. */
    @Nullable public static volatile Ghost ghost;
 
-   /** Élément en cours de placement : type (0 sticker, 1 pendentif, 2 StatTrack), dessin, finition, pose ; skip = élément déjà posé masqué. */
+   /** Élément en cours de placement : type (0 sticker, 2 StatTrack), dessin, finition, pose ; skip = élément déjà posé masqué. */
    public record Ghost(int kind, String id, int finish, DecorData.Placement at, int skip) {
    }
 
@@ -110,11 +105,7 @@ public final class DecorRender {
    }
 
    // ------------------------------------------------------------------ relevé pendant le rendu de TaCZ
-   /** > 0 pendant le dessin d'une réplique en pendentif (rendu TaCZ imbriqué : ne rien relever). */
-   private static int nesting;
-
    public static void beginGun(Object model, ItemStack stack, ItemDisplayContext context, int packedLight) {
-      if (nesting > 0) return;
       boolean menu = context.firstPerson() && RefitDecorTab.open;
       active = context != ItemDisplayContext.GUI && (DecorData.any(stack) || menu);
       gunModel = model;
@@ -186,7 +177,7 @@ public final class DecorRender {
    }
 
    public static void endModel(Object model) {
-      if (nesting > 0 || !active || model != gunModel) return;
+      if (!active || model != gunModel) return;
       active = false;
       STACK.clear();
       if (ctx.firstPerson()) lastFp = new Snapshot(new HashMap<>(BONES), new ArrayList<>(PIECES),
@@ -223,9 +214,6 @@ public final class DecorRender {
       DecorData.Placement st = DecorData.statTrak(gun);
       if (g != null && g.kind == 2) st = g.at;
       if (st != null) statTrak(bs, st, Math.min(DecorData.MAX_SHOWN, CamoData.kills(gun)));
-      DecorData.Charm ch = DecorData.charm(gun);
-      if (g != null && g.kind == 1) ch = new DecorData.Charm(g.id, g.at);
-      if (ch != null) charm(bs, ch);
    }
 
    /** Repère local d'un élément posé : point (px), normale, haut (tourné de rot), droite. */
@@ -472,207 +460,6 @@ public final class DecorRender {
       }
    }
 
-   // ------------------------------------------------------------------ pendentif : chaînette et objet, pendule amorti
-   /** État du balancier par arme et par vue (1re personne ou non). */
-   private static final class Swing {
-      final Vector3f dir = new Vector3f(0, -1, 0);
-      final Vector3f vel = new Vector3f();
-      final Vector3f lastAnchor = new Vector3f();
-      final Vector3f lastVel = new Vector3f();
-      long last;
-      boolean init;
-   }
-
-   private static final Map<ItemStack, Swing[]> SWINGS = new WeakHashMap<>();
-
-   private static void charm(MultiBufferSource.BufferSource bs, DecorData.Charm charm) {
-      DecorCatalog.Charm d = DecorCatalog.Charm.byId(charm.id());
-      if (d == null) return;
-      Bone part = BONES.get(charm.at().bone());
-      if (part == null) return;
-      DecorData.Placement at = charm.at();
-      // point d'accroche (anneau), dans le repère de la vue
-      Vector3f local = new Vector3f(at.px() + at.nx() * 0.4F, at.py() + at.ny() * 0.4F, at.pz() + at.nz() * 0.4F).div(16F);
-      Vector3f anchor = part.pose.transformPosition(local, new Vector3f());
-      Swing sw = SWINGS.computeIfAbsent(gun, k -> new Swing[] {new Swing(), new Swing()})[ctx.firstPerson() ? 0 : 1];
-      Vector3f down = gravity(part);
-      float unit = (float) Math.cbrt(Math.abs(part.pose.determinant()));   // 1 bloc du modèle, dans la vue
-      float gunPx = gunLength();
-      float len = Math.max(1.4F, Math.min(2.6F, gunPx * 0.05F)) / 16F * unit;  // chaînette : ~1/20 de l'arme
-      step(sw, anchor, down, len);
-      Vector3f end = new Vector3f(anchor).add(new Vector3f(sw.dir).mul(len));
-      // chaînette : 3 maillons
-      VertexConsumer vc = bs.getBuffer(RenderType.entityCutoutNoCull(CHAIN));
-      Vector3f side = new Vector3f(sw.dir).cross(0, 0, 1);
-      if (side.lengthSquared() < 1e-6F) side.set(1, 0, 0);
-      side.normalize().mul(len * 0.09F);
-      for (int i = 0; i < 3; i++) {
-         Vector3f a = new Vector3f(anchor).lerp(end, i / 3F), bb2 = new Vector3f(anchor).lerp(end, (i + 1) / 3F);
-         Vector3f s2 = i % 2 == 0 ? side : new Vector3f(sw.dir).cross(side).normalize().mul(len * 0.09F);
-         linkQuad(vc, a, bb2, s2);
-      }
-      bs.endBatch(RenderType.entityCutoutNoCull(CHAIN));
-      // le pendentif : tout petit (~1/10 de l'arme qui le porte), pendu à l'anneau, qui tourne doucement sur lui-même
-      float size = Math.max(2.2F, Math.min(4.2F, gunPx * 0.1F)) / 16F * unit;
-      PoseStack ps = new PoseStack();
-      ps.translate(end.x, end.y, end.z);
-      ps.mulPose(new Quaternionf().rotationTo(0, -1, 0, sw.dir.x, sw.dir.y, sw.dir.z));
-      ps.mulPose(new Quaternionf().rotationY((float) ((System.currentTimeMillis() % 9000L) / 9000.0 * Math.PI * 2)));
-      if (d.kind == DecorCatalog.Charm.Kind.MOB) {
-         MobCharms.renderHanging(d, ps, bs, light, size);
-         return;
-      }
-      ItemStack replica = REPLICAS.computeIfAbsent(d, DecorRender::replica);
-      GunDisplayInstance display = TimelessAPI.getGunDisplay(replica).orElse(null);
-      BedrockGunModel model = display == null ? null : display.getGunModel();
-      if (model == null) return;
-      ModelInfo info = bounds(model);
-      float[] bb = info.bb;
-      float ex = bb[3] - bb[0], ey = bb[4] - bb[1], ez = bb[5] - bb[2];
-      float longest = Math.max(ex, Math.max(ey, ez));
-      if (longest <= 1e-4F) return;
-      ps.scale(size / longest, size / longest, size / longest);
-      if (d.kind == DecorCatalog.Charm.Kind.KNIFE) {
-         // couteau : son grand axe à la verticale, bout du manche (le plus épais ; la lame s'affine) en haut, lame en bas
-         int ax = info.axis;
-         float sign = info.handleAtMax ? 1F : -1F;
-         // sens du manche après le retournement de TaCZ (x et y inversés)
-         Vector3f dir = new Vector3f(ax == 0 ? -sign : 0, ax == 1 ? -sign : 0, ax == 2 ? sign : 0);
-         ps.mulPose(new Quaternionf().rotationTo(dir.x, dir.y, dir.z, 0, 1, 0));
-         ps.scale(-1F, -1F, 1F);
-         float[] c = info.knifeAttach;
-         ps.translate(-c[0], -c[1], -c[2]);
-      } else {
-         // arme : à plat, suspendue par le milieu du dessus (y vers le bas chez TaCZ : le dessus est le y le plus petit)
-         ps.scale(-1F, -1F, 1F);
-         float[] c = info.gunAttach;
-         ps.translate(-c[0], -c[1], -c[2]);
-      }
-      RenderType type = display.enablesTransparency() ? RenderType.entityTranslucent(display.getModelTexture())
-         : RenderType.entityCutout(display.getModelTexture());
-      nesting++;
-      try {
-         model.render(ps, replica, ItemDisplayContext.FIXED, type, light, OverlayTexture.NO_OVERLAY);
-      } finally {
-         nesting--;
-      }
-   }
-
-   /** Répliques des pendentifs : une arme TaCZ (modèle, skin de caisse) et, au besoin, son camo. */
-   private static final Map<DecorCatalog.Charm, ItemStack> REPLICAS = new java.util.EnumMap<>(DecorCatalog.Charm.class);
-
-   private static ItemStack replica(DecorCatalog.Charm d) {
-      ItemStack st = GunItemBuilder.create().setId(new ResourceLocation(d.ref)).forceBuild();
-      if (d.variant != null) st.getOrCreateTag().putString(CamoData.KEY, d.variant);
-      return st;
-   }
-
-   /**
-    * Modèle d'une réplique au repos (blocs, repère du modèle), sans les os techniques de TaCZ : boîte englobante, grand axe et
-    * bout le plus épais le long de ce grand axe (le manche d'un couteau ; la lame s'affine vers la pointe). Une fois par modèle.
-    */
-   private record ModelInfo(float[] bb, int axis, boolean handleAtMax, float[] knifeAttach, float[] gunAttach) {
-   }
-
-   private static final Map<Object, ModelInfo> BOUNDS = new WeakHashMap<>();
-
-   private static ModelInfo bounds(BedrockGunModel model) {
-      return BOUNDS.computeIfAbsent(model, k -> {
-         List<float[]> boxes = new ArrayList<>();
-         PoseStack ps = new PoseStack();
-         for (BedrockPart p : model.getShouldRender()) walkBounds(p, ps, boxes);
-         float[] b = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
-         for (float[] x : boxes) {
-            for (int i = 0; i < 3; i++) {
-               b[i] = Math.min(b[i], x[i]);
-               b[i + 3] = Math.max(b[i + 3], x[i + 3]);
-            }
-         }
-         if (boxes.isEmpty()) return new ModelInfo(new float[6], 2, true, new float[3], new float[3]);
-         int ax = 0;
-         for (int i = 1; i < 3; i++) {
-            if (b[i + 3] - b[i] > b[ax + 3] - b[ax]) ax = i;
-         }
-         // épaisseur (étendue sur les deux autres axes) des cubes présents dans le premier et le dernier cinquième
-         float len = b[ax + 3] - b[ax];
-         float[] lo = thickness(boxes, ax, b[ax], b[ax] + len * 0.2F), hi = thickness(boxes, ax, b[ax + 3] - len * 0.2F, b[ax + 3]);
-         boolean atMax = hi[0] * hi[1] >= lo[0] * lo[1];
-         float sink = len * 0.03F;
-         // couteau : bout du manche le long du grand axe ; arme : dessus (y le plus petit chez TaCZ) au milieu
-         return new ModelInfo(b, ax, atMax, surfaceAttach(boxes, b, ax, atMax ? 1 : -1, sink), surfaceAttach(boxes, b, 1, -1, sink));
-      });
-   }
-
-   /**
-    * Point d'accroche sur la surface du modèle : le plus loin possible le long de l'axe ax, du côté sign (+1 : max, -1 : min),
-    * au droit du centre des deux autres axes (sinon au centre de la pièce la plus en bout), enfoncé de sink vers l'intérieur
-    * pour que le bout de la chaîne entre dans la pièce.
-    */
-   private static float[] surfaceAttach(List<float[]> boxes, float[] bb, int ax, float sign, float sink) {
-      int u = (ax + 1) % 3, v = (ax + 2) % 3;
-      float cu = (bb[u] + bb[u + 3]) * 0.5F, cv = (bb[v] + bb[v + 3]) * 0.5F;
-      float best = Float.NaN;
-      for (float[] x : boxes) {
-         if (cu < x[u] || cu > x[u + 3] || cv < x[v] || cv > x[v + 3]) continue;
-         float e = sign > 0 ? x[ax + 3] : x[ax];
-         if (Float.isNaN(best) || (sign > 0 ? e > best : e < best)) best = e;
-      }
-      if (Float.isNaN(best)) {
-         float[] far = null;
-         for (float[] x : boxes) {
-            float e = sign > 0 ? x[ax + 3] : x[ax];
-            if (far == null || (sign > 0 ? e > best : e < best)) {
-               best = e;
-               far = x;
-            }
-         }
-         cu = (far[u] + far[u + 3]) * 0.5F;
-         cv = (far[v] + far[v + 3]) * 0.5F;
-      }
-      float[] p = new float[3];
-      p[u] = cu;
-      p[v] = cv;
-      p[ax] = best - sign * sink;
-      return p;
-   }
-
-   /** Étendue des cubes qui touchent la tranche [from, to] le long de l'axe, sur les deux autres axes. */
-   private static float[] thickness(List<float[]> boxes, int ax, float from, float to) {
-      int u = (ax + 1) % 3, v = (ax + 2) % 3;
-      float u0 = Float.MAX_VALUE, u1 = -Float.MAX_VALUE, v0 = Float.MAX_VALUE, v1 = -Float.MAX_VALUE;
-      for (float[] x : boxes) {
-         if (x[ax + 3] < from || x[ax] > to) continue;
-         u0 = Math.min(u0, x[u]);
-         u1 = Math.max(u1, x[u + 3]);
-         v0 = Math.min(v0, x[v]);
-         v1 = Math.max(v1, x[v + 3]);
-      }
-      return u1 < u0 ? new float[2] : new float[] {u1 - u0, v1 - v0};
-   }
-
-   private static void walkBounds(BedrockPart p, PoseStack ps, List<float[]> boxes) {
-      if (!p.visible || p.name != null && (p.name.endsWith("_pos") || p.name.equals("camera") || p.name.equals("views") || p.name.equals("positioning"))) return;
-      ps.pushPose();
-      p.translateAndRotateAndScale(ps);
-      Matrix4f m = ps.last().pose();
-      Vector3f t = new Vector3f();
-      for (float[] c : CUBES.computeIfAbsent(p, DecorRender::readCubes)) {
-         float[] b = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
-         for (int i = 0; i < 8; i++) {
-            m.transformPosition(t.set((i & 1) == 0 ? c[0] : c[3], (i & 2) == 0 ? c[1] : c[4], (i & 4) == 0 ? c[2] : c[5]).div(16F));
-            b[0] = Math.min(b[0], t.x);
-            b[1] = Math.min(b[1], t.y);
-            b[2] = Math.min(b[2], t.z);
-            b[3] = Math.max(b[3], t.x);
-            b[4] = Math.max(b[4], t.y);
-            b[5] = Math.max(b[5], t.z);
-         }
-         boxes.add(b);
-      }
-      for (BedrockPart c : p.children) walkBounds(c, ps, boxes);
-      ps.popPose();
-   }
-
    /**
     * Longueur de l'arme (pixels du modèle), mesurée une fois par modèle : plus grande étendue des cubes dans le repère de l'os
     * qui porte le plus de pièces (le corps de l'arme ; pas les os techniques de TaCZ comme « camera », qui peuvent être tournés).
@@ -702,52 +489,5 @@ public final class DecorRender {
          float len = Math.max(hi.x - lo.x, Math.max(hi.y - lo.y, hi.z - lo.z));
          return len > 0 && len < 400 ? len : 40F;
       });
-   }
-
-   private static void linkQuad(VertexConsumer vc, Vector3f a, Vector3f b, Vector3f side) {
-      Vector3f[] q = {new Vector3f(a).sub(side), new Vector3f(a).add(side), new Vector3f(b).add(side), new Vector3f(b).sub(side)};
-      float[][] uv = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-      Vector3f n = new Vector3f(side).cross(new Vector3f(b).sub(a)).normalize();
-      for (int k = 0; k < 4; k++) {
-         vc.vertex(q[k].x, q[k].y, q[k].z).color(1F, 1F, 1F, 1F).uv(uv[k][0], uv[k][1]).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light)
-            .normal(n.x, n.y, n.z).endVertex();
-      }
-   }
-
-   /** Bas du monde dans le repère de la vue : en 1re personne, d'après l'inclinaison de la caméra ; sinon, bas de l'arme. */
-   private static Vector3f gravity(Bone part) {
-      if (ctx.firstPerson()) {
-         float pitch = (float) Math.toRadians(Minecraft.getInstance().gameRenderer.getMainCamera().getXRot());
-         return new Vector3f(0, -(float) Math.cos(pitch), -(float) Math.sin(pitch)).normalize();
-      }
-      Vector3f d = part.normal.transform(new Vector3f(0, 1, 0));
-      return d.normalize();
-   }
-
-   /** Pendule : la direction de la chaîne suit la gravité, freinée, secouée par l'accélération du point d'accroche. */
-   private static void step(Swing sw, Vector3f anchor, Vector3f down, float len) {
-      long now = System.nanoTime();
-      if (!sw.init) {
-         sw.init = true;
-         sw.dir.set(down);
-         sw.lastAnchor.set(anchor);
-         sw.last = now;
-         return;
-      }
-      float dt = Math.min(0.05F, (now - sw.last) / 1e9F);
-      sw.last = now;
-      if (dt <= 0) return;
-      Vector3f v = new Vector3f(anchor).sub(sw.lastAnchor).div(dt);
-      Vector3f acc = new Vector3f(v).sub(sw.lastVel).div(dt);
-      if (acc.length() > 400) acc.normalize().mul(400);
-      sw.lastAnchor.set(anchor);
-      sw.lastVel.set(v);
-      // force : gravité moins l'accélération du point d'accroche (repère accéléré), freinage
-      Vector3f f = new Vector3f(down).mul(9.8F).sub(new Vector3f(acc).mul(0.12F));
-      Vector3f tang = new Vector3f(f).sub(new Vector3f(sw.dir).mul(f.dot(sw.dir)));
-      sw.vel.add(tang.div(Math.max(len * 9, 0.02F)).mul(dt));
-      sw.vel.mul((float) Math.exp(-3.2F * dt));
-      sw.dir.add(new Vector3f(sw.vel).mul(dt)).normalize();
-      sw.vel.sub(new Vector3f(sw.dir).mul(sw.vel.dot(sw.dir)));
    }
 }

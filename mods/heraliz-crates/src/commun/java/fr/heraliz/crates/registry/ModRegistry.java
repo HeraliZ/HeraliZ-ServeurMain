@@ -152,7 +152,7 @@ public final class ModRegistry {
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.heralizcrates"))
-            .icon(() -> new ItemStack(CRATE_ITEMS.get(CrateType.VULKHAR).get()))
+            .icon(() -> new ItemStack(CRATE_ITEMS.get(CrateType.GEMME).get()))
             .displayItems((params, output) -> {
                 output.accept(CRATE_EDITOR.get());
                 for (CrateType t : CrateType.values()) {
@@ -177,10 +177,7 @@ public final class ModRegistry {
             case SUJET_N07 -> MapColor.COLOR_LIGHT_GREEN;
             case SYLVORN -> MapColor.PLANT;
             case MERE_DES_RUINES -> MapColor.COLOR_RED;
-            case VULKHAR -> MapColor.FIRE;
             case PORTEUR_DE_PESTE -> MapColor.COLOR_YELLOW;
-            case CHEVALIER_SANS_VISAGE -> MapColor.COLOR_PURPLE;
-            case KRAKEN -> MapColor.COLOR_CYAN;
             case VOTE -> MapColor.COLOR_BLUE;
             case QUETE -> MapColor.GOLD;
             case EVENT -> MapColor.COLOR_MAGENTA;
@@ -189,7 +186,6 @@ public final class ModRegistry {
             case TRAUMA -> MapColor.SNOW;
             case BUILD -> MapColor.COLOR_YELLOW;
             case STICKER -> MapColor.COLOR_LIGHT_BLUE;
-            case PENDENTIF -> MapColor.COLOR_RED;
             case CAMO -> MapColor.COLOR_MAGENTA;
         };
     }

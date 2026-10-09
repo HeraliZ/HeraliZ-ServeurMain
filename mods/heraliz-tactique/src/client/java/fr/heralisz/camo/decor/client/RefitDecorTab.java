@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Onglet « Personnaliser » du menu de modification TaCZ : stickers (5 au plus), pendentif, compteur StatTrack.
+ * Onglet « Personnaliser » du menu de modification TaCZ : stickers (5 au plus), compteur StatTrack.
  * <p>On choisit un élément (dans l'inventaire, ou un élément déjà posé à déplacer) : un aperçu suit la souris sur l'arme ; clic
  * gauche = coller, molette = tourner, Maj + molette = taille, clic droit = annuler. Le serveur revérifie tout (DecorPacket).
  */
@@ -43,7 +43,7 @@ import java.util.function.Consumer;
 public final class RefitDecorTab {
    public static boolean open;
 
-   /** Placement en cours : type (0 sticker, 1 pendentif, 2 StatTrack), emplacement d'inventaire (nouvel élément) ou index (déplacement). */
+   /** Placement en cours : type (0 sticker, 2 StatTrack), emplacement d'inventaire (nouvel élément) ou index (déplacement). */
    private record Placing(int kind, String id, int finish, int slot, int index) {
    }
 
@@ -70,7 +70,6 @@ public final class RefitDecorTab {
       int x = 8, y = 30;
       Inventory inv = player.getInventory();
       List<DecorData.Sticker> stickers = DecorData.stickers(gun);
-      DecorData.Charm charm = DecorData.charm(gun);
       boolean st = DecorData.hasStatTrak(gun);
       add.accept(new Label(x, y, 200, Component.translatable("gui.heralisz_camo.decor.title").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
       y += 14;
@@ -84,14 +83,6 @@ public final class RefitDecorTab {
          add.accept(Button.builder(Component.translatable("gui.heralisz_camo.decor.move"), b -> begin(new Placing(0, s.id(), s.finish(), -1, idx), s.at()))
             .bounds(x + 96, y, 52, 14).build());
          add.accept(Button.builder(Component.translatable("gui.heralisz_camo.decor.scrape"), b -> send(DecorPacket.SCRAPE_STICKER, -1, idx, null))
-            .bounds(x + 150, y, 52, 14).build());
-         y += 16;
-      }
-      if (charm != null) {
-         add.accept(new Label(x + 4, y + 2, 90, Component.translatable("gui.heralisz_camo.decor.charm").withStyle(ChatFormatting.GRAY)));
-         add.accept(Button.builder(Component.translatable("gui.heralisz_camo.decor.move"), b -> begin(new Placing(1, charm.id(), 0, -1, 0), charm.at()))
-            .bounds(x + 96, y, 52, 14).build());
-         add.accept(Button.builder(Component.translatable("gui.heralisz_camo.decor.remove"), b -> send(DecorPacket.REMOVE_CHARM, -1, 0, null))
             .bounds(x + 150, y, 52, 14).build());
          y += 16;
       }
@@ -112,8 +103,6 @@ public final class RefitDecorTab {
          Placing p = null;
          if (s.getItem() instanceof DecorItems.StickerItem si && stickers.size() < DecorData.MAX_STICKERS) {
             p = new Placing(0, si.design.id(), si.finish.ordinal(), i, -1);
-         } else if (s.getItem() instanceof DecorItems.CharmItem ci) {
-            p = new Placing(1, ci.design.id(), 0, i, -1);
          } else if (s.getItem() instanceof DecorItems.StatTrakItem && !st) {
             p = new Placing(2, "stattrack", 0, i, -1);
          }
@@ -141,8 +130,6 @@ public final class RefitDecorTab {
    public static List<DecorData.Placement> placedOn(ItemStack gun) {
       List<DecorData.Placement> out = new java.util.ArrayList<>();
       for (DecorData.Sticker s : DecorData.stickers(gun)) out.add(s.at());
-      DecorData.Charm c = DecorData.charm(gun);
-      if (c != null) out.add(c.at());
       return out;
    }
 
@@ -210,7 +197,6 @@ public final class RefitDecorTab {
       Placing p = placing;
       int action = switch (p.kind) {
          case 0 -> p.slot >= 0 ? DecorPacket.ADD_STICKER : DecorPacket.MOVE_STICKER;
-         case 1 -> p.slot >= 0 ? DecorPacket.SET_CHARM : DecorPacket.MOVE_CHARM;
          default -> p.slot >= 0 ? DecorPacket.SET_STATTRACK : DecorPacket.MOVE_STATTRACK;
       };
       send(action, p.slot, p.index, at);
@@ -249,7 +235,7 @@ public final class RefitDecorTab {
       String now = gun.getTag() != null ? String.valueOf(gun.getTag().get(DecorData.KEY)) : "";
       int decorItems = 0;
       for (ItemStack s : mc.player.getInventory().items) {
-         if (s.getItem() instanceof DecorItems.StickerItem || s.getItem() instanceof DecorItems.CharmItem || s.getItem() instanceof DecorItems.StatTrakItem) {
+         if (s.getItem() instanceof DecorItems.StickerItem || s.getItem() instanceof DecorItems.StatTrakItem) {
             decorItems += s.getCount();
          }
       }

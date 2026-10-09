@@ -26,12 +26,14 @@ import static fr.heraliz.crates.client.render.scene.Geo.v;
 /**
  * Caisse Gemme : le Reliquaire des Gemmes. Sur un dais octogonal de marbre noir veine d'or, quatre pylones d'or portent
  * les quatre gemmes des couteaux (rubis, saphir, emeraude, perle noire), reliees au centre par des rigoles de lumiere.
- * Au centre, une colonne de cristal taille, cerclee d'or et tenue par quatre griffes fines, renferme un couteau qui
- * se balance doucement et passe, dans un eclair, par les douze couteaux de la caisse (3 modeles x 4 gemmes).
+ * Au centre, une colonne de cristal taille, cerclee d'or et tenue par quatre griffes fines, renferme le Coeur : une
+ * grosse gemme taillee qui tourne doucement et passe d'une couleur a l'autre (rubis, saphir, emeraude, perle noire).
  * <p>Le cadenas verrouille la griffe avant. Au declic les griffes s'ouvrent, les pylones tirent l'un apres l'autre leur
- * rayon dans le cristal qui se charge de lumiere, puis il vole en eclats : les eclats tournent autour du reliquaire et
- * trois couteaux s'envolent pour leur numero (flips du butterfly, karambit qui tourne sur son anneau, M9 qui pivote).
- * A la fermeture, ils se fondent en un seul qui rentre, et les eclats se ressoudent autour de lui.
+ * rayon dans le cristal (le Coeur prend la couleur de chaque tir), le cristal se charge puis vole en eclats : les eclats
+ * tournent autour du reliquaire, le Coeur s'eleve sous la roue des couteaux et change de couleur au rythme de la roue,
+ * puis s'allume a la couleur de la rarete gagnee. A la fermeture il redescend et les eclats se ressoudent autour de lui.
+ * <p>Tout est fait de maillages fixes (envoyes une fois a la carte graphique) : aucun vrai modele d'arme ni trainee
+ * recalculee a chaque image. Au repos, seul le Coeur est anime (deux appels de dessin), le reste de la caisse est fige.
  */
 public final class Gemme extends Design {
     private static final Mat MARBLE = Mat.MAIN;
@@ -40,14 +42,12 @@ public final class Gemme extends Design {
     private static final Mat GOLD_F = Mat.ACCENT;
     private static final Mat PLAQUE = Mat.EMBLEM;
     private static final Mat PLATE = Mat.LOCK;
-    private static final Mat ICONS = Mat.DECAL_A;
     private static final Mat FACET = Mat.DECAL_B;
     private static final Mat VELVET = Mat.INTERIOR.withWorld(12);
     private static final Mat CRYSTAL = Mat.GEM;
     private static final Mat DARK = Mat.DARK;
-    private static final Mat POLISH = Mat.SPECIAL;
 
-    /** Rubis, saphir, emeraude, perle noire : lueurs (meme ordre que les lames de l'atlas et que les finitions des couteaux). */
+    /** Rubis, saphir, emeraude, perle noire : lueurs (meme ordre que les finitions des couteaux). */
     public static final int[] GEM_RGB = {0xFF2050, 0x3070FF, 0x25E080, 0x9A6CFF};
     /** Teinte des gemmes taillees (plus sombre pour la perle noire). */
     private static final int[] GEM_TINT = {0xFF3A60, 0x3A7AFF, 0x34EA8C, 0x6A48D8};
@@ -62,19 +62,18 @@ public final class Gemme extends Design {
     /** Griffes : pied (rayon), pointe (rayon, hauteur) au bas du fut. */
     private static final float CLAW_R0 = 6.1f, CLAW_TIP_R = CR + 0.3f, CLAW_TIP_Y = 8.4f;
     /**
-     * Couteaux : les vrais modeles TaCZ des skins heralisz_skins (le shader de heralisz_camo dessine la finition).
-     * Taille d'affichage (px) dans le cristal et en l'air, roulis du modele ; hauteur dans le cristal ; orbite en l'air.
+     * Coeur : gemme taillee d'axe vertical, entierement dans le cristal (rayon 3,3 px pour un fut de 5 px). Rayon,
+     * couronne, pavillon ; hauteur en l'air pendant la roue (sous la roue, px du modele).
      */
-    private static final String[] KNIFE_ID = {"butterfly", "karambit", "m9"};
-    private static final String[] GEM_ID = {"doppler_ruby", "doppler_sapphire", "gamma_emerald", "doppler_black_pearl"};
-    private static final float KNIFE_IN = 8f, KNIFE_SHOW = 9f;
-    private static final float K_Y = 13.8f, SHOW_R = 10f, SHOW_Y = 25.5f;
-    /** Duree d'un couteau dans le cristal avant de passer au suivant (ticks). */
-    private static final float GEM_CYCLE = 70f;
+    private static final float HEART_R = 3.3f, HEART_CROWN = 1.7f, HEART_PAV = 3.6f, HEART_UP_Y = 26.5f;
+    /** Duree d'une couleur du Coeur au repos (ticks), dont le fondu vers la suivante. */
+    private static final float GEM_CYCLE = 60f, GEM_FADE = 14f;
 
     private Mesh base = Mesh.EMPTY, channel = Mesh.EMPTY, collar = Mesh.EMPTY, gemGlow = Mesh.EMPTY;
     private final Mesh[] gems = new Mesh[4];
     private Mesh claw = Mesh.EMPTY, diamond = Mesh.EMPTY, diamondGlow = Mesh.EMPTY;
+    /** Coeur (blanc, teinte a chaque image) et son halo de facettes. */
+    private Mesh heart = Mesh.EMPTY, heartGlow = Mesh.EMPTY;
     /** Diamant qui flotte au-dessus de la pointe du cristal. */
     private static final float DIAMOND_Y = CT + 2.6f;
     private final Mesh[] shellOut = new Mesh[N], shellIn = new Mesh[N], shellEdge = new Mesh[N], shellBand = new Mesh[N];
@@ -82,8 +81,8 @@ public final class Gemme extends Design {
     private static final int CRACK_STEPS = 6;
     private final Mesh[][] cracks = new Mesh[N][CRACK_STEPS + 1];
     private final float[][] shellPivot = new float[N][];
-    /** Rendus reels des 12 couteaux (apercu hors jeu et rendu lointain), index modele * 4 + gemme. */
-    private final Mesh[] icons = new Mesh[12];
+    /** Pose du Coeur au repos (dessine a chaque image par-dessus la caisse figee). */
+    private final Pose idlePose = new Pose();
 
     public Gemme() {
         super("gemme", 0x9FE8FF, 0xFFD36A);
@@ -95,7 +94,7 @@ public final class Gemme extends Design {
         ringY = 54;
         ringR = 25;
         revealY = 60;
-        riseFromY = CMID;
+        riseFromY = HEART_UP_Y;
         lockFloorY = T2;
     }
 
@@ -173,16 +172,14 @@ public final class Gemme extends Design {
         dg.gem(1.35f, 0.7f, 1.6f, 8, Mat.WHITE);
         diamondGlow = dg.build();
 
-        // ---- rendus reels des couteaux (cases 4 x 3 de la tuile) : carres recto verso, 1 px de large
-        for (int c = 0; c < 12; c++) {
-            Mat m = ICONS.sub((c % 4) / 4f, (c / 4) / 3f, (c % 4 + 1) / 4f, (c / 4 + 1) / 3f);
-            MeshBuilder ib = new MeshBuilder();
-            float hw = 0.5f, hh = 0.5f * (4f / 3f);
-            float[][] uv = {{m.u(0), m.v(1)}, {m.u(1), m.v(1)}, {m.u(1), m.v(0)}, {m.u(0), m.v(0)}};
-            ib.poly(new float[][]{v(-hw, -hh, 0.01f), v(hw, -hh, 0.01f), v(hw, hh, 0.01f), v(-hw, hh, 0.01f)}, uv, null, v(0, 0, 1));
-            ib.poly(new float[][]{v(-hw, -hh, -0.01f), v(hw, -hh, -0.01f), v(hw, hh, -0.01f), v(-hw, hh, -0.01f)}, uv, null, v(0, 0, -1));
-            icons[c] = ib.build();
-        }
+        // ---- Coeur : gemme taillee (16 facettes), blanche (teinte a chaque image), et sa coque lumineuse
+        MeshBuilder hb = new MeshBuilder();
+        hb.gem(HEART_R, HEART_CROWN, HEART_PAV, 16, CRYSTAL);
+        heart = hb.build();
+        MeshBuilder hg = new MeshBuilder();
+        hg.scale(1.18f);
+        hg.gem(HEART_R, HEART_CROWN, HEART_PAV, 16, Mat.WHITE);
+        heartGlow = hg.build();
 
         // ---- cadenas : hexagone de laque noire, face emaillee au diamant, anse d'or
         Padlock.Style st = new Padlock.Style();
@@ -351,11 +348,6 @@ public final class Gemme extends Design {
     // =================================================================== chronologie
     /** Allumage des pylones (un toutes les 4 ticks apres le declic) ; eclatement du cristal (1 s de charge). */
     private static final int FIRE0 = CrateAnim.UNLOCK + 1, BURST = CrateAnim.OPEN + 10;
-    /** Moment "heros" : les couteaux alignes face au joueur, un eclat de lumiere court sur chaque lame. */
-    private static final float HERO0 = BURST + 6, HERO1 = CrateAnim.RISE + 10;
-    private static final float[] HERO_X = {0, -7.5f, 7.5f}, HERO_YAW = {0, 14, -14}, HERO_TILT = {0, 12, -12};
-    /** Debut des figures (flips, rotations) une fois les couteaux repartis en orbite. */
-    private static final float TRICK0 = HERO1 + 6;
 
     /** Temps local des mouvements de la caisse : arret sur image de 4 ticks a l'eclatement (la roue garde le temps reel). */
     private static CrateState warp(CrateState s) {
@@ -408,24 +400,11 @@ public final class Gemme extends Design {
         return a;
     }
 
-    /** Couteaux hors du cristal (0 dedans, 1 en l'air). */
-    private static float release(CrateState s) {
+    /** Coeur hors du cristal, sous la roue (0 dedans, 1 en l'air). */
+    private static float lift(CrateState s) {
         if (!s.active) return 0;
         float t = s.t;
-        return Ease.smooth(Ease.range(t, BURST + 2, BURST + 14)) * (1 - Ease.smooth(Ease.range(t, CrateAnim.CLOSE - 8, CrateAnim.SLAM - 4)));
-    }
-
-    /** Alignement "heros" face au joueur (0..1). */
-    private static float hero(CrateState s) {
-        if (!s.active) return 0;
-        float t = s.t;
-        return Ease.smooth(Ease.range(t, HERO0, HERO0 + 10)) * (1 - Ease.smooth(Ease.range(t, HERO1 - 8, HERO1 + 4)));
-    }
-
-    /** Avancement des figures des couteaux (0..1), decale de lead ticks. */
-    private static float show(CrateState s, float lead) {
-        if (!s.active) return 0;
-        return Ease.inOutSine(Ease.range(s.t, TRICK0 + lead, CrateAnim.CLOSE - 14 + lead * 0.4f));
+        return Ease.smooth(Ease.range(t, BURST + 2, BURST + 18)) * (1 - Ease.smooth(Ease.range(t, CrateAnim.CLOSE - 10, CrateAnim.SLAM - 4)));
     }
 
     /** Allumage du pylone k (rayon tire dans le cristal), 0..1. */
@@ -438,90 +417,58 @@ public final class Gemme extends Design {
         return on * hold * off + 0.8f * Seq.stopFlash(s);
     }
 
-    /** Couleur qui passe d'une gemme a l'autre (lueurs du cristal). */
+    /** Couleur qui passe d'une gemme a l'autre en continu (lueurs du cristal). */
     private static int gemCycle(float time) {
         float u = (time * 0.02f) % 4f;
         int i = (int) u;
         return Ease.mix(GEM_RGB[i], GEM_RGB[(i + 1) % 4], Ease.smooth(u - i));
     }
 
-    /** Couteau montre dans le cristal (0..11 : modele c % 3, gemme c % 4) ; fige a l'ouverture (varie d'une ouverture a l'autre). */
-    private static int shown(CrateState s) {
-        return s.active ? (s.winIndex * 5 + 1) % 12 : (int) Math.floor(s.time / GEM_CYCLE) % 12;
-    }
-
-    /** Nombre de couteaux dessines : un au repos, trois pendant l'ouverture. */
-    private static int knifeCount(CrateState s) {
-        return release(s) > 0.001f ? 3 : 1;
-    }
-
-    private static float wrap(float a) {
-        return ((a + 180f) % 360f + 360f) % 360f - 180f;
+    /** Couleur du Coeur au repos : chaque gemme tient GEM_CYCLE ticks puis fond vers la suivante. */
+    private static int restColor(float clock) {
+        float u = clock / GEM_CYCLE;
+        int i = (int) Math.floor(u);
+        float f = (u - i) * GEM_CYCLE;
+        int a = Math.floorMod(i, 4), b = Math.floorMod(i + 1, 4);
+        return Ease.mix(GEM_RGB[a], GEM_RGB[b], Ease.smooth(Ease.range(f, GEM_CYCLE - GEM_FADE, GEM_CYCLE)));
     }
 
     /**
-     * Pose du couteau j (centre du couteau, lame a la verticale) ; renvoie sa taille d'affichage (plus grande dimension,
-     * px). Au repos il tourne lentement sur lui-meme dans le cristal ; en l'air les trois couteaux flottent en orbite et
-     * tournent comme sur un presentoir, puis s'alignent face au joueur pour le moment "heros".
+     * Couleur du Coeur : celle du repos, puis celle de chaque pylone qui tire, un tour des quatre gemmes au rythme de la
+     * roue (de plus en plus lent), enfin la couleur de la rarete gagnee jusqu'a la fermeture.
      */
-    private float knifePose(CrateState s, int j, Pose p) {
-        float e = release(s), h = hero(s);
-        float t = s.active ? s.t : 0;
-        float phi = 90 + j * 120 + (s.active ? 160f * Ease.smooth(Ease.range(t, BURST, BURST + 36)) + 0.35f * Math.max(0, t - HERO1) * e : 0);
-        float y = Ease.lerp(K_Y + 0.25f * (float) Math.sin(s.time * 0.05f), SHOW_Y + 0.8f * (float) Math.sin(s.time * 0.06f + j * 2.1f), e);
-        float[] c = Geo.polar(8, 8, phi, SHOW_R * e, y);
-        if (h > 0) {
-            float[] lineup = {8 + HERO_X[j], SHOW_Y + (j == 0 ? 1.2f : 0) + 0.3f * (float) Math.sin(s.time * 0.08f + j), 8 + 6.5f};
-            c = Geo.lerp(c, lineup, h);
+    private static int heartColor(CrateState s) {
+        if (!s.active) return restColor(s.clock);
+        float t = s.t;
+        int c = restColor(s.clock);
+        for (int k = 0; k < 4; k++) {
+            float f = Ease.smooth(Ease.range(t, FIRE0 + 4 * k, FIRE0 + 4 * k + 2));
+            if (f > 0) c = Ease.mix(c, GEM_RGB[k], f);
         }
-        float size = j == 0 ? Ease.lerp(KNIFE_IN, KNIFE_SHOW, e) : KNIFE_SHOW * Ease.smooth(Ease.clamp01(e * 1.2f));
-        size *= 1 - 0.08f * swapFlash(s);
-        float spin = s.time * 1.1f + j * 120;
-        float yaw = Ease.lerp(spin, HERO_YAW[j], h);
-        p.translate(c[0], c[1], c[2]).rotY(yaw).rotZ(0.5f * HERO_TILT[j] * h);
-        return size;
-    }
-
-    /** Pointe de la lame (repere du couteau : lame verticale centree). */
-    private static float[] tip(float size) {
-        return v(0, 0.45f * size, 0);
-    }
-
-    /** Couteau j : modele (0 butterfly, 1 karambit, 2 m9) et index 0..11 (modele * 4 + gemme). */
-    private static int knifeModel(CrateState s, int j) {
-        return (shown(s) + j) % 3;
-    }
-
-    private static int knifeIndex(CrateState s, int j) {
-        return knifeModel(s, j) * 4 + gemOf(s, j);
-    }
-
-    private static int gemOf(CrateState s, int j) {
-        return (shown(s) + j) % 4;
-    }
-
-    /** NBT du couteau TaCZ (meme objet que celui donne par la caisse). */
-    private static String knifeNbt(int c) {
-        return "{GunId:\"heralisz_skins:" + KNIFE_ID[c / 4] + "__" + GEM_ID[c % 4] + "\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}";
-    }
-
-    /** Dessine le couteau (vrai modele en jeu, rendu reel en apercu / de loin). */
-    private void drawKnife(CrateState s, Pose p, DrawList out, int c, float size, int gc, float glowA) {
-        if (s.realItems) {
-            out.item(p, "tacz:modern_kinetic_gun", knifeNbt(c), size, true);
-        } else {
-            p.push().scale(size * 0.72f);
-            out.translucent(p, icons[c], 0xFFFFFF, 1f);
-            out.additive(p, icons[c], gc, glowA * 0.2f);
-            p.pop();
+        if (t > CrateAnim.SPIN) {
+            // meme avancement que la roue : les couleurs defilent vite au depart puis ralentissent
+            float a = CrateAnim.ringAngle(t, Math.max(1, s.ringSize), s.winIndex) / 45f;
+            int i = (int) Math.floor(a);
+            c = Ease.mix(c, Ease.mix(GEM_RGB[Math.floorMod(i, 4)], GEM_RGB[Math.floorMod(i + 1, 4)], Ease.smooth(a - i)),
+                    Ease.smooth(Ease.range(t, CrateAnim.SPIN, CrateAnim.SPIN + 6)));
         }
+        if (t >= CrateAnim.STOP) c = Ease.mix(c, s.rarityRgb, Ease.smooth(Ease.range(t, CrateAnim.STOP, CrateAnim.STOP + 4)));
+        if (t >= CrateAnim.CLOSE) c = Ease.mix(c, restColor(s.clock), Ease.smooth(Ease.range(t, CrateAnim.CLOSE, CrateAnim.SLAM)));
+        return c;
     }
 
-    /** Eclair du changement de gemme (1 -> 0 juste apres le changement). */
-    private static float swapFlash(CrateState s) {
-        if (s.active || s.time < GEM_CYCLE) return 0;
-        float u = (s.time % GEM_CYCLE) / GEM_CYCLE;
-        return (float) Math.exp(-u * 30f);
+    /** Hauteur du centre du Coeur (px du modele) : dans le cristal, ou sous la roue pendant l'ouverture. */
+    private static float heartY(CrateState s) {
+        return Ease.lerp(CMID + 0.3f * (float) Math.sin(s.clock * 0.05f), HEART_UP_Y + 0.6f * (float) Math.sin(s.clock * 0.07f), lift(s));
+    }
+
+    /** Pose du Coeur (centre de la gemme, axe vertical) : tourne sur lui-meme, s'eleve et grossit pendant la roue. */
+    private static void heartPose(CrateState s, Pose p) {
+        float e = lift(s);
+        float y = heartY(s);
+        float spin = s.clock * 1.6f + (s.active ? 540f * Ease.smooth(Ease.range(s.t, BURST - 6, BURST + 18)) + 720f * Seq.spin(s) : 0);
+        float pop = 1 + 0.18f * Seq.stopFlash(s) + 0.12f * charge(s) * (1 - burst(s));
+        p.translate(8, y, 8).rotY(spin).rotZ(9f * (1 - e)).scale((1 + 0.35f * e) * pop);
     }
 
     private static float gemY(CrateState s, int k) {
@@ -558,6 +505,39 @@ public final class Gemme extends Design {
         return Math.max(Math.max(rumble, impact), Math.max(0.35f * Seq.stopFlash(s), 0.45f * Seq.slam(s)));
     }
 
+    /** Le Coeur : gemme teintee + coque lumineuse de sa couleur. */
+    private void drawHeart(CrateState s, Pose p, DrawList out) {
+        int c = heartColor(s);
+        float r = ((c >> 16) & 255) / 255f, g = ((c >> 8) & 255) / 255f, b = (c & 255) / 255f;
+        float pulse = 0.5f + 0.5f * (float) Math.sin(s.clock * 0.09f);
+        p.push();
+        heartPose(s, p);
+        // gemme claire teintee : on remonte un peu les couleurs sombres (perle noire) pour garder les facettes lisibles
+        out.solidTinted(p, heart, 0.9f, 0.12f + 0.88f * r, 0.12f + 0.88f * g, 0.12f + 0.88f * b);
+        out.additive(p, heartGlow, c, 0.32f + 0.18f * pulse + 0.5f * Seq.stopFlash(s) + 0.35f * lift(s));
+        p.pop();
+    }
+
+    /** Halo du Coeur, a sa couleur. */
+    private static void heartHalo(CrateState s, Pose p, DrawList out, float[] at, int rgb, float ch, float E) {
+        float e = lift(s);
+        out.billboard(p, Sprite.HALO, at[0], at[1], at[2], 7f + 10f * ch + 5f * e, 0, rgb, (0.3f + 0.5f * ch) * (1 - 0.5f * E) + 0.35f * e);
+    }
+
+    @Override
+    public boolean animatedAtRest() {
+        return true;
+    }
+
+    @Override
+    public void idle(CrateState s, DrawList out) {
+        ensureBuilt();
+        Pose p = idlePose.reset();
+        scaleFrame(p);
+        drawHeart(s, p, out);
+        heartHalo(s, p, out, new float[]{8, heartY(s), 8}, heartColor(s), 0, 0);
+    }
+
     @Override
     protected void model(CrateState s0, Pose p, DrawList out) {
         CrateState s = warp(s0);
@@ -565,7 +545,6 @@ public final class Gemme extends Design {
         float aw = Seq.awaken(s0);
         float ch = crystalGlow(s);
         float E = burst(s);
-        float stop = Seq.stopFlash(s0);
         out.solid(p, base, gl);
 
         // rigoles et bagues lumineuses des pylones, gemmes flottantes
@@ -617,16 +596,8 @@ public final class Gemme extends Design {
             p.pop();
         }
 
-        // couteaux (derriere le verre : dessines avant le cristal translucide)
-        float sf = swapFlash(s);
-        for (int j = 0; j < knifeCount(s); j++) {
-            int gc = GEM_RGB[gemOf(s, j)];
-            float ka = 0.55f + 0.4f * sf + 0.25f * aw + 0.6f * stop;
-            p.push();
-            float size = knifePose(s, j, p);
-            drawKnife(s0, p, out, knifeIndex(s, j), size, gc, ka);
-            p.pop();
-        }
+        // Coeur (derriere le verre : dessine avant le cristal translucide). Caisse figee : il est anime a part (idle).
+        if (!s0.frozen) drawHeart(s, p, out);
 
         // cristal : quartiers (respirent et se fissurent a la charge, eclatent, tournent, se ressoudent)
         int tint = Ease.mix(0xFFFFFF, gemCycle(s.time), 0.04f + 0.3f * ch);
@@ -645,39 +616,6 @@ public final class Gemme extends Design {
             if (crackStep > 0 && E < 0.6f) out.additive(p, cracks[k][crackStep], crackCol, (0.55f + 0.6f * ch) * (1 - E));
             p.pop();
         }
-
-        // trainees : eclats qui partent et reviennent, pointes des lames en l'air
-        if (s.active && !s.item) {
-            boolean shardsMoving = (s.t > BURST && s.t < BURST + 18) || (s.t > CrateAnim.CLOSE - 4 && s.t < CrateAnim.SLAM + 2);
-            if (shardsMoving) {
-                for (int k = 0; k < N; k++) {
-                    float[][] pts = new float[6][];
-                    for (int i = 0; i < pts.length; i++) {
-                        CrateState c = s.copy();
-                        c.t = s.t - i * 1.1f;
-                        Pose q = new Pose();
-                        shardPose(c, k, q);
-                        pts[i] = q.apply(0, 0, 0);
-                    }
-                    out.additive(p, fr.heraliz.crates.client.render.scene.Trail.ribbon(pts, 0.55f, 0.05f), edgeCol, 0.8f);
-                }
-            }
-            float e = release(s);
-            if (e > 0.05f) {
-                for (int j = 0; j < knifeCount(s); j++) {
-                    float[][] pts = new float[9][];
-                    for (int i = 0; i < pts.length; i++) {
-                        CrateState c = s.copy();
-                        c.t = s.t - i * 0.7f;
-                        c.time = s.time - i * 0.7f;
-                        Pose q = new Pose();
-                        float[] tp = tip(knifePose(c, j, q));
-                        pts[i] = q.apply(tp[0], tp[1], tp[2]);
-                    }
-                    out.additive(p, fr.heraliz.crates.client.render.scene.Trail.ribbon(pts, 0.42f, 0.03f), GEM_RGB[gemOf(s, j)], 0.85f * e);
-                }
-            }
-        }
     }
 
     @Override
@@ -693,24 +631,19 @@ public final class Gemme extends Design {
         float aw = Seq.awaken(s0);
         float ch = crystalGlow(s);
         float E = burst(s);
-        // halo au sol et coeur du cristal
+        // halo au sol ; halo du Coeur (caisse figee : dessine avec le Coeur, voir idle)
         out.ground(p, Sprite.HALO, 8, 0.06f, 8, 21f, 0, glow, 0.12f + 0.25f * aw);
-        out.billboard(p, Sprite.HALO, 8, CMID, 8, 8f + 12f * ch, 0, Ease.mix(GEM_RGB[gemOf(s, 0)], gemCycle(s.time), ch), (0.4f + 0.6f * ch) * (1 - E));
+        int hc = heartColor(s);
+        float[] hpos = {8, heartY(s), 8};
+        if (!s0.frozen) heartHalo(s, p, out, hpos, hc, ch, E);
         out.billboard(p, Sprite.HALO, 8, DIAMOND_Y + 3f * aw, 8, 4.5f + 3f * aw, 0, 0xE8F8FF, 0.35f + 0.3f * aw);
         out.billboard(p, Sprite.GLINT, 8, DIAMOND_Y + 0.9f + 3f * aw, 8.6f, 2.2f, s0.time * 2f, 0xFFFFFF, 0.5f + 0.4f * (float) Math.sin(s0.time * 0.11f));
-        // eclats de lumiere sur les facettes
-        for (int i = 0; i < 5; i++) {
+        // eclats de lumiere sur les facettes du cristal
+        for (int i = 0; i < 4; i++) {
             float ph = (s0.time * 0.035f + Ease.hash(i * 17 + 3)) % 1f;
             float tw = (float) Math.pow(Math.sin(Math.PI * ph), 8);
             float[] q = Geo.polar(8, 8, 90 + (Ease.hash(i * 5 + 1) - 0.5f) * 150, CR * (0.8f + 0.2f * Ease.hash(i * 7)), CB1 + (CT0 - CB1) * Ease.hash(i * 3 + 2));
             out.billboard(p, Sprite.GLINT, q[0], q[1], q[2] + 0.6f, 1.6f, s0.time * 3 + i * 40, 0xFFFFFF, 0.9f * tw * (1 - E));
-        }
-        // rayons divins qui descendent sur le cristal pendant la charge
-        float chg = charge(s);
-        if (chg > 0.01f && s0.t < BURST + 6) {
-            float fade = 1 - Ease.range(s0.t, BURST, BURST + 6);
-            out.shaft(p, 8, CB, 8, 3.5f + 3f * chg, 42f, s0.time * 0.6f, 3, 0xE8F8FF, 0.35f * chg * fade);
-            out.shaft(p, 8, CB, 8, 1.2f + 1.5f * chg, 46f, -s0.time * 0.9f, 2, 0xFFFFFF, 0.5f * chg * fade);
         }
         // gemmes des pylones : halos ; rayons vers le cristal (fil discret au repos, tir a la charge)
         float[] core = {8, CMID, 8};
@@ -724,28 +657,20 @@ public final class Gemme extends Design {
                 beamBetween(p, out, new float[]{c[0], gy, c[2]}, core, 0.18f, 0xFFFFFF, 0.9f * fire);
             }
         }
-        // couteaux : aura a la couleur de leur gemme ; moment "heros" : projecteur et eclat qui court sur la lame
-        float sf = swapFlash(s);
-        float e = release(s), h = hero(s);
-        for (int j = 0; j < knifeCount(s); j++) {
-            Pose q = new Pose();
-            float ksz = knifePose(s, j, q);
-            float[] at = q.apply(0, 0, -1.2f);
-            int gc = GEM_RGB[gemOf(s, j)];
-            out.billboard(p, Sprite.HALO, at[0], at[1], at[2], 0.35f * ksz + 3f * e, 0, gc, 0.35f + 0.3f * e + 0.7f * sf + 0.8f * Seq.stopFlash(s0));
-            if (h > 0.01f) {
-                out.beam(p, at[0], at[1] - 7f, at[2], 1.9f, 16f, Ease.mix(0xFFFFFF, gc, 0.35f), 0.28f * h);
-                float u = Ease.range(s.t, BURST + 18 + 6 * j, BURST + 27 + 6 * j);
-                if (u > 0 && u < 1) {
-                    float gu = Ease.inOutSine(u);
-                    float[] g = q.apply(Ease.lerp(-0.3f, 0.36f, gu) * ksz, Ease.lerp(-0.35f, 0.42f, gu) * ksz, 0.8f);
-                    float a = (float) Math.sin(Math.PI * u);
-                    out.billboard(p, Sprite.GLINT, g[0], g[1], g[2], 2.6f, s0.time * 6, 0xFFFFFF, a);
-                    out.billboard(p, Sprite.HALO, g[0], g[1], g[2], 2.4f, 0, gc, 0.6f * a);
-                }
-            }
-        }
         if (!s0.active) return;
+        // rayons divins qui descendent sur le cristal pendant la charge
+        float chg = charge(s);
+        if (chg > 0.01f && s0.t < BURST + 6) {
+            float fade = 1 - Ease.range(s0.t, BURST, BURST + 6);
+            out.shaft(p, 8, CB, 8, 3.5f + 3f * chg, 42f, s0.time * 0.6f, 3, 0xE8F8FF, 0.35f * chg * fade);
+        }
+        // Coeur en l'air : colonne de lumiere vers la roue, eclat a l'arret
+        float e = lift(s);
+        if (e > 0.01f) {
+            out.beam(p, hpos[0], hpos[1], hpos[2], 2.2f, 18f, hc, 0.22f * e);
+            float sf = Seq.stopFlash(s0);
+            if (sf > 0.01f) out.rays(p, hpos[0], hpos[1], hpos[2], 8, 16f + 10f * (1 - sf), 1.6f, s0.time, hc, 0.7f * sf);
+        }
         // eclatement : eclair blanc, halo qui s'expand, rayons aux quatre couleurs, onde au sol
         float flash = s0.t >= BURST ? (float) Math.exp(-(s0.t - BURST) * 0.32f) : 0;
         if (flash > 0.01f) {
@@ -788,19 +713,14 @@ public final class Gemme extends Design {
     // =================================================================== particules et sons
     @Override
     public void idleFx(CrateState s, FxSink fx, Random r) {
-        if (r.nextFloat() < 0.3f) {
+        if (r.nextFloat() < 0.2f) {
             int k = r.nextInt(4);
             float[] q = Geo.polar(8, 8, 45 + 90 * k, 4.5f + r.nextFloat() * 5.5f, T2 + 0.2f);
             fx.particle(FxSink.SPARK, q[0], q[1], q[2], 0, 0.12f + r.nextFloat() * 0.1f, 0, GEM_RGB[k], 1.0f + r.nextFloat() * 0.6f, 30);
         }
-        if (r.nextFloat() < 0.12f) {
-            float[] q = Geo.polar(8, 8, r.nextFloat() * 360, CR * (0.5f + r.nextFloat() * 0.6f), 7f + r.nextFloat() * 16f);
-            fx.particle(FxSink.DOT, q[0], q[1], q[2], 0, 0.04f, 0, 0xFFFFFF, 1.1f, 24);
-        }
         if (r.nextFloat() < 0.08f) {
-            int k = r.nextInt(4);
-            float[] c = pylonPos(k);
-            fx.particle(FxSink.SPARK, c[0] + rnd(r, 1.2f), GEM_Y + rnd(r, 1.2f), c[2] + rnd(r, 1.2f), 0, 0.08f, 0, GEM_RGB[k], 1.2f, 26);
+            float[] q = Geo.polar(8, 8, r.nextFloat() * 360, CR * (0.5f + r.nextFloat() * 0.6f), 7f + r.nextFloat() * 16f);
+            fx.particle(FxSink.DOT, q[0], q[1], q[2], 0, 0.04f, 0, restColor(s.clock), 1.1f, 24);
         }
     }
 
@@ -814,12 +734,10 @@ public final class Gemme extends Design {
             int t0 = FIRE0 + 4 * i;
             float[] c = pylonPos(i);
             if (k == t0) fx.sound(Snd.GEM_CHIME, c[0], GEM_Y, c[2], 0.35f, 1.3f + 0.15f * i);
-            if (k >= t0 && k < BURST) {
-                for (int n = 0; n < 2; n++) {
-                    float u = r.nextFloat();
-                    fx.particle(FxSink.SPARK, Ease.lerp(c[0], 8, u), Ease.lerp(GEM_Y, CMID, u), Ease.lerp(c[2], 8, u),
-                            (8 - c[0]) * 0.04f, 0, (8 - c[2]) * 0.04f, GEM_RGB[i], 1.3f, 10);
-                }
+            if (k >= t0 && k < BURST && r.nextBoolean()) {
+                float u = r.nextFloat();
+                fx.particle(FxSink.SPARK, Ease.lerp(c[0], 8, u), Ease.lerp(GEM_Y, CMID, u), Ease.lerp(c[2], 8, u),
+                        (8 - c[0]) * 0.04f, 0, (8 - c[2]) * 0.04f, GEM_RGB[i], 1.3f, 10);
             }
         }
         if (k > FIRE0 + 4 && k < BURST && r.nextFloat() < charge(w)) {
@@ -829,32 +747,26 @@ public final class Gemme extends Design {
         // eclatement
         if (k == BURST) {
             fx.sound(Snd.GEM_SHATTER, 8, CMID, 8, 1.5f, 1.0f);
-            for (int i = 0; i < 80; i++) {
+            for (int i = 0; i < 48; i++) {
                 double th = r.nextDouble() * Math.PI * 2, ph = Math.acos(2 * r.nextDouble() - 1);
                 double sp = 1.2 + r.nextDouble() * 2.2;
                 fx.particle(i % 3 == 0 ? FxSink.SPARK : FxSink.SHARD, 8, CMID + rnd(r, 5f), 8,
                         (float) (Math.sin(ph) * Math.cos(th) * sp), (float) (Math.cos(ph) * sp * 0.7 + 0.3), (float) (Math.sin(ph) * Math.sin(th) * sp),
                         i % 5 == 0 ? 0xFFFFFF : GEM_RGB[i % 4], 1.4f + r.nextFloat() * 1.8f, 26 + r.nextInt(20));
             }
-            for (int i = 0; i < 24; i++) {
-                double a = Math.PI * 2 * i / 24;
+            for (int i = 0; i < 16; i++) {
+                double a = Math.PI * 2 * i / 16;
                 fx.particle(FxSink.DOT, 8, T2 + 0.5f, 8, (float) Math.cos(a) * 1.6f, 0.05f, (float) Math.sin(a) * 1.6f, glow, 1.6f, 18);
             }
         }
-        // moment heros : un eclat court sur chaque lame
-        for (int j = 0; j < 3; j++) {
-            if (k == BURST + 18 + 6 * j) fx.sound(Snd.GEM_CHIME, 8 + HERO_X[j], SHOW_Y, 14, 0.7f, 1.0f + 0.12f * j);
+        // Coeur en l'air : quelques etincelles de sa couleur
+        if (k > BURST + 14 && k < CrateAnim.CLOSE - 8 && r.nextFloat() < 0.5f) {
+            float hy = heartY(w);
+            fx.particle(FxSink.SPARK, 8 + rnd(r, HEART_R), hy + rnd(r, HEART_R), 8 + rnd(r, HEART_R), rnd(r, 0.08f), 0.05f, rnd(r, 0.08f), heartColor(w), 1.1f, 14);
         }
-        if (k > BURST + 14 && k < CrateAnim.CLOSE - 8) {
-            int j = r.nextInt(3);
-            Pose q = new Pose();
-            float[] tp = tip(knifePose(w, j, q));
-            float[] at = q.apply(tp[0], tp[1], tp[2]);
-            fx.particle(FxSink.SPARK, at[0], at[1], at[2], rnd(r, 0.08f), 0.03f, rnd(r, 0.08f), GEM_RGB[gemOf(w, j)], 1.1f, 14);
-        }
-        if (k == CrateAnim.STOP + 1) fx.sound(Snd.GEM_CHIME, 8, SHOW_Y, 8, 0.8f, 1.35f);
+        if (k == CrateAnim.STOP + 1) fx.sound(Snd.GEM_CHIME, 8, HEART_UP_Y, 8, 0.8f, 1.35f);
         // les eclats se ressoudent : scintillement aspire, 'tink' pile au choc
         if (k == CrateAnim.SLAM - 21) fx.sound(Snd.GEM_REFORM, 8, CMID, 8, 1.0f, 1.0f);
-        if (k == CrateAnim.SLAM) burst(fx, r, 8, CMID, 8, 0xFFFFFF, glow, 30, 1.4f, 1.4f);
+        if (k == CrateAnim.SLAM) burst(fx, r, 8, CMID, 8, 0xFFFFFF, glow, 24, 1.4f, 1.4f);
     }
 }

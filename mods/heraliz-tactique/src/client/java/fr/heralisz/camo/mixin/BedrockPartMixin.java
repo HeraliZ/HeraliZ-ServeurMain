@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Personnalisation des armes : relève la matrice et les cubes de chaque pièce dessinée (stickers, pendentif, StatTrack). */
+/** Personnalisation des armes : relève la matrice et les cubes de chaque pièce dessinée (stickers, StatTrack). */
 @Mixin(value = BedrockPart.class, remap = false)
 public abstract class BedrockPartMixin {
    @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V",
