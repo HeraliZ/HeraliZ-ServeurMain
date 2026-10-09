@@ -49,8 +49,11 @@ quand un choix leur revient.
   (`heralisz_economie`, `EconomieApi`). Les objets du casino s'appellent « jetons ».
 - Dimensions à part : `heralisz_matchs:arenes` (ClashWar, duels) et `heralisz_matchs:zombies`.
 - Style de toutes les interfaces : celui des **écrans de clan** (panneaux de verre, police DM Sans, échelle 640×360,
-  jamais de fond uni). Kit à copier : `python outils/copier_kit_ui.py mods/<projet>`. Exceptions : l'inventaire et les
-  écrans à thème (machines du casino).
+  jamais de fond uni). Kit à copier : `python outils/copier_kit_ui.py mods/<projet>`. Exceptions : l'inventaire, la
+  fouille du loot (coffres T1 à T7, caisses de ravitaillement, caisse de CRac) et l'inventaire des sacs à dos gardent
+  leur style de base façon DayZ (choix du propriétaire : le style « clan » y fait trop moderne ; au plus une petite
+  amélioration dans le même style), et les écrans à thème (machines du casino). Toutes les autres interfaces des mods
+  passent au style des clans.
 - Menu Échap (heraliz_interface, maquette validée) : à gauche le logo et le menu (Reprendre, Informations, Discord,
   Boutique, Options, Statistiques, Joueurs, Se déconnecter ; ni Mods ni Succès), à droite la carte du joueur (hérals,
   joueurs en ligne, ping, extractions ouvertes, zones du clan).
