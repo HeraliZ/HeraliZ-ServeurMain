@@ -19,6 +19,7 @@ import java.util.Map;
  */
 public final class GeoPart {
     private static final float UV_INSET = 0.035f;
+    private static final float SMOOTH_UV_INSET = 0.01f;
 
     public final String name;
     public float x, y, z;
@@ -29,6 +30,9 @@ public final class GeoPart {
     /** Quads: 4 vertices x (x, y, z, u, v) followed by the normal (nx, ny, nz) = 23 floats each. */
     private float[] quads = new float[0];
     private int quadCount;
+    /** Smooth quads: 4 vertices x (x, y, z, u, v, nx, ny, nz) = 32 floats each (rounded lighting). */
+    private float[] smooth = new float[0];
+    private int smoothCount;
 
     public GeoPart(String name, float x, float y, float z, float xRot, float yRot, float zRot) {
         this.name = name;
@@ -97,6 +101,38 @@ public final class GeoPart {
         quadCount += list.size();
     }
 
+    /**
+     * Adds a smooth quad: 4 corners (x, y, z, u, v, nx, ny, nz), positions in model units, u v in texels. The u v are
+     * pulled a hair towards the middle of the quad so that a corner on the edge of its texture region never samples
+     * the neighbouring texel.
+     */
+    public void addQuad(float[] corners, float texW, float texH) {
+        float cu = 0f, cv = 0f;
+        for (int i = 0; i < 4; i++) {
+            cu += corners[i * 8 + 3] * 0.25f;
+            cv += corners[i * 8 + 4] * 0.25f;
+        }
+        float[] grown = new float[smooth.length + 32];
+        System.arraycopy(smooth, 0, grown, 0, smooth.length);
+        int o = smooth.length;
+        for (int i = 0; i < 4; i++) {
+            int k = i * 8;
+            float u = corners[k + 3], v = corners[k + 4];
+            float du = cu - u, dv = cv - v, len = (float) Math.sqrt(du * du + dv * dv);
+            float e = len > 1e-6f ? Math.min(SMOOTH_UV_INSET, len * 0.25f) / len : 0f;
+            grown[o + k] = corners[k] / 16f;
+            grown[o + k + 1] = corners[k + 1] / 16f;
+            grown[o + k + 2] = corners[k + 2] / 16f;
+            grown[o + k + 3] = (u + du * e) / texW;
+            grown[o + k + 4] = (v + dv * e) / texH;
+            grown[o + k + 5] = corners[k + 5];
+            grown[o + k + 6] = corners[k + 6];
+            grown[o + k + 7] = corners[k + 7];
+        }
+        smooth = grown;
+        smoothCount++;
+    }
+
     private static float inset(float a, float b, boolean first) {
         float span = Math.abs(b - a);
         float e = Math.min(UV_INSET, span * 0.25f);
@@ -138,10 +174,10 @@ public final class GeoPart {
 
     public void render(PoseStack ps, VertexConsumer vc, int light, int overlay, float r, float g, float b, float a) {
         if (!visible) return;
-        if (quadCount == 0 && children.isEmpty()) return;
+        if (quadCount == 0 && smoothCount == 0 && children.isEmpty()) return;
         ps.pushPose();
         translateAndRotate(ps);
-        if (quadCount > 0) {
+        if (quadCount > 0 || smoothCount > 0) {
             PoseStack.Pose pose = ps.last();
             Matrix4f m = pose.pose();
             Matrix3f n = pose.normal();
@@ -154,6 +190,15 @@ public final class GeoPart {
                     int k = o + i * 5;
                     m.transform(pv.set(quads[k], quads[k + 1], quads[k + 2], 1f));
                     vc.vertex(pv.x(), pv.y(), pv.z(), r, g, b, a, quads[k + 3], quads[k + 4], overlay, light,
+                            nv.x(), nv.y(), nv.z());
+                }
+            }
+            for (int q = 0; q < smoothCount; q++) {
+                for (int i = 0; i < 4; i++) {
+                    int k = q * 32 + i * 8;
+                    m.transform(pv.set(smooth[k], smooth[k + 1], smooth[k + 2], 1f));
+                    n.transform(nv.set(smooth[k + 5], smooth[k + 6], smooth[k + 7]));
+                    vc.vertex(pv.x(), pv.y(), pv.z(), r, g, b, a, smooth[k + 3], smooth[k + 4], overlay, light,
                             nv.x(), nv.y(), nv.z());
                 }
             }

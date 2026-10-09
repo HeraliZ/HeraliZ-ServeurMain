@@ -4,40 +4,6 @@
   "particle": "airstrike:item/designator"
  },
  "display": {
-  "thirdperson_righthand": {
-   "rotation": [
-    90,
-    0,
-    0
-   ],
-   "translation": [
-    0,
-    1.5,
-    -2.0
-   ],
-   "scale": [
-    0.55,
-    0.55,
-    0.55
-   ]
-  },
-  "thirdperson_lefthand": {
-   "rotation": [
-    90,
-    0,
-    0
-   ],
-   "translation": [
-    0,
-    1.5,
-    -2.0
-   ],
-   "scale": [
-    0.55,
-    0.55,
-    0.55
-   ]
-  },
   "firstperson_righthand": {
    "rotation": [
     0,
@@ -140,13 +106,5 @@
     0.9
    ]
   }
- },
- "overrides": [
-  {
-   "predicate": {
-    "airstrike:raised": 1
-   },
-   "model": "airstrike:item/designator_raised"
-  }
- ]
+ }
 }

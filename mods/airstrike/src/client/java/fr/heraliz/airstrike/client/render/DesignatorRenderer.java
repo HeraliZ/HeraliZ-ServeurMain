@@ -11,18 +11,12 @@ import fr.heraliz.airstrike.item.DesignatorItem;
 import fr.heraliz.airstrike.registry.ModItems;
 import fr.heraliz.airstrike.strike.StrikeType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
@@ -37,18 +31,21 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * Draws the binoculars (generated model, see tools/modelgen/designator.py), the loaded cartridge (the payload item
- * model laid flat in the bay) and the screen on the back of the module, which shows the logo of the loaded cartridge.
+ * Draws the binoculars (generated model, see mods/airstrike/outils/modele/jumelles.py), the loaded cartridge (the
+ * payload item model laid flat in the bay) and the screen on the back of the module, which shows the logo of the loaded
+ * cartridge. How they are held (both hands, first and third person) is in {@link DesignatorHold}.
  * <p>
- * Reload (first person): the thumb presses the latch and the hatch springs open, the old cartridge pops up, the hand
- * catches it, flips it in the air, catches it again and pockets it, comes back with the new one, shows it with a twirl,
- * slides it in nose first, clicks it home and slams the hatch; the screen then boots on the new cartridge.
+ * Reload, done by the left hand while the right one holds the binoculars: it leaves its tube, presses the latch and the
+ * hatch springs open, the old cartridge pops up, the hand catches it, flips it in the air, catches it again and pockets
+ * it, comes back with the new one, shows it with a twirl, slides it in nose first, clicks it home, slams the hatch and
+ * goes back to its tube; the screen then boots on the new cartridge. The hand stays on the left of the hatch so that
+ * the arm never hides it.
  */
 public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
     private static final ResourceLocation TEXTURE = ModModels.texture("designator");
     private static final ResourceLocation SCREEN = ModModels.texture("designator_display");
     private static final ResourceLocation DUST = new ResourceLocation(AirstrikeMod.MODID, "textures/particle/smoke_1.png");
-    // item space, 1/16 block - keep in sync with tools/modelgen/designator.py
+    // item space, 1/16 block - keep in sync with mods/airstrike/outils/modele/jumelles.py
     private static final Vector3f BAY = new Vector3f(8.0f, 11.31f, 7.45f);
     private static final Vector3f HINGE = new Vector3f(8.0f, 12.925f, 4.3f);
     private static final Vector3f LATCH = new Vector3f(8.0f, 13.55f, 11.15f);
@@ -58,12 +55,13 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float HATCH_OPEN_DEG = 112f;
     /** Payload item model centre (0..1 block space). */
     private static final float PAY_X = 8f / 16f, PAY_Y = 7.9f / 16f, PAY_Z = 8f / 16f;
-    /** First person arms are drawn a bit smaller than life size to fit the binoculars. */
-    private static final float ARM_SCALE = 0.6f;
     /** The hand grips the cartridge by its left side (cartridge frame), so that the cartridge stays visible. */
     private static final Vector3f GRIP = new Vector3f(-3.2f, 0.3f, 0.5f);
     /** Screen atlas cells (4 x 4 of 128 x 64): 0-7 cartridges, then empty, hatch open, loading, white. */
     private static final int CELL_EMPTY = 8, CELL_OPEN = 9, CELL_LOADING = 10, CELL_WHITE = 11, CELL_FLARE = 12;
+    /** Where the left hand pockets and fetches the cartridges in third person (and for an item on its own). */
+    static final Vector3f TP_OFF = new Vector3f(BAY).add(-14f, -8f, 6f);
+    private static final Vector3f ITEM_OFF = new Vector3f(-12f, 2f, 15f);
 
     // reload timeline (progress 0..1)
     public static final float T_LATCH = 0.11f, T_OPEN = 0.14f, T_OPENED = 0.24f, T_POP = 0.20f, T_CATCH = 0.27f,
@@ -203,11 +201,11 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
         return o;
     }
 
-    /** Free edge of the hatch (top surface, where the hand pulls it), item units. */
-    private static Vector3f hatchEdge(float open) {
+    /** Point of the top surface of the hatch, at distance d from the hinge (6.3: free edge), item units. */
+    private static Vector3f lidPoint(float open, float d) {
         float a = (float) Math.toRadians(HATCH_OPEN_DEG * open);
-        float y = 0.2f, z = 6.3f;
-        return v(8.0f, HINGE.y + y * Mth.cos(a) + z * Mth.sin(a), HINGE.z - y * Mth.sin(a) + z * Mth.cos(a));
+        float y = 0.2f;
+        return v(8.0f, HINGE.y + y * Mth.cos(a) + d * Mth.sin(a), HINGE.z - y * Mth.sin(a) + d * Mth.cos(a));
     }
 
     private static Quaternionf euler(Vector3f deg) {
@@ -227,11 +225,15 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
         return new Vector3f(GRIP).rotate(rot).add(pos);
     }
 
-    public static Anim anim(float p, boolean hasOld, Vector3f off) {
+    /**
+     * Hand path and cartridges of the reload (item units). {@code off}: where cartridges are pocketed and fetched;
+     * {@code start}: where the hand starts from and goes back to (its grip), or null to start from {@code off}.
+     */
+    public static Anim anim(float p, boolean hasOld, Vector3f off, Vector3f start) {
         Anim a = new Anim();
         Vector3f popTop = add(BAY, 0f, 3.0f, 0.3f);
-        Vector3f release = add(BAY, -1.2f, 5.6f, 2.0f);
-        Vector3f catchPos = add(BAY, -1.6f, 5.2f, 2.6f);
+        Vector3f release = add(BAY, -2.0f, 5.0f, 1.0f);
+        Vector3f catchPos = add(BAY, -3.2f, 4.4f, 1.6f);
         Quaternionf popRot = euler(v(-14f, 0f, 0f));
 
         // ---- old cartridge: pops up, flipped in the air, pocketed
@@ -249,13 +251,13 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
                 a.oldRot = euler(v(-14f - 6f * s, 0f, 0f));
             } else if (p < T_CATCH2) {
                 float s = u(p, T_RELEASE, T_CATCH2);
-                a.oldPos = new Vector3f(release).lerp(catchPos, s).add(0f, 3.4f * 4f * s * (1f - s), 0f);
+                a.oldPos = new Vector3f(release).lerp(catchPos, s).add(0f, 3.0f * 4f * s * (1f - s), 0f);
                 a.oldRot = euler(v(-20f - 360f * smooth(s), 30f * s, 0f));
             } else {
                 float s = smooth(u(p, T_CATCH2, T_POCKET));
                 Quaternionf r = euler(v(-20f - 40f * s, 30f, 0f));
                 Vector3f offCart = new Vector3f(off).sub(new Vector3f(GRIP).rotate(r));
-                a.oldPos = track(p, stop(T_CATCH2, catchPos), k(T_CATCH2 + 0.04f, add(catchPos, -1.5f, 0.6f, 1.5f)),
+                a.oldPos = track(p, stop(T_CATCH2, catchPos), k(T_CATCH2 + 0.04f, add(catchPos, -2.0f, -1.0f, 0.8f)),
                         stop(T_POCKET, offCart));
                 a.oldRot = r;
             }
@@ -264,12 +266,12 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
         // ---- new cartridge: shown with a twirl, slid in nose first, seated
         Quaternionf baseNew = null;
         if (p >= T_POCKET) {
-            Vector3f show = add(BAY, -3.0f, 10.0f, 8.0f);
-            Vector3f show2 = add(BAY, -1.6f, 8.8f, 6.6f);
-            Vector3f nose = add(BAY, 0f, 3.0f, 2.6f);
-            Vector3f slide = add(BAY, 0f, 0.9f, 0.6f);
-            Vector3f rotV = track(p, stop(T_POCKET, v(-60f, 0f, 0f)), k(T_SHOW, v(35f, 0f, 0f)),
-                    k(T_TWIRLED, v(35f, 0f, 0f)), k(T_NOSE, v(-32f, 0f, 0f)), k(T_SEATED - 0.03f, v(-8f, 0f, 0f)),
+            Vector3f show = add(BAY, -5.5f, 6.0f, 2.5f);
+            Vector3f show2 = add(BAY, -4.0f, 5.2f, 2.0f);
+            Vector3f nose = add(BAY, -0.6f, 3.0f, 1.2f);
+            Vector3f slide = add(BAY, 0f, 0.9f, 0.4f);
+            Vector3f rotV = track(p, stop(T_POCKET, v(-60f, 0f, 0f)), k(T_SHOW, v(30f, 0f, 0f)),
+                    k(T_TWIRLED, v(30f, 0f, 0f)), k(T_NOSE, v(-32f, 0f, 0f)), k(T_SEATED - 0.03f, v(-8f, 0f, 0f)),
                     stop(T_SEATED, v(0f, 0f, 0f)));
             baseNew = euler(rotV);
             float spin = 360f * smooth(u(p, T_SHOW - 0.01f, T_TWIRLED));
@@ -283,41 +285,44 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
             a.newRot = new Quaternionf(baseNew).rotateZ((float) Math.toRadians(spin));
         }
 
-        // ---- hand
-        Vector3f latchUp = add(LATCH, 0f, 1.6f, 1.4f);
-        Vector3f latchBack = add(LATCH, 0f, 1.8f, 1.6f);
-        Vector3f press = add(BAY, 0f, 1.35f, 0.3f);
-        Vector3f edgeOpen = hatchEdge(1f).add(0f, 0.8f, 0.4f);
-        Vector3f edgeClosed = hatchEdge(0f).add(0f, 0.8f, 0.2f);
+        // ---- hand (always on the left of the hatch)
+        Vector3f from = start != null ? start : off;
+        Vector3f latchUp = add(LATCH, -4.0f, 1.4f, 1.0f);
+        Vector3f latchPress = add(LATCH, -3.0f, 0.2f, 0.2f);
+        Vector3f latchBack = add(LATCH, -4.2f, 1.6f, 1.2f);
+        Vector3f press = add(BAY, -1.2f, 1.5f, 0.3f);
+        Vector3f edgeOpen = lidPoint(1f, 3.6f).add(-2.4f, 0.6f, 0.4f);
+        Vector3f edgeClosed = lidPoint(0f, 3.6f).add(-2.4f, 0.9f, 0.2f);
         if (p < T_CATCH || (!hasOld && p < T_POCKET)) {
             if (hasOld) {
-                a.hand = track(p, stop(0f, off), k(0.07f, latchUp), stop(T_LATCH, add(LATCH, 0f, 0.1f, 0.1f)),
-                        k(T_OPEN + 0.01f, latchBack), k(0.22f, add(BAY, 0.3f, 6.0f, 1.2f)),
-                        stop(T_CATCH, held(popTop, popRot)));
+                a.hand = track(p, stop(0f, from), k(0.07f, latchUp), stop(T_LATCH, latchPress), k(T_OPEN + 0.01f, latchBack),
+                        k(0.22f, add(BAY, -4.0f, 4.5f, 1.0f)), stop(T_CATCH, held(popTop, popRot)));
             } else {
-                a.hand = track(p, stop(0f, off), k(0.07f, latchUp), stop(T_LATCH, add(LATCH, 0f, 0.1f, 0.1f)),
-                        k(T_OPEN + 0.01f, latchBack), stop(0.30f, off), stop(T_POCKET, off));
+                a.hand = track(p, stop(0f, from), k(0.07f, latchUp), stop(T_LATCH, latchPress), k(T_OPEN + 0.01f, latchBack),
+                        stop(0.30f, off), stop(T_POCKET, off));
             }
         } else if (p < T_RELEASE) {
             a.hand = held(a.oldPos, euler(v(-14f - 6f * smooth(u(p, T_CATCH, T_RELEASE)), 0f, 0f)));
         } else if (p < T_CATCH2) {
             // the hand lets go, dips and opens while the cartridge flips over
             float s = u(p, T_RELEASE, T_CATCH2);
-            Vector3f from = held(release, euler(v(-20f, 0f, 0f)));
-            Vector3f to = held(catchPos, euler(v(-20f, 30f, 0f)));
-            a.hand = new Vector3f(from).lerp(to, smooth(s)).add(0f, -1.3f * Mth.sin(s * Mth.PI), 0.4f * Mth.sin(s * Mth.PI));
+            Vector3f h0 = held(release, euler(v(-20f, 0f, 0f)));
+            Vector3f h1 = held(catchPos, euler(v(-20f, 30f, 0f)));
+            a.hand = h0.lerp(h1, smooth(s)).add(0f, -1.3f * Mth.sin(s * Mth.PI), 0.4f * Mth.sin(s * Mth.PI));
         } else if (p < T_POCKET) {
             a.hand = held(a.oldPos, euler(v(-20f - 40f * smooth(u(p, T_CATCH2, T_POCKET)), 30f, 0f)));
         } else if (p < T_SEATED) {
             a.hand = held(a.newPos, baseNew);
         } else if (p < T_LID) {
             // lets go of the side and pushes the cartridge home from the top
-            a.hand = track(p, stop(T_SEATED, held(BAY, new Quaternionf())), k(T_SEATED + 0.02f, add(BAY, -0.6f, 3.4f, 0.9f)),
+            a.hand = track(p, stop(T_SEATED, held(BAY, new Quaternionf())), k(T_SEATED + 0.02f, add(BAY, -2.0f, 3.4f, 0.9f)),
                     stop(T_CLICK, press), stop(T_LID, edgeOpen));
         } else if (p < T_SLAM) {
-            a.hand = hatchEdge(hatchOpen(p)).add(0f, 0.8f, 0.4f - 0.2f * u(p, T_LID, T_SLAM));
+            float s = u(p, T_LID, T_SLAM);
+            a.hand = lidPoint(hatchOpen(p), 3.6f).add(-2.4f, 0.6f + 0.3f * s, 0.4f - 0.2f * s);
         } else {
-            a.hand = track(p, stop(T_SLAM, edgeClosed), k(0.88f, add(edgeClosed, 0f, 3.0f, 2.2f)), stop(1f, off));
+            a.hand = track(p, stop(T_SLAM, edgeClosed), k(0.90f, add(edgeClosed, -3.0f, 3.0f, 1.0f)), stop(0.97f, from),
+                    stop(1f, from));
         }
         return a;
     }
@@ -327,23 +332,37 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext ctx, PoseStack ps, MultiBufferSource buffers, int light,
                              int overlay) {
+        if (ctx == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND || ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND) {
+            if (DesignatorHold.placeThirdPerson(ctx, ps)) {
+                draw(stack, ps, buffers, light, overlay, TP_OFF, DesignatorHold.TP_GRIP_L, true);
+                return;
+            }
+            // not held by a posed player (mob, one hand only): in the hand, as an ordinary item
+            ps.translate(0.5f, 0.5f, 0.5f);
+            ps.translate(0f, 1.5f / 16f, -2.0f / 16f);
+            ps.mulPose(Axis.XP.rotationDegrees(90f));
+            ps.scale(0.55f, 0.55f, 0.55f);
+            ps.translate(-0.5f, -0.5f, -0.5f);
+            draw(stack, ps, buffers, light, overlay, TP_OFF, DesignatorHold.TP_GRIP_L, true);
+            return;
+        }
+        // first person contexts only when DesignatorHold does not draw them (held in one hand)
+        draw(stack, ps, buffers, light, overlay, ITEM_OFF, null, ctx != ItemDisplayContext.GUI);
+    }
+
+    /**
+     * Draws the binoculars in item space: body, hatch, status LED, screen, cartridges and the sparks of the reload.
+     * Returns the reload motion (for the hand that does it), or null when not reloading.
+     */
+    public static Anim draw(ItemStack stack, PoseStack ps, MultiBufferSource buffers, int light, int overlay, Vector3f off,
+                            Vector3f start, boolean fx) {
         Minecraft mc = Minecraft.getInstance();
         double now = mc.level == null ? 0 : mc.level.getGameTime() + mc.getFrameTime();
         float p = DesignatorItem.reloadProgress(stack, now);
         boolean reloading = p < 1f;
         StrikeType loaded = DesignatorItem.cartridge(stack);
         StrikeType old = DesignatorItem.ejected(stack);
-        boolean firstPerson = ctx.firstPerson() && mc.player != null;
-
-        // where the hand fetches cartridges: just off screen (first person) or beside the binoculars
-        Vector3f off = v(-12f, 2f, 15f);
-        Matrix4f toItem = null;
-        if (firstPerson) {
-            toItem = new Matrix4f(ps.last().pose()).invert();
-            Vector3f w = toItem.transformPosition(v(ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND ? -0.55f : 0.55f, -0.75f, -0.6f));
-            off.set(w).mul(16f);
-        }
-        Anim a = reloading ? anim(p, old != null, off) : null;
+        Anim a = reloading ? anim(p, old != null, off, start) : null;
 
         GeoModel m = ModModels.designator();
         GeoPart hatch = m.part("hatch");
@@ -358,16 +377,16 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
         }
         ps.popPose();
         renderScreen(ps, buffers.getBuffer(RenderType.eyes(SCREEN)), loaded, old, p, now);
-        if (reloading && ctx != ItemDisplayContext.GUI) renderFx(ps, buffers, p, now, light);
+        if (reloading && fx) renderFx(ps, buffers, p, now, light);
 
         VertexConsumer vc = buffers.getBuffer(Sheets.cutoutBlockSheet());
         if (!reloading) {
             if (loaded != null) cartridge(loaded, BAY, null, ps, vc, light, overlay);
-            return;
+            return null;
         }
         if (a.oldPos != null) cartridge(old, a.oldPos, a.oldRot, ps, vc, light, overlay);
         if (a.newPos != null && loaded != null) cartridge(loaded, a.newPos, a.newRot, ps, vc, light, overlay);
-        if (firstPerson) renderHands(ps, buffers, light, ctx, a, p, toItem);
+        return a;
     }
 
     /** Status LED: cartridge colour, amber blink while empty or open, white flash when the cartridge clicks home. */
@@ -633,50 +652,5 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
             }
         }
         ps.popPose();
-    }
-
-    // ------------------------------------------------------------------------------------------------------------
-    // First person hands
-
-    private static void renderHands(PoseStack ps, MultiBufferSource buffers, int light, ItemDisplayContext ctx, Anim a,
-                                    float p, Matrix4f toItem) {
-        Minecraft mc = Minecraft.getInstance();
-        AbstractClientPlayer player = mc.player;
-        EntityRenderer<? super AbstractClientPlayer> r = mc.getEntityRenderDispatcher().getRenderer(player);
-        if (!(r instanceof PlayerRenderer pr)) return;
-        PlayerModel<AbstractClientPlayer> model = pr.getModel();
-        ResourceLocation skin = player.getSkinTextureLocation();
-        boolean rightHolds = ctx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
-        float scale = ARM_SCALE / new Matrix4f(ps.last().pose()).getScale(new Vector3f()).x;
-        // hands slide in from below with the presentation
-        float in = presentation(p);
-        Vector3f down = toItem.transformDirection(v(0, -1, 0)).normalize().mul(10f * (1f - in));
-        // the working hand (opposite to the one holding the binoculars)
-        Vector3f shoulderDir = toItem.transformDirection(v(rightHolds ? -0.75f : 0.75f, -0.55f, 0.2f)).normalize();
-        arm(ps, buffers, light, rightHolds ? model.leftArm : model.rightArm, rightHolds ? model.leftSleeve : model.rightSleeve,
-                skin, new Vector3f(a.hand).add(down), shoulderDir, rightHolds, scale);
-        // the holding hand, under the side of the body
-        Vector3f holdPos = v(rightHolds ? 14.2f : 1.8f, 4.6f, 9.5f).add(down);
-        Vector3f holdDir = toItem.transformDirection(v(rightHolds ? 0.5f : -0.5f, -0.85f, 0.35f)).normalize();
-        arm(ps, buffers, light, rightHolds ? model.rightArm : model.leftArm, rightHolds ? model.rightSleeve : model.leftSleeve,
-                skin, holdPos, holdDir, !rightHolds, scale);
-    }
-
-    /** Draws an arm whose hand ends at {@code hand} (item units), the arm going towards {@code shoulderDir}. */
-    private static void arm(PoseStack ps, MultiBufferSource buffers, int light, ModelPart arm, ModelPart sleeve,
-                            ResourceLocation skin, Vector3f hand, Vector3f shoulderDir, boolean left, float scale) {
-        PartPose armPose = arm.storePose(), sleevePose = sleeve.storePose();
-        arm.loadPose(PartPose.ZERO);
-        sleeve.loadPose(PartPose.ZERO);
-        ps.pushPose();
-        ps.translate(hand.x / 16f, hand.y / 16f, hand.z / 16f);
-        ps.scale(scale, scale, scale);
-        ps.mulPose(new Quaternionf().rotationTo(0f, 1f, 0f, -shoulderDir.x, -shoulderDir.y, -shoulderDir.z));
-        ps.translate((left ? -1f : 1f) / 16f, -10.5f / 16f, 0f);
-        arm.render(ps, buffers.getBuffer(RenderType.entitySolid(skin)), light, OverlayTexture.NO_OVERLAY);
-        sleeve.render(ps, buffers.getBuffer(RenderType.entityTranslucent(skin)), light, OverlayTexture.NO_OVERLAY);
-        ps.popPose();
-        arm.loadPose(armPose);
-        sleeve.loadPose(sleevePose);
     }
 }

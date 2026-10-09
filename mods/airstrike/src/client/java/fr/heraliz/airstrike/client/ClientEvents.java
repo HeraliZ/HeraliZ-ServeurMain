@@ -3,6 +3,7 @@ package fr.heraliz.airstrike.client;
 import fr.heraliz.airstrike.AirstrikeMod;
 import fr.heraliz.airstrike.client.fx.Deafen;
 import fr.heraliz.airstrike.client.fx.FxQuality;
+import fr.heraliz.airstrike.client.render.DesignatorHold;
 import fr.heraliz.airstrike.client.render.StrikeRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -11,9 +12,11 @@ import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -65,9 +68,20 @@ public final class ClientEvents {
         CloudFog.onFogColor(event);
     }
 
-    @SubscribeEvent
+    /** Low priority: a mod that takes over the hands first (revive animation...) keeps them. */
+    @SubscribeEvent(priority = EventPriority.LOW)
     public static void onRenderHand(RenderHandEvent event) {
-        if (DesignatorClient.isScoped()) event.setCanceled(true);
+        DesignatorHold.onRenderHand(event);
+    }
+
+    @SubscribeEvent
+    public static void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
+        DesignatorHold.endPlayer();
+    }
+
+    @SubscribeEvent
+    public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
+        DesignatorHold.endPlayer();
     }
 
     @SubscribeEvent

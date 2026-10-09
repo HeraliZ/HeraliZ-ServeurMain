@@ -32,11 +32,12 @@ Options d'un rendu (voir `rendre()` dans `apercu.html`) :
 
 - `vue` : `fps` (1re personne), `tps` (3e personne : `camYaw`, `camPitch`, `camDist`, `tete` [lacet, tangage]),
   `objet` (l'objet seul en orbite), `gui` (case d'inventaire) ;
-- `version` : `avant` (le mod tel qu'il est) ou `apres` (la proposition d'`apres.js`) ;
+- `version` : `avant` (la tenue des jumelles d'avant la 1.7.0) ou `apres` (celle d'`apres.js`, dans le mod depuis la 1.7.0) ;
 - `etat` : `repos`, `vise` (`tVise` : ticks depuis le clic droit), `recharge` (`p` : avancement 0..1, `charge`,
   `ancienne` : cartouches), et pour la référence `tacz` (`arme`) ou `main_vide` (la main vide du jeu) ;
 - `modele: "origine"` : la version `apres` avec le modèle d'origine ; `R` : réglages d'`apres.js` remplacés le temps
   d'un rendu (essais de placement) ; `w`, `h` : taille de l'image.
 
-`apres.js` contient la proposition (placements, prises des mains, trajet du rechargement, poses à la 3e personne) :
-ce sont les valeurs reprises dans le mod une fois validées.
+`apres.js` contient les réglages validés (placements, prises des mains, trajet du rechargement, poses à la 3e personne),
+repris tels quels dans le mod : `client/render/DesignatorHold.java` (tenue à deux mains, 1re et 3e personne) et
+`DesignatorRenderer.anim` (trajet de la main gauche). Toute retouche se fait des deux côtés, aperçu d'abord.

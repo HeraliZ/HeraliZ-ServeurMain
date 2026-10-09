@@ -9,11 +9,8 @@ import fr.heraliz.airstrike.client.particle.ShockwaveParticle;
 import fr.heraliz.airstrike.client.particle.SparkParticle;
 import fr.heraliz.airstrike.client.render.SupplyCrateRenderer;
 import fr.heraliz.airstrike.registry.ModEntities;
-import fr.heraliz.airstrike.registry.ModItems;
 import fr.heraliz.airstrike.registry.ModParticles;
 import net.minecraft.client.renderer.entity.NoopRenderer;
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -24,18 +21,11 @@ import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 /** Mod bus client registrations. */
 @Mod.EventBusSubscriber(modid = AirstrikeMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientSetup {
     private ClientSetup() {
-    }
-
-    @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> ItemProperties.register(ModItems.DESIGNATOR.get(), new ResourceLocation(AirstrikeMod.MODID, "raised"),
-                (stack, level, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0f : 0.0f));
     }
 
     @SubscribeEvent

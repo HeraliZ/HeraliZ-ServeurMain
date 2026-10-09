@@ -382,7 +382,34 @@ def atlas():
     peindre(a, "verre_emetteur", texture_verre(h, w, np.array([220, 40, 32], float), np.array([70, 6, 8], float), 120))
     h, w = taille("verre_recepteur")
     peindre(a, "verre_recepteur", texture_verre(h, w, np.array([30, 40, 62], float), np.array([6, 7, 12], float), 150))
+    deborder(a, hauteur_libre)
     return Image.fromarray(a)
+
+
+def deborder(a, haut, marge=2):
+    """Recopie le bord de chaque région sur quelques pixels autour, là où la texture est vide (partie libre seulement) :
+    un point pris tout au bord d'une région (arrondis de la carte graphique) garde la bonne couleur, jamais un trou."""
+    libre = a[..., 3] == 0
+    libre[:haut] = False
+    H, W = libre.shape
+
+    def copier(dst, src):
+        ok = libre[dst]
+        a[dst][ok] = a[src][ok]
+        libre[dst] &= ~ok
+
+    for (u0, v0, u1, v1) in REGIONS.values():
+        for k in range(1, marge + 1):
+            if v0 - k >= 0:
+                copier((v0 - k, slice(u0, u1)), (v0, slice(u0, u1)))
+            if v1 - 1 + k < H:
+                copier((v1 - 1 + k, slice(u0, u1)), (v1 - 1, slice(u0, u1)))
+        lignes = slice(max(0, v0 - marge), min(H, v1 + marge))
+        for k in range(1, marge + 1):
+            if u0 - k >= 0:
+                copier((lignes, u0 - k), (lignes, u0))
+            if u1 - 1 + k < W:
+                copier((lignes, u1 - 1 + k), (lignes, u1 - 1))
 
 
 # ------------------------------------------------------------------ fichier .geo

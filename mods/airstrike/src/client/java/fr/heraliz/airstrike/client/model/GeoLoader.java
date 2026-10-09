@@ -26,6 +26,7 @@ import java.util.Optional;
  * point &lt;name&gt; x y z          (natural frame: x right, y up, z back)
  * part &lt;path&gt; px py pz rx ry rz
  * box x y z w h d inflate u1 v1 u2 v2 (x6: down up west north east south)   (belongs to the last part)
+ * quad (x y z u v nx ny nz) x4                  smooth surface, one normal per corner (belongs to the last part)
  * </pre>
  */
 public final class GeoLoader {
@@ -82,7 +83,7 @@ public final class GeoLoader {
                 meta.texH = Integer.parseInt(t[2]);
             }
         }
-        int boxes = 0;
+        int boxes = 0, quads = 0;
         for (String raw : lines) {
             String line = raw.trim();
             if (line.isEmpty() || line.startsWith("#")) continue;
@@ -109,6 +110,14 @@ public final class GeoLoader {
                             boxes++;
                         }
                     }
+                    case "quad" -> {
+                        if (current != null && t.length >= 33) {
+                            float[] q = new float[32];
+                            for (int i = 0; i < 32; i++) q[i] = f(t[1 + i]);
+                            current.addQuad(q, meta.texW, meta.texH);
+                            quads++;
+                        }
+                    }
                     default -> {
                     }
                 }
@@ -116,7 +125,7 @@ public final class GeoLoader {
                 AirstrikeMod.LOGGER.warn("Bad line in {}: {}", geo, line);
             }
         }
-        AirstrikeMod.LOGGER.debug("Loaded {} ({} parts, {} boxes)", geo, parts.size(), boxes);
+        AirstrikeMod.LOGGER.debug("Loaded {} ({} parts, {} boxes, {} quads)", geo, parts.size(), boxes, quads);
         return new GeoModel(root, meta);
     }
 
