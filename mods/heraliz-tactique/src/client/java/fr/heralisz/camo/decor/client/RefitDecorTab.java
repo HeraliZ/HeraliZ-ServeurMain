@@ -7,6 +7,7 @@ import com.tacz.guns.client.animation.screen.RefitTransform;
 import com.tacz.guns.client.gui.GunRefitScreen;
 import fr.heralisz.camo.HeraliszCamo;
 import fr.heralisz.camo.client.RefitSkinTab;
+import fr.heralisz.camo.client.atelier.AtelierArme;
 import fr.heralisz.camo.decor.DecorData;
 import fr.heralisz.camo.decor.DecorItems;
 import fr.heralisz.camo.network.CamoNetwork;
@@ -117,6 +118,90 @@ public final class RefitDecorTab {
       if (shown == 0) add.accept(new Label(x, y + 2, 200, Component.translatable("gui.heralisz_camo.decor.none").withStyle(ChatFormatting.GRAY)));
    }
 
+   /** Élément de l'inventaire choisi : StatTrack posé tout seul à la meilleure place, sticker en aperçu qui suit la souris. */
+   private static void prendre(Placing p) {
+      if (p.kind == 2) {
+         // StatTrack : posé tout seul à la meilleure place, à la taille de l'arme ; « Déplacer » pour le mettre ailleurs
+         Minecraft mc = Minecraft.getInstance();
+         Screen screen = mc.screen;
+         DecorPick.Fit fit = screen == null || mc.player == null ? null : DecorPick.autoPlate(screen.width, screen.height, placedOn(mc.player.getMainHandItem()));
+         if (fit != null) {
+            DecorData.Placement at = placementFor(2, fit.hit(), fit.scale(), 0);
+            if (at != null) {
+               stop();
+               send(DecorPacket.SET_STATTRACK, p.slot, -1, new DecorData.Placement(at.bone(), at.px(), at.py(), at.pz(), at.nx(), at.ny(), at.nz(),
+                  at.ux(), at.uy(), at.uz(), fit.scale(), 0));
+               return;
+            }
+         }
+      }
+      begin(p, null);
+   }
+
+   /** Ce que donnerait l'objet de l'inventaire (sticker ou StatTrack) sur cette arme ; null s'il ne peut pas être posé. */
+   @Nullable
+   private static Placing placingDe(ItemStack s, int slot, ItemStack gun) {
+      if (s.getItem() instanceof DecorItems.StickerItem si && DecorData.stickers(gun).size() < DecorData.MAX_STICKERS) {
+         return new Placing(0, si.design.id(), si.finish.ordinal(), slot, -1);
+      }
+      if (s.getItem() instanceof DecorItems.StatTrakItem && !DecorData.hasStatTrak(gun)) {
+         return new Placing(2, "stattrack", 0, slot, -1);
+      }
+      return null;
+   }
+
+   // ------------------------------------------------------------------ atelier d'arme (fr.heralisz.camo.client.atelier)
+   /** Un élément est-il en cours de placement ? À l'emplacement d'inventaire {@code slot}, ou n'importe lequel (-1). */
+   public static boolean enPose(int slot) {
+      return placing != null && (slot < 0 || placing.slot == slot);
+   }
+
+   /** Placement en cours de l'élément déjà posé n° {@code index} (StatTrack : 0, {@code statTrack}) ? */
+   public static boolean enDeplacement(int index, boolean statTrack) {
+      return placing != null && placing.slot < 0 && placing.index == index && (placing.kind == 2) == statTrack;
+   }
+
+   /** Arrête le placement en cours. */
+   public static void arreter() {
+      stop();
+   }
+
+   /** Peut-on poser l'objet de l'inventaire sur l'arme tenue ? (5 stickers au plus, un seul StatTrack) */
+   public static boolean posable(ItemStack s) {
+      Minecraft mc = Minecraft.getInstance();
+      return mc.player != null && placingDe(s, 0, mc.player.getMainHandItem()) != null;
+   }
+
+   /** Objet de déco de l'emplacement d'inventaire {@code slot} : StatTrack posé tout seul, sticker à coller avec la souris. */
+   public static void choisirObjet(int slot) {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.player == null) return;
+      Placing p = placingDe(mc.player.getInventory().getItem(slot), slot, mc.player.getMainHandItem());
+      if (p != null) prendre(p);
+   }
+
+   /** Déplacer le sticker n° {@code index} déjà posé. */
+   public static void deplacerSticker(int index) {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.player == null) return;
+      List<DecorData.Sticker> stickers = DecorData.stickers(mc.player.getMainHandItem());
+      if (index < 0 || index >= stickers.size()) return;
+      DecorData.Sticker s = stickers.get(index);
+      begin(new Placing(0, s.id(), s.finish(), -1, index), s.at());
+   }
+
+   /** Gratter (retirer) le sticker n° {@code index}. */
+   public static void gratterSticker(int index) {
+      send(DecorPacket.SCRAPE_STICKER, -1, index, null);
+   }
+
+   /** Déplacer le StatTrack posé. */
+   public static void deplacerStatTrack() {
+      Minecraft mc = Minecraft.getInstance();
+      if (mc.player == null || !DecorData.hasStatTrak(mc.player.getMainHandItem())) return;
+      begin(new Placing(2, "stattrack", 0, -1, 0), DecorData.statTrak(mc.player.getMainHandItem()));
+   }
+
    private static void begin(Placing p, @Nullable DecorData.Placement from) {
       placing = p;
       rot = from != null ? from.rot() : 0;
@@ -176,7 +261,8 @@ public final class RefitDecorTab {
 
    @SubscribeEvent
    public static void onRenderPost(ScreenEvent.Render.Post e) {
-      if (!(e.getScreen() instanceof GunRefitScreen) || placing == null) return;
+      // l'atelier dessine sa propre aide
+      if (!(e.getScreen() instanceof GunRefitScreen) || e.getScreen() instanceof AtelierArme || placing == null) return;
       GuiGraphics g = e.getGuiGraphics();
       var font = Minecraft.getInstance().font;
       g.drawCenteredString(font, Component.translatable("gui.heralisz_camo.decor.hint"), e.getScreen().width / 2, e.getScreen().height - 28, 0xFFE8A0);
@@ -310,21 +396,7 @@ public final class RefitDecorTab {
 
       @Override
       public void onPress() {
-         if (this.p.kind == 2) {
-            // StatTrack : posé tout seul à la meilleure place, à la taille de l'arme ; « Déplacer » pour le mettre ailleurs
-            Screen screen = Minecraft.getInstance().screen;
-            DecorPick.Fit fit = screen == null ? null : DecorPick.autoPlate(screen.width, screen.height, placedOn(Minecraft.getInstance().player.getMainHandItem()));
-            if (fit != null) {
-               DecorData.Placement at = placementFor(2, fit.hit(), fit.scale(), 0);
-               if (at != null) {
-                  stop();
-                  send(DecorPacket.SET_STATTRACK, this.slot, -1, new DecorData.Placement(at.bone(), at.px(), at.py(), at.pz(), at.nx(), at.ny(), at.nz(),
-                     at.ux(), at.uy(), at.uz(), fit.scale(), 0));
-                  return;
-               }
-            }
-         }
-         begin(this.p, null);
+         prendre(this.p);
       }
 
       @Override

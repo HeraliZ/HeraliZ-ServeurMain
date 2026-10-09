@@ -169,6 +169,11 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
 - les icônes d'inventaire des armes TaCZ sont des photos 3D faites chez le joueur (`camo/client/IconesArmes` du mod
   tactique : modèle + skin, sans accessoires, 64 au plus en mémoire graphique, rien sur le disque ni le serveur) ; l'image
   `slot` du gunpack ne s'affiche qu'en attendant la photo ou si elle est impossible.
+- l'écran de modification des armes TaCZ est remplacé chez le joueur par l'**Atelier d'arme** (`camo/client/atelier` du
+  mod tactique, sous-classe de `GunRefitScreen` pour que TaCZ le reconnaisse) : onglets Accessoires, Camo, Personnaliser.
+  Poses et retraits par les paquets de TaCZ, camos et stickers par les nôtres. S'il plante, l'écran de TaCZ (avec les
+  anciens onglets Skin et Personnaliser) revient jusqu'au redémarrage du jeu. Les accessoires rangés dans un coffre
+  proche (fonction de TaCZ Addon) n'y sont pas proposés : seulement ceux de l'inventaire.
 - le camo d'une arme est l'étiquette NBT `HeraliszCamo` ; un camo à vie porte en plus `HeraliszCamoProprio` et
   `HeraliszCamoJeton` (`fr.heralisz.camo.CamoData`). Un mod qui pose lui-même un camo sur une arme qui peut porter un
   camo à vie doit retirer ces deux clés, sinon le serveur la prend pour un camo à vie périmé et lui enlève son camo

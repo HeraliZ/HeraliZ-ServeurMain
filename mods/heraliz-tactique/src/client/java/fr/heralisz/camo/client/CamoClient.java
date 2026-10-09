@@ -6,14 +6,18 @@ import fr.heralisz.camo.Camo;
 import fr.heralisz.camo.CamoData;
 import fr.heralisz.camo.CollectionVue;
 import fr.heralisz.camo.HeraliszCamo;
+import fr.heralisz.camo.client.atelier.AtelierArme;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -21,7 +25,7 @@ import javax.annotation.Nullable;
 
 @Mod.EventBusSubscriber(modid = HeraliszCamo.MODID, value = Dist.CLIENT)
 public final class CamoClient {
-   /** Camo à afficher : l'aperçu choisi dans l'onglet Skin (arme en main, écran ouvert), sinon celui de l'arme. */
+   /** Camo à afficher : l'aperçu choisi dans l'atelier ou l'onglet Skin (arme en main, écran ouvert), sinon celui de l'arme. */
    @Nullable
    public static Camo camoFor(ItemStack stack) {
       Minecraft mc = Minecraft.getInstance();
@@ -51,9 +55,22 @@ public final class CamoClient {
       CollectionVue.vider();
    }
 
+   /**
+    * L'écran de modification de TaCZ (sa touche, arme en main) est remplacé par l'Atelier d'arme. S'il a planté dans la
+    * session, l'écran de TaCZ et nos anciens onglets restent (AtelierArme.secours).
+    */
+   @SubscribeEvent(priority = EventPriority.LOW)
+   public static void onOpening(ScreenEvent.Opening event) {
+      Screen s = event.getNewScreen();
+      if (s != null && s.getClass() == GunRefitScreen.class && !AtelierArme.enPanne()) {
+         event.setNewScreen(new AtelierArme());
+      }
+   }
+
    @SubscribeEvent
    public static void onClientTick(TickEvent.ClientTickEvent event) {
-      if (event.phase == TickEvent.Phase.END && Minecraft.getInstance().screen instanceof GunRefitScreen screen) {
+      // l'atelier suit lui-même les changements de l'arme (AtelierArme.tick)
+      if (event.phase == TickEvent.Phase.END && Minecraft.getInstance().screen instanceof GunRefitScreen screen && !(screen instanceof AtelierArme)) {
          RefitSkinTab.refreshIfChanged(screen);
       }
    }
