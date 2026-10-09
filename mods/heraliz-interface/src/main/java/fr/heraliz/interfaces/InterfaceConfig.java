@@ -2,6 +2,8 @@ package fr.heraliz.interfaces;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -13,11 +15,16 @@ public final class InterfaceConfig {
     private InterfaceConfig() {
     }
 
+    /** Lien du Discord du serveur (bouton Discord du menu Echap). */
+    public static final String DISCORD_DEFAUT = "https://discord.gg/heraliz";
+    /** Anciens liens par defaut : une config ecrite avec l'un d'eux prend le lien actuel (rien a changer chez les joueurs). */
+    private static final List<String> ANCIENS_DISCORD = List.of("https://discord.gg/kYmtdKYXg");
+
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.BooleanValue MENU_ACTIF;
     public static final ForgeConfigSpec.ConfigValue<String> DISCORD_LIEN, DISCORD_LIBELLE, BOUTIQUE_LIEN, BOUTIQUE_LIBELLE,
             INFORMATIONS_LIBELLE, SOUS_TITRE, ACCENT;
-    public static final ForgeConfigSpec.BooleanValue FLOU, ECHELLE_AUTO, BOUTON_MODS, PIED, LIENS_MOJANG;
+    public static final ForgeConfigSpec.BooleanValue FLOU, ECHELLE_AUTO, PIED, LIENS_MOJANG;
     public static final ForgeConfigSpec.IntValue FLOU_FORCE;
 
     static {
@@ -26,7 +33,7 @@ public final class InterfaceConfig {
         MENU_ACTIF = b.comment("Remplacer le menu Echap vanilla par celui d'HeraliZ (false = menu vanilla)")
                 .define("actif", true);
         DISCORD_LIEN = b.comment("Lien du bouton Discord (vide = bouton cache)")
-                .define("discord_lien", "https://discord.gg/kYmtdKYXg", InterfaceConfig::lienValide);
+                .define("discord_lien", DISCORD_DEFAUT, InterfaceConfig::lienValide);
         DISCORD_LIBELLE = b.comment("Libelle du bouton Discord (vide = traduction : « Discord »)")
                 .define("discord_libelle", "");
         BOUTIQUE_LIEN = b.comment("Lien de la boutique (vide = bouton affiche mais grise avec « Bientot »)")
@@ -46,8 +53,6 @@ public final class InterfaceConfig {
         ECHELLE_AUTO = b.comment("Taille d'interface automatique pour ce menu (comme les ecrans des clans : 3 en 1080p, 4 en 1440p) ;"
                         + " false = taille d'interface choisie dans les options")
                 .define("echelle_auto", true);
-        BOUTON_MODS = b.comment("Afficher le bouton Mods (liste des mods Forge)")
-                .define("bouton_mods", true);
         LIENS_MOJANG = b.comment("Afficher les petits liens « Avis » et « Signaler un bug » de Mojang en bas a droite")
                 .define("liens_mojang", true);
         PIED = b.comment("Afficher en bas de l'ecran le pseudo, le serveur et le ping")
@@ -60,6 +65,14 @@ public final class InterfaceConfig {
         if (!(o instanceof String s)) return false;
         String t = s.trim().toLowerCase(Locale.ROOT);
         return t.isEmpty() || t.startsWith("https://") || t.startsWith("http://");
+    }
+
+    /** Lien du bouton Discord (null : bouton cache). */
+    @Nullable
+    public static String discord() {
+        String s = texte(DISCORD_LIEN, DISCORD_DEFAUT);
+        if (s.isEmpty()) return null;
+        return ANCIENS_DISCORD.contains(s) ? DISCORD_DEFAUT : s;
     }
 
     /** Valeur lue sans planter si la config n'est pas encore chargee (banc, ecran titre). */

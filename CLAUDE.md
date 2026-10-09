@@ -51,7 +51,11 @@ quand un choix leur revient.
 - Style de toutes les interfaces : celui des **écrans de clan** (panneaux de verre, police DM Sans, échelle 640×360,
   jamais de fond uni). Kit à copier : `python outils/copier_kit_ui.py mods/<projet>`. Exceptions : l'inventaire et les
   écrans à thème (machines du casino).
-- Menu Échap (heraliz_interface) : Reprendre, Discord, Boutique, Informations, boutons vanilla.
+- Menu Échap (heraliz_interface, maquette validée) : à gauche le logo et le menu (Reprendre, Informations, Discord,
+  Boutique, Options, Statistiques, Joueurs, Se déconnecter ; ni Mods ni Succès), à droite la carte du joueur (hérals,
+  joueurs en ligne, ping, extractions ouvertes, zones du clan).
+- Discord du serveur : https://discord.gg/heraliz (menu Échap et launcher). Noms de domaine heraliz.fr et heraliz.com :
+  le site du serveur y sera mis plus tard (la boutique pourra y pointer).
 
 ---
 

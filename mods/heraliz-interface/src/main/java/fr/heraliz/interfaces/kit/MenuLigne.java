@@ -31,6 +31,8 @@ public class MenuLigne extends AbstractButton {
     private int iconeDroite = -1;
     @Nullable
     private String pastille;
+    /** Sans cadre au repos (le libelle pose sur le fond) : seul le survol dessine le fond et le contour. */
+    private boolean sobre;
     private float survol;
     private final Anim.Horloge horloge = new Anim.Horloge();
     /** Opacite d'ensemble 0..1 et decalage vertical (unites) de l'animation d'ouverture. */
@@ -80,6 +82,12 @@ public class MenuLigne extends AbstractButton {
         return this;
     }
 
+    /** Ligne sans cadre au repos (menu Echap) : fond et contour n'apparaissent qu'au survol. */
+    public MenuLigne sobre() {
+        this.sobre = true;
+        return this;
+    }
+
     public String libelle() {
         return libelle;
     }
@@ -110,18 +118,19 @@ public class MenuLigne extends AbstractButton {
 
         // fond et contour
         int fond, contour;
+        int repos = sobre ? 0 : 1;
         if (!active) {
-            fond = Ui.argb(0xFFFFFF, a(4));
-            contour = Ui.argb(0xFFFFFF, a(14));
+            fond = Ui.argb(0xFFFFFF, a(4 * repos));
+            contour = Ui.argb(0xFFFFFF, a(14 * repos));
         } else if (style == Style.PRINCIPAL) {
             fond = Ui.argb(accent, a((int) (38 + 34 * s)));
             contour = Ui.argb(Ui.mix(accent, 0xFFFFFF, 0.25f * s), a((int) (150 + 90 * s)));
         } else if (style == Style.DANGER) {
-            fond = Ui.argb(accent, a((int) (12 + 26 * s)));
-            contour = Ui.argb(accent, a((int) (70 + 130 * s)));
+            fond = Ui.argb(accent, a((int) (12 * repos + 26 * s)));
+            contour = Ui.argb(accent, a((int) (70 * repos + 130 * s)));
         } else {
-            fond = Ui.argb(0xFFFFFF, a((int) (7 + 11 * s)));
-            contour = Ui.argb(Ui.mix(0xFFFFFF, accent, s), a((int) (30 + 80 * s)));
+            fond = Ui.argb(0xFFFFFF, a((int) (7 * repos + 11 * s)));
+            contour = Ui.argb(Ui.mix(0xFFFFFF, accent, s), a((int) (30 * repos + 80 * s)));
         }
         Ui.soft(g, x, y, w, h, fond);
         Ui.softOutline(g, x + 1, y + 1, w - 2, h - 2, contour);

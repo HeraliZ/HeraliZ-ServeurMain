@@ -40,5 +40,18 @@
   "subtitles.heraliz_interface.ui_clic": "Click",
   "subtitles.heraliz_interface.ui_ouvrir": "Menu opens",
   "subtitles.heraliz_interface.ui_fermer": "Menu closes",
-  "heraliz_interface.pack_impose": "The server's texture pack is enforced"
+  "heraliz_interface.pack_impose": "The server's texture pack is enforced",
+  "gui.heraliz_interface.pause.carte.herals": "Herals",
+  "gui.heraliz_interface.pause.carte.en_ligne": "Online",
+  "gui.heraliz_interface.pause.carte.ping": "Ping",
+  "gui.heraliz_interface.pause.carte.extractions": "Open extractions",
+  "gui.heraliz_interface.pause.carte.aucune_extraction": "None right now",
+  "gui.heraliz_interface.pause.carte.ferme_dans": "closes in %s",
+  "gui.heraliz_interface.pause.carte.permanente": "always open",
+  "gui.heraliz_interface.pause.carte.clan": "Your clan",
+  "gui.heraliz_interface.pause.carte.sans_clan": "No clan · /clan to create or join one",
+  "gui.heraliz_interface.pause.carte.sans_clan_puce": "No clan",
+  "gui.heraliz_interface.pause.carte.zones": "%s zones held",
+  "gui.heraliz_interface.pause.carte.zone": "1 zone held",
+  "gui.heraliz_interface.pause.carte.aucune_zone": "No zone held"
 }
