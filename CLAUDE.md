@@ -118,7 +118,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
 | crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : menu Échap, pack de textures du serveur imposé |
-| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes des admins (`/extraction`) |
+| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (3 à la fois, 30 à 60 min, 30 s à tenir ; `/extraction`, `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
 
@@ -213,6 +213,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `fr.heraliz.reanimation.execution.Executions` | reanimation (serveur) | exécutions |
 | `com.caracrea.api.voice.CaraCreaVoice` | caracrea (serveur) | voix : couper un joueur, portée, routage |
 | `fr.heralisz.tactical.api.HeraliszTacticalAPI` | tactique (commun) | index des objets tactiques |
+| `com.heraliz.extraction.api.ExtractionApi` | extraction (commun, rempli chez le joueur) | extractions ouvertes (`ouvertes()`, `version()`) pour la carte du monde |
 
 **Pour qu'un nouveau mod utilise un des nôtres :**
 - dépendance obligatoire : la déclarer dans son `mods.toml` et compiler contre une copie du jar dans son `libs/`

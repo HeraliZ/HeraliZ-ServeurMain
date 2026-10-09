@@ -9,7 +9,7 @@ modId="heraliz_extraction"
 version="${mod_version}"
 displayName="HeraliZ Extraction"
 authors="${mod_authors}"
-description='''Fusée d'extraction : tiens la zone pendant 1:30 à ciel ouvert pour être extrait au spawn. Zones fixes pour les admins (/extraction).'''
+description='''Fusée d'extraction : tiens la zone pendant 1:30 à ciel ouvert pour être extrait au spawn. Zones fixes de la carte, ouvertes à tour de rôle (/extraction, /extractions).'''
 
 [[dependencies.heraliz_extraction]]
     modId="forge"

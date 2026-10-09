@@ -50,8 +50,14 @@ public class ExtractionTerminalEntity extends Entity {
             SynchedEntityData.defineId(ExtractionTerminalEntity.class, EntityDataSerializers.FLOAT);
     protected static final EntityDataAccessor<Byte> DATA_STATE =
             SynchedEntityData.defineId(ExtractionTerminalEntity.class, EntityDataSerializers.BYTE);
-    /** Zone fixe créée par un admin (/extraction create) : pas de PC, pas de fumée, permanente, toit autorisé. */
+    /** Zone fixe créée par un admin (/extraction create) : pas de PC, survit aux redémarrages, toit autorisé. */
     protected static final EntityDataAccessor<Boolean> DATA_FIXED =
+            SynchedEntityData.defineId(ExtractionTerminalEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Zone ouverte (zone fixe : rotation, ouverture à la main ou zone permanente ; zone de fusée : toujours). */
+    protected static final EntityDataAccessor<Boolean> DATA_OPEN =
+            SynchedEntityData.defineId(ExtractionTerminalEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Zone fixe ouverte surmontée d'une colonne de fumée (repère de loin, réglage zones.smoke). */
+    protected static final EntityDataAccessor<Boolean> DATA_SMOKE =
             SynchedEntityData.defineId(ExtractionTerminalEntity.class, EntityDataSerializers.BOOLEAN);
 
     /** Ticks depuis la fermeture (effets de fin ; le serveur retire le terminal après {@link #END_LINGER}). */
@@ -60,6 +66,11 @@ public class ExtractionTerminalEntity extends Entity {
     /** Forme de la zone (suit le relief, s'arrête sur les murs), recalculée régulièrement. */
     @Nullable
     private ZoneShape zone;
+
+    /** Fondu d'ouverture / de fermeture d'une zone fixe (client, 0..1, une seconde). */
+    private float openFade;
+    private float openFadeOld;
+    private boolean fadeStarted;
 
     public ExtractionTerminalEntity(EntityType<? extends ExtractionTerminalEntity> type, Level level) {
         super(type, level);
@@ -74,6 +85,11 @@ public class ExtractionTerminalEntity extends Entity {
         return this.entityData.get(DATA_FIXED);
     }
 
+    /** Zone ouverte : on peut s'y extraire (une zone fixe fermée ne montre rien et n'extrait personne). */
+    public boolean isOpen() {
+        return this.entityData.get(DATA_OPEN);
+    }
+
     @Override
     protected void defineSynchedData() {
         this.entityData.define(DATA_BEST_PROGRESS, 0);
@@ -83,6 +99,8 @@ public class ExtractionTerminalEntity extends Entity {
         this.entityData.define(DATA_RADIUS, 5.0F);
         this.entityData.define(DATA_STATE, STATE_ACTIVE);
         this.entityData.define(DATA_FIXED, false);
+        this.entityData.define(DATA_OPEN, true);
+        this.entityData.define(DATA_SMOKE, false);
     }
 
     // ------------------------------------------------------------------ getters
@@ -117,7 +135,7 @@ public class ExtractionTerminalEntity extends Entity {
     /** Intensité des effets de la zone : monte une fois le fumigène déployé, retombe à la fermeture. */
     public float getVisualStrength(float partialTick) {
         if (isFixed()) {
-            return 1.0F;
+            return Mth.lerp(partialTick, this.openFadeOld, this.openFade);
         }
         if (getState() == STATE_ACTIVE) {
             return Mth.clamp((this.tickCount + partialTick - TerminalGeometry.DEPLOY_END + 10.0F) / 10.0F, 0.0F, 1.0F);
@@ -176,11 +194,11 @@ public class ExtractionTerminalEntity extends Entity {
             return;
         }
 
-        refreshZone();
         if (isFixed()) {
-            spawnOutlineParticles();
+            fixedClientTick();
             return;
         }
+        refreshZone();
         if (this.tickCount < TerminalGeometry.DEPLOY_END) {
             return;
         }
@@ -196,16 +214,41 @@ public class ExtractionTerminalEntity extends Entity {
             }
         }
 
-        // colonne de fumée épaisse qui monte très haut
-        level.addParticle(ModRegistry.EXTRACTION_SMOKE.get(),
-                tip.x + (rand.nextDouble() - 0.5D) * 0.15D, tip.y, tip.z + (rand.nextDouble() - 0.5D) * 0.15D,
-                (rand.nextDouble() - 0.5D) * 0.02D, 0.22D + rand.nextDouble() * 0.05D, (rand.nextDouble() - 0.5D) * 0.02D);
+        spawnSmokeColumn(tip);
         // étincelles crachées par le fumigène
         for (int i = 0; i < 2; i++) {
             level.addParticle(ModRegistry.EXTRACTION_SPARK.get(), tip.x, tip.y, tip.z,
                     (rand.nextDouble() - 0.5D) * 0.14D, 0.1D + rand.nextDouble() * 0.18D, (rand.nextDouble() - 0.5D) * 0.14D);
         }
         spawnOutlineParticles();
+    }
+
+    /** Zone fixe : fondu à l'ouverture et à la fermeture ; ouverte, son contour et sa colonne de fumée. */
+    private void fixedClientTick() {
+        float target = isOpen() ? 1.0F : 0.0F;
+        if (!this.fadeStarted) {
+            // zone déjà ouverte quand le joueur arrive : pas de fondu
+            this.fadeStarted = true;
+            this.openFade = target;
+        }
+        this.openFadeOld = this.openFade;
+        this.openFade = this.openFade < target ? Math.min(target, this.openFade + 0.05F) : Math.max(target, this.openFade - 0.05F);
+        if (!isOpen()) {
+            return;
+        }
+        refreshZone();
+        spawnOutlineParticles();
+        if (this.entityData.get(DATA_SMOKE)) {
+            spawnSmokeColumn(position().add(0.0D, 0.2D, 0.0D));
+        }
+    }
+
+    /** Colonne de fumée épaisse qui monte très haut (visible de loin). */
+    private void spawnSmokeColumn(Vec3 from) {
+        RandomSource rand = this.random;
+        this.level().addParticle(ModRegistry.EXTRACTION_SMOKE.get(),
+                from.x + (rand.nextDouble() - 0.5D) * 0.15D, from.y, from.z + (rand.nextDouble() - 0.5D) * 0.15D,
+                (rand.nextDouble() - 0.5D) * 0.02D, 0.22D + rand.nextDouble() * 0.05D, (rand.nextDouble() - 0.5D) * 0.02D);
     }
 
     /** Limite de la zone au sol, le long du contour (qui tourne doucement). */

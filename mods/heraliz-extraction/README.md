@@ -22,15 +22,37 @@ La zone (rayon 8 par défaut) suit le relief, s'arrête sur les murs et n'entre 
 /give @p heraliz_extraction:extraction_terminal
 ```
 
-## Zones fixes (admins, OP 2)
+## Zones fixes de la carte (admins, OP 2)
+
+Les extractions de la carte : zone rouge (sans PC), qui survit aux redémarrages, utilisable avec ou sans toit, retour
+au spawn au bout du temps à tenir (30 s par défaut). Elles **tournent** : seules quelques-unes sont ouvertes en même
+temps (3 par défaut), chacune pour 30 à 60 min tirées au hasard, puis d'autres prennent le relais (d'abord celles
+fermées depuis le plus longtemps). Une zone ouverte a sa colonne de fumée (repère de loin).
+
+- Ouverture : annoncée dans le chat à tous les joueurs de la dimension (« [Extraction] Aérodrome nord ouverte pendant
+  45 min · 850 m au nord-est », clic = `/extractions`).
+- 2 min avant la fermeture : rappel aux joueurs à moins de 200 blocs ; puis « est fermée ». Ceux qui étaient en train
+  de s'extraire perdent leur chrono.
+- Un joueur à terre (Réanimation) ne peut pas s'extraire.
+- Les joueurs reçoivent la liste des extractions ouvertes (connexion, chaque ouverture / fermeture) : la carte du monde
+  la lit dans `com.heraliz.extraction.api.ExtractionApi` (API stable).
 
 ```
-/extraction create <nom> [rayon] [secondes]   crée une zone permanente à ta position
+/extraction create <nom> [rayon] [secondes]   crée une zone à ta position (elle entre dans la rotation)
+/extraction label <nom> <nom affiché>         nom montré aux joueurs (« Aérodrome nord »)
 /extraction remove <nom>                      supprime une zone
-/extraction list                              liste les zones
+/extraction list                              liste les zones (mode, ouverte ou non, temps restant)
+/extraction open <nom> [minutes]              ouvre une zone tout de suite (sans minutes : 30 à 60 min)
+/extraction close <nom>                       ferme une zone (la rotation en ouvre une autre)
+/extraction mode <nom> rotation|permanent|closed
+                                              rotation (défaut), toujours ouverte, ou seulement à la main
+/extraction tp <nom>                          va voir une zone
+/extraction rotation                          état de la rotation et zones ouvertes
+/extraction rotation next                     ferme les zones ouvertes, d'autres ouvrent
 ```
 
-Zone rouge seule (sans PC ni fumée), permanente (survit aux redémarrages), utilisable avec ou sans toit.
+Pour tous les joueurs : `/extractions`, les extractions ouvertes avec leur distance, leur direction et le temps avant
+leur fermeture.
 
 ## Réglages
 
@@ -38,16 +60,24 @@ Zone rouge seule (sans PC ni fumée), permanente (survit aux redémarrages), uti
 
 | Clé | Défaut | Rôle |
 |---|---|---|
-| `durationSeconds` | 90 | temps à tenir dans la zone |
+| `durationSeconds` | 90 | temps à tenir dans la zone du terminal |
 | `radius` | 8.0 | rayon de la zone (blocs) |
 | `zoneLifetimeSeconds` | 300 | durée d'ouverture de la zone du terminal |
+| `zones.durationSeconds` | 30 | temps à tenir dans une zone fixe créée sans temps |
+| `zones.smoke` | true | colonne de fumée au-dessus des zones fixes ouvertes |
+| `rotation.enabled` | true | rotation des zones fixes (false : ouvertures à la main seulement) |
+| `rotation.openAtOnce` | 3 | zones ouvertes en même temps |
+| `rotation.minMinutes` / `maxMinutes` | 30 / 60 | durée d'ouverture d'une zone (au hasard entre les deux) |
+| `rotation.warnMinutes` | 2 | rappel aux joueurs proches avant la fermeture (0 = jamais) |
+| `rotation.announce` | true | annonce de chaque ouverture dans le chat |
 | `useWorldSpawn` | true | TP au spawn du monde, sinon `dimension` / `x` `y` `z` |
 
 ## Où toucher
 
-- `src/commun` : enregistrements (objet, entité, particules), réglages, état synchronisé du terminal, forme de la zone,
-  particules de la fumée et de la zone ;
-- `src/serveur` : pose du terminal, chronos et barres des joueurs, téléportation, zones fixes et commandes ;
+- `src/commun` : enregistrements (objet, entité, particules), réglages, état synchronisé du terminal (zone ouverte,
+  fumée), forme de la zone, particules de la fumée et de la zone, paquet des extractions ouvertes, `api/ExtractionApi` ;
+- `src/serveur` : pose du terminal, chronos et barres des joueurs, téléportation, zones fixes (`ExtractionZones`),
+  rotation et annonces (`Rotation`), commandes ;
 - `src/client` : PC en main et à genoux, écran du PC, rendu du terminal et de la zone, textures.
 
 ## Outils

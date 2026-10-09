@@ -1,6 +1,7 @@
 package com.heraliz.extraction.client;
 
 import com.heraliz.extraction.HeralizExtraction;
+import com.heraliz.extraction.api.ExtractionApi;
 import com.heraliz.extraction.item.ExtractionTerminalItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -16,6 +17,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
@@ -23,12 +25,20 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.List;
+
 @Mod.EventBusSubscriber(modid = HeralizExtraction.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientEvents {
     /** Le joueur en cours de rendu a été descendu (à genoux) : il faut refermer le pushPose. */
     private static boolean kneelPushed;
 
     private ClientEvents() {
+    }
+
+    /** Déconnexion : la liste des extractions ouvertes (carte du monde) appartenait à ce serveur. */
+    @SubscribeEvent
+    public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        ExtractionApi.recevoir(List.of());
     }
 
     @SubscribeEvent
