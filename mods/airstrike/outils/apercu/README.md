@@ -14,6 +14,7 @@ dire au propriétaire que ce n'est pas testé en jeu.
 ```
 python3 prep.py <dossier>                                         modèle du mod, cartouches, joueur (skin de Steve)
 python3 prep.py <dossier> --apres <designator.geo> <designator.png>   + un modèle proposé (voir ../modele/jumelles.py)
+python3 prep.py <dossier> --cartouches <dossier>                  + des cartouches proposées (voir ../modele/cartouches.py)
 python3 prep_tacz.py ... <dossier> m16a1                           une arme TaCZ de référence (détail en tête du fichier)
 ```
 
@@ -36,7 +37,9 @@ Options d'un rendu (voir `rendre()` dans `apercu.html`) :
 - `etat` : `repos`, `vise` (`tVise` : ticks depuis le clic droit), `recharge` (`p` : avancement 0..1, `charge`,
   `ancienne` : cartouches), et pour la référence `tacz` (`arme`) ou `main_vide` (la main vide du jeu) ;
 - `modele: "origine"` : la version `apres` avec le modèle d'origine ; `R` : réglages d'`apres.js` remplacés le temps
-  d'un rendu (essais de placement) ; `w`, `h` : taille de l'image.
+  d'un rendu (essais de placement) ; `w`, `h` : taille de l'image ;
+- `objet` (vues `objet` et `gui`) : un modèle d'objet seul, par exemple `cartridge_special` ; `transparent` (vue `gui`) :
+  fond transparent. Dans la baie, la version `apres` prend la cartouche du niveau de la frappe quand elle existe.
 
 `apres.js` contient les réglages validés (placements, prises des mains, trajet du rechargement, poses à la 3e personne),
 repris tels quels dans le mod : `client/render/DesignatorHold.java` (tenue à deux mains, 1re et 3e personne) et

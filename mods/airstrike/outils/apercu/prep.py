@@ -5,6 +5,7 @@ les jumelles (geo/designator.geo, chargé comme GeoLoader / GeoPart du mod), les
 payload_*.json) et le joueur (PlayerModel du jeu : tête, corps, bras, jambes et leurs calques, bras larges et fins).
 
 usage : python3 prep.py <dossier de sortie> [skin 64x64 .png] [--apres <designator.geo> <designator.png>]
+        [--cartouches <dossier des cartridge_*.json et .png proposés>]
   -> scene.json + les textures copiées (designator.png, designator_display.png, payload_*.png, skin.png)
 Le skin par défaut est celui de Steve du pack de textures du serveur (heraliz-interface).
 """
@@ -199,10 +200,12 @@ FACES = {
 }
 
 
-def cartouche(nom):
-    d = json.loads((ASSETS / "models" / "item" / (nom + ".json")).read_text(encoding="utf-8"))
-    g = Maillage()
+def cartouche(nom, dossier=None):
+    """Modèle d'objet à éléments ; les éléments lumineux (forge_data) à part, dans « <nom>_lumineux »."""
+    d = json.loads(((dossier or ASSETS / "models" / "item") / (nom + ".json")).read_text(encoding="utf-8"))
+    g, lum = Maillage(), Maillage()
     for e in d["elements"]:
+        cible = lum if "forge_data" in e else g
         a, b = e["from"], e["to"]
         m = ident()
         r = e.get("rotation")
@@ -219,8 +222,9 @@ def cartouche(nom):
             for i, c in enumerate((c0, c1, c2, c3)):
                 p = [a[j] + (b[j] - a[j]) * c[j] for j in range(3)]
                 sommets.append(p + [uv[i][0] / 16.0, uv[i][1] / 16.0])
-            g.quad(m, sommets, n)
-    return g.json()
+            # coins listés dans le sens des aiguilles vu de dehors : inversés pour que la face soit vue de dehors
+            cible.quad(m, sommets[::-1], n)
+    return g.json(), (lum.json() if lum.pos else None)
 
 
 # ------------------------------------------------------------------ joueur (PlayerModel)
@@ -260,6 +264,11 @@ def main():
         i = args.index("--apres")
         apres = args[i + 1:i + 3]
         args = args[:i] + args[i + 3:]
+    neuves = None
+    if "--cartouches" in args:
+        i = args.index("--cartouches")
+        neuves = Path(args[i + 1])
+        args = args[:i] + args[i + 2:]
     dossier = Path(args[0])
     skin = Path(args[1]) if len(args) > 1 else SKIN
     dossier.mkdir(parents=True, exist_ok=True)
@@ -267,9 +276,19 @@ def main():
     shutil.copyfile(tex / "entity" / "designator.png", dossier / "designator.png")
     shutil.copyfile(tex / "entity" / "designator_display.png", dossier / "designator_display.png")
     cartouches = {}
+
+    def ajouter(f, textures):
+        maillage, lumineux = cartouche(f.stem, f.parent)
+        shutil.copyfile(textures / (f.stem + ".png"), dossier / (f.stem + ".png"))
+        cartouches[f.stem] = maillage
+        if lumineux:
+            cartouches[f.stem + "_lumineux"] = lumineux
+
     for f in sorted((ASSETS / "models" / "item").glob("payload_*.json")):
-        shutil.copyfile(tex / "item" / (f.stem + ".png"), dossier / (f.stem + ".png"))
-        cartouches[f.stem] = cartouche(f.stem)
+        ajouter(f, tex / "item")
+    # cartouches par niveau (cartridge_light, _heavy, _special) : celles du mod, ou celles proposées (--cartouches)
+    for f in sorted((neuves or ASSETS / "models" / "item").glob("cartridge_*.json")):
+        ajouter(f, neuves or tex / "item")
     shutil.copyfile(skin, dossier / "skin.png")
     scene = {"jumelles": jumelles(), "cartouches": cartouches, "joueur": joueur(False), "joueur_fin": joueur(True)}
     if apres:

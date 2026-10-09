@@ -129,14 +129,14 @@ void main() {
   vUv = aUv;
   vec3 n = normalize(transpose(inverse(mat3(uModel))) * aNrm);
   float l = min(1.0, (max(0.0, dot(normalize(uL0), n)) + max(0.0, dot(normalize(uL1), n))) * 0.6 + 0.4);
-  vCol = uMode == 2 ? uColor : vec4(uColor.rgb * l, uColor.a);
+  vCol = (uMode == 2 || uMode == 3) ? uColor : vec4(uColor.rgb * l, uColor.a);
 }`;
 const FS = `#version 300 es
 precision highp float; precision highp int;
 in vec2 vUv; in vec4 vCol; uniform sampler2D uTex; uniform int uMode; out vec4 o;
 void main() {
   vec4 c = texture(uTex, vUv) * vCol;
-  if (uMode == 0 && c.a < 0.1) discard;
+  if ((uMode == 0 || uMode == 3) && c.a < 0.1) discard;
   if (uMode == 1 && c.a < 0.004) discard;
   o = c;
 }`;
@@ -211,7 +211,7 @@ gl.bindVertexArray(vaoDyn);
   gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0);
 });
 
-async function texture(url) {
+async function texture(url, mip) {
   const img = new Image();
   img.src = url;
   await img.decode();
@@ -219,7 +219,8 @@ async function texture(url) {
   gl.bindTexture(gl.TEXTURE_2D, t);
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  if (mip) gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mip ? gl.NEAREST_MIPMAP_LINEAR : gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -229,7 +230,7 @@ async function texture(url) {
 // ------------------------------------------------------------------ file de dessin (opaques, puis translucides, puis lumineux)
 let FILE = [];
 let PROJ = M.ident(), L0 = [0, 1, 0], L1 = [0, 1, 0];
-// mode 0 : opaque (découpe), 1 : translucide, 2 : lumineux (additif, sans lumière)
+// mode 0 : opaque (découpe), 1 : translucide, 2 : lumineux (additif, sans lumière), 3 : opaque sans lumière
 function dessiner(m, pose, tex, mode, couleur) {
   FILE.push({m, pose: new Float32Array(pose), tex, mode, couleur: couleur || [1, 1, 1, 1]});
 }
@@ -261,7 +262,7 @@ function vider() {
     if (passe === 1) { gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(true); gl.disable(gl.CULL_FACE); }
     if (passe === 2) { gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false); gl.enable(gl.CULL_FACE); }
     for (const d of FILE) {
-      if (d.mode !== passe) continue;
+      if (d.mode !== passe && !(passe === 0 && d.mode === 3)) continue;
       gl.uniformMatrix4fv(uModel, false, d.pose);
       gl.uniform1i(uMode, d.mode);
       gl.uniform4fv(uColor, d.couleur);
@@ -302,7 +303,9 @@ async function charger(dossier) {
   for (const [k, g] of Object.entries(sc.jumelles)) S.jumelles[k] = maillage(g);
   for (const [k, g] of Object.entries(sc.cartouches)) {
     S.cartouches[k] = maillage(g);
-    S.tex[k] = await texture(dossier + k + '.png');
+    const base = k.replace(/_lumineux$/, '');
+    S.tex[k] = S.tex[base] || await texture(dossier + base + '.png', true);
+    S.tex[base] = S.tex[k];
   }
   for (const k of ['joueur', 'joueur_fin']) for (const [n, g] of Object.entries(sc[k])) S[k][n] = maillage(g);
   for (const k of ['designator', 'designator_display', 'skin']) S.tex[k] = await texture(dossier + k + '.png');
@@ -478,8 +481,15 @@ function cartouche(type, pos, rot, ps) {
   ps.xp(-90);
   ps.scale(CART_SCALE, CART_SCALE, CART_SCALE);
   ps.translate(-PAY[0], -PAY[1], -PAY[2]);
+  objetSeul(ps, type.startsWith('cartridge_') ? type : 'payload_' + type);
+  ps.pop();
+}
+// un modèle d'objet à éléments dans le repère de l'objet (0..1) ; ses faces lumineuses sans lumière
+function objetSeul(ps, nom) {
+  ps.push();
   ps.scale(1 / 16, 1 / 16, 1 / 16);
-  dessiner(S.cartouches['payload_' + type], ps.last(), S.tex['payload_' + type], 0);
+  dessiner(S.cartouches[nom], ps.last(), S.tex[nom], 0);
+  if (S.cartouches[nom + '_lumineux']) dessiner(S.cartouches[nom + '_lumineux'], ps.last(), S.tex[nom], 3);
   ps.pop();
 }
 // bras du joueur : ModelPart du bras et de la manche (pivot, rotations), comme ModelPart.render
@@ -701,19 +711,26 @@ function rendre(o) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     L0 = M.dir(vue, LW0); L1 = M.dir(vue, LW1);
     const ps = new PoseStack(vue);
-    if (version === 'apres') objetApres(ps, o);
+    if (o.objet) objetSeul(ps, o.objet);
+    else if (version === 'apres') objetApres(ps, o);
     else jumellesAvant(ps, {...o, p: o.p == null ? 1 : o.p}, 'objet');
     vider();
   } else if (o.vue === 'gui') {
     // case d'inventaire : projection orthogonale (repère des écrans retourné deux fois : y vers le haut)
-    gl.clearColor(0.545, 0.545, 0.545, 1);
+    if (o.transparent) gl.clearColor(0, 0, 0, 0);
+    else gl.clearColor(0.545, 0.545, 0.545, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     PROJ = M.sc(2 * h / w, 2, -0.5);
     // Lighting.setupFor3DItems (sans le retournement de y des écrans)
     const ml = M.mul(M.ry(-22.5 * RAD), M.rx(135 * RAD));
     L0 = M.dir(ml, LW0); L1 = M.dir(ml, LW1);
     const ps = new PoseStack();
-    if (version === 'apres') guiApres(ps, o);
+    if (o.objet) {
+      // un modèle d'objet à éléments avec sa transformation « gui » (cartouches : rotation 20, -25, taille 0,95)
+      affichage(ps, o.affichage || {t: [0, 0, 0], r: [20, -25, 0], s: 0.95}, false);
+      ps.translate(-0.5, -0.5, -0.5);
+      objetSeul(ps, o.objet);
+    } else if (version === 'apres') guiApres(ps, o);
     else {
       affichage(ps, AFFICHAGE_AVANT.gui, false);
       ps.translate(-0.5, -0.5, -0.5);

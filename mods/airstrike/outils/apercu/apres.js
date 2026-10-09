@@ -66,6 +66,13 @@ function brasTacz(ps, cote, G, D, IN, fin) {
   brasModele(ps, cote, pose, fin);
   ps.pop();
 }
+// niveau de chaque frappe (cartouches Légère, Lourde, Spéciale)
+const NIVEAU = {gun_run: 'light', smoke: 'light', bombing: 'heavy', cluster: 'heavy', gas: 'heavy', precision: 'special',
+  napalm: 'special'};
+function modeleCartouche(type) {
+  const n = 'cartridge_' + NIVEAU[type];
+  return NIVEAU[type] && S.cartouches[n] ? n : type;
+}
 // jumelles seules (corps, trappe, voyant, écran, cartouches), sans les mains d'avant
 function jumellesApres(ps, o, off, debut) {
   const p = o.p == null ? 1 : o.p, recharge = p < 1;
@@ -81,9 +88,9 @@ function jumellesApres(ps, o, off, debut) {
   f = partie(ps, J.emit_led); dessiner(J.emit_led, ps.last(), tex, 2, led); f();
   ps.pop();
   ecran(ps, o.charge, o.ancienne, p);
-  if (!recharge) { if (o.charge) cartouche(o.charge, BAY, null, ps); return null; }
-  if (a.oldPos) cartouche(o.ancienne, a.oldPos, a.oldRot, ps);
-  if (a.newPos && o.charge) cartouche(o.charge, a.newPos, a.newRot, ps);
+  if (!recharge) { if (o.charge) cartouche(modeleCartouche(o.charge), BAY, null, ps); return null; }
+  if (a.oldPos) cartouche(modeleCartouche(o.ancienne), a.oldPos, a.oldRot, ps);
+  if (a.newPos && o.charge) cartouche(modeleCartouche(o.charge), a.newPos, a.newRot, ps);
   return a;
 }
 // trajet du rechargement façon TaCZ (pixels de l'objet) : la main gauche part de sa prise, appuie sur le loquet,
