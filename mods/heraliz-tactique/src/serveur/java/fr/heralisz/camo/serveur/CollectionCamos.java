@@ -53,6 +53,8 @@ final class CollectionCamos {
    private static Path fichier;
    private static boolean modifie;
    private static int ticksAvantSauvegarde = -1;
+   /** Faux si le fichier était illisible au démarrage : les armes des propriétaires ne sont alors jamais dépouillées. */
+   private static boolean fiable = true;
 
    private CollectionCamos() {
    }
@@ -64,6 +66,7 @@ final class CollectionCamos {
       JOUEURS.clear();
       modifie = false;
       ticksAvantSauvegarde = -1;
+      fiable = true;
       try {
          Files.createDirectories(dossier);
          if (Files.exists(fichier)) {
@@ -83,7 +86,9 @@ final class CollectionCamos {
          }
          LOG.info("[Camos] {} collection(s) de camos à vie chargée(s) depuis {}", JOUEURS.size(), fichier);
       } catch (Exception e) {
-         LOG.error("[Camos] {} illisible : on repart vide, l'ancien fichier est gardé en .bad", fichier, e);
+         LOG.error("[Camos] {} illisible : on repart vide, l'ancien fichier est gardé en .bad ; les camos à vie déjà posés"
+            + " restent sur les armes jusqu'au prochain redémarrage avec un fichier lisible", fichier, e);
+         fiable = false;
          try {
             Files.copy(fichier, fichier.resolveSibling("collections.json.bad"), StandardCopyOption.REPLACE_EXISTING);
          } catch (IOException ignored) {
@@ -177,6 +182,11 @@ final class CollectionCamos {
       } catch (IOException e) {
          LOG.error("[Camos] sauvegarde impossible : {}", fichier, e);
       }
+   }
+
+   /** Vrai si les collections ont été lues correctement (sinon : aucune arme n'est dépouillée de son camo à vie). */
+   static boolean fiable() {
+      return fiable;
    }
 
    // ------------------------------------------------------------------ accès

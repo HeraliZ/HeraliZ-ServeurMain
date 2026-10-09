@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import javax.annotation.Nullable;
 
 /**
  * Règles des camos à vie (côté serveur).
@@ -198,7 +199,6 @@ public final class CamosAVie {
       if (!(e.getEntity() instanceof ServerPlayer p) || p instanceof FakePlayer) return;
       if (p.getPersistentData().contains(KillCounter.EN_MATCH)) return;
       CollectionCamos.Joueur j = CollectionCamos.trouver(p.getUUID());
-      if (j == null) return;
       Set<Camo> perdus = EnumSet.noneOf(Camo.class);
       for (ItemEntity ie : e.getDrops()) {
          if (ie != null) depouiller(ie.getItem(), p.getUUID(), j, perdus);
@@ -207,7 +207,7 @@ public final class CamosAVie {
       depouiller(p.containerMenu.getCarried(), p.getUUID(), j, perdus);
       Container grille = p.inventoryMenu.getCraftSlots();
       for (int i = 0; i < grille.getContainerSize(); i++) depouiller(grille.getItem(i), p.getUUID(), j, perdus);
-      if (perdus.isEmpty()) return;
+      if (perdus.isEmpty() || j == null) return;
       long fin = System.currentTimeMillis() + RECHARGE_MS;
       MutableComponent noms = Component.empty();
       boolean premier = true;
@@ -223,15 +223,18 @@ public final class CamosAVie {
       p.sendSystemMessage(Component.translatable("msg.heralisz_camo.lost", noms, RECHARGE_MS / 60_000L).withStyle(ChatFormatting.GRAY));
    }
 
-   /** Retire les camos à vie de {@code joueur} de cet objet et des objets qu'il contient ; note ceux qui étaient valables. */
-   private static void depouiller(ItemStack stack, UUID joueur, CollectionCamos.Joueur j, Set<Camo> perdus) {
+   /**
+    * Retire les camos à vie de {@code joueur} de cet objet et des objets qu'il contient ; note ceux qui étaient valables
+    * ({@code j} null : aucune collection, rien à noter).
+    */
+   private static void depouiller(ItemStack stack, UUID joueur, @Nullable CollectionCamos.Joueur j, Set<Camo> perdus) {
       if (!stack.isEmpty() && stack.getTag() != null) depouiller(stack.getTag(), joueur, j, perdus, 0);
    }
 
-   private static void depouiller(CompoundTag tag, UUID joueur, CollectionCamos.Joueur j, Set<Camo> perdus, int profondeur) {
+   private static void depouiller(CompoundTag tag, UUID joueur, @Nullable CollectionCamos.Joueur j, Set<Camo> perdus, int profondeur) {
       if (tag.contains(CamoData.KEY, Tag.TAG_STRING) && tag.hasUUID(CamoData.OWNER) && joueur.equals(tag.getUUID(CamoData.OWNER))) {
          Camo c = Camo.byId(tag.getString(CamoData.KEY));
-         if (c != null && valide(j, c, tag.getLong(CamoData.TOKEN))) perdus.add(c);
+         if (c != null && j != null && valide(j, c, tag.getLong(CamoData.TOKEN))) perdus.add(c);
          tag.remove(CamoData.KEY);
          tag.remove(CamoData.OWNER);
          tag.remove(CamoData.TOKEN);
@@ -244,7 +247,7 @@ public final class CamosAVie {
       }
    }
 
-   private static void contenu(ListTag items, UUID joueur, CollectionCamos.Joueur j, Set<Camo> perdus, int profondeur) {
+   private static void contenu(ListTag items, UUID joueur, @Nullable CollectionCamos.Joueur j, Set<Camo> perdus, int profondeur) {
       for (int i = 0; i < items.size(); i++) {
          CompoundTag item = items.getCompound(i);
          if (item.contains("tag", Tag.TAG_COMPOUND)) depouiller(item.getCompound("tag"), joueur, j, perdus, profondeur + 1);
@@ -279,6 +282,7 @@ public final class CamosAVie {
       if (proprio == null) return false;
       Camo camo = CamoData.get(stack);
       if (proprio.equals(p.getUUID())) {
+         if (!CollectionCamos.fiable()) return false; // collections illisibles au démarrage : on ne retire rien à son propriétaire
          CollectionCamos.Joueur j = CollectionCamos.trouver(proprio);
          if (camo != null && j != null && j.camos.contains(camo) && valide(j, camo, CamoData.token(stack))) return false;
          // posé depuis sur une autre arme, retiré de la collection, ou arme qui avait déjà quitté le joueur à sa mort
