@@ -9,9 +9,9 @@ Besoin de Pillow et numpy (pip install pillow numpy).
 Dans l'inventaire, TaCZ dessine chaque objet avec une petite image du gunpack (textures/.../slot/*.png). La plupart des
 gunpacks dessinent un trait noir épais autour de l'objet (2 pixels sur une icône de 64, 3 sur une de 128) : un contour
 noir qui jure avec l'inventaire. Le script ne l'efface pas (les parties fines, canons et rails, disparaîtraient) : le
-trait prend la couleur de l'objet juste à côté, à peine assombrie au bord (BORD), comme une ombre douce. Seul le trait
-collé au vide change ; les traits intérieurs (détails du dessin) restent. Un objet entièrement noir (le noir continue
-au-delà de l'épaisseur d'un trait) est laissé tel quel.
+trait prend la couleur de l'objet juste à côté, sans bord plus sombre (choix du propriétaire). Seul le trait collé au
+vide change ; les traits intérieurs (détails du dessin) restent. Un objet entièrement noir (le noir continue au-delà de
+l'épaisseur d'un trait) est laissé tel quel.
 
 Relancer ne change rien aux icônes déjà corrigées : à lancer après l'ajout ou la mise à jour d'un gunpack. Les icônes
 sont des fichiers des joueurs : il faut leur redonner le dossier tacz.
@@ -27,7 +27,6 @@ TACZ = DEPOT / "serveur" / "tacz"
 
 NOIR = 30                  # un pixel du trait : max(R, G, B) <= NOIR
 MAJORITE = 0.5             # une couche fait partie du trait si au moins la moitié de ses pixels sont noirs
-BORD = (0.86, 0.94, 1.0)   # assombrissement des couches du trait recoloré, de l'extérieur vers l'intérieur
 
 
 def icones():
@@ -101,16 +100,6 @@ def sans_contour(a):
         rgb[prend] = somme[prend] / poids[prend][:, None]
         connu |= prend
         reste &= ~prend
-    # ombre douce au bord, jamais plus sombre qu'un pixel du trait (relancer ne la reprend pas pour un trait)
-    for k, f in enumerate(BORD, start=1):
-        m = trait & (num == k)
-        if f == 1.0 or not m.any():
-            continue
-        corps = rgb[m]
-        mc = corps.max(axis=1, keepdims=True)
-        plancher = np.minimum(mc, NOIR + 2)
-        sombre = corps * f
-        rgb[m] = np.where(sombre.max(axis=1, keepdims=True) < plancher, corps * (plancher / np.maximum(mc, 1e-6)), sombre)
     b = a.copy()
     b[..., :3] = np.clip(rgb + 0.5, 0, 255).astype(np.uint8)
     return b, "corrigée"
