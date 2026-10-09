@@ -68,6 +68,23 @@ public final class PosMap {
    private static final Pattern NOT_RECEIVER = Pattern.compile(
       "grip|stock|butt|cheek|sight|scope|rail|mount|carry|handle|trigger|safety|selector|switch|hammer|bolt|charg|release|catch|latch|lever"
          + "|pin|ping|screw|button|guard|gaurd|gas|barrel|muzzle", Pattern.CASE_INSENSITIVE);
+   /**
+    * Petites pièces rapportées et poignée (Diamond façon Call of Duty : elles restent en or jaune, le reste du corps prend le
+    * pavé de diamants) : détente, sûreté, leviers, boutons, vis, culasse, levier d'armement, tube de crosse, bagues…
+    * Code 0.97 : reste « corps » pour tous les autres camos (seuil 0.9 du shader). Même règle dans l'aperçu
+    * (outils/apercu_camos/prep.py).
+    */
+   static final float ACCENT = 0.97F;
+   private static final Pattern ACCENT_NAME = Pattern.compile(
+      "grip|trigger|safety|selector|switch|hammer|bolt|charg|release|catch|latch|lever|(^|_)pin|ping|screw|button|buffer|deco|pull|ring",
+      Pattern.CASE_INSENSITIVE);
+   /**
+    * Poignées (relief d'usinage du shader : grain antidérapant ; Diamond : en or comme les petites pièces). Code 0.985 :
+    * « corps » pour les autres camos. En demi-précision dans la carte, 0.94 / 0.97 / 0.985 / 1 restent distincts (voir le
+    * gabarit des camos). Même règle dans l'aperçu (prep.py).
+    */
+   static final float GRIP = 0.985F;
+   private static final Pattern GRIP_NAME = Pattern.compile("grip", Pattern.CASE_INSENSITIVE);
    /** Rôle d'une pièce (hérité des parents) pour placer le pavé quand la carcasse n'est pas nommée. */
    static final byte R_NONE = 0, R_STOCK = 1, R_FRONT = 2, R_OTHER = 3;
    private static final Pattern STOCK_NAME = Pattern.compile("stock|butt", Pattern.CASE_INSENSITIVE);
@@ -546,13 +563,15 @@ public final class PosMap {
    }
 
    /**
-    * Partie d'une pièce d'après son nom quand elle descend du corps : chargeur, canon, carcasse (et, sous la carcasse, les
-    * petites pièces rapportées qui redeviennent du corps).
+    * Partie d'une pièce d'après son nom quand elle descend du corps : chargeur, canon, petites pièces et poignée (ACCENT),
+    * carcasse (et, sous la carcasse, les autres pièces rapportées qui redeviennent du corps).
     */
    private static float classe(float parent, String name) {
       boolean corps = parent == BODY || parent == RECEIVER;
       if (corps && MAG.matcher(name).find()) return MAGAZINE;
       if (corps && BARREL.matcher(name).find() && !name.toLowerCase().contains("muzzle_flash")) return BARREL_PART;
+      if (corps && GRIP_NAME.matcher(name).find()) return GRIP;
+      if (corps && ACCENT_NAME.matcher(name).find()) return ACCENT;
       if (parent == BODY && RECEIVER_NAME.matcher(name).matches()) return RECEIVER;
       if (parent == RECEIVER && !RECEIVER_NAME.matcher(name).matches() && NOT_RECEIVER.matcher(name).find()) return BODY;
       return parent;

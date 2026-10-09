@@ -79,12 +79,26 @@ void main() {
   if (CamoId > 0 && camoCovers(pm.a, CamoParts)) {
     PART = pm.a;
     KEEP_BASE = 0.0;
+    VN_DETAIL = normalize(viewNormal);
+#ifndef SANS_RELIEF
+    appliquerRelief(pm.xyz, pm.a);
+#endif
     ${ANCIEN ? ancien : nouveau}
+    color.rgb *= DETAIL_SHADE;
   }
+#ifdef ARME_NUE_RELIEF
+  // arme sans camo avec le relief d'usinage (proposition : programme de base des armes)
+  if (CamoId == 0 && camoCovers(pm.a, CamoParts)) {
+    PART = pm.a;
+    VN_DETAIL = normalize(viewNormal);
+    appliquerRelief(pm.xyz, pm.a);
+    color.rgb *= DETAIL_SHADE;
+  }
+#endif
 #ifdef CAMO_RELIEF
   if (uMode == 1) { color = vec4(vec3(RELIEF * 0.5), 1.0); em = vec3(0.0); }
 #endif
-  color *= vertexColor;
+  color *= mix(vertexColor, vec4(1.0), NO_SHADE);
   color.rgb += em;
   fragColor = vec4(color.rgb, 1.0);
 }`;

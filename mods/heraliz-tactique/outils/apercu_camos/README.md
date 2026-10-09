@@ -27,7 +27,9 @@ Le dossier des armes préparées ne va pas dans Git (gros fichiers refaits à la
 `prep.py` reproduit aussi le repérage de la **carcasse** du mod (`PosMap.RECEIVER`, partie 0.94 : pavé de diamants du
 Diamond) : pièces nommées upper / lower / receiver / body / frame / slide…, sinon la zone entre la crosse et le
 garde-main autour du haut du chargeur. Si l'une des deux règles change, changer l'autre (elles sont comparées pièce par
-pièce sur les 147 modèles des gunpacks : 0 différence le 08/10).
+pièce sur les 147 modèles des gunpacks : 0 différence le 08/10). Même chose pour les **petites pièces** (`PosMap.ACCENT`,
+partie 0.97 : poignée, détente, sûreté, leviers, vis, culasse, tube de crosse, bagues…), qui restent en or sur le
+Diamond pendant que le reste du corps prend le pavé.
 
 ## 2. Rendre
 

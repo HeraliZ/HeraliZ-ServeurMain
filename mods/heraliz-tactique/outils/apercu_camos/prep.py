@@ -25,6 +25,13 @@ RECEIVER = 0.94
 RECEIVER_NAME = re.compile(r'^(upper|lower|receiver|upper_?receiver|lower_?receiver|body|gun_?body|upper_?body|lower_?body|frame|slide|slide_?base)\d*$', re.I)
 # sous-pièces de la carcasse qui restent en or (petites pièces rapportées, poignée, organes de visée...)
 NOT_RECEIVER = re.compile(r'grip|stock|butt|cheek|sight|scope|rail|mount|carry|handle|trigger|safety|selector|switch|hammer|bolt|charg|release|catch|latch|lever|pin|ping|screw|button|guard|gaurd|gas|barrel|muzzle', re.I)
+# petites pièces rapportées et poignée (Diamant façon Call of Duty : elles restent en or, le reste du corps prend le pavé),
+# comme PosMap.ACCENT : code 0.97, « corps » pour tous les autres camos
+ACCENT = 0.97
+ACCENT_NAME = re.compile(r'grip|trigger|safety|selector|switch|hammer|bolt|charg|release|catch|latch|lever|(^|_)pin|ping|screw|button|buffer|deco|pull|ring', re.I)
+# poignées (relief d'usinage : grain antidérapant ; Diamond : en or comme les petites pièces), comme PosMap.GRIP
+GRIP = 0.985
+GRIP_NAME = re.compile(r'grip', re.I)
 STOCK_NAME = re.compile(r'stock|butt', re.I)
 FRONT_NAME = re.compile(r'handguard|hand_guard|^hg$|foregrip|fore_grip|forend|gas|barrel|muzzle|suppress|silenc', re.I)
 OTHER_NAME = re.compile(r'grip|sight|scope|carry|handle|rail|mount', re.I)
@@ -132,6 +139,10 @@ def classe(cls, name):
         return MAGAZINE
     if cls in (BODY, RECEIVER) and BARREL.search(name) and 'muzzle_flash' not in name.lower():
         return BARREL_PART
+    if cls in (BODY, RECEIVER) and GRIP_NAME.search(name):
+        return GRIP
+    if cls in (BODY, RECEIVER) and ACCENT_NAME.search(name):
+        return ACCENT
     if cls == BODY and RECEIVER_NAME.match(name):
         return RECEIVER
     if cls == RECEIVER and not RECEIVER_NAME.match(name) and NOT_RECEIVER.search(name):
