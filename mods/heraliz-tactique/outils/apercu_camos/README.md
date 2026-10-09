@@ -49,6 +49,8 @@ NODE_PATH=$(npm root -g) node rendre.js travaux.json
 - `vue: "orbite"` : l'arme posée, la caméra autour (`yaw`, `pitch`, `zoom`) ;
 - `vue: "fps"` : l'arme tenue en vue du joueur, qui regarde vers `envYaw` / `envPitch` (degrés) : faire varier `envYaw`
   de 0 à 360 donne l'animation « le joueur se retourne » (les reflets liés au monde glissent sur l'arme) ;
+- `vue: "icone"` : icône d'inventaire (profil droit penché de `roule` degrés, -34 par défaut, sans perspective, cadrée
+  sur l'arme, fond transparent ; `camo: 0` = sans camo) : rendre en 512 px puis réduire (moyenne) pour une icône lisse ;
 - `temps` : `CamoTime` (camos animés) ; `relief: true` : affiche la carte de relief tirée de la texture ;
 - `"ancien": true` sur une passe : `main` d'avant la refonte 2026-10 (comparaisons avant / après avec l'ancien shader).
 

@@ -5,8 +5,9 @@
 //    "passes": [{"shader": "chemin d'un camo_<id>.fsh ou du gabarit", "defines": "lignes #define en plus (facultatif)",
 //                "ancien": false, "rendus": [{"arme": "xm177", "camo": 1, "sortie": "rendu.png", ...options}]}]}
 // "ancien": true rend avec le main d'avant la refonte 2026-10 (pour les comparaisons avant / après).
-// Options d'un rendu (voir rendre() dans apercu.html) : vue "orbite" (yaw, pitch, zoom) ou "fps" (envYaw, envPitch :
-// direction où regarde le joueur), temps (CamoTime), w, h, relief (affiche la carte de relief).
+// Options d'un rendu (voir rendre() dans apercu.html) : vue "orbite" (yaw, pitch, zoom), "fps" (envYaw, envPitch :
+// direction où regarde le joueur) ou "icone" (icône d'inventaire : roule, marge), temps (CamoTime), w, h, relief (affiche
+// la carte de relief). Camo 0 : l'arme sans camo.
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
