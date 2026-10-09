@@ -4,12 +4,14 @@ import com.tacz.guns.api.item.IGun;
 import com.tacz.guns.client.gui.GunRefitScreen;
 import fr.heralisz.camo.Camo;
 import fr.heralisz.camo.CamoData;
+import fr.heralisz.camo.CollectionVue;
 import fr.heralisz.camo.HeraliszCamo;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -33,12 +35,20 @@ public final class CamoClient {
    public static void onTooltip(ItemTooltipEvent event) {
       Camo camo = CamoData.get(event.getItemStack());
       if (camo != null && IGun.getIGunOrNull(event.getItemStack()) != null) {
-         event.getToolTip().add(1, Component.translatable("tooltip.heralisz_camo.gun_camo",
+         // camo à vie (collection d'un joueur) : il ne suit pas l'arme si elle change de main
+         String cle = CamoData.owner(event.getItemStack()) != null ? "tooltip.heralisz_camo.gun_camo_life" : "tooltip.heralisz_camo.gun_camo";
+         event.getToolTip().add(1, Component.translatable(cle,
             Component.translatable(camo.nameKey()).withStyle(camo.tier.color, ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
       } else if (camo != null && fr.heralisz.camo.BagSupport.isBag(event.getItemStack())) {
          event.getToolTip().add(1, Component.translatable("tooltip.heralisz_camo.bag_camo",
             Component.translatable(camo.nameKey()).withStyle(camo.tier.color, ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
       }
+   }
+
+   /** Déconnexion : la collection à vie d'un serveur ne reste pas affichée sur un autre. */
+   @SubscribeEvent
+   public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+      CollectionVue.vider();
    }
 
    @SubscribeEvent

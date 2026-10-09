@@ -103,6 +103,11 @@ public enum Camo {
       return this.tier == Tier.MYTHIC;
    }
 
+   /** Camo du Pack-a-Punch (réservé au mode zombies : jamais dans la collection à vie). */
+   public boolean isPackAPunch() {
+      return this.id.startsWith("pap_");
+   }
+
    public String nameKey() {
       return "camo.heralisz_camo." + this.id;
    }

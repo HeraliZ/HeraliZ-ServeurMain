@@ -169,6 +169,11 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
 - les icônes d'inventaire des armes TaCZ sont des photos 3D faites chez le joueur (`camo/client/IconesArmes` du mod
   tactique : modèle + skin, sans accessoires, 64 au plus en mémoire graphique, rien sur le disque ni le serveur) ; l'image
   `slot` du gunpack ne s'affiche qu'en attendant la photo ou si elle est impossible.
+- le camo d'une arme est l'étiquette NBT `HeraliszCamo` ; un camo à vie porte en plus `HeraliszCamoProprio` et
+  `HeraliszCamoJeton` (`fr.heralisz.camo.CamoData`). Un mod qui pose lui-même un camo sur une arme qui peut porter un
+  camo à vie doit retirer ces deux clés, sinon le serveur la prend pour un camo à vie périmé et lui enlève son camo
+  (pas le cas aujourd'hui : le Pack-a-Punch et Wonder ne touchent qu'aux armes prêtées des matchs, où les camos à vie
+  sont refusés).
 
 **Les briques à connaître** (paquet `pont` de chaque projet, détails dans `docs/METHODE_CLIENT_SERVEUR.md`) :
 - `Parties.serveur(...)` / `Parties.client(...)` à la fin du constructeur `@Mod` : chargent `serveur.PartieServeur` /
@@ -426,6 +431,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   dans une zone tenue par son clan, objet « Bonus de loot » de la boutique (`heralisz_utils:document_lootbonus`, 2 h de
   jeu décomptées seulement en ligne, gardé à la mort) ;
 - extractions de la carte : 3 zones ouvertes à la fois, 30 à 60 min chacune, 30 s à tenir, retour au spawn ;
+- camos à vie (pour la boutique) : clic droit sur un objet camo = il entre pour toujours dans la collection du joueur
+  (objet consommé ; stockée hors du monde, `heralisz_camo/collections.json` à la racine du serveur, elle survit aux
+  changements de carte). Onglet Skin : camos de l'inventaire (posés depuis l'objet : définitifs, comme avant) ou de la
+  collection. Un camo de la collection ne vaut que sur une arme à la fois et seulement entre les mains de son
+  propriétaire ; mort avec l'arme (pas à terre, pas en match) : il la quitte et ne se remet pas avant 15 min. Camos du
+  Pack-a-Punch exclus. Staff : `/camos voir|ajouter|retirer|recharge <joueur> [camo|tous]` ;
 - territoires des clans : 3 zones au plus par clan ; chaque zone tenue verse 100 hérals par heure à la banque du clan ;
   une ville vaut son niveau de loot (1 à 7, `/territoire valeur <zone> <1-7>`, clé « valeur » de zones.json) et
   rapporte au clan 10 XP par heure et par point de valeur (l'aérodrome T6 fait monter le clan plus vite dans le

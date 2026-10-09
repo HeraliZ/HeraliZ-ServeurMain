@@ -40,8 +40,11 @@ public final class ReceptionServeur {
          return;
       }
       ItemStack gun = player.getMainHandItem();
-      if (IGun.getIGunOrNull(gun) == null || CamoData.get(gun) != null || KnifeSkins.of(gun) != null) {
-         return; // pas une arme, déjà un camo (définitif), ou couteau à skin unique
+      if (IGun.getIGunOrNull(gun) == null || KnifeSkins.of(gun) != null) {
+         return; // pas une arme, ou couteau à skin unique
+      }
+      if (CamoData.get(gun) != null && CamoData.owner(gun) == null) {
+         return; // déjà un camo définitif (un camo à vie, lui, peut être remplacé)
       }
       ItemStack camoStack = player.getInventory().getItem(p.camoSlot());
       if (!(camoStack.getItem() instanceof CamoItem item)) {
@@ -52,6 +55,7 @@ public final class ReceptionServeur {
             Component.translatable("item.heralisz_camo.camo.gun." + item.camo().id)).withStyle(ChatFormatting.RED), true);
          return; // skin de boss réservé à une autre arme
       }
+      CamosAVie.liberer(player, gun);
       CamoData.set(gun, item.camo());
       camoStack.shrink(1);
       player.getInventory().setChanged();
