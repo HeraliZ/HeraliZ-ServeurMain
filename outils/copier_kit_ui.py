@@ -2,7 +2,9 @@
 sans dépendance de compilation : polices DM Sans (assets/<modid>/font), Ui, Echelle, HzButton, HzField, HzScroll, SonsUi.
 
     python outils/copier_kit_ui.py <dossier projet> <paquet java cible> <modid>
-    ex. python outils/copier_kit_ui.py src/heraliz-emote fr.heraliz.emote.client.gui.kit heraliz_emote
+    ex. python outils/copier_kit_ui.py mods/heraliz-emote fr.heraliz.emote.client.gui.kit heraliz_emote
+
+Projet coupé (src/commun, src/client, src/serveur) : le kit va dans src/client (c'est de l'affichage) ; sinon src/main.
 
 - Accent : celui du clan du joueur lu par réflexion (fr.heralisz.clans.client.ClientClans.accent()) si le mod clans est
   présent, sinon l'accent neutre ; un écran peut l'imposer (Ui.forcerAccent).
@@ -50,7 +52,9 @@ def main():
     projet, paquet, modid = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
     if not projet.is_absolute():
         projet = ROOT / projet
-    dest = projet / "src/main/java" / paquet.replace(".", "/")
+    # projet coupé (src/commun, src/client, src/serveur) : le kit est de l'affichage -> src/client ; sinon src/main
+    cote = "src/client" if (projet / "src/client/java").is_dir() else "src/main"
+    dest = projet / cote / "java" / paquet.replace(".", "/")
     dest.mkdir(parents=True, exist_ok=True)
     for nom in FICHIERS:
         t = (SRC_KIT / nom).read_text(encoding="utf-8")
@@ -73,7 +77,7 @@ def main():
             print(f"[kit] attention : '{nom}' mentionne encore les matchs")
         (dest / nom).write_text(t, encoding="utf-8", newline="\n")
         print(f"[kit] {dest / nom}")
-    fdest = projet / "src/main/resources/assets" / modid / "font"
+    fdest = projet / cote / "resources/assets" / modid / "font"
     fdest.mkdir(parents=True, exist_ok=True)
     for f in SRC_FONT.iterdir():
         if f.suffix == ".json":
