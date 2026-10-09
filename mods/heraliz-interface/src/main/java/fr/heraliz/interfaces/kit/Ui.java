@@ -315,11 +315,24 @@ public final class Ui {
 
     /** Pastille (etiquette) : texte en petites capitales espacees sur un fond teinte. Rend la largeur dessinee. */
     public static int chip(GuiGraphics g, Font font, String texte, int x, int y, int rgb) {
+        return chip(g, font, texte, x, y, rgb, 255);
+    }
+
+    /** Pastille a l'opacite {@code alpha} (apparition en fondu). */
+    public static int chip(GuiGraphics g, Font font, String texte, int x, int y, int rgb, int alpha) {
         int w = chipWidth(font, texte), h = 11;
-        soft(g, x, y, w, h, argb(rgb, 34));
-        softOutline(g, x + 1, y + 1, w - 2, h - 2, argb(rgb, 90));
-        spaced(g, font, texte, SMALL, x + 5, y + 2.5f, argb(mix(rgb, 0xFFFFFF, 0.3f), 255), 0.6f);
+        soft(g, x, y, w, h, argb(rgb, 34 * alpha / 255));
+        softOutline(g, x + 1, y + 1, w - 2, h - 2, argb(rgb, 90 * alpha / 255));
+        if (lisible(alpha)) spaced(g, font, texte, SMALL, x + 5, y + 2.5f, argb(mix(rgb, 0xFFFFFF, 0.3f), alpha), 0.6f);
         return w;
+    }
+
+    /**
+     * Un texte d'opacite {@code alpha} peut-il etre dessine ? Minecraft dessine OPAQUE un texte dont l'opacite est sous 4
+     * (au lieu de le cacher) : un fondu qui part de 0 ferait clignoter le texte en plein une image.
+     */
+    public static boolean lisible(int alpha) {
+        return alpha >= 4;
     }
 
     public static int chipWidth(Font font, String texte) {
@@ -389,9 +402,14 @@ public final class Ui {
 
     /** Titre de section en capitales espacees avec un filet qui s'efface a droite. */
     public static void section(GuiGraphics g, Font font, String titre, int x, int y, int w) {
-        spaced(g, font, titre, SMALL, x, y, argb(MUTED, 255), 1.0f);
+        section(g, font, titre, x, y, w, 255);
+    }
+
+    /** Titre de section a l'opacite {@code alpha} (apparition en fondu). */
+    public static void section(GuiGraphics g, Font font, String titre, int x, int y, int w, int alpha) {
+        if (lisible(alpha)) spaced(g, font, titre, SMALL, x, y, argb(MUTED, alpha), 1.0f);
         int tw = (int) spacedWidth(font, titre, SMALL, 1.0f);
-        hairline(g, x + tw + 8, x + w, y + 4, 0xFFFFFF, 40, false, true);
+        hairline(g, x + tw + 8, x + w, y + 4, 0xFFFFFF, 40 * alpha / 255, false, true);
     }
 
     // ------------------------------------------------------------------ filets

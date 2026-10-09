@@ -51,7 +51,8 @@ public class Tuile extends AbstractButton {
 
     @Override
     protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        if (opacite <= 0.01f) return;
+        // sous ~6 %, les textes les plus pales passeraient sous l'opacite 4, que Minecraft dessine opaque
+        if (opacite < 0.06f) return;
         boolean hover = active && isHoveredOrFocused();
         survol = Anim.vers(survol, hover ? 1f : 0f, horloge.dt(), 16f);
         float s = survol;

@@ -1,5 +1,6 @@
 package fr.heraliz.interfaces.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.realmsclient.RealmsMainScreen;
 import fr.heraliz.interfaces.InterfaceConfig;
 import fr.heraliz.interfaces.kit.Anim;
@@ -273,7 +274,7 @@ public class EcranPause extends Screen {
         clan = ProfilJoueur.clan();
         extractions = mc.level == null ? List.of() : ProfilJoueur.extractions(mc.level.getGameTime());
         int n = Math.max(1, Math.min(3, extractions.size()));
-        carteH = 108 + n * 15 + 30 + 15 + 8;
+        carteH = 108 + n * 15 + 44; // + ecart, titre « Ton clan », sa ligne, marge du bas
         carteY = Math.max(8, Math.min(height - 30 - carteH, (height - 22 - carteH) / 2));
     }
 
@@ -320,7 +321,7 @@ public class EcranPause extends Screen {
             Fond.lueur(g, cx + logoW * 0.40f, logoY + logoH * 0.5f, logoH * 0.9f, logoH * 0.8f, accent, Math.round(26 * tl));
             Logo.banniere(g, logoX, logoY - (1 - tl) * 5, logoW, tl);
         }
-        if (sousTitre != null) {
+        if (sousTitre != null && Ui.lisible(Math.round(255 * tl))) {
             int a = Math.round(255 * tl);
             if (carte) {
                 // aligne a gauche, petit filet d'accent devant
@@ -358,7 +359,7 @@ public class EcranPause extends Screen {
         if (carte) dessinerCarte(g, Anim.sortie(Anim.progression(ouvert, 140, 320)), accent);
         super.render(g, mouseX, mouseY, partialTick);
 
-        if (pied != null) {
+        if (pied != null && Ui.lisible(Math.round(255 * t))) {
             Ui.at(g, font, Ui.lit(pied.toUpperCase(Locale.ROOT), Ui.SMALL), carte ? colX : 10, height - 15,
                     Ui.argb(Ui.mix(Ui.FAINT, Ui.MUTED, 0.35f), Math.round(255 * t)));
         }
@@ -367,7 +368,7 @@ public class EcranPause extends Screen {
     /** Carte du joueur, a droite : tete, pseudo, clan ; herals, en ligne, ping ; extractions ouvertes ; zones du clan. */
     private void dessinerCarte(GuiGraphics g, float t, int accent) {
         Minecraft mc = minecraft;
-        if (mc.player == null || t <= 0.01f) return;
+        if (mc.player == null || t < 0.02f) return;
         int a = Math.round(255 * t);
         int x = carteX, y = Math.round(carteY + (1 - t) * 6), w = carteW, h = carteH;
         Fond.lueur(g, x + w / 2f, y + h * 0.55f, w * 0.62f, h * 0.62f, 0x000000, Math.round(90 * t));
@@ -376,6 +377,7 @@ public class EcranPause extends Screen {
         int px = x + 12, iw = w - 24;
 
         // tete (visage et chapeau du skin), pseudo, clan
+        RenderSystem.enableBlend();
         g.setColor(1f, 1f, 1f, t);
         PlayerFaceRenderer.draw(g, mc.player.getSkinTextureLocation(), px, y + 12, 28);
         g.setColor(1f, 1f, 1f, 1f);
@@ -386,12 +388,12 @@ public class EcranPause extends Screen {
         if (c != null) {
             String puce = "[" + c.tag() + "] " + c.nom();
             puce = Ui.ellipsis(font, puce, Ui.SMALL, x + w - 12 - tx - 40);
-            int cw = Ui.chip(g, font, puce, tx, y + 29, c.accent());
+            int cw = Ui.chip(g, font, puce, tx, y + 29, c.accent(), a);
             if (!c.grade().isEmpty() && tx + cw + 6 + Ui.spacedWidth(font, c.grade(), Ui.SMALL, 0.8f) <= x + w - 12) {
                 Ui.spaced(g, font, c.grade(), Ui.SMALL, tx + cw + 6, y + 31.5f, Ui.argb(Ui.MUTED, a), 0.8f);
             }
         } else {
-            Ui.chip(g, font, t("pause.carte.sans_clan_puce"), tx, y + 29, Ui.MUTED);
+            Ui.chip(g, font, t("pause.carte.sans_clan_puce"), tx, y + 29, Ui.MUTED, a);
         }
 
         // tuiles : herals, en ligne, ping
@@ -405,7 +407,7 @@ public class EcranPause extends Screen {
 
         // extractions ouvertes
         int sy = y + 96;
-        Ui.section(g, font, t("pause.carte.extractions"), px, sy, iw);
+        Ui.section(g, font, t("pause.carte.extractions"), px, sy, iw, a);
         int ry = sy + 12;
         if (extractions.isEmpty()) {
             Ui.at(g, font, Ui.lit(t("pause.carte.aucune_extraction"), Ui.FONT), px, ry + 3, Ui.argb(Ui.MUTED, a));
@@ -426,7 +428,7 @@ public class EcranPause extends Screen {
 
         // le clan
         int cy = ry + 8;
-        Ui.section(g, font, t("pause.carte.clan"), px, cy, iw);
+        Ui.section(g, font, t("pause.carte.clan"), px, cy, iw, a);
         int ly = cy + 12;
         if (c == null) {
             Ui.at(g, font, Ui.lit(Ui.ellipsis(font, t("pause.carte.sans_clan"), Ui.FONT, iw), Ui.FONT), px, ly + 3, Ui.argb(Ui.MUTED, a));
