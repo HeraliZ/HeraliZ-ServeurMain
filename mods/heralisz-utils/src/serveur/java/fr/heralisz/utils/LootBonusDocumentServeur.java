@@ -2,7 +2,7 @@ package fr.heralisz.utils;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-/** Document de loot bonus côté serveur (HeraliszUtils.DOCUMENT_USINE) : clic droit d'origine (LuckPerms, son, message). */
+/** « Bonus de loot » côté serveur (HeraliszUtils.DOCUMENT_USINE) : clic droit = bonus de loot pour un temps de jeu. */
 public class LootBonusDocumentServeur extends LootBonusDocument {
     public LootBonusDocumentServeur(String rarity) {
         super(rarity);
@@ -20,12 +20,11 @@ public class LootBonusDocumentServeur extends LootBonusDocument {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        MinecraftServer server = level.getServer();
-        if (!level.isClientSide && server != null) {
-            server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
-                    "lp user " + player.getGameProfile().getName() + " permission settemp phatloots.bonus.1.2 true 1h");
+        if (!level.isClientSide && player instanceof ServerPlayer sp) {
+            long restant = BonusLootTemps.activer(sp);
             level.playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
-            player.displayClientMessage(Component.translatable("message.heralisz_utils.lootbonus").withStyle(ChatFormatting.GREEN), true);
+            sp.sendSystemMessage(Component.literal("Bonus de loot +" + BonusLootConfig.pourcent() + " % activé : "
+                    + BonusLootTemps.duree(restant) + " de jeu.").withStyle(ChatFormatting.GOLD));
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }

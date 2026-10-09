@@ -135,32 +135,65 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
 
     /** Tire un objet de la table (poids) ; si l'entrée a une rareté, elle est inscrite dessus. */
     static ItemStack tirer(Table t, RandomSource r) {
+        return tirer(t, r, 0);
+    }
+
+    /**
+     * Tire un objet avec un bonus de loot ({@link BonusLoot}, en %) : l'objet a ce pourcentage de chances d'être tiré une
+     * seconde fois, on garde le plus rare des deux (rareté inscrite, sinon le plus petit poids) ; sa quantité est
+     * augmentée d'autant (arrondi au hasard : +10 % sur 5 balles = 6 une fois sur deux).
+     */
+    static ItemStack tirer(Table t, RandomSource r, int bonus) {
+        Entree e = entree(t, r);
+        if (e == null) return ItemStack.EMPTY;
+        if (bonus > 0 && r.nextInt(100) < bonus) {
+            Entree autre = entree(t, r);
+            if (autre != null && plusRare(autre, e)) e = autre;
+        }
+        return objet(e, r, bonus);
+    }
+
+    @Nullable
+    private static Entree entree(Table t, RandomSource r) {
         int total = t.objets().stream().mapToInt(Entree::poids).sum();
-        if (total <= 0) return ItemStack.EMPTY;
+        if (total <= 0) return null;
         int k = r.nextInt(total);
         for (Entree e : t.objets()) {
             k -= e.poids();
-            if (k < 0) {
-                int n = e.min() + r.nextInt(e.max() - e.min() + 1);
-                ItemStack st = new ItemStack(e.item(), n);
-                if (e.nbt() != null) {
-                    try {
-                        st.setTag(TagParser.parseTag(e.nbt()));
-                    } catch (Exception ex) {
-                        HeralizLoot.LOG.warn("NBT illisible pour {} : {}", e.item(), e.nbt());
-                    }
-                }
-                // pile maximale selon la pile (NBT compris) : munitions TaCZ, soins et grenades data-driven
-                st.setCount(Math.min(n, Math.max(1, st.getMaxStackSize())));
-                Rarete ra = e.rarete();
-                if (e.nom() != null) {
-                    Style s = Style.EMPTY.withItalic(false);
-                    st.setHoverName(Component.literal(e.nom()).setStyle(ra != null ? s.withColor(TextColor.fromRgb(ra.couleur)) : s));
-                }
-                if (ra != null) st.getOrCreateTag().putString(Rarete.CLE, ra.id);
-                return st;
+            if (k < 0) return e;
+        }
+        return null;
+    }
+
+    /** a est-elle plus rare que b ? La rareté inscrite d'abord (coffres T7), sinon le poids le plus petit. */
+    private static boolean plusRare(Entree a, Entree b) {
+        int ra = a.rarete() == null ? -1 : a.rarete().ordinal(), rb = b.rarete() == null ? -1 : b.rarete().ordinal();
+        return ra != rb ? ra > rb : a.poids() < b.poids();
+    }
+
+    private static ItemStack objet(Entree e, RandomSource r, int bonus) {
+        int n = e.min() + r.nextInt(e.max() - e.min() + 1);
+        if (bonus > 0) {
+            double x = n * (1.0 + bonus / 100.0);
+            n = (int) x;
+            if (r.nextDouble() < x - n) n++;
+        }
+        ItemStack st = new ItemStack(e.item(), n);
+        if (e.nbt() != null) {
+            try {
+                st.setTag(TagParser.parseTag(e.nbt()));
+            } catch (Exception ex) {
+                HeralizLoot.LOG.warn("NBT illisible pour {} : {}", e.item(), e.nbt());
             }
         }
-        return ItemStack.EMPTY;
+        // pile maximale selon la pile (NBT compris) : munitions TaCZ, soins et grenades data-driven
+        st.setCount(Math.min(n, Math.max(1, st.getMaxStackSize())));
+        Rarete ra = e.rarete();
+        if (e.nom() != null) {
+            Style s = Style.EMPTY.withItalic(false);
+            st.setHoverName(Component.literal(e.nom()).setStyle(ra != null ? s.withColor(TextColor.fromRgb(ra.couleur)) : s));
+        }
+        if (ra != null) st.getOrCreateTag().putString(Rarete.CLE, ra.id);
+        return st;
     }
 }

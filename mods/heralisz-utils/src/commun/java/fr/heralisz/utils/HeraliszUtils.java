@@ -38,7 +38,7 @@ public final class HeraliszUtils {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     private static final List<RegistryObject<Item>> ALL = new ArrayList<>();
-    /** Document de loot bonus : version serveur (clic droit : permission LuckPerms) branchée par la partie serveur. */
+    /** « Bonus de loot » (boutique) : version serveur (clic droit : bonus de loot pour un temps de jeu) branchée par la partie serveur. */
     public static final fr.heralisz.utils.pont.Usine<String, LootBonusDocument> DOCUMENT_USINE =
             new fr.heralisz.utils.pont.Usine<>(LootBonusDocument::new);
     /** Groupes de l'onglet commun « HeraliZ · Utils » (porteur du jar fusionné : voir mods.toml). */
@@ -119,6 +119,9 @@ public final class HeraliszUtils {
         // ambiance de la map (ciel, nuits, brouillard, filtre d'image) : réglages côté client
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
                 fr.heralisz.utils.ambiance.AmbianceConfig.SPEC, "heralisz_utils-ambiance.toml");
+        // objet « Bonus de loot » (boutique) : bonus et durée, réglages du serveur
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.SERVER,
+                BonusLootConfig.SPEC, "heralisz_utils-server.toml");
         // parties du jar fusionné (docs/METHODE_CLIENT_SERVEUR.md §4) : logique (serveur) et affichage (client)
         Parties.serveur(MODID, "fr.heralisz.utils.serveur.PartieServeur", bus);
         Parties.client(MODID, "fr.heralisz.utils.client.PartieClient", bus);

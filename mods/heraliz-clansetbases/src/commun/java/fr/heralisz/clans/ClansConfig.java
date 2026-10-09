@@ -47,7 +47,7 @@ public final class ClansConfig {
         // l'economie est celle du mod heralisz_economie (dependance obligatoire) : plus de choix de fournisseur ici
 
         b.comment("Territoires").push("territoires");
-        LOOT_BONUS = b.comment("Bonus de loot (%) des membres presents dans une zone tenue : noeud LuckPerms phatloots.bonus.<n>")
+        LOOT_BONUS = b.comment("Bonus de loot (%) des membres presents dans une zone tenue (HeraliZ Loot : objets plus rares, quantites)")
                 .defineInRange("loot_bonus", 10, 0, 100);
         DUREE_CAPTURE_S = b.comment("Secondes pour capturer une zone tenue par un autre clan (un seul capteur)").defineInRange("duree_capture_s", 90, 5, 3600);
         DUREE_CAPTURE_NEUTRE_S = b.comment("Secondes pour capturer une zone libre").defineInRange("duree_capture_neutre_s", 60, 5, 3600);

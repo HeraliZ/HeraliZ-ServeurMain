@@ -11,7 +11,7 @@ public final class ConfigLoot {
 
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.DoubleValue PROPORTION;
-    public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RAYON_ETOILES, ETOILES_PAR_SECONDE;
+    public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX;
     public static final ForgeConfigSpec.BooleanValue ETOILES;
 
     static {
@@ -28,6 +28,10 @@ public final class ConfigLoot {
         ETOILES = b.comment("Montrer les étoiles autour des conteneurs actifs.").define("actives", true);
         RAYON_ETOILES = b.comment("Distance (blocs) jusqu'à laquelle un joueur voit les étoiles.").defineInRange("rayon", 24, 4, 64);
         ETOILES_PAR_SECONDE = b.comment("Étoiles envoyées par seconde et par conteneur.").defineInRange("par_seconde", 2, 1, 8);
+        b.pop();
+        b.comment("Bonus de loot (zone tenue par son clan...) : au premier tirage d'un conteneur, chaque objet a ce pourcentage",
+                "de chances d'être tiré une seconde fois (le plus rare des deux est gardé) et les quantités montent d'autant.").push("bonus");
+        BONUS_MAX = b.comment("Bonus maximal (%) quand plusieurs bonus s'additionnent.").defineInRange("max", 25, 0, 100);
         b.pop();
         SPEC = b.build();
     }
@@ -50,6 +54,10 @@ public final class ConfigLoot {
 
     static int rayonEtoiles() {
         return SPEC.isLoaded() ? RAYON_ETOILES.get() : 24;
+    }
+
+    static int bonusMax() {
+        return SPEC.isLoaded() ? BONUS_MAX.get() : 25;
     }
 
     static int etoilesParSeconde() {

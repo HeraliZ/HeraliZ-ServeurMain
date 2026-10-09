@@ -13,7 +13,7 @@
 
 #Territoires
 [territoires]
-	#Bonus de loot (%) des membres presents dans une zone tenue : noeud LuckPerms phatloots.bonus.<n>
+	#Bonus de loot (%) des membres presents dans une zone tenue (HeraliZ Loot : objets plus rares, quantites)
 	#Range: 0 ~ 100
 	loot_bonus = 10
 	#Secondes pour capturer une zone tenue par un autre clan (un seul capteur)

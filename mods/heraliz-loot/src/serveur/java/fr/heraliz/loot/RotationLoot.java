@@ -467,9 +467,12 @@ public final class RotationLoot extends SavedData {
             return;
         }
         if (a.contenu == null) {
-            a.contenu = e.remplir(k, cb.nom, l.random);
+            // contenu tiré à la première ouverture : avec le bonus de loot de celui qui ouvre
+            int bonus = BonusLoot.pourcent(p);
+            a.contenu = e.remplir(k, cb.nom, l.random, bonus);
             e.tires.add(k);
             e.setDirty();
+            BonusLoot.annoncer(p, bonus);
         }
         Inventaire inv = a.contenu;
         boolean premier = !e.regarde(inv, p);
@@ -479,8 +482,8 @@ public final class RotationLoot extends SavedData {
 
     private static final Set<String> SANS_TABLE = new HashSet<>();
 
-    /** Contenu d'un conteneur, tiré dans sa table : objets placés au hasard dans les 27 cases. */
-    private Inventaire remplir(long k, String nom, RandomSource r) {
+    /** Contenu d'un conteneur, tiré dans sa table (bonus de loot en %) : objets placés au hasard dans les 27 cases. */
+    private Inventaire remplir(long k, String nom, RandomSource r, int bonus) {
         Inventaire inv = new Inventaire(this, k);
         TablesCoffres.Choix c = TablesCoffres.pourConteneur(nom);
         if (c == null || c.table().objets().isEmpty()) {
@@ -496,7 +499,7 @@ public final class RotationLoot extends SavedData {
             cases[i] = cases[j];
             cases[j] = t;
         }
-        for (int i = 0; i < n; i++) inv.objets.set(cases[i], TablesCoffres.tirer(c.table(), r));
+        for (int i = 0; i < n; i++) inv.objets.set(cases[i], TablesCoffres.tirer(c.table(), r, bonus));
         return inv;
     }
 

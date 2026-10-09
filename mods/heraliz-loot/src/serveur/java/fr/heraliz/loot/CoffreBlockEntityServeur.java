@@ -64,6 +64,11 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
 
     // ------------------------------------------------------------------------------------------ loot
     void generer() {
+        generer(0);
+    }
+
+    /** Tire le contenu du coffre, avec le bonus de loot (%) du joueur qui l'ouvre le premier. */
+    void generer(int bonus) {
         RandomSource r = level.random;
         TablesCoffres.Table t = TablesCoffres.table(type().nom);
         java.util.Arrays.fill(rarete, (byte) -1);
@@ -81,7 +86,7 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
         Collections.shuffle(cases, new java.util.Random(r.nextLong()));
         int n = t.min() + r.nextInt(Math.max(1, t.max() - t.min() + 1));
         for (int k = 0; k < Math.min(n, TAILLE); k++) {
-            ItemStack st = TablesCoffres.tirer(t, r);
+            ItemStack st = TablesCoffres.tirer(t, r, bonus);
             int i = cases.get(k);
             objets.set(i, st);
             Rarete ra = Rarete.de(st);
@@ -134,7 +139,9 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
             return;
         }
         if (!genere) {
-            generer();
+            int bonus = BonusLoot.pourcent(p);
+            generer(bonus);
+            BonusLoot.annoncer(p, bonus);
         }
         long now = level.getGameTime();
         switch (etat) {

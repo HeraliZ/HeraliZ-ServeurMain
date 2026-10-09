@@ -214,6 +214,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `com.caracrea.api.voice.CaraCreaVoice` | caracrea (serveur) | voix : couper un joueur, portée, routage |
 | `fr.heralisz.tactical.api.HeraliszTacticalAPI` | tactique (commun) | index des objets tactiques |
 | `com.heraliz.extraction.api.ExtractionApi` | extraction (commun, rempli chez le joueur) | extractions ouvertes (`ouvertes()`, `version()`) pour la carte du monde |
+| données persistantes du joueur `PlayerPersisted.HeralizBonusLoot.<source>` | lues par loot (serveur), écrites par clansetbases (`clan`) et utils (`objet`) | bonus de loot : `{Pct, Fin (heure en ms)}` ou `{Pct, Restant (ticks de jeu)}`, sources additionnées, plafond 25 % (`fr.heraliz.loot.BonusLoot`) |
 
 **Pour qu'un nouveau mod utilise un des nôtres :**
 - dépendance obligatoire : la déclarer dans son `mods.toml` et compiler contre une copie du jar dans son `libs/`
@@ -420,6 +421,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - CRac : aucun sac de couchage (retour à la base par la commande de téléportation, lits normaux) ; seuls les C4
   abîment les constructions ;
 - casino : revente avec 5 % de commission, échanges d'objets coupés, entrée non payable avec le compte ;
+- bonus de loot (HeraliZ Loot, au premier tirage d'un conteneur) : chaque objet a 10 % de chances d'être tiré une
+  seconde fois (le plus rare est gardé) et les quantités montent de 10 % ; sources cumulables, plafond 25 % : membre
+  dans une zone tenue par son clan, objet « Bonus de loot » de la boutique (`heralisz_utils:document_lootbonus`, 2 h de
+  jeu décomptées seulement en ligne, gardé à la mort) ;
+- extractions de la carte : 3 zones ouvertes à la fois, 30 à 60 min chacune, 30 s à tenir, retour au spawn ;
 - caisses (heraliz_crates) : Vulkhar, Chevalier sans visage, Kraken et Pendentifs supprimées (Glacivore aussi), et
   plus aucun pendentif (charm) d'arme dans Tactique ; la caisse Gemme montre une gemme qui change de couleur (plus de
   couteau dans le cristal) ; hitbox = vraie forme de chaque modèle en cubes de 2 px (`python outils/formes_caisses.py`

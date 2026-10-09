@@ -7,16 +7,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /**
- * Document de loot bonus : clic droit pour donner au joueur la permission temporaire PhatLoots
- * « phatloots.bonus.1.2 » pendant 1 h (via LuckPerms, comme l'ancien objet ArkaniaZ).
- * Jar fusionné : l'objet ici ; l'effet du clic dans LootBonusDocumentServeur (HeraliszUtils.DOCUMENT_USINE).
+ * Objet « Bonus de loot » (vendu sur la boutique) : clic droit = +10 % de loot (objets plus rares, quantités) à
+ * l'ouverture des conteneurs de HeraliZ Loot, pendant 2 h de jeu (réglages : BonusLootConfig). Un deuxième objet ajoute
+ * sa durée. Jar fusionné : l'objet ici ; l'effet du clic dans LootBonusDocumentServeur (HeraliszUtils.DOCUMENT_USINE).
  */
 public class LootBonusDocument extends UtilItem {
     public LootBonusDocument(String rarity) {
         super("document", rarity);
     }
 
-    /** Clic droit : la permission, le son et le message sont donnés par LootBonusDocumentServeur (partie serveur). */
+    /** Clic droit : le bonus, le son et le message sont donnés par LootBonusDocumentServeur (partie serveur). */
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide);
