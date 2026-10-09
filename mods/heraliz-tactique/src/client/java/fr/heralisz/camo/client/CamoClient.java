@@ -2,11 +2,13 @@ package fr.heralisz.camo.client;
 
 import com.tacz.guns.api.item.IGun;
 import com.tacz.guns.client.gui.GunRefitScreen;
+import com.tacz.guns.client.gui.GunSmithTableScreen;
 import fr.heralisz.camo.Camo;
 import fr.heralisz.camo.CamoData;
 import fr.heralisz.camo.CollectionVue;
 import fr.heralisz.camo.HeraliszCamo;
 import fr.heralisz.camo.client.atelier.AtelierArme;
+import fr.heralisz.camo.client.atelier.TableArmurier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -56,14 +58,19 @@ public final class CamoClient {
    }
 
    /**
-    * L'écran de modification de TaCZ (sa touche, arme en main) est remplacé par l'Atelier d'arme. S'il a planté dans la
-    * session, l'écran de TaCZ et nos anciens onglets restent (AtelierArme.secours).
+    * Les écrans de TaCZ sont remplacés par les nôtres : modification d'arme (sa touche, arme en main) par l'Atelier
+    * d'arme, table de fabrication par la Table d'armurier. S'ils ont planté dans la session, ceux de TaCZ restent
+    * (AtelierArme.secours, TableArmurier.secours).
     */
    @SubscribeEvent(priority = EventPriority.LOW)
    public static void onOpening(ScreenEvent.Opening event) {
       Screen s = event.getNewScreen();
-      if (s != null && s.getClass() == GunRefitScreen.class && !AtelierArme.enPanne()) {
+      if (s == null) return;
+      if (s.getClass() == GunRefitScreen.class && !AtelierArme.enPanne()) {
          event.setNewScreen(new AtelierArme());
+      } else if (s.getClass() == GunSmithTableScreen.class && !TableArmurier.enPanne() && Minecraft.getInstance().player != null) {
+         GunSmithTableScreen table = (GunSmithTableScreen) s;
+         event.setNewScreen(new TableArmurier(table.getMenu(), Minecraft.getInstance().player.getInventory(), table.getTitle()));
       }
    }
 

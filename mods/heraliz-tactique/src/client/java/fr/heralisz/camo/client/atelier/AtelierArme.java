@@ -192,6 +192,7 @@ public final class AtelierArme extends GunRefitScreen {
 
    private void construire() {
       this.infobulle = null;
+      Effets.vider();
       ItemStack gun = arme();
       IGun iGun = IGun.getIGunOrNull(gun);
       if (iGun == null) return;
