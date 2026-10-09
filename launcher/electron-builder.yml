@@ -18,7 +18,8 @@ files:
   - 'app/assets/fonts/**'
   - 'app/assets/images/heraliz-*.{png,jpg,ico}'
   - 'app/assets/images/minecraft.icns'
-  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,renderer}.js'
+  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,renderer,spartan}.js'
+  - 'app/assets/js/spartan-cle.json'
 
 extraResources:
   - 'libraries'

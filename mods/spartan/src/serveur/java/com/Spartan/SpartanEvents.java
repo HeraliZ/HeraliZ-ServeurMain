@@ -6,6 +6,7 @@ import com.Spartan.ban.PlayerRegistry;
 import com.Spartan.check.CheckManager;
 import com.Spartan.check.HandshakeMonitor;
 import com.Spartan.check.Mitigation;
+import com.Spartan.check.item.AntiDupe;
 import com.Spartan.check.movement.MovementEngine;
 import com.Spartan.config.SpartanConfig;
 import com.Spartan.esp.Noise;
@@ -204,6 +205,8 @@ public class SpartanEvents {
         }
         // Anti-ESP : lignes de vue entre joueurs, décisions d'envoi appliquées tout de suite.
         VisibilityEngine.tick(event.getServer());
+        // Anti-duplication : un relevé de temps en temps (même numéro à deux endroits au même instant).
+        AntiDupe.tick(event.getServer());
         // Une fois par heure : écrit le registre si besoin, applique la rétention RGPD.
         if (++serverTicks % 72000 == 0) {
             int days = SpartanConfig.DATA_RETENTION_DAYS.get();

@@ -267,6 +267,22 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   « maven libs », options `--fml.mavenRoots` / `--fml.modLists`) ; Spartan hache et juge chacun de ces jars comme ceux
   du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism` et retire les options d'injection du joueur
   (`launcher/app/assets/js/spartan.js`). Son pack doit être exactement `livraison/mods client` de la même fabrication.
+- **Jeton du launcher** (on ne joue que depuis le launcher HeraliZ) : à chaque lancement, `spartan.js` fabrique un
+  jeton signé, valable **6 h**, lié au pseudo et aux mods (`-Dspartan.launchToken=…`, masqué dans le journal du
+  launcher). Clé : secret GitHub `SPARTAN_LAUNCHER_SECRET` (au moins 32 caractères aléatoires), injecté côté serveur
+  par la mise en ligne et côté launcher par `launcher/outils/spartan-cle.js` au moment de fabriquer le launcher
+  (`npm run dist:win` avec la variable d'environnement `SPARTAN_LAUNCHER_SECRET`) ; `spartan-cle.json` n'est JAMAIS
+  dans Git. Réglage `tokenRequired` (`serveur/config/spartan-common.toml`) : `false` = alerte seulement ; `true` =
+  connexion REFUSÉE sans jeton valide (CurseForge, autre launcher, jeton expiré), même en détection silencieuse. Ne le
+  passer à `true` qu'une fois le launcher distribué à tous. Changer la clé à chaque nouvelle version du launcher.
+  Vérifié : un jeton fabriqué par le launcher est accepté par `LaunchToken.verify` (Java) ; autre pseudo ou autre clé
+  refusés.
+- **Anti-duplication** (`check/item/AntiDupe`, section `[antidupe]`) : les objets de valeur NON empilables (`tacz:*`,
+  `backpacked:*`, `heraliz_armory:*` par défaut) reçoivent un numéro unique invisible (donnée `spartan_uid`) quand ils
+  sont rangés dans l'inventaire ; toutes les 20 s, un relevé en une fois (inventaires, souris, coffre de l'Ender,
+  Curios, contenu des sacs) : même numéro à deux endroits = copie, alerte au staff avec preuve, rien de supprimé.
+  Jamais numéroté : objet en main, porté, dans un sac ; joueurs en créatif ignorés. Un mod qui COPIE un objet suivi
+  (au lieu de le déplacer) doit retirer `spartan_uid` de la copie, sinon fausse alerte.
 - Un mod qui déplace un joueur doit passer par une vraie téléportation (`teleportTo`, `connection.teleport`) ou un recul
   (`setDeltaMovement` + `hurtMarked`) : Spartan les suit. Un `setPos` / `moveTo` seul sur un joueur peut être pris pour
   de la triche (cas connus : projection du Draugr, remontée de la Mère des Ruines : à surveiller dans les alertes).
@@ -339,6 +355,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   - sinon : `python outils/fusion_nouveau.py <dossier> <groupe> "<Nom>"` (nouveau projet depuis `mods/_gabarit`),
     `python outils/fusion_copier.py <sources reçues> mods/<dossier>`, puis la méthode (section 4 et la doc) ;
   - ne jamais mettre ses dossiers `build/`, `run/`, ni de README contenant des noms perso ;
+  - mettre `LICENCE-HeraliZ.txt` (copie de `mods/_gabarit/src/commun/resources/`) dans ses ressources communes :
+    `verifier.py` refuse un jar de nos mods sans cette mention de propriété (version « licence libre » pour un mod
+    qui reprend du code GPL / LGPL, voir celles de CaraCrea, Bunker, Backpack, Tactique) ;
   - fabriquer, vérifier (noms perso compris), puis commit et push.
 - **Un mod d'un autre auteur** : son jar dans `serveur/mods-tiers/` (ou `client/mods-tiers/` s'il ne sert qu'aux
   joueurs), en retirant l'ancienne version.

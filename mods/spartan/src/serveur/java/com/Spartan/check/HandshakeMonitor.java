@@ -1,6 +1,7 @@
 package com.Spartan.check;
 
 import com.Spartan.config.SpartanConfig;
+import com.Spartan.integrity.LauncherGate;
 import com.Spartan.util.PacketGuard;
 import java.util.Map;
 import java.util.UUID;
@@ -48,6 +49,10 @@ public final class HandshakeMonitor {
             PENDING.remove(uuid);
             CheckManager.flag("Handshake", p,
                     "aucune info client reçue après " + timeout + " s (mod client modifié ou absent ?)");
+            if (launchNeeded && !PacketGuard.hasSeen(uuid, "launch") && SpartanConfig.LAUNCHER_TOKEN_REQUIRED.get()) {
+                LauncherGate.refuser(p); // aucun jeton reçu : règle d'accès, même en détection silencieuse
+                return;
+            }
             if (SpartanConfig.mayKickForClientSignal()) {
                 p.connection.disconnect(Component.literal("[Spartan] Client non conforme."));
             }
