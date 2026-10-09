@@ -56,6 +56,7 @@ public final class PosMapCache {
       CamoRenderType.clear();
       CamoFx.clearCache();
       BagCamo.clear();
+      IconesArmes.vider();
    }
 
    private PosMapCache() {}

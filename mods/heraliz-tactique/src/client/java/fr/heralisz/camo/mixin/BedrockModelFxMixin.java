@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.tacz.guns.client.model.bedrock.BedrockModel;
 import fr.heralisz.camo.client.CamoFx;
+import fr.heralisz.camo.client.IconesArmes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -28,17 +29,23 @@ public abstract class BedrockModelFxMixin {
    @Redirect(method = RENDER, at = @At(value = "INVOKE", remap = true,
       target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;getBuffer(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
    private VertexConsumer heralisz$fxBuffer(MultiBufferSource.BufferSource source, RenderType type) {
-      return CamoFx.begin(source.getBuffer(type), type);
+      // cadrage d'une icône 3D d'inventaire : les sommets sont relevés, rien n'est dessiné
+      VertexConsumer cadre = IconesArmes.cadre();
+      return cadre != null ? cadre : CamoFx.begin(source.getBuffer(type), type);
    }
 
    @Inject(method = RENDER, at = @At(value = "INVOKE",
       target = "Lcom/tacz/guns/compat/oculus/OculusCompat;endBatch(Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;)Z"))
    private void heralisz$fxFreeze(CallbackInfo ci) {
-      CamoFx.freeze();
+      if (IconesArmes.cadre() == null) {
+         CamoFx.freeze();
+      }
    }
 
    @Inject(method = RENDER, at = @At("TAIL"))
    private void heralisz$fxDraw(CallbackInfo ci) {
-      CamoFx.end();
+      if (IconesArmes.cadre() == null) {
+         CamoFx.end();
+      }
    }
 }

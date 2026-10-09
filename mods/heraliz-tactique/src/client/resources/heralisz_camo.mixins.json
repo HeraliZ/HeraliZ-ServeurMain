@@ -15,7 +15,8 @@
     "FunctionalBedrockPartMixin",
     "BedrockCubeBoxAccessor",
     "BedrockCubePerFaceAccessor",
-    "ItemRendererBagMixin"
+    "ItemRendererBagMixin",
+    "GunItemIconeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

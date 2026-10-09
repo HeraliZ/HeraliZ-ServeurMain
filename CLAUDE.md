@@ -165,6 +165,9 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   `python outils/silencieux.py` (jamais à la main dans les fichiers des silencieux ; à relancer si la portée d'un tir
   normal change dans `serveur/config/tacz-common.toml`). Un tir silencieux part aussi deux fois moins fort pour les autres
   joueurs (mixin commun `TaczSonSilencieuxMixin` du mod tactique).
+- les icônes d'inventaire des armes TaCZ sont des photos 3D faites chez le joueur (`camo/client/IconesArmes` du mod
+  tactique : modèle + skin, sans accessoires, 64 au plus en mémoire graphique, rien sur le disque ni le serveur) ; l'image
+  `slot` du gunpack ne s'affiche qu'en attendant la photo ou si elle est impossible.
 
 **Les briques à connaître** (paquet `pont` de chaque projet, détails dans `docs/METHODE_CLIENT_SERVEUR.md`) :
 - `Parties.serveur(...)` / `Parties.client(...)` à la fin du constructeur `@Mod` : chargent `serveur.PartieServeur` /
