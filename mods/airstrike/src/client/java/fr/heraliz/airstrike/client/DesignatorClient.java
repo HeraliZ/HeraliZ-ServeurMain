@@ -1,25 +1,27 @@
 package fr.heraliz.airstrike.client;
 
-import fr.heraliz.airstrike.item.PayloadItem;
 import com.mojang.blaze3d.platform.InputConstants;
 import fr.heraliz.airstrike.AirstrikeConfig;
+import fr.heraliz.airstrike.item.CartridgeItem;
 import fr.heraliz.airstrike.item.DesignatorItem;
 import fr.heraliz.airstrike.network.DesignatePacket;
 import fr.heraliz.airstrike.network.LoadCartridgePacket;
 import fr.heraliz.airstrike.network.Network;
 import fr.heraliz.airstrike.registry.ModSounds;
+import fr.heraliz.airstrike.strike.CartridgeTier;
 import fr.heraliz.airstrike.strike.StrikeType;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.client.settings.IKeyConflictContext;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -30,8 +32,26 @@ public final class DesignatorClient {
     public static final float[] ZOOMS = {2.5f, 4.0f, 6.5f, 10.0f};
     public static final int SCOPE_DELAY = 5;
 
-    public static final KeyMapping CYCLE_KEY = new KeyMapping("key.airstrike.cycle", KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.airstrike");
+    /**
+     * Binoculars in hand, no screen open: the reload key (R) only acts then, so it never conflicts with the R of the
+     * guns (TaCZ) or of the building tools (CRac).
+     */
+    public static final IKeyConflictContext IN_HAND = new IKeyConflictContext() {
+        @Override
+        public boolean isActive() {
+            Minecraft mc = Minecraft.getInstance();
+            return mc.screen == null && mc.player != null && !heldDesignator(mc.player).isEmpty();
+        }
+
+        @Override
+        public boolean conflicts(IKeyConflictContext other) {
+            return other == this;
+        }
+    };
+
+    /** Tap: reload the last strike; hold: wheel of the strikes. */
+    public static final KeyMapping CYCLE_KEY = new KeyMapping("key.airstrike.cycle", IN_HAND,
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "key.categories.airstrike");
 
     public static int zoomIndex = 1;
     /** Range finder result of the last tick. */
@@ -44,9 +64,14 @@ public final class DesignatorClient {
     public static String errorKey = "";
 
     private static boolean wasScoped;
-    /** Ticks the swap key has been held: a short tap cycles, holding opens the wheel. */
+    /** Ticks the reload key has been held: a short tap reloads, holding opens the wheel. */
     private static int keyHeldTicks;
-    private static final int WHEEL_DELAY = 5;
+    private static final int WHEEL_DELAY = 4;
+    /** Last strike loaded (tap of the reload key once the bay is empty). */
+    private static StrikeType lastType;
+    /** Last strike loaded and when (client game time): toast at the bottom of the screen. */
+    public static StrikeType toastType;
+    public static long toastTime = -1000;
     private static boolean sensInit;
     private static float lastYaw, lastPitch;
 
@@ -76,19 +101,36 @@ public final class DesignatorClient {
         }
     }
 
+    /**
+     * Strikes that can be loaded now, in wheel order: a cartridge of their level in the inventory, or the level of the
+     * cartridge already in the bay (reprogramming), or creative mode.
+     */
     public static List<StrikeType> availableTypes() {
         List<StrikeType> out = new ArrayList<>();
         LocalPlayer p = Minecraft.getInstance().player;
         if (p == null) return out;
-        for (StrikeType t : StrikeType.values()) {
-            if (p.getAbilities().instabuild || PayloadItem.countPayload(p.getInventory(), t) > 0) out.add(t);
+        for (StrikeType t : StrikeType.WHEEL) {
+            if (isAvailable(t)) out.add(t);
         }
         return out;
     }
 
-    public static int payloadCount(StrikeType t) {
+    public static boolean isAvailable(StrikeType t) {
         LocalPlayer p = Minecraft.getInstance().player;
-        return p == null ? 0 : PayloadItem.countPayload(p.getInventory(), t);
+        if (p == null || !t.selectable()) return false;
+        if (p.getAbilities().instabuild || tierCount(t.tier) > 0) return true;
+        StrikeType loaded = loaded();
+        return loaded != null && loaded.tier == t.tier;
+    }
+
+    /** Cartridges of a level carried by the player. */
+    public static int tierCount(CartridgeTier tier) {
+        LocalPlayer p = Minecraft.getInstance().player;
+        return p == null || tier == null ? 0 : CartridgeItem.count(p.getInventory(), tier);
+    }
+
+    public static int payloadCount(StrikeType t) {
+        return tierCount(t.tier);
     }
 
     private static void play(SoundEvent s, float pitch) {
@@ -108,7 +150,7 @@ public final class DesignatorClient {
         return DesignatorItem.cartridge(heldDesignator(Minecraft.getInstance().player));
     }
 
-    /** Key G / shift + scroll: swaps the cartridge for the next type carried in the inventory. */
+    /** Shift + scroll in the binoculars: the next strike that can be loaded. */
     public static void cycle(int dir) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
@@ -119,10 +161,15 @@ public final class DesignatorClient {
         StrikeType current = DesignatorItem.cartridge(held);
         List<StrikeType> available = availableTypes();
         StrikeType next = null;
-        int n = StrikeType.values().length;
-        int start = current == null ? (dir > 0 ? -1 : 0) : current.ordinal();
+        StrikeType[] wheel = StrikeType.WHEEL;
+        int n = wheel.length;
+        int start = -1;
+        for (int i = 0; i < n; i++) {
+            if (wheel[i] == current) start = i;
+        }
+        if (start < 0) start = dir > 0 ? -1 : 0;
         for (int i = 1; i <= n; i++) {
-            StrikeType t = StrikeType.byId(Math.floorMod(start + dir * i, n));
+            StrikeType t = wheel[Math.floorMod(start + dir * i, n)];
             if (t != current && available.contains(t)) {
                 next = t;
                 break;
@@ -135,7 +182,10 @@ public final class DesignatorClient {
         load(next);
     }
 
-    /** Asks the server to load this cartridge into the held binoculars (reload animation). */
+    /**
+     * Asks the server to load this strike into the held binoculars: reprogramming when the cartridge in the bay has
+     * the same level, otherwise a reload (animation) with a cartridge of its level.
+     */
     public static void load(StrikeType type) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
@@ -143,9 +193,39 @@ public final class DesignatorClient {
         if (held.isEmpty() || mc.level == null || mc.gameMode == null) return;
         long now = mc.level.getGameTime();
         if (DesignatorItem.isReloading(held, now) || now < DesignatorItem.clientReloadBlock) return;
-        if (p.isUsingItem()) mc.gameMode.releaseUsingItem(p);
-        DesignatorItem.clientReloadBlock = now + 10;
+        StrikeType current = DesignatorItem.cartridge(held);
+        boolean sameLevel = current != null && current.tier == type.tier;
+        if (!sameLevel) {
+            if (p.isUsingItem()) mc.gameMode.releaseUsingItem(p);
+            DesignatorItem.clientReloadBlock = now + 10;
+        }
+        lastType = type;
+        toastType = type;
+        toastTime = now;
         Network.CHANNEL.sendToServer(new LoadCartridgePacket(type));
+    }
+
+    /** Short press of the reload key: an empty bay gets the last strike again (or the first one available). */
+    public static void quickReload() {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer p = mc.player;
+        ItemStack held = heldDesignator(p);
+        if (held.isEmpty() || mc.level == null) return;
+        long now = mc.level.getGameTime();
+        if (DesignatorItem.isReloading(held, now) || now < DesignatorItem.clientReloadBlock) return;
+        StrikeType loaded = DesignatorItem.cartridge(held);
+        if (loaded != null) {
+            p.displayClientMessage(Component.translatable("hud.airstrike.already_loaded",
+                    Component.translatable(loaded.translationKey()), CYCLE_KEY.getTranslatedKeyMessage()), true);
+            return;
+        }
+        List<StrikeType> available = availableTypes();
+        StrikeType t = lastType != null && available.contains(lastType) ? lastType : available.isEmpty() ? null : available.get(0);
+        if (t == null) {
+            error("hud.airstrike.status.no_payload");
+            return;
+        }
+        load(t);
     }
 
     /** Opens the cartridge wheel (key held). */
@@ -162,7 +242,7 @@ public final class DesignatorClient {
         LocalPlayer p = mc.player;
         if (p == null) return;
         boolean using = isUsingDesignator(p);
-        // tap the key: next cartridge; hold it: cartridge wheel
+        // tap the key: reload the last strike; hold it: wheel of the strikes
         while (CYCLE_KEY.consumeClick()) {
             // presses are tracked with isDown below
         }
@@ -170,7 +250,7 @@ public final class DesignatorClient {
         if (CYCLE_KEY.isDown() && mc.screen == null && holding) {
             if (++keyHeldTicks == WHEEL_DELAY) openWheel();
         } else {
-            if (keyHeldTicks > 0 && keyHeldTicks < WHEEL_DELAY && mc.screen == null && holding) cycle(1);
+            if (keyHeldTicks > 0 && keyHeldTicks < WHEEL_DELAY && mc.screen == null && holding) quickReload();
             keyHeldTicks = 0;
         }
         boolean scoped = isScoped();

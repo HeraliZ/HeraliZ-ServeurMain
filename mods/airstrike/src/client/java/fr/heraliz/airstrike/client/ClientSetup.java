@@ -50,6 +50,7 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void onOverlays(RegisterGuiOverlaysEvent event) {
         event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), "binoculars", DesignatorHud::render);
+        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "strike_toast", DesignatorHud::renderToast);
     }
 
     @SubscribeEvent

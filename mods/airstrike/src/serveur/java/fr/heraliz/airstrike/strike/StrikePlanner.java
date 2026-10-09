@@ -78,7 +78,9 @@ public final class StrikePlanner {
         int turnSign = rnd.nextBoolean() ? 1 : -1;
         int profile = type == StrikeType.GUN_RUN ? FlightPath.PROFILE_DIVE : FlightPath.PROFILE_LEVEL;
         double lowY = Math.max(maxGround + 12, base + 20);
-        FlightPath path = type == StrikeType.GUN_RUN
+        // gun run: one dive and strafe then climb away, or two passes crossing each other (config)
+        boolean twoPasses = type == StrikeType.GUN_RUN && AirstrikeConfig.GUN_PASSES.get() >= 2;
+        FlightPath path = twoPasses
                 ? gunRunPath(level, target, dx, dz, speed, alt, base, turnSign)
                 : new FlightPath(target.x, target.z, dx, dz, speed, cruiseY, lowY, approach, levelDist, exit,
                 entry, radius, turnSign, profile, 215, 40);
@@ -206,7 +208,6 @@ public final class StrikePlanner {
     private static final double GUN_APPROACH = 390, GUN_EXIT = 45, GUN_APPROACH2 = 230, GUN_EXIT2 = 480;
     private static final double GUN_TURN_RADIUS = 80, GUN_CROSS_ANGLE = 75;
     private static final double GUN_DIVE_START = 215, GUN_DIVE_END = 40;
-    private static final int GUN_ROUNDS_PER_PASS = 100;
 
     private static double mod2pi(double a) {
         a %= Math.PI * 2;
@@ -309,13 +310,13 @@ public final class StrikePlanner {
     private static void planGunRun(ServerLevel level, FlightPath path, RandomSource rnd, Vec3 target, double base,
                                    List<Drop> out) {
         strafe(level, path, rnd, target, base, path.approach, path.dx, path.dz, out);
-        strafe(level, path, rnd, target, base, path.pass2At, path.dx2, path.dz2, out);
+        if (path.profile == FlightPath.PROFILE_TRACK) strafe(level, path, rnd, target, base, path.pass2At, path.dx2, path.dz2, out);
     }
 
     /** One strafing pass flying over the target at track distance {@code over} along (dx, dz). */
     private static void strafe(ServerLevel level, FlightPath path, RandomSource rnd, Vec3 target, double base,
                                double over, double dx, double dz, List<Drop> out) {
-        int rounds = GUN_ROUNDS_PER_PASS;
+        int rounds = AirstrikeConfig.GUN_ROUNDS.get();
         double rx = -dz, rz = dx;
         double[] gun = AircraftData.JET_GUN;
         for (int i = 0; i < rounds; i++) {

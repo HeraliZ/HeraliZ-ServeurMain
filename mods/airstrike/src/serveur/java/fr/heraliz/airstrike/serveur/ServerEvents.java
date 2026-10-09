@@ -2,9 +2,13 @@ package fr.heraliz.airstrike.serveur;
 
 import fr.heraliz.airstrike.AirstrikeConfig;
 import fr.heraliz.airstrike.command.AirstrikeCommand;
+import fr.heraliz.airstrike.item.PayloadItem;
+import fr.heraliz.airstrike.registry.ModItems;
 import fr.heraliz.airstrike.strike.StrikeManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -22,6 +26,19 @@ public final class ServerEvents {
         public static void onLevelTick(TickEvent.LevelTickEvent event) {
             if (event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel level) {
                 StrikeManager.tick(level);
+            }
+        }
+
+        /** The old single strike payloads a player carries become the cartridge of their level (every 2 s). */
+        @SubscribeEvent
+        public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+            if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer p) || p.tickCount % 40 != 0) return;
+            Inventory inv = p.getInventory();
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                ItemStack s = inv.getItem(i);
+                if (s.getItem() instanceof PayloadItem old) {
+                    inv.setItem(i, new ItemStack(ModItems.cartridge(old.tier()), s.getCount()));
+                }
             }
         }
 

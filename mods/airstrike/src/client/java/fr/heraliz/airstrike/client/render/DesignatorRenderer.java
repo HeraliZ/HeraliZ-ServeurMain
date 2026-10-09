@@ -376,7 +376,8 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
                     led[0], led[1], led[2], 1);
         }
         ps.popPose();
-        renderScreen(ps, buffers.getBuffer(RenderType.eyes(SCREEN)), loaded, old, p, now);
+        renderScreen(ps, buffers.getBuffer(RenderType.eyes(SCREEN)), loaded, old, p, now,
+                DesignatorItem.reprogramProgress(stack, now));
         if (reloading && fx) renderFx(ps, buffers, p, now, light);
 
         VertexConsumer vc = buffers.getBuffer(Sheets.cutoutBlockSheet());
@@ -405,9 +406,20 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
     // Screen
 
     private static void renderScreen(PoseStack ps, VertexConsumer vc, StrikeType loaded, StrikeType old, float p,
-                                     double now) {
+                                     double now, float reprog) {
         PoseStack.Pose pose = ps.last();
         float z = DISPLAY_Z / 16f;
+        if (p >= 1f && reprog < 1f && loaded != null) {
+            // cartridge reprogrammed for another strike of its level: short flash, then the new logo scans in
+            if (reprog < 0.35f) {
+                cell(pose, vc, CELL_WHITE, 0f, 1f, z, 0.8f * (1f - reprog / 0.35f), 0.55f, 1f, 0.6f);
+            } else {
+                float f = smooth(u(reprog, 0.35f, 0.95f));
+                cell(pose, vc, loaded.ordinal(), 0f, f, z, 1f, 1f, 1f, 1f);
+                strip(pose, vc, f, 0.05f, z + 0.0006f, 0.35f, 1f, 0.45f);
+            }
+            return;
+        }
         if (p >= 1f) {
             if (loaded == null) {
                 boolean on = ((long) now / 10) % 2 == 0;
@@ -636,7 +648,7 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
 
     private static void cartridge(StrikeType type, Vector3f pos, Quaternionf rot, PoseStack ps, VertexConsumer vc,
                                   int light, int overlay) {
-        BakedModel model = Minecraft.getInstance().getItemRenderer().getItemModelShaper().getItemModel(ModItems.payload(type));
+        BakedModel model = Minecraft.getInstance().getItemRenderer().getItemModelShaper().getItemModel(ModItems.cartridgeFor(type));
         ps.pushPose();
         ps.translate(pos.x / 16f, pos.y / 16f, pos.z / 16f);
         if (rot != null) ps.mulPose(rot);

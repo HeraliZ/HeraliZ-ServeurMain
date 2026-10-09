@@ -23,6 +23,8 @@ public final class AirstrikeConfig {
     public static final ForgeConfigSpec.DoubleValue PRECISION_POWER;
     public static final ForgeConfigSpec.DoubleValue BOMBLET_POWER;
     public static final ForgeConfigSpec.DoubleValue GUN_DAMAGE;
+    public static final ForgeConfigSpec.IntValue GUN_PASSES;
+    public static final ForgeConfigSpec.IntValue GUN_ROUNDS;
     public static final ForgeConfigSpec.IntValue BOMB_COUNT;
     public static final ForgeConfigSpec.IntValue BOMBLET_COUNT;
     public static final ForgeConfigSpec.BooleanValue DEAFENING;
@@ -46,7 +48,7 @@ public final class AirstrikeConfig {
 
     /** Version of the defaults the file was last upgraded to (see {@link #migrate()}). */
     public static final ForgeConfigSpec.IntValue CONFIG_VERSION;
-    private static final int CURRENT_VERSION = 2;
+    private static final int CURRENT_VERSION = 3;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -68,23 +70,27 @@ public final class AirstrikeConfig {
                 .define("announceNearby", false);
         b.pop();
 
+        // power by cartridge level: Light (strafing run, smoke) < Heavy (bombing, cluster, gas) < Special (guided bomb, napalm)
         b.comment("Damage").push("damage");
         DESTROY_BLOCKS = b.comment("Bombs destroy blocks (set to false for base-protected servers).").define("destroyBlocks", true);
         NAPALM_PLACES_FIRE = b.comment("Napalm places fire blocks (only if destroyBlocks is true).").define("napalmPlacesFire", true);
-        BOMB_POWER = b.comment("Explosion power of each bomb of a bombing run (TNT = 4).").defineInRange("bombPower", 4.5, 0.0, 12.0);
-        PRECISION_POWER = b.comment("Explosion power of the guided bomb.").defineInRange("precisionPower", 9.5, 0.0, 16.0);
-        BOMBLET_POWER = b.comment("Explosion power of each cluster bomblet.").defineInRange("bombletPower", 2.0, 0.0, 8.0);
-        GUN_DAMAGE = b.comment("Damage of each cannon round (strafing run).").defineInRange("gunDamage", 9.0, 0.0, 100.0);
-        BOMB_COUNT = b.comment("Bombs dropped by a bombing run.").defineInRange("bombCount", 8, 1, 8);
-        BOMBLET_COUNT = b.comment("Bomblets released by the cluster bomb.").defineInRange("bombletCount", 24, 4, 64);
+        BOMB_POWER = b.comment("Explosion power of each bomb of a bombing run (TNT = 4).").defineInRange("bombPower", 3.5, 0.0, 12.0);
+        PRECISION_POWER = b.comment("Explosion power of the guided bomb.").defineInRange("precisionPower", 7.0, 0.0, 16.0);
+        BOMBLET_POWER = b.comment("Explosion power of each cluster bomblet.").defineInRange("bombletPower", 1.8, 0.0, 8.0);
+        GUN_DAMAGE = b.comment("Damage of each cannon round (strafing run).").defineInRange("gunDamage", 4.0, 0.0, 100.0);
+        GUN_PASSES = b.comment("Strafing passes of a gun run (1, or 2 with a turn back over the target).")
+                .defineInRange("gunPasses", 1, 1, 2);
+        GUN_ROUNDS = b.comment("Cannon rounds fired by each strafing pass.").defineInRange("gunRounds", 60, 10, 200);
+        BOMB_COUNT = b.comment("Bombs dropped by a bombing run.").defineInRange("bombCount", 6, 1, 8);
+        BOMBLET_COUNT = b.comment("Bomblets released by the cluster bomb.").defineInRange("bombletCount", 16, 4, 64);
         DEAFENING = b.comment("Players close to an explosion hear their ears ring and the world muffled for a few seconds.")
                 .define("deafening", true);
         b.pop();
 
         b.comment("Area effects").push("areas");
         SMOKE_SECONDS = b.comment("Duration of the smoke screen (seconds).").defineInRange("smokeSeconds", 30, 5, 600);
-        GAS_SECONDS = b.comment("Duration of the toxic gas cloud (seconds).").defineInRange("gasSeconds", 30, 5, 600);
-        NAPALM_SECONDS = b.comment("Duration of the napalm fire (seconds).").defineInRange("napalmSeconds", 30, 2, 120);
+        GAS_SECONDS = b.comment("Duration of the toxic gas cloud (seconds).").defineInRange("gasSeconds", 25, 5, 600);
+        NAPALM_SECONDS = b.comment("Duration of the napalm fire (seconds).").defineInRange("napalmSeconds", 20, 2, 120);
         SMOKE_BLINDS = b.comment("Players inside the smoke screen are blinded.").define("smokeBlinds", true);
         SMOKE_BREAKS_AGGRO = b.comment("Monsters lose their target when it hides inside the smoke.").define("smokeBreaksAggro", true);
         NOISE_ATTRACTS_MONSTERS = b.comment("Explosions and cannon fire attract idle monsters (zombies...) within this radius, 0 = off.")
@@ -130,6 +136,17 @@ public final class AirstrikeConfig {
             upgrade(GAS_SECONDS, 40, 30);
             upgrade(NAPALM_SECONDS, 14, 30);
             upgrade(PRECISION_POWER, 7.0, 9.5);
+        }
+        if (version < 3) {
+            // cartridge levels: power brought in line with the level of each strike
+            upgrade(BOMB_POWER, 4.5, 3.5);
+            upgrade(PRECISION_POWER, 9.5, 7.0);
+            upgrade(BOMBLET_POWER, 2.0, 1.8);
+            upgrade(GUN_DAMAGE, 9.0, 4.0);
+            upgrade(BOMB_COUNT, 8, 6);
+            upgrade(BOMBLET_COUNT, 24, 16);
+            upgrade(GAS_SECONDS, 30, 25);
+            upgrade(NAPALM_SECONDS, 30, 20);
         }
         CONFIG_VERSION.set(CURRENT_VERSION);
         SPEC.save();

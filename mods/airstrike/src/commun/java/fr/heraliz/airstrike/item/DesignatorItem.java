@@ -25,9 +25,10 @@ import java.util.function.Consumer;
 
 /**
  * Laser designator binoculars. Hold right click to look through them, left click to mark the target.
- * A payload cartridge is loaded into the bay on top of the laser module (key G): the loaded type and the reload
- * animation live in the stack NBT so that every player sees the hatch open. The zoom, HUD and designation input
- * live in {@code client.DesignatorClient}.
+ * A strike cartridge is loaded into the bay on top of the laser module (key R, held: wheel of the strikes): the loaded
+ * strike and the reload animation live in the stack NBT so that every player sees the hatch open. Choosing another
+ * strike of the same level only reprograms the cartridge already in the bay. The zoom, HUD and designation input live
+ * in {@code client.DesignatorClient}.
  */
 public class DesignatorItem extends Item {
     /** Length of the reload animation (hatch opens, cartridge swapped, hatch closes). */
@@ -35,6 +36,9 @@ public class DesignatorItem extends Item {
     private static final String TAG_CARTRIDGE = "Cartridge";
     private static final String TAG_EJECTED = "Ejected";
     private static final String TAG_RELOAD = "ReloadAt";
+    private static final String TAG_REPROGRAM = "ReprogAt";
+    /** Length of the screen sequence when the cartridge in the bay is reprogrammed for another strike of its level. */
+    public static final int REPROGRAM_TICKS = 12;
 
     /** Client only: blocks raising the binoculars until the server confirms a reload that was just requested. */
     public static long clientReloadBlock = Long.MIN_VALUE;
@@ -78,6 +82,22 @@ public class DesignatorItem extends Item {
         if (previous != null) tag.putString(TAG_EJECTED, previous.id);
         else tag.remove(TAG_EJECTED);
         tag.putLong(TAG_RELOAD, gameTime);
+        tag.remove(TAG_REPROGRAM);
+    }
+
+    /** The cartridge in the bay is set to another strike of its level (no reload, a short screen sequence). */
+    public static void reprogram(ItemStack stack, StrikeType type, long gameTime) {
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putString(TAG_CARTRIDGE, type.id);
+        tag.putLong(TAG_REPROGRAM, gameTime);
+    }
+
+    /** 0..1 progress of the reprogramming screen sequence, 1 when idle. */
+    public static float reprogramProgress(ItemStack stack, double gameTime) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(TAG_REPROGRAM)) return 1f;
+        double t = (gameTime - tag.getLong(TAG_REPROGRAM)) / REPROGRAM_TICKS;
+        return t < 0 || t > 1 ? 1f : (float) t;
     }
 
     /** The cartridge was used to call a strike. */
@@ -122,6 +142,10 @@ public class DesignatorItem extends Item {
         if (loaded != null) {
             tooltip.add(Component.translatable("tooltip.airstrike.designator.loaded",
                     Component.translatable(loaded.translationKey()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(loaded.uiColor)))));
+            if (loaded.tier != null) {
+                tooltip.add(Component.translatable("tooltip.airstrike.designator.tier",
+                        Component.translatable(loaded.tier.translationKey()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(loaded.tier.color)))));
+            }
         } else {
             tooltip.add(Component.translatable("tooltip.airstrike.designator.empty").withStyle(ChatFormatting.GOLD));
         }

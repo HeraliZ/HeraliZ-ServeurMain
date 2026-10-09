@@ -221,12 +221,12 @@
     },
     {
      "type": "minecraft:item",
-     "name": "airstrike:payload_smoke",
+     "name": "airstrike:cartridge_light",
      "weight": 3
     },
     {
      "type": "minecraft:item",
-     "name": "airstrike:payload_supply",
+     "name": "airstrike:cartridge_heavy",
      "weight": 1
     }
    ]

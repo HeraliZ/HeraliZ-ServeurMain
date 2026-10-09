@@ -1,8 +1,8 @@
 package fr.heraliz.airstrike.strike;
 
 import fr.heraliz.airstrike.AirstrikeConfig;
+import fr.heraliz.airstrike.item.CartridgeItem;
 import fr.heraliz.airstrike.item.DesignatorItem;
-import fr.heraliz.airstrike.item.PayloadItem;
 import fr.heraliz.airstrike.registry.ModItems;
 import fr.heraliz.airstrike.registry.ModSounds;
 import net.minecraft.ChatFormatting;
@@ -31,20 +31,9 @@ public final class DesignatorLogic {
         player.playNotifySound(ModSounds.RADIO_DENIED.get(), SoundSource.PLAYERS, 0.8f, 1.0f);
     }
 
-    /** Counts the payload items of a type carried by the player. */
+    /** Counts the cartridges of the level of a strike carried by the player. */
     public static int countPayload(Inventory inv, StrikeType type) {
-        return PayloadItem.countPayload(inv, type);
-    }
-
-    private static boolean consumePayload(Inventory inv, StrikeType type) {
-        for (int i = 0; i < inv.getContainerSize(); i++) {
-            ItemStack s = inv.getItem(i);
-            if (s.getItem() instanceof PayloadItem p && p.getStrikeType() == type) {
-                s.shrink(1);
-                return true;
-            }
-        }
-        return false;
+        return type.tier == null ? 0 : CartridgeItem.count(inv, type.tier);
     }
 
     private static ItemStack heldDesignator(ServerPlayer player) {
@@ -54,10 +43,12 @@ public final class DesignatorLogic {
     }
 
     /**
-     * Loads a cartridge into the held binoculars: one payload item leaves the inventory, the cartridge that was in
-     * the bay (unused) goes back to it. Plays the reload animation for everybody.
+     * Loads a strike into the held binoculars. Same level as the cartridge in the bay: the cartridge is only
+     * reprogrammed (nothing taken, short screen sequence). Otherwise one cartridge of the level leaves the inventory,
+     * the one that was in the bay (unused) goes back to it, and everybody sees the reload animation.
      */
     public static void loadCartridge(ServerPlayer player, StrikeType type) {
+        if (!type.selectable()) return;
         ItemStack held = heldDesignator(player);
         if (held.isEmpty()) return;
         ServerLevel level = player.serverLevel();
@@ -65,20 +56,29 @@ public final class DesignatorLogic {
         if (DesignatorItem.isReloading(held, now)) return;
         StrikeType current = DesignatorItem.cartridge(held);
         if (type == current) return;
+        Component name = Component.translatable(type.translationKey()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(type.uiColor)));
+        if (current != null && current.tier == type.tier) {
+            DesignatorItem.reprogram(held, type, now);
+            level.playSound(null, player.getX(), player.getEyeY(), player.getZ(), ModSounds.DESIGNATOR_BEEP.get(),
+                    SoundSource.PLAYERS, 0.7f, 1.3f);
+            player.displayClientMessage(Component.translatable("msg.airstrike.reprogrammed", name), true);
+            return;
+        }
         boolean creative = player.getAbilities().instabuild;
         Inventory inv = player.getInventory();
+        Component tierName = Component.translatable(type.tier.translationKey());
         if (!creative) {
             if (AirstrikeConfig.CONSUME_PAYLOAD.get()) {
-                if (!consumePayload(inv, type)) {
-                    deny(player, "msg.airstrike.no_payload", Component.translatable(type.translationKey()));
+                if (!CartridgeItem.consume(inv, type.tier)) {
+                    deny(player, "msg.airstrike.no_cartridge_tier", tierName);
                     return;
                 }
                 if (current != null) {
-                    ItemStack back = new ItemStack(ModItems.payload(current));
+                    ItemStack back = new ItemStack(ModItems.cartridgeFor(current));
                     if (!inv.add(back)) player.drop(back, false);
                 }
-            } else if (countPayload(inv, type) <= 0) {
-                deny(player, "msg.airstrike.no_payload", Component.translatable(type.translationKey()));
+            } else if (CartridgeItem.count(inv, type.tier) <= 0) {
+                deny(player, "msg.airstrike.no_cartridge_tier", tierName);
                 return;
             }
         }
@@ -86,8 +86,7 @@ public final class DesignatorLogic {
         DesignatorItem.load(held, type, current, now);
         level.playSound(null, player.getX(), player.getEyeY(), player.getZ(), ModSounds.DESIGNATOR_RELOAD.get(),
                 SoundSource.PLAYERS, 0.9f, 1.0f);
-        player.displayClientMessage(Component.translatable("msg.airstrike.loaded",
-                Component.translatable(type.translationKey()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(type.uiColor)))), true);
+        player.displayClientMessage(Component.translatable("msg.airstrike.loaded", name), true);
     }
 
     public static void designate(ServerPlayer player, Vec3 target) {

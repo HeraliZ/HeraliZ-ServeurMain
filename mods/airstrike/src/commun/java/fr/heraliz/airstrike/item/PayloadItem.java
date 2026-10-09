@@ -1,5 +1,6 @@
 package fr.heraliz.airstrike.item;
 
+import fr.heraliz.airstrike.strike.CartridgeTier;
 import fr.heraliz.airstrike.strike.StrikeType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -15,7 +16,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Strike authorisation module ("recharge"). One is consumed each time the designator calls a strike of its type.
+ * Old strike module of a single strike ("recharge"), replaced by the cartridges of a level ({@link CartridgeItem}). Still
+ * registered so that the stacks already in the worlds keep existing: the server turns them into the cartridge of their
+ * level as soon as a player carries them, and until then they count for that level.
  */
 public class PayloadItem extends Item {
     private final StrikeType type;
@@ -27,6 +30,11 @@ public class PayloadItem extends Item {
 
     public StrikeType getStrikeType() {
         return type;
+    }
+
+    /** Level of the cartridge it becomes (the supply drop, which has none any more: Heavy). */
+    public CartridgeTier tier() {
+        return type.tier != null ? type.tier : CartridgeTier.HEAVY;
     }
 
     /**
@@ -49,7 +57,7 @@ public class PayloadItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable(type.descriptionKey()).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.airstrike.payload.usage").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        tooltip.add(Component.translatable("tooltip.airstrike.payload.old", Component.translatable("item.airstrike.cartridge_" + tier().id))
+                .withStyle(ChatFormatting.GRAY));
     }
 }

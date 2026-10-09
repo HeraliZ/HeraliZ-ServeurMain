@@ -1,6 +1,6 @@
 #Internal, do not edit: lets new versions of the mod update values left at their old defaults.
 #Range: 1 ~ 1000
-configVersion = 2
+configVersion = 3
 
 #Designator (binoculars)
 [designator]
@@ -34,22 +34,28 @@ configVersion = 2
 	napalmPlacesFire = true
 	#Explosion power of each bomb of a bombing run (TNT = 4).
 	#Range: 0.0 ~ 12.0
-	bombPower = 4.5
+	bombPower = 3.5
 	#Explosion power of the guided bomb.
 	#Range: 0.0 ~ 16.0
-	precisionPower = 9.5
+	precisionPower = 7.0
 	#Explosion power of each cluster bomblet.
 	#Range: 0.0 ~ 8.0
-	bombletPower = 2.0
+	bombletPower = 1.8
 	#Damage of each cannon round (strafing run).
 	#Range: 0.0 ~ 100.0
-	gunDamage = 9.0
+	gunDamage = 4.0
+	#Strafing passes of a gun run (1, or 2 with a turn back over the target).
+	#Range: 1 ~ 2
+	gunPasses = 1
+	#Cannon rounds fired by each strafing pass.
+	#Range: 10 ~ 200
+	gunRounds = 60
 	#Bombs dropped by a bombing run.
 	#Range: 1 ~ 8
-	bombCount = 8
+	bombCount = 6
 	#Bomblets released by the cluster bomb.
 	#Range: 4 ~ 64
-	bombletCount = 24
+	bombletCount = 16
 	#Players close to an explosion hear their ears ring and the world muffled for a few seconds.
 	deafening = true
 
@@ -60,10 +66,10 @@ configVersion = 2
 	smokeSeconds = 30
 	#Duration of the toxic gas cloud (seconds).
 	#Range: 5 ~ 600
-	gasSeconds = 30
+	gasSeconds = 25
 	#Duration of the napalm fire (seconds).
 	#Range: 2 ~ 120
-	napalmSeconds = 30
+	napalmSeconds = 20
 	#Players inside the smoke screen are blinded.
 	smokeBlinds = true
 	#Monsters lose their target when it hides inside the smoke.

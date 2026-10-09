@@ -2,9 +2,11 @@ package fr.heraliz.airstrike.client.hud;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import fr.heraliz.airstrike.AirstrikeMod;
+import fr.heraliz.airstrike.client.CartridgeWheelScreen;
 import fr.heraliz.airstrike.client.ClientStrikes;
 import fr.heraliz.airstrike.client.DesignatorClient;
 import fr.heraliz.airstrike.registry.ModItems;
+import fr.heraliz.airstrike.strike.CartridgeTier;
 import fr.heraliz.airstrike.strike.StrikeType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -85,16 +87,17 @@ public final class DesignatorHud {
         panel(g, rx - 4, ly - 4, 126, 64);
         if (type != null) {
             int spare = DesignatorClient.payloadCount(type);
-            ItemStack icon = new ItemStack(ModItems.payload(type));
+            ItemStack icon = new ItemStack(ModItems.cartridgeFor(type));
             g.pose().pushPose();
             g.pose().translate(rx, ly - 1, 0);
             g.pose().scale(1.6f, 1.6f, 1f);
             g.renderItem(icon, 0, 0);
             g.pose().popPose();
             g.drawString(font, Component.translatable(type.translationKey()), rx + 30, ly, 0xFF000000 | type.uiColor, false);
-            g.drawString(font, Component.translatable("hud.airstrike.loaded"), rx + 30, ly + 12, LED, false);
-            g.drawString(font, creative ? "+∞" : "+" + spare, rx + 30 + font.width(Component.translatable("hud.airstrike.loaded")) + 6,
-                    ly + 12, LED_DIM, false);
+            CartridgeTier tier = type.tier != null ? type.tier : CartridgeTier.HEAVY;
+            Component tierName = Component.translatable(tier.translationKey());
+            g.drawString(font, tierName, rx + 30, ly + 12, 0xFF000000 | tier.color, false);
+            g.drawString(font, creative ? "+∞" : "+" + spare, rx + 30 + font.width(tierName) + 6, ly + 12, LED_DIM, false);
         } else {
             boolean blinkEmpty = (gameTime / 8) % 2 == 0;
             g.fill(rx, ly - 1, rx + 25, ly + 24, 0x50000000);
@@ -107,6 +110,44 @@ public final class DesignatorHud {
 
         // -- bottom: status line
         drawStatus(g, font, p, cx, cy + (int) (h * 0.36f), gameTime, type != null);
+        RenderSystem.disableBlend();
+    }
+
+    /** Strike just loaded: a glass label at the bottom of the screen for 2.5 s (icon, name, level of the cartridge). */
+    public static void renderToast(ForgeGui gui, GuiGraphics g, float pt, int w, int h) {
+        Minecraft mc = Minecraft.getInstance();
+        StrikeType t = DesignatorClient.toastType;
+        if (t == null || t.tier == null || mc.level == null || mc.options.hideGui || mc.player == null) return;
+        float age = mc.level.getGameTime() - DesignatorClient.toastTime + pt;
+        if (age < 0 || age > 50) return;
+        float a = Math.min(1f, age / 4f) * (age > 42 ? 1f - (age - 42) / 8f : 1f);
+        if (a <= 0.01f) return;
+        Font font = mc.font;
+        int alpha = (int) (a * 255);
+        Component name = Component.literal(Component.translatable(t.translationKey()).getString().toUpperCase(Locale.ROOT))
+                .withStyle(st -> st.withFont(CartridgeWheelScreen.BOLD));
+        Component tier = Component.literal(Component.translatable("hud.airstrike.toast.cartridge",
+                        Component.translatable(t.tier.translationKey())).getString().toUpperCase(Locale.ROOT))
+                .withStyle(st -> st.withFont(CartridgeWheelScreen.FONT));
+        float tierScale = 0.7f;
+        int tw = font.width(name), cw = (int) (font.width(tier) * tierScale) + 10;
+        int pw = 26 + tw + 8 + cw + 8;
+        int x0 = w / 2 - pw / 2;
+        int y0 = h - 64 + (int) ((1f - Math.min(1f, age / 4f)) * 6f);
+        RenderSystem.enableBlend();
+        g.fill(x0 + 1, y0, x0 + pw - 1, y0 + 22, (int) (alpha * 0.8f) << 24 | 0x0D0F14);
+        g.fill(x0, y0 + 1, x0 + 1, y0 + 21, (int) (alpha * 0.8f) << 24 | 0x0D0F14);
+        g.fill(x0 + pw - 1, y0 + 1, x0 + pw, y0 + 21, (int) (alpha * 0.8f) << 24 | 0x0D0F14);
+        g.fill(x0 + 2, y0, x0 + pw - 2, y0 + 1, alpha << 24 | t.tier.color);
+        CartridgeWheelScreen.icon(g, t.ordinal(), x0 + 6, y0 + 4, 14f, alpha << 24 | t.uiColor);
+        g.drawString(font, name, x0 + 26, y0 + 7, alpha << 24 | 0xECEEF2, false);
+        int cx = x0 + 26 + tw + 8;
+        g.fill(cx, y0 + 5, cx + cw, y0 + 17, (alpha * 40 / 255) << 24 | t.tier.color);
+        g.pose().pushPose();
+        g.pose().translate(cx + 5, y0 + 8, 0);
+        g.pose().scale(tierScale, tierScale, 1f);
+        g.drawString(font, tier, 0, 0, alpha << 24 | t.tier.color, false);
+        g.pose().popPose();
         RenderSystem.disableBlend();
     }
 

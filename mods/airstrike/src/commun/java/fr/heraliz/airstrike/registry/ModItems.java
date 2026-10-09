@@ -1,8 +1,10 @@
 package fr.heraliz.airstrike.registry;
 
 import fr.heraliz.airstrike.AirstrikeMod;
+import fr.heraliz.airstrike.item.CartridgeItem;
 import fr.heraliz.airstrike.item.DesignatorItem;
 import fr.heraliz.airstrike.item.PayloadItem;
+import fr.heraliz.airstrike.strike.CartridgeTier;
 import fr.heraliz.airstrike.strike.StrikeType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -20,6 +22,22 @@ public final class ModItems {
     public static final RegistryObject<DesignatorItem> DESIGNATOR = ITEMS.register("designator",
             () -> new DesignatorItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
 
+    /** Strike cartridges, one per level. */
+    public static final Map<CartridgeTier, RegistryObject<CartridgeItem>> CARTRIDGES = new EnumMap<>(CartridgeTier.class);
+
+    static {
+        for (CartridgeTier tier : CartridgeTier.values()) {
+            Rarity rarity = switch (tier) {
+                case LIGHT -> Rarity.UNCOMMON;
+                case HEAVY -> Rarity.RARE;
+                case SPECIAL -> Rarity.EPIC;
+            };
+            CARTRIDGES.put(tier, ITEMS.register("cartridge_" + tier.id,
+                    () -> new CartridgeItem(tier, new Item.Properties().stacksTo(16).rarity(rarity))));
+        }
+    }
+
+    /** Old single strike payloads: kept for the stacks already in the worlds (turned into cartridges). */
     public static final Map<StrikeType, RegistryObject<PayloadItem>> PAYLOADS = new EnumMap<>(StrikeType.class);
 
     static {
@@ -34,6 +52,15 @@ public final class ModItems {
 
     public static PayloadItem payload(StrikeType type) {
         return PAYLOADS.get(type).get();
+    }
+
+    public static CartridgeItem cartridge(CartridgeTier tier) {
+        return CARTRIDGES.get(tier).get();
+    }
+
+    /** Cartridge drawn in the bay of the binoculars for a strike (the supply drop, without a level: Heavy). */
+    public static CartridgeItem cartridgeFor(StrikeType type) {
+        return cartridge(type.tier != null ? type.tier : CartridgeTier.HEAVY);
     }
 
     private ModItems() {
