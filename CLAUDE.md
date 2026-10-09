@@ -470,6 +470,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   leurs comptes dès le premier démarrage. `ops.json` n'est pas dans le dépôt.
 - **Monde** : `server.properties` → `level-name=HeraliZ`. Le dossier du monde doit porter ce nom. Les configs de
   `serveur/defaultconfigs/` sont copiées par Forge dans tout nouveau monde.
+- **Nouvelle carte (en cours, hors dépôt)** : trois mondes séparés : le spawn, la carte (loot, villes, extractions) et
+  les bases des joueurs. Au spawn, un PNJ téléportera au hasard sur la carte (à faire quand la carte sera finie). Les
+  territoires des clans ne marchent aujourd'hui que dans l'overworld (`Territoires.monde()`) : à rendre réglable si la
+  carte n'est pas l'overworld ; l'extraction renvoie au spawn (`Destination`, réglable).
 - **Rien n'a été testé en jeu** depuis la séparation client / serveur (version 2.x des groupes, Matchs 0.3.0, pack
   imposé de heraliz_interface 1.1.0).
 - **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
