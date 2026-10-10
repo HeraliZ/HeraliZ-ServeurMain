@@ -7,17 +7,6 @@ function validateUsername(value) {
     return value
 }
 
-// Checked by the server-side SimpleLogin mod, not by the launcher.
-function validatePassword(value) {
-    if (typeof value !== 'string' || value.length < 6 || value.length > 64) {
-        throw new Error('Le mot de passe doit contenir 6 à 64 caractères.')
-    }
-    if (/[\u0000-\u001f\u007f]/.test(value) || value.trim() !== value) {
-        throw new Error('Le mot de passe ne doit pas commencer ou finir par un espace.')
-    }
-    return value
-}
-
 // Minecraft uses UUID.nameUUIDFromBytes("OfflinePlayer:" + name), including case.
 // This identifies a local profile; it does NOT authenticate the player's identity.
 function createOfflineProfile(username) {
@@ -34,4 +23,4 @@ function createOfflineProfile(username) {
     }
 }
 
-module.exports = { validateUsername, validatePassword, createOfflineProfile }
+module.exports = { validateUsername, createOfflineProfile }

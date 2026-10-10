@@ -28,7 +28,7 @@ function createWindow() {
     win = new BrowserWindow({
         title: 'HeraliZ Launcher', width: 1180, height: 780,
         minWidth: 940, minHeight: 680, frame: false, show: false,
-        backgroundColor: '#0b0d0e',
+        backgroundColor: '#06070a',
         icon: path.join(__dirname, 'app', 'assets', 'images', process.platform === 'win32' ? 'heraliz-icon.ico' : 'heraliz-emblem.png'),
         webPreferences: {
             preload: path.join(__dirname, 'app', 'preload.js'),
@@ -75,9 +75,9 @@ else {
         handle('settings', value => service.saveSettings(value))
         handle('status', () => service.getServerStatus())
         handle('launch', () => service.launch())
-        handle('folder', () => service.openGameFolder())
         handle('link', async name => {
-            const links = { discord: config.discordUrl, releases: 'https://github.com/HeraliZ/HeraliZ-ServeurMain/releases' }
+            // Aucun lien vers les fichiers du serveur ou du jeu (choix du propriétaire : ne pas faciliter le vol des jars).
+            const links = { discord: config.discordUrl }
             if (!Object.hasOwn(links, name) || !links[name]) throw new Error('Ce lien n’est pas encore configuré.')
             const url = httpsUrl(links[name])
             if (name === 'discord' && !['discord.gg', 'discord.com'].includes(url.hostname)) throw new Error('Lien Discord invalide.')

@@ -6,108 +6,245 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
     <title>HeraliZ Launcher</title>
     <link rel="stylesheet" href="assets/css/heraliz.css">
+    <script src="assets/js/nouveautes.js" defer></script>
+    <script src="assets/js/topo.js" defer></script>
     <script src="assets/js/renderer.js" defer></script>
 </head>
-<body data-screen="splash">
+<body data-screen="splash" data-tab="accueil">
     <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
-        <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h7m4 0h5M4 17h3m4 0h9M11 3v8M7 13v8"/></symbol>
-        <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z M8 12l3 3 5-6"/></symbol>
-        <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>
-        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
-        <symbol id="i-box" viewBox="0 0 24 24"><path d="m3 7 9-4 9 4v11l-9 4-9-4Z M3 7l9 4 9-4M12 11v11M8 5l9 4"/></symbol>
-        <symbol id="i-discord" viewBox="0 0 24 24"><path d="m8 5-4 1-3 13 6 2 1-3m8-13 4 1 3 13-6 2-1-3M7 7a14 14 0 0 1 10 0M5 16a15 15 0 0 0 14 0"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/></symbol>
-        <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 5h7l2 3h9v12H3Z"/></symbol>
-        <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+        <symbol id="i-discord" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M19.3 5.3A17 17 0 0 0 15 4l-.5 1a15.6 15.6 0 0 0-5 0L9 4a17 17 0 0 0-4.3 1.3C2 9.4 1.3 13.3 1.6 17.2a17.2 17.2 0 0 0 5.3 2.7l1.1-1.8a11 11 0 0 1-1.8-.9l.4-.3a12.2 12.2 0 0 0 10.8 0l.4.3a11 11 0 0 1-1.8.9l1.1 1.8a17.1 17.1 0 0 0 5.3-2.7c.4-4.5-.7-8.4-3.1-11.9ZM8.7 14.8c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2Zm6.6 0c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2Z"/></symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-5-6 6 6-6 6"/></symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+        <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></symbol>
+        <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+        <symbol id="i-skull" viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-7 7c0 2.4 1.2 4 2.5 5v3h9v-3c1.3-1 2.5-2.6 2.5-5a7 7 0 0 0-7-7Z"/><circle cx="9.5" cy="10.5" r="1.5"/><circle cx="14.5" cy="10.5" r="1.5"/><path d="M10 18v2M14 18v2"/></symbol>
+        <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></symbol>
+        <symbol id="i-hammer" viewBox="0 0 24 24"><path d="m14 6 4 4M4 20l9-9M12 4l6 6-3 3-6-6Z"/></symbol>
+        <symbol id="i-memory" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="1.5"/><path d="M7 7v10M11 7v10M15 7v10M6 17v3M18 17v3"/></symbol>
+        <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
         <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></symbol>
+        <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
+        <symbol id="i-cart" viewBox="0 0 24 24"><path d="M4 5h2l2 10h10l2-7H7"/><circle cx="10" cy="19" r="1.3"/><circle cx="17" cy="19" r="1.3"/></symbol>
     </defs></svg>
 
-    <header class="titlebar">
-        <span class="titlebar-brand">HERALI<span>Z</span></span>
-        <div class="window-actions">
-            <button data-window="minimize" aria-label="Réduire">−</button>
-            <button data-window="maximize" aria-label="Agrandir ou restaurer">□</button>
-            <button data-window="close" class="close-window" aria-label="Fermer">×</button>
+    <div class="fond" aria-hidden="true">
+        <canvas id="topo"></canvas>
+        <div class="balise"><i></i><i></i><b></b><span>ZONE HERALIZ</span></div>
+        <div class="voile"></div>
+        <div class="grain"></div>
+    </div>
+
+    <header class="titre">
+        <div class="marque"><img src="assets/images/heraliz-emblem.png" alt=""><span>HERALI<b>Z</b></span></div>
+        <div class="fen">
+            <button data-window="minimize" aria-label="Réduire">–</button>
+            <button data-window="maximize" aria-label="Agrandir ou restaurer">▢</button>
+            <button data-window="close" class="fermer-fenetre" aria-label="Fermer">✕</button>
         </div>
     </header>
 
-    <div class="stage">
-        <!-- 1. Loading -->
-        <section class="screen screen-splash" aria-label="Chargement">
-            <img class="splash-logo" src="assets/images/heraliz-logo.png" alt="HeraliZ">
-            <div class="splash-bar"><span id="splash-fill"></span></div>
-            <p class="splash-text" id="splash-text">Chargement</p>
-        </section>
+    <!-- Démarrage -->
+    <section class="ecran ecran-splash" aria-label="Chargement">
+        <div class="halo"></div>
+        <img class="embleme" src="assets/images/heraliz-emblem.png" alt="HeraliZ">
+        <div class="chargement">
+            <div class="barre"><i id="splash-fill"></i></div>
+            <div class="l"><span id="splash-text">Chargement</span><span id="splash-percent">0 %</span></div>
+        </div>
+        <div class="pied">HERALIZ LAUNCHER · <span id="splash-version"></span></div>
+    </section>
 
-        <!-- 2. Identity -->
-        <section class="screen screen-identity" aria-label="Ton identité">
-            <form id="profile-form" class="identity-card">
-                <img class="identity-logo" src="assets/images/heraliz-logo.png" alt="HeraliZ">
-                <h1>Choisis ton pseudo Minecraft</h1>
-                <div class="input-wrap"><svg><use href="#i-user"/></svg><input id="username" name="username" autocomplete="off" spellcheck="false" minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" placeholder="TonPseudo" aria-label="Pseudo Minecraft" aria-describedby="username-hint" required></div>
-                <p class="field-hint" id="username-hint">3 à 16 caractères : lettres, chiffres ou _</p>
-                <div class="input-wrap input-gap"><svg><use href="#i-lock"/></svg><input id="password" name="password" type="password" autocomplete="new-password" minlength="6" maxlength="64" placeholder="Mot de passe" aria-label="Mot de passe" aria-describedby="password-hint" required></div>
-                <div class="input-wrap input-gap-sm"><svg><use href="#i-lock"/></svg><input id="password-confirm" name="password-confirm" type="password" autocomplete="new-password" minlength="6" maxlength="64" placeholder="Confirmer le mot de passe" aria-label="Confirmer le mot de passe" required></div>
-                <p class="field-hint" id="password-hint">Première connexion : il protège ton pseudo sur le serveur. Déjà inscrit ? Entre le même.</p>
-                <p class="rule-note"><svg><use href="#i-shield"/></svg><span><strong>Un joueur, un compte.</strong> Double compte = ban.</span></p>
-                <!-- Old profiles without a password land here once. -->
-                <p class="password-note" id="password-missing" hidden>Ton pseudo n’a pas encore de mot de passe : choisis-en un pour le protéger.</p>
-                <label class="checkbox-line" for="accept-rules"><input type="checkbox" id="accept-rules" required><span>J’accepte le <button type="button" class="inline-link" data-dialog="rules-dialog">règlement</button></span></label>
-                <button class="primary full" type="submit" id="save-profile">VALIDER <svg><use href="#i-arrow"/></svg></button>
-                <p id="profile-feedback" class="feedback" role="status" aria-live="polite"></p>
-                <button type="button" class="text-button back-link" id="identity-back" hidden>Annuler</button>
-            </form>
-        </section>
-
-        <!-- 3. Main menu -->
-        <section class="screen screen-main" aria-label="Menu principal">
-            <div class="main-top">
-                <button class="chip" id="change-profile" title="Changer de pseudo"><svg><use href="#i-user"/></svg><span id="current-user"></span></button>
-                <button class="icon-button" data-dialog="settings-dialog" title="Paramètres" aria-label="Paramètres"><svg><use href="#i-sliders"/></svg></button>
-                <button class="icon-button logout-button" id="logout" data-dialog="logout-dialog" title="Se déconnecter" aria-label="Se déconnecter"><svg><use href="#i-logout"/></svg></button>
+    <!-- Pseudo (en attendant les comptes HeraliZ du site) -->
+    <section class="ecran ecran-identite" aria-label="Ton pseudo">
+        <div class="cx-gauche">
+            <img class="logo" src="assets/images/heraliz-logo.png" alt="HeraliZ">
+            <p class="pitch">La survie façon DayZ sur Minecraft : loot, zombies, clans, bases et raids.</p>
+            <div class="atouts">
+                <div class="atout"><div class="ic"><svg class="i"><use href="#i-skull"/></svg></div><div><div class="t">Survie sans pitié</div><div class="d">Zombies, faim, soins et loot rare dans les villes.</div></div></div>
+                <div class="atout"><div class="ic"><svg class="i"><use href="#i-flag"/></svg></div><div><div class="t">Clans &amp; territoires</div><div class="d">Prends des villes, gagne des hérals et grimpe au classement.</div></div></div>
+                <div class="atout"><div class="ic"><svg class="i"><use href="#i-hammer"/></svg></div><div><div class="t">Bases &amp; raids</div><div class="d">Construis, protège et pille les bases des autres.</div></div></div>
             </div>
+            <button class="discord-cta" data-link="discord"><svg class="i"><use href="#i-discord"/></svg><span class="txt"><span class="t">Rejoindre le Discord</span><span class="d">Annonces, entraide, recrutement des clans</span></span><span class="fl"><svg class="i"><use href="#i-arrow"/></svg></span></button>
+        </div>
+        <form id="profile-form" class="formulaire" novalidate>
+            <div class="eyebrow caps">Bienvenue, survivant</div>
+            <h1 class="caps">Choisis ton pseudo</h1>
+            <p class="intro">Ton pseudo Minecraft sur HeraliZ. En jeu, tu le protèges avec un mot de passe : <b>/register</b> la première fois, puis <b>/login</b>.</p>
+            <div class="champ">
+                <label for="username">Pseudo Minecraft</label>
+                <div class="input"><svg class="i"><use href="#i-user"/></svg><input id="username" name="username" autocomplete="off" spellcheck="false" maxlength="16" placeholder="TonPseudo" aria-describedby="username-hint"><span class="ok" id="username-ok" hidden><svg class="i"><use href="#i-check"/></svg>Pseudo valide</span></div>
+            </div>
+            <div class="regle"><svg class="i"><use href="#i-shield"/></svg><span><b>Un joueur, un compte.</b> Un double compte = bannissement.</span></div>
+            <label class="coche" for="accept-rules"><input type="checkbox" id="accept-rules"><span class="box"><svg class="i"><use href="#i-check"/></svg></span><span>J’accepte le <button type="button" class="lien" data-dialog="rules-dialog">règlement</button> du serveur</span></label>
+            <button class="valider" type="submit" id="save-profile">ENTRER DANS LA ZONE <svg class="i"><use href="#i-arrow"/></svg></button>
+            <p id="profile-feedback" class="feedback" role="status" aria-live="polite"></p>
+            <p class="bas" id="username-hint">3 à 16 caractères : lettres, chiffres ou _</p>
+            <button type="button" class="retour" id="identity-back" hidden>Annuler</button>
+        </form>
+    </section>
 
-            <div class="main-center">
-                <img class="main-logo" src="assets/images/heraliz-logo.png" alt="HeraliZ">
-                <button id="play" class="play">JOUER</button>
-                <div class="launch-progress" id="progress-area" hidden>
-                    <div><span class="progress-label"><span class="spinner"></span><span id="progress-message" role="status" aria-live="polite"></span></span><span id="progress-percent"></span></div>
-                    <progress id="progress" max="100" aria-label="Préparation du jeu"></progress>
+    <!-- Menu principal -->
+    <section class="ecran ecran-principal" aria-label="Menu principal">
+        <nav class="nav">
+            <div class="onglets" role="tablist">
+                <button class="onglet caps" role="tab" data-tab="accueil">Accueil</button>
+                <button class="onglet caps" role="tab" data-tab="nouveautes">Nouveautés</button>
+                <button class="onglet caps" role="tab" data-tab="reglement">Règlement</button>
+                <button class="onglet caps" role="tab" data-tab="boutique">Boutique<span class="bientot">Bientôt</span></button>
+            </div>
+            <div class="droite">
+                <button class="discord-nav" data-link="discord"><svg class="i"><use href="#i-discord"/></svg><span>Discord</span></button>
+                <div class="profil-zone">
+                    <button class="profil" id="profil-bouton" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-profil">
+                        <canvas class="tete" width="8" height="8" aria-hidden="true"></canvas>
+                        <span class="noms"><span class="nom" id="current-user"></span><span class="sous"><span class="point vert"></span>Profil local</span></span>
+                        <svg class="i chevron"><use href="#i-chevron"/></svg>
+                    </button>
+                    <div class="menu-profil" id="menu-profil" role="menu" hidden>
+                        <button role="menuitem" id="change-profile"><svg class="i"><use href="#i-swap"/></svg>Changer de pseudo</button>
+                        <button role="menuitem" id="logout" data-dialog="logout-dialog"><svg class="i"><use href="#i-logout"/></svg>Se déconnecter</button>
+                    </div>
+                </div>
+                <button class="rond" data-dialog="settings-dialog" aria-label="Paramètres" title="Paramètres"><svg class="i"><use href="#i-gear"/></svg></button>
+            </div>
+        </nav>
+
+        <main class="contenu">
+            <div class="page page-accueil">
+                <div class="hero">
+                    <div class="surtitre caps">Version 1 · Saison 1</div>
+                    <img class="logo" src="assets/images/heraliz-logo.png" alt="HeraliZ">
+                    <p class="pitch">Pille les villes, construis ta base, survis aux hordes. <b>Seul ou en clan</b>, chaque nuit peut être la dernière.</p>
+                    <div class="badges"><span class="badge"><svg class="i"><use href="#i-skull"/></svg>Zombies</span><span class="badge"><svg class="i"><use href="#i-flag"/></svg>Clans &amp; territoires</span><span class="badge"><svg class="i"><use href="#i-hammer"/></svg>Bases &amp; raids</span></div>
+                    <button class="discord-cta" data-link="discord"><svg class="i"><use href="#i-discord"/></svg><span class="txt"><span class="t">Rejoindre le Discord</span><span class="d">Annonces, entraide, recrutement des clans</span></span><span class="fl"><svg class="i"><use href="#i-arrow"/></svg></span></button>
+                </div>
+                <div class="actus">
+                    <div class="entete"><span class="l caps">Nouveautés</span><span class="f"></span><span class="fleches" id="actus-fleches"><button id="actus-prec" aria-label="Nouveautés plus récentes">‹</button><button id="actus-suiv" aria-label="Nouveautés plus anciennes">›</button></span></div>
+                    <div class="cartes" id="actus-cartes"></div>
                 </div>
             </div>
 
-            <footer class="main-bottom">
-                <div class="server-state"><span class="status-dot" id="server-dot"></span><span id="server-status">Vérification du serveur…</span><button id="refresh-status" class="text-button" aria-label="Actualiser le statut du serveur" title="Actualiser">↻</button></div>
-                <button class="discord-button" data-link="discord" id="discord-button"><svg><use href="#i-discord"/></svg>Discord</button>
-                <span class="edition">FORGE 1.20.1</span>
-            </footer>
-        </section>
-    </div>
+            <div class="page page-nouveautes">
+                <div class="page-titre"><span class="l caps">Nouveautés</span><span class="f"></span></div>
+                <div class="grille-actus" id="toutes-actus"></div>
+            </div>
 
-    <dialog id="rules-dialog" aria-labelledby="rules-title">
-        <div class="dialog-heading"><span class="eyebrow">CODE DES SURVIVANTS</span><button class="dialog-close" aria-label="Fermer le règlement">×</button></div>
-        <h2 id="rules-title">Une zone. Des règles.</h2>
-        <ol class="rules-list"><li><span>01</span><div><h3>Un joueur, un compte.</h3><p>Les doubles comptes sont interdits et entraînent un bannissement immédiat. Changer de pseudo ne permet pas de contourner une sanction.</p></div></li><li><span>02</span><div><h3>Respecte ton identité.</h3><p>Conserve le même pseudo. N’utilise jamais le pseudo d’un autre joueur ou d’un membre du staff.</p></div></li><li><span>03</span><div><h3>Joue loyalement.</h3><p>La triche, l’exploitation de bugs et le harcèlement n’ont pas leur place sur HeraliZ. Signale les problèmes à l’équipe.</p></div></li></ol>
-        <p class="dialog-note">La connexion par pseudo n’authentifie pas ton identité. Les contrôles et les sanctions relèvent du serveur et de son équipe.</p><button class="primary full dialog-close">J’AI COMPRIS</button>
+            <div class="page page-reglement">
+                <div class="panneau-page">
+                    <div class="eyebrow caps">Code des survivants</div>
+                    <h2 class="caps">Une zone. Des règles.</h2>
+                    <div class="regles" data-regles></div>
+                    <p class="note">Les contrôles et les sanctions sont faits par le serveur et son équipe.</p>
+                </div>
+            </div>
+
+            <div class="page page-boutique">
+                <div class="panneau-page centre">
+                    <div class="pastille-or"><svg class="i"><use href="#i-cart"/></svg></div>
+                    <div class="eyebrow caps or">Bientôt</div>
+                    <h2 class="caps">La boutique arrive</h2>
+                    <p class="note">Elle ouvrira avec le site HeraliZ. Rejoins le Discord pour être prévenu.</p>
+                    <button class="discord-cta" data-link="discord"><svg class="i"><use href="#i-discord"/></svg><span class="txt"><span class="t">Rejoindre le Discord</span><span class="d">Annonces, entraide, recrutement des clans</span></span><span class="fl"><svg class="i"><use href="#i-arrow"/></svg></span></button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="dock">
+            <div class="serveur" id="serveur-infos">
+                <div class="bloc"><div class="l">Serveur</div><div class="v"><span class="point" id="server-dot"></span><span id="server-status">Vérification…</span></div></div>
+                <div class="sep"></div>
+                <div class="bloc" id="bloc-joueurs"><div class="l">Survivants</div><div class="v"><span id="server-players">—</span><small id="server-max"></small><span class="jauge"><i id="server-gauge"></i></span></div></div>
+                <div class="sep"></div>
+                <div class="bloc"><div class="l">Ping</div><div class="v"><span id="server-ping">—</span><small>ms</small></div></div>
+                <div class="sep"></div>
+                <div class="bloc"><div class="l">Version</div><div class="v">1.20.1 <small>· Forge</small></div></div>
+            </div>
+            <div class="prep" id="prep" hidden>
+                <div class="haut"><span class="etape" id="progress-message" role="status" aria-live="polite"></span><span class="vit" id="progress-detail"></span></div>
+                <div class="barre" id="progress-bar"><i id="progress-fill"></i></div>
+                <div class="etapes" id="etapes">
+                    <span data-etape="prepare"><b></b>Pack HeraliZ</span>
+                    <span data-etape="java"><b></b>Java 17</span>
+                    <span data-etape="fichiers"><b></b>Jeu et mods</span>
+                    <span data-etape="install"><b></b>Forge</span>
+                    <span data-etape="launch"><b></b>Lancement</span>
+                </div>
+            </div>
+            <div class="boutons">
+                <button class="jouer" id="play"><span class="tri"></span><span class="spin" hidden></span><span class="lab" id="play-label">JOUER</span></button>
+            </div>
+        </footer>
+    </section>
+
+    <template id="regles-modele">
+        <ol class="liste-regles">
+            <li><span class="num">01</span><div><h3>Un joueur, un compte.</h3><p>Les doubles comptes sont interdits et entraînent un bannissement immédiat. Changer de pseudo ne permet pas de contourner une sanction.</p></div></li>
+            <li><span class="num">02</span><div><h3>Respecte ton identité.</h3><p>Garde le même pseudo. N’utilise jamais le pseudo d’un autre joueur ou d’un membre du staff.</p></div></li>
+            <li><span class="num">03</span><div><h3>Joue loyalement.</h3><p>La triche, l’exploitation de bugs et le harcèlement n’ont pas leur place sur HeraliZ. Signale les problèmes à l’équipe.</p></div></li>
+        </ol>
+    </template>
+
+    <dialog id="rules-dialog" class="petite" aria-labelledby="rules-title">
+        <button class="fermer dialog-close" aria-label="Fermer le règlement">✕</button>
+        <div class="eyebrow caps">Code des survivants</div>
+        <h2 id="rules-title" class="caps">Une zone. Des règles.</h2>
+        <div class="regles" data-regles></div>
+        <button class="btn1 plein dialog-close">J’ai compris</button>
     </dialog>
 
-    <dialog id="settings-dialog" aria-labelledby="settings-title">
-        <div class="dialog-heading"><span class="eyebrow">PARAMÈTRES</span><button class="dialog-close" aria-label="Fermer les paramètres">×</button></div>
-        <h2 id="settings-title">Paramètres du jeu</h2>
-        <form id="settings-form"><div class="range-label"><label for="memory">Mémoire allouée</label><output id="memory-value" for="memory">4 Go</output></div><input type="range" id="memory" min="2" max="8" step="1" value="4"><p class="field-hint">Une partie de la mémoire reste réservée à ton ordinateur.</p>
-            <label class="setting-toggle" for="fullscreen"><span>Plein écran<small>Lancer Minecraft en plein écran.</small></span><input type="checkbox" id="fullscreen"></label>
-            <label class="setting-toggle" for="auto-connect"><span>Connexion directe<small>Rejoindre HeraliZ au lancement du jeu.</small></span><input type="checkbox" id="auto-connect"></label>
-            <div class="settings-info"><svg><use href="#i-box"/></svg><p><strong>Minecraft 1.20.1 · Forge · Java 17</strong><br>Le jeu et le pack sont vérifiés à chaque lancement.</p></div>
-            <p id="settings-feedback" class="feedback" role="status"></p><button class="primary full" type="submit">ENREGISTRER</button>
-        </form>
-        <div class="settings-links"><button class="text-button" id="game-folder"><svg><use href="#i-folder"/></svg>Ouvrir le dossier du jeu</button><button class="text-button" data-link="releases">Versions du launcher ↗</button></div>
-        <p class="settings-version">HeraliZ <span id="app-version"></span></p>
+    <dialog id="settings-dialog" class="modale" aria-labelledby="settings-title">
+        <div class="cote">
+            <div class="t caps">Paramètres</div>
+            <div class="st">Launcher HeraliZ</div>
+            <div class="menu" role="tablist">
+                <button class="on" role="tab" data-panneau="jeu"><svg class="i"><use href="#i-memory"/></svg>Jeu</button>
+                <button role="tab" data-panneau="apropos"><svg class="i"><use href="#i-info"/></svg>À propos</button>
+            </div>
+            <div class="version">Version <span id="app-version"></span></div>
+        </div>
+        <div class="corps">
+            <button class="fermer dialog-close" aria-label="Fermer les paramètres">✕</button>
+            <form id="settings-form" class="panneau" data-panneau="jeu">
+                <h2 id="settings-title" class="caps">Jeu</h2>
+                <p class="sous">Réglages appliqués au prochain lancement.</p>
+                <div class="bloc-reglage">
+                    <div class="ligne"><div><label class="nom" for="memory">Mémoire allouée au jeu</label><div class="desc" id="memory-desc"></div></div><output class="valeur" id="memory-value" for="memory"></output></div>
+                    <div class="curseur-ram"><div class="piste"></div><div class="reco" id="memory-reco"></div><div class="rempli" id="memory-fill"></div><input type="range" id="memory" min="2" max="8" step="1" value="4"></div>
+                    <div class="graduations" id="memory-grad"></div>
+                    <div class="reco-txt" id="memory-reco-txt"><span class="point vert"></span>Recommandé pour HeraliZ : 5 à 8 Go</div>
+                </div>
+                <label class="bloc-reglage ligne" for="auto-connect"><span><span class="nom">Connexion directe</span><span class="desc">Rejoindre HeraliZ dès que le jeu est lancé.</span></span><input type="checkbox" class="toggle" id="auto-connect"></label>
+                <label class="bloc-reglage ligne" for="fullscreen"><span><span class="nom">Plein écran</span><span class="desc">Lancer Minecraft en plein écran.</span></span><input type="checkbox" class="toggle" id="fullscreen"></label>
+                <div class="info">
+                    <div class="c"><div class="l">Pack de mods</div><div class="v"><span class="point vert"></span>Vérifié à chaque lancement</div></div>
+                    <div class="c"><div class="l">Java</div><div class="v">17 · intégré</div></div>
+                </div>
+                <div class="actions"><p id="settings-feedback" class="feedback" role="status"></p><button class="btn1" type="submit">Enregistrer</button></div>
+            </form>
+            <div class="panneau" data-panneau="apropos" hidden>
+                <h2 class="caps">À propos</h2>
+                <p class="sous">HeraliZ Launcher <span id="about-version"></span></p>
+                <div class="bloc-reglage">
+                    <div class="nom">Le launcher officiel de HeraliZ</div>
+                    <p class="desc">Il installe et vérifie Minecraft 1.20.1, Forge et le pack de mods du serveur à chaque lancement.</p>
+                </div>
+                <div class="bloc-reglage">
+                    <div class="nom">Crédits</div>
+                    <p class="desc">Basé sur Helios Launcher de Daniel Scalzi (licence MIT). Police DM Sans (licence SIL Open Font). Minecraft est une marque de Mojang Studios ; HeraliZ n’est pas affilié à Mojang ni à Microsoft.</p>
+                </div>
+            </div>
+        </div>
     </dialog>
-    <dialog id="logout-dialog" class="small-dialog" aria-labelledby="logout-title">
-        <h2 id="logout-title">Se déconnecter ?</h2>
-        <p class="muted">Ton pseudo <strong id="logout-user"></strong> et son mot de passe seront oubliés sur ce PC. Note bien ton mot de passe : il te faudra le même pour revenir.</p>
+
+    <dialog id="logout-dialog" class="petite" aria-labelledby="logout-title">
+        <h2 id="logout-title" class="caps">Se déconnecter ?</h2>
+        <p class="desc">Le pseudo <b id="logout-user"></b> sera oublié sur ce PC. Ton compte en jeu et ton mot de passe <b>/login</b> ne changent pas.</p>
         <p id="logout-feedback" class="feedback" role="status"></p>
-        <div class="dialog-actions"><button class="secondary dialog-close">Annuler</button><button class="primary" id="confirm-logout">DÉCONNEXION</button></div>
+        <div class="actions-dialog"><button class="btn2 dialog-close">Annuler</button><button class="btn1" id="confirm-logout">Déconnexion</button></div>
     </dialog>
+
     <div id="toast" role="status" aria-live="polite" hidden></div>
 </body>
 </html>

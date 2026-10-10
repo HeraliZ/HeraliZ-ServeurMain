@@ -2,7 +2,9 @@
 
 Launcher de survie Minecraft DayZ pour **Minecraft 1.20.1 / Forge / Java 17**.
 
-Interface française, logos HeraliZ, profil local par pseudo, règlement, réglages de mémoire et vérification des fichiers. Aucune connexion Microsoft dans l’application.
+Interface française aux couleurs HeraliZ (maquettes validées) : fond « carte », accueil « VERSION 1 · SAISON 1 », onglets Accueil / Nouveautés / Règlement / Boutique (bientôt), Discord bien en vue, préparation du jeu avec ses étapes, réglages de mémoire, vérification des fichiers. Profil local par pseudo : le mot de passe se choisit en jeu (`/register` la première fois, puis `/login`), le launcher n’en garde aucun. Aucune connexion Microsoft dans l’application.
+
+**Aucun accès au dossier du jeu** depuis le launcher (ni bouton, ni lien, ni nom de fichier affiché pendant le téléchargement) : choix du propriétaire, pour ne pas faciliter le vol des jars.
 
 ## Démarrer
 
@@ -21,7 +23,7 @@ Renseigner `app/heraliz.json` :
 
 - `serverAddress` : domaine ou IPv4, avec le port si nécessaire.
 - `distributionUrl` : URL HTTPS du manifeste Helios/Nebula complet.
-- `discordUrl` : invitation HTTPS Discord, ou `null`.
+- `discordUrl` : invitation HTTPS Discord (`https://discord.gg/heraliz`), ou `null`.
 - `serverId` : `heraliz-1.20.1`, identique à celui du manifeste.
 
 L’adresse et le pack ne sont pas encore fournis. La version exacte de Forge doit correspondre au serveur. Ne pas diffuser cette version comme un accès opérationnel avant configuration et test de la connexion réelle.
@@ -36,7 +38,7 @@ npm run lint
 npm run dist:win
 ```
 
-L’installeur Windows est créé dans `dist/`. Les builds ne publient aucune release automatiquement. GitHub Actions teste et construit les trois plateformes, puis conserve les installeurs comme artefacts à examiner. Les mises à jour du launcher passent par le lien GitHub dans les paramètres ; le pack est actualisé au lancement du jeu.
+L’installeur Windows est créé dans `dist/`. Les builds ne publient aucune release automatiquement. GitHub Actions teste et construit les trois plateformes, puis conserve les installeurs comme artefacts à examiner. Les nouvelles versions du launcher sont distribuées par l’équipe ; le pack est actualisé au lancement du jeu.
 
 Le profil et le jeu sont enregistrés dans le dossier de données de l’application HeraliZ. L’ancien dossier Helios et `.minecraft` ne sont pas réutilisés automatiquement.
 
@@ -47,6 +49,8 @@ Le profil et le jeu sont enregistrés dans le dossier de données de l’applica
 - `app/index.html`, `app/assets/css/heraliz.css`, `app/assets/js/renderer.js` : interface locale, sans contenu web distant.
 - `launcher-service.js` : profil, état serveur, Java, téléchargements et cycle de vie de Minecraft.
 - `processbuilder.js` : arguments Minecraft/Forge, conservés depuis Helios et adaptés aux profils locaux.
+- `topo.js` : fond « carte » dessiné une fois par taille de fenêtre (rien d’animé).
+- `nouveautes.js` + `app/assets/images/nouveautes/` (images 960 × 540) : les nouveautés de l’accueil et de l’onglet Nouveautés, la plus récente en premier.
 
 Les anciens templates EJS et scripts Helios restent comme référence dans les sources. Ils ne sont ni chargés ni inclus dans l’application construite. Le manifeste de construction énumère les fichiers actifs.
 

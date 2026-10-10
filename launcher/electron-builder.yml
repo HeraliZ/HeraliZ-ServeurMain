@@ -15,10 +15,11 @@ files:
   - 'app/preload.js'
   - 'app/heraliz.json'
   - 'app/assets/css/heraliz.css'
-  - 'app/assets/fonts/**'
+  - 'app/assets/fonts/DMSans-*'
   - 'app/assets/images/heraliz-*.{png,jpg,ico}'
+  - 'app/assets/images/nouveautes/*.jpg'
   - 'app/assets/images/minecraft.icns'
-  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,renderer,spartan}.js'
+  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,renderer,spartan,topo,nouveautes}.js'
   - 'app/assets/js/spartan-cle.json'
 
 extraResources:

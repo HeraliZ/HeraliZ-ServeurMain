@@ -1,7 +1,9 @@
-const { app, shell } = require('electron')
+const { app } = require('electron')
 const fs = require('fs-extra')
 const path = require('node:path')
 const os = require('node:os')
+const net = require('node:net')
+const dns = require('node:dns').promises
 const got = require('got')
 const { HeliosDistribution, validateLocalFile } = require('helios-core/common')
 const { DistributionIndexProcessor, MojangIndexProcessor, downloadQueue, downloadFile, getExpectedDownloadSize } = require('helios-core/dl')
@@ -9,8 +11,32 @@ const { validateSelectedJvm, ensureJavaDirIsRoot, javaExecFromRoot, discoverBest
 const { getServerStatus } = require('helios-core/mojang')
 const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
-const { createOfflineProfile, validatePassword } = require('./offline-profile')
+const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution } = require('./security')
+
+// Temps d'ouverture d'une connexion au serveur, en millisecondes (null si injoignable) : le « ping » de l'accueil.
+async function mesurerPing(host, port) {
+    try {
+        const { address } = await dns.lookup(host)
+        return await new Promise(resolve => {
+            const debut = process.hrtime.bigint()
+            const socket = net.connect({ host: address, port, timeout: 3000 })
+            const fin = value => { socket.destroy(); resolve(value) }
+            socket.once('connect', () => fin(Math.max(1, Math.round(Number(process.hrtime.bigint() - debut) / 1e6))))
+            socket.once('timeout', () => fin(null))
+            socket.once('error', () => fin(null))
+        })
+    } catch { return null }
+}
+
+// « 6,4 Mo/s · ≈ 40 s » d'après la vitesse moyenne depuis le début du téléchargement.
+function detailTelechargement(octets, total, debut) {
+    const secondes = (Date.now() - debut) / 1000
+    if (secondes < 1 || octets <= 0) return null
+    const vitesse = octets / secondes
+    const reste = total > octets ? Math.ceil((total - octets) / vitesse) : 0
+    return `${(vitesse / 1048576).toFixed(1).replace('.', ',')} Mo/s · ≈ ${reste >= 90 ? `${Math.ceil(reste / 60)} min` : `${reste} s`}`
+}
 
 class LauncherService {
     constructor(config, notify) {
@@ -18,8 +44,11 @@ class LauncherService {
         this.notify = notify
         this.busy = false
         this.game = null
-        this.progress = { busy: false, phase: 'idle', message: 'Prêt pour ta prochaine expédition.', percent: null }
+        this.progress = { busy: false, phase: 'idle', message: 'Prêt pour ta prochaine expédition.', percent: null, detail: null }
         Config.load()
+        // Les anciennes versions écrivaient le mot de passe en clair dans le dossier du jeu, pour un module jamais
+        // installé sur le serveur : on l'efface. Le mot de passe se choisit en jeu (/register, puis /login).
+        fs.removeSync(path.join(Config.getInstanceDirectory(), config.serverId, '.sl_password'))
         // Never preserve or expose legacy Microsoft/Mojang credentials.
         const previous = Config.getSelectedAccount()
         const profile = previous?.type === 'offline' ? previous : null
@@ -34,30 +63,21 @@ class LauncherService {
         Config.save()
     }
 
-    emit(phase, message, percent = null) {
-        this.progress = { busy: this.busy, phase, message, percent: percent == null ? null : Math.max(0, Math.min(100, Math.floor(percent))) }
+    emit(phase, message, percent = null, detail = null) {
+        this.progress = { busy: this.busy, phase, message, percent: percent == null ? null : Math.max(0, Math.min(100, Math.floor(percent))), detail }
         this.notify(this.progress)
-    }
-
-    // SimpleLogin (client + server mod) reads the password from the game directory
-    // and sends it on join; the server registers it the first time, then checks it.
-    passwordFile() {
-        return path.join(Config.getInstanceDirectory(), this.config.serverId, '.sl_password')
-    }
-
-    hasPassword() {
-        return fs.existsSync(this.passwordFile())
     }
 
     getState() {
         const profile = Config.getSelectedAccount()
+        const totalRAM = Math.round(os.totalmem() / 1073741824)
         const maxRAM = Math.max(2, Math.min(32, Math.floor(os.totalmem() / 1073741824) - 2))
         const memory = Config.getMaxRAM(this.config.serverId)
         const ramGB = Math.floor(Number.parseInt(memory) / (memory.endsWith('M') ? 1024 : 1)) || 2
         return {
             version: app.getVersion(),
-            profile: profile ? { username: profile.displayName, rulesAccepted: profile.rulesAccepted === true, passwordSet: this.hasPassword() } : null,
-            settings: { ramGB: Math.min(maxRAM, Math.max(2, ramGB)), maxRAM, fullscreen: Config.getFullscreen(), autoConnect: Config.getAutoConnect() },
+            profile: profile ? { username: profile.displayName, rulesAccepted: profile.rulesAccepted === true } : null,
+            settings: { ramGB: Math.min(maxRAM, Math.max(2, ramGB)), maxRAM, totalRAM, fullscreen: Config.getFullscreen(), autoConnect: Config.getAutoConnect() },
             configured: Boolean(this.config.serverAddress && this.config.distributionUrl),
             discordConfigured: Boolean(this.config.discordUrl), progress: this.progress
         }
@@ -67,8 +87,6 @@ class LauncherService {
         if (this.busy) throw new Error('Attends la fin de la préparation ou de la partie pour changer de profil.')
         if (!value || value.acceptedRules !== true) throw new Error('Tu dois accepter le règlement pour continuer.')
         const profile = createOfflineProfile(value.username)
-        const password = validatePassword(value.password)
-        fs.outputFileSync(this.passwordFile(), password, { encoding: 'utf8', mode: 0o600 })
         Config.setOfflineProfile(profile, true)
         Config.save()
         return this.getState()
@@ -77,7 +95,6 @@ class LauncherService {
     logout() {
         if (this.busy) throw new Error('Attends la fin de la préparation ou de la partie pour te déconnecter.')
         for (const key of Object.keys(Config.getAuthAccounts())) Config.removeAuthAccount(key)
-        fs.removeSync(this.passwordFile())
         Config.save()
         return this.getState()
     }
@@ -93,13 +110,6 @@ class LauncherService {
         return this.getState()
     }
 
-    async openGameFolder() {
-        const folder = path.join(Config.getInstanceDirectory(), this.config.serverId)
-        await fs.ensureDir(folder)
-        const error = await shell.openPath(folder)
-        if (error) throw new Error('Impossible d’ouvrir le dossier du jeu.')
-    }
-
     async getServerStatus() {
         if (!this.config.serverAddress) return { state: 'unconfigured' }
         if (this.statusPending) return this.statusPending
@@ -107,8 +117,8 @@ class LauncherService {
         this.statusPending = (async () => {
             try {
                 const [host, port = '25565'] = this.config.serverAddress.split(':')
-                const result = await getServerStatus(763, host, Number(port))
-                this.status = { state: 'online', online: result.players.online, max: result.players.max }
+                const [result, ping] = await Promise.all([getServerStatus(763, host, Number(port)), mesurerPing(host, Number(port))])
+                this.status = { state: 'online', online: result.players.online, max: result.players.max, ping }
             } catch { this.status = { state: 'unreachable' } }
             this.statusAt = Date.now()
             this.statusPending = null
@@ -178,7 +188,8 @@ class LauncherService {
         if (assets.length) {
             assets.forEach(asset => httpsUrl(asset.url))
             const total = getExpectedDownloadSize(assets)
-            await downloadQueue(assets, bytes => this.emit('download', 'Téléchargement du jeu et du pack…', total ? bytes / total * 100 : 0))
+            const debut = Date.now()
+            await downloadQueue(assets, bytes => this.emit('download', 'Téléchargement du jeu et des mods…', total ? bytes / total * 100 : 0, detailTelechargement(bytes, total, debut)))
             this.emit('verify', 'Contrôle des fichiers téléchargés…')
             // Check BEFORE postDownload, which may execute a Forge installer.
             for (const asset of assets) {
@@ -197,7 +208,6 @@ class LauncherService {
         if (this.busy) throw new Error('Une préparation ou une partie est déjà en cours.')
         const saved = Config.getSelectedAccount()
         if (!saved || saved.rulesAccepted !== true) throw new Error('Choisis ton pseudo et accepte le règlement.')
-        if (!this.hasPassword()) throw new Error('Choisis un mot de passe pour protéger ton pseudo.')
         const profile = createOfflineProfile(saved.displayName)
         this.busy = true
         try {
