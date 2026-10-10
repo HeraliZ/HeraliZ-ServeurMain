@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/stairs",
+ "textures": {
+  "bottom": "heraliz_decors:block/roche_ocre",
+  "top": "heraliz_decors:block/roche_ocre",
+  "side": "heraliz_decors:block/roche_ocre"
+ }
+}

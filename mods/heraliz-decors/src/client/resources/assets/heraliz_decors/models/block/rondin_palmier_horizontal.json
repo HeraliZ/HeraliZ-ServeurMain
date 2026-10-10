@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/cube_column_horizontal",
+ "textures": {
+  "end": "heraliz_decors:block/rondin_palmier_bout",
+  "side": "heraliz_decors:block/rondin_palmier"
+ }
+}

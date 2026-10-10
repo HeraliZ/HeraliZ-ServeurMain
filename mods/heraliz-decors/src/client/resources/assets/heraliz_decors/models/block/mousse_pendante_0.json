@@ -1,0 +1,96 @@
+{
+ "textures": {
+  "m": "heraliz_decors:block/mousse_0",
+  "particle": "heraliz_decors:block/mousse_0"
+ },
+ "elements": [
+  {
+   "from": [
+    0.0,
+    0,
+    8
+   ],
+   "to": [
+    16.0,
+    16,
+    8
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 45,
+    "rescale": false
+   },
+   "shade": false,
+   "faces": {
+    "north": {
+     "texture": "#m",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#m",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    0,
+    8
+   ],
+   "to": [
+    16.0,
+    16,
+    8
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45,
+    "rescale": false
+   },
+   "shade": false,
+   "faces": {
+    "north": {
+     "texture": "#m",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#m",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false
+}

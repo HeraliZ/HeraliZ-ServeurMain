@@ -1,0 +1,49 @@
+{
+ "variants": {
+  "facing=north,pose=sol": {
+   "model": "heraliz_decors:block/lanterne_fer_sol"
+  },
+  "facing=north,pose=mur": {
+   "model": "heraliz_decors:block/lanterne_fer_mur"
+  },
+  "facing=north,pose=plafond": {
+   "model": "heraliz_decors:block/lanterne_fer_plafond"
+  },
+  "facing=east,pose=sol": {
+   "model": "heraliz_decors:block/lanterne_fer_sol",
+   "y": 90
+  },
+  "facing=east,pose=mur": {
+   "model": "heraliz_decors:block/lanterne_fer_mur",
+   "y": 90
+  },
+  "facing=east,pose=plafond": {
+   "model": "heraliz_decors:block/lanterne_fer_plafond",
+   "y": 90
+  },
+  "facing=south,pose=sol": {
+   "model": "heraliz_decors:block/lanterne_fer_sol",
+   "y": 180
+  },
+  "facing=south,pose=mur": {
+   "model": "heraliz_decors:block/lanterne_fer_mur",
+   "y": 180
+  },
+  "facing=south,pose=plafond": {
+   "model": "heraliz_decors:block/lanterne_fer_plafond",
+   "y": 180
+  },
+  "facing=west,pose=sol": {
+   "model": "heraliz_decors:block/lanterne_fer_sol",
+   "y": 270
+  },
+  "facing=west,pose=mur": {
+   "model": "heraliz_decors:block/lanterne_fer_mur",
+   "y": 270
+  },
+  "facing=west,pose=plafond": {
+   "model": "heraliz_decors:block/lanterne_fer_plafond",
+   "y": 270
+  }
+ }
+}

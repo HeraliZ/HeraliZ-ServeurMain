@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab",
+ "textures": {
+  "bottom": "heraliz_decors:block/toile_rayee_bleue",
+  "top": "heraliz_decors:block/toile_rayee_bleue",
+  "side": "heraliz_decors:block/toile_rayee_bleue"
+ }
+}

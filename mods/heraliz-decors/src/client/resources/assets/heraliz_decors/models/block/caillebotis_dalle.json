@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:block/slab",
+ "textures": {
+  "bottom": "heraliz_decors:block/caillebotis",
+  "top": "heraliz_decors:block/caillebotis",
+  "side": "heraliz_decors:block/caillebotis"
+ },
+ "render_type": "minecraft:cutout"
+}

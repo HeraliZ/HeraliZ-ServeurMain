@@ -1,0 +1,84 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "poteau": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_poteau"
+   }
+  },
+  {
+   "when": {
+    "north": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_bras",
+    "y": 0
+   }
+  },
+  {
+   "when": {
+    "east": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_bras",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "south": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_bras",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "west": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_bras",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "nord_est": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_bras_diag",
+    "y": 0
+   }
+  },
+  {
+   "when": {
+    "sud_est": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_bras_diag",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "sud_ouest": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_bras_diag",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "nord_ouest": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/grillage_bras_diag",
+    "y": 270
+   }
+  }
+ ]
+}

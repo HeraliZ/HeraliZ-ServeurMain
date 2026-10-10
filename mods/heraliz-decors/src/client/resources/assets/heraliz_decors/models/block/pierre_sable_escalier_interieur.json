@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/inner_stairs",
+ "textures": {
+  "bottom": "heraliz_decors:block/pierre_sable",
+  "top": "heraliz_decors:block/pierre_sable",
+  "side": "heraliz_decors:block/pierre_sable"
+ }
+}

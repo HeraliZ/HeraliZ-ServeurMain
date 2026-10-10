@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab",
+ "textures": {
+  "bottom": "heraliz_decors:block/enduit_sable",
+  "top": "heraliz_decors:block/enduit_sable",
+  "side": "heraliz_decors:block/enduit_sable"
+ }
+}

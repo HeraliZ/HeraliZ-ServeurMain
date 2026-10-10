@@ -1,0 +1,22 @@
+{
+ "variants": {
+  "pose=sol,taille=petit": {
+   "model": "heraliz_decors:block/stalactite_petit_sol"
+  },
+  "pose=plafond,taille=petit": {
+   "model": "heraliz_decors:block/stalactite_petit_plafond"
+  },
+  "pose=sol,taille=moyen": {
+   "model": "heraliz_decors:block/stalactite_moyen_sol"
+  },
+  "pose=plafond,taille=moyen": {
+   "model": "heraliz_decors:block/stalactite_moyen_plafond"
+  },
+  "pose=sol,taille=grand": {
+   "model": "heraliz_decors:block/stalactite_grand_sol"
+  },
+  "pose=plafond,taille=grand": {
+   "model": "heraliz_decors:block/stalactite_grand_plafond"
+  }
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab",
+ "textures": {
+  "bottom": "heraliz_decors:block/panneau_polaire_blanc",
+  "top": "heraliz_decors:block/panneau_polaire_blanc",
+  "side": "heraliz_decors:block/panneau_polaire_blanc"
+ }
+}

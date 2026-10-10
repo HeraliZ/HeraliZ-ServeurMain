@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "axis=y": {
+   "model": "heraliz_decors:block/rondin_palmier"
+  },
+  "axis=x": {
+   "model": "heraliz_decors:block/rondin_palmier_horizontal",
+   "x": 90,
+   "y": 90
+  },
+  "axis=z": {
+   "model": "heraliz_decors:block/rondin_palmier_horizontal",
+   "x": 90
+  }
+ }
+}

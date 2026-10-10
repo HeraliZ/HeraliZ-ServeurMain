@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "type=bottom": {
+   "model": "heraliz_decors:block/zellige_vert_dalle"
+  },
+  "type=top": {
+   "model": "heraliz_decors:block/zellige_vert_dalle_haut"
+  },
+  "type=double": {
+   "model": "heraliz_decors:block/zellige_vert"
+  }
+ }
+}

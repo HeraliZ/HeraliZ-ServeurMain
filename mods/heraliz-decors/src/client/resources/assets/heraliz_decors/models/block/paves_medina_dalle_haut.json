@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab_top",
+ "textures": {
+  "bottom": "heraliz_decors:block/paves_medina",
+  "top": "heraliz_decors:block/paves_medina",
+  "side": "heraliz_decors:block/paves_medina"
+ }
+}

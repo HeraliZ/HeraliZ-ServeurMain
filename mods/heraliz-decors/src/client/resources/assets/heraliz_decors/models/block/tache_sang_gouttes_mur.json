@@ -1,0 +1,32 @@
+{
+ "textures": {
+  "t": "heraliz_decors:block/tache_sang_gouttes",
+  "particle": "heraliz_decors:block/tache_sang_gouttes"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    15.75
+   ],
+   "to": [
+    16,
+    16,
+    15.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

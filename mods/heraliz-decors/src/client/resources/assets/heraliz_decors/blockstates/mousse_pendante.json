@@ -1,0 +1,20 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heraliz_decors:block/mousse_pendante_0"
+   },
+   {
+    "model": "heraliz_decors:block/mousse_pendante_0",
+    "y": 90
+   },
+   {
+    "model": "heraliz_decors:block/mousse_pendante_1"
+   },
+   {
+    "model": "heraliz_decors:block/mousse_pendante_1",
+    "y": 90
+   }
+  ]
+ }
+}

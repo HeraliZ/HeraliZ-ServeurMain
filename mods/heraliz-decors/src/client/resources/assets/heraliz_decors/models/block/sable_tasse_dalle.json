@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab",
+ "textures": {
+  "bottom": "heraliz_decors:block/sable_tasse",
+  "top": "heraliz_decors:block/sable_tasse",
+  "side": "heraliz_decors:block/sable_tasse"
+ }
+}

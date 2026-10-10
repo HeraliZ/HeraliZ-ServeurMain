@@ -1,0 +1,75 @@
+{
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "maille": "heraliz_decors:block/grillage_maille",
+  "acier": "heraliz_decors:block/grillage_acier",
+  "barbeles": "heraliz_decors:block/grillage_barbeles",
+  "particle": "heraliz_decors:block/grillage_acier"
+ },
+ "elements": [
+  {
+   "from": [
+    7.25,
+    0,
+    7.25
+   ],
+   "to": [
+    8.75,
+    23,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#acier"
+    },
+    "south": {
+     "texture": "#acier"
+    },
+    "east": {
+     "texture": "#acier"
+    },
+    "west": {
+     "texture": "#acier"
+    },
+    "up": {
+     "texture": "#acier"
+    },
+    "down": {
+     "texture": "#acier"
+    }
+   }
+  },
+  {
+   "from": [
+    6.9,
+    23,
+    6.9
+   ],
+   "to": [
+    9.1,
+    23.6,
+    9.1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#acier"
+    },
+    "south": {
+     "texture": "#acier"
+    },
+    "east": {
+     "texture": "#acier"
+    },
+    "west": {
+     "texture": "#acier"
+    },
+    "up": {
+     "texture": "#acier"
+    },
+    "down": {
+     "texture": "#acier"
+    }
+   }
+  }
+ ]
+}

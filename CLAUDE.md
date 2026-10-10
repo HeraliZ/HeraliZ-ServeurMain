@@ -89,8 +89,8 @@ monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir s
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
-Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 21 mods (sources, fabriqués en 19 jars
-`-serveur` pour le Ptero) = les 40 jars du dossier `mods/` du serveur, et les 43 jars des joueurs.
+Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 22 mods (sources, fabriqués en 20 jars
+`-serveur` pour le Ptero) = les 41 jars du dossier `mods/` du serveur, et les 44 jars des joueurs.
 
 Jamais dans Git (voir `.gitignore`) :
 - `build/`, `run/`, `dist/`, `livraison/` (refaits à chaque fabrication) ;
@@ -121,6 +121,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
 | heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) |
+| heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade et rayons de soleil, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
 | heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons |
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
 | heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) |
@@ -420,18 +421,21 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     entier quand il en fournit une nouvelle, on ne la modifie jamais ici. Chaque version envoyée ajoute sa taille au
     dépôt pour toujours : pas de nouvel envoi pour un petit changement.
   - Le **monde en service** sur le Ptero (changé par les joueurs) n'est jamais dans Git. La mise en ligne automatique
-    ne dépose et n'écrase jamais de monde : mettre la carte sur le Ptero (dossier `HeraliZ` à la racine du serveur) est
-    une étape à part, décidée par le propriétaire.
-  - **Attention (11/10) : la carte a besoin de mods qui ne sont pas encore dans ce dépôt.** Sans eux, leurs blocs
-    disparaissent au chargement du monde et le train roule sur l'ancien tracé :
-    - **HeraliZ Décors 1.7.0** (`heraliz_decors`, absent du dépôt) : grillage militaire, sable et blocs du désert,
-      taches de sang, brouillard et zones dangereuses (gaz, radiation, froid) ;
+    ne dépose et n'écrase jamais de monde : mettre la carte sur le Ptero est une étape à part, décidée par le
+    propriétaire (voir section 11, « Nouvelle carte » : trois mondes prévus, la carte n'est pas forcément le monde
+    principal `HeraliZ`).
+  - **La carte a besoin de trois de nos mods à ces versions au moins** (sans eux, leurs blocs disparaissent au
+    chargement du monde et le train roule sur l'ancien tracé). Ils ont été apportés du dossier de travail de la carte
+    le 11/10 ; les joueurs doivent avoir les jars `-client` de la même fabrication :
+    - **HeraliZ Décors 1.7.0** (`mods/heraliz-decors`, nouveau) : grillage militaire, sable et blocs du désert, taches
+      de sang, brouillard et zones dangereuses (gaz, radiation, froid) ;
     - **HeraliZ Utils** : apporté le 11/10 (version 2.2.0 : réseau de train de la nouvelle carte, gares droites,
       éoliennes à l'abandon `eolienne_usee` et `eolienne_moderne_usee`, ascenseur qui porte mieux les joueurs) ;
     - **HeraliZ Loot** : apporté le 11/10 (version 0.5.0 : les nouveaux conteneurs HD posés sur la carte, rotation du
       loot quand un conteneur est posé ou remplacé à la main).
-    Leurs sources sont dans le dossier de travail de la carte, chez le propriétaire : à apporter ici comme « un de nos
-    mods modifié » (début de cette section), puis fabriquer et vérifier, avant de mettre la carte en service.
+    Ces trois mods continuent d'évoluer avec la carte, dans son dossier de travail : quand le propriétaire fournit
+    une nouvelle carte, vérifier avec lui s'ils ont changé et les rapporter ici de la même façon (assembler avec ce
+    qui a été fait ici entre-temps, fabriquer, vérifier). Rien de tout cela n'a été testé sur le serveur.
 
 ---
 
@@ -442,7 +446,8 @@ des écrans de clan, « full opti » (zéro lag, même sur les petits PC). On ne
 remplaçant prêt. Projets maison prévus : ambiance sonore (remplacera MAtmos et TCTcore), traverser les feuillages
 (remplacera Passable Foliage et Kiwi), zombies de la survie (remplaceront Mutants & Zombies, Zombie Awareness,
 CoroUtil), véhicules et parachute sans ywzj, carte du monde « AAA », optimisation des 5 boss,
-« HeraliZ Décors » (nos props sans le code de MrCrayfish, pour remplacer cfm).
+« HeraliZ Décors » (le mod existe depuis le 11/10 avec les décors de la nouvelle carte ; il lui reste à reprendre
+nos props sans le code de MrCrayfish, pour remplacer cfm).
 
 **Fabrication** :
 - GeckoLib = geckolib222 4.4.7 seul, jamais embarqué ;

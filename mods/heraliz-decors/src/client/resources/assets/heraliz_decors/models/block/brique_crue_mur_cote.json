@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/template_wall_side",
+ "textures": {
+  "wall": "heraliz_decors:block/brique_crue"
+ }
+}

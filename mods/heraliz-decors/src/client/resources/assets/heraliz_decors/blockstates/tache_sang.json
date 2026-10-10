@@ -1,0 +1,244 @@
+{
+ "variants": {
+  "facing=north,forme=petite_flaque,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_petite_flaque_sol"
+  },
+  "facing=north,forme=petite_flaque,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_petite_flaque_mur"
+  },
+  "facing=north,forme=grande_flaque,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_grande_flaque_sol"
+  },
+  "facing=north,forme=grande_flaque,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_grande_flaque_mur"
+  },
+  "facing=north,forme=eclaboussures,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_eclaboussures_sol"
+  },
+  "facing=north,forme=eclaboussures,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_eclaboussures_mur"
+  },
+  "facing=north,forme=trainee,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_trainee_sol"
+  },
+  "facing=north,forme=trainee,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_trainee_mur"
+  },
+  "facing=north,forme=gouttes,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_gouttes_sol"
+  },
+  "facing=north,forme=gouttes,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_gouttes_mur"
+  },
+  "facing=north,forme=empreintes,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_empreintes_sol"
+  },
+  "facing=north,forme=empreintes,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_empreintes_mur"
+  },
+  "facing=north,forme=main,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_main_sol"
+  },
+  "facing=north,forme=main,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_main_mur"
+  },
+  "facing=north,forme=projection,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_projection_sol"
+  },
+  "facing=north,forme=projection,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_projection_mur"
+  },
+  "facing=east,forme=petite_flaque,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_petite_flaque_sol",
+   "y": 90
+  },
+  "facing=east,forme=petite_flaque,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_petite_flaque_mur",
+   "y": 90
+  },
+  "facing=east,forme=grande_flaque,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_grande_flaque_sol",
+   "y": 90
+  },
+  "facing=east,forme=grande_flaque,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_grande_flaque_mur",
+   "y": 90
+  },
+  "facing=east,forme=eclaboussures,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_eclaboussures_sol",
+   "y": 90
+  },
+  "facing=east,forme=eclaboussures,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_eclaboussures_mur",
+   "y": 90
+  },
+  "facing=east,forme=trainee,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_trainee_sol",
+   "y": 90
+  },
+  "facing=east,forme=trainee,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_trainee_mur",
+   "y": 90
+  },
+  "facing=east,forme=gouttes,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_gouttes_sol",
+   "y": 90
+  },
+  "facing=east,forme=gouttes,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_gouttes_mur",
+   "y": 90
+  },
+  "facing=east,forme=empreintes,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_empreintes_sol",
+   "y": 90
+  },
+  "facing=east,forme=empreintes,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_empreintes_mur",
+   "y": 90
+  },
+  "facing=east,forme=main,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_main_sol",
+   "y": 90
+  },
+  "facing=east,forme=main,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_main_mur",
+   "y": 90
+  },
+  "facing=east,forme=projection,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_projection_sol",
+   "y": 90
+  },
+  "facing=east,forme=projection,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_projection_mur",
+   "y": 90
+  },
+  "facing=south,forme=petite_flaque,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_petite_flaque_sol",
+   "y": 180
+  },
+  "facing=south,forme=petite_flaque,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_petite_flaque_mur",
+   "y": 180
+  },
+  "facing=south,forme=grande_flaque,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_grande_flaque_sol",
+   "y": 180
+  },
+  "facing=south,forme=grande_flaque,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_grande_flaque_mur",
+   "y": 180
+  },
+  "facing=south,forme=eclaboussures,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_eclaboussures_sol",
+   "y": 180
+  },
+  "facing=south,forme=eclaboussures,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_eclaboussures_mur",
+   "y": 180
+  },
+  "facing=south,forme=trainee,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_trainee_sol",
+   "y": 180
+  },
+  "facing=south,forme=trainee,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_trainee_mur",
+   "y": 180
+  },
+  "facing=south,forme=gouttes,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_gouttes_sol",
+   "y": 180
+  },
+  "facing=south,forme=gouttes,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_gouttes_mur",
+   "y": 180
+  },
+  "facing=south,forme=empreintes,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_empreintes_sol",
+   "y": 180
+  },
+  "facing=south,forme=empreintes,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_empreintes_mur",
+   "y": 180
+  },
+  "facing=south,forme=main,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_main_sol",
+   "y": 180
+  },
+  "facing=south,forme=main,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_main_mur",
+   "y": 180
+  },
+  "facing=south,forme=projection,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_projection_sol",
+   "y": 180
+  },
+  "facing=south,forme=projection,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_projection_mur",
+   "y": 180
+  },
+  "facing=west,forme=petite_flaque,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_petite_flaque_sol",
+   "y": 270
+  },
+  "facing=west,forme=petite_flaque,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_petite_flaque_mur",
+   "y": 270
+  },
+  "facing=west,forme=grande_flaque,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_grande_flaque_sol",
+   "y": 270
+  },
+  "facing=west,forme=grande_flaque,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_grande_flaque_mur",
+   "y": 270
+  },
+  "facing=west,forme=eclaboussures,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_eclaboussures_sol",
+   "y": 270
+  },
+  "facing=west,forme=eclaboussures,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_eclaboussures_mur",
+   "y": 270
+  },
+  "facing=west,forme=trainee,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_trainee_sol",
+   "y": 270
+  },
+  "facing=west,forme=trainee,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_trainee_mur",
+   "y": 270
+  },
+  "facing=west,forme=gouttes,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_gouttes_sol",
+   "y": 270
+  },
+  "facing=west,forme=gouttes,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_gouttes_mur",
+   "y": 270
+  },
+  "facing=west,forme=empreintes,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_empreintes_sol",
+   "y": 270
+  },
+  "facing=west,forme=empreintes,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_empreintes_mur",
+   "y": 270
+  },
+  "facing=west,forme=main,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_main_sol",
+   "y": 270
+  },
+  "facing=west,forme=main,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_main_mur",
+   "y": 270
+  },
+  "facing=west,forme=projection,pose=sol": {
+   "model": "heraliz_decors:block/tache_sang_projection_sol",
+   "y": 270
+  },
+  "facing=west,forme=projection,pose=mur": {
+   "model": "heraliz_decors:block/tache_sang_projection_mur",
+   "y": 270
+  }
+ }
+}

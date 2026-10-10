@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=south": {
+   "model": "heraliz_decors:block/eau_surface"
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/eau_surface",
+   "y": 90
+  },
+  "facing=north": {
+   "model": "heraliz_decors:block/eau_surface",
+   "y": 180
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/eau_surface",
+   "y": 270
+  }
+ }
+}

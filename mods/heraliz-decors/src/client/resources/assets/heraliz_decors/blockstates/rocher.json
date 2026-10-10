@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "taille=petit": {
+   "model": "heraliz_decors:block/rocher_petit"
+  },
+  "taille=moyen": {
+   "model": "heraliz_decors:block/rocher_moyen"
+  },
+  "taille=grand": {
+   "model": "heraliz_decors:block/rocher_grand"
+  }
+ }
+}

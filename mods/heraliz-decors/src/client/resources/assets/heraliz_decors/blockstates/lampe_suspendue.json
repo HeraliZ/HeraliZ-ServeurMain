@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "taille=petit": {
+   "model": "heraliz_decors:block/lampe_suspendue_petit"
+  },
+  "taille=moyen": {
+   "model": "heraliz_decors:block/lampe_suspendue_moyen"
+  },
+  "taille=grand": {
+   "model": "heraliz_decors:block/lampe_suspendue_grand"
+  }
+ }
+}

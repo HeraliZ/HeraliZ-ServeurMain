@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab",
+ "textures": {
+  "bottom": "heraliz_decors:block/zellige_bleu",
+  "top": "heraliz_decors:block/zellige_bleu",
+  "side": "heraliz_decors:block/zellige_bleu"
+ }
+}

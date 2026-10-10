@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/outer_stairs",
+ "textures": {
+  "bottom": "heraliz_decors:block/roche_rouge",
+  "top": "heraliz_decors:block/roche_rouge",
+  "side": "heraliz_decors:block/roche_rouge"
+ }
+}

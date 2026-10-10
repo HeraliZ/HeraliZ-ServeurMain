@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/wall_inventory",
+ "textures": {
+  "wall": "heraliz_decors:block/enduit_blanc"
+ }
+}

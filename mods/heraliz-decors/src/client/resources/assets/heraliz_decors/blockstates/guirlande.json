@@ -1,0 +1,11 @@
+{
+ "variants": {
+  "axis=x": {
+   "model": "heraliz_decors:block/guirlande"
+  },
+  "axis=z": {
+   "model": "heraliz_decors:block/guirlande",
+   "y": 90
+  }
+ }
+}

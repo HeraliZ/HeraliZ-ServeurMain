@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "type=bottom": {
+   "model": "heraliz_decors:block/tole_larmee_dalle"
+  },
+  "type=top": {
+   "model": "heraliz_decors:block/tole_larmee_dalle_haut"
+  },
+  "type=double": {
+   "model": "heraliz_decors:block/tole_larmee"
+  }
+ }
+}
