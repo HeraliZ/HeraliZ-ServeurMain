@@ -5,6 +5,8 @@ import fr.heralisz.n07.HeraliszN07;
 import fr.heralisz.n07.api.scene.Scene;
 import fr.heralisz.n07.api.scene.SkipMode;
 import fr.heralisz.n07.scene.ScenePackets;
+import fr.heraliz.boss.client.HudBoss;
+import fr.heraliz.boss.client.kit.Ui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -45,6 +47,8 @@ import java.util.List;
 public final class ScenePlayer {
    /** Ticks d'appui avant que le vote soit envoye. */
    private static final int HOLD_TICKS = 12;
+   /** Vert du curseur des étiquettes et de la pastille des joueurs. */
+   private static final int CURSOR = 0x7CFF3A;
 
    /** Une lecture de scene : la principale (camera) ou l habillage seul (textes / sons par-dessus le jeu). */
    private static final class Play {
@@ -459,7 +463,8 @@ public final class ScenePlayer {
       if (black > 0.003F) g.fill(0, 0, w, h, BossHud.argb(fadeColor, black));
       // repliques textuelles
       Font font = mc.font;
-      int subLine = 0;
+      // bas des sous-titres : au-dessus des bandes noires, ou de la barre d'objets quand le jeu reste visible
+      int subBottom = bh > 0 ? h - bh - 6 : h - 36;
       for (Scene.Cue c : scene.cues) {
          if (c.tick() > age) break;
          float a = age - c.tick(), dur = c.f()[0];
@@ -469,19 +474,14 @@ public final class ScenePlayer {
             case Scene.TITLE -> BossHud.drawTitleCard(g, w, h, a, out, tr(c.s()[0]), tr(c.s()[1]), tr(c.s()[2]), (int) c.f()[1] & 0xFFFFFF);
             case Scene.SUBTITLE -> {
                float alpha = Mth.clamp(a / 5F, 0, 1) * Mth.clamp((dur - a) / 5F, 0, 1);
-               drawSubtitle(g, font, w, h - bh - 14 - subLine * 26, tr(c.s()[0]), tr(c.s()[1]), (int) c.f()[1], alpha);
-               subLine++;
+               int hs = drawSubtitle(g, font, w, subBottom, tr(c.s()[0]), tr(c.s()[1]), (int) c.f()[1], alpha);
+               if (hs > 0) subBottom -= hs + 4;
             }
             case Scene.LABEL -> {
                float[] f = c.f();
                String txt = tr(c.s()[0]);
                int n = f[4] <= 0 ? txt.length() : Math.min(txt.length(), (int) (a * f[4]));
-               String shown = txt.substring(0, n) + (n < txt.length() || ((int) (a / 6) % 2 == 0) ? "_" : "");
-               g.pose().pushPose();
-               g.pose().translate(f[1] * w, f[2] * h, 0);
-               g.pose().scale(f[3], f[3], 1);
-               g.drawString(font, shown, 0, 0, BossHud.argb((int) f[5], out), true);
-               g.pose().popPose();
+               drawLabel(g, font, txt.substring(0, n), n < txt.length() || ((int) (a / 6) % 2 == 0), f[1] * w, f[2] * h, f[3] * 0.85F, (int) f[5], out);
             }
             default -> {
             }
@@ -493,33 +493,78 @@ public final class ScenePlayer {
       return key == null || key.isEmpty() ? "" : I18n.exists(key) ? I18n.get(key) : key;
    }
 
-   private static void drawSubtitle(GuiGraphics g, Font font, int w, int y, String speaker, String text, int color, float alpha) {
-      if (alpha <= 0.01F) return;
-      int maxW = (int) (w * 0.6F);
-      Component line = speaker.isEmpty() ? Component.literal(text) : Component.literal(speaker + " : ").withStyle(st -> st.withColor(color & 0xFFFFFF))
-         .append(Component.literal(text).withStyle(st -> st.withColor(0xF0F0E0)));
-      List<FormattedCharSequence> lines = font.split(line, maxW);
-      int lh = 10, total = lines.size() * lh;
-      int top = y - total;
-      int bw = 0;
-      for (FormattedCharSequence l : lines) bw = Math.max(bw, font.width(l));
-      g.fill(w / 2 - bw / 2 - 6, top - 4, w / 2 + bw / 2 + 6, top + total + 2, BossHud.argb(0x000000, 0.55F * alpha));
-      int a8 = (int) (alpha * 255) << 24;
-      for (int i = 0; i < lines.size(); i++) {
-         FormattedCharSequence l = lines.get(i);
-         g.drawString(font, l, w / 2 - font.width(l) / 2, top + i * lh, 0xFFFFFF | a8, true);
-      }
+   /** Étiquette tapée lettre par lettre (« GRUPPE 935 — ABTEILUNG N_ ») : capitales espacées, curseur vert. */
+   private static void drawLabel(GuiGraphics g, Font font, String shown, boolean cursor, float x, float y, float scale, int color, float alpha) {
+      int a8 = Math.round(255 * alpha);
+      if (a8 < 4) return;
+      g.drawManaged(() -> {
+         HudBoss.caps(g, font, shown, Ui.BOLD, x, y, scale, 2.0F, Ui.argb(color, a8), true);
+         if (cursor) {
+            float cx = x + (shown.isEmpty() ? 0 : HudBoss.largeur(font, shown, Ui.BOLD, scale, 2.0F) + 2.0F * scale);
+            HudBoss.caps(g, font, "_", Ui.BOLD, cx, y, scale, 0, Ui.argb(CURSOR, a8), true);
+         }
+      });
    }
 
+   /**
+    * Sous-titre parlé (maquette validée) : panneau de verre centré, nom de qui parle en petites capitales de sa couleur,
+    * réplique en DM Sans, centrée et coupée à la largeur du panneau. {@code bottom} = bas du panneau ; rend sa hauteur.
+    */
+   private static int drawSubtitle(GuiGraphics g, Font font, int w, int bottom, String speaker, String text, int color, float alpha) {
+      if (alpha <= 0.01F) return 0;
+      int a8 = Math.round(255 * alpha);
+      int pw = Math.min(Math.round(w * 0.52F), w - 24), padX = 10, lh = 12;
+      List<FormattedCharSequence> lines = font.split(Ui.lit(text, Ui.FONT), pw - 2 * padX);
+      boolean head = !speaker.isEmpty();
+      int haut = head ? 13 : 5, ph = haut + lines.size() * lh + 8;
+      int x0 = (w - pw) / 2, y0 = bottom - ph;
+      Ui.glass(g, x0, y0, pw, ph, Math.round(184 * alpha));
+      g.drawManaged(() -> {
+         if (head) {
+            float sw = HudBoss.largeur(font, speaker, HudBoss.MINI_GRAS, 1, 1.2F);
+            HudBoss.caps(g, font, speaker, HudBoss.MINI_GRAS, w / 2F - sw / 2, y0 + 5, 1, 1.2F, Ui.argb(color, a8), false);
+         }
+         int y = y0 + haut;
+         for (FormattedCharSequence l : lines) {
+            g.drawString(font, l, Math.round(w / 2F - font.width(l) / 2F), y, Ui.argb(0xF0F0E0, a8), true);
+            y += lh;
+         }
+      });
+      return ph;
+   }
+
+   /** « Maintenir [Espace] pour passer », joueurs qui maintiennent, barre de progression : en bas à droite. */
    private static void drawSkip(Minecraft mc, GuiGraphics g, int w, int h, int target) {
       Font font = mc.font;
-      net.minecraft.network.chat.MutableComponent txt = Component.translatable("scene.heralisz_n07.skip", mc.options.keyJump.getTranslatedKeyMessage());
-      if (votesRun == target && votesNeeded > 1 && votesNeeded < 100) txt.append("  (" + votesHolding + "/" + votesNeeded + ")");
-      int tw = font.width(txt);
-      int x = w - tw - 14, y = h - 22;
+      String hold = Component.translatable("scene.heralisz_n07.hold").getString(), skip = Component.translatable("scene.heralisz_n07.to_skip").getString();
+      String key = mc.options.keyJump.getTranslatedKeyMessage().getString();
+      String votes = votesRun == target && votesNeeded > 1 && votesNeeded < 100
+         ? Component.translatable("scene.heralisz_n07.players", votesHolding, votesNeeded).getString() : null;
+      int text = holdSent ? 0xB8FF6A : 0xD8DCD0;
+      int xR = w - Math.round(w * 0.05F), y = h - 26;
+      float wHold = HudBoss.largeurTexte(font, hold, HudBoss.MINI, 1.1F), wSkip = HudBoss.largeurTexte(font, skip, HudBoss.MINI, 1.1F);
+      int wKey = Math.round(HudBoss.largeurTexte(font, key, HudBoss.MINI_GRAS, 1)) + 8;
+      int wVotes = votes == null ? 0 : Math.round(HudBoss.largeur(font, votes, HudBoss.MINI_GRAS, 1, 0.8F)) + 8;
+      float total = wHold + 5 + wKey + 5 + wSkip + (votes == null ? 0 : 6 + wVotes);
+      float x = xR - total;
+      // touche et pastille (formes), puis les textes en un lot
+      int kx = Math.round(x + wHold + 5);
+      Ui.soft(g, kx, y - 1, wKey, 10, Ui.argb(0xFFFFFF, 32));
+      Ui.softOutline(g, kx + 1, y, wKey - 2, 8, Ui.argb(0xFFFFFF, 64));
+      int vx = Math.round(xR - wVotes);
+      if (votes != null) {
+         Ui.soft(g, vx, y - 1, wVotes, 10, Ui.argb(CURSOR, 34));
+         Ui.softOutline(g, vx + 1, y, wVotes - 2, 8, Ui.argb(CURSOR, 90));
+      }
+      int barW = Math.round(Math.min(113, total));
       float k = holdTicks / (float) HOLD_TICKS;
-      g.fill(x - 6, y - 5, w - 8, y + 12, 0x88000000);
-      g.fill(x - 6, y + 11, x - 6 + (int) ((w - 8 - (x - 6)) * k), y + 12, 0xFFB8FF6A);
-      g.drawString(font, txt, x, y, holdSent ? 0xFFB8FF6A : 0xFFE6E6D0, true);
+      g.fill(xR - barW, y + 13, xR, y + 14, Ui.argb(0xFFFFFF, 31));
+      if (k > 0) g.fill(xR - barW, y + 13, xR - barW + Math.round(barW * Math.min(1, k)), y + 14, Ui.argb(0xB8FF6A, 255));
+      g.drawManaged(() -> {
+         HudBoss.texte(g, font, hold, HudBoss.MINI, x, y + 0.5F, 1.1F, Ui.argb(text, 255), true);
+         HudBoss.texte(g, font, key, HudBoss.MINI_GRAS, kx + 4, y + 0.5F, 1, Ui.argb(0xFFFFFF, 255), false);
+         HudBoss.texte(g, font, skip, HudBoss.MINI, kx + wKey + 5, y + 0.5F, 1.1F, Ui.argb(text, 255), true);
+         if (votes != null) HudBoss.caps(g, font, votes, HudBoss.MINI_GRAS, vx + 4, y + 0.5F, 1, 0.8F, Ui.argb(Ui.mix(CURSOR, 0xFFFFFF, 0.3F), 255), false);
+      });
    }
 }

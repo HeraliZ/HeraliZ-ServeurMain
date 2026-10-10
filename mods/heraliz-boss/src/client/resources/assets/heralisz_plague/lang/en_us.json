@@ -1,6 +1,8 @@
 {
  "itemGroup.heralisz_plague": "HeralisZ — The Plague Bearer, Quarantine Station",
  "entity.heralisz_plague.plague_bearer": "The Plague Bearer",
+ "hud.heralisz_plague.name": "THE PLAGUE BEARER",
+ "hud.heralisz_plague.epithet": "NBC Unit",
  "entity.heralisz_plague.plague_glob": "Bile",
  "entity.heralisz_plague.plague_swarm": "Fly swarm",
  "item.heralisz_plague.plague_bearer_spawn_egg": "Plague Bearer Spawn Egg",

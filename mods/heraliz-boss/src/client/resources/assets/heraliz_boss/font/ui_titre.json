@@ -1,0 +1,25 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 6.0,
+        " ": 8.0
+      }
+    },
+    {
+      "type": "ttf",
+      "file": "heraliz_boss:dmsans_bold.ttf",
+      "size": 22.0,
+      "oversample": 6.0,
+      "shift": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

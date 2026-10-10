@@ -1,6 +1,8 @@
 {
  "itemGroup.heralisz_plague": "HeralisZ — Le Porteur de Peste, la Station de Quarantaine",
  "entity.heralisz_plague.plague_bearer": "Le Porteur de Peste",
+ "hud.heralisz_plague.name": "LE PORTEUR DE PESTE",
+ "hud.heralisz_plague.epithet": "Unité NBC",
  "entity.heralisz_plague.plague_glob": "Bile",
  "entity.heralisz_plague.plague_swarm": "Essaim de mouches",
  "item.heralisz_plague.plague_bearer_spawn_egg": "Œuf d'apparition : le Porteur de Peste",

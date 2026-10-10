@@ -2,6 +2,7 @@
  "itemGroup.heralisz_mammoth": "HeralisZ - Ymirak",
  "entity.heralisz_mammoth.mammoth": "Ymirak, the Dead Mammoth",
  "hud.heralisz_mammoth.name": "YMIRAK",
+ "hud.heralisz_mammoth.epithet": "The Dead Mammoth",
  "item.heralisz_mammoth.war_horn": "Tribal War Horn",
  "item.heralisz_mammoth.debug_blade": "Test Blade (-33% Ymirak)",
  "item.heralisz_mammoth.war_horn.lore": "A mammoth horn ringed with bronze. The tribe blew it to call their god.",

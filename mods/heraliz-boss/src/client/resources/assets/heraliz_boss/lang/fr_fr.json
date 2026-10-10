@@ -7,5 +7,6 @@
   "onglet.heraliz_boss.n07": "Sujet N-07",
   "onglet.heraliz_boss.n07_decor": "Décors du spawn",
   "onglet.heraliz_boss.plague": "Porteur de Peste",
-  "onglet.heraliz_boss.sylvorn": "Sylvorn"
+  "onglet.heraliz_boss.sylvorn": "Sylvorn",
+  "hud.heraliz_boss.phase": "Phase %s"
 }

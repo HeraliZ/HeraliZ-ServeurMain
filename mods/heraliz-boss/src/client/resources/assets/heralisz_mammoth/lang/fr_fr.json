@@ -2,6 +2,7 @@
  "itemGroup.heralisz_mammoth": "HeralisZ - Ymirak",
  "entity.heralisz_mammoth.mammoth": "Ymirak, le Mammouth Mort",
  "hud.heralisz_mammoth.name": "YMIRAK",
+ "hud.heralisz_mammoth.epithet": "Le mammouth mort",
  "item.heralisz_mammoth.war_horn": "Cor de guerre de la tribu",
  "item.heralisz_mammoth.debug_blade": "Lame de test (-33 % Ymirak)",
  "item.heralisz_mammoth.war_horn.lore": "Une corne de mammouth cerclée de bronze. La tribu la sonnait pour appeler son dieu.",
