@@ -235,6 +235,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `com.caracrea.api.voice.CaraCreaVoice` | caracrea (serveur) | voix : couper un joueur, portée, routage |
 | `fr.heralisz.tactical.api.HeraliszTacticalAPI` | tactique (commun) | index des objets tactiques |
 | `com.heraliz.extraction.api.ExtractionApi` | extraction (commun, rempli chez le joueur) | extractions ouvertes (`ouvertes()`, `version()`) pour la carte du monde |
+| `fr.heraliz.loot.client.RaretesClient.couleur(ItemStack)` | loot (client, lu par réflexion par dayzhotbar) | couleur de rareté d'un objet (0 : aucune) |
 | données persistantes du joueur `PlayerPersisted.HeralizBonusLoot.<source>` | lues par loot (serveur), écrites par clansetbases (`clan`) et utils (`objet`) | bonus de loot : `{Pct, Fin (heure en ms)}` ou `{Pct, Restant (ticks de jeu)}`, sources additionnées, plafond 25 % (`fr.heraliz.loot.BonusLoot`) |
 
 **Pour qu'un nouveau mod utilise un des nôtres :**
@@ -446,6 +447,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   seconde fois (le plus rare est gardé) et les quantités montent de 10 % ; sources cumulables, plafond 25 % : membre
   dans une zone tenue par son clan, objet « Bonus de loot » de la boutique (`heralisz_utils:document_lootbonus`, 2 h de
   jeu décomptées seulement en ligne, gardé à la mort) ;
+- raretés des objets (HeraliZ Loot, validées) : Commun gris, Peu commun vert, Rare bleu, Épique violet, Légendaire
+  or, Unique rouge ; un léger dégradé de la couleur derrière l'objet et un trait fin en bas de la case, partout
+  (inventaire, coffres, sacs, barre d'objets DayZ), infobulle « ★ Rare » (rien pour Commun). Réglage :
+  `serveur/config/heraliz_loot/raretes.json` (à remplir avec la refonte du loot) ; le staff, objet en main :
+  `/rarete <niveau|aucune|effacer|voir|defaut|recharger>` (choix en jeu dans `raretes_jeu.json`, jamais écrasé) ;
 - extractions de la carte : 3 zones ouvertes à la fois, 30 à 60 min chacune, 30 s à tenir, retour au spawn ;
 - camos à vie (pour la boutique) : clic droit sur un objet camo = il entre pour toujours dans la collection du joueur
   (objet consommé ; stockée hors du monde, `heralisz_camo/collections.json` à la racine du serveur, elle survit aux
