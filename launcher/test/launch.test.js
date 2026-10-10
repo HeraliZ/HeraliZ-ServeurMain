@@ -23,6 +23,21 @@ Module._load = originalLoad
 test.after(() => fs.rmSync(directory, { recursive: true, force: true }))
 const config = { serverId: 'heraliz-1.20.1', serverAddress: null, distributionUrl: null }
 
+test('the game address follows the Minecraft SRV record, only for the default port', async () => {
+    const dnsPromises = require('node:dns').promises
+    const original = dnsPromises.resolveSrv
+    const asked = []
+    dnsPromises.resolveSrv = async name => { asked.push(name); return [{ name: 'jeu.example.net', port: 25570, priority: 0, weight: 5 }] }
+    try {
+        assert.deepEqual(await LauncherService.cibleJeu('heraliz.fr', 25565), { host: 'jeu.example.net', port: 25570 })
+        assert.deepEqual(asked, ['_minecraft._tcp.heraliz.fr'])
+        assert.deepEqual(await LauncherService.cibleJeu('heraliz.fr', 25570), { host: 'heraliz.fr', port: 25570 })
+        assert.equal(asked.length, 1)
+        dnsPromises.resolveSrv = async () => { throw Object.assign(new Error('no SRV record'), { code: 'ENODATA' }) }
+        assert.deepEqual(await LauncherService.cibleJeu('heraliz.fr', 25565), { host: 'heraliz.fr', port: 25565 })
+    } finally { dnsPromises.resolveSrv = original }
+})
+
 test('saved profile replaces Microsoft credentials and exposes no tokens', () => {
     Config.load()
     Config.addMicrosoftAuthAccount('previous', 'mc-secret', 'OldUser', 0, 'ms-secret', 'refresh-secret', 0)

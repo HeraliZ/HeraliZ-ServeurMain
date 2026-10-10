@@ -26,7 +26,8 @@ quand un choix leur revient.
    licences. Pour qu'un de ces mods devienne « à nous », on le refait nous-mêmes.
 6. **Ne pas toucher** aux jars de `serveur/mods-tiers/` et `client/mods-tiers/` sans demande explicite.
 7. **Aucun mot de passe, clé, jeton ou adresse de serveur dans le dépôt.** Les accès au Ptero sont dans les
-   « Secrets » GitHub (section 8), jamais dans un fichier.
+   « Secrets » GitHub (section 8), jamais dans un fichier. Seule exception : l'adresse publique de jeu `heraliz.fr`
+   (celle que tapent les joueurs, dans le launcher) ; jamais l'IP ni la machine du Ptero.
 8. **Pas de test en jeu par Claude** : les propriétaires testent eux-mêmes. Chaque compte rendu dit clairement ce qui
    n'a PAS été testé en jeu.
 9. **Contenu visuel nouveau** (modèle, arme, machine, interface importante) : d'abord des rendus à valider par le
@@ -62,6 +63,10 @@ quand un choix leur revient.
   joueurs en ligne, ping, extractions ouvertes, zones du clan).
 - Discord du serveur : https://discord.gg/heraliz (menu Échap et launcher). Noms de domaine heraliz.fr et heraliz.com :
   le site du serveur y sera mis plus tard (la boutique pourra y pointer).
+- Adresse de jeu : **heraliz.fr** (launcher, `launcher/app/heraliz.json`). Le domaine mène au serveur de jeu par un
+  enregistrement DNS `A` (port 25565) ou `SRV` `_minecraft._tcp.heraliz.fr` (autre port, ou quand heraliz.fr mènera
+  au site) : réglages dans `launcher/docs/HERALIZ-DEPLOIEMENT.md`. La distribution du launcher doit porter la même
+  adresse.
 
 ---
 
