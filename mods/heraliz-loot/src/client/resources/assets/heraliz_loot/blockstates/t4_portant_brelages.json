@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t4_portant_brelages"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t4_portant_brelages"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t4_portant_brelages"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t4_portant_brelages"
+  }
+ }
+}

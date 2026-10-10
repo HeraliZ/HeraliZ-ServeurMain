@@ -120,7 +120,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
-| heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7), rotation par zones |
+| heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) |
 | heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons |
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
 | heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) |
@@ -428,8 +428,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
       taches de sang, brouillard et zones dangereuses (gaz, radiation, froid) ;
     - **HeraliZ Utils** : apporté le 11/10 (version 2.2.0 : réseau de train de la nouvelle carte, gares droites,
       éoliennes à l'abandon `eolienne_usee` et `eolienne_moderne_usee`, ascenseur qui porte mieux les joueurs) ;
-    - **HeraliZ Loot 0.4.2** : rotation du loot quand un conteneur est posé ou remplacé à la main, commande
-      `/heralizloot zone <id> part`, à assembler avec la version d'ici.
+    - **HeraliZ Loot** : apporté le 11/10 (version 0.5.0 : les nouveaux conteneurs HD posés sur la carte, rotation du
+      loot quand un conteneur est posé ou remplacé à la main).
     Leurs sources sont dans le dossier de travail de la carte, chez le propriétaire : à apporter ici comme « un de nos
     mods modifié » (début de cette section), puis fabriquer et vérifier, avant de mettre la carte en service.
 

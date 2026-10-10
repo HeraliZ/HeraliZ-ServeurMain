@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t6_poste_securite"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t6_poste_securite"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t6_poste_securite"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t6_poste_securite"
+  }
+ }
+}

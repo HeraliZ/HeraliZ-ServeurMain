@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t4_filet_camouflage"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t4_filet_camouflage"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t4_filet_camouflage"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t4_filet_camouflage"
+  }
+ }
+}

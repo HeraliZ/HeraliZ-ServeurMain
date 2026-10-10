@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t5_robot_demineur"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t5_robot_demineur"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t5_robot_demineur"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t5_robot_demineur"
+  }
+ }
+}

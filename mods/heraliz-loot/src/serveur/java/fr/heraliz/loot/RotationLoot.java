@@ -34,6 +34,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -47,6 +48,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -62,8 +64,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * redevient inactif et, après un délai (configuration), un AUTRE conteneur de la zone tiré au hasard devient actif. Les
  * actifs se voient : étoiles blanches qui scintillent autour d'eux, envoyées aux seuls joueurs proches.</p>
  * <p>Tout est logique : un conteneur peut être actif dans un secteur non chargé. Quand on l'approche ou qu'on l'ouvre,
- * on vérifie que le bloc en place est bien le conteneur attendu ; sinon la position sort de la zone (« invalide ») et un
- * autre conteneur de la zone prend sa place.</p>
+ * on vérifie que le bloc en place est bien le conteneur attendu ; sinon un autre conteneur de la zone prend sa place.</p>
+ * <p>Changer le loot de place est automatique : un conteneur posé (à la main, /setblock, ou trouvé à l'ouverture) entre
+ * dans la rotation. À sa place d'origine avec son modèle d'origine, il reprend sa place ; sinon (autre modèle, autre
+ * niveau, nouvel endroit) il rejoint la zone de son niveau la plus proche, à moins de 64 blocs
+ * ({@link ZonesLoot#rattacher}), ou en commence une nouvelle (« ajouts/t3_x_z », avec la part d'actifs de son niveau) ;
+ * il se remplit, quand son tour vient, dans sa propre table (un T6 posé à la place d'un T5 donne du loot T6). Un
+ * conteneur cassé : sa place d'origine attend un conteneur (« invalide »), un conteneur posé en jeu sort de la rotation
+ * (une zone créée en jeu qui se vide disparaît). Ces changements et les parts réglées par commande sont gardés avec le
+ * monde ({@link #places}, {@link #zonesAjoutees}, {@link #parts}).</p>
  */
 public final class RotationLoot extends SavedData {
     private static final String FICHIER = "heraliz_loot_rotation";
@@ -87,10 +96,22 @@ public final class RotationLoot extends SavedData {
     /** Une réapparition programmée : un conteneur de la zone (autre que exclu) deviendra actif à l'heure dite (ticks). */
     record Attente(String zone, long heure, long exclu) {}
 
+    /** Un conteneur posé ou changé en jeu : sa zone et son nom. */
+    record Place(String zone, String nom) {}
+
+    /** Une zone créée en jeu : son nom et sa part d'actifs (celle de son niveau, null : configuration). */
+    record ZoneAjoutee(String nom, @Nullable Double actifs) {}
+
     final Long2ObjectOpenHashMap<Actif> actifs = new Long2ObjectOpenHashMap<>();
     final List<Attente> attentes = new ArrayList<>();
     /** Positions retirées de leur zone (le bloc en place n'est pas le conteneur attendu) -> nom attendu. */
     final Long2ObjectOpenHashMap<String> invalides = new Long2ObjectOpenHashMap<>();
+    /** Conteneurs posés ou changés en jeu (position -> zone, nom) : remis dans les zones à chaque lecture des fichiers. */
+    final Long2ObjectOpenHashMap<Place> places = new Long2ObjectOpenHashMap<>();
+    /** Zones créées en jeu (identifiant -> nom, part). */
+    final Map<String, ZoneAjoutee> zonesAjoutees = new java.util.TreeMap<>();
+    /** Parts d'actifs réglées par commande (identifiant de zone -> part, 0 à 1). */
+    final Map<String, Double> parts = new java.util.TreeMap<>();
     /** Actifs dont le contenu est tiré. */
     private final LongOpenHashSet tires = new LongOpenHashSet();
     /** Index spatial des actifs (étoiles) : secteur -> positions. */
@@ -129,6 +150,18 @@ public final class RotationLoot extends SavedData {
             CompoundTag c = (CompoundTag) x;
             r.invalides.put(c.getLong("Pos"), c.getString("Nom"));
         }
+        for (Tag x : t.getList("Places", Tag.TAG_COMPOUND)) {
+            CompoundTag c = (CompoundTag) x;
+            r.places.put(c.getLong("Pos"), new Place(c.getString("Zone"), c.getString("Nom")));
+        }
+        for (Tag x : t.getList("ZonesAjoutees", Tag.TAG_COMPOUND)) {
+            CompoundTag c = (CompoundTag) x;
+            r.zonesAjoutees.put(c.getString("Id"), new ZoneAjoutee(c.getString("Nom"), c.contains("Actifs") ? c.getDouble("Actifs") : null));
+        }
+        for (Tag x : t.getList("Parts", Tag.TAG_COMPOUND)) {
+            CompoundTag c = (CompoundTag) x;
+            r.parts.put(c.getString("Zone"), c.getDouble("Part"));
+        }
         return r;
     }
 
@@ -165,6 +198,32 @@ public final class RotationLoot extends SavedData {
             li.add(c);
         }
         t.put("Invalides", li);
+        ListTag lp = new ListTag();
+        for (Long2ObjectMap.Entry<Place> e : places.long2ObjectEntrySet()) {
+            CompoundTag c = new CompoundTag();
+            c.putLong("Pos", e.getLongKey());
+            c.putString("Zone", e.getValue().zone());
+            c.putString("Nom", e.getValue().nom());
+            lp.add(c);
+        }
+        t.put("Places", lp);
+        ListTag lz = new ListTag();
+        zonesAjoutees.forEach((id, z) -> {
+            CompoundTag c = new CompoundTag();
+            c.putString("Id", id);
+            c.putString("Nom", z.nom());
+            if (z.actifs() != null) c.putDouble("Actifs", z.actifs());
+            lz.add(c);
+        });
+        t.put("ZonesAjoutees", lz);
+        ListTag lq = new ListTag();
+        parts.forEach((id, p) -> {
+            CompoundTag c = new CompoundTag();
+            c.putString("Zone", id);
+            c.putDouble("Part", p);
+            lq.add(c);
+        });
+        t.put("Parts", lq);
         return t;
     }
 
@@ -233,20 +292,163 @@ public final class RotationLoot extends SavedData {
         setDirty();
     }
 
-    /** Le bloc en k n'est pas (ou plus) le conteneur attendu : la position sort de sa zone, un autre prend sa place. */
+    /**
+     * Le conteneur en k n'est plus là (cassé, ou autre chose en place) : s'il était actif, un autre conteneur de sa zone
+     * prend sa place. Une place d'origine (fichier de la zone) attend son conteneur (« invalide ») ; un conteneur posé en
+     * jeu sort de la rotation.
+     */
     void invalider(ServerLevel l, long k, String trouve, boolean retire) {
+        ResourceKey<Level> dim = l.dimension();
+        ZonesLoot.Zone avant = ZonesLoot.zoneDe(dim, k);
+        if (avant == null) return;
         Actif a = retirerActif(k);
+        places.remove(k);
+        ZonesLoot.Zone origine = ZonesLoot.origine(dim, k);
+        String n = origine == null ? null : origine.duFichier(k);
+        if (n != null) {
+            ZonesLoot.placer(origine, k, n);
+            invalides.put(k, n);
+        } else {
+            ZonesLoot.enlever(dim, k);
+            invalides.remove(k);
+        }
+        nettoyer(dim, avant);
+        setDirty();
         if (a == null) return;
-        invalides.put(k, a.nom);
         if (retire) {
             HeralizLoot.LOG.info("Rotation : {} retiré en {} (zone {}), un autre conteneur prend sa place", a.nom, BlockPos.of(k).toShortString(), a.zone);
         } else {
-            HeralizLoot.LOG.warn("Rotation : {} attendu en {} (zone {}) mais {} en place ; position retirée de la zone",
+            HeralizLoot.LOG.warn("Rotation : {} attendu en {} (zone {}) mais {} en place ; un autre conteneur prend sa place",
                     a.nom, BlockPos.of(k).toShortString(), a.zone, trouve);
         }
-        ZonesLoot.Zone z = ZonesLoot.zone(l.dimension(), a.zone);
+        ZonesLoot.Zone z = ZonesLoot.zone(dim, a.zone);
         if (z != null) activerUn(z, k, l.random);
+    }
+
+    /**
+     * Le conteneur nom est en k : il entre dans la rotation. Avec le modèle de sa place d'origine, il y revient ; sinon il
+     * rejoint la zone la plus proche de son niveau ({@link ZonesLoot#rattacher}). -> sa zone (null : aucune zone).
+     */
+    @Nullable
+    ZonesLoot.Zone adopter(ServerLevel l, long k, String nom) {
+        ResourceKey<Level> dim = l.dimension();
+        ZonesLoot.Zone origine = ZonesLoot.origine(dim, k);
+        boolean chezLui = origine != null && nom.equals(origine.duFichier(k));
+        ZonesLoot.Zone z = chezLui ? origine : ZonesLoot.rattacher(dim, k, nom);
+        if (z == null) z = creerZone(l, k, nom);
+        ZonesLoot.Zone avant = ZonesLoot.zoneDe(dim, k);
+        ZonesLoot.placer(z, k, nom);
+        if (avant != null && avant != z) nettoyer(dim, avant);
+        invalides.remove(k);
+        if (chezLui) places.remove(k);
+        else places.put(k, new Place(z.id, nom));
+        Actif a = actifs.get(k);
+        if (a != null && !(a.nom.equals(nom) && a.zone.equals(z.id))) {
+            if (a.zone.equals(z.id)) {                                  // même zone : le nouveau modèle reste actif
+                Actif b = new Actif(z.id, nom);
+                b.contenu = a.contenu;
+                actifs.put(k, b);
+            } else {                                                    // autre zone : l'ancienne en active un autre
+                retirerActif(k);
+                ZonesLoot.Zone za = ZonesLoot.zone(dim, a.zone);
+                if (za != null) activerUn(za, k, l.random);
+            }
+        }
+        if (avant != z) {
+            HeralizLoot.LOG.info("Rotation : {} posé en {}, rejoint la zone {}", nom, BlockPos.of(k).toShortString(), z.id);
+        }
+        completer(l, z);
         setDirty();
+        return z;
+    }
+
+    /** Nouvelle zone pour un conteneur posé loin de toute zone de son niveau : « ajouts/t3_120_-450 ». */
+    private ZonesLoot.Zone creerZone(ServerLevel l, long k, String nom) {
+        int niv = ZonesLoot.niveau(nom), x = BlockPos.getX(k), z = BlockPos.getZ(k);
+        String id = "ajouts/t" + niv + "_" + x + "_" + z;
+        ZoneAjoutee za = zonesAjoutees.get(id);
+        if (za == null) {
+            za = new ZoneAjoutee("Posé en jeu, T" + niv + " (" + x + ", " + z + ")", ZonesLoot.partNiveau(l.dimension(), niv));
+            zonesAjoutees.put(id, za);
+            setDirty();
+            HeralizLoot.LOG.info("Rotation : nouvelle zone {} ({})", id, za.nom());
+        }
+        ZonesLoot.Zone zo = ZonesLoot.creer(l.dimension(), id, za.nom(), za.actifs(), niv);
+        Double p = parts.get(id);
+        if (p != null) zo.partForcee = p;
+        return zo;
+    }
+
+    /** Niveau d'une zone créée en jeu, lu dans son identifiant (ajouts/t3_x_z -> 3). */
+    private static int niveauAjout(String id) {
+        int i = id.indexOf("/t"), j = id.indexOf('_', i + 2);
+        try {
+            return Integer.parseInt(id.substring(i + 2, j));
+        } catch (RuntimeException ex) {
+            return 0;
+        }
+    }
+
+    /** Une zone créée en jeu qui n'a plus de conteneur disparaît (avec ses réapparitions et sa part réglée). */
+    private void nettoyer(ResourceKey<Level> dim, ZonesLoot.Zone z) {
+        if (z.taille() > 0 || !zonesAjoutees.containsKey(z.id)) return;
+        zonesAjoutees.remove(z.id);
+        parts.remove(z.id);
+        attentes.removeIf(a -> a.zone().equals(z.id));
+        ZonesLoot.supprimer(dim, z.id);
+        setDirty();
+        HeralizLoot.LOG.info("Rotation : zone {} vide, retirée", z.id);
+    }
+
+    /** Part d'actifs d'une zone réglée par commande (null : celle du fichier ou de son niveau). */
+    void regler(ZonesLoot.Zone z, @Nullable Double part) {
+        if (part == null) parts.remove(z.id);
+        else parts.put(z.id, part);
+        z.partForcee = part;
+        setDirty();
+        ZonesLoot.invalider();                                          // les comptes se refont au prochain tick
+    }
+
+    /** Zone qui a grandi (ou retrouvé un conteneur) : si sa part d'actifs le demande, un conteneur de plus devient actif. */
+    private void completer(ServerLevel l, ZonesLoot.Zone z) {
+        int a = 0, inv = 0;
+        for (Actif x : actifs.values()) {
+            if (x.zone.equals(z.id)) a++;
+        }
+        for (Attente x : attentes) {
+            if (x.zone().equals(z.id)) a++;
+        }
+        for (int i = 0; i < z.taille(); i++) {
+            if (invalides.containsKey(z.position(i))) inv++;
+        }
+        int cible = z.cible(z.taille() - inv);
+        while (a < cible && activerUn(z, AUCUNE, l.random)) a++;
+    }
+
+    /** Remet dans les zones (qui viennent d'être lues) les zones créées en jeu, les parts réglées et les conteneurs
+     *  posés ou changés en jeu. */
+    private void remettrePlaces(ServerLevel l) {
+        ResourceKey<Level> dim = l.dimension();
+        zonesAjoutees.forEach((id, za) -> ZonesLoot.creer(dim, id, za.nom(), za.actifs(), niveauAjout(id)));
+        if (parts.keySet().removeIf(id -> ZonesLoot.zone(dim, id) == null)) setDirty();
+        parts.forEach((id, p) -> ZonesLoot.zone(dim, id).partForcee = p);
+        if (places.isEmpty()) return;
+        LongArrayList perdus = new LongArrayList();
+        Map<Long, Place> deplaces = new HashMap<>();
+        for (Long2ObjectMap.Entry<Place> e : places.long2ObjectEntrySet()) {
+            long k = e.getLongKey();
+            Place p = e.getValue();
+            ZonesLoot.Zone z = ZonesLoot.zone(dim, p.zone());
+            if (z == null) {                                            // zone disparue : la plus proche, ou une nouvelle
+                z = ZonesLoot.rattacher(dim, k, p.nom());
+                if (z == null) z = creerZone(l, k, p.nom());
+                deplaces.put(k, new Place(z.id, p.nom()));
+            }
+            ZonesLoot.placer(z, k, p.nom());
+        }
+        for (long k : perdus) places.remove(k);
+        deplaces.forEach((k, p) -> places.put((long) k, p));
+        if (!perdus.isEmpty() || !deplaces.isEmpty()) setDirty();
     }
 
     /** Quelqu'un regarde-t-il dans cet inventaire ? (autre que sauf) */
@@ -264,6 +466,7 @@ public final class RotationLoot extends SavedData {
      * zones ramenées à leur nombre d'actifs (actifs + réapparitions en attente = cible).
      */
     void reconcilier(ServerLevel l) {
+        remettrePlaces(l);
         Map<String, ZonesLoot.Zone> zones = ZonesLoot.zones(l.dimension());
         Object2IntOpenHashMap<String> nbInvalides = new Object2IntOpenHashMap<>();
         ObjectIterator<Long2ObjectMap.Entry<String>> ii = invalides.long2ObjectEntrySet().iterator();
@@ -333,8 +536,8 @@ public final class RotationLoot extends SavedData {
             }
         }
         if (!zones.isEmpty() || ajoutes > 0 || retires > 0) {
-            HeralizLoot.LOG.info("Rotation du loot ({}) : {} zones, {} actifs ({} ajoutés, {} retirés), {} en attente, {} invalides",
-                    l.dimension().location(), zones.size(), actifs.size(), ajoutes, retires, attentes.size(), invalides.size());
+            HeralizLoot.LOG.info("Rotation du loot ({}) : {} zones, {} actifs ({} ajoutés, {} retirés), {} en attente, {} invalides, {} posés en jeu",
+                    l.dimension().location(), zones.size(), actifs.size(), ajoutes, retires, attentes.size(), invalides.size(), places.size());
         }
     }
 
@@ -398,7 +601,7 @@ public final class RotationLoot extends SavedData {
         int rayon = ConfigLoot.rayonEtoiles(), nb = ConfigLoot.etoilesParSeconde();
         double r2 = (double) rayon * rayon;
         int rs = SectionPos.blockToSectionCoord(rayon) + 1;
-        Map<Long, String> fautifs = new HashMap<>();
+        Map<Long, BlockState> fautifs = new HashMap<>();
         for (ServerPlayer p : l.players()) {
             int sx = SectionPos.blockToSectionCoord(p.getBlockX()), sz = SectionPos.blockToSectionCoord(p.getBlockZ());
             for (int dx = -rs; dx <= rs; dx++) {
@@ -414,7 +617,7 @@ public final class RotationLoot extends SavedData {
                         if (a == null) continue;
                         BlockState st = l.getBlockState(b);
                         if (!(st.getBlock() instanceof ConteneurBlock cb) || !cb.nom.equals(a.nom)) {
-                            fautifs.put(k, BuiltInRegistries.BLOCK.getKey(st.getBlock()).toString());
+                            fautifs.put(k, st);
                             continue;
                         }
                         scintiller(l, p, b, st, cb, nb);
@@ -422,7 +625,10 @@ public final class RotationLoot extends SavedData {
                 }
             }
         }
-        fautifs.forEach((k, trouve) -> invalider(l, k, trouve, false));
+        fautifs.forEach((k, st) -> {                                    // autre conteneur en place : il prend la relève
+            if (st.getBlock() instanceof ConteneurBlock cb && avecLoot(cb)) adopter(l, k, cb.nom);
+            else invalider(l, k, BuiltInRegistries.BLOCK.getKey(st.getBlock()).toString(), false);
+        });
     }
 
     /** Quelques étoiles (END_ROD) sur le dessus, l'avant et les côtés de l'objet (pas le dos, contre le mur). */
@@ -453,12 +659,21 @@ public final class RotationLoot extends SavedData {
     }
 
     // ------------------------------------------------------------------------------------------ joueurs, blocs
+    /** Le conteneur peut-il avoir du loot ? (une table lui correspond ; les véhicules n'en ont pas) */
+    static boolean avecLoot(ConteneurBlock cb) {
+        return !cb.vehicule && TablesCoffres.pourConteneur(cb.nom) != null;
+    }
+
     /** Clic droit sur un conteneur (bloc principal en pos). */
     static void ouvrir(ServerLevel l, BlockPos pos, BlockState st, ConteneurBlock cb, ServerPlayer p) {
         RotationLoot e = get(l);
         long k = pos.asLong();
+        ZonesLoot.Zone z = ZonesLoot.zoneDe(l.dimension(), k);
+        if ((z == null || !cb.nom.equals(z.conteneur(k)) || e.invalides.containsKey(k)) && avecLoot(cb)) {
+            e.adopter(l, k, cb.nom);                                    // posé sans qu'on le sache (WorldEdit...) : il entre
+        }
         Actif a = e.actifs.get(k);
-        if (a != null && !a.nom.equals(cb.nom)) {
+        if (a != null && !a.nom.equals(cb.nom)) {                       // conteneur sans table à la place d'un actif
             e.invalider(l, k, cb.nom, false);
             a = null;
         }
@@ -503,29 +718,18 @@ public final class RotationLoot extends SavedData {
         return inv;
     }
 
-    /** Un conteneur de la rotation vient d'être posé : s'il avait été retiré de sa zone, il y revient. */
+    /** Un conteneur vient d'être posé : il entre dans la rotation tout seul (voir {@link #adopter}). */
     static void blocPose(ServerLevel l, BlockPos pos, String nom) {
-        long k = pos.asLong();
-        if (ZonesLoot.zoneDe(l.dimension(), k) == null) return;
-        RotationLoot e = get(l);
-        if (nom.equals(e.invalides.get(k))) {
-            e.invalides.remove(k);
-            e.setDirty();
-        }
+        ConteneurBlock cb = ConteneurBlock.parNom(nom);
+        if (cb == null || !avecLoot(cb)) return;
+        get(l).adopter(l, pos.asLong(), nom);
     }
 
-    /** Un conteneur de la rotation vient d'être cassé ou remplacé : sa position sort de la zone. */
+    /** Un conteneur de la rotation vient d'être cassé ou remplacé (voir {@link #invalider}). */
     static void blocRetire(ServerLevel l, BlockPos pos, String nom) {
         long k = pos.asLong();
-        ZonesLoot.Zone z = ZonesLoot.zoneDe(l.dimension(), k);
-        if (z == null) return;
-        RotationLoot e = get(l);
-        if (e.actifs.containsKey(k)) {
-            e.invalider(l, k, BuiltInRegistries.BLOCK.getKey(l.getBlockState(pos).getBlock()).toString(), true);
-        } else if (nom.equals(z.conteneur(k)) && !e.invalides.containsKey(k)) {
-            e.invalides.put(k, nom);
-            e.setDirty();
-        }
+        if (ZonesLoot.zoneDe(l.dimension(), k) == null) return;
+        get(l).invalider(l, k, BuiltInRegistries.BLOCK.getKey(l.getBlockState(pos).getBlock()).toString(), true);
     }
 
     private static void son(ServerLevel l, BlockPos pos, BlockState st, boolean ouverture) {

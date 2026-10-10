@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t4_norvegiens_cuisine"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t4_norvegiens_cuisine"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t4_norvegiens_cuisine"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t4_norvegiens_cuisine"
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t6_caisson_plomb"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t6_caisson_plomb"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t6_caisson_plomb"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t6_caisson_plomb"
+  }
+ }
+}

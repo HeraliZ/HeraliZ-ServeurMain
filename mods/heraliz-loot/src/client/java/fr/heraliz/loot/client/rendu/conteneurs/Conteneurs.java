@@ -32,7 +32,7 @@ public final class Conteneurs {
     private static final Map<String, float[][]> COLLISIONS = new java.util.HashMap<>();
 
     /** Lots de nouveaux modèles (classes LotXxx de ce paquet, chargées si présentes : les outils compilent un lot seul). */
-    private static final String[] LOTS = {"T1a", "T1b", "T2b", "T3b", "T4b", "T56"};
+    private static final String[] LOTS = {"T1a", "T1b", "T2b", "T3b", "T4b", "T56", "T6c", "T5c", "T4c", "T3c"};
 
     private static void civil(String nom, Consumer<MeshBuilder> f) {
         OPAQUES.put(nom, f);

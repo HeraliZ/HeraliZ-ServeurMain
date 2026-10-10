@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t4_caisse_conserves"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t4_caisse_conserves"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t4_caisse_conserves"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t4_caisse_conserves"
+  }
+ }
+}

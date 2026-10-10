@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t6_pupitre_lancement"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t6_pupitre_lancement"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t6_pupitre_lancement"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t6_pupitre_lancement"
+  }
+ }
+}

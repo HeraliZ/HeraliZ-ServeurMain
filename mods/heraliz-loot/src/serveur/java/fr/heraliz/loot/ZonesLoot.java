@@ -32,6 +32,10 @@ import net.minecraftforge.registries.ForgeRegistries;
  * <pre>{ "nom": "Tcherno — quartier 3", "actifs": 0.2, "conteneurs": [[x, y, z, "t2_frigo"], ...] }</pre>
  * « actifs » (part des conteneurs qui ont du loot) et « dimension » (minecraft:overworld par défaut) sont facultatifs.
  * x, y, z : bloc principal du conteneur ; le nom est celui du bloc sans « heraliz_loot: ». Les véhicules sont ignorés.
+ * <p>Les zones changent en jeu : un conteneur posé ou remplacé entre tout seul dans la zone de son tiers la plus proche
+ * ({@link #rattacher}, {@link #placer}) ; loin de toute zone de son tiers, il en commence une nouvelle ({@link #creer}).
+ * Ces changements, et la part d'actifs réglée par commande, sont gardés par le monde ({@link RotationLoot}) et remis à
+ * chaque rechargement des fichiers.</p>
  */
 public final class ZonesLoot extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().create();
@@ -40,50 +44,118 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
     private static volatile int version;
     private static volatile Map<ResourceKey<Level>, Map<String, Zone>> ZONES = Map.of();
     private static volatile Map<ResourceKey<Level>, Long2ObjectOpenHashMap<Zone>> INDEX = Map.of();
+    /** Index des fichiers (position -> zone), tel que lu : sans les changements faits en jeu. */
+    private static volatile Map<ResourceKey<Level>, Long2ObjectOpenHashMap<Zone>> ORIGINE = Map.of();
+    /** Un conteneur posé en jeu rejoint la zone de son niveau dont un conteneur est à moins de RAYON blocs. */
+    static final int RAYON = 64;
 
-    /** Une zone : ses conteneurs (position du bloc principal + nom), dans l'ordre du fichier. */
+    /** Une zone : ses conteneurs (position du bloc principal + nom), ceux du fichier puis ceux posés en jeu. */
     public static final class Zone {
         public final String id, nom;
         @Nullable
         public final Double actifs;
         public final ResourceKey<Level> dimension;
-        private final long[] positions;
-        private final String[] noms;
+        /** Part d'actifs réglée en jeu (/heralizloot zone <id> part), prioritaire ; null : celle du fichier. */
+        @Nullable
+        volatile Double partForcee;
+        /** Niveau de la zone : celui de la plupart de ses conteneurs (t5_... -> 5), 0 si aucun ; donné à la création
+         *  pour une zone créée en jeu. */
+        public int niveau;
+        private final LongArrayList positions;
+        private final List<String> noms;
         private final Long2IntOpenHashMap indice = new Long2IntOpenHashMap();
+        /** Conteneurs du fichier (position -> nom), même si la position a changé de modèle ou de zone en jeu. */
+        private final Long2ObjectOpenHashMap<String> fichier = new Long2ObjectOpenHashMap<>();
 
         Zone(String id, String nom, @Nullable Double actifs, ResourceKey<Level> dimension, LongArrayList positions, List<String> noms) {
             this.id = id;
             this.nom = nom;
             this.actifs = actifs;
             this.dimension = dimension;
-            this.positions = positions.toLongArray();
-            this.noms = noms.toArray(new String[0]);
+            this.positions = positions;
+            this.noms = new ArrayList<>(noms);
             indice.defaultReturnValue(-1);
-            for (int i = 0; i < this.positions.length; i++) indice.put(this.positions[i], i);
+            int[] parNiveau = new int[10];
+            for (int i = 0; i < positions.size(); i++) {
+                indice.put(positions.getLong(i), i);
+                fichier.put(positions.getLong(i), noms.get(i));
+                int n = ZonesLoot.niveau(noms.get(i));
+                if (n > 0 && n < parNiveau.length) parNiveau[n]++;
+            }
+            int m = 0;
+            for (int n = 1; n < parNiveau.length; n++) {
+                if (parNiveau[n] > parNiveau[m]) m = n;
+            }
+            this.niveau = m;
         }
 
         public int taille() {
-            return positions.length;
+            return positions.size();
         }
 
         public long position(int i) {
-            return positions[i];
+            return positions.getLong(i);
         }
 
         public String conteneur(int i) {
-            return noms[i];
+            return noms.get(i);
         }
 
         /** Nom du conteneur attendu en pos (null si pos n'est pas dans la zone). */
         @Nullable
         public String conteneur(long pos) {
             int i = indice.get(pos);
-            return i < 0 ? null : noms[i];
+            return i < 0 ? null : noms.get(i);
         }
 
-        /** Part d'actifs : celle de la zone, sinon celle de la configuration serveur. */
+        /** Nom que le fichier de la zone met en pos (null : pos n'est pas dans le fichier). */
+        @Nullable
+        public String duFichier(long pos) {
+            return fichier.get(pos);
+        }
+
+        /** Met le conteneur nom en pos (ajouté, ou nouveau modèle à une place déjà dans la zone). */
+        void poser(long pos, String nom) {
+            int i = indice.get(pos);
+            if (i >= 0) {
+                noms.set(i, nom);
+                return;
+            }
+            indice.put(pos, positions.size());
+            positions.add(pos);
+            noms.add(nom);
+        }
+
+        /** Retire pos de la zone (le dernier conteneur prend sa place dans la liste). */
+        void enlever(long pos) {
+            int i = indice.remove(pos);
+            if (i < 0) return;
+            int der = positions.size() - 1;
+            if (i != der) {
+                long k = positions.getLong(der);
+                positions.set(i, k);
+                noms.set(i, noms.get(der));
+                indice.put(k, i);
+            }
+            positions.removeLong(der);
+            noms.remove(der);
+        }
+
+        /** Carré de la distance de (x, y, z) au plus proche conteneur de la zone (MAX_VALUE si la zone est vide). */
+        double distance2(int x, int y, int z) {
+            double d = Double.MAX_VALUE;
+            for (int i = 0; i < positions.size(); i++) {
+                long k = positions.getLong(i);
+                double dx = BlockPos.getX(k) - x, dy = BlockPos.getY(k) - y, dz = BlockPos.getZ(k) - z;
+                d = Math.min(d, dx * dx + dy * dy + dz * dz);
+            }
+            return d;
+        }
+
+        /** Part d'actifs : celle réglée en jeu, sinon celle de la zone, sinon celle de la configuration serveur. */
         public double proportion() {
-            return actifs != null ? actifs : ConfigLoot.proportion();
+            Double p = partForcee;
+            return p != null ? p : actifs != null ? actifs : ConfigLoot.proportion();
         }
 
         /**
@@ -158,8 +230,11 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
                 HeralizLoot.LOG.error("Zone de loot {} illisible", id, ex);
             }
         }
+        Map<ResourceKey<Level>, Long2ObjectOpenHashMap<Zone>> origine = new HashMap<>();
+        index.forEach((d, idx) -> origine.put(d, new Long2ObjectOpenHashMap<>(idx)));
         ZONES = zones;
         INDEX = index;
+        ORIGINE = origine;
         version++;
         int nz = zones.values().stream().mapToInt(Map::size).sum();
         HeralizLoot.LOG.info("{} zones de loot, {} conteneurs{}{}{}", nz, total,
@@ -198,6 +273,95 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
     static Zone zoneDe(ResourceKey<Level> dim, long pos) {
         Long2ObjectOpenHashMap<Zone> idx = INDEX.get(dim);
         return idx == null ? null : idx.get(pos);
+    }
+
+    /** Zone dont le fichier contient pos, avant tout changement fait en jeu (null : pos n'est dans aucun fichier). */
+    @Nullable
+    static Zone origine(ResourceKey<Level> dim, long pos) {
+        Long2ObjectOpenHashMap<Zone> idx = ORIGINE.get(dim);
+        return idx == null ? null : idx.get(pos);
+    }
+
+    /** Niveau d'un conteneur d'après son préfixe : t5_caisse_mortier -> 5, soins2_... -> 2 (0 sans chiffre). */
+    static int niveau(String nom) {
+        int i = nom.indexOf('_');
+        String p = i > 0 ? nom.substring(0, i) : nom;
+        int j = p.length();
+        while (j > 0 && Character.isDigit(p.charAt(j - 1))) j--;
+        try {
+            return j < p.length() ? Integer.parseInt(p.substring(j)) : 0;
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    /**
+     * Zone où ranger un conteneur posé en jeu en pos : la zone de son niveau dont un conteneur est le plus près, à moins
+     * de {@link #RAYON} blocs (null : aucune, il faut en commencer une, {@link #creer}).
+     */
+    @Nullable
+    static Zone rattacher(ResourceKey<Level> dim, long pos, String nom) {
+        int niv = niveau(nom), x = BlockPos.getX(pos), y = BlockPos.getY(pos), z = BlockPos.getZ(pos);
+        Zone mieux = null;
+        double dm = (double) RAYON * RAYON;
+        for (Zone zo : zones(dim).values()) {
+            if (zo.niveau != niv) continue;
+            double d = zo.distance2(x, y, z);
+            if (d <= dm) {
+                dm = d;
+                mieux = zo;
+            }
+        }
+        return mieux;
+    }
+
+    /** Part d'actifs des zones de ce niveau dans les fichiers (celle de la plus grande), null si aucune n'en donne. */
+    @Nullable
+    static Double partNiveau(ResourceKey<Level> dim, int niv) {
+        Zone mieux = null;
+        for (Zone zo : zones(dim).values()) {
+            if (zo.niveau == niv && zo.actifs != null && (mieux == null || zo.taille() > mieux.taille())) mieux = zo;
+        }
+        return mieux == null ? null : mieux.actifs;
+    }
+
+    /** Nouvelle zone (vide) créée en jeu ; si l'identifiant existe déjà, la zone existante. */
+    static Zone creer(ResourceKey<Level> dim, String id, String nom, @Nullable Double actifs, int niveau) {
+        Zone z = zone(dim, id);
+        if (z != null) return z;
+        if (!(ZONES instanceof HashMap)) ZONES = new HashMap<>(ZONES);
+        if (!(INDEX instanceof HashMap)) INDEX = new HashMap<>(INDEX);
+        z = new Zone(id, nom, actifs, dim, new LongArrayList(), new ArrayList<>());
+        z.niveau = niveau;
+        ZONES.computeIfAbsent(dim, k -> new TreeMap<>()).put(id, z);
+        INDEX.computeIfAbsent(dim, k -> new Long2ObjectOpenHashMap<>());
+        return z;
+    }
+
+    /** Retire une zone créée en jeu (vide). */
+    static void supprimer(ResourceKey<Level> dim, String id) {
+        Map<String, Zone> m = ZONES.get(dim);
+        Zone z = m == null ? null : m.remove(id);
+        if (z == null) return;
+        Long2ObjectOpenHashMap<Zone> idx = INDEX.get(dim);
+        for (int i = 0; i < z.taille() && idx != null; i++) idx.remove(z.position(i), z);
+    }
+
+    /** Met le conteneur nom en pos dans la zone z (il quitte son ancienne zone s'il en change). */
+    static void placer(Zone z, long pos, String nom) {
+        Long2ObjectOpenHashMap<Zone> idx = INDEX.get(z.dimension);
+        if (idx == null) return;
+        Zone avant = idx.get(pos);
+        if (avant != null && avant != z) avant.enlever(pos);
+        z.poser(pos, nom);
+        idx.put(pos, z);
+    }
+
+    /** Retire pos de sa zone. */
+    static void enlever(ResourceKey<Level> dim, long pos) {
+        Long2ObjectOpenHashMap<Zone> idx = INDEX.get(dim);
+        Zone z = idx == null ? null : idx.remove(pos);
+        if (z != null) z.enlever(pos);
     }
 
     /** Index position -> zone d'une dimension (lecture seule). */

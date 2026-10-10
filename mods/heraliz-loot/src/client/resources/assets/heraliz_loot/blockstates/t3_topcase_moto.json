@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_loot:block/hd/t3_topcase_moto"
+  },
+  "facing=east": {
+   "model": "heraliz_loot:block/hd/t3_topcase_moto"
+  },
+  "facing=south": {
+   "model": "heraliz_loot:block/hd/t3_topcase_moto"
+  },
+  "facing=west": {
+   "model": "heraliz_loot:block/hd/t3_topcase_moto"
+  }
+ }
+}
