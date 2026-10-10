@@ -36,7 +36,11 @@ public enum Genre {
     GYROPHARE("gyrophare", "gyrophare", 128, 4, 32, "metal", true, 4, 0, 4, 12, 13, 12),
     VENTILATEUR("ventilateur", "ventilateur", 64, 2, 24, "metal", true, 0, 0, 0, 16, 16, 16),
     EOLIENNE_MODERNE("eolienne_moderne", "eolienne_moderne", 384, 42, 96, "metal", true, 0, 0, 0, 16, 4, 16),
-    CHATEAU_EAU("chateau_eau", "chateau_eau", 256, 14, 80, "metal", true, 0, 0, 0, 16, 4, 16);
+    CHATEAU_EAU("chateau_eau", "chateau_eau", 256, 14, 80, "metal", true, 0, 0, 0, 16, 4, 16),
+    // lot 4 (11/10, tools/gen_eoliennes_usees.py) : éoliennes à l'abandon (rouille, pale cassée, lierre et lianes qui
+    // flottent au vent ; le rotor bloqué se balance au lieu de tourner)
+    EOLIENNE_MODERNE_USEE("eolienne_moderne_usee", "eolienne_moderne_usee", 384, 42, 96, "metal", true, 0, 0, 0, 16, 4, 16),
+    EOLIENNE_USEE("eolienne_usee", "eolienne_usee", 144, 4, 40, "metal", true, 5, 0, 3, 11, 9, 13);
 
     public final String id, maillage, son;
     public final int vue, rayon, lod;

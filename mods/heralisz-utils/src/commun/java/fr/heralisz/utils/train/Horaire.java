@@ -33,6 +33,20 @@ public final class Horaire {
             Vehicule.VOITURE, Vehicule.VOITURE, Vehicule.VOITURE};
     /** Modèle de chaque véhicule (tools/gen_train.py, VARIANTES) : la loco puis des voitures toutes différentes. */
     public static final String[] MODELES = {"loco", "voiture_a", "voiture_c", "fourgon", "voiture_b", "voiture_a", "voiture_c"};
+    /** Rames sur la boucle (v2, 09/10) : la seconde suit exactement le même horaire avec un demi-tour d'avance (elles
+     *  sont toujours à l'opposé l'une de l'autre et ne se croisent jamais sur la voie unique). Une voiture est désignée
+     *  par un numéro global : rame * N + place dans la rame. */
+    public static final int RAMES = 2;
+    public static final int N = RAME.length;
+
+    public static int rame(int veh) {
+        return Math.max(0, veh) / N;
+    }
+
+    public static int place(int veh) {
+        return Math.floorMod(veh, N);
+    }
+
     public static final double ATTELAGE = 0.6;
     /** Longueur de la rame et décalage du centre de chaque véhicule par rapport au milieu de la rame. */
     public static final double LONGUEUR;
@@ -50,7 +64,12 @@ public final class Horaire {
         }
     }
 
-    private static Horaire instance;
+    private static volatile Horaire instance;
+
+    /** Le réseau a changé (Reseau.choisir) : l'horaire sera recalculé. */
+    static void oublier() {
+        instance = null;
+    }
 
     public final Reseau reseau;
     public final double[] sGare;            // abscisse d'arrêt (milieu du quai) de chaque gare
@@ -118,6 +137,16 @@ public final class Horaire {
      *  restant à quai (en route : temps depuis le départ). */
     public record Etat(double s, double v, int aQuai, int suivante, double reste, double tCycle) {}
 
+    /** Temps de l'horaire de la rame r (la rame 0 est celle d'origine). */
+    public double tRame(double t, int r) {
+        return t + r * periode / RAMES;
+    }
+
+    /** État de la rame r à l'instant t. */
+    public Etat etatRame(double t, int r) {
+        return etat(tRame(t, r));
+    }
+
     /** t : secondes de jeu (temps du monde / 20, décalage compris). */
     public Etat etat(double t) {
         double tc = t % periode;
@@ -173,10 +202,10 @@ public final class Horaire {
 
     private final double[] pa = new double[3], pb = new double[3], pt = new double[3];
 
-    /** Place le véhicule i de la rame dont le milieu est à l'abscisse sRame. */
+    /** Place le véhicule i (numéro global ou place dans la rame) de la rame dont le milieu est à l'abscisse sRame. */
     public synchronized void placer(int i, double sRame, Placement out) {
-        Vehicule v = RAME[i];
-        double sc = sRame + DECALAGE[i];
+        Vehicule v = RAME[place(i)];
+        double sc = sRame + DECALAGE[place(i)];
         out.s = sc;
         bogie(sc + v.bogie, out.bogieAvant);
         bogie(sc - v.bogie, out.bogieArriere);

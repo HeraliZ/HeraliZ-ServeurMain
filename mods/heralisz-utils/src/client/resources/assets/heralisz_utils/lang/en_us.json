@@ -618,5 +618,7 @@
   "onglet.heralisz_utils.carte": "Map ground",
   "onglet.heralisz_utils.gares": "Stations & elevator",
   "onglet.heralisz_utils.vehicules": "Vehicles",
-  "onglet.heralisz_utils.usure": "Weapon wear"
+  "onglet.heralisz_utils.usure": "Weapon wear",
+  "block.heralisz_utils.eolienne_moderne_usee": "Derelict wind turbine",
+  "block.heralisz_utils.eolienne_usee": "Derelict wind pump"
 }

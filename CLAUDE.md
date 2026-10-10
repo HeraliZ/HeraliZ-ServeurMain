@@ -116,7 +116,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases, heralisz_tags | hérals, clans, bunkers et pillage, tags |
-| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules | train, ascenseur, carte, plans, ambiance, cadavres, roue de ping, usure des armes, véhicules |
+| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules | train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json`), ascenseur, carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
@@ -426,9 +426,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     disparaissent au chargement du monde et le train roule sur l'ancien tracé :
     - **HeraliZ Décors 1.7.0** (`heraliz_decors`, absent du dépôt) : grillage militaire, sable et blocs du désert,
       taches de sang, brouillard et zones dangereuses (gaz, radiation, froid) ;
-    - **HeraliZ Utils** : le réseau de train de la nouvelle carte (`assets/heralisz_utils/train/reseau_v2.json`, gares
-      droites) et les éoliennes à l'abandon (`eolienne_usee`, `eolienne_moderne_usee`), faits sur la version 2.0.7 du
-      dossier de travail de la carte, à assembler avec la 2.1.0 d'ici ;
+    - **HeraliZ Utils** : apporté le 11/10 (version 2.2.0 : réseau de train de la nouvelle carte, gares droites,
+      éoliennes à l'abandon `eolienne_usee` et `eolienne_moderne_usee`, ascenseur qui porte mieux les joueurs) ;
     - **HeraliZ Loot 0.4.2** : rotation du loot quand un conteneur est posé ou remplacé à la main, commande
       `/heralizloot zone <id> part`, à assembler avec la version d'ici.
     Leurs sources sont dans le dossier de travail de la carte, chez le propriétaire : à apporter ici comme « un de nos

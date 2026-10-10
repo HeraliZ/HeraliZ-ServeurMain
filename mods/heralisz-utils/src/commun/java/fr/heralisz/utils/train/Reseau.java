@@ -31,6 +31,26 @@ public final class Reseau {
 
     private static Reseau instance;
     private static boolean essaye;
+    /** Fichier du réseau dans le jar (assets/heralisz_utils/train/<nom>.json) : « reseau » (ancienne map) ou « reseau_v2 »
+     *  (nouvelle map, 09/10). Chaque monde dit le sien (données « heralisz_train »), le serveur l'annonce aux joueurs. */
+    private static String nom = "reseau";
+
+    /** Choisit le réseau ; s'il change, il sera relu et l'horaire recalculé. */
+    public static void choisir(String n) {
+        if (n == null || n.isEmpty()) n = "reseau";
+        synchronized (Reseau.class) {
+            if (n.equals(nom)) return;
+            nom = n;
+            instance = null;
+            essaye = false;
+        }
+        Horaire.oublier();
+        HeraliszUtils.LOG.info("Réseau ferré choisi : {}", n);
+    }
+
+    public static synchronized String nom() {
+        return nom;
+    }
 
     public final int n;
     public final float[] x, y, z;
@@ -78,7 +98,7 @@ public final class Reseau {
     public static synchronized Reseau get() {
         if (!essaye) {
             essaye = true;
-            try (InputStream in = Reseau.class.getResourceAsStream("/assets/heralisz_utils/train/reseau.json")) {
+            try (InputStream in = Reseau.class.getResourceAsStream("/assets/heralisz_utils/train/" + nom + ".json")) {
                 if (in == null) {
                     HeraliszUtils.LOG.warn("Réseau ferré absent du jar : pas de train");
                 } else {

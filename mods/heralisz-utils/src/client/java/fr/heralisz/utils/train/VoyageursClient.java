@@ -23,7 +23,8 @@ public final class VoyageursClient {
         Voyageurs.CLIENT.removeIf(Entity::isRemoved);
         Horaire h = Horaire.get();
         if (h == null) return;
-        Horaire.Etat e = h.etat(TrainClient.tTick);
+        int rv = Horaire.rame(v.pv >= 0 ? v.pv : v.getEntityData().get(Voyageur.VEHICULE));
+        Horaire.Etat e = h.etatRame(TrainClient.tTick, rv);
         Entity rider = v.getFirstPassenger();
         Horaire.Placement pl = new Horaire.Placement();
         if (rider != null && TrainClient.estMoi(rider)) {

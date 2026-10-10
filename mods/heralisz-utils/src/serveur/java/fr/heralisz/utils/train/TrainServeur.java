@@ -104,11 +104,14 @@ public final class TrainServeur {
     public static final class Donnees extends SavedData {
         public boolean actif;
         public long decalage;
+        /** Réseau de ce monde (fichier du jar) : « reseau » (ancienne map, par défaut) ou « reseau_v2 » (nouvelle map). */
+        public String reseau = "reseau";
 
         static Donnees lire(CompoundTag t) {
             Donnees d = new Donnees();
             d.actif = t.getBoolean("actif");
             d.decalage = t.getLong("decalage");
+            if (t.contains("reseau")) d.reseau = t.getString("reseau");
             return d;
         }
 
@@ -116,18 +119,23 @@ public final class TrainServeur {
         public CompoundTag save(CompoundTag t) {
             t.putBoolean("actif", actif);
             t.putLong("decalage", decalage);
+            t.putString("reseau", reseau);
             return t;
         }
     }
 
     public static Donnees donnees(MinecraftServer server) {
         ServerLevel o = server.overworld();
-        return o.getDataStorage().computeIfAbsent(Donnees::lire, Donnees::new, "heralisz_train");
+        Donnees d = o.getDataStorage().computeIfAbsent(Donnees::lire, Donnees::new, "heralisz_train");
+        Reseau.choisir(d.reseau);
+        return d;
     }
 
     /** Le train roule-t-il sur ce serveur (monde de la map, réseau présent dans le jar) ? */
     public static boolean actif(MinecraftServer server) {
-        return server != null && Horaire.get() != null && donnees(server).actif;
+        if (server == null) return false;
+        Donnees d = donnees(server);
+        return Horaire.get() != null && d.actif;
     }
 
     /** Secondes de l'horaire côté serveur. */
@@ -137,7 +145,7 @@ public final class TrainServeur {
 
     private static void annoncer(MinecraftServer server, ServerPlayer p) {
         Donnees d = donnees(server);
-        Train.Annonce a = new Train.Annonce(d.actif && Horaire.get() != null, d.decalage);
+        Train.Annonce a = new Train.Annonce(d.actif && Horaire.get() != null, d.decalage, d.reseau);
         if (p != null) {
             Train.CANAL.send(PacketDistributor.PLAYER.with(() -> p), a);
         } else {
@@ -192,16 +200,30 @@ public final class TrainServeur {
                         c.getSource().sendFailure(Component.literal("Pas de réseau ferré dans ce jar."));
                         return 0;
                     }
-                    Horaire.Etat et = h.etat(temps(srv));
                     Reseau r = h.reseau;
-                    double[] p = new double[3];
-                    r.point(et.s(), p);
-                    String ou = et.aQuai() >= 0 ? "à quai à " + r.gares[et.aQuai()].nom() + ", départ dans " + duree(et.reste())
-                            : "en route vers " + r.gares[et.suivante()].nom() + String.format(" à %.0f km/h", et.v() * 3.6);
-                    c.getSource().sendSuccess(() -> Component.literal(String.format("Train %s : %s (x %.0f, y %.0f, z %.0f). Tour complet : %s.",
-                            donnees(srv).actif ? "actif" : "ARRÊTÉ", ou, p[0], p[1], p[2], duree(h.periode))), false);
+                    for (int rame = 0; rame < Horaire.RAMES; rame++) {
+                        Horaire.Etat et = h.etatRame(temps(srv), rame);
+                        double[] p = new double[3];
+                        r.point(et.s(), p);
+                        String ou = et.aQuai() >= 0 ? "à quai à " + r.gares[et.aQuai()].nom() + ", départ dans " + duree(et.reste())
+                                : "en route vers " + r.gares[et.suivante()].nom() + String.format(" à %.0f km/h", et.v() * 3.6);
+                        int n = rame + 1;
+                        c.getSource().sendSuccess(() -> Component.literal(String.format("Train %d (%s, réseau %s) %s : %s (x %.0f, y %.0f, z %.0f). Tour : %s.",
+                                n, donnees(srv).actif ? "actif" : "ARRÊTÉ", Reseau.nom(), "", ou, p[0], p[1], p[2], duree(h.periode))), false);
+                    }
                     return 1;
                 }))
+                .then(Commands.literal("reseau").then(Commands.argument("nom", StringArgumentType.word()).executes(c -> {
+                    MinecraftServer srv = c.getSource().getServer();
+                    Donnees d = donnees(srv);
+                    d.reseau = StringArgumentType.getString(c, "nom");
+                    d.setDirty();
+                    Reseau.choisir(d.reseau);
+                    annoncer(srv, null);
+                    boolean ok = Horaire.get() != null;
+                    c.getSource().sendSuccess(() -> Component.literal("Réseau ferré : " + d.reseau + (ok ? "" : " (introuvable dans le jar : pas de train)")), true);
+                    return ok ? 1 : 0;
+                })))
                 .then(Commands.literal("actif").then(Commands.argument("oui", BoolArgumentType.bool()).executes(c -> {
                     MinecraftServer srv = c.getSource().getServer();
                     Donnees d = donnees(srv);

@@ -33,6 +33,13 @@ public final class TrainClient {
     /** Paquets du canal heralisz_utils:train reçus du serveur (branché par client.PartieClient). */
     public static void recevoir(Object m) {
         if (m instanceof Train.Annonce a) {
+            if (!a.reseau().equals(Reseau.nom())) {                       // autre réseau : voie et rame à recalculer
+                Reseau.choisir(a.reseau());
+                Minecraft.getInstance().execute(() -> {
+                    VoieRendu.vider();
+                    RameRendu.vider();
+                });
+            }
             annonce(a.actif(), a.decalage());
         } else if (m instanceof Train.Recadrer r) {
             recadrage(r.vehicule(), r.lx(), r.lz());
@@ -81,7 +88,9 @@ public final class TrainClient {
         if (t - derniereDescente < 500) return;
         derniereDescente = t;
         Horaire h = Horaire.get();
-        if (h != null && h.etat(tTick).aQuai() < 0) {
+        Minecraft mc0 = Minecraft.getInstance();
+        int rame = mc0.player != null && mc0.player.getVehicle() instanceof Voyageur vy ? Horaire.rame(vy.vehicule()) : 0;
+        if (h != null && h.etatRame(tTick, rame).aQuai() < 0) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null) {
                 mc.gui.setOverlayMessage(net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.en_marche"), false);

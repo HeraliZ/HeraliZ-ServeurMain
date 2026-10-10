@@ -36,7 +36,7 @@ public final class VoyageursServeur {
             return;
         }
         Horaire.Placement pl = new Horaire.Placement();
-        h.placer(v.vehicule(), h.etat(TrainServeur.temps(srv)).s(), pl);
+        h.placer(v.vehicule(), h.etatRame(TrainServeur.temps(srv), Horaire.rame(v.vehicule())).s(), pl);
         Vec3 w = Voyageurs.versMonde(pl, v.lx(), Reseau.PLANCHER, v.lz());
         v.setPos(w.x, w.y, w.z);
         // Maj : lu puis effacé avant le tick du passager (le véhicule est tické d'abord) -> plus de descente vanilla
@@ -63,14 +63,15 @@ public final class VoyageursServeur {
         if (!(p.getVehicle() instanceof Voyageur v) || p.getServer() == null) return;
         Horaire h = Horaire.get();
         if (h == null) return;
-        Horaire.Etat e = h.etat(TrainServeur.temps(p.getServer()));
-        int pq = Voyageurs.portesQuai(h, e);
         int ov = v.getEntityData().get(Voyageur.VEHICULE);
+        Horaire.Etat e = h.etatRame(TrainServeur.temps(p.getServer()), Horaire.rame(ov));
+        int pq = Voyageurs.portesQuai(h, e);
         float ox = v.getEntityData().get(Voyageur.LX), oz = v.getEntityData().get(Voyageur.LZ);
         boolean ok = veh == ov ? Math.hypot(x - ox, z - oz) < 1.2 : Math.abs(veh - ov) == 1 && Voyageurs.voiture(veh)
                 && Math.abs(ox) > Voyageurs.VL - 0.6f && Math.abs(x) > Voyageurs.VL - 0.6f;
         boolean place = assis && Voyageurs.sieges(veh) && Float.isFinite(Voyageurs.baie(x)) && Math.abs(Math.abs(z) - Voyageurs.ASSIS_Z) < 0.1f;
-        ok &= Voyageurs.voiture(veh) && (place || Voyageurs.libre(Voyageurs.SERVEUR, veh, x, z, pq, true));
+        ok &= Voyageurs.voiture(veh) && Horaire.rame(veh) == Horaire.rame(ov)
+                && (place || Voyageurs.libre(Voyageurs.SERVEUR, veh, x, z, pq, true));
         if (!ok) {
             if (Boolean.getBoolean("heralisz.train.debug")) {
                 HeraliszUtils.LOG.info("Train (debug) : marche refusée {} -> {} ({}, {}) depuis {} ({}, {}) écart {} libre {} pq {}", p.getGameProfile().getName(),
@@ -130,7 +131,7 @@ public final class VoyageursServeur {
         MinecraftServer srv = v.getServer();
         Horaire h = Horaire.get();
         if (srv == null || h == null) return null;
-        Horaire.Etat et = h.etat(TrainServeur.temps(srv));
+        Horaire.Etat et = h.etatRame(TrainServeur.temps(srv), Horaire.rame(v.vehicule()));
         Horaire.Placement pl = new Horaire.Placement();
         h.placer(v.vehicule(), et.s(), pl);
         int cote = et.aQuai() >= 0 ? h.reseau.gares[et.aQuai()].cote() : (v.lz() >= 0 ? 1 : -1);
@@ -147,10 +148,10 @@ public final class VoyageursServeur {
         return null;
     }
 
-    /** Gare où est le train, sinon la prochaine. */
-    static Reseau.Gare gare(MinecraftServer srv) {
+    /** Gare où est la rame, sinon la prochaine. */
+    static Reseau.Gare gare(MinecraftServer srv, int rame) {
         Horaire h = Horaire.get();
-        Horaire.Etat et = h.etat(TrainServeur.temps(srv));
+        Horaire.Etat et = h.etatRame(TrainServeur.temps(srv), rame);
         return h.reseau.gares[et.aQuai() >= 0 ? et.aQuai() : et.suivante()];
     }
 
@@ -160,7 +161,7 @@ public final class VoyageursServeur {
         MinecraftServer srv = v.getServer();
         Horaire h = Horaire.get();
         if (srv == null || h == null) return null;
-        Reseau.Gare g = gare(srv);
+        Reseau.Gare g = gare(srv, Horaire.rame(v.vehicule()));
         double cap = Math.toRadians(g.cap()), nx = -Math.sin(cap) * g.cote(), nz = Math.cos(cap) * g.cote();
         double[] c = new double[3];
         Vec3 milieu = null;
@@ -200,17 +201,21 @@ public final class VoyageursServeur {
     /** Le train est-il arrêté à quai ? En marche, on ne descend pas (on ne saute pas d'un train qui roule). Sans train
      *  actif, rien n'empêche de descendre. */
     public static boolean aQuai(MinecraftServer srv) {
+        return aQuai(srv, 0);
+    }
+
+    public static boolean aQuai(MinecraftServer srv, int rame) {
         Horaire h = Horaire.get();
         if (h == null || srv == null || !TrainServeur.actif(srv)) return true;
-        return h.etat(TrainServeur.temps(srv)).aQuai() >= 0;
+        return h.etatRame(TrainServeur.temps(srv), rame).aQuai() >= 0;
     }
 
     /** Descente demandée par le passager (Maj, Maj maintenue) : seulement train arrêté en gare ; en marche, un message
      *  dans la barre d'action et le passager reste à bord. Les autres descentes (mort, commande, train arrêté par un
      *  opérateur...) passent toujours. */
     static void descenteDemandee(ServerPlayer p, String pourquoi) {
-        if (!(p.getVehicle() instanceof Voyageur)) return;
-        if (!aQuai(p.getServer())) {
+        if (!(p.getVehicle() instanceof Voyageur vy)) return;
+        if (!aQuai(p.getServer(), Horaire.rame(vy.vehicule()))) {
             p.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.en_marche"), true);
             return;
         }
@@ -225,7 +230,7 @@ public final class VoyageursServeur {
         String gare = null;
         if (q == null) {
             q = quai(v, p);
-            if (q != null && p.getServer() != null) gare = gare(p.getServer()).nom();
+            if (q != null && p.getServer() != null) gare = gare(p.getServer(), Horaire.rame(v.vehicule())).nom();
         }
         liberer(v, p, q);
         if (gare != null) {
@@ -241,11 +246,15 @@ public final class VoyageursServeur {
         Voyageurs.SERVEUR.removeIf(Entity::isRemoved);
         if (!TrainServeur.actif(srv)) return;
         Horaire h = Horaire.get();
-        Horaire.Etat e = h.etat(TrainServeur.temps(srv));
-        double[] c = new double[3];
-        h.reseau.point(e.s(), c);
-        int pq = Voyageurs.portesQuai(h, e);
+        Horaire.Etat[] etats = new Horaire.Etat[Horaire.RAMES];
+        double[][] centres = new double[Horaire.RAMES][3];
         Horaire.Placement pl = new Horaire.Placement();
+        for (int r = 0; r < Horaire.RAMES; r++) {
+            etats[r] = h.etatRame(TrainServeur.temps(srv), r);
+            h.reseau.point(etats[r].s(), centres[r]);
+        }
+        for (int r = 0; r < Horaire.RAMES; r++) {
+        Horaire.Etat e = etats[r];
         if (e.v() > 1.0 && lvl.getGameTime() % 2 == 0) {                         // zombies et bêtes sur la voie : écrasés
             for (int i = 0; i < Horaire.RAME.length; i++) {
                 h.placer(i, e.s(), pl);
@@ -264,31 +273,36 @@ public final class VoyageursServeur {
                 }
             }
         }
+        }
         for (ServerPlayer p : lvl.players()) {
             if (p.isSpectator() || p.isPassenger()) continue;
-            if (p.distanceToSqr(c[0], c[1], c[2]) > Math.pow(Horaire.LONGUEUR / 2 + 20, 2)) {
-                DESCENDUS.remove(p.getUUID());
-                continue;
-            }
             boolean dansBande = false;
+            rames:
+            for (int r = 0; r < Horaire.RAMES; r++) {
+            Horaire.Etat e = etats[r];
+            double[] c = centres[r];
+            if (p.distanceToSqr(c[0], c[1], c[2]) > Math.pow(Horaire.LONGUEUR / 2 + 20, 2)) continue;
+            int pq = Voyageurs.portesQuai(h, e);
             for (int i = 0; i < Horaire.RAME.length; i++) {
-                h.placer(i, e.s(), pl);
+                int veh = r * Horaire.N + i;
+                h.placer(veh, e.s(), pl);
                 double[] l = Voyageurs.versLocal(pl, p.position());
                 double demi = Horaire.RAME[i].longueur / 2;
                 if (Math.abs(l[0]) > demi + 0.4 || Math.abs(l[2]) > Voyageurs.VW + 1.0 || l[1] < SOL - 0.2 || l[1] > 5.4) continue;
                 float ax = (float) Math.abs(l[0]);
-                boolean seuil = Voyageurs.voiture(i) && ax >= Voyageurs.PX0 + 0.05 && ax <= Voyageurs.PX1 - 0.05;
+                boolean seuil = Voyageurs.voiture(veh) && ax >= Voyageurs.PX0 + 0.05 && ax <= Voyageurs.PX1 - 0.05;
                 if (pq != 0 && seuil && Math.signum(l[2]) == pq && Math.abs(l[1] - Reseau.PLANCHER) < 0.7
                         && Math.abs(l[2]) > Voyageurs.VW - 0.4 && Math.abs(l[2]) < Voyageurs.VW + 0.9) {
                     dansBande = true;
-                    if (DESCENDUS.contains(p.getUUID())) break;                     // vient de descendre : on attend
-                    monter(lvl, p, i, (float) l[0], pq * (Voyageurs.VWI - Voyageurs.R - 0.02f));
-                    break;
+                    if (DESCENDUS.contains(p.getUUID())) break rames;               // vient de descendre : on attend
+                    monter(lvl, p, veh, (float) l[0], pq * (Voyageurs.VWI - Voyageurs.R - 0.02f));
+                    break rames;
                 }
                 if (Math.abs(l[2]) < Voyageurs.VW + 0.25 && Math.abs(l[0]) < demi + 0.2 && l[1] > SOL && l[1] < 5.2) {
                     heurt(p, pl, l, e.v());
-                    break;
+                    break rames;
                 }
+            }
             }
             if (!dansBande) DESCENDUS.remove(p.getUUID());                    // ressorti de la bande : réarmé
         }
@@ -351,6 +365,7 @@ public final class VoyageursServeur {
     static void deconnexion(ServerPlayer p) {
         if (!(p.getVehicle() instanceof Voyageur v) || p.getServer() == null || Horaire.get() == null) return;
         liberer(v, p, quai(v, p));
-        HeraliszUtils.LOG.info("{} déconnecté dans le train : posé sur le quai de {}", p.getGameProfile().getName(), gare(p.getServer()).nom());
+        HeraliszUtils.LOG.info("{} déconnecté dans le train : posé sur le quai de {}", p.getGameProfile().getName(),
+                gare(p.getServer(), Horaire.rame(v.vehicule())).nom());
     }
 }

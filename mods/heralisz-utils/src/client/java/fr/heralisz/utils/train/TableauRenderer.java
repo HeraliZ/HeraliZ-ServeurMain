@@ -77,16 +77,20 @@ public class TableauRenderer implements BlockEntityRenderer<TableauBlockEntity> 
 
     /** Les trois lignes du bas : direction, attente (grosses diodes), précision. */
     static String[] lignes(Horaire h, int k) {
-        Horaire.Etat e = h.etat(TrainClient.temps(Minecraft.getInstance().getFrameTime()));
+        double t = TrainClient.temps(Minecraft.getInstance().getFrameTime());
         Reseau r = h.reseau;
         String suivante = r.gares[(k + 1) % r.gares.length].nom();
         String dir = "DIRECTION " + suivante;
-        if (e.aQuai() == k) {
-            int s = (int) Math.ceil(e.reste());
-            String dep = String.format("%d:%02d", s / 60, s % 60);
-            return new String[]{dir, "À QUAI", "DÉPART DANS " + dep};
+        double a = Double.MAX_VALUE;
+        for (int rame = 0; rame < Horaire.RAMES; rame++) {
+            Horaire.Etat e = h.etatRame(t, rame);
+            if (e.aQuai() == k) {
+                int s = (int) Math.ceil(e.reste());
+                String dep = String.format("%d:%02d", s / 60, s % 60);
+                return new String[]{dir, "À QUAI", "DÉPART DANS " + dep};
+            }
+            a = Math.min(a, h.attente(k, e));
         }
-        double a = h.attente(k, e);
         if (a < 30) return new String[]{dir, "TRAIN EN APPROCHE", "ÉLOIGNEZ-VOUS DE LA VOIE"};
         int m = (int) Math.ceil(a / 60);
         return new String[]{dir, "PROCHAIN TRAIN", "DANS " + m + " MIN"};

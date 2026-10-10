@@ -29,7 +29,7 @@ import net.minecraftforge.registries.RegistryObject;
  * (données du monde, annonce, commandes, descentes forcées) est dans TrainServeur (src/serveur).
  */
 public final class Train {
-    private static final String PROTO = "2";                  // 2 : train v2 (paquet Descente, gabarit élargi)
+    private static final String PROTO = "3";                  // 3 : réseau choisi par le monde, deux rames (09/10)
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "train"),
             () -> PROTO, PROTO::equals, PROTO::equals);
 
@@ -97,15 +97,16 @@ public final class Train {
         }
     }
 
-    /** État annoncé aux clients. */
-    public record Annonce(boolean actif, long decalage) {
+    /** État annoncé aux clients : train actif, décalage de l'horaire, réseau du monde. */
+    public record Annonce(boolean actif, long decalage, String reseau) {
         void ecrire(FriendlyByteBuf b) {
             b.writeBoolean(actif);
             b.writeLong(decalage);
+            b.writeUtf(reseau);
         }
 
         static Annonce lire(FriendlyByteBuf b) {
-            return new Annonce(b.readBoolean(), b.readLong());
+            return new Annonce(b.readBoolean(), b.readLong(), b.readUtf());
         }
     }
 

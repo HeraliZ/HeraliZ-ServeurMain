@@ -53,15 +53,16 @@ public final class RameRendu {
     /** Soufflets entre deux voitures voisines : un tube de caoutchouc plissé (parois, toit) et la passerelle, tendus
      *  entre les cadres des deux caisses, recalculés à chaque image : fermés même en courbe, on ne voit plus dehors. */
     private static void soufflets(PoseStack ps, Matrix4f proj, Vec3 cam, Horaire h, Horaire.Etat e, ClientLevel lvl,
-                                  net.minecraft.client.renderer.ShaderInstance sh) {
+                                  net.minecraft.client.renderer.ShaderInstance sh, int rame) {
         if (bbSoufflet == null) bbSoufflet = new com.mojang.blaze3d.vertex.BufferBuilder(8192);
         var bb = bbSoufflet;
         bb.begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
         int n = 0, bloc = 0, ciel = 0;
-        for (int i = 1; i + 1 < Horaire.RAME.length; i++) {
-            if (!Voyageurs.voiture(i) || !Voyageurs.voiture(i + 1)) continue;
-            h.placer(i, e.s(), PA);
-            h.placer(i + 1, e.s(), PB);
+        for (int i = 1; i + 1 < Horaire.N; i++) {
+            int veh = rame * Horaire.N + i;
+            if (!Voyageurs.voiture(veh) || !Voyageurs.voiture(veh + 1)) continue;
+            h.placer(veh, e.s(), PA);
+            h.placer(veh + 1, e.s(), PB);
             if (Math.abs(PA.x - cam.x) + Math.abs(PA.z - cam.z) > 160) continue;
             BlockPos lp = BlockPos.containing(Voyageurs.versMonde(PA, -SX, 2.0, 0));
             bloc = Math.max(bloc, lvl.getBrightness(LightLayer.BLOCK, lp));
@@ -123,8 +124,6 @@ public final class RameRendu {
         Horaire h = Horaire.get();
         ClientLevel lvl = Minecraft.getInstance().level;
         if (h == null || lvl == null || TrainClient.shTrain == null) return;
-        Horaire.Etat e = h.etat(TrainClient.temps(partial));
-        int coteQuai = e.aQuai() >= 0 ? h.reseau.gares[e.aQuai()].cote() : 0;
         double portee = Minecraft.getInstance().options.getEffectiveRenderDistance() * 16.0 + 32;
         var sh = TrainClient.shTrain;
         RenderSystem.setShader(() -> sh);
@@ -142,8 +141,12 @@ public final class RameRendu {
         }
         var lum = sh.safeGetUniform("Lumiere");
         if (!vitres) Voyageurs.animer();
-        for (int i = 0; i < Horaire.RAME.length; i++) {
-            h.placer(i, e.s(), PL);
+        for (int rame = 0; rame < Horaire.RAMES; rame++) {
+        Horaire.Etat e = h.etatRame(TrainClient.temps(partial), rame);
+        int coteQuai = e.aQuai() >= 0 ? h.reseau.gares[e.aQuai()].cote() : 0;
+        for (int i = 0; i < Horaire.N; i++) {
+            int veh = rame * Horaire.N + i;
+            h.placer(veh, e.s(), PL);
             Horaire.Vehicule v = Horaire.RAME[i];
             double dx = PL.x - cam.x, dy = PL.y - cam.y, dz = PL.z - cam.z;
             double d = Math.sqrt(dx * dx + dy * dy + dz * dz);
@@ -164,8 +167,8 @@ public final class RameRendu {
                 if (verre != vitres) continue;
                 if (g.nature == ModeleTrain.INTERIEUR && d > 72) continue;
                 if (g.nom.equals("feux") && i != Horaire.RAME.length - 1) continue;      // feux de fin de convoi
-                if (g.nom.equals("soufflet_av") && !Voyageurs.voiture(i - 1)) continue;   // pas de soufflet contre la loco
-                if (g.nom.equals("soufflet_ar") && !Voyageurs.voiture(i + 1)) continue;   // ni au bout du train
+                if (g.nom.equals("soufflet_av") && !Voyageurs.voiture(veh - 1)) continue;   // pas de soufflet contre la loco
+                if (g.nom.equals("soufflet_ar") && !Voyageurs.voiture(veh + 1)) continue;   // ni au bout du train
                 switch (g.nature) {
                     case ModeleTrain.INTERIEUR -> lum.set((float) Math.max(bloc, 12), (float) ciel);
                     case ModeleTrain.LUMIERE -> lum.set(15f, 15f);
@@ -173,7 +176,7 @@ public final class RameRendu {
                 }
                 Matrix4f mg = M;
                 if (g.porte >= 0) {
-                    float o = porte(i, g.porte, e, coteQuai);
+                    float o = porte(veh, g.porte, e, coteQuai);
                     if (o > 0 && g.porte < 100) {                            // porte latérale louvoyante : sort de
                         float sort = Voyageurs.lisse(o / 0.22f), glisse = Voyageurs.lisse((o - 0.22f) / 0.78f);   // 7 cm puis glisse
                         float cote = g.porte % 2 == 0 ? -1f : 1f;
@@ -212,7 +215,8 @@ public final class RameRendu {
                 }
             }
         }
-        if (!vitres) soufflets(ps, proj, cam, h, e, lvl, sh);
+        if (!vitres) soufflets(ps, proj, cam, h, e, lvl, sh, rame);
+        }
         VertexBuffer.unbind();
         Minecraft.getInstance().gameRenderer.lightTexture().turnOffLightLayer();
         if (vitres) {

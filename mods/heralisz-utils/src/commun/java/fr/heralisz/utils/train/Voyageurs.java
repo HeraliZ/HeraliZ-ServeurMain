@@ -66,7 +66,7 @@ public final class Voyageurs {
     }
 
     static boolean sieges(int veh) {
-        return veh >= 0 && veh < Horaire.MODELES.length && !SANS_SIEGES.contains(Horaire.MODELES[veh]);
+        return veh >= 0 && veh < Horaire.N * Horaire.RAMES && !SANS_SIEGES.contains(Horaire.MODELES[Horaire.place(veh)]);
     }
 
     /** Voyageurs vus de chaque côté (le client en a besoin pour ouvrir les portes de tout le monde). */
@@ -86,13 +86,13 @@ public final class Voyageurs {
     }
 
     static boolean voiture(int veh) {
-        return veh >= 1 && veh < Horaire.RAME.length && Horaire.RAME[veh] == Horaire.Vehicule.VOITURE;
+        return veh >= 1 && veh < Horaire.N * Horaire.RAMES && Horaire.RAME[Horaire.place(veh)] == Horaire.Vehicule.VOITURE;
     }
 
     // ------------------------------------------------------------------------------------------------ portes animées (client)
-    private static final float[][] ANIM = new float[Horaire.RAME.length][6];
+    private static final float[][] ANIM = new float[Horaire.N * Horaire.RAMES][6];
     /** Secondes avant de refermer (on ne claque pas la porte au nez de celui qui vient de passer). */
-    private static final float[][] GARDE = new float[Horaire.RAME.length][6];
+    private static final float[][] GARDE = new float[Horaire.N * Horaire.RAMES][6];
     private static long animDernier;
 
     private static float distance(List<Voyageur> vs, int veh, float dx) {
@@ -124,7 +124,7 @@ public final class Voyageurs {
         long t = System.nanoTime();
         float dt = animDernier == 0 ? 0f : Math.min(0.1f, (t - animDernier) / 1e9f);
         animDernier = t;
-        for (int veh = 1; veh < Horaire.RAME.length; veh++) {
+        for (int veh = 1; veh < Horaire.N * Horaire.RAMES; veh++) {
             for (int n : new int[]{0, 1, 4, 5}) {
                 GARDE[veh][n] = appel(veh, n) ? 0.5f : Math.max(0f, GARDE[veh][n] - dt);
                 float cible = GARDE[veh][n] > 0 ? 1f : 0f;
@@ -184,7 +184,7 @@ public final class Voyageurs {
         for (float[] o : OBJETS) {                                         // samovar, poubelle, extincteur des vestibules
             if (x > o[0] - R && x < o[2] + R && z > o[1] - R && z < o[3] + R) return false;
         }
-        float[][] obs = veh >= 0 && veh < Horaire.MODELES.length ? OBSTACLES.get(Horaire.MODELES[veh]) : null;
+        float[][] obs = veh >= 0 && veh < Horaire.N * Horaire.RAMES ? OBSTACLES.get(Horaire.MODELES[Horaire.place(veh)]) : null;
         if (obs != null) {
             for (float[] o : obs) {                                        // caisses du fourgon (de quoi se couvrir)
                 if (x > o[0] - R && x < o[2] + R && z > o[1] - R && z < o[3] + R) return false;

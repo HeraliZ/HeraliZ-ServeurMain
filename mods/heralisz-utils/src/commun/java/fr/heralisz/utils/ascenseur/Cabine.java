@@ -15,24 +15,31 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Cabine de l'ascenseur : plateforme de 4,6 × 4,6 blocs sur laquelle on se tient (collision comme une barque) quand elle
- * est arrêtée. Au départ, les joueurs debout dessus deviennent ses passagers (debout, à leur place, jusqu'à 9) : c'est
- * le serveur qui déplace la cabine, accélère et ralentit en douceur ; à l'arrivée, chacun est reposé sur le plancher.
- * On ne peut pas descendre en marche. Le client suit les positions envoyées à chaque tick (interpolées).
- * Jar fusionné : ici l'état synchronisé, la plateforme et les passagers (lus des deux côtés) ; le déplacement, la montée
- * et la descente sont dans CabineServeur (src/serveur), créée par Ascenseur.CABINE_USINE dans un monde serveur.
+ * Cabine de l'ascenseur : plateforme de 4,6 × 4,6 blocs sur laquelle on marche (collision comme une barque), arrêtée
+ * comme en marche. Personne n'est « passager » : on peut bouger, se baisser, tirer pendant le trajet. Ceux qui sont
+ * debout dessus sont portés : par le serveur (CabineServeur, pour tout le monde) et, pour son propre joueur, par le
+ * client (PorteurCabine), sans attendre le serveur ; en marche, des garde-corps invisibles empêchent de tomber du bord,
+ * et personne ne passe à travers le plancher. Le serveur accélère et ralentit en douceur ; le client suit les positions
+ * envoyées à chaque tick (interpolées).
+ * Jar fusionné : ici l'état synchronisé et la plateforme (lus des deux côtés) ; le déplacement est dans CabineServeur
+ * (src/serveur), créée par Ascenseur.CABINE_USINE dans un monde serveur.
  */
 public class Cabine extends Entity {
     /** Épaisseur du plancher : le dessus est à getY() + PONT. */
     public static final float PONT = 0.25f;
     /** Hauteur du cadre (le crochet de la corde est au-dessus). */
     public static final float CADRE = 3.1f;
+    /** Demi-largeur du plancher. */
+    public static final float DEMI = 2.3f;
     static final EntityDataAccessor<Float> CIBLE = SynchedEntityData.defineId(Cabine.class, EntityDataSerializers.FLOAT);
     static final EntityDataAccessor<Boolean> MARCHE = SynchedEntityData.defineId(Cabine.class, EntityDataSerializers.BOOLEAN);
     static final EntityDataAccessor<Integer> FACADE = SynchedEntityData.defineId(Cabine.class, EntityDataSerializers.INT);
 
     private int lerpSteps;
     private double lx, ly, lz;
+    /** Côté client : de combien la cabine a bougé (en y) à son dernier tick, et à quel tick (pour PorteurCabine). */
+    public double deltaClient;
+    public int tickDelta = -1;
 
     public Cabine(EntityType<? extends Cabine> type, Level level) {
         super(type, level);
@@ -71,6 +78,7 @@ public class Cabine extends Entity {
     public void tick() {
         super.tick();
         if (level().isClientSide) {
+            double avant = getY();
             if (lerpSteps > 0) {
                 double nx = getX() + (lx - getX()) / lerpSteps;
                 double ny = getY() + (ly - getY()) / lerpSteps;
@@ -78,6 +86,8 @@ public class Cabine extends Entity {
                 --lerpSteps;
                 setPos(nx, ny, nz);
             }
+            deltaClient = getY() - avant;
+            tickDelta = tickCount;
             return;
         }
         tickServeur();
@@ -96,7 +106,14 @@ public class Cabine extends Entity {
 
     @Override
     protected boolean canAddPassenger(Entity e) {
-        return e instanceof Player && getPassengers().size() < 9;
+        return false;
+    }
+
+    /** L'entité est-elle debout sur le plancher (au-dessus, dans l'emprise, les pieds près du plancher) ? */
+    public boolean porte(Entity e) {
+        double y = e.getY(), f = plancher();
+        return !e.isSpectator() && !e.isPassenger() && Math.abs(e.getX() - getX()) <= DEMI + 0.1 && Math.abs(e.getZ() - getZ()) <= DEMI + 0.1
+                && y >= f - 0.7 && y <= f + 0.45;
     }
 
     @Override

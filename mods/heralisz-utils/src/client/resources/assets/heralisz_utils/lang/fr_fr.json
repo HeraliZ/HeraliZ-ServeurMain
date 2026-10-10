@@ -618,5 +618,7 @@
   "onglet.heralisz_utils.carte": "Sols de la carte",
   "onglet.heralisz_utils.gares": "Gares et ascenseur",
   "onglet.heralisz_utils.vehicules": "Véhicules",
-  "onglet.heralisz_utils.usure": "Usure des armes"
+  "onglet.heralisz_utils.usure": "Usure des armes",
+  "block.heralisz_utils.eolienne_moderne_usee": "Éolienne abandonnée",
+  "block.heralisz_utils.eolienne_usee": "Éolienne de pompage abandonnée"
 }

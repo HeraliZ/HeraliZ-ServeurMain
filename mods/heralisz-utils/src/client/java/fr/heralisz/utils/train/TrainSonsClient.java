@@ -58,6 +58,7 @@ public final class TrainSonsClient {
     private static Boucle roulement, moteur;
     @OnlyIn(Dist.CLIENT)
     private static Horaire.Etat prec;
+    private static int ramePrec = -1;
 
     @OnlyIn(Dist.CLIENT)
     @Mod.EventBusSubscriber(modid = HeraliszUtils.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -73,8 +74,24 @@ public final class TrainSonsClient {
                 prec = null;
                 return;
             }
-            Horaire.Etat et = h.etat(TrainClient.tTick);
             Vec3 oreille = mc.gameRenderer.getMainCamera().getPosition();
+            // la rame la plus proche de l'oreille (deux rames sur la boucle)
+            Horaire.Etat et = null;
+            int rr = 0;
+            double dm = Double.MAX_VALUE;
+            for (int r = 0; r < Horaire.RAMES; r++) {
+                Horaire.Etat e_ = h.etatRame(TrainClient.tTick, r);
+                double[] c_ = new double[3];
+                h.reseau.point(e_.s(), c_);
+                double d_ = oreille.distanceToSqr(c_[0], c_[1], c_[2]);
+                if (d_ < dm) {
+                    dm = d_;
+                    et = e_;
+                    rr = r;
+                }
+            }
+            if (rr != ramePrec) prec = null;                                   // autre rame : pas d'événement à cheval
+            ramePrec = rr;
             // point de la rame le plus proche (milieu de chaque véhicule), locomotive
             Horaire.Placement pl = new Horaire.Placement();
             Vec3 proche = null, loco = null;
