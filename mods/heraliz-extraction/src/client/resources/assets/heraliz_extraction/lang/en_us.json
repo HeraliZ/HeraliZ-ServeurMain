@@ -1,4 +1,9 @@
 {
   "item.heraliz_extraction.extraction_terminal": "Terminal d'extraction",
-  "entity.heraliz_extraction.extraction_terminal": "Terminal d'extraction"
+  "entity.heraliz_extraction.extraction_terminal": "Terminal d'extraction",
+  "hud.heraliz_extraction.titre": "Extraction",
+  "hud.heraliz_extraction.reste_ciel": "Stay in the zone, under open sky",
+  "hud.heraliz_extraction.reste": "Stay in the zone",
+  "hud.heraliz_extraction.reviens": "Get back in the zone!",
+  "hud.heraliz_extraction.zone": "Zone: %s"
 }

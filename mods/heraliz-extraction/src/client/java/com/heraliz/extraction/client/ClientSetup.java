@@ -8,6 +8,7 @@ import com.heraliz.extraction.client.particle.ExtractionSparkParticle;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -31,6 +32,11 @@ public final class ClientSetup {
                 renderer.addLayer(new TerminalHeldLayer(renderer));
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void registerOverlays(RegisterGuiOverlaysEvent event) {
+        event.registerAboveAll("extraction", HudExtraction::rendu);
     }
 
     @SubscribeEvent

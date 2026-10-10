@@ -1,0 +1,25 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 1.8,
+        " ": 2.4
+      }
+    },
+    {
+      "type": "ttf",
+      "file": "heraliz_extraction:dmsans_bold.ttf",
+      "size": 6.5,
+      "oversample": 4.0,
+      "shift": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

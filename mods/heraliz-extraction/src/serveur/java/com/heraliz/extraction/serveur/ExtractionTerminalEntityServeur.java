@@ -3,19 +3,14 @@ package com.heraliz.extraction.serveur;
 import com.heraliz.extraction.ExtractionConfig;
 import com.heraliz.extraction.TerminalGeometry;
 import com.heraliz.extraction.entity.ExtractionTerminalEntity;
-import com.heraliz.extraction.item.ExtractionTerminalItem;
-import net.minecraft.ChatFormatting;
+import com.heraliz.extraction.reseau.Reseau;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
-import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -27,8 +22,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Partie serveur du terminal d'extraction : chrono de chaque joueur dans la zone, barre en haut de l'écran, extraction
- * (téléportation), fermeture de la zone, zones fixes des admins et leur sauvegarde. Créée par ModRegistry.TERMINAL_USINE.
+ * Partie serveur du terminal d'extraction : chrono de chaque joueur dans la zone (envoyé à son HUD,
+ * {@link Reseau.Progression}), extraction (téléportation), fermeture de la zone, zones fixes des admins et leur sauvegarde.
+ * Créée par ModRegistry.TERMINAL_USINE.
  * Une zone fixe lit son état (ouverte ou non, temps restant, réglages) dans {@link ExtractionZones} une fois par seconde :
  * c'est {@link Rotation} et les commandes qui l'ouvrent et la ferment.
  */
@@ -40,8 +36,8 @@ public class ExtractionTerminalEntityServeur extends ExtractionTerminalEntity {
     private static final class Extractor {
         int progress;
         int outTicks;
-        final ServerBossEvent bar = new ServerBossEvent(Component.empty(), BossEvent.BossBarColor.RED,
-                BossEvent.BossBarOverlay.NOTCHED_10);
+        /** Dernier état envoyé à son HUD (null : rien encore) : dans la zone ou non. */
+        Boolean sentInside;
     }
 
     @Nullable
@@ -131,9 +127,7 @@ public class ExtractionTerminalEntityServeur extends ExtractionTerminalEntity {
         AABB area = getBoundingBox().inflate(radius + 1.0D, 4.0D, radius + 1.0D);
         for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, area, p -> !p.isSpectator() && p.isAlive())) {
             if (!this.extractors.containsKey(player.getUUID()) && isInZone(player)) {
-                Extractor extractor = new Extractor();
-                extractor.bar.addPlayer(player);
-                this.extractors.put(player.getUUID(), extractor);
+                this.extractors.put(player.getUUID(), new Extractor());
             }
         }
 
@@ -145,7 +139,6 @@ public class ExtractionTerminalEntityServeur extends ExtractionTerminalEntity {
             Extractor extractor = entry.getValue();
             ServerPlayer player = level.getServer().getPlayerList().getPlayer(entry.getKey());
             if (player == null) {
-                extractor.bar.removeAllPlayers();
                 it.remove();
                 continue;
             }
@@ -155,7 +148,7 @@ public class ExtractionTerminalEntityServeur extends ExtractionTerminalEntity {
                 // sorti de la zone : la barre disparaît simplement (petite tolérance pour un saut au bord)
                 extractor.outTicks++;
                 if (dead || extractor.outTicks > OUT_GRACE) {
-                    extractor.bar.removeAllPlayers();
+                    Reseau.envoyer(player, Reseau.Progression.fin());
                     it.remove();
                     continue;
                 }
@@ -165,12 +158,12 @@ public class ExtractionTerminalEntityServeur extends ExtractionTerminalEntity {
             }
 
             if (extractor.progress >= duration) {
-                extractor.bar.removeAllPlayers();
+                Reseau.envoyer(player, Reseau.Progression.fin());
                 it.remove();
                 extract(player);
                 continue;
             }
-            updateBar(extractor, duration, ticksLeft);
+            sendProgress(player, extractor, inside, duration, ticksLeft);
             best = Math.max(best, extractor.progress);
         }
 
@@ -217,21 +210,13 @@ public class ExtractionTerminalEntityServeur extends ExtractionTerminalEntity {
                 && !Compat.downed(player);
     }
 
-    private void updateBar(Extractor extractor, int duration, int ticksLeft) {
-        float progress = (float) extractor.progress / duration;
-        extractor.bar.setProgress(progress);
-        extractor.bar.setColor(progress < 0.6F ? BossEvent.BossBarColor.RED
-                : progress < 0.9F ? BossEvent.BossBarColor.YELLOW : BossEvent.BossBarColor.GREEN);
-        if (extractor.progress % 20 == 1) {
-            int remaining = Mth.ceil((duration - extractor.progress) / 20.0F);
-            Component name = Component.literal("Extraction — " + ExtractionTerminalItem.formatTime(remaining))
-                    .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
-            if (ticksLeft >= 0) {
-                name = name.copy().append(Component.literal("   (zone : " + ExtractionTerminalItem.formatTime(ticksLeft / 20) + ")")
-                        .withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)));
-            }
-            extractor.bar.setName(name);
+    /** Chrono vers le HUD du joueur : à son arrivée, quand il sort ou revient, puis toutes les 4 ticks (le HUD interpole). */
+    private void sendProgress(ServerPlayer player, Extractor extractor, boolean inside, int duration, int ticksLeft) {
+        if (extractor.sentInside != null && extractor.sentInside == inside && this.tickCount % 4 != 0) {
+            return;
         }
+        extractor.sentInside = inside;
+        Reseau.envoyer(player, new Reseau.Progression(extractor.progress, duration, ticksLeft, inside, !isFixed()));
     }
 
     private void extract(ServerPlayer player) {
@@ -250,10 +235,16 @@ public class ExtractionTerminalEntityServeur extends ExtractionTerminalEntity {
         clearExtractors();
     }
 
-    /** Plus personne ne s'extrait : les barres disparaissent. */
+    /** Plus personne ne s'extrait : les chronos disparaissent des écrans. */
     private void clearExtractors() {
-        for (Extractor extractor : this.extractors.values()) {
-            extractor.bar.removeAllPlayers();
+        MinecraftServer server = this.level().getServer();
+        if (server != null) {
+            for (UUID id : this.extractors.keySet()) {
+                ServerPlayer player = server.getPlayerList().getPlayer(id);
+                if (player != null) {
+                    Reseau.envoyer(player, Reseau.Progression.fin());
+                }
+            }
         }
         this.extractors.clear();
         this.entityData.set(DATA_BEST_PROGRESS, 0);

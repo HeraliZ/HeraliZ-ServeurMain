@@ -35,10 +35,11 @@ public final class ClientEvents {
     private ClientEvents() {
     }
 
-    /** Déconnexion : la liste des extractions ouvertes (carte du monde) appartenait à ce serveur. */
+    /** Déconnexion : la liste des extractions ouvertes (carte du monde) et le chrono appartenaient à ce serveur. */
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         ExtractionApi.recevoir(List.of());
+        HudExtraction.vider();
     }
 
     @SubscribeEvent
