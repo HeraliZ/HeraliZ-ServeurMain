@@ -524,6 +524,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - boutique : achats en argent ou en crédits du site, livrés tout de suite si le joueur est connecté, sinon à sa
   prochaine connexion, une seule fois. Règles de Mojang : pas d'avantage de jeu payant (les crédits n'y changent rien :
   c'est ce qu'ils achètent qui compte) ; liste des articles à décider avec le propriétaire ;
+- grades de la boutique, du plus petit au meilleur : **Rescapé** (cuivre `#E39B5E`), **Traqueur** (bleu glacé
+  `#8FD3FF`), **Roi de la Zone** (or `#FFC23A`). Pour l'instant, seulement le nom du grade en couleur (site, chat, liste
+  des joueurs), **sans icône** : insignes en métal, pixel art et survivants 3D avec une arme ont tous été refusés
+  (« trop IA », « pas du tout l'idée »). Les icônes reviendront plus tard, à partir d'un exemple fourni par le
+  propriétaire ou faites par un graphiste : ne pas en reproposer sans l'un ou l'autre ;
 - refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
 - retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
   Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,
