@@ -457,4 +457,42 @@ public final class Ui {
     public static String tempsJeu(long ticks) {
         return duree(ticks * 50L);
     }
+
+    // ------------------------------------------------------------------ anneaux (HUD)
+    /**
+     * Anneau (ou disque si {@code rInt} = 0) centre en (cx, cy), du rayon interieur {@code rInt} au rayon exterieur
+     * {@code rExt}, rempli de la fraction {@code de} a la fraction {@code a} d'un tour (0 = midi, sens des aiguilles d'une
+     * montre). Quads du rendu « gui » : rien n'est alloue.
+     */
+    public static void anneau(GuiGraphics g, float cx, float cy, float rInt, float rExt, float de, float a, int argb) {
+        float d = Math.max(0f, Math.min(1f, de)), f = Math.max(d, Math.min(1f, a));
+        if (f - d <= 0.0005f || (argb >>> 24) == 0) return;
+        int n = Math.max(2, (int) Math.ceil(72 * (f - d)));
+        float al = (argb >>> 24) / 255f, r = ((argb >> 16) & 255) / 255f, gr = ((argb >> 8) & 255) / 255f, b = (argb & 255) / 255f;
+        org.joml.Matrix4f m = g.pose().last().pose();
+        com.mojang.blaze3d.vertex.VertexConsumer vc = g.bufferSource().getBuffer(net.minecraft.client.renderer.RenderType.gui());
+        double t0 = (d * 2 * Math.PI);
+        float s0 = (float) Math.sin(t0), c0 = (float) Math.cos(t0);
+        for (int i = 1; i <= n; i++) {
+            double t1 = (d + (f - d) * i / n) * 2 * Math.PI;
+            float s1 = (float) Math.sin(t1), c1 = (float) Math.cos(t1);
+            vc.vertex(m, cx + rExt * s0, cy - rExt * c0, 0).color(r, gr, b, al).endVertex();
+            vc.vertex(m, cx + rInt * s0, cy - rInt * c0, 0).color(r, gr, b, al).endVertex();
+            vc.vertex(m, cx + rInt * s1, cy - rInt * c1, 0).color(r, gr, b, al).endVertex();
+            vc.vertex(m, cx + rExt * s1, cy - rExt * c1, 0).color(r, gr, b, al).endVertex();
+            s0 = s1;
+            c0 = c1;
+        }
+        g.flush();
+    }
+
+    /** Disque plein. */
+    public static void disque(GuiGraphics g, float cx, float cy, float r, int argb) {
+        anneau(g, cx, cy, 0f, r, 0f, 1f, argb);
+    }
+
+    /** Un texte d'opacite {@code alpha} peut-il etre dessine ? (sous 4, Minecraft le dessinerait opaque) */
+    public static boolean lisible(int alpha) {
+        return alpha >= 4;
+    }
 }

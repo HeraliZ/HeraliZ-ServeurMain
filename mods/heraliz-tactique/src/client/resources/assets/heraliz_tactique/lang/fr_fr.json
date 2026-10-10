@@ -6,5 +6,9 @@
   "onglet.heraliz_tactique.soins": "Soins",
   "onglet.heraliz_tactique.grenades": "Grenades",
   "onglet.heraliz_tactique.camos": "Camos",
-  "onglet.heraliz_tactique.decor": "Décorations"
+  "onglet.heraliz_tactique.decor": "Décorations",
+  "overlay.heraliz_tactique.encore": "encore %s s",
+  "overlay.heraliz_tactique.explose": "explose dans %s s",
+  "overlay.heraliz_tactique.lancer_doux": "Lancer doux (accroupi)",
+  "overlay.heraliz_tactique.pour_arreter": "pour arrêter"
 }

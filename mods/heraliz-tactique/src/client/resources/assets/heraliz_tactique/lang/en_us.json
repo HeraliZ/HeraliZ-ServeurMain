@@ -6,5 +6,9 @@
   "onglet.heraliz_tactique.soins": "Healing",
   "onglet.heraliz_tactique.grenades": "Grenades",
   "onglet.heraliz_tactique.camos": "Camos",
-  "onglet.heraliz_tactique.decor": "Decorations"
+  "onglet.heraliz_tactique.decor": "Decorations",
+  "overlay.heraliz_tactique.encore": "%s s left",
+  "overlay.heraliz_tactique.explose": "explodes in %s s",
+  "overlay.heraliz_tactique.lancer_doux": "Soft throw (crouched)",
+  "overlay.heraliz_tactique.pour_arreter": "to stop"
 }
