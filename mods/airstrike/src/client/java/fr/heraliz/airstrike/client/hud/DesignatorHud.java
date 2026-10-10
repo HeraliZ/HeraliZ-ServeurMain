@@ -5,7 +5,6 @@ import fr.heraliz.airstrike.AirstrikeMod;
 import fr.heraliz.airstrike.client.CartridgeWheelScreen;
 import fr.heraliz.airstrike.client.ClientStrikes;
 import fr.heraliz.airstrike.client.DesignatorClient;
-import fr.heraliz.airstrike.registry.ModItems;
 import fr.heraliz.airstrike.strike.CartridgeTier;
 import fr.heraliz.airstrike.strike.StrikeType;
 import net.minecraft.client.Minecraft;
@@ -13,21 +12,25 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 import java.util.Locale;
 
-/** Binocular view: lens mask, stadia reticle, compass tape, range finder and payload readouts. */
+/**
+ * Vue des jumelles (maquette validée) : masque des deux lentilles, réticule blanc à graduations, cadre de visée rouge,
+ * boussole en bandeau (points cardinaux en français), mesures à gauche (distance, élévation, grille, azimut, zoom),
+ * cartouche chargée et touches à droite, état en bas (vert : prêt ; ambre : recharge, hors de portée, à charger ;
+ * rouge : cible marquée, impact).
+ */
 public final class DesignatorHud {
     private static final ResourceLocation MASK = new ResourceLocation(AirstrikeMod.MODID, "textures/gui/binocular_mask.png");
-    private static final int LED = 0xFFFF3A22;
-    private static final int LED_DIM = 0xB0FF3A22;
-    private static final int GREEN = 0xFF5CFF6A;
-    private static final int AMBER = 0xFFFFB02E;
-    private static final int RETICLE = 0xE0141414;
+    private static final ResourceLocation MINI = new ResourceLocation(AirstrikeMod.MODID, "ui_mini"),
+            MINI_GRAS = new ResourceLocation(AirstrikeMod.MODID, "ui_mini_bold");
+    private static final int ROUGE = 0xFF4A3D, VERT = 0x5FD08A, AMBRE = 0xE8B34A, MUET = 0x8F95A0;
+    private static final int TRAIT = 0xC7FFFFFF, TRAIT_OMBRE = 0x40000000;
 
     private DesignatorHud() {
     }
@@ -40,7 +43,7 @@ public final class DesignatorHud {
         float fade = Mth.clamp((p.getTicksUsingItem() - DesignatorClient.SCOPE_DELAY + pt) / 3.0f, 0f, 1f);
         long gameTime = mc.level.getGameTime();
 
-        // -- lens mask (2:1 texture kept at screen height) + black side bars
+        // -- masque des lentilles (texture 2:1 à la hauteur de l'écran) + bandes noires sur les côtés
         RenderSystem.enableBlend();
         int mh = h, mw = h * 2, mx = (w - mw) / 2;
         g.blit(MASK, mx, 0, mw, mh, 0f, 0f, 1024, 512, 1024, 512);
@@ -54,62 +57,74 @@ public final class DesignatorHud {
         }
 
         int cx = w / 2, cy = h / 2;
-        drawReticle(g, cx, cy, gameTime, pt);
-        drawCompass(g, font, cx, Math.max(14, h / 2 - (int) (h * 0.40f)), p.getViewYRot(pt));
-
-        // -- left: range finder readouts
-        int lx = cx - Math.min(w / 2 - 12, (int) (h * 0.62f));
-        int ly = cy + (int) (h * 0.16f);
-        String dist = DesignatorClient.aimDistance < 0 ? "----" : String.format(Locale.ROOT, "%4.0f m", DesignatorClient.aimDistance);
-        int distColor = DesignatorClient.aimInRange ? LED : AMBER;
-        panel(g, lx - 4, ly - 4, 118, 64);
-        g.drawString(font, Component.translatable("hud.airstrike.range"), lx, ly, LED_DIM, false);
-        g.drawString(font, dist, lx + 44, ly, distColor, false);
-        if (DesignatorClient.aimPoint != null) {
-            double dy = DesignatorClient.aimPoint.y - p.getEyeY();
-            g.drawString(font, Component.translatable("hud.airstrike.elevation"), lx, ly + 12, LED_DIM, false);
-            g.drawString(font, String.format(Locale.ROOT, "%+4.0f m", dy), lx + 44, ly + 12, LED, false);
-            g.drawString(font, "GRID", lx, ly + 24, LED_DIM, false);
-            g.drawString(font, String.format(Locale.ROOT, "%d %d", (int) Math.floor(DesignatorClient.aimPoint.x),
-                    (int) Math.floor(DesignatorClient.aimPoint.z)), lx + 44, ly + 24, LED, false);
-        }
+        drawReticle(g, font, cx, cy, h, gameTime, pt);
         float heading = Mth.wrapDegrees(p.getViewYRot(pt) + 180f);
         if (heading < 0) heading += 360f;
-        g.drawString(font, "AZ", lx, ly + 36, LED_DIM, false);
-        g.drawString(font, String.format(Locale.ROOT, "%03.0f°", heading), lx + 44, ly + 36, LED, false);
-        g.drawString(font, "ZOOM", lx, ly + 48, LED_DIM, false);
-        g.drawString(font, String.format(Locale.ROOT, "x%.1f", DesignatorClient.zoom()), lx + 44, ly + 48, LED, false);
+        drawCompass(g, font, cx, Math.max(10, Math.round(h * 0.0667f)), w, heading);
 
-        // -- right: cartridge in the bay + spares in the inventory
-        int rx = cx + Math.min(w / 2 - 130, (int) (h * 0.62f) - 118);
+        // -- à gauche : mesures
+        int pw = 112;
+        int lx = Math.max(8, cx - Math.round(h * 0.675f)), ly = cy + Math.round(h * 0.0926f);
+        String dist = DesignatorClient.aimDistance < 0 ? "----" : String.format(Locale.ROOT, "%.0f m", DesignatorClient.aimDistance);
+        String elev = "----", grille = "----";
+        if (DesignatorClient.aimPoint != null) {
+            double dy = DesignatorClient.aimPoint.y - p.getEyeY();
+            elev = String.format(Locale.ROOT, "%+.0f m", dy);
+            grille = nombre((int) Math.floor(DesignatorClient.aimPoint.x)) + " · " + nombre((int) Math.floor(DesignatorClient.aimPoint.z));
+        }
+        String[][] lignes = {
+                {"hud.airstrike.mesure.distance", dist},
+                {"hud.airstrike.mesure.elevation", elev},
+                {"hud.airstrike.mesure.grille", grille},
+                {"hud.airstrike.mesure.azimut", String.format(Locale.ROOT, "%.0f°", heading)},
+                {"hud.airstrike.mesure.zoom", "×" + zoom(DesignatorClient.zoom())}};
+        panneau(g, lx, ly, pw, 5 + lignes.length * 11 + 4, 0x080A0C, 158, 0xFFFFFF, 31);
+        for (int i = 0; i < lignes.length; i++) {
+            int y = ly + 6 + i * 11;
+            caps(g, font, Component.translatable(lignes[i][0]).getString(), MINI, lx + 6, y + 2, 1f, 1.1f, argb(MUET, 255));
+            int couleur = i == 0 && !DesignatorClient.aimInRange && DesignatorClient.aimDistance >= 0 ? AMBRE : 0xFFFFFF;
+            droite(g, font, lit(lignes[i][1], CartridgeWheelScreen.BOLD), lx + pw - 6, y - 0.5f, 0.9f, argb(couleur, 255));
+        }
+
+        // -- à droite : cartouche chargée, réserve, touches
+        int rx = Math.min(cx + Math.round(h * 0.397f), w - pw - 8), ry = ly;
         StrikeType type = DesignatorClient.loaded();
         boolean creative = p.getAbilities().instabuild;
-        panel(g, rx - 4, ly - 4, 126, 64);
+        panneau(g, rx, ry, pw, 68, 0x080A0C, 158, 0xFFFFFF, 31);
+        caps(g, font, Component.translatable("hud.airstrike.cartouche_chargee").getString(), MINI, rx + 6, ry + 5, 1f, 1.0f, argb(MUET, 255));
+        // icône dans son cadre
+        g.fillGradient(rx + 6, ry + 14, rx + 21, ry + 29, 0xFF5E6670, 0xFF3A4048);
+        cadre(g, rx + 6, ry + 14, 15, 15, argb(0xFFFFFF, 64));
         if (type != null) {
-            int spare = DesignatorClient.payloadCount(type);
-            ItemStack icon = new ItemStack(ModItems.cartridgeFor(type));
-            g.pose().pushPose();
-            g.pose().translate(rx, ly - 1, 0);
-            g.pose().scale(1.6f, 1.6f, 1f);
-            g.renderItem(icon, 0, 0);
-            g.pose().popPose();
-            g.drawString(font, Component.translatable(type.translationKey()), rx + 30, ly, 0xFF000000 | type.uiColor, false);
+            CartridgeWheelScreen.icon(g, type.ordinal(), rx + 7.5f, ry + 15.5f, 12f, 0xFF000000 | type.uiColor);
+            RenderSystem.enableBlend();
+            Component nom = lit(Component.translatable(type.translationKey()).getString(), CartridgeWheelScreen.BOLD);
+            gauche(g, font, nom, rx + 25, ry + 13, 0.9f, argb(mix(type.uiColor, 0xFFFFFF, 0.25f), 255));
             CartridgeTier tier = type.tier != null ? type.tier : CartridgeTier.HEAVY;
-            Component tierName = Component.translatable(tier.translationKey());
-            g.drawString(font, tierName, rx + 30, ly + 12, 0xFF000000 | tier.color, false);
-            g.drawString(font, creative ? "+∞" : "+" + spare, rx + 30 + font.width(tierName) + 6, ly + 12, LED_DIM, false);
+            String niveau = Component.translatable(tier.translationKey()).getString().toUpperCase(Locale.ROOT);
+            int cw = Math.round(espaceLargeur(font, niveau, MINI_GRAS, 0.6f)) + 8;
+            g.fill(rx + 25, ry + 23, rx + 25 + cw, ry + 31, argb(tier.color, 40));
+            cadre(g, rx + 25, ry + 23, cw, 8, argb(tier.color, 110));
+            caps(g, font, niveau, MINI_GRAS, rx + 29, ry + 23.5f, 1f, 0.6f, argb(mix(tier.color, 0xFFFFFF, 0.3f), 255));
+            String reserve = creative ? "+∞" : Component.translatable("hud.airstrike.en_reserve", DesignatorClient.payloadCount(type)).getString();
+            g.drawString(font, lit(reserve, MINI), rx + 25 + cw + 4, ry + 24, argb(MUET, 255), false);
         } else {
             boolean blinkEmpty = (gameTime / 8) % 2 == 0;
-            g.fill(rx, ly - 1, rx + 25, ly + 24, 0x50000000);
-            g.drawCenteredString(font, "?", rx + 12, ly + 7, AMBER);
-            g.drawString(font, Component.translatable("hud.airstrike.empty"), rx + 30, ly, blinkEmpty ? AMBER : 0xFFFFFFFF, false);
+            Component q = lit("?", CartridgeWheelScreen.BOLD);
+            g.drawString(font, q, rx + 14 - font.width(q) / 2, ry + 17, argb(AMBRE, 255), false);
+            gauche(g, font, lit(Component.translatable("hud.airstrike.empty").getString(), CartridgeWheelScreen.BOLD), rx + 25, ry + 16, 0.9f,
+                    argb(blinkEmpty ? AMBRE : 0xFFFFFF, 255));
         }
-        g.drawString(font, Component.translatable("hud.airstrike.cycle_hint", DesignatorClient.CYCLE_KEY.getTranslatedKeyMessage()),
-                rx, ly + 34, 0xA0FFFFFF, false);
-        g.drawString(font, Component.translatable("hud.airstrike.zoom_hint"), rx, ly + 46, 0xA0FFFFFF, false);
+        g.fill(rx + 6, ry + 35, rx + pw - 6, ry + 36, argb(0xFFFFFF, 26));
+        String molette = Component.translatable("hud.airstrike.touche.molette").getString();
+        indice(g, font, rx + 6, ry + 39, Component.translatable("hud.airstrike.indice.roue").getString(),
+                DesignatorClient.CYCLE_KEY.getTranslatedKeyMessage().getString());
+        indice(g, font, rx + 6, ry + 48, Component.translatable("hud.airstrike.indice.zoom").getString(), molette);
+        indice(g, font, rx + 6, ry + 57, Component.translatable("hud.airstrike.indice.suivante").getString(),
+                mc.options.keyShift.getTranslatedKeyMessage().getString(), molette);
 
-        // -- bottom: status line
-        drawStatus(g, font, p, cx, cy + (int) (h * 0.36f), gameTime, type != null);
+        // -- en bas : état
+        drawStatus(g, font, p, cx, Math.round(h * 0.861f), gameTime, type != null);
         RenderSystem.disableBlend();
     }
 
@@ -151,45 +166,49 @@ public final class DesignatorHud {
         RenderSystem.disableBlend();
     }
 
-    private static void panel(GuiGraphics g, int x, int y, int w, int h) {
-        g.fill(x, y, x + w, y + h, 0x70000000);
-        g.fill(x, y, x + 3, y + 1, LED_DIM);
-        g.fill(x, y, x + 1, y + 3, LED_DIM);
-        g.fill(x + w - 3, y + h - 1, x + w, y + h, LED_DIM);
-        g.fill(x + w - 1, y + h - 3, x + w, y + h, LED_DIM);
-    }
+    // ------------------------------------------------------------------ réticule, boussole, état
 
-    private static void drawReticle(GuiGraphics g, int cx, int cy, long gameTime, float pt) {
-        int len = 150, gap = 10;
-        int down = Math.min(len, (int) (Minecraft.getInstance().getWindow().getGuiScaledHeight() * 0.2f));
-        // main stadia lines
-        g.fill(cx - len, cy, cx - gap, cy + 1, RETICLE);
-        g.fill(cx + gap, cy, cx + len, cy + 1, RETICLE);
-        g.fill(cx, cy + gap, cx + 1, cy + down, RETICLE);
-        g.fill(cx, cy - 70, cx + 1, cy - gap, RETICLE);
-        // thick outer posts
-        g.fill(cx - len - 60, cy - 1, cx - len, cy + 2, RETICLE);
-        g.fill(cx + len, cy - 1, cx + len + 60, cy + 2, RETICLE);
-        g.fill(cx - 1, cy + down, cx + 2, cy + down + 30, RETICLE);
-        // mil ticks
-        for (int i = 1; i * 12 < len - gap; i++) {
-            int d = gap + i * 12;
-            int s = i % 2 == 0 ? 4 : 2;
-            g.fill(cx - d, cy - s, cx - d + 1, cy + s + 1, RETICLE);
-            g.fill(cx + d, cy - s, cx + d + 1, cy + s + 1, RETICLE);
-            if (d < down) g.fill(cx - s, cy + d, cx + s + 1, cy + d + 1, RETICLE);
+    private static void drawReticle(GuiGraphics g, Font font, int cx, int cy, int h, long gameTime, float pt) {
+        int len = 140, gap = 10;
+        int down = Math.min(77, Math.round(h * 0.2f));
+        // traits principaux (blancs, ombre douce)
+        trait(g, cx - len, cy, cx - gap, cy + 1);
+        trait(g, cx + gap, cy, cx + len, cy + 1);
+        trait(g, cx, cy + gap, cx + 1, cy + down);
+        trait(g, cx, cy - 50, cx + 1, cy - gap);
+        // graduations
+        for (int i = 1; i <= 8; i++) {
+            int d = gap + i * 15, s = i % 2 == 0 ? 2 : 1;
+            if (d >= len) break;
+            g.fill(cx - d, cy - s, cx - d + 1, cy + s + 1, 0x99FFFFFF);
+            g.fill(cx + d, cy - s, cx + d + 1, cy + s + 1, 0x99FFFFFF);
         }
-        // range finder box, shrinking after a designation
+        for (int i = 1; i <= 4; i++) {
+            int d = gap + i * 15, s = i % 2 == 0 ? 3 : 2;
+            if (d >= down) break;
+            g.fill(cx - s, cy + d, cx + s + 1, cy + d + 1, 0x99FFFFFF);
+        }
+        // cadre de visée rouge, qui se resserre après un marquage
         float lock = Mth.clamp((gameTime - DesignatorClient.lockTime + pt) / 8.0f, 0f, 1f);
         boolean locking = gameTime - DesignatorClient.lockTime < 60;
-        int size = locking ? (int) Mth.lerp(lock, 40, 9) : 9;
-        int col = locking ? ((gameTime / 3) % 2 == 0 ? LED : 0xFFFFFFFF) : LED;
-        int c = Math.max(3, size / 3);
+        int size = locking ? (int) Mth.lerp(lock, 24, 8) : 8;
+        int col = locking && (gameTime / 3) % 2 != 0 ? 0xFFFFFFFF : 0xFF000000 | ROUGE;
+        int c = Math.max(4, size * 5 / 8);
         corner(g, cx - size, cy - size, c, 1, 1, col);
         corner(g, cx + size, cy - size, c, -1, 1, col);
         corner(g, cx - size, cy + size, c, 1, -1, col);
         corner(g, cx + size, cy + size, c, -1, -1, col);
-        g.fill(cx, cy, cx + 1, cy + 1, LED);
+        g.fill(cx - 1, cy - 1, cx + 1, cy + 1, 0xFF000000 | ROUGE);
+        // distance à côté du réticule
+        if (DesignatorClient.aimDistance >= 0) {
+            String d = String.format(Locale.ROOT, "%.0f m", DesignatorClient.aimDistance);
+            gauche(g, font, lit(d, MINI_GRAS), cx + 11, cy + 9, 1.2f, argb(DesignatorClient.aimInRange ? 0xFFFFFF : AMBRE, 255));
+        }
+    }
+
+    private static void trait(GuiGraphics g, int x0, int y0, int x1, int y1) {
+        g.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, TRAIT_OMBRE);
+        g.fill(x0, y0, x1, y1, TRAIT);
     }
 
     private static void corner(GuiGraphics g, int x, int y, int len, int dx, int dy, int color) {
@@ -198,75 +217,181 @@ public final class DesignatorHud {
         g.fill(x, Math.min(y, y2), x + 1, Math.max(y, y2) + 1, color);
     }
 
-    private static void drawCompass(GuiGraphics g, Font font, int cx, int y, float viewYaw) {
-        float heading = viewYaw + 180f;
-        float pxPerDeg = 3.2f;
-        int half = 150;
-        g.fill(cx - half - 6, y - 3, cx + half + 6, y + 19, 0x60000000);
-        for (int deg = (int) Math.floor(heading - half / pxPerDeg) - 1; deg <= heading + half / pxPerDeg + 1; deg++) {
+    /** Boussole en bandeau : graduations tous les 5°, valeurs tous les 15°, points cardinaux en gras, aiguille rouge. */
+    private static void drawCompass(GuiGraphics g, Font font, int cx, int y, int w, float heading) {
+        float pxParDegre = 1.4f;
+        int demi = Math.min(113, w / 2 - 20);
+        panneau(g, cx - demi, y, demi * 2, 16, 0x080A0C, 158, 0xFFFFFF, 31);
+        for (int deg = (int) Math.floor(heading - demi / pxParDegre) - 1; deg <= heading + demi / pxParDegre + 1; deg++) {
             if (Math.floorMod(deg, 5) != 0) continue;
-            int x = cx + Math.round((deg - heading) * pxPerDeg);
-            if (x < cx - half || x > cx + half) continue;
+            int x = cx + Math.round((deg - heading) * pxParDegre);
+            if (x < cx - demi + 3 || x > cx + demi - 3) continue;
             int d = Math.floorMod(deg, 360);
             boolean major = d % 15 == 0;
-            g.fill(x, y, x + 1, y + (major ? 6 : 3), LED_DIM);
+            g.fill(x, y, x + 1, y + (major ? 4 : 2), 0x8CFFFFFF);
             if (major) {
-                String label = switch (d) {
-                    case 0 -> "N";
-                    case 45 -> "NE";
-                    case 90 -> "E";
-                    case 135 -> "SE";
-                    case 180 -> "S";
-                    case 225 -> "SW";
-                    case 270 -> "W";
-                    case 315 -> "NW";
-                    default -> Integer.toString(d);
-                };
-                g.drawCenteredString(font, label, x, y + 8, d % 45 == 0 ? LED : LED_DIM);
+                boolean cardinal = d % 45 == 0;
+                String label = cardinal ? Component.translatable("hud.airstrike.cap." + d).getString() : Integer.toString(d);
+                Component c = lit(label, cardinal ? MINI_GRAS : MINI);
+                float s = cardinal ? 1.2f : 1f;
+                float lw = font.width(c) * s;
+                if (x - lw / 2 < cx - demi + 2 || x + lw / 2 > cx + demi - 2) continue;
+                gauche(g, font, c, x - lw / 2, y + 6, s, cardinal ? 0xFFFFFFFF : 0x99FFFFFF);
             }
         }
-        g.fill(cx, y - 5, cx + 1, y + 8, 0xFFFFFFFF);
+        g.fill(cx, y - 2, cx + 1, y + 18, 0xFF000000 | ROUGE);
+        Component cap = lit(String.format(Locale.ROOT, "%.0f°", heading), MINI_GRAS);
+        float cw = font.width(cap) * 1.2f;
+        gauche(g, font, cap, cx + 0.5f - cw / 2, y + 20, 1.2f, 0xFFFFFFFF);
     }
 
-    private static void drawStatus(GuiGraphics g, Font font, LocalPlayer p, int cx, int y, long gameTime,
-                                   boolean loaded) {
+    private static void drawStatus(GuiGraphics g, Font font, LocalPlayer p, int cx, int y, long gameTime, boolean loaded) {
         Component line;
-        int color;
+        int teinte;
         float cd = p.getCooldowns().getCooldownPercent(p.getUseItem().getItem(), 0f);
         ClientStrikes.ClientStrike mine = ClientStrikes.myActive();
         boolean blink = (gameTime / 10) % 2 == 0;
+        boolean point = true;
         if (gameTime - DesignatorClient.errorTime < 40) {
             line = Component.translatable(DesignatorClient.errorKey);
-            color = AMBER;
+            teinte = AMBRE;
         } else if (mine != null) {
             double eta = ClientStrikes.myNextImpact();
-            if (eta > 0) {
-                line = Component.translatable("hud.airstrike.status.inbound", String.format(Locale.ROOT, "%.0f", Math.ceil(eta / 20.0)));
-            } else {
-                line = Component.translatable("hud.airstrike.status.impact");
-            }
-            color = blink ? LED : 0xFFFFFFFF;
-            // laser indicator
-            g.fill(cx - 22, y - 20, cx - 16, y - 14, blink ? LED : 0x40FF3A22);
-            g.drawString(font, "LASER", cx - 12, y - 20, LED, false);
+            line = eta > 0 ? Component.translatable("hud.airstrike.status.inbound", String.format(Locale.ROOT, "%.0f", Math.ceil(eta / 20.0)))
+                    : Component.translatable("hud.airstrike.status.impact");
+            teinte = ROUGE;
+            point = blink; // le laser clignote tant que la cible est tenue
         } else if (cd > 0f) {
             line = Component.translatable("hud.airstrike.status.cooldown");
-            color = AMBER;
-            int bw = 120;
-            g.fill(cx - bw / 2, y + 12, cx + bw / 2, y + 14, 0x60FFFFFF);
-            g.fill(cx - bw / 2, y + 12, cx - bw / 2 + (int) (bw * (1f - cd)), y + 14, AMBER);
+            teinte = AMBRE;
         } else if (!loaded) {
             line = Component.translatable("hud.airstrike.status.load_hint", DesignatorClient.CYCLE_KEY.getTranslatedKeyMessage());
-            color = AMBER;
+            teinte = AMBRE;
         } else if (!DesignatorClient.aimInRange) {
             line = Component.translatable("hud.airstrike.status.out_of_range", DesignatorClient.maxRange());
-            color = AMBER;
+            teinte = AMBRE;
         } else {
             line = Component.translatable("hud.airstrike.status.ready");
-            color = blink ? GREEN : 0xFFB8FFBE;
+            teinte = VERT;
         }
-        int tw = font.width(line);
-        g.fill(cx - tw / 2 - 6, y - 3, cx + tw / 2 + 6, y + 10, 0x80000000);
-        g.drawString(font, line, cx - tw / 2, y, color, false);
+        String texte = line.getString().toUpperCase(Locale.ROOT);
+        float tw = espaceLargeur(font, texte, MINI_GRAS, 1.2f);
+        int pw = Math.max(153, Math.round(tw) + 30), x0 = cx - pw / 2;
+        panneau(g, x0, y, pw, 17, mix(0x080A0C, teinte, 0.12f), 179, teinte, 128);
+        float tx = cx - (tw + 9) / 2f;
+        if (point) {
+            g.fill(Math.round(tx) - 1, y + 6, Math.round(tx) + 4, y + 11, argb(teinte, 60));
+            g.fill(Math.round(tx), y + 7, Math.round(tx) + 3, y + 10, argb(teinte, 255));
+        }
+        caps(g, font, texte, MINI_GRAS, tx + 9, y + 5.5f, 1f, 1.2f, argb(mix(teinte, 0xFFFFFF, 0.6f), 255));
+        if (cd > 0f && mine == null && gameTime - DesignatorClient.errorTime >= 40) {
+            g.fill(x0 + 6, y + 19, x0 + pw - 6, y + 20, argb(0xFFFFFF, 40));
+            g.fill(x0 + 6, y + 19, x0 + 6 + Math.round((pw - 12) * (1f - cd)), y + 20, argb(AMBRE, 255));
+        }
+    }
+
+    // ------------------------------------------------------------------ dessin
+
+    /** Panneau de verre : fond teinté, contour fin, liseré haut, coins adoucis. */
+    private static void panneau(GuiGraphics g, int x, int y, int w, int h, int fond, int alphaFond, int bord, int alphaBord) {
+        int f = argb(fond, alphaFond);
+        g.fill(x + 1, y, x + w - 1, y + 1, f);
+        g.fill(x, y + 1, x + w, y + h - 1, f);
+        g.fill(x + 1, y + h - 1, x + w - 1, y + h, f);
+        cadre(g, x + 1, y + 1, w - 2, h - 2, argb(bord, alphaBord));
+        g.fill(x + 2, y + 1, x + w - 2, y + 2, argb(0xFFFFFF, 31));
+    }
+
+    /** Contour d'un pixel à l'intérieur du rectangle. */
+    private static void cadre(GuiGraphics g, int x, int y, int w, int h, int argb) {
+        g.fill(x, y, x + w, y + 1, argb);
+        g.fill(x, y + h - 1, x + w, y + h, argb);
+        g.fill(x, y + 1, x + 1, y + h - 1, argb);
+        g.fill(x + w - 1, y + 1, x + w, y + h - 1, argb);
+    }
+
+    /** Une ligne d'aide : touche(s) dans un petit cadre, puis le texte. */
+    private static void indice(GuiGraphics g, Font font, int x, int y, String texte, String... touches) {
+        int cx = x;
+        for (String t : touches) {
+            Component c = lit(t, MINI_GRAS);
+            int tw = font.width(c) + 6;
+            g.fill(cx, y, cx + tw, y + 8, argb(0xFFFFFF, 30));
+            cadre(g, cx, y, tw, 8, argb(0xFFFFFF, 64));
+            g.drawString(font, c, cx + 3, y, 0xFFFFFFFF, false);
+            cx += tw + 3;
+        }
+        g.drawString(font, lit(texte, MINI), cx + 2, y, argb(0xFFFFFF, 184), false);
+    }
+
+    private static int argb(int rgb, int alpha) {
+        return (Mth.clamp(alpha, 0, 255) << 24) | (rgb & 0xFFFFFF);
+    }
+
+    private static int mix(int a, int b, float t) {
+        int r = (int) (((a >> 16) & 255) * (1 - t) + ((b >> 16) & 255) * t);
+        int gr = (int) (((a >> 8) & 255) * (1 - t) + ((b >> 8) & 255) * t);
+        int bl = (int) ((a & 255) * (1 - t) + (b & 255) * t);
+        return (r << 16) | (gr << 8) | bl;
+    }
+
+    private static MutableComponent lit(String s, ResourceLocation font) {
+        return Component.literal(s).withStyle(st -> st.withFont(font));
+    }
+
+    /** Capitales espacées, x = bord gauche, à l'échelle s. */
+    private static void caps(GuiGraphics g, Font font, String s, ResourceLocation f, float x, float y, float sc, float espace, int argb) {
+        String up = s.toUpperCase(Locale.ROOT);
+        float cx = 0;
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(sc, sc, 1);
+        for (int i = 0; i < up.length(); i = up.offsetByCodePoints(i, 1)) {
+            Component c = lit(new String(Character.toChars(up.codePointAt(i))), f);
+            g.pose().pushPose();
+            g.pose().translate(cx, 0, 0);
+            g.drawString(font, c, 0, 0, argb, false);
+            g.pose().popPose();
+            cx += font.width(c) + espace;
+        }
+        g.pose().popPose();
+    }
+
+    private static float espaceLargeur(Font font, String s, ResourceLocation f, float espace) {
+        float w = 0;
+        for (int i = 0; i < s.length(); i = s.offsetByCodePoints(i, 1)) {
+            w += font.width(lit(new String(Character.toChars(s.codePointAt(i))), f)) + espace;
+        }
+        return Math.max(0, w - espace);
+    }
+
+    private static void gauche(GuiGraphics g, Font font, Component c, float x, float y, float sc, int argb) {
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(sc, sc, 1);
+        g.drawString(font, c, 0, 0, argb, false);
+        g.pose().popPose();
+    }
+
+    private static void droite(GuiGraphics g, Font font, Component c, float xDroite, float y, float sc, int argb) {
+        gauche(g, font, c, xDroite - font.width(c) * sc, y, sc, argb);
+    }
+
+    /** Nombre avec espace fine des milliers (« 1 840 », « -2 210 »). */
+    private static String nombre(int v) {
+        String s = Integer.toString(Math.abs(v));
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            if (i > 0 && (s.length() - i) % 3 == 0) b.append('\u202f');
+            b.append(s.charAt(i));
+        }
+        return (v < 0 ? "-" : "") + b;
+    }
+
+    /** « 4 », « 2,5 » (virgule en français). */
+    private static String zoom(float z) {
+        boolean entier = Math.abs(z - Math.round(z)) < 0.05f;
+        String s = entier ? Integer.toString(Math.round(z)) : String.format(Locale.ROOT, "%.1f", z);
+        return Minecraft.getInstance().getLanguageManager().getSelected().startsWith("fr") ? s.replace('.', ',') : s;
     }
 }
