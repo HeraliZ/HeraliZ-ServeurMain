@@ -39,7 +39,9 @@ quand un choix leur revient.
 ## 1. Le serveur en bref
 
 - Minecraft **1.20.1**, Forge **47** ; sur le Ptero : **Mohist 1.20.1-916** (`mohist-1.20.1-916-server.jar`), Java 17.
-- Joueurs en version crackée : `online-mode=false` + plugin **AuthMe** (comptes par mot de passe).
+- Joueurs en version crackée : `online-mode=false` + plugin **AuthMe** (comptes par mot de passe : `/register` à la
+  première connexion puis `/login` ; BCRYPT, 8 caractères minimum, IP bloquée 30 min après 6 erreurs). À venir : le
+  compte HeraliZ du site (Azuriom) dans le launcher, avec code par mail sur un nouveau PC ; AuthMe reste la 3e barrière.
 - Plugins (triés le 08/10, seulement l'utile ; tout le reste a été retiré) : AuthMe, spark, LuckPerms (grades du staff,
   base locale), KauriVPN (anti-VPN), LiteBans (mutes, avertissements, historique ; les bans pour triche passent par
   Spartan), WorldEdit + WorldGuard + WorldGuardExtraFlags (outils du staff, protection du spawn), ConsoleSpamFix.
@@ -477,6 +479,20 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
 - Armurerie : les combinaisons intégrales (Hazmat, froid, plongée) se portent seules (sac à dos permis) ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
+- launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
+  du logo « VERSION 1 · SAISON 1 », onglets Accueil / Nouveautés / Règlement / Boutique (« Bientôt »), Discord bien en
+  vue (bouton en haut à droite + grand bouton sur l'accueil et l'écran de connexion). **Aucun accès au dossier du jeu**
+  depuis le launcher et aucun nom de fichier affiché pendant le téléchargement (ne pas faciliter le vol des jars) ;
+- comptes et site (choix du propriétaire) : site **Azuriom** au style HeraliZ, comptes communs au site et au launcher
+  (un compte créé d'un côté marche de l'autre), boutique, crédits du site, votes, actualités, relié au serveur par
+  AzLink. Inscription pseudo + mail + mot de passe, confirmée par un code reçu par mail ; **code par mail à chaque
+  nouveau PC** (pas à chaque nouvelle IP) ; le serveur vérifie le ticket du launcher (mode B de Spartan, la clé ne
+  quitte plus nos serveurs) ; le mot de passe du jeu AuthMe reste en plus. Mails automatiques depuis une adresse
+  @heraliz.fr par un service d'envoi (Brevo). Domaines heraliz.fr et heraliz.com chez IONOS. Site hébergé à part du
+  Ptero (petit serveur loué au nom du propriétaire conseillé, 10 € par mois au plus) ;
+- boutique : achats en argent ou en crédits du site, livrés tout de suite si le joueur est connecté, sinon à sa
+  prochaine connexion, une seule fois. Règles de Mojang : pas d'avantage de jeu payant (les crédits n'y changent rien :
+  c'est ce qu'ils achètent qui compte) ; liste des articles à décider avec le propriétaire ;
 - refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
 - retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
   Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,
@@ -511,6 +527,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   imposé de heraliz_interface 1.1.0).
 - **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
   LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur.
+- **Site et comptes HeraliZ (Azuriom)** : hébergement à choisir, puis maquettes du thème, extension Azuriom (inscription
+  depuis le launcher, code par mail sur un nouveau PC, ticket signé pour Spartan), branchement du launcher, boutique et
+  votes. D'ici là, le launcher demande seulement le pseudo et AuthMe protège le compte en jeu.
 - **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé pas encore
   (il faut un serveur d'authentification, voir `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
