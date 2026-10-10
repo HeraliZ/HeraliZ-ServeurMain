@@ -1,19 +1,25 @@
 package fr.heraliz.crac.build.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.ArrayList;
 import java.util.List;
 import fr.heraliz.crac.build.model.PieceKind;
 import fr.heraliz.crac.build.world.BuildCost;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-/** Building Plan wheel: the 13 pieces with their icon, name and twig cost. */
+import static fr.heraliz.crac.client.kit.Dessin.*;
+
+/**
+ * Building Plan wheel: the 13 pieces with their icon and cost (red and dimmed when the player cannot pay it); the hub
+ * names the piece under the mouse (or the selected one), its cost and how much the player has.
+ */
 @OnlyIn(Dist.CLIENT)
 public class PlanRadialScreen extends RadialMenuScreen {
     private static final PieceKind[] KINDS = PieceKind.values();
-    private static final int ICON = 26;
 
     public PlanRadialScreen(InputConstants.Key trigger) {
         super(Component.translatable("crac.plan.title"), trigger);
@@ -34,38 +40,72 @@ public class PlanRadialScreen extends RadialMenuScreen {
         return KINDS[i] == PlanState.selected();
     }
 
+    @Override
+    protected Look look(int i) {
+        return this.active(i) ? Look.CURRENT : this.affordable(KINDS[i]) ? Look.NORMAL : Look.DIMMED;
+    }
+
+    @Override
+    protected String heading() {
+        return Component.translatable("crac.plan.title").getString();
+    }
+
     private boolean affordable(PieceKind kind) {
         return this.minecraft == null || this.minecraft.player == null || BuildClient.has(this.minecraft.player, BuildClient.placeCost(kind));
     }
 
     @Override
-    protected void drawEntry(GuiGraphics g, int i, int x, int y, boolean hover) {
+    protected void drawEntry(GuiGraphics g, int i, float x, float y, boolean hover, float alpha) {
         PieceKind kind = KINDS[i];
-        int size = hover ? ICON + 4 : ICON;
-        if (!BuildIcons.draw(g, BuildIcons.piece(kind), x - size / 2, y - size / 2 - 4, size)) {
-            this.lines(g, BuildClient.pieceName(kind).getString(), x, y - 4, 40, hover ? WHITE : 0xFFD0D0D0, 0.6F);
+        float size = hover ? 23.33F : 20.67F;
+        float top = y - 17.33F;
+        if (!BuildIcons.draw(g, BuildIcons.piece(kind), x - size / 2, top, size, alpha)) {
+            // no icon: the name in its place
+            this.label(g, BuildClient.pieceName(kind).getString(), x, top + size / 2, a(TEXTE, 255 * alpha));
         }
         List<BuildCost> cost = BuildClient.placeCost(kind);
         if (!cost.isEmpty()) {
-            String c = String.valueOf(cost.get(0).count()) + (cost.size() > 1 ? "+" : "");
-            this.text(g, c, x, y + size / 2 + 1, this.affordable(kind) ? GREY : RED, 0.6F);
+            String c = cost.get(0).count() + (cost.size() > 1 ? "+" : "");
+            this.label(g, c, x, top + size + 5.67F, a(this.affordable(kind) ? TEXTE : ROUGE_PALE, (this.affordable(kind) ? 217 : 255) * alpha));
         }
     }
 
     @Override
-    protected void drawHub(GuiGraphics g, int cx, int cy) {
+    protected void drawHub(GuiGraphics g, float cx, float cy) {
         PieceKind kind = this.hovered >= 0 ? KINDS[this.hovered] : PlanState.selected();
-        this.lines(g, BuildClient.pieceName(kind).getString(), cx, cy - 10, 84, this.hovered >= 0 ? WHITE : GOLD, 0.85F);
-        List<BuildCost> cost = BuildClient.placeCost(kind);
-        boolean ok = this.affordable(kind);
-        int y = cy + 4;
+        List<HubLine> lines = new ArrayList<>();
+        lines.add(title(BuildClient.pieceName(kind).getString()));
+        lines.addAll(costLines(this.minecraft == null ? null : this.minecraft.player, BuildClient.placeCost(kind)));
+        this.hub(g, cx, cy, lines, 0.8F);
+    }
+
+    /** "16 × Stick" (green when the player has enough, red otherwise) and "You have 64 · 3 missing". */
+    static List<HubLine> costLines(LocalPlayer player, List<BuildCost> cost) {
+        List<HubLine> lines = new ArrayList<>();
         if (cost.isEmpty()) {
-            this.text(g, Component.translatable("crac.hud.free").getString(), cx, y, GREY, 0.7F);
+            lines.add(line(Component.translatable("crac.hud.free"), a(VERT_PALE, 255)));
+            return lines;
         }
+        boolean creative = player != null && player.getAbilities().instabuild;
+        BuildCost missing = null;
+        int missingHave = 0;
         for (BuildCost c : cost) {
-            this.text(g, c.count() + "x " + c.displayName().getString(), cx, y, ok ? 0xFFC8C8C8 : RED, 0.7F);
-            y += 8;
+            int have = player == null ? 0 : BuildClient.count(player, c);
+            boolean ok = creative || have >= c.count();
+            lines.add(line(Component.translatable("crac.wheel.cost", c.count(), c.displayName()), a(ok ? VERT_PALE : ROUGE_PALE, 255)));
+            if (!ok && missing == null) {
+                missing = c;
+                missingHave = have;
+            }
         }
+        if (player != null && !creative) {
+            if (missing != null) {
+                lines.add(line(Component.translatable("crac.wheel.missing", missingHave, missing.count() - missingHave), a(ATTENUE, 255)));
+            } else if (cost.size() == 1) {
+                lines.add(line(Component.translatable("crac.wheel.have", BuildClient.count(player, cost.get(0))), a(ATTENUE, 255)));
+            }
+        }
+        return lines;
     }
 
     @Override

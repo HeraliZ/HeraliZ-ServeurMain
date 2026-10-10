@@ -1,17 +1,23 @@
 package fr.heraliz.crac.client;
 
-import java.util.Locale;
+import fr.heraliz.crac.client.kit.Ui;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent.Clone;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent.Post;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import static fr.heraliz.crac.client.kit.Dessin.*;
+
 /**
- * Raid block timers sent by the server: the zone the player stands in (drawn on the HUD) and the player's own base
- * (used to grey out building, upgrading and repairing; a neighbour's raid does not block them).
+ * Raid block timers sent by the server: the zone the player stands in (a red card at the top of the screen, validated
+ * mock-up) and the player's own base (used to grey out building, upgrading and repairing; a neighbour's raid does not
+ * block them). The card is a HUD overlay of its own ({@code crac:raid_block}), drawn once per frame.
  */
 @OnlyIn(Dist.CLIENT)
 public final class RaidBlockOverlay {
@@ -49,20 +55,36 @@ public final class RaidBlockOverlay {
         ownExpireAtMillis = 0L;
     }
 
-    @SubscribeEvent
-    public static void onRenderGui(Post event) {
-        int remainingSeconds = secondsLeft(expireAtMillis);
-        if (remainingSeconds > 0) {
-            Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.player != null && !minecraft.options.hideGui) {
-                net.minecraft.network.chat.Component text = net.minecraft.network.chat.Component.translatable("crac.raid.hud", String.format(Locale.ROOT, "%02d:%02d", remainingSeconds / 60, remainingSeconds % 60));
-                int x = minecraft.getWindow().getGuiScaledWidth() / 2;
-                event.getGuiGraphics().pose().pushPose();
-                event.getGuiGraphics().pose().translate(0.0F, 0.0F, 500.0F);
-                event.getGuiGraphics().drawCenteredString(minecraft.font, text, x, 10, -57312);
-                event.getGuiGraphics().pose().popPose();
-            }
+    /** The card: a lock, "RAID BLOCK", what it blocks, and the time left. */
+    public static void render(ForgeGui gui, GuiGraphics g, float partialTick, int width, int height) {
+        int left = secondsLeft(expireAtMillis);
+        Minecraft mc = Minecraft.getInstance();
+        if (left <= 0 || mc.player == null || mc.options.hideGui) {
+            return;
         }
+        Font font = mc.font;
+        float px = 1.0F / (float) mc.getWindow().getGuiScale();
+        String title = Component.translatable("crac.raid.title").getString();
+        String line = Component.translatable(ownBaseBlocked() ? "crac.raid.own" : "crac.raid.zone").getString();
+        String time = String.format("%d:%02d", left / 60, left % 60);
+        float timeW = largeur(font, time, TITRE) * 0.94F;
+        float textW = Math.max(largeurCaps(font, title, MINI_GRAS, 0.85F), largeur(font, line, MINI));
+        float w = Math.max(133.33F, 6 + 10 + 4.67F + textW + 6.67F + timeW + 6);
+        float h = 22.67F;
+        float x = (width - w) / 2, y = 10;
+        degradeV(g, x, y + h, x + w, y + h + 5, a(0, 70), a(0, 0));
+        rect(g, x, y, x + w, y + h, a(0x280606, 184));
+        contour(g, x, y, w, h, px, a(0xFF4A3D, 140));
+        rect(g, x + px, y + px, x + w - px, y + 2 * px, a(BLANC, 26));
+        cadenas(g, x + 6, y + h / 2 - 5, 10, a(ROUGE, 255));
+        float tx = x + 6 + 10 + 4.67F;
+        caps(g, font, title, MINI_GRAS, tx, y + 8 - 4.21F, 0.85F, a(ROSE, 255));
+        texte(g, font, Ui.lit(line, MINI), tx, y + 15.67F - 4.21F, a(BLANC, 179));
+        g.pose().pushPose();
+        g.pose().translate(x + w - 6 - timeW, y + h / 2 - (3.91F + 3.5F) * 0.94F, 0);
+        g.pose().scale(0.94F, 0.94F, 1);
+        g.drawString(font, Ui.lit(time, TITRE), 0, 0, a(BLANC, 255), false);
+        g.pose().popPose();
     }
 
     private static int secondsLeft(long expireAt) {

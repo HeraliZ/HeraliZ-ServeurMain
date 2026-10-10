@@ -2,7 +2,6 @@ package fr.heraliz.crac.client.group;
 
 import java.awt.Color;
 import fr.heraliz.crac.Config;
-import fr.heraliz.crac.client.ScaledScreen;
 import fr.heraliz.crac.group.GroupNames;
 import fr.heraliz.crac.network.C2SCreateGroup;
 import fr.heraliz.crac.network.NetworkHandler;
@@ -10,28 +9,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
-public class GroupCreateScreen extends ScaledScreen {
-    private static final int PANEL_W = 200;
-    private static final int PANEL_H = 182;
-    private int left;
-    private int top;
-    private int nameX;
-    private int nameY;
-    private int nameW;
-    private int fieldH = 16;
-    private int tagX;
-    private int tagY;
-    private int tagW;
-    private int hueX;
-    private int hueY;
-    private int hueW;
-    private int hueH = 12;
-    private int swatchX;
-    private int swatchW = 26;
-    private int btnX;
-    private int btnY;
-    private int btnW;
-    private int btnH = 18;
+import static fr.heraliz.crac.client.kit.Dessin.*;
+
+/** Create a group: name, tag (3 or 4 letters) and colour, in the style of the group screen. */
+public class GroupCreateScreen extends EcranGroupe {
+    private static final float W = 260;
+    private static final float H = 214;
     private String name = "";
     private String tag = "";
     private float hue = 0.58F;
@@ -43,23 +26,8 @@ public class GroupCreateScreen extends ScaledScreen {
     }
 
     @Override
-    protected void init() {
-        this.left = (this.guiW() - 200) / 2;
-        this.top = (this.guiH() - 182) / 2;
-        int pad = 14;
-        this.nameX = this.left + pad;
-        this.nameY = this.top + 44;
-        this.nameW = 200 - 2 * pad;
-        this.tagX = this.left + pad;
-        this.tagY = this.top + 84;
-        this.tagW = 72;
-        this.hueX = this.left + pad;
-        this.hueY = this.top + 124;
-        this.hueW = 200 - 2 * pad - (this.swatchW + 6);
-        this.swatchX = this.left + 200 - pad - this.swatchW;
-        this.btnX = this.left + pad;
-        this.btnY = this.top + 182 - 28;
-        this.btnW = 200 - 2 * pad;
+    protected void initCanevas() {
+        this.placer(W, H);
     }
 
     /** The server's limit (synced config), never above what the packet carries. */
@@ -71,111 +39,126 @@ public class GroupCreateScreen extends ScaledScreen {
         }
     }
 
-    private boolean nameValid() {
-        return GroupNames.cleanName(this.name, nameMax()) != null;
-    }
-
-    private boolean tagValid() {
-        return GroupNames.cleanTag(this.tag) != null;
-    }
-
     private boolean valid() {
-        return this.nameValid() && this.tagValid();
+        return GroupNames.cleanName(this.name, nameMax()) != null && GroupNames.cleanTag(this.tag) != null;
     }
 
     private int selectedColor() {
-        return Color.HSBtoRGB(this.hue, 0.85F, 0.95F) & 16777215;
+        return Color.HSBtoRGB(this.hue, 0.85F, 0.95F) & 0xFFFFFF;
+    }
+
+    // geometry
+    private float fx() {
+        return this.x0 + 13.33F;
+    }
+
+    private float fw() {
+        return W - 26.67F;
+    }
+
+    private float nameY() {
+        return this.y0 + 52;
+    }
+
+    private float tagY() {
+        return this.y0 + 86;
+    }
+
+    private float tagW() {
+        return 64;
+    }
+
+    private float hueY() {
+        return this.y0 + 122;
+    }
+
+    private float hueW() {
+        return this.fw() - 30;
+    }
+
+    private float[] createRect() {
+        return new float[]{this.fx(), this.y0 + H - 30, this.fw(), 18};
     }
 
     @Override
-    protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float pt) {
-        this.renderBackground(g);
-        GroupTheme.panel(g, this.left, this.top, 200, 182);
-        g.drawCenteredString(this.font, Component.translatable("crac.gui.create_group"), this.left + 100, this.top + 12, -6504193);
-        g.fill(this.left + 14, this.top + 26, this.left + 200 - 14, this.top + 27, -13745040);
-        boolean blink = System.currentTimeMillis() / 500L % 2L == 0L;
-        g.drawString(this.font, Component.translatable("crac.gui.group_name"), this.nameX, this.nameY - 11, -9536363, false);
-        GroupTheme.field(g, this.nameX, this.nameY, this.nameW, this.fieldH, this.focus == 1);
-        this.drawFieldText(g, this.name, this.nameX, this.nameY, this.nameW, this.focus == 1 && blink);
-        g.drawString(this.font, Component.translatable("crac.gui.group_tag"), this.tagX, this.tagY - 11, -9536363, false);
-        GroupTheme.field(g, this.tagX, this.tagY, this.tagW, this.fieldH, this.focus == 2);
-        this.drawFieldText(g, this.tag, this.tagX, this.tagY, this.tagW, this.focus == 2 && blink);
-        g.drawString(this.font, "3-4 letters", this.tagX + this.tagW + 8, this.tagY + 4, -9536363, false);
-        g.drawString(this.font, Component.translatable("crac.gui.group_color"), this.hueX, this.hueY - 11, -9536363, false);
-        this.drawHueBar(g);
-        int col = 0xFF000000 | this.selectedColor();
-        g.fill(this.swatchX, this.hueY, this.swatchX + this.swatchW, this.hueY + this.hueH, col);
-        GroupTheme.border(g, this.swatchX, this.hueY, this.swatchW, this.hueH, -14009250);
-        boolean hover = this.valid() && inRect(mouseX, mouseY, this.btnX, this.btnY, this.btnW, this.btnH);
-        int btnCol = !this.valid() ? -11181958 : (hover ? -10757772 : -12598694);
-        GroupTheme.button(g, this.font, this.btnX, this.btnY, this.btnW, this.btnH, Component.translatable("crac.gui.accept").getString(), btnCol);
-        this.renderWidgets(g, mouseX, mouseY, pt);
-    }
-
-    private void drawFieldText(GuiGraphics g, String text, int x, int y, int w, boolean cursor) {
-        int tx = x + 5;
-        int ty = y + (this.fieldH - 8) / 2;
-        // long names scroll: keep the end (where the cursor is) inside the field
-        String visible = text;
-        while (!visible.isEmpty() && this.font.width(visible + "_") > w - 10) {
-            visible = visible.substring(1);
+    protected void rendu(GuiGraphics g, float mx, float my, float pt) {
+        this.fond(g);
+        int color = this.selectedColor();
+        this.panneau(g, color);
+        this.entete(g, -1, Component.translatable("crac.gui.create_group").getString(), BLANC, Component.translatable("crac.gui.create_hint").getString());
+        this.libelle(g, Component.translatable("crac.gui.group_name").getString(), this.fx(), this.nameY() - 7);
+        this.champ(g, this.fx(), this.nameY(), this.fw(), 15.33F, this.name, "", this.focus == 1);
+        this.libelle(g, Component.translatable("crac.gui.group_tag").getString(), this.fx(), this.tagY() - 7);
+        this.champ(g, this.fx(), this.tagY(), this.tagW(), 15.33F, this.tag, "", this.focus == 2);
+        texte(g, this.font, lit(Component.translatable("crac.gui.tag_hint").getString(), MINI), this.fx() + this.tagW() + 6, this.tagY() + 7.67F - 4.21F, a(ATTENUE, 255));
+        this.libelle(g, Component.translatable("crac.gui.group_color").getString(), this.fx(), this.hueY() - 7);
+        // hue bar, its cursor, and the colour it gives
+        float hx = this.fx(), hy = this.hueY(), hw = this.hueW(), hh = 10;
+        int steps = 48;
+        for (int i = 0; i < steps; i++) {
+            float a0 = (float) i / steps, a1 = (float) (i + 1) / steps;
+            degradeH(g, hx + hw * a0, hy, hx + hw * a1, hy + hh, a(Color.HSBtoRGB(a0, 0.85F, 0.95F), 255), a(Color.HSBtoRGB(a1, 0.85F, 0.95F), 255));
         }
-        String shown = visible + (cursor ? "_" : "");
-        g.drawString(this.font, shown, tx, ty, -3878166, false);
-    }
-
-    private void drawHueBar(GuiGraphics g) {
-        for (int i = 0; i < this.hueW; i++) {
-            int c = 0xFF000000 | Color.HSBtoRGB((float)i / this.hueW, 0.85F, 0.95F) & 16777215;
-            g.fill(this.hueX + i, this.hueY, this.hueX + i + 1, this.hueY + this.hueH, c);
+        contour(g, hx, hy, hw, hh, this.px, a(BLANC, 46));
+        float cx = hx + this.hue * hw;
+        rect(g, cx - 1.33F, hy - 2, cx + 1.33F, hy + hh + 2, a(BLANC, 255));
+        rect(g, cx - 0.67F, hy - 1.33F, cx + 0.67F, hy + hh + 1.33F, a(color, 255));
+        float sx = hx + hw + 6;
+        rect(g, sx, hy - 2, sx + 24, hy + hh + 2, a(color, 255));
+        contour(g, sx, hy - 2, 24, hh + 4, this.px, a(BLANC, 89));
+        // preview of the name in its colour
+        if (!this.name.isEmpty() || !this.tag.isEmpty()) {
+            String preview = this.name + (this.tag.isEmpty() ? "" : "  [" + this.tag + "]");
+            texte(g, this.font, lit(preview, GRAS_9), this.fx(), this.y0 + 150 - 5.44F, a(mix(color, BLANC, 0.5F), 255));
         }
-
-        GroupTheme.border(g, this.hueX, this.hueY, this.hueW, this.hueH, -14009250);
-        int mx = this.hueX + Math.round(this.hue * (this.hueW - 1));
-        g.fill(mx - 1, this.hueY - 2, mx + 2, this.hueY + this.hueH + 2, -1);
-        g.fill(mx, this.hueY - 1, mx + 1, this.hueY + this.hueH + 1, -15724528);
+        rect(g, this.fx(), this.y0 + H - 38, this.fx() + this.fw(), this.y0 + H - 38 + this.px, a(BLANC, 20));
+        float[] b = this.createRect();
+        boolean ok = this.valid();
+        this.grandBouton(g, b[0], b[1], b[2], b[3], Component.translatable("crac.gui.create").getString(), -2, ok && dans(mx, my, b[0], b[1], b[2], b[3]), ok);
     }
 
     @Override
-    protected boolean clickContent(double mx, double my, int button) {
-        if (inRect(mx, my, this.nameX, this.nameY, this.nameW, this.fieldH)) {
+    protected boolean clic(double mx, double my, int button) {
+        if (dans(mx, my, this.fx(), this.nameY(), this.fw(), 15.33F)) {
             this.focus = 1;
             return true;
-        } else if (inRect(mx, my, this.tagX, this.tagY, this.tagW, this.fieldH)) {
+        }
+        if (dans(mx, my, this.fx(), this.tagY(), this.tagW(), 15.33F)) {
             this.focus = 2;
             return true;
-        } else if (inRect(mx, my, this.hueX - 2, this.hueY - 2, this.hueW + 4, this.hueH + 4)) {
+        }
+        if (dans(mx, my, this.fx() - 2, this.hueY() - 3, this.hueW() + 4, 16)) {
             this.draggingHue = true;
             this.updateHue(mx);
             this.focus = 0;
             return true;
-        } else if (this.valid() && inRect(mx, my, this.btnX, this.btnY, this.btnW, this.btnH)) {
+        }
+        float[] b = this.createRect();
+        if (this.valid() && dans(mx, my, b[0], b[1], b[2], b[3])) {
             this.accept();
             return true;
-        } else {
-            this.focus = 0;
-            return this.clickWidgets(mx, my, button);
         }
+        this.focus = 0;
+        return false;
     }
 
     @Override
-    protected boolean dragContent(double mx, double my, int button, double dx, double dy) {
+    protected boolean glisse(double mx, double my, int button, double dx, double dy) {
         if (this.draggingHue) {
             this.updateHue(mx);
             return true;
-        } else {
-            return this.dragWidgets(mx, my, button, dx, dy);
         }
+        return false;
     }
 
     @Override
-    protected boolean releaseContent(double mx, double my, int button) {
+    protected boolean relache(double mx, double my, int button) {
         this.draggingHue = false;
-        return this.releaseWidgets(mx, my, button);
+        return false;
     }
 
     private void updateHue(double mx) {
-        this.hue = (float)Mth.clamp((mx - this.hueX) / (this.hueW - 1), 0.0, 1.0);
+        this.hue = (float) Mth.clamp((mx - this.fx()) / this.hueW(), 0.0, 1.0);
     }
 
     @Override
@@ -189,7 +172,6 @@ public class GroupCreateScreen extends ScaledScreen {
             this.tag = this.tag + Character.toUpperCase(c);
             return true;
         }
-
         return false;
     }
 
@@ -201,7 +183,6 @@ public class GroupCreateScreen extends ScaledScreen {
                 if (this.valid()) {
                     this.accept();
                 }
-
                 return true;
             case 258:
                 this.focus = this.focus == 1 ? 2 : 1;
@@ -212,7 +193,6 @@ public class GroupCreateScreen extends ScaledScreen {
                 } else if (this.focus == 2 && !this.tag.isEmpty()) {
                     this.tag = this.tag.substring(0, this.tag.length() - 1);
                 }
-
                 return true;
             default:
                 return super.keyPressed(key, scan, mods);
@@ -222,14 +202,5 @@ public class GroupCreateScreen extends ScaledScreen {
     private void accept() {
         NetworkHandler.CHANNEL.sendToServer(new C2SCreateGroup(GroupNames.cleanName(this.name, nameMax()), this.tag, this.selectedColor()));
         this.onClose();
-    }
-
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
-
-    private static boolean inRect(double mx, double my, int x, int y, int w, int h) {
-        return mx >= x && mx < x + w && my >= y && my < y + h;
     }
 }

@@ -1,6 +1,7 @@
 package fr.heraliz.crac.build.client;
 
 import fr.heraliz.crac.build.world.ClientMirror;
+import fr.heraliz.crac.client.RaidBlockOverlay;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -34,6 +35,8 @@ public final class BuildClientSetup {
         @SubscribeEvent
         public static void onOverlays(RegisterGuiOverlaysEvent event) {
             event.registerAbove(VanillaGuiOverlay.CROSSHAIR.id(), "building", BuildHud::render);
+            // once per frame, above everything (it used to be drawn after every overlay of the HUD)
+            event.registerAboveAll("raid_block", RaidBlockOverlay::render);
         }
 
         @SubscribeEvent

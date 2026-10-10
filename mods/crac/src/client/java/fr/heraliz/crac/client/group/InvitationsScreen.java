@@ -1,26 +1,25 @@
 package fr.heraliz.crac.client.group;
 
 import java.util.List;
-import fr.heraliz.crac.client.ScaledScreen;
+import fr.heraliz.crac.client.kit.Ui;
 import fr.heraliz.crac.network.C2SInviteResponse;
 import fr.heraliz.crac.network.NetworkHandler;
 import fr.heraliz.crac.network.S2COpenInvites;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.network.chat.Component;
 
-public class InvitationsScreen extends ScaledScreen {
-    private static final int PANEL_W = 252;
-    private static final int CARD_H = 64;
-    private static final int HEADER = 34;
-    private static final int FOOTER = 12;
-    private static final int BTN_W = 78;
-    private static final int BTN_H = 15;
+import static fr.heraliz.crac.client.kit.Dessin.*;
+
+/** The invitations to join a group: who invites, to which group (in its colour), Accept or Decline. */
+public class InvitationsScreen extends EcranGroupe {
+    private static final float W = 300;
+    private static final float CARD = 40;
+    private static final float GAP = 4;
+    private static final float TOP = 40;
     private final List<S2COpenInvites.InviteEntry> invites;
-    private int left;
-    private int top;
-    private int panelH;
+    /** Cards that fit on the screen. */
+    private int shown;
 
     public InvitationsScreen(List<S2COpenInvites.InviteEntry> invites) {
         super(Component.translatable("crac.gui.invitations"));
@@ -39,87 +38,72 @@ public class InvitationsScreen extends ScaledScreen {
     }
 
     @Override
-    protected void init() {
-        this.panelH = 34 + this.invites.size() * 64 + 12;
-        this.left = (this.guiW() - 252) / 2;
-        this.top = (this.guiH() - this.panelH) / 2;
+    protected void initCanevas() {
+        this.shown = Math.min(this.invites.size(), Math.max(1, (int) ((this.ch - 40 - TOP - 14) / (CARD + GAP))));
+        this.placer(W, TOP + this.shown * (CARD + GAP) - GAP + 14);
+    }
+
+    private float cardY(int i) {
+        return this.y0 + TOP + i * (CARD + GAP);
+    }
+
+    private float[] acceptRect(int i) {
+        String s = Component.translatable("crac.gui.accept").getString();
+        float w = this.largeurPetitBouton(s, false);
+        float[] d = this.declineRect(i);
+        return new float[]{d[0] - 4 - w, d[1], w, 14};
+    }
+
+    private float[] declineRect(int i) {
+        String s = Component.translatable("crac.gui.decline").getString();
+        float w = this.largeurPetitBouton(s, false);
+        return new float[]{this.x0 + W - 13.33F - 6 - w, this.cardY(i) + (CARD - 14) / 2, w, 14};
     }
 
     @Override
-    protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float pt) {
-        this.renderBackground(g);
-        GroupTheme.panel(g, this.left, this.top, 252, this.panelH);
-        g.drawCenteredString(this.font, Component.translatable("crac.gui.invitations"), this.left + 126, this.top + 12, -6504193);
-        g.fill(this.left + 14, this.top + 26, this.left + 252 - 14, this.top + 27, -13745040);
-
-        for (int i = 0; i < this.invites.size(); i++) {
-            this.renderCard(g, mouseX, mouseY, i);
+    protected void rendu(GuiGraphics g, float mx, float my, float pt) {
+        this.fond(g);
+        this.panneau(g, ACCENT);
+        this.entete(g, -1, Component.translatable("crac.gui.invitations").getString(), BLANC,
+            Component.translatable("crac.gui.invitations_count", this.invites.size()).getString());
+        float x = this.x0 + 13.33F, w = W - 26.67F;
+        for (int i = 0; i < this.shown; i++) {
+            float y = this.cardY(i);
+            S2COpenInvites.InviteEntry e = this.invites.get(i);
+            rect(g, x, y, x + w, y + CARD, a(BLANC, 8));
+            contour(g, x, y, w, CARD, this.px, a(BLANC, 26));
+            rect(g, x, y + 5, x + 1.33F, y + CARD - 5, a(e.groupColor() & 0xFFFFFF, 255));
+            this.tete(g, e.inviterId(), x + 8, y + (CARD - 16) / 2, 16);
+            float tx = x + 30;
+            float[] acc = this.acceptRect(i);
+            float room = acc[0] - 6 - tx;
+            String inviter = Ui.ellipsis(this.font, e.inviterName(), GRAS_9, Math.round(room));
+            float iw = largeur(this.font, inviter, GRAS_9);
+            texte(g, this.font, lit(inviter, GRAS_9), tx, y + 13 - 5.44F, a(BLANC, 255));
+            String invited = Ui.ellipsis(this.font, " " + Component.translatable("crac.gui.invited_you").getString(), MINI, Math.round(room - iw));
+            texte(g, this.font, lit(invited, MINI), tx + iw, y + 13 - 4.21F, a(ATTENUE, 255));
+            String group = Ui.ellipsis(this.font, e.groupName() + "  [" + e.groupTag() + "]", MOYEN_GRAS, Math.round(room));
+            texte(g, this.font, lit(group, MOYEN_GRAS), tx, y + 26 - 4.7F, a(mix(e.groupColor() & 0xFFFFFF, BLANC, 0.45F), 255));
+            float[] d = this.declineRect(i);
+            this.petitBouton(g, acc[0], acc[1], acc[2], acc[3], Component.translatable("crac.gui.accept").getString(), VERT, dans(mx, my, acc[0], acc[1], acc[2], acc[3]), false);
+            this.petitBouton(g, d[0], d[1], d[2], d[3], Component.translatable("crac.gui.decline").getString(), 0xFF6B6B, dans(mx, my, d[0], d[1], d[2], d[3]), false);
         }
-
-        this.renderWidgets(g, mouseX, mouseY, pt);
-    }
-
-    private void renderCard(GuiGraphics g, int mouseX, int mouseY, int i) {
-        S2COpenInvites.InviteEntry e = this.invites.get(i);
-        int x = this.left + 14;
-        int w = 224;
-        int cy = this.top + 34 + i * 64;
-        g.fill(x, cy, x + w, cy + 64 - 6, -16116954);
-        GroupTheme.border(g, x, cy, w, 58, -14009250);
-        PlayerFaceRenderer.draw(g, GroupManageScreen.skinFor(e.inviterId()), x + 4, cy + 4, 16);
-        int gc = 0xFF000000 | e.groupColor() & 16777215;
-        g.drawString(this.font, e.inviterName(), x + 24, cy + 5, -3878166, false);
-        g.drawString(this.font, e.groupName() + " [" + e.groupTag() + "]", x + 24, cy + 16, gc, false);
-        g.drawString(this.font, Component.translatable("crac.gui.invited_you"), x + 24, cy + 27, -9536363, false);
-        int[] a = this.acceptRect(i);
-        int[] d = this.declineRect(i);
-        boolean ha = inRect(mouseX, mouseY, a[0], a[1], 78, 15);
-        boolean hd = inRect(mouseX, mouseY, d[0], d[1], 78, 15);
-        int ac = ha ? -10757772 : -12598694;
-        int dc = hd ? -2074037 : -4179669;
-        GroupTheme.border(g, a[0], a[1], 78, 15, ac);
-        GroupTheme.check(g, a[0] + 8, a[1] + 3, ac);
-        g.drawString(this.font, Component.translatable("crac.gui.accept"), a[0] + 22, a[1] + 4, ac, false);
-        GroupTheme.border(g, d[0], d[1], 78, 15, dc);
-        GroupTheme.cross(g, d[0] + 8, d[1] + 4, dc);
-        g.drawString(this.font, Component.translatable("crac.gui.decline"), d[0] + 22, d[1] + 4, dc, false);
-    }
-
-    private int[] acceptRect(int i) {
-        int cy = this.top + 34 + i * 64;
-        return new int[]{this.left + 18, cy + 64 - 27};
-    }
-
-    private int[] declineRect(int i) {
-        int cy = this.top + 34 + i * 64;
-        return new int[]{this.left + 18 + 78 + 8, cy + 64 - 27};
     }
 
     @Override
-    protected boolean clickContent(double mx, double my, int button) {
-        for (int i = 0; i < this.invites.size(); i++) {
-            int[] a = this.acceptRect(i);
-            int[] d = this.declineRect(i);
-            if (inRect(mx, my, a[0], a[1], 78, 15)) {
+    protected boolean clic(double mx, double my, int button) {
+        for (int i = 0; i < this.shown; i++) {
+            float[] acc = this.acceptRect(i);
+            float[] d = this.declineRect(i);
+            if (dans(mx, my, acc[0], acc[1], acc[2], acc[3])) {
                 NetworkHandler.CHANNEL.sendToServer(new C2SInviteResponse(this.invites.get(i).groupId(), true));
                 return true;
             }
-
-            if (inRect(mx, my, d[0], d[1], 78, 15)) {
+            if (dans(mx, my, d[0], d[1], d[2], d[3])) {
                 NetworkHandler.CHANNEL.sendToServer(new C2SInviteResponse(this.invites.get(i).groupId(), false));
                 return true;
             }
         }
-
-        return this.clickWidgets(mx, my, button);
-    }
-
-    @Override
-    public boolean isPauseScreen() {
         return false;
-    }
-
-    private static boolean inRect(double mx, double my, int x, int y, int w, int h) {
-        return mx >= x && mx < x + w && my >= y && my < y + h;
     }
 }

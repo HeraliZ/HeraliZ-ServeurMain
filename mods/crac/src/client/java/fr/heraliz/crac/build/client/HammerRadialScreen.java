@@ -16,10 +16,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
-/** Hammer wheel on the targeted piece: upgrade to each tier (with its cost), repair, and demolish while allowed. */
+import static fr.heraliz.crac.client.kit.Dessin.*;
+
+/**
+ * Hammer wheel on the targeted piece: upgrade to each tier (with its cost), repair, and demolish while allowed. The
+ * current tier has a white edge, lower tiers are dimmed, Demolish is red; the hub tells what the entry under the mouse
+ * costs or why it cannot be used.
+ */
 @OnlyIn(Dist.CLIENT)
 public class HammerRadialScreen extends RadialMenuScreen {
-    private static final int ICON = 26;
     private static final int REPAIR = -1;
     private static final int DEMOLISH = -2;
 
@@ -58,6 +63,30 @@ public class HammerRadialScreen extends RadialMenuScreen {
         return this.problem(i) == null;
     }
 
+    @Override
+    protected boolean active(int i) {
+        return this.entries.get(i) == this.target.tier.ordinal();
+    }
+
+    @Override
+    protected Look look(int i) {
+        int entry = this.entries.get(i);
+        if (entry == DEMOLISH) {
+            return Look.DANGER;
+        }
+        if (this.active(i)) {
+            return Look.CURRENT;
+        }
+        return entry >= 0 && entry < this.target.tier.ordinal() ? Look.DIMMED : Look.NORMAL;
+    }
+
+    @Override
+    protected String heading() {
+        String s = BuildClient.pieceName(this.target.kind()).getString() + " · " + BuildClient.tierName(this.target.tier).getString();
+        S2CPieceInfo info = this.info();
+        return info == null ? s : s + " · " + Component.translatable("crac.wheel.hp", info.hp(), info.maxHp()).getString();
+    }
+
     private List<BuildCost> cost(int entry) {
         if (entry == REPAIR) {
             return BuildClient.repairCost(this.target.tier);
@@ -90,64 +119,79 @@ public class HammerRadialScreen extends RadialMenuScreen {
         return null;
     }
 
+    private boolean affordable(int entry) {
+        LocalPlayer player = this.minecraft == null ? null : this.minecraft.player;
+        return player == null || BuildClient.has(player, this.cost(entry));
+    }
+
     @Override
-    protected void drawEntry(GuiGraphics g, int i, int x, int y, boolean hover) {
+    protected void drawEntry(GuiGraphics g, int i, float x, float y, boolean hover, float alpha) {
         int entry = this.entries.get(i);
-        boolean on = this.enabled(i);
-        int color = on ? (hover ? WHITE : 0xFFD8D8D8) : DARK_GREY;
-        int size = hover && on ? ICON + 4 : ICON;
+        float size = hover ? 23.33F : 20.67F;
+        float top = y - 17.33F;
+        float labelY = top + size + 5.67F;
+        int text = a(TEXTE, 217 * alpha);
         if (entry >= 0) {
             Tier tier = Tier.byOrdinal(entry);
-            if (!BuildIcons.draw(g, BuildIcons.tier(tier), x - size / 2, y - size / 2 - 5, size)) {
-                this.lines(g, BuildClient.tierName(tier).getString(), x, y - 5, 44, color, 0.75F);
+            String name = BuildClient.tierName(tier).getString();
+            if (!BuildIcons.draw(g, BuildIcons.tier(tier), x - size / 2, top, size, alpha)) {
+                this.label(g, name, x, top + size / 2, text);
             }
-            List<BuildCost> cost = this.cost(entry);
-            if (!cost.isEmpty()) {
-                this.text(g, cost.get(0).count() + "x", x, y + size / 2 - 1, on ? GREY : DARK_GREY, 0.65F);
+            String label;
+            int color = text;
+            if (entry == this.target.tier.ordinal()) {
+                label = Component.translatable("crac.wheel.current", name).getString();
+            } else if (entry < this.target.tier.ordinal()) {
+                label = name;
+            } else {
+                List<BuildCost> cost = this.cost(entry);
+                label = cost.isEmpty() ? name : name + " · " + cost.get(0).count();
+                if (!this.affordable(entry)) {
+                    color = a(ROUGE_PALE, 255 * alpha);
+                }
             }
+            this.label(g, label, x, labelY, color);
         } else if (entry == REPAIR) {
-            this.text(g, Component.translatable("crac.hammer.repair").getString(), x, y - 6, color, 0.85F);
+            marteaux(g, x, top + size / 2, size * 0.32F, a(0xE3E6EB, 255 * alpha));
             List<BuildCost> cost = this.cost(entry);
-            if (!cost.isEmpty()) {
-                this.text(g, cost.get(0).count() + "x", x, y + 5, on ? GREY : DARK_GREY, 0.65F);
-            }
+            String name = Component.translatable("crac.hammer.repair").getString();
+            this.label(g, cost.isEmpty() ? name : name + " · " + cost.get(0).count(), x, labelY, this.affordable(entry) ? text : a(ROUGE_PALE, 255 * alpha));
         } else {
-            this.text(g, Component.translatable("crac.hammer.demolish").getString(), x, y - 6, hover ? 0xFFFF8080 : 0xFFE06060, 0.85F);
+            croix(g, x, top + size / 2, size * 0.22F, size * 0.09F, a(ROUGE_PALE, 255 * alpha));
+            String name = Component.translatable("crac.hammer.demolish").getString();
             PieceInfoCache.Entry e = PieceInfoCache.get(this.target.id);
             int left = e == null ? -1 : e.demolishSecondsLeft();
-            if (left > 0) {
-                this.text(g, String.format("%d:%02d", left / 60, left % 60), x, y + 5, GREY, 0.65F);
-            }
+            this.label(g, left > 0 ? name + " · " + String.format("%d:%02d", left / 60, left % 60) : name, x, labelY, a(ROSE, 255 * alpha));
         }
     }
 
     @Override
-    protected void drawHub(GuiGraphics g, int cx, int cy) {
+    protected void drawHub(GuiGraphics g, float cx, float cy) {
+        List<HubLine> lines = new ArrayList<>();
         if (this.hovered < 0) {
-            this.lines(g, BuildClient.pieceName(this.target.kind()).getString(), cx, cy - 12, 88, WHITE, 0.85F);
-            this.text(g, BuildClient.tierName(this.target.tier).getString(), cx, cy + 2, GOLD, 0.75F);
+            lines.add(title(BuildClient.pieceName(this.target.kind()).getString()));
+            lines.add(line(BuildClient.tierName(this.target.tier), a(OR, 255)));
             S2CPieceInfo info = this.info();
             if (info != null) {
-                this.text(g, info.hp() + " / " + info.maxHp() + " HP", cx, cy + 12, 0xFFC8C8C8, 0.7F);
+                lines.add(line(Component.translatable("crac.wheel.hp", info.hp(), info.maxHp()), a(ATTENUE, 255)));
             }
+            this.hub(g, cx, cy, lines, 0.67F);
             return;
         }
         int entry = this.entries.get(this.hovered);
-        String title = (entry >= 0 ? Component.translatable("crac.hammer.upgrade_to", BuildClient.tierName(Tier.byOrdinal(entry))) : Component.translatable(entry == REPAIR ? "crac.hammer.repair" : "crac.hammer.demolish")).getString();
-        this.lines(g, title, cx, cy - 16, 88, WHITE, 0.8F);
-        int y = cy - 4;
-        for (BuildCost c : this.cost(entry)) {
-            boolean have = this.minecraft != null && this.minecraft.player != null
-                && (this.minecraft.player.getAbilities().instabuild || BuildClient.count(this.minecraft.player, c) >= c.count());
-            this.text(g, c.count() + "x " + c.displayName().getString(), cx, y, have ? 0xFFC8C8C8 : RED, 0.7F);
-            y += 8;
-        }
+        String title = (entry >= 0 ? Component.translatable("crac.hammer.upgrade_to", BuildClient.tierName(Tier.byOrdinal(entry)))
+            : Component.translatable(entry == REPAIR ? "crac.hammer.repair" : "crac.hammer.demolish")).getString();
+        lines.add(title(title));
         String problem = this.problem(this.hovered);
-        if (problem != null) {
-            this.lines(g, Txt.c(problem).getString(), cx, y + 6, 90, RED, 0.6F);
-        } else if (entry == DEMOLISH) {
-            this.lines(g, Component.translatable("crac.hammer.no_refund").getString(), cx, y + 6, 90, GREY, 0.6F);
+        if (entry == DEMOLISH) {
+            lines.add(line(Component.translatable("crac.hammer.no_refund"), a(ATTENUE, 255)));
+        } else if (problem != null && !"crac.hammer.not_enough".equals(problem)) {
+            // not about materials: say why
+            lines.add(line(Txt.c(problem), a(ROUGE_PALE, 255)));
+        } else {
+            lines.addAll(PlanRadialScreen.costLines(this.minecraft == null ? null : this.minecraft.player, this.cost(entry)));
         }
+        this.hub(g, cx, cy, lines, 0.67F);
     }
 
     @Override

@@ -2,33 +2,28 @@ package fr.heraliz.crac.client.group;
 
 import java.util.ArrayList;
 import java.util.List;
-import fr.heraliz.crac.client.ScaledScreen;
+import java.util.Locale;
+import fr.heraliz.crac.client.kit.Ui;
 import fr.heraliz.crac.network.C2SGroupAction;
 import fr.heraliz.crac.network.NetworkHandler;
 import fr.heraliz.crac.network.S2COnlinePlayers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
-public class AddMemberScreen extends ScaledScreen {
-    private static final int PANEL_W = 204;
-    private static final int PANEL_H = 188;
-    private static final int ROW_H = 20;
-    private static final int VISIBLE = 6;
+import static fr.heraliz.crac.client.kit.Dessin.*;
+
+/** Add a member: a search field and the online players who can join (click one), in the style of the group screen. */
+public class AddMemberScreen extends EcranGroupe {
+    private static final float W = 240;
+    private static final float H = 236;
+    private static final float ROW = 20;
+    private static final int VISIBLE = 7;
     private final List<S2COnlinePlayers.Entry> all;
     private final List<S2COnlinePlayers.Entry> filtered = new ArrayList<>();
     private String search = "";
     private int scroll = 0;
-    private int left;
-    private int top;
-    private int listX;
-    private int listY;
-    private int listW;
-    private int searchY;
-    private int fieldH = 16;
-    private int backY;
 
     public AddMemberScreen(List<S2COnlinePlayers.Entry> players) {
         super(Component.translatable("crac.gui.add_member"));
@@ -40,88 +35,98 @@ public class AddMemberScreen extends ScaledScreen {
     }
 
     @Override
-    protected void init() {
-        this.left = (this.guiW() - 204) / 2;
-        this.top = (this.guiH() - 188) / 2;
-        this.listX = this.left + 14;
-        this.listW = 176;
-        this.searchY = this.top + 34;
-        this.listY = this.top + 58;
-        this.backY = this.top + 188 - 24;
+    protected void initCanevas() {
+        this.placer(W, H);
         this.refilter();
     }
 
     private void refilter() {
         this.filtered.clear();
-        String q = this.search.toLowerCase();
-
+        String q = this.search.toLowerCase(Locale.ROOT);
         for (S2COnlinePlayers.Entry e : this.all) {
-            if (q.isEmpty() || e.name().toLowerCase().contains(q)) {
+            if (q.isEmpty() || e.name().toLowerCase(Locale.ROOT).contains(q)) {
                 this.filtered.add(e);
             }
         }
-
         this.scroll = 0;
     }
 
-    @Override
-    protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float pt) {
-        this.renderBackground(g);
-        GroupTheme.panel(g, this.left, this.top, 204, 188);
-        g.drawCenteredString(this.font, Component.translatable("crac.gui.add_member"), this.left + 102, this.top + 12, -6504193);
-        g.fill(this.left + 14, this.top + 26, this.left + 204 - 14, this.top + 27, -13745040);
-        boolean blink = System.currentTimeMillis() / 500L % 2L == 0L;
-        GroupTheme.field(g, this.listX, this.searchY, this.listW, this.fieldH, true);
-        String shown = (this.search.isEmpty() ? Component.translatable("crac.gui.search").getString() : this.search) + (blink ? "_" : "");
-        int sc = this.search.isEmpty() ? -9536363 : -3878166;
-        g.drawString(this.font, shown, this.listX + 5, this.searchY + 4, sc, false);
-        if (this.filtered.isEmpty()) {
-            g.drawString(this.font, Component.translatable("crac.gui.no_players"), this.listX, this.listY + 6, -9536363, false);
-        }
+    private float listX() {
+        return this.x0 + 13.33F;
+    }
 
-        int end = Math.min(this.filtered.size(), this.scroll + 6);
+    private float listW() {
+        return W - 26.67F;
+    }
 
-        for (int idx = this.scroll; idx < end; idx++) {
-            S2COnlinePlayers.Entry e = this.filtered.get(idx);
-            int y = this.listY + (idx - this.scroll) * 20;
-            boolean hover = inRect(mouseX, mouseY, this.listX, y, this.listW, 18);
-            g.fill(this.listX, y, this.listX + this.listW, y + 20 - 2, hover ? -14996402 : -16116954);
-            GroupTheme.border(g, this.listX, y, this.listW, 18, hover ? -11634488 : -14009250);
-            PlayerFaceRenderer.draw(g, GroupManageScreen.skinFor(e.id()), this.listX + 2, y + 1, 16);
-            g.drawString(this.font, e.name(), this.listX + 24, y + 5, -3878166, false);
-        }
+    private float listY() {
+        return this.y0 + 58;
+    }
 
-        int bw = 60;
-        int bx = this.left + 14;
-        boolean hb = inRect(mouseX, mouseY, bx, this.backY, bw, 16);
-        GroupTheme.button(g, this.font, bx, this.backY, bw, 16, Component.translatable("crac.gui.back").getString(), hb ? -1 : -9536363);
-        this.renderWidgets(g, mouseX, mouseY, pt);
+    private float[] backRect() {
+        String s = Component.translatable("crac.gui.back").getString();
+        return new float[]{this.x0 + 13.33F, this.y0 + H - 25.33F, this.largeurGrandBouton(s), 16};
     }
 
     @Override
-    protected boolean clickContent(double mx, double my, int button) {
-        int end = Math.min(this.filtered.size(), this.scroll + 6);
-
+    protected void rendu(GuiGraphics g, float mx, float my, float pt) {
+        this.fond(g);
+        this.panneau(g, ACCENT);
+        this.entete(g, -1, Component.translatable("crac.gui.add_member").getString(), BLANC, Component.translatable("crac.gui.add_member_hint").getString());
+        this.champ(g, this.listX(), this.y0 + 38, this.listW(), 15.33F, this.search, Component.translatable("crac.gui.search").getString(), true);
+        if (this.filtered.isEmpty()) {
+            texte(g, this.font, lit(Component.translatable("crac.gui.no_players").getString(), MINI), this.listX(), this.listY() + 8 - 4.21F, a(ATTENUE, 255));
+        }
+        int end = Math.min(this.filtered.size(), this.scroll + VISIBLE);
         for (int idx = this.scroll; idx < end; idx++) {
-            int y = this.listY + (idx - this.scroll) * 20;
-            if (inRect(mx, my, this.listX, y, this.listW, 18)) {
+            S2COnlinePlayers.Entry e = this.filtered.get(idx);
+            float y = this.listY() + (idx - this.scroll) * ROW;
+            boolean hov = dans(mx, my, this.listX(), y, this.listW(), ROW);
+            if (hov) {
+                this.ligneSurvol(g, this.listX(), y, this.listW(), ROW);
+            }
+            this.tete(g, e.id(), this.listX() + 5.33F, y + 4, 12);
+            String name = Ui.ellipsis(this.font, e.name(), GRAS_9, Math.round(this.listW() - 60));
+            texte(g, this.font, lit(name, GRAS_9), this.listX() + 22.67F, y + ROW / 2 - 5.44F, a(BLANC, 255));
+            if (hov) {
+                String add = Component.translatable("crac.gui.add").getString();
+                float aw = largeurCaps(this.font, add, MINI_GRAS, 0.6F);
+                caps(g, this.font, add, MINI_GRAS, this.listX() + this.listW() - 6 - aw, y + ROW / 2 - 4.21F, 0.6F, a(VERT_PALE, 255));
+            }
+        }
+        if (this.filtered.size() > VISIBLE) {
+            float track = VISIBLE * ROW;
+            float thumb = Math.max(12, track * VISIBLE / this.filtered.size());
+            float ty = this.listY() + (track - thumb) * this.scroll / Math.max(1, this.filtered.size() - VISIBLE);
+            rect(g, this.x0 + W - 6, ty, this.x0 + W - 5, ty + thumb, a(BLANC, 56));
+        }
+        rect(g, this.listX(), this.y0 + H - 32, this.listX() + this.listW(), this.y0 + H - 32 + this.px, a(BLANC, 20));
+        float[] b = this.backRect();
+        this.grandBouton(g, b[0], b[1], b[2], b[3], Component.translatable("crac.gui.back").getString(), -1, dans(mx, my, b[0], b[1], b[2], b[3]), true);
+    }
+
+    @Override
+    protected boolean clic(double mx, double my, int button) {
+        int end = Math.min(this.filtered.size(), this.scroll + VISIBLE);
+        for (int idx = this.scroll; idx < end; idx++) {
+            float y = this.listY() + (idx - this.scroll) * ROW;
+            if (dans(mx, my, this.listX(), y, this.listW(), ROW)) {
                 NetworkHandler.CHANNEL.sendToServer(new C2SGroupAction(C2SGroupAction.Type.ADD, this.filtered.get(idx).id()));
                 return true;
             }
         }
-
-        if (inRect(mx, my, this.left + 14, this.backY, 60, 16)) {
+        float[] b = this.backRect();
+        if (dans(mx, my, b[0], b[1], b[2], b[3])) {
             NetworkHandler.CHANNEL.sendToServer(new C2SGroupAction(C2SGroupAction.Type.REFRESH, null));
             return true;
-        } else {
-            return this.clickWidgets(mx, my, button);
         }
+        return false;
     }
 
     @Override
-    protected boolean scrollContent(double mx, double my, double delta) {
-        int max = Math.max(0, this.filtered.size() - 6);
-        this.scroll = Mth.clamp(this.scroll - (int)Math.signum(delta), 0, max);
+    protected boolean molette(double mx, double my, double delta) {
+        int max = Math.max(0, this.filtered.size() - VISIBLE);
+        this.scroll = Mth.clamp(this.scroll - (int) Math.signum(delta), 0, max);
         return true;
     }
 
@@ -131,9 +136,8 @@ public class AddMemberScreen extends ScaledScreen {
             this.search = this.search + c;
             this.refilter();
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -142,17 +146,7 @@ public class AddMemberScreen extends ScaledScreen {
             this.search = this.search.substring(0, this.search.length() - 1);
             this.refilter();
             return true;
-        } else {
-            return super.keyPressed(key, scan, mods);
         }
-    }
-
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
-
-    private static boolean inRect(double mx, double my, int x, int y, int w, int h) {
-        return mx >= x && mx < x + w && my >= y && my < y + h;
+        return super.keyPressed(key, scan, mods);
     }
 }

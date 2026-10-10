@@ -50,4 +50,22 @@ public final class BuildIcons {
         RenderSystem.disableBlend();
         return true;
     }
+
+    /** Same at a free position and size (wheels drawn on the screens' canvas), with an opacity from 0 to 1. */
+    public static boolean draw(GuiGraphics g, ResourceLocation tex, float x, float y, float size, float alpha) {
+        if (!has(tex)) {
+            return false;
+        }
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        g.setColor(1.0F, 1.0F, 1.0F, alpha);
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(size / 64.0F, size / 64.0F, 1.0F);
+        g.blit(tex, 0, 0, 0.0F, 0.0F, 64, 64, 64, 64);
+        g.pose().popPose();
+        g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.disableBlend();
+        return true;
+    }
 }
