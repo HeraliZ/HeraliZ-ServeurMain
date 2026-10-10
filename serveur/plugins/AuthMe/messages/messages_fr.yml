@@ -10,7 +10,7 @@
 registration:
     disabled: '&cL''inscription est désactivée.'
     name_taken: '&cUtilisateur déjà inscrit.'
-    register_request: '&cPour vous inscrire, utilisez "/register <MotDePasse> <ConfirmerMotDePasse>"'
+    register_request: '&cPour vous inscrire, utilisez "/register <MotDePasse> <ConfirmerMotDePasse>"%nl%&7Mot de passe de jeu de 8 caractères minimum, différent de celui de votre compte HeraliZ.'
     command_usage: '&cUsage: /register <MotDePasse> <ConfirmerMotDePasse>'
     reg_only: 'Seul les joueurs enregistrés sont admis!%nl%Veuillez vous rendre sur https://www.example.com pour plus d''infos.'
     success: '&aInscription effectuée !'
@@ -22,7 +22,7 @@ password:
     name_in_password: '&cVous ne pouvez pas utiliser votre pseudo comme mot de passe.'
     unsafe_password: '&cCe mot de passe n''est pas accepté, choisissez-en un autre.'
     forbidden_characters: '&cVotre mot de passe contient des caractères non autorisés. Caractères permis : %valid_chars'
-    wrong_length: '&cVotre mot de passe est trop court ou trop long !'
+    wrong_length: '&cVotre mot de passe doit contenir entre 8 et 30 caractères.'
 
 # Identification
 login:
