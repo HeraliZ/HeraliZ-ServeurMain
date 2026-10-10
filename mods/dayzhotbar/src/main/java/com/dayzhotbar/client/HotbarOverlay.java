@@ -202,9 +202,9 @@ final class HotbarOverlay implements IGuiOverlay {
             return false;
         }
         float mid = top + (bottom - top) * 0.55f;
-        p.gradient(slotX + 1, top + 1, slotX + SLOT - 1, mid, argb(c, 0), argb(c, 0.16f * fade));
-        p.gradient(slotX + 1, mid, slotX + SLOT - 1, bottom - 1, argb(c, 0.16f * fade), argb(c, 0.42f * fade));
-        p.box(slotX + 1, bottom - 2, slotX + SLOT - 1, bottom - 1, argb(c, 0.85f * fade));
+        p.gradient(slotX + 1, top + 1, slotX + SLOT - 1, mid, argb(c, 0), argb(c, 0.07f * fade));
+        p.gradient(slotX + 1, mid, slotX + SLOT - 1, bottom - 1, argb(c, 0.07f * fade), argb(c, 0.22f * fade));
+        p.box(slotX + 1, bottom - 2, slotX + SLOT - 1, bottom - 1, argb(c, 0.75f * fade));
         return true;
     }
 

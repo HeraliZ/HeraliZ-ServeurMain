@@ -14,8 +14,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Couleur de rareté derrière les objets (choix du propriétaire) : un léger dégradé de la couleur de la rareté, du haut
- * de la case (transparent) vers le bas (42 %), et un trait fin en bas de la case. Dans tous les écrans à cases
+ * Couleur de rareté derrière les objets (choix du propriétaire) : un très léger dégradé de la couleur de la rareté, du
+ * haut de la case (transparent) vers le bas (22 %), et un trait fin en bas de la case. Dans tous les écrans à cases
  * (inventaire, coffres, sacs, créatif...), dessiné après le fond de l'écran et avant les objets ; la barre d'objets façon
  * DayZ l'appelle aussi ({@link #couleur}, par réflexion). Les coffres T7 gardent leur propre révélation des raretés.
  */
@@ -25,7 +25,7 @@ public final class RaretesClient {
     }
 
     /** Opacités du dégradé (haut, milieu, bas) et du trait du bas. */
-    private static final int A_MILIEU = 41, A_BAS = 107, A_TRAIT = 217;
+    private static final int A_MILIEU = 18, A_BAS = 56, A_TRAIT = 191;
 
     @SubscribeEvent
     public static void fonds(ContainerScreenEvent.Render.Background e) {
