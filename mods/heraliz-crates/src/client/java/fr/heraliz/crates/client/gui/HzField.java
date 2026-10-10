@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Petit champ de saisie numerique sobre : fond sombre, filet en bas (couleur d'accent quand il a le focus). La premiere
+ * Petit champ de saisie numerique sobre : fond sombre, contour fin (couleur d'accent quand il a le focus). La premiere
  * frappe apres le clic remplace la valeur ; Entree, Tab ou un clic ailleurs valident.
  */
 public class HzField extends AbstractWidget {
@@ -114,10 +114,15 @@ public class HzField extends AbstractWidget {
     protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         int x = getX(), y = getY(), w = getWidth(), h = getHeight();
         boolean focus = isFocused();
-        g.fill(x, y, x + w, y + h, Ui.argb(0x000000, focus ? 150 : isHovered ? 110 : 80));
-        g.fill(x, y + h - 1, x + w, y + h, focus ? Ui.argb(accent, 230) : Ui.argb(0xFFFFFF, isHovered ? 70 : 34));
+        // fond sombre et contour fin (couleur d'accent quand il a le focus)
+        g.fill(x, y, x + w, y + h, Ui.argb(0x000000, focus ? 120 : isHovered ? 105 : 90));
+        int edge = focus ? Ui.argb(accent, 230) : Ui.argb(0xFFFFFF, isHovered ? 56 : 31);
+        g.fill(x, y, x + w, y + 1, edge);
+        g.fill(x, y + h - 1, x + w, y + h, edge);
+        g.fill(x, y + 1, x + 1, y + h - 1, edge);
+        g.fill(x + w - 1, y + 1, x + w, y + h - 1, edge);
         Font font = Minecraft.getInstance().font;
-        Component text = Ui.lit(value, Ui.FONT);
+        Component text = Ui.lit(value, Ui.BOLD);
         int tx = x + 4, ty = y + (h - 8) / 2;
         if (focus && replace && !value.isEmpty()) {
             g.fill(tx - 1, ty - 1, tx + font.width(text) + 1, ty + 9, Ui.argb(accent, 70));

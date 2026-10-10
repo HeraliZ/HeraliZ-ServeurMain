@@ -18,14 +18,15 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Editeur de butin des operateurs (outil d'edition sur une caisse), epure : une ligne par objet avec sa quantite, sa
- * rarete (clic pour changer) et sa chance en %. Changer une chance reequilibre les autres (elles gardent leurs
- * proportions ; les poids sont remis sur 100 000). Suppression au survol d'une ligne, ajout depuis l'inventaire.
+ * Editeur de butin des operateurs (outil d'edition sur une caisse, maquette validee) : en-tete (nom de la caisse, nombre
+ * d'objets et total des chances, pastille « Editeur · staff »), une ligne par objet avec sa quantite, sa rarete (clic
+ * pour changer) et sa chance en %. Changer une chance reequilibre les autres (elles gardent leurs proportions ; les
+ * poids sont remis sur 100 000). Suppression au survol d'une ligne, ajout depuis l'inventaire.
  */
 public class LootEditorScreen extends Screen {
     /** Total des poids apres une saisie de pourcentage : 1 000 = 1 %. */
     private static final int NORMAL_TOTAL = 100_000;
-    private static final int ROW_H = 18, HEAD_H = 46, FOOT_H = 34;
+    private static final int ROW_H = 20, HEAD_H = 52, FOOT_H = 36;
 
     private static final class Row {
         final int orig;
@@ -53,7 +54,7 @@ public class LootEditorScreen extends Screen {
         int bound = -1;
 
         Slot() {
-            count = new HzField(0, 0, 30, 14, 4, v -> v.matches("\\d{0,4}"));
+            count = new HzField(0, 0, 34, 14, 4, v -> v.matches("\\d{0,4}"));
             pct = new HzField(0, 0, 50, 14, 7, v -> v.matches("\\d{0,3}([.,]\\d{0,3})?")).suffix("%");
             rarity = new HzButton(0, 0, 62, 12, Component.empty(), 0x888888, () -> cycleRarity(this)).look(HzButton.Look.PILL);
             count.accent(type.glow);
@@ -105,22 +106,22 @@ public class LootEditorScreen extends Screen {
     // =================================================================== mise en page
     @Override
     protected void init() {
-        pw = Math.min(380, width - 24);
+        pw = Math.min(400, width - 24);
         int maxRows = Math.max(3, (height - 12 - HEAD_H - FOOT_H) / ROW_H);
         int shown = Math.max(3, Math.min(rows.size(), maxRows));
         ph = HEAD_H + shown * ROW_H + FOOT_H;
         left = (width - pw) / 2;
         top = (height - ph) / 2;
         colDelete = left + pw - 18;
-        colPct = colDelete - 8 - 50;
-        colRarity = colPct - 8 - 62;
-        colCount = colRarity - 8 - 30;
+        colPct = colDelete - 10 - 50;
+        colRarity = colPct - 10 - 62;
+        colCount = colRarity - 10 - 34;
         slots.clear();
         for (int i = 0; i < shown; i++) slots.add(new Slot());
         int fy = top + ph - 26;
-        addBtn = addRenderableWidget(new HzButton(left + 14, fy + 4, 120, 12, Component.translatable("gui.heralizcrates.editor.add"),
-                type.glow, this::openPicker).look(HzButton.Look.LINK));
-        saveBtn = addRenderableWidget(new HzButton(left + pw - 14 - 104, fy, 104, 18, Component.translatable("gui.heralizcrates.editor.save"),
+        // « + Ajouter un objet » : bouton sans texte, posé sur les capitales vertes dessinées par render
+        addBtn = addRenderableWidget(new HzButton(left + 14, fy + 4, 110, 12, Component.empty(), type.glow, this::openPicker).look(HzButton.Look.LINK));
+        saveBtn = addRenderableWidget(new HzButton(left + pw - 14 - 96, fy - 1, 96, 19, Component.translatable("gui.heralizcrates.editor.save"),
                 Ui.OK, this::save).look(HzButton.Look.PRIMARY));
         bind();
     }
@@ -145,10 +146,10 @@ public class LootEditorScreen extends Screen {
             int r = scroll + i;
             int y = rowsTop() + i * ROW_H;
             s.count.setX(colCount);
-            s.count.setY(y + 2);
-            s.rarity.setBounds(colRarity, y + 3, 62, 12);
+            s.count.setY(y + 3);
+            s.rarity.setBounds(colRarity, y + 4, 62, 12);
             s.pct.setX(colPct);
-            s.pct.setY(y + 2);
+            s.pct.setY(y + 3);
             if (r >= rows.size()) {
                 s.bound = -1;
                 s.setVisible(false);
@@ -400,20 +401,29 @@ public class LootEditorScreen extends Screen {
         CardArt.softOutline(g, left + 1, top + 1, pw - 2, ph - 2, Ui.argb(0xFFFFFF, 16));
         Ui.hairline(g, left + 1, left + pw - 1, top, glow, 200, true, true);
 
-        // en-tete : nom de la caisse, mention "editeur"
-        g.drawString(font, Ui.lit(type.crateName().getString(), Ui.BOLD), left + 14, top + 12, Ui.argb(Ui.TEXT, 255), false);
-        String label = Component.translatable("gui.heralizcrates.editor.label").getString();
-        float lw = Ui.spacedWidth(font, label.toUpperCase(Locale.ROOT), Ui.SMALL, 1.2f);
-        Ui.spaced(g, font, label, Ui.SMALL, left + pw - 14 - lw, top + 13, Ui.argb(Ui.MUTED, 255), 1.2f);
-        Ui.hairline(g, left + 14, left + pw - 14, top + 27, 0xFFFFFF, 22, false, true);
+        // en-tete : nom de la caisse en capitales, nombre d'objets et total des chances, pastille « Editeur · staff »
+        String nom = type.crateName().getString().toUpperCase(Locale.ROOT);
+        g.pose().pushPose();
+        g.pose().translate(left + 14, top + 10, 0);
+        g.pose().scale(1.1f, 1.1f, 1);
+        Ui.spaced(g, font, nom, Ui.BOLD, 0, 0, Ui.argb(Ui.TEXT, 255), 1.5f);
+        g.pose().popPose();
+        long tot = total();
+        String resume = Component.translatable("gui.heralizcrates.editor.summary", rows.size(), rows.isEmpty() ? "0" : fmtPct(tot > 0 ? 100.0 : 0)).getString();
+        g.drawString(font, Ui.lit(resume, CardArt.MINI), left + 14, top + 25, Ui.argb(Ui.MUTED, 255), false);
+        String badge = Component.translatable("gui.heralizcrates.editor.badge").getString().toUpperCase(Locale.ROOT);
+        int badgeW = Math.round(Ui.spacedWidth(font, badge, CardArt.MINI_GRAS, 0.8f)) + 10, badgeX = left + pw - 14 - badgeW;
+        CardArt.soft(g, badgeX, top + 11, badgeW, 10, Ui.argb(glow, 34));
+        CardArt.softOutline(g, badgeX + 1, top + 12, badgeW - 2, 8, Ui.argb(glow, 110));
+        Ui.spaced(g, font, badge, CardArt.MINI_GRAS, badgeX + 5, top + 12.5f, Ui.argb(Ui.mix(glow, 0xFFFFFF, 0.3f), 255), 0.8f);
 
         // en-tetes de colonnes
-        int hy = top + 34;
+        int hy = top + 40;
         int faint = Ui.argb(Ui.FAINT, 255);
-        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.editor.col.item").getString(), Ui.SMALL, left + 14, hy, faint, 1f);
-        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.editor.col.count").getString(), Ui.SMALL, colCount + 1, hy, faint, 1f);
-        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.editor.col.rarity").getString(), Ui.SMALL, colRarity + 1, hy, faint, 1f);
-        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.editor.col.chance").getString(), Ui.SMALL, colPct + 1, hy, faint, 1f);
+        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.editor.col.item").getString(), CardArt.MINI, left + 34, hy, faint, 1.0f);
+        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.editor.col.count").getString(), CardArt.MINI, colCount + 1, hy, faint, 1.0f);
+        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.editor.col.rarity").getString(), CardArt.MINI, colRarity + 1, hy, faint, 1.0f);
+        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.editor.col.chance").getString(), CardArt.MINI, colPct + 1, hy, faint, 1.0f);
 
         // lignes
         int rt = rowsTop();
@@ -426,26 +436,29 @@ public class LootEditorScreen extends Screen {
             Row row = rows.get(s.bound);
             int y = rt + (s.bound - scroll) * ROW_H;
             int col = CardArt.color(row.rarity);
-            if (s.bound == hovered) CardArt.soft(g, left + 6, y, pw - 12, ROW_H, Ui.argb(0xFFFFFF, 9));
-            g.fill(left + 7, y + 4, left + 9, y + ROW_H - 4, Ui.argb(col, 220));
+            if (s.bound == hovered) {
+                CardArt.soft(g, left + 6, y, pw - 12, ROW_H, Ui.argb(0xFFFFFF, 11));
+                CardArt.softOutline(g, left + 7, y + 1, pw - 14, ROW_H - 2, Ui.argb(0xFFFFFF, 23));
+            }
+            g.fill(left + 9, y + 4, left + 10, y + ROW_H - 4, Ui.argb(col, 255));
             CardArt.item(g, row.stack, left + 22, y + ROW_H / 2f, 16);
             int nameX = left + 34, nameW = colCount - nameX - 8;
             String name = row.stack.getHoverName().getString();
             String shown = font.plainSubstrByWidth(name, nameW);
             Component nameC = Ui.lit(shown, Ui.FONT);
-            g.drawString(font, nameC, nameX, y + 5, row.missing ? Ui.argb(Ui.DANGER, 255) : Ui.argb(Ui.TEXT, 255), false);
+            g.drawString(font, nameC, nameX, y + 6, row.missing ? Ui.argb(Ui.DANGER, 255) : Ui.argb(Ui.TEXT, 255), false);
             String tagKey = row.missing ? "gui.heralizcrates.editor.missing" : row.commandOnly ? "gui.heralizcrates.editor.command"
                     : row.orig < 0 ? "gui.heralizcrates.editor.new" : null;
             if (tagKey != null) {
                 Component tag = Ui.tr(Ui.SMALL, tagKey);
                 int tx = nameX + font.width(nameC) + 6;
                 if (tx + font.width(tag) < colCount - 6) {
-                    g.drawString(font, tag, tx, y + 6, row.orig < 0 ? Ui.argb(Ui.OK, 230) : Ui.argb(Ui.MUTED, 200), false);
+                    g.drawString(font, tag, tx, y + 7, row.orig < 0 ? Ui.argb(Ui.OK, 230) : Ui.argb(Ui.MUTED, 200), false);
                 }
             }
             if (s.bound == hovered) {
                 boolean on = mouseX >= colDelete - 2 && mouseX < colDelete + 12;
-                g.drawString(font, Ui.lit("×", Ui.BOLD), colDelete + 2, y + 4, Ui.argb(Ui.DANGER, on ? 255 : 150), false);
+                g.drawString(font, Ui.lit("×", Ui.BOLD), colDelete + 2, y + 5, Ui.argb(0xFF8A80, on ? 255 : 160), false);
             }
         }
         // barre de defilement
@@ -469,10 +482,16 @@ public class LootEditorScreen extends Screen {
             state = Ui.tr(Ui.SMALL, "gui.heralizcrates.editor.dirty");
             stateColor = Ui.argb(0xFFC83A, 220);
         }
+        // « + Ajouter un objet » en capitales vertes
+        String ajout = Component.translatable("gui.heralizcrates.editor.add").getString().toUpperCase(Locale.ROOT);
+        int aw = Math.round(Ui.spacedWidth(font, ajout, CardArt.MINI_GRAS, 1.2f));
+        addBtn.setBounds(left + 14, top + ph - 22, aw, 12);
+        boolean addHover = addBtn.isHoveredOrFocused() && !picking;
+        Ui.spaced(g, font, ajout, CardArt.MINI_GRAS, left + 14, top + ph - 20, Ui.argb(addHover ? 0xCFF3DA : 0x9BE3B3, 255), 1.2f);
         if (state != null) {
             int sx = saveBtn.getX() - 10 - font.width(state);
-            if (sx > addBtn.getX() + font.width(addBtn.getMessage()) + 16) {
-                g.drawString(font, state, sx, top + ph - 20, stateColor, false);
+            if (sx > left + 14 + aw + 16) {
+                g.drawString(font, state, sx, top + ph - 21, stateColor, false);
             }
         }
 
