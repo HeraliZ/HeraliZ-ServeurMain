@@ -140,6 +140,18 @@ final class HotbarOverlay implements IGuiOverlay {
             g.flush();
         }
 
+        // Rarity tint behind the items (HeraliZ Loot, when present): a soft gradient and a thin line at the bottom
+        boolean tint = false;
+        for (int i = 0; i < 9; i++) {
+            tint |= rarity(p, inv.items.get(i), left + i * step, top, bottom, fade);
+        }
+        if (!offhand.isEmpty()) {
+            tint |= rarity(p, offhand, offhandX, top, bottom, fade);
+        }
+        if (tint) {
+            g.flush();
+        }
+
         // Items, with a small count in the bottom corner and the slot number in the top one
         Labels labels = new Labels(g, mc.font, scale);
         int seed = 1;
@@ -156,6 +168,44 @@ final class HotbarOverlay implements IGuiOverlay {
             renderItem(g, mc.font, player, partialTick, offhand, offhandX + 2, top + 2, seed);
             count(labels, p, offhand, offhandX, bottom);
         }
+    }
+
+    private static java.lang.invoke.MethodHandle rarityColour;
+    private static boolean raritySearched;
+
+    /** RGB colour of the item's rarity from HeraliZ Loot (soft dependency, read by reflection), -1 when none. */
+    private static int rarityColour(ItemStack stack) {
+        if (!raritySearched) {
+            raritySearched = true;
+            try {
+                Class<?> c = Class.forName("fr.heraliz.loot.client.RaretesClient");
+                rarityColour = java.lang.invoke.MethodHandles.publicLookup().findStatic(c, "couleur",
+                        java.lang.invoke.MethodType.methodType(int.class, ItemStack.class));
+            } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
+                rarityColour = null;
+            }
+        }
+        if (rarityColour == null || stack.isEmpty()) {
+            return -1;
+        }
+        try {
+            return (int) rarityColour.invokeExact(stack);
+        } catch (Throwable t) {
+            return -1;
+        }
+    }
+
+    /** Rarity tint inside one slanted slot; returns whether something was drawn. */
+    private static boolean rarity(Slant p, ItemStack stack, int slotX, int top, int bottom, float fade) {
+        int c = rarityColour(stack);
+        if (c < 0) {
+            return false;
+        }
+        float mid = top + (bottom - top) * 0.55f;
+        p.gradient(slotX + 1, top + 1, slotX + SLOT - 1, mid, argb(c, 0), argb(c, 0.16f * fade));
+        p.gradient(slotX + 1, mid, slotX + SLOT - 1, bottom - 1, argb(c, 0.16f * fade), argb(c, 0.42f * fade));
+        p.box(slotX + 1, bottom - 2, slotX + SLOT - 1, bottom - 1, argb(c, 0.85f * fade));
+        return true;
     }
 
     private static void count(Labels labels, Slant p, ItemStack stack, int slotX, int bottom) {
@@ -255,6 +305,16 @@ final class HotbarOverlay implements IGuiOverlay {
 
         float shear(float x, float y) {
             return x + k * (centerY - y);
+        }
+
+        /** A slanted rectangle going from {@code top} colour (upper edge) to {@code bottom} colour (lower edge). */
+        void gradient(float x0, float y0, float x1, float y1, int top, int bottom) {
+            VertexConsumer buffer = g.bufferSource().getBuffer(RenderType.gui());
+            Matrix4f pose = g.pose().last().pose();
+            buffer.vertex(pose, shear(x0, y0), y0, 0).color(top >> 16 & 0xFF, top >> 8 & 0xFF, top & 0xFF, top >>> 24).endVertex();
+            buffer.vertex(pose, shear(x0, y1), y1, 0).color(bottom >> 16 & 0xFF, bottom >> 8 & 0xFF, bottom & 0xFF, bottom >>> 24).endVertex();
+            buffer.vertex(pose, shear(x1, y1), y1, 0).color(bottom >> 16 & 0xFF, bottom >> 8 & 0xFF, bottom & 0xFF, bottom >>> 24).endVertex();
+            buffer.vertex(pose, shear(x1, y0), y0, 0).color(top >> 16 & 0xFF, top >> 8 & 0xFF, top & 0xFF, top >>> 24).endVertex();
         }
 
         /** A plain slanted rectangle, with the same winding as GuiGraphics.fill. */
