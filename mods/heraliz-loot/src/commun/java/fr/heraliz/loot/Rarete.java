@@ -2,15 +2,18 @@ package fr.heraliz.loot;
 
 import net.minecraft.world.item.ItemStack;
 
-/** Raretés du loot : couleur du cadre, nom affiché, temps d'identification (ticks) — plus c'est rare, plus c'est long. */
+/**
+ * Les 6 raretés des objets (choix du propriétaire) : couleur (fond des cases, cadre des coffres T7, infobulle), nom
+ * affiché, temps d'identification dans un coffre T7 (ticks) — plus c'est rare, plus c'est long. L'ancienne rareté
+ * « mythique » des tables est lue comme Unique.
+ */
 public enum Rarete {
     COMMUN("commun", "Commun", 0x9A9A9A, 20),
     PEU_COMMUN("peu_commun", "Peu commun", 0x5CBF4A, 30),
     RARE("rare", "Rare", 0x3F8CFF, 45),
     EPIQUE("epique", "Épique", 0xA64DFF, 70),
-    LEGENDAIRE("legendaire", "Légendaire", 0xFF9B1F, 110),
-    MYTHIQUE("mythique", "Mythique", 0xFF3333, 160),
-    UNIQUE("unique", "Unique", 0xFFD84A, 220);
+    LEGENDAIRE("legendaire", "Légendaire", 0xF2B83A, 110),
+    UNIQUE("unique", "Unique", 0xFF3333, 220);
 
     public static final String CLE = "HeralizRarete";
     public final String id, nom;
@@ -23,13 +26,22 @@ public enum Rarete {
         this.duree = duree;
     }
 
+    /** Rareté d'après son identifiant (« mythique », ancien nom, = Unique) ; inconnu : Commun. */
     public static Rarete de(String id) {
+        Rarete r = lire(id);
+        return r == null ? COMMUN : r;
+    }
+
+    /** Rareté d'après son identifiant, null si inconnu. */
+    public static Rarete lire(String id) {
+        if (id == null) return null;
+        if (id.equalsIgnoreCase("mythique")) return UNIQUE;
         for (Rarete r : values()) {
             if (r.id.equalsIgnoreCase(id)) {
                 return r;
             }
         }
-        return COMMUN;
+        return null;
     }
 
     /** Rareté inscrite sur un objet de coffre (null : objet ordinaire). */

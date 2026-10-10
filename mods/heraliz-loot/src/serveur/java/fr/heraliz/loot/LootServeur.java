@@ -47,7 +47,12 @@ public final class LootServeur {
             e.addListener(new TablesCoffres());
             e.addListener(new ZonesLoot());
         });
-        MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> Commandes.enregistrer(e.getDispatcher()));
+        MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> {
+            Commandes.enregistrer(e.getDispatcher());
+            CommandesRarete.enregistrer(e.getDispatcher());
+        });
+        // raretés des objets : config/heraliz_loot/raretes.json, envoyées aux joueurs
+        RaretesServeur.brancher();
         // toutes les secondes : réapparitions des coffres T7 ; rotation du loot (réapparitions, étoiles)
         MinecraftForge.EVENT_BUS.addListener((TickEvent.LevelTickEvent e) -> {
             if (e.phase == TickEvent.Phase.END && e.level instanceof ServerLevel sl && sl.getGameTime() % 20 == 0) {

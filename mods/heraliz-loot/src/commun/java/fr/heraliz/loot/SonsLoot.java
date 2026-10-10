@@ -28,7 +28,6 @@ public final class SonsLoot {
             case RARE -> REVELE_RARE.get();
             case EPIQUE -> REVELE_EPIQUE.get();
             case LEGENDAIRE -> REVELE_LEGENDAIRE.get();
-            case MYTHIQUE -> REVELE_MYTHIQUE.get();
             case UNIQUE -> REVELE_UNIQUE.get();
         };
     }

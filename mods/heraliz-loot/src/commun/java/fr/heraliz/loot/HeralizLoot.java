@@ -127,6 +127,8 @@ public final class HeralizLoot {
         ENTITES.register(bus);
         MENUS.register(bus);
         SonsLoot.SONS.register(bus);
+        // raretés des objets envoyées aux joueurs (fond des cases, infobulle)
+        ReseauLoot.enregistrer();
         // rotation du loot : réglages serveur (heraliz_loot-server.toml) ; un changement recalcule les zones (partie serveur)
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConfigLoot.SPEC);
         // parties coupées (docs/METHODE_CLIENT_SERVEUR.md) : tables, tirages, zones, rotation, identification, commandes

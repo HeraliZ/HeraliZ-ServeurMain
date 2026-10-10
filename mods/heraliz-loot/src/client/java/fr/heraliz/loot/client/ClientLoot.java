@@ -2,6 +2,7 @@ package fr.heraliz.loot.client;
 
 import fr.heraliz.loot.HeralizLoot;
 import fr.heraliz.loot.Rarete;
+import fr.heraliz.loot.RaretesObjets;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -65,8 +66,9 @@ public final class ClientLoot {
 
         @SubscribeEvent
         public static void infobulleLoot(ItemTooltipEvent e) {
-            Rarete r = Rarete.de(e.getItemStack());
-            if (r != null) {
+            // rareté inscrite sur l'objet (coffres T7) ou celle de sa sorte ; Commun n'est pas rappelé
+            Rarete r = RaretesObjets.de(e.getItemStack());
+            if (r != null && (r != Rarete.COMMUN || Rarete.de(e.getItemStack()) != null)) {
                 e.getToolTip().add(Math.min(1, e.getToolTip().size()), Component.literal("★ " + r.nom)
                         .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.couleur))));
             }

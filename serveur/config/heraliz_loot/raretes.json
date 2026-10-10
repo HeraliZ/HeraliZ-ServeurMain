@@ -1,0 +1,8 @@
+{
+  "_aide": "Rareté de chaque objet : couleur légère derrière l'objet dans les cases. Niveaux : commun, peu_commun, rare, epique, legendaire, unique (« aucune » = pas de rareté). « objets » : identifiant de l'objet ; « armes », « accessoires », « munitions » : identifiants de TaCZ. Les choix faits en jeu (/rarete) vont dans raretes_jeu.json et passent avant ce fichier.",
+  "defaut": "commun",
+  "objets": {},
+  "armes": {},
+  "accessoires": {},
+  "munitions": {}
+}
