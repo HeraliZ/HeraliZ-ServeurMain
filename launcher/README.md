@@ -2,7 +2,7 @@
 
 Launcher de survie Minecraft DayZ pour **Minecraft 1.20.1 / Forge / Java 17**.
 
-Interface française aux couleurs HeraliZ (maquettes validées) : fond « carte », accueil « VERSION 1 · SAISON 1 », onglets Accueil / Nouveautés / Règlement / Boutique (bientôt), Discord bien en vue, préparation du jeu avec ses étapes, réglages de mémoire, vérification des fichiers. Profil local par pseudo : le mot de passe se choisit en jeu (`/register` la première fois, puis `/login`), le launcher n’en garde aucun. Aucune connexion Microsoft dans l’application.
+Interface française aux couleurs HeraliZ (maquettes validées) : fond « carte », accueil « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (bientôt), trois nouveautés non cliquables sur l’accueil, Discord bien en vue, préparation du jeu avec ses étapes, réglages de mémoire, vérification des fichiers. Profil local par pseudo : le mot de passe se choisit en jeu (`/register` la première fois, puis `/login`), le launcher n’en garde aucun. Aucune connexion Microsoft dans l’application.
 
 **Aucun accès au dossier du jeu** depuis le launcher (ni bouton, ni lien, ni nom de fichier affiché pendant le téléchargement) : choix du propriétaire, pour ne pas faciliter le vol des jars.
 
@@ -50,7 +50,7 @@ Le profil et le jeu sont enregistrés dans le dossier de données de l’applica
 - `launcher-service.js` : profil, état serveur, Java, téléchargements et cycle de vie de Minecraft.
 - `processbuilder.js` : arguments Minecraft/Forge, conservés depuis Helios et adaptés aux profils locaux.
 - `topo.js` : fond « carte » dessiné une fois par taille de fenêtre (rien d’animé).
-- `nouveautes.js` + `app/assets/images/nouveautes/` (images 960 × 540) : les nouveautés de l’accueil et de l’onglet Nouveautés, la plus récente en premier.
+- `nouveautes.js` + `app/assets/images/nouveautes/` (images 960 × 540) : les trois nouveautés de l’accueil, la plus récente en premier.
 
 Les anciens templates EJS et scripts Helios restent comme référence dans les sources. Ils ne sont ni chargés ni inclus dans l’application construite. Le manifeste de construction énumère les fichiers actifs.
 

@@ -128,10 +128,10 @@ body[data-screen=principal] .ecran-principal { display: grid; animation: apparit
 .nav .onglets { display: flex; gap: 6px; }
 .nav .onglet { position: relative; height: 34px; padding: 0 14px; display: flex; align-items: center; font-size: 12px; color: rgba(236, 238, 242, 0.55); }
 .nav .onglet:hover { color: rgba(236, 238, 242, 0.85); }
-body[data-tab=accueil] .onglet[data-tab=accueil], body[data-tab=nouveautes] .onglet[data-tab=nouveautes],
-body[data-tab=reglement] .onglet[data-tab=reglement], body[data-tab=boutique] .onglet[data-tab=boutique] { color: #fff; }
-body[data-tab=accueil] .onglet[data-tab=accueil]::after, body[data-tab=nouveautes] .onglet[data-tab=nouveautes]::after,
-body[data-tab=reglement] .onglet[data-tab=reglement]::after, body[data-tab=boutique] .onglet[data-tab=boutique]::after {
+body[data-tab=accueil] .onglet[data-tab=accueil], body[data-tab=reglement] .onglet[data-tab=reglement],
+body[data-tab=boutique] .onglet[data-tab=boutique] { color: #fff; }
+body[data-tab=accueil] .onglet[data-tab=accueil]::after, body[data-tab=reglement] .onglet[data-tab=reglement]::after,
+body[data-tab=boutique] .onglet[data-tab=boutique]::after {
     content: ''; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 2px; background: var(--accent); box-shadow: 0 0 10px rgba(227, 32, 27, 0.8); border-radius: 2px; }
 .nav .onglet .bientot { margin-left: 8px; font-size: 9px; letter-spacing: .14em; padding: 2px 6px 1px; border-radius: 3px; color: var(--or); background: rgba(232, 195, 106, 0.12); box-shadow: inset 0 0 0 1px rgba(232, 195, 106, 0.35); }
 .nav .droite { margin-left: auto; display: flex; align-items: center; gap: 10px; }
@@ -161,8 +161,7 @@ body[data-tab=reglement] .onglet[data-tab=reglement]::after, body[data-tab=bouti
 /* ---------- pages ---------- */
 .contenu { position: relative; z-index: 5; min-height: 0; }
 .page { position: absolute; inset: 0 56px; display: none; }
-body[data-tab=accueil] .page-accueil, body[data-tab=nouveautes] .page-nouveautes,
-body[data-tab=reglement] .page-reglement, body[data-tab=boutique] .page-boutique { display: flex; flex-direction: column; animation: apparition .35s var(--ease); }
+body[data-tab=accueil] .page-accueil, body[data-tab=reglement] .page-reglement, body[data-tab=boutique] .page-boutique { display: flex; flex-direction: column; animation: apparition .35s var(--ease); }
 
 /* accueil */
 .hero { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; max-width: 560px; padding-bottom: 8px; }
@@ -176,19 +175,13 @@ body[data-tab=reglement] .page-reglement, body[data-tab=boutique] .page-boutique
     color: rgba(236, 238, 242, 0.8); background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); backdrop-filter: blur(10px); }
 .badge svg.i { width: 13px; height: 13px; color: var(--accent2); }
 .actus { flex: none; padding-bottom: 20px; }
-.entete, .page-titre { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.entete .l, .page-titre .l { font-size: 11px; color: rgba(236, 238, 242, 0.75); }
-.entete .f, .page-titre .f { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0)); }
-.fleches { display: flex; gap: 6px; }
-.fleches button { width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: rgba(236, 238, 242, 0.7); background: rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); font-size: 15px; }
-.fleches button:hover:not(:disabled) { color: #fff; background: rgba(255, 255, 255, 0.1); }
-.fleches button:disabled { opacity: .35; }
+.entete { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.entete .l { font-size: 11px; color: rgba(236, 238, 242, 0.75); }
+.entete .f { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0)); }
 .cartes { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 12px; }
 .carte { position: relative; height: clamp(108px, 16.5vh, 190px); border-radius: 6px; overflow: hidden; background: #111;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 30px rgba(0, 0, 0, 0.45); }
-.carte img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
-.carte:hover img { transform: scale(1.04); }
+.carte img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .carte::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6, 7, 10, 0) 25%, rgba(6, 7, 10, 0.92) 100%); }
 .carte.une::before { content: ''; position: absolute; inset: 0; z-index: 3; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(227, 32, 27, 0.45); pointer-events: none; }
 .carte .txt { position: absolute; left: 14px; right: 14px; bottom: 12px; z-index: 2; }
@@ -198,17 +191,8 @@ body[data-tab=reglement] .page-reglement, body[data-tab=boutique] .page-boutique
 .carte .t { font-size: 15px; font-weight: 700; line-height: 1.25; }
 .carte .d { font-size: 11px; color: rgba(236, 238, 242, 0.65); margin-top: 3px; }
 
-/* nouveautés */
-.page-nouveautes { padding-top: 26px; }
-.grille-actus { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-content: start; padding: 2px 6px 24px 2px; }
-.actu { border-radius: 7px; overflow: hidden; background: rgba(12, 14, 19, 0.72); backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09), 0 12px 30px rgba(0, 0, 0, 0.4); }
-.actu.une { box-shadow: inset 0 0 0 1px rgba(227, 32, 27, 0.45), 0 12px 30px rgba(0, 0, 0, 0.4); }
-.actu img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
-.actu .txt { padding: 14px 16px 16px; }
-.actu .t { font-size: 15px; font-weight: 700; }
-.actu .d { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
-.grille-actus::-webkit-scrollbar, .panneau-page::-webkit-scrollbar, .corps::-webkit-scrollbar { width: 6px; }
-.grille-actus::-webkit-scrollbar-thumb, .panneau-page::-webkit-scrollbar-thumb, .corps::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 3px; }
+.panneau-page::-webkit-scrollbar, .corps::-webkit-scrollbar { width: 6px; }
+.panneau-page::-webkit-scrollbar-thumb, .corps::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 3px; }
 
 /* règlement et boutique */
 .page-reglement, .page-boutique { justify-content: center; align-items: center; }

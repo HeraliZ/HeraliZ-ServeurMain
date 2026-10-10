@@ -1,7 +1,7 @@
 /* global document, window */
 /*
  * Interface du launcher (maquettes validées) : démarrage -> pseudo (la première fois) -> menu principal avec ses onglets
- * Accueil, Nouveautés, Règlement et Boutique. Tout passe par l'API étroite du preload (window.heraliz) ; aucun contenu
+ * Accueil, Règlement et Boutique. Tout passe par l'API étroite du preload (window.heraliz) ; aucun contenu
  * distant, aucun texte injecté en HTML.
  */
 const $ = id => document.getElementById(id)
@@ -15,7 +15,6 @@ let state
 let toastTimeout
 let erreurTimeout
 let launchPending = false
-let actusPage = 0
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -79,8 +78,8 @@ function dessinerTete(canvas) {
 
 /* ---------- nouveautés ---------- */
 
-function carteActu(n, grande) {
-    const carte = el('article', grande ? 'actu' : 'carte')
+function carteActu(n) {
+    const carte = el('article', 'carte')
     if (n.une) carte.classList.add('une')
     if (typeof n.image === 'string' && IMAGE.test(n.image)) {
         const img = el('img')
@@ -96,14 +95,10 @@ function carteActu(n, grande) {
     return carte
 }
 
+/* Les trois nouveautés les plus récentes, sur l'accueil, non cliquables (choix du propriétaire : pas d'onglet dédié). */
 function afficherActus() {
-    const dernier = Math.max(0, NOUVEAUTES.length - 3)
-    actusPage = Math.min(Math.max(actusPage, 0), dernier)
-    $('actus-cartes').replaceChildren(...NOUVEAUTES.slice(actusPage, actusPage + 3).map(n => carteActu(n, false)))
-    $('actus-fleches').hidden = NOUVEAUTES.length <= 3
-    $('actus-prec').disabled = actusPage === 0
-    $('actus-suiv').disabled = actusPage >= dernier
-    $('toutes-actus').replaceChildren(...NOUVEAUTES.map(n => carteActu(n, true)))
+    $('actus-cartes').replaceChildren(...NOUVEAUTES.slice(0, 3).map(carteActu))
+    $('actus-cartes').closest('.actus').hidden = NOUVEAUTES.length === 0
 }
 
 /* ---------- menu du profil ---------- */
@@ -257,8 +252,6 @@ for (const zone of document.querySelectorAll('[data-regles]')) zone.append($('re
 $('profil-bouton').addEventListener('click', event => { event.stopPropagation(); basculerMenu() })
 document.addEventListener('click', event => { if (!$('menu-profil').hidden && !event.target.closest('.profil-zone')) fermerMenu() })
 document.addEventListener('keydown', event => { if (event.key === 'Escape') fermerMenu() })
-$('actus-prec').addEventListener('click', () => { actusPage -= 1; afficherActus() })
-$('actus-suiv').addEventListener('click', () => { actusPage += 1; afficherActus() })
 $('change-profile').addEventListener('click', () => { fermerMenu(); restoreProfileForm(); showScreen('identite') })
 $('identity-back').addEventListener('click', () => { restoreProfileForm(); showScreen('principal') })
 $('logout-dialog').addEventListener('close', () => feedback('logout-feedback', ''))

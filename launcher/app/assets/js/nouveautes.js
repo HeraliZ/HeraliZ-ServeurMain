@@ -1,7 +1,8 @@
 /* global window */
 /*
- * Nouveautés affichées par le launcher, la plus récente en premier. Les trois premières sont sur l'accueil, toutes dans
- * l'onglet Nouveautés. Images dans assets/images/nouveautes/ (720 × 405). « une » : mise en avant (bord rouge).
+ * Nouveautés de l'accueil du launcher, la plus récente en premier : seules les trois premières sont affichées, en
+ * rectangles non cliquables (pas d'onglet dédié, choix du propriétaire). Images dans assets/images/nouveautes/
+ * (960 × 540). « une » : mise en avant (bord rouge).
  */
 window.HERALIZ_NOUVEAUTES = Object.freeze([
     {

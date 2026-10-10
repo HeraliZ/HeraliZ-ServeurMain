@@ -480,7 +480,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - Armurerie : les combinaisons intégrales (Hazmat, froid, plongée) se portent seules (sac à dos permis) ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
-  du logo « VERSION 1 · SAISON 1 », onglets Accueil / Nouveautés / Règlement / Boutique (« Bientôt »), Discord bien en
+  du logo « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (« Bientôt »), trois nouveautés non cliquables
+  sur l'accueil (pas d'onglet Nouveautés, `launcher/app/assets/js/nouveautes.js`), Discord bien en
   vue (bouton en haut à droite + grand bouton sur l'accueil et l'écran de connexion). **Aucun accès au dossier du jeu**
   depuis le launcher et aucun nom de fichier affiché pendant le téléchargement (ne pas faciliter le vol des jars) ;
 - comptes et site (choix du propriétaire) : site **Azuriom** au style HeraliZ, comptes communs au site et au launcher
