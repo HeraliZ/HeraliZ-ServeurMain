@@ -195,6 +195,9 @@ public final class ClientEvents {
          if (!KEPT.contains(id) && !"reanimation".equals(id.getNamespace())) {
             event.setCanceled(true);
          }
+      } else if ((ClientDowned.localFlags() & 400) == 16 && VanillaGuiOverlay.CROSSHAIR.id().equals(event.getOverlay().id())) {
+         // pendant qu'on réanime, l'anneau de progression remplace le réticule
+         event.setCanceled(true);
       }
    }
 
