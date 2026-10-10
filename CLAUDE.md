@@ -32,7 +32,8 @@ quand un choix leur revient.
 9. **Contenu visuel nouveau** (modèle, arme, machine, interface importante) : d'abord des rendus à valider par le
    propriétaire, ensuite seulement le code et les jars.
 10. **La carte (map) se fait hors de ce dépôt.** Quand le propriétaire fournit un mod, un pack de textures ou un monde
-    modifié (jar + sources), on l'ajoute ici (section 9).
+    modifié (jar + sources), on l'ajoute ici (section 9). La carte terminée est déposée telle quelle dans
+    `monde/HeraliZ/` : on ne la retouche pas ici.
 
 ---
 
@@ -83,6 +84,8 @@ client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (
 launcher/                 le launcher des joueurs (Electron, Node.js) : `npm install` puis `npm start` dans ce dossier ;
                           doc dans launcher/README.md et launcher/docs/
 outils/                   fabrication et contrôles (Python 3.11+)
+monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; jamais envoyée au Ptero
+                          par la mise en ligne automatique
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
@@ -95,7 +98,8 @@ Jamais dans Git (voir `.gitignore`) :
   dépôt (onglet Releases), contrôlé par `serveur/mohist.sha256`. Pour changer de version : nouvelle Release, nouvelle
   empreinte ;
 - ses `libraries/` : Mohist les télécharge seul au premier démarrage ;
-- le **monde** (la carte est refaite hors de ce dépôt ; il va directement sur le Ptero) ;
+- le **monde en service** sur le Ptero (changé par les joueurs). Seule la carte de départ est dans le dépôt
+  (`monde/HeraliZ/`, section 9) ;
 - `ops.json`, `whitelist.json`, `usercache.json`, les bases de données des plugins (données des joueurs) ;
 - `outils/chemins_local.json`, `outils/noms_interdits.txt` (propres à chaque PC).
 
@@ -368,7 +372,7 @@ Règles :
 **Installation complète** (serveur Ptero neuf ou à remettre à neuf) : « Run workflow » avec la case
 « installation_complete » (et « redemarrer »). En plus de ce qui précède, il envoie Mohist (pris dans la Release
 « base-serveur », empreinte contrôlée) et les fichiers de la racine : `server.properties`, `bukkit.yml`, `spigot.yml`,
-`commands.yml`, `eula.txt`, `server-icon.png`. Il ne reste alors qu'à déposer le monde (dossier `HeraliZ`) et à
+`commands.yml`, `eula.txt`, `server-icon.png`. Il ne reste alors qu'à déposer le monde (dossier `HeraliZ` ; la carte de départ est dans `monde/HeraliZ/`) et à
 démarrer. Attention : `server.properties` du dépôt remplace celui du serveur (port 25565 : vérifier que le panel
 remet bien le port de l'allocation, sinon l'y changer).
 
@@ -406,7 +410,29 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - **Un pack de textures** : il est imposé par heraliz_interface
   (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
   par celui du nouveau pack, puis refabriquer heraliz_interface.
-- **Le monde** : jamais dans Git (trop gros, changé par les joueurs). Il va directement sur le Ptero.
+- **Le monde** : la **carte de départ** (monde neuf, jamais joué) est dans `monde/HeraliZ/` depuis le 11/10, sur
+  décision du propriétaire. Version « finale v3 » : 64 régions, 259 Mo, apparition en -435, 66, 1118 ; son `level.dat`
+  est en créatif, paisible, commandes permises (carte de construction : sur le serveur, c'est `server.properties` qui
+  fixe le mode de jeu et la difficulté). Elle contient son pack de données (`datapacks/heraliz_carte` : zones de loot
+  par lieu et par palier) et ses réglages (`data/heraliz_zones.json`, `data/heraliz_brume.json`,
+  `data/heralisz_train.dat`).
+  - Elle est fabriquée hors de ce dépôt (dossier de travail de la carte, chez le propriétaire) : on la remplace en
+    entier quand il en fournit une nouvelle, on ne la modifie jamais ici. Chaque version envoyée ajoute sa taille au
+    dépôt pour toujours : pas de nouvel envoi pour un petit changement.
+  - Le **monde en service** sur le Ptero (changé par les joueurs) n'est jamais dans Git. La mise en ligne automatique
+    ne dépose et n'écrase jamais de monde : mettre la carte sur le Ptero (dossier `HeraliZ` à la racine du serveur) est
+    une étape à part, décidée par le propriétaire.
+  - **Attention (11/10) : la carte a besoin de mods qui ne sont pas encore dans ce dépôt.** Sans eux, leurs blocs
+    disparaissent au chargement du monde et le train roule sur l'ancien tracé :
+    - **HeraliZ Décors 1.7.0** (`heraliz_decors`, absent du dépôt) : grillage militaire, sable et blocs du désert,
+      taches de sang, brouillard et zones dangereuses (gaz, radiation, froid) ;
+    - **HeraliZ Utils** : le réseau de train de la nouvelle carte (`assets/heralisz_utils/train/reseau_v2.json`, gares
+      droites) et les éoliennes à l'abandon (`eolienne_usee`, `eolienne_moderne_usee`), faits sur la version 2.0.7 du
+      dossier de travail de la carte, à assembler avec la 2.1.0 d'ici ;
+    - **HeraliZ Loot 0.4.2** : rotation du loot quand un conteneur est posé ou remplacé à la main, commande
+      `/heralizloot zone <id> part`, à assembler avec la version d'ici.
+    Leurs sources sont dans le dossier de travail de la carte, chez le propriétaire : à apporter ici comme « un de nos
+    mods modifié » (début de cette section), puis fabriquer et vérifier, avant de mettre la carte en service.
 
 ---
 
