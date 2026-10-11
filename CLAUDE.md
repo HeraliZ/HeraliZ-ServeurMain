@@ -364,7 +364,8 @@ Règles :
 1. fabrique les mods dont les sources ont changé (les autres jars sont repris du cache) et range les jars ;
 2. lance les contrôles possibles sans Minecraft (GeckoLib, noms perso si le secret `NOMS_INTERDITS` existe) ; un
    échec arrête tout : rien n'est envoyé au Ptero ;
-3. garde nos jars (paquets « mods-serveur » et « mods-client », 3 jours) à télécharger dans l'onglet Actions ;
+3. garde nos jars (paquets « mods-serveur » et « mods-client », 3 jours) à télécharger dans l'onglet Actions ; quand le
+   quota de stockage des artefacts de GitHub est plein, ces copies manquent (avertissement), sans bloquer la suite ;
 4. **si les secrets du Ptero sont réglés**, il met à jour le serveur par SFTP :
    - `mods/` devient la copie exacte de `livraison/mods serveur` : les anciennes versions sont retirées ;
    - plugins : les jars du Ptero qui ne sont pas dans le dépôt sont SUPPRIMÉS un par un (leurs dossiers de données
