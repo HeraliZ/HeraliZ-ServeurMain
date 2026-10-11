@@ -12,6 +12,7 @@ Contrôles :
   - verif_reobf      : noms de Minecraft réobfusqués (sinon plantage au chargement) ;
   - mention          : LICENCE-HeraliZ.txt dans chaque jar de nos mods (propriété HeraliZ) ;
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
+  - accessoires      : listes communes d'accessoires TaCZ à jour (gunpack heraliz_accessoires, outils/accessoires.py) ;
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
                        (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement) ;
   - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
@@ -142,6 +143,14 @@ def main():
         for l in out.splitlines():
             if "silencieux sans portée" in l or "pas à jour" in l or "introuvable" in l:
                 print(l.strip())
+        erreurs += 1
+    # accessoires à plat : un gunpack ajouté ou changé demande de refaire les listes communes (outils/accessoires.py)
+    code, out = lancer([str(O / "accessoires.py"), "--verifier"])
+    if code != 0:
+        for l in out.splitlines():
+            if l.startswith("[accessoires]") and "problème(s)" not in l:
+                print(l.strip())
+        print("[accessoires] relancer : python outils/accessoires.py")
         erreurs += 1
     # trois langues : paramètres (%s...) et codes couleur identiques, sinon le joueur voit un texte cassé
     code, out = lancer([str(O / "verifier_langues.py")] + [p.name for p in choisis])

@@ -205,6 +205,16 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   `python outils/silencieux.py` (jamais à la main dans les fichiers des silencieux ; à relancer si la portée d'un tir
   normal change dans `serveur/config/tacz-common.toml`). Un tir silencieux part aussi deux fois moins fort pour les autres
   joueurs (mixin commun `TaczSonSilencieuxMixin` du mod tactique).
+- les accessoires TaCZ sont **à plat** (choix du propriétaire) : tout viseur, bouche, crosse, poignée ou laser va sur
+  toute arme qui a cet emplacement (ouvert dans `allow_attachment_types` de sa donnée ET os `<type>_pos` dans son
+  modèle, sinon l'accessoire serait invisible) ; il y a juste des accessoires meilleurs que d'autres. Gunpack
+  `serveur/tacz/heraliz_accessoires` (listes communes `#heraliz_accessoires:viseurs|bouches|crosses|poignees|lasers`,
+  ajoutées aux listes des armes ; crosses OEM sur les armes dont le modèle a leur nœud) **refait par
+  `python outils/accessoires.py`**, jamais à la main ; les autres gunpacks ne sont pas touchés. Gardent leur liste
+  d'origine : chargeurs et munitions spéciales, accessoires faits pour une seule arme (tableau `PROPRES` : lunettes
+  intégrées de l'AUG et du P90, montages latéraux d'AK, baïonnettes, canon du Deagle doré…), Wonder Weapons. Un
+  emplacement fermé reste fermé : pour l'ouvrir, ajouter le type à `allow_attachment_types` de l'arme puis relancer
+  l'outil (`--rapport` liste les os sans emplacement et les emplacements sans os).
 - les icônes d'inventaire des armes TaCZ sont des photos 3D faites chez le joueur (`camo/client/IconesArmes` du mod
   tactique : modèle + skin, sans accessoires, 64 au plus en mémoire graphique, rien sur le disque ni le serveur) ; l'image
   `slot` du gunpack ne s'affiche qu'en attendant la photo ou si elle est impossible.
@@ -302,6 +312,7 @@ Les contrôles :
   Minecraft + Forge du lanceur CurseForge ;
 - noms perso : aucun mot interdit dans les sources ni les jars ;
 - silencieux : chaque silencieux des gunpacks a sa portée de son (`outils/silencieux.py`).
+- accessoires : listes communes d'accessoires TaCZ à jour (`outils/accessoires.py`).
 - langues : textes français, anglais et russe avec les mêmes paramètres et codes couleur (`outils/verifier_langues.py`).
 
 **Où va quoi** (dossier `livraison/`, recréé à chaque fois) :
@@ -630,7 +641,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - **Un mod d'un autre auteur** : son jar dans `serveur/mods-tiers/` (ou `client/mods-tiers/` s'il ne sert qu'aux
   joueurs), en retirant l'ancienne version.
 - **Un gunpack TaCZ (nouveau ou mis à jour)** : son dossier dans `serveur/tacz/`, puis `python outils/silencieux.py`
-  (portée du son de ses silencieux, `verifier.py` le réclame) et `python outils/icones_sans_contour.py` (retire le
+  (portée du son de ses silencieux, `verifier.py` le réclame), `python outils/accessoires.py` (ses accessoires dans
+  les listes communes et les listes communes sur ses armes, `verifier.py` le réclame ; un accessoire fait pour une
+  seule de ses armes va dans `PROPRES` de l'outil) et `python outils/icones_sans_contour.py` (retire le
   contour noir de ses icônes d'inventaire). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
   redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur.
 - **Un pack de textures** : il est imposé par heraliz_interface
