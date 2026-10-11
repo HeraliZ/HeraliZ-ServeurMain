@@ -100,10 +100,6 @@
   "config.heralisz_tactical.melee.max_target": "最大目标数量",
   "config.heralisz_tactical.melee.max_target.desc": "单次近战攻击可以命中的最大目标数量。",
 
-  "key.category.heralisz_tactical": "HeraliZ 战术装备",
-  "key.heralisz_tactical.normal_attack.desc": "普通攻击",
-  "key.heralisz_tactical.sp_attack.desc": "重击/特殊动作",
-
   "pack.heralisz_tactical.default_pack.name": "HeraliZ 战术装备",
   "pack.heralisz_tactical.default_pack.desc": "HeraliZ 战术装备默认包",
 
