@@ -1,0 +1,144 @@
+"""Pack de jeu du launcher HeraliZ (distribution Helios), fait par Nebula, le générateur officiel de Helios.
+
+    python outils/pack_launcher.py <dossier de Nebula> <sortie> [--version 1.0.42] [--essai]
+
+Contenu : Forge 1.20.1-<FORGE> (Nebula lance l'installeur de Forge), les jars joueurs de livraison/mods client
+(exactement ceux de la même fabrication que le serveur : Spartan compare leurs empreintes) et le dossier tacz des
+gunpacks (modèles, sons, icônes des armes). --essai : sans fabrication, avec seulement les mods tiers du dépôt.
+
+Résultat dans <sortie>/envoi : distribution.json et les seuls fichiers qu'il cite, prêts à être déposés tels quels
+dans https://heraliz.fr/launcher/ (dossier /var/www/launcher de la VM du site). Chaque fichier est contrôlé (taille,
+MD5) et la distribution passe le contrôle du launcher lui-même (launcher/app/assets/js/security.js).
+Nebula a besoin de Node.js 22 et de Java (pour l'installeur de Forge).
+"""
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from urllib.parse import unquote, urlparse
+
+RACINE_DEPOT = Path(__file__).resolve().parent.parent
+FORGE = "47.4.0"            # version de Forge de nos mods (gradle.properties)
+SERVEUR = "heraliz"         # Nebula : dossier servers/heraliz-1.20.1, identifiant heraliz-1.20.1
+MINECRAFT = "1.20.1"
+BASE_URL = "https://heraliz.fr/launcher/"
+
+
+def nebula(dossier, *args):
+    print("[pack] nebula", " ".join(args), flush=True)
+    subprocess.run(["node", "dist/index.js", *args], cwd=dossier, check=True)
+
+
+def md5(fichier):
+    h = hashlib.md5()
+    with open(fichier, "rb") as f:
+        for bloc in iter(lambda: f.read(1 << 20), b""):
+            h.update(bloc)
+    return h.hexdigest()
+
+
+def modules(liste):
+    for m in liste or []:
+        yield m
+        yield from modules(m.get("subModules"))
+
+
+def main():
+    a = argparse.ArgumentParser()
+    a.add_argument("nebula")
+    a.add_argument("sortie")
+    a.add_argument("--version", default="1.0.0")
+    a.add_argument("--essai", action="store_true")
+    args = a.parse_args()
+    neb, sortie = Path(args.nebula).resolve(), Path(args.sortie).resolve()
+    racine, envoi = sortie / "racine", sortie / "envoi"
+    for d in (racine, envoi):
+        shutil.rmtree(d, ignore_errors=True)
+        d.mkdir(parents=True)
+
+    java = shutil.which("java")
+    if not java:
+        sys.exit("[pack] Java introuvable (nécessaire à l'installeur de Forge).")
+    (neb / ".env").write_text(
+        f"JAVA_EXECUTABLE={java}\nROOT={racine}\nBASE_URL={BASE_URL}\nHELIOS_DATA_FOLDER={sortie / 'helios'}\n",
+        encoding="utf-8")
+    nebula(neb, "init", "root")
+    nebula(neb, "generate", "server", SERVEUR, MINECRAFT, "--forge", FORGE)
+    serveur = racine / "servers" / f"{SERVEUR}-{MINECRAFT}"
+    if not serveur.is_dir():
+        sys.exit(f"[pack] Nebula n'a pas créé {serveur}.")
+
+    # mods des joueurs : ceux de la fabrication (ou, pour un essai, les mods tiers du dépôt)
+    requis = serveur / "forgemods" / "required"
+    requis.mkdir(parents=True, exist_ok=True)
+    if args.essai:
+        jars = sorted((RACINE_DEPOT / "serveur" / "mods-tiers").glob("*.jar")) + sorted((RACINE_DEPOT / "client" / "mods-tiers").glob("*.jar"))
+    else:
+        jars = sorted((RACINE_DEPOT / "livraison" / "mods client").glob("*.jar"))
+    if not jars:
+        sys.exit("[pack] Aucun jar joueur : lancer d'abord outils/construire.py.")
+    for j in jars:
+        shutil.copy2(j, requis / j.name)
+    print(f"[pack] {len(jars)} mods joueurs", flush=True)
+
+    # gunpacks TaCZ : le dossier tacz du jeu (les joueurs en ont besoin pour les modèles, sons et icônes)
+    shutil.copytree(RACINE_DEPOT / "serveur" / "tacz", serveur / "files" / "tacz")
+
+    # fiche du serveur : adresse de jeu (doit être celle du launcher), connexion directe, serveur principal
+    config = json.loads((RACINE_DEPOT / "launcher" / "app" / "heraliz.json").read_text(encoding="utf-8"))
+    fiche_p = serveur / "servermeta.json"
+    fiche = json.loads(fiche_p.read_text(encoding="utf-8"))
+    fiche["meta"].update({
+        "version": args.version, "name": "HeraliZ", "description": "Survie façon DayZ sur Minecraft 1.20.1",
+        "address": config["serverAddress"], "mainServer": True, "autoconnect": True,
+    })
+    fiche_p.write_text(json.dumps(fiche, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    nebula(neb, "generate", "distro")
+    distro_p = racine / "distribution.json"
+    if not distro_p.exists():
+        sys.exit("[pack] distribution.json introuvable après « generate distro ».")
+    distro = json.loads(distro_p.read_text(encoding="utf-8"))
+
+    # seuls les fichiers cités par la distribution partent, contrôlés un par un
+    total, n = 0, 0
+    for m in modules(s for srv in distro["servers"] for s in srv["modules"]):
+        art = m["artifact"]
+        url = art["url"]
+        if not url.startswith(BASE_URL):
+            continue  # fichier pris ailleurs (Mojang, Forge) : le launcher le télécharge à la source
+        rel = unquote(urlparse(url).path)[len(urlparse(BASE_URL).path):]
+        src = racine / rel
+        if not src.is_file():
+            sys.exit(f"[pack] fichier cité absent : {rel}")
+        if src.stat().st_size != art["size"] or md5(src) != art["MD5"].lower():
+            sys.exit(f"[pack] taille ou MD5 faux : {rel}")
+        dst = envoi / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        total += art["size"]
+        n += 1
+    shutil.copy2(distro_p, envoi / "distribution.json")
+
+    # le launcher doit accepter cette distribution (même contrôle que chez les joueurs)
+    controle = (
+        "const { validateDistribution } = require(process.argv[1]);"
+        "const fs = require('fs');"
+        "validateDistribution(JSON.parse(fs.readFileSync(process.argv[2], 'utf8')), JSON.parse(fs.readFileSync(process.argv[3], 'utf8')));"
+        "console.log('[pack] distribution acceptée par le launcher');"
+    )
+    subprocess.run(["node", "-e", controle, str(RACINE_DEPOT / "launcher" / "app" / "assets" / "js" / "security.js"),
+                    str(distro_p), str(RACINE_DEPOT / "launcher" / "app" / "heraliz.json")], check=True)
+    types = {}
+    for m in modules(s for srv in distro["servers"] for s in srv["modules"]):
+        types[m["type"]] = types.get(m["type"], 0) + 1
+    print(f"[pack] modules : {types}")
+    print(f"[pack] {n} fichiers à déposer, {total / 1048576:.0f} Mo (dans {envoi})")
+
+
+if __name__ == "__main__":
+    main()
