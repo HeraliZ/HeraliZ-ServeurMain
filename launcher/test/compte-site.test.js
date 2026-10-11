@@ -52,6 +52,7 @@ test('compte banni, pseudo impossible en jeu, API fermée, site injoignable', as
     await cas({ status: 400, body: { status: 'error', message: 'Auth API is not enabled' } }, /pas encore ouverte/)
     await cas({ status: 404, body: '<html>' }, /pas encore ouverte/)
     await cas({ status: 422, body: { status: 'error', reason: 'invalid_2fa', message: 'Invalid 2FA code' } }, /double authentification incorrect/)
+    await cas({ status: 429, body: { status: 'error', reason: 'too_many_attempts', message: 'Too many attempts' } }, /attends 10 minutes/)
     await cas({ status: 502, body: null }, /rencontré un problème/)
     await cas(new Error('ECONNREFUSED'), /ne répond pas/)
     assert.throws(() => new CompteSite('http://heraliz.fr'), /HTTPS/)

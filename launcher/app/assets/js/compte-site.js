@@ -15,7 +15,8 @@ const MESSAGES = {
     invalid_password: 'Mot de passe incorrect.',
     user_banned: BANNI,
     register_disabled: 'La création de compte est fermée pour le moment.',
-    too_many_accounts: 'Trop de comptes créés depuis cette connexion : réessaie plus tard.'
+    too_many_accounts: 'Trop de comptes créés depuis cette connexion : réessaie plus tard.',
+    too_many_attempts: 'Trop d’essais ratés : attends 10 minutes avant de réessayer.'
 }
 const SITE_INJOIGNABLE = 'Le site HeraliZ ne répond pas. Vérifie ta connexion internet et réessaie.'
 const API_FERMEE = 'La connexion des comptes n’est pas encore ouverte sur le site HeraliZ.'
