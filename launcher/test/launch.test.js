@@ -72,7 +72,7 @@ test('the launcher keeps no password and erases the old plain-text file', () => 
     assert.equal(fs.existsSync(legacy), false)
     const state = service.saveProfile({ username: 'Survivant', acceptedRules: true, password: 'Zone-Rouge 42' })
     assert.equal(fs.existsSync(legacy), false)
-    assert.deepEqual(state.profile, { username: 'Survivant', rulesAccepted: true })
+    assert.deepEqual(state.profile, { username: 'Survivant', rulesAccepted: true, compte: false })
     assert.equal(JSON.stringify(state).includes('Zone-Rouge'), false)
     assert.equal(fs.readFileSync(path.join(directory, 'config.json'), 'utf8').includes('Zone-Rouge'), false)
 })

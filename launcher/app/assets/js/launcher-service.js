@@ -1,4 +1,4 @@
-const { app } = require('electron')
+const { app, safeStorage } = require('electron')
 const fs = require('fs-extra')
 const path = require('node:path')
 const os = require('node:os')
@@ -13,6 +13,18 @@ const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution } = require('./security')
+const { CompteSite } = require('./compte-site')
+
+// Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur). Sans chiffrement
+// disponible, il n'est pas gardé : il faudra se reconnecter au prochain lancement.
+function chiffrer(jeton) {
+    if (!jeton || !safeStorage?.isEncryptionAvailable?.()) return null
+    return safeStorage.encryptString(jeton).toString('base64')
+}
+function dechiffrer(valeur) {
+    if (!valeur || !safeStorage?.isEncryptionAvailable?.()) return null
+    try { return safeStorage.decryptString(Buffer.from(valeur, 'base64')) } catch { return null }
+}
 
 // Machine et port réels du jeu : comme Minecraft, un enregistrement DNS « _minecraft._tcp.<domaine> » (SRV) peut
 // renvoyer le domaine vers un autre hôte ou un autre port. Minecraft ne le cherche que pour le port 25565.
@@ -52,11 +64,14 @@ function detailTelechargement(octets, total, debut) {
 }
 
 class LauncherService {
-    constructor(config, notify) {
+    constructor(config, notify, { compteSite } = {}) {
         this.config = config
         this.notify = notify
         this.busy = false
         this.game = null
+        // Comptes HeraliZ du site : obligatoires dès que l'adresse du site est réglée (sinon, pseudo seul, pour les essais).
+        this.compteSite = compteSite || (config.siteUrl ? new CompteSite(config.siteUrl) : null)
+        this.jeton = null
         this.progress = { busy: false, phase: 'idle', message: 'Prêt pour ta prochaine expédition.', percent: null, detail: null }
         Config.load()
         // Les anciennes versions écrivaient le mot de passe en clair dans le dossier du jeu, pour un module jamais
@@ -64,10 +79,14 @@ class LauncherService {
         fs.removeSync(path.join(Config.getInstanceDirectory(), config.serverId, '.sl_password'))
         // Never preserve or expose legacy Microsoft/Mojang credentials.
         const previous = Config.getSelectedAccount()
-        const profile = previous?.type === 'offline' ? previous : null
+        // Avec les comptes du site, un ancien profil « pseudo seul » n'est pas repris : connexion au compte demandée.
+        const garde = previous?.type === 'offline' && (this.compteSite ? Boolean(previous.compte?.jeton) : !previous.compte) ? previous : null
         for (const key of Object.keys(Config.getAuthAccounts())) Config.removeAuthAccount(key)
-        if (profile) {
-            try { Config.setOfflineProfile(createOfflineProfile(profile.displayName), profile.rulesAccepted === true) } catch { /* invalid local profile: ask again */ }
+        if (garde) {
+            try {
+                const profile = createOfflineProfile(garde.displayName)
+                Config.setOfflineProfile(garde.compte ? { ...profile, compte: { id: garde.compte.id, jeton: garde.compte.jeton } } : profile, garde.rulesAccepted === true)
+            } catch { /* invalid local profile: ask again */ }
         }
         Config.setClientToken(null)
         Config.setSelectedServer(config.serverId)
@@ -89,7 +108,8 @@ class LauncherService {
         const ramGB = Math.floor(Number.parseInt(memory) / (memory.endsWith('M') ? 1024 : 1)) || 2
         return {
             version: app.getVersion(),
-            profile: profile ? { username: profile.displayName, rulesAccepted: profile.rulesAccepted === true } : null,
+            profile: profile ? { username: profile.displayName, rulesAccepted: profile.rulesAccepted === true, compte: Boolean(profile.compte) } : null,
+            comptesSite: Boolean(this.compteSite),
             settings: { ramGB: Math.min(maxRAM, Math.max(2, ramGB)), maxRAM, totalRAM, fullscreen: Config.getFullscreen(), autoConnect: Config.getAutoConnect() },
             configured: Boolean(this.config.serverAddress && this.config.distributionUrl),
             discordConfigured: Boolean(this.config.discordUrl), progress: this.progress
@@ -98,6 +118,7 @@ class LauncherService {
 
     saveProfile(value) {
         if (this.busy) throw new Error('Attends la fin de la préparation ou de la partie pour changer de profil.')
+        if (this.compteSite) throw new Error('Connecte-toi avec ton compte HeraliZ.')
         if (!value || value.acceptedRules !== true) throw new Error('Tu dois accepter le règlement pour continuer.')
         const profile = createOfflineProfile(value.username)
         Config.setOfflineProfile(profile, true)
@@ -105,10 +126,97 @@ class LauncherService {
         return this.getState()
     }
 
+    // Connexion au compte HeraliZ du site : { ...état, a2f: true } si le site demande le code de double authentification.
+    async connexion(value) {
+        if (this.busy) throw new Error('Attends la fin de la préparation ou de la partie pour changer de compte.')
+        if (!this.compteSite) throw new Error('Les comptes HeraliZ ne sont pas encore ouverts.')
+        if (!value || value.acceptedRules !== true) throw new Error('Tu dois accepter le règlement pour continuer.')
+        const resultat = await this.compteSite.connexion(value.email, value.password, value.code)
+        if (resultat.etat === 'a2f') return { ...this.getState(), a2f: true }
+        this.enregistrerCompte(resultat.compte, true)
+        return this.getState()
+    }
+
+    // Ce que permet le site (création de compte depuis le launcher, longueur du mot de passe, conditions du site).
+    async etatComptes() {
+        if (!this.compteSite) return { inscription: false, motDePasseMin: 12, conditions: null }
+        try {
+            this.etatSite = await this.compteSite.etat()
+        } catch {
+            this.etatSite = null
+            return { inscription: false, motDePasseMin: 12, conditions: null, injoignable: true }
+        }
+        return this.etatSite
+    }
+
+    // Création d'un compte du site depuis le launcher : le compte est aussitôt connecté sur ce PC.
+    async inscription(value) {
+        if (this.busy) throw new Error('Attends la fin de la préparation ou de la partie pour changer de compte.')
+        if (!this.compteSite) throw new Error('Les comptes HeraliZ ne sont pas encore ouverts.')
+        if (!value || value.acceptedRules !== true) throw new Error('Tu dois accepter le règlement pour continuer.')
+        const resultat = await this.compteSite.inscription({
+            pseudo: value.pseudo, email: value.email, motDePasse: value.password, confirmation: value.confirmation, conditions: true
+        }, this.etatSite?.motDePasseMin ?? 12)
+        this.enregistrerCompte(resultat.compte, true)
+        return { ...this.getState(), nouveauCompte: true }
+    }
+
+    // Double authentification du compte connecté : { active: true } ou { active: false, secret, qr }.
+    async a2fPreparer() {
+        if (!this.compteSite) throw new Error('Les comptes HeraliZ ne sont pas encore ouverts.')
+        return this.compteSite.a2fPreparer(this.jetonActuel())
+    }
+
+    async a2fActiver(value) {
+        if (!this.compteSite) throw new Error('Les comptes HeraliZ ne sont pas encore ouverts.')
+        return this.compteSite.a2fActiver(this.jetonActuel(), value?.code, value?.password)
+    }
+
+    jetonActuel() {
+        const jeton = this.jeton || dechiffrer(Config.getSelectedAccount()?.compte?.jeton)
+        if (!jeton) throw new Error('Connecte-toi avec ton compte HeraliZ.')
+        return jeton
+    }
+
+    enregistrerCompte(compte, rulesAccepted) {
+        const profile = createOfflineProfile(compte.username)
+        this.jeton = compte.jeton || this.jeton
+        Config.setOfflineProfile({ ...profile, compte: { id: compte.id, jeton: chiffrer(this.jeton) } }, rulesAccepted)
+        Config.save()
+    }
+
+    oublierCompte() {
+        for (const key of Object.keys(Config.getAuthAccounts())) Config.removeAuthAccount(key)
+        this.jeton = null
+        Config.save()
+    }
+
+    // Le site reconnaît-il toujours le compte (au démarrage et avant chaque partie) ? Pseudo mis à jour s'il a changé
+    // sur le site ; site injoignable : on garde le compte (horsLigne) ; jeton refusé : déconnexion (sessionExpiree).
+    async verifierCompte() {
+        const saved = Config.getSelectedAccount()
+        if (!this.compteSite || !saved?.compte) return this.getState()
+        const jeton = this.jeton || dechiffrer(saved.compte.jeton)
+        let compte = null
+        if (jeton) {
+            try { compte = await this.compteSite.verifier(jeton) } catch { return { ...this.getState(), horsLigne: true } }
+        }
+        if (!compte) {
+            this.oublierCompte()
+            return { ...this.getState(), sessionExpiree: true }
+        }
+        this.jeton = jeton
+        if (compte.username !== saved.displayName) this.enregistrerCompte({ ...compte, jeton }, saved.rulesAccepted === true)
+        return this.getState()
+    }
+
     logout() {
         if (this.busy) throw new Error('Attends la fin de la préparation ou de la partie pour te déconnecter.')
-        for (const key of Object.keys(Config.getAuthAccounts())) Config.removeAuthAccount(key)
-        Config.save()
+        const saved = Config.getSelectedAccount()
+        const jeton = this.jeton || dechiffrer(saved?.compte?.jeton)
+        // Le site oublie aussi le jeton ; sans attendre sa réponse (le launcher, lui, l'oublie tout de suite).
+        if (jeton && this.compteSite) this.compteSite.deconnexion(jeton).catch(() => {})
+        this.oublierCompte()
         return this.getState()
     }
 
@@ -220,10 +328,16 @@ class LauncherService {
     async launch() {
         if (this.busy) throw new Error('Une préparation ou une partie est déjà en cours.')
         const saved = Config.getSelectedAccount()
+        if (this.compteSite && !saved?.compte) throw new Error('Connecte-toi avec ton compte HeraliZ.')
         if (!saved || saved.rulesAccepted !== true) throw new Error('Choisis ton pseudo et accepte le règlement.')
-        const profile = createOfflineProfile(saved.displayName)
         this.busy = true
         try {
+            if (this.compteSite) {
+                this.emit('prepare', 'Vérification de ton compte HeraliZ…')
+                const etat = await this.verifierCompte()
+                if (etat.sessionExpiree) throw new Error('Ta session a expiré : reconnecte-toi avec ton compte HeraliZ.')
+            }
+            const profile = createOfflineProfile(Config.getSelectedAccount().displayName)
             this.emit('prepare', 'Chargement du pack HeraliZ…')
             const distro = await this.loadDistribution()
             const server = distro.getServerById(this.config.serverId)

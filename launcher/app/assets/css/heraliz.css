@@ -303,6 +303,42 @@ body[data-tab=accueil] .page-accueil, body[data-tab=reglement] .page-reglement, 
 .valider:disabled { filter: grayscale(.6) brightness(.7); }
 .formulaire .feedback { margin-top: 12px; text-align: center; }
 .formulaire .bas { text-align: center; font-size: 11.5px; color: var(--muted); margin-top: 14px; }
+.formulaire .bas.note { font-size: 10.5px; color: var(--faint); margin-top: 6px; }
+.formulaire .bas.note b { color: var(--muted); }
+.champ-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.lien.discret { font-size: 10.5px; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+.lien.discret:hover { color: #fff; }
+.input .oeil { display: flex; align-items: center; padding: 4px; margin-right: -4px; color: var(--muted); }
+.input .oeil:hover, .input .oeil.actif { color: #fff; }
+/* connexion ou création de compte (comptes du site) */
+.formulaire { max-height: calc(100vh - 64px); overflow-y: auto; scrollbar-width: none; }
+.formulaire::-webkit-scrollbar { display: none; }
+.bascule { display: grid; grid-template-columns: 1fr 1fr; margin-top: 16px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); overflow: hidden; }
+.bascule button { height: 36px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; color: var(--muted); transition: background .15s, color .15s; }
+.bascule button:hover { color: #fff; }
+.bascule button[aria-selected=true] { color: #fff; background: linear-gradient(180deg, rgba(227, 32, 27, 0.32), rgba(227, 32, 27, 0.12)); box-shadow: inset 0 0 0 1px rgba(255, 90, 78, 0.55); }
+.formulaire[data-mode=connexion] .mode-inscription, .formulaire[data-mode=inscription] .mode-connexion { display: none; }
+.formulaire[data-mode=inscription] .champ { margin-top: 12px; }
+.deux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.aide { font-size: 10.5px; color: var(--faint); margin-top: 5px; line-height: 1.45; }
+.aide:empty { display: none; }
+.aide.erreur { color: #FF8A80; }
+.champ.erreur .input { box-shadow: inset 0 0 0 1px rgba(255, 90, 78, 0.85); }
+.coche .lien { font-size: inherit; }
+/* double authentification */
+dialog.a2f { width: min(620px, calc(100vw - 48px)); }
+dialog.a2f h2 { margin-top: 6px; }
+.a2f-corps { display: flex; gap: 20px; align-items: center; margin-top: 16px; }
+.a2f-qr { flex: none; width: 168px; height: 168px; padding: 8px; border-radius: 6px; background: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+.a2f-qr img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.a2f-pas { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 10px; font-size: 12px; color: rgba(236, 238, 242, 0.85); line-height: 1.5; }
+.a2f-pas b { color: #fff; }
+.a2f-cle { display: block; margin-top: 4px; font-size: 10.5px; color: var(--muted); }
+.a2f-cle code, .a2f-codes code { font-family: Consolas, 'Courier New', monospace; color: #fff; letter-spacing: .06em; user-select: all; }
+.a2f-cle code { display: block; margin-top: 2px; font-size: 11px; }
+dialog.a2f .deux { margin-top: 6px; }
+.a2f-codes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.a2f-codes code { padding: 9px 10px; border-radius: 5px; text-align: center; font-size: 13px; background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
 .retour { display: block; margin: 10px auto 0; font-size: 11.5px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
 .retour:hover { color: #fff; }
 

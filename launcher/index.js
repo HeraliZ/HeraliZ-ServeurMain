@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain, shell, dialog, clipboard } = require('electron')
 const path = require('node:path')
 const { pathToFileURL } = require('node:url')
 const { isTrustedFrame, httpsUrl } = require('./app/assets/js/security')
@@ -19,7 +19,12 @@ function handle(name, action) {
             return { ok: true, data: await action(...args) }
         } catch (error) {
             console.error(`[HeraliZ/${name}]`, error)
-            return { ok: false, error: error.message || 'Une erreur est survenue. Réessaie dans un instant.' }
+            const reponse = { ok: false, error: error.message || 'Une erreur est survenue. Réessaie dans un instant.' }
+            // erreurs par champ d'un formulaire (création de compte) : seulement des textes
+            if (error.champs && typeof error.champs === 'object') {
+                reponse.champs = Object.fromEntries(Object.entries(error.champs).filter(([, v]) => typeof v === 'string').slice(0, 8))
+            }
+            return reponse
         }
     })
 }
@@ -71,16 +76,35 @@ else {
         })
         handle('state', () => service.getState())
         handle('profile', value => service.saveProfile(value))
+        handle('connexion', value => service.connexion(value))
+        handle('compte', () => service.verifierCompte())
+        handle('etat-comptes', () => service.etatComptes())
+        handle('inscription', value => service.inscription(value))
+        handle('a2f-preparer', () => service.a2fPreparer())
+        handle('a2f-activer', value => service.a2fActiver(value))
+        // codes de secours de la double authentification vers le presse-papiers (seulement des codes, rien d'autre)
+        handle('copier-codes', codes => {
+            if (typeof codes !== 'string' || codes.length > 1000 || !/^[\w-]+(\n[\w-]+)*$/.test(codes)) throw new Error('Copie impossible.')
+            clipboard.writeText(codes)
+        })
         handle('logout', () => service.logout())
         handle('settings', value => service.saveSettings(value))
         handle('status', () => service.getServerStatus())
         handle('launch', () => service.launch())
         handle('link', async name => {
             // Aucun lien vers les fichiers du serveur ou du jeu (choix du propriétaire : ne pas faciliter le vol des jars).
-            const links = { discord: config.discordUrl }
+            // Pages du site HeraliZ (Azuriom) : inscription, mot de passe oublié, compte, conditions (adresse donnée par le
+            // site, gardée seulement si elle est sur le site lui-même).
+            const site = config.siteUrl ? httpsUrl(config.siteUrl) : null
+            const pageSite = chemin => site && new URL(chemin, site).href
+            const links = {
+                discord: config.discordUrl, inscription: pageSite('/user/register'), motdepasse: pageSite('/user/password/reset'),
+                compte: pageSite('/profile'), conditions: service.etatSite?.conditions || null
+            }
             if (!Object.hasOwn(links, name) || !links[name]) throw new Error('Ce lien n’est pas encore configuré.')
             const url = httpsUrl(links[name])
             if (name === 'discord' && !['discord.gg', 'discord.com'].includes(url.hostname)) throw new Error('Lien Discord invalide.')
+            if (name !== 'discord' && url.host !== site.host) throw new Error('Lien du site invalide.')
             await shell.openExternal(url.href)
         })
         handle('window', action => {
