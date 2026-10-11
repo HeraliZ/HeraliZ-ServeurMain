@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/stairs",
- "textures": {
-  "bottom": "heraliz_decors:block/dallage_sable",
-  "top": "heraliz_decors:block/dallage_sable",
-  "side": "heraliz_decors:block/dallage_sable"
- }
-}

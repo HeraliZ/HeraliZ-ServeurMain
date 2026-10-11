@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/outer_stairs",
- "textures": {
-  "bottom": "heraliz_decors:block/tole_larmee",
-  "top": "heraliz_decors:block/tole_larmee",
-  "side": "heraliz_decors:block/tole_larmee"
- }
-}

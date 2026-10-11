@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/inner_stairs",
- "textures": {
-  "bottom": "heraliz_decors:block/tole_larmee",
-  "top": "heraliz_decors:block/tole_larmee",
-  "side": "heraliz_decors:block/tole_larmee"
- }
-}

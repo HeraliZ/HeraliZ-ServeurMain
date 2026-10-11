@@ -13,9 +13,9 @@ import net.minecraftforge.registries.RegistryObject;
 
 /**
  * Blocs maison des villes du désert (médina de Mirage) et de la base militaire arctique (1.5.0) : enduits, briques de terre
- * crue, pierre de taille, zelliges, moucharabiehs, toiles du souk, tapis ; panneaux polaires, tôles, caillebotis, hublots,
+ * crue, pierre de taille, zelliges, moucharabiehs, toiles du souk, tapis ; panneaux polaires, tôles, hublots,
  * béton et neige tassée. Blocs simples (aucun calcul) ; escaliers, dalles et murets pour certains. Les textures sont
- * générées par tools/blocs_maison.py (même liste, même ordre) ; aucun objet lâché quand on les casse (blocs de la map).
+ * générées par outils/blocs_maison.py (même liste, même ordre) ; aucun objet lâché quand on les casse (blocs de la map).
  */
 final class BlocsMaison {
     private BlocsMaison() {}
@@ -43,53 +43,42 @@ final class BlocsMaison {
 
     static void enregistrer() {
         // désert : médina de Mirage
-        cube("enduit_sable", M.ENDUIT, MapColor.SAND, "escalier", "dalle", "mur");
+        cube("enduit_sable", M.ENDUIT, MapColor.SAND, "dalle", "mur");
         cube("enduit_sable_use", M.ENDUIT, MapColor.SAND);
-        cube("enduit_blanc", M.ENDUIT, MapColor.QUARTZ, "escalier", "dalle", "mur");
+        cube("enduit_blanc", M.ENDUIT, MapColor.QUARTZ);
         cube("enduit_blanc_use", M.ENDUIT, MapColor.QUARTZ);
-        cube("enduit_ocre", M.ENDUIT, MapColor.TERRACOTTA_ORANGE, "escalier", "dalle", "mur");
+        cube("enduit_ocre", M.ENDUIT, MapColor.TERRACOTTA_ORANGE);
         cube("enduit_ocre_use", M.ENDUIT, MapColor.TERRACOTTA_ORANGE);
-        cube("brique_crue", M.TERRE, MapColor.TERRACOTTA_YELLOW, "escalier", "dalle", "mur");
+        cube("brique_crue", M.TERRE, MapColor.TERRACOTTA_YELLOW, "escalier");
         cube("brique_crue_usee", M.TERRE, MapColor.TERRACOTTA_YELLOW);
-        cube("pise", M.TERRE, MapColor.TERRACOTTA_ORANGE, "mur");
         cube("pierre_sable", M.PIERRE, MapColor.SAND, "escalier", "dalle", "mur");
-        cube("pierre_sable_frise", M.PIERRE, MapColor.SAND);
-        pilier("pilier_sable", M.PIERRE, MapColor.SAND);
-        cube("dallage_sable", M.PIERRE, MapColor.SAND, "escalier", "dalle");
-        cube("carreaux_terre_cuite", M.CARREAU, MapColor.TERRACOTTA_RED, "escalier", "dalle");
+        cube("dallage_sable", M.PIERRE, MapColor.SAND);
+        cube("carreaux_terre_cuite", M.CARREAU, MapColor.TERRACOTTA_RED);
         cube("paves_medina", M.PIERRE, MapColor.TERRACOTTA_WHITE, "dalle");
-        cube("sable_tasse", M.SABLE, MapColor.SAND, "dalle");
-        cube("zellige_bleu", M.CARREAU, MapColor.COLOR_BLUE, "dalle");
-        cube("zellige_vert", M.CARREAU, MapColor.COLOR_GREEN, "dalle");
-        cube("zellige_ocre", M.CARREAU, MapColor.TERRACOTTA_ORANGE, "dalle");
+        cube("sable_tasse", M.SABLE, MapColor.SAND);
+        cube("zellige_bleu", M.CARREAU, MapColor.COLOR_BLUE);
+        cube("zellige_vert", M.CARREAU, MapColor.COLOR_GREEN);
         decoupe("moucharabieh", M.BOIS, MapColor.COLOR_BROWN);
-        decoupe("claustra", M.ENDUIT, MapColor.QUARTZ);
         cube("bois_palmier", M.BOIS, MapColor.WOOD, "escalier", "dalle");
         pilier("rondin_palmier", M.BOIS, MapColor.WOOD);
-        cube("palmes_sechees", M.PALME, MapColor.COLOR_YELLOW, "dalle");
-        cube("toile_rayee_rouge", M.TOILE, MapColor.COLOR_RED, "dalle");
-        cube("toile_rayee_bleue", M.TOILE, MapColor.COLOR_BLUE, "dalle");
-        cube("toile_safran", M.TOILE, MapColor.COLOR_ORANGE, "dalle");
+        cube("palmes_sechees", M.PALME, MapColor.COLOR_YELLOW);
+        cube("toile_rayee_rouge", M.TOILE, MapColor.COLOR_RED);
+        cube("toile_rayee_bleue", M.TOILE, MapColor.COLOR_BLUE);
+        cube("toile_safran", M.TOILE, MapColor.COLOR_ORANGE);
         tapis("tapis_berbere", M.TOILE, MapColor.COLOR_RED);
         // arctique : base militaire
-        cube("tole_blanche", M.METAL, MapColor.SNOW, "dalle");
+        cube("tole_blanche", M.METAL, MapColor.SNOW);
         cube("tole_blanche_givree", M.METAL, MapColor.SNOW);
-        cube("panneau_polaire_blanc", M.METAL, MapColor.SNOW, "dalle");
-        cube("panneau_polaire_orange", M.METAL, MapColor.COLOR_ORANGE, "dalle");
-        cube("panneau_polaire_rouge", M.METAL, MapColor.COLOR_RED, "dalle");
-        cube("panneau_polaire_gris", M.METAL, MapColor.COLOR_GRAY, "dalle");
+        cube("panneau_polaire_blanc", M.METAL, MapColor.SNOW);
+        cube("panneau_polaire_orange", M.METAL, MapColor.COLOR_ORANGE);
+        cube("panneau_polaire_rouge", M.METAL, MapColor.COLOR_RED);
+        cube("panneau_polaire_gris", M.METAL, MapColor.COLOR_GRAY);
         cube("panneau_givre", M.METAL, MapColor.SNOW);
-        decoupe("caillebotis", M.METAL, MapColor.METAL, "dalle");
-        cube("tole_larmee", M.METAL, MapColor.METAL, "escalier", "dalle");
-        cube("tole_larmee_rouille", M.METAL, MapColor.TERRACOTTA_BROWN, "dalle");
+        cube("tole_larmee", M.METAL, MapColor.METAL, "dalle");
         cube("beton_polaire", M.BETON, MapColor.STONE, "escalier", "dalle", "mur");
-        cube("beton_marquage", M.BETON, MapColor.COLOR_YELLOW, "dalle");
-        cube("neige_tassee", M.NEIGE, MapColor.SNOW, "dalle");
+        cube("neige_tassee", M.NEIGE, MapColor.SNOW);
         cube("glace_sale", M.NEIGE, MapColor.ICE);
-        cube("isolant", M.LAINE, MapColor.COLOR_YELLOW);
         translucide("hublot", M.METAL, MapColor.SNOW);
-        cube("grille_aeration", M.METAL, MapColor.METAL);
-        cube("bache_blanche", M.TOILE, MapColor.SNOW, "dalle");
         // toits de tôle (à la place du cuivre)
         cube("tole_toit_verte", M.METAL, MapColor.COLOR_GREEN, "escalier", "dalle");
         cube("tole_toit_bleue", M.METAL, MapColor.COLOR_BLUE, "escalier", "dalle");
@@ -102,7 +91,7 @@ final class BlocsMaison {
         variantes(nom, b, m, c, false, variantes);
     }
 
-    /** Bloc ajouré (moucharabieh, claustra, caillebotis) : on voit au travers, les faces voisines restent dessinées. */
+    /** Bloc ajouré (moucharabieh) : on voit au travers, les faces voisines restent dessinées. */
     private static void decoupe(String nom, M m, MapColor c, String... variantes) {
         RegistryObject<Block> b = Blocs.bloc(nom, () -> new Block(prop(m, c).noOcclusion()
                 .isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false)));

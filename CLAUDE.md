@@ -133,7 +133,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
 | heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) |
-| heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade et rayons de soleil, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
+| heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Seulement les blocs posés sur la carte (1.9.0 : 48 blocs jamais posés retirés, d'après le workflow « Inventaire de la carte » ; gardés aussi `tole_toit_bleue` et `tole_toit_rouille`, dont les escaliers et dalles sont posés). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
 | heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons |
 | heraliz-composants | heraliz_composants | heraliz_composants | 47 composants de craft (armes, soins, viseurs, munitions, protection, divers) et objets de récupération à revendre, modèles 3D et icônes ; rareté = couleur du nom ; tags `heraliz_composants:<catégorie>` et `tous`. Aucune recette ni loot (refonte à venir). Modèles, icônes, traductions, tags et `ComponentDefs.java` refaits par `python mods/heraliz-composants/outils/build.py mods/heraliz-composants` (catalogue : `outils/composants.py`) |
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
@@ -653,6 +653,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
       éoliennes à l'abandon `eolienne_usee` et `eolienne_moderne_usee`, ascenseur qui porte mieux les joueurs) ;
     - **HeraliZ Loot** : apporté le 11/10 (version 0.5.0 : les nouveaux conteneurs HD posés sur la carte, rotation du
       loot quand un conteneur est posé ou remplacé à la main).
+    Avant de retirer un bloc d'un de nos mods, relancer le workflow « Inventaire de la carte » (lecture seule, liste
+    les blocs posés dans chaque monde du Ptero) : un bloc retiré qui est posé disparaît de la carte au chargement.
     Si le propriétaire fournit une nouvelle version d'un de ces mods pour la carte, la rapporter ici de la même façon (assembler avec ce
     qui a été fait ici entre-temps, fabriquer, vérifier). Rien de tout cela n'a été testé sur le serveur.
 

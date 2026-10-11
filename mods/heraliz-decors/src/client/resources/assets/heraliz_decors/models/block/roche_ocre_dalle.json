@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/slab",
- "textures": {
-  "bottom": "heraliz_decors:block/roche_ocre",
-  "top": "heraliz_decors:block/roche_ocre",
-  "side": "heraliz_decors:block/roche_ocre"
- }
-}

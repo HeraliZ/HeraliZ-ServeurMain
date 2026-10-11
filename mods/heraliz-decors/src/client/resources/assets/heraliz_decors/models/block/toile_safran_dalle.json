@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/slab",
- "textures": {
-  "bottom": "heraliz_decors:block/toile_safran",
-  "top": "heraliz_decors:block/toile_safran",
-  "side": "heraliz_decors:block/toile_safran"
- }
-}

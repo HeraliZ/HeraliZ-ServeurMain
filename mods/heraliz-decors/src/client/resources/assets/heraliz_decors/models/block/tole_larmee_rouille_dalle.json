@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/slab",
- "textures": {
-  "bottom": "heraliz_decors:block/tole_larmee_rouille",
-  "top": "heraliz_decors:block/tole_larmee_rouille",
-  "side": "heraliz_decors:block/tole_larmee_rouille"
- }
-}

@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/inner_stairs",
- "textures": {
-  "bottom": "heraliz_decors:block/enduit_ocre",
-  "top": "heraliz_decors:block/enduit_ocre",
-  "side": "heraliz_decors:block/enduit_ocre"
- }
-}

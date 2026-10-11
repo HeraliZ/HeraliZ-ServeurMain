@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -83,8 +82,6 @@ public final class Blocs {
 
     // ------------------------------------------------------------------ grands effets (dessinés d'un seul tenant), eau, ambiance
     public static final RegistryObject<Block> GRANDE_CASCADE = bloc("grande_cascade", () -> new fr.heraliz.decors.effet.CascadeBloc(effet()));
-    public static final RegistryObject<Block> RAYON_SOLEIL = bloc("rayon_soleil", () -> new fr.heraliz.decors.effet.EffetBloc(effet(),
-            fr.heraliz.decors.effet.RayonBE::new));
     public static final RegistryObject<Block> AMBIANCE = bloc("ambiance", () -> new fr.heraliz.decors.effet.Ambiance(effet()));
     public static final RegistryObject<Block> EAU_DECOR = bloc("eau_decor", () -> new fr.heraliz.decors.bloc.EauDecor(
             BlockBehaviour.Properties.of().mapColor(MapColor.WATER).noCollission().noOcclusion().replaceable().noLootTable()
@@ -103,11 +100,8 @@ public final class Blocs {
     public static final RegistryObject<Block> ROCHE_ROUGE = bloc("roche_rouge", () -> new Block(roche(MapColor.TERRACOTTA_RED)));
     public static final RegistryObject<Block> ROCHE_SOMBRE = bloc("roche_sombre", () -> new Block(roche(MapColor.DEEPSLATE)));
     public static final RegistryObject<Block> ROCHE_OCRE_ESCALIER = escalier("roche_ocre_escalier", ROCHE_OCRE);
-    public static final RegistryObject<Block> ROCHE_OCRE_DALLE = dalle("roche_ocre_dalle");
     public static final RegistryObject<Block> ROCHE_ROUGE_ESCALIER = escalier("roche_rouge_escalier", ROCHE_ROUGE);
-    public static final RegistryObject<Block> ROCHE_ROUGE_DALLE = dalle("roche_rouge_dalle");
     public static final RegistryObject<Block> ROCHE_SOMBRE_ESCALIER = escalier("roche_sombre_escalier", ROCHE_SOMBRE);
-    public static final RegistryObject<Block> ROCHE_SOMBRE_DALLE = dalle("roche_sombre_dalle");
     public static final RegistryObject<Block> ROCHER = bloc("rocher", () -> new Deco.Rocher(roche(MapColor.STONE).noOcclusion(),
             s -> switch (s.getValue(Proprietes.TAILLE)) {
                 case PETIT -> boite(3, 0, 3, 13, 6, 13);
@@ -157,10 +151,6 @@ public final class Blocs {
 
     private static RegistryObject<Block> escalier(String nom, RegistryObject<Block> base) {
         return bloc(nom, () -> new StairBlock(() -> base.get().defaultBlockState(), roche(MapColor.STONE)));
-    }
-
-    private static RegistryObject<Block> dalle(String nom) {
-        return bloc(nom, () -> new SlabBlock(roche(MapColor.STONE)));
     }
 
     static RegistryObject<Block> bloc(String nom, Supplier<Block> s) {
