@@ -109,8 +109,11 @@ jobs:
       - name: Contrôles (GeckoLib, noms perso)
         run: python outils/verifier.py --sans-split
 
+      # copies à télécharger dans l'onglet Actions : un quota d'artefacts plein (« Artifact storage quota has been
+      # hit ») ne doit pas bloquer la suite
       - name: Garder nos jars serveur
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: mods-serveur
           path: livraison/mods serveur/*-serveur.jar
@@ -118,6 +121,7 @@ jobs:
 
       - name: Garder nos jars joueurs
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: mods-client
           path: |
