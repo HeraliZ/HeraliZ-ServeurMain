@@ -301,10 +301,12 @@ public final class ScanManager {
             s.lastAt = System.currentTimeMillis();
             return;
         }
-        if (reference.isEmpty() && official.isEmpty() && !warnedNoReference) {
+        if (reference.isEmpty() && !warnedNoReference) {
             warnedNoReference = true;
-            Spartan.LOGGER.warn("[Spartan] Ni modpack officiel (config/spartan/officiel.json) ni client de référence : "
-                    + "seuls les indices universels sont relevés.");
+            Spartan.LOGGER.warn(official.isEmpty()
+                    ? "[Spartan] Ni modpack officiel (config/spartan/officiel.json) ni client de référence : seuls les indices universels sont relevés."
+                    : "[Spartan] Client de référence non appris : le code d'origine inconnue reste « suspect » (orange) au premier contrôle. "
+                    + "Depuis un jeu propre : /spartan reference learn <pseudo>.");
         }
 
         List<Finding> findings = ScanAnalyzer.analyze(r, reference, official, s.baseline, settings());
@@ -317,7 +319,8 @@ public final class ScanManager {
         s.lastAt = System.currentTimeMillis();
 
         boolean asked = !s.requesters.isEmpty();
-        boolean fresh = findings.stream().anyMatch(f -> f.severity() != Severity.INFO && !s.alerted.contains(f.key()));
+        // nouvel indice, ou indice déjà signalé en orange qui passe au rouge (code injecté apparu en cours de partie…)
+        boolean fresh = findings.stream().anyMatch(f -> f.severity() != Severity.INFO && !s.alerted.contains(alertKey(f)));
         String evidence = null;
         if (fresh || asked) {
             evidence = alert(p, s, findings, r, trigger, verdict);
@@ -344,6 +347,7 @@ public final class ScanManager {
         }
         for (Finding f : findings) {
             s.alerted.add(f.key());
+            s.alerted.add(alertKey(f));
         }
         CheckManager.recordSilent("ClientScan", p.getUUID());
 
@@ -379,7 +383,7 @@ public final class ScanManager {
         }
         fields.add(new String[] {"Preuve", "Rapport complet joint · sur le serveur : config/spartan/evidence/" + Text.discord(file)});
         DiscordWebhook.sendReport(title, v == Severity.STRONG ? COLOR_STRONG : COLOR_SUSPECT,
-                "Aucune action automatique : surveillez-le en spectateur, puis `/sban` si c'est confirmé.",
+                "Aucune action automatique : surveillez-le en spectateur, puis `/sban` si c'est confirmé." + referenceHint(),
                 fields, file, json.getBytes(StandardCharsets.UTF_8));
 
         Component msg = Component.literal("[Spartan] ").withStyle(ChatFormatting.DARK_RED)
@@ -399,6 +403,18 @@ public final class ScanManager {
             appendLog(logLine);
         }
         return file;
+    }
+
+    /** Clé d'un indice déjà signalé : un indice fort a la sienne, pour qu'un indice orange devenu rouge soit re-signalé. */
+    private static String alertKey(Finding f) {
+        return f.severity() == Severity.STRONG ? f.key() + "!fort" : f.key();
+    }
+
+    /** Rappel quand le client de référence n'est pas appris : le code d'origine inconnue reste orange sans lui. */
+    private static String referenceHint() {
+        return reference.isEmpty()
+                ? "\n⚠️ Client de référence non appris : le code inconnu reste en orange au premier contrôle. Depuis un jeu PROPRE : `/spartan reference learn <pseudo>`."
+                : "";
     }
 
     private static String firstText(List<Finding> findings) {

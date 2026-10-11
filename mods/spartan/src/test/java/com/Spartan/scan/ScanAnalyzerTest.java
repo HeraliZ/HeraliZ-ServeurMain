@@ -231,13 +231,65 @@ class ScanAnalyzerTest {
         later.natives.add(new ScanReport.NativeEntry("helper.dll", "%USERPROFILE%/documents", ""));
         later.modules.add("GAME/injected@?");
         List<Finding> fs = ScanAnalyzer.analyze(later, ScanTestData.reference(), baseline, ScanTestData.settings());
-        assertEquals(Severity.SUSPECT, find(fs, "late:d:").severity(), fs.toString());
+        assertEquals(Severity.STRONG, find(fs, "late:d:").severity(), fs.toString());
         Finding module = find(fs, "module:GAME/injected");
         assertEquals(Severity.STRONG, module.severity());
         assertTrue(module.text().contains("en cours de partie"), module.text());
         // Le même contrôle sans changement depuis le début de la session : rien.
         assertNull(ScanAnalyzer.verdict(ScanAnalyzer.analyze(ScanTestData.clean(), ScanTestData.reference(),
                 baseline, ScanTestData.settings())));
+    }
+
+    @Test
+    void lateDllFromInstalledProgramOrOverlayStaysSuspect() {
+        Set<String> baseline = ScanAnalyzer.inventory(ScanTestData.clean());
+        ScanReport later = ScanTestData.clean();
+        later.natives.add(new ScanReport.NativeEntry("rgbhelper.dll", "%PROGRAMFILES%/vendor", ""));
+        later.natives.add(new ScanReport.NativeEntry("discord_hook64.dll", "%USERPROFILE%/appdata/local/discord", ""));
+        List<Finding> fs = ScanAnalyzer.analyze(later, ScanTestData.reference(), baseline, ScanTestData.settings());
+        for (Finding f : fs) {
+            if (f.key().startsWith("late:d:")) {
+                assertEquals(Severity.SUSPECT, f.severity(), f.toString());
+            }
+        }
+    }
+
+    @Test
+    void unknownCodeAppearingAfterJoiningIsStrongWithoutReference() {
+        Set<String> baseline = ScanAnalyzer.inventory(ScanTestData.clean());
+        ScanReport later = ScanTestData.clean();
+        later.origins.add(new ScanReport.OriginEntry("unnamed@app:a.b", List.of("a.b.Ghost"), List.of("Render thread")));
+        List<Finding> fs = ScanAnalyzer.analyze(later, null, baseline, ScanTestData.settings());
+        Finding f = find(fs, "origin:unnamed@app:a.b");
+        assertEquals(Severity.STRONG, f.severity(), fs.toString());
+        assertTrue(f.text().contains("en cours de partie"), f.text());
+        // Au premier contrôle (pas encore d'inventaire de session) et sans référence : soupçon seulement.
+        assertEquals(Severity.SUSPECT, find(ScanAnalyzer.analyze(later, null, null, ScanTestData.settings()),
+                "origin:unnamed@app:a.b").severity());
+    }
+
+    @Test
+    void scrambledInjectedClientIsStrongWithoutReference() {
+        // relevé réel d'un client injecté (11/10) : classes aux noms brouillés, dans des threads sans nom
+        ScanReport r = ScanTestData.clean();
+        r.unnamedThreads = 8;
+        r.origins.add(new ScanReport.OriginEntry("unnamed@?:\u001ad\u0010s",
+                List.of("\u001ad\u0010s.\u0014b4od\u0018\u0003i\t\n00"), List.of("(sans nom)")));
+        List<Finding> fs = ScanAnalyzer.analyze(r, null, null, ScanTestData.settings());
+        Finding f = find(fs, "origin:unnamed@?:");
+        assertEquals(Severity.STRONG, f.severity(), fs.toString());
+        assertTrue(f.text().contains("\\x1A"), f.text());
+        assertEquals(Severity.STRONG, find(fs, "threads:unnamed").severity());
+    }
+
+    @Test
+    void unknownReadableCodeWithoutReferenceStaysSuspect() {
+        ScanReport r = ScanTestData.clean();
+        r.unnamedThreads = 1;
+        r.origins.add(new ScanReport.OriginEntry("unnamed@app:org.example", List.of("org.example.Helper"), List.of("Worker")));
+        List<Finding> fs = ScanAnalyzer.analyze(r, null, null, ScanTestData.settings());
+        assertEquals(Severity.SUSPECT, find(fs, "origin:unnamed@app:org.example").severity());
+        assertEquals(Severity.SUSPECT, find(fs, "threads:unnamed").severity());
     }
 
     @Test
