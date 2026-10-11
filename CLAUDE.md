@@ -368,18 +368,20 @@ Règles :
      restent), ceux du dépôt sont envoyés avec leurs réglages (jamais de base de données) ;
    - `config/`, `tacz/`, `heralisz_matchs/` et `mohist-config/` sont complétés ou mis à jour, sans rien supprimer ; `config/spartan/officiel.json` est remplacé
      (les bans et preuves de Spartan, dans `config/spartan/`, ne sont jamais touchés) ;
-   - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde : **les configs du dépôt font foi**, un réglage
-     changé à la main sur le serveur est écrasé au prochain envoi ;
+   - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde (nom lu dans le `server.properties` du Ptero) :
+     **les configs du dépôt font foi**, un réglage changé à la main sur le serveur est écrasé au prochain envoi ;
    - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
      racine du serveur se mettent à jour à la main) ;
 5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ».
 
-**Nouvelle carte** : « Run workflow » avec la case « deposer_carte ». Après la mise à jour habituelle, il prévient les
-joueurs, arrête le serveur proprement, garde l'ancien monde tel quel sous le nom `<monde>_ancien_<date>` (jamais
-supprimé ; ses dossiers `_nether` / `_the_end` aussi, s'il y en a), envoie `monde/HeraliZ/` à sa place, contrôle chaque
-fichier, recopie les réglages `serverconfig/` de l'ancien monde puis ceux de `defaultconfigs/`, et redémarre. Si l'envoi
-échoue, l'ancien monde reprend sa place et le serveur redémarre dessus. Le nom du monde est lu dans le `server.properties`
-du Ptero. Restent hors du monde, donc gardés : clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe, grades,
+**Nouvelle carte** : « Run workflow » avec la case « deposer_carte ». Après la mise à jour habituelle, il envoie
+`monde/HeraliZ/` à côté du monde en service (`<monde>_nouvelle_<date>`, serveur toujours en marche, 2 fichiers à la fois,
+reprise si la liaison coupe), contrôle chaque fichier, y recopie les réglages `serverconfig/` du monde en service puis
+ceux de `defaultconfigs/` ; ensuite seulement il prévient les joueurs, arrête le serveur proprement, renomme l'ancien
+monde `<monde>_ancien_<date>` (jamais supprimé ; ses dossiers `_nether` / `_the_end` aussi, s'il y en a), donne son nom
+à la carte et redémarre. Un échec avant la bascule ne touche ni au serveur ni à son monde (carte incomplète laissée dans
+`<monde>_nouvelle_<date>`, à supprimer depuis le panel). Le nom du monde est lu dans le `server.properties` du Ptero
+(aujourd'hui `dayz_map`). Restent hors du monde, donc gardés : clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe, grades,
 bans. Repartent de zéro avec la carte : inventaires et positions des joueurs, zones d'extraction posées à la main,
 territoires pris. Les zones WorldGuard restent rattachées au nom du monde (mêmes coordonnées) : le résumé de l'envoi
 les liste, à refaire pour la nouvelle carte. L'ancien monde se supprime depuis le panel quand tout va bien.
@@ -567,8 +569,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
   leurs comptes dès le premier démarrage. `ops.json` n'est pas dans le dépôt.
-- **Monde** : `server.properties` → `level-name=HeraliZ`. Le dossier du monde doit porter ce nom. Les configs de
-  `serveur/defaultconfigs/` sont copiées par Forge dans tout nouveau monde.
+- **Monde** : sur le Ptero, le monde s'appelle **`dayz_map`** (`level-name` du `server.properties` du Ptero, lu par la
+  mise en ligne). Celui du dépôt dit encore `HeraliZ` : une « installation complète » le mettrait à la place et le
+  serveur créerait un monde neuf `HeraliZ` (aligner `level-name` avant). Avant le 11/10, la mise en ligne prenait le nom
+  du dépôt et copiait `serverconfig/` dans un dossier `HeraliZ/` du Ptero, qui n'est pas le monde en service. Les
+  configs de `serveur/defaultconfigs/` sont copiées par Forge dans tout nouveau monde.
 - **Nouvelle carte (en cours, hors dépôt)** : trois mondes séparés : le spawn, la carte (loot, villes, extractions) et
   les bases des joueurs. Au spawn, un PNJ téléportera au hasard sur la carte (à faire quand la carte sera finie). Les
   territoires des clans ne marchent aujourd'hui que dans l'overworld (`Territoires.monde()`) : à rendre réglable si la

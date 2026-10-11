@@ -184,7 +184,14 @@ jobs:
                   f.write('rm -f "/plugins/%s"' % n.replace('"', '') + chr(10))
           print("plugins retirés du Ptero :", ", ".join(retirer) or "aucun")
           EOF
-          MONDE=$(grep -E '^level-name=' serveur/server.properties | cut -d= -f2)
+          # le monde en service : level-name du server.properties du Ptero (celui du dépôt à défaut)
+          MONDE=""
+          if lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+              -e "$LFTP_REGLAGES set cmd:fail-exit yes; get /server.properties -o server_ptero.properties; bye" < /dev/null 2> /dev/null; then
+            MONDE=$(tr -d '\r' < server_ptero.properties | sed -n 's/^level-name=//p' | head -n 1)
+          fi
+          case "$MONDE" in ""|.|..|*[!A-Za-z0-9_.-]*) MONDE=$(grep -E '^level-name=' serveur/server.properties | cut -d= -f2);; esac
+          echo "Monde du serveur : /$MONDE"
           lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "
             $LFTP_REGLAGES
             source retirer.lftp;
@@ -217,9 +224,11 @@ jobs:
             mput -O / serveur/mohist-*.jar serveur/server.properties serveur/bukkit.yml serveur/spigot.yml serveur/commands.yml serveur/eula.txt serveur/server-icon.png;
             bye"
 
-      # Nouvelle carte (case « deposer_carte ») : la carte de départ de monde/HeraliZ devient le monde du serveur. Serveur
-      # arrêté proprement d'abord ; l'ancien monde est gardé tel quel sous le nom <monde>_ancien_<date> (jamais supprimé) ;
-      # la carte est envoyée puis contrôlée fichier par fichier ; si l'envoi échoue, l'ancien monde est remis à sa place.
+      # Nouvelle carte (case « deposer_carte ») : la carte de départ de monde/HeraliZ devient le monde du serveur.
+      # 1. envoi de la carte À CÔTÉ (<monde>_nouvelle_<date>) pendant que le serveur tourne, reprise si la liaison coupe,
+      #    contrôle fichier par fichier, réglages serverconfig du monde en service puis ceux du dépôt ;
+      # 2. joueurs prévenus, arrêt propre ; 3. l'ancien monde prend le nom <monde>_ancien_<date> (jamais supprimé) et la
+      #    carte prend sa place ; 4. redémarrage. Un échec avant la bascule ne touche ni au serveur ni à son monde.
       # Clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe et bans sont hors du monde : rien n'est perdu.
       - name: Mettre la carte de départ en service
         if: github.event_name == 'workflow_dispatch' && inputs.deposer_carte
@@ -250,11 +259,44 @@ jobs:
               exit 1;;
           esac
           DATE=$(date -u +%Y-%m-%d_%Hh%M)
-          echo "Monde du serveur : /$MONDE (l'ancien sera gardé dans /${MONDE}_ancien_$DATE)"
+          NOUVEAU="${MONDE}_nouvelle_$DATE"
+          if ! sftp "cls -1 /;" > racine_brute.txt; then
+            echo "::error::Les dossiers du Ptero ne se lisent pas. Rien n'a été changé."
+            exit 1
+          fi
+          tr -d '\r' < racine_brute.txt | sed 's:/*$::; s:.*/::' > racine_ptero.txt
+          echo "Monde du serveur : /$MONDE. Dossiers du Ptero : $(paste -sd ' ' racine_ptero.txt)"
 
-          # arrêt propre : le serveur sauvegarde l'ancien monde avant qu'on y touche
+          # 1. la carte à côté, serveur en marche ; une liaison coupée reprend là où elle s'est arrêtée (3 essais)
+          for essai in 1 2 3; do
+            if sftp "set net:timeout 120; set net:max-retries 10; set net:reconnect-interval-base 10; mirror -R -P 2 monde/HeraliZ \"/$NOUVEAU\";"; then
+              break
+            fi
+            if [ "$essai" = 3 ]; then
+              echo "::error::La carte n'a pas pu être envoyée (3 essais). Le serveur et son monde n'ont pas été touchés ; carte incomplète dans /$NOUVEAU (à supprimer depuis le panel)."
+              exit 1
+            fi
+            echo "Envoi interrompu (essai $essai sur 3) : reprise là où il s'est arrêté."
+          done
+          # contrôle : chaque fichier présent avec la bonne taille (seule la ligne « mkdir -p » du dossier est attendue)
+          sftp "mirror -R --dry-run --ignore-time --no-perms monde/HeraliZ \"/$NOUVEAU\";" > controle.txt 2>&1 || echo "contrôle impossible" >> controle.txt
+          grep -v '^mkdir -p ' controle.txt | sed -E 's#//[^/@]*@#//#g' > ecarts.txt || true
+          if [ -s ecarts.txt ] || ! grep -q '^mkdir -p ' controle.txt; then
+            head -n 50 ecarts.txt
+            echo "::error::Carte envoyée incomplète ($(wc -l < ecarts.txt) écarts). Le serveur et son monde n'ont pas été touchés ; carte incomplète dans /$NOUVEAU (à supprimer depuis le panel)."
+            exit 1
+          fi
+          echo "Carte envoyée dans /$NOUVEAU et contrôlée : $(find monde/HeraliZ -type f | wc -l) fichiers."
+          # réglages « serveur » des mods : ceux du monde en service, puis ceux du dépôt (ils font foi)
+          if grep -Fxq "$MONDE" racine_ptero.txt && existe "/$MONDE/serverconfig"; then
+            sftp "mirror \"/$MONDE/serverconfig\" ancien_serverconfig;" && sftp "mirror -R ancien_serverconfig \"/$NOUVEAU/serverconfig\";" \
+              || echo "::warning::Réglages du monde en service non recopiés (Forge reprendra ceux de defaultconfigs)."
+          fi
+          sftp "mirror -R serveur/defaultconfigs \"/$NOUVEAU/serverconfig\";" || echo "::warning::defaultconfigs non recopié (Forge le fera au démarrage)."
+
+          # 2. arrêt propre : le serveur sauvegarde l'ancien monde avant la bascule
           if ! E=$(etat); then
-            echo "::error::L'API du Ptero ne répond pas (PTERO_URL, PTERO_SERVER_ID, PTERO_API_KEY). Rien n'a été changé."
+            echo "::error::L'API du Ptero ne répond pas : serveur et monde non touchés (carte prête dans /$NOUVEAU)."
             exit 1
           fi
           echo "Serveur : $E"
@@ -264,7 +306,7 @@ jobs:
               sleep 60
             fi
             if ! ptero -X POST "$API/power" -d '{"signal":"stop"}'; then
-              echo "::error::Le panel refuse d'arrêter le serveur. Rien n'a été changé."
+              echo "::error::Le panel refuse d'arrêter le serveur : monde non touché (carte prête dans /$NOUVEAU)."
               exit 1
             fi
             for _ in $(seq 90); do
@@ -273,18 +315,17 @@ jobs:
               [ "$E" = "offline" ] && break
             done
             if [ "$E" != "offline" ]; then
-              echo "::error::Le serveur ne s'est pas arrêté en 15 minutes (état : $E). Le monde n'a pas été changé : vérifier le serveur dans le panel."
+              echo "::error::Le serveur ne s'est pas arrêté en 15 minutes (état : $E) : monde non touché (carte prête dans /$NOUVEAU). Vérifier le serveur dans le panel."
               exit 1
             fi
           fi
           echo "Serveur arrêté."
 
-          # en cas d'échec : la carte incomplète est mise de côté (<monde>_echec_<date>), l'ancien monde reprend sa place
-          ENVOI=0
+          # 3. bascule : l'ancien monde (et ses dimensions à part, s'il y en a) garde ses fichiers sous un autre nom,
+          #    la carte prend sa place. En cas d'échec, les anciens noms sont remis et le serveur redémarre dessus.
           DEPLACES=""
           retablir() {
-            echo "::error::Échec pendant $1 : l'ancien monde est remis en place."
-            if [ "$ENVOI" = 1 ] && existe "/$MONDE"; then sftp "mv \"/$MONDE\" \"/${MONDE}_echec_$DATE\";" || true; fi
+            echo "::error::Échec pendant $1 : l'ancien monde est remis en place (carte laissée dans /$NOUVEAU)."
             for nom in $DEPLACES; do
               if ! sftp "mv \"/${nom}_ancien_$DATE\" \"/$nom\";"; then
                 echo "::error::/${nom}_ancien_$DATE n'a pas pu reprendre le nom /$nom : serveur laissé arrêté, le renommer depuis le panel."
@@ -293,10 +334,6 @@ jobs:
             done
             ptero -X POST "$API/power" -d '{"signal":"start"}' || true
           }
-
-          # l'ancien monde (et ses dimensions à part, s'il y en a) gardé tel quel sous un autre nom
-          if ! sftp "cls -1 /;" > racine_brute.txt; then retablir "la lecture des dossiers du Ptero"; exit 1; fi
-          tr -d '\r' < racine_brute.txt | sed 's:/*$::; s:.*/::' > racine_ptero.txt
           for nom in "$MONDE" "${MONDE}_nether" "${MONDE}_the_end"; do
             grep -Fxq "$nom" racine_ptero.txt || continue
             if ! sftp "mv \"/$nom\" \"/${nom}_ancien_$DATE\";"; then retablir "la mise de côté de /$nom"; exit 1; fi
@@ -304,28 +341,10 @@ jobs:
             echo "/$nom gardé dans /${nom}_ancien_$DATE"
           done
           if existe "/$MONDE"; then retablir "la mise de côté de l'ancien monde (/$MONDE est toujours là)"; exit 1; fi
+          if ! sftp "mv \"/$NOUVEAU\" \"/$MONDE\";"; then retablir "la mise en place de la carte"; exit 1; fi
+          echo "La carte est maintenant /$MONDE."
           GARDE="aucun (pas de monde /$MONDE sur le Ptero)"
           case " $DEPLACES " in *" $MONDE "*) GARDE="/${MONDE}_ancien_$DATE";; esac
-
-          # la carte à sa place, puis contrôle : chaque fichier présent avec la bonne taille (le contrôle ne doit rien
-          # proposer d'envoyer : seule sa ligne « mkdir -p » du dossier du monde est attendue)
-          ENVOI=1
-          if ! sftp "mirror -R -P 8 monde/HeraliZ \"/$MONDE\";"; then retablir "l'envoi de la carte"; exit 1; fi
-          sftp "mirror -R --dry-run --ignore-time --no-perms monde/HeraliZ \"/$MONDE\";" > controle.txt 2>&1 || echo "contrôle impossible" >> controle.txt
-          grep -v '^mkdir -p ' controle.txt | sed -E 's#//[^/@]*@#//#g' > ecarts.txt || true
-          if [ -s ecarts.txt ] || ! grep -q '^mkdir -p ' controle.txt; then
-            head -n 50 ecarts.txt
-            retablir "le contrôle de la carte envoyée ($(wc -l < ecarts.txt) fichiers manquants ou incomplets)"
-            exit 1
-          fi
-          echo "Carte envoyée et contrôlée : $(find monde/HeraliZ -type f | wc -l) fichiers."
-
-          # réglages « serveur » des mods : ceux de l'ancien monde, puis ceux du dépôt (ils font foi)
-          if existe "/${MONDE}_ancien_$DATE/serverconfig"; then
-            sftp "mirror \"/${MONDE}_ancien_$DATE/serverconfig\" ancien_serverconfig;" && sftp "mirror -R ancien_serverconfig \"/$MONDE/serverconfig\";" \
-              || echo "::warning::Réglages de l'ancien monde non recopiés (Forge reprendra ceux de defaultconfigs)."
-          fi
-          sftp "mirror -R serveur/defaultconfigs \"/$MONDE/serverconfig\";" || echo "::warning::defaultconfigs non recopié (Forge le fera au démarrage)."
 
           # zones WorldGuard de l'ancien monde : elles restent rattachées au nom du monde, donc aux mêmes coordonnées
           ZONES=""
@@ -354,7 +373,7 @@ jobs:
             fi
           fi
 
-          # redémarrage sur la nouvelle carte
+          # 4. redémarrage sur la nouvelle carte
           if ! ptero -X POST "$API/power" -d '{"signal":"start"}'; then
             echo "::error::La carte est en place mais le serveur n'a pas pu être démarré : le démarrer depuis le panel."
             exit 1
