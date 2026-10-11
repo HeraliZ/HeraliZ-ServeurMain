@@ -378,7 +378,10 @@ Règles :
      **les configs du dépôt font foi**, un réglage changé à la main sur le serveur est écrasé au prochain envoi ;
    - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
      racine du serveur se mettent à jour à la main) ;
-5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer » ;
+5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ». Le
+   résumé de chaque envoi dit aussi si les webhooks Discord de Spartan sont valides (Discord interrogé sans rien
+   poster) et si la clé des jetons du launcher est réglée ; case « tester_discord » : un message de test part dans le
+   salon privé des alertes ;
 6. **pack du launcher** (si les secrets du site sont réglés, après la mise à jour du Ptero) : `outils/pack_launcher.py`
    met en forme, avec Nebula (le générateur de Helios, version figée dans le workflow), Forge 1.20.1-47.4.0, les jars
    joueurs de CETTE fabrication (ceux de `officiel.json`) et le dossier `tacz`, puis les dépose par rsync sur la VM du
@@ -466,7 +469,11 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   adresse IP, 60 par heure en tout) et `/api/heraliz/a2f/preparer|activer` (double authentification : QR code, puis
   code de l'application et mot de passe ; 8 codes de secours). Un compte créé dans le launcher est un compte du site
   (boutique, votes) et inversement. Le site ne garde qu'une session de launcher par compte : se connecter sur un autre
-  PC déconnecte le premier.
+  PC déconnecte le premier. Contre qui essaie des mots de passe : 10 erreurs de connexion par adresse IP, puis 10
+  minutes d'attente (`LimiteConnexion` de l'extension ; Azuriom seul en permettait 60 par minute). Mots de passe
+  chiffrés par le site (bcrypt), jamais gardés par le launcher.
+- « verifier » dit aussi ce qui est visible depuis internet : ports ouverts, base de données (seulement sur la VM),
+  fichiers internes du site (`.env`, journaux, réglages : tous refusés), SSH et fail2ban.
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
   port `3306`, base `azuriom`, utilisateur `azuriom`, mot de passe = secret `SITE_BDD_MDP` ; jeu : Minecraft Java ;
   compte administrateur au choix du propriétaire).
@@ -498,8 +505,13 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   (`SPARTAN_LAUNCHER_SECRET`) n'entre dans le launcher qu'à ce moment-là, si le secret existe.
 - L'installateur n'est pas signé (certificat payant) : au premier lancement, Windows affiche « Windows a protégé votre
   ordinateur » → « Informations complémentaires » → « Exécuter quand même ».
-- Le launcher ne se met pas à jour tout seul : une nouvelle version se re-télécharge au même lien. Le pack (mods,
-  gunpacks), lui, se met à jour seul à chaque lancement.
+- **Mises à jour, rien à retélécharger** : à chaque partie, le launcher relit le pack en ligne et ne télécharge que
+  les fichiers changés ou manquants (empreinte de chaque fichier) ; un mod retiré du pack n'est plus chargé (liste de
+  mods passée à Forge). Le launcher lui-même se met à jour seul depuis la 1.6.0 (`mise-a-jour.js`, electron-updater) :
+  au démarrage il lit https://heraliz.fr/telecharger/latest.yml (écrit par « publier »), télécharge la nouvelle
+  version, l'installe sans rien demander et redémarre ; au plus 2 essais par version (pas de redémarrage en boucle),
+  ensuite il demande de le retélécharger. Les launchers 1.5.0 et plus anciens doivent être retéléchargés une fois.
+  Changer de version : `npm version x.y.z` dans `launcher/` (le numéro doit monter), puis « publier ».
 
 ---
 
