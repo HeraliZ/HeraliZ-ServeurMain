@@ -138,6 +138,8 @@ server {
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
     add_header Referrer-Policy "strict-origin-when-cross-origin";
+    # HSTS (pris en compte seulement en https) : le navigateur ne repasse plus jamais par http:// pour ce site
+    add_header Strict-Transport-Security "max-age=31536000" always;
 
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;

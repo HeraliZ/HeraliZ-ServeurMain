@@ -54,6 +54,24 @@ if [ "${essais:-0}" -gt 0 ]; then
 fi
 echo "Adresses bloquées en ce moment : $(fail2ban-client status sshd | awk -F: '/Currently banned/ {gsub(/[ \t]/, "", $2); print $2}')"
 
+# HSTS sur un site déjà installé (installer.sh l'écrit dans les nouveaux) : sur un Wi-Fi piégé, personne ne peut plus
+# détourner un joueur vers une fausse page http:// pour voler son mot de passe
+SITE_NGINX=/etc/nginx/sites-available/heraliz
+if [ -f "$SITE_NGINX" ] && ! grep -q "Strict-Transport-Security" "$SITE_NGINX"; then
+  cp "$SITE_NGINX" /tmp/heraliz-nginx.avant
+  sed -i '/add_header Referrer-Policy/a\    add_header Strict-Transport-Security "max-age=31536000" always;' "$SITE_NGINX"
+  if nginx -t > /dev/null 2>&1; then
+    systemctl reload nginx
+    echo "HSTS : ajouté (le site ne passe plus jamais par http://)"
+  else
+    cp /tmp/heraliz-nginx.avant "$SITE_NGINX"
+    echo "::warning::HSTS non ajouté : la configuration de nginx a été refusée, remise comme avant."
+  fi
+  rm -f /tmp/heraliz-nginx.avant
+elif [ -f "$SITE_NGINX" ]; then
+  echo "HSTS : déjà en place"
+fi
+
 # LLMNR (et mDNS) : inutiles sur un serveur, et ouverts sur internet par systemd-resolved
 if systemctl is-active --quiet systemd-resolved; then
   install -d /etc/systemd/resolved.conf.d

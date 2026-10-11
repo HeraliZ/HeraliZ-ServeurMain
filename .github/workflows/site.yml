@@ -117,14 +117,14 @@ jobs:
           ouvreur = urllib.request.build_opener(SansRedirection)
 
 
-          def lire(chemin, methode="GET", entetes=None, base=f"https://{SITE}"):
+          def lire(chemin, methode="GET", entetes=None, base=f"https://{SITE}", limite=3_000_000):
               requete = urllib.request.Request(base + chemin, method=methode,
                                                headers={"User-Agent": "HeraliZ-verification", **(entetes or {})})
               try:
-                  with ouvreur.open(requete, timeout=25) as r:
-                      return r.status, r.headers, r.read(3_000_000)
+                  with ouvreur.open(requete, timeout=60) as r:
+                      return r.status, r.headers, r.read(limite)
               except urllib.error.HTTPError as e:
-                  return e.code, e.headers, e.read(3_000_000)
+                  return e.code, e.headers, e.read(limite)
               except Exception as e:
                   return None, None, type(e).__name__.encode()
 
@@ -214,7 +214,7 @@ jobs:
               alerte("Liste des fichiers visible par tous : " + ", ".join(listes))
           else:
               print("Listes de fichiers (launcher, téléchargement, images, extensions) : toutes cachées")
-          code, h, corps = lire("/launcher/distribution.json")
+          code, h, corps = lire("/launcher/distribution.json", limite=80_000_000)
           pack = json_ou_rien(corps) if code == 200 else None
           if isinstance(pack, dict):
               def modules(liste):
@@ -230,7 +230,7 @@ jobs:
               if code_jar == 200:
                   conseils.append("les mods joueurs se téléchargent sans compte (leurs adresses sont dans distribution.json)")
           else:
-              print(f"Pack du launcher : code {code}")
+              print(f"Pack du launcher : code {code}" + (" (lisible sans compte, mais pas en JSON)" if code == 200 else ""))
 
           # 4. Fichiers internes : réglages, base, clé des jetons, journaux, sauvegardes, outils de débogage, chemins piégés
           SENSIBLES = ["/.env", "/.env.backup", "/.env.bak", "/.env.old", "/.git/HEAD", "/.git/config", "/artisan",
