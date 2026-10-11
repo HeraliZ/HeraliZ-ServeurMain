@@ -30,9 +30,11 @@ public final class CinematicCamera {
       if (on) {
          if (savedCamera == null) {
             savedCamera = mc.options.getCameraType();
-            if (savedCamera.isFirstPerson()) {
-               mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-            }
+         }
+         // 3e personne pendant TOUTE la scène, pour l'exécuteur comme pour l'exécuté : remise à chaque tick si quelque
+         // chose (touche F5, 1re personne imposée en survie par heraliz_interface) l'a ramenée à la 1re personne
+         if (mc.options.getCameraType().isFirstPerson()) {
+            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
          }
       } else if (savedCamera != null) {
          mc.options.setCameraType(savedCamera);

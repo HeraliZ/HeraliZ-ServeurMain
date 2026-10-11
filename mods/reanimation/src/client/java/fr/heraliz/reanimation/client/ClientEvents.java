@@ -8,6 +8,9 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.Input;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ComputeFovModifierEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
@@ -105,6 +108,17 @@ public final class ClientEvents {
       if ((ClientDowned.localFlags() & 145) != 0) {
          event.setCanceled(true);
          event.setSwingHand(false);
+      } else if (event.isUseItem() && event.getHand() == InteractionHand.MAIN_HAND) {
+         // Clic droit sur un joueur à terre : une arme en main (TaCZ, tactique) bloque le clic avant qu'il n'arrive au
+         // serveur, et Maj + clic droit ne réanimait pas. On envoie nous-mêmes l'interaction, comme la main vide :
+         // le serveur réanime (Maj) ou fouille (sans Maj), comme avant.
+         Minecraft mc = Minecraft.getInstance();
+         if (mc.player != null && mc.gameMode != null && mc.hitResult instanceof EntityHitResult hit
+               && hit.getEntity() instanceof LivingEntity cible && cible != mc.player && Downed.isDowned(cible)) {
+            mc.gameMode.interact(mc.player, cible, InteractionHand.MAIN_HAND);
+            event.setCanceled(true);
+            event.setSwingHand(false);
+         }
       }
    }
 
