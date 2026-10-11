@@ -126,6 +126,20 @@ public final class InterfaceClient {
         }
     }
 
+    private static boolean reglagesPoses;
+
+    /** Premier tick du jeu : tutoriel de Minecraft coupé, réglages HeraliZ une fois par installation ({@link ReglagesDefaut}). */
+    @SubscribeEvent
+    public static void reglages(TickEvent.ClientTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || reglagesPoses) return;
+        reglagesPoses = true;
+        try {
+            ReglagesDefaut.appliquer(Minecraft.getInstance());
+        } catch (Throwable t) {
+            HeralizInterface.LOG.warn("[interface] réglages HeraliZ non posés", t);
+        }
+    }
+
     /** Notre ecran a plante : journal, menu vanilla a la place et pour le reste de la session. */
     public static void secours(Throwable t) {
         enPanne = true;
