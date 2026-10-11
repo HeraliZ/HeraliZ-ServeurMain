@@ -101,10 +101,11 @@ public final class HeralizCompat {
     }
 
     // ------------------------------------------------------------------ voix de CaraCrea
-    /** Joueurs qui parlent → chuchotent-ils ? (écrit par les événements de CaraCrea, thread serveur) */
-    private static final Map<UUID, Boolean> PARLENT = new ConcurrentHashMap<>();
+    /** Joueurs qui parlent → mode de voix : 0 chuchote, 1 parle, 2 crie (écrit par les événements de CaraCrea). */
+    private static final Map<UUID, Integer> PARLENT = new ConcurrentHashMap<>();
     private static Supplier<Double> portee = () -> 48.0;
     private static Supplier<Double> porteeChuchote = () -> 24.0;
+    private static Supplier<Double> porteeCri = () -> 96.0;
 
     @SuppressWarnings("unchecked")
     private static void voix() {
@@ -117,6 +118,7 @@ public final class HeralizCompat {
             MethodHandle joueur = L.findVirtual(Class.forName("com.caracrea.api.voice.VoiceEvent"), "getPlayer",
                     MethodType.methodType(UUID.class));
             MethodHandle chuchote = L.findVirtual(debut, "isWhisper", MethodType.methodType(boolean.class));
+            MethodHandle crie = cri(debut); // mode « crier » de CaraCrea 1.5 ; null avec une version plus ancienne
             Object server = Class.forName("com.caracrea.CaraCreaConfig").getField("SERVER").get(null);
             Object normal = server.getClass().getField("voiceRange").get(server);
             Object bas = server.getClass().getField("whisperRange").get(server);
@@ -124,9 +126,17 @@ public final class HeralizCompat {
                 portee = n;
                 porteeChuchote = w;
             }
+            try {
+                if (server.getClass().getField("shoutRange").get(server) instanceof ForgeConfigSpec.DoubleValue c) {
+                    porteeCri = c;
+                }
+            } catch (NoSuchFieldException ancien) {
+                porteeCri = portee; // CaraCrea sans mode crier
+            }
             MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, (Class<Event>) debut, e -> {
                 try {
-                    PARLENT.put((UUID) joueur.invoke(e), (boolean) chuchote.invoke(e));
+                    int mode = (boolean) chuchote.invoke(e) ? 0 : crie != null && (boolean) crie.invoke(e) ? 2 : 1;
+                    PARLENT.put((UUID) joueur.invoke(e), mode);
                 } catch (Throwable ignored) {
                     // jamais casser la voix
                 }
@@ -140,13 +150,23 @@ public final class HeralizCompat {
             });
             MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
                 if (e.phase == TickEvent.Phase.START && !PARLENT.isEmpty()) {
-                    PARLENT.forEach((id, bas2) -> Noise.voice(id, bas2 ? porteeChuchote.get() : portee.get()));
+                    PARLENT.forEach((id, mode) -> Noise.voice(id, mode == 0 ? porteeChuchote.get()
+                            : mode == 2 ? porteeCri.get() : portee.get()));
                 }
             });
             Spartan.LOGGER.info("[Spartan] Anti-ESP : voix de CaraCrea reliée (un joueur caché qui parle est montré à ceux qui l'entendent).");
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             Spartan.LOGGER.warn("[Spartan] CaraCrea : API de la voix non reconnue ({}). Un joueur caché qui parle pourrait "
                     + "être entendu sans être vu.", e.toString());
+        }
+    }
+
+    /** {@code TalkStart.isShout()} de CaraCrea 1.5, ou null si cette version ne connaît pas le mode crier. */
+    private static MethodHandle cri(Class<?> debut) {
+        try {
+            return L.findVirtual(debut, "isShout", MethodType.methodType(boolean.class));
+        } catch (ReflectiveOperationException e) {
+            return null;
         }
     }
 
