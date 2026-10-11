@@ -8,13 +8,10 @@
  *      de s'attacher au jeu déjà lancé. Placée APRÈS les options du joueur : la dernière l'emporte. Java 17 : surtout
  *      pas -XX:-EnableDynamicAgentLoading (Java 21+, le jeu refuserait de démarrer).
  *    - optionsSures(options) : retire des options Java du joueur tout ce qui sert à injecter du code au lancement.
- * 2. Jeton de lancement (le serveur peut refuser ceux qui ne passent pas par ce launcher) :
- *    - jetonLancement(pseudo, dossierMods) : jeton signé, valable DUREE_JETON_S, lié au pseudo et à l'empreinte du
- *      dossier mods, passé au jeu par -Dspartan.launchToken=… Format identique à
- *      mods/spartan/src/commun/java/com/Spartan/integrity/LaunchToken.java (docs : mods/spartan/docs/LAUNCHER.md).
- *    - La clé n'est JAMAIS dans le dépôt : outils/spartan-cle.js l'écrit dans spartan-cle.json au moment de fabriquer
- *      le launcher, depuis la variable SPARTAN_LAUNCHER_SECRET (même valeur que le secret GitHub du serveur). Sans
- *      clé : pas de jeton, le serveur ne fait que signaler.
+ * 2. Jeton de lancement (le serveur peut refuser ceux qui ne passent pas par ce launcher) : signé par le SITE pour le
+ *    compte connecté (mode B de mods/spartan/docs/LAUNCHER.md ; /api/heraliz/jeton-jeu, site/extension/heraliz),
+ *    valable 6 h, lié au pseudo du compte et à l'empreinte du dossier mods (empreinteMods), passé au jeu par
+ *    -Dspartan.launchToken=… Le launcher ne contient aucune clé : il ne peut pas fabriquer de jeton lui-même.
  */
 
 const crypto = require('crypto')
@@ -38,9 +35,9 @@ const DANGEREUSES = [
     /^-Dspartan\./i
 ]
 
-/** Durée de validité d'un jeton : une soirée de jeu (le serveur ne le vérifie qu'à la connexion). */
-const DUREE_JETON_S = 6 * 3600
 const ARG_JETON = '-Dspartan.launchToken='
+// jeton v1 rendu par le site : base64url(contenu) "." base64url(HMAC-SHA256), rien d'autre (il finit en option Java)
+const JETON = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
 
 /** Options Java ajoutées à chaque lancement (copie). */
 function protections() {
@@ -102,35 +99,9 @@ function empreinteMods(dossierMods) {
     return sha256Hex(lines.join('\n'))
 }
 
-function b64url(buf) {
-    return Buffer.from(buf).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
-/** Jeton v1 : base64url(payload) "." base64url(HMAC-SHA256(clé, payload)). */
-function creerJeton(cle, pseudo, expiration, empreinte) {
-    const alea = crypto.randomBytes(12).toString('hex')
-    const payload = Buffer.from(['v1', b64url(Buffer.from(pseudo, 'utf8')), String(expiration), empreinte, alea].join('|'), 'utf8')
-    const signature = crypto.createHmac('sha256', Buffer.from(cle, 'utf8')).update(payload).digest()
-    return b64url(payload) + '.' + b64url(signature)
-}
-
-/** Clé fabriquée avec le launcher (spartan-cle.json), ou null. */
-function cle() {
-    try {
-        const c = JSON.parse(fs.readFileSync(path.join(__dirname, 'spartan-cle.json'), 'utf8')).cle
-        return typeof c === 'string' && c.length >= 32 ? c : null
-    } catch (e) {
-        return null
-    }
-}
-
-/** Option Java du jeton pour ce lancement, ou null si le launcher n'a pas de clé. */
-function argumentJeton(pseudo, dossierMods, maintenant = Math.floor(Date.now() / 1000), cleImposee = undefined) {
-    const k = cleImposee === undefined ? cle() : cleImposee
-    if (!k || typeof pseudo !== 'string' || !pseudo.trim()) {
-        return null
-    }
-    return ARG_JETON + creerJeton(k, pseudo.trim(), maintenant + DUREE_JETON_S, empreinteMods(dossierMods))
+/** Option Java du jeton rendu par le site pour ce lancement, ou null (pas de jeton, ou jeton mal formé). */
+function argumentJeton(jeton) {
+    return typeof jeton === 'string' && JETON.test(jeton) ? ARG_JETON + jeton : null
 }
 
 /** Arguments à écrire dans le journal du launcher : le jeton est masqué. */
@@ -138,4 +109,4 @@ function masquerJeton(args) {
     return args.map(a => typeof a === 'string' && a.startsWith(ARG_JETON) ? ARG_JETON + '**********' : a)
 }
 
-module.exports = { protections, optionsSures, argumentJeton, masquerJeton, empreinteMods, DUREE_JETON_S }
+module.exports = { protections, optionsSures, argumentJeton, masquerJeton, empreinteMods }

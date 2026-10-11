@@ -45,11 +45,10 @@ jobs:
       - name: Tests et relecture du code
         run: npm test && npm run lint
 
-      # la clé des jetons Spartan entre dans le launcher seulement ici (jamais dans Git) ; sans elle, pas de jeton
+      # aucune clé dans le launcher : les jetons de lancement de Spartan sont signés par le site (mode B)
       - name: Installateur Windows
-        env:
-          SPARTAN_LAUNCHER_SECRET: ${{ secrets.SPARTAN_LAUNCHER_SECRET }}
         run: |
+          rm -f app/assets/js/spartan-cle.json
           npm run dist:win
           ls -l dist/*.exe
           # adresse de la mise à jour automatique, lue par le launcher installé (mise-a-jour.js)

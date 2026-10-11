@@ -28,6 +28,7 @@ const CHAMPS = { name: 'pseudo', email: 'email', password: 'motDePasse', conditi
 const PSEUDO = /^[A-Za-z0-9_]{3,16}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const SECRET_A2F = /^[A-Z2-7]{16,128}$/
+const JETON_JEU = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
 
 // Requête JSON en HTTPS vers le site ; rend { status, body } sans lever d'erreur pour les réponses 4xx / 5xx.
 async function requeteParDefaut(url, donnees, methode = 'POST') {
@@ -191,6 +192,24 @@ class CompteSite {
         if (reponse.status !== 200) throw erreur(reponse)
         const codes = Array.isArray(reponse.body?.codes) ? reponse.body.codes.filter(c => typeof c === 'string' && /^[\w-]{4,64}$/.test(c)) : []
         return { codes }
+    }
+
+    // Jeton de lancement du jeu signé par le site pour le compte connecté (Spartan le vérifie à la connexion au serveur),
+    // lié au pseudo du compte et à l'empreinte du dossier mods. null si le site n'en fait pas ; erreur si la session a
+    // expiré ou si le compte est banni.
+    async jetonJeu(jeton, empreinte) {
+        if (!/^[0-9a-f]{64}$/.test(empreinte || '')) return null
+        let reponse
+        try {
+            reponse = await this.appeler('heraliz/jeton-jeu', { access_token: jeton, empreinte })
+        } catch {
+            return null
+        }
+        if (reponse.status === 200 && typeof reponse.body?.jeton === 'string' && JETON_JEU.test(reponse.body.jeton)) return reponse.body.jeton
+        if (reponse.status === 401) throw new Error(SESSION_EXPIREE)
+        if (reponse.status === 403 && reponse.body?.reason === 'user_banned') throw new Error(BANNI)
+        // extension absente (404), clé pas encore créée (503), site en panne : sans jeton, le serveur décide
+        return null
     }
 }
 
