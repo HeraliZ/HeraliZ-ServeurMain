@@ -93,6 +93,8 @@ else
 fi
 chown -R www-data:www-data "$DOSSIER"
 chmod -R u+rwX,g+rX,o+rX "$DOSSIER"
+# le .env d'Azuriom (mot de passe de la base, clé du site) : lisible par le site seulement
+if [ -f "$DOSSIER/.env" ]; then chmod 640 "$DOSSIER/.env"; fi
 # racine du site : le dossier public d'Azuriom dès qu'il existe (sinon l'installeur, à la racine du dossier)
 RACINE="$DOSSIER"
 [ -f "$DOSSIER/public/index.php" ] && RACINE="$DOSSIER/public"
