@@ -53,5 +53,15 @@
   "gui.heraliz_interface.pause.carte.sans_clan_puce": "No clan",
   "gui.heraliz_interface.pause.carte.zones": "%s zones held",
   "gui.heraliz_interface.pause.carte.zone": "1 zone held",
-  "gui.heraliz_interface.pause.carte.aucune_zone": "No zone held"
+  "gui.heraliz_interface.pause.carte.aucune_zone": "No zone held",
+  "gui.heraliz_interface.pause.langue": "Language",
+  "gui.heraliz_interface.titre.jouer": "Play",
+  "gui.heraliz_interface.titre.options": "Options",
+  "gui.heraliz_interface.titre.quitter": "Quit game",
+  "gui.heraliz_interface.titre.version": "Version 1 · Season 1",
+  "gui.heraliz_interface.titre.langue": "Language",
+  "gui.heraliz_interface.titre.recherche": "Looking for the server…",
+  "gui.heraliz_interface.titre.injoignable": "Server unreachable",
+  "gui.heraliz_interface.titre.en_ligne": "%s online · %s ms",
+  "gui.heraliz_interface.titre.ping": "%s ms"
 }

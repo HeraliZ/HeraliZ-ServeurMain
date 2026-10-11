@@ -111,7 +111,7 @@ class LauncherService {
             version: app.getVersion(),
             profile: profile ? { username: profile.displayName, rulesAccepted: profile.rulesAccepted === true, compte: Boolean(profile.compte) } : null,
             comptesSite: Boolean(this.compteSite),
-            settings: { ramGB: Math.min(maxRAM, Math.max(2, ramGB)), maxRAM, totalRAM, fullscreen: Config.getFullscreen(), autoConnect: Config.getAutoConnect() },
+            settings: { ramGB: Math.min(maxRAM, Math.max(2, ramGB)), maxRAM, totalRAM, fullscreen: Config.getFullscreen() },
             configured: Boolean(this.config.serverAddress && this.config.distributionUrl),
             discordConfigured: Boolean(this.config.discordUrl), progress: this.progress
         }
@@ -230,11 +230,10 @@ class LauncherService {
 
     saveSettings(value) {
         if (this.busy) throw new Error('Les réglages sont verrouillés pendant la préparation et la partie.')
-        if (!value || !Number.isInteger(value.ramGB) || value.ramGB < 2 || value.ramGB > this.getState().settings.maxRAM || typeof value.fullscreen !== 'boolean' || typeof value.autoConnect !== 'boolean') throw new Error('Réglages invalides.')
+        if (!value || !Number.isInteger(value.ramGB) || value.ramGB < 2 || value.ramGB > this.getState().settings.maxRAM || typeof value.fullscreen !== 'boolean') throw new Error('Réglages invalides.')
         Config.setMinRAM(this.config.serverId, '2G')
         Config.setMaxRAM(this.config.serverId, `${value.ramGB}G`)
         Config.setFullscreen(value.fullscreen)
-        Config.setAutoConnect(value.autoConnect)
         Config.save()
         return this.getState()
     }

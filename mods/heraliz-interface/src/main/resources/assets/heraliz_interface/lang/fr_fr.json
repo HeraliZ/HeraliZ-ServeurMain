@@ -53,5 +53,15 @@
   "gui.heraliz_interface.pause.carte.sans_clan_puce": "Sans clan",
   "gui.heraliz_interface.pause.carte.zones": "%s zones tenues",
   "gui.heraliz_interface.pause.carte.zone": "1 zone tenue",
-  "gui.heraliz_interface.pause.carte.aucune_zone": "Aucune zone tenue"
+  "gui.heraliz_interface.pause.carte.aucune_zone": "Aucune zone tenue",
+  "gui.heraliz_interface.pause.langue": "Langue",
+  "gui.heraliz_interface.titre.jouer": "Jouer",
+  "gui.heraliz_interface.titre.options": "Options",
+  "gui.heraliz_interface.titre.quitter": "Quitter le jeu",
+  "gui.heraliz_interface.titre.version": "Version 1 · Saison 1",
+  "gui.heraliz_interface.titre.langue": "Langue",
+  "gui.heraliz_interface.titre.recherche": "Recherche du serveur…",
+  "gui.heraliz_interface.titre.injoignable": "Serveur injoignable",
+  "gui.heraliz_interface.titre.en_ligne": "%s en ligne · %s ms",
+  "gui.heraliz_interface.titre.ping": "%s ms"
 }

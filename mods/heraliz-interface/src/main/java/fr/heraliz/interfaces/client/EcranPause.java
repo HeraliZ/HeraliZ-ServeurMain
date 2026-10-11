@@ -50,6 +50,8 @@ public class EcranPause extends Screen {
     private final List<MenuLigne> lignes = new ArrayList<>();
     private final List<Tuile> tuiles = new ArrayList<>();
     private final List<Integer> separateurs = new ArrayList<>();
+    @Nullable
+    private Langues.Selecteur langue;
     private int colX, colW, logoX, logoY, logoW, logoH, sousY;
     @Nullable
     private String sousTitre;
@@ -104,12 +106,12 @@ public class EcranPause extends Screen {
         int accent = Ui.accent();
         String discord = InterfaceConfig.discord(), boutique = lien(InterfaceConfig.BOUTIQUE_LIEN);
 
-        // ---- petits boutons : Joueurs (serveur multi : ni Succès, ni Statistiques, ni Ouvrir au LAN)
+        // ---- petits boutons : Joueurs, puis le choix de langue (serveur multi : ni Succès, ni Statistiques, ni LAN)
         record Petit(int icone, Component libelle, Runnable action) {
         }
         List<Petit> petits = new ArrayList<>();
         petits.add(new Petit(Icons.JOUEURS, Component.translatable("gui.heraliz_interface.pause.joueurs"), () -> mc.setScreen(new SocialInteractionsScreen())));
-        int rangees = (petits.size() + 1) / 2;
+        int rangees = (petits.size() + 2) / 2; // + la tuile de langue
         int nbLignes = 4 + (discord != null ? 1 : 0); // reprendre, informations, (discord), boutique, options
 
         // ---- tailles : normale (canevas 640 x 360) ou compacte (petite hauteur d'interface)
@@ -172,11 +174,13 @@ public class EcranPause extends Screen {
         int demi = (colW - 6) / 2;
         for (int i = 0; i < petits.size(); i++) {
             Petit p = petits.get(i);
-            boolean seulSurRangee = i == petits.size() - 1 && i % 2 == 0;
             int tx = x + (i % 2 == 0 ? 0 : colW - demi);
             int ty = y + (i / 2) * (th + ecart);
-            tuiles.add(new Tuile(tx, ty, seulSurRangee ? colW : demi, th, p.icone(), p.libelle(), accent, p.action()));
+            tuiles.add(new Tuile(tx, ty, demi, th, p.icone(), p.libelle(), accent, p.action()));
         }
+        int il = petits.size();
+        langue = new Langues.Selecteur(x + (il % 2 == 0 ? 0 : colW - demi), y + (il / 2) * (th + ecart), demi, th, 12,
+                t("pause.langue").toUpperCase(Locale.ROOT), accent);
         y += rangees * th + (rangees - 1) * ecart;
         separateurs.add(y + groupe / 2);
         y += groupe;
@@ -192,6 +196,7 @@ public class EcranPause extends Screen {
 
         for (MenuLigne l : lignes) addRenderableWidget(l);
         for (Tuile tu : tuiles) addRenderableWidget(tu);
+        addRenderableWidget(langue);
 
         // ---- liens Mojang (avis, bugs), discrets en bas a droite
         if (InterfaceConfig.oui(InterfaceConfig.LIENS_MOJANG, true)) {
@@ -334,7 +339,7 @@ public class EcranPause extends Screen {
         // apparition en cascade des boutons
         int i = 0;
         for (MenuLigne l : lignes) {
-            if (i == lignes.size() - 1) i += tuiles.size(); // « quitter » apres les petits boutons
+            if (i == lignes.size() - 1) i += tuiles.size() + (langue != null ? 1 : 0); // « quitter » apres les petits boutons
             float ti = Anim.sortie(Anim.progression(ouvert, 90 + i * 26L, 260));
             l.opacite = ti;
             l.decalageY = (1 - ti) * 6;
@@ -346,6 +351,11 @@ public class EcranPause extends Screen {
             tu.opacite = ti;
             tu.decalageY = (1 - ti) * 6;
             k++;
+        }
+        if (langue != null) {
+            float ti = Anim.sortie(Anim.progression(ouvert, 90 + k * 26L, 260));
+            langue.opacite = ti;
+            langue.decalageY = (1 - ti) * 6;
         }
         if (carte) dessinerCarte(g, Anim.sortie(Anim.progression(ouvert, 140, 320)), accent);
         super.render(g, mouseX, mouseY, partialTick);

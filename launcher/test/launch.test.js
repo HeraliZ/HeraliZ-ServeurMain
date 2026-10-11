@@ -140,7 +140,8 @@ test('Minecraft 1.20.1 receives offline identity, quick play and no unresolved t
     assert.equal(args[args.indexOf('--username') + 1], 'Survivant')
     assert.equal(args[args.indexOf('--uuid') + 1], profile.uuid)
     assert.equal(args[args.indexOf('--accessToken') + 1], '0')
-    assert.equal(args[args.indexOf('--quickPlayMultiplayer') + 1], 'play.example.com:25565')
+    // pas de connexion directe : l'écran titre HeraliZ a son bouton « Jouer »
+    assert.equal(args.includes('--quickPlayMultiplayer') || args.includes('--server'), false)
     assert.equal(args.some(arg => String(arg).includes('${')), false)
     assert.ok(args.includes('-XX:+DisableAttachMechanism'), 'protection anti-injection de Spartan')
     assert.equal(JSON.stringify(vanilla), before)

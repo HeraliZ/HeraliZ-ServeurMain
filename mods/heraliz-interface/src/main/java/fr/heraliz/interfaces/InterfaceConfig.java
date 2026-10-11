@@ -26,6 +26,8 @@ public final class InterfaceConfig {
             INFORMATIONS_LIBELLE, SOUS_TITRE, ACCENT;
     public static final ForgeConfigSpec.BooleanValue FLOU, ECHELLE_AUTO, PIED, LIENS_MOJANG;
     public static final ForgeConfigSpec.IntValue FLOU_FORCE;
+    public static final ForgeConfigSpec.BooleanValue TITRE_ACTIF;
+    public static final ForgeConfigSpec.ConfigValue<String> SERVEUR_ADRESSE, SERVEUR_NOM;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -57,6 +59,15 @@ public final class InterfaceConfig {
                 .define("liens_mojang", true);
         PIED = b.comment("Afficher en bas de l'ecran le pseudo, le serveur et le ping")
                 .define("pied", true);
+        b.pop();
+        b.comment("Ecran titre HeraliZ (remplace celui de Minecraft) : Jouer = connexion au serveur, ni solo ni liste de serveurs")
+                .push("ecran_titre");
+        TITRE_ACTIF = b.comment("Remplacer l'ecran titre de Minecraft (false = ecran vanilla, avec le solo : essais sur PC)")
+                .define("actif", true);
+        SERVEUR_ADRESSE = b.comment("Adresse du serveur rejoint par le bouton Jouer")
+                .define("adresse", "play.heraliz.fr", o -> o instanceof String s && s.trim().matches("[A-Za-z0-9.-]+(:\\d{1,5})?"));
+        SERVEUR_NOM = b.comment("Nom du serveur (liste des serveurs de Minecraft, ecran de connexion)")
+                .define("nom", "HeraliZ");
         b.pop();
         SPEC = b.build();
     }
