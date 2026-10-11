@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_composants:item/3d/caoutchouc"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_composants:item/icon/caoutchouc"
+    }
+  }
+}

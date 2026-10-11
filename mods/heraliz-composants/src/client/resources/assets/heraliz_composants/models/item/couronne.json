@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_composants:item/3d/couronne"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_composants:item/icon/couronne"
+    }
+  }
+}

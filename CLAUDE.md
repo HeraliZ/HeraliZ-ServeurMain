@@ -98,8 +98,8 @@ monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir s
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
-Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 22 mods (sources, fabriqués en 20 jars
-`-serveur` pour le Ptero) = les 41 jars du dossier `mods/` du serveur, et les 44 jars des joueurs.
+Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 23 mods (sources, fabriqués en 21 jars
+`-serveur` pour le Ptero) = les 42 jars du dossier `mods/` du serveur, et les 45 jars des joueurs.
 
 Jamais dans Git (voir `.gitignore`) :
 - `build/`, `run/`, `dist/`, `livraison/` (refaits à chaque fabrication) ;
@@ -132,6 +132,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) |
 | heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade et rayons de soleil, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
 | heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons |
+| heraliz-composants | heraliz_composants | heraliz_composants | 47 composants de craft (armes, soins, viseurs, munitions, protection, divers) et objets de récupération à revendre, modèles 3D et icônes ; rareté = couleur du nom ; tags `heraliz_composants:<catégorie>` et `tous`. Aucune recette ni loot (refonte à venir). Modèles, icônes, traductions, tags et `ComponentDefs.java` refaits par `python mods/heraliz-composants/outils/build.py mods/heraliz-composants` (catalogue : `outils/composants.py`) |
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
 | heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) |
 | heralisz-bunker | heralisz_bunker | heralisz_bunker | portes animées (reprises de HBM Modernized, GPL), cartes d'accès, barricades |
@@ -751,7 +752,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     (MIT) embarqués dans **emote** ; Concentus (BSD) embarqué dans **caracrea**. Le propriétaire pense ces mods « 100 %
     à lui » ; son propre dépôt le contredit (ces crédits et paquets). Les brouiller = violer la licence, risque pour
     HeraliZ : ne pas le faire sans preuve de propriété et relicence écrite.
-  - **possible** (code 100 % HeraliZ) : boss, clansetbases, utils, matchs, casino, crates, loot, decors, armory,
+  - **possible** (code 100 % HeraliZ) : boss, clansetbases, utils, matchs, casino, crates, loot, decors, composants, armory,
     wonder, reanimation, airstrike, interface, extraction, dayzhotbar, crac ; + le code propre à HeraliZ de caracrea
     (`com.caracrea`) et d'emote (`fr.heraliz.emote`) et les parties « All Rights Reserved » de tactique (camo, mêlée,
     soins, grenades) — en gardant à côté, lisibles, les parties tierces ci-dessus.
