@@ -4,18 +4,24 @@ import fr.heraliz.interfaces.HeralizInterface;
 import fr.heraliz.interfaces.InterfaceConfig;
 import fr.heraliz.interfaces.kit.Flou;
 import fr.heraliz.interfaces.kit.Ui;
+import com.mojang.realmsclient.RealmsMainScreen;
 import java.util.Set;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -35,7 +41,28 @@ public final class InterfaceClient {
     private InterfaceClient() {
     }
 
-    private static boolean enPanne;
+    private static boolean enPanne, titreEnPanne;
+
+    /**
+     * Ecran titre HeraliZ ({@link EcranTitre}) a la place de celui de Minecraft, de la liste des serveurs, des mondes solo
+     * et de Realms : on ne joue que sur HeraliZ. Config « ecran_titre.actif = false » : ecrans vanilla (essais en solo).
+     */
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void ecranTitre(ScreenEvent.Opening e) {
+        Screen s = e.getNewScreen();
+        if (s == null || titreEnPanne || !InterfaceConfig.oui(InterfaceConfig.TITRE_ACTIF, true)) return;
+        if (s.getClass() == TitleScreen.class || s instanceof JoinMultiplayerScreen || s instanceof SelectWorldScreen
+                || s instanceof RealmsMainScreen) {
+            e.setNewScreen(new EcranTitre());
+        }
+    }
+
+    /** Notre ecran titre a plante : journal, ecran titre de Minecraft pour le reste de la session. */
+    public static void titreEnPanne(Throwable t) {
+        titreEnPanne = true;
+        HeralizInterface.LOG.error("[interface] ecran titre HeraliZ en panne, retour a celui de Minecraft pour cette session", t);
+        Minecraft.getInstance().setScreen(new TitleScreen());
+    }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void ouverture(ScreenEvent.Opening e) {
@@ -73,6 +100,25 @@ public final class InterfaceClient {
     public static void contourBloc(RenderHighlightEvent.Block e) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && !mc.player.isCreative()) e.setCanceled(true);
+    }
+
+    /**
+     * Vue a la 1re personne en survie (facon DayZ) : la touche F5 ne marche qu'en creatif et en spectateur (staff) ; en
+     * survie, elle ramene seulement a la 1re personne si la vue avait change. Les cinematiques des autres mods (execution,
+     * badge, scenes) changent la camera elles-memes et la remettent apres : elles ne sont pas concernees.
+     */
+    @SubscribeEvent
+    public static void vue(TickEvent.ClientTickEvent e) {
+        if (e.phase != TickEvent.Phase.START) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.player.isCreative() || mc.player.isSpectator()) return;
+        boolean appui = false;
+        while (mc.options.keyTogglePerspective.consumeClick()) {
+            appui = true;
+        }
+        if (appui && mc.options.getCameraType() != CameraType.FIRST_PERSON) {
+            mc.options.setCameraType(CameraType.FIRST_PERSON);
+        }
     }
 
     /** Notre ecran a plante : journal, menu vanilla a la place et pour le reste de la session. */

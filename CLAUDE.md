@@ -60,7 +60,8 @@ quand un choix leur revient.
   passent au style des clans.
 - Menu Échap (heraliz_interface, maquette validée) : à gauche le logo et le menu (Reprendre, Informations, Discord,
   Boutique, Options, Joueurs, Se déconnecter ; ni Mods, ni Succès, ni Statistiques, ni Ouvrir au LAN : serveur multi
-  seulement, boutons retirés aussi du menu vanilla de secours), à droite la carte du joueur (hérals,
+  seulement, boutons retirés aussi du menu vanilla de secours ; tuile « Langue » à drapeaux FR / EN / RU), à droite la
+  carte du joueur (hérals,
   joueurs en ligne, ping, extractions ouvertes, zones du clan).
 - Discord du serveur : https://discord.gg/heraliz (menu Échap et launcher). Noms de domaine heraliz.fr et heraliz.com :
   le site du serveur y sera mis plus tard (la boutique pourra y pointer).
@@ -141,7 +142,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
 | crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
-| heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : menu Échap, pack de textures du serveur imposé |
+| heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (3 à la fois, 30 à 60 min, 30 s à tenir ; `/extraction`, `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
@@ -708,6 +709,16 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   des joueurs), **sans icône** : insignes en métal, pixel art et survivants 3D avec une arme ont tous été refusés
   (« trop IA », « pas du tout l'idée »). Les icônes reviendront plus tard, à partir d'un exemple fourni par le
   propriétaire ou faites par un graphiste : ne pas en reproposer sans l'un ou l'autre ;
+- écran titre HeraliZ (maquette validée le 11/10, heraliz_interface 1.3.0) : carte floutée en fond, logo, JOUER
+  (rejoint `play.heraliz.fr`, joueurs en ligne et ping à droite), OPTIONS, QUITTER LE JEU, version en bas à gauche,
+  drapeaux de langue en bas à droite. Il remplace aussi la liste des serveurs, les mondes solo et Realms (config
+  client `ecran_titre.actif = false` : écrans vanilla, pour les essais en solo sur PC). Le launcher ne se connecte
+  plus tout seul (option « Connexion directe » retirée) et écrit `lang:fr_fr` dans `options.txt` au premier lancement ;
+- vue : 1re personne forcée en survie (façon DayZ) ; F5 seulement en créatif et en spectateur (staff). Les
+  cinématiques des mods (exécution, badge, scènes) changent la caméra elles-mêmes ;
+- langues : français (par défaut), anglais, russe, au choix par drapeau (écran titre et menu Échap) ; menus,
+  descriptions, messages du serveur et commandes traduits ; le chat entre joueurs n'est PAS traduit (choix du
+  propriétaire, 11/10 : pas de service de traduction payant) ;
 - refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
 - retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
   Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,
