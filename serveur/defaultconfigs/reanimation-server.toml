@@ -8,9 +8,9 @@
 	#Secondes au sol avant de se vider de son sang.
 	#Range: 5 ~ 600
 	bleedOutSeconds = 30
-	#Vitesse de reptation, par rapport au ramper vanilla (1.0 = vanilla, 0 = immobile).
+	#Vitesse de reptation à terre, par rapport au ramper vanilla (lui-même 0,3 x la marche) : 1.0 = vanilla, 0.35 = environ 1/10 de la marche, 0 = immobile.
 	#Range: 0.0 ~ 2.0
-	crawlSpeed = 0.7
+	crawlSpeed = 0.35
 	#Un joueur qui se déconnecte au sol meurt (anti déco-combat).
 	#Si false, il est toujours au sol à son retour. Un redémarrage du serveur ne tue jamais.
 	dieOnDisconnect = true

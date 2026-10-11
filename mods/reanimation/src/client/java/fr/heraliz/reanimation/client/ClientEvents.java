@@ -10,6 +10,7 @@ import net.minecraft.client.player.Input;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ComputeFovModifierEvent;
@@ -50,6 +51,9 @@ public final class ClientEvents {
       VanillaGuiOverlay.CHAT_PANEL.id(),
       VanillaGuiOverlay.PLAYER_LIST.id()
    );
+
+   // ralentissement des touches en rampant, le même que Minecraft (KeyboardInput.tick, sans enchantement)
+   private static final float CRAWL_INPUT = 0.3F;
 
    private ClientEvents() {
    }
@@ -138,13 +142,20 @@ public final class ClientEvents {
 
    @SubscribeEvent
    public static void onMovementInput(MovementInputUpdateEvent event) {
-      int f = Downed.flags(event.getEntity());
+      Player player = event.getEntity();
+      int f = Downed.flags(player);
       Input input = event.getInput();
       if ((f & 1) != 0) {
          input.jumping = false;
          input.shiftKeyDown = false;
          if ((f & 64) != 0) {
             freeze(input);
+         } else if (!player.isVisuallySwimming() && !player.isCrouching()) {
+            // Ramper : Minecraft ne ralentit les touches (x0,3) que si la pose du joueur est déjà à plat (ou accroupie).
+            // Si un autre mod la lui a reprise ce tick-ci (TaCZ, voir PlayerPoseMixin), le même ralentissement est fait
+            // ici, jamais en double. En plus : vitesse de reptation du serveur (crawlSpeed, attribut de vitesse).
+            input.forwardImpulse *= CRAWL_INPUT;
+            input.leftImpulse *= CRAWL_INPUT;
          }
       } else if ((f & 144) != 0) {
          ClientDowned.Info me = ClientDowned.local();
@@ -236,7 +247,8 @@ public final class ClientEvents {
 
    @SubscribeEvent
    public static void onNameTag(RenderNameTagEvent event) {
-      if (ExecutionScenes.involved(event.getEntity())) {
+      // pendant une scène d'exécution, ou quand le corps à terre est couché par Poses (la plaque tournerait avec lui)
+      if (ExecutionScenes.involved(event.getEntity()) || Poses.layingFlat(event.getEntity())) {
          event.setResult(Result.DENY);
       }
    }

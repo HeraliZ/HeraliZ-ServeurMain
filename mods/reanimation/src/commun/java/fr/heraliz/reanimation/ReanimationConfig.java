@@ -37,7 +37,7 @@ public final class ReanimationConfig {
       ENABLED = b.comment("Les joueurs tombent au sol au lieu de mourir.").define("enabled", true);
       DOWNED_HEALTH = b.comment("Vie au sol (8 = 4 cœurs). Tout dégât reçu au sol peut achever le joueur.").defineInRange("downedHealth", 8.0, 1.0, 40.0);
       BLEED_OUT_SECONDS = b.comment("Secondes au sol avant de se vider de son sang.").defineInRange("bleedOutSeconds", 30, 5, 600);
-      CRAWL_SPEED = b.comment("Vitesse de reptation, par rapport au ramper vanilla (1.0 = vanilla, 0 = immobile).").defineInRange("crawlSpeed", 0.7, 0.0, 2.0);
+      CRAWL_SPEED = b.comment("Vitesse de reptation à terre, par rapport au ramper vanilla (lui-même 0,3 x la marche) : 1.0 = vanilla, 0.35 = environ 1/10 de la marche, 0 = immobile.").defineInRange("crawlSpeed", 0.35, 0.0, 2.0);
       DIE_ON_DISCONNECT = b.comment(
             new String[]{
                "Un joueur qui se déconnecte au sol meurt (anti déco-combat).",

@@ -58,6 +58,10 @@ public final class ClientDowned {
          INFOS.remove(p.entityId);
       } else {
          ClientDowned.Info info = old != null ? old : new ClientDowned.Info();
+         if ((oldFlags & 1) == 0 && (p.flags & 1) != 0) {
+            info.downTicks = 0;
+         }
+
          info.flags = p.flags;
          info.partner = p.partnerId;
          info.bleed = p.bleed;
@@ -90,6 +94,10 @@ public final class ClientDowned {
          ClientDowned.Info info = (ClientDowned.Info)var1.next();
          if (info.has(1) && !info.has(32) && info.bleed > 0) {
             info.bleed--;
+         }
+
+         if (info.has(1) && info.downTicks < 100) {
+            info.downTicks++;
          }
 
          boolean clocked = info.has(4) || info.has(16) || info.has(128) || info.has(256);
@@ -132,6 +140,8 @@ public final class ClientDowned {
       public int revive;
       public int reviveMax;
       public int style;
+      /** Ticks passés à terre depuis la chute (corps couché par Poses si la pose « nage » manque). */
+      public int downTicks;
 
       public boolean has(int flag) {
          return (this.flags & flag) != 0;
@@ -143,6 +153,11 @@ public final class ClientDowned {
 
       public float reviveProgress(float partialTick) {
          return this.reviveMax <= 0 ? 0.0F : Mth.clamp((this.revive + partialTick) / this.reviveMax, 0.0F, 1.0F);
+      }
+
+      /** Chute du corps, de 0 (debout) à 1 (à plat) : même vitesse que le swimAmount de Minecraft (+0,09 par tick). */
+      public float fall(float partialTick) {
+         return Mth.clamp((this.downTicks + partialTick) * 0.09F, 0.0F, 1.0F);
       }
    }
 }
