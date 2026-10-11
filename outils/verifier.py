@@ -153,8 +153,14 @@ def main():
                 print(l.strip())
         print("[accessoires] relancer : python outils/accessoires.py")
         erreurs += 1
-    # logo « M » de Max Stuff retiré des icônes (choix du propriétaire, 11/10) : un gunpack remis à neuf le ramènerait
-    code, out = lancer([str(O / "icones_sans_logo.py"), "--verifier"])
+    # logo « M » de Max Stuff retiré des icônes (choix du propriétaire, 11/10) : un gunpack remis à neuf le ramènerait.
+    # L'outil lit les images avec numpy et Pillow : sans eux (machines de GitHub), contrôle sauté comme verif_reobf.
+    import importlib.util
+    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+        print("[logos] numpy ou Pillow absent : contrôle des logos sauté (à faire sur un PC)")
+        code = 0
+    else:
+        code, out = lancer([str(O / "icones_sans_logo.py"), "--verifier"])
     if code != 0:
         for l in out.splitlines():
             if l.startswith("[logos]"):
