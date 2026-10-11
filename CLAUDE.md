@@ -88,6 +88,7 @@ client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (
 launcher/                 le launcher des joueurs (Electron, Node.js) : `npm install` puis `npm start` dans ce dossier ;
                           doc dans launcher/README.md et launcher/docs/
 outils/                   fabrication et contrôles (Python 3.11+)
+site/vm/                  installation du site (Azuriom) sur sa VM, lancée par .github/workflows/site.yml (section 8 bis)
 monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; envoyée au Ptero seulement
                           sur demande (case « deposer_carte », section 8)
 .github/workflows/        fabrication et mise en ligne automatiques
@@ -407,6 +408,29 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 
 ---
 
+## 8 bis. Le site HeraliZ (Azuriom)
+
+- Le site est sur sa propre VM, à part du Ptero : **heraliz.fr** (et www) y mène ; **play.heraliz.fr** mène au serveur
+  de jeu. Aucune IP ni aucun accès dans le dépôt.
+- `.github/workflows/site.yml`, bouton « Run workflow » de « Site HeraliZ » :
+  - **verifier** : regarde la VM sans rien changer (système, place, déjà installé, ports, pare-feu) et dit quels noms
+    heraliz.fr mènent à la VM, plus les renvois SRV de Minecraft ;
+  - **installer** : `site/vm/installer.sh` en root (sudo si besoin) : nginx, PHP 8.3 (8.2 ou 8.4 à défaut ; dépôt Sury
+    ou ondrej si le système n'en a pas), MariaDB (base et utilisateur `azuriom`), installeur officiel d'Azuriom dans
+    `/var/www/azuriom`, HTTPS Let's Encrypt pour les noms qui mènent à la VM (renouvelé seul), tâches planifiées
+    (`/etc/cron.d/azuriom`). Se relance sans danger : un site déjà installé n'est jamais retéléchargé. Le site lui-même
+    (thème, extension, boutique) se règle ensuite dans Azuriom, pas par ce bouton.
+- Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
+  port `3306`, base `azuriom`, utilisateur `azuriom`, mot de passe = secret `SITE_BDD_MDP` ; jeu : Minecraft Java ;
+  compte administrateur au choix du propriétaire).
+- Secrets : `SITE_SSH_HOTE` (IP de la VM), `SITE_SSH_UTILISATEUR`, `SITE_SSH_MDP`, `SITE_SSH_PORT` (seulement si ce n'est
+  pas 22), `SITE_BDD_MDP` (mot de passe de la base, choisi par le propriétaire). Le mot de passe ne passe jamais dans
+  une ligne de commande : le script est copié sur la VM (lisible par l'utilisateur seul), lancé puis effacé.
+- Répété sur une Ubuntu 24.04 (PHP 8.3, mot de passe à caractères spéciaux, sudo avec mot de passe, 2e passe) : rien
+  n'a encore été lancé sur la vraie VM au moment de l'écrire.
+
+---
+
 ## 9. Ajouter ce que le propriétaire fournit
 
 - **Un de nos mods modifié ou nouveau (jar + sources)** :
@@ -582,9 +606,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   imposé de heraliz_interface 1.1.0).
 - **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
   LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur.
-- **Site et comptes HeraliZ (Azuriom)** : hébergement à choisir, puis maquettes du thème, extension Azuriom (inscription
-  depuis le launcher, code par mail sur un nouveau PC, ticket signé pour Spartan), branchement du launcher, boutique et
-  votes. D'ici là, le launcher demande seulement le pseudo et AuthMe protège le compte en jeu.
+- **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis) ; ensuite : maquettes du
+  thème, extension Azuriom (inscription depuis le launcher, code par mail sur un nouveau PC, ticket signé pour
+  Spartan), branchement du launcher, boutique et votes. D'ici là, le launcher demande seulement le pseudo et AuthMe protège le compte en jeu.
 - **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé pas encore
   (il faut un serveur d'authentification, voir `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
