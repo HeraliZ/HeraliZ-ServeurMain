@@ -1,6 +1,7 @@
 #!/bin/bash
 # Installation du site HeraliZ (Azuriom) sur la VM, lancée en root par .github/workflows/site.yml (choix « installer ») :
-# nginx, PHP, MariaDB (base « azuriom »), installeur officiel d'Azuriom, HTTPS (Let's Encrypt), tâches planifiées.
+# nginx, PHP, MariaDB (base « azuriom »), installeur officiel d'Azuriom, HTTPS (Let's Encrypt), tâches planifiées, et le
+# dossier du pack du launcher (https://heraliz.fr/launcher/, rempli par la mise en ligne du serveur).
 # Peut être relancée sans danger : rien de déjà installé n'est écrasé (le site en service n'est jamais retéléchargé).
 # Variables écrites en tête par la mise en ligne : BDD_MDP, DOMAINES (ceux qui mènent à la VM), HTTPS (oui / non),
 # URL_INSTALLEUR.
@@ -24,7 +25,8 @@ service_() {
 
 echo "== Paquets"
 apt-get update -q
-apt-get install -y -q ca-certificates curl unzip cron nginx mariadb-server certbot python3-certbot-nginx lsb-release gnupg
+apt-get install -y -q ca-certificates curl unzip cron nginx mariadb-server certbot python3-certbot-nginx lsb-release gnupg \
+  rsync
 
 # PHP 8.4 de préférence (recommandé par Azuriom ; 8.3 ou 8.2 sinon) ; dépôt Sury (Debian) ou ondrej (Ubuntu) si le système
 # n'en propose aucun
@@ -94,7 +96,9 @@ chmod -R u+rwX,g+rX,o+rX "$DOSSIER"
 RACINE="$DOSSIER"
 [ -f "$DOSSIER/public/index.php" ] && RACINE="$DOSSIER/public"
 echo "Racine du site : $RACINE"
-install -d -m 755 /var/www/launcher   # pack du launcher (rempli par la mise en ligne du serveur)
+# pack du launcher : déposé par la mise en ligne du serveur (rsync), avec l'utilisateur SSH (root ou celui qui a lancé sudo)
+install -d -m 755 -o "${SUDO_USER:-root}" /var/www/launcher
+chown -R "${SUDO_USER:-root}" /var/www/launcher
 
 echo "== nginx"
 ECOUTE6=""
@@ -155,6 +159,8 @@ server {
     location = /launcher/distribution.json {
         alias /var/www/launcher/distribution.json;
         add_header Cache-Control "no-cache";
+        gzip on;
+        gzip_types application/json;
     }
     location ^~ /launcher/ {
         alias /var/www/launcher/;
