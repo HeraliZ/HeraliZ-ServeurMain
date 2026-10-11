@@ -719,13 +719,30 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   carte n'est pas l'overworld ; l'extraction renvoie au spawn (`Destination`, réglable).
 - **Rien n'a été testé en jeu** depuis la séparation client / serveur (version 2.x des groupes, Matchs 0.3.0, pack
   imposé de heraliz_interface 1.1.0).
-- **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
-  LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur (emotes : Emotecraft CC-BY-4.0,
-  PlayerAnimator MIT). Le pack du launcher se télécharge aujourd'hui sans compte (adresses lisibles dans
-  `distribution.json`). Options proposées au propriétaire le 11/10 : pack réservé aux comptes (liens signés), brouillage
-  du code de nos mods non libres, textures et modèles de valeur envoyés par le serveur et gardés en mémoire (filigrane
-  par compte) ; un fichier affiché à l'écran peut toujours être capturé, le but est de rendre le vol difficile, inutile
-  hors de HeraliZ et traçable.
+- **Protection des jars contre la décompilation** : pas encore faite. Le propriétaire veut pousser au maximum (11/10).
+  Ce qu'on a le droit de brouiller, vérifié dans le dépôt le 11/10 (paquets Java et champs `authors`/`credits` des
+  `mods.toml`) :
+  - **jamais** (code d'autres auteurs, licence à garder lisible) : `fr.heralisz.tactical` de **tactique** (crédité
+    « LesRaisins Tactical, GPL 3.0 » dans son mods.toml) ; `com.hbm` de **bunker** (103 fichiers, « base HBM Modernized,
+    GPL-3.0 ») ; `com.mrcrayfish` de **backpack** (178 fichiers, LGPL 2.1) ; Emotecraft (CC-BY-4.0) et PlayerAnimator
+    (MIT) embarqués dans **emote** ; Concentus (BSD) embarqué dans **caracrea**. Le propriétaire pense ces mods « 100 %
+    à lui » ; son propre dépôt le contredit (ces crédits et paquets). Les brouiller = violer la licence, risque pour
+    HeraliZ : ne pas le faire sans preuve de propriété et relicence écrite.
+  - **possible** (code 100 % HeraliZ) : boss, clansetbases, utils, matchs, casino, crates, loot, decors, armory,
+    wonder, reanimation, airstrike, interface, extraction, dayzhotbar, crac ; + le code propre à HeraliZ de caracrea
+    (`com.caracrea`) et d'emote (`fr.heraliz.emote`) et les parties « All Rights Reserved » de tactique (camo, mêlée,
+    soins, grenades) — en gardant à côté, lisibles, les parties tierces ci-dessus.
+  - **Attention casse-serveur** : le brouillage renomme les classes ; or les mods s'appellent entre eux par le NOM de
+    classes (API par réflexion, section 5), plus Mixins, GeckoLib, enregistrements Forge et modIds qui ne changent
+    jamais. Un brouillage mal réglé casse le serveur. À faire par petits lots sur un PC, en gardant (`-keep`) toutes
+    les API, Mixins, entités et le `@Mod`, puis `verifier.py` + essai en jeu avant d'envoyer. Gain réel modéré sur
+    Forge.
+  - Le pack du launcher se télécharge aujourd'hui **sans compte** (adresses dans `distribution.json`, fichiers servis
+    par helios avec `got.stream`, sans en-tête d'auth). Protection la plus utile et sans renommer de classe : pack
+    réservé aux comptes (liens signés `secure_link` + `/launcher/distribution.json` dynamique qui vérifie le jeton ;
+    le launcher envoie déjà son jeton pour `distribution.json`). Puis, le plus fort : modèles et skins de valeur
+    envoyés chiffrés par le serveur, gardés en mémoire, filigrane par compte. Un fichier affiché à l'écran peut
+    toujours être capturé : but = vol difficile, inutile hors de HeraliZ, traçable.
 - **Audit de sécurité « façon pirate » du 11/10** (site, launcher, dépôt, séparation client / serveur) : corrigé et
   mis en ligne (adresse IP falsifiable, limites de connexion du site, codes de secours, liens des e-mails, CORS, HSTS,
   droits de la clé, launcher 1.6.1). Reste :
