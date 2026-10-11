@@ -57,11 +57,16 @@ public final class InterfaceClient {
         }
     }
 
-    /** Notre ecran titre a plante : journal, ecran titre de Minecraft pour le reste de la session. */
+    /**
+     * Notre ecran titre a plante (construction ou rendu) : journal, ecran titre de Minecraft au tick suivant et pour le
+     * reste de la session (jamais de jeu bloque au demarrage).
+     */
     public static void titreEnPanne(Throwable t) {
+        if (titreEnPanne) return;
         titreEnPanne = true;
         HeralizInterface.LOG.error("[interface] ecran titre HeraliZ en panne, retour a celui de Minecraft pour cette session", t);
-        Minecraft.getInstance().setScreen(new TitleScreen());
+        Minecraft mc = Minecraft.getInstance();
+        mc.tell(() -> mc.setScreen(new TitleScreen()));
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)

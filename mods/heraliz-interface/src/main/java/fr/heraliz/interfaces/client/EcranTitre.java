@@ -76,6 +76,14 @@ public class EcranTitre extends Screen {
     // ------------------------------------------------------------------ construction
     @Override
     protected void init() {
+        try {
+            construire();
+        } catch (Throwable ex) {
+            InterfaceClient.titreEnPanne(ex);
+        }
+    }
+
+    private void construire() {
         if (ouvert < 0) ouvert = Util.getMillis();
         if (InterfaceConfig.oui(InterfaceConfig.ECHELLE_AUTO, true)) Echelle.forcer(this);
         lignes.clear();
