@@ -1,5 +1,7 @@
 package fr.heraliz.loot;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -24,6 +26,11 @@ public enum Rarete {
         this.nom = nom;
         this.couleur = couleur;
         this.duree = duree;
+    }
+
+    /** Nom affiché, dans la langue du joueur (clé heraliz_loot.rarete.&lt;id&gt;, nom français en secours). */
+    public MutableComponent texte() {
+        return Component.translatableWithFallback("heraliz_loot.rarete." + id, nom);
     }
 
     /** Rareté d'après son identifiant (« mythique », ancien nom, = Unique) ; inconnu : Commun. */

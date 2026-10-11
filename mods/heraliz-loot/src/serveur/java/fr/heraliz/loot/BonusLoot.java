@@ -53,7 +53,8 @@ public final class BonusLoot {
     /** « Bonus de loot +10 % » au-dessus de la barre d'objets, quand il a servi. */
     static void annoncer(ServerPlayer p, int bonus) {
         if (bonus > 0) {
-            p.displayClientMessage(Component.literal("Bonus de loot +" + bonus + " %").withStyle(ChatFormatting.GOLD), true);
+            p.displayClientMessage(Component.translatableWithFallback("heraliz_loot.bonus.annonce", "Bonus de loot +%s %%", bonus)
+                    .withStyle(ChatFormatting.GOLD), true);
         }
     }
 }

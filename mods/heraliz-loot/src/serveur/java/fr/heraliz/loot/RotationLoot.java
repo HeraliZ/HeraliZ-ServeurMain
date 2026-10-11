@@ -678,7 +678,7 @@ public final class RotationLoot extends SavedData {
             a = null;
         }
         if (a == null) {
-            p.displayClientMessage(Component.literal("Vide.").withStyle(ChatFormatting.GRAY), true);
+            p.displayClientMessage(Component.translatableWithFallback("heraliz_loot.conteneur.vide", "Vide.").withStyle(ChatFormatting.GRAY), true);
             return;
         }
         if (a.contenu == null) {
@@ -745,11 +745,14 @@ public final class RotationLoot extends SavedData {
     // ------------------------------------------------------------------------------------------ titres
     private static Map<String, String> noms;
 
-    /** Titre de l'inventaire : le nom français du conteneur, sans l'étiquette de tiers (« [T2] »). */
+    /**
+     * Titre de l'inventaire : le nom du bloc dans la langue du joueur, dont son jeu retire l'étiquette de tiers (« [T2] »,
+     * ClientLoot) ; sans le jar client, le nom français sans l'étiquette.
+     */
     static Component titre(ConteneurBlock cb) {
         if (noms == null) noms = lireNoms();
         String n = noms.get(cb.nom);
-        return n != null ? Component.literal(n) : Component.translatable(cb.getDescriptionId());
+        return n != null ? Component.translatableWithFallback(cb.getDescriptionId(), n) : Component.translatable(cb.getDescriptionId());
     }
 
     private static Map<String, String> lireNoms() {
