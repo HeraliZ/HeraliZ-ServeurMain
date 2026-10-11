@@ -61,5 +61,6 @@
   "heraliz_emote.menu.on": "Activé : tu entends les emotes des autres",
   "heraliz_emote.menu.off": "Coupé : tu n'entends que les tiennes",
   "heraliz_emote.config.section": "Réglages",
-  "heraliz_emote.config.unit_blocks": "blocs"
+  "heraliz_emote.config.unit_blocks": "blocs",
+  "heraliz_emote.config.unit_seconds": "s"
 }

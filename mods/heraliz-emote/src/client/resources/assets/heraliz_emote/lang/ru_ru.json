@@ -61,5 +61,6 @@
   "heraliz_emote.menu.on": "Вкл.: ты слышишь эмоции других",
   "heraliz_emote.menu.off": "Выкл.: ты слышишь только свои",
   "heraliz_emote.config.section": "Настройки",
-  "heraliz_emote.config.unit_blocks": "блоков"
+  "heraliz_emote.config.unit_blocks": "блоков",
+  "heraliz_emote.config.unit_seconds": "с"
 }

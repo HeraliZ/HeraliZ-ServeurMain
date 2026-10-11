@@ -61,5 +61,6 @@
   "heraliz_emote.menu.on": "On: you hear other players' emotes",
   "heraliz_emote.menu.off": "Off: you only hear your own",
   "heraliz_emote.config.section": "Settings",
-  "heraliz_emote.config.unit_blocks": "blocks"
+  "heraliz_emote.config.unit_blocks": "blocks",
+  "heraliz_emote.config.unit_seconds": "s"
 }
