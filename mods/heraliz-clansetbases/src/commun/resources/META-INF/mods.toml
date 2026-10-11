@@ -1,6 +1,7 @@
-# HeraliZ Clans et bases : UN jar, CINQ mods. Chaque mod garde son modId d'origine (objets, blocs, entités, sons, dimension,
-# configs, données des serveurs et canaux réseau inchangés) ; « heraliz_clansetbases » porte le code partagé (pont
-# client/serveur, onglet créatif commun). Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+# HeraliZ Clans et bases : UN jar, QUATRE mods (les tags ont été retirés en 2.3.0). Chaque mod garde son modId d'origine
+# (objets, blocs, entités, sons, dimension, configs, données des serveurs et canaux réseau inchangés) ;
+# « heraliz_clansetbases » porte le code partagé (pont client/serveur, onglet créatif commun). Ce fichier est IDENTIQUE
+# dans les trois jars (-client, -serveur, -complet).
 # Chaque [[mods]] a sa classe @Mod (FML 47 : ModLoader.buildMods exige une classe @Mod par modId, et inversement).
 # Les autres mods (matchs, casino, crac, corps, ping...) dépendent de heralisz_economie / heralisz_clans en « [0.1.0,) » :
 # la version 2.0.0 leur convient.
@@ -13,7 +14,7 @@ modId="heraliz_clansetbases"
 version="${mod_version}"
 displayName="HeraliZ Clans et bases"
 authors="${mod_authors}"
-description='''L'économie, les clans, les bases de clan et les tags HeraliZ réunis en un seul fichier. Onglet créatif commun « HeraliZ · Clans et bases ».'''
+description='''L'économie, les clans et les bases de clan HeraliZ réunis en un seul fichier. Onglet créatif commun « HeraliZ · Clans et bases ».'''
 [[dependencies.heraliz_clansetbases]]
     modId="forge"
     mandatory=true
@@ -88,7 +89,7 @@ modId="heralisz_bases"
 version="${mod_version}"
 displayName="HeraliZ Clans et bases · Bases"
 authors="${mod_authors}"
-description='''Bases de clan du serveur HeraliZ : un bunker souterrain par clan dans une dimension dédiée, salles à débloquer avec la banque du clan, permissions de base, pillages de 18 h à 23 h, blindage.'''
+description='''Bases de clan du serveur HeraliZ : un bunker souterrain par clan dans une dimension dédiée, salles à débloquer avec la banque du clan, permissions de base, pillages de 18 h à 23 h, portes et meubles protégés à casser au C4.'''
 [[dependencies.heralisz_bases]]
     modId="heraliz_clansetbases"
     mandatory=true
@@ -118,29 +119,4 @@ description='''Bases de clan du serveur HeraliZ : un bunker souterrain par clan 
     mandatory=true
     versionRange="[0.1.0,)"
     ordering="AFTER"
-    side="BOTH"
-
-[[mods]]
-modId="heralisz_tags"
-version="${mod_version}"
-displayName="HeraliZ Clans et bases · Tags"
-authors="${mod_authors}"
-description='''Tags (sprays) du serveur HeraliZ : 48 tags peints à la bombe (pochoirs de survivants, lettrages graff, street art, boss) à débloquer, roue de 4 tags (touche J), collection, pose sur les murs pendant 30 s.'''
-[[dependencies.heralisz_tags]]
-    modId="heraliz_clansetbases"
-    mandatory=true
-    versionRange="[${mod_version}]"
-    ordering="AFTER"
-    side="BOTH"
-[[dependencies.heralisz_tags]]
-    modId="forge"
-    mandatory=true
-    versionRange="${forge_version_range}"
-    ordering="NONE"
-    side="BOTH"
-[[dependencies.heralisz_tags]]
-    modId="minecraft"
-    mandatory=true
-    versionRange="${minecraft_version_range}"
-    ordering="NONE"
     side="BOTH"
