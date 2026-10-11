@@ -38,7 +38,7 @@ npm run lint
 npm run dist:win
 ```
 
-L’installeur Windows est créé dans `dist/`. Les builds ne publient aucune release automatiquement. GitHub Actions teste et construit les trois plateformes, puis conserve les installeurs comme artefacts à examiner. Les nouvelles versions du launcher sont distribuées par l’équipe ; le pack est actualisé au lancement du jeu.
+L’installeur Windows est créé dans `dist/`. Sur GitHub, le workflow « Launcher HeraliZ » (`.github/workflows/launcher.yml`, à la racine du dépôt) teste et construit l’installateur Windows à chaque changement de `launcher/` sur `main`, et le met en ligne à https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe sur demande (case « publier ») ; voir `CLAUDE.md`, section 8 ter. Le launcher ne se met pas à jour seul ; le pack est actualisé au lancement du jeu.
 
 Le profil et le jeu sont enregistrés dans le dossier de données de l’application HeraliZ. L’ancien dossier Helios et `.minecraft` ne sont pas réutilisés automatiquement.
 
