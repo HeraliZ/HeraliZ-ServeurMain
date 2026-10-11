@@ -13,6 +13,10 @@ const Spartan                  = require('./spartan')
 
 const logger = LoggerUtil.getLogger('ProcessBuilder')
 
+// AppImage (Linux) : variables posées par l'image et son script de démarrage, et listes de chemins qu'il complète
+const VARIABLES_APPIMAGE = ['APPIMAGE', 'APPDIR', 'ARGV0', 'OWD', 'APPIMAGE_SILENT_INSTALL', 'APPIMAGE_EXIT_AFTER_INSTALL']
+const LISTES_APPIMAGE = ['PATH', 'LD_LIBRARY_PATH', 'XDG_DATA_DIRS', 'GSETTINGS_SCHEMA_DIR']
+
 
 /**
  * Only forge and fabric are top level mod loaders.
@@ -53,7 +57,9 @@ class ProcessBuilder {
         // premier lancement : le jeu en français (les drapeaux de l'écran titre HeraliZ changent ensuite la langue)
         const options = path.join(this.gameDir, 'options.txt')
         if (!fs.existsSync(options)) fs.writeFileSync(options, 'lang:fr_fr\n')
-        const tempNativePath = path.join(os.tmpdir(), ConfigManager.getTempNativeFolder(), crypto.pseudoRandomBytes(16).toString('hex'))
+        const dossierNatives = path.join(os.tmpdir(), ConfigManager.getTempNativeFolder())
+        ProcessBuilder.nettoyerNatives(dossierNatives)
+        const tempNativePath = path.join(dossierNatives, crypto.pseudoRandomBytes(16).toString('hex'))
         process.throwDeprecation = true
         this.setupLiteLoader()
         logger.info('Using liteloader:', this.usingLiteLoader)
@@ -84,27 +90,26 @@ class ProcessBuilder {
 
         logger.info('Launch Arguments:', Spartan.masquerJeton(loggableArgs))
 
-        const child = child_process.spawn(ConfigManager.getJavaExecutable(this.server.rawServer.id), args, {
-            cwd: this.gameDir,
-            detached: ConfigManager.getLaunchDetached(),
-            // jeton de Spartan par l'environnement, sans les variables d'injection de Java (spartan.js)
-            env: this.environnement()
-        })
-
-        if(ConfigManager.getLaunchDetached()){
-            child.unref()
+        // Lancement détaché : le jeu est un programme à part, qui reste ouvert si le joueur ferme le launcher (sous
+        // Windows, un jeu non détaché est arrêté avec le launcher). Aucun tuyau vers le launcher : la console du jeu
+        // (dont les erreurs de Java au démarrage, absentes de latest.log) est écrite par Java lui-même dans
+        // logs/console-jeu.log, remplacé à chaque partie.
+        const journal = this.ouvrirJournalConsole()
+        let child
+        try {
+            child = child_process.spawn(ConfigManager.getJavaExecutable(this.server.rawServer.id), args, {
+                cwd: this.gameDir,
+                detached: true,
+                stdio: ['ignore', journal ?? 'ignore', journal ?? 'ignore'],
+                // jeton de Spartan par l'environnement, sans les variables d'injection (spartan.js) ni celles de l'AppImage
+                env: this.environnement()
+            })
+        } finally {
+            // le jeu a sa propre copie du fichier ouvert : celle du launcher est refermée tout de suite
+            if (journal != null) fs.closeSync(journal)
         }
+        child.unref()
 
-        child.stdout.setEncoding('utf8')
-        child.stderr.setEncoding('utf8')
-
-        child.stdout.on('data', (data) => {
-            data.trim().split('\n').forEach(x => console.log(`\x1b[32m[Minecraft]\x1b[0m ${x}`))
-            
-        })
-        child.stderr.on('data', (data) => {
-            data.trim().split('\n').forEach(x => console.log(`\x1b[31m[Minecraft]\x1b[0m ${x}`))
-        })
         child.on('close', (code, signal) => {
             logger.info('Exited with code', code)
             fs.remove(tempNativePath, (err) => {
@@ -119,9 +124,63 @@ class ProcessBuilder {
         return child
     }
 
-    /** Environnement du jeu (spartan.js) : jeton signé par le site, aucune variable d'injection de Java. */
+    /** Environnement du jeu (spartan.js) : jeton signé par le site, aucune variable d'injection, rien de l'AppImage. */
     environnement(base = process.env) {
-        return Spartan.environnementJeu(this.jetonSpartan, base)
+        return Spartan.environnementJeu(this.jetonSpartan, ProcessBuilder.sansAppImage(base))
+    }
+
+    /** Fichier de la console du jeu (descripteur ouvert), ou null s'il ne peut pas être créé : console ignorée. */
+    ouvrirJournalConsole() {
+        try {
+            const dossier = path.join(this.gameDir, 'logs')
+            fs.ensureDirSync(dossier)
+            return fs.openSync(path.join(dossier, 'console-jeu.log'), 'w')
+        } catch (err) {
+            logger.warn('Console du jeu non enregistrée', err)
+            return null
+        }
+    }
+
+    /**
+     * Linux, launcher en AppImage : l'image est montée dans un dossier temporaire ($APPDIR) qui disparaît quand le
+     * launcher se ferme, alors que le jeu (lancé détaché) continue. Le jeu n'y cherche donc rien : variables de
+     * l'AppImage retirées, chemins qui y mènent ôtés des listes (PATH, LD_LIBRARY_PATH…). Hors AppImage, l'environnement
+     * est rendu tel quel. base n'est jamais modifié.
+     */
+    static sansAppImage(base = process.env) {
+        const appdir = typeof base?.APPDIR === 'string' ? base.APPDIR.replace(/\/+$/, '') : ''
+        if (!base?.APPIMAGE || !appdir.startsWith('/') || appdir.length < 2) return base
+        const dansAppImage = chemin => {
+            const c = chemin.replace(/\/+$/, '')
+            return c === appdir || c.startsWith(appdir + '/')
+        }
+        const env = {}
+        for (const [nom, valeur] of Object.entries(base)) {
+            if (VARIABLES_APPIMAGE.includes(nom)) continue
+            if (LISTES_APPIMAGE.includes(nom) && typeof valeur === 'string') {
+                const reste = valeur.split(':').filter(chemin => chemin && !dansAppImage(chemin))
+                if (reste.length) env[nom] = reste.join(':')
+                continue
+            }
+            env[nom] = valeur
+        }
+        return env
+    }
+
+    /**
+     * Le dossier temporaire des bibliothèques natives d'une partie est effacé à la fin du jeu, mais seulement si le
+     * launcher est encore ouvert. Ceux qui restent (launcher fermé pendant la partie) sont retirés après 3 jours.
+     */
+    static nettoyerNatives(parent, ageMs = 3 * 24 * 3600 * 1000) {
+        let noms
+        try { noms = fs.readdirSync(parent) } catch { return }
+        for (const nom of noms) {
+            if (!/^[0-9a-f]{32}$/.test(nom)) continue
+            const dossier = path.join(parent, nom)
+            try {
+                if (Date.now() - fs.statSync(dossier).mtimeMs > ageMs) fs.removeSync(dossier)
+            } catch { /* encore utilisé par un jeu ouvert, ou déjà retiré */ }
+        }
     }
 
     /**
@@ -377,7 +436,7 @@ class ProcessBuilder {
 
         // Java Arguments
         if(process.platform === 'darwin'){
-            args.push('-Xdock:name=HeliosLauncher')
+            args.push('-Xdock:name=HeraliZ')
             args.push('-Xdock:icon=' + path.join(__dirname, '..', 'images', 'minecraft.icns'))
         }
         args.push('-Xmx' + ConfigManager.getMaxRAM(this.server.rawServer.id))
@@ -430,7 +489,7 @@ class ProcessBuilder {
 
         // Java Arguments
         if(process.platform === 'darwin'){
-            args.push('-Xdock:name=HeliosLauncher')
+            args.push('-Xdock:name=HeraliZ')
             args.push('-Xdock:icon=' + path.join(__dirname, '..', 'images', 'minecraft.icns'))
         }
         args.push('-Xmx' + ConfigManager.getMaxRAM(this.server.rawServer.id))

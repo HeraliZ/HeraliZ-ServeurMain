@@ -1,10 +1,14 @@
 'use strict'
 
-// Mise à jour automatique du launcher lui-même (version installée sur Windows). Au démarrage, le launcher lit
-// https://heraliz.fr/telecharger/latest.yml (adresse : « publish » de electron-builder.yml, écrite dans
-// app-update.yml à la fabrication). Si une version plus récente existe, il la télécharge (empreinte SHA-512
-// contrôlée), l'installe sans rien demander puis redémarre. Le site injoignable ou lent ne bloque jamais le démarrage.
-// Le pack de jeu (mods, gunpacks) a sa propre mise à jour, à chaque partie (launcher-service.js).
+// Mise à jour du launcher lui-même (version installée). Au démarrage, le launcher lit sur https://heraliz.fr/telecharger/
+// (adresse : « publish » de electron-builder.yml, écrite dans app-update.yml à la fabrication) latest.yml (Windows),
+// latest-mac.yml ou latest-linux.yml. Si une version plus récente existe :
+// - Windows et Linux en AppImage (auto) : il la télécharge (empreinte SHA-512 contrôlée), l'installe sans rien
+//   demander puis redémarre ;
+// - Mac (application non signée par Apple : macOS refuse qu'elle se remplace seule) et Linux en paquet .deb (il
+//   faudrait le mot de passe administrateur) : le joueur est seulement prévenu, avec un lien vers le nouveau fichier.
+// Le site injoignable ou lent ne bloque jamais le démarrage. Le pack de jeu (mods, gunpacks) a sa propre mise à jour,
+// à chaque partie (launcher-service.js).
 
 const DELAI_VERIFICATION_MS = 10000
 // une même version n'est installée automatiquement que 2 fois par jour : si l'installation échoue (fichier bloqué,
@@ -19,13 +23,15 @@ function avecDelai(promesse, ms) {
 }
 
 class MiseAJour {
-    // updater : l'autoUpdater d'electron-updater ; actif : version installée sur Windows ; envoyer : état vers
-    // l'interface ; occupe : une préparation ou une partie est en cours (jamais de redémarrage dans ce cas) ;
-    // memoire : { lire(), ecrire(valeur) }, les essais d'installation gardés d'un démarrage à l'autre.
-    constructor({ updater, actif, envoyer, occupe, memoire, delaiMs = DELAI_VERIFICATION_MS, delaiInstallationMs = 1200 }) {
+    // updater : celui d'electron-updater ; actif : version installée (pas en développement) ; auto : installation
+    // automatique (sinon le joueur est seulement prévenu) ; envoyer : état vers l'interface ; occupe : une préparation
+    // ou une partie est en cours (jamais de redémarrage dans ce cas) ; memoire : { lire(), ecrire(valeur) }, les essais
+    // d'installation gardés d'un démarrage à l'autre.
+    constructor({ updater, actif, auto = true, envoyer, occupe, memoire, delaiMs = DELAI_VERIFICATION_MS, delaiInstallationMs = 1200 }) {
         this.updater = updater
         this.memoire = memoire
         this.actif = Boolean(actif && updater)
+        this.auto = auto !== false
         this.envoyer = envoyer
         this.occupe = occupe
         this.delaiMs = delaiMs
@@ -34,7 +40,7 @@ class MiseAJour {
         this.dernierPourcent = -1
         if (!this.actif) return
         this.updater.autoDownload = false
-        this.updater.autoInstallOnAppQuit = true
+        this.updater.autoInstallOnAppQuit = this.auto
         this.updater.disableDifferentialDownload = true
         this.updater.allowDowngrade = false
         this.updater.allowPrerelease = false
@@ -48,7 +54,8 @@ class MiseAJour {
     }
 
     // { disponible: false } ou { disponible: true, version } : le téléchargement est alors lancé, suivi par envoyer() ;
-    // { disponible: false, bloquee: true } : cette version n'a pas réussi à s'installer, à retélécharger à la main.
+    // { disponible: false, bloquee: true } : cette version n'a pas réussi à s'installer, à retélécharger à la main ;
+    // { disponible: false, manuelle: true, version } : sans installation automatique (Mac, .deb), à télécharger à la main.
     verifier() {
         if (!this.verification) this.verification = this.chercher()
         return this.verification
@@ -63,7 +70,8 @@ class MiseAJour {
             return { disponible: false }
         }
         const version = resultat?.updateInfo?.version
-        if (!resultat?.isUpdateAvailable || typeof version !== 'string') return { disponible: false }
+        if (!resultat?.isUpdateAvailable || typeof version !== 'string' || !/^\d{1,4}\.\d{1,4}\.\d{1,6}$/.test(version)) return { disponible: false }
+        if (!this.auto) return { disponible: false, manuelle: true, version }
         const essai = this.essai(version)
         if (essai.fois >= ESSAIS_MAX) return { disponible: false, bloquee: true, version }
         this.telecharger(version, essai)

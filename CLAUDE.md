@@ -363,7 +363,9 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   « maven libs », options `--fml.mavenRoots` / `--fml.modLists`) ; Spartan hache et juge chacun de ces jars comme ceux
   du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism`, retire les options d'injection du joueur et, depuis
   la 1.6.1, les variables d'environnement que Java lit au démarrage (`JAVA_TOOL_OPTIONS`, `_JAVA_OPTIONS`,
-  `JDK_JAVA_OPTIONS` : un `-javaagent` de triche pouvait s'y glisser) (`launcher/app/assets/js/spartan.js`) ; ses verrous
+  `JDK_JAVA_OPTIONS` : un `-javaagent` de triche pouvait s'y glisser ; depuis la 1.8.0 aussi `LD_PRELOAD`, `LD_AUDIT`,
+  `DYLD_INSERT_LIBRARIES` sur Mac et Linux) (`launcher/app/assets/js/spartan.js`). Depuis la 1.8.0, le jeu est lancé à
+  part du launcher (le fermer pendant la partie ne coupe plus le jeu ; console du jeu dans `logs/console-jeu.log`) ; ses verrous
   Electron (`electronFuses` de `electron-builder.yml`) l'empêchent de tourner comme un simple Node.js ou de charger un
   autre code que son archive. Son pack est refait à chaque mise en ligne avec `livraison/mods client` de la même
   fabrication (section 8).
@@ -590,12 +592,18 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   celui du compte.
 - `.github/workflows/launcher.yml`, « Launcher HeraliZ » : à chaque envoi sur `main` qui touche `launcher/`, tests puis
   installateur Windows, gardé 7 jours dans l'onglet Actions (paquet « launcher-windows », si le quota d'artefacts le
-  permet). « Run workflow » avec la case « publier » : il est aussi mis en ligne, toujours au même lien,
-  https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe (lien à mettre sur le site et le Discord), envoyé par SFTP
-  par la machine Windows qui l'a fabriqué (aucun artefact entre deux tâches). Le launcher ne contient aucune clé : ses
-  jetons de lancement sont signés par le site (section 6 bis).
-- L'installateur n'est pas signé (certificat payant) : au premier lancement, Windows affiche « Windows a protégé votre
-  ordinateur » → « Informations complémentaires » → « Exécuter quand même ».
+  permet), et paquets Linux (AppImage et .deb). L'application Mac n'est fabriquée que par « Run workflow » (une minute
+  de machine Mac compte pour 10 sur un dépôt privé). « Run workflow » avec la case « publier » : chaque machine met ses
+  fichiers en ligne, toujours aux mêmes liens (à mettre sur le site et le Discord) :
+  https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe (Windows), `HeraliZ-Launcher.dmg` (Mac),
+  `HeraliZ-Launcher.AppImage` et `HeraliZ-Launcher.deb` (Linux), avec leurs fichiers de version (`latest.yml`,
+  `latest-mac.yml`, `latest-linux.yml`), envoyés par SFTP (`launcher/ci/publier.py`, aucun artefact entre deux
+  tâches). Le launcher ne contient aucune clé : ses jetons de lancement sont signés par le site (section 6 bis).
+- Les installateurs ne sont pas signés (certificats payants) : au premier lancement, Windows affiche « Windows a protégé
+  votre ordinateur » → « Informations complémentaires » → « Exécuter quand même » ; Mac : Réglages Système →
+  Confidentialité et sécurité → « Ouvrir quand même » (macOS 15+), ou clic droit → Ouvrir. Mise à jour automatique sur
+  Windows et avec l'AppImage ; sur Mac et avec le .deb, le launcher annonce la nouvelle version et donne le lien.
+  Mac et Linux : rien essayé sur une vraie machine (launcher 1.8.0).
 - **Mises à jour, rien à retélécharger** : à chaque partie, le launcher relit le pack en ligne et ne télécharge que
   les fichiers changés ou manquants (empreinte de chaque fichier) ; depuis la 1.7.0, il le demande au site pour le
   compte connecté (`/api/heraliz/pack`, liens signés 6 h, section 8 bis) au lieu de le lire à `distributionUrl` :

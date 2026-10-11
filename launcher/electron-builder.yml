@@ -51,34 +51,56 @@ nsis:
   allowElevation: true
   allowToChangeInstallationDirectory: true
 
-# macOS Configuration
+# macOS : une seule application « universelle » (Mac Intel et Apple Silicon). Pas de certificat Apple (payant) :
+# signature « ad hoc » (identity '-'), obligatoire pour qu'elle démarre sur Apple Silicon après les verrous ci-dessus,
+# sans « hardened runtime » (réservé aux applications notariées). Au premier lancement, macOS demande une autorisation
+# (README.md). Noms fixes : liens publics https://heraliz.fr/telecharger/HeraliZ-Launcher.dmg (et -mac.zip).
 mac:
   icon: 'app/assets/images/heraliz-emblem.png'
   target:
     - target: 'dmg'
-      arch:
-        - 'x64'
-        - 'arm64'
-  artifactName: '${productName}-setup-${version}-${arch}.${ext}'
+      arch: 'universal'
+    - target: 'zip'
+      arch: 'universal'
+  artifactName: 'HeraliZ-Launcher-mac.${ext}'
   category: 'public.app-category.games'
+  identity: '-'
+  hardenedRuntime: false
+  notarize: false
 
-# Linux Configuration
+dmg:
+  artifactName: 'HeraliZ-Launcher.${ext}'
+  title: 'HeraliZ Launcher'
+
+# Linux : AppImage (toutes distributions, se met à jour seule) et paquet .deb (Ubuntu, Debian, Mint…). Noms fixes :
+# https://heraliz.fr/telecharger/HeraliZ-Launcher.AppImage et HeraliZ-Launcher.deb.
 linux:
   icon: 'app/assets/images/heraliz-emblem.png'
-  target: 'AppImage'
+  target:
+    - target: 'AppImage'
+      arch: 'x64'
+    - target: 'deb'
+      arch: 'x64'
+  artifactName: 'HeraliZ-Launcher.${ext}'
+  executableName: 'heraliz-launcher'
+  # nom du raccourci = desktopName de package.json : le bureau associe la fenêtre au launcher (icône, barre des tâches)
+  syncDesktopName: true
   maintainer: 'HeraliZ'
   vendor: 'HeraliZ'
   synopsis: 'Launcher Minecraft DayZ HeraliZ'
   description: 'Launcher HeraliZ pour Minecraft Forge 1.20.1.'
   category: 'Game'
 
+deb:
+  packageName: 'heraliz-launcher'
 
 directories:
   buildResources: 'build'
   output: 'dist'
 
-# Mise à jour automatique du launcher installé (app/assets/js/mise-a-jour.js) : adresse écrite dans app-update.yml.
-# latest.yml et l'installateur y sont déposés par le workflow « Launcher HeraliZ » (case « publier »).
+# Mise à jour du launcher installé (app/assets/js/mise-a-jour.js) : adresse écrite dans app-update.yml. latest.yml
+# (Windows), latest-mac.yml et latest-linux.yml y sont déposés avec les fichiers par le workflow « Launcher HeraliZ »
+# (case « publier »).
 publish:
   - provider: 'generic'
     url: 'https://heraliz.fr/telecharger/'

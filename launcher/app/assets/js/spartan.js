@@ -14,7 +14,9 @@
  *    d'environnement SPARTAN_LAUNCH_TOKEN (environnementJeu), jamais sur la ligne de commande, que d'autres programmes
  *    et les antivirus lisent. Le launcher ne contient aucune clé : il ne peut pas fabriquer de jeton lui-même.
  * 3. environnementJeu() retire aussi les variables que Java lit au démarrage (JAVA_TOOL_OPTIONS…) : un programme de
- *    triche pourrait y glisser un -javaagent sans toucher aux options du launcher.
+ *    triche pourrait y glisser un -javaagent sans toucher aux options du launcher. Même chose sur Linux et Mac pour les
+ *    variables qui font charger une bibliothèque native dans tout programme lancé (LD_PRELOAD, LD_AUDIT,
+ *    DYLD_INSERT_LIBRARIES) : rien n'est injecté dans le jeu par ce biais (une surcouche comme MangoHud non plus).
  */
 
 const crypto = require('crypto')
@@ -42,8 +44,10 @@ const ARG_JETON = '-Dspartan.launchToken='
 const VAR_JETON = 'SPARTAN_LAUNCH_TOKEN'
 // jeton v1 rendu par le site : base64url(contenu) "." base64url(HMAC-SHA256), rien d'autre
 const JETON = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
-// variables d'environnement lues par Java au démarrage (une option -javaagent y suffit), et tout jeton hérité
-const VARIABLES_DANGEREUSES = ['JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', VAR_JETON]
+// variables d'environnement lues par Java au démarrage (une option -javaagent y suffit), bibliothèques natives imposées
+// à tout programme lancé (Linux, Mac), et tout jeton hérité
+const VARIABLES_DANGEREUSES = ['JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', 'LD_PRELOAD', 'LD_AUDIT',
+    'DYLD_INSERT_LIBRARIES', VAR_JETON]
 
 /** Options Java ajoutées à chaque lancement (copie). */
 function protections() {

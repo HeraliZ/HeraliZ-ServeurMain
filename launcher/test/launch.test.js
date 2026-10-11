@@ -103,6 +103,7 @@ test('concurrent launches and settings edits are rejected during preparation', a
     assert.throws(() => service.saveSettings({ ramGB: 4, fullscreen: false, autoConnect: true }), /verrouillés/)
     assert.throws(() => service.saveProfile({ username: 'Other', acceptedRules: true }), /Attends/)
     assert.throws(() => service.logout(), /Attends/)
+    while (!unblock) await new Promise(resolve => setImmediate(resolve))
     unblock(new Error('network failure'))
     await assert.rejects(launch, /network failure/)
     assert.equal(service.busy, false)
@@ -172,20 +173,133 @@ test('same-size corrupt download is rejected before any post-download processing
 })
 
 test('launch succeeds through the preparation pipeline and unlocks on game exit', async () => {
-    const child = new EventEmitter()
+    const child = Object.assign(new EventEmitter(), { pid: 4242 })
     const build = ProcessBuilder.prototype.build
     ProcessBuilder.prototype.build = () => child
     const service = new LauncherService(config, () => {})
     service.loadDistribution = async () => ({ getServerById: () => ({ rawServer: { id: config.serverId } }) })
     service.ensureJava = async () => {}
     service.repair = async () => ({ version: {}, loader: {} })
+    const partie = path.join(directory, 'partie-en-cours.json')
     try {
         assert.deepEqual(await service.launch(), { started: true })
         child.emit('spawn')
         assert.equal(service.progress.phase, 'running')
+        assert.match(service.progress.detail, /fermer le launcher/)
         assert.equal(service.busy, true)
+        // partie notée : un launcher rouvert pendant le jeu ne relance pas un second Minecraft
+        assert.equal(JSON.parse(fs.readFileSync(partie, 'utf8')).pid, 4242)
         child.emit('close', 0)
         assert.equal(service.busy, false)
         assert.equal(service.progress.phase, 'idle')
+        assert.equal(fs.existsSync(partie), false)
     } finally { ProcessBuilder.prototype.build = build }
+})
+
+test('launcher rouvert pendant une partie : pas de second Minecraft ; dans le doute, le joueur n’est pas bloqué', async () => {
+    const partie = path.join(directory, 'partie-en-cours.json')
+    const noter = (pid, depuis = Date.now()) => fs.writeFileSync(partie, JSON.stringify({ pid, depuis }))
+    const service = nom => new LauncherService(config, () => {}, { nomProcessus: async () => nom })
+    assert.equal(await service('javaw.exe').partieDejaOuverte(), false, 'rien de noté')
+    noter(4242)
+    const ouvert = service('javaw.exe')
+    ouvert.saveProfile({ username: 'Survivant', acceptedRules: true })
+    await assert.rejects(ouvert.launch(), /déjà ouvert/)
+    assert.equal(ouvert.busy, false)
+    assert.equal(await service('java').partieDejaOuverte(), true)
+    // numéro repris par un autre programme, processus disparu, partie trop ancienne : la note est oubliée
+    assert.equal(await service('chrome').partieDejaOuverte(), false)
+    assert.equal(fs.existsSync(partie), false)
+    noter(4242)
+    assert.equal(await service(null).partieDejaOuverte(), false)
+    noter(4242, Date.now() - 3 * 24 * 3600 * 1000)
+    assert.equal(await service('java').partieDejaOuverte(), false)
+    fs.writeFileSync(partie, 'illisible')
+    assert.equal(await service('java').partieDejaOuverte(), false)
+})
+
+test('nom du processus : celui d’un programme en cours, rien pour un processus terminé', async () => {
+    const nom = await LauncherService.nomProcessus(process.pid)
+    assert.equal(typeof nom, 'string')
+    assert.ok(nom.length > 0 && !/^javaw?(\.exe)?$/i.test(nom), nom)
+    const fini = require('node:child_process').spawn(process.execPath, ['-e', ''], { stdio: 'ignore' })
+    await new Promise(resolve => fini.once('exit', resolve))
+    assert.equal(await LauncherService.nomProcessus(fini.pid), null)
+})
+
+test('le jeu est lancé détaché, sa console va dans logs/console-jeu.log, sans variable d’injection', async () => {
+    new LauncherService(config, () => {})
+    Config.setJavaExecutable(config.serverId, process.execPath)
+    Config.setModConfiguration(config.serverId, { id: config.serverId, mods: {} })
+    const server = { rawServer: { id: config.serverId, minecraftVersion: '1.20.1' }, modules: [] }
+    const jeton = 'A'.repeat(40) + '.' + 'B'.repeat(43)
+    const builder = new ProcessBuilder(server, {}, {}, createOfflineProfile('Survivant'), '1.3.0', jeton)
+    const script = 'console.log(JSON.stringify({ outil: process.env.JAVA_TOOL_OPTIONS || null, jeton: process.env.SPARTAN_LAUNCH_TOKEN || null })); console.error("erreur de démarrage")'
+    builder.constructJVMArguments = () => ['-e', script]
+    builder.constructModList = () => []
+    const spawn = require('node:child_process').spawn
+    const avant = { outil: process.env.JAVA_TOOL_OPTIONS, deprecation: process.throwDeprecation }
+    let options = null
+    require('node:child_process').spawn = (commande, args, opts) => { options = opts; return spawn(commande, args, opts) }
+    process.env.JAVA_TOOL_OPTIONS = '-javaagent:triche.jar'
+    // le jeu ne retient pas le launcher (unref) : le test, lui, attend sa fin
+    const garde = setInterval(() => {}, 1000)
+    try {
+        const jeu = builder.build()
+        const code = await new Promise((resolve, reject) => { jeu.once('close', resolve); jeu.once('error', reject) })
+        assert.equal(code, 0)
+        assert.equal(options.detached, true)
+        assert.equal(options.stdio[0], 'ignore')
+        assert.equal(typeof options.stdio[1], 'number')
+        const journal = fs.readFileSync(path.join(Config.getInstanceDirectory(), config.serverId, 'logs', 'console-jeu.log'), 'utf8')
+        assert.match(journal, /erreur de démarrage/)
+        assert.deepEqual(JSON.parse(journal.split('\n')[0]), { outil: null, jeton })
+    } finally {
+        clearInterval(garde)
+        require('node:child_process').spawn = spawn
+        if (avant.outil === undefined) delete process.env.JAVA_TOOL_OPTIONS
+        else process.env.JAVA_TOOL_OPTIONS = avant.outil
+        process.throwDeprecation = avant.deprecation
+    }
+})
+
+test('AppImage (Linux) : le jeu ne garde rien du dossier monté de l’image, qui disparaît avec le launcher', () => {
+    const base = {
+        HOME: '/home/x', APPIMAGE: '/home/x/HeraliZ-Launcher.AppImage', APPDIR: '/tmp/.mount_HeraliAbC', ARGV0: 'x', OWD: '/home/x',
+        PATH: '/tmp/.mount_HeraliAbC:/tmp/.mount_HeraliAbC/usr/sbin:/usr/local/bin:/usr/bin',
+        LD_LIBRARY_PATH: '/tmp/.mount_HeraliAbC/usr/lib', XDG_DATA_DIRS: '/tmp/.mount_HeraliAbC/usr/share/:/usr/share/gnome:/usr/share/',
+        GSETTINGS_SCHEMA_DIR: '/tmp/.mount_HeraliAbC/usr/share/glib-2.0/schemas', LANG: 'fr_FR.UTF-8'
+    }
+    const copie = { ...base }
+    assert.deepEqual(ProcessBuilder.sansAppImage(base), {
+        HOME: '/home/x', PATH: '/usr/local/bin:/usr/bin', XDG_DATA_DIRS: '/usr/share/gnome:/usr/share/', LANG: 'fr_FR.UTF-8'
+    })
+    assert.deepEqual(base, copie)
+    // un dossier voisin au nom proche n'est pas celui de l'image ; hors AppImage, rien ne change
+    assert.equal(ProcessBuilder.sansAppImage({ ...base, PATH: '/tmp/.mount_HeraliAbCD/bin' }).PATH, '/tmp/.mount_HeraliAbCD/bin')
+    const normal = { PATH: '/usr/bin', LD_LIBRARY_PATH: '/opt/lib' }
+    assert.equal(ProcessBuilder.sansAppImage(normal), normal)
+    // avec le reste des protections : variables d'injection retirées aussi
+    const builder = new ProcessBuilder({ rawServer: { id: config.serverId } }, {}, {}, createOfflineProfile('Survivant'), '1.3.0')
+    const env = builder.environnement({ ...base, LD_PRELOAD: '/tmp/x.so', JAVA_TOOL_OPTIONS: '-javaagent:x.jar' })
+    assert.equal(env.LD_PRELOAD, undefined)
+    assert.equal(env.JAVA_TOOL_OPTIONS, undefined)
+    assert.equal(env.APPDIR, undefined)
+})
+
+test('les bibliothèques natives laissées par une partie (launcher fermé) sont effacées après 3 jours', () => {
+    const parent = fs.mkdtempSync(path.join(directory, 'natives-'))
+    const vieux = path.join(parent, 'a'.repeat(32))
+    const recent = path.join(parent, 'b'.repeat(32))
+    const autre = path.join(parent, 'autre')
+    for (const d of [vieux, recent, autre]) fs.mkdirSync(d)
+    fs.writeFileSync(path.join(vieux, 'lwjgl.so'), 'x')
+    const ancien = new Date(Date.now() - 4 * 24 * 3600 * 1000)
+    fs.utimesSync(vieux, ancien, ancien)
+    fs.utimesSync(autre, ancien, ancien)
+    ProcessBuilder.nettoyerNatives(parent)
+    assert.equal(fs.existsSync(vieux), false)
+    assert.equal(fs.existsSync(recent), true)
+    assert.equal(fs.existsSync(autre), true, 'seuls les dossiers du launcher sont touchés')
+    ProcessBuilder.nettoyerNatives(path.join(parent, 'absent'))
 })
