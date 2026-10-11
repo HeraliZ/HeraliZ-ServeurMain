@@ -1,8 +1,7 @@
 {
-  "item_group.heralisz_tactical.throwable": "HeraliZ - Lancers",
-  "item_group.heralisz_tactical.consumable": "HeraliZ - Soins",
-  "item_group.heralisz_tactical.melee": "HeraliZ - Mêlée",
-
+  "item_group.heralisz_tactical.throwable": "HeraliZ - Throwables",
+  "item_group.heralisz_tactical.consumable": "HeraliZ - Healing",
+  "item_group.heralisz_tactical.melee": "HeraliZ - Melee",
   "item.heralisz_tactical.blood_pack": "Blood Pack",
   "item.heralisz_tactical.blood_pack.desc": "Emergency transfusion, quickly restores health and hunger.",
   "item.heralisz_tactical.condensed_milk": "Condensed Milk",
@@ -35,16 +34,13 @@
   "item.heralisz_tactical.molotov.desc": "Molotov cocktail, ignites the area on impact.",
   "item.heralisz_tactical.c4": "C4 [WIP]",
   "item.heralisz_tactical.c4.desc": "Remote explosive, sticks and detonates from afar.",
-
   "item.heralisz_tactical.dagger": "Dagger",
   "item.heralisz_tactical.dagger.desc": "Light military dagger, quick to draw and strike.",
   "item.heralisz_tactical.baseball_bat": "Baseball Bat",
   "item.heralisz_tactical.baseball_bat.desc": "Solid baseball bat, hits hard.",
   "item.heralisz_tactical.karambit": "Karambit",
   "item.heralisz_tactical.karambit.desc": "Karambit, great for rapid consecutive attacks.",
-
   "item.heralisz_tactical.flash_shield": "Flash Shield",
-
   "heralisz_tactical.block.smith_table.name": "Smithing Table (HeraliZ)",
   "heralisz_tactical.block.smith_table.desc": "A Classic Forging Table",
   "heralisz_tactical.type.melee.name": "MELEE",
@@ -80,12 +76,10 @@
   "tooltip.heralisz_tactical.melee.action_line": "%s: %s dmg, %s cd",
   "tooltip.heralisz_tactical.more_lines": "... %s more",
   "tooltip.heralisz_tactical.shift_hint": "Hold [Shift] for details",
-
   "effect.heralisz_tactical.blinded": "Blinded",
   "effect.heralisz_tactical.deafened": "Deafened",
   "effect.heralisz_tactical.flammable": "Flammable",
   "enchantment.heralisz_tactical.backstab": "Backstab",
-
   "config.heralisz_tactical.effect": "Effects",
   "config.heralisz_tactical.effect.blackflash": "Black Flash",
   "config.heralisz_tactical.effect.blackflash.desc": "Use black overlay instead of white when blinded by flashbang",
@@ -99,14 +93,11 @@
   "config.heralisz_tactical.melee.durability.desc": "If enabled, melee weapons will consume durability when used (if it will).",
   "config.heralisz_tactical.melee.max_target": "Max Target Count",
   "config.heralisz_tactical.melee.max_target.desc": "The maximum number of targets that can be hit by a single melee attack.",
-
   "key.category.heralisz_tactical": "HeraliZ Tactical",
   "key.heralisz_tactical.normal_attack.desc": "Normal Attack",
   "key.heralisz_tactical.sp_attack.desc": "Special Attack/Action",
-
   "pack.heralisz_tactical.default_pack.name": "HeraliZ Tactical",
   "pack.heralisz_tactical.default_pack.desc": "Default Pack for HeraliZ Tactical",
-
   "subtitle.heralisz_tactical.entity.grenade.bounce": "Grenade Bounce",
   "subtitle.heralisz_tactical.entity.grenade.flash.explode": "Flashbang Explosion",
   "subtitle.heralisz_tactical.entity.grenade.m67.explode": "M67 Grenade Explosion",
