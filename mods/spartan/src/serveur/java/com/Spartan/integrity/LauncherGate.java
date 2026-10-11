@@ -68,7 +68,7 @@ public final class LauncherGate {
 
     /** Refus de connexion : jeu lancé hors du launcher HeraliZ (CurseForge, autre launcher, jeton expiré). */
     public static void refuser(ServerPlayer p) {
-        p.connection.disconnect(Component.literal(
+        p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.launcher",
                 "Connexion refusée : lancez le jeu depuis le launcher HeraliZ.\n"
                         + "(Le jeu lancé autrement, ou depuis plus de 6 heures, n'est pas accepté.)"));
     }

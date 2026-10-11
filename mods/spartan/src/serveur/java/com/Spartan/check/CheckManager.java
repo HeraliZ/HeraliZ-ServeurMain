@@ -289,7 +289,8 @@ public class CheckManager {
         // silencieuse ; le staff le surveille et décide.
         boolean mayKick = withEvidence ? !SpartanConfig.ALERT_ONLY.get() : SpartanConfig.mayKickForClientSignal();
         if (mayKick && vl >= SpartanConfig.ACTION_VL.get()) {
-            player.connection.disconnect(Component.literal("[Spartan] Expulsé : " + checkName));
+            player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.controle",
+                    "[Spartan] Expulsé : %s", checkName));
         }
     }
 

@@ -346,8 +346,9 @@ public final class BanManager {
     }
 
     public static Component kickMessage(BanRecord r) {
-        return Component.literal("Vous êtes banni de ce serveur.\n\nRaison : " + r.reason
-                + "\nDurée : " + r.describeExpiry());
+        // texte traduit chez le joueur (fichiers de langue du jar joueur), français pour la console
+        return Component.translatableWithFallback("spartan.expulsion.banni",
+                "Vous êtes banni de ce serveur.\n\nRaison : %s\nDurée : %s", r.reason, r.describeExpiry());
     }
 
     private static boolean matches(BanRecord r, String key) {
