@@ -252,9 +252,12 @@ def main():
         jamais = sorted(exist - set(utilises))
         lignes.append("## %s : %d bloc(s) posé(s) sur %d existant(s)" % (ns, len(utilises), len(exist)))
         lignes.append("")
-        for nom in sorted(utilises, key=lambda x: -utilises[x]):
-            ou = [dim for dim in poses if poses[dim].get(ns + ":" + nom)]
-            lignes.append("- posé : `%s:%s` — %d chunk(s) (%s)" % (ns, nom, utilises[nom], ", ".join(ou)))
+        # une ligne par dimension : « bloc ×chunks », du plus fréquent au plus rare
+        for dim in sorted(poses):
+            ici = {b.partition(":")[2]: n for b, n in poses[dim].items() if b.startswith(ns + ":")}
+            if ici:
+                lignes.append("Posés dans %s (%d) : %s" % (dim, len(ici), ", ".join(
+                    "`%s` ×%d" % (b, ici[b]) for b in sorted(ici, key=lambda x: (-ici[x], x)))))
         if jamais:
             lignes.append("")
             lignes.append("Jamais posés (%d) : %s" % (len(jamais), ", ".join("`%s`" % j for j in jamais)))
