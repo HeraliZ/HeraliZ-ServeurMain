@@ -238,7 +238,8 @@ public enum DecorType {
     public MutableComponent modeName(int mode) {
         int m = Math.floorMod(mode, modes);
         if (this == FLECHE) {
-            return Component.literal(DecorNames.ARROW_LABELS[DecorNames.arrowLabel(m)] + (DecorNames.arrowLeft(m) ? "  ←" : "  →"));
+            int k = DecorNames.arrowLabel(m);
+            return Component.translatableWithFallback(DecorNames.ARROW_KEYS[k], DecorNames.ARROW_LABELS[k]).append(DecorNames.arrowLeft(m) ? "  ←" : "  →");
         }
         return Component.translatable("decor.heralizcasino." + id + ".mode." + m);
     }

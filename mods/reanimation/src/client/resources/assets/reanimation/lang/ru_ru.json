@@ -155,5 +155,6 @@
   "death.attack.reanimation.execution_check.player": "%1$s ранен игроком %2$s",
   "menu.reanimation.subtitle": "Открыто %s / %s · выбрано: %s",
   "menu.reanimation.subtitle_none": "Открыто %s / %s",
-  "menu.reanimation.equipped_btn": "Выбрано"
+  "menu.reanimation.equipped_btn": "Выбрано",
+  "reanimation.bot.nom": "Бот %s"
 }

@@ -10,6 +10,10 @@ public final class DecorNames {
     /** Textes de la fleche a ampoules ; variante = texte * 2 + sens (0 : vers la droite, 1 : vers la gauche). */
     public static final String[] ARROW_LABELS = {"CAISSE", "JEUX", "SORTIE", "BAR", "VIP", "ENTRÉE"};
 
+    /** Cles de traduction des textes de la fleche (meme ordre ; le texte francais sert de secours). */
+    public static final String[] ARROW_KEYS = {"heralizcasino.fleche.caisse", "heralizcasino.fleche.jeux", "heralizcasino.fleche.sortie",
+            "heralizcasino.fleche.bar", "heralizcasino.fleche.vip", "heralizcasino.fleche.entree"};
+
     public static int arrowLabel(int mode) {
         return Math.floorMod(mode, ARROW_LABELS.length * 2) / 2;
     }

@@ -278,11 +278,13 @@ public final class CasinoCommand {
     }
 
     private static void line(CommandSourceStack src, MachineType t, double[] r) {
-        String v = Math.abs(r[0] - r[1]) < 1e-4 ? String.format(Locale.ROOT, "%.1f %%", r[1] * 100)
-                : String.format(Locale.ROOT, "%.1f a %.1f %%", r[0] * 100, r[1] * 100);
-        if (r.length > 2 && r[2] >= 0.0005) v += String.format(Locale.ROOT, " (± %.1f)", r[2] * 100);
+        MutableComponent v = Math.abs(r[0] - r[1]) < 1e-4 ? Component.literal(String.format(Locale.ROOT, "%.1f %%", r[1] * 100))
+                : Component.translatableWithFallback("heralizcasino.commande.rtp_plage", "%s à %s %%",
+                        String.format(Locale.ROOT, "%.1f", r[0] * 100), String.format(Locale.ROOT, "%.1f", r[1] * 100));
+        if (r.length > 2 && r[2] >= 0.0005) v.append(String.format(Locale.ROOT, " (± %.1f)", r[2] * 100));
         MutableComponent l = Component.literal(" • ").append(t.displayName().withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal(String.format(Locale.ROOT, " : %s (maison %.1f %%)", v, (1 - r[1]) * 100))
+                .append(Component.translatableWithFallback("heralizcasino.commande.rtp_ligne", " : %s (maison %s %%)", v,
+                                String.format(Locale.ROOT, "%.1f", (1 - r[1]) * 100))
                         .withStyle(r[1] >= 1 ? ChatFormatting.RED : ChatFormatting.GRAY));
         Reponses.ok(src, l);
     }
