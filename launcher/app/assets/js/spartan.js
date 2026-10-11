@@ -10,8 +10,11 @@
  *    - optionsSures(options) : retire des options Java du joueur tout ce qui sert à injecter du code au lancement.
  * 2. Jeton de lancement (le serveur peut refuser ceux qui ne passent pas par ce launcher) : signé par le SITE pour le
  *    compte connecté (mode B de mods/spartan/docs/LAUNCHER.md ; /api/heraliz/jeton-jeu, site/extension/heraliz),
- *    valable 6 h, lié au pseudo du compte et à l'empreinte du dossier mods (empreinteMods), passé au jeu par
- *    -Dspartan.launchToken=… Le launcher ne contient aucune clé : il ne peut pas fabriquer de jeton lui-même.
+ *    valable 6 h, lié au pseudo du compte et à l'empreinte du dossier mods (empreinteMods), passé au jeu par la variable
+ *    d'environnement SPARTAN_LAUNCH_TOKEN (environnementJeu), jamais sur la ligne de commande, que d'autres programmes
+ *    et les antivirus lisent. Le launcher ne contient aucune clé : il ne peut pas fabriquer de jeton lui-même.
+ * 3. environnementJeu() retire aussi les variables que Java lit au démarrage (JAVA_TOOL_OPTIONS…) : un programme de
+ *    triche pourrait y glisser un -javaagent sans toucher aux options du launcher.
  */
 
 const crypto = require('crypto')
@@ -36,8 +39,11 @@ const DANGEREUSES = [
 ]
 
 const ARG_JETON = '-Dspartan.launchToken='
-// jeton v1 rendu par le site : base64url(contenu) "." base64url(HMAC-SHA256), rien d'autre (il finit en option Java)
+const VAR_JETON = 'SPARTAN_LAUNCH_TOKEN'
+// jeton v1 rendu par le site : base64url(contenu) "." base64url(HMAC-SHA256), rien d'autre
 const JETON = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
+// variables d'environnement lues par Java au démarrage (une option -javaagent y suffit), et tout jeton hérité
+const VARIABLES_DANGEREUSES = ['JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', VAR_JETON]
 
 /** Options Java ajoutées à chaque lancement (copie). */
 function protections() {
@@ -99,14 +105,23 @@ function empreinteMods(dossierMods) {
     return sha256Hex(lines.join('\n'))
 }
 
-/** Option Java du jeton rendu par le site pour ce lancement, ou null (pas de jeton, ou jeton mal formé). */
-function argumentJeton(jeton) {
-    return typeof jeton === 'string' && JETON.test(jeton) ? ARG_JETON + jeton : null
+/**
+ * Environnement du jeu : celui du launcher, sans les variables qui permettent d'injecter du code dans Java (ni un jeton
+ * venu d'ailleurs), plus le jeton rendu par le site pour ce lancement s'il est bien formé. Les noms sont comparés sans
+ * tenir compte des majuscules (Windows). base n'est jamais modifié.
+ */
+function environnementJeu(jeton, base = process.env) {
+    const env = {}
+    for (const [nom, valeur] of Object.entries(base || {})) {
+        if (!VARIABLES_DANGEREUSES.includes(nom.toUpperCase())) env[nom] = valeur
+    }
+    if (typeof jeton === 'string' && JETON.test(jeton)) env[VAR_JETON] = jeton
+    return env
 }
 
-/** Arguments à écrire dans le journal du launcher : le jeton est masqué. */
+/** Arguments à écrire dans le journal du launcher : un jeton qui y serait quand même est masqué. */
 function masquerJeton(args) {
     return args.map(a => typeof a === 'string' && a.startsWith(ARG_JETON) ? ARG_JETON + '**********' : a)
 }
 
-module.exports = { protections, optionsSures, argumentJeton, masquerJeton, empreinteMods }
+module.exports = { protections, optionsSures, environnementJeu, masquerJeton, empreinteMods }

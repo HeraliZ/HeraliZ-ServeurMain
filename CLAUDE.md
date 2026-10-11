@@ -316,14 +316,18 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   CaraCrea (un joueur caché qui parle est montré à ceux qui l'entendent). Si une de ces API change, ce fichier aussi.
 - **Launcher** (`launcher/`, Helios) : il charge les mods depuis son dossier (`common/modstore`, fournisseur Forge
   « maven libs », options `--fml.mavenRoots` / `--fml.modLists`) ; Spartan hache et juge chacun de ces jars comme ceux
-  du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism` et retire les options d'injection du joueur
-  (`launcher/app/assets/js/spartan.js`). Son pack est refait à chaque mise en ligne avec `livraison/mods client` de la
-  même fabrication (section 8).
+  du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism`, retire les options d'injection du joueur et, depuis
+  la 1.6.1, les variables d'environnement que Java lit au démarrage (`JAVA_TOOL_OPTIONS`, `_JAVA_OPTIONS`,
+  `JDK_JAVA_OPTIONS` : un `-javaagent` de triche pouvait s'y glisser) (`launcher/app/assets/js/spartan.js`) ; ses verrous
+  Electron (`electronFuses` de `electron-builder.yml`) l'empêchent de tourner comme un simple Node.js ou de charger un
+  autre code que son archive. Son pack est refait à chaque mise en ligne avec `livraison/mods client` de la même
+  fabrication (section 8).
 - **Jeton de lancement, signé par le site (mode B, depuis le launcher 1.6.0)** : on ne joue que depuis le launcher
   HeraliZ, connecté à un compte du site. À chaque partie, le launcher envoie au site l'empreinte de son dossier mods ;
   le site (`/api/heraliz/jeton-jeu`, `JetonController` de l'extension) rend un jeton valable **6 h**, signé pour le
-  pseudo du compte connecté (jamais un pseudo envoyé par le launcher), passé au jeu par `-Dspartan.launchToken=…`
-  (masqué dans le journal du launcher) et vérifié par Spartan à la connexion (`LaunchToken.verify`, même format). La
+  pseudo du compte connecté (jamais un pseudo envoyé par le launcher), passé au jeu par la variable d'environnement
+  `SPARTAN_LAUNCH_TOKEN` depuis la 1.6.1 (avant : `-Dspartan.launchToken=…`, visible de tout programme dans la ligne de
+  commande ; Spartan lit les deux) et vérifié par Spartan à la connexion (`LaunchToken.verify`, même format). La
   clé (`storage/app/heraliz/jeton-jeu.cle` sur la VM du site) est créée une seule fois par `theme.sh` et lue par la mise
   en ligne du serveur, qui l'écrit dans `launcherSecret` : elle n'est ni dans Git, ni dans un secret GitHub, ni dans le
   launcher (impossible de fabriquer un jeton sans le site). L'ancien secret GitHub `SPARTAN_LAUNCHER_SECRET` ne sert

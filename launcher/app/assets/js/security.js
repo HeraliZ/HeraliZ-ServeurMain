@@ -1,3 +1,4 @@
+const os = require('node:os')
 const path = require('node:path')
 
 function httpsUrl(value) {
@@ -6,6 +7,18 @@ function httpsUrl(value) {
         throw new Error('Une adresse HTTPS sans identifiants est requise.')
     }
     return url
+}
+
+// Message d'erreur montré au joueur : jamais le nom de son compte Windows (souvent un prénom), qui apparaît dans les
+// chemins de fichiers des erreurs du système ou de Helios et finirait en capture d'écran sur le Discord.
+function sansChemins(texte, dossierPerso = os.homedir()) {
+    let message = String(texte ?? '')
+    if (dossierPerso && dossierPerso.length > 3) {
+        for (const forme of new Set([dossierPerso, dossierPerso.replace(/\\/g, '/')])) {
+            message = message.replace(new RegExp(forme.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '~')
+        }
+    }
+    return message.replace(/([\\/](?:Users|home)[\\/])[^\\/'"\r\n]+/gi, '$1…')
 }
 
 function isTrustedFrame(event, webContents, pageUrl) {
@@ -60,4 +73,4 @@ function validateDistribution(raw, config) {
     return raw
 }
 
-module.exports = { httpsUrl, isTrustedFrame, safeRelativePath, validateDistribution }
+module.exports = { sansChemins, httpsUrl, isTrustedFrame, safeRelativePath, validateDistribution }

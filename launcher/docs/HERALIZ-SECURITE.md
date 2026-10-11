@@ -51,11 +51,15 @@ Dans le jeu, Spartan (mods/spartan du dépôt) compare chaque jar chargé au mod
 y compris les jars du dossier du launcher (`common/modstore`, options `--fml.mavenRoots` / `--fml.modLists`). Le pack
 du launcher doit donc contenir exactement les jars de `livraison/mods client`, dont `spartan-<version>-client.jar` de
 la MÊME fabrication que le jar serveur. Quand tous les joueurs passent par le launcher, le réglage serveur
-`requireHardenedJvm = true` signale ceux qui lancent le jeu sans ces protections. Le jeton signé du launcher
-(`mods/spartan/docs/LAUNCHER.md`) demande un serveur d'authentification : pas encore en place.
+`requireHardenedJvm = true` signale ceux qui lancent le jeu sans ces protections. Le jeton de lancement est signé par
+le site pour le compte connecté (mode B, depuis la 1.6.0) et passé au jeu par la variable d'environnement
+`SPARTAN_LAUNCH_TOKEN`, jamais sur la ligne de commande (depuis la 1.6.1) ; le serveur refuse qui n'en a pas
+(`tokenRequired = true`). Le launcher retire aussi de l'environnement du jeu `JAVA_TOOL_OPTIONS`, `_JAVA_OPTIONS` et
+`JDK_JAVA_OPTIONS`, que Java lit au démarrage (un `-javaagent` de triche pouvait s'y glisser), et ses verrous Electron
+(`electronFuses`) l'empêchent de tourner comme un simple Node.js ou de charger un autre code que son archive.
 
 ## Limites restantes
 
-Cette refonte n’ajoute pas d’authentification serveur, de bannissement automatique, de certificat Windows ni de signature cryptographique du manifeste. HTTPS et les empreintes n’empêchent pas un hébergeur compromis de publier ensemble un manifeste et des fichiers malveillants.
+Pas encore de certificat Windows ni de signature cryptographique des mises à jour et du manifeste (prévu : clé gardée hors de la VM du site). HTTPS et les empreintes n’empêchent pas un hébergeur compromis de publier ensemble un manifeste et des fichiers malveillants.
 
 Depuis la 1.6.0, le launcher installé se met à jour seul depuis https://heraliz.fr/telecharger/ (latest.yml : version et empreinte SHA-512 contrôlée avant installation, `mise-a-jour.js`) ; le pack est actualisé à chaque partie. Qui peut écrire sur la VM du site peut donc livrer un launcher ou un pack : protéger ses accès (secrets `SITE_*`) et les comptes GitHub qui lancent la publication. Avant diffusion, tester le serveur réel et, si possible, signer l’installeur.

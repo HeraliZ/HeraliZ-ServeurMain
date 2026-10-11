@@ -73,3 +73,16 @@ test('IPC rejects foreign windows, subframes and navigated pages', () => {
     contents.mainFrame.url = 'https://example.com'
     assert.equal(isTrustedFrame(event, contents, url), false)
 })
+
+test('messages d’erreur montrés au joueur : jamais le nom de son compte Windows', () => {
+    const { sansChemins } = require('../app/assets/js/security')
+    const perso = 'C:\\Users\\Jean Dupont'
+    assert.equal(sansChemins('EBUSY: open \'C:\\Users\\Jean Dupont\\AppData\\Roaming\\HeraliZ Launcher\\game\\x.jar\'', perso),
+        'EBUSY: open \'~\\AppData\\Roaming\\HeraliZ Launcher\\game\\x.jar\'')
+    assert.equal(sansChemins('échec : c:\\users\\jean dupont\\AppData\\y', perso), 'échec : ~\\AppData\\y')
+    assert.equal(sansChemins('C:/Users/Jean Dupont/AppData/z', perso), '~/AppData/z')
+    assert.equal(sansChemins('C:\\Users\\JEANDU~1\\AppData\\Local\\Temp\\a', perso), 'C:\\Users\\…\\AppData\\Local\\Temp\\a')
+    assert.equal(sansChemins('/home/jean/.heraliz/b', '/home/jean'), '~/.heraliz/b')
+    assert.equal(sansChemins('Mot de passe incorrect.', perso), 'Mot de passe incorrect.')
+    assert.equal(sansChemins(undefined, perso), '')
+})

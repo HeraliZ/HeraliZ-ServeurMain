@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, shell, dialog, clipboard } = require('elect
 const path = require('node:path')
 const fs = require('node:fs')
 const { pathToFileURL } = require('node:url')
-const { isTrustedFrame, httpsUrl } = require('./app/assets/js/security')
+const { isTrustedFrame, httpsUrl, sansChemins } = require('./app/assets/js/security')
 const { MiseAJour } = require('./app/assets/js/mise-a-jour')
 const config = require('./app/heraliz.json')
 
@@ -21,7 +21,7 @@ function handle(name, action) {
             return { ok: true, data: await action(...args) }
         } catch (error) {
             console.error(`[HeraliZ/${name}]`, error)
-            const reponse = { ok: false, error: error.message || 'Une erreur est survenue. Réessaie dans un instant.' }
+            const reponse = { ok: false, error: sansChemins(error.message) || 'Une erreur est survenue. Réessaie dans un instant.' }
             // erreurs par champ d'un formulaire (création de compte) : seulement des textes
             if (error.champs && typeof error.champs === 'object') {
                 reponse.champs = Object.fromEntries(Object.entries(error.champs).filter(([, v]) => typeof v === 'string').slice(0, 8))

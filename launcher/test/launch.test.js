@@ -127,10 +127,16 @@ test('Minecraft 1.20.1 receives offline identity, quick play and no unresolved t
     const builder = new ProcessBuilder(server, vanilla, loader, profile, '1.3.0', jeton)
     builder.classpathArg = () => ['classpath']
     const args = builder.constructJVMArguments([], directory)
-    assert.ok(args.includes('-Dspartan.launchToken=' + jeton), 'jeton signé par le site')
+    // jeton signé par le site : dans l'environnement du jeu, jamais sur la ligne de commande
+    assert.equal(args.some(a => String(a).includes(jeton) || String(a).startsWith('-Dspartan.')), false)
+    const env = builder.environnement({ Path: 'x', JAVA_TOOL_OPTIONS: '-javaagent:triche.jar' })
+    assert.equal(env.SPARTAN_LAUNCH_TOKEN, jeton)
+    assert.equal(env.JAVA_TOOL_OPTIONS, undefined)
+    assert.equal(env.Path, 'x')
     const sansJeton = new ProcessBuilder(server, vanilla, loader, profile, '1.3.0')
     sansJeton.classpathArg = () => ['classpath']
-    assert.equal(sansJeton.constructJVMArguments([], directory).some(a => String(a).startsWith('-Dspartan.launchToken=')), false)
+    assert.equal(sansJeton.constructJVMArguments([], directory).some(a => String(a).startsWith('-Dspartan.')), false)
+    assert.equal(sansJeton.environnement({}).SPARTAN_LAUNCH_TOKEN, undefined)
     assert.equal(args[args.indexOf('--username') + 1], 'Survivant')
     assert.equal(args[args.indexOf('--uuid') + 1], profile.uuid)
     assert.equal(args[args.indexOf('--accessToken') + 1], '0')
