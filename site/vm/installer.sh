@@ -26,10 +26,11 @@ echo "== Paquets"
 apt-get update -q
 apt-get install -y -q ca-certificates curl unzip cron nginx mariadb-server certbot python3-certbot-nginx lsb-release gnupg
 
-# PHP 8.3 de préférence (8.2 ou 8.4 sinon) ; dépôt Sury (Debian) ou ondrej (Ubuntu) si le système n'en propose aucun
+# PHP 8.4 de préférence (recommandé par Azuriom ; 8.3 ou 8.2 sinon) ; dépôt Sury (Debian) ou ondrej (Ubuntu) si le système
+# n'en propose aucun
 choisir_php() {
   local v
-  for v in 8.3 8.2 8.4; do
+  for v in 8.4 8.3 8.2; do
     # (sortie gardée avant le grep : « grep -q » ferme le tube et ferait échouer la commande avec pipefail)
     if grep -q 'Candidate: [0-9]' <<< "$(apt-cache policy "php$v-fpm" 2> /dev/null)"; then echo "$v"; return 0; fi
   done
@@ -68,6 +69,9 @@ CREATE DATABASE IF NOT EXISTS azuriom CHARACTER SET utf8mb4 COLLATE utf8mb4_unic
 CREATE USER IF NOT EXISTS 'azuriom'@'localhost' IDENTIFIED BY '$MDP_SQL';
 ALTER USER 'azuriom'@'localhost' IDENTIFIED BY '$MDP_SQL';
 GRANT ALL PRIVILEGES ON azuriom.* TO 'azuriom'@'localhost';
+CREATE USER IF NOT EXISTS 'azuriom'@'127.0.0.1' IDENTIFIED BY '$MDP_SQL';
+ALTER USER 'azuriom'@'127.0.0.1' IDENTIFIED BY '$MDP_SQL';
+GRANT ALL PRIVILEGES ON azuriom.* TO 'azuriom'@'127.0.0.1';
 FLUSH PRIVILEGES;
 SQL
 echo "Base « azuriom » et utilisateur « azuriom » prêts."
@@ -93,7 +97,24 @@ echo "Racine du site : $RACINE"
 
 echo "== nginx"
 ECOUTE6=""
-[ -f /proc/net/if_inet6 ] && ECOUTE6="listen [::]:80;"   # IPv6 seulement si la machine l'a (sinon nginx refuse de démarrer)
+DEFAUT6=""
+if [ -f /proc/net/if_inet6 ]; then   # IPv6 seulement si la machine l'a (sinon nginx refuse de démarrer)
+  ECOUTE6="listen [::]:80;"
+  DEFAUT6="listen [::]:80 default_server; listen [::]:443 ssl default_server;"
+fi
+# le site ne répond pas à l'IP de la VM ni à un nom inconnu (recommandation d'Azuriom)
+cat > /etc/nginx/sites-available/heraliz-defaut <<NGINX
+# Écrit par site/vm/installer.sh : requêtes qui ne visent pas heraliz.fr refusées.
+server {
+    listen 80 default_server;
+    listen 443 ssl default_server;
+    $DEFAUT6
+    server_name _;
+    ssl_reject_handshake on;
+    return 444;
+}
+NGINX
+ln -sf /etc/nginx/sites-available/heraliz-defaut /etc/nginx/sites-enabled/heraliz-defaut
 cat > /etc/nginx/sites-available/heraliz <<NGINX
 # Site HeraliZ (Azuriom), écrit par site/vm/installer.sh : modifier le dépôt, pas ce fichier.
 server {
@@ -108,6 +129,7 @@ server {
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "strict-origin-when-cross-origin";
 
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
@@ -143,8 +165,11 @@ echo "== HTTPS"
 if [ "$HTTPS" = oui ]; then
   args=()
   for d in $DOMAINES; do args+=(-d "$d"); done
-  certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email --redirect --keep-until-expiring "${args[@]}"
-  echo "Certificat HTTPS en place pour : $DOMAINES (renouvelé tout seul par certbot)."
+  if certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email --redirect --keep-until-expiring "${args[@]}"; then
+    echo "Certificat HTTPS en place pour : $DOMAINES (renouvelé tout seul par certbot). Site : https://${DOMAINES%% *}"
+  else
+    echo "::warning::Certificat HTTPS refusé (port 80 fermé chez l'hébergeur ?) : le site marche en http://${DOMAINES%% *} ; relancer « installer » plus tard."
+  fi
 else
   echo "HTTPS non demandé (le domaine ne mène pas encore à la VM) : relancer « installer » une fois le DNS à jour."
 fi

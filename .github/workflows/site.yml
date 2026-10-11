@@ -88,7 +88,15 @@ jobs:
       - name: Azuriom
         run: |
           curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/Azuriom/AzuriomInstaller/releases/latest -o installeur.json || true
-          URL=$(python -c 'import json; d = json.load(open("installeur.json")); print(next(a["browser_download_url"] for a in d["assets"] if a["name"].endswith(".zip")))' 2> /dev/null || true)
+          # le bon fichier est « AzuriomInstaller.zip » (« -old » est l'ancien installeur, pour les vieilles versions de PHP)
+          URL=$(python - <<'EOF' || true
+          import json
+          zips = [a for a in json.load(open("installeur.json"))["assets"] if a["name"].endswith(".zip")]
+          print("fichiers de la version :", ", ".join(a["name"] for a in zips), file=__import__("sys").stderr)
+          bons = [a for a in zips if a["name"] == "AzuriomInstaller.zip"] or [a for a in zips if "old" not in a["name"].lower()]
+          print(bons[0]["browser_download_url"])
+          EOF
+          )
           URL=${URL:-https://github.com/Azuriom/AzuriomInstaller/releases/latest/download/AzuriomInstaller.zip}
           echo "Installeur d'Azuriom : $URL"
           echo "URL_INSTALLEUR=$URL" >> "$GITHUB_ENV"
