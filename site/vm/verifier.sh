@@ -60,6 +60,17 @@ if [ "$installe" != non ]; then
     *) echo "Connexion des comptes au launcher (API d'Azuriom) : réponse inattendue (code ${code:-aucun})";;
   esac
 fi
+# thème et extensions du site (choix « theme » du workflow)
+if [ "$installe" != non ]; then
+  if curl -s -m 20 --resolve heraliz.fr:443:127.0.0.1 https://heraliz.fr/ 2> /dev/null | grep -q 'themes/heraliz/css/heraliz.css'; then
+    echo "Thème du site : HeraliZ"
+  else
+    echo "Thème du site : celui d'origine d'Azuriom (lancer « theme »)"
+  fi
+  ext=""
+  for e in shop vote; do [ -f "/var/www/azuriom/plugins/$e/plugin.json" ] && ext="$ext $e"; done
+  echo "Extensions téléchargées :${ext:- aucune}"
+fi
 if [ -f /var/www/launcher/distribution.json ]; then
   echo "Pack du launcher : $(find /var/www/launcher -type f | wc -l) fichiers, $(du -sh /var/www/launcher | cut -f1), distribution du $(date -r /var/www/launcher/distribution.json '+%d/%m %H:%M')"
 else

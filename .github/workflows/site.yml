@@ -1,16 +1,26 @@
 # Site HeraliZ (Azuriom) sur sa VM, à part du Ptero (voir CLAUDE.md, section 8 bis). « Run workflow » :
 # - verifier : regarde la VM et les adresses heraliz.fr sans rien changer ;
 # - installer : installe ou met à jour nginx, PHP, MariaDB, l'installeur d'Azuriom, le HTTPS et les tâches planifiées
-#   (site/vm/installer.sh). Les accès sont dans les secrets SITE_* : jamais dans un fichier.
+#   (site/vm/installer.sh) ;
+# - theme : met le site aux couleurs HeraliZ (site/theme/heraliz), installe la Boutique et les Votes d'Azuriom et fait
+#   les réglages de départ une seule fois (site/vm/theme.sh, site/vm/reglages.php). Lancé tout seul à chaque envoi sur
+#   main qui touche le thème.
+# Les accès sont dans les secrets SITE_* : jamais dans un fichier.
 name: Site HeraliZ
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "site/theme/**"
+      - "site/vm/theme.sh"
+      - "site/vm/reglages.php"
   workflow_dispatch:
     inputs:
       action:
-        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le site"
+        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, boutique, votes)"
         type: choice
-        options: [verifier, installer]
+        options: [verifier, installer, theme]
         default: verifier
 
 permissions:
@@ -30,7 +40,7 @@ jobs:
       SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
       SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
       SITE_BDD_MDP: ${{ secrets.SITE_BDD_MDP }}
-      ACTION: ${{ inputs.action }}
+      ACTION: ${{ inputs.action || 'theme' }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
@@ -86,6 +96,7 @@ jobs:
 
       # installeur officiel d'Azuriom : dernière version publiée ; pour « verifier », son contenu et la doc d'installation
       - name: Azuriom
+        if: env.ACTION != 'theme'
         run: |
           curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/Azuriom/AzuriomInstaller/releases/latest -o installeur.json || true
           # le bon fichier est « AzuriomInstaller.zip » (« -old » est l'ancien installeur, pour les vieilles versions de PHP)
@@ -117,6 +128,22 @@ jobs:
             fi
           fi
 
+      # thème, réglages et images des premières actualités (celles du launcher), envoyés en une archive
+      - name: Thème du site
+        if: env.ACTION == 'theme'
+        run: |
+          mkdir -p envoi/vm envoi/contenu/actus
+          cp -r site/theme envoi/theme
+          cp site/vm/reglages.php envoi/vm/
+          cp launcher/app/assets/images/nouveautes/*.jpg envoi/contenu/actus/
+          tar -czf theme.tgz -C envoi .
+          echo "Archive du thème : $(du -h theme.tgz | cut -f1), $(find envoi -type f | wc -l) fichiers"
+          export SSHPASS="$SITE_SSH_MDP"
+          ARCHIVE="/tmp/heraliz_theme_$GITHUB_RUN_ID.tgz"
+          sshpass -e scp -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o PubkeyAuthentication=no -P "$SSH_PORT" \
+            theme.tgz "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE:$ARCHIVE" < /dev/null
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+
       - name: Sur la VM
         run: |
           umask 077
@@ -124,6 +151,9 @@ jobs:
             echo "exec < /dev/null"
             if [ "$ACTION" = installer ]; then
               printf 'BDD_MDP=%q\nDOMAINES=%q\nHTTPS=%q\nURL_INSTALLEUR=%q\n' "$SITE_BDD_MDP" "$DOMAINES" "$HTTPS" "$URL_INSTALLEUR"
+            fi
+            if [ "$ACTION" = theme ]; then
+              printf 'ARCHIVE=%q\n' "$ARCHIVE"
             fi
             cat "site/vm/$ACTION.sh"
           } > script_vm.sh
@@ -140,6 +170,16 @@ jobs:
             printf '%s\n' "$SITE_SSH_MDP" | sshpass -e ssh "${OPTS[@]}" -p "$SSH_PORT" "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE" \
               "sudo -S -p '' bash $DISTANT; r=\$?; rm -f $DISTANT; exit \$r"
           fi
+
+      - name: Résumé du site
+        if: success() && env.ACTION == 'theme'
+        run: |
+          {
+            echo "### Site HeraliZ mis à jour"
+            echo "- thème HeraliZ actif sur **https://heraliz.fr**, avec la Boutique et les Votes d'Azuriom"
+            echo "- réglages de départ (menu, Règlement, grades, premières actualités) faits une seule fois : ensuite l'administration du site fait foi"
+            echo "- reste à faire dans l'administration : moyens de paiement (Boutique → Paiements), articles et prix, sites de vote"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Résumé
         if: success() && env.ACTION == 'installer'

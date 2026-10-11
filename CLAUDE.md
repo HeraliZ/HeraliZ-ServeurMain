@@ -89,6 +89,7 @@ launcher/                 le launcher des joueurs (Electron, Node.js) : `npm ins
                           doc dans launcher/README.md et launcher/docs/
 outils/                   fabrication et contrôles (Python 3.11+)
 site/vm/                  installation du site (Azuriom) sur sa VM, lancée par .github/workflows/site.yml (section 8 bis)
+site/theme/heraliz/       le thème du site (maquettes validées), envoyé par le même workflow (choix « theme », section 8 bis)
 monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; envoyée au Ptero seulement
                           sur demande (case « deposer_carte », section 8)
 .github/workflows/        fabrication et mise en ligne automatiques
@@ -436,6 +437,21 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     installateur, https://heraliz.fr/telecharger/, section 8 ter). Se relance sans danger : un site
     déjà installé n'est jamais retéléchargé. Le site lui-même (thème, extension, boutique) se règle ensuite dans
     Azuriom, pas par ce bouton. À relancer après un changement de `installer.sh`.
+  - **theme** : `site/vm/theme.sh` dépose le thème `site/theme/heraliz` (dans Azuriom : `resources/themes/heraliz` ; son
+    `config.json`, réécrit par l'administration, n'est jamais écrasé), télécharge et active les extensions Boutique
+    (`shop`) et Votes (`vote`) d'Azuriom, puis lance `site/vm/reglages.php` avec l'utilisateur du site : le thème
+    redevient actif à chaque envoi ; une seule fois (repère `heraliz.reglages`) : nom HeraliZ, monnaie « crédit »,
+    boutique payée en crédits (crédits achetés en euros), menu Accueil / Boutique / Votes / Règlement, page Règlement
+    (celui du launcher), grades Rescapé / Traqueur / Roi de la Zone, trois premières actualités (images du launcher),
+    serveur play.heraliz.fr suivi par simple ping. Chaque élément n'est créé que s'il manque : ensuite l'administration
+    du site fait foi. Lancé tout seul à chaque envoi sur `main` qui touche `site/theme/`, `site/vm/theme.sh` ou
+    `site/vm/reglages.php`.
+- Le thème : accueil, connexion, inscription, boutique (catégories, articles en cartes de grade), votes, pages et
+  actualités refaits d'après les maquettes ; les autres pages (profil, panier, paiement...) gardent celles d'Azuriom,
+  habillées par `assets/css/heraliz.css`. Grades en couleur sans icône. La mention « Propulsé par Azuriom » du pied de
+  page est exigée par la licence d'Azuriom : ne pas la retirer. L'état du serveur est gardé 1 minute (un serveur éteint
+  ne ralentit pas le site). Réglages du thème (liens Discord et launcher, saison, date de début, places) :
+  administration → Thèmes → Configurer. Polices DM Sans et Oswald sous licence OFL (`assets/fonts/OFL.txt`).
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
   port `3306`, base `azuriom`, utilisateur `azuriom`, mot de passe = secret `SITE_BDD_MDP` ; jeu : Minecraft Java ;
   compte administrateur au choix du propriétaire).
@@ -639,9 +655,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
   LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur.
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
-  le site (section 8) ; ensuite : maquettes du thème, extension Azuriom (inscription depuis le launcher, code par mail
-  sur un nouveau PC, ticket signé pour Spartan), boutique et votes. D'ici là, le launcher demande seulement le pseudo
-  et AuthMe protège le compte en jeu.
+  le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
+  l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
+  prix), sites de vote et leurs récompenses ; avant d'ouvrir la boutique : pages Conditions de vente
+  (`cgv`), Confidentialité (`confidentialite`) et Mentions légales (`mentions-legales`), que le pied de page affiche dès
+  qu'elles existent. Ensuite : AzLink sur le Ptero (livraison des achats en jeu), mails (Brevo), extension Azuriom
+  (inscription depuis le launcher, code par mail sur un nouveau PC, ticket signé pour Spartan). D'ici là, le launcher
+  demande seulement le pseudo et AuthMe protège le compte en jeu.
 - **Launcher** : installateur Windows fabriqué par GitHub (section 8 ter), pas encore donné aux joueurs. Connexion
   avec le compte du site codée, mise de côté jusqu'à validation de ses écrans par le propriétaire (en la remettant,
   ajouter `compte-site` à la liste des fichiers de `launcher/electron-builder.yml`). Jamais essayé de bout en bout
