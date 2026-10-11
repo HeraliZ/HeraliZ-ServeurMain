@@ -275,5 +275,6 @@
   "arkaniaz.gun.berthier.name": "Berthier",
   "arkaniaz.gun.gm6_lynx.name": "Gm6 LYNX",
   "arkaniaz.gun.luger1906.name": "Luger 1906",
-  "arkaniaz.gun.ssg_08.name": "SSG"
+  "arkaniaz.gun.ssg_08.name": "SSG",
+  "arkaniaz.attachment.sr25s.name": "SR-25 Silencer"
 }

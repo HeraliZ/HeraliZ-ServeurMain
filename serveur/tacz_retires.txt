@@ -1,0 +1,64 @@
+# Fichiers de gunpacks retirés du dépôt (chemins sous serveur/tacz, donc sous /tacz du Ptero).
+# La mise en ligne copie serveur/tacz sans rien supprimer (TaCZ y écrit aussi ses propres fichiers) : elle efface
+# ensuite chacun de ces fichiers sur le Ptero (.github/workflows/serveur.yml). Ajouter ici tout fichier de gunpack
+# retiré du dépôt, sinon il reste actif sur le serveur (objet sans affichage chez les joueurs : case rose et noir).
+# Un chemin par ligne ; les lignes vides et celles qui commencent par # sont ignorées.
+
+# anciens établis (avant le 11/10)
+arkaniaz_pack_0_converted/data/tacz/index/blocks/ammo_workbench.json
+arkaniaz_pack_0_converted/data/tacz/index/blocks/attachment_workbench.json
+arkaniaz_pack_0_converted/data/tacz/data/blocks/ammo_workbench.json
+arkaniaz_pack_0_converted/data/tacz/data/blocks/attachment_workbench.json
+
+# 11/10 : accessoires sans texture (114514, grip, phone, tapeb, tapeg) et derniers fichiers des anciens établis
+arkaniaz_pack_0_converted/assets/tacz/display/blocks/ammo_workbench.json
+arkaniaz_pack_0_converted/assets/tacz/display/blocks/attachment_workbench.json
+arkaniaz_pack_0_converted/assets/tacz/display/blocks/workbench_1x1x1.json
+arkaniaz_pack_0_converted/assets/tacz/display/blocks/workbench_1x2x1.json
+arkaniaz_pack_0_converted/assets/tacz/geo_models/block/ammo_workbench.json
+arkaniaz_pack_0_converted/assets/tacz/geo_models/block/attachment_workbench.json
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/ammo_workbench.png
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/ammo_workbench_n.png
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/ammo_workbench_s.png
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/attachment_workbench.png
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/attachment_workbench_n.png
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/attachment_workbench_s.png
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/workbench_1x1x1.png
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/workbench_1x2x1.png
+arkaniaz_pack_0_converted/assets/tacz/textures/block/uv/workbench_2x1x1.png
+arkaniaz_pack_0_converted/data/tacz/data/blocks/workbench_1x1x1.json
+arkaniaz_pack_0_converted/data/tacz/data/blocks/workbench_1x2x1.json
+arkaniaz_pack_0_converted/data/tacz/recipes/attachments/tape.json
+arkaniaz_pack_0_converted/data/tacz/recipes/attachments/tapeg.json
+arkaniaz_pack_1_converted/assets/arkaniaz/display/attachments/114514_display.json
+arkaniaz_pack_1_converted/assets/arkaniaz/display/attachments/grip_display.json
+arkaniaz_pack_1_converted/assets/arkaniaz/display/attachments/phone_display.json
+arkaniaz_pack_1_converted/assets/arkaniaz/display/attachments/tape_display.json
+arkaniaz_pack_1_converted/assets/arkaniaz/display/attachments/tapeg_display.json
+arkaniaz_pack_1_converted/assets/arkaniaz/geo_models/attachment/114514_geo.json
+arkaniaz_pack_1_converted/assets/arkaniaz/geo_models/attachment/grip_geo.json
+arkaniaz_pack_1_converted/assets/arkaniaz/geo_models/attachment/phone_geo.json
+arkaniaz_pack_1_converted/assets/arkaniaz/geo_models/attachment/tape_geo.json
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/slot/123.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/slot/phone.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/slot/tapeb.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/slot/tapeg.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/uv/123.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/uv/blue.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/uv/blue_s.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/uv/green.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/uv/green_s.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/uv/grip.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/uv/phone.png
+arkaniaz_pack_1_converted/assets/arkaniaz/textures/attachment/uv/phone_s.png
+arkaniaz_pack_1_converted/data/arkaniaz/data/attachments/114514_data.json
+arkaniaz_pack_1_converted/data/arkaniaz/data/attachments/grip_data.json
+arkaniaz_pack_1_converted/data/arkaniaz/data/attachments/phone_data.json
+arkaniaz_pack_1_converted/data/arkaniaz/data/attachments/tape_data.json
+arkaniaz_pack_1_converted/data/arkaniaz/index/attachments/114514.json
+arkaniaz_pack_1_converted/data/arkaniaz/index/attachments/grip.json
+arkaniaz_pack_1_converted/data/arkaniaz/index/attachments/phone.json
+arkaniaz_pack_1_converted/data/arkaniaz/index/attachments/tapeb.json
+arkaniaz_pack_1_converted/data/arkaniaz/index/attachments/tapeg.json
+arkaniaz_pack_1_converted/data/arkaniaz/recipes/attachments/tape.json
+arkaniaz_pack_1_converted/data/arkaniaz/recipes/attachments/tapeg.json

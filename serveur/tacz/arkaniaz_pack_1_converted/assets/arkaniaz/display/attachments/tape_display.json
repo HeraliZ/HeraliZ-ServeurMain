@@ -1,9 +1,0 @@
-{
-  "slot": "arkaniaz:attachment/slot/tapeb",
-  "model": "arkaniaz:attachment/tape_geo",
-  "texture": "arkaniaz:attachment/uv/blue",
-  "sounds": {
-    "install": "tacz:attachments/attachment_general_b",
-    "uninstall": "tacz:attachments/attachment_general_uninstall"
-  }
-}

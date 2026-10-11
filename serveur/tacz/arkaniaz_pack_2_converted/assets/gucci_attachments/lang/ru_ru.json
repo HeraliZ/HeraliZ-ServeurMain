@@ -13,5 +13,8 @@
   "gucci_attachments.attachment.muzzle_kraken": "Дульный тормоз \"Kraken\"",
   "gucci_attachments.attachment.stock_precise": "Приклад \"Precision-5\"",
   "gucci_attachments.attachment.sight_hco": "Прицел HCO",
-  "gucci_attachments.attachment.sight_olight_red_dot": "Коллиматорный прицел \"Olight\""
+  "gucci_attachments.attachment.sight_olight_red_dot": "Коллиматорный прицел \"Olight\"",
+  "gucci_attachments.attachment.grip_minivert.name": "Малая вертикальная рукоятка",
+  "gucci_attachments.attachment.laser_hs507c.name": "Лазер HS507C",
+  "gucci_attachments.attachment.muzzle_s_z60": "Глушитель Z60"
 }
