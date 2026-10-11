@@ -56,6 +56,8 @@ public final class MovementEngine {
     /** Pings sans réponse depuis 30 s alors que le client bouge : vanilla aurait été expulsé (keepalive). */
     private static final long IGNORED_PINGS_NANOS = 30_000_000_000L;
     private static final int IGNORED_PINGS_MOVES = 200;
+    /** Doublons de position d'un clic droit (isUseDuplicate) espacés d'au moins ceci (clic maintenu : 200 ms). */
+    private static final long DUPLICATE_SPACING_NANOS = 100_000_000L;
     /** Au-delà, une téléportation rend l'historique de positions au sol périmé. */
     private static final double RELOCATION = 16.0;
     private static final int MAX_TRACKED_TELEPORTS = 16;
@@ -98,6 +100,7 @@ public final class MovementEngine {
         boolean stableUse;        // le joueur utilise un objet de façon certaine (ralentissement attendu)
         boolean useChanged;       // le client a relâché / changé d'objet dans ce lot de paquets
         int movesSincePong;
+        long duplicateNanos;      // dernier doublon de position (clic droit d'un client 1.17+), voir isUseDuplicate
         boolean ignoredReported;
         int forgedPongs;
         boolean flooded;
@@ -358,12 +361,19 @@ public final class MovementEngine {
         if (s.pending) {
             s.movesSincePending++;
         }
-        boolean charged = !s.skipCharge;
-        s.skipCharge = false;
+        boolean duplicate = isUseDuplicate(s, e);
+        boolean charged = !s.skipCharge && !duplicate;
+        if (!duplicate) {
+            s.skipCharge = false;
+        }
         CheckManager.runMovePacket(p, new MovePacket(e.nanos(), e.hasPos(), e.hasRot(), e.yRot(), e.xRot(),
                 e.onGround(), charged));
         if (p.hasDisconnected()) {
             return;
+        }
+        if (duplicate) {
+            s.duplicateNanos = e.nanos();
+            return; // rotation seulement : ni tick (Timer), ni pas de mouvement (Speed, Vertical, Fly)
         }
         if (!e.hasPos()) {
             activityWithoutPosition(s, e.nanos(), grace);
@@ -413,6 +423,21 @@ public final class MovementEngine {
         if (!violated && sample.groundTo() && !sample.special()) {
             Mitigation.recordGround(p, to, e.nanos());
         }
+    }
+
+    /**
+     * Doublon de position des clients 1.17+ : en utilisant un objet (clic droit : soin, nourriture, bouclier…),
+     * le client renvoie sa dernière position exacte avec sa rotation, en plus du paquet du tick
+     * (MultiPlayerGameMode.useItem). Compté comme un vrai pas, il faisait croire à un arrêt net puis à une
+     * accélération ou à une montée impossible (fausses alertes Speed, Vertical, Fly, Timer et renvois en
+     * arrière). Au plus un toutes les {@link #DUPLICATE_SPACING_NANOS} (un clic droit maintenu en envoie un
+     * toutes les 200 ms) : un tricheur ne peut pas s'en servir pour rester immobile en l'air sans être jugé.
+     */
+    private static boolean isUseDuplicate(State s, MoveInbox.Event e) {
+        // (réponse à une téléportation exclue : elle aussi répète une position, et garde son traitement)
+        return e.hasPos() && e.hasRot() && s.ref != null && !s.reseedNext && !s.skipCharge && s.ownSetbackAt == 0
+                && e.x() == s.ref.x && e.y() == s.ref.y && e.z() == s.ref.z
+                && (s.duplicateNanos == 0 || e.nanos() - s.duplicateNanos > DUPLICATE_SPACING_NANOS);
     }
 
     private static void reseed(ServerPlayer p, State s, Vec3 to) {

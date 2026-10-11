@@ -160,6 +160,15 @@ def _mixins(z, out, profondeur=0):
         for c in attrs.get("MixinConfigs", "").split(","):
             if c.strip():
                 out[c.strip()] = out.get(c.strip()) or _paquet(z, c.strip())
+    # jars imbriqués chargés par Forge : ceux que déclare META-INF/jarjar/metadata.json (où qu'ils soient : EntityCulling
+    # range TRansition et TRender dans META-INF/jars/), et ceux du dossier META-INF/jarjar/
+    imbriques = {n for n in noms if n.startswith("META-INF/jarjar/") and n.endswith(".jar")}
+    if "META-INF/jarjar/metadata.json" in noms:
+        try:
+            meta = json.loads(z.read("META-INF/jarjar/metadata.json").decode("utf-8", "replace"))
+            imbriques |= {j.get("path") for j in meta.get("jars", []) if isinstance(j, dict) and j.get("path") in noms}
+        except (ValueError, AttributeError):
+            pass
     for n in noms:
         if n.endswith(".json") and not n.startswith(("assets/", "data/")) and z.getinfo(n).file_size < 65536:
             try:
@@ -168,8 +177,9 @@ def _mixins(z, out, profondeur=0):
                 continue
             if isinstance(d, dict) and "package" in d and any(isinstance(d.get(k), list) for k in ("mixins", "client", "server")):
                 out[n] = out.get(n) or str(d.get("package", ""))
-        elif n.startswith("META-INF/jarjar/") and n.endswith(".jar") and profondeur < 3:
-            import io
+    if profondeur < 3:
+        import io
+        for n in sorted(imbriques):
             with zipfile.ZipFile(io.BytesIO(z.read(n))) as zi:
                 _mixins(zi, out, profondeur + 1)
 
