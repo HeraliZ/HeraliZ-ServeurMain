@@ -544,7 +544,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur.
 - **Un pack de textures** : il est imposé par heraliz_interface
   (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
-  par celui du nouveau pack, puis refabriquer heraliz_interface.
+  par celui du nouveau pack, puis refabriquer heraliz_interface. Pack imposé depuis le 11/10 (heraliz_interface
+  1.2.1) : le « pack 8 », c'est-à-dire l'ancien pack plus les vitres de la nouvelle carte (6 textures de verre
+  refaites, 6 modèles de vitres ajoutés) ; l'herbe n'a pas changé.
 - **Le monde** : la **carte de départ** (monde neuf, jamais joué) est dans `monde/HeraliZ/` depuis le 11/10, sur
   décision du propriétaire. Version « finale v3 » : 64 régions, 259 Mo, apparition en -435, 66, 1118 ; son `level.dat`
   est en créatif, paisible, commandes permises (carte de construction : sur le serveur, c'est `server.properties` qui
