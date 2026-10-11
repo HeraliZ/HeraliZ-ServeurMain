@@ -1,6 +1,6 @@
 {
-  "item.heraliz_extraction.extraction_terminal": "Terminal d'extraction",
-  "entity.heraliz_extraction.extraction_terminal": "Terminal d'extraction",
+  "item.heraliz_extraction.extraction_terminal": "Extraction Terminal",
+  "entity.heraliz_extraction.extraction_terminal": "Extraction Terminal",
   "hud.heraliz_extraction.titre": "Extraction",
   "hud.heraliz_extraction.reste_ciel": "Stay in the zone, under open sky",
   "hud.heraliz_extraction.reste": "Stay in the zone",

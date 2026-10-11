@@ -1,0 +1,9 @@
+{
+  "item.heraliz_extraction.extraction_terminal": "Терминал эвакуации",
+  "entity.heraliz_extraction.extraction_terminal": "Терминал эвакуации",
+  "hud.heraliz_extraction.titre": "Эвакуация",
+  "hud.heraliz_extraction.reste_ciel": "Оставайся в зоне под открытым небом",
+  "hud.heraliz_extraction.reste": "Оставайся в зоне",
+  "hud.heraliz_extraction.reviens": "Вернись в зону!",
+  "hud.heraliz_extraction.zone": "Зона: %s"
+}

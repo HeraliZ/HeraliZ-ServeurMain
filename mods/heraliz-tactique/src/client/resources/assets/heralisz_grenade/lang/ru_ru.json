@@ -1,0 +1,16 @@
+{
+  "item.heralisz_grenade.c4": "C4 [WIP]",
+  "item.heralisz_grenade.c4.desc": "Дистанционная взрывчатка: прилипает и взрывается по команде издалека.",
+  "item.heralisz_grenade.flash_grenade": "Светошумовая граната",
+  "item.heralisz_grenade.flash_grenade.desc": "Ослепляет ярким светом и оглушает громким звуком,\nотвернись или держись подальше.",
+  "item.heralisz_grenade.m67": "Граната M67",
+  "item.heralisz_grenade.m67.desc": "Классическая осколочная граната: выдерни чеку и брось,\nпри взрыве наносит урон по площади.",
+  "item.heralisz_grenade.molotov": "Коктейль Молотова",
+  "item.heralisz_grenade.molotov.desc": "Коктейль Молотова, поджигает область при попадании.",
+  "item.heralisz_grenade.rgn": "Граната РГН",
+  "item.heralisz_grenade.rgn.desc": "Советская наступательная граната с большим радиусом поражения.",
+  "item.heralisz_grenade.smoke_grenade": "Дымовая граната",
+  "item.heralisz_grenade.smoke_grenade.desc": "Ставит большую дымовую завесу,\nзакрывает обзор для укрытия и перемещения.",
+  "pack.heralisz_grenade.default_pack.name": "§6HeraliZ §7- §fГранаты",
+  "pack.heralisz_grenade.name": "§6HeraliZ §7- §fГранаты"
+}

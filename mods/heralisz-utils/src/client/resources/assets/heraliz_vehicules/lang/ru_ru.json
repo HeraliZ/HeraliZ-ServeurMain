@@ -1,0 +1,9 @@
+{
+  "itemGroup.heraliz_vehicules": "HeraliZ: транспорт",
+  "heraliz_vehicules.refus.dimension": "Транспорт здесь запрещён (матчи, режим «Зомби», бункеры).",
+  "heraliz_vehicules.refus.combat": "Нельзя достать транспорт во время боя.",
+  "heraliz_vehicules.refus.retire": "Этого транспорта нет на HeraliZ.",
+  "heraliz_vehicules.cmd.liste": "Транспорт HeraliZ (топливо: канистра, ПКМ по транспорту):",
+  "heraliz_vehicules.cmd.inconnu": "Неизвестный транспорт: %s (buggy, moto, camion, fourgon).",
+  "heraliz_vehicules.cmd.donne": "%s выдано (игроков: %s)."
+}
