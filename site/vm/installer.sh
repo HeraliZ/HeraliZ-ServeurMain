@@ -1,7 +1,8 @@
 #!/bin/bash
 # Installation du site HeraliZ (Azuriom) sur la VM, lancée en root par .github/workflows/site.yml (choix « installer ») :
 # nginx, PHP, MariaDB (base « azuriom »), installeur officiel d'Azuriom, HTTPS (Let's Encrypt), tâches planifiées, et le
-# dossier du pack du launcher (https://heraliz.fr/launcher/, rempli par la mise en ligne du serveur).
+# dossier du pack du launcher (https://heraliz.fr/launcher/, rempli par la mise en ligne du serveur) et celui de
+# l'installateur du launcher (https://heraliz.fr/telecharger/, rempli par le workflow « Launcher HeraliZ »).
 # Peut être relancée sans danger : rien de déjà installé n'est écrasé (le site en service n'est jamais retéléchargé).
 # Variables écrites en tête par la mise en ligne : BDD_MDP, DOMAINES (ceux qui mènent à la VM), HTTPS (oui / non),
 # URL_INSTALLEUR.
@@ -96,9 +97,9 @@ chmod -R u+rwX,g+rX,o+rX "$DOSSIER"
 RACINE="$DOSSIER"
 [ -f "$DOSSIER/public/index.php" ] && RACINE="$DOSSIER/public"
 echo "Racine du site : $RACINE"
-# pack du launcher : déposé par la mise en ligne du serveur (rsync), avec l'utilisateur SSH (root ou celui qui a lancé sudo)
-install -d -m 755 -o "${SUDO_USER:-root}" /var/www/launcher
-chown -R "${SUDO_USER:-root}" /var/www/launcher
+# pack et installateur du launcher : déposés par rsync avec l'utilisateur SSH (root ou celui qui a lancé sudo)
+install -d -m 755 -o "${SUDO_USER:-root}" /var/www/launcher /var/www/telecharger
+chown -R "${SUDO_USER:-root}" /var/www/launcher /var/www/telecharger
 
 echo "== nginx"
 ECOUTE6=""
@@ -165,6 +166,13 @@ server {
     location ^~ /launcher/ {
         alias /var/www/launcher/;
         autoindex off;
+    }
+
+    # Installateur du launcher (HeraliZ-Launcher-Setup.exe), déposé par le workflow « Launcher HeraliZ »
+    location ^~ /telecharger/ {
+        alias /var/www/telecharger/;
+        autoindex off;
+        add_header Cache-Control "no-cache";
     }
 }
 NGINX

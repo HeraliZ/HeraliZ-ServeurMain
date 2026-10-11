@@ -430,8 +430,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   - **installer** : `site/vm/installer.sh` en root (sudo si besoin) : nginx, PHP 8.4 (8.3 ou 8.2 à défaut ; dépôt Sury
     ou ondrej si le système n'en a pas), MariaDB (base et utilisateur `azuriom`), installeur officiel d'Azuriom dans
     `/var/www/azuriom`, HTTPS Let's Encrypt pour les noms qui mènent à la VM (renouvelé seul), tâches planifiées
-    (`/etc/cron.d/azuriom`), rsync et le dossier du pack du launcher `/var/www/launcher` (servi à
-    https://heraliz.fr/launcher/, rempli par la mise en ligne du serveur, section 8). Se relance sans danger : un site
+    (`/etc/cron.d/azuriom`), rsync et les dossiers du launcher : `/var/www/launcher` (son pack, servi à
+    https://heraliz.fr/launcher/, rempli par la mise en ligne du serveur, section 8) et `/var/www/telecharger` (son
+    installateur, https://heraliz.fr/telecharger/, section 8 ter). Se relance sans danger : un site
     déjà installé n'est jamais retéléchargé. Le site lui-même (thème, extension, boutique) se règle ensuite dans
     Azuriom, pas par ce bouton. À relancer après un changement de `installer.sh`.
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
@@ -442,6 +443,22 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   une ligne de commande : le script est copié sur la VM (lisible par l'utilisateur seul), lancé puis effacé.
 - Lancé sur la vraie VM le 11/10 (Debian 13, PHP 8.4, HTTPS en place) ; l'installeur web d'Azuriom (navigateur) reste
   au propriétaire.
+
+---
+
+## 8 ter. Le launcher des joueurs
+
+- `launcher/` (Electron, moteur Helios) ; réglages dans `launcher/app/heraliz.json` (adresse de jeu, pack, Discord).
+  Son pack de jeu est refait à chaque mise en ligne du serveur (section 8, point 6).
+- `.github/workflows/launcher.yml`, « Launcher HeraliZ » : à chaque envoi sur `main` qui touche `launcher/`, tests puis
+  installateur Windows, gardé 7 jours dans l'onglet Actions (paquet « launcher-windows »). « Run workflow » avec la case
+  « publier » : il est aussi mis en ligne, toujours au même lien, https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
+  (lien à mettre sur le site et le Discord). La clé des jetons Spartan (`SPARTAN_LAUNCHER_SECRET`) n'entre dans le
+  launcher qu'à ce moment-là, si le secret existe.
+- L'installateur n'est pas signé (certificat payant) : au premier lancement, Windows affiche « Windows a protégé votre
+  ordinateur » → « Informations complémentaires » → « Exécuter quand même ».
+- Le launcher ne se met pas à jour tout seul : une nouvelle version se re-télécharge au même lien. Le pack (mods,
+  gunpacks), lui, se met à jour seul à chaque lancement.
 
 ---
 
@@ -624,9 +641,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   le site (section 8) ; ensuite : maquettes du thème, extension Azuriom (inscription depuis le launcher, code par mail
   sur un nouveau PC, ticket signé pour Spartan), boutique et votes. D'ici là, le launcher demande seulement le pseudo
   et AuthMe protège le compte en jeu.
-- **Launcher** : pas encore fabriqué ni donné aux joueurs (installateur Windows à faire). Connexion avec le compte du
-  site codée, mise de côté jusqu'à validation de ses écrans par le propriétaire. Jamais essayé de bout en bout (pack
-  du site, Forge, connexion au serveur) : à faire par le propriétaire avant de le distribuer.
+- **Launcher** : installateur Windows fabriqué par GitHub (section 8 ter), pas encore donné aux joueurs. Connexion
+  avec le compte du site codée, mise de côté jusqu'à validation de ses écrans par le propriétaire (en la remettant,
+  ajouter `compte-site` à la liste des fichiers de `launcher/electron-builder.yml`). Jamais essayé de bout en bout
+  (pack du site, Forge, connexion au serveur) : à faire par le propriétaire avant de le distribuer.
 - **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé pas encore
   (il faut un serveur d'authentification, voir `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
