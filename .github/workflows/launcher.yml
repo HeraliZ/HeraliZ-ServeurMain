@@ -1,0 +1,107 @@
+# Launcher des joueurs (launcher/, voir CLAUDE.md section 8 ter) : tests, puis installateur Windows gardé 7 jours dans
+# l'onglet Actions (paquet « launcher-windows »). « Run workflow » avec « publier » : l'installateur est aussi mis en
+# ligne sur https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe (VM du site, dossier /var/www/telecharger).
+name: Launcher HeraliZ
+
+on:
+  push:
+    branches: [main]
+    paths: ["launcher/**", ".github/workflows/launcher.yml"]
+  workflow_dispatch:
+    inputs:
+      publier:
+        description: "Mettre l'installateur en ligne sur heraliz.fr/telecharger (sinon : seulement dans l'onglet Actions)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: launcher
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: launcher/package-lock.json
+
+      - name: Dépendances
+        run: npm ci --no-audit --no-fund
+
+      - name: Tests et relecture du code
+        run: npm test && npm run lint
+
+      # la clé des jetons Spartan entre dans le launcher seulement ici (jamais dans Git) ; sans elle, pas de jeton
+      - name: Installateur Windows
+        env:
+          SPARTAN_LAUNCHER_SECRET: ${{ secrets.SPARTAN_LAUNCHER_SECRET }}
+        run: |
+          npm run dist:win
+          ls -l dist/*.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: launcher-windows
+          path: launcher/dist/*.exe
+          retention-days: 7
+
+  publier:
+    needs: windows
+    if: github.event_name == 'workflow_dispatch' && inputs.publier
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
+      SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
+      SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
+      SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: launcher-windows
+          path: installateur
+
+      - name: Mise en ligne sur heraliz.fr/telecharger
+        run: |
+          if [ -z "$SITE_SSH_HOTE" ] || [ -z "$SITE_SSH_UTILISATEUR" ] || [ -z "$SITE_SSH_MDP" ]; then
+            echo "::error::Secrets SITE_SSH_* manquants (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          shopt -s nullglob
+          exe=(installateur/*.exe)
+          if [ "${#exe[@]}" -ne 1 ]; then echo "::error::Un seul installateur attendu, ${#exe[@]} trouvé(s)."; exit 1; fi
+          # nom fixe : le lien du site ne change jamais
+          cp "${exe[0]}" HeraliZ-Launcher-Setup.exe
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync > /dev/null
+          export SSHPASS="$SITE_SSH_MDP"
+          SSH=(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o PubkeyAuthentication=no -p "${SITE_SSH_PORT:-22}")
+          VM="$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE"
+          DOSSIER=/var/www/telecharger
+          if ! sshpass -e "${SSH[@]}" "$VM" "command -v rsync > /dev/null && [ -w $DOSSIER ]" < /dev/null; then
+            echo "::error::La VM du site n'est pas prête (rsync ou dossier $DOSSIER) : lancer le workflow « Site HeraliZ » avec « installer », puis relancer celui-ci."
+            exit 1
+          fi
+          rsync --perms --chmod=F644 --delay-updates -e "sshpass -e ${SSH[*]}" HeraliZ-Launcher-Setup.exe "$VM:$DOSSIER/"
+          URL=https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
+          taille=$(curl -fsSI --max-time 60 "$URL" | tr -d '\r' | awk 'tolower($1) == "content-length:" {print $2}')
+          if [ "$taille" != "$(stat -c %s HeraliZ-Launcher-Setup.exe)" ]; then
+            echo "::error::$URL ne donne pas l'installateur envoyé (taille ${taille:-inconnue})."
+            exit 1
+          fi
+          {
+            echo "### Launcher en ligne"
+            echo "- $URL ($(( taille / 1048576 )) Mo, fait à partir de \`$(basename "${exe[0]}")\`)"
+          } >> "$GITHUB_STEP_SUMMARY"

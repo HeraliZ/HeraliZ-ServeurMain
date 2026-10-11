@@ -47,6 +47,8 @@ jobs:
       SPARTAN_LAUNCHER_SECRET: ${{ secrets.SPARTAN_LAUNCHER_SECRET }}
       LITEBANS_DB_USER: ${{ secrets.LITEBANS_DB_USER }}
       LITEBANS_DB_PASSWORD: ${{ secrets.LITEBANS_DB_PASSWORD }}
+      # accès à la VM du site réglés (pack du launcher) ; les secrets eux-mêmes ne sont donnés qu'à l'étape du pack
+      SITE_PRET: ${{ secrets.SITE_SSH_HOTE != '' && secrets.SITE_SSH_UTILISATEUR != '' && secrets.SITE_SSH_MDP != '' }}
       PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
@@ -412,3 +414,89 @@ jobs:
           curl -sS -f -X POST "$PTERO_URL/api/client/servers/$PTERO_SERVER_ID/power" \
             -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \
             -H "Accept: Application/vnd.pterodactyl.v1+json" -d '{"signal":"restart"}'
+
+      # Pack du launcher (voir CLAUDE.md, section 8) : les jars joueurs de CETTE fabrication (ceux qui viennent d'aller
+      # sur le Ptero : Spartan compare leurs empreintes) et le dossier tacz, mis en forme par Nebula (le générateur de
+      # Helios, version figée), puis déposés sur la VM du site, là où le launcher les cherche (distributionUrl de
+      # launcher/app/heraliz.json). Dernière étape : un échec ici ne retient ni la mise à jour du Ptero ni son redémarrage.
+      - uses: actions/setup-node@v4
+        if: env.SITE_PRET == 'true' && env.PTERO_SFTP_HOST != ''
+        with:
+          node-version: "22"
+
+      - name: Pack du launcher (heraliz.fr/launcher)
+        if: env.SITE_PRET == 'true' && env.PTERO_SFTP_HOST != ''
+        timeout-minutes: 45
+        env:
+          NEBULA: 7ffc978727b95e03ae9d125688cf5cf132b78419
+          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
+          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
+          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
+          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+        run: |
+          git init -q nebula
+          git -C nebula fetch -q --depth 1 https://github.com/dscalzi/Nebula.git "$NEBULA"
+          git -C nebula checkout -q FETCH_HEAD
+          if ! (cd nebula && npm ci --no-audit --no-fund && npm run build) > nebula.log 2>&1; then tail -n 60 nebula.log; exit 1; fi
+          # (Nebula affiche toute la distribution : seules les lignes de l'outil sont gardées, sauf en cas d'échec)
+          if ! python outils/pack_launcher.py nebula pack --version "1.0.$GITHUB_RUN_NUMBER" > pack.log 2>&1; then tail -n 80 pack.log; exit 1; fi
+          grep '^\[pack\]' pack.log
+
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync > /dev/null
+          export SSHPASS="$SITE_SSH_MDP"
+          SSH=(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o PubkeyAuthentication=no -p "${SITE_SSH_PORT:-22}")
+          VM="$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE"
+          DOSSIER=/var/www/launcher
+          if ! sshpass -e "${SSH[@]}" "$VM" true < /dev/null; then
+            echo "::error::Connexion à la VM du site impossible : vérifier les secrets SITE_SSH_* (le workflow « Site HeraliZ », choix « verifier », aide à trouver)."
+            exit 1
+          fi
+          if ! sshpass -e "${SSH[@]}" "$VM" "command -v rsync > /dev/null && [ -w $DOSSIER ]" < /dev/null; then
+            echo "::error::La VM du site n'est pas prête pour le pack (rsync ou dossier $DOSSIER) : lancer le workflow « Site HeraliZ » avec « installer », puis relancer cette mise en ligne."
+            exit 1
+          fi
+          # 1. fichiers nouveaux ou changés, mis en place tous ensemble à la fin ; 2. distribution.json ; 3. retrait des
+          # anciens fichiers : un joueur qui lance le launcher pendant l'envoi ne tombe jamais sur un fichier manquant
+          RS=(rsync -r --perms --checksum --chmod=D755 --chmod=F644 -e "sshpass -e ${SSH[*]}")
+          "${RS[@]}" --delay-updates --exclude=/distribution.json pack/envoi/ "$VM:$DOSSIER/"
+          "${RS[@]}" pack/envoi/distribution.json "$VM:$DOSSIER/"
+          "${RS[@]}" --delete pack/envoi/ "$VM:$DOSSIER/"
+
+          # vu d'internet : la distribution servie est celle envoyée, et quelques fichiers ont la bonne taille
+          python - <<'EOF'
+          import json, os, sys, urllib.request
+          envoi = json.load(open("pack/envoi/distribution.json", encoding="utf-8"))
+          r = json.load(open("pack/resume.json", encoding="utf-8"))
+          base = r["distribution"].rsplit("/", 1)[0] + "/"
+          def ouvrir(url, methode="GET"):
+              return urllib.request.urlopen(urllib.request.Request(url, method=methode, headers={"Cache-Control": "no-cache"}), timeout=60)
+          def echec(message):
+              print("::error::" + message)
+              sys.exit(1)
+          try:
+              with ouvrir(r["distribution"]) as rep:
+                  servie = json.loads(rep.read())
+          except Exception as e:
+              echec(f"{r['distribution']} illisible ({e}) : lancer le workflow « Site HeraliZ » avec « installer » (accès /launcher/ du site).")
+          if servie != envoi:
+              echec(f"{r['distribution']} ne donne pas le pack envoyé.")
+          mods = [m for s in envoi["servers"] for m in s["modules"]]
+          fichiers = [m for m in mods if m["type"] == "File"]
+          choix = [m for m in mods if m["type"] in ("ForgeHosted", "ForgeMod")][:2] + fichiers[:1] + fichiers[len(fichiers) // 2:][:1] + fichiers[-1:]
+          for m in choix:
+              a = m["artifact"]
+              if not a["url"].startswith(base):
+                  continue
+              try:
+                  with ouvrir(a["url"], "HEAD") as rep:
+                      taille = rep.headers.get("Content-Length")
+              except Exception as e:
+                  echec(f"{a['url']} illisible ({e}).")
+              if taille != str(a["size"]):
+                  echec(f"{a['url']} : taille {taille} au lieu de {a['size']}.")
+          print(f"Pack du launcher en ligne : {r['distribution']} ({r['mods']} mods, {r['fichiers']} fichiers, {r['octets'] / 1048576:.0f} Mo).")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+              f.write("### Pack du launcher\n"
+                      f"- {r['mods']} mods joueurs, {r['fichiers']} fichiers, {r['octets'] / 1048576:.0f} Mo (version {r['version']})\n"
+                      f"- en ligne : {r['distribution']}\n")
+          EOF

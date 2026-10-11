@@ -2,6 +2,6 @@
     "serverId": "heraliz-1.20.1",
     "minecraftVersion": "1.20.1",
     "serverAddress": "play.heraliz.fr",
-    "distributionUrl": null,
+    "distributionUrl": "https://heraliz.fr/launcher/distribution.json",
     "discordUrl": "https://discord.gg/heraliz"
 }

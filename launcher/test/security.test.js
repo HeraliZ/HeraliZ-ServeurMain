@@ -29,7 +29,14 @@ test('cross-platform path traversal is rejected', () => {
 
 const config = { serverId: 'heraliz-1.20.1', serverAddress: 'play.example.com' }
 function distro() {
-    return { servers: [{ id: config.serverId, address: config.serverAddress, minecraftVersion: '1.20.1', modules: [{ id: 'net.minecraftforge:forge:1.20.1-47.4.0', type: 'ForgeHosted', artifact: { url: 'https://example.com/forge.jar', MD5: '0'.repeat(32), size: 123 } }] }] }
+    const artifact = name => ({ url: `https://example.com/${name}`, MD5: '0'.repeat(32), size: 123 })
+    // same shape as Nebula's output for Forge 1.20.1
+    const forge = { id: 'net.minecraftforge:lowcodelanguage:1.20.1-47.4.0', type: 'ForgeHosted', artifact: artifact('lowcodelanguage.jar'), subModules: [
+        { id: '1.20.1-47.4.0', type: 'VersionManifest', artifact: artifact('1.20.1-forge-47.4.0.json') },
+        { id: 'net.minecraftforge:fmlcore:1.20.1-47.4.0', type: 'Library', classpath: true, artifact: artifact('fmlcore.jar') }
+    ] }
+    const tacz = { id: 'stg59.png', name: 'stg59.png', type: 'File', artifact: { ...artifact('stg59.png'), path: 'tacz/pack/assets/stg59.png' } }
+    return { servers: [{ id: config.serverId, address: config.serverAddress, minecraftVersion: '1.20.1', modules: [forge, tacz] }] }
 }
 
 test('distribution is bound to HeraliZ and requires a Forge loader and hashes', () => {
@@ -43,8 +50,17 @@ test('distribution is bound to HeraliZ and requires a Forge loader and hashes', 
         d => { d.servers[0].modules[0].artifact.path = '../escape.jar' },
         d => { d.servers[0].modules[0].id = 'net...evil:forge:1' },
         d => { d.servers[0].modules[0].artifact.url = 'http://example.com/forge.jar' },
-        d => { d.servers.push(d.servers[0]) }
+        d => { d.servers.push(d.servers[0]) },
+        d => { d.servers[0].modules[0].id = 'net.evil:lowcodelanguage:1.20.1-47.4.0' },
+        d => { d.servers[0].modules[0].id = 'net.minecraftforge:forge:1.20.4-49.0.1' },
+        d => { d.servers[0].modules[0].subModules.shift() },
+        d => { d.servers[0].modules[0].subModules[0].id = '1.21-51.0.0' },
+        d => { d.servers[0].modules.push({ ...d.servers[0].modules[0] }) },
+        d => { d.servers[0].modules[1].artifact.path = 'tacz/../../escape.png' }
     ]) { const value = distro(); mutate(value); assert.throws(() => validateDistribution(value, config)) }
+    const classic = distro()
+    classic.servers[0].modules[0].id = 'net.minecraftforge:forge:1.20.1-47.4.0'
+    validateDistribution(classic, config)
 })
 
 test('IPC rejects foreign windows, subframes and navigated pages', () => {

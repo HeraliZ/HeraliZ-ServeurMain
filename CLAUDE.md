@@ -314,7 +314,8 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
 - **Launcher** (`launcher/`, Helios) : il charge les mods depuis son dossier (`common/modstore`, fournisseur Forge
   « maven libs », options `--fml.mavenRoots` / `--fml.modLists`) ; Spartan hache et juge chacun de ces jars comme ceux
   du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism` et retire les options d'injection du joueur
-  (`launcher/app/assets/js/spartan.js`). Son pack doit être exactement `livraison/mods client` de la même fabrication.
+  (`launcher/app/assets/js/spartan.js`). Son pack est refait à chaque mise en ligne avec `livraison/mods client` de la
+  même fabrication (section 8).
 - **Jeton du launcher** (on ne joue que depuis le launcher HeraliZ) : à chaque lancement, `spartan.js` fabrique un
   jeton signé, valable **6 h**, lié au pseudo et aux mods (`-Dspartan.launchToken=…`, masqué dans le journal du
   launcher). Clé : secret GitHub `SPARTAN_LAUNCHER_SECRET` (au moins 32 caractères aléatoires), injecté côté serveur
@@ -373,7 +374,16 @@ Règles :
      **les configs du dépôt font foi**, un réglage changé à la main sur le serveur est écrasé au prochain envoi ;
    - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
      racine du serveur se mettent à jour à la main) ;
-5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ».
+5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer » ;
+6. **pack du launcher** (si les secrets du site sont réglés, après la mise à jour du Ptero) : `outils/pack_launcher.py`
+   met en forme, avec Nebula (le générateur de Helios, version figée dans le workflow), Forge 1.20.1-47.4.0, les jars
+   joueurs de CETTE fabrication (ceux de `officiel.json`) et le dossier `tacz`, puis les dépose par rsync sur la VM du
+   site : https://heraliz.fr/launcher/ (`distributionUrl` de `launcher/app/heraliz.json`). Nouveaux fichiers d'abord,
+   `distribution.json` ensuite, anciens fichiers retirés en dernier ; l'étape relit le tout depuis internet et le
+   résumé de l'envoi dit ce qui est en ligne. Les joueurs ont les nouveaux mods à leur prochain lancement du launcher,
+   le serveur à son prochain redémarrage : après un changement de mods, redémarrer le serveur (case « redemarrer »)
+   pour que tout le monde soit sur la même version. Un échec ici arrive en dernier : il ne retient ni la mise à jour
+   du Ptero ni le redémarrage.
 
 **Nouvelle carte** : « Run workflow » avec la case « deposer_carte ». Après la mise à jour habituelle, il envoie
 `monde/HeraliZ/` à côté du monde en service (`<monde>_nouvelle_<date>`, serveur toujours en marche, 2 fichiers à la fois,
@@ -402,7 +412,8 @@ Secrets à créer par le propriétaire (Settings → Secrets and variables → A
 staff : alertes et rapports), `SPARTAN_DISCORD_SANCTIONS` (webhook du salon public des sanctions : pseudo, durée,
 raison), `SPARTAN_LAUNCHER_SECRET` (quand le launcher signera les lancements). LiteBans : `LITEBANS_DB_USER` et
 `LITEBANS_DB_PASSWORD` (base MySQL du Ptero, onglet « Databases » du panel) ; sans eux, LiteBans passe en base locale
-(H2) et repart sans historique. Personne ne doit les écrire ailleurs.
+(H2) et repart sans historique. Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
+écrire ailleurs.
 
 Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SRG : ils ne tournent que sur les PC
 (section 6), pas sur GitHub. C'est pour ça qu'on vérifie AVANT d'envoyer.
@@ -416,19 +427,38 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - `.github/workflows/site.yml`, bouton « Run workflow » de « Site HeraliZ » :
   - **verifier** : regarde la VM sans rien changer (système, place, déjà installé, ports, pare-feu) et dit quels noms
     heraliz.fr mènent à la VM, plus les renvois SRV de Minecraft ;
-  - **installer** : `site/vm/installer.sh` en root (sudo si besoin) : nginx, PHP 8.3 (8.2 ou 8.4 à défaut ; dépôt Sury
+  - **installer** : `site/vm/installer.sh` en root (sudo si besoin) : nginx, PHP 8.4 (8.3 ou 8.2 à défaut ; dépôt Sury
     ou ondrej si le système n'en a pas), MariaDB (base et utilisateur `azuriom`), installeur officiel d'Azuriom dans
     `/var/www/azuriom`, HTTPS Let's Encrypt pour les noms qui mènent à la VM (renouvelé seul), tâches planifiées
-    (`/etc/cron.d/azuriom`). Se relance sans danger : un site déjà installé n'est jamais retéléchargé. Le site lui-même
-    (thème, extension, boutique) se règle ensuite dans Azuriom, pas par ce bouton.
+    (`/etc/cron.d/azuriom`), rsync et les dossiers du launcher : `/var/www/launcher` (son pack, servi à
+    https://heraliz.fr/launcher/, rempli par la mise en ligne du serveur, section 8) et `/var/www/telecharger` (son
+    installateur, https://heraliz.fr/telecharger/, section 8 ter). Se relance sans danger : un site
+    déjà installé n'est jamais retéléchargé. Le site lui-même (thème, extension, boutique) se règle ensuite dans
+    Azuriom, pas par ce bouton. À relancer après un changement de `installer.sh`.
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
   port `3306`, base `azuriom`, utilisateur `azuriom`, mot de passe = secret `SITE_BDD_MDP` ; jeu : Minecraft Java ;
   compte administrateur au choix du propriétaire).
 - Secrets : `SITE_SSH_HOTE` (IP de la VM), `SITE_SSH_UTILISATEUR`, `SITE_SSH_MDP`, `SITE_SSH_PORT` (seulement si ce n'est
   pas 22), `SITE_BDD_MDP` (mot de passe de la base, choisi par le propriétaire). Le mot de passe ne passe jamais dans
   une ligne de commande : le script est copié sur la VM (lisible par l'utilisateur seul), lancé puis effacé.
-- Répété sur une Ubuntu 24.04 (PHP 8.3, mot de passe à caractères spéciaux, sudo avec mot de passe, 2e passe) : rien
-  n'a encore été lancé sur la vraie VM au moment de l'écrire.
+- Lancé sur la vraie VM le 11/10 (Debian 13, PHP 8.4, HTTPS en place) ; l'installeur web d'Azuriom (navigateur) reste
+  au propriétaire.
+
+---
+
+## 8 ter. Le launcher des joueurs
+
+- `launcher/` (Electron, moteur Helios) ; réglages dans `launcher/app/heraliz.json` (adresse de jeu, pack, Discord).
+  Son pack de jeu est refait à chaque mise en ligne du serveur (section 8, point 6).
+- `.github/workflows/launcher.yml`, « Launcher HeraliZ » : à chaque envoi sur `main` qui touche `launcher/`, tests puis
+  installateur Windows, gardé 7 jours dans l'onglet Actions (paquet « launcher-windows »). « Run workflow » avec la case
+  « publier » : il est aussi mis en ligne, toujours au même lien, https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
+  (lien à mettre sur le site et le Discord). La clé des jetons Spartan (`SPARTAN_LAUNCHER_SECRET`) n'entre dans le
+  launcher qu'à ce moment-là, si le secret existe.
+- L'installateur n'est pas signé (certificat payant) : au premier lancement, Windows affiche « Windows a protégé votre
+  ordinateur » → « Informations complémentaires » → « Exécuter quand même ».
+- Le launcher ne se met pas à jour tout seul : une nouvelle version se re-télécharge au même lien. Le pack (mods,
+  gunpacks), lui, se met à jour seul à chaque lancement.
 
 ---
 
@@ -607,9 +637,14 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   imposé de heraliz_interface 1.1.0).
 - **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
   LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur.
-- **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis) ; ensuite : maquettes du
-  thème, extension Azuriom (inscription depuis le launcher, code par mail sur un nouveau PC, ticket signé pour
-  Spartan), branchement du launcher, boutique et votes. D'ici là, le launcher demande seulement le pseudo et AuthMe protège le compte en jeu.
+- **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
+  le site (section 8) ; ensuite : maquettes du thème, extension Azuriom (inscription depuis le launcher, code par mail
+  sur un nouveau PC, ticket signé pour Spartan), boutique et votes. D'ici là, le launcher demande seulement le pseudo
+  et AuthMe protège le compte en jeu.
+- **Launcher** : installateur Windows fabriqué par GitHub (section 8 ter), pas encore donné aux joueurs. Connexion
+  avec le compte du site codée, mise de côté jusqu'à validation de ses écrans par le propriétaire (en la remettant,
+  ajouter `compte-site` à la liste des fichiers de `launcher/electron-builder.yml`). Jamais essayé de bout en bout
+  (pack du site, Forge, connexion au serveur) : à faire par le propriétaire avant de le distribuer.
 - **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé pas encore
   (il faut un serveur d'authentification, voir `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
