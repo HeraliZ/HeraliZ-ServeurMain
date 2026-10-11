@@ -17,6 +17,10 @@ on:
         description: "Installation complète : envoyer aussi Mohist et les fichiers de la racine (server.properties...)"
         type: boolean
         default: false
+      deposer_carte:
+        description: "Nouvelle carte : la carte de monde/HeraliZ devient le monde du serveur (ancien monde gardé en copie, serveur redémarré)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -213,8 +217,175 @@ jobs:
             mput -O / serveur/mohist-*.jar serveur/server.properties serveur/bukkit.yml serveur/spigot.yml serveur/commands.yml serveur/eula.txt serveur/server-icon.png;
             bye"
 
+      # Nouvelle carte (case « deposer_carte ») : la carte de départ de monde/HeraliZ devient le monde du serveur. Serveur
+      # arrêté proprement d'abord ; l'ancien monde est gardé tel quel sous le nom <monde>_ancien_<date> (jamais supprimé) ;
+      # la carte est envoyée puis contrôlée fichier par fichier ; si l'envoi échoue, l'ancien monde est remis à sa place.
+      # Clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe et bans sont hors du monde : rien n'est perdu.
+      - name: Mettre la carte de départ en service
+        if: github.event_name == 'workflow_dispatch' && inputs.deposer_carte
+        timeout-minutes: 90
+        run: |
+          if [ -z "$PTERO_SFTP_HOST" ] || [ -z "$PTERO_URL" ] || [ -z "$PTERO_SERVER_ID" ] || [ -z "$PTERO_API_KEY" ]; then
+            echo "::error::Il faut les secrets du SFTP et de l'API du Ptero : le serveur doit être arrêté pour changer de monde."
+            exit 1
+          fi
+          API="${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID"
+          ptero() {
+            curl -sS -f --retry 3 --retry-all-errors -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \
+              -H "Accept: Application/vnd.pterodactyl.v1+json" "$@"
+          }
+          etat() { ptero "$API/resources" | python -c 'import json, sys; print(json.load(sys.stdin)["attributes"]["current_state"])'; }
+          sftp() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$LFTP_REGLAGES set cmd:fail-exit yes; $1 bye" < /dev/null; }
+          existe() { sftp "cls -d \"$1\";" > /dev/null 2>&1; }
+
+          # le monde en service : level-name du server.properties du Ptero (celui du dépôt à défaut)
+          MONDE=""
+          if sftp "get /server.properties -o server_ptero.properties;" 2> /dev/null; then
+            MONDE=$(tr -d '\r' < server_ptero.properties | sed -n 's/^level-name=//p' | head -n 1)
+          fi
+          [ -n "$MONDE" ] || MONDE=$(sed -n 's/^level-name=//p' serveur/server.properties | head -n 1)
+          case "$MONDE" in
+            ""|.|..|*[!A-Za-z0-9_.-]*|mods|plugins|config|defaultconfigs|libraries|logs|tacz|heralisz_*|heraliz_*|mohist-config)
+              echo "::error::Nom de monde inattendu dans server.properties : « $MONDE ». Rien n'a été changé."
+              exit 1;;
+          esac
+          DATE=$(date -u +%Y-%m-%d_%Hh%M)
+          echo "Monde du serveur : /$MONDE (l'ancien sera gardé dans /${MONDE}_ancien_$DATE)"
+
+          # arrêt propre : le serveur sauvegarde l'ancien monde avant qu'on y touche
+          if ! E=$(etat); then
+            echo "::error::L'API du Ptero ne répond pas (PTERO_URL, PTERO_SERVER_ID, PTERO_API_KEY). Rien n'a été changé."
+            exit 1
+          fi
+          echo "Serveur : $E"
+          if [ "$E" != "offline" ]; then
+            if [ "$E" = "running" ]; then
+              ptero -X POST "$API/command" -d '{"command":"say Nouvelle carte : redémarrage du serveur dans 1 minute."}' > /dev/null || true
+              sleep 60
+            fi
+            if ! ptero -X POST "$API/power" -d '{"signal":"stop"}'; then
+              echo "::error::Le panel refuse d'arrêter le serveur. Rien n'a été changé."
+              exit 1
+            fi
+            for _ in $(seq 90); do
+              sleep 10
+              E=$(etat || echo inconnu)
+              [ "$E" = "offline" ] && break
+            done
+            if [ "$E" != "offline" ]; then
+              echo "::error::Le serveur ne s'est pas arrêté en 15 minutes (état : $E). Le monde n'a pas été changé : vérifier le serveur dans le panel."
+              exit 1
+            fi
+          fi
+          echo "Serveur arrêté."
+
+          # en cas d'échec : la carte incomplète est mise de côté (<monde>_echec_<date>), l'ancien monde reprend sa place
+          ENVOI=0
+          DEPLACES=""
+          retablir() {
+            echo "::error::Échec pendant $1 : l'ancien monde est remis en place."
+            if [ "$ENVOI" = 1 ] && existe "/$MONDE"; then sftp "mv \"/$MONDE\" \"/${MONDE}_echec_$DATE\";" || true; fi
+            for nom in $DEPLACES; do
+              if ! sftp "mv \"/${nom}_ancien_$DATE\" \"/$nom\";"; then
+                echo "::error::/${nom}_ancien_$DATE n'a pas pu reprendre le nom /$nom : serveur laissé arrêté, le renommer depuis le panel."
+                return
+              fi
+            done
+            ptero -X POST "$API/power" -d '{"signal":"start"}' || true
+          }
+
+          # l'ancien monde (et ses dimensions à part, s'il y en a) gardé tel quel sous un autre nom
+          if ! sftp "cls -1 /;" > racine_brute.txt; then retablir "la lecture des dossiers du Ptero"; exit 1; fi
+          tr -d '\r' < racine_brute.txt | sed 's:/*$::; s:.*/::' > racine_ptero.txt
+          for nom in "$MONDE" "${MONDE}_nether" "${MONDE}_the_end"; do
+            grep -Fxq "$nom" racine_ptero.txt || continue
+            if ! sftp "mv \"/$nom\" \"/${nom}_ancien_$DATE\";"; then retablir "la mise de côté de /$nom"; exit 1; fi
+            DEPLACES="$DEPLACES $nom"
+            echo "/$nom gardé dans /${nom}_ancien_$DATE"
+          done
+          if existe "/$MONDE"; then retablir "la mise de côté de l'ancien monde (/$MONDE est toujours là)"; exit 1; fi
+          GARDE="aucun (pas de monde /$MONDE sur le Ptero)"
+          case " $DEPLACES " in *" $MONDE "*) GARDE="/${MONDE}_ancien_$DATE";; esac
+
+          # la carte à sa place, puis contrôle : chaque fichier présent avec la bonne taille (le contrôle ne doit rien
+          # proposer d'envoyer : seule sa ligne « mkdir -p » du dossier du monde est attendue)
+          ENVOI=1
+          if ! sftp "mirror -R -P 8 monde/HeraliZ \"/$MONDE\";"; then retablir "l'envoi de la carte"; exit 1; fi
+          sftp "mirror -R --dry-run --ignore-time --no-perms monde/HeraliZ \"/$MONDE\";" > controle.txt 2>&1 || echo "contrôle impossible" >> controle.txt
+          grep -v '^mkdir -p ' controle.txt | sed -E 's#//[^/@]*@#//#g' > ecarts.txt || true
+          if [ -s ecarts.txt ] || ! grep -q '^mkdir -p ' controle.txt; then
+            head -n 50 ecarts.txt
+            retablir "le contrôle de la carte envoyée ($(wc -l < ecarts.txt) fichiers manquants ou incomplets)"
+            exit 1
+          fi
+          echo "Carte envoyée et contrôlée : $(find monde/HeraliZ -type f | wc -l) fichiers."
+
+          # réglages « serveur » des mods : ceux de l'ancien monde, puis ceux du dépôt (ils font foi)
+          if existe "/${MONDE}_ancien_$DATE/serverconfig"; then
+            sftp "mirror \"/${MONDE}_ancien_$DATE/serverconfig\" ancien_serverconfig;" && sftp "mirror -R ancien_serverconfig \"/$MONDE/serverconfig\";" \
+              || echo "::warning::Réglages de l'ancien monde non recopiés (Forge reprendra ceux de defaultconfigs)."
+          fi
+          sftp "mirror -R serveur/defaultconfigs \"/$MONDE/serverconfig\";" || echo "::warning::defaultconfigs non recopié (Forge le fera au démarrage)."
+
+          # zones WorldGuard de l'ancien monde : elles restent rattachées au nom du monde, donc aux mêmes coordonnées
+          ZONES=""
+          if sftp "get \"/plugins/WorldGuard/worlds/$MONDE/regions.yml\" -o regions_ptero.yml;" 2> /dev/null; then
+            ZONES=$(python - <<'EOF'
+          import re
+          zones, retrait, dedans = [], None, False
+          for l in open("regions_ptero.yml", encoding="utf-8", errors="replace").read().splitlines():
+              if not l.strip() or l.lstrip().startswith("#"):
+                  continue
+              if not dedans:
+                  dedans = re.match(r"regions\s*:", l) is not None
+                  continue
+              r = len(l) - len(l.lstrip(" "))
+              if r == 0:
+                  break
+              retrait = retrait or r
+              m = re.match(r"([^ :#][^:]*):\s*$", l[r:]) if r == retrait else None
+              if m and m.group(1).strip("'\"") != "__global__":
+                  zones.append(m.group(1).strip("'\""))
+          print(" ".join(zones))
+          EOF
+            ) || ZONES=""
+            if [ -n "$ZONES" ]; then
+              echo "::warning::Zones WorldGuard de l'ancienne carte toujours actives (mêmes coordonnées sur la nouvelle) : $ZONES"
+            fi
+          fi
+
+          # redémarrage sur la nouvelle carte
+          if ! ptero -X POST "$API/power" -d '{"signal":"start"}'; then
+            echo "::error::La carte est en place mais le serveur n'a pas pu être démarré : le démarrer depuis le panel."
+            exit 1
+          fi
+          debut=$SECONDS
+          E=""
+          while [ $((SECONDS - debut)) -lt 900 ]; do
+            sleep 15
+            E=$(etat || echo inconnu)
+            [ "$E" = "running" ] && break
+            [ "$E" = "offline" ] && [ $((SECONDS - debut)) -gt 60 ] && break
+          done
+          {
+            echo "### Nouvelle carte déposée sur le Ptero"
+            echo "- monde du serveur : \`/$MONDE\` (carte de \`monde/HeraliZ\`, contrôlée fichier par fichier)"
+            case "$GARDE" in
+              /*) echo "- ancien monde gardé tel quel : \`$GARDE\` (à supprimer depuis le panel quand tout va bien)";;
+              *) echo "- ancien monde : $GARDE";;
+            esac
+            if [ -n "$ZONES" ]; then echo "- zones WorldGuard de l'ancienne carte encore actives, aux mêmes coordonnées : $ZONES"; fi
+            echo "- état du serveur après le démarrage : $E"
+          } >> "$GITHUB_STEP_SUMMARY"
+          case "$E" in
+            running) echo "Serveur démarré sur la nouvelle carte. Ancien monde gardé : $GARDE.";;
+            offline) echo "::error::Le serveur s'est arrêté pendant son démarrage sur la nouvelle carte : voir la console du panel. Ancien monde gardé : $GARDE."
+                     exit 1;;
+            *) echo "::warning::Démarrage pas encore terminé après 15 minutes (état : $E) : voir la console du panel. Ancien monde gardé : $GARDE.";;
+          esac
+
       - name: Redémarrer le serveur
-        if: env.PTERO_API_KEY != '' && github.event_name == 'workflow_dispatch' && inputs.redemarrer
+        if: env.PTERO_API_KEY != '' && github.event_name == 'workflow_dispatch' && inputs.redemarrer && !inputs.deposer_carte
         run: |
           curl -sS -f -X POST "$PTERO_URL/api/client/servers/$PTERO_SERVER_ID/power" \
             -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \

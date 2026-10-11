@@ -89,8 +89,8 @@ client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (
 launcher/                 le launcher des joueurs (Electron, Node.js) : `npm install` puis `npm start` dans ce dossier ;
                           doc dans launcher/README.md et launcher/docs/
 outils/                   fabrication et contrôles (Python 3.11+)
-monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; jamais envoyée au Ptero
-                          par la mise en ligne automatique
+monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; envoyée au Ptero seulement
+                          sur demande (case « deposer_carte », section 8)
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
@@ -375,6 +375,16 @@ Règles :
      racine du serveur se mettent à jour à la main) ;
 5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ».
 
+**Nouvelle carte** : « Run workflow » avec la case « deposer_carte ». Après la mise à jour habituelle, il prévient les
+joueurs, arrête le serveur proprement, garde l'ancien monde tel quel sous le nom `<monde>_ancien_<date>` (jamais
+supprimé ; ses dossiers `_nether` / `_the_end` aussi, s'il y en a), envoie `monde/HeraliZ/` à sa place, contrôle chaque
+fichier, recopie les réglages `serverconfig/` de l'ancien monde puis ceux de `defaultconfigs/`, et redémarre. Si l'envoi
+échoue, l'ancien monde reprend sa place et le serveur redémarre dessus. Le nom du monde est lu dans le `server.properties`
+du Ptero. Restent hors du monde, donc gardés : clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe, grades,
+bans. Repartent de zéro avec la carte : inventaires et positions des joueurs, zones d'extraction posées à la main,
+territoires pris. Les zones WorldGuard restent rattachées au nom du monde (mêmes coordonnées) : le résumé de l'envoi
+les liste, à refaire pour la nouvelle carte. L'ancien monde se supprime depuis le panel quand tout va bien.
+
 **Installation complète** (serveur Ptero neuf ou à remettre à neuf) : « Run workflow » avec la case
 « installation_complete » (et « redemarrer »). En plus de ce qui précède, il envoie Mohist (pris dans la Release
 « base-serveur », empreinte contrôlée) et les fichiers de la racine : `server.properties`, `bukkit.yml`, `spigot.yml`,
@@ -427,8 +437,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     dépôt pour toujours : pas de nouvel envoi pour un petit changement.
   - Le **monde en service** sur le Ptero (changé par les joueurs) n'est jamais dans Git. La mise en ligne automatique
     ne dépose et n'écrase jamais de monde : mettre la carte sur le Ptero est une étape à part, décidée par le
-    propriétaire (voir section 11, « Nouvelle carte » : trois mondes prévus, la carte n'est pas forcément le monde
-    principal `HeraliZ`).
+    propriétaire, faite par la case « deposer_carte » (section 8 ; voir aussi section 11, « Nouvelle carte » : trois
+    mondes prévus, la carte n'est pas forcément le monde principal `HeraliZ`).
   - **La carte a besoin de trois de nos mods à ces versions au moins** (sans eux, leurs blocs disparaissent au
     chargement du monde et le train roule sur l'ancien tracé). Ils ont été apportés du dossier de travail de la carte
     le 11/10 ; les joueurs doivent avoir les jars `-client` de la même fabrication :
