@@ -29,12 +29,30 @@ const PSEUDO = /^[A-Za-z0-9_]{3,16}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const SECRET_A2F = /^[A-Z2-7]{16,128}$/
 const JETON_JEU = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
+// taille maximale du pack de jeu (distribution.json), comme avant qu'il ne vienne du compte
+const TAILLE_PACK = 32 * 1024 * 1024
 
 // Requête JSON en HTTPS vers le site ; rend { status, body } sans lever d'erreur pour les réponses 4xx / 5xx.
-async function requeteParDefaut(url, donnees, methode = 'POST') {
+// « limite » (octets) : grosse réponse à un POST (le pack de jeu), lue par morceaux et refusée au-delà.
+async function requeteParDefaut(url, donnees, methode = 'POST', { limite } = {}) {
     const options = {
         responseType: 'json', throwHttpErrors: false, followRedirect: false, headers: { accept: 'application/json' },
         timeout: { request: 15000 }, retry: { limit: 0 }
+    }
+    if (limite) {
+        const flux = got.stream.post(url, { ...options, responseType: undefined, json: donnees, timeout: { request: 120000 } })
+        let status = 0
+        flux.once('response', reponse => { status = reponse.statusCode })
+        const morceaux = []
+        let taille = 0
+        for await (const morceau of flux) {
+            taille += morceau.length
+            if (taille > limite) { flux.destroy(); throw new Error('Réponse trop volumineuse.') }
+            morceaux.push(morceau)
+        }
+        let body = null
+        try { body = JSON.parse(Buffer.concat(morceaux).toString('utf8')) } catch { /* pas du JSON : body null */ }
+        return { status, body }
     }
     const reponse = methode === 'GET' ? await got.get(url, options) : await got.post(url, { ...options, json: donnees })
     return { status: reponse.statusCode, body: reponse.body }
@@ -93,9 +111,9 @@ class CompteSite {
     }
 
     // chemin sous /api/ du site : auth/authenticate, heraliz/inscription...
-    async appeler(chemin, donnees, methode = 'POST') {
+    async appeler(chemin, donnees, methode = 'POST', options) {
         try {
-            return await this.requete(`${this.base}/api/${chemin}`, donnees, methode)
+            return await this.requete(`${this.base}/api/${chemin}`, donnees, methode, options)
         } catch {
             throw new Error(SITE_INJOIGNABLE)
         }
@@ -211,6 +229,17 @@ class CompteSite {
         // extension absente (404), clé pas encore créée (503), site en panne : sans jeton, le serveur décide
         return null
     }
+
+    // Pack de jeu (distribution Helios) donné par le site au compte connecté : ses liens vers les fichiers du pack sont
+    // signés pour quelques heures (sans compte, le site refuse ces fichiers). Erreur claire sinon.
+    async pack(jeton) {
+        const reponse = await this.appeler('heraliz/pack', { access_token: jeton }, 'POST', { limite: TAILLE_PACK })
+        if (reponse.status === 200 && reponse.body && typeof reponse.body === 'object' && !Array.isArray(reponse.body)) return reponse.body
+        if (reponse.status === 503) throw new Error('Le pack de jeu HeraliZ n’est pas encore en ligne. Réessaie plus tard.')
+        if (reponse.status === 404) throw new Error('Le site HeraliZ ne donne pas encore le pack de jeu au launcher. Réessaie plus tard.')
+        if (reponse.status === 200) throw new Error('Réponse du site HeraliZ illisible.')
+        throw erreur(reponse)
+    }
 }
 
-module.exports = { CompteSite, verifierInscription }
+module.exports = { CompteSite, verifierInscription, requeteParDefaut }

@@ -394,8 +394,9 @@ Règles :
    met en forme, avec Nebula (le générateur de Helios, version figée dans le workflow), Forge 1.20.1-47.4.0, les jars
    joueurs de CETTE fabrication (ceux de `officiel.json`) et le dossier `tacz`, puis les dépose par rsync sur la VM du
    site : https://heraliz.fr/launcher/ (`distributionUrl` de `launcher/app/heraliz.json`). Nouveaux fichiers d'abord,
-   `distribution.json` ensuite, anciens fichiers retirés en dernier ; l'étape relit le tout depuis internet et le
-   résumé de l'envoi dit ce qui est en ligne. Les joueurs ont les nouveaux mods à leur prochain lancement du launcher,
+   `distribution.json` ensuite, anciens fichiers retirés en dernier ; l'étape relit le tout depuis internet (pack
+   réservé aux comptes : avec des liens signés comme le site le fait, clé `pack.cle` lue sur la VM, section 8 bis) et
+   le résumé de l'envoi dit ce qui est en ligne et si le pack est réservé aux comptes. Les joueurs ont les nouveaux mods à leur prochain lancement du launcher,
    le serveur à son prochain redémarrage : après un changement de mods, redémarrer le serveur (case « redemarrer »)
    pour que tout le monde soit sur la même version. Un échec ici arrive en dernier : il ne retient ni la mise à jour
    du Ptero ni le redémarrage.
@@ -462,7 +463,13 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     serveur play.heraliz.fr suivi par simple ping. Chaque élément n'est créé que s'il manque : ensuite l'administration
     du site fait foi. Lancé tout seul à chaque envoi sur `main` qui touche `site/theme/`, `site/extension/`,
     `site/vm/theme.sh` ou `site/vm/reglages.php`. Le résumé de l'envoi dit si la connexion et la création de compte du
-    launcher sont ouvertes (`/api/heraliz/etat`).
+    launcher sont ouvertes (`/api/heraliz/etat`). Il réserve aussi le **pack du launcher aux comptes** (depuis le
+    launcher 1.7.0) : clé `storage/app/heraliz/pack.cle` créée une seule fois, recopiée dans
+    `/etc/nginx/heraliz-pack.conf` (lu par les deux accès `/launcher/` de nginx, module `secure_link`) : sans lien signé
+    par le site (`/api/heraliz/pack`), tout fichier du pack est refusé (403 ; signature périmée : 410). Verrou posé
+    seulement si le launcher publié (`/telecharger/latest.yml`) est au moins `PACK_LAUNCHER_MIN` (1.7.0, en tête de
+    `theme.sh`) ; `PACK_RESERVE=non` le rouvre à tous. Après la pose, `theme.sh` essaie un fichier sans signature (403
+    attendu) et un lien signé (200) : si le lien signé est refusé, le pack est rouvert tout seul (avertissement).
 - Le thème : accueil, connexion, inscription, boutique (catégories, articles en cartes de grade), votes, pages et
   actualités refaits d'après les maquettes ; les autres pages (profil, panier, paiement...) gardent celles d'Azuriom,
   habillées par `assets/css/heraliz.css`. Grades en couleur sans icône. La mention « Propulsé par Azuriom » du pied de
@@ -473,6 +480,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   (`/api/auth/authenticate`, `verify`, `logout` ; administration → Paramètres → Authentification → « API
   d'authentification »). L'extension HeraliZ ajoute `/api/heraliz/etat` (ce que le launcher peut proposer),
   `/api/heraliz/jeton-jeu` (jeton de lancement du jeu signé pour le compte connecté, section 6 bis),
+  `/api/heraliz/pack` (pack de jeu du compte connecté, `PackController` : la distribution déposée dans
+  `/var/www/launcher`, chaque lien vers `/launcher/` signé 6 h, MD5 de « expiration + chemin décodé + espace + clé »
+  comme `secure_link` de nginx ; compte banni ou jeton inconnu : refusé ; 30 par minute et par adresse IP),
   `/api/heraliz/inscription` (création de compte, mêmes règles que la page d'inscription du site : pseudo de 3 à 16
   lettres, chiffres ou _, e-mail unique, mot de passe de 12 caractères au moins, confirmé ; 3 comptes par heure et par
   adresse IP, 60 par heure en tout) et `/api/heraliz/a2f/preparer|activer` (double authentification : QR code, puis
@@ -535,7 +545,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - L'installateur n'est pas signé (certificat payant) : au premier lancement, Windows affiche « Windows a protégé votre
   ordinateur » → « Informations complémentaires » → « Exécuter quand même ».
 - **Mises à jour, rien à retélécharger** : à chaque partie, le launcher relit le pack en ligne et ne télécharge que
-  les fichiers changés ou manquants (empreinte de chaque fichier) ; un mod retiré du pack n'est plus chargé (liste de
+  les fichiers changés ou manquants (empreinte de chaque fichier) ; depuis la 1.7.0, il le demande au site pour le
+  compte connecté (`/api/heraliz/pack`, liens signés 6 h, section 8 bis) au lieu de le lire à `distributionUrl` :
+  sans compte, le pack ne se télécharge plus ; un mod retiré du pack n'est plus chargé (liste de
   mods passée à Forge). Le launcher lui-même se met à jour seul depuis la 1.6.0 (`mise-a-jour.js`, electron-updater) :
   au démarrage il lit https://heraliz.fr/telecharger/latest.yml (écrit par « publier »), télécharge la nouvelle
   version, l'installe sans rien demander et redémarre ; au plus 2 essais par version (pas de redémarrage en boucle),
@@ -737,11 +749,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     jamais. Un brouillage mal réglé casse le serveur. À faire par petits lots sur un PC, en gardant (`-keep`) toutes
     les API, Mixins, entités et le `@Mod`, puis `verifier.py` + essai en jeu avant d'envoyer. Gain réel modéré sur
     Forge.
-  - Le pack du launcher se télécharge aujourd'hui **sans compte** (adresses dans `distribution.json`, fichiers servis
-    par helios avec `got.stream`, sans en-tête d'auth). Protection la plus utile et sans renommer de classe : pack
-    réservé aux comptes (liens signés `secure_link` + `/launcher/distribution.json` dynamique qui vérifie le jeton ;
-    le launcher envoie déjà son jeton pour `distribution.json`). Puis, le plus fort : modèles et skins de valeur
-    envoyés chiffrés par le serveur, gardés en mémoire, filigrane par compte. Un fichier affiché à l'écran peut
+  - **Pack réservé aux comptes** : fait (launcher 1.7.0, extension `/api/heraliz/pack`, verrou nginx de `theme.sh`,
+    section 8 bis) : sans compte du site, ni la liste du pack ni ses fichiers ne se téléchargent. Un compte se crée
+    librement : c'est un frein (rien d'anonyme, rien d'automatique), pas un coffre. Ensuite, le plus fort : modèles et
+    skins de valeur envoyés par le serveur, gardés en mémoire, filigrane par compte. Un fichier affiché à l'écran peut
     toujours être capturé : but = vol difficile, inutile hors de HeraliZ, traçable.
 - **Audit de sécurité « façon pirate » du 11/10** (site, launcher, dépôt, séparation client / serveur) : corrigé et
   mis en ligne (adresse IP falsifiable, limites de connexion du site, codes de secours, liens des e-mails, CORS, HSTS,

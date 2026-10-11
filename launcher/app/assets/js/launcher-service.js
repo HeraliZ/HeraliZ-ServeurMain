@@ -258,6 +258,12 @@ class LauncherService {
 
     async loadDistribution() {
         if (!this.config.serverAddress || !this.config.distributionUrl) throw new Error('Le serveur est en préparation. Son adresse et son pack de jeu doivent encore être configurés par l’équipe HeraliZ.')
+        // Comptes du site : le pack vient du site, pour le compte connecté, avec des liens signés pour quelques heures
+        // (sans compte, le site refuse les fichiers du pack).
+        if (this.compteSite) {
+            const raw = validateDistribution(await this.compteSite.pack(this.jetonActuel()), this.config)
+            return new HeliosDistribution(raw, Config.getCommonDirectory(), Config.getInstanceDirectory())
+        }
         const url = httpsUrl(this.config.distributionUrl)
         // No demo-server fallback and no unvalidated remote content in the UI.
         const response = got.stream(url, {

@@ -230,6 +230,14 @@ jobs:
               print(f"Pack du launcher : liste lisible sans compte ({len(mods)} mods joueurs) ; un mod téléchargé sans compte : code {code_jar}")
               if code_jar == 200:
                   conseils.append("les mods joueurs se téléchargent sans compte (leurs adresses sont dans distribution.json)")
+          elif code == 403:
+              # verrouillé (site/vm/theme.sh) : rien sans lien signé par le site, ni avec une signature inventée
+              code_jar = lire("/launcher/verification-du-verrou.jar", "HEAD")[0]
+              code_faux = lire("/launcher/distribution.json?e=4102444800&s=" + "A" * 22)[0]
+              print(f"Pack du launcher : réservé aux comptes (liste sans compte : code 403 ; fichier du pack sans lien signé : "
+                    f"code {code_jar} ; signature inventée : code {code_faux})")
+              if code_jar != 403 or code_faux != 403:
+                  alerte("Pack du launcher : un fichier s'ouvre sans lien signé par le site")
           else:
               print(f"Pack du launcher : code {code}" + (" (lisible sans compte, mais pas en JSON)" if code == 200 else ""))
 
