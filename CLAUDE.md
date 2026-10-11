@@ -478,7 +478,12 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   minutes d'attente (`LimiteConnexion` de l'extension ; Azuriom seul en permettait 60 par minute). Mots de passe
   chiffrés par le site (bcrypt), jamais gardés par le launcher.
 - « verifier » dit aussi ce qui est visible depuis internet : ports ouverts, base de données (seulement sur la VM),
-  fichiers internes du site (`.env`, journaux, réglages : tous refusés), SSH et fail2ban.
+  fichiers internes du site (`.env`, journaux, réglages : tous refusés), SSH et fail2ban. Étape « Vu depuis internet
+  (comme un pirate) », lancée depuis une machine de GitHub, sans compte et en lecture seule : redirection HTTPS,
+  certificat, anciens chiffrements, en-têtes de sécurité, cookies de session, listes de fichiers, pack du launcher,
+  fichiers internes et chemins piégés (clé des jetons, sauvegardes, outils de débogage), mode débogage, données
+  montrées par les API publiques (`/api/posts`, `/api/servers`, flux RSS), appels depuis un autre site,
+  administration, captcha d'inscription. Problème = avertissement, « à renforcer » = conseil.
 - **securite** (« Run workflow », et à la fin d'« installer ») : `site/vm/securite.sh` installe fail2ban (6 mots de
   passe SSH faux en 10 minutes = adresse bloquée 1 h, jusqu'à 2 jours si elle recommence ; filtre réglé pour
   OpenSSH 10, dont les refus s'écrivent sous le nom `sshd-session`) et coupe LLMNR / mDNS. Le SSH de la VM accepte
