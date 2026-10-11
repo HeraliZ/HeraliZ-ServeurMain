@@ -112,6 +112,8 @@ public class HeraliszSylvorn {
 
    private void attributes(EntityAttributeCreationEvent event) {
       event.put(SYLVORN.get(), Sylvorn.createAttributes().build());
+      // SapNode est une LivingEntity : sans ses attributs, le serveur plante quand Sylvorn pose un nœud (attaque CHANNEL).
+      event.put(SAP_NODE.get(), SapNode.createAttributes().build());
    }
 
    /** Icône du groupe « Sylvorn » de l'onglet HeraliZ · Boss (groupe déclaré par HeralizBoss, ordre fixe). */
