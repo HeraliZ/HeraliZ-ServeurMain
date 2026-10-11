@@ -18,6 +18,8 @@ import net.minecraftforge.registries.RegistryObject;
 @Mod(HeralizDecors.MODID)
 public final class HeralizDecors {
     public static final String MODID = "heraliz_decors";
+    /** Marque de propriété HeraliZ (anti-vol) : embarquée dans le jar, elle dit à qui l'ouvre à qui ce mod appartient. */
+    public static final String PROPRIETE_HERALIZ = "HeraliZ - propriété de HeraliZ (serveur play.heraliz.fr). Mod réservé au serveur HeraliZ ; reproduction ou utilisation ailleurs interdite.";
     public static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
 
     public static final DeferredRegister<CreativeModeTab> ONGLETS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);

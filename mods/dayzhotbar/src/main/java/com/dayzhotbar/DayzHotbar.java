@@ -14,6 +14,8 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 public class DayzHotbar {
     public static final String MOD_ID = "dayzhotbar";
 
+    /** Marque de propriété HeraliZ (anti-vol) : embarquée dans le jar, elle dit à qui l'ouvre à qui ce mod appartient. */
+    public static final String PROPRIETE_HERALIZ = "HeraliZ - propriété de HeraliZ (serveur play.heraliz.fr). Mod réservé au serveur HeraliZ ; reproduction ou utilisation ailleurs interdite.";
     public DayzHotbar() {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             HotbarClient.init(FMLJavaModLoadingContext.get().getModEventBus());

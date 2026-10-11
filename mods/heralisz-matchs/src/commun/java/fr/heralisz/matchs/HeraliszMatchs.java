@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 @Mod(HeraliszMatchs.MODID)
 public class HeraliszMatchs {
     public static final String MODID = "heralisz_matchs";
+    /** Marque de propriété HeraliZ (anti-vol) : embarquée dans le jar, elle dit à qui l'ouvre à qui ce mod appartient. */
+    public static final String PROPRIETE_HERALIZ = "HeraliZ - propriété de HeraliZ (serveur play.heraliz.fr). Mod réservé au serveur HeraliZ ; reproduction ou utilisation ailleurs interdite.";
     public static final Logger LOG = LogUtils.getLogger();
 
     /** Dimension des arenes ClashWar et Duels (jour fixe, vide, sans monstres). */

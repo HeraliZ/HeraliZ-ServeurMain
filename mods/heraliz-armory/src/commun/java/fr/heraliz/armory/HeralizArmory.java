@@ -35,6 +35,8 @@ import java.util.Set;
 @Mod(HeralizArmory.MOD_ID)
 public class HeralizArmory {
     public static final String MOD_ID = "heraliz_armory";
+    /** Marque de propriété HeraliZ (anti-vol) : embarquée dans le jar, elle dit à qui l'ouvre à qui ce mod appartient. */
+    public static final String PROPRIETE_HERALIZ = "HeraliZ - propriété de HeraliZ (serveur play.heraliz.fr). Mod réservé au serveur HeraliZ ; reproduction ou utilisation ailleurs interdite.";
     public static final Logger LOGGER = LogUtils.getLogger();
     /** Ancien mod de tenues : ses objets gardes ont le meme chemin ici (heralisz_armor:x -> heraliz_armory:x). */
     public static final String OLD_MOD = "heralisz_armor";
