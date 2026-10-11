@@ -1,0 +1,131 @@
+# Enquête Spartan sur un joueur EN JEU : demande au serveur un contrôle d'intégrité immédiat (`spartan scan <joueur>`,
+# par la console du Ptero), attend la réponse, puis récupère et affiche les derniers rapports de Spartan sur ce joueur
+# (config/spartan/evidence/) : indices, code d'origine inconnue, DLL, threads, crochets... Rien n'est changé sur le
+# serveur ; le rapport ne contient ni IP ni identifiant matériel. « Run workflow » : pseudo du joueur. Une demande
+# peut aussi partir d'une branche de travail en écrivant le pseudo dans outils/enquete/joueur.txt.
+name: Enquête Spartan
+
+on:
+  workflow_dispatch:
+    inputs:
+      joueur:
+        description: "Pseudo du joueur à contrôler (connecté en ce moment)"
+        type: string
+        required: true
+  push:
+    branches-ignore: [main]
+    paths: ["outils/enquete/joueur.txt"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enquete
+  cancel-in-progress: false
+
+jobs:
+  enquete:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Joueur
+        env:
+          JOUEUR_SAISI: ${{ inputs.joueur }}
+        run: |
+          J="${JOUEUR_SAISI:-$(head -n1 outils/enquete/joueur.txt 2>/dev/null | tr -d '\r')}"
+          J="$(printf '%s' "$J" | tr -cd 'A-Za-z0-9_')"
+          if [ -z "$J" ]; then echo "::error::Pseudo vide."; exit 1; fi
+          echo "JOUEUR=$J" >> "$GITHUB_ENV"
+          echo "Joueur contrôlé : $J"
+
+      - name: Accès au Ptero
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+
+      - name: Contrôle immédiat (console du serveur)
+        run: |
+          API="${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID"
+          CODE=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$API/command" \
+            -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \
+            -H "Accept: Application/vnd.pterodactyl.v1+json" -d "{\"command\":\"spartan scan $JOUEUR\"}")
+          echo "Commande « spartan scan $JOUEUR » envoyée à la console (réponse du panel : $CODE)."
+          if [ "$CODE" != "204" ]; then echo "::warning::Le panel n'a pas accepté la commande (serveur arrêté ?) : seuls les anciens rapports seront lus."; fi
+          # le jeu du joueur répond en quelques secondes ; le rapport est écrit dans config/spartan/evidence/
+          sleep 120
+
+      - name: Rapports de Spartan sur ce joueur
+        run: |
+          mkdir -p preuves
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "set sftp:auto-confirm yes; set net:max-retries 2; set net:timeout 30; cls -1 /config/spartan/evidence/; bye" > liste.txt || true
+          # fichiers « <pseudo en minuscules>_<sorte>_<heure en ms>.json » : les 4 plus récents de ce joueur
+          python3 - <<'EOF2'
+          import os
+          j = os.environ["JOUEUR"].lower() + "_"
+          noms = [os.path.basename(l.strip()) for l in open("liste.txt", encoding="utf-8", errors="replace") if l.strip()]
+          a_lui = [n for n in noms if n.startswith(j) and n.endswith(".json")]
+          heure = lambda n: int(n[:-5].rsplit("_", 1)[-1]) if n[:-5].rsplit("_", 1)[-1].isdigit() else 0
+          choisis = sorted(a_lui, key=heure)[-4:]
+          open("choisis.txt", "w").write("".join("/config/spartan/evidence/" + n + "\n" for n in choisis))
+          print(len(a_lui), "rapport(s) de Spartan pour ce joueur sur le serveur ;", len(choisis), "lu(s).")
+          EOF2
+          while read -r f; do
+            [ -n "$f" ] && lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "set sftp:auto-confirm yes; get \"$f\" -o \"preuves/$(basename "$f")\"; bye" || true
+          done < choisis.txt
+          python3 - <<'EOF'
+          import glob, json, os
+          heure = lambda f: int(f[:-5].rsplit("_", 1)[-1]) if f[:-5].rsplit("_", 1)[-1].isdigit() else 0
+          fichiers = sorted(glob.glob("preuves/*.json"), key=heure)
+          if not fichiers:
+              print("Aucun rapport : le joueur n'est peut-être pas connecté, ou son jeu n'a pas répondu.")
+          for f in fichiers:
+              d = json.load(open(f, encoding="utf-8"))
+              print("=" * 100)
+              print(os.path.basename(f), "|", d.get("date"), "|", d.get("type"), "|", d.get("trigger"), "| verdict", d.get("verdict"))
+              print("référence :", d.get("reference"))
+              for x in d.get("findings", []):
+                  print(f"  [{x.get('severity')}] {x.get('text')}")
+              r = d.get("report") or {}
+              if not r:
+                  # autres preuves (détections de mouvement, combat...) : tout le contenu sauf l'identifiant
+                  d.pop("uuid", None)
+                  print(json.dumps(d, ensure_ascii=False, indent=1)[:6000])
+                  continue
+              print("-- jeu :", r.get("java"), "|", r.get("os"), "| contrôle en", r.get("durationMs"), "ms")
+              print("-- options Java :", r.get("jvmFlags"))
+              print("-- attach coupé :", r.get("attachDisabled"), "| programme attaché :", r.get("attachListener"))
+              print("-- injection (natif) :", r.get("injection"))
+              print("-- DLL / bibliothèques natives hors système :")
+              for n in r.get("natives", []):
+                  print("     ", n)
+              print("-- programmes repérés :", r.get("processHits"), "| classes de triche connues :", r.get("classHits"))
+              print("-- anticheat modifié :", r.get("tamper"))
+              print("-- code d'origine inconnue (piles des threads) :")
+              for o in r.get("origins", []):
+                  print("     ", o)
+              print("-- chargeurs de classes :", r.get("loaders"))
+              print(f"-- threads ({r.get('threadCount')}, sans nom : {r.get('unnamedThreads')}) :")
+              print("     ", r.get("threadNames"))
+              print("-- fichiers chargés hors du dossier mods :", r.get("loadedFiles"))
+              print("-- configs Mixin :", [ (m.get("name"), m.get("pkg"), m.get("targetCount")) for m in r.get("mixins", []) ])
+              print("-- modules :", len(r.get("modules", [])), "| jars :", len(r.get("files", [])))
+              print("-- étapes en échec :", r.get("errors"))
+          EOF
