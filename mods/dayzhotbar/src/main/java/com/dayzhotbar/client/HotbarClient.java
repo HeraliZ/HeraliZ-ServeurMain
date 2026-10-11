@@ -23,6 +23,9 @@ public final class HotbarClient {
         modBus.addListener(HotbarClient::registerOverlays);
         // Lowest priority and not receiving cancelled events: if another mod hides the hotbar, ours stays hidden too.
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, HotbarClient::replaceVanillaHotbar);
+        // Bruit de changement d'objet des autres joueurs (MAtmos) : de près seulement. Priorité haute : passe avant
+        // l'assourdissement des grenades flash (heraliz_tactique), qui atténue ensuite le son gardé.
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, SonChangementObjet::onPlaySound);
     }
 
     private static void registerOverlays(RegisterGuiOverlaysEvent event) {
