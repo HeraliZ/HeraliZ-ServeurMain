@@ -145,7 +145,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
 | crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé |
-| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (3 à la fois, 30 à 60 min, 30 s à tenir ; `/extraction`, `/extractions` pour les joueurs) |
+| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (5 à 6 à la fois tirées au hasard, 30 à 60 min, 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
 
@@ -703,7 +703,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (inventaire, coffres, sacs, barre d'objets DayZ), infobulle « ★ Rare » (rien pour Commun). Réglage :
   `serveur/config/heraliz_loot/raretes.json` (à remplir avec la refonte du loot) ; le staff, objet en main :
   `/rarete <niveau|aucune|effacer|voir|defaut|recharger>` (choix en jeu dans `raretes_jeu.json`, jamais écrasé) ;
-- extractions de la carte : 3 zones ouvertes à la fois, 30 à 60 min chacune, 30 s à tenir, retour au spawn ;
+- extractions de la carte : 35 à 40 points possibles, 5 à 6 ouverts à la fois au hasard (`openAtOnce` / `openAtOnceMax` de
+  `heraliz_extraction-common.toml`), 30 à 60 min chacun, 30 s à tenir, retour au spawn ;
 - camos à vie (pour la boutique) : clic droit sur un objet camo = il entre pour toujours dans la collection du joueur
   (objet consommé ; stockée hors du monde, `heralisz_camo/collections.json` à la racine du serveur, elle survit aux
   changements de carte). Onglet Skin : camos de l'inventaire (posés depuis l'objet : définitifs, comme avant) ou de la
@@ -758,6 +759,16 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - langues : français (par défaut), anglais, russe, au choix par drapeau (écran titre et menu Échap) ; menus,
   descriptions, messages du serveur et commandes traduits ; le chat entre joueurs n'est PAS traduit (choix du
   propriétaire, 11/10 : pas de service de traduction payant) ;
+- mort (11/10) : tout ce que porte le joueur part sur son cadavre (slots Curios compris, montrés à la fouille) ; cadavre
+  qui disparaît au bout de 10 min, ou tout de suite une fois vide ; on ne peut rien y déposer. `keepInventory` doit être
+  à false sur les mondes du Ptero (gamerule tapée en jeu) ; `/suicide` pour tous les joueurs (mort normale) ;
+- train (11/10) : un train qui roule heurte (2,5 cœurs, joueur projeté à côté) ; il ne tue que devant la locomotive ou
+  dans la voie, sous la caisse ;
+- onglets créatifs (11/10) : l'onglet « HeraliZ » (meubles cfm) ne montre que les meubles posés sur la carte (liste
+  `heralisz_utils_onglet_heraliz.json`, refaite d'après le workflow « Inventaire de la carte ») ; armes de mêlée et
+  couteaux seulement dans le groupe Mêlée de HeraliZ · Tactique (plus dans « Arme lourde ») ;
+- au premier lancement : plus de tutoriel de Minecraft, et une fois par installation synchronisation verticale coupée,
+  images par seconde illimitées, nuages et ombres des entités coupés (heraliz_interface, `ReglagesDefaut`) ;
 - refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
 - retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
   Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,

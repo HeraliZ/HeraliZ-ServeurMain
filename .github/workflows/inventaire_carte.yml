@@ -1,4 +1,4 @@
-# Inventaire de la carte (relance : affichage compact) : quels blocs de nos mods (décors, meubles de l'onglet HeraliZ, bases, utils…) sont posés
+# Inventaire de la carte : quels blocs de nos mods (décors, meubles de l'onglet HeraliZ, bases, utils…) sont posés
 # sur la carte du serveur, et lesquels ne sont posés nulle part. LECTURE SEULE : les fichiers de régions du monde en
 # service sont COPIÉS sur la machine de GitHub (téléchargement SFTP), puis lus ; rien n'est jamais écrit ni supprimé
 # sur le Ptero. Le résultat s'affiche dans le résumé de l'exécution. « Run workflow » ; peut aussi partir d'une
