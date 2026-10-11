@@ -474,6 +474,11 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   chiffrés par le site (bcrypt), jamais gardés par le launcher.
 - « verifier » dit aussi ce qui est visible depuis internet : ports ouverts, base de données (seulement sur la VM),
   fichiers internes du site (`.env`, journaux, réglages : tous refusés), SSH et fail2ban.
+- **securite** (« Run workflow », et à la fin d'« installer ») : `site/vm/securite.sh` installe fail2ban (6 mots de
+  passe SSH faux en 10 minutes = adresse bloquée 1 h, jusqu'à 2 jours si elle recommence ; filtre réglé pour
+  OpenSSH 10, dont les refus s'écrivent sous le nom `sshd-session`) et coupe LLMNR / mDNS. Le SSH de la VM accepte
+  root avec mot de passe (les workflows s'en servent) : le mot de passe doit rester long et unique. Attention : 6 erreurs
+  depuis chez soi bloquent aussi sa propre adresse 1 h.
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
   port `3306`, base `azuriom`, utilisateur `azuriom`, mot de passe = secret `SITE_BDD_MDP` ; jeu : Minecraft Java ;
   compte administrateur au choix du propriétaire).

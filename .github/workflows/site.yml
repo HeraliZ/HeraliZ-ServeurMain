@@ -5,6 +5,8 @@
 # - theme : met le site aux couleurs HeraliZ (site/theme/heraliz), dépose l'extension HeraliZ (site/extension/heraliz :
 #   comptes du launcher), installe la Boutique et les Votes d'Azuriom et fait les réglages de départ une seule fois
 #   (site/vm/theme.sh, site/vm/reglages.php). Lancé tout seul à chaque envoi sur main qui touche le thème ou l'extension.
+# - securite : fail2ban contre les essais de mots de passe SSH, LLMNR coupé (site/vm/securite.sh, aussi à la fin
+#   d'« installer »).
 # Les accès sont dans les secrets SITE_* : jamais dans un fichier.
 name: Site HeraliZ
 
@@ -19,9 +21,9 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes)"
+        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes) ; securite : bloquer les essais de mots de passe SSH (fail2ban)"
         type: choice
-        options: [verifier, installer, theme]
+        options: [verifier, installer, theme, securite]
         default: verifier
 
 permissions:
@@ -97,7 +99,7 @@ jobs:
 
       # installeur officiel d'Azuriom : dernière version publiée ; pour « verifier », son contenu et la doc d'installation
       - name: Azuriom
-        if: env.ACTION != 'theme'
+        if: env.ACTION == 'verifier' || env.ACTION == 'installer'
         run: |
           curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/Azuriom/AzuriomInstaller/releases/latest -o installeur.json || true
           # le bon fichier est « AzuriomInstaller.zip » (« -old » est l'ancien installeur, pour les vieilles versions de PHP)
@@ -158,6 +160,8 @@ jobs:
               printf 'ARCHIVE=%q\n' "$ARCHIVE"
             fi
             cat "site/vm/$ACTION.sh"
+            # « installer » se termine par la sécurité de la VM
+            if [ "$ACTION" = installer ]; then cat site/vm/securite.sh; fi
           } > script_vm.sh
           export SSHPASS="$SITE_SSH_MDP"
           OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o PubkeyAuthentication=no)

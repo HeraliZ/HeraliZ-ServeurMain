@@ -95,9 +95,9 @@ fi
 
 # sécurité : ce qui est visible depuis internet
 echo "== Sécurité"
-ouverts=$(ss -ltnH 2> /dev/null | awk '{print $4}' | grep -vE '^(127\.[0-9.]+|\[::1\]|::1):' | awk -F: '{print $NF}' | sort -n | uniq | tr '\n' ' ')
+ouverts=$(ss -ltnH 2> /dev/null | awk '{print $4}' | grep -vE '^(127\.[0-9.]+|\[::1\]|::1)(%[[:alnum:]]+)?:' | awk -F: '{print $NF}' | sort -n | uniq | tr '\n' ' ')
 echo "Ports ouverts sur le réseau : ${ouverts:-aucun}"
-if ss -ltnH 2> /dev/null | awk '{print $4}' | grep -E ':3306$' | grep -vqE '^(127\.[0-9.]+|\[::1\]|::1):'; then
+if ss -ltnH 2> /dev/null | awk '{print $4}' | grep -E ':3306$' | grep -vqE '^(127\.[0-9.]+|\[::1\]|::1)(%[[:alnum:]]+)?:'; then
   echo "::warning::Base de données (port 3306) : ouverte sur le réseau"
 else
   echo "Base de données (comptes, mails, mots de passe chiffrés) : accessible seulement depuis la VM elle-même"
@@ -121,5 +121,5 @@ fi
 if command -v fail2ban-client > /dev/null; then
   echo "fail2ban : actif ($(fail2ban-client status 2> /dev/null | awk -F: '/Jail list/ {gsub(/^[ \t]+/, "", $2); print $2}'))"
 else
-  echo "fail2ban : absent (les essais de mot de passe SSH ne sont pas bloqués)"
+  echo "fail2ban : absent (les essais de mot de passe SSH ne sont pas bloqués : lancer « securite »)"
 fi
