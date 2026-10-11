@@ -187,10 +187,13 @@ jobs:
           # le monde en service : level-name du server.properties du Ptero (celui du dépôt à défaut)
           MONDE=""
           if lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
-              -e "$LFTP_REGLAGES set cmd:fail-exit yes; get /server.properties -o server_ptero.properties; bye" < /dev/null 2> /dev/null; then
-            MONDE=$(tr -d '\r' < server_ptero.properties | sed -n 's/^level-name=//p' | head -n 1)
+              -e "$LFTP_REGLAGES set cmd:fail-exit yes; set xfer:clobber on; get /server.properties -o server_ptero_maj.properties; bye" < /dev/null; then
+            MONDE=$(tr -d '\r' < server_ptero_maj.properties | sed -n 's/^level-name=//p' | head -n 1)
           fi
-          case "$MONDE" in ""|.|..|*[!A-Za-z0-9_.-]*) MONDE=$(grep -E '^level-name=' serveur/server.properties | cut -d= -f2);; esac
+          case "$MONDE" in ""|.|..|*[!A-Za-z0-9_.-]*)
+            MONDE=$(grep -E '^level-name=' serveur/server.properties | cut -d= -f2)
+            echo "::warning::server.properties du Ptero illisible : réglages serverconfig copiés dans /$MONDE (nom du dépôt).";;
+          esac
           echo "Monde du serveur : /$MONDE"
           lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "
             $LFTP_REGLAGES
@@ -244,18 +247,18 @@ jobs:
               -H "Accept: Application/vnd.pterodactyl.v1+json" "$@"
           }
           etat() { ptero "$API/resources" | python -c 'import json, sys; print(json.load(sys.stdin)["attributes"]["current_state"])'; }
-          sftp() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$LFTP_REGLAGES set cmd:fail-exit yes; $1 bye" < /dev/null; }
+          sftp() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$LFTP_REGLAGES set cmd:fail-exit yes; set xfer:clobber on; $1 bye" < /dev/null; }
           existe() { sftp "cls -d \"$1\";" > /dev/null 2>&1; }
 
-          # le monde en service : level-name du server.properties du Ptero (celui du dépôt à défaut)
+          # le monde en service : level-name du server.properties DU PTERO, obligatoirement (le nom du dépôt peut être
+          # différent : se tromper de nom poserait la carte à côté du monde que le serveur charge)
           MONDE=""
-          if sftp "get /server.properties -o server_ptero.properties;" 2> /dev/null; then
-            MONDE=$(tr -d '\r' < server_ptero.properties | sed -n 's/^level-name=//p' | head -n 1)
+          if sftp "get /server.properties -o server_ptero_carte.properties;"; then
+            MONDE=$(tr -d '\r' < server_ptero_carte.properties | sed -n 's/^level-name=//p' | head -n 1)
           fi
-          [ -n "$MONDE" ] || MONDE=$(sed -n 's/^level-name=//p' serveur/server.properties | head -n 1)
           case "$MONDE" in
             ""|.|..|*[!A-Za-z0-9_.-]*|mods|plugins|config|defaultconfigs|libraries|logs|tacz|heralisz_*|heraliz_*|mohist-config)
-              echo "::error::Nom de monde inattendu dans server.properties : « $MONDE ». Rien n'a été changé."
+              echo "::error::Nom du monde illisible ou inattendu dans le server.properties du Ptero : « $MONDE ». Rien n'a été changé."
               exit 1;;
           esac
           DATE=$(date -u +%Y-%m-%d_%Hh%M)

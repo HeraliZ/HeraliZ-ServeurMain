@@ -382,7 +382,8 @@ ceux de `defaultconfigs/` ; ensuite seulement il prévient les joueurs, arrête 
 monde `<monde>_ancien_<date>` (jamais supprimé ; ses dossiers `_nether` / `_the_end` aussi, s'il y en a), donne son nom
 à la carte et redémarre. Un échec avant la bascule ne touche ni au serveur ni à son monde (carte incomplète laissée dans
 `<monde>_nouvelle_<date>`, à supprimer depuis le panel). Le nom du monde est lu dans le `server.properties` du Ptero
-(aujourd'hui `dayz_map`). Restent hors du monde, donc gardés : clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe, grades,
+(aujourd'hui `dayz_map`), obligatoirement : s'il est illisible, rien n'est changé (le 11/10, un repli sur le nom du dépôt
+a posé la carte dans `/HeraliZ`, que le serveur ne charge pas). Restent hors du monde, donc gardés : clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe, grades,
 bans. Repartent de zéro avec la carte : inventaires et positions des joueurs, zones d'extraction posées à la main,
 territoires pris. Les zones WorldGuard restent rattachées au nom du monde (mêmes coordonnées) : le résumé de l'envoi
 les liste, à refaire pour la nouvelle carte. L'ancien monde se supprime depuis le panel quand tout va bien.
