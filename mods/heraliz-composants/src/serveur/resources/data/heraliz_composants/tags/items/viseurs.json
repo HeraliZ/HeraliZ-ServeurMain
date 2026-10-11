@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_composants:batterie",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:ferraille"
+  ]
+}

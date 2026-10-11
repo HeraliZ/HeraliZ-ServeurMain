@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:bocal_poudre",
+    "heraliz_composants:tonnelet_poudre"
+  ]
+}

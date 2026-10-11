@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_composants:item/3d/plaque_identite"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_composants:item/icon/plaque_identite"
+    }
+  }
+}
