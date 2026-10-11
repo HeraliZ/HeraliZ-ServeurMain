@@ -319,16 +319,19 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism` et retire les options d'injection du joueur
   (`launcher/app/assets/js/spartan.js`). Son pack est refait à chaque mise en ligne avec `livraison/mods client` de la
   même fabrication (section 8).
-- **Jeton du launcher** (on ne joue que depuis le launcher HeraliZ) : à chaque lancement, `spartan.js` fabrique un
-  jeton signé, valable **6 h**, lié au pseudo et aux mods (`-Dspartan.launchToken=…`, masqué dans le journal du
-  launcher). Clé : secret GitHub `SPARTAN_LAUNCHER_SECRET` (au moins 32 caractères aléatoires), injecté côté serveur
-  par la mise en ligne et côté launcher par `launcher/outils/spartan-cle.js` au moment de fabriquer le launcher
-  (`npm run dist:win` avec la variable d'environnement `SPARTAN_LAUNCHER_SECRET`) ; `spartan-cle.json` n'est JAMAIS
-  dans Git. Réglage `tokenRequired` (`serveur/config/spartan-common.toml`) : `false` = alerte seulement ; `true` =
-  connexion REFUSÉE sans jeton valide (CurseForge, autre launcher, jeton expiré), même en détection silencieuse. Ne le
-  passer à `true` qu'une fois le launcher distribué à tous. Changer la clé à chaque nouvelle version du launcher.
-  Vérifié : un jeton fabriqué par le launcher est accepté par `LaunchToken.verify` (Java) ; autre pseudo ou autre clé
-  refusés.
+- **Jeton de lancement, signé par le site (mode B, depuis le launcher 1.6.0)** : on ne joue que depuis le launcher
+  HeraliZ, connecté à un compte du site. À chaque partie, le launcher envoie au site l'empreinte de son dossier mods ;
+  le site (`/api/heraliz/jeton-jeu`, `JetonController` de l'extension) rend un jeton valable **6 h**, signé pour le
+  pseudo du compte connecté (jamais un pseudo envoyé par le launcher), passé au jeu par `-Dspartan.launchToken=…`
+  (masqué dans le journal du launcher) et vérifié par Spartan à la connexion (`LaunchToken.verify`, même format). La
+  clé (`storage/app/heraliz/jeton-jeu.cle` sur la VM du site) est créée une seule fois par `theme.sh` et lue par la mise
+  en ligne du serveur, qui l'écrit dans `launcherSecret` : elle n'est ni dans Git, ni dans un secret GitHub, ni dans le
+  launcher (impossible de fabriquer un jeton sans le site). L'ancien secret GitHub `SPARTAN_LAUNCHER_SECRET` ne sert
+  plus. Réglage `tokenRequired` (`serveur/config/spartan-common.toml`) : `false` = alerte seulement ; `true` =
+  connexion REFUSÉE sans jeton valide (CurseForge, autre launcher, launcher 1.5.0 ou plus ancien, jeton expiré), même
+  en détection silencieuse. Ne le passer à `true` qu'après un essai réussi en jeu avec le launcher 1.6.0 ; la mise en
+  ligne refuse d'envoyer `true` si la clé n'a pas pu être lue sur le site. Vérifié (copie locale du site) : un jeton du
+  site est accepté par le code Java de Spartan ; autre pseudo, autre clé ou plus de 6 h : refusé.
 - **Anti-duplication** (`check/item/AntiDupe`, section `[antidupe]`) : les objets de valeur NON empilables (`tacz:*`,
   `backpacked:*`, `heraliz_armory:*` par défaut) reçoivent un numéro unique invisible (donnée `spartan_uid`) quand ils
   sont rangés dans l'inventaire ; toutes les 20 s, un relevé en une fois (inventaires, souris, coffre de l'Ender,
@@ -417,7 +420,7 @@ Secrets à créer par le propriétaire (Settings → Secrets and variables → A
 `PTERO_SERVER_ID`, `PTERO_API_KEY` (clé « client » du compte Ptero), et `NOMS_INTERDITS` (le contenu de
 `outils/noms_interdits.txt`, un mot par ligne). Pour Spartan : `SPARTAN_DISCORD_ALERTES` (webhook du salon PRIVÉ du
 staff : alertes et rapports), `SPARTAN_DISCORD_SANCTIONS` (webhook du salon public des sanctions : pseudo, durée,
-raison), `SPARTAN_LAUNCHER_SECRET` (quand le launcher signera les lancements). LiteBans : `LITEBANS_DB_USER` et
+raison) ; la clé des jetons du launcher est lue sur la VM du site (section 6 bis). LiteBans : `LITEBANS_DB_USER` et
 `LITEBANS_DB_PASSWORD` (base MySQL du Ptero, onglet « Databases » du panel) ; sans eux, LiteBans passe en base locale
 (H2) et repart sans historique. Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
 écrire ailleurs.
@@ -464,6 +467,7 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - **Comptes du launcher** : le launcher se connecte avec les comptes du site par l'API d'authentification d'Azuriom
   (`/api/auth/authenticate`, `verify`, `logout` ; administration → Paramètres → Authentification → « API
   d'authentification »). L'extension HeraliZ ajoute `/api/heraliz/etat` (ce que le launcher peut proposer),
+  `/api/heraliz/jeton-jeu` (jeton de lancement du jeu signé pour le compte connecté, section 6 bis),
   `/api/heraliz/inscription` (création de compte, mêmes règles que la page d'inscription du site : pseudo de 3 à 16
   lettres, chiffres ou _, e-mail unique, mot de passe de 12 caractères au moins, confirmé ; 3 comptes par heure et par
   adresse IP, 60 par heure en tout) et `/api/heraliz/a2f/preparer|activer` (double authentification : QR code, puis
@@ -506,8 +510,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   installateur Windows, gardé 7 jours dans l'onglet Actions (paquet « launcher-windows », si le quota d'artefacts le
   permet). « Run workflow » avec la case « publier » : il est aussi mis en ligne, toujours au même lien,
   https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe (lien à mettre sur le site et le Discord), envoyé par SFTP
-  par la machine Windows qui l'a fabriqué (aucun artefact entre deux tâches). La clé des jetons Spartan
-  (`SPARTAN_LAUNCHER_SECRET`) n'entre dans le launcher qu'à ce moment-là, si le secret existe.
+  par la machine Windows qui l'a fabriqué (aucun artefact entre deux tâches). Le launcher ne contient aucune clé : ses
+  jetons de lancement sont signés par le site (section 6 bis).
 - L'installateur n'est pas signé (certificat payant) : au premier lancement, Windows affiche « Windows a protégé votre
   ordinateur » → « Informations complémentaires » → « Exécuter quand même ».
 - **Mises à jour, rien à retélécharger** : à chaque partie, le launcher relit le pack en ligne et ne télécharge que
@@ -709,8 +713,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   une copie locale du site (création, connexion par e-mail et par pseudo, activation de la double authentification
   avec un vrai code), pas encore sur Windows ni avec un vrai téléphone. Jamais essayé de bout en bout (pack du site,
   Forge, connexion au serveur) : à faire par le propriétaire avant de le distribuer.
-- **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé pas encore
-  (il faut un serveur d'authentification, voir `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
+- **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé par le site
+  (mode B) depuis le launcher 1.6.0, `tokenRequired` encore à `false` (à passer à `true` après un essai en jeu). Prévu
+  ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
 
 ---
