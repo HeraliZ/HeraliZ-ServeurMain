@@ -39,6 +39,7 @@ public final class CaraCreaConfig {
         public final ForgeConfigSpec.EnumValue<VoiceMode> voiceMode;
         public final ForgeConfigSpec.DoubleValue voiceRange;
         public final ForgeConfigSpec.DoubleValue whisperRange;
+        public final ForgeConfigSpec.DoubleValue shoutRange;
         public final ForgeConfigSpec.DoubleValue crouchMultiplier;
         public final ForgeConfigSpec.BooleanValue allowGroups;
         public final ForgeConfigSpec.BooleanValue allowRecording;
@@ -56,7 +57,7 @@ public final class CaraCreaConfig {
         Server(ForgeConfigSpec.Builder builder) {
             builder.comment("Character creator rules").push("creator");
             freeEdit = builder
-                    .comment("Players may reopen the creator themselves (/caracrea or the key) and change their look whenever they want.",
+                    .comment("Players may reopen the creator themselves (/caracrea or /perso) and change their look whenever they want.",
                             "When false, only operators can open it for them (/caracrea open <player>) and the first-join creator.")
                     .define("freeEdit", true);
             openOnFirstJoin = builder
@@ -78,6 +79,11 @@ public final class CaraCreaConfig {
             whisperRange = builder
                     .comment("Portee d'un chuchotement, en blocs.")
                     .defineInRange("porteeChuchotement", 24.0, 1.0, 128.0);
+            // Mode « crier » (touche « changer de mode ») : entendu plus loin que la voix normale.
+            shoutRange = builder
+                    .comment("Portee d'un cri, en blocs (mode crier : entendu plus loin que la voix normale ; 96 = deux fois la",
+                            "portee normale de 48).")
+                    .defineInRange("porteeCri", 96.0, 4.0, 512.0);
             crouchMultiplier = builder
                     .comment("Portee de la voix accroupi, en part de la portee normale (1 = pas de changement, 0.5 = moitie).")
                     .defineInRange("accroupi", 1.0, 0.0, 1.0);
@@ -145,6 +151,7 @@ public final class CaraCreaConfig {
         public final ForgeConfigSpec.DoubleValue micGain;
         public final ForgeConfigSpec.DoubleValue voiceVolume;
         public final ForgeConfigSpec.BooleanValue muted;
+        public final ForgeConfigSpec.BooleanValue deafened;
         public final ForgeConfigSpec.BooleanValue denoise;
         public final ForgeConfigSpec.IntValue denoiseStrength;
         public final ForgeConfigSpec.BooleanValue automaticGain;
@@ -177,7 +184,7 @@ public final class CaraCreaConfig {
                     .defineInRange("voiceSensitivity", 1.0, 0.2, 5.0);
             builder.pop();
 
-            builder.comment("Built-in proximity voice chat (also in game: the voice settings key)").push("voice");
+            builder.comment("Built-in proximity voice chat (also in game: /voix, or the voice menu key then Settings)").push("voice");
             voiceChat = builder
                     .comment("Talk to and hear the players around (when the server has the voice chat on).")
                     .define("enabled", true);
@@ -199,6 +206,10 @@ public final class CaraCreaConfig {
             muted = builder
                     .comment("Microphone muted (key M).")
                     .define("muted", false);
+            // « Couper tout le monde » : ne coupe que ce que le joueur entend, pas son micro.
+            deafened = builder
+                    .comment("Everyone muted: you hear no voice at all, the others still hear you (key \"mute everyone\").")
+                    .define("deafened", false);
             denoise = builder
                     .comment("Remove the steady background noise (fan, computer, street) from your microphone.")
                     .define("denoise", true);

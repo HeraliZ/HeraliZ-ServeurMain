@@ -20,7 +20,7 @@
 	#Range: 0.2 ~ 5.0
 	voiceSensitivity = 1.0
 
-#Built-in proximity voice chat (also in game: the voice settings key)
+#Built-in proximity voice chat (also in game: /voix, or the voice menu key then Settings)
 [voice]
 	#Talk to and hear the players around (when the server has the voice chat on).
 	enabled = true
@@ -39,6 +39,8 @@
 	volume = 1.0
 	#Microphone muted (key M).
 	muted = false
+	#Everyone muted: you hear no voice at all, the others still hear you (key "mute everyone").
+	deafened = false
 	#Remove the steady background noise (fan, computer, street) from your microphone.
 	denoise = true
 	#Bring your voice to a steady level whatever the microphone's volume.

@@ -23,14 +23,26 @@ public abstract class VoiceEvent extends Event {
     /** A player started talking (their voice reaches the server). */
     public static final class TalkStart extends VoiceEvent {
         private final boolean whisper;
+        private final boolean shout;
 
         public TalkStart(UUID player, boolean whisper) {
+            this(player, whisper, false);
+        }
+
+        /** Avec le mode crier (CaraCrea 1.5) ; l'ancien constructeur reste pour les mods qui l'appellent. */
+        public TalkStart(UUID player, boolean whisper, boolean shout) {
             super(player);
             this.whisper = whisper;
+            this.shout = shout && !whisper;
         }
 
         public boolean isWhisper() {
             return whisper;
+        }
+
+        /** Le joueur crie : sa voix porte jusqu'à {@code voix.porteeCri} (au lieu de {@code voix.portee}). */
+        public boolean isShout() {
+            return shout;
         }
     }
 

@@ -190,8 +190,10 @@ final class Microphone {
                 if (local || ending) {
                     int length = encoder.encode(frame, packet);
                     if (length > 0) {
-                        boolean whisper = VoiceClient.whispering();
-                        int flags = (whisper ? VoiceProtocol.F_WHISPER : 0) | (ending ? VoiceProtocol.F_END : 0);
+                        // Chuchoter, parler ou crier : le mode choisi part dans les drapeaux de chaque trame.
+                        int mode = VoiceClient.voiceMode();
+                        boolean whisper = mode == VoiceProtocol.MODE_WHISPER;
+                        int flags = VoiceProtocol.flag(mode) | (ending ? VoiceProtocol.F_END : 0);
                         boolean sent = local ? send : wasSent;
                         if (sent) {
                             if (transport != null) {

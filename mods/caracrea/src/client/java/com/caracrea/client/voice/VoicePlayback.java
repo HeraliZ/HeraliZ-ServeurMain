@@ -231,7 +231,8 @@ final class VoicePlayback {
                       float[] local) {
         UUID speaker = stream.speaker;
         boolean self = speaker == LOOPBACK;
-        boolean whisper = (flags & VoiceProtocol.F_WHISPER) != 0;
+        int mode = VoiceProtocol.mode(flags);
+        boolean whisper = mode == VoiceProtocol.MODE_WHISPER;
         if (!self) {
             VoiceActivity.report(speaker, pcm, whisper);
             VoiceRecorder.record(speaker, listener.names().get(speaker), pcm);
@@ -261,7 +262,8 @@ final class VoicePlayback {
             x = local[0];
             y = local[1];
             z = local[2];
-            float range = whisper ? listener.whisperRange() : listener.range();
+            // La voix s'éteint au bord de la portée de son mode : chuchotement, normale ou cri.
+            float range = whisper ? listener.whisperRange() : mode == VoiceProtocol.MODE_SHOUT ? listener.shoutRange() : listener.range();
             gain *= falloff((float) Math.sqrt(x * x + y * y + z * z), range);
         }
         float cutoff = LowPass.OFF;

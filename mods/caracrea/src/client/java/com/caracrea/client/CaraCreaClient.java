@@ -3,10 +3,7 @@ package com.caracrea.client;
 import com.caracrea.CaraCreaConfig;
 import com.caracrea.character.BodyType;
 import com.caracrea.client.voice.VoiceClient;
-import com.caracrea.network.CaraCreaNetwork;
 import com.caracrea.voice.VoiceActivity;
-import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -15,18 +12,15 @@ import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import org.lwjgl.glfw.GLFW;
 
-/** Client wiring: the 3D body, key binding, per-tick animation, cleanup on disconnect. */
+/**
+ * Client wiring: the 3D body, the voice keys, per-tick animation, cleanup on disconnect. Plus de touche pour le
+ * créateur de personnage : il s'ouvre par {@code /caracrea} ou {@code /perso} (et tout seul à la première connexion).
+ */
 public final class CaraCreaClient {
-    /** Opens the creator (if the server allows it). Unbound by default to avoid conflicts; see the controls menu. */
-    public static final KeyMapping OPEN_CREATOR = new KeyMapping("key.caracrea.open",
-            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "key.categories.caracrea");
-
     private CaraCreaClient() {
     }
 
@@ -46,7 +40,6 @@ public final class CaraCreaClient {
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {
-        event.register(OPEN_CREATOR);
         VoiceClient.keys().forEach(event::register);
     }
 
@@ -94,11 +87,6 @@ public final class CaraCreaClient {
             return;
         }
         Minecraft mc = Minecraft.getInstance();
-        while (OPEN_CREATOR.consumeClick()) {
-            if (mc.player != null) {
-                CaraCreaNetwork.CHANNEL.sendToServer(new CaraCreaNetwork.RequestCreator());
-            }
-        }
         VoiceClient.tick();
         if (mc.level != null) {
             FaceAnimator.tick();

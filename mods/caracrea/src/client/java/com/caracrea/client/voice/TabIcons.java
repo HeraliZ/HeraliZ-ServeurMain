@@ -2,6 +2,7 @@ package com.caracrea.client.voice;
 
 import com.caracrea.CaraCrea;
 import com.caracrea.voice.VoiceActivity;
+import com.caracrea.voice.net.VoiceProtocol;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -51,7 +52,8 @@ public final class TabIcons {
         if (!VoiceActivity.isTalking(player) && !(me && VoiceClient.transmitting())) {
             return -1;
         }
-        if (me ? VoiceClient.whisperHeld() : VoiceActivity.isWhispering(player)) {
+        // Un cri garde l'icône « parle » (pas d'icône à part).
+        if (me ? VoiceClient.voiceMode() == VoiceProtocol.MODE_WHISPER : VoiceActivity.isWhispering(player)) {
             return WHISPER;
         }
         int group = VoiceClient.groupOf(player);

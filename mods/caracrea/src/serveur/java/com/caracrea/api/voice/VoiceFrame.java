@@ -10,6 +10,11 @@ public interface VoiceFrame {
     /** Whether they whisper. */
     boolean whisper();
 
+    /** S'il crie (mode crier, CaraCrea 1.5) ; faux par défaut pour les anciennes implémentations. */
+    default boolean shout() {
+        return false;
+    }
+
     /** Frame number (one every 20 ms, keeps counting through silences). */
     int sequence();
 

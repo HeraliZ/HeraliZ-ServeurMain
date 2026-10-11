@@ -98,6 +98,8 @@ public final class VoiceServer {
         volatile boolean reported;
         volatile boolean disabled;
         volatile boolean selfMuted;
+        /** Le joueur a coupé tout le monde : il n'entend plus aucune voix (les autres l'entendent toujours). */
+        volatile boolean selfDeafened;
         volatile boolean adminMuted;
         // API overrides (not kept).
         volatile float range = Float.NaN;
@@ -108,6 +110,7 @@ public final class VoiceServer {
         volatile long lastVoice;
         volatile boolean ended;
         volatile boolean lastWhisper;
+        volatile boolean lastShout;
         // Server thread.
         boolean talking;
         String lastTransport;
@@ -148,7 +151,7 @@ public final class VoiceServer {
     private static final ThreadLocal<VoiceRouting.Recipients> RECIPIENTS = ThreadLocal.withInitial(VoiceRouting.Recipients::new);
     private static final ThreadLocal<ApiView> API_VIEW = ThreadLocal.withInitial(ApiView::new);
     private static volatile VoiceRouter[] routers = new VoiceRouter[0];
-    private static volatile VoiceRouting.Rules rules = new VoiceRouting.Rules(false, 48, 24, 1, 1, true, true, false, true, true);
+    private static volatile VoiceRouting.Rules rules = new VoiceRouting.Rules(false, 48, 24, 96, 1, 1, true, true, false, true, true);
     private static volatile UdpVoiceServer udp;
     private static volatile boolean active;
     private static volatile String[] levelNames = new String[0];
@@ -288,8 +291,9 @@ public final class VoiceServer {
         CaraCreaConfig.Server c = CaraCreaConfig.SERVER;
         UdpVoiceServer u = udp;
         int port = u != null && u.running() ? u.port() : 0;
-        return new CaraCreaNetwork.VoiceConfig(true, c.voiceRange.get().floatValue(), c.whisperRange.get().floatValue(), c.allowGroups.get(),
-                c.allowRecording.get(), c.bitrate.get(), port, c.publicAddress.get().trim(), m.session, m.key, m.voiceId);
+        return new CaraCreaNetwork.VoiceConfig(true, c.voiceRange.get().floatValue(), c.whisperRange.get().floatValue(),
+                c.shoutRange.get().floatValue(), c.allowGroups.get(), c.allowRecording.get(), c.bitrate.get(), port,
+                c.publicAddress.get().trim(), m.session, m.key, m.voiceId);
     }
 
     private static String udpSettings(MinecraftServer s) {
@@ -309,7 +313,7 @@ public final class VoiceServer {
 
     private static void deactivate(boolean tell) {
         active = false;
-        rules = new VoiceRouting.Rules(false, 48, 24, 1, 1, true, true, false, true, true);
+        rules = new VoiceRouting.Rules(false, 48, 24, 96, 1, 1, true, true, false, true, true);
         for (Member m : List.copyOf(ORDER)) {
             remove(m);
             ServerPlayer player = m.player;
@@ -390,13 +394,15 @@ public final class VoiceServer {
         VoiceRouting.Rules current = rules;
         float range = c.voiceRange.get().floatValue();
         float whisper = c.whisperRange.get().floatValue();
+        float shout = c.shoutRange.get().floatValue();
         float crouch = c.crouchMultiplier.get().floatValue();
         int spectators = c.spectators.get().ordinal();
-        if (!current.enabled() || current.range() != range || current.whisperRange() != whisper || current.crouch() != crouch
+        if (!current.enabled() || current.range() != range || current.whisperRange() != whisper || current.shoutRange() != shout
+                || current.crouch() != crouch
                 || current.spectators() != spectators || current.groups() != c.allowGroups.get()
                 || current.isolateMatches() != c.isolateMatches.get() || current.teamOnly() != c.matchTeamOnly.get()
                 || current.matchSpectatorsTogether() != c.matchSpectatorsTogether.get() || current.downedMuffled() != c.downedMuffled.get()) {
-            rules = new VoiceRouting.Rules(true, range, whisper, crouch, spectators, c.allowGroups.get(), c.isolateMatches.get(),
+            rules = new VoiceRouting.Rules(true, range, whisper, shout, crouch, spectators, c.allowGroups.get(), c.isolateMatches.get(),
                     c.matchTeamOnly.get(), c.matchSpectatorsTogether.get(), c.downedMuffled.get());
         }
         long now = System.nanoTime();
@@ -440,7 +446,7 @@ public final class VoiceServer {
             if (player.isAlive() && !muted && !m.silenced) {
                 flags |= TALK;
             }
-            if (m.disabled || m.deafened) {
+            if (m.disabled || m.deafened || m.selfDeafened) {
                 flags |= DEAF;
             }
             if (player.isCrouching()) {
@@ -502,7 +508,8 @@ public final class VoiceServer {
             boolean talking = talking(m, now);
             if (talking != m.talking) {
                 m.talking = talking;
-                MinecraftForge.EVENT_BUS.post(talking ? new VoiceEvent.TalkStart(m.uuid, m.lastWhisper) : new VoiceEvent.TalkStop(m.uuid));
+                MinecraftForge.EVENT_BUS.post(talking ? new VoiceEvent.TalkStart(m.uuid, m.lastWhisper, m.lastShout)
+                        : new VoiceEvent.TalkStop(m.uuid));
             }
             if (!m.simulated && m.reported) {
                 String transport = transport(m);
@@ -548,6 +555,7 @@ public final class VoiceServer {
         }
         m.disabled = state.disabled();
         m.selfMuted = state.muted();
+        m.selfDeafened = state.deafened();
         m.clientUdp = state.udp();
         m.reported = true;
         UdpVoiceServer.Peer peer = m.peer;
@@ -633,17 +641,19 @@ public final class VoiceServer {
         if (index < 0 || (s.flags[index] & TALK) == 0) {
             return;
         }
-        boolean whisper = (flags & VoiceProtocol.F_WHISPER) != 0;
+        // Chuchoter, parler ou crier : choisi par le joueur, porté par les drapeaux de la trame.
+        int mode = VoiceProtocol.mode(flags);
         from.lastVoice = System.nanoTime();
         from.ended = (flags & VoiceProtocol.F_END) != 0;
-        from.lastWhisper = whisper;
+        from.lastWhisper = mode == VoiceProtocol.MODE_WHISPER;
+        from.lastShout = mode == VoiceProtocol.MODE_SHOUT;
         RELAYED.incrementAndGet();
         VoiceRouting.Recipients out = RECIPIENTS.get();
-        VoiceRouting.route(s, r, index, whisper, out);
+        VoiceRouting.route(s, r, index, mode, out);
         VoiceRouter[] hooks = routers;
         if (hooks.length > 0) {
             ApiView view = API_VIEW.get();
-            view.set(s, index, whisper, sequence, out);
+            view.set(s, index, mode, sequence, out);
             for (VoiceRouter hook : hooks) {
                 try {
                     hook.route(view, view);
@@ -677,7 +687,7 @@ public final class VoiceServer {
             sendTcp(to.player, new CaraCreaNetwork.VoiceDown(from.voiceId, sequence, f, (short) dx, (short) dy, (short) dz, copy));
         }
         if (ECHO && !from.simulated) {
-            int f = (whisper ? VoiceProtocol.F_WHISPER : 0) | end;
+            int f = VoiceProtocol.flag(mode) | end;
             if (u == null || from.peer == null || !from.clientUdp || !u.sendVoice(from.peer, from.voiceId, f, sequence, 0, 0, 0, buf, off, len)) {
                 sendTcp(from.player, new CaraCreaNetwork.VoiceDown(from.voiceId, sequence, f, (short) 0, (short) 0, (short) 0,
                         copy != null ? copy : Arrays.copyOfRange(buf, off, off + len)));
@@ -735,14 +745,14 @@ public final class VoiceServer {
     private static final class ApiView implements VoiceFrame, VoiceRecipients {
         private VoiceSnapshot s;
         private int speaker;
-        private boolean whisper;
+        private int mode;
         private int sequence;
         private VoiceRouting.Recipients out;
 
-        void set(VoiceSnapshot snapshot, int index, boolean whispering, int frame, VoiceRouting.Recipients recipients) {
+        void set(VoiceSnapshot snapshot, int index, int voiceMode, int frame, VoiceRouting.Recipients recipients) {
             s = snapshot;
             speaker = index;
-            whisper = whispering;
+            mode = voiceMode;
             sequence = frame;
             out = recipients;
         }
@@ -759,7 +769,12 @@ public final class VoiceServer {
 
         @Override
         public boolean whisper() {
-            return whisper;
+            return mode == VoiceProtocol.MODE_WHISPER;
+        }
+
+        @Override
+        public boolean shout() {
+            return mode == VoiceProtocol.MODE_SHOUT;
         }
 
         @Override
@@ -795,7 +810,7 @@ public final class VoiceServer {
             if (l < 0 || l == speaker || (s.flags[l] & DEAF) != 0 || (s.flags[l] & REACHABLE) == 0) {
                 return false;
             }
-            out.add(l, (effects & (NO_POSITION | RADIO | MUFFLED)) | (whisper ? VoiceProtocol.F_WHISPER : 0));
+            out.add(l, (effects & (NO_POSITION | RADIO | MUFFLED)) | VoiceProtocol.flag(mode));
             return true;
         }
 

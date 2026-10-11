@@ -4,10 +4,12 @@ import com.caracrea.CaraCreaConfig;
 import com.caracrea.client.CompositeSkins;
 import com.caracrea.network.CaraCreaNetwork.GroupInfo;
 import com.caracrea.voice.VoiceActivity;
+import com.caracrea.voice.net.VoiceProtocol;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -28,7 +30,9 @@ import java.util.UUID;
  * What the voice chat shows: a speaker above the head of whoever talks
  * (blue when whispering, green for your group, crossed out for players who
  * turned their voice chat off), your own microphone state at the bottom
- * left, the members of your group at the top left, and a recording mark.
+ * left (avec le haut-parleur barré quand vous avez coupé tout le monde, et le
+ * mode chuchoter / crier), the members of your group at the top left, and a
+ * recording mark.
  */
 public final class VoiceHud {
     private VoiceHud() {
@@ -105,7 +109,7 @@ public final class VoiceHud {
         int groupBottom = renderGroup(g, mc);
         // The zombies mode of the HeraliZ matches draws its round tally in the bottom left corner: our microphone
         // then goes to the top left, under the group list.
-        renderSelf(g, zombiesHud() ? groupBottom + 24 : height, adminMuted);
+        renderSelf(g, mc.font, zombiesHud() ? groupBottom + 24 : height, adminMuted);
         if (VoiceRecorder.recording()) {
             boolean blink = (System.currentTimeMillis() / 500) % 2 == 0;
             g.fill(width - 46, 6, width - 6, 18, 0x90101418);
@@ -116,8 +120,12 @@ public final class VoiceHud {
         }
     }
 
-    /** Your own state: talking (green, blue when whispering), muted (red), voice chat off (crossed speaker). */
-    private static void renderSelf(GuiGraphics g, int height, boolean adminMuted) {
+    /**
+     * Votre état, sur une ligne : le micro quand vous parlez (vert, bleu en chuchotant, orange en criant), coupé (rouge,
+     * barré) ou introuvable (gris) ; puis le haut-parleur barré quand vous avez coupé tout le monde ; puis le mode de voix
+     * (« Chuchoter », « Crier ») tant qu'il n'est pas « Parler ». Chat vocal coupé : seulement le haut-parleur barré.
+     */
+    private static void renderSelf(GuiGraphics g, Font font, int height, boolean adminMuted) {
         boolean disabled = !CaraCreaConfig.CLIENT.voiceChat.get();
         int x = 6;
         int y = height - 24;
@@ -129,10 +137,27 @@ public final class VoiceHud {
         boolean muted = CaraCreaConfig.CLIENT.muted.get() || adminMuted;
         boolean unavailable = VoiceClient.microphoneUnavailable();
         boolean talking = VoiceClient.transmitting();
-        if (!muted && !unavailable && !talking) {
-            return;
+        int mode = VoiceClient.voiceMode();
+        int modeColor = mode == VoiceProtocol.MODE_WHISPER ? 0xFF6FB6F0 : mode == VoiceProtocol.MODE_SHOUT ? 0xFFF0A24A : 0xFF6FD98A;
+        if (muted || unavailable || talking) {
+            renderMicrophone(g, x, y, unavailable ? 0xFF9A9A9A : muted ? 0xFFE0605A : modeColor, muted || unavailable);
+            x += 18;
         }
-        int color = unavailable ? 0xFF9A9A9A : muted ? 0xFFE0605A : VoiceClient.whisperHeld() ? 0xFF6FB6F0 : 0xFF6FD98A;
+        if (VoiceClient.everyoneMuted()) {
+            // Tout le monde coupé : le même haut-parleur barré que « chat vocal coupé », à côté du micro.
+            g.fill(x - 2, y - 2, x + 18, y + 18, 0x80101418);
+            g.blit(TabIcons.TEXTURE, x, y, 16, 16, TabIcons.OFF * 16, 0, 16, 16, TabIcons.COUNT * 16, 16);
+            x += 22;
+        }
+        if (mode != VoiceProtocol.MODE_TALK) {
+            Component label = Component.translatable(VoiceClient.modeKey(mode));
+            g.fill(x - 2, y + 2, x + font.width(label) + 3, y + 14, 0x80101418);
+            g.drawString(font, label, x + 1, y + 4, modeColor, false);
+        }
+    }
+
+    /** Le petit micro, barré de rouge quand il est coupé ou introuvable. */
+    private static void renderMicrophone(GuiGraphics g, int x, int y, int color, boolean crossed) {
         g.fill(x - 2, y - 2, x + 14, y + 18, 0x80101418);
         // A small microphone: capsule, cradle, stem and foot.
         g.fill(x + 4, y, x + 8, y + 9, color);
@@ -142,7 +167,7 @@ public final class VoiceHud {
         g.fill(x + 2, y + 10, x + 10, y + 11, color);
         g.fill(x + 5, y + 11, x + 7, y + 14, color);
         g.fill(x + 3, y + 14, x + 9, y + 15, color);
-        if (muted || unavailable) {
+        if (crossed) {
             for (int i = 0; i < 14; i++) {
                 g.fill(x - 1 + i, y + i, x + 1 + i, y + i + 2, 0xFFE0605A);
             }
