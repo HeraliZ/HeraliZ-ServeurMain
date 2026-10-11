@@ -22,6 +22,18 @@ if [ -f /var/www/azuriom/artisan ]; then
   echo "Azuriom : installé${v:+ (version $v)}"
 elif [ -f /var/www/azuriom/index.php ]; then
   echo "Azuriom : installeur en place, installation à terminer dans le navigateur (https://heraliz.fr)"
+  # ce que l'installeur vérifie avant son bouton « Télécharger » (même requête que sa page)
+  etat=$(curl -s -m 20 --resolve heraliz.fr:443:127.0.0.1 -H 'X-Requested-With: XMLHttpRequest' https://heraliz.fr/ 2> /dev/null)
+  python3 - "$etat" <<'PY'
+import json, sys
+try:
+    d = json.loads(sys.argv[1])
+except ValueError:
+    sys.exit("Installeur d'Azuriom : pas de réponse lisible")
+manque = [k for k, v in d.get("requirements", {}).items() if not v]
+print("Installeur d'Azuriom : " + ("tout est prêt pour « Télécharger »" if d.get("compatible") else "il manque : " + ", ".join(manque))
+      + (" ; Azuriom déjà téléchargé" if d.get("downloaded") else "") + (" ; déjà extrait" if d.get("extracted") else ""))
+PY
 else
   echo "Azuriom : absent"
 fi
