@@ -14,10 +14,10 @@ Nebula a besoin de Node.js 22 et de Java (pour l'installeur de Forge).
 import argparse
 import hashlib
 import json
-import os
 import shutil
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -97,6 +97,21 @@ def main():
         "address": config["serverAddress"], "mainServer": True, "autoconnect": True,
     })
     fiche_p.write_text(json.dumps(fiche, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    # Nebula ouvre l'installeur de Forge en fenêtre et attend qu'on clique (impossible sur GitHub) : on l'installe
+    # d'abord nous-mêmes, sans fenêtre, là où Nebula le cherche ; Nebula reprend ensuite cette installation.
+    nom = f"{MINECRAFT}-{FORGE}"
+    installeur = racine / "repo" / "lib" / "net" / "minecraftforge" / "forge" / nom / f"forge-{nom}-installer.jar"
+    if not installeur.exists():
+        installeur.parent.mkdir(parents=True, exist_ok=True)
+        url = f"https://maven.minecraftforge.net/net/minecraftforge/forge/{nom}/forge-{nom}-installer.jar"
+        print(f"[pack] téléchargement de {url}", flush=True)
+        urllib.request.urlretrieve(url, installeur)
+    cache = racine / "cache" / "forge" / nom
+    cache.mkdir(parents=True, exist_ok=True)
+    (cache / "launcher_profiles.json").write_text('{"profiles": {}}', encoding="utf-8")
+    print("[pack] installeur de Forge (sans fenêtre)", flush=True)
+    subprocess.run([java, "-Djava.awt.headless=true", "-jar", str(installeur), "--installClient", str(cache)], check=True)
 
     nebula(neb, "generate", "distro")
     distro_p = racine / "distribution.json"

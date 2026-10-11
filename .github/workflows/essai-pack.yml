@@ -34,6 +34,9 @@ jobs:
           npm ci || npm i
           npm run build
 
+      - name: Code de Nebula pour l'installeur de Forge
+        run: grep -n "verifyInstallerRan\|processWithInstaller\|Spawning\|cache\|versions" nebula/dist/resolver/forge/adapter/ForgeGradle3.resolver.js | head -n 60
+
       - name: Pack (essai)
         run: python3 outils/pack_launcher.py nebula pack --essai --version 0.0.1
 
