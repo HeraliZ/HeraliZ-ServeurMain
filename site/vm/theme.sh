@@ -48,6 +48,18 @@ if [ "$code" = 200 ] && grep -q 'themes/heraliz/css/heraliz.css' "$TRAVAIL/accue
 else
   echo "::warning::Accueil de https://heraliz.fr : réponse ${code:-aucune}, thème HeraliZ non vu dans la page"
 fi
+# fichiers appelés par l'accueil (styles, scripts, polices, images du thème et des actualités)
+total=0
+absents=0
+while read -r chemin; do
+  total=$((total + 1))
+  code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 "https://heraliz.fr$chemin" || true)
+  if [ "$code" != 200 ]; then
+    absents=$((absents + 1))
+    echo "::warning::Fichier du site absent : $chemin (réponse ${code:-aucune})"
+  fi
+done < <(grep -oE '(href|src)="https?://[^/"]+/(assets|storage)/[^"]+"' "$TRAVAIL/accueil.html" | cut -d'"' -f2 | sed -E 's#^https?://[^/]+##' | sort -u)
+echo "Fichiers de l'accueil (styles, scripts, polices, images) : $((total - absents)) sur $total s'ouvrent"
 pages=""
 for chemin in /shop /vote /reglement /news /user/login /user/register; do
   code=$(curl -s -o /dev/null -m 30 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 "https://heraliz.fr$chemin" || true)
