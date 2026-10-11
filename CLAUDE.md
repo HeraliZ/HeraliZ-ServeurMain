@@ -26,7 +26,8 @@ quand un choix leur revient.
    licences. Pour qu'un de ces mods devienne « à nous », on le refait nous-mêmes.
 6. **Ne pas toucher** aux jars de `serveur/mods-tiers/` et `client/mods-tiers/` sans demande explicite.
 7. **Aucun mot de passe, clé, jeton ou adresse de serveur dans le dépôt.** Les accès au Ptero sont dans les
-   « Secrets » GitHub (section 8), jamais dans un fichier.
+   « Secrets » GitHub (section 8), jamais dans un fichier. Seule exception : l'adresse publique de jeu
+   `play.heraliz.fr` (celle que tapent les joueurs, dans le launcher) ; jamais l'IP ni la machine du Ptero ou du site.
 8. **Pas de test en jeu par Claude** : les propriétaires testent eux-mêmes. Chaque compte rendu dit clairement ce qui
    n'a PAS été testé en jeu.
 9. **Contenu visuel nouveau** (modèle, arme, machine, interface importante) : d'abord des rendus à valider par le
@@ -62,6 +63,9 @@ quand un choix leur revient.
   joueurs en ligne, ping, extractions ouvertes, zones du clan).
 - Discord du serveur : https://discord.gg/heraliz (menu Échap et launcher). Noms de domaine heraliz.fr et heraliz.com :
   le site du serveur y sera mis plus tard (la boutique pourra y pointer).
+- Adresses : **play.heraliz.fr** = le serveur de jeu (launcher, `launcher/app/heraliz.json` ; enregistrement DNS `A`,
+  plus un `SRV` si le port n'est pas 25565) ; **heraliz.fr** = la machine du site (à part du Ptero). Réglages DNS dans
+  `launcher/docs/HERALIZ-DEPLOIEMENT.md`. La distribution du launcher doit porter la même adresse de jeu.
 
 ---
 
@@ -84,8 +88,9 @@ client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (
 launcher/                 le launcher des joueurs (Electron, Node.js) : `npm install` puis `npm start` dans ce dossier ;
                           doc dans launcher/README.md et launcher/docs/
 outils/                   fabrication et contrôles (Python 3.11+)
-monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; jamais envoyée au Ptero
-                          par la mise en ligne automatique
+site/vm/                  installation du site (Azuriom) sur sa VM, lancée par .github/workflows/site.yml (section 8 bis)
+monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; envoyée au Ptero seulement
+                          sur demande (case « deposer_carte », section 8)
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
@@ -364,11 +369,24 @@ Règles :
      restent), ceux du dépôt sont envoyés avec leurs réglages (jamais de base de données) ;
    - `config/`, `tacz/`, `heralisz_matchs/` et `mohist-config/` sont complétés ou mis à jour, sans rien supprimer ; `config/spartan/officiel.json` est remplacé
      (les bans et preuves de Spartan, dans `config/spartan/`, ne sont jamais touchés) ;
-   - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde : **les configs du dépôt font foi**, un réglage
-     changé à la main sur le serveur est écrasé au prochain envoi ;
+   - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde (nom lu dans le `server.properties` du Ptero) :
+     **les configs du dépôt font foi**, un réglage changé à la main sur le serveur est écrasé au prochain envoi ;
    - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
      racine du serveur se mettent à jour à la main) ;
 5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ».
+
+**Nouvelle carte** : « Run workflow » avec la case « deposer_carte ». Après la mise à jour habituelle, il envoie
+`monde/HeraliZ/` à côté du monde en service (`<monde>_nouvelle_<date>`, serveur toujours en marche, 2 fichiers à la fois,
+reprise si la liaison coupe), contrôle chaque fichier, y recopie les réglages `serverconfig/` du monde en service puis
+ceux de `defaultconfigs/` ; ensuite seulement il prévient les joueurs, arrête le serveur proprement, renomme l'ancien
+monde `<monde>_ancien_<date>` (jamais supprimé ; ses dossiers `_nether` / `_the_end` aussi, s'il y en a), donne son nom
+à la carte et redémarre. Un échec avant la bascule ne touche ni au serveur ni à son monde (carte incomplète laissée dans
+`<monde>_nouvelle_<date>`, à supprimer depuis le panel). Le nom du monde est lu dans le `server.properties` du Ptero
+(aujourd'hui `dayz_map`), obligatoirement : s'il est illisible, rien n'est changé (le 11/10, un repli sur le nom du dépôt
+a posé la carte dans `/HeraliZ`, que le serveur ne charge pas). Restent hors du monde, donc gardés : clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe, grades,
+bans. Repartent de zéro avec la carte : inventaires et positions des joueurs, zones d'extraction posées à la main,
+territoires pris. Les zones WorldGuard restent rattachées au nom du monde (mêmes coordonnées) : le résumé de l'envoi
+les liste, à refaire pour la nouvelle carte. L'ancien monde se supprime depuis le panel quand tout va bien.
 
 **Installation complète** (serveur Ptero neuf ou à remettre à neuf) : « Run workflow » avec la case
 « installation_complete » (et « redemarrer »). En plus de ce qui précède, il envoie Mohist (pris dans la Release
@@ -388,6 +406,29 @@ raison), `SPARTAN_LAUNCHER_SECRET` (quand le launcher signera les lancements). L
 
 Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SRG : ils ne tournent que sur les PC
 (section 6), pas sur GitHub. C'est pour ça qu'on vérifie AVANT d'envoyer.
+
+---
+
+## 8 bis. Le site HeraliZ (Azuriom)
+
+- Le site est sur sa propre VM, à part du Ptero : **heraliz.fr** (et www) y mène ; **play.heraliz.fr** mène au serveur
+  de jeu. Aucune IP ni aucun accès dans le dépôt.
+- `.github/workflows/site.yml`, bouton « Run workflow » de « Site HeraliZ » :
+  - **verifier** : regarde la VM sans rien changer (système, place, déjà installé, ports, pare-feu) et dit quels noms
+    heraliz.fr mènent à la VM, plus les renvois SRV de Minecraft ;
+  - **installer** : `site/vm/installer.sh` en root (sudo si besoin) : nginx, PHP 8.3 (8.2 ou 8.4 à défaut ; dépôt Sury
+    ou ondrej si le système n'en a pas), MariaDB (base et utilisateur `azuriom`), installeur officiel d'Azuriom dans
+    `/var/www/azuriom`, HTTPS Let's Encrypt pour les noms qui mènent à la VM (renouvelé seul), tâches planifiées
+    (`/etc/cron.d/azuriom`). Se relance sans danger : un site déjà installé n'est jamais retéléchargé. Le site lui-même
+    (thème, extension, boutique) se règle ensuite dans Azuriom, pas par ce bouton.
+- Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
+  port `3306`, base `azuriom`, utilisateur `azuriom`, mot de passe = secret `SITE_BDD_MDP` ; jeu : Minecraft Java ;
+  compte administrateur au choix du propriétaire).
+- Secrets : `SITE_SSH_HOTE` (IP de la VM), `SITE_SSH_UTILISATEUR`, `SITE_SSH_MDP`, `SITE_SSH_PORT` (seulement si ce n'est
+  pas 22), `SITE_BDD_MDP` (mot de passe de la base, choisi par le propriétaire). Le mot de passe ne passe jamais dans
+  une ligne de commande : le script est copié sur la VM (lisible par l'utilisateur seul), lancé puis effacé.
+- Répété sur une Ubuntu 24.04 (PHP 8.3, mot de passe à caractères spéciaux, sudo avec mot de passe, 2e passe) : rien
+  n'a encore été lancé sur la vraie VM au moment de l'écrire.
 
 ---
 
@@ -422,8 +463,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     dépôt pour toujours : pas de nouvel envoi pour un petit changement.
   - Le **monde en service** sur le Ptero (changé par les joueurs) n'est jamais dans Git. La mise en ligne automatique
     ne dépose et n'écrase jamais de monde : mettre la carte sur le Ptero est une étape à part, décidée par le
-    propriétaire (voir section 11, « Nouvelle carte » : trois mondes prévus, la carte n'est pas forcément le monde
-    principal `HeraliZ`).
+    propriétaire, faite par la case « deposer_carte » (section 8 ; voir aussi section 11, « Nouvelle carte » : trois
+    mondes prévus, la carte n'est pas forcément le monde principal `HeraliZ`).
   - **La carte a besoin de trois de nos mods à ces versions au moins** (sans eux, leurs blocs disparaissent au
     chargement du monde et le train roule sur l'ancien tracé). Ils ont été apportés du dossier de travail de la carte
     le 11/10 ; les joueurs doivent avoir les jars `-client` de la même fabrication :
@@ -524,6 +565,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - boutique : achats en argent ou en crédits du site, livrés tout de suite si le joueur est connecté, sinon à sa
   prochaine connexion, une seule fois. Règles de Mojang : pas d'avantage de jeu payant (les crédits n'y changent rien :
   c'est ce qu'ils achètent qui compte) ; liste des articles à décider avec le propriétaire ;
+- grades de la boutique, du plus petit au meilleur : **Rescapé** (cuivre `#E39B5E`), **Traqueur** (bleu glacé
+  `#8FD3FF`), **Roi de la Zone** (or `#FFC23A`). Pour l'instant, seulement le nom du grade en couleur (site, chat, liste
+  des joueurs), **sans icône** : insignes en métal, pixel art et survivants 3D avec une arme ont tous été refusés
+  (« trop IA », « pas du tout l'idée »). Les icônes reviendront plus tard, à partir d'un exemple fourni par le
+  propriétaire ou faites par un graphiste : ne pas en reproposer sans l'un ou l'autre ;
 - refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
 - retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
   Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,
@@ -548,8 +594,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
   leurs comptes dès le premier démarrage. `ops.json` n'est pas dans le dépôt.
-- **Monde** : `server.properties` → `level-name=HeraliZ`. Le dossier du monde doit porter ce nom. Les configs de
-  `serveur/defaultconfigs/` sont copiées par Forge dans tout nouveau monde.
+- **Monde** : sur le Ptero, le monde s'appelle **`dayz_map`** (`level-name` du `server.properties` du Ptero, lu par la
+  mise en ligne). Celui du dépôt dit encore `HeraliZ` : une « installation complète » le mettrait à la place et le
+  serveur créerait un monde neuf `HeraliZ` (aligner `level-name` avant). Avant le 11/10, la mise en ligne prenait le nom
+  du dépôt et copiait `serverconfig/` dans un dossier `HeraliZ/` du Ptero, qui n'est pas le monde en service. Les
+  configs de `serveur/defaultconfigs/` sont copiées par Forge dans tout nouveau monde.
 - **Nouvelle carte (en cours, hors dépôt)** : trois mondes séparés : le spawn, la carte (loot, villes, extractions) et
   les bases des joueurs. Au spawn, un PNJ téléportera au hasard sur la carte (à faire quand la carte sera finie). Les
   territoires des clans ne marchent aujourd'hui que dans l'overworld (`Territoires.monde()`) : à rendre réglable si la
@@ -558,9 +607,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   imposé de heraliz_interface 1.1.0).
 - **Protection des jars contre la décompilation** : pas encore faite. Ne jamais brouiller du code sous licence GPL ou
   LGPL (tactique, bunker, backpack, caracrea) ni du code d'un autre auteur.
-- **Site et comptes HeraliZ (Azuriom)** : hébergement à choisir, puis maquettes du thème, extension Azuriom (inscription
-  depuis le launcher, code par mail sur un nouveau PC, ticket signé pour Spartan), branchement du launcher, boutique et
-  votes. D'ici là, le launcher demande seulement le pseudo et AuthMe protège le compte en jeu.
+- **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis) ; ensuite : maquettes du
+  thème, extension Azuriom (inscription depuis le launcher, code par mail sur un nouveau PC, ticket signé pour
+  Spartan), branchement du launcher, boutique et votes. D'ici là, le launcher demande seulement le pseudo et AuthMe protège le compte en jeu.
 - **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé pas encore
   (il faut un serveur d'authentification, voir `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.

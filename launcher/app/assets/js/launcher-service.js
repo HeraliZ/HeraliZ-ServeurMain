@@ -14,13 +14,26 @@ const ProcessBuilder = require('./processbuilder')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution } = require('./security')
 
+// Machine et port réels du jeu : comme Minecraft, un enregistrement DNS « _minecraft._tcp.<domaine> » (SRV) peut
+// renvoyer le domaine vers un autre hôte ou un autre port. Minecraft ne le cherche que pour le port 25565.
+async function cibleJeu(host, port) {
+    if (port === 25565) {
+        try {
+            const [srv] = await dns.resolveSrv(`_minecraft._tcp.${host}`)
+            if (srv?.name && srv.port) return { host: srv.name, port: srv.port }
+        } catch { /* pas de renvoi : le domaine lui-même */ }
+    }
+    return { host, port }
+}
+
 // Temps d'ouverture d'une connexion au serveur, en millisecondes (null si injoignable) : le « ping » de l'accueil.
 async function mesurerPing(host, port) {
     try {
-        const { address } = await dns.lookup(host)
+        const cible = await cibleJeu(host, port)
+        const { address } = await dns.lookup(cible.host)
         return await new Promise(resolve => {
             const debut = process.hrtime.bigint()
-            const socket = net.connect({ host: address, port, timeout: 3000 })
+            const socket = net.connect({ host: address, port: cible.port, timeout: 3000 })
             const fin = value => { socket.destroy(); resolve(value) }
             socket.once('connect', () => fin(Math.max(1, Math.round(Number(process.hrtime.bigint() - debut) / 1e6))))
             socket.once('timeout', () => fin(null))
@@ -253,3 +266,4 @@ class LauncherService {
 }
 
 module.exports = LauncherService
+module.exports.cibleJeu = cibleJeu
