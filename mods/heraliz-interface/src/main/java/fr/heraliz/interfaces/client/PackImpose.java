@@ -83,17 +83,18 @@ public final class PackImpose {
         @SubscribeEvent
         public static void packs(AddPackFindersEvent e) {
             if (e.getPackType() != PackType.CLIENT_RESOURCES) return;
-            ajouter(e, TEXTURES, "resourcepacks/textures", "HeraliZ : textures");
-            ajouter(e, HERBE, "resourcepacks/herbe", "HeraliZ : herbe");
+            ajouter(e, TEXTURES, "resourcepacks/textures", "heraliz_interface.pack.textures");
+            ajouter(e, HERBE, "resourcepacks/herbe", "heraliz_interface.pack.herbe");
         }
 
+        /** {@code titre} : cle de traduction du nom du pack. */
         private static void ajouter(AddPackFindersEvent e, String id, String dossier, String titre) {
             Path chemin = ModList.get().getModFileById(HeralizInterface.MODID).getFile().findResource(dossier);
             if (!Files.isDirectory(chemin)) {
                 HeralizInterface.LOG.error("[interface] pack {} absent du jar ({})", id, dossier);
                 return;
             }
-            Pack pack = Pack.readMetaAndCreate(id, Component.literal(titre), true, n -> new PathPackResources(n, chemin, true),
+            Pack pack = Pack.readMetaAndCreate(id, Component.translatable(titre), true, n -> new PathPackResources(n, chemin, true),
                     PackType.CLIENT_RESOURCES, Pack.Position.TOP, PackSource.BUILT_IN);
             if (pack != null) e.addRepositorySource(c -> c.accept(pack));
         }

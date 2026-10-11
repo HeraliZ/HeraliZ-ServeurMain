@@ -986,5 +986,6 @@
   "heralisz_matchs.duel.classe.pompe": "POMPE",
   "heralisz_matchs.duel.classe.precision": "PRÉCISION",
   "heralisz_matchs.duel.classe.soutien": "SOUTIEN",
-  "heralisz_matchs.duel.classe.numero": "CLASSE %s"
+  "heralisz_matchs.duel.classe.numero": "CLASSE %s",
+  "heralisz_matchs.zombies.dev.aucune_partie": "aucune partie de zombies"
 }

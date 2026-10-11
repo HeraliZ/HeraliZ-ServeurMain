@@ -986,5 +986,6 @@
   "heralisz_matchs.duel.classe.pompe": "ДРОБОВИК",
   "heralisz_matchs.duel.classe.precision": "СНАЙПЕР",
   "heralisz_matchs.duel.classe.soutien": "ПОДДЕРЖКА",
-  "heralisz_matchs.duel.classe.numero": "КЛАСС %s"
+  "heralisz_matchs.duel.classe.numero": "КЛАСС %s",
+  "heralisz_matchs.zombies.dev.aucune_partie": "нет игры в режиме зомби"
 }
