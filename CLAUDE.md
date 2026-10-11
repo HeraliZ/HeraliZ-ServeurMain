@@ -454,6 +454,11 @@ raison) ; la clé des jetons du launcher est lue sur la VM du site (section 6 bi
 (H2) et repart sans historique. Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
 écrire ailleurs.
 
+**Contrôle avant fusion** (`.github/workflows/controle.yml`, « Contrôle avant fusion ») : sur chaque demande de fusion
+(pull request) vers `main` qui touche `mods/` ou `outils/`, mêmes fabrication et contrôles que la mise en ligne, sans
+rien envoyer au Ptero ni au site (caches de main lus seulement). Ne fusionner que quand il est vert : un mod qui ne
+compile pas reste hors de `main`.
+
 Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SRG : ils ne tournent que sur les PC
 (section 6), pas sur GitHub. C'est pour ça qu'on vérifie AVANT d'envoyer.
 
