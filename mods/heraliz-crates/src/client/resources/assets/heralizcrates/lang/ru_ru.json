@@ -170,5 +170,6 @@
   "subtitles.heralizcrates.theme.gem_reform": "Кристалл срастается",
   "subtitles.heralizcrates.theme.gem_chime": "Вспышка света",
   "subtitles.heralizcrates.theme.gem_shatter": "Кристалл разлетается",
-  "subtitles.heralizcrates.theme.gem_charge": "Кристалл заряжается"
+  "subtitles.heralizcrates.theme.gem_charge": "Кристалл заряжается",
+  "heralizcrates.commande.poids": "(вес %s, %s)"
 }

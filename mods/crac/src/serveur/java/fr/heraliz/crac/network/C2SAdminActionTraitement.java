@@ -42,7 +42,8 @@ public final class C2SAdminActionTraitement {
                         String group = AdminManager.groupLabel(server, msg.a());
                         int removed = AdminManager.wipeClaim(player, msg.a());
                         AdminManager.log(player, "wiped the claim of " + group + " (" + removed + " pieces/blocks removed)");
-                        player.displayClientMessage(Component.literal("§6[Admin] Wiped " + removed + " blocks/structures."), false);
+                        player.displayClientMessage(Component.translatableWithFallback("crac.admin.wiped",
+                            "§6[Admin] %s blocs ou structures effacés.", String.valueOf(removed)), false);
                         break;
                     case C2SAdminAction.TP_TO_PLAYER:
                         AdminManager.log(player, "teleported to " + AdminManager.playerLabel(server, msg.b()));
@@ -52,7 +53,8 @@ public final class C2SAdminActionTraitement {
                         if (AdminManager.setOwner(player, msg.a(), msg.b())) {
                             AdminManager.log(player, "made " + AdminManager.playerLabel(server, msg.b()) + " the owner of " + AdminManager.groupLabel(server, msg.a()));
                         } else {
-                            player.displayClientMessage(Component.literal("§c[Admin] That player is not a member of the group."), false);
+                            player.displayClientMessage(Component.translatableWithFallback("crac.admin.not_member",
+                                "§c[Admin] Ce joueur n'est pas membre du groupe."), false);
                         }
                         break;
                     default:

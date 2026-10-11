@@ -49,11 +49,12 @@ public final class C2SAdminConfigTraitement {
                         }
 
                         player.displayClientMessage(
-                            Component.literal(
-                                failed == 0
-                                    ? "§6[Admin] Applied " + applied + " config change" + (applied == 1 ? "" : "s") + "."
-                                    : "§6[Admin] Applied " + applied + ", §c" + failed + " refused (unknown key, wrong type or out of range)."
-                            ),
+                            failed == 0
+                                ? Component.translatableWithFallback("crac.admin.config_applied",
+                                    "§6[Admin] %s changement(s) de config appliqué(s).", String.valueOf(applied))
+                                : Component.translatableWithFallback("crac.admin.config_refused",
+                                    "§6[Admin] %s appliqué(s), §c%s refusé(s) (clé inconnue, mauvais type ou hors limites).",
+                                    String.valueOf(applied), String.valueOf(failed)),
                             false
                         );
                         AdminManager.sendSnapshot(player);

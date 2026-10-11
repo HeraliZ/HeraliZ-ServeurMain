@@ -210,15 +210,18 @@ public final class ZonesServeur {
     public static void commandes(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("zones").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("info").executes(c -> {
-                    StringBuilder b = new StringBuilder("Zones dangereuses : " + zones.size());
+                    // noms et genres des zones : ceux du fichier de la map (data/heraliz_zones.json), tels quels
+                    StringBuilder b = new StringBuilder();
                     for (Zone z : zones) b.append("\n - ").append(z.nom()).append(" (").append(z.genre()).append(")");
-                    String t = b.toString();
-                    c.getSource().sendSuccess(() -> Component.literal(t), false);
+                    Component t = Component.translatableWithFallback("heraliz_decors.zones.info", "Zones dangereuses : %s",
+                            String.valueOf(zones.size())).append(b.toString());
+                    c.getSource().sendSuccess(() -> t, false);
                     return 1;
                 }))
                 .then(Commands.literal("recharger").executes(c -> {
                     charger(c.getSource().getServer());
-                    c.getSource().sendSuccess(() -> Component.literal("Zones rechargées : " + zones.size()), true);
+                    c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_decors.zones.rechargees", "Zones rechargées : %s",
+                            String.valueOf(zones.size())), true);
                     return 1;
                 })));
     }

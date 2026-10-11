@@ -170,5 +170,6 @@
   "subtitles.heralizcrates.theme.gem_reform": "Cristal qui se ressoude",
   "subtitles.heralizcrates.theme.gem_chime": "Éclat de lumière",
   "subtitles.heralizcrates.theme.gem_shatter": "Cristal qui vole en éclats",
-  "subtitles.heralizcrates.theme.gem_charge": "Cristal qui se charge"
+  "subtitles.heralizcrates.theme.gem_charge": "Cristal qui se charge",
+  "heralizcrates.commande.poids": "(poids %s, %s)"
 }

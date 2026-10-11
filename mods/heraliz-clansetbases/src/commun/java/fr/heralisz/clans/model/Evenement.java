@@ -65,6 +65,12 @@ public record Evenement(long quand, Genre genre, List<String> args) {
             String etat = (e == null ? Perm.Etat.HERITE : e).name().toLowerCase(java.util.Locale.ROOT);
             return net.minecraft.network.chat.Component.translatable("evenement.permission." + etat, auteur, libelle, cible);
         }
+        if ((genre == Genre.PROMOTION || genre == Genre.RETROGRADATION) && args.size() >= 2) {
+            // le grade est ecrit en nom d'enum (ancien journal : libelle francais) : traduit dans la langue du joueur
+            Grade g = Grade.duJournal(args.get(1));
+            Object grade = g == null ? args.get(1) : net.minecraft.network.chat.Component.translatable(g.libelle());
+            return net.minecraft.network.chat.Component.translatable(genre.libelle(), args.get(0), grade);
+        }
         return net.minecraft.network.chat.Component.translatable(genre.libelle(), args.toArray());
     }
 

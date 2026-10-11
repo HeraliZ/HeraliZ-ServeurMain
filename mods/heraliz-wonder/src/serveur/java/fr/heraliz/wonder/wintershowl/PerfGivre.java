@@ -2,6 +2,9 @@ package fr.heraliz.wonder.wintershowl;
 
 import fr.heraliz.wonder.HeralizWonder;
 import fr.heraliz.wonder.WonderConfig;
+import fr.heraliz.wonder.serveur.Perf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.server.ServerLifecycleHooks;
@@ -47,19 +50,21 @@ public final class PerfGivre {
     public static void tick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
         if (++ticks < 600) return;
-        if (WonderConfig.lire(WonderConfig.JOURNAL_PERF) && tirs > 0) HeralizWonder.LOG.info("[wonder] perf givre {}", resume(true));
+        if (WonderConfig.lire(WonderConfig.JOURNAL_PERF) && tirs > 0) HeralizWonder.LOG.info("[wonder] perf givre {}", Perf.journal(resume(true)));
         else remettre();
     }
 
-    public static String resume(boolean raz) {
+    /** Resume depuis le dernier releve : message traduit du staff ; {@link Perf#journal} pour le journal. */
+    public static MutableComponent resume(boolean raz) {
         MinecraftServer s = ServerLifecycleHooks.getCurrentServer();
         double mspt = s == null ? 0 : s.getAverageTickTime();
-        String r = String.format(Locale.ROOT,
-                "%d ticks : %d tirs de givre (%.3f ms en tout, %.3f ms par tir, pire %.3f ms ; %d creatures touchees dont %d gelees d'un coup ; "
-                        + "%d lancers de rayon) ; suivi %.3f ms (pire tick %.3f ms, pic %d creatures suivies) ; %d gels, %d eclatements (%.3f ms dont "
-                        + "les regles de mort) ; tick serveur moyen %.2f ms",
-                ticks, tirs, nsTirs / 1e6, tirs == 0 ? 0 : nsTirs / 1e6 / tirs, maxTir / 1e6, touchees, geleesTir, lancers, nsSuivi / 1e6, maxTick / 1e6,
-                picSuivies, gels, eclats, nsEclats / 1e6, mspt);
+        MutableComponent r = Component.translatableWithFallback("heraliz_wonder.perf.givre",
+                "%s ticks : %s tirs de givre (%s ms en tout, %s ms par tir, pire %s ms ; %s créatures touchées dont %s gelées d'un coup ; "
+                        + "%s lancers de rayon) ; suivi %s ms (pire tick %s ms, pic %s créatures suivies) ; %s gels, %s éclatements (%s ms dont "
+                        + "les règles de mort) ; tick serveur moyen %s ms",
+                Perf.n(ticks), Perf.n(tirs), Perf.ms(nsTirs / 1e6), Perf.ms(tirs == 0 ? 0 : nsTirs / 1e6 / tirs), Perf.ms(maxTir / 1e6), Perf.n(touchees),
+                Perf.n(geleesTir), Perf.n(lancers), Perf.ms(nsSuivi / 1e6), Perf.ms(maxTick / 1e6), Perf.n(picSuivies), Perf.n(gels), Perf.n(eclats),
+                Perf.ms(nsEclats / 1e6), String.format(Locale.ROOT, "%.2f", mspt));
         if (raz) remettre();
         return r;
     }

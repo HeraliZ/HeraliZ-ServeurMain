@@ -75,7 +75,7 @@ public final class AdminManager {
         boolean ok = AUTH.isAuthed(p.getUUID(), permitted(p), AdminConfig.consolePassword.get());
         if (!ok && had) {
             log(p, "admin session ended (password changed, console disabled or operator level lost)");
-            p.displayClientMessage(Component.literal("§c[Admin] Your admin session has ended."), false);
+            p.displayClientMessage(Component.translatableWithFallback("crac.admin.session_ended", "§c[Admin] Ta session admin est terminée."), false);
             denyLogin(p);
         }
         return ok;
@@ -88,12 +88,14 @@ public final class AdminManager {
         AdminAuth.Result result = AUTH.login(
             p.getUUID(), permitted(p), AdminConfig.consolePassword.get(), password, now, AdminConfig.maxFailedLogins.get(), lockoutMs
         );
-        String reason = switch (result) {
+        Component reason = switch (result) {
             case OK -> null;
-            case DISABLED -> "The admin console is disabled on this server.";
-            case NO_PERMISSION -> "You need operator level " + AdminConfig.permissionLevel.get() + " to use the admin console.";
-            case LOCKED -> "Too many wrong passwords. Try again in " + (AUTH.lockoutLeft(p.getUUID(), now) + 999L) / 1000L + "s.";
-            case WRONG_PASSWORD -> "Wrong password.";
+            case DISABLED -> Component.translatableWithFallback("crac.admin.disabled", "§c[Admin] La console admin est désactivée sur ce serveur.");
+            case NO_PERMISSION -> Component.translatableWithFallback("crac.admin.no_permission",
+                "§c[Admin] Il faut le niveau d'opérateur %s pour utiliser la console admin.", String.valueOf(AdminConfig.permissionLevel.get()));
+            case LOCKED -> Component.translatableWithFallback("crac.admin.locked", "§c[Admin] Trop de mots de passe faux. Réessaie dans %s s.",
+                String.valueOf((AUTH.lockoutLeft(p.getUUID(), now) + 999L) / 1000L));
+            case WRONG_PASSWORD -> Component.translatableWithFallback("crac.admin.wrong_password", "§c[Admin] Mot de passe faux.");
         };
         if (reason == null) {
             log(p, "logged in to the admin console");
@@ -104,7 +106,7 @@ public final class AdminManager {
             } else {
                 Crac.LOGGER.info("[CRac admin] Refused console login for {} ({}): {}", p.getGameProfile().getName(), p.getUUID(), result);
             }
-            p.displayClientMessage(Component.literal("§c[Admin] " + reason), false);
+            p.displayClientMessage(reason, false);
             denyLogin(p);
         }
     }

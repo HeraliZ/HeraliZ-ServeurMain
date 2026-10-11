@@ -13,6 +13,7 @@ import fr.heraliz.casino.client.render.scene.Scene;
 import fr.heraliz.casino.client.render.scene.Sprite;
 
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -227,16 +228,15 @@ public final class BoardDesign extends MachineDesign<BoardView> {
     private void content(Scene s, BoardView v, Pose p, DrawList out, float g, int cycle, int tick) {
         float z = SZ + 0.15f;
         float shiftY = g > 0 ? (Ease.hash(tick * 19 + cycle) - 0.5f) * 1.6f * g : 0;
-        String[] titles = {"TOP GAGNANTS", "TOP PERDANTS", "TOP PARIEURS"};
-        String[] subs = {"PLUS GROS GAINS EN UNE PARTIE", "BILAN : GAINS MOINS MISES", "LES PLUS GROSSES MISES CUMULEES"};
-        String[] empty = {"AUCUN GAGNANT... POUR L'INSTANT", "PERSONNE N'A ENCORE PERDU", "AUCUNE MISE POUR L'INSTANT"};
+        String[] kinds = {"gagnants", "perdants", "parieurs"};
         int k = Math.max(0, Math.min(2, v.kind));
+        String title = I18n.get("heralizcasino.tableau.top_" + kinds[k]), sub = I18n.get("heralizcasino.tableau.sous_" + kinds[k]);
         int theme = k == 1 ? LOSS : k == 2 ? BET : GREEN;
-        row(p, out, titles[k], 8, SY1 - 1.9f + shiftY, z, 1.6f, theme, DrawList.T_CENTER | DrawList.T_BOLD, g, 0, tick, cycle);
-        row(p, out, subs[k], 8, SY1 - 3.5f + shiftY, z, 0.6f, DIM, DrawList.T_CENTER, g, 1, tick, cycle);
+        row(p, out, title, 8, SY1 - 1.9f + shiftY, z, 1.6f, theme, DrawList.T_CENTER | DrawList.T_BOLD, g, 0, tick, cycle);
+        row(p, out, sub, 8, SY1 - 3.5f + shiftY, z, 0.6f, DIM, DrawList.T_CENTER, g, 1, tick, cycle);
         int n = Math.min(v.names.length, Math.min(v.values.length, 8));
         if (n == 0) {
-            row(p, out, empty[k], 8, (SY0 + SY1) / 2 + shiftY, z, 0.95f, theme, DrawList.T_CENTER, g, 2, tick, cycle);
+            row(p, out, I18n.get("heralizcasino.tableau.vide_" + kinds[k]), 8, (SY0 + SY1) / 2 + shiftY, z, 0.95f, theme, DrawList.T_CENTER, g, 2, tick, cycle);
         }
         for (int i = 0; i < n; i++) {
             float y = SY1 - 5.4f - i * 1.45f + shiftY;
@@ -253,7 +253,7 @@ public final class BoardDesign extends MachineDesign<BoardView> {
             }
         }
         if (v.recordAmount > 0) {
-            String rec = "RECORD : " + v.recordName + " — " + fmt(v.recordAmount) + (v.recordMachine.isEmpty() ? "" : " (" + v.recordMachine + ")");
+            String rec = I18n.get("heralizcasino.tableau.record", v.recordName, fmt(v.recordAmount)) + (v.recordMachine.isEmpty() ? "" : " (" + v.recordMachine + ")");
             row(p, out, rec, 8, SY0 + 0.9f + shiftY, z, fit(rec, 0.7f, SX1 - SX0 - 1.2f, false), GOLD, DrawList.T_CENTER, g, 12, tick, cycle);
         }
     }

@@ -59,4 +59,21 @@ public enum Grade {
             return def;
         }
     }
+
+    /**
+     * Grade d'un argument du journal (PROMOTION, RETROGRADATION) : nom de l'enum, ou libelle francais ecrit par les
+     * anciennes versions du serveur (journaux deja enregistres). Null si inconnu.
+     */
+    @javax.annotation.Nullable
+    public static Grade duJournal(String s) {
+        if (s == null) return null;
+        for (Grade g : values()) if (g.name().equalsIgnoreCase(s)) return g;
+        return switch (s) {
+            case "Chef" -> CHEF;
+            case "Haut gradé" -> HAUT_GRADE;
+            case "Membre" -> MEMBRE;
+            case "Recrue" -> RECRUE;
+            default -> null;
+        };
+    }
 }

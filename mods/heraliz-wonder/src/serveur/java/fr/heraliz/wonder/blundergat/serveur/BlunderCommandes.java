@@ -7,11 +7,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fr.heraliz.wonder.Armes;
 import fr.heraliz.wonder.HeralizWonder;
 import fr.heraliz.wonder.blundergat.BlunderArmes;
+import fr.heraliz.wonder.serveur.Perf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -53,17 +55,17 @@ public final class BlunderCommandes {
                 .then(Commands.literal("pap").then(Commands.argument("niveau", IntegerArgumentType.integer(0, Armes.PAP_MAX)).executes(BlunderCommandes::pap)))
                 .then(Commands.literal("acide").executes(BlunderCommandes::acide))
                 .then(Commands.literal("perf").executes(c -> {
-                    String r = BlunderPerf.resume(true);
-                    HeralizWonder.LOG.info("[wonder] perf blundergat {}", r);
+                    MutableComponent r = BlunderPerf.resume(true);
+                    HeralizWonder.LOG.info("[wonder] perf blundergat {}", Perf.journal(r));
                     dire(c, r);
                     return 1;
                 }))
                 .then(Commands.literal("stress").then(Commands.argument("secondes", IntegerArgumentType.integer(1, 300)).executes(BlunderCommandes::stress))));
     }
 
-    private static void dire(CommandContext<CommandSourceStack> c, String s) {
-        if (c.getSource().getEntity() instanceof ServerPlayer p) p.displayClientMessage(Component.literal(s).withStyle(ChatFormatting.AQUA), true);
-        else HeralizWonder.LOG.info("[wonder] {}", s);
+    private static void dire(CommandContext<CommandSourceStack> c, MutableComponent s) {
+        if (c.getSource().getEntity() instanceof ServerPlayer p) p.displayClientMessage(s.withStyle(ChatFormatting.AQUA), true);
+        else HeralizWonder.LOG.info("[wonder] {}", Perf.journal(s));
     }
 
     private static int pap(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
@@ -71,7 +73,7 @@ public final class BlunderCommandes {
         ItemStack s = p.getMainHandItem();
         byte type = BlunderArmes.type(s);
         if (type == BlunderArmes.AUCUNE) {
-            dire(c, "Pas de Blundergat ni d'Acid Gat en main.");
+            dire(c, Component.translatableWithFallback("heraliz_wonder.banc.pas_blundergat", "Pas de Blundergat ni d'Acid Gat en main."));
             return 0;
         }
         int n = IntegerArgumentType.getInteger(c, "niveau");
@@ -89,7 +91,7 @@ public final class BlunderCommandes {
         BlunderNoms.renommer(s);
         p.getInventory().setChanged();
         HeralizWonder.LOG.info("[wonder] banc : {} au Pack-a-Punch niveau {}", BlunderArmes.nom(type), n);
-        dire(c, BlunderArmes.nom(type) + " : Pack-a-Punch niveau " + n);
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.pap", "%s : Pack-a-Punch niveau %s", BlunderArmes.nom(type), String.valueOf(n)));
         return 1;
     }
 
@@ -97,12 +99,12 @@ public final class BlunderCommandes {
         ServerPlayer p = c.getSource().getPlayerOrException();
         ItemStack s = p.getMainHandItem();
         if (!ModList.get().isLoaded("tacz") || !BlunderTacz.convertir(s)) {
-            dire(c, "Il faut tenir un Blundergat.");
+            dire(c, Component.translatableWithFallback("heraliz_wonder.banc.tenir_blundergat", "Il faut tenir un Blundergat."));
             return 0;
         }
         p.getInventory().setChanged();
         HeralizWonder.LOG.info("[wonder] banc : Blundergat converti en Acid Gat (Pack-a-Punch {})", Armes.pap(s));
-        dire(c, "Acid Gat !");
+        dire(c, Component.literal("Acid Gat !"));
         return 1;
     }
 
@@ -116,7 +118,8 @@ public final class BlunderCommandes {
         stressTick = 0;
         BlunderPerf.resume(true);
         HeralizWonder.LOG.info("[wonder] stress blundergat : 4 tireurs virtuels pendant {} s", stressTicks / 20);
-        dire(c, "Stress Blundergat : 4 tireurs virtuels pendant " + stressTicks / 20 + " s.");
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.stress_arme", "Stress %s : 4 tireurs virtuels pendant %s s.", "Blundergat",
+                String.valueOf(stressTicks / 20)));
         return 1;
     }
 
@@ -124,9 +127,9 @@ public final class BlunderCommandes {
         if (e.phase != TickEvent.Phase.END || stressJoueur == null) return;
         ServerPlayer p = stressJoueur;
         if (stressTick >= stressTicks || p.isRemoved()) {
-            String r = BlunderPerf.resume(true);
-            HeralizWonder.LOG.info("[wonder] stress blundergat termine : {}", r);
-            p.sendSystemMessage(Component.literal("Stress termine : " + r).withStyle(ChatFormatting.AQUA));
+            MutableComponent r = BlunderPerf.resume(true);
+            HeralizWonder.LOG.info("[wonder] stress blundergat termine : {}", Perf.journal(r));
+            p.sendSystemMessage(Component.translatableWithFallback("heraliz_wonder.banc.stress_fin", "Stress terminé : %s", r).withStyle(ChatFormatting.AQUA));
             stressJoueur = null;
             return;
         }

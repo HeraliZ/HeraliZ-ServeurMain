@@ -135,23 +135,27 @@ public final class ClanService {
         return v < 0 ? 0 : Math.min(BANQUE_MAX, v);
     }
 
-    /** « 2 j 3 h », « 1 h 03 », « 12 min », « 45 s ». */
-    public static String duree(long ms) {
+    /** « 2 j 3 h », « 1 h 03 », « 12 min », « 45 s » (traduit chez le joueur ; argument d'un message). */
+    public static MutableComponent duree(long ms) {
         long s = Math.max(0, ms) / 1000;
-        if (s >= 86_400) return (s / 86_400) + " j " + ((s % 86_400) / 3600) + " h";
-        if (s >= 3600) return (s / 3600) + " h " + String.format(Locale.ROOT, "%02d", (s % 3600) / 60);
-        if (s >= 60) return (s / 60) + " min";
-        return s + " s";
+        if (s >= 86_400) {
+            return Component.translatableWithFallback("heralisz_clans.duree.jours", "%s j %s h", String.valueOf(s / 86_400),
+                    String.valueOf((s % 86_400) / 3600));
+        }
+        if (s >= 3600) {
+            return Component.translatableWithFallback("heralisz_clans.duree.heures", "%s h %s", String.valueOf(s / 3600),
+                    String.format(Locale.ROOT, "%02d", (s % 3600) / 60));
+        }
+        if (s >= 60) return Component.translatableWithFallback("heralisz_clans.duree.minutes", "%s min", String.valueOf(s / 60));
+        return Component.translatableWithFallback("heralisz_clans.duree.secondes", "%s s", String.valueOf(s));
     }
 
-    /** Libelle francais d'un grade (journal d'evenements : les arguments sont des chaines). */
+    /**
+     * Grade ecrit dans le journal d'evenements (les arguments sont des chaines) : le nom de l'enum, traduit par le
+     * client ({@link Grade#duJournal}, qui lit aussi l'ancien libelle francais des journaux deja enregistres).
+     */
     public static String libelleGrade(Grade g) {
-        return switch (g) {
-            case CHEF -> "Chef";
-            case HAUT_GRADE -> "Haut gradé";
-            case MEMBRE -> "Membre";
-            case RECRUE -> "Recrue";
-        };
+        return g.name();
     }
 
     /** Nom affiche d'un joueur : en ligne, sinon dernier nom connu dans le clan ou le lien. */
@@ -508,7 +512,7 @@ public final class ClanService {
         if (ex != null) {
             info(ex, "msg.vous_exclu", c.tag);
             ClansNet.toPlayer(ex, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.INFO,
-                    List.of(Component.translatable("msg.vous_exclu", c.tag).getString()), "", null));
+                    ServerHandlers.cleEtArgs("msg.vous_exclu", c.tag), "", null));
             Sync.envoyerSnapshot(ex);
         }
         Sync.diffuserTags(c, null, ex);
@@ -682,7 +686,7 @@ public final class ClanService {
         for (ServerPlayer m : enLigne) {
             m.sendSystemMessage(Component.translatable("msg.dissous", c.tag));
             ClansNet.toPlayer(m, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.INFO,
-                    List.of(Component.translatable("msg.dissous", c.tag).getString()), "", null));
+                    ServerHandlers.cleEtArgs("msg.dissous", c.tag), "", null));
             ClansNet.toPlayer(m, new Packets.ClanSnapshotS2C(null));
         }
         if (server != null) {
@@ -748,7 +752,7 @@ public final class ClanService {
             Quetes.mouvementBanque(c, -montant); // le net depose recule : un cycle depot/retrait ne compte pas
         }
         ClansNet.toPlayer(p, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.INFO,
-                List.of(Component.translatable(depot ? "msg.depot" : "msg.retrait", eco.format(montant)).getString()), "banque", null));
+                ServerHandlers.cleEtArgs(depot ? "msg.depot" : "msg.retrait", eco.format(montant)), "banque", null));
         changement(c);
         // les deux cotes sont ecrits tout de suite, le cote debite en premier
         if (depot) {
@@ -890,7 +894,7 @@ public final class ClanService {
         if (chef != null) {
             Component texte = Component.translatable("msg.banniere_reinitialisee", c.tag);
             chef.sendSystemMessage(texte.copy().withStyle(s -> s.withColor(0xFFB347)));
-            ClansNet.toPlayer(chef, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.INFO, List.of(ServerHandlers.coupe(texte.getString())), "",
+            ClansNet.toPlayer(chef, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.INFO, ServerHandlers.cleEtArgs("msg.banniere_reinitialisee", c.tag), "",
                     Banniere.DEFAUT));
         }
         return true;

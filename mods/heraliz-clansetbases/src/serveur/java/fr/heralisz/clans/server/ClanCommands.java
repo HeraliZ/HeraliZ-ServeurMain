@@ -348,9 +348,10 @@ public final class ClanCommands {
         Reponses.ligne(src, Component.translatable("msg.admin.info_quetes", Quetes.tailleJour(), Quetes.tailleSemaine(), Quetes.fichier().toString()));
         if (store != null) {
             for (Clan c : store.classement()) {
-                Reponses.ligne(src, Component.literal("[" + c.tag + "] " + c.nom + " · niv. " + c.niveau + " (" + c.xp + "/"
-                        + Niveaux.xpPour(c.niveau) + " XP) · " + c.membres.size() + " membres · banque " + eco.format(c.banque) + " · zones "
-                        + Territoires.compterTenus(c.id)));
+                Reponses.ligne(src, Component.translatableWithFallback("heralisz_clans.cmd.admin_ligne",
+                        "[%s] %s · niv. %s (%s/%s XP) · %s membres · banque %s · zones %s", c.tag, c.nom, String.valueOf(c.niveau),
+                        String.valueOf(c.xp), String.valueOf(Niveaux.xpPour(c.niveau)), String.valueOf(c.membres.size()), eco.format(c.banque),
+                        String.valueOf(Territoires.compterTenus(c.id))));
             }
         }
         return 1;

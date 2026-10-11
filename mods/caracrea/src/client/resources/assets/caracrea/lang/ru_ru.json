@@ -447,5 +447,9 @@
   "caracrea.voice.managed.svc.hint": "На этом сервере голоса передаёт Simple Voice Chat: настройте микрофон, звук и группы в его собственных настройках. Голосовой чат CaraCrea не использует ни ваш микрофон, ни динамики.",
   "caracrea.voice.managed.open_svc": "Открыть Simple Voice Chat",
   "caracrea.voice.managed.off": "Голосовой чат не активен на этом сервере",
-  "caracrea.voice.managed.off.hint": "Сервер не включил голосовой чат CaraCrea: ничего не записывается и не воспроизводится."
+  "caracrea.voice.managed.off.hint": "Сервер не включил голосовой чат CaraCrea: ничего не записывается и не воспроизводится.",
+  "caracrea.voice.duration.days": "%s д %s ч",
+  "caracrea.voice.duration.hours": "%s ч %s мин",
+  "caracrea.voice.duration.minutes": "%s мин",
+  "caracrea.voice.duration.seconds": "%s с"
 }

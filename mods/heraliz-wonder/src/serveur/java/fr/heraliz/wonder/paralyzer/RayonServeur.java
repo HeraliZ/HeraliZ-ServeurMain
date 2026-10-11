@@ -7,6 +7,8 @@ import fr.heraliz.wonder.WonderConfig;
 import fr.heraliz.wonder.serveur.Degats;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -306,9 +308,10 @@ public final class RayonServeur {
         n = 0;
     }
 
-    public static String etat() {
+    public static MutableComponent etat() {
         int g = 0;
         for (int k = 0; k < n; k++) if (GELE[k]) g++;
-        return n + " creatures exposees dont " + g + " figees";
+        return Component.translatableWithFallback("heraliz_wonder.banc.paralyzer_etat", "%s créatures exposées dont %s figées",
+                String.valueOf(n), String.valueOf(g));
     }
 }

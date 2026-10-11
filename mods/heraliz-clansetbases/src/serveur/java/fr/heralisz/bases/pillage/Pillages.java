@@ -380,14 +380,16 @@ public final class Pillages {
         RAIDS.clear();
     }
 
-    /** Joueurs en ligne d'une session (admin, journal). */
-    static List<String> noms(UUID base) {
-        List<String> l = new ArrayList<>();
+    /** Joueurs d'une session (admin) : « nom[TAG] », suivi de « (hors ligne) » traduit chez le joueur. */
+    static List<Component> noms(UUID base) {
+        List<Component> l = new ArrayList<>();
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         for (Session s : SESSIONS.values()) {
             if (!s.base.equals(base)) continue;
             boolean enLigne = server != null && server.getPlayerList().getPlayer(s.joueur) != null;
-            l.add(s.nom + "[" + s.tag + "]" + (enLigne ? "" : " (hors ligne)"));
+            String nom = s.nom + "[" + s.tag + "]";
+            l.add(enLigne ? Component.literal(nom)
+                    : Component.translatableWithFallback("heralisz_bases.cmd.pillard_hors_ligne", "%s (hors ligne)", nom));
         }
         return l;
     }

@@ -22,6 +22,7 @@ import fr.heralisz.clans.model.Perm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -182,9 +183,20 @@ public final class BaseService {
         BasesNet.toPlayer(p, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.REFUS, cle, List.of(), ""));
     }
 
+    /**
+     * Arguments d'une notice en texte. Un composant traduisible sans parametre (libelle de permission) part en cle : le
+     * client le traduit dans la langue du joueur (le serveur dedie n'a pas les fichiers de langue).
+     */
     static List<String> chaines(Object... args) {
         List<String> l = new ArrayList<>(args.length);
-        for (Object o : args) l.add(o instanceof Component c ? c.getString() : String.valueOf(o));
+        for (Object o : args) {
+            if (o instanceof Component c) {
+                l.add(c.getContents() instanceof TranslatableContents t && t.getArgs().length == 0 && c.getSiblings().isEmpty()
+                        ? t.getKey() : c.getString());
+            } else {
+                l.add(String.valueOf(o));
+            }
+        }
         return l;
     }
 

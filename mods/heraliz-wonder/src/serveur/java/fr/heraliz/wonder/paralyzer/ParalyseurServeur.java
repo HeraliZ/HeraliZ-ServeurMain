@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import fr.heraliz.wonder.HeralizWonder;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -30,8 +31,8 @@ public final class ParalyseurServeur {
     private static void commandes(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("wonderpz").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("perf").executes(c -> {
-                    String r = PerfParalyseur.resume();
-                    c.getSource().sendSuccess(() -> Component.literal("Paralyzer : " + r), false);
+                    MutableComponent r = PerfParalyseur.resume();
+                    c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_wonder.banc.paralyzer_perf", "Paralyzer : %s", r), false);
                     return Command.SINGLE_SUCCESS;
                 })));
     }

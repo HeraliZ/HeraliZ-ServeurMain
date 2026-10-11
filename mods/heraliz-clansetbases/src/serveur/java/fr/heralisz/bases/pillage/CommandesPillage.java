@@ -16,6 +16,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -126,7 +127,11 @@ public final class CommandesPillage {
             if (b == null || vues.contains(b)) continue;
             vues.add(b);
             String att = String.join(", ", Pillages.attaquants(b.clan));
-            String noms = String.join(", ", Pillages.noms(b.clan));
+            MutableComponent noms = Component.empty();
+            for (Component n : Pillages.noms(b.clan)) {
+                if (!noms.getSiblings().isEmpty()) noms.append(", ");
+                noms.append(n);
+            }
             Reponses.ok(src, Component.translatable("cmd.heralisz_bases.pillages", Pillages.tagDe(b), att, Pillages.pillards(b.clan), noms));
         }
         return vues.size();

@@ -2,6 +2,9 @@ package fr.heraliz.wonder.blundergat.serveur;
 
 import fr.heraliz.wonder.HeralizWonder;
 import fr.heraliz.wonder.WonderConfig;
+import fr.heraliz.wonder.serveur.Perf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.server.ServerLifecycleHooks;
@@ -50,20 +53,22 @@ public final class BlunderPerf {
     public static void tick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
         if (++ticks < 600) return;
-        if (WonderConfig.lire(WonderConfig.JOURNAL_PERF) && (tirs + impacts) > 0) HeralizWonder.LOG.info("[wonder] perf blundergat {}", resume(true));
+        if (WonderConfig.lire(WonderConfig.JOURNAL_PERF) && (tirs + impacts) > 0) HeralizWonder.LOG.info("[wonder] perf blundergat {}", Perf.journal(resume(true)));
         else remettre();
     }
 
-    public static String resume(boolean raz) {
+    /** Resume depuis le dernier releve : message traduit du staff ; {@link Perf#journal} pour le journal. */
+    public static MutableComponent resume(boolean raz) {
         MinecraftServer s = ServerLifecycleHooks.getCurrentServer();
         double mspt = s == null ? 0 : s.getAverageTickTime();
         double total = (nsTir + nsCart + nsExpl + nsEclats) / 1e6;
-        String r = String.format(Locale.ROOT,
-                "%d ticks : %d tirs d'acide (%d cartouches, pic %d en meme temps), vol+suivi %.3f ms, %d explosions (%.3f ms, %d creatures, "
-                        + "%d lancers de rayon) ; %d impacts d'obus en %d paquets (%.3f ms) ; total %.3f ms (%.4f ms/tick) ; pire %.3f ms ; "
-                        + "tick serveur moyen %.2f ms",
-                ticks, tirs, cartouches, picCartouches, nsCart / 1e6, explosions, nsExpl / 1e6, touchees, lancers, impacts, paquets, nsEclats / 1e6,
-                total, ticks == 0 ? 0 : total / ticks, maxNs / 1e6, mspt);
+        MutableComponent r = Component.translatableWithFallback("heraliz_wonder.perf.blundergat",
+                "%s ticks : %s tirs d'acide (%s cartouches, pic %s en même temps), vol+suivi %s ms, %s explosions (%s ms, %s créatures, "
+                        + "%s lancers de rayon) ; %s impacts d'obus en %s paquets (%s ms) ; total %s ms (%s ms/tick) ; pire %s ms ; "
+                        + "tick serveur moyen %s ms",
+                Perf.n(ticks), Perf.n(tirs), Perf.n(cartouches), Perf.n(picCartouches), Perf.ms(nsCart / 1e6), Perf.n(explosions), Perf.ms(nsExpl / 1e6),
+                Perf.n(touchees), Perf.n(lancers), Perf.n(impacts), Perf.n(paquets), Perf.ms(nsEclats / 1e6), Perf.ms(total),
+                String.format(Locale.ROOT, "%.4f", ticks == 0 ? 0 : total / ticks), Perf.ms(maxNs / 1e6), String.format(Locale.ROOT, "%.2f", mspt));
         if (raz) remettre();
         return r;
     }

@@ -63,7 +63,7 @@ public final class ClientGivre {
             String r = FxGivre.stats();
             HeralizWonder.LOG.info("[wonder] fx {}", r);
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) mc.player.displayClientMessage(Component.literal("Effets du givre : voir le journal"), true);
+            if (mc.player != null) mc.player.displayClientMessage(Component.translatable("heraliz_wonder.journal.effets_givre"), true);
             return Command.SINGLE_SUCCESS;
         }));
     }

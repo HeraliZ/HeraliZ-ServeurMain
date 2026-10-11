@@ -5,6 +5,8 @@ import fr.heraliz.wonder.HeralizWonder;
 import fr.heraliz.wonder.Regles;
 import fr.heraliz.wonder.serveur.Degats;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -442,9 +444,10 @@ public final class Givre {
     }
 
     /** Etat pour le banc : creatures suivies, gelees, file. */
-    public static String etat() {
+    public static MutableComponent etat() {
         int g = 0;
         for (int i = 0; i < n; i++) if (GELEE[i]) g++;
-        return n + " creatures suivies (" + g + " gelees), " + fTaille + " coups en route";
+        return Component.translatableWithFallback("heraliz_wonder.banc.givre_etat", "%s créatures suivies (%s gelées), %s coups en route",
+                String.valueOf(n), String.valueOf(g), String.valueOf(fTaille));
     }
 }

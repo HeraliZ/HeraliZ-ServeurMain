@@ -128,5 +128,12 @@
   "onglet.heraliz_decors": "HeraliZ · Декор",
   "msg.heraliz_decors.zone.gaz": "§a⚠ Зона ядовитого газа: нужен противогаз или костюм Hazmat",
   "msg.heraliz_decors.zone.radiation": "§e☢ Зона радиации: обязателен костюм Hazmat",
-  "msg.heraliz_decors.zone.froid": "§b❄ Сильный мороз: рекомендуется арктический костюм"
+  "msg.heraliz_decors.zone.froid": "§b❄ Сильный мороз: рекомендуется арктический костюм",
+  "heraliz_decors.brume.info_fixee": "Туман: %s (зафиксирован)",
+  "heraliz_decors.brume.info": "Туман: %s, смена через %s мин %s с",
+  "heraliz_decors.brume.auto": "Туман: автоматический выбор",
+  "heraliz_decors.brume.profils": "Профили: %s",
+  "heraliz_decors.brume.fixee": "Туман зафиксирован: %s (/brume auto — вернуть автовыбор)",
+  "heraliz_decors.zones.info": "Опасные зоны: %s",
+  "heraliz_decors.zones.rechargees": "Зоны перезагружены: %s"
 }

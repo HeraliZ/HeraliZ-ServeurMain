@@ -7,6 +7,7 @@ import fr.heraliz.crac.build.BuildConfig;
 import fr.heraliz.crac.build.model.PieceKind;
 import fr.heraliz.crac.build.model.Tier;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -137,15 +138,21 @@ public final class Costs {
         }
     }
 
+    /**
+     * "16x Stick, 4x Nail", or "free". The item names stay translatable: a refusal built on the server shows them in the
+     * player's language, not in the server's.
+     */
     public static Component describe(List<BuildCost> cost) {
         if (cost.isEmpty()) {
             return Component.translatable("crac.cost.free");
         }
-        StringBuilder sb = new StringBuilder();
+        MutableComponent out = Component.empty();
+        boolean first = true;
         for (BuildCost c : cost) {
-            if (sb.length() > 0) sb.append(", ");
-            sb.append(c.count()).append("x ").append(c.displayName().getString());
+            if (!first) out.append(", ");
+            first = false;
+            out.append(c.count() + "x ").append(c.displayName());
         }
-        return Component.literal(sb.toString());
+        return out;
     }
 }

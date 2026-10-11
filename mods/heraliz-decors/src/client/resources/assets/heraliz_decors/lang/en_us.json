@@ -128,5 +128,12 @@
  "onglet.heraliz_decors": "HeraliZ · Decors",
  "msg.heraliz_decors.zone.gaz": "§a⚠ Toxic gas zone: gas mask or Hazmat suit",
  "msg.heraliz_decors.zone.radiation": "§e☢ Irradiated zone: Hazmat suit required",
- "msg.heraliz_decors.zone.froid": "§b❄ Extreme cold: arctic suit advised"
+ "msg.heraliz_decors.zone.froid": "§b❄ Extreme cold: arctic suit advised",
+ "heraliz_decors.brume.info_fixee": "Fog: %s (locked)",
+ "heraliz_decors.brume.info": "Fog: %s, changes in %s min %s s",
+ "heraliz_decors.brume.auto": "Fog: automatic draw",
+ "heraliz_decors.brume.profils": "Profiles: %s",
+ "heraliz_decors.brume.fixee": "Fog locked: %s (/brume auto to resume the draw)",
+ "heraliz_decors.zones.info": "Danger zones: %s",
+ "heraliz_decors.zones.rechargees": "Zones reloaded: %s"
 }

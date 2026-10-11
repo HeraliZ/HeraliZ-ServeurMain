@@ -36,7 +36,7 @@ public final class BlunderClient {
             String r = FxBlunder.stats();
             HeralizWonder.LOG.info("[wonder] fx blundergat {}", r);
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) mc.player.displayClientMessage(Component.literal("Effets Blundergat : voir le journal"), true);
+            if (mc.player != null) mc.player.displayClientMessage(Component.translatable("heraliz_wonder.journal.effets_blundergat"), true);
             return Command.SINGLE_SUCCESS;
         }));
     }

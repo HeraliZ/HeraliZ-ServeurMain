@@ -17,6 +17,8 @@ import fr.heraliz.casino.game.cards.BlackjackTable;
 import fr.heraliz.casino.game.cards.Cards;
 
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
+import java.util.Locale;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 
@@ -248,9 +250,11 @@ public final class BlackjackDesign extends MachineDesign<BlackjackView> {
         float[] glovePos = null;
         if (!s.item) {
             double bp = t.rules().blackjackPays;
-            String pays = Math.abs(bp - 1.5) < 0.01 ? "3 CONTRE 2" : Math.abs(bp - 1.2) < 0.01 ? "6 CONTRE 5" : Math.abs(bp - 1.0) < 0.01 ? "1 CONTRE 1" : "x" + bp;
-            flatText(p, out, "BLACKJACK PAIE " + pays, 8f, -1.3f, 0.95f, CHALK, 22f, false);
-            flatText(p, out, t.rules().dealerHitsSoft17 ? "LE CROUPIER TIRE SUR 17 SOUPLE" : "LE CROUPIER RESTE SUR 17", 8f, 0.3f, 0.62f, 0xC8C0A8, 22f, false);
+            String pays = Math.abs(bp - 1.5) < 0.01 ? I18n.get("heralizcasino.bj.contre", "3", "2") : Math.abs(bp - 1.2) < 0.01 ? I18n.get("heralizcasino.bj.contre", "6", "5")
+                    : Math.abs(bp - 1.0) < 0.01 ? I18n.get("heralizcasino.bj.contre", "1", "1") : "x" + bp;
+            flatText(p, out, I18n.get("heralizcasino.bj.paie", pays), 8f, -1.3f, 0.95f, CHALK, 22f, false);
+            flatText(p, out, I18n.get(t.rules().dealerHitsSoft17 ? "screen.heralizcasino.bj.h17" : "screen.heralizcasino.bj.s17").toUpperCase(Locale.ROOT), 8f, 0.3f, 0.62f,
+                    0xC8C0A8, 22f, false);
         }
         if (!s.item && t.phase != BlackjackTable.IDLE) {
             // ---- cartes du joueur
@@ -298,15 +302,15 @@ public final class BlackjackDesign extends MachineDesign<BlackjackView> {
                 if (landed == 0) continue;
                 int total = Cards.total(t.hands[h], landed);
                 float[] c = playerCard(t, h, 0);
-                String txt = total > 21 ? "SAUTE" : (landed == 2 && total == 21 && t.handCount == 1 ? "BLACKJACK" : String.valueOf(total));
+                String txt = total > 21 ? I18n.get("heralizcasino.bj.saute") : (landed == 2 && total == 21 && t.handCount == 1 ? "BLACKJACK" : String.valueOf(total));
                 int col = total > 21 ? 0xFF5A5A : (t.active == h && t.phase == BlackjackTable.PLAYER && t.handCount > 1 ? GOLD_RGB : 0xFFFFFF);
                 flatText(p, out, txt, c[0] - 2.6f, c[1] + 0.2f, 1.1f, col, 3.6f, true);
                 if (settled) {
                     String res = switch (t.results[h]) {
-                        case BlackjackTable.R_WIN -> "GAGNE";
+                        case BlackjackTable.R_WIN -> I18n.get("heralizcasino.bj.gagne");
                         case BlackjackTable.R_BLACKJACK -> "BLACKJACK !";
-                        case BlackjackTable.R_PUSH -> "EGALITE";
-                        default -> "PERDU";
+                        case BlackjackTable.R_PUSH -> I18n.get("heralizcasino.bj.egalite");
+                        default -> I18n.get("heralizcasino.bj.perdu");
                     };
                     int rc = t.results[h] == BlackjackTable.R_WIN || t.results[h] == BlackjackTable.R_BLACKJACK ? GOLD_RGB
                             : t.results[h] == BlackjackTable.R_PUSH ? 0xCFE8FF : 0xFF6A6A;
@@ -321,7 +325,7 @@ public final class BlackjackDesign extends MachineDesign<BlackjackView> {
                 int k = 0;
                 for (int i = 0; i < t.dealerSize && k < dl; i++) if (t.dealerTicks[i] <= now && (i != 1 || now >= t.revealTick + 3)) shown[k++] = t.dealer[i];
                 int total = Cards.total(shown, dl);
-                flatText(p, out, total > 21 ? "SAUTE" : String.valueOf(total), 1.6f, -4.6f, 1.1f, total > 21 ? 0xFF5A5A : 0xCFE8FF);
+                flatText(p, out, total > 21 ? I18n.get("heralizcasino.bj.saute") : String.valueOf(total), 1.6f, -4.6f, 1.1f, total > 21 ? 0xFF5A5A : 0xCFE8FF);
             }
             if (settled && t.totalPayout() > t.totalBet()) {
                 out.billboard(p, Sprite.FLARE, 8, TOP + 2, 7, 6f * (1 - Ease.range(fnow, t.settleTick + 20, t.settleTick + 60)), s.time * 2, GOLD_RGB, 0.3f);

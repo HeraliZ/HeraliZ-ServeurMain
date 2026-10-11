@@ -8,11 +8,13 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fr.heraliz.wonder.HeralizWonder;
 import fr.heraliz.wonder.jetgun.JetGun;
+import fr.heraliz.wonder.serveur.Perf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -62,17 +64,21 @@ public final class JetCommandes {
                 .then(Commands.literal("surchauffe").executes(JetCommandes::surchauffe))
                 .then(Commands.literal("pap").then(Commands.argument("niveau", IntegerArgumentType.integer(0, 3)).executes(JetCommandes::pap)))
                 .then(Commands.literal("perf").executes(c -> {
-                    String r = Aspiration.resume(true);
-                    HeralizWonder.LOG.info("[wonder] perf {}", r);
+                    MutableComponent r = Aspiration.resume(true);
+                    HeralizWonder.LOG.info("[wonder] perf {}", Perf.journal(r));
                     dire(c, r);
                     return 1;
                 }))
                 .then(Commands.literal("stress").then(Commands.argument("secondes", IntegerArgumentType.integer(1, 300)).executes(JetCommandes::stress))));
     }
 
-    private static void dire(CommandContext<CommandSourceStack> c, String s) {
-        if (c.getSource().getEntity() instanceof ServerPlayer p) p.displayClientMessage(Component.literal(s).withStyle(ChatFormatting.AQUA), true);
-        else HeralizWonder.LOG.info("[wonder] {}", s);
+    private static void dire(CommandContext<CommandSourceStack> c, MutableComponent s) {
+        if (c.getSource().getEntity() instanceof ServerPlayer p) p.displayClientMessage(s.withStyle(ChatFormatting.AQUA), true);
+        else HeralizWonder.LOG.info("[wonder] {}", Perf.journal(s));
+    }
+
+    private static MutableComponent pasDeJetGun() {
+        return Component.translatableWithFallback("heraliz_wonder.banc.pas_jetgun", "Pas de Jet Gun en main.");
     }
 
     private static ItemStack jetgun(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
@@ -88,7 +94,7 @@ public final class JetCommandes {
     private static int chaleur(CommandContext<CommandSourceStack> c, boolean gel) throws CommandSyntaxException {
         ItemStack s = jetgun(c);
         if (s.isEmpty()) {
-            dire(c, "Pas de Jet Gun en main.");
+            dire(c, pasDeJetGun());
             return 0;
         }
         int v = IntegerArgumentType.getInteger(c, "pourcent");
@@ -97,7 +103,9 @@ public final class JetCommandes {
         t.putBoolean(JetGun.NBT_VERROU, false);
         gelJoueur = gel && v > 0 ? c.getSource().getPlayerOrException() : null;
         gelValeur = v * JetGun.CHALEUR_MAX / 100f;
-        dire(c, "Jet Gun : chaleur " + v + " %" + (gelJoueur != null ? " (tenue)" : ""));
+        dire(c, gelJoueur != null
+                ? Component.translatableWithFallback("heraliz_wonder.banc.jet_chaleur_tenue", "Jet Gun : chaleur %s %% (tenue)", String.valueOf(v))
+                : Component.translatableWithFallback("heraliz_wonder.banc.jet_chaleur", "Jet Gun : chaleur %s %%", String.valueOf(v)));
         return 1;
     }
 
@@ -115,20 +123,20 @@ public final class JetCommandes {
     private static int surchauffe(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         ItemStack s = jetgun(c);
         if (s.isEmpty()) {
-            dire(c, "Pas de Jet Gun en main.");
+            dire(c, pasDeJetGun());
             return 0;
         }
         CompoundTag t = s.getOrCreateTag();
         t.putFloat(JetGun.NBT_CHALEUR, JetGun.CHALEUR_MAX);
         t.putBoolean(JetGun.NBT_VERROU, true);
-        dire(c, "Jet Gun : surchauffe");
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.jet_surchauffe", "Jet Gun : surchauffe"));
         return 1;
     }
 
     private static int pap(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         ItemStack s = jetgun(c);
         if (s.isEmpty()) {
-            dire(c, "Pas de Jet Gun en main.");
+            dire(c, pasDeJetGun());
             return 0;
         }
         int n = IntegerArgumentType.getInteger(c, "niveau");
@@ -142,7 +150,9 @@ public final class JetCommandes {
             t.putInt("HeraliszZbPapNiveau", n);
             t.putString("HeraliszCamo", "pap_" + n);
         }
-        dire(c, "Jet Gun : Pack-a-Punch niveau " + n + (n > 0 ? " (surchauffe reduite)" : ""));
+        dire(c, n > 0
+                ? Component.translatableWithFallback("heraliz_wonder.banc.jet_pap", "Jet Gun : Pack-a-Punch niveau %s (surchauffe réduite)", String.valueOf(n))
+                : Component.translatableWithFallback("heraliz_wonder.banc.pap", "%s : Pack-a-Punch niveau %s", "Jet Gun", String.valueOf(n)));
         return 1;
     }
 
@@ -151,7 +161,7 @@ public final class JetCommandes {
         int n = IntegerArgumentType.getInteger(c, "n");
         int poses = poserHorde(p, n, distance, pv, marche);
         HeralizWonder.LOG.info("[wonder] banc : horde de {} zombies a {} blocs ({} PV, {})", poses, distance, pv, marche ? "qui marchent" : "figes");
-        dire(c, poses + " zombies poses.");
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.zombies_poses", "%s zombies posés.", String.valueOf(poses)));
         return poses;
     }
 
@@ -198,7 +208,8 @@ public final class JetCommandes {
         stressTick = 0;
         Aspiration.resume(true);
         HeralizWonder.LOG.info("[wonder] stress jet gun : 4 tireurs virtuels pendant {} s", stressTicks / 20);
-        dire(c, "Stress Jet Gun : 4 tireurs virtuels pendant " + stressTicks / 20 + " s.");
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.stress_arme", "Stress %s : 4 tireurs virtuels pendant %s s.", "Jet Gun",
+                String.valueOf(stressTicks / 20)));
         return 1;
     }
 
@@ -207,9 +218,10 @@ public final class JetCommandes {
         if (e.phase != TickEvent.Phase.START || stressJoueur == null) return;
         ServerPlayer p = stressJoueur;
         if (stressTick >= stressTicks || p.isRemoved()) {
-            String r = Aspiration.resume(true);
-            HeralizWonder.LOG.info("[wonder] stress jet gun termine : {}", r);
-            p.sendSystemMessage(Component.literal("Stress Jet Gun termine : " + r).withStyle(ChatFormatting.AQUA));
+            MutableComponent r = Aspiration.resume(true);
+            HeralizWonder.LOG.info("[wonder] stress jet gun termine : {}", Perf.journal(r));
+            p.sendSystemMessage(Component.translatableWithFallback("heraliz_wonder.banc.stress_arme_fin", "Stress %s terminé : %s", "Jet Gun", r)
+                    .withStyle(ChatFormatting.AQUA));
             stressJoueur = null;
             return;
         }

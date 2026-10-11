@@ -4,8 +4,10 @@ import fr.heralisz.clans.model.Texte;
 import fr.heralisz.clans.network.ClansNet;
 import fr.heralisz.clans.network.Packets;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +47,30 @@ public final class ServerHandlers {
     public static void erreur(ServerPlayer p, String cle, Object... args) {
         Component c = Component.translatable(cle, args);
         p.sendSystemMessage(c.copy().withStyle(s -> s.withColor(0xFF6B6B)));
-        ClansNet.toPlayer(p, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.ERREUR, List.of(coupe(c.getString())), "", null));
+        ClansNet.toPlayer(p, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.ERREUR, cleEtArgs(cle, args), "", null));
+    }
+
+    /**
+     * Arguments d'une notice ERREUR / INFO : la cle de traduction puis ses arguments en texte. Le client traduit dans la
+     * langue du joueur (le serveur dedie n'a pas les fichiers de langue : un texte deja ecrit ici resterait une cle).
+     * Un argument traduisible sans parametre (libelle de permission, nom d'entite) part en cle, traduite aussi par le
+     * client ; les autres composants partent en texte. 7 arguments au plus (le paquet en lit 8).
+     */
+    public static List<String> cleEtArgs(String cle, Object... args) {
+        List<String> l = new ArrayList<>(Math.min(8, args.length + 1));
+        l.add(coupe(cle));
+        for (int i = 0; i < args.length && l.size() < 8; i++) {
+            Object o = args[i];
+            String s;
+            if (o instanceof Component c) {
+                s = c.getContents() instanceof TranslatableContents t && t.getArgs().length == 0 && c.getSiblings().isEmpty()
+                        ? t.getKey() : c.getString();
+            } else {
+                s = String.valueOf(o);
+            }
+            l.add(coupe(s));
+        }
+        return l;
     }
 
     /** Message d'information simple dans le chat. */

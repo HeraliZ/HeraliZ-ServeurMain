@@ -3,6 +3,7 @@ package fr.heralisz.clans.client.gui.hud;
 import fr.heralisz.clans.HeraliszClans;
 import fr.heralisz.clans.client.ClansClient;
 import fr.heralisz.clans.client.ClientClans;
+import fr.heralisz.clans.client.ClientHandlers;
 import fr.heralisz.clans.client.gui.kit.BannerArt;
 import fr.heralisz.clans.client.gui.kit.Icons;
 import fr.heralisz.clans.client.gui.kit.Ui;
@@ -77,7 +78,10 @@ public final class ClanHud {
     public static void toast(Packets.NoticeS2C n) {
         long now = Util.getMillis();
         String titre = Component.translatable("gui.toast." + n.genre().name().toLowerCase(Locale.ROOT)).getString();
-        String texte = Component.translatable(n.genre().libelle(), n.args().toArray()).getString();
+        // ERREUR / INFO : cle + arguments envoyes par le serveur, traduits ici (ClientHandlers.texteNotice)
+        boolean libre = n.genre() == Packets.NoticeS2C.Genre.ERREUR || n.genre() == Packets.NoticeS2C.Genre.INFO;
+        String texte = libre ? Component.translatable(n.genre().libelle(), ClientHandlers.texteNotice(n.args())).getString()
+                : Component.translatable(n.genre().libelle(), n.args().toArray()).getString();
         Component sous = null;
         int accent;
         switch (n.genre()) {

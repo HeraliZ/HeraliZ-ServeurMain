@@ -447,5 +447,9 @@
   "caracrea.voice.managed.svc.hint": "Sur ce serveur, c'est Simple Voice Chat qui transporte les voix : réglez le micro, le son et les groupes dans ses propres réglages. Le chat vocal de CaraCrea n'utilise ni votre micro ni vos haut-parleurs.",
   "caracrea.voice.managed.open_svc": "Ouvrir Simple Voice Chat",
   "caracrea.voice.managed.off": "Le chat vocal n'est pas actif sur ce serveur",
-  "caracrea.voice.managed.off.hint": "Le serveur n'a pas allumé le chat vocal de CaraCrea : rien n'est capté ni joué."
+  "caracrea.voice.managed.off.hint": "Le serveur n'a pas allumé le chat vocal de CaraCrea : rien n'est capté ni joué.",
+  "caracrea.voice.duration.days": "%s j %s h",
+  "caracrea.voice.duration.hours": "%s h %s",
+  "caracrea.voice.duration.minutes": "%s min",
+  "caracrea.voice.duration.seconds": "%s s"
 }

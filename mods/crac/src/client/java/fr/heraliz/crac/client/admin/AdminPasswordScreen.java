@@ -6,6 +6,7 @@ import fr.heraliz.crac.network.C2SAdminLogin;
 import fr.heraliz.crac.network.NetworkHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
@@ -26,14 +27,14 @@ public class AdminPasswordScreen extends ScaledScreen {
     private boolean wrongPassword = false;
 
     public AdminPasswordScreen() {
-        super(Component.literal("Admin Login"));
+        super(Component.translatable("crac.admin.login_title"));
     }
 
     @Override
     protected void init() {
         this.left = (this.guiW() - 220) / 2;
         this.top = (this.guiH() - 110) / 2;
-        this.passwordBox = new EditBox(this.font, this.left + 20, this.top + 44, 180, 16, Component.literal("Password"));
+        this.passwordBox = new EditBox(this.font, this.left + 20, this.top + 44, 180, 16, Component.translatable("crac.admin.password"));
         this.passwordBox.setMaxLength(64);
         this.passwordBox.setBordered(false);
         this.passwordBox.setFormatter((text, pos) -> FormattedCharSequence.forward("*".repeat(text.length()), Style.EMPTY.withColor(-1)));
@@ -47,16 +48,16 @@ public class AdminPasswordScreen extends ScaledScreen {
     protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float pt) {
         this.renderBackground(g);
         GroupTheme.panel(g, this.left, this.top, 220, 110);
-        g.drawCenteredString(this.font, "RAC admin panel", this.left + 110, this.top + 12, -6504193);
-        g.drawString(this.font, "Password:", this.left + 20, this.top + 30, -3878166);
+        g.drawCenteredString(this.font, I18n.get("crac.admin.panel_title"), this.left + 110, this.top + 12, -6504193);
+        g.drawString(this.font, I18n.get("crac.admin.password_label"), this.left + 20, this.top + 30, -3878166);
         GroupTheme.field(g, this.left + 16, this.top + 40, 188, 22, this.passwordBox.isFocused());
         if (this.wrongPassword) {
             // the server says why in chat (wrong password, lockout, operator level, console disabled)
-            g.drawCenteredString(this.font, "Login refused, see chat", this.left + 110, this.top + 66, -2074037);
+            g.drawCenteredString(this.font, I18n.get("crac.admin.login_refused"), this.left + 110, this.top + 66, -2074037);
         }
 
         boolean hover = mouseX >= this.btnX && mouseX < this.btnX + this.btnW && mouseY >= this.btnY && mouseY < this.btnY + this.btnH;
-        GroupTheme.button(g, this.font, this.btnX, this.btnY, this.btnW, this.btnH, "Login", hover ? -10757772 : -12598694);
+        GroupTheme.button(g, this.font, this.btnX, this.btnY, this.btnW, this.btnH, I18n.get("crac.admin.login"), hover ? -10757772 : -12598694);
         this.renderWidgets(g, mouseX, mouseY, pt);
     }
 

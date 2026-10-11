@@ -15,6 +15,7 @@ import fr.heraliz.crac.network.C2SAdminPlacable;
 import fr.heraliz.crac.network.NetworkHandler;
 import fr.heraliz.crac.network.S2CAdminData;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -23,7 +24,10 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class AdminPanelScreen extends ScaledScreen {
     private static final int PANEL_W = 420;
     private static final int PANEL_H = 250;
-    private static final String[] TABS = new String[]{"Groups", "Claims", "Players", "Config", "Placable"};
+    /** Translation keys of the tabs (assets/crac/lang). */
+    private static final String[] TABS = new String[]{
+        "crac.admin.tab.groups", "crac.admin.tab.claims", "crac.admin.tab.players", "crac.admin.tab.config", "crac.admin.tab.placable"
+    };
     private static final int TAB_CONFIG = 3;
     private static final int TAB_PLACABLE = 4;
     private static final int ROW_H = 20;
@@ -51,7 +55,7 @@ public class AdminPanelScreen extends ScaledScreen {
     private static final int EDIT_BATCH_BYTES = 30000;
 
     public AdminPanelScreen() {
-        super(Component.literal("RAC admin panel"));
+        super(Component.translatable("crac.admin.panel_title"));
     }
 
     public void onDataRefreshed() {
@@ -271,7 +275,7 @@ public class AdminPanelScreen extends ScaledScreen {
     protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float pt) {
         this.renderBackground(g);
         GroupTheme.panel(g, this.left, this.top, 420, 250);
-        g.drawString(this.font, "RAC admin panel", this.left + 14, this.top + 10, -6504193);
+        g.drawString(this.font, I18n.get("crac.admin.panel_title"), this.left + 14, this.top + 10, -6504193);
         int tw = 74;
 
         for (int i = 0; i < TABS.length; i++) {
@@ -280,7 +284,7 @@ public class AdminPanelScreen extends ScaledScreen {
             boolean active = i == this.tab;
             g.fill(tx, ty, tx + tw, ty + 16, active ? -14996400 : -16116954);
             GroupTheme.border(g, tx, ty, tw, 16, active ? -11634488 : -14536366);
-            g.drawCenteredString(this.font, TABS[i], tx + tw / 2, ty + 4, active ? -1 : -9536363);
+            g.drawCenteredString(this.font, I18n.get(TABS[i]), tx + tw / 2, ty + 4, active ? -1 : -9536363);
         }
 
         if (this.tab == 3 && this.viewingGroup == null) {
@@ -294,7 +298,7 @@ public class AdminPanelScreen extends ScaledScreen {
         if (this.viewingGroup != null) {
             int[] b = this.backRect();
             boolean hov = in(mouseX, mouseY, b);
-            GroupTheme.button(g, this.font, b[0], b[1], b[2], b[3], "Back", hov ? -2074037 : -4179669);
+            GroupTheme.button(g, this.font, b[0], b[1], b[2], b[3], I18n.get("crac.gui.back"), hov ? -2074037 : -4179669);
         }
 
         this.renderWidgets(g, mouseX, mouseY, pt);
@@ -328,7 +332,7 @@ public class AdminPanelScreen extends ScaledScreen {
 
         g.disableScissor();
         if (rows.isEmpty()) {
-            g.drawCenteredString(this.font, "Nothing here.", this.left + 210, areaY + areaH / 2 - 4, -9536363);
+            g.drawCenteredString(this.font, I18n.get("crac.admin.nothing"), this.left + 210, areaY + areaH / 2 - 4, -9536363);
         }
 
         this.drawScrollbar(g, rows.size(), 20, areaY, areaH);
@@ -362,9 +366,9 @@ public class AdminPanelScreen extends ScaledScreen {
         int[] ap = this.applyRect();
         int[] rf = this.refreshRect();
         boolean dirty = !this.edits.isEmpty();
-        GroupTheme.button(g, this.font, rf[0], rf[1], rf[2], rf[3], "Refresh", in(mouseX, mouseY, rf) ? -1 : -11634488);
+        GroupTheme.button(g, this.font, rf[0], rf[1], rf[2], rf[3], I18n.get("crac.admin.refresh"), in(mouseX, mouseY, rf) ? -1 : -11634488);
         GroupTheme.button(
-            g, this.font, ap[0], ap[1], ap[2], ap[3], dirty ? "Apply*" : "Apply", !dirty ? -11181958 : (in(mouseX, mouseY, ap) ? -10757772 : -12598694)
+            g, this.font, ap[0], ap[1], ap[2], ap[3], dirty ? I18n.get("crac.admin.apply") + "*" : I18n.get("crac.admin.apply"), !dirty ? -11181958 : (in(mouseX, mouseY, ap) ? -10757772 : -12598694)
         );
         int valueX = this.left + 420 - 150;
         this.scissor(g, this.left + 8, areaY, this.left + 420 - 8, areaY + areaH);
@@ -392,7 +396,7 @@ public class AdminPanelScreen extends ScaledScreen {
                         GroupTheme.button(g, this.font, rm[0], rm[1], rm[2], rm[3], "x", in(mouseX, mouseY, rm) ? -2074037 : -4179669);
                     }
                 } else if (row.entry() == -2) {
-                    String text = editing ? "+ " + this.editBuffer + "_" : "+ add entry";
+                    String text = editing ? "+ " + this.editBuffer + "_" : "+ " + I18n.get("crac.admin.add_entry");
                     g.drawString(this.font, text, this.left + 26, ry + 4, editing ? -1 : -12598694);
                 } else {
                     String path = this.trim(this.shortLabel(c), valueX - (this.left + 16) - 6);
@@ -403,9 +407,9 @@ public class AdminPanelScreen extends ScaledScreen {
                     if (c.type() == 4) {
                         int n = this.listEntries(c).size();
                         boolean open = c.path().equals(this.expandedList);
-                        g.drawString(this.font, n + (n == 1 ? " entry" : " entries"), valueX, ry + 4, changed ? -12598694 : -9536363);
+                        g.drawString(this.font, I18n.get(n == 1 ? "crac.admin.entry_one" : "crac.admin.entries", n), valueX, ry + 4, changed ? -12598694 : -9536363);
                         int[] ob = this.openRect(ry);
-                        GroupTheme.button(g, this.font, ob[0], ob[1], ob[2], ob[3], open ? "Close" : "Open", in(mouseX, mouseY, ob) ? -1 : -11634488);
+                        GroupTheme.button(g, this.font, ob[0], ob[1], ob[2], ob[3], I18n.get(open ? "crac.admin.close" : "crac.admin.open"), in(mouseX, mouseY, ob) ? -1 : -11634488);
                     } else if (c.type() == 0 && !editing) {
                         boolean on = Boolean.parseBoolean(shown);
                         g.drawString(this.font, on ? "true" : "false", valueX, ry + 4, on ? -12598694 : -4179669);
@@ -420,10 +424,10 @@ public class AdminPanelScreen extends ScaledScreen {
         g.disableScissor();
         this.drawScrollbar(g, rows.size(), 16, areaY, areaH);
         if (this.editingRow >= 0) {
-            g.drawCenteredString(this.font, "Enter = confirm, Esc = cancel", this.left + 210, this.top + 250 - 11, -9536363);
+            g.drawCenteredString(this.font, I18n.get("crac.admin.edit_hint"), this.left + 210, this.top + 250 - 11, -9536363);
         } else if (dirty) {
             g.drawCenteredString(
-                this.font, this.edits.size() + " unsaved change" + (this.edits.size() == 1 ? "" : "s"), this.left + 210, this.top + 250 - 11, -12598694
+                this.font, I18n.get(this.edits.size() == 1 ? "crac.admin.unsaved_one" : "crac.admin.unsaved", this.edits.size()), this.left + 210, this.top + 250 - 11, -12598694
             );
         }
     }
@@ -476,9 +480,9 @@ public class AdminPanelScreen extends ScaledScreen {
         boolean dirty = this.placRows != null;
         int[] ap = this.placApplyRect();
         int[] rf = this.placRefreshRect();
-        GroupTheme.button(g, this.font, rf[0], rf[1], rf[2], rf[3], "Refresh", in(mouseX, mouseY, rf) ? -1 : -11634488);
+        GroupTheme.button(g, this.font, rf[0], rf[1], rf[2], rf[3], I18n.get("crac.admin.refresh"), in(mouseX, mouseY, rf) ? -1 : -11634488);
         GroupTheme.button(
-            g, this.font, ap[0], ap[1], ap[2], ap[3], dirty ? "Apply*" : "Apply", !dirty ? -11181958 : (in(mouseX, mouseY, ap) ? -10757772 : -12598694)
+            g, this.font, ap[0], ap[1], ap[2], ap[3], dirty ? I18n.get("crac.admin.apply") + "*" : I18n.get("crac.admin.apply"), !dirty ? -11181958 : (in(mouseX, mouseY, ap) ? -10757772 : -12598694)
         );
         int hpX = this.left + 420 - 150;
         this.scissor(g, this.left + 8, areaY, this.left + 420 - 8, areaY + areaH);
@@ -490,7 +494,7 @@ public class AdminPanelScreen extends ScaledScreen {
                 boolean editing = i == this.editingRow;
                 g.fill(this.left + 10, ry, this.left + 420 - 10, ry + 16 - 2, !hov && !editing ? -16116954 : -14996402);
                 if (i == rows.size()) {
-                    String text = editing ? "+ " + this.editBuffer + "_" : "+ add block (modid:block)";
+                    String text = editing ? "+ " + this.editBuffer + "_" : "+ " + I18n.get("crac.admin.add_block");
                     g.drawString(this.font, text, this.left + 16, ry + 4, editing ? -1 : -12598694);
                 } else {
                     AdminPanelScreen.PlacRow r = rows.get(i);
@@ -505,7 +509,7 @@ public class AdminPanelScreen extends ScaledScreen {
                         tg[1],
                         tg[2],
                         tg[3],
-                        r.enabled ? "on" : "off",
+                        I18n.get(r.enabled ? "crac.admin.on" : "crac.admin.off"),
                         r.enabled ? (in(mouseX, mouseY, tg) ? -10757772 : -12598694) : -11181958
                     );
                     int[] rm = this.placRemoveRect(ry);
@@ -517,12 +521,12 @@ public class AdminPanelScreen extends ScaledScreen {
         g.disableScissor();
         this.drawScrollbar(g, rows.size() + 1, 16, areaY, areaH);
         if (this.editingRow >= 0) {
-            g.drawCenteredString(this.font, "Enter = confirm, Esc = cancel", this.left + 210, this.top + 250 - 11, -9536363);
+            g.drawCenteredString(this.font, I18n.get("crac.admin.edit_hint"), this.left + 210, this.top + 250 - 11, -9536363);
         } else if (dirty) {
-            g.drawCenteredString(this.font, "unsaved changes — Apply to save", this.left + 210, this.top + 250 - 11, -12598694);
+            g.drawCenteredString(this.font, I18n.get("crac.admin.unsaved_apply"), this.left + 210, this.top + 250 - 11, -12598694);
         } else {
             g.drawCenteredString(
-                this.font, rows.size() + " blocks — 'off' keeps the line but stops it being placable", this.left + 210, this.top + 250 - 11, -9536363
+                this.font, I18n.get("crac.admin.placable_hint", rows.size()), this.left + 210, this.top + 250 - 11, -9536363
             );
         }
     }
@@ -684,19 +688,19 @@ public class AdminPanelScreen extends ScaledScreen {
                 return rows;
             } else {
                 for (S2CAdminData.MemberInfo m : g.members()) {
-                    String status = m.online() ? "§aonline" : "§8offline";
-                    String text = m.name() + "  " + status + (m.owner() ? " §6(owner)" : "");
+                    String status = m.online() ? "§a" + I18n.get("crac.gui.online") : "§8" + I18n.get("crac.gui.offline");
+                    String text = m.name() + "  " + status + (m.owner() ? " §6(" + I18n.get("crac.gui.owner_tag") + ")" : "");
                     List<AdminPanelScreen.RowButton> btns = new ArrayList<>();
                     if (!m.owner()) {
                         UUID gid = g.id();
                         UUID mid = m.id();
                         String who = m.name();
                         String group = g.name();
-                        btns.add(new AdminPanelScreen.RowButton("Kick", -4179669, -2074037, () -> this.confirm(
-                            "Kick " + who + " from " + group + "?", C2SAdminAction.ofUuids(C2SAdminAction.KICK_MEMBER, gid, mid)
+                        btns.add(new AdminPanelScreen.RowButton(I18n.get("crac.gui.kick"), -4179669, -2074037, () -> this.confirm(
+                            I18n.get("crac.admin.confirm_kick", who, group), C2SAdminAction.ofUuids(C2SAdminAction.KICK_MEMBER, gid, mid)
                         )));
-                        btns.add(new AdminPanelScreen.RowButton("Owner", -12598694, -10757772, () -> this.confirm(
-                            "Make " + who + " the owner of " + group + "?", C2SAdminAction.ofUuids(C2SAdminAction.SET_OWNER, gid, mid)
+                        btns.add(new AdminPanelScreen.RowButton(I18n.get("crac.gui.make_owner"), -12598694, -10757772, () -> this.confirm(
+                            I18n.get("crac.admin.confirm_owner", who, group), C2SAdminAction.ofUuids(C2SAdminAction.SET_OWNER, gid, mid)
                         )));
                     }
 
@@ -713,16 +717,15 @@ public class AdminPanelScreen extends ScaledScreen {
                             + " §8["
                             + g.tag()
                             + "]§r  §7"
-                            + g.members().size()
-                            + " members"
-                            + (g.claimTier() >= 0 ? "  §aclaim T" + g.claimTier() : "");
+                            + I18n.get("crac.admin.members_count", g.members().size())
+                            + (g.claimTier() >= 0 ? "  §a" + I18n.get("crac.admin.claim_tier", g.claimTier()) : "");
                         UUID gid = g.id();
                         List<AdminPanelScreen.RowButton> btns = new ArrayList<>();
                         String group = g.name();
-                        btns.add(new AdminPanelScreen.RowButton("Disband", -4179669, -2074037, () -> this.confirm(
-                            "Disband " + group + "? Its claim is removed too.", C2SAdminAction.ofUuid(C2SAdminAction.DISBAND_GROUP, gid)
+                        btns.add(new AdminPanelScreen.RowButton(I18n.get("crac.admin.disband"), -4179669, -2074037, () -> this.confirm(
+                            I18n.get("crac.admin.confirm_disband", group), C2SAdminAction.ofUuid(C2SAdminAction.DISBAND_GROUP, gid)
                         )));
-                        btns.add(new AdminPanelScreen.RowButton("Members", -11634488, -1, () -> {
+                        btns.add(new AdminPanelScreen.RowButton(I18n.get("crac.gui.members"), -11634488, -1, () -> {
                             this.viewingGroup = gid;
                             this.scroll = 0;
                         }));
@@ -731,17 +734,17 @@ public class AdminPanelScreen extends ScaledScreen {
                     break;
                 case 1:
                     for (S2CAdminData.ClaimInfo c : d.claims()) {
-                        String text = c.groupName() + "  §7tier " + c.tier() + "  (" + c.centerX() + ", " + c.centerZ() + ")  r=" + c.radius()
-                            + "  " + c.pieces() + " pieces" + ("minecraft:overworld".equals(c.dimension()) ? "" : "  §8" + c.dimension());
+                        String text = c.groupName() + "  §7" + I18n.get("crac.admin.tier", c.tier()) + "  (" + c.centerX() + ", " + c.centerZ() + ")  r=" + c.radius()
+                            + "  " + I18n.get("crac.admin.pieces", c.pieces()) + ("minecraft:overworld".equals(c.dimension()) ? "" : "  §8" + c.dimension());
                         UUID gid = c.groupId();
                         List<AdminPanelScreen.RowButton> btns = new ArrayList<>();
                         String group = c.groupName();
-                        btns.add(new AdminPanelScreen.RowButton("Wipe", -4179669, -2074037, () -> this.confirm(
-                            "Wipe every piece and placable block of " + group + "'s base? This cannot be undone.",
+                        btns.add(new AdminPanelScreen.RowButton(I18n.get("crac.admin.wipe"), -4179669, -2074037, () -> this.confirm(
+                            I18n.get("crac.admin.confirm_wipe", group),
                             C2SAdminAction.ofUuid(C2SAdminAction.WIPE_CLAIM, gid)
                         )));
-                        btns.add(new AdminPanelScreen.RowButton("Unclaim", -4179669, -2074037, () -> this.confirm(
-                            "Remove the claim of " + group + "? Its Claim Block breaks.", C2SAdminAction.ofUuid(C2SAdminAction.UNCLAIM, gid)
+                        btns.add(new AdminPanelScreen.RowButton(I18n.get("crac.admin.unclaim"), -4179669, -2074037, () -> this.confirm(
+                            I18n.get("crac.admin.confirm_unclaim", group), C2SAdminAction.ofUuid(C2SAdminAction.UNCLAIM, gid)
                         )));
                         rows.add(new AdminPanelScreen.Row(text, -3878166, btns));
                     }
@@ -750,7 +753,7 @@ public class AdminPanelScreen extends ScaledScreen {
                     for (S2CAdminData.PlayerInfo p : d.players()) {
                         String text = p.name()
                             + "  §7"
-                            + (p.groupName().isEmpty() ? "no group" : p.groupName())
+                            + (p.groupName().isEmpty() ? I18n.get("crac.admin.no_group") : p.groupName())
                             + "  ("
                             + p.x()
                             + ", "
@@ -1017,7 +1020,7 @@ public class AdminPanelScreen extends ScaledScreen {
         }
         if (tooLong > 0 && this.minecraft.player != null) {
             this.minecraft.player.displayClientMessage(
-                Component.literal("§c[Admin] " + tooLong + " value(s) too long for the panel; edit them in the config file."), false
+                Component.translatable("crac.admin.too_long", String.valueOf(tooLong)), false
             );
         }
     }

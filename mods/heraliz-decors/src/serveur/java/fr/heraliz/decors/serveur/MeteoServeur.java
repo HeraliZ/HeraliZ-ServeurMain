@@ -158,15 +158,17 @@ public final class MeteoServeur {
                 .then(Commands.literal("info").executes(c -> {
                     MinecraftServer srv = c.getSource().getServer();
                     long reste = Math.max(0, finTicks - srv.getTickCount()) / 20;
-                    c.getSource().sendSuccess(() -> Component.literal("Brume : " + profil.nom + (force ? " (fixée)" : ", change dans "
-                            + reste / 60 + " min " + reste % 60 + " s")), false);
+                    c.getSource().sendSuccess(() -> force
+                            ? Component.translatableWithFallback("heraliz_decors.brume.info_fixee", "Brume : %s (fixée)", profil.nom)
+                            : Component.translatableWithFallback("heraliz_decors.brume.info", "Brume : %s, change dans %s min %s s",
+                                    profil.nom, String.valueOf(reste / 60), String.valueOf(reste % 60)), false);
                     return 1;
                 }))
                 .then(Commands.literal("auto").executes(c -> {
                     force = false;
                     finTicks = 1;
                     retenir(c.getSource().getServer());
-                    c.getSource().sendSuccess(() -> Component.literal("Brume : tirage automatique"), true);
+                    c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_decors.brume.auto", "Brume : tirage automatique"), true);
                     return 1;
                 }))
                 .then(Commands.argument("profil", StringArgumentType.word())
@@ -179,13 +181,14 @@ public final class MeteoServeur {
     private static int fixer(net.minecraft.commands.CommandSourceStack src, String nom, int secondes) {
         Ambiance.Profil p = Ambiance.Profil.de(nom);
         if (p == null) {
-            src.sendFailure(Component.literal("Profils : clair, leger, moyen, fort, puree"));
+            src.sendFailure(Component.translatableWithFallback("heraliz_decors.brume.profils", "Profils : %s", "clair, leger, moyen, fort, puree"));
             return 0;
         }
         force = true;
         changer(src.getServer(), p, secondes, false);
         retenir(src.getServer());
-        src.sendSuccess(() -> Component.literal("Brume fixée : " + p.nom + " (/brume auto pour reprendre le tirage)"), true);
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_decors.brume.fixee", "Brume fixée : %s (/brume auto pour reprendre le tirage)",
+                p.nom), true);
         return 1;
     }
 }

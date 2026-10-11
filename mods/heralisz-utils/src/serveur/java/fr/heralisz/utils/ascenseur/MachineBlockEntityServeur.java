@@ -112,11 +112,12 @@ public class MachineBlockEntityServeur extends MachineBlockEntity {
     void appel(ServerLevel l, ServerPlayer p, int deck, boolean monter) {
         CabineServeur c = cabineServeur(l);
         if (c == null || paliers.length < 2) {
-            p.displayClientMessage(Component.literal("L'ascenseur se met en route… réessaie dans un instant"), true);
+            p.displayClientMessage(Component.translatableWithFallback("heralisz_utils.ascenseur.demarrage",
+                    "L'ascenseur se met en route… réessaie dans un instant"), true);
             return;
         }
         if (c.enMarche()) {
-            p.displayClientMessage(Component.literal("L'ascenseur est déjà en marche"), true);
+            p.displayClientMessage(Component.translatableWithFallback("heralisz_utils.ascenseur.en_marche", "L'ascenseur est déjà en marche"), true);
             return;
         }
         int ici = -1;
@@ -131,14 +132,18 @@ public class MachineBlockEntityServeur extends MachineBlockEntity {
         if (Math.abs(c.plancher() - deck) < 0.5) {
             int suivant = monter ? ici + 1 : ici - 1;
             if (suivant < 0 || suivant >= paliers.length) {
-                p.displayClientMessage(Component.literal(monter ? "Tout en haut : on ne peut pas monter plus" : "Tout en bas : on ne peut pas descendre plus"), true);
+                p.displayClientMessage(monter
+                        ? Component.translatableWithFallback("heralisz_utils.ascenseur.tout_en_haut", "Tout en haut : on ne peut pas monter plus")
+                        : Component.translatableWithFallback("heralisz_utils.ascenseur.tout_en_bas", "Tout en bas : on ne peut pas descendre plus"), true);
                 return;
             }
             c.allerA(paliers[suivant]);
-            p.displayClientMessage(Component.literal(monter ? "Ça monte… accroche-toi" : "Ça descend… accroche-toi"), true);
+            p.displayClientMessage(monter
+                    ? Component.translatableWithFallback("heralisz_utils.ascenseur.monte", "Ça monte… accroche-toi")
+                    : Component.translatableWithFallback("heralisz_utils.ascenseur.descend", "Ça descend… accroche-toi"), true);
         } else {
             c.allerA(deck);
-            p.displayClientMessage(Component.literal("L'ascenseur arrive"), true);
+            p.displayClientMessage(Component.translatableWithFallback("heralisz_utils.ascenseur.arrive", "L'ascenseur arrive"), true);
         }
     }
 

@@ -170,5 +170,6 @@
   "subtitles.heralizcrates.theme.gem_reform": "Crystal reforms",
   "subtitles.heralizcrates.theme.gem_chime": "Gleam",
   "subtitles.heralizcrates.theme.gem_shatter": "Crystal shatters",
-  "subtitles.heralizcrates.theme.gem_charge": "Crystal charging"
+  "subtitles.heralizcrates.theme.gem_charge": "Crystal charging",
+  "heralizcrates.commande.poids": "(weight %s, %s)"
 }
