@@ -1,7 +1,8 @@
 # Réglages de Spartan (anticheat HeraliZ). Fichier du dépôt : il fait foi, la mise en ligne l'envoie sur le Ptero.
-# Les adresses des webhooks Discord et le secret du launcher ne sont JAMAIS écrits ici : les marques __SPARTAN_…__
-# sont remplacées au moment de l'envoi par les secrets GitHub (SPARTAN_DISCORD_ALERTES, SPARTAN_DISCORD_SANCTIONS,
-# SPARTAN_LAUNCHER_SECRET ; vide si le secret n'existe pas). Pour refaire ce fichier après l'ajout d'un réglage :
+# Les adresses des webhooks Discord et la clé des jetons de lancement ne sont JAMAIS écrites ici : les marques
+# __SPARTAN_…__ sont remplacées au moment de l'envoi, par les secrets GitHub SPARTAN_DISCORD_ALERTES et
+# SPARTAN_DISCORD_SANCTIONS, et par la clé lue sur la VM du site, qui signe les jetons pour le compte connecté au
+# launcher (vide si absent). Pour refaire ce fichier après l'ajout d'un réglage :
 # fabriquer Spartan, puis partir de mods/spartan/build/config-modele/spartan-common.toml.
 
 
