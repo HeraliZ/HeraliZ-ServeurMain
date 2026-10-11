@@ -21,7 +21,10 @@ installe=non
 if [ -f /var/www/azuriom/artisan ]; then
   v=$(grep -oE "VERSION = '[^']+'" /var/www/azuriom/app/Azuriom.php 2> /dev/null | head -n 1 | cut -d"'" -f2)
   # Azuriom est installé quand son .env porte une clé (APP_KEY), écrite par la dernière étape dans le navigateur
-  if grep -qE '^APP_KEY=base64:.+' /var/www/azuriom/.env 2> /dev/null; then
+  if [ -f /var/www/azuriom/.env ] && [ ! -r /var/www/azuriom/.env ]; then
+    installe=inconnu
+    echo "Azuriom${v:+ $v} : présent (son .env n'est lisible qu'en root : état exact inconnu)"
+  elif grep -qE '^APP_KEY=base64:.+' /var/www/azuriom/.env 2> /dev/null; then
     installe=oui
     echo "Azuriom : installé${v:+ (version $v)}"
   elif [ -f /var/www/azuriom/.env ]; then
@@ -47,12 +50,13 @@ else
   echo "Azuriom : absent"
 fi
 # API de connexion du launcher (AzAuth) : 422 = activée (requête vide refusée), 400 = pas activée dans l'administration
-if [ "$installe" = oui ]; then
+if [ "$installe" != non ]; then
   code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 -X POST \
     -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{}' https://heraliz.fr/api/auth/authenticate)
   case "$code" in
     422) echo "Connexion des comptes au launcher (API d'Azuriom) : activée";;
     400) echo "Connexion des comptes au launcher (API d'Azuriom) : PAS activée (administration du site → Paramètres → Authentification)";;
+    200) echo "Connexion des comptes au launcher (API d'Azuriom) : pas encore (l'installation d'Azuriom n'est pas finie)";;
     *) echo "Connexion des comptes au launcher (API d'Azuriom) : réponse inattendue (code ${code:-aucun})";;
   esac
 fi
