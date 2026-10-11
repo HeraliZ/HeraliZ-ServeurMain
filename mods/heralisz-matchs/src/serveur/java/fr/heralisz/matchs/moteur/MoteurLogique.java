@@ -14,6 +14,7 @@ import fr.heralisz.matchs.moteur.api.Kits;
 import fr.heralisz.matchs.moteur.api.MatchApi;
 import fr.heralisz.matchs.moteur.api.Partie;
 import fr.heralisz.matchs.moteur.arenes.ArenesService;
+import fr.heralisz.matchs.moteur.arenes.BordureArenes;
 import fr.heralisz.matchs.moteur.arenes.Protections;
 import fr.heralisz.matchs.moteur.coffre.Coffres;
 import fr.heralisz.matchs.moteur.coffre.Descente;
@@ -51,7 +52,7 @@ import java.util.UUID;
 /**
  * Partie serveur (docs/METHODE_CLIENT_SERVEUR.md) du module d'entree du moteur commun (voir {@code Modules}) : sons, configuration, paquets, commandes ({@code /groupe},
  * {@code /matchs}), chargement des cartes et des kits, tick des parties, poses d'arenes, choix de classe, spectateurs,
- * bornes, connexions (reprise du Coffre apres crash), systeme de combat du serveur ({@code combat.CombatService}),
+ * bornes, bordure du monde des dimensions de matchs ({@code arenes.BordureArenes}), connexions (reprise du Coffre apres crash), systeme de combat du serveur ({@code combat.CombatService}),
  * restrictions en match ({@code combat.RestrictionsMatch}) et remise a zero a l'arret. Le HUD client est branche par
  * {@code moteur.client.HudMoteur}.
  */
@@ -76,6 +77,7 @@ public final class MoteurLogique {
         CombatEvents.enregistrer();
         Descente.enregistrer();
         Protections.enregistrer();
+        BordureArenes.enregistrer();
     }
 
 
@@ -149,6 +151,8 @@ public final class MoteurLogique {
         Spectateurs.tick(s);
         int t = s.getTickCount();
         if (t % 5 == 0) Protections.bornes(s);
+        // bordure propre aux dimensions de matchs, joueurs hors bordure ramenes (jamais de mort en boucle)
+        if (t % 20 == 0) BordureArenes.tick(s);
         if (t % 20 == 0) GroupesService.tick();
         if (t % 200 == 0) CombatTag.purger();
         CombatService.tick(s);
@@ -156,6 +160,8 @@ public final class MoteurLogique {
     }
 
     private static void demarrage(ServerStartedEvent e) {
+        // bordure des dimensions de matchs d'abord : la reprise des arenes ecarte celles qui seraient dehors
+        BordureArenes.demarrage(e.getServer());
         ArenesService.demarrage(e.getServer());
     }
 

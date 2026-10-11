@@ -90,6 +90,16 @@ public final class CwHud {
         zoneActive = false;
     }
 
+    /**
+     * Bas (y, echelle du joueur) de la pile de toasts du ClashWar en haut a droite, 0 si elle est vide : les autres HUD
+     * de ce coin (defis de duel) se placent dessous. Sans allocation.
+     */
+    public static int basToasts(long now) {
+        int n = 0;
+        for (int i = 0; i < nombre; i++) if (now - DEBUTS[i] < DUREE_MS) n++;
+        return n == 0 ? 0 : 74 + n * (HAUTEUR + 4) - 4;
+    }
+
     // ------------------------------------------------------------------ toasts
     static void rendreGui(RenderGuiEvent.Post e) {
         if (nombre == 0) return;

@@ -502,6 +502,22 @@ public final class HudMoteur {
         g.fill(x + 3, y + 3, x + 4, y + 4, argb);
     }
 
+    /**
+     * Bas (y, echelle du joueur) de ce que le moteur dessine dans le coin haut droit : numero de manche des zombies
+     * ({@link #hautFil}), fil des eliminations, invitation de groupe ; 0 si rien. Les autres HUD de ce coin (defis de
+     * duel) se placent dessous. Meme calcul que {@link #dessiner}, sans rien dessiner ni allouer.
+     */
+    public static int basHautDroit(int h, long now) {
+        int yFil = hautFil.applyAsInt(h);
+        int bas = Math.max(0, yFil);
+        if (yFil < 0) yFil = 6;
+        int lignes = MoteurClient.fil().size();
+        if (lignes > 0) bas = Math.max(bas, yFil + lignes * 16 - 2);
+        MoteurClient.Toast t = MoteurClient.toasts().peekLast();
+        if (t != null && now - t.recuMs() <= TOAST_DUREE) bas = Math.max(bas, yFil + lignes * 16 + 4 + 40);
+        return bas;
+    }
+
     // ---------------------------------------------------------------- toasts
     private static final long TOAST_DUREE = 8000;
     private static final TexteEspace TOAST_TITRE = new TexteEspace(Ui.SMALL, 1.0f);

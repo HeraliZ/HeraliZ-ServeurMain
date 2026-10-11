@@ -40,7 +40,8 @@ import java.util.function.Consumer;
  * par tick (file d'attente commune), registre persistant ({@link RegistreArenes}), rechargement au demarrage,
  * nettoyage a la liberation et ecouteurs de remise en etat des modes. Grille : rang i -> case
  * ((i mod 32) x 512, (i / 32) x 512) de la dimension de la carte, origine en y = 64 (ou {@code "y"} du JSON de la
- * carte). Fil serveur.
+ * carte). Les dimensions de matchs ont leur propre bordure du monde ({@link BordureArenes}) : une instance n'est posee ou
+ * reprise que si elle y tient entierement. Fil serveur.
  */
 public final class ArenesService {
     private ArenesService() {
@@ -86,34 +87,44 @@ public final class ArenesService {
             HeraliszMatchs.LOG.warn("[matchs] reserver : carte inconnue {}", carteId);
             return null;
         }
+        ServerLevel niveau = s.getLevel(c.dimension());
+        if (niveau == null) {
+            HeraliszMatchs.LOG.warn("[matchs] reserver {} : dimension {} absente", carteId, c.dimension().location());
+            return null;
+        }
+        // bordure propre aux matchs (independante de celle de la carte) avant tout choix de case
+        BordureArenes.imposer(niveau);
+        // instances deja posees, reutilisees (jamais une qui serait hors de la bordure)
         for (Instance i : Arenes.instances()) {
-            if (i.carte().id().equals(carteId) && i.libre()) {
+            if (i.carte().id().equals(carteId) && i.libre() && utilisable(s, i)) {
                 i.occuper("?");
                 return i;
             }
         }
         // instance encore en pose d'avance (demarrage) : on la prend, elle sera prete avant une neuve
         for (Instance i : Arenes.instances()) {
-            if (i.carte().id().equals(carteId) && PRECHAUFFAGE.equals(i.occupant())) {
+            if (i.carte().id().equals(carteId) && PRECHAUFFAGE.equals(i.occupant()) && utilisable(s, i)) {
                 i.occuper("?");
                 return i;
             }
-        }
-        ServerLevel niveau = s.getLevel(c.dimension());
-        if (niveau == null) {
-            HeraliszMatchs.LOG.warn("[matchs] reserver {} : dimension {} absente", carteId, c.dimension().location());
-            return null;
         }
         Structure st = structure(s, carteId);
         if (st == null) return null;
         RegistreArenes reg = RegistreArenes.de(s);
         String dim = c.dimension().location().toString();
         int index = reg.prochainIndex(dim);
+        BlockPos o = origine(c, index);
+        // jamais une arene hors de la bordure (ni pres de son bord) : on y mourrait en boucle
+        if (!BordureArenes.dansBordure(niveau, BordureArenes.emprise(c, st, o), BordureArenes.MARGE)) {
+            HeraliszMatchs.LOG.error("[matchs] reserver {} : la case {} ({}) sortirait de la bordure de {} ({}) : refuse", carteId, index,
+                    o.toShortString(), dim, BordureArenes.decrire(niveau));
+            return null;
+        }
         RegistreArenes.Entree e = new RegistreArenes.Entree();
         e.carte = carteId;
         e.dim = dim;
         e.index = index;
-        e.origine = origine(c, index);
+        e.origine = o;
         e.empreinte = st.empreinte;
         reg.entrees.add(e);
         reg.setDirty();
@@ -125,7 +136,25 @@ public final class ArenesService {
         return inst;
     }
 
-    /** Origine de la case {@code index} pour cette carte. */
+    /** Instances deja signalees hors de la bordure (une ligne de journal chacune). */
+    private static final Set<String> HORS_BORDURE = new java.util.HashSet<>();
+
+    /** Vrai si l'instance posee tombe entierement dans la bordure de sa dimension (sinon : signalee, jamais prise). */
+    private static boolean utilisable(MinecraftServer s, Instance i) {
+        if (BordureArenes.dansBordure(i.niveau(), BordureArenes.emprise(i.carte(), structure(s, i.carte().id()), i.origine()), 0)) return true;
+        if (HORS_BORDURE.add(i.id())) {
+            HeraliszMatchs.LOG.error("[matchs] instance {} en {} hors de la bordure de {} ({}) : ecartee", i.id(), i.origine().toShortString(),
+                    i.niveau().dimension().location(), BordureArenes.decrire(i.niveau()));
+        }
+        return false;
+    }
+
+    /**
+     * Origine de la case {@code index} pour cette carte. Grille de {@link #LARGEUR_GRILLE} cases de
+     * {@link Arenes#ESPACEMENT} blocs par rangee, a partir de (0, 0) vers +x / +z : 1 000 instances tiennent dans un carre
+     * de 16 384 blocs de cote, tres loin du bord de la bordure des matchs ({@link BordureArenes}). Les cases liberees sont
+     * reprises telles quelles (instances reutilisees), seules les nouvelles cartes en ajoutent.
+     */
     public static BlockPos origine(Carte c, int index) {
         int y = c.meta().has("y") ? c.meta().get("y").getAsInt() : 64;
         int h = c.taille().getY();
@@ -322,6 +351,7 @@ public final class ArenesService {
     public static void arret() {
         FILE.clear();
         STRUCTURES.clear();
+        HORS_BORDURE.clear();
     }
 
     /** Vrai si le niveau est une dimension de matchs. */

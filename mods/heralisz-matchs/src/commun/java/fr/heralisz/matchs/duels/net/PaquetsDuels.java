@@ -101,8 +101,8 @@ public final class PaquetsDuels {
     }
 
     /**
-     * Defi recu (toast + ecran de reponse 30 s) ou fin d'un defi (defi null, raison = cle de traduction affichee en
-     * toast, vide = rien).
+     * Defi recu (notification discrete en haut a droite pendant 30 s, sans ecran) ou fin d'un defi (defi null, raison =
+     * cle de traduction affichee en toast, vide = rien ; id negatif = debut d'un duel, tous les defis affiches tombent).
      */
     public record DefiS2C(@Nullable Vues.DefiVue defi, int idFini, String raison) {
         public void write(FriendlyByteBuf b) {

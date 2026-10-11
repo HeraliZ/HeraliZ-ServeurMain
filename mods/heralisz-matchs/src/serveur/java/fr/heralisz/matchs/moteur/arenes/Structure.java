@@ -69,12 +69,35 @@ public final class Structure {
      * avec d'autres mods de blocs presents, est abandonnee).
      */
     public final long empreinte;
+    /**
+     * Emprise au sol des blocs et entites poses (relative a l'origine, max inclus), annexes comprises : sert a verifier
+     * qu'une instance tombe entierement dans la bordure du monde ({@link BordureArenes}). 0 si la structure est vide.
+     */
+    public final int minX, minZ, maxX, maxZ;
 
     private Structure(String carte, List<Bloc> blocs, List<Ent> entites, long empreinte) {
         this.carte = carte;
         this.blocs = blocs;
         this.entites = entites;
         this.empreinte = empreinte;
+        int x0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE;
+        for (Bloc b : blocs) {
+            x0 = Math.min(x0, b.x());
+            z0 = Math.min(z0, b.z());
+            x1 = Math.max(x1, b.x());
+            z1 = Math.max(z1, b.z());
+        }
+        for (Ent e : entites) {
+            x0 = Math.min(x0, (int) Math.floor(e.x()));
+            z0 = Math.min(z0, (int) Math.floor(e.z()));
+            x1 = Math.max(x1, (int) Math.floor(e.x()));
+            z1 = Math.max(z1, (int) Math.floor(e.z()));
+        }
+        boolean vide = x0 > x1;
+        this.minX = vide ? 0 : x0;
+        this.minZ = vide ? 0 : z0;
+        this.maxX = vide ? 0 : x1;
+        this.maxZ = vide ? 0 : z1;
     }
 
     /** Lit la structure de la carte, ou null (avertissement) si elle est absente ou illisible. */

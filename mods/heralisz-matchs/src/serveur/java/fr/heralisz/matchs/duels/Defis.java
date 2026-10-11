@@ -13,7 +13,11 @@ import fr.heralisz.matchs.moteur.api.Groupes;
 import fr.heralisz.matchs.moteur.api.Instance;
 import fr.heralisz.matchs.moteur.api.MatchApi;
 import fr.heralisz.matchs.reseau.MatchsNet;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -29,7 +33,8 @@ import java.util.UUID;
 
 /**
  * Defis de duel (MATCHS_SPEC §3) : {@code /duel <joueur>} ou l'ecran DUEL ; le defiant choisit le format (1v1, ou 2v2
- * seulement si les deux camps sont des groupes de 2), le mode et la carte ; le defie accepte dans les 30 s (toast + ecran).
+ * seulement si les deux camps sont des groupes de 2), le mode et la carte ; le defie accepte dans les 30 s (notification
+ * discrete en haut a droite, boutons du chat, {@code /duel accepter|refuser [id]}, touches a regler, ecran DUEL).
  * A l'acceptation : verifications (en ligne, hors match, Coffre possible pour chacun), reservation d'une instance de la
  * carte, Coffre de chacun puis rattachement a la {@link DuelPartie}, qui demarre quand l'instance est prete.
  * Fil serveur.
@@ -182,8 +187,14 @@ public final class Defis {
         DEFIS.put(d.id, d);
         Vues.DefiVue v = vue(s, d);
         MatchsNet.versJoueur(cible, new PaquetsDuels.DefiS2C(v, 0, ""));
-        Annonces.chat(cible, Component.translatable("duel.chat.defi_recu", p.getGameProfile().getName(), format.toUpperCase(Locale.ROOT),
-                Component.translatable("duel.mode." + mode), c.nomFr()));
+        // message du chat avec ses boutons [Accepter] [Refuser] cliquables (propres a CE defi : /duel accepter <id>) ;
+        // chez le joueur, la notification discrete en haut a droite (sans ecran) montre le meme defi
+        Annonces.chat(cible, Component.translatableWithFallback("duel.chat.defi_recu", "%s vous défie en %s · %s · %s.", p.getGameProfile().getName(),
+                        format.toUpperCase(Locale.ROOT), Component.translatable("duel.mode." + mode), c.nomFr())
+                .append(" ").append(bouton("duel.chat.bouton_accepter", "[Accepter]", "duel.chat.survol_accepter", "Accepter ce défi",
+                        DuelsConfig.COMMANDE_ACCEPTER + " " + d.id, 0x5FD08A))
+                .append(" ").append(bouton("duel.chat.bouton_refuser", "[Refuser]", "duel.chat.survol_refuser", "Refuser ce défi",
+                        DuelsConfig.COMMANDE_REFUSER + " " + d.id, 0xFF6B6B)));
         Annonces.chat(p, Component.translatable("duel.chat.defi_envoye", cible.getGameProfile().getName()));
         for (UUID u : campB) {
             if (u.equals(cible.getUUID())) continue;
@@ -225,6 +236,26 @@ public final class Defis {
             return;
         }
         lancer(s, d);
+    }
+
+    /**
+     * Commande : repond au defi d'id donne ({@code /duel accepter <id>}, boutons du chat), ou au dernier defi recu si
+     * {@code id} est negatif ({@code /duel accepter}).
+     */
+    public static void repondreCommande(ServerPlayer p, int id, boolean accepte) {
+        if (id < 0) {
+            repondreDernier(p, accepte);
+            return;
+        }
+        Defi d = DEFIS.get(id);
+        // un defi qui ne le concerne pas (autre joueur, id invente) : comme un defi expire, sans rien toucher
+        if (d != null && !p.getUUID().equals(d.defie) && !p.getUUID().equals(d.defiant)) d = null;
+        if (d == null) {
+            erreur(p, "duel.erreur.expire");
+            MatchsNet.versJoueur(p, new PaquetsDuels.DefiS2C(null, id, ""));
+            return;
+        }
+        repondre(p, id, accepte);
     }
 
     /** Commande : repond au dernier defi recu. */
@@ -365,6 +396,14 @@ public final class Defis {
     public static void vider() {
         DEFIS.clear();
         DERNIER.clear();
+    }
+
+    /** Bouton de chat : texte colore en gras, commande lancee au clic, infobulle (traduits chez le joueur). */
+    private static MutableComponent bouton(String cle, String fr, String cleSurvol, String frSurvol, String commande, int couleur) {
+        Component survol = Component.translatableWithFallback(cleSurvol, frSurvol).append(Component.literal("\n" + commande).withStyle(ChatFormatting.GRAY));
+        return Component.translatableWithFallback(cle, fr).withStyle(st -> st.withColor(couleur).withBold(true)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, commande))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, survol)));
     }
 
     private static void erreur(ServerPlayer p, String cle, Object... args) {
