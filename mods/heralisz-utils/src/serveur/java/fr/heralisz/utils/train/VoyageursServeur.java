@@ -299,7 +299,7 @@ public final class VoyageursServeur {
                     break rames;
                 }
                 if (Math.abs(l[2]) < Voyageurs.VW + 0.25 && Math.abs(l[0]) < demi + 0.2 && l[1] > SOL && l[1] < 5.2) {
-                    heurt(p, pl, l, e.v());
+                    heurt(p, pl, l, e.v(), i == 0 && l[0] > demi - 1.5);
                     break rames;
                 }
             }
@@ -335,9 +335,13 @@ public final class VoyageursServeur {
      *  affleure 0,4 au-dessus du sol aplani), le tablier d'un pont jusqu'à 1,57. */
     static final double SOL = -1.6;
 
-    /** Joueur dans le gabarit : le train roule -> tué net (un seul coup, armure ou pas) ; à l'arrêt -> repoussé à côté,
-     *  du côté le plus proche puis de l'autre, là où l'on tient debout (jamais dans le mur du quai). */
-    private static void heurt(ServerPlayer p, Horaire.Placement pl, double[] l, double v) {
+    /** Coup d'un train qui roule, en dehors des cas où il écrase : 5 points (2,5 cœurs), armure ou pas. */
+    static final float HEURT = 5f;
+
+    /** Joueur dans le gabarit : le train roule -> heurté (2,5 cœurs) et repoussé à côté ; tué net seulement s'il est
+     *  devant la locomotive ou dans la voie, sous la caisse (écrasé). À l'arrêt -> repoussé à côté, du côté le plus
+     *  proche puis de l'autre, là où l'on tient debout (jamais dans le mur du quai). */
+    private static void heurt(ServerPlayer p, Horaire.Placement pl, double[] l, double v, boolean devant) {
         double cote = l[2] >= 0 ? 1 : -1;
         Vec3 dehors = null;
         for (double c : new double[]{cote, -cote}) {
@@ -348,8 +352,9 @@ public final class VoyageursServeur {
             if (dehors != null) break;
         }
         if (v > 1.0) {
-            p.hurt(ecrase(p.serverLevel()), Float.MAX_VALUE);
-            if (p.isAlive()) {                                              // créatif : seulement projeté
+            boolean dessous = Math.abs(l[2]) < Voyageurs.VW - 0.5 && l[1] < Reseau.PLANCHER - 0.3;    // dans la voie
+            p.hurt(ecrase(p.serverLevel()), devant || dessous ? Float.MAX_VALUE : HEURT);
+            if (p.isAlive()) {                                              // heurté (ou créatif) : projeté à côté
                 Vec3 lat = Voyageurs.versMonde(pl, l[0], 0, cote * 1.0).subtract(Voyageurs.versMonde(pl, l[0], 0, 0)).normalize();
                 if (dehors != null) p.teleportTo(dehors.x, dehors.y, dehors.z);
                 p.setDeltaMovement(lat.scale(1.5).add(0, 0.45, 0));
