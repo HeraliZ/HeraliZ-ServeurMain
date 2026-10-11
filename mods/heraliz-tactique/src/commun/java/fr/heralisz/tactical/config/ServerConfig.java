@@ -1,8 +1,12 @@
 package fr.heralisz.tactical.config;
 
 import fr.heraliz.tactique.allonge.Allonge;
+import fr.heraliz.tactique.vitres.Vitres;
+import java.util.List;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;
+import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 
@@ -14,6 +18,13 @@ public class ServerConfig {
    /** HeraliZ : s'allonger avec la touche « Ramper » de TaCZ (fr.heraliz.tactique.allonge.Allonge). */
    public static DoubleValue DELAI_RALLONGER;
    public static DoubleValue SANS_TIR_EN_SE_COUCHANT;
+   /** HeraliZ : vitres cassées par les balles de TaCZ, qui repoussent (fr.heraliz.tactique.vitres.Vitres). */
+   public static BooleanValue VITRES_CASSER;
+   public static IntValue VITRES_DELAI_MINUTES;
+   public static ConfigValue<List<? extends String>> VITRES_DIMENSIONS;
+   public static IntValue VITRES_RAYON_SPAWN;
+   public static BooleanValue VITRES_CLAIMS_CRAC;
+   public static ConfigValue<List<? extends String>> VITRES_BLOCS_PROTEGES;
 
    public static ForgeConfigSpec init() {
       Builder builder = new Builder();
@@ -39,6 +50,34 @@ public class ServerConfig {
             "Durée (en secondes) sans pouvoir tirer pendant que le joueur se couche (passage debout -> allongé ;",
             "l'animation de Minecraft dure 0,6 s). Le serveur compte 0,2 s de moins (décalage du réseau).")
          .defineInRange("duree_sans_tir_couche", Allonge.DEFAUT_SANS_TIR, 0.0, 5.0);
+      builder.pop();
+      // HeraliZ : vitres cassées par les balles, qui repoussent (lu par le serveur seulement)
+      builder.push("vitres");
+      VITRES_CASSER = builder.comment(
+            "Les balles des armes TaCZ cassent le verre (verre, verre coloré ou teinté, vitres et vitres colorées : la même règle",
+            "que TaCZ). La balle casse la vitre et s'arrête dessus ; la vitre repousse seule, au même endroit et dans le même",
+            "état. Le verre gorgé d'eau ne casse pas (l'eau se répandrait). Le réglage DestroyGlass de tacz-common.toml doit",
+            "rester à false : c'est HeraliZ qui casse (TaCZ ne regarde aucune zone protégée et dérange les blocs voisins).",
+            "false : comme avant (les blocs de verre laissent passer les balles, les vitres les arrêtent, rien ne casse).")
+         .define("casser", true);
+      VITRES_DELAI_MINUTES = builder.comment(
+            "Délai (en minutes) avant qu'une vitre cassée repousse, compté en temps réel : une vitre dont le délai est passé",
+            "pendant un arrêt du serveur repousse au redémarrage. Si quelqu'un se tient à sa place ou si un bloc l'occupe, elle",
+            "attend et réessaie. Les vitres à remettre sont gardées dans les données du monde (data/heraliz_vitres.dat, une",
+            "liste par dimension).")
+         .defineInRange("delai_repousse_minutes", Vitres.DEFAUT_DELAI_MINUTES, 1, 10080);
+      VITRES_DIMENSIONS = builder.comment(
+            "Dimensions où le verre ne casse jamais (arènes des matchs, zombies, bunkers des clans) : les balles le traversent",
+            "ou s'y arrêtent comme avant.")
+         .defineList("dimensions_protegees", Vitres.DEFAUT_DIMENSIONS, o -> o instanceof String);
+      VITRES_RAYON_SPAWN = builder.comment(
+            "Rayon (en blocs) autour du point d'apparition du monde (dimension minecraft:overworld) où le verre ne casse pas,",
+            "sur toute la hauteur. 0 : aucun.")
+         .defineInRange("rayon_spawn", Vitres.DEFAUT_RAYON_SPAWN, 0, 100000);
+      VITRES_CLAIMS_CRAC = builder.comment("Le verre ne casse pas dans les claims de CRac (bases des groupes).")
+         .define("proteger_claims_crac", true);
+      VITRES_BLOCS_PROTEGES = builder.comment("Blocs de verre qui ne cassent jamais (identifiants, par exemple \"minecraft:tinted_glass\").")
+         .defineList("blocs_proteges", List.of(), o -> o instanceof String);
       builder.pop();
       return builder.build();
    }
