@@ -2,6 +2,12 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('heraliz', Object.freeze({
     getState: () => ipcRenderer.invoke('heraliz:state'),
+    majLauncher: () => ipcRenderer.invoke('heraliz:maj-launcher'),
+    onMaj: callback => {
+        const listener = (_event, etat) => callback(etat)
+        ipcRenderer.on('heraliz:maj', listener)
+        return () => ipcRenderer.removeListener('heraliz:maj', listener)
+    },
     saveProfile: (username, acceptedRules) => ipcRenderer.invoke('heraliz:profile', { username, acceptedRules }),
     connexion: (email, password, code, acceptedRules) => ipcRenderer.invoke('heraliz:connexion', { email, password, code, acceptedRules }),
     verifierCompte: () => ipcRenderer.invoke('heraliz:compte'),

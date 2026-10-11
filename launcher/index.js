@@ -1,7 +1,9 @@
 const { app, BrowserWindow, ipcMain, shell, dialog, clipboard } = require('electron')
 const path = require('node:path')
+const fs = require('node:fs')
 const { pathToFileURL } = require('node:url')
 const { isTrustedFrame, httpsUrl } = require('./app/assets/js/security')
+const { MiseAJour } = require('./app/assets/js/mise-a-jour')
 const config = require('./app/heraliz.json')
 
 // Test runs never touch the player's real profile or game installation.
@@ -74,6 +76,20 @@ else {
                 win.setProgressBar(progress.busy && progress.phase !== 'running' ? (progress.percent == null ? 2 : progress.percent / 100) : -1)
             }
         })
+        // mise à jour du launcher lui-même : seulement la version installée sur Windows (pas en développement)
+        const majActive = app.isPackaged && process.platform === 'win32'
+        const fichierMaj = path.join(app.getPath('userData'), 'mise-a-jour.json')
+        const miseAJour = new MiseAJour({
+            updater: majActive ? require('electron-updater').autoUpdater : null,
+            actif: majActive,
+            envoyer: etat => { if (win && !win.isDestroyed()) win.webContents.send('heraliz:maj', etat) },
+            occupe: () => Boolean(service?.busy),
+            memoire: {
+                lire: () => JSON.parse(fs.readFileSync(fichierMaj, 'utf8')),
+                ecrire: valeur => fs.writeFileSync(fichierMaj, JSON.stringify(valeur))
+            }
+        })
+        handle('maj-launcher', () => miseAJour.verifier())
         handle('state', () => service.getState())
         handle('profile', value => service.saveProfile(value))
         handle('connexion', value => service.connexion(value))

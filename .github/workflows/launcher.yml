@@ -52,6 +52,11 @@ jobs:
         run: |
           npm run dist:win
           ls -l dist/*.exe
+          # adresse de la mise à jour automatique, lue par le launcher installé (mise-a-jour.js)
+          if ! grep -q "url: https://heraliz.fr/telecharger/" dist/win-unpacked/resources/app-update.yml; then
+            echo "::error::app-update.yml absent ou sans l'adresse heraliz.fr/telecharger : le launcher ne pourrait pas se mettre à jour."
+            exit 1
+          fi
 
       # gardé 7 jours dans l'onglet Actions ; un quota d'artefacts plein ne bloque ni la fabrication ni la mise en ligne
       - uses: actions/upload-artifact@v4
@@ -67,7 +72,8 @@ jobs:
           python-version: "3.12"
 
       # envoyé directement depuis cette machine (pas d'artefact entre deux tâches : il en dépendrait) ; nom fixe : le lien
-      # du site ne change jamais. Mot de passe par variable d'environnement seulement, jamais dans une commande.
+      # du site ne change jamais. Puis latest.yml (version, empreinte, taille), lu par les launchers installés pour se
+      # mettre à jour seuls. Mot de passe par variable d'environnement seulement, jamais dans une commande.
       - name: Mise en ligne sur heraliz.fr/telecharger
         if: github.event_name == 'workflow_dispatch' && inputs.publier
         env:
@@ -75,6 +81,7 @@ jobs:
           SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+          PYTHONUTF8: "1"
         run: |
           if [ -z "$SITE_SSH_HOTE" ] || [ -z "$SITE_SSH_UTILISATEUR" ] || [ -z "$SITE_SSH_MDP" ]; then
             echo "::error::Secrets SITE_SSH_* manquants (Settings → Secrets and variables → Actions)."
@@ -85,6 +92,10 @@ jobs:
           if [ "${#exe[@]}" -ne 1 ]; then echo "::error::Un seul installateur attendu, ${#exe[@]} trouvé(s)."; exit 1; fi
           python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
           INSTALLATEUR="${exe[0]}" python - <<'PY'
+          import base64
+          import datetime
+          import hashlib
+          import json
           import os
           import sys
 
@@ -107,14 +118,29 @@ jobs:
           except OSError:
               print(f"::error::La VM du site n'est pas prête (dossier {DOSSIER}) : lancer le workflow « Site HeraliZ » avec « installer », puis relancer celui-ci.")
               sys.exit(1)
-          # envoyé sous un nom provisoire, puis renommé d'un coup : le lien ne donne jamais un fichier à moitié envoyé
-          provisoire = f"{DOSSIER}/.{NOM}.envoi"
-          sftp.put(os.environ["INSTALLATEUR"], provisoire, confirm=True)
-          sftp.chmod(provisoire, 0o644)
-          sftp.posix_rename(provisoire, f"{DOSSIER}/{NOM}")
+          # chaque fichier est envoyé sous un nom provisoire puis renommé d'un coup : jamais un fichier à moitié envoyé ;
+          # l'installateur d'abord, latest.yml ensuite (il ne désigne jamais un installateur absent)
+          def deposer(local, nom):
+              provisoire = f"{DOSSIER}/.{nom}.envoi"
+              sftp.put(local, provisoire, confirm=True)
+              sftp.chmod(provisoire, 0o644)
+              sftp.posix_rename(provisoire, f"{DOSSIER}/{nom}")
+
+          installateur = os.environ["INSTALLATEUR"]
+          with open(installateur, "rb") as f:
+              empreinte = base64.b64encode(hashlib.sha512(f.read()).digest()).decode()
+          taille = os.path.getsize(installateur)
+          with open("package.json", encoding="utf-8") as f:
+              version = json.load(f)["version"]
+          date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+          with open("latest.yml", "w", encoding="utf-8", newline="\n") as f:
+              f.write(f"version: {version}\nfiles:\n  - url: {NOM}\n    sha512: {empreinte}\n    size: {taille}\n"
+                      f"path: {NOM}\nsha512: {empreinte}\nreleaseDate: '{date}'\n")
+          deposer(installateur, NOM)
+          deposer("latest.yml", "latest.yml")
           sftp.close()
           client.close()
-          print(f"Installateur déposé dans {DOSSIER}/{NOM}")
+          print(f"Launcher {version} déposé dans {DOSSIER} ({NOM} et latest.yml)")
           PY
           URL=https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
           taille=$(curl -fsSI --max-time 60 "$URL" | tr -d '\r' | awk 'tolower($1) == "content-length:" {print $2}')
@@ -122,7 +148,13 @@ jobs:
             echo "::error::$URL ne donne pas l'installateur envoyé (taille ${taille:-inconnue})."
             exit 1
           fi
+          VERSION=$(node -p "require('./package.json').version")
+          if ! curl -fsS --max-time 60 https://heraliz.fr/telecharger/latest.yml | grep -qx "version: $VERSION"; then
+            echo "::error::https://heraliz.fr/telecharger/latest.yml n'annonce pas la version $VERSION : les launchers installés ne se mettront pas à jour."
+            exit 1
+          fi
           {
-            echo "### Launcher en ligne"
-            echo "- $URL ($(( taille / 1048576 )) Mo, fait à partir de \`$(basename "${exe[0]}")\`)"
+            echo "### Launcher $VERSION en ligne"
+            echo "- $URL ($(( taille / 1048576 )) Mo)"
+            echo "- les launchers déjà installés (1.6.0 et plus) se mettent à jour seuls à leur prochain démarrage"
           } >> "$GITHUB_STEP_SUMMARY"

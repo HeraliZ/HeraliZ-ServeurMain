@@ -19,7 +19,7 @@ files:
   - 'app/assets/images/heraliz-*.{png,jpg,ico}'
   - 'app/assets/images/nouveautes/*.jpg'
   - 'app/assets/images/minecraft.icns'
-  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,renderer,spartan,topo,nouveautes,compte-site}.js'
+  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,renderer,spartan,topo,nouveautes,compte-site,mise-a-jour}.js'
   - 'app/assets/js/spartan-cle.json'
 
 extraResources:
@@ -33,7 +33,9 @@ win:
       arch: 'x64'
 
 # Windows Installer Configuration
+# Nom fixe : c'est le lien public (https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe) et celui de latest.yml.
 nsis:
+  artifactName: 'HeraliZ-Launcher-Setup.${ext}'
   oneClick: false
   perMachine: false
   allowElevation: true
@@ -64,3 +66,9 @@ linux:
 directories:
   buildResources: 'build'
   output: 'dist'
+
+# Mise à jour automatique du launcher installé (app/assets/js/mise-a-jour.js) : adresse écrite dans app-update.yml.
+# latest.yml et l'installateur y sont déposés par le workflow « Launcher HeraliZ » (case « publier »).
+publish:
+  - provider: 'generic'
+    url: 'https://heraliz.fr/telecharger/'
