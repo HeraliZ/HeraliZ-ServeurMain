@@ -643,8 +643,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - **Un gunpack TaCZ (nouveau ou mis à jour)** : son dossier dans `serveur/tacz/`, puis `python outils/silencieux.py`
   (portée du son de ses silencieux, `verifier.py` le réclame), `python outils/accessoires.py` (ses accessoires dans
   les listes communes et les listes communes sur ses armes, `verifier.py` le réclame ; un accessoire fait pour une
-  seule de ses armes va dans `PROPRES` de l'outil) et `python outils/icones_sans_contour.py` (retire le
-  contour noir de ses icônes d'inventaire). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
+  seule de ses armes va dans `PROPRES` de l'outil), `python outils/icones_sans_contour.py` (retire le
+  contour noir de ses icônes d'inventaire) et `python outils/icones_sans_logo.py` (retire le logo « M » de Max Stuff,
+  `verifier.py` le réclame). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
   redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur.
 - **Un pack de textures** : il est imposé par heraliz_interface
   (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
@@ -757,6 +758,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - duels (11/10) : défi reçu = petite notification en haut à droite (plus de grand écran au milieu) ; les dimensions des matchs et des zombies ont leur propre bordure du monde (avant, les arènes sortaient de celle de la carte : mort en boucle) ;
 - sons (11/10) : MAtmos jouait le bruit de changement d'objet de chaque joueur visible, sans atténuation (sons stéréo) : dayzhotbar (`SonChangementObjet`) ne laisse entendre celui des autres qu'à 8 blocs au plus ;
 - accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;
+- logo de Max Stuff (11/10) : le petit « M » est retiré des icônes de ses accessoires, choix du propriétaire malgré la licence du pack (CC BY-NC-ND 4.0 : pas de version modifiée diffusée ; tous les gunpacks des autres auteurs ont la même licence, et NC à surveiller avec la boutique). Auteurs crédités dans `serveur/tacz/arkaniaz_pack_5_converted/CREDITS.txt`. D'autres logos restent sur des icônes d'armes (« Chill Deep » du pack arkaniaz_custom, « MIL », « CIB ») : pas touchés sans demande ;
 - touches (11/10) : une seule table des touches par défaut, appliquée chez le joueur par heraliz_interface (`client/Touches.java`) sans toucher aux jars des autres auteurs : pas de doublon (G = mode de tir de TaCZ, H = inspecter, Tab = liste des joueurs), Curios sur U, mode de la voix (chuchoter / parler / crier) sur X, touches inutiles cachées de l'écran des commandes ; une touche choisie par un joueur n'est jamais changée. Une touche de mod avec Maj, Ctrl ou Alt sur un bouton de souris prend tout ce bouton dès que le modificateur est enfoncé (Forge) : à ne jamais refaire ;
 - Armurerie : les combinaisons intégrales (Hazmat, froid, plongée) se portent seules (sac à dos permis) ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;

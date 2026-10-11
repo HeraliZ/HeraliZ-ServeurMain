@@ -18,6 +18,9 @@ Provenance (serveur/tacz/.export-state.json) : gunpack fourni par le mod Forge M
 gunpack de TaCZ 1.1.
 
 Retouches faites pour le serveur HeraliZ :
+  - icônes d'inventaire des accessoires (assets/maxstuff/textures/attachment/slot) : le petit logo « M » de
+    Max Stuff, dans le coin haut-gauche de l'icône, a été retiré (outils/icones_sans_logo.py, choix du
+    propriétaire du serveur) ; les auteurs restent crédités ici ;
   - icônes d'inventaire des armes (assets/maxstuff/textures/gun/slot) : contour noir adouci
     (outils/icones_sans_contour.py) ;
   - fiches d'affichage de deux armes (assets/maxstuff/display/guns : ak_alpha, m82a2) : noms de sons de tir
