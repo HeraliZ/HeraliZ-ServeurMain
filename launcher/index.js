@@ -71,16 +71,22 @@ else {
         })
         handle('state', () => service.getState())
         handle('profile', value => service.saveProfile(value))
+        handle('connexion', value => service.connexion(value))
+        handle('compte', () => service.verifierCompte())
         handle('logout', () => service.logout())
         handle('settings', value => service.saveSettings(value))
         handle('status', () => service.getServerStatus())
         handle('launch', () => service.launch())
         handle('link', async name => {
             // Aucun lien vers les fichiers du serveur ou du jeu (choix du propriétaire : ne pas faciliter le vol des jars).
-            const links = { discord: config.discordUrl }
+            // Pages du site HeraliZ (Azuriom) : inscription, mot de passe oublié, compte.
+            const site = config.siteUrl ? httpsUrl(config.siteUrl) : null
+            const pageSite = chemin => site && new URL(chemin, site).href
+            const links = { discord: config.discordUrl, inscription: pageSite('/user/register'), motdepasse: pageSite('/user/password/reset'), compte: pageSite('/profile') }
             if (!Object.hasOwn(links, name) || !links[name]) throw new Error('Ce lien n’est pas encore configuré.')
             const url = httpsUrl(links[name])
             if (name === 'discord' && !['discord.gg', 'discord.com'].includes(url.hostname)) throw new Error('Lien Discord invalide.')
+            if (name !== 'discord' && url.host !== site.host) throw new Error('Lien du site invalide.')
             await shell.openExternal(url.href)
         })
         handle('window', action => {
