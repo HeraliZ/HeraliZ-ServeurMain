@@ -17,9 +17,18 @@ if command -v ufw > /dev/null; then echo "Pare-feu ufw : $(ufw status 2> /dev/nu
 code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' https://packages.sury.org/ 2> /dev/null)
 if [ "${code:-000}" = 000 ]; then echo "Sortie vers internet : bloquée"; else echo "Sortie vers internet : OK"; fi
 # le site et le launcher
+installe=non
 if [ -f /var/www/azuriom/artisan ]; then
   v=$(grep -oE "VERSION = '[^']+'" /var/www/azuriom/app/Azuriom.php 2> /dev/null | head -n 1 | cut -d"'" -f2)
-  echo "Azuriom : installé${v:+ (version $v)}"
+  # Azuriom est installé quand son .env porte une clé (APP_KEY), écrite par la dernière étape dans le navigateur
+  if grep -qE '^APP_KEY=base64:.+' /var/www/azuriom/.env 2> /dev/null; then
+    installe=oui
+    echo "Azuriom : installé${v:+ (version $v)}"
+  elif [ -f /var/www/azuriom/.env ]; then
+    echo "Azuriom${v:+ $v} : téléchargé, base de données réglée ; à finir dans le navigateur (jeu, compte administrateur)"
+  else
+    echo "Azuriom${v:+ $v} : téléchargé ; à finir dans le navigateur (base de données, jeu, compte administrateur)"
+  fi
 elif [ -f /var/www/azuriom/index.php ]; then
   echo "Azuriom : installeur en place, installation à terminer dans le navigateur (https://heraliz.fr)"
   # ce que l'installeur vérifie avant son bouton « Télécharger » (même requête que sa page)
@@ -38,7 +47,7 @@ else
   echo "Azuriom : absent"
 fi
 # API de connexion du launcher (AzAuth) : 422 = activée (requête vide refusée), 400 = pas activée dans l'administration
-if [ -f /var/www/azuriom/artisan ]; then
+if [ "$installe" = oui ]; then
   code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 -X POST \
     -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{}' https://heraliz.fr/api/auth/authenticate)
   case "$code" in
