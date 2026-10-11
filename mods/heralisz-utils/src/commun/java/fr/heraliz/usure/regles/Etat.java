@@ -14,7 +14,7 @@ public enum Etat {
     public static final Etat[] TOUS = values();
 
     public final String cle;
-    /** Couleur (RGB) de l'etat : barre, HUD, infobulle. */
+    /** Couleur (RGB) de l'etat : HUD (point et jauge), infobulle. */
     public final int couleur;
 
     Etat(String cle, int couleur) {

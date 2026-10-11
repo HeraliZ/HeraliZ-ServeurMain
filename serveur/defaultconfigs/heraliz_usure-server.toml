@@ -8,7 +8,7 @@
     usure_creatif = false
     # Aucune usure pendant un match (duels, ClashWar, zombies : armes pretees).
     sans_usure_en_match = true
-    # Petite pastille d'etat sous les munitions (chaque joueur peut aussi la couper).
+    # Petit affichage de l'etat de l'arme en main, en bas a gauche (chaque joueur peut aussi le couper).
     hud_autorise = true
     # Dimensions ou les armes ne s'usent pas.
     dimensions_sans_usure = [

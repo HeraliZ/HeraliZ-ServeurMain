@@ -32,7 +32,7 @@ public final class Regles {
     public boolean usureCreatif = false;
     /** Aucune usure pendant un match (drapeau {@code heralisz:en_match}) ni sur une arme pretee. */
     public boolean sansUsureEnMatch = true;
-    /** Le petit affichage pres des munitions est permis (chaque joueur peut aussi le couper chez lui). */
+    /** Le petit indicateur de l'arme en main (en bas a gauche) est permis (chaque joueur peut aussi le couper chez lui). */
     public boolean hudAutorise = true;
     public List<String> dimensionsSansUsure = new ArrayList<>(List.of("heralisz_matchs:arenes", "heralisz_matchs:zombies"));
     /** Munitions des armes « corps a corps » (couteaux faits en armes TaCZ) : ces armes vont dans la categorie Corps a corps. */

@@ -18,20 +18,34 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 /**
- * Petit affichage de l'etat de l'arme en main, en bas a droite, juste SOUS le compteur de munitions de TaCZ
- * (munitions : de h-44 a h-25 ; l'indicateur « EN COMBAT » de HeraliZ Matchs est au-dessus, de h-69 a h-50) : pastille
- * de verre comme « EN COMBAT », point de couleur, etat en petites capitales espacees, pourcentage, jauge fine (avec la
- * part d'etat perdue aux reparations). Arme ruinee : pastille rouge « RUINEE », toujours affichee, qui clignote au clic
- * a vide ; l'etat seul suit le reglage du joueur et du serveur. Textes mis en cache : une image n'alloue rien de plus que
- * le rendu vanilla des glyphes.
+ * Petit indicateur de l'etat de l'arme EN MAIN, en bas a gauche de l'ecran (plus rien n'est dessine sur l'icone de
+ * l'arme) : pastille de verre leger de 13 px de haut, point de la couleur de l'etat (vert neuf, vert-jaune bon, jaune
+ * use, orange abime, rouge ruinee : {@link Etat#couleur}), etat en petites capitales espacees, pourcentage, jauge fine
+ * dessous (avec, en rouge sombre, la part d'etat perdue aux reparations).
+ * <p>Place, pour ne rien recouvrir : bord gauche a 4 px, bas de la pastille a h-28, donc juste au-dessus du micro et du
+ * haut-parleur barre de CaraCrea (de h-26 a h-6) et sous la derniere ligne du chat (qui finit a h-40) ; largeur bornee
+ * pour ne jamais toucher les coeurs (a partir de w/2-91) : si la place manque (ecran etroit, nom d'etat long en russe),
+ * le nom de l'etat est omis. La case de seconde main de la barre DayZ est plus bas (a partir de h-22) ; le HUD de TaCZ
+ * (munitions) reste seul en bas a droite. En match et en zombies, les armes pretees ne s'usent pas : rien ne s'affiche
+ * (la carte du joueur des zombies occupe ce coin).
+ * <p>Arme ruinee : toujours affichee (alerte), pastille teintee de rouge, contour rouge qui clignote au clic a vide ; les
+ * autres etats suivent le reglage du joueur ({@link ClientConfig#HUD}) et du serveur ({@code hudAutorise}). Masque avec
+ * F1, F3 et en spectateur. Textes et largeurs en cache : une image n'alloue rien de plus que le rendu vanilla des glyphes.
  */
 public final class HudUsure {
     private HudUsure() {
     }
 
-    static final int LARGEUR = 100, HAUTEUR = 17;
+    /** Hauteur de la pastille, marge interieure, bord gauche, ecart entre le bas de la pastille et le bas de l'ecran. */
+    static final int HAUTEUR = 13, PAD = 5, X = 4, BAS = 28;
+    /** Point d'etat (cote) et ecarts point / nom / pourcentage. */
+    private static final int POINT = 4, ECART_POINT = 4, ECART_PCT = 5;
+    /** Bord gauche des coeurs vanilla (w/2 - 91) et espace garde avec eux. */
+    private static final int COEURS = 91, ECART_COEURS = 4;
+    /** Opacite du verre (plus leger que les ecrans : 200). */
+    private static final int VERRE = 150;
 
-    private static final TexteEspace TITRE = new TexteEspace(Ui.SMALL, 1.0f);
+    private static final TexteEspace TITRE = new TexteEspace(Ui.SMALL, 0.6f);
     private static String langue;
     private static final String[] NOMS_ETATS = new String[Etat.TOUS.length];
     private static int pctMontre = -1;
@@ -41,41 +55,55 @@ public final class HudUsure {
     static void render(ForgeGui gui, GuiGraphics g, float partialTick, int w, int h) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
-        if (p == null || mc.options.hideGui || p.isSpectator()) return;
+        if (p == null || mc.options.hideGui || mc.options.renderDebug || p.isSpectator()) return;
         ItemStack arme = p.getMainHandItem();
         Profil pr = ReglesClient.suivie(p, arme);
         if (pr == null) return;
         Regles r = ReglesClient.get();
         int etat = Usure.etat(arme, pr);
         Etat st = Etat.de(etat, r);
-        if (st != Etat.RUINE) {
+        boolean ruinee = st == Etat.RUINE;
+        if (!ruinee) {
             ClientConfig.ModeHud mode = ClientConfig.HUD.get();
             if (!r.hudAutorise || mode == ClientConfig.ModeHud.JAMAIS) return;
             if (mode == ClientConfig.ModeHud.SI_USEE && st == Etat.NEUF) return;
         }
         textes(mc);
         Font font = mc.font;
-        int x = w - 8 - LARGEUR, y = h - 23;
-        int couleur = st.couleur;
-        Ui.glass(g, x, y, LARGEUR, HAUTEUR, 175);
-        // flash rouge au clic a vide d'une arme ruinee
-        long depuisClic = ClientTirs.depuisClic();
-        if (st == Etat.RUINE && depuisClic < 600) {
-            float f = 1f - depuisClic / 600f;
-            Ui.softOutline(g, x + 1, y + 1, LARGEUR - 2, HAUTEUR - 2, Ui.argb(Ui.DANGER, (int) (200 * f)));
-        }
-        Ui.soft(g, x + 7, y + 5, 5, 5, Ui.argb(couleur, 255));
-        TITRE.texte(NOMS_ETATS[st.ordinal()]).dessiner(g, x + 17, y + 4.5f, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.45f), 255));
         if (etat != pctMontre) {
             pctMontre = etat;
-            pctTexte = Ui.lit(Reparation.pct(etat), Ui.BOLD);
+            pctTexte = Ui.lit(Reparation.pct(etat), Ui.SMALL);
             pctLargeur = font.width(pctTexte);
         }
-        if (17 + TITRE.largeur() + 6 + pctLargeur + 7 <= LARGEUR) {
-            g.drawString(font, pctTexte, x + LARGEUR - 7 - pctLargeur, y + 4, Ui.argb(Ui.TEXT, 255), false);
+        TITRE.texte(NOMS_ETATS[st.ordinal()]);
+
+        // largeur : point, nom de l'etat, pourcentage ; sans le nom si la pastille toucherait les coeurs
+        int place = w / 2 - COEURS - ECART_COEURS - X;
+        int sansNom = PAD + POINT + ECART_POINT + pctLargeur + PAD;
+        int avecNom = sansNom + (int) Math.ceil(TITRE.largeur()) + ECART_PCT;
+        boolean nom = avecNom <= place;
+        int lw = nom ? avecNom : sansNom;
+        int x = X, y = h - BAS - HAUTEUR;
+        int couleur = st.couleur;
+
+        Ui.glass(g, x, y, lw, HAUTEUR, VERRE);
+        if (ruinee) {
+            Ui.soft(g, x + 1, y + 1, lw - 2, HAUTEUR - 2, Ui.argb(Ui.DANGER, 28));
+            // flash rouge au clic a vide d'une arme ruinee
+            long depuisClic = ClientTirs.depuisClic();
+            if (depuisClic < 600) {
+                float f = 1f - depuisClic / 600f;
+                Ui.softOutline(g, x + 1, y + 1, lw - 2, HAUTEUR - 2, Ui.argb(Ui.DANGER, (int) (200 * f)));
+            }
         }
+        Ui.soft(g, x + PAD, y + 3, POINT, POINT, Ui.argb(couleur, 255));
+        int tx = x + PAD + POINT + ECART_POINT;
+        if (nom) TITRE.dessiner(g, tx, y + 2, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.45f), 255));
+        int couleurPct = ruinee ? Ui.mix(Ui.DANGER, 0xFFFFFF, 0.3f) : Ui.TEXT;
+        g.drawString(font, pctTexte, x + lw - PAD - pctLargeur, y + 2, Ui.argb(couleurPct, 255), false);
+
         // jauge fine : etat, et la part perdue aux reparations en rouge sombre
-        int bx = x + 6, bw = LARGEUR - 12, by = y + HAUTEUR - 4;
+        int bx = x + PAD, bw = lw - 2 * PAD, by = y + HAUTEUR - 3;
         Ui.bar(g, bx, by, bw, 1, etat / (float) Usure.PLEIN, couleur);
         int max = Usure.max(arme);
         if (max < Usure.PLEIN) {

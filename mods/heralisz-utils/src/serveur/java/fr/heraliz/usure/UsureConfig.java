@@ -131,7 +131,7 @@ public final class UsureConfig {
         e.val("general.usure_creatif", r.usureCreatif, "Les armes s'usent aussi en mode creatif.");
         e.val("general.sans_usure_en_match", r.sansUsureEnMatch,
                 "Aucune usure pendant un match (duels, ClashWar, zombies : armes pretees).");
-        e.val("general.hud_autorise", r.hudAutorise, "Petite pastille d'etat sous les munitions (chaque joueur peut aussi la couper).");
+        e.val("general.hud_autorise", r.hudAutorise, "Petit affichage de l'etat de l'arme en main, en bas a gauche (chaque joueur peut aussi le couper).");
         e.val("general.dimensions_sans_usure", new ArrayList<>(r.dimensionsSansUsure), "Dimensions ou les armes ne s'usent pas.");
         e.val("general.munitions_corps_a_corps", new ArrayList<>(r.munitionsMelee),
                 "Munitions des armes de corps a corps (couteaux faits en armes TaCZ) : categorie melee.");

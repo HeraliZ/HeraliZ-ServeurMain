@@ -152,7 +152,7 @@ modId="heraliz_usure"
 version="${mod_version}"
 displayName="HeraliZ Utils · Usure des armes"
 authors="${mod_authors}"
-description='''Usure des armes TaCZ du serveur HeraliZ (remplace Gun Durability) : etats Neuf / Bon / Use / Abime / Ruine (une arme ruinee ne tire plus avant d'etre reparee), sans enrayage ni malus de degats ou de precision, kits de reparation par niveau, barre d'usure sur l'objet et petit affichage pres des munitions. Aucune usure en match ni en mode zombies. Tout se regle cote serveur (fichier et ecran /usure config).'''
+description='''Usure des armes TaCZ du serveur HeraliZ (remplace Gun Durability) : etats Neuf / Bon / Use / Abime / Ruine (une arme ruinee ne tire plus avant d'etre reparee), sans enrayage ni malus de degats ou de precision, kits de reparation par niveau, petit affichage de l'arme en main en bas a gauche de l'ecran. Aucune usure en match ni en mode zombies. Tout se regle cote serveur (fichier et ecran /usure config).'''
 [[dependencies.heraliz_usure]]
     modId="heralisz_utils"
     mandatory=true

@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
  * Aucune usure en match, sur une arme pretee, dans une dimension sans usure, en creatif (reglable). Aucune allocation
  * par tir : identifiant lu tel quel dans le NBT, profil en cache, entiers 0..1000 gardes en cache par Minecraft.
  * <p>Jar fusionne (docs/METHODE_CLIENT_SERVEUR.md §5) : ici, ce que lisent les deux cotes (exemptions, aussi lues par
- * le client pour la barre, le HUD et le clic a vide ; calcul de la perte) ; les ecouteurs des tirs sont dans
+ * le client pour le HUD et le clic a vide ; calcul de la perte) ; les ecouteurs des tirs sont dans
  * {@code TirsServeur} (partie serveur, inscrits par serveur.PartieServeur).
  */
 public final class Tirs {

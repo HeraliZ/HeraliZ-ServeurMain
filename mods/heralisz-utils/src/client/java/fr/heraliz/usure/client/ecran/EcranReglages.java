@@ -10,7 +10,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
-/** Reglages du joueur (liste des mods, bouton « Config ») : petit affichage pres des munitions, barre sur les armes. */
+/** Reglages du joueur (liste des mods, bouton « Config ») : petit indicateur de l'arme en main, en bas a gauche. */
 public class EcranReglages extends Screen {
     private final Screen parent;
     private int px, py, pw, ph;
@@ -28,17 +28,13 @@ public class EcranReglages extends Screen {
     protected void init() {
         Echelle.forcer(this);
         pw = Math.min(420, width - 24);
-        ph = 150;
+        ph = 120;
         px = (width - pw) / 2;
         py = (height - ph) / 2;
         int cw = pw - 2 * Ui.MARGE;
         String[] modes = {t("heraliz_usure.reglages.hud.toujours"), t("heraliz_usure.reglages.hud.si_usee"), t("heraliz_usure.reglages.hud.jamais")};
         addRenderableWidget(new Segments(px + Ui.MARGE + cw / 2, py + 54, cw / 2 - 8, 14, modes, () -> ClientConfig.HUD.get().ordinal(), i -> {
             ClientConfig.HUD.set(ClientConfig.ModeHud.values()[i]);
-            ClientConfig.SPEC.save();
-        }));
-        addRenderableWidget(new Interrupteur(px + Ui.MARGE + cw - 90, py + 84, 82, 14, ClientConfig.BARRE::get, v -> {
-            ClientConfig.BARRE.set(v);
             ClientConfig.SPEC.save();
         }));
         addRenderableWidget(new HzButton(px + pw - Ui.MARGE - 100, py + ph - 28, 100, 18, Component.translatable("gui.done"), Ui.accent(), this::onClose)
@@ -51,7 +47,6 @@ public class EcranReglages extends Screen {
         Cadre.fermer(g, px + pw - Ui.MARGE - 7, py + 14, mouseX, mouseY);
         int x = px + Ui.MARGE, cw = pw - 2 * Ui.MARGE;
         ligne(g, x, py + 48, cw, "heraliz_usure.reglages.hud", mouseX, mouseY);
-        ligne(g, x, py + 78, cw, "heraliz_usure.reglages.barre", mouseX, mouseY);
         Ui.hairline(g, px + Ui.MARGE, px + pw - Ui.MARGE, py + ph - 36, 0xFFFFFF, 30, true, true);
         super.render(g, mouseX, mouseY, partialTick);
     }

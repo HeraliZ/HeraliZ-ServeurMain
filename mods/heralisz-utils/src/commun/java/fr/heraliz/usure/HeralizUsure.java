@@ -22,8 +22,8 @@ import java.util.function.Supplier;
  *   <li>{@code UsureConfig} / {@code ReglesServeur} : reglages serveur (fichier {@code serverconfig/heraliz_usure-server.toml}
  *   relu tout seul, ecran {@code /usure config}) ;</li>
  *   <li>{@code Commandes} : {@code /usure voir | reparer | definir | config} ;</li>
- *   <li>client ({@code client.ClientUsure}) : barre d'usure sur l'objet (aussi dans DayZ Hotbar), infobulle, petit
- *   affichage pres des munitions TaCZ (alerte « ruinee »).</li>
+ *   <li>client ({@code client.ClientUsure}) : infobulle, petit indicateur de l'arme en main en bas a gauche de l'ecran
+ *   (alerte « ruinee ») ; rien sur l'icone de l'arme.</li>
  * </ul>
  * Aucune usure en match (drapeau {@code heralisz:en_match} de HeraliZ Matchs, armes pretees {@code HeraliszMatch}),
  * dans les dimensions des matchs et des zombies ; couteaux et armes des zombies exclus. Camos et Pack-a-Punch intacts.
