@@ -768,7 +768,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   qui disparaît au bout de 10 min, ou tout de suite une fois vide ; on ne peut rien y déposer. `keepInventory` doit être
   à false sur les mondes du Ptero (gamerule tapée en jeu) ; `/suicide` pour tous les joueurs (mort normale) ;
 - train (11/10) : un train qui roule heurte (2,5 cœurs, joueur projeté à côté) ; il ne tue que devant la locomotive ou
-  dans la voie, sous la caisse ;
+  dans la voie, sous la caisse ; dans la voiture, les jambes bougent et on peut sauter (réseau du train version 4 :
+  jars joueurs et serveur de la même fabrication). La voie se corrige EN JEU, jamais dans les fichiers du monde (staff) :
+  `/train voie info` (point visé), `genre <p|r|t|T|P|x> [longueur]`, `retirer [longueur]`, `annuler`, `liste`,
+  `effacer` (aspect seulement, le trajet ne bouge pas ; gardé dans les données du train du monde) ; `/train voie remplir
+  [ponts|tout]` pose sous la voie dessinée un bloc invisible et incassable (`heralisz_utils:voie_pleine`) pour qu'on
+  ne puisse plus entrer dans le ballast des ponts, `vider` le retire ;
 - onglets créatifs (11/10) : l'onglet « HeraliZ » (meubles cfm) ne montre que les meubles posés sur la carte (liste
   `heralisz_utils_onglet_heraliz.json`, refaite d'après le workflow « Inventaire de la carte ») ; armes de mêlée et
   couteaux seulement dans le groupe Mêlée de HeraliZ · Tactique (plus dans « Arme lourde ») ;

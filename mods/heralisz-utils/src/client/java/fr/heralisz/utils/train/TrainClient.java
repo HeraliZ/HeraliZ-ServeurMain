@@ -43,6 +43,8 @@ public final class TrainClient {
             annonce(a.actif(), a.decalage());
         } else if (m instanceof Train.Recadrer r) {
             recadrage(r.vehicule(), r.lx(), r.lz());
+        } else if (m instanceof Train.Voie v) {
+            VoieRendu.retouches(v.reseau(), v.retouches());
         }
     }
 
@@ -75,8 +77,8 @@ public final class TrainClient {
         return new float[]{p.input.leftImpulse, p.input.forwardImpulse, (float) v};
     }
 
-    static void envoyer(int v, float x, float z, boolean assis) {
-        Train.CANAL.sendToServer(new Train.Marche(v, x, z, assis));
+    static void envoyer(int v, float x, float z, boolean assis, float hauteur) {
+        Train.CANAL.sendToServer(new Train.Marche(v, x, z, assis, hauteur));
     }
 
     private static long derniereDescente;
@@ -110,7 +112,7 @@ public final class TrainClient {
                 : net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.a_bord", maj), false);
     }
 
-    /** Touches : saut (se lever), accroupi (s'asseoir). */
+    /** Touches : saut (se lever ; debout : sauter), accroupi (s'asseoir). */
     static boolean saut() {
         Minecraft mc = Minecraft.getInstance();
         return mc.screen == null && mc.options.keyJump.isDown();
@@ -215,7 +217,7 @@ public final class TrainClient {
             decalage = 0;
             fr.heralisz.utils.cine.CineDecor.oublier();                // le décor de la cinématique de ce serveur
             Minecraft.getInstance().execute(() -> {
-                VoieRendu.vider();
+                VoieRendu.oublier();                                   // et les retouches de la voie de ce serveur
                 RameRendu.vider();
                 PlateauRendu.vider();
             });

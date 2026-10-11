@@ -21,6 +21,11 @@ public final class Voyageurs {
     static final float R = 0.24f;                  // demi-largeur d'un voyageur
     static final float[] FEN_X = {-6, -4, -2, 0, 2, 4, 6};
     static final double MARCHE = 0.2158, COURSE = 0.28;
+    /** Saut dans la voiture, comme le saut de Minecraft : vitesse de départ, pesanteur et freinage par tick (sommet à
+     *  1,25 bloc au-dessus du plancher) ; le serveur refuse plus haut que SAUT_MAX. */
+    static final float SAUT = 0.42f, PESANTEUR = 0.08f, FREIN = 0.98f, SAUT_MAX = 1.3f;
+    /** Hauteur des passages (portes d'intercirculation et de cloison : 2,6 blocs) moins la taille d'un joueur. */
+    static final float SAUT_PORTE = 0.8f;
     /** Objets des vestibules (x0, z0, x1, z1 : samovar, poubelle, extincteur), lus dans train/voitures.json. */
     static float[][] OBJETS = new float[0][];
     /** Par modèle de voiture (train/voitures.json, écrit par tools/gen_train.py) : banquettes ou non, obstacles en plus
@@ -239,6 +244,13 @@ public final class Voyageurs {
         double cc = Math.cos(pl.cap), sc = Math.sin(pl.cap), cp = Math.cos(pl.pente), sp = Math.sin(pl.pente);
         double a = dx * cc + dz * sc, c = -dx * sc + dz * cc;
         return new double[]{a * cp + dy * sp, -a * sp + dy * cp, c};
+    }
+
+    /** Plus haut saut possible en x (coordonnée de la voiture) : sous le plafond de la salle, ou sous le linteau d'une
+     *  porte (cloisons des vestibules, intercirculation et soufflet). */
+    static float plafondSaut(float x) {
+        float ax = Math.abs(x);
+        return Math.abs(ax - VEST) < R + 0.3f || ax > VL - R - 0.3f ? SAUT_PORTE : SAUT_MAX - 0.05f;
     }
 
     /** Milieu de la baie (fenêtre) la plus proche si on y est (|lx - f| < 0,5), sinon NaN. */

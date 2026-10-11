@@ -21,8 +21,9 @@ import net.minecraftforge.network.PacketDistributor;
 
 /**
  * Le train de HeraliZ, côté serveur (jar fusionné : partie serveur de Train, code d'origine déplacé tel quel) : données du
- * monde « heralisz_train » (actif + décalage de l'horaire), annonce aux joueurs, commandes /train, montée et descentes
- * (filet de sécurité : téléportation, changement de monde, mort, déconnexion), paquets Marche / Descente reçus.
+ * monde « heralisz_train » (actif + décalage de l'horaire + retouches de la voie dessinée), annonce aux joueurs, commandes
+ * /train (/train voie : VoieServeur), montée et descentes (filet de sécurité : téléportation, changement de monde, mort,
+ * déconnexion), paquets Marche / Descente reçus.
  */
 public final class TrainServeur {
     private TrainServeur() {}
@@ -45,7 +46,7 @@ public final class TrainServeur {
     /** Paquets client -> serveur (traitements d'origine de Train.init). */
     private static void recevoir(Train.Recu r) {
         if (r.paquet() instanceof Train.Marche m) {
-            VoyageursServeur.marche(r.joueur(), m.vehicule(), m.lx(), m.lz(), m.assis());
+            VoyageursServeur.marche(r.joueur(), m.vehicule(), m.lx(), m.lz(), m.assis(), m.hauteur());
         } else if (r.paquet() instanceof Train.Descente) {
             VoyageursServeur.descenteDemandee(r.joueur(), "Maj");
         }
@@ -101,18 +102,33 @@ public final class TrainServeur {
         }
     }
 
-    /** Données du monde : le train roule-t-il ici, et de combien l'horaire est-il décalé (ticks). */
+    /** Données du monde : le train roule-t-il ici, de combien l'horaire est-il décalé (ticks), et les retouches de la
+     *  voie dessinée posées par le staff (/train voie), une liste par réseau. */
     public static final class Donnees extends SavedData {
         public boolean actif;
         public long decalage;
         /** Réseau de ce monde (fichier du jar) : « reseau » (ancienne map, par défaut) ou « reseau_v2 » (nouvelle map). */
         public String reseau = "reseau";
+        /** Retouches de la voie dessinée, par nom de réseau (purement visuelles, Retouches). */
+        final java.util.Map<String, java.util.List<Retouches.Retouche>> voie = new java.util.HashMap<>();
 
         static Donnees lire(CompoundTag t) {
             Donnees d = new Donnees();
             d.actif = t.getBoolean("actif");
             d.decalage = t.getLong("decalage");
             if (t.contains("reseau")) d.reseau = t.getString("reseau");
+            if (t.contains("voie", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                CompoundTag v = t.getCompound("voie");
+                for (String nom : v.getAllKeys()) {
+                    net.minecraft.nbt.ListTag l = v.getList(nom, net.minecraft.nbt.Tag.TAG_INT_ARRAY);
+                    java.util.List<Retouches.Retouche> rs = new java.util.ArrayList<>();
+                    for (int k = 0; k < l.size(); k++) {
+                        int[] a = l.getIntArray(k);
+                        if (a.length >= 3) rs.add(new Retouches.Retouche(a[0], a[1], (byte) a[2]));
+                    }
+                    d.voie.put(nom, rs);
+                }
+            }
             return d;
         }
 
@@ -121,7 +137,22 @@ public final class TrainServeur {
             t.putBoolean("actif", actif);
             t.putLong("decalage", decalage);
             t.putString("reseau", reseau);
+            CompoundTag v = new CompoundTag();
+            for (var e : voie.entrySet()) {
+                if (e.getValue().isEmpty()) continue;
+                net.minecraft.nbt.ListTag l = new net.minecraft.nbt.ListTag();
+                for (Retouches.Retouche x : e.getValue()) {
+                    l.add(new net.minecraft.nbt.IntArrayTag(new int[]{x.debut(), x.longueur(), x.genre()}));
+                }
+                v.put(e.getKey(), l);
+            }
+            t.put("voie", v);
             return t;
+        }
+
+        /** Retouches du réseau de ce monde (liste modifiable : appeler setDirty puis TrainServeur.voie après). */
+        java.util.List<Retouches.Retouche> retouches() {
+            return voie.computeIfAbsent(reseau, k -> new java.util.ArrayList<>());
         }
     }
 
@@ -151,6 +182,19 @@ public final class TrainServeur {
             Train.CANAL.send(PacketDistributor.PLAYER.with(() -> p), a);
         } else {
             Train.CANAL.send(PacketDistributor.ALL.noArg(), a);
+        }
+        voie(server, p);
+    }
+
+    /** Retouches de la voie du réseau de ce monde, à un joueur (p) ou à tous (null) : après l'annonce, et à chaque
+     *  retouche (/train voie). */
+    static void voie(MinecraftServer server, ServerPlayer p) {
+        Donnees d = donnees(server);
+        Train.Voie v = new Train.Voie(d.reseau, java.util.List.copyOf(d.retouches()));
+        if (p != null) {
+            Train.CANAL.send(PacketDistributor.PLAYER.with(() -> p), v);
+        } else {
+            Train.CANAL.send(PacketDistributor.ALL.noArg(), v);
         }
     }
 
@@ -198,6 +242,7 @@ public final class TrainServeur {
 
     private static void commandes(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("train").requires(s -> s.hasPermission(2))
+                .then(VoieServeur.commande())
                 .then(Commands.literal("info").executes(c -> {
                     MinecraftServer srv = c.getSource().getServer();
                     Horaire h = Horaire.get();

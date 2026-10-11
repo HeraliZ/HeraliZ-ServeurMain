@@ -18,13 +18,17 @@ import net.minecraft.world.phys.Vec3;
  * donnée en coordonnées de la voiture (lx le long, lz en travers, au niveau du plancher). Le serveur et chaque client
  * en déduisent la position dans le monde à partir de l'horaire (le train n'est pas une entité) : tout le monde voit le
  * voyageur exactement dans la voiture qu'il dessine. Le joueur qui marche calcule lui-même sa position (sans attendre
- * le serveur) et l'envoie ; le serveur la vérifie (Voyageurs). Jamais sauvegardée.
+ * le serveur) et l'envoie ; le serveur la vérifie (Voyageurs). Debout, il peut sauter (Espace) : la hauteur du saut
+ * au-dessus du plancher est prédite de même par son client, vérifiée par le serveur et montrée aux autres (HAUTEUR).
+ * Jamais sauvegardée.
  */
 public class Voyageur extends Entity {
     static final EntityDataAccessor<Integer> VEHICULE = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.INT);
     static final EntityDataAccessor<Float> LX = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.FLOAT);
     static final EntityDataAccessor<Float> LZ = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.FLOAT);
     static final EntityDataAccessor<Boolean> ASSIS = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.BOOLEAN);
+    /** Hauteur du saut au-dessus du plancher (0 : pieds au plancher), vue par le serveur et les autres joueurs. */
+    static final EntityDataAccessor<Float> HAUTEUR = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.FLOAT);
     /** Le joueur porté est assis (prédiction de son propre client). */
     boolean passis;
     boolean accroupiPrec;
@@ -33,6 +37,17 @@ public class Voyageur extends Entity {
     float px, pz;
     int pv = -1;
     double capPrec = Double.NaN;
+    /** Saut prédit par le client du joueur porté : hauteur au-dessus du plancher, vitesse verticale (blocs par tick) ;
+     *  Espace à relâcher d'abord (il vient de servir à se lever de la banquette). */
+    float ph, pvy;
+    boolean sautBloque;
+    /** Côté client, pour l'animation de la marche (jambes, balancement de la vue) : pas fait dans la voiture depuis le
+     *  tick précédent (blocs), dernière position locale vue, balancement de la vue du tick précédent. */
+    float pas, animX, animZ, bobPrec;
+    int animVeh = -1;
+    /** Côté serveur : tick du décollage du dernier saut, retombé au plancher depuis (VoyageursServeur.sautVerifie). */
+    int debutSaut = -100;
+    boolean sautSol = true;
     /** Le serveur libère lui-même son passager (Voyageurs.liberer) : point de descente imposé (null : le passager reste
      *  où il est, la téléportation qui suit le place). */
     boolean libere;
@@ -53,6 +68,7 @@ public class Voyageur extends Entity {
         entityData.define(LX, 0f);
         entityData.define(LZ, 0f);
         entityData.define(ASSIS, false);
+        entityData.define(HAUTEUR, 0f);
     }
 
     public boolean assis() {
@@ -69,6 +85,12 @@ public class Voyageur extends Entity {
 
     public float lz() {
         return pv >= 0 ? pz : entityData.get(LZ);
+    }
+
+    /** Hauteur du saut au-dessus du plancher (0 assis ou pieds au plancher). */
+    public float hauteur() {
+        if (assis()) return 0f;
+        return pv >= 0 ? ph : entityData.get(HAUTEUR);
     }
 
     void placer(int v, float x, float z) {
@@ -114,10 +136,11 @@ public class Voyageur extends Entity {
         return assis();
     }
 
-    /** Debout : pieds au plancher ; assis : un peu plus bas, le bassin sur le coussin (pose assise du modèle). */
+    /** Debout : pieds au plancher (plus la hauteur du saut) ; assis : un peu plus bas, le bassin sur le coussin (pose
+     *  assise du modèle). */
     @Override
     protected void positionRider(Entity p, Entity.MoveFunction f) {
-        if (hasPassenger(p)) f.accept(p, getX(), getY() - (assis() ? 0.15 : 0), getZ());
+        if (hasPassenger(p)) f.accept(p, getX(), getY() + (assis() ? -0.15 : hauteur()), getZ());
     }
 
     /** Descente par le chemin vanilla (stopRiding : téléportation d'un autre mod, commande, mort...) : sortie sûre à côté
