@@ -1,7 +1,6 @@
 package com.hbm_m.multiblock;
 
 import java.util.List;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -17,6 +16,5 @@ public class DoorBlockItem extends MultiblockBlockItem {
 
    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
       super.appendHoverText(stack, level, tooltip, flag);
-      tooltip.add(Component.translatable("tooltip.hbm_m.door_skin").withStyle(ChatFormatting.GRAY));
    }
 }
