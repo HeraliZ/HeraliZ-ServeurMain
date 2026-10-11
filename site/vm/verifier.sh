@@ -82,6 +82,12 @@ if [ -f /var/www/launcher/distribution.json ]; then
 else
   echo "Pack du launcher : pas encore déposé"
 fi
+# pack réservé aux comptes (site/vm/theme.sh) : un fichier inconnu du pack, sans lien signé par le site, est refusé
+case "$(curl -s -o /dev/null -m 15 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 https://heraliz.fr/launcher/verification-du-verrou.jar 2> /dev/null)" in
+  403) echo "Pack du launcher : réservé aux comptes HeraliZ (sans lien signé par le site : refusé)";;
+  404) echo "Pack du launcher : ouvert à tous (verrou posé par « theme » une fois le launcher 1.7.0 publié)";;
+  *) echo "Pack du launcher : verrou inconnu (pas de réponse du site)";;
+esac
 if [ -f /var/www/telecharger/HeraliZ-Launcher-Setup.exe ]; then
   echo "Installateur du launcher : $(du -h /var/www/telecharger/HeraliZ-Launcher-Setup.exe | cut -f1), du $(date -r /var/www/telecharger/HeraliZ-Launcher-Setup.exe '+%d/%m %H:%M')"
 else

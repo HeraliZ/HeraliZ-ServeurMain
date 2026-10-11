@@ -125,6 +125,11 @@ server {
 }
 NGINX
 ln -sf /etc/nginx/sites-available/heraliz-defaut /etc/nginx/sites-enabled/heraliz-defaut
+# pack du launcher : ouvert à tous tant que « theme » ne l'a pas réservé aux comptes (site/vm/theme.sh)
+if [ ! -f /etc/nginx/heraliz-pack.conf ]; then
+  printf '# Pack du launcher ouvert à tous : réservé aux comptes HeraliZ par site/vm/theme.sh (choix « theme »).\n' \
+    > /etc/nginx/heraliz-pack.conf
+fi
 cat > /etc/nginx/sites-available/heraliz <<NGINX
 # Site HeraliZ (Azuriom), écrit par site/vm/installer.sh : modifier le dépôt, pas ce fichier.
 server {
@@ -171,15 +176,18 @@ server {
         deny all;
     }
 
-    # Pack du launcher (distribution Helios et fichiers du jeu), déposé par la mise en ligne du serveur
+    # Pack du launcher (distribution Helios et fichiers du jeu), déposé par la mise en ligne du serveur ; réservé aux
+    # comptes HeraliZ (liens signés par le site) par heraliz-pack.conf, écrit par site/vm/theme.sh
     location = /launcher/distribution.json {
         alias /var/www/launcher/distribution.json;
+        include /etc/nginx/heraliz-pack.conf;
         add_header Cache-Control "no-cache";
         gzip on;
         gzip_types application/json;
     }
     location ^~ /launcher/ {
         alias /var/www/launcher/;
+        include /etc/nginx/heraliz-pack.conf;
         autoindex off;
     }
 

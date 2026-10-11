@@ -41,6 +41,8 @@ class InscriptionController extends Controller
             'mot_de_passe_min' => app()->isProduction() ? 12 : 8,
             // jetons de lancement du jeu signés par le site (Spartan)
             'jeton' => JetonController::cle() !== null,
+            // pack de jeu donné aux comptes connectés, avec des liens signés (PackController)
+            'pack' => PackController::cle() !== null,
             // les conditions du site : leur adresse, ou la page d'inscription du site qui les affiche (si elle est ouverte)
             'conditions' => $conditions === null ? null : (preg_match('/^https?:\/\//i', $conditions)
                 ? $conditions : (Route::has('register') ? route('register') : null)),

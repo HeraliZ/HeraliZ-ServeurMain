@@ -555,19 +555,56 @@ jobs:
           "${RS[@]}" pack/envoi/distribution.json "$VM:$DOSSIER/"
           "${RS[@]}" --delete pack/envoi/ "$VM:$DOSSIER/"
 
+          # clé du pack (site/vm/theme.sh) : le pack réservé aux comptes ne s'ouvre qu'avec un lien signé par le site ;
+          # la vérification signe ses liens comme le site le fait pour un compte connecté
+          CLE_PACK=/var/www/azuriom/storage/app/heraliz/pack.cle
+          if [ "$SITE_SSH_UTILISATEUR" = root ]; then
+            cle=$(sshpass -e "${SSH[@]}" "$VM" "cat $CLE_PACK 2> /dev/null" < /dev/null || true)
+          else
+            cle=$(printf '%s\n' "$SITE_SSH_MDP" | sshpass -e "${SSH[@]}" "$VM" "sudo -S -p '' cat $CLE_PACK 2> /dev/null" || true)
+          fi
+          cle=$(printf '%s' "$cle" | tr -d '\r\n')
+          if [ "${#cle}" -ge 32 ]; then
+            echo "::add-mask::$cle"
+            (umask 077 && printf '%s' "$cle" > "$RUNNER_TEMP/pack.cle")
+          fi
+          unset cle
+
           # vu d'internet : la distribution servie est celle envoyée, et quelques fichiers ont la bonne taille
           python - <<'EOF'
-          import json, os, sys, urllib.request
+          import base64, hashlib, json, os, pathlib, sys, time, urllib.error, urllib.parse, urllib.request
           envoi = json.load(open("pack/envoi/distribution.json", encoding="utf-8"))
           r = json.load(open("pack/resume.json", encoding="utf-8"))
           base = r["distribution"].rsplit("/", 1)[0] + "/"
+          fichier_cle = pathlib.Path(os.environ["RUNNER_TEMP"], "pack.cle")
+          cle = fichier_cle.read_text(encoding="utf-8").strip() if fichier_cle.exists() else ""
+          def signer(url):
+              # même calcul que le site (PackController) et nginx (secure_link) : MD5 de « <expiration><chemin> <clé> »
+              morceaux = urllib.parse.urlsplit(url)
+              if not cle or not morceaux.path.startswith("/launcher/") or morceaux.query:
+                  return url
+              e = int(time.time()) + 600
+              h = hashlib.md5(str(e).encode() + urllib.parse.unquote_to_bytes(morceaux.path) + b" " + cle.encode()).digest()
+              return f"{url}?e={e}&s=" + base64.urlsafe_b64encode(h).decode().rstrip("=")
           def ouvrir(url, methode="GET"):
               return urllib.request.urlopen(urllib.request.Request(url, method=methode, headers={"Cache-Control": "no-cache"}), timeout=60)
           def echec(message):
               print("::error::" + message)
               sys.exit(1)
+          # pack réservé aux comptes : sans lien signé, même la distribution est refusée (403)
           try:
-              with ouvrir(r["distribution"]) as rep:
+              with ouvrir(r["distribution"], "HEAD") as rep:
+                  libre = rep.status
+          except urllib.error.HTTPError as e:
+              libre = e.code
+          except Exception as e:
+              echec(f"{r['distribution']} injoignable ({e}).")
+          reserve = libre == 403
+          if reserve and not cle:
+              print("::warning::Pack du launcher réservé aux comptes, mais sa clé n'a pas pu être lue sur le site : pack envoyé, non vérifié depuis internet.")
+              sys.exit(0)
+          try:
+              with ouvrir(signer(r["distribution"])) as rep:
                   servie = json.loads(rep.read())
           except Exception as e:
               echec(f"{r['distribution']} illisible ({e}) : lancer le workflow « Site HeraliZ » avec « installer » (accès /launcher/ du site).")
@@ -581,15 +618,17 @@ jobs:
               if not a["url"].startswith(base):
                   continue
               try:
-                  with ouvrir(a["url"], "HEAD") as rep:
+                  with ouvrir(signer(a["url"]), "HEAD") as rep:
                       taille = rep.headers.get("Content-Length")
               except Exception as e:
                   echec(f"{a['url']} illisible ({e}).")
               if taille != str(a["size"]):
                   echec(f"{a['url']} : taille {taille} au lieu de {a['size']}.")
-          print(f"Pack du launcher en ligne : {r['distribution']} ({r['mods']} mods, {r['fichiers']} fichiers, {r['octets'] / 1048576:.0f} Mo).")
+          acces = "réservé aux comptes HeraliZ (liens signés par le site)" if reserve else "ouvert à tous (verrou posé par « Site HeraliZ », choix « theme », une fois le launcher 1.7.0 publié)"
+          print(f"Pack du launcher en ligne : {r['distribution']} ({r['mods']} mods, {r['fichiers']} fichiers, {r['octets'] / 1048576:.0f} Mo) ; {acces}.")
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
               f.write("### Pack du launcher\n"
                       f"- {r['mods']} mods joueurs, {r['fichiers']} fichiers, {r['octets'] / 1048576:.0f} Mo (version {r['version']})\n"
-                      f"- en ligne : {r['distribution']}\n")
+                      f"- en ligne : {r['distribution']}, {acces}\n")
           EOF
+          rm -f "$RUNNER_TEMP/pack.cle"

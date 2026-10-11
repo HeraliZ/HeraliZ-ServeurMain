@@ -4,7 +4,8 @@ const Module = require('node:module')
 const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
-const { CompteSite, verifierInscription } = require('../app/assets/js/compte-site')
+const http = require('node:http')
+const { CompteSite, verifierInscription, requeteParDefaut } = require('../app/assets/js/compte-site')
 
 // Faux site Azuriom : réponses de /api/auth/<chemin> (authenticate, verify...) et de /api/heraliz/<chemin> (extension
 // HeraliZ : heraliz/etat, heraliz/inscription...) selon ce que le test prépare.
@@ -160,6 +161,48 @@ test('jeton de lancement du jeu : signé par le site pour le compte connecté', 
     assert.equal(await new CompteSite('https://heraliz.fr', panne.requete).jetonJeu('bon', EMP), null)
 })
 
+test('pack de jeu du compte connecté : rendu tel quel (liens signés par le site), erreurs claires', async () => {
+    const PACK = { version: '1.0.0', servers: [{ id: 'heraliz-1.20.1', modules: [] }] }
+    const site = fauxSite({
+        'heraliz/pack': d => d.access_token === 'perime' ? { status: 401, body: { status: 'error', reason: 'invalid_token' } }
+            : d.access_token === 'banni' ? { status: 403, body: { status: 'error', reason: 'user_banned' } }
+                : d.access_token === 'sans-pack' ? { status: 503, body: { status: 'error', reason: 'pack_absent' } }
+                    : d.access_token === 'bizarre' ? { status: 200, body: ['pas', 'un', 'pack'] }
+                        : { status: 200, body: PACK }
+    })
+    const compte = new CompteSite('https://heraliz.fr', site.requete)
+    assert.deepEqual(await compte.pack('bon'), PACK)
+    assert.deepEqual(site.appels[0], { url: 'https://heraliz.fr/api/heraliz/pack', methode: 'POST', donnees: { access_token: 'bon' } })
+    await assert.rejects(compte.pack('perime'), /session a expiré/)
+    await assert.rejects(compte.pack('banni'), /banni/)
+    await assert.rejects(compte.pack('sans-pack'), /pas encore en ligne/)
+    await assert.rejects(compte.pack('bizarre'), /illisible/)
+    await assert.rejects(new CompteSite('https://heraliz.fr', fauxSite({ 'heraliz/pack': { status: 404, body: null } }).requete).pack('bon'), /ne donne pas encore/)
+    await assert.rejects(new CompteSite('https://heraliz.fr', fauxSite({ 'heraliz/pack': new Error('ECONNRESET') }).requete).pack('bon'), /ne répond pas/)
+})
+
+test('grosse réponse du site (pack) : lue par morceaux, refusée au-delà de la limite, erreurs du site rendues', async () => {
+    const serveur = http.createServer((req, res) => {
+        let corps = ''
+        req.on('data', c => { corps += c })
+        req.on('end', () => {
+            const { access_token: jeton } = JSON.parse(corps)
+            if (jeton === 'perime') { res.writeHead(401, { 'Content-Type': 'application/json' }); res.end('{"reason":"invalid_token"}'); return }
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ servers: [], remplissage: jeton === 'gros' ? 'x'.repeat(5000) : '' }))
+        })
+    })
+    await new Promise(resolve => serveur.listen(0, '127.0.0.1', resolve))
+    try {
+        const url = `http://127.0.0.1:${serveur.address().port}/api/heraliz/pack`
+        assert.deepEqual(await requeteParDefaut(url, { access_token: 'bon' }, 'POST', { limite: 1000 }), { status: 200, body: { servers: [], remplissage: '' } })
+        assert.deepEqual(await requeteParDefaut(url, { access_token: 'perime' }, 'POST', { limite: 1000 }), { status: 401, body: { reason: 'invalid_token' } })
+        await assert.rejects(requeteParDefaut(url, { access_token: 'gros' }, 'POST', { limite: 1000 }), /volumineuse/)
+    } finally {
+        serveur.close()
+    }
+})
+
 // Le service du launcher avec un faux compte du site.
 const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'heraliz-compte-'))
 const originalLoad = Module._load
@@ -276,4 +319,25 @@ test('à chaque partie, le jeton de lancement est demandé au site pour le compt
     assert.equal(compte.demandeJeton.jeton, 'jeton-secret')
     // dossier mods du jeu absent ou vide : empreinte de « rien », comme le calcule le mod
     assert.equal(compte.demandeJeton.empreinte, require('node:crypto').createHash('sha256').update('').digest('hex'))
+})
+
+test('avec les comptes du site, le pack de jeu vient du site pour le compte connecté', async () => {
+    const compte = fauxCompte()
+    const artifact = nom => ({ url: `https://heraliz.fr/launcher/${nom}?e=1800000000&s=${'A'.repeat(22)}`, MD5: '0'.repeat(32), size: 1 })
+    compte.pack = async jeton => {
+        compte.demandePack = jeton
+        return { servers: [{ id: 'heraliz-1.20.1', address: 'play.heraliz.fr', minecraftVersion: '1.20.1', modules: [
+            { id: 'net.minecraftforge:lowcodelanguage:1.20.1-47.4.0', type: 'ForgeHosted', artifact: artifact('forge.jar'), subModules: [
+                { id: '1.20.1-47.4.0', type: 'VersionManifest', artifact: artifact('forge.json') }] }] }] }
+    }
+    const reglages = { ...config, serverAddress: 'play.heraliz.fr', distributionUrl: 'https://heraliz.fr/launcher/distribution.json' }
+    const service = new LauncherService(reglages, () => {}, { compteSite: compte })
+    await assert.rejects(service.loadDistribution(), /Connecte-toi/)
+    await service.connexion({ email: 'a@b.fr', password: 'bon', acceptedRules: true })
+    const distribution = await service.loadDistribution()
+    assert.equal(compte.demandePack, 'jeton-secret')
+    assert.equal(distribution.getServerById('heraliz-1.20.1').rawServer.javaOptions.supported, '17.x')
+    // un pack qui ne serait pas celui du serveur HeraliZ est refusé, même venant du site
+    compte.pack = async () => ({ servers: [{ id: 'autre', address: 'play.heraliz.fr', minecraftVersion: '1.20.1', modules: [] }] })
+    await assert.rejects(service.loadDistribution(), /ne correspond pas/)
 })

@@ -8,6 +8,11 @@
 set -euo pipefail
 : "${ARCHIVE:?}"
 DOSSIER=/var/www/azuriom
+# Pack du launcher réservé aux comptes HeraliZ (liens signés par le site) : « non » le rouvre à tous. Verrou posé
+# seulement si le launcher publié (heraliz.fr/telecharger/latest.yml) est au moins PACK_LAUNCHER_MIN, la première version
+# qui demande le pack au site : les plus anciens se mettent à jour seuls au démarrage, avant de télécharger le pack.
+PACK_RESERVE=oui
+PACK_LAUNCHER_MIN=1.7.0
 TRAVAIL=$(mktemp -d /tmp/heraliz_site.XXXXXX)
 trap 'rm -rf "$TRAVAIL" "$ARCHIVE"' EXIT
 
@@ -44,12 +49,100 @@ if [ ! -s "$CLE" ]; then
   chown www-data:www-data "$CLE"
   echo "Clé des jetons de lancement : créée"
 fi
-# storage (journaux, sessions, clé) lisible par le site seulement, remis à chaque envoi (« installer » relancé ouvre le
+# clé du pack du launcher (liens signés pour les comptes connectés : PackController de l'extension), créée une seule
+# fois sur la VM ; nginx la reçoit dans /etc/nginx/heraliz-pack.conf (plus bas)
+PACK_CLE="$DOSSIER/storage/app/heraliz/pack.cle"
+if [ ! -s "$PACK_CLE" ]; then
+  (umask 077 && head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' > "$PACK_CLE")
+  chown www-data:www-data "$PACK_CLE"
+  echo "Clé du pack du launcher : créée"
+fi
+# storage (journaux, sessions, clés) lisible par le site seulement, remis à chaque envoi (« installer » relancé ouvre le
 # dossier du site en lecture à tous les comptes de la VM)
 chown -R www-data:www-data "$DOSSIER/storage"
 chmod -R o-rwx "$DOSSIER/storage"
 chmod 700 "$(dirname "$CLE")"
-chmod 600 "$CLE"
+chmod 600 "$CLE" "$PACK_CLE"
+
+echo "== Pack du launcher"
+# Les fichiers du pack (https://heraliz.fr/launcher/) ne s'ouvrent qu'avec un lien signé par le site pour un compte
+# connecté (6 h) : sans compte, plus rien ne se télécharge. Même calcul que PackController (module secure_link de nginx).
+SITE_NGINX=/etc/nginx/sites-available/heraliz
+PACK_NGINX=/etc/nginx/heraliz-pack.conf
+pack_ouvert() {
+  printf '# Pack du launcher ouvert à tous (%s), écrit par site/vm/theme.sh.\n' "$1" > "$PACK_NGINX"
+  chmod 600 "$PACK_NGINX"
+}
+pack_signe() {   # <chemin> : lien signé pour 10 minutes, comme le site le fait pour les comptes connectés
+  local e=$(( $(date +%s) + 600 ))
+  printf '%s?e=%s&s=%s' "$1" "$e" "$(printf '%s' "$e$1 $(cat "$PACK_CLE")" | openssl md5 -binary | base64 | tr '+/' '-_' | tr -d '=')"
+}
+pack_code() { curl -s -o /dev/null -m 20 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 "https://heraliz.fr$1" || true; }
+nginx_modules=$(nginx -V 2>&1 || true)
+publie=$(awk '/^version:/ {print $2}' /var/www/telecharger/latest.yml 2> /dev/null | tr -d "'\"\r" || true)
+if [ "$PACK_RESERVE" != oui ]; then
+  raison="PACK_RESERVE=non dans site/vm/theme.sh"
+elif ! grep -q http_secure_link_module <<< "$nginx_modules"; then
+  raison="nginx n'a pas le module secure_link"
+elif [ -z "$publie" ] || [ "$(printf '%s\n' "$PACK_LAUNCHER_MIN" "$publie" | sort -V | head -n 1)" != "$PACK_LAUNCHER_MIN" ]; then
+  raison="launcher publié : ${publie:-aucun} ; publier la $PACK_LAUNCHER_MIN ou plus récente (« Launcher HeraliZ », case « publier »), puis relancer « theme »"
+else
+  raison=""
+fi
+if [ ! -f "$SITE_NGINX" ]; then
+  echo "::warning::Pack du launcher : réglages nginx du site absents (lancer « installer »)."
+else
+  cp "$SITE_NGINX" /tmp/heraliz-nginx.avant
+  if [ -f "$PACK_NGINX" ]; then cp "$PACK_NGINX" /tmp/heraliz-pack.avant; else rm -f /tmp/heraliz-pack.avant; fi
+  if [ -z "$raison" ]; then
+    (umask 077 && cat > "$PACK_NGINX" <<CONF
+# Pack du launcher réservé aux comptes HeraliZ, écrit par site/vm/theme.sh : modifier le dépôt, pas ce fichier.
+# Lien signé par le site pour un compte connecté (PackController de l'extension HeraliZ) : sans signature valable,
+# refusé (403) ; signature périmée, refusé (410).
+secure_link \$arg_s,\$arg_e;
+secure_link_md5 "\$secure_link_expires\$uri $(cat "$PACK_CLE")";
+if (\$secure_link = "") { return 403; }
+if (\$secure_link = "0") { return 410; }
+CONF
+    )
+  else
+    pack_ouvert "$raison"
+  fi
+  chmod 600 "$PACK_NGINX"
+  # site installé avant le verrou : ses deux accès au pack (/launcher/) lisent ce réglage
+  if ! grep -q "include /etc/nginx/heraliz-pack.conf" "$SITE_NGINX"; then
+    sed -i -E 's#^([[:space:]]*)alias /var/www/launcher/(distribution\.json)?;#&\n\1include /etc/nginx/heraliz-pack.conf;#' "$SITE_NGINX"
+  fi
+  if nginx -t > /dev/null 2>&1; then
+    systemctl reload nginx
+  else
+    cp /tmp/heraliz-nginx.avant "$SITE_NGINX"
+    if [ -f /tmp/heraliz-pack.avant ]; then cp /tmp/heraliz-pack.avant "$PACK_NGINX"; else pack_ouvert "réglage refusé par nginx"; fi
+    nginx -t > /dev/null 2>&1 && systemctl reload nginx
+    raison="nginx a refusé le verrou : réglages remis comme avant"
+    echo "::warning::Pack du launcher : $raison."
+  fi
+  rm -f /tmp/heraliz-nginx.avant /tmp/heraliz-pack.avant
+  sleep 2
+  # vu comme un visiteur : un fichier inconnu du pack, sans signature (403 = verrouillé, 404 = ouvert), et la
+  # distribution avec un lien signé comme le site le fait (200, ou 404 si le pack n'a pas encore été déposé)
+  libre=$(pack_code /launcher/verification-du-verrou.jar)
+  signe=$(pack_code "$(pack_signe /launcher/distribution.json)")
+  if [ -z "$raison" ]; then
+    if [ "$libre" = 403 ] && { [ "$signe" = 200 ] || [ "$signe" = 404 ]; }; then
+      echo "Pack du launcher : réservé aux comptes HeraliZ (sans lien signé par le site : refusé)"
+    else
+      # un lien signé refusé bloquerait tous les joueurs : pack rouvert
+      pack_ouvert "verrou rouvert : sans signature $libre, lien signé $signe"
+      nginx -t > /dev/null 2>&1 && systemctl reload nginx
+      echo "::warning::Pack du launcher : verrou mal en place (sans signature : ${libre:-aucune réponse}, lien signé : ${signe:-aucune réponse}) : pack rouvert à tous."
+    fi
+  elif [ "$libre" = 403 ]; then
+    echo "Pack du launcher : toujours réservé aux comptes HeraliZ ($raison)"
+  else
+    echo "Pack du launcher : ouvert à tous ($raison) ; fichier inconnu sans signature : réponse ${libre:-aucune}"
+  fi
+fi
 
 echo "== Extensions Boutique et Votes"
 for ext in shop vote; do
