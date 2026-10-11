@@ -1,6 +1,7 @@
 package fr.heraliz.emote.client;
 
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
+import fr.heraliz.emote.EmoteRules;
 import fr.heraliz.emote.HeralizEmote;
 import io.github.kosmx.emotes.api.events.client.ClientEmoteAPI;
 import io.github.kosmx.emotes.executor.emotePlayer.IEmotePlayer;
@@ -23,9 +24,9 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 /**
- * Borrowing: look at a player who plays an emote and press the borrow key (Shift + right click by
- * default) to play the same emote. Holding Shift makes you crouch, and Emotecraft stops emotes of
- * players who are not standing, so the borrowed emote waits until you stand up.
+ * Copie d'emote : vise un joueur qui joue une emote et fais Maj + clic droit (ou la touche « Copier l'emote », sans
+ * touche par défaut) pour jouer la même. Maj fait s'accroupir, et Emotecraft arrête les emotes des joueurs qui ne sont
+ * pas debout : l'emote copiée attend qu'on se relève.
  */
 public final class BorrowController {
     /** Two use clicks closer than this are the same held button repeating. */
@@ -49,12 +50,14 @@ public final class BorrowController {
     static void tick() {
         clientTicks++;
         Minecraft mc = Minecraft.getInstance();
+        // ancienne touche par défaut (Maj + clic droit) restée dans options.txt : elle bloquait le clic droit accroupi
+        if (mc.screen == null) HeralizKeys.retirerTouchePiege(mc);
         if (!HeralizConfig.BORROW_ENABLED.get() || mc.player == null || mc.level == null) {
             pending = null;
             keyWasDown = false;
             return;
         }
-        // bindings other than the use button (the default shares it, see onInteraction)
+        // touche choisie par le joueur, hors bouton d'« Utiliser » (celle-là passe par onInteraction)
         boolean down = mc.screen == null && HeralizKeys.keyHeld(HeralizKeys.BORROW) && HeralizKeys.modifierHeld(HeralizKeys.BORROW);
         if (down && !keyWasDown && !HeralizKeys.sharesUseKey(HeralizKeys.BORROW)) {
             tryBorrow(mc);
@@ -67,15 +70,24 @@ public final class BorrowController {
         tickPending(mc);
     }
 
-    /** Shift + right click: borrow instead of using the held item, only when there is something to borrow. */
+    /**
+     * Maj + clic droit (le clic d'« Utiliser ») sur un joueur qui joue une emote : on copie son emote au lieu d'utiliser
+     * l'objet tenu. Lu ici, sur le vrai clic d'« Utiliser », et plus par une touche Maj + clic droit qui volait tout le
+     * clic droit accroupi (voir {@link HeralizKeys#BORROW}). Rien n'est annulé si on ne vise pas un joueur qui danse :
+     * le clic garde son effet (fouille, soins, visée, réanimation d'un joueur à terre...). Passe aussi par ici la touche
+     * « Copier l'emote » si le joueur l'a mise sur le bouton d'« Utiliser ».
+     */
     static void onInteraction(InputEvent.InteractionKeyMappingTriggered event) {
         if (!event.isUseItem() || !HeralizConfig.BORROW_ENABLED.get()) return;
-        if (!HeralizKeys.sharesUseKey(HeralizKeys.BORROW) || !HeralizKeys.modifierHeld(HeralizKeys.BORROW)) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
+        boolean accroupi = mc.options.keyShift.isDown();
+        boolean touche = HeralizKeys.sharesUseKey(HeralizKeys.BORROW) && HeralizKeys.modifierHeld(HeralizKeys.BORROW);
+        if (!accroupi && !touche) return;
+        // les deux mains, puis le clic tenu (répété tous les 4 ticks) : un seul essai par appui
         boolean repeat = clientTicks - lastUseAttempt <= REPEAT_TICKS;
         lastUseAttempt = clientTicks;
-        if (!repeat) lastUseBorrowed = tryBorrow(mc);
+        if (!repeat) lastUseBorrowed = tryBorrow(mc, !touche);
         if (lastUseBorrowed) {
             event.setCanceled(true);
             event.setSwingHand(false);
@@ -84,11 +96,24 @@ public final class BorrowController {
 
     /** What the borrow key does. Public for the CI scenario. */
     public static boolean tryBorrow(Minecraft mc) {
+        return tryBorrow(mc, false);
+    }
+
+    /**
+     * {@code discret} (Maj + clic droit) : rien sans un joueur visé qui joue une emote, sans message, et jamais sur un
+     * joueur à terre (Maj + clic droit le réanime).
+     */
+    private static boolean tryBorrow(Minecraft mc, boolean discret) {
         LocalPlayer self = mc.player;
         if (self == null || self.isDeadOrDying()) return false;
         if (HeralizConfig.EMPTY_HAND_ONLY.get() && !self.getMainHandItem().isEmpty()) return false;
         AbstractClientPlayer target = lookedAtPlayer(self);
-        return target != null && borrowFrom(target);
+        if (target == null) return false;
+        if (discret) {
+            IEmotePlayer playing = playingEmote(target);
+            if (playing == null || playing.getData() == null || EmoteRules.isDowned(target)) return false;
+        }
+        return borrowFrom(target);
     }
 
     /** Queues the emote {@code target} is playing. */
