@@ -90,6 +90,8 @@ launcher/                 le launcher des joueurs (Electron, Node.js) : `npm ins
 outils/                   fabrication et contrôles (Python 3.11+)
 site/vm/                  installation du site (Azuriom) sur sa VM, lancée par .github/workflows/site.yml (section 8 bis)
 site/theme/heraliz/       le thème du site (maquettes validées), envoyé par le même workflow (choix « theme », section 8 bis)
+site/extension/heraliz/   l'extension Azuriom « HeraliZ » : création de compte et double authentification depuis le
+                          launcher (section 8 bis), envoyée avec le thème
 monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; envoyée au Ptero seulement
                           sur demande (case « deposer_carte », section 8)
 .github/workflows/        fabrication et mise en ligne automatiques
@@ -439,20 +441,32 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     déjà installé n'est jamais retéléchargé. Le site lui-même (thème, extension, boutique) se règle ensuite dans
     Azuriom, pas par ce bouton. À relancer après un changement de `installer.sh`.
   - **theme** : `site/vm/theme.sh` dépose le thème `site/theme/heraliz` (dans Azuriom : `resources/themes/heraliz` ; son
-    `config.json`, réécrit par l'administration, n'est jamais écrasé), télécharge et active les extensions Boutique
-    (`shop`) et Votes (`vote`) d'Azuriom, puis lance `site/vm/reglages.php` avec l'utilisateur du site : le thème
-    redevient actif à chaque envoi ; une seule fois (repère `heraliz.reglages`) : nom HeraliZ, monnaie « crédit »,
+    `config.json`, réécrit par l'administration, n'est jamais écrasé) et l'extension `site/extension/heraliz` (dans
+    Azuriom : `plugins/heraliz`), télécharge et active les extensions Boutique (`shop`) et Votes (`vote`) d'Azuriom,
+    puis lance `site/vm/reglages.php` avec l'utilisateur du site : le thème redevient actif à chaque envoi ; une seule
+    fois (repère `heraliz.api_launcher`) : API d'authentification d'Azuriom activée (comptes du launcher) ; une seule
+    fois (repère `heraliz.reglages`) : nom HeraliZ, monnaie « crédit »,
     boutique payée en crédits (crédits achetés en euros), menu Accueil / Boutique / Votes / Règlement, page Règlement
     (celui du launcher), grades Rescapé / Traqueur / Roi de la Zone, trois premières actualités (images du launcher),
     serveur play.heraliz.fr suivi par simple ping. Chaque élément n'est créé que s'il manque : ensuite l'administration
-    du site fait foi. Lancé tout seul à chaque envoi sur `main` qui touche `site/theme/`, `site/vm/theme.sh` ou
-    `site/vm/reglages.php`.
+    du site fait foi. Lancé tout seul à chaque envoi sur `main` qui touche `site/theme/`, `site/extension/`,
+    `site/vm/theme.sh` ou `site/vm/reglages.php`. Le résumé de l'envoi dit si la connexion et la création de compte du
+    launcher sont ouvertes (`/api/heraliz/etat`).
 - Le thème : accueil, connexion, inscription, boutique (catégories, articles en cartes de grade), votes, pages et
   actualités refaits d'après les maquettes ; les autres pages (profil, panier, paiement...) gardent celles d'Azuriom,
   habillées par `assets/css/heraliz.css`. Grades en couleur sans icône. La mention « Propulsé par Azuriom » du pied de
   page est exigée par la licence d'Azuriom : ne pas la retirer. L'état du serveur est gardé 1 minute (un serveur éteint
   ne ralentit pas le site). Réglages du thème (liens Discord et launcher, saison, date de début, places) :
   administration → Thèmes → Configurer. Polices DM Sans et Oswald sous licence OFL (`assets/fonts/OFL.txt`).
+- **Comptes du launcher** : le launcher se connecte avec les comptes du site par l'API d'authentification d'Azuriom
+  (`/api/auth/authenticate`, `verify`, `logout` ; administration → Paramètres → Authentification → « API
+  d'authentification »). L'extension HeraliZ ajoute `/api/heraliz/etat` (ce que le launcher peut proposer),
+  `/api/heraliz/inscription` (création de compte, mêmes règles que la page d'inscription du site : pseudo de 3 à 16
+  lettres, chiffres ou _, e-mail unique, mot de passe de 12 caractères au moins, confirmé ; 3 comptes par heure et par
+  adresse IP, 60 par heure en tout) et `/api/heraliz/a2f/preparer|activer` (double authentification : QR code, puis
+  code de l'application et mot de passe ; 8 codes de secours). Un compte créé dans le launcher est un compte du site
+  (boutique, votes) et inversement. Le site ne garde qu'une session de launcher par compte : se connecter sur un autre
+  PC déconnecte le premier.
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
   port `3306`, base `azuriom`, utilisateur `azuriom`, mot de passe = secret `SITE_BDD_MDP` ; jeu : Minecraft Java ;
   compte administrateur au choix du propriétaire).
@@ -468,11 +482,20 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 
 - `launcher/` (Electron, moteur Helios) ; réglages dans `launcher/app/heraliz.json` (adresse de jeu, pack, Discord).
   Son pack de jeu est refait à chaque mise en ligne du serveur (section 8, point 6).
+- **Compte HeraliZ obligatoire** (`launcher/app/assets/js/compte-site.js`, adresse du site : `siteUrl` de
+  `heraliz.json`) : connexion par e-mail ou pseudo + mot de passe (+ code de double authentification si le compte l'a),
+  ou création du compte dans le launcher (pseudo, e-mail, mot de passe, confirmation, règlement), section 8 bis. Après
+  une création de compte ou une connexion sans double authentification, le launcher la propose (QR code à scanner,
+  « Plus tard » possible) ; elle reste dans le menu du profil (« Double authentification »). Le mot de passe ne fait que
+  passer : le launcher ne garde que le jeton du site, chiffré par Windows (`safeStorage`). Le compte est revérifié au
+  démarrage et avant chaque partie (banni ou déconnecté sur le site : retour à la connexion). Le pseudo en jeu est
+  celui du compte.
 - `.github/workflows/launcher.yml`, « Launcher HeraliZ » : à chaque envoi sur `main` qui touche `launcher/`, tests puis
-  installateur Windows, gardé 7 jours dans l'onglet Actions (paquet « launcher-windows »). « Run workflow » avec la case
-  « publier » : il est aussi mis en ligne, toujours au même lien, https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
-  (lien à mettre sur le site et le Discord). La clé des jetons Spartan (`SPARTAN_LAUNCHER_SECRET`) n'entre dans le
-  launcher qu'à ce moment-là, si le secret existe.
+  installateur Windows, gardé 7 jours dans l'onglet Actions (paquet « launcher-windows », si le quota d'artefacts le
+  permet). « Run workflow » avec la case « publier » : il est aussi mis en ligne, toujours au même lien,
+  https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe (lien à mettre sur le site et le Discord), envoyé par SFTP
+  par la machine Windows qui l'a fabriqué (aucun artefact entre deux tâches). La clé des jetons Spartan
+  (`SPARTAN_LAUNCHER_SECRET`) n'entre dans le launcher qu'à ce moment-là, si le secret existe.
 - L'installateur n'est pas signé (certificat payant) : au premier lancement, Windows affiche « Windows a protégé votre
   ordinateur » → « Informations complémentaires » → « Exécuter quand même ».
 - Le launcher ne se met pas à jour tout seul : une nouvelle version se re-télécharge au même lien. Le pack (mods,
@@ -660,13 +683,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
   prix), sites de vote et leurs récompenses ; avant d'ouvrir la boutique : pages Conditions de vente
   (`cgv`), Confidentialité (`confidentialite`) et Mentions légales (`mentions-legales`), que le pied de page affiche dès
-  qu'elles existent. Ensuite : AzLink sur le Ptero (livraison des achats en jeu), mails (Brevo), extension Azuriom
-  (inscription depuis le launcher, code par mail sur un nouveau PC, ticket signé pour Spartan). D'ici là, le launcher
-  demande seulement le pseudo et AuthMe protège le compte en jeu.
-- **Launcher** : installateur Windows fabriqué par GitHub (section 8 ter), pas encore donné aux joueurs. Connexion
-  avec le compte du site codée, mise de côté jusqu'à validation de ses écrans par le propriétaire (en la remettant,
-  ajouter `compte-site` à la liste des fichiers de `launcher/electron-builder.yml`). Jamais essayé de bout en bout
-  (pack du site, Forge, connexion au serveur) : à faire par le propriétaire avant de le distribuer.
+  qu'elles existent. Comptes du launcher (création, connexion, double authentification) en place (section 8 bis).
+  Ensuite : AzLink sur le Ptero (livraison des achats en jeu), mails (Brevo : code de confirmation à l'inscription,
+  code sur un nouveau PC), ticket signé du site pour Spartan (mode B). Un autre launcher que le nôtre peut encore
+  rejoindre le serveur tant que `tokenRequired` de Spartan reste à `false` : AuthMe protège alors le compte en jeu.
+- **Launcher** : installateur Windows fabriqué par GitHub (section 8 ter), pas encore donné aux joueurs. Comptes du
+  site (connexion, création, double authentification) branchés le 11/10 à la demande du propriétaire ; essayés contre
+  une copie locale du site (création, connexion par e-mail et par pseudo, activation de la double authentification
+  avec un vrai code), pas encore sur Windows ni avec un vrai téléphone. Jamais essayé de bout en bout (pack du site,
+  Forge, connexion au serveur) : à faire par le propriétaire avant de le distribuer.
 - **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé pas encore
   (il faut un serveur d'authentification, voir `mods/spartan/docs/LAUNCHER.md`). Prévu ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
