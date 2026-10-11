@@ -136,15 +136,26 @@ public final class BanCommands {
         if (target == AMBIGUOUS) {
             return 0;
         }
-        // Compte connu → par UUID (précis) ; sinon pseudo brut ou serial (bans de la 1.0).
-        String key = target != null ? target.uuid : input;
-        int lifted = BanManager.unban(src.getServer(), key, src.getTextName());
+        // Compte connu → ses bans ET ceux de ses PC (ban matériel de la 1.0, PC partagé) ;
+        // sinon pseudo brut ou serial (bans de la 1.0).
+        String shown = target != null ? target.name : input;
+        String summary;
+        int lifted;
+        if (target != null) {
+            BanManager.Leve l = BanManager.unbanPlayer(src.getServer(), target, src.getTextName());
+            lifted = l.total();
+            summary = shown + " débanni par " + src.getTextName() + " (" + l.compte() + " ban(s) du compte, "
+                    + l.pc() + " ban(s) de son PC levé(s)"
+                    + (l.autresComptes().isEmpty() ? "" : " ; son PC retiré du ban de " + String.join(", ", l.autresComptes())
+                    + ", qui reste banni") + ")";
+        } else {
+            lifted = BanManager.unban(src.getServer(), input, src.getTextName());
+            summary = shown + " débanni par " + src.getTextName() + " (" + lifted + " ban(s) levé(s))";
+        }
         if (lifted == 0) {
             src.sendFailure(Component.literal("Aucun ban actif pour " + input + "."));
             return 0;
         }
-        String shown = target != null ? target.name : input;
-        String summary = shown + " débanni par " + src.getTextName() + " (" + lifted + " ban(s) levé(s))";
         src.sendSuccess(() -> Component.literal(summary).withStyle(ChatFormatting.GREEN), false);
         AlertManager.info(src.getServer(), "Déban", summary, AlertManager.COLOR_UNBAN);
         return lifted;

@@ -332,6 +332,10 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
 - **Jars imbriqués** : `outils/construire.py` suit `META-INF/jarjar/metadata.json` pour trouver les jars que Forge
   charge depuis un autre jar (EntityCulling apporte TRansition et TRender dans `META-INF/jars/`) ; leurs configs Mixin
   sont dans `officiel.json`. Avant le 11/10, elles étaient signalées à tort (« config Mixin inconnue »).
+- **Lever un ban** : `/sunban <joueur>` lève ses bans ET ceux qui visent un de ses PC (Spartan 2.2.1) : un ban matériel
+  sans compte (importé de Spartan 1.0, alerte « Compte secondaire … PC de (ban Spartan 1.0) ») est levé ; le ban d'un autre
+  compte reste, seul ce PC en est retiré. Avant, un joueur pris par un ban de la 1.0 ne pouvait pas être débanni par
+  son pseudo. `/sbaninfo <joueur>` montre ses bans et ses comptes liés.
 - Réglages : `serveur/config/spartan-common.toml` (fait foi). Webhooks et secret du launcher : JAMAIS dans le dépôt,
   marques `__SPARTAN_…__` remplacées par les secrets GitHub à l'envoi (section 8).
 - Branchements HeraliZ (`mods/spartan/src/serveur/java/com/Spartan/serveur/compat/HeralizCompat.java`, par réflexion,

@@ -107,7 +107,8 @@ final class ReceptionServeur {
         if (otherAccount) {
             AlertManager.info(player.server, "Compte secondaire",
                     playerName + " se connecte depuis le PC de " + ban.name
-                            + " (banni : " + ban.reason + ", " + ban.describeExpiry() + "). Expulsé.",
+                            + " (banni : " + ban.reason + ", " + ban.describeExpiry() + "). Expulsé. Pour le laisser jouer : /sunban "
+                            + playerName + ".",
                     AlertManager.COLOR_BAN);
         }
         player.connection.disconnect(BanManager.kickMessage(ban));

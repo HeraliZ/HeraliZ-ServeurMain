@@ -270,8 +270,61 @@ public final class BanManager {
                 }
             }
         }
-        // Une IP n'est retirée de la liste vanilla que si c'est Spartan qui l'a bannie
-        // et qu'aucun autre ban actif ne la couvre encore.
+        retirerIps(server, lifted, now);
+        if (!lifted.isEmpty()) {
+            save();
+        }
+        return lifted.size();
+    }
+
+    /** Ce que {@link #unbanPlayer} a levé : bans du compte, bans du PC sans compte, PC retiré du ban d'un autre compte. */
+    public record Leve(int compte, int pc, List<String> autresComptes) {
+        public int total() {
+            return compte + pc + autresComptes.size();
+        }
+    }
+
+    /**
+     * Lève tout ce qui empêche ce compte de jouer : ses propres bans, puis les bans qui visent un de ses PC. Un ban
+     * matériel sans compte (importé de Spartan 1.0) est levé ; le ban d'un AUTRE compte reste, seul ce PC en est retiré
+     * (l'autre compte reste banni par compte et par IP).
+     */
+    public static synchronized Leve unbanPlayer(MinecraftServer server, PlayerRegistry.Record target, String by) {
+        int compte = unban(server, target.uuid, by);
+        long now = System.currentTimeMillis();
+        LinkedHashSet<String> pcs = new LinkedHashSet<>();
+        for (String s : target.serials) {
+            pcs.add(norm(s));
+        }
+        List<BanRecord> lifted = new ArrayList<>();
+        List<String> autres = new ArrayList<>();
+        boolean change = false;
+        for (BanRecord r : BANS) {
+            if (!r.isActive(now) || r.serials.stream().noneMatch(pcs::contains)) {
+                continue;
+            }
+            if (r.uuid == null) {
+                r.liftedAt = now;
+                r.liftedBy = by + " (déban de " + target.name + ")";
+                lifted.add(r);
+            } else {
+                r.serials.removeAll(pcs);
+                autres.add(r.name);
+            }
+            change = true;
+        }
+        retirerIps(server, lifted, now);
+        if (change) {
+            save();
+        }
+        return new Leve(compte, lifted.size(), autres);
+    }
+
+    /**
+     * Une IP n'est retirée de la liste vanilla que si c'est Spartan qui l'a bannie
+     * et qu'aucun autre ban actif ne la couvre encore.
+     */
+    private static void retirerIps(MinecraftServer server, List<BanRecord> lifted, long now) {
         for (BanRecord r : lifted) {
             for (String ip : r.ips) {
                 boolean stillNeeded = BANS.stream().anyMatch(o -> o.isIpBanActive(now) && o.ips.contains(ip));
@@ -281,10 +334,6 @@ public final class BanManager {
                 }
             }
         }
-        if (!lifted.isEmpty()) {
-            save();
-        }
-        return lifted.size();
     }
 
     /** Ban actif portant sur ce PC, ou null. */
