@@ -1,0 +1,28 @@
+{{-- Icône SVG des maquettes : @include('heraliz.icone', ['nom' => 'discord']) --}}
+@php
+    $traces = [
+        'discord' => '<path fill="currentColor" stroke="none" d="M19.3 5.3A17 17 0 0 0 15 4l-.5 1a15.6 15.6 0 0 0-5 0L9 4a17 17 0 0 0-4.3 1.3C2 9.4 1.3 13.3 1.6 17.2a17.2 17.2 0 0 0 5.3 2.7l1.1-1.8a11 11 0 0 1-1.8-.9l.4-.3a12.2 12.2 0 0 0 10.8 0l.4.3a11 11 0 0 1-1.8.9l1.1 1.8a17.1 17.1 0 0 0 5.3-2.7c.4-4.5-.7-8.4-3.1-11.9ZM8.7 14.8c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2Zm6.6 0c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2Z"/>',
+        'fleche' => '<path d="M4 12h15m-5-6 6 6-6 6"/>',
+        'coche' => '<path d="m5 12 4.5 4.5L19 7"/>',
+        'joueur' => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+        'mail' => '<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m4 7 8 6 8-6"/>',
+        'cadenas' => '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+        'bouclier' => '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+        'crane' => '<path d="M12 3a7 7 0 0 0-7 7c0 2.4 1.2 4 2.5 5v3h9v-3c1.3-1 2.5-2.6 2.5-5a7 7 0 0 0-7-7Z"/><circle cx="9.5" cy="10.5" r="1.5"/><circle cx="14.5" cy="10.5" r="1.5"/><path d="M10 18v2M14 18v2"/>',
+        'drapeau' => '<path d="M5 21V4m0 0h11l-2 4 2 4H5"/>',
+        'marteau' => '<path d="m14 6 4 4M4 20l9-9M12 4l6 6-3 3-6-6Z"/>',
+        'camion' => '<path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17" r="1.6"/><circle cx="17" cy="17" r="1.6"/>',
+        'piece' => '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/>',
+        'historique' => '<path d="M4 12a8 8 0 1 0 2.3-5.7M4 4v5h5"/><path d="M12 8v4l3 2"/>',
+        'sortie' => '<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>',
+        'alerte' => '<path d="M12 3 2 20h20Z"/><path d="M12 10v4M12 17h.01"/>',
+        'windows' => '<path fill="currentColor" stroke="none" d="M3 5.5 10 4.5v7H3zM11 4.3 21 3v8.5H11zM3 12.5h7v7L3 18.5zM11 12.5h10V21l-10-1.4z"/>',
+        'couronne' => '<path d="m3 8 4 4 5-7 5 7 4-4-2 11H5Z"/>',
+        'etoile' => '<path d="m12 3 2.6 5.8 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.4 20l1.4-6.3L3 9.4l6.4-.6Z"/>',
+        'panier' => '<path d="M3 4h2l2.4 11h11L21 7H6.2"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+        'menu' => '<path d="M4 7h16M4 12h16M4 17h16"/>',
+        'livre' => '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3Z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+        'cible' => '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
+    ];
+@endphp
+<svg class="i" viewBox="0 0 24 24" aria-hidden="true" @isset($style) style="{{ $style }}" @endisset>{!! $traces[$nom] ?? '' !!}</svg>
