@@ -425,8 +425,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - Le site est sur sa propre VM, à part du Ptero : **heraliz.fr** (et www) y mène ; **play.heraliz.fr** mène au serveur
   de jeu. Aucune IP ni aucun accès dans le dépôt.
 - `.github/workflows/site.yml`, bouton « Run workflow » de « Site HeraliZ » :
-  - **verifier** : regarde la VM sans rien changer (système, place, déjà installé, ports, pare-feu) et dit quels noms
-    heraliz.fr mènent à la VM, plus les renvois SRV de Minecraft ;
+  - **verifier** : regarde la VM sans rien changer (système, place, déjà installé, ports, pare-feu ; Azuriom installé ou
+    non, API de connexion des comptes au launcher activée ou non, pack et installateur du launcher en ligne) et dit
+    quels noms heraliz.fr mènent à la VM, plus les renvois SRV de Minecraft ;
   - **installer** : `site/vm/installer.sh` en root (sudo si besoin) : nginx, PHP 8.4 (8.3 ou 8.2 à défaut ; dépôt Sury
     ou ondrej si le système n'en a pas), MariaDB (base et utilisateur `azuriom`), installeur officiel d'Azuriom dans
     `/var/www/azuriom`, HTTPS Let's Encrypt pour les noms qui mènent à la VM (renouvelé seul), tâches planifiées
