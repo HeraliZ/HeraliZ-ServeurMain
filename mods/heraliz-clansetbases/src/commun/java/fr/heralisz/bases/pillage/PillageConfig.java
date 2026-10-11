@@ -29,9 +29,9 @@ public final class PillageConfig {
                 .defineInRange("avertissement_s", 120, 10, 1800);
         b.pop();
         b.push("blindage");
-        BLINDAGE_PARTOUT = b.comment("Les blocs heralisz_bases:blindage_1..8 valent PARTOUT (N C4 pour les casser, insensibles aux "
-                + "autres explosions). false : les AUTRES blocs de la table (cfm, portes HBM) ne sont proteges que dans la dimension des "
-                + "bases (la carte n'est jamais touchee). true : toute la table dans toutes les dimensions").define("blindage_partout", false);
+        BLINDAGE_PARTOUT = b.comment("Ou vaut la table de protection (protection.json : meubles cfm, portes HBM ; niveau N = N C4 pour "
+                + "casser le bloc, insensible aux autres explosions). false : seulement dans la dimension des bases (la carte n'est "
+                + "jamais touchee). true : dans toutes les dimensions").define("blindage_partout", false);
         C4_MAINTIEN_MIN = b.comment("Un C4 pose dans une base garde son chunk charge (il ne disparait pas au dechargement) tant que la "
                 + "fenetre de pillage est ouverte ou qu'un joueur est dans la base, au plus ce nombre de minutes")
                 .defineInRange("c4_maintien_min", 120, 1, 1440);

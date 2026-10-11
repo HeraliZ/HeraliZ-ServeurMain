@@ -1,20 +1,16 @@
 package fr.heralisz.bases;
 
 import com.mojang.logging.LogUtils;
-import fr.heraliz.clansetbases.HeralizClansetbases;
 import fr.heraliz.clansetbases.pont.Parties;
-import fr.heralisz.bases.blindage.BlindageRegistry;
 import fr.heralisz.bases.network.BasesNet;
 import fr.heralisz.bases.registry.BasesRegistry;
 import fr.heralisz.bases.registry.Sons;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
 /**
@@ -33,13 +29,10 @@ public class HeraliszBases {
         Sons.SONS.register(modBus);
         BasesNet.register();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BasesConfig.SPEC);
-        // module de pillage (BASES_SPEC §4, §5), partie commune : sa config, les blocs de blindage, ses paquets
+        // module de pillage (BASES_SPEC §4, §5), partie commune : sa config, ses paquets. Plus de groupe « Bases » dans
+        // l'onglet creatif commun : il ne contenait que les blocs de blindage, retires en 2.3.0 (la coque et la sortie,
+        // blocs d'administration, n'y ont jamais ete)
         fr.heralisz.bases.pillage.PillageModule.init(modBus);
-        // onglet creatif commun « HeraliZ · Clans et bases » : contenu de l'ancien onglet « HeraliZ Blindage »
-        HeralizClansetbases.ONGLET.ajouter("bases", "onglet.heraliz_clansetbases.bases",
-                () -> new ItemStack(BlindageRegistry.OBJETS_BLINDAGE.get(BlindageRegistry.NIVEAUX - 1).get()), out -> {
-                    for (RegistryObject<net.minecraft.world.item.Item> o : BlindageRegistry.OBJETS_BLINDAGE) out.accept(o.get());
-                });
         // regles, store, commandes, teleportations, pillage, blindage : partie serveur (dans l'ordre d'origine) ;
         // ecrans, HUD, plan, touches : partie client (docs/METHODE_CLIENT_SERVEUR.md §4)
         Parties.serveur(MODID, "fr.heralisz.bases.serveur.PartieServeur", modBus);

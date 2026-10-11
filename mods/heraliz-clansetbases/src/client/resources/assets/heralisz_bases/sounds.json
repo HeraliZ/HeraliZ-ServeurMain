@@ -71,18 +71,6 @@
     ],
     "subtitle": "subtitles.heralisz_bases.tp_tic"
   },
-  "blindage_pas": {
-    "sounds": [
-      "heralisz_bases:blindage_pas"
-    ],
-    "subtitle": "subtitles.heralisz_bases.blindage_pas"
-  },
-  "blindage_coup": {
-    "sounds": [
-      "heralisz_bases:blindage_coup"
-    ],
-    "subtitle": "subtitles.heralisz_bases.blindage_coup"
-  },
   "blindage_fissure": {
     "sounds": [
       "heralisz_bases:blindage_fissure"

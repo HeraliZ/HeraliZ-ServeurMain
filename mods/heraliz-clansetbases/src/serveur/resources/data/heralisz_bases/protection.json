@@ -1,5 +1,5 @@
 {
-  "_aide": "Table des niveaux de blindage (BASES_SPEC §5) : niveau N = N coups de C4 pour casser le bloc. Les blocs listés ne sont jamais détruits par une explosion ordinaire ; « parties » = blocs-pièces d'une structure (portes HBM) qui prennent le niveau et les coups de leur contrôleur ; « sources » = coups et rayon (blocs, centre de l'explosion -> centre du bloc) par source d'explosion : ThrowableId de heralisz_tactical (ex. heralisz_grenade:c4) ou id d'entité (minecraft:tnt), « defaut » sinon. Un bloc d'un mod absent est ignoré. Copie éditable : config/heralisz_bases/protection.json (relue par /base admin protection recharger). Généré par tools/bases/gen_blindage.py.",
+  "_aide": "Table des niveaux de blindage (BASES_SPEC §5) : niveau N = N coups de C4 pour casser le bloc. Les blocs listés ne sont jamais détruits par une explosion ordinaire ; « parties » = blocs-pièces d'une structure (portes HBM) qui prennent le niveau et les coups de leur contrôleur ; « sources » = coups et rayon (blocs, centre de l'explosion -> centre du bloc) par source d'explosion : ThrowableId de heralisz_tactical (ex. heralisz_grenade:c4) ou id d'entité (minecraft:tnt), « defaut » sinon. Un bloc d'un mod absent est ignoré. Copie éditable : config/heralisz_bases/protection.json (relue par /base admin protection recharger). Se modifie à la main (le générateur d'origine, tools/bases/gen_blindage.py, n'est pas dans le dépôt).",
   "niveaux": {
     "cfm:lino": 1,
     "cfm:lino2": 1,
@@ -103,15 +103,7 @@
     "heralisz_bunker:cargo_door": 8,
     "heralisz_bunker:transition_seal": 8,
     "heralisz_bunker:door_bunker": 8,
-    "heralisz_bunker:metal_door": 8,
-    "heralisz_bases:blindage_1": 1,
-    "heralisz_bases:blindage_2": 2,
-    "heralisz_bases:blindage_3": 3,
-    "heralisz_bases:blindage_4": 4,
-    "heralisz_bases:blindage_5": 5,
-    "heralisz_bases:blindage_6": 6,
-    "heralisz_bases:blindage_7": 7,
-    "heralisz_bases:blindage_8": 8
+    "heralisz_bunker:metal_door": 8
   },
   "parties": [
     "heralisz_bunker:universal_machine_part"

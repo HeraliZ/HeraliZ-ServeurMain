@@ -27,11 +27,12 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Table des niveaux de blindage (BASES_SPEC §5) : {@code data/heralisz_bases/protection.json} (genere par
- * tools/bases/gen_blindage.py), ou sa copie editable {@code config/heralisz_bases/protection.json} si elle existe.
+ * Table des niveaux de blindage (BASES_SPEC §5) : {@code data/heralisz_bases/protection.json}, ou sa copie editable
+ * {@code config/heralisz_bases/protection.json} si elle existe.
  * <ul>
  *   <li>{@code niveaux} : id de bloc -> niveau 1..8 (les {@code cfm:*} des anciens niveaux, les portes HBM de
- *   heralisz_bunker = 8, {@code blindage_1..8}) ; un bloc d'un mod absent est ignore ;</li>
+ *   heralisz_bunker = 8) ; un bloc d'un mod absent est ignore. Les blocs de blindage du mod (niveaux 1 a 8) ont ete
+ *   retires en 2.3.0 : seuls les blocs de cette table sont proteges ;</li>
  *   <li>{@code parties} : blocs-pieces d'une structure multibloc (portes HBM) qui prennent le niveau et les coups de leur
  *   controleur ;</li>
  *   <li>{@code sources} : coups et rayon par source d'explosion (ThrowableId de heralisz_tactical, ex.
@@ -59,15 +60,22 @@ public final class Protection {
     private static volatile Map<String, Integer> brut = Map.of();
     private static volatile String origine = "defaut";
 
+    /** Couleur d'affichage par niveau (liseré de l'infobulle, ligne de l'infobulle d'objet), index 0 = niveau 1. */
+    private static final int[] COULEURS = {0x6E7C8A, 0x5FD08A, 0x4FC3F7, 0x6FA8FF, 0xB28DFF, 0xE8C36A, 0xFF9F43, 0xFF5A5A};
+
     /** Niveau de protection du bloc (0 = aucun). */
     public static int niveau(BlockState s) {
         return niveau(s.getBlock());
     }
 
     public static int niveau(Block b) {
-        if (b instanceof BlindageBlock bb) return bb.niveau;
         Integer n = niveaux.get(b);
         return n == null ? 0 : n;
+    }
+
+    /** Couleur d'un niveau de protection (borne a 1..8), pour l'affichage cote client. */
+    public static int couleur(int niveau) {
+        return COULEURS[Math.max(1, Math.min(COULEURS.length, niveau)) - 1];
     }
 
     /** Bloc-piece d'une structure (niveau et coups de son controleur). */
@@ -117,7 +125,7 @@ public final class Protection {
             }
             Optional<Resource> res = server.getResourceManager().getResource(FICHIER);
             if (res.isEmpty()) {
-                HeraliszBases.LOG.warn("[bases] table de protection {} absente : seuls les blindage_1..8 sont proteges", FICHIER);
+                HeraliszBases.LOG.warn("[bases] table de protection {} absente : aucun bloc n'est protege", FICHIER);
                 return false;
             }
             try (Reader r = res.get().openAsReader()) {
@@ -166,9 +174,9 @@ public final class Protection {
                 lus.size(), parties.size(), src.size(), depuis);
     }
 
-    /** Resout les ids lus en blocs (serveur ou client) ; les blindage_1..8 sont toujours proteges a leur niveau. */
+    /** Resout les ids lus en blocs (serveur ou client). */
     public static void installer(Map<String, Integer> lus, List<String> pieces) {
-        Map<Block, Integer> n = blindagesSeuls();
+        Map<Block, Integer> n = new IdentityHashMap<>();
         for (Map.Entry<String, Integer> e : lus.entrySet()) {
             ResourceLocation rl = ResourceLocation.tryParse(e.getKey());
             if (rl == null || !ForgeRegistries.BLOCKS.containsKey(rl)) continue;
@@ -189,15 +197,5 @@ public final class Protection {
 
     public static List<String> partiesBrutes() {
         return partiesBrutes;
-    }
-
-    private static Map<Block, Integer> blindagesSeuls() {
-        Map<Block, Integer> m = new IdentityHashMap<>();
-        try {
-            for (int i = 1; i <= BlindageRegistry.NIVEAUX; i++) m.put(BlindageRegistry.bloc(i), i);
-        } catch (RuntimeException | ExceptionInInitializerError ex) {
-            // registres pas encore prets (chargement de classe precoce) : rempli au premier chargement
-        }
-        return m;
     }
 }

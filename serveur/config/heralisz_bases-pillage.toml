@@ -7,7 +7,7 @@
 	avertissement_s = 120
 
 [blindage]
-	#Les blocs heralisz_bases:blindage_1..8 valent PARTOUT (N C4 pour les casser, insensibles aux autres explosions). false : les AUTRES blocs de la table (cfm, portes HBM) ne sont proteges que dans la dimension des bases (la carte n'est jamais touchee). true : toute la table dans toutes les dimensions
+	#Ou vaut la table de protection (protection.json : meubles cfm, portes HBM ; niveau N = N C4 pour casser le bloc, insensible aux autres explosions). false : seulement dans la dimension des bases (la carte n'est jamais touchee). true : dans toutes les dimensions
 	blindage_partout = false
 	#Un C4 pose dans une base garde son chunk charge (il ne disparait pas au dechargement) tant que la fenetre de pillage est ouverte ou qu'un joueur est dans la base, au plus ce nombre de minutes
 	#Range: 1 ~ 1440

@@ -1,7 +1,6 @@
 package fr.heralisz.bases.blindage.client;
 
 import fr.heralisz.bases.HeraliszBases;
-import fr.heralisz.bases.blindage.BlindageBlock;
 import fr.heralisz.bases.blindage.Protection;
 import fr.heralisz.bases.pillage.PillageNet;
 import fr.heralisz.clans.client.gui.kit.Ui;
@@ -52,7 +51,7 @@ public final class BlindageClient {
     public static void info(PillageNet.InfoBlindageS2C m) {
         niveau = Math.max(1, m.niveau());
         coups = Math.max(0, Math.min(niveau, m.coups()));
-        couleur = BlindageBlock.couleur(niveau);
+        couleur = Protection.couleur(niveau);
         titre = Ui.lit(Component.translatable("hud.heralisz_bases.blindage.titre", niveau).getString().toUpperCase(Locale.ROOT), Ui.BOLD);
         compte = Ui.lit(coups == 0 ? Component.translatable("hud.heralisz_bases.blindage.intact").getString().toUpperCase(Locale.ROOT)
                 : coups + "/" + niveau, Ui.BOLD);
@@ -99,7 +98,7 @@ public final class BlindageClient {
         int i = Math.max(1, Math.min(8, n));
         if (LIGNE_NIVEAU[i] == null) {
             MutableComponent c = Component.translatable("tooltip.heralisz_bases.blindage.niveau", n);
-            LIGNE_NIVEAU[i] = c.withStyle(s -> s.withColor(BlindageBlock.couleur(i)));
+            LIGNE_NIVEAU[i] = c.withStyle(s -> s.withColor(Protection.couleur(i)));
         }
         return LIGNE_NIVEAU[i];
     }
@@ -110,10 +109,10 @@ public final class BlindageClient {
         private Forge() {
         }
 
-        /** Infobulle d'un objet protege d'un autre mod (les blindage_1..8 ont la leur). */
+        /** Infobulle d'un objet protege (blocs cfm, portes HBM de la table de protection). */
         @SubscribeEvent
         public static void infobulle(ItemTooltipEvent e) {
-            if (!(e.getItemStack().getItem() instanceof BlockItem bi) || bi.getBlock() instanceof BlindageBlock) return;
+            if (!(e.getItemStack().getItem() instanceof BlockItem bi)) return;
             int n = Protection.niveau(bi.getBlock());
             if (n > 0) e.getToolTip().add(ligneNiveau(n));
         }
@@ -123,7 +122,7 @@ public final class BlindageClient {
         public static void clic(PlayerInteractEvent.RightClickBlock e) {
             if (!e.getLevel().isClientSide || !e.getEntity().isShiftKeyDown() || !e.getEntity().getMainHandItem().isEmpty()) return;
             BlockState s = e.getLevel().getBlockState(e.getPos());
-            if (!(s.getBlock() instanceof BlindageBlock) && e.getLevel().dimension() != fr.heralisz.bases.monde.Grille.BUNKERS) return;
+            if (e.getLevel().dimension() != fr.heralisz.bases.monde.Grille.BUNKERS) return;
             if (Protection.niveau(s) <= 0 && !Protection.partie(s)) return;
             e.setCanceled(true);
             e.setCancellationResult(InteractionResult.SUCCESS);

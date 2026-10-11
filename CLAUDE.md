@@ -130,7 +130,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
-| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases, heralisz_tags | hérals, clans, bunkers et pillage, tags |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules | train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json`), ascenseur, carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
@@ -456,7 +456,7 @@ monde `<monde>_ancien_<date>` (jamais supprimé ; ses dossiers `_nether` / `_the
 à la carte et redémarre. Un échec avant la bascule ne touche ni au serveur ni à son monde (carte incomplète laissée dans
 `<monde>_nouvelle_<date>`, à supprimer depuis le panel). Le nom du monde est lu dans le `server.properties` du Ptero
 (aujourd'hui `dayz_map`), obligatoirement : s'il est illisible, rien n'est changé (le 11/10, un repli sur le nom du dépôt
-a posé la carte dans `/HeraliZ`, que le serveur ne charge pas). Restent hors du monde, donc gardés : clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe, grades,
+a posé la carte dans `/HeraliZ`, que le serveur ne charge pas). Restent hors du monde, donc gardés : clans, hérals, bunkers (reposés seuls), comptes AuthMe, grades,
 bans. Repartent de zéro avec la carte : inventaires et positions des joueurs, zones d'extraction posées à la main,
 territoires pris. Les zones WorldGuard restent rattachées au nom du monde (mêmes coordonnées) : le résumé de l'envoi
 les liste, à refaire pour la nouvelle carte. L'ancien monde se supprime depuis le panel quand tout va bien.
