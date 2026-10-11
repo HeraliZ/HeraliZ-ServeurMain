@@ -41,10 +41,17 @@ en_site php "$TRAVAIL/vm/reglages.php" "$DOSSIER" "$TRAVAIL/contenu"
 en_site php artisan view:clear > /dev/null
 en_site php artisan cache:clear > /dev/null
 
-# le site répond avec le thème (requête locale, comme un visiteur)
+# le site répond avec le thème (requêtes locales, comme un visiteur) et ses pages principales s'ouvrent
 code=$(curl -s -o "$TRAVAIL/accueil.html" -m 30 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 https://heraliz.fr/ || true)
 if [ "$code" = 200 ] && grep -q 'themes/heraliz/css/heraliz.css' "$TRAVAIL/accueil.html"; then
   echo "Accueil de https://heraliz.fr : en ligne avec le thème HeraliZ"
 else
   echo "::warning::Accueil de https://heraliz.fr : réponse ${code:-aucune}, thème HeraliZ non vu dans la page"
 fi
+pages=""
+for chemin in /shop /vote /reglement /news /user/login /user/register; do
+  code=$(curl -s -o /dev/null -m 30 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 "https://heraliz.fr$chemin" || true)
+  pages="$pages $chemin ${code:-000} ;"
+  [ "$code" = 200 ] || echo "::warning::Page https://heraliz.fr$chemin : réponse ${code:-aucune}"
+done
+echo "Pages (200 = s'ouvre) :${pages% ;}"
