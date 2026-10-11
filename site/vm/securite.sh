@@ -54,6 +54,34 @@ if [ "${essais:-0}" -gt 0 ]; then
 fi
 echo "Adresses bloquées en ce moment : $(fail2ban-client status sshd | awk -F: '/Currently banned/ {gsub(/[ \t]/, "", $2); print $2}')"
 
+# Site déjà installé (installer.sh écrit ces réglages dans les nouveaux) :
+# - HSTS : sur un Wi-Fi piégé, personne ne peut plus détourner un joueur vers une fausse page http:// ;
+# - le site reçoit toujours son vrai nom et aucune adresse « transmise » : personne ne peut se faire passer pour une
+#   autre adresse IP (et échapper aux limites de connexion) ni faire écrire au site des liens vers un autre site.
+SITE_NGINX=/etc/nginx/sites-available/heraliz
+if [ -f "$SITE_NGINX" ]; then
+  cp "$SITE_NGINX" /tmp/heraliz-nginx.avant
+  ajoutes=""
+  if ! grep -q "Strict-Transport-Security" "$SITE_NGINX"; then
+    sed -i '/add_header Referrer-Policy/a\    add_header Strict-Transport-Security "max-age=31536000" always;' "$SITE_NGINX"
+    ajoutes="$ajoutes, HSTS"
+  fi
+  if ! grep -q "fastcgi_param HTTP_HOST" "$SITE_NGINX"; then
+    sed -i 's#^\([[:space:]]*\)include fastcgi_params;#&\n\1fastcgi_param HTTP_HOST $host;\n\1fastcgi_param HTTP_X_FORWARDED_FOR "";\n\1fastcgi_param HTTP_X_FORWARDED_HOST "";\n\1fastcgi_param HTTP_X_FORWARDED_PORT "";\n\1fastcgi_param HTTP_X_FORWARDED_PROTO "";\n\1fastcgi_param HTTP_X_FORWARDED_PREFIX "";\n\1fastcgi_param HTTP_FORWARDED "";#' "$SITE_NGINX"
+    ajoutes="$ajoutes, vrai nom du site et adresse IP impossible à falsifier"
+  fi
+  if [ -z "$ajoutes" ]; then
+    echo "nginx : HSTS, vrai nom du site et adresse IP impossible à falsifier déjà en place"
+  elif nginx -t > /dev/null 2>&1; then
+    systemctl reload nginx
+    echo "nginx : ajouté${ajoutes#,}"
+  else
+    cp /tmp/heraliz-nginx.avant "$SITE_NGINX"
+    echo "::warning::nginx a refusé les nouveaux réglages (${ajoutes#, }) : configuration remise comme avant."
+  fi
+  rm -f /tmp/heraliz-nginx.avant
+fi
+
 # LLMNR (et mDNS) : inutiles sur un serveur, et ouverts sur internet par systemd-resolved
 if systemctl is-active --quiet systemd-resolved; then
   install -d /etc/systemd/resolved.conf.d

@@ -44,6 +44,12 @@ if [ ! -s "$CLE" ]; then
   chown www-data:www-data "$CLE"
   echo "Clé des jetons de lancement : créée"
 fi
+# storage (journaux, sessions, clé) lisible par le site seulement, remis à chaque envoi (« installer » relancé ouvre le
+# dossier du site en lecture à tous les comptes de la VM)
+chown -R www-data:www-data "$DOSSIER/storage"
+chmod -R o-rwx "$DOSSIER/storage"
+chmod 700 "$(dirname "$CLE")"
+chmod 600 "$CLE"
 
 echo "== Extensions Boutique et Votes"
 for ext in shop vote; do

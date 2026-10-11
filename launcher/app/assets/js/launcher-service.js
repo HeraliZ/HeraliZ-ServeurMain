@@ -12,7 +12,7 @@ const { getServerStatus } = require('helios-core/mojang')
 const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
 const { createOfflineProfile } = require('./offline-profile')
-const { httpsUrl, validateDistribution } = require('./security')
+const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { CompteSite } = require('./compte-site')
 const Spartan = require('./spartan')
 
@@ -363,7 +363,7 @@ class LauncherService {
             this.game.once('error', error => {
                 this.game = null
                 this.busy = false
-                this.emit('error', `Impossible de démarrer Minecraft : ${error.message}`)
+                this.emit('error', `Impossible de démarrer Minecraft : ${sansChemins(error.message)}`)
             })
             this.game.once('close', code => {
                 this.game = null
@@ -373,7 +373,7 @@ class LauncherService {
             return { started: true }
         } catch (error) {
             this.busy = false
-            this.emit('error', error.message || 'La préparation a échoué. Réessaie.')
+            this.emit('error', sansChemins(error.message) || 'La préparation a échoué. Réessaie.')
             throw error
         }
     }

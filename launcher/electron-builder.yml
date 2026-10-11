@@ -7,6 +7,17 @@ copyright: 'Copyright © 2018-2024 Daniel Scalzi'
 asar: true
 compression: 'maximum'
 
+# Verrous d'Electron (« fuses »), posés dans l'exécutable à la fabrication : le launcher ne peut plus tourner comme un
+# simple Node.js (ELECTRON_RUN_AS_NODE), ni recevoir des options Node ou un débogueur, ni charger autre chose que son
+# archive app.asar. Un tricheur a plus de mal à en tirer le jeton du site ou à retirer les protections de Spartan.
+# Rien dans le launcher, Helios ou electron-updater n'utilise ce qui est coupé.
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  onlyLoadAppFromAsar: true
+  enableCookieEncryption: true
+
 files:
   - 'index.js'
   - 'package.json'

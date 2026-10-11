@@ -24,7 +24,8 @@ const logger = LoggerUtil.getLogger('ProcessBuilder')
  */
 class ProcessBuilder {
 
-    // jetonSpartan : jeton de lancement signé par le site pour ce compte (spartan.js), ou null
+    // jetonSpartan : jeton de lancement signé par le site pour ce compte (spartan.js), ou null ; passé au jeu par
+    // l'environnement, jamais sur la ligne de commande
     constructor(distroServer, vanillaManifest, modManifest, authUser, launcherVersion, jetonSpartan = null){
         this.gameDir = path.join(ConfigManager.getInstanceDirectory(), distroServer.rawServer.id)
         this.commonDir = ConfigManager.getCommonDirectory()
@@ -82,7 +83,9 @@ class ProcessBuilder {
 
         const child = child_process.spawn(ConfigManager.getJavaExecutable(this.server.rawServer.id), args, {
             cwd: this.gameDir,
-            detached: ConfigManager.getLaunchDetached()
+            detached: ConfigManager.getLaunchDetached(),
+            // jeton de Spartan par l'environnement, sans les variables d'injection de Java (spartan.js)
+            env: this.environnement()
         })
 
         if(ConfigManager.getLaunchDetached()){
@@ -111,6 +114,11 @@ class ProcessBuilder {
         })
 
         return child
+    }
+
+    /** Environnement du jeu (spartan.js) : jeton signé par le site, aucune variable d'injection de Java. */
+    environnement(base = process.env) {
+        return Spartan.environnementJeu(this.jetonSpartan, base)
     }
 
     /**
@@ -383,8 +391,6 @@ class ProcessBuilder {
         // Spartan : options du joueur sans porte d'entrée pour les injecteurs, puis les protections (voir spartan.js)
         args = args.concat(Spartan.optionsSures(ConfigManager.getJVMOptions(this.server.rawServer.id)))
         args = args.concat(Spartan.protections())
-        const jeton = Spartan.argumentJeton(this.jetonSpartan)
-        if (jeton) args.push(jeton)
         args.push('-Djava.library.path=' + tempNativePath)
 
         // Main Java Class
@@ -438,8 +444,6 @@ class ProcessBuilder {
         // Spartan : options du joueur sans porte d'entrée pour les injecteurs, puis les protections (voir spartan.js)
         args = args.concat(Spartan.optionsSures(ConfigManager.getJVMOptions(this.server.rawServer.id)))
         args = args.concat(Spartan.protections())
-        const jeton = Spartan.argumentJeton(this.jetonSpartan)
-        if (jeton) args.push(jeton)
 
         // Main Java Class
         args.push(this.modManifest.mainClass)

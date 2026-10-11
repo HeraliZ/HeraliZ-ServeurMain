@@ -87,6 +87,273 @@ jobs:
           echo "DOMAINES=${DOMAINES# }" >> "$GITHUB_ENV"
           echo "HTTPS=$HTTPS" >> "$GITHUB_ENV"
 
+      # « verifier » vu d'internet, comme un pirate : ce que n'importe qui peut lire ou télécharger sur heraliz.fr sans
+      # compte. Lecture seule : aucun compte créé, aucune connexion essayée, aucune adresse IP affichée.
+      - name: Vu depuis internet (comme un pirate)
+        if: env.ACTION == 'verifier'
+        run: |
+          python3 - <<'PY'
+          import http.client
+          import json
+          import os
+          import re
+          import socket
+          import ssl
+          import subprocess
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          SITE = "heraliz.fr"
+          alertes = []
+          conseils = []
+
+
+          class SansRedirection(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, *args, **kwargs):
+                  return None
+
+
+          ouvreur = urllib.request.build_opener(SansRedirection)
+
+
+          def lire(chemin, methode="GET", entetes=None, base=f"https://{SITE}", limite=3_000_000):
+              requete = urllib.request.Request(base + chemin, method=methode,
+                                               headers={"User-Agent": "HeraliZ-verification", **(entetes or {})})
+              try:
+                  with ouvreur.open(requete, timeout=60) as r:
+                      return r.status, r.headers, r.read(limite)
+              except urllib.error.HTTPError as e:
+                  return e.code, e.headers, e.read(limite)
+              except Exception as e:
+                  return None, None, type(e).__name__.encode()
+
+
+          def alerte(texte):
+              alertes.append(texte)
+              print(f"::warning::{texte}")
+
+
+          def json_ou_rien(corps):
+              try:
+                  return json.loads(corps)
+              except Exception:
+                  return None
+
+
+          def cles(o):
+              if isinstance(o, dict):
+                  for k, v in o.items():
+                      yield k
+                      yield from cles(v)
+              elif isinstance(o, list):
+                  for v in o:
+                      yield from cles(v)
+
+
+          JSON = {"Accept": "application/json"}
+
+          # 1. HTTPS : redirection, certificat, anciens chiffrements
+          code, h, _ = lire("/", base=f"http://{SITE}")
+          lieu = (h.get("Location") or "") if h else ""
+          if code in (301, 308) and lieu.startswith("https://"):
+              print("http:// → https:// : redirigé (mots de passe jamais en clair sur le réseau)")
+          else:
+              alerte(f"http://{SITE} n'est pas redirigé vers https:// (code {code})")
+          try:
+              contexte = ssl.create_default_context()
+              with socket.create_connection((SITE, 443), timeout=20) as s, contexte.wrap_socket(s, server_hostname=SITE) as t:
+                  reste = (ssl.cert_time_to_seconds(t.getpeercert()["notAfter"]) - time.time()) / 86400
+                  print(f"Certificat HTTPS : valide ({t.version()}), expire dans {reste:.0f} jours (renouvelé seul)")
+                  if reste < 14:
+                      alerte(f"Certificat HTTPS : expire dans {reste:.0f} jours, le renouvellement automatique ne marche pas")
+          except Exception as e:
+              alerte(f"Certificat HTTPS invalide ou site injoignable ({type(e).__name__})")
+          for nom, option in (("TLS 1.0", "-tls1"), ("TLS 1.1", "-tls1_1")):
+              try:
+                  r = subprocess.run(["openssl", "s_client", "-connect", f"{SITE}:443", "-servername", SITE, option,
+                                      "-cipher", "DEFAULT@SECLEVEL=0"], input=b"", capture_output=True, timeout=30)
+                  accepte = re.search(rb"Cipher is (?!\(NONE\))[A-Z0-9-]+", r.stdout) is not None
+              except Exception:
+                  accepte = False
+              print(f"Ancien chiffrement {nom} : {'accepté' if accepte else 'refusé'}")
+              if accepte:
+                  conseils.append(f"{nom} encore accepté : le couper dans nginx")
+
+          # 2. En-têtes de sécurité et cookies de session
+          code, h, _ = lire("/")
+          if h is None:
+              alerte("Le site ne répond pas")
+          else:
+              serveur = h.get("Server") or ""
+              print(f"Logiciel annoncé par le site : « {serveur or 'rien'} »" + (f", {h.get('X-Powered-By')}" if h.get("X-Powered-By") else ""))
+              if re.search(r"\d", serveur) or h.get("X-Powered-By"):
+                  conseils.append("versions des logiciels du site affichées (aide un pirate à chercher leurs failles)")
+              absents = [n for n in ("Strict-Transport-Security", "X-Frame-Options", "X-Content-Type-Options", "Referrer-Policy")
+                         if not h.get(n)]
+              print("En-têtes de sécurité : " + ("tous présents" if not absents else "absents : " + ", ".join(absents)))
+              if "X-Frame-Options" in absents and "frame-ancestors" not in (h.get("Content-Security-Policy") or ""):
+                  conseils.append("pages du site intégrables dans un autre site (X-Frame-Options)")
+              if "Strict-Transport-Security" in absents:
+                  conseils.append("HSTS absent : ajouter Strict-Transport-Security (le navigateur n'essaiera plus jamais http://)")
+              for cookie in h.get_all("Set-Cookie") or []:
+                  nom = cookie.split("=", 1)[0].strip()
+                  attributs = cookie.lower()
+                  manque = [a for a in ("secure", "samesite") if a not in attributs]
+                  if "session" in nom.lower() and "httponly" not in attributs:
+                      manque.append("httponly")
+                  print(f"Cookie {nom} : " + ("Secure, SameSite" + (", HttpOnly" if "httponly" in attributs else "")
+                                               if not manque else "sans " + ", ".join(manque)))
+                  if manque and "session" in nom.lower():
+                      alerte(f"Cookie de session {nom} sans {', '.join(manque)} : la session d'un joueur pourrait être volée")
+
+          # 3. Listes de fichiers et pack du launcher
+          listes = [c for c in ("/launcher/", "/telecharger/", "/assets/", "/storage/", "/assets/plugins/", "/assets/themes/")
+                    if re.search(rb"<title>Index of", lire(c)[2] or b"")]
+          if listes:
+              alerte("Liste des fichiers visible par tous : " + ", ".join(listes))
+          else:
+              print("Listes de fichiers (launcher, téléchargement, images, extensions) : toutes cachées")
+          code, h, corps = lire("/launcher/distribution.json", limite=80_000_000)
+          pack = json_ou_rien(corps) if code == 200 else None
+          if isinstance(pack, dict):
+              def modules(liste):
+                  for m in liste or []:
+                      yield m
+                      yield from modules(m.get("subModules"))
+              tous = [m for s in pack.get("servers") or [] for m in modules(s.get("modules"))]
+              mods = [m for m in tous if m.get("type") == "ForgeMod"]
+              url = next(((m.get("artifact") or {}).get("url") for m in mods if (m.get("artifact") or {}).get("url")), "")
+              morceaux = urllib.parse.urlsplit(url)
+              code_jar = lire(morceaux.path, "HEAD")[0] if morceaux.hostname == SITE else None
+              print(f"Pack du launcher : liste lisible sans compte ({len(mods)} mods joueurs) ; un mod téléchargé sans compte : code {code_jar}")
+              if code_jar == 200:
+                  conseils.append("les mods joueurs se téléchargent sans compte (leurs adresses sont dans distribution.json)")
+          else:
+              print(f"Pack du launcher : code {code}" + (" (lisible sans compte, mais pas en JSON)" if code == 200 else ""))
+
+          # 4. Fichiers internes : réglages, base, clé des jetons, journaux, sauvegardes, outils de débogage, chemins piégés
+          SENSIBLES = ["/.env", "/.env.backup", "/.env.bak", "/.env.old", "/.git/HEAD", "/.git/config", "/artisan",
+                       "/composer.json", "/composer.lock", "/package.json", "/storage/logs/laravel.log",
+                       "/storage/app/heraliz/jeton-jeu.cle", "/vendor/autoload.php", "/config/database.php",
+                       "/database/database.sqlite", "/plugins/heraliz/plugin.json",
+                       "/plugins/heraliz/src/Controllers/JetonController.php", "/resources/themes/heraliz/config.json",
+                       "/phpinfo.php", "/info.php", "/server-status", "/nginx_status", "/adminer.php", "/phpmyadmin/",
+                       "/backup.sql", "/dump.sql", "/azuriom.sql", "/backup.zip", "/site.zip", "/install.php",
+                       "/installer.php", "/_ignition/health-check", "/telescope", "/horizon", "/_debugbar/open",
+                       "/launcher../azuriom/.env", "/telecharger../azuriom/.env", "/launcher/../../azuriom/.env",
+                       "/%2e%2e/%2e%2e/etc/passwd", "/index.php/../.env", "/assets/../.env",
+                       time.strftime("/storage/logs/laravel-%Y-%m-%d.log")]
+          servis = [c for c in SENSIBLES if lire(c)[0] == 200]
+          if servis:
+              alerte("Fichiers internes lisibles depuis internet : " + ", ".join(servis))
+          else:
+              print(f"Fichiers internes (mot de passe de la base, clé des jetons, journaux, sauvegardes, débogage, chemins piégés) : "
+                    f"{len(SENSIBLES)} essayés, aucun lisible")
+
+          # 5. Mode débogage : une erreur ne doit montrer ni code ni réglage
+          traces = re.compile(rb'Whoops|Stack trace|vendor/laravel|APP_KEY|DB_PASSWORD|"trace"\s*:|"exception"\s*:')
+          essais = [("/api/heraliz/jeton-jeu", "GET", JSON), ("/api/auth/verify", "GET", JSON),
+                    ("/api/heraliz/inexistant", "GET", JSON), ("/user/login", "PUT", None), ("/user/inexistant", "GET", None)]
+          fuite = next((c for c, m, e in essais if traces.search(lire(c, m, e)[2] or b"")), None)
+          if fuite:
+              alerte(f"Mode débogage actif : une erreur ({fuite}) montre le code et les réglages du site (APP_DEBUG)")
+          else:
+              print("Erreurs du site : messages courts, aucun code ni réglage montré (débogage coupé)")
+
+          # 6. Ce que les API publiques montrent des comptes
+          INTERDITES = {"email", "password", "access_token", "remember_token", "two_factor_secret",
+                        "two_factor_recovery_codes", "last_login_ip", "ip", "money"}
+          code, h, corps = lire("/api/heraliz/etat", entetes=JSON)
+          etat = json_ou_rien(corps)
+          if isinstance(etat, dict):
+              print("/api/heraliz/etat : " + ", ".join(f"{k}={v}" for k, v in etat.items() if not isinstance(v, (dict, list))))
+              if INTERDITES & set(cles(etat)):
+                  alerte("/api/heraliz/etat montre des données de compte")
+          for chemin, nom in (("/api/posts", "actualités"), ("/api/servers", "serveurs")):
+              code, h, corps = lire(chemin, entetes=JSON)
+              donnees = json_ou_rien(corps)
+              trouvees = INTERDITES & set(cles(donnees))
+              if trouvees:
+                  alerte(f"API publique des {nom} ({chemin}) : montre {', '.join(sorted(trouvees))}")
+              else:
+                  print(f"API publique des {nom} : aucun e-mail, mot de passe, jeton, solde ni adresse IP de joueur (code {code})")
+              if chemin == "/api/servers":
+                  liste = donnees if isinstance(donnees, list) else (donnees or {}).get("data", []) if isinstance(donnees, dict) else []
+                  for serveur in liste:
+                      hote = str(serveur.get("address") or "")
+                      hote = hote[1:].split("]")[0] if hote.startswith("[") else (hote.rsplit(":", 1)[0] if hote.count(":") == 1 else hote)
+                      if re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", hote) or ":" in hote:
+                          alerte("Azuriom → Serveurs : le serveur de jeu est enregistré par son adresse IP, visible par tous "
+                                 "(/api/servers) : mettre play.heraliz.fr à la place")
+                      elif hote:
+                          print(f"Adresse du serveur de jeu montrée par le site : « {hote} » (un nom, pas une IP)")
+          for chemin in ("/api/rss", "/api/atom"):
+              auteurs = re.findall(rb"<(?:author|dc:creator)>(.*?)</(?:author|dc:creator)>", lire(chemin)[2] or b"", re.S)
+              if any(b"@" in a for a in auteurs):
+                  alerte(f"Le flux d'actualités {chemin} montre l'e-mail d'un auteur")
+          print("Flux d'actualités (RSS, Atom) : auteurs montrés par leur pseudo seulement")
+
+          # 7. Un site piégé peut-il utiliser la session d'un joueur ?
+          code, h, _ = lire("/api/auth/authenticate", "OPTIONS",
+                            {"Origin": "https://exemple.invalid", "Access-Control-Request-Method": "POST"})
+          acao = ((h.get("Access-Control-Allow-Origin") if h else None) or "").strip()
+          acac = ((h.get("Access-Control-Allow-Credentials") if h else None) or "").strip().lower()
+          if "exemple.invalid" in acao and acac == "true":
+              alerte("L'API accepte les appels d'autres sites AVEC les cookies : un site piégé pourrait agir avec la session d'un joueur")
+          else:
+              print(f"API appelée depuis un autre site : « {acao or 'refusé'} », sans cookies (un site piégé ne peut rien lire d'un compte)")
+
+          # 8. Fausse adresse IP : Laravel croit le X-Forwarded-For de n'importe qui si le nom demandé finit par
+          # .on-forge.com, et nginx transmet ce nom tel quel quand l'adresse complète est dans la ligne de requête.
+          # Si le compteur de la limite repart à zéro avec une autre « adresse », toutes les limites sont contournables.
+          def reste_limite(fausse_ip):
+              try:
+                  c = http.client.HTTPSConnection(SITE, 443, timeout=20, context=ssl.create_default_context())
+                  c.putrequest("GET", f"https://{SITE}/api/heraliz/etat", skip_host=True, skip_accept_encoding=True)
+                  for nom, valeur in (("Host", "verification.on-forge.com"), ("X-Forwarded-For", fausse_ip),
+                                      ("User-Agent", "HeraliZ-verification")):
+                      c.putheader(nom, valeur)
+                  c.endheaders()
+                  r = c.getresponse()
+                  r.read()
+                  c.close()
+                  reste = r.getheader("X-RateLimit-Remaining")
+                  return int(reste) if r.status == 200 and reste and reste.isdigit() else None
+              except Exception:
+                  return None
+          # A, B, A, B : avec un seul compteur, il ne fait que descendre (au plus un retour à zéro par minute) ; avec un
+          # compteur par fausse adresse, B ne descend pas sous A les deux fois
+          a1, b1, a2, b2 = (reste_limite(ip) for ip in ("198.51.100.1", "198.51.100.2") * 2)
+          if None not in (a1, b1, a2, b2) and b1 >= a1 and b2 >= a2:
+              alerte("Adresse IP falsifiable : avec un faux nom de site, chaque fausse adresse a son propre compteur, toutes "
+                     "les limites (mots de passe, double authentification, comptes) sont contournables : lancer « securite »")
+          else:
+              print("Fausse adresse IP (faux nom de site + X-Forwarded-For) : sans effet, les limites comptent la vraie adresse")
+
+          # 9. Administration et inscription
+          code, h, _ = lire("/admin")
+          if code == 200:
+              alerte("/admin s'ouvre sans connexion")
+          else:
+              print(f"Administration : demande une connexion (code {code})")
+          code, h, corps = lire("/user/register")
+          captcha = re.search(rb"h-captcha|g-recaptcha|cf-turnstile", corps or b"") is not None
+          print(f"Captcha sur la page d'inscription du site : {'oui' if captcha else 'non'}")
+          if code == 200 and not captcha:
+              conseils.append("pas de captcha à l'inscription sur le site : un robot peut créer des comptes en masse")
+
+          print(f"Résultat : {len(alertes)} problème(s), {len(conseils)} renforcement(s) conseillé(s)")
+          for c in conseils:
+              print(f"À renforcer : {c}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+              f.write("### Vu depuis internet (comme un pirate)\n")
+              f.write("".join(f"- **problème** : {a}\n" for a in alertes) or
+                      "- aucune donnée lisible sans compte : réglages, base, clé des jetons, journaux et débogage tous refusés\n")
+              f.write("".join(f"- à renforcer : {c}\n" for c in conseils))
+          PY
+
       - name: Connexion à la VM
         run: |
           export SSHPASS="$SITE_SSH_MDP"

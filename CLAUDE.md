@@ -316,14 +316,18 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   CaraCrea (un joueur caché qui parle est montré à ceux qui l'entendent). Si une de ces API change, ce fichier aussi.
 - **Launcher** (`launcher/`, Helios) : il charge les mods depuis son dossier (`common/modstore`, fournisseur Forge
   « maven libs », options `--fml.mavenRoots` / `--fml.modLists`) ; Spartan hache et juge chacun de ces jars comme ceux
-  du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism` et retire les options d'injection du joueur
-  (`launcher/app/assets/js/spartan.js`). Son pack est refait à chaque mise en ligne avec `livraison/mods client` de la
-  même fabrication (section 8).
+  du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism`, retire les options d'injection du joueur et, depuis
+  la 1.6.1, les variables d'environnement que Java lit au démarrage (`JAVA_TOOL_OPTIONS`, `_JAVA_OPTIONS`,
+  `JDK_JAVA_OPTIONS` : un `-javaagent` de triche pouvait s'y glisser) (`launcher/app/assets/js/spartan.js`) ; ses verrous
+  Electron (`electronFuses` de `electron-builder.yml`) l'empêchent de tourner comme un simple Node.js ou de charger un
+  autre code que son archive. Son pack est refait à chaque mise en ligne avec `livraison/mods client` de la même
+  fabrication (section 8).
 - **Jeton de lancement, signé par le site (mode B, depuis le launcher 1.6.0)** : on ne joue que depuis le launcher
   HeraliZ, connecté à un compte du site. À chaque partie, le launcher envoie au site l'empreinte de son dossier mods ;
   le site (`/api/heraliz/jeton-jeu`, `JetonController` de l'extension) rend un jeton valable **6 h**, signé pour le
-  pseudo du compte connecté (jamais un pseudo envoyé par le launcher), passé au jeu par `-Dspartan.launchToken=…`
-  (masqué dans le journal du launcher) et vérifié par Spartan à la connexion (`LaunchToken.verify`, même format). La
+  pseudo du compte connecté (jamais un pseudo envoyé par le launcher), passé au jeu par la variable d'environnement
+  `SPARTAN_LAUNCH_TOKEN` depuis la 1.6.1 (avant : `-Dspartan.launchToken=…`, visible de tout programme dans la ligne de
+  commande ; Spartan lit les deux) et vérifié par Spartan à la connexion (`LaunchToken.verify`, même format). La
   clé (`storage/app/heraliz/jeton-jeu.cle` sur la VM du site) est créée une seule fois par `theme.sh` et lue par la mise
   en ligne du serveur, qui l'écrit dans `launcherSecret` : elle n'est ni dans Git, ni dans un secret GitHub, ni dans le
   launcher (impossible de fabriquer un jeton sans le site). L'ancien secret GitHub `SPARTAN_LAUNCHER_SECRET` ne sert
@@ -474,14 +478,29 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   adresse IP, 60 par heure en tout) et `/api/heraliz/a2f/preparer|activer` (double authentification : QR code, puis
   code de l'application et mot de passe ; 8 codes de secours). Un compte créé dans le launcher est un compte du site
   (boutique, votes) et inversement. Le site ne garde qu'une session de launcher par compte : se connecter sur un autre
-  PC déconnecte le premier. Contre qui essaie des mots de passe : 10 erreurs de connexion par adresse IP, puis 10
-  minutes d'attente (`LimiteConnexion` de l'extension ; Azuriom seul en permettait 60 par minute). Mots de passe
-  chiffrés par le site (bcrypt), jamais gardés par le launcher.
+  PC déconnecte le premier. Contre qui essaie des mots de passe (`LimiteConnexion` de l'extension, launcher ET page de
+  connexion du site) : 10 erreurs par adresse IP (une IPv6 compte pour son bloc /64, `Adresse`), puis 10 minutes
+  d'attente ; 10 codes de double authentification faux pour un même compte, puis 15 minutes, quelle que soit l'adresse ;
+  espaces retirés des codes (bug d'Azuriom 1.2.13 : un code de secours tapé avec un espace n'était jamais consommé).
+  Aucun intermédiaire cru (`trustedproxy.proxies` vide : Laravel croyait le X-Forwarded-For de n'importe qui qui
+  envoyait un nom en `.on-forge.com`, ce qui contournait toutes les limites ; reproduit puis corrigé le 11/10) ; nginx
+  donne toujours au site son vrai nom (`fastcgi_param HTTP_HOST $host`, adresses « transmises » vidées). Liens écrits
+  par le site forcés sur `APP_URL` s'il est en https (e-mails à venir). Appels d'autres sites (CORS) : seulement
+  `/api/posts`, `/api/servers` et les flux, jamais les comptes. Mots de passe chiffrés par le site (bcrypt), jamais
+  gardés par le launcher. Si le site passe un jour derrière Cloudflare : déclarer ses adresses dans
+  `HeralizServiceProvider::register`, sinon tous les joueurs partageraient la même limite.
 - « verifier » dit aussi ce qui est visible depuis internet : ports ouverts, base de données (seulement sur la VM),
-  fichiers internes du site (`.env`, journaux, réglages : tous refusés), SSH et fail2ban.
+  fichiers internes du site (`.env`, journaux, réglages : tous refusés), SSH et fail2ban. Étape « Vu depuis internet
+  (comme un pirate) », lancée depuis une machine de GitHub, sans compte et en lecture seule : redirection HTTPS,
+  certificat, anciens chiffrements, en-têtes de sécurité, cookies de session, listes de fichiers, pack du launcher,
+  fichiers internes et chemins piégés (clé des jetons, sauvegardes, outils de débogage), mode débogage, données
+  montrées par les API publiques (`/api/posts`, `/api/servers`, flux RSS), appels depuis un autre site,
+  administration, captcha d'inscription. Problème = avertissement, « à renforcer » = conseil.
 - **securite** (« Run workflow », et à la fin d'« installer ») : `site/vm/securite.sh` installe fail2ban (6 mots de
   passe SSH faux en 10 minutes = adresse bloquée 1 h, jusqu'à 2 jours si elle recommence ; filtre réglé pour
-  OpenSSH 10, dont les refus s'écrivent sous le nom `sshd-session`) et coupe LLMNR / mDNS. Le SSH de la VM accepte
+  OpenSSH 10, dont les refus s'écrivent sous le nom `sshd-session`), coupe LLMNR / mDNS et ajoute à nginx, sur un site
+  déjà installé, HSTS et le vrai nom du site (`installer.sh` les écrit dans les nouveaux). `theme.sh` remet à chaque
+  envoi `storage/` et la clé des jetons en lecture pour le site seulement (600). Le SSH de la VM accepte
   root avec mot de passe (les workflows s'en servent) : le mot de passe doit rester long et unique. Attention : 6 erreurs
   depuis chez soi bloquent aussi sa propre adresse 1 h.
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
