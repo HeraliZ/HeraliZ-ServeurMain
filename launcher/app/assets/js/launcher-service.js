@@ -14,6 +14,7 @@ const ProcessBuilder = require('./processbuilder')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution } = require('./security')
 const { CompteSite } = require('./compte-site')
+const Spartan = require('./spartan')
 
 // Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur). Sans chiffrement
 // disponible, il n'est pas gardé : il faudra se reconnecter au prochain lancement.
@@ -170,6 +171,13 @@ class LauncherService {
     async a2fActiver(value) {
         if (!this.compteSite) throw new Error('Les comptes HeraliZ ne sont pas encore ouverts.')
         return this.compteSite.a2fActiver(this.jetonActuel(), value?.code, value?.password)
+    }
+
+    // Jeton de lancement signé par le site pour ce compte (Spartan, mode B), lié au dossier mods du jeu ; null sans site.
+    async jetonSpartan() {
+        if (!this.compteSite) return null
+        const dossierMods = path.join(Config.getInstanceDirectory(), this.config.serverId, 'mods')
+        return this.compteSite.jetonJeu(this.jetonActuel(), Spartan.empreinteMods(dossierMods))
     }
 
     jetonActuel() {
@@ -349,7 +357,8 @@ class LauncherService {
             Config.save()
             const { version, loader } = await this.repair(distro, server)
             this.emit('launch', 'Démarrage de Minecraft…')
-            this.game = new ProcessBuilder(server, version, loader, profile, app.getVersion()).build()
+            const jetonSpartan = await this.jetonSpartan()
+            this.game = new ProcessBuilder(server, version, loader, profile, app.getVersion(), jetonSpartan).build()
             this.game.once('spawn', () => this.emit('running', 'Minecraft est lancé. Bonne survie !', 100))
             this.game.once('error', error => {
                 this.game = null

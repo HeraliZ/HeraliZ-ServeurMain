@@ -8,7 +8,7 @@ La protection utile consiste à séparer les composants :
 
 - Garder côté serveur les règles de loot, l’économie, les validations de combat, données sensibles et permissions lorsque la conception le permet.
 - Envoyer au client seulement ce qui est nécessaire au rendu, aux interfaces et au protocole.
-- Conserver sources et modules serveur dans des dépôts privés. Ce dépôt est public.
+- Conserver sources et modules serveur dans des dépôts privés. Ce dépôt est privé (il contient les détections de Spartan) : le garder privé.
 - L’obfuscation augmente le coût de lecture sans empêcher la copie ; vérifier sa compatibilité avec Forge et les mixins.
 - Des liens temporaires ou téléchargements autorisés limitent la distribution initiale, pas la redistribution par un joueur autorisé.
 
@@ -58,4 +58,4 @@ la MÊME fabrication que le jar serveur. Quand tous les joueurs passent par le l
 
 Cette refonte n’ajoute pas d’authentification serveur, de bannissement automatique, de certificat Windows ni de signature cryptographique du manifeste. HTTPS et les empreintes n’empêchent pas un hébergeur compromis de publier ensemble un manifeste et des fichiers malveillants.
 
-Les mises à jour du launcher sont manuelles via les releases HeraliZ ; le pack est actualisé au lancement. Avant diffusion, tester le serveur réel, signer l’installeur et protéger les comptes pouvant modifier le pack et les releases.
+Depuis la 1.6.0, le launcher installé se met à jour seul depuis https://heraliz.fr/telecharger/ (latest.yml : version et empreinte SHA-512 contrôlée avant installation, `mise-a-jour.js`) ; le pack est actualisé à chaque partie. Qui peut écrire sur la VM du site peut donc livrer un launcher ou un pack : protéger ses accès (secrets `SITE_*`) et les comptes GitHub qui lancent la publication. Avant diffusion, tester le serveur réel et, si possible, signer l’installeur.

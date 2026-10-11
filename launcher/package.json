@@ -1,6 +1,6 @@
 {
   "name": "heraliz-launcher",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "productName": "HeraliZ Launcher",
   "description": "Launcher HeraliZ — survie Minecraft DayZ",
   "author": "Daniel Scalzi (https://github.com/dscalzi/)",
@@ -13,8 +13,6 @@
   "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "predist": "node outils/spartan-cle.js",
-    "predist:win": "node outils/spartan-cle.js",
     "dist": "electron-builder --publish never",
     "dist:win": "electron-builder --win --publish never",
     "dist:mac": "npm run dist -- -m",
@@ -27,6 +25,7 @@
   },
   "dependencies": {
     "adm-zip": "0.6.1",
+    "electron-updater": "6.8.9",
     "fs-extra": "^11.1.1",
     "got": "^11.8.5",
     "helios-core": "~2.2.4",

@@ -35,6 +35,15 @@ install -d -o www-data -g www-data "$EXTENSION"
 rsync -a --delete "$TRAVAIL/extension/heraliz/" "$EXTENSION/"
 chown -R www-data:www-data "$EXTENSION"
 en_site php artisan plugin:enable heraliz
+# clé des jetons de lancement du jeu (Spartan), créée une seule fois sur la VM : jamais dans le dépôt ni le launcher ;
+# la mise en ligne du serveur de jeu vient la lire ici (serveur.yml)
+CLE="$DOSSIER/storage/app/heraliz/jeton-jeu.cle"
+if [ ! -s "$CLE" ]; then
+  install -d -o www-data -g www-data -m 700 "$(dirname "$CLE")"
+  (umask 077 && head -c 48 /dev/urandom | base64 | tr -d '\n=' > "$CLE")
+  chown www-data:www-data "$CLE"
+  echo "Clé des jetons de lancement : créée"
+fi
 
 echo "== Extensions Boutique et Votes"
 for ext in shop vote; do
@@ -77,6 +86,10 @@ done
 echo "Pages (200 = s'ouvre) :${pages% ;}"
 # API des comptes du launcher (extension HeraliZ) : ce que le launcher lit avant d'afficher son formulaire
 etat=$(curl -s -m 30 --resolve heraliz.fr:443:127.0.0.1 https://heraliz.fr/api/heraliz/etat || true)
+case "$etat" in
+  *'"jeton":true'*) ;;
+  *) echo "::warning::Jetons de lancement du jeu (Spartan) : clé absente sur le site" ;;
+esac
 case "$etat" in
   *'"connexion":true'*'"inscription":true'*) echo "Comptes du launcher : connexion et création de compte ouvertes" ;;
   *'"connexion":true'*) echo "::warning::Comptes du launcher : connexion ouverte, création de compte fermée (administration → Paramètres → Authentification → inscriptions)" ;;

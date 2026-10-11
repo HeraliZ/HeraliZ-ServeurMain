@@ -52,6 +52,7 @@ test('compte banni, pseudo impossible en jeu, API fermée, site injoignable', as
     await cas({ status: 400, body: { status: 'error', message: 'Auth API is not enabled' } }, /pas encore ouverte/)
     await cas({ status: 404, body: '<html>' }, /pas encore ouverte/)
     await cas({ status: 422, body: { status: 'error', reason: 'invalid_2fa', message: 'Invalid 2FA code' } }, /double authentification incorrect/)
+    await cas({ status: 429, body: { status: 'error', reason: 'too_many_attempts', message: 'Too many attempts' } }, /attends 10 minutes/)
     await cas({ status: 502, body: null }, /rencontré un problème/)
     await cas(new Error('ECONNREFUSED'), /ne répond pas/)
     assert.throws(() => new CompteSite('http://heraliz.fr'), /HTTPS/)
@@ -135,6 +136,30 @@ test('double authentification : QR code à scanner, activation, codes de secours
     assert.equal(site.appels.length, 3)
 })
 
+test('jeton de lancement du jeu : signé par le site pour le compte connecté', async () => {
+    const JETON = 'A'.repeat(40) + '.' + 'B'.repeat(43)
+    const EMP = 'c'.repeat(64)
+    const site = fauxSite({
+        'heraliz/jeton-jeu': d => d.access_token === 'perime' ? { status: 401, body: { status: 'error', reason: 'invalid_token' } }
+            : d.access_token === 'banni' ? { status: 403, body: { status: 'error', reason: 'user_banned' } }
+                : d.access_token === 'sans-cle' ? { status: 503, body: { status: 'error', reason: 'jeton_indisponible' } }
+                    : { status: 200, body: { jeton: JETON, expire: 1800021600 } }
+    })
+    const compte = new CompteSite('https://heraliz.fr', site.requete)
+    assert.equal(await compte.jetonJeu('bon', EMP), JETON)
+    assert.deepEqual(site.appels[0], { url: 'https://heraliz.fr/api/heraliz/jeton-jeu', methode: 'POST', donnees: { access_token: 'bon', empreinte: EMP } })
+    assert.equal(await compte.jetonJeu('sans-cle', EMP), null)
+    await assert.rejects(compte.jetonJeu('perime', EMP), /session a expiré/)
+    await assert.rejects(compte.jetonJeu('banni', EMP), /banni/)
+    assert.equal(await compte.jetonJeu('bon', 'pas-une-empreinte'), null)
+    assert.equal(site.appels.length, 4)
+    // réponse bizarre ou site en panne : pas de jeton, la partie se lance quand même (le serveur décide)
+    const bizarre = fauxSite({ 'heraliz/jeton-jeu': { status: 200, body: { jeton: JETON + ' -javaagent:x.jar' } } })
+    assert.equal(await new CompteSite('https://heraliz.fr', bizarre.requete).jetonJeu('bon', EMP), null)
+    const panne = fauxSite({ 'heraliz/jeton-jeu': new Error('ECONNRESET') })
+    assert.equal(await new CompteSite('https://heraliz.fr', panne.requete).jetonJeu('bon', EMP), null)
+})
+
 // Le service du launcher avec un faux compte du site.
 const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'heraliz-compte-'))
 const originalLoad = Module._load
@@ -171,7 +196,8 @@ function fauxCompte() {
             return { etat: 'ok', compte: { id: 8, username: valeur.pseudo, jeton: 'jeton-neuf' } }
         },
         a2fPreparer: async jeton => { f.jetonA2F = jeton; return { active: false, secret: 'ABCDEFGHIJKLMNOP', qr: '<svg/>' } },
-        a2fActiver: async (jeton, code, motDePasse) => { f.activation = { jeton, code, motDePasse }; return { codes: ['abcd-1234'] } }
+        a2fActiver: async (jeton, code, motDePasse) => { f.activation = { jeton, code, motDePasse }; return { codes: ['abcd-1234'] } },
+        jetonJeu: async (jeton, empreinte) => { f.demandeJeton = { jeton, empreinte }; return 'A'.repeat(40) + '.' + 'B'.repeat(43) }
     }
     return f
 }
@@ -240,4 +266,14 @@ test('création de compte depuis le launcher : connecté tout de suite, puis dou
     assert.equal(compte.jetonA2F, 'jeton-neuf')
     assert.deepEqual(await service.a2fActiver({ code: '123456', password: 'un-mot-de-passe' }), { codes: ['abcd-1234'] })
     assert.deepEqual(compte.activation, { jeton: 'jeton-neuf', code: '123456', motDePasse: 'un-mot-de-passe' })
+})
+
+test('à chaque partie, le jeton de lancement est demandé au site pour le compte et le dossier mods du jeu', async () => {
+    const compte = fauxCompte()
+    const service = new LauncherService(config, () => {}, { compteSite: compte })
+    await service.connexion({ email: 'a@b.fr', password: 'bon', acceptedRules: true })
+    assert.equal(await service.jetonSpartan(), 'A'.repeat(40) + '.' + 'B'.repeat(43))
+    assert.equal(compte.demandeJeton.jeton, 'jeton-secret')
+    // dossier mods du jeu absent ou vide : empreinte de « rien », comme le calcule le mod
+    assert.equal(compte.demandeJeton.empreinte, require('node:crypto').createHash('sha256').update('').digest('hex'))
 })

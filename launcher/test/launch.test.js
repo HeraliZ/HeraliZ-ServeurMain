@@ -123,9 +123,14 @@ test('Minecraft 1.20.1 receives offline identity, quick play and no unresolved t
     const loader = { mainClass: 'cpw.mods.bootstraplauncher.BootstrapLauncher', arguments: { jvm: [], game: ['--launchTarget', 'forgeclient'] } }
     const before = JSON.stringify(vanilla)
     const profile = createOfflineProfile('Survivant')
-    const builder = new ProcessBuilder(server, vanilla, loader, profile, '1.3.0')
+    const jeton = 'A'.repeat(40) + '.' + 'B'.repeat(43)
+    const builder = new ProcessBuilder(server, vanilla, loader, profile, '1.3.0', jeton)
     builder.classpathArg = () => ['classpath']
     const args = builder.constructJVMArguments([], directory)
+    assert.ok(args.includes('-Dspartan.launchToken=' + jeton), 'jeton signé par le site')
+    const sansJeton = new ProcessBuilder(server, vanilla, loader, profile, '1.3.0')
+    sansJeton.classpathArg = () => ['classpath']
+    assert.equal(sansJeton.constructJVMArguments([], directory).some(a => String(a).startsWith('-Dspartan.launchToken=')), false)
     assert.equal(args[args.indexOf('--username') + 1], 'Survivant')
     assert.equal(args[args.indexOf('--uuid') + 1], profile.uuid)
     assert.equal(args[args.indexOf('--accessToken') + 1], '0')

@@ -2,6 +2,7 @@
 
 use Azuriom\Plugin\Heraliz\Controllers\A2fController;
 use Azuriom\Plugin\Heraliz\Controllers\InscriptionController;
+use Azuriom\Plugin\Heraliz\Controllers\JetonController;
 use Illuminate\Support\Facades\Route;
 
 // API des comptes HeraliZ pour le launcher, sous /api/heraliz (préfixe posé par RouteServiceProvider).
@@ -9,3 +10,4 @@ Route::get('/etat', [InscriptionController::class, 'etat'])->name('etat');
 Route::post('/inscription', [InscriptionController::class, 'inscrire'])->middleware('throttle:heraliz-inscription')->name('inscription');
 Route::post('/a2f/preparer', [A2fController::class, 'preparer'])->middleware('throttle:heraliz-a2f')->name('a2f.preparer');
 Route::post('/a2f/activer', [A2fController::class, 'activer'])->middleware('throttle:heraliz-a2f')->name('a2f.activer');
+Route::post('/jeton-jeu', [JetonController::class, 'creer'])->middleware('throttle:heraliz-jeton')->name('jeton');

@@ -24,7 +24,8 @@ const logger = LoggerUtil.getLogger('ProcessBuilder')
  */
 class ProcessBuilder {
 
-    constructor(distroServer, vanillaManifest, modManifest, authUser, launcherVersion){
+    // jetonSpartan : jeton de lancement signé par le site pour ce compte (spartan.js), ou null
+    constructor(distroServer, vanillaManifest, modManifest, authUser, launcherVersion, jetonSpartan = null){
         this.gameDir = path.join(ConfigManager.getInstanceDirectory(), distroServer.rawServer.id)
         this.commonDir = ConfigManager.getCommonDirectory()
         this.server = distroServer
@@ -32,6 +33,7 @@ class ProcessBuilder {
         this.modManifest = modManifest
         this.authUser = authUser
         this.launcherVersion = launcherVersion
+        this.jetonSpartan = jetonSpartan
         this.forgeModListFile = path.join(this.gameDir, 'forgeMods.list') // 1.13+
         this.fmlDir = path.join(this.gameDir, 'forgeModList.json')
         this.llDir = path.join(this.gameDir, 'liteloaderModList.json')
@@ -381,7 +383,7 @@ class ProcessBuilder {
         // Spartan : options du joueur sans porte d'entrée pour les injecteurs, puis les protections (voir spartan.js)
         args = args.concat(Spartan.optionsSures(ConfigManager.getJVMOptions(this.server.rawServer.id)))
         args = args.concat(Spartan.protections())
-        const jeton = Spartan.argumentJeton(this.authUser.displayName, path.join(this.gameDir, 'mods'))
+        const jeton = Spartan.argumentJeton(this.jetonSpartan)
         if (jeton) args.push(jeton)
         args.push('-Djava.library.path=' + tempNativePath)
 
@@ -436,7 +438,7 @@ class ProcessBuilder {
         // Spartan : options du joueur sans porte d'entrée pour les injecteurs, puis les protections (voir spartan.js)
         args = args.concat(Spartan.optionsSures(ConfigManager.getJVMOptions(this.server.rawServer.id)))
         args = args.concat(Spartan.protections())
-        const jeton = Spartan.argumentJeton(this.authUser.displayName, path.join(this.gameDir, 'mods'))
+        const jeton = Spartan.argumentJeton(this.jetonSpartan)
         if (jeton) args.push(jeton)
 
         // Main Java Class

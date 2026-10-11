@@ -21,6 +21,10 @@ on:
         description: "Nouvelle carte : la carte de monde/HeraliZ devient le monde du serveur (ancien monde gardé en copie, serveur redémarré)"
         type: boolean
         default: false
+      tester_discord:
+        description: "Envoyer un message de test dans le salon Discord privé des alertes de Spartan"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -44,7 +48,6 @@ jobs:
       NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
       SPARTAN_DISCORD_ALERTES: ${{ secrets.SPARTAN_DISCORD_ALERTES }}
       SPARTAN_DISCORD_SANCTIONS: ${{ secrets.SPARTAN_DISCORD_SANCTIONS }}
-      SPARTAN_LAUNCHER_SECRET: ${{ secrets.SPARTAN_LAUNCHER_SECRET }}
       LITEBANS_DB_USER: ${{ secrets.LITEBANS_DB_USER }}
       LITEBANS_DB_PASSWORD: ${{ secrets.LITEBANS_DB_PASSWORD }}
       # accès à la VM du site réglés (pack du launcher) ; les secrets eux-mêmes ne sont donnés qu'à l'étape du pack
@@ -130,8 +133,38 @@ jobs:
             livraison/mods client/dayzhotbar-*.jar
           retention-days: 3
 
-      # secrets écrits dans les fichiers envoyés, jamais dans le dépôt : webhooks Discord et secret du launcher de
-      # Spartan ; base de données de LiteBans (sans ses secrets : base locale H2, sans historique des sanctions)
+      # clé des jetons de lancement du jeu : créée sur la VM du site (site/vm/theme.sh), qui signe les jetons pour le
+      # compte connecté au launcher ; lue ici à chaque envoi pour que Spartan les vérifie. Jamais dans le dépôt, ni dans
+      # un secret GitHub, ni dans le launcher.
+      - name: Clé des jetons du launcher (site)
+        if: env.SITE_PRET == 'true' && env.PTERO_SFTP_HOST != ''
+        env:
+          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
+          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
+          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
+          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass > /dev/null
+          export SSHPASS="$SITE_SSH_MDP"
+          SSH=(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o PubkeyAuthentication=no -p "${SITE_SSH_PORT:-22}")
+          VM="$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE"
+          CLE=/var/www/azuriom/storage/app/heraliz/jeton-jeu.cle
+          if [ "$SITE_SSH_UTILISATEUR" = root ]; then
+            cle=$(sshpass -e "${SSH[@]}" "$VM" "cat $CLE" < /dev/null 2> /dev/null || true)
+          else
+            cle=$(printf '%s\n' "$SITE_SSH_MDP" | sshpass -e "${SSH[@]}" "$VM" "sudo -S -p '' cat $CLE" 2> /dev/null || true)
+          fi
+          cle=$(printf '%s' "$cle" | tr -d '\r\n')
+          if [ "${#cle}" -ge 32 ]; then
+            echo "::add-mask::$cle"
+            (umask 077 && printf '%s' "$cle" > "$RUNNER_TEMP/jeton-jeu.cle")
+            echo "Clé des jetons de lancement : lue sur le site"
+          else
+            echo "::warning::Clé des jetons de lancement introuvable sur le site (lancer « Site HeraliZ » avec « theme ») : Spartan ne pourra vérifier aucun jeton."
+          fi
+
+      # secrets écrits dans les fichiers envoyés, jamais dans le dépôt : webhooks Discord et clé des jetons de Spartan ;
+      # base de données de LiteBans (sans ses secrets : base locale H2, sans historique des sanctions)
       - name: Secrets (Spartan, LiteBans)
         if: env.PTERO_SFTP_HOST != ''
         run: |
@@ -139,8 +172,17 @@ jobs:
           import os, pathlib, re
           p = pathlib.Path("serveur/config/spartan-common.toml")
           s = p.read_text(encoding="utf-8")
-          for marque in ("SPARTAN_DISCORD_ALERTES", "SPARTAN_DISCORD_SANCTIONS", "SPARTAN_LAUNCHER_SECRET"):
-              valeur = os.environ.get(marque, "").strip().replace("\\", "\\\\").replace('"', '\\"')
+          fichier_cle = pathlib.Path(os.environ.get("RUNNER_TEMP", "/tmp"), "jeton-jeu.cle")
+          valeurs = {
+              "SPARTAN_DISCORD_ALERTES": os.environ.get("SPARTAN_DISCORD_ALERTES", ""),
+              "SPARTAN_DISCORD_SANCTIONS": os.environ.get("SPARTAN_DISCORD_SANCTIONS", ""),
+              "SPARTAN_LAUNCHER_SECRET": fichier_cle.read_text(encoding="utf-8") if fichier_cle.exists() else "",
+          }
+          # sans clé, Spartan refuserait tous les joueurs si les jetons sont obligatoires : rien n'est envoyé
+          if not valeurs["SPARTAN_LAUNCHER_SECRET"].strip() and re.search(r"(?m)^\s*tokenRequired\s*=\s*true", s):
+              raise SystemExit("::error::tokenRequired = true sans clé des jetons (site injoignable ?) : tous les joueurs seraient refusés. Rien n'est envoyé.")
+          for marque, valeur in valeurs.items():
+              valeur = valeur.strip().replace("\\", "\\\\").replace('"', '\\"')
               s = s.replace("__%s__" % marque, valeur)
           p.write_text(s, encoding="utf-8")
           p = pathlib.Path("livraison/plugins/LiteBans/config.yml")
@@ -151,6 +193,53 @@ jobs:
           for marque, valeur in (("LITEBANS_DB_USER", user), ("LITEBANS_DB_PASSWORD", mdp)):
               s = s.replace("__%s__" % marque, valeur.replace("'", "''"))
           p.write_text(s, encoding="utf-8")
+          EOF
+
+      # Spartan : les webhooks Discord existent-ils encore ? (Discord répond sur le webhook lui-même, sans rien poster ;
+      # aucune adresse n'est affichée.) Message de test seulement avec la case « tester_discord ».
+      - name: Spartan (Discord et launcher)
+        if: env.PTERO_SFTP_HOST != ''
+        env:
+          TESTER_DISCORD: ${{ github.event_name == 'workflow_dispatch' && inputs.tester_discord }}
+        run: |
+          python - <<'EOF'
+          import json, os, re, urllib.error, urllib.request
+          lignes = ["### Spartan"]
+          def webhook(nom, marque, tester):
+              url = os.environ.get(marque, "").strip()
+              if not url:
+                  return f"- {nom} : **absent** (secret `{marque}`) : rien ne sera envoyé sur Discord"
+              if not re.fullmatch(r"https://(canary\.|ptb\.)?discord(app)?\.com/api/webhooks/\d+/[\w-]+", url):
+                  return f"- {nom} : le secret `{marque}` ne ressemble pas à une adresse de webhook Discord"
+              requete = urllib.request.Request(url, headers={"User-Agent": "HeraliZ-mise-en-ligne"})
+              try:
+                  with urllib.request.urlopen(requete, timeout=20) as r:
+                      info = json.load(r)
+              except urllib.error.HTTPError as e:
+                  return f"- {nom} : **refusé par Discord** (code {e.code} : webhook supprimé ?) : à recréer, puis mettre sa nouvelle adresse dans `{marque}`"
+              except Exception as e:
+                  return f"- {nom} : Discord injoignable ({type(e).__name__})"
+              ligne = f"- {nom} : valide (webhook « {info.get('name', '?')} »)"
+              if tester:
+                  corps = json.dumps({"username": "Spartan", "allowed_mentions": {"parse": []},
+                                      "content": "Test de la mise en ligne HeraliZ : ce salon reçoit bien les alertes de l'anticheat Spartan."}).encode()
+                  envoi = urllib.request.Request(url + "?wait=true", data=corps, method="POST",
+                                                 headers={"Content-Type": "application/json", "User-Agent": "HeraliZ-mise-en-ligne"})
+                  try:
+                      with urllib.request.urlopen(envoi, timeout=20):
+                          ligne += " ; message de test envoyé"
+                  except Exception as e:
+                      ligne += f" ; message de test **refusé** ({getattr(e, 'code', type(e).__name__)})"
+              return ligne
+          tester = os.environ.get("TESTER_DISCORD") == "true"
+          lignes.append(webhook("Alertes (salon privé du staff)", "SPARTAN_DISCORD_ALERTES", tester))
+          lignes.append(webhook("Sanctions (salon public)", "SPARTAN_DISCORD_SANCTIONS", False))
+          fichier_cle = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "jeton-jeu.cle")
+          lignes.append("- Clé des jetons de lancement (signés par le site) : " + ("lue sur le site" if os.path.exists(fichier_cle) else "**absente** : Spartan ne peut vérifier aucun jeton"))
+          texte = "\n".join(lignes)
+          print(texte)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+              f.write(texte + "\n")
           EOF
 
       # Adresse du SFTP nettoyée (« sftp:// » ou port collés par erreur) et testée AVANT tout envoi : un Ptero

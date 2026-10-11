@@ -573,6 +573,31 @@ $('play').addEventListener('click', async () => {
     finally { launchPending = false; updatePlay() }
 })
 
+// Mise à jour du launcher au démarrage (version installée) : true si elle s'installe, le launcher redémarre alors seul.
+async function majLauncher() {
+    let finir
+    const fin = new Promise(resolve => { finir = resolve })
+    // abonné avant la demande : aucun état perdu, même si le téléchargement échoue tout de suite
+    const arreter = api.onMaj(etat => {
+        if (etat?.etat === 'telechargement') splashStep(etat.pourcent, `Mise à jour du launcher : ${etat.pourcent} %`)
+        else finir(etat?.etat)
+    })
+    try {
+        splashStep(20, 'Recherche de mises à jour')
+        const maj = await call(api.majLauncher()).catch(() => null)
+        if (maj?.bloquee) toast(`La mise à jour ${maj.version} du launcher ne s’installe pas : retélécharge le launcher sur heraliz.fr.`)
+        if (!maj?.disponible) return false
+        splashStep(0, `Mise à jour du launcher (version ${maj.version})…`)
+        const etat = await fin
+        if (etat === 'installation') {
+            splashStep(100, 'Installation de la mise à jour : le launcher redémarre tout seul…')
+            return true
+        }
+        if (etat === 'erreur') toast('La mise à jour du launcher n’a pas pu se faire : elle sera retentée au prochain démarrage.')
+        return false
+    } finally { arreter() }
+}
+
 async function init() {
     dessinerTete(document.querySelector('.profil .tete'))
     afficherActus()
@@ -584,6 +609,7 @@ async function init() {
         $('server-status').textContent = 'Ouvre cette interface avec le launcher HeraliZ.'
     } else {
         try {
+            if (await majLauncher()) return
             splashStep(35, 'Chargement du profil')
             applyState(await call(api.getState()))
             api.onProgress(renderProgress)
