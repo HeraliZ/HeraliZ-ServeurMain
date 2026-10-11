@@ -163,7 +163,8 @@ public final class TrainServeur {
 
     private static Component duree(double sec) {
         int s = (int) Math.round(sec);
-        return s >= 60 ? Component.translatableWithFallback("heralisz_utils.train.duree.min_s", "%s min %s s", String.valueOf(s / 60), String.valueOf(s % 60))
+        return s >= 60
+                ? Component.translatableWithFallback("heralisz_utils.train.duree.min_s", "%s min %s s", String.valueOf(s / 60), String.valueOf(s % 60))
                 : Component.translatableWithFallback("heralisz_utils.train.duree.s", "%s s", String.valueOf(s));
     }
 
@@ -201,7 +202,8 @@ public final class TrainServeur {
                     MinecraftServer srv = c.getSource().getServer();
                     Horaire h = Horaire.get();
                     if (h == null) {
-                        c.getSource().sendFailure(Component.translatableWithFallback("heralisz_utils.train.pas_de_reseau", "Pas de réseau ferré dans ce jar."));
+                        c.getSource().sendFailure(Component.translatableWithFallback("heralisz_utils.train.pas_de_reseau",
+                                "Pas de réseau ferré dans ce jar."));
                         return 0;
                     }
                     Reseau r = h.reseau;
