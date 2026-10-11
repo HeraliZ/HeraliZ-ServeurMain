@@ -15,25 +15,21 @@ Minecraft et le launcher (statut et ping de l’accueil) suivent les enregistrem
 
 ## Générer le pack
 
-Le moteur attend une distribution Helios complète. Pour Forge 1.20.1, un lien vers le JAR de l’installeur ne suffit pas : bibliothèques, manifeste de version et fichiers générés par Forge sont nécessaires. Utiliser [Nebula, le générateur officiel](https://github.com/dscalzi/Nebula), avec Java 17 et la version exacte du serveur.
+Le pack est refait à chaque mise en ligne du serveur (`.github/workflows/serveur.yml`, étape « Pack du launcher », voir `CLAUDE.md` section 8) par `outils/pack_launcher.py`, avec [Nebula, le générateur officiel de Helios](https://github.com/dscalzi/Nebula) (version figée dans le workflow), Java 17 et Forge 1.20.1-47.4.0 :
 
-Dans un projet Nebula séparé, configurer `ROOT`, `BASE_URL` (HTTPS) et `JAVA_EXECUTABLE`, puis suivre son README. Exemple, en remplaçant `47.x.y` :
+- mods : exactement `livraison/mods client` de la même fabrication que le Ptero (Spartan compare leurs empreintes avec `officiel.json`) ;
+- fichiers : le dossier `serveur/tacz` (gunpacks : modèles, sons, icônes), posé dans le dossier du jeu ;
+- Forge : l’installeur de Forge est lancé sans fenêtre avant Nebula, qui reprend son installation ; comme dans tout pack Helios, les bibliothèques et le client préparés par Forge sont servis par le site.
 
-```sh
-npm run start -- init root
-npm run start -- generate server heraliz 1.20.1 --forge 47.x.y
-npm run start -- generate distro
-```
+Le résultat (`distribution.json` et les seuls fichiers qu’il cite, contrôlés un par un) est déposé par rsync sur la VM du site, dans `/var/www/launcher`, servi à https://heraliz.fr/launcher/ (dossier de `distributionUrl`). Nouveaux fichiers d’abord, `distribution.json` ensuite, anciens fichiers retirés en dernier : un joueur qui lance le launcher pendant l’envoi ne tombe pas sur un fichier manquant. L’étape relit ensuite la distribution et quelques fichiers depuis internet.
 
-Vérifier l’identifiant généré : `heraliz-1.20.1`. Ajuster `app/heraliz.json` et le manifeste ensemble si un autre identifiant est employé. La distribution doit contenir un seul serveur avec l’adresse exacte de `serverAddress`, `minecraftVersion: "1.20.1"`, `autoconnect: true` et un module `ForgeHosted` `net.minecraftforge:forge:1.20.1-47.…`.
+Essai à la main, sans fabrication (mods tiers du dépôt seulement) : `python outils/pack_launcher.py <dossier de Nebula> <sortie> --essai` (Nebula construit, `npm ci` puis `npm run build`). Rien n’est déposé.
 
-Héberger le manifeste et ses fichiers en HTTPS. Chaque module doit fournir son empreinte MD5 de compatibilité Helios, sa taille et son URL HTTPS. Chemins absolus et traversées `..` sont refusés. Java est fixé à 17. Les empreintes assurent la cohérence avec le manifeste ; elles ne remplacent pas une signature du manifeste.
-
-Renseigner `distributionUrl`, `serverAddress` et éventuellement `discordUrl` dans `app/heraliz.json`, puis reconstruire le launcher.
+La distribution doit contenir un seul serveur `heraliz-1.20.1` avec l’adresse exacte de `serverAddress`, `minecraftVersion: "1.20.1"`, un seul module `ForgeHosted` du groupe `net.minecraftforge` en `1.20.1-47.…` (Nebula le nomme d’après sa première bibliothèque, `lowcodelanguage`) avec son manifeste de version. Chaque module fournit son empreinte MD5 de compatibilité Helios, sa taille et son URL HTTPS ; chemins absolus et traversées `..` sont refusés ; Java est fixé à 17 ; 30 000 fichiers et 32 Mo de distribution au plus. Les empreintes assurent la cohérence avec le manifeste ; elles ne remplacent pas une signature du manifeste. L’outil applique le contrôle du launcher lui-même (`app/assets/js/security.js`) avant tout dépôt.
 
 ## Ajouter les mods plus tard
 
-Le pack peut initialement contenir Forge seul. Ajouter ensuite les mods clients dans les emplacements `forgemods` de Nebula, les configurations dans ses dossiers `files`, régénérer et téléverser la distribution. Ne pas modifier les JAR après génération de leurs empreintes.
+Un mod joueur ajouté au serveur (dans `client/mods-tiers/`, `serveur/mods-tiers/` ou un de nos mods) arrive dans `livraison/mods client`, donc dans le pack à la mise en ligne suivante. Des configurations pour les joueurs iraient dans les `files` de Nebula (à ajouter dans `outils/pack_launcher.py`). Ne pas modifier les JAR après génération de leurs empreintes. Le launcher ne retire pas du dossier du jeu un fichier `tacz` qui a quitté le pack : retirer un gunpack chez les joueurs demande un nettoyage à part.
 
 Les mods obligatoires restent obligatoires. Les mods optionnels suivent les valeurs par défaut du manifeste ; cette refonte n’inclut pas de sélecteur de mods optionnels. Les fichiers sont vérifiés à chaque lancement. Tout téléchargement est contrôlé avant traitement et lancement.
 

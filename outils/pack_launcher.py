@@ -169,7 +169,8 @@ def main():
     for m in modules(s for srv in distro["servers"] for s in srv["modules"]):
         types[m["type"]] = types.get(m["type"], 0) + 1
     print(f"[pack] modules : {types}")
-    print(f"[pack] {n} fichiers à déposer, {total / 1048576:.0f} Mo (dans {envoi})")
+    print(f"[pack] {n} fichiers à déposer, {total / 1048576:.0f} Mo (dans {envoi}) ; "
+          f"distribution.json : {distro_p.stat().st_size / 1048576:.1f} Mo")
     (sortie / "resume.json").write_text(json.dumps({
         "version": args.version, "mods": len(jars), "fichiers": n, "octets": total,
         "distribution": config["distributionUrl"],

@@ -22,11 +22,11 @@ Le launcher s’ouvre même sans serveur configuré. Il affiche alors « Serveur
 Renseigner `app/heraliz.json` :
 
 - `serverAddress` : `play.heraliz.fr`, l’adresse publique du serveur de jeu (domaine ou IPv4, avec le port si nécessaire).
-- `distributionUrl` : URL HTTPS du manifeste Helios/Nebula complet.
+- `distributionUrl` : URL HTTPS du manifeste Helios/Nebula complet : `https://heraliz.fr/launcher/distribution.json`, refait à chaque mise en ligne du serveur.
 - `discordUrl` : invitation HTTPS Discord (`https://discord.gg/heraliz`), ou `null`.
 - `serverId` : `heraliz-1.20.1`, identique à celui du manifeste.
 
-L’adresse est `play.heraliz.fr` ; le pack n’est pas encore fourni. La version exacte de Forge doit correspondre au serveur. Ne pas diffuser cette version comme un accès opérationnel avant configuration et test de la connexion réelle.
+L’adresse est `play.heraliz.fr` ; le pack (Forge 1.20.1-47.4.0, mods joueurs, gunpacks) est servi par le site. Ne pas diffuser cette version comme un accès opérationnel avant un test de la connexion réelle.
 
 Voir [la configuration du pack](docs/HERALIZ-DEPLOIEMENT.md) et [les protections et limites de sécurité](docs/HERALIZ-SECURITE.md).
 
