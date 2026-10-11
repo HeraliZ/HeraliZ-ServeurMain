@@ -23,7 +23,9 @@
 #Indépendant de alertOnly : ne bannit personne, annule seulement l'avantage.
 [mitigation]
 	#Fly / Speed : renvoie le joueur à sa dernière position au sol.
-	movementSetback = true
+	#Coupé le 11/10 pendant le réglage des seuils (alertes à tort chez des joueurs honnêtes) : à remettre à true
+	#quand les alertes de mouvement seront fiables.
+	movementSetback = false
 	#Après une détection de minage, casse bloquée pendant N secondes (0 = non).
 	#Range: 0 ~ 300
 	blockLockSeconds = 3

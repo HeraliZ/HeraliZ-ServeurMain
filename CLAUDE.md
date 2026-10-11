@@ -309,7 +309,17 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   à la main ; `/spartan officiel` relit le fichier sans redémarrer.
 - **Détection silencieuse** (choix du propriétaire) : ce qui vient du jeu du joueur n'expulse jamais, le staff reçoit
   l'alerte sur Discord avec le rapport et décide (`/sban`). `alertOnly = true` les premières semaines : régler les
-  seuils sur les vraies alertes avant toute sanction automatique.
+  seuils sur les vraies alertes avant toute sanction automatique. Attention : les corrections immédiates
+  (section `[mitigation]`) ne dépendent pas d'`alertOnly` ; le renvoi en arrière des détections de mouvement
+  (`movementSetback`) est coupé depuis le 11/10, après des alertes à tort chez le propriétaire : le remettre quand les
+  alertes de mouvement seront fiables.
+- **Doublon de position du clic droit** (Spartan 2.1.1, `MovementEngine.isUseDuplicate`) : en utilisant un objet (soin,
+  nourriture…), un client 1.17+ renvoie sa dernière position exacte en plus du paquet du tick. Compté comme un vrai pas,
+  il déclenchait Speed, Vertical, Fly et Timer à tort (alertes « maximum 0.07 », « 0.65 bloc de trop »). Il ne sert
+  plus qu'à la rotation, au plus un toutes les 100 ms.
+- **Jars imbriqués** : `outils/construire.py` suit `META-INF/jarjar/metadata.json` pour trouver les jars que Forge
+  charge depuis un autre jar (EntityCulling apporte TRansition et TRender dans `META-INF/jars/`) ; leurs configs Mixin
+  sont dans `officiel.json`. Avant le 11/10, elles étaient signalées à tort (« config Mixin inconnue »).
 - Réglages : `serveur/config/spartan-common.toml` (fait foi). Webhooks et secret du launcher : JAMAIS dans le dépôt,
   marques `__SPARTAN_…__` remplacées par les secrets GitHub à l'envoi (section 8).
 - Branchements HeraliZ (`mods/spartan/src/serveur/java/com/Spartan/serveur/compat/HeralizCompat.java`, par réflexion,
