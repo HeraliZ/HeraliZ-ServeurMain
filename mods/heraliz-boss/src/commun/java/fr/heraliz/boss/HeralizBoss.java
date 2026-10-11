@@ -22,6 +22,8 @@ import net.minecraftforge.registries.RegistryObject;
 public class HeralizBoss {
    public static final String MODID = "heraliz_boss";
 
+   /** Marque de propriété HeraliZ (anti-vol) : embarquée dans le jar, elle dit à qui l'ouvre à qui ce mod appartient. */
+   public static final String PROPRIETE_HERALIZ = "HeraliZ - propriété de HeraliZ (serveur play.heraliz.fr). Mod réservé au serveur HeraliZ ; reproduction ou utilisation ailleurs interdite.";
    public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
    /** Groupes de l'onglet (un par boss, plus les décors du spawn) : déclarés ci-dessous, dans un ordre fixe. */

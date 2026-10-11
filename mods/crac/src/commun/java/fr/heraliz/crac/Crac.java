@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 @Mod("crac")
 public class Crac {
     public static final String MODID = "crac";
+    /** Marque de propriété HeraliZ (anti-vol) : embarquée dans le jar, elle dit à qui l'ouvre à qui ce mod appartient. */
+    public static final String PROPRIETE_HERALIZ = "HeraliZ - propriété de HeraliZ (serveur play.heraliz.fr). Mod réservé au serveur HeraliZ ; reproduction ou utilisation ailleurs interdite.";
     public static final Logger LOGGER = LogManager.getLogger();
 
     public Crac() {

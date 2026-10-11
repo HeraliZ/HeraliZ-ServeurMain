@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 @Mod(HeralizInterface.MODID)
 public final class HeralizInterface {
     public static final String MODID = "heraliz_interface";
+    /** Marque de propriété HeraliZ (anti-vol) : embarquée dans le jar, elle dit à qui l'ouvre à qui ce mod appartient. */
+    public static final String PROPRIETE_HERALIZ = "HeraliZ - propriété de HeraliZ (serveur play.heraliz.fr). Mod réservé au serveur HeraliZ ; reproduction ou utilisation ailleurs interdite.";
     public static final Logger LOG = LogUtils.getLogger();
 
     public HeralizInterface() {
