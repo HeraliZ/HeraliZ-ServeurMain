@@ -15,6 +15,7 @@ import fr.heraliz.casino.client.render.scene.Sprite;
 
 import java.util.Locale;
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -346,21 +347,21 @@ public final class CrashDesign extends MachineDesign<CrashView> {
         // multiplicateur geant / messages
         float cx = (GX0 + GX1) / 2, cy = (GY0 + GY1) / 2 + 3;
         if (v.phase == RoundView.BETTING) {
-            out.text(p, "MISE A FEU DANS", cx, cy + 2.6f, SZ + 0.1f, 1.6f, PALE, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
+            out.text(p, I18n.get("heralizcasino.fusee.mise_a_feu"), cx, cy + 2.6f, SZ + 0.1f, 1.6f, PALE, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
             String c = String.format(Locale.ROOT, "%.1f s", Math.max(0, v.countdown));
             out.text(p, c, cx, cy - 1.8f, SZ + 0.1f, 4.2f, v.countdown < 3 ? RED_RGB : AMBER, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
         } else if (v.phase == RoundView.IDLE) {
-            out.text(p, "LA FUSEE", cx, cy + 1.5f, SZ + 0.1f, 3.4f, AMBER, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
-            out.text(p, "Misez pour lancer le compte a rebours", cx, cy - 2.5f, SZ + 0.1f, 1.1f, PALE, 0.9f, DrawList.T_CENTER);
+            out.text(p, I18n.get("heralizcasino.fusee.titre"), cx, cy + 1.5f, SZ + 0.1f, 3.4f, AMBER, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
+            out.text(p, I18n.get("heralizcasino.fusee.misez"), cx, cy - 2.5f, SZ + 0.1f, 1.1f, PALE, 0.9f, DrawList.T_CENTER);
         } else {
             String mt = String.format(Locale.ROOT, "%.2fx", m);
             int col = boom ? RED_RGB : Ease.mix(PALE, PHOSPHOR, (float) Math.min(1, Math.log(m) / 2));
             float pulse = flying ? 1 + 0.03f * (float) Math.sin(s.time * 0.9f) : 1;
             out.text(p, mt, cx, cy, SZ + 0.12f, fit(mt, 5.2f * pulse, 26f, true), col, 1f, DrawList.T_CENTER | DrawList.T_BOLD | DrawList.T_OUTLINE, 0x030A04);
-            if (boom) out.text(p, "CRASH !", cx, cy + 5f, SZ + 0.12f, 2.2f, RED_RGB, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
-            else if (v.inPlay > 0) out.text(p, v.inPlay + " en vol - " + fmt(v.totalInPlay) + " jetons", cx, cy - 4.4f, SZ + 0.1f, 1f, PALE, 0.9f, DrawList.T_CENTER);
+            if (boom) out.text(p, I18n.get("heralizcasino.fusee.crash"), cx, cy + 5f, SZ + 0.12f, 2.2f, RED_RGB, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
+            else if (v.inPlay > 0) out.text(p, I18n.get("heralizcasino.fusee.en_vol", String.valueOf(v.inPlay), fmt(v.totalInPlay)), cx, cy - 4.4f, SZ + 0.1f, 1f, PALE, 0.9f, DrawList.T_CENTER);
             if (v.myCash > 0) {
-                String me = String.format(Locale.ROOT, "ENCAISSE A %.2fx", v.myCash / 100.0);
+                String me = I18n.get("heralizcasino.fusee.encaisse", String.format(Locale.ROOT, "%.2f", v.myCash / 100.0));
                 out.text(p, me, cx, cy - 6.2f, SZ + 0.1f, 1.2f, GOLD_RGB, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
             }
         }

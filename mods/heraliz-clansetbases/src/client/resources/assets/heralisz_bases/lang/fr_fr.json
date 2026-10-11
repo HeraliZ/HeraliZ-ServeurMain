@@ -254,5 +254,13 @@
   "refus.heralisz_bases.salle_verrouillee": "Salle verrouillée : débloquez-la depuis l'écran de la base",
   "msg.heralisz_bases.en_match": "Impossible pendant un match.",
   "msg.heralisz_bases.vehicule": "Descendez d'abord de votre véhicule.",
-  "gui.heralisz_bases.tp2.raison.en_match": "Vous êtes en match"
+  "gui.heralisz_bases.tp2.raison.en_match": "Vous êtes en match",
+  "heralisz_bases.cmd.liste_ligne": "[%s] parcelle %s · %s · %s salle(s) achetée(s)",
+  "heralisz_bases.cmd.oui": "oui",
+  "heralisz_bases.cmd.non": "non",
+  "heralisz_bases.cmd.pillard_hors_ligne": "%s (hors ligne)",
+  "heralisz_bases.modele.non_charge": "non chargé",
+  "heralisz_bases.modele.absent": "%s absent de data/heralisz_bases/structures",
+  "heralisz_bases.modele.absents": "%s et %s absents de data/heralisz_bases/structures",
+  "heralisz_bases.modele.illisible": "lecture impossible : %s"
 }

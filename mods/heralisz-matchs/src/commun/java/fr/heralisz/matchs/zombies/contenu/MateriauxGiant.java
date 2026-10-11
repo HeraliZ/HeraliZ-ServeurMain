@@ -119,7 +119,7 @@ public final class MateriauxGiant {
 
     /** Onglet creatif de developpement (banc d'essai, retouches de la carte a la main). */
     public static final RegistryObject<CreativeModeTab> ONGLET = ONGLETS.register("zb_mat_dev", () -> CreativeModeTab.builder()
-            .title(Component.literal("HeraliZ - materiaux The Giant (dev)"))
+            .title(Component.translatableWithFallback("heralisz_matchs.onglet.materiaux_giant", "HeraliZ - matériaux The Giant (dev)"))
             .icon(() -> new ItemStack(TOUS.get("zb_mat_brique").get()))
             .displayItems((p, sortie) -> TOUS.values().forEach(r -> sortie.accept(r.get())))
             .build());

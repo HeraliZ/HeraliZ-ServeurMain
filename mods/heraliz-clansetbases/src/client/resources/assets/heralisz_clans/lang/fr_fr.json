@@ -614,5 +614,10 @@
   "zone.cmd.drapeau_hors_zone": "Attention : ce drapeau est hors de sa zone (%s blocs du centre pour un rayon de %s) : personne ne pourra lancer le signal. Rapprochez-le, ou retirez centreFixe de zones.json.",
   "zone.cmd.info_centre_fixe": "Centre fixé à la main (centreFixe dans zones.json) : le drapeau est à %s blocs du centre.",
   "clan.cmd.prefixe": "Clans · ",
-  "msg.admin.pas_membre": "%s n'est pas membre de [%s]."
+  "msg.admin.pas_membre": "%s n'est pas membre de [%s].",
+  "heralisz_clans.cmd.admin_ligne": "[%s] %s · niv. %s (%s/%s XP) · %s membres · banque %s · zones %s",
+  "heralisz_clans.duree.jours": "%s j %s h",
+  "heralisz_clans.duree.heures": "%s h %s",
+  "heralisz_clans.duree.minutes": "%s min",
+  "heralisz_clans.duree.secondes": "%s s"
 }

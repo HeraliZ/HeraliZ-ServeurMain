@@ -254,5 +254,13 @@
   "refus.heralisz_bases.salle_verrouillee": "Комната заперта: откройте её на экране базы",
   "msg.heralisz_bases.en_match": "Невозможно во время матча.",
   "msg.heralisz_bases.vehicule": "Сначала выйдите из транспорта.",
-  "gui.heralisz_bases.tp2.raison.en_match": "Вы в матче"
+  "gui.heralisz_bases.tp2.raison.en_match": "Вы в матче",
+  "heralisz_bases.cmd.liste_ligne": "[%s] участок %s · %s · куплено комнат: %s",
+  "heralisz_bases.cmd.oui": "да",
+  "heralisz_bases.cmd.non": "нет",
+  "heralisz_bases.cmd.pillard_hors_ligne": "%s (не в сети)",
+  "heralisz_bases.modele.non_charge": "не загружена",
+  "heralisz_bases.modele.absent": "%s отсутствует в data/heralisz_bases/structures",
+  "heralisz_bases.modele.absents": "%s и %s отсутствуют в data/heralisz_bases/structures",
+  "heralisz_bases.modele.illisible": "не удалось прочитать: %s"
 }

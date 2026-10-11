@@ -614,5 +614,10 @@
   "zone.cmd.drapeau_hors_zone": "Внимание: этот флаг вне своей зоны (%s блоков от центра при радиусе %s): никто не сможет подать сигнал. Переставьте его ближе или уберите centreFixe из zones.json.",
   "zone.cmd.info_centre_fixe": "Центр задан вручную (centreFixe в zones.json): флаг в %s блоках от центра.",
   "clan.cmd.prefixe": "Кланы · ",
-  "msg.admin.pas_membre": "%s не состоит в [%s]."
+  "msg.admin.pas_membre": "%s не состоит в [%s].",
+  "heralisz_clans.cmd.admin_ligne": "[%s] %s · ур. %s (%s/%s XP) · участников: %s · банк %s · зон: %s",
+  "heralisz_clans.duree.jours": "%s д %s ч",
+  "heralisz_clans.duree.heures": "%s ч %s мин",
+  "heralisz_clans.duree.minutes": "%s мин",
+  "heralisz_clans.duree.secondes": "%s с"
 }

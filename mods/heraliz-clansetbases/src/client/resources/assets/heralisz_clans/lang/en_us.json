@@ -614,5 +614,10 @@
   "zone.cmd.drapeau_hors_zone": "Warning: this flag is outside its zone (%s blocks from the center, radius %s): nobody will be able to launch the signal. Move it closer, or remove centreFixe from zones.json.",
   "zone.cmd.info_centre_fixe": "Center set by hand (centreFixe in zones.json): the flag is %s blocks from it.",
   "clan.cmd.prefixe": "Clans · ",
-  "msg.admin.pas_membre": "%s is not a member of [%s]."
+  "msg.admin.pas_membre": "%s is not a member of [%s].",
+  "heralisz_clans.cmd.admin_ligne": "[%s] %s · lvl %s (%s/%s XP) · %s members · bank %s · zones %s",
+  "heralisz_clans.duree.jours": "%sd %sh",
+  "heralisz_clans.duree.heures": "%sh %smin",
+  "heralisz_clans.duree.minutes": "%s min",
+  "heralisz_clans.duree.secondes": "%s s"
 }

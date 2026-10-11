@@ -308,7 +308,9 @@ public final class Defis {
             MatchApi.rejoindre(p, partie);
         }
         HeraliszMatchs.LOG.info("[duels] {} : {} {} sur {} ({} joueurs{})", id, mode, format, carte, tous.size(), entrainement ? ", entrainement" : "");
-        Component titre = Component.literal(nomCamp(campA) + "  ·  " + (entrainement ? Component.translatable("duel.cible").getString() : nomCamp(campB)));
+        // « duel.cible » traduit chez le joueur (le serveur n'a pas les fichiers de langue : getString() y rendrait la clé)
+        Component titre = Component.literal(nomCamp(campA) + "  ·  ")
+                .append(entrainement ? Component.translatable("duel.cible") : Component.literal(nomCamp(campB)));
         Annonces.grande(tous, new Annonces.Annonce(Component.translatable("duel.annonce.duel"), titre, DuelsConfig.COULEUR_A, Registres.SON_MANCHE, 60,
                 Annonces.Style.NORMALE));
         // fermeture des ecrans de defi cote client
