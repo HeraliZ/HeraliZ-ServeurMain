@@ -87,3 +87,39 @@ if [ -f /var/www/telecharger/HeraliZ-Launcher-Setup.exe ]; then
 else
   echo "Installateur du launcher : pas encore en ligne"
 fi
+if [ -f /var/www/telecharger/latest.yml ]; then
+  echo "Mise à jour automatique du launcher : version $(awk '/^version:/ {print $2}' /var/www/telecharger/latest.yml) annoncée"
+else
+  echo "Mise à jour automatique du launcher : pas encore annoncée (latest.yml absent)"
+fi
+
+# sécurité : ce qui est visible depuis internet
+echo "== Sécurité"
+ouverts=$(ss -ltnH 2> /dev/null | awk '{print $4}' | grep -vE '^(127\.[0-9.]+|\[::1\]|::1):' | awk -F: '{print $NF}' | sort -n | uniq | tr '\n' ' ')
+echo "Ports ouverts sur le réseau : ${ouverts:-aucun}"
+if ss -ltnH 2> /dev/null | awk '{print $4}' | grep -E ':3306$' | grep -vqE '^(127\.[0-9.]+|\[::1\]|::1):'; then
+  echo "::warning::Base de données (port 3306) : ouverte sur le réseau"
+else
+  echo "Base de données (comptes, mails, mots de passe chiffrés) : accessible seulement depuis la VM elle-même"
+fi
+# fichiers internes d'Azuriom : jamais servis (la racine du site est son dossier public)
+servis=""
+total=0
+for chemin in /.env /artisan /composer.json /storage/logs/laravel.log /vendor/autoload.php /config/database.php /plugins/heraliz/plugin.json /database/database.sqlite; do
+  total=$((total + 1))
+  code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 "https://heraliz.fr$chemin" || true)
+  [ "$code" = 200 ] && servis="$servis $chemin"
+done
+if [ -n "$servis" ]; then
+  echo "::warning::Fichiers internes du site visibles depuis internet :$servis"
+else
+  echo "Fichiers internes du site (.env, journaux, réglages, extensions) : tous refusés ($total essayés)"
+fi
+if [ "$(id -u)" = 0 ]; then
+  echo "SSH : mot de passe $(sshd -T 2> /dev/null | awk '$1 == "passwordauthentication" {print ($2 == "yes" ? "accepté" : "refusé")}'), connexion root $(sshd -T 2> /dev/null | awk '$1 == "permitrootlogin" {print $2}')"
+fi
+if command -v fail2ban-client > /dev/null; then
+  echo "fail2ban : actif ($(fail2ban-client status 2> /dev/null | awk -F: '/Jail list/ {gsub(/^[ \t]+/, "", $2); print $2}'))"
+else
+  echo "fail2ban : absent (les essais de mot de passe SSH ne sont pas bloqués)"
+fi
