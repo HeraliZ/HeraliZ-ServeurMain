@@ -174,8 +174,16 @@ public final class CaptureMort {
         if (!(Registres.CORPS.get().create(level) instanceof CorpsEntityServeur corps)) return false;
         double x = p.getX(), y = Math.max(p.getY(), level.getMinBuildHeight() + 1), z = p.getZ();
         corps.moveTo(x, y, z, p.yBodyRot, 0);
-        // mort dans un bloc (etouffement, porte...) : remonte jusqu'a une place libre
-        for (int i = 0; i < 4 && !level.noCollision(corps, corps.getBoundingBox()); i++) corps.setPos(x, Math.floor(y) + 1 + i, z);
+        // Mort dans un bloc (étouffement, porte…) : seul le MILIEU du corps compte (un corps qui touche un mur ou un meuble
+        // à côté reste où il est), et il ne remonte que d'un bloc au plus. Avant, toute la largeur (1,2) comptait et le
+        // corps montait jusqu'à 4 blocs : il finissait sur le toit, à l'étage ou pris dans un plafond (« disparu »).
+        net.minecraft.world.phys.AABB milieu = corps.getBoundingBox().deflate(0.45, 0, 0.45);
+        if (level.getBlockCollisions(corps, milieu).iterator().hasNext()) {
+            double haut = Math.floor(y) + 1;
+            if (!level.getBlockCollisions(corps, milieu.move(0, haut - corps.getY(), 0)).iterator().hasNext()) {
+                corps.setPos(x, haut, z);
+            }
+        }
         corps.preparer(p, contenu, s.cause, s.execution ? ReanimationCompat.SCENE_APRES_COUP : 0);
 
         plafonds(level, corps);
