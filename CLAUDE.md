@@ -32,9 +32,11 @@ quand un choix leur revient.
    n'a PAS été testé en jeu.
 9. **Contenu visuel nouveau** (modèle, arme, machine, interface importante) : d'abord des rendus à valider par le
    propriétaire, ensuite seulement le code et les jars.
-10. **La carte (map) se fait hors de ce dépôt.** Quand le propriétaire fournit un mod, un pack de textures ou un monde
-    modifié (jar + sources), on l'ajoute ici (section 9). La carte terminée est déposée telle quelle dans
-    `monde/HeraliZ/` : on ne la retouche pas ici.
+10. **La carte (map) se construit en ce moment directement sur le serveur** (Ptero, monde `dayz_map`), par les
+    propriétaires en jeu (détails, améliorations). **On ne touche JAMAIS aux fichiers du monde** : ni ici, ni sur le
+    Ptero (pas de case « deposer_carte », pas de copie, pas de retouche). Quand la construction sera finie, le monde du
+    Ptero sera copié dans GitHub : ce sera la carte « finale » de référence (section 9). Un mod ou un pack de textures
+    fourni pour la carte (jar + sources) s'ajoute ici comme d'habitude (section 9).
 
 ---
 
@@ -94,8 +96,8 @@ site/vm/                  installation du site (Azuriom) sur sa VM, lancée par 
 site/theme/heraliz/       le thème du site (maquettes validées), envoyé par le même workflow (choix « theme », section 8 bis)
 site/extension/heraliz/   l'extension Azuriom « HeraliZ » : création de compte et double authentification depuis le
                           launcher (section 8 bis), envoyée avec le thème
-monde/HeraliZ/            la carte de départ (monde neuf, jamais joué), voir section 9 ; envoyée au Ptero seulement
-                          sur demande (case « deposer_carte », section 8)
+monde/HeraliZ/            ancienne copie de la carte (v3 du 11/10) ; sera remplacée par la copie finale du monde du
+                          Ptero quand la construction sera finie (section 9)
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
@@ -441,7 +443,9 @@ Règles :
    pour que tout le monde soit sur la même version. Un échec ici arrive en dernier : il ne retient ni la mise à jour
    du Ptero ni le redémarrage.
 
-**Nouvelle carte** : « Run workflow » avec la case « deposer_carte ». Après la mise à jour habituelle, il envoie
+**Nouvelle carte** — **à NE PAS utiliser pendant que la carte se construit sur le serveur** (section 0, règle 10) :
+elle mettrait la vieille copie du dépôt à la place du monde en construction (renommé `_ancien`, pas supprimé).
+« Run workflow » avec la case « deposer_carte ». Après la mise à jour habituelle, il envoie
 `monde/HeraliZ/` à côté du monde en service (`<monde>_nouvelle_<date>`, serveur toujours en marche, 2 fichiers à la fois,
 reprise si la liaison coupe), contrôle chaque fichier, y recopie les réglages `serverconfig/` du monde en service puis
 ceux de `defaultconfigs/` ; ensuite seulement il prévient les joueurs, arrête le serveur proprement, renomme l'ancien
@@ -623,19 +627,23 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   par celui du nouveau pack, puis refabriquer heraliz_interface. Pack imposé depuis le 11/10 (heraliz_interface
   1.2.1) : le « pack 8 », c'est-à-dire l'ancien pack plus les vitres de la nouvelle carte (6 textures de verre
   refaites, 6 modèles de vitres ajoutés) ; l'herbe n'a pas changé.
-- **Le monde** : la **carte de départ** (monde neuf, jamais joué) est dans `monde/HeraliZ/` depuis le 11/10, sur
+- **Le monde** : depuis le 11/10 (soir), la carte se construit **directement sur le Ptero** (monde `dayz_map`) ;
+  personne n'y touche par ici (section 0, règle 10). La mise en ligne ne copie dans le monde que les réglages
+  (`serverconfig/`), jamais les blocs. **Quand les propriétaires disent que la carte est finie** : copier le monde du
+  Ptero dans GitHub (dossier complet, par SFTP, serveur arrêté ou sauvegarde faite avant pour une copie propre) ; ce
+  sera la carte « finale » gardée en mémoire. Les fichiers de plus de 100 Mo sont refusés par GitHub (sinon : archive
+  dans une Release, comme Mohist) et chaque copie ajoute sa taille au dépôt pour toujours : une seule copie, à la fin.
+  Ce qui est dans `monde/HeraliZ/` aujourd'hui est l'ancienne copie (v3) :
+  la **carte de départ** (monde neuf, jamais joué) mise dans `monde/HeraliZ/` le 11/10, sur
   décision du propriétaire. Version « finale v3 » : 64 régions, 259 Mo, apparition en -435, 66, 1118 ; son `level.dat`
   est en créatif, paisible, commandes permises (carte de construction : sur le serveur, c'est `server.properties` qui
   fixe le mode de jeu et la difficulté). Elle contient son pack de données (`datapacks/heraliz_carte` : zones de loot
   par lieu et par palier) et ses réglages (`data/heraliz_zones.json`, `data/heraliz_brume.json`,
   `data/heralisz_train.dat`).
-  - Elle est fabriquée hors de ce dépôt (dossier de travail de la carte, chez le propriétaire) : on la remplace en
-    entier quand il en fournit une nouvelle, on ne la modifie jamais ici. Chaque version envoyée ajoute sa taille au
-    dépôt pour toujours : pas de nouvel envoi pour un petit changement.
+  - On ne la modifie jamais ici ; elle sera remplacée en entier par la copie finale du monde du Ptero.
   - Le **monde en service** sur le Ptero (changé par les joueurs) n'est jamais dans Git. La mise en ligne automatique
-    ne dépose et n'écrase jamais de monde : mettre la carte sur le Ptero est une étape à part, décidée par le
-    propriétaire, faite par la case « deposer_carte » (section 8 ; voir aussi section 11, « Nouvelle carte » : trois
-    mondes prévus, la carte n'est pas forcément le monde principal `HeraliZ`).
+    ne dépose et n'écrase jamais de monde. La case « deposer_carte » (section 8) ne doit plus servir tant que la carte
+    se construit sur le serveur (voir aussi section 11, « Nouvelle carte » : trois mondes prévus).
   - **La carte a besoin de trois de nos mods à ces versions au moins** (sans eux, leurs blocs disparaissent au
     chargement du monde et le train roule sur l'ancien tracé). Ils ont été apportés du dossier de travail de la carte
     le 11/10 ; les joueurs doivent avoir les jars `-client` de la même fabrication :
@@ -645,8 +653,7 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
       éoliennes à l'abandon `eolienne_usee` et `eolienne_moderne_usee`, ascenseur qui porte mieux les joueurs) ;
     - **HeraliZ Loot** : apporté le 11/10 (version 0.5.0 : les nouveaux conteneurs HD posés sur la carte, rotation du
       loot quand un conteneur est posé ou remplacé à la main).
-    Ces trois mods continuent d'évoluer avec la carte, dans son dossier de travail : quand le propriétaire fournit
-    une nouvelle carte, vérifier avec lui s'ils ont changé et les rapporter ici de la même façon (assembler avec ce
+    Si le propriétaire fournit une nouvelle version d'un de ces mods pour la carte, la rapporter ici de la même façon (assembler avec ce
     qui a été fait ici entre-temps, fabriquer, vérifier). Rien de tout cela n'a été testé sur le serveur.
 
 ---
@@ -780,7 +787,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   serveur créerait un monde neuf `HeraliZ` (aligner `level-name` avant). Avant le 11/10, la mise en ligne prenait le nom
   du dépôt et copiait `serverconfig/` dans un dossier `HeraliZ/` du Ptero, qui n'est pas le monde en service. Les
   configs de `serveur/defaultconfigs/` sont copiées par Forge dans tout nouveau monde.
-- **Nouvelle carte (en cours, hors dépôt)** : trois mondes séparés : le spawn, la carte (loot, villes, extractions) et
+- **Nouvelle carte (en construction sur le Ptero, monde `dayz_map` ; copie finale dans GitHub à la fin, section 9)** :
+  trois mondes séparés : le spawn, la carte (loot, villes, extractions) et
   les bases des joueurs. Au spawn, un PNJ téléportera au hasard sur la carte (à faire quand la carte sera finie). Les
   territoires des clans ne marchent aujourd'hui que dans l'overworld (`Territoires.monde()`) : à rendre réglable si la
   carte n'est pas l'overworld ; l'extraction renvoie au spawn (`Destination`, réglable).
