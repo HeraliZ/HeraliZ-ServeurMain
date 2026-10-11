@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_composants:plaque_recyclee",
+    "heraliz_composants:plaque_soudee",
+    "heraliz_composants:plaque_metal",
+    "heraliz_composants:plaque_renforcee"
+  ]
+}
