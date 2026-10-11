@@ -19,6 +19,9 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         // Double authentification : 10 essais par minute et par adresse IP
         RateLimiter::for('heraliz-a2f', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
 
+        // Jeton de lancement du jeu (Spartan) : 30 par minute et par adresse IP (un par partie lancée)
+        RateLimiter::for('heraliz-jeton', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
+
         // Connexion par l'API d'Azuriom (launcher) : 10 erreurs par adresse IP, puis 10 minutes d'attente
         $this->router->pushMiddlewareToGroup('api', LimiteConnexion::class);
     }

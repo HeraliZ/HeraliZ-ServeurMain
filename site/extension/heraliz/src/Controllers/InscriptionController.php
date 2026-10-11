@@ -37,6 +37,8 @@ class InscriptionController extends Controller
             'connexion' => (bool) setting('auth_api', false),
             'inscription' => (bool) setting('register', true) && setting('auth_api', false),
             'mot_de_passe_min' => app()->isProduction() ? 12 : 8,
+            // jetons de lancement du jeu signés par le site (Spartan)
+            'jeton' => JetonController::cle() !== null,
             // les conditions du site : leur adresse, ou la page d'inscription du site qui les affiche
             'conditions' => $conditions === null ? null : (preg_match('/^https?:\/\//i', $conditions) ? $conditions : route('register')),
         ]);

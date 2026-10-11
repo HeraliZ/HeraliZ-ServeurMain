@@ -4,6 +4,7 @@ namespace Azuriom\Plugin\Heraliz\Controllers;
 
 use Azuriom\Http\Controllers\Controller;
 use Azuriom\Models\ActionLog;
+use Azuriom\Plugin\Heraliz\Controllers\Concerns\CompteApi;
 use Azuriom\Models\User;
 use Azuriom\Support\QrCodeRenderer;
 use Illuminate\Http\JsonResponse;
@@ -20,6 +21,8 @@ use PragmaRX\Google2FA\Google2FA;
  */
 class A2fController extends Controller
 {
+    use CompteApi;
+
     public function preparer(Request $request)
     {
         $user = $this->compte($request);
@@ -87,29 +90,6 @@ class A2fController extends Controller
         ]);
 
         return response()->json(['active' => true, 'codes' => $codes]);
-    }
-
-    /**
-     * Le compte du jeton de l'API d'authentification, ou la réponse d'erreur à rendre.
-     */
-    private function compte(Request $request): User|JsonResponse
-    {
-        if (! setting('auth_api', false)) {
-            return response()->json(['status' => 'error', 'message' => 'Auth API is not enabled'], 400);
-        }
-
-        $this->validate($request, ['access_token' => ['required', 'string']]);
-        $user = User::firstWhere('access_token', $request->input('access_token'));
-
-        if ($user === null) {
-            return response()->json(['status' => 'error', 'reason' => 'invalid_token', 'message' => 'Invalid token'], 401);
-        }
-
-        if ($user->isBanned()) {
-            return response()->json(['status' => 'error', 'reason' => 'user_banned', 'message' => 'User banned'], 403);
-        }
-
-        return $user;
     }
 
     private function cle(User $user): string
