@@ -10,5 +10,6 @@
   "overlay.heraliz_tactique.encore": "encore %s s",
   "overlay.heraliz_tactique.explose": "explose dans %s s",
   "overlay.heraliz_tactique.lancer_doux": "Lancer doux (accroupi)",
-  "overlay.heraliz_tactique.pour_arreter": "pour arrêter"
+  "overlay.heraliz_tactique.pour_arreter": "pour arrêter",
+  "overlay.heraliz_tactique.allonge_attente": "Tu pourras te rallonger dans %s s"
 }

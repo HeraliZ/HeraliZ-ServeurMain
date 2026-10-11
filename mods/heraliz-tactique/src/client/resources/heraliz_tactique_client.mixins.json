@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.tactique.mixin.client",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_tactique.refmap.json",
+  "client": [
+    "LocalPlayerCrawlMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

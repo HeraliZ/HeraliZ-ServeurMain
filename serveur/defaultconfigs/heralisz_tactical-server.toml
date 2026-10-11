@@ -17,3 +17,13 @@
 	#Range: 1 ~ 512
 	melee_max_target = 32
 
+[allonge]
+	#Délai (en secondes) avant de pouvoir se rallonger, compté à partir du moment où le joueur s'est relevé
+	#(touche, saut, autre objet en main, eau...). Le serveur compte 0,5 s de moins (décalage du réseau).
+	#Range: 0.0 ~ 60.0
+	delai_rallonger = 4.5
+	#Durée (en secondes) sans pouvoir tirer pendant que le joueur se couche (passage debout -> allongé ;
+	#l'animation de Minecraft dure 0,6 s). Le serveur compte 0,2 s de moins (décalage du réseau).
+	#Range: 0.0 ~ 5.0
+	duree_sans_tir_couche = 0.7
+

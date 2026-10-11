@@ -2,6 +2,7 @@ package fr.heraliz.tactique;
 
 import fr.heralisz.camo.HeraliszCamo;
 import fr.heralisz.tactical.init.ModItems;
+import fr.heraliz.tactique.allonge.ReseauAllonge;
 import fr.heraliz.tactique.onglet.OngletGroupe;
 import fr.heraliz.tactique.pont.Parties;
 import net.minecraft.core.registries.Registries;
@@ -26,6 +27,9 @@ import net.minecraftforge.registries.RegistryObject;
  * construit les mods en parallèle, l'ordre d'ajout depuis chaque @Mod ne serait pas stable. Le contenu de chaque groupe
  * reste fourni par son mod (ModItems pour le moteur, HeraliszCamo pour les camos), appelé seulement au remplissage.
  * Les anciens onglets (heralisz_tactical:throwable/consumable/melee, heralisz_camo:camos/skinx/decor) sont retirés.
+ * <p>
+ * Il porte aussi « s'allonger » (paquet {@code fr.heraliz.tactique.allonge}) : règles HeraliZ ajoutées au ramper de TaCZ
+ * (un appui, délai pour se rallonger, pas de tir pendant qu'on se couche).
  */
 @Mod(HeralizTactique.MODID)
 public class HeralizTactique {
@@ -55,6 +59,9 @@ public class HeralizTactique {
    public HeralizTactique() {
       IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
       TABS.register(bus);
+      // s'allonger (touche « Ramper » de TaCZ) : canal réseau, règles du serveur, touche et message chez le joueur
+      ReseauAllonge.init();
+      Parties.serveur(MODID, "fr.heraliz.tactique.serveur.ServeurTactique", bus);
       Parties.client(MODID, "fr.heraliz.tactique.client.ClientTactique", bus);
    }
 
