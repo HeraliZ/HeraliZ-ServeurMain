@@ -104,9 +104,12 @@ def main():
     installeur = racine / "repo" / "lib" / "net" / "minecraftforge" / "forge" / nom / f"forge-{nom}-installer.jar"
     if not installeur.exists():
         installeur.parent.mkdir(parents=True, exist_ok=True)
-        url = f"https://maven.minecraftforge.net/net/minecraftforge/forge/{nom}/forge-{nom}-installer.jar"
+        # même adresse que Nebula ; le serveur de Forge refuse les requêtes sans nom de navigateur
+        url = f"https://files.minecraftforge.net/maven/net/minecraftforge/forge/{nom}/forge-{nom}-installer.jar"
         print(f"[pack] téléchargement de {url}", flush=True)
-        urllib.request.urlretrieve(url, installeur)
+        requete = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (HeraliZ pack launcher)"})
+        with urllib.request.urlopen(requete, timeout=120) as r, open(installeur, "wb") as f:
+            shutil.copyfileobj(r, f)
     cache = racine / "cache" / "forge" / nom
     cache.mkdir(parents=True, exist_ok=True)
     (cache / "launcher_profiles.json").write_text('{"profiles": {}}', encoding="utf-8")
