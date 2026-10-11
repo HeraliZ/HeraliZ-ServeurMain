@@ -55,7 +55,8 @@ repositories {
     flatDir { dirs 'libs', 'libs/banc' }
 }
 
-// Mixin client : packs de ressources imposés (OptionsMixin, voir client/PackImpose)
+// Mixins client : packs de ressources imposés (OptionsMixin, voir client/PackImpose), touches cachées de l'écran
+// des commandes (KeyBindsListMixin, voir client/Touches)
 mixin {
     add sourceSets.main, "heraliz_interface.refmap.json"
     config "heraliz_interface.mixins.json"
