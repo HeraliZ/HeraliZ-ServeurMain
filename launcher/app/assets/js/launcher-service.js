@@ -152,7 +152,7 @@ class LauncherService {
         let size = 0
         for await (const chunk of response) {
             size += chunk.length
-            if (size > 8 * 1024 * 1024) { response.destroy(); throw new Error('La distribution est trop volumineuse.') }
+            if (size > 32 * 1024 * 1024) { response.destroy(); throw new Error('La distribution est trop volumineuse.') }
             chunks.push(chunk)
         }
         const raw = validateDistribution(JSON.parse(Buffer.concat(chunks).toString('utf8')), this.config)

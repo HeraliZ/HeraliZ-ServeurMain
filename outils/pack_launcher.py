@@ -2,14 +2,16 @@
 
     python outils/pack_launcher.py <dossier de Nebula> <sortie> [--version 1.0.42] [--essai]
 
-Contenu : Forge 1.20.1-<FORGE> (Nebula lance l'installeur de Forge), les jars joueurs de livraison/mods client
-(exactement ceux de la même fabrication que le serveur : Spartan compare leurs empreintes) et le dossier tacz des
-gunpacks (modèles, sons, icônes des armes). --essai : sans fabrication, avec seulement les mods tiers du dépôt.
+Contenu : Forge 1.20.1-<FORGE> (installeur de Forge lancé sans fenêtre, repris par Nebula), les jars joueurs de
+livraison/mods client (exactement ceux de la même fabrication que le serveur : Spartan compare leurs empreintes) et le
+dossier tacz des gunpacks (modèles, sons, icônes des armes). --essai : sans fabrication, avec seulement les mods tiers
+du dépôt.
 
 Résultat dans <sortie>/envoi : distribution.json et les seuls fichiers qu'il cite, prêts à être déposés tels quels
-dans https://heraliz.fr/launcher/ (dossier /var/www/launcher de la VM du site). Chaque fichier est contrôlé (taille,
-MD5) et la distribution passe le contrôle du launcher lui-même (launcher/app/assets/js/security.js).
-Nebula a besoin de Node.js 22 et de Java (pour l'installeur de Forge).
+dans le dossier de « distributionUrl » du launcher (launcher/app/heraliz.json : https://heraliz.fr/launcher/, dossier
+/var/www/launcher de la VM du site). Chaque fichier est contrôlé (taille, MD5) et la distribution passe le contrôle du
+launcher lui-même (launcher/app/assets/js/security.js). Résumé (nombre de mods et de fichiers, taille) dans
+<sortie>/resume.json. Nebula a besoin de Node.js 22 et de Java (pour l'installeur de Forge).
 """
 import argparse
 import hashlib
@@ -25,7 +27,6 @@ RACINE_DEPOT = Path(__file__).resolve().parent.parent
 FORGE = "47.4.0"            # version de Forge de nos mods (gradle.properties)
 SERVEUR = "heraliz"         # Nebula : dossier servers/heraliz-1.20.1, identifiant heraliz-1.20.1
 MINECRAFT = "1.20.1"
-BASE_URL = "https://heraliz.fr/launcher/"
 
 
 def nebula(dossier, *args):
@@ -55,6 +56,11 @@ def main():
     a.add_argument("--essai", action="store_true")
     args = a.parse_args()
     neb, sortie = Path(args.nebula).resolve(), Path(args.sortie).resolve()
+    # le pack est déposé là où le launcher va le chercher
+    config = json.loads((RACINE_DEPOT / "launcher" / "app" / "heraliz.json").read_text(encoding="utf-8"))
+    if not str(config.get("distributionUrl") or "").startswith("https://") or not config["distributionUrl"].endswith("/distribution.json"):
+        sys.exit("[pack] launcher/app/heraliz.json : distributionUrl doit être https://.../distribution.json.")
+    base_url = config["distributionUrl"].rsplit("/", 1)[0] + "/"
     racine, envoi = sortie / "racine", sortie / "envoi"
     for d in (racine, envoi):
         shutil.rmtree(d, ignore_errors=True)
@@ -64,7 +70,7 @@ def main():
     if not java:
         sys.exit("[pack] Java introuvable (nécessaire à l'installeur de Forge).")
     (neb / ".env").write_text(
-        f"JAVA_EXECUTABLE={java}\nROOT={racine}\nBASE_URL={BASE_URL}\nHELIOS_DATA_FOLDER={sortie / 'helios'}\n",
+        f"JAVA_EXECUTABLE={java}\nROOT={racine}\nBASE_URL={base_url}\nHELIOS_DATA_FOLDER={sortie / 'helios'}\n",
         encoding="utf-8")
     nebula(neb, "init", "root")
     # sans les exemples de Nebula (flux RSS, Discord) : le launcher HeraliZ ne s'en sert pas
@@ -94,7 +100,6 @@ def main():
     shutil.copytree(RACINE_DEPOT / "serveur" / "tacz", serveur / "files" / "tacz")
 
     # fiche du serveur : adresse de jeu (doit être celle du launcher), connexion directe, serveur principal
-    config = json.loads((RACINE_DEPOT / "launcher" / "app" / "heraliz.json").read_text(encoding="utf-8"))
     fiche_p = serveur / "servermeta.json"
     fiche = json.loads(fiche_p.read_text(encoding="utf-8"))
     fiche["meta"].update({
@@ -127,6 +132,8 @@ def main():
     distro_p = racine / "distribution.json"
     if not distro_p.exists():
         sys.exit("[pack] distribution.json introuvable après « generate distro ».")
+    if distro_p.stat().st_size > 32 * 1048576:  # limite du launcher (launcher-service.js)
+        sys.exit("[pack] distribution.json dépasse 32 Mo : le launcher la refuserait.")
     distro = json.loads(distro_p.read_text(encoding="utf-8"))
 
     # seuls les fichiers cités par la distribution partent, contrôlés un par un
@@ -134,9 +141,9 @@ def main():
     for m in modules(s for srv in distro["servers"] for s in srv["modules"]):
         art = m["artifact"]
         url = art["url"]
-        if not url.startswith(BASE_URL):
+        if not url.startswith(base_url):
             continue  # fichier pris ailleurs (Mojang, Forge) : le launcher le télécharge à la source
-        rel = unquote(urlparse(url).path)[len(urlparse(BASE_URL).path):]
+        rel = unquote(urlparse(url).path)[len(urlparse(base_url).path):]
         src = racine / rel
         if not src.is_file():
             sys.exit(f"[pack] fichier cité absent : {rel}")
@@ -163,6 +170,10 @@ def main():
         types[m["type"]] = types.get(m["type"], 0) + 1
     print(f"[pack] modules : {types}")
     print(f"[pack] {n} fichiers à déposer, {total / 1048576:.0f} Mo (dans {envoi})")
+    (sortie / "resume.json").write_text(json.dumps({
+        "version": args.version, "mods": len(jars), "fichiers": n, "octets": total,
+        "distribution": config["distributionUrl"],
+    }, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":
