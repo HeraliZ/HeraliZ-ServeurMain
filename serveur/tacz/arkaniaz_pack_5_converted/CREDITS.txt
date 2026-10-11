@@ -1,0 +1,28 @@
+Crédits du gunpack « MaxStuff » (dossier arkaniaz_pack_5_converted)
+=====================================================================
+
+Les armes, accessoires, munitions, modèles, textures, animations et sons de l'espace de noms « maxstuff »
+viennent du gunpack Max Stuff pour TaCZ (Timeless and Classics Zero), de ses auteurs. Ce n'est pas un contenu
+de HeraliZ.
+
+Informations d'origine, reprises telles quelles de assets/maxstuff/gunpack_info.json :
+  nom      : MaxStuff (clé de traduction pack.ma.name)
+  version  : 1.6.0
+  date     : 2024-6-09
+  auteurs  : Maxinablender, Rene_M and Contributers
+  licence  : CC BY-NC-ND 4.0
+  url      : (non renseignée)
+
+Provenance (serveur/tacz/.export-state.json) : gunpack fourni par le mod Forge MaxStuff
+(com.corrinedev.maxstuff.MaxStuff, chemin /assets/maxstuff/gunpack/maxstuff), puis converti au format de
+gunpack de TaCZ 1.1.
+
+Retouches faites pour le serveur HeraliZ :
+  - icônes d'inventaire des armes (assets/maxstuff/textures/gun/slot) : contour noir adouci
+    (outils/icones_sans_contour.py) ;
+  - fiches d'affichage de deux armes (assets/maxstuff/display/guns : ak_alpha, m82a2) : noms de sons de tir
+    corrigés ou ajoutés (sons de tir qui manquaient) ;
+  - réglages de jeu dans data/ (portée du son des silencieux, outils/silencieux.py, et autres réglages du
+    serveur).
+Les fichiers des modèles, des textures des armes, des animations et des sons ne sont pas modifiés.
+Ce fichier n'est pas lu par TaCZ.
