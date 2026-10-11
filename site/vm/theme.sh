@@ -1,9 +1,10 @@
 #!/bin/bash
 # Mise à jour du site HeraliZ sur sa VM, lancée en root par .github/workflows/site.yml (choix « theme », et tout seul à
-# chaque envoi sur main qui touche le thème) : thème HeraliZ (site/theme/heraliz), extensions Boutique et Votes
-# d'Azuriom, puis site/vm/reglages.php (thème actif ; réglages de départ une seule fois : l'administration fait foi).
-# Variable écrite en tête par la mise en ligne : ARCHIVE (thème, reglages.php et images des premières actualités ;
-# effacée à la fin).
+# chaque envoi sur main qui touche le thème ou l'extension) : thème HeraliZ (site/theme/heraliz), extension HeraliZ
+# (site/extension/heraliz : création de compte et double authentification depuis le launcher), extensions Boutique et
+# Votes d'Azuriom, puis site/vm/reglages.php (thème actif ; réglages de départ une seule fois : l'administration fait
+# foi). Variable écrite en tête par la mise en ligne : ARCHIVE (thème, extension, reglages.php et images des premières
+# actualités ; effacée à la fin).
 set -euo pipefail
 : "${ARCHIVE:?}"
 DOSSIER=/var/www/azuriom
@@ -27,6 +28,13 @@ rsync -a --delete --exclude=/config.json "$TRAVAIL/theme/heraliz/" "$THEME/"
 [ -f "$THEME/config.json" ] || cp "$TRAVAIL/theme/heraliz/config.json" "$THEME/config.json"
 chown -R www-data:www-data "$THEME"
 echo "Thème déposé : $(find "$THEME" -type f | wc -l) fichiers"
+
+echo "== Extension HeraliZ (comptes du launcher)"
+EXTENSION="$DOSSIER/plugins/heraliz"
+install -d -o www-data -g www-data "$EXTENSION"
+rsync -a --delete "$TRAVAIL/extension/heraliz/" "$EXTENSION/"
+chown -R www-data:www-data "$EXTENSION"
+en_site php artisan plugin:enable heraliz
 
 echo "== Extensions Boutique et Votes"
 for ext in shop vote; do
@@ -67,3 +75,11 @@ for chemin in /shop /vote /reglement /news /user/login /user/register; do
   [ "$code" = 200 ] || echo "::warning::Page https://heraliz.fr$chemin : réponse ${code:-aucune}"
 done
 echo "Pages (200 = s'ouvre) :${pages% ;}"
+# API des comptes du launcher (extension HeraliZ) : ce que le launcher lit avant d'afficher son formulaire
+etat=$(curl -s -m 30 --resolve heraliz.fr:443:127.0.0.1 https://heraliz.fr/api/heraliz/etat || true)
+case "$etat" in
+  *'"connexion":true'*'"inscription":true'*) echo "Comptes du launcher : connexion et création de compte ouvertes" ;;
+  *'"connexion":true'*) echo "::warning::Comptes du launcher : connexion ouverte, création de compte fermée (administration → Paramètres → Authentification → inscriptions)" ;;
+  *'"connexion":'*) echo "::warning::Comptes du launcher : API de connexion désactivée (administration → Paramètres → Authentification)" ;;
+  *) echo "::warning::Comptes du launcher : https://heraliz.fr/api/heraliz/etat ne répond pas (extension HeraliZ)" ;;
+esac

@@ -68,8 +68,14 @@ if [ "$installe" != non ]; then
     echo "Thème du site : celui d'origine d'Azuriom (lancer « theme »)"
   fi
   ext=""
-  for e in shop vote; do [ -f "/var/www/azuriom/plugins/$e/plugin.json" ] && ext="$ext $e"; done
+  for e in heraliz shop vote; do [ -f "/var/www/azuriom/plugins/$e/plugin.json" ] && ext="$ext $e"; done
   echo "Extensions téléchargées :${ext:- aucune}"
+  # extension HeraliZ : création de compte et double authentification depuis le launcher
+  case "$(curl -s -m 15 --resolve heraliz.fr:443:127.0.0.1 https://heraliz.fr/api/heraliz/etat 2> /dev/null)" in
+    *'"inscription":true'*) echo "Création de compte depuis le launcher : ouverte";;
+    *'"inscription":false'*) echo "Création de compte depuis le launcher : fermée (inscriptions ou API d'authentification coupées dans l'administration)";;
+    *) echo "Création de compte depuis le launcher : extension HeraliZ absente (lancer « theme »)";;
+  esac
 fi
 if [ -f /var/www/launcher/distribution.json ]; then
   echo "Pack du launcher : $(find /var/www/launcher -type f | wc -l) fichiers, $(du -sh /var/www/launcher | cut -f1), distribution du $(date -r /var/www/launcher/distribution.json '+%d/%m %H:%M')"

@@ -1,6 +1,7 @@
 # Launcher des joueurs (launcher/, voir CLAUDE.md section 8 ter) : tests, puis installateur Windows gardé 7 jours dans
-# l'onglet Actions (paquet « launcher-windows »). « Run workflow » avec « publier » : l'installateur est aussi mis en
-# ligne sur https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe (VM du site, dossier /var/www/telecharger).
+# l'onglet Actions (paquet « launcher-windows », si le quota d'artefacts du dépôt le permet). « Run workflow » avec
+# « publier » : l'installateur est aussi mis en ligne sur https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
+# (VM du site, dossier /var/www/telecharger), envoyé directement par la machine qui l'a fabriqué.
 name: Launcher HeraliZ
 
 on:
@@ -52,52 +53,72 @@ jobs:
           npm run dist:win
           ls -l dist/*.exe
 
+      # gardé 7 jours dans l'onglet Actions ; un quota d'artefacts plein ne bloque ni la fabrication ni la mise en ligne
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: launcher-windows
           path: launcher/dist/*.exe
           retention-days: 7
 
-  publier:
-    needs: windows
-    if: github.event_name == 'workflow_dispatch' && inputs.publier
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
-      SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
-      SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
-      SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
-    steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/setup-python@v5
+        if: github.event_name == 'workflow_dispatch' && inputs.publier
         with:
-          name: launcher-windows
-          path: installateur
+          python-version: "3.12"
 
+      # envoyé directement depuis cette machine (pas d'artefact entre deux tâches : il en dépendrait) ; nom fixe : le lien
+      # du site ne change jamais. Mot de passe par variable d'environnement seulement, jamais dans une commande.
       - name: Mise en ligne sur heraliz.fr/telecharger
+        if: github.event_name == 'workflow_dispatch' && inputs.publier
+        env:
+          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
+          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
+          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
+          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
         run: |
           if [ -z "$SITE_SSH_HOTE" ] || [ -z "$SITE_SSH_UTILISATEUR" ] || [ -z "$SITE_SSH_MDP" ]; then
             echo "::error::Secrets SITE_SSH_* manquants (Settings → Secrets and variables → Actions)."
             exit 1
           fi
           shopt -s nullglob
-          exe=(installateur/*.exe)
+          exe=(dist/*.exe)
           if [ "${#exe[@]}" -ne 1 ]; then echo "::error::Un seul installateur attendu, ${#exe[@]} trouvé(s)."; exit 1; fi
-          # nom fixe : le lien du site ne change jamais
-          cp "${exe[0]}" HeraliZ-Launcher-Setup.exe
-          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync > /dev/null
-          export SSHPASS="$SITE_SSH_MDP"
-          SSH=(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o PubkeyAuthentication=no -p "${SITE_SSH_PORT:-22}")
-          VM="$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE"
-          DOSSIER=/var/www/telecharger
-          if ! sshpass -e "${SSH[@]}" "$VM" "command -v rsync > /dev/null && [ -w $DOSSIER ]" < /dev/null; then
-            echo "::error::La VM du site n'est pas prête (rsync ou dossier $DOSSIER) : lancer le workflow « Site HeraliZ » avec « installer », puis relancer celui-ci."
-            exit 1
-          fi
-          rsync --perms --chmod=F644 --delay-updates -e "sshpass -e ${SSH[*]}" HeraliZ-Launcher-Setup.exe "$VM:$DOSSIER/"
+          python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+          INSTALLATEUR="${exe[0]}" python - <<'PY'
+          import os
+          import sys
+
+          import paramiko
+
+          DOSSIER = "/var/www/telecharger"
+          NOM = "HeraliZ-Launcher-Setup.exe"
+          client = paramiko.SSHClient()
+          client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+          try:
+              client.connect(os.environ["SITE_SSH_HOTE"], port=int(os.environ.get("SITE_SSH_PORT") or 22),
+                             username=os.environ["SITE_SSH_UTILISATEUR"], password=os.environ["SITE_SSH_MDP"],
+                             timeout=20, banner_timeout=30, auth_timeout=30, allow_agent=False, look_for_keys=False)
+          except Exception as erreur:
+              print(f"::error::Connexion à la VM du site impossible : {type(erreur).__name__}")
+              sys.exit(1)
+          sftp = client.open_sftp()
+          try:
+              sftp.stat(DOSSIER)
+          except OSError:
+              print(f"::error::La VM du site n'est pas prête (dossier {DOSSIER}) : lancer le workflow « Site HeraliZ » avec « installer », puis relancer celui-ci.")
+              sys.exit(1)
+          # envoyé sous un nom provisoire, puis renommé d'un coup : le lien ne donne jamais un fichier à moitié envoyé
+          provisoire = f"{DOSSIER}/.{NOM}.envoi"
+          sftp.put(os.environ["INSTALLATEUR"], provisoire, confirm=True)
+          sftp.chmod(provisoire, 0o644)
+          sftp.posix_rename(provisoire, f"{DOSSIER}/{NOM}")
+          sftp.close()
+          client.close()
+          print(f"Installateur déposé dans {DOSSIER}/{NOM}")
+          PY
           URL=https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
           taille=$(curl -fsSI --max-time 60 "$URL" | tr -d '\r' | awk 'tolower($1) == "content-length:" {print $2}')
-          if [ "$taille" != "$(stat -c %s HeraliZ-Launcher-Setup.exe)" ]; then
+          if [ "$taille" != "$(stat -c %s "${exe[0]}")" ]; then
             echo "::error::$URL ne donne pas l'installateur envoyé (taille ${taille:-inconnue})."
             exit 1
           fi

@@ -1,0 +1,15 @@
+{
+    "id": "heraliz",
+    "name": "HeraliZ",
+    "description": "Comptes HeraliZ depuis le launcher : création de compte et double authentification (A2F) par l'API du site.",
+    "version": "1.0.0",
+    "url": "https://heraliz.fr",
+    "authors": [
+        "HeraliZ"
+    ],
+    "azuriom_api": "1.2.0",
+    "providers": [
+        "\\Azuriom\\Plugin\\Heraliz\\Providers\\HeralizServiceProvider",
+        "\\Azuriom\\Plugin\\Heraliz\\Providers\\RouteServiceProvider"
+    ]
+}

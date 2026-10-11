@@ -2,7 +2,7 @@
 
 Launcher de survie Minecraft DayZ pour **Minecraft 1.20.1 / Forge / Java 17**.
 
-Interface française aux couleurs HeraliZ (maquettes validées) : fond « carte », accueil « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (bientôt), trois nouveautés non cliquables sur l’accueil, Discord bien en vue, préparation du jeu avec ses étapes, réglages de mémoire, vérification des fichiers. Profil local par pseudo : le mot de passe se choisit en jeu (`/register` la première fois, puis `/login`), le launcher n’en garde aucun. Aucune connexion Microsoft dans l’application.
+Interface française aux couleurs HeraliZ (maquettes validées) : fond « carte », accueil « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (bientôt), trois nouveautés non cliquables sur l’accueil, Discord bien en vue, préparation du jeu avec ses étapes, réglages de mémoire, vérification des fichiers. Compte HeraliZ obligatoire, le même que sur heraliz.fr : connexion par e-mail ou pseudo et mot de passe, ou création du compte dans le launcher, puis proposition de la double authentification (QR code). Le launcher ne garde que le jeton du site, jamais le mot de passe ; en jeu, AuthMe demande en plus son propre mot de passe (`/register` la première fois, puis `/login`). Aucune connexion Microsoft dans l’application.
 
 **Aucun accès au dossier du jeu** depuis le launcher (ni bouton, ni lien, ni nom de fichier affiché pendant le téléchargement) : choix du propriétaire, pour ne pas faciliter le vol des jars.
 
@@ -56,9 +56,9 @@ Les anciens templates EJS et scripts Helios restent comme référence dans les s
 
 ## Identité et doubles comptes
 
-Un seul profil est mémorisé. Les pseudos acceptent 3 à 16 caractères ASCII (lettres, chiffres, `_`). L’UUID correspond au calcul Minecraft hors ligne et respecte la casse.
+Un seul compte est mémorisé : celui du site HeraliZ (Azuriom), vérifié au démarrage et avant chaque partie (`compte-site.js`). Le pseudo en jeu est celui du compte : 3 à 16 caractères ASCII (lettres, chiffres, `_`). L’UUID correspond au calcul Minecraft hors ligne et respecte la casse.
 
-**Un pseudo seul n’est pas une preuve d’identité.** Le message de bannissement exprime le règlement ; le launcher ne détecte pas et ne bannit pas automatiquement les doubles comptes. L’authentification, les permissions et les sanctions doivent être appliquées côté serveur. Ne jamais accorder des droits administrateur sur la seule base d’un pseudo libre.
+**Le launcher ne protège que lui-même.** Un autre launcher peut encore rejoindre le serveur avec n’importe quel pseudo tant que Spartan n’exige pas le jeton du launcher (`tokenRequired`) : AuthMe reste la protection en jeu. Le message de bannissement exprime le règlement ; le launcher ne détecte pas et ne bannit pas automatiquement les doubles comptes. L’authentification, les permissions et les sanctions doivent être appliquées côté serveur. Ne jamais accorder des droits administrateur sur la seule base d’un pseudo libre.
 
 ## Crédits
 

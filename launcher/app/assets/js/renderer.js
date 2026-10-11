@@ -1,20 +1,27 @@
 /* global document, window */
 /*
- * Interface du launcher (maquettes validées) : démarrage -> pseudo (la première fois) -> menu principal avec ses onglets
- * Accueil, Règlement et Boutique. Tout passe par l'API étroite du preload (window.heraliz) ; aucun contenu
- * distant, aucun texte injecté en HTML.
+ * Interface du launcher (maquettes validées) : démarrage -> connexion ou création du compte HeraliZ (celui du site
+ * heraliz.fr), avec proposition de la double authentification -> menu principal avec ses onglets Accueil, Règlement et
+ * Boutique. Tout passe par l'API étroite du preload (window.heraliz) ; aucun texte distant injecté en HTML (le QR code
+ * de la double authentification est une image).
  */
 const $ = id => document.getElementById(id)
 const api = window.heraliz
 const NOUVEAUTES = Array.isArray(window.HERALIZ_NOUVEAUTES) ? window.HERALIZ_NOUVEAUTES : []
-const PSEUDO = /^[A-Za-z0-9_]{3,16}$/
 const IMAGE = /^[\w-]+\.(jpg|png)$/
+const PSEUDO = /^[A-Za-z0-9_]{3,16}$/
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const SPLASH_MIN_MS = 1800
 const ERREUR_VISIBLE_MS = 15000
 let state
 let toastTimeout
 let erreurTimeout
 let launchPending = false
+// ce que permet le site (création de compte, longueur du mot de passe, conditions), demandé une fois
+let etatComptes = null
+// mot de passe tapé juste avant, gardé seulement le temps de proposer la double authentification
+let motDePasseA2F = null
+let apresA2F = null
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -27,7 +34,7 @@ function el(tag, classe, texte) {
 
 async function call(promise) {
     const result = await promise
-    if (!result.ok) throw new Error(result.error)
+    if (!result.ok) throw Object.assign(new Error(result.error), result.champs ? { champs: result.champs } : {})
     return result.data
 }
 
@@ -47,7 +54,126 @@ function feedback(id, message, error = false) {
 
 function showScreen(name) {
     document.body.dataset.screen = name
-    if (name === 'identite') setTimeout(() => $('username').focus(), 450)
+    if (name === 'identite') setTimeout(focusFormulaire, 450)
+}
+
+function focusFormulaire() {
+    if ($('profile-form').dataset.mode === 'inscription') $('new-pseudo').focus()
+    else $(!$('code-champ').hidden ? 'code' : $('email').value ? 'password' : 'email').focus()
+}
+
+/* ---------- connexion ou création de compte ---------- */
+
+function changerMode(mode) {
+    const inscription = mode === 'inscription'
+    $('profile-form').dataset.mode = inscription ? 'inscription' : 'connexion'
+    for (const b of document.querySelectorAll('.bascule [data-mode]')) b.setAttribute('aria-selected', String(b.dataset.mode === $('profile-form').dataset.mode))
+    $('form-titre').textContent = inscription ? 'Crée ton compte' : 'Connecte-toi'
+    $('form-intro').replaceChildren(...(inscription
+        ? [document.createTextNode('Un seul compte pour le launcher et '), el('b', null, 'heraliz.fr'), document.createTextNode(' (boutique, votes). Ton pseudo sera ton nom en jeu.')]
+        : [document.createTextNode('Avec ton compte HeraliZ, le même que sur '), el('b', null, 'heraliz.fr'), document.createTextNode('. Ton pseudo en jeu est celui de ton compte.')]))
+    $('save-profile-label').textContent = inscription ? 'CRÉER MON COMPTE' : 'ENTRER DANS LA ZONE'
+    effacerErreurs()
+    feedback('profile-feedback', '')
+    if (inscription) chargerEtatComptes()
+    focusFormulaire()
+}
+
+// Longueur du mot de passe et conditions du site ; création de compte fermée si le site ne la propose pas.
+async function chargerEtatComptes() {
+    if (!etatComptes || etatComptes.injoignable) {
+        etatComptes = await call(api.etatComptes()).catch(() => ({ inscription: false, motDePasseMin: 12, conditions: null, injoignable: true }))
+    }
+    const min = etatComptes.motDePasseMin || 12
+    $('new-password-aide').textContent = `Au moins ${min} caractères. Pas le même que ton /login en jeu.`
+    $('conditions-site').hidden = !etatComptes.conditions
+    if ($('profile-form').dataset.mode === 'inscription' && !etatComptes.inscription) {
+        feedback('profile-feedback', etatComptes.injoignable
+            ? 'Le site HeraliZ ne répond pas. Vérifie ta connexion internet et réessaie.'
+            : 'La création de compte depuis le launcher n’est pas encore ouverte : crée ton compte sur heraliz.fr.', true)
+    }
+}
+
+const AIDES = { pseudo: '3 à 16 caractères : lettres, chiffres ou _. C’est ton nom en jeu.', email: '', motDePasse: null }
+
+function effacerErreurs() {
+    for (const c of document.querySelectorAll('.mode-inscription .champ.erreur')) c.classList.remove('erreur')
+    for (const a of document.querySelectorAll('.mode-inscription .aide')) {
+        a.classList.remove('erreur')
+        const defaut = AIDES[a.dataset.aide]
+        if (defaut !== null && defaut !== undefined) a.textContent = defaut
+    }
+    if (etatComptes) $('new-password-aide').textContent = `Au moins ${etatComptes.motDePasseMin || 12} caractères. Pas le même que ton /login en jeu.`
+}
+
+// Erreurs par champ (contrôle du launcher ou réponse du site) sous les champs concernés.
+function afficherErreurs(champs) {
+    effacerErreurs()
+    let premier = null
+    for (const [nom, message] of Object.entries(champs || {})) {
+        const cible = nom === 'confirmation' ? 'motDePasse' : nom
+        const champ = document.querySelector(`.mode-inscription [data-champ="${nom}"]`)
+        const aide = document.querySelector(`.mode-inscription [data-aide="${cible}"]`)
+        if (nom === 'pseudo') $('new-pseudo-ok').hidden = true
+        if (champ) champ.classList.add('erreur')
+        if (aide) { aide.textContent = message; aide.classList.add('erreur') }
+        premier = premier || champ?.querySelector('input')
+    }
+    premier?.focus()
+}
+
+function verifierInscription() {
+    const min = etatComptes?.motDePasseMin || 12
+    const champs = {}
+    if (!PSEUDO.test($('new-pseudo').value)) champs.pseudo = 'Le pseudo doit faire 3 à 16 caractères : lettres, chiffres ou _.'
+    if (!EMAIL.test($('new-email').value.trim())) champs.email = 'Entre une adresse e-mail valide.'
+    if ($('new-password').value.length < min) champs.motDePasse = `Le mot de passe doit faire au moins ${min} caractères.`
+    else if ($('new-password').value !== $('new-password2').value) champs.confirmation = 'Les deux mots de passe ne sont pas identiques.'
+    return champs
+}
+
+/* ---------- double authentification ---------- */
+
+function svgEnImage(svg) {
+    const octets = new TextEncoder().encode(svg)
+    let binaire = ''
+    for (const o of octets) binaire += String.fromCharCode(o)
+    return `data:image/svg+xml;base64,${window.btoa(binaire)}`
+}
+
+// Propose la double authentification (QR code) ; false si elle est déjà active. motDePasse : celui tapé juste avant.
+async function ouvrirA2F({ motDePasse = null, depuisMenu = false } = {}) {
+    const r = await call(api.a2fPreparer())
+    if (r.active) {
+        if (depuisMenu) toast('La double authentification est déjà active sur ton compte.')
+        return false
+    }
+    motDePasseA2F = motDePasse
+    $('a2f-qr').src = svgEnImage(r.qr)
+    $('a2f-secret').textContent = r.secret.replace(/(.{4})(?=.)/g, '$1 ')
+    $('a2f-code').value = ''
+    $('a2f-mdp').value = ''
+    $('a2f-mdp-champ').hidden = Boolean(motDePasse)
+    $('a2f-etape-qr').hidden = false
+    $('a2f-etape-codes').hidden = true
+    feedback('a2f-feedback', '')
+    $('a2f-dialog').showModal()
+    setTimeout(() => $('a2f-code').focus(), 50)
+    return true
+}
+
+// Après une connexion ou une création de compte : proposer la double authentification, puis aller au menu.
+async function apresConnexion(motDePasse, nouveauCompte) {
+    const versMenu = () => { showTab('accueil'); showScreen('principal') }
+    try {
+        apresA2F = versMenu
+        if (await ouvrirA2F({ motDePasse })) return
+    } catch (error) {
+        // extension du site absente ou site lent : la proposition attendra, le joueur entre quand même
+        if (nouveauCompte) toast(`Compte créé. ${error.message}`)
+    }
+    apresA2F = null
+    versMenu()
 }
 
 function showTab(name) {
@@ -62,7 +188,7 @@ function splashStep(percent, text) {
 }
 
 function profileReady() {
-    return Boolean(state?.profile?.username && state.profile.rulesAccepted)
+    return Boolean(state?.profile?.username && state.profile.rulesAccepted && (!state.comptesSite || state.profile.compte))
 }
 
 /* Tête de survivant en pixels, purement décorative (le launcher ne connaît pas le skin du joueur). */
@@ -194,7 +320,7 @@ function renderProgress(progress) {
         span.classList.toggle('ok', actuelle >= 0 && i < actuelle)
         span.classList.toggle('cours', i === actuelle)
     }
-    for (const id of ['username', 'accept-rules', 'save-profile', 'change-profile', 'logout', 'confirm-logout', 'memory', 'fullscreen', 'auto-connect']) $(id).disabled = progress.busy
+    for (const id of ['email', 'password', 'code', 'new-pseudo', 'new-email', 'new-password', 'new-password2', 'accept-rules', 'save-profile', 'site-account', 'securite', 'logout', 'confirm-logout', 'memory', 'fullscreen', 'auto-connect']) $(id).disabled = progress.busy
     $('settings-form').querySelector('[type=submit]').disabled = progress.busy
     updatePlay()
 }
@@ -216,12 +342,23 @@ function applyState(next) {
     renderProgress(state.progress)
 }
 
-/* Le formulaire du pseudo reprend le profil enregistré. */
+/* Formulaire de connexion : les mots de passe et le code ne restent jamais affichés d'une fois sur l'autre. */
 function restoreProfileForm() {
-    $('username').value = state?.profile?.username || ''
+    $('password').value = ''
+    $('code').value = ''
+    $('code-champ').hidden = true
+    $('new-password').value = ''
+    $('new-password2').value = ''
+    effacerErreurs()
+    afficherMotDePasse(false)
     $('accept-rules').checked = state?.profile?.rulesAccepted || false
-    $('username-ok').hidden = !PSEUDO.test($('username').value)
-    feedback('profile-feedback', '')
+    feedback('profile-feedback', state && !state.comptesSite ? 'Les comptes HeraliZ ne sont pas encore ouverts.' : '')
+}
+
+function afficherMotDePasse(visible) {
+    $('password').type = visible ? 'text' : 'password'
+    $('password-toggle').classList.toggle('actif', visible)
+    $('password-toggle').setAttribute('aria-label', visible ? 'Cacher le mot de passe' : 'Afficher le mot de passe')
 }
 
 async function refreshStatus() {
@@ -252,14 +389,77 @@ for (const zone of document.querySelectorAll('[data-regles]')) zone.append($('re
 $('profil-bouton').addEventListener('click', event => { event.stopPropagation(); basculerMenu() })
 document.addEventListener('click', event => { if (!$('menu-profil').hidden && !event.target.closest('.profil-zone')) fermerMenu() })
 document.addEventListener('keydown', event => { if (event.key === 'Escape') fermerMenu() })
-$('change-profile').addEventListener('click', () => { fermerMenu(); restoreProfileForm(); showScreen('identite') })
 $('identity-back').addEventListener('click', () => { restoreProfileForm(); showScreen('principal') })
 $('logout-dialog').addEventListener('close', () => feedback('logout-feedback', ''))
 $('settings-dialog').addEventListener('close', () => { feedback('settings-feedback', ''); ouvrirPanneau('jeu') })
 $('memory').addEventListener('input', afficherMemoire)
-$('username').addEventListener('input', () => {
-    $('username-ok').hidden = !PSEUDO.test($('username').value)
+$('password-toggle').addEventListener('click', () => afficherMotDePasse($('password').type === 'password'))
+for (const id of ['email', 'password', 'code', 'new-email', 'new-password', 'new-password2']) $(id).addEventListener('input', () => feedback('profile-feedback', ''))
+for (const b of document.querySelectorAll('#profile-form [data-mode]')) b.addEventListener('click', () => changerMode(b.dataset.mode))
+$('new-pseudo').addEventListener('input', () => {
+    $('new-pseudo-ok').hidden = !PSEUDO.test($('new-pseudo').value)
     feedback('profile-feedback', '')
+})
+$('securite').addEventListener('click', () => {
+    fermerMenu()
+    apresA2F = null
+    ouvrirA2F({ depuisMenu: true }).catch(error => toast(error.message))
+})
+$('a2f-plus-tard').addEventListener('click', () => $('a2f-dialog').close())
+for (const id of ['a2f-code', 'a2f-mdp']) {
+    $(id).addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('a2f-activer').click() } })
+}
+$('a2f-fini').addEventListener('click', () => $('a2f-dialog').close())
+$('a2f-dialog').addEventListener('close', () => {
+    motDePasseA2F = null
+    $('a2f-code').value = ''
+    $('a2f-mdp').value = ''
+    $('a2f-qr').removeAttribute('src')
+    $('a2f-codes').replaceChildren()
+    const suite = apresA2F
+    apresA2F = null
+    if (suite) suite()
+})
+$('a2f-activer').addEventListener('click', async () => {
+    const code = $('a2f-code').value.replace(/\s+/g, '')
+    if (!/^\d{6}$/.test(code)) {
+        feedback('a2f-feedback', 'Entre le code à 6 chiffres de ton application.', true)
+        $('a2f-code').focus()
+        return
+    }
+    const motDePasse = motDePasseA2F || $('a2f-mdp').value
+    if (!motDePasse) {
+        feedback('a2f-feedback', 'Entre ton mot de passe.', true)
+        $('a2f-mdp').focus()
+        return
+    }
+    $('a2f-activer').disabled = true
+    feedback('a2f-feedback', 'Activation…')
+    try {
+        const { codes } = await call(api.a2fActiver(code, motDePasse))
+        motDePasseA2F = null
+        if (codes.length === 0) {
+            // déjà activée entre-temps (depuis le site) : pas de nouveaux codes de secours
+            $('a2f-dialog').close()
+            toast('La double authentification est active sur ton compte.')
+            return
+        }
+        $('a2f-codes').replaceChildren(...codes.map(c => el('code', null, c)))
+        $('a2f-etape-qr').hidden = true
+        $('a2f-etape-codes').hidden = false
+        feedback('a2f-codes-feedback', '')
+    } catch (error) {
+        feedback('a2f-feedback', error.message, true)
+    } finally { $('a2f-activer').disabled = false }
+})
+// les codes de secours ne disparaissent pas par Échap : seulement par « C'est noté »
+$('a2f-dialog').addEventListener('cancel', event => { if (!$('a2f-etape-codes').hidden) event.preventDefault() })
+$('a2f-copier').addEventListener('click', async () => {
+    const codes = [...$('a2f-codes').children].map(c => c.textContent).join('\n')
+    try {
+        await call(api.copierCodes(codes))
+        feedback('a2f-codes-feedback', 'Codes copiés : colle-les dans un endroit sûr.')
+    } catch { feedback('a2f-codes-feedback', 'Copie impossible : recopie les codes à la main.', true) }
 })
 
 $('confirm-logout').addEventListener('click', async () => {
@@ -275,9 +475,15 @@ $('confirm-logout').addEventListener('click', async () => {
 
 $('profile-form').addEventListener('submit', async event => {
     event.preventDefault()
-    if (!PSEUDO.test($('username').value)) {
-        feedback('profile-feedback', 'Le pseudo doit contenir 3 à 16 caractères : lettres, chiffres ou _.', true)
-        $('username').focus()
+    if ($('profile-form').dataset.mode === 'inscription') return creerCompte()
+    if (!$('email').value.trim() || !$('password').value) {
+        feedback('profile-feedback', 'Entre ton e-mail (ou ton pseudo) et ton mot de passe.', true)
+        $(!$('email').value.trim() ? 'email' : 'password').focus()
+        return
+    }
+    if (!$('code-champ').hidden && !$('code').value.trim()) {
+        feedback('profile-feedback', 'Entre le code de ton application de double authentification.', true)
+        $('code').focus()
         return
     }
     if (!$('accept-rules').checked) {
@@ -285,14 +491,56 @@ $('profile-form').addEventListener('submit', async event => {
         return
     }
     $('save-profile').disabled = true
+    feedback('profile-feedback', 'Connexion à ton compte HeraliZ…')
+    const motDePasse = $('password').value
     try {
-        applyState(await call(api.saveProfile($('username').value, true)))
-        feedback('profile-feedback', '')
-        showTab('accueil')
-        showScreen('principal')
+        const next = await call(api.connexion($('email').value.trim(), motDePasse, $('code-champ').hidden ? '' : $('code').value, true))
+        if (next.a2f) {
+            $('code-champ').hidden = false
+            feedback('profile-feedback', 'Entre le code de ton application de double authentification.')
+            $('code').focus()
+            return
+        }
+        // double authentification déjà active si le code a été demandé : rien à proposer
+        const codeDemande = !$('code-champ').hidden
+        applyState(next)
+        restoreProfileForm()
+        if (codeDemande) { showTab('accueil'); showScreen('principal') }
+        else await apresConnexion(motDePasse, false)
     } catch (error) { feedback('profile-feedback', error.message, true) }
     finally { $('save-profile').disabled = Boolean(state?.progress.busy) }
 })
+
+async function creerCompte() {
+    const champs = verifierInscription()
+    if (Object.keys(champs).length > 0) {
+        afficherErreurs(champs)
+        feedback('profile-feedback', Object.values(champs)[0], true)
+        return
+    }
+    if (!$('accept-rules').checked) {
+        feedback('profile-feedback', 'Tu dois accepter le règlement pour continuer.', true)
+        return
+    }
+    effacerErreurs()
+    $('save-profile').disabled = true
+    feedback('profile-feedback', 'Création de ton compte HeraliZ…')
+    const motDePasse = $('new-password').value
+    try {
+        const next = await call(api.inscription($('new-pseudo').value, $('new-email').value.trim(), motDePasse, $('new-password2').value, true))
+        applyState(next)
+        restoreProfileForm()
+        $('new-pseudo').value = ''
+        $('new-email').value = ''
+        $('new-pseudo-ok').hidden = true
+        changerMode('connexion')
+        toast(`Compte créé : bienvenue, ${next.profile?.username || 'survivant'} !`)
+        await apresConnexion(motDePasse, true)
+    } catch (error) {
+        if (error.champs) afficherErreurs(error.champs)
+        feedback('profile-feedback', error.message, true)
+    } finally { $('save-profile').disabled = Boolean(state?.progress.busy) }
+}
 
 $('settings-form').addEventListener('submit', async event => {
     event.preventDefault()
@@ -316,6 +564,11 @@ $('play').addEventListener('click', async () => {
     catch (error) {
         launchPending = false
         renderProgress({ busy: false, phase: 'error', message: error.message, percent: null })
+        // Session expirée : le compte a été oublié, retour à la connexion.
+        if (state.comptesSite) {
+            const next = await call(api.getState()).catch(() => null)
+            if (next && !next.profile) { applyState(next); restoreProfileForm(); showScreen('identite'); toast(error.message) }
+        }
     }
     finally { launchPending = false; updatePlay() }
 })
@@ -334,6 +587,13 @@ async function init() {
             splashStep(35, 'Chargement du profil')
             applyState(await call(api.getState()))
             api.onProgress(renderProgress)
+            if (state.profile?.compte) {
+                splashStep(50, 'Vérification du compte')
+                // Un site lent ne doit pas bloquer le démarrage : le compte sera revérifié avant la partie.
+                const compte = await Promise.race([call(api.verifierCompte()).catch(() => null), wait(5000).then(() => null)])
+                if (compte) applyState(compte)
+                if (compte?.sessionExpiree) toast('Ta session a expiré : reconnecte-toi avec ton compte HeraliZ.')
+            }
             splashStep(70, 'Contact du serveur')
             // Un serveur lent ne doit pas bloquer le démarrage.
             await Promise.race([refreshStatus(), wait(4000)])

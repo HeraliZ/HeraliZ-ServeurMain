@@ -16,7 +16,7 @@ La séparation dépend de chaque mod : des blocs ou objets supplémentaires requ
 
 ## Pseudos et doubles comptes
 
-Le launcher mémorise un profil, valide le pseudo, calcule l’UUID hors ligne Minecraft et demande l’acceptation du règlement. Le bannissement immédiat affiché est une règle, pas une détection automatique.
+Le launcher exige un compte du site HeraliZ (connexion ou création, double authentification proposée), garde seulement le jeton du site (chiffré par le système, jamais le mot de passe), prend le pseudo du compte, calcule l’UUID hors ligne Minecraft et demande l’acceptation du règlement. Le bannissement immédiat affiché est une règle, pas une détection automatique.
 
 Le joueur peut modifier ses fichiers ou utiliser un autre launcher. L’UUID est calculable et ne prouve pas l’identité ; la casse du pseudo le modifie. Le serveur doit réserver les identités et traiter leurs variantes de manière cohérente.
 

@@ -1,0 +1,10 @@
+{
+    "name": "heraliz/heraliz",
+    "type": "azuriom-plugin",
+    "description": "Comptes HeraliZ depuis le launcher (création de compte, double authentification)",
+    "autoload": {
+        "psr-4": {
+            "Azuriom\\Plugin\\Heraliz\\": "src/"
+        }
+    }
+}

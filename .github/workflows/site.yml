@@ -2,9 +2,9 @@
 # - verifier : regarde la VM et les adresses heraliz.fr sans rien changer ;
 # - installer : installe ou met à jour nginx, PHP, MariaDB, l'installeur d'Azuriom, le HTTPS et les tâches planifiées
 #   (site/vm/installer.sh) ;
-# - theme : met le site aux couleurs HeraliZ (site/theme/heraliz), installe la Boutique et les Votes d'Azuriom et fait
-#   les réglages de départ une seule fois (site/vm/theme.sh, site/vm/reglages.php). Lancé tout seul à chaque envoi sur
-#   main qui touche le thème.
+# - theme : met le site aux couleurs HeraliZ (site/theme/heraliz), dépose l'extension HeraliZ (site/extension/heraliz :
+#   comptes du launcher), installe la Boutique et les Votes d'Azuriom et fait les réglages de départ une seule fois
+#   (site/vm/theme.sh, site/vm/reglages.php). Lancé tout seul à chaque envoi sur main qui touche le thème ou l'extension.
 # Les accès sont dans les secrets SITE_* : jamais dans un fichier.
 name: Site HeraliZ
 
@@ -13,12 +13,13 @@ on:
     branches: [main]
     paths:
       - "site/theme/**"
+      - "site/extension/**"
       - "site/vm/theme.sh"
       - "site/vm/reglages.php"
   workflow_dispatch:
     inputs:
       action:
-        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, boutique, votes)"
+        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes)"
         type: choice
         options: [verifier, installer, theme]
         default: verifier
@@ -128,12 +129,13 @@ jobs:
             fi
           fi
 
-      # thème, réglages et images des premières actualités (celles du launcher), envoyés en une archive
+      # thème, extension, réglages et images des premières actualités (celles du launcher), envoyés en une archive
       - name: Thème du site
         if: env.ACTION == 'theme'
         run: |
           mkdir -p envoi/vm envoi/contenu/actus
           cp -r site/theme envoi/theme
+          cp -r site/extension envoi/extension
           cp site/vm/reglages.php envoi/vm/
           cp launcher/app/assets/images/nouveautes/*.jpg envoi/contenu/actus/
           tar -czf theme.tgz -C envoi .
@@ -177,6 +179,7 @@ jobs:
           {
             echo "### Site HeraliZ mis à jour"
             echo "- thème HeraliZ actif sur **https://heraliz.fr**, avec la Boutique et les Votes d'Azuriom"
+            echo "- comptes du launcher (extension HeraliZ) : connexion avec le compte du site, création de compte et double authentification depuis le launcher"
             echo "- réglages de départ (menu, Règlement, grades, premières actualités) faits une seule fois : ensuite l'administration du site fait foi"
             echo "- reste à faire dans l'administration : moyens de paiement (Boutique → Paiements), articles et prix, sites de vote"
           } >> "$GITHUB_STEP_SUMMARY"
