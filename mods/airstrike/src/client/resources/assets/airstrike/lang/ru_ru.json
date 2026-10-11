@@ -146,5 +146,6 @@
   "strike.airstrike.gun_run.short": "Штурмовка",
   "strike.airstrike.smoke.short": "Дым",
   "strike.airstrike.gas.short": "Газ",
-  "strike.airstrike.supply.short": "Снабжение"
+  "strike.airstrike.supply.short": "Снабжение",
+  "airstrike.hud.metres": "%s м"
 }

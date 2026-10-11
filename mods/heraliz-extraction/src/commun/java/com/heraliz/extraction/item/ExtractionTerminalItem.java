@@ -36,15 +36,15 @@ public class ExtractionTerminalItem extends Item {
     /** Durée max d'utilisation : en pratique la saisie s'arrête d'elle-même dès que le lancement réussit. */
     private static final int MAX_USE = 72000;
 
-    /** Raison d'un échec de lancement, affichée sur l'écran du PC. */
+    /** Raison d'un échec de lancement, affichée sur l'écran du PC ({@code key} : clé de traduction, lue chez le joueur). */
     public enum LaunchError {
-        ROOF("toit détecté"),
-        AIR("pas au sol");
+        ROOF("heraliz_extraction.terminal.erreur.toit"),
+        AIR("heraliz_extraction.terminal.erreur.sol");
 
-        public final String label;
+        public final String key;
 
-        LaunchError(String label) {
-            this.label = label;
+        LaunchError(String key) {
+            this.key = key;
         }
     }
 
@@ -91,9 +91,13 @@ public class ExtractionTerminalItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("PC bricolé relié à une caisse à fumigène.").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Maintiens clic droit à ciel ouvert pour lancer l'extraction.").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("La zone reste ouverte 5 min pour tous les joueurs.").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("⚠ La fumée est visible de très loin...").withStyle(ChatFormatting.RED));
+        tooltip.add(Component.translatableWithFallback("heraliz_extraction.terminal.infobulle.1",
+                "PC bricolé relié à une caisse à fumigène.").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatableWithFallback("heraliz_extraction.terminal.infobulle.2",
+                "Maintiens clic droit à ciel ouvert pour lancer l'extraction.").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatableWithFallback("heraliz_extraction.terminal.infobulle.3",
+                "La zone reste ouverte 5 min pour tous les joueurs.").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatableWithFallback("heraliz_extraction.terminal.infobulle.4",
+                "⚠ La fumée est visible de très loin...").withStyle(ChatFormatting.RED));
     }
 }

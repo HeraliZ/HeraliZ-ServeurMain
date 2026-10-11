@@ -65,11 +65,11 @@ public final class DesignatorHud {
         // -- à gauche : mesures
         int pw = 112;
         int lx = Math.max(8, cx - Math.round(h * 0.675f)), ly = cy + Math.round(h * 0.0926f);
-        String dist = DesignatorClient.aimDistance < 0 ? "----" : String.format(Locale.ROOT, "%.0f m", DesignatorClient.aimDistance);
+        String dist = DesignatorClient.aimDistance < 0 ? "----" : metres(String.format(Locale.ROOT, "%.0f", DesignatorClient.aimDistance));
         String elev = "----", grille = "----";
         if (DesignatorClient.aimPoint != null) {
             double dy = DesignatorClient.aimPoint.y - p.getEyeY();
-            elev = String.format(Locale.ROOT, "%+.0f m", dy);
+            elev = metres(String.format(Locale.ROOT, "%+.0f", dy));
             grille = nombre((int) Math.floor(DesignatorClient.aimPoint.x)) + " · " + nombre((int) Math.floor(DesignatorClient.aimPoint.z));
         }
         String[][] lignes = {
@@ -201,7 +201,7 @@ public final class DesignatorHud {
         g.fill(cx - 1, cy - 1, cx + 1, cy + 1, 0xFF000000 | ROUGE);
         // distance à côté du réticule
         if (DesignatorClient.aimDistance >= 0) {
-            String d = String.format(Locale.ROOT, "%.0f m", DesignatorClient.aimDistance);
+            String d = metres(String.format(Locale.ROOT, "%.0f", DesignatorClient.aimDistance));
             gauche(g, font, lit(d, MINI_GRAS), cx + 11, cy + 9, 1.2f, argb(DesignatorClient.aimInRange ? 0xFFFFFF : AMBRE, 255));
         }
     }
@@ -386,6 +386,11 @@ public final class DesignatorHud {
             b.append(s.charAt(i));
         }
         return (v < 0 ? "-" : "") + b;
+    }
+
+    /** Distance déjà formatée suivie de l'unité de la langue du joueur (« 120 m », « 120 м »). */
+    private static String metres(String valeur) {
+        return Component.translatable("airstrike.hud.metres", valeur).getString();
     }
 
     /** « 4 », « 2,5 » (virgule en français). */

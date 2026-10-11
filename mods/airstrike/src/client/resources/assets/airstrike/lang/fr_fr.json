@@ -146,5 +146,6 @@
  "strike.airstrike.gun_run.short": "Mitraillage",
  "strike.airstrike.smoke.short": "Fumée",
  "strike.airstrike.gas.short": "Gaz",
- "strike.airstrike.supply.short": "Ravitaillement"
+ "strike.airstrike.supply.short": "Ravitaillement",
+  "airstrike.hud.metres": "%s m"
 }

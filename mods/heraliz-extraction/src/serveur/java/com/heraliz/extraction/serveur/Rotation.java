@@ -44,8 +44,9 @@ public final class Rotation {
     /** Joueurs prévenus de la fermeture d'une zone : à moins de tant de blocs. */
     private static final double NEARBY = 200.0D;
     private static final RandomSource RANDOM = RandomSource.create();
-    private static final String[] DIRECTIONS = {"au nord", "au nord-est", "à l'est", "au sud-est", "au sud", "au sud-ouest",
-            "à l'ouest", "au nord-ouest"};
+    /** Directions (clé {@code heraliz_extraction.direction.<id>}, texte français de secours). */
+    private static final String[][] DIRECTIONS = {{"n", "au nord"}, {"ne", "au nord-est"}, {"e", "à l'est"},
+            {"se", "au sud-est"}, {"s", "au sud"}, {"so", "au sud-ouest"}, {"o", "à l'ouest"}, {"no", "au nord-ouest"}};
 
     private static int ticks;
 
@@ -86,11 +87,11 @@ public final class Rotation {
                     data.open(zone.name(), now + randomDuration());
                 } else {
                     data.close(zone.name(), now);
-                    tellNearby(server, zone, Component.literal(" est fermée.").withStyle(ChatFormatting.GRAY));
+                    tellNearby(server, zone, "heraliz_extraction.zone.fermee", "%s est fermée.", ChatFormatting.GRAY);
                 }
                 changed = true;
             } else if (warn > 0 && left <= warn && left > warn - 20) {
-                tellNearby(server, zone, Component.literal(" ferme dans " + formatMinutes(left) + ".").withStyle(ChatFormatting.RED));
+                tellNearby(server, zone, "heraliz_extraction.zone.ferme_dans", "%s ferme dans %s.", ChatFormatting.RED, formatMinutes(left));
             }
         }
 
@@ -155,7 +156,7 @@ public final class Rotation {
     static void close(MinecraftServer server, ExtractionZones.Zone zone) {
         ExtractionZones data = ExtractionZones.get(server);
         data.close(zone.name(), now(server));
-        tellNearby(server, zone, Component.literal(" est fermée.").withStyle(ChatFormatting.GRAY));
+        tellNearby(server, zone, "heraliz_extraction.zone.fermee", "%s est fermée.", ChatFormatting.GRAY);
         sync(server);
     }
 
@@ -225,7 +226,8 @@ public final class Rotation {
     // ------------------------------------------------------------------ messages
 
     private static MutableComponent prefix() {
-        return Component.literal("[Extraction] ").withStyle(ChatFormatting.GOLD);
+        return Component.translatableWithFallback("heraliz_extraction.chat.prefixe", "[Extraction]").append(" ")
+                .withStyle(ChatFormatting.GOLD);
     }
 
     /** « [Extraction] Aérodrome nord ouverte pendant 45 min · 850 m au nord-est » à chaque joueur de la dimension. */
@@ -238,51 +240,69 @@ public final class Rotation {
                 continue;
             }
             MutableComponent msg = prefix()
-                    .append(Component.literal(zone.displayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
-                    .append(Component.literal(" ouverte pendant ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(formatMinutes(durationTicks)).withStyle(ChatFormatting.WHITE))
-                    .append(Component.literal(" · " + where(player, zone)).withStyle(ChatFormatting.YELLOW));
+                    .append(Component.translatableWithFallback("heraliz_extraction.zone.ouverte", "%s ouverte pendant %s · %s",
+                                    Component.literal(zone.displayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD),
+                                    formatMinutes(durationTicks).withStyle(ChatFormatting.WHITE),
+                                    where(player, zone).withStyle(ChatFormatting.YELLOW))
+                            .withStyle(ChatFormatting.GRAY));
             player.sendSystemMessage(msg.withStyle(style -> style
                     .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/extractions"))
                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            Component.literal("Voir les extractions ouvertes (/extractions)")))));
+                            Component.translatableWithFallback("heraliz_extraction.zone.voir",
+                                    "Voir les extractions ouvertes (/extractions)")))));
             player.playNotifySound(SoundEvents.UI_TOAST_IN, SoundSource.MASTER, 1.0F, 1.0F);
         }
     }
 
-    /** Message aux joueurs proches de la zone (fermeture, rappel). */
-    private static void tellNearby(MinecraftServer server, ExtractionZones.Zone zone, Component end) {
+    /**
+     * Message aux joueurs proches de la zone (fermeture, rappel) : clé de traduction dont le premier paramètre est le nom
+     * de la zone, puis {@code args}.
+     */
+    private static void tellNearby(MinecraftServer server, ExtractionZones.Zone zone, String key, String fallback,
+                                   ChatFormatting color, Object... args) {
+        Object[] all = new Object[args.length + 1];
+        all[0] = Component.literal(zone.displayName()).withStyle(ChatFormatting.WHITE);
+        System.arraycopy(args, 0, all, 1, args.length);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if (player.level().dimension().location().equals(zone.dimension())
                     && player.position().distanceToSqr(zone.pos()) < NEARBY * NEARBY) {
                 player.sendSystemMessage(prefix()
-                        .append(Component.literal(zone.displayName()).withStyle(ChatFormatting.WHITE))
-                        .append(end));
+                        .append(Component.translatableWithFallback(key, fallback, all).withStyle(color)));
             }
         }
     }
 
-    /** « 850 m au nord-est », « 1,2 km à l'ouest », « ici ». */
-    static String where(ServerPlayer player, ExtractionZones.Zone zone) {
+    /** « 850 m au nord-est », « 1,2 km à l'ouest », « ici » (traduits chez le joueur). */
+    static MutableComponent where(ServerPlayer player, ExtractionZones.Zone zone) {
         double dx = zone.pos().x - player.getX();
         double dz = zone.pos().z - player.getZ();
         double d = Math.sqrt(dx * dx + dz * dz);
         if (d < 20.0D) {
-            return "ici";
+            return Component.translatableWithFallback("heraliz_extraction.position.ici", "ici");
         }
         int dir = Math.floorMod((int) Math.round(Math.atan2(dx, -dz) / (Math.PI / 4.0D)), 8);
-        String dist = d < 1000.0D ? Math.round(d / 10.0D) * 10 + " m"
-                : String.format(Locale.ROOT, "%.1f km", d / 1000.0D).replace('.', ',');
-        return dist + " " + DIRECTIONS[dir];
+        Component direction = Component.translatableWithFallback("heraliz_extraction.direction." + DIRECTIONS[dir][0],
+                DIRECTIONS[dir][1]);
+        if (d < 1000.0D) {
+            return Component.translatableWithFallback("heraliz_extraction.position.metres", "%s m %s",
+                    String.valueOf(Math.round(d / 10.0D) * 10), direction);
+        }
+        // « 1,2 km » : unités et dixièmes à part, chaque langue met son séparateur décimal
+        long tenths = Math.round(d / 100.0D);
+        return Component.translatableWithFallback("heraliz_extraction.position.km", "%s,%s km %s",
+                String.valueOf(tenths / 10L), String.valueOf(tenths % 10L), direction);
     }
 
-    /** « 45 min », « 1 h 05 », « 40 s ». */
-    static String formatMinutes(long ticks) {
+    /** « 45 min », « 1 h 05 », « 40 s » (traduits chez le joueur). */
+    static MutableComponent formatMinutes(long ticks) {
         long seconds = Math.max(0L, ticks / 20L);
         if (seconds < 60L) {
-            return seconds + " s";
+            return Component.translatableWithFallback("heraliz_extraction.duree.secondes", "%s s", String.valueOf(seconds));
         }
         long minutes = (seconds + 59L) / 60L;
-        return minutes < 60L ? minutes + " min" : (minutes / 60L) + " h " + String.format(Locale.ROOT, "%02d", minutes % 60L);
+        return minutes < 60L
+                ? Component.translatableWithFallback("heraliz_extraction.duree.minutes", "%s min", String.valueOf(minutes))
+                : Component.translatableWithFallback("heraliz_extraction.duree.heures", "%s h %s", String.valueOf(minutes / 60L),
+                String.format(Locale.ROOT, "%02d", minutes % 60L));
     }
 }

@@ -4,6 +4,8 @@ import com.heraliz.extraction.ExtractionConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -42,6 +44,11 @@ public class ExtractionZones extends SavedData {
         Mode(String id, String label) {
             this.id = id;
             this.label = label;
+        }
+
+        /** Libellé traduit chez le joueur (clé {@code heraliz_extraction.mode.<id>}, {@link #label} en secours). */
+        public MutableComponent text() {
+            return Component.translatableWithFallback("heraliz_extraction.mode." + this.id, this.label);
         }
 
         public static Mode byId(String id) {
