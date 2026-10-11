@@ -49,6 +49,9 @@ quand un choix leur revient.
 - Plugins (triés le 08/10, seulement l'utile ; tout le reste a été retiré) : AuthMe, spark, LuckPerms (grades du staff,
   base locale), KauriVPN (anti-VPN), LiteBans (mutes, avertissements, historique ; les bans pour triche passent par
   Spartan), WorldEdit + WorldGuard + WorldGuardExtraFlags (outils du staff, protection du spawn), ConsoleSpamFix.
+- Sanctions (alignées le 11/10) : LiteBans pour `/kick`, `/ban` (compte seul), `/tempban`, `/banip`, `/mute`,
+  `/tempmute`, `/unmute`, `/unban` (lève aussi les bans temporaires et d'IP) et `/untempban` (transmis à `/unban`) ;
+  Spartan pour `/banpc` (compte + IP + PC, = `/sban`) et `/unbanpc` (= `/sunban`).
   Pas de plugin anti-duplication ni « ClearLag » (ils voient mal les mods / suppriment leurs entités).
 - Armes : **TaCZ** (mod de base, jamais à notre nom) + nos gunpacks dans `serveur/tacz/`.
 - Monnaie du serveur : les **hérals** (« 1 héral », « 1 500 hérals »). Identifiants internes inchangés

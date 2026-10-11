@@ -182,6 +182,8 @@ ne jamais la publier (ni sur Discord, ni dans un dépôt Git).
 | `/sban <joueur> <durée> [raison]` | 3 | Bannit le **compte + ses IP + ses PC**. Durée : `30m`, `12h`, `7d`, `2w` ou `def`. Marche aussi si le joueur est hors ligne (il doit s'être connecté au moins une fois). |
 | `/sunban <joueur>` | 3 | Lève **tous** ses bans actifs (compte, IP, PC). Marche hors ligne. |
 | `/unbanplayer <joueur>` | 3 | Alias de `/sunban` (l'ancienne commande, réparée). |
+| `/banpc …`, `/unbanpc <joueur>` | 3 | Mêmes commandes que `/sban` et `/sunban`, avec les noms alignés sur ceux de LiteBans. |
+| `/untempban <joueur> [raison]` | LiteBans | Transmis à `/unban` de LiteBans (qui lève aussi les bans temporaires), avec les droits de celui qui la tape. |
 | `/sbaninfo <joueur>` | 2 | Nombre d'IP/PC connus, **comptes liés** (même IP ou même PC), historique des bans. |
 | `/spartan checks` | 2 | Liste des détections actives. |
 | `/spartan vl <joueur>` | 2 | Niveaux de violation actuels du joueur. |
@@ -510,7 +512,7 @@ com.Spartan
 ├── ban/
 │   ├── BanManager            Bans compte (vanilla) + IP (vanilla) + PC, historique
 │   ├── PlayerRegistry        IP / PC connus par joueur, comptes liés, purge RGPD
-│   ├── BanCommands           /sban /sunban /sbaninfo /unbanplayer
+│   ├── BanCommands           /sban /sunban /sbaninfo /unbanplayer (+ AliasSanctions : /banpc /unbanpc /untempban)
 │   └── Durations             30m, 12h, 7d, 2w, def
 ├── Client/ClientEvents       Côté joueur : handshake + intégrité (agents, threads)
 ├── Client/ClientScanService  Côté joueur : exécute les contrôles demandés, hors du thread du jeu

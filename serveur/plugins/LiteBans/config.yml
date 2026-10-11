@@ -250,7 +250,8 @@ silent: false
 
 # If enabled, punishments will be IP-based by default. (All bans will be IP bans, all mutes will be IP mutes, etc.)
 # Please note that this will affect the permissions required - `/ban` will require `litebans.ipban`, and `/mute` will require `litebans.ipmute` instead.
-punish_ip: true
+# HeraliZ (11/10) : /ban ne bannit que le compte ; /banip pour l'IP, /banpc (Spartan) pour compte + IP + PC.
+punish_ip: false
 
 # Instead of "CONSOLE", this name will be used to represent the console.
 console_sender_name: Console
