@@ -31,14 +31,19 @@ function validateDistribution(raw, config) {
     }
     safeRelativePath(server.id)
     if (server.id.includes('/') || server.id.includes('\\')) throw new Error('Identifiant de serveur invalide.')
-    if (!Array.isArray(server.modules) || !server.modules.some(m => m.type === 'ForgeHosted' && /^net\.minecraftforge:forge:1\.20\.1-47\./.test(m.id))) {
+    // Nebula names the Forge module after its first library (lowcodelanguage for 1.18 to 1.20.2): check the Forge group,
+    // the 1.20.1-47 version and the version manifest the launcher starts Forge from.
+    const loaders = Array.isArray(server.modules) ? server.modules.filter(m => m.type === 'ForgeHosted') : []
+    const forge = loaders.length === 1 ? loaders[0] : null
+    if (!forge || !/^net\.minecraftforge:[a-z][a-z0-9_-]*:1\.20\.1-47\.[0-9.]+$/.test(forge.id) || !Array.isArray(forge.subModules)
+        || !forge.subModules.some(m => m.type === 'VersionManifest' && /^1\.20\.1-47\.[0-9.]+$/.test(m.id))) {
         throw new Error('Le manifeste Forge 1.20.1 manque dans la distribution.')
     }
     let count = 0
     function validateModules(modules, depth = 0) {
         if (!Array.isArray(modules) || depth > 20) throw new Error('Distribution trop complexe.')
         for (const module of modules) {
-            if (++count > 10000 || !module.artifact) throw new Error('Module invalide.')
+            if (++count > 30000 || !module.artifact) throw new Error('Module invalide.')
             if (typeof module.id !== 'string' || /[/\\\x00-\x20]/.test(module.id) || module.id.includes('..')) throw new Error('Identifiant de module invalide.')
             if (!['ForgeHosted', 'ForgeMod', 'Library', 'File', 'VersionManifest'].includes(module.type)) throw new Error('Type de module non autorisé.')
             httpsUrl(module.artifact.url)

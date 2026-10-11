@@ -5,7 +5,7 @@ name: Essai pack launcher
 on:
   push:
     branches: [claude/amazing-euler-zyl33z]
-    paths: ["outils/pack_launcher.py", ".github/workflows/essai-pack.yml"]
+    paths: ["outils/pack_launcher.py", "launcher/app/assets/js/security.js", ".github/workflows/essai-pack.yml"]
 
 permissions:
   contents: read
