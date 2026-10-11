@@ -18,6 +18,16 @@
       ]
     },
     {
+      "type": "ttf",
+      "size": 11.0,
+      "oversample": 4.0,
+      "shift": [
+        0.0,
+        1.0
+      ],
+      "file": "reanimation:cyrillique_bold.ttf"
+    },
+    {
       "type": "reference",
       "id": "minecraft:default"
     }
