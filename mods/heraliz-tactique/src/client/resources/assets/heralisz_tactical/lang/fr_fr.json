@@ -105,5 +105,8 @@
   "subtitle.heralisz_tactical.entity.grenade.smoke.start": "Ouverture du fumigène",
   "subtitle.heralisz_tactical.entity.grenade.smoke.loop": "Le fumigène se vide",
   "subtitle.heralisz_tactical.entity.grenade.smoke.end": "La fumée se dissipe",
-  "subtitle.heralisz_tactical.player.ring": "*Sifflement d'oreilles*"
+  "subtitle.heralisz_tactical.player.ring": "*Sifflement d'oreilles*",
+  "heralisz_tactical.detonateur.boom": "BOUM !",
+  "heralisz_tactical.detonateur.pas_de_signal": "- PAS DE SIGNAL -",
+  "heralisz_tactical.config.titre": "Réglages de LesRaisins Tactical"
 }

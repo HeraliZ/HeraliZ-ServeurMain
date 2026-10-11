@@ -105,5 +105,8 @@
   "subtitle.heralisz_tactical.entity.grenade.smoke.start": "Дымовая граната открывается",
   "subtitle.heralisz_tactical.entity.grenade.smoke.loop": "Дымовая граната выпускает дым",
   "subtitle.heralisz_tactical.entity.grenade.smoke.end": "Дым рассеивается",
-  "subtitle.heralisz_tactical.player.ring": "*Звон в ушах*"
+  "subtitle.heralisz_tactical.player.ring": "*Звон в ушах*",
+  "heralisz_tactical.detonateur.boom": "БУМ!",
+  "heralisz_tactical.detonateur.pas_de_signal": "- НЕТ СИГНАЛА -",
+  "heralisz_tactical.config.titre": "Настройки LesRaisins Tactical"
 }

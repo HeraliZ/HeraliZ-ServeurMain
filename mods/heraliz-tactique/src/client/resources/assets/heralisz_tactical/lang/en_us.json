@@ -105,5 +105,8 @@
   "subtitle.heralisz_tactical.entity.grenade.smoke.start": "Smoke Grenade Opening",
   "subtitle.heralisz_tactical.entity.grenade.smoke.loop": "Smoke Grenade Release",
   "subtitle.heralisz_tactical.entity.grenade.smoke.end": "Smoke Grenade Dissipation",
-  "subtitle.heralisz_tactical.player.ring": "*Deafened Ringing*"
+  "subtitle.heralisz_tactical.player.ring": "*Deafened Ringing*",
+  "heralisz_tactical.detonateur.boom": "BOOM!",
+  "heralisz_tactical.detonateur.pas_de_signal": "- NO SIGNAL -",
+  "heralisz_tactical.config.titre": "LesRaisins Tactical Settings"
 }

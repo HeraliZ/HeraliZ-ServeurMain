@@ -55,17 +55,20 @@ final class CommandeCamos {
    private static int voir(CommandSourceStack s, ServerPlayer p) {
       CollectionCamos.Joueur j = CollectionCamos.trouver(p.getUUID());
       if (j == null || j.camos.isEmpty()) {
-         s.sendSuccess(() -> Component.literal(p.getGameProfile().getName() + " n'a aucun camo à vie.").withStyle(ChatFormatting.GRAY), false);
+         s.sendSuccess(() -> Component.translatableWithFallback("heralisz_camo.commande.aucun", "%s n'a aucun camo à vie.", p.getGameProfile().getName()).withStyle(ChatFormatting.GRAY), false);
          return 0;
       }
       long now = System.currentTimeMillis();
-      MutableComponent liste = Component.literal(p.getGameProfile().getName() + " : " + j.camos.size() + " camo(s) à vie : ").withStyle(ChatFormatting.GRAY);
+      MutableComponent liste = Component.translatableWithFallback("heralisz_camo.commande.liste", "%s : %s camo(s) à vie : ",
+         p.getGameProfile().getName(), String.valueOf(j.camos.size())).withStyle(ChatFormatting.GRAY);
       boolean premier = true;
       for (Camo c : j.camos) {
          if (!premier) liste.append(Component.literal(", ").withStyle(ChatFormatting.GRAY));
          liste.append(CamosAVie.nom(c));
          long reste = j.recharges.getOrDefault(c, 0L) - now;
-         if (reste > 0) liste.append(Component.literal(" (" + CamosAVie.minutes(reste) + " min)").withStyle(ChatFormatting.RED));
+         if (reste > 0) liste.append(Component.literal(" (")
+            .append(Component.translatableWithFallback("gui.heralisz_camo.atelier.minutes", "%s min", String.valueOf(CamosAVie.minutes(reste))))
+            .append(")").withStyle(ChatFormatting.RED));
          premier = false;
       }
       s.sendSuccess(() -> liste, false);
@@ -84,7 +87,7 @@ final class CommandeCamos {
       } else {
          Camo camo = Camo.byId(id);
          if (camo == null || camo.isPackAPunch()) {
-            c.getSource().sendFailure(Component.literal("Camo inconnu (ou réservé au mode zombies) : " + id));
+            c.getSource().sendFailure(Component.translatableWithFallback("heralisz_camo.commande.inconnu", "Camo inconnu (ou réservé au mode zombies) : %s", id));
             return 0;
          }
          if (j.camos.add(camo)) nouveaux++;
@@ -92,7 +95,8 @@ final class CommandeCamos {
       CollectionCamos.changer();
       CamosAVie.envoyer(p);
       int n = nouveaux;
-      c.getSource().sendSuccess(() -> Component.literal(n + " camo(s) ajouté(s) à la collection de " + p.getGameProfile().getName() + ".")
+      c.getSource().sendSuccess(() -> Component.translatableWithFallback("heralisz_camo.commande.ajoutes", "%s camo(s) ajouté(s) à la collection de %s.",
+            String.valueOf(n), p.getGameProfile().getName())
          .withStyle(ChatFormatting.GREEN), true);
       return n;
    }
@@ -117,14 +121,15 @@ final class CommandeCamos {
          }
       }
       if (n == 0) {
-         c.getSource().sendFailure(Component.literal(p.getGameProfile().getName() + " n'a pas ce camo : " + id));
+         c.getSource().sendFailure(Component.translatableWithFallback("heralisz_camo.commande.absent", "%s n'a pas ce camo : %s", p.getGameProfile().getName(), id));
          return 0;
       }
       CollectionCamos.changer();
       CamosAVie.verifier(p);
       CamosAVie.envoyer(p);
       int retires = n;
-      c.getSource().sendSuccess(() -> Component.literal(retires + " camo(s) retiré(s) de la collection de " + p.getGameProfile().getName() + ".")
+      c.getSource().sendSuccess(() -> Component.translatableWithFallback("heralisz_camo.commande.retires", "%s camo(s) retiré(s) de la collection de %s.",
+            String.valueOf(retires), p.getGameProfile().getName())
          .withStyle(ChatFormatting.YELLOW), true);
       return n;
    }
@@ -135,7 +140,8 @@ final class CommandeCamos {
       if (j != null) j.recharges.clear();
       CollectionCamos.changer();
       CamosAVie.envoyer(p);
-      s.sendSuccess(() -> Component.literal("Délais effacés pour " + p.getGameProfile().getName() + " (" + n + ").").withStyle(ChatFormatting.GREEN), true);
+      s.sendSuccess(() -> Component.translatableWithFallback("heralisz_camo.commande.recharge", "Délais effacés pour %s (%s).",
+         p.getGameProfile().getName(), String.valueOf(n)).withStyle(ChatFormatting.GREEN), true);
       return n;
    }
 }

@@ -378,5 +378,12 @@
   "gui.heralisz_camo.table.par_fabrication": "×%s par fabrication",
   "gui.heralisz_camo.table.stat.degats": "Dégâts",
   "gui.heralisz_camo.table.stat.cadence": "Coups / min",
-  "gui.heralisz_camo.table.stat.chargeur": "Chargeur"
+  "gui.heralisz_camo.table.stat.chargeur": "Chargeur",
+  "heralisz_camo.commande.aucun": "%s n'a aucun camo à vie.",
+  "heralisz_camo.commande.liste": "%s : %s camo(s) à vie : ",
+  "heralisz_camo.commande.inconnu": "Camo inconnu (ou réservé au mode zombies) : %s",
+  "heralisz_camo.commande.ajoutes": "%s camo(s) ajouté(s) à la collection de %s.",
+  "heralisz_camo.commande.absent": "%s n'a pas ce camo : %s",
+  "heralisz_camo.commande.retires": "%s camo(s) retiré(s) de la collection de %s.",
+  "heralisz_camo.commande.recharge": "Délais effacés pour %s (%s)."
 }

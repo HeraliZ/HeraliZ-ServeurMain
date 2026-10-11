@@ -41,7 +41,7 @@ public class BasicClothConfig {
                   Component.translatable("config.heralisz_tactical.melee.durability"), (Boolean)CommonConfig.MELEE_ITEM_CONSUME_DURABILITY.get()
                )
                .setDefaultValue(true)
-               .setTooltip(new Component[]{Component.translatable("config.heralisz_tactical.effect.durability.desc")})
+               .setTooltip(new Component[]{Component.translatable("config.heralisz_tactical.melee.durability.desc")})
                .setSaveConsumer(CommonConfig.MELEE_ITEM_CONSUME_DURABILITY::set)
                .build()
          )
@@ -52,7 +52,7 @@ public class BasicClothConfig {
                .setDefaultValue(32)
                .setMin(1)
                .setMax(512)
-               .setTooltip(new Component[]{Component.translatable("config.heralisz_tactical.effect.max_target.desc")})
+               .setTooltip(new Component[]{Component.translatable("config.heralisz_tactical.melee.max_target.desc")})
                .setSaveConsumer(CommonConfig.MELEE_IGNORE_INVULNERABLE_TICK_THRESHOLD::set)
                .build()
          );

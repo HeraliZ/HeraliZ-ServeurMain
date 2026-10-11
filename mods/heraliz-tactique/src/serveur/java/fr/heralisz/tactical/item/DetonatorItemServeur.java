@@ -41,13 +41,13 @@ public class DetonatorItemServeur extends DetonatorItem {
       if (this.detonate(detonatorStack, pPlayer)) {
          pPlayer.setItemInHand(pUsedHand, ItemStack.EMPTY);
          if (pPlayer instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.literal("BOOM!").withStyle(ChatFormatting.RED), true);
+            serverPlayer.sendSystemMessage(Component.translatableWithFallback("heralisz_tactical.detonateur.boom", "BOUM !").withStyle(ChatFormatting.RED), true);
          }
 
          return InteractionResultHolder.sidedSuccess(detonatorStack, pLevel.isClientSide());
       } else {
          if (pPlayer instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.literal("- NO SIGNAL -").withStyle(ChatFormatting.RED), true);
+            serverPlayer.sendSystemMessage(Component.translatableWithFallback("heralisz_tactical.detonateur.pas_de_signal", "- PAS DE SIGNAL -").withStyle(ChatFormatting.RED), true);
          }
 
          return InteractionResultHolder.pass(detonatorStack);

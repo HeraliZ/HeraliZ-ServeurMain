@@ -378,5 +378,12 @@
   "gui.heralisz_camo.table.par_fabrication": "×%s за изготовление",
   "gui.heralisz_camo.table.stat.degats": "Урон",
   "gui.heralisz_camo.table.stat.cadence": "Выстр. / мин",
-  "gui.heralisz_camo.table.stat.chargeur": "Магазин"
+  "gui.heralisz_camo.table.stat.chargeur": "Магазин",
+  "heralisz_camo.commande.aucun": "У %s нет постоянных камуфляжей.",
+  "heralisz_camo.commande.liste": "%s: постоянных камуфляжей — %s: ",
+  "heralisz_camo.commande.inconnu": "Неизвестный камуфляж (или только для режима зомби): %s",
+  "heralisz_camo.commande.ajoutes": "В коллекцию %2$s добавлено камуфляжей: %1$s.",
+  "heralisz_camo.commande.absent": "У %s нет этого камуфляжа: %s",
+  "heralisz_camo.commande.retires": "Из коллекции %2$s убрано камуфляжей: %1$s.",
+  "heralisz_camo.commande.recharge": "Задержки сброшены для %s (%s)."
 }
