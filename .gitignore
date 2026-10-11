@@ -38,3 +38,10 @@ serveur/plugins/AuthMe/*.sqlite
 *.iml
 .DS_Store
 Thumbs.db
+
+# réglages et clés d'un site ou d'un outil copiés pour essayer (mot de passe de base, clé des jetons…) : jamais dans Git
+.env
+.env.*
+*.cle
+*.pem
+*.key
