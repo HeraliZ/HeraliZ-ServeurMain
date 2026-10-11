@@ -194,6 +194,8 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
             st.setHoverName(Component.literal(e.nom()).setStyle(ra != null ? s.withColor(TextColor.fromRgb(ra.couleur)) : s));
         }
         if (ra != null) st.getOrCreateTag().putString(Rarete.CLE, ra.id);
+        // nourriture ArkaniaZ : état (bon, pourri, périmé) fixé ici, sinon il change à chaque renvoi au joueur
+        EtatNourriture.fixer(st, r);
         return st;
     }
 }

@@ -21,9 +21,7 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
 import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.ShareToLanScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -105,19 +103,12 @@ public class EcranPause extends Screen {
         Minecraft mc = minecraft;
         int accent = Ui.accent();
         String discord = InterfaceConfig.discord(), boutique = lien(InterfaceConfig.BOUTIQUE_LIEN);
-        boolean lanPossible = mc.hasSingleplayerServer() && mc.getSingleplayerServer() != null && !mc.getSingleplayerServer().isPublished();
 
-        // ---- petits boutons : Statistiques, et Joueurs (Ouvrir au LAN en solo)
+        // ---- petits boutons : Joueurs (serveur multi : ni Succès, ni Statistiques, ni Ouvrir au LAN)
         record Petit(int icone, Component libelle, Runnable action) {
         }
         List<Petit> petits = new ArrayList<>();
-        petits.add(new Petit(Icons.STATS, Component.translatable("gui.heraliz_interface.pause.statistiques"),
-                () -> mc.setScreen(new StatsScreen(this, mc.player.getStats()))));
-        if (lanPossible) {
-            petits.add(new Petit(Icons.LAN, Component.translatable("gui.heraliz_interface.pause.lan"), () -> mc.setScreen(new ShareToLanScreen(this))));
-        } else {
-            petits.add(new Petit(Icons.JOUEURS, Component.translatable("gui.heraliz_interface.pause.joueurs"), () -> mc.setScreen(new SocialInteractionsScreen())));
-        }
+        petits.add(new Petit(Icons.JOUEURS, Component.translatable("gui.heraliz_interface.pause.joueurs"), () -> mc.setScreen(new SocialInteractionsScreen())));
         int rangees = (petits.size() + 1) / 2;
         int nbLignes = 4 + (discord != null ? 1 : 0); // reprendre, informations, (discord), boutique, options
 
