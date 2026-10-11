@@ -94,6 +94,7 @@ chmod -R u+rwX,g+rX,o+rX "$DOSSIER"
 RACINE="$DOSSIER"
 [ -f "$DOSSIER/public/index.php" ] && RACINE="$DOSSIER/public"
 echo "Racine du site : $RACINE"
+install -d -m 755 /var/www/launcher   # pack du launcher (rempli par la mise en ligne du serveur)
 
 echo "== nginx"
 ECOUTE6=""
@@ -148,6 +149,16 @@ server {
 
     location ~ /\.(?!well-known).* {
         deny all;
+    }
+
+    # Pack du launcher (distribution Helios et fichiers du jeu), déposé par la mise en ligne du serveur
+    location = /launcher/distribution.json {
+        alias /var/www/launcher/distribution.json;
+        add_header Cache-Control "no-cache";
+    }
+    location ^~ /launcher/ {
+        alias /var/www/launcher/;
+        autoindex off;
     }
 }
 NGINX
