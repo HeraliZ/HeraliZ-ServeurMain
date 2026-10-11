@@ -50,6 +50,9 @@ class ProcessBuilder {
      */
     build(){
         fs.ensureDirSync(this.gameDir)
+        // premier lancement : le jeu en français (les drapeaux de l'écran titre HeraliZ changent ensuite la langue)
+        const options = path.join(this.gameDir, 'options.txt')
+        if (!fs.existsSync(options)) fs.writeFileSync(options, 'lang:fr_fr\n')
         const tempNativePath = path.join(os.tmpdir(), ConfigManager.getTempNativeFolder(), crypto.pseudoRandomBytes(16).toString('hex'))
         process.throwDeprecation = true
         this.setupLiteLoader()
@@ -336,18 +339,9 @@ class ProcessBuilder {
 
     }
 
-    _processAutoConnectArg(args){
-        if(ConfigManager.getAutoConnect() && this.server.rawServer.autoconnect){
-            if(mcVersionAtLeast('1.20', this.server.rawServer.minecraftVersion)){
-                args.push('--quickPlayMultiplayer')
-                args.push(`${this.server.hostname}:${this.server.port}`)
-            } else {
-                args.push('--server')
-                args.push(this.server.hostname)
-                args.push('--port')
-                args.push(this.server.port)
-            }
-        }
+    // Pas de connexion directe : le jeu s'ouvre sur l'écran titre HeraliZ (mod heraliz_interface), dont le bouton
+    // « Jouer » rejoint le serveur. Ni solo, ni liste de serveurs.
+    _processAutoConnectArg(_args){
     }
 
     /**

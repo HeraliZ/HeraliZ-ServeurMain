@@ -320,7 +320,7 @@ function renderProgress(progress) {
         span.classList.toggle('ok', actuelle >= 0 && i < actuelle)
         span.classList.toggle('cours', i === actuelle)
     }
-    for (const id of ['email', 'password', 'code', 'new-pseudo', 'new-email', 'new-password', 'new-password2', 'accept-rules', 'save-profile', 'site-account', 'securite', 'logout', 'confirm-logout', 'memory', 'fullscreen', 'auto-connect']) $(id).disabled = progress.busy
+    for (const id of ['email', 'password', 'code', 'new-pseudo', 'new-email', 'new-password', 'new-password2', 'accept-rules', 'save-profile', 'site-account', 'securite', 'logout', 'confirm-logout', 'memory', 'fullscreen']) $(id).disabled = progress.busy
     $('settings-form').querySelector('[type=submit]').disabled = progress.busy
     updatePlay()
 }
@@ -336,7 +336,6 @@ function applyState(next) {
     $('memory').value = state.settings.ramGB
     $('memory-desc').textContent = `${state.settings.totalRAM} Go détectés sur ton PC · une partie reste à Windows.`
     $('fullscreen').checked = state.settings.fullscreen
-    $('auto-connect').checked = state.settings.autoConnect
     $('identity-back').hidden = !profileReady()
     afficherMemoire()
     renderProgress(state.progress)
@@ -545,7 +544,7 @@ async function creerCompte() {
 $('settings-form').addEventListener('submit', async event => {
     event.preventDefault()
     try {
-        const next = await call(api.saveSettings({ ramGB: Number($('memory').value), fullscreen: $('fullscreen').checked, autoConnect: $('auto-connect').checked }))
+        const next = await call(api.saveSettings({ ramGB: Number($('memory').value), fullscreen: $('fullscreen').checked }))
         state.settings = next.settings
         feedback('settings-feedback', 'Paramètres enregistrés.')
     } catch (error) { feedback('settings-feedback', error.message, true) }
