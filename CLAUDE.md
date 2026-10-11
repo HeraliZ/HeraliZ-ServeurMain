@@ -59,7 +59,8 @@ quand un choix leur revient.
   amélioration dans le même style), et les écrans à thème (machines du casino). Toutes les autres interfaces des mods
   passent au style des clans.
 - Menu Échap (heraliz_interface, maquette validée) : à gauche le logo et le menu (Reprendre, Informations, Discord,
-  Boutique, Options, Statistiques, Joueurs, Se déconnecter ; ni Mods ni Succès), à droite la carte du joueur (hérals,
+  Boutique, Options, Joueurs, Se déconnecter ; ni Mods, ni Succès, ni Statistiques, ni Ouvrir au LAN : serveur multi
+  seulement, boutons retirés aussi du menu vanilla de secours), à droite la carte du joueur (hérals,
   joueurs en ligne, ping, extractions ouvertes, zones du clan).
 - Discord du serveur : https://discord.gg/heraliz (menu Échap et launcher). Noms de domaine heraliz.fr et heraliz.com :
   le site du serveur y sera mis plus tard (la boutique pourra y pointer).

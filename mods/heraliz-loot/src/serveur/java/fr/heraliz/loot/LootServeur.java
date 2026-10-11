@@ -60,5 +60,11 @@ public final class LootServeur {
                 RotationLoot.tick(sl);
             }
         });
+        // toutes les secondes, par joueur : nourriture ArkaniaZ venue d'ailleurs que du loot (état fixé, EtatNourriture)
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.PlayerTickEvent e) -> {
+            if (e.phase == TickEvent.Phase.END && e.player instanceof ServerPlayer sp && sp.tickCount % 20 == 0) {
+                EtatNourriture.joueur(sp);
+            }
+        });
     }
 }

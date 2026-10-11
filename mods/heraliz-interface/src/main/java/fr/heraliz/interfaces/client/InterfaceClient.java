@@ -4,13 +4,17 @@ import fr.heraliz.interfaces.HeralizInterface;
 import fr.heraliz.interfaces.InterfaceConfig;
 import fr.heraliz.interfaces.kit.Flou;
 import fr.heraliz.interfaces.kit.Ui;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -46,6 +50,29 @@ public final class InterfaceClient {
     /** Vrai menu de pause (avec boutons) : titre « menu.game » ; F3+Echap ouvre la pause sans menu (« menu.paused »). */
     public static boolean menuComplet(Screen s) {
         return s.getTitle().getContents() instanceof TranslatableContents tc && "menu.game".equals(tc.getKey());
+    }
+
+    /** Boutons du menu Echap vanilla retires (serveur multi) : Succes, Statistiques, Ouvrir au LAN. */
+    private static final Set<String> RETIRES = Set.of("gui.advancements", "gui.stats", "menu.shareToLan");
+
+    /** Menu Echap vanilla (secours, voir {@link #secours}) : sans les boutons de {@link #RETIRES}. */
+    @SubscribeEvent
+    public static void menuVanilla(ScreenEvent.Init.Post e) {
+        if (!(e.getScreen() instanceof PauseScreen)) return;
+        for (GuiEventListener l : e.getListenersList()) {
+            if (l instanceof AbstractWidget w && w.getMessage().getContents() instanceof TranslatableContents tc
+                    && RETIRES.contains(tc.getKey())) {
+                w.visible = false;
+                w.active = false;
+            }
+        }
+    }
+
+    /** Contour du bloc vise (blocs, decors, props) : cache hors du mode creatif, pour l'immersion. */
+    @SubscribeEvent
+    public static void contourBloc(RenderHighlightEvent.Block e) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && !mc.player.isCreative()) e.setCanceled(true);
     }
 
     /** Notre ecran a plante : journal, menu vanilla a la place et pour le reste de la session. */
