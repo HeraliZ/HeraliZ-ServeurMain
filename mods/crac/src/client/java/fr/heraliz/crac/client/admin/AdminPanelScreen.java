@@ -16,6 +16,7 @@ import fr.heraliz.crac.network.NetworkHandler;
 import fr.heraliz.crac.network.S2CAdminData;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -1020,7 +1021,7 @@ public class AdminPanelScreen extends ScaledScreen {
         }
         if (tooLong > 0 && this.minecraft.player != null) {
             this.minecraft.player.displayClientMessage(
-                Component.translatable("crac.admin.too_long", String.valueOf(tooLong)), false
+                Component.translatable("crac.admin.too_long", String.valueOf(tooLong)).withStyle(ChatFormatting.RED), false
             );
         }
     }

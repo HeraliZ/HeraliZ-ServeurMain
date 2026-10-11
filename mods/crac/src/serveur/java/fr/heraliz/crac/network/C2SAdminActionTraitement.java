@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import fr.heraliz.crac.admin.AdminManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -43,7 +44,7 @@ public final class C2SAdminActionTraitement {
                         int removed = AdminManager.wipeClaim(player, msg.a());
                         AdminManager.log(player, "wiped the claim of " + group + " (" + removed + " pieces/blocks removed)");
                         player.displayClientMessage(Component.translatableWithFallback("crac.admin.wiped",
-                            "§6[Admin] %s blocs ou structures effacés.", String.valueOf(removed)), false);
+                            "§6[Admin] %s blocs ou structures effacés.", String.valueOf(removed)).withStyle(ChatFormatting.GOLD), false);
                         break;
                     case C2SAdminAction.TP_TO_PLAYER:
                         AdminManager.log(player, "teleported to " + AdminManager.playerLabel(server, msg.b()));

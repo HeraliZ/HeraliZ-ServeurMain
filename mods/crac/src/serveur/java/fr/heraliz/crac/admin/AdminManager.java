@@ -28,6 +28,7 @@ import fr.heraliz.crac.placable.PlacableHpManager;
 import fr.heraliz.crac.placable.PlacablePositionData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -92,9 +93,10 @@ public final class AdminManager {
             case OK -> null;
             case DISABLED -> Component.translatableWithFallback("crac.admin.disabled", "§c[Admin] La console admin est désactivée sur ce serveur.");
             case NO_PERMISSION -> Component.translatableWithFallback("crac.admin.no_permission",
-                "§c[Admin] Il faut le niveau d'opérateur %s pour utiliser la console admin.", String.valueOf(AdminConfig.permissionLevel.get()));
+                "§c[Admin] Il faut le niveau d'opérateur %s pour utiliser la console admin.", String.valueOf(AdminConfig.permissionLevel.get()))
+                .withStyle(ChatFormatting.RED);
             case LOCKED -> Component.translatableWithFallback("crac.admin.locked", "§c[Admin] Trop de mots de passe faux. Réessaie dans %s s.",
-                String.valueOf((AUTH.lockoutLeft(p.getUUID(), now) + 999L) / 1000L));
+                String.valueOf((AUTH.lockoutLeft(p.getUUID(), now) + 999L) / 1000L)).withStyle(ChatFormatting.RED);
             case WRONG_PASSWORD -> Component.translatableWithFallback("crac.admin.wrong_password", "§c[Admin] Mot de passe faux.");
         };
         if (reason == null) {

@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import fr.heraliz.crac.admin.AdminConfigAccess;
 import fr.heraliz.crac.admin.AdminManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
@@ -52,9 +53,12 @@ public final class C2SAdminConfigTraitement {
                             failed == 0
                                 ? Component.translatableWithFallback("crac.admin.config_applied",
                                     "§6[Admin] %s changement(s) de config appliqué(s).", String.valueOf(applied))
+                                    .withStyle(ChatFormatting.GOLD)
                                 : Component.translatableWithFallback("crac.admin.config_refused",
-                                    "§6[Admin] %s appliqué(s), §c%s refusé(s) (clé inconnue, mauvais type ou hors limites).",
-                                    String.valueOf(applied), String.valueOf(failed)),
+                                    "§6[Admin] %s appliqué(s), %s", String.valueOf(applied),
+                                    Component.translatableWithFallback("crac.admin.config_refused_count",
+                                        "§c%s refusé(s) (clé inconnue, mauvais type ou hors limites).", String.valueOf(failed))
+                                        .withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.GOLD),
                             false
                         );
                         AdminManager.sendSnapshot(player);
