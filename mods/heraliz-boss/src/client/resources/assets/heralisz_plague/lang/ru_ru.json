@@ -55,5 +55,18 @@
   "block.heralisz_plague.hero_shutter_door": "Металлическая рольставня",
   "block.heralisz_plague.hero_sludge_pipe": "Сопло для шлама",
   "block.heralisz_plague.hero_sludge_vat": "Чан со шламом",
-  "block.heralisz_plague.hero_vent_fan": "Вентилятор"
+  "block.heralisz_plague.hero_vent_fan": "Вентилятор",
+  "title.heralisz_plague.p2.top": "БАЛЛОНЫ ЛОПАЮТСЯ",
+  "title.heralisz_plague.p2.name": "ФАЗА II",
+  "title.heralisz_plague.p2.sub": "ЧУМА НА СВОБОДЕ",
+  "title.heralisz_plague.p3.top": "ОН СРЫВАЕТ МАСКУ",
+  "title.heralisz_plague.p3.name": "ФАЗА III",
+  "title.heralisz_plague.p3.sub": "НУЛЕВОЙ ПАЦИЕНТ",
+  "title.heralisz_plague.entry.top": "КРАСНАЯ ЗОНА",
+  "title.heralisz_plague.entry.name": "КАРАНТИННАЯ СТАНЦИЯ",
+  "title.heralisz_plague.entry.sub": "ОТСЮДА НЕ ВЫХОДЯТ",
+  "title.heralisz_plague.death.top": "ПОСЛЕДНИЙ ГЛОТОК ВОЗДУХА",
+  "title.heralisz_plague.death.sub": "ПЛЕСЕНЬ ЗАБИРАЕТ ЕГО",
+  "title.heralisz_plague.spawn.top": "ТРЕВОГА: ЗАРАЖЁННАЯ ЗОНА",
+  "title.heralisz_plague.spawn.sub": "ОТРЯД РХБЗ - ВЫЖИВШИХ НЕТ"
 }

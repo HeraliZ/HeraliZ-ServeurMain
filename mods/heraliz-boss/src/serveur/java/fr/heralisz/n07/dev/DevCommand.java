@@ -38,7 +38,7 @@ public final class DevCommand {
             DevControl b = nearest(c.getSource());
             if (b == null) return 0;
             if (!b.devAction(StringArgumentType.getString(c, "name").toUpperCase(Locale.ROOT))) {
-               c.getSource().sendFailure(Component.literal("Action inconnue"));
+               c.getSource().sendFailure(Component.translatableWithFallback("command.heralisz_n07.dev.unknown_action", "Action inconnue"));
                return 0;
             }
             return 1;

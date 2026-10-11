@@ -411,5 +411,8 @@
   "command.heralisz_n07.zombies.started": "Бой начат (%s виртуальных ОЗ).",
   "command.heralisz_n07.zombies.reset": "Зал сброшен.",
   "command.heralisz_n07.zombies.busy": "В этом зале уже идёт бой.",
-  "command.heralisz_n07.zombies.return": "[N-07] Запрошено возвращение: %s (%s)"
+  "command.heralisz_n07.zombies.return": "[N-07] Запрошено возвращение: %s (%s)",
+  "command.heralisz_n07.dev.unknown_action": "Неизвестное действие",
+  "command.heralisz_n07.zombies.return.teleporter": "телепорт",
+  "command.heralisz_n07.zombies.return.evacuation": "эвакуация"
 }

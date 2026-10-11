@@ -45,7 +45,7 @@ public final class BossHud {
       BossInfo info = boss instanceof BossInfo bi ? bi : null;
       boolean visible = boss != null && !Cinematic.active() && !ScenePlayer.active() && !(boss.isDeadOrDying() && boss.deathTime > 70);
       int phase = info != null ? info.phase() : 1;
-      if (info != null) lastName = info.hudName();
+      if (info != null) lastName = tr(info.hudName());
       BARRE.dessiner(g, partial, w, boss, visible, phase, lastName, Component.translatable("hud.heralisz_n07.epithet").getString(),
          info != null ? info.accentColor() : 0x9CFF5A, info != null ? info.hudTop(phase) : 0xA8FF7A, info != null ? info.hudBottom(phase) : 0x2F9A2A);
    }

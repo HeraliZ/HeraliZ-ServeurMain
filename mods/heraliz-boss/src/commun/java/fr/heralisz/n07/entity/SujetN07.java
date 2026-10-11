@@ -116,7 +116,8 @@ public class SujetN07 extends HeraliszBoss<SujetN07.Action> {
    // ------------------------------------------------------------------ BossInfo
    @Override
    public String hudName() {
-      return "SUJET N-07";
+      // cle de traduction (« SUJET N-07 ») ; le HUD la traduit
+      return "cine.heralisz_n07.spawn.title";
    }
 
    @Override

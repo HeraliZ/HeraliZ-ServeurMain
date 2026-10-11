@@ -55,5 +55,18 @@
   "block.heralisz_plague.hero_shutter_door": "Shutter door",
   "block.heralisz_plague.hero_sludge_pipe": "Sludge nozzle",
   "block.heralisz_plague.hero_sludge_vat": "Sludge vat",
-  "block.heralisz_plague.hero_vent_fan": "Vent fan"
+  "block.heralisz_plague.hero_vent_fan": "Vent fan",
+  "title.heralisz_plague.p2.top": "THE CANISTERS BURST",
+  "title.heralisz_plague.p2.name": "PHASE II",
+  "title.heralisz_plague.p2.sub": "THE PLAGUE IS LOOSE",
+  "title.heralisz_plague.p3.top": "HE TEARS OFF HIS MASK",
+  "title.heralisz_plague.p3.name": "PHASE III",
+  "title.heralisz_plague.p3.sub": "PATIENT ZERO",
+  "title.heralisz_plague.entry.top": "RED ZONE",
+  "title.heralisz_plague.entry.name": "THE QUARANTINE STATION",
+  "title.heralisz_plague.entry.sub": "NO ONE GETS OUT",
+  "title.heralisz_plague.death.top": "ONE LAST GASP",
+  "title.heralisz_plague.death.sub": "THE MOLD TAKES HIM BACK",
+  "title.heralisz_plague.spawn.top": "ALERT: CONTAMINATED ZONE",
+  "title.heralisz_plague.spawn.sub": "NBC UNIT - NO SURVIVORS"
 }

@@ -411,5 +411,8 @@
   "command.heralisz_n07.zombies.started": "Fight started (%s virtual HP).",
   "command.heralisz_n07.zombies.reset": "Hall reset.",
   "command.heralisz_n07.zombies.busy": "A fight is already running in this hall.",
-  "command.heralisz_n07.zombies.return": "[N-07] Return requested: %s (%s)"
+  "command.heralisz_n07.zombies.return": "[N-07] Return requested: %s (%s)",
+  "command.heralisz_n07.dev.unknown_action": "Unknown action",
+  "command.heralisz_n07.zombies.return.teleporter": "teleporter",
+  "command.heralisz_n07.zombies.return.evacuation": "evacuation"
 }
