@@ -676,5 +676,6 @@
   "heralisz_utils.tableau.eloignez": "ÉLOIGNEZ-VOUS DE LA VOIE",
   "heralisz_utils.tableau.prochain": "PROCHAIN TRAIN",
   "heralisz_utils.tableau.dans_min": "DANS %s MIN",
-  "heralisz_utils.pack.terrain": "HeraliZ : terrain"
+  "heralisz_utils.pack.terrain": "HeraliZ : terrain",
+  "heralisz_utils.suicide.refus": "Impossible en créatif ou en spectateur."
 }

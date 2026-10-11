@@ -676,5 +676,6 @@
   "heralisz_utils.tableau.eloignez": "STAND CLEAR OF THE TRACK",
   "heralisz_utils.tableau.prochain": "NEXT TRAIN",
   "heralisz_utils.tableau.dans_min": "IN %s MIN",
-  "heralisz_utils.pack.terrain": "HeraliZ: terrain"
+  "heralisz_utils.pack.terrain": "HeraliZ: terrain",
+  "heralisz_utils.suicide.refus": "Not possible in creative or spectator mode."
 }

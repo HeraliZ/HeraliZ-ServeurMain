@@ -676,5 +676,6 @@
   "heralisz_utils.tableau.eloignez": "ОТОЙДИТЕ ОТ ПУТЕЙ",
   "heralisz_utils.tableau.prochain": "СЛЕДУЮЩИЙ ПОЕЗД",
   "heralisz_utils.tableau.dans_min": "ЧЕРЕЗ %s МИН",
-  "heralisz_utils.pack.terrain": "HeraliZ: местность"
+  "heralisz_utils.pack.terrain": "HeraliZ: местность",
+  "heralisz_utils.suicide.refus": "Недоступно в творческом режиме и режиме наблюдателя."
 }

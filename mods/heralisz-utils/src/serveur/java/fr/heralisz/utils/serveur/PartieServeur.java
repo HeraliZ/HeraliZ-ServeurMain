@@ -34,5 +34,6 @@ public final class PartieServeur implements Partie {
         // logique serveur (à l'origine : CineReseau.init puis Train.init, dans le constructeur @Mod)
         CineReseauServeur.init();
         TrainServeur.init();
+        Suicide.init();
     }
 }
