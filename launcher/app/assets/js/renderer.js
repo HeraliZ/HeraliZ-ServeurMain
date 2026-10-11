@@ -85,7 +85,6 @@ async function chargerEtatComptes() {
         etatComptes = await call(api.etatComptes()).catch(() => ({ inscription: false, motDePasseMin: 12, conditions: null, injoignable: true }))
     }
     const min = etatComptes.motDePasseMin || 12
-    $('new-password').placeholder = `${min} caractères min.`
     $('new-password-aide').textContent = `Au moins ${min} caractères. Pas le même que ton /login en jeu.`
     $('conditions-site').hidden = !etatComptes.conditions
     if ($('profile-form').dataset.mode === 'inscription' && !etatComptes.inscription) {
