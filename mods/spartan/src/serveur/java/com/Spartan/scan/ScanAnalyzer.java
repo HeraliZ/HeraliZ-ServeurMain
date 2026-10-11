@@ -23,7 +23,8 @@ import java.util.TreeSet;
  *   module, config Mixin, chargeur de classes ou code d'origine inconnus.
  *
  * Tout ce qui APPARAÎT en cours de partie (absent du premier contrôle de la
- * session) est aggravé : c'est la signature d'une injection après le lancement.
+ * session) est aggravé : c'est la signature d'une injection après le lancement
+ * (module, config Mixin, code d'origine inconnue, DLL hors des dossiers sûrs).
  */
 public final class ScanAnalyzer {
     /** Fournisseurs de mods d'un lancement normal. */
@@ -115,8 +116,13 @@ public final class ScanAnalyzer {
         }
         injection(r, out);
         if (r.unnamedThreads > 0) {
-            out.add(new Finding(Severity.SUSPECT, "threads:unnamed",
-                    r.unnamedThreads + " thread(s) sans nom dans le jeu (trace fréquente d'un injecteur)"));
+            // des threads sans nom qui exécutent du code inconnu : ce sont ceux du client injecté (Doomsday, 11/10)
+            boolean actifs = r.origins.stream().anyMatch(o -> !(hasRef && ref.origins.contains(o.key()))
+                    && o.threads().contains("(sans nom)"));
+            out.add(new Finding(actifs ? Severity.STRONG : Severity.SUSPECT, "threads:unnamed",
+                    r.unnamedThreads + " thread(s) sans nom dans le jeu" + (actifs
+                            ? " qui exécutent du code d'origine inconnue : client injecté"
+                            : " (trace fréquente d'un injecteur)")));
         }
         providers(r, ref, hasRef, official != null, s, out);
         files(r, ref, hasRef, official, out);
@@ -333,9 +339,15 @@ public final class ScanAnalyzer {
             if (hasRef && ref.origins.contains(o.key())) {
                 continue;
             }
-            out.add(new Finding(hasRef ? Severity.STRONG : Severity.SUSPECT, "origin:" + o.key(),
-                    "code d'origine inconnue en cours d'exécution (" + o.key() + ") : "
-                            + String.join(", ", o.classes()) + " — threads : " + String.join(", ", o.threads())));
+            // Noms de classes impossibles pour du code Java compilé (caractères de contrôle) : code brouillé chargé
+            // directement en mémoire, sans fichier. Aucun mod honnête n'en a : indice fort même sans référence.
+            boolean brouille = nomImpossible(o.key()) || o.classes().stream().anyMatch(ScanAnalyzer::nomImpossible);
+            List<String> classes = o.classes().stream().map(ScanAnalyzer::lisible).toList();
+            out.add(new Finding(hasRef || brouille ? Severity.STRONG : Severity.SUSPECT, "origin:" + o.key(),
+                    (brouille ? "client injecté : code brouillé (noms de classes aux caractères de contrôle, impossibles en Java"
+                            + " normal) chargé en mémoire sans fichier (" + lisible(o.key()) + ") : "
+                            : "code d'origine inconnue en cours d'exécution (" + lisible(o.key()) + ") : ")
+                            + String.join(", ", classes) + " — threads : " + String.join(", ", o.threads())));
         }
         for (String l : r.loaders) {
             if (NORMAL_LOADERS.contains(l) || (hasRef && ref.loaders.contains(l))) {
@@ -367,10 +379,24 @@ public final class ScanAnalyzer {
         for (ScanReport.MixinEntry m : r.mixins) {
             mixinNames.put("x:" + ScanReport.hex(ScanReport.mixinFingerprint(m.name())), m.name() + " (" + m.pkg() + ")");
         }
+        Map<String, ScanReport.NativeEntry> natives = new LinkedHashMap<>();
+        for (ScanReport.NativeEntry n : r.natives) {
+            natives.put("d:" + n.name().toLowerCase(Locale.ROOT), n);
+        }
         for (String item : appeared) {
             String what = mixinNames.getOrDefault(item, item.substring(item.indexOf(':') + 1));
+            if (item.startsWith("o:")) {
+                continue; // code d'origine connue de la référence : rien à dire (les autres sont aggravés plus haut)
+            }
             if (item.startsWith("d:")) {
-                out.add(new Finding(Severity.SUSPECT, "late:" + item, "bibliothèque native chargée en cours de partie : " + what));
+                ScanReport.NativeEntry n = natives.get(item);
+                String place = n == null ? "" : n.place();
+                // Programmes installés et dossier du jeu : un pilote ou un outil peut se charger tard (soupçon). Ailleurs
+                // (profil, Temp, Téléchargements, dossier quelconque), hors overlay connu : c'est la trace d'une injection.
+                boolean sure = place.startsWith("%PROGRAMFILES%") || place.startsWith("%JEU%") || overlay(what);
+                out.add(new Finding(sure ? Severity.SUSPECT : Severity.STRONG, "late:" + item,
+                        "bibliothèque native chargée en cours de partie : " + what + (place.isEmpty() ? "" : " (" + place + ")")
+                                + (sure ? "" : " — injection probable")));
             } else if (item.startsWith("m:")) {
                 out.add(new Finding(Severity.STRONG, "late:" + item, "module de code chargé en cours de partie : " + what));
             } else {
@@ -394,6 +420,10 @@ public final class ScanAnalyzer {
         for (ScanReport.NativeEntry n : r.natives) {
             out.add("d:" + n.name().toLowerCase(Locale.ROOT));
         }
+        // code d'origine inconnue vu dans les piles : un client injecté après la connexion n'y est pas au premier contrôle
+        for (ScanReport.OriginEntry o : r.origins) {
+            out.add("o:" + o.key());
+        }
         return out;
     }
 
@@ -408,7 +438,48 @@ public final class ScanAnalyzer {
         if (findingKey.startsWith("dll:")) {
             return "d:" + findingKey.substring(4);
         }
+        if (findingKey.startsWith("origin:")) {
+            return "o:" + findingKey.substring(7);
+        }
         return "";
+    }
+
+    /**
+     * Nom de classe qu'aucun compilateur Java ne produit : caractères de contrôle (C0 / C1). Les brouilleurs de clients
+     * de triche s'en servent pour rendre leur code illisible ; la JVM les accepte quand la classe est chargée à la main.
+     */
+    static boolean nomImpossible(String name) {
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (c < 0x20 || (c >= 0x7F && c <= 0x9F)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Nom lisible dans une alerte : les caractères de contrôle deviennent \xNN. */
+    static String lisible(String name) {
+        StringBuilder sb = new StringBuilder(name.length() + 8);
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (c < 0x20 || (c >= 0x7F && c <= 0x9F)) {
+                sb.append(String.format(Locale.ROOT, "\\x%02X", (int) c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Overlays et outils légitimes qui se chargent dans les jeux (noms de DLL, en minuscules). */
+    private static final List<String> OVERLAYS = List.of("discord", "gameoverlayrenderer", "graphics-hook", "obs-",
+            "nvspcap", "nvinject", "rtss", "medal", "overwolf", "owclient", "rivatuner", "action_x64", "bdcam", "fraps",
+            "xsplit", "amdhook", "steam", "epicgames", "uplay", "galaxy", "radeon", "igo64", "eosovh");
+
+    static boolean overlay(String dll) {
+        String n = dll.toLowerCase(Locale.ROOT);
+        return OVERLAYS.stream().anyMatch(n::contains);
     }
 
     static String sensitive(String target) {

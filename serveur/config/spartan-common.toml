@@ -117,7 +117,7 @@
 	firstScanMinSeconds = 10
 	#Contrôles suivants : intervalle aléatoire minimum (secondes).
 	#Range: 30 ~ 86400
-	intervalMinSeconds = 180
+	intervalMinSeconds = 90
 	#Classes sensibles du jeu : le contrôle relève chaque Mixin qui les modifie (rendu = ESP / X-ray,
 	#mouvement = fly / speed / NoSlow, réseau, souris = aimbot…). Une config Mixin inconnue qui en
 	#touche une est un indice fort. Ajoutez les classes de TaCZ ou d'autres mods à protéger.
@@ -134,7 +134,7 @@
 	firstScanMaxSeconds = 30
 	#Contrôles suivants : intervalle aléatoire maximum (secondes).
 	#Range: 30 ~ 86400
-	intervalMaxSeconds = 480
+	intervalMaxSeconds = 240
 	#Programmes de triche / d'injection : signalés s'ils tournent sur le PC du joueur (morceau du
 	#nom de l'exécutable, minuscules). Seuls les programmes correspondants sont envoyés au serveur.
 	processPatterns = ["cheatengine", "processhacker", "systeminformer", "x64dbg", "x32dbg", "ollydbg", "injector", "xenos", "recaf", "jd-gui", "bytecode-viewer"]

@@ -336,6 +336,19 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   sans compte (importé de Spartan 1.0, alerte « Compte secondaire … PC de (ban Spartan 1.0) ») est levé ; le ban d'un autre
   compte reste, seul ce PC en est retiré. Avant, un joueur pris par un ban de la 1.0 ne pouvait pas être débanni par
   son pseudo. `/sbaninfo <joueur>` montre ses bans et ses comptes liés.
+- **Injection en cours de partie** (Spartan 2.3.0) : le contrôle d'intégrité passe toutes les 90 à 240 s ; ce qui
+  APPARAÎT après le premier contrôle de la session est rouge : code d'origine inconnue dans les piles des threads
+  (client injecté, même sans client de référence), DLL chargée hors des programmes installés et du dossier du jeu
+  (hors overlays connus). Rouge aussi dès la connexion : du code aux noms de classes faits de caractères de contrôle
+  (brouillé, chargé en mémoire sans fichier) et des threads sans nom qui exécutent du code inconnu : c'est ce
+  qu'a laissé le client de triche Doomsday le 11/10, sans DLL ni autre trace. Un indice déjà signalé en orange qui
+  passe au rouge est re-signalé. Sans client de
+  référence appris (`/spartan reference learn <pseudo>` depuis un jeu PROPRE), le code inconnu présent dès la
+  connexion reste orange : l'alerte Discord le rappelle. Choix du propriétaire (11/10) : même en rouge, alerte
+  seulement, jamais d'expulsion ; le staff bannit avec `/sban`.
+- **Enquête sur un joueur en jeu** : workflow « Enquête Spartan » (`.github/workflows/enquete.yml`, « Run workflow » +
+  pseudo) : contrôle immédiat par la console du Ptero, puis affiche dans le journal de GitHub les 4 derniers rapports
+  de Spartan sur ce joueur (indices, DLL, threads, code inconnu ; ni IP ni identifiant matériel). Rien n'est changé.
 - Réglages : `serveur/config/spartan-common.toml` (fait foi). Webhooks et secret du launcher : JAMAIS dans le dépôt,
   marques `__SPARTAN_…__` remplacées par les secrets GitHub à l'envoi (section 8).
 - Branchements HeraliZ (`mods/spartan/src/serveur/java/com/Spartan/serveur/compat/HeralizCompat.java`, par réflexion,
