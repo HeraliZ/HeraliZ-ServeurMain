@@ -12,7 +12,7 @@ public interface BossInfo {
    /** PV « réels » affichés (échelle des dégâts d'armes). */
    int virtualMax();
 
-   /** Nom en capitales pour la barre et les titres. */
+   /** Nom en capitales pour la barre et les titres : clé de traduction (un texte qui n'en est pas une s'affiche tel quel). */
    String hudName();
 
    /** Couleurs de la jauge (haut, bas) selon la phase ; couleur du nom. */

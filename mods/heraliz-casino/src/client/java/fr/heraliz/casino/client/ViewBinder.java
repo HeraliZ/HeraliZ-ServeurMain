@@ -42,6 +42,7 @@ import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
+import net.minecraft.client.resources.language.I18n;
 
 /**
  * Remplit la vue de chaque type de machine a partir de son entite (etat synchronise par le serveur).
@@ -258,21 +259,21 @@ public final class ViewBinder {
         }
     }
 
-    // ---- tableau des taux de la caisse (noms des objets traduits), recalcule quand la config change
+    // ---- tableau des taux de la caisse (noms des objets traduits), recalcule quand la config ou la langue change
     private static String ratesKey;
     private static String[] ratesCache = new String[0];
 
     private static String[] rates() {
-        String key = CasinoConfig.json();
+        String key = Minecraft.getInstance().getLanguageManager().getSelected() + "|" + CasinoConfig.json();
         if (key.equals(ratesKey)) return ratesCache;
         java.util.List<String> lines = new java.util.ArrayList<>();
         CasinoConfig.Cashier c = CasinoConfig.get().caisse;
         // en tete : le change avec les herals, la monnaie du serveur (mod HeraliZ Economie) : « 1 héral = 1 jeton »
         if (fr.heraliz.casino.economy.EconomieServeur.ouvert() && (c.economie.achat || c.economie.vente)) {
-            lines.add(c.economie.jetonsServeur + (c.economie.jetonsServeur >= 2 ? " hérals = " : " héral = ")
-                    + c.economie.jetonsCasino + (c.economie.jetonsCasino >= 2 ? " jetons" : " jeton"));
+            lines.add(I18n.get(c.economie.jetonsServeur >= 2 ? "heralizcasino.caisse.herals" : "heralizcasino.caisse.heral", String.valueOf(c.economie.jetonsServeur))
+                    + " = " + I18n.get(c.economie.jetonsCasino >= 2 ? "heralizcasino.caisse.jetons" : "heralizcasino.caisse.jeton", String.valueOf(c.economie.jetonsCasino)));
             if (c.economie.commissionRevente > 0)
-                lines.add("Revente : -" + Math.round(c.economie.commissionRevente * 100) + " %");
+                lines.add(I18n.get("heralizcasino.caisse.revente", String.valueOf(Math.round(c.economie.commissionRevente * 100))));
         }
         for (CasinoConfig.Exchange e : CasinoConfig.get().caisse.echanges) {
             if (!c.echangesObjets) break;
@@ -281,7 +282,7 @@ public final class ViewBinder {
             lines.add("1 " + new ItemStack(item).getHoverName().getString() + " = " + e.jetons);
         }
         for (CasinoConfig.CommandExchange e : CasinoConfig.get().caisse.encaissements) {
-            lines.add(e.jetons + " j = " + e.montant + " " + e.nom);
+            lines.add(I18n.get("heralizcasino.caisse.commande", String.valueOf(e.jetons), String.valueOf(e.montant), e.nom));
         }
         ratesCache = lines.toArray(new String[0]);
         ratesKey = key;

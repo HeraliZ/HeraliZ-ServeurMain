@@ -24,7 +24,8 @@ public final class C2SAdminLoginTraitement {
                 if (PacketThrottle.allow(player, PacketThrottle.Kind.ADMIN_LOGIN, COOLDOWN_MS)) {
                     AdminManager.login(player, msg.password());
                 } else {
-                    player.displayClientMessage(Component.literal("§c[Admin] Wait a second between two login attempts."), false);
+                    player.displayClientMessage(Component.translatableWithFallback("crac.admin.wait",
+                        "§c[Admin] Attends une seconde entre deux tentatives de connexion."), false);
                     AdminManager.denyLogin(player);
                 }
             }

@@ -259,11 +259,13 @@ public final class DuelsLogique {
         for (Partie p : MatchApi.parties()) {
             if (!(p instanceof DuelPartie d)) continue;
             n++;
-            Annonces.retour(ctx.getSource(), Component.literal(d + " instance " + (d.instance() == null ? "-" : d.instance().id())));
+            Annonces.retour(ctx.getSource(), Component.translatableWithFallback("heralisz_matchs.commande.duels.instance", "%s instance %s",
+                    String.valueOf(d), d.instance() == null ? "-" : d.instance().id()));
         }
         int total = n;
-        Annonces.retour(ctx.getSource(), Component.literal("[duels] " + total + " duel(s), catalogue v" + Armurerie.catalogue().version() + " ("
-                + Armurerie.catalogue().armes().size() + " armes)"));
+        Annonces.retour(ctx.getSource(), Component.translatableWithFallback("heralisz_matchs.commande.duels.etat",
+                "[duels] %s duel(s), catalogue v%s (%s armes)", String.valueOf(total), String.valueOf(Armurerie.catalogue().version()),
+                String.valueOf(Armurerie.catalogue().armes().size())));
         return n;
     }
 

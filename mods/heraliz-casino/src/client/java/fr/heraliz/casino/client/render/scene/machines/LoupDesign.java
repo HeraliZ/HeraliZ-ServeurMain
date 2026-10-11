@@ -19,6 +19,7 @@ import fr.heraliz.casino.game.slot.Suspense;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -143,7 +144,8 @@ public final class LoupDesign extends MachineDesign<LoupView> {
     static final String[] JACKPOTS = {"MINI", "MINOR", "MAJOR", "GRAND", "SUPER"};
     static final int[] JACKPOT_COLORS = {0x6AD8FF, 0xC08AFF, 0xFF6A4A, 0xFFD36A, 0xFF8AE8};
     static final int[] TIER_COLORS = {0xF6F0E4, 0xFFE890, 0xE0B080, 0xFF9A7A};
-    static final String[] TIERS = {"", "PAILLE", "BOIS", "BRIQUE"};
+    /** Cles des niveaux des cadres (traduits a l'affichage). */
+    static final String[] TIERS = {"", "heralizcasino.loup.paille", "heralizcasino.loup.bois", "heralizcasino.loup.brique"};
     static final int[] IDLE = {0, 5, 3, 1, 9, 4, 8, 2, 6, 10, 0, 1, 3, 9, 5};
 
     private Mesh body = Mesh.EMPTY, kit = Mesh.EMPTY, top = Mesh.EMPTY, ext = Mesh.EMPTY, topperGlow = Mesh.EMPTY, bodyLights = Mesh.EMPTY;
@@ -175,22 +177,22 @@ public final class LoupDesign extends MachineDesign<LoupView> {
 
     /** Nom d'un bonus. */
     static String featureName(int bonus) {
-        return switch (bonus) {
-            case Loup.B_BUZZ -> "LES SCIES";
-            case Loup.B_MEGA -> "MÉGA CHAPEAU";
-            case Loup.B_MANSION -> "LE MANOIR";
-            case Loup.B_SUPER_BUZZ -> "SUPER SCIES";
-            case Loup.B_SUPER_MEGA -> "SUPER MÉGA CHAPEAU";
-            case Loup.B_SUPER_MANSION -> "SUPER MANOIR";
-            default -> "TOURS GRATUITS";
-        };
+        return I18n.get(switch (bonus) {
+            case Loup.B_BUZZ -> "heralizcasino.loup.scies";
+            case Loup.B_MEGA -> "heralizcasino.loup.mega_chapeau";
+            case Loup.B_MANSION -> "heralizcasino.loup.manoir";
+            case Loup.B_SUPER_BUZZ -> "heralizcasino.loup.super_scies";
+            case Loup.B_SUPER_MEGA -> "heralizcasino.loup.super_mega_chapeau";
+            case Loup.B_SUPER_MANSION -> "heralizcasino.loup.super_manoir";
+            default -> "heralizcasino.slot.tours_gratuits";
+        });
     }
 
     /** Annonce de la case gagnante de la roue. */
     static String segTitle(int code) {
-        if (Loup.isJackpot(code)) return "JACKPOT " + JACKPOTS[code] + " !";
-        if (code == Loup.W_UPGRADE) return "SUPER ROUE !";
-        return featureName(Loup.featureOf(code)) + " !";
+        if (Loup.isJackpot(code)) return I18n.get("heralizcasino.loup.jackpot_annonce", JACKPOTS[code]);
+        if (code == Loup.W_UPGRADE) return I18n.get("heralizcasino.loup.super_roue");
+        return I18n.get("heralizcasino.slot.annonce", featureName(Loup.featureOf(code)));
     }
 
     /** Point de la roue a l'angle "deg" (sens horaire depuis le haut), rayon r. */
@@ -672,7 +674,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
                 out.sheet(null);
             }
             screen(s, v, p, out, at, lift);
-            Intro.title(p, out, introT, "SOUFFLE DU LOUP", "6 CHAPEAUX = 6 TOURS GRATUITS", 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, AMBER, GOLD);
+            Intro.title(p, out, introT, I18n.get("heralizcasino.loup.titre"), I18n.get("heralizcasino.loup.intro"), 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, AMBER, GOLD);
         }
         MeshBuilder gl = new MeshBuilder();
         gl.face(GLASS, nz, p(WX0, WY0, FZ - 0.05f), p(WX1, WY0, FZ - 0.05f), p(WX1, py1, FZ - 0.05f), p(WX0, py1, FZ - 0.05f));
@@ -732,7 +734,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         }
         out.additive(p, fx.buildDynamic(), 0xF0F4FF, 0.9f);
         Intro.crtOn(p, out, DARK, FLASH, t, WX0, WY0, WX1, WY1, SZ + 0.36f, AMBER);
-        Intro.title(p, out, t, "SOUFFLE DU LOUP", "6 CHAPEAUX = 6 TOURS GRATUITS", 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, AMBER, GOLD);
+        Intro.title(p, out, t, I18n.get("heralizcasino.loup.titre"), I18n.get("heralizcasino.loup.intro"), 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, AMBER, GOLD);
     }
 
     /** La roue des bonus au sommet de la borne, son pointeur et sa couronne d'ampoules (repere : la borne relevee). */
@@ -818,7 +820,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
             out.text(p, title, WHX, ty, tz, fit(title, 1.45f, 12.6f, true) * Ease.outBack(Ease.clamp01(since / 6f), 2.4f), GOLD, 1f, flags, 0x2A1400);
         } else if (w.w < Loup.WHEEL_GO + 10) {
             boolean sup = w.turn == 1;
-            String title = sup ? (ws.events & Loup.EV_DIRECT) != 0 ? "SCIE D'OR : SUPER ROUE !" : "SUPER ROUE !" : "LA ROUE DES BONUS !";
+            String title = I18n.get(sup ? (ws.events & Loup.EV_DIRECT) != 0 ? "heralizcasino.loup.scie_or_super" : "heralizcasino.loup.super_roue" : "heralizcasino.loup.roue_bonus");
             float from = sup ? -Loup.SUPER_INTRO : 0;
             float a = Ease.clamp01((w.w - from) / 4f) * (1 - Ease.range(w.w, Loup.WHEEL_GO + 4, Loup.WHEEL_GO + 10));
             caption(s, p, out, a, sup ? GOLD : AMBER, pr);
@@ -911,7 +913,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
             case Loup.R_MINOR -> "MINOR";
             case Loup.R_MAJOR -> "MAJOR";
             case Loup.R_GRAND -> "GRAND";
-            case Loup.R_WHEEL -> "ROUE !";
+            case Loup.R_WHEEL -> I18n.get("heralizcasino.loup.roue");
             default -> amountText(v, Loup.rewardMilli(v.rules, tier, reward));
         };
     }
@@ -1476,25 +1478,27 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         if (ftz != null) {
             // tour gratuit : il ne manque qu'un chapeau pour un tour de plus
             int n = v.rules.retriggerSpins;
-            String sub = n > 1 ? "POUR " + n + " TOURS DE PLUS" : "POUR UN TOUR DE PLUS";
+            String sub = n > 1 ? I18n.get("heralizcasino.loup.pour_n_tours", String.valueOf(n)) : I18n.get("heralizcasino.loup.pour_un_tour");
             float a = Ease.clamp01(ftz[1] / 4f);
-            out.text(p, "ENCORE UN CHAPEAU...", 8, yt + 0.5f, z, fit("ENCORE UN CHAPEAU...", 1.05f, 11.4f, true), GOLD, a * (0.7f + 0.3f * s.pulse(0.5f)), DrawList.T_CENTER | DrawList.T_BOLD);
+            String encore = I18n.get("heralizcasino.loup.encore_chapeau");
+            out.text(p, encore, 8, yt + 0.5f, z, fit(encore, 1.05f, 11.4f, true), GOLD, a * (0.7f + 0.3f * s.pulse(0.5f)), DrawList.T_CENTER | DrawList.T_BOLD);
             out.text(p, sub, 8, yt - 0.85f, z, fit(sub, 0.5f, 11.4f, false), WHITE, a * 0.9f, DrawList.T_CENTER);
         } else if (tz != null) {
             // suspense : il ne manque plus qu'un symbole pour un bonus
             int hoped = Loup.teaseSymbol(spin, (int) tz[0]);
             int missing = 6;
             for (int c = 0; c < (int) tz[0] * Loup.ROWS; c++) if (spin.grid[c] == Loup.HAT) missing--;
-            String txt = hoped == Loup.SAW ? "ENCORE UNE SCIE..." : missing == 1 ? "ENCORE UN CHAPEAU..." : "ENCORE " + missing + " CHAPEAUX...";
-            String sub = hoped == Loup.SAW ? "POUR LA ROUE DES BONUS" : "POUR LES TOURS GRATUITS";
+            String txt = hoped == Loup.SAW ? I18n.get("heralizcasino.loup.encore_scie") : missing == 1 ? I18n.get("heralizcasino.loup.encore_chapeau")
+                    : I18n.get("heralizcasino.loup.encore_chapeaux", String.valueOf(missing));
+            String sub = I18n.get(hoped == Loup.SAW ? "heralizcasino.loup.pour_roue" : "heralizcasino.slot.pour_tours");
             float a = Ease.clamp01(tz[1] / 4f);
             out.text(p, txt, 8, yt + 0.5f, z, fit(txt, 1.05f, 11.4f, true), teaseColor(hoped), a * (0.7f + 0.3f * s.pulse(0.5f)), DrawList.T_CENTER | DrawList.T_BOLD);
             out.text(p, sub, 8, yt - 0.85f, z, fit(sub, 0.5f, 11.4f, false), WHITE, a * 0.9f, DrawList.T_CENTER);
         } else if (blowing(spin, lt)) {
             boolean inhale = lt - Loup.blowStart(spin) < Loup.BLOW_WIND - 4;
-            String txt = inhale ? "LE LOUP PREND SON SOUFFLE..." : "LE LOUP SOUFFLE !";
+            String txt = I18n.get(inhale ? "heralizcasino.loup.inspire" : "heralizcasino.loup.souffle");
             out.text(p, txt, 8, yt + 0.5f, z, fit(txt, 1.0f, 11.4f, true), inhale ? WHITE : AMBER, 0.75f + 0.25f * s.pulse(0.5f), DrawList.T_CENTER | DrawList.T_BOLD);
-            String sub = "CHAQUE MAISON EMPORTÉE RÉVÈLE SON GAIN";
+            String sub = I18n.get("heralizcasino.loup.maison_gain");
             out.text(p, sub, 8, yt - 0.85f, z, fit(sub, 0.5f, 11.4f, false), GOLD, 0.95f, DrawList.T_CENTER);
         } else if (inBonus) {
             // le bonus en cours a gauche ; a droite, paille > bois > brique
@@ -1514,7 +1518,8 @@ public final class LoupDesign extends MachineDesign<LoupView> {
             for (int t = 1; t <= 3; t++) {
                 float x = x0 + (t - 1) * 2.15f;
                 quadAt(b, x + 0.6f, yt + 0.35f, icon, icon, frame(t), 1f, z + 0.02f);
-                out.text(p, TIERS[t], x + 0.6f, yt - 1.05f, z, fit(TIERS[t], 0.4f, 2f, true), TIER_COLORS[t], 1f, DrawList.T_CENTER);
+                String tier = I18n.get(TIERS[t]);
+                out.text(p, tier, x + 0.6f, yt - 1.05f, z, fit(tier, 0.4f, 2f, true), TIER_COLORS[t], 1f, DrawList.T_CENTER);
                 if (t < 3) out.text(p, "›", x + 1.65f, yt + 0.05f, z, 0.8f, GOLD, 1f, DrawList.T_CENTER);
             }
             out.sheet(SHEET);
@@ -1532,12 +1537,12 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         }
         if (idle) {
             int phase = ((int) (s.time / 20)) % 3;
-            String txt = phase == 0 ? "6 CHAPEAUX = 6 TOURS GRATUITS" : phase == 1 ? "3 SCIES = LA ROUE DES BONUS" : "2 SCIES + 1 SCIE D'OR = SUPER ROUE";
+            String txt = I18n.get(phase == 0 ? "heralizcasino.loup.intro" : phase == 1 ? "heralizcasino.loup.idle_scies" : "heralizcasino.loup.idle_scie_or");
             out.text(p, txt, 8, yb, z, fit(txt, 0.6f, 11.5f, false), phase == 0 ? AMBER : phase == 1 ? BLUE : GOLD, 0.95f, DrawList.T_CENTER);
             return;
         }
         if (tz != null || ftz != null) return;
-        String mise = "MISE " + fmt(v.bet);
+        String mise = I18n.get("heralizcasino.slot.mise", fmt(v.bet));
         out.text(p, mise, WX0 + 0.3f, yb, z, fit(mise, 0.5f, 3.2f, false), WHITE, 0.9f, 0);
         long milli = v.winSoFar(i, false);
         float bumpAt = -100;
@@ -1563,14 +1568,14 @@ public final class LoupDesign extends MachineDesign<LoupView> {
             }
         }
         long won = (long) Math.floor(v.bet * (Math.min(milli, v.seq.totalMilli) / 1000.0));
-        String gt = "GAIN " + fmt(won);
+        String gt = I18n.get("heralizcasino.slot.gain", fmt(won));
         float bump = bumpAt >= 0 && bumpAt < 5 ? 1 + 0.25f * Ease.bell(bumpAt, 0, 5) : 1;
         out.text(p, gt, 8.4f, yb, z, fit(gt, 0.62f * bump, 4.4f, false), won > 0 ? GOLD : WHITE, 1f, DrawList.T_CENTER);
         if (inBonus) {
             int left = spin.spinsLeft;
             if (spin.kind == Loup.FREE && (spin.events & Loup.EV_RETRIGGER) != 0 && lt < Loup.bonusSpin(spin)) left = Math.max(0, left - v.rules.retriggerSpins);
             boolean last = left == 0;
-            String right = last ? "DERNIER TOUR" : "TOURS " + left;
+            String right = last ? I18n.get("heralizcasino.slot.dernier_tour") : I18n.get("heralizcasino.slot.tours_n", String.valueOf(left));
             out.text(p, right, WX1 - 0.3f, yb, z, fit(right, 0.5f, 3f, false), last ? RED : GREEN, 1f, DrawList.T_RIGHT);
         }
     }
@@ -1616,8 +1621,9 @@ public final class LoupDesign extends MachineDesign<LoupView> {
                 // une maison de brique cachait un tour de roue
                 float a = Ease.clamp01(lt / 4f) * (1 - Ease.range(lt, Loup.HOUSE_INTRO - 5, Loup.HOUSE_INTRO));
                 veil(p, out, 0.6f * a, lift);
-                out.text(p, "UNE MAISON CACHAIT", cx, cy + 1.1f, z, fit("UNE MAISON CACHAIT", 1.1f, 11f, true), WHITE, a, flags, 0x000000);
-                out.text(p, "LA ROUE !", cx, cy - 1.0f, z, fit("LA ROUE !", 2f, 11f, true) * Ease.outBack(Ease.clamp01(lt / 6f), 2.4f), 0xFF8AE8, a, flags, 0x000000);
+                String cachait = I18n.get("heralizcasino.loup.maison_cachait"), laRoue = I18n.get("heralizcasino.loup.la_roue");
+                out.text(p, cachait, cx, cy + 1.1f, z, fit(cachait, 1.1f, 11f, true), WHITE, a, flags, 0x000000);
+                out.text(p, laRoue, cx, cy - 1.0f, z, fit(laRoue, 2f, 11f, true) * Ease.outBack(Ease.clamp01(lt / 6f), 2.4f), 0xFF8AE8, a, flags, 0x000000);
             }
             // la roue
             if (spin.wheelSeg >= 0 || spin.superSeg >= 0) {
@@ -1630,11 +1636,11 @@ public final class LoupDesign extends MachineDesign<LoupView> {
                     boolean sup = k == 1;
                     if (sup) veil(p, out, 0.7f * Ease.clamp01((w - from) / 6f) * (1 - Ease.range(w, Loup.WHEEL_T - 10, Loup.WHEEL_T)), lift);
                     if (w < Loup.WHEEL_STOP + 6) {
-                        String title = sup ? "SUPER ROUE !" : "LA ROUE !";
+                        String title = I18n.get(sup ? "heralizcasino.loup.super_roue" : "heralizcasino.loup.la_roue");
                         float a = Math.min(1f, (w - from) / 4f);
                         out.text(p, title, cx, cy + 1.2f, z, fit(title, 2f, 11f, true) * Ease.outBack(Ease.clamp01((w - from) / 6f), 2.2f), sup ? GOLD : AMBER, a, flags, 0x000000);
-                        String sub = sup && w < 0 ? (spin.events & Loup.EV_DIRECT) != 0 ? "LA SCIE D'OR OUVRE LA SUPER ROUE" : "LA ROUE PASSE AU NIVEAU SUPÉRIEUR"
-                                : "REGARDE LA ROUE EN HAUT";
+                        String sub = I18n.get(sup && w < 0 ? (spin.events & Loup.EV_DIRECT) != 0 ? "heralizcasino.loup.or_ouvre" : "heralizcasino.loup.niveau_sup"
+                                : "heralizcasino.loup.regarde_roue");
                         out.text(p, sub, cx, cy - 1.2f, z, fit(sub, 0.7f, 11f, true), WHITE, a * (0.6f + 0.4f * s.pulse(0.3f)), flags, 0x000000);
                     } else {
                         String res = segTitle(sup ? Loup.SUPER_WHEEL[spin.superSeg] : Loup.WHEEL[spin.wheelSeg]);
@@ -1649,7 +1655,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
                     float m = j * Rotten.BIG_WIN_TICKS / Loup.JACKPOT_T;
                     BigWin.mascot(p, out, m, Rotten.BIG_WIN_TICKS, WOLF_A, WOLF_B, null, 8, cy - 0.3f, 7.2f, RY0 - 0.15f, mascotTop, SZ + 0.14f, FZ, 0, null);
                     int jk = Math.max(0, spin.jackpot);
-                    String title = "JACKPOT " + JACKPOTS[jk];
+                    String title = I18n.get("heralizcasino.slot.jackpot", JACKPOTS[jk]);
                     float a = Ease.clamp01(j / 4f) * (1 - Ease.range(j, Loup.JACKPOT_T - 6, Loup.JACKPOT_T));
                     out.text(p, title, cx, RY1 - 0.9f, z + 0.1f, fit(title, 1.8f, 11.5f, true) * Ease.outBack(Ease.clamp01(j / 6f), 2.4f), JACKPOT_COLORS[jk], a, flags, 0x000000);
                     long amount = (long) Math.floor(v.bet * spin.jackpotMilli / 1000.0);
@@ -1663,7 +1669,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
                 if (e >= 0 && e < Loup.BONUS_INTRO) {
                     float a = Math.min(1f, e / 4f) * (1 - Ease.range(e, Loup.BONUS_INTRO - 6, Loup.BONUS_INTRO));
                     boolean sup = Loup.isSuper(spin.bonus);
-                    String title = featureName(spin.bonus) + " !";
+                    String title = I18n.get("heralizcasino.slot.annonce", featureName(spin.bonus));
                     veil(p, out, 0.72f * a, lift);
                     out.text(p, title, cx, cy + 2.0f, z, fit(title, 1.5f, 11.2f, true) * Ease.outBack(Ease.clamp01(e / 6f), 2f), sup ? GOLD : AMBER, a, flags, 0x2A1400);
                     String[] sub = intro(spin.bonus);
@@ -1685,7 +1691,8 @@ public final class LoupDesign extends MachineDesign<LoupView> {
                 BigWin.text(p, out, m, Rotten.BIG_WIN_TICKS, 4, total, 8, RY1 - 0.9f, RY0 + 1.2f, z + 0.1f, 11.5f, GOLD, GOLD);
             } else {
                 BigWin.shade(p, out, DARK, WX0, WY0, WX1, WY1 + lift, SZ + 0.15f, BigWin.SHADE * Ease.clamp01((m - Rotten.BIG_WIN_TICKS) / 5f));
-                out.text(p, "GAIN MAXIMUM !", cx, cy + 1.2f, z, fit("GAIN MAXIMUM !", 1.8f, 11f, true), GOLD, 1f, flags, 0x2A1400);
+                String maxTxt = I18n.get("heralizcasino.slot.gain_max");
+                out.text(p, maxTxt, cx, cy + 1.2f, z, fit(maxTxt, 1.8f, 11f, true), GOLD, 1f, flags, 0x2A1400);
                 out.text(p, fmt(total), cx, cy - 1.0f, z, fit(fmt(total), 2.2f, 11f, true), GOLD, 1f, flags, 0x2A1400);
             }
         }
@@ -1693,15 +1700,18 @@ public final class LoupDesign extends MachineDesign<LoupView> {
 
     /** Les trois lignes d'explication d'un bonus. */
     static String[] intro(int bonus) {
-        return switch (bonus) {
-            case Loup.B_BUZZ -> new String[]{"LES SCIES FILENT VERS LA DROITE", "CHAQUE CASE TRAVERSÉE = UN CHAPEAU", "PUIS 6 TOURS GRATUITS"};
-            case Loup.B_MEGA -> new String[]{"DES MÉGA CHAPEAUX TOMBENT SUR LA GRILLE", "CHAQUE CASE COUVERTE = UN CADRE DE PAILLE", "PUIS 6 TOURS GRATUITS"};
-            case Loup.B_MANSION -> new String[]{"TOUT SE CONSTRUIT DIRECTEMENT EN BRIQUE", "CHAQUE CHAPEAU = UNE MAISON DE BRIQUE", "6 TOURS GRATUITS"};
-            case Loup.B_SUPER_BUZZ -> new String[]{"LA GRILLE PASSE À 5 × 6", "LES SCIES SONT COPIÉES EN HAUT ET FILENT", "PUIS 6 TOURS GRATUITS"};
-            case Loup.B_SUPER_MEGA -> new String[]{"LA GRILLE PASSE À 5 × 6", "DES MÉGA CHAPEAUX SUR 30 CASES", "PUIS 6 TOURS GRATUITS"};
-            case Loup.B_SUPER_MANSION -> new String[]{"LA GRILLE PASSE À 5 × 6", "LES SCIES POSENT DES BRIQUES PARTOUT", "6 TOURS GRATUITS EN BRIQUE"};
-            default -> new String[]{"CHAQUE CHAPEAU POSE UN CADRE", "PAILLE › BOIS › BRIQUE", "LE LOUP SOUFFLE À LA FIN : LES GAINS APPARAISSENT"};
+        String[] keys = switch (bonus) {
+            case Loup.B_BUZZ -> new String[]{"buzz_1", "buzz_2", "puis_6"};
+            case Loup.B_MEGA -> new String[]{"mega_1", "mega_2", "puis_6"};
+            case Loup.B_MANSION -> new String[]{"manoir_1", "manoir_2", "six_tours"};
+            case Loup.B_SUPER_BUZZ -> new String[]{"grille_5x6", "super_buzz_2", "puis_6"};
+            case Loup.B_SUPER_MEGA -> new String[]{"grille_5x6", "super_mega_2", "puis_6"};
+            case Loup.B_SUPER_MANSION -> new String[]{"grille_5x6", "super_manoir_2", "six_tours_brique"};
+            default -> new String[]{"cadre_1", "cadre_2", "cadre_3"};
         };
+        String[] lines = new String[keys.length];
+        for (int k = 0; k < keys.length; k++) lines[k] = I18n.get("heralizcasino.loup." + keys[k]);
+        return lines;
     }
 
     /** Mise en place : la grille s'agrandit, l'action du bonus, puis l'annonce des tours gratuits. */
@@ -1709,7 +1719,8 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         if ((spin.events & Loup.EV_EXPAND) != 0 && lt < Loup.EXPAND_T) {
             float a = Ease.clamp01(lt / 4f) * (1 - Ease.range(lt, Loup.EXPAND_T - 8, Loup.EXPAND_T));
             boolean up = lt >= EXP_UP;
-            String t1 = up ? "GRILLE 5 × 6 !" : "SUPER !", t2 = up ? "30 CASES POUR CONSTRUIRE" : "LA BORNE S'AGRANDIT...";
+            String t1 = I18n.get(up ? "heralizcasino.loup.grille_5x6_annonce" : "heralizcasino.loup.super"),
+                    t2 = I18n.get(up ? "heralizcasino.loup.trente_cases" : "heralizcasino.loup.borne");
             float pop = up ? Ease.outBack(Ease.clamp01((lt - EXP_UP) / 6f), 2.4f) : Ease.outBack(Ease.clamp01(lt / 6f), 2.2f);
             out.text(p, t1, cx, cy + 1.3f, z, fit(t1, 2.1f, 11f, true) * pop * (1 + 0.05f * (float) Math.sin(s.time * 0.8f)), GOLD, a, flags, 0x3A1400);
             out.text(p, t2, cx, cy - 1.0f, z, fit(t2, 0.8f, 11f, true), WHITE, a * (0.7f + 0.3f * s.pulse(0.4f)), flags, 0x000000);
@@ -1719,10 +1730,10 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         float at = lt - Loup.actionStart(spin);
         // annonce de l'action, le temps qu'elle demarre
         String what = switch (spin.bonus) {
-            case Loup.B_BUZZ, Loup.B_SUPER_BUZZ -> "LES SCIES DÉCOUPENT LA GRILLE !";
-            case Loup.B_SUPER_MANSION -> "LES SCIES POSENT DES BRIQUES !";
-            case Loup.B_MANSION -> "TOUT EN BRIQUE !";
-            case Loup.B_MEGA, Loup.B_SUPER_MEGA -> "MÉGA CHAPEAUX !";
+            case Loup.B_BUZZ, Loup.B_SUPER_BUZZ -> I18n.get("heralizcasino.loup.scies_decoupent");
+            case Loup.B_SUPER_MANSION -> I18n.get("heralizcasino.loup.scies_briques");
+            case Loup.B_MANSION -> I18n.get("heralizcasino.loup.tout_brique");
+            case Loup.B_MEGA, Loup.B_SUPER_MEGA -> I18n.get("heralizcasino.loup.mega_chapeaux");
             default -> "";
         };
         float from = plan.sawsShown >= 0 ? plan.sawsShown : plan.formEnd;
@@ -1735,9 +1746,9 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         if (f >= 0 && f < Loup.FS_INTRO) {
             float a = Ease.clamp01(f / 4f) * (1 - Ease.range(f, Loup.FS_INTRO - 6, Loup.FS_INTRO));
             veil(p, out, 0.55f * a, lift);
-            String t1 = spin.spinsLeft + " TOURS GRATUITS";
+            String t1 = I18n.get("heralizcasino.slot.n_tours_gratuits", String.valueOf(spin.spinsLeft));
             out.text(p, t1, cx, cy + 0.8f, z, fit(t1, 1.7f, 11f, true) * Ease.outBack(Ease.clamp01(f / 6f), 2.4f), GREEN, a, flags, 0x000000);
-            String t2 = Loup.isMansion(spin.bonus) ? "CHAQUE CHAPEAU = UNE BRIQUE" : "3 CHAPEAUX D'UN COUP = UN TOUR DE PLUS";
+            String t2 = I18n.get(Loup.isMansion(spin.bonus) ? "heralizcasino.loup.chapeau_brique" : "heralizcasino.loup.trois_chapeaux");
             out.text(p, t2, cx, cy - 1.0f, z, fit(t2, 0.7f, 11f, true), WHITE, a, flags, 0x000000);
         }
     }
@@ -1747,13 +1758,14 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         if ((spin.events & Loup.EV_LAST) != 0 && lt < Loup.LAST_T) {
             float a = Math.min(1f, lt / 3f) * (1 - Ease.range(lt, Loup.LAST_T - 5, Loup.LAST_T));
             veil(p, out, 0.6f * a, lift);
-            out.text(p, "DERNIER TOUR !", cx, cy, z, fit("DERNIER TOUR !", 1.9f, 11f, true) * Ease.outBack(Ease.clamp01(lt / 6f), 2.4f), RED, a, flags, 0x000000);
+            String last = I18n.get("heralizcasino.slot.dernier_tour_annonce");
+            out.text(p, last, cx, cy, z, fit(last, 1.9f, 11f, true) * Ease.outBack(Ease.clamp01(lt / 6f), 2.4f), RED, a, flags, 0x000000);
         }
         if ((spin.events & Loup.EV_RETRIGGER) != 0) {
             float r = lt - Loup.bonusSpin(spin);
             if (r >= 0 && r < Loup.RETRIG) {
                 float a = Math.min(1f, r / 3f) * (1 - Ease.range(r, Loup.RETRIG - 5, Loup.RETRIG));
-                String txt = "+" + v.rules.retriggerSpins + (v.rules.retriggerSpins > 1 ? " TOURS !" : " TOUR !");
+                String txt = I18n.get(v.rules.retriggerSpins > 1 ? "heralizcasino.slot.plus_tours_annonce" : "heralizcasino.slot.plus_tour_annonce", String.valueOf(v.rules.retriggerSpins));
                 veil(p, out, 0.55f * a, lift);
                 out.text(p, txt, cx, cy, z, fit(txt, 1.8f, 11f, true) * Ease.outBack(Ease.clamp01(r / 5f), 2.4f), GREEN, a, flags, 0x000000);
             }
@@ -1762,7 +1774,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         float b0 = lt - Loup.buildStart(spin);
         if (b0 >= 0 && b0 < Loup.build(spin)) {
             float a = Ease.clamp01(b0 / 3f) * (1 - Ease.range(b0, Loup.build(spin) - 5, Loup.build(spin)));
-            String t1 = "LES CADRES DEVIENNENT DES MAISONS";
+            String t1 = I18n.get("heralizcasino.loup.cadres_maisons");
             out.text(p, t1, cx, RY1 + lift - 0.9f, z, fit(t1, 0.9f, 11.4f, true), GOLD, a, flags, 0x2A1400);
         }
         float bt = lt - Loup.blowStart(spin);
@@ -1775,7 +1787,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
             float j = bt - reveal[c];
             if (j < 2 || j >= Loup.REVEAL_JACK + 4) continue;
             float a = Ease.clamp01((j - 2) / 3f) * (1 - Ease.range(j, Loup.REVEAL_JACK, Loup.REVEAL_JACK + 4));
-            String txt = rw == Loup.R_WHEEL ? "LA ROUE !" : "JACKPOT " + rewardText(v, spin.tier[c], rw) + " !";
+            String txt = rw == Loup.R_WHEEL ? I18n.get("heralizcasino.loup.la_roue") : I18n.get("heralizcasino.loup.jackpot_annonce", rewardText(v, spin.tier[c], rw));
             out.text(p, txt, cx, cy + 0.2f, z + 0.05f, fit(txt, 1.7f, 11f, true) * Ease.outBack(Ease.clamp01((j - 2) / 5f), 2.4f), rewardColor(spin.tier[c], rw), a, flags, 0x000000);
         }
         // toutes les maisons sont parties : le total
@@ -1800,7 +1812,7 @@ public final class LoupDesign extends MachineDesign<LoupView> {
         // le total reste affiche jusqu'a la partie suivante, sur un fond assombri (les boutons du joueur reviennent)
         float k = tier > 0 ? t - show : t;
         BigWin.shade(p, out, DARK, WX0, WY0, WX1, WY1 + lift, SZ + 0.15f, BigWin.SHADE * Ease.clamp01(k / 5f));
-        out.text(p, "GAIN DU BONUS", cx, cy + 1.2f, z, 1f, WHITE, Ease.clamp01(k / 3f), flags, 0x000000);
+        out.text(p, I18n.get("heralizcasino.loup.gain_bonus"), cx, cy + 1.2f, z, 1f, WHITE, Ease.clamp01(k / 3f), flags, 0x000000);
         String txt = fmt(amount);
         out.text(p, txt, cx, cy - 1.0f, z, fit(txt, 2.2f * Ease.outBack(Math.min(1f, k / 6f), 2f), 10f, true), GOLD, Ease.clamp01(k / 3f), flags, 0x2A1400);
     }

@@ -617,12 +617,15 @@ public final class Territoires {
         ClansNet.toPlayer(p, new Packets.PanneauDrapeauS2C(vue(zone, p, now)));
     }
 
-    /** « 1 h 03 », « 12 min », « 45 s ». */
-    public static String duree(long ms) {
+    /** « 1 h 03 », « 12 min », « 45 s » (traduit chez le joueur ; memes cles que ClanService.duree). */
+    public static net.minecraft.network.chat.MutableComponent duree(long ms) {
         long s = Math.max(0, ms) / 1000;
-        if (s >= 3600) return (s / 3600) + " h " + String.format("%02d", (s % 3600) / 60);
-        if (s >= 60) return (s / 60) + " min";
-        return s + " s";
+        if (s >= 3600) {
+            return Component.translatableWithFallback("heralisz_clans.duree.heures", "%s h %s", String.valueOf(s / 3600),
+                    String.format(java.util.Locale.ROOT, "%02d", (s % 3600) / 60));
+        }
+        if (s >= 60) return Component.translatableWithFallback("heralisz_clans.duree.minutes", "%s min", String.valueOf(s / 60));
+        return Component.translatableWithFallback("heralisz_clans.duree.secondes", "%s s", String.valueOf(s));
     }
 
     // ------------------------------------------------------------------ administration (/territoire)

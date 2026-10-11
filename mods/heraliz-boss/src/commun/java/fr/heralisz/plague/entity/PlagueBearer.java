@@ -70,8 +70,9 @@ public class PlagueBearer extends HeraliszBoss<PlagueBearer.Action> {
    }
 
    // ------------------------------------------------------------------ HUD
+   /** Clé de traduction du nom (traduite par l'affichage, chez le joueur). */
    public String hudName() {
-      return "LE PORTEUR DE PESTE";
+      return "hud.heralisz_plague.name";
    }
 
    public int hudTop(int ph) {
@@ -118,15 +119,16 @@ public class PlagueBearer extends HeraliszBoss<PlagueBearer.Action> {
       return CINE[Mth.clamp(kind, 0, CINE.length - 1)];
    }
 
+   /** Clés de traduction {bandeau, titre, sous-titre} ; le HUD les traduit chez le joueur. */
    @Override
    public String[] cinematicTitles(int kind) {
       return switch (kind) {
-         case PHASE2_K -> new String[] {"LES BONBONNES CÈDENT", "PHASE II", "LA PESTE EST LIBRE"};
-         case PHASE3_K -> new String[] {"IL ARRACHE SON MASQUE", "PHASE III", "PATIENT ZÉRO"};
-         case ENTRY_K -> new String[] {"ZONE ROUGE", "LA STATION DE QUARANTAINE", "ON NE SORT PAS D'ICI"};
+         case PHASE2_K -> new String[] {"title.heralisz_plague.p2.top", "title.heralisz_plague.p2.name", "title.heralisz_plague.p2.sub"};
+         case PHASE3_K -> new String[] {"title.heralisz_plague.p3.top", "title.heralisz_plague.p3.name", "title.heralisz_plague.p3.sub"};
+         case ENTRY_K -> new String[] {"title.heralisz_plague.entry.top", "title.heralisz_plague.entry.name", "title.heralisz_plague.entry.sub"};
          case OFFER_K -> new String[] {"", "", ""};
-         case DEATH_K -> new String[] {"UNE DERNIÈRE BOUFFÉE D'AIR", "LE PORTEUR DE PESTE", "LA MOISISSURE LE REPREND"};
-         default -> new String[] {"ALERTE : ZONE CONTAMINÉE", "LE PORTEUR DE PESTE", "UNITÉ NBC - AUCUN SURVIVANT"};
+         case DEATH_K -> new String[] {"title.heralisz_plague.death.top", "hud.heralisz_plague.name", "title.heralisz_plague.death.sub"};
+         default -> new String[] {"title.heralisz_plague.spawn.top", "hud.heralisz_plague.name", "title.heralisz_plague.spawn.sub"};
       };
    }
 

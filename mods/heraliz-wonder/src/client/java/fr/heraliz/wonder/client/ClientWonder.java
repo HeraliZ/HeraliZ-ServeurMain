@@ -50,7 +50,7 @@ public final class ClientWonder {
             String r = Fx.stats() + " | " + FxVent.stats();
             HeralizWonder.LOG.info("[wonder] fx {}", r);
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) mc.player.displayClientMessage(Component.literal("Effets : voir le journal"), true);
+            if (mc.player != null) mc.player.displayClientMessage(Component.translatable("heraliz_wonder.journal.effets"), true);
             return Command.SINGLE_SUCCESS;
         }).then(Commands.literal("inspecter").executes(c -> {
             // banc d'essai : inspection TaCZ de l'arme tenue (comme la touche d'inspection)

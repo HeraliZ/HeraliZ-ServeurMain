@@ -45,7 +45,7 @@ final class Commandes {
                         be.ouvrir(p);
                         return 1;
                     }
-                    c.getSource().sendFailure(Component.literal("Pas de coffre T7 ici"));
+                    c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.t7.absent", "Pas de coffre T7 ici"));
                     return 0;
                 })))
                 .then(Commands.literal("reinitialiser").executes(c -> reinit(c.getSource(), 24))
@@ -62,17 +62,18 @@ final class Commandes {
                         .then(Commands.literal("declencher").then(Commands.argument("nom", StringArgumentType.word()).suggests(POINTS)
                                 .executes(c -> {
                                     int n = PointsT7.declencher(c.getSource().getLevel(), StringArgumentType.getString(c, "nom"));
-                                    if (n == 0) c.getSource().sendFailure(Component.literal("Rien n'apparaît (point inconnu, coffre déjà là ou place prise)"));
+                                    if (n == 0) c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.point.rien",
+                                            "Rien n'apparaît (point inconnu, coffre déjà là ou place prise)"));
                                     return n;
                                 })))
                         .then(Commands.literal("retirer").then(Commands.argument("nom", StringArgumentType.word()).suggests(POINTS)
                                 .executes(c -> {
                                     PointsT7.Point p = PointsT7.get(c.getSource().getLevel()).retirer(StringArgumentType.getString(c, "nom"));
                                     if (p == null) {
-                                        c.getSource().sendFailure(Component.literal("Point inconnu"));
+                                        c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.point.inconnu", "Point inconnu"));
                                         return 0;
                                     }
-                                    c.getSource().sendSuccess(() -> Component.literal("Point " + p.nom + " retiré"), true);
+                                    c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.point.retire", "Point %s retiré", p.nom), true);
                                     return 1;
                                 })))
                         .then(Commands.literal("liste").executes(c -> liste(c.getSource())))));
@@ -96,14 +97,14 @@ final class Commandes {
     private static int apparaitre(CommandContext<CommandSourceStack> c, int presenceS) throws CommandSyntaxException {
         String type = PointsT7.type(StringArgumentType.getString(c, "type"));
         if (type == null) {
-            c.getSource().sendFailure(Component.literal("Type inconnu"));
+            c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.type_inconnu", "Type inconnu"));
             return 0;
         }
         BlockPos pos = BlockPosArgument.getLoadedBlockPos(c, "pos");
         Direction face = Direction.fromYRot(c.getSource().getRotation().y).getOpposite();
         int presence = presenceS < 0 ? PointsT7.presenceDefaut(type) : presenceS * 20;
         if (!PointsT7.apparaitre(c.getSource().getLevel(), pos, face, type, presence, "")) {
-            c.getSource().sendFailure(Component.literal("Place prise"));
+            c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.place_prise", "Place prise"));
             return 0;
         }
         return 1;
@@ -112,7 +113,7 @@ final class Commandes {
     private static int ajouter(CommandContext<CommandSourceStack> c, boolean auto, int presenceS, int minS, int maxS) {
         String type = PointsT7.type(StringArgumentType.getString(c, "type"));
         if (type == null) {
-            c.getSource().sendFailure(Component.literal("Type inconnu"));
+            c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.type_inconnu", "Type inconnu"));
             return 0;
         }
         PointsT7.Point p = new PointsT7.Point();
@@ -126,11 +127,15 @@ final class Commandes {
         p.delaiMax = Math.max(p.delaiMin, (maxS < 0 ? 3600 : maxS) * 20);
         ServerLevel l = c.getSource().getLevel();
         if (!PointsT7.get(l).ajouter(p)) {
-            c.getSource().sendFailure(Component.literal("Ce nom de point existe déjà"));
+            c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.point.existe", "Ce nom de point existe déjà"));
             return 0;
         }
-        c.getSource().sendSuccess(() -> Component.literal("Point " + p.nom + " (" + type.substring(3) + ", " + (auto ? "auto" : "événement")
-                + ", présence " + p.presence / 20 + " s" + (auto ? ", réapparition " + p.delaiMin / 20 + "-" + p.delaiMax / 20 + " s" : "") + ")"), true);
+        c.getSource().sendSuccess(() -> auto
+                ? Component.translatableWithFallback("heraliz_loot.cmd.point.ajoute_auto",
+                        "Point %1$s (%2$s, auto, présence %3$s s, réapparition %4$s-%5$s s)",
+                        p.nom, type.substring(3), p.presence / 20, p.delaiMin / 20, p.delaiMax / 20)
+                : Component.translatableWithFallback("heraliz_loot.cmd.point.ajoute", "Point %1$s (%2$s, événement, présence %3$s s)",
+                        p.nom, type.substring(3), p.presence / 20), true);
         return 1;
     }
 
@@ -138,10 +143,15 @@ final class Commandes {
         int n = 0;
         for (PointsT7.Point p : PointsT7.get(s.getLevel()).tous()) {
             n++;
-            s.sendSuccess(() -> Component.literal(p.nom + " : " + p.type.substring(3) + " en " + p.pos.toShortString() + ", "
-                    + (p.auto ? "auto" : "événement") + (p.present() ? " — présent" : "")), false);
+            Component mode = p.auto ? Component.translatableWithFallback("heraliz_loot.cmd.point.mode.auto", "auto")
+                    : Component.translatableWithFallback("heraliz_loot.cmd.point.mode.evenement", "événement");
+            s.sendSuccess(() -> p.present()
+                    ? Component.translatableWithFallback("heraliz_loot.cmd.point.ligne_present", "%1$s : %2$s en %3$s, %4$s — présent",
+                            p.nom, p.type.substring(3), p.pos.toShortString(), mode)
+                    : Component.translatableWithFallback("heraliz_loot.cmd.point.ligne", "%1$s : %2$s en %3$s, %4$s",
+                            p.nom, p.type.substring(3), p.pos.toShortString(), mode), false);
         }
-        if (n == 0) s.sendSuccess(() -> Component.literal("Aucun point d'apparition"), false);
+        if (n == 0) s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.point.aucun", "Aucun point d'apparition"), false);
         return n;
     }
 
@@ -156,7 +166,7 @@ final class Commandes {
             }
         }
         int fin = n;
-        s.sendSuccess(() -> Component.literal(fin + " coffre(s) remis à neuf"), true);
+        s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.reinitialise", "%s coffre(s) remis à neuf", fin), true);
         return n;
     }
 }

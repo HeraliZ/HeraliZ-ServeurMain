@@ -184,6 +184,15 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   n'ont rien à retélécharger) ;
 - changer un modèle, une texture, un effet, le HUD → `src/client` (nouveau jar `-client` pour les joueurs) ;
 - ajouter un objet, un bloc, une entité, un paquet ou une donnée synchronisée → `src/commun` (**les deux** jars).
+- **textes (3 langues : français, anglais, russe)** : jamais de texte écrit en dur. Chaque texte est une clé de
+  `assets/<modid>/lang/` présente dans `fr_fr.json` (la référence), `en_us.json` et `ru_ru.json` (glossaire des termes :
+  héral → heral / герал, extraction → extraction / эвакуация, à terre → downed / нокаут…). Message envoyé par le
+  serveur : `Component.translatableWithFallback(clé, texte français, args...)` (le joueur le lit dans sa langue, la
+  console en français) ; dans ces clés, seulement `%s` / `%1$s` et `%%` (formater les nombres avant). Côté client :
+  `Component.translatable` ou `I18n.get`. `python outils/verifier_langues.py` contrôle les trois langues (mêmes
+  paramètres et codes couleur) ; les polices DM Sans n'ont pas le cyrillique : `python outils/polices_cyrillique.py`
+  ajoute Onest (OFL) en secours à toute nouvelle police d'un mod. Restent en français : journaux, configs, alertes du
+  staff de Spartan.
 - les camos des armes (tactique) : les 62 shaders `camo_<id>.fsh` sont **générés** depuis
   `mods/heraliz-tactique/outils/camo_gabarit.fsh` par `python mods/heraliz-tactique/outils/generer_camos.py` ; on modifie
   le gabarit, jamais les fichiers générés.
@@ -288,6 +297,7 @@ Les contrôles :
   Minecraft + Forge du lanceur CurseForge ;
 - noms perso : aucun mot interdit dans les sources ni les jars ;
 - silencieux : chaque silencieux des gunpacks a sa portée de son (`outils/silencieux.py`).
+- langues : textes français, anglais et russe avec les mêmes paramètres et codes couleur (`outils/verifier_langues.py`).
 
 **Où va quoi** (dossier `livraison/`, recréé à chaque fois) :
 - `mods serveur/` → `mods/` du Ptero ;
@@ -385,7 +395,7 @@ Règles :
 
 `.github/workflows/serveur.yml`, à chaque envoi sur la branche `main` :
 1. fabrique les mods dont les sources ont changé (les autres jars sont repris du cache) et range les jars ;
-2. lance les contrôles possibles sans Minecraft (GeckoLib, noms perso si le secret `NOMS_INTERDITS` existe) ; un
+2. lance les contrôles possibles sans Minecraft (GeckoLib, langues, noms perso si le secret `NOMS_INTERDITS` existe) ; un
    échec arrête tout : rien n'est envoyé au Ptero ;
 3. garde nos jars (paquets « mods-serveur » et « mods-client », 3 jours) à télécharger dans l'onglet Actions ; quand le
    quota de stockage des artefacts de GitHub est plein, ces copies manquent (avertissement), sans bloquer la suite ;
@@ -443,6 +453,11 @@ raison) ; la clé des jetons du launcher est lue sur la VM du site (section 6 bi
 `LITEBANS_DB_PASSWORD` (base MySQL du Ptero, onglet « Databases » du panel) ; sans eux, LiteBans passe en base locale
 (H2) et repart sans historique. Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
 écrire ailleurs.
+
+**Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
+fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets
+« test-mods-serveur » et « test-mods-client », pour essayer en jeu). Ne faire passer une branche sur `main` que quand il
+est vert : un mod qui ne compile pas reste hors de `main`.
 
 Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SRG : ils ne tournent que sur les PC
 (section 6), pas sur GitHub. C'est pour ça qu'on vérifie AVANT d'envoyer.

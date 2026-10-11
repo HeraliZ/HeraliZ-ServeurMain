@@ -54,7 +54,7 @@ public final class HandshakeMonitor {
                 return;
             }
             if (SpartanConfig.mayKickForClientSignal()) {
-                p.connection.disconnect(Component.literal("[Spartan] Client non conforme."));
+                p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.non_conforme", "[Spartan] Client non conforme."));
             }
         }
     }

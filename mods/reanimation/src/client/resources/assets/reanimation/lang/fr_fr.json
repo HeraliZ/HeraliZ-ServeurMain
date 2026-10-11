@@ -155,5 +155,6 @@
   "death.attack.reanimation.execution_check.player": "%1$s a été blessé par %2$s",
   "menu.reanimation.subtitle": "%s / %s débloquées · équipée : %s",
   "menu.reanimation.subtitle_none": "%s / %s débloquées",
-  "menu.reanimation.equipped_btn": "Équipée"
+  "menu.reanimation.equipped_btn": "Équipée",
+  "reanimation.bot.nom": "Bot %s"
 }

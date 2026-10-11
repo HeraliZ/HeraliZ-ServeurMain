@@ -1,39 +1,47 @@
 {
-  "_aide": "Texte de l'ecran Informations du menu Echap (HeraliZ Interface). Modifiable librement : chaque texte existe en francais (fr) et en anglais (en). Le fichier est relu a chaque ouverture de l'ecran (pas besoin de relancer le jeu). Supprimer ce fichier le recree avec le texte d'origine.",
+  "_aide": "Texte de l'ecran Informations du menu Echap (HeraliZ Interface). Modifiable librement : chaque texte existe en francais (fr), en anglais (en) et en russe (ru) ; une langue absente prend l'anglais, puis le francais. Le fichier est relu a chaque ouverture de l'ecran (pas besoin de relancer le jeu). Supprimer ce fichier le recree avec le texte d'origine.",
   "chiffres": [
     {
       "valeur": "1950",
       "fr": "Année en cours",
-      "en": "Current year"
+      "en": "Current year",
+      "ru": "Текущий год"
     },
     {
       "valeur": "30 ans",
       "en_valeur": "30 years",
+      "ru_valeur": "30 лет",
       "fr": "Depuis l'effondrement",
-      "en": "Since the collapse"
+      "en": "Since the collapse",
+      "ru": "С момента краха"
     },
     {
       "valeur": "Hérals",
       "en_valeur": "Herals",
+      "ru_valeur": "Гералы",
       "fr": "Seule monnaie",
-      "en": "The only currency"
+      "en": "The only currency",
+      "ru": "Единственная валюта"
     }
   ],
   "reperes": [
     {
       "annee": "1920",
       "fr": "L'effondrement",
-      "en": "The collapse"
+      "en": "The collapse",
+      "ru": "Крах"
     },
     {
       "annee": "1920 – 1949",
       "fr": "Les années noires",
-      "en": "The dark years"
+      "en": "The dark years",
+      "ru": "Тёмные годы"
     },
     {
       "annee": "1950",
       "fr": "Aujourd'hui : survivre",
-      "en": "Today: survive"
+      "en": "Today: survive",
+      "ru": "Сегодня: выжить"
     }
   ],
   "histoire": {
@@ -48,6 +56,12 @@
       "Thirty years have passed. It is 1950 and the survivors live among the ruins of the old world. Forests have swallowed the villages, roads are cut off and the old watchtowers still stand guard over what is left.",
       "Here, nobody pays with banknotes anymore: the only currency that matters is the heral. You earn them by exploring, trading and fighting… and you lose them just as fast.",
       "Found a clan, build your base, hold territories. And above all: stay alive."
+    ],
+    "ru": [
+      "В 1920 году мир рухнул. Никто толком не знает, откуда пришла зараза: за несколько недель города смолкли, а мёртвые поднялись.",
+      "Прошло тридцать лет. Сейчас 1950 год, и выжившие живут среди руин старого мира. Леса поглотили деревни, дороги перерезаны, а старые вышки всё ещё стерегут то, что осталось.",
+      "Здесь больше никто не платит банкнотами: единственная валюта, которая имеет значение, — гералы. Их зарабатывают, исследуя, торгуя и сражаясь… и теряют так же быстро.",
+      "Создайте клан, постройте базу, удерживайте территории. И главное: останьтесь в живых."
     ]
   },
   "commandes": [
@@ -55,54 +69,64 @@
       "commande": "/clan",
       "touche": "K",
       "fr": "Votre clan : membres, banque, quêtes, territoires",
-      "en": "Your clan: members, bank, quests, territories"
+      "en": "Your clan: members, bank, quests, territories",
+      "ru": "Ваш клан: участники, банк, задания, территории"
     },
     {
       "commande": "/cc",
       "fr": "Chat de clan (/cc message, ou /cc seul pour basculer)",
-      "en": "Clan chat (/cc message, or /cc alone to toggle)"
+      "en": "Clan chat (/cc message, or /cc alone to toggle)",
+      "ru": "Чат клана (/cc сообщение или просто /cc для переключения)"
     },
     {
       "commande": "/base",
       "touche": "N",
       "fr": "Votre base : entrer, sortir, salles",
-      "en": "Your base: enter, leave, rooms"
+      "en": "Your base: enter, leave, rooms",
+      "ru": "Ваша база: войти, выйти, комнаты"
     },
     {
       "commande": "/tags",
       "touche": "J",
       "fr": "Vos tags à peindre sur les murs",
-      "en": "Your tags to spray on walls"
+      "en": "Your tags to spray on walls",
+      "ru": "Ваши теги для рисования на стенах"
     },
     {
       "commande": "/solde",
       "fr": "Voir vos hérals",
-      "en": "Check your herals"
+      "en": "Check your herals",
+      "ru": "Посмотреть свои гералы"
     },
     {
       "commande": "/payer",
       "fr": "Donner des hérals : /payer joueur montant",
-      "en": "Give herals: /payer player amount"
+      "en": "Give herals: /payer player amount",
+      "ru": "Передать гералы: /payer игрок сумма"
     },
     {
       "commande": "/classement",
       "fr": "Les survivants les plus riches",
-      "en": "The richest survivors"
+      "en": "The richest survivors",
+      "ru": "Самые богатые выжившие"
     },
     {
       "commande": "/duel",
       "fr": "Défier un joueur en duel",
-      "en": "Challenge a player to a duel"
+      "en": "Challenge a player to a duel",
+      "ru": "Вызвать игрока на дуэль"
     },
     {
       "commande": "/groupe",
       "fr": "Former un groupe pour les matchs",
-      "en": "Form a group for matches"
+      "en": "Form a group for matches",
+      "ru": "Собрать группу для матчей"
     },
     {
       "commande": "/zombies",
       "fr": "Mode zombies en équipe",
-      "en": "Team zombies mode"
+      "en": "Team zombies mode",
+      "ru": "Командный режим зомби"
     }
   ],
   "regles": {
@@ -121,10 +145,19 @@
       "Disconnecting during a fight counts as a death.",
       "No advertising for other servers.",
       "Staff decisions apply. If you disagree, open a ticket on Discord."
+    ],
+    "ru": [
+      "Прежде всего уважение: никаких оскорблений, травли и дискриминационных высказываний — ни в игре, ни в Discord.",
+      "Никакого читерства: модифицированные клиенты, x-ray, макросы и использование багов запрещены.",
+      "Нашли баг? Сообщите о нём персоналу в Discord, а не используйте его.",
+      "Выход из игры во время боя засчитывается как смерть.",
+      "Никакой рекламы других серверов.",
+      "Решения персонала обязательны. Если вы не согласны, откройте тикет в Discord."
     ]
   },
   "note_regles": {
     "fr": "Règlement provisoire : la version complète est sur le Discord.",
-    "en": "Provisional rules: the full version is on Discord."
+    "en": "Provisional rules: the full version is on Discord.",
+    "ru": "Временные правила: полная версия — в Discord."
   }
 }

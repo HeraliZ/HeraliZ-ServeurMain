@@ -7,6 +7,7 @@ import fr.heralisz.matchs.moteur.api.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -173,11 +174,11 @@ public final class ArenesService {
         return id != null && NAMESPACES_NETTOYES.contains(id.getNamespace());
     }
 
-    /** Texte d'avancement de la pose (« 12 000 / 48 210 ») ou « prete ». */
-    public static String progression(Instance inst) {
-        if (inst.prete()) return "prete";
-        for (Pose p : FILE) if (p.inst == inst) return p.i + " / " + p.st.blocs.size();
-        return "en attente";
+    /** Texte d'avancement de la pose (« 12 000 / 48 210 ») ou « prete » (traduit chez le joueur). */
+    public static Component progression(Instance inst) {
+        if (inst.prete()) return Component.translatableWithFallback("heralisz_matchs.commande.arenes.prete", "prête");
+        for (Pose p : FILE) if (p.inst == inst) return Component.literal(p.i + " / " + p.st.blocs.size());
+        return Component.translatableWithFallback("heralisz_matchs.commande.arenes.attente", "en attente");
     }
 
     // ------------------------------------------------------------------ cycle de vie

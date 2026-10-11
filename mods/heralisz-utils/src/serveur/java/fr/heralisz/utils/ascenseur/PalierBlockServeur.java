@@ -29,7 +29,7 @@ public class PalierBlockServeur extends PalierBlock {
         l.playSound(null, pos, SoundEvents.WOODEN_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.7f, monter ? 1.1f : 0.9f);
         MachineBlockEntityServeur m = MachineBlockEntityServeur.trouver(l, pos);
         if (m == null) {
-            p.displayClientMessage(Component.literal("L'ascenseur ne répond pas"), true);
+            p.displayClientMessage(Component.translatableWithFallback("heralisz_utils.ascenseur.ne_repond_pas", "L'ascenseur ne répond pas"), true);
         } else if (p instanceof ServerPlayer sp) {
             m.appel((ServerLevel) l, sp, pos.getY() - 1, monter);
         }

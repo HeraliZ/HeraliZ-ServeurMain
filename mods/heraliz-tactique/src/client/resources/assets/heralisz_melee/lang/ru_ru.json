@@ -1,0 +1,14 @@
+{
+  "item.heralisz_melee.baseball_bat": "Бейсбольная бита",
+  "item.heralisz_melee.baseball_bat.desc": "Крепкая бейсбольная бита, бьёт сильно.",
+  "item.heralisz_melee.executor": "§4Палач",
+  "item.heralisz_melee.mercy": "§rМилосердие",
+  "item.heralisz_melee.desmoulins_edge": "§bКлинок Демулена",
+  "item.heralisz_melee.dragons_fang": "§6Клык дракона",
+  "item.heralisz_melee.tac_dagger": "§7Тактический кинжал",
+  "item.heralisz_melee.sea_gleam": "§9Морской блеск",
+  "item.heralisz_melee.creed": "§cКредо",
+  "item.heralisz_melee.smite_hammer": "§rМолот кары",
+  "pack.heralisz_melee.default_pack.name": "§cHeraliZ §7- §fБлижний бой",
+  "pack.heralisz_melee.name": "§cHeraliZ §7- §fБлижний бой"
+}

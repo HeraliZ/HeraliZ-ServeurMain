@@ -86,7 +86,8 @@ final class ReceptionServeur {
             if (SpartanConfig.SILENT_CLIENT.get()) {
                 CheckManager.flag("ClientIntegrity", player, "identifiant matériel vide : client modifié ?");
             } else {
-                player.connection.disconnect(Component.literal("[Spartan] Identifiant client manquant."));
+                player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.identifiant",
+                        "[Spartan] Identifiant client manquant."));
                 Spartan.LOGGER.info("[Spartan] {} expulsé : identifiant vide.", playerName);
             }
             return;
@@ -146,7 +147,7 @@ final class ReceptionServeur {
                     CheckManager.flag("JvmHardening", player,
                             "protections anti-injection manquantes (" + safeDetail + ") : lancez le jeu via le launcher officiel");
                     if (SpartanConfig.mayKickForClientSignal()) {
-                        player.connection.disconnect(Component.literal(
+                        player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.protections",
                                 "Lancez le jeu depuis le launcher officiel (protections anti-triche requises)."));
                     }
                 }
@@ -155,7 +156,7 @@ final class ReceptionServeur {
                 if (SpartanConfig.BLOCK_SHADERS.get() && !SpartanConfig.getAllowedShaderpacks().contains(lower)) {
                     CheckManager.flag("Shaders", player, "shaderpack actif non autorisé : " + safeDetail);
                     if (SpartanConfig.mayKickForClientSignal()) {
-                        player.connection.disconnect(Component.literal(
+                        player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.shaders",
                                 "Les shaders sont interdits sur ce serveur. Désactivez votre shaderpack."));
                     }
                 }
@@ -182,7 +183,8 @@ final class ReceptionServeur {
         }
         AlertManager.dispatch(player, "ModScan", 1, "Mods interdits : " + String.join(", ", found), null);
         if (SpartanConfig.mayKickForClientSignal()) {
-            player.connection.disconnect(Component.literal("[Spartan] Mod interdit détecté : " + String.join(", ", found)));
+            player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.mod_interdit",
+                    "[Spartan] Mod interdit détecté : %s", String.join(", ", found)));
         }
     }
 
@@ -209,7 +211,7 @@ final class ReceptionServeur {
         if (!custom.isEmpty()) {
             CheckManager.flag("ResourcePack", player, "pack(s) de texture non autorisé(s) : " + String.join(", ", custom));
             if (SpartanConfig.mayKickForClientSignal()) {
-                player.connection.disconnect(Component.literal(
+                player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.packs",
                         "Les packs de ressources personnalisés sont interdits. Retirez-les (dossier resourcepacks)."));
             }
         }

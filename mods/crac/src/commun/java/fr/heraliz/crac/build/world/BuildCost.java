@@ -89,13 +89,25 @@ public record BuildCost(Ingredient ingredient, int count, @Nullable String label
 
     public Component displayName() {
         if (this.problem != null) {
-            return Component.literal(this.label + " (" + this.problem + ": tell an admin)");
+            // the English problem stays in the record (server log, config check); the player reads it in their language
+            return Component.translatableWithFallback("crac.cost.invalid", "%s (%s : préviens un admin)", this.label, problemText(this.problem));
         }
         if (this.label != null) {
             return Component.literal(this.label);
         }
         ItemStack[] items = this.ingredient.getItems();
         return items.length == 0 ? Component.literal("?") : items[0].getHoverName();
+    }
+
+    /** The problem of an unpayable cost (see {@link #parse}) in the player's language. */
+    private static Component problemText(String problem) {
+        return switch (problem) {
+            case "malformed cost entry" -> Component.translatableWithFallback("crac.cost.malformed_entry", "entrée de coût mal écrite");
+            case "malformed id" -> Component.translatableWithFallback("crac.cost.malformed_id", "identifiant mal écrit");
+            case "unknown or empty tag" -> Component.translatableWithFallback("crac.cost.unknown_tag", "tag inconnu ou vide");
+            case "unknown item" -> Component.translatableWithFallback("crac.cost.unknown_item", "objet inconnu");
+            default -> Component.literal(problem);
+        };
     }
 
     private static String pretty(String path) {

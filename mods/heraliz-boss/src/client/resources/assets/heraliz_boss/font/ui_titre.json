@@ -18,6 +18,16 @@
       ]
     },
     {
+      "type": "ttf",
+      "size": 22.0,
+      "oversample": 6.0,
+      "shift": [
+        0.0,
+        1.0
+      ],
+      "file": "heraliz_boss:cyrillique_bold.ttf"
+    },
+    {
       "type": "reference",
       "id": "minecraft:default"
     }

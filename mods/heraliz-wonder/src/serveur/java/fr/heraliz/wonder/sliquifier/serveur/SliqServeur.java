@@ -13,6 +13,8 @@ import fr.heraliz.wonder.sliquifier.net.SliqReseau;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -589,7 +591,8 @@ public final class SliqServeur {
         return n;
     }
 
-    public static String etat() {
-        return nB + " boules en vol, " + nF + " flaques, " + nG + " glissades";
+    public static MutableComponent etat() {
+        return Component.translatableWithFallback("heraliz_wonder.banc.sliq_etat", "%s boules en vol, %s flaques, %s glissades",
+                String.valueOf(nB), String.valueOf(nF), String.valueOf(nG));
     }
 }

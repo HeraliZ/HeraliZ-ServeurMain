@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix3f;
@@ -80,20 +81,20 @@ public class TableauRenderer implements BlockEntityRenderer<TableauBlockEntity> 
         double t = TrainClient.temps(Minecraft.getInstance().getFrameTime());
         Reseau r = h.reseau;
         String suivante = r.gares[(k + 1) % r.gares.length].nom();
-        String dir = "DIRECTION " + suivante;
+        String dir = I18n.get("heralisz_utils.tableau.direction", suivante);
         double a = Double.MAX_VALUE;
         for (int rame = 0; rame < Horaire.RAMES; rame++) {
             Horaire.Etat e = h.etatRame(t, rame);
             if (e.aQuai() == k) {
                 int s = (int) Math.ceil(e.reste());
                 String dep = String.format("%d:%02d", s / 60, s % 60);
-                return new String[]{dir, "À QUAI", "DÉPART DANS " + dep};
+                return new String[]{dir, I18n.get("heralisz_utils.tableau.a_quai"), I18n.get("heralisz_utils.tableau.depart", dep)};
             }
             a = Math.min(a, h.attente(k, e));
         }
-        if (a < 30) return new String[]{dir, "TRAIN EN APPROCHE", "ÉLOIGNEZ-VOUS DE LA VOIE"};
+        if (a < 30) return new String[]{dir, I18n.get("heralisz_utils.tableau.approche"), I18n.get("heralisz_utils.tableau.eloignez")};
         int m = (int) Math.ceil(a / 60);
-        return new String[]{dir, "PROCHAIN TRAIN", "DANS " + m + " MIN"};
+        return new String[]{dir, I18n.get("heralisz_utils.tableau.prochain"), I18n.get("heralisz_utils.tableau.dans_min", m)};
     }
 
     private static void texte(PoseStack ps, MultiBufferSource buf, String t, float x, float y, float echelle, int coul, boolean avant) {

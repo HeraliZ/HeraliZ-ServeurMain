@@ -72,7 +72,7 @@ public final class PackMusiques {
         if (e.getPackType() != PackType.CLIENT_RESOURCES) return;
         preparerDossier();
         e.addRepositorySource(consommateur -> {
-            Pack p = Pack.readMetaAndCreate(ID, Component.literal("HeraliZ — musiques zombies"), true, Ressources::new,
+            Pack p = Pack.readMetaAndCreate(ID, Component.translatable("heralisz_matchs.pack_musiques.titre"), true, Ressources::new,
                     PackType.CLIENT_RESOURCES, Pack.Position.TOP, PackSource.BUILT_IN);
             if (p != null) consommateur.accept(p);
             else HeraliszMatchs.LOG.warn("[zombies] pack des musiques non cree");
@@ -139,7 +139,9 @@ public final class PackMusiques {
         @Override
         public IoSupplier<InputStream> getRootResource(String... chemin) {
             if (chemin.length == 1 && "pack.mcmeta".equals(chemin[0])) {
-                byte[] b = ("{\"pack\":{\"pack_format\":15,\"description\":\"Vos musiques : config/heralisz_matchs/musiques\"}}")
+                // description traduite chez le joueur (composant JSON {"translate": ...}, texte français de secours)
+                byte[] b = ("{\"pack\":{\"pack_format\":15,\"description\":{\"translate\":\"heralisz_matchs.pack_musiques.description\","
+                        + "\"fallback\":\"Vos musiques : config/heralisz_matchs/musiques\"}}}")
                         .getBytes(StandardCharsets.UTF_8);
                 return () -> new ByteArrayInputStream(b);
             }

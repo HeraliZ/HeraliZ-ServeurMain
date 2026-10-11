@@ -6,6 +6,7 @@ import fr.heralisz.utils.train.PlateauRendu;
 import fr.heralisz.utils.train.TrainSons;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -1691,7 +1693,7 @@ public final class Cinematique {
         float tete = lisse(k(C_PIVOT + 30, C_PIVOT + 50));
         chauffeur.a("tete", -0.06f * tete, TETE_CHAUFFEUR * tete, 0.28f * Mth.sin(tete * Mth.PI));
         if (t == C_HE) {
-            dire("« Hé ! »", 40);
+            dire(I18n.get("heralisz_utils.cine.he"), 40);
         }
         if (t < C_CRI) {                                           // entré dans la cabine : juste derrière le grand dossier
             float e = lisse(k(C_DEBUT, C_DEBUT + 24));
@@ -2037,12 +2039,13 @@ public final class Cinematique {
             g.pose().popPose();
             g.pose().pushPose();
             g.pose().scale(1.5f, 1.5f, 1f);
-            g.drawCenteredString(mc.font, Component.literal("Refuge des survivants"), (int) (w / 3f), (int) (h / 3f) - 2,
+            g.drawCenteredString(mc.font, Component.translatable("heralisz_utils.cine.sous_titre"), (int) (w / 3f), (int) (h / 3f) - 2,
                     (a << 24) | 0xB8B0A0);
             g.pose().popPose();
         }
         if (attente == -1) {
-            g.drawString(mc.font, Component.literal("Maintenir ESPACE pour passer"), 6, h - 11, 0x70FFFFFF);
+            g.drawString(mc.font, Component.translatable("heralisz_utils.cine.passer",
+                    mc.options.keyJump.getTranslatedKeyMessage().getString().toUpperCase(Locale.ROOT)), 6, h - 11, 0x70FFFFFF);
         }
     }
 

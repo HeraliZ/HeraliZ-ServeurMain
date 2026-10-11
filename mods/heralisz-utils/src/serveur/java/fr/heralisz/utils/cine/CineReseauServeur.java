@@ -14,6 +14,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -119,13 +120,14 @@ public final class CineReseauServeur {
     private static int rejouer(CommandSourceStack src, ServerPlayer sp, boolean force) {
         ServerLevel ow = CineDecorServeur.get(sp.server).niveau(sp.server);
         if (!decorPresent(sp.server)) {
-            src.sendFailure(Component.literal("Le point de réveil de la cinématique n'est pas praticable dans ce monde (/cinematique reveil)."));
+            src.sendFailure(Component.translatableWithFallback("heralisz_utils.cine.reveil_impraticable",
+                    "Le point de réveil de la cinématique n'est pas praticable dans ce monde (/cinematique reveil)."));
             return 0;
         }
         Vec3 r = CineDecorServeur.get(sp.server).etat().reveil();
         boolean auRefuge = sp.level() == ow && sp.position().distanceToSqr(r) < RAYON_REFUGE * RAYON_REFUGE;
         if (!force && !auRefuge) {
-            src.sendFailure(Component.literal("La cinématique se rejoue depuis le spawn."));
+            src.sendFailure(Component.translatableWithFallback("heralisz_utils.cine.depuis_spawn", "La cinématique se rejoue depuis le spawn."));
             return 0;
         }
         allerAuReveil(sp);
@@ -141,16 +143,21 @@ public final class CineReseauServeur {
     private static int info(CommandSourceStack src) {
         CineDecorServeur d = CineDecorServeur.get(src.getServer());
         CineDecor.Etat e = d.etat();
-        StringBuilder s = new StringBuilder(d.regle() ? "Décor réglé en jeu" : "Décor par défaut (refuge de la map)");
-        s.append(" — monde ").append(e.monde());
-        s.append("\nRéveil : ").append(pos(e.reveil().x, e.reveil().y, e.reveil().z))
-                .append(String.format(java.util.Locale.ROOT, ", regard %.0f°", e.cap()))
-                .append(decorPresent(src.getServer()) ? " (praticable)" : " (PAS praticable : bloc ou vide)");
+        MutableComponent s = d.regle()
+                ? Component.translatableWithFallback("heralisz_utils.cine.info.regle", "Décor réglé en jeu — monde %s", e.monde().toString())
+                : Component.translatableWithFallback("heralisz_utils.cine.info.defaut", "Décor par défaut (refuge de la map) — monde %s",
+                        e.monde().toString());
+        String reveil = pos(e.reveil().x, e.reveil().y, e.reveil().z), cap = String.format(java.util.Locale.ROOT, "%.0f", e.cap());
+        s.append("\n").append(decorPresent(src.getServer())
+                ? Component.translatableWithFallback("heralisz_utils.cine.info.reveil", "Réveil : %s, regard %s° (praticable)", reveil, cap)
+                : Component.translatableWithFallback("heralisz_utils.cine.info.reveil_bloque", "Réveil : %s, regard %s° (PAS praticable : bloc ou vide)",
+                        reveil, cap));
         for (CineDecor.Piece p : e.epave()) {
-            s.append("\nÉpave : ").append(p.modele()).append(" en ").append(pos(p.x(), p.y(), p.z()))
-                    .append(String.format(java.util.Locale.ROOT, ", lacet %.0f°, roulis %.0f°", p.lacet(), p.roulis()));
+            s.append("\n").append(Component.translatableWithFallback("heralisz_utils.cine.info.epave", "Épave : %s en %s, lacet %s°, roulis %s°",
+                    p.modele(), pos(p.x(), p.y(), p.z()), String.format(java.util.Locale.ROOT, "%.0f", p.lacet()),
+                    String.format(java.util.Locale.ROOT, "%.0f", p.roulis())));
         }
-        src.sendSuccess(() -> Component.literal(s.toString()), false);
+        src.sendSuccess(() -> s, false);
         return 1;
     }
 
@@ -158,24 +165,31 @@ public final class CineReseauServeur {
         ServerPlayer sp = src.getPlayerOrException();
         CineDecorServeur.get(sp.server).reveil(sp.serverLevel(), sp.position(), sp.getYRot());
         envoyer(sp.server, null);
-        src.sendSuccess(() -> Component.literal("Point de réveil posé en " + pos(sp.getX(), sp.getY(), sp.getZ())
-                + ", regard dans ta direction. L'épave n'a pas bougé : /cinematique epave poser (derrière le réveil) ou "
-                + "/cinematique epave devant (devant toi)."), true);
+        src.sendSuccess(() -> Component.translatableWithFallback("heralisz_utils.cine.reveil_pose", "Point de réveil posé en %s, regard dans ta "
+                + "direction. L'épave n'a pas bougé : /cinematique epave poser (derrière le réveil) ou /cinematique epave devant (devant toi).",
+                pos(sp.getX(), sp.getY(), sp.getZ())), true);
         return 1;
     }
 
     /** Remplace l'épave par une nouvelle disposition (calculée dans le monde principal) et prévient tout le monde. */
-    private static int epave(CommandSourceStack src, Function<ServerLevel, List<CineDecor.Piece>> f, String quoi) {
+    private static int epave(CommandSourceStack src, Function<ServerLevel, List<CineDecor.Piece>> f, Component quoi) {
         ServerLevel ow = CineDecorServeur.get(src.getServer()).niveau(src.getServer());
         if (src.getLevel() != ow) {
-            src.sendFailure(Component.literal("L'épave se règle dans le monde du point de réveil (" + ow.dimension().location() + ")."));
+            src.sendFailure(Component.translatableWithFallback("heralisz_utils.cine.epave.mauvais_monde",
+                    "L'épave se règle dans le monde du point de réveil (%s).", ow.dimension().location().toString()));
             return 0;
         }
         List<CineDecor.Piece> ep = f.apply(ow);
         int n = CineDecorServeur.get(src.getServer()).epave(ow, ep);
         envoyer(src.getServer(), null);
-        src.sendSuccess(() -> Component.literal(quoi + " (" + ep.size() + " pièces, " + n + " barrières invisibles)."), true);
+        src.sendSuccess(() -> Component.translatableWithFallback("heralisz_utils.cine.epave.resultat", "%s (%s pièces, %s barrières invisibles).",
+                quoi, String.valueOf(ep.size()), String.valueOf(n)), true);
         return 1;
+    }
+
+    /** Nom de l'opération sur l'épave (clé heralisz_utils.cine.epave.<cle>), repris dans la réponse d'epave. */
+    private static Component libelle(String cle, String francais) {
+        return Component.translatableWithFallback("heralisz_utils.cine.epave." + cle, francais);
     }
 
     private static List<CineDecor.Piece> decalees(CineDecorServeur d, double dx, double dy, double dz) {
@@ -219,15 +233,18 @@ public final class CineReseauServeur {
                 .then(Commands.literal("epave").requires(s -> s.hasPermission(2))
                         .then(Commands.literal("poser").executes(c -> {
                             CineDecor.Etat et = CineDecorServeur.get(c.getSource().getServer()).etat();
-                            return epave(c.getSource(), l -> CineDecorServeur.derriere(l, et.reveil(), et.cap()), "Épave posée derrière le point de réveil");
+                            return epave(c.getSource(), l -> CineDecorServeur.derriere(l, et.reveil(), et.cap()),
+                                    libelle("derriere", "Épave posée derrière le point de réveil"));
                         }))
                         .then(Commands.literal("devant").executes(c -> {
                             ServerPlayer sp = c.getSource().getPlayerOrException();
-                            return epave(c.getSource(), l -> CineDecorServeur.devant(l, sp.position(), sp.getYRot(), 3), "Épave posée devant toi");
+                            return epave(c.getSource(), l -> CineDecorServeur.devant(l, sp.position(), sp.getYRot(), 3),
+                                    libelle("devant", "Épave posée devant toi"));
                         }).then(Commands.argument("distance", DoubleArgumentType.doubleArg(0, 64)).executes(c -> {
                             ServerPlayer sp = c.getSource().getPlayerOrException();
                             double dist = DoubleArgumentType.getDouble(c, "distance");
-                            return epave(c.getSource(), l -> CineDecorServeur.devant(l, sp.position(), sp.getYRot(), dist), "Épave posée devant toi");
+                            return epave(c.getSource(), l -> CineDecorServeur.devant(l, sp.position(), sp.getYRot(), dist),
+                                    libelle("devant", "Épave posée devant toi"));
                         })))
                         .then(Commands.literal("decaler")
                                 .then(Commands.argument("dx", DoubleArgumentType.doubleArg(-64, 64))
@@ -236,13 +253,13 @@ public final class CineReseauServeur {
                                                     CineDecorServeur dec = CineDecorServeur.get(c.getSource().getServer());
                                                     List<CineDecor.Piece> ep = decalees(dec, DoubleArgumentType.getDouble(c, "dx"),
                                                             DoubleArgumentType.getDouble(c, "dy"), DoubleArgumentType.getDouble(c, "dz"));
-                                                    return epave(c.getSource(), l -> ep, "Épave décalée");
+                                                    return epave(c.getSource(), l -> ep, libelle("decalee", "Épave décalée"));
                                                 })))))
                         .then(Commands.literal("tourner")
                                 .then(Commands.argument("degres", FloatArgumentType.floatArg(-360, 360)).executes(c -> {
                                     List<CineDecor.Piece> ep = tournees(CineDecorServeur.get(c.getSource().getServer()), FloatArgumentType.getFloat(c, "degres"));
-                                    return epave(c.getSource(), l -> ep, "Épave tournée");
+                                    return epave(c.getSource(), l -> ep, libelle("tournee", "Épave tournée"));
                                 })))
-                        .then(Commands.literal("retirer").executes(c -> epave(c.getSource(), l -> List.of(), "Épave retirée")))));
+                        .then(Commands.literal("retirer").executes(c -> epave(c.getSource(), l -> List.of(), libelle("retiree", "Épave retirée"))))));
     }
 }

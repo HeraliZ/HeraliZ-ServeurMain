@@ -12,7 +12,9 @@ Contrôles :
   - verif_reobf      : noms de Minecraft réobfusqués (sinon plantage au chargement) ;
   - mention          : LICENCE-HeraliZ.txt dans chaque jar de nos mods (propriété HeraliZ) ;
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
-  - noms perso       : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
+  - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
+                       (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement) ;
+  - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
                        dans nos sources ni dans nos jars.
 Code de sortie 1 au moindre problème.
 """
@@ -141,6 +143,12 @@ def main():
             if "silencieux sans portée" in l or "pas à jour" in l or "introuvable" in l:
                 print(l.strip())
         erreurs += 1
+    # trois langues : paramètres (%s...) et codes couleur identiques, sinon le joueur voit un texte cassé
+    code, out = lancer([str(O / "verifier_langues.py")] + [p.name for p in choisis])
+    for l in out.splitlines():
+        if "ERREUR" in l or l.startswith("[langues] ") and "erreur(s)" in l:
+            print(l.strip())
+    erreurs += code != 0
     pat = noms_interdits()
     if pat:
         for p in choisis:

@@ -1,0 +1,12 @@
+{
+  "itemGroup.heraliz_boss": "HeraliZ · Боссы",
+  "onglet.heraliz_boss.titre": "Боссы",
+  "onglet.heraliz_boss.tous": "Все",
+  "onglet.heraliz_boss.mammoth": "Имирак",
+  "onglet.heraliz_boss.mere": "Мать Руин",
+  "onglet.heraliz_boss.n07": "Объект N-07",
+  "onglet.heraliz_boss.n07_decor": "Декор спавна",
+  "onglet.heraliz_boss.plague": "Чумоносец",
+  "onglet.heraliz_boss.sylvorn": "Sylvorn",
+  "hud.heraliz_boss.phase": "Фаза %s"
+}

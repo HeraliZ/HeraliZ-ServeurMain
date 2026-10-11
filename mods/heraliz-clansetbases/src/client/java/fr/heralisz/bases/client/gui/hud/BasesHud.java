@@ -14,6 +14,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiEvent;
@@ -107,7 +108,13 @@ public final class BasesHud {
     /** Empile un toast (3 visibles au plus ; les suivants attendent une place). REFUS = ligne discrete. */
     public static void notice(Packets.NoticeS2C n) {
         long now = Util.getMillis();
-        Component texte = Component.translatable(n.cle(), n.args().toArray());
+        // un argument qui est une cle connue (libelle de permission envoye par le serveur) est traduit ici
+        Object[] args = new Object[n.args().size()];
+        for (int i = 0; i < args.length; i++) {
+            String a = n.args().get(i);
+            args[i] = a.indexOf('.') > 0 && I18n.exists(a) ? Component.translatable(a) : a;
+        }
+        Component texte = Component.translatable(n.cle(), args);
         if (n.genre() == Packets.NoticeS2C.Genre.REFUS) {
             refus = Ui.in(texte, Ui.SMALL);
             refusLe = now;

@@ -1,0 +1,12 @@
+{
+  "spartan.expulsion.banni": "Вы забанены на этом сервере.\n\nПричина: %s\nСрок: %s",
+  "spartan.expulsion.launcher": "Подключение отклонено: запустите игру через лаунчер HeraliZ.\n(Игра, запущенная иначе или более 6 часов назад, не принимается.)",
+  "spartan.expulsion.version": "Ваша версия Spartan не совпадает с серверной.\nПерезапустите игру через официальный лаунчер, чтобы обновить её.",
+  "spartan.expulsion.protections": "Запустите игру через официальный лаунчер (нужна защита от читов).",
+  "spartan.expulsion.shaders": "Шейдеры на этом сервере запрещены. Отключите свой шейдерпак.",
+  "spartan.expulsion.packs": "Сторонние ресурспаки запрещены. Удалите их (папка resourcepacks).",
+  "spartan.expulsion.mod_interdit": "[Spartan] Обнаружен запрещённый мод: %s",
+  "spartan.expulsion.non_conforme": "[Spartan] Недопустимый клиент.",
+  "spartan.expulsion.identifiant": "[Spartan] Отсутствует идентификатор клиента.",
+  "spartan.expulsion.controle": "[Spartan] Кикнут: %s"
+}

@@ -378,5 +378,12 @@
   "gui.heralisz_camo.table.par_fabrication": "×%s per craft",
   "gui.heralisz_camo.table.stat.degats": "Damage",
   "gui.heralisz_camo.table.stat.cadence": "Rounds / min",
-  "gui.heralisz_camo.table.stat.chargeur": "Magazine"
+  "gui.heralisz_camo.table.stat.chargeur": "Magazine",
+  "heralisz_camo.commande.aucun": "%s has no lifetime camo.",
+  "heralisz_camo.commande.liste": "%s: %s lifetime camo(s): ",
+  "heralisz_camo.commande.inconnu": "Unknown camo (or zombies mode only): %s",
+  "heralisz_camo.commande.ajoutes": "%s camo(s) added to %s's collection.",
+  "heralisz_camo.commande.absent": "%s doesn't have this camo: %s",
+  "heralisz_camo.commande.retires": "%s camo(s) removed from %s's collection.",
+  "heralisz_camo.commande.recharge": "Cooldowns cleared for %s (%s)."
 }

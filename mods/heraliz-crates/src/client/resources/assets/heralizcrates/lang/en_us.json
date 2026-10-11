@@ -1,14 +1,14 @@
 {
   "itemGroup.heralizcrates": "HERALIZ — Crates",
   "block.heralizcrates.crate_part": "Crate (part)",
-  "block.heralizcrates.sujet_n07_crate": "Sujet N-07 Crate",
-  "item.heralizcrates.sujet_n07_key": "Sujet N-07 Key",
+  "block.heralizcrates.sujet_n07_crate": "Subject N-07 Crate",
+  "item.heralizcrates.sujet_n07_key": "Subject N-07 Key",
   "block.heralizcrates.sylvorn_crate": "Sylvorn Crate",
   "item.heralizcrates.sylvorn_key": "Sylvorn Key",
-  "block.heralizcrates.mere_des_ruines_crate": "Mère des Ruines Crate",
-  "item.heralizcrates.mere_des_ruines_key": "Mère des Ruines Key",
-  "block.heralizcrates.porteur_de_peste_crate": "Porteur de Peste Crate",
-  "item.heralizcrates.porteur_de_peste_key": "Porteur de Peste Key",
+  "block.heralizcrates.mere_des_ruines_crate": "Mother of Ruins Crate",
+  "item.heralizcrates.mere_des_ruines_key": "Mother of Ruins Key",
+  "block.heralizcrates.porteur_de_peste_crate": "Plague Bearer Crate",
+  "item.heralizcrates.porteur_de_peste_key": "Plague Bearer Key",
   "block.heralizcrates.vote_crate": "Vote Crate",
   "item.heralizcrates.vote_key": "Vote Key",
   "block.heralizcrates.quete_crate": "Quest Crate",
@@ -135,7 +135,7 @@
   "subtitles.heralizcrates.fx.curtain": "Booth curtain",
   "subtitles.heralizcrates.fx.counter": "Vote counter",
   "subtitles.heralizcrates.fx.lever": "Ballot box lever",
-  "subtitles.heralizcrates.fx.stamp": "Stamp",
+  "subtitles.heralizcrates.fx.stamp": "VOTED stamp",
   "subtitles.heralizcrates.theme.fanfare": "Fanfare",
   "subtitles.heralizcrates.theme.cheer": "Crowd cheers",
   "subtitles.heralizcrates.fx.cannon": "Confetti cannon",
@@ -170,5 +170,6 @@
   "subtitles.heralizcrates.theme.gem_reform": "Crystal reforms",
   "subtitles.heralizcrates.theme.gem_chime": "Gleam",
   "subtitles.heralizcrates.theme.gem_shatter": "Crystal shatters",
-  "subtitles.heralizcrates.theme.gem_charge": "Crystal charging"
+  "subtitles.heralizcrates.theme.gem_charge": "Crystal charging",
+  "heralizcrates.commande.poids": "(weight %s, %s)"
 }

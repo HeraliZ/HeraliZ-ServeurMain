@@ -1170,7 +1170,7 @@ public class PlagueBearerServeur extends PlagueBearer {
       Zombie z = EntityType.ZOMBIE.create(level);
       if (z == null) return;
       z.moveTo(at.x, at.y, at.z, random.nextFloat() * 360F, 0);
-      z.setCustomName(Component.translatable("entity.heralisz_bosses.plague_infected"));
+      z.setCustomName(Component.translatableWithFallback("entity.heralisz_n07.plague_infected", "Infecté"));
       ItemStack helmet = new ItemStack(Items.LEATHER_HELMET);
       helmet.getOrCreateTagElement("display").putInt("color", 0x4A5226);
       z.setItemSlot(EquipmentSlot.HEAD, helmet);

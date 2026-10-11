@@ -23,8 +23,9 @@ public class LootBonusDocumentServeur extends LootBonusDocument {
         if (!level.isClientSide && player instanceof ServerPlayer sp) {
             long restant = BonusLootTemps.activer(sp);
             level.playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
-            sp.sendSystemMessage(Component.literal("Bonus de loot +" + BonusLootConfig.pourcent() + " % activé : "
-                    + BonusLootTemps.duree(restant) + " de jeu.").withStyle(ChatFormatting.GOLD));
+            sp.sendSystemMessage(Component.translatableWithFallback("heralisz_utils.bonus_loot.active",
+                    "Bonus de loot +%s %% activé : %s de jeu.", String.valueOf(BonusLootConfig.pourcent()),
+                    BonusLootTemps.duree(restant)).withStyle(ChatFormatting.GOLD));
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }

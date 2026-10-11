@@ -1,5 +1,6 @@
 package fr.heralisz.utils;
 
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -60,7 +61,8 @@ public final class BonusLootTemps {
             return;
         }
         p.getPersistentData().getCompound(PERSISTE).getCompound(CLE).remove(SOURCE);
-        p.sendSystemMessage(Component.literal("Ton bonus de loot est terminé.").withStyle(ChatFormatting.GRAY));
+        p.sendSystemMessage(Component.translatableWithFallback("heralisz_utils.bonus_loot.termine", "Ton bonus de loot est terminé.")
+                .withStyle(ChatFormatting.GRAY));
     }
 
     /** À la connexion : rappel du bonus en cours. */
@@ -69,17 +71,20 @@ public final class BonusLootTemps {
         if (event.getEntity() instanceof ServerPlayer p) {
             CompoundTag source = source(p);
             if (source != null && source.getLong("Restant") > 0L) {
-                p.sendSystemMessage(Component.literal("Bonus de loot +" + source.getInt("Pct") + " % actif : encore "
-                        + duree(source.getLong("Restant")) + " de jeu.").withStyle(ChatFormatting.GOLD));
+                p.sendSystemMessage(Component.translatableWithFallback("heralisz_utils.bonus_loot.actif",
+                        "Bonus de loot +%s %% actif : encore %s de jeu.", String.valueOf(source.getInt("Pct")),
+                        duree(source.getLong("Restant"))).withStyle(ChatFormatting.GOLD));
             }
         }
     }
 
-    /** « 2 h », « 1 h 35 », « 12 min ». */
-    static String duree(long ticks) {
+    /** « 2 h », « 1 h 35 », « 12 min » (traduit chez le joueur). */
+    static Component duree(long ticks) {
         long minutes = (Math.max(0L, ticks) + 1199L) / 1200L;
-        if (minutes < 60L) return minutes + " min";
+        if (minutes < 60L) return Component.translatableWithFallback("heralisz_utils.duree.min", "%s min", String.valueOf(minutes));
         long h = minutes / 60L, m = minutes % 60L;
-        return m == 0L ? h + " h" : h + " h " + String.format("%02d", m);
+        return m == 0L ? Component.translatableWithFallback("heralisz_utils.duree.h", "%s h", String.valueOf(h))
+                : Component.translatableWithFallback("heralisz_utils.duree.h_min", "%s h %s", String.valueOf(h),
+                        String.format(Locale.ROOT, "%02d", m));
     }
 }

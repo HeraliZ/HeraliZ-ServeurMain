@@ -78,7 +78,7 @@ public final class ChallengeManager {
                     p.getName().getString() + " utilise une autre version de Spartan (client "
                             + shortId(clientBuild) + ", serveur " + shortId(mine) + "). Expulsé avec consigne de mise à jour.",
                     AlertManager.COLOR_INFO);
-            p.connection.disconnect(Component.literal(
+            p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.version",
                     "Votre version de Spartan n'est pas celle du serveur.\n"
                             + "Relancez le jeu depuis le launcher officiel pour la mettre à jour."));
             return;
@@ -129,7 +129,7 @@ public final class ChallengeManager {
                     CheckManager.flag("Integrity", p, "aucune réponse au défi d'intégrité (" + s.timeouts
                             + " fois de suite) : mod client bloqué ou désactivé ?");
                     if (SpartanConfig.mayKickForClientSignal()) {
-                        p.connection.disconnect(Component.literal("[Spartan] Client non conforme."));
+                        p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.non_conforme", "[Spartan] Client non conforme."));
                         return;
                     }
                 }
@@ -197,7 +197,7 @@ public final class ChallengeManager {
         s.failed++;
         CheckManager.flag("Integrity", p, "réponse fausse au défi d'intégrité : mod client modifié");
         if (SpartanConfig.mayKickForClientSignal()) {
-            p.connection.disconnect(Component.literal("[Spartan] Client non conforme."));
+            p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.non_conforme", "[Spartan] Client non conforme."));
         }
     }
 

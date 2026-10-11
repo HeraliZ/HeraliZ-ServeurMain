@@ -2,27 +2,21 @@
   "key.categories.heraliz_ping": "HeraliZ Ping",
   "key.heraliz_ping.ping": "Ping (tap: mark, hold: wheel)",
   "key.heraliz_ping.reglages": "Ping settings",
-
   "heraliz_ping.type.ennemi": "Enemy",
   "heraliz_ping.type.danger": "Danger",
   "heraliz_ping.type.loot": "Loot",
   "heraliz_ping.type.aller": "Let's go",
   "heraliz_ping.type.defendre": "Defend",
   "heraliz_ping.type.aide": "Need help",
-
   "heraliz_ping.roue.rappel": "Release to mark · right click: cancel",
   "heraliz_ping.roue.annuler": "Cancel",
-
   "heraliz_ping.sous_titre.ping": "Ally ping",
   "heraliz_ping.sous_titre.alerte": "Ally alert",
-
   "heraliz_ping.msg.cadence": "Easy: too many pings at once.",
   "heraliz_ping.msg.portee": "Too far to mark (%s blocks at most).",
   "heraliz_ping.msg.vue": "You can't see that target.",
-
   "heraliz_ping.oui": "Yes",
   "heraliz_ping.non": "No",
-
   "heraliz_ping.cmd.change": "Pings: %s = %s (saved).",
   "heraliz_ping.cmd.aide.titre": "Pings",
   "heraliz_ping.cmd.aide.bref": "Tap the key: marks what you aim at (the type is picked for you: loot, enemy, let's go).",
@@ -36,7 +30,6 @@
   "heraliz_ping.cmd.admin.refus": "Refused: rate %s · range %s · out of sight %s · target %s · spectator %s",
   "heraliz_ping.cmd.admin.liens": "Links: clans %s · matches %s",
   "heraliz_ping.cmd.admin.usage": "/ping admin <duree|portee|rafale|recharge|max|vue|spectateurs|groupe|actif> <value>",
-
   "heraliz_ping.reglages.titre": "Pings",
   "heraliz_ping.reglages.sous_titre": "Ping display and sound",
   "heraliz_ping.reglages.volume": "Sound volume",

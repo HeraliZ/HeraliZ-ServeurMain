@@ -211,7 +211,8 @@ public final class HeralizCommand {
             c.getSource().sendSuccess(() -> Component.literal(" " + idx + ". ").withStyle(ChatFormatting.DARK_GRAY)
                     .append(name).append(Component.literal(" x" + e.count + "  ").withStyle(ChatFormatting.WHITE))
                     .append(e.rarity.displayName())
-                    .append(Component.literal(String.format(Locale.ROOT, "  (poids %d, %.2f%%)", e.weight, loot.chance(e)))
+                    .append(Component.literal("  ").append(Component.translatableWithFallback("heralizcrates.commande.poids", "(poids %s, %s)",
+                                    String.valueOf(e.weight), String.format(Locale.ROOT, "%.2f%%", loot.chance(e))))
                             .withStyle(ChatFormatting.GRAY)), false);
         }
         return loot.entries.size();

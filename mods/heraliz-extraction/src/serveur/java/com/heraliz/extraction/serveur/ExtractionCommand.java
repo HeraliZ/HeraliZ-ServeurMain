@@ -29,6 +29,7 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Commandes admin (OP niveau 2) pour les zones d'extraction fixes de la map :
@@ -48,13 +49,17 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = HeralizExtraction.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ExtractionCommand {
     private static final SimpleCommandExceptionType NAME_TAKEN =
-            new SimpleCommandExceptionType(Component.literal("Une zone porte déjà ce nom."));
+            new SimpleCommandExceptionType(Component.translatableWithFallback("heraliz_extraction.commande.nom_pris",
+                    "Une zone porte déjà ce nom."));
     private static final SimpleCommandExceptionType UNKNOWN_ZONE =
-            new SimpleCommandExceptionType(Component.literal("Aucune zone avec ce nom."));
+            new SimpleCommandExceptionType(Component.translatableWithFallback("heraliz_extraction.commande.zone_inconnue",
+                    "Aucune zone avec ce nom."));
     private static final SimpleCommandExceptionType UNKNOWN_MODE =
-            new SimpleCommandExceptionType(Component.literal("Mode inconnu : rotation, permanent ou closed."));
+            new SimpleCommandExceptionType(Component.translatableWithFallback("heraliz_extraction.commande.mode_inconnu",
+                    "Mode inconnu : rotation, permanent ou closed."));
     private static final SimpleCommandExceptionType NO_DIMENSION =
-            new SimpleCommandExceptionType(Component.literal("La dimension de cette zone n'existe pas sur ce serveur."));
+            new SimpleCommandExceptionType(Component.translatableWithFallback("heraliz_extraction.commande.pas_de_dimension",
+                    "La dimension de cette zone n'existe pas sur ce serveur."));
 
     private ExtractionCommand() {
     }
@@ -135,10 +140,14 @@ public final class ExtractionCommand {
         zones.add(zone);
         Rotation.place(level, zone);
 
-        source.sendSuccess(() -> Component.literal("Zone d'extraction « " + name + " » créée : rayon " + radius
-                + " blocs, " + ExtractionTerminalItem.formatTime(zone.holdSeconds()) + " à tenir"
-                + (seconds == 0 ? " (réglage zones.durationSeconds)" : "") + ". Elle entre dans la rotation ;"
-                + " /extraction label " + name + " <nom affiché> pour la nommer.").withStyle(ChatFormatting.GREEN), true);
+        String time = ExtractionTerminalItem.formatTime(zone.holdSeconds());
+        source.sendSuccess(() -> (seconds == 0
+                ? Component.translatableWithFallback("heraliz_extraction.commande.creee_reglage",
+                "Zone d'extraction « %s » créée : rayon %s blocs, %s à tenir (réglage zones.durationSeconds). Elle entre dans la rotation ; /extraction label %s <nom affiché> pour la nommer.",
+                name, String.valueOf(radius), time, name)
+                : Component.translatableWithFallback("heraliz_extraction.commande.creee",
+                "Zone d'extraction « %s » créée : rayon %s blocs, %s à tenir. Elle entre dans la rotation ; /extraction label %s <nom affiché> pour la nommer.",
+                name, String.valueOf(radius), time, name)).withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
 
@@ -162,7 +171,8 @@ public final class ExtractionCommand {
         if (wasOpen) {
             Rotation.sync(source.getServer());
         }
-        source.sendSuccess(() -> Component.literal("Zone d'extraction « " + name + " » supprimée.").withStyle(ChatFormatting.YELLOW), true);
+        source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.supprimee",
+                "Zone d'extraction « %s » supprimée.", name).withStyle(ChatFormatting.YELLOW), true);
         return 1;
     }
 
@@ -171,16 +181,21 @@ public final class ExtractionCommand {
         MinecraftServer server = source.getServer();
         ExtractionZones zones = ExtractionZones.get(server);
         if (zones.all().isEmpty()) {
-            source.sendSuccess(() -> Component.literal("Aucune zone d'extraction fixe.").withStyle(ChatFormatting.GRAY), false);
+            source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.liste.vide",
+                    "Aucune zone d'extraction fixe.").withStyle(ChatFormatting.GRAY), false);
             return 0;
         }
         long now = Rotation.now(server);
-        source.sendSuccess(() -> Component.literal("Zones d'extraction (" + zones.all().size() + ") :").withStyle(ChatFormatting.GOLD), false);
+        source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.liste.titre",
+                "Zones d'extraction (%s) :", String.valueOf(zones.all().size())).withStyle(ChatFormatting.GOLD), false);
         for (ExtractionZones.Zone zone : zones.all()) {
-            MutableComponent line = Component.literal(String.format(" - %s « %s » : %s %d %d %d, rayon %.1f, %s à tenir, %s — ",
-                    zone.name(), zone.displayName(), zone.dimension(), (int) Math.floor(zone.pos().x), (int) Math.floor(zone.pos().y),
-                    (int) Math.floor(zone.pos().z), zone.radius(), ExtractionTerminalItem.formatTime(zone.holdSeconds()), zone.mode().label))
-                    .withStyle(ChatFormatting.GRAY);
+            MutableComponent line = Component.literal(" ").append(Component.translatableWithFallback(
+                            "heraliz_extraction.commande.liste.ligne", "- %s « %s » : %s %s %s %s, rayon %s, %s à tenir, %s —",
+                            zone.name(), zone.displayName(), zone.dimension().toString(),
+                            String.valueOf((int) Math.floor(zone.pos().x)), String.valueOf((int) Math.floor(zone.pos().y)),
+                            String.valueOf((int) Math.floor(zone.pos().z)), String.format(Locale.ROOT, "%.1f", zone.radius()),
+                            ExtractionTerminalItem.formatTime(zone.holdSeconds()), zone.mode().text()))
+                    .append(" ").withStyle(ChatFormatting.GRAY);
             line.append(state(zones, zone, now));
             source.sendSuccess(() -> line, false);
         }
@@ -190,10 +205,11 @@ public final class ExtractionCommand {
     /** « ouverte (12 min) », « toujours ouverte », « fermée ». */
     private static Component state(ExtractionZones zones, ExtractionZones.Zone zone, long now) {
         if (!zones.isOpen(zone, now)) {
-            return Component.literal("fermée").withStyle(ChatFormatting.DARK_GRAY);
+            return Component.translatableWithFallback("heraliz_extraction.etat.fermee", "fermée").withStyle(ChatFormatting.DARK_GRAY);
         }
         long left = zones.remainingTicks(zone, now);
-        return Component.literal(left < 0L ? "toujours ouverte" : "ouverte (" + Rotation.formatMinutes(left) + ")")
+        return (left < 0L ? Component.translatableWithFallback("heraliz_extraction.etat.toujours_ouverte", "toujours ouverte")
+                : Component.translatableWithFallback("heraliz_extraction.etat.ouverte", "ouverte (%s)", Rotation.formatMinutes(left)))
                 .withStyle(ChatFormatting.GREEN);
     }
 
@@ -201,13 +217,13 @@ public final class ExtractionCommand {
         CommandSourceStack source = ctx.getSource();
         ExtractionZones.Zone zone = zone(ctx);
         if (zone.mode() == ExtractionZones.Mode.PERMANENT) {
-            source.sendSuccess(() -> Component.literal("« " + zone.name() + " » est permanente : elle est déjà toujours ouverte.")
-                    .withStyle(ChatFormatting.GRAY), false);
+            source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.deja_permanente",
+                    "« %s » est permanente : elle est déjà toujours ouverte.", zone.name()).withStyle(ChatFormatting.GRAY), false);
             return 0;
         }
         Rotation.open(source.getServer(), zone, durationTicks);
-        source.sendSuccess(() -> Component.literal("Zone « " + zone.name() + " » ouverte pour " + Rotation.formatMinutes(durationTicks) + ".")
-                .withStyle(ChatFormatting.GREEN), true);
+        source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.ouverte",
+                "Zone « %s » ouverte pour %s.", zone.name(), Rotation.formatMinutes(durationTicks)).withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
 
@@ -216,18 +232,22 @@ public final class ExtractionCommand {
         ExtractionZones.Zone zone = zone(ctx);
         ExtractionZones zones = ExtractionZones.get(source.getServer());
         if (zone.mode() == ExtractionZones.Mode.PERMANENT) {
-            source.sendSuccess(() -> Component.literal("« " + zone.name() + " » est permanente : /extraction mode " + zone.name()
-                    + " rotation ou closed d'abord.").withStyle(ChatFormatting.GRAY), false);
+            source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.permanente_fermer",
+                    "« %s » est permanente : /extraction mode %s rotation ou closed d'abord.", zone.name(), zone.name())
+                    .withStyle(ChatFormatting.GRAY), false);
             return 0;
         }
         if (!zones.isOpen(zone, Rotation.now(source.getServer()))) {
-            source.sendSuccess(() -> Component.literal("« " + zone.name() + " » est déjà fermée.").withStyle(ChatFormatting.GRAY), false);
+            source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.deja_fermee",
+                    "« %s » est déjà fermée.", zone.name()).withStyle(ChatFormatting.GRAY), false);
             return 0;
         }
         Rotation.close(source.getServer(), zone);
-        source.sendSuccess(() -> Component.literal("Zone « " + zone.name() + " » fermée"
-                + (zone.mode() == ExtractionZones.Mode.ROTATION && ExtractionConfig.ROTATION_ENABLED.get()
-                ? " : la rotation en ouvre une autre." : ".")).withStyle(ChatFormatting.YELLOW), true);
+        source.sendSuccess(() -> (zone.mode() == ExtractionZones.Mode.ROTATION && ExtractionConfig.ROTATION_ENABLED.get()
+                ? Component.translatableWithFallback("heraliz_extraction.commande.fermee_rotation",
+                "Zone « %s » fermée : la rotation en ouvre une autre.", zone.name())
+                : Component.translatableWithFallback("heraliz_extraction.commande.fermee", "Zone « %s » fermée.", zone.name()))
+                .withStyle(ChatFormatting.YELLOW), true);
         return 1;
     }
 
@@ -251,7 +271,8 @@ public final class ExtractionCommand {
         if (wasOpen != zones.isOpen(changed, now)) {
             Rotation.sync(server);
         }
-        source.sendSuccess(() -> Component.literal("Zone « " + zone.name() + " » : " + mode.label + ".").withStyle(ChatFormatting.GREEN), true);
+        source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.mode", "Zone « %s » : %s.",
+                zone.name(), mode.text()).withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
 
@@ -268,7 +289,8 @@ public final class ExtractionCommand {
             Rotation.sync(source.getServer());
         }
         String shown = text;
-        source.sendSuccess(() -> Component.literal("Zone « " + zone.name() + " » affichée « " + shown + " ».").withStyle(ChatFormatting.GREEN), true);
+        source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.nommee", "Zone « %s » affichée « %s ».",
+                zone.name(), shown).withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
 
@@ -291,10 +313,13 @@ public final class ExtractionCommand {
         long now = Rotation.now(server);
         long pool = zones.all().stream().filter(z -> z.mode() == ExtractionZones.Mode.ROTATION).count();
         boolean on = ExtractionConfig.ROTATION_ENABLED.get();
-        source.sendSuccess(() -> Component.literal(on
-                ? "Rotation : " + ExtractionConfig.ROTATION_OPEN.get() + " zone(s) ouvertes à la fois parmi " + pool
-                + ", " + ExtractionConfig.ROTATION_MIN_MINUTES.get() + " à " + ExtractionConfig.ROTATION_MAX_MINUTES.get() + " min chacune."
-                : "Rotation coupée (rotation.enabled = false) : seules les ouvertures à la main et les zones permanentes comptent.")
+        source.sendSuccess(() -> (on
+                ? Component.translatableWithFallback("heraliz_extraction.commande.rotation",
+                "Rotation : %s zone(s) ouvertes à la fois parmi %s, %s à %s min chacune.",
+                String.valueOf(ExtractionConfig.ROTATION_OPEN.get()), String.valueOf(pool),
+                String.valueOf(ExtractionConfig.ROTATION_MIN_MINUTES.get()), String.valueOf(ExtractionConfig.ROTATION_MAX_MINUTES.get()))
+                : Component.translatableWithFallback("heraliz_extraction.commande.rotation_coupee",
+                "Rotation coupée (rotation.enabled = false) : seules les ouvertures à la main et les zones permanentes comptent."))
                 .withStyle(ChatFormatting.GOLD), false);
         int open = 0;
         for (ExtractionZones.Zone zone : zones.all()) {
@@ -306,7 +331,8 @@ public final class ExtractionCommand {
             }
         }
         if (open == 0) {
-            source.sendSuccess(() -> Component.literal(" Aucune zone ouverte.").withStyle(ChatFormatting.GRAY), false);
+            source.sendSuccess(() -> Component.literal(" ").append(Component.translatableWithFallback(
+                    "heraliz_extraction.commande.aucune_ouverte", "Aucune zone ouverte.")).withStyle(ChatFormatting.GRAY), false);
         }
         return open;
     }
@@ -326,7 +352,8 @@ public final class ExtractionCommand {
             Rotation.close(server, zone);
         }
         Rotation.tick(server);
-        source.sendSuccess(() -> Component.literal(open.size() + " zone(s) fermée(s), la rotation a ouvert les suivantes.")
+        source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.suivantes",
+                "%s zone(s) fermée(s), la rotation a ouvert les suivantes.", String.valueOf(open.size()))
                 .withStyle(ChatFormatting.GREEN), true);
         return open.size();
     }
@@ -346,17 +373,26 @@ public final class ExtractionCommand {
         }
         open.sort((a, b) -> Double.compare(a.pos().distanceToSqr(player.position()), b.pos().distanceToSqr(player.position())));
         if (open.isEmpty()) {
-            player.sendSystemMessage(Component.literal("Aucune extraction ouverte pour l'instant.").withStyle(ChatFormatting.GRAY));
+            player.sendSystemMessage(Component.translatableWithFallback("heraliz_extraction.joueurs.aucune",
+                    "Aucune extraction ouverte pour l'instant.").withStyle(ChatFormatting.GRAY));
             return 0;
         }
-        player.sendSystemMessage(Component.literal("Extractions ouvertes (" + open.size() + ") :").withStyle(ChatFormatting.GOLD));
+        player.sendSystemMessage(Component.translatableWithFallback("heraliz_extraction.joueurs.titre",
+                "Extractions ouvertes (%s) :", String.valueOf(open.size())).withStyle(ChatFormatting.GOLD));
         for (ExtractionZones.Zone zone : open) {
             long left = zones.remainingTicks(zone, now);
             player.sendSystemMessage(Component.literal(" • ").withStyle(ChatFormatting.GRAY)
                     .append(Component.literal(zone.displayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
-                    .append(Component.literal(" — " + Rotation.where(player, zone)).withStyle(ChatFormatting.YELLOW))
-                    .append(Component.literal(" · " + (left < 0L ? "toujours ouverte" : "ferme dans " + Rotation.formatMinutes(left))
-                            + " · " + zone.holdSeconds() + " s à tenir").withStyle(ChatFormatting.GRAY)));
+                    .append(Component.literal(" — ").append(Rotation.where(player, zone)).withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal(" · ")
+                            .append(left < 0L
+                                    ? Component.translatableWithFallback("heraliz_extraction.etat.toujours_ouverte", "toujours ouverte")
+                                    : Component.translatableWithFallback("heraliz_extraction.joueurs.ferme_dans", "ferme dans %s",
+                                    Rotation.formatMinutes(left)))
+                            .append(" · ")
+                            .append(Component.translatableWithFallback("heraliz_extraction.joueurs.a_tenir", "%s s à tenir",
+                                    String.valueOf(zone.holdSeconds())))
+                            .withStyle(ChatFormatting.GRAY)));
         }
         return open.size();
     }

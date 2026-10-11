@@ -54,7 +54,7 @@ public final class JetClient {
             String r = JetFx.stats();
             HeralizWonder.LOG.info("[wonder] fx {}", r);
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) mc.player.displayClientMessage(Component.literal("Effets du Jet Gun : voir le journal"), true);
+            if (mc.player != null) mc.player.displayClientMessage(Component.translatable("heraliz_wonder.journal.effets_jetgun"), true);
             return Command.SINGLE_SUCCESS;
         }).then(Commands.literal("tenir").then(Commands.argument("ticks", IntegerArgumentType.integer(0, 2000)).executes(c -> {
             tenir = IntegerArgumentType.getInteger(c, "ticks");

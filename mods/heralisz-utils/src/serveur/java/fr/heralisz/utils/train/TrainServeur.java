@@ -3,6 +3,7 @@ package fr.heralisz.utils.train;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import java.util.Locale;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -160,9 +161,11 @@ public final class TrainServeur {
         }
     }
 
-    private static String duree(double sec) {
+    private static Component duree(double sec) {
         int s = (int) Math.round(sec);
-        return s >= 60 ? (s / 60) + " min " + (s % 60) + " s" : s + " s";
+        return s >= 60
+                ? Component.translatableWithFallback("heralisz_utils.train.duree.min_s", "%s min %s s", String.valueOf(s / 60), String.valueOf(s % 60))
+                : Component.translatableWithFallback("heralisz_utils.train.duree.s", "%s s", String.valueOf(s));
     }
 
     /** Cale l'horaire pour que le train soit à quai à la gare (secondes depuis son arrivée ; négatif : avant). */
@@ -174,7 +177,7 @@ public final class TrainServeur {
             if (h.reseau.gares[i].nom().equalsIgnoreCase(nom) || String.valueOf(i).equals(nom)) k = i;
         }
         if (k < 0) {
-            src.sendFailure(Component.literal("Gare inconnue : " + nom));
+            src.sendFailure(Component.translatableWithFallback("heralisz_utils.train.gare_inconnue", "Gare inconnue : %s", nom));
             return 0;
         }
         MinecraftServer srv = src.getServer();
@@ -187,7 +190,9 @@ public final class TrainServeur {
         d.setDirty();
         annoncer(srv, null);
         String g = h.reseau.gares[k].nom();
-        src.sendSuccess(() -> Component.literal("Train calé à " + g + (secondes != 0 ? " (" + secondes + " s)" : "")), true);
+        src.sendSuccess(() -> secondes != 0
+                ? Component.translatableWithFallback("heralisz_utils.train.cale_decale", "Train calé à %s (%s s)", g, String.valueOf(secondes))
+                : Component.translatableWithFallback("heralisz_utils.train.cale", "Train calé à %s", g), true);
         return 1;
     }
 
@@ -197,7 +202,8 @@ public final class TrainServeur {
                     MinecraftServer srv = c.getSource().getServer();
                     Horaire h = Horaire.get();
                     if (h == null) {
-                        c.getSource().sendFailure(Component.literal("Pas de réseau ferré dans ce jar."));
+                        c.getSource().sendFailure(Component.translatableWithFallback("heralisz_utils.train.pas_de_reseau",
+                                "Pas de réseau ferré dans ce jar."));
                         return 0;
                     }
                     Reseau r = h.reseau;
@@ -205,11 +211,18 @@ public final class TrainServeur {
                         Horaire.Etat et = h.etatRame(temps(srv), rame);
                         double[] p = new double[3];
                         r.point(et.s(), p);
-                        String ou = et.aQuai() >= 0 ? "à quai à " + r.gares[et.aQuai()].nom() + ", départ dans " + duree(et.reste())
-                                : "en route vers " + r.gares[et.suivante()].nom() + String.format(" à %.0f km/h", et.v() * 3.6);
-                        int n = rame + 1;
-                        c.getSource().sendSuccess(() -> Component.literal(String.format("Train %d (%s, réseau %s) %s : %s (x %.0f, y %.0f, z %.0f). Tour : %s.",
-                                n, donnees(srv).actif ? "actif" : "ARRÊTÉ", Reseau.nom(), "", ou, p[0], p[1], p[2], duree(h.periode))), false);
+                        Component ou = et.aQuai() >= 0
+                                ? Component.translatableWithFallback("heralisz_utils.train.info.a_quai", "à quai à %s, départ dans %s",
+                                        r.gares[et.aQuai()].nom(), duree(et.reste()))
+                                : Component.translatableWithFallback("heralisz_utils.train.info.en_route", "en route vers %s à %s km/h",
+                                        r.gares[et.suivante()].nom(), String.format(Locale.ROOT, "%.0f", et.v() * 3.6));
+                        String n = String.valueOf(rame + 1);
+                        Component etat = donnees(srv).actif ? Component.translatableWithFallback("heralisz_utils.train.info.actif", "actif")
+                                : Component.translatableWithFallback("heralisz_utils.train.info.arrete", "ARRÊTÉ");
+                        c.getSource().sendSuccess(() -> Component.translatableWithFallback("heralisz_utils.train.info.ligne",
+                                "Train %s (%s, réseau %s) : %s (x %s, y %s, z %s). Tour : %s.", n, etat, Reseau.nom(), ou,
+                                String.format(Locale.ROOT, "%.0f", p[0]), String.format(Locale.ROOT, "%.0f", p[1]),
+                                String.format(Locale.ROOT, "%.0f", p[2]), duree(h.periode)), false);
                     }
                     return 1;
                 }))
@@ -221,7 +234,10 @@ public final class TrainServeur {
                     Reseau.choisir(d.reseau);
                     annoncer(srv, null);
                     boolean ok = Horaire.get() != null;
-                    c.getSource().sendSuccess(() -> Component.literal("Réseau ferré : " + d.reseau + (ok ? "" : " (introuvable dans le jar : pas de train)")), true);
+                    c.getSource().sendSuccess(() -> ok
+                            ? Component.translatableWithFallback("heralisz_utils.train.reseau", "Réseau ferré : %s", d.reseau)
+                            : Component.translatableWithFallback("heralisz_utils.train.reseau_introuvable",
+                                    "Réseau ferré : %s (introuvable dans le jar : pas de train)", d.reseau), true);
                     return ok ? 1 : 0;
                 })))
                 .then(Commands.literal("actif").then(Commands.argument("oui", BoolArgumentType.bool()).executes(c -> {
@@ -230,7 +246,8 @@ public final class TrainServeur {
                     d.actif = BoolArgumentType.getBool(c, "oui");
                     d.setDirty();
                     annoncer(srv, null);
-                    c.getSource().sendSuccess(() -> Component.literal("Train " + (d.actif ? "en service" : "arrêté")), true);
+                    c.getSource().sendSuccess(() -> d.actif ? Component.translatableWithFallback("heralisz_utils.train.en_service", "Train en service")
+                            : Component.translatableWithFallback("heralisz_utils.train.arrete", "Train arrêté"), true);
                     return 1;
                 })))
                 .then(Commands.literal("gare").then(Commands.argument("nom", StringArgumentType.word())
@@ -243,7 +260,8 @@ public final class TrainServeur {
                     d.decalage += 20L * IntegerArgumentType.getInteger(c, "secondes");
                     d.setDirty();
                     annoncer(srv, null);
-                    c.getSource().sendSuccess(() -> Component.literal("Horaire décalé (total " + d.decalage / 20 + " s)"), true);
+                    c.getSource().sendSuccess(() -> Component.translatableWithFallback("heralisz_utils.train.decalage", "Horaire décalé (total %s s)",
+                            String.valueOf(d.decalage / 20)), true);
                     return 1;
                 }))));
     }

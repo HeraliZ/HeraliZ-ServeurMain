@@ -34,7 +34,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -213,8 +212,8 @@ public final class BaseCommands {
         BasesStore s = BasesStore.get();
         Modele m = Modele.get();
         Reponses.ok(src, Component.translatable("cmd.heralisz_bases.info_globale", s == null ? 0 : s.bases().size(),
-                m == null ? Modele.erreur() : m.plan.tx + " x " + m.plan.ty + " x " + m.plan.tz + ", " + m.nombre(),
-                Fenetre.vue().mode().name(), Fenetre.ouverte() ? "oui" : "non", Fenetre.jour()));
+                m == null ? Modele.erreurTexte() : m.plan.tx + " x " + m.plan.ty + " x " + m.plan.tz + ", " + m.nombre(),
+                Fenetre.vue().mode().name(), ouiNon(Fenetre.ouverte()), Fenetre.jour()));
         return 1;
     }
 
@@ -239,8 +238,8 @@ public final class BaseCommands {
         }
         for (Base b : s.bases()) {
             String tag = ClansApi.infos(b.clan).map(ClanInfo::tag).orElse(b.tag);
-            Reponses.ok(src, Component.literal(String.format(Locale.ROOT, "[%s] parcelle %d · %s · %d salle(s) achetee(s)", tag, b.parcelle,
-                    b.etat.name(), b.salles.size())));
+            Reponses.ok(src, Component.translatableWithFallback("heralisz_bases.cmd.liste_ligne", "[%s] parcelle %s · %s · %s salle(s) achetée(s)",
+                    tag, String.valueOf(b.parcelle), b.etat.name(), String.valueOf(b.salles.size())));
         }
         return s.bases().size();
     }
@@ -368,7 +367,7 @@ public final class BaseCommands {
 
     private static int fenetre(CommandSourceStack src, FenetreVue.Mode m) {
         Fenetre.forcer(m);
-        Reponses.ok(src, Component.translatable("cmd.heralisz_bases.fenetre", m.name(), Fenetre.ouverte() ? "oui" : "non"));
+        Reponses.ok(src, Component.translatable("cmd.heralisz_bases.fenetre", m.name(), ouiNon(Fenetre.ouverte())));
         return 1;
     }
 
@@ -386,7 +385,7 @@ public final class BaseCommands {
         ServerPlayer p = joueur(c);
         if (actif) p.getPersistentData().putBoolean(ClansApi.EN_MATCH, true);
         else p.getPersistentData().remove(ClansApi.EN_MATCH);
-        Reponses.ok(c.getSource(), Component.literal(ClansApi.EN_MATCH + " = " + (actif ? "oui" : "-")));
+        Reponses.ok(c.getSource(), Component.literal(ClansApi.EN_MATCH + " = ").append(actif ? ouiNon(true) : Component.literal("-")));
         return 1;
     }
 
@@ -400,8 +399,14 @@ public final class BaseCommands {
             }
             ParcellesData.de(level);
         }
-        if (ok) Reponses.ok(src, Component.translatable("cmd.heralisz_bases.recharge", Modele.erreur()));
-        else Reponses.erreur(src, Component.translatable("cmd.heralisz_bases.recharge_erreur", Modele.erreur()));
+        if (ok) Reponses.ok(src, Component.translatable("cmd.heralisz_bases.recharge", Modele.erreurTexte()));
+        else Reponses.erreur(src, Component.translatable("cmd.heralisz_bases.recharge_erreur", Modele.erreurTexte()));
         return ok ? 1 : 0;
+    }
+
+    /** « oui » / « non » dans la langue du joueur (reponses des commandes d'administration). */
+    private static Component ouiNon(boolean v) {
+        return v ? Component.translatableWithFallback("heralisz_bases.cmd.oui", "oui")
+                : Component.translatableWithFallback("heralisz_bases.cmd.non", "non");
     }
 }

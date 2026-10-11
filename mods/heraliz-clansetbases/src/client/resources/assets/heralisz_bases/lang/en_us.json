@@ -254,5 +254,13 @@
   "refus.heralisz_bases.salle_verrouillee": "Locked room: unlock it from the base screen",
   "msg.heralisz_bases.en_match": "Not possible during a match.",
   "msg.heralisz_bases.vehicule": "Get off your vehicle first.",
-  "gui.heralisz_bases.tp2.raison.en_match": "You are in a match"
+  "gui.heralisz_bases.tp2.raison.en_match": "You are in a match",
+  "heralisz_bases.cmd.liste_ligne": "[%s] plot %s · %s · %s room(s) bought",
+  "heralisz_bases.cmd.oui": "yes",
+  "heralisz_bases.cmd.non": "no",
+  "heralisz_bases.cmd.pillard_hors_ligne": "%s (offline)",
+  "heralisz_bases.modele.non_charge": "not loaded",
+  "heralisz_bases.modele.absent": "%s missing from data/heralisz_bases/structures",
+  "heralisz_bases.modele.absents": "%s and %s missing from data/heralisz_bases/structures",
+  "heralisz_bases.modele.illisible": "unreadable: %s"
 }

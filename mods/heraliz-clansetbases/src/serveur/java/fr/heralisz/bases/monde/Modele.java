@@ -14,6 +14,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.Resource;
@@ -48,6 +49,8 @@ public final class Modele {
 
     private static Modele actuel;
     private static String erreur = "non charge";
+    /** Meme raison, pour les messages d'administration (traduite chez le joueur). */
+    private static Component erreurTexte = Component.translatableWithFallback("heralisz_bases.modele.non_charge", "non chargé");
 
     public final Plan plan;
     public final BlockState[] palette;
@@ -79,9 +82,14 @@ public final class Modele {
         return actuel;
     }
 
-    /** Raison de l'absence de modele (journal, message admin). */
+    /** Raison de l'absence de modele (journal du serveur). */
     public static String erreur() {
         return erreur;
+    }
+
+    /** Raison de l'absence de modele (messages d'administration, traduite chez le joueur ; vide si charge). */
+    public static Component erreurTexte() {
+        return erreurTexte;
     }
 
     public int nombre() {
@@ -108,6 +116,11 @@ public final class Modele {
             if (rj.isEmpty() || rn.isEmpty()) {
                 erreur = (rj.isEmpty() ? "bunker.json" : "") + (rj.isEmpty() && rn.isEmpty() ? " et " : "") + (rn.isEmpty() ? "bunker.nbt" : "")
                         + " absent(s) de data/heralisz_bases/structures";
+                erreurTexte = rj.isEmpty() && rn.isEmpty()
+                        ? Component.translatableWithFallback("heralisz_bases.modele.absents", "%s et %s absents de data/heralisz_bases/structures",
+                                "bunker.json", "bunker.nbt")
+                        : Component.translatableWithFallback("heralisz_bases.modele.absent", "%s absent de data/heralisz_bases/structures",
+                                rj.isEmpty() ? "bunker.json" : "bunker.nbt");
                 HeraliszBases.LOG.warn("[bases] modele du bunker indisponible : {}", erreur);
                 return false;
             }
@@ -122,11 +135,13 @@ public final class Modele {
             Modele m = construire(server, Plan.lire(jo), racine);
             actuel = m;
             erreur = "";
+            erreurTexte = Component.empty();
             HeraliszBases.LOG.info("[bases] modele du bunker charge : {} x {} x {}, {} blocs, {} salles, {} entrees, {} blocs de coque provisoire remplaces",
                     m.plan.tx, m.plan.ty, m.plan.tz, m.nombre(), m.plan.salles.size(), m.plan.entrees.size(), m.coqueRemplacee);
             return true;
         } catch (Exception ex) {
             erreur = "lecture impossible : " + ex;
+            erreurTexte = Component.translatableWithFallback("heralisz_bases.modele.illisible", "lecture impossible : %s", String.valueOf(ex));
             HeraliszBases.LOG.error("[bases] modele du bunker illisible", ex);
             return false;
         }

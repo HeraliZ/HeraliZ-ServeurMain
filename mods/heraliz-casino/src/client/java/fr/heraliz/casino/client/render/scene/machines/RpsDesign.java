@@ -15,6 +15,7 @@ import fr.heraliz.casino.client.render.scene.Sprite;
 import fr.heraliz.casino.game.duel.Rps;
 
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -299,14 +300,14 @@ public final class RpsDesign extends MachineDesign<RpsView> {
         boolean blink = ((int) (s.time / 10)) % 2 == 0;
         switch (v.phase) {
             case 0 -> {
-                out.text(p, "PIERRE FEUILLE", cx, 32.3f, z, 0.9f, LED_AMBER, 0.95f, DrawList.T_CENTER);
-                out.text(p, "CISEAUX", cx, 30.6f, z, 0.9f, LED_AMBER, 0.95f, DrawList.T_CENTER);
-                if (blink) out.text(p, "DÉFI ?", cx, 27.8f, z, 1.4f, LED_GREEN, 1f, DrawList.T_CENTER);
+                out.text(p, I18n.get("heralizcasino.pfc.titre_1"), cx, 32.3f, z, 0.9f, LED_AMBER, 0.95f, DrawList.T_CENTER);
+                out.text(p, I18n.get("heralizcasino.pfc.titre_2"), cx, 30.6f, z, 0.9f, LED_AMBER, 0.95f, DrawList.T_CENTER);
+                if (blink) out.text(p, I18n.get("heralizcasino.pfc.defi"), cx, 27.8f, z, 1.4f, LED_GREEN, 1f, DrawList.T_CENTER);
             }
             case 1 -> {
-                out.text(p, "DÉFI OUVERT", cx, 32.4f, z, 0.9f, blink ? LED_GREEN : LED_AMBER, 1f, DrawList.T_CENTER);
+                out.text(p, I18n.get("heralizcasino.pfc.defi_ouvert"), cx, 32.4f, z, 0.9f, blink ? LED_GREEN : LED_AMBER, 1f, DrawList.T_CENTER);
                 out.text(p, v.nameA, cx, 30.4f, z, fit(v.nameA, 1.1f, 11.5f, false), LED_AMBER, 1f, DrawList.T_CENTER);
-                String st = fmt(v.stake) + " J";
+                String st = I18n.get("heralizcasino.pfc.jetons", fmt(v.stake));
                 out.text(p, st, cx, 27.9f, z, fit(st, 1.3f, 11.5f, false), LED_RED, 1f, DrawList.T_CENTER);
             }
             default -> {
@@ -324,13 +325,14 @@ public final class RpsDesign extends MachineDesign<RpsView> {
                 String line;
                 int col = LED_AMBER;
                 if (v.phase == 3) {
-                    line = v.winner == 1 ? v.nameA + " GAGNE" : v.winner == 2 ? v.nameB + " GAGNE" : "ANNULÉ";
+                    line = v.winner == 1 ? I18n.get("heralizcasino.pfc.gagne", v.nameA) : v.winner == 2 ? I18n.get("heralizcasino.pfc.gagne", v.nameB) : I18n.get("heralizcasino.pfc.annule");
                     col = blink ? LED_GREEN : LED_AMBER;
                 } else if (v.step == 1) {
                     float t = v.sinceReveal;
-                    line = t < Rps.T_FOU ? "CHI" : t < Rps.T_MI ? "FOU" : t < Rps.T_THROW ? "MI !" : "MANCHE " + v.round;
+                    line = t < Rps.T_FOU ? I18n.get("heralizcasino.pfc.chi") : t < Rps.T_MI ? I18n.get("heralizcasino.pfc.fou") : t < Rps.T_THROW ? I18n.get("heralizcasino.pfc.mi")
+                            : I18n.get("heralizcasino.pfc.manche", String.valueOf(v.round));
                 } else {
-                    line = "MANCHE " + v.round + "  " + (int) Math.ceil(v.countdown) + "s";
+                    line = I18n.get("heralizcasino.pfc.manche", String.valueOf(v.round)) + "  " + (int) Math.ceil(v.countdown) + "s";
                     if (v.countdown <= 5 && blink) col = LED_RED;
                 }
                 out.text(p, line, cx, 27.2f, z, fit(line, 0.95f, 12f, false), col, 1f, DrawList.T_CENTER);
@@ -342,14 +344,14 @@ public final class RpsDesign extends MachineDesign<RpsView> {
     private void reveal(Scene s, RpsView v, Pose p, DrawList out) {
         float t = v.sinceReveal;
         // ---- CHI / FOU / MI : grandes lettres au-dessus de la table
-        String[] words = {"CHI", "FOU", "MI !"};
+        String[] words = {I18n.get("heralizcasino.pfc.chi"), I18n.get("heralizcasino.pfc.fou"), I18n.get("heralizcasino.pfc.mi")};
         int[] at = {0, Rps.T_FOU, Rps.T_MI};
         for (int i = 0; i < 3; i++) {
             float k = t - at[i];
             if (k < 0 || k > 14) continue;
             float pop = Ease.outBack(Math.min(1f, k / 4f), 2.5f);
             float a = 1 - Ease.range(k, 8, 14);
-            out.text(p, words[i], CX, 22.5f + k * 0.1f, CZ, 3.2f * pop, i == 2 ? GOLD : 0xFFFFFF, a, DrawList.T_CENTER | DrawList.T_BILLBOARD | DrawList.T_OUTLINE, 0x000000);
+            out.text(p, words[i], CX, 22.5f + k * 0.1f, CZ, fit(words[i], 3.2f, 20f, true) * pop, i == 2 ? GOLD : 0xFFFFFF, a, DrawList.T_CENTER | DrawList.T_BILLBOARD | DrawList.T_OUTLINE, 0x000000);
         }
         if (t < Rps.T_THROW) return;
         int a = v.shownA, b = v.shownB;
@@ -395,15 +397,15 @@ public final class RpsDesign extends MachineDesign<RpsView> {
 
     /** Texte du resultat d'une manche. */
     public static String resultText(int a, int b) {
-        if (a < 0 && b < 0) return "PERSONNE N'A JOUÉ";
-        if (a < 0 || b < 0) return "TROP TARD !";
-        if (a == b) return "ÉGALITÉ";
+        if (a < 0 && b < 0) return I18n.get("heralizcasino.pfc.personne");
+        if (a < 0 || b < 0) return I18n.get("heralizcasino.pfc.trop_tard");
+        if (a == b) return I18n.get("heralizcasino.pfc.egalite");
         int w = Rps.winner(a, b) == 1 ? a : b;
-        return switch (w) {
-            case Rps.ROCK -> "LA PIERRE ÉCRASE LES CISEAUX";
-            case Rps.PAPER -> "LA FEUILLE RECOUVRE LA PIERRE";
-            default -> "LES CISEAUX COUPENT LA FEUILLE";
-        };
+        return I18n.get(switch (w) {
+            case Rps.ROCK -> "heralizcasino.pfc.pierre";
+            case Rps.PAPER -> "heralizcasino.pfc.feuille";
+            default -> "heralizcasino.pfc.ciseaux";
+        });
     }
 
     /** Trajectoire en cloche de la main a la table. */

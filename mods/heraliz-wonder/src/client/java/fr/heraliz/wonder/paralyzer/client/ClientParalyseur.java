@@ -32,7 +32,7 @@ public final class ClientParalyseur {
             String r = FxParalyseur.stats();
             HeralizWonder.LOG.info("[wonder] fx {}", r);
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) mc.player.displayClientMessage(Component.literal("Effets du Paralyzer : voir le journal"), true);
+            if (mc.player != null) mc.player.displayClientMessage(Component.translatable("heraliz_wonder.journal.effets_paralyzer"), true);
             return 1;
         }));
     }

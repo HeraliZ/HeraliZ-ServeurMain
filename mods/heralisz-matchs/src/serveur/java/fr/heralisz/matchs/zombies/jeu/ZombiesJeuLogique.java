@@ -331,7 +331,10 @@ public final class ZombiesJeuLogique {
                                     n++;
                                 }
                             }
-                            if (n == 0) Annonces.retour(c.getSource(), Component.literal("aucune partie de zombies"));
+                            if (n == 0) {
+                                Annonces.retour(c.getSource(), Component.translatableWithFallback("heralisz_matchs.zombies.dev.aucune_partie",
+                                        "aucune partie de zombies"));
+                            }
                             return n;
                         }))
                         .then(Commands.literal("manche").then(Commands.argument("n", IntegerArgumentType.integer(1, 200)).executes(c -> {
@@ -504,7 +507,10 @@ public final class ZombiesJeuLogique {
         ServerPlayer sp = c.getSource().getPlayer();
         PartieZombies p = sp == null ? null : PartiesZombies.partieDe(sp);
         if (p == null) p = premiere();
-        if (p == null) throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("aucune partie de zombies")).create();
+        if (p == null) {
+            throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.translatableWithFallback(
+                    "heralisz_matchs.zombies.dev.aucune_partie", "aucune partie de zombies")).create();
+        }
         return p;
     }
 

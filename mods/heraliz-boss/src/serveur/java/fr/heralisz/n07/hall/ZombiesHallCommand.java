@@ -110,7 +110,11 @@ public final class ZombiesHallCommand {
          public void onReturnRequested(ServerPlayer p, ReturnReason reason) {
             Vec3 top = h.liftTop();
             p.teleportTo(h.level, top.x, top.y, top.z, h.yaw(180), 0);
-            p.displayClientMessage(Component.translatable("command.heralisz_n07.zombies.return", p.getGameProfile().getName(), reason.name()), false);
+            Component motif = reason == ReturnReason.TELEPORTER
+               ? Component.translatableWithFallback("command.heralisz_n07.zombies.return.teleporter", "téléporteur")
+               : Component.translatableWithFallback("command.heralisz_n07.zombies.return.evacuation", "évacuation");
+            p.displayClientMessage(Component.translatableWithFallback("command.heralisz_n07.zombies.return", "[N-07] Retour demandé : %s (%s)",
+               p.getGameProfile().getName(), motif), false);
          }
       };
    }

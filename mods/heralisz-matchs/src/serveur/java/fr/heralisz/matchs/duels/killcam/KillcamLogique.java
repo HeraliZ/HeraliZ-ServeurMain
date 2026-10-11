@@ -325,7 +325,7 @@ public final class KillcamLogique {
         Enregistreur ancien = ESSAIS.put(p.getUUID(), r);
         if (ancien != null) ancien.arreter();
         HeraliszMatchs.LOG.info("[killcam] enregistrement reel de {}", p.getGameProfile().getName());
-        Annonces.retour(ctx.getSource(), Component.literal("killcam : enregistrement"));
+        Annonces.retour(ctx.getSource(), Component.translatableWithFallback("heralisz_matchs.killcam.enregistrement", "killcam : enregistrement"));
         return 1;
     }
 

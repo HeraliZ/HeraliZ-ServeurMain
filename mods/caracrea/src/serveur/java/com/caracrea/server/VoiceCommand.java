@@ -89,7 +89,7 @@ public final class VoiceCommand {
         }
         MutableComponent message = duration == null
                 ? Component.translatable("caracrea.voice.command.muted", profiles.size())
-                : Component.translatable("caracrea.voice.command.muted_for", profiles.size(), VoiceMutes.remaining(duration.toMillis()));
+                : Component.translatable("caracrea.voice.command.muted_for", profiles.size(), VoiceMutes.remainingText(duration.toMillis()));
         reply(context.getSource(), message.withStyle(ChatFormatting.GREEN));
         return profiles.size();
     }
@@ -113,7 +113,7 @@ public final class VoiceCommand {
         for (VoiceMutes.Mute mute : mutes) {
             MutableComponent line = Component.literal(" • " + mute.name() + " — ").withStyle(ChatFormatting.WHITE);
             line.append(mute.until() == 0 ? Component.translatable("caracrea.voice.command.forever")
-                    : Component.translatable("caracrea.voice.command.left", VoiceMutes.remaining(mute.until() - now)));
+                    : Component.translatable("caracrea.voice.command.left", VoiceMutes.remainingText(mute.until() - now)));
             if (!mute.reason().isBlank()) {
                 line.append(Component.literal(" — " + mute.reason()).withStyle(ChatFormatting.GRAY));
             }
@@ -149,7 +149,7 @@ public final class VoiceCommand {
             state.append(" · ").append(Component.translatable("caracrea.voice.command.admin_muted").withStyle(ChatFormatting.RED));
             if (mute != null && mute.until() > 0) {
                 state.append(" (").append(Component.translatable("caracrea.voice.command.left",
-                        VoiceMutes.remaining(mute.until() - System.currentTimeMillis()))).append(")");
+                        VoiceMutes.remainingText(mute.until() - System.currentTimeMillis()))).append(")");
             }
         }
         state.append(Component.literal(String.format(Locale.ROOT, " · UDP %d ↑ %d ↓", info.framesIn(), info.framesOut()))

@@ -7,6 +7,7 @@ import fr.heralisz.matchs.client.kit.Icons;
 import fr.heralisz.matchs.client.kit.SonsUi;
 import fr.heralisz.matchs.client.kit.Ui;
 import fr.heralisz.matchs.duels.net.Vues;
+import fr.heralisz.matchs.moteur.client.HudMoteur;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -91,8 +92,8 @@ public class ScoresScreen extends Screen implements EcranDuels {
         // equipes et score
         Vues.EquipeScore a = t.equipes().size() > 0 ? t.equipes().get(0) : null, b = t.equipes().size() > 1 ? t.equipes().get(1) : null;
         int sy = py + 52;
-        if (a != null) Ui.right(g, f, Ui.lit(a.nom(), Ui.BOLD), cx - 48, sy + 6, Ui.argb(a.couleur(), 255));
-        if (b != null) g.drawString(f, Ui.lit(b.nom(), Ui.BOLD), (int) cx + 48, sy + 6, Ui.argb(b.couleur(), 255), false);
+        if (a != null) Ui.right(g, f, Ui.lit(HudMoteur.nomAffiche(a.nom()), Ui.BOLD), cx - 48, sy + 6, Ui.argb(a.couleur(), 255));
+        if (b != null) g.drawString(f, Ui.lit(HudMoteur.nomAffiche(b.nom()), Ui.BOLD), (int) cx + 48, sy + 6, Ui.argb(b.couleur(), 255), false);
         g.pose().pushPose();
         float sc = 2f;
         float sw = f.width(Ui.lit(score, Ui.BOLD)) * sc;

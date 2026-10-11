@@ -146,5 +146,6 @@
  "strike.airstrike.gun_run.short": "Gun run",
  "strike.airstrike.smoke.short": "Smoke",
  "strike.airstrike.gas.short": "Gas",
- "strike.airstrike.supply.short": "Supply"
+ "strike.airstrike.supply.short": "Supply",
+  "airstrike.hud.metres": "%s m"
 }

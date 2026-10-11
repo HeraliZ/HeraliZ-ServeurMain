@@ -19,6 +19,6 @@
   "item.heralisz_heal.surv12.desc": "Field surgical kit for severe injuries.",
   "item.heralisz_heal.vaseline": "Vaseline",
   "item.heralisz_heal.vaseline.desc": "Grants resistance when applied.",
-  "pack.heralisz_heal.default_pack.name": "§aHeraliZ §7- §fSoins",
-  "pack.heralisz_heal.name": "§aHeraliZ §7- §fSoins"
+  "pack.heralisz_heal.default_pack.name": "§aHeraliZ §7- §fHealing",
+  "pack.heralisz_heal.name": "§aHeraliZ §7- §fHealing"
 }

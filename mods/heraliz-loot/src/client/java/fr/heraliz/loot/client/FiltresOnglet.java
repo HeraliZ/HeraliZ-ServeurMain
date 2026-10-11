@@ -31,22 +31,26 @@ public final class FiltresOnglet {
     private FiltresOnglet() {
     }
 
-    /** {préfixe du nom (vide = tout), libellé, info-bulle, couleur} */
+    /** {préfixe du nom (vide = tout), libellé, info-bulle, couleur} ; textes dans heraliz_loot.filtre.* (T1 à T7 : tels quels). */
     private static final Object[][] FILTRES = {
-            {"", "Tout", "Tous les conteneurs", 0xFFB8BCC4},
-            {"t1_", "T1", "Commun : rue, logements", 0xFF9AA0A8},
-            {"t2_", "T2", "Peu commun : maison, ferme", 0xFF6FAE5A},
-            {"t3_", "T3", "Rare : police, secours, chasse", 0xFF4C8FD6},
-            {"t4_", "T4", "Épique : militaire léger", 0xFF9A6CD0},
-            {"t5_", "T5", "Légendaire : militaire lourd, ONU", 0xFFE08A2E},
-            {"t6_", "T6", "Mythique : haute sécurité", 0xFFD0453A},
-            {"t7_", "T7", "Unique : coffres animés", 0xFFE6C24A},
-            {"nourriture", "Vivres", "Nourriture (quantité selon la taille)", 0xFFD9D2C0},
-            {"soins", "Soins", "Soins (quantité selon la taille)", 0xFFE07FA8},
-            {"munitions", "Mun.", "Munitions (quantité selon la taille)", 0xFFA9825A},
-            {"vehicules", "Véhic.", "Véhicules de décor (collision exacte)", 0xFF7FA3B8},
+            {"", texte("tout"), texte("tout.info"), 0xFFB8BCC4},
+            {"t1_", Component.literal("T1"), texte("t1.info"), 0xFF9AA0A8},
+            {"t2_", Component.literal("T2"), texte("t2.info"), 0xFF6FAE5A},
+            {"t3_", Component.literal("T3"), texte("t3.info"), 0xFF4C8FD6},
+            {"t4_", Component.literal("T4"), texte("t4.info"), 0xFF9A6CD0},
+            {"t5_", Component.literal("T5"), texte("t5.info"), 0xFFE08A2E},
+            {"t6_", Component.literal("T6"), texte("t6.info"), 0xFFD0453A},
+            {"t7_", Component.literal("T7"), texte("t7.info"), 0xFFE6C24A},
+            {"nourriture", texte("vivres"), texte("vivres.info"), 0xFFD9D2C0},
+            {"soins", texte("soins"), texte("soins.info"), 0xFFE07FA8},
+            {"munitions", texte("munitions"), texte("munitions.info"), 0xFFA9825A},
+            {"vehicules", texte("vehicules"), texte("vehicules.info"), 0xFF7FA3B8},
     };
     private static final int LARGEUR = 40, HAUTEUR = 14, PAS = 16;
+
+    private static Component texte(String cle) {
+        return Component.translatable("heraliz_loot.filtre." + cle);
+    }
 
     private static String filtre = "";
     private static CreativeModeTab dernier;
@@ -58,8 +62,8 @@ public final class FiltresOnglet {
         CASES.clear();
         int x = s.getGuiLeft() - LARGEUR - 6, y = s.getGuiTop() + 2;
         for (int i = 0; i < FILTRES.length; i++) {
-            Case c = new Case(x, y + i * PAS, (String) FILTRES[i][0], (String) FILTRES[i][1], (int) FILTRES[i][3]);
-            c.setTooltip(Tooltip.create(Component.literal((String) FILTRES[i][2])));
+            Case c = new Case(x, y + i * PAS, (String) FILTRES[i][0], (Component) FILTRES[i][1], (int) FILTRES[i][3]);
+            c.setTooltip(Tooltip.create((Component) FILTRES[i][2]));
             CASES.add(c);
             e.addListener(c);
         }
@@ -108,8 +112,8 @@ public final class FiltresOnglet {
         private final String prefixe;
         private final int couleur;
 
-        Case(int x, int y, String prefixe, String libelle, int couleur) {
-            super(x, y, LARGEUR, HAUTEUR, Component.literal(libelle));
+        Case(int x, int y, String prefixe, Component libelle, int couleur) {
+            super(x, y, LARGEUR, HAUTEUR, libelle);
             this.prefixe = prefixe;
             this.couleur = couleur;
         }

@@ -37,7 +37,7 @@ public final class SliqClient {
             String r = FxSliq.stats();
             HeralizWonder.LOG.info("[sliquifier] fx {}", r);
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) mc.player.displayClientMessage(Component.literal("Effets du Sliquifier : voir le journal"), true);
+            if (mc.player != null) mc.player.displayClientMessage(Component.translatable("heraliz_wonder.journal.effets_sliquifier"), true);
             return Command.SINGLE_SUCCESS;
         }).then(Commands.literal("glisser").then(Commands.argument("ticks", IntegerArgumentType.integer(1, 200)).executes(c -> {
             GlisseJoueur.avancer = IntegerArgumentType.getInteger(c, "ticks");

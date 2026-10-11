@@ -35,8 +35,10 @@ final class CommandesRarete {
                 .then(Commands.literal("recharger").executes(c -> {
                     boolean ok = RaretesServeur.charger();
                     RaretesServeur.envoyerATous();
-                    if (ok) c.getSource().sendSuccess(() -> Component.literal("Raretés relues et envoyées aux joueurs."), false);
-                    else c.getSource().sendFailure(Component.literal("Un fichier des raretés est illisible : gardé en .bad et ignoré (voir la console)."));
+                    if (ok) c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.rarete.relues",
+                            "Raretés relues et envoyées aux joueurs."), false);
+                    else c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.illisible",
+                            "Un fichier des raretés est illisible : gardé en .bad et ignoré (voir la console)."));
                     return ok ? 1 : 0;
                 }))
                 .then(Commands.literal("aucune").executes(c -> definir(c.getSource(), null)))
@@ -51,43 +53,49 @@ final class CommandesRarete {
     }
 
     private static MutableComponent nom(Rarete r) {
-        return r == null ? Component.literal("aucune").withStyle(ChatFormatting.GRAY)
-                : Component.literal(r.nom).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.couleur)));
+        return r == null ? Component.translatableWithFallback("heraliz_loot.rarete.aucune", "aucune").withStyle(ChatFormatting.GRAY)
+                : r.texte().setStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.couleur)));
+    }
+
+    private static MutableComponent parDefaut() {
+        return Component.translatableWithFallback("heraliz_loot.cmd.rarete.origine.defaut", "(rareté par défaut)");
     }
 
     private static int voir(CommandSourceStack src) {
         ServerPlayer p = src.getPlayer();
         if (p == null) {
-            src.sendFailure(Component.literal("À faire en jeu, l'objet en main."));
+            src.sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.en_jeu", "À faire en jeu, l'objet en main."));
             return 0;
         }
         ItemStack st = p.getMainHandItem();
         RaretesObjets.Cle cle = RaretesObjets.cle(st);
         if (cle == null) {
-            src.sendFailure(Component.literal("Tiens un objet en main."));
+            src.sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.objet_en_main", "Tiens un objet en main."));
             return 0;
         }
         Rarete propre = RaretesObjets.propre(st), affichee = RaretesObjets.de(st);
-        String origine = propre == null ? " (rareté par défaut)" : RaretesServeur.choisieEnJeu(cle) ? " (choisie en jeu)" : " (raretes.json)";
+        Component origine = propre == null ? parDefaut()
+                : RaretesServeur.choisieEnJeu(cle) ? Component.translatableWithFallback("heraliz_loot.cmd.rarete.origine.jeu", "(choisie en jeu)")
+                : Component.literal("(raretes.json)");
         src.sendSuccess(() -> Component.literal(cle.id() + " : ").append(nom(affichee))
-                .append(Component.literal(origine).withStyle(ChatFormatting.GRAY)), false);
+                .append(Component.literal(" ").append(origine).withStyle(ChatFormatting.GRAY)), false);
         return 1;
     }
 
     private static int definir(CommandSourceStack src, Rarete r) {
         ServerPlayer p = src.getPlayer();
         if (p == null) {
-            src.sendFailure(Component.literal("À faire en jeu, l'objet en main."));
+            src.sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.en_jeu", "À faire en jeu, l'objet en main."));
             return 0;
         }
         RaretesObjets.Cle cle = RaretesObjets.cle(p.getMainHandItem());
         if (cle == null) {
-            src.sendFailure(Component.literal("Tiens un objet en main."));
+            src.sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.objet_en_main", "Tiens un objet en main."));
             return 0;
         }
         RaretesServeur.definir(cle, r);
         src.sendSuccess(() -> Component.literal(cle.id() + " → ").append(nom(r == null ? RaretesObjets.table().defaut() : r))
-                .append(Component.literal(r == null ? " (rareté par défaut)" : "").withStyle(ChatFormatting.GRAY)), false);
+                .append(r == null ? Component.literal(" ").append(parDefaut()).withStyle(ChatFormatting.GRAY) : Component.empty()), false);
         return 1;
     }
 
@@ -95,11 +103,11 @@ final class CommandesRarete {
         ServerPlayer p = src.getPlayer();
         RaretesObjets.Cle cle = p == null ? null : RaretesObjets.cle(p.getMainHandItem());
         if (cle == null) {
-            src.sendFailure(Component.literal("Tiens un objet en main."));
+            src.sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.objet_en_main", "Tiens un objet en main."));
             return 0;
         }
         if (!RaretesServeur.effacer(cle)) {
-            src.sendFailure(Component.literal("Aucun choix fait en jeu pour " + cle.id() + "."));
+            src.sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.aucun_choix", "Aucun choix fait en jeu pour %s.", cle.id()));
             return 0;
         }
         Rarete r = RaretesObjets.de(p.getMainHandItem());
@@ -109,7 +117,7 @@ final class CommandesRarete {
 
     private static int definirDefaut(CommandSourceStack src, Rarete r) {
         RaretesServeur.definirDefaut(r);
-        src.sendSuccess(() -> Component.literal("Rareté par défaut : ").append(nom(r)), false);
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.rarete.defaut", "Rareté par défaut : %s", nom(r)), false);
         return 1;
     }
 }

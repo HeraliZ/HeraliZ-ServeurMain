@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import fr.heraliz.crac.admin.AdminManager;
 import fr.heraliz.crac.placable.PlacableHpManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -45,17 +46,14 @@ public final class C2SAdminPlacableTraitement {
                         PlacableHpManager.applyFromPanel(player.getServer(), entries);
                         AdminManager.log(player, "saved the placable register (" + entries.size() + " blocks, " + skipped + " unknown skipped)");
                         player.displayClientMessage(
-                            Component.literal(
-                                skipped == 0
-                                    ? "§6[Admin] Placable register saved (" + entries.size() + " blocks)."
-                                    : "§6[Admin] Placable register saved ("
-                                        + entries.size()
-                                        + "), §c"
-                                        + skipped
-                                        + " unknown block"
-                                        + (skipped == 1 ? "" : "s")
-                                        + " skipped."
-                            ),
+                            skipped == 0
+                                ? Component.translatableWithFallback("crac.admin.placable_saved",
+                                    "§6[Admin] Registre des placables enregistré (%s blocs).", String.valueOf(entries.size()))
+                                    .withStyle(ChatFormatting.GOLD)
+                                : Component.translatableWithFallback("crac.admin.placable_saved_skipped",
+                                    "§6[Admin] Registre des placables enregistré (%s), %s", String.valueOf(entries.size()),
+                                    Component.translatableWithFallback("crac.admin.placable_skipped", "§c%s bloc(s) inconnu(s) ignoré(s).",
+                                        String.valueOf(skipped)).withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.GOLD),
                             false
                         );
                         AdminManager.sendSnapshot(player);

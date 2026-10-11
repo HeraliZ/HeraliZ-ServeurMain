@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -496,7 +497,7 @@ public final class NicheDesign extends MachineDesign<NicheView> {
             intro(s, p, out, introT);
         } else {
             screen(s, v, p, out, at);
-            Intro.title(p, out, introT, "LA NICHE", INTRO_SUB, 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, BLUE, GOLD);
+            Intro.title(p, out, introT, I18n.get("heralizcasino.niche.titre"), I18n.get(INTRO_SUB), 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, BLUE, GOLD);
         }
         out.translucent(p, glass, 0xFFFFFF, 0.25f);
     }
@@ -504,7 +505,8 @@ public final class NicheDesign extends MachineDesign<NicheView> {
     /** Temps de l'intro pour l'image en cours (-1 : pas d'intro) ; lu par la grille au repos. */
     private float introT = -1;
 
-    static final String INTRO_SUB = "3 PATTES = TOURS GRATUITS · JUSQU'À 4 GRILLES";
+    /** Cle du sous-titre de l'intro (traduit a l'affichage). */
+    static final String INTRO_SUB = "heralizcasino.niche.intro";
     /** Pattes de l'intro : nombre, premiere (tick), intervalle. */
     static final int PAWS = 9;
     static final float PAW_T = 36, PAW_DT = 2.2f;
@@ -588,10 +590,10 @@ public final class NicheDesign extends MachineDesign<NicheView> {
             float sc = Ease.outBack(Ease.clamp01(bt / 3f), 2.6f);
             // un aboiement de chaque cote de la niche
             float x = k == 0 ? nx + 3.3f : nx - 3.3f, y = ground + (k == 0 ? 5.4f : 6.2f) + bt * 0.06f;
-            out.text(p, "WOUF!", x, y, z + 0.3f, 1.2f * sc, k == 0 ? AMBER : GOLD, 1 - Ease.range(bt, 5, 8), flags, 0x000000);
+            out.text(p, I18n.get("heralizcasino.niche.wouf"), x, y, z + 0.3f, 1.2f * sc, k == 0 ? AMBER : GOLD, 1 - Ease.range(bt, 5, 8), flags, 0x000000);
         }
         Intro.crtOn(p, out, DARK, FLASH, t, WX0, WY0, WX1, WY1, SZ + 0.36f, BLUE);
-        Intro.title(p, out, t, "LA NICHE", INTRO_SUB, 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, BLUE, GOLD);
+        Intro.title(p, out, t, I18n.get("heralizcasino.niche.titre"), I18n.get(INTRO_SUB), 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, BLUE, GOLD);
     }
 
     /** Bandeau de titre d'une grille du Multihold (texte dessine apres les maillages). */
@@ -1173,14 +1175,14 @@ public final class NicheDesign extends MachineDesign<NicheView> {
             Place pl = h.pl();
             float hs = pl.scale(), y = pl.y1() + (0.04f + HEAD / 2) * hs, z = SZ + 0.09f;
             int col = h.state() == LATEST ? AMBER : h.state() == OPEN ? WHITE : GREY;
-            out.text(p, "GRILLE " + (h.k() + 1), pl.x0() + 0.15f * hs, y, z, 0.34f * hs, col, h.a(), DrawList.T_BOLD);
+            out.text(p, I18n.get("heralizcasino.niche.grille", String.valueOf(h.k() + 1)), pl.x0() + 0.15f * hs, y, z, 0.34f * hs, col, h.a(), DrawList.T_BOLD);
             if (h.winMilli() > 0) {
                 String w = "+" + amountText(v, h.winMilli());
                 out.text(p, w, pl.x1() - 0.15f * hs, y, z, fit(w, 0.42f, GW * 0.5f, true) * hs, GOLD, h.a(), DrawList.T_RIGHT | DrawList.T_BOLD);
             } else if (h.state() == LOCKED) {
-                out.text(p, "VERROUILLÉE", pl.x1() - 0.15f * hs, y, z, 0.28f * hs, GREY, h.a(), DrawList.T_RIGHT);
+                out.text(p, I18n.get("heralizcasino.niche.verrouillee"), pl.x1() - 0.15f * hs, y, z, 0.28f * hs, GREY, h.a(), DrawList.T_RIGHT);
             } else if (h.state() == LATEST && h.k() < Niche.GRIDS - 1) {
-                out.text(p, "PATTES ICI", pl.x1() - 0.15f * hs, y, z, 0.28f * hs, AMBER, h.a(), DrawList.T_RIGHT | DrawList.T_BOLD);
+                out.text(p, I18n.get("heralizcasino.niche.pattes_ici"), pl.x1() - 0.15f * hs, y, z, 0.28f * hs, AMBER, h.a(), DrawList.T_RIGHT | DrawList.T_BOLD);
             }
         }
     }
@@ -1206,53 +1208,55 @@ public final class NicheDesign extends MachineDesign<NicheView> {
             float[] tz = idle ? null : teasing(spin, lt);
             if (tz != null) {
                 float a = Ease.clamp01(tz[1] / 4f);
-                out.text(p, "ENCORE UNE PATTE...", 8, yt + 0.5f, z, fit("ENCORE UNE PATTE...", 1.05f, 11.4f, true), AMBER, a * (0.7f + 0.3f * s.pulse(0.5f)), bold);
-                out.text(p, "POUR LES TOURS GRATUITS", 8, yt - 0.85f, z, fit("POUR LES TOURS GRATUITS", 0.5f, 11.4f, false), WHITE, a * 0.9f, DrawList.T_CENTER);
+                String encore = I18n.get("heralizcasino.niche.encore_patte"), pour = I18n.get("heralizcasino.slot.pour_tours");
+                out.text(p, encore, 8, yt + 0.5f, z, fit(encore, 1.05f, 11.4f, true), AMBER, a * (0.7f + 0.3f * s.pulse(0.5f)), bold);
+                out.text(p, pour, 8, yt - 0.85f, z, fit(pour, 0.5f, 11.4f, false), WHITE, a * 0.9f, DrawList.T_CENTER);
             } else {
                 out.text(p, "MULTIHOLD", 8, yt + 0.45f, z, fit("MULTIHOLD", 1.0f, 11f, true), BLUE, 1f, bold);
-                String sub = "JUSQU'À 4 GRILLES · WILDS x2 / x3 COLLANTS";
+                String sub = I18n.get("heralizcasino.niche.collants");
                 out.text(p, sub, 8, yt - 0.8f, z, fit(sub, 0.5f, 11.4f, false), GOLD, 0.95f, DrawList.T_CENTER);
             }
             if (idle) {
                 int phase = ((int) (s.time / 20)) % 3;
-                String txt = phase == 0 ? "3 PATTES = " + v.rules.freeSpins + " TOURS GRATUITS + " + mult(v.rules.scatterPay) + "× LA MISE"
-                        : phase == 1 ? "WILD x2 + WILD x3 SUR UNE LIGNE = x5" : "20 LIGNES · DE GAUCHE À DROITE";
+                String txt = phase == 0 ? I18n.get("heralizcasino.niche.idle_pattes", String.valueOf(v.rules.freeSpins), mult(v.rules.scatterPay))
+                        : I18n.get(phase == 1 ? "heralizcasino.niche.idle_wild" : "heralizcasino.niche.idle_lignes");
                 out.text(p, txt, 8, yb, z, fit(txt, 0.58f, 11.4f, false), phase == 0 ? AMBER : phase == 1 ? GOLD : BLUE, 0.95f, DrawList.T_CENTER);
                 return;
             }
             if (tz != null) return;
-            bottomLine(v, p, out, i, spin, lt, yb, z, "20 LIGNES", WHITE);
+            bottomLine(v, p, out, i, spin, lt, yb, z, I18n.get("heralizcasino.niche.lignes"), WHITE);
             return;
         }
         float yt = (TOP_BAR + WY1) / 2, yb = (WY0 + LOW_BAR) / 2;
         boolean free = spin.kind == Niche.FREE;
         int left = free ? spinsShown(spin, lt) : v.rules.freeSpins;
         boolean last = free && left == 0;
-        String big = last ? "DERNIER TOUR" : (free ? "TOURS RESTANTS : " : "TOURS GRATUITS : ") + left;
+        String big = last ? I18n.get("heralizcasino.slot.dernier_tour")
+                : I18n.get(free ? "heralizcasino.niche.tours_restants" : "heralizcasino.niche.tours_gratuits", String.valueOf(left));
         out.text(p, big, 8, yt + 0.45f, z, fit(big, 0.95f, 11.2f, true), last ? RED : GREEN, 1f, bold);
         int open = latest(spin, lt) + 1;
         String sub;
         int col;
         if (free && spin.winMilli > 0 && lt >= Niche.winStart(spin)) {
-            sub = "CE TOUR : +" + amountText(v, spin.winMilli);
+            sub = I18n.get("heralizcasino.niche.ce_tour", amountText(v, spin.winMilli));
             col = GOLD;
         } else if (open < Niche.GRIDS) {
-            sub = "3 PATTES SUR LA GRILLE ALLUMÉE = GRILLE SUIVANTE";
+            sub = I18n.get("heralizcasino.niche.grille_suivante");
             col = AMBER;
         } else {
-            sub = "4 GRILLES OUVERTES !";
+            sub = I18n.get("heralizcasino.niche.quatre_grilles");
             col = GOLD;
         }
         out.text(p, sub, 8, yt - 0.75f, z, fit(sub, 0.48f, 11.4f, false), col, 0.95f, DrawList.T_CENTER);
-        bottomLine(v, p, out, i, spin, lt, yb, z, "GRILLES " + open + "/" + Niche.GRIDS, open == Niche.GRIDS ? GOLD : BLUE);
+        bottomLine(v, p, out, i, spin, lt, yb, z, I18n.get("heralizcasino.niche.grilles", String.valueOf(open), String.valueOf(Niche.GRIDS)), open == Niche.GRIDS ? GOLD : BLUE);
     }
 
     private void bottomLine(NicheView v, Pose p, DrawList out, int i, Niche.Spin spin, float lt, float y, float z, String right, int col) {
         // trois zones qui ne se touchent jamais : mise a gauche, gain au centre, lignes / grilles a droite
-        String mise = "MISE " + fmt(v.bet);
+        String mise = I18n.get("heralizcasino.slot.mise", fmt(v.bet));
         out.text(p, mise, WX0 + 0.3f, y, z, fit(mise, 0.5f, 2.9f, false), WHITE, 0.9f, 0);
         long won = (long) Math.floor(v.bet * (gainSoFar(v, i, spin, lt) / 1000.0));
-        String g = "GAIN " + fmt(won);
+        String g = I18n.get("heralizcasino.slot.gain", fmt(won));
         out.text(p, g, 7.9f, y, z, fit(g, 0.62f, 3.9f, false), won > 0 ? GOLD : WHITE, 1f, DrawList.T_CENTER);
         out.text(p, right, WX1 - 0.3f, y, z, fit(right, 0.5f, 2.7f, false), col, 1f, DrawList.T_RIGHT);
     }
@@ -1296,11 +1300,12 @@ public final class NicheDesign extends MachineDesign<NicheView> {
                 if (e >= 0 && e < Niche.TRIGGER_T + 4) {
                     float a = Math.min(1f, e / 4f) * (1 - Ease.range(e, Niche.TRIGGER_T - 4, Niche.TRIGGER_T + 4));
                     veil(p, out, 0.62f * a, RX0 - 0.15f, RY0 - 0.1f, RX1 + 0.15f, RY1 + 0.1f);
-                    out.text(p, "BONUS !", cx, cy + 1.9f, z, fit("BONUS !", 2.2f, 11f, true) * Ease.outBack(Ease.clamp01(e / 6f), 2.2f), AMBER, a, flags, 0x2A1400);
-                    String ft = v.rules.freeSpins + " TOURS GRATUITS";
+                    String bonus = I18n.get("heralizcasino.niche.bonus");
+                    out.text(p, bonus, cx, cy + 1.9f, z, fit(bonus, 2.2f, 11f, true) * Ease.outBack(Ease.clamp01(e / 6f), 2.2f), AMBER, a, flags, 0x2A1400);
+                    String ft = I18n.get("heralizcasino.slot.n_tours_gratuits", String.valueOf(v.rules.freeSpins));
                     out.text(p, ft, cx, cy + 0.15f, z, fit(ft, 1.05f, 11f, true), GREEN, a, flags, 0x000000);
                     float pay = Ease.clamp01((e - 10) / 6f);
-                    String pt = "+" + mult(v.rules.scatterPay) + "× LA MISE : +" + amountText(v, spin.bonusMilli);
+                    String pt = I18n.get("heralizcasino.niche.fois_mise", mult(v.rules.scatterPay), amountText(v, spin.bonusMilli));
                     out.text(p, pt, cx, cy - 1.45f, z, fit(pt, 0.85f, 11f, true) * Math.max(0.05f, Ease.outBack(pay, 2.4f)), GOLD, a * pay, flags, 0x2A1400);
                 }
             }
@@ -1315,7 +1320,8 @@ public final class NicheDesign extends MachineDesign<NicheView> {
                 BigWin.text(p, out, mt, Rotten.BIG_WIN_TICKS, 4, total, 8, RY1 - 0.9f, RY0 + 1.2f, z + 0.1f, 11.5f, GOLD, GOLD);
             } else {
                 BigWin.shade(p, out, DARK, WX0, WY0, WX1, WY1, SZ + 0.15f, BigWin.SHADE * Ease.clamp01((spin.kind == Niche.BASE ? mt - Rotten.BIG_WIN_TICKS : mt) / 5f));
-                out.text(p, "GAIN MAXIMUM !", 8, cy + 1.2f, z, fit("GAIN MAXIMUM !", 1.8f, 11f, true), GOLD, 1f, flags, 0x2A1400);
+                String maxTxt = I18n.get("heralizcasino.slot.gain_max");
+                out.text(p, maxTxt, 8, cy + 1.2f, z, fit(maxTxt, 1.8f, 11f, true), GOLD, 1f, flags, 0x2A1400);
                 out.text(p, fmt(total), 8, cy - 1.0f, z, fit(fmt(total), 2.2f, 11f, true), GOLD, 1f, flags, 0x2A1400);
             }
         }
@@ -1328,7 +1334,8 @@ public final class NicheDesign extends MachineDesign<NicheView> {
         if ((spin.events & Niche.EV_LAST) != 0 && lt < Niche.LAST_T + 2) {
             float a = Ease.clamp01(lt / 3f) * (1 - Ease.range(lt, Niche.LAST_T - 3, Niche.LAST_T + 2));
             veil(p, out, 0.5f * a, gx0, gy0, gx1, gy1);
-            out.text(p, "DERNIER TOUR !", cx, cy, z, fit("DERNIER TOUR !", 2f, 11f, true) * Ease.outBack(Ease.clamp01(lt / 5f), 2.2f), RED, a, flags, 0x000000);
+            String last = I18n.get("heralizcasino.slot.dernier_tour_annonce");
+            out.text(p, last, cx, cy, z, fit(last, 2f, 11f, true) * Ease.outBack(Ease.clamp01(lt / 5f), 2.2f), RED, a, flags, 0x000000);
         }
         // deblocages : "3 PATTES !" sur la grille source, "GRILLE n !" puis "+N TOURS" sur la nouvelle
         for (int u = 0; u < spin.unlocked; u++) {
@@ -1337,17 +1344,18 @@ public final class NicheDesign extends MachineDesign<NicheView> {
             Place pt = slot(to, 1), pf = slot(to - 1, 1);
             if (ut >= 0 && ut < Niche.UNLOCK_BREAK) {
                 float a = Ease.clamp01(ut / 3f) * (1 - Ease.range(ut, Niche.UNLOCK_BREAK - 4, Niche.UNLOCK_BREAK));
-                out.text(p, "3 PATTES !", pf.midX(), pf.midY(), z, fit("3 PATTES !", 1.15f, GW * 0.9f, true) * Ease.outBack(Ease.clamp01(ut / 5f), 2.4f), AMBER, a, flags, 0x000000);
+                String pattes = I18n.get("heralizcasino.niche.trois_pattes");
+                out.text(p, pattes, pf.midX(), pf.midY(), z, fit(pattes, 1.15f, GW * 0.9f, true) * Ease.outBack(Ease.clamp01(ut / 5f), 2.4f), AMBER, a, flags, 0x000000);
             }
             if (ut >= Niche.UNLOCK_BREAK && ut < Niche.UNLOCK_GROW + 6) {
                 float g = ut - Niche.UNLOCK_BREAK, a = Ease.clamp01(g / 3f) * (1 - Ease.range(ut, Niche.UNLOCK_GROW, Niche.UNLOCK_GROW + 6));
-                String txt = "GRILLE " + (to + 1) + " !";
+                String txt = I18n.get("heralizcasino.niche.grille_annonce", String.valueOf(to + 1));
                 out.text(p, txt, pt.midX(), pt.midY(), z, fit(txt, 1.15f, GW * 0.9f, true) * Ease.outBack(Ease.clamp01(g / 5f), 2.4f), GOLD, a, flags, 0x2A1400);
             }
             float ad = ut - addStart(spin, u);
             if (ad >= 0 && ad < Niche.ADD_T + 4) {
                 int n = spin.unlockAdd[u];
-                String txt = "+" + n + (n > 1 ? " TOURS" : " TOUR");
+                String txt = I18n.get(n > 1 ? "heralizcasino.niche.plus_tours" : "heralizcasino.niche.plus_tour", String.valueOf(n));
                 float a = Ease.clamp01(ad / 3f) * (1 - Ease.range(ad, Niche.ADD_T, Niche.ADD_T + 4));
                 out.text(p, txt, pt.midX(), pt.midY(), z, fit(txt, 1.25f, GW * 0.92f, true) * Ease.outBack(Ease.clamp01(ad / 5f), 2.4f), GREEN, a, flags, 0x000000);
             }
@@ -1366,8 +1374,9 @@ public final class NicheDesign extends MachineDesign<NicheView> {
                 } else {
                     float k = tier > 0 ? e - show : e, a = Ease.clamp01(k / 4f);
                     BigWin.shade(p, out, DARK, WX0, WY0, WX1, WY1, SZ + 0.15f, BigWin.SHADE * a);
-                    out.text(p, "BONUS TERMINÉ", cx, cy + 1.7f, z, fit("BONUS TERMINÉ", 1.4f, 11f, true) * Ease.outBack(Ease.clamp01(k / 6f), 2f), AMBER, a, flags, 0x000000);
-                    out.text(p, "GAIN TOTAL", cx, cy + 0.35f, z, 0.75f, WHITE, a, flags, 0x000000);
+                    String fin = I18n.get("heralizcasino.niche.bonus_termine");
+                    out.text(p, fin, cx, cy + 1.7f, z, fit(fin, 1.4f, 11f, true) * Ease.outBack(Ease.clamp01(k / 6f), 2f), AMBER, a, flags, 0x000000);
+                    out.text(p, I18n.get("heralizcasino.slot.gain_total"), cx, cy + 0.35f, z, 0.75f, WHITE, a, flags, 0x000000);
                     String tt = fmt((long) Math.floor(amount * (tier > 0 ? 1 : Ease.outCubic(Ease.clamp01((k - 4) / 24f)))));
                     out.text(p, tt, cx, cy - 1.3f, z, fit(tt, 2.3f, 10f, true) * Ease.outBack(Ease.clamp01((k - 2) / 7f), 2f), GOLD, a, flags, 0x2A1400);
                 }

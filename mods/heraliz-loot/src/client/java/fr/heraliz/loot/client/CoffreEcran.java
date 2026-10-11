@@ -12,6 +12,7 @@ import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -139,9 +140,9 @@ public class CoffreEcran extends AbstractContainerScreen<CoffreMenu> {
         g.drawString(font, nom, 8, 7, TITRE, false);
         g.fill(8, 17, 8 + font.width(nom), 18, FILET);
         int n = menu.donnees.get(CoffreMenu.D_RESTANTS);
-        String droite = n > 0 ? n + " à identifier" : "Tout identifié";
+        String droite = n > 0 ? I18n.get("heraliz_loot.coffre.a_identifier", n) : I18n.get("heraliz_loot.coffre.tout_identifie");
         g.drawString(font, droite, imageWidth - 8 - font.width(droite), 7, TEXTE, false);
-        g.drawString(font, "Inventaire", 8, inventoryLabelY, TEXTE, false);
+        g.drawString(font, playerInventoryTitle, 8, inventoryLabelY, TEXTE, false);
     }
 
     @Override

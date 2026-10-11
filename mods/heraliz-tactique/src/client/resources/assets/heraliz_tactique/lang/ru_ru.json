@@ -1,0 +1,14 @@
+{
+  "itemGroup.heraliz_tactique": "HeraliZ · Тактика",
+  "onglet.heraliz_tactique.titre": "Тактика",
+  "onglet.heraliz_tactique.tous": "Все",
+  "onglet.heraliz_tactique.melee": "Ближний бой",
+  "onglet.heraliz_tactique.soins": "Лечение",
+  "onglet.heraliz_tactique.grenades": "Гранаты",
+  "onglet.heraliz_tactique.camos": "Камуфляжи",
+  "onglet.heraliz_tactique.decor": "Декор",
+  "overlay.heraliz_tactique.encore": "ещё %s с",
+  "overlay.heraliz_tactique.explose": "взрыв через %s с",
+  "overlay.heraliz_tactique.lancer_doux": "Мягкий бросок (присев)",
+  "overlay.heraliz_tactique.pour_arreter": "чтобы остановить"
+}

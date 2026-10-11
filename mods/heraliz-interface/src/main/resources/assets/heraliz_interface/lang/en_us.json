@@ -63,5 +63,7 @@
   "gui.heraliz_interface.titre.recherche": "Looking for the server…",
   "gui.heraliz_interface.titre.injoignable": "Server unreachable",
   "gui.heraliz_interface.titre.en_ligne": "%s online · %s ms",
-  "gui.heraliz_interface.titre.ping": "%s ms"
+  "gui.heraliz_interface.titre.ping": "%s ms",
+  "heraliz_interface.pack.textures": "HeraliZ: textures",
+  "heraliz_interface.pack.herbe": "HeraliZ: grass"
 }

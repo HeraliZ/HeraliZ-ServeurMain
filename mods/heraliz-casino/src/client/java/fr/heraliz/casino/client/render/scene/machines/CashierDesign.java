@@ -14,6 +14,7 @@ import fr.heraliz.casino.registry.Snd;
 import fr.heraliz.casino.client.render.scene.Sprite;
 
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -334,7 +335,7 @@ public final class CashierDesign extends MachineDesign<CashierView> {
         out.translucent(p, glass, 0xFFFFFF, 0.75f);
         // ardoise des taux, ecrite a la craie
         float bx = -8.2f, bz = PZ + 0.78f;
-        out.text(p, "TAUX DU JOUR", bx, 27.3f, bz, 0.66f, CHALK, 0.95f, DrawList.T_CENTER | DrawList.T_BOLD);
+        out.text(p, I18n.get("heralizcasino.caisse.taux"), bx, 27.3f, bz, 0.66f, CHALK, 0.95f, DrawList.T_CENTER | DrawList.T_BOLD);
         for (int i = 0; i < Math.min(7, v.rates.length); i++) {
             String line = v.rates[i];
             out.text(p, line, bx, 26.0f - i * 0.95f, bz, fit(line, 0.52f, 9.2f, false), CHALK, 0.9f, DrawList.T_CENTER);

@@ -6,6 +6,7 @@ import fr.heraliz.casino.client.render.scene.DrawList;
 import fr.heraliz.casino.client.render.scene.Ease;
 import fr.heraliz.casino.client.render.scene.MachineDesign;
 import fr.heraliz.casino.client.render.scene.Pose;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -19,7 +20,8 @@ final class BigWin {
     private BigWin() {
     }
 
-    static final String[] LABELS = {"", "GROS GAIN !", "MÉGA GAIN !", "GAIN ÉPIQUE !", "GAIN MAXIMUM !"};
+    /** Cles des paliers (traduits a l'affichage, langue choisie par le joueur). */
+    static final String[] LABELS = {"", "overlay.heralizcasino.big", "heralizcasino.bigwin.mega", "heralizcasino.bigwin.epique", "heralizcasino.slot.gain_max"};
 
     /** Assombrissement des symboles pendant l'annonce (1 = normal). */
     static float dim(float t, float len) {
@@ -74,7 +76,7 @@ final class BigWin {
         float a = Ease.clamp01(t / 4f) * (1 - Ease.range(t, len - 6, len));
         float pop = Ease.outBack(Ease.clamp01((t - 4) / 7f), 2.4f);
         float beat = 1 + 0.06f * (float) Math.max(0, Math.sin(t * 0.8f));
-        String label = LABELS[Math.min(4, tier)];
+        String label = I18n.get(LABELS[Math.min(4, tier)]);
         out.text(p, label, cx, yTitle, z, MachineDesign.fit(label, 1.9f, width, true) * pop * beat, titleColor, a, flags, 0x000000);
         float k = Ease.outCubic(Ease.clamp01((t - 6) / (len * 0.6f)));
         long shown = (long) Math.floor(amount * k);

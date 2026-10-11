@@ -198,7 +198,7 @@ public class HeralizConfigScreen extends Screen {
             int fx = tx + (int) Math.round(value * 110);
             g.fill(tx, ty, fx, ty + 2, Ui.argb(accent, 230));
             Ui.soft(g, fx - 3, ty - 3, 7, 8, hover ? 0xFFFFFFFF : Ui.argb(Ui.TEXT, 255));
-            String unit = key.equals("reach") ? Component.translatable("heraliz_emote.config.unit_blocks").getString() : "s";
+            String unit = Component.translatable(key.equals("reach") ? "heraliz_emote.config.unit_blocks" : "heraliz_emote.config.unit_seconds").getString();
             Ui.right(g, font, Ui.lit(current() + " " + unit, Ui.BOLD), tx - 10, y + (h - 8) / 2f, Ui.argb(0xFFFFFF, 255));
         }
     }

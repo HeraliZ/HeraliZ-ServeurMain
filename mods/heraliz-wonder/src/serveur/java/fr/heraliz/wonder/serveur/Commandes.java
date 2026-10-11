@@ -11,6 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -55,8 +56,8 @@ public final class Commandes {
                                 .then(Commands.argument("pv", DoubleArgumentType.doubleArg(1, 100000))
                                         .executes(c -> horde(c, DoubleArgumentType.getDouble(c, "distance"), DoubleArgumentType.getDouble(c, "pv")))))))
                 .then(Commands.literal("perf").executes(c -> {
-                    String r = Perf.resume(true);
-                    HeralizWonder.LOG.info("[wonder] perf {}", r);
+                    MutableComponent r = Perf.resume(true);
+                    HeralizWonder.LOG.info("[wonder] perf {}", Perf.journal(r));
                     dire(c, r);
                     return 1;
                 }))
@@ -66,10 +67,15 @@ public final class Commandes {
     /** Etiquette du camo de heralisz_camo ({@code CamoData.KEY}), posee par la machine Pack-a-Punch du mode zombies. */
     private static final String NBT_CAMO = "HeraliszCamo";
 
-    private static void dire(CommandContext<CommandSourceStack> c, String s) {
+    private static void dire(CommandContext<CommandSourceStack> c, MutableComponent s) {
         // barre d'action : message direct au joueur, sans remplir le chat (captures du banc lisibles)
-        if (c.getSource().getEntity() instanceof ServerPlayer p) p.displayClientMessage(Component.literal(s).withStyle(ChatFormatting.AQUA), true);
-        else HeralizWonder.LOG.info("[wonder] {}", s);
+        if (c.getSource().getEntity() instanceof ServerPlayer p) p.displayClientMessage(s.withStyle(ChatFormatting.AQUA), true);
+        else HeralizWonder.LOG.info("[wonder] {}", Perf.journal(s));
+    }
+
+    /** Nom de l'arme pour le banc : noms propres tels quels, « pistolet a rayons » traduit. */
+    private static Component nom(byte type) {
+        return type == Armes.RAYON ? Component.translatableWithFallback("heraliz_wonder.banc.nom_rayon", "pistolet à rayons") : Component.literal(Armes.nom(type));
     }
 
     private static int pap(CommandContext<CommandSourceStack> c) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
@@ -77,7 +83,7 @@ public final class Commandes {
         ItemStack s = p.getMainHandItem();
         byte type = Armes.type(s);
         if (type == Armes.AUCUNE) {
-            dire(c, "Pas de Wonder Weapon en main.");
+            dire(c, Component.translatableWithFallback("heraliz_wonder.banc.pas_wonder", "Pas de Wonder Weapon en main."));
             return 0;
         }
         int n = IntegerArgumentType.getInteger(c, "niveau");
@@ -100,7 +106,7 @@ public final class Commandes {
         NomsPap.renommer(s);
         p.getInventory().setChanged();
         HeralizWonder.LOG.info("[wonder] banc : {} au Pack-a-Punch niveau {}", Armes.nom(type), n);
-        dire(c, Armes.nom(type) + " : Pack-a-Punch niveau " + n);
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.pap", "%s : Pack-a-Punch niveau %s", nom(type), String.valueOf(n)));
         return 1;
     }
 
@@ -109,7 +115,7 @@ public final class Commandes {
         int n = IntegerArgumentType.getInteger(c, "n");
         int poses = poserHorde(p, n, distance, pv);
         HeralizWonder.LOG.info("[wonder] banc : horde de {} zombies a {} blocs ({} PV)", poses, distance, pv);
-        dire(c, poses + " zombies poses.");
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.zombies_poses", "%s zombies posés.", String.valueOf(poses)));
         return poses;
     }
 
@@ -157,7 +163,7 @@ public final class Commandes {
         stressTick = 0;
         Perf.resume(true);
         HeralizWonder.LOG.info("[wonder] stress : 4 tireurs virtuels pendant {} s", stressTicks / 20);
-        dire(c, "Stress : 4 tireurs virtuels pendant " + stressTicks / 20 + " s.");
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.stress", "Stress : 4 tireurs virtuels pendant %s s.", String.valueOf(stressTicks / 20)));
         return 1;
     }
 
@@ -166,9 +172,9 @@ public final class Commandes {
         if (e.phase != TickEvent.Phase.END || stressJoueur == null) return;
         ServerPlayer p = stressJoueur;
         if (stressTick >= stressTicks || p.isRemoved()) {
-            String r = Perf.resume(true);
-            HeralizWonder.LOG.info("[wonder] stress termine : {}", r);
-            p.sendSystemMessage(Component.literal("Stress termine : " + r).withStyle(ChatFormatting.AQUA));
+            MutableComponent r = Perf.resume(true);
+            HeralizWonder.LOG.info("[wonder] stress termine : {}", Perf.journal(r));
+            p.sendSystemMessage(Component.translatableWithFallback("heraliz_wonder.banc.stress_fin", "Stress terminé : %s", r).withStyle(ChatFormatting.AQUA));
             stressJoueur = null;
             return;
         }

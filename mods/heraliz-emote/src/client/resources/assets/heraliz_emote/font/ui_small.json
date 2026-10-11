@@ -18,6 +18,16 @@
       ]
     },
     {
+      "type": "ttf",
+      "size": 9.0,
+      "oversample": 4.0,
+      "shift": [
+        0.0,
+        1.0
+      ],
+      "file": "heraliz_emote:cyrillique_medium.ttf"
+    },
+    {
       "type": "reference",
       "id": "minecraft:default"
     }

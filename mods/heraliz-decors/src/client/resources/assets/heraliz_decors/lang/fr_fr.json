@@ -128,5 +128,12 @@
  "onglet.heraliz_decors": "HeraliZ · Décors",
  "msg.heraliz_decors.zone.gaz": "§a⚠ Zone de gaz toxique : masque à gaz ou combinaison Hazmat",
  "msg.heraliz_decors.zone.radiation": "§e☢ Zone irradiée : combinaison Hazmat obligatoire",
- "msg.heraliz_decors.zone.froid": "§b❄ Froid extrême : combinaison arctique conseillée"
+ "msg.heraliz_decors.zone.froid": "§b❄ Froid extrême : combinaison arctique conseillée",
+ "heraliz_decors.brume.info_fixee": "Brume : %s (fixée)",
+ "heraliz_decors.brume.info": "Brume : %s, change dans %s min %s s",
+ "heraliz_decors.brume.auto": "Brume : tirage automatique",
+ "heraliz_decors.brume.profils": "Profils : %s",
+ "heraliz_decors.brume.fixee": "Brume fixée : %s (/brume auto pour reprendre le tirage)",
+ "heraliz_decors.zones.info": "Zones dangereuses : %s",
+ "heraliz_decors.zones.rechargees": "Zones rechargées : %s"
 }

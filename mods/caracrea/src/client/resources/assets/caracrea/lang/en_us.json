@@ -446,6 +446,10 @@
   "caracrea.voice.managed.svc": "The voice chat is handled by Simple Voice Chat",
   "caracrea.voice.managed.svc.hint": "On this server, Simple Voice Chat carries the voices: set the microphone, sound and groups in its own settings. CaraCrea's voice chat uses neither your microphone nor your speakers.",
   "caracrea.voice.managed.open_svc": "Open Simple Voice Chat",
-  "caracrea.voice.managed.off": "The voice chat is not on on this server",
-  "caracrea.voice.managed.off.hint": "The server has not switched CaraCrea's voice chat on: nothing is captured or played."
+  "caracrea.voice.managed.off": "Voice chat is not active on this server",
+  "caracrea.voice.managed.off.hint": "The server has not switched CaraCrea's voice chat on: nothing is captured or played.",
+  "caracrea.voice.duration.days": "%sd %sh",
+  "caracrea.voice.duration.hours": "%sh %sm",
+  "caracrea.voice.duration.minutes": "%s min",
+  "caracrea.voice.duration.seconds": "%s s"
 }

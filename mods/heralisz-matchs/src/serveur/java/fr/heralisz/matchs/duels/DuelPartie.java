@@ -64,6 +64,11 @@ import java.util.UUID;
  * <p>Fil serveur ; pas d'allocation par tick hors evenements (listes tampons reutilisees).
  */
 public class DuelPartie extends Partie {
+    /**
+     * Nom de l'equipe et de la cible du mode entrainement : une cle de traduction (aucun pseudo ne contient de point),
+     * traduite chez le joueur (tableau des scores, fil des eliminations).
+     */
+    static final String NOM_CIBLE = "heralisz_matchs.duel.cible_nom";
     /** Fiche d'un participant (joueur ou cible d'entrainement). */
     static final class Fiche {
         final UUID id;
@@ -144,7 +149,7 @@ public class DuelPartie extends Partie {
         this.carteId = carteId;
         this.entrainement = entrainement;
         this.a = new Equipe("a", nomCamp(campA, "A"), DuelsConfig.COULEUR_A);
-        this.b = new Equipe("b", entrainement ? "CIBLE" : nomCamp(campB, "B"), DuelsConfig.COULEUR_B);
+        this.b = new Equipe("b", entrainement ? NOM_CIBLE : nomCamp(campB, "B"), DuelsConfig.COULEUR_B);
         ajouterEquipe(a);
         ajouterEquipe(b);
         for (ServerPlayer p : campA) inscrire(p, a);
@@ -277,7 +282,7 @@ public class DuelPartie extends Partie {
         inst.niveau().addFreshEntity(c);
         cible = c;
         b.ajouter(c.getUUID());
-        fiches.put(c.getUUID(), new Fiche(c.getUUID(), "CIBLE", b, true));
+        fiches.put(c.getUUID(), new Fiche(c.getUUID(), NOM_CIBLE, b, true));
         if (enregistreur != null) enregistreur.suivre(c);
     }
 

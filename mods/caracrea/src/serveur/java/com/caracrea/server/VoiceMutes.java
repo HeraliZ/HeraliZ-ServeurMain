@@ -132,7 +132,7 @@ public final class VoiceMutes {
         if (online != null) {
             online.sendSystemMessage(until == 0
                     ? Component.translatable("caracrea.voice.admin_muted").withStyle(ChatFormatting.RED)
-                    : Component.translatable("caracrea.voice.admin_muted_for", remaining(until - now)).withStyle(ChatFormatting.RED));
+                    : Component.translatable("caracrea.voice.admin_muted_for", remainingText(until - now)).withStyle(ChatFormatting.RED));
             if (reason != null && !reason.isBlank()) {
                 online.sendSystemMessage(Component.translatable("caracrea.voice.reason", reason).withStyle(ChatFormatting.GRAY));
             }
@@ -226,6 +226,25 @@ public final class VoiceMutes {
             return minutes + " min";
         }
         return s + " s";
+    }
+
+    /** {@link #remaining} in the player's language (French for the console and players without the client jar). */
+    public static Component remainingText(long ms) {
+        long s = Math.max(0, (ms + 999) / 1000);
+        long days = s / 86400;
+        long hours = s / 3600 % 24;
+        long minutes = s / 60 % 60;
+        if (days > 0) {
+            return Component.translatableWithFallback("caracrea.voice.duration.days", "%s j %s h", String.valueOf(days), String.valueOf(hours));
+        }
+        if (hours > 0) {
+            return Component.translatableWithFallback("caracrea.voice.duration.hours", "%s h %s", String.valueOf(hours),
+                    String.format(java.util.Locale.ROOT, "%02d", minutes));
+        }
+        if (minutes > 0) {
+            return Component.translatableWithFallback("caracrea.voice.duration.minutes", "%s min", String.valueOf(minutes));
+        }
+        return Component.translatableWithFallback("caracrea.voice.duration.seconds", "%s s", String.valueOf(s));
     }
 
     /** "30s", "10m", "2h", "3j" / "3d", "1sem" / "1w"; null when it is not a duration. */

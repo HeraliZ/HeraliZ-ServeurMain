@@ -11,7 +11,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 
 public class MenuIntegration {
    public static ConfigBuilder getConfigBuilder() {
-      ConfigBuilder root = ConfigBuilder.create().setTitle(Component.literal("LesRaisins Tactical Settings"));
+      ConfigBuilder root = ConfigBuilder.create().setTitle(Component.translatable("heralisz_tactical.config.titre"));
       root.setGlobalized(true);
       root.setGlobalizedExpanded(false);
       ConfigEntryBuilder entryBuilder = root.entryBuilder();

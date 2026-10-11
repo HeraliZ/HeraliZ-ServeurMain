@@ -54,7 +54,7 @@ public class BotEntityServeur extends BotEntity {
       this.entityData.set(DATA_SKIN, Math.floorMod(skin, SKINS.length));
       this.entityData.set(DATA_MODE, mode.ordinal());
       String name = SKINS[this.skin()];
-      Component label = Component.literal("Bot " + Character.toUpperCase(name.charAt(0)) + name.substring(1));
+      Component label = Component.translatableWithFallback("reanimation.bot.nom", "Bot %s", Character.toUpperCase(name.charAt(0)) + name.substring(1));
       if (mode != BotEntity.Mode.PASSIVE) {
          label = label.copy().append(" [").append(Component.translatable("entity.reanimation.bot.mode." + mode.id())).append("]");
       }

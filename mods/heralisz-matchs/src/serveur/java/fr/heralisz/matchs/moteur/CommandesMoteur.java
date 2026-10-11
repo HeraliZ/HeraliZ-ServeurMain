@@ -85,7 +85,10 @@ public final class CommandesMoteur {
                         .then(Commands.literal("rendre").then(Commands.argument("joueur", EntityArgument.player()).executes(x -> {
                             ServerPlayer p = EntityArgument.getPlayer(x, "joueur");
                             boolean ok = Coffre.rendre(p);
-                            retour(x, Component.literal("Coffre de " + p.getGameProfile().getName() + (ok ? " rendu." : " : rien a rendre.")));
+                            retour(x, ok ? Component.translatableWithFallback("heralisz_matchs.commande.coffre.rendu", "Coffre de %s rendu.",
+                                    p.getGameProfile().getName())
+                                    : Component.translatableWithFallback("heralisz_matchs.commande.coffre.rien", "Coffre de %s : rien à rendre.",
+                                    p.getGameProfile().getName()));
                             return ok ? 1 : 0;
                         }))))
                 .then(Commands.literal("combat")
@@ -93,15 +96,23 @@ public final class CommandesMoteur {
                         .then(Commands.literal("marquer").then(Commands.argument("joueur", EntityArgument.player()).executes(x -> combat(x, 1))))
                         .then(Commands.literal("effacer").then(Commands.argument("joueur", EntityArgument.player()).executes(x -> combat(x, 2)))))
                 .then(Commands.literal("parties").executes(x -> {
-                    if (MatchApi.parties().isEmpty()) retour(x, Component.literal("Aucune partie."));
+                    if (MatchApi.parties().isEmpty()) {
+                        retour(x, Component.translatableWithFallback("heralisz_matchs.commande.aucune_partie", "Aucune partie."));
+                    }
                     for (Partie p : MatchApi.parties()) retour(x, Component.literal(p.toString()));
                     return MatchApi.parties().size();
                 }))
                 .then(Commands.literal("arenes")
                         .then(Commands.literal("liste").executes(x -> {
-                            for (Carte ca : Arenes.cartes()) retour(x, Component.literal("carte " + ca.id() + " (" + ca.type() + ")"));
+                            for (Carte ca : Arenes.cartes()) {
+                                retour(x, Component.translatableWithFallback("heralisz_matchs.commande.arenes.carte", "carte %s (%s)", ca.id(), ca.type()));
+                            }
                             for (Instance i : Arenes.instances()) {
-                                retour(x, Component.literal(i + " " + ArenesService.progression(i) + (i.libre() ? " libre" : " occupee par " + i.occupant())));
+                                retour(x, i.libre()
+                                        ? Component.translatableWithFallback("heralisz_matchs.commande.arenes.libre", "%s %s libre",
+                                        String.valueOf(i), ArenesService.progression(i))
+                                        : Component.translatableWithFallback("heralisz_matchs.commande.arenes.occupee", "%s %s occupée par %s",
+                                        String.valueOf(i), ArenesService.progression(i), String.valueOf(i.occupant())));
                             }
                             return Arenes.instances().size();
                         }))
@@ -110,18 +121,20 @@ public final class CommandesMoteur {
                                 .executes(x -> {
                                     Instance i = Arenes.reserver(StringArgumentType.getString(x, "carte"));
                                     if (i == null) {
-                                        x.getSource().sendFailure(Component.literal("Reservation impossible (voir le journal)."));
+                                        x.getSource().sendFailure(Component.translatableWithFallback(
+                                                "heralisz_matchs.commande.arenes.reservation_impossible", "Réservation impossible (voir le journal)."));
                                         return 0;
                                     }
                                     i.occuper("admin");
-                                    retour(x, Component.literal("Instance " + i.id() + " reservee (" + ArenesService.progression(i) + ")."));
+                                    retour(x, Component.translatableWithFallback("heralisz_matchs.commande.arenes.reservee", "Instance %s réservée (%s).",
+                                            i.id(), ArenesService.progression(i)));
                                     return 1;
                                 })))
                         .then(Commands.literal("liberer").then(Commands.argument("instance", StringArgumentType.string()).executes(x -> {
                             Instance i = instance(StringArgumentType.getString(x, "instance"));
                             if (i == null) return 0;
                             Arenes.liberer(i);
-                            retour(x, Component.literal("Instance " + i.id() + " liberee."));
+                            retour(x, Component.translatableWithFallback("heralisz_matchs.commande.arenes.liberee", "Instance %s libérée.", i.id()));
                             return 1;
                         })))
                         .then(Commands.literal("tp").then(Commands.argument("instance", StringArgumentType.string()).executes(x -> {
@@ -149,7 +162,8 @@ public final class CommandesMoteur {
         ServerPlayer p = x.getSource().getPlayerOrException();
         String nom = StringArgumentType.getString(x, "point");
         if (i == null || !i.prete()) {
-            x.getSource().sendFailure(Component.literal("Instance introuvable ou pas encore posee."));
+            x.getSource().sendFailure(Component.translatableWithFallback("heralisz_matchs.commande.arenes.introuvable",
+                    "Instance introuvable ou pas encore posée."));
             return 0;
         }
         if (nom.startsWith("rel ")) {
@@ -161,7 +175,8 @@ public final class CommandesMoteur {
                 p.teleportTo(i.niveau(), i.origine().getX() + rx, i.origine().getY() + ry, i.origine().getZ() + rz, lacet, tangage);
                 return 1;
             } catch (RuntimeException e) {
-                x.getSource().sendFailure(Component.literal("Format : rel x y z [lacet] [tangage]"));
+                x.getSource().sendFailure(Component.translatableWithFallback("heralisz_matchs.commande.arenes.format_rel",
+                        "Format : rel x y z [lacet] [tangage]"));
                 return 0;
             }
         }
@@ -198,7 +213,8 @@ public final class CommandesMoteur {
         }
         java.util.List<Pose> l = i.points(nom);
         if (l.isEmpty()) {
-            x.getSource().sendFailure(Component.literal("Point « " + nom + " » absent de la carte " + i.carte().id() + "."));
+            x.getSource().sendFailure(Component.translatableWithFallback("heralisz_matchs.commande.arenes.point_absent",
+                    "Point « %s » absent de la carte %s.", nom, i.carte().id()));
             return 0;
         }
         l.get(Math.max(0, Math.min(rang, l.size() - 1))).teleporter(p, i.niveau());
@@ -225,10 +241,15 @@ public final class CommandesMoteur {
         if (action == 1) CombatTag.marquer(p);
         else if (action == 2) CombatTag.effacer(p.getUUID());
         long cle = p.getPersistentData().getLong(CombatTag.CLE_JUSQUA);
-        String texte = p.getGameProfile().getName() + " : " + (CombatTag.estTague(p) ? "en combat, " + (CombatTag.restantMs(p) + 999) / 1000
-                + " s restantes" : (MatchApi.enMatch(p) ? "en match (jamais de tag)" : "libre")) + " ; " + CombatTag.CLE_JUSQUA + " = "
-                + (cle == 0 ? "absente" : String.valueOf(cle));
-        retour(x, Component.literal(texte));
+        Component etat = CombatTag.estTague(p)
+                ? Component.translatableWithFallback("heralisz_matchs.commande.combat.en_combat", "en combat, %s s restantes",
+                String.valueOf((CombatTag.restantMs(p) + 999) / 1000))
+                : MatchApi.enMatch(p) ? Component.translatableWithFallback("heralisz_matchs.commande.combat.en_match", "en match (jamais de tag)")
+                : Component.translatableWithFallback("heralisz_matchs.commande.combat.libre", "libre");
+        Component valeur = cle == 0 ? Component.translatableWithFallback("heralisz_matchs.commande.combat.absente", "absente")
+                : Component.literal(String.valueOf(cle));
+        retour(x, Component.translatableWithFallback("heralisz_matchs.commande.combat.ligne", "%s : %s ; %s = %s",
+                p.getGameProfile().getName(), etat, CombatTag.CLE_JUSQUA, valeur));
         return CombatTag.estTague(p) ? 1 : 0;
     }
 
@@ -241,11 +262,13 @@ public final class CommandesMoteur {
         ServerPlayer p = EntityArgument.getPlayer(x, "joueur");
         CompoundTag t = Coffres.lire(p.getUUID());
         if (t == null) {
-            retour(x, Component.literal(p.getGameProfile().getName() + " : aucun depot."));
+            retour(x, Component.translatableWithFallback("heralisz_matchs.commande.coffre.aucun_depot", "%s : aucun dépôt.",
+                    p.getGameProfile().getName()));
             return 0;
         }
-        retour(x, Component.literal(p.getGameProfile().getName() + " : depot « " + t.getString("raison") + " » du "
-                + new java.util.Date(t.getLong("date")) + ", " + t.getList("inventaire", 10).size() + " piles, dimension " + t.getString("dim")));
+        retour(x, Component.translatableWithFallback("heralisz_matchs.commande.coffre.depot", "%s : dépôt « %s » du %s, %s piles, dimension %s",
+                p.getGameProfile().getName(), t.getString("raison"), String.valueOf(new java.util.Date(t.getLong("date"))),
+                String.valueOf(t.getList("inventaire", 10).size()), t.getString("dim")));
         return 1;
     }
 }

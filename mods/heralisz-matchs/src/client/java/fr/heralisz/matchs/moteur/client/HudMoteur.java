@@ -13,6 +13,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -427,8 +428,8 @@ public final class HudMoteur {
         if (libre < 0) return null;
         Rendu r = new Rendu();
         r.ligne = l;
-        r.tueur = Ui.lit(l.tueur(), Ui.BOLD);
-        r.victime = Ui.lit(l.victime(), Ui.BOLD);
+        r.tueur = Ui.lit(nomAffiche(l.tueur()), Ui.BOLD);
+        r.victime = Ui.lit(nomAffiche(l.victime()), Ui.BOLD);
         r.arme = Ui.lit(l.arme(), Ui.SMALL);
         r.wt = l.tueur().isEmpty() ? 0 : font.width(r.tueur);
         r.wv = font.width(r.victime);
@@ -622,5 +623,13 @@ public final class HudMoteur {
                 a == null ? "" : a.style(), courante == null ? -1 : (Util.getMillis() - debutAnnonce) / 50, MoteurClient.fil().size(),
                 MoteurClient.toasts().size(), MoteurClient.combatSecondes(), String.format(java.util.Locale.ROOT, "%.2f", MoteurClient.combatRatio()),
                 MoteurClient.enMatch(), MoteurClient.cartesMasquees());
+    }
+
+    /**
+     * Nom du fil des eliminations : un pseudo tel quel, ou une cle de traduction envoyee par le serveur (cible du mode
+     * entrainement : aucun pseudo ne contient de point).
+     */
+    public static String nomAffiche(String nom) {
+        return nom.indexOf('.') > 0 && I18n.exists(nom) ? I18n.get(nom) : nom;
     }
 }

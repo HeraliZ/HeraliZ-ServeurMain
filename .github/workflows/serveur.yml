@@ -109,7 +109,7 @@ jobs:
         if: env.NOMS_INTERDITS != ''
         run: printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
 
-      - name: Contrôles (GeckoLib, noms perso)
+      - name: Contrôles (GeckoLib, noms perso, langues)
         run: python outils/verifier.py --sans-split
 
       # copies à télécharger dans l'onglet Actions : un quota d'artefacts plein (« Artifact storage quota has been

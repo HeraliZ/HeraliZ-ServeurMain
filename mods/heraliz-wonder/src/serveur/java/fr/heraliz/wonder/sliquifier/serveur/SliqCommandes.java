@@ -5,12 +5,14 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import fr.heraliz.wonder.Armes;
 import fr.heraliz.wonder.HeralizWonder;
+import fr.heraliz.wonder.serveur.Perf;
 import fr.heraliz.wonder.sliquifier.Sliquifier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -64,28 +66,29 @@ public final class SliqCommandes {
                     return 1;
                 }))
                 .then(Commands.literal("nettoyer").executes(c -> {
-                    dire(c, SliqServeur.nettoyer() + " flaques effacees.");
+                    dire(c, Component.translatableWithFallback("heraliz_wonder.banc.flaques_effacees", "%s flaques effacées.",
+                            String.valueOf(SliqServeur.nettoyer())));
                     return 1;
                 }))
                 .then(Commands.literal("perf").executes(c -> {
-                    String r = SliqPerf.resume(true);
-                    HeralizWonder.LOG.info("[sliquifier] perf {}", r);
+                    MutableComponent r = SliqPerf.resume(true);
+                    HeralizWonder.LOG.info("[sliquifier] perf {}", Perf.journal(r));
                     dire(c, r);
                     return 1;
                 }))
                 .then(Commands.literal("stress").then(Commands.argument("secondes", IntegerArgumentType.integer(1, 300)).executes(SliqCommandes::stress))));
     }
 
-    private static void dire(CommandContext<CommandSourceStack> c, String s) {
-        if (c.getSource().getEntity() instanceof ServerPlayer p) p.displayClientMessage(Component.literal(s).withStyle(ChatFormatting.LIGHT_PURPLE), true);
-        else HeralizWonder.LOG.info("[sliquifier] {}", s);
+    private static void dire(CommandContext<CommandSourceStack> c, MutableComponent s) {
+        if (c.getSource().getEntity() instanceof ServerPlayer p) p.displayClientMessage(s.withStyle(ChatFormatting.LIGHT_PURPLE), true);
+        else HeralizWonder.LOG.info("[sliquifier] {}", Perf.journal(s));
     }
 
     private static int pap(CommandContext<CommandSourceStack> c) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer p = c.getSource().getPlayerOrException();
         ItemStack s = p.getMainHandItem();
         if (!Sliquifier.est(s)) {
-            dire(c, "Pas de Sliquifier en main.");
+            dire(c, Component.translatableWithFallback("heraliz_wonder.banc.pas_sliquifier", "Pas de Sliquifier en main."));
             return 0;
         }
         int n = IntegerArgumentType.getInteger(c, "niveau");
@@ -104,14 +107,14 @@ public final class SliqCommandes {
         SliqPap.renommer(s);
         p.getInventory().setChanged();
         HeralizWonder.LOG.info("[sliquifier] banc : Pack-a-Punch niveau {}", n);
-        dire(c, "Sliquifier : Pack-a-Punch niveau " + n);
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.pap", "%s : Pack-a-Punch niveau %s", "Sliquifier", String.valueOf(n)));
         return 1;
     }
 
     private static int horde(CommandContext<CommandSourceStack> c, int distance) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer p = c.getSource().getPlayerOrException();
         int n = poserHorde(p, IntegerArgumentType.getInteger(c, "n"), distance, 20);
-        dire(c, n + " zombies poses.");
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.zombies_poses", "%s zombies posés.", String.valueOf(n)));
         return n;
     }
 
@@ -158,7 +161,7 @@ public final class SliqCommandes {
         stressTick = 0;
         SliqPerf.resume(true);
         HeralizWonder.LOG.info("[sliquifier] stress : 4 tireurs virtuels pendant {} s", stressTicks / 20);
-        dire(c, "Stress : 4 tireurs virtuels pendant " + stressTicks / 20 + " s.");
+        dire(c, Component.translatableWithFallback("heraliz_wonder.banc.stress", "Stress : 4 tireurs virtuels pendant %s s.", String.valueOf(stressTicks / 20)));
         return 1;
     }
 
@@ -166,9 +169,9 @@ public final class SliqCommandes {
         if (e.phase != TickEvent.Phase.END || stressJoueur == null) return;
         ServerPlayer p = stressJoueur;
         if (stressTick >= stressTicks || p.isRemoved()) {
-            String r = SliqPerf.resume(true);
-            HeralizWonder.LOG.info("[sliquifier] stress termine : {}", r);
-            p.sendSystemMessage(Component.literal("Stress termine : " + r).withStyle(ChatFormatting.LIGHT_PURPLE));
+            MutableComponent r = SliqPerf.resume(true);
+            HeralizWonder.LOG.info("[sliquifier] stress termine : {}", Perf.journal(r));
+            p.sendSystemMessage(Component.translatableWithFallback("heraliz_wonder.banc.stress_fin", "Stress terminé : %s", r).withStyle(ChatFormatting.LIGHT_PURPLE));
             stressJoueur = null;
             return;
         }

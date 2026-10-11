@@ -54,7 +54,8 @@ public final class PaquetsMoteur {
 
     /** Prefixe des messages de chat du mod : « HeraliZ Matchs » en accent + separateur. */
     public static MutableComponent prefixe() {
-        return Component.literal("HeraliZ Matchs").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x6FA8FF)).withBold(true))
+        return Component.translatableWithFallback("matchs.nom", "HeraliZ Matchs")
+                .withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x6FA8FF)).withBold(true))
                 .append(Component.literal("  ").withStyle(Style.EMPTY.withBold(false)));
     }
 

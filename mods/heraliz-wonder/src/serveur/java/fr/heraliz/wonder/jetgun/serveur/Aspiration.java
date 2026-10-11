@@ -7,7 +7,10 @@ import fr.heraliz.wonder.jetgun.JetConfig;
 import fr.heraliz.wonder.jetgun.net.Broyage;
 import fr.heraliz.wonder.jetgun.net.JetReseau;
 import fr.heraliz.wonder.serveur.Degats;
+import fr.heraliz.wonder.serveur.Perf;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -410,14 +413,16 @@ public final class Aspiration {
     }
 
     // ================================================================== mesures
-    public static String resume(boolean raz) {
+    /** Resume depuis le dernier releve : message traduit du staff ; {@link fr.heraliz.wonder.serveur.Perf#journal} pour le journal. */
+    public static MutableComponent resume(boolean raz) {
         MinecraftServer s = ServerLifecycleHooks.getCurrentServer();
         double mspt = s == null ? 0 : s.getAverageTickTime();
-        String r = String.format(Locale.ROOT,
-                "jet gun : %d ticks actifs, %.3f ms en tout (%.4f ms par tick actif, pire %.3f ms), dont recherches %.3f ms (%d, %d lancers de rayon) ; "
-                        + "%d impulsions, %d creatures aspirees (tick-creature), %d dechiquetees ; pics : %d tireurs, %d cibles ; tick serveur moyen %.2f ms",
-                nTicksActifs, nsTotal / 1e6, nTicksActifs == 0 ? 0 : nsTotal / 1e6 / nTicksActifs, nsMax / 1e6, nsRecherche / 1e6, nRecherches, nVues,
-                nImpulsions, nTraites, nBroyes, picTireurs, picCibles, mspt);
+        MutableComponent r = Component.translatableWithFallback("heraliz_wonder.perf.jetgun",
+                "jet gun : %s ticks actifs, %s ms en tout (%s ms par tick actif, pire %s ms), dont recherches %s ms (%s, %s lancers de rayon) ; "
+                        + "%s impulsions, %s créatures aspirées (tick-créature), %s déchiquetées ; pics : %s tireurs, %s cibles ; tick serveur moyen %s ms",
+                Perf.n(nTicksActifs), Perf.ms(nsTotal / 1e6), String.format(Locale.ROOT, "%.4f", nTicksActifs == 0 ? 0 : nsTotal / 1e6 / nTicksActifs),
+                Perf.ms(nsMax / 1e6), Perf.ms(nsRecherche / 1e6), Perf.n(nRecherches), Perf.n(nVues), Perf.n(nImpulsions), Perf.n(nTraites),
+                Perf.n(nBroyes), Perf.n(picTireurs), Perf.n(picCibles), String.format(Locale.ROOT, "%.2f", mspt));
         if (raz) {
             nsTotal = nsMax = nsRecherche = 0;
             nImpulsions = nRecherches = nVues = nTraites = nBroyes = picTireurs = picCibles = nTicksActifs = 0;

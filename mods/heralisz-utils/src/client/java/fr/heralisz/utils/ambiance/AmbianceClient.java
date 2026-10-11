@@ -56,7 +56,7 @@ public final class AmbianceClient {
         if (e.getPackType() != PackType.CLIENT_RESOURCES) return;
         try {
             Path chemin = ModList.get().getModFileById(HeraliszUtils.MODID).getFile().findResource("resourcepacks/heraliz_terrain");
-            Pack pack = Pack.readMetaAndCreate("heralisz_utils:terrain", Component.literal("HeraliZ : terrain"), true,
+            Pack pack = Pack.readMetaAndCreate("heralisz_utils:terrain", Component.translatable("heralisz_utils.pack.terrain"), true,
                     id -> new PathPackResources(id, chemin, true), PackType.CLIENT_RESOURCES, Pack.Position.TOP, PackSource.BUILT_IN);
             if (pack != null) {
                 e.addRepositorySource(c -> c.accept(pack));

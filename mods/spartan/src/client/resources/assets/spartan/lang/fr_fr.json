@@ -1,0 +1,12 @@
+{
+  "spartan.expulsion.banni": "Vous êtes banni de ce serveur.\n\nRaison : %s\nDurée : %s",
+  "spartan.expulsion.launcher": "Connexion refusée : lancez le jeu depuis le launcher HeraliZ.\n(Le jeu lancé autrement, ou depuis plus de 6 heures, n'est pas accepté.)",
+  "spartan.expulsion.version": "Votre version de Spartan n'est pas celle du serveur.\nRelancez le jeu depuis le launcher officiel pour la mettre à jour.",
+  "spartan.expulsion.protections": "Lancez le jeu depuis le launcher officiel (protections anti-triche requises).",
+  "spartan.expulsion.shaders": "Les shaders sont interdits sur ce serveur. Désactivez votre shaderpack.",
+  "spartan.expulsion.packs": "Les packs de ressources personnalisés sont interdits. Retirez-les (dossier resourcepacks).",
+  "spartan.expulsion.mod_interdit": "[Spartan] Mod interdit détecté : %s",
+  "spartan.expulsion.non_conforme": "[Spartan] Client non conforme.",
+  "spartan.expulsion.identifiant": "[Spartan] Identifiant client manquant.",
+  "spartan.expulsion.controle": "[Spartan] Expulsé : %s"
+}

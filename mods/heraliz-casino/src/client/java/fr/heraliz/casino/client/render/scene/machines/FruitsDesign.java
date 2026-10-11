@@ -18,6 +18,7 @@ import fr.heraliz.casino.game.slot.SlotRules;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -372,7 +373,7 @@ public final class FruitsDesign extends MachineDesign<SlotView> {
         // ---- afficheur : jackpot, ou gain apres l'arret des rouleaux
         if (!s.item) {
             if (won && ((int) (t / 30)) % 2 == 0) {
-                String txt = (v.jackpot ? "JACKPOT " : "GAIN ") + fmt(v.win);
+                String txt = I18n.get(v.jackpot ? "heralizcasino.slot.jackpot" : "heralizcasino.slot.gain", fmt(v.win));
                 out.text(p, txt, 8, 31.6f, 14.9f, fit(txt, 0.95f, 8.2f, true), GOLD_RGB, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
             } else {
                 String txt = fmt(v.jackpotValue);

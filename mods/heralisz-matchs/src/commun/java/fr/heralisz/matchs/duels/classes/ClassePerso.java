@@ -61,9 +61,20 @@ public record ClassePerso(String nom, String principale, Map<String, String> acc
         return s == null ? "" : s;
     }
 
+    /**
+     * Noms des classes par defaut, gardes tels quels dans les donnees des joueurs ; l'affichage les traduit
+     * ({@link #CLES_NOMS_DEFAUT}, et {@code heralisz_matchs.duel.classe.numero} pour « CLASSE n »).
+     */
+    public static final String[] NOMS_DEFAUT = {"ASSAUT", "SMG", "POMPE", "PRÉCISION", "SOUTIEN"};
+    /** Cles de traduction des {@link #NOMS_DEFAUT}, dans le meme ordre. */
+    public static final String[] CLES_NOMS_DEFAUT = {"heralisz_matchs.duel.classe.assaut", "heralisz_matchs.duel.classe.smg",
+            "heralisz_matchs.duel.classe.pompe", "heralisz_matchs.duel.classe.precision", "heralisz_matchs.duel.classe.soutien"};
+    /** Debut du nom d'une classe vide (« CLASSE n »). */
+    public static final String PREFIXE_VIDE = "CLASSE ";
+
     /** Classe vide nommee « CLASSE n » (n a partir de 1). */
     public static ClassePerso vide(int n) {
-        return new ClassePerso("CLASSE " + n, "", Map.of(), "", "", List.of(), "", "", "");
+        return new ClassePerso(PREFIXE_VIDE + n, "", Map.of(), "", "", List.of(), "", "", "");
     }
 
     /**
@@ -73,7 +84,6 @@ public record ClassePerso(String nom, String principale, Map<String, String> acc
      */
     public static ClassePerso parDefaut(int n, Catalogue c) {
         String[][] types = {{"rifle"}, {"smg"}, {"shotgun"}, {"sniper"}, {"mg", "rifle"}};
-        String[] noms = {"ASSAUT", "SMG", "POMPE", "PRÉCISION", "SOUTIEN"};
         int k = Math.max(0, Math.min(EMPLACEMENTS - 1, n));
         String principale = "";
         for (String t : types[k]) {
@@ -95,7 +105,7 @@ public record ClassePerso(String nom, String principale, Map<String, String> acc
         }
         List<String> soins = new ArrayList<>();
         for (int i = 0; i < SOINS && !c.soins().isEmpty(); i++) soins.add(c.soins().get(Math.min(i, c.soins().size() - 1)).id());
-        return new ClassePerso(noms[k], principale, Map.of(), secondaire, premier(c.melees()), soins, premier(c.letales()),
+        return new ClassePerso(NOMS_DEFAUT[k], principale, Map.of(), secondaire, premier(c.melees()), soins, premier(c.letales()),
                 premier(c.tactiques()), c.tenueParDefaut());
     }
 

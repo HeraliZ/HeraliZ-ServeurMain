@@ -237,10 +237,11 @@ public class ClaimUpkeepScreen extends AbstractContainerScreen<ClaimUpkeepMenu> 
         return h == Math.floor(h) ? String.valueOf((int)h) : String.valueOf(h);
     }
 
-    private static String duration(int minutes) {
+    private static Component duration(int minutes) {
         int h = minutes / 60;
         int m = minutes % 60;
-        return (h > 0 ? h + "h " : "") + m + "m";
+        return h > 0 ? Component.translatable("crac.upkeep.duration_hm", String.valueOf(h), String.valueOf(m))
+            : Component.translatable("crac.upkeep.duration_m", String.valueOf(m));
     }
 
     private static int barColor(int minutes) {

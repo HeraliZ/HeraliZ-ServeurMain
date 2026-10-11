@@ -20,6 +20,7 @@ import fr.heraliz.casino.game.slot.Suspense;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -360,7 +361,7 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
             out.solid(p, bars, 0.45f);
             out.solid(p, cloud, 0.5f);
             screen(s, v, p, out, at);
-            Intro.title(p, out, introT, "LES PORTES DE L'OLYMPE", "4 ZEUS = 15 TOURS GRATUITS", 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, GOLD, SKY);
+            Intro.title(p, out, introT, I18n.get("heralizcasino.olympe.titre"), I18n.get("heralizcasino.olympe.intro"), 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, GOLD, SKY);
         }
         out.translucent(p, glass, 0xFFFFFF, 0.25f);
     }
@@ -417,7 +418,7 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
         if (white > 0.01f) Intro.quad(fx, FLASH, WX0 - 6, WY0 - 6, WX1 + 6, WY1 + 6, WX0, WY0, WX1, WY1, z + 0.3f, white, false);
         if (!fx.isEmpty()) out.additive(p, fx.buildDynamic(), 0xF0F6FF, 1f);
         Intro.crtOn(p, out, DARK, FLASH, t, WX0, WY0, WX1, WY1, SZ + 0.36f, SKY);
-        Intro.title(p, out, t, "LES PORTES DE L'OLYMPE", "4 ZEUS = 15 TOURS GRATUITS", 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, GOLD, SKY);
+        Intro.title(p, out, t, I18n.get("heralizcasino.olympe.titre"), I18n.get("heralizcasino.olympe.intro"), 8, (RY0 + RY1) / 2, SZ + 0.32f, 11.4f, GOLD, SKY);
     }
 
     /** Case a la rangee y (fractionnaire, 0 = haut) du rouleau reel, decoupee a la fenetre de la grille. */
@@ -709,9 +710,9 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
         float yb = (WY0 + RY0) / 2 - 0.1f, yt = (RY1 + WY1) / 2 - 0.05f, z = SZ + 0.08f;
         if (spin == null || (finished && v.since > v.totalTicks() + 200)) {
             boolean blink = ((int) (s.time / 20)) % 2 == 0;
-            String top = blink ? "4 ZEUS = 15 TOURS GRATUITS" : "ORBES DE ZEUS : x2 À x500";
+            String top = I18n.get(blink ? "heralizcasino.olympe.intro" : "heralizcasino.olympe.orbes");
             out.text(p, top, 8, yt, z, fit(top, 0.7f, 11.5f, true), blink ? SKY : GOLD, 0.95f, DrawList.T_CENTER);
-            String bot = "8 SYMBOLES IDENTIQUES OU PLUS PAIENT PARTOUT";
+            String bot = I18n.get("heralizcasino.olympe.partout");
             out.text(p, bot, 8, yb, z, fit(bot, 0.5f, 11.5f, false), WHITE, 0.9f, DrawList.T_CENTER);
             return;
         }
@@ -719,22 +720,23 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
         int col = GOLD;
         if (teasing(spin, lt) != null) {
             // suspense : il ne manque qu'un Zeus
-            String sub = spin.kind == Olympe.FREE ? "POUR " + v.rules.retrigger + " TOURS GRATUITS DE PLUS" : "POUR LES TOURS GRATUITS";
-            out.text(p, "ENCORE UN ZEUS...", 8, yt + 0.5f, z, fit("ENCORE UN ZEUS...", 1.05f, 11.4f, true), GOLD, 0.7f + 0.3f * s.pulse(0.5f), DrawList.T_CENTER | DrawList.T_BOLD);
+            String sub = spin.kind == Olympe.FREE ? I18n.get("heralizcasino.olympe.pour_n", String.valueOf(v.rules.retrigger)) : I18n.get("heralizcasino.slot.pour_tours");
+            String encore = I18n.get("heralizcasino.olympe.encore_zeus");
+            out.text(p, encore, 8, yt + 0.5f, z, fit(encore, 1.05f, 11.4f, true), GOLD, 0.7f + 0.3f * s.pulse(0.5f), DrawList.T_CENTER | DrawList.T_BOLD);
             out.text(p, sub, 8, yt - 0.8f, z, fit(sub, 0.5f, 11.4f, false), WHITE, 0.9f, DrawList.T_CENTER);
         } else {
             if (spin.kind == Olympe.FREE) {
-                top = "TOURS GRATUITS " + (spin.freeTotal - spin.freeLeft) + "/" + spin.freeTotal;
+                top = I18n.get("heralizcasino.olympe.tours", String.valueOf(spin.freeTotal - spin.freeLeft), String.valueOf(spin.freeTotal));
                 col = SKY;
             } else {
-                top = "4 ZEUS = 15 TOURS GRATUITS";
+                top = I18n.get("heralizcasino.olympe.intro");
                 col = SKY;
             }
             out.text(p, top, 8, yt, z, fit(top, 0.7f, 11.5f, true), col, 1f, DrawList.T_CENTER);
         }
         // suspense : la camera remonte vers l'annonce du haut, le bandeau du bas passe sous les boutons (rien a y lire)
         if (teasing(spin, lt) != null) return;
-        String mise = "MISE " + fmt(v.bet);
+        String mise = I18n.get("heralizcasino.slot.mise", fmt(v.bet));
         out.text(p, mise, WX0 + 0.3f, yb, z, fit(mise, 0.5f, 3.4f, false), WHITE, 0.9f, 0);
         long milli = v.winSoFar(i, false);
         if (lt >= winStart(spin)) {
@@ -746,7 +748,7 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
             }
         }
         long won = (long) Math.floor(v.bet * (Math.min(milli, v.seq.totalMilli) / 1000.0));
-        String g = "GAIN " + fmt(won);
+        String g = I18n.get("heralizcasino.slot.gain", fmt(won));
         out.text(p, g, 9.3f, yb, z, fit(g, 0.6f, 6.4f, false), won > 0 ? GOLD : WHITE, 1f, DrawList.T_CENTER);
     }
 
@@ -782,16 +784,19 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
         if ((spin.events & Olympe.EV_FREE) != 0 && e >= 0 && e < ft0) {
             float a = Math.min(1f, e / 5f) * (1 - Ease.range(e, ft0 - 6, ft0));
             float popK = Ease.outBack(Math.min(1f, e / 7f), 2f);
-            out.text(p, "LES PORTES S'OUVRENT !", 8, cy + 1.8f, z, fit("LES PORTES S'OUVRENT !", 1.3f, 11.5f, true) * popK, SKY, a, flags, 0x000000);
-            String ft = spin.freeTotal + " TOURS GRATUITS";
+            String portes = I18n.get("heralizcasino.olympe.portes");
+            out.text(p, portes, 8, cy + 1.8f, z, fit(portes, 1.3f, 11.5f, true) * popK, SKY, a, flags, 0x000000);
+            String ft = I18n.get("heralizcasino.slot.n_tours_gratuits", String.valueOf(spin.freeTotal));
             out.text(p, ft, 8, cy - 0.2f, z, fit(ft, 1.5f, 11.5f, true), GOLD, a, flags, 0x2A1400);
-            out.text(p, "LES MULTIPLICATEURS S'ADDITIONNENT", 8, cy - 2.0f, z, fit("LES MULTIPLICATEURS S'ADDITIONNENT", 0.6f, 11.5f, true), WHITE, a, flags, 0x000000);
+            String plus = I18n.get("heralizcasino.olympe.additionnent");
+            out.text(p, plus, 8, cy - 2.0f, z, fit(plus, 0.6f, 11.5f, true), WHITE, a, flags, 0x000000);
             return;
         }
         if ((spin.events & Olympe.EV_FREE) != 0) e -= ft0;
         if ((spin.events & Olympe.EV_RETRIGGER) != 0 && e >= 0 && e < rt) {
             float a = Math.min(1f, e / 4f) * (1 - Ease.range(e, rt - 5, rt));
-            out.text(p, "+5 TOURS GRATUITS !", 8, cy, z, fit("+5 TOURS GRATUITS !", 1.4f, 11.5f, true), GOLD, a, flags, 0x2A1400);
+            String plus = I18n.get("heralizcasino.slot.plus_tours_gratuits", "5");
+            out.text(p, plus, 8, cy, z, fit(plus, 1.4f, 11.5f, true), GOLD, a, flags, 0x2A1400);
             return;
         }
         boolean max = (spin.events & Olympe.EV_MAXWIN) != 0;
@@ -804,7 +809,8 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
                 BigWin.text(p, out, m, Rotten.BIG_WIN_TICKS, 4, total, 8, RY1 - 0.9f, RY0 + 1.2f, z + 0.1f, 11.5f, GOLD, GOLD);
             } else {
                 BigWin.shade(p, out, DARK, WX0, WY0, WX1, WY1, SZ + 0.15f, BigWin.SHADE * Ease.clamp01((m - Rotten.BIG_WIN_TICKS) / 5f));
-                out.text(p, "GAIN MAXIMUM !", 8, cy + 1.2f, z, fit("GAIN MAXIMUM !", 1.8f, 11f, true), GOLD, 1f, flags, 0x2A1400);
+                String maxTxt = I18n.get("heralizcasino.slot.gain_max");
+                out.text(p, maxTxt, 8, cy + 1.2f, z, fit(maxTxt, 1.8f, 11f, true), GOLD, 1f, flags, 0x2A1400);
                 out.text(p, fmt(total), 8, cy - 1.0f, z, fit(fmt(total), 2.2f, 11f, true), GOLD, 1f, flags, 0x2A1400);
             }
             return;
@@ -815,7 +821,7 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
             long total = (long) Math.floor(v.bet * v.winSoFar(v.seq.spins.size(), false) / 1000.0);
             // le fond s'assombrit, le total ressort (les boutons du joueur reviennent, voir summary)
             BigWin.shade(p, out, DARK, WX0, WY0, WX1, WY1, SZ + 0.15f, BigWin.SHADE * a);
-            out.text(p, "GAIN TOTAL", 8, cy + 1.3f, z, 1.2f, WHITE, a, flags, 0x000000);
+            out.text(p, I18n.get("heralizcasino.slot.gain_total"), 8, cy + 1.3f, z, 1.2f, WHITE, a, flags, 0x000000);
             String tt = fmt(total);
             out.text(p, tt, 8, cy - 1.0f, z, fit(tt, 2.4f * Ease.outBack(Math.min(1f, k / 7f), 2f), 11f, true), GOLD, a, flags, 0x2A1400);
         }
