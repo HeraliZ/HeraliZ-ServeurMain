@@ -29,12 +29,12 @@ test('the game address follows the Minecraft SRV record, only for the default po
     const asked = []
     dnsPromises.resolveSrv = async name => { asked.push(name); return [{ name: 'jeu.example.net', port: 25570, priority: 0, weight: 5 }] }
     try {
-        assert.deepEqual(await LauncherService.cibleJeu('heraliz.fr', 25565), { host: 'jeu.example.net', port: 25570 })
-        assert.deepEqual(asked, ['_minecraft._tcp.heraliz.fr'])
-        assert.deepEqual(await LauncherService.cibleJeu('heraliz.fr', 25570), { host: 'heraliz.fr', port: 25570 })
+        assert.deepEqual(await LauncherService.cibleJeu('play.heraliz.fr', 25565), { host: 'jeu.example.net', port: 25570 })
+        assert.deepEqual(asked, ['_minecraft._tcp.play.heraliz.fr'])
+        assert.deepEqual(await LauncherService.cibleJeu('play.heraliz.fr', 25570), { host: 'play.heraliz.fr', port: 25570 })
         assert.equal(asked.length, 1)
         dnsPromises.resolveSrv = async () => { throw Object.assign(new Error('no SRV record'), { code: 'ENODATA' }) }
-        assert.deepEqual(await LauncherService.cibleJeu('heraliz.fr', 25565), { host: 'heraliz.fr', port: 25565 })
+        assert.deepEqual(await LauncherService.cibleJeu('play.heraliz.fr', 25565), { host: 'play.heraliz.fr', port: 25565 })
     } finally { dnsPromises.resolveSrv = original }
 })
 

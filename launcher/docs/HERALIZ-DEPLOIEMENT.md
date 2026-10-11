@@ -1,15 +1,17 @@
 # Préparer HeraliZ et ses futurs mods
 
-L’adresse du serveur est `heraliz.fr` et l’invitation Discord `https://discord.gg/heraliz`. La version exacte de Forge 47.x et l’hébergement HTTPS du pack restent à renseigner. Le launcher ne les remplace pas par des valeurs fictives.
+L’adresse du serveur de jeu est `play.heraliz.fr` et l’invitation Discord `https://discord.gg/heraliz`. La version exacte de Forge 47.x et l’hébergement HTTPS du pack restent à renseigner. Le launcher ne les remplace pas par des valeurs fictives.
 
-## Le domaine heraliz.fr
+## Les adresses heraliz.fr
 
-Le domaine doit mener au serveur de jeu, dans la zone DNS de heraliz.fr (chez IONOS) :
+Dans la zone DNS de heraliz.fr (chez IONOS) :
 
-- si le serveur répond sur le port 25565 : un enregistrement `A` de `heraliz.fr` vers l’IP du serveur de jeu ;
-- sinon, ou dès que `heraliz.fr` mène au site : un enregistrement `A` `jeu.heraliz.fr` vers l’IP du serveur de jeu, plus un enregistrement `SRV` `_minecraft._tcp.heraliz.fr` (priorité 0, poids 5, port du serveur, cible `jeu.heraliz.fr`).
+- `heraliz.fr` mène au site (machine à part du serveur de jeu) ;
+- `play.heraliz.fr` : enregistrement `A` vers l’IP du serveur de jeu. C’est l’adresse que tapent les joueurs et celle du launcher ;
+- si le serveur de jeu ne répond pas sur le port 25565 : en plus, un enregistrement `SRV` `_minecraft._tcp.play.heraliz.fr` (priorité 0, poids 5, port du serveur, cible `play.heraliz.fr`) ;
+- facultatif, pour que `heraliz.fr` tapé dans Minecraft mène aussi au jeu : un enregistrement `SRV` `_minecraft._tcp.heraliz.fr` (priorité 0, poids 5, port du serveur, cible `play.heraliz.fr`). Le site n’en est pas gêné.
 
-Minecraft et le launcher (statut et ping de l’accueil) suivent l’enregistrement `SRV`. Les joueurs tapent toujours `heraliz.fr`.
+Minecraft et le launcher (statut et ping de l’accueil) suivent les enregistrements `SRV`.
 
 ## Générer le pack
 
