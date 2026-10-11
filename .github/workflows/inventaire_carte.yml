@@ -1,0 +1,72 @@
+# Inventaire de la carte : quels blocs de nos mods (décors, meubles de l'onglet HeraliZ, bases, utils…) sont posés
+# sur la carte du serveur, et lesquels ne sont posés nulle part. LECTURE SEULE : les fichiers de régions du monde en
+# service sont COPIÉS sur la machine de GitHub (téléchargement SFTP), puis lus ; rien n'est jamais écrit ni supprimé
+# sur le Ptero. Le résultat s'affiche dans le résumé de l'exécution. « Run workflow » ; peut aussi partir d'une
+# branche de travail quand ce fichier change.
+name: Inventaire de la carte
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/inventaire_carte.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: inventaire-carte
+  cancel-in-progress: false
+
+jobs:
+  inventaire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Accès au Ptero
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+          echo "LFTP_REGLAGES=set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30; set net:reconnect-interval-base 5; set net:limit-total-rate 15M;" >> "$GITHUB_ENV"
+
+      - name: Copie des régions du monde en service (lecture seule)
+        run: |
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+            -e "$LFTP_REGLAGES set cmd:fail-exit yes; set xfer:clobber on; get /server.properties -o server_ptero.properties; bye" < /dev/null
+          MONDE=$(tr -d '\r' < server_ptero.properties | sed -n 's/^level-name=//p' | head -n 1)
+          case "$MONDE" in ""|.|..|*[!A-Za-z0-9_.-]*) echo "::error::Nom du monde illisible dans le server.properties du Ptero."; exit 1;; esac
+          echo "Monde en service : $MONDE"
+          echo "MONDE=$MONDE" >> "$GITHUB_ENV"
+          mkdir -p copie
+          for D in "$MONDE" "${MONDE}_nether" "${MONDE}_the_end"; do
+            # seulement les fichiers de régions de blocs (*.mca des dossiers region/) : ni entités, ni joueurs, ni réglages
+            lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+              -e "$LFTP_REGLAGES mirror --parallel=2 --include-glob '*.mca' --exclude-glob 'entities/' --exclude-glob 'poi/' --exclude-glob 'playerdata/' /$D copie/$D; bye" < /dev/null \
+              || echo "(pas de dossier /$D)"
+          done
+          du -sh copie/* 2>/dev/null || true
+          find copie -name '*.mca' | wc -l
+
+      - name: Inventaire
+        run: |
+          python outils/inventaire_carte.py copie/* --sortie inventaire.md
+          cat inventaire.md >> "$GITHUB_STEP_SUMMARY"
