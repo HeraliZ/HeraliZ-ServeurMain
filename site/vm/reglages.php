@@ -4,6 +4,8 @@
  * Réglages du site HeraliZ (Azuriom), lancés par site/vm/theme.sh avec l'utilisateur du site (www-data) :
  *   php reglages.php <dossier d'Azuriom> <dossier du contenu envoyé>
  * À chaque envoi : le thème « heraliz » devient le thème du site.
+ * Une seule fois (repère « heraliz.api_launcher ») : l'API de connexion des comptes est activée, pour le launcher
+ * (connexion, création de compte et double authentification avec le compte du site).
  * Une seule fois (repère « heraliz.reglages » dans les réglages) : nom et description du site, crédits, boutique en
  * crédits et en euros, menu, page Règlement, grades de la saison, trois premières actualités, serveur de jeu à
  * surveiller. Chaque élément n'est créé que s'il manque : rien de ce que l'administration a déjà changé n'est écrasé.
@@ -43,6 +45,13 @@ function dire(string $message): void
 app(ThemeManager::class)->changeTheme('heraliz');
 dire('Thème du site : HeraliZ');
 
+// le launcher se connecte avec les comptes du site : API d'authentification d'Azuriom activée une seule fois, ensuite
+// l'administration fait foi (Paramètres → Authentification → API d'authentification)
+if (setting('heraliz.api_launcher') === null) {
+    Setting::updateSettings(['auth_api' => true, 'heraliz.api_launcher' => now()->toDateString()]);
+    dire('Connexion des comptes depuis le launcher : API d’authentification activée');
+}
+
 if (setting('heraliz.reglages') !== null) {
     dire('Réglages de départ : déjà faits le '.setting('heraliz.reglages').' (rien n’est changé, l’administration fait foi)');
 } else {
@@ -57,6 +66,8 @@ dire('Jeu choisi à l’installation : '.$jeu.match ($jeu) {
     default => '',
 });
 dire('Inscriptions sur le site : '.(setting('register', true) ? 'ouvertes' : 'fermées (administration → Paramètres)'));
+dire('Comptes du site dans le launcher : '.(setting('auth_api', false) ? 'connexion ouverte' : 'connexion fermée (administration → Paramètres → Authentification → API d’authentification)')
+    .(plugins()->isEnabled('heraliz') ? ', création de compte et double authentification par l’extension HeraliZ' : ', extension HeraliZ absente (pas de création de compte depuis le launcher)'));
 dire('Extensions actives : '.(implode(', ', array_keys(plugins()->plugins())) ?: 'aucune'));
 dire('Boutique : '.(plugins()->isEnabled('shop') ? \Azuriom\Plugin\Shop\Models\Package::count().' article(s)' : 'extension absente'));
 dire('Votes : '.(plugins()->isEnabled('vote') ? \Azuriom\Plugin\Vote\Models\Site::count().' site(s) de vote' : 'extension absente'));
