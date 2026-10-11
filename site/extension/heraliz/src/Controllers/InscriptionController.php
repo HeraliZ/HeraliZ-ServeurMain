@@ -6,11 +6,13 @@ use Azuriom\Http\Controllers\Controller;
 use Azuriom\Http\Resources\AuthenticatedUser;
 use Azuriom\Models\ActionLog;
 use Azuriom\Models\User;
+use Azuriom\Plugin\Heraliz\Adresse;
 use Azuriom\Rules\GameAuth;
 use Azuriom\Rules\Username;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
@@ -39,8 +41,9 @@ class InscriptionController extends Controller
             'mot_de_passe_min' => app()->isProduction() ? 12 : 8,
             // jetons de lancement du jeu signés par le site (Spartan)
             'jeton' => JetonController::cle() !== null,
-            // les conditions du site : leur adresse, ou la page d'inscription du site qui les affiche
-            'conditions' => $conditions === null ? null : (preg_match('/^https?:\/\//i', $conditions) ? $conditions : route('register')),
+            // les conditions du site : leur adresse, ou la page d'inscription du site qui les affiche (si elle est ouverte)
+            'conditions' => $conditions === null ? null : (preg_match('/^https?:\/\//i', $conditions)
+                ? $conditions : (Route::has('register') ? route('register') : null)),
         ]);
     }
 
@@ -72,7 +75,7 @@ class InscriptionController extends Controller
             'password' => 'mot de passe',
         ]);
 
-        $cleIp = 'heraliz-inscription:'.$request->ip();
+        $cleIp = 'heraliz-inscription:'.Adresse::de($request);
         if (RateLimiter::tooManyAttempts($cleIp, self::PAR_IP) || RateLimiter::tooManyAttempts('heraliz-inscription', self::EN_TOUT)) {
             return response()->json([
                 'status' => 'error',

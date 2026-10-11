@@ -474,9 +474,17 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   adresse IP, 60 par heure en tout) et `/api/heraliz/a2f/preparer|activer` (double authentification : QR code, puis
   code de l'application et mot de passe ; 8 codes de secours). Un compte créé dans le launcher est un compte du site
   (boutique, votes) et inversement. Le site ne garde qu'une session de launcher par compte : se connecter sur un autre
-  PC déconnecte le premier. Contre qui essaie des mots de passe : 10 erreurs de connexion par adresse IP, puis 10
-  minutes d'attente (`LimiteConnexion` de l'extension ; Azuriom seul en permettait 60 par minute). Mots de passe
-  chiffrés par le site (bcrypt), jamais gardés par le launcher.
+  PC déconnecte le premier. Contre qui essaie des mots de passe (`LimiteConnexion` de l'extension, launcher ET page de
+  connexion du site) : 10 erreurs par adresse IP (une IPv6 compte pour son bloc /64, `Adresse`), puis 10 minutes
+  d'attente ; 10 codes de double authentification faux pour un même compte, puis 15 minutes, quelle que soit l'adresse ;
+  espaces retirés des codes (bug d'Azuriom 1.2.13 : un code de secours tapé avec un espace n'était jamais consommé).
+  Aucun intermédiaire cru (`trustedproxy.proxies` vide : Laravel croyait le X-Forwarded-For de n'importe qui qui
+  envoyait un nom en `.on-forge.com`, ce qui contournait toutes les limites ; reproduit puis corrigé le 11/10) ; nginx
+  donne toujours au site son vrai nom (`fastcgi_param HTTP_HOST $host`, adresses « transmises » vidées). Liens écrits
+  par le site forcés sur `APP_URL` s'il est en https (e-mails à venir). Appels d'autres sites (CORS) : seulement
+  `/api/posts`, `/api/servers` et les flux, jamais les comptes. Mots de passe chiffrés par le site (bcrypt), jamais
+  gardés par le launcher. Si le site passe un jour derrière Cloudflare : déclarer ses adresses dans
+  `HeralizServiceProvider::register`, sinon tous les joueurs partageraient la même limite.
 - « verifier » dit aussi ce qui est visible depuis internet : ports ouverts, base de données (seulement sur la VM),
   fichiers internes du site (`.env`, journaux, réglages : tous refusés), SSH et fail2ban. Étape « Vu depuis internet
   (comme un pirate) », lancée depuis une machine de GitHub, sans compte et en lecture seule : redirection HTTPS,
@@ -486,7 +494,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   administration, captcha d'inscription. Problème = avertissement, « à renforcer » = conseil.
 - **securite** (« Run workflow », et à la fin d'« installer ») : `site/vm/securite.sh` installe fail2ban (6 mots de
   passe SSH faux en 10 minutes = adresse bloquée 1 h, jusqu'à 2 jours si elle recommence ; filtre réglé pour
-  OpenSSH 10, dont les refus s'écrivent sous le nom `sshd-session`) et coupe LLMNR / mDNS. Le SSH de la VM accepte
+  OpenSSH 10, dont les refus s'écrivent sous le nom `sshd-session`), coupe LLMNR / mDNS et ajoute à nginx, sur un site
+  déjà installé, HSTS et le vrai nom du site (`installer.sh` les écrit dans les nouveaux). `theme.sh` remet à chaque
+  envoi `storage/` et la clé des jetons en lecture pour le site seulement (600). Le SSH de la VM accepte
   root avec mot de passe (les workflows s'en servent) : le mot de passe doit rester long et unique. Attention : 6 erreurs
   depuis chez soi bloquent aussi sa propre adresse 1 h.
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,

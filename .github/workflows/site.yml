@@ -93,6 +93,7 @@ jobs:
         if: env.ACTION == 'verifier'
         run: |
           python3 - <<'PY'
+          import http.client
           import json
           import os
           import re
@@ -242,7 +243,8 @@ jobs:
                        "/backup.sql", "/dump.sql", "/azuriom.sql", "/backup.zip", "/site.zip", "/install.php",
                        "/installer.php", "/_ignition/health-check", "/telescope", "/horizon", "/_debugbar/open",
                        "/launcher../azuriom/.env", "/telecharger../azuriom/.env", "/launcher/../../azuriom/.env",
-                       "/%2e%2e/%2e%2e/etc/passwd", "/index.php/../.env", "/assets/../.env"]
+                       "/%2e%2e/%2e%2e/etc/passwd", "/index.php/../.env", "/assets/../.env",
+                       time.strftime("/storage/logs/laravel-%Y-%m-%d.log")]
           servis = [c for c in SENSIBLES if lire(c)[0] == 200]
           if servis:
               alerte("Fichiers internes lisibles depuis internet : " + ", ".join(servis))
@@ -303,7 +305,34 @@ jobs:
           else:
               print(f"API appelée depuis un autre site : « {acao or 'refusé'} », sans cookies (un site piégé ne peut rien lire d'un compte)")
 
-          # 8. Administration et inscription
+          # 8. Fausse adresse IP : Laravel croit le X-Forwarded-For de n'importe qui si le nom demandé finit par
+          # .on-forge.com, et nginx transmet ce nom tel quel quand l'adresse complète est dans la ligne de requête.
+          # Si le compteur de la limite repart à zéro avec une autre « adresse », toutes les limites sont contournables.
+          def reste_limite(fausse_ip):
+              try:
+                  c = http.client.HTTPSConnection(SITE, 443, timeout=20, context=ssl.create_default_context())
+                  c.putrequest("GET", f"https://{SITE}/api/heraliz/etat", skip_host=True, skip_accept_encoding=True)
+                  for nom, valeur in (("Host", "verification.on-forge.com"), ("X-Forwarded-For", fausse_ip),
+                                      ("User-Agent", "HeraliZ-verification")):
+                      c.putheader(nom, valeur)
+                  c.endheaders()
+                  r = c.getresponse()
+                  r.read()
+                  c.close()
+                  reste = r.getheader("X-RateLimit-Remaining")
+                  return int(reste) if r.status == 200 and reste and reste.isdigit() else None
+              except Exception:
+                  return None
+          # A, B, A, B : avec un seul compteur, il ne fait que descendre (au plus un retour à zéro par minute) ; avec un
+          # compteur par fausse adresse, B ne descend pas sous A les deux fois
+          a1, b1, a2, b2 = (reste_limite(ip) for ip in ("198.51.100.1", "198.51.100.2") * 2)
+          if None not in (a1, b1, a2, b2) and b1 >= a1 and b2 >= a2:
+              alerte("Adresse IP falsifiable : avec un faux nom de site, chaque fausse adresse a son propre compteur, toutes "
+                     "les limites (mots de passe, double authentification, comptes) sont contournables : lancer « securite »")
+          else:
+              print("Fausse adresse IP (faux nom de site + X-Forwarded-For) : sans effet, les limites comptent la vraie adresse")
+
+          # 9. Administration et inscription
           code, h, _ = lire("/admin")
           if code == 200:
               alerte("/admin s'ouvre sans connexion")

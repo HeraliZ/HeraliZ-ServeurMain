@@ -93,6 +93,8 @@ else
 fi
 chown -R www-data:www-data "$DOSSIER"
 chmod -R u+rwX,g+rX,o+rX "$DOSSIER"
+# storage (journaux, sessions, clé des jetons de lancement) : lisible par le site seulement
+chmod -R o-rwx "$DOSSIER/storage"
 # le .env d'Azuriom (mot de passe de la base, clé du site) : lisible par le site seulement
 if [ -f "$DOSSIER/.env" ]; then chmod 640 "$DOSSIER/.env"; fi
 # racine du site : le dossier public d'Azuriom dès qu'il existe (sinon l'installeur, à la racine du dossier)
@@ -154,6 +156,15 @@ server {
         fastcgi_pass unix:/run/php/php$V-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
+        # le site reçoit toujours son vrai nom et aucune adresse « transmise » : personne ne peut se faire passer pour une
+        # autre adresse IP (et échapper aux limites de connexion) ni faire écrire au site des liens vers un autre site
+        fastcgi_param HTTP_HOST \$host;
+        fastcgi_param HTTP_X_FORWARDED_FOR "";
+        fastcgi_param HTTP_X_FORWARDED_HOST "";
+        fastcgi_param HTTP_X_FORWARDED_PORT "";
+        fastcgi_param HTTP_X_FORWARDED_PROTO "";
+        fastcgi_param HTTP_X_FORWARDED_PREFIX "";
+        fastcgi_param HTTP_FORWARDED "";
     }
 
     location ~ /\.(?!well-known).* {

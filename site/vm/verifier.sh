@@ -105,7 +105,9 @@ fi
 # fichiers internes d'Azuriom : jamais servis (la racine du site est son dossier public)
 servis=""
 total=0
-for chemin in /.env /artisan /composer.json /storage/logs/laravel.log /vendor/autoload.php /config/database.php /plugins/heraliz/plugin.json /database/database.sqlite; do
+for chemin in /.env /artisan /composer.json /storage/logs/laravel.log "/storage/logs/laravel-$(date +%F).log" \
+    /storage/app/heraliz/jeton-jeu.cle /vendor/autoload.php /config/database.php /plugins/heraliz/plugin.json \
+    /database/database.sqlite; do
   total=$((total + 1))
   code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 "https://heraliz.fr$chemin" || true)
   [ "$code" = 200 ] && servis="$servis $chemin"
@@ -114,6 +116,22 @@ if [ -n "$servis" ]; then
   echo "::warning::Fichiers internes du site visibles depuis internet :$servis"
 else
   echo "Fichiers internes du site (.env, journaux, réglages, extensions) : tous refusés ($total essayés)"
+fi
+# réglages du site (rien de secret) : adresse officielle (liens des e-mails) et mode débogage (doit être coupé)
+if [ -f /var/www/azuriom/.env ]; then
+  echo "Réglages du site : $(grep -E '^(APP_URL|APP_ENV|APP_DEBUG)=' /var/www/azuriom/.env | tr '\n' ' ')"
+  if grep -qE '^APP_DEBUG=true' /var/www/azuriom/.env; then
+    echo "::warning::Mode débogage du site actif (APP_DEBUG=true) : une erreur montrerait le code et les réglages."
+  fi
+fi
+SITE_NGINX=/etc/nginx/sites-available/heraliz
+if [ -f "$SITE_NGINX" ]; then
+  echo "nginx : HSTS $(grep -q Strict-Transport-Security "$SITE_NGINX" && echo oui || echo 'non (lancer « securite »)'), adresse IP impossible à falsifier $(grep -q 'fastcgi_param HTTP_HOST' "$SITE_NGINX" && echo oui || echo 'non (lancer « securite »)')"
+fi
+CLE=/var/www/azuriom/storage/app/heraliz/jeton-jeu.cle
+if [ -f "$CLE" ]; then
+  echo "Clé des jetons de lancement : droits $(stat -c '%a %U' "$CLE"), dossier $(stat -c '%a' "$(dirname "$CLE")")"
+  if [ "$(stat -c '%a' "$CLE")" != 600 ]; then echo "::warning::Clé des jetons lisible par d'autres comptes de la VM : lancer « theme »."; fi
 fi
 if [ "$(id -u)" = 0 ]; then
   echo "SSH : mot de passe $(sshd -T 2> /dev/null | awk '$1 == "passwordauthentication" {print ($2 == "yes" ? "accepté" : "refusé")}'), connexion root $(sshd -T 2> /dev/null | awk '$1 == "permitrootlogin" {print $2}')"
