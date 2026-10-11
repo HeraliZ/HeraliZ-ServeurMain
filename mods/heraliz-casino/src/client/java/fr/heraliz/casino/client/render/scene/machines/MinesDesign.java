@@ -16,6 +16,7 @@ import fr.heraliz.casino.client.render.scene.Sprite;
 
 import java.util.Locale;
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -320,23 +321,23 @@ public final class MinesDesign extends MachineDesign<MinesView> {
         }
         if (s.item) return;
         // ---- ecrans des pupitres (phosphore vert)
-        String left1 = "MINES", left2 = String.valueOf(v.mines);
+        String left1 = I18n.get("heralizcasino.mines.titre"), left2 = String.valueOf(v.mines);
         String right1, right2;
         int rc = PHOSPHOR;
         if (v.phase == MinesView.PLAYING) {
             right1 = String.format(Locale.ROOT, "x%.2f", v.mult100 / 100.0);
-            right2 = fmt(v.bet * v.mult100 / 100) + " j";
+            right2 = I18n.get("heralizcasino.mines.jetons", fmt(v.bet * v.mult100 / 100));
         } else if (v.phase == MinesView.BOOM) {
-            right1 = "BOUM !";
-            right2 = "-" + fmt(v.bet) + " j";
+            right1 = I18n.get("heralizcasino.mines.boum");
+            right2 = I18n.get("heralizcasino.mines.jetons", "-" + fmt(v.bet));
             rc = RED_RGB;
         } else if (v.phase == MinesView.CASHED) {
             right1 = String.format(Locale.ROOT, "x%.2f", v.mult100 / 100.0);
-            right2 = "+" + fmt(v.win) + " j";
+            right2 = I18n.get("heralizcasino.mines.jetons", "+" + fmt(v.win));
             rc = GOLD_RGB;
         } else {
-            right1 = "PRET";
-            right2 = "Choisissez";
+            right1 = I18n.get("heralizcasino.mines.pret");
+            right2 = I18n.get("heralizcasino.mines.choisissez");
         }
         screenText(p, out, deskX(-1), left1, left2, PHOSPHOR, AMBER);
         screenText(p, out, deskX(1), right1, right2, rc, 0xE8FFE0);

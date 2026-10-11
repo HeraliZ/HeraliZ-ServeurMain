@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
+import net.minecraft.client.resources.language.I18n;
 
 /**
  * Tablette du Directeur (operateurs) : deux onglets.
@@ -637,7 +638,7 @@ public class AdminScreen extends Screen {
         double v = k.get.getAsDouble();
         return switch (k.format) {
             case PCT -> String.format(Locale.ROOT, "%.1f %%", v * 100);
-            case BOOL -> v > 0.5 ? "OUI" : "NON";
+            case BOOL -> I18n.get(v > 0.5 ? "gui.yes" : "gui.no").toUpperCase(Locale.ROOT);
             case MULT -> String.format(Locale.ROOT, "x%.2f", v);
             case SEC -> (long) v + " s";
             case MINUTES -> (long) v + " min";

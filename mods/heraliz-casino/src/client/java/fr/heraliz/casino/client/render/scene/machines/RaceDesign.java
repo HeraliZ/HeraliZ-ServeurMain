@@ -18,6 +18,7 @@ import fr.heraliz.casino.game.race.RaceRules;
 
 import java.util.Locale;
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 
@@ -277,7 +278,7 @@ public final class RaceDesign extends MachineDesign<RaceView> {
                 p.pop();
                 if (result && i == v.winner) {
                     out.billboard(p, Sprite.FLARE, x, TOP + 3, z, 4f + 1.5f * (float) Math.sin(s.time * 0.3f), s.time * 3, AMBER, 0.5f);
-                    out.text(p, "1er", x, TOP + 5.4f, z, 1.1f, AMBER, 1f, DrawList.T_CENTER | DrawList.T_BILLBOARD | DrawList.T_BOLD | DrawList.T_OUTLINE, 0x2A1A04);
+                    out.text(p, I18n.get("heralizcasino.course.premier"), x, TOP + 5.4f, z, 1.1f, AMBER, 1f, DrawList.T_CENTER | DrawList.T_BILLBOARD | DrawList.T_BOLD | DrawList.T_OUTLINE, 0x2A1A04);
                 }
             }
         }
@@ -286,15 +287,15 @@ public final class RaceDesign extends MachineDesign<RaceView> {
         String title;
         int tc = AMBER;
         if (v.phase == RoundView.BETTING) {
-            title = "DEPART DANS " + (int) Math.ceil(v.countdown) + " s";
+            title = I18n.get("heralizcasino.course.depart", String.valueOf((int) Math.ceil(v.countdown)));
             tc = v.countdown < 5 ? 0xFF5A4A : AMBER;
         } else if (racing) {
-            title = "ILS SONT PARTIS !";
+            title = I18n.get("heralizcasino.course.partis");
             tc = PHOSPHOR;
         } else if (result) {
-            title = "VAINQUEUR : " + (v.winner + 1) + " - " + RaceRules.NAMES[v.winner].toUpperCase(Locale.ROOT);
+            title = I18n.get("heralizcasino.course.vainqueur", String.valueOf(v.winner + 1), RaceRules.NAMES[v.winner].toUpperCase(Locale.ROOT));
         } else {
-            title = "PROCHAINE COURSE - MISEZ !";
+            title = I18n.get("heralizcasino.course.prochaine");
         }
         out.text(p, title, 10, TOP + 10.4f, -11.55f, fit(title, 1.2f, 21f, true), tc, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
         for (int i = 0; i < N; i++) {

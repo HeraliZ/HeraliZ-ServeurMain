@@ -16,6 +16,8 @@ import fr.heraliz.casino.client.render.scene.Sprite;
 import fr.heraliz.casino.game.duel.NavalBoard;
 
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
+import java.util.Locale;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -447,7 +449,8 @@ public final class NavalDesign extends MachineDesign<NavalView> {
             } else {
                 float k = v.sinceShot - SHOT;
                 boolean sunk = hit && isWreckCell(target == 1 ? v.wrecksA : v.wrecksB, v.lastShot);
-                String txt = sunk ? "COULÉ !" : hit ? "TOUCHÉ !" : "À L'EAU";
+                String txt = sunk ? I18n.get("heralizcasino.naval.coule") : hit ? I18n.get("screen.heralizcasino.naval.hit")
+                        : I18n.get("screen.heralizcasino.naval.miss").toUpperCase(Locale.ROOT);
                 float a = Math.min(1f, k / 3f) * (1 - Ease.range(k, 22, 30));
                 float pop = Ease.outBack(Math.min(1f, k / 5f), 2.5f);
                 out.text(p, txt, bc[0], BOARD_Y + 5 + k * 0.08f, bc[1], 1.7f * pop, sunk ? GOLD : hit ? RED : WATER, a,

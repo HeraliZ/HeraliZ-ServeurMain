@@ -1,6 +1,7 @@
 package fr.heralisz.matchs.duels.client;
 
 import fr.heralisz.matchs.client.kit.Ui;
+import fr.heralisz.matchs.duels.classes.ClassePerso;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -62,6 +63,18 @@ final class Rendu {
     }
 
     /** Nom affichable : traduction de la cle si elle existe, sinon nom lisible tire de l'id ou de la cle. */
+    /** Nom d'une classe : les noms par defaut (« ASSAUT », « CLASSE 2 »...) traduits, les autres tels quels. */
+    static String nomClasse(String nom) {
+        if (nom == null) return "";
+        for (int i = 0; i < ClassePerso.NOMS_DEFAUT.length; i++) {
+            if (ClassePerso.NOMS_DEFAUT[i].equals(nom)) return I18n.get(ClassePerso.CLES_NOMS_DEFAUT[i]);
+        }
+        if (nom.startsWith(ClassePerso.PREFIXE_VIDE) && nom.substring(ClassePerso.PREFIXE_VIDE.length()).matches("\\d+")) {
+            return I18n.get("heralisz_matchs.duel.classe.numero", nom.substring(ClassePerso.PREFIXE_VIDE.length()));
+        }
+        return nom;
+    }
+
     static String nom(String cle, String id) {
         String k = id == null || id.isEmpty() ? cle : id;
         if (k == null) return "";

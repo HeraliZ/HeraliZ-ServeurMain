@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
@@ -85,8 +86,8 @@ public final class HudZombiesRendu implements IGuiOverlay {
     private static final TypeAtout[] ATOUTS = TypeAtout.values();
     private static final TypeBonus[] BONUS = TypeBonus.values();
     private static final int[] CHIFFRES_TAMPON = new int[6];
-    private static final String[] CAPS_FR = {"N", "NE", "E", "SE", "S", "SO", "O", "NO"};
-    private static final String[] CAPS_EN = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+    /** Caps de la boussole : clés {@code heralisz_matchs.boussole.<id>} (N, NE, E... traduits chez le joueur). */
+    private static final String[] CAPS = {"n", "ne", "e", "se", "s", "so", "o", "no"};
 
     static {
         for (TypeAtout a : TypeAtout.values()) ICONE_ATOUT[a.ordinal()] = HeraliszMatchs.id("textures/gui/zombies/v2/atout_" + a.id() + ".png");
@@ -978,7 +979,6 @@ public final class HudZombiesRendu implements IGuiOverlay {
         Ui.band(g, Math.round(cx - bw / 2F - 14), y - 2, Math.round(cx + bw / 2F + 14), y + 22, 0x000000, 105, 34);
         // cap : 0 = nord, 90 = est (lacet de Minecraft : 0 = sud, 90 = ouest)
         float cap = Mth.wrapDegrees(p.getViewYRot(partiel) + 180);
-        String[] noms = Ui.french() ? CAPS_FR : CAPS_EN;
         for (int k = 0; k < 24; k++) {
             int ang = k * 15;
             float rel = Mth.wrapDegrees(ang - cap);
@@ -989,7 +989,7 @@ public final class HudZombiesRendu implements IGuiOverlay {
             if (ang % 45 == 0) {
                 int i = ang / 45;
                 boolean cardinal = ang % 90 == 0;
-                caps[i].definir(font, noms[i], cardinal ? Ui.BOLD : Ui.SMALL, 0);
+                caps[i].definir(font, I18n.get("heralisz_matchs.boussole." + CAPS[i]), cardinal ? Ui.BOLD : Ui.SMALL, 0);
                 int c = cardinal ? Ui.TEXT : Ui.mix(Ui.MUTED, 0xFFFFFF, 0.25F);
                 texte(g, font, caps[i], x, cardinal ? y - 0.5F : y + 0.5F, Ui.argb(c, (int) (255 * fa)), (int) (150 * fa), 1);
             } else {
@@ -1020,7 +1020,7 @@ public final class HudZombiesRendu implements IGuiOverlay {
                 int cle = m * 4 + (dy > 3 ? 1 : dy < -3 ? 2 : 0) + (bord ? (rel > 0 ? 1000000 : 2000000) : 0);
                 if (cle != repereDistVu) {
                     repereDistVu = cle;
-                    String t = m + " m" + (dy > 3 ? " ▲" : dy < -3 ? " ▼" : "");
+                    String t = I18n.get("killcam.distance", m) + (dy > 3 ? " ▲" : dy < -3 ? " ▼" : "");
                     if (bord) t = rel > 0 ? t + " ▶" : "◀ " + t;
                     repereDist.definir(font, t, Ui.SMALL, 0);
                 }

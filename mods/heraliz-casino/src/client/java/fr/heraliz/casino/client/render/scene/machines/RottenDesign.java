@@ -16,6 +16,7 @@ import fr.heraliz.casino.game.slot.Rotten;
 import fr.heraliz.casino.game.slot.Suspense;
 
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -240,12 +241,13 @@ public final class RottenDesign extends MachineDesign<RottenView> {
         } else {
             out.solid(p, bars, 0.4f);
             screen(s, v, p, out, at, playing);
-            Intro.title(p, out, introT, "ROTTEN", INTRO_SUB, 8, (RY0 + RY1) / 2, SZ + 0.32f, 11f, TOXIC, 0xFFA040);
+            Intro.title(p, out, introT, "ROTTEN", I18n.get(INTRO_SUB), 8, (RY0 + RY1) / 2, SZ + 0.32f, 11f, TOXIC, 0xFFA040);
         }
         out.translucent(p, glass, 0xFFFFFF, 0.3f);
     }
 
-    static final String INTRO_SUB = "3 SAVANT FOU = TOURS GRATUITS";
+    /** Cle du sous-titre de l'intro (traduit a l'affichage). */
+    static final String INTRO_SUB = "heralizcasino.rotten.intro";
 
     /** Temps de l'intro pour l'image en cours (-1 : pas d'intro) ; lu par la grille (arrivee des colonnes). */
     private float introT = -1;
@@ -297,7 +299,7 @@ public final class RottenDesign extends MachineDesign<RottenView> {
         if (!hands.isEmpty()) out.solid(p, hands.buildDynamic(), 0.3f);
         if (!fx.isEmpty()) out.additive(p, fx.buildDynamic(), 0xB8FF8A, 0.9f);
         Intro.crtOn(p, out, DARK, FLASH, t, WX0, WY0, WX1, WY1, SZ + 0.36f, TOXIC);
-        Intro.title(p, out, t, "ROTTEN", INTRO_SUB, 8, (RY0 + RY1) / 2, SZ + 0.32f, 11f, TOXIC, 0xFFA040);
+        Intro.title(p, out, t, "ROTTEN", I18n.get(INTRO_SUB), 8, (RY0 + RY1) / 2, SZ + 0.32f, 11f, TOXIC, 0xFFA040);
     }
 
     /** Symbole affiche a une case avant le tour i (grille finale du tour precedent). */
@@ -520,8 +522,8 @@ public final class RottenDesign extends MachineDesign<RottenView> {
         if (tz != null) {
             int hoped = Rotten.teaseSymbol(spin, (int) tz[0]);
             boolean inv = hoped == Rotten.INVASION;
-            String txt = inv ? "ENCORE UNE INVASION..." : "ENCORE UN SAVANT FOU...";
-            String sub = spin.kind == Rotten.FREE ? "POUR DES TOURS GRATUITS EN PLUS" : inv ? "POUR L'INVASION TOTALE" : "POUR LES TOURS GRATUITS";
+            String txt = I18n.get(inv ? "heralizcasino.rotten.encore_invasion" : "heralizcasino.rotten.encore_savant");
+            String sub = I18n.get(spin.kind == Rotten.FREE ? "heralizcasino.rotten.pour_plus" : inv ? "heralizcasino.rotten.pour_invasion" : "heralizcasino.slot.pour_tours");
             float a = Ease.clamp01(tz[1] / 4f), ym = (RY1 + WY1) / 2;
             out.text(p, txt, 8, ym + 0.32f, SZ + 0.08f, fit(txt, 0.82f, 11f, true), teaseColor(hoped), a * (0.7f + 0.3f * s.pulse(0.5f)), DrawList.T_CENTER | DrawList.T_BOLD);
             out.text(p, sub, 8, ym - 0.58f, SZ + 0.08f, fit(sub, 0.42f, 11f, false), WHITE, a * 0.9f, DrawList.T_CENTER);
@@ -552,25 +554,26 @@ public final class RottenDesign extends MachineDesign<RottenView> {
         float y = (WY0 + RY0) / 2 - 0.05f, z = SZ + 0.08f;
         if (spin == null || (finished && v.since > v.totalTicks() + 200)) {
             boolean blink = ((int) (s.time / 20)) % 2 == 0;
-            String idle = blink ? "INSÉREZ VOS JETONS" : "3 SAVANT FOU = TOURS GRATUITS";
+            String idle = I18n.get(blink ? "heralizcasino.rotten.inserez" : INTRO_SUB);
             out.text(p, idle, 8, y, z, fit(idle, 0.6f, 11f, false), blink ? TOXIC : GOLD, 0.95f, DrawList.T_CENTER);
             return;
         }
         // suspense : la camera remonte vers l'annonce du haut, le bandeau du bas passe sous les boutons (rien a y lire)
         if (teasing(spin, lt) != null) return;
-        String mise = "MISE " + fmt(v.bet);
+        String mise = I18n.get("heralizcasino.slot.mise", fmt(v.bet));
         out.text(p, mise, RX0 + 0.1f, y, z, fit(mise, 0.5f, 3.2f, false), WHITE, 0.9f, 0);
         long milli = v.winSoFar(i, lt >= landed);
         long won = (long) Math.floor(v.bet * (milli / 1000.0));
-        String g = "GAIN " + fmt(won);
+        String g = I18n.get("heralizcasino.slot.gain", fmt(won));
         out.text(p, g, 8.6f, y, z, fit(g, 0.62f, 4.4f, false), won > 0 ? GOLD : WHITE, 1f, DrawList.T_CENTER);
         String right = null;
         int col = WHITE;
         if (spin.kind == Rotten.RESPIN) {
-            right = "RELANCES " + spin.respinsLeft;
+            right = I18n.get("heralizcasino.rotten.relances", String.valueOf(spin.respinsLeft));
             col = PURPLE;
         } else if (spin.mode != Rotten.MODE_BASE || spin.kind == Rotten.FREE) {
-            right = (spin.mode == Rotten.MODE_INVASION ? "INVASION " : "SAVANT ") + (spin.freeTotal - spin.freeLeft) + "/" + spin.freeTotal;
+            right = I18n.get(spin.mode == Rotten.MODE_INVASION ? "heralizcasino.rotten.invasion_n" : "heralizcasino.rotten.savant_n",
+                    String.valueOf(spin.freeTotal - spin.freeLeft), String.valueOf(spin.freeTotal));
             col = spin.mode == Rotten.MODE_INVASION ? BLOOD : TOXIC;
         }
         if (right != null) out.text(p, right, RX1 - 0.1f, y, z, fit(right, 0.5f, 3.2f, false), col, 1f, DrawList.T_RIGHT);
@@ -599,10 +602,12 @@ public final class RottenDesign extends MachineDesign<RottenView> {
         int mt = Rotten.MUTATION_T, bt = Rotten.BONUS_T, rt = Rotten.RETRIGGER_T;
         if ((spin.events & Rotten.EV_MUTATION) != 0 && e >= 0 && e < mt) {
             float a = Math.min(1f, e / 4f) * (1 - Ease.range(e, mt - 5, mt));
-            out.text(p, "MUTATION !", cx, cy + 1.3f, z, fit("MUTATION !", 2f, 10.5f, true) * Ease.outBack(Math.min(1f, e / 6f), 2.5f), PURPLE, a, flags, 0x10001A);
+            String mutation = I18n.get("heralizcasino.rotten.mutation");
+            out.text(p, mutation, cx, cy + 1.3f, z, fit(mutation, 2f, 10.5f, true) * Ease.outBack(Math.min(1f, e / 6f), 2.5f), PURPLE, a, flags, 0x10001A);
             int n = Integer.bitCount(spin.added);
-            String sub = spin.kind == Rotten.RESPIN ? "+ RELANCES" : spin.respinsLeft + (spin.respinsLeft > 1 ? " RELANCES" : " RELANCE");
-            String line = sub + (n > 0 ? "  ·  " + n + " SYMBOLE" + (n > 1 ? "S" : "") : "");
+            String sub = spin.kind == Rotten.RESPIN ? I18n.get("heralizcasino.rotten.plus_relances")
+                    : I18n.get(spin.respinsLeft > 1 ? "heralizcasino.rotten.n_relances" : "heralizcasino.rotten.n_relance", String.valueOf(spin.respinsLeft));
+            String line = sub + (n > 0 ? "  ·  " + I18n.get(n > 1 ? "heralizcasino.rotten.n_symboles" : "heralizcasino.rotten.n_symbole", String.valueOf(n)) : "");
             out.text(p, line, cx, cy - 1.3f, z, fit(line, 0.85f, 10.5f, true), WHITE, a, flags, 0x000000);
             return;
         }
@@ -611,18 +616,21 @@ public final class RottenDesign extends MachineDesign<RottenView> {
             if (b >= 0 && b < bt) {
                 boolean inv = (spin.events & Rotten.EV_INVASION) != 0;
                 float a = Math.min(1f, b / 5f) * (1 - Ease.range(b, bt - 6, bt));
-                out.text(p, inv ? "INVASION TOTALE" : "SAVANT FOU", cx, cy + 1.6f, z, fit(inv ? "INVASION TOTALE" : "SAVANT FOU", 2.1f, 11f, true)
+                String nom = I18n.get(inv ? "heralizcasino.rotten.invasion_totale" : "heralizcasino.rotten.savant_fou");
+                out.text(p, nom, cx, cy + 1.6f, z, fit(nom, 2.1f, 11f, true)
                         * Ease.outBack(Math.min(1f, b / 7f), 2f), inv ? BLOOD : TOXIC, a, flags, 0x000000);
                 int free = spin.kind == Rotten.BASE ? spin.freeTotal : spin.freeLeft;
-                String ft = free + " TOURS GRATUITS";
+                String ft = I18n.get("heralizcasino.slot.n_tours_gratuits", String.valueOf(free));
                 out.text(p, ft, cx, cy - 0.9f, z, fit(ft, 1.1f, 10.5f, true), GOLD, a, flags, 0x000000);
-                if (inv) out.text(p, "LES MUTATIONS RESTENT !", cx, cy - 2.5f, z, fit("LES MUTATIONS RESTENT !", 0.7f, 10.5f, true), WHITE, a, flags, 0x000000);
+                String restent = I18n.get("heralizcasino.rotten.restent");
+                if (inv) out.text(p, restent, cx, cy - 2.5f, z, fit(restent, 0.7f, 10.5f, true), WHITE, a, flags, 0x000000);
                 return;
             }
         }
         if ((spin.events & Rotten.EV_RETRIGGER) != 0 && e >= 0 && e < rt) {
             float a = Math.min(1f, e / 4f) * (1 - Ease.range(e, rt - 5, rt));
-            out.text(p, "TOURS GRATUITS EN PLUS !", cx, cy, z, fit("TOURS GRATUITS EN PLUS !", 1.2f, 10.5f, true), GOLD, a, flags, 0x000000);
+            String enPlus = I18n.get("heralizcasino.rotten.en_plus");
+            out.text(p, enPlus, cx, cy, z, fit(enPlus, 1.2f, 10.5f, true), GOLD, a, flags, 0x000000);
             return;
         }
         boolean max = (spin.events & Rotten.EV_MAXWIN) != 0;
@@ -635,7 +643,8 @@ public final class RottenDesign extends MachineDesign<RottenView> {
                 BigWin.text(p, out, m, Rotten.BIG_WIN_TICKS, 4, total, cx, RY1 - 1.1f, RY0 + 1.3f, z + 0.1f, 11f, GOLD, GOLD);
             } else {
                 BigWin.shade(p, out, DARK, WX0, WY0, WX1, WY1, SZ + 0.15f, BigWin.SHADE * Ease.clamp01((m - Rotten.BIG_WIN_TICKS) / 5f));
-                out.text(p, "GAIN MAXIMUM !", cx, cy + 1.2f, z, fit("GAIN MAXIMUM !", 1.8f, 10.5f, true), GOLD, 1f, flags, 0x2A0A00);
+                String maxTxt = I18n.get("heralizcasino.slot.gain_max");
+                out.text(p, maxTxt, cx, cy + 1.2f, z, fit(maxTxt, 1.8f, 10.5f, true), GOLD, 1f, flags, 0x2A0A00);
                 out.text(p, fmt(total), cx, cy - 1.0f, z, fit(fmt(total), 2.2f, 10.5f, true), GOLD, 1f, flags, 0x2A0A00);
             }
             return;
@@ -646,7 +655,7 @@ public final class RottenDesign extends MachineDesign<RottenView> {
             long total = (long) Math.floor(v.bet * v.winSoFar(v.seq.spins.size(), false) / 1000.0);
             // le fond s'assombrit, le total ressort (les boutons du joueur reviennent, voir summary)
             BigWin.shade(p, out, DARK, WX0, WY0, WX1, WY1, SZ + 0.15f, BigWin.SHADE * a);
-            out.text(p, "GAIN TOTAL", cx, cy + 1.3f, z, 1.2f, WHITE, a, flags, 0x000000);
+            out.text(p, I18n.get("heralizcasino.slot.gain_total"), cx, cy + 1.3f, z, 1.2f, WHITE, a, flags, 0x000000);
             String tt = fmt(total);
             out.text(p, tt, cx, cy - 1.0f, z, fit(tt, 2.4f * Ease.outBack(Math.min(1f, k / 7f), 2f), 10.5f, true), GOLD, a, flags, 0x2A0A00);
         }

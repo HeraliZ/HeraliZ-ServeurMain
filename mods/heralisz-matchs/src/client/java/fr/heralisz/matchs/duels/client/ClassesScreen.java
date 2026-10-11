@@ -132,7 +132,7 @@ public class ClassesScreen extends Screen implements EcranDuels {
         for (int i = 0; i < CHAMPS.length; i++) libelles[i] = Component.translatable("duel.classes.champ." + CHAMPS[i]).getString();
         addRenderableWidget(new HzIcon(px + pw - 24, py + 9, 12, Icons.CROIX, Component.translatable("gui.fermer"), this::onClose));
         nom = addRenderableWidget(new HzField(mx0 + DX, py + 40, VW, 15, ClassePerso.NOM_MAX, HzField.TOUT).accent(accent).remplacerAuFocus(false));
-        nom.setValue(classe().nom());
+        nom.setValue(Rendu.nomClasse(classe().nom()));
         nom.setResponder(v -> {
             brouillons[emplacement] = classe().avecNom(v);
             majTextes();
@@ -328,7 +328,7 @@ public class ClassesScreen extends Screen implements EcranDuels {
         }
         for (int i = 0; i < ClassePerso.EMPLACEMENTS; i++) {
             ClassePerso b = brouillons[i];
-            String n = b.nom().isEmpty() ? Component.translatable("duel.classes.sans_nom").getString() : b.nom();
+            String n = b.nom().isEmpty() ? Component.translatable("duel.classes.sans_nom").getString() : Rendu.nomClasse(b.nom());
             nomsEmplacements[i] = Ui.ellipsis(font, n, Ui.BOLD, 72);
             Catalogue.Arme a = c.arme(b.principale());
             String an = a == null ? Component.translatable("duel.classes.aucune_arme").getString() : Rendu.nom(a.nom(), a.id());

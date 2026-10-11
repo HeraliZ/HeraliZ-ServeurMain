@@ -17,6 +17,7 @@ import fr.heraliz.casino.game.roulette.Roulette;
 import fr.heraliz.casino.game.roulette.RouletteLayout;
 
 import java.util.Random;
+import net.minecraft.client.resources.language.I18n;
 
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.p;
 import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
@@ -423,14 +424,14 @@ public final class RouletteDesign extends MachineDesign<RouletteView> {
             head1 = (int) Math.ceil(v.countdown) + " s";
             c1 = v.countdown < 5 ? 0xFF5A4A : AMBER;
         } else if (v.phase == RoundView.RUNNING) {
-            head1 = v.spinTime > v.spinTicks * 0.55f ? "RIEN NE" : "FAITES";
+            head1 = I18n.get(v.spinTime > v.spinTicks * 0.55f ? "heralizcasino.roulette.rien_ne" : "heralizcasino.roulette.faites");
         } else if (result) {
             head1 = Roulette.label(v.number);
             c1 = v.number == 0 || v.number == Roulette.DOUBLE_ZERO ? PHOSPHOR : Roulette.isRed(v.number) ? 0xFF5A4A : 0xE8E0CC;
         } else {
-            head1 = "MISEZ";
+            head1 = I18n.get("heralizcasino.roulette.misez");
         }
-        String head2 = v.phase == RoundView.RUNNING ? (v.spinTime > v.spinTicks * 0.55f ? "VA PLUS" : "VOS JEUX") : null;
+        String head2 = v.phase == RoundView.RUNNING ? I18n.get(v.spinTime > v.spinTicks * 0.55f ? "heralizcasino.roulette.va_plus" : "heralizcasino.roulette.vos_jeux") : null;
         out.text(p, head1, bx, TOP + 19.1f, bz, fit(head1, result ? 1.6f : 0.9f, 3.2f, true), c1, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
         if (head2 != null) out.text(p, head2, bx, TOP + 18f, bz, fit(head2, 0.9f, 3.2f, true), c1, 1f, DrawList.T_CENTER | DrawList.T_BOLD);
         for (int i = 0; i < Math.min(8, v.history.length); i++) {

@@ -69,7 +69,7 @@ public class ChoixClasseScreen extends Screen implements EcranDuels {
             }
             String gren = (l == null ? "" : Rendu.nom(l.nom(), l.id())) + (l != null && t != null ? ", " : "") + (t == null ? "" : Rendu.nom(t.nom(), t.id()));
             int w = CW - 16;
-            cartes.add(new Carte(Ui.ellipsis(font, k.nom(), Ui.BOLD, w - 14), Ui.ellipsis(font, p == null ? aucune : Rendu.nom(p.nom(), p.id()), Ui.FONT, w),
+            cartes.add(new Carte(Ui.ellipsis(font, Rendu.nomClasse(k.nom()), Ui.BOLD, w - 14), Ui.ellipsis(font, p == null ? aucune : Rendu.nom(p.nom(), p.id()), Ui.FONT, w),
                     p == null ? ItemStack.EMPTY : p.icone(), Ui.ellipsis(font, s == null ? "—" : Rendu.nom(s.nom(), s.id()), Ui.SMALL, w),
                     Ui.ellipsis(font, m == null ? "—" : Rendu.nom(m.nom(), m.id()), Ui.SMALL, w), Ui.ellipsis(font, soins.length() == 0 ? "—" : soins.toString(), Ui.SMALL, w),
                     Ui.ellipsis(font, gren.isEmpty() ? "—" : gren, Ui.SMALL, w), Ui.ellipsis(font, te == null ? "—" : Rendu.nom(te.nom(), te.id()), Ui.SMALL, w)));
