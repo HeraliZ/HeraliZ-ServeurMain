@@ -16,3 +16,32 @@ echo "Ports en écoute : $( (ss -ltn 2> /dev/null || netstat -ltn 2> /dev/null) 
 if command -v ufw > /dev/null; then echo "Pare-feu ufw : $(ufw status 2> /dev/null | head -n 1)"; else echo "Pare-feu ufw : absent"; fi
 code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' https://packages.sury.org/ 2> /dev/null)
 if [ "${code:-000}" = 000 ]; then echo "Sortie vers internet : bloquée"; else echo "Sortie vers internet : OK"; fi
+# le site et le launcher
+if [ -f /var/www/azuriom/artisan ]; then
+  v=$(grep -oE "VERSION = '[^']+'" /var/www/azuriom/app/Azuriom.php 2> /dev/null | head -n 1 | cut -d"'" -f2)
+  echo "Azuriom : installé${v:+ (version $v)}"
+elif [ -f /var/www/azuriom/index.php ]; then
+  echo "Azuriom : installeur en place, installation à terminer dans le navigateur (https://heraliz.fr)"
+else
+  echo "Azuriom : absent"
+fi
+# API de connexion du launcher (AzAuth) : 422 = activée (requête vide refusée), 400 = pas activée dans l'administration
+if [ -f /var/www/azuriom/artisan ]; then
+  code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 -X POST \
+    -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{}' https://heraliz.fr/api/auth/authenticate)
+  case "$code" in
+    422) echo "Connexion des comptes au launcher (API d'Azuriom) : activée";;
+    400) echo "Connexion des comptes au launcher (API d'Azuriom) : PAS activée (administration du site → Paramètres → Authentification)";;
+    *) echo "Connexion des comptes au launcher (API d'Azuriom) : réponse inattendue (code ${code:-aucun})";;
+  esac
+fi
+if [ -f /var/www/launcher/distribution.json ]; then
+  echo "Pack du launcher : $(find /var/www/launcher -type f | wc -l) fichiers, $(du -sh /var/www/launcher | cut -f1), distribution du $(date -r /var/www/launcher/distribution.json '+%d/%m %H:%M')"
+else
+  echo "Pack du launcher : pas encore déposé"
+fi
+if [ -f /var/www/telecharger/HeraliZ-Launcher-Setup.exe ]; then
+  echo "Installateur du launcher : $(du -h /var/www/telecharger/HeraliZ-Launcher-Setup.exe | cut -f1), du $(date -r /var/www/telecharger/HeraliZ-Launcher-Setup.exe '+%d/%m %H:%M')"
+else
+  echo "Installateur du launcher : pas encore en ligne"
+fi
