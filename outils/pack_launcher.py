@@ -67,6 +67,11 @@ def main():
         f"JAVA_EXECUTABLE={java}\nROOT={racine}\nBASE_URL={BASE_URL}\nHELIOS_DATA_FOLDER={sortie / 'helios'}\n",
         encoding="utf-8")
     nebula(neb, "init", "root")
+    # sans les exemples de Nebula (flux RSS, Discord) : le launcher HeraliZ ne s'en sert pas
+    meta_p = racine / "meta" / "distrometa.json"
+    meta = json.loads(meta_p.read_text(encoding="utf-8"))
+    meta["meta"] = {}
+    meta_p.write_text(json.dumps(meta, indent=2), encoding="utf-8")
     nebula(neb, "generate", "server", SERVEUR, MINECRAFT, "--forge", FORGE)
     serveur = racine / "servers" / f"{SERVEUR}-{MINECRAFT}"
     if not serveur.is_dir():
@@ -96,6 +101,8 @@ def main():
         "version": args.version, "name": "HeraliZ", "description": "Survie façon DayZ sur Minecraft 1.20.1",
         "address": config["serverAddress"], "mainServer": True, "autoconnect": True,
     })
+    for exemple in ("icon", "discord"):
+        fiche["meta"].pop(exemple, None)
     fiche_p.write_text(json.dumps(fiche, indent=2, ensure_ascii=False), encoding="utf-8")
 
     # Nebula ouvre l'installeur de Forge en fenêtre et attend qu'on clique (impossible sur GitHub) : on l'installe
