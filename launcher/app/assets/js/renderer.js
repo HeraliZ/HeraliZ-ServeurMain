@@ -7,6 +7,7 @@
 const $ = id => document.getElementById(id)
 const api = window.heraliz
 const NOUVEAUTES = Array.isArray(window.HERALIZ_NOUVEAUTES) ? window.HERALIZ_NOUVEAUTES : []
+const PSEUDO = /^[A-Za-z0-9_]{3,16}$/
 const IMAGE = /^[\w-]+\.(jpg|png)$/
 const SPLASH_MIN_MS = 1800
 const ERREUR_VISIBLE_MS = 15000
@@ -46,7 +47,7 @@ function feedback(id, message, error = false) {
 
 function showScreen(name) {
     document.body.dataset.screen = name
-    if (name === 'identite') setTimeout(() => $(!$('code-champ').hidden ? 'code' : $('email').value ? 'password' : 'email').focus(), 450)
+    if (name === 'identite') setTimeout(() => $('username').focus(), 450)
 }
 
 function showTab(name) {
@@ -61,7 +62,7 @@ function splashStep(percent, text) {
 }
 
 function profileReady() {
-    return Boolean(state?.profile?.username && state.profile.rulesAccepted && (!state.comptesSite || state.profile.compte))
+    return Boolean(state?.profile?.username && state.profile.rulesAccepted)
 }
 
 /* Tête de survivant en pixels, purement décorative (le launcher ne connaît pas le skin du joueur). */
@@ -193,7 +194,7 @@ function renderProgress(progress) {
         span.classList.toggle('ok', actuelle >= 0 && i < actuelle)
         span.classList.toggle('cours', i === actuelle)
     }
-    for (const id of ['email', 'password', 'code', 'accept-rules', 'save-profile', 'site-account', 'logout', 'confirm-logout', 'memory', 'fullscreen', 'auto-connect']) $(id).disabled = progress.busy
+    for (const id of ['username', 'accept-rules', 'save-profile', 'change-profile', 'logout', 'confirm-logout', 'memory', 'fullscreen', 'auto-connect']) $(id).disabled = progress.busy
     $('settings-form').querySelector('[type=submit]').disabled = progress.busy
     updatePlay()
 }
@@ -215,20 +216,12 @@ function applyState(next) {
     renderProgress(state.progress)
 }
 
-/* Formulaire de connexion : le mot de passe et le code ne restent jamais affichés d'une fois sur l'autre. */
+/* Le formulaire du pseudo reprend le profil enregistré. */
 function restoreProfileForm() {
-    $('password').value = ''
-    $('code').value = ''
-    $('code-champ').hidden = true
-    afficherMotDePasse(false)
+    $('username').value = state?.profile?.username || ''
     $('accept-rules').checked = state?.profile?.rulesAccepted || false
-    feedback('profile-feedback', state && !state.comptesSite ? 'Les comptes HeraliZ ne sont pas encore ouverts.' : '')
-}
-
-function afficherMotDePasse(visible) {
-    $('password').type = visible ? 'text' : 'password'
-    $('password-toggle').classList.toggle('actif', visible)
-    $('password-toggle').setAttribute('aria-label', visible ? 'Cacher le mot de passe' : 'Afficher le mot de passe')
+    $('username-ok').hidden = !PSEUDO.test($('username').value)
+    feedback('profile-feedback', '')
 }
 
 async function refreshStatus() {
@@ -259,12 +252,15 @@ for (const zone of document.querySelectorAll('[data-regles]')) zone.append($('re
 $('profil-bouton').addEventListener('click', event => { event.stopPropagation(); basculerMenu() })
 document.addEventListener('click', event => { if (!$('menu-profil').hidden && !event.target.closest('.profil-zone')) fermerMenu() })
 document.addEventListener('keydown', event => { if (event.key === 'Escape') fermerMenu() })
+$('change-profile').addEventListener('click', () => { fermerMenu(); restoreProfileForm(); showScreen('identite') })
 $('identity-back').addEventListener('click', () => { restoreProfileForm(); showScreen('principal') })
 $('logout-dialog').addEventListener('close', () => feedback('logout-feedback', ''))
 $('settings-dialog').addEventListener('close', () => { feedback('settings-feedback', ''); ouvrirPanneau('jeu') })
 $('memory').addEventListener('input', afficherMemoire)
-$('password-toggle').addEventListener('click', () => afficherMotDePasse($('password').type === 'password'))
-for (const id of ['email', 'password', 'code']) $(id).addEventListener('input', () => feedback('profile-feedback', ''))
+$('username').addEventListener('input', () => {
+    $('username-ok').hidden = !PSEUDO.test($('username').value)
+    feedback('profile-feedback', '')
+})
 
 $('confirm-logout').addEventListener('click', async () => {
     $('confirm-logout').disabled = true
@@ -279,14 +275,9 @@ $('confirm-logout').addEventListener('click', async () => {
 
 $('profile-form').addEventListener('submit', async event => {
     event.preventDefault()
-    if (!$('email').value.trim() || !$('password').value) {
-        feedback('profile-feedback', 'Entre ton e-mail et ton mot de passe.', true)
-        $(!$('email').value.trim() ? 'email' : 'password').focus()
-        return
-    }
-    if (!$('code-champ').hidden && !$('code').value.trim()) {
-        feedback('profile-feedback', 'Entre le code de ton application de double authentification.', true)
-        $('code').focus()
+    if (!PSEUDO.test($('username').value)) {
+        feedback('profile-feedback', 'Le pseudo doit contenir 3 à 16 caractères : lettres, chiffres ou _.', true)
+        $('username').focus()
         return
     }
     if (!$('accept-rules').checked) {
@@ -294,17 +285,9 @@ $('profile-form').addEventListener('submit', async event => {
         return
     }
     $('save-profile').disabled = true
-    feedback('profile-feedback', 'Connexion à ton compte HeraliZ…')
     try {
-        const next = await call(api.connexion($('email').value.trim(), $('password').value, $('code-champ').hidden ? '' : $('code').value, true))
-        if (next.a2f) {
-            $('code-champ').hidden = false
-            feedback('profile-feedback', 'Entre le code de ton application de double authentification.')
-            $('code').focus()
-            return
-        }
-        applyState(next)
-        restoreProfileForm()
+        applyState(await call(api.saveProfile($('username').value, true)))
+        feedback('profile-feedback', '')
         showTab('accueil')
         showScreen('principal')
     } catch (error) { feedback('profile-feedback', error.message, true) }
@@ -333,11 +316,6 @@ $('play').addEventListener('click', async () => {
     catch (error) {
         launchPending = false
         renderProgress({ busy: false, phase: 'error', message: error.message, percent: null })
-        // Session expirée : le compte a été oublié, retour à la connexion.
-        if (state.comptesSite) {
-            const next = await call(api.getState()).catch(() => null)
-            if (next && !next.profile) { applyState(next); restoreProfileForm(); showScreen('identite'); toast(error.message) }
-        }
     }
     finally { launchPending = false; updatePlay() }
 })
@@ -356,13 +334,6 @@ async function init() {
             splashStep(35, 'Chargement du profil')
             applyState(await call(api.getState()))
             api.onProgress(renderProgress)
-            if (state.profile?.compte) {
-                splashStep(50, 'Vérification du compte')
-                // Un site lent ne doit pas bloquer le démarrage : le compte sera revérifié avant la partie.
-                const compte = await Promise.race([call(api.verifierCompte()).catch(() => null), wait(5000).then(() => null)])
-                if (compte) applyState(compte)
-                if (compte?.sessionExpiree) toast('Ta session a expiré : reconnecte-toi avec ton compte HeraliZ.')
-            }
             splashStep(70, 'Contact du serveur')
             // Un serveur lent ne doit pas bloquer le démarrage.
             await Promise.race([refreshStatus(), wait(4000)])

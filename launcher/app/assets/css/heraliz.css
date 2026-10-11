@@ -303,13 +303,6 @@ body[data-tab=accueil] .page-accueil, body[data-tab=reglement] .page-reglement, 
 .valider:disabled { filter: grayscale(.6) brightness(.7); }
 .formulaire .feedback { margin-top: 12px; text-align: center; }
 .formulaire .bas { text-align: center; font-size: 11.5px; color: var(--muted); margin-top: 14px; }
-.formulaire .bas.note { font-size: 10.5px; color: var(--faint); margin-top: 6px; }
-.formulaire .bas.note b { color: var(--muted); }
-.champ-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.lien.discret { font-size: 10.5px; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
-.lien.discret:hover { color: #fff; }
-.input .oeil { display: flex; align-items: center; padding: 4px; margin-right: -4px; color: var(--muted); }
-.input .oeil:hover, .input .oeil.actif { color: #fff; }
 .retour { display: block; margin: 10px auto 0; font-size: 11.5px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
 .retour:hover { color: #fff; }
 
