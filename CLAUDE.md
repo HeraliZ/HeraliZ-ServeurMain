@@ -329,8 +329,9 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   launcher (impossible de fabriquer un jeton sans le site). L'ancien secret GitHub `SPARTAN_LAUNCHER_SECRET` ne sert
   plus. Réglage `tokenRequired` (`serveur/config/spartan-common.toml`) : `false` = alerte seulement ; `true` =
   connexion REFUSÉE sans jeton valide (CurseForge, autre launcher, launcher 1.5.0 ou plus ancien, jeton expiré), même
-  en détection silencieuse. Ne le passer à `true` qu'après un essai réussi en jeu avec le launcher 1.6.0 ; la mise en
-  ligne refuse d'envoyer `true` si la clé n'a pas pu être lue sur le site. Vérifié (copie locale du site) : un jeton du
+  en détection silencieuse. **À `true` depuis le 11/10** (demande du propriétaire, serveur pas encore ouvert, avant tout
+  essai en jeu) : seul le launcher HeraliZ 1.6.0 ou plus récent peut entrer ; si le site est en panne, plus personne
+  n'entre. La mise en ligne refuse d'envoyer `true` si la clé n'a pas pu être lue sur le site. Vérifié (copie locale du site) : un jeton du
   site est accepté par le code Java de Spartan ; autre pseudo, autre clé ou plus de 6 h : refusé.
 - **Anti-duplication** (`check/item/AntiDupe`, section `[antidupe]`) : les objets de valeur NON empilables (`tacz:*`,
   `backpacked:*`, `heraliz_armory:*` par défaut) reçoivent un numéro unique invisible (donnée `spartan_uid`) quand ils
@@ -706,15 +707,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (`cgv`), Confidentialité (`confidentialite`) et Mentions légales (`mentions-legales`), que le pied de page affiche dès
   qu'elles existent. Comptes du launcher (création, connexion, double authentification) en place (section 8 bis).
   Ensuite : AzLink sur le Ptero (livraison des achats en jeu), mails (Brevo : code de confirmation à l'inscription,
-  code sur un nouveau PC), ticket signé du site pour Spartan (mode B). Un autre launcher que le nôtre peut encore
-  rejoindre le serveur tant que `tokenRequired` de Spartan reste à `false` : AuthMe protège alors le compte en jeu.
+  code sur un nouveau PC). Ticket signé du site pour Spartan (mode B) en place, `tokenRequired = true` depuis le 11/10 :
+  aucun autre launcher que le nôtre ne peut rejoindre le serveur ; AuthMe reste la barrière suivante.
 - **Launcher** : installateur Windows fabriqué par GitHub (section 8 ter), pas encore donné aux joueurs. Comptes du
   site (connexion, création, double authentification) branchés le 11/10 à la demande du propriétaire ; essayés contre
   une copie locale du site (création, connexion par e-mail et par pseudo, activation de la double authentification
   avec un vrai code), pas encore sur Windows ni avec un vrai téléphone. Jamais essayé de bout en bout (pack du site,
   Forge, connexion au serveur) : à faire par le propriétaire avant de le distribuer.
 - **Spartan** (08/10) : rien testé en jeu. Launcher : protections anti-injection branchées ; jeton signé par le site
-  (mode B) depuis le launcher 1.6.0, `tokenRequired` encore à `false` (à passer à `true` après un essai en jeu). Prévu
+  (mode B) depuis le launcher 1.6.0, `tokenRequired = true` depuis le 11/10 (jamais essayé en jeu). Prévu
   ensuite : détection de la visée assistée (aimbot) sur les tirs TaCZ (d'abord
   mesurer sans alerte), butin caché à travers les murs, protection du jar joueur contre la décompilation.
 
