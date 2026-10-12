@@ -131,7 +131,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
-| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json`), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
+| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
@@ -383,6 +383,8 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
 - Branchements HeraliZ (`mods/spartan/src/serveur/java/com/Spartan/serveur/compat/HeralizCompat.java`, par réflexion,
   sans dépendance) : alliés de l'anti-ESP = même équipe de match, même partie de zombies, sinon même clan ; voix de
   CaraCrea (un joueur caché qui parle est montré à ceux qui l'entendent). Si une de ces API change, ce fichier aussi.
+  Utils envoie en plus son propre test d'alliance par message IMC (`ally_predicate`) : deux passagers d'une même rame du
+  train (le train n'est pas fait de blocs, la ligne de vue « monde » coupait dans les tunnels et les gares).
 - **Launcher** (`launcher/`, Helios) : il charge les mods depuis son dossier (`common/modstore`, fournisseur Forge
   « maven libs », options `--fml.mavenRoots` / `--fml.modLists`) ; Spartan hache et juge chacun de ces jars comme ceux
   du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism`, retire les options d'injection du joueur et, depuis
@@ -872,9 +874,20 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - usure (12/10) : l'indicateur de l'arme en main est en bas à droite, sous le HUD de TaCZ (`HudUsure`, pastille de
   12 px) ; nouvel habillage au style des clans en attente du choix du propriétaire (maquettes A segments, B ligne
   sous les munitions, C anneau) ;
-- train (11/10) : un train qui roule heurte (2,5 cœurs, joueur projeté à côté) ; il ne tue que devant la locomotive ou
-  dans la voie, sous la caisse ; dans la voiture, les jambes bougent et on peut sauter (réseau du train version 4 :
-  jars joueurs et serveur de la même fabrication). La voie se corrige EN JEU, jamais dans les fichiers du monde (staff) :
+- train (11/10, 12/10) : un train qui roule heurte (2,5 cœurs, joueur projeté à côté) ; il ne tue que devant la locomotive ou
+  dans la voie, sous la caisse ; dans la voiture, on marche comme au sol dans Minecraft (élan, vitesse du joueur, course
+  vue des autres, bruits de pas, corps tourné dans le sens de la marche, arme de TaCZ qui balance) et on peut sauter ; on
+  s'allonge avec la touche « Ramper » de TaCZ (elle ou Espace pour se relever ; seulement si TaCZ permet de ramper) ; plus de
+  pose « assis sur une selle » avec une arme (mixins client sur l'animation de TaCZ). Les balles de TaCZ s'arrêtent sur la
+  caisse, les cloisons, les banquettes, les tablettes, les caisses du fourgon, le soufflet et la locomotive
+  (`train/Blindage`, `train/BallesTrain`, côté serveur) ; une vitre touchée casse et se répare au bout de 5 min (`/train
+  vitres`, `/train vitres reparer`) ; un passager se touche au même instant que les murs (ping compensé pour un tireur hors
+  du train ; mixin serveur sur `HitboxHelper` de TaCZ, config `heralisz_utils_serveur.mixins.json` dans `-serveur` et
+  `-complet`). Contre les « téléportations » : horloge du train lissée chez le joueur (le temps du monde, recalé chaque
+  seconde par le serveur, faisait reculer le train), voyageur annoncé avec son passager déjà assis dessus (sinon figé à la
+  porte au-delà de 64 blocs), autres passagers lissés sur 3 ticks, voyageurs d'une même rame jamais cachés l'un à l'autre
+  par l'anti-ESP de Spartan (message IMC `ally_predicate`). Réseau du train version 5 : jars joueurs et serveur de la même
+  fabrication. La voie se corrige EN JEU, jamais dans les fichiers du monde (staff) :
   `/train voie info` (point visé), `genre <p|r|t|T|P|x> [longueur]`, `retirer [longueur]`, `annuler`, `liste`,
   `effacer` (aspect seulement, le trajet ne bouge pas ; gardé dans les données du train du monde) ; `/train voie remplir
   [ponts|tout]` pose sous la voie dessinée un bloc invisible et incassable (`heralisz_utils:voie_pleine`) pour qu'on
@@ -911,6 +924,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : suivent l'ancienne carte, à refaire pour la
   nouvelle, en donnant sa valeur (niveau de loot) à chaque ville. Les statistiques par ville (captures, temps tenu)
   sont enregistrées mais pas encore affichées dans l'écran du clan (interface à valider d'abord).
+- **Loot dans le train** (souhaité, T1 à T4, T4 rare ; pas fait) : le train n'est pas fait de blocs, donc pas de
+  conteneur posé ; prévu : des emplacements fixes dans chaque voiture (coordonnées de la voiture, comme les banquettes),
+  tirés par HeraliZ Loot (paliers T1 à T4) et gardés par le serveur voiture par voiture (vidés à chaque tour de boucle),
+  ouverts par un paquet quand un passager vise l'emplacement (même fouille que les conteneurs de la carte), dessinés par
+  RameRendu.
 - **Bugs repérés, non corrigés** (attendre l'accord du propriétaire) :
   - Sylvorn : les attributs de `SapNode` ne sont pas déclarés (risque de plantage à l'attaque CHANNEL ; correction d'une
     ligne dans `HeraliszSylvorn.attributes`) ;
