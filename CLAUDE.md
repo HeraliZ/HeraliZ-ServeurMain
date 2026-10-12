@@ -130,8 +130,8 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
-| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) |
-| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules | train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json`), ascenseur, carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
+| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json`), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
@@ -283,6 +283,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `com.caracrea.api.voice.CaraCreaVoice` | caracrea (serveur) | voix : couper un joueur, portée, routage |
 | `fr.heralisz.tactical.api.HeraliszTacticalAPI` | tactique (commun) | index des objets tactiques |
 | `com.heraliz.extraction.api.ExtractionApi` | extraction (commun, rempli chez le joueur) | extractions ouvertes (`ouvertes()`, `version()`) pour la carte du monde |
+| `fr.heralisz.clans.api.CarteApi` (paquets `CarteDemandeC2S` / `CarteS2C`) | clansetbases (commun, rempli chez le joueur) | pour la carte du monde (lue par réflexion par utils) : `demander()` (au plus 1 par seconde), `zones()` (état public de chaque zone, celui du drapeau), `allies()` (membres de son clan dans le même monde, personne en match), `monClan()`, `version()`, `dessinerBanniere(...)`, `ravitailler(id)` |
 | `fr.heraliz.loot.client.RaretesClient.couleur(ItemStack)` | loot (client, lu par réflexion par dayzhotbar) | couleur de rareté d'un objet (0 : aucune) |
 | données persistantes du joueur `PlayerPersisted.HeralizBonusLoot.<source>` | lues par loot (serveur), écrites par clansetbases (`clan`) et utils (`objet`) | bonus de loot : `{Pct, Fin (heure en ms)}` ou `{Pct, Restant (ticks de jeu)}`, sources additionnées, plafond 25 % (`fr.heraliz.loot.BonusLoot`) |
 
@@ -705,6 +706,16 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     les blocs posés dans chaque monde du Ptero) : un bloc retiré qui est posé disparaît de la carte au chargement.
     Si le propriétaire fournit une nouvelle version d'un de ces mods pour la carte, la rapporter ici de la même façon (assembler avec ce
     qui a été fait ici entre-temps, fabriquer, vérifier). Rien de tout cela n'a été testé sur le serveur.
+- **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
+  1024 px au plus avec `carte.json`, dans `mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte/` (jar
+  joueur de HeraliZ Utils). Jamais dessiné à la main : refait par `python outils/carte_monde.py <copie du monde>
+  --installer` (LECTURE SEULE du monde ; numpy et Pillow ; environ 1 min pour 64 régions ; 1 à 4 blocs par pixel pour
+  tenir en 2048 px, environ 1,5 Mo par vue ; `--stats` liste les blocs du dessus et leur couleur), puis fabriquer
+  heralisz-utils. Le workflow « Inventaire de la carte » le refait aussi depuis le monde en service (paquet « fond-carte »,
+  7 jours, avec deux aperçus) : poser ses fichiers dans le dossier ci-dessus. Pas encore fait : l'écran montre « Carte en
+  préparation » tant qu'il manque (les fonds de l'ancienne carte ne sont pas mis). À refaire quand la carte est finie,
+  et seulement depuis une carte propre (une construction de joueur posée sur la carte apparaîtrait sur le fond ; les
+  blocs de CRac sont ignorés d'office) ; chaque version ajoute environ 3 Mo au dépôt pour toujours : la refaire rarement.
 
 ---
 
@@ -788,10 +799,25 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - sons (11/10) : MAtmos jouait le bruit de changement d'objet de chaque joueur visible, sans atténuation (sons stéréo) : dayzhotbar (`SonChangementObjet`) ne laisse entendre celui des autres qu'à 8 blocs au plus ;
 - accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;
 - logo de Max Stuff (11/10) : le petit « M » est retiré des icônes de ses accessoires, choix du propriétaire malgré la licence du pack (CC BY-NC-ND 4.0 : pas de version modifiée diffusée ; tous les gunpacks des autres auteurs ont la même licence, et NC à surveiller avec la boutique). Auteurs crédités dans `serveur/tacz/arkaniaz_pack_5_converted/CREDITS.txt`. D'autres logos restent sur des icônes d'armes (« Chill Deep » du pack arkaniaz_custom, « MIL », « CIB ») : pas touchés sans demande ;
-- touches (11/10) : une seule table des touches par défaut, appliquée chez le joueur par heraliz_interface (`client/Touches.java`) sans toucher aux jars des autres auteurs : pas de doublon (G = mode de tir de TaCZ, H = inspecter, Tab = liste des joueurs), Curios sur U, mode de la voix (chuchoter / parler / crier) sur X, touches inutiles cachées de l'écran des commandes ; une touche choisie par un joueur n'est jamais changée. Une touche de mod avec Maj, Ctrl ou Alt sur un bouton de souris prend tout ce bouton dès que le modificateur est enfoncé (Forge) : à ne jamais refaire ;
+- touches (11/10) : une seule table des touches par défaut, appliquée chez le joueur par heraliz_interface (`client/Touches.java`) sans toucher aux jars des autres auteurs : pas de doublon (G = mode de tir de TaCZ, H = inspecter, Tab = liste des joueurs), Curios sur U, mode de la voix (chuchoter / parler / crier) sur X, carte du monde sur la touche MARQUÉE « M » du clavier du joueur (12/10 ; sur AZERTY c'est la touche du « ; » d'un QWERTY, qui était « Couper mon micro » de CaraCrea : le micro passe alors sur la touche voisine marquée « , »), touches inutiles cachées de l'écran des commandes ; une touche choisie par un joueur n'est jamais changée. Une touche de mod avec Maj, Ctrl ou Alt sur un bouton de souris prend tout ce bouton dès que le modificateur est enfoncé (Forge) : à ne jamais refaire ;
 - sprint en un appui (12/10, heraliz_interface 1.7.0) : interrupteur dans le menu Échap ; c'est l'option « Sprint : Basculer / Maintenir » de Minecraft (Options > Commandes), enregistrée dans `options.txt` (`client/Sprint.java`). Activé : un appui sur la touche de sprint pour courir, un autre pour arrêter. En repassant à « Maintenir », la touche de sprint est relâchée (sinon le jeu la croirait encore enfoncée). Réglage du joueur, rien côté serveur ;
 - Armurerie : les combinaisons intégrales (Hazmat, froid, plongée) se portent seules (sac à dos permis) ;
 - Curios (12/10, Armurerie 0.13.0) : Maj + clic sur un objet Curios (gilet, gants, masque, genouillères, ghillie, brassard, sac à dos…) dans l'inventaire normal (E) = il part dans le premier slot Curios libre qui l'accepte, sans ouvrir le panneau Curios (mixin commun `InventoryCuriosQuickMoveMixin`, `curios/MajClicCurios`, rangement par le serveur dans `MajClicCuriosServeur` : l'objet est déplacé, pas copié ; son d'équipement). Mêmes règles que posé à la main dans le panneau Curios (validateurs, combinaisons). Une armure va d'abord dans son slot d'armure s'il est libre ; aucun slot libre ou objet refusé : Maj + clic normal (inventaire ↔ barre d'objets) ; en créatif : normal. Le panneau Curios ne s'ouvre pas tout seul avec l'inventaire : ce serait un autre écran, ouvert par le serveur à chaque appui sur E par un paquet interne de Curios (hors de son API), à la place de l'inventaire de base façon DayZ ;
+- carte du monde (12/10, maquettes validées : vues satellite et topographique, zoom sur une ville ; `heraliz_carte`
+  dans HeraliZ Utils 2.8.0) : touche M ; à gauche les calques à cocher (territoires des clans, zones d'extraction,
+  points d'intérêt, mon clan, pings du clan, grille de 500 m : colonnes A, B… et lignes 1, 2…), la liste des
+  territoires et leur état, son clan ; en haut à droite Satellite / Topographique ; fiche d'une zone au clic
+  (propriétaire, tenue depuis, protection, bonus de loot, niveau de loot, ravitaillement de son clan, rayon, distance ;
+  « Lancer le ravitaillement », que le serveur n'accepte qu'au drapeau comme avant, sinon « Marquer pour le clan ») ;
+  en bas coordonnées, carré, échelle et aide ; boussole. Souris : glisser, molette (zoom autour du curseur), Espace =
+  revenir sur soi. Jamais d'autres joueurs que les membres de son clan dans le même monde (envoyés par le serveur,
+  rien en match) ; les états des zones sont ceux que le drapeau montre à tous (capture en cours et clan qui capture
+  compris). Clic droit = ping du clan sur ce point (sans portée ni ligne de vue ; réglage `carte` de
+  `heraliz_ping-server.toml`, `/ping admin carte`), clic droit sur son propre ping = le retirer. Lieux nommés posés EN
+  JEU par le staff à l'endroit où il se tient : `/carte lieu ajouter <ville|village|aerodrome|militaire|centrale|usine|
+  port|hopital|gare|point> <nom>` (ailleurs : `/execute positioned X Y Z run carte lieu ajouter ...`), `/carte lieu
+  retirer <nom>`, `/carte lieu liste`, `/carte nom <nom>` (sous-titre « Monde · … ») ; gardés avec le monde
+  (`data/heraliz_carte_lieux.dat`, ils suivront la copie finale de la carte). Fond : section 9 ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
   du logo « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (« Bientôt »), trois nouveautés non cliquables
@@ -879,6 +905,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     ligne dans `HeraliszSylvorn.attributes`) ;
   - Tactique : le C4 posé disparaît au redémarrage du serveur ; le feu au sol des molotovs dure toujours 2 s ;
     l'éclaboussure des grenades à effet est limitée à 4 blocs.
+- **Carte du monde** (HeraliZ Utils 2.8.0, Clans 2.4.0, Interface 1.7.0) : fond pas encore fabriqué (attendre la
+  carte finie : workflow « Inventaire de la carte » ou `outils/carte_monde.py --installer`, section 9) ; lieux et nom
+  de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
+  territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
 - **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
   Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
