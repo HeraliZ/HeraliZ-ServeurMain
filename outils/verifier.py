@@ -14,6 +14,8 @@ Contrôles :
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
   - accessoires      : listes communes d'accessoires TaCZ à jour (gunpack heraliz_accessoires, outils/accessoires.py) ;
   - logos            : plus de logo « M » de Max Stuff sur les icônes d'accessoires (outils/icones_sans_logo.py) ;
+  - verif_accessoires : chaque accessoire TaCZ bien placé sur chaque arme qui l'accepte, ni flottant, ni traversant,
+                       ni invisible (outils/verif_accessoires.py ; défauts acceptés listés dans l'outil) ;
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
                        (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement) ;
   - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
@@ -167,6 +169,18 @@ def main():
                 print(l.strip())
         print("[logos] relancer : python outils/icones_sans_logo.py")
         erreurs += 1
+    # placement de chaque accessoire sur chaque arme (ni flottant, ni traversant, ni invisible) : un gunpack ajouté ou
+    # changé peut en déplacer. Calcul avec numpy et Pillow (textures) : sans eux, sauté comme les logos.
+    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+        print("[verif_accessoires] numpy ou Pillow absent : placement des accessoires non contrôlé (à faire sur un PC)")
+    else:
+        code, out = lancer([str(O / "verif_accessoires.py")])
+        if code != 0:
+            for l in out.splitlines():
+                if l.startswith("[verif_accessoires]") and "problème(s)" not in l:
+                    print(l.strip())
+            print("[verif_accessoires] détail et images : python outils/verif_accessoires.py --rapport --images")
+            erreurs += 1
     # trois langues : paramètres (%s...) et codes couleur identiques, sinon le joueur voit un texte cassé
     code, out = lancer([str(O / "verifier_langues.py")] + [p.name for p in choisis])
     for l in out.splitlines():

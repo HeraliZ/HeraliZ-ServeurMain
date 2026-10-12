@@ -220,7 +220,16 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   d'origine : chargeurs et munitions spéciales, accessoires faits pour une seule arme (tableau `PROPRES` : lunettes
   intégrées de l'AUG et du P90, montages latéraux d'AK, baïonnettes, canon du Deagle doré…), Wonder Weapons. Un
   emplacement fermé reste fermé : pour l'ouvrir, ajouter le type à `allow_attachment_types` de l'arme puis relancer
-  l'outil (`--rapport` liste les os sans emplacement et les emplacements sans os).
+  l'outil (`--rapport` liste les os sans emplacement et les emplacements sans os). Un accessoire qui flotte à côté
+  d'une arme ou la traverse en est retiré par le tableau `EXCLUS` de l'outil (l'arme reçoit alors la liste commune
+  écrite sans lui).
+- placement des accessoires TaCZ (12/10) : `python outils/verif_accessoires.py` pose par le calcul chaque accessoire
+  sur chaque arme qui l'accepte, exactement comme TaCZ 1.1.8 le dessine (os `<type>_pos`, pièces cachées, adaptateurs),
+  et mesure s'il flotte (écart de plus de 0,35 px), s'il traverse l'arme ou s'il est invisible (`verifier.py` le
+  lance ; `--rapport` détaille, `--images` fait des planches de contrôle vues de côté et de face). Un défaut se
+  corrige dans le modèle de l'arme (os `<type>_pos` déplacé, tube de crosse `ar_stock_adapter` ajouté), sinon
+  l'accessoire est retiré de l'arme (`EXCLUS`), sinon il est accepté avec sa raison (`ACCEPTES` de l'outil :
+  baïonnettes, silencieux à manchon, lunette d'époque du Springfield). Aucun essai en jeu : à confirmer à l'œil.
 - les icônes d'inventaire des armes TaCZ sont des photos 3D faites chez le joueur (`camo/client/IconesArmes` du mod
   tactique : modèle + skin, sans accessoires, 64 au plus en mémoire graphique, rien sur le disque ni le serveur) ; l'image
   `slot` du gunpack ne s'affiche qu'en attendant la photo ou si elle est impossible. Armes de profil, canon à droite ;
@@ -326,6 +335,8 @@ Les contrôles :
 - noms perso : aucun mot interdit dans les sources ni les jars ;
 - silencieux : chaque silencieux des gunpacks a sa portée de son (`outils/silencieux.py`).
 - accessoires : listes communes d'accessoires TaCZ à jour (`outils/accessoires.py`).
+- verif_accessoires : chaque accessoire TaCZ bien placé sur chaque arme qui l'accepte (`outils/verif_accessoires.py` ;
+  numpy et Pillow, sauté sans eux).
 - langues : textes français, anglais et russe avec les mêmes paramètres et codes couleur (`outils/verifier_langues.py`).
 
 **Où va quoi** (dossier `livraison/`, recréé à chaque fois) :
@@ -671,7 +682,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - **Un gunpack TaCZ (nouveau ou mis à jour)** : son dossier dans `serveur/tacz/`, puis `python outils/silencieux.py`
   (portée du son de ses silencieux, `verifier.py` le réclame), `python outils/accessoires.py` (ses accessoires dans
   les listes communes et les listes communes sur ses armes, `verifier.py` le réclame ; un accessoire fait pour une
-  seule de ses armes va dans `PROPRES` de l'outil), `python outils/icones_sans_contour.py` (retire le
+  seule de ses armes va dans `PROPRES` de l'outil), `python outils/verif_accessoires.py` (placement de chaque
+  accessoire sur chaque arme, `verifier.py` le réclame), `python outils/icones_sans_contour.py` (retire le
   contour noir de ses icônes d'inventaire) et `python outils/icones_sans_logo.py` (retire le logo « M » de Max Stuff,
   `verifier.py` le réclame). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
   redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur. Retirer un gunpack ou une arme du dépôt ne
