@@ -18,16 +18,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 /**
- * Petit indicateur de l'etat de l'arme EN MAIN, en bas a gauche de l'ecran (plus rien n'est dessine sur l'icone de
- * l'arme) : pastille de verre leger de 13 px de haut, point de la couleur de l'etat (vert neuf, vert-jaune bon, jaune
+ * Petit indicateur de l'etat de l'arme EN MAIN, en bas a droite de l'ecran (plus rien n'est dessine sur l'icone de
+ * l'arme) : pastille de verre leger de 12 px de haut, point de la couleur de l'etat (vert neuf, vert-jaune bon, jaune
  * use, orange abime, rouge ruinee : {@link Etat#couleur}), etat en petites capitales espacees, pourcentage, jauge fine
- * dessous (avec, en rouge sombre, la part d'etat perdue aux reparations).
- * <p>Place, pour ne rien recouvrir : bord gauche a 4 px, bas de la pastille a h-28, donc juste au-dessus du micro et du
- * haut-parleur barre de CaraCrea (de h-26 a h-6) et sous la derniere ligne du chat (qui finit a h-40) ; largeur bornee
- * pour ne jamais toucher les coeurs (a partir de w/2-91) : si la place manque (ecran etroit, nom d'etat long en russe),
- * le nom de l'etat est omis. La case de seconde main de la barre DayZ est plus bas (a partir de h-22) ; le HUD de TaCZ
- * (munitions) reste seul en bas a droite. En match et en zombies, les armes pretees ne s'usent pas : rien ne s'affiche
- * (la carte du joueur des zombies occupe ce coin).
+ * dessous (avec, en rouge sombre, la part d'etat perdue aux reparations). Textes a 85 % de la petite police.
+ * <p>Place, pour ne rien recouvrir : bord droit a 8 px (comme l'indicateur « en combat » des matchs), bas de la pastille
+ * a h-6, donc SOUS le HUD de TaCZ (munitions, mode de tir, icone de l'arme : de h-44 a h-25) et loin de l'indicateur
+ * « en combat » (au-dessus de TaCZ, de h-69 a h-50) ; largeur bornee pour ne jamais toucher la barre d'objets DayZ
+ * (centree en bas, case de seconde main et jauge comprises : jusqu'a w/2+{@value #BARRE}) : si la place manque (ecran
+ * etroit, nom d'etat long en russe), le nom de l'etat est omis. Le micro de CaraCrea reste seul en bas a gauche. En
+ * match et en zombies, les armes pretees ne s'usent pas : rien ne s'affiche.
  * <p>Arme ruinee : toujours affichee (alerte), pastille teintee de rouge, contour rouge qui clignote au clic a vide ; les
  * autres etats suivent le reglage du joueur ({@link ClientConfig#HUD}) et du serveur ({@code hudAutorise}). Masque avec
  * F1, F3 et en spectateur. Textes et largeurs en cache : une image n'alloue rien de plus que le rendu vanilla des glyphes.
@@ -36,12 +36,17 @@ public final class HudUsure {
     private HudUsure() {
     }
 
-    /** Hauteur de la pastille, marge interieure, bord gauche, ecart entre le bas de la pastille et le bas de l'ecran. */
-    static final int HAUTEUR = 13, PAD = 5, X = 4, BAS = 28;
+    /** Hauteur de la pastille, marge interieure, ecart au bord droit, ecart entre le bas de la pastille et le bas de l'ecran. */
+    static final int HAUTEUR = 12, PAD = 4, DROITE = 8, BAS = 6;
     /** Point d'etat (cote) et ecarts point / nom / pourcentage. */
-    private static final int POINT = 4, ECART_POINT = 4, ECART_PCT = 5;
-    /** Bord gauche des coeurs vanilla (w/2 - 91) et espace garde avec eux. */
-    private static final int COEURS = 91, ECART_COEURS = 4;
+    private static final int POINT = 3, ECART_POINT = 3, ECART_PCT = 4;
+    /** Taille des textes (petite police a 85 %). */
+    private static final float TEXTE = 0.85f;
+    /**
+     * Demi-largeur gardee libre au milieu du bas de l'ecran : barre d'objets DayZ (9 cases de 20 px et leurs ecarts, case
+     * de seconde main a 10 px, jauge d'attaque, inclinaison), avec une marge.
+     */
+    private static final int BARRE = 134;
     /** Opacite du verre (plus leger que les ecrans : 200). */
     private static final int VERRE = 150;
 
@@ -73,17 +78,17 @@ public final class HudUsure {
         if (etat != pctMontre) {
             pctMontre = etat;
             pctTexte = Ui.lit(Reparation.pct(etat), Ui.SMALL);
-            pctLargeur = font.width(pctTexte);
+            pctLargeur = (int) Math.ceil(font.width(pctTexte) * TEXTE);
         }
         TITRE.texte(NOMS_ETATS[st.ordinal()]);
 
-        // largeur : point, nom de l'etat, pourcentage ; sans le nom si la pastille toucherait les coeurs
-        int place = w / 2 - COEURS - ECART_COEURS - X;
+        // largeur : point, nom de l'etat, pourcentage ; sans le nom si la pastille toucherait la barre d'objets
+        int place = w - DROITE - (w / 2 + BARRE);
         int sansNom = PAD + POINT + ECART_POINT + pctLargeur + PAD;
-        int avecNom = sansNom + (int) Math.ceil(TITRE.largeur()) + ECART_PCT;
+        int avecNom = sansNom + (int) Math.ceil(TITRE.largeur() * TEXTE) + ECART_PCT;
         boolean nom = avecNom <= place;
         int lw = nom ? avecNom : sansNom;
-        int x = X, y = h - BAS - HAUTEUR;
+        int x = w - DROITE - lw, y = h - BAS - HAUTEUR;
         int couleur = st.couleur;
 
         Ui.glass(g, x, y, lw, HAUTEUR, VERRE);
@@ -96,11 +101,15 @@ public final class HudUsure {
                 Ui.softOutline(g, x + 1, y + 1, lw - 2, HAUTEUR - 2, Ui.argb(Ui.DANGER, (int) (200 * f)));
             }
         }
-        Ui.soft(g, x + PAD, y + 3, POINT, POINT, Ui.argb(couleur, 255));
-        int tx = x + PAD + POINT + ECART_POINT;
-        if (nom) TITRE.dessiner(g, tx, y + 2, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.45f), 255));
+        Ui.soft(g, x + PAD, y + 4, POINT, POINT, Ui.argb(couleur, 255));
+        // textes a 85 % : nom de l'etat apres le point, pourcentage cale a droite
         int couleurPct = ruinee ? Ui.mix(Ui.DANGER, 0xFFFFFF, 0.3f) : Ui.TEXT;
-        g.drawString(font, pctTexte, x + lw - PAD - pctLargeur, y + 2, Ui.argb(couleurPct, 255), false);
+        g.pose().pushPose();
+        g.pose().translate(x, y + 2, 0);
+        g.pose().scale(TEXTE, TEXTE, 1);
+        if (nom) TITRE.dessiner(g, (PAD + POINT + ECART_POINT) / TEXTE, 0, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.45f), 255));
+        g.drawString(font, pctTexte, Math.round((lw - PAD - pctLargeur) / TEXTE), 0, Ui.argb(couleurPct, 255), false);
+        g.pose().popPose();
 
         // jauge fine : etat, et la part perdue aux reparations en rouge sombre
         int bx = x + PAD, bw = lw - 2 * PAD, by = y + HAUTEUR - 3;

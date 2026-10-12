@@ -18,7 +18,7 @@ public final class ClientConfig {
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
-        HUD = b.comment("Petit indicateur de l'etat de l'arme en main, en bas a gauche de l'ecran : TOUJOURS, SI_USEE (pas quand elle est neuve) ou JAMAIS.",
+        HUD = b.comment("Petit indicateur de l'etat de l'arme en main, en bas a droite de l'ecran : TOUJOURS, SI_USEE (pas quand elle est neuve) ou JAMAIS.",
                 "L'alerte « ruinee » reste toujours affichee.").defineEnum("hud", ModeHud.TOUJOURS);
         SPEC = b.build();
     }

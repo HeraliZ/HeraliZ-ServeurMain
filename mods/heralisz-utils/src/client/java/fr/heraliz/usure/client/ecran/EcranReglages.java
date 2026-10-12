@@ -10,7 +10,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
-/** Reglages du joueur (liste des mods, bouton « Config ») : petit indicateur de l'arme en main, en bas a gauche. */
+/** Reglages du joueur (liste des mods, bouton « Config ») : petit indicateur de l'arme en main, en bas a droite. */
 public class EcranReglages extends Screen {
     private final Screen parent;
     private int px, py, pw, ph;
