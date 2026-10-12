@@ -223,7 +223,10 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   l'outil (`--rapport` liste les os sans emplacement et les emplacements sans os).
 - les icônes d'inventaire des armes TaCZ sont des photos 3D faites chez le joueur (`camo/client/IconesArmes` du mod
   tactique : modèle + skin, sans accessoires, 64 au plus en mémoire graphique, rien sur le disque ni le serveur) ; l'image
-  `slot` du gunpack ne s'affiche qu'en attendant la photo ou si elle est impossible.
+  `slot` du gunpack ne s'affiche qu'en attendant la photo ou si elle est impossible. Armes de profil, canon à droite ;
+  couteaux modélisés couchés (lame le long de X, très minces le long de Z : « Knife » CT et T, « M9 Bayonet » et ses
+  skins) photographiés à plat, pointe en haut à gauche comme leurs icônes dessinées (2.12.0 ; avant, on les voyait par
+  le bout). Seule l'icône change, pas l'arme en main.
 - l'écran de modification des armes TaCZ est remplacé chez le joueur par l'**Atelier d'arme** (`camo/client/atelier` du
   mod tactique, sous-classe de `GunRefitScreen` pour que TaCZ le reconnaisse) : onglets Accessoires, Camo, Personnaliser.
   Poses et retraits par les paquets de TaCZ, camos et stickers par les nôtres. S'il plante, l'écran de TaCZ (avec les

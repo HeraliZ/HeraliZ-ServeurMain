@@ -59,7 +59,8 @@ import java.util.Set;
 
 /**
  * Icônes 3D des armes dans l'inventaire, à la place de l'image dessinée du gunpack : l'arme est « photographiée » une fois,
- * de profil et penchée comme les icônes dessinées, avec son skin (camo, finition de lame) mais sans ses accessoires, dans
+ * de profil (couteaux modélisés couchés : à plat, voir {@link #orientation}) et penchée comme les icônes dessinées, avec son
+ * skin (camo, finition de lame) mais sans ses accessoires, dans
  * une petite texture gardée en mémoire graphique. L'inventaire affiche ensuite cette image comme l'icône d'origine (même
  * place, même coût). Réglages validés sur les aperçus hors jeu (outils/apercu_camos, vue « icone »).
  * <p>
@@ -83,6 +84,8 @@ public final class IconesArmes {
    private static final float MARGE = 0.03F;
    /** Arme placée loin devant : regard presque parallèle, reflets des camos comme sur l'aperçu validé. */
    private static final float LOIN = 50.0F;
+   /** Couteau couché : au moins 2 fois plus étendu le long de sa lame que dans son épaisseur (écarts des sommets). */
+   private static final float A_PLAT = 2.0F;
 
    /** Ce qui donne son aspect à l'icône : l'arme, son modèle d'affichage et son skin (camo ou finition de lame). */
    private record Cle(ResourceLocation arme, ResourceLocation affichage, @Nullable Object skin) {}
@@ -246,9 +249,8 @@ public final class IconesArmes {
             ECHECS.add(cle);
             return;
          }
-         // 2. orientation : canon vers la droite (côté droit de l'arme face à nous), puis l'arme penchée
-         float lacet = canonVersPlusZ(modele, releve) ? 90.0F : -90.0F;
-         Quaternionf rot = new Quaternionf(Axis.ZP.rotationDegrees(ROULIS)).mul(Axis.YP.rotationDegrees(lacet));
+         // 2. orientation : canon vers la droite (côté droit de l'arme face à nous) ou couteau à plat, puis l'arme penchée
+         Quaternionf rot = new Quaternionf(Axis.ZP.rotationDegrees(ROULIS)).mul(orientation(modele, releve));
          // 3. photo, réduction, rangement
          ranger(cle, photo(modele, stack, type, rot, releve.bornes(rot)));
       } catch (RuntimeException e) {
@@ -258,6 +260,36 @@ public final class IconesArmes {
             LOG.warn("Icône 3D impossible pour {} : l'icône dessinée du gunpack reste affichée", cle.arme(), e);
          }
       }
+   }
+
+   /**
+    * Orientation de l'arme, avant de la pencher.
+    * <ul>
+    *    <li>Armes (canon le long de Z, comme toutes celles de TaCZ) : de profil, canon vers la droite (inchangé).</li>
+    *    <li>Couteaux modélisés couchés : lame le long de X (ou de Y), plat de la lame face à Z, donc très minces le long de
+    *    Z (« Knife » CT et T, « M9 Bayonet » et ses skins). Vus de profil comme une arme, on les voyait par le bout ou par
+    *    la tranche, presque invisibles : ils sont photographiés à plat, lame à gauche et manche à droite, ce qui donne
+    *    une fois penché la pointe en haut à gauche, comme les icônes dessinées de leurs gunpacks. Le manche est la moitié
+    *    la plus épaisse (une lame est plus mince que sa poignée).</li>
+    * </ul>
+    * Seuls ces modèles changent : vérifié sur les 170 modèles d'armes des gunpacks du dépôt (12/10), aucun autre n'est
+    * plus mince le long de Z que le long de X et de Y.
+    */
+   private static Quaternionf orientation(BedrockGunModel modele, Cadre releve) {
+      float[] e = releve.ecarts();
+      if (e[2] < e[0] && e[2] < e[1] && Math.max(e[0], e[1]) >= A_PLAT * e[2]) {
+         int axeLong = e[0] >= e[1] ? 0 : 1;
+         boolean manchePlus = releve.plusEpaisCotePlus(axeLong);
+         if (axeLong == 0) {
+            // lame le long de X : manche du côté +X déjà à droite ; sinon demi-tour autour de Y (le haut reste en haut)
+            return manchePlus ? new Quaternionf() : Axis.YP.rotationDegrees(180.0F);
+         }
+         // lame le long de Y : quart de tour autour de Z (X -> haut, Y -> gauche), puis demi-tour si le manche est en +Y
+         Quaternionf quart = Axis.ZP.rotationDegrees(90.0F);
+         return manchePlus ? new Quaternionf(Axis.YP.rotationDegrees(180.0F)).mul(quart) : quart;
+      }
+      float lacet = canonVersPlusZ(modele, releve) ? 90.0F : -90.0F;
+      return Axis.YP.rotationDegrees(lacet);
    }
 
    /** Vrai si la bouche du canon est du côté +Z (les armes TaCZ pointent vers -Z, mais un modèle peut faire autrement). */
@@ -459,6 +491,54 @@ public final class IconesArmes {
          p[3 * n + 1] = y;
          p[3 * n + 2] = z;
          n++;
+      }
+
+      /** Écart type des sommets le long de X, Y et Z : l'étendue de l'arme dans chaque sens. */
+      float[] ecarts() {
+         double[] somme = new double[3];
+         double[] carres = new double[3];
+         for (int i = 0; i < n; i++) {
+            for (int a = 0; a < 3; a++) {
+               double v = p[3 * i + a];
+               somme[a] += v;
+               carres[a] += v * v;
+            }
+         }
+         float[] e = new float[3];
+         for (int a = 0; a < 3; a++) {
+            e[a] = (float) Math.sqrt(variance(somme[a], carres[a], n));
+         }
+         return e;
+      }
+
+      /** Vrai si la moitié « + » de l'axe donné (au-delà du milieu de la boîte) est la plus épaisse le long de Z. */
+      boolean plusEpaisCotePlus(int axe) {
+         float min = Float.MAX_VALUE;
+         float max = -Float.MAX_VALUE;
+         for (int i = 0; i < n; i++) {
+            min = Math.min(min, p[3 * i + axe]);
+            max = Math.max(max, p[3 * i + axe]);
+         }
+         float milieu = (min + max) / 2;
+         double[] somme = new double[2];
+         double[] carres = new double[2];
+         int[] nombre = new int[2];
+         for (int i = 0; i < n; i++) {
+            int moitie = p[3 * i + axe] >= milieu ? 1 : 0;
+            double z = p[3 * i + 2];
+            somme[moitie] += z;
+            carres[moitie] += z * z;
+            nombre[moitie]++;
+         }
+         return variance(somme[1], carres[1], nombre[1]) > variance(somme[0], carres[0], nombre[0]);
+      }
+
+      private static double variance(double somme, double carres, int nombre) {
+         if (nombre == 0) {
+            return 0.0;
+         }
+         double moyenne = somme / nombre;
+         return Math.max(0.0, carres / nombre - moyenne * moyenne);
       }
 
       /** Boîte des sommets tournés par rot : x0, y0, z0, x1, y1, z1. */
