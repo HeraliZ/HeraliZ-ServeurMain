@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/slab_top",
- "textures": {
-  "bottom": "heraliz_decors:block/roche_sombre",
-  "top": "heraliz_decors:block/roche_sombre",
-  "side": "heraliz_decors:block/roche_sombre"
- }
-}

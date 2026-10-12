@@ -1,11 +1,12 @@
 {
   "name": "heraliz-launcher",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "productName": "HeraliZ Launcher",
   "description": "Launcher HeraliZ — survie Minecraft DayZ",
   "author": "Daniel Scalzi (https://github.com/dscalzi/)",
   "license": "UNLICENSED",
-  "homepage": "https://github.com/HeraliZ/HeraliZ-ServeurMain",
+  "homepage": "https://heraliz.fr",
+  "desktopName": "heraliz-launcher.desktop",
   "bugs": {
     "url": "https://github.com/HeraliZ/HeraliZ-ServeurMain/issues"
   },

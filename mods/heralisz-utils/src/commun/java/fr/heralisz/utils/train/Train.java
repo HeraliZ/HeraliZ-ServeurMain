@@ -24,12 +24,15 @@ import net.minecraftforge.registries.RegistryObject;
  * Le train de HeraliZ, côté commun : il ne roule que dans un monde qui le demande (données « heralisz_train » du
  * monde principal, écrites par la map : actif + décalage de l'horaire), et le serveur l'annonce à chaque joueur qui se
  * connecte. Le reste (position, portes, panneaux) se calcule des deux côtés à partir du temps du monde (Horaire).
- * Commandes (op) : /train info, /train actif <oui|non>, /train decalage <secondes> (avancer l'horaire, pour les essais).
- * Jar fusionné : ici les registres, le canal et ses paquets (numéros, ordre et version inchangés) ; la logique serveur
- * (données du monde, annonce, commandes, descentes forcées) est dans TrainServeur (src/serveur).
+ * Commandes (op) : /train info, /train actif <oui|non>, /train decalage <secondes> (avancer l'horaire, pour les essais),
+ * /train voie ... (retouches de la voie dessinée, collision des ponts : VoieServeur).
+ * Jar fusionné : ici les registres, le canal et ses paquets (numéros et ordre inchangés ; un paquet de plus et version 4
+ * le 11/10) ; la logique serveur (données du monde, annonce, commandes, descentes forcées) est dans TrainServeur
+ * (src/serveur).
  */
 public final class Train {
-    private static final String PROTO = "3";                  // 3 : réseau choisi par le monde, deux rames (09/10)
+    private static final String PROTO = "4";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
+                                                              // 4 : saut dans la voiture, retouches de la voie (11/10)
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "train"),
             () -> PROTO, PROTO::equals, PROTO::equals);
 
@@ -50,8 +53,11 @@ public final class Train {
     public static final RegistryObject<EntityType<Voyageur>> VOYAGEUR = ENTITES.register("voyageur",
             () -> EntityType.Builder.<Voyageur>of(VOYAGEUR_USINE, MobCategory.MISC).sized(0.2f, 0.2f).noSummon().noSave().fireImmune()
                     .clientTrackingRange(10).updateInterval(1).build("voyageur"));
+    /** Voie pleine : collision invisible sous la voie dessinée (ponts), posée par /train voie remplir. Sans objet. */
+    public static final RegistryObject<net.minecraft.world.level.block.Block> VOIE_PLEINE = BLOCS.register("voie_pleine",
+            () -> new VoiePleineBlock(VoiePleineBlock.proprietes()));
 
-    /** Paquets serveur -> client reçus (Annonce, Recadrer) : traités par la partie client (TrainClient.recevoir). */
+    /** Paquets serveur -> client reçus (Annonce, Recadrer, Voie) : traités par la partie client (TrainClient.recevoir). */
     public static final Crochet<Object> RECEPTION_CLIENT = new Crochet<>();
     /** Paquets client -> serveur reçus (Marche, Descente) : traités par la partie serveur (TrainServeur.recevoir). */
     public static final Crochet<Recu> RECEPTION_SERVEUR = new Crochet<>();
@@ -61,17 +67,19 @@ public final class Train {
 
     private Train() {}
 
-    /** Position d'un voyageur dans sa voiture (client -> serveur ; serveur -> client pour recadrer). */
-    public record Marche(int vehicule, float lx, float lz, boolean assis) {
+    /** Position d'un voyageur dans sa voiture (client -> serveur) : voiture, lx, lz, assis, hauteur du saut au-dessus du
+     *  plancher (0 : les pieds au plancher ; vérifiée par le serveur, VoyageursServeur.marche). */
+    public record Marche(int vehicule, float lx, float lz, boolean assis, float hauteur) {
         void ecrire(FriendlyByteBuf b) {
             b.writeVarInt(vehicule);
             b.writeFloat(lx);
             b.writeFloat(lz);
             b.writeBoolean(assis);
+            b.writeFloat(hauteur);
         }
 
         static Marche lire(FriendlyByteBuf b) {
-            return new Marche(b.readVarInt(), b.readFloat(), b.readFloat(), b.readBoolean());
+            return new Marche(b.readVarInt(), b.readFloat(), b.readFloat(), b.readBoolean(), b.readFloat());
         }
     }
 
@@ -94,6 +102,18 @@ public final class Train {
 
         static Recadrer lire(FriendlyByteBuf b) {
             return new Recadrer(b.readVarInt(), b.readFloat(), b.readFloat());
+        }
+    }
+
+    /** Retouches de la voie dessinée (/train voie) pour le réseau nommé : envoyées à la connexion et à chaque changement. */
+    public record Voie(String reseau, java.util.List<Retouches.Retouche> retouches) {
+        void ecrire(FriendlyByteBuf b) {
+            b.writeUtf(reseau);
+            Retouches.ecrire(b, retouches);
+        }
+
+        static Voie lire(FriendlyByteBuf b) {
+            return new Voie(b.readUtf(), Retouches.lire(b));
         }
     }
 
@@ -145,6 +165,10 @@ public final class Train {
             });
             ctx.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CANAL.registerMessage(4, Voie.class, Voie::ecrire, Voie::lire, (m, ctx) -> {
+            ctx.get().enqueueWork(() -> RECEPTION_CLIENT.accept(m));
+            ctx.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         // écouteurs serveur (connexion, commandes, tick du monde, descentes forcées...) : TrainServeur.init (partie serveur).
         // Restent ici, des deux côtés comme à l'origine : à bord, rien n'est cassé, posé ni utilisé (le client n'essaie
         // même pas : pas de geste prédit qu'il faudrait corriger).

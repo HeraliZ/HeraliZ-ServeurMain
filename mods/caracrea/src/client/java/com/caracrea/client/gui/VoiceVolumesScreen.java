@@ -23,7 +23,8 @@ import java.util.UUID;
 
 /**
  * The volume of each player's voice for you (0 to 200 %), and a button to silence someone completely. Kept on your
- * computer, across sessions. HeraliZ interface style.
+ * computer, across sessions. HeraliZ interface style. C'est le menu vocal (touche « menu vocal », « ) » en AZERTY) :
+ * ouvert depuis la touche, il a aussi un bouton vers les réglages complets du chat vocal.
  */
 public class VoiceVolumesScreen extends Screen {
     private static final int ROW = 24;
@@ -57,6 +58,11 @@ public class VoiceVolumesScreen extends Screen {
         py = (height - ph) / 2;
         listY = py + 48;
         listH = py + ph - 40 - listY;
+        if (parent == null) {
+            // Ouvert par la touche du menu vocal : les réglages complets (micro, son, réseau...) sont à un clic.
+            addRenderableWidget(new HzButton(px + Ui.MARGE, py + ph - 28, 100, 18, Component.translatable("caracrea.voice.settings.open"),
+                    Ui.accent(), () -> minecraft.setScreen(new VoiceSettingsScreen(this))));
+        }
         addRenderableWidget(new HzButton(px + pw - Ui.MARGE - 100, py + ph - 28, 100, 18, Component.translatable("gui.done"), Ui.accent(),
                 this::onClose).look(HzButton.Look.PRIMARY));
     }

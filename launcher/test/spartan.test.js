@@ -45,6 +45,11 @@ test('jeton : celui signé par le site passe tel quel au jeu par l’environneme
     }
 })
 
+test('Linux et Mac : aucune bibliothèque native imposée au jeu par l’environnement', () => {
+    const base = { HOME: '/home/x', LD_PRELOAD: '/tmp/triche.so', LD_AUDIT: '/tmp/audit.so', DYLD_INSERT_LIBRARIES: '/tmp/x.dylib', LD_LIBRARY_PATH: '/opt/gpu/lib' }
+    assert.deepStrictEqual(environnementJeu(undefined, base), { HOME: '/home/x', LD_LIBRARY_PATH: '/opt/gpu/lib' })
+})
+
 test('environnement du jeu : sans les variables d’injection de Java ni jeton hérité, le reste gardé', () => {
     const base = {
         Path: 'C:\\Windows', SystemRoot: 'C:\\Windows', JAVA_TOOL_OPTIONS: '-javaagent:triche.jar',

@@ -38,8 +38,10 @@ public final class CaraCreaNetwork {
     public static final Crochet<Recu> RECEPTION_SERVEUR = new Crochet<>();
 
     // 4 (1.0.1): CloseCreator added. 5 (1.1.0): voice over UDP (session key in VoiceConfig), voice numbers, flags,
-    // positions, OpenVoiceSettings.
-    private static final String PROTOCOL = "5";
+    // positions, OpenVoiceSettings. 6 (1.5.0) : mode de voix (chuchoter / parler / crier, drapeau F_SHOUT), portée du cri
+    // dans VoiceConfig, « couper tout le monde » dans VoiceStateUp. Un client d'une autre version est refusé à la
+    // connexion par Forge (canal incompatible) au lieu de mal lire ces paquets.
+    private static final String PROTOCOL = "6";
 
     /** Name of the channel: {@code server.VoiceInbound} recognises the voice frames by it. */
     public static final ResourceLocation NAME = new ResourceLocation(CaraCrea.MOD_ID, "main");
@@ -183,7 +185,10 @@ public final class CaraCreaNetwork {
         }
     }
 
-    /** Client to server: the player pressed the key to open the creator. */
+    /**
+     * Client to server: the player pressed the key to open the creator. Plus envoyé par le jeu des joueurs depuis la
+     * 1.5 (touche retirée : {@code /caracrea} ou {@code /perso}) ; le serveur l'accepte toujours.
+     */
     public record RequestCreator() {
         void encode(FriendlyByteBuf buf) {
         }
@@ -201,19 +206,20 @@ public final class CaraCreaNetwork {
 
     /**
      * Server to client, on joining (and whenever the voice chat is switched on or off): whether the built-in voice chat
-     * runs, its ranges, the Opus bit rate, and the dedicated UDP channel: port (0 = none), host to use (empty = the
+     * runs, its ranges (normal, whisper, shout), the Opus bit rate, and the dedicated UDP channel: port (0 = none), host to use (empty = the
      * server's address), the session id and key this player's voice packets are encrypted with, and its voice number.
      */
-    public record VoiceConfig(boolean enabled, float range, float whisperRange, boolean groups, boolean recording, int bitrate,
-                              int udpPort, String udpHost, long session, byte[] key, int voiceId) {
+    public record VoiceConfig(boolean enabled, float range, float whisperRange, float shoutRange, boolean groups, boolean recording,
+                              int bitrate, int udpPort, String udpHost, long session, byte[] key, int voiceId) {
         public static VoiceConfig off() {
-            return new VoiceConfig(false, 48, 24, false, false, 24000, 0, "", 0, new byte[32], 0);
+            return new VoiceConfig(false, 48, 24, 96, false, false, 24000, 0, "", 0, new byte[32], 0);
         }
 
         void encode(FriendlyByteBuf buf) {
             buf.writeBoolean(enabled);
             buf.writeFloat(range);
             buf.writeFloat(whisperRange);
+            buf.writeFloat(shoutRange);
             buf.writeBoolean(groups);
             buf.writeBoolean(recording);
             buf.writeVarInt(bitrate);
@@ -228,6 +234,7 @@ public final class CaraCreaNetwork {
             boolean enabled = buf.readBoolean();
             float range = buf.readFloat();
             float whisper = buf.readFloat();
+            float shout = buf.readFloat();
             boolean groups = buf.readBoolean();
             boolean recording = buf.readBoolean();
             int bitrate = buf.readVarInt();
@@ -236,7 +243,7 @@ public final class CaraCreaNetwork {
             long session = buf.readLong();
             byte[] key = new byte[32];
             buf.readBytes(key);
-            return new VoiceConfig(enabled, range, whisper, groups, recording, bitrate, port, host, session, key, buf.readVarInt());
+            return new VoiceConfig(enabled, range, whisper, shout, groups, recording, bitrate, port, host, session, key, buf.readVarInt());
         }
 
         void handle(Supplier<NetworkEvent.Context> context) {
@@ -246,8 +253,8 @@ public final class CaraCreaNetwork {
     }
 
     /**
-     * Client to server, when UDP is not usable: 20 ms of the player's voice (Opus). {@code flags}: whisper, end of
-     * sentence ({@code VoiceProtocol.UP_FLAGS}). Read on the network thread ({@code server.VoiceInbound}).
+     * Client to server, when UDP is not usable: 20 ms of the player's voice (Opus). {@code flags}: whisper or shout, end
+     * of sentence ({@code VoiceProtocol.UP_FLAGS}). Read on the network thread ({@code server.VoiceInbound}).
      */
     public record VoiceUp(int sequence, int flags, byte[] data) {
         void encode(FriendlyByteBuf buf) {
@@ -298,18 +305,20 @@ public final class CaraCreaNetwork {
 
     /**
      * Client to server: the player's own voice state: voice chat turned off (hears no one, is not heard), microphone
-     * muted (shown to the others), and whether the UDP channel works for it (otherwise voices come through the game
-     * connection).
+     * muted (shown to the others), everyone muted ({@code deafened} : il n'entend plus aucune voix, le serveur ne lui en
+     * envoie plus, mais les autres l'entendent toujours), and whether the UDP channel works for it (otherwise voices come
+     * through the game connection).
      */
-    public record VoiceStateUp(boolean disabled, boolean muted, boolean udp) {
+    public record VoiceStateUp(boolean disabled, boolean muted, boolean deafened, boolean udp) {
         void encode(FriendlyByteBuf buf) {
             buf.writeBoolean(disabled);
             buf.writeBoolean(muted);
+            buf.writeBoolean(deafened);
             buf.writeBoolean(udp);
         }
 
         static VoiceStateUp decode(FriendlyByteBuf buf) {
-            return new VoiceStateUp(buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
+            return new VoiceStateUp(buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean());
         }
 
         void handle(Supplier<NetworkEvent.Context> context) {

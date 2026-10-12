@@ -45,8 +45,11 @@ sourceSets {
     }
 }
 
-// Mixins (tous côté client) : une seule table de correspondance pour toutes les configs *.mixins.json du jar.
+// Mixins : deux tables de correspondance (docs/METHODE_CLIENT_SERVEUR.md, piège n°25).
+//   - commune (src/commun/resources/*.mixins.json : pose « à terre » gardée malgré TaCZ, des deux côtés) -> dans les trois jars ;
+//   - client (src/client/resources/*.mixins.json) -> seulement dans -client et -complet.
 mixin {
+    add sourceSets.main, "${jar_name}-commun.refmap.json"
     add sourceSets.client, "${jar_name}.refmap.json"
 }
 
@@ -63,6 +66,7 @@ dependencies {
     }
     // Autres mods du modpack nécessaires à la compilation : libs/<nom>-<version>-<suffixe du projet>.jar, puis
     //   compileOnly fg.deobf("blank:<nom>:<version>-<suffixe du projet>")   (suffixe unique : cache de deobf partagé)
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     clientAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
@@ -89,9 +93,11 @@ def manifeste = [
         'Implementation-Version'  : mod_version,
         'Implementation-Vendor'   : mod_authors,
 ]
-// Configs de mixins du côté client (src/client/resources/*.mixins.json) : seulement dans -client et -complet.
-def mixinsClient = fileTree('src/client/resources') { include '*.mixins.json' }.files*.name.sort().join(',')
-def manifesteClient = manifeste + (mixinsClient ? ['MixinConfigs': mixinsClient] : [:])
+// Configs de mixins : communes (src/commun/resources) dans les trois jars, client (src/client/resources) dans -client et -complet.
+def mixinsCommun = fileTree('src/commun/resources') { include '*.mixins.json' }.files*.name.sort()
+def mixinsClient = fileTree('src/client/resources') { include '*.mixins.json' }.files*.name.sort()
+def manifesteServeur = manifeste + (mixinsCommun ? ['MixinConfigs': mixinsCommun.join(',')] : [:])
+def manifesteClient = manifeste + ((mixinsCommun + mixinsClient) ? ['MixinConfigs': (mixinsCommun + mixinsClient).join(',')] : [:])
 
 // -complet : commun + client + serveur (solo, profil de test)
 tasks.named('jar', Jar).configure {
@@ -114,15 +120,15 @@ tasks.register('clientJar', Jar) {
     finalizedBy 'reobfClientJar'
 }
 
-// -serveur : commun + serveur + data (pour le serveur), sans mixins client ni table de correspondance
+// -serveur : commun + serveur + data (pour le serveur) : mixins communs et leur table, sans mixins client ni leur table
 tasks.register('serveurJar', Jar) {
     group = 'build'
     archiveClassifier = 'serveur'
     from sourceSets.main.output
     from sourceSets.serveur.output
-    exclude '*.refmap.json'
+    exclude "${jar_name}.refmap.json"
     duplicatesStrategy = DuplicatesStrategy.FAIL
-    manifest { attributes(manifeste) }
+    manifest { attributes(manifesteServeur) }
     finalizedBy 'reobfServeurJar'
 }
 

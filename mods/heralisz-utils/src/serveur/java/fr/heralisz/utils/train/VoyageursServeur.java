@@ -58,11 +58,13 @@ public final class VoyageursServeur {
     }
 
     /** Position voulue par le client du voyageur (paquet Marche) : vérifiée, appliquée ; descente par une porte
-     *  ouverte ; sinon recadrage. */
-    static void marche(ServerPlayer p, int veh, float x, float z, boolean assis) {
+     *  ouverte ; sinon recadrage. La hauteur du saut est acceptée de 0 à Voyageurs.SAUT_MAX, debout seulement, et en
+     *  suivant la courbe d'un vrai saut (sautVerifie : pas de lévitation dans la voiture). */
+    static void marche(ServerPlayer p, int veh, float x, float z, boolean assis, float hauteur) {
         if (!(p.getVehicle() instanceof Voyageur v) || p.getServer() == null) return;
         Horaire h = Horaire.get();
         if (h == null) return;
+        sautVerifie(v, assis, hauteur);
         int ov = v.getEntityData().get(Voyageur.VEHICULE);
         Horaire.Etat e = h.etatRame(TrainServeur.temps(p.getServer()), Horaire.rame(ov));
         int pq = Voyageurs.portesQuai(h, e);
@@ -89,6 +91,42 @@ public final class VoyageursServeur {
             Vec3 q = posable(p.level(), p, Voyageurs.versMonde(pl, x, Reseau.PLANCHER + 0.02, pq * (Voyageurs.VW + 0.65)), 0.6, 2.0);
             liberer(v, p, q != null ? q : sortie(v, p));
         }
+    }
+
+    /** Hauteur du saut de Minecraft k ticks après le décollage (Voyageurs.SAUT, PESANTEUR, FREIN), 0 une fois retombé. */
+    private static final float[] ARC = new float[20];
+
+    static {
+        float y = 0f, vy = Voyageurs.SAUT;
+        for (int k = 1; k < ARC.length; k++) {
+            y += vy;
+            vy = (vy - Voyageurs.PESANTEUR) * Voyageurs.FREIN;
+            ARC[k] = Math.max(0f, y);
+            if (y <= 0f) y = vy = 0f;
+        }
+    }
+
+    /** Hauteur du saut annoncée par le client : bornée (0 à SAUT_MAX), nulle assis, et jamais au-dessus de la courbe
+     *  d'un vrai saut (3 ticks de marge pour le réseau). Un nouveau saut seulement après être retombé au plancher et au
+     *  moins 10 ticks après le précédent (comme le saut de Minecraft) : un client trafiqué ne peut au mieux que sauter
+     *  sans arrêt, comme avec Espace maintenue, jamais flotter. */
+    private static void sautVerifie(Voyageur v, boolean assis, float hauteur) {
+        float hs = assis || !Float.isFinite(hauteur) ? 0f : Math.max(0f, Math.min(Voyageurs.SAUT_MAX, hauteur));
+        if (hs <= 0.02f) {
+            hs = 0f;
+            v.sautSol = true;
+        } else {
+            int dt = v.tickCount - v.debutSaut;
+            if (v.sautSol && (dt < 0 || dt >= 10)) {                         // décollage
+                v.debutSaut = v.tickCount;
+                v.sautSol = false;
+                dt = 0;
+            }
+            float permis = 0f;
+            for (int k = Math.max(0, dt - 3); k <= Math.min(ARC.length - 1, dt + 3); k++) permis = Math.max(permis, ARC[k]);
+            hs = permis <= 0f ? 0f : Math.min(hs, permis + 0.1f);
+        }
+        if (hs != v.getEntityData().get(Voyageur.HAUTEUR)) v.getEntityData().set(Voyageur.HAUTEUR, hs);
     }
 
     /** Joueurs qui viennent de descendre : pas remontés tant qu'ils n'ont pas quitté la bande de montée (sinon, posés
@@ -299,7 +337,7 @@ public final class VoyageursServeur {
                     break rames;
                 }
                 if (Math.abs(l[2]) < Voyageurs.VW + 0.25 && Math.abs(l[0]) < demi + 0.2 && l[1] > SOL && l[1] < 5.2) {
-                    heurt(p, pl, l, e.v());
+                    heurt(p, pl, l, e.v(), i == 0 && l[0] > demi - 1.5);
                     break rames;
                 }
             }
@@ -335,9 +373,13 @@ public final class VoyageursServeur {
      *  affleure 0,4 au-dessus du sol aplani), le tablier d'un pont jusqu'à 1,57. */
     static final double SOL = -1.6;
 
-    /** Joueur dans le gabarit : le train roule -> tué net (un seul coup, armure ou pas) ; à l'arrêt -> repoussé à côté,
-     *  du côté le plus proche puis de l'autre, là où l'on tient debout (jamais dans le mur du quai). */
-    private static void heurt(ServerPlayer p, Horaire.Placement pl, double[] l, double v) {
+    /** Coup d'un train qui roule, en dehors des cas où il écrase : 5 points (2,5 cœurs), armure ou pas. */
+    static final float HEURT = 5f;
+
+    /** Joueur dans le gabarit : le train roule -> heurté (2,5 cœurs) et repoussé à côté ; tué net seulement s'il est
+     *  devant la locomotive ou dans la voie, sous la caisse (écrasé). À l'arrêt -> repoussé à côté, du côté le plus
+     *  proche puis de l'autre, là où l'on tient debout (jamais dans le mur du quai). */
+    private static void heurt(ServerPlayer p, Horaire.Placement pl, double[] l, double v, boolean devant) {
         double cote = l[2] >= 0 ? 1 : -1;
         Vec3 dehors = null;
         for (double c : new double[]{cote, -cote}) {
@@ -348,8 +390,9 @@ public final class VoyageursServeur {
             if (dehors != null) break;
         }
         if (v > 1.0) {
-            p.hurt(ecrase(p.serverLevel()), Float.MAX_VALUE);
-            if (p.isAlive()) {                                              // créatif : seulement projeté
+            boolean dessous = Math.abs(l[2]) < Voyageurs.VW - 0.5 && l[1] < Reseau.PLANCHER - 0.3;    // dans la voie
+            p.hurt(ecrase(p.serverLevel()), devant || dessous ? Float.MAX_VALUE : HEURT);
+            if (p.isAlive()) {                                              // heurté (ou créatif) : projeté à côté
                 Vec3 lat = Voyageurs.versMonde(pl, l[0], 0, cote * 1.0).subtract(Voyageurs.versMonde(pl, l[0], 0, 0)).normalize();
                 if (dehors != null) p.teleportTo(dehors.x, dehors.y, dehors.z);
                 p.setDeltaMovement(lat.scale(1.5).add(0, 0.45, 0));

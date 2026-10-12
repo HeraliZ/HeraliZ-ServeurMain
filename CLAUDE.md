@@ -49,6 +49,9 @@ quand un choix leur revient.
 - Plugins (triés le 08/10, seulement l'utile ; tout le reste a été retiré) : AuthMe, spark, LuckPerms (grades du staff,
   base locale), KauriVPN (anti-VPN), LiteBans (mutes, avertissements, historique ; les bans pour triche passent par
   Spartan), WorldEdit + WorldGuard + WorldGuardExtraFlags (outils du staff, protection du spawn), ConsoleSpamFix.
+- Sanctions (alignées le 11/10) : LiteBans pour `/kick`, `/ban` (compte seul), `/tempban`, `/banip`, `/mute`,
+  `/tempmute`, `/unmute`, `/unban` (lève aussi les bans temporaires et d'IP) et `/untempban` (transmis à `/unban`) ;
+  Spartan pour `/banpc` (compte + IP + PC, = `/sban`) et `/unbanpc` (= `/sunban`).
   Pas de plugin anti-duplication ni « ClearLag » (ils voient mal les mods / suppriment leurs entités).
 - Armes : **TaCZ** (mod de base, jamais à notre nom) + nos gunpacks dans `serveur/tacz/`.
 - Monnaie du serveur : les **hérals** (« 1 héral », « 1 500 hérals »). Identifiants internes inchangés
@@ -127,13 +130,13 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
-| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases, heralisz_tags | hérals, clans, bunkers et pillage, tags |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules | train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json`), ascenseur, carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
 | heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) |
-| heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade et rayons de soleil, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
+| heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Seulement les blocs posés sur la carte (1.9.0 : 48 blocs jamais posés retirés, d'après le workflow « Inventaire de la carte » ; gardés aussi `tole_toit_bleue` et `tole_toit_rouille`, dont les escaliers et dalles sont posés). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
 | heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons |
 | heraliz-composants | heraliz_composants | heraliz_composants | 47 composants de craft (armes, soins, viseurs, munitions, protection, divers) et objets de récupération à revendre, modèles 3D et icônes ; rareté = couleur du nom ; tags `heraliz_composants:<catégorie>` et `tous`. Aucune recette ni loot (refonte à venir). Modèles, icônes, traductions, tags et `ComponentDefs.java` refaits par `python mods/heraliz-composants/outils/build.py mods/heraliz-composants` (catalogue : `outils/composants.py`) |
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
@@ -144,8 +147,8 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
 | crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
-| heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé |
-| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (3 à la fois, 30 à 60 min, 30 s à tenir ; `/extraction`, `/extractions` pour les joueurs) |
+| heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
+| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (5 à 6 à la fois tirées au hasard, 30 à 60 min, 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
 
@@ -202,6 +205,16 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   `python outils/silencieux.py` (jamais à la main dans les fichiers des silencieux ; à relancer si la portée d'un tir
   normal change dans `serveur/config/tacz-common.toml`). Un tir silencieux part aussi deux fois moins fort pour les autres
   joueurs (mixin commun `TaczSonSilencieuxMixin` du mod tactique).
+- les accessoires TaCZ sont **à plat** (choix du propriétaire) : tout viseur, bouche, crosse, poignée ou laser va sur
+  toute arme qui a cet emplacement (ouvert dans `allow_attachment_types` de sa donnée ET os `<type>_pos` dans son
+  modèle, sinon l'accessoire serait invisible) ; il y a juste des accessoires meilleurs que d'autres. Gunpack
+  `serveur/tacz/heraliz_accessoires` (listes communes `#heraliz_accessoires:viseurs|bouches|crosses|poignees|lasers`,
+  ajoutées aux listes des armes ; crosses OEM sur les armes dont le modèle a leur nœud) **refait par
+  `python outils/accessoires.py`**, jamais à la main ; les autres gunpacks ne sont pas touchés. Gardent leur liste
+  d'origine : chargeurs et munitions spéciales, accessoires faits pour une seule arme (tableau `PROPRES` : lunettes
+  intégrées de l'AUG et du P90, montages latéraux d'AK, baïonnettes, canon du Deagle doré…), Wonder Weapons. Un
+  emplacement fermé reste fermé : pour l'ouvrir, ajouter le type à `allow_attachment_types` de l'arme puis relancer
+  l'outil (`--rapport` liste les os sans emplacement et les emplacements sans os).
 - les icônes d'inventaire des armes TaCZ sont des photos 3D faites chez le joueur (`camo/client/IconesArmes` du mod
   tactique : modèle + skin, sans accessoires, 64 au plus en mémoire graphique, rien sur le disque ni le serveur) ; l'image
   `slot` du gunpack ne s'affiche qu'en attendant la photo ou si elle est impossible.
@@ -299,6 +312,7 @@ Les contrôles :
   Minecraft + Forge du lanceur CurseForge ;
 - noms perso : aucun mot interdit dans les sources ni les jars ;
 - silencieux : chaque silencieux des gunpacks a sa portée de son (`outils/silencieux.py`).
+- accessoires : listes communes d'accessoires TaCZ à jour (`outils/accessoires.py`).
 - langues : textes français, anglais et russe avec les mêmes paramètres et codes couleur (`outils/verifier_langues.py`).
 
 **Où va quoi** (dossier `livraison/`, recréé à chaque fois) :
@@ -360,7 +374,9 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   « maven libs », options `--fml.mavenRoots` / `--fml.modLists`) ; Spartan hache et juge chacun de ces jars comme ceux
   du dossier mods. Le launcher ajoute `-XX:+DisableAttachMechanism`, retire les options d'injection du joueur et, depuis
   la 1.6.1, les variables d'environnement que Java lit au démarrage (`JAVA_TOOL_OPTIONS`, `_JAVA_OPTIONS`,
-  `JDK_JAVA_OPTIONS` : un `-javaagent` de triche pouvait s'y glisser) (`launcher/app/assets/js/spartan.js`) ; ses verrous
+  `JDK_JAVA_OPTIONS` : un `-javaagent` de triche pouvait s'y glisser ; depuis la 1.8.0 aussi `LD_PRELOAD`, `LD_AUDIT`,
+  `DYLD_INSERT_LIBRARIES` sur Mac et Linux) (`launcher/app/assets/js/spartan.js`). Depuis la 1.8.0, le jeu est lancé à
+  part du launcher (le fermer pendant la partie ne coupe plus le jeu ; console du jeu dans `logs/console-jeu.log`) ; ses verrous
   Electron (`electronFuses` de `electron-builder.yml`) l'empêchent de tourner comme un simple Node.js ou de charger un
   autre code que son archive. Son pack est refait à chaque mise en ligne avec `livraison/mods client` de la même
   fabrication (section 8).
@@ -453,7 +469,7 @@ monde `<monde>_ancien_<date>` (jamais supprimé ; ses dossiers `_nether` / `_the
 à la carte et redémarre. Un échec avant la bascule ne touche ni au serveur ni à son monde (carte incomplète laissée dans
 `<monde>_nouvelle_<date>`, à supprimer depuis le panel). Le nom du monde est lu dans le `server.properties` du Ptero
 (aujourd'hui `dayz_map`), obligatoirement : s'il est illisible, rien n'est changé (le 11/10, un repli sur le nom du dépôt
-a posé la carte dans `/HeraliZ`, que le serveur ne charge pas). Restent hors du monde, donc gardés : clans, hérals, tags, bunkers (reposés seuls), comptes AuthMe, grades,
+a posé la carte dans `/HeraliZ`, que le serveur ne charge pas). Restent hors du monde, donc gardés : clans, hérals, bunkers (reposés seuls), comptes AuthMe, grades,
 bans. Repartent de zéro avec la carte : inventaires et positions des joueurs, zones d'extraction posées à la main,
 territoires pris. Les zones WorldGuard restent rattachées au nom du monde (mêmes coordonnées) : le résumé de l'envoi
 les liste, à refaire pour la nouvelle carte. L'ancien monde se supprime depuis le panel quand tout va bien.
@@ -587,12 +603,18 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   celui du compte.
 - `.github/workflows/launcher.yml`, « Launcher HeraliZ » : à chaque envoi sur `main` qui touche `launcher/`, tests puis
   installateur Windows, gardé 7 jours dans l'onglet Actions (paquet « launcher-windows », si le quota d'artefacts le
-  permet). « Run workflow » avec la case « publier » : il est aussi mis en ligne, toujours au même lien,
-  https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe (lien à mettre sur le site et le Discord), envoyé par SFTP
-  par la machine Windows qui l'a fabriqué (aucun artefact entre deux tâches). Le launcher ne contient aucune clé : ses
-  jetons de lancement sont signés par le site (section 6 bis).
-- L'installateur n'est pas signé (certificat payant) : au premier lancement, Windows affiche « Windows a protégé votre
-  ordinateur » → « Informations complémentaires » → « Exécuter quand même ».
+  permet), et paquets Linux (AppImage et .deb). L'application Mac n'est fabriquée que par « Run workflow » (une minute
+  de machine Mac compte pour 10 sur un dépôt privé). « Run workflow » avec la case « publier » : chaque machine met ses
+  fichiers en ligne, toujours aux mêmes liens (à mettre sur le site et le Discord) :
+  https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe (Windows), `HeraliZ-Launcher.dmg` (Mac),
+  `HeraliZ-Launcher.AppImage` et `HeraliZ-Launcher.deb` (Linux), avec leurs fichiers de version (`latest.yml`,
+  `latest-mac.yml`, `latest-linux.yml`), envoyés par SFTP (`launcher/ci/publier.py`, aucun artefact entre deux
+  tâches). Le launcher ne contient aucune clé : ses jetons de lancement sont signés par le site (section 6 bis).
+- Les installateurs ne sont pas signés (certificats payants) : au premier lancement, Windows affiche « Windows a protégé
+  votre ordinateur » → « Informations complémentaires » → « Exécuter quand même » ; Mac : Réglages Système →
+  Confidentialité et sécurité → « Ouvrir quand même » (macOS 15+), ou clic droit → Ouvrir. Mise à jour automatique sur
+  Windows et avec l'AppImage ; sur Mac et avec le .deb, le launcher annonce la nouvelle version et donne le lien.
+  Mac et Linux : rien essayé sur une vraie machine (launcher 1.8.0).
 - **Mises à jour, rien à retélécharger** : à chaque partie, le launcher relit le pack en ligne et ne télécharge que
   les fichiers changés ou manquants (empreinte de chaque fichier) ; depuis la 1.7.0, il le demande au site pour le
   compte connecté (`/api/heraliz/pack`, liens signés 6 h, section 8 bis) au lieu de le lire à `distributionUrl` :
@@ -619,14 +641,20 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
 - **Un mod d'un autre auteur** : son jar dans `serveur/mods-tiers/` (ou `client/mods-tiers/` s'il ne sert qu'aux
   joueurs), en retirant l'ancienne version.
 - **Un gunpack TaCZ (nouveau ou mis à jour)** : son dossier dans `serveur/tacz/`, puis `python outils/silencieux.py`
-  (portée du son de ses silencieux, `verifier.py` le réclame) et `python outils/icones_sans_contour.py` (retire le
-  contour noir de ses icônes d'inventaire). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
+  (portée du son de ses silencieux, `verifier.py` le réclame), `python outils/accessoires.py` (ses accessoires dans
+  les listes communes et les listes communes sur ses armes, `verifier.py` le réclame ; un accessoire fait pour une
+  seule de ses armes va dans `PROPRES` de l'outil), `python outils/icones_sans_contour.py` (retire le
+  contour noir de ses icônes d'inventaire) et `python outils/icones_sans_logo.py` (retire le logo « M » de Max Stuff,
+  `verifier.py` le réclame). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
   redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur.
 - **Un pack de textures** : il est imposé par heraliz_interface
   (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
   par celui du nouveau pack, puis refabriquer heraliz_interface. Pack imposé depuis le 11/10 (heraliz_interface
   1.2.1) : le « pack 8 », c'est-à-dire l'ancien pack plus les vitres de la nouvelle carte (6 textures de verre
-  refaites, 6 modèles de vitres ajoutés) ; l'herbe n'a pas changé.
+  refaites, 6 modèles de vitres ajoutés) ; l'herbe n'a pas changé. Retouches faites ici depuis (validées par le
+  propriétaire) : capteur de lumière rendu à Minecraft (1.5.1) ; porte et trappe en chêne noir vieillies (vitre
+  transparente, poignée en métal sombre) et 16 lits à cadre de métal usé (1.6.1). Les anciens fichiers
+  `door_dark_oak_upper/lower.png` (noms d'avant la 1.13) ne sont plus lus.
 - **Le monde** : depuis le 11/10 (soir), la carte se construit **directement sur le Ptero** (monde `dayz_map`) ;
   personne n'y touche par ici (section 0, règle 10). La mise en ligne ne copie dans le monde que les réglages
   (`serverconfig/`), jamais les blocs. **Quand les propriétaires disent que la carte est finie** : copier le monde du
@@ -653,6 +681,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
       éoliennes à l'abandon `eolienne_usee` et `eolienne_moderne_usee`, ascenseur qui porte mieux les joueurs) ;
     - **HeraliZ Loot** : apporté le 11/10 (version 0.5.0 : les nouveaux conteneurs HD posés sur la carte, rotation du
       loot quand un conteneur est posé ou remplacé à la main).
+    Avant de retirer un bloc d'un de nos mods, relancer le workflow « Inventaire de la carte » (lecture seule, liste
+    les blocs posés dans chaque monde du Ptero) : un bloc retiré qui est posé disparaît de la carte au chargement.
     Si le propriétaire fournit une nouvelle version d'un de ces mods pour la carte, la rapporter ici de la même façon (assembler avec ce
     qui a été fait ici entre-temps, fabriquer, vérifier). Rien de tout cela n'a été testé sur le serveur.
 
@@ -703,7 +733,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (inventaire, coffres, sacs, barre d'objets DayZ), infobulle « ★ Rare » (rien pour Commun). Réglage :
   `serveur/config/heraliz_loot/raretes.json` (à remplir avec la refonte du loot) ; le staff, objet en main :
   `/rarete <niveau|aucune|effacer|voir|defaut|recharger>` (choix en jeu dans `raretes_jeu.json`, jamais écrasé) ;
-- extractions de la carte : 3 zones ouvertes à la fois, 30 à 60 min chacune, 30 s à tenir, retour au spawn ;
+- extractions de la carte : 35 à 40 points possibles, 5 à 6 ouverts à la fois au hasard (`openAtOnce` / `openAtOnceMax` de
+  `heraliz_extraction-common.toml`), 30 à 60 min chacun, 30 s à tenir, retour au spawn ;
 - camos à vie (pour la boutique) : clic droit sur un objet camo = il entre pour toujours dans la collection du joueur
   (objet consommé ; stockée hors du monde, `heralisz_camo/collections.json` à la racine du serveur, elle survit aux
   changements de carte). Onglet Skin : camos de l'inventaire (posés depuis l'objet : définitifs, comme avant) ou de la
@@ -726,6 +757,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
   I, menu =, abandon Retour arrière ;
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
+- vitres (11/10) : une balle casse la vitre ou le bloc de verre touché, reposé tel quel au bout de 20 min (même après un redémarrage ; section `[vitres]` de `heralisz_tactical-server.toml`, mod tactique) ; jamais au spawn (64 blocs), en match, en zombies, dans les bunkers ni dans les claims CRac. `DestroyGlass` de TaCZ reste à false (TaCZ casse sans regarder les protections ni les blocs voisins) ;
+- duels (11/10) : défi reçu = petite notification en haut à droite (plus de grand écran au milieu) ; les dimensions des matchs et des zombies ont leur propre bordure du monde (avant, les arènes sortaient de celle de la carte : mort en boucle) ;
+- sons (11/10) : MAtmos jouait le bruit de changement d'objet de chaque joueur visible, sans atténuation (sons stéréo) : dayzhotbar (`SonChangementObjet`) ne laisse entendre celui des autres qu'à 8 blocs au plus ;
+- accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;
+- logo de Max Stuff (11/10) : le petit « M » est retiré des icônes de ses accessoires, choix du propriétaire malgré la licence du pack (CC BY-NC-ND 4.0 : pas de version modifiée diffusée ; tous les gunpacks des autres auteurs ont la même licence, et NC à surveiller avec la boutique). Auteurs crédités dans `serveur/tacz/arkaniaz_pack_5_converted/CREDITS.txt`. D'autres logos restent sur des icônes d'armes (« Chill Deep » du pack arkaniaz_custom, « MIL », « CIB ») : pas touchés sans demande ;
+- touches (11/10) : une seule table des touches par défaut, appliquée chez le joueur par heraliz_interface (`client/Touches.java`) sans toucher aux jars des autres auteurs : pas de doublon (G = mode de tir de TaCZ, H = inspecter, Tab = liste des joueurs), Curios sur U, mode de la voix (chuchoter / parler / crier) sur X, touches inutiles cachées de l'écran des commandes ; une touche choisie par un joueur n'est jamais changée. Une touche de mod avec Maj, Ctrl ou Alt sur un bouton de souris prend tout ce bouton dès que le modificateur est enfoncé (Forge) : à ne jamais refaire ;
 - Armurerie : les combinaisons intégrales (Hazmat, froid, plongée) se portent seules (sac à dos permis) ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
@@ -758,6 +795,21 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - langues : français (par défaut), anglais, russe, au choix par drapeau (écran titre et menu Échap) ; menus,
   descriptions, messages du serveur et commandes traduits ; le chat entre joueurs n'est PAS traduit (choix du
   propriétaire, 11/10 : pas de service de traduction payant) ;
+- mort (11/10) : tout ce que porte le joueur part sur son cadavre (slots Curios compris, montrés à la fouille) ; cadavre
+  qui disparaît au bout de 10 min, ou tout de suite une fois vide ; on ne peut rien y déposer. `keepInventory` doit être
+  à false sur les mondes du Ptero (gamerule tapée en jeu) ; `/suicide` pour tous les joueurs (mort normale) ;
+- train (11/10) : un train qui roule heurte (2,5 cœurs, joueur projeté à côté) ; il ne tue que devant la locomotive ou
+  dans la voie, sous la caisse ; dans la voiture, les jambes bougent et on peut sauter (réseau du train version 4 :
+  jars joueurs et serveur de la même fabrication). La voie se corrige EN JEU, jamais dans les fichiers du monde (staff) :
+  `/train voie info` (point visé), `genre <p|r|t|T|P|x> [longueur]`, `retirer [longueur]`, `annuler`, `liste`,
+  `effacer` (aspect seulement, le trajet ne bouge pas ; gardé dans les données du train du monde) ; `/train voie remplir
+  [ponts|tout]` pose sous la voie dessinée un bloc invisible et incassable (`heralisz_utils:voie_pleine`) pour qu'on
+  ne puisse plus entrer dans le ballast des ponts, `vider` le retire ;
+- onglets créatifs (11/10) : l'onglet « HeraliZ » (meubles cfm) ne montre que les meubles posés sur la carte (liste
+  `heralisz_utils_onglet_heraliz.json`, refaite d'après le workflow « Inventaire de la carte ») ; armes de mêlée et
+  couteaux seulement dans le groupe Mêlée de HeraliZ · Tactique (plus dans « Arme lourde ») ;
+- au premier lancement : plus de tutoriel de Minecraft, et une fois par installation synchronisation verticale coupée,
+  images par seconde illimitées, nuages et ombres des entités coupés (heraliz_interface, `ReglagesDefaut`) ;
 - refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
 - retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
   Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,

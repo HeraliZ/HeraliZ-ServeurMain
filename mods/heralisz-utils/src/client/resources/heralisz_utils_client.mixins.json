@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heralisz.utils.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heralisz_utils.refmap.json",
+  "client": [
+    "LivingEntityTrainMixin",
+    "LocalPlayerTrainMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

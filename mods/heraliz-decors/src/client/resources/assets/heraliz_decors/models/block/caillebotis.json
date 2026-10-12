@@ -1,7 +1,0 @@
-{
- "parent": "minecraft:block/cube_all",
- "textures": {
-  "all": "heraliz_decors:block/caillebotis"
- },
- "render_type": "minecraft:cutout"
-}

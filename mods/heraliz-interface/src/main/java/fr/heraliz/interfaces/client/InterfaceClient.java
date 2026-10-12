@@ -126,6 +126,40 @@ public final class InterfaceClient {
         }
     }
 
+    private static boolean reglagesPoses;
+
+    /** Premier tick du jeu : tutoriel de Minecraft coupé, réglages HeraliZ une fois par installation ({@link ReglagesDefaut}). */
+    @SubscribeEvent
+    public static void reglages(TickEvent.ClientTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || reglagesPoses) return;
+        reglagesPoses = true;
+        try {
+            ReglagesDefaut.appliquer(Minecraft.getInstance());
+        } catch (Throwable t) {
+            HeralizInterface.LOG.warn("[interface] réglages HeraliZ non posés", t);
+        }
+    }
+
+    private static boolean touchesPosees;
+
+    /**
+     * Touches par défaut du serveur ({@link Touches}), à chaque lancement : au premier tick sans écran de chargement
+     * (Forge relit les touches des mods dans options.txt à la fin du chargement) et en priorité la plus basse, après les
+     * autres mods qui rangent leurs touches au même tick (véhicules de HeraliZ Utils).
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void touches(TickEvent.ClientTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || touchesPosees) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getOverlay() != null || mc.options == null) return;
+        touchesPosees = true;
+        try {
+            Touches.appliquer(mc);
+        } catch (Throwable t) {
+            HeralizInterface.LOG.warn("[interface] touches HeraliZ non posées", t);
+        }
+    }
+
     /** Notre ecran a plante : journal, menu vanilla a la place et pour le reste de la session. */
     public static void secours(Throwable t) {
         enPanne = true;

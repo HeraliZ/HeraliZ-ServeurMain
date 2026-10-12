@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, dialog, clipboard } = require('electron')
+const { app, BrowserWindow, ipcMain, shell, dialog, clipboard, Menu } = require('electron')
 const path = require('node:path')
 const fs = require('node:fs')
 const { pathToFileURL } = require('node:url')
@@ -10,6 +10,10 @@ const config = require('./app/heraliz.json')
 if (!app.isPackaged && process.env.HERALIZ_TEST_DATA) app.setPath('userData', process.env.HERALIZ_TEST_DATA)
 // Same id as electron-builder's appId: Windows shows the HeraliZ icon and name in the taskbar, even in dev.
 if (process.platform === 'win32') app.setAppUserModelId('fr.heraliz.launcher')
+// Linux : launcher en AppImage (variable posée par l'image elle-même) ; sinon paquet .deb
+const appImage = process.platform === 'linux' && Boolean(process.env.APPIMAGE)
+// Nouveau launcher à télécharger à la main (Mac, .deb) : fichiers publiés par le workflow « Launcher HeraliZ »
+const FICHIER_LAUNCHER = { win32: 'HeraliZ-Launcher-Setup.exe', darwin: 'HeraliZ-Launcher.dmg', linux: appImage ? 'HeraliZ-Launcher.AppImage' : 'HeraliZ-Launcher.deb' }
 const pageUrl = pathToFileURL(path.join(__dirname, 'app', 'index.html')).href
 let win
 let service
@@ -51,12 +55,13 @@ function createWindow() {
     win.removeMenu()
     win.once('ready-to-show', () => win.show())
     win.on('close', async event => {
-        if (!service?.busy) return
+        // Partie en cours : le jeu est lancé à part (détaché), il reste ouvert quand le launcher se ferme. Rien à demander.
+        if (!service?.busy || service.progress?.phase === 'running') return
         event.preventDefault()
         const { response } = await dialog.showMessageBox(win, {
-            type: 'question', title: 'HeraliZ est en cours d’utilisation',
-            message: 'Un téléchargement ou une partie est en cours.',
-            detail: 'Tu peux réduire le launcher. Fermer arrête la préparation, mais laisse une partie déjà lancée ouverte.',
+            type: 'question', title: 'Préparation en cours',
+            message: 'Le jeu est en cours de préparation.',
+            detail: 'Fermer le launcher arrête la préparation : elle reprendra au prochain clic sur JOUER. Une fois Minecraft lancé, tu pourras fermer le launcher sans fermer le jeu.',
             buttons: ['Rester', 'Fermer'], defaultId: 0, cancelId: 0
         })
         if (response === 1) { service.dispose(); win.destroy(); app.quit() }
@@ -76,12 +81,14 @@ else {
                 win.setProgressBar(progress.busy && progress.phase !== 'running' ? (progress.percent == null ? 2 : progress.percent / 100) : -1)
             }
         })
-        // mise à jour du launcher lui-même : seulement la version installée sur Windows (pas en développement)
-        const majActive = app.isPackaged && process.platform === 'win32'
+        // mise à jour du launcher lui-même : seulement la version installée (pas en développement). Automatique sous
+        // Windows et en AppImage ; Mac (application non signée par Apple) et .deb : le joueur est prévenu (mise-a-jour.js)
+        const majActive = app.isPackaged && ['win32', 'darwin', 'linux'].includes(process.platform)
         const fichierMaj = path.join(app.getPath('userData'), 'mise-a-jour.json')
         const miseAJour = new MiseAJour({
-            updater: majActive ? require('electron-updater').autoUpdater : null,
+            updater: majActive ? choisirUpdater() : null,
             actif: majActive,
+            auto: process.platform === 'win32' || appImage,
             envoyer: etat => { if (win && !win.isDestroyed()) win.webContents.send('heraliz:maj', etat) },
             occupe: () => Boolean(service?.busy),
             memoire: {
@@ -115,7 +122,8 @@ else {
             const pageSite = chemin => site && new URL(chemin, site).href
             const links = {
                 discord: config.discordUrl, inscription: pageSite('/user/register'), motdepasse: pageSite('/user/password/reset'),
-                compte: pageSite('/profile'), conditions: service.etatSite?.conditions || null
+                compte: pageSite('/profile'), conditions: service.etatSite?.conditions || null,
+                telecharger: FICHIER_LAUNCHER[process.platform] ? pageSite(`/telecharger/${FICHIER_LAUNCHER[process.platform]}`) : null
             }
             if (!Object.hasOwn(links, name) || !links[name]) throw new Error('Ce lien n’est pas encore configuré.')
             const url = httpsUrl(links[name])
@@ -129,8 +137,19 @@ else {
             else if (action === 'close') win.close()
             else throw new Error('Action inconnue.')
         })
+        // Mac : menu de l'application réduit à l'essentiel (Quitter, copier-coller dans les champs, fenêtre), sans les
+        // outils de développement du menu par défaut d'Electron. Windows et Linux : pas de menu (removeMenu).
+        if (process.platform === 'darwin') Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]))
         createWindow()
     })
+}
+
+// Linux : AppImage ou paquet .deb choisi d'après la façon dont le launcher tourne (pas d'après le fichier « package-type »
+// qu'electron-builder peut laisser dans les deux). Windows et Mac : celui qu'electron-updater choisit.
+function choisirUpdater() {
+    const majs = require('electron-updater')
+    if (process.platform !== 'linux') return majs.autoUpdater
+    return appImage ? new majs.AppImageUpdater() : new majs.DebUpdater()
 }
 app.on('window-all-closed', () => app.quit())
 app.on('before-quit', () => service?.dispose())

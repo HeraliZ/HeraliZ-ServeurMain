@@ -2,7 +2,6 @@ package com.caracrea.client.voice;
 
 import com.caracrea.CaraCreaConfig;
 import com.caracrea.client.gui.CharacterCreatorScreen;
-import com.caracrea.client.gui.VoiceGroupsScreen;
 import com.caracrea.client.gui.VoiceSettingsScreen;
 import com.caracrea.client.gui.VoiceVolumesScreen;
 import com.caracrea.network.CaraCreaNetwork;
@@ -10,6 +9,7 @@ import com.caracrea.network.CaraCreaNetwork.GroupInfo;
 import com.caracrea.network.CaraCreaNetwork.PlayerVoice;
 import com.caracrea.voice.VoiceActivity;
 import com.caracrea.voice.VoiceGate;
+import com.caracrea.voice.net.VoiceProtocol;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
@@ -26,7 +26,6 @@ import net.minecraftforge.fml.ModList;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,40 +44,42 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class VoiceClient {
     public static final String CATEGORY = "key.categories.caracrea.voice";
     /**
-     * Default keys chosen for HeraliZ, where V, G and H are taken by TaCZ (zoom and melee, fire mode, inspect), Curios,
-     * TCTcore and the vehicles, N by the bases and M by Xaero's map, I / = / Backspace by Reanimation, ² / 0 by the
-     * emotes, J by the tags, K by the clans, B by the backpack: Caps Lock to talk, the key right of L to mute ("M" on an
-     * AZERTY keyboard), the key right of 0 for the settings (")" on AZERTY). The rest are buttons of the settings
-     * screen and stay unbound. They do nothing while the server does not run our voice chat.
+     * Les cinq touches du chat vocal, rien de plus (choix du propriétaire) : appuyer pour parler, couper son micro, couper
+     * tout le monde, changer de mode (chuchoter, parler, crier) et le menu vocal (volume par joueur, couper quelqu'un ;
+     * les réglages complets s'ouvrent depuis ce menu ou par {@code /voix}). Touches par défaut choisies pour HeraliZ, où
+     * V, G et H sont prises par TaCZ (zoom et mêlée, mode de tir, inspection), Curios, TCTcore et les véhicules, N par les
+     * bases, I / = / Retour arrière par Réanimation, ² / 0 par les emotes, J par les tags, K par les clans, B par le sac à
+     * dos : Verr. Maj pour parler, la touche à droite de L pour couper le micro (« M » en AZERTY), la touche à droite de 0
+     * pour le menu (« ) » en AZERTY). « Couper tout le monde » et « changer de mode » n'ont pas de touche par défaut (pas
+     * de touche libre sûre avec tous les mods du serveur) : à choisir dans Options > Contrôles ; ils restent aussi dans les
+     * réglages. Les identifiants {@code talk}, {@code mute} et {@code settings} ne changent pas : les joueurs gardent les
+     * touches qu'ils avaient choisies. Rien ne marche tant que le serveur ne fait pas tourner notre chat vocal.
      */
     public static final KeyMapping PUSH_TO_TALK = key("talk", GLFW.GLFW_KEY_CAPS_LOCK);
-    public static final KeyMapping WHISPER = key("whisper", GLFW.GLFW_KEY_UNKNOWN);
     public static final KeyMapping MUTE = key("mute", GLFW.GLFW_KEY_SEMICOLON);
-    public static final KeyMapping DISABLE = key("disable", GLFW.GLFW_KEY_UNKNOWN);
-    public static final KeyMapping SETTINGS = key("settings", GLFW.GLFW_KEY_MINUS);
-    public static final KeyMapping GROUPS = key("groups", GLFW.GLFW_KEY_UNKNOWN);
-    public static final KeyMapping HIDE_ICONS = key("hide_icons", GLFW.GLFW_KEY_UNKNOWN);
-    public static final KeyMapping RECORD = key("record", GLFW.GLFW_KEY_UNKNOWN);
+    public static final KeyMapping MUTE_ALL = key("mute_all", GLFW.GLFW_KEY_UNKNOWN);
+    public static final KeyMapping MODE = key("mode", GLFW.GLFW_KEY_UNKNOWN);
+    public static final KeyMapping MENU = key("settings", GLFW.GLFW_KEY_MINUS);
 
     private static KeyMapping key(String name, int key) {
         return new KeyMapping("key.caracrea.voice." + name, KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, key, CATEGORY);
     }
 
     public static List<KeyMapping> keys() {
-        return List.of(PUSH_TO_TALK, WHISPER, MUTE, DISABLE, SETTINGS, GROUPS, HIDE_ICONS, RECORD);
+        return List.of(PUSH_TO_TALK, MUTE, MUTE_ALL, MODE, MENU);
     }
 
     /** What the audio threads need from the settings, copied every tick. */
     record Settings(boolean pushToTalk, float threshold, float micGain, float volume, boolean canTalk, boolean testing,
                     int denoise, boolean automaticGain, boolean automaticActivation, String outputDevice, boolean hrtf,
-                    int jitterMs, int bitrate) {
+                    int jitterMs, int bitrate, boolean deafened) {
     }
 
     /**
      * Where the listener and the players around are, copied every tick for the playback thread: the camera position
      * and its axes (right, up, forward), the players' eye positions (x, y, z, occlusion 0..1) and names.
      */
-    record Listener(double x, double y, double z, float[] axes, float range, float whisperRange,
+    record Listener(double x, double y, double z, float[] axes, float range, float whisperRange, float shoutRange,
                     Map<UUID, double[]> positions, Map<UUID, String> names) {
         /** A world offset (speaker minus listener) in the listener's space: x right, y up, z behind (OpenAL's axes). */
         void toLocal(double dx, double dy, double dz, float[] out) {
@@ -89,10 +90,14 @@ public final class VoiceClient {
     }
 
     private static final float[] NO_AXES = {1, 0, 0, 0, 1, 0, 0, 0, -1};
-    private static volatile Settings settings = new Settings(true, 0.35F, 1, 1, false, false, 2, true, true, "", false, 0, 24000);
-    private static volatile Listener listener = new Listener(0, 0, 0, NO_AXES, 48, 24, Map.of(), Map.of());
+    private static volatile Settings settings = new Settings(true, 0.35F, 1, 1, false, false, 2, true, true, "", false, 0, 24000, false);
+    private static volatile Listener listener = new Listener(0, 0, 0, NO_AXES, 48, 24, 96, Map.of(), Map.of());
     private static volatile boolean pushToTalkDown;
-    private static volatile boolean whisperDown;
+    /**
+     * Mode de voix choisi (chuchoter, parler, crier : {@code VoiceProtocol.MODE_*}), lu par le fil du micro. Gardé en
+     * mémoire seulement : chaque lancement du jeu repart en voix normale.
+     */
+    private static volatile int voiceMode = VoiceProtocol.MODE_TALK;
     private static volatile CaraCreaNetwork.VoiceConfig config = CaraCreaNetwork.VoiceConfig.off();
     private static volatile VoicePlayback playback;
     private static volatile VoiceTransport transport;
@@ -200,10 +205,6 @@ public final class VoiceClient {
         return config.groups() && serverSupported();
     }
 
-    public static boolean recordingAllowed() {
-        return config.recording() && serverSupported();
-    }
-
     public static List<GroupInfo> groups() {
         return groups;
     }
@@ -261,12 +262,28 @@ public final class VoiceClient {
         return pushToTalkDown;
     }
 
-    static boolean whispering() {
-        return whisperDown;
+    /** Mode de voix choisi : {@code VoiceProtocol.MODE_WHISPER}, {@code MODE_TALK} ou {@code MODE_SHOUT} (tout fil). */
+    public static int voiceMode() {
+        return voiceMode;
     }
 
-    public static boolean whisperHeld() {
-        return whisperDown;
+    /** Change le mode de voix (touche « changer de mode » ou réglages) ; il part avec les trames suivantes. */
+    public static void setVoiceMode(int mode) {
+        voiceMode = Math.floorMod(mode, VoiceProtocol.MODES);
+    }
+
+    /** Clé de traduction du nom d'un mode (« Chuchoter », « Parler », « Crier »). */
+    public static String modeKey(int mode) {
+        return switch (mode) {
+            case VoiceProtocol.MODE_WHISPER -> "caracrea.voice.voice_mode.whisper";
+            case VoiceProtocol.MODE_SHOUT -> "caracrea.voice.voice_mode.shout";
+            default -> "caracrea.voice.voice_mode.talk";
+        };
+    }
+
+    /** Le joueur a coupé tout le monde : il n'entend plus aucune voix (son micro, lui, marche toujours). */
+    public static boolean everyoneMuted() {
+        return CaraCreaConfig.CLIENT.deafened.get();
     }
 
     static UUID self() {
@@ -409,6 +426,10 @@ public final class VoiceClient {
     /** UDP or network thread: a frame of another player's voice. */
     static void received(int speaker, int flags, int sequence, int dx, int dy, int dz, byte[] buf, int off, int len) {
         RECEIVED.incrementAndGet();
+        if (settings.deafened()) {
+            // Tout le monde est coupé : le serveur n'envoie plus rien une fois prévenu, ceci couvre le temps de l'aller.
+            return;
+        }
         VoicePlayback current = playback;
         UUID player = player(speaker);
         if (current != null && player != null) {
@@ -479,10 +500,10 @@ public final class VoiceClient {
             }
             VoiceTransport current = transport;
             boolean udp = current != null && current.udpConnected();
-            String state = !enabled + "|" + c.muted.get() + "|" + udp;
+            String state = !enabled + "|" + c.muted.get() + "|" + c.deafened.get() + "|" + udp;
             if (!state.equals(sentState)) {
                 sentState = state;
-                CaraCreaNetwork.CHANNEL.sendToServer(new CaraCreaNetwork.VoiceStateUp(!enabled, c.muted.get(), udp));
+                CaraCreaNetwork.CHANNEL.sendToServer(new CaraCreaNetwork.VoiceStateUp(!enabled, c.muted.get(), c.deafened.get(), udp));
             }
             if (current != null) {
                 current.report(lossPermille(), bufferMs());
@@ -501,34 +522,9 @@ public final class VoiceClient {
             }
             return;
         }
-        while (SETTINGS.consumeClick()) {
-            mc.setScreen(new VoiceSettingsScreen(null));
-        }
-        while (DISABLE.consumeClick()) {
-            c.voiceChat.set(!enabled);
-            CaraCreaConfig.CLIENT_SPEC.save();
-            mc.player.displayClientMessage(Component.translatable(enabled ? "caracrea.voice.disabled" : "caracrea.voice.enabled_again"), true);
-        }
-        while (HIDE_ICONS.consumeClick()) {
-            c.icons.set(!c.icons.get());
-            CaraCreaConfig.CLIENT_SPEC.save();
-        }
-        while (GROUPS.consumeClick()) {
-            if (groupsAllowed()) {
-                mc.setScreen(new VoiceGroupsScreen(null));
-            } else {
-                mc.player.displayClientMessage(Component.translatable("caracrea.voice.group.not_allowed"), true);
-            }
-        }
-        while (RECORD.consumeClick()) {
-            if (!recordingAllowed()) {
-                mc.player.displayClientMessage(Component.translatable("caracrea.voice.record.not_allowed"), true);
-            } else {
-                Path done = VoiceRecorder.toggle();
-                mc.player.displayClientMessage(done == null
-                        ? Component.translatable("caracrea.voice.record.started")
-                        : Component.translatable("caracrea.voice.record.saved", done.getFileName().toString()), true);
-            }
+        // Menu vocal : volume de chacun et couper quelqu'un ; son bouton « Réglages » mène aux réglages complets.
+        while (MENU.consumeClick()) {
+            mc.setScreen(new VoiceVolumesScreen(null));
         }
 
         if (testing && VoiceGate.testExpired(testingSince, System.nanoTime())) {
@@ -540,8 +536,8 @@ public final class VoiceClient {
         }
         if (!active()) {
             stopAudio();
-            while (MUTE.consumeClick()) {
-                // Nothing to mute.
+            while (MUTE.consumeClick() | MUTE_ALL.consumeClick() | MODE.consumeClick()) {
+                // Nothing to mute, nobody to hear or to talk to.
             }
             return;
         }
@@ -563,20 +559,31 @@ public final class VoiceClient {
             CaraCreaConfig.CLIENT_SPEC.save();
             mc.player.displayClientMessage(Component.translatable(muted ? "caracrea.voice.muted" : "caracrea.voice.unmuted"), true);
         }
+        while (MUTE_ALL.consumeClick()) {
+            boolean deafened = !c.deafened.get();
+            c.deafened.set(deafened);
+            CaraCreaConfig.CLIENT_SPEC.save();
+            mc.player.displayClientMessage(Component.translatable(deafened ? "caracrea.voice.everyone_muted" : "caracrea.voice.everyone_unmuted"), true);
+        }
+        while (MODE.consumeClick()) {
+            // Chuchoter -> parler -> crier -> chuchoter.
+            setVoiceMode(voiceMode + 1);
+            mc.player.displayClientMessage(Component.translatable("caracrea.voice.voice_mode.changed",
+                    Component.translatable(modeKey(voiceMode))), true);
+        }
 
         // Keys are read directly, so push-to-talk also works in the character creator and the voice
         // screens, but never while typing in the chat or a sign.
         boolean talkScreen = mc.screen == null || mc.screen instanceof CharacterCreatorScreen
                 || mc.screen instanceof VoiceSettingsScreen || mc.screen instanceof VoiceVolumesScreen;
         pushToTalkDown = talkScreen && isDown(PUSH_TO_TALK);
-        whisperDown = talkScreen && isDown(WHISPER);
 
         float volume = (float) (c.voiceVolume.get() * mc.options.getSoundSourceVolume(SoundSource.MASTER)
                 * mc.options.getSoundSourceVolume(SoundSource.VOICE));
         settings = new Settings(c.pushToTalk.get(), c.activationThreshold.get().floatValue(), c.micGain.get().floatValue(), volume,
                 !c.muted.get() && mc.player.isAlive(), testing, c.denoise.get() ? c.denoiseStrength.get() : 0, c.automaticGain.get(),
                 c.automaticActivation.get(), c.speaker.get(), mc.options.directionalAudio().get(), c.jitterBufferMs.get(),
-                config.bitrate());
+                config.bitrate(), c.deafened.get());
 
         Camera camera = mc.gameRenderer.getMainCamera();
         Vec3 eye = camera.getPosition();
@@ -586,7 +593,7 @@ public final class VoiceClient {
         float[] axes = {-left.x(), -left.y(), -left.z(), up.x(), up.y(), up.z(), look.x(), look.y(), look.z()};
         Map<UUID, double[]> positions = new HashMap<>();
         Map<UUID, String> names = new HashMap<>();
-        double reach = Math.max(config.range(), config.whisperRange()) + 16;
+        double reach = Math.max(config.range(), Math.max(config.whisperRange(), config.shoutRange())) + 16;
         boolean walls = c.occlusion.get();
         for (Player player : mc.level.players()) {
             if (player != mc.player && player.distanceToSqr(eye) <= reach * reach) {
@@ -597,7 +604,7 @@ public final class VoiceClient {
         if (VoiceRecorder.recording()) {
             mc.getConnection().getOnlinePlayers().forEach(info -> names.put(info.getProfile().getId(), info.getProfile().getName()));
         }
-        listener = new Listener(eye.x, eye.y, eye.z, axes, config.range(), config.whisperRange(), positions, names);
+        listener = new Listener(eye.x, eye.y, eye.z, axes, config.range(), config.whisperRange(), config.shoutRange(), positions, names);
     }
 
     /** 0 in the open, 0.5 behind a thin wall, up to 1 behind thick or several walls. */
@@ -655,7 +662,6 @@ public final class VoiceClient {
             current.stop();
         }
         pushToTalkDown = false;
-        whisperDown = false;
     }
 
     /** Stops everything (leaving the server, or the server does not run our voice chat). */

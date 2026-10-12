@@ -1,7 +1,15 @@
-# Launcher des joueurs (launcher/, voir CLAUDE.md section 8 ter) : tests, puis installateur Windows gardé 7 jours dans
-# l'onglet Actions (paquet « launcher-windows », si le quota d'artefacts du dépôt le permet). « Run workflow » avec
-# « publier » : l'installateur est aussi mis en ligne sur https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
-# (VM du site, dossier /var/www/telecharger), envoyé directement par la machine qui l'a fabriqué.
+# Launcher des joueurs (launcher/, voir CLAUDE.md section 8 ter), pour Windows, Mac et Linux.
+# - À chaque changement de launcher/ sur main : tests, installateur Windows (gardé 7 jours dans l'onglet Actions, paquet
+#   « launcher-windows », si le quota d'artefacts du dépôt le permet) et paquets Linux (fabriqués pour vérifier).
+# - « Run workflow » : en plus, l'application Mac (lancée seulement à la main : sur un dépôt privé, une minute de machine
+#   macOS en compte 10) ; les fichiers Mac et Linux sont gardés 3 jours dans l'onglet Actions (« launcher-mac »,
+#   « launcher-linux »). Avec « publier », chaque machine met ses fichiers en ligne sur https://heraliz.fr/telecharger/
+#   (VM du site, dossier /var/www/telecharger), avec le fichier de version lu par les launchers installés :
+#     Windows : HeraliZ-Launcher-Setup.exe + latest.yml
+#     Mac     : HeraliZ-Launcher.dmg et HeraliZ-Launcher-mac.zip + latest-mac.yml
+#     Linux   : HeraliZ-Launcher.AppImage et HeraliZ-Launcher.deb + latest-linux.yml
+#   Envoi direct depuis la machine qui a fabriqué les fichiers (launcher/ci/publier.py, pas d'artefact entre deux
+#   tâches : il en dépendrait). Une plateforme en échec n'empêche pas les autres d'être mises en ligne.
 name: Launcher HeraliZ
 
 on:
@@ -11,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       publier:
-        description: "Mettre l'installateur en ligne sur heraliz.fr/telecharger (sinon : seulement dans l'onglet Actions)"
+        description: "Mettre le launcher (Windows, Mac, Linux) en ligne sur heraliz.fr/telecharger (sinon : seulement dans l'onglet Actions)"
         type: boolean
         default: false
 
@@ -70,9 +78,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      # envoyé directement depuis cette machine (pas d'artefact entre deux tâches : il en dépendrait) ; nom fixe : le lien
-      # du site ne change jamais. Puis latest.yml (version, empreinte, taille), lu par les launchers installés pour se
-      # mettre à jour seuls. Mot de passe par variable d'environnement seulement, jamais dans une commande.
+      # nom fixe : le lien du site ne change jamais. Puis latest.yml (version, empreinte, taille), lu par les launchers
+      # installés pour se mettre à jour seuls. Mot de passe par variable d'environnement seulement, jamais dans une commande.
       - name: Mise en ligne sur heraliz.fr/telecharger
         if: github.event_name == 'workflow_dispatch' && inputs.publier
         env:
@@ -82,78 +89,141 @@ jobs:
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
           PYTHONUTF8: "1"
         run: |
-          if [ -z "$SITE_SSH_HOTE" ] || [ -z "$SITE_SSH_UTILISATEUR" ] || [ -z "$SITE_SSH_MDP" ]; then
-            echo "::error::Secrets SITE_SSH_* manquants (Settings → Secrets and variables → Actions)."
-            exit 1
-          fi
           shopt -s nullglob
           exe=(dist/*.exe)
           if [ "${#exe[@]}" -ne 1 ]; then echo "::error::Un seul installateur attendu, ${#exe[@]} trouvé(s)."; exit 1; fi
           python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
-          INSTALLATEUR="${exe[0]}" python - <<'PY'
-          import base64
-          import datetime
-          import hashlib
-          import json
-          import os
-          import sys
+          python ci/publier.py latest.yml "HeraliZ-Launcher-Setup.exe=${exe[0]}"
 
-          import paramiko
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
 
-          DOSSIER = "/var/www/telecharger"
-          NOM = "HeraliZ-Launcher-Setup.exe"
-          client = paramiko.SSHClient()
-          client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-          try:
-              client.connect(os.environ["SITE_SSH_HOTE"], port=int(os.environ.get("SITE_SSH_PORT") or 22),
-                             username=os.environ["SITE_SSH_UTILISATEUR"], password=os.environ["SITE_SSH_MDP"],
-                             timeout=20, banner_timeout=30, auth_timeout=30, allow_agent=False, look_for_keys=False)
-          except Exception as erreur:
-              print(f"::error::Connexion à la VM du site impossible : {type(erreur).__name__}")
-              sys.exit(1)
-          sftp = client.open_sftp()
-          try:
-              sftp.stat(DOSSIER)
-          except OSError:
-              print(f"::error::La VM du site n'est pas prête (dossier {DOSSIER}) : lancer le workflow « Site HeraliZ » avec « installer », puis relancer celui-ci.")
-              sys.exit(1)
-          # chaque fichier est envoyé sous un nom provisoire puis renommé d'un coup : jamais un fichier à moitié envoyé ;
-          # l'installateur d'abord, latest.yml ensuite (il ne désigne jamais un installateur absent)
-          def deposer(local, nom):
-              provisoire = f"{DOSSIER}/.{nom}.envoi"
-              sftp.put(local, provisoire, confirm=True)
-              sftp.chmod(provisoire, 0o644)
-              sftp.posix_rename(provisoire, f"{DOSSIER}/{nom}")
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: launcher/package-lock.json
 
-          installateur = os.environ["INSTALLATEUR"]
-          with open(installateur, "rb") as f:
-              empreinte = base64.b64encode(hashlib.sha512(f.read()).digest()).decode()
-          taille = os.path.getsize(installateur)
-          with open("package.json", encoding="utf-8") as f:
-              version = json.load(f)["version"]
-          date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-          with open("latest.yml", "w", encoding="utf-8", newline="\n") as f:
-              f.write(f"version: {version}\nfiles:\n  - url: {NOM}\n    sha512: {empreinte}\n    size: {taille}\n"
-                      f"path: {NOM}\nsha512: {empreinte}\nreleaseDate: '{date}'\n")
-          deposer(installateur, NOM)
-          deposer("latest.yml", "latest.yml")
-          sftp.close()
-          client.close()
-          print(f"Launcher {version} déposé dans {DOSSIER} ({NOM} et latest.yml)")
-          PY
-          URL=https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe
-          taille=$(curl -fsSI --max-time 60 "$URL" | tr -d '\r' | awk 'tolower($1) == "content-length:" {print $2}')
-          if [ "$taille" != "$(stat -c %s "${exe[0]}")" ]; then
-            echo "::error::$URL ne donne pas l'installateur envoyé (taille ${taille:-inconnue})."
+      - name: Dépendances
+        run: npm ci --no-audit --no-fund
+
+      - name: Tests
+        run: npm test
+
+      - name: AppImage et paquet .deb
+        run: |
+          rm -f app/assets/js/spartan-cle.json
+          npm run dist:linux
+          ls -l dist/HeraliZ-Launcher.AppImage dist/HeraliZ-Launcher.deb
+          if ! grep -q "url: https://heraliz.fr/telecharger/" dist/linux-unpacked/resources/app-update.yml; then
+            echo "::error::app-update.yml absent ou sans l'adresse heraliz.fr/telecharger : le launcher ne pourrait pas se mettre à jour."
             exit 1
           fi
-          VERSION=$(node -p "require('./package.json').version")
-          if ! curl -fsS --max-time 60 https://heraliz.fr/telecharger/latest.yml | grep -qx "version: $VERSION"; then
-            echo "::error::https://heraliz.fr/telecharger/latest.yml n'annonce pas la version $VERSION : les launchers installés ne se mettront pas à jour."
+
+      # gardés 3 jours, seulement sur « Run workflow » (place des artefacts du dépôt, partagée avec les mods du serveur)
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        with:
+          name: launcher-linux
+          path: |
+            launcher/dist/HeraliZ-Launcher.AppImage
+            launcher/dist/HeraliZ-Launcher.deb
+          retention-days: 3
+
+      - uses: actions/setup-python@v5
+        if: github.event_name == 'workflow_dispatch' && inputs.publier
+        with:
+          python-version: "3.12"
+
+      - name: Mise en ligne sur heraliz.fr/telecharger
+        if: github.event_name == 'workflow_dispatch' && inputs.publier
+        env:
+          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
+          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
+          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
+          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+          PYTHONUTF8: "1"
+        run: |
+          python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+          python ci/publier.py latest-linux.yml \
+            HeraliZ-Launcher.AppImage=dist/HeraliZ-Launcher.AppImage \
+            HeraliZ-Launcher.deb=dist/HeraliZ-Launcher.deb
+
+  mac:
+    # seulement à la main (« Run workflow ») : voir en tête
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    timeout-minutes: 50
+    defaults:
+      run:
+        shell: bash
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: launcher/package-lock.json
+
+      - name: Dépendances
+        run: npm ci --no-audit --no-fund
+
+      - name: Tests
+        run: npm test
+
+      # application universelle (Mac Intel et Apple Silicon), signée « ad hoc » (pas de certificat Apple) :
+      # macOS demande une autorisation au premier lancement (launcher/README.md)
+      - name: Application Mac
+        run: |
+          rm -f app/assets/js/spartan-cle.json
+          npm run dist:mac
+          ls -l dist/HeraliZ-Launcher.dmg dist/HeraliZ-Launcher-mac.zip
+          APP="dist/mac-universal/HeraliZ Launcher.app"
+          if ! grep -q "url: https://heraliz.fr/telecharger/" "$APP/Contents/Resources/app-update.yml"; then
+            echo "::error::app-update.yml absent ou sans l'adresse heraliz.fr/telecharger : le launcher ne verrait pas les nouvelles versions."
             exit 1
           fi
-          {
-            echo "### Launcher $VERSION en ligne"
-            echo "- $URL ($(( taille / 1048576 )) Mo)"
-            echo "- les launchers déjà installés (1.6.0 et plus) se mettent à jour seuls à leur prochain démarrage"
-          } >> "$GITHUB_STEP_SUMMARY"
+          archs=$(lipo -archs "$APP/Contents/MacOS/HeraliZ Launcher")
+          case "$archs" in
+            *x86_64*arm64*|*arm64*x86_64*) echo "Architectures : $archs" ;;
+            *) echo "::error::Application non universelle ($archs)."; exit 1 ;;
+          esac
+          # sans signature valide, un Mac Apple Silicon refuse de lancer l'application
+          codesign --verify --deep "$APP"
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: launcher-mac
+          path: launcher/dist/HeraliZ-Launcher.dmg
+          retention-days: 3
+
+      - uses: actions/setup-python@v5
+        if: inputs.publier
+        with:
+          python-version: "3.12"
+
+      # zip d'abord (fichier principal de latest-mac.yml, comme electron-builder), puis l'image disque à installer
+      - name: Mise en ligne sur heraliz.fr/telecharger
+        if: inputs.publier
+        env:
+          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
+          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
+          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
+          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+          PYTHONUTF8: "1"
+        run: |
+          python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+          python ci/publier.py latest-mac.yml \
+            HeraliZ-Launcher-mac.zip=dist/HeraliZ-Launcher-mac.zip \
+            HeraliZ-Launcher.dmg=dist/HeraliZ-Launcher.dmg

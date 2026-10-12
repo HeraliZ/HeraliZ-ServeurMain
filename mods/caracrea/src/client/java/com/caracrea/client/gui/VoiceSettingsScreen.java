@@ -6,6 +6,8 @@ import com.caracrea.client.gui.kit.HzButton;
 import com.caracrea.client.gui.kit.SonsUi;
 import com.caracrea.client.gui.kit.Ui;
 import com.caracrea.client.voice.VoiceClient;
+import com.caracrea.voice.net.VoiceProtocol;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -23,9 +25,10 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 /**
- * Settings of the built-in voice chat (key ")" on AZERTY, or {@code /voix}), in the HeraliZ interface style: a glass
- * panel with four tabs — <i>General</i> (on / off, push-to-talk or voice activation with an automatic or set threshold
- * on a live meter, mute, icons), <i>Microphone</i> (device, amplification, automatic volume, noise suppression strength,
+ * Settings of the built-in voice chat ({@code /voix}, or the « Réglages » button of the voice menu, key ")" on AZERTY), in
+ * the HeraliZ interface style: a glass panel with four tabs — <i>General</i> (on / off, push-to-talk or voice activation
+ * with an automatic or set threshold on a live meter, mute, couper tout le monde, mode de voix chuchoter / parler /
+ * crier, icons), <i>Microphone</i> (device, amplification, automatic volume, noise suppression strength,
  * and the microphone test: hear yourself with a large level meter showing the background level and the threshold),
  * <i>Sound</i> (output, volume, 3D, walls, jitter buffer, sound test) and <i>Network</i> (UDP or game connection, ping,
  * losses, buffer, bit rates). The per-player volumes and the groups are a click away. Changes apply at once.
@@ -94,9 +97,23 @@ public class VoiceSettingsScreen extends Screen {
                 return text("caracrea.voice.mute.hint", VoiceClient.MUTE.getTranslatedKeyMessage());
             }
         });
+        // Couper tout le monde : on n'entend plus aucune voix, les autres nous entendent toujours.
+        general.add(new Toggle("mute_all", c.deafened::get, v -> set(c.deafened, v)) {
+            @Override
+            String hint() {
+                return text("caracrea.voice.mute_all.hint", keyName(VoiceClient.MUTE_ALL));
+            }
+        });
+        // Mode de voix (même ordre que VoiceProtocol.MODE_* : chuchoter, parler, crier).
+        general.add(new Segments("voice_mode", () -> new String[]{text(VoiceClient.modeKey(VoiceProtocol.MODE_WHISPER)),
+                text(VoiceClient.modeKey(VoiceProtocol.MODE_TALK)), text(VoiceClient.modeKey(VoiceProtocol.MODE_SHOUT))},
+                VoiceClient::voiceMode, VoiceClient::setVoiceMode) {
+            @Override
+            String hint() {
+                return text("caracrea.voice.voice_mode.hint", keyName(VoiceClient.MODE));
+            }
+        });
         general.add(new Toggle("icons", c.icons::get, v -> set(c.icons, v)));
-        general.add(new Info("whisper", () -> VoiceClient.WHISPER.isUnbound() ? text("caracrea.voice.whisper.unbound")
-                : VoiceClient.WHISPER.getTranslatedKeyMessage().getString(), () -> Ui.TEXT));
         tabs.add(general);
 
         List<Row> micro = new ArrayList<>();
@@ -233,6 +250,11 @@ public class VoiceSettingsScreen extends Screen {
 
     private static String text(String key, Object... args) {
         return Component.translatable(key, args).getString();
+    }
+
+    /** Nom de la touche, ou « à assigner (Contrôles) » quand elle n'en a pas. */
+    private static String keyName(KeyMapping key) {
+        return key.isUnbound() ? text("caracrea.voice.key.unbound") : key.getTranslatedKeyMessage().getString();
     }
 
     private List<Row> visible() {

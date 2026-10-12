@@ -22,6 +22,8 @@ let etatComptes = null
 // mot de passe tapé juste avant, gardé seulement le temps de proposer la double authentification
 let motDePasseA2F = null
 let apresA2F = null
+// nouvelle version du launcher à télécharger à la main (Mac, Linux en .deb), montrée une fois l'accueil affiché
+let nouvelleVersion = null
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -334,7 +336,7 @@ function applyState(next) {
     $('logout-user').textContent = state.profile?.username || ''
     $('memory').max = state.settings.maxRAM
     $('memory').value = state.settings.ramGB
-    $('memory-desc').textContent = `${state.settings.totalRAM} Go détectés sur ton PC · une partie reste à Windows.`
+    $('memory-desc').textContent = `${state.settings.totalRAM} Go détectés sur ton PC · une partie reste au système.`
     $('fullscreen').checked = state.settings.fullscreen
     $('identity-back').hidden = !profileReady()
     afficherMemoire()
@@ -585,6 +587,7 @@ async function majLauncher() {
         splashStep(20, 'Recherche de mises à jour')
         const maj = await call(api.majLauncher()).catch(() => null)
         if (maj?.bloquee) toast(`La mise à jour ${maj.version} du launcher ne s’installe pas : retélécharge le launcher sur heraliz.fr.`)
+        if (maj?.manuelle) nouvelleVersion = maj.version
         if (!maj?.disponible) return false
         splashStep(0, `Mise à jour du launcher (version ${maj.version})…`)
         const etat = await fin
@@ -631,5 +634,19 @@ async function init() {
     await wait(400)
     restoreProfileForm()
     showScreen(profileReady() ? 'principal' : 'identite')
+    if (nouvelleVersion) proposerNouvelleVersion(nouvelleVersion)
 }
+
+// Mac et Linux (.deb) : le launcher ne se remplace pas seul, le joueur télécharge la nouvelle version (même lien que
+// sur le site) et l'installe par-dessus l'ancienne. Compte et jeu sont gardés.
+const CONSIGNE_MAJ = {
+    darwin: 'Télécharge-la, ouvre le fichier .dmg et glisse HeraliZ Launcher dans Applications pour remplacer l’ancienne version.',
+    linux: 'Télécharge-la et installe le nouveau paquet .deb par-dessus l’ancien (double-clic sur le fichier).'
+}
+function proposerNouvelleVersion(version) {
+    $('maj-version').textContent = version
+    $('maj-consigne').textContent = CONSIGNE_MAJ[state?.plateforme] || 'Télécharge-la sur heraliz.fr.'
+    $('maj-dialog').showModal()
+}
+$('maj-telecharger').addEventListener('click', () => $('maj-dialog').close())
 init()

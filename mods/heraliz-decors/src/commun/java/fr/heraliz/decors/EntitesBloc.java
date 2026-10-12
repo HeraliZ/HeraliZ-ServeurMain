@@ -1,7 +1,6 @@
 package fr.heraliz.decors;
 
 import fr.heraliz.decors.effet.CascadeBE;
-import fr.heraliz.decors.effet.RayonBE;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -15,9 +14,6 @@ public final class EntitesBloc {
     @SuppressWarnings("DataFlowIssue")
     public static final RegistryObject<BlockEntityType<CascadeBE>> CASCADE = TYPES.register("grande_cascade",
             () -> BlockEntityType.Builder.of(CascadeBE::new, Blocs.GRANDE_CASCADE.get()).build(null));
-    @SuppressWarnings("DataFlowIssue")
-    public static final RegistryObject<BlockEntityType<RayonBE>> RAYON = TYPES.register("rayon_soleil",
-            () -> BlockEntityType.Builder.of(RayonBE::new, Blocs.RAYON_SOLEIL.get()).build(null));
 
     private EntitesBloc() {}
 }

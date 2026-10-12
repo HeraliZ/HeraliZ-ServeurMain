@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "heraliz_interface.refmap.json",
   "client": [
+    "KeyBindsListMixin",
     "OptionsMixin"
   ],
   "injectors": {

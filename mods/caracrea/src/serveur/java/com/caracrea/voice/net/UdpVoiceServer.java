@@ -299,6 +299,12 @@ public final class UdpVoiceServer implements AutoCloseable {
                     limited++;
                     return;
                 }
+                // Autre version du protocole (drapeaux lus autrement) : jamais liée en UDP ; la connexion du jeu refuse
+                // déjà un client d'une autre version (canal de CaraCreaNetwork).
+                if (length < 1 || (buf[UP_HEADER] & 0xff) != VERSION) {
+                    invalid++;
+                    return;
+                }
                 boolean first = peer.address == null;
                 peer.address = source;
                 peer.bound = true;

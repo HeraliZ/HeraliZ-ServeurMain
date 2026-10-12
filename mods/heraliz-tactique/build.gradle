@@ -52,7 +52,7 @@ sourceSets {
 
 // Mixins : deux tables de correspondance.
 //   - commune (src/commun/resources/*.mixins.json : mixins des DEUX côtés de heralisz_tactical : enclume, bouclier, objets
-//     consommés) -> dans les trois jars ;
+//     consommés ; de heraliz_tactique : s'allonger, ramper de TaCZ vu par le serveur) -> dans les trois jars ;
 //   - client (src/client/resources/*.mixins.json) -> seulement dans -client et -complet.
 mixin {
     add sourceSets.main, "${jar_name}-commun.refmap.json"

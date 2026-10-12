@@ -14,6 +14,11 @@ public final class DuelsConfig {
     public static final long DEFI_MS = 30_000L;
     /** Delai minimal entre deux defis lances par le meme joueur (ms). */
     public static final long DEFI_CADENCE_MS = 3_000L;
+    /**
+     * Commandes de reponse a un defi (les memes dans toutes les langues), suivies au besoin de l'id du defi : boutons du
+     * chat (serveur) et rappel de la notification (client).
+     */
+    public static final String COMMANDE_ACCEPTER = "/duel accepter", COMMANDE_REFUSER = "/duel refuser";
     /** Carte par defaut (v1 : Nuketown). */
     public static final String CARTE_DEFAUT = "duel_nuketown";
 

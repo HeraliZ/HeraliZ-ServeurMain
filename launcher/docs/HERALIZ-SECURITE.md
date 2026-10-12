@@ -55,11 +55,14 @@ la MÊME fabrication que le jar serveur. Quand tous les joueurs passent par le l
 le site pour le compte connecté (mode B, depuis la 1.6.0) et passé au jeu par la variable d'environnement
 `SPARTAN_LAUNCH_TOKEN`, jamais sur la ligne de commande (depuis la 1.6.1) ; le serveur refuse qui n'en a pas
 (`tokenRequired = true`). Le launcher retire aussi de l'environnement du jeu `JAVA_TOOL_OPTIONS`, `_JAVA_OPTIONS` et
-`JDK_JAVA_OPTIONS`, que Java lit au démarrage (un `-javaagent` de triche pouvait s'y glisser), et ses verrous Electron
-(`electronFuses`) l'empêchent de tourner comme un simple Node.js ou de charger un autre code que son archive.
+`JDK_JAVA_OPTIONS`, que Java lit au démarrage (un `-javaagent` de triche pouvait s'y glisser), et, sur Linux et Mac,
+`LD_PRELOAD`, `LD_AUDIT` et `DYLD_INSERT_LIBRARIES` (bibliothèque native imposée au jeu) ; ses verrous Electron
+(`electronFuses`) l'empêchent de tourner comme un simple Node.js ou de charger un autre code que son archive (sur Mac,
+l'application est re-signée « ad hoc » après la pose des verrous). Le jeu est lancé détaché (il survit à la fermeture
+du launcher), avec le même environnement nettoyé.
 
 ## Limites restantes
 
 Pas encore de certificat Windows ni de signature cryptographique des mises à jour et du manifeste (prévu : clé gardée hors de la VM du site). HTTPS et les empreintes n’empêchent pas un hébergeur compromis de publier ensemble un manifeste et des fichiers malveillants.
 
-Depuis la 1.6.0, le launcher installé se met à jour seul depuis https://heraliz.fr/telecharger/ (latest.yml : version et empreinte SHA-512 contrôlée avant installation, `mise-a-jour.js`) ; le pack est actualisé à chaque partie. Qui peut écrire sur la VM du site peut donc livrer un launcher ou un pack : protéger ses accès (secrets `SITE_*`) et les comptes GitHub qui lancent la publication. Avant diffusion, tester le serveur réel et, si possible, signer l’installeur.
+Depuis la 1.6.0, le launcher installé se met à jour seul depuis https://heraliz.fr/telecharger/ (latest.yml : version et empreinte SHA-512 contrôlée avant installation, `mise-a-jour.js`) ; depuis la 1.8.0, l'AppImage Linux aussi (latest-linux.yml). Sur Mac (application signée « ad hoc », sans certificat Apple ni notarisation) et pour le paquet .deb, le launcher annonce seulement la nouvelle version (latest-mac.yml, latest-linux.yml) et le joueur la télécharge lui-même. Le pack est actualisé à chaque partie. Qui peut écrire sur la VM du site peut donc livrer un launcher ou un pack : protéger ses accès (secrets `SITE_*`) et les comptes GitHub qui lancent la publication. Avant diffusion, tester le serveur réel et, si possible, signer l’installeur.

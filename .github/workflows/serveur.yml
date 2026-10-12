@@ -278,6 +278,16 @@ jobs:
               for n in retirer:
                   f.write('rm -f "/plugins/%s"' % n.replace('"', '') + chr(10))
           print("plugins retirés du Ptero :", ", ".join(retirer) or "aucun")
+          # gunpacks : fichiers retirés du dépôt, listés dans serveur/tacz_retires.txt, effacés de /tacz après la copie
+          tacz = []
+          for l in open("serveur/tacz_retires.txt", encoding="utf-8"):
+              l = l.strip()
+              if l and not l.startswith("#") and ".." not in l and not l.startswith("/") and '"' not in l:
+                  tacz.append(l)
+          with open("retirer_tacz.lftp", "w", encoding="utf-8") as f:
+              for n in tacz:
+                  f.write('rm -f "/tacz/%s"' % n + chr(10))
+          print("fichiers de gunpacks retirés du Ptero (s'ils y sont encore) :", len(tacz))
           EOF
           # le monde en service : level-name du server.properties du Ptero (celui du dépôt à défaut)
           MONDE=""
@@ -301,7 +311,7 @@ jobs:
             mirror -R -P 8 serveur/defaultconfigs /defaultconfigs;
             mirror -R -P 8 serveur/defaultconfigs /$MONDE/serverconfig;
             mirror -R -P 8 serveur/tacz /tacz;
-            rm -f /tacz/arkaniaz_pack_0_converted/data/tacz/index/blocks/ammo_workbench.json /tacz/arkaniaz_pack_0_converted/data/tacz/index/blocks/attachment_workbench.json /tacz/arkaniaz_pack_0_converted/data/tacz/data/blocks/ammo_workbench.json /tacz/arkaniaz_pack_0_converted/data/tacz/data/blocks/attachment_workbench.json;
+            source retirer_tacz.lftp;
             mirror -R -P 8 serveur/heralisz_matchs /heralisz_matchs;
             mirror -R -P 8 serveur/mohist-config /mohist-config;
             bye"

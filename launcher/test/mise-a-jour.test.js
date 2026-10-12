@@ -98,3 +98,21 @@ test('installation ratée : au plus 2 essais par version, puis le joueur est pr�
     const casse = { lire: () => { throw new SyntaxError('JSON') }, ecrire: () => { throw new Error('disque plein') } }
     assert.equal((await new MiseAJour({ updater: fauxUpdater({ version: '1.7.0' }), actif: true, envoyer: () => {}, occupe: () => false, memoire: casse, delaiInstallationMs: 0 }).verifier()).disponible, true)
 })
+
+test('Mac et .deb : pas d’installation automatique, le joueur est prévenu de la nouvelle version', async () => {
+    const envois = []
+    const updater = fauxUpdater({ version: '1.8.0' })
+    let telechargements = 0
+    const telecharger = updater.downloadUpdate
+    updater.downloadUpdate = async () => { telechargements++; return telecharger() }
+    const maj = new MiseAJour({ updater, actif: true, auto: false, envoyer: e => envois.push(e), occupe: () => false, delaiInstallationMs: 0 })
+    assert.deepEqual(await maj.verifier(), { disponible: false, manuelle: true, version: '1.8.0' })
+    await attendre(10)
+    assert.equal(telechargements, 0)
+    assert.deepEqual(updater.installations, [])
+    assert.deepEqual(envois, [])
+    assert.equal(updater.autoInstallOnAppQuit, false, 'rien ne s’installe à la fermeture')
+    // déjà à jour : rien à dire ; version mal formée annoncée par le site : ignorée
+    assert.deepEqual(await new MiseAJour({ updater: fauxUpdater(), actif: true, auto: false, envoyer: () => {}, occupe: () => false }).verifier(), { disponible: false })
+    assert.deepEqual(await new MiseAJour({ updater: fauxUpdater({ version: '<b>2</b>' }), actif: true, auto: false, envoyer: () => {}, occupe: () => false }).verifier(), { disponible: false })
+})

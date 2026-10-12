@@ -1,7 +1,7 @@
 package com.caracrea.voice.net;
 
 /**
- * The voice datagrams (version 1), all numbers big-endian.
+ * The voice datagrams (version 2), all numbers big-endian.
  *
  * <pre>
  * client -&gt; server : magic(1) type(1) session(8) counter(8) | encrypted payload | tag(16)
@@ -17,13 +17,16 @@ package com.caracrea.voice.net;
  *   <li>VOICE_UP: flags(1) sequence(4) opus; VOICE_DOWN: speaker voice id(2) flags(1) sequence(4) dx dy dz (3 x int16,
  *   speaker minus listener in 1/8 block) opus.</li>
  * </ul>
+ *
+ * <p>Version 2 (CaraCrea 1.5) : le mode de voix (chuchoter, parler, crier) passe dans les drapeaux ({@link #F_WHISPER},
+ * {@link #F_SHOUT}).
  */
 public final class VoiceProtocol {
     /** Taille maximale d'un paquet Opus (octets) ; reprise par VoiceCodec (client). */
     public static final int MAX_PACKET = 512;
 
     public static final int MAGIC = 0xC7;
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
 
     public static final int HELLO = 0x01;
     public static final int HELLO_ACK = 0x02;
@@ -57,10 +60,18 @@ public final class VoiceProtocol {
     public static final int F_NO_POSITION = 8;
     /** Radio effect (reserved for addons). */
     public static final int F_RADIO = 16;
+    /** Le joueur crie : entendu jusqu'à la portée du cri (réglage serveur {@code porteeCri}). */
+    public static final int F_SHOUT = 32;
     /** Last frame of a sentence: the listener stops this voice right after it. */
     public static final int F_END = 0x80;
     /** Flags a client may set on its own frames. */
-    public static final int UP_FLAGS = F_WHISPER | F_END;
+    public static final int UP_FLAGS = F_WHISPER | F_SHOUT | F_END;
+
+    // Modes de voix, choisis par le joueur (touche « changer de mode ») : chuchoter, parler, crier.
+    public static final int MODE_WHISPER = 0;
+    public static final int MODE_TALK = 1;
+    public static final int MODE_SHOUT = 2;
+    public static final int MODES = 3;
 
     /** Position offsets are sent in 1/8 block. */
     public static final float POSITION_SCALE = 8F;
@@ -99,6 +110,16 @@ public final class VoiceProtocol {
 
     public static long getLong(byte[] b, int o) {
         return (long) getInt(b, o) << 32 | (getInt(b, o + 4) & 0xffffffffL);
+    }
+
+    /** Mode d'une trame d'après ses drapeaux ; si un client envoie les deux, le chuchotement l'emporte. */
+    public static int mode(int flags) {
+        return (flags & F_WHISPER) != 0 ? MODE_WHISPER : (flags & F_SHOUT) != 0 ? MODE_SHOUT : MODE_TALK;
+    }
+
+    /** Drapeau qui porte un mode (aucun pour parler normalement). */
+    public static int flag(int mode) {
+        return mode == MODE_WHISPER ? F_WHISPER : mode == MODE_SHOUT ? F_SHOUT : 0;
     }
 
     /** A position offset in blocks, as the int16 sent (clamped to about ±4096 blocks). */

@@ -19,7 +19,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 /**
  * Registres du coeur : la coque (obsidienne renforcee, incassable), le bloc de sortie des sas, la particule de
- * poussiere de coque. Les blocs de blindage (§5) sont enregistres par le module pillage dans ses propres registres.
+ * poussiere de coque. Les anciens blocs de blindage (niveaux 1 a 8) ont ete retires en 2.3.0 (constructions protegees :
+ * plan et marteau de CRac ; systeme des bases a repenser).
  */
 public final class BasesRegistry {
     private BasesRegistry() {

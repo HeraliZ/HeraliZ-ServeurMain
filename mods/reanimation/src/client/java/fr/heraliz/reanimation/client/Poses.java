@@ -1,9 +1,11 @@
 package fr.heraliz.reanimation.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import java.util.ArrayDeque;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
@@ -13,6 +15,10 @@ public final class Poses {
    public static final int BEAT = 12;
    private static final float KNEEL_LEGS = 1.2F;
    private static final double KNEEL_DROP = 0.32;
+   // bras d'un joueur à terre (radians) : au repos le long du corps, mains un peu vers l'avant ; tendu devant la tête
+   private static final float ARM_REST_X = -0.25F;
+   private static final float ARM_REST_Z = 0.12F;
+   private static final float ARM_REACH_Z = 2.84F;
    private static final ArrayDeque<Boolean> RENDERING = new ArrayDeque<>();
 
    private Poses() {
@@ -69,8 +75,11 @@ public final class Poses {
    }
 
    private static void lying(HumanoidModel<?> m, float limbSwing, float limbAmount) {
-      float moving = Mth.clamp(limbAmount * 2.5F, 0.0F, 1.0F);
-      float stroke = Mth.sin(limbSwing * 0.35F);
+      // Réglé sur la vraie reptation (crawlSpeed 0,35 x ramper vanilla : limbAmount ~0,09, soit 4 x les blocs par tick) :
+      // mouvement plein dès qu'il rampe, un cycle (bras droit puis bras gauche) par bloc environ. Les anciens réglages
+      // (x2,5 et x0,35) donnaient à cette vitesse un quart de mouvement et un cycle de 10 secondes.
+      float moving = Mth.clamp(limbAmount * 15.0F, 0.0F, 1.0F);
+      float stroke = Mth.sin(limbSwing * 1.6F);
       float kick = moving * stroke * 0.28F;
       m.rightLeg.xRot = 0.04F;
       m.leftLeg.xRot = 0.04F;
@@ -78,20 +87,28 @@ public final class Poses {
       m.leftLeg.yRot = 0.0F;
       m.rightLeg.zRot = 0.07F + Math.max(0.0F, kick);
       m.leftLeg.zRot = -0.07F - Math.max(0.0F, -kick);
-      m.rightArm.xRot = -3.05F;
-      m.leftArm.xRot = -3.05F;
+      // Bras au repos : le long du corps, un peu écartés, mains légèrement vers l'avant (posées au sol quand il est à plat).
+      // Avant : les deux bras tendus au-dessus de la tête (-3,05), ce qui faisait « bras levés » dès que le corps restait
+      // droit. En rampant, un bras à la fois passe par le côté (rotation z, au ras du sol, jamais à travers) et va se
+      // tendre devant la tête pour tirer le corps, puis revient le long du flanc ; immobile, plus aucun bras tendu.
+      float reachRight = moving * smooth(Math.max(0.0F, stroke));
+      float reachLeft = moving * smooth(Math.max(0.0F, -stroke));
+      m.rightArm.xRot = ARM_REST_X;
+      m.leftArm.xRot = ARM_REST_X;
       m.rightArm.yRot = 0.0F;
       m.leftArm.yRot = 0.0F;
-      m.rightArm.zRot = -0.35F + 0.35F * moving * stroke;
-      m.leftArm.zRot = 0.35F + 0.35F * moving * stroke;
+      m.rightArm.zRot = Mth.lerp(reachRight, ARM_REST_Z, ARM_REACH_Z);
+      m.leftArm.zRot = -Mth.lerp(reachLeft, ARM_REST_Z, ARM_REACH_Z);
       m.head.xRot = Math.min(m.head.xRot, -0.3F);
    }
 
    private static void revived(HumanoidModel<?> m, float p) {
       if (p > 0.86F) {
+         // fin de la réanimation : la main droite va se poser au sol devant l'épaule pour se relever (par le côté, comme
+         // en rampant)
          float k = smooth((p - 0.86F) / 0.13999999F);
-         m.rightArm.xRot = Mth.lerp(k, m.rightArm.xRot, -2.6F);
-         m.rightArm.zRot = Mth.lerp(k, m.rightArm.zRot, 0.2F);
+         m.rightArm.xRot = Mth.lerp(k, m.rightArm.xRot, -0.35F);
+         m.rightArm.zRot = Mth.lerp(k, m.rightArm.zRot, 2.64F);
       }
    }
 
@@ -181,21 +198,68 @@ public final class Poses {
             poseStack.pushPose();
             poseStack.translate(0.0, -0.32, 0.0);
             return true;
-         } else if (!info.has(4)) {
-            return false;
          } else {
-            float p = info.reviveProgress(partialTick);
-            if (!(p <= 0.1F) && !(p >= 0.86F)) {
-               float push = pump(info.revive + partialTick);
-               poseStack.pushPose();
-               poseStack.translate(0.0, -0.035 * push, 0.0);
-               poseStack.scale(1.0F + 0.03F * push, 1.0F - 0.05F * push, 1.0F + 0.03F * push);
-               return true;
-            } else {
-               return false;
+            boolean pushed = false;
+            if (info.has(4)) {
+               float p = info.reviveProgress(partialTick);
+               if (!(p <= 0.1F) && !(p >= 0.86F)) {
+                  float push = pump(info.revive + partialTick);
+                  poseStack.pushPose();
+                  pushed = true;
+                  poseStack.translate(0.0, -0.035 * push, 0.0);
+                  poseStack.scale(1.0F + 0.03F * push, 1.0F - 0.05F * push, 1.0F + 0.03F * push);
+               }
             }
+
+            if (layingFlat(e, info)) {
+               if (!pushed) {
+                  poseStack.pushPose();
+                  pushed = true;
+               }
+
+               layFlat(e, poseStack, partialTick, info.fall(partialTick));
+            }
+
+            return pushed;
          }
       }
+   }
+
+   /**
+    * Vrai quand un corps à terre (hors scène d'exécution) n'est pas dans la pose « nage » de Minecraft : le rendu vanilla
+    * le dessinerait debout, c'est {@link #layFlat} qui le couche (filet de sécurité, voir PlayerPoseMixin). Sa plaque de nom
+    * tournerait avec lui : ClientEvents la cache pendant ce temps.
+    */
+   static boolean layingFlat(Entity e) {
+      ClientDowned.Info info = ClientDowned.get(e.getId());
+      return info != null && !info.has(8) && !info.has(16) && e instanceof LivingEntity living && layingFlat(living, info)
+         && !ExecutionScenes.involved(e);
+   }
+
+   private static boolean layingFlat(LivingEntity e, ClientDowned.Info info) {
+      return info.has(1) && !e.isVisuallySwimming();
+   }
+
+   /**
+    * Couche le corps comme PlayerRenderer.setupRotations couche un joueur qui rampe : autour de l'axe du corps, rotation
+    * de -90° x {@code fall} (chute du corps, même vitesse que swimAmount) puis décalage (0, -1, 0,3). Le rendu vanilla
+    * tourne encore de son côté tant que swimAmount redescend (pose « nage » perdue) : cette part est retirée ici, la
+    * rotation n'est jamais appliquée deux fois. Appelé seulement hors pose « nage » : Minecraft n'ajoute alors pas son
+    * décalage.
+    */
+   private static void layFlat(LivingEntity e, PoseStack ps, float partialTick, float fall) {
+      if (fall <= 0.0F) {
+         return;
+      }
+
+      float yaw = 180.0F - Mth.rotLerp(partialTick, e.yBodyRotO, e.yBodyRot);
+      // rotation que le rendu vanilla (PlayerRenderer, BotRenderer) fera encore après nous
+      float vanilla = e.getSwimAmount(partialTick) * (e instanceof Player && e.isInWater() ? -90.0F - e.getXRot() : -90.0F);
+      ps.mulPose(Axis.YP.rotationDegrees(yaw));
+      ps.mulPose(Axis.XP.rotationDegrees(-90.0F * fall));
+      ps.translate(0.0F, -1.0F, 0.3F);
+      ps.mulPose(Axis.XP.rotationDegrees(-vanilla));
+      ps.mulPose(Axis.YP.rotationDegrees(-yaw));
    }
 
    static void beginPlayer(LivingEntity e, PoseStack poseStack, float partialTick) {

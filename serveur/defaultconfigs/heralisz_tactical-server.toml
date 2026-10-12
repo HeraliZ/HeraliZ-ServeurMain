@@ -17,3 +17,38 @@
 	#Range: 1 ~ 512
 	melee_max_target = 32
 
+[allonge]
+	#Délai (en secondes) avant de pouvoir se rallonger, compté à partir du moment où le joueur s'est relevé
+	#(touche, saut, autre objet en main, eau...). Le serveur compte 0,5 s de moins (décalage du réseau).
+	#Range: 0.0 ~ 60.0
+	delai_rallonger = 4.5
+	#Durée (en secondes) sans pouvoir tirer pendant que le joueur se couche (passage debout -> allongé ;
+	#l'animation de Minecraft dure 0,6 s). Le serveur compte 0,2 s de moins (décalage du réseau).
+	#Range: 0.0 ~ 5.0
+	duree_sans_tir_couche = 0.7
+
+[vitres]
+	#Les balles des armes TaCZ cassent le verre (verre, verre coloré ou teinté, vitres et vitres colorées : la même règle
+	#que TaCZ). La balle casse la vitre et s'arrête dessus ; la vitre repousse seule, au même endroit et dans le même
+	#état. Le verre gorgé d'eau ne casse pas (l'eau se répandrait). Le réglage DestroyGlass de tacz-common.toml doit
+	#rester à false : c'est HeraliZ qui casse (TaCZ ne regarde aucune zone protégée et dérange les blocs voisins).
+	#false : comme avant (les blocs de verre laissent passer les balles, les vitres les arrêtent, rien ne casse).
+	casser = true
+	#Délai (en minutes) avant qu'une vitre cassée repousse, compté en temps réel : une vitre dont le délai est passé
+	#pendant un arrêt du serveur repousse au redémarrage. Si quelqu'un se tient à sa place ou si un bloc l'occupe, elle
+	#attend et réessaie. Les vitres à remettre sont gardées dans les données du monde (data/heraliz_vitres.dat, une
+	#liste par dimension).
+	#Range: 1 ~ 10080
+	delai_repousse_minutes = 20
+	#Dimensions où le verre ne casse jamais (arènes des matchs, zombies, bunkers des clans) : les balles le traversent
+	#ou s'y arrêtent comme avant.
+	dimensions_protegees = ["heralisz_matchs:arenes", "heralisz_matchs:zombies", "heralisz_bases:bunkers"]
+	#Rayon (en blocs) autour du point d'apparition du monde (dimension minecraft:overworld) où le verre ne casse pas,
+	#sur toute la hauteur. 0 : aucun.
+	#Range: 0 ~ 100000
+	rayon_spawn = 64
+	#Le verre ne casse pas dans les claims de CRac (bases des groupes).
+	proteger_claims_crac = true
+	#Blocs de verre qui ne cassent jamais (identifiants, par exemple "minecraft:tinted_glass").
+	blocs_proteges = []
+

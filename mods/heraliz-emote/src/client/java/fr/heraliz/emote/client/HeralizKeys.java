@@ -1,6 +1,7 @@
 package fr.heraliz.emote.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import fr.heraliz.emote.HeralizEmote;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -13,8 +14,8 @@ public final class HeralizKeys {
     public static final String CATEGORY = "key.categories.heraliz_emote";
 
     /**
-     * In game only, and never reported as a conflict: Shift + right click is meant to share the
-     * right button with "Use item" (the use is cancelled only when an emote is borrowed).
+     * In game only, and never reported as a conflict: the Reverse sound key shares Left Ctrl with "Sprint" (it is only
+     * read while borrowing).
      */
     private static final IKeyConflictContext SHARED = new IKeyConflictContext() {
         @Override
@@ -28,8 +29,16 @@ public final class HeralizKeys {
         }
     };
 
-    public static final KeyMapping BORROW = new KeyMapping("key.heraliz_emote.borrow", SHARED, KeyModifier.SHIFT,
-            InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_RIGHT, CATEGORY);
+    /**
+     * Touche « Copier l'emote » : SANS touche par défaut (le joueur peut en choisir une dans Options > Commandes).
+     * Maj + clic droit sur un joueur qui danse copie son emote sans elle ({@link BorrowController#onInteraction}).
+     * <p>Avant la 2.7.1, elle valait Maj + clic droit. Avec Forge, une touche à modificateur posée sur un bouton prend
+     * TOUT ce bouton tant que le modificateur est enfoncé ({@code KeyMappingLookup.getAll} ne rend alors qu'elle) :
+     * accroupi, « Utiliser / Poser », la visée de TaCZ, les soins, la réanimation et la fouille ne recevaient plus le
+     * clic droit. {@link #retirerTouchePiege} retire ce réglage s'il est resté dans options.txt.</p>
+     */
+    public static final KeyMapping BORROW = new KeyMapping("key.heraliz_emote.borrow", KeyConflictContext.IN_GAME,
+            InputConstants.UNKNOWN, CATEGORY);
     public static final KeyMapping REVERSE_SOUND = new KeyMapping("key.heraliz_emote.reverse_sound", SHARED, KeyModifier.NONE,
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_CONTROL, CATEGORY);
     /**
@@ -65,8 +74,33 @@ public final class HeralizKeys {
         return modifier == KeyModifier.NONE || modifier.isActive(KeyConflictContext.IN_GAME);
     }
 
-    /** Bound to the same button as "Use item / Place block" (the default: Shift + right click). */
+    /** Mise par le joueur sur le même bouton que « Utiliser / Poser » (une touche sans bouton ne compte pas). */
     static boolean sharesUseKey(KeyMapping mapping) {
-        return mapping.getKey().equals(Minecraft.getInstance().options.keyUse.getKey());
+        InputConstants.Key key = mapping.getKey();
+        return !key.equals(InputConstants.UNKNOWN) && key.equals(Minecraft.getInstance().options.keyUse.getKey());
+    }
+
+    /**
+     * Retire (« sans touche ») la touche Copier si elle combine un modificateur (Maj, Ctrl, Alt) et le clic droit ou
+     * gauche, ou le bouton d'« Utiliser » ou d'« Attaquer » : réglage par défaut avant la 2.7.1, gardé dans options.txt
+     * chez les joueurs. Ce réglage volerait le clic à Minecraft et aux autres mods dès que le modificateur est enfoncé
+     * (voir {@link #BORROW}) ; Maj + clic droit sur un joueur qui danse marche sans lui. Appelée à chaque tick de jeu
+     * sans écran ouvert : une comparaison, et un enregistrement des options seulement quand il faut retirer.
+     *
+     * @return vrai si la touche a été retirée
+     */
+    static boolean retirerTouchePiege(Minecraft mc) {
+        KeyModifier modifier = BORROW.getKeyModifier();
+        InputConstants.Key key = BORROW.getKey();
+        if (modifier == KeyModifier.NONE || key.equals(InputConstants.UNKNOWN)) return false;
+        boolean clic = key.getType() == InputConstants.Type.MOUSE
+                && (key.getValue() == GLFW.GLFW_MOUSE_BUTTON_RIGHT || key.getValue() == GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        if (!clic && !key.equals(mc.options.keyUse.getKey()) && !key.equals(mc.options.keyAttack.getKey())) return false;
+        BORROW.setKeyModifierAndCode(KeyModifier.NONE, InputConstants.UNKNOWN);
+        BORROW.setDown(false);
+        KeyMapping.resetMapping();
+        mc.options.save();
+        HeralizEmote.LOGGER.info("Touche « Copier l'emote » ({} + {}) retirée : elle bloquait ce bouton", modifier, key.getName());
+        return true;
     }
 }

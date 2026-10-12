@@ -316,7 +316,8 @@ public final class ExtractionCommand {
         source.sendSuccess(() -> (on
                 ? Component.translatableWithFallback("heraliz_extraction.commande.rotation",
                 "Rotation : %s zone(s) ouvertes à la fois parmi %s, %s à %s min chacune.",
-                String.valueOf(ExtractionConfig.ROTATION_OPEN.get()), String.valueOf(pool),
+                ExtractionConfig.ROTATION_OPEN.get() + (ExtractionConfig.ROTATION_OPEN_MAX.get() > ExtractionConfig.ROTATION_OPEN.get()
+                        ? "-" + ExtractionConfig.ROTATION_OPEN_MAX.get() : ""), String.valueOf(pool),
                 String.valueOf(ExtractionConfig.ROTATION_MIN_MINUTES.get()), String.valueOf(ExtractionConfig.ROTATION_MAX_MINUTES.get()))
                 : Component.translatableWithFallback("heraliz_extraction.commande.rotation_coupee",
                 "Rotation coupée (rotation.enabled = false) : seules les ouvertures à la main et les zones permanentes comptent."))

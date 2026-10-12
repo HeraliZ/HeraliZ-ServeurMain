@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/slab",
- "textures": {
-  "bottom": "heraliz_decors:block/palmes_sechees",
-  "top": "heraliz_decors:block/palmes_sechees",
-  "side": "heraliz_decors:block/palmes_sechees"
- }
-}

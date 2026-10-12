@@ -116,19 +116,17 @@
   "heraliz_usure.ecran.general.creatif.aide": "Weapons also wear for players in creative mode.",
   "heraliz_usure.ecran.general.match": "No wear in matches",
   "heraliz_usure.ecran.general.match.aide": "Duels, ClashWar, zombies: weapons are loaned, they don't wear.",
-  "heraliz_usure.ecran.general.hud": "Display near the ammo counter",
-  "heraliz_usure.ecran.general.hud.aide": "Small condition pill under the ammo counter (each player can also turn it off).",
+  "heraliz_usure.ecran.general.hud": "Held weapon indicator",
+  "heraliz_usure.ecran.general.hud.aide": "Small condition indicator in the bottom left corner of the screen (each player can also turn it off).",
   "heraliz_usure.ecran.general.dimensions": "No-wear dimensions",
   "heraliz_usure.ecran.general.dimensions.aide": "Comma-separated.",
   "heraliz_usure.ecran.general.munitions": "Melee ammo",
   "heraliz_usure.ecran.general.munitions.aide": "TaCZ weapons that are knives.",
   "heraliz_usure.reglages.titre": "Weapon wear",
   "heraliz_usure.reglages.sous_titre": "How your weapons' condition is shown",
-  "heraliz_usure.reglages.hud": "Pill near the ammo counter",
+  "heraliz_usure.reglages.hud": "Indicator (bottom left)",
   "heraliz_usure.reglages.hud.aide": "The ruined alert is always shown.",
   "heraliz_usure.reglages.hud.toujours": "Always",
   "heraliz_usure.reglages.hud.si_usee": "If worn",
-  "heraliz_usure.reglages.hud.jamais": "Never",
-  "heraliz_usure.reglages.barre": "Wear bar on weapons",
-  "heraliz_usure.reglages.barre.aide": "In the inventory and the hotbar."
+  "heraliz_usure.reglages.hud.jamais": "Never"
 }

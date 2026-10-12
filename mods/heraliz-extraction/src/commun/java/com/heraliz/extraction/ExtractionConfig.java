@@ -13,6 +13,7 @@ public final class ExtractionConfig {
     public static final ForgeConfigSpec.BooleanValue FIXED_SMOKE;
     public static final ForgeConfigSpec.BooleanValue ROTATION_ENABLED;
     public static final ForgeConfigSpec.IntValue ROTATION_OPEN;
+    public static final ForgeConfigSpec.IntValue ROTATION_OPEN_MAX;
     public static final ForgeConfigSpec.IntValue ROTATION_MIN_MINUTES;
     public static final ForgeConfigSpec.IntValue ROTATION_MAX_MINUTES;
     public static final ForgeConfigSpec.IntValue ROTATION_WARN_MINUTES;
@@ -50,8 +51,11 @@ public final class ExtractionConfig {
                         "puis d'autres prennent le relais. false = les zones en rotation restent fermées",
                         "(ouverture à la main : /extraction open <nom>).")
                 .define("enabled", true);
-        ROTATION_OPEN = b.comment("Nombre de zones ouvertes en même temps (si la carte en a moins, elles restent toutes ouvertes).")
-                .defineInRange("openAtOnce", 3, 1, 32);
+        ROTATION_OPEN = b.comment("Nombre de zones ouvertes en même temps, au moins (si la carte en a moins, elles restent toutes",
+                        "ouvertes). Le nombre réel est tiré au hasard entre openAtOnce et openAtOnceMax à chaque fermeture.")
+                .defineInRange("openAtOnce", 5, 1, 32);
+        ROTATION_OPEN_MAX = b.comment("Nombre de zones ouvertes en même temps, au plus (voir openAtOnce).")
+                .defineInRange("openAtOnceMax", 6, 1, 32);
         ROTATION_MIN_MINUTES = b.comment("Durée d'ouverture d'une zone (minutes), tirée au hasard entre minMinutes et maxMinutes.")
                 .defineInRange("minMinutes", 30, 1, 1440);
         ROTATION_MAX_MINUTES = b.defineInRange("maxMinutes", 60, 1, 1440);

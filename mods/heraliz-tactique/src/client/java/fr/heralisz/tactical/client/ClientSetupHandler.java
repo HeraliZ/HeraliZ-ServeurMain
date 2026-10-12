@@ -2,7 +2,6 @@ package fr.heralisz.tactical.client;
 
 import fr.heralisz.tactical.client.audio.SoundHandler;
 import fr.heralisz.tactical.client.gui.overlay.InteractKeyTextOverlay;
-import fr.heralisz.tactical.client.input.AttackKeys;
 import fr.heralisz.tactical.client.overlay.UsingProgressOverlay;
 import fr.heralisz.tactical.client.particle.SmokeCloudParticle;
 import fr.heralisz.tactical.client.renderer.CoolDownDecorations;
@@ -28,7 +27,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -90,11 +88,8 @@ public class ClientSetupHandler {
       MinecraftForge.EVENT_BUS.register(SoundHandler.get());
    }
 
-   @SubscribeEvent
-   public static void onClientSetup(RegisterKeyMappingsEvent event) {
-      event.register(AttackKeys.NORMAL_ATTACK);
-      event.register(AttackKeys.SPECIAL_ATTACK);
-   }
+   // HeraliZ : plus de touches « Attaque normale » / « Attaque / action spéciale » (doublons d'Attaquer et d'Utiliser dans
+   // les Commandes) : AttackKeys lit directement les touches de Minecraft.
 
    @SubscribeEvent
    public static void onRegisterGuiOverlays(RegisterGuiOverlaysEvent event) {

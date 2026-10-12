@@ -1,6 +1,7 @@
 package fr.heralisz.matchs.duels;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -50,7 +51,7 @@ import java.util.UUID;
 /**
  * Partie serveur (docs/METHODE_CLIENT_SERVEUR.md) du module d'entree des duels (appele par {@code Modules}) : registres, paquets, commandes, ecouteurs.
  * <p>Commandes : {@code /duel} (ecran DUEL), {@code /duel <joueur>} (ecran avec la cible choisie), {@code /duel
- * accepter|refuser} (dernier defi recu), {@code /duel classes} (ecran CLASSES), {@code /duel quitter} (abandon),
+ * accepter|refuser [id]} (dernier defi recu, ou celui d'id donne : boutons du chat), {@code /duel classes} (ecran CLASSES), {@code /duel quitter} (abandon),
  * {@code /duel stats [joueur]}, {@code /duel classement} ; op : {@code /duel entrainement <rd|mam>} (contre la cible
  * immobile), {@code /duel etat}, {@code /duel annuler}.
  */
@@ -178,14 +179,21 @@ public final class DuelsLogique {
                     ouvrirEcranDuel(ctx.getSource().getPlayerOrException(), null);
                     return 1;
                 })
+                // sans id : le dernier defi recu ; avec id : ce defi-la (boutons du chat, plusieurs defis en attente)
                 .then(Commands.literal("accepter").executes(ctx -> {
                     Defis.repondreDernier(ctx.getSource().getPlayerOrException(), true);
                     return 1;
-                }))
+                }).then(Commands.argument("defi", IntegerArgumentType.integer(1)).executes(ctx -> {
+                    Defis.repondreCommande(ctx.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(ctx, "defi"), true);
+                    return 1;
+                })))
                 .then(Commands.literal("refuser").executes(ctx -> {
                     Defis.repondreDernier(ctx.getSource().getPlayerOrException(), false);
                     return 1;
-                }))
+                }).then(Commands.argument("defi", IntegerArgumentType.integer(1)).executes(ctx -> {
+                    Defis.repondreCommande(ctx.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(ctx, "defi"), false);
+                    return 1;
+                })))
                 .then(Commands.literal("classes").executes(ctx -> {
                     ouvrirClasses(ctx.getSource().getPlayerOrException());
                     return 1;

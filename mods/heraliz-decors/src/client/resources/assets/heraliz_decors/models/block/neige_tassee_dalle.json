@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/slab",
- "textures": {
-  "bottom": "heraliz_decors:block/neige_tassee",
-  "top": "heraliz_decors:block/neige_tassee",
-  "side": "heraliz_decors:block/neige_tassee"
- }
-}

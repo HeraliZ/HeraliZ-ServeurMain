@@ -11,7 +11,7 @@ public final class Profil {
     public final Categorie categorie;
     /** Arme exclue par une surcharge (couteaux, armes du mode zombies...). */
     public final boolean exclue;
-    /** Vrai si l'arme s'use : barre, infobulle, HUD et blocage de l'arme ruinee ne concernent que ces armes. */
+    /** Vrai si l'arme s'use : infobulle, HUD et blocage de l'arme ruinee ne concernent que ces armes. */
     public final boolean suivie;
     /** Usure par tir en % d'etat (affichage) et en milliemes (calcul). */
     public final float usurePct, usureMilliemes;

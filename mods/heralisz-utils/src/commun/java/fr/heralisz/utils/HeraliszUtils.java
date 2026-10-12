@@ -131,16 +131,43 @@ public final class HeraliszUtils {
 
     private static void hideOldItems(BuildCreativeModeTabContentsEvent event) {
         Set<String> hidden = HIDDEN.get(event.getTabKey().location());
-        if (hidden == null) {
-            return;
-        }
+        Set<String> meubles = meublesGardes();
         List<ItemStack> remove = new ArrayList<>();
         event.getEntries().forEach(e -> {
             ResourceLocation id = ForgeRegistries.ITEMS.getKey(e.getKey().getItem());
-            if (hidden.contains("*") || id != null && hidden.contains(id.getPath())) {
+            boolean cache = hidden != null && (hidden.contains("*") || id != null && hidden.contains(id.getPath()));
+            // onglet « HeraliZ » (meubles cfm) : seulement ceux posés sur la carte
+            boolean meubleInutile = id != null && "cfm".equals(id.getNamespace()) && !meubles.isEmpty()
+                    && !meubles.contains(id.getPath());
+            if (cache || meubleInutile) {
                 remove.add(e.getKey());
             }
         });
         remove.forEach(s -> event.getEntries().remove(s));
+    }
+
+    private static Set<String> meublesGardes;
+
+    /**
+     * Meubles de l'onglet « HeraliZ » (cfm) gardés dans le menu créatif : ceux posés sur la carte
+     * (heralisz_utils_onglet_heraliz.json, refait d'après le workflow « Inventaire de la carte »). Fichier absent ou
+     * illisible : rien n'est caché.
+     */
+    private static Set<String> meublesGardes() {
+        if (meublesGardes == null) {
+            Set<String> out = new java.util.HashSet<>();
+            try (java.io.InputStream in = HeraliszUtils.class.getResourceAsStream("/heralisz_utils_onglet_heraliz.json")) {
+                if (in != null) {
+                    JsonObject o = com.google.gson.JsonParser.parseReader(
+                            new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+                    o.getAsJsonArray("garder").forEach(x -> out.add(x.getAsString()));
+                }
+            } catch (Exception ex) {
+                LOG.warn("[utils] liste des meubles gardés illisible : rien n'est caché", ex);
+                out.clear();
+            }
+            meublesGardes = out;
+        }
+        return meublesGardes;
     }
 }

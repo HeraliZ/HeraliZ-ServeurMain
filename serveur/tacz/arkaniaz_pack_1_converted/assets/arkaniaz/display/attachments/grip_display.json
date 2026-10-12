@@ -1,9 +1,0 @@
-{
-  "slot": "arkaniaz:attachment/slot/grip",
-  "model": "arkaniaz:attachment/grip_geo",
-  "texture": "arkaniaz:attachment/uv/grip",
-  "sounds": {
-    "install": "tacz:attachments/attachment_general_b",
-    "uninstall": "tacz:attachments/attachment_general_uninstall"
-  }
-}

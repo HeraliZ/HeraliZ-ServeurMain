@@ -1,6 +1,0 @@
-{
- "parent": "minecraft:item/generated",
- "textures": {
-  "layer0": "heraliz_decors:item/rayon_soleil"
- }
-}

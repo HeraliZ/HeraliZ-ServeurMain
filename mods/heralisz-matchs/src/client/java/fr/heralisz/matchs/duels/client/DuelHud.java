@@ -25,7 +25,8 @@ import java.util.Locale;
 /**
  * HUD des duels : recherche et destruction (porteur de la charge, charge au sol, charge posee avec minuterie et bips,
  * invite « maintenez accroupi », barre de pose / desamorcage, reperes A / B et charge a l'ecran), eclair de
- * l'explosion, toasts des defis (en haut a gauche). DM Sans, verre, aucun element vanilla. Les textes sont prepares a la
+ * l'explosion, toasts de fin des defis (refuse, annule, expire : en haut a gauche ; les defis recus sont dans
+ * {@link NotifDefis}, en haut a droite). DM Sans, verre, aucun element vanilla. Les textes sont prepares a la
  * reception (pas d'allocation par image hors chiffres qui changent).
  */
 final class DuelHud {

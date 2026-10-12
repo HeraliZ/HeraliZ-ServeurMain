@@ -43,7 +43,7 @@ Prévoir une inscription ou connexion côté serveur, des limites d’essais, de
 
 ## Vérification avant publication
 
-1. Tester avec un profil Windows vierge : pseudo, Java 17, installation Forge et connexion au bon serveur.
+1. Tester avec un profil Windows vierge, puis sur un Mac (Intel et Apple Silicon si possible) et un Linux (AppImage et .deb) : pseudo, Java 17, installation Forge et connexion au bon serveur ; fermer le launcher pendant la partie (le jeu doit rester ouvert).
 2. Corrompre un fichier du pack : le launcher doit réparer ou arrêter le lancement.
 3. Tester une panne réseau, le redémarrage, la RAM, le plein écran et la fermeture du jeu.
 4. Vérifier côté serveur l’usurpation de pseudo, les droits staff et les sanctions.

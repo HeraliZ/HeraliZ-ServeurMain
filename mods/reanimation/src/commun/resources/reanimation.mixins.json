@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.reanimation.mixin.commun",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "reanimation-1.20.1-commun.refmap.json",
+  "mixins": [
+    "PlayerPoseMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

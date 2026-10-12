@@ -67,17 +67,18 @@ public class ModItems {
       ItemStack stack = new ItemStack((ItemLike)MELEE.get());
       IMeleeWeapon iMeleeWeapon = IMeleeWeapon.of(stack);
       if (iMeleeWeapon != null) {
-         iMeleeWeapon.setId(stack, new ResourceLocation("heralisz_melee", "dagger"));   // HeralisZ : contenu dans heralisz_melee
+         iMeleeWeapon.setId(stack, new ResourceLocation("heralisz_melee", "tac_dagger"));   // HeralisZ : contenu dans heralisz_melee
       }
 
       return stack;
    }
 
-   /** Groupe « Mêlée » de l'onglet HeraliZ · Tactique : toutes les armes de mêlée (aussi rangées dans l'onglet Heavy Weapon de TaCZ). */
+   /** Groupe « Mêlée » de l'onglet HeraliZ · Tactique : toutes les armes de mêlée, puis les couteaux des gunpacks. */
    public static void remplirMelee(Output pOutput) {
       for (MeleeWeaponIndex<?> index : HeraliszTacticalAPI.getMeleeIndexes()) {
          pOutput.accept(index.createItemStack());
       }
+      fr.heraliz.tactique.onglets.Couteaux.tous().forEach(pOutput::accept);
    }
 
    /** Groupe « Soins » : contenu de l'ancien onglet heralisz_tactical:consumable. */
@@ -107,8 +108,8 @@ public class ModItems {
    }
 
    /**
-    * HeralisZ : les armes de mêlée sont rangées dans l'onglet Heavy Weapon de TaCZ avec les couteaux (voir HeraliszTabs) ;
-    * cet onglet reste donc vide et n'est pas affiché. Le Flash Shield n'est plus proposé.
+    * HeraliZ : les armes de mêlée et les couteaux sont dans le groupe Mêlée de l'onglet HeraliZ · Tactique
+    * (remplirMelee) ; cet ancien onglet reste vide et n'est pas affiché. Le Flash Shield n'est plus proposé.
     */
    public static void fillMeleeWeapons(ItemDisplayParameters pParameters, Output pOutput) {
    }

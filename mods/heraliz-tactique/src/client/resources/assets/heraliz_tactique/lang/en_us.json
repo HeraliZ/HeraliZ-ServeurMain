@@ -10,5 +10,6 @@
   "overlay.heraliz_tactique.encore": "%s s left",
   "overlay.heraliz_tactique.explose": "explodes in %s s",
   "overlay.heraliz_tactique.lancer_doux": "Soft throw (crouched)",
-  "overlay.heraliz_tactique.pour_arreter": "to stop"
+  "overlay.heraliz_tactique.pour_arreter": "to stop",
+  "overlay.heraliz_tactique.allonge_attente": "You can go prone again in %s s"
 }

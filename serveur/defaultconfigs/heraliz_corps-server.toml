@@ -9,10 +9,10 @@
 	protection_clan = false
 	#Minutes (de jeu, serveur allume) avant qu'un corps disparaisse avec ce qu'il contient
 	#Range: 1 ~ 10080
-	disparition_minutes = 30
+	disparition_minutes = 10
 	#Secondes avant qu'un corps vide disparaisse
 	#Range: 1 ~ 600
-	disparition_vide_secondes = 10
+	disparition_vide_secondes = 1
 	#Corps au plus par chunk : au-dela, le plus ancien du chunk disparait (filet anti-lag)
 	#Range: 1 ~ 256
 	max_par_chunk = 16

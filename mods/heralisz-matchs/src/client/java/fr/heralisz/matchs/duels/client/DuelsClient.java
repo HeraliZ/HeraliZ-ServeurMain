@@ -9,7 +9,6 @@ import fr.heralisz.matchs.duels.armes.Catalogue;
 import fr.heralisz.matchs.duels.classes.ClassePerso;
 import fr.heralisz.matchs.duels.net.PaquetsDuels;
 import fr.heralisz.matchs.duels.net.Vues;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
@@ -29,9 +28,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Cote client des duels (classe d'entree client de {@code Modules}) : etat recu du serveur (catalogue, classes, defi,
- * recherche et destruction), ouverture des ecrans, HUD ({@link DuelHud}), rendu de la cible d'entrainement, etapes du
- * banc d'essai. Fil client.
+ * Cote client des duels (classe d'entree client de {@code Modules}) : etat recu du serveur (catalogue, classes, defis
+ * recus, recherche et destruction), ouverture des ecrans, HUD ({@link DuelHud}), notification des defis recus
+ * ({@link NotifDefis}, jamais d'ecran), rendu de la cible d'entrainement, etapes du banc d'essai. Fil client.
  */
 public final class DuelsClient {
     private DuelsClient() {
@@ -42,16 +41,16 @@ public final class DuelsClient {
     private static int derniere;
     private static int versionClasses;
     @Nullable
-    private static Vues.DefiVue defi;
-    private static long defiRecuMs;
-    @Nullable
     private static PaquetsDuels.ChoixS2C choixEnAttente;
 
     /** Appele par {@code Duels.construire} sur le client physique. */
     public static void initClient(IEventBus modBus) {
         modBus.addListener((EntityRenderersEvent.RegisterRenderers e) -> e.registerEntityRenderer(Registres.CIBLE.get(), CibleRenderer::new));
+        // touches « accepter / refuser un defi » (sans touche par defaut)
+        modBus.addListener(NotifDefis::enregistrerTouches);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, DuelsClient::masquerHud);
         MinecraftForge.EVENT_BUS.addListener(DuelHud::rendre);
+        MinecraftForge.EVENT_BUS.addListener(NotifDefis::rendre);
         MinecraftForge.EVENT_BUS.addListener(DuelHud::matrices);
         MinecraftForge.EVENT_BUS.addListener(DuelsClient::tick);
         MinecraftForge.EVENT_BUS.addListener(DuelsClient::deconnexion);
@@ -75,15 +74,10 @@ public final class DuelsClient {
         return versionClasses;
     }
 
+    /** Defi recu le plus recent encore en attente, ou null. */
     @Nullable
     public static Vues.DefiVue defi() {
-        return defi;
-    }
-
-    /** Millisecondes restantes du defi recu (0 si aucun). */
-    public static long defiResteMs() {
-        if (defi == null) return 0;
-        return Math.max(0, defi.resteMs() - (Util.getMillis() - defiRecuMs));
+        return NotifDefis.plusRecent();
     }
 
     // ------------------------------------------------------------------ reception
@@ -102,29 +96,24 @@ public final class DuelsClient {
 
     public static void ecranDuel(Vues.EcranDuel e) {
         Minecraft mc = Minecraft.getInstance();
-        if (e.entrant() != null) {
-            defi = e.entrant();
-            defiRecuMs = Util.getMillis();
-        }
+        if (e.entrant() != null) NotifDefis.ajouter(e.entrant(), false);
         if (mc.screen instanceof DuelScreen s) s.mettreAJour(e);
-        else if (mc.screen == null || mc.screen instanceof DefiScreen || mc.screen instanceof ClassesScreen) mc.setScreen(new DuelScreen(e));
+        else if (mc.screen == null || mc.screen instanceof ClassesScreen) mc.setScreen(new DuelScreen(e));
     }
 
+    /**
+     * Defi recu : notification discrete en haut a droite ({@link NotifDefis}) et son, JAMAIS d'ecran (on peut etre en
+     * plein PvP). Fin d'un defi : sa notification sort ; {@code idFini} negatif = debut d'un duel, toutes sortent.
+     */
     public static void defi(@Nullable Vues.DefiVue d, int idFini, String raison) {
         Minecraft mc = Minecraft.getInstance();
         if (d != null) {
-            defi = d;
-            defiRecuMs = Util.getMillis();
-            DuelHud.toast(Component.translatable("duel.toast.defi"), Component.translatable("duel.toast.defi_texte", d.defiant(),
-                    d.format().toUpperCase(java.util.Locale.ROOT)), true);
+            NotifDefis.ajouter(d, true);
             if (mc.player != null) mc.player.playNotifySound(Registres.DEFI.get(), SoundSource.MASTER, 0.9f, 1f);
-            if (mc.screen == null) mc.setScreen(new DefiScreen(d));
             return;
         }
-        if (defi != null && (idFini < 0 || defi.id() == idFini)) {
-            defi = null;
-            if (mc.screen instanceof DefiScreen) mc.setScreen(null);
-        }
+        if (idFini < 0) NotifDefis.vider(true);
+        else NotifDefis.retirer(idFini);
         if (idFini < 0 && mc.screen instanceof DuelScreen) mc.setScreen(null);
         if (!raison.isEmpty()) DuelHud.toast(Component.translatable("duel.toast.defi"), Component.translatable(raison), false);
     }
@@ -197,19 +186,20 @@ public final class DuelsClient {
     private static void tick(TickEvent.ClientTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
         DuelHud.tick();
+        NotifDefis.tick();
         if (choixEnAttente != null && !killcamActive() && ouvrirChoix(choixEnAttente)) choixEnAttente = null;
-        if (defi != null && defiResteMs() <= 0) defi = null;
     }
 
     private static void deconnexion(ClientPlayerNetworkEvent.LoggingOut e) {
         catalogue = Catalogue.VIDE;
         classes = List.of();
-        defi = null;
+        NotifDefis.vider(false);
         choixEnAttente = null;
         DuelHud.vider();
     }
 
-    private static boolean killcamActive() {
+    /** Vrai pendant une killcam (les HUD des duels se taisent). */
+    static boolean killcamActive() {
         try {
             return fr.heralisz.matchs.duels.killcam.client.KillcamClient.actif();
         } catch (LinkageError ex) {
@@ -250,8 +240,8 @@ public final class DuelsClient {
         });
         r.ajouter("duelLog", (mc, v, s) -> {
             if (mc.screen instanceof EcranDuels d) HeraliszMatchs.LOG.info("[duels] ecran {} : {}", mc.screen.getClass().getSimpleName(), d.journal());
-            HeraliszMatchs.LOG.info("[duels] catalogue client v{} : {} armes ; classes {} ; HUD {}", catalogue.version(), catalogue.armes().size(),
-                    classes.size(), DuelHud.etat());
+            HeraliszMatchs.LOG.info("[duels] catalogue client v{} : {} armes ; classes {} ; HUD {} ; defis {}", catalogue.version(), catalogue.armes().size(),
+                    classes.size(), DuelHud.etat(), NotifDefis.etat());
         });
     }
 
@@ -281,11 +271,11 @@ public final class DuelsClient {
                         new Vues.StatsVue(14, 9, 212, 167, 48, 23), etape.has("entrant") ? in : null, null, null)));
             }
             case "defi" -> {
-                Vues.DefiVue d = new Vues.DefiVue(8, "Vortex", "Dev", "2v2", Vues.MODE_MAM, "Nuketown", 30_000, List.of("Vortex", "Kaelis"), List.of("Dev", "Ravenn"));
-                defi = d;
-                defiRecuMs = Util.getMillis();
-                DuelHud.toast(Component.translatable("duel.toast.defi"), Component.translatable("duel.toast.defi_texte", "Vortex", "2V2"), true);
-                mc.setScreen(new DefiScreen(d));
+                // deux defis empiles : un 1v1 (plus ancien), puis un 2v2 (le plus recent, en haut, avec le rappel)
+                mc.setScreen(null);
+                NotifDefis.ajouter(new Vues.DefiVue(9, "Nova_77", "Dev", "1v1", Vues.MODE_RD, "Nuketown", 12_000, List.of("Nova_77"), List.of("Dev")), true);
+                NotifDefis.ajouter(new Vues.DefiVue(8, "Vortex", "Dev", "2v2", Vues.MODE_MAM, "Nuketown", 30_000, List.of("Vortex", "Kaelis"),
+                        List.of("Dev", "Ravenn")), true);
             }
             case "choix" -> mc.setScreen(new ChoixClasseScreen(new PaquetsDuels.ChoixS2C(5, classes, 1,
                     Component.translatable("duel.choix.manche", 2, Component.translatable("duel.role.attaque")), 0xE8C547, false)));
@@ -313,6 +303,7 @@ public final class DuelsClient {
             }
             case "aucun" -> {
                 DuelHud.vider();
+                NotifDefis.vider(false);
                 mc.setScreen(null);
             }
             default -> HeraliszMatchs.LOG.warn("[duels] duelFaux inconnu : {}", q);

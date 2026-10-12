@@ -35,12 +35,38 @@ Voir [la configuration du pack](docs/HERALIZ-DEPLOIEMENT.md) et [les protections
 ```sh
 npm test
 npm run lint
-npm run dist:win
+npm run dist:win     # sur Windows : dist/HeraliZ-Launcher-Setup.exe
+npm run dist:mac     # sur un Mac : dist/HeraliZ-Launcher.dmg et HeraliZ-Launcher-mac.zip (application universelle)
+npm run dist:linux   # sur Linux : dist/HeraliZ-Launcher.AppImage et HeraliZ-Launcher.deb
 ```
 
-L’installeur Windows est créé dans `dist/`. Sur GitHub, le workflow « Launcher HeraliZ » (`.github/workflows/launcher.yml`, à la racine du dépôt) teste et construit l’installateur Windows à chaque changement de `launcher/` sur `main`, et le met en ligne à https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe sur demande (case « publier ») ; voir `CLAUDE.md`, section 8 ter. Le launcher ne se met pas à jour seul ; le pack est actualisé au lancement du jeu.
+Sur GitHub, le workflow « Launcher HeraliZ » (`.github/workflows/launcher.yml`, à la racine du dépôt) teste et fabrique le launcher Windows et Linux à chaque changement de `launcher/` sur `main`, et aussi le launcher Mac sur « Run workflow ». Avec la case « publier », chaque fichier est mis en ligne à un lien fixe, avec son fichier de version (`ci/publier.py`) ; voir `CLAUDE.md`, section 8 ter :
 
-Le profil et le jeu sont enregistrés dans le dossier de données de l’application HeraliZ. L’ancien dossier Helios et `.minecraft` ne sont pas réutilisés automatiquement.
+| Système | Lien | Mise à jour du launcher |
+|---|---|---|
+| Windows | https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe | automatique (`latest.yml`) |
+| Mac (Intel et Apple Silicon) | https://heraliz.fr/telecharger/HeraliZ-Launcher.dmg | le launcher prévient et propose le nouveau fichier (`latest-mac.yml`) |
+| Linux, toutes distributions | https://heraliz.fr/telecharger/HeraliZ-Launcher.AppImage | automatique (`latest-linux.yml`) |
+| Linux, Ubuntu / Debian / Mint | https://heraliz.fr/telecharger/HeraliZ-Launcher.deb | le launcher prévient et propose le nouveau fichier |
+
+Le pack de jeu est actualisé à chaque lancement, sur tous les systèmes. Java 17 est téléchargé pour le bon système (Apple Silicon compris, sans Rosetta).
+
+Le jeu est lancé à part du launcher (« détaché ») : le joueur peut fermer le launcher pendant la partie, Minecraft reste ouvert. Un launcher rouvert pendant la partie refuse d'en lancer une seconde. La console du jeu (dont les erreurs de Java au démarrage) est écrite dans `logs/console-jeu.log` du dossier du jeu.
+
+## Installer sur Mac ou Linux (à donner aux joueurs)
+
+**Mac** : télécharger `HeraliZ-Launcher.dmg`, l'ouvrir et glisser HeraliZ Launcher dans Applications. L'application n'est pas signée par Apple (certificat payant) : au premier lancement, macOS la bloque une fois.
+
+- macOS 15 (Sequoia) et plus récent : ouvrir le launcher, fermer le message avec « Terminé », puis Réglages Système → Confidentialité et sécurité → en bas, « Ouvrir quand même » à côté de HeraliZ Launcher, et confirmer (mot de passe ou Touch ID).
+- macOS 14 et plus ancien : dans Applications, clic droit (ou Ctrl + clic) sur HeraliZ Launcher → Ouvrir → Ouvrir.
+- Si macOS demande l'accès au trousseau « HeraliZ Launcher Safe Storage » (après une nouvelle version), choisir « Toujours autoriser » : c'est là qu'est gardée la connexion au compte.
+- Nouvelle version : le launcher l'annonce avec un bouton « Télécharger » ; glisser la nouvelle application dans Applications pour remplacer l'ancienne (compte et jeu gardés).
+
+**Linux** :
+
+- Ubuntu, Debian, Mint, Pop!_OS : télécharger `HeraliZ-Launcher.deb` et l'installer (double-clic, ou `sudo apt install ./HeraliZ-Launcher.deb`). Nouvelle version : annoncée par le launcher, installer le nouveau `.deb` de la même façon.
+- Autres distributions : télécharger `HeraliZ-Launcher.AppImage`, le rendre exécutable (Propriétés → Autoriser l'exécution, ou `chmod +x HeraliZ-Launcher.AppImage`) et l'ouvrir. Il se met à jour seul. S'il ne s'ouvre pas, installer FUSE 2 (paquet `libfuse2` ou `fuse2`).
+- La connexion au compte est gardée dans le trousseau du bureau (GNOME Keyring, KWallet). Sans trousseau, le launcher ne la garde pas : il faut se reconnecter à chaque ouverture.
 
 ## Architecture
 
@@ -48,7 +74,9 @@ Le profil et le jeu sont enregistrés dans le dossier de données de l’applica
 - `app/preload.js` : API étroite exposée à l’interface.
 - `app/index.html`, `app/assets/css/heraliz.css`, `app/assets/js/renderer.js` : interface locale, sans contenu web distant.
 - `launcher-service.js` : profil, état serveur, Java, téléchargements et cycle de vie de Minecraft.
-- `processbuilder.js` : arguments Minecraft/Forge, conservés depuis Helios et adaptés aux profils locaux.
+- `processbuilder.js` : arguments Minecraft/Forge, conservés depuis Helios et adaptés aux profils locaux ; lancement détaché du jeu.
+- `mise-a-jour.js` : mise à jour du launcher lui-même (automatique ou annoncée selon le système).
+- `ci/publier.py` : mise en ligne sur heraliz.fr/telecharger (workflow « Launcher HeraliZ »).
 - `topo.js` : fond « carte » dessiné une fois par taille de fenêtre (rien d’animé).
 - `nouveautes.js` + `app/assets/images/nouveautes/` (images 960 × 540) : les trois nouveautés de l’accueil, la plus récente en premier.
 

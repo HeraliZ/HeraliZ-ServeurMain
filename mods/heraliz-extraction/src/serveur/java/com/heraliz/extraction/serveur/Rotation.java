@@ -68,6 +68,9 @@ public final class Rotation {
         }
     }
 
+    /** Nombre de zones à garder ouvertes, tiré entre openAtOnce et openAtOnceMax (-1 : à tirer). */
+    private static int cible = -1;
+
     static void tick(MinecraftServer server) {
         ExtractionZones data = ExtractionZones.get(server);
         long now = now(server);
@@ -87,6 +90,7 @@ public final class Rotation {
                     data.open(zone.name(), now + randomDuration());
                 } else {
                     data.close(zone.name(), now);
+                    cible = -1;                                                     // nouveau tirage du nombre ouvert
                     tellNearby(server, zone, "heraliz_extraction.zone.fermee", "%s est fermée.", ChatFormatting.GRAY);
                 }
                 changed = true;
@@ -97,15 +101,22 @@ public final class Rotation {
 
         if (rotation) {
             List<ExtractionZones.Zone> pool = data.all().stream().filter(z -> z.mode() == ExtractionZones.Mode.ROTATION).toList();
-            int target = Math.min(ExtractionConfig.ROTATION_OPEN.get(), pool.size());
+            int min = ExtractionConfig.ROTATION_OPEN.get();
+            int max = Math.max(min, ExtractionConfig.ROTATION_OPEN_MAX.get());
+            if (cible < min || cible > max) {
+                cible = min + RANDOM.nextInt(max - min + 1);
+            }
+            int target = Math.min(cible, pool.size());
             int open = (int) pool.stream().filter(z -> data.isOpen(z, now)).count();
             while (open < target) {
                 List<ExtractionZones.Zone> candidates = closedCandidates(data, now, null);
                 if (candidates.isEmpty()) {
                     break;
                 }
-                // les zones fermées depuis le plus longtemps (ou jamais ouvertes) d'abord, un peu de hasard parmi elles
-                ExtractionZones.Zone pick = candidates.get(RANDOM.nextInt(Math.max(1, (candidates.size() + 1) / 2)));
+                // au hasard parmi toutes les zones fermées, sauf celles qui viennent de fermer (le quart le plus récent),
+                // pour qu'une zone ne rouvre pas aussitôt
+                int choix = Math.max(1, candidates.size() - candidates.size() / 4);
+                ExtractionZones.Zone pick = candidates.get(RANDOM.nextInt(choix));
                 long duration = randomDuration();
                 data.open(pick.name(), now + duration);
                 announceOpening(server, pick, duration);

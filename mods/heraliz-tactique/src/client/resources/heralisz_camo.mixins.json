@@ -17,7 +17,8 @@
     "BedrockCubePerFaceAccessor",
     "ItemRendererBagMixin",
     "GunItemIconeMixin",
-    "GunSmithTableScreenAccessor"
+    "GunSmithTableScreenAccessor",
+    "IconeOngletMixin"
   ],
   "injectors": {
     "defaultRequire": 1

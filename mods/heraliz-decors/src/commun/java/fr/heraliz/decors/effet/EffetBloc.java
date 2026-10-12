@@ -12,7 +12,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Bloc invisible qui porte un grand effet (cascade, rayon de soleil) : le bloc ne se dessine pas, c'est son entité
+ * Bloc invisible qui porte un grand effet (cascade) : le bloc ne se dessine pas, c'est son entité
  * de bloc qui dessine tout l'effet d'un seul tenant, côté client seulement. Aucune collision, aucun calcul serveur
  * (pas de tick) : coût nul pour le serveur.
  */

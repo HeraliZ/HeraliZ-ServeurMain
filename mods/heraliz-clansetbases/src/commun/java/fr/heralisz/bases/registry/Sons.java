@@ -37,6 +37,14 @@ public final class Sons {
     public static final RegistryObject<SoundEvent> COQUE_PAS = son("coque_pas");
     public static final RegistryObject<SoundEvent> COQUE_COUP = son("coque_coup");
 
+    /**
+     * Coup de C4 encaisse par un bloc protege (fissures) et rupture au dernier coup (blindage.Blindage). Ids d'origine
+     * gardes ({@code blindage_fissure}, {@code blindage_rupture}) : ils etaient enregistres avec les anciens blocs de
+     * blindage, retires en 2.3.0.
+     */
+    public static final RegistryObject<SoundEvent> FISSURE = son("blindage_fissure");
+    public static final RegistryObject<SoundEvent> RUPTURE = son("blindage_rupture");
+
     /** Sons de bloc de la coque et de la sortie (aucun son vanilla). */
     public static final ForgeSoundType COQUE = new ForgeSoundType(1.0f, 1.0f, COQUE_COUP, COQUE_PAS, COQUE_COUP, COQUE_COUP, COQUE_PAS);
 

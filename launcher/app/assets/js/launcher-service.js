@@ -4,6 +4,7 @@ const path = require('node:path')
 const os = require('node:os')
 const net = require('node:net')
 const dns = require('node:dns').promises
+const execFile = require('node:util').promisify(require('node:child_process').execFile)
 const got = require('got')
 const { HeliosDistribution, validateLocalFile } = require('helios-core/common')
 const { DistributionIndexProcessor, MojangIndexProcessor, downloadQueue, downloadFile, getExpectedDownloadSize } = require('helios-core/dl')
@@ -16,16 +17,46 @@ const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { CompteSite } = require('./compte-site')
 const Spartan = require('./spartan')
 
-// Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur). Sans chiffrement
-// disponible, il n'est pas gardé : il faudra se reconnecter au prochain lancement.
+// Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur ; Mac : trousseau ;
+// Linux : GNOME Keyring ou KWallet). Sans vrai chiffrement disponible, il n'est pas gardé : il faudra se reconnecter
+// au prochain lancement.
+function chiffrementDisponible() {
+    if (!safeStorage?.isEncryptionAvailable?.()) return false
+    // Linux sans trousseau : Electron « chiffre » avec une clé écrite dans son propre code, autant dire en clair
+    if (process.platform === 'linux' && ['basic_text', 'unknown'].includes(safeStorage.getSelectedStorageBackend?.())) return false
+    return true
+}
 function chiffrer(jeton) {
-    if (!jeton || !safeStorage?.isEncryptionAvailable?.()) return null
+    if (!jeton || !chiffrementDisponible()) return null
     return safeStorage.encryptString(jeton).toString('base64')
 }
 function dechiffrer(valeur) {
-    if (!valeur || !safeStorage?.isEncryptionAvailable?.()) return null
+    if (!valeur || !chiffrementDisponible()) return null
     try { return safeStorage.decryptString(Buffer.from(valeur, 'base64')) } catch { return null }
 }
+
+// Le jeu est lancé détaché : il reste ouvert si le launcher est fermé. Son numéro de processus est noté
+// (partie-en-cours.json) pour qu'un launcher rouvert pendant la partie ne lance pas un second Minecraft.
+const PARTIE_MAX_MS = 2 * 24 * 3600 * 1000
+function fichierPartie() {
+    return path.join(app.getPath('userData'), 'partie-en-cours.json')
+}
+
+// Nom du programme qui porte ce numéro de processus (« javaw.exe », « java »…), ou null s'il n'existe plus.
+async function nomProcessus(pid) {
+    try { process.kill(pid, 0) } catch { return null }
+    try {
+        if (process.platform === 'linux') return (await fs.readFile(`/proc/${pid}/comm`, 'utf8')).trim() || null
+        if (process.platform === 'win32') {
+            const { stdout } = await execFile('tasklist', ['/FI', `PID eq ${pid}`, '/FO', 'CSV', '/NH'], { timeout: 8000, windowsHide: true })
+            const premier = /^"([^"]+)","(\d+)"/m.exec(stdout)
+            return premier && Number(premier[2]) === pid ? premier[1] : null
+        }
+        const { stdout } = await execFile('ps', ['-p', String(pid), '-o', 'comm='], { timeout: 8000 })
+        return path.basename(stdout.trim()) || null
+    } catch { return null }
+}
+const estJava = nom => /^javaw?(\.exe)?$/i.test(nom || '')
 
 // Machine et port réels du jeu : comme Minecraft, un enregistrement DNS « _minecraft._tcp.<domaine> » (SRV) peut
 // renvoyer le domaine vers un autre hôte ou un autre port. Minecraft ne le cherche que pour le port 25565.
@@ -65,11 +96,12 @@ function detailTelechargement(octets, total, debut) {
 }
 
 class LauncherService {
-    constructor(config, notify, { compteSite } = {}) {
+    constructor(config, notify, { compteSite, nomProcessus: nomDuProcessus = nomProcessus } = {}) {
         this.config = config
         this.notify = notify
         this.busy = false
         this.game = null
+        this.nomProcessus = nomDuProcessus
         // Comptes HeraliZ du site : obligatoires dès que l'adresse du site est réglée (sinon, pseudo seul, pour les essais).
         this.compteSite = compteSite || (config.siteUrl ? new CompteSite(config.siteUrl) : null)
         this.jeton = null
@@ -92,7 +124,8 @@ class LauncherService {
         Config.setClientToken(null)
         Config.setSelectedServer(config.serverId)
         Config.ensureJavaConfig(config.serverId, { suggestedMajor: 17 })
-        Config.setLaunchDetached(false)
+        // le jeu est toujours lancé détaché (processbuilder.js) : il survit à la fermeture du launcher
+        Config.setLaunchDetached(true)
         Config.save()
     }
 
@@ -109,6 +142,8 @@ class LauncherService {
         const ramGB = Math.floor(Number.parseInt(memory) / (memory.endsWith('M') ? 1024 : 1)) || 2
         return {
             version: app.getVersion(),
+            // win32, darwin ou linux : la consigne de mise à jour à la main du launcher en dépend (renderer.js)
+            plateforme: process.platform,
             profile: profile ? { username: profile.displayName, rulesAccepted: profile.rulesAccepted === true, compte: Boolean(profile.compte) } : null,
             comptesSite: Boolean(this.compteSite),
             settings: { ramGB: Math.min(maxRAM, Math.max(2, ramGB)), maxRAM, totalRAM, fullscreen: Config.getFullscreen() },
@@ -345,6 +380,7 @@ class LauncherService {
         if (!saved || saved.rulesAccepted !== true) throw new Error('Choisis ton pseudo et accepte le règlement.')
         this.busy = true
         try {
+            if (await this.partieDejaOuverte()) throw new Error('Minecraft est déjà ouvert. Ferme le jeu avant de relancer une partie.')
             if (this.compteSite) {
                 this.emit('prepare', 'Vérification de ton compte HeraliZ…')
                 const etat = await this.verifierCompte()
@@ -363,14 +399,20 @@ class LauncherService {
             const { version, loader } = await this.repair(distro, server)
             this.emit('launch', 'Démarrage de Minecraft…')
             const jetonSpartan = await this.jetonSpartan()
-            this.game = new ProcessBuilder(server, version, loader, profile, app.getVersion(), jetonSpartan).build()
-            this.game.once('spawn', () => this.emit('running', 'Minecraft est lancé. Bonne survie !', 100))
-            this.game.once('error', error => {
+            const jeu = new ProcessBuilder(server, version, loader, profile, app.getVersion(), jetonSpartan).build()
+            this.game = jeu
+            jeu.once('spawn', () => {
+                this.noterPartie(jeu.pid)
+                this.emit('running', 'Minecraft est lancé. Bonne survie !', 100, 'Tu peux fermer le launcher : le jeu reste ouvert.')
+            })
+            jeu.once('error', error => {
+                this.oublierPartie(jeu.pid)
                 this.game = null
                 this.busy = false
                 this.emit('error', `Impossible de démarrer Minecraft : ${sansChemins(error.message)}`)
             })
-            this.game.once('close', code => {
+            jeu.once('close', code => {
+                this.oublierPartie(jeu.pid)
                 this.game = null
                 this.busy = false
                 this.emit(code === 0 ? 'idle' : 'error', code === 0 ? 'Partie terminée. Prêt à repartir ?' : 'Minecraft s’est fermé avec une erreur. Consulte le dossier logs du jeu.')
@@ -383,15 +425,38 @@ class LauncherService {
         }
     }
 
-    dispose() {
-        if (this.game) {
-            this.game.stdout?.destroy()
-            this.game.stderr?.destroy()
-            this.game.unref()
+    noterPartie(pid) {
+        if (!Number.isInteger(pid) || pid <= 0) return
+        try { fs.writeFileSync(fichierPartie(), JSON.stringify({ pid, depuis: Date.now() })) } catch { /* sans mémoire */ }
+    }
+
+    oublierPartie(pid) {
+        try {
+            if (JSON.parse(fs.readFileSync(fichierPartie(), 'utf8'))?.pid === pid) fs.removeSync(fichierPartie())
+        } catch { /* rien de noté */ }
+    }
+
+    // Un Minecraft lancé par ce launcher (puis laissé ouvert, launcher fermé) tourne-t-il encore ? Dans le doute (numéro
+    // repris par un autre programme, partie trop ancienne, vérification impossible) : non, le joueur n'est jamais bloqué.
+    async partieDejaOuverte() {
+        let lu
+        try { lu = JSON.parse(fs.readFileSync(fichierPartie(), 'utf8')) } catch (erreur) {
+            if (erreur?.code !== 'ENOENT') fs.remove(fichierPartie()).catch(() => {})
+            return false
         }
+        const recente = Number.isInteger(lu?.pid) && lu.pid > 0 && Number.isFinite(lu.depuis) && Date.now() - lu.depuis < PARTIE_MAX_MS
+        const ouverte = recente && estJava(await this.nomProcessus(lu.pid).catch(() => null))
+        if (!ouverte) await fs.remove(fichierPartie()).catch(() => {})
+        return ouverte
+    }
+
+    // Fermeture du launcher : le jeu, lancé détaché, n'est pas arrêté. Le launcher cesse seulement de le suivre.
+    dispose() {
+        this.game?.unref?.()
         this.busy = false
     }
 }
 
 module.exports = LauncherService
 module.exports.cibleJeu = cibleJeu
+module.exports.nomProcessus = nomProcessus

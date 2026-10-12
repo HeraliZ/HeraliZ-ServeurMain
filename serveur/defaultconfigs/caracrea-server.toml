@@ -1,7 +1,7 @@
 
 #Character creator rules
 [creator]
-	#Players may reopen the creator themselves (/caracrea or the key) and change their look whenever they want.
+	#Players may reopen the creator themselves (/caracrea or /perso) and change their look whenever they want.
 	#When false, only operators can open it for them (/caracrea open <player>) and the first-join creator.
 	freeEdit = true
 	#Open the creator automatically the first time a player joins.
@@ -22,6 +22,10 @@
 	#Portee d'un chuchotement, en blocs.
 	#Range: 1.0 ~ 128.0
 	porteeChuchotement = 24.0
+	#Portee d'un cri, en blocs (mode crier : entendu plus loin que la voix normale ; 96 = deux fois la
+	#portee normale de 48).
+	#Range: 4.0 ~ 512.0
+	porteeCri = 96.0
 	#Portee de la voix accroupi, en part de la portee normale (1 = pas de changement, 0.5 = moitie).
 	#Range: 0.0 ~ 1.0
 	accroupi = 1.0

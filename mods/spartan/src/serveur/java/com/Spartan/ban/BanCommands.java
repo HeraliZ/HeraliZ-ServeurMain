@@ -24,6 +24,7 @@ import net.minecraft.server.MinecraftServer;
  *   /sunban <joueur|uuid|serial>      lève tous les bans actifs (hors ligne OK)
  *   /sbaninfo <joueur|uuid|serial>    identifiants connus, comptes liés, historique
  *   /unbanplayer <joueur>             alias de /sunban (ancienne commande, réparée)
+ *   /banpc, /unbanpc, /untempban      noms alignés sur ceux de LiteBans (voir {@link AliasSanctions})
  *
  * Pseudos avec caractères spéciaux : entre guillemets ("Mon.Pseudo!").
  * Sur un serveur crack, « Steve » et « steve » sont deux comptes différents :
@@ -37,7 +38,7 @@ public final class BanCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("sban")
+        LiteralCommandNode<CommandSourceStack> sban = dispatcher.register(Commands.literal("sban")
                 .requires(src -> src.hasPermission(3))
                 .then(Commands.argument("player", StringArgumentType.string())
                         .suggests((ctx, b) -> SharedSuggestionProvider.suggest(ctx.getSource().getServer().getPlayerNames(), b))
@@ -52,6 +53,7 @@ public final class BanCommands {
                 .then(Commands.argument("player", StringArgumentType.string())
                         .executes(BanCommands::unban)));
         dispatcher.register(Commands.literal("unbanplayer").requires(src -> src.hasPermission(3)).redirect(unban));
+        AliasSanctions.register(dispatcher, sban, unban);
 
         dispatcher.register(Commands.literal("sbaninfo")
                 .requires(src -> src.hasPermission(2))

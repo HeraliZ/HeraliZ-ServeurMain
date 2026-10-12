@@ -1,7 +1,6 @@
 package com.mrcrayfish.backpacked.network.play;
 
 import com.mrcrayfish.backpacked.client.gui.screen.CustomiseBackpackScreen;
-import com.mrcrayfish.backpacked.client.gui.toasts.UnlockBackpackToast;
 import com.mrcrayfish.backpacked.common.backpack.Backpack;
 import com.mrcrayfish.backpacked.common.backpack.BackpackManager;
 import com.mrcrayfish.backpacked.data.pickpocket.TraderPickpocketing;
@@ -23,7 +22,7 @@ public class ClientPlayHandler {
             Backpack backpack = BackpackManager.instance().getClientBackpack(message.cosmeticId());
             if (backpack != null) {
                impl.unlockBackpack(message.cosmeticId());
-               mc.getToasts().addToast(new UnlockBackpackToast(backpack));
+               // HeraliZ : plus de notification « sac à dos débloqué » en haut à droite (demande du propriétaire)
             }
          });
       }

@@ -3,7 +3,8 @@ package com.caracrea.voice.net;
 import static com.caracrea.voice.net.VoiceProtocol.F_GROUP;
 import static com.caracrea.voice.net.VoiceProtocol.F_MUFFLED;
 import static com.caracrea.voice.net.VoiceProtocol.F_NO_POSITION;
-import static com.caracrea.voice.net.VoiceProtocol.F_WHISPER;
+import static com.caracrea.voice.net.VoiceProtocol.MODE_SHOUT;
+import static com.caracrea.voice.net.VoiceProtocol.MODE_WHISPER;
 import static com.caracrea.voice.net.VoiceSnapshot.*;
 
 /**
@@ -20,8 +21,8 @@ import static com.caracrea.voice.net.VoiceSnapshot.*;
  *   <li>Spectators outside a match: muted, heard by spectators only, or heard like everyone.</li>
  *   <li>Groups: members hear each other from anywhere; a normal or isolated group keeps its members' words inside;
  *   members of an isolated group hear nobody else.</li>
- *   <li>Otherwise: same dimension and within range (whisper range when whispering, times the crouch multiplier, or the
- *   range imposed by an addon).</li>
+ *   <li>Otherwise: same dimension and within range (whisper range when whispering, shout range when shouting, times the
+ *   crouch multiplier, or the range imposed by an addon).</li>
  * </ol>
  */
 public final class VoiceRouting {
@@ -33,10 +34,10 @@ public final class VoiceRouting {
     public static final int SPECTATORS_AMONG_THEMSELVES = 1;
     public static final int SPECTATORS_ALL = 2;
 
-    /** The server's voice settings, as the voice threads read them. */
-    public record Rules(boolean enabled, float range, float whisperRange, float crouch, int spectators, boolean groups,
+    /** The server's voice settings, as the voice threads read them ({@code shoutRange} : portée du mode crier). */
+    public record Rules(boolean enabled, float range, float whisperRange, float shoutRange, float crouch, int spectators, boolean groups,
                         boolean isolateMatches, boolean teamOnly, boolean matchSpectatorsTogether, boolean downedMuffled) {
-        public static final Rules DEFAULT = new Rules(true, 48, 24, 1, SPECTATORS_AMONG_THEMSELVES, true, true, false, true, true);
+        public static final Rules DEFAULT = new Rules(true, 48, 24, 96, 1, SPECTATORS_AMONG_THEMSELVES, true, true, false, true, true);
     }
 
     /** The listeners of one frame and how each hears it (voice flags); reused frame after frame, no allocation. */
@@ -115,8 +116,11 @@ public final class VoiceRouting {
     private VoiceRouting() {
     }
 
-    /** Fills {@code out} with who hears {@code from}'s frame; returns how many. */
-    public static int route(VoiceSnapshot s, Rules rules, int from, boolean whisper, Recipients out) {
+    /**
+     * Fills {@code out} with who hears {@code from}'s frame; returns how many. {@code mode} : chuchoter, parler ou crier
+     * ({@code VoiceProtocol.MODE_*}), qui choisit la portée et passe dans les drapeaux de chaque auditeur.
+     */
+    public static int route(VoiceSnapshot s, Rules rules, int from, int mode, Recipients out) {
         out.reset(s.count);
         if (!rules.enabled() || from < 0 || from >= s.count) {
             return 0;
@@ -127,12 +131,13 @@ public final class VoiceRouting {
         if ((f & TALK) == 0 || match == 0 && spectator && rules.spectators() == SPECTATORS_MUTE) {
             return 0;
         }
-        float range = Float.isNaN(s.range[from]) ? whisper ? rules.whisperRange() : rules.range() : s.range[from];
+        float modeRange = mode == MODE_WHISPER ? rules.whisperRange() : mode == MODE_SHOUT ? rules.shoutRange() : rules.range();
+        float range = Float.isNaN(s.range[from]) ? modeRange : s.range[from];
         if ((f & CROUCH) != 0) {
             range *= rules.crouch();
         }
         double rangeSq = (double) range * range;
-        int base = (whisper ? F_WHISPER : 0) | ((f & DOWNED) != 0 && rules.downedMuffled() ? F_MUFFLED : 0);
+        int base = VoiceProtocol.flag(mode) | ((f & DOWNED) != 0 && rules.downedMuffled() ? F_MUFFLED : 0);
         boolean matchSpectator = (f & MATCH_SPECTATOR) != 0;
         int group = rules.groups() ? s.group[from] : 0;
         int groupType = s.groupType[from];

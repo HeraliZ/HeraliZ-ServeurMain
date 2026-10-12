@@ -7,6 +7,7 @@ import fr.heralisz.bases.network.BasesNet;
 import fr.heralisz.bases.pillage.PillageConfig;
 import fr.heralisz.bases.pillage.PillageNet;
 import fr.heralisz.bases.registry.BasesRegistry;
+import fr.heralisz.bases.registry.Sons;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -63,14 +64,10 @@ import java.util.Map;
  *   <li>clic droit accroupi main vide sur un bloc protege : infobulle « Blindage 4 · 2/4 » (paquet
  *   {@link PillageNet.InfoBlindageS2C}) sans utiliser le bloc.</li>
  * </ul>
- * Ou ces regles valent (decision du 01/10, RETOURS §2.5 : « le blindage doit aussi marcher hors des bases ») :
- * <ul>
- *   <li>nos blocs {@code heralisz_bases:blindage_1..8} : PARTOUT (dimension des bases, carte, autres mondes) — un
- *   blindage pose sur la carte ne cede qu'au N-ieme C4, fissures et infobulle comprises ;</li>
- *   <li>les autres blocs de la table ({@code cfm:*}, portes HBM) : seulement dans la dimension des bases, sauf
- *   {@code blindage_partout} = true (la carte, qui en est pleine, n'est jamais touchee par defaut).</li>
- * </ul>
- * Hors des bases, un blindage se retire a la pioche comme ailleurs (aucune notion de proprietaire sur la carte).
+ * Ou ces regles valent : les blocs de la table ({@code cfm:*}, portes HBM) seulement dans la dimension des bases, sauf
+ * {@code blindage_partout} = true (la carte, qui en est pleine, n'est jamais touchee par defaut). Les anciens blocs de
+ * blindage du mod (niveaux 1 a 8, qui valaient partout) ont ete retires en 2.3.0 : hors de la dimension des bases (et
+ * sans {@code blindage_partout}), plus aucun bloc n'est protege.
  */
 public final class Blindage {
     private Blindage() {
@@ -90,17 +87,15 @@ public final class Blindage {
         return level instanceof ServerLevel && (BasesApi.dansBunkers(level) || PillageConfig.BLINDAGE_PARTOUT.get());
     }
 
-    /** Niveau de protection qui vaut ICI : toute la table si {@link #actif}, sinon seulement nos blocs de blindage. */
+    /** Niveau de protection qui vaut ICI : toute la table si {@link #actif}, sinon aucun (0). */
     public static int niveauIci(Level level, BlockPos pos) {
-        if (actif(level)) return niveauEn(level, pos);
-        return level.getBlockState(pos).getBlock() instanceof BlindageBlock bb ? bb.niveau : 0;
+        return actif(level) ? niveauEn(level, pos) : 0;
     }
 
-    /** {@link #cle} pour les blocs qui comptent ICI (nos blindages seulement hors de la dimension des bases). */
+    /** {@link #cle} pour les blocs qui comptent ICI (aucun hors de la dimension des bases, sauf {@code blindage_partout}). */
     @Nullable
     public static BlockPos cleIci(Level level, BlockPos pos, BlockState s) {
-        if (actif(level)) return cle(level, pos, s);
-        return s.getBlock() instanceof BlindageBlock ? pos.immutable() : null;
+        return actif(level) ? cle(level, pos, s) : null;
     }
 
     // ------------------------------------------------------------------ resolution
@@ -184,16 +179,18 @@ public final class Blindage {
     }
 
     /**
-     * Apres le coeur (HIGH) : blocs proteges retires de la liste, coups portes par la source. Dans tous les mondes : nos
-     * blindages partout, le reste de la table seulement la ou {@link #actif}.
+     * Apres le coeur (HIGH) : blocs proteges retires de la liste, coups portes par la source, seulement la ou
+     * {@link #actif} (ailleurs, aucun bloc protege : rien n'est change).
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onDetonate(ExplosionEvent.Detonate e) {
         if (!(e.getLevel() instanceof ServerLevel level)) return;
-        e.getAffectedBlocks().removeIf(pos -> niveauIci(level, pos) > 0);
+        derniersTouches = 0;
+        // hors de la dimension des bases (sans blindage_partout), aucun bloc protege : l'explosion n'est pas touchee
+        if (!actif(level)) return;
+        e.getAffectedBlocks().removeIf(pos -> niveauEn(level, pos) > 0);
         String id = sourceId(e.getExplosion());
         Protection.Source src = Protection.source(id);
-        derniersTouches = 0;
         if (src.coups() <= 0 || src.rayon() <= 0) return;
         Vec3 c = e.getExplosion().getPosition();
         int r = (int) Math.ceil(src.rayon());
@@ -260,7 +257,7 @@ public final class Blindage {
         d.mettre(k, c);
         fissure(level, cle, stade(total, niveau));
         double x = cle.getX() + 0.5, y = cle.getY() + 0.5, z = cle.getZ() + 0.5;
-        level.playSound(null, x, y, z, BlindageRegistry.FISSURE.get(), SoundSource.BLOCKS, 1.4f, 0.9f + level.random.nextFloat() * 0.2f);
+        level.playSound(null, x, y, z, Sons.FISSURE.get(), SoundSource.BLOCKS, 1.4f, 0.9f + level.random.nextFloat() * 0.2f);
         level.sendParticles(BasesRegistry.POUSSIERE_COQUE.get(), x, y, z, 10, 0.45, 0.45, 0.45, 0.01);
         return false;
     }
@@ -272,7 +269,7 @@ public final class Blindage {
 
     private static void rompre(ServerLevel level, BlockPos cle, BlockState s) {
         double x = cle.getX() + 0.5, y = cle.getY() + 0.5, z = cle.getZ() + 0.5;
-        level.playSound(null, x, y, z, BlindageRegistry.RUPTURE.get(), SoundSource.BLOCKS, 2.0f, 0.9f + level.random.nextFloat() * 0.2f);
+        level.playSound(null, x, y, z, Sons.RUPTURE.get(), SoundSource.BLOCKS, 2.0f, 0.9f + level.random.nextFloat() * 0.2f);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, s), x, y, z, 40, 0.35, 0.35, 0.35, 0.15);
         level.sendParticles(BasesRegistry.POUSSIERE_COQUE.get(), x, y, z, 28, 0.5, 0.5, 0.5, 0.03);
         // aucun objet rendu : retrait direct (la moitie haute d'une porte suit, une porte HBM detruit ses pieces)
@@ -327,7 +324,7 @@ public final class Blindage {
     @SubscribeEvent
     public static void onChunkVu(ChunkWatchEvent.Watch e) {
         ServerLevel level = e.getLevel();
-        // tous les mondes : un blindage peut etre fissure hors des bases (SavedData vide = rien a faire)
+        // tous les mondes : avec blindage_partout, un bloc peut etre fissure hors des bases (SavedData vide = rien a faire)
         CoupsData d = CoupsData.de(level);
         if (d.vide()) return;
         envoyerChunk(e.getPlayer(), level, d, e.getPos().toLong());
@@ -376,8 +373,8 @@ public final class Blindage {
         if (!p.isShiftKeyDown() || !p.getMainHandItem().isEmpty()) return;
         ServerLevel level = (ServerLevel) e.getLevel();
         BlockState s = level.getBlockState(e.getPos());
-        // hors du monde des bases, seuls les blindage_1..8 repondent (une porte cfm de la carte s'ouvre normalement)
-        if (!actif(level) && !(s.getBlock() instanceof BlindageBlock)) return;
+        // hors du monde des bases (sans blindage_partout), rien ne repond (une porte cfm de la carte s'ouvre normalement)
+        if (!actif(level)) return;
         BlockPos k = cle(level, e.getPos(), s);
         if (k == null) return;
         e.setCanceled(true);

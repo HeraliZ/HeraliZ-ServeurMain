@@ -233,16 +233,6 @@ def tex_eau():
     png("eau_surface", np.vstack(frames), alpha=np.vstack(alphas), anim={"frametime": 3, "interpolate": True})
 
 
-def tex_rayons():
-    """Rayon de soleil (entity/rayon, 32 x 64) : doux sur les bords, apparaît en haut, s'efface en bas, légères stries.
-    Blanc : la couleur dorée est donnée au dessin."""
-    y, x = np.mgrid[0:64, 0:32]
-    u, v = (x + 0.5) / 32, (y + 0.5) / 64
-    a = np.exp(-((u - 0.5) / 0.24) ** 2) * np.clip(v / 0.08, 0, 1) * np.clip((1 - v) / 0.3, 0, 1) ** 0.8
-    a *= 0.7 + 0.3 * aniso(64, 32, 4, 0.25, 907)
-    png("rayon", np.full((64, 32, 3), 255.0), alpha=a * 255, sous="entity")
-
-
 def tex_mousse():
     """Mousse pendante (lichen en filaments) : fils gris-vert qui ondulent, la moitié traverse tout le bloc (se raccorde
     au bloc du dessous), les autres s'arrêtent plus ou moins bas. Deux variantes."""
@@ -288,7 +278,7 @@ def tex_particules():
 
 
 def tex_icones():
-    """Icônes d'objet des blocs sans modèle visible (ambiance, cascade, rayon, surface d'eau)."""
+    """Icônes d'objet des blocs sans modèle visible (ambiance, cascade, surface d'eau)."""
     y, x = np.mgrid[0:16, 0:16]
     d = np.hypot(x - 7.5, y - 7.5) / 8
     png("ambiance", np.full((16, 16, 3), 225.0), alpha=np.clip(1 - d, 0, 1) * 220, sous="item")
@@ -299,10 +289,6 @@ def tex_icones():
     al[0:2, 2:14] = 255
     rgb[0:2, 2:14] = (110, 100, 90)
     png("grande_cascade", rgb, alpha=al, sous="item")
-    rgb = np.zeros((16, 16, 3))
-    rgb[...] = (255, 214, 130)
-    larg = 1.5 + y * 0.35
-    png("rayon_soleil", rgb, alpha=np.clip(1 - np.abs(x - 7.5) / larg, 0, 1) * 230, sous="item")
     rgb = np.zeros((16, 16, 3))
     rgb[...] = (46, 130, 124)
     vague = np.abs(((y + 2 * np.sin(x / 2.5)) % 5) - 2.5) < 0.7
@@ -724,8 +710,7 @@ def modeles_roche():
         t = {"bottom": nom, "top": nom, "side": nom}
         for suf, par in (("escalier", "stairs"), ("escalier_interieur", "inner_stairs"), ("escalier_exterieur", "outer_stairs")):
             modele(f"{nom}_{suf}", t, None, parent=f"minecraft:block/{par}")
-        modele(f"{nom}_dalle", t, None, parent="minecraft:block/slab")
-        modele(f"{nom}_dalle_haut", t, None, parent="minecraft:block/slab_top")
+
     def rocher(taille):
         r = np.random.default_rng({"petit": 7, "moyen": 8, "grand": 9}[taille])
         n, s = {"petit": (4, 0.45), "moyen": (6, 0.8), "grand": (8, 1.15)}[taille]
@@ -783,7 +768,7 @@ def etats():
         return d
     for n in ROCHES:
         ecrire_json(os.path.join(E, n + ".json"), {"variants": {"": m(n)}})
-    for n in ("ambiance", "grande_cascade", "rayon_soleil"):                    # dessinés par leur entité ou invisibles
+    for n in ("ambiance", "grande_cascade"):                                    # dessinés par leur entité ou invisibles
         ecrire_json(os.path.join(E, n + ".json"), {"variants": {"": m("vide")}})
     for bloc, modl in (("lanterne_fer", "lanterne_fer"), ("projecteur", "projecteur")):
         ecrire_json(os.path.join(E, bloc + ".json"), {"variants": {
@@ -807,8 +792,6 @@ def etats():
         for n, _, _ in FORMES_SANG for p in ("sol", "mur")}})
     for nom in ROCHES:
         ecrire_json(os.path.join(E, f"{nom}_escalier.json"), etats_escalier(nom))
-        ecrire_json(os.path.join(E, f"{nom}_dalle.json"), {"variants": {
-            "type=bottom": m(f"{nom}_dalle"), "type=top": m(f"{nom}_dalle_haut"), "type=double": m(nom)}})
 
 
 # Minecraft 1.20.1 du lanceur CurseForge (dossier Install : outils/chemins.py du dépôt, réglable par PC)
@@ -845,10 +828,9 @@ def objets():
     for nom in ROCHES:
         blocs[nom] = nom
         blocs[f"{nom}_escalier"] = f"{nom}_escalier"
-        blocs[f"{nom}_dalle"] = f"{nom}_dalle"
     for k, v in blocs.items():
         obj(k, f"{NS}:block/{v}")
-    for nom, layer in (("grande_cascade", "item/grande_cascade"), ("rayon_soleil", "item/rayon_soleil"), ("ambiance", "item/ambiance"),
+    for nom, layer in (("grande_cascade", "item/grande_cascade"), ("ambiance", "item/ambiance"),
                        ("eau_decor", "item/eau_decor"), ("mousse_pendante", "block/mousse_0"),
                        ("tache_sang", "block/tache_sang_eclaboussures")):
         ecrire_json(os.path.join(I, nom + ".json"), {"parent": "minecraft:item/generated", "textures": {"layer0": f"{NS}:{layer}"}})
@@ -858,16 +840,15 @@ NOMS = {
     "lanterne_fer": ("Lanterne en fer", "Iron lantern"), "lampe_suspendue": ("Lampe suspendue", "Hanging lamp"),
     "guirlande": ("Guirlande d'ampoules", "String lights"), "projecteur": ("Projecteur", "Floodlight"),
     "cristal_bleu": ("Cristal bleu", "Blue crystal"), "cristal_ambre": ("Cristal ambré", "Amber crystal"),
-    "grande_cascade": ("Grande cascade", "Great waterfall"), "rayon_soleil": ("Rayon de soleil", "Sunbeam"),
+    "grande_cascade": ("Grande cascade", "Great waterfall"),
     "eau_decor": ("Surface d'eau animée", "Animated water surface"),
     "ambiance": ("Ambiance (brume, lucioles...)", "Ambience (mist, fireflies...)"),
     "mousse_pendante": ("Mousse pendante", "Hanging moss"),
     "tache_sang": ("Tache de sang", "Blood stain"),
     "roche_ocre": ("Roche ocre", "Ochre rock"), "roche_rouge": ("Roche rouge", "Red rock"), "roche_sombre": ("Roche sombre", "Dark rock"),
-    "roche_ocre_escalier": ("Escalier de roche ocre", "Ochre rock stairs"), "roche_ocre_dalle": ("Dalle de roche ocre", "Ochre rock slab"),
-    "roche_rouge_escalier": ("Escalier de roche rouge", "Red rock stairs"), "roche_rouge_dalle": ("Dalle de roche rouge", "Red rock slab"),
+    "roche_ocre_escalier": ("Escalier de roche ocre", "Ochre rock stairs"),
+    "roche_rouge_escalier": ("Escalier de roche rouge", "Red rock stairs"),
     "roche_sombre_escalier": ("Escalier de roche sombre", "Dark rock stairs"),
-    "roche_sombre_dalle": ("Dalle de roche sombre", "Dark rock slab"),
     "rocher": ("Rocher", "Boulder"), "stalactite": ("Stalactite", "Stalactite"),
 }
 
@@ -988,7 +969,6 @@ def main():
     tex_metaux()
     tex_lumieres()
     tex_eau()
-    tex_rayons()
     tex_mousse()
     tex_particules()
     tex_icones()
