@@ -33,15 +33,21 @@ import top.theillusivec4.curios.api.CuriosApi;
  * dessine et la manche flottait a cote du bras : animations Player Animator du joueur (tenue et coups des armes de melee
  * de Tactique, emotes, carte d'acces) que le jeu ecarte pour le bras a la premiere personne mais pas pour notre appel,
  * vraies poses des bras (objet tenu a deux mains dans l'autre main).
+ * <p>Forge lance cet evenement DANS renderRightHand / renderLeftHand : notre propre appel le relance, il passe alors sans
+ * rien faire (dessinEnCours), sinon chaque appel en relance un autre jusqu'au plantage du jeu (0.12.1).
  * <p>Les armes TaCZ et de melee dessinent leurs bras elles-memes, sans cet evenement : rien n'est dessine ici pour elles.
  */
 @Mod.EventBusSubscriber(modid = HeralizArmory.MOD_ID, value = Dist.CLIENT)
 public final class FirstPersonArms {
     private FirstPersonArms() {}
 
+    /** Vrai pendant que le bras de peau est dessine par notre appel (rendu du jeu, sur le fil de rendu seulement). */
+    private static boolean dessinEnCours;
+
     /** En dernier : un mod qui remplace le bras (evenement annule avant nous) garde la main, rien n'est dessine par-dessus. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRenderArm(RenderArmEvent event) {
+        if (dessinEnCours) return; // l'evenement relance par notre renderRightHand : le jeu dessine le bras de peau
         AbstractClientPlayer player = event.getPlayer();
         boolean right = event.getArm() == HumanoidArm.RIGHT;
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
@@ -55,8 +61,13 @@ public final class FirstPersonArms {
         int light = event.getPackedLight();
         // le bras de peau, a la place du jeu (meme appel, memes arguments) ...
         event.setCanceled(true);
-        if (right) renderer.renderRightHand(stack, buffers, light, player);
-        else renderer.renderLeftHand(stack, buffers, light, player);
+        dessinEnCours = true;
+        try {
+            if (right) renderer.renderRightHand(stack, buffers, light, player);
+            else renderer.renderLeftHand(stack, buffers, light, player);
+        } finally {
+            dessinEnCours = false;
+        }
         // ... et la pose avec laquelle il vient d'etre dessine (PlayerRenderer.renderHand : setupAnim du jeu et des mods,
         // puis xRot = 0 ; le bras garde son leger penchement de ~6 degres)
         PlayerModel<AbstractClientPlayer> pm = renderer.getModel();

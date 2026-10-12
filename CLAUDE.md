@@ -131,7 +131,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) |
-| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules | train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json`), ascenseur, carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles`, `cfm:model_239` = escalier) |
+| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules | train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json`), ascenseur, carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
@@ -822,8 +822,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   [ponts|tout]` pose sous la voie dessinée un bloc invisible et incassable (`heralisz_utils:voie_pleine`) pour qu'on
   ne puisse plus entrer dans le ballast des ponts, `vider` le retire ;
 - meubles cfm (12/10) : « Model 239 » (petit escalier en grille de métal) a la forme d'un escalier de Minecraft (on y monte sans
-  sauter) au lieu d'un cube ; ses meubles « Standard_Block » sont tous des cubes de 15 px : pour en reformer un autre,
-  l'ajouter à `FORMES` de `fr.heralisz.utils.meubles.FormesMeubles` (Utils, code commun : joueurs et serveur à la même version) ;
+  sauter) au lieu d'un cube ; « Model 240 » celle de son garde-corps (poteaux et lisses, juste devant le bord du bloc) et
+  « Model 241 » celle de son plancher en caillebotis (sur le dessus du bloc) ; ses meubles « Standard_Block » sont tous
+  des cubes de 15 px : pour en reformer un autre, ajouter ses boîtes (relevées dans son modèle, meuble tourné vers le
+  nord) à `FORMES` de `fr.heralisz.utils.meubles.FormesMeubles` (Utils, code commun : joueurs et serveur à la même
+  version). Les formes s'arrêtent à 0,01 px des côtés du bloc : une forme qui couvre toute une face cache la face du
+  bloc voisin, et on voyait le vide à travers la grille (Utils 2.7.0) ;
 - onglets créatifs (11/10) : l'onglet « HeraliZ » (meubles cfm) ne montre que les meubles posés sur la carte (liste
   `heralisz_utils_onglet_heraliz.json`, refaite d'après le workflow « Inventaire de la carte ») ; armes de mêlée et
   couteaux seulement dans le groupe Mêlée de HeraliZ · Tactique (plus dans « Arme lourde ») ;

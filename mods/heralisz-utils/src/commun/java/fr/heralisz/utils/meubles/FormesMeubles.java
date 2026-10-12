@@ -21,12 +21,35 @@ import net.minecraftforge.registries.ForgeRegistries;
  * meubles listés ici est remplacée au démarrage (champ public SHAPES du bloc, puis caches des états recalculés).
  * Code commun : le joueur et le serveur doivent avoir la même forme, sinon ils ne sont pas d'accord sur les collisions.
  * Meuble absent ou cfm changé (plus de champ SHAPES) : forme d'origine gardée, avertissement dans le journal.
+ * <p>Ces meubles cachent les faces des blocs voisins que leur forme recouvre en entier (le jeu ne dessine pas une face
+ * collée à un bloc plein) ; or ce sont des grilles, on voit à travers : une forme qui touche toute une face du bloc
+ * faisait disparaître la face du voisin (on voyait le vide sous l'escalier, 2.7.0). Les formes s'arrêtent donc à un
+ * centième de pixel des côtés du bloc ({@link #RETRAIT}) : rien de visible ni de sensible en jeu, aucune face cachée.
  */
 public final class FormesMeubles {
-    /** Meuble cfm -> forme selon le côté où il regarde (propriété facing, comme son modèle). */
+    /** Écart laissé entre la forme et les côtés du bloc, en pixels (voir plus haut). */
+    static final double RETRAIT = 0.01;
+
+    /**
+     * Meuble cfm -> forme selon le côté où il regarde (propriété facing, comme son modèle). Boîtes en pixels, données
+     * pour un meuble tourné vers le nord (modèle sans rotation), relevées dans les modèles de cfm.
+     */
     private static final Map<ResourceLocation, Function<Direction, VoxelShape>> FORMES = Map.of(
-            // petit escalier en grille de métal : on y monte sans sauter, comme un escalier de Minecraft
-            new ResourceLocation("cfm", "model_239"), FormesMeubles::escalier);
+            // petit escalier en grille de métal : on y monte sans sauter, comme un escalier de Minecraft (haut au nord)
+            new ResourceLocation("cfm", "model_239"), tournee(
+                    new double[] {0, 0, 0, 16, 8, 16},
+                    new double[] {0, 8, 0, 16, 16, 8}),
+            // garde-corps : deux poteaux et trois lisses, dessinés juste devant le bord nord du bloc (z de -1 à 0) ; les
+            // vides entre les lisses restent ouverts (balles), trop petits pour qu'un joueur passe
+            new ResourceLocation("cfm", "model_240"), tournee(
+                    new double[] {0, 0, -1, 0.5, 16, 0},
+                    new double[] {15.5, 0, -1, 16, 16, 0},
+                    new double[] {0.5, 15, -1, 15.5, 16, 0},
+                    new double[] {0.5, 12, -1, 15.5, 12.8, 0},
+                    new double[] {0.5, 5, -1, 15.5, 6, 0}),
+            // plancher en caillebotis, posé sur le dessus du bloc (y de 16 à 17) : on marche dessus, rien en dessous
+            new ResourceLocation("cfm", "model_241"), tournee(
+                    new double[] {0, 16, 0, 16, 17, 16}));
 
     private FormesMeubles() {
     }
@@ -72,14 +95,31 @@ public final class FormesMeubles {
         throw new NoSuchFieldException("SHAPES dans " + classe.getName());
     }
 
-    /** Escalier de Minecraft : moitié basse pleine, moitié haute du côté où il monte (celui où il regarde). */
-    static VoxelShape escalier(Direction haut) {
-        VoxelShape marche = switch (haut) {
-            case SOUTH -> Block.box(0, 8, 8, 16, 16, 16);
-            case EAST -> Block.box(8, 8, 0, 16, 16, 16);
-            case WEST -> Block.box(0, 8, 0, 8, 16, 16);
-            default -> Block.box(0, 8, 0, 16, 16, 8);
+    /** Forme faite des boîtes données (meuble tourné vers le nord), tournée comme le modèle dans son blockstate. */
+    static Function<Direction, VoxelShape> tournee(double[]... boites) {
+        return cote -> {
+            VoxelShape forme = Shapes.empty();
+            for (double[] b : boites) {
+                forme = Shapes.or(forme, tourner(b, cote));
+            }
+            return forme;
         };
-        return Shapes.or(Block.box(0, 0, 0, 16, 8, 16), marche);
+    }
+
+    /** Une boîte {x1, y1, z1, x2, y2, z2} du nord vers ce côté (rotation y du blockstate : est 90°, sud 180°, ouest 270°). */
+    static VoxelShape tourner(double[] b, Direction cote) {
+        double x1 = b[0], z1 = b[2], x2 = b[3], z2 = b[5];
+        double[] xz = switch (cote) {
+            case EAST -> new double[] {16 - z2, x1, 16 - z1, x2};
+            case SOUTH -> new double[] {16 - x2, 16 - z2, 16 - x1, 16 - z1};
+            case WEST -> new double[] {z1, 16 - x2, z2, 16 - x1};
+            default -> new double[] {x1, z1, x2, z2};
+        };
+        return Block.box(retrait(xz[0]), b[1], retrait(xz[1]), retrait(xz[2]), b[4], retrait(xz[3]));
+    }
+
+    /** Un bord de boîte posé sur un côté du bloc (0 ou 16) en est écarté de {@link #RETRAIT}. */
+    private static double retrait(double v) {
+        return v == 0 ? RETRAIT : v == 16 ? 16 - RETRAIT : v;
     }
 }
