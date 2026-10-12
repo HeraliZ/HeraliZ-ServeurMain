@@ -145,8 +145,9 @@ public class ClientEventsHandler {
          MobEffectInstance effect = player.getEffect((MobEffect)ModEffects.BLIND.get());
          if (effect != null) {
             int tickRemain = effect.getDuration();
-            int alpha = tickRemain > 100 ? 255 : (int)(tickRemain / 100.0F * 255.0F);
-            int color = (ClientConfig.BLACK_FLASH.get() ? 0 : 16777215) + (alpha << 24);
+            // HeraliZ : durée infinie (-1) ou négative : écran blanc plein, jamais une couleur au hasard
+            int alpha = tickRemain > 100 || tickRemain < 0 ? 255 : (int)(tickRemain / 100.0F * 255.0F);
+            int color = (flashNoir() ? 0 : 16777215) + (alpha << 24);
             GuiGraphics graphics = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
             int width = mc.getWindow().getGuiScaledWidth();
             int height = mc.getWindow().getGuiScaledHeight();
@@ -158,6 +159,15 @@ public class ClientEventsHandler {
             RenderSystem.depthMask(true);
             RenderSystem.enableDepthTest();
          }
+      }
+   }
+
+   /** Réglage « écran noir » de la flash ; blanc si la config du joueur n'est pas lisible (jamais d'erreur à chaque image). */
+   private static boolean flashNoir() {
+      try {
+         return ClientConfig.BLACK_FLASH.get();
+      } catch (RuntimeException e) {
+         return false;
       }
    }
 

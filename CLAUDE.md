@@ -259,6 +259,9 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
 7. Ordre des groupes d'un onglet créatif : les déclarer dans le mod porteur (FML construit les mods en parallèle).
 8. GeckoLib : `compileOnly` contre `libs/geckolib222-...jar`, **jamais embarqué** (sinon tout le contenu ArkaniaZ
    disparaît).
+9. `PlaySoundEvent.getSound()` peut être **null** : un autre mod a pu annuler le son avant (dayzhotbar le fait en
+   priorité haute pour les bruits lointains de MAtmos, Emote pour la musique coupée). Toujours le vérifier : c'était la
+   cause du plantage du jeu à l'explosion d'une flash (assourdissement de Tactique, corrigé en 2.12.0).
 
 ---
 
