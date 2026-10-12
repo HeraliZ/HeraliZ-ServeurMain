@@ -133,7 +133,7 @@ public class CorpsMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         if (player.level().isClientSide) return true;
-        return corps != null && corps.contenu() == contenu && corps.aPortee(player);
+        return corps != null && corps.contenu() == contenu && corps.resteAPortee(player);
     }
 
     @Override
