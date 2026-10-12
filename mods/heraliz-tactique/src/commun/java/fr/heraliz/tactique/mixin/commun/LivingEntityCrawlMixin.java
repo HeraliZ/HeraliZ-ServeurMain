@@ -22,7 +22,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *    arme TaCZ (TaCZ le relèverait à chaque tick) et le plongeon (corps à plat en l'air) ; avec une arme, TaCZ garde la
  *    main, comme avant ;</li>
  *    <li>après la touche et après chaque tick de TaCZ ({@code tickCrawling}, qui relève le joueur tout seul), l'heure du
- *    coucher ou du relevé est notée sur les données du tireur.</li>
+ *    coucher ou du relevé est notée sur les données du tireur ;</li>
+ *    <li>{@code crawl(false)} pendant un plongeon : le joueur est retombé debout, le plongeon est fini (corps plus gardé
+ *    à plat, 2.12.0).</li>
  * </ul>
  * TaCZ n'appelle cette classe que sur le serveur (et le serveur intégré du solo) ; on le vérifie quand même. Noms de TaCZ
  * (non obfusqués) : remap = false. require = 0 : si TaCZ change ces méthodes, le ramper reste celui de TaCZ, rien ne casse.
@@ -39,6 +41,8 @@ public abstract class LivingEntityCrawlMixin {
    @Inject(method = "crawl(Z)V", at = @At("HEAD"), cancellable = true, require = 0)
    private void heraliz$refuserSiTropTot(boolean allonger, CallbackInfo ci) {
       if (allonger && !this.data.isCrawling && !this.shooter.level().isClientSide && !Allonge.peutSAllonger(this.shooter, this.data)) {
+         // refusé en retombant d'un plongeon : le joueur reste debout, le corps n'est plus gardé à plat
+         Allonge.releverPendantPlongeon(this.data);
          ci.cancel();
       }
    }
@@ -46,6 +50,10 @@ public abstract class LivingEntityCrawlMixin {
    @Inject(method = "crawl(Z)V", at = @At("RETURN"), require = 0)
    private void heraliz$noterApresTouche(boolean allonger, CallbackInfo ci) {
       if (!this.shooter.level().isClientSide) {
+         if (!allonger) {
+            // « se relever » pendant un plongeon : le joueur est retombé debout, le corps n'est plus gardé à plat
+            Allonge.releverPendantPlongeon(this.data);
+         }
          Allonge.noter(this.data);
       }
    }

@@ -33,6 +33,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *    <li>plongeon en cours : corps à plat (le tick de TaCZ ne passe pas) ; en retombant, le joueur s'allonge par le même
  *    chemin qu'une touche ;</li>
  *    <li>après la touche et après chaque tick, les passages debout <-> allongé sont notés ;</li>
+ *    <li>allongé : le joueur ne court plus (2.12.0). Minecraft ne laisse pas se mettre à courir à plat, mais gardait la
+ *    course d'un joueur qui s'allonge ou retombe d'un plongeon en courant, touche d'avancer tenue : pour TaCZ il courait
+ *    encore à plat (tir refusé « en train de courir », arme baissée dès qu'il se relevait) ;</li>
+ *    <li>plongeon fini sans s'allonger (touche de saut tenue en retombant, allongé refusé, plongeon abandonné) : le
+ *    serveur, qui garde le corps à plat en attendant la demande d'allongé, est prévenu tout de suite (paquet « se
+ *    relever » de TaCZ, 2.12.0) ; avant, les autres joueurs le voyaient encore couché (rechargement « couché » sur un
+ *    joueur debout) jusqu'à 4 s, et sans fin s'il enchaînait les sauts ;</li>
  *    <li>refus du serveur (PaquetRefusAllonge) : le joueur est relevé au début du tick suivant.</li>
  * </ul>
  * Noms de TaCZ (non obfusqués) : remap = false. require = 0 : si TaCZ change ces méthodes, le ramper reste celui de TaCZ
@@ -54,6 +61,9 @@ public abstract class LocalPlayerCrawlMixin {
    /** Allongé demandé par la retombée d'un plongeon (pas par la touche) : ni plongeon, ni refus « plongeon en cours ». */
    @Unique
    private boolean heraliz$retombee;
+   /** Plongeon en cours au tick précédent (corps à plat en l'air) : sa fin sans allongé est signalée au serveur. */
+   @Unique
+   private boolean heraliz$plongeait;
 
    @Shadow
    public abstract void crawl(boolean isCrawl);
@@ -108,6 +118,7 @@ public abstract class LocalPlayerCrawlMixin {
             --this.crawCooldownTicks;
          }
          this.player.setForcedPose(Pose.SWIMMING);
+         this.heraliz$plongeait = true;
          this.heraliz$noter();
          ci.cancel();
          return;
@@ -122,6 +133,12 @@ public abstract class LocalPlayerCrawlMixin {
             AllongeClient.finRetombee();
          }
       }
+      if (this.heraliz$plongeait && !this.isCrawling) {
+         // plongeon fini debout (touche de saut tenue, allongé refusé, plongeon abandonné) : le serveur attend une demande
+         // d'allongé en gardant le corps à plat ; « se relever » (paquet de TaCZ) lui fait finir le plongeon tout de suite
+         NetworkHandler.CHANNEL.sendToServer(new ClientMessagePlayerCrawl(false));
+      }
+      this.heraliz$plongeait = false;
       if (!(this.player.getMainHandItem().getItem() instanceof IGun)) {
          this.heraliz$tickSansArme();
          ci.cancel();
@@ -173,6 +190,11 @@ public abstract class LocalPlayerCrawlMixin {
       if (this.isCrawling != this.heraliz$etaitAllonge) {
          this.heraliz$etaitAllonge = this.isCrawling;
          AllongeClient.changement(this.isCrawling);
+      }
+      // allongé : plus de course (appelé après la touche et à chaque tick, avant le mouvement du joueur). Minecraft ne
+      // remet pas la course à plat (élan trop faible) ; l'arrêt part au serveur avec la position, comme d'habitude
+      if (this.isCrawling && this.player.isSprinting()) {
+         this.player.setSprinting(false);
       }
    }
 }

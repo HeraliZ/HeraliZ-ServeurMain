@@ -31,6 +31,7 @@ import net.minecraftforge.fml.LogicalSide;
  *    TaCZ ({@code isCrawling}) : changer d'objet en restant allongé ne relève pas le joueur ;</li>
  *    <li>dans l'eau, à terre, ou en train de fouiller ou réanimer (Réanimation), avec ou sans arme : plus allongé (la
  *    pose d'un joueur à terre, à plat, ou qui fouille, accroupi, est celle de Réanimation) ;</li>
+ *    <li>allongé : pas de course (un joueur qui s'allonge en courant ne court plus) ;</li>
  *    <li>plongeon : {@link PlongeonServeur} ;</li>
  *    <li>tirer pendant qu'on se couche, ou pendant le début d'un plongeon : tir refusé ({@code GunShootEvent} de TaCZ,
  *    côté serveur : ni balle, ni munition dépensée, ni son pour les autres).</li>
@@ -86,6 +87,11 @@ public final class AllongeServeur {
       if (PlongeonServeur.tick(joueur, donnees, etat, empeche)) {
          Allonge.noter(donnees);
          return true;
+      }
+      // allongé : pas de course (2.12.0). Le joueur s'arrête lui-même (mixin de LocalPlayerCrawl) ; ceci couvre un jeu
+      // modifié ou un ancien jar : sinon TaCZ le compte « en train de courir » à plat (tir refusé, arme baissée)
+      if (donnees.isCrawling && joueur.isSprinting()) {
+         joueur.setSprinting(false);
       }
       if (!sansArme(donnees)) {
          return false;

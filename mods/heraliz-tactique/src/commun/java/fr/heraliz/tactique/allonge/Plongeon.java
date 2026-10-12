@@ -24,6 +24,8 @@ public final class Plongeon {
    public long phaseA;
    /** Début du plongeon en cours (le coucher, pour la durée sans tir, compte depuis cette heure). */
    public long debutA;
+   /** Retombées vues trop tôt pendant ce plongeon (le joueur a requitté le sol juste après) : au plus 2, sinon il resaute. */
+   public int rebonds;
    /** Dernier plongeon accepté (délai entre deux plongeons). */
    public long dernierA;
    /** Dernière demande reçue (les demandes trop rapprochées sont ignorées). */
