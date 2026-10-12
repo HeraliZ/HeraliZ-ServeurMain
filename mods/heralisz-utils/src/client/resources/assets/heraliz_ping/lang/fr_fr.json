@@ -19,6 +19,7 @@
   "heraliz_ping.msg.cadence": "Doucement : trop de pings d'un coup.",
   "heraliz_ping.msg.portee": "Trop loin pour marquer (%s blocs au plus).",
   "heraliz_ping.msg.vue": "Tu ne vois pas cette cible.",
+  "heraliz_ping.msg.carte": "Les pings depuis la carte sont désactivés sur ce serveur.",
 
   "heraliz_ping.oui": "Oui",
   "heraliz_ping.non": "Non",
@@ -35,7 +36,7 @@
   "heraliz_ping.cmd.admin.stats": "%s pings reçus, %s relayés (%s paquets envoyés), %s actifs, %s µs par ping en moyenne",
   "heraliz_ping.cmd.admin.refus": "Refusés : cadence %s · portée %s · hors de vue %s · cible %s · spectateur %s",
   "heraliz_ping.cmd.admin.liens": "Liens : clans %s · matchs %s",
-  "heraliz_ping.cmd.admin.usage": "/ping admin <duree|portee|rafale|recharge|max|vue|spectateurs|groupe|actif> <valeur>",
+  "heraliz_ping.cmd.admin.usage": "/ping admin <duree|portee|rafale|recharge|max|vue|spectateurs|groupe|carte|actif> <valeur>",
 
   "heraliz_ping.reglages.titre": "Pings",
   "heraliz_ping.reglages.sous_titre": "Affichage et son des pings",

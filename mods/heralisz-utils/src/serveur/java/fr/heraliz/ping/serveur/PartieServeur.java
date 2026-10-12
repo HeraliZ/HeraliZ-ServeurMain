@@ -9,7 +9,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
  * Partie serveur de heraliz_ping (jar fusionne HeraliZ Utils, docs/METHODE_CLIENT_SERVEUR.md §4) : les evenements
- * serveur de l'ancien @Mod (meme place dans le constructeur), les paquets recus des joueurs (PingC2S, AnnulerC2S ->
+ * serveur de l'ancien @Mod (meme place dans le constructeur), les paquets recus des joueurs (PingC2S, AnnulerC2S, CarteC2S ->
  * PingService, sur le fil serveur comme avant) et la presence forcee des faux joueurs du banc d'essai.
  */
 public final class PartieServeur implements Partie {
@@ -19,6 +19,7 @@ public final class PartieServeur implements Partie {
         PingNet.RECEPTION_SERVEUR.brancher(r -> {
             if (r.paquet() instanceof Paquets.PingC2S m) PingService.recevoir(r.joueur(), m);
             else if (r.paquet() instanceof Paquets.AnnulerC2S m) PingService.annuler(r.joueur(), m.id());
+            else if (r.paquet() instanceof Paquets.CarteC2S m) PingService.recevoirCarte(r.joueur(), m);
         });
         PingNet.PRESENCE_FORCEE = PingService::presenceForcee;
     }

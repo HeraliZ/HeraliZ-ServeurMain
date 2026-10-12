@@ -37,6 +37,7 @@ public final class PingCommandes {
                 .then(booleen("vue", PingConfig.VERIFIER_VUE))
                 .then(booleen("spectateurs", PingConfig.SPECTATEURS_VOIENT))
                 .then(booleen("groupe", PingConfig.GROUPE_HORS_MATCH))
+                .then(booleen("carte", PingConfig.CARTE))
                 .then(booleen("actif", PingConfig.ACTIF));
         d.register(Commands.literal("ping").executes(PingCommandes::aide).then(admin));
         // alias : un plugin du serveur (Essentials...) peut deja avoir /ping

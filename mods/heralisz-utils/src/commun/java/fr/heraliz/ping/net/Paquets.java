@@ -4,13 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
 /**
- * Les 5 paquets du canal {@code heraliz_ping:main}, tous minuscules (octets du message, en-tete du canal non compte) :
+ * Les 6 paquets du canal {@code heraliz_ping:main}, tous minuscules (octets du message, en-tete du canal non compte) :
  * <ul>
  *     <li>{@link PingC2S} : le joueur marque un bloc ou une entite (13 a 17 octets) ;</li>
  *     <li>{@link AnnulerC2S} : il retire un de ses pings (1 a 5 octets) ;</li>
  *     <li>{@link PingS2C} : un ping a afficher (environ 20 octets + le pseudo) ;</li>
  *     <li>{@link MajS2C} : nouvelle place d'une entite pingee hors de portee de suivi, ou fin d'un ping (2 a 16 octets) ;</li>
- *     <li>{@link ReglagesS2C} : regles du serveur utiles au client (3 octets).</li>
+ *     <li>{@link ReglagesS2C} : regles du serveur utiles au client (3 octets) ;</li>
+ *     <li>{@link CarteC2S} : le joueur marque un point depuis la carte du monde (9 octets).</li>
  * </ul>
  */
 public final class Paquets {
@@ -121,6 +122,22 @@ public final class Paquets {
 
         public static ReglagesS2C lire(FriendlyByteBuf buf) {
             return new ReglagesS2C(buf.readUnsignedShort(), buf.readBoolean());
+        }
+    }
+
+    /**
+     * Ping pose depuis la carte du monde (heraliz_carte) : type (0 a 5, ou {@code PingType.AUTO} = « On y va ») et point
+     * (x, z) dans le monde du joueur ; le serveur choisit la hauteur. Sans portee ni ligne de vue (config {@code carte}).
+     */
+    public record CarteC2S(int type, int x, int z) {
+        public void ecrire(FriendlyByteBuf buf) {
+            buf.writeByte(type & 7);
+            buf.writeInt(x);
+            buf.writeInt(z);
+        }
+
+        public static CarteC2S lire(FriendlyByteBuf buf) {
+            return new CarteC2S(buf.readUnsignedByte() & 7, buf.readInt(), buf.readInt());
         }
     }
 }
