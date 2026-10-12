@@ -7114,7 +7114,7 @@
 				{
 					"name": "muzzle_pos",
 					"parent": "positioning2",
-					"pivot": [0.2, 8.11875, -24.475]
+					"pivot": [0.2, 8.11875, -24.175]
 				},
 				{
 					"name": "laser_pos",
@@ -7124,7 +7124,7 @@
 				{
 					"name": "scope_pos",
 					"parent": "positioning2",
-					"pivot": [0, 10.3, 5.4]
+					"pivot": [0, 9.65, 5.4]
 				},
 				{
 					"name": "grip_pos",

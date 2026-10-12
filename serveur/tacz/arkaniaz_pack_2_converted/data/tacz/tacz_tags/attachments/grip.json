@@ -1,6 +1,5 @@
 [
   "gucci_attachments:grip_bcm",
-  "gucci_attachments:grip_cqr",
   "gucci_attachments:grip_flat",
   "gucci_attachments:grip_phase",
   "gucci_attachments:grip_rk1_b25u",
@@ -17,7 +16,5 @@
   "gucci_attachments:grip_vert3",
   "gucci_attachments:grip_vert6",
   "gucci_attachments:grip_bojin1",
-  "gucci_attachments:grip_vg1",
-  "gucci_attachments:grip_cqr_g2",
-  "gucci_attachments:grip_bipod"
+  "gucci_attachments:grip_vg1"
 ]

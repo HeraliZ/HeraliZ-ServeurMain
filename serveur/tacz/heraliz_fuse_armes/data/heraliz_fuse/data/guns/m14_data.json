@@ -94,6 +94,6 @@
       "prep": 0.1
     }
   },
-  "allow_attachment_types": ["scope", "stock", "grip", "muzzle", "extended_mag"],
+  "allow_attachment_types": ["scope", "grip", "muzzle", "extended_mag"],
   "exclusive_attachments": {}
 }
