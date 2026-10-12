@@ -98,7 +98,7 @@
   },
   "the_giant": {
     "_doc": "v3 (D-051), regles de The Giant : annihilator = arme TaCZ donnee par le fourneau du Fly Trap (remplace l'Annihilator de BO3) ; recharge_teleporteur_s ; chance_bonus_teleporteur et chance_chiens_teleporteur (apres la manche 25) ; degats_piege = degats a un joueur dans un piege electrique toutes les 12 ticks (PV Minecraft, 20 = a terre sans Blindage) ; bowie_manche_max = derniere manche ou le Bowie Knife tue d'un coup ; bowie_objet = objet de melee qui remplace le couteau a l'achat (vide = le couteau actuel devient mortel).",
-    "annihilator": "tacz:rhino357",
+    "annihilator": "arkaniaz:python",
     "recharge_teleporteur_s": 30,
     "chance_bonus_teleporteur": 0.12,
     "chance_chiens_teleporteur": 0.25,

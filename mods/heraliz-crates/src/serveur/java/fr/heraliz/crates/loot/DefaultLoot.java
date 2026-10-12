@@ -243,7 +243,7 @@ final class DefaultLoot {
                 l.add(e("heralisz_tactical:throwable", 1, 15, RARE).nbt("{ThrowableId:\"heralisz_grenade:c4\"}"));
                 l.add(gun("deagle", "SEMI", 20, RARE));
                 l.add(gun("ump45", "AUTO", 22, RARE));
-                l.add(gun("hk_mp5a5", "AUTO", 22, RARE));
+                l.add(gun("maxstuff:hk_mp5k", "AUTO", 22, RARE));
                 l.add(gun("vector45", "AUTO", 15, RARE));
                 l.add(gun("p90", "AUTO", 15, RARE));
                 l.add(gun("m870", "SEMI", 25, RARE));
@@ -256,10 +256,10 @@ final class DefaultLoot {
                 l.add(gun("g36k", "AUTO", 10, EPIC));
                 l.add(gun("mk14", "SEMI", 8, EPIC));
                 l.add(gun("rpk", "AUTO", 6, EPIC));
-                l.add(gun("m700", "SEMI", 10, EPIC));
-                l.add(gun("ai_awp", "SEMI", 4, LEGENDARY));
-                l.add(gun("m107", "SEMI", 3, LEGENDARY));
-                l.add(gun("barrett_m95", "SEMI", 2, LEGENDARY));
+                l.add(gun("arkaniaz:ssg_08", "SEMI", 10, EPIC));
+                l.add(gun("aiawp", "SEMI", 4, LEGENDARY));
+                l.add(gun("arkaniaz:m82a3", "SEMI", 3, LEGENDARY));
+                l.add(gun("m95", "SEMI", 2, LEGENDARY));
                 l.add(gun("m249", "AUTO", 3, LEGENDARY));
                 l.add(e("dyairdrop:flaregun0", 1, 4, LEGENDARY));
                 l.add(gun("rpg7", "SEMI", 1, MYTHIC));
@@ -303,7 +303,8 @@ final class DefaultLoot {
 
     /** Arme TaCZ du pack par defaut (chargeur vide, le joueur recharge). */
     private static LootEntry gun(String id, String mode, int weight, LootRarity rarity) {
-        return e("tacz:modern_kinetic_gun", 1, weight, rarity).nbt("{GunId:\"tacz:" + id + "\",GunFireMode:\"" + mode + "\",GunCurrentAmmoCount:0}");
+        String gunId = id.contains(":") ? id : "tacz:" + id;
+        return e("tacz:modern_kinetic_gun", 1, weight, rarity).nbt("{GunId:\"" + gunId + "\",GunFireMode:\"" + mode + "\",GunCurrentAmmoCount:0}");
     }
 
     /** Munitions TaCZ du pack par defaut. */

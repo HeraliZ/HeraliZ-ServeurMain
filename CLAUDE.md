@@ -502,9 +502,12 @@ les joueurs n'ont que les images du dépôt : un gunpack (ou un index d'arme) re
 donne des carrés roses et noirs dans le menu créatif (12/10 : ~1 000 objets de 5 vieux packs et d'anciens index). Par
 défaut lecture seule ; case « supprimer » : ce qui n'est pas dans le dépôt est SUPPRIMÉ du Ptero (gunpacks entiers,
 index d'objets en trop ; effacés par le panel, un dossier en un appel, sinon fichier par fichier en SFTP, très lent),
-puis redémarrer. Le pack par défaut de TaCZ (`tacz_default_gun`, aussi dans son jar) est
-gardé. Les joueurs n'ont jamais ces gunpacks (pack du launcher = dépôt). À lancer après avoir retiré un gunpack ou une
-arme du dépôt.
+puis redémarrer. Le pack par défaut de TaCZ (`tacz_default_gun`) n'est pas gardé (12/10) : avec
+`DefaultPackDebug = true` (`serveur/tacz/tacz-pre.toml`), TaCZ ne le copie jamais de son jar chez les joueurs (49 objets
+roses : MP5, AWP, M107, Kar98, Rhino…) et ses fichiers, différents des versions retouchées de `arkaniaz_pack_0_converted`
+aux mêmes chemins, pouvaient passer devant sur le serveur selon l'ordre de lecture. Ses armes citées ailleurs ont été
+remplacées par celles de nos packs (largages, caisses, Annihilator des Zombies). Les joueurs n'ont jamais ces gunpacks
+(pack du launcher = dépôt). À lancer après avoir retiré un gunpack ou une arme du dépôt.
 
 **Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
 fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets

@@ -148,7 +148,7 @@ final class QueteGiant {
         int nr = 0;
         for (PlanGiant.CibleCachee c : plan.ciblesCachees) if (c.tir()) nr++;
         this.relaisRequis = nr;
-        this.armeAnnihilator = ConfigZombies.texte("the_giant", "annihilator", "tacz:rhino357");
+        this.armeAnnihilator = ConfigZombies.texte("the_giant", "annihilator", "arkaniaz:python");
     }
 
     // ------------------------------------------------------------------ installation
