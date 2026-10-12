@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -20,7 +21,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CrossCollisionBlock;
+import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -38,14 +42,16 @@ import org.slf4j.Logger;
  *    <li><b>Casse</b> : sur l'événement public {@code AmmoHitBlockEvent} de TaCZ (une balle touche un bloc, avant que
  *    TaCZ ne la retire), si le bloc est du verre au sens de TaCZ et que le verre casse à cet endroit : l'état complet du
  *    bloc est noté (VitresCassees), puis le bloc devient de l'air, avec les éclats et le bruit d'un bloc cassé, sans
- *    objet lâché et SANS prévenir les blocs voisins (les vitres voisines gardent leurs connexions, rien ne tombe ni ne
- *    se décroche : la carte reste telle quelle autour du trou).</li>
+ *    objet lâché et SANS prévenir les blocs voisins (rien ne tombe ni ne se décroche : la carte reste telle quelle
+ *    autour du trou) ; seules les vitres fines voisines qui s'y raccordaient perdent leur raccord vers le trou, pour un
+ *    bord net.</li>
  *    <li><b>Zones où le verre ne casse pas</b> : réglage {@code [vitres] casser} à false, dimensions protégées (matchs,
  *    zombies, bunkers), rayon autour du point d'apparition du monde (le spawn, protégé par WorldGuard, que ce mod ne
  *    peut pas lire), claims de CRac (lus par réflexion, CRac facultatif), verre gorgé d'eau, blocs de la liste
  *    {@code blocs_proteges}. Là, tout reste comme avant.</li>
  *    <li><b>Repousse</b> : chaque seconde, les vitres dont le délai est passé sont reposées dans leur état exact (sans
- *    prévenir les voisins non plus), si leur chunk est chargé, si leur place est encore de l'air et si personne (joueur,
+ *    prévenir les voisins non plus), raccordées aux vitres fines voisines comme dans le jeu (une vitre fine voisine
+ *    encore cassée : pas de raccord vers le trou ; elle s'y raccordera en repoussant), si leur chunk est chargé, si leur place est encore de l'air et si personne (joueur,
  *    créature, véhicule) ne s'y tient ; sinon elles attendent. Au démarrage du serveur, les vitres en retard sont reposées
  *    tout de suite, chunks chargés exprès (au plus {@link #MAX_CHARGEMENTS_DEMARRAGE}, les autres au chargement de leur
  *    chunk).</li>
@@ -117,6 +123,7 @@ public final class VitresServeur {
       if (level.setBlock(pos, Blocks.AIR.defaultBlockState(), DRAPEAUX)) {
          level.gameEvent(tireur, GameEvent.BLOCK_DESTROY, pos);
          noter(level, pos, avant);
+         detacher(level, pos, avant);
       }
    }
 
@@ -223,7 +230,7 @@ public final class VitresServeur {
          if (!level.getBlockState(pos).isAir() || quelquUnDedans(level, pos)) {
             continue;
          }
-         level.setBlock(pos, v.etat(), DRAPEAUX);
+         reposer(level, pos, v.etat());
          it.remove();
          change = true;
          remises++;
@@ -237,6 +244,69 @@ public final class VitresServeur {
    /** Un joueur, une créature ou un véhicule touche la case (les spectateurs et les objets au sol ne comptent pas). */
    private static boolean quelquUnDedans(ServerLevel level, BlockPos pos) {
       return !level.getEntities((Entity) null, new AABB(pos), en -> en.blocksBuilding && !en.isSpectator()).isEmpty();
+   }
+
+   // ------------------------------------------------------------------ raccords des vitres fines
+
+   /**
+    * Vitre fine cassée : les vitres fines (et barreaux) voisines qui s'y raccordaient ne pointent plus vers le trou. Seul
+    * leur raccord de ce côté change, sans prévenir personne d'autre.
+    */
+   private static void detacher(ServerLevel level, BlockPos pos, BlockState cassee) {
+      for (Direction cote : Direction.Plane.HORIZONTAL) {
+         if (!raccordee(cassee, cote)) {
+            continue;
+         }
+         BlockPos voisin = pos.relative(cote);
+         BlockState v = level.getBlockState(voisin);
+         if (raccordee(v, cote.getOpposite())) {
+            level.setBlock(voisin, v.setValue(raccord(cote.getOpposite()), false), DRAPEAUX);
+         }
+      }
+   }
+
+   /**
+    * Repose une vitre : son état d'avant la casse, raccordée aux vitres fines voisines comme le ferait le jeu (vers une
+    * vitre fine ou des barreaux : raccordée, et eux à elle ; vers une case vide, une vitre voisine encore cassée : pas de
+    * raccord). Vers les autres blocs (murs, blocs pleins), les raccords d'avant la casse sont gardés tels quels.
+    */
+   private static void reposer(ServerLevel level, BlockPos pos, BlockState etat) {
+      BlockState propre = etat;
+      if (etat.getBlock() instanceof IronBarsBlock) {
+         for (Direction cote : Direction.Plane.HORIZONTAL) {
+            BlockState v = level.getBlockState(pos.relative(cote));
+            if (v.getBlock() instanceof IronBarsBlock) {
+               propre = propre.setValue(raccord(cote), true);
+            } else if (v.isAir()) {
+               propre = propre.setValue(raccord(cote), false);
+            }
+         }
+      }
+      level.setBlock(pos, propre, DRAPEAUX);
+      if (!(propre.getBlock() instanceof IronBarsBlock)) {
+         return;
+      }
+      for (Direction cote : Direction.Plane.HORIZONTAL) {
+         BlockPos voisin = pos.relative(cote);
+         BlockState v = level.getBlockState(voisin);
+         if (v.getBlock() instanceof IronBarsBlock && !raccordee(v, cote.getOpposite())) {
+            level.setBlock(voisin, v.setValue(raccord(cote.getOpposite()), true), DRAPEAUX);
+         }
+      }
+   }
+
+   private static BooleanProperty raccord(Direction cote) {
+      return switch (cote) {
+         case NORTH -> CrossCollisionBlock.NORTH;
+         case SOUTH -> CrossCollisionBlock.SOUTH;
+         case EAST -> CrossCollisionBlock.EAST;
+         default -> CrossCollisionBlock.WEST;
+      };
+   }
+
+   /** Vrai si ce bloc est une vitre fine ou des barreaux raccordés de ce côté. */
+   private static boolean raccordee(BlockState etat, Direction cote) {
+      return etat.getBlock() instanceof IronBarsBlock && etat.hasProperty(raccord(cote)) && etat.getValue(raccord(cote));
    }
 
    // ------------------------------------------------------------------ réglages

@@ -37,7 +37,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class Vitres {
    /** Réglage par défaut : délai avant qu'une vitre cassée repousse (minutes). */
-   public static final int DEFAUT_DELAI_MINUTES = 20;
+   public static final int DEFAUT_DELAI_MINUTES = 5;
    /** Réglage par défaut : rayon autour du point d'apparition du monde où le verre ne casse pas (blocs). */
    public static final int DEFAUT_RAYON_SPAWN = 64;
    /** Réglage par défaut : dimensions où le verre ne casse jamais (arènes des matchs, zombies, bunkers des clans). */

@@ -39,7 +39,7 @@
 	#attend et réessaie. Les vitres à remettre sont gardées dans les données du monde (data/heraliz_vitres.dat, une
 	#liste par dimension).
 	#Range: 1 ~ 10080
-	delai_repousse_minutes = 20
+	delai_repousse_minutes = 5
 	#Dimensions où le verre ne casse jamais (arènes des matchs, zombies, bunkers des clans) : les balles le traversent
 	#ou s'y arrêtent comme avant.
 	dimensions_protegees = ["heralisz_matchs:arenes", "heralisz_matchs:zombies", "heralisz_bases:bunkers"]
