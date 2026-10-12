@@ -135,7 +135,13 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
 
     private boolean aPortee(Player p, double distance) {
         if (isRemoved() || !p.isAlive() || p.level() != level()) return false;
-        return getBoundingBox().distanceToSqr(p.getEyePosition()) <= distance * distance;
+        // distance des yeux au point le plus proche de la boite
+        AABB b = getBoundingBox();
+        Vec3 o = p.getEyePosition();
+        double dx = Math.max(Math.max(b.minX - o.x, o.x - b.maxX), 0.0);
+        double dy = Math.max(Math.max(b.minY - o.y, o.y - b.maxY), 0.0);
+        double dz = Math.max(Math.max(b.minZ - o.z, o.z - b.maxZ), 0.0);
+        return dx * dx + dy * dy + dz * dz <= distance * distance;
     }
 
     /**
