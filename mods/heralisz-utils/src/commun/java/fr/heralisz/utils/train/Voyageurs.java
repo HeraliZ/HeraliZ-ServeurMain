@@ -20,7 +20,11 @@ public final class Voyageurs {
     static final float PASSERELLE = 0.7f;           // soufflet de chaque voiture (le suivant commence au milieu)
     static final float R = 0.24f;                  // demi-largeur d'un voyageur
     static final float[] FEN_X = {-6, -4, -2, 0, 2, 4, 6};
-    static final double MARCHE = 0.2158, COURSE = 0.28;
+    /** Marche dans la voiture, comme celle de Minecraft au sol (LivingEntity.travel) : la vitesse du joueur (attribut,
+     *  0,1 ; course +30 %, lenteur, armes de TaCZ...) s'ajoute à chaque tick, puis le frottement du sol la multiplie par
+     *  0,6 × 0,91 (vitesse établie : 0,216 bloc par tick à pied, 0,28 en courant) ; en l'air, 0,02 et 0,91. Un saut en
+     *  courant donne un élan de 0,2 vers l'avant (Player.jumpFromGround). */
+    static final float FROTTEMENT_SOL = 0.6f * 0.91f, FROTTEMENT_AIR = 0.91f, ACCEL_AIR = 0.02f, ELAN_SAUT = 0.2f;
     /** Saut dans la voiture, comme le saut de Minecraft : vitesse de départ, pesanteur et freinage par tick (sommet à
      *  1,25 bloc au-dessus du plancher) ; le serveur refuse plus haut que SAUT_MAX. */
     static final float SAUT = 0.42f, PESANTEUR = 0.08f, FREIN = 0.98f, SAUT_MAX = 1.3f;
@@ -207,12 +211,15 @@ public final class Voyageurs {
     }
 
     /** Déplace (veh, x, z) de (dx, dz) en coordonnées de voiture, axe par axe ; passe d'une voiture à l'autre au
-     *  milieu du soufflet. Renvoie {veh, x, z}. */
+     *  milieu du soufflet. Renvoie {veh, x, z, x bloqué (1/0), z bloqué (1/0)} : un axe bloqué perd sa vitesse, comme une
+     *  collision horizontale de Minecraft. */
     static float[] deplacer(List<Voyageur> vs, int veh, float x, float z, float dx, float dz, int portesQuai, boolean souples) {
-        float nx = x + dx;
+        float nx = x + dx, bx = 0, bz = 0;
         if (libre(vs, veh, nx, z, portesQuai, souples)) x = nx;
+        else if (dx != 0) bx = 1;
         float nz = z + dz;
         if (libre(vs, veh, x, nz, portesQuai, souples)) z = nz;
+        else if (dz != 0) bz = 1;
         float lim = VL + PASSERELLE;
         if (x > lim && voiture(veh - 1)) {
             veh -= 1;
@@ -221,7 +228,7 @@ public final class Voyageurs {
             veh += 1;
             x += 2 * lim;
         }
-        return new float[]{veh, x, z};
+        return new float[]{veh, x, z, bx, bz};
     }
 
     /** Passage d'une voiture à la suivante : x de la voiture veh exprimé dans la voiture voisine vers (veh ± 1). */

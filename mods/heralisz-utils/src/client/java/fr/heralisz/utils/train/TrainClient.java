@@ -93,18 +93,8 @@ public final class TrainClient {
         return e == Minecraft.getInstance().player;
     }
 
-    /** Entrées du joueur à bord : {gauche, avant, vitesse en blocs par tick}. */
-    static float[] entree() {
-        Minecraft mc = Minecraft.getInstance();
-        var p = mc.player;
-        if (p == null || mc.screen != null) return new float[]{0, 0, 0};
-        double v = mc.options.keySprint.isDown() ? Voyageurs.COURSE : Voyageurs.MARCHE;
-        if (p.input.shiftKeyDown) v *= 0.35;
-        return new float[]{p.input.leftImpulse, p.input.forwardImpulse, (float) v};
-    }
-
-    static void envoyer(int v, float x, float z, boolean assis, float hauteur) {
-        Train.CANAL.sendToServer(new Train.Marche(v, x, z, assis, hauteur));
+    static void envoyer(int v, float x, float z, byte etat, float hauteur) {
+        Train.CANAL.sendToServer(new Train.Marche(v, x, z, etat, hauteur));
     }
 
     private static long derniereDescente;
@@ -155,6 +145,8 @@ public final class TrainClient {
                 v.pv = veh;
                 v.px = x;
                 v.pz = z;
+                v.vx = 0f;
+                v.vz = 0f;
             }
         }
     }

@@ -33,6 +33,11 @@ public class Voyageur extends Entity {
     /** Le joueur porté est assis (prédiction de son propre client). */
     boolean passis;
     boolean accroupiPrec;
+    /** Vitesse de marche prédite dans la voiture (blocs par tick, coordonnées de la voiture), comme celle de Minecraft :
+     *  accélération, frottement du sol (0,546 par tick) ou de l'air (0,91). */
+    float vx, vz;
+    /** Course (sprint) du joueur porté, prédite par son client et envoyée au serveur (animations de course chez les autres). */
+    boolean pcourse;
     /** Chez les autres joueurs : position affichée dans la voiture (voiture, lx, lz, hauteur), lissée vers la position
      *  reçue du serveur en 3 ticks (comme Minecraft pour toute entité) ; rv = -1 : rien d'affiché encore. */
     int rv = -1;
@@ -40,6 +45,14 @@ public class Voyageur extends Entity {
     float cx, cz, ch;
     int rPas;
     boolean rAssis;
+    /** Côté client, bruits de pas : distance de marche (comme Entity.moveDist), prochain pas, en l'air au tick précédent. */
+    float distPas;
+    int prochainPas = 1;
+    boolean enLair;
+    /** Côté client, pour orienter le corps dans le sens de la marche : pas du tick (coordonnées de la voiture) et cap de
+     *  la voiture (radians). */
+    float dirX, dirZ;
+    double capAnim;
 
     /** Position locale prédite par le client du joueur porté (sinon celle du serveur). */
     float px, pz;
@@ -99,6 +112,11 @@ public class Voyageur extends Entity {
     public float hauteur() {
         if (assis()) return 0f;
         return pv >= 0 ? ph : rv >= 0 ? rh : entityData.get(HAUTEUR);
+    }
+
+    /** Debout, les pieds sur le plancher : pas assis, pas en l'air. */
+    public boolean surLePlancher() {
+        return !assis() && hauteur() <= 0.02f;
     }
 
     void placer(int v, float x, float z) {

@@ -27,12 +27,13 @@ import net.minecraftforge.registries.RegistryObject;
  * Commandes (op) : /train info, /train actif <oui|non>, /train decalage <secondes> (avancer l'horaire, pour les essais),
  * /train voie ... (retouches de la voie dessinée, collision des ponts : VoieServeur).
  * Jar fusionné : ici les registres, le canal et ses paquets (numéros et ordre inchangés ; un paquet de plus et version 4
- * le 11/10) ; la logique serveur (données du monde, annonce, commandes, descentes forcées) est dans TrainServeur
- * (src/serveur).
+ * le 11/10 ; version 5 le 12/10) ; la logique serveur (données du monde, annonce, commandes, descentes forcées) est dans
+ * TrainServeur et VoyageursServeur (src/serveur).
  */
 public final class Train {
-    private static final String PROTO = "4";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
-                                                              // 4 : saut dans la voiture, retouches de la voie (11/10)
+    private static final String PROTO = "5";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
+                                                              // 4 : saut dans la voiture, retouches de la voie (11/10) ;
+                                                              // 5 : course dans la voiture (12/10)
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "train"),
             () -> PROTO, PROTO::equals, PROTO::equals);
 
@@ -68,19 +69,33 @@ public final class Train {
 
     private Train() {}
 
-    /** Position d'un voyageur dans sa voiture (client -> serveur) : voiture, lx, lz, assis, hauteur du saut au-dessus du
-     *  plancher (0 : les pieds au plancher ; vérifiée par le serveur, VoyageursServeur.marche). */
-    public record Marche(int vehicule, float lx, float lz, boolean assis, float hauteur) {
+    /** Position d'un voyageur dans sa voiture (client -> serveur) : voiture, lx, lz, état (ASSIS, COURSE),
+     *  hauteur du saut au-dessus du plancher (0 : les pieds au plancher ; vérifiée par le serveur, VoyageursServeur.marche). */
+    public record Marche(int vehicule, float lx, float lz, byte etat, float hauteur) {
+        public static final byte ASSIS = 1, COURSE = 4;
+
+        public static byte etat(boolean assis, boolean course) {
+            return (byte) ((assis ? ASSIS : 0) | (course ? COURSE : 0));
+        }
+
+        public boolean assis() {
+            return (etat & ASSIS) != 0;
+        }
+
+        public boolean course() {
+            return (etat & COURSE) != 0;
+        }
+
         void ecrire(FriendlyByteBuf b) {
             b.writeVarInt(vehicule);
             b.writeFloat(lx);
             b.writeFloat(lz);
-            b.writeBoolean(assis);
+            b.writeByte(etat);
             b.writeFloat(hauteur);
         }
 
         static Marche lire(FriendlyByteBuf b) {
-            return new Marche(b.readVarInt(), b.readFloat(), b.readFloat(), b.readBoolean(), b.readFloat());
+            return new Marche(b.readVarInt(), b.readFloat(), b.readFloat(), b.readByte(), b.readFloat());
         }
     }
 

@@ -54,7 +54,7 @@ public final class TrainServeur {
     /** Paquets client -> serveur (traitements d'origine de Train.init). */
     private static void recevoir(Train.Recu r) {
         if (r.paquet() instanceof Train.Marche m) {
-            VoyageursServeur.marche(r.joueur(), m.vehicule(), m.lx(), m.lz(), m.assis(), m.hauteur());
+            VoyageursServeur.marche(r.joueur(), m);
         } else if (r.paquet() instanceof Train.Descente) {
             VoyageursServeur.descenteDemandee(r.joueur(), "Maj");
         }
