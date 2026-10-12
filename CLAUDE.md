@@ -59,8 +59,8 @@ quand un choix leur revient.
 - Dimensions à part : `heralisz_matchs:arenes` (ClashWar, duels) et `heralisz_matchs:zombies`.
 - Style de toutes les interfaces : celui des **écrans de clan** (panneaux de verre, police DM Sans, échelle 640×360,
   jamais de fond uni). Kit à copier : `python outils/copier_kit_ui.py mods/<projet>`. Exceptions : l'inventaire, la
-  fouille du loot (coffres T1 à T7, caisses de ravitaillement, caisse de CRac) et l'inventaire des sacs à dos gardent
-  leur style de base façon DayZ (choix du propriétaire : le style « clan » y fait trop moderne ; au plus une petite
+  fouille du loot (coffres T1 à T7, caisses de ravitaillement, caisse de CRac, cadavres) et l'inventaire des sacs à
+  dos gardent leur style de base façon DayZ (choix du propriétaire : le style « clan » y fait trop moderne ; au plus une petite
   amélioration dans le même style), et les écrans à thème (machines du casino). Toutes les autres interfaces des mods
   passent au style des clans.
 - Menu Échap (heraliz_interface, maquette validée) : à gauche le logo et le menu (Reprendre, Informations, Discord,
@@ -825,7 +825,16 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   propriétaire, 11/10 : pas de service de traduction payant) ;
 - mort (11/10) : tout ce que porte le joueur part sur son cadavre (slots Curios compris, montrés à la fouille) ; cadavre
   qui disparaît au bout de 10 min, ou tout de suite une fois vide ; on ne peut rien y déposer. `keepInventory` doit être
-  à false sur les mondes du Ptero (gamerule tapée en jeu) ; `/suicide` pour tous les joueurs (mort normale) ;
+  à false sur les mondes du Ptero (gamerule tapée en jeu) ; `/suicide` pour tous les joueurs (mort normale).
+  Fouille du cadavre (12/10, Utils 2.8.0) : comme un coffre, au style de base façon DayZ (texture du coffre du pack) :
+  en haut « Corps de X » (cause, temps restant), Équipement et Sac, Accessoires, Inventaire du mort, « Tout prendre »,
+  en dessous son propre inventaire ; on fouille de là où l'on est, rien ne déplace le joueur (serveur : 5 blocs des
+  yeux au corps pour ouvrir, 6 pour garder ouvert) ; boîte du cadavre dans le sens du corps (1 × 1,9 bloc, carré de
+  1,6 en diagonale, 0,45 de haut), sans collision. Fouiller un joueur À TERRE (Réanimation 1.14.0) ne téléporte plus
+  à côté de lui non plus (la réanimation, elle, garde sa place à genoux) ;
+- usure (12/10) : l'indicateur de l'arme en main est en bas à droite, sous le HUD de TaCZ (`HudUsure`, pastille de
+  12 px) ; nouvel habillage au style des clans en attente du choix du propriétaire (maquettes A segments, B ligne
+  sous les munitions, C anneau) ;
 - train (11/10) : un train qui roule heurte (2,5 cœurs, joueur projeté à côté) ; il ne tue que devant la locomotive ou
   dans la voie, sous la caisse ; dans la voiture, les jambes bougent et on peut sauter (réseau du train version 4 :
   jars joueurs et serveur de la même fabrication). La voie se corrige EN JEU, jamais dans les fichiers du monde (staff) :
