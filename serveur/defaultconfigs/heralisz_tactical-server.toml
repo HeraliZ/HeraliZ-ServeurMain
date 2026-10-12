@@ -26,6 +26,25 @@
 	#l'animation de Minecraft dure 0,6 s). Le serveur compte 0,2 s de moins (décalage du réseau).
 	#Range: 0.0 ~ 5.0
 	duree_sans_tir_couche = 0.7
+	#Plongeon façon Call of Duty : en avançant, touche « Ramper » pendant un saut (jusqu'à 0,45 s après) ou avec la
+	#touche de saut enfoncée : le joueur est lancé en avant, corps à plat, et retombe allongé. Avec ou sans arme en
+	#main. L'élan est décidé et donné par le serveur (vitesse de Minecraft envoyée au joueur, suivie par Spartan).
+	#Il compte comme « se coucher » : pas de tir pendant duree_sans_tir_couche depuis son début, et il respecte
+	#delai_rallonger. Les dégâts de chute restent ceux de Minecraft. false : pas de plongeon.
+	plongeon = true
+	#Vitesse vers l'avant donnée par le plongeon, en blocs par tick (un sprint va à 0,28) : 0,7 lance le joueur
+	#d'environ 2,5 blocs depuis le sol, de 3,5 à 4,5 blocs depuis un saut.
+	#Range: 0.1 ~ 1.5
+	plongeon_vitesse = 0.7
+	#Petit élan vers le haut d'un plongeon depuis le sol, en blocs par tick (un saut vaut 0,42) : 0,15 fait monter
+	#le corps d'environ 0,2 bloc. En l'air (juste après un saut), le plongeon ne donne aucun élan vers le haut.
+	#Au-dessus de 0,15, un plongeon lancé avec un saut peut passer par-dessus une clôture ou un muret (1,5 bloc).
+	#Range: 0.0 ~ 0.3
+	plongeon_hauteur = 0.15
+	#Délai (en secondes) entre deux plongeons, compté depuis le début du précédent (delai_rallonger compte aussi).
+	#Le serveur compte 0,5 s de moins (décalage du réseau).
+	#Range: 0.0 ~ 120.0
+	delai_plongeon = 6.0
 
 [vitres]
 	#Les balles des armes TaCZ cassent le verre (verre, verre coloré ou teinté, vitres et vitres colorées : la même règle

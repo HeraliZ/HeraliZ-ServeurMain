@@ -768,6 +768,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   I, menu =, abandon Retour arrière ;
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
 - vitres (11/10, 12/10) : une balle casse la vitre ou le bloc de verre touché, reposé au même endroit au bout de 5 min (même après un redémarrage ; les vitres fines voisines perdent leur raccord vers le trou et le retrouvent à la repousse : deux vitres côte à côte cassées repoussent reliées ; section `[vitres]` de `heralisz_tactical-server.toml`, mod tactique) ; jamais au spawn (64 blocs), en match, en zombies, dans les bunkers ni dans les claims CRac. `DestroyGlass` de TaCZ reste à false (TaCZ casse sans regarder les protections ni les blocs voisins) ;
+- s'allonger (11/10, 12/10, mod tactique, `allonge/`) : un appui pour s'allonger, un autre pour se relever, avec ou sans arme en
+  main (sans arme : même pose et même vitesse que le « ramper » de TaCZ) ; pas de tir pendant qu'on se couche, délai avant
+  de se rallonger ; plongeon façon CoD (en avançant, touche « Ramper » pendant un saut ou avec la touche de saut enfoncée) :
+  élan décidé et donné par le serveur (setDeltaMovement + hurtMarked, suivi par Spartan), on retombe allongé ; réglages
+  `[allonge]` de `heralisz_tactical-server.toml` (`plongeon`, `plongeon_vitesse`, `plongeon_hauteur`, `delai_plongeon`) ;
 - duels (11/10) : défi reçu = petite notification en haut à droite (plus de grand écran au milieu) ; les dimensions des matchs et des zombies ont leur propre bordure du monde (avant, les arènes sortaient de celle de la carte : mort en boucle) ;
 - sons (11/10) : MAtmos jouait le bruit de changement d'objet de chaque joueur visible, sans atténuation (sons stéréo) : dayzhotbar (`SonChangementObjet`) ne laisse entendre celui des autres qu'à 8 blocs au plus ;
 - accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;
