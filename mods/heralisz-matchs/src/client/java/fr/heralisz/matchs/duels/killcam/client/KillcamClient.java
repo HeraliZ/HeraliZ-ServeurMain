@@ -45,7 +45,8 @@ import java.util.UUID;
 /**
  * Cote client de la killcam : reception d'un clip, lecture ({@link Lecteur}), camera, rendu des joueurs factices et des
  * traceurs, bandeau ({@link KillcamHud}), touche pour passer, retour propre de la camera et du HUD.
- * <p>Pendant une lecture : la camera est une entite factice placee par-dessus l'epaule du tueur (mode premiere
+ * <p>Pendant une lecture : la camera est une entite factice placee par-dessus l'epaule du tueur, puis dans ses yeux
+ * pour la fin (son modele n'est alors plus dessine, voir {@link Lecteur#PREMIERE_IMAGES}) (mode premiere
  * personne force, rendu de la main coupe) ; les vrais joueurs (et les entites du clip) sont masques, seuls les faux
  * joueurs sont dessines ; tous les calques de HUD sont masques sauf le bandeau ; les clics d'attaque/utilisation sont
  * ignores. A la fin (ou au passage, ou sur ordre du serveur) : camera d'avant (ou le joueur), mode de camera d'avant,
@@ -252,6 +253,8 @@ public final class KillcamClient {
             for (int k = 0; k < l.faux.length; k++) {
                 FauxJoueur f = l.faux[k];
                 if (!f.visible) continue;
+                // fin vue par les yeux du tueur : la camera est dans sa tete
+                if (k == l.clip.tueur && l.tueurMasque()) continue;
                 float pt = l.partiel(k);
                 double x = l.pos(k, 0), y = l.pos(k, 1), z = l.pos(k, 2);
                 try {

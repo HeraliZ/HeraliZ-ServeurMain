@@ -26,7 +26,7 @@ final class Traceurs {
 
     private final double[] sx = new double[MAX], sy = new double[MAX], sz = new double[MAX];
     private final double[] ex = new double[MAX], ey = new double[MAX], ez = new double[MAX];
-    private final double[] longueur = new double[MAX], ne = new double[MAX];
+    private final double[] longueur = new double[MAX], ne = new double[MAX], flash = new double[MAX];
     private final boolean[] touche = new boolean[MAX], actif = new boolean[MAX];
     private int prochain;
 
@@ -34,8 +34,11 @@ final class Traceurs {
         java.util.Arrays.fill(actif, false);
     }
 
-    /** Nouveau traceur de (x0..) a (x1..), ne a l'instant {@code horloge} ; touche = impact sur un joueur. */
-    void ajouter(double x0, double y0, double z0, double x1, double y1, double z1, boolean surJoueur, double horloge) {
+    /**
+     * Nouveau traceur de (x0..) a (x1..), ne a l'instant {@code horloge} ; touche = impact sur un joueur ;
+     * {@code echelleFlash} = taille de l'eclair de bouche (1 normal, plus petit vu par les yeux du tireur).
+     */
+    void ajouter(double x0, double y0, double z0, double x1, double y1, double z1, boolean surJoueur, double horloge, double echelleFlash) {
         int i = prochain;
         prochain = (prochain + 1) % MAX;
         sx[i] = x0;
@@ -47,6 +50,7 @@ final class Traceurs {
         double dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
         longueur[i] = Math.sqrt(dx * dx + dy * dy + dz * dz);
         ne[i] = horloge;
+        flash[i] = echelleFlash;
         touche[i] = surJoueur;
         actif[i] = true;
     }
@@ -100,7 +104,7 @@ final class Traceurs {
             // eclair de bouche
             if (age < FLASH) {
                 float k = (float) (1 - age / FLASH);
-                double t = 0.12 + 0.16 * k;
+                double t = (0.12 + 0.16 * k) * flash[i];
                 etoile(vc, m, sx[i] - cx, sy[i] - cy, sz[i] - cz, gauche, haut, t, 255, 196, 110, (int) (230 * k));
             }
             // etincelle d'impact
