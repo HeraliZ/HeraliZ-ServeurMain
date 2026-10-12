@@ -48,11 +48,12 @@ public final class Train {
     public static final RegistryObject<net.minecraft.world.level.block.entity.BlockEntityType<TableauBlockEntity>> TABLEAU_BE =
             ENTITES_BLOC.register("tableau_gare", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder
                     .of(TableauBlockEntity::new, TABLEAU.get()).build(null));
-    /** Voyageur : version serveur (VoyageurServeur : tick, descente) dans un monde serveur, commune côté client. */
+    /** Voyageur : version serveur (VoyageurServeur : tick, descente) dans un monde serveur, commune côté client. Suivi
+     *  aussi loin qu'un joueur (32 tronçons, comme EntityType.PLAYER) : un joueur vu sans son voyageur resterait figé. */
     public static final UsineEntite<Voyageur> VOYAGEUR_USINE = new UsineEntite<>(Voyageur::new);
     public static final RegistryObject<EntityType<Voyageur>> VOYAGEUR = ENTITES.register("voyageur",
             () -> EntityType.Builder.<Voyageur>of(VOYAGEUR_USINE, MobCategory.MISC).sized(0.2f, 0.2f).noSummon().noSave().fireImmune()
-                    .clientTrackingRange(10).updateInterval(1).build("voyageur"));
+                    .clientTrackingRange(32).updateInterval(1).build("voyageur"));
     /** Voie pleine : collision invisible sous la voie dessinée (ponts), posée par /train voie remplir. Sans objet. */
     public static final RegistryObject<net.minecraft.world.level.block.Block> VOIE_PLEINE = BLOCS.register("voie_pleine",
             () -> new VoiePleineBlock(VoiePleineBlock.proprietes()));

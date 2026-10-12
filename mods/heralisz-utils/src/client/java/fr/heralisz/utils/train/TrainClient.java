@@ -24,9 +24,17 @@ public final class TrainClient {
     static boolean actif;
     static long decalage;
     static ShaderInstance shTrain;
-    /** Temps de l'horaire au début du tick client en cours : les voyageurs sont placés à cet instant, et la rame est
-     *  dessinée à tTick - (1 - fraction) / 20, l'instant où le moteur interpole leur position (aucun décalage). */
-    static double tTick;
+    /** Temps de l'horaire (secondes) au début du tick client en cours et au tick précédent : les voyageurs sont placés à
+     *  tTick, et la rame est dessinée entre les deux (temps), exactement là où le moteur interpole leur position. */
+    static double tTick, tPrec;
+    /** Horloge du train chez le joueur, en ticks (temps du monde + décalage de l'horaire). Le temps du monde du client
+     *  avance d'un tick par tick du jeu et le serveur le recale d'un coup chaque seconde (ClientboundSetTimePacket) : dès
+     *  que le serveur tient moins de 20 ticks par seconde, ou que le réseau hésite, le train (et tous ses voyageurs)
+     *  reculait de 0,75 à 2 blocs chaque seconde (« micro retour en arrière »). Cette horloge ne recule jamais : elle suit
+     *  le temps du monde en accélérant ou ralentissant doucement (au plus de 25 % à 75 %, en pratique quelques pour cent,
+     *  invisible), et ne se recale d'un coup qu'après un écart de plus de 3 secondes (serveur gelé, décalage changé). */
+    private static double horloge = Double.NaN, debit = 1.0;
+    private static final double RECALAGE = 60.0, GAIN = 0.03, GAIN_DEBIT = 0.001;
 
     private TrainClient() {}
 
@@ -51,6 +59,7 @@ public final class TrainClient {
     static void annonce(boolean a, long d) {
         actif = a;
         decalage = d;
+        horloge = Double.NaN;                                       // nouvel horaire : recalée au prochain tick
         HeraliszUtils.LOG.info("Train : {} (décalage {} s)", a ? "en service" : "absent", d / 20);
     }
 
@@ -60,7 +69,24 @@ public final class TrainClient {
 
     /** Secondes de l'horaire pour l'image en cours. */
     public static double temps(float partial) {
-        return tTick - (1.0 - partial) / 20.0;
+        return tPrec + (tTick - tPrec) * partial;
+    }
+
+    /** Avance l'horloge du train d'un tick du jeu (début du tick client). */
+    static void avancerHorloge(Minecraft mc) {
+        double cible = mc.level.getGameTime() + decalage;
+        tPrec = tTick;
+        if (mc.isPaused()) return;                                  // solo en pause : le monde ne tourne plus
+        double ecart = cible - horloge;
+        if (Double.isNaN(horloge) || Math.abs(ecart) > RECALAGE) {
+            horloge = cible;
+            debit = 1.0;
+            tTick = tPrec = horloge / 20.0;
+            return;
+        }
+        debit = Math.max(0.5, Math.min(1.5, debit + GAIN_DEBIT * ecart));
+        horloge += Math.max(0.25, Math.min(1.75, debit + GAIN * ecart));
+        tTick = horloge / 20.0;
     }
 
     static boolean estMoi(net.minecraft.world.entity.Entity e) {
@@ -206,8 +232,9 @@ public final class TrainClient {
         @SubscribeEvent
         public static void horaire(net.minecraftforge.event.TickEvent.ClientTickEvent e) {
             Minecraft mc = Minecraft.getInstance();
-            if (e.phase == net.minecraftforge.event.TickEvent.Phase.START && mc.level != null) {
-                tTick = (mc.level.getGameTime() + decalage) / 20.0;
+            if (e.phase == net.minecraftforge.event.TickEvent.Phase.START) {
+                if (mc.level != null) avancerHorloge(mc);
+                else horloge = Double.NaN;
             }
         }
 
@@ -215,6 +242,7 @@ public final class TrainClient {
         public static void deconnexion(ClientPlayerNetworkEvent.LoggingOut e) {
             actif = false;
             decalage = 0;
+            horloge = Double.NaN;
             fr.heralisz.utils.cine.CineDecor.oublier();                // le décor de la cinématique de ce serveur
             Minecraft.getInstance().execute(() -> {
                 VoieRendu.oublier();                                   // et les retouches de la voie de ce serveur

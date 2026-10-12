@@ -20,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * voyageur exactement dans la voiture qu'il dessine. Le joueur qui marche calcule lui-même sa position (sans attendre
  * le serveur) et l'envoie ; le serveur la vérifie (Voyageurs). Debout, il peut sauter (Espace) : la hauteur du saut
  * au-dessus du plancher est prédite de même par son client, vérifiée par le serveur et montrée aux autres (HAUTEUR).
+ * Chez les autres joueurs, sa position dans la voiture est lissée sur 3 ticks comme celle de toute entité (rx, rz, rh).
  * Jamais sauvegardée.
  */
 public class Voyageur extends Entity {
@@ -32,6 +33,13 @@ public class Voyageur extends Entity {
     /** Le joueur porté est assis (prédiction de son propre client). */
     boolean passis;
     boolean accroupiPrec;
+    /** Chez les autres joueurs : position affichée dans la voiture (voiture, lx, lz, hauteur), lissée vers la position
+     *  reçue du serveur en 3 ticks (comme Minecraft pour toute entité) ; rv = -1 : rien d'affiché encore. */
+    int rv = -1;
+    float rx, rz, rh;
+    float cx, cz, ch;
+    int rPas;
+    boolean rAssis;
 
     /** Position locale prédite par le client du joueur porté (sinon celle du serveur). */
     float px, pz;
@@ -76,21 +84,21 @@ public class Voyageur extends Entity {
     }
 
     public int vehicule() {
-        return pv >= 0 ? pv : entityData.get(VEHICULE);
+        return pv >= 0 ? pv : rv >= 0 ? rv : entityData.get(VEHICULE);
     }
 
     public float lx() {
-        return pv >= 0 ? px : entityData.get(LX);
+        return pv >= 0 ? px : rv >= 0 ? rx : entityData.get(LX);
     }
 
     public float lz() {
-        return pv >= 0 ? pz : entityData.get(LZ);
+        return pv >= 0 ? pz : rv >= 0 ? rz : entityData.get(LZ);
     }
 
     /** Hauteur du saut au-dessus du plancher (0 assis ou pieds au plancher). */
     public float hauteur() {
         if (assis()) return 0f;
-        return pv >= 0 ? ph : entityData.get(HAUTEUR);
+        return pv >= 0 ? ph : rv >= 0 ? rh : entityData.get(HAUTEUR);
     }
 
     void placer(int v, float x, float z) {

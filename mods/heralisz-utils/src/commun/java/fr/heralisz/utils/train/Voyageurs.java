@@ -224,6 +224,12 @@ public final class Voyageurs {
         return new float[]{veh, x, z};
     }
 
+    /** Passage d'une voiture à la suivante : x de la voiture veh exprimé dans la voiture voisine vers (veh ± 1). */
+    static float versVoisine(int veh, int vers, float x) {
+        float lim = VL + PASSERELLE;
+        return vers == veh - 1 ? x - 2 * lim : vers == veh + 1 ? x + 2 * lim : x;
+    }
+
     /** Côté des portes latérales ouvertes pour cet état (+1 droite, -1 gauche, 0 fermées). */
     static int portesQuai(Horaire h, Horaire.Etat e) {
         return e.aQuai() >= 0 && Horaire.portes(e) > 0.8 ? h.reseau.gares[e.aQuai()].cote() : 0;

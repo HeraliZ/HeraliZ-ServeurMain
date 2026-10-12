@@ -108,12 +108,53 @@ public final class VoyageursClient {
             v.capPrec = pl.cap;
         } else {
             v.pv = -1;
+            lisser(v);
             h.placer(v.vehicule(), e.s(), pl);
         }
         if (v.pv >= 0 && rider == null) v.passis = false;
         Vec3 w = Voyageurs.versMonde(pl, v.lx(), Reseau.PLANCHER, v.lz());
         v.setPos(w.x, w.y, w.z);
         compterPas(v, rider != null && TrainClient.estMoi(rider));
+    }
+
+    // ------------------------------------------------------------------------------------------------ les autres passagers
+
+    /** Place affichée d'un autre passager : celle reçue du serveur, rejointe en 3 ticks à chaque nouvelle valeur (comme
+     *  Minecraft fait pour la position de toute entité) ; d'un coup en s'asseyant, en se relevant ou après un
+     *  grand écart. Le passage d'une voiture à la voisine garde le même point. */
+    private static void lisser(Voyageur v) {
+        var d = v.getEntityData();
+        int tv = d.get(Voyageur.VEHICULE);
+        float tx = d.get(Voyageur.LX), tz = d.get(Voyageur.LZ);
+        boolean assis = d.get(Voyageur.ASSIS);
+        float th = assis ? 0f : d.get(Voyageur.HAUTEUR);
+        boolean net = v.rv < 0 || assis != v.rAssis || Math.abs(tv - v.rv) > 1;
+        if (!net && tv != v.rv) {
+            v.rx = Voyageurs.versVoisine(v.rv, tv, v.rx);
+            v.cx = Voyageurs.versVoisine(v.rv, tv, v.cx);
+            v.rv = tv;
+        }
+        if (net || Math.hypot(tx - v.rx, tz - v.rz) > 3.0) {
+            v.rv = tv;
+            v.rx = v.cx = tx;
+            v.rz = v.cz = tz;
+            v.rh = v.ch = th;
+            v.rPas = 0;
+        } else {
+            if (tx != v.cx || tz != v.cz || th != v.ch) {
+                v.cx = tx;
+                v.cz = tz;
+                v.ch = th;
+                v.rPas = 3;
+            }
+            if (v.rPas > 0) {
+                v.rx += (tx - v.rx) / v.rPas;
+                v.rz += (tz - v.rz) / v.rPas;
+                v.rh += (th - v.rh) / v.rPas;
+                v.rPas--;
+            }
+        }
+        v.rAssis = assis;
     }
 
     /** Saut du passager debout (Espace) : courbe du saut de Minecraft, prédite ici (le serveur la vérifie), plafonnée

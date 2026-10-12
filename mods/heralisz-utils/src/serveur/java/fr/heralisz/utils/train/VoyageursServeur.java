@@ -93,6 +93,15 @@ public final class VoyageursServeur {
         }
     }
 
+    /** Deux joueurs dans la même rame (chacun passager de son voyageur) : l'anti-ESP de Spartan ne les cache jamais l'un
+     *  à l'autre (test d'alliance envoyé par TrainServeur à Spartan). Le train n'est pas fait de blocs : dans un tunnel en
+     *  courbe ou sous un auvent de gare, la ligne de vue « monde » coupait entre deux voyageurs qui se voient dans la
+     *  voiture, et l'un disparaissait chez l'autre. */
+    static boolean memeRame(ServerPlayer a, ServerPlayer b) {
+        return a.getVehicle() instanceof Voyageur va && b.getVehicle() instanceof Voyageur vb && !va.isRemoved() && !vb.isRemoved()
+                && va.level() == vb.level() && Horaire.rame(va.vehicule()) == Horaire.rame(vb.vehicule());
+    }
+
     /** Hauteur du saut de Minecraft k ticks après le décollage (Voyageurs.SAUT, PESANTEUR, FREIN), 0 une fois retombé. */
     private static final float[] ARC = new float[20];
 
@@ -346,14 +355,22 @@ public final class VoyageursServeur {
         }
     }
 
+    /** Montée : le joueur prend place sur son voyageur AVANT que celui-ci n'entre dans le monde (comme les cavaliers des
+     *  araignées de Minecraft). Ainsi, quand le serveur l'annonce aux joueurs autour, il porte déjà son passager et il est
+     *  suivi aussi loin que lui : avant, un voyageur annoncé vide n'était envoyé qu'à 64 blocs (portée « other » de
+     *  spigot.yml) et, au-delà, les autres voyaient le joueur figé à la porte (plus aucune position envoyée pour un
+     *  passager) jusqu'à ce que le train change de tronçon : il « restait sur place » puis se « téléportait ». */
     private static void monter(ServerLevel lvl, ServerPlayer p, int veh, float x, float z) {
         Voyageur v = Train.VOYAGEUR.get().create(lvl);
         if (v == null) return;
         v.placer(veh, x, z);
         v.setPos(p.getX(), p.getY(), p.getZ());
-        lvl.addFreshEntity(v);
+        if (!p.startRiding(v, true)) return;
+        if (!lvl.addFreshEntity(v)) {                                     // refusé par un autre mod ou un plugin : on reste à quai
+            p.stopRiding();
+            return;
+        }
         Voyageurs.SERVEUR.add(v);
-        p.startRiding(v, true);
         HeraliszUtils.LOG.info("{} monte dans la voiture {} ({}, {})", p.getGameProfile().getName(), veh, x, z);
         lvl.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.PLAYERS, 0.4f, 1.4f);
     }

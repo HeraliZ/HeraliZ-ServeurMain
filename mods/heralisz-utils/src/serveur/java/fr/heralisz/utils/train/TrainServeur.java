@@ -28,7 +28,15 @@ import net.minecraftforge.network.PacketDistributor;
 public final class TrainServeur {
     private TrainServeur() {}
 
-    /** Branché par la partie serveur (serveur.PartieServeur), dans l'ordre d'origine des écouteurs. */
+    /** Branché par la partie serveur (serveur.PartieServeur), dans l'ordre d'origine des écouteurs ; puis, pour l'anti-ESP
+     *  de Spartan, les voyageurs d'une même rame donnés pour alliés. */
+    public static void init(net.minecraftforge.eventbus.api.IEventBus busMod) {
+        init();
+        busMod.addListener((net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent e) ->
+                net.minecraftforge.fml.InterModComms.sendTo("spartan", "ally_predicate",
+                        () -> (java.util.function.BiPredicate<ServerPlayer, ServerPlayer>) VoyageursServeur::memeRame));
+    }
+
     public static void init() {
         Train.RECEPTION_SERVEUR.brancher(TrainServeur::recevoir);
         MinecraftForge.EVENT_BUS.addListener(TrainServeur::connexion);
