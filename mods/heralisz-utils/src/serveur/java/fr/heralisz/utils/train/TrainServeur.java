@@ -28,10 +28,11 @@ import net.minecraftforge.network.PacketDistributor;
 public final class TrainServeur {
     private TrainServeur() {}
 
-    /** Branché par la partie serveur (serveur.PartieServeur), dans l'ordre d'origine des écouteurs ; puis, pour l'anti-ESP
-     *  de Spartan, les voyageurs d'une même rame donnés pour alliés. */
+    /** Branché par la partie serveur (serveur.PartieServeur), dans l'ordre d'origine des écouteurs ; puis les balles qui
+     *  touchent le train (BallesTrain) et, pour l'anti-ESP de Spartan, les voyageurs d'une même rame donnés pour alliés. */
     public static void init(net.minecraftforge.eventbus.api.IEventBus busMod) {
         init();
+        BallesTrain.init();
         busMod.addListener((net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent e) ->
                 net.minecraftforge.fml.InterModComms.sendTo("spartan", "ally_predicate",
                         () -> (java.util.function.BiPredicate<ServerPlayer, ServerPlayer>) VoyageursServeur::memeRame));
@@ -209,6 +210,7 @@ public final class TrainServeur {
     private static void connexion(PlayerEvent.PlayerLoggedInEvent e) {
         if (e.getEntity() instanceof ServerPlayer sp && sp.getServer() != null) {
             annoncer(sp.getServer(), sp);
+            BallesTrain.envoyerVitres(sp);
             if (sp.getVehicle() instanceof Voyageur) VoyageursServeur.deconnexion(sp);   // ancien monde : réveil sur le quai
         }
     }
@@ -251,6 +253,19 @@ public final class TrainServeur {
     private static void commandes(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("train").requires(s -> s.hasPermission(2))
                 .then(VoieServeur.commande())
+                .then(Commands.literal("vitres")
+                        .executes(c -> {
+                            int n = BallesTrain.vitresCassees();
+                            c.getSource().sendSuccess(() -> Component.translatableWithFallback("heralisz_utils.train.vitres.info",
+                                    "Vitres du train cassées : %s (chacune se répare 5 minutes après)", String.valueOf(n)), false);
+                            return n;
+                        })
+                        .then(Commands.literal("reparer").executes(c -> {
+                            int n = BallesTrain.reparerTout();
+                            c.getSource().sendSuccess(() -> Component.translatableWithFallback("heralisz_utils.train.vitres.reparees",
+                                    "Vitres du train réparées : %s", String.valueOf(n)), true);
+                            return 1;
+                        })))
                 .then(Commands.literal("info").executes(c -> {
                     MinecraftServer srv = c.getSource().getServer();
                     Horaire h = Horaire.get();

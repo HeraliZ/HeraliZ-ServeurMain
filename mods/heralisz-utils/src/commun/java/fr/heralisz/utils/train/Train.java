@@ -27,13 +27,13 @@ import net.minecraftforge.registries.RegistryObject;
  * Commandes (op) : /train info, /train actif <oui|non>, /train decalage <secondes> (avancer l'horaire, pour les essais),
  * /train voie ... (retouches de la voie dessinée, collision des ponts : VoieServeur).
  * Jar fusionné : ici les registres, le canal et ses paquets (numéros et ordre inchangés ; un paquet de plus et version 4
- * le 11/10 ; version 5 le 12/10) ; la logique serveur (données du monde, annonce, commandes, descentes forcées) est dans
- * TrainServeur et VoyageursServeur (src/serveur).
+ * le 11/10 ; version 5 le 12/10) ; la logique serveur (données du monde, annonce, commandes, descentes forcées, balles qui
+ * touchent le train) est dans TrainServeur, VoyageursServeur et BallesTrain (src/serveur).
  */
 public final class Train {
     private static final String PROTO = "5";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
                                                               // 4 : saut dans la voiture, retouches de la voie (11/10) ;
-                                                              // 5 : course dans la voiture (12/10)
+                                                              // 5 : course dans la voiture, vitres cassées (12/10)
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "train"),
             () -> PROTO, PROTO::equals, PROTO::equals);
 
@@ -96,6 +96,18 @@ public final class Train {
 
         static Marche lire(FriendlyByteBuf b) {
             return new Marche(b.readVarInt(), b.readFloat(), b.readFloat(), b.readByte(), b.readFloat());
+        }
+    }
+
+    /** Vitres des voitures cassées par des balles (serveur -> client), toutes à la fois à chaque changement et à la
+     *  connexion : clés Blindage.cle(voiture, côté, baie). */
+    public record Vitres(int[] cassees) {
+        void ecrire(FriendlyByteBuf b) {
+            b.writeVarIntArray(cassees);
+        }
+
+        static Vitres lire(FriendlyByteBuf b) {
+            return new Vitres(b.readVarIntArray(256));
         }
     }
 
@@ -182,6 +194,10 @@ public final class Train {
             ctx.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CANAL.registerMessage(4, Voie.class, Voie::ecrire, Voie::lire, (m, ctx) -> {
+            ctx.get().enqueueWork(() -> RECEPTION_CLIENT.accept(m));
+            ctx.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CANAL.registerMessage(5, Vitres.class, Vitres::ecrire, Vitres::lire, (m, ctx) -> {
             ctx.get().enqueueWork(() -> RECEPTION_CLIENT.accept(m));
             ctx.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));

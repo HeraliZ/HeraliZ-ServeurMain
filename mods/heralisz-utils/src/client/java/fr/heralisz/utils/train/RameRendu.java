@@ -37,6 +37,11 @@ public final class RameRendu {
         return cote == coteQuai ? (float) Horaire.portes(e) : 0f;
     }
 
+    /** Vitre k (0..13, ModeleTrain.Groupe.fenetres) de la voiture veh cassée ? */
+    private static boolean cassee(int veh, int k) {
+        return TrainClient.vitresCassees.contains(Blindage.cle(veh, k >= 7 ? 1 : -1, k % 7));
+    }
+
     private static final net.minecraft.resources.ResourceLocation TEX_SOUFFLET =
             new net.minecraft.resources.ResourceLocation(fr.heralisz.utils.HeraliszUtils.MODID, "textures/train/soufflet.png");
     private static final Horaire.Placement PA = new Horaire.Placement(), PB = new Horaire.Placement();
@@ -186,6 +191,14 @@ public final class RameRendu {
                     }
                 }
                 ModeleTrain.lier(g.texture);
+                if (g.fenetres != null && TrainClient.vitresCassees(veh)) {      // vitres cassées par des balles : pas dessinées
+                    for (int k = 0; k < g.fenetres.length; k++) {
+                        if (g.fenetres[k] == null || cassee(veh, k)) continue;
+                        g.fenetres[k].bind();
+                        g.fenetres[k].drawWithShader(mg, proj, sh);
+                    }
+                    continue;
+                }
                 g.vbo.bind();
                 g.vbo.drawWithShader(mg, proj, sh);
             }

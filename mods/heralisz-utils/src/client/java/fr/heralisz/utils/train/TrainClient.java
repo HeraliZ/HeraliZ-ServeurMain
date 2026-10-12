@@ -35,6 +35,9 @@ public final class TrainClient {
      *  invisible), et ne se recale d'un coup qu'après un écart de plus de 3 secondes (serveur gelé, décalage changé). */
     private static double horloge = Double.NaN, debit = 1.0;
     private static final double RECALAGE = 60.0, GAIN = 0.03, GAIN_DEBIT = 0.001;
+    /** Vitres cassées par des balles (clés Blindage.cle), reçues du serveur ; voitures qui en ont. */
+    static java.util.Set<Integer> vitresCassees = java.util.Set.of();
+    private static java.util.Set<Integer> voituresVitres = java.util.Set.of();
 
     private TrainClient() {}
 
@@ -53,7 +56,20 @@ public final class TrainClient {
             recadrage(r.vehicule(), r.lx(), r.lz());
         } else if (m instanceof Train.Voie v) {
             VoieRendu.retouches(v.reseau(), v.retouches());
+        } else if (m instanceof Train.Vitres v) {
+            java.util.Set<Integer> s = new java.util.HashSet<>(), voit = new java.util.HashSet<>();
+            for (int k : v.cassees()) {
+                s.add(k);
+                voit.add(Blindage.vehiculeDe(k));
+            }
+            vitresCassees = s;
+            voituresVitres = voit;
         }
+    }
+
+    /** Cette voiture a-t-elle une vitre cassée ? */
+    static boolean vitresCassees(int veh) {
+        return voituresVitres.contains(veh);
     }
 
     static void annonce(boolean a, long d) {
@@ -235,6 +251,8 @@ public final class TrainClient {
             actif = false;
             decalage = 0;
             horloge = Double.NaN;
+            vitresCassees = java.util.Set.of();
+            voituresVitres = java.util.Set.of();
             fr.heralisz.utils.cine.CineDecor.oublier();                // le décor de la cinématique de ce serveur
             Minecraft.getInstance().execute(() -> {
                 VoieRendu.oublier();                                   // et les retouches de la voie de ce serveur

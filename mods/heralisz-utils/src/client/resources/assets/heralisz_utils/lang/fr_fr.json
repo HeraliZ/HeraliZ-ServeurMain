@@ -450,6 +450,8 @@
   "heralisz_utils.train.reseau_introuvable": "Réseau ferré : %s (introuvable dans le jar : pas de train)",
   "heralisz_utils.train.en_service": "Train en service",
   "heralisz_utils.train.arrete": "Train arrêté",
+  "heralisz_utils.train.vitres.info": "Vitres du train cassées : %s (chacune se répare 5 minutes après)",
+  "heralisz_utils.train.vitres.reparees": "Vitres du train réparées : %s",
   "heralisz_utils.train.decalage": "Horaire décalé (total %s s)",
   "heralisz_utils.cine.reveil_impraticable": "Le point de réveil de la cinématique n'est pas praticable dans ce monde (/cinematique reveil).",
   "heralisz_utils.cine.depuis_spawn": "La cinématique se rejoue depuis le spawn.",

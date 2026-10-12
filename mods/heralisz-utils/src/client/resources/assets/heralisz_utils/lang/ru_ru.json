@@ -450,6 +450,8 @@
   "heralisz_utils.train.reseau_introuvable": "Железнодорожная сеть: %s (нет в jar: поезда не будет)",
   "heralisz_utils.train.en_service": "Поезд в работе",
   "heralisz_utils.train.arrete": "Поезд остановлен",
+  "heralisz_utils.train.vitres.info": "Разбитые окна поезда: %s (каждое чинится через 5 минут)",
+  "heralisz_utils.train.vitres.reparees": "Окна поезда починены: %s",
   "heralisz_utils.train.decalage": "Расписание сдвинуто (всего %s с)",
   "heralisz_utils.cine.reveil_impraticable": "Точка пробуждения катсцены в этом мире непригодна (/cinematique reveil).",
   "heralisz_utils.cine.depuis_spawn": "Катсцену можно пересмотреть только на спавне.",

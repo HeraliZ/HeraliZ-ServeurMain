@@ -78,6 +78,11 @@ public final class Voyageurs {
         return veh >= 0 && veh < Horaire.N * Horaire.RAMES && !SANS_SIEGES.contains(Horaire.MODELES[Horaire.place(veh)]);
     }
 
+    /** Obstacles en plus de ce modèle de voiture (caisses du fourgon), ou null. */
+    static float[][] obstacles(int veh) {
+        return veh >= 0 && veh < Horaire.N * Horaire.RAMES ? OBSTACLES.get(Horaire.MODELES[Horaire.place(veh)]) : null;
+    }
+
     /** Voyageurs vus de chaque côté (le client en a besoin pour ouvrir les portes de tout le monde). */
     static final List<Voyageur> CLIENT = new ArrayList<>(), SERVEUR = new ArrayList<>();
 

@@ -450,6 +450,8 @@
   "heralisz_utils.train.reseau_introuvable": "Rail network: %s (not found in the jar: no train)",
   "heralisz_utils.train.en_service": "Train in service",
   "heralisz_utils.train.arrete": "Train stopped",
+  "heralisz_utils.train.vitres.info": "Broken train windows: %s (each one is repaired 5 minutes later)",
+  "heralisz_utils.train.vitres.reparees": "Train windows repaired: %s",
   "heralisz_utils.train.decalage": "Schedule shifted (total %s s)",
   "heralisz_utils.cine.reveil_impraticable": "The cutscene wake-up point isn't usable in this world (/cinematique reveil).",
   "heralisz_utils.cine.depuis_spawn": "The cutscene can only be replayed from spawn.",
