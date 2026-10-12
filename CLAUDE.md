@@ -205,7 +205,8 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   `python outils/silencieux.py` (jamais à la main dans les fichiers des silencieux ; à relancer si la portée d'un tir
   normal change dans `serveur/config/tacz-common.toml`). Un tir silencieux part aussi deux fois moins fort pour les autres
   joueurs (mixin commun `TaczSonSilencieuxMixin` du mod tactique). Choix du propriétaire (12/10) : net et à sa vraie
-  place jusqu'à la portée nette du silencieux (14 à 22 blocs, `PORTEES` ; TaCZ lit le double et l'éteint jusque-là) ;
+  place jusqu'à la portée nette, la même pour tous les silencieux (16 blocs, `PORTEE_NETTE` ; TaCZ lit le double et
+  l'éteint jusque-là) ;
   au-delà, jusqu'à la portée d'un tir normal, le même son plus grave et plus faible, d'un point flou autour du tireur
   (même point 30 s pour un même joueur), décidé par le serveur (`fr.heraliz.tactique.son.SonLointain`, canal
   `heraliz_tactique:son`, section `[silencieux]` de `heralisz_tactical-server.toml`) : le jeu du joueur ne reçoit jamais
