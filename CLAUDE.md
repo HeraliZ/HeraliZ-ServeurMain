@@ -651,7 +651,10 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
   par celui du nouveau pack, puis refabriquer heraliz_interface. Pack imposé depuis le 11/10 (heraliz_interface
   1.2.1) : le « pack 8 », c'est-à-dire l'ancien pack plus les vitres de la nouvelle carte (6 textures de verre
-  refaites, 6 modèles de vitres ajoutés) ; l'herbe n'a pas changé.
+  refaites, 6 modèles de vitres ajoutés) ; l'herbe n'a pas changé. Retouches faites ici depuis (validées par le
+  propriétaire) : capteur de lumière rendu à Minecraft (1.5.1) ; porte et trappe en chêne noir vieillies (vitre
+  transparente, poignée en métal sombre) et 16 lits à cadre de métal usé (1.6.1). Les anciens fichiers
+  `door_dark_oak_upper/lower.png` (noms d'avant la 1.13) ne sont plus lus.
 - **Le monde** : depuis le 11/10 (soir), la carte se construit **directement sur le Ptero** (monde `dayz_map`) ;
   personne n'y touche par ici (section 0, règle 10). La mise en ligne ne copie dans le monde que les réglages
   (`serverconfig/`), jamais les blocs. **Quand les propriétaires disent que la carte est finie** : copier le monde du
