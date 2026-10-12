@@ -39,8 +39,8 @@ public final class VoyageursServeur {
         h.placer(v.vehicule(), h.etatRame(TrainServeur.temps(srv), Horaire.rame(v.vehicule())).s(), pl);
         Vec3 w = Voyageurs.versMonde(pl, v.lx(), Reseau.PLANCHER, v.lz());
         v.setPos(w.x, w.y, w.z);
-        // le passager tient sur le plancher : « au sol » pour les autres mods, jamais de chute comptée
-        rider.setOnGround(v.surLePlancher());
+        // le passager tient sur le plancher (ou y est allongé) : « au sol » pour les autres mods, jamais de chute comptée
+        rider.setOnGround(v.surLePlancher() || v.allonge());
         rider.resetFallDistance();
         // Maj : lu puis effacé avant le tick du passager (le véhicule est tické d'abord) -> plus de descente vanilla
         // n'importe où ; Maj vient du client (paquet Descente). Maj maintenue 2 s debout : descente de secours.
@@ -62,8 +62,9 @@ public final class VoyageursServeur {
 
     /** Position voulue par le client du voyageur (paquet Marche) : vérifiée, appliquée ; descente par une porte
      *  ouverte ; sinon recadrage. La hauteur du saut est acceptée de 0 à Voyageurs.SAUT_MAX, debout seulement, et en
-     *  suivant la courbe d'un vrai saut (sautVerifie : pas de lévitation dans la voiture). La course (sprint) est
-     *  reprise telle quelle pour les autres joueurs (animations), debout seulement. */
+     *  suivant la courbe d'un vrai saut (sautVerifie : pas de lévitation dans la voiture). Allongé : seulement debout
+     *  d'abord (pas assis), si TaCZ permet de ramper sur ce serveur ; jamais en l'air. La course (sprint) est reprise
+     *  telle quelle pour les autres joueurs (animations), debout seulement. */
     static void marche(ServerPlayer p, Train.Marche m) {
         if (!(p.getVehicle() instanceof Voyageur v) || p.getServer() == null) return;
         Horaire h = Horaire.get();
@@ -71,7 +72,8 @@ public final class VoyageursServeur {
         int veh = m.vehicule();
         float x = m.lx(), z = m.lz();
         boolean assis = m.assis();
-        sautVerifie(v, assis, m.hauteur());
+        boolean allonge = !assis && m.allonge() && ramperPermis();
+        sautVerifie(v, assis || allonge, m.hauteur());
         int ov = v.getEntityData().get(Voyageur.VEHICULE);
         Horaire.Etat e = h.etatRame(TrainServeur.temps(p.getServer()), Horaire.rame(ov));
         int pq = Voyageurs.portesQuai(h, e);
@@ -92,13 +94,23 @@ public final class VoyageursServeur {
         if (veh != ov) HeraliszUtils.LOG.info("{} passe dans la voiture {}", p.getGameProfile().getName(), veh);
         v.placer(veh, x, z);
         v.getEntityData().set(Voyageur.ASSIS, place);
-        boolean course = m.course() && !place;
+        v.getEntityData().set(Voyageur.ALLONGE, allonge && !place);
+        boolean course = m.course() && !place && !allonge;
         if (p.isSprinting() != course) p.setSprinting(course);
         if (pq != 0 && Math.signum(z) == pq && Math.abs(z) > Voyageurs.VW + 0.2f) {          // descente sur le quai
             Horaire.Placement pl = new Horaire.Placement();
             h.placer(veh, e.s(), pl);
             Vec3 q = posable(p.level(), p, Voyageurs.versMonde(pl, x, Reseau.PLANCHER + 0.02, pq * (Voyageurs.VW + 0.65)), 0.6, 2.0);
             liberer(v, p, q != null ? q : sortie(v, p));
+        }
+    }
+
+    /** TaCZ permet-il de ramper sur ce serveur (réglage EnableCrawl, envoyé aux joueurs) ? Sans TaCZ lisible : oui. */
+    private static boolean ramperPermis() {
+        try {
+            return Boolean.TRUE.equals(com.tacz.guns.config.sync.SyncConfig.ENABLE_CRAWL.get());
+        } catch (Throwable t) {
+            return true;
         }
     }
 

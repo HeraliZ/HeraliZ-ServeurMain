@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 /**
  * Haut du corps d'un passager du train qui tient une arme de TaCZ, vu à la troisième personne : TaCZ tourne le buste
  * vers le regard (AdjustmentYRotModifier) sauf pour un joueur qui a un véhicule ; un passager debout tenait donc son arme
- * dans l'axe de ses jambes, pas de son regard. Pour un passager debout, aucun véhicule n'est vu ici (comme
+ * dans l'axe de ses jambes, pas de son regard. Pour un passager debout ou allongé, aucun véhicule n'est vu ici (comme
  * TaczAnimationTrainMixin). Cible : AdjustmentYRotModifier.apply(String) de TaCZ 1.1.8 (remap = false), appel
  * Entity.getVehicle sous son nom de jeu (m_20202_) sur Player. require = 0 : si TaCZ change, rien ne plante.
  */

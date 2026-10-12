@@ -16,9 +16,9 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Tick client d'un voyageur : le passager calcule lui-même sa marche dans la voiture (et son saut, Espace debout) et
- * l'envoie au serveur ; les autres voyageurs sont placés d'après l'horaire, à leur place dans la voiture lissée sur 3
- * ticks (comme Minecraft pour toute entité : sinon ils avançaient par à-coups au gré
+ * Tick client d'un voyageur : le passager calcule lui-même sa marche dans la voiture (et son saut, Espace debout, et son
+ * allongé, touche « Ramper » de TaCZ) et l'envoie au serveur ; les autres voyageurs sont placés d'après l'horaire, à leur
+ * place dans la voiture lissée sur 3 ticks (comme Minecraft pour toute entité : sinon ils avançaient par à-coups au gré
  * du réseau). Branché par client.PartieClient sur {@link Voyageur#TICK_CLIENT}.
  * <p>
  * La marche est celle de Minecraft au sol (Voyageurs.FROTTEMENT_SOL...) : vitesse du joueur (attribut : course, lenteur,
@@ -62,7 +62,7 @@ public final class VoyageursClient {
         v.setPos(w.x, w.y, w.z);
         v.capAnim = pl.cap;
         compterPas(v, moi, rider);
-        if (rider != null && !moi) rider.setOnGround(v.surLePlancher());
+        if (rider != null && !moi) rider.setOnGround(v.surLePlancher() || v.allonge());
     }
 
     // ------------------------------------------------------------------------------------------------ le passager local
@@ -79,11 +79,13 @@ public final class VoyageursClient {
             v.px = v.getEntityData().get(Voyageur.LX);
             v.pz = v.getEntityData().get(Voyageur.LZ);
             v.accroupiPrec = TrainClient.accroupi();                         // Maj tenu en montant : pas un appui
+            v.ramperPrec = TrainClient.ramper();
             v.ph = 0f;
             v.pvy = 0f;
             v.vx = 0f;
             v.vz = 0f;
             v.passis = false;
+            v.pallonge = false;
             v.pcourse = false;
             v.sautBloque = TrainClient.saut();                               // Espace tenue en montant : pas un saut
             TrainClient.aide(false);
@@ -91,6 +93,8 @@ public final class VoyageursClient {
         h.placer(v.pv, e.s(), pl);
         boolean acc = TrainClient.accroupi();
         boolean appui = acc && !v.accroupiPrec;
+        boolean rp = TrainClient.ramper();
+        boolean appuiRamper = rp && !v.ramperPrec;
         boolean change = false;
         if (v.passis) {                                                   // assis : Espace se lève, Maj descend
             if (appui) {
@@ -104,6 +108,17 @@ public final class VoyageursClient {
                 change = true;
                 TrainClient.aide(false);
             }
+        } else if (v.pallonge) {                                          // allongé : Ramper ou Espace relève
+            if (appuiRamper || TrainClient.saut()) {
+                v.pallonge = false;
+                v.sautBloque = TrainClient.saut();                        // Espace a servi à se relever : pas de saut
+                change = true;
+                TrainClient.aide(false);
+            }
+        } else if (appuiRamper && v.ph <= 0f && v.pvy <= 0f && TrainClient.ramperPermis()) {
+            v.pallonge = true;                                            // debout, les pieds au plancher : on s'allonge
+            change = true;
+            TrainClient.aide(false, true);
         } else if (appui && !devantBanquette(v)) {
             TrainClient.descendre();                                      // couloir, vestibule, soufflet, porte
         } else if (appui) {                                               // devant une banquette : on s'assoit
@@ -123,11 +138,12 @@ public final class VoyageursClient {
             TrainClient.aide(true);
         }
         v.accroupiPrec = acc;
+        v.ramperPrec = rp;
         boolean coursePrec = v.pcourse;
         boolean bouge = marche(v, p, h, e, pl);
         change |= v.pcourse != coursePrec;
         if (bouge || change || v.tickCount % 10 == 0) {
-            TrainClient.envoyer(v.pv, v.px, v.pz, Train.Marche.etat(v.passis, v.pcourse), v.ph);
+            TrainClient.envoyer(v.pv, v.px, v.pz, Train.Marche.etat(v.passis, v.pallonge, v.pcourse), v.ph);
         }
         h.placer(v.pv, e.s(), pl);
         if (!Double.isNaN(v.capPrec)) {                                   // le regard tourne avec la voiture
@@ -176,13 +192,13 @@ public final class VoyageursClient {
         // course : comme Minecraft (touche de course en avançant franchement ; elle dure tant qu'on avance), debout,
         // assez nourri, sans objet en cours d'utilisation ni cécité
         boolean nourri = p.getFoodData().getFoodLevel() > 6 || p.getAbilities().mayfly;
-        boolean course = libre && !p.input.shiftKeyDown && nourri && !p.isUsingItem() && !p.hasEffect(MobEffects.BLINDNESS)
+        boolean course = libre && !v.pallonge && !p.input.shiftKeyDown && nourri && !p.isUsingItem() && !p.hasEffect(MobEffects.BLINDNESS)
                 && (v.pcourse ? p.input.forwardImpulse > 1e-5f : mc.options.keySprint.isDown() && p.input.forwardImpulse >= 0.8f);
         course(v, p, course);
         double yaw = Math.toRadians(p.getYRot());
         double cy = Math.cos(yaw), sy = Math.sin(yaw), cc = Math.cos(pl.cap), sc = Math.sin(pl.cap);
         // saut (debout, les pieds au plancher) : en courant, élan de 0,2 vers l'avant (Player.jumpFromGround)
-        if (auSol && espace && !v.sautBloque) {
+        if (!v.pallonge && auSol && espace && !v.sautBloque) {
             v.pvy = Voyageurs.SAUT;
             if (course) {
                 double wx = -sy * Voyageurs.ELAN_SAUT, wz = cy * Voyageurs.ELAN_SAUT;
@@ -233,7 +249,7 @@ public final class VoyageursClient {
      *  serveur la vérifie), plafonnée sous le linteau des portes. Renvoie vrai si la hauteur a changé (à envoyer). */
     private static boolean sauter(Voyageur v) {
         float avant = v.ph;
-        if (v.passis) {
+        if (v.passis || v.pallonge) {
             v.ph = 0f;
             v.pvy = 0f;
         } else if (v.ph > 0f || v.pvy > 0f) {
@@ -255,15 +271,15 @@ public final class VoyageursClient {
     // ------------------------------------------------------------------------------------------------ les autres passagers
 
     /** Place affichée d'un autre passager : celle reçue du serveur, rejointe en 3 ticks à chaque nouvelle valeur (comme
-     *  Minecraft fait pour la position de toute entité) ; d'un coup en s'asseyant, en se relevant ou après un
-     *  grand écart. Le passage d'une voiture à la voisine garde le même point. */
+     *  Minecraft fait pour la position de toute entité) ; d'un coup en s'asseyant, en s'allongeant, en se relevant ou
+     *  après un grand écart. Le passage d'une voiture à la voisine garde le même point. */
     private static void lisser(Voyageur v) {
         var d = v.getEntityData();
         int tv = d.get(Voyageur.VEHICULE);
         float tx = d.get(Voyageur.LX), tz = d.get(Voyageur.LZ);
-        boolean assis = d.get(Voyageur.ASSIS);
-        float th = assis ? 0f : d.get(Voyageur.HAUTEUR);
-        boolean net = v.rv < 0 || assis != v.rAssis || Math.abs(tv - v.rv) > 1;
+        boolean assis = d.get(Voyageur.ASSIS), allonge = !assis && d.get(Voyageur.ALLONGE);
+        float th = assis || allonge ? 0f : d.get(Voyageur.HAUTEUR);
+        boolean net = v.rv < 0 || assis != v.rAssis || allonge != v.rAllonge || Math.abs(tv - v.rv) > 1;
         if (!net && tv != v.rv) {
             v.rx = Voyageurs.versVoisine(v.rv, tv, v.rx);
             v.cx = Voyageurs.versVoisine(v.rv, tv, v.cx);
@@ -290,6 +306,7 @@ public final class VoyageursClient {
             }
         }
         v.rAssis = assis;
+        v.rAllonge = allonge;
     }
 
     // ------------------------------------------------------------------------------------------------ pas, jambes, corps
@@ -331,7 +348,7 @@ public final class VoyageursClient {
             v.distPas += d * 0.6f;
             if (v.distPas > v.prochainPas) {
                 v.prochainPas = (int) v.distPas + 1;
-                pas(v, rider, 1.0f);
+                pas(v, rider, v.allonge() ? 0.6f : 1.0f);
             }
         }
     }
@@ -345,7 +362,7 @@ public final class VoyageursClient {
                 t.getPitch(), false);
     }
 
-    /** Vitesse de marche (blocs par tick) d'un passager debout du train, pour l'animation de ses jambes ; -1
+    /** Vitesse de marche (blocs par tick) d'un passager debout ou allongé du train, pour l'animation de ses jambes ; -1
      *  s'il n'est pas sur le plancher du train (le jeu calcule alors l'animation comme d'habitude). Appelé par le mixin
      *  LivingEntityTrainMixin, aussi pour le joueur du serveur intégré en solo : seulement côté client. */
     public static float marcheAnimee(LivingEntity e) {
@@ -374,7 +391,7 @@ public final class VoyageursClient {
      *  restait immobile, comme en l'air, et l'on avait l'impression de glisser). */
     public static void apresTick(LocalPlayer p) {
         if (!(p.getVehicle() instanceof Voyageur v) || v.isRemoved()) return;
-        p.setOnGround(v.surLePlancher());
+        p.setOnGround(v.surLePlancher() || v.allonge());
         if (v.assis()) return;
         float cible = v.hauteur() > 0.02f ? 0f : Math.min(0.1f, v.pas);
         p.oBob = v.bobPrec;
@@ -384,7 +401,7 @@ public final class VoyageursClient {
     }
 
     /** Véhicule vu par l'animation à la troisième personne de TaCZ (mixins TaczAnimationTrainMixin et
-     *  TaczAjustementTrainMixin) : aucun pour un passager debout du train (sinon TaCZ lui met les jambes en pose
+     *  TaczAjustementTrainMixin) : aucun pour un passager debout ou allongé du train (sinon TaCZ lui met les jambes en pose
      *  de monture, « assis sur une selle », et ne tourne plus le haut du corps vers le regard) ; le vrai véhicule sinon. */
     public static Entity vehiculePourAnimation(Player p) {
         Entity veh = p.getVehicle();

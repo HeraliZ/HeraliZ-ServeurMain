@@ -33,7 +33,7 @@ import net.minecraftforge.registries.RegistryObject;
 public final class Train {
     private static final String PROTO = "5";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
                                                               // 4 : saut dans la voiture, retouches de la voie (11/10) ;
-                                                              // 5 : course dans la voiture, vitres cassées (12/10)
+                                                              // 5 : allongé et course dans la voiture, vitres cassées (12/10)
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "train"),
             () -> PROTO, PROTO::equals, PROTO::equals);
 
@@ -69,17 +69,21 @@ public final class Train {
 
     private Train() {}
 
-    /** Position d'un voyageur dans sa voiture (client -> serveur) : voiture, lx, lz, état (ASSIS, COURSE),
+    /** Position d'un voyageur dans sa voiture (client -> serveur) : voiture, lx, lz, état (ASSIS, ALLONGE, COURSE),
      *  hauteur du saut au-dessus du plancher (0 : les pieds au plancher ; vérifiée par le serveur, VoyageursServeur.marche). */
     public record Marche(int vehicule, float lx, float lz, byte etat, float hauteur) {
-        public static final byte ASSIS = 1, COURSE = 4;
+        public static final byte ASSIS = 1, ALLONGE = 2, COURSE = 4;
 
-        public static byte etat(boolean assis, boolean course) {
-            return (byte) ((assis ? ASSIS : 0) | (course ? COURSE : 0));
+        public static byte etat(boolean assis, boolean allonge, boolean course) {
+            return (byte) ((assis ? ASSIS : 0) | (allonge ? ALLONGE : 0) | (course ? COURSE : 0));
         }
 
         public boolean assis() {
             return (etat & ASSIS) != 0;
+        }
+
+        public boolean allonge() {
+            return (etat & ALLONGE) != 0;
         }
 
         public boolean course() {
@@ -208,6 +212,19 @@ public final class Train {
         MinecraftForge.EVENT_BUS.addListener(Train::clicGauche);
         MinecraftForge.EVENT_BUS.addListener(Train::casse);
         MinecraftForge.EVENT_BUS.addListener(Train::pose);
+        // des deux côtés aussi : la pose à plat du passager allongé (serveur : boîte de collision des balles ; client : rendu)
+        MinecraftForge.EVENT_BUS.addListener(Train::poseAllonge);
+    }
+
+    /** Passager allongé dans une voiture : pose à plat (Pose.SWIMMING, celle du « ramper » de Minecraft et de TaCZ), remise
+     *  à la fin de chaque tick du joueur, après Player.updatePlayerPose qui remet debout tout passager (et après TaCZ, qui
+     *  remet sa propre pose forcée à zéro hors de son « ramper »). Hors du train, rien ne change. */
+    private static void poseAllonge(net.minecraftforge.event.TickEvent.PlayerTickEvent e) {
+        if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+        net.minecraft.world.entity.player.Player p = e.player;
+        if (p.getVehicle() instanceof Voyageur v && !v.isRemoved() && v.allonge() && p.getPose() != net.minecraft.world.entity.Pose.SWIMMING) {
+            p.setPose(net.minecraft.world.entity.Pose.SWIMMING);
+        }
     }
 
     /** Vraiment dans le train : passager d'un voyageur du même monde, tout près (un passager « fantôme » resté accroché

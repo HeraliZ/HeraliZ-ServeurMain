@@ -113,6 +113,34 @@ public final class TrainClient {
         Train.CANAL.sendToServer(new Train.Marche(v, x, z, etat, hauteur));
     }
 
+    /** Touche « Ramper » de TaCZ (s'allonger, se relever), pas avec un écran ouvert. */
+    static boolean ramper() {
+        Minecraft mc = Minecraft.getInstance();
+        try {
+            return mc.screen == null && com.tacz.guns.client.input.CrawlKey.CRAWL_KEY.isDown();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** TaCZ permet-il de ramper sur ce serveur (réglage EnableCrawl, envoyé par le serveur) ? */
+    static boolean ramperPermis() {
+        try {
+            return Boolean.TRUE.equals(com.tacz.guns.config.sync.SyncConfig.ENABLE_CRAWL.get());
+        } catch (Throwable t) {
+            return true;
+        }
+    }
+
+    /** Nom de la touche « Ramper » pour les messages. */
+    static net.minecraft.network.chat.Component toucheRamper() {
+        try {
+            return com.tacz.guns.client.input.CrawlKey.CRAWL_KEY.getTranslatedKeyMessage();
+        } catch (Throwable t) {
+            return net.minecraft.network.chat.Component.literal("?");
+        }
+    }
+
     private static long derniereDescente;
 
     /** Demande au serveur de descendre du train (Maj) ; une fois par demi-seconde au plus. En marche : seulement le
@@ -134,14 +162,22 @@ public final class TrainClient {
         Train.CANAL.sendToServer(new Train.Descente());
     }
 
-    /** Rappel des touches dans la barre d'action : à bord (Maj descend, devant une banquette : s'asseoir) ou assis. */
+    /** Rappel des touches dans la barre d'action : à bord (Maj descend, devant une banquette : s'asseoir, Ramper :
+     *  s'allonger), assis, ou allongé. */
     static void aide(boolean assis) {
+        aide(assis, false);
+    }
+
+    static void aide(boolean assis, boolean allonge) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         var saut = mc.options.keyJump.getTranslatedKeyMessage();
         var maj = mc.options.keyShift.getTranslatedKeyMessage();
-        mc.gui.setOverlayMessage(assis ? net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.assis", saut, maj)
-                : net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.a_bord", maj), false);
+        net.minecraft.network.chat.Component msg;
+        if (allonge) msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.allonge", toucheRamper(), saut);
+        else if (assis) msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.assis", saut, maj);
+        else msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.a_bord", maj, toucheRamper());
+        mc.gui.setOverlayMessage(msg, false);
     }
 
     /** Touches : saut (se lever ; debout : sauter), accroupi (s'asseoir). */
