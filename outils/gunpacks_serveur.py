@@ -6,8 +6,10 @@ le dépôt donne donc des objets en carrés roses et noirs dans le menu créatif
 tacz sans rien y supprimer : ce qui a été retiré du dépôt peut y rester.
 
 Usage (workflow « Gunpacks du serveur ») :
-    python outils/gunpacks_serveur.py liste_ptero.txt --resume resume.md [--ranger ranger.lftp --date AAAA-MM-JJ]
-liste_ptero.txt : sortie de « find /tacz » de lftp (un chemin par ligne, les dossiers finissent par « / »).
+    python outils/gunpacks_serveur.py racine.txt index.txt --resume resume.md [--ranger ranger.lftp --date AAAA-MM-JJ]
+racine.txt : ce qu'il y a directement dans /tacz (« cls -1 -F /tacz/ » de lftp, les dossiers finissent par « / ») ;
+index.txt : les fichiers d'index des gunpacks (« cls -1 /tacz/*/data/*/index/*/* »), seuls lus par le serveur pour
+la liste des objets (lister tout le dossier, plus de 6 000 fichiers, prend plus de 13 minutes par SFTP).
 --ranger écrit les commandes lftp qui DÉPLACENT (jamais n'effacent) ce qui n'est pas dans le dépôt vers
 /tacz_ranges/<date>/ : rien n'est perdu, il suffit de le remettre dans /tacz pour revenir en arrière.
 """
@@ -19,52 +21,54 @@ import sys
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 DEPOT = RACINE / "serveur" / "tacz"
-TYPES = re.compile(r"^[^/]+/data/([^/]+)/index/(guns|attachments|ammo)/(.+)\.json$")
-NOMS = {"guns": "armes", "attachments": "accessoires", "ammo": "munitions"}
+TYPES = re.compile(r"^[^/]+/data/([^/]+)/index/(guns|attachments|ammo|blocks)/(.+)\.json$")
+NOMS = {"guns": "armes", "attachments": "accessoires", "ammo": "munitions", "blocks": "tables de fabrication"}
 
 
-def fichiers_depot():
-    return {p.relative_to(DEPOT).as_posix() for p in DEPOT.rglob("*") if p.is_file()}
+def depot():
+    racine = {p.name + ("/" if p.is_dir() else "") for p in DEPOT.iterdir()}
+    index = {p.relative_to(DEPOT).as_posix() for p in DEPOT.glob("*/data/*/index/*/*") if p.is_file() and TYPES.match(p.relative_to(DEPOT).as_posix())}
+    return racine, index
 
 
-def fichiers_ptero(liste):
-    out = set()
-    for ligne in pathlib.Path(liste).read_text(encoding="utf-8", errors="replace").splitlines():
+def lignes(fichier):
+    for ligne in pathlib.Path(fichier).read_text(encoding="utf-8", errors="replace").splitlines():
         ligne = ligne.strip()
-        if not ligne.startswith("/tacz/") or ligne.endswith("/"):
-            continue
-        out.add(ligne[len("/tacz/"):])
-    return out
+        if ligne.startswith("/tacz/"):
+            ligne = ligne[len("/tacz/"):]
+        if ligne and not ligne.startswith("/"):
+            yield ligne
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("liste")
+    ap.add_argument("racine")
+    ap.add_argument("index")
     ap.add_argument("--resume", required=True)
     ap.add_argument("--ranger")
     ap.add_argument("--date", default="")
     a = ap.parse_args()
 
-    depot, ptero = fichiers_depot(), fichiers_ptero(a.liste)
-    if not ptero:
+    racine_depot, index_depot = depot()
+    racine_ptero = {x for x in lignes(a.racine) if "/" not in x.rstrip("/")}
+    index_ptero = {x for x in lignes(a.index) if TYPES.match(x)}
+    if not racine_ptero:
         print("::error::liste du dossier tacz du Ptero vide ou illisible : rien n'est comparé")
         return 1
-    packs_depot = {f.split("/", 1)[0] for f in depot}
-    en_trop = sorted(ptero - depot)
-    manquants = sorted(depot - ptero)
-    # ce qui est en trop : dossiers entiers absents du dépôt, et fichiers en trop dans les gunpacks du dépôt
-    packs_en_trop = sorted({f.split("/", 1)[0] for f in en_trop if f.split("/", 1)[0] not in packs_depot})
-    fichiers_en_trop = [f for f in en_trop if f.split("/", 1)[0] in packs_depot]
+    noms_depot = {x.rstrip("/") for x in racine_depot}
+    # en trop : dossiers (ou fichiers) entiers absents du dépôt, et index en trop dans les gunpacks du dépôt
+    packs_en_trop = sorted(x.rstrip("/") for x in racine_ptero if x.rstrip("/") not in noms_depot)
+    fichiers_en_trop = sorted(f for f in index_ptero - index_depot if f.split("/", 1)[0] in noms_depot)
+    manquants = sorted(index_depot - index_ptero)
     objets = collections.defaultdict(list)
-    for f in en_trop:
+    for f in sorted(index_ptero - index_depot):
         m = TYPES.match(f)
-        if m:
-            objets[NOMS[m.group(2)]].append(f"{m.group(1)}:{m.group(3)}")
+        objets[NOMS[m.group(2)]].append(f"{m.group(1)}:{m.group(3)}  ({f.split('/', 1)[0]})")
 
     l = ["### Gunpacks du serveur (dossier tacz du Ptero comparé au dépôt)", ""]
-    l.append(f"- Ptero : {len(ptero)} fichiers ; dépôt : {len(depot)} fichiers")
-    l.append(f"- en trop sur le Ptero (absents du dépôt, donc absents chez les joueurs) : {len(en_trop)} fichiers")
-    l.append(f"- manquants sur le Ptero : {len(manquants)} fichiers")
+    l.append(f"- dans /tacz du Ptero : {len(racine_ptero)} dossiers ou fichiers ; dépôt : {len(racine_depot)}")
+    l.append(f"- dossiers en trop sur le Ptero (absents du dépôt, donc absents chez les joueurs) : {len(packs_en_trop)}")
+    l.append(f"- index d'objets en trop dans les gunpacks du dépôt : {len(fichiers_en_trop)} ; manquants sur le Ptero : {len(manquants)}")
     if objets:
         l.append("- objets en trop envoyés aux joueurs (carrés roses et noirs dans le menu créatif) : "
                  + ", ".join(f"{len(v)} {k}" for k, v in sorted(objets.items())))
@@ -72,14 +76,14 @@ def main():
     if packs_en_trop:
         l.append("**Dossiers entiers absents du dépôt :**")
         for p in packs_en_trop:
-            n = sum(1 for f in en_trop if f.split("/", 1)[0] == p)
-            l.append(f"- `{p}` ({n} fichiers)")
+            n = sum(1 for f in index_ptero if f.split("/", 1)[0] == p)
+            l.append(f"- `{p}`" + (f" ({n} objets)" if n else ""))
         l.append("")
     if fichiers_en_trop:
-        l.append("**Fichiers en trop dans les gunpacks du dépôt :**")
+        l.append("**Index d'objets en trop dans les gunpacks du dépôt :**")
         par_pack = collections.Counter(f.split("/", 1)[0] for f in fichiers_en_trop)
         for p, n in sorted(par_pack.items()):
-            l.append(f"- `{p}` : {n} fichiers")
+            l.append(f"- `{p}` : {n} objets")
         l.append("")
     for k, v in sorted(objets.items()):
         l.append(f"<details><summary>{len(v)} {k} en trop</summary>")
@@ -89,7 +93,7 @@ def main():
         l.append("</details>")
         l.append("")
     if manquants:
-        l.append("<details><summary>Fichiers du dépôt absents du Ptero</summary>")
+        l.append("<details><summary>Index du dépôt absents du Ptero</summary>")
         l.append("")
         l.extend(f"- `{x}`" for x in manquants[:200])
         l.append("")

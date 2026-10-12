@@ -58,16 +58,17 @@ jobs:
 
       - name: Liste du dossier tacz du Ptero (lecture seule)
         run: |
+          # ce qu'il y a dans /tacz, puis seulement les index des gunpacks (tout lister prend plus de 13 minutes)
           lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
-            -e "$LFTP_REGLAGES set cmd:fail-exit yes; find /tacz > liste_ptero.txt; bye" < /dev/null
-          wc -l liste_ptero.txt
+            -e "$LFTP_REGLAGES cls -1 -F /tacz/ > racine.txt; cls -1 /tacz/*/data/*/index/*/* > index.txt; bye" < /dev/null
+          wc -l racine.txt index.txt
 
       - name: Comparaison avec le dépôt
         run: |
           if [ "$RANGER" = "true" ]; then
-            python outils/gunpacks_serveur.py liste_ptero.txt --resume resume.md --ranger ranger.lftp --date "$(date -u +%F)"
+            python outils/gunpacks_serveur.py racine.txt index.txt --resume resume.md --ranger ranger.lftp --date "$(date -u +%F)"
           else
-            python outils/gunpacks_serveur.py liste_ptero.txt --resume resume.md
+            python outils/gunpacks_serveur.py racine.txt index.txt --resume resume.md
           fi
           cat resume.md >> "$GITHUB_STEP_SUMMARY"
 
@@ -76,7 +77,7 @@ jobs:
         run: |
           echo "Commandes :"; cat ranger.lftp
           lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
-            -e "$LFTP_REGLAGES set cmd:fail-exit yes; source ranger.lftp; find /tacz > liste_apres.txt; bye" < /dev/null
-          python outils/gunpacks_serveur.py liste_apres.txt --resume apres.md > /dev/null
+            -e "$LFTP_REGLAGES set cmd:fail-exit yes; source ranger.lftp; set cmd:fail-exit no; cls -1 -F /tacz/ > racine2.txt; cls -1 /tacz/*/data/*/index/*/* > index2.txt; bye" < /dev/null
+          python outils/gunpacks_serveur.py racine2.txt index2.txt --resume apres.md > /dev/null
           { echo; echo "### Après rangement"; echo; sed -n '3,6p' apres.md
             echo; echo "Rangé dans \`/tacz_ranges/$(date -u +%F)/\` sur le Ptero (rien n'est effacé). Redémarrer le serveur pour que ce soit pris en compte."; } >> "$GITHUB_STEP_SUMMARY"
