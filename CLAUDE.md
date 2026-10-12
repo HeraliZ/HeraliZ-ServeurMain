@@ -496,7 +496,8 @@ dépôt (`outils/gunpacks_serveur.py`). Le serveur envoie aux joueurs les objets
 les joueurs n'ont que les images du dépôt : un gunpack (ou un index d'arme) resté sur le Ptero sans être dans le dépôt
 donne des carrés roses et noirs dans le menu créatif (12/10 : ~1 000 objets de 5 vieux packs et d'anciens index). Par
 défaut lecture seule ; case « supprimer » : ce qui n'est pas dans le dépôt est SUPPRIMÉ du Ptero (gunpacks entiers,
-index d'objets en trop), puis redémarrer. Le pack par défaut de TaCZ (`tacz_default_gun`, aussi dans son jar) est
+index d'objets en trop ; effacés par le panel, un dossier en un appel, sinon fichier par fichier en SFTP, très lent),
+puis redémarrer. Le pack par défaut de TaCZ (`tacz_default_gun`, aussi dans son jar) est
 gardé. Les joueurs n'ont jamais ces gunpacks (pack du launcher = dépôt). À lancer après avoir retiré un gunpack ou une
 arme du dépôt.
 
