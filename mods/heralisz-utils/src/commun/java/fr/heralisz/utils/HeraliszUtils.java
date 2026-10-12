@@ -118,7 +118,7 @@ public final class HeraliszUtils {
         fr.heralisz.utils.cine.CineReseau.init(bus);                 // cinématique d'arrivée (première connexion, /cinematique)
         fr.heralisz.utils.train.Train.init(bus);                     // réseau ferré : horaire, annonce aux joueurs, /train
         bus.addListener(HeraliszUtils::hideOldItems);
-        bus.addListener(fr.heralisz.utils.meubles.FormesMeubles::installer); // meubles cfm à leur vraie forme (Model 239 : escalier)
+        bus.addListener(fr.heralisz.utils.meubles.FormesMeubles::installer); // meubles cfm à leur vraie forme (Models 239 à 241)
         // ambiance de la map (ciel, nuits, brouillard, filtre d'image) : réglages côté client
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
                 fr.heralisz.utils.ambiance.AmbianceConfig.SPEC, "heralisz_utils-ambiance.toml");
