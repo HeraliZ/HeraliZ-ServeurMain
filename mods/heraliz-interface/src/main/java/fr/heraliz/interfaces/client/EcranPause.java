@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.realmsclient.RealmsMainScreen;
 import fr.heraliz.interfaces.InterfaceConfig;
 import fr.heraliz.interfaces.kit.Anim;
+import fr.heraliz.interfaces.kit.Bascule;
 import fr.heraliz.interfaces.kit.Echelle;
 import fr.heraliz.interfaces.kit.Fond;
 import fr.heraliz.interfaces.kit.HzButton;
@@ -36,8 +37,9 @@ import java.util.Locale;
 /**
  * Menu Echap HeraliZ (remplace {@link net.minecraft.client.gui.screens.PauseScreen}, voir {@link InterfaceClient}),
  * d'apres la maquette validee : a gauche le logo, la phrase d'accroche et le menu (REPRENDRE en accent, INFORMATIONS,
- * DISCORD, BOUTIQUE, OPTIONS, lignes sans cadre au repos), deux petits boutons (STATISTIQUES, JOUEURS ou OUVRIR AU LAN
- * en solo ; ni Mods ni Succes, choix du proprietaire) et SE DECONNECTER en rouge. A droite, la carte du joueur : tete,
+ * DISCORD, BOUTIQUE, OPTIONS, lignes sans cadre au repos), les petits boutons JOUEURS et LANGUE (ni Mods, ni Succes,
+ * ni Statistiques, ni LAN : choix du proprietaire), dessous le reglage SPRINT EN UN APPUI ({@link Sprint}, interrupteur
+ * avec l'etat ecrit, explication au survol) et SE DECONNECTER en rouge. A droite, la carte du joueur : tete,
  * pseudo, clan et grade, herals, joueurs en ligne, ping, extractions ouvertes, zones tenues par le clan (lus chez nos
  * autres mods par reflexion, {@link ProfilJoueur} ; une ligne sans donnees est cachee). En bas : le serveur a gauche,
  * les liens Mojang a droite. Fenetre trop etroite : menu centre, sans carte.
@@ -52,6 +54,10 @@ public class EcranPause extends Screen {
     private final List<Integer> separateurs = new ArrayList<>();
     @Nullable
     private Langues.Selecteur langue;
+    @Nullable
+    private Bascule sprint;
+    /** Infobulle du sprint (preparee a l'init, jamais a l'image). */
+    private List<Component> aideSprint = List.of();
     private int colX, colW, logoX, logoY, logoW, logoH, sousY;
     @Nullable
     private String sousTitre;
@@ -106,12 +112,13 @@ public class EcranPause extends Screen {
         int accent = Ui.accent();
         String discord = InterfaceConfig.discord(), boutique = lien(InterfaceConfig.BOUTIQUE_LIEN);
 
-        // ---- petits boutons : Joueurs, puis le choix de langue (serveur multi : ni Succès, ni Statistiques, ni LAN)
+        // ---- petits boutons : Joueurs, puis le choix de langue (serveur multi : ni Succès, ni Statistiques, ni LAN),
+        // dessous le sprint en un appui sur toute la largeur
         record Petit(int icone, Component libelle, Runnable action) {
         }
         List<Petit> petits = new ArrayList<>();
         petits.add(new Petit(Icons.JOUEURS, Component.translatable("gui.heraliz_interface.pause.joueurs"), () -> mc.setScreen(new SocialInteractionsScreen())));
-        int rangees = (petits.size() + 2) / 2; // + la tuile de langue
+        int rangees = (petits.size() + 2) / 2 + 1; // + la tuile de langue, + la ligne du sprint
         int nbLignes = 4 + (discord != null ? 1 : 0); // reprendre, informations, (discord), boutique, options
 
         // ---- tailles : normale (canevas 640 x 360) ou compacte (petite hauteur d'interface)
@@ -181,6 +188,9 @@ public class EcranPause extends Screen {
         int il = petits.size();
         langue = new Langues.Selecteur(x + (il % 2 == 0 ? 0 : colW - demi), y + (il / 2) * (th + ecart), demi, th, 12,
                 t("pause.langue").toUpperCase(Locale.ROOT), accent);
+        sprint = new Bascule(x, y + (rangees - 1) * (th + ecart), colW, th, Component.translatable("gui.heraliz_interface.pause.sprint"),
+                t("pause.active"), t("pause.desactive"), accent, Sprint::enUnAppui, Sprint::basculer);
+        aideSprint = List.of(Ui.lit(t("pause.sprint"), Ui.BOLD), Ui.lit(t("pause.sprint.aide1"), Ui.FONT), Ui.lit(t("pause.sprint.aide2"), Ui.FONT));
         y += rangees * th + (rangees - 1) * ecart;
         separateurs.add(y + groupe / 2);
         y += groupe;
@@ -197,6 +207,7 @@ public class EcranPause extends Screen {
         for (MenuLigne l : lignes) addRenderableWidget(l);
         for (Tuile tu : tuiles) addRenderableWidget(tu);
         addRenderableWidget(langue);
+        addRenderableWidget(sprint);
 
         // ---- liens Mojang (avis, bugs), discrets en bas a droite
         if (InterfaceConfig.oui(InterfaceConfig.LIENS_MOJANG, true)) {
@@ -339,7 +350,7 @@ public class EcranPause extends Screen {
         // apparition en cascade des boutons
         int i = 0;
         for (MenuLigne l : lignes) {
-            if (i == lignes.size() - 1) i += tuiles.size() + (langue != null ? 1 : 0); // « quitter » apres les petits boutons
+            if (i == lignes.size() - 1) i += tuiles.size() + (langue != null ? 1 : 0) + (sprint != null ? 1 : 0); // « quitter » apres les petits boutons
             float ti = Anim.sortie(Anim.progression(ouvert, 90 + i * 26L, 260));
             l.opacite = ti;
             l.decalageY = (1 - ti) * 6;
@@ -356,9 +367,17 @@ public class EcranPause extends Screen {
             float ti = Anim.sortie(Anim.progression(ouvert, 90 + k * 26L, 260));
             langue.opacite = ti;
             langue.decalageY = (1 - ti) * 6;
+            k++;
+        }
+        if (sprint != null) {
+            float ti = Anim.sortie(Anim.progression(ouvert, 90 + k * 26L, 260));
+            sprint.opacite = ti;
+            sprint.decalageY = (1 - ti) * 6;
         }
         if (carte) dessinerCarte(g, Anim.sortie(Anim.progression(ouvert, 140, 320)), accent);
         super.render(g, mouseX, mouseY, partialTick);
+        // le sprint en un appui s'explique au survol
+        if (sprint != null && sprint.isHovered() && sprint.opacite > 0.9f) Ui.tooltip(g, font, aideSprint, mouseX, mouseY, accent);
 
         if (pied != null && Ui.lisible(Math.round(255 * t))) {
             Ui.at(g, font, Ui.lit(pied.toUpperCase(Locale.ROOT), Ui.SMALL), carte ? colX : 10, height - 15,
@@ -452,6 +471,7 @@ public class EcranPause extends Screen {
         List<String> l = new ArrayList<>();
         for (MenuLigne m : lignes) l.add(m.libelle().toUpperCase(Locale.ROOT));
         for (Tuile tu : tuiles) l.add(tu.getMessage().getString().toUpperCase(Locale.ROOT));
+        if (sprint != null) l.add(sprint.getMessage().getString().toUpperCase(Locale.ROOT));
         return l;
     }
 }

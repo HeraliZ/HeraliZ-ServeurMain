@@ -65,9 +65,9 @@ quand un choix leur revient.
   passent au style des clans.
 - Menu Échap (heraliz_interface, maquette validée) : à gauche le logo et le menu (Reprendre, Informations, Discord,
   Boutique, Options, Joueurs, Se déconnecter ; ni Mods, ni Succès, ni Statistiques, ni Ouvrir au LAN : serveur multi
-  seulement, boutons retirés aussi du menu vanilla de secours ; tuile « Langue » à drapeaux FR / EN / RU), à droite la
-  carte du joueur (hérals,
-  joueurs en ligne, ping, extractions ouvertes, zones du clan).
+  seulement, boutons retirés aussi du menu vanilla de secours ; tuile « Langue » à drapeaux FR / EN / RU ; dessous, sur
+  toute la largeur, le réglage « Sprint en un appui » : interrupteur Activé / Désactivé, explication au survol), à
+  droite la carte du joueur (hérals, joueurs en ligne, ping, extractions ouvertes, zones du clan).
 - Discord du serveur : https://discord.gg/heraliz (menu Échap et launcher). Noms de domaine heraliz.fr et heraliz.com :
   le site du serveur y sera mis plus tard (la boutique pourra y pointer).
 - Adresses : **play.heraliz.fr** = le serveur de jeu (launcher, `launcher/app/heraliz.json` ; enregistrement DNS `A`,
@@ -788,6 +788,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;
 - logo de Max Stuff (11/10) : le petit « M » est retiré des icônes de ses accessoires, choix du propriétaire malgré la licence du pack (CC BY-NC-ND 4.0 : pas de version modifiée diffusée ; tous les gunpacks des autres auteurs ont la même licence, et NC à surveiller avec la boutique). Auteurs crédités dans `serveur/tacz/arkaniaz_pack_5_converted/CREDITS.txt`. D'autres logos restent sur des icônes d'armes (« Chill Deep » du pack arkaniaz_custom, « MIL », « CIB ») : pas touchés sans demande ;
 - touches (11/10) : une seule table des touches par défaut, appliquée chez le joueur par heraliz_interface (`client/Touches.java`) sans toucher aux jars des autres auteurs : pas de doublon (G = mode de tir de TaCZ, H = inspecter, Tab = liste des joueurs), Curios sur U, mode de la voix (chuchoter / parler / crier) sur X, touches inutiles cachées de l'écran des commandes ; une touche choisie par un joueur n'est jamais changée. Une touche de mod avec Maj, Ctrl ou Alt sur un bouton de souris prend tout ce bouton dès que le modificateur est enfoncé (Forge) : à ne jamais refaire ;
+- sprint en un appui (12/10, heraliz_interface 1.7.0) : interrupteur dans le menu Échap ; c'est l'option « Sprint : Basculer / Maintenir » de Minecraft (Options > Commandes), enregistrée dans `options.txt` (`client/Sprint.java`). Activé : un appui sur la touche de sprint pour courir, un autre pour arrêter. En repassant à « Maintenir », la touche de sprint est relâchée (sinon le jeu la croirait encore enfoncée). Réglage du joueur, rien côté serveur ;
 - Armurerie : les combinaisons intégrales (Hazmat, froid, plongée) se portent seules (sac à dos permis) ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus

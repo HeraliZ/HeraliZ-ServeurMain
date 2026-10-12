@@ -280,7 +280,8 @@ public final class BancInterface {
             if (c instanceof AbstractWidget w) {
                 log("  {} '{}' x={} y={} l={} h={} actif={}", w.getClass().getSimpleName(), w.getMessage().getString(), w.getX(), w.getY(),
                         w.getWidth(), w.getHeight(), w.active);
-                if (ecran instanceof EcranPause && (w instanceof fr.heraliz.interfaces.kit.MenuLigne || w instanceof fr.heraliz.interfaces.kit.Tuile)) {
+                if (ecran instanceof EcranPause && (w instanceof fr.heraliz.interfaces.kit.MenuLigne || w instanceof fr.heraliz.interfaces.kit.Tuile
+                        || w instanceof fr.heraliz.interfaces.kit.Bascule)) {
                     gauche = Math.min(gauche, w.getX());
                     droite = Math.max(droite, w.getX() + w.getWidth());
                     bordsG.add(w.getX());
