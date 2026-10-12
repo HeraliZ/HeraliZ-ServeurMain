@@ -64,7 +64,8 @@ public class HeralizTactique {
       TABS.register(bus);
       // établis génériques de TaCZ (workbench_a/b/c, sans nom chez nous) retirés de tous les onglets créatifs
       bus.addListener(Etablis::retirer);
-      // s'allonger (touche « Ramper » de TaCZ) : canal réseau, règles du serveur, touche et message chez le joueur
+      // s'allonger (touche « Ramper » de TaCZ, avec ou sans arme) et plongeon : canal réseau, règles du serveur, touche et
+      // messages chez le joueur
       ReseauAllonge.init();
       Parties.serveur(MODID, "fr.heraliz.tactique.serveur.ServeurTactique", bus);
       Parties.client(MODID, "fr.heraliz.tactique.client.ClientTactique", bus);

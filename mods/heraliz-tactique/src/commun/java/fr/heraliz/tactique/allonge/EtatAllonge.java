@@ -1,11 +1,19 @@
 package fr.heraliz.tactique.allonge;
 
+import javax.annotation.Nullable;
+
 /**
  * État « allongé » noté par HeraliZ sur les données du tireur de TaCZ ({@code ShooterDataHolder}, une par entité vivante),
  * ajouté par le mixin commun {@code fr.heraliz.tactique.mixin.commun.ShooterDataHolderMixin}. Rempli et lu côté serveur
  * seulement ({@link Allonge#noter}). Heures en millisecondes de {@link Allonge#maintenant()} ; 0 = jamais.
  */
 public interface EtatAllonge {
+   /** Plongeon de ce joueur (créé par le serveur au premier besoin ; null pour les autres entités). */
+   @Nullable
+   Plongeon heraliz$getPlongeon();
+
+   void heraliz$setPlongeon(Plongeon plongeon);
+
    /** Dernier état vu (allongé ou debout), pour repérer les passages de l'un à l'autre. */
    boolean heraliz$getEtaitAllonge();
 

@@ -491,6 +491,15 @@ raison) ; la clé des jetons du launcher est lue sur la VM du site (section 6 bi
 (H2) et repart sans historique. Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
 écrire ailleurs.
 
+**Gunpacks du serveur** (`.github/workflows/gunpacks.yml`, « Run workflow ») : compare le dossier `tacz` du Ptero au
+dépôt (`outils/gunpacks_serveur.py`). Le serveur envoie aux joueurs les objets de TOUS les gunpacks de son `tacz`, mais
+les joueurs n'ont que les images du dépôt : un gunpack (ou un index d'arme) resté sur le Ptero sans être dans le dépôt
+donne des carrés roses et noirs dans le menu créatif (12/10 : ~1 000 objets de 5 vieux packs et d'anciens index). Par
+défaut lecture seule ; case « supprimer » : ce qui n'est pas dans le dépôt est SUPPRIMÉ du Ptero (gunpacks entiers,
+index d'objets en trop), puis redémarrer. Le pack par défaut de TaCZ (`tacz_default_gun`, aussi dans son jar) est
+gardé. Les joueurs n'ont jamais ces gunpacks (pack du launcher = dépôt). À lancer après avoir retiré un gunpack ou une
+arme du dépôt.
+
 **Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
 fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets
 « test-mods-serveur » et « test-mods-client », pour essayer en jeu). Ne faire passer une branche sur `main` que quand il
@@ -646,7 +655,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   seule de ses armes va dans `PROPRES` de l'outil), `python outils/icones_sans_contour.py` (retire le
   contour noir de ses icônes d'inventaire) et `python outils/icones_sans_logo.py` (retire le logo « M » de Max Stuff,
   `verifier.py` le réclame). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
-  redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur.
+  redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur. Retirer un gunpack ou une arme du dépôt ne
+  l'enlève pas du Ptero : ensuite, workflow « Gunpacks du serveur » avec « supprimer », puis redémarrer (section 8).
 - **Un pack de textures** : il est imposé par heraliz_interface
   (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
   par celui du nouveau pack, puis refabriquer heraliz_interface. Pack imposé depuis le 11/10 (heraliz_interface
@@ -757,7 +767,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
   I, menu =, abandon Retour arrière ;
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
-- vitres (11/10) : une balle casse la vitre ou le bloc de verre touché, reposé tel quel au bout de 20 min (même après un redémarrage ; section `[vitres]` de `heralisz_tactical-server.toml`, mod tactique) ; jamais au spawn (64 blocs), en match, en zombies, dans les bunkers ni dans les claims CRac. `DestroyGlass` de TaCZ reste à false (TaCZ casse sans regarder les protections ni les blocs voisins) ;
+- vitres (11/10, 12/10) : une balle casse la vitre ou le bloc de verre touché, reposé au même endroit au bout de 5 min (même après un redémarrage ; les vitres fines voisines perdent leur raccord vers le trou et le retrouvent à la repousse : deux vitres côte à côte cassées repoussent reliées ; section `[vitres]` de `heralisz_tactical-server.toml`, mod tactique) ; jamais au spawn (64 blocs), en match, en zombies, dans les bunkers ni dans les claims CRac. `DestroyGlass` de TaCZ reste à false (TaCZ casse sans regarder les protections ni les blocs voisins) ;
+- s'allonger (11/10, 12/10, mod tactique, `allonge/`) : un appui pour s'allonger, un autre pour se relever, avec ou sans arme en
+  main (sans arme : même pose et même vitesse que le « ramper » de TaCZ) ; pas de tir pendant qu'on se couche, délai avant
+  de se rallonger ; plongeon façon CoD (en avançant, touche « Ramper » pendant un saut ou avec la touche de saut enfoncée) :
+  élan décidé et donné par le serveur (setDeltaMovement + hurtMarked, suivi par Spartan), on retombe allongé ; réglages
+  `[allonge]` de `heralisz_tactical-server.toml` (`plongeon`, `plongeon_vitesse`, `plongeon_hauteur`, `delai_plongeon`) ;
 - duels (11/10) : défi reçu = petite notification en haut à droite (plus de grand écran au milieu) ; les dimensions des matchs et des zombies ont leur propre bordure du monde (avant, les arènes sortaient de celle de la carte : mort en boucle) ;
 - sons (11/10) : MAtmos jouait le bruit de changement d'objet de chaque joueur visible, sans atténuation (sons stéréo) : dayzhotbar (`SonChangementObjet`) ne laisse entendre celui des autres qu'à 8 blocs au plus ;
 - accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;

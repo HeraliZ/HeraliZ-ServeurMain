@@ -18,6 +18,10 @@ public class ServerConfig {
    /** HeraliZ : s'allonger avec la touche « Ramper » de TaCZ (fr.heraliz.tactique.allonge.Allonge). */
    public static DoubleValue DELAI_RALLONGER;
    public static DoubleValue SANS_TIR_EN_SE_COUCHANT;
+   public static BooleanValue PLONGEON;
+   public static DoubleValue PLONGEON_VITESSE;
+   public static DoubleValue PLONGEON_HAUTEUR;
+   public static DoubleValue DELAI_PLONGEON;
    /** HeraliZ : vitres cassées par les balles de TaCZ, qui repoussent (fr.heraliz.tactique.vitres.Vitres). */
    public static BooleanValue VITRES_CASSER;
    public static IntValue VITRES_DELAI_MINUTES;
@@ -50,6 +54,26 @@ public class ServerConfig {
             "Durée (en secondes) sans pouvoir tirer pendant que le joueur se couche (passage debout -> allongé ;",
             "l'animation de Minecraft dure 0,6 s). Le serveur compte 0,2 s de moins (décalage du réseau).")
          .defineInRange("duree_sans_tir_couche", Allonge.DEFAUT_SANS_TIR, 0.0, 5.0);
+      PLONGEON = builder.comment(
+            "Plongeon façon Call of Duty : en avançant, touche « Ramper » pendant un saut (jusqu'à 0,45 s après) ou avec la",
+            "touche de saut enfoncée : le joueur est lancé en avant, corps à plat, et retombe allongé. Avec ou sans arme en",
+            "main. L'élan est décidé et donné par le serveur (vitesse de Minecraft envoyée au joueur, suivie par Spartan).",
+            "Il compte comme « se coucher » : pas de tir pendant duree_sans_tir_couche depuis son début, et il respecte",
+            "delai_rallonger. Les dégâts de chute restent ceux de Minecraft. false : pas de plongeon.")
+         .define("plongeon", Allonge.DEFAUT_PLONGEON);
+      PLONGEON_VITESSE = builder.comment(
+            "Vitesse vers l'avant donnée par le plongeon, en blocs par tick (un sprint va à 0,28) : 0,7 lance le joueur",
+            "d'environ 2,5 blocs depuis le sol, de 3,5 à 4,5 blocs depuis un saut.")
+         .defineInRange("plongeon_vitesse", Allonge.DEFAUT_PLONGEON_VITESSE, 0.1, 1.5);
+      PLONGEON_HAUTEUR = builder.comment(
+            "Petit élan vers le haut d'un plongeon depuis le sol, en blocs par tick (un saut vaut 0,42) : 0,15 fait monter",
+            "le corps d'environ 0,2 bloc. En l'air (juste après un saut), le plongeon ne donne aucun élan vers le haut.",
+            "Au-dessus de 0,15, un plongeon lancé avec un saut peut passer par-dessus une clôture ou un muret (1,5 bloc).")
+         .defineInRange("plongeon_hauteur", Allonge.DEFAUT_PLONGEON_HAUTEUR, 0.0, 0.3);
+      DELAI_PLONGEON = builder.comment(
+            "Délai (en secondes) entre deux plongeons, compté depuis le début du précédent (delai_rallonger compte aussi).",
+            "Le serveur compte 0,5 s de moins (décalage du réseau).")
+         .defineInRange("delai_plongeon", Allonge.DEFAUT_DELAI_PLONGEON, 0.0, 120.0);
       builder.pop();
       // HeraliZ : vitres cassées par les balles, qui repoussent (lu par le serveur seulement)
       builder.push("vitres");

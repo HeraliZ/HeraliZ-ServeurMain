@@ -11,5 +11,6 @@
   "overlay.heraliz_tactique.explose": "взрыв через %s с",
   "overlay.heraliz_tactique.lancer_doux": "Мягкий бросок (присев)",
   "overlay.heraliz_tactique.pour_arreter": "чтобы остановить",
-  "overlay.heraliz_tactique.allonge_attente": "Снова лечь можно через %s с"
+  "overlay.heraliz_tactique.allonge_attente": "Снова лечь можно через %s с",
+  "overlay.heraliz_tactique.plongeon_attente": "Снова нырнуть вперёд можно через %s с"
 }

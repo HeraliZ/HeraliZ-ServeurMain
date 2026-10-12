@@ -4,6 +4,7 @@ import com.tacz.guns.entity.shooter.LivingEntityCrawl;
 import com.tacz.guns.entity.shooter.ShooterDataHolder;
 import fr.heraliz.tactique.allonge.Allonge;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,10 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * S'allonger, côté serveur (fr.heraliz.tactique.allonge.Allonge) : le « ramper » de TaCZ vu par le serveur.
  * <ul>
- *    <li>{@code crawl(true)} (paquet ClientMessagePlayerCrawl du joueur) est refusé si le délai pour se rallonger n'est
- *    pas écoulé (décision branchée par la partie serveur, qui renvoie aussi le refus au joueur) ;</li>
- *    <li>après la touche et après chaque tick ({@code tickCrawling}, qui relève le joueur tout seul), l'heure du coucher
- *    ou du relevé est notée sur les données du tireur.</li>
+ *    <li>{@code crawl(true)} (paquet ClientMessagePlayerCrawl du joueur, avec ou sans arme en main) est refusé si le délai
+ *    pour se rallonger n'est pas écoulé ou si le joueur est à terre (décision branchée par la partie serveur, qui renvoie
+ *    aussi le refus au joueur) ;</li>
+ *    <li>avant chaque tick ({@code tickCrawling}), pour les joueurs : la partie serveur traite elle-même le joueur sans
+ *    arme TaCZ (TaCZ le relèverait à chaque tick) et le plongeon (corps à plat en l'air) ; avec une arme, TaCZ garde la
+ *    main, comme avant ;</li>
+ *    <li>après la touche et après chaque tick de TaCZ ({@code tickCrawling}, qui relève le joueur tout seul), l'heure du
+ *    coucher ou du relevé est notée sur les données du tireur.</li>
  * </ul>
  * TaCZ n'appelle cette classe que sur le serveur (et le serveur intégré du solo) ; on le vérifie quand même. Noms de TaCZ
  * (non obfusqués) : remap = false. require = 0 : si TaCZ change ces méthodes, le ramper reste celui de TaCZ, rien ne casse.
@@ -42,6 +47,14 @@ public abstract class LivingEntityCrawlMixin {
    private void heraliz$noterApresTouche(boolean allonger, CallbackInfo ci) {
       if (!this.shooter.level().isClientSide) {
          Allonge.noter(this.data);
+      }
+   }
+
+   /** Joueurs seulement (TaCZ passe ici pour chaque entité vivante, à chaque tick) ; traité par HeraliZ : TaCZ ne passe pas. */
+   @Inject(method = "tickCrawling()V", at = @At("HEAD"), cancellable = true, require = 0)
+   private void heraliz$avantTick(CallbackInfo ci) {
+      if (this.shooter instanceof Player joueur && !joueur.level().isClientSide && Allonge.avantTickServeur(joueur, this.data)) {
+         ci.cancel();
       }
    }
 
