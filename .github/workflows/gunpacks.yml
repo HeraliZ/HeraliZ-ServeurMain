@@ -1,0 +1,82 @@
+# Gunpacks du serveur : compare le dossier tacz du Ptero au dépôt (outils/gunpacks_serveur.py). Le serveur envoie aux
+# joueurs les armes de TOUS les gunpacks de son dossier tacz, mais les joueurs n'ont que les images du dépôt : un
+# gunpack resté sur le Ptero sans être dans le dépôt donne des carrés roses et noirs dans le menu créatif (la mise en
+# ligne complète tacz sans rien y supprimer). Par défaut LECTURE SEULE (résumé de l'exécution). Case « ranger » : ce
+# qui n'est pas dans le dépôt est DÉPLACÉ vers /tacz_ranges/<date>/ (jamais effacé ; pour revenir en arrière, le
+# remettre dans /tacz), pris en compte au prochain redémarrage du serveur. Part aussi, en lecture seule, d'une branche
+# de travail quand ce fichier ou l'outil change.
+name: Gunpacks du serveur
+
+on:
+  workflow_dispatch:
+    inputs:
+      ranger:
+        description: "Déplacer vers /tacz_ranges/<date>/ ce qui n'est pas dans le dépôt (rien n'est effacé)"
+        type: boolean
+        default: false
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/gunpacks.yml", "outils/gunpacks_serveur.py"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: serveur
+  cancel-in-progress: false
+
+jobs:
+  gunpacks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PYTHONIOENCODING: utf-8
+      RANGER: ${{ github.event_name == 'workflow_dispatch' && inputs.ranger }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Accès au Ptero
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+          echo "LFTP_REGLAGES=set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30; set net:reconnect-interval-base 5;" >> "$GITHUB_ENV"
+
+      - name: Liste du dossier tacz du Ptero (lecture seule)
+        run: |
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+            -e "$LFTP_REGLAGES set cmd:fail-exit yes; find /tacz > liste_ptero.txt; bye" < /dev/null
+          wc -l liste_ptero.txt
+
+      - name: Comparaison avec le dépôt
+        run: |
+          if [ "$RANGER" = "true" ]; then
+            python outils/gunpacks_serveur.py liste_ptero.txt --resume resume.md --ranger ranger.lftp --date "$(date -u +%F)"
+          else
+            python outils/gunpacks_serveur.py liste_ptero.txt --resume resume.md
+          fi
+          cat resume.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ranger ce qui n'est pas dans le dépôt (déplacé, jamais effacé)
+        if: env.RANGER == 'true'
+        run: |
+          echo "Commandes :"; cat ranger.lftp
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+            -e "$LFTP_REGLAGES set cmd:fail-exit yes; source ranger.lftp; find /tacz > liste_apres.txt; bye" < /dev/null
+          python outils/gunpacks_serveur.py liste_apres.txt --resume apres.md > /dev/null
+          { echo; echo "### Après rangement"; echo; sed -n '3,6p' apres.md
+            echo; echo "Rangé dans \`/tacz_ranges/$(date -u +%F)/\` sur le Ptero (rien n'est effacé). Redémarrer le serveur pour que ce soit pris en compte."; } >> "$GITHUB_STEP_SUMMARY"
