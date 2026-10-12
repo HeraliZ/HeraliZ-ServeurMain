@@ -3,6 +3,7 @@ package fr.heraliz.ping.server;
 import fr.heraliz.ping.HeralizPing;
 import fr.heraliz.ping.PingConfig;
 import fr.heraliz.ping.PingType;
+import fr.heraliz.ping.net.Paquets.CarteC2S;
 import fr.heraliz.ping.net.Paquets.MajS2C;
 import fr.heraliz.ping.net.Paquets.PingC2S;
 import fr.heraliz.ping.net.Paquets.PingS2C;
@@ -170,6 +171,69 @@ public final class PingService {
         ServerPlayer[] dest = CERCLE.toArray(new ServerPlayer[0]);
         for (ServerPlayer d : dest) envoyer(d, d == p ? msg.pourAuteur() : msg);
         ACTIFS.add(new Actif(id, p.getUUID(), dest, p.server.getTickCount() + duree * 20L + 10, cible, x, y, z));
+        relayes++;
+        nanosAcceptes += System.nanoTime() - t0;
+    }
+
+    /**
+     * Ping pose depuis la carte du monde (clic droit) : memes regles que {@link #recevoir} pour l'auteur, la cadence et
+     * les destinataires, mais sans portee ni ligne de vue (on marque un point de la carte, pas ce qu'on vise). Le point est
+     * dans le monde de l'auteur et dans sa bordure ; sa hauteur est le dessus du terrain si le troncon est charge (aucun
+     * chargement force), sinon celle de l'auteur. Interrupteur {@code carte} de la config.
+     */
+    public static void recevoirCarte(ServerPlayer p, CarteC2S m) {
+        long t0 = System.nanoTime();
+        recus++;
+        if (!PingConfig.ACTIF.get()) {
+            refusInactif++;
+            return;
+        }
+        if (!Regles.peutPinguer(p.isAlive(), p.isSpectator())) {
+            refusSpectateur++;
+            return;
+        }
+        long maintenant = Util.getMillis();
+        Seau seau = SEAUX.get(p.getUUID());
+        if (seau == null) {
+            seau = new Seau(PingConfig.RAFALE.get(), maintenant);
+            SEAUX.put(p.getUUID(), seau);
+        }
+        if (!PingConfig.CARTE.get()) {
+            refusInactif++;
+            signaler(p, seau, maintenant, "heraliz_ping.msg.carte");
+            return;
+        }
+        if (!seau.prendre(maintenant, PingConfig.RAFALE.get(), PingConfig.RECHARGE_MS.get())) {
+            refusCadence++;
+            signaler(p, seau, maintenant, "heraliz_ping.msg.cadence");
+            return;
+        }
+        ServerLevel niveau = p.serverLevel();
+        double x = Math.floor(m.x()) + 0.5, z = Math.floor(m.z()) + 0.5;
+        if (!Double.isFinite(x) || !Double.isFinite(z) || !niveau.getWorldBorder().isWithinBounds(x, z)) {
+            refusCible++;
+            return;
+        }
+        BlockPos colonne = BlockPos.containing(x, 0, z);
+        double y = niveau.hasChunkAt(colonne)
+                ? niveau.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, colonne.getX(), colonne.getZ()) + 0.05
+                : p.getY();
+        long bloc = BlockPos.containing(x, y - 0.5, z).asLong();
+        int couleur = Cercles.destinataires(p, CERCLE);
+        if (couleur == Cercles.REFUS) {
+            refusSpectateur++;
+            return;
+        }
+        PingType type = m.type() == PingType.AUTO ? PingType.ALLER : PingType.parId(m.type());
+        if (type == null) return;
+        plafonner(p.getUUID(), PingConfig.MAX_PAR_JOUEUR.get() - 1);
+        int id = prochainId++;
+        if (prochainId > 1_000_000_000) prochainId = 1;
+        int duree = PingConfig.DUREE_S.get();
+        PingS2C msg = new PingS2C(id, type.id(), false, -1, bloc, x, y, z, couleur, duree, p.getGameProfile().getName());
+        ServerPlayer[] dest = CERCLE.toArray(new ServerPlayer[0]);
+        for (ServerPlayer d : dest) envoyer(d, d == p ? msg.pourAuteur() : msg);
+        ACTIFS.add(new Actif(id, p.getUUID(), dest, p.server.getTickCount() + duree * 20L + 10, null, x, y, z));
         relayes++;
         nanosAcceptes += System.nanoTime() - t0;
     }

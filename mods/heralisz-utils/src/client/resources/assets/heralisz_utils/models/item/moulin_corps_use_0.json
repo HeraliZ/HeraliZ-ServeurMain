@@ -1,6 +1,3 @@
 {
- "parent": "minecraft:item/generated",
- "textures": {
-  "layer0": "heralisz_utils:item/moulin"
- }
+ "parent": "heralisz_utils:block/moulin_corps_use_0"
 }

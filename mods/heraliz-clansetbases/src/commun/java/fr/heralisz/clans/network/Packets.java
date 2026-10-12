@@ -473,4 +473,150 @@ public final class Packets {
             if (p != null) RECEPTION_SERVEUR.accept(new Recu(p, this));
         }
     }
+
+    // =================================================================== carte du monde (CarteApi)
+    /** La carte du monde est ouverte : le joueur demande l'etat des territoires (au plus 1 par seconde, sans reponse sinon). */
+    public record CarteDemandeC2S() {
+        void write(FriendlyByteBuf b) {
+        }
+
+        static CarteDemandeC2S read(FriendlyByteBuf b) {
+            return new CarteDemandeC2S();
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = sender(ctx);
+            if (p != null) RECEPTION_SERVEUR.accept(new Recu(p, this));
+        }
+    }
+
+    /**
+     * Reponse a {@link CarteDemandeC2S} : les zones (proprietaire et capteur ecrits une seule fois dans une table des
+     * clans, banniere comprise), les membres de son clan dans le meme monde et son clan.
+     */
+    public record CarteS2C(List<fr.heralisz.clans.api.CarteApi.Zone> zones, List<fr.heralisz.clans.api.CarteApi.Allie> allies,
+                           @Nullable fr.heralisz.clans.api.CarteApi.MonClan monClan) {
+        static final int MAX_ZONES = 256, MAX_CLANS = 128, MAX_ALLIES = 64;
+
+        private record ClanVu(String tag, String nom, int couleur, @Nullable Banniere banniere) {
+        }
+
+        void write(FriendlyByteBuf b) {
+            // table des clans cites (proprietaires et capteurs)
+            List<ClanVu> clans = new ArrayList<>();
+            Map<String, Integer> index = new HashMap<>();
+            List<fr.heralisz.clans.api.CarteApi.Zone> zs = zones.size() > MAX_ZONES ? zones.subList(0, MAX_ZONES) : zones;
+            for (var z : zs) {
+                if (!z.proprioTag().isEmpty() && !index.containsKey(z.proprioTag()) && clans.size() < MAX_CLANS) {
+                    index.put(z.proprioTag(), clans.size());
+                    clans.add(new ClanVu(z.proprioTag(), z.proprioNom(), z.proprioCouleur(), z.proprioBanniere()));
+                }
+                if (!z.capteurTag().isEmpty() && !index.containsKey(z.capteurTag()) && clans.size() < MAX_CLANS) {
+                    index.put(z.capteurTag(), clans.size());
+                    clans.add(new ClanVu(z.capteurTag(), z.capteurNom(), z.capteurCouleur(), z.capteurBanniere()));
+                }
+            }
+            b.writeVarInt(clans.size());
+            for (ClanVu c : clans) {
+                Texte.utf(b, c.tag(), 8);
+                Texte.utf(b, c.nom(), 32);
+                b.writeInt(c.couleur());
+                b.writeBoolean(c.banniere() != null);
+                if (c.banniere() != null) c.banniere().write(b);
+            }
+            b.writeVarInt(zs.size());
+            for (var z : zs) {
+                Texte.utf(b, z.id(), 32);
+                Texte.utf(b, z.nom(), 48);
+                b.writeInt(z.x());
+                b.writeInt(z.z());
+                b.writeVarInt(Math.max(0, z.rayon()));
+                b.writeBoolean(z.drapeau());
+                if (z.drapeau()) {
+                    b.writeInt(z.drapeauX());
+                    b.writeInt(z.drapeauZ());
+                }
+                b.writeVarInt(index.getOrDefault(z.proprioTag(), -1) + 1);
+                b.writeVarInt(z.etat().ordinal());
+                b.writeVarInt(index.getOrDefault(z.capteurTag(), -1) + 1);
+                b.writeFloat(z.progression());
+                b.writeVarLong(Math.max(0, z.tenueDepuisMs()));
+                b.writeVarLong(Math.max(0, z.protegeeMs()));
+                b.writeVarInt(Math.max(0, z.valeur()));
+                b.writeVarInt(Math.max(0, z.bonusLoot()));
+                b.writeBoolean(z.monClan());
+                b.writeVarLong(Math.max(-1, z.ravitaillementMs()) + 1);
+                b.writeBoolean(z.peutRavitailler());
+            }
+            List<fr.heralisz.clans.api.CarteApi.Allie> as = allies.size() > MAX_ALLIES ? allies.subList(0, MAX_ALLIES) : allies;
+            b.writeVarInt(as.size());
+            for (var a : as) {
+                Texte.utf(b, a.nom(), 16);
+                b.writeDouble(a.x());
+                b.writeDouble(a.z());
+            }
+            b.writeBoolean(monClan != null);
+            if (monClan != null) {
+                Texte.utf(b, monClan.tag(), 8);
+                Texte.utf(b, monClan.nom(), 32);
+                b.writeInt(monClan.couleur());
+                b.writeBoolean(monClan.banniere() != null);
+                if (monClan.banniere() != null) monClan.banniere().write(b);
+                b.writeVarInt(Math.max(0, monClan.enLigne()));
+                b.writeVarInt(Math.max(0, monClan.territoires()));
+            }
+        }
+
+        static CarteS2C read(FriendlyByteBuf b) {
+            int nc = Math.min(MAX_CLANS, b.readVarInt());
+            List<ClanVu> clans = new ArrayList<>(nc);
+            for (int i = 0; i < nc; i++) {
+                String tag = b.readUtf(8), nom = b.readUtf(32);
+                int couleur = b.readInt();
+                Banniere ban = b.readBoolean() ? Banniere.read(b) : null;
+                clans.add(new ClanVu(tag, nom, couleur, ban));
+            }
+            int nz = Math.min(MAX_ZONES, b.readVarInt());
+            List<fr.heralisz.clans.api.CarteApi.Zone> zs = new ArrayList<>(nz);
+            for (int i = 0; i < nz; i++) {
+                String id = b.readUtf(32), nom = b.readUtf(48);
+                int x = b.readInt(), z = b.readInt(), rayon = b.readVarInt();
+                boolean drapeau = b.readBoolean();
+                int dx = drapeau ? b.readInt() : 0, dz = drapeau ? b.readInt() : 0;
+                ClanVu o = clan(clans, b.readVarInt());
+                EtatZone etat = EtatZone.parOrdinal(b.readVarInt());
+                ClanVu c = clan(clans, b.readVarInt());
+                float prog = Math.max(0, Math.min(1, b.readFloat()));
+                long tenue = b.readVarLong(), protegee = b.readVarLong();
+                int valeur = b.readVarInt(), bonus = b.readVarInt();
+                boolean mien = b.readBoolean();
+                long ravit = b.readVarLong() - 1;
+                boolean peut = b.readBoolean();
+                zs.add(new fr.heralisz.clans.api.CarteApi.Zone(id, nom, x, z, rayon, drapeau, dx, dz,
+                        o == null ? "" : o.tag(), o == null ? "" : o.nom(), o == null ? 0 : o.couleur(), o == null ? null : o.banniere(),
+                        etat, c == null ? "" : c.tag(), c == null ? "" : c.nom(), c == null ? 0 : c.couleur(), c == null ? null : c.banniere(),
+                        prog, tenue, protegee, valeur, bonus, mien, ravit, peut));
+            }
+            int na = Math.min(MAX_ALLIES, b.readVarInt());
+            List<fr.heralisz.clans.api.CarteApi.Allie> as = new ArrayList<>(na);
+            for (int i = 0; i < na; i++) as.add(new fr.heralisz.clans.api.CarteApi.Allie(b.readUtf(16), b.readDouble(), b.readDouble()));
+            fr.heralisz.clans.api.CarteApi.MonClan mc = null;
+            if (b.readBoolean()) {
+                String tag = b.readUtf(8), nom = b.readUtf(32);
+                int couleur = b.readInt();
+                Banniere ban = b.readBoolean() ? Banniere.read(b) : null;
+                mc = new fr.heralisz.clans.api.CarteApi.MonClan(tag, nom, couleur, ban, b.readVarInt(), b.readVarInt());
+            }
+            return new CarteS2C(zs, as, mc);
+        }
+
+        @Nullable
+        private static ClanVu clan(List<ClanVu> clans, int i) {
+            return i <= 0 || i > clans.size() ? null : clans.get(i - 1);
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(this);
+        }
+    }
 }

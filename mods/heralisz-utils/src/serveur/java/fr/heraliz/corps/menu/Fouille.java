@@ -8,7 +8,11 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraftforge.network.NetworkHooks;
 
-/** Ouverture de la fouille d'un corps (serveur) : regles d'acces, puis menu partage. */
+/**
+ * Ouverture de la fouille d'un corps (serveur) : regles d'acces, puis menu partage. Le joueur fouille de la ou il est,
+ * comme un coffre : rien ne le deplace ; seule la distance est verifiee ici (CorpsEntity.aPortee, des yeux jusqu'au
+ * corps), puis a chaque clic tant que la fouille reste ouverte (CorpsMenu.stillValid).
+ */
 public final class Fouille {
     private Fouille() {
     }

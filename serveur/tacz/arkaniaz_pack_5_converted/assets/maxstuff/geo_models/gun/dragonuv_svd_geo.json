@@ -5981,7 +5981,7 @@
 				{
 					"name": "scope_pos",
 					"parent": "positioning2",
-					"pivot": [0, 11.325, 3.025]
+					"pivot": [0, 10.725, 3.025]
 				},
 				{
 					"name": "bone5",

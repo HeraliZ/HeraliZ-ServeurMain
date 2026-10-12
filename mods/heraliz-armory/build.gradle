@@ -46,7 +46,7 @@ sourceSets {
 }
 
 // Mixins : comme l'original, aucune table de correspondance (remap = false, noms vanilla et SRG cités tous les deux).
-//   commun (src/commun/resources/heraliz_armory.mixins.json : ancien gestionnaire ArkaniaZ coupé, slots d'armure) -> 3 jars ;
+//   commun (src/commun/resources/heraliz_armory.mixins.json : ancien gestionnaire ArkaniaZ coupé, slots d'armure, Maj + clic vers Curios) -> 3 jars ;
 //   client (src/client/resources/heraliz_armory_client.mixins.json : nages) -> -client et -complet.
 
 repositories {

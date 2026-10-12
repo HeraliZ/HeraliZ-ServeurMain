@@ -105,8 +105,13 @@ def manifeste = [
         'Implementation-Vendor'   : mod_authors,
 ]
 // Configs de mixins du côté client (src/client/resources/*.mixins.json) : seulement dans -client et -complet.
-def mixinsClient = fileTree('src/client/resources') { include '*.mixins.json' }.files*.name.sort().join(',')
-def manifesteClient = manifeste + (mixinsClient ? ['MixinConfigs': mixinsClient] : [:])
+// Configs de mixins du côté serveur (src/serveur/resources/*.mixins.json : mixins sur TaCZ, noms de TaCZ non obfusqués,
+// remap = false, sans table de correspondance) : seulement dans -serveur et -complet.
+def mixinsClient = fileTree('src/client/resources') { include '*.mixins.json' }.files*.name.sort()
+def mixinsServeur = fileTree('src/serveur/resources') { include '*.mixins.json' }.files*.name.sort()
+def manifesteClient = manifeste + (mixinsClient ? ['MixinConfigs': mixinsClient.join(',')] : [:])
+def manifesteServeur = manifeste + (mixinsServeur ? ['MixinConfigs': mixinsServeur.join(',')] : [:])
+def manifesteComplet = manifeste + ((mixinsClient + mixinsServeur) ? ['MixinConfigs': (mixinsClient + mixinsServeur).join(',')] : [:])
 
 // -complet : commun + client + serveur (solo, profil de test)
 tasks.named('jar', Jar).configure {
@@ -114,7 +119,7 @@ tasks.named('jar', Jar).configure {
     from sourceSets.client.output
     from sourceSets.serveur.output
     duplicatesStrategy = DuplicatesStrategy.FAIL
-    manifest { attributes(manifesteClient) }
+    manifest { attributes(manifesteComplet) }
     finalizedBy 'reobfJar'
 }
 
@@ -129,7 +134,8 @@ tasks.register('clientJar', Jar) {
     finalizedBy 'reobfClientJar'
 }
 
-// -serveur : commun + serveur + data (pour le serveur), sans mixins client ni table de correspondance
+// -serveur : commun + serveur + data (pour le serveur), sans mixins client ni table de correspondance (mixins serveur sur
+// TaCZ seulement, sans table)
 tasks.register('serveurJar', Jar) {
     group = 'build'
     archiveClassifier = 'serveur'
@@ -137,7 +143,7 @@ tasks.register('serveurJar', Jar) {
     from sourceSets.serveur.output
     exclude '*.refmap.json'
     duplicatesStrategy = DuplicatesStrategy.FAIL
-    manifest { attributes(manifeste) }
+    manifest { attributes(manifesteServeur) }
     finalizedBy 'reobfServeurJar'
 }
 

@@ -338,8 +338,42 @@ public class DuelPartie extends Partie {
         sp.clearFire();
         sp.fallDistance = 0;
         sp.setHealth(sp.getMaxHealth());
-        sp.getFoodData().setFoodLevel(20);
-        sp.getFoodData().setSaturation(5f);
+        figerFaim(sp);
+    }
+
+    // ------------------------------------------------------------------ faim figee
+    /**
+     * Faim imposee pendant tout le duel (retour des proprietaires : « ne pas perdre de nourriture en duel ») : barre
+     * pleine, saturation 5, aucune fatigue, minuteur de regeneration a zero. Relue a chaque tick
+     * ({@link #figerFaimTous}), elle ne baisse jamais (courir, sauter, encaisser ne coute rien) et la regeneration
+     * naturelle de Minecraft ne se declenche pas (les soins de la classe soignent toujours). Avant, la faim s'usait
+     * pendant le combat et la vie remontait un peu tant qu'elle restait haute. La faim d'avant le duel est dans le
+     * Coffre ({@code Coffre.deposer} : FoodData complete, inventaire compris) et rendue a la fin, quelle qu'elle soit
+     * (victoire, defaite, abandon, annulation ; deconnexion : a la reconnexion).
+     */
+    private static final CompoundTag FAIM_DUEL = faimDuel();
+
+    private static CompoundTag faimDuel() {
+        CompoundTag t = new CompoundTag();
+        t.putInt("foodLevel", 20);
+        t.putInt("foodTickTimer", 0);
+        t.putFloat("foodSaturationLevel", 5f);
+        t.putFloat("foodExhaustionLevel", 0f);
+        return t;
+    }
+
+    private static void figerFaim(ServerPlayer sp) {
+        // memes cles que FoodData.addAdditionalSaveData : le minuteur (prive) n'a pas d'autre acces
+        sp.getFoodData().readAdditionalSaveData(FAIM_DUEL);
+    }
+
+    /** Faim figee de chaque joueur encore dans le duel (pas les partis : leur Coffre les a rendus ou les rendra). */
+    private void figerFaimTous() {
+        for (Fiche f : fiches.values()) {
+            if (f.bot || f.parti) continue;
+            ServerPlayer p = joueur(f.id);
+            if (p != null) figerFaim(p);
+        }
     }
 
     // ------------------------------------------------------------------ classes
@@ -402,6 +436,8 @@ public class DuelPartie extends Partie {
                 if (enregistreur != null) enregistreur.suivre(c);
             }
         }
+        // avant les phases : un joueur rendu dans ce tick (fin, annulation) est deja marque parti au tick suivant
+        if (phase() != Phase.TERMINEE) figerFaimTous();
         switch (phase()) {
             case ATTENTE -> {
                 if (ticksPhase() > DuelsConfig.ATTENTE_MAX_TICKS) annuler(Component.translatable("duel.annule.arene"));

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "dimension": "minecraft:overworld",
+  "x0": -2048,
+  "z0": -2048,
+  "largeur": 4096,
+  "hauteur": 4096,
+  "blocsParPixel": 2,
+  "pixelsLargeur": 2048,
+  "pixelsHauteur": 2048,
+  "tuile": 1024,
+  "colonnes": 2,
+  "lignes": 2,
+  "vues": [
+    "satellite",
+    "relief"
+  ],
+  "niveauMer": 63,
+  "fait": "2026-10-12",
+  "chunks": 65536
+}

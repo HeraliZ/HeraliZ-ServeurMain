@@ -15,7 +15,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 
 /**
- * Mise en place cote client : petit indicateur de l'arme en main en bas a gauche (HUD), infobulles, tirs du joueur local,
+ * Mise en place cote client : petit indicateur de l'arme en main en bas a droite (HUD), infobulles, tirs du joueur local,
  * ecrans. Plus aucune barre sur l'icone des armes (inventaires, barre d'objets, barre DayZ) : l'etat se lit dans
  * l'indicateur et dans l'infobulle.
  */
@@ -35,7 +35,7 @@ public final class ClientUsure {
                 () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> new EcranReglages(parent)));
     }
 
-    /** Indicateur de l'etat de l'arme en main, en bas a gauche ({@link HudUsure}). */
+    /** Indicateur de l'etat de l'arme en main, en bas a droite ({@link HudUsure}). */
     private static void calques(RegisterGuiOverlaysEvent e) {
         e.registerAboveAll("etat_arme", HudUsure::render);
     }

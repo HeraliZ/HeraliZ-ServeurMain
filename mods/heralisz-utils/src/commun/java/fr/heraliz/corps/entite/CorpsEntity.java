@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
 import javax.annotation.Nullable;
@@ -117,11 +118,30 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
         return visibleDes;
     }
 
-    /** Le joueur peut-il garder la fouille ouverte (vivant, meme monde, a portee) ? */
+    /**
+     * Le joueur peut-il OUVRIR la fouille (vivant, meme monde, corps a portee de main) ? Distance mesuree des yeux du
+     * joueur jusqu'a la boite du corps, comme le jeu le fait pour un clic sur une entite : on fouille de la ou l'on est,
+     * sans etre deplace. Reglage {@code distance_fouille} (5 blocs ; le clic du jeu porte a 3 blocs, la marge couvre la
+     * latence).
+     */
     public boolean aPortee(Player p) {
+        return aPortee(p, CorpsConfig.DISTANCE_FOUILLE.get());
+    }
+
+    /** Le joueur peut-il GARDER la fouille ouverte ? Meme mesure, un bloc de plus (un pas en arriere ne la ferme pas). */
+    public boolean resteAPortee(Player p) {
+        return aPortee(p, CorpsConfig.DISTANCE_FOUILLE.get() + 1.0);
+    }
+
+    private boolean aPortee(Player p, double distance) {
         if (isRemoved() || !p.isAlive() || p.level() != level()) return false;
-        double d = CorpsConfig.DISTANCE_FOUILLE.get() + 1.0;
-        return p.distanceToSqr(this) <= d * d;
+        // distance des yeux au point le plus proche de la boite
+        AABB b = getBoundingBox();
+        Vec3 o = p.getEyePosition();
+        double dx = Math.max(Math.max(b.minX - o.x, o.x - b.maxX), 0.0);
+        double dy = Math.max(Math.max(b.minY - o.y, o.y - b.maxY), 0.0);
+        double dz = Math.max(Math.max(b.minZ - o.z, o.z - b.maxZ), 0.0);
+        return dx * dx + dy * dy + dz * dz <= distance * distance;
     }
 
     /**
@@ -210,10 +230,41 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
         return null;
     }
 
-    /** Le corps depasse sa boite (1,9 bloc de long) : boite de rendu elargie. */
+    // ------------------------------------------------------------------ boite (forme du corps allonge)
+    /**
+     * Demi-longueur du segment tete-pieds et epaisseur autour de lui (blocs). Le corps fait 1,875 bloc de long et
+     * environ 1 bloc de large aux epaules (bras compris), centre sur la position de l'entite, la tete du cote oppose au
+     * regard du mort (voir client.Maillage) : DEMI_SEGMENT + RAYON = 0,94 (moitie de la longueur), RAYON = 0,5.
+     */
+    static final double DEMI_SEGMENT = 0.44, RAYON = 0.5;
+
+    /**
+     * Boite qui suit le corps allonge au lieu d'un carre : le jeu n'a que des boites alignees sur les axes, celle-ci
+     * entoure le segment tete-pieds tourne comme le corps, epaissi de {@link #RAYON}. Corps nord-sud ou est-ouest :
+     * 1 x 1,9 bloc, exactement le corps ; corps en diagonale : carre de 1,6 bloc (un rectangle tourne a 45 degres en
+     * demanderait 2). Hauteur 0,45 (le dos, le torse et la tete). On la vise facilement pour fouiller ; elle ne gene
+     * aucun deplacement (ni collision ni poussee : voir canBeCollidedWith et isPushable).
+     * <p>Recalculee a chaque placement (setPos) ; le lacet est pose avant (moveTo, chargement, readSpawnData).
+     */
+    @Override
+    protected AABB makeBoundingBox() {
+        double lacet = Math.toRadians(getYRot());
+        double ex = Math.abs(Math.sin(lacet)) * DEMI_SEGMENT + RAYON;
+        double ez = Math.abs(Math.cos(lacet)) * DEMI_SEGMENT + RAYON;
+        Vec3 p = position();
+        return new AABB(p.x - ex, p.y, p.z - ez, p.x + ex, p.y + getBbHeight(), p.z + ez);
+    }
+
+    @Override
+    public void refreshDimensions() {
+        super.refreshDimensions();
+        setBoundingBox(makeBoundingBox());
+    }
+
+    /** Les mains depassent un peu la boite : boite de rendu elargie. */
     @Override
     public AABB getBoundingBoxForCulling() {
-        return getBoundingBox().inflate(0.8, 0.3, 0.8);
+        return getBoundingBox().inflate(0.5, 0.3, 0.5);
     }
 
     @Override
@@ -293,5 +344,7 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
         float lacet = b.readFloat();
         setYRot(lacet);
         yRotO = lacet;
+        // la position a ete posee avant le lacet exact (paquet d'apparition) : boite recalculee dans le bon sens
+        setPos(getX(), getY(), getZ());
     }
 }

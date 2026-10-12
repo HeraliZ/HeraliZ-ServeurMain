@@ -39,6 +39,9 @@ public final class VoyageursServeur {
         h.placer(v.vehicule(), h.etatRame(TrainServeur.temps(srv), Horaire.rame(v.vehicule())).s(), pl);
         Vec3 w = Voyageurs.versMonde(pl, v.lx(), Reseau.PLANCHER, v.lz());
         v.setPos(w.x, w.y, w.z);
+        // le passager tient sur le plancher (ou y est allongé) : « au sol » pour les autres mods, jamais de chute comptée
+        rider.setOnGround(v.surLePlancher() || v.allonge());
+        rider.resetFallDistance();
         // Maj : lu puis effacé avant le tick du passager (le véhicule est tické d'abord) -> plus de descente vanilla
         // n'importe où ; Maj vient du client (paquet Descente). Maj maintenue 2 s debout : descente de secours.
         if (rider instanceof ServerPlayer sp) {
@@ -59,12 +62,18 @@ public final class VoyageursServeur {
 
     /** Position voulue par le client du voyageur (paquet Marche) : vérifiée, appliquée ; descente par une porte
      *  ouverte ; sinon recadrage. La hauteur du saut est acceptée de 0 à Voyageurs.SAUT_MAX, debout seulement, et en
-     *  suivant la courbe d'un vrai saut (sautVerifie : pas de lévitation dans la voiture). */
-    static void marche(ServerPlayer p, int veh, float x, float z, boolean assis, float hauteur) {
+     *  suivant la courbe d'un vrai saut (sautVerifie : pas de lévitation dans la voiture). Allongé : seulement debout
+     *  d'abord (pas assis), si TaCZ permet de ramper sur ce serveur ; jamais en l'air. La course (sprint) est reprise
+     *  telle quelle pour les autres joueurs (animations), debout seulement. */
+    static void marche(ServerPlayer p, Train.Marche m) {
         if (!(p.getVehicle() instanceof Voyageur v) || p.getServer() == null) return;
         Horaire h = Horaire.get();
         if (h == null) return;
-        sautVerifie(v, assis, hauteur);
+        int veh = m.vehicule();
+        float x = m.lx(), z = m.lz();
+        boolean assis = m.assis();
+        boolean allonge = !assis && m.allonge() && ramperPermis();
+        sautVerifie(v, assis || allonge, m.hauteur());
         int ov = v.getEntityData().get(Voyageur.VEHICULE);
         Horaire.Etat e = h.etatRame(TrainServeur.temps(p.getServer()), Horaire.rame(ov));
         int pq = Voyageurs.portesQuai(h, e);
@@ -85,12 +94,33 @@ public final class VoyageursServeur {
         if (veh != ov) HeraliszUtils.LOG.info("{} passe dans la voiture {}", p.getGameProfile().getName(), veh);
         v.placer(veh, x, z);
         v.getEntityData().set(Voyageur.ASSIS, place);
+        v.getEntityData().set(Voyageur.ALLONGE, allonge && !place);
+        boolean course = m.course() && !place && !allonge;
+        if (p.isSprinting() != course) p.setSprinting(course);
         if (pq != 0 && Math.signum(z) == pq && Math.abs(z) > Voyageurs.VW + 0.2f) {          // descente sur le quai
             Horaire.Placement pl = new Horaire.Placement();
             h.placer(veh, e.s(), pl);
             Vec3 q = posable(p.level(), p, Voyageurs.versMonde(pl, x, Reseau.PLANCHER + 0.02, pq * (Voyageurs.VW + 0.65)), 0.6, 2.0);
             liberer(v, p, q != null ? q : sortie(v, p));
         }
+    }
+
+    /** TaCZ permet-il de ramper sur ce serveur (réglage EnableCrawl, envoyé aux joueurs) ? Sans TaCZ lisible : oui. */
+    private static boolean ramperPermis() {
+        try {
+            return Boolean.TRUE.equals(com.tacz.guns.config.sync.SyncConfig.ENABLE_CRAWL.get());
+        } catch (Throwable t) {
+            return true;
+        }
+    }
+
+    /** Deux joueurs dans la même rame (chacun passager de son voyageur) : l'anti-ESP de Spartan ne les cache jamais l'un
+     *  à l'autre (test d'alliance envoyé par TrainServeur à Spartan). Le train n'est pas fait de blocs : dans un tunnel en
+     *  courbe ou sous un auvent de gare, la ligne de vue « monde » coupait entre deux voyageurs qui se voient dans la
+     *  voiture, et l'un disparaissait chez l'autre. */
+    static boolean memeRame(ServerPlayer a, ServerPlayer b) {
+        return a.getVehicle() instanceof Voyageur va && b.getVehicle() instanceof Voyageur vb && !va.isRemoved() && !vb.isRemoved()
+                && va.level() == vb.level() && Horaire.rame(va.vehicule()) == Horaire.rame(vb.vehicule());
     }
 
     /** Hauteur du saut de Minecraft k ticks après le décollage (Voyageurs.SAUT, PESANTEUR, FREIN), 0 une fois retombé. */
@@ -346,14 +376,22 @@ public final class VoyageursServeur {
         }
     }
 
+    /** Montée : le joueur prend place sur son voyageur AVANT que celui-ci n'entre dans le monde (comme les cavaliers des
+     *  araignées de Minecraft). Ainsi, quand le serveur l'annonce aux joueurs autour, il porte déjà son passager et il est
+     *  suivi aussi loin que lui : avant, un voyageur annoncé vide n'était envoyé qu'à 64 blocs (portée « other » de
+     *  spigot.yml) et, au-delà, les autres voyaient le joueur figé à la porte (plus aucune position envoyée pour un
+     *  passager) jusqu'à ce que le train change de tronçon : il « restait sur place » puis se « téléportait ». */
     private static void monter(ServerLevel lvl, ServerPlayer p, int veh, float x, float z) {
         Voyageur v = Train.VOYAGEUR.get().create(lvl);
         if (v == null) return;
         v.placer(veh, x, z);
         v.setPos(p.getX(), p.getY(), p.getZ());
-        lvl.addFreshEntity(v);
+        if (!p.startRiding(v, true)) return;
+        if (!lvl.addFreshEntity(v)) {                                     // refusé par un autre mod ou un plugin : on reste à quai
+            p.stopRiding();
+            return;
+        }
         Voyageurs.SERVEUR.add(v);
-        p.startRiding(v, true);
         HeraliszUtils.LOG.info("{} monte dans la voiture {} ({}, {})", p.getGameProfile().getName(), veh, x, z);
         lvl.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.PLAYERS, 0.4f, 1.4f);
     }

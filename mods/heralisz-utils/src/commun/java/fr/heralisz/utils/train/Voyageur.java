@@ -20,6 +20,8 @@ import net.minecraft.world.phys.Vec3;
  * voyageur exactement dans la voiture qu'il dessine. Le joueur qui marche calcule lui-même sa position (sans attendre
  * le serveur) et l'envoie ; le serveur la vérifie (Voyageurs). Debout, il peut sauter (Espace) : la hauteur du saut
  * au-dessus du plancher est prédite de même par son client, vérifiée par le serveur et montrée aux autres (HAUTEUR).
+ * Il peut aussi s'allonger sur le plancher (touche « Ramper » de TaCZ, ALLONGE : pose à plat, Train.poseAllonge).
+ * Chez les autres joueurs, sa position dans la voiture est lissée sur 3 ticks comme celle de toute entité (rx, rz, rh).
  * Jamais sauvegardée.
  */
 public class Voyageur extends Entity {
@@ -29,9 +31,34 @@ public class Voyageur extends Entity {
     static final EntityDataAccessor<Boolean> ASSIS = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.BOOLEAN);
     /** Hauteur du saut au-dessus du plancher (0 : pieds au plancher), vue par le serveur et les autres joueurs. */
     static final EntityDataAccessor<Float> HAUTEUR = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.FLOAT);
+    /** Le joueur porté est allongé sur le plancher (vérifié par le serveur, vu par les autres). */
+    static final EntityDataAccessor<Boolean> ALLONGE = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.BOOLEAN);
     /** Le joueur porté est assis (prédiction de son propre client). */
     boolean passis;
     boolean accroupiPrec;
+    /** Allongé (prédiction de son propre client), touche « Ramper » au tick précédent. */
+    boolean pallonge;
+    boolean ramperPrec;
+    /** Vitesse de marche prédite dans la voiture (blocs par tick, coordonnées de la voiture), comme celle de Minecraft :
+     *  accélération, frottement du sol (0,546 par tick) ou de l'air (0,91). */
+    float vx, vz;
+    /** Course (sprint) du joueur porté, prédite par son client et envoyée au serveur (animations de course chez les autres). */
+    boolean pcourse;
+    /** Chez les autres joueurs : position affichée dans la voiture (voiture, lx, lz, hauteur), lissée vers la position
+     *  reçue du serveur en 3 ticks (comme Minecraft pour toute entité) ; rv = -1 : rien d'affiché encore. */
+    int rv = -1;
+    float rx, rz, rh;
+    float cx, cz, ch;
+    int rPas;
+    boolean rAssis, rAllonge;
+    /** Côté client, bruits de pas : distance de marche (comme Entity.moveDist), prochain pas, en l'air au tick précédent. */
+    float distPas;
+    int prochainPas = 1;
+    boolean enLair;
+    /** Côté client, pour orienter le corps dans le sens de la marche : pas du tick (coordonnées de la voiture) et cap de
+     *  la voiture (radians). */
+    float dirX, dirZ;
+    double capAnim;
 
     /** Position locale prédite par le client du joueur porté (sinon celle du serveur). */
     float px, pz;
@@ -69,28 +96,39 @@ public class Voyageur extends Entity {
         entityData.define(LZ, 0f);
         entityData.define(ASSIS, false);
         entityData.define(HAUTEUR, 0f);
+        entityData.define(ALLONGE, false);
     }
 
     public boolean assis() {
         return pv >= 0 ? passis : entityData.get(ASSIS);
     }
 
+    /** Allongé sur le plancher (jamais assis en même temps). */
+    public boolean allonge() {
+        return !assis() && (pv >= 0 ? pallonge : entityData.get(ALLONGE));
+    }
+
     public int vehicule() {
-        return pv >= 0 ? pv : entityData.get(VEHICULE);
+        return pv >= 0 ? pv : rv >= 0 ? rv : entityData.get(VEHICULE);
     }
 
     public float lx() {
-        return pv >= 0 ? px : entityData.get(LX);
+        return pv >= 0 ? px : rv >= 0 ? rx : entityData.get(LX);
     }
 
     public float lz() {
-        return pv >= 0 ? pz : entityData.get(LZ);
+        return pv >= 0 ? pz : rv >= 0 ? rz : entityData.get(LZ);
     }
 
-    /** Hauteur du saut au-dessus du plancher (0 assis ou pieds au plancher). */
+    /** Hauteur du saut au-dessus du plancher (0 assis, allongé ou pieds au plancher). */
     public float hauteur() {
-        if (assis()) return 0f;
-        return pv >= 0 ? ph : entityData.get(HAUTEUR);
+        if (assis() || allonge()) return 0f;
+        return pv >= 0 ? ph : rv >= 0 ? rh : entityData.get(HAUTEUR);
+    }
+
+    /** Debout ou allongé, les pieds (ou le corps) sur le plancher : pas assis, pas en l'air. */
+    public boolean surLePlancher() {
+        return !assis() && hauteur() <= 0.02f;
     }
 
     void placer(int v, float x, float z) {
@@ -136,8 +174,8 @@ public class Voyageur extends Entity {
         return assis();
     }
 
-    /** Debout : pieds au plancher (plus la hauteur du saut) ; assis : un peu plus bas, le bassin sur le coussin (pose
-     *  assise du modèle). */
+    /** Debout : pieds au plancher (plus la hauteur du saut) ; allongé : le corps à plat sur le plancher ; assis : un peu
+     *  plus bas, le bassin sur le coussin (pose assise du modèle). */
     @Override
     protected void positionRider(Entity p, Entity.MoveFunction f) {
         if (hasPassenger(p)) f.accept(p, getX(), getY() + (assis() ? -0.15 : hauteur()), getZ());

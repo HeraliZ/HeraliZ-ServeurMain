@@ -8,10 +8,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Jambes des passagers debout du train : le jeu anime la marche d'après le déplacement dans le monde depuis le tick
- * précédent, nul pour un passager (placé par son véhicule), et le joueur « flottait » dans la voiture. Pour un passager
- * debout d'un voyageur du train, la vitesse vient du pas fait dans la voiture (VoyageursClient.marcheAnimee : position
- * prédite pour soi, position reçue du serveur pour les autres). Même formule que LivingEntity.updateWalkAnimation.
+ * Jambes et corps des passagers debout (ou allongés) du train : le jeu anime la marche et tourne le corps d'après le
+ * déplacement dans le monde depuis le tick précédent, nul pour un passager (placé par son véhicule), et le joueur
+ * « flottait » dans la voiture. Pour un passager d'un voyageur du train, la vitesse vient du pas fait dans la voiture
+ * (VoyageursClient.marcheAnimee : position prédite pour soi, position reçue du serveur et lissée pour les autres), et le
+ * corps se tourne dans le sens de ce pas (VoyageursClient.orienterCorps, même règle que LivingEntity.tick). Même formule
+ * que LivingEntity.updateWalkAnimation pour les jambes.
  */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityTrainMixin {
@@ -20,6 +22,7 @@ public abstract class LivingEntityTrainMixin {
         LivingEntity soi = (LivingEntity) (Object) this;
         float pas = VoyageursClient.marcheAnimee(soi);
         if (pas >= 0f) {
+            VoyageursClient.orienterCorps(soi);
             soi.walkAnimation.update(Math.min(pas * 4.0f, 1.0f), 0.4f);
             ci.cancel();
         }

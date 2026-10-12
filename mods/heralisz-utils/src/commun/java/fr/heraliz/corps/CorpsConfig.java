@@ -59,7 +59,8 @@ public final class CorpsConfig {
                 .defineInRange("max_par_chunk", 16, 1, 256);
         MAX_PAR_MONDE = b.comment("Corps au plus sur le serveur : au-dela, le plus ancien disparait (filet anti-lag)")
                 .defineInRange("max_par_monde", 400, 1, 100000);
-        DISTANCE_FOUILLE = b.comment("Distance maximale (blocs) pour fouiller un corps").defineInRange("distance_fouille", 5.0, 2.0, 16.0);
+        DISTANCE_FOUILLE = b.comment("Distance maximale (blocs) pour fouiller un corps, des yeux du joueur jusqu'au corps (on fouille de la ou l'on est,",
+                "sans etre deplace) ; la fouille ouverte se ferme un bloc plus loin").defineInRange("distance_fouille", 5.0, 2.0, 16.0);
         DIMENSIONS_EXCLUES = b.comment("Dimensions ou aucun corps n'apparait (les matchs gerent leurs morts eux-memes)")
                 .defineListAllowEmpty("dimensions_exclues", List.of("heralisz_matchs:arenes", "heralisz_matchs:zombies"),
                         o -> o instanceof String);

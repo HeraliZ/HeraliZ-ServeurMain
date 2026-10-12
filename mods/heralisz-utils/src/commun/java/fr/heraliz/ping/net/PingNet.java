@@ -46,8 +46,8 @@ public final class PingNet {
      */
     public static volatile Predicate<ServerPlayer> PRESENCE_FORCEE = p -> false;
 
-    /** Index des messages (1er octet de chaque paquet du canal). */
-    public static final int I_PING_C2S = 0, I_ANNULER_C2S = 1, I_PING_S2C = 2, I_MAJ_S2C = 3, I_REGLAGES_S2C = 4;
+    /** Index des messages (1er octet de chaque paquet du canal) ; les ajouts vont a la fin (les index existants ne bougent pas). */
+    public static final int I_PING_C2S = 0, I_ANNULER_C2S = 1, I_PING_S2C = 2, I_MAJ_S2C = 3, I_REGLAGES_S2C = 4, I_CARTE_C2S = 5;
 
     public static void enregistrer() {
         CANAL.messageBuilder(Paquets.PingC2S.class, I_PING_C2S, NetworkDirection.PLAY_TO_SERVER)
@@ -74,6 +74,13 @@ public final class PingNet {
                 .encoder(Paquets.ReglagesS2C::ecrire).decoder(Paquets.ReglagesS2C::lire)
                 .consumerMainThread((m, ctx) -> RECEPTION_CLIENT.accept(m))
                 .add();
+        // ping pose depuis la carte du monde (heraliz_carte, HeraliZ Utils 2.8.0)
+        CANAL.messageBuilder(Paquets.CarteC2S.class, I_CARTE_C2S, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(Paquets.CarteC2S::ecrire).decoder(Paquets.CarteC2S::lire)
+                .consumerMainThread((m, ctx) -> {
+                    ServerPlayer p = ctx.get().getSender();
+                    if (p != null) RECEPTION_SERVEUR.accept(new Recu(p, m));
+                }).add();
     }
 
     /** Vrai si le client du joueur a le mod (sinon on ne lui envoie rien). */

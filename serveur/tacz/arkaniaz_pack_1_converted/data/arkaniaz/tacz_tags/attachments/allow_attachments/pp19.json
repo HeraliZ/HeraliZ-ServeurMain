@@ -2,6 +2,6 @@
   "#tacz:scope",
   "#tacz:muzzle",
   "#tacz:extended_mag",
-  "#tacz:oem_stock",
+  "tacz:oem_stock_light",
   "#tacz:stock"
 ]

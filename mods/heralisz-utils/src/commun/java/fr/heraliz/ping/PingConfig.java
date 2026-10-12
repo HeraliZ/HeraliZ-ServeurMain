@@ -31,6 +31,8 @@ public final class PingConfig {
     public static final ForgeConfigSpec.BooleanValue SPECTATEURS_VOIENT;
     /** Hors match, un joueur sans clan pingue son groupe (/groupe de HeraliZ Matchs) s'il en a un. */
     public static final ForgeConfigSpec.BooleanValue GROUPE_HORS_MATCH;
+    /** Pings poses depuis la carte du monde (heraliz_carte) : sans portee ni ligne de vue, dans le monde du joueur. */
+    public static final ForgeConfigSpec.BooleanValue CARTE;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -46,6 +48,8 @@ public final class PingConfig {
                 .define("spectateurs_voient", false);
         GROUPE_HORS_MATCH = b.comment("Hors match, un joueur sans clan envoie ses pings a son groupe (/groupe) s'il en a un")
                 .define("groupe_hors_match", true);
+        CARTE = b.comment("Marquer un point depuis la carte du monde (clic droit), sans portee ni ligne de vue, dans le monde du joueur")
+                .define("carte", true);
         b.pop();
         SERVEUR_SPEC = b.build();
     }

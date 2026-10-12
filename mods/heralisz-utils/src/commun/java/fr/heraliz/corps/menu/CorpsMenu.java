@@ -88,12 +88,13 @@ public class CorpsMenu extends AbstractContainerMenu {
             if (i == CorpsContenu.MAIN_GAUCHE) s.setBackground(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
             addSlot(s);
         }
+        // inventaire du joueur sous le corps, a la place qu'il a dans un coffre
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 9; c++) {
-                addSlot(new Slot(inv, 9 + r * 9 + c, Disposition.DROITE + c * Disposition.CASE + 1, disposition.yJoueur + r * Disposition.CASE + 1));
+                addSlot(new Slot(inv, 9 + r * 9 + c, Disposition.GAUCHE + c * Disposition.CASE + 1, disposition.yJoueur + r * Disposition.CASE + 1));
             }
         }
-        for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c, Disposition.DROITE + c * Disposition.CASE + 1, disposition.yJoueurBarre + 1));
+        for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c, Disposition.GAUCHE + c * Disposition.CASE + 1, disposition.yJoueurBarre + 1));
     }
 
     // ------------------------------------------------------------------ acces (ecran)
@@ -133,7 +134,7 @@ public class CorpsMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         if (player.level().isClientSide) return true;
-        return corps != null && corps.contenu() == contenu && corps.aPortee(player);
+        return corps != null && corps.contenu() == contenu && corps.resteAPortee(player);
     }
 
     @Override

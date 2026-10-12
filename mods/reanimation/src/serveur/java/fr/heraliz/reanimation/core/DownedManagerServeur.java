@@ -450,7 +450,12 @@ public final class DownedManagerServeur {
                tell(actor, Component.translatable("message.reanimation.already_searched", new Object[]{target.getDisplayName()}));
             } else if (inRange(actor, target)) {
                s.searcher = actor;
-               placeBeside(actor, target);
+               // Un joueur fouille de là où il est (à portée : inRange ci-dessus, puis searchValid tant que la fouille
+               // reste ouverte) : il n'est plus téléporté à côté du corps (retour des propriétaires, 12/10). Les bots
+               // gardent leur place à genoux à côté du corps (ils y vont d'eux-mêmes, BotGoals).
+               if (!(actor instanceof ServerPlayer)) {
+                  placeBeside(actor, target);
+               }
                if (actor instanceof ServerPlayer p) {
                   Container inventory = inventoryOf(target);
                   if (inventory == null) {

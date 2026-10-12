@@ -18,7 +18,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" for="launcher">Lien de téléchargement du launcher</label>
+                        <label class="form-label" for="launcher">Lien de téléchargement du launcher pour Windows (Mac et Linux : liens fixes)</label>
                         <input type="url" class="form-control @error('launcher') is-invalid @enderror" id="launcher" name="launcher" value="{{ old('launcher', theme_config('launcher')) }}" placeholder="https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe">
                         @error('launcher')<span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>@enderror
                     </div>

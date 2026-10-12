@@ -27,12 +27,13 @@ import net.minecraftforge.registries.RegistryObject;
  * Commandes (op) : /train info, /train actif <oui|non>, /train decalage <secondes> (avancer l'horaire, pour les essais),
  * /train voie ... (retouches de la voie dessinée, collision des ponts : VoieServeur).
  * Jar fusionné : ici les registres, le canal et ses paquets (numéros et ordre inchangés ; un paquet de plus et version 4
- * le 11/10) ; la logique serveur (données du monde, annonce, commandes, descentes forcées) est dans TrainServeur
- * (src/serveur).
+ * le 11/10 ; version 5 le 12/10) ; la logique serveur (données du monde, annonce, commandes, descentes forcées, balles qui
+ * touchent le train) est dans TrainServeur, VoyageursServeur et BallesTrain (src/serveur).
  */
 public final class Train {
-    private static final String PROTO = "4";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
-                                                              // 4 : saut dans la voiture, retouches de la voie (11/10)
+    private static final String PROTO = "5";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
+                                                              // 4 : saut dans la voiture, retouches de la voie (11/10) ;
+                                                              // 5 : allongé et course dans la voiture, vitres cassées (12/10)
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "train"),
             () -> PROTO, PROTO::equals, PROTO::equals);
 
@@ -48,11 +49,12 @@ public final class Train {
     public static final RegistryObject<net.minecraft.world.level.block.entity.BlockEntityType<TableauBlockEntity>> TABLEAU_BE =
             ENTITES_BLOC.register("tableau_gare", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder
                     .of(TableauBlockEntity::new, TABLEAU.get()).build(null));
-    /** Voyageur : version serveur (VoyageurServeur : tick, descente) dans un monde serveur, commune côté client. */
+    /** Voyageur : version serveur (VoyageurServeur : tick, descente) dans un monde serveur, commune côté client. Suivi
+     *  aussi loin qu'un joueur (32 tronçons, comme EntityType.PLAYER) : un joueur vu sans son voyageur resterait figé. */
     public static final UsineEntite<Voyageur> VOYAGEUR_USINE = new UsineEntite<>(Voyageur::new);
     public static final RegistryObject<EntityType<Voyageur>> VOYAGEUR = ENTITES.register("voyageur",
             () -> EntityType.Builder.<Voyageur>of(VOYAGEUR_USINE, MobCategory.MISC).sized(0.2f, 0.2f).noSummon().noSave().fireImmune()
-                    .clientTrackingRange(10).updateInterval(1).build("voyageur"));
+                    .clientTrackingRange(32).updateInterval(1).build("voyageur"));
     /** Voie pleine : collision invisible sous la voie dessinée (ponts), posée par /train voie remplir. Sans objet. */
     public static final RegistryObject<net.minecraft.world.level.block.Block> VOIE_PLEINE = BLOCS.register("voie_pleine",
             () -> new VoiePleineBlock(VoiePleineBlock.proprietes()));
@@ -67,19 +69,49 @@ public final class Train {
 
     private Train() {}
 
-    /** Position d'un voyageur dans sa voiture (client -> serveur) : voiture, lx, lz, assis, hauteur du saut au-dessus du
-     *  plancher (0 : les pieds au plancher ; vérifiée par le serveur, VoyageursServeur.marche). */
-    public record Marche(int vehicule, float lx, float lz, boolean assis, float hauteur) {
+    /** Position d'un voyageur dans sa voiture (client -> serveur) : voiture, lx, lz, état (ASSIS, ALLONGE, COURSE),
+     *  hauteur du saut au-dessus du plancher (0 : les pieds au plancher ; vérifiée par le serveur, VoyageursServeur.marche). */
+    public record Marche(int vehicule, float lx, float lz, byte etat, float hauteur) {
+        public static final byte ASSIS = 1, ALLONGE = 2, COURSE = 4;
+
+        public static byte etat(boolean assis, boolean allonge, boolean course) {
+            return (byte) ((assis ? ASSIS : 0) | (allonge ? ALLONGE : 0) | (course ? COURSE : 0));
+        }
+
+        public boolean assis() {
+            return (etat & ASSIS) != 0;
+        }
+
+        public boolean allonge() {
+            return (etat & ALLONGE) != 0;
+        }
+
+        public boolean course() {
+            return (etat & COURSE) != 0;
+        }
+
         void ecrire(FriendlyByteBuf b) {
             b.writeVarInt(vehicule);
             b.writeFloat(lx);
             b.writeFloat(lz);
-            b.writeBoolean(assis);
+            b.writeByte(etat);
             b.writeFloat(hauteur);
         }
 
         static Marche lire(FriendlyByteBuf b) {
-            return new Marche(b.readVarInt(), b.readFloat(), b.readFloat(), b.readBoolean(), b.readFloat());
+            return new Marche(b.readVarInt(), b.readFloat(), b.readFloat(), b.readByte(), b.readFloat());
+        }
+    }
+
+    /** Vitres des voitures cassées par des balles (serveur -> client), toutes à la fois à chaque changement et à la
+     *  connexion : clés Blindage.cle(voiture, côté, baie). */
+    public record Vitres(int[] cassees) {
+        void ecrire(FriendlyByteBuf b) {
+            b.writeVarIntArray(cassees);
+        }
+
+        static Vitres lire(FriendlyByteBuf b) {
+            return new Vitres(b.readVarIntArray(256));
         }
     }
 
@@ -169,6 +201,10 @@ public final class Train {
             ctx.get().enqueueWork(() -> RECEPTION_CLIENT.accept(m));
             ctx.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CANAL.registerMessage(5, Vitres.class, Vitres::ecrire, Vitres::lire, (m, ctx) -> {
+            ctx.get().enqueueWork(() -> RECEPTION_CLIENT.accept(m));
+            ctx.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         // écouteurs serveur (connexion, commandes, tick du monde, descentes forcées...) : TrainServeur.init (partie serveur).
         // Restent ici, des deux côtés comme à l'origine : à bord, rien n'est cassé, posé ni utilisé (le client n'essaie
         // même pas : pas de geste prédit qu'il faudrait corriger).
@@ -176,6 +212,19 @@ public final class Train {
         MinecraftForge.EVENT_BUS.addListener(Train::clicGauche);
         MinecraftForge.EVENT_BUS.addListener(Train::casse);
         MinecraftForge.EVENT_BUS.addListener(Train::pose);
+        // des deux côtés aussi : la pose à plat du passager allongé (serveur : boîte de collision des balles ; client : rendu)
+        MinecraftForge.EVENT_BUS.addListener(Train::poseAllonge);
+    }
+
+    /** Passager allongé dans une voiture : pose à plat (Pose.SWIMMING, celle du « ramper » de Minecraft et de TaCZ), remise
+     *  à la fin de chaque tick du joueur, après Player.updatePlayerPose qui remet debout tout passager (et après TaCZ, qui
+     *  remet sa propre pose forcée à zéro hors de son « ramper »). Hors du train, rien ne change. */
+    private static void poseAllonge(net.minecraftforge.event.TickEvent.PlayerTickEvent e) {
+        if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+        net.minecraft.world.entity.player.Player p = e.player;
+        if (p.getVehicle() instanceof Voyageur v && !v.isRemoved() && v.allonge() && p.getPose() != net.minecraft.world.entity.Pose.SWIMMING) {
+            p.setPose(net.minecraft.world.entity.Pose.SWIMMING);
+        }
     }
 
     /** Vraiment dans le train : passager d'un voyageur du même monde, tout près (un passager « fantôme » resté accroché

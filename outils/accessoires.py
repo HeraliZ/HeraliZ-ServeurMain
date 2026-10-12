@@ -65,11 +65,60 @@ PROPRES = {
     "tacz:bayonet_6h3": "baïonnette d'AK (arme de corps à corps)",
     "tacz:bayonet_m9": "baïonnette d'AR (arme de corps à corps)",
     "tacz:deagle_golden_long_barrel": "canon long du Desert Eagle doré",
+    "arkaniaz:sr25s": "silencieux intégré du SR-25 (arme retirée) : il enveloppe tout le canon et traverse le "
+                      "garde-main des autres armes",
 }
 
 # Armes laissées telles quelles (espace de noms ou identifiant d'arme).
 ARMES_A_PART = {
     "heraliz_wonder": "Wonder Weapons du mode zombies",
+}
+
+# Accessoires retirés de certaines armes (« * » : de toutes) : ils y flottent ou les traversent, mesuré par
+# outils/verif_accessoires.py. accessoire -> (raison, armes). Une arme concernée reçoit, pour ce type, la liste
+# commune sans eux (identifiants écrits un à un) au lieu de « #heraliz_accessoires:<liste> ». Sans effet si la liste
+# d'origine de l'arme (son gunpack) donne déjà l'accessoire : TaCZ additionne les listes, on ne peut rien y retirer
+# d'ici (--verifier le signale).
+EXCLUS = {
+    "gucci_attachments:laser_hs507c": ("modèle décalé de 10 px au-dessus de son point de montage : flotte à côté de "
+                                       "toutes les armes", "*"),
+    "gucci_attachments:grip_bipod": (
+        "bipied dessiné 8 à 12 px devant son point de montage : flotte devant le garde-main des armes courtes",
+        ["arkaniaz:9a91", "arkaniaz:aks74u", "arkaniaz:evo3", "arkaniaz:gm6_lynx", "arkaniaz:negev", "arkaniaz:tec9",
+         "arkaniaz:ump9", "cis:at_rpg_7_lvd", "heraliz_fuse:mp7r", "heraliz_fuse:ro635v3", "maxstuff:aks74u",
+         "maxstuff:arp", "maxstuff:g36", "maxstuff:glock_bulpup", "maxstuff:honey_badger", "maxstuff:m320t",
+         "maxstuff:m870t", "maxstuff:scar_hamr", "maxstuff:vector9", "tacz:hk416d", "tacz:m4a1", "tacz:mk14",
+         "tacz:scar_l", "tacz:sks_tactical", "tacz:spr15hb", "tacz:ump45", "tacz:vector45"]),
+    "gucci_attachments:grip_cqr": (
+        "poignée longue : traverse le chargeur ou la carcasse",
+        ["arkaniaz:tec9", "arkaniaz:ump9", "arkaniaz_custom:vector_firmax", "arkaniaz_custom:vectorhy",
+         "cis:at_rpg_7_lvd", "maxstuff:m320t", "maxstuff:scar_hamr", "maxstuff:vector9", "tacz:m249", "tacz:mk14",
+         "tacz:sks_tactical", "tacz:vector45"]),
+    "gucci_attachments:grip_cqr_g2": (
+        "poignée longue : traverse le chargeur ou la carcasse",
+        ["arkaniaz:tec9", "arkaniaz:ump9", "arkaniaz_custom:vector_firmax", "arkaniaz_custom:vectorhy",
+         "cis:at_rpg_7_lvd", "maxstuff:g36", "maxstuff:m320t", "maxstuff:scar_hamr", "maxstuff:vector9",
+         "tacz:m249", "tacz:mk14", "tacz:ump45", "tacz:vector45"]),
+    "tacz:grip_cqr": (
+        "poignée longue : traverse le chargeur ou la carcasse",
+        ["arkaniaz:aks74u", "arkaniaz:mod2", "arkaniaz:negev", "arkaniaz:pkp", "arkaniaz:tec9", "arkaniaz:ump9",
+         "arkaniaz_custom:vector_firmax", "arkaniaz_custom:vectorhy", "cis:at_rpg_7_lvd", "heraliz_fuse:mp7r",
+         "maxstuff:aks74u", "maxstuff:ar10", "maxstuff:g36", "maxstuff:glock_bulpup", "maxstuff:hk417",
+         "maxstuff:honey_badger", "maxstuff:m320t", "maxstuff:mk11", "maxstuff:scar_hamr", "maxstuff:scar_pdw",
+         "maxstuff:scar_sbr", "maxstuff:vector9", "tacz:hk416d", "tacz:m249", "tacz:mk14", "tacz:scar_h",
+         "tacz:scar_l", "tacz:sks_tactical", "tacz:ump45", "tacz:vector45"]),
+    "maxstuff:a3_grip": (
+        "poignée longue : traverse le chargeur ou la carcasse",
+        ["arkaniaz:aks74u", "arkaniaz:evo3", "arkaniaz:tec9", "cis:at_rpg_7_lvd", "maxstuff:glock_bulpup",
+         "tacz:m249"]),
+    "maxstuff:underbarrel_chainsaw": (
+        "tronçonneuse sous le canon : traverse la poignée ou le bipied de l'arme",
+        ["cis:at_rpg_7_lvd", "tacz:mk14", "tacz:spr15hb"]),
+    "gucci_attachments:muzzle_s_fd197": (
+        "silencieux à manchon : sa partie arrière traverse le chargeur hélicoïdal, sous le canon", ["arkaniaz:pp19"]),
+    "maxstuff:scw_stock": (
+        "crosse sur rails, faite pour une carcasse longue : flotte derrière ces armes",
+        ["heraliz_fuse:mp5_classic", "maxstuff:db_short_tactical"]),
 }
 
 META = {
@@ -192,10 +241,17 @@ def a_part(arme):
     return arme in ARMES_A_PART or arme.split(":")[0] in ARMES_A_PART
 
 
+def exclus_de(arme):
+    """Accessoires que EXCLUS retire de cette arme."""
+    return {a for a, (_, armes) in EXCLUS.items() if armes == "*" or arme in armes}
+
+
 def calculer(gp):
     """(listes communes {type: [accessoires]}, ajouts {arme: [entrées]}, détail {arme: (types, os)})."""
+    partout = {a for a, (_, armes) in EXCLUS.items() if armes == "*"}
     communes = {t: sorted(a for a, ty in gp.type_acc.items()
-                          if ty == t and a not in PROPRES and par_noeud(gp, a) is None) for t in LISTES}
+                          if ty == t and a not in PROPRES and a not in partout and par_noeud(gp, a) is None)
+                for t in LISTES}
     noeuds = {a: (gp.type_acc[a], par_noeud(gp, a)) for a in gp.type_acc
               if gp.type_acc[a] in LISTES and a not in PROPRES and par_noeud(gp, a)}
     ajouts, detail = {}, {}
@@ -204,8 +260,15 @@ def calculer(gp):
             continue
         types, os_ = gp.types_arme(arme), gp.os_arme(arme)
         detail[arme] = (types, os_)
-        entrees = ["#%s:%s" % (PACK, LISTES[t]) for t in LISTES if t in types and t + "_pos" in os_]
-        entrees += sorted(a for a, (t, n) in noeuds.items() if t in types and n in os_)
+        exclus = exclus_de(arme)
+        entrees = []
+        for t in LISTES:
+            if t in types and t + "_pos" in os_:
+                if exclus & set(communes[t]):
+                    entrees += [a for a in communes[t] if a not in exclus]
+                else:
+                    entrees.append("#%s:%s" % (PACK, LISTES[t]))
+        entrees += sorted(a for a, (t, n) in noeuds.items() if t in types and n in os_ and a not in exclus)
         if entrees:
             ajouts[arme] = entrees
     return communes, ajouts, detail
@@ -293,6 +356,22 @@ def noter_retires(enleves, revenus):
     RETIRES.write_bytes(("\n".join(lignes) + "\n").encode("utf-8"))
 
 
+def controle_exclus(gp):
+    """EXCLUS sans effet : arme inconnue, ou accessoire déjà donné par la liste d'origine de l'arme."""
+    out = []
+    for a, (_, armes) in sorted(EXCLUS.items()):
+        if a not in gp.type_acc:
+            out.append("EXCLUS : accessoire inconnu %s" % a)
+            continue
+        for arme in sorted(gp.armes) if armes == "*" else armes:
+            if arme not in gp.armes:
+                out.append("EXCLUS : arme inconnue %s (pour %s)" % (arme, a))
+            elif a in resoudre(gp.listes_armes.get(arme, []), gp.listes) and gp.type_acc[a] in gp.types_arme(arme):
+                out.append("EXCLUS sans effet : %s reçoit déjà %s par sa liste d'origine (à retirer de son gunpack "
+                           "ou à accepter dans outils/verif_accessoires.py)" % (arme, a))
+    return out
+
+
 # ------------------------------------------------------------------ principal
 def main():
     verifier = "--verifier" in sys.argv[1:]
@@ -302,6 +381,9 @@ def main():
     presents = {str(f.relative_to(SORTIE)).replace("\\", "/") for f in SORTIE.rglob("*") if f.is_file()} \
         if SORTIE.exists() else set()
     problemes, ecrits = 0, 0
+    for alerte in controle_exclus(gp):
+        print("[accessoires] " + alerte)
+        problemes += 1
     retires = lignes_retires()
     for chemin in sorted(set(voulus) & retires):
         if verifier:

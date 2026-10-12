@@ -28,9 +28,12 @@ RACINE = pathlib.Path(__file__).resolve().parent.parent
 DEPOT = RACINE / "serveur" / "tacz"
 TYPES = re.compile(r"^[^/]+/data/([^/]+)/index/(guns|attachments|ammo|blocks)/(.+)\.json$")
 NOMS = {"guns": "armes", "attachments": "accessoires", "ammo": "munitions", "blocks": "tables de fabrication"}
-# pack par défaut de TaCZ (AK-47, M4A1…) : fourni par le jar de TaCZ, chez les joueurs aussi (pas de carrés roses) ; le
-# serveur en a une copie dans /tacz. Ni compté, ni rangé.
-GARDES = {"tacz_default_gun"}
+# Gardés sur le Ptero même s'ils ne sont pas dans le dépôt. Vide : le pack par défaut de TaCZ (tacz_default_gun) n'est
+# PAS gardé. Avec DefaultPackDebug = true (serveur/tacz/tacz-pre.toml), TaCZ ne le copie jamais de son jar dans le
+# dossier tacz des joueurs : ses 49 objets absents de nos gunpacks étaient des carrés roses chez eux, et ses 131 autres
+# fichiers, différents des versions retouchées de arkaniaz_pack_0_converted (mêmes chemins), pouvaient prendre leur
+# place sur le serveur selon l'ordre de lecture des dossiers (12/10).
+GARDES = set()
 
 
 def depot():
@@ -228,8 +231,6 @@ def main():
     racine_ptero, index_ptero, packs, fichiers, manquants, objets = comparer(racine_ptero, index_ptero)
     l = ["### Gunpacks du serveur (dossier tacz du Ptero comparé au dépôt)", ""]
     l += resume(racine_ptero, index_ptero, packs, fichiers, manquants, objets)
-    l.append("Pack par défaut de TaCZ (`tacz_default_gun`, aussi dans le jar de TaCZ chez les joueurs) : gardé.")
-    l.append("")
 
     if a.supprimer and sftp is not None and (packs or fichiers):
         faits = supprimer(sftp, packs, fichiers)

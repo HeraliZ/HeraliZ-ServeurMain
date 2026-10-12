@@ -60,5 +60,6 @@ public final class GuiEvents {
         PermsLocales.vider();
         ClanHud.vider();
         BannerArt.vider();
+        fr.heralisz.clans.api.CarteApi.vider();
     }
 }

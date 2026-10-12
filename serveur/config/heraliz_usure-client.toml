@@ -1,4 +1,4 @@
-#Petit indicateur de l'etat de l'arme en main, en bas a gauche de l'ecran : TOUJOURS, SI_USEE (pas quand elle est neuve) ou JAMAIS.
+#Petit indicateur de l'etat de l'arme en main, en bas a droite de l'ecran : TOUJOURS, SI_USEE (pas quand elle est neuve) ou JAMAIS.
 #L'alerte « ruinee » reste toujours affichee.
 #Allowed Values: TOUJOURS, SI_USEE, JAMAIS
 hud = "TOUJOURS"

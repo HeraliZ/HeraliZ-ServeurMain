@@ -43,7 +43,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
  * TaCZ, mêmes règles qu'une touche) ; le serveur garde le corps à plat jusqu'à cette demande (pas de redressement d'un
  * tick pour les autres joueurs), au plus le temps d'un aller-retour du réseau. Plongeon abandonné (le joueur retombe
  * debout) : dans l'eau, en véhicule, en vol, à terre ou occupé (Réanimation), sans décollage ou sans demande à temps,
- * ou après 2,5 s de chute.
+ * après 2,5 s de chute, quand le joueur dit se relever (son jeu l'envoie s'il retombe debout, 2.12.0) ou quand il
+ * resaute après avoir retouché le sol.
  */
 public final class PlongeonServeur {
    /** Lissage de la vitesse vue par le serveur : moitié de l'ancienne, moitié du dernier tick. */
@@ -54,6 +55,8 @@ public final class PlongeonServeur {
    private static final long DEMANDES_MIN_MS = 150L;
    /** Attente du réseau au plus (décollage, demande d'allongé à la retombée). */
    private static final long ATTENTE_MAX_MS = 4000L;
+   /** Retombées « vues trop tôt » acceptées par plongeon ; au-delà, le joueur a resauté : il est retombé debout. */
+   private static final int REBONDS_MAX = 2;
 
    private PlongeonServeur() {
    }
@@ -126,6 +129,12 @@ public final class PlongeonServeur {
          }
          case Plongeon.ATTERRI -> {
             if (!joueur.onGround()) {
+               if (++p.rebonds > REBONDS_MAX) {
+                  // il a retouché le sol et resauté, plusieurs fois : retombé debout (sans cela, un joueur qui enchaîne les
+                  // sauts après un plongeon restait couché pour les autres et pour les balles, sans fin)
+                  p.phase = Plongeon.AUCUN;
+                  return false;
+               }
                phase(p, Plongeon.VOL, t); // retombée vue trop tôt (positions du joueur en retard sur l'élan) : encore en vol
             } else if (dansPhase > attente) {
                p.phase = Plongeon.AUCUN; // pas de demande d'allongé : debout
@@ -230,6 +239,7 @@ public final class PlongeonServeur {
       p.phaseA = t;
       p.debutA = t;
       p.dernierA = t;
+      p.rebonds = 0;
       joueur.setForcedPose(Pose.SWIMMING);
       repondre(joueur, PaquetReponsePlongeon.ACCEPTE, 0L);
    }

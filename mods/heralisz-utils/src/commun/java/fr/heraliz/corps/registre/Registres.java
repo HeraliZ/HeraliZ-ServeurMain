@@ -29,13 +29,15 @@ public final class Registres {
     public static final UsineEntite<AncienCorps> ANCIEN_USINE = new UsineEntite<>(AncienCorps::new);
 
     /**
-     * {@code heraliz_corps:corpse}. Boite 1,2 x 0,45 (corps allonge) ; suivi par les clients a 4 chunks (64 blocs) au plus ;
+     * {@code heraliz_corps:corpse}. Boite qui suit le corps allonge (1 x 1,9 x 0,45, tournee comme lui : voir
+     * CorpsEntity.makeBoundingBox ; la largeur declaree ici ne sert qu'avant le premier placement) ; suivi par les clients
+     * a 4 chunks (64 blocs) au plus ;
      * position renvoyee toutes les 100 ticks seulement (un corps ne bouge pas ; pendant une chute, a chaque tick) ;
      * insensible au feu ; pas de /summon (un corps vide n'a pas de sens).
      */
     public static final RegistryObject<EntityType<CorpsEntity>> CORPS = ENTITES.register("corpse",
             () -> EntityType.Builder.<CorpsEntity>of(CORPS_USINE, MobCategory.MISC)
-                    .sized(1.2F, 0.45F)
+                    .sized(1.0F, 0.45F)
                     .clientTrackingRange(4)
                     .updateInterval(100)
                     .setShouldReceiveVelocityUpdates(false)

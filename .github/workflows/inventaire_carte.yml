@@ -2,17 +2,26 @@
 # sur la carte du serveur, et lesquels ne sont posés nulle part. LECTURE SEULE : les fichiers de régions du monde en
 # service sont COPIÉS sur la machine de GitHub (téléchargement SFTP), puis lus ; rien n'est jamais écrit ni supprimé
 # sur le Ptero. Le résultat s'affiche dans le résumé de l'exécution. « Run workflow » ; peut aussi partir d'une
-# branche de travail quand ce fichier change.
+# branche de travail quand ce fichier change. Fabrique aussi, depuis les mêmes régions, le fond de la carte du monde
+# (outils/carte_monde.py : vues satellite et relief), gardé dans le paquet « fond-carte ». Case « installer_fond »
+# (« Run workflow » sur une branche de travail, jamais main) : le fond est aussi mis dans le mod HeraliZ Utils et
+# enregistré sur cette branche (utile quand le quota des paquets de GitHub est plein ; ~3 Mo de plus dans le dépôt à
+# chaque fois : à faire rarement). Le monde du Ptero n'est jamais modifié.
 name: Inventaire de la carte
 
 on:
   workflow_dispatch:
+    inputs:
+      installer_fond:
+        description: "Mettre le fond de la carte du monde dans le mod (branche de travail seulement, jamais main)"
+        type: boolean
+        default: false
   push:
     branches-ignore: [main]
-    paths: [".github/workflows/inventaire_carte.yml"]
+    paths: [".github/workflows/inventaire_carte.yml", "outils/carte_monde.py"]
 
 permissions:
-  contents: read
+  contents: write   # seulement pour « installer_fond » (enregistrer le fond sur la branche de travail)
 
 concurrency:
   group: inventaire-carte
@@ -70,3 +79,49 @@ jobs:
         run: |
           python outils/inventaire_carte.py copie/* --sortie inventaire.md
           cat inventaire.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Fond de la carte du monde (touche M, HeraliZ Utils) : vue de dessus satellite et relief, refaite depuis les MÊMES
+      # régions copiées (rien n'est écrit sur le Ptero). Gardée 7 jours dans le paquet « fond-carte » ; pour la mettre
+      # dans le jeu : la poser dans mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte/ (ou relancer
+      # outils/carte_monde.py --installer sur une copie du monde), puis fabriquer heralisz-utils. Un échec ici ne retient
+      # pas l'inventaire.
+      - name: Fond de la carte du monde
+        continue-on-error: true
+        run: |
+          python -m pip install --quiet numpy pillow
+          python outils/carte_monde.py "copie/$MONDE" --sortie fond_carte --stats 2>&1 | tee fond_carte.log
+          {
+            echo "## Fond de la carte du monde"
+            echo
+            echo '```'
+            grep '^\[carte\]' fond_carte.log || true
+            echo '```'
+            echo
+            echo "Images dans le paquet « fond-carte » de cette exécution (7 jours), avec deux aperçus. Pour les mettre dans le jeu :"
+            echo "les poser dans le mod HeraliZ Utils (assets/heraliz_carte/carte/), puis fabriquer heralisz-utils et l'envoyer."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Garder le fond de la carte
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: fond-carte
+          path: fond_carte/
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Mettre le fond dans le mod (branche de travail)
+        if: ${{ inputs.installer_fond && github.ref_name != 'main' }}
+        run: |
+          D=mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte
+          test -s fond_carte/carte.json || { echo "::error::Fond de la carte absent : rien n'est enregistré."; exit 1; }
+          mkdir -p "$D"
+          rm -f "$D"/satellite_*.png "$D"/relief_*.png "$D"/carte.json
+          cp fond_carte/satellite_*.png fond_carte/relief_*.png fond_carte/carte.json "$D"/
+          git config user.name "HeraliZ"
+          git config user.email "heraliz@users.noreply.github.com"
+          git add -A "$D"
+          if git diff --cached --quiet; then echo "Fond inchangé : rien à enregistrer."; exit 0; fi
+          git commit -q -m "Carte du monde : fond refait depuis le monde du serveur ($MONDE, lecture seule)"
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"
+          echo "Fond de la carte enregistré sur la branche ${GITHUB_REF_NAME} : fabriquer heralisz-utils et l'envoyer." >> "$GITHUB_STEP_SUMMARY"

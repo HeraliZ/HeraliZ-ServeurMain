@@ -9,12 +9,17 @@ import net.minecraft.client.player.RemotePlayer;
  * place et anime a la main par {@link Lecteur}, dessine par {@link KillcamClient}. Le skin vient du profil (UUID du
  * vrai joueur : meme skin que dans la liste des joueurs). Jamais en spectateur (sinon seul la tete serait dessinee),
  * jamais d'etiquette de nom vanilla.
+ * <p>Allonge (« ramper » de TaCZ, nage) : Minecraft couche le modele selon {@code getSwimAmount}, qui monte de 0,09 par
+ * tick... dans le tick de l'entite, que ce faux joueur n'a jamais : il restait debout. Le {@link Lecteur} donne ici
+ * l'avancement calcule sur l'enregistrement ({@link #nageA} -> {@link #nageB}, interpole avec le partiel du rendu).
  */
 public final class FauxJoueur extends RemotePlayer {
     /** Index de palette de l'objet tenu actuellement pose (-2 = rien encore). */
     int objetPose = -2;
     /** Dessine a cette image (present dans l'enregistrement). */
     boolean visible;
+    /** Corps couche (0 debout, 1 a plat) a l'image courante et a la suivante. */
+    float nageA, nageB;
 
     /** Texture imposee (participant qui n'est pas un joueur : le mannequin d'entrainement), sinon le skin du profil. */
     @javax.annotation.Nullable
@@ -58,6 +63,12 @@ public final class FauxJoueur extends RemotePlayer {
     @Override
     public boolean isCurrentlyGlowing() {
         return false;
+    }
+
+    /** Corps couche, rejoue (voir la classe) : lu par le rendu du joueur et le modele (pose a plat, bras). */
+    @Override
+    public float getSwimAmount(float partiel) {
+        return nageA + (nageB - nageA) * partiel;
     }
 
     /** Une image d'animation du bras (coup, utilisation) : l'equivalent du tick vanilla. */

@@ -53,6 +53,7 @@ public final class PartieServeur implements Partie {
             else if (m instanceof Packets.SimpleC2S x) ServerHandlers.simple(p, x);
             else if (m instanceof Packets.RavitaillementC2S x) ServerHandlers.ravitaillement(p, x);
             else if (m instanceof Packets.PermsJoueurC2S x) ServerHandlers.permsJoueur(p, x);
+            else if (m instanceof Packets.CarteDemandeC2S) Territoires.carte(p);
         });
     }
 }

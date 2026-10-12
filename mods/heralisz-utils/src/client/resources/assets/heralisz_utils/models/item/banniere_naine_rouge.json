@@ -1,6 +1,0 @@
-{
- "parent": "minecraft:item/generated",
- "textures": {
-  "layer0": "heralisz_utils:item/banniere_naine_rouge"
- }
-}

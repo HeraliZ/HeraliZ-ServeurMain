@@ -177,7 +177,9 @@ public final class CaptureMort {
         // Mort dans un bloc (étouffement, porte…) : seul le MILIEU du corps compte (un corps qui touche un mur ou un meuble
         // à côté reste où il est), et il ne remonte que d'un bloc au plus. Avant, toute la largeur (1,2) comptait et le
         // corps montait jusqu'à 4 blocs : il finissait sur le toit, à l'étage ou pris dans un plafond (« disparu »).
-        net.minecraft.world.phys.AABB milieu = corps.getBoundingBox().deflate(0.45, 0, 0.45);
+        // Milieu = carré de 0,3 bloc au centre (la boîte du corps suit maintenant sa longueur : elle ne sert pas ici).
+        net.minecraft.world.phys.AABB milieu = new net.minecraft.world.phys.AABB(x - 0.15, corps.getY(), z - 0.15, x + 0.15,
+                corps.getY() + corps.getBbHeight(), z + 0.15);
         if (level.getBlockCollisions(corps, milieu).iterator().hasNext()) {
             double haut = Math.floor(y) + 1;
             if (!level.getBlockCollisions(corps, milieu.move(0, haut - corps.getY(), 0)).iterator().hasNext()) {

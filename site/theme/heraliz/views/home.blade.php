@@ -5,7 +5,6 @@
 
 @php
     $discord = theme_config('discord') ?: 'https://discord.gg/heraliz';
-    $launcher = theme_config('launcher') ?: 'https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe';
     $saison = theme_config('saison') ?: 'Saison 1';
     // état du serveur gardé 1 minute (même clé que le bandeau d'état, heraliz/etat.blade.php)
     $etatServeur = $server ? cache()->remember('heraliz.etat-serveur.'.$server->id, 60, function () use ($server) {
@@ -28,10 +27,11 @@
                  sizes="(max-width: 600px) 92vw, 540px" width="560" height="183" alt="{{ site_name() }}" fetchpriority="high">
             <h1 class="titre">Pille. Construis. <span>Survis.</span></h1>
             <p class="pitch">Pille les villes, construis ta base, survis aux hordes. Seul ou en clan, chaque nuit peut être la dernière.</p>
-            <div class="actions">
-                <a class="btn rouge grand" href="{{ $launcher }}">@include('heraliz.icone', ['nom' => 'windows'])Télécharger le launcher<small>Windows</small></a>
+            <div class="actions" id="telecharger">
+                @include('heraliz.telecharger')
                 <a class="btn discord grand" href="{{ $discord }}" target="_blank" rel="noopener noreferrer">@include('heraliz.icone', ['nom' => 'discord', 'style' => 'width:22px;height:22px'])Rejoindre le Discord</a>
             </div>
+            <p class="note-os">Linux : fichier AppImage, ou <a href="https://heraliz.fr/telecharger/HeraliZ-Launcher.deb">paquet .deb</a>. Mac : au premier lancement, clic droit sur l'application puis « Ouvrir ».</p>
         </div>
     </section>
 
@@ -146,7 +146,7 @@
                 <div class="pas actif">
                     <div class="rond">1</div>
                     <h3>Installe le launcher</h3>
-                    <p><a href="{{ $launcher }}">Télécharge-le pour Windows</a> : il installe le jeu et les mods du serveur tout seul, et les garde à jour.</p>
+                    <p><a href="#telecharger">Télécharge-le</a> pour Windows, Mac ou Linux : il installe le jeu et les mods du serveur tout seul, et les garde à jour.</p>
                 </div>
                 <div class="pas">
                     <div class="rond">2</div>
@@ -171,7 +171,7 @@
                 <p>{{ $places }} places. Une seule vie à chaque sortie.</p>
             </div>
             <div class="boutons">
-                <a class="btn rouge grand" href="{{ $launcher }}">@include('heraliz.icone', ['nom' => 'windows'])Télécharger le launcher</a>
+                @include('heraliz.telecharger')
                 <a class="btn discord grand" href="{{ $discord }}" target="_blank" rel="noopener noreferrer">@include('heraliz.icone', ['nom' => 'discord', 'style' => 'width:22px;height:22px'])Discord</a>
             </div>
         </div>

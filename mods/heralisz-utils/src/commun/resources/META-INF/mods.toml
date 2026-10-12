@@ -1,4 +1,4 @@
-# HeraliZ Utils : UN jar, CINQ mods. Chaque mod garde son modId d'origine (objets, blocs, entités, sons, configs, données
+# HeraliZ Utils : UN jar, SIX mods. Chaque mod garde son modId d'origine (objets, blocs, entités, sons, configs, données
 # des mondes, canaux réseau inchangés). « heralisz_utils » (en PREMIER : il donne le nom du module Java du jar) est à la fois
 # un mod de contenu (carte, train, cinématique, ambiance, plans) et le PORTEUR du jar : pont client/serveur
 # (fr.heralisz.utils.pont), onglet créatif commun « HeraliZ · Utils » et son panneau (fr.heralisz.utils.onglet). Pas de
@@ -209,4 +209,42 @@ description='''Vehicules du serveur HeraliZ (repris de Fuse) : buggy MRZR4, moto
     mandatory=true
     versionRange="[0.5.10,)"
     ordering="AFTER"
+    side="BOTH"
+
+[[mods]]
+modId="heraliz_carte"
+version="${mod_version}"
+displayName="HeraliZ Utils · Carte"
+authors="${mod_authors}"
+description='''Carte du monde du serveur HeraliZ (touche M) : vue satellite ou relief de toute la carte, position et direction du joueur, membres de son clan, territoires des clans, extractions ouvertes, villes et points d interet, pings du clan (clic droit sur la carte pour marquer un point). Jamais les autres joueurs.'''
+[[dependencies.heraliz_carte]]
+    modId="heralisz_utils"
+    mandatory=true
+    versionRange="[${mod_version}]"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.heraliz_carte]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_carte]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+# liens doux, lus par reflexion : territoires et allies (heralisz_clans), extractions (heraliz_extraction)
+[[dependencies.heraliz_carte]]
+    modId="heralisz_clans"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_carte]]
+    modId="heraliz_extraction"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="NONE"
     side="BOTH"

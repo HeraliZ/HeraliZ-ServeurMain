@@ -28,10 +28,27 @@ import java.util.Locale;
  * l'explosion, toasts de fin des defis (refuse, annule, expire : en haut a gauche ; les defis recus sont dans
  * {@link NotifDefis}, en haut a droite). DM Sans, verre, aucun element vanilla. Les textes sont prepares a la
  * reception (pas d'allocation par image hors chiffres qui changent).
+ * <p>Reperes A / B (retour des proprietaires : ils genaient la visee) : bien visibles seulement pendant le choix de
+ * classe et les {@link #REPERES_DEBUT_MS} premieres secondes de chaque manche (fondu de {@link #REPERES_FONDU_MS}) ;
+ * ensuite une simple lettre tres pale. Toujours effaces pres du viseur (centre de l'ecran) et quand le joueur est sur le
+ * site ; touche « liste des joueurs » (Tab) enfoncee = reperes bien visibles. Rien pendant une killcam.
  */
 final class DuelHud {
     private DuelHud() {
     }
+
+    /** Reperes A / B bien visibles pendant les premieres secondes de chaque manche (ms). */
+    static final long REPERES_DEBUT_MS = 8000;
+    /** Passage de « bien visibles » a « discrets » (ms). */
+    static final long REPERES_FONDU_MS = 1200;
+    /** Opacite d'un repere discret (lettre seule). */
+    private static final float REPERES_DISCRETS = 0.32f;
+    /** Pres du viseur (pixels d'interface depuis le centre) : efface en dessous de MIN, entier au-dela de MAX. */
+    private static final float VISEUR_MIN = 18f, VISEUR_MAX = 64f;
+    /** Pres du site (blocs, a plat) : efface en dessous de MIN, entier au-dela de MAX. */
+    private static final double SITE_MIN = 8, SITE_MAX = 14;
+    /** Reperes bien visibles jusqu'a cette heure (Util.getMillis) ; MAX_VALUE pendant le choix de classe. */
+    private static long reperesFortsJusque;
 
     // ------------------------------------------------------------------ etat R&D
     @Nullable
@@ -66,7 +83,10 @@ final class DuelHud {
         ticksDepuis = 0;
         derniereSeconde = -1;
         prochainBip = 0;
-        if (v == null) return;
+        if (v == null) {
+            reperesFortsJusque = 0;
+            return;
+        }
         // textes prepares une fois
         couleurHaut = Ui.TEXT;
         ligneHaut = Component.empty();
@@ -88,6 +108,29 @@ final class DuelHud {
         ligneInvite = v.invite().isEmpty() ? Component.empty() : Ui.tr(Ui.FONT, "duel.hud.invite_" + v.invite());
         aLigneHaut = !ligneHaut.getString().isEmpty();
         aInvite = !v.invite().isEmpty();
+    }
+
+    /**
+     * Choix de classe recu (debut de manche) : {@code secondes} &gt; 0 = choix ouvert, reperes bien visibles tant qu'il
+     * dure ; 0 = debut du combat, encore {@link #REPERES_DEBUT_MS}, puis ils deviennent discrets.
+     */
+    static void choix(int secondes) {
+        reperesFortsJusque = secondes > 0 ? Long.MAX_VALUE : Util.getMillis() + REPERES_DEBUT_MS;
+    }
+
+    /** 1 = reperes bien visibles, 0 = discrets (fondu entre les deux). */
+    private static float forceReperes(long now) {
+        if (now <= reperesFortsJusque) return 1f;
+        long t = now - reperesFortsJusque;
+        return t >= REPERES_FONDU_MS ? 0f : 1f - t / (float) REPERES_FONDU_MS;
+    }
+
+    /** 0 en dessous de a, 1 au-dela de b, courbe douce entre les deux. */
+    private static float lisse(double a, double b, double v) {
+        if (v <= a) return 0f;
+        if (v >= b) return 1f;
+        float t = (float) ((v - a) / (b - a));
+        return t * t * (3 - 2 * t);
     }
 
     static void toast(Component titre, Component texte, boolean defi) {
@@ -160,6 +203,8 @@ final class DuelHud {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null) return;
         if (mc.screen instanceof EcranDuels) return;
+        // pendant une killcam, rien par-dessus le rejeu (ce HUD ne passe pas par un calque Forge, que la killcam masque)
+        if (DuelsClient.killcamActive()) return;
         GuiGraphics g = e.getGuiGraphics();
         Font font = mc.font;
         int w = g.guiWidth(), h = g.guiHeight();
@@ -232,8 +277,12 @@ final class DuelHud {
         double[] s = v.sites();
         boolean sitesConnus = s.length >= 6 && (s[0] != 0 || s[2] != 0);
         if (sitesConnus && v.etat() != Vues.CHARGE_POSEE) {
-            repere(g, font, w, h, s[0], s[1] + 1.2, s[2], LETTRE_A, v.attaque() ? Ui.AMBRE : Ui.ACCENT_NEUTRE);
-            repere(g, font, w, h, s[3], s[4] + 1.2, s[5], LETTRE_B, v.attaque() ? Ui.AMBRE : Ui.ACCENT_NEUTRE);
+            Minecraft mc = Minecraft.getInstance();
+            // Tab (liste des joueurs) enfonce : on regarde ou sont les sites, reperes bien visibles
+            float force = mc.options.keyPlayerList.isDown() ? 1f : forceReperes(now);
+            int c = v.attaque() ? Ui.AMBRE : Ui.ACCENT_NEUTRE;
+            repere(g, font, w, h, s[0], s[1] + 1.2, s[2], LETTRE_A, c, force);
+            repere(g, font, w, h, s[3], s[4] + 1.2, s[5], LETTRE_B, c, force);
         }
         boolean chargeVisible = v.etat() == Vues.CHARGE_POSEE || (v.attaque() && v.etat() == Vues.CHARGE_AU_SOL);
         if (chargeVisible && projeter(v.x(), v.y() + 0.6, v.z(), w, h)) {
@@ -244,12 +293,28 @@ final class DuelHud {
         }
     }
 
-    private static void repere(GuiGraphics g, Font font, int w, int h, double x, double y, double z, Component lettre, int couleur) {
-        if (!projeter(x, y, z, w, h)) return;
+    /**
+     * Un repere de site : {@code force} 1 = pastille sombre + cadre + lettre (debut de manche), 0 = lettre seule tres
+     * pale. Efface pres du viseur (jamais devant un adversaire qu'on vise) et quand le joueur est sur le site.
+     */
+    private static void repere(GuiGraphics g, Font font, int w, int h, double x, double y, double z, Component lettre, int couleur, float force) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || !projeter(x, y, z, w, h)) return;
+        double dx = x - mc.player.getX(), dz = z - mc.player.getZ();
+        float loin = lisse(SITE_MIN, SITE_MAX, Math.sqrt(dx * dx + dz * dz));
+        double ex = sx - w / 2.0, ey = sy - h / 2.0;
+        float horsViseur = lisse(VISEUR_MIN, VISEUR_MAX, Math.sqrt(ex * ex + ey * ey));
+        // bien visible : un peu attenue pres du viseur seulement ; discret : rien du tout pres du viseur
+        float plein = loin * (0.35f + 0.65f * horsViseur), discret = REPERES_DISCRETS * loin * horsViseur;
+        float a = discret + (plein - discret) * force;
+        if (a < 0.03f) return;
         int ix = (int) sx, iy = (int) sy;
-        Ui.soft(g, ix - 6, iy - 6, 13, 13, Ui.argb(0x0D0F14, 170));
-        Ui.softOutline(g, ix - 5, iy - 5, 11, 11, Ui.argb(couleur, 200));
-        Ui.centered(g, font, lettre, ix + 0.5f, iy - 3.5f, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.4f), 255));
+        float cadre = a * force;
+        if (cadre > 0.03f) {
+            Ui.soft(g, ix - 6, iy - 6, 13, 13, Ui.argb(0x0D0F14, (int) (170 * cadre)));
+            Ui.softOutline(g, ix - 5, iy - 5, 11, 11, Ui.argb(couleur, (int) (200 * cadre)));
+        }
+        Ui.centered(g, font, lettre, ix + 0.5f, iy - 3.5f, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.4f), Math.max(4, (int) (255 * a))));
     }
 
     private static void losange(GuiGraphics g, int x, int y, int r, int argb) {

@@ -24,9 +24,20 @@ public final class TrainClient {
     static boolean actif;
     static long decalage;
     static ShaderInstance shTrain;
-    /** Temps de l'horaire au début du tick client en cours : les voyageurs sont placés à cet instant, et la rame est
-     *  dessinée à tTick - (1 - fraction) / 20, l'instant où le moteur interpole leur position (aucun décalage). */
-    static double tTick;
+    /** Temps de l'horaire (secondes) au début du tick client en cours et au tick précédent : les voyageurs sont placés à
+     *  tTick, et la rame est dessinée entre les deux (temps), exactement là où le moteur interpole leur position. */
+    static double tTick, tPrec;
+    /** Horloge du train chez le joueur, en ticks (temps du monde + décalage de l'horaire). Le temps du monde du client
+     *  avance d'un tick par tick du jeu et le serveur le recale d'un coup chaque seconde (ClientboundSetTimePacket) : dès
+     *  que le serveur tient moins de 20 ticks par seconde, ou que le réseau hésite, le train (et tous ses voyageurs)
+     *  reculait de 0,75 à 2 blocs chaque seconde (« micro retour en arrière »). Cette horloge ne recule jamais : elle suit
+     *  le temps du monde en accélérant ou ralentissant doucement (au plus de 25 % à 75 %, en pratique quelques pour cent,
+     *  invisible), et ne se recale d'un coup qu'après un écart de plus de 3 secondes (serveur gelé, décalage changé). */
+    private static double horloge = Double.NaN, debit = 1.0;
+    private static final double RECALAGE = 60.0, GAIN = 0.03, GAIN_DEBIT = 0.001;
+    /** Vitres cassées par des balles (clés Blindage.cle), reçues du serveur ; voitures qui en ont. */
+    static java.util.Set<Integer> vitresCassees = java.util.Set.of();
+    private static java.util.Set<Integer> voituresVitres = java.util.Set.of();
 
     private TrainClient() {}
 
@@ -45,12 +56,26 @@ public final class TrainClient {
             recadrage(r.vehicule(), r.lx(), r.lz());
         } else if (m instanceof Train.Voie v) {
             VoieRendu.retouches(v.reseau(), v.retouches());
+        } else if (m instanceof Train.Vitres v) {
+            java.util.Set<Integer> s = new java.util.HashSet<>(), voit = new java.util.HashSet<>();
+            for (int k : v.cassees()) {
+                s.add(k);
+                voit.add(Blindage.vehiculeDe(k));
+            }
+            vitresCassees = s;
+            voituresVitres = voit;
         }
+    }
+
+    /** Cette voiture a-t-elle une vitre cassée ? */
+    static boolean vitresCassees(int veh) {
+        return voituresVitres.contains(veh);
     }
 
     static void annonce(boolean a, long d) {
         actif = a;
         decalage = d;
+        horloge = Double.NaN;                                       // nouvel horaire : recalée au prochain tick
         HeraliszUtils.LOG.info("Train : {} (décalage {} s)", a ? "en service" : "absent", d / 20);
     }
 
@@ -60,25 +85,60 @@ public final class TrainClient {
 
     /** Secondes de l'horaire pour l'image en cours. */
     public static double temps(float partial) {
-        return tTick - (1.0 - partial) / 20.0;
+        return tPrec + (tTick - tPrec) * partial;
+    }
+
+    /** Avance l'horloge du train d'un tick du jeu (début du tick client). */
+    static void avancerHorloge(Minecraft mc) {
+        double cible = mc.level.getGameTime() + decalage;
+        tPrec = tTick;
+        if (mc.isPaused()) return;                                  // solo en pause : le monde ne tourne plus
+        double ecart = cible - horloge;
+        if (Double.isNaN(horloge) || Math.abs(ecart) > RECALAGE) {
+            horloge = cible;
+            debit = 1.0;
+            tTick = tPrec = horloge / 20.0;
+            return;
+        }
+        debit = Math.max(0.5, Math.min(1.5, debit + GAIN_DEBIT * ecart));
+        horloge += Math.max(0.25, Math.min(1.75, debit + GAIN * ecart));
+        tTick = horloge / 20.0;
     }
 
     static boolean estMoi(net.minecraft.world.entity.Entity e) {
         return e == Minecraft.getInstance().player;
     }
 
-    /** Entrées du joueur à bord : {gauche, avant, vitesse en blocs par tick}. */
-    static float[] entree() {
-        Minecraft mc = Minecraft.getInstance();
-        var p = mc.player;
-        if (p == null || mc.screen != null) return new float[]{0, 0, 0};
-        double v = mc.options.keySprint.isDown() ? Voyageurs.COURSE : Voyageurs.MARCHE;
-        if (p.input.shiftKeyDown) v *= 0.35;
-        return new float[]{p.input.leftImpulse, p.input.forwardImpulse, (float) v};
+    static void envoyer(int v, float x, float z, byte etat, float hauteur) {
+        Train.CANAL.sendToServer(new Train.Marche(v, x, z, etat, hauteur));
     }
 
-    static void envoyer(int v, float x, float z, boolean assis, float hauteur) {
-        Train.CANAL.sendToServer(new Train.Marche(v, x, z, assis, hauteur));
+    /** Touche « Ramper » de TaCZ (s'allonger, se relever), pas avec un écran ouvert. */
+    static boolean ramper() {
+        Minecraft mc = Minecraft.getInstance();
+        try {
+            return mc.screen == null && com.tacz.guns.client.input.CrawlKey.CRAWL_KEY.isDown();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** TaCZ permet-il de ramper sur ce serveur (réglage EnableCrawl, envoyé par le serveur) ? */
+    static boolean ramperPermis() {
+        try {
+            return Boolean.TRUE.equals(com.tacz.guns.config.sync.SyncConfig.ENABLE_CRAWL.get());
+        } catch (Throwable t) {
+            return true;
+        }
+    }
+
+    /** Nom de la touche « Ramper » pour les messages. */
+    static net.minecraft.network.chat.Component toucheRamper() {
+        try {
+            return com.tacz.guns.client.input.CrawlKey.CRAWL_KEY.getTranslatedKeyMessage();
+        } catch (Throwable t) {
+            return net.minecraft.network.chat.Component.literal("?");
+        }
     }
 
     private static long derniereDescente;
@@ -102,14 +162,22 @@ public final class TrainClient {
         Train.CANAL.sendToServer(new Train.Descente());
     }
 
-    /** Rappel des touches dans la barre d'action : à bord (Maj descend, devant une banquette : s'asseoir) ou assis. */
+    /** Rappel des touches dans la barre d'action : à bord (Maj descend, devant une banquette : s'asseoir, Ramper :
+     *  s'allonger), assis, ou allongé. */
     static void aide(boolean assis) {
+        aide(assis, false);
+    }
+
+    static void aide(boolean assis, boolean allonge) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         var saut = mc.options.keyJump.getTranslatedKeyMessage();
         var maj = mc.options.keyShift.getTranslatedKeyMessage();
-        mc.gui.setOverlayMessage(assis ? net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.assis", saut, maj)
-                : net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.a_bord", maj), false);
+        net.minecraft.network.chat.Component msg;
+        if (allonge) msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.allonge", toucheRamper(), saut);
+        else if (assis) msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.assis", saut, maj);
+        else msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.a_bord", maj, toucheRamper());
+        mc.gui.setOverlayMessage(msg, false);
     }
 
     /** Touches : saut (se lever ; debout : sauter), accroupi (s'asseoir). */
@@ -129,6 +197,8 @@ public final class TrainClient {
                 v.pv = veh;
                 v.px = x;
                 v.pz = z;
+                v.vx = 0f;
+                v.vz = 0f;
             }
         }
     }
@@ -206,8 +276,9 @@ public final class TrainClient {
         @SubscribeEvent
         public static void horaire(net.minecraftforge.event.TickEvent.ClientTickEvent e) {
             Minecraft mc = Minecraft.getInstance();
-            if (e.phase == net.minecraftforge.event.TickEvent.Phase.START && mc.level != null) {
-                tTick = (mc.level.getGameTime() + decalage) / 20.0;
+            if (e.phase == net.minecraftforge.event.TickEvent.Phase.START) {
+                if (mc.level != null) avancerHorloge(mc);
+                else horloge = Double.NaN;
             }
         }
 
@@ -215,6 +286,9 @@ public final class TrainClient {
         public static void deconnexion(ClientPlayerNetworkEvent.LoggingOut e) {
             actif = false;
             decalage = 0;
+            horloge = Double.NaN;
+            vitresCassees = java.util.Set.of();
+            voituresVitres = java.util.Set.of();
             fr.heralisz.utils.cine.CineDecor.oublier();                // le décor de la cinématique de ce serveur
             Minecraft.getInstance().execute(() -> {
                 VoieRendu.oublier();                                   // et les retouches de la voie de ce serveur

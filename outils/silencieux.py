@@ -7,7 +7,7 @@
 
 Sur le serveur, un tir s'entend jusqu'à DefaultGunFireSoundDistance blocs (serveur/config/tacz-common.toml : 256).
 Un tir silencieux s'entend en deux temps (choix du propriétaire, 12/10) :
-- jusqu'à sa PORTÉE NETTE (tableau PORTEES, 14 à 22 blocs) : son du silencieux de l'arme, à sa vraie place (on sait
+- jusqu'à sa PORTÉE NETTE (PORTEE_NETTE, 16 blocs, la même pour tous) : son du silencieux de l'arme, à sa vraie place (on sait
   d'où il vient), qui baisse avec la distance et s'éteint au double de la portée nette ;
 - au-delà, jusqu'à la portée d'un tir normal : le même son, plus grave et étouffé, venu d'un endroit flou autour du
   tireur (on l'entend, on devine la direction, pas l'endroit exact). Ce son est décidé et envoyé par le mod tactique
@@ -32,38 +32,36 @@ DEPOT = Path(__file__).resolve().parents[1]
 TACZ = DEPOT / "serveur" / "tacz"
 CONFIG_TACZ = DEPOT / "serveur" / "config" / "tacz-common.toml"
 
-# Portée nette en blocs de chaque silencieux (identifiant de l'accessoire) : on l'entend net et à sa vraie place
-# jusque-là (10 à 20 blocs voulus par le propriétaire). Plus le silencieux est gros (long, épais), plus il étouffe ; un
-# petit calibre s'étouffe mieux qu'un gros. Au-delà : son lointain étouffé, jusqu'à 256 blocs (tacz-common.toml).
-PORTEES = {
-    # silencieux de pistolet et de mitraillette (petits calibres) : les plus discrets
-    "tacz:muzzle_silencer_ptilopsis": 14,       # PO-2 « Ptilopsis »
-    "tacz:muzzle_silence_ptilopsis": 14,
-    "tacz:muzzle_silencer_mirage": 14,          # Mirage
-    "tacz:muzzle_silence_mirage": 14,
-    "gucci_attachments:muzzle_s_fd197": 14,     # FD917 (silencieux de pistolet)
-    # gros silencieux de fusil (longs ou épais)
-    "tacz:muzzle_silencer_ursus": 16,           # Ursus (standard militaire)
-    "tacz:muzzle_silence_ursus": 16,
-    "tacz:muzzle_silencer_knight_qd": 16,       # Knight QD
-    "tacz:muzzle_silence_knight_qd": 16,
-    "tacz:muzzle_silencer_phantom_s1": 16,      # Phantom S1
-    "tacz:muzzle_silence_phantom_s1": 16,
-    "gucci_attachments:muzzle_s_gsx": 16,       # Eckland GS-X
-    "gucci_attachments:muzzle_s_gogol9": 16,    # Gogol 9
-    "gucci_attachments:muzzle_s_z60": 16,       # Z60
-    "arkaniaz:sr25s": 16,                       # silencieux intégré du SR-25 (très long)
-    # silencieux de fusil fins
-    "gucci_attachments:muzzle_s_fss5": 18,      # FSS V
-    "gucci_attachments:muzzle_s_osprey": 18,    # Osprey
-    "gucci_attachments:muzzle_s_c784": 18,      # C784
-    # court et imprimé en 3D ; calibre .50 (même étouffé, le tir reste puissant)
-    "gucci_attachments:muzzle_s_widemouth": 20,  # 3DP Widemouth
-    "tacz:muzzle_silencer_vulture": 20,         # Vulture .50
-    # hybrides : à peine silencieux
-    "maxstuff:supressed_brake": 22,             # frein de bouche silencieux
-    "tacz:deagle_golden_long_barrel": 22,       # canon long du Deagle doré
-}
+# Portée nette en blocs : on entend le tir net et à sa vraie place jusque-là. Choix du propriétaire (12/10) : la même
+# pour tous les silencieux (« une portée précise, à chaque fois la même »), entre les 10 et 20 blocs voulus. Au-delà : son
+# lointain étouffé et flou, jusqu'à 256 blocs (tacz-common.toml).
+PORTEE_NETTE = 16
+
+# Tous les silencieux des gunpacks (identifiants des accessoires) : --verifier signale ceux qui manquent.
+PORTEES = {ident: PORTEE_NETTE for ident in (
+    "tacz:muzzle_silencer_ptilopsis",
+    "tacz:muzzle_silence_ptilopsis",
+    "tacz:muzzle_silencer_mirage",
+    "tacz:muzzle_silence_mirage",
+    "gucci_attachments:muzzle_s_fd197",
+    "tacz:muzzle_silencer_ursus",
+    "tacz:muzzle_silence_ursus",
+    "tacz:muzzle_silencer_knight_qd",
+    "tacz:muzzle_silence_knight_qd",
+    "tacz:muzzle_silencer_phantom_s1",
+    "tacz:muzzle_silence_phantom_s1",
+    "gucci_attachments:muzzle_s_gsx",
+    "gucci_attachments:muzzle_s_gogol9",
+    "gucci_attachments:muzzle_s_z60",
+    "arkaniaz:sr25s",
+    "gucci_attachments:muzzle_s_fss5",
+    "gucci_attachments:muzzle_s_osprey",
+    "gucci_attachments:muzzle_s_c784",
+    "gucci_attachments:muzzle_s_widemouth",
+    "tacz:muzzle_silencer_vulture",
+    "maxstuff:supressed_brake",
+    "tacz:deagle_golden_long_barrel",
+)}
 
 # TaCZ fait baisser le son net jusqu'à zéro à la distance qu'il lit : le double de la portée nette (à la portée nette,
 # le son est encore au quart de son volume de près ; le son lointain prend le relais entre les deux).

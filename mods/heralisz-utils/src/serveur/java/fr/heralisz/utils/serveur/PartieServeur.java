@@ -33,7 +33,7 @@ public final class PartieServeur implements Partie {
         Train.VOYAGEUR_USINE.serveur(VoyageurServeur::new);
         // logique serveur (à l'origine : CineReseau.init puis Train.init, dans le constructeur @Mod)
         CineReseauServeur.init();
-        TrainServeur.init();
+        TrainServeur.init(busMod);
         Suicide.init();
     }
 }

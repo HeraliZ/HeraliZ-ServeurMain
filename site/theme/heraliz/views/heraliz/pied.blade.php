@@ -1,7 +1,6 @@
 {{-- Pied de page des maquettes ; « Propulsé par Azuriom » est exigé par la licence d'Azuriom (ne pas le retirer) --}}
 @php
     $discord = theme_config('discord') ?: 'https://discord.gg/heraliz';
-    $launcher = theme_config('launcher') ?: 'https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe';
     $pagesInfo = \Azuriom\Models\Page::enabled()->whereIn('slug', ['reglement', 'cgv', 'confidentialite', 'mentions-legales'])->pluck('title', 'slug');
 @endphp
 <footer class="pied">
@@ -21,7 +20,7 @@
             <div>
                 <h4>Jouer</h4>
                 <ul>
-                    <li><a href="{{ $launcher }}">Télécharger le launcher</a></li>
+                    <li><a href="{{ route('home') }}#telecharger">Télécharger le launcher</a></li>
                     @guest
                         @if(Route::has('register'))<li><a href="{{ route('register') }}">Créer un compte</a></li>@endif
                     @else

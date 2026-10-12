@@ -143,7 +143,67 @@ public final class Territoires {
         if (instance != null && e.getEntity() instanceof ServerPlayer p) {
             instance.dernierHud.remove(p.getUUID());
             instance.lootBonus.oublier(p.getUUID());
+            instance.derniereCarte.remove(p.getUUID());
         }
+    }
+
+    // ------------------------------------------------------------------ carte du monde (CarteApi, HeraliZ Utils)
+    /** Au plus une reponse de carte par joueur et par seconde (les demandes en trop sont ignorees, sans message). */
+    private static final long CARTE_CADENCE_MS = 900;
+    private final Map<UUID, Long> derniereCarte = new HashMap<>();
+
+    /**
+     * Le joueur a la carte du monde ouverte : il recoit ce qu'il a le droit de voir. Toutes les zones avec leur etat
+     * public (celui du drapeau : libre, tenue, protegee, capture et clan qui capture, contestee), le ravitaillement des
+     * zones de son clan, les membres de son clan connectes dans le meme monde (personne en match) et son clan. Hors du
+     * monde des territoires : ni zones ni allies.
+     */
+    public static void carte(ServerPlayer p) {
+        if (instance != null) instance.envoyerCarte(p, System.currentTimeMillis());
+    }
+
+    private void envoyerCarte(ServerPlayer p, long now) {
+        Long der = derniereCarte.get(p.getUUID());
+        if (der != null && now - der < CARTE_CADENCE_MS) return;
+        derniereCarte.put(p.getUUID(), now);
+        ClanStore store = ClanStore.get();
+        Clan mien = store == null ? null : store.clanDe(p.getUUID());
+        boolean ici = p.level() == monde() && !fr.heralisz.clans.api.ClansApi.enMatch(p);
+        List<fr.heralisz.clans.api.CarteApi.Zone> vues = new ArrayList<>();
+        if (ici && store != null) {
+            for (Zone z : zones.values()) {
+                EtatTerritoire e = data.etat(z.id);
+                Clan O = clanProprio(store, e);
+                EtatZone aff = etatsAffiches.getOrDefault(z.id, O == null ? EtatZone.NEUTRE : EtatZone.TENUE);
+                EtatZone etat = aff == EtatZone.CAPTURE || aff == EtatZone.CONTESTE ? aff : O == null ? EtatZone.NEUTRE : EtatZone.TENUE;
+                long protegee = O != null && e.protegeeJusque > now ? e.protegeeJusque - now : 0;
+                if (etat == EtatZone.TENUE && protegee > 0) etat = EtatZone.PROTEGEE;
+                Clan C = etat == EtatZone.CAPTURE && e.capteur != null ? store.get(e.capteur) : null;
+                boolean membre = O != null && mien != null && mien.id.equals(O.id);
+                boolean peut = membre && mien.peut(p.getUUID(), Perm.RAVITAILLEMENT) && z.drapeau != null && !ravitaillement.enCours(z.id);
+                vues.add(new fr.heralisz.clans.api.CarteApi.Zone(z.id, z.nom, z.x, z.z, z.rayon, z.drapeau != null,
+                        z.drapeau == null ? 0 : z.drapeau.getX(), z.drapeau == null ? 0 : z.drapeau.getZ(),
+                        O == null ? "" : O.tag, O == null ? "" : O.nom, O == null ? COULEUR_NEUTRE : O.banniere.accent(), O == null ? null : O.banniere,
+                        etat, C == null ? "" : C.tag, C == null ? "" : C.nom, C == null ? 0 : C.banniere.accent(), C == null ? null : C.banniere,
+                        C == null ? 0f : e.progression, O == null ? 0 : Math.max(0, now - e.captureLe), protegee, z.valeur,
+                        ClansConfig.LOOT_BONUS.get(), membre, membre ? Math.max(0, e.prochainRavitaillement - now) : -1, peut));
+            }
+        }
+        List<fr.heralisz.clans.api.CarteApi.Allie> allies = new ArrayList<>();
+        fr.heralisz.clans.api.CarteApi.MonClan monClan = null;
+        if (mien != null) {
+            int enLigne = 0;
+            for (UUID m : mien.membres.keySet()) {
+                ServerPlayer d = server.getPlayerList().getPlayer(m);
+                if (d == null) continue;
+                enLigne++;
+                if (!ici || d == p || d.level() != p.level() || !d.isAlive() || d.isSpectator() || fr.heralisz.clans.api.ClansApi.enMatch(d)) continue;
+                allies.add(new fr.heralisz.clans.api.CarteApi.Allie(d.getGameProfile().getName(), d.getX(), d.getZ()));
+            }
+            monClan = new fr.heralisz.clans.api.CarteApi.MonClan(mien.tag, mien.nom, mien.banniere.accent(), mien.banniere, enLigne,
+                    compterTenus(mien.id));
+        }
+        ClansNet.toPlayer(p, new Packets.CarteS2C(vues, allies, monClan));
     }
 
     /** Le moteur du serveur en cours (null hors serveur). */

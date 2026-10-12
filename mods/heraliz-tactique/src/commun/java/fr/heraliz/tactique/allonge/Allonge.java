@@ -211,6 +211,20 @@ public final class Allonge {
    }
 
    /**
+    * Le joueur demande à se relever (paquet « ramper : non » de TaCZ) : un plongeon en cours est fini, il ne retombera pas
+    * allongé. Son jeu l'envoie quand le plongeon se termine debout (touche de saut tenue en retombant, allongé refusé,
+    * plongeon abandonné) : sans cela, le serveur garderait le corps à plat en attendant la demande d'allongé (2.12.0).
+    * Appelé côté serveur (mixin de LivingEntityCrawl).
+    */
+   public static void releverPendantPlongeon(ShooterDataHolder donnees) {
+      EtatAllonge etat = etat(donnees);
+      Plongeon plongeon = etat == null ? null : etat.heraliz$getPlongeon();
+      if (plongeon != null && plongeon.enCours()) {
+         plongeon.phase = Plongeon.AUCUN;
+      }
+   }
+
+   /**
     * Note un passage debout <-> allongé (heure du coucher, heure du relevé). Appelé côté serveur après chaque endroit où
     * l'état change : la touche (crawl), chaque tick (tickCrawling de TaCZ, ou le tick HeraliZ sans arme, qui relèvent le
     * joueur tout seuls : autre objet en main, saut, eau, véhicule...). Un joueur qui s'allonge en retombant d'un plongeon

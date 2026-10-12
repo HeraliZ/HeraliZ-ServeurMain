@@ -19,7 +19,8 @@ import java.util.Locale;
  * Bandeau de la killcam (calque de HUD {@code heralisz_matchs:killcam}, au-dessus de tout ; les autres calques sont
  * masques pendant la lecture) : bandes cinema en degrade haut et bas, « ● KILLCAM » en haut a gauche, raison en
  * haut a droite (derniere elimination, essai), en bas « TUE PAR » + nom du tueur a sa couleur d'equipe, arme et
- * distance, touche pour passer, fine barre de progression ; voiles noirs des fondus d'entree, de sortie et de retour.
+ * distance, touche pour passer, fine barre de progression ; pendant la fin vue par les yeux du tueur, « vue du tueur »
+ * sous le titre et un petit viseur au centre ; voiles noirs des fondus d'entree, de sortie et de retour.
  * Tous les textes sont prepares au lancement ({@link #preparer}) : aucune allocation par image.
  */
 final class KillcamHud {
@@ -30,7 +31,7 @@ final class KillcamHud {
     /** Duree du voile de retour apres la killcam (ms). */
     static final int RETOUR_MS = 260;
 
-    private static Espace titre, tuePar, raison, passer, cle;
+    private static Espace titre, tuePar, raison, passer, cle, vueTueur;
     private static Component nom = Component.empty(), detail = Component.empty();
     private static int nomCouleur = Ui.TEXT;
     private static int nomLargeur;
@@ -79,6 +80,7 @@ final class KillcamHud {
         raison = r.isEmpty() ? null : new Espace(font, r, Ui.SMALL, 0.9f);
         passer = new Espace(font, Component.translatable("killcam.passer").getString(), Ui.SMALL, 0.9f);
         cle = new Espace(font, KillcamClient.CLE_PASSER.getTranslatedKeyMessage().getString(), Ui.SMALL, 0.6f);
+        vueTueur = new Espace(font, Component.translatable("killcam.vue_tueur").getString(), Ui.SMALL, 0.9f);
         Clip.Participant t = c.participants.get(c.tueur);
         nom = Ui.lit(t.nom, Ui.BOLD);
         nomLargeur = font.width(nom);
@@ -126,6 +128,13 @@ final class KillcamHud {
             Ui.soft(g, 15, 9, 7, 7, Ui.argb(ROUGE, (int) (ta * pouls * 0.25f)));
             titre.dessiner(g, font, 27, 8, Ui.argb(Ui.TEXT, ta));
             Ui.hairline(g, 27 + titre.largeur + 10, 27 + titre.largeur + 70, 12, ROUGE, (int) (140 * a), false, true);
+            // fin par les yeux du tueur : « vue du tueur » sous le titre et petit viseur au centre
+            float fp = l.premiere();
+            int tf = (int) (ta * fp);
+            if (tf >= 8) {
+                vueTueur.dessiner(g, font, 27, 21, Ui.argb(Ui.mix(ROUGE, 0xFFFFFF, 0.45f), tf));
+                viseur(g, W / 2, H / 2, (int) (190 * a * fp));
+            }
             // raison (en haut a droite)
             if (raison != null) {
                 int w = raison.largeur + 12, x = W - 16 - w;
@@ -161,5 +170,18 @@ final class KillcamHud {
         // voiles noirs des fondus (plein ecran, par-dessus)
         float v = l.voile();
         if (v > 0.003f) g.fill(0, 0, largeur, hauteur, Ui.argb(0x000000, (int) (255 * v)));
+    }
+
+    /** Petit viseur discret (point et quatre traits ecartes) : ou visait le tueur, vu par ses yeux. */
+    private static void viseur(GuiGraphics g, int cx, int cy, int alpha) {
+        if (alpha < 8) return;
+        int c = Ui.argb(0xFFFFFF, alpha), ombre = Ui.argb(0x000000, alpha / 2);
+        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, ombre);
+        g.fill(cx, cy, cx + 1, cy + 1, c);
+        int ecart = 4, long_ = 4;
+        g.fill(cx - ecart - long_, cy, cx - ecart, cy + 1, c);
+        g.fill(cx + ecart + 1, cy, cx + ecart + 1 + long_, cy + 1, c);
+        g.fill(cx, cy - ecart - long_, cx + 1, cy - ecart, c);
+        g.fill(cx, cy + ecart + 1, cx + 1, cy + ecart + 1 + long_, c);
     }
 }
