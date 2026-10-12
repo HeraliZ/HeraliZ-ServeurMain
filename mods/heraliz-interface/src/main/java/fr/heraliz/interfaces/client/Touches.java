@@ -42,8 +42,13 @@ import org.lwjgl.glfw.GLFW;
  * chargement), après les autres mods : {@code InterfaceClient.touches}, priorité la plus basse, donc après le
  * rangement des touches des véhicules de HeraliZ Utils ({@code ClientVehicules}) fait au même tick.
  * <p>
- * Ne changent pas (choix du propriétaire) : Réanimation (Retour arrière, I, =), emotes (0, ²), TaCZ, voix (Verr. Maj, M,
+ * Ne changent pas (choix du propriétaire) : Réanimation (Retour arrière, I, =), emotes (0, ²), TaCZ, voix (Verr. Maj,
  * « ) »), roue de ping (souris 5), clan K, base N, sac B, lunettes (flèche haut).
+ * <p>
+ * Selon le clavier ({@link #selonClavier}) : la carte du monde (HeraliZ Utils) sur la touche MARQUÉE « M » du clavier du
+ * joueur (les codes de touche suivent les places d'un clavier QWERTY : sur AZERTY, le « M » est la touche du « ; »).
+ * Sur AZERTY, cette touche était « Couper mon micro » de CaraCrea : le micro passe sur la touche voisine, marquée
+ * « , » (libre). Sur QWERTY, la carte est sur M et le micro reste sur « ; ».
  */
 public final class Touches {
     private Touches() {
@@ -178,7 +183,9 @@ public final class Touches {
         Map<String, String> deja = lire(repere);
         int deplacees = 0, absentes = 0;
         boolean repereChange = false;
-        for (Ligne l : TABLE) {
+        List<Ligne> table = new ArrayList<>(TABLE);
+        table.addAll(selonClavier());
+        for (Ligne l : table) {
             KeyMapping k = parNom.get(l.nom());
             if (k == null) {
                 absentes++; // mod absent : rien à faire, la ligne servira s'il revient
@@ -213,7 +220,38 @@ public final class Touches {
         }
         if (repereChange) ecrire(repere, deja);
         HeralizInterface.LOG.info("[interface] touches HeraliZ : {} lignes, {} touches déplacées, {} absentes (mod absent)",
-                TABLE.size(), deplacees, absentes);
+                table.size(), deplacees, absentes);
+    }
+
+    /**
+     * Lignes qui dépendent du clavier du joueur, calculées au lancement : la carte du monde sur la touche marquée « M » ;
+     * si c'est celle de « Couper mon micro » de CaraCrea (clavier AZERTY : touche du « ; »), le micro passe sur la touche
+     * marquée « , » (touche M d'un clavier QWERTY), libre : jamais deux touches sur la même.
+     */
+    private static List<Ligne> selonClavier() {
+        int m = toucheMarquee("m", GLFW.GLFW_KEY_M);
+        List<Ligne> l = new ArrayList<>(2);
+        l.add(vers("key.heraliz_carte.ouvrir", m));
+        if (m == GLFW.GLFW_KEY_SEMICOLON) l.add(vers("key.caracrea.voice.mute", GLFW.GLFW_KEY_M));
+        return l;
+    }
+
+    /** Code de la touche qui porte cette lettre sur le clavier du joueur (sinon {@code defaut}, la place QWERTY). */
+    private static int toucheMarquee(String lettre, int defaut) {
+        int[] candidates = new int[2 + 26 + 1];
+        candidates[0] = GLFW.GLFW_KEY_SEMICOLON;
+        candidates[1] = GLFW.GLFW_KEY_COMMA;
+        for (int i = 0; i < 26; i++) candidates[2 + i] = GLFW.GLFW_KEY_A + i;
+        candidates[28] = GLFW.GLFW_KEY_APOSTROPHE;
+        try {
+            for (int k : candidates) {
+                String nom = GLFW.glfwGetKeyName(k, 0);
+                if (nom != null && nom.equalsIgnoreCase(lettre)) return k;
+            }
+        } catch (RuntimeException | LinkageError e) {
+            HeralizInterface.LOG.warn("[interface] disposition du clavier illisible : touche « {} » laissée à sa place QWERTY", lettre);
+        }
+        return defaut;
     }
 
     /** Nouvelle touche par défaut (sans modificateur) ; faux si elle n'a pas pu être posée. */
