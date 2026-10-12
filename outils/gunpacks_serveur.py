@@ -28,6 +28,9 @@ RACINE = pathlib.Path(__file__).resolve().parent.parent
 DEPOT = RACINE / "serveur" / "tacz"
 TYPES = re.compile(r"^[^/]+/data/([^/]+)/index/(guns|attachments|ammo|blocks)/(.+)\.json$")
 NOMS = {"guns": "armes", "attachments": "accessoires", "ammo": "munitions", "blocks": "tables de fabrication"}
+# pack par défaut de TaCZ (AK-47, M4A1…) : fourni par le jar de TaCZ, chez les joueurs aussi (pas de carrés roses) ; le
+# serveur en a une copie dans /tacz. Ni compté, ni rangé.
+GARDES = {"tacz_default_gun"}
 
 
 def depot():
@@ -99,6 +102,8 @@ def lire_listes(fichier_racine, fichier_index):
 
 def comparer(racine_ptero, index_ptero):
     racine_depot, index_depot = depot()
+    racine_ptero = {x for x in racine_ptero if x not in GARDES}
+    index_ptero = {f for f in index_ptero if f.split("/", 1)[0] not in GARDES}
     packs = sorted(x for x in racine_ptero if x not in racine_depot)
     fichiers = sorted(f for f in index_ptero - index_depot if f.split("/", 1)[0] in racine_depot)
     manquants = sorted(index_depot - index_ptero)
@@ -106,7 +111,7 @@ def comparer(racine_ptero, index_ptero):
     for f in sorted(index_ptero - index_depot):
         m = TYPES.match(f)
         objets[NOMS[m.group(2)]].append(f"{m.group(1)}:{m.group(3)}  ({f.split('/', 1)[0]})")
-    return packs, fichiers, manquants, objets
+    return racine_ptero, index_ptero, packs, fichiers, manquants, objets
 
 
 def resume(racine_ptero, index_ptero, packs, fichiers, manquants, objets):
@@ -190,15 +195,17 @@ def main():
     if not racine_ptero:
         print("::error::dossier tacz du Ptero vide ou illisible : rien n'est comparé")
         return 1
-    packs, fichiers, manquants, objets = comparer(racine_ptero, index_ptero)
+    racine_ptero, index_ptero, packs, fichiers, manquants, objets = comparer(racine_ptero, index_ptero)
     l = ["### Gunpacks du serveur (dossier tacz du Ptero comparé au dépôt)", ""]
     l += resume(racine_ptero, index_ptero, packs, fichiers, manquants, objets)
+    l.append("Pack par défaut de TaCZ (`tacz_default_gun`, aussi dans le jar de TaCZ chez les joueurs) : gardé.")
+    l.append("")
 
     if a.ranger and sftp is not None and (packs or fichiers):
         dest, faits = ranger(sftp, packs, fichiers)
         apres = comparer(*lister_ptero(sftp))
         l += [f"### Rangé dans `{dest}` (rien n'est effacé)", ""] + [f"- `{x}`" for x in faits] + [""]
-        l.append(f"Après : {len(apres[0])} dossiers et {len(apres[1])} objets encore en trop. "
+        l.append(f"Après : {len(apres[2])} dossiers et {len(apres[3])} objets encore en trop. "
                  "Redémarrer le serveur pour que ce soit pris en compte ; pour revenir en arrière, remettre ces "
                  "fichiers dans /tacz.")
     elif a.ranger:
