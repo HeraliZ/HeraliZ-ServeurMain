@@ -720,8 +720,10 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   --installer` (LECTURE SEULE du monde ; numpy et Pillow ; environ 1 min pour 64 régions ; 1 à 4 blocs par pixel pour
   tenir en 2048 px, environ 1,5 Mo par vue ; `--stats` liste les blocs du dessus et leur couleur), puis fabriquer
   heralisz-utils. Le workflow « Inventaire de la carte » le refait aussi depuis le monde en service (paquet « fond-carte »,
-  7 jours, avec deux aperçus) : poser ses fichiers dans le dossier ci-dessus. Pas encore fait : l'écran montre « Carte en
-  préparation » tant qu'il manque (les fonds de l'ancienne carte ne sont pas mis). À refaire quand la carte est finie,
+  7 jours, avec deux aperçus) : poser ses fichiers dans le dossier ci-dessus ; case « installer_fond » (sur une branche de
+  travail, jamais `main`) : il les pose lui-même dans le mod et les enregistre sur cette branche. Fond actuel : provisoire,
+  fait le 12/10 depuis `dayz_map` en construction (4096 × 4096 blocs autour de 0, 2 blocs par pixel). Sans fond, l'écran
+  montre « Carte en préparation ». À refaire quand la carte est finie,
   et seulement depuis une carte propre (une construction de joueur posée sur la carte apparaîtrait sur le fond ; les
   blocs de CRac sont ignorés d'office) ; chaque version ajoute environ 3 Mo au dépôt pour toujours : la refaire rarement.
 
@@ -934,8 +936,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     ligne dans `HeraliszSylvorn.attributes`) ;
   - Tactique : le C4 posé disparaît au redémarrage du serveur ; le feu au sol des molotovs dure toujours 2 s ;
     l'éclaboussure des grenades à effet est limitée à 4 blocs.
-- **Carte du monde** (HeraliZ Utils 2.8.0, Clans 2.4.0, Interface 1.7.0) : fond pas encore fabriqué (attendre la
-  carte finie : workflow « Inventaire de la carte » ou `outils/carte_monde.py --installer`, section 9) ; lieux et nom
+- **Carte du monde** (HeraliZ Utils 2.8.0, Clans 2.4.0, Interface 1.7.0) : fond provisoire du 12/10 (carte en
+  construction), à refaire quand la carte est finie (workflow « Inventaire de la carte », case « installer_fond »,
+  section 9) ; lieux et nom
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
 - **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
