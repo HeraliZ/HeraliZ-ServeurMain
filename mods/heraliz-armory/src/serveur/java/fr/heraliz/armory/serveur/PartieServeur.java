@@ -1,6 +1,8 @@
 package fr.heraliz.armory.serveur;
 
 import fr.heraliz.armory.compat.TaczCompat;
+import fr.heraliz.armory.curios.MajClicCurios;
+import fr.heraliz.armory.curios.MajClicCuriosServeur;
 import fr.heraliz.armory.entity.MannequinServeur;
 import fr.heraliz.armory.item.MannequinItemServeur;
 import fr.heraliz.armory.item.SetKitItemServeur;
@@ -29,6 +31,8 @@ public final class PartieServeur implements Partie {
         // crochets : touche des lunettes (paquet ToggleNvg), bouteille de plongee (tick du porteur)
         ArmoryNetwork.RECEPTION_SERVEUR.brancher(NightVisionServeur::toggle);
         Diving.BOUTEILLE_SERVEUR.brancher(DivingServeur::bouteille);
+        // Maj + clic de l'inventaire vers les slots Curios (mixin commun InventoryCuriosQuickMoveMixin)
+        MajClicCurios.SERVEUR = MajClicCuriosServeur::ranger;
         // ecouteurs de l'ancien constructeur, dans le meme ordre : remappage heralisz_armor, puis tirs a la tete TaCZ
         MinecraftForge.EVENT_BUS.addListener(AnciensObjets::remapOldItems);
         TaczCompat.register();
