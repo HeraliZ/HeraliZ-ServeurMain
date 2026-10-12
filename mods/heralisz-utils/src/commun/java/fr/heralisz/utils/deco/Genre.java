@@ -16,15 +16,10 @@ public enum Genre {
     DRAPEAU_HERALIZ("drapeau_heraliz", "drapeau_heraliz", 128, 8, 32, "metal", true, 7, 0, 7, 9, 16, 9),
     DRAPEAU_ARMEE("drapeau_armee", "drapeau_armee", 128, 8, 32, "metal", true, 7, 0, 7, 9, 16, 9),
     DRAPEAU_QUARANTAINE("drapeau_quarantaine", "drapeau_quarantaine", 128, 8, 32, "metal", true, 7, 0, 7, 9, 16, 9),
-    DRAPEAU_SECOURS("drapeau_secours", "drapeau_secours", 128, 8, 32, "metal", true, 7, 0, 7, 9, 16, 9),
-    DRAPEAU_BLANC("drapeau_blanc", "drapeau_blanc", 128, 8, 32, "metal", true, 7, 0, 7, 9, 16, 9),
-    // faille des nains : lanterne au bout d'une corde (éclaire), bannières de toile (contre un mur, face au vide)
+    // faille des nains : lanterne au bout d'une corde (éclaire)
     LANTERNE_CORDE("lanterne_corde", "lanterne_corde", 96, 2, 32, "metal", false, 6, 12, 6, 10, 16, 10),
-    BANNIERE_NAINE_ROUGE("banniere_naine_rouge", "banniere_naine_rouge", 128, 3, 40, "bois", false, 1, 4, 13, 15, 16, 16),
-    BANNIERE_NAINE_BLEU("banniere_naine_bleu", "banniere_naine_bleu", 128, 3, 40, "bois", false, 1, 4, 13, 15, 16, 16),
-    // décors vivants vus de loin (tools/gen_anim_props.py) : grande roue des fêtes foraines, chevalets des champs de
+    // décors vivants vus de loin (tools/gen_anim_props.py) : chevalets des champs de
     // pétrole, grues des chantiers, lanterne du phare, mâts d'antenne relais, corbeaux au-dessus des lieux morts
-    GRANDE_ROUE("grande_roue", "grande_roue", 256, 28, 80, "metal", true, 0, 0, 0, 16, 4, 16),
     CHEVALET("chevalet_pompage", "chevalet", 224, 6, 64, "metal", true, 0, 0, 0, 16, 2, 16),
     GRUE("grue_tour", "grue", 256, 34, 96, "metal", true, 0, 0, 0, 16, 4, 16),
     PHARE("phare_lanterne", "phare", 256, 46, 96, "metal", true, 0, 0, 0, 16, 2, 16),

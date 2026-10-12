@@ -12,7 +12,7 @@ public class AnimeBlockEntity extends BlockEntity {
     }
 
     public Genre genre() {
-        return getBlockState().getBlock() instanceof AnimeBlock a ? a.genre : Genre.DRAPEAU_BLANC;
+        return getBlockState().getBlock() instanceof AnimeBlock a ? a.genre : Genre.DRAPEAU_HERALIZ;
     }
 
     @Override

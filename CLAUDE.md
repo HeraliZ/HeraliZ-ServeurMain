@@ -851,7 +851,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   bloc voisin, et on voyait le vide à travers la grille (Utils 2.7.0) ;
 - onglets créatifs (11/10) : l'onglet « HeraliZ » (meubles cfm) ne montre que les meubles posés sur la carte (liste
   `heralisz_utils_onglet_heraliz.json`, refaite d'après le workflow « Inventaire de la carte ») ; armes de mêlée et
-  couteaux seulement dans le groupe Mêlée de HeraliZ · Tactique (plus dans « Arme lourde ») ;
+  couteaux seulement dans le groupe Mêlée de HeraliZ · Tactique (plus dans « Arme lourde ») ; l'onglet « HeraliZ —
+  Décors de la map » (Utils 2.8.0, 12/10) n'a plus que les décors posés : les 200 jamais posés nulle part (carte, carte
+  des zombies, arènes ; d'après le workflow « Inventaire de la carte ») sont retirés du mod avec leurs modèles et
+  textures (panneaux de villes et de villages, 80 flèches, pièces de la voiture de train décorative, grande roue,
+  drapeaux blanc et de secours, bannières naines…) ; les sols `sable_caillouteux` et `terre_craquelee` (autre onglet)
+  restent ;
 - au premier lancement : plus de tutoriel de Minecraft, et une fois par installation synchronisation verticale coupée,
   images par seconde illimitées, nuages et ombres des entités coupés (heraliz_interface, `ReglagesDefaut`) ;
 - refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
