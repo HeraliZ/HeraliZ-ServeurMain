@@ -20,16 +20,27 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderArmEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.theillusivec4.curios.api.CuriosApi;
 
-/** Vue a la premiere personne : la manche du haut et les gants apparaissent sur le bras du joueur (rendu translucide, verre). */
+/**
+ * Vue a la premiere personne : la manche du haut et les gants apparaissent sur le bras du joueur (rendu translucide, verre).
+ * <p>Le bras de peau est dessine ici, par le meme appel que le jeu (PlayerRenderer.renderRightHand / renderLeftHand, que
+ * ItemInHandRenderer ferait juste apres cet evenement), puis les pieces reprennent la pose EXACTE avec laquelle il vient
+ * d'etre dessine. Une pose recalculee a part (setupAnim appele par nous, avant le jeu) pouvait differer de celle du bras
+ * dessine et la manche flottait a cote du bras : animations Player Animator du joueur (tenue et coups des armes de melee
+ * de Tactique, emotes, carte d'acces) que le jeu ecarte pour le bras a la premiere personne mais pas pour notre appel,
+ * vraies poses des bras (objet tenu a deux mains dans l'autre main).
+ * <p>Les armes TaCZ et de melee dessinent leurs bras elles-memes, sans cet evenement : rien n'est dessine ici pour elles.
+ */
 @Mod.EventBusSubscriber(modid = HeralizArmory.MOD_ID, value = Dist.CLIENT)
 public final class FirstPersonArms {
     private FirstPersonArms() {}
 
-    @SubscribeEvent
+    /** En dernier : un mod qui remplace le bras (evenement annule avant nous) garde la main, rien n'est dessine par-dessus. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRenderArm(RenderArmEvent event) {
         AbstractClientPlayer player = event.getPlayer();
         boolean right = event.getArm() == HumanoidArm.RIGHT;
@@ -38,38 +49,22 @@ public final class FirstPersonArms {
         var curios = CuriosApi.getCuriosInventory(player).resolve()
                 .map(inv -> inv.findCurios(st -> PieceItem.is(st, "hands") || PieceItem.is(st, "vest"))).orElse(java.util.List.of());
         if (!hasChest && curios.isEmpty()) return;
-        ModelPart pose = handPose(player, right);
-        if (hasChest) {
-            render(((PieceItem) chest.getItem()).def(), chest, player, right, pose, event.getPoseStack(), event.getMultiBufferSource(),
-                    event.getPackedLight());
-        }
+        if (!(Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(player) instanceof PlayerRenderer renderer)) return;
+        PoseStack stack = event.getPoseStack();
+        MultiBufferSource buffers = event.getMultiBufferSource();
+        int light = event.getPackedLight();
+        // le bras de peau, a la place du jeu (meme appel, memes arguments) ...
+        event.setCanceled(true);
+        if (right) renderer.renderRightHand(stack, buffers, light, player);
+        else renderer.renderLeftHand(stack, buffers, light, player);
+        // ... et la pose avec laquelle il vient d'etre dessine (PlayerRenderer.renderHand : setupAnim du jeu et des mods,
+        // puis xRot = 0 ; le bras garde son leger penchement de ~6 degres)
+        PlayerModel<AbstractClientPlayer> pm = renderer.getModel();
+        ModelPart pose = right ? pm.rightArm : pm.leftArm;
+        if (hasChest) render(((PieceItem) chest.getItem()).def(), chest, player, right, pose, stack, buffers, light);
         for (var r : curios) {
-            if (r.slotContext().visible()) {
-                render(((PieceItem) r.stack().getItem()).def(), r.stack(), player, right, pose, event.getPoseStack(),
-                        event.getMultiBufferSource(), event.getPackedLight());
-            }
+            if (r.slotContext().visible()) render(((PieceItem) r.stack().getItem()).def(), r.stack(), player, right, pose, stack, buffers, light);
         }
-    }
-
-    /**
-     * Pose exacte du bras vanilla a la premiere personne (PlayerRenderer.renderHand : setupAnim a zero puis xRot = 0 ;
-     * le bras garde un leger penchement de ~6 degres). Sans elle, la manche est decalee de presque 1 pixel au poignet
-     * et la peau du bras depasse.
-     */
-    private static ModelPart handPose(AbstractClientPlayer player, boolean right) {
-        if (Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(player) instanceof PlayerRenderer renderer) {
-            PlayerModel<AbstractClientPlayer> pm = renderer.getModel();
-            pm.attackTime = 0.0F;
-            pm.crouching = false;
-            pm.swimAmount = 0.0F;
-            pm.rightArmPose = HumanoidModel.ArmPose.EMPTY;
-            pm.leftArmPose = HumanoidModel.ArmPose.EMPTY;
-            pm.setupAnim(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
-            ModelPart arm = right ? pm.rightArm : pm.leftArm;
-            arm.xRot = 0.0F;
-            return arm;
-        }
-        return null;
     }
 
     private static void render(PieceDef def, ItemStack item, LivingEntity player, boolean right, ModelPart pose, PoseStack stack,
@@ -78,9 +73,10 @@ public final class FirstPersonArms {
         if (v == null) return;
         HumanoidModel<LivingEntity> model = ArmorModels.INSTANCE.modelFor(def, player);
         ModelPart arm = right ? model.rightArm : model.leftArm;
-        if (pose != null) arm.copyFrom(pose);
-        else arm.resetPose();
+        arm.copyFrom(pose);
         arm.visible = true;
+        // modele partage par toutes les entites : aucun ajustement de ghillie (GearLayering) d'un autre rendu ne doit rester
+        if (model instanceof MeshArmorModel mesh) mesh.clearFit();
         VertexConsumer vc = ItemRenderer.getArmorFoilBuffer(buffers, v.renderType(), false, item.hasFoil());
         arm.render(stack, vc, light, OverlayTexture.NO_OVERLAY);
         // surfaces libres du bras (0.9.0 : combinaisons)
