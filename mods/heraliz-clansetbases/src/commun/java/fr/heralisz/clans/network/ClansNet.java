@@ -57,6 +57,9 @@ public final class ClansNet {
         msg(Packets.RavitaillementC2S.class, c2s, Packets.RavitaillementC2S::write, Packets.RavitaillementC2S::read, Packets.RavitaillementC2S::handle);
         // --- ajouts (toujours en fin de liste : les identifiants existants ne bougent pas)
         msg(Packets.PermsJoueurC2S.class, c2s, Packets.PermsJoueurC2S::write, Packets.PermsJoueurC2S::read, Packets.PermsJoueurC2S::handle);
+        // carte du monde (2.4.0) : demande quand la carte est ouverte, reponse avec les territoires (CarteApi)
+        msg(Packets.CarteDemandeC2S.class, c2s, Packets.CarteDemandeC2S::write, Packets.CarteDemandeC2S::read, Packets.CarteDemandeC2S::handle);
+        msg(Packets.CarteS2C.class, s2c, Packets.CarteS2C::write, Packets.CarteS2C::read, Packets.CarteS2C::handle);
     }
 
     public static void toPlayer(ServerPlayer player, Object msg) {
