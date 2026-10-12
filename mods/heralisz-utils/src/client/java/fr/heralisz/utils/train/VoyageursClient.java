@@ -383,4 +383,11 @@ public final class VoyageursClient {
         p.walkDist = p.walkDistO + v.pas * 0.6f;
     }
 
+    /** Véhicule vu par l'animation à la troisième personne de TaCZ (mixins TaczAnimationTrainMixin et
+     *  TaczAjustementTrainMixin) : aucun pour un passager debout du train (sinon TaCZ lui met les jambes en pose
+     *  de monture, « assis sur une selle », et ne tourne plus le haut du corps vers le regard) ; le vrai véhicule sinon. */
+    public static Entity vehiculePourAnimation(Player p) {
+        Entity veh = p.getVehicle();
+        return veh instanceof Voyageur v && !v.assis() ? null : veh;
+    }
 }

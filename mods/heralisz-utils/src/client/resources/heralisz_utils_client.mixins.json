@@ -6,7 +6,9 @@
   "refmap": "heralisz_utils.refmap.json",
   "client": [
     "LivingEntityTrainMixin",
-    "LocalPlayerTrainMixin"
+    "LocalPlayerTrainMixin",
+    "TaczAjustementTrainMixin",
+    "TaczAnimationTrainMixin"
   ],
   "injectors": {
     "defaultRequire": 1
