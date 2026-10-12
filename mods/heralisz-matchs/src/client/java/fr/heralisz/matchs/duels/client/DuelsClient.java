@@ -120,6 +120,8 @@ public final class DuelsClient {
 
     public static void choix(PaquetsDuels.ChoixS2C p) {
         Minecraft mc = Minecraft.getInstance();
+        // debut de manche : les reperes A / B sont bien visibles pendant le choix et les premieres secondes du combat
+        DuelHud.choix(p.secondes());
         if (p.secondes() <= 0) {
             choixEnAttente = null;
             if (mc.screen instanceof ChoixClasseScreen) mc.setScreen(null);
