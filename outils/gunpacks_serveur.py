@@ -161,12 +161,50 @@ def effacer(sftp, chemin):
     return n
 
 
+def api_ptero():
+    """Adresse de l'API « client » du serveur et sa clé (secrets PTERO_URL, PTERO_SERVER_ID, PTERO_API_KEY), ou None."""
+    url, serveur, cle = (os.environ.get(k, "").strip() for k in ("PTERO_URL", "PTERO_SERVER_ID", "PTERO_API_KEY"))
+    if not (url and serveur and cle):
+        return None
+    return f"{url.rstrip('/')}/api/client/servers/{serveur}", cle
+
+
+def effacer_api(api, chemins):
+    """Fait effacer par le panel (bouton « Supprimer » du gestionnaire de fichiers) : un dossier entier en un appel,
+    sur la machine du serveur, au lieu d'un aller-retour SFTP par fichier (des milliers dans un gunpack)."""
+    import json
+    import urllib.request
+    adresse, cle = api
+    for i in range(0, len(chemins), 50):
+        corps = json.dumps({"root": "/tacz", "files": chemins[i:i + 50]}).encode()
+        requete = urllib.request.Request(f"{adresse}/files/delete", data=corps, method="POST", headers={
+            "Authorization": f"Bearer {cle}", "Content-Type": "application/json",
+            "Accept": "Application/vnd.pterodactyl.v1+json"})
+        with urllib.request.urlopen(requete, timeout=600) as reponse:
+            reponse.read()
+        print(f"effacé par le panel : {', '.join(chemins[i:i + 50])}", flush=True)
+
+
 def supprimer(sftp, packs, fichiers):
     faits = []
+    api = api_ptero()
+    if api is not None:
+        try:
+            effacer_api(api, list(packs) + list(fichiers))
+            return [f"/tacz/{x}" for x in list(packs) + list(fichiers)]
+        except OSError as e:
+            print(f"::warning::panel du Ptero injoignable ({e}) : suppression fichier par fichier (SFTP, plus lent)",
+                  flush=True)
+    restants = set(sftp.listdir("/tacz"))  # le panel a pu en effacer une partie avant de lâcher
     for p in packs:
-        faits.append(f"/tacz/{p} ({effacer(sftp, f'/tacz/{p}')} fichiers)")
+        if p in restants:
+            faits.append(f"/tacz/{p} ({effacer(sftp, f'/tacz/{p}')} fichiers)")
+            print(faits[-1], flush=True)
     for f in fichiers:
-        sftp.remove(f"/tacz/{f}")
+        try:
+            sftp.remove(f"/tacz/{f}")
+        except FileNotFoundError:
+            continue
         faits.append(f"/tacz/{f}")
     return faits
 

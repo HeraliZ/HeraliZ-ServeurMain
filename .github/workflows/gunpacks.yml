@@ -3,7 +3,8 @@
 # gunpack resté sur le Ptero sans être dans le dépôt donne des carrés roses et noirs dans le menu créatif (la mise en
 # ligne complète tacz sans rien y supprimer). Par défaut LECTURE SEULE (résumé de l'exécution). Case « supprimer » :
 # ce qui n'est pas dans le dépôt est SUPPRIMÉ du Ptero (gunpacks entiers, index d'objets en trop ; le pack par défaut de
-# TaCZ est gardé), pris en compte au prochain redémarrage du serveur. Part aussi, en lecture seule, d'une branche de
+# TaCZ est gardé), pris en compte au prochain redémarrage du serveur. Effacé par le panel (API « client » du Ptero, un
+# dossier en un appel), sinon fichier par fichier en SFTP (très lent : des milliers de fichiers par gunpack). Part aussi, en lecture seule, d'une branche de
 # travail quand ce fichier ou l'outil change.
 name: Gunpacks du serveur
 
@@ -34,6 +35,9 @@ jobs:
       PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
       PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
       PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
       PYTHONIOENCODING: utf-8
       SUPPRIMER: ${{ github.event_name == 'workflow_dispatch' && inputs.supprimer }}
     steps:
