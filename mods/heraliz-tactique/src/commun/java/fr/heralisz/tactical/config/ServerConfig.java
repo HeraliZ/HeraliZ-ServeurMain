@@ -1,6 +1,7 @@
 package fr.heralisz.tactical.config;
 
 import fr.heraliz.tactique.allonge.Allonge;
+import fr.heraliz.tactique.son.SonLointain;
 import fr.heraliz.tactique.vitres.Vitres;
 import java.util.List;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -29,6 +30,10 @@ public class ServerConfig {
    public static IntValue VITRES_RAYON_SPAWN;
    public static BooleanValue VITRES_CLAIMS_CRAC;
    public static ConfigValue<List<? extends String>> VITRES_BLOCS_PROTEGES;
+   /** HeraliZ : tirs silencieux entendus de loin, étouffés et d'un endroit flou (fr.heraliz.tactique.son.SonLointain). */
+   public static BooleanValue SON_LOINTAIN;
+   public static DoubleValue SON_LOINTAIN_VOLUME;
+   public static DoubleValue SON_LOINTAIN_FLOU;
 
    public static ForgeConfigSpec init() {
       Builder builder = new Builder();
@@ -102,6 +107,25 @@ public class ServerConfig {
          .define("proteger_claims_crac", true);
       VITRES_BLOCS_PROTEGES = builder.comment("Blocs de verre qui ne cassent jamais (identifiants, par exemple \"minecraft:tinted_glass\").")
          .defineList("blocs_proteges", List.of(), o -> o instanceof String);
+      builder.pop();
+      // HeraliZ : tirs silencieux entendus de loin (lu par le serveur seulement)
+      builder.push("silencieux");
+      SON_LOINTAIN = builder.comment(
+            "Un tir silencieux s'entend net et à sa vraie place jusqu'à la portée nette de son silencieux (10 à 20 blocs,",
+            "outils/silencieux.py). Au-delà, jusqu'à la portée d'un tir normal (DefaultGunFireSoundDistance de",
+            "tacz-common.toml), les autres joueurs l'entendent plus grave, plus faible, venu d'un endroit flou autour du",
+            "tireur : la direction à peu près, pas l'endroit. Le serveur n'envoie que cette position floue.",
+            "false : au-delà de la portée nette, on n'entend rien.")
+         .define("son_lointain", SonLointain.DEFAUT_ACTIF);
+      SON_LOINTAIN_VOLUME = builder.comment(
+            "Volume du son lointain juste après la portée nette (comme les volumes de TaCZ, le jeu le met au carré : 0,35",
+            "donne 0,12, un tir normal à 20 blocs 0,54). Il baisse ensuite jusqu'à zéro à la portée d'un tir normal.")
+         .defineInRange("volume_lointain", SonLointain.DEFAUT_VOLUME, 0.0, 1.0);
+      SON_LOINTAIN_FLOU = builder.comment(
+            "Flou de l'endroit d'où vient le son lointain, en part de la distance au tireur (0,5 : à 100 blocs, il vient",
+            "d'un point jusqu'à 50 blocs à côté du tireur ; au plus 96 blocs). Le point reste le même 30 s pour un même",
+            "tireur et un même joueur. 0 : vraie place (déconseillé : elle serait envoyée au jeu du joueur).")
+         .defineInRange("flou_lointain", SonLointain.DEFAUT_FLOU, 0.0, 1.0);
       builder.pop();
       return builder.build();
    }

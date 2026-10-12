@@ -6,6 +6,7 @@ import fr.heraliz.tactique.allonge.ReseauAllonge;
 import fr.heraliz.tactique.onglet.OngletGroupe;
 import fr.heraliz.tactique.onglets.Etablis;
 import fr.heraliz.tactique.pont.Parties;
+import fr.heraliz.tactique.son.ReseauSon;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -67,6 +68,8 @@ public class HeralizTactique {
       // s'allonger (touche « Ramper » de TaCZ, avec ou sans arme) et plongeon : canal réseau, règles du serveur, touche et
       // messages chez le joueur
       ReseauAllonge.init();
+      // tirs silencieux entendus de loin, étouffés et d'un endroit flou (son.SonLointain)
+      ReseauSon.init();
       Parties.serveur(MODID, "fr.heraliz.tactique.serveur.ServeurTactique", bus);
       Parties.client(MODID, "fr.heraliz.tactique.client.ClientTactique", bus);
    }

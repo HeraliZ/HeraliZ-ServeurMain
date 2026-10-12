@@ -6,20 +6,22 @@
                                              ou si un silencieux des gunpacks n'a pas de portée dans PORTEES)
 
 Sur le serveur, un tir s'entend jusqu'à DefaultGunFireSoundDistance blocs (serveur/config/tacz-common.toml : 256).
-Les silencieux des gunpacks retiraient seulement 12 à 32 blocs (valeurs prévues pour une portée de 64) : un tir
-silencieux s'entendait encore à 230 blocs, presque aussi fort qu'un tir normal (les sons « silencieux » des gunpacks
-ont le même volume que les tirs normaux, seul le timbre change).
+Un tir silencieux s'entend en deux temps (choix du propriétaire, 12/10) :
+- jusqu'à sa PORTÉE NETTE (tableau PORTEES, 14 à 22 blocs) : son du silencieux de l'arme, à sa vraie place (on sait
+  d'où il vient), qui baisse avec la distance et s'éteint au double de la portée nette ;
+- au-delà, jusqu'à la portée d'un tir normal : le même son, plus grave et étouffé, venu d'un endroit flou autour du
+  tireur (on l'entend, on devine la direction, pas l'endroit exact). Ce son est décidé et envoyé par le mod tactique
+  (fr.heraliz.tactique.son.SonLointain, section [silencieux] de heralisz_tactical-server.toml), d'une position déjà
+  floue : le jeu des joueurs ne reçoit jamais la vraie position d'un tireur lointain.
 
-Chaque silencieux a ici SA portée, en blocs (tableau PORTEES) : au-delà, les autres joueurs n'entendent rien (le
-serveur ne leur envoie pas le son) ; en deçà, le son baisse avec la distance. Le script l'écrit dans le fichier de
-données du silencieux : {"distance": {"multiplier": portée / portée d'un tir normal}, "use_silence_sound": true}.
-Ces données sont envoyées par le serveur aux joueurs : rien à mettre à jour chez eux. Relancer le script si la portée
-d'un tir normal change dans tacz-common.toml, ou après l'ajout d'un gunpack (--verifier signale tout silencieux
-inconnu).
+Le script écrit dans le fichier de données du silencieux le double de sa portée nette, que TaCZ lit :
+{"distance": {"multiplier": 2 x portée nette / portée d'un tir normal}, "use_silence_sound": true}. Ces données sont
+envoyées par le serveur aux joueurs : rien à mettre à jour chez eux. Relancer le script si la portée d'un tir normal
+change dans tacz-common.toml, ou après l'ajout d'un gunpack (--verifier signale tout silencieux inconnu).
 
 Le volume (deux fois moins fort qu'un tir normal pour les autres joueurs, comme TaCZ le fait déjà pour le tireur) est
-réglé dans le mod tactique (mixin TaczSonSilencieuxMixin). La portée sert aussi à l'anticheat (Spartan montre le
-tireur aux joueurs qui l'entendent) : rien à régler de son côté.
+réglé dans le mod tactique (mixin TaczSonSilencieuxMixin). La zone du son net sert aussi à l'anticheat (Spartan montre
+le tireur aux joueurs qui l'entendent) ; le son lointain, lui, ne montre personne.
 """
 import json
 import re
@@ -30,37 +32,42 @@ DEPOT = Path(__file__).resolve().parents[1]
 TACZ = DEPOT / "serveur" / "tacz"
 CONFIG_TACZ = DEPOT / "serveur" / "config" / "tacz-common.toml"
 
-# Portée en blocs de chaque silencieux (identifiant de l'accessoire). Plus le silencieux est gros (long, épais), plus
-# il étouffe ; un petit calibre s'étouffe mieux qu'un gros. Un tir sans silencieux : 256 blocs (tacz-common.toml).
+# Portée nette en blocs de chaque silencieux (identifiant de l'accessoire) : on l'entend net et à sa vraie place
+# jusque-là (10 à 20 blocs voulus par le propriétaire). Plus le silencieux est gros (long, épais), plus il étouffe ; un
+# petit calibre s'étouffe mieux qu'un gros. Au-delà : son lointain étouffé, jusqu'à 256 blocs (tacz-common.toml).
 PORTEES = {
     # silencieux de pistolet et de mitraillette (petits calibres) : les plus discrets
-    "tacz:muzzle_silencer_ptilopsis": 16,       # PO-2 « Ptilopsis »
-    "tacz:muzzle_silence_ptilopsis": 16,
-    "tacz:muzzle_silencer_mirage": 16,          # Mirage
-    "tacz:muzzle_silence_mirage": 16,
-    "gucci_attachments:muzzle_s_fd197": 16,     # FD917 (silencieux de pistolet)
+    "tacz:muzzle_silencer_ptilopsis": 14,       # PO-2 « Ptilopsis »
+    "tacz:muzzle_silence_ptilopsis": 14,
+    "tacz:muzzle_silencer_mirage": 14,          # Mirage
+    "tacz:muzzle_silence_mirage": 14,
+    "gucci_attachments:muzzle_s_fd197": 14,     # FD917 (silencieux de pistolet)
     # gros silencieux de fusil (longs ou épais)
-    "tacz:muzzle_silencer_ursus": 24,           # Ursus (standard militaire)
-    "tacz:muzzle_silence_ursus": 24,
-    "tacz:muzzle_silencer_knight_qd": 24,       # Knight QD
-    "tacz:muzzle_silence_knight_qd": 24,
-    "tacz:muzzle_silencer_phantom_s1": 24,      # Phantom S1
-    "tacz:muzzle_silence_phantom_s1": 24,
-    "gucci_attachments:muzzle_s_gsx": 24,       # Eckland GS-X
-    "gucci_attachments:muzzle_s_gogol9": 24,    # Gogol 9
-    "gucci_attachments:muzzle_s_z60": 24,       # Z60
-    "arkaniaz:sr25s": 24,                       # silencieux intégré du SR-25 (très long)
+    "tacz:muzzle_silencer_ursus": 16,           # Ursus (standard militaire)
+    "tacz:muzzle_silence_ursus": 16,
+    "tacz:muzzle_silencer_knight_qd": 16,       # Knight QD
+    "tacz:muzzle_silence_knight_qd": 16,
+    "tacz:muzzle_silencer_phantom_s1": 16,      # Phantom S1
+    "tacz:muzzle_silence_phantom_s1": 16,
+    "gucci_attachments:muzzle_s_gsx": 16,       # Eckland GS-X
+    "gucci_attachments:muzzle_s_gogol9": 16,    # Gogol 9
+    "gucci_attachments:muzzle_s_z60": 16,       # Z60
+    "arkaniaz:sr25s": 16,                       # silencieux intégré du SR-25 (très long)
     # silencieux de fusil fins
-    "gucci_attachments:muzzle_s_fss5": 32,      # FSS V
-    "gucci_attachments:muzzle_s_osprey": 32,    # Osprey
-    "gucci_attachments:muzzle_s_c784": 32,      # C784
+    "gucci_attachments:muzzle_s_fss5": 18,      # FSS V
+    "gucci_attachments:muzzle_s_osprey": 18,    # Osprey
+    "gucci_attachments:muzzle_s_c784": 18,      # C784
     # court et imprimé en 3D ; calibre .50 (même étouffé, le tir reste puissant)
-    "gucci_attachments:muzzle_s_widemouth": 40,  # 3DP Widemouth
-    "tacz:muzzle_silencer_vulture": 40,         # Vulture .50
+    "gucci_attachments:muzzle_s_widemouth": 20,  # 3DP Widemouth
+    "tacz:muzzle_silencer_vulture": 20,         # Vulture .50
     # hybrides : à peine silencieux
-    "maxstuff:supressed_brake": 48,             # frein de bouche silencieux
-    "tacz:deagle_golden_long_barrel": 48,       # canon long du Deagle doré
+    "maxstuff:supressed_brake": 22,             # frein de bouche silencieux
+    "tacz:deagle_golden_long_barrel": 22,       # canon long du Deagle doré
 }
+
+# TaCZ fait baisser le son net jusqu'à zéro à la distance qu'il lit : le double de la portée nette (à la portée nette,
+# le son est encore au quart de son volume de près ; le son lointain prend le relais entre les deux).
+FONDU = 2
 
 
 # ------------------------------------------------------------------ lecture tolérante (commentaires, virgules finales)
@@ -192,7 +199,7 @@ def main():
             print("[silencieux] %s : accessoire introuvable dans serveur/tacz" % ident)
             problemes += 1
             continue
-        mult = blocs / base
+        mult = FONDU * blocs / base
         for f in fichiers:
             texte = f.read_text(encoding="utf-8")
             actuel = lire(f).get("silence")
@@ -201,7 +208,7 @@ def main():
                 a_jour += 1
                 continue
             if verifier:
-                print("[silencieux] %s : pas à jour (%s blocs voulus)" % (f.relative_to(DEPOT), blocs))
+                print("[silencieux] %s : pas à jour (portée nette de %s blocs voulue)" % (f.relative_to(DEPOT), blocs))
                 problemes += 1
                 continue
             pos = _objet_silence(texte)
@@ -214,7 +221,7 @@ def main():
             f.write_bytes(texte.encode("utf-8"))
             if lire(f).get("silence") != voulu:
                 sys.exit("[silencieux] écriture incorrecte : " + str(f))
-            print("[silencieux] %-40s %2d blocs  (%s)" % (ident, blocs, f.relative_to(TACZ)))
+            print("[silencieux] %-40s net jusqu'à %2d blocs  (%s)" % (ident, blocs, f.relative_to(TACZ)))
     for ident in sorted(silencieux_des_gunpacks() - set(PORTEES)):
         print("[silencieux] %s : silencieux sans portée dans PORTEES (outils/silencieux.py)" % ident)
         problemes += 1

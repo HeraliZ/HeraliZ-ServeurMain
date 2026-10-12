@@ -204,7 +204,12 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
 - la portée du son des silencieux TaCZ (gunpacks de `serveur/tacz/`) : tableau `PORTEES` de `outils/silencieux.py`, puis
   `python outils/silencieux.py` (jamais à la main dans les fichiers des silencieux ; à relancer si la portée d'un tir
   normal change dans `serveur/config/tacz-common.toml`). Un tir silencieux part aussi deux fois moins fort pour les autres
-  joueurs (mixin commun `TaczSonSilencieuxMixin` du mod tactique).
+  joueurs (mixin commun `TaczSonSilencieuxMixin` du mod tactique). Choix du propriétaire (12/10) : net et à sa vraie
+  place jusqu'à la portée nette du silencieux (14 à 22 blocs, `PORTEES` ; TaCZ lit le double et l'éteint jusque-là) ;
+  au-delà, jusqu'à la portée d'un tir normal, le même son plus grave et plus faible, d'un point flou autour du tireur
+  (même point 30 s pour un même joueur), décidé par le serveur (`fr.heraliz.tactique.son.SonLointain`, canal
+  `heraliz_tactique:son`, section `[silencieux]` de `heralisz_tactical-server.toml`) : le jeu du joueur ne reçoit jamais
+  la vraie position d'un tireur lointain.
 - les accessoires TaCZ sont **à plat** (choix du propriétaire) : tout viseur, bouche, crosse, poignée ou laser va sur
   toute arme qui a cet emplacement (ouvert dans `allow_attachment_types` de sa donnée ET os `<type>_pos` dans son
   modèle, sinon l'accessoire serait invisible) ; il y a juste des accessoires meilleurs que d'autres. Gunpack
