@@ -43,41 +43,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Accès au Ptero
+      - name: Comparaison avec le dépôt (et rangement si demandé)
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          HOTE="${PTERO_SFTP_HOST#sftp://}"
-          HOTE="${HOTE%%/*}"
-          PORT="${PTERO_SFTP_PORT:-}"
-          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
-          PORT="${PORT:-2022}"
-          echo "::add-mask::$HOTE"
-          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
-          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
-          echo "LFTP_REGLAGES=set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30; set net:reconnect-interval-base 5;" >> "$GITHUB_ENV"
-
-      - name: Liste du dossier tacz du Ptero (lecture seule)
-        run: |
-          # ce qu'il y a dans /tacz, puis seulement les index des gunpacks (tout lister prend plus de 13 minutes)
-          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
-            -e "$LFTP_REGLAGES cls -1 -F /tacz/ > racine.txt; cls -1 /tacz/*/data/*/index/*/* > index.txt; bye" < /dev/null
-          wc -l racine.txt index.txt
-
-      - name: Comparaison avec le dépôt
-        run: |
+          pip install --quiet paramiko
           if [ "$RANGER" = "true" ]; then
-            python outils/gunpacks_serveur.py racine.txt index.txt --resume resume.md --ranger ranger.lftp --date "$(date -u +%F)"
+            python outils/gunpacks_serveur.py --resume resume.md --ranger
           else
-            python outils/gunpacks_serveur.py racine.txt index.txt --resume resume.md
+            python outils/gunpacks_serveur.py --resume resume.md
           fi
           cat resume.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Ranger ce qui n'est pas dans le dépôt (déplacé, jamais effacé)
-        if: env.RANGER == 'true'
-        run: |
-          echo "Commandes :"; cat ranger.lftp
-          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
-            -e "$LFTP_REGLAGES set cmd:fail-exit yes; source ranger.lftp; set cmd:fail-exit no; cls -1 -F /tacz/ > racine2.txt; cls -1 /tacz/*/data/*/index/*/* > index2.txt; bye" < /dev/null
-          python outils/gunpacks_serveur.py racine2.txt index2.txt --resume apres.md > /dev/null
-          { echo; echo "### Après rangement"; echo; sed -n '3,6p' apres.md
-            echo; echo "Rangé dans \`/tacz_ranges/$(date -u +%F)/\` sur le Ptero (rien n'est effacé). Redémarrer le serveur pour que ce soit pris en compte."; } >> "$GITHUB_STEP_SUMMARY"

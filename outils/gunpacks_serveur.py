@@ -1,22 +1,27 @@
-"""Compare le dossier tacz du Ptero (liste de ses fichiers) avec serveur/tacz du dépôt.
+"""Compare le dossier tacz du Ptero avec serveur/tacz du dépôt (workflow « Gunpacks du serveur »).
 
-Le serveur envoie aux joueurs la liste des armes, accessoires et munitions de TOUS les gunpacks de son dossier tacz ;
-les joueurs n'ont que les images et modèles du dépôt (pack du launcher). Un gunpack resté sur le Ptero sans être dans
-le dépôt donne donc des objets en carrés roses et noirs dans le menu créatif. La mise en ligne complète le dossier
+Le serveur envoie aux joueurs la liste des armes, accessoires, munitions et tables de TOUS les gunpacks de son dossier
+tacz ; les joueurs n'ont que les images et modèles du dépôt (pack du launcher). Un gunpack resté sur le Ptero sans être
+dans le dépôt donne donc des objets en carrés roses et noirs dans le menu créatif. La mise en ligne complète le dossier
 tacz sans rien y supprimer : ce qui a été retiré du dépôt peut y rester.
 
-Usage (workflow « Gunpacks du serveur ») :
-    python outils/gunpacks_serveur.py racine.txt index.txt --resume resume.md [--ranger ranger.lftp --date AAAA-MM-JJ]
-racine.txt : ce qu'il y a directement dans /tacz (« cls -1 -F /tacz/ » de lftp, les dossiers finissent par « / ») ;
-index.txt : les fichiers d'index des gunpacks (« cls -1 /tacz/*/data/*/index/*/* »), seuls lus par le serveur pour
-la liste des objets (lister tout le dossier, plus de 6 000 fichiers, prend plus de 13 minutes par SFTP).
---ranger écrit les commandes lftp qui DÉPLACENT (jamais n'effacent) ce qui n'est pas dans le dépôt vers
-/tacz_ranges/<date>/ : rien n'est perdu, il suffit de le remettre dans /tacz pour revenir en arrière.
+Seuls le haut de /tacz et les index des gunpacks (data/<ns>/index/<type>/) sont lus : ce sont eux qui font apparaître
+les objets (lister tout le dossier, plus de 6 000 fichiers, prend plus de 13 minutes par SFTP).
+
+    python outils/gunpacks_serveur.py --resume resume.md            lecture seule (accès SFTP : PTERO_SFTP_* )
+    python outils/gunpacks_serveur.py --resume resume.md --ranger   DÉPLACE (jamais n'efface) ce qui n'est pas dans
+                                                                    le dépôt vers /tacz_ranges/<date>/
+    python outils/gunpacks_serveur.py --resume r.md --listes racine.txt index.txt   essai sans Ptero (une ligne par
+                                                                    chemin sous /tacz, dossiers finis par « / »)
+Revenir en arrière : remettre dans /tacz ce qui a été rangé dans /tacz_ranges/<date>/, puis redémarrer.
 """
 import argparse
 import collections
+import datetime
+import os
 import pathlib
 import re
+import stat
 import sys
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
@@ -26,101 +31,183 @@ NOMS = {"guns": "armes", "attachments": "accessoires", "ammo": "munitions", "blo
 
 
 def depot():
-    racine = {p.name + ("/" if p.is_dir() else "") for p in DEPOT.iterdir()}
-    index = {p.relative_to(DEPOT).as_posix() for p in DEPOT.glob("*/data/*/index/*/*") if p.is_file() and TYPES.match(p.relative_to(DEPOT).as_posix())}
+    racine = {p.name.rstrip("/") for p in DEPOT.iterdir()}
+    index = set()
+    for p in DEPOT.glob("*/data/*/index/*/**/*"):
+        rel = p.relative_to(DEPOT).as_posix()
+        if p.is_file() and TYPES.match(rel):
+            index.add(rel)
     return racine, index
 
 
-def lignes(fichier):
-    for ligne in pathlib.Path(fichier).read_text(encoding="utf-8", errors="replace").splitlines():
-        ligne = ligne.strip()
-        if ligne.startswith("/tacz/"):
-            ligne = ligne[len("/tacz/"):]
-        if ligne and not ligne.startswith("/"):
-            yield ligne
+def connexion():
+    import paramiko
+    hote = os.environ["PTERO_SFTP_HOST"].strip()
+    hote = hote.split("://", 1)[-1].split("/", 1)[0]
+    port = os.environ.get("PTERO_SFTP_PORT", "").strip()
+    if ":" in hote:
+        hote, p = hote.rsplit(":", 1)
+        port = port or p
+    transport = paramiko.Transport((hote, int(port or 2022)))
+    transport.connect(username=os.environ["PTERO_SFTP_USER"], password=os.environ["PTERO_SFTP_PASSWORD"])
+    return transport, paramiko.SFTPClient.from_transport(transport)
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("racine")
-    ap.add_argument("index")
-    ap.add_argument("--resume", required=True)
-    ap.add_argument("--ranger")
-    ap.add_argument("--date", default="")
-    a = ap.parse_args()
+def dossiers(sftp, chemin):
+    try:
+        return [(a.filename, stat.S_ISDIR(a.st_mode or 0)) for a in sftp.listdir_attr(chemin)]
+    except OSError:
+        return []
 
+
+def lister_ptero(sftp):
+    """(noms en haut de /tacz, index des gunpacks) ; chemins relatifs à /tacz."""
+    racine, index = set(), set()
+    for pack, est_dossier in dossiers(sftp, "/tacz"):
+        racine.add(pack)
+        if not est_dossier:
+            continue
+        for ns, d in dossiers(sftp, f"/tacz/{pack}/data"):
+            if not d:
+                continue
+            for typ, d2 in dossiers(sftp, f"/tacz/{pack}/data/{ns}/index"):
+                if not d2:
+                    continue
+                pile = [f"{pack}/data/{ns}/index/{typ}"]
+                while pile:
+                    rel = pile.pop()
+                    for nom, d3 in dossiers(sftp, f"/tacz/{rel}"):
+                        chemin = f"{rel}/{nom}"
+                        if d3:
+                            pile.append(chemin)
+                        elif TYPES.match(chemin):
+                            index.add(chemin)
+    return racine, index
+
+
+def lire_listes(fichier_racine, fichier_index):
+    def lignes(f):
+        for ligne in pathlib.Path(f).read_text(encoding="utf-8", errors="replace").splitlines():
+            ligne = ligne.strip()
+            if ligne.startswith("/tacz/"):
+                ligne = ligne[len("/tacz/"):]
+            if ligne and not ligne.startswith("/"):
+                yield ligne
+    racine = {x.rstrip("/") for x in lignes(fichier_racine) if "/" not in x.rstrip("/")}
+    return racine, {x for x in lignes(fichier_index) if TYPES.match(x)}
+
+
+def comparer(racine_ptero, index_ptero):
     racine_depot, index_depot = depot()
-    racine_ptero = {x for x in lignes(a.racine) if "/" not in x.rstrip("/")}
-    index_ptero = {x for x in lignes(a.index) if TYPES.match(x)}
-    if not racine_ptero:
-        print("::error::liste du dossier tacz du Ptero vide ou illisible : rien n'est comparé")
-        return 1
-    noms_depot = {x.rstrip("/") for x in racine_depot}
-    # en trop : dossiers (ou fichiers) entiers absents du dépôt, et index en trop dans les gunpacks du dépôt
-    packs_en_trop = sorted(x.rstrip("/") for x in racine_ptero if x.rstrip("/") not in noms_depot)
-    fichiers_en_trop = sorted(f for f in index_ptero - index_depot if f.split("/", 1)[0] in noms_depot)
+    packs = sorted(x for x in racine_ptero if x not in racine_depot)
+    fichiers = sorted(f for f in index_ptero - index_depot if f.split("/", 1)[0] in racine_depot)
     manquants = sorted(index_depot - index_ptero)
     objets = collections.defaultdict(list)
     for f in sorted(index_ptero - index_depot):
         m = TYPES.match(f)
         objets[NOMS[m.group(2)]].append(f"{m.group(1)}:{m.group(3)}  ({f.split('/', 1)[0]})")
+    return packs, fichiers, manquants, objets
 
-    l = ["### Gunpacks du serveur (dossier tacz du Ptero comparé au dépôt)", ""]
-    l.append(f"- dans /tacz du Ptero : {len(racine_ptero)} dossiers ou fichiers ; dépôt : {len(racine_depot)}")
-    l.append(f"- dossiers en trop sur le Ptero (absents du dépôt, donc absents chez les joueurs) : {len(packs_en_trop)}")
-    l.append(f"- index d'objets en trop dans les gunpacks du dépôt : {len(fichiers_en_trop)} ; manquants sur le Ptero : {len(manquants)}")
+
+def resume(racine_ptero, index_ptero, packs, fichiers, manquants, objets):
+    l = [f"- dans /tacz du Ptero : {len(racine_ptero)} dossiers ou fichiers, {len(index_ptero)} objets",
+         f"- dossiers en trop sur le Ptero (absents du dépôt, donc absents chez les joueurs) : {len(packs)}",
+         f"- objets en trop dans les gunpacks du dépôt : {len(fichiers)} ; objets du dépôt manquants sur le Ptero : "
+         f"{len(manquants)}"]
     if objets:
         l.append("- objets en trop envoyés aux joueurs (carrés roses et noirs dans le menu créatif) : "
                  + ", ".join(f"{len(v)} {k}" for k, v in sorted(objets.items())))
     l.append("")
-    if packs_en_trop:
+    if packs:
         l.append("**Dossiers entiers absents du dépôt :**")
-        for p in packs_en_trop:
+        for p in packs:
             n = sum(1 for f in index_ptero if f.split("/", 1)[0] == p)
             l.append(f"- `{p}`" + (f" ({n} objets)" if n else ""))
         l.append("")
-    if fichiers_en_trop:
-        l.append("**Index d'objets en trop dans les gunpacks du dépôt :**")
-        par_pack = collections.Counter(f.split("/", 1)[0] for f in fichiers_en_trop)
-        for p, n in sorted(par_pack.items()):
+    if fichiers:
+        l.append("**Objets en trop dans les gunpacks du dépôt :**")
+        for p, n in sorted(collections.Counter(f.split("/", 1)[0] for f in fichiers).items()):
             l.append(f"- `{p}` : {n} objets")
         l.append("")
     for k, v in sorted(objets.items()):
-        l.append(f"<details><summary>{len(v)} {k} en trop</summary>")
-        l.append("")
-        l.extend(f"- `{x}`" for x in sorted(v))
-        l.append("")
-        l.append("</details>")
-        l.append("")
+        l += [f"<details><summary>{len(v)} {k} en trop</summary>", ""] + [f"- `{x}`" for x in v] + ["", "</details>", ""]
     if manquants:
-        l.append("<details><summary>Index du dépôt absents du Ptero</summary>")
-        l.append("")
-        l.extend(f"- `{x}`" for x in manquants[:200])
-        l.append("")
-        l.append("</details>")
+        l += ["<details><summary>Objets du dépôt absents du Ptero</summary>", ""]
+        l += [f"- `{x}`" for x in manquants[:200]] + ["", "</details>", ""]
+    return l
+
+
+def mkdir_p(sftp, chemin):
+    actuel = ""
+    for morceau in chemin.strip("/").split("/"):
+        actuel += "/" + morceau
+        try:
+            sftp.stat(actuel)
+        except OSError:
+            sftp.mkdir(actuel)
+
+
+def libre(sftp, chemin):
+    n, essai = 1, chemin
+    while True:
+        try:
+            sftp.stat(essai)
+        except OSError:
+            return essai
+        n += 1
+        essai = f"{chemin}.{n}"
+
+
+def ranger(sftp, packs, fichiers):
+    dest = "/tacz_ranges/" + datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+    mkdir_p(sftp, dest)
+    faits = []
+    for p in packs:
+        cible = libre(sftp, f"{dest}/{p}")
+        sftp.rename(f"/tacz/{p}", cible)
+        faits.append(f"/tacz/{p} -> {cible}")
+    for f in fichiers:
+        mkdir_p(sftp, str(pathlib.PurePosixPath(f"{dest}/{f}").parent))
+        cible = libre(sftp, f"{dest}/{f}")
+        sftp.rename(f"/tacz/{f}", cible)
+        faits.append(f"/tacz/{f} -> {cible}")
+    return dest, faits
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--resume", required=True)
+    ap.add_argument("--ranger", action="store_true")
+    ap.add_argument("--listes", nargs=2, metavar=("RACINE", "INDEX"))
+    a = ap.parse_args()
+
+    transport = sftp = None
+    if a.listes:
+        racine_ptero, index_ptero = lire_listes(*a.listes)
+    else:
+        transport, sftp = connexion()
+        racine_ptero, index_ptero = lister_ptero(sftp)
+    if not racine_ptero:
+        print("::error::dossier tacz du Ptero vide ou illisible : rien n'est comparé")
+        return 1
+    packs, fichiers, manquants, objets = comparer(racine_ptero, index_ptero)
+    l = ["### Gunpacks du serveur (dossier tacz du Ptero comparé au dépôt)", ""]
+    l += resume(racine_ptero, index_ptero, packs, fichiers, manquants, objets)
+
+    if a.ranger and sftp is not None and (packs or fichiers):
+        dest, faits = ranger(sftp, packs, fichiers)
+        apres = comparer(*lister_ptero(sftp))
+        l += [f"### Rangé dans `{dest}` (rien n'est effacé)", ""] + [f"- `{x}`" for x in faits] + [""]
+        l.append(f"Après : {len(apres[0])} dossiers et {len(apres[1])} objets encore en trop. "
+                 "Redémarrer le serveur pour que ce soit pris en compte ; pour revenir en arrière, remettre ces "
+                 "fichiers dans /tacz.")
+    elif a.ranger:
+        l.append("Rien à ranger.")
+    if transport is not None:
+        transport.close()
     texte = "\n".join(l) + "\n"
     pathlib.Path(a.resume).write_text(texte, encoding="utf-8")
     print(texte)
-
-    if a.ranger:
-        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", a.date):
-            print("::error::--ranger demande --date AAAA-MM-JJ")
-            return 1
-        dest = f"/tacz_ranges/{a.date}"
-        cmds = [f'mkdir -p -f "{dest}"']
-        for p in packs_en_trop:
-            cmds.append(f'mv "/tacz/{p}" "{dest}/{p}"')
-        dossiers = sorted({str(pathlib.PurePosixPath(f).parent) for f in fichiers_en_trop})
-        for d in dossiers:
-            cmds.append(f'mkdir -p -f "{dest}/{d}"')
-        for f in fichiers_en_trop:
-            cmds.append(f'mv "/tacz/{f}" "{dest}/{f}"')
-        for c in cmds:
-            if any(ch in c for ch in "`$\n;"):
-                print(f"::error::nom de fichier inattendu, rien n'est déplacé : {c}")
-                return 1
-        pathlib.Path(a.ranger).write_text("\n".join(cmds) + "\n", encoding="utf-8")
-        print(f"{len(packs_en_trop)} dossiers et {len(fichiers_en_trop)} fichiers à ranger dans {dest}")
     return 0
 
 
