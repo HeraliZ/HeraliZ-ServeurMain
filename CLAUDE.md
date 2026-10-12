@@ -495,9 +495,10 @@ raison) ; la clé des jetons du launcher est lue sur la VM du site (section 6 bi
 dépôt (`outils/gunpacks_serveur.py`). Le serveur envoie aux joueurs les objets de TOUS les gunpacks de son `tacz`, mais
 les joueurs n'ont que les images du dépôt : un gunpack (ou un index d'arme) resté sur le Ptero sans être dans le dépôt
 donne des carrés roses et noirs dans le menu créatif (12/10 : ~1 000 objets de 5 vieux packs et d'anciens index). Par
-défaut lecture seule ; case « ranger » : ce qui n'est pas dans le dépôt est DÉPLACÉ vers `/tacz_ranges/<date>/` (jamais
-effacé ; pour revenir en arrière, le remettre dans `/tacz`), puis redémarrer. Le pack par défaut de TaCZ
-(`tacz_default_gun`, aussi dans son jar) est gardé. À lancer après avoir retiré un gunpack ou une arme du dépôt.
+défaut lecture seule ; case « supprimer » : ce qui n'est pas dans le dépôt est SUPPRIMÉ du Ptero (gunpacks entiers,
+index d'objets en trop), puis redémarrer. Le pack par défaut de TaCZ (`tacz_default_gun`, aussi dans son jar) est
+gardé. Les joueurs n'ont jamais ces gunpacks (pack du launcher = dépôt). À lancer après avoir retiré un gunpack ou une
+arme du dépôt.
 
 **Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
 fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets
@@ -655,7 +656,7 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   contour noir de ses icônes d'inventaire) et `python outils/icones_sans_logo.py` (retire le logo « M » de Max Stuff,
   `verifier.py` le réclame). Ses `assets/` (modèles, sons, icônes) servent aussi aux joueurs : leur
   redonner le dossier `tacz` ; ses `data/` sont envoyées par le serveur. Retirer un gunpack ou une arme du dépôt ne
-  l'enlève pas du Ptero : ensuite, workflow « Gunpacks du serveur » avec « ranger », puis redémarrer (section 8).
+  l'enlève pas du Ptero : ensuite, workflow « Gunpacks du serveur » avec « supprimer », puis redémarrer (section 8).
 - **Un pack de textures** : il est imposé par heraliz_interface
   (`mods/heraliz-interface/src/main/resources/resourcepacks/textures` et `.../herbe`) : remplacer le contenu du dossier
   par celui du nouveau pack, puis refabriquer heraliz_interface. Pack imposé depuis le 11/10 (heraliz_interface

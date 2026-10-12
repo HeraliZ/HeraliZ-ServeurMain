@@ -9,15 +9,15 @@ Seuls le haut de /tacz et les index des gunpacks (data/<ns>/index/<type>/) sont 
 les objets (lister tout le dossier, plus de 6 000 fichiers, prend plus de 13 minutes par SFTP).
 
     python outils/gunpacks_serveur.py --resume resume.md            lecture seule (accès SFTP : PTERO_SFTP_* )
-    python outils/gunpacks_serveur.py --resume resume.md --ranger   DÉPLACE (jamais n'efface) ce qui n'est pas dans
-                                                                    le dépôt vers /tacz_ranges/<date>/
+    python outils/gunpacks_serveur.py --resume resume.md --supprimer   SUPPRIME du Ptero ce qui n'est pas dans le dépôt
+                                                                    (gunpacks entiers et index d'objets en trop)
     python outils/gunpacks_serveur.py --resume r.md --listes racine.txt index.txt   essai sans Ptero (une ligne par
                                                                     chemin sous /tacz, dossiers finis par « / »)
-Revenir en arrière : remettre dans /tacz ce qui a été rangé dans /tacz_ranges/<date>/, puis redémarrer.
+Les joueurs n'ont jamais téléchargé ces gunpacks (le pack du launcher est fait avec le dépôt) : les supprimer enlève
+seulement les objets en carrés roses, au prochain redémarrage du serveur.
 """
 import argparse
 import collections
-import datetime
 import os
 import pathlib
 import re
@@ -142,47 +142,39 @@ def resume(racine_ptero, index_ptero, packs, fichiers, manquants, objets):
     return l
 
 
-def mkdir_p(sftp, chemin):
-    actuel = ""
-    for morceau in chemin.strip("/").split("/"):
-        actuel += "/" + morceau
-        try:
-            sftp.stat(actuel)
-        except OSError:
-            sftp.mkdir(actuel)
+def effacer(sftp, chemin):
+    """Supprime un fichier ou un dossier entier du Ptero ; rend le nombre de fichiers supprimés."""
+    try:
+        contenu = sftp.listdir_attr(chemin)
+    except OSError:
+        sftp.remove(chemin)
+        return 1
+    n = 0
+    for a in contenu:
+        sous = f"{chemin}/{a.filename}"
+        if stat.S_ISDIR(a.st_mode or 0):
+            n += effacer(sftp, sous)
+        else:
+            sftp.remove(sous)
+            n += 1
+    sftp.rmdir(chemin)
+    return n
 
 
-def libre(sftp, chemin):
-    n, essai = 1, chemin
-    while True:
-        try:
-            sftp.stat(essai)
-        except OSError:
-            return essai
-        n += 1
-        essai = f"{chemin}.{n}"
-
-
-def ranger(sftp, packs, fichiers):
-    dest = "/tacz_ranges/" + datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
-    mkdir_p(sftp, dest)
+def supprimer(sftp, packs, fichiers):
     faits = []
     for p in packs:
-        cible = libre(sftp, f"{dest}/{p}")
-        sftp.rename(f"/tacz/{p}", cible)
-        faits.append(f"/tacz/{p} -> {cible}")
+        faits.append(f"/tacz/{p} ({effacer(sftp, f'/tacz/{p}')} fichiers)")
     for f in fichiers:
-        mkdir_p(sftp, str(pathlib.PurePosixPath(f"{dest}/{f}").parent))
-        cible = libre(sftp, f"{dest}/{f}")
-        sftp.rename(f"/tacz/{f}", cible)
-        faits.append(f"/tacz/{f} -> {cible}")
-    return dest, faits
+        sftp.remove(f"/tacz/{f}")
+        faits.append(f"/tacz/{f}")
+    return faits
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--resume", required=True)
-    ap.add_argument("--ranger", action="store_true")
+    ap.add_argument("--supprimer", action="store_true")
     ap.add_argument("--listes", nargs=2, metavar=("RACINE", "INDEX"))
     a = ap.parse_args()
 
@@ -201,15 +193,14 @@ def main():
     l.append("Pack par défaut de TaCZ (`tacz_default_gun`, aussi dans le jar de TaCZ chez les joueurs) : gardé.")
     l.append("")
 
-    if a.ranger and sftp is not None and (packs or fichiers):
-        dest, faits = ranger(sftp, packs, fichiers)
+    if a.supprimer and sftp is not None and (packs or fichiers):
+        faits = supprimer(sftp, packs, fichiers)
         apres = comparer(*lister_ptero(sftp))
-        l += [f"### Rangé dans `{dest}` (rien n'est effacé)", ""] + [f"- `{x}`" for x in faits] + [""]
+        l += ["### Supprimé du Ptero", ""] + [f"- `{x}`" for x in faits] + [""]
         l.append(f"Après : {len(apres[2])} dossiers et {len(apres[3])} objets encore en trop. "
-                 "Redémarrer le serveur pour que ce soit pris en compte ; pour revenir en arrière, remettre ces "
-                 "fichiers dans /tacz.")
-    elif a.ranger:
-        l.append("Rien à ranger.")
+                 "Redémarrer le serveur pour que ce soit pris en compte.")
+    elif a.supprimer:
+        l.append("Rien à supprimer.")
     if transport is not None:
         transport.close()
     texte = "\n".join(l) + "\n"
