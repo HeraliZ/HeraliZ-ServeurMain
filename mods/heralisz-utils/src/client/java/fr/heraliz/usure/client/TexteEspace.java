@@ -12,7 +12,8 @@ import java.util.Locale;
 
 /**
  * Texte en capitales espacees mis en cache (HUD) : les composants de chaque lettre et leurs avances ne sont recalcules
- * que si le texte change ; le dessin d'une image n'alloue rien de plus que le rendu vanilla des glyphes.
+ * que si le texte change ; le dessin d'une image n'alloue rien de plus que le rendu vanilla des glyphes. Avances exactes
+ * (fractions de pixel, comme le jeu pose les lettres) : l'espacement reste celui demande, meme en petite taille.
  */
 public final class TexteEspace {
     private final ResourceLocation police;
@@ -41,7 +42,7 @@ public final class TexteEspace {
         int k = 0;
         for (int i = 0; i < up.length(); i = up.offsetByCodePoints(i, 1), k++) {
             lettres[k] = Ui.lit(new String(Character.toChars(up.codePointAt(i))), police);
-            avances[k] = font.width(lettres[k]) + espace;
+            avances[k] = font.getSplitter().stringWidth(lettres[k]) + espace;
             largeur += avances[k];
         }
         if (n > 0) largeur -= espace;
