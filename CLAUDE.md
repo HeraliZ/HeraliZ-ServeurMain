@@ -129,7 +129,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | Projet | Jar | modIds dedans | Rôle |
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
-| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
+| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
@@ -885,9 +885,35 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   yeux au corps pour ouvrir, 6 pour garder ouvert) ; boîte du cadavre dans le sens du corps (1 × 1,9 bloc, carré de
   1,6 en diagonale, 0,45 de haut), sans collision. Fouiller un joueur À TERRE (Réanimation 1.14.0) ne téléporte plus
   à côté de lui non plus (la réanimation, elle, garde sa place à genoux) ;
-- usure (12/10) : l'indicateur de l'arme en main est en bas à droite, sous le HUD de TaCZ (`HudUsure`, pastille de
-  12 px) ; nouvel habillage au style des clans en attente du choix du propriétaire (maquettes A segments, B ligne
-  sous les munitions, C anneau) ;
+- usure (12/10, 13/10, Utils 2.9.0) : l'indicateur de l'arme en main est en bas à droite, sous le HUD de TaCZ
+  (`HudUsure`) ; habillage C « anneau » choisi par le propriétaire : pastille de verre de 16 px de haut (≈ 45 px de
+  large), petit anneau de la couleur de l'état qui se vide dans le sens horaire (part perdue aux réparations en rouge au
+  bout du tour), pourcentage en gras et état en petites capitales dessous ; arme ruinée : anneau et contour rouges,
+  contour avivé au clic à vide. Formes en maillages adoucis d'un pixel d'écran (`FormesHud`, `Maillage` : nettes à toute
+  échelle d'interface, calculées seulement quand l'état change), polices `hud_pct` / `hud_etat` (DM Sans gras 8,2 et
+  5,2 px) ; largeur réservée au pourcentage stable (la pastille ne bouge pas à chaque tir), nom de l'état omis si la
+  place manque près de la barre d'objets DayZ ;
+- véhicules (13/10, Utils 2.9.0) : plus de coffre dans les véhicules, ni à bord ni sur une épave (mixin serveur
+  `VehiculeSansCoffreMixin` sur `ContainerCraft` d'ywzj) ; ce qui était déjà rangé dans un véhicule posé est posé au sol à
+  côté de lui, sans limite de temps, dès qu'il se charge (objets déplacés, jamais copiés ; noté dans le journal du
+  serveur). PV max divisés par 5 (moto 20, buggy et fourgon 60, camion 100 ; `PointsDeVie`) : les véhicules déjà posés y
+  passent en gardant leur pourcentage de vie. Plus de panneau « TOUCHÉ / DÉGÂTS / CRITIQUE » avec la petite vue 3D du
+  véhicule quand on le touche, ni de barre de vie du véhicule touché (`client/IndicateurDegats`, calque
+  `ywzj_vehicle:vehicle_hit_indicator` caché chez le joueur) ; restent les impacts de balles et la barre de vie d'un
+  véhicule qu'on regarde (`showVehicleInfoDistance` de `ywzj_vehicle-server.toml`, 0 pour la retirer). Réglages
+  `coffre_retire` et `pv_pourcent` de `heraliz_vehicules-server.toml`. Seuil de blindage d'ywzj inchangé (un coup sous
+  50, ou 10 pour le buggy, n'enlève que 0,1 PV) ;
+- couteaux TaCZ (13/10, Tactique 2.13.0, `fr.heraliz.tactique.couteaux`) : « Knife » CT et T, karambits, papillons, M9
+  (fiche `arkaniaz:knife_data`) frappent comme les armes de mêlée de LR, réglés comme la Dague tactique : clic gauche
+  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,45 s, touche tenue = coups
+  enchaînés ; clic droit (Viser) = coup puissant ×1,5 toutes les 0,9 s, plus de visée au couteau, rien si le viseur est
+  sur un joueur à terre (Réanimation) ; V (« Mêlée » de TaCZ) = coup rapide (le coup de TaCZ n'est plus donné aux
+  couteaux). Cône de 3 blocs (65° / 75°), plusieurs cibles, vue dégagée ; coup décidé et donné par le serveur
+  (`serveur/CouteauxServeur`, coup de LR `IMeleeWeapon.attackTarget`), cadence vérifiée en temps réel. Animation
+  « melee_push » du couteau pour les deux coups. Avant : pour TaCZ un couteau est une arme à feu, le clic gauche tirait
+  une balle de 0,005 bloc et seul V frappait. Portée 3 et pas 4 comme LR : au-delà d'environ 3,6, Spartan annule le coup
+  et bloque les coups 3 s. Réglages : section `[couteaux]` de `heralisz_tactical-server.toml` (`actif = false` : comme
+  avant) ;
 - train (11/10, 12/10) : un train qui roule heurte (2,5 cœurs, joueur projeté à côté) ; il ne tue que devant la locomotive ou
   dans la voie, sous la caisse ; dans la voiture, on marche comme au sol dans Minecraft (élan, vitesse du joueur, course
   vue des autres, bruits de pas, corps tourné dans le sens de la marche, arme de TaCZ qui balance) et on peut sauter ; on
@@ -953,6 +979,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   section 9) ; lieux et nom
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
+- **Mêlée de LR** : portée de 4 blocs, mais Spartan (reachDistance 3,3 + marge) annule les coups au-delà d'environ 3,6
+  et bloque les coups du joueur 3 s : ramener les portées à ~3,3 (non fait, à décider).
 - **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
   Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
