@@ -88,3 +88,36 @@
 	#tireur et un même joueur. 0 : vraie place (déconseillé : elle serait envoyée au jeu du joueur).
 	#Range: 0.0 ~ 1.0
 	flou_lointain = 0.5
+
+[couteaux]
+	#Couteaux TaCZ (Knife CT et T, karambits, papillons, M9 ; fiche technique arkaniaz:knife_data) frappés comme les
+	#armes de mêlée de HeraliZ Tactique (LR), réglés comme la Dague tactique : touche Tirer (clic gauche) = coup
+	#rapide, touche tenue = coups enchaînés ; touche Viser (clic droit) = coup puissant ; touche « Mêlée » de TaCZ (V) =
+	#coup rapide. Le serveur décide des cibles et des dégâts. false : comme avant (clic gauche sans effet, clic droit
+	#pour viser, seul le coup de TaCZ sur V : 13 dégâts, 1,4 bloc).
+	actif = true
+	#Dégâts ajoutés à l'attaque du joueur (1 à mains nues, plus les effets Force / Faiblesse) pour un coup rapide :
+	#5,5 donne 6,5 dégâts (3,25 cœurs), comme la Dague tactique. Coup critique (en retombant d'un saut) : x1,5.
+	#Range: 0.0 ~ 100.0
+	degats = 5.5
+	#Dégâts du coup puissant (clic droit) : ceux du coup rapide multipliés par cette valeur (1,5 : 9,75 dégâts).
+	#Range: 1.0 ~ 10.0
+	multiplicateur_lourd = 1.5
+	#Ticks (20 par seconde) avant le coup suivant, après un coup rapide (9 : 0,45 s, comme la Dague tactique).
+	#Range: 4 ~ 200
+	cadence_rapide = 9
+	#Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique).
+	#Range: 4 ~ 400
+	cadence_lourd = 18
+	#Portée (en blocs) entre les yeux du joueur et le point le plus proche de la cible. La Dague tactique va à 4,
+	#mais au-delà d'environ 3,6 l'anticheat Spartan (reachDistance 3,3 + marge) annule le coup, bloque les coups du
+	#joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.
+	#Range: 1.0 ~ 6.0
+	portee = 3.0
+	#Ouverture (en degrés) du cône du coup rapide devant le regard, moitié de chaque côté (65, comme la Dague
+	#tactique). Tous les êtres vivants dans le cône, à portée et en vue, sont touchés.
+	#Range: 5.0 ~ 180.0
+	angle_rapide = 65.0
+	#Ouverture (en degrés) du cône du coup puissant (75, comme la Dague tactique).
+	#Range: 5.0 ~ 180.0
+	angle_lourd = 75.0

@@ -3,6 +3,7 @@ package fr.heraliz.tactique;
 import fr.heralisz.camo.HeraliszCamo;
 import fr.heralisz.tactical.init.ModItems;
 import fr.heraliz.tactique.allonge.ReseauAllonge;
+import fr.heraliz.tactique.couteaux.ReseauCouteaux;
 import fr.heraliz.tactique.onglet.OngletGroupe;
 import fr.heraliz.tactique.onglets.Etablis;
 import fr.heraliz.tactique.pont.Parties;
@@ -33,7 +34,8 @@ import net.minecraftforge.registries.RegistryObject;
  * Il porte aussi « s'allonger » (paquet {@code fr.heraliz.tactique.allonge}) : règles HeraliZ ajoutées au ramper de TaCZ
  * (un appui, délai pour se rallonger, pas de tir pendant qu'on se couche) ; les vitres cassées par les balles, qui
  * repoussent (paquet {@code fr.heraliz.tactique.vitres}) ; le retrait des établis inutiles de TaCZ des onglets créatifs
- * ({@code fr.heraliz.tactique.onglets.Etablis}).
+ * ({@code fr.heraliz.tactique.onglets.Etablis}) ; les coups des couteaux TaCZ, frappés comme les armes de mêlée
+ * (paquet {@code fr.heraliz.tactique.couteaux}).
  */
 @Mod(HeralizTactique.MODID)
 public class HeralizTactique {
@@ -70,6 +72,8 @@ public class HeralizTactique {
       ReseauAllonge.init();
       // tirs silencieux entendus de loin, étouffés et d'un endroit flou (son.SonLointain)
       ReseauSon.init();
+      // couteaux TaCZ frappés comme les armes de mêlée de LR (couteaux.CoupsCouteau) : demande de coup du joueur
+      ReseauCouteaux.init();
       Parties.serveur(MODID, "fr.heraliz.tactique.serveur.ServeurTactique", bus);
       Parties.client(MODID, "fr.heraliz.tactique.client.ClientTactique", bus);
    }

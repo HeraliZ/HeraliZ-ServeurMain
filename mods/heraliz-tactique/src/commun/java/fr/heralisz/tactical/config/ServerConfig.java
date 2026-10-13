@@ -1,6 +1,7 @@
 package fr.heralisz.tactical.config;
 
 import fr.heraliz.tactique.allonge.Allonge;
+import fr.heraliz.tactique.couteaux.CoupsCouteau;
 import fr.heraliz.tactique.son.SonLointain;
 import fr.heraliz.tactique.vitres.Vitres;
 import java.util.List;
@@ -34,6 +35,15 @@ public class ServerConfig {
    public static BooleanValue SON_LOINTAIN;
    public static DoubleValue SON_LOINTAIN_VOLUME;
    public static DoubleValue SON_LOINTAIN_FLOU;
+   /** HeraliZ : couteaux TaCZ frappés comme les armes de mêlée de LR (fr.heraliz.tactique.couteaux.CoupsCouteau). */
+   public static BooleanValue COUTEAUX;
+   public static DoubleValue COUTEAUX_DEGATS;
+   public static DoubleValue COUTEAUX_MULTIPLICATEUR_LOURD;
+   public static IntValue COUTEAUX_CADENCE_RAPIDE;
+   public static IntValue COUTEAUX_CADENCE_LOURD;
+   public static DoubleValue COUTEAUX_PORTEE;
+   public static DoubleValue COUTEAUX_ANGLE_RAPIDE;
+   public static DoubleValue COUTEAUX_ANGLE_LOURD;
 
    public static ForgeConfigSpec init() {
       Builder builder = new Builder();
@@ -126,6 +136,40 @@ public class ServerConfig {
             "d'un point jusqu'à 50 blocs à côté du tireur ; au plus 96 blocs). Le point reste le même 30 s pour un même",
             "tireur et un même joueur. 0 : vraie place (déconseillé : elle serait envoyée au jeu du joueur).")
          .defineInRange("flou_lointain", SonLointain.DEFAUT_FLOU, 0.0, 1.0);
+      builder.pop();
+      // HeraliZ : couteaux TaCZ (envoyé aux joueurs à la connexion : ils lisent la même cadence que le serveur)
+      builder.push("couteaux");
+      COUTEAUX = builder.comment(
+            "Couteaux TaCZ (Knife CT et T, karambits, papillons, M9 ; fiche technique arkaniaz:knife_data) frappés comme les",
+            "armes de mêlée de HeraliZ Tactique (LR), réglés comme la Dague tactique : touche Tirer (clic gauche) = coup",
+            "rapide, touche tenue = coups enchaînés ; touche Viser (clic droit) = coup puissant ; touche « Mêlée » de TaCZ (V) =",
+            "coup rapide. Le serveur décide des cibles et des dégâts. false : comme avant (clic gauche sans effet, clic droit",
+            "pour viser, seul le coup de TaCZ sur V : 13 dégâts, 1,4 bloc).")
+         .define("actif", CoupsCouteau.DEFAUT_ACTIF);
+      COUTEAUX_DEGATS = builder.comment(
+            "Dégâts ajoutés à l'attaque du joueur (1 à mains nues, plus les effets Force / Faiblesse) pour un coup rapide :",
+            "5,5 donne 6,5 dégâts (3,25 cœurs), comme la Dague tactique. Coup critique (en retombant d'un saut) : x1,5.")
+         .defineInRange("degats", CoupsCouteau.DEFAUT_DEGATS, 0.0, 100.0);
+      COUTEAUX_MULTIPLICATEUR_LOURD = builder.comment(
+            "Dégâts du coup puissant (clic droit) : ceux du coup rapide multipliés par cette valeur (1,5 : 9,75 dégâts).")
+         .defineInRange("multiplicateur_lourd", CoupsCouteau.DEFAUT_MULTIPLICATEUR_LOURD, 1.0, 10.0);
+      COUTEAUX_CADENCE_RAPIDE = builder.comment(
+            "Ticks (20 par seconde) avant le coup suivant, après un coup rapide (9 : 0,45 s, comme la Dague tactique).")
+         .defineInRange("cadence_rapide", CoupsCouteau.DEFAUT_CADENCE_RAPIDE, CoupsCouteau.CADENCE_MIN, 200);
+      COUTEAUX_CADENCE_LOURD = builder.comment(
+            "Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique).")
+         .defineInRange("cadence_lourd", CoupsCouteau.DEFAUT_CADENCE_LOURD, CoupsCouteau.CADENCE_MIN, 400);
+      COUTEAUX_PORTEE = builder.comment(
+            "Portée (en blocs) entre les yeux du joueur et le point le plus proche de la cible. La Dague tactique va à 4,",
+            "mais au-delà d'environ 3,6 l'anticheat Spartan (reachDistance 3,3 + marge) annule le coup, bloque les coups du",
+            "joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.")
+         .defineInRange("portee", CoupsCouteau.DEFAUT_PORTEE, 1.0, 6.0);
+      COUTEAUX_ANGLE_RAPIDE = builder.comment(
+            "Ouverture (en degrés) du cône du coup rapide devant le regard, moitié de chaque côté (65, comme la Dague",
+            "tactique). Tous les êtres vivants dans le cône, à portée et en vue, sont touchés.")
+         .defineInRange("angle_rapide", CoupsCouteau.DEFAUT_ANGLE_RAPIDE, 5.0, 180.0);
+      COUTEAUX_ANGLE_LOURD = builder.comment("Ouverture (en degrés) du cône du coup puissant (75, comme la Dague tactique).")
+         .defineInRange("angle_lourd", CoupsCouteau.DEFAUT_ANGLE_LOURD, 5.0, 180.0);
       builder.pop();
       return builder.build();
    }
