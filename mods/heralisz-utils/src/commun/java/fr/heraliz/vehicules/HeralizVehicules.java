@@ -22,7 +22,8 @@ import org.slf4j.Logger;
  *   sur le serveur) ;</li>
  *   <li>{@code CoffreRetire}, {@code SuiviVehicules} : plus de coffre dans les véhicules (contenu déjà rangé posé au
  *   sol) ;</li>
- *   <li>{@link PointsDeVie} : PV max divisés par 5 (réglage pv_pourcent), véhicules déjà posés compris.</li>
+ *   <li>{@link PointsDeVie} : PV max divisés par 5 (réglage pv_pourcent), véhicules déjà posés compris ;</li>
+ *   <li>{@code client.IndicateurDegats} : plus de panneau des dégâts quand on touche un véhicule.</li>
  * </ul>
  * Jar fusionné HeraliZ Utils (docs/METHODE_CLIENT_SERVEUR.md) : ici le commun (liste des véhicules, onglet, réglages,
  * filtre des onglets du moteur) ; {@code Regles}, {@code Commandes} et l'effacement des objets retirés
