@@ -4,6 +4,7 @@ Lit les tables de constantes de toutes les classes du mod, relève chaque classe
 puis cherche chacun (en remontant les classes mères et les interfaces) dans le jar GeckoLib visé.
 Usage : python check_geckolib_api.py <mod.jar> <geckolib.jar>
 """
+import re
 import struct
 import sys
 import zipfile
@@ -80,9 +81,15 @@ def main():
                     if r[1].lstrip("[L").startswith(PREFIX):
                         used.add(r)
 
+    srg = re.compile(r"^[mf]_\d+_$")
+
     def has(c, nm, ds, seen=None):
         seen = seen or set()
-        if c not in lib or c in seen:
+        if c not in lib:
+            # membre de Minecraft (nom SRG) hérité d'une classe mère hors GeckoLib (ex. EntityRenderer.shouldRender
+            # appelé par super. dans une sous-classe de GeoEntityRenderer) : la JVM le trouve dans la classe mère
+            return c.startswith("net/minecraft/") and bool(srg.match(nm))
+        if c in seen:
             return False
         seen.add(c)
         sup, itf, mem = lib[c]
