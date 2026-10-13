@@ -7,7 +7,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 /**
  * Partie serveur de heraliz_vehicules (jar fusionné HeraliZ Utils, docs/METHODE_CLIENT_SERVEUR.md §4) : règles des
  * véhicules (dimensions interdites, tag de combat, descente avant un changement de dimension, explosions sans casse de
- * blocs, essence obligatoire), objets du moteur retirés effacés, commandes /vehicules, coffre retiré
+ * blocs, essence obligatoire), objets du moteur retirés effacés, commandes /vehicules, coffre retiré et PV divisés
  * (SuiviVehicules ; ouverture du coffre refusée par le mixin serveur VehiculeSansCoffreMixin). Écouteurs dans l'ordre
  * d'origine.
  */

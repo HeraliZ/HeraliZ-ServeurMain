@@ -6,7 +6,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 /**
  * Partie SERVEUR de {@link HeralizVehicules} (docs/METHODE_CLIENT_SERVEUR.md §5) : les écouteurs serveur que le
  * constructeur du @Mod inscrivait, dans l'ordre d'origine (réglages relus -> protection des blocs, objets retirés effacés,
- * règles des véhicules, commandes /vehicules), puis le suivi des véhicules posés (coffre retiré :
+ * règles des véhicules, commandes /vehicules), puis le suivi des véhicules posés (PV divisés, coffre retiré :
  * {@link SuiviVehicules}).
  */
 public final class HeralizVehiculesServeur {
