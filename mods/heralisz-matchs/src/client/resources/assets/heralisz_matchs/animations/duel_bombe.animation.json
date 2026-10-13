@@ -1,0 +1,16 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.duel_bombe.repos": {
+      "loop": true,
+      "animation_length": 1.0,
+      "bones": {
+        "racine": {
+          "rotation": {
+            "vector": [0, 0, 0]
+          }
+        }
+      }
+    }
+  }
+}
