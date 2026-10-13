@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import fr.heraliz.tactique.melee.PorteeMelee;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,7 +32,8 @@ public class RayFilter implements ITargetFilter {
    @NotNull
    @Override
    public List<Entity> filterTargets(LivingEntity attacker, Vec3 origin, Vec3 direction) {
-      Vec3 to = origin.add(direction.normalize().scale(this.maxRange));
+      // HeraliZ : portée plafonnée ([melee] portee_max, PorteeMelee)
+      Vec3 to = origin.add(direction.normalize().scale(this.getMaxRange()));
       List<RayFilter.RayEntityHitResult> targets = this.findEntitiesOnPath(attacker, origin, to);
       return targets.stream().limit(this.penetration + 1).<Entity>map(EntityHitResult::getEntity).toList();
    }
@@ -39,7 +41,7 @@ public class RayFilter implements ITargetFilter {
    @NotNull
    public List<RayFilter.RayEntityHitResult> findEntitiesOnPath(LivingEntity attacker, Vec3 startVec, Vec3 endVec) {
       List<RayFilter.RayEntityHitResult> hitEntities = new ArrayList<>();
-      AABB area = attacker.getBoundingBox().expandTowards(attacker.getViewVector(1.0F).scale(this.maxRange)).inflate(1.0);
+      AABB area = attacker.getBoundingBox().expandTowards(attacker.getViewVector(1.0F).scale(this.getMaxRange())).inflate(1.0);
 
       for (Entity entity : attacker.level().getEntities(attacker, area, EntitySelector.NO_SPECTATORS)) {
          if (!entity.equals(attacker) && !entity.equals(attacker.getVehicle()) && entity.isAlive() && ITargetFilter.hasLineOfSight(attacker, entity)) {
@@ -58,9 +60,10 @@ public class RayFilter implements ITargetFilter {
       return hitEntities;
    }
 
+   /** HeraliZ : la portée de la fiche, ramenée à la portée maximale des armes de corps à corps ([melee] portee_max). */
    @Override
    public double getMaxRange() {
-      return this.maxRange;
+      return PorteeMelee.plafonner(this.maxRange);
    }
 
    public static class RayEntityHitResult extends EntityHitResult {

@@ -109,6 +109,14 @@ public interface IMeleeWeapon extends ICustomItem {
    }
 
    default AttackResult performAttack(Player attacker, Entity target, ItemStack stack, float base, float knockback) {
+      return attackTarget(attacker, target, stack, base, knockback);
+   }
+
+   /**
+    * Un coup de mêlée sur une cible (code d'origine de performAttack, sorti tel quel pour servir aussi aux couteaux TaCZ,
+    * fr.heraliz.tactique.couteaux.CoupsCouteau : mêmes règles que les armes de LR). Serveur seulement.
+    */
+   static AttackResult attackTarget(Player attacker, Entity target, ItemStack stack, float base, float knockback) {
       if (!ForgeHooks.onPlayerAttackTarget(attacker, target)) {
          return AttackResult.MISS;
       }

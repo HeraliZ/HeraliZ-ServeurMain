@@ -16,10 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Vitres cassées par les balles (fr.heraliz.tactique.vitres.Vitres) : le trajet d'une balle de TaCZ, bloc par bloc.
  * <p>
  * TaCZ fait passer ses balles au travers des blocs de sa liste {@code PassThroughBlocks} (tacz-common.toml : les blocs de
- * verre pleins y sont) sans même les toucher : une balle ne pourrait jamais les casser. Là où le verre casse (décision
- * de la partie serveur : hors zones protégées, réglage {@code [vitres] casser}), le verre redevient un bloc que la balle
- * touche, avec le même calcul que TaCZ ; la balle le casse alors ({@code AmmoHitBlockEvent}, VitresServeur) et s'y
- * arrête, comme avec le réglage DestroyGlass de TaCZ. Ailleurs, rien ne change.
+ * verre pleins et les fenêtres de meubles {@code cfm:vb_*} y sont) sans même les toucher : une balle ne pourrait jamais
+ * les casser. Là où le bloc casse (décision de la partie serveur : verre ou bloc de la liste {@code [vitres]
+ * blocs_en_plus}, hors zones protégées, réglage {@code [vitres] casser}), il redevient un bloc que la balle touche,
+ * avec le même calcul que TaCZ ; la balle le casse alors ({@code AmmoHitBlockEvent}, VitresServeur) et s'y arrête, comme
+ * avec le réglage DestroyGlass de TaCZ. Ailleurs, rien ne change. Chaque appel est noté ({@code Vitres.crochetAppele}) :
+ * {@code /vitres pourquoi} sait ainsi si ce mixin est bien en place.
  * <p>
  * Cible : la fonction {@code lambda$rayTraceBlocks$1(Level, ClipContext, BlockPos)} de BlockRayTrace (TaCZ 1.1.8), qui
  * regarde chaque bloc du trajet (null = la balle continue). Seul le serveur calcule les impacts des balles. Noms de TaCZ
@@ -38,8 +40,10 @@ public abstract class TaczVerreBalleMixin {
       if (!Vitres.branche() || level.isClientSide) {
          return;
       }
+      Vitres.crochetAppele();
       BlockState etat = level.getBlockState(pos);
-      if (Vitres.estVerre(etat) && Vitres.cassable(level, pos, etat)) {
+      // verre ou bloc de la liste blocs_en_plus (fenêtres de meubles), hors zones protégées
+      if (Vitres.cassable(level, pos, etat)) {
          cir.setReturnValue(Vitres.toucher(level, contexte, pos, etat));
       }
    }

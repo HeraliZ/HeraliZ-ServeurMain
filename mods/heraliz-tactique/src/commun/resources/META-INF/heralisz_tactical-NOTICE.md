@@ -13,4 +13,8 @@ Modifications HeralisZ (2026-09-27) :
 - Les armes de mêlée sont rangées dans l'onglet Heavy Weapon de TaCZ, avec les couteaux ; le Flash Shield n'est plus proposé.
 - Les icônes des onglets pointent sur nos objets.
 
+Modifications HeraliZ (2026-10-13) :
+- Le coup de mêlée sur une cible (`IMeleeWeapon.performAttack`) est sorti dans `IMeleeWeapon.attackTarget`, sans
+  changement, pour donner les mêmes coups aux couteaux TaCZ ; réglages des couteaux dans la config serveur (`[couteaux]`).
+
 Sources obtenues en décompilant le jar désobfusqué (Vineflower 1.12), voir `tools/fork_tactical.py`.

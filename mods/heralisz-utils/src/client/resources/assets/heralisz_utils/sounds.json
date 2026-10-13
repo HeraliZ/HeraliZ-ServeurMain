@@ -3,7 +3,8 @@
   "sounds": [
    {
     "name": "heralisz_utils:train/klaxon",
-    "stream": false
+    "stream": false,
+    "attenuation_distance": 128
    }
   ],
   "subtitle": "subtitles.heralisz_utils.train.klaxon"
@@ -12,7 +13,8 @@
   "sounds": [
    {
     "name": "heralisz_utils:train/roulement",
-    "stream": true
+    "stream": false,
+    "attenuation_distance": 16
    }
   ],
   "subtitle": "subtitles.heralisz_utils.train.roulement"
@@ -21,7 +23,8 @@
   "sounds": [
    {
     "name": "heralisz_utils:train/freins",
-    "stream": false
+    "stream": false,
+    "attenuation_distance": 48
    }
   ],
   "subtitle": "subtitles.heralisz_utils.train.freins"
@@ -30,7 +33,8 @@
   "sounds": [
    {
     "name": "heralisz_utils:train/moteur",
-    "stream": true
+    "stream": false,
+    "attenuation_distance": 64
    }
   ],
   "subtitle": "subtitles.heralisz_utils.train.moteur"
@@ -39,10 +43,121 @@
   "sounds": [
    {
     "name": "heralisz_utils:train/carillon",
-    "stream": false
+    "stream": false,
+    "attenuation_distance": 48
    }
   ],
   "subtitle": "subtitles.heralisz_utils.train.carillon"
+ },
+ "train.voie": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/voie",
+    "stream": false,
+    "attenuation_distance": 72
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.roulement"
+ },
+ "train.cabine": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/cabine",
+    "stream": false,
+    "attenuation_distance": 16
+   }
+  ]
+ },
+ "train.joint": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/joint_1",
+    "stream": false,
+    "attenuation_distance": 40,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:train/joint_2",
+    "stream": false,
+    "attenuation_distance": 40,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:train/joint_3",
+    "stream": false,
+    "attenuation_distance": 40,
+    "preload": true
+   },
+   {
+    "name": "heralisz_utils:train/joint_4",
+    "stream": false,
+    "attenuation_distance": 40,
+    "preload": true
+   }
+  ]
+ },
+ "train.attelage": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/attelage",
+    "stream": false,
+    "attenuation_distance": 40
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.attelage"
+ },
+ "train.depart": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/depart",
+    "stream": false,
+    "attenuation_distance": 64
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.depart"
+ },
+ "train.detente": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/detente",
+    "stream": false,
+    "attenuation_distance": 40
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.detente"
+ },
+ "train.portes_ouverture": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/portes_ouverture",
+    "stream": false,
+    "attenuation_distance": 28,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.portes_ouverture"
+ },
+ "train.portes_fermeture": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/portes_fermeture",
+    "stream": false,
+    "attenuation_distance": 28,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.portes_fermeture"
+ },
+ "train.porte_interieure": {
+  "sounds": [
+   {
+    "name": "heralisz_utils:train/porte_interieure",
+    "stream": false,
+    "attenuation_distance": 12,
+    "preload": true
+   }
+  ],
+  "subtitle": "subtitles.heralisz_utils.train.porte_interieure"
  },
  "cine.pas": {
   "sounds": [

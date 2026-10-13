@@ -7,7 +7,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
@@ -28,9 +30,10 @@ import java.util.WeakHashMap;
  *   <li>tant qu'une combinaison est portee, plus rien n'entre dans ces slots ;</li>
  *   <li>le sac a dos (slot Curios « back ») reste autorise ; les mains aussi.</li>
  * </ul>
- * Valable pour les joueurs et le mannequin. Appliquee par : SuitItem (canEquip, clic droit), mixin du slot d'armure de
- * l'inventaire (tous les objets, ceux des autres mods compris), CurioEquipEvent (Curios), menu et clic droit du
- * mannequin, commandes et tenues completes ; garde-fou serveur dans SuitEvents (objet rendu a l'inventaire).
+ * Valable pour les joueurs et le mannequin. Appliquee par : SuitItem (canEquip, clic droit), mixins des slots d'armure
+ * de l'inventaire et de l'ecran de Curios (tous les objets, ceux des autres mods compris, {@link #refusesArmorSlot}),
+ * CurioEquipEvent (Curios), menu et clic droit du mannequin, commandes et tenues completes ; garde-fou serveur dans
+ * SuitEvents (objet rendu a l'inventaire).
  */
 public final class SuitRules {
     private SuitRules() {}
@@ -86,6 +89,35 @@ public final class SuitRules {
         if (entity == null || stack.isEmpty()) return true;
         if (isSuit(stack)) return slot == EquipmentSlot.CHEST && canWearSuit(entity);
         return !wearsSuit(entity);
+    }
+
+    /**
+     * Slot d'armure d'un menu du joueur (inventaire de base InventoryMenu$1, ecran de Curios CuriosContainerV2$1 et
+     * CuriosContainer$1 : mixins InventoryArmorSlotMixin et CuriosArmorSlotMixin) : vrai si la regle refuse cet objet,
+     * explication au joueur. Tous les objets, ceux des autres mods compris (clic, Maj + clic, touches numeriques).
+     */
+    public static boolean refusesArmorSlot(Slot self, ItemStack stack) {
+        if (stack.isEmpty() || !(self.container instanceof Inventory inv)) return false;
+        // slots 36 a 39 de l'inventaire : pieds, jambes, torse, tete
+        EquipmentSlot slot = switch (self.getContainerSlot()) {
+            case 36 -> EquipmentSlot.FEET;
+            case 37 -> EquipmentSlot.LEGS;
+            case 38 -> EquipmentSlot.CHEST;
+            case 39 -> EquipmentSlot.HEAD;
+            default -> null;
+        };
+        if (slot == null) return false;
+        if (isSuit(stack)) {
+            // une combinaison ailleurs qu'au torse : le jeu la refuse deja, sans message
+            if (slot != EquipmentSlot.CHEST || canWearSuit(inv.player)) return false;
+            tell(inv.player, false);
+            return true;
+        }
+        if (wearsSuit(inv.player)) {
+            tell(inv.player, true);
+            return true;
+        }
+        return false;
     }
 
     /** Cet objet peut-il entrer dans ce slot Curios ? Rien dans un slot de vetements tant qu'une combinaison est portee. */

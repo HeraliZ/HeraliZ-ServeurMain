@@ -31,6 +31,9 @@ import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
  *     renvoie l'etat exact (case videe, slot Curios synchronise par Curios). Sans partie serveur : comportement normal.</li>
  *     <li>Creatif : comportement normal (l'inventaire creatif est decide par le jeu du joueur).</li>
  * </ul>
+ * Depuis 0.14.0, la touche de l'inventaire ouvre l'ecran de Curios (client/curios/InventaireCurios), dont le Maj + clic
+ * (CuriosContainerV2) range deja un objet Curios dans un slot Curios libre, avec les memes regles. Ce Maj + clic ne sert
+ * plus qu'a l'inventaire de base, ouvert seulement en secours (serveur sans reponse).
  */
 public final class MajClicCurios {
     private MajClicCurios() {
