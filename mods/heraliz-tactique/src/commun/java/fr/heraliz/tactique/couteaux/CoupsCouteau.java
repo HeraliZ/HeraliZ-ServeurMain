@@ -1,6 +1,7 @@
 package fr.heraliz.tactique.couteaux;
 
 import fr.heralisz.tactical.config.ServerConfig;
+import fr.heraliz.tactique.melee.PorteeMelee;
 import fr.heraliz.tactique.onglets.Couteaux;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.player.Player;
@@ -25,8 +26,9 @@ import net.minecraftforge.common.ForgeConfigSpec;
  *    un joueur à terre : rien (Réanimation : réanimer ou fouiller, comme avant) ;</li>
  *    <li>dégâts : (attaque du joueur, 1 à mains nues, + {@code degats}) pour le coup rapide, ×{@code multiplicateur_lourd}
  *    pour le coup puissant, comme les coups de LR (coup critique en tombant, recul, temps d'invincibilité de la cible) ;
- *    cibles : tout être vivant dans un cône devant les yeux ({@code portee}, {@code angle_rapide} / {@code angle_lourd},
- *    vue dégagée), plusieurs à la fois comme avec LR ;</li>
+ *    cibles : tout être vivant dans un cône devant les yeux (portée : {@code portee_max} de la section {@code [melee]},
+ *    commune à toutes les armes de corps à corps, {@link PorteeMelee} ; {@code angle_rapide} / {@code angle_lourd}, vue
+ *    dégagée), plusieurs à la fois comme avec LR ;</li>
  *    <li>animation « melee_push » du couteau et son bruit (ceux de la touche « Mêlée » de TaCZ) ; les autres joueurs voient
  *    le coup de TaCZ en 3e personne et entendent le coup et l'impact ;</li>
  *    <li>pas de coup pendant que le couteau est sorti (temps de sortie de TaCZ), ni à terre ou en train de fouiller ou de
@@ -51,12 +53,6 @@ public final class CoupsCouteau {
    public static final int DEFAUT_CADENCE_RAPIDE = 9;
    /** Réglage par défaut : ticks après un coup puissant ({@code cooldown} de l'attaque droite de la Dague tactique). */
    public static final int DEFAUT_CADENCE_LOURD = 18;
-   /**
-    * Réglage par défaut : portée en blocs, des yeux au point le plus proche de la cible. La Dague tactique va à 4 ; 3 est
-    * la portée d'un coup de Minecraft, que l'anticheat Spartan tolère (reachDistance 3,3 + marge) : au-delà, il annule le
-    * coup et bloque les coups du joueur 3 s.
-    */
-   public static final double DEFAUT_PORTEE = 3.0D;
    /** Réglage par défaut : ouverture du cône du coup rapide, en degrés (Dague tactique : 65). */
    public static final double DEFAUT_ANGLE_RAPIDE = 65.0D;
    /** Réglage par défaut : ouverture du cône du coup puissant, en degrés (Dague tactique : 75). */
@@ -90,8 +86,12 @@ public final class CoupsCouteau {
          : valeur(ServerConfig.COUTEAUX_CADENCE_RAPIDE, DEFAUT_CADENCE_RAPIDE);
    }
 
+   /**
+    * Portée en blocs, des yeux au point le plus proche de la cible : celle de toutes les armes de corps à corps
+    * ({@code [melee] portee_max}, 3 : la portée d'un coup de Minecraft, que l'anticheat Spartan tolère).
+    */
    public static double portee() {
-      return valeur(ServerConfig.COUTEAUX_PORTEE, DEFAUT_PORTEE);
+      return PorteeMelee.max();
    }
 
    /** Ouverture du cône, en degrés (la moitié de chaque côté du regard). */

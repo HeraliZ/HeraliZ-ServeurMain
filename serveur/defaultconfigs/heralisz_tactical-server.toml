@@ -16,6 +16,14 @@
 	#maximum number of targets can contains in melee attack request packet
 	#Range: 1 ~ 512
 	melee_max_target = 32
+	#Portée maximale (en blocs) de toutes les armes de corps à corps de HeraliZ Tactique : armes de mêlée (coups
+	#rapides, coups puissants, balayages et combos de chaque arme) et couteaux TaCZ (le coup du bouclier flash va à
+	#2,5). Mesurée des yeux du joueur au point le plus proche de la cible. Une arme dont la fiche
+	#(data/heralisz_melee/index/melee) va plus loin est ramenée à cette valeur ; une arme plus courte garde la sienne.
+	#Au-delà d'environ 3,6, l'anticheat Spartan (reachDistance 3,3 + marge) annule le coup, bloque les coups du
+	#joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.
+	#Range: 1.0 ~ 6.0
+	portee_max = 3.0
 
 [allonge]
 	#Délai (en secondes) avant de pouvoir se rallonger, compté à partir du moment où le joueur s'est relevé
@@ -117,13 +125,8 @@
 	#Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique).
 	#Range: 4 ~ 400
 	cadence_lourd = 18
-	#Portée (en blocs) entre les yeux du joueur et le point le plus proche de la cible. La Dague tactique va à 4,
-	#mais au-delà d'environ 3,6 l'anticheat Spartan (reachDistance 3,3 + marge) annule le coup, bloque les coups du
-	#joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.
-	#Range: 1.0 ~ 6.0
-	portee = 3.0
 	#Ouverture (en degrés) du cône du coup rapide devant le regard, moitié de chaque côté (65, comme la Dague
-	#tactique). Tous les êtres vivants dans le cône, à portée et en vue, sont touchés.
+	#tactique). Tous les êtres vivants dans le cône, à portée ([melee] portee_max) et en vue, sont touchés.
 	#Range: 5.0 ~ 180.0
 	angle_rapide = 65.0
 	#Ouverture (en degrés) du cône du coup puissant (75, comme la Dague tactique).

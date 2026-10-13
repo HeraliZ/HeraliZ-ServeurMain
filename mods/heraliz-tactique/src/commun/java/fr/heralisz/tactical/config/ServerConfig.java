@@ -2,6 +2,7 @@ package fr.heralisz.tactical.config;
 
 import fr.heraliz.tactique.allonge.Allonge;
 import fr.heraliz.tactique.couteaux.CoupsCouteau;
+import fr.heraliz.tactique.melee.PorteeMelee;
 import fr.heraliz.tactique.son.SonLointain;
 import fr.heraliz.tactique.vitres.Vitres;
 import java.util.List;
@@ -17,6 +18,8 @@ public class ServerConfig {
    public static IntValue FLASH_SHIELD_COOLDOWN;
    public static DoubleValue CROUCHING_INIT_SPEED_PERCENT;
    public static IntValue MELEE_MAX_TARGET_PER_PACKET;
+   /** HeraliZ : portée maximale de toutes les armes de corps à corps de Tactique (fr.heraliz.tactique.melee.PorteeMelee). */
+   public static DoubleValue MELEE_PORTEE_MAX;
    /** HeraliZ : s'allonger avec la touche « Ramper » de TaCZ (fr.heraliz.tactique.allonge.Allonge). */
    public static DoubleValue DELAI_RALLONGER;
    public static DoubleValue SANS_TIR_EN_SE_COUCHANT;
@@ -42,7 +45,6 @@ public class ServerConfig {
    public static DoubleValue COUTEAUX_MULTIPLICATEUR_LOURD;
    public static IntValue COUTEAUX_CADENCE_RAPIDE;
    public static IntValue COUTEAUX_CADENCE_LOURD;
-   public static DoubleValue COUTEAUX_PORTEE;
    public static DoubleValue COUTEAUX_ANGLE_RAPIDE;
    public static DoubleValue COUTEAUX_ANGLE_LOURD;
 
@@ -59,6 +61,15 @@ public class ServerConfig {
       builder.push("melee");
       MELEE_MAX_TARGET_PER_PACKET = builder.comment("maximum number of targets can contains in melee attack request packet")
          .defineInRange("melee_max_target", 32, 1, 512);
+      // HeraliZ : envoyé aux joueurs à la connexion (ils choisissent leurs cibles avec la même portée que le serveur)
+      MELEE_PORTEE_MAX = builder.comment(
+            "Portée maximale (en blocs) de toutes les armes de corps à corps de HeraliZ Tactique : armes de mêlée (coups",
+            "rapides, coups puissants, balayages et combos de chaque arme) et couteaux TaCZ (le coup du bouclier flash va à",
+            "2,5). Mesurée des yeux du joueur au point le plus proche de la cible. Une arme dont la fiche",
+            "(data/heralisz_melee/index/melee) va plus loin est ramenée à cette valeur ; une arme plus courte garde la sienne.",
+            "Au-delà d'environ 3,6, l'anticheat Spartan (reachDistance 3,3 + marge) annule le coup, bloque les coups du",
+            "joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.")
+         .defineInRange("portee_max", PorteeMelee.DEFAUT, 1.0, 6.0);
       builder.pop();
       // HeraliZ : config serveur envoyée par Forge aux joueurs à la connexion (le joueur et le serveur lisent les mêmes valeurs)
       builder.push("allonge");
@@ -170,14 +181,9 @@ public class ServerConfig {
       COUTEAUX_CADENCE_LOURD = builder.comment(
             "Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique).")
          .defineInRange("cadence_lourd", CoupsCouteau.DEFAUT_CADENCE_LOURD, CoupsCouteau.CADENCE_MIN, 400);
-      COUTEAUX_PORTEE = builder.comment(
-            "Portée (en blocs) entre les yeux du joueur et le point le plus proche de la cible. La Dague tactique va à 4,",
-            "mais au-delà d'environ 3,6 l'anticheat Spartan (reachDistance 3,3 + marge) annule le coup, bloque les coups du",
-            "joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.")
-         .defineInRange("portee", CoupsCouteau.DEFAUT_PORTEE, 1.0, 6.0);
       COUTEAUX_ANGLE_RAPIDE = builder.comment(
             "Ouverture (en degrés) du cône du coup rapide devant le regard, moitié de chaque côté (65, comme la Dague",
-            "tactique). Tous les êtres vivants dans le cône, à portée et en vue, sont touchés.")
+            "tactique). Tous les êtres vivants dans le cône, à portée ([melee] portee_max) et en vue, sont touchés.")
          .defineInRange("angle_rapide", CoupsCouteau.DEFAUT_ANGLE_RAPIDE, 5.0, 180.0);
       COUTEAUX_ANGLE_LOURD = builder.comment("Ouverture (en degrés) du cône du coup puissant (75, comme la Dague tactique).")
          .defineInRange("angle_lourd", CoupsCouteau.DEFAUT_ANGLE_LOURD, 5.0, 180.0);

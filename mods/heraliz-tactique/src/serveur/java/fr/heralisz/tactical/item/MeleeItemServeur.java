@@ -7,6 +7,7 @@ import fr.heralisz.tactical.api.melee.AttackResult;
 import fr.heralisz.tactical.api.melee.MeleeAction;
 import fr.heralisz.tactical.config.CommonConfig;
 import fr.heralisz.tactical.item.melee.CombatData;
+import fr.heraliz.tactique.melee.PorteeMelee;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -43,7 +44,10 @@ public class MeleeItemServeur extends MeleeItem {
 
                   for (Entity livingentity : targets) {
                      boolean flag = !(livingentity instanceof ArmorStand armorStand && armorStand.isMarker());
-                     boolean inRange = livingentity.distanceToSqr(attacker) <= filter.getMaxRange() * filter.getMaxRange();
+                     // HeraliZ : même mesure que la zone du coup chez le joueur et que Spartan (des yeux au point le plus
+                     // proche de la cible, portée plafonnée par [melee] portee_max, petite marge pour le décalage du réseau) ;
+                     // avant : distance des pieds aux pieds, jusqu'à la portée de la fiche (4 blocs)
+                     boolean inRange = PorteeMelee.aPortee(attacker, livingentity, filter.getMaxRange());
                      if (livingentity != attacker && flag && inRange) {
                         AttackResult result = this.performAttack(attacker, livingentity, stack, damage, knockback);
                         hit |= result.hit();
