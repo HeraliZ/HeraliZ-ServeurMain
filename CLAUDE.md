@@ -810,7 +810,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
   I, menu =, abandon Retour arrière ;
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
-- vitres (11/10, 12/10) : une balle casse la vitre ou le bloc de verre touché, reposé au même endroit au bout de 5 min (même après un redémarrage ; les vitres fines voisines perdent leur raccord vers le trou et le retrouvent à la repousse : deux vitres côte à côte cassées repoussent reliées ; section `[vitres]` de `heralisz_tactical-server.toml`, mod tactique) ; jamais au spawn (64 blocs), en match, en zombies, dans les bunkers ni dans les claims CRac. `DestroyGlass` de TaCZ reste à false (TaCZ casse sans regarder les protections ni les blocs voisins) ;
+- vitres (11/10, 12/10, 13/10) : une balle casse la vitre ou le bloc de verre touché, reposé au même endroit au bout de 5 min (même après un redémarrage ; les vitres fines voisines perdent leur raccord vers le trou et le retrouvent à la repousse : deux vitres côte à côte cassées repoussent reliées ; section `[vitres]` de `heralisz_tactical-server.toml`, mod tactique). Cassent aussi les blocs de `blocs_en_plus` : la fenêtre de meubles `cfm:vb_4` (posée sur la carte ; avant, les balles la traversaient) devient `cfm:vb_5` (la même, vitre brisée) puis redevient intacte. Jamais dans le monde du spawn (`heralisz:spawn`), en match, en zombies, dans les bunkers ni dans les claims CRac ; plus de cercle de 64 blocs autour du point d'apparition de la carte (`rayon_spawn = 0` depuis le 13/10 : ce point est au milieu d'une ville, -435 1118 sur la v3, dont le verre ne cassait jamais). Un bloc posé ou cassé à la main à la place d'une vitre en attente : la main l'emporte, elle ne repousse pas. Staff : `/vitres pourquoi [x y z]` (bloc visé ou donné : casse-t-il, sinon pourquoi — réglage, eau, bloc protégé, dimension, rayon du spawn, claim CRac et son bloc de claim —, vitre en attente, ce que ferait une balle tirée d'ici). `DestroyGlass` de TaCZ reste à false (TaCZ casse sans regarder les protections ni les blocs voisins) ;
+- portée du corps à corps (13/10, Tactique 2.13.0) : 3 blocs au plus pour toutes les armes (choix du propriétaire), un seul réglage `[melee] portee_max` de `heralisz_tactical-server.toml` (`melee/PorteeMelee`), mesuré des yeux au point le plus proche de la cible comme Spartan (qui annule au-delà d'environ 3,6). Armes de mêlée de LR : avant 4, Lame de Desmoulins 4,25 / 4,5, Marteau du châtiment 3 / 3,5 ; les fiches gardent leur valeur, ramenée au plafond chez le joueur et au serveur, et le serveur mesure comme le joueur (0,4 de marge réseau) au lieu des pieds aux pieds. Couteaux TaCZ : leur ancien réglage `[couteaux] portee` est retiré. Déjà sous 3, inchangés : bouclier flash 2,5, couteau à travers les fenêtres des Zombies 2,6, exécutions de Réanimation 3, crosses et baïonnettes TaCZ 1 à 2 ;
 - s'allonger (11/10, 12/10, mod tactique, `allonge/`) : un appui pour s'allonger, un autre pour se relever, avec ou sans arme en
   main (sans arme : même pose et même vitesse que le « ramper » de TaCZ) ; pas de tir pendant qu'on se couche, délai avant
   de se rallonger ; plongeon façon CoD (en avançant, touche « Ramper » pendant un saut ou avec la touche de saut enfoncée) :
@@ -911,9 +912,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   couteaux). Cône de 3 blocs (65° / 75°), plusieurs cibles, vue dégagée ; coup décidé et donné par le serveur
   (`serveur/CouteauxServeur`, coup de LR `IMeleeWeapon.attackTarget`), cadence vérifiée en temps réel. Animation
   « melee_push » du couteau pour les deux coups. Avant : pour TaCZ un couteau est une arme à feu, le clic gauche tirait
-  une balle de 0,005 bloc et seul V frappait. Portée 3 et pas 4 comme LR : au-delà d'environ 3,6, Spartan annule le coup
-  et bloque les coups 3 s. Réglages : section `[couteaux]` de `heralisz_tactical-server.toml` (`actif = false` : comme
-  avant) ;
+  une balle de 0,005 bloc et seul V frappait. Portée : `[melee] portee_max` (3, commune à toutes les armes de corps à
+  corps). Réglages : section `[couteaux]` de `heralisz_tactical-server.toml` (`actif = false` : comme avant) ;
 - train (11/10, 12/10) : un train qui roule heurte (2,5 cœurs, joueur projeté à côté) ; il ne tue que devant la locomotive ou
   dans la voie, sous la caisse ; dans la voiture, on marche comme au sol dans Minecraft (élan, vitesse du joueur, course
   vue des autres, bruits de pas, corps tourné dans le sens de la marche, arme de TaCZ qui balance) et on peut sauter ; on
@@ -990,8 +990,6 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   section 9) ; lieux et nom
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
-- **Mêlée de LR** : portée de 4 blocs, mais Spartan (reachDistance 3,3 + marge) annule les coups au-delà d'environ 3,6
-  et bloque les coups du joueur 3 s : ramener les portées à ~3,3 (non fait, à décider).
 - **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
   Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
