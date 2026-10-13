@@ -82,7 +82,7 @@ public final class ClientVehicules {
         t.put(AllKeys.RIGHT, null);                                       // D
         t.put(AllKeys.UP, null);                                          // Espace : frein à main
         t.put(AllKeys.LEAVE_VEHICLE, clavier(GLFW.GLFW_KEY_LEFT_SHIFT));  // J (tags) -> Maj gauche
-        t.put(AllKeys.OPEN_INVENTORY, InputConstants.UNKNOWN);            // B (sac) -> aucune : E ouvre le coffre à bord
+        t.put(AllKeys.OPEN_INVENTORY, InputConstants.UNKNOWN);            // B (sac) -> aucune : plus de coffre (CoffreRetire)
         t.put(AllKeys.TOGGLE_ENGINE, clavier(GLFW.GLFW_KEY_WORLD_2));     // I (Reanimation) -> <
         t.put(AllKeys.LEFT_YAW, clavier(GLFW.GLFW_KEY_PAGE_UP));          // A QWERTY (jeter) -> Page préc. : benne du camion
         t.put(AllKeys.RIGHT_YAW, clavier(GLFW.GLFW_KEY_PAGE_DOWN));       // E (inventaire) -> Page suiv. : benne du camion

@@ -19,7 +19,9 @@ import org.slf4j.Logger;
  *   <li>{@code Regles} : pas de véhicule dans les matchs ni les bunkers, pas de véhicule sorti en plein combat, aucun bloc
  *   cassé par les explosions de véhicules, descente du véhicule avant tout changement de dimension ;</li>
  *   <li>{@code Commandes} : {@code /vehicules liste | donner} (réponses en message système : retours de commande coupés
- *   sur le serveur).</li>
+ *   sur le serveur) ;</li>
+ *   <li>{@code CoffreRetire}, {@code SuiviVehicules} : plus de coffre dans les véhicules (contenu déjà rangé posé au
+ *   sol).</li>
  * </ul>
  * Jar fusionné HeraliZ Utils (docs/METHODE_CLIENT_SERVEUR.md) : ici le commun (liste des véhicules, onglet, réglages,
  * filtre des onglets du moteur) ; {@code Regles}, {@code Commandes} et l'effacement des objets retirés

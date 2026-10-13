@@ -8,7 +8,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -18,6 +20,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.ywzj.vehicle.all.AllConfigs;
+import org.ywzj.vehicle.entity.misc.VehiclePart;
 import org.ywzj.vehicle.entity.vehicle.AbstractVehicle;
 import org.ywzj.vehicle.item.VehicleSpawnItem;
 
@@ -27,8 +30,8 @@ import java.util.List;
  * Les véhicules et les systèmes du serveur.
  * <ul>
  *   <li><b>Matchs et bunkers</b> ({@link VehiculesConfig#DIMENSIONS_INTERDITES}) : impossible d'y poser un véhicule ; un
- *   véhicule qui y arriverait (commande, vieux monde) est retiré et rendu en objet à sa place ; aucun véhicule ne peut y
- *   changer de dimension.</li>
+ *   véhicule qui y arriverait (commande, vieux monde) est retiré et rendu en objet à sa place, avec le contenu de son
+ *   coffre ; aucun véhicule ne peut y changer de dimension.</li>
  *   <li><b>Tag de combat</b> (clé {@code heralisz:combat_jusqua} de HeraliZ Matchs, epoch ms) : pas de véhicule sorti de la
  *   poche en plein combat. Les dégâts d'un véhicule conduit comptent déjà comme venant du conducteur (source de Limitless
  *   Vehicle : entité causale = conducteur), donc ils taguent normalement.</li>
@@ -92,7 +95,10 @@ public final class Regles {
         }
     }
 
-    /** Véhicule qui apparaît dans une dimension interdite : retiré, rendu en objet sur place (tick suivant). */
+    /**
+     * Véhicule qui apparaît dans une dimension interdite : retiré, rendu en objet sur place (tick suivant), avec ce que
+     * contenait son coffre (sinon perdu avec lui).
+     */
     private static void onArrivee(EntityJoinLevelEvent e) {
         if (e.getLevel().isClientSide() || !(e.getEntity() instanceof AbstractVehicle v) || !dimensionInterdite(e.getLevel().dimension())) return;
         e.setCanceled(true);
@@ -101,8 +107,14 @@ public final class Regles {
         double x = v.getX(), y = v.getY(), z = v.getZ();
         HeralizVehicules.LOG.warn("[vehicules] vehicule {} retire de {} ({} {} {}) : dimension sans vehicules", id,
                 level.dimension().location(), (int) x, (int) y, (int) z);
-        if (id != null && Contenu.VEHICULES.contains(id.toString())) {
-            level.getServer().execute(() -> level.addFreshEntity(new ItemEntity(level, x, y + 0.5, z, Contenu.vehicule(id.toString()))));
+        List<ItemStack> contenu = CoffreRetire.sortir(v);
+        // un débris d'épave (VehiclePart) porte l'id du véhicule détruit : pas de véhicule neuf rendu pour lui
+        boolean rendu = !(v instanceof VehiclePart) && id != null && Contenu.VEHICULES.contains(id.toString());
+        if (rendu || !contenu.isEmpty()) {
+            level.getServer().execute(() -> {
+                if (rendu) level.addFreshEntity(new ItemEntity(level, x, y + 0.5, z, Contenu.vehicule(id.toString())));
+                CoffreRetire.poser(level, new Vec3(x, y + 0.5, z), contenu, id);
+            });
         }
     }
 

@@ -8,4 +8,7 @@
 	#Les explosions de vehicules ne cassent aucun bloc (bases, bunkers) : force canDestroyBlock et
 	#explosionDropBlock a false dans la config de Limitless Vehicle.
 	proteger_blocs = true
+	#Les vehicules n'ont plus de coffre : impossible de l'ouvrir (a bord ou sur une epave). Les objets deja
+	#ranges dans un vehicule pose sont poses au sol a cote de lui (sans limite de temps) quand il se charge.
+	coffre_retire = true
 
