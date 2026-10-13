@@ -31,6 +31,7 @@ public class ServerConfig {
    public static IntValue VITRES_RAYON_SPAWN;
    public static BooleanValue VITRES_CLAIMS_CRAC;
    public static ConfigValue<List<? extends String>> VITRES_BLOCS_PROTEGES;
+   public static ConfigValue<List<? extends String>> VITRES_BLOCS_EN_PLUS;
    /** HeraliZ : tirs silencieux entendus de loin, étouffés et d'un endroit flou (fr.heraliz.tactique.son.SonLointain). */
    public static BooleanValue SON_LOINTAIN;
    public static DoubleValue SON_LOINTAIN_VOLUME;
@@ -94,29 +95,39 @@ public class ServerConfig {
       builder.push("vitres");
       VITRES_CASSER = builder.comment(
             "Les balles des armes TaCZ cassent le verre (verre, verre coloré ou teinté, vitres et vitres colorées : la même règle",
-            "que TaCZ). La balle casse la vitre et s'arrête dessus ; la vitre repousse seule, au même endroit et dans le même",
-            "état. Le verre gorgé d'eau ne casse pas (l'eau se répandrait). Le réglage DestroyGlass de tacz-common.toml doit",
-            "rester à false : c'est HeraliZ qui casse (TaCZ ne regarde aucune zone protégée et dérange les blocs voisins).",
+            "que TaCZ) et les blocs de blocs_en_plus. La balle casse la vitre et s'arrête dessus ; la vitre repousse seule, au",
+            "même endroit et dans le même état. Le verre gorgé d'eau ne casse pas (l'eau se répandrait). Le réglage",
+            "DestroyGlass de tacz-common.toml doit rester à false : c'est HeraliZ qui casse (TaCZ ne regarde aucune zone",
+            "protégée et dérange les blocs voisins). Pour savoir pourquoi une vitre ne casse pas : /vitres pourquoi (staff).",
             "false : comme avant (les blocs de verre laissent passer les balles, les vitres les arrêtent, rien ne casse).")
          .define("casser", true);
       VITRES_DELAI_MINUTES = builder.comment(
             "Délai (en minutes) avant qu'une vitre cassée repousse, compté en temps réel : une vitre dont le délai est passé",
-            "pendant un arrêt du serveur repousse au redémarrage. Si quelqu'un se tient à sa place ou si un bloc l'occupe, elle",
-            "attend et réessaie. Les vitres à remettre sont gardées dans les données du monde (data/heraliz_vitres.dat, une",
-            "liste par dimension).")
+            "pendant un arrêt du serveur repousse au redémarrage. Si quelqu'un se tient à sa place (ou du feu, de la neige,",
+            "de l'eau), elle attend et réessaie. Un bloc posé à sa place, la vitre reposée à la main comprise : la main",
+            "l'emporte, elle ne repousse pas. Les vitres à remettre sont gardées dans les données du monde",
+            "(data/heraliz_vitres.dat, une liste par dimension).")
          .defineInRange("delai_repousse_minutes", Vitres.DEFAUT_DELAI_MINUTES, 1, 10080);
       VITRES_DIMENSIONS = builder.comment(
-            "Dimensions où le verre ne casse jamais (arènes des matchs, zombies, bunkers des clans) : les balles le traversent",
-            "ou s'y arrêtent comme avant.")
+            "Dimensions où le verre ne casse jamais (spawn, arènes des matchs, zombies, bunkers des clans) : les balles le",
+            "traversent ou s'y arrêtent comme avant.")
          .defineList("dimensions_protegees", Vitres.DEFAUT_DIMENSIONS, o -> o instanceof String);
       VITRES_RAYON_SPAWN = builder.comment(
             "Rayon (en blocs) autour du point d'apparition du monde (dimension minecraft:overworld) où le verre ne casse pas,",
-            "sur toute la hauteur. 0 : aucun.")
+            "sur toute la hauteur. 0 : aucun. Le spawn des joueurs est un monde à part (heralisz:spawn, dans",
+            "dimensions_protegees) ; sur la carte, le point d'apparition est au milieu d'une ville (-435 1118 sur la carte v3) :",
+            "avec 64, le verre de cette ville ne cassait jamais.")
          .defineInRange("rayon_spawn", Vitres.DEFAUT_RAYON_SPAWN, 0, 100000);
       VITRES_CLAIMS_CRAC = builder.comment("Le verre ne casse pas dans les claims de CRac (bases des groupes).")
          .define("proteger_claims_crac", true);
       VITRES_BLOCS_PROTEGES = builder.comment("Blocs de verre qui ne cassent jamais (identifiants, par exemple \"minecraft:tinted_glass\").")
          .defineList("blocs_proteges", List.of(), o -> o instanceof String);
+      VITRES_BLOCS_EN_PLUS = builder.comment(
+            "Autres blocs qui cassent comme une vitre (mêmes zones protégées, même délai) : \"bloc\" (il disparaît) ou",
+            "\"bloc > bloc cassé\" (il devient sa version cassée, même orientation, puis redevient lui-même). Les balles de",
+            "TaCZ s'y arrêtent là où ils cassent, même s'ils sont dans PassThroughBlocks. cfm:vb_4 : fenêtre à croisée grise",
+            "des meubles, posée sur la carte ; cfm:vb_5 : la même, vitre brisée (les cfm:vb_5 posés à la main ne bougent pas).")
+         .defineList("blocs_en_plus", Vitres.DEFAUT_BLOCS_EN_PLUS, o -> o instanceof String);
       builder.pop();
       // HeraliZ : tirs silencieux entendus de loin (lu par le serveur seulement)
       builder.push("silencieux");
