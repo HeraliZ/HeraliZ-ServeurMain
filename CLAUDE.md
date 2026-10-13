@@ -931,7 +931,18 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `/train voie info` (point visé), `genre <p|r|t|T|P|x> [longueur]`, `retirer [longueur]`, `annuler`, `liste`,
   `effacer` (aspect seulement, le trajet ne bouge pas ; gardé dans les données du train du monde) ; `/train voie remplir
   [ponts|tout]` pose sous la voie dessinée un bloc invisible et incassable (`heralisz_utils:voie_pleine`) pour qu'on
-  ne puisse plus entrer dans le ballast des ponts, `vider` le retire ;
+  ne puisse plus entrer dans le ballast des ponts, `vider` le retire. Sons du train (13/10, Utils 2.9.0) : tous fabriqués
+  par le calcul (`python mods/heralisz-utils/outils/sons_train.py`, aucun enregistrement ; `--ecoute DOSSIER` donne des
+  copies mp3 et deux scènes d'écoute) ; on modifie le générateur, jamais les `.ogg`. Joués chez le joueur seulement,
+  tirés de l'horaire (`train/TrainSonsClient`, rien du serveur), portées dans `sounds.json` (`attenuation_distance`).
+  Roulement sur le point de la rame le plus proche (72 blocs) ; à bord, boucle « cabine » sur le joueur et roulement
+  extérieur baissé ; un « tac » par essieu qui passe un joint de rail (tous les 25 blocs, le rythme suit la vitesse ;
+  40 blocs) ; moteur de la locomotive dont le régime suit l'effort (64 blocs) ; avertisseur 25 s avant chaque gare et
+  2 s avant le départ (128 blocs) ; freins 5,5 s avant l'arrêt, puis air et carillon dans le haut-parleur du quai le plus
+  proche ; portes côté quai (les 3 plus proches, 28 blocs) : ouverture 3 s après l'arrêt, bips puis fermeture 8 s avant
+  le départ, calées sur l'animation ; au départ, desserrage, turbo et attelages qui se tendent ; portes intérieures
+  (12 blocs). Les temps `BIPS` (1,4 s) et `FREINAGE` (5,5 s) sont à la fois dans le générateur et dans
+  `TrainSonsClient` : à changer des deux côtés (et relancer le générateur) si l'horaire ou l'animation des portes change ;
 - meubles cfm (12/10) : « Model 239 » (petit escalier en grille de métal) a la forme d'un escalier de Minecraft (on y monte sans
   sauter) au lieu d'un cube ; « Model 240 » celle de son garde-corps (poteaux et lisses, juste devant le bord du bloc) et
   « Model 241 » celle de son plancher en caillebotis (sur le dessus du bloc) ; ses meubles « Standard_Block » sont tous
