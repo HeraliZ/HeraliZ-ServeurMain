@@ -23,8 +23,9 @@ import java.util.Iterator;
 import java.util.Locale;
 
 /**
- * HUD des duels : recherche et destruction (porteur de la charge, charge au sol, charge posee avec minuterie et bips,
- * invite « maintenez accroupi », barre de pose / desamorcage, reperes A / B et charge a l'ecran), eclair de
+ * HUD des duels : recherche et destruction (porteur de l'ordinateur, ordinateur au sol, bombe amorcee avec minuterie et
+ * bips, invites « restez accroupi », barre d'amorcage « CODE n / 3 » et de piratage avec les secondes restantes, reperes
+ * A / B sur les bombes et ordinateur a l'ecran), eclair de
  * l'explosion, toasts de fin des defis (refuse, annule, expire : en haut a gauche ; les defis recus sont dans
  * {@link NotifDefis}, en haut a droite). DM Sans, verre, aucun element vanilla. Les textes sont prepares a la
  * reception (pas d'allocation par image hors chiffres qui changent).
@@ -62,6 +63,10 @@ final class DuelHud {
     private static Component texteMinuterie = Component.empty();
     private static int prochainBip;
     private static final Component LETTRE_A = Ui.lit("A", Ui.BOLD), LETTRE_B = Ui.lit("B", Ui.BOLD);
+    /** Couleur du piratage (ecran de l'ordinateur, barre du HUD). */
+    private static final int PIRATE = 0x46DCFF;
+    /** Libelle de la barre d'action garde tant qu'il ne change pas (code n / 3, dixiemes de seconde du piratage). */
+    private static int cleAction = Integer.MIN_VALUE;
 
     // ------------------------------------------------------------------ toasts, eclair
     private record Toast(Component titre, Component texte, long debutMs, boolean defi) {
@@ -103,8 +108,8 @@ final class DuelHud {
             ligneHaut = Ui.tr(Ui.BOLD, "duel.hud.desamorcee");
             couleurHaut = Ui.OK;
         }
-        ligneAction = v.action() == Vues.ACTION_POSE ? Ui.tr(Ui.SMALL, "duel.hud.action_pose")
-                : v.action() == Vues.ACTION_DESAMORCAGE ? Ui.tr(Ui.SMALL, "duel.hud.action_desamorcage") : Component.empty();
+        ligneAction = Component.empty();
+        cleAction = Integer.MIN_VALUE;
         ligneInvite = v.invite().isEmpty() ? Component.empty() : Ui.tr(Ui.FONT, "duel.hud.invite_" + v.invite());
         aLigneHaut = !ligneHaut.getString().isEmpty();
         aInvite = !v.invite().isEmpty();
@@ -257,20 +262,41 @@ final class DuelHud {
         }
         // reperes a l'ecran
         reperes(g, font, w, h, v, now);
-        // barre d'action (pose / desamorcage)
+        // barre d'action (amorcage : code n / 3 ; piratage : secondes restantes)
         if (v.action() != Vues.ACTION_AUCUNE) {
             float fait = Math.min(v.totalTicks(), v.faitTicks() + (now - rdRecuMs) / 50f);
             float r = fait / v.totalTicks();
+            Component lib = libelleAction(v.action(), r, (v.totalTicks() - fait) / 20f);
             int bw = 180, bx = (int) (cx - bw / 2f), by = h / 2 + 26;
             Ui.glass(g, bx - 10, by - 16, bw + 20, 30, 190);
-            Ui.centered(g, font, ligneAction, cx, by - 10, Ui.argb(Ui.TEXT, 255));
-            int c = v.action() == Vues.ACTION_POSE ? Ui.AMBRE : Ui.OK;
+            Ui.centered(g, font, lib, cx, by - 10, Ui.argb(Ui.TEXT, 255));
+            int c = v.action() == Vues.ACTION_POSE ? Ui.AMBRE : PIRATE;
             Ui.bar(g, bx, by + 2, bw, 4, r, c);
         } else if (aInvite) {
             int iw = font.width(ligneInvite) + 24, iy = h - 78;
             Ui.glass(g, (int) (cx - iw / 2f), iy - 5, iw, 18, 170);
             Ui.centered(g, font, ligneInvite, cx, iy, Ui.argb(Ui.TEXT, 255));
         }
+    }
+
+    /**
+     * Libelle de la barre d'action : « AMORCAGE · CODE n / 3 » (un code par tiers des 5 s) ou « PIRATAGE… 3,3 s »
+     * (secondes restantes, virgule sauf en anglais) ; recree seulement quand il change.
+     */
+    private static Component libelleAction(int action, float r, float resteS) {
+        int cle = action == Vues.ACTION_POSE ? 1000 + Math.min(3, 1 + (int) (r * 3f)) : 2000 + Math.max(0, Math.round(resteS * 10f));
+        if (cle != cleAction) {
+            cleAction = cle;
+            if (action == Vues.ACTION_POSE) {
+                ligneAction = Ui.tr(Ui.SMALL, "duel.hud.action_amorcage", String.valueOf(cle - 1000));
+            } else {
+                String t = String.format(Locale.ROOT, "%.1f", (cle - 2000) / 10f);
+                String langue = Minecraft.getInstance().getLanguageManager().getSelected();
+                if (langue == null || !langue.startsWith("en")) t = t.replace('.', ',');
+                ligneAction = Ui.tr(Ui.SMALL, "duel.hud.action_piratage", t);
+            }
+        }
+        return ligneAction;
     }
 
     private static void reperes(GuiGraphics g, Font font, int w, int h, Vues.RdVue v, long now) {

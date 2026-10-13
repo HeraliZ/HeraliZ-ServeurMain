@@ -162,6 +162,22 @@
     -180.0
    ]
   ],
+  "bombe_a": [
+   [
+    64.5,
+    2.0,
+    39.5,
+    90.0
+   ]
+  ],
+  "bombe_b": [
+   [
+    71.5,
+    2.0,
+    13.5,
+    90.0
+   ]
+  ],
   "charge": [
    [
     13.5,
@@ -224,7 +240,7 @@
  "recherche_destruction": {
   "attaquants": "a",
   "defenseurs": "b",
-  "note": "A attaque depuis la maison jaune (charge dans son jardin) ; les deux sites sont chez la maison verte : site_a = son garage, site_b = son allée nord. Au changement de côté, les équipes échangent leurs points d'apparition."
+  "note": "A attaque depuis la maison jaune (ordinateur dans son jardin) ; les deux bombes sont chez la maison verte : bombe_a au milieu de son garage, bombe_b sur sa pelouse nord, 2 blocs au nord de site_b (au bout de la haie), module de commande tourne vers l'ouest (cote attaquants). Au changement de côté, les équipes échangent leurs points d'apparition."
  },
  "equipes": {
   "a": {
@@ -238,5 +254,5 @@
  },
  "sol_y": 2,
  "generateur": "tools/matchs/cartes/duel_nuketown.py",
- "version": 1
+ "version": 2
 }
