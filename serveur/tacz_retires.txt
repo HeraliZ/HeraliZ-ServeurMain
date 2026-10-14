@@ -62,3 +62,17 @@ arkaniaz_pack_1_converted/data/arkaniaz/index/attachments/tapeb.json
 arkaniaz_pack_1_converted/data/arkaniaz/index/attachments/tapeg.json
 arkaniaz_pack_1_converted/data/arkaniaz/recipes/attachments/tape.json
 arkaniaz_pack_1_converted/data/arkaniaz/recipes/attachments/tapeg.json
+
+# 14/10 : viseur standard 5-10x (tacz:scope_standard_8x), retiré à la demande du propriétaire
+arkaniaz_pack_0_converted/assets/tacz/display/attachments/scope_standard_8x_display.json
+arkaniaz_pack_0_converted/assets/tacz/geo_models/attachment/lod/scope_standard_8x.json
+arkaniaz_pack_0_converted/assets/tacz/geo_models/attachment/lod/scope_standard_8x_geo.json
+arkaniaz_pack_0_converted/assets/tacz/geo_models/attachment/scope_standard_8x_geo.json
+arkaniaz_pack_0_converted/assets/tacz/textures/attachment/lod/scope_standard_8x.png
+arkaniaz_pack_0_converted/assets/tacz/textures/attachment/slot/scope_standard_8x.png
+arkaniaz_pack_0_converted/assets/tacz/textures/attachment/uv/scope_standard_8x.png
+arkaniaz_pack_0_converted/assets/tacz/textures/attachment/uv/scope_standard_8x_n.png
+arkaniaz_pack_0_converted/assets/tacz/textures/attachment/uv/scope_standard_8x_s.png
+arkaniaz_pack_0_converted/data/tacz/data/attachments/scope_standard_8x_data.json
+arkaniaz_pack_0_converted/data/tacz/index/attachments/scope_standard_8x.json
+arkaniaz_pack_0_converted/data/tacz/recipes/attachments/scope_standard_8x.json

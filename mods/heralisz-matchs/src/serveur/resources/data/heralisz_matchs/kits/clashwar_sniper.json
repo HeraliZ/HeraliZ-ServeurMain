@@ -9,7 +9,7 @@
   "principale": {
     "gun": "arkaniaz:m200",
     "accessoires": {
-      "scope": "tacz:scope_standard_8x",
+      "scope": "tacz:scope_vudu",
       "extended_mag": "tacz:extended_mag_1"
     },
     "reserve": 30
