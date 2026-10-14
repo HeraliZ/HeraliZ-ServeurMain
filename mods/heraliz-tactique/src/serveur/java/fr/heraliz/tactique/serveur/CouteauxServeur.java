@@ -6,7 +6,6 @@ import com.tacz.guns.api.item.IGun;
 import com.tacz.guns.config.common.GunConfig;
 import com.tacz.guns.network.NetworkHandler;
 import com.tacz.guns.network.message.ServerMessageSound;
-import com.tacz.guns.network.message.event.ServerMessageGunMelee;
 import com.tacz.guns.sound.SoundManager;
 import fr.heralisz.tactical.api.collision.ConeFilter;
 import fr.heralisz.tactical.api.item.IMeleeWeapon;
@@ -14,6 +13,7 @@ import fr.heralisz.tactical.api.melee.AttackResult;
 import fr.heraliz.tactique.allonge.CompatReanimation;
 import fr.heraliz.tactique.couteaux.CoupsCouteau;
 import fr.heraliz.tactique.couteaux.PaquetCoupCouteau;
+import fr.heraliz.tactique.couteaux.PaquetCoupVu;
 import fr.heraliz.tactique.couteaux.ReseauCouteaux;
 import fr.heraliz.tactique.onglets.Couteaux;
 import java.util.HashMap;
@@ -42,8 +42,9 @@ import net.minecraftforge.eventbus.api.EventPriority;
  *    d'un joueur honnête), à {@link #TOLERANCE_MS} près pour le décalage du réseau : un coup arrivé en avance est accepté,
  *    mais le suivant est compté depuis l'heure où il était dû, si bien qu'un jeu modifié ne frappe jamais plus vite que
  *    la cadence ;</li>
- *    <li><b>accepté</b> : les autres joueurs voient le coup en 3e personne (paquet « mêlée » de TaCZ, animation
- *    « melee_upper » de son animation 3e personne) et l'entendent (son « melee_push » du couteau, à la distance des
+ *    <li><b>accepté</b> : les autres joueurs voient le coup en 3e personne (PaquetCoupVu, 14/10 : grand coup de haut en bas
+ *    « melee_3_upper » de TaCZ pour le coup puissant, « melee_upper » et « melee_2_upper » en alternance pour le coup
+ *    rapide) et l'entendent (son « melee_push » du couteau, à la distance des
  *    bruits d'arme de TaCZ, DefaultGunOtherSoundDistance) ;</li>
  *    <li><b>coup</b> (si le même couteau est toujours en main, dans la même case) : tout être vivant dans le cône
  *    ({@link ConeFilter} de LR : portée jusqu'au point le plus proche de la cible, ouverture, vue dégagée), dégâts
@@ -120,8 +121,8 @@ final class CouteauxServeur {
       etat.lourd = d.lourd();
       etat.caseBarre = joueur.getInventory().selected;
       etat.arme = arme.getGunId(main);
-      // les autres joueurs : le coup en 3e personne (comme la touche « Mêlée » de TaCZ) et son bruit
-      NetworkHandler.sendToTrackingEntity(new ServerMessageGunMelee(joueur.getId(), main.copy()), joueur);
+      // les autres joueurs : le coup en 3e personne (puissant : grand coup de haut en bas, PaquetCoupVu) et son bruit
+      ReseauCouteaux.envoyerAutour(joueur, new PaquetCoupVu(joueur.getId(), d.lourd()));
       son(joueur, arme, main, SoundManager.MELEE_PUSH, false);
    }
 

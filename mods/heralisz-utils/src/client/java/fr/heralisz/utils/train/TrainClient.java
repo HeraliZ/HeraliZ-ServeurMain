@@ -141,29 +141,8 @@ public final class TrainClient {
         }
     }
 
-    private static long derniereDescente;
-
-    /** Demande au serveur de descendre du train (Maj) ; une fois par demi-seconde au plus. En marche : seulement le
-     *  message (le serveur refuse aussi). */
-    static void descendre() {
-        long t = System.currentTimeMillis();
-        if (t - derniereDescente < 500) return;
-        derniereDescente = t;
-        Horaire h = Horaire.get();
-        Minecraft mc0 = Minecraft.getInstance();
-        int rame = mc0.player != null && mc0.player.getVehicle() instanceof Voyageur vy ? Horaire.rame(vy.vehicule()) : 0;
-        if (h != null && h.etatRame(tTick, rame).aQuai() < 0) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.gui.setOverlayMessage(net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.en_marche"), false);
-            }
-            return;
-        }
-        Train.CANAL.sendToServer(new Train.Descente());
-    }
-
-    /** Rappel des touches dans la barre d'action : à bord (Maj descend, devant une banquette : s'asseoir, Ramper :
-     *  s'allonger), assis, ou allongé. */
+    /** Rappel des touches dans la barre d'action : à bord (devant une banquette, Maj : s'asseoir ; Ramper : s'allonger ;
+     *  on descend par une porte ouverte en gare), assis, ou allongé. */
     static void aide(boolean assis) {
         aide(assis, false);
     }
@@ -175,7 +154,7 @@ public final class TrainClient {
         var maj = mc.options.keyShift.getTranslatedKeyMessage();
         net.minecraft.network.chat.Component msg;
         if (allonge) msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.allonge", toucheRamper(), saut);
-        else if (assis) msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.assis", saut, maj);
+        else if (assis) msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.assis", saut);
         else msg = net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.a_bord", maj, toucheRamper());
         mc.gui.setOverlayMessage(msg, false);
     }

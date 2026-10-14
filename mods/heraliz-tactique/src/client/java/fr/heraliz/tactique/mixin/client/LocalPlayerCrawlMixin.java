@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *    <li>{@code crawl(true)} (touche « Ramper ») à terre ou en train de fouiller ou réanimer (Réanimation) : rien ne se
  *    passe ; pendant le délai pour se rallonger : rien non plus (rien n'est envoyé au serveur), un message dit dans
  *    combien de secondes ce sera possible ;</li>
- *    <li>{@code crawl(true)} en avançant, pendant un saut ou avec la touche de saut enfoncée : plongeon demandé au serveur
+ *    <li>{@code crawl(true)} en se déplaçant (devant, derrière, côté), pendant un saut ou avec la touche de saut enfoncée : plongeon demandé au serveur
  *    au lieu de s'allonger ; pendant un plongeon, la touche ne fait rien ;</li>
  *    <li>sans arme TaCZ en main : TaCZ refuserait de coucher le joueur ({@code crawl}) et le relèverait à chaque tick
  *    ({@code tickCrawl}) ; HeraliZ fait à la place ce que TaCZ fait avec une arme, sans les règles de l'arme : même état

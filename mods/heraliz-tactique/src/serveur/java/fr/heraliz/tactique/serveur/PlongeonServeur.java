@@ -7,6 +7,7 @@ import com.tacz.guns.entity.shooter.ShooterDataHolder;
 import fr.heraliz.tactique.allonge.Allonge;
 import fr.heraliz.tactique.allonge.CompatReanimation;
 import fr.heraliz.tactique.allonge.EtatAllonge;
+import fr.heraliz.tactique.allonge.PaquetDemandePlongeon;
 import fr.heraliz.tactique.allonge.PaquetReponsePlongeon;
 import fr.heraliz.tactique.allonge.Plongeon;
 import fr.heraliz.tactique.allonge.ReseauAllonge;
@@ -29,12 +30,12 @@ import net.minecraftforge.eventbus.api.EventPriority;
  * ramper ; délai pour se rallonger écoulé ; délai entre deux plongeons écoulé ; au sol, ou en l'air au plus {@link Allonge#fenetreSautServeurMs()} après un
  * saut (vu par le serveur : {@code LivingJumpEvent}, que Minecraft lance aussi côté serveur quand le joueur quitte le sol
  * vers le haut) ; et en train d'avancer : vitesse horizontale (positions reçues, lissées tick après tick) d'au moins
- * {@link Allonge#AVANT_MIN_SERVEUR} bloc par tick dans le sens du regard, et surtout vers l'avant (pas en crabe ni à
- * reculons). Les demandes à moins de 0,15 s d'intervalle sont ignorées.
+ * {@link Allonge#AVANT_MIN_SERVEUR} bloc par tick dans le sens des touches tenues envoyé par le joueur (devant, derrière,
+ * sur le côté ou en diagonale, 14/10), et surtout dans ce sens (au moins la moitié de la vitesse). Les demandes à moins de 0,15 s d'intervalle sont ignorées.
  * <p>
  * <b>Élan</b> : vitesse de Minecraft {@code setDeltaMovement} + {@code hurtMarked} (comme un recul) : Minecraft l'envoie au
  * joueur (ClientboundSetEntityMotionPacket), qui la remplace par la sienne ; l'anticheat Spartan voit ce paquet et
- * l'attend. Vers l'avant ({@code plongeon_vitesse}) dans le sens du regard ; vers le haut {@code plongeon_hauteur} depuis
+ * l'attend. Dans le sens demandé ({@code plongeon_vitesse}) ; vers le haut {@code plongeon_hauteur} depuis
  * le sol, rien en l'air (le saut a déjà donné l'élan : jamais plus haut qu'un saut + 0,22 bloc). Les dégâts de chute ne
  * sont pas touchés (ceux de Minecraft).
  * <p>
@@ -180,7 +181,8 @@ public final class PlongeonServeur {
    }
 
    /** Demande de plongeon d'un joueur (PaquetDemandePlongeon). */
-   private static void demande(ServerPlayer joueur) {
+   private static void demande(PaquetDemandePlongeon.Demande d) {
+      ServerPlayer joueur = d.joueur();
       ShooterDataHolder donnees = IGunOperator.fromLivingEntity(joueur).getDataHolder();
       EtatAllonge etat = Allonge.etat(donnees);
       if (donnees == null || etat == null) {
@@ -225,8 +227,9 @@ public final class PlongeonServeur {
          repondre(joueur, PaquetReponsePlongeon.REFUSE, 0L);
          return;
       }
-      Vec3 regard = Vec3.directionFromRotation(0.0F, joueur.getYRot());
-      if (!avance(joueur, p, regard)) {
+      // sens des touches tenues (devant, derrière, côté, diagonale), vérifié sur le déplacement vu par le serveur
+      Vec3 regard = PaquetDemandePlongeon.direction(d.gauche(), d.avant(), joueur.getYRot());
+      if (regard == Vec3.ZERO || !avance(joueur, p, regard)) {
          repondre(joueur, PaquetReponsePlongeon.REFUSE, 0L);
          return;
       }

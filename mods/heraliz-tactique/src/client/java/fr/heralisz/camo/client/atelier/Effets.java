@@ -30,14 +30,57 @@ final class Effets {
    /** Effets déjà lus, par accessoire (vidé à chaque ouverture d'écran : les données arrivent du serveur à la connexion). */
    private static final Map<ResourceLocation, List<Effet>> CACHE = new HashMap<>();
 
-   /** Un effet : texte court et couleur (vert : mieux, rouge : moins bien, or : spécial, gris : neutre). */
-   record Effet(String texte, int couleur) {}
+   /**
+    * Un effet : texte court et couleur (vert : mieux, rouge : moins bien, or : spécial, gris : neutre) ; {@code cle} : la
+    * caractéristique de TaCZ (damage, ads, pitch…) ou null (zoom, capacité).
+    */
+   record Effet(String texte, int couleur, @Nullable String cle) {
+      Effet(String texte, int couleur) {
+         this(texte, couleur, null);
+      }
+   }
+
+   /** Caractéristiques chiffrées par {@link Stats#effets} (les lignes de TaCZ correspondantes ne sont pas répétées). */
+   private static final java.util.Set<String> CHIFFREES = java.util.Set.of("damage", "rpm", "ads", "pitch", "yaw", "effective_range",
+      "aim_inaccuracy", "inaccuracy", "hipfire_inaccuracy", "weight", "ammo_speed");
+   /** Effets chiffrés sur l'arme, par accessoire (vidé avec {@link #CACHE}). */
+   private static final Map<ResourceLocation, List<Effet>> SUR_ARME = new HashMap<>();
 
    private Effets() {
    }
 
    static void vider() {
       CACHE.clear();
+      SUR_ARME.clear();
+   }
+
+   /**
+    * Effets de l'accessoire {@code s} sur l'arme {@code gun}, chiffrés (« -20 % recul vert. », « -0,03 s visée ») : ce que
+    * l'arme gagne ou perd en le posant à la place de ce qui occupe son emplacement ; puis les effets sans chiffre de TaCZ
+    * (zoom, silencieux, capacité…). Sans arme : {@link #de}.
+    */
+   static List<Effet> sur(ItemStack gun, ItemStack s) {
+      IAttachment ia = IAttachment.getIAttachmentOrNull(s);
+      if (ia == null) return List.of();
+      if (gun.isEmpty()) return de(s);
+      return SUR_ARME.computeIfAbsent(ia.getAttachmentId(s), id -> {
+         List<Effet> out = new ArrayList<>();
+         List<Stats.Effet> chiffres = List.of();
+         try {
+            chiffres = Stats.effets(gun, s);
+         } catch (RuntimeException ignored) {
+            // arme ou accessoire dont TaCZ ne calcule pas les chiffres : effets sans chiffre seulement
+         }
+         for (Effet e : de(s)) {
+            if (e.cle() == null || chiffres.isEmpty() || !CHIFFREES.contains(e.cle())) out.add(e);
+         }
+         List<Effet> num = new ArrayList<>();
+         for (Stats.Effet c : chiffres) {
+            num.add(new Effet(c.texte() + " " + I18n.get("gui.heralisz_camo.atelier.court." + c.cle()), c.mieux() ? Ui.OK : Ui.DANGER, c.cle()));
+         }
+         num.addAll(out);
+         return num;
+      });
    }
 
    /** Effets de l'accessoire (liste vide pour un autre objet). */
@@ -97,7 +140,7 @@ final class Effets {
             reste = reste.substring(0, reste.length() - ".decrease".length());
          }
          String cle = "gui.heralisz_camo.atelier.effet." + reste.replace('.', '_');
-         if (I18n.exists(cle)) return new Effet(signe + I18n.get(cle), couleur);
+         if (I18n.exists(cle)) return new Effet(signe + I18n.get(cle), couleur, reste.replace('.', '_'));
       }
       String s = c.getString().trim();
       return s.isEmpty() ? null : new Effet(s, couleur);

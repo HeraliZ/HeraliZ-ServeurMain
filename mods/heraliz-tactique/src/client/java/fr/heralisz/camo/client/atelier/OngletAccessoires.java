@@ -46,7 +46,8 @@ final class OngletAccessoires implements AtelierArme.Partie {
       AttachmentType.LASER, AttachmentType.EXTENDED_MAG};
    /** Couleurs proposées pour un laser : rouge, orange, jaune, vert, cyan, bleu, violet, blanc. */
    private static final int[] LASERS = {0xFF2D2D, 0xFF8A1F, 0xFFE53B, 0x3BFF5C, 0x2EE6FF, 0x3B6BFF, 0xB04DFF, 0xFFFFFF};
-   private static final int STATS_H = 58, CARTE_H = 34, ECART = 4;
+   /** Panneau des caractéristiques : titre + 3 rangées (Stats.RANGEES). */
+   private static final int STATS_H = 24 + Stats.RANGEES * 17 + 2, CARTE_H = 34, ECART = 4;
 
    private final AtelierArme a;
    /** Accessoire choisi : son emplacement d'inventaire (-1 : aucun) et une copie pour vérifier que c'est toujours lui. */
@@ -108,7 +109,7 @@ final class OngletAccessoires implements AtelierArme.Partie {
       }
 
       // caractéristiques, en bas au centre
-      this.sw = Math.min(360, this.a.width - 32);
+      this.sw = Math.min(460, this.a.width - 32);
       this.sx = (this.a.width - this.sw) / 2;
       this.sy = this.a.height - 14 - STATS_H;
       ItemStack avec = this.slotChoisi >= 0 ? inv.getItem(this.slotChoisi) : ItemStack.EMPTY;
@@ -418,7 +419,7 @@ final class OngletAccessoires implements AtelierArme.Partie {
       String nom = Ui.ellipsis(font, s.getHoverName().getString(), Ui.FONT, tw - (pose ? chipPose + 4 : 0));
       g.drawString(font, Ui.lit(nom, Ui.FONT), tx, y + 6, Ui.argb(Ui.TEXT, 255), false);
       // effets : autant de pastilles que la place le permet, le reste dans l'infobulle
-      List<Effets.Effet> liste = Effets.de(s);
+      List<Effets.Effet> liste = Effets.sur(AtelierArme.arme(), s);
       int cx = tx;
       for (int i = 0; i < liste.size(); i++) {
          Effets.Effet e = liste.get(i);
@@ -438,7 +439,7 @@ final class OngletAccessoires implements AtelierArme.Partie {
    private List<Component> infobulleDe(ItemStack s) {
       List<Component> l = new ArrayList<>();
       l.add(Ui.lit(s.getHoverName().getString(), Ui.BOLD));
-      for (Effets.Effet e : Effets.de(s)) {
+      for (Effets.Effet e : Effets.sur(AtelierArme.arme(), s)) {
          l.add(Ui.lit(e.texte(), Ui.FONT).withStyle(st -> st.withColor(e.couleur())));
       }
       return l;

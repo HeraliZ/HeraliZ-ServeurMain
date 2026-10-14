@@ -7,7 +7,9 @@
   "client": [
     "LocalPlayerCrawlMixin",
     "LocalPlayerShootCouteauMixin",
-    "LocalPlayerAimCouteauMixin"
+    "LocalPlayerAimCouteauMixin",
+    "TaczAllongeAnimationMixin",
+    "TaczTeteAllongeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -871,6 +871,32 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   - soins : au plus Épique (Surv12, CMS) ; nouveau soin « Attelle et bandage » (Peu commun) : jambe cassée et saignement
     soignés en 3,5 s (aspect provisoire : trousse CAR orange, à refaire après validation d'un rendu) ;
   Rien de tout cela n'a été essayé en jeu : régler les chiffres dans les scripts après les premiers combats.
+- lot du soir du 14/10 (rien testé en jeu) :
+  - barricade en bois (Bunker 0.11.0) : posée à fleur sur ce qu'il y a dessous (forme de collision : demi-dalle des
+    routes à y + 0,5) ; collision (balles et joueurs) à la hauteur réelle du modèle (`BarricadeEntity.MUR_H` 37,2 px
+    pour le mur de rondins, `POTEAU_H` 44 px pour les trois poteaux, segments 0, 4 et 8) : on ne voit plus par-dessus
+    sans pouvoir être touché ;
+  - plongeon (Tactique 2.15.0) : dans le sens des touches tenues (devant, derrière, côté, diagonale), vérifié par le
+    serveur sur le déplacement ; canal « allonge » version 3 ;
+  - train (Utils 2.10.0) : Maj ne fait plus jamais descendre (assis, debout, maintenue) : seulement s'asseoir devant
+    une banquette ; on sort par une porte ouverte en gare (ou mort, téléportation, déconnexion) ;
+  - armes TaCZ : infobulle sans perforation d'armure, dégâts à la tête, vitesse de déplacement, « Appuyez sur … pour
+    les accessoires » ni nom du gunpack (`camo/mixin/ClientGunTooltipMixin`) ; « Dégâts » de l'infobulle et de
+    l'Atelier = dégâts contre un joueur (réglages de `armes.json` envoyés à la connexion, `armes.DegatsJoueurs`, canal
+    `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
+    à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
+    `Effets.sur`) ;
+  - couteaux : le coup puissant (clic droit) a sa propre animation « melee_stock » (générée par
+    `python mods/heraliz-tactique/outils/couteaux_coup_lourd.py` depuis le coup de chaque modèle, réglages `LENTEUR`,
+    `SURCOUCHE` en tête du script ; donnée à TaCZ chez le joueur, `couteaux/CoupLourdClient`) ; vu des autres : grand coup
+    de haut en bas (« melee_3_upper ») pour le coup puissant, deux gestes en alternance pour le coup rapide
+    (`PaquetCoupVu`, canal « couteaux » version 2) ;
+  - corps des joueurs « démembré » et tête vers le ciel en s'allongeant : la remise à zéro de Réanimation 1.15.0
+    (`client/Poses.apply`) n'efface plus les poses de Player Animator ; l'animation « allongé » de TaCZ suit le corps
+    couché (`mixin/client/TaczAllongeAnimationMixin`) et le regard de la tête allongé est limité
+    (`TaczTeteAllongeMixin`) ; gestes debout de la mêlée de LR arrêtés allongé (`IdleAnimationHandler`). CaraCrea ne
+    déforme rien lui-même (il recopie le modèle de Minecraft) ; pistes restantes s'il reste des défauts : ses cubes
+    ignorent les parties cachées par d'autres mods (jambes du terminal d'extraction), emotes permises allongé.
 - sons (11/10) : MAtmos jouait le bruit de changement d'objet de chaque joueur visible, sans atténuation (sons stéréo) : dayzhotbar (`SonChangementObjet`) ne laisse entendre celui des autres qu'à 8 blocs au plus ;
 - accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;
 - logo de Max Stuff (11/10) : le petit « M » est retiré des icônes de ses accessoires, choix du propriétaire malgré la licence du pack (CC BY-NC-ND 4.0 : pas de version modifiée diffusée ; tous les gunpacks des autres auteurs ont la même licence, et NC à surveiller avec la boutique). Auteurs crédités dans `serveur/tacz/arkaniaz_pack_5_converted/CREDITS.txt`. D'autres logos restent sur des icônes d'armes (« Chill Deep » du pack arkaniaz_custom, « MIL », « CIB ») : pas touchés sans demande ;

@@ -56,9 +56,8 @@ public final class TrainServeur {
     private static void recevoir(Train.Recu r) {
         if (r.paquet() instanceof Train.Marche m) {
             VoyageursServeur.marche(r.joueur(), m);
-        } else if (r.paquet() instanceof Train.Descente) {
-            VoyageursServeur.descenteDemandee(r.joueur(), "Maj");
         }
+        // Train.Descente (ancienne descente par Maj) : ignoré depuis le 14/10, on ne descend que par les portes
     }
 
     static void recadrer(ServerPlayer p, int v, float x, float z) {

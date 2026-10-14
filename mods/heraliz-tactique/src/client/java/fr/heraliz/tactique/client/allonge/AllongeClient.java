@@ -233,7 +233,7 @@ public final class AllongeClient {
     * Appui pour s'allonger (debout, délai pour se rallonger écoulé) : est-ce un plongeon ? Vrai si la touche est prise par
     * le plongeon (demande envoyée, ou en attente : message), et le joueur ne s'allonge pas ; faux : appui ordinaire.
     * Mêmes conditions que le serveur (PlongeonServeur), un peu plus strictes : au sol avec la touche de saut enfoncée, ou
-    * en l'air juste après un saut ; en avançant ; ni en vol, ni en véhicule, ni dans l'eau, ni à terre ou occupé
+    * en l'air juste après un saut ; en se déplaçant dans le sens des touches tenues (devant, derrière, côté) ; ni en vol, ni en véhicule, ni dans l'eau, ni à terre ou occupé
     * (Réanimation).
     */
    public static boolean tenterPlongeon(LocalPlayer joueur) {
@@ -259,12 +259,23 @@ public final class AllongeClient {
       if (!sautEnCours && !sautEnfonce) {
          return false;
       }
-      // en avant : déplacement du dernier tick dans le sens du regard
-      Vec3 regard = Vec3.directionFromRotation(0.0F, joueur.getYRot());
+      // dans le sens des touches de déplacement tenues (devant, derrière, côté, diagonale) : déplacement du dernier tick
+      // dans ce sens. Touches lues directement (l'état du joueur n'est mis à jour qu'au tick suivant).
+      Minecraft mc = Minecraft.getInstance();
+      int avant = (mc.options.keyUp.isDown() ? 1 : 0) - (mc.options.keyDown.isDown() ? 1 : 0);
+      int gauche = (mc.options.keyLeft.isDown() ? 1 : 0) - (mc.options.keyRight.isDown() ? 1 : 0);
+      if (avant == 0 && gauche == 0 && joueur.input != null) {
+         avant = (int) Math.signum(joueur.input.forwardImpulse);
+         gauche = (int) Math.signum(joueur.input.leftImpulse);
+      }
+      if (avant == 0 && gauche == 0) {
+         return false;
+      }
+      Vec3 sens = PaquetDemandePlongeon.direction(gauche, avant, joueur.getYRot());
       double dx = joueur.getX() - joueur.xo;
       double dz = joueur.getZ() - joueur.zo;
-      double avant = dx * regard.x + dz * regard.z;
-      if (avant < Allonge.AVANT_MIN || avant < 0.5D * Math.sqrt(dx * dx + dz * dz)) {
+      double vitesse = dx * sens.x + dz * sens.z;
+      if (vitesse < Allonge.AVANT_MIN || vitesse < 0.5D * Math.sqrt(dx * dx + dz * dz)) {
          return false;
       }
       long attente = plongeonRestantMs(t);
@@ -273,7 +284,7 @@ public final class AllongeClient {
          return true;
       }
       demandePlongeonA = t;
-      ReseauAllonge.envoyerAuServeur(new PaquetDemandePlongeon());
+      ReseauAllonge.envoyerAuServeur(new PaquetDemandePlongeon((byte) gauche, (byte) avant));
       return true;
    }
 

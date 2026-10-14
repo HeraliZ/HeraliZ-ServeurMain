@@ -96,10 +96,9 @@ public final class VoyageursClient {
         boolean rp = TrainClient.ramper();
         boolean appuiRamper = rp && !v.ramperPrec;
         boolean change = false;
-        if (v.passis) {                                                   // assis : Espace se lève, Maj descend
-            if (appui) {
-                TrainClient.descendre();
-            } else if (TrainClient.saut()) {
+        // 14/10 : Maj ne fait plus jamais descendre du train (on ne sort que par une porte ouverte, en gare)
+        if (v.passis) {                                                   // assis : Espace se lève
+            if (TrainClient.saut()) {
                 float f = Voyageurs.baie(v.px);
                 v.passis = false;
                 v.px = f;
@@ -119,9 +118,7 @@ public final class VoyageursClient {
             v.pallonge = true;                                            // debout, les pieds au plancher : on s'allonge
             change = true;
             TrainClient.aide(false, true);
-        } else if (appui && !devantBanquette(v)) {
-            TrainClient.descendre();                                      // couloir, vestibule, soufflet, porte
-        } else if (appui) {                                               // devant une banquette : on s'assoit
+        } else if (appui && devantBanquette(v)) {                         // devant une banquette : on s'assoit
             // accroupi dans une baie : assis sur la banquette tournée dans le sens du regard
             double yawLocal = Math.toRadians(p.getYRot());
             double regx = -Math.sin(yawLocal), regz = Math.cos(yawLocal);

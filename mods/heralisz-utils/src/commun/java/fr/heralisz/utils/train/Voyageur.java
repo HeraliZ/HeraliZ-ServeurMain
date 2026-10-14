@@ -79,9 +79,6 @@ public class Voyageur extends Entity {
      *  où il est, la téléportation qui suit le place). */
     boolean libere;
     Vec3 sortieImposee;
-    /** Côté serveur, touche accroupi du passager : relâchée depuis la montée, ticks de maintien (descente de secours). */
-    boolean majRelachee;
-    int majTicks, majAbsent;
 
     public Voyageur(EntityType<? extends Voyageur> type, Level level) {
         super(type, level);
