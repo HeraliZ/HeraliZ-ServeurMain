@@ -1,5 +1,7 @@
 package fr.heralisz.matchs.duels.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import fr.heralisz.matchs.HeraliszMatchs;
 import fr.heralisz.matchs.client.kit.Ui;
 import fr.heralisz.matchs.duels.Registres;
 import fr.heralisz.matchs.duels.net.Vues;
@@ -9,6 +11,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderGuiEvent;
@@ -31,7 +34,9 @@ import java.util.Locale;
  * reception (pas d'allocation par image hors chiffres qui changent).
  * <p>Reperes A / B (retour des proprietaires : ils genaient la visee) : bien visibles seulement pendant le choix de
  * classe et les {@link #REPERES_DEBUT_MS} premieres secondes de chaque manche (fondu de {@link #REPERES_FONDU_MS}) ;
- * ensuite une simple lettre tres pale. Toujours effaces pres du viseur (centre de l'ecran) et quand le joueur est sur le
+ * ensuite un badge tres pale, sans distance. Badge (14/10, l'ancien carre de 13 px etait trop laid) : carre aux coins
+ * arrondis en verre sombre, bord a la couleur de l'equipe, lettre, pointe vers le site et distance en metres dessous ;
+ * formes lisses tirees de {@code textures/gui/duel_repere.png} (outils/reperes/reperes_sites.py). Toujours effaces pres du viseur (centre de l'ecran) et quand le joueur est sur le
  * site ; touche « liste des joueurs » (Tab) enfoncee = reperes bien visibles. Rien pendant une killcam.
  */
 final class DuelHud {
@@ -42,7 +47,7 @@ final class DuelHud {
     static final long REPERES_DEBUT_MS = 8000;
     /** Passage de « bien visibles » a « discrets » (ms). */
     static final long REPERES_FONDU_MS = 1200;
-    /** Opacite d'un repere discret (lettre seule). */
+    /** Opacite d'un repere discret (badge pale, sans distance). */
     private static final float REPERES_DISCRETS = 0.32f;
     /** Pres du viseur (pixels d'interface depuis le centre) : efface en dessous de MIN, entier au-dela de MAX. */
     private static final float VISEUR_MIN = 18f, VISEUR_MAX = 64f;
@@ -62,7 +67,13 @@ final class DuelHud {
     private static int derniereSeconde = -1;
     private static Component texteMinuterie = Component.empty();
     private static int prochainBip;
-    private static final Component LETTRE_A = Ui.lit("A", Ui.BOLD), LETTRE_B = Ui.lit("B", Ui.BOLD);
+    private static final Component LETTRE_A = Ui.lit("A", Ui.BOLD), LETTRE_B = Ui.lit("B", Ui.BOLD), ALERTE = Ui.lit("!", Ui.BOLD);
+    /** Formes du badge (fond, bord, reflet ; cases de 64 x 80 sur une planche de 256 x 128, filtrage lisse). */
+    private static final ResourceLocation BADGE = HeraliszMatchs.id("textures/gui/duel_repere.png");
+    /** Badge de 22 px d'interface de large (case de 64 px) ; du centre du carre a la pointe : 44 px de la case. */
+    private static final float BADGE_ECHELLE = 22f / 64f, BADGE_POINTE = 44f * BADGE_ECHELLE;
+    /** « 27 m » : textes des distances gardes une fois crees. */
+    private static final Component[] DISTANCES = new Component[1000];
     /** Couleur du piratage (ecran de l'ordinateur, barre du HUD). */
     private static final int PIRATE = 0x46DCFF;
     /** Libelle de la barre d'action garde tant qu'il ne change pas (code n / 3, dixiemes de seconde du piratage). */
@@ -311,43 +322,68 @@ final class DuelHud {
             repere(g, font, w, h, s[3], s[4] + 1.2, s[5], LETTRE_B, c, force);
         }
         boolean chargeVisible = v.etat() == Vues.CHARGE_POSEE || (v.attaque() && v.etat() == Vues.CHARGE_AU_SOL);
-        if (chargeVisible && projeter(v.x(), v.y() + 0.6, v.z(), w, h)) {
+        if (chargeVisible && projeter(v.x(), v.y() + 0.9, v.z(), w, h)) {
             int c = v.etat() == Vues.CHARGE_POSEE ? Ui.DANGER : Ui.AMBRE;
-            float pulse = 0.6f + 0.4f * (float) Math.abs(Math.sin(now / 220.0));
-            losange(g, (int) sx, (int) sy, 5, Ui.argb(c, (int) (230 * pulse)));
-            losange(g, (int) sx, (int) sy, 3, Ui.argb(0x0D0F14, 220));
+            float pulse = 0.7f + 0.3f * (float) Math.abs(Math.sin(now / 220.0));
+            Minecraft mc = Minecraft.getInstance();
+            int m = mc.player == null ? -1 : (int) Math.round(Math.sqrt(mc.player.distanceToSqr(v.x(), v.y(), v.z())));
+            badge(g, font, sx, sy, ALERTE, c, pulse, m);
         }
     }
 
     /**
-     * Un repere de site : {@code force} 1 = pastille sombre + cadre + lettre (debut de manche), 0 = lettre seule tres
-     * pale. Efface pres du viseur (jamais devant un adversaire qu'on vise) et quand le joueur est sur le site.
+     * Un repere de site : {@code force} 1 = badge bien visible avec la distance (debut de manche), 0 = badge tres pale
+     * sans distance. Efface pres du viseur (jamais devant un adversaire qu'on vise) et quand le joueur est sur le site.
      */
     private static void repere(GuiGraphics g, Font font, int w, int h, double x, double y, double z, Component lettre, int couleur, float force) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || !projeter(x, y, z, w, h)) return;
         double dx = x - mc.player.getX(), dz = z - mc.player.getZ();
-        float loin = lisse(SITE_MIN, SITE_MAX, Math.sqrt(dx * dx + dz * dz));
+        double plat = Math.sqrt(dx * dx + dz * dz);
+        float loin = lisse(SITE_MIN, SITE_MAX, plat);
         double ex = sx - w / 2.0, ey = sy - h / 2.0;
         float horsViseur = lisse(VISEUR_MIN, VISEUR_MAX, Math.sqrt(ex * ex + ey * ey));
         // bien visible : un peu attenue pres du viseur seulement ; discret : rien du tout pres du viseur
         float plein = loin * (0.35f + 0.65f * horsViseur), discret = REPERES_DISCRETS * loin * horsViseur;
         float a = discret + (plein - discret) * force;
         if (a < 0.03f) return;
-        int ix = (int) sx, iy = (int) sy;
-        float cadre = a * force;
-        if (cadre > 0.03f) {
-            Ui.soft(g, ix - 6, iy - 6, 13, 13, Ui.argb(0x0D0F14, (int) (170 * cadre)));
-            Ui.softOutline(g, ix - 5, iy - 5, 11, 11, Ui.argb(couleur, (int) (200 * cadre)));
-        }
-        Ui.centered(g, font, lettre, ix + 0.5f, iy - 3.5f, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.4f), Math.max(4, (int) (255 * a))));
+        badge(g, font, sx, sy, lettre, couleur, a, force > 0.5f ? (int) Math.round(Math.sqrt(mc.player.distanceToSqr(x, y, z))) : -1);
     }
 
-    private static void losange(GuiGraphics g, int x, int y, int r, int argb) {
-        for (int i = -r; i <= r; i++) {
-            int l = r - Math.abs(i);
-            g.fill(x - l, y + i, x + l + 1, y + i + 1, argb);
+    /**
+     * Badge dont la pointe touche (px, py) : verre sombre, bord {@code couleur}, reflet, lettre, et la distance dessous si
+     * {@code metres} >= 0. {@code a} : opacite (0 a 1).
+     */
+    private static void badge(GuiGraphics g, Font font, float px, float py, Component lettre, int couleur, float a, int metres) {
+        float cx = px, cy = py - BADGE_POINTE;
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        g.pose().pushPose();
+        g.pose().translate(cx, cy, 0);
+        g.pose().scale(BADGE_ECHELLE, BADGE_ECHELLE, 1f);
+        teinte(0x0D0F14, 0.82f * a);
+        g.blit(BADGE, -32, -32, 0f, 0f, 64, 80, 256, 128);
+        teinte(couleur, 0.95f * a);
+        g.blit(BADGE, -32, -32, 64f, 0f, 64, 80, 256, 128);
+        teinte(0xFFFFFF, 0.16f * a);
+        g.blit(BADGE, -32, -32, 128f, 0f, 64, 80, 256, 128);
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        g.pose().popPose();
+        int alpha = Math.max(4, (int) (255 * a));
+        g.pose().pushPose();
+        g.pose().translate(cx, cy, 0);
+        g.pose().scale(1.2f, 1.2f, 1f);
+        Ui.centered(g, font, lettre, 0.5f, -3.6f, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.55f), alpha));
+        g.pose().popPose();
+        if (metres >= 0) {
+            Component d = DISTANCES[Math.min(metres, DISTANCES.length - 1)];
+            if (d == null) d = DISTANCES[Math.min(metres, DISTANCES.length - 1)] = Ui.lit(Math.min(metres, DISTANCES.length - 1) + " m", Ui.SMALL);
+            Ui.centered(g, font, d, cx + 0.5f, py + 3f, Ui.argb(Ui.TEXT, (int) (230 * a)));
         }
+    }
+
+    private static void teinte(int rgb, float a) {
+        RenderSystem.setShaderColor(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f, Math.max(0f, Math.min(1f, a)));
     }
 
     private static void rendreToasts(GuiGraphics g, Font font, long now) {
