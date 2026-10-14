@@ -897,6 +897,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     (`TaczTeteAllongeMixin`) ; gestes debout de la mêlée de LR arrêtés allongé (`IdleAnimationHandler`). CaraCrea ne
     déforme rien lui-même (il recopie le modèle de Minecraft) ; pistes restantes s'il reste des défauts : ses cubes
     ignorent les parties cachées par d'autres mods (jambes du terminal d'extraction), emotes permises allongé.
+- casse des blocs (14/10, CRac 1.4.0-beta, `event/CasseBlocs` + `serveur/event/CasseBlocsServeur`) : en survie, un joueur ne
+  casse AUCUN bloc et ne peut même pas commencer (pas de fissures ; avant, casser un bloc qui revenait permettait de se
+  glisser dedans accroupi). Libres : créatif, spectateur, staff (permission 2). Exceptions laissées aux règles de CRac :
+  le bloc de revendication et, dans une base seulement, les échelles et trappes des pillards (`#crac:raid_access`). Les
+  objets posés de CRac se ramassent par leur touche. Les cultures aussi sont bloquées (à rouvrir si la ferme doit marcher) ;
+- viseur standard 5-10x (`tacz:scope_standard_8x`) retiré (14/10) : fichiers listés dans `serveur/tacz_retires.txt`,
+  retiré des listes, des armes, du loot ; remplacé par la lunette Vudu dans les kits des matchs.
 - sons (11/10) : MAtmos jouait le bruit de changement d'objet de chaque joueur visible, sans atténuation (sons stéréo) : dayzhotbar (`SonChangementObjet`) ne laisse entendre celui des autres qu'à 8 blocs au plus ;
 - accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;
 - logo de Max Stuff (11/10) : le petit « M » est retiré des icônes de ses accessoires, choix du propriétaire malgré la licence du pack (CC BY-NC-ND 4.0 : pas de version modifiée diffusée ; tous les gunpacks des autres auteurs ont la même licence, et NC à surveiller avec la boutique). Auteurs crédités dans `serveur/tacz/arkaniaz_pack_5_converted/CREDITS.txt`. D'autres logos restent sur des icônes d'armes (« Chill Deep » du pack arkaniaz_custom, « MIL », « CIB ») : pas touchés sans demande ;
