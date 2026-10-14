@@ -1,0 +1,732 @@
+{
+  "_aide": "Dégâts des armes TaCZ contre les JOUEURS (mod Tactique, serveur). « degats » : une balle (un plomb pour un fusil à pompe) à courte distance ; la baisse avec la distance et les accessoires gardent leur effet. « tete » : multiplicateur d'un tir à la tête. Arme absente : dégâts de TaCZ. Fichier ÉCRIT par outils/equilibrage_armes.py : changer le script et le relancer. Relu à chaque démarrage du serveur.",
+  "actif": true,
+  "armes": {
+    "arkaniaz_custom:vector_firmax": {
+      "famille": "smg_45",
+      "rarete": "legendaire",
+      "degats": 4.97,
+      "tete": 1.5
+    },
+    "arkaniaz_custom:vectorhy": {
+      "famille": "smg_45",
+      "rarete": "legendaire",
+      "degats": 4.97,
+      "tete": 1.5
+    },
+    "tacz:aa12": {
+      "famille": "pompe",
+      "rarete": "epique",
+      "degats": 2.5,
+      "tete": 1.25
+    },
+    "tacz:aiawp": {
+      "famille": "precision_338",
+      "rarete": "epique",
+      "degats": 20.8,
+      "tete": 2.0
+    },
+    "tacz:ak47": {
+      "famille": "fusil_762",
+      "rarete": "rare",
+      "degats": 6.0,
+      "tete": 1.7
+    },
+    "tacz:aug": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "tacz:b93r": {
+      "famille": "pistolet_9",
+      "rarete": "rare",
+      "degats": 4.5,
+      "tete": 1.6
+    },
+    "tacz:cz75": {
+      "famille": "pistolet_9",
+      "rarete": "commun",
+      "degats": 4.14,
+      "tete": 1.6
+    },
+    "tacz:db_long": {
+      "famille": "pompe",
+      "rarete": "peu_commun",
+      "degats": 2.3,
+      "tete": 1.25
+    },
+    "tacz:db_short": {
+      "famille": "pompe",
+      "rarete": "peu_commun",
+      "degats": 1.44,
+      "tete": 1.25
+    },
+    "tacz:deagle": {
+      "famille": "pistolet_50",
+      "rarete": "epique",
+      "degats": 8.32,
+      "tete": 1.6
+    },
+    "tacz:g36k": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "tacz:glock_17": {
+      "famille": "pistolet_9",
+      "rarete": "commun",
+      "degats": 4.14,
+      "tete": 1.6
+    },
+    "tacz:hk416d": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "tacz:hk_g3": {
+      "famille": "fusil_308",
+      "rarete": "epique",
+      "degats": 7.8,
+      "tete": 1.7
+    },
+    "tacz:m16a1": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "tacz:m1911": {
+      "famille": "pistolet_45",
+      "rarete": "commun",
+      "degats": 5.06,
+      "tete": 1.6
+    },
+    "tacz:m249": {
+      "famille": "mitrailleuse_556",
+      "rarete": "epique",
+      "degats": 5.62,
+      "tete": 1.6
+    },
+    "tacz:m4a1": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "tacz:m870": {
+      "famille": "pompe",
+      "rarete": "rare",
+      "degats": 2.67,
+      "tete": 1.25
+    },
+    "tacz:m95": {
+      "famille": "precision_50",
+      "rarete": "legendaire",
+      "degats": 25.92,
+      "tete": 2.0
+    },
+    "tacz:minigun": {
+      "famille": "minigun",
+      "rarete": "legendaire",
+      "degats": 4.86,
+      "tete": 1.5
+    },
+    "tacz:mk14": {
+      "famille": "fusil_308",
+      "rarete": "legendaire",
+      "degats": 8.1,
+      "tete": 1.7
+    },
+    "tacz:p320": {
+      "famille": "pistolet_45",
+      "rarete": "peu_commun",
+      "degats": 5.28,
+      "tete": 1.6
+    },
+    "tacz:p90": {
+      "famille": "smg_9",
+      "rarete": "epique",
+      "degats": 4.16,
+      "tete": 1.5
+    },
+    "tacz:rpk": {
+      "famille": "mitrailleuse_762",
+      "rarete": "epique",
+      "degats": 6.66,
+      "tete": 1.6
+    },
+    "tacz:scar_h": {
+      "famille": "fusil_308",
+      "rarete": "epique",
+      "degats": 7.8,
+      "tete": 1.7
+    },
+    "tacz:scar_l": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "tacz:sks_tactical": {
+      "famille": "fusil_762",
+      "rarete": "rare",
+      "degats": 6.0,
+      "tete": 1.7
+    },
+    "tacz:spr15hb": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "tacz:springfield1873": {
+      "famille": "precision_308",
+      "rarete": "rare",
+      "degats": 16.0,
+      "tete": 2.0
+    },
+    "tacz:type_81": {
+      "famille": "fusil_762",
+      "rarete": "rare",
+      "degats": 6.0,
+      "tete": 1.7
+    },
+    "tacz:ump45": {
+      "famille": "smg_45",
+      "rarete": "rare",
+      "degats": 4.6,
+      "tete": 1.5
+    },
+    "tacz:uzi": {
+      "famille": "smg_9",
+      "rarete": "peu_commun",
+      "degats": 3.84,
+      "tete": 1.5
+    },
+    "tacz:vector45": {
+      "famille": "smg_45",
+      "rarete": "epique",
+      "degats": 4.78,
+      "tete": 1.5
+    },
+    "arkaniaz:686": {
+      "famille": "pompe",
+      "rarete": "peu_commun",
+      "degats": 2.3,
+      "tete": 1.25
+    },
+    "arkaniaz:882": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "arkaniaz:9a91": {
+      "famille": "fusil_762",
+      "rarete": "rare",
+      "degats": 6.0,
+      "tete": 1.7
+    },
+    "arkaniaz:aks74u": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "arkaniaz:an94": {
+      "famille": "fusil_762",
+      "rarete": "rare",
+      "degats": 6.0,
+      "tete": 1.7
+    },
+    "arkaniaz:aw50": {
+      "famille": "precision_50",
+      "rarete": "legendaire",
+      "degats": 25.92,
+      "tete": 2.0
+    },
+    "arkaniaz:berthier": {
+      "famille": "precision_308",
+      "rarete": "rare",
+      "degats": 16.0,
+      "tete": 2.0
+    },
+    "arkaniaz:evo3": {
+      "famille": "smg_9",
+      "rarete": "rare",
+      "degats": 4.0,
+      "tete": 1.5
+    },
+    "arkaniaz:g18c": {
+      "famille": "pistolet_9",
+      "rarete": "rare",
+      "degats": 4.5,
+      "tete": 1.6
+    },
+    "arkaniaz:galilace": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "arkaniaz:gew98": {
+      "famille": "precision_308",
+      "rarete": "rare",
+      "degats": 16.0,
+      "tete": 2.0
+    },
+    "arkaniaz:gm6_lynx": {
+      "famille": "precision_50",
+      "rarete": "legendaire",
+      "degats": 25.92,
+      "tete": 2.0
+    },
+    "arkaniaz:gras1874": {
+      "famille": "precision_308",
+      "rarete": "rare",
+      "degats": 16.0,
+      "tete": 2.0
+    },
+    "arkaniaz:hbar": {
+      "famille": "mitrailleuse_556",
+      "rarete": "epique",
+      "degats": 5.62,
+      "tete": 1.6
+    },
+    "arkaniaz:luger1906": {
+      "famille": "precision_308",
+      "rarete": "rare",
+      "degats": 16.0,
+      "tete": 2.0
+    },
+    "arkaniaz:m200": {
+      "famille": "precision_338",
+      "rarete": "legendaire",
+      "degats": 21.6,
+      "tete": 2.0
+    },
+    "arkaniaz:m82a3": {
+      "famille": "precision_50",
+      "rarete": "legendaire",
+      "degats": 25.92,
+      "tete": 2.0
+    },
+    "arkaniaz:mg3": {
+      "famille": "mitrailleuse_762",
+      "rarete": "epique",
+      "degats": 6.66,
+      "tete": 1.6
+    },
+    "arkaniaz:mod2": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "arkaniaz:negev": {
+      "famille": "mitrailleuse_762",
+      "rarete": "epique",
+      "degats": 6.66,
+      "tete": 1.6
+    },
+    "arkaniaz:p250": {
+      "famille": "pistolet_9",
+      "rarete": "commun",
+      "degats": 4.14,
+      "tete": 1.6
+    },
+    "arkaniaz:pkp": {
+      "famille": "mitrailleuse_762",
+      "rarete": "epique",
+      "degats": 6.66,
+      "tete": 1.6
+    },
+    "arkaniaz:pp19": {
+      "famille": "smg_9",
+      "rarete": "peu_commun",
+      "degats": 3.84,
+      "tete": 1.5
+    },
+    "arkaniaz:python": {
+      "famille": "pistolet_50",
+      "rarete": "rare",
+      "degats": 8.0,
+      "tete": 1.6
+    },
+    "arkaniaz:r8": {
+      "famille": "pistolet_50",
+      "rarete": "rare",
+      "degats": 8.0,
+      "tete": 1.6
+    },
+    "arkaniaz:sr_2m": {
+      "famille": "smg_9",
+      "rarete": "peu_commun",
+      "degats": 3.84,
+      "tete": 1.5
+    },
+    "arkaniaz:ssg_08": {
+      "famille": "precision_762",
+      "rarete": "epique",
+      "degats": 14.56,
+      "tete": 2.0
+    },
+    "arkaniaz:tec9": {
+      "famille": "pistolet_9",
+      "rarete": "peu_commun",
+      "degats": 4.32,
+      "tete": 1.6
+    },
+    "arkaniaz:type20": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "arkaniaz:ump9": {
+      "famille": "smg_9",
+      "rarete": "rare",
+      "degats": 4.0,
+      "tete": 1.5
+    },
+    "arkaniaz:usp": {
+      "famille": "pistolet_9",
+      "rarete": "commun",
+      "degats": 4.14,
+      "tete": 1.6
+    },
+    "maxstuff:adar2": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "maxstuff:ak12": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "maxstuff:ak74": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "maxstuff:ak_alpha": {
+      "famille": "fusil_762",
+      "rarete": "legendaire",
+      "degats": 6.48,
+      "tete": 1.7
+    },
+    "maxstuff:aks74u": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "maxstuff:ar10": {
+      "famille": "fusil_308_rapide",
+      "rarete": "legendaire",
+      "degats": 7.34,
+      "tete": 1.7
+    },
+    "maxstuff:ar10b": {
+      "famille": "fusil_308_rapide",
+      "rarete": "legendaire",
+      "degats": 7.34,
+      "tete": 1.7
+    },
+    "maxstuff:ar57": {
+      "famille": "smg_9",
+      "rarete": "epique",
+      "degats": 4.16,
+      "tete": 1.5
+    },
+    "maxstuff:ar762": {
+      "famille": "fusil_762",
+      "rarete": "epique",
+      "degats": 6.24,
+      "tete": 1.7
+    },
+    "maxstuff:arp": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "maxstuff:aug_a2": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "maxstuff:aug_hbar": {
+      "famille": "mitrailleuse_556",
+      "rarete": "epique",
+      "degats": 5.62,
+      "tete": 1.6
+    },
+    "maxstuff:colt_933": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "maxstuff:db_50": {
+      "famille": "pompe_balle",
+      "rarete": "legendaire",
+      "degats": 21.6,
+      "tete": 1.5
+    },
+    "maxstuff:db_short_tactical": {
+      "famille": "pompe",
+      "rarete": "rare",
+      "degats": 1.5,
+      "tete": 1.25
+    },
+    "maxstuff:deagle_12g": {
+      "famille": "pistolet_pompe",
+      "rarete": "epique",
+      "degats": 2.08,
+      "tete": 1.25
+    },
+    "maxstuff:deagle_50bmg": {
+      "famille": "pistolet_50bmg",
+      "rarete": "legendaire",
+      "degats": 15.12,
+      "tete": 1.6
+    },
+    "maxstuff:dragonuv_svd": {
+      "famille": "precision_semi",
+      "rarete": "epique",
+      "degats": 12.48,
+      "tete": 2.0
+    },
+    "maxstuff:g36": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "maxstuff:glock_18c": {
+      "famille": "pistolet_9",
+      "rarete": "rare",
+      "degats": 4.5,
+      "tete": 1.6
+    },
+    "maxstuff:glock_54": {
+      "famille": "pistolet_50",
+      "rarete": "rare",
+      "degats": 8.0,
+      "tete": 1.6
+    },
+    "maxstuff:glock_bulpup": {
+      "famille": "pistolet_9",
+      "rarete": "peu_commun",
+      "degats": 4.32,
+      "tete": 1.6
+    },
+    "maxstuff:hk417": {
+      "famille": "fusil_308",
+      "rarete": "epique",
+      "degats": 7.8,
+      "tete": 1.7
+    },
+    "maxstuff:hk_g33": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "maxstuff:hk_mp5k": {
+      "famille": "smg_9",
+      "rarete": "peu_commun",
+      "degats": 3.84,
+      "tete": 1.5
+    },
+    "maxstuff:hk_mp5sd": {
+      "famille": "smg_9",
+      "rarete": "rare",
+      "degats": 4.0,
+      "tete": 1.5
+    },
+    "maxstuff:honey_badger": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "maxstuff:m17": {
+      "famille": "pistolet_9",
+      "rarete": "commun",
+      "degats": 4.14,
+      "tete": 1.6
+    },
+    "maxstuff:m82a2": {
+      "famille": "precision_50",
+      "rarete": "legendaire",
+      "degats": 25.92,
+      "tete": 2.0
+    },
+    "maxstuff:m870t": {
+      "famille": "pompe",
+      "rarete": "rare",
+      "degats": 2.67,
+      "tete": 1.25
+    },
+    "maxstuff:mk11": {
+      "famille": "fusil_308_rapide",
+      "rarete": "legendaire",
+      "degats": 7.34,
+      "tete": 1.7
+    },
+    "maxstuff:mk18_burst": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "maxstuff:mk23": {
+      "famille": "pistolet_45",
+      "rarete": "rare",
+      "degats": 5.5,
+      "tete": 1.6
+    },
+    "maxstuff:mk47": {
+      "famille": "fusil_762",
+      "rarete": "epique",
+      "degats": 6.24,
+      "tete": 1.7
+    },
+    "maxstuff:quatro15": {
+      "famille": "mitrailleuse_556",
+      "rarete": "epique",
+      "degats": 5.62,
+      "tete": 1.6
+    },
+    "maxstuff:rpk16": {
+      "famille": "mitrailleuse_556",
+      "rarete": "epique",
+      "degats": 5.62,
+      "tete": 1.6
+    },
+    "maxstuff:rpk_74": {
+      "famille": "mitrailleuse_762",
+      "rarete": "epique",
+      "degats": 6.66,
+      "tete": 1.6
+    },
+    "maxstuff:rpk_74m": {
+      "famille": "mitrailleuse_762",
+      "rarete": "epique",
+      "degats": 6.66,
+      "tete": 1.6
+    },
+    "maxstuff:saiga12": {
+      "famille": "pompe",
+      "rarete": "epique",
+      "degats": 2.5,
+      "tete": 1.25
+    },
+    "maxstuff:scar_hamr": {
+      "famille": "mitrailleuse_556",
+      "rarete": "epique",
+      "degats": 5.62,
+      "tete": 1.6
+    },
+    "maxstuff:scar_pdw": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "maxstuff:scar_sbr": {
+      "famille": "fusil_762",
+      "rarete": "epique",
+      "degats": 6.24,
+      "tete": 1.7
+    },
+    "maxstuff:sr16": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "maxstuff:thunderbird_short": {
+      "famille": "pistolet_50",
+      "rarete": "epique",
+      "degats": 8.32,
+      "tete": 1.6
+    },
+    "maxstuff:ump9": {
+      "famille": "smg_45",
+      "rarete": "rare",
+      "degats": 4.6,
+      "tete": 1.5
+    },
+    "maxstuff:vector9": {
+      "famille": "smg_9",
+      "rarete": "epique",
+      "degats": 4.16,
+      "tete": 1.5
+    },
+    "maxstuff:xm177": {
+      "famille": "fusil_556",
+      "rarete": "rare",
+      "degats": 5.2,
+      "tete": 1.7
+    },
+    "maxstuff:z15_a": {
+      "famille": "fusil_556",
+      "rarete": "epique",
+      "degats": 5.41,
+      "tete": 1.7
+    },
+    "heraliz_fuse:m14": {
+      "famille": "fusil_308",
+      "rarete": "epique",
+      "degats": 7.8,
+      "tete": 1.7
+    },
+    "heraliz_fuse:mp5_classic": {
+      "famille": "smg_9",
+      "rarete": "peu_commun",
+      "degats": 3.84,
+      "tete": 1.5
+    },
+    "heraliz_fuse:mp5k": {
+      "famille": "smg_9",
+      "rarete": "peu_commun",
+      "degats": 3.84,
+      "tete": 1.5
+    },
+    "heraliz_fuse:mp7r": {
+      "famille": "smg_9",
+      "rarete": "rare",
+      "degats": 4.0,
+      "tete": 1.5
+    },
+    "heraliz_fuse:olympia": {
+      "famille": "pompe",
+      "rarete": "peu_commun",
+      "degats": 2.3,
+      "tete": 1.25
+    },
+    "heraliz_fuse:ro635v3": {
+      "famille": "smg_9",
+      "rarete": "rare",
+      "degats": 4.0,
+      "tete": 1.5
+    },
+    "heraliz_fuse:stakeout": {
+      "famille": "pompe",
+      "rarete": "rare",
+      "degats": 3.0,
+      "tete": 1.25
+    }
+  }
+}
