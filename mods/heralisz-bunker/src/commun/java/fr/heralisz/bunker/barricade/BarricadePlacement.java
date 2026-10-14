@@ -10,6 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Où et si une barricade peut être posée. Même calcul pour la pose (serveur, qui décide) et pour l'aperçu vert / rouge
@@ -29,19 +30,29 @@ public final class BarricadePlacement {
       float yaw = player.getYRot() + 180.0F;
       BlockPos pos = hit.getBlockPos();
       double y;
+      // posée à fleur du dessus de ce qu'il y a dessous (forme de collision) : sur un bloc plein à y + 1, sur une demi-dalle
+      // (routes) à y + 0,5, sans vide entre la dalle et la barricade (14/10)
       if (level.getBlockState(pos).canBeReplaced()) {
          // herbe, fleur... : on pose au sol, sur le bloc en dessous
-         y = pos.getY();
-         if (!level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP)) {
-            return new Result(new Vec3(hit.getLocation().x, y, hit.getLocation().z), yaw, false);
+         BlockPos sous = pos.below();
+         double haut = dessus(level, sous);
+         if (haut < 0.0) {
+            return new Result(new Vec3(hit.getLocation().x, pos.getY(), hit.getLocation().z), yaw, false);
          }
-      } else if (hit.getDirection() == Direction.UP && level.getBlockState(pos).isFaceSturdy(level, pos, Direction.UP)) {
-         y = pos.getY() + 1.0;
+         y = sous.getY() + haut;
+      } else if (hit.getDirection() == Direction.UP && dessus(level, pos) >= 0.0) {
+         y = pos.getY() + dessus(level, pos);
       } else {
          return new Result(hit.getLocation(), yaw, false);
       }
       Vec3 at = new Vec3(hit.getLocation().x, y, hit.getLocation().z);
       return new Result(at, yaw, fits(level, at, yaw));
+   }
+
+   /** Hauteur (0..1,5) du dessus de la forme de collision du bloc, -1 s'il n'en a pas (air, herbe...). */
+   private static double dessus(Level level, BlockPos pos) {
+      VoxelShape forme = level.getBlockState(pos).getCollisionShape(level, pos);
+      return forme.isEmpty() ? -1.0 : forme.max(Direction.Axis.Y);
    }
 
    /** Axe de la barricade (le long des rondins) pour une orientation donnée ; même repère que le rendu. */
@@ -62,7 +73,7 @@ public final class BarricadePlacement {
       int unsupported = 0;
       for (int i = 0; i < BarricadeEntity.LOGS; i++) {
          Vec3 c = at.add(along.scale(BarricadeEntity.logOffset(i)));
-         AABB box = new AABB(c.x - r, at.y + 0.05, c.z - r, c.x + r, at.y + BarricadeEntity.LOG_H[i] / 16.0, c.z + r);
+         AABB box = new AABB(c.x - r, at.y + 0.05, c.z - r, c.x + r, at.y + BarricadeEntity.hauteur(i) / 16.0, c.z + r);
          if (blocked(level, box)) {
             return false;
          }

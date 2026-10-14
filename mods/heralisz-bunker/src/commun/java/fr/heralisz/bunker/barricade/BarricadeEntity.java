@@ -27,11 +27,17 @@ import net.minecraftforge.network.NetworkHooks;
  */
 public class BarricadeEntity extends Entity {
    public static final float MAX_HP = 150.0F;
-   /** Hauteur de chaque rondin (px, sans la pointe) : partagée avec le rendu et la pose pour coller au modèle. */
-   public static final float[] LOG_H = {35, 38, 36, 39, 37, 39.5F, 36.5F, 38, 35.5F};
-   public static final int LOGS = LOG_H.length;
-   /** Diamètre d'un rondin, écart entre deux rondins, hauteur de la pointe taillée (px). */
-   public static final float LOG_D = 4.6F, LOG_STEP = 4.8F, TIP_H = 5.6F;
+   /**
+    * Segments de collision le long de la barricade (un tous les {@link #LOG_STEP} px). 14/10 : hauteurs prises sur le
+    * modèle « mur de rondins couchés » (outils/BarricadeModele.java) au lieu de l'ancienne palissade à pointes, qui
+    * dépassait le mur de 4 à 8 px : un joueur qui sautait derrière voyait par-dessus le mur sans pouvoir être touché.
+    * Mur : dessus du rondin du haut ({@link #MUR_H}) ; les trois poteaux (segments 0, 4 et 8) : leur hauteur ({@link #POTEAU_H}).
+    */
+   public static final int LOGS = 9;
+   /** Dessus du mur de rondins couchés et des poteaux (px). */
+   public static final float MUR_H = 37.2F, POTEAU_H = 44.0F;
+   /** Épaisseur d'un segment, écart entre deux segments (px). */
+   public static final float LOG_D = 4.6F, LOG_STEP = 4.8F;
    /** Position des jambes de force le long de la barricade (px depuis le centre). */
    public static final float LEG_X = 16.0F;
    private static final int SEGMENTS = LOGS;
@@ -41,7 +47,7 @@ public class BarricadeEntity extends Entity {
    public BarricadeEntity(EntityType<? extends BarricadeEntity> type, Level level) {
       super(type, level);
       for (int i = 0; i < SEGMENTS; i++) {
-         this.parts[i] = new BarricadePart(this, LOG_D / 16F, (LOG_H[i] + TIP_H) / 16F);
+         this.parts[i] = new BarricadePart(this, LOG_D / 16F, hauteur(i) / 16F);
       }
       this.setId(ENTITY_COUNTER.getAndAdd(this.parts.length + 1) + 1);
    }
@@ -67,6 +73,11 @@ public class BarricadeEntity extends Entity {
    public int damageStage() {
       float r = this.hp() / MAX_HP;
       return r > 0.75F ? 0 : r > 0.5F ? 1 : r > 0.25F ? 2 : 3;
+   }
+
+   /** Hauteur du segment i (px) : poteau aux deux bouts et au milieu, mur ailleurs. */
+   public static float hauteur(int i) {
+      return i == 0 || i == LOGS / 2 || i == LOGS - 1 ? POTEAU_H : MUR_H;
    }
 
    /** Décalage (en blocs) du centre du rondin i depuis le centre de la barricade, le long de celle-ci. */
