@@ -41,12 +41,15 @@ import org.lwjgl.glfw.GLFW;
  *    tant que le serveur le voit sortir, comme pour les tirs de TaCZ), ni à terre ou en train de fouiller ou de réanimer,
  *    ni avec un écran ouvert ;</li>
  *    <li>coup accepté : paquet au serveur, puis comme la touche « Mêlée » de TaCZ (LocalPlayerMelee) : bruit « melee_push »
- *    du couteau et animation « melee_push » (signal « bayonet_push » de sa machine à états).</li>
+ *    du couteau et animation « melee_push » (signal « bayonet_push » de sa machine à états) ; coup puissant : animation
+ *    « melee_stock » (CoupLourdClient, 14/10), différente du coup rapide.</li>
  * </ul>
  */
 public final class CouteauxClient {
    /** Signal de la machine à états de TaCZ qui joue l'animation « melee_push » (coup sans accessoire de mêlée). */
    private static final String SIGNAL_COUP = "bayonet_push";
+   /** Signal qui joue « melee_stock » : le coup puissant (CoupLourdClient). */
+   private static final String SIGNAL_COUP_LOURD = "bayonet_stock";
 
    /** Horloge du joueur, en ticks (avance à chaque tick du jeu). */
    private static long horloge;
@@ -73,6 +76,7 @@ public final class CouteauxClient {
          }
       });
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, GunMeleeEvent.class, CouteauxClient::coupDeTacz);
+      ReseauCouteaux.COUP_VU_CLIENT.brancher(CoupLourdClient::vu);
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ClientPlayerNetworkEvent.LoggingIn.class, e -> {
          pretA = 0L;
          caseVue = -1;
@@ -109,7 +113,9 @@ public final class CouteauxClient {
          SoundPlayManager.playMeleePushSound(joueur, affichage);
          AnimationStateMachine<?> etats = affichage.getAnimationStateMachine();
          if (etats != null) {
-            etats.trigger(SIGNAL_COUP);
+            IGun ig = IGun.getIGunOrNull(main);
+            boolean clipLourd = lourd && ig != null && CoupLourdClient.preparer(etats.getAnimationController(), ig.getGunId(main));
+            etats.trigger(clipLourd ? SIGNAL_COUP_LOURD : SIGNAL_COUP);
          }
       });
       return true;

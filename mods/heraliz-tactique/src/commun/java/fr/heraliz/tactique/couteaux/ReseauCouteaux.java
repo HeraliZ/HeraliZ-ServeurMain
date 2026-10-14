@@ -14,12 +14,14 @@ import net.minecraftforge.network.simple.SimpleChannel;
  * message clair.
  */
 public final class ReseauCouteaux {
-   private static final String VERSION = "1";
+   private static final String VERSION = "2";
    public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(
       new ResourceLocation(HeralizTactique.MODID, "couteaux"), () -> VERSION, VERSION::equals, VERSION::equals);
 
    /** Demande de coup reçue par le serveur : branchée par la partie serveur (CouteauxServeur). */
    public static final Crochet<PaquetCoupCouteau.Demande> COUP_SERVEUR = new Crochet<>();
+   /** Coup d'un autre joueur, vu en 3e personne : branché par la partie client (CouteauxClient). */
+   public static final Crochet<PaquetCoupVu> COUP_VU_CLIENT = new Crochet<>();
 
    private ReseauCouteaux() {
    }
@@ -28,6 +30,13 @@ public final class ReseauCouteaux {
    public static void init() {
       CANAL.registerMessage(0, PaquetCoupCouteau.class, PaquetCoupCouteau::encode, PaquetCoupCouteau::decode,
          PaquetCoupCouteau::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+      CANAL.registerMessage(1, PaquetCoupVu.class, PaquetCoupVu::encode, PaquetCoupVu::decode, PaquetCoupVu::handle,
+         Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+   }
+
+   /** Serveur -> les joueurs qui voient cette entité (pas elle-même). */
+   public static void envoyerAutour(net.minecraft.world.entity.Entity entite, Object paquet) {
+      CANAL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> entite), paquet);
    }
 
    /** Joueur -> serveur (appelé par la partie client seulement). */
