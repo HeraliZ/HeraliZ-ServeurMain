@@ -22,7 +22,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
  *    <li>pas de tir pendant que le joueur se couche (passage debout -> allongé) : {@code duree_sans_tir_couche} ;</li>
  *    <li>après s'être relevé (touche, saut, autre objet en main, eau...), pas de nouvel allongé avant
  *    {@code delai_rallonger}, compté depuis le moment où il s'est relevé ;</li>
- *    <li>plongeon façon Call of Duty : en avançant, la touche pendant un saut (jusqu'à {@link #FENETRE_SAUT_MS} après) ou
+ *    <li>plongeon façon Call of Duty : en se déplaçant (devant, derrière, côté, 14/10), la touche pendant un saut (jusqu'à {@link #FENETRE_SAUT_MS} après) ou
  *    avec la touche de saut enfoncée lance le joueur en avant, corps à plat, et il retombe allongé. L'élan est décidé et
  *    donné par le serveur seul (vitesse de Minecraft envoyée au joueur : l'anticheat Spartan la voit) ; le joueur ne fait
  *    que le demander. Le plongeon compte comme « se coucher » : pas de tir pendant {@code duree_sans_tir_couche} depuis son
@@ -49,7 +49,7 @@ public final class Allonge {
    /** Réglage par défaut : plongeon permis. */
    public static final boolean DEFAUT_PLONGEON = true;
    /**
-    * Réglage par défaut : vitesse vers l'avant donnée par le plongeon, en blocs par tick (un sprint va à 0,28) : environ
+    * Réglage par défaut : vitesse donnée par le plongeon, en blocs par tick (un sprint va à 0,28) : environ
     * 2,5 blocs depuis le sol, 3,5 à 4,5 blocs depuis un saut (pas de frottement du sol au départ).
     */
    public static final double DEFAUT_PLONGEON_VITESSE = 0.7D;
@@ -73,7 +73,7 @@ public final class Allonge {
    /** Le serveur accepte 0,3 s de plus après le saut (le saut et la demande arrivent par le réseau). */
    public static final long MARGE_SAUT_MS = 300L;
    /**
-    * Vitesse vers l'avant minimale pour plonger, chez le joueur (blocs par tick, dans le sens du regard) : marche 0,22,
+    * Vitesse minimale pour plonger, chez le joueur (blocs par tick, dans le sens des touches tenues) : marche 0,22,
     * sprint 0,28, accroupi ou allongé 0,07.
     */
    public static final double AVANT_MIN = 0.1D;
@@ -141,7 +141,7 @@ public final class Allonge {
       return valeur(ServerConfig.PLONGEON, DEFAUT_PLONGEON);
    }
 
-   /** Vitesse vers l'avant du plongeon (blocs par tick). */
+   /** Vitesse du plongeon, dans le sens du déplacement (blocs par tick). */
    public static double plongeonVitesse() {
       return valeur(ServerConfig.PLONGEON_VITESSE, DEFAUT_PLONGEON_VITESSE);
    }

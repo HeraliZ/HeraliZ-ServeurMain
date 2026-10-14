@@ -16,14 +16,14 @@ import net.minecraftforge.network.simple.SimpleChannel;
  * avec un message clair. Version 2 : plongeon (demande et réponse).
  */
 public final class ReseauAllonge {
-   private static final String VERSION = "2";
+   private static final String VERSION = "3";
    public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(
       new ResourceLocation(HeralizTactique.MODID, "allonge"), () -> VERSION, VERSION::equals, VERSION::equals);
 
    /** Refus du serveur reçu chez le joueur : branché par la partie client (AllongeClient). */
    public static final Crochet<PaquetRefusAllonge> REFUS_CLIENT = new Crochet<>();
    /** Demande de plongeon reçue par le serveur : branchée par la partie serveur (PlongeonServeur). */
-   public static final Crochet<ServerPlayer> PLONGEON_SERVEUR = new Crochet<>();
+   public static final Crochet<PaquetDemandePlongeon.Demande> PLONGEON_SERVEUR = new Crochet<>();
    /** Réponse du serveur à une demande de plongeon, reçue chez le joueur : branchée par la partie client (AllongeClient). */
    public static final Crochet<PaquetReponsePlongeon> REPONSE_PLONGEON_CLIENT = new Crochet<>();
 
