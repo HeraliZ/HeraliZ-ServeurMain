@@ -42,21 +42,11 @@ public final class VoyageursServeur {
         // le passager tient sur le plancher (ou y est allongé) : « au sol » pour les autres mods, jamais de chute comptée
         rider.setOnGround(v.surLePlancher() || v.allonge());
         rider.resetFallDistance();
-        // Maj : lu puis effacé avant le tick du passager (le véhicule est tické d'abord) -> plus de descente vanilla
-        // n'importe où ; Maj vient du client (paquet Descente). Maj maintenue 2 s debout : descente de secours.
+        // Maj : effacé avant le tick du passager (le véhicule est tické d'abord) -> plus de descente vanilla n'importe où.
+        // 14/10 (choix du propriétaire) : Maj ne fait plus jamais descendre (ni le paquet Descente, ni Maj maintenue) :
+        // on ne sort que par une porte ouverte, en gare (marche), ou par mort, téléportation, déconnexion.
         if (rider instanceof ServerPlayer sp) {
-            boolean maj = sp.isShiftKeyDown();
             sp.setShiftKeyDown(false);
-            if (maj) {
-                v.majAbsent = 0;
-                if (v.majRelachee && !v.assis() && ++v.majTicks >= 40) {
-                    v.majTicks = 0;
-                    descenteDemandee(sp, "Maj maintenue");
-                }
-            } else if (++v.majAbsent > 3) {                                  // relâchée (un paquet peut manquer un tick)
-                v.majRelachee = true;
-                v.majTicks = 0;
-            }
         }
     }
 
@@ -276,18 +266,6 @@ public final class VoyageursServeur {
         Horaire h = Horaire.get();
         if (h == null || srv == null || !TrainServeur.actif(srv)) return true;
         return h.etatRame(TrainServeur.temps(srv), rame).aQuai() >= 0;
-    }
-
-    /** Descente demandée par le passager (Maj, Maj maintenue) : seulement train arrêté en gare ; en marche, un message
-     *  dans la barre d'action et le passager reste à bord. Les autres descentes (mort, commande, train arrêté par un
-     *  opérateur...) passent toujours. */
-    static void descenteDemandee(ServerPlayer p, String pourquoi) {
-        if (!(p.getVehicle() instanceof Voyageur vy)) return;
-        if (!aQuai(p.getServer(), Horaire.rame(vy.vehicule()))) {
-            p.displayClientMessage(net.minecraft.network.chat.Component.translatable("msg.heralisz_utils.train.en_marche"), true);
-            return;
-        }
-        descendre(p, pourquoi);
     }
 
     /** Fait descendre un joueur de la rame (Maj, filet de sécurité...) : à côté du train, sinon sur le quai (avec un
