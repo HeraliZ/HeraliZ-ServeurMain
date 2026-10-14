@@ -23,6 +23,12 @@ public class IdleAnimationHandler {
          Minecraft mc = Minecraft.getInstance();
          if (mc.level != null) {
             for (AbstractClientPlayer clientPlayer : mc.level.players()) {
+               // HeraliZ (14/10) : allongé (ramper, plongeon, Pose.SWIMMING hors de l'eau), les gestes debout de la mêlée
+               // ne jouent pas sur un corps à plat (personnage tordu) : arrêtés comme sans arme de mêlée
+               if (clientPlayer.getPose() == Pose.SWIMMING && !clientPlayer.isSwimming()) {
+                  stopAll(clientPlayer);
+                  continue;
+               }
                if (clientPlayer.getPose() != Pose.SLEEPING
                   && !clientPlayer.onClimbable()
                   && !clientPlayer.isSwimming()

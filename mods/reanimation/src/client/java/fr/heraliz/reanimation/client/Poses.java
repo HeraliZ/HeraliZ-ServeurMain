@@ -29,7 +29,29 @@ public final class Poses {
       return c < 0.4F ? Mth.sin(c / 0.4F * (float) Math.PI) : 0.0F;
    }
 
+   /**
+    * Pose de Réanimation (à terre, fouille, réanimation, exécution). 14/10 : la remise à zéro des décalages (tête, torse,
+    * jambes) n'est gardée que si une pose est appliquée ; sinon les valeurs d'avant sont rendues. Avant, elle effaçait
+    * à chaque image, chez tous les joueurs, ce que Player Animator venait de poser (emotes, allongé de TaCZ, mêlée) :
+    * torse et tête revenaient au centre, bras et jambes non (personnage « démembré »).
+    */
    static boolean apply(HumanoidModel<?> m, LivingEntity e, float limbSwing, float limbAmount, float age) {
+      float[] avant = {m.head.x, m.head.z, m.head.zRot, m.body.x, m.body.z, m.body.zRot, m.rightLeg.x, m.leftLeg.x};
+      boolean pose = poser(m, e, limbSwing, limbAmount, age);
+      if (!pose) {
+         m.head.x = avant[0];
+         m.head.z = avant[1];
+         m.head.zRot = avant[2];
+         m.body.x = avant[3];
+         m.body.z = avant[4];
+         m.body.zRot = avant[5];
+         m.rightLeg.x = avant[6];
+         m.leftLeg.x = avant[7];
+      }
+      return pose;
+   }
+
+   private static boolean poser(HumanoidModel<?> m, LivingEntity e, float limbSwing, float limbAmount, float age) {
       m.head.x = 0.0F;
       m.head.z = 0.0F;
       m.head.zRot = 0.0F;
