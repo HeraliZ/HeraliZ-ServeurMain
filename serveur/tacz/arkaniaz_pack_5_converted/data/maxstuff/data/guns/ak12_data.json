@@ -158,14 +158,6 @@
   // 专属的配件属性
   "exclusive_attachments": {
     // 配件 ID，后面的数据和配件的 data 部分结构完全一致
-    "tacz:scope_standard_8x": {
-      "weight": 2.0,
-      "ads_addend": 0.04,
-      "inaccuracy_addend": -0.4,
-      "recoil_modifier": {
-        "pitch": -0.2,
-        "yaw": -0.1
-      }
-    }
+
   }
 }

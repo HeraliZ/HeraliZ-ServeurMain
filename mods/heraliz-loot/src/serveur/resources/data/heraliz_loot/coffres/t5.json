@@ -344,7 +344,6 @@
   {"item": "tacz:attachment", "nombre": [1, 1], "poids": 14, "nbt": "{AttachmentId:\"gucci_attachments:muzzle_fr_wolf\"}", "_cat": "accessoires_rares"},
   {"item": "tacz:attachment", "nombre": [1, 1], "poids": 14, "nbt": "{AttachmentId:\"gucci_attachments:scope_karrina\"}", "_cat": "accessoires_rares"},
   {"item": "tacz:attachment", "nombre": [1, 1], "poids": 14, "nbt": "{AttachmentId:\"tacz:muzzle_silencer_ptilopsis\"}", "_cat": "accessoires_rares"},
-  {"item": "tacz:attachment", "nombre": [1, 1], "poids": 14, "nbt": "{AttachmentId:\"tacz:scope_standard_8x\"}", "_cat": "accessoires_rares"},
   {"item": "tacz:attachment", "nombre": [1, 1], "poids": 7, "nbt": "{AttachmentId:\"gucci_attachments:muzzle_fr_coors2\"}", "_cat": "accessoires_rares"},
   {"item": "tacz:attachment", "nombre": [1, 1], "poids": 7, "nbt": "{AttachmentId:\"gucci_attachments:muzzle_s_gogol9\"}", "_cat": "accessoires_rares"},
   {"item": "tacz:attachment", "nombre": [1, 1], "poids": 7, "nbt": "{AttachmentId:\"gucci_attachments:muzzle_s_widemouth\"}", "_cat": "accessoires_rares"},

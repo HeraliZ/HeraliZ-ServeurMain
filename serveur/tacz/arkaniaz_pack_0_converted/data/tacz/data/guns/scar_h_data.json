@@ -160,12 +160,6 @@
         "extended_mag"
     ],
     "exclusive_attachments": {
-        "tacz:scope_standard_8x": {
-            "weight": 2.0,
-            "ads_addend": 0.04,
-            "recoil_modifier": {
-                "yaw": -0.2
-            }
-        }
+
     }
 }
