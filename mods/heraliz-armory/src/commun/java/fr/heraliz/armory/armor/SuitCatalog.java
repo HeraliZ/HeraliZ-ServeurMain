@@ -12,12 +12,12 @@ import java.util.List;
 public final class SuitCatalog {
     private SuitCatalog() {}
 
-    //                                set                 piece   palier dur.  vitesse balles melee morsure expl.  rad. gaz    nvg    bonus
+    // valeurs ecrites par outils/equilibrage_armures.py (palier = rang de rarete, une seule protection partout)
     public static final List<PieceDef> SUITS = List.of(
-            new PieceDef("hazmat", "suit", 3, 300, 0, 5, 5, 10, 5.0f, 100, true, false, null),
-            new PieceDef("hazmat_renforce", "suit", 4, 450, 0, 25, 20, 30, 12.0f, 100, true, false, null),
-            new PieceDef("arctique", "suit", 3, 300, 0, 5, 10, 10, 0.0f, 0, false, false, "cold"),
-            new PieceDef("arctique_renforcee", "suit", 4, 450, 0, 25, 20, 30, 12.0f, 0, false, false, "cold"),
-            new PieceDef("plongee", "suit", 3, 400, -0.06, 0, 0, 10, 0.0f, 0, false, false, "diving")
+            new PieceDef("hazmat", "suit", 2, 300, 0, 12, 12, 12, 12.0f, 100, true, false, null),
+            new PieceDef("hazmat_renforce", "suit", 4, 450, 0, 36, 36, 36, 36.0f, 100, true, false, null),
+            new PieceDef("arctique", "suit", 2, 300, 0, 12, 12, 12, 12.0f, 0, false, false, "cold"),
+            new PieceDef("arctique_renforcee", "suit", 4, 450, 0, 36, 36, 36, 36.0f, 0, false, false, "cold"),
+            new PieceDef("plongee", "suit", 3, 400, -0.06, 6, 6, 6, 6.0f, 0, false, false, "diving")
     );
 }

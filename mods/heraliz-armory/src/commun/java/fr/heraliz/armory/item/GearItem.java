@@ -68,19 +68,14 @@ public interface GearItem extends ProtectiveItem {
         return Component.literal(glyph(rarity)).append(Component.translatable("rarity.heraliz_armory." + rarity).withStyle(rarityStyle(rarity)));
     }
 
-    /** Infobulle (identique a celle de HeralisZ Armor : rarete, emplacement, protections, zone, bonus). */
+    /** Infobulle : rarete, emplacement, protection (s'il y en a une), zone, bonus. */
     static void appendTooltip(GearDef g, List<Component> lines) {
         lines.add(rarityLine(g.rarity()));
         if (g.armor()) {
             lines.add(Component.translatable("tooltip.heraliz_armory.slot", Component.translatable("tooltip.heraliz_armory.slot." + g.slot()))
                     .withStyle(ChatFormatting.GRAY));
         }
-        lines.add(Component.translatable("tooltip.heraliz_armory.protection").withStyle(ChatFormatting.GRAY));
-        lines.add(PieceItem.stat(PieceItem.BULLET, "bullet", g.bullet()));
-        lines.add(PieceItem.stat(PieceItem.EXPLOSION, "explosion", g.explosion()));
-        lines.add(PieceItem.stat(PieceItem.MELEE, "melee", g.melee()));
-        lines.add(PieceItem.stat(PieceItem.BITE, "bite", g.bite()));
-        lines.add(PieceItem.stat(PieceItem.RADIATION, "radiation", g.radiation()));
+        if (g.bullet() > 0) lines.add(PieceItem.protection(g.bullet()));
         lines.add(Component.translatable(g.protectsHead() ? "tooltip.heraliz_armory.zone.head" : "tooltip.heraliz_armory.zone.body")
                 .withStyle(ChatFormatting.DARK_GRAY));
         if (g.bonus() != null) {

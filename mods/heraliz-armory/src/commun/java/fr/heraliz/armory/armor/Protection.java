@@ -10,31 +10,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Calcul des protections : chaque objet porte donne un % par type de degat, les % s'additionnent et sont plafonnes a 75 %
- * (radiation 100 %). Tir a la tete : seules les pieces de tete comptent. Autres coups : pieces du corps + un quart des
- * pieces de tete. Une combinaison compte en entier partout.
- * <p>0.9.0 : un seul calcul et un seul plafond pour tout ce que porte le joueur : pieces et combinaisons de l'Armurerie,
- * objets repris de HeralisZ Armor (ghillies, brassards, masques a gaz, objets event ; explosion = moitie des balles).
- * Partage par les degats (ProtectionEvents) et le panneau de l'inventaire (client).
+ * Calcul des protections (0.15.0, choix du proprietaire du 14/10) : une seule protection par objet, la meme contre les
+ * balles, les explosions, le corps a corps et les morsures (valeurs ecrites par outils/equilibrage_armures.py). Les %
+ * des objets portes s'additionnent, plafonnes a {@link #CAP} (radiation : 100 %, Hazmat seulement). Tir a la tete : seuls
+ * le casque et le visage comptent ; autres coups : seules les pieces du corps. Une combinaison compte en entier partout.
  */
 public final class Protection {
     private Protection() {}
 
-    public static final float CAP = 75.0F;
-    public static final float HEAD_SHARE = 0.25F;
+    /** Plafond : une tenue Unique complete (60 % au corps, 50 % a la tete) ne peut pas etre depassee. */
+    public static final float CAP = 60.0F;
+    /** Part des pieces de tete sur un coup au corps (0.15.0 : aucune, chaque tenue atteint son total avec le corps seul). */
+    public static final float HEAD_SHARE = 0.0F;
     private static final EquipmentSlot[] ARMOR = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
     /** Types de degat geres. */
     public enum Kind { BULLET, MELEE, BITE, EXPLOSION, RADIATION }
 
     public record Worn(Guard def, ItemStack stack, boolean curio) {}
-
-    /** Totaux en % (deja plafonnes) : balles (corps), balles (tete), explosion, melee, morsure, radiation. */
-    public record Totals(float bullet, float head, float explosion, float melee, float bite, float radiation) {
-        public boolean isEmpty() {
-            return bullet <= 0 && head <= 0 && explosion <= 0 && melee <= 0 && bite <= 0 && radiation <= 0;
-        }
-    }
 
     /** Objets protecteurs de l'Armurerie portes (slots d'armure et slots Curios). */
     public static List<Worn> worn(LivingEntity entity) {
@@ -64,8 +57,8 @@ public final class Protection {
     }
 
     /**
-     * Part d'un objet dans un coup : 1 s'il couvre la zone touchee, un quart pour la tete sur un coup au corps ;
-     * une combinaison couvre tout (1 partout).
+     * Part d'un objet dans un coup : 1 s'il couvre la zone touchee, sinon {@link #HEAD_SHARE} (tete sur un coup au
+     * corps) ou 0 (corps sur un tir a la tete) ; une combinaison couvre tout (1 partout).
      */
     public static float share(Guard p, boolean headshot) {
         if (p.wholeBody()) return 1.0F;
@@ -79,13 +72,7 @@ public final class Protection {
         return total;
     }
 
-    public static Totals totals(List<Worn> worn) {
-        float b = sum(worn, Kind.BULLET, false), h = sum(worn, Kind.BULLET, true), e = sum(worn, Kind.EXPLOSION, false);
-        float m = sum(worn, Kind.MELEE, false), bite = sum(worn, Kind.BITE, false), rad = sum(worn, Kind.RADIATION, false);
-        return new Totals(Math.min(CAP, b), Math.min(CAP, h), Math.min(CAP, e), Math.min(CAP, m), Math.min(CAP, bite), Math.min(100, rad));
-    }
-
-    /** Tenue complete d'un ensemble (infobulle du kit) : % balles (corps, tete). */
+    /** Tenue complete d'un ensemble (infobulle du kit) : % de protection (corps, tete). */
     public static float[] setBullet(List<PieceDef> pieces) {
         float b = 0, h = 0;
         for (PieceDef p : pieces) {

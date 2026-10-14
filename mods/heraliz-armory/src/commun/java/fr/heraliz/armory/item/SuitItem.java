@@ -67,14 +67,10 @@ public class SuitItem extends SetArmorItem {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         PieceDef def = def();
+        tooltip.add(GearItem.rarityLine(PieceItem.rarity(def.tier())));
         tooltip.add(Component.translatable("tooltip.heraliz_armory.suit").withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.translatable("tooltip.heraliz_armory.suit.alone").withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.translatable("tooltip.heraliz_armory.protection").withStyle(ChatFormatting.GRAY));
-        tooltip.add(PieceItem.stat(PieceItem.BULLET, "bullet", def.bullet()));
-        tooltip.add(PieceItem.stat(PieceItem.EXPLOSION, "explosion", def.explosion()));
-        tooltip.add(PieceItem.stat(PieceItem.MELEE, "melee", def.melee()));
-        tooltip.add(PieceItem.stat(PieceItem.BITE, "bite", def.bite()));
-        tooltip.add(PieceItem.stat(PieceItem.RADIATION, "radiation", def.radiation()));
+        tooltip.add(PieceItem.protection(def.bullet()));
         tooltip.add(Component.translatable("tooltip.heraliz_armory.zone.all").withStyle(ChatFormatting.DARK_GRAY));
         if (def.gas()) tooltip.add(Component.translatable("tooltip.heraliz_armory.gas").withStyle(ChatFormatting.AQUA));
         if (def.radiation() >= 100) tooltip.add(Component.translatable("tooltip.heraliz_armory.radiation_proof").withStyle(ChatFormatting.AQUA));
