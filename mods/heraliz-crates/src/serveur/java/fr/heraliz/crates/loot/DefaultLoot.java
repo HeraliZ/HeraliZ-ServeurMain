@@ -266,11 +266,12 @@ final class DefaultLoot {
                 l.add(gun("minigun", "AUTO", 1, MYTHIC));
                 l.get(0).weight += TOTAL - total(l);
             }
-            // caisse Gemme : uniquement les 4 finitions gemmes des trois couteaux (Black Pearl la plus courante, Emerald la plus rare)
+            // caisse Gemme : uniquement les 4 finitions gemmes des trois couteaux (Black Pearl la plus courante, Emerald la plus
+            // rare) ; tous les couteaux sont Unique (choix du proprietaire, 14/10)
             case GEMME -> {
                 for (String k : new String[]{"butterfly", "karambit", "m9"}) {
-                    l.add(knife(k + "__doppler_black_pearl", 120, LEGENDARY));
-                    l.add(knife(k + "__doppler_ruby", 107, LEGENDARY));
+                    l.add(knife(k + "__doppler_black_pearl", 120, MYTHIC));
+                    l.add(knife(k + "__doppler_ruby", 107, MYTHIC));
                     l.add(knife(k + "__doppler_sapphire", 67, MYTHIC));
                     l.add(knife(k + "__gamma_emerald", 39, MYTHIC));
                 }

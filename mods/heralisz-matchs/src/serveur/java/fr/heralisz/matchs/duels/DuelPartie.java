@@ -8,6 +8,8 @@ import fr.heralisz.matchs.HeraliszMatchs;
 import fr.heralisz.matchs.duels.armes.Armurerie;
 import fr.heralisz.matchs.duels.armes.Catalogue;
 import fr.heralisz.matchs.duels.armes.TirsTacz;
+import fr.heralisz.matchs.duels.bombe.BombeDuel;
+import fr.heralisz.matchs.duels.bombe.OrdinateurDuel;
 import fr.heralisz.matchs.duels.classes.ClassePerso;
 import fr.heralisz.matchs.duels.donnees.DuelsStore;
 import fr.heralisz.matchs.duels.killcam.Enregistreur;
@@ -27,22 +29,22 @@ import fr.heralisz.matchs.moteur.api.Partie;
 import fr.heralisz.matchs.moteur.api.Pose;
 import fr.heralisz.matchs.moteur.spectateur.Spectateurs;
 import fr.heralisz.matchs.reseau.MatchsNet;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -55,8 +57,9 @@ import java.util.UUID;
 
 /**
  * Un duel (MATCHS_SPEC §3) : deux equipes (A = maison jaune, B = maison verte de Nuketown) en 1v1 ou 2v2, mode
- * <b>recherche et destruction</b> (une vie par manche, charge, sites A/B, premier a 4 manches, changement de cote apres
- * 3 manches, killcam de la derniere elimination en fin de manche) ou <b>match a mort</b> (reapparition apres 3 s loin des
+ * <b>recherche et destruction</b> (une vie par manche, bombes des sites A/B amorcees avec l'ordinateur porte par un
+ * attaquant, pirate par un defenseur ; premier a 4 manches, changement de cote apres 3 manches, killcam de la derniere
+ * elimination en fin de manche) ou <b>match a mort</b> (reapparition apres 3 s loin des
  * ennemis, premier a 20 / 30 eliminations ou 10 min, killcam a chaque mort). Classes personnalisees choisies en debut de
  * manche ou a chaque reapparition (5 s). Fin : tableau des scores, statistiques de duel, Coffre rendu.
  * <p>Phases ({@link Partie.Phase}) : ATTENTE (pose de l'instance) -> CHOIX (gel, choix de classe) -> COMBAT ->
@@ -119,17 +122,32 @@ public class DuelPartie extends Partie {
     // ------------------------------------------------------------------ recherche et destruction
     private int manche;
     private Equipe attaquants, defenseurs;
+    /**
+     * Etat de « la charge » ({@code Vues.CHARGE_*}) : l'ordinateur d'amorcage porte par un attaquant, au sol (porteur
+     * tue), pose et relie a la bombe amorcee (POSEE), puis la bombe desamorcee ou explosee.
+     */
     private int etatCharge = Vues.CHARGE_AUCUNE;
     @Nullable
     private UUID porteur;
+    /** Position de l'ordinateur pose (au sol ferme, en amorcage, amorce, retombe apres un piratage) et son orientation. */
     private double cx, cy, cz;
+    private float lacet;
+    /** Site de la bombe en cours d'amorcage ou amorcee ("A", "B", vide). */
     private String siteCharge = "";
     private int minuterie;
     private int progression;
+    /** Attaquant qui amorce (charge portee) ou defenseur qui pirate (charge posee). */
     @Nullable
     private UUID acteur;
+    /** Temps du monde au debut de l'action en cours et a l'explosion prevue (lus par l'ecran de l'ordinateur). */
+    private int debutAction, finMinuterie;
+    /** Bombes posees sur les sites pendant le duel (points bombe_a / bombe_b) et ordinateur pose. */
     @Nullable
-    private Entity affichageCharge;
+    private Pose poseBombeA, poseBombeB;
+    @Nullable
+    private BombeDuel bombeA, bombeB;
+    @Nullable
+    private OrdinateurDuel ordinateur;
     @Nullable
     private AABB siteA, siteB;
     private final Map<UUID, Integer> signatures = new LinkedHashMap<>();
@@ -226,6 +244,7 @@ public class DuelPartie extends Partie {
         lireSites();
         if (entrainement) poserCible();
         if (rd) {
+            lirePosesBombes();
             manche = 0;
             nouvelleManche();
         } else {
@@ -455,6 +474,11 @@ public class DuelPartie extends Partie {
         if (phase() != Phase.TERMINEE && ticks() % 20 == 0) {
             envoyerHud(false);
             DuelsStore.sauverSiBesoin(false);
+            // bombes et ordinateur : jamais sauvegardes avec le monde, reposes s'ils ont disparu (troncon decharge)
+            if (rd && (phase() == Phase.CHOIX || phase() == Phase.COMBAT || phase() == Phase.PREPARATION)) {
+                entretenirBombes();
+                majOrdinateur();
+            }
         }
     }
 
@@ -473,6 +497,8 @@ public class DuelPartie extends Partie {
             ServerPlayer p = joueur(f.id);
             if (p == null) continue;
             equiper(p, f);
+            // l'equipement vide l'inventaire : l'ordinateur du porteur est donne apres
+            if (rd && f.id.equals(porteur)) donnerObjetCharge(p);
             f.apparition = ticks();
             MatchsNet.versJoueur(p, new PaquetsDuels.ChoixS2C(0, List.of(), f.classe, Component.empty(), 0, true));
         }
@@ -515,6 +541,8 @@ public class DuelPartie extends Partie {
         Equipement.retirer(victime);
         if (rd) {
             lacherChargeSiPorteur(f.id, victime.getX(), victime.getY(), victime.getZ());
+            // tue en plein piratage : l'ordinateur retombe a ses pieds, toujours relie, le piratage repart de zero
+            if (etatCharge == Vues.CHARGE_POSEE && f.id.equals(acteur)) lacherOrdinateur(victime.getX(), victime.getY(), victime.getZ(), victime.getYRot());
             Spectateurs.suivre(victime, this);
             verifierFinManche();
         } else {
@@ -667,7 +695,6 @@ public class DuelPartie extends Partie {
             Annonces.grande(enLigneCopie(), new Annonces.Annonce(Component.translatable("duel.annonce.changement"),
                     Component.translatable("duel.annonce.changement_sous"), Ui.OR, Registres.SON_MANCHE, 60, Annonces.Style.NORMALE));
         }
-        retirerAffichageCharge();
         // la killcam de fin de manche ne montre qu'une elimination de cette manche
         if (enregistreur != null) enregistreur.oublierDerniere();
         progression = 0;
@@ -676,7 +703,8 @@ public class DuelPartie extends Partie {
         minuterie = 0;
         placerTous(attaquants, "spawn_a");
         placerTous(defenseurs, "spawn_b");
-        // la charge va a un attaquant connecte au hasard, sinon elle attend au point « charge »
+        // l'ordinateur va a un attaquant connecte au hasard (dans son inventaire au debut du combat), sinon il attend
+        // ferme au point « charge »
         List<UUID> candidats = new ArrayList<>();
         for (UUID u : attaquants.joueurs()) {
             Fiche f = fiches.get(u);
@@ -688,9 +716,12 @@ public class DuelPartie extends Partie {
         } else {
             porteur = null;
             Pose c = instance() == null ? null : instance().point("charge");
-            if (c != null) poserAuSol(c.x(), c.y(), c.z());
+            if (c != null) poserAuSol(c.x(), c.y(), c.z(), c.yaw());
             else etatCharge = Vues.CHARGE_AUCUNE;
         }
+        // bombes des sites remises en veille (posees au premier passage), ordinateur de la manche precedente retire
+        entretenirBombes();
+        majOrdinateur();
         for (ServerPlayer p : enLigneCopie()) {
             Fiche f = fiches.get(p.getUUID());
             boolean att = f != null && f.equipe == attaquants;
@@ -727,39 +758,73 @@ public class DuelPartie extends Partie {
         if (phase() == Phase.COMBAT && (ticks() % 5 == 0)) synchroniserRd(ticks() % 100 == 0);
     }
 
+    /**
+     * Le porteur s'accroupit (au sol) a moins de {@link DuelsConfig#RD_AMORCAGE_PORTEE} blocs d'une bombe : il ouvre
+     * l'ordinateur au sol devant lui et tape les 3 codes ({@link DuelsConfig#RD_POSE_TICKS}). Touche lachee, trop loin de
+     * l'ordinateur ouvert ou d'une autre bombe : l'ordinateur est range, la saisie repart de zero.
+     */
     private void tickPorteur() {
         ServerPlayer p = porteur == null ? null : joueur(porteur);
         Fiche f = porteur == null ? null : fiches.get(porteur);
         if (p == null || f == null || f.parti || !f.equipe.estVivant(f.id)) {
             if (p != null) lacherChargeSiPorteur(p.getUUID(), p.getX(), p.getY(), p.getZ());
             else {
+                porteur = null;
+                progression = 0;
+                acteur = null;
+                siteCharge = "";
                 Pose c = instance() == null ? null : instance().point("charge");
-                if (c != null) poserAuSol(c.x(), c.y(), c.z());
+                if (c != null) poserAuSol(c.x(), c.y(), c.z(), c.yaw());
             }
             return;
         }
-        String site = siteDe(p);
-        boolean pose = !site.isEmpty() && p.isShiftKeyDown() && p.onGround();
-        if (pose) {
+        if (ticks() % 20 == 0) donnerObjetCharge(p);
+        String site = bombeProche(p);
+        boolean amorce = !site.isEmpty() && p.isShiftKeyDown() && p.onGround() && !p.isSpectator();
+        if (amorce && progression > 0) {
+            // meme bombe, et l'attaquant reste devant l'ordinateur qu'il a ouvert
+            double dx = p.getX() - cx, dz = p.getZ() - cz;
+            amorce = site.equals(siteCharge) && dx * dx + dz * dz <= DuelsConfig.RD_AMORCAGE_ECART * DuelsConfig.RD_AMORCAGE_ECART;
+        }
+        if (amorce) {
             if (progression == 0) {
                 acteur = p.getUUID();
-                synchroniserRd(true);
+                siteCharge = site;
+                debutAction = tempsMonde();
+                placerOrdinateurAmorcage(p, site);
             }
             progression++;
+            if (progression == 1) {
+                majOrdinateur();
+                synchroniserRd(true);
+            }
             if (progression >= DuelsConfig.RD_POSE_TICKS) poser(p, site);
         } else if (progression > 0) {
             progression = 0;
             acteur = null;
+            siteCharge = "";
+            majOrdinateur();
             synchroniserRd(true);
         }
     }
 
-    private String siteDe(Entity e) {
-        if (siteA != null && siteA.contains(e.getX(), e.getY() + 0.1, e.getZ())) return "A";
-        if (siteB != null && siteB.contains(e.getX(), e.getY() + 0.1, e.getZ())) return "B";
-        return "";
+    /** Site dont la bombe est a portee d'amorcage ("" si aucune) ; la plus proche si les deux le sont. */
+    private String bombeProche(Entity e) {
+        String site = "";
+        double mieux = DuelsConfig.RD_AMORCAGE_PORTEE * DuelsConfig.RD_AMORCAGE_PORTEE;
+        for (int i = 0; i < 2; i++) {
+            Pose b = i == 0 ? poseBombeA : poseBombeB;
+            if (b == null || Math.abs(e.getY() - b.y()) > DuelsConfig.RD_HAUTEUR) continue;
+            double dx = e.getX() - b.x(), dz = e.getZ() - b.z(), d = dx * dx + dz * dz;
+            if (d <= mieux) {
+                mieux = d;
+                site = i == 0 ? "A" : "B";
+            }
+        }
+        return site;
     }
 
+    /** Codes saisis : la bombe est amorcee, l'ordinateur reste pose, allume, relie a la bombe (40 s). */
     private void poser(ServerPlayer p, String site) {
         etatCharge = Vues.CHARGE_POSEE;
         siteCharge = site;
@@ -767,10 +832,10 @@ public class DuelPartie extends Partie {
         progression = 0;
         acteur = null;
         minuterie = DuelsConfig.RD_MINUTERIE_TICKS;
-        cx = p.getX();
-        cy = p.getY();
-        cz = p.getZ();
-        afficherCharge(cx, cy, cz);
+        finMinuterie = tempsMonde() + minuterie;
+        retirerObjetCharge(p);
+        majBombes();
+        majOrdinateur();
         MatchsNet.versJoueurs(enLigneCopie(), new PaquetsDuels.EffetS2C(PaquetsDuels.EffetS2C.POSEE, cx, cy, cz));
         for (ServerPlayer q : enLigneCopie()) {
             Fiche f = fiches.get(q.getUUID());
@@ -793,7 +858,8 @@ public class DuelPartie extends Partie {
             if (dx * dx + dy * dy + dz * dz <= DuelsConfig.RD_RAMASSAGE * DuelsConfig.RD_RAMASSAGE) {
                 porteur = u;
                 etatCharge = Vues.CHARGE_PORTEE;
-                retirerAffichageCharge();
+                majOrdinateur();
+                donnerObjetCharge(p);
                 son(p, Registres.RAMASSE.get(), 0.8f);
                 synchroniserRd(true);
                 return;
@@ -801,81 +867,119 @@ public class DuelPartie extends Partie {
         }
     }
 
+    /**
+     * Bombe amorcee : minuterie, et piratage. Un defenseur vivant, accroupi au sol a moins de
+     * {@link DuelsConfig#RD_PIRATAGE_PORTEE} blocs de l'ordinateur le ramasse et le pirate en restant accroupi
+     * ({@link DuelsConfig#RD_DESAMORCAGE_TICKS}) ; un seul a la fois. Touche lachee, tue, ou plus loin que le cable de la
+     * bombe : l'ordinateur retombe a ses pieds, toujours relie, le piratage repart de zero.
+     */
     private void tickPosee() {
         minuterie--;
         if (minuterie <= 0) {
             exploser();
             return;
         }
-        // desamorcage : un defenseur vivant, accroupi, a portee ; un seul a la fois
         ServerPlayer d = acteur == null ? null : joueur(acteur);
-        if (d != null && !peutDesamorcer(d)) d = null;
+        if (acteur != null && (d == null || !peutPirater(d, false))) {
+            if (d != null) lacherOrdinateur(d.getX(), d.getY(), d.getZ(), d.getYRot());
+            else lacherOrdinateur(cx, cy, cz, lacet + 180f);
+            d = null;
+        }
         if (d == null) {
             for (UUID u : defenseurs.vivants()) {
                 ServerPlayer p = joueur(u);
-                if (p != null && peutDesamorcer(p)) {
+                if (p != null && peutPirater(p, true)) {
                     d = p;
                     break;
                 }
             }
-        }
-        if (d == null) {
-            if (progression > 0) {
-                progression = 0;
-                acteur = null;
-                synchroniserRd(true);
-            }
-            return;
-        }
-        if (acteur == null || !acteur.equals(d.getUUID())) {
+            if (d == null) return;
             acteur = d.getUUID();
             progression = 0;
+            debutAction = tempsMonde();
+            majOrdinateur();
             synchroniserRd(true);
         }
+        // l'ordinateur suit le pirate (dessine dans ses mains chez les joueurs)
+        if (ordinateur != null && !ordinateur.isRemoved()) ordinateur.setPos(d.getX(), d.getY(), d.getZ());
         progression++;
         if (progression >= DuelsConfig.RD_DESAMORCAGE_TICKS) {
             etatCharge = Vues.CHARGE_DESAMORCEE;
             progression = 0;
             acteur = null;
+            poserA(d.getX(), d.getY(), d.getZ(), d.getYRot() + 180f);
+            majBombes();
+            majOrdinateur();
             MatchsNet.versJoueurs(enLigneCopie(), new PaquetsDuels.EffetS2C(PaquetsDuels.EffetS2C.DESAMORCEE, cx, cy, cz));
             finManche(defenseurs, "duel.manche.desamorcee");
         }
     }
 
-    private boolean peutDesamorcer(ServerPlayer p) {
+    /**
+     * Vrai si ce joueur peut pirater : defenseur vivant, accroupi ; pour commencer, au sol a portee de l'ordinateur pose ;
+     * en cours, pas plus loin de la bombe que le cable.
+     */
+    private boolean peutPirater(ServerPlayer p, boolean commencer) {
         Fiche f = fiches.get(p.getUUID());
-        if (f == null || f.parti || f.equipe != defenseurs || !f.equipe.estVivant(f.id) || p.isSpectator()) return false;
-        double dx = p.getX() - cx, dy = p.getY() - cy, dz = p.getZ() - cz;
-        return p.isShiftKeyDown() && dx * dx + dy * dy + dz * dz <= DuelsConfig.RD_DESAMORCAGE_PORTEE * DuelsConfig.RD_DESAMORCAGE_PORTEE;
+        if (f == null || f.parti || f.equipe != defenseurs || !f.equipe.estVivant(f.id) || p.isSpectator() || !p.isShiftKeyDown()) return false;
+        if (commencer) {
+            if (!p.onGround() || Math.abs(p.getY() - cy) > DuelsConfig.RD_HAUTEUR) return false;
+            double dx = p.getX() - cx, dz = p.getZ() - cz;
+            return dx * dx + dz * dz <= DuelsConfig.RD_PIRATAGE_PORTEE * DuelsConfig.RD_PIRATAGE_PORTEE;
+        }
+        Pose b = poseBombe(siteCharge);
+        if (b == null) return true;
+        double dx = p.getX() - b.x(), dz = p.getZ() - b.z();
+        return dx * dx + dz * dz <= DuelsConfig.RD_CABLE * DuelsConfig.RD_CABLE;
+    }
+
+    /** Le pirate lache l'ordinateur (touche lachee, tue, trop loin, parti) : il retombe a ses pieds, toujours relie. */
+    private void lacherOrdinateur(double x, double y, double z, float lacetJoueur) {
+        acteur = null;
+        progression = 0;
+        poserA(x, y, z, lacetJoueur + 180f);
+        majOrdinateur();
+        synchroniserRd(true);
     }
 
     private void exploser() {
         etatCharge = Vues.CHARGE_EXPLOSEE;
-        retirerAffichageCharge();
-        MatchsNet.versJoueurs(enLigneCopie(), new PaquetsDuels.EffetS2C(PaquetsDuels.EffetS2C.EXPLOSION, cx, cy, cz));
+        progression = 0;
+        acteur = null;
+        majBombes();
+        majOrdinateur();
+        Pose b = poseBombe(siteCharge);
+        double x = b != null ? b.x() : cx, y = b != null ? b.y() + 0.5 : cy, z = b != null ? b.z() : cz;
+        MatchsNet.versJoueurs(enLigneCopie(), new PaquetsDuels.EffetS2C(PaquetsDuels.EffetS2C.EXPLOSION, x, y, z));
         finManche(attaquants, "duel.manche.explosee");
     }
 
+    /** Le porteur meurt ou part : l'ordinateur tombe ferme a l'endroit (ou au point « charge » s'il est hors de la carte). */
     private void lacherChargeSiPorteur(UUID u, double x, double y, double z) {
         if (etatCharge != Vues.CHARGE_PORTEE || !u.equals(porteur)) return;
         Instance inst = instance();
+        ServerPlayer p = joueur(u);
+        if (p != null) retirerObjetCharge(p);
+        float yaw = p != null ? p.getYRot() : 0f;
         porteur = null;
         progression = 0;
         acteur = null;
+        siteCharge = "";
         if (inst == null || !inst.contient(x, y, z)) {
             Pose c = inst == null ? null : inst.point("charge");
-            if (c != null) poserAuSol(c.x(), c.y(), c.z());
+            if (c != null) poserAuSol(c.x(), c.y(), c.z(), c.yaw());
             return;
         }
-        poserAuSol(x, y, z);
+        poserAuSol(x, y, z, yaw);
     }
 
-    private void poserAuSol(double x, double y, double z) {
+    private void poserAuSol(double x, double y, double z, float yaw) {
         etatCharge = Vues.CHARGE_AU_SOL;
         cx = x;
-        cy = y;
+        cy = solSous(x, y, z);
         cz = z;
-        afficherCharge(x, y, z);
+        lacet = yaw;
+        majOrdinateur();
         synchroniserRd(true);
     }
 
@@ -901,6 +1005,10 @@ public class DuelPartie extends Partie {
         gagnanteManche = gagnante;
         progression = 0;
         acteur = null;
+        // amorcage interrompu par la fin de la manche : l'ordinateur ouvert est range
+        if (etatCharge == Vues.CHARGE_PORTEE) siteCharge = "";
+        majBombes();
+        majOrdinateur();
         for (ServerPlayer p : enLigneCopie()) {
             Fiche f = fiches.get(p.getUUID());
             boolean gagne = f != null && f.equipe == gagnante;
@@ -928,33 +1036,243 @@ public class DuelPartie extends Partie {
         else nouvelleManche();
     }
 
-    // ------------------------------------------------------------------ charge : affichage
-    private void afficherCharge(double x, double y, double z) {
-        retirerAffichageCharge();
+    // ------------------------------------------------------------------ bombes et ordinateur (entites d'affichage)
+    /** Poses des bombes : points bombe_a / bombe_b de la carte (a defaut site_a / site_b). */
+    private void lirePosesBombes() {
         Instance inst = instance();
         if (inst == null) return;
-        ServerLevel niveau = inst.niveau();
-        CompoundTag t = new CompoundTag();
-        t.putString("id", "minecraft:item_display");
-        CompoundTag item = new CompoundTag();
-        item.putString("id", HeraliszMatchs.MODID + ":duel_charge");
-        item.putByte("Count", (byte) 1);
-        t.put("item", item);
-        t.putString("item_display", "fixed");
-        ListTag tags = new ListTag();
-        tags.add(StringTag.valueOf("heralisz_duel_charge"));
-        t.put("Tags", tags);
-        Entity e = EntityType.loadEntityRecursive(t, niveau, ent -> {
-            ent.moveTo(x, y + 0.12, z, 0f, 0f);
-            return ent;
-        });
-        if (e != null && niveau.addFreshEntity(e)) affichageCharge = e;
+        poseBombeA = inst.point("bombe_a");
+        if (poseBombeA == null) poseBombeA = inst.point("site_a");
+        poseBombeB = inst.point("bombe_b");
+        if (poseBombeB == null) poseBombeB = inst.point("site_b");
     }
 
-    private void retirerAffichageCharge() {
-        if (affichageCharge != null) {
-            affichageCharge.discard();
-            affichageCharge = null;
+    @Nullable
+    private Pose poseBombe(String site) {
+        return "A".equals(site) ? poseBombeA : "B".equals(site) ? poseBombeB : null;
+    }
+
+    @Nullable
+    private BombeDuel bombe(String site) {
+        BombeDuel b = "A".equals(site) ? bombeA : "B".equals(site) ? bombeB : null;
+        return b == null || b.isRemoved() ? null : b;
+    }
+
+    /**
+     * Pose les bombes manquantes (premier passage, ou troncon decharge : jamais sauvegardees avec le monde) et leur donne
+     * l'etat de la manche. Appele a chaque manche et toutes les secondes.
+     */
+    private void entretenirBombes() {
+        if (!rd) return;
+        Instance inst = instance();
+        if (inst == null) return;
+        if (bombeA == null || bombeA.isRemoved()) bombeA = creerBombe("A", poseBombeA, inst);
+        if (bombeB == null || bombeB.isRemoved()) bombeB = creerBombe("B", poseBombeB, inst);
+        majBombes();
+    }
+
+    @Nullable
+    private BombeDuel creerBombe(String site, @Nullable Pose p, Instance inst) {
+        if (p == null) return null;
+        BombeDuel b = Registres.BOMBE.get().create(inst.niveau());
+        if (b == null) return null;
+        b.partie(id());
+        b.site(site);
+        b.moveTo(p.x(), p.y(), p.z(), p.yaw(), 0f);
+        // troncon charge avant l'ajout (comme la cible d'entrainement)
+        inst.niveau().getChunk(p.bloc());
+        return inst.niveau().addFreshEntity(b) ? b : null;
+    }
+
+    private void majBombes() {
+        majBombe(bombeA);
+        majBombe(bombeB);
+    }
+
+    /** Seule la bombe du site amorce change d'etat (amorcee, desamorcee, explosee) ; l'autre reste en veille. */
+    private void majBombe(@Nullable BombeDuel b) {
+        if (b == null || b.isRemoved()) return;
+        int e = BombeDuel.VEILLE;
+        if (b.site().equals(siteCharge)) {
+            if (etatCharge == Vues.CHARGE_POSEE) e = BombeDuel.ARMEE;
+            else if (etatCharge == Vues.CHARGE_DESAMORCEE) e = BombeDuel.DESAMORCEE;
+            else if (etatCharge == Vues.CHARGE_EXPLOSEE) e = BombeDuel.EXPLOSEE;
+        }
+        b.etat(e);
+    }
+
+    private void retirerBombes() {
+        if (bombeA != null) bombeA.discard();
+        if (bombeB != null) bombeB.discard();
+        bombeA = null;
+        bombeB = null;
+    }
+
+    /** Etat de l'ordinateur pose d'apres la manche, ou -1 s'il n'est pas dans le monde (porte, explose, aucun). */
+    private int etatOrdinateur() {
+        return switch (etatCharge) {
+            case Vues.CHARGE_PORTEE -> acteur != null && progression > 0 ? OrdinateurDuel.AMORCAGE : -1;
+            case Vues.CHARGE_AU_SOL -> OrdinateurDuel.FERME;
+            case Vues.CHARGE_POSEE -> acteur != null ? OrdinateurDuel.PIRATAGE : OrdinateurDuel.AMORCEE;
+            case Vues.CHARGE_DESAMORCEE -> OrdinateurDuel.DESAMORCEE;
+            default -> -1;
+        };
+    }
+
+    /** Met l'ordinateur du monde dans l'etat de la manche : le cree (ou le recree), le deplace, ou le retire. */
+    private void majOrdinateur() {
+        int e = etatOrdinateur();
+        if (e < 0) {
+            retirerOrdinateur();
+            return;
+        }
+        Instance inst = instance();
+        if (inst == null) return;
+        OrdinateurDuel o = ordinateur;
+        boolean nouveau = o == null || o.isRemoved();
+        if (nouveau) {
+            o = Registres.ORDINATEUR.get().create(inst.niveau());
+            if (o == null) return;
+            o.partie(id());
+            o.moveTo(cx, cy, cz, lacet, 0f);
+        }
+        o.etat(e);
+        o.site(siteCharge.isEmpty() ? "A" : siteCharge);
+        o.bombe(e == OrdinateurDuel.FERME ? null : bombe(siteCharge));
+        ServerPlayer u = acteur == null ? null : joueur(acteur);
+        o.utilisateur(e == OrdinateurDuel.AMORCAGE || e == OrdinateurDuel.PIRATAGE ? u : null);
+        o.debut(debutAction);
+        o.fin(finMinuterie);
+        if (e == OrdinateurDuel.PIRATAGE && u != null) {
+            o.setPos(u.getX(), u.getY(), u.getZ());
+        } else if (!nouveau) {
+            o.setPos(cx, cy, cz);
+            o.setYRot(lacet);
+        }
+        if (nouveau) {
+            inst.niveau().getChunk(BlockPos.containing(o.getX(), o.getY(), o.getZ()));
+            if (inst.niveau().addFreshEntity(o)) ordinateur = o;
+        }
+    }
+
+    private void retirerOrdinateur() {
+        if (ordinateur != null) ordinateur.discard();
+        ordinateur = null;
+    }
+
+    /**
+     * L'attaquant ouvre l'ordinateur au sol : un demi-bloc devant lui, vers la bombe, ecran tourne vers lui, jamais dans
+     * l'emprise de la bombe.
+     */
+    private void placerOrdinateurAmorcage(ServerPlayer p, String site) {
+        Pose b = poseBombe(site);
+        double px = p.getX(), pz = p.getZ();
+        double ux, uz;
+        double dx = b == null ? 0 : b.x() - px, dz = b == null ? 0 : b.z() - pz, d = Math.sqrt(dx * dx + dz * dz);
+        if (d > 1e-3) {
+            ux = dx / d;
+            uz = dz / d;
+        } else {
+            double r = Math.toRadians(p.getYRot());
+            ux = -Math.sin(r);
+            uz = Math.cos(r);
+        }
+        double[] q = horsBombe(site, px + ux * 0.55, pz + uz * 0.55);
+        cx = q[0];
+        cz = q[1];
+        cy = solSous(cx, p.getY() + 0.5, cz);
+        lacet = (float) Math.toDegrees(Math.atan2(-(px - cx), pz - cz));
+    }
+
+    /** Ordinateur pose a cet endroit (au sol, hors de l'emprise de la bombe) ; hors de la carte : il ne bouge pas. */
+    private void poserA(double x, double y, double z, float yaw) {
+        Instance inst = instance();
+        if (inst != null && !inst.contient(x, y, z)) return;
+        double[] q = horsBombe(siteCharge, x, z);
+        cx = q[0];
+        cz = q[1];
+        cy = solSous(cx, y + 0.1, cz);
+        lacet = yaw;
+    }
+
+    /**
+     * Repousse un point (x, z) hors de l'emprise de la bombe du site : rectangle tourne avec elle (berceau et module, voir
+     * outils/bombe/modeles.py), elargi de la taille de l'ordinateur.
+     */
+    private double[] horsBombe(String site, double x, double z) {
+        Pose b = poseBombe(site);
+        if (b == null) return new double[]{x, z};
+        double psi = Math.toRadians(b.yaw());
+        // axes du modele dans le monde (rendu : rotation de 180 - lacet autour de Y) : X = longueur (nez), Z = arriere
+        double axX = -Math.cos(psi), axZ = -Math.sin(psi), azX = Math.sin(psi), azZ = -Math.cos(psi);
+        double rx = x - b.x(), rz = z - b.z();
+        double lx = rx * axX + rz * axZ, lz = rx * azX + rz * azZ;
+        double x0 = -1.12, x1 = 1.18, z0 = -0.76, z1 = 0.64;
+        if (lx > x0 && lx < x1 && lz > z0 && lz < z1) {
+            double dx0 = lx - x0, dx1 = x1 - lx, dz0 = lz - z0, dz1 = z1 - lz;
+            double m = Math.min(Math.min(dx0, dx1), Math.min(dz0, dz1));
+            if (m == dx0) lx = x0;
+            else if (m == dx1) lx = x1;
+            else if (m == dz0) lz = z0;
+            else lz = z1;
+        }
+        return new double[]{b.x() + lx * axX + lz * azX, b.z() + lx * axZ + lz * azZ};
+    }
+
+    /** Hauteur du sol sous un point (jusqu'a 4 blocs plus bas), pour qu'un ordinateur lache en l'air retombe au sol. */
+    private double solSous(double x, double y, double z) {
+        Instance inst = instance();
+        if (inst == null) return y;
+        for (int i = 0; i < 4; i++) {
+            BlockPos pos = BlockPos.containing(x, y - 0.01 - i, z);
+            VoxelShape forme = inst.niveau().getBlockState(pos).getCollisionShape(inst.niveau(), pos);
+            if (!forme.isEmpty()) return Math.min(y, pos.getY() + forme.max(Direction.Axis.Y));
+        }
+        return y;
+    }
+
+    private int tempsMonde() {
+        Instance inst = instance();
+        return inst == null ? 0 : (int) inst.niveau().getGameTime();
+    }
+
+    // ------------------------------------------------------------------ objet porte (ordinateur ferme)
+    /**
+     * Donne l'ordinateur ferme au porteur (objet prete du match : jamais lache, retire a la fin) dans la derniere case de
+     * la barre si elle est libre, sinon la premiere libre. Rien s'il l'a deja.
+     */
+    private void donnerObjetCharge(ServerPlayer p) {
+        Inventory inv = p.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) if (estCharge(inv.getItem(i))) return;
+        if (estCharge(p.containerMenu.getCarried())) return;
+        ItemStack s = Equipement.marquer(new ItemStack(Registres.CHARGE.get()), id());
+        int libre = inv.getItem(8).isEmpty() ? 8 : -1;
+        for (int i = 0; i < 9 && libre < 0; i++) if (inv.getItem(i).isEmpty()) libre = i;
+        if (libre >= 0) inv.setItem(libre, s);
+        else if (!inv.add(s)) HeraliszMatchs.LOG.warn("[duels] {} : inventaire plein, ordinateur non donne a {}", id(), p.getGameProfile().getName());
+        p.inventoryMenu.broadcastChanges();
+    }
+
+    private static boolean estCharge(ItemStack s) {
+        return !s.isEmpty() && s.is(Registres.CHARGE.get());
+    }
+
+    private static void retirerObjetCharge(ServerPlayer p) {
+        Inventory inv = p.getInventory();
+        boolean change = false;
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            if (estCharge(inv.getItem(i))) {
+                inv.setItem(i, ItemStack.EMPTY);
+                change = true;
+            }
+        }
+        if (estCharge(p.containerMenu.getCarried())) {
+            p.containerMenu.setCarried(ItemStack.EMPTY);
+            change = true;
+        }
+        if (change) {
+            p.inventoryMenu.broadcastChanges();
+            p.containerMenu.broadcastChanges();
         }
     }
 
@@ -973,10 +1291,10 @@ public class DuelPartie extends Partie {
             }
             String invite = "";
             if (phase() == Phase.COMBAT && f.equipe.estVivant(f.id) && action == Vues.ACTION_AUCUNE) {
-                if (moi && !siteDe(p).isEmpty()) invite = "poser";
-                else if (!att && etatCharge == Vues.CHARGE_POSEE) {
-                    double dx = p.getX() - cx, dy = p.getY() - cy, dz = p.getZ() - cz;
-                    if (dx * dx + dy * dy + dz * dz <= DuelsConfig.RD_DESAMORCAGE_PORTEE * DuelsConfig.RD_DESAMORCAGE_PORTEE) invite = "desamorcer";
+                if (moi && !bombeProche(p).isEmpty()) invite = "poser";
+                else if (!att && etatCharge == Vues.CHARGE_POSEE && acteur == null) {
+                    double dx = p.getX() - cx, dz = p.getZ() - cz, r = DuelsConfig.RD_PIRATAGE_PORTEE + 0.6;
+                    if (dx * dx + dz * dz <= r * r && Math.abs(p.getY() - cy) <= DuelsConfig.RD_HAUTEUR) invite = "desamorcer";
                 }
             }
             // signature sans allocation (pas de boxing) : renvoi seulement si elle change
@@ -990,14 +1308,23 @@ public class DuelPartie extends Partie {
             boolean voitCharge = att || etatCharge == Vues.CHARGE_POSEE;
             Fiche fp = porteur == null ? null : fiches.get(porteur);
             int total = action == Vues.ACTION_DESAMORCAGE ? DuelsConfig.RD_DESAMORCAGE_TICKS : DuelsConfig.RD_POSE_TICKS;
+            // reperes A / B : sur les bombes (a defaut, centre des zones des sites)
             double[] sites = new double[6];
-            if (siteA != null) centre(siteA, sites, 0);
-            if (siteB != null) centre(siteB, sites, 3);
+            if (poseBombeA != null) bombeRepere(poseBombeA, sites, 0);
+            else if (siteA != null) centre(siteA, sites, 0);
+            if (poseBombeB != null) bombeRepere(poseBombeB, sites, 3);
+            else if (siteB != null) centre(siteB, sites, 3);
             Vues.RdVue v = new Vues.RdVue(att, phase() == Phase.COMBAT || phase() == Phase.CHOIX ? etatCharge : Vues.CHARGE_AUCUNE,
                     att && fp != null ? fp.nom : "", moi, siteCharge, voitCharge ? cx : 0, voitCharge ? cy : 0, voitCharge ? cz : 0,
                     etatCharge == Vues.CHARGE_POSEE ? minuterie : 0, action, progression, total, invite, sites);
             MatchsNet.versJoueur(p, new PaquetsDuels.RdS2C(v));
         }
+    }
+
+    private static void bombeRepere(Pose p, double[] d, int i) {
+        d[i] = p.x();
+        d[i + 1] = p.y() + 0.5;
+        d[i + 2] = p.z();
     }
 
     private static void centre(AABB b, double[] d, int i) {
@@ -1025,8 +1352,9 @@ public class DuelPartie extends Partie {
     // ------------------------------------------------------------------ fin
     @Override
     protected void surFin(@Nullable Equipe gagnante) {
-        retirerAffichageCharge();
         etatCharge = Vues.CHARGE_AUCUNE;
+        retirerOrdinateur();
+        retirerBombes();
         if (annulee) return;
         // statistiques globales (jamais les stats de clan)
         if (!entrainement) {
@@ -1088,7 +1416,8 @@ public class DuelPartie extends Partie {
         }
         if (cible != null && !cible.isRemoved()) cible.discard();
         cible = null;
-        retirerAffichageCharge();
+        retirerOrdinateur();
+        retirerBombes();
     }
 
     private void rendre(ServerPlayer p) {
@@ -1142,8 +1471,13 @@ public class DuelPartie extends Partie {
         lacherChargeSiPorteur(f.id, joueur.getX(), joueur.getY(), joueur.getZ());
         f.equipe.eliminer(f.id);
         if (acteur != null && acteur.equals(f.id)) {
-            acteur = null;
-            progression = 0;
+            // le pirate part : l'ordinateur retombe a ses pieds ; l'amorceur (porteur) l'a deja lache ferme
+            if (etatCharge == Vues.CHARGE_POSEE) lacherOrdinateur(joueur.getX(), joueur.getY(), joueur.getZ(), joueur.getYRot());
+            else {
+                acteur = null;
+                progression = 0;
+                majOrdinateur();
+            }
         }
         if (rendreMaintenant) rendre(joueur);
         else {

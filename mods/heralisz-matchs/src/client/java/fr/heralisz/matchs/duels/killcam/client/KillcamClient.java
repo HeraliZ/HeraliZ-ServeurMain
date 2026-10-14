@@ -45,9 +45,9 @@ import java.util.UUID;
 /**
  * Cote client de la killcam : reception d'un clip, lecture ({@link Lecteur}), camera, rendu des joueurs factices et des
  * traceurs, bandeau ({@link KillcamHud}), touche pour passer, retour propre de la camera et du HUD.
- * <p>Pendant une lecture : la camera est une entite factice placee par-dessus l'epaule du tueur, puis dans ses yeux
- * pour la fin (son modele n'est alors plus dessine, voir {@link Lecteur#PREMIERE_IMAGES}) (mode premiere
- * personne force, rendu de la main coupe) ; les vrais joueurs (et les entites du clip) sont masques, seuls les faux
+ * <p>Pendant une lecture : la camera est une entite factice placee dans les yeux du tueur, du debut a la fin (son
+ * modele n'est pas dessine ; mode premiere personne force ; a la place de la main du joueur, l'arme du tueur en
+ * premiere personne, {@link ArmeEnMain}) ; les vrais joueurs (et les entites du clip) sont masques, seuls les faux
  * joueurs sont dessines ; tous les calques de HUD sont masques sauf le bandeau ; les clics d'attaque/utilisation sont
  * ignores. A la fin (ou au passage, ou sur ordre du serveur) : camera d'avant (ou le joueur), mode de camera d'avant,
  * rotation du joueur rendue s'il n'a pas ete teleporte, HUD rendu, voile de retour de {@link KillcamHud#RETOUR_MS}.
@@ -282,9 +282,18 @@ public final class KillcamClient {
         if (e.getEntity() instanceof FauxJoueur) e.setResult(Event.Result.DENY);
     }
 
+    /**
+     * Main du joueur remplacee par l'arme du tueur (premiere personne). Annule en premier : sinon TaCZ dessinerait l'arme
+     * du joueur qui regarde la killcam.
+     */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void main(RenderHandEvent e) {
-        if (lecteur != null) e.setCanceled(true);
+        Lecteur l = lecteur;
+        if (l == null) return;
+        e.setCanceled(true);
+        if (e.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && l.etat == Lecteur.Etat.LECTURE) {
+            ArmeEnMain.dessiner(e, l.objetTueur());
+        }
     }
 
     /** Tous les calques de HUD sauf le bandeau sont masques pendant la lecture. */

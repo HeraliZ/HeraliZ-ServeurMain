@@ -5,11 +5,23 @@ import com.google.gson.JsonObject;
 import fr.heralisz.matchs.HeraliszMatchs;
 import fr.heralisz.matchs.dev.MatchsHarness;
 import fr.heralisz.matchs.duels.Registres;
+import fr.heralisz.matchs.duels.bombe.ChargeObjet;
+import fr.heralisz.matchs.duels.bombe.OrdinateurDuel;
+import fr.heralisz.matchs.duels.client.bombe.BombeRendu;
+import fr.heralisz.matchs.duels.client.bombe.ChargeObjetRendu;
+import fr.heralisz.matchs.duels.client.bombe.OrdinateurRendu;
+import fr.heralisz.matchs.duels.client.bombe.PosesBombe;
 import fr.heralisz.matchs.duels.armes.Catalogue;
 import fr.heralisz.matchs.duels.classes.ClassePerso;
 import fr.heralisz.matchs.duels.net.PaquetsDuels;
 import fr.heralisz.matchs.duels.net.Vues;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -17,6 +29,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -30,7 +43,8 @@ import java.util.UUID;
 /**
  * Cote client des duels (classe d'entree client de {@code Modules}) : etat recu du serveur (catalogue, classes, defis
  * recus, recherche et destruction), ouverture des ecrans, HUD ({@link DuelHud}), notification des defis recus
- * ({@link NotifDefis}, jamais d'ecran), rendu de la cible d'entrainement, etapes du banc d'essai. Fil client.
+ * ({@link NotifDefis}, jamais d'ecran), rendus de la cible d'entrainement, de la bombe, de l'ordinateur pose et de
+ * l'ordinateur en main (duels/client/bombe), poses des joueurs qui tapent ou piratent, etapes du banc d'essai. Fil client.
  */
 public final class DuelsClient {
     private DuelsClient() {
@@ -45,7 +59,17 @@ public final class DuelsClient {
 
     /** Appele par {@code Duels.construire} sur le client physique. */
     public static void initClient(IEventBus modBus) {
-        modBus.addListener((EntityRenderersEvent.RegisterRenderers e) -> e.registerEntityRenderer(Registres.CIBLE.get(), CibleRenderer::new));
+        modBus.addListener((EntityRenderersEvent.RegisterRenderers e) -> {
+            e.registerEntityRenderer(Registres.CIBLE.get(), CibleRenderer::new);
+            e.registerEntityRenderer(Registres.BOMBE.get(), BombeRendu::new);
+            e.registerEntityRenderer(Registres.ORDINATEUR.get(), OrdinateurRendu::new);
+        });
+        // ordinateur ferme en main (GeckoLib), porte le long du corps comme une mallette
+        ChargeObjet.RENDU_CLIENT.brancher(c -> c.accept(ORDINATEUR_EN_MAIN));
+        // joueur qui tape ou pirate : mains cachees a la 1re personne, pose des bras (Player Animator s'il est la)
+        OrdinateurDuel.TICK_CLIENT.brancher(PosesBombe::suivre);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, PosesBombe::mains);
+        MinecraftForge.EVENT_BUS.addListener(PosesBombe::deconnexion);
         // touches « accepter / refuser un defi » (sans touche par defaut)
         modBus.addListener(NotifDefis::enregistrerTouches);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, DuelsClient::masquerHud);
@@ -55,6 +79,19 @@ public final class DuelsClient {
         MinecraftForge.EVENT_BUS.addListener(DuelsClient::tick);
         MinecraftForge.EVENT_BUS.addListener(DuelsClient::deconnexion);
     }
+
+    /** Rendu de l'ordinateur ferme en main (une instance : Forge appelle initializeClient une fois par objet). */
+    private static final IClientItemExtensions ORDINATEUR_EN_MAIN = new IClientItemExtensions() {
+        @Override
+        public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+            return ChargeObjetRendu.instance();
+        }
+
+        @Override
+        public HumanoidModel.ArmPose getArmPose(LivingEntity entite, InteractionHand main, ItemStack pile) {
+            return HumanoidModel.ArmPose.EMPTY;
+        }
+    };
 
     // ------------------------------------------------------------------ lecture
     public static Catalogue catalogue() {
@@ -161,7 +198,16 @@ public final class DuelsClient {
         switch (effet) {
             case PaquetsDuels.EffetS2C.EXPLOSION -> {
                 DuelHud.flash();
-                if (mc.level != null) mc.level.playLocalSound(x, y, z, Registres.EXPLOSION.get(), SoundSource.PLAYERS, 4f, 1f, false);
+                if (mc.level != null) {
+                    mc.level.playLocalSound(x, y, z, Registres.EXPLOSION.get(), SoundSource.PLAYERS, 4f, 1f, false);
+                    // boule de feu et fumee a la place de la bombe (elle n'est plus dessinee jusqu'a la manche suivante)
+                    mc.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, x, y, z, 1, 0, 0);
+                    for (int i = 0; i < 12; i++) {
+                        double a = i * Math.PI / 6;
+                        mc.level.addParticle(ParticleTypes.LARGE_SMOKE, x + Math.cos(a) * 0.6, y + 0.3, z + Math.sin(a) * 0.6, Math.cos(a) * 0.08, 0.06,
+                                Math.sin(a) * 0.08);
+                    }
+                }
             }
             case PaquetsDuels.EffetS2C.POSEE -> {
                 if (mc.level != null) mc.level.playLocalSound(x, y, z, Registres.POSE.get(), SoundSource.PLAYERS, 1.5f, 1f, false);

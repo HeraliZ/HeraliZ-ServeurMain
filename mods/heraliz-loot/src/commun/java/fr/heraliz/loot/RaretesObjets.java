@@ -16,7 +16,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 /**
  * Rareté de chaque sorte d'objet : la couleur légère derrière l'objet dans les cases (inventaire, coffres, sacs, barre
  * d'objets) et la ligne « ★ Rare » de l'infobulle. Par identifiant d'objet, et pour les objets de TaCZ (une seule sorte
- * d'objet pour toutes les armes) par identifiant d'arme, d'accessoire ou de munition. Les objets sans rareté ont celle
+ * d'objet pour toutes les armes) par identifiant d'arme, d'accessoire ou de munition ; les soins de Tactique par leur
+ * identifiant de soin. Les objets sans rareté ont celle
  * par défaut (Commun, ou aucune). Une rareté inscrite sur l'objet lui-même ({@link Rarete#CLE}, coffres T7) passe avant.
  * <p>Rempli côté serveur depuis {@code config/heraliz_loot/raretes.json} (commande /rarete pour le staff) et envoyé aux
  * joueurs à la connexion et à chaque changement ({@link ReseauLoot}). Lectures sans allocation : appelé pour chaque case
@@ -28,7 +29,9 @@ public final class RaretesObjets {
 
     /** Ce qui porte la rareté : l'objet, ou l'arme / l'accessoire / la munition de TaCZ (étiquette de l'objet). */
     public enum Sorte {
-        OBJET("objets", null), ARME("armes", "GunId"), ACCESSOIRE("accessoires", "AttachmentId"), MUNITION("munitions", "AmmoId");
+        OBJET("objets", null), ARME("armes", "GunId"), ACCESSOIRE("accessoires", "AttachmentId"), MUNITION("munitions", "AmmoId"),
+        /** Soins de Tactique (0.6.2) : un seul objet heralisz_tactical:consumable pour tous, identifiant dans ConsumableId. */
+        SOIN("soins", "ConsumableId");
 
         /** Clé dans raretes.json. */
         public final String cle;

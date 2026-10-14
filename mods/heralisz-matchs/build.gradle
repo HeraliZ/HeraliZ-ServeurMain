@@ -57,10 +57,9 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     // GeckoLib = geckolib222 4.4.7 du modpack, le seul GeckoLib du serveur : compilé contre lui, JAMAIS embarqué.
-    // (copier TEST SERVEUR - Ptero/mods/geckolib222-forge-1.20.1-4.4.7.jar en libs/geckolib222-<geckolib_libs_version>.jar)
-    if (file("libs/geckolib222-${geckolib_libs_version}.jar").exists()) {
-        compileOnly fg.deobf("blank:geckolib222:${geckolib_libs_version}")
-    }
+    // Sert à la bombe et à l'ordinateur des duels (duels/bombe, duels/client/bombe). Copie dans libs/ (la même que
+    // mods/crac/libs et mods/heraliz-boss/libs, même nom : cache de deobf partagé).
+    compileOnly fg.deobf("blank:geckolib222:${geckolib_libs_version}")
     // Autres mods du modpack nécessaires à la compilation : libs/<nom>-<version>-<suffixe du projet>.jar, puis
     //   compileOnly fg.deobf("blank:<nom>:<version>-<suffixe du projet>")   (suffixe unique : cache de deobf partagé)
     // Clans et économie (obligatoires en jeu), Curios et Sujet N-07 (API de la carte The Giant) : jamais embarqués

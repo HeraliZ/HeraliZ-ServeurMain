@@ -15,8 +15,8 @@ import java.util.List;
  * @param kind       « armor » (slot d'armure vanilla : tete) ou « curio »
  * @param slot       zone : head, face, body, bracelet
  * @param curio      slot Curios (mask, body, bracelet) ou null
- * @param rarity     rarete (couleur du nom) : common, uncommon, rare, epic, legendary, event
- * @param bullet     % balles (explosion : la moitie, comme avant)
+ * @param rarity     rarete (couleur du nom) : common, uncommon, rare, epic, legendary, unique, event
+ * @param bullet     % de protection (0.15.0 : le meme pour tout, ecrit par outils/equilibrage_armures.py)
  * @param melee      % corps a corps
  * @param bite       % morsure
  * @param radiation  % radiation
@@ -35,10 +35,10 @@ public record GearDef(String id, String tab, String fam, String kind, String slo
         return "armor".equals(kind);
     }
 
-    /** Explosion = moitie des balles (regle de HeralisZ Armor, gardee telle quelle). */
+    /** 0.15.0 : une seule protection, la meme contre les explosions. */
     @Override
     public float explosion() {
-        return bullet * 0.5F;
+        return bullet;
     }
 
     @Override

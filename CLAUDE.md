@@ -132,12 +132,12 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
-| heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam, Zombies (carte The Giant) |
+| heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
 | heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) |
 | heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Seulement les blocs posés sur la carte (1.9.0 : 48 blocs jamais posés retirés, d'après le workflow « Inventaire de la carte » ; gardés aussi `tole_toit_bleue` et `tole_toit_rouille`, dont les escaliers et dalles sont posés). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
-| heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons |
+| heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons ; une seule protection par pièce et six raretés (0.15.0, section 10 « équilibrage ») |
 | heraliz-composants | heraliz_composants | heraliz_composants | 47 composants de craft (armes, soins, viseurs, munitions, protection, divers) et objets de récupération à revendre, modèles 3D et icônes ; rareté = couleur du nom ; tags `heraliz_composants:<catégorie>` et `tous`. Aucune recette ni loot (refonte à venir). Modèles, icônes, traductions, tags et `ComponentDefs.java` refaits par `python mods/heraliz-composants/outils/build.py mods/heraliz-composants` (catalogue : `outils/composants.py`) |
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
 | heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) |
@@ -198,6 +198,19 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   paramètres et codes couleur) ; les polices DM Sans n'ont pas le cyrillique : `python outils/polices_cyrillique.py`
   ajoute Onest (OFL) en secours à toute nouvelle police d'un mod. Restent en français : journaux, configs, alertes du
   staff de Spartan.
+- la bombe et l'ordinateur des duels (modèles, textures HD, masques lumineux, sons de clavier et de piratage) sont
+  **générés** par `python mods/heralisz-matchs/outils/bombe/modeles.py` et `sons.py` (`--sortie` pour essayer ailleurs) ;
+  jamais retouchés à la main. Matchs dépend de GeckoLib depuis la 0.7.0 (geckolib222, compileOnly, jamais embarqué).
+- repères des sites A et B des duels (badge) : `textures/gui/duel_repere.png` est **généré** par
+  `python mods/heralisz-matchs/outils/reperes/reperes_sites.py` (`--apercu planche.png` pour une planche d'aperçu).
+- protections des armures (Armurerie) : `ArmorCatalog`, `SuitCatalog`, `GearCatalog` et les raretés des objets de
+  l'Armurerie dans `raretes.json` sont **écrits** par `python mods/heraliz-armory/outils/equilibrage_armures.py`
+  (tableaux `TENUE`, `ENSEMBLES`, `COMBINAISONS` en tête du script) ; jamais à la main.
+- dégâts des armes TaCZ contre les joueurs et raretés des armes, accessoires et munitions :
+  `serveur/config/heraliz_tactique/armes.json` et les sections `armes`, `accessoires`, `munitions` de
+  `serveur/config/heraliz_loot/raretes.json` sont **écrits** par `python outils/equilibrage_armes.py` (tableaux
+  `FAMILLES`, `RARETE_ARME`, `BONUS_RARETE` en tête du script) ; à relancer après l'ajout d'un gunpack. Les gunpacks ne
+  sont jamais modifiés pour ça.
 - les camos des armes (tactique) : les 62 shaders `camo_<id>.fsh` sont **générés** depuis
   `mods/heraliz-tactique/outils/camo_gabarit.fsh` par `python mods/heraliz-tactique/outils/generer_camos.py` ; on modifie
   le gabarit, jamais les fichiers générés.
@@ -784,7 +797,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - raretés des objets (HeraliZ Loot, validées) : Commun gris, Peu commun vert, Rare bleu, Épique violet, Légendaire
   or, Unique rouge ; un léger dégradé de la couleur derrière l'objet et un trait fin en bas de la case, partout
   (inventaire, coffres, sacs, barre d'objets DayZ), infobulle « ★ Rare » (rien pour Commun). Réglage :
-  `serveur/config/heraliz_loot/raretes.json` (à remplir avec la refonte du loot) ; le staff, objet en main :
+  `serveur/config/heraliz_loot/raretes.json` (sections `objets`, `armes`, `accessoires`, `munitions`, `soins` ; remplie
+  le 14/10 pour l'Armurerie, les armes, accessoires, munitions et soins, voir « équilibrage ») ; le staff, objet en main :
   `/rarete <niveau|aucune|effacer|voir|defaut|recharger>` (choix en jeu dans `raretes_jeu.json`, jamais écrasé) ;
 - extractions de la carte : 35 à 40 points possibles, 5 à 6 ouverts à la fois au hasard (`openAtOnce` / `openAtOnceMax` de
   `heraliz_extraction-common.toml`), 30 à 60 min chacun, 30 s à tenir, retour au spawn ;
@@ -824,6 +838,39 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (petite hitbox, rechargement « couché » vu sur un joueur debout) jusqu'à 4 s, et sans fin s'il enchaînait les sauts ;
 - duels (11/10) : défi reçu = petite notification en haut à droite (plus de grand écran au milieu) ; les dimensions des matchs et des zombies ont leur propre bordure du monde (avant, les arènes sortaient de celle de la carte : mort en boucle) ;
 - duels (12/10, Matchs 0.6.0) : repères des sites A et B (recherche et destruction) bien visibles seulement pendant le choix de classe et les 8 premières secondes de chaque manche, ensuite une simple lettre très pâle ; toujours effacés près du viseur et quand on est sur le site ; Tab enfoncé = bien visibles ; rien du HUD des duels pendant une killcam (`duels/client/DuelHud`) ; faim figée pendant tout le duel (barre pleine, rien ne s'use, `DuelPartie.figerFaim`), donc plus de régénération naturelle de la vie en duel (seuls les soins de la classe soignent) ; la faim et l'inventaire d'avant le duel (nourriture comprise) sont gardés dans le Coffre et rendus à la fin (victoire, défaite, abandon, annulation ; déconnexion : à la reconnexion) ; killcam (`duels/killcam/client/Lecteur`) : pistes lissées chez le joueur (les positions arrivent au serveur par à-coups : les personnages tremblaient), corps recalculé comme Minecraft, joueur allongé (« ramper » de TaCZ) rejoué à plat, et les 24 dernières images (1,2 s de jeu, ralenti compris) vues par les yeux du tueur avec un petit viseur (« vue du tueur ») ;
+- duels (13/10, Matchs 0.7.0) : recherche et destruction avec une vraie bombe (rendus validés : bombe 1 « ogive sur berceau », ordinateur 2 « terminal noir ») : une bombe posée en permanence sur chaque site (points `bombe_a` / `bombe_b` de la carte de duel, module tourné vers les attaquants ; B décalée de 2 blocs vers le nord, sinon cachée par la haie), et l'objet « charge » (`heralisz_matchs:duel_charge`, même identifiant) devenu un ordinateur portable noir (VX-9). L'attaquant accroupi contre la bombe (2 blocs) pose l'ordinateur ouvert et l'amorce en 5 s (3 codes, « AMORÇAGE · CODE n/3 ») ; relevé ou éloigné : l'ordinateur revient dans sa main, tout repart de zéro. Amorcée : l'ordinateur reste au sol, écran rouge avec compte à rebours de 40 s, relié à la bombe par un câble ; bombe rouge, bips qui accélèrent. Le défenseur accroupi sur l'ordinateur (1,6 bloc) le ramasse et le pirate en 6 s, sans s'éloigner de plus de 4 blocs de la bombe (longueur du câble) ; tué, relevé ou déconnecté : l'ordinateur tombe à ses pieds, toujours relié, le piratage repart de zéro. Sons de clavier et de piratage faits maison ; poses des bras par Player Animator s'il est là (réflexion, sinon accroupi normal). Bombe et ordinateur (`duels/bombe/BombeDuel`, `OrdinateurDuel`) ne se sauvegardent jamais : rien hors d'un duel ;
+- duels (14/10, Matchs 0.8.0) : la killcam est vue **par les yeux du tueur du début à la fin** (plus de vue par-dessus
+  l'épaule), regard lissé en courbe (`Lecteur.courbe`), arme du tueur dessinée en première personne (`ArmeEnMain` : rendu
+  de TaCZ par réflexion, objet ordinaire sinon) ; repères des sites A et B refaits (l'ancien carré de 13 px était jugé
+  « horriblement moche ») : badge arrondi en verre sombre, bord de la couleur de l'équipe, lettre, pointe vers le site et
+  distance en mètres dessous ; bombe amorcée et ordinateur au sol au même style (« ! » rouge / ambre) ; mêmes règles de
+  visibilité qu'avant (bien visibles 8 s, puis pâles et sans distance). Rien testé en jeu ;
+- équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
+  - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
+    dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
+    comptent ; tir au corps : seules les pièces du corps ; plafond 60 % ; radiation : Hazmat seulement ; froid :
+    combinaisons contre le froid seulement ; gaz : masques à gaz et Hazmat seulement (le « Masque anti-émeute Lacrymo »
+    et le « Demi-masque Croc » ne filtrent plus) ; les 23 niveaux NV regroupés en six raretés (tenue complète, corps /
+    tête) : Commun 12/10 % (citadin, rescapé, ranger, woodland), Peu commun 22/18 % (nomade, gardien, cobra, sentinelle),
+    Rare 32/26 % (rempart, vipère, sibérie, scorpion), Épique 41/34 % (contrat, bélier, fennec, blizzard), Légendaire
+    50/42 % (barricade, béton, meute, corbeau, ours), Unique 60/50 % (mastodonte, titan) ; casques de vision nocturne :
+    Peu commun, Épique, Légendaire, Légendaire ; ghillies, brassards, objets d'événement : aucune protection ;
+  - armes : dégâts contre les joueurs réglés par famille (Tactique 2.14.0, `serveur/DegatsArmes`), joueur à 20 PV :
+    fusil d'assaut 5,56 Rare 5,2 par balle (4 balles sans armure, 6 en Rare, 10 en Unique ; tête ×1,7 : 3 sans casque,
+    5 avec un casque Unique), pistolet 9 mm 4,5 (tête ×1,6), mitraillette 4,0, fusil 7,62 6,0, 7,62 OTAN 7,5,
+    mitrailleuse 5,4 / 6,4, précision 16 à 24 (tête ×2), pompe 24 par décharge ; ±4 % par rareté (Commun ×0,92 …
+    Légendaire ×1,08) ; lance-grenades, couteaux, Wonder Weapons et dégâts contre les créatures : inchangés ;
+  - raretés des armes : pistolet dès Commun, mitraillette et pompe dès Peu commun, fusil d'assaut dès Rare, précision
+    Rare (anciens à verrou) à Légendaire (.338 et .50), mitrailleuses Épique (minigun Légendaire), lance-grenades
+    Légendaire ; aucune arme Unique ; **tous les couteaux Unique**, jamais dans le loot de la carte (caisse Gemme
+    seulement, rareté Unique aussi dans la caisse) ;
+  - accessoires : rareté d'après la force de leurs bonus (moins de recul, de dispersion, visée plus rapide, silencieux,
+    dégâts) : plus la rareté est basse, plus les bonus sont faibles ; lunettes par grossissement ; chargeurs par taille ;
+    munitions spéciales et crosse « précise » Épique ou Légendaire. Leurs effets eux-mêmes viennent des gunpacks des
+    autres auteurs et n'ont pas été changés ;
+  - soins : au plus Épique (Surv12, CMS) ; nouveau soin « Attelle et bandage » (Peu commun) : jambe cassée et saignement
+    soignés en 3,5 s (aspect provisoire : trousse CAR orange, à refaire après validation d'un rendu) ;
+  Rien de tout cela n'a été essayé en jeu : régler les chiffres dans les scripts après les premiers combats.
 - sons (11/10) : MAtmos jouait le bruit de changement d'objet de chaque joueur visible, sans atténuation (sons stéréo) : dayzhotbar (`SonChangementObjet`) ne laisse entendre celui des autres qu'à 8 blocs au plus ;
 - accroupi (11/10) : le clic droit doit toujours marcher accroupi (fouiller, se soigner, viser, réanimer) ; avec une arme TaCZ en main, la touche « Interagir » de TaCZ (O) ouvre les conteneurs de loot, caisses et cadavres (tag `tacz:interact_key/whitelist` dans heraliz-loot) ;
 - logo de Max Stuff (11/10) : le petit « M » est retiré des icônes de ses accessoires, choix du propriétaire malgré la licence du pack (CC BY-NC-ND 4.0 : pas de version modifiée diffusée ; tous les gunpacks des autres auteurs ont la même licence, et NC à surveiller avec la boutique). Auteurs crédités dans `serveur/tacz/arkaniaz_pack_5_converted/CREDITS.txt`. D'autres logos restent sur des icônes d'armes (« Chill Deep » du pack arkaniaz_custom, « MIL », « CIB ») : pas touchés sans demande ;
@@ -983,6 +1030,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Bugs repérés, non corrigés** (attendre l'accord du propriétaire) :
   - Sylvorn : les attributs de `SapNode` ne sont pas déclarés (risque de plantage à l'attaque CHANNEL ; correction d'une
     ligne dans `HeraliszSylvorn.attributes`) ;
+  - Matchs : la cible d'entraînement (`/duel entrainement`) est retirée par le serveur dès la première seconde
+    (`CibleEntrainementServeur.tick` appelle `super.tick`, qui la retire toujours) ;
   - Tactique : le C4 posé disparaît au redémarrage du serveur ; le feu au sol des molotovs dure toujours 2 s ;
     l'éclaboussure des grenades à effet est limitée à 4 blocs.
 - **Carte du monde** (HeraliZ Utils 2.8.0, Clans 2.4.0, Interface 1.7.0) : fond provisoire du 12/10 (carte en

@@ -38,3 +38,11 @@ description='''Matchs du serveur HeraliZ : ClashWar (tournoi entre clans), Duels
     versionRange="[0.1.0,)"
     ordering="AFTER"
     side="BOTH"
+
+# bombe et ordinateur des duels (recherche et destruction) : entités GeckoLib (geckolib222, jamais embarqué)
+[[dependencies.heralisz_matchs]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"

@@ -109,6 +109,8 @@ def main():
         dern = [l for l in out.splitlines() if "absentes" in l]
         if not dern or not dern[-1].startswith("0 absentes"):
             print("[geckolib]    %-22s %s" % (p.name, dern[-1] if dern else out[-300:]))
+            for l in [l for l in out.splitlines() if l.startswith("   ")][:15]:
+                print("      " + l.strip())
             erreurs += 1
         with zipfile.ZipFile(cible) as z:
             emb = [n for n in z.namelist() if n.startswith("META-INF/jarjar/") and "geckolib" in n.lower()]

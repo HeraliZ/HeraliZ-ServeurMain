@@ -20,12 +20,12 @@ import java.util.Optional;
 
 /**
  * Lecture d'un {@link Clip} cote client : joueurs factices (skins reels) places image par image avec interpolation,
- * camera par-dessus l'epaule du tueur (entite camera factice, collision avec les blocs, lissage), puis dans ses yeux
- * pour la fin, tirs (sons et traceurs), ralenti sur la fin, chute de la victime, fondus. Le temps avance en temps reel
+ * camera dans les yeux du tueur du debut a la fin (entite camera factice ; regard en courbe sur 4 images, voir
+ * {@link #courbe}), son arme en premiere personne ({@link ArmeEnMain}), tirs (sons et traceurs), ralenti sur la fin, chute de la victime, fondus. Le temps avance en temps reel
  * (independant des ticks).
- * <p>Deroulement : fondu d'entree {@link #ENTREE_MS} pendant que la lecture commence ; lecture a vitesse 1 ; les
- * {@link #PREMIERE_IMAGES} dernieres images vues par les yeux du tueur (passage de l'epaule aux yeux en
- * {@link #PREMIERE_TRANSITION_MS}, son modele n'est plus dessine) ; les {@link #RALENTI} dernieres images a
+ * <p>Deroulement : fondu d'entree {@link #ENTREE_MS} pendant que la lecture commence ; lecture a vitesse 1, tout par les
+ * yeux du tueur (son modele n'est pas dessine ; la vue par-dessus l'epaule, retiree le 14/10, reste dans le code mais
+ * n'est plus montree) ; les {@link #RALENTI} dernieres images a
  * {@link #VITESSE_RALENTI} ; tenue {@link #TENUE_MS} sur la mort (la victime tombe) ; fondu de sortie {@link #SORTIE_MS}.
  * <p>Pistes preparees a la reception ({@link #lisser}, {@link #corps}, {@link #allonge}) : le serveur prend la position
  * des joueurs a chaque tick, mais elle lui arrive par le reseau par a-coups (0, 1 ou 2 paquets de mouvement par tick) ;
@@ -127,9 +127,10 @@ final class Lecteur {
         int d = 0;
         while (d < derniere && !t.present(d)) d++;
         debut = d;
-        debutPremiere = Math.max(debut, derniere - PREMIERE_IMAGES);
-        // clip trop court pour les deux vues : tout par les yeux du tueur, sans passage
-        if (debutPremiere <= debut) premiere = 1;
+        // toute la killcam par les yeux du tueur, comme il voyait (choix du proprietaire, 14/10) : plus de vue par-dessus
+        // l'epaule ; son arme est dessinee en premiere personne (ArmeEnMain)
+        debutPremiere = debut;
+        premiere = 1;
         temps = debut;
         horloge = debut;
         tirSuivant = 0;
@@ -532,7 +533,7 @@ final class Lecteur {
         float fr = fraction;
         double x = Mth.lerp(fr, t.x[a], t.x[b]), y = Mth.lerp(fr, t.y[a], t.y[b]), z = Mth.lerp(fr, t.z[a], t.z[b]);
         double oeilCible = oeil(t, a);
-        float lacetD = Mth.rotLerp(fr, t.tete[a], t.tete[b]), tangD = Mth.lerp(fr, t.tangage[a], t.tangage[b]);
+        float lacetD = courbe(t, t.tete, a, b, fr, true), tangD = Mth.clamp(courbe(t, t.tangage, a, b, fr, false), -90f, 90f);
         if (!camInit) {
             majCollisionCamera(a);
             recul = reculCible;
@@ -586,6 +587,31 @@ final class Lecteur {
         camera.yHeadRotO = pl;
         camera.setXRot(pt);
         camera.xRotO = pt;
+    }
+
+    /**
+     * Regard du tueur entre les images a et b (= a + 1) : courbe de Catmull-Rom sur les images a - 1 .. b + 1. Les
+     * rotations n'arrivent qu'a 20 Hz : en ligne droite d'une image a l'autre, la vue par ses yeux avancait par a-coups.
+     * Une image voisine absente ou de l'autre cote d'un saut est remplacee par a ou b. {@code angle} : valeurs en degres
+     * qui font le tour (lacet), deroulees autour de l'image a.
+     */
+    private float courbe(Clip.Participant t, float[] v, int a, int b, float fr, boolean angle) {
+        if (a == b || fr <= 0f) return v[a];
+        int p0 = a > debut && t.present(a - 1) && distance2(t, a - 1, a) <= SAUT * SAUT ? a - 1 : a;
+        int p3 = b < derniere && t.present(b + 1) && distance2(t, b, b + 1) <= SAUT * SAUT ? b + 1 : b;
+        float y1 = v[a];
+        float y0 = angle ? y1 + Mth.wrapDegrees(v[p0] - y1) : v[p0];
+        float y2 = angle ? y1 + Mth.wrapDegrees(v[b] - y1) : v[b];
+        float y3 = angle ? y2 + Mth.wrapDegrees(v[p3] - v[b]) : v[p3];
+        float f2 = fr * fr, f3 = f2 * fr;
+        return 0.5f * (2 * y1 + (y2 - y0) * fr + (2 * y0 - 5 * y1 + 4 * y2 - y3) * f2 + (3 * y1 - y0 - 3 * y2 + y3) * f3);
+    }
+
+    /** Objet tenu par le tueur a l'image en cours (dessine en premiere personne, voir ArmeEnMain). */
+    ItemStack objetTueur() {
+        Clip.Participant t = clip.participants.get(clip.tueur);
+        int o = t.objet[i0];
+        return o >= 0 && o < clip.objets.size() ? clip.objets.get(o) : ItemStack.EMPTY;
     }
 
     /** Position interpolee d'un faux joueur pour le rendu (x, y ou z selon axe 0, 1, 2). */

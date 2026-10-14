@@ -61,14 +61,21 @@ public class SetKitItem extends Item {
         return InteractionResultHolder.pass(kit);
     }
 
+    /** Rang de rarete de la tenue : celui de ses pieces (toutes de la meme rarete, outils/equilibrage_armures.py). */
+    private int tier() {
+        int t = 1;
+        for (PieceDef def : set.pieces()) t = Math.max(t, def.tier());
+        return t;
+    }
+
     @Override
     public Component getName(ItemStack stack) {
-        return super.getName(stack).copy().withStyle(PieceItem.nameStyle(PieceItem.tierOfLevel(set.level())));
+        return super.getName(stack).copy().withStyle(PieceItem.nameStyle(tier()));
     }
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.heraliz_armory.level", set.level()).withStyle(ChatFormatting.GOLD));
+        tooltip.add(GearItem.rarityLine(PieceItem.rarity(tier())));
         tooltip.add(Component.translatable("tooltip.heraliz_armory.family",
                 Component.translatable("tooltip.heraliz_armory.family." + set.family())).withStyle(set.familyColor()));
         float[] total = fr.heraliz.armory.armor.Protection.setBullet(set.pieces());

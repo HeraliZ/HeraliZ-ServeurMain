@@ -1,8 +1,6 @@
 package fr.heraliz.armory.item;
 
-import fr.heraliz.armory.HeralizArmory;
 import fr.heraliz.armory.armor.PieceDef;
-import fr.heraliz.armory.armor.SetDef;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -14,9 +12,8 @@ import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
- * Commun aux pieces (armure vanilla ou Curios) : definition + infobulle. 0.8.2 : meme presentation que les armures
- * HeralisZ Armor (emplacement, « Protection : » et cinq lignes a pictogrammes, zone protegee), pour que les deux mods se
- * lisent pareil dans l'inventaire.
+ * Commun aux pieces (armure vanilla ou Curios) : definition + infobulle. 0.15.0 : rarete, ensemble, emplacement, une
+ * seule ligne « Protection : x % », zone protegee (plus de pictogrammes par type de degat).
  */
 public interface PieceItem extends ProtectiveItem {
     PieceDef def();
@@ -38,10 +35,6 @@ public interface PieceItem extends ProtectiveItem {
         return def().curioSlot();
     }
 
-    /** Pictogrammes des protections (police heraliz_armory:icons, copie de celle de HeralisZ Armor). */
-    String BULLET = "", EXPLOSION = "", MELEE = "", BITE = "", RADIATION = "";
-    Style ICON_FONT = Style.EMPTY.withFont(HeralizArmory.id("icons")).withColor(ChatFormatting.WHITE);
-
     /** Nom de la touche des lunettes de vision nocturne (renseigne par le client ; « ? » ailleurs). */
     Holder NVG_KEY = new Holder();
 
@@ -53,29 +46,22 @@ public interface PieceItem extends ProtectiveItem {
         return v == Math.floor(v) ? String.valueOf((int) v) : String.format(Locale.ROOT, "%.1f", v);
     }
 
-    /** « [icone] Balles 8 % » : valeur doree, grisee si nulle. */
-    static MutableComponent stat(String glyph, String key, float value) {
-        return Component.literal(" ").append(Component.literal(glyph).withStyle(ICON_FONT)).append(Component.literal(" "))
-                .append(Component.translatable("stat.heraliz_armory." + key).withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(" " + pct(value) + " %").withStyle(value > 0 ? ChatFormatting.GOLD : ChatFormatting.DARK_GRAY));
+    /** « Protection : 12 % » (une seule protection depuis la 0.15.0), grisee si nulle. */
+    static MutableComponent protection(float value) {
+        return Component.translatable("tooltip.heraliz_armory.protection_valeur", pct(value))
+                .withStyle(value > 0 ? ChatFormatting.GOLD : ChatFormatting.DARK_GRAY);
     }
 
     static void appendTooltip(PieceDef def, List<Component> tooltip) {
-        int level = SetDef.levelOf(def.set());
-        tooltip.add(Component.translatable("tooltip.heraliz_armory.set", Component.translatable("tooltip.heraliz_armory.set." + def.set()), level)
-                .withStyle(ChatFormatting.GOLD));
-        // emplacement : seulement pour les pieces d'armure (Curios affiche deja « Emplacement : … » pour les siennes),
-        // comme les armures HeralisZ Armor
+        tooltip.add(GearItem.rarityLine(rarity(def.tier())));
+        tooltip.add(Component.translatable("tooltip.heraliz_armory.set", Component.translatable("tooltip.heraliz_armory.set." + def.set()))
+                .withStyle(ChatFormatting.GRAY));
+        // emplacement : seulement pour les pieces d'armure (Curios affiche deja « Emplacement : … » pour les siennes)
         if (def.curioSlot() == null) {
             tooltip.add(Component.translatable("tooltip.heraliz_armory.slot", Component.translatable("tooltip.heraliz_armory.slot." + def.piece()))
                     .withStyle(ChatFormatting.GRAY));
         }
-        tooltip.add(Component.translatable("tooltip.heraliz_armory.protection").withStyle(ChatFormatting.GRAY));
-        tooltip.add(stat(BULLET, "bullet", def.bullet()));
-        tooltip.add(stat(EXPLOSION, "explosion", def.explosion()));
-        tooltip.add(stat(MELEE, "melee", def.melee()));
-        tooltip.add(stat(BITE, "bite", def.bite()));
-        tooltip.add(stat(RADIATION, "radiation", def.radiation()));
+        tooltip.add(protection(def.bullet()));
         tooltip.add(Component.translatable(def.protectsHead() ? "tooltip.heraliz_armory.zone.head" : "tooltip.heraliz_armory.zone.body")
                 .withStyle(ChatFormatting.DARK_GRAY));
         if (def.gas()) tooltip.add(Component.translatable("tooltip.heraliz_armory.gas").withStyle(ChatFormatting.AQUA));
@@ -83,24 +69,21 @@ public interface PieceItem extends ProtectiveItem {
         // le poids (vitesse) est affiche par le jeu sous « Porte sur la tete : » / « Porte en gilet : » (attributs)
     }
 
-    /**
-     * Couleur du nom selon le palier, avec les couleurs de rarete de HeralisZ Armor (commun blanc, peu commun vert, rare
-     * bleu, epique violet, legendaire orange) : les deux mods se lisent pareil dans l'inventaire.
-     */
-    static Style nameStyle(int tier) {
-        int rgb = switch (tier) {
-            case 2 -> 0x55FF55;
-            case 3 -> 0x5599FF;
-            case 4 -> 0xC060FF;
-            case 5, 6 -> 0xFFAA00;
-            default -> 0xFFFFFF;
+    /** Rarete d'apres le palier des pieces (0.15.0 : palier = rang de rarete, 1 commun ... 6 unique). */
+    static String rarity(int tier) {
+        return switch (tier) {
+            case 2 -> "uncommon";
+            case 3 -> "rare";
+            case 4 -> "epic";
+            case 5 -> "legendary";
+            case 6 -> "unique";
+            default -> "common";
         };
-        return Style.EMPTY.withColor(net.minecraft.network.chat.TextColor.fromRgb(rgb));
     }
 
-    /** Palier d'un ensemble d'apres son niveau NV (meme decoupage que tools/kit.py). */
-    static int tierOfLevel(int level) {
-        return level <= 2 ? 1 : level <= 7 ? 2 : level <= 12 ? 3 : level <= 17 ? 4 : level <= 20 ? 5 : 6;
+    /** Couleur du nom selon la rarete (memes couleurs que les objets de l'Armurerie et HeraliZ Loot). */
+    static Style nameStyle(int tier) {
+        return GearItem.rarityStyle(rarity(tier));
     }
 
     static boolean is(ItemStack stack, String piece) {

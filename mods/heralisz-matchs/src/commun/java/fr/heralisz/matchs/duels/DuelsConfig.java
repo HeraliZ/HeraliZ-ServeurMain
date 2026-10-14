@@ -34,22 +34,30 @@ public final class DuelsConfig {
     // ------------------------------------------------------------------ recherche et destruction
     /** Duree d'une manche (2 min). */
     public static final int RD_MANCHE_TICKS = 120 * 20;
-    /** Pose de la charge (5 s). */
+    /** Amorcage d'une bombe : saisie des 3 codes sur l'ordinateur, accroupi (5 s). */
     public static final int RD_POSE_TICKS = 5 * 20;
-    /** Desamorcage (7 s). */
-    public static final int RD_DESAMORCAGE_TICKS = 7 * 20;
-    /** Minuterie de la charge posee (40 s). */
+    /** Desamorcage = piratage de l'ordinateur, accroupi, l'ordinateur en main (6 s). */
+    public static final int RD_DESAMORCAGE_TICKS = 6 * 20;
+    /** Minuterie de la bombe amorcee (40 s). */
     public static final int RD_MINUTERIE_TICKS = 40 * 20;
+    /** Distance a plat (blocs) du centre de la bombe jusqu'a laquelle le porteur peut l'amorcer. */
+    public static final double RD_AMORCAGE_PORTEE = 2.0;
+    /** Pendant l'amorcage, l'attaquant reste a cette distance (blocs, a plat) de l'ordinateur qu'il a ouvert. */
+    public static final double RD_AMORCAGE_ECART = 1.6;
+    /** Distance a plat (blocs) de l'ordinateur pose jusqu'a laquelle un defenseur accroupi le ramasse pour le pirater. */
+    public static final double RD_PIRATAGE_PORTEE = 1.6;
+    /** Longueur du cable (blocs, a plat depuis le centre de la bombe) : plus loin, le pirate lache l'ordinateur. */
+    public static final double RD_CABLE = 4.0;
+    /** Ecart de hauteur maximal (blocs) pour amorcer ou ramasser l'ordinateur. */
+    public static final double RD_HAUTEUR = 1.5;
     /** Manches gagnantes (premier a 4). */
     public static final int RD_MANCHES_GAGNANTES = 4;
     /** Changement de cote apres ce nombre de manches jouees. */
     public static final int RD_CHANGEMENT_COTE = 3;
     /** Pause entre deux manches (killcam de la derniere elimination, annonces). */
     public static final int RD_INTERMANCHE_TICKS = 7 * 20;
-    /** Distance de ramassage de la charge au sol (blocs). */
+    /** Distance de ramassage de l'ordinateur ferme au sol par un attaquant (blocs). */
     public static final double RD_RAMASSAGE = 1.6;
-    /** Distance maximale pour desamorcer (blocs, depuis le centre de la charge). */
-    public static final double RD_DESAMORCAGE_PORTEE = 2.2;
 
     // ------------------------------------------------------------------ match a mort
     /** Reapparition apres 3 s. */

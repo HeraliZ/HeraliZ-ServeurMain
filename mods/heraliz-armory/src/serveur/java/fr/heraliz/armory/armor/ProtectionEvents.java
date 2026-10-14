@@ -32,9 +32,9 @@ import java.util.List;
  * <ul>
  *   <li>balles et projectiles (balles TaCZ comprises), explosions, coups de joueurs (melee), attaques de creatures
  *   (morsure) ; irradiation (degats magiques sous l'effet geckolib:irradiated) ;</li>
- *   <li>tir a la tete (TaCZ) : seules les pieces de tete comptent ; autres coups : le corps + un quart de la tete ; une
- *   combinaison compte partout ;</li>
- *   <li>les % s'additionnent, un seul plafond commun : 75 % (radiation 100 %) ;</li>
+ *   <li>une seule protection par objet, la meme pour tous ces degats (0.15.0) ; tir a la tete (TaCZ) : seules les pieces
+ *   de tete comptent ; autres coups : seules les pieces du corps ; une combinaison compte partout ;</li>
+ *   <li>les % s'additionnent, un seul plafond commun : {@link Protection#CAP} (radiation 100 %, Hazmat seulement) ;</li>
  *   <li>les objets Curios s'usent d'un point quand ils protegent (les pieces d'armure s'usent comme en vanilla).</li>
  * </ul>
  * Bonus (repris de HeralisZ Armor, appliques toutes les 10 ticks aux joueurs) : filtre (masques a gaz, Hazmat) = effets

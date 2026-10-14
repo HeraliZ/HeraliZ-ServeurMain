@@ -128,7 +128,7 @@ public final class Vues {
     }
 
     // ------------------------------------------------------------------ recherche et destruction
-    /** Etats de la charge. */
+    /** Etats de la charge (l'ordinateur d'amorcage, puis la bombe qu'il a amorcee). */
     public static final int CHARGE_AUCUNE = 0, CHARGE_PORTEE = 1, CHARGE_AU_SOL = 2, CHARGE_POSEE = 3, CHARGE_DESAMORCEE = 4, CHARGE_EXPLOSEE = 5;
     /** Actions en cours du joueur qui recoit la vue. */
     public static final int ACTION_AUCUNE = 0, ACTION_POSE = 1, ACTION_DESAMORCAGE = 2;
@@ -141,13 +141,13 @@ public final class Vues {
      * @param porteur     nom du porteur (vide si aucun)
      * @param moiPorteur  le joueur porte la charge
      * @param site        site de pose ("A", "B", vide)
-     * @param x           position de la charge (au sol ou posee)
+     * @param x           position de l'ordinateur (au sol, ou pose et relie a la bombe amorcee)
      * @param resteTicks  minuterie restante (charge posee), decomptee par le client
      * @param action      {@code ACTION_*} du joueur
      * @param faitTicks   progression de l'action au moment de l'envoi
      * @param totalTicks  duree totale de l'action
      * @param invite      invite affichee ("" = aucune) : "poser", "desamorcer", "ramasser"
-     * @param sites       centres des sites A et B (x, y, z, x, y, z) pour les reperes a l'ecran
+     * @param sites       bombes A et B (a defaut, centres des zones des sites) : x, y, z, x, y, z, pour les reperes a l'ecran
      */
     public record RdVue(boolean attaque, int etat, String porteur, boolean moiPorteur, String site, double x, double y, double z, int resteTicks,
                         int action, int faitTicks, int totalTicks, String invite, double[] sites) {

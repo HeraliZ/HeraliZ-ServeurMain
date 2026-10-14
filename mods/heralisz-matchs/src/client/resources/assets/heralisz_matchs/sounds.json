@@ -428,6 +428,40 @@
     ],
     "subtitle": "subtitles.heralisz_matchs.duel_ramasse"
   },
+  "duel_clavier": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:duel_clavier_1",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "heralisz_matchs:duel_clavier_2",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "heralisz_matchs:duel_clavier_3",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_clavier"
+  },
+  "duel_piratage": {
+    "sounds": [
+      {
+        "name": "heralisz_matchs:duel_piratage_1",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "heralisz_matchs:duel_piratage_2",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "heralisz_matchs:duel_piratage_3",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.heralisz_matchs.duel_piratage"
+  },
   "cw_annonce": {
     "sounds": [
       "heralisz_matchs:cw_annonce"

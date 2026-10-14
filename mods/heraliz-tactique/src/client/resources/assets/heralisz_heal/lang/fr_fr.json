@@ -20,5 +20,7 @@
   "item.heralisz_heal.vaseline": "Vaseline",
   "item.heralisz_heal.vaseline.desc": "Donne de la résistance une fois appliquée.",
   "pack.heralisz_heal.default_pack.name": "§aHeraliZ §7- §fSoins",
-  "pack.heralisz_heal.name": "§aHeraliZ §7- §fSoins"
+  "pack.heralisz_heal.name": "§aHeraliZ §7- §fSoins",
+  "item.heralisz_heal.attelle_bandage": "Attelle et bandage",
+  "item.heralisz_heal.attelle_bandage.desc": "Attelle et bandage compressif : remet une jambe cassée et arrête un saignement en quelques secondes."
 }

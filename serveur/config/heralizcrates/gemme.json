@@ -5,14 +5,14 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 121,
-      "rarity": "legendary",
+      "rarity": "mythic",
       "nbt": "{GunId:\"heralisz_skins:butterfly__doppler_black_pearl\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 107,
-      "rarity": "legendary",
+      "rarity": "mythic",
       "nbt": "{GunId:\"heralisz_skins:butterfly__doppler_ruby\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
     },
     {
@@ -33,14 +33,14 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 120,
-      "rarity": "legendary",
+      "rarity": "mythic",
       "nbt": "{GunId:\"heralisz_skins:karambit__doppler_black_pearl\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 107,
-      "rarity": "legendary",
+      "rarity": "mythic",
       "nbt": "{GunId:\"heralisz_skins:karambit__doppler_ruby\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
     },
     {
@@ -61,14 +61,14 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 120,
-      "rarity": "legendary",
+      "rarity": "mythic",
       "nbt": "{GunId:\"heralisz_skins:m9__doppler_black_pearl\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 107,
-      "rarity": "legendary",
+      "rarity": "mythic",
       "nbt": "{GunId:\"heralisz_skins:m9__doppler_ruby\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}"
     },
     {
