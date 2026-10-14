@@ -74,6 +74,8 @@ public class HeralizTactique {
       ReseauSon.init();
       // couteaux TaCZ frappés comme les armes de mêlée de LR (couteaux.CoupsCouteau) : demande de coup du joueur
       ReseauCouteaux.init();
+      // dégâts des armes contre les joueurs (armes.DegatsJoueurs) : envoyés aux joueurs pour les chiffres affichés
+      fr.heraliz.tactique.armes.ReseauArmes.init();
       Parties.serveur(MODID, "fr.heraliz.tactique.serveur.ServeurTactique", bus);
       Parties.client(MODID, "fr.heraliz.tactique.client.ClientTactique", bus);
    }

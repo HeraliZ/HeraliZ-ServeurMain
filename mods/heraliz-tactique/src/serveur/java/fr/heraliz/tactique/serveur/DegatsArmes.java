@@ -7,6 +7,9 @@ import com.mojang.logging.LogUtils;
 import com.tacz.guns.api.TimelessAPI;
 import com.tacz.guns.api.event.common.EntityHurtByGunEvent;
 import com.tacz.guns.resource.index.CommonGunIndex;
+import fr.heraliz.tactique.armes.DegatsJoueurs;
+import fr.heraliz.tactique.armes.PaquetDegatsArmes;
+import fr.heraliz.tactique.armes.ReseauArmes;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -14,8 +17,10 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -30,16 +35,11 @@ import org.slf4j.Logger;
  * la distance et accessoires compris) sont multipliés par « degats » / dégâts d'une balle de l'arme chargée par TaCZ, pour
  * garder la même proportion ; une arme dont TaCZ donne 0 dégât (quelques fusils anti-matériel des gunpacks) prend
  * « degats » tel quel. Arme absente du fichier, créatures, fichier absent ou « actif » à false : rien ne change. Fichier
- * relu à chaque démarrage du serveur.
+ * relu à chaque démarrage du serveur, et envoyé à chaque joueur qui se connecte (chiffres affichés chez lui).
  */
 final class DegatsArmes {
    private static final Logger LOG = LogUtils.getLogger();
    private static final String FICHIER = "heraliz_tactique/armes.json";
-
-   private record Reglage(float degats, float tete) {
-   }
-
-   private static volatile Map<ResourceLocation, Reglage> reglages = Map.of();
 
    private DegatsArmes() {
    }
@@ -47,24 +47,30 @@ final class DegatsArmes {
    static void brancher() {
       MinecraftForge.EVENT_BUS.addListener(DegatsArmes::demarrage);
       MinecraftForge.EVENT_BUS.addListener(DegatsArmes::touche);
+      MinecraftForge.EVENT_BUS.addListener(DegatsArmes::connexion);
    }
 
    private static void demarrage(ServerAboutToStartEvent e) {
       charger();
    }
 
+   /** Les réglages vont aussi au joueur qui se connecte (chiffres de l'infobulle et de l'Atelier d'arme). */
+   private static void connexion(PlayerEvent.PlayerLoggedInEvent e) {
+      if (e.getEntity() instanceof ServerPlayer joueur) ReseauArmes.envoyer(joueur, new PaquetDegatsArmes(DegatsJoueurs.tous()));
+   }
+
    static void charger() {
       Path p = FMLPaths.CONFIGDIR.get().resolve(FICHIER);
       if (!Files.isRegularFile(p)) {
-         reglages = Map.of();
+         DegatsJoueurs.remplacer(Map.of());
          LOG.info("[armes] {} absent : dégâts de TaCZ contre les joueurs inchangés", FICHIER);
          return;
       }
-      Map<ResourceLocation, Reglage> lus = new HashMap<>();
+      Map<ResourceLocation, DegatsJoueurs.Reglage> lus = new HashMap<>();
       try (Reader r = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
          JsonObject racine = JsonParser.parseReader(r).getAsJsonObject();
          if (racine.has("actif") && !racine.get("actif").getAsBoolean()) {
-            reglages = Map.of();
+            DegatsJoueurs.remplacer(Map.of());
             LOG.info("[armes] {} : « actif » à false, dégâts de TaCZ contre les joueurs inchangés", FICHIER);
             return;
          }
@@ -74,12 +80,12 @@ final class DegatsArmes {
             if (id == null || !o.has("degats")) continue;
             float degats = o.get("degats").getAsFloat();
             float tete = o.has("tete") ? o.get("tete").getAsFloat() : -1f;
-            if (degats > 0) lus.put(id, new Reglage(degats, tete));
+            if (degats > 0) lus.put(id, new DegatsJoueurs.Reglage(degats, tete));
          }
-         reglages = Map.copyOf(lus);
+         DegatsJoueurs.remplacer(lus);
          LOG.info("[armes] {} armes réglées contre les joueurs ({})", lus.size(), FICHIER);
       } catch (Exception ex) {
-         reglages = Map.of();
+         DegatsJoueurs.remplacer(Map.of());
          LOG.error("[armes] {} illisible : dégâts de TaCZ contre les joueurs inchangés", FICHIER, ex);
       }
    }
@@ -88,7 +94,7 @@ final class DegatsArmes {
       if (e.getLogicalSide() != LogicalSide.SERVER || !(e.getHurtEntity() instanceof Player)) return;
       ResourceLocation arme = e.getGunId();
       if (arme == null) return;
-      Reglage r = reglages.get(arme);
+      DegatsJoueurs.Reglage r = DegatsJoueurs.de(arme);
       if (r == null) return;
       float origine = TimelessAPI.getCommonGunIndex(arme).map(CommonGunIndex::getBulletData).map(b -> b.getDamageAmount()).orElse(-1f);
       if (origine > 0.01f) {

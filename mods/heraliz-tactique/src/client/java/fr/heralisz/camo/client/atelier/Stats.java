@@ -1,12 +1,15 @@
 package fr.heralisz.camo.client.atelier;
 
 import com.tacz.guns.api.TimelessAPI;
+import com.tacz.guns.api.item.IAttachment;
 import com.tacz.guns.api.item.IGun;
 import com.tacz.guns.api.modifier.IAttachmentModifier;
 import com.tacz.guns.resource.index.CommonGunIndex;
 import com.tacz.guns.resource.modifier.AttachmentCacheProperty;
 import com.tacz.guns.resource.modifier.AttachmentPropertyManager;
 import com.tacz.guns.resource.pojo.data.gun.GunData;
+import com.tacz.guns.util.AttachmentDataUtils;
+import fr.heraliz.tactique.armes.DegatsJoueurs;
 import fr.heralisz.camo.client.kit.Ui;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -24,11 +27,18 @@ import java.util.regex.Pattern;
 
 /**
  * Caractéristiques de l'arme tenue, avec ses accessoires, et ce que changerait l'accessoire choisi. Les chiffres sont ceux
- * des diagrammes de TaCZ (mêmes calculs) : dégâts, cadence, portée, précision en visée, recul vertical, temps de visée.
+ * des diagrammes de TaCZ (mêmes calculs), sauf les dégâts : ceux contre un joueur (armes.DegatsJoueurs, réglage du
+ * serveur). 14/10 : onze caractéristiques (dégâts, cadence, portée, chargeur, dispersion au jugé et en visée, recul
+ * vertical et horizontal, temps de visée, poids, vitesse des balles) sur 4 colonnes, et l'effet chiffré de chaque
+ * accessoire sur l'arme ({@link #effets}).
  */
 final class Stats {
    /** Fin des clés de titre des diagrammes de TaCZ (gui.tacz.gun_refit.property_diagrams.*), dans l'ordre affiché. */
-   private static final String[] CLES = {"damage", "rpm", "effective_range", "aim_inaccuracy", "pitch", "ads"};
+   private static final String[] CLES = {"damage", "rpm", "effective_range", "ammo_capacity", "hipfire_inaccuracy", "aim_inaccuracy",
+      "pitch", "yaw", "ads", "weight", "ammo_speed"};
+   /** Chargeur : pas un diagramme de TaCZ, lu à part (AttachmentDataUtils). */
+   private static final String CAPACITE = "ammo_capacity";
+   static final int COLONNES = 4, RANGEES = 3;
    private static final Pattern NOMBRE = Pattern.compile("-?\\d+(?:[.,]\\d+)?");
 
    /** Une caractéristique : barre (0..1) avant et après, valeur affichée, écart avec l'accessoire choisi. */
@@ -45,16 +55,25 @@ final class Stats {
       if (data == null) return List.of();
       Map<String, IAttachmentModifier.DiagramsData> avant = diagrammes(gun, data);
       Map<String, IAttachmentModifier.DiagramsData> apres = null;
+      ItemStack copie = null;
       if (avec != null && !avec.isEmpty()) {
-         ItemStack copie = gun.copy();
+         copie = gun.copy();
          iGun.installAttachment(copie, avec);
          apres = diagrammes(copie, data);
       }
+      float origine = data.getBulletData() == null ? 0F : data.getBulletData().getDamageAmount();
+      // dégâts contre un joueur : même proportion que le serveur (arme sans réglage, ou à 0 dégât chez TaCZ : chiffres de TaCZ)
+      double facteurJoueur = DegatsJoueurs.de(iGun.getGunId(gun)) == null || origine <= 0.01F ? 1.0
+         : DegatsJoueurs.ajuster(iGun.getGunId(gun), 1.0, origine);
       List<Ligne> out = new ArrayList<>();
       for (String cle : CLES) {
+         if (CAPACITE.equals(cle)) {
+            out.add(capacite(gun, copie, data));
+            continue;
+         }
          IAttachmentModifier.DiagramsData d = avant.get(cle);
          if (d == null) continue;
-         double valeur = valeur(cle, d);
+         double valeur = valeur(cle, d) * ("damage".equals(cle) ? facteurJoueur : 1.0);
          float barre = barre(d);
          float barreApres = barre;
          String ecart = null;
@@ -65,8 +84,11 @@ final class Stats {
             double delta = d2.modifier().doubleValue() - d.modifier().doubleValue();
             if (Math.abs(delta) > 1e-6) {
                mieux = delta > 0 == d.positivelyBetter();
-               double pct = Math.abs(valeur) > 1e-6 ? delta / Math.abs(valeur) * 100.0 : 0.0;
-               if (Math.abs(pct) >= 0.5) {
+               double base = "damage".equals(cle) ? valeur / facteurJoueur : valeur;
+               double pct = Math.abs(base) > 1e-6 ? delta / Math.abs(base) * 100.0 : 0.0;
+               if ("ads".equals(cle)) {
+                  ecart = (delta > 0 ? "+" : "-") + nombre(Math.abs(delta), 2) + " s";
+               } else if (Math.abs(pct) >= 0.5) {
                   ecart = (pct > 0 ? "+" : "-") + Math.round(Math.abs(pct)) + " %";
                } else if (Math.abs(valeur) <= 1e-6) {
                   ecart = (delta > 0 ? "+" : "-") + nombre(Math.abs(delta), 2);
@@ -75,6 +97,41 @@ final class Stats {
          }
          out.add(new Ligne(cle, barre, barreApres, texte(cle, valeur), ecart, mieux));
       }
+      return out;
+   }
+
+   /** Chargeur : nombre de munitions avec les accessoires, et avec l'accessoire choisi. */
+   private static Ligne capacite(ItemStack gun, @Nullable ItemStack copie, GunData data) {
+      int n = AttachmentDataUtils.getAmmoCountWithAttachment(gun, data);
+      int m = copie == null ? n : AttachmentDataUtils.getAmmoCountWithAttachment(copie, data);
+      String ecart = m == n ? null : (m > n ? "+" : "-") + Math.abs(m - n);
+      return new Ligne(CAPACITE, Math.min(1f, n / 100f), Math.min(1f, m / 100f), String.valueOf(n), ecart, m >= n);
+   }
+
+   /** Effet chiffré d'un accessoire sur l'arme (une ligne par caractéristique changée). */
+   record Effet(String cle, String texte, boolean mieux, double force) {}
+
+   /**
+    * Ce que l'accessoire {@code s} change sur {@code gun} : l'arme avec l'emplacement vide, puis avec lui. Les écarts en %
+    * de la valeur de l'arme (« -20 % » de recul), ou en unités pour les petites valeurs (« -0,03 s » de visée) ; les plus
+    * forts d'abord. Liste vide si l'accessoire ne va pas sur l'arme.
+    */
+   static List<Effet> effets(ItemStack gun, ItemStack s) {
+      IGun iGun = IGun.getIGunOrNull(gun);
+      IAttachment ia = IAttachment.getIAttachmentOrNull(s);
+      if (iGun == null || ia == null) return List.of();
+      GunData data = TimelessAPI.getCommonGunIndex(iGun.getGunId(gun)).map(CommonGunIndex::getGunData).orElse(null);
+      if (data == null) return List.of();
+      ItemStack sans = gun.copy();
+      iGun.unloadAttachment(sans, ia.getType(s));
+      List<Ligne> l = calculer(sans, s);
+      List<Effet> out = new ArrayList<>();
+      for (Ligne x : l) {
+         if (x.ecart() == null) continue;
+         double force = Math.abs(x.apres() - x.avant()) + 0.001;
+         out.add(new Effet(x.cle(), x.ecart(), x.mieux(), force));
+      }
+      out.sort((a, b) -> Double.compare(b.force(), a.force()));
       return out;
    }
 
@@ -116,6 +173,9 @@ final class Stats {
          case "aim_inaccuracy" -> nombre(v, 1) + " %";
          case "ads" -> nombre(v, 2) + " s";
          case "damage" -> nombre(v, 1);
+         case "hipfire_inaccuracy" -> nombre(v, 1);
+         case "weight" -> nombre(v, 1) + " kg";
+         case "ammo_speed" -> Math.round(v) + " m/s";
          default -> nombre(v, 2);
       };
    }
@@ -131,7 +191,7 @@ final class Stats {
    }
 
    // ------------------------------------------------------------------ dessin
-   /** Panneau « Caractéristiques » : 3 colonnes, 2 rangées ; {@code avec} = nom de l'accessoire choisi (ou null). */
+   /** Panneau « Caractéristiques » : 4 colonnes, 3 rangées ; {@code avec} = nom de l'accessoire choisi (ou null). */
    static void dessiner(GuiGraphics g, Font font, List<Ligne> lignes, @Nullable String avec, int x, int y, int w, int h, int accent) {
       Ui.glass(g, x, y, w, h);
       String titre = Component.translatable("gui.heralisz_camo.atelier.stats").getString();
@@ -150,11 +210,11 @@ final class Stats {
          Ui.centered(g, font, Ui.tr(Ui.SMALL, "gui.heralisz_camo.atelier.stats_aucune"), x + w / 2f, y + h / 2f, Ui.argb(Ui.FAINT, 255));
          return;
       }
-      int colW = (w - 24 - 24) / 3;
-      for (int i = 0; i < Math.min(6, lignes.size()); i++) {
+      int colW = (w - 24 - 12 * (COLONNES - 1)) / COLONNES;
+      for (int i = 0; i < Math.min(COLONNES * RANGEES, lignes.size()); i++) {
          Ligne l = lignes.get(i);
-         int cx = x + 12 + (i % 3) * (colW + 12);
-         int cy = y + 22 + (i / 3) * 17;
+         int cx = x + 12 + (i % COLONNES) * (colW + 12);
+         int cy = y + 22 + (i / COLONNES) * 17;
          g.drawString(font, Ui.tr(Ui.SMALL, "gui.heralisz_camo.atelier.stat." + l.cle()), cx, cy + 1, Ui.argb(Ui.MUTED, 255), false);
          float droite = cx + colW;
          if (l.ecart() != null) {
