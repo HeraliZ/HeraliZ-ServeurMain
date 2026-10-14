@@ -1,5 +1,5 @@
 {
-  "_aide": "Rareté de chaque objet : couleur légère derrière l'objet dans les cases. Niveaux : commun, peu_commun, rare, epique, legendaire, unique (« aucune » = pas de rareté). « objets » : identifiant de l'objet ; « armes », « accessoires », « munitions » : identifiants de TaCZ. Les choix faits en jeu (/rarete) vont dans raretes_jeu.json et passent avant ce fichier.",
+  "_aide": "Rareté de chaque objet : couleur légère derrière l'objet dans les cases. Niveaux : commun, peu_commun, rare, epique, legendaire, unique (« aucune » = pas de rareté). « objets » : identifiant de l'objet ; « armes », « accessoires », « munitions » : identifiants de TaCZ ; « soins » : identifiants des soins de Tactique. Les choix faits en jeu (/rarete) vont dans raretes_jeu.json et passent avant ce fichier.",
   "defaut": "commun",
   "objets": {
     "heraliz_armory:citadin_head": "commun",
@@ -576,5 +576,18 @@
     "tacz:762x39": "rare",
     "tacz:9mm": "commun",
     "tacz:rpg_rocket": "legendaire"
+  },
+  "soins": {
+    "heralisz_heal:vaseline": "commun",
+    "heralisz_heal:ibuprofen": "commun",
+    "heralisz_heal:condensed_milk": "commun",
+    "heralisz_heal:goldenstar": "peu_commun",
+    "heralisz_heal:amoxycillin": "peu_commun",
+    "heralisz_heal:ai2": "peu_commun",
+    "heralisz_heal:attelle_bandage": "peu_commun",
+    "heralisz_heal:carfak": "rare",
+    "heralisz_heal:blood_pack": "rare",
+    "heralisz_heal:surv12": "epique",
+    "heralisz_heal:cms": "epique"
   }
 }

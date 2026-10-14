@@ -41,7 +41,8 @@ public final class RaretesServeur {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final String AIDE = "Rareté de chaque objet : couleur légère derrière l'objet dans les cases. Niveaux : commun, peu_commun, "
             + "rare, epique, legendaire, unique (« aucune » = pas de rareté). « objets » : identifiant de l'objet ; « armes », "
-            + "« accessoires », « munitions » : identifiants de TaCZ. Les choix faits en jeu (/rarete) vont dans raretes_jeu.json "
+            + "« accessoires », « munitions » : identifiants de TaCZ ; « soins » : identifiants des soins de Tactique. Les choix "
+            + "faits en jeu (/rarete) vont dans raretes_jeu.json "
             + "et passent avant ce fichier.";
 
     /** Base (fichier du dépôt) et choix faits en jeu (valeurs : identifiant de rareté ou « aucune »). */

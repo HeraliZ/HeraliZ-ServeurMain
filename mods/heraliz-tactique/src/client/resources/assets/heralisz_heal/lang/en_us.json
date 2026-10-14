@@ -20,5 +20,7 @@
   "item.heralisz_heal.vaseline": "Vaseline",
   "item.heralisz_heal.vaseline.desc": "Grants resistance when applied.",
   "pack.heralisz_heal.default_pack.name": "§aHeraliZ §7- §fHealing",
-  "pack.heralisz_heal.name": "§aHeraliZ §7- §fHealing"
+  "pack.heralisz_heal.name": "§aHeraliZ §7- §fHealing",
+  "item.heralisz_heal.attelle_bandage": "Splint and bandage",
+  "item.heralisz_heal.attelle_bandage.desc": "Splint and pressure bandage: fixes a broken leg and stops bleeding in a few seconds."
 }
