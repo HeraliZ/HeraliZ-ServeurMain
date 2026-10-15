@@ -14,6 +14,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import org.joml.Matrix4f;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -67,12 +69,21 @@ final class EcranVif {
         Matrix4f m = ps.last().pose();
         VertexConsumer q = tampons.getBuffer(TypesRendu.COULEUR_ECRAN);
         Font police = Minecraft.getInstance().font;
-        switch (etat) {
-            case OrdinateurDuel.AMORCAGE -> amorcage(o.progression(partial), m, q, police, ps, tampons);
-            case OrdinateurDuel.AMORCEE -> amorcee(o.resteTicks(partial), m, q, police, ps, tampons);
-            default -> piratage(o.progression(partial), m, q, police, ps, tampons);
+        TEXTES.clear();
+        try {
+            switch (etat) {
+                case OrdinateurDuel.AMORCAGE -> amorcage(o.progression(partial), m, q, police, ps, tampons);
+                case OrdinateurDuel.AMORCEE -> amorcee(o.resteTicks(partial), m, q, police, ps, tampons);
+                default -> piratage(o.progression(partial), m, q, police, ps, tampons);
+            }
+            // les textes APRES tous les quads : demander le tampon de la police termine celui des quads (MultiBufferSource
+            // immediat) ; un quad ecrit ensuite dans le tampon termine faisait planter le jeu (« Not building! ») des le
+            // premier chiffre tape (Matchs 0.7.0 a 0.9.0 : plantage a l'amorcage de la bombe)
+            for (Texte t : TEXTES) dessinerTexte(police, ps, tampons, t);
+        } finally {
+            TEXTES.clear();
+            ps.popPose();
         }
-        ps.popPose();
     }
 
     private static void amorcage(float r, Matrix4f m, VertexConsumer q, Font police, PoseStack ps, MultiBufferSource tampons) {
@@ -170,11 +181,25 @@ final class EcranVif {
         q.vertex(m, x, y, 0f).color(rgb >> 16 & 255, rgb >> 8 & 255, rgb & 255, 255).uv2(LightTexture.FULL_BRIGHT).endVertex();
     }
 
+    private record Texte(String s, float x, float yc, float hauteur, int rgb, int align) {
+    }
+
+    /** Textes de l'image en cours, dessinés après les quads (voir {@link #dessiner}). */
+    private static final List<Texte> TEXTES = new ArrayList<>();
+
     /**
      * Texte en DM Sans gras, centré verticalement sur {@code yc}, de {@code hauteur} pixels d'image (hauteur des
-     * chiffres) ; align : 0 = à gauche de x, 1 = centré, 2 = à droite. Un peu devant les quads.
+     * chiffres) ; align : 0 = à gauche de x, 1 = centré, 2 = à droite. Un peu devant les quads. Mis en attente : dessiné
+     * après tous les quads de l'écran.
      */
     private static void texte(Font police, PoseStack ps, MultiBufferSource tampons, String s, float x, float yc, float hauteur, int rgb, int align) {
+        TEXTES.add(new Texte(s, x, yc, hauteur, rgb, align));
+    }
+
+    private static void dessinerTexte(Font police, PoseStack ps, MultiBufferSource tampons, Texte t) {
+        String s = t.s();
+        float x = t.x(), yc = t.yc(), hauteur = t.hauteur();
+        int rgb = t.rgb(), align = t.align();
         Component c = composant(s);
         float sc = hauteur / HAUTEUR_CHIFFRE;
         float w = police.width(c) * sc;
