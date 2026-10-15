@@ -51,5 +51,14 @@
   "message.heraliz_grades.kit.place": "Освободите место: нужно %s свободных ячеек в инвентаре.",
   "message.heraliz_grades.kit.recu": "Набор %s получен.",
   "message.heraliz_grades.kit.reset": "Перезарядка наборов сброшена для %s.",
-  "message.heraliz_grades.kit.reset_rien": "У игрока %s не было перезарядки."
+  "message.heraliz_grades.kit.reset_rien": "У игрока %s не было перезарядки.",
+  "message.heraliz_grades.lien.indisponible": "Привязка к Discord сейчас недоступна.",
+  "message.heraliz_grades.lien.attends": "Подождите немного, прежде чем повторить.",
+  "message.heraliz_grades.lien.erreur": "Не удалось связаться с Discord, попробуйте чуть позже.",
+  "message.heraliz_grades.lien.copier": "Нажмите, чтобы скопировать",
+  "message.heraliz_grades.lien.code": "Ваш код: %1$s. В Discord, в канале #lien, введите /lier %2$s (действует 5 минут).",
+  "message.heraliz_grades.lien.lie": "Ваш аккаунт теперь привязан к Discord %s.",
+  "message.heraliz_grades.lien.expire": "Срок действия кода истёк: введите /lier, чтобы получить новый.",
+  "message.heraliz_grades.lien.delie": "Ваш аккаунт больше не привязан к Discord.",
+  "message.heraliz_grades.lien.pas_lie": "Ваш аккаунт не был привязан ни к одному Discord."
 }

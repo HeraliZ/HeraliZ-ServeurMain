@@ -51,5 +51,14 @@
   "message.heraliz_grades.kit.place": "Make some room: you need %s free slots in your inventory.",
   "message.heraliz_grades.kit.recu": "Kit %s claimed.",
   "message.heraliz_grades.kit.reset": "Kit cooldown reset for %s.",
-  "message.heraliz_grades.kit.reset_rien": "%s had no cooldown running."
+  "message.heraliz_grades.kit.reset_rien": "%s had no cooldown running.",
+  "message.heraliz_grades.lien.indisponible": "The Discord link isn't available right now.",
+  "message.heraliz_grades.lien.attends": "Wait a bit before trying again.",
+  "message.heraliz_grades.lien.erreur": "Couldn't reach Discord, try again in a moment.",
+  "message.heraliz_grades.lien.copier": "Click to copy",
+  "message.heraliz_grades.lien.code": "Your code: %1$s. On Discord, in the #lien channel, type /lier %2$s (valid for 5 minutes).",
+  "message.heraliz_grades.lien.lie": "Your account is now linked to the Discord account %s.",
+  "message.heraliz_grades.lien.expire": "Your code expired: use /lier again to get a new one.",
+  "message.heraliz_grades.lien.delie": "Your account is no longer linked to Discord.",
+  "message.heraliz_grades.lien.pas_lie": "Your account wasn't linked to any Discord account."
 }

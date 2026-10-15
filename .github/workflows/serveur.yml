@@ -50,6 +50,8 @@ jobs:
       SPARTAN_DISCORD_SANCTIONS: ${{ secrets.SPARTAN_DISCORD_SANCTIONS }}
       LITEBANS_DB_USER: ${{ secrets.LITEBANS_DB_USER }}
       LITEBANS_DB_PASSWORD: ${{ secrets.LITEBANS_DB_PASSWORD }}
+      HERALIBOT_LIEN_URL: ${{ secrets.HERALIBOT_LIEN_URL }}
+      HERALIBOT_LIEN_CLE: ${{ secrets.HERALIBOT_LIEN_CLE }}
       # accès à la VM du site réglés (pack du launcher) ; les secrets eux-mêmes ne sont donnés qu'à l'étape du pack
       SITE_PRET: ${{ secrets.SITE_SSH_HOTE != '' && secrets.SITE_SSH_UTILISATEUR != '' && secrets.SITE_SSH_MDP != '' }}
       PYTHONIOENCODING: utf-8
@@ -164,8 +166,9 @@ jobs:
           fi
 
       # secrets écrits dans les fichiers envoyés, jamais dans le dépôt : webhooks Discord et clé des jetons de Spartan ;
-      # base de données de LiteBans (sans ses secrets : base locale H2, sans historique des sanctions)
-      - name: Secrets (Spartan, LiteBans)
+      # base de données de LiteBans (sans ses secrets : base locale H2, sans historique des sanctions) ; adresse et clé du
+      # lien Discord <-> Minecraft avec HeraliBot (heraliz-grades ; sans elles, le lien est simplement désactivé)
+      - name: Secrets (Spartan, LiteBans, lien Discord)
         if: env.PTERO_SFTP_HOST != ''
         run: |
           python - <<'EOF'
@@ -193,6 +196,13 @@ jobs:
           for marque, valeur in (("LITEBANS_DB_USER", user), ("LITEBANS_DB_PASSWORD", mdp)):
               s = s.replace("__%s__" % marque, valeur.replace("'", "''"))
           p.write_text(s, encoding="utf-8")
+          p = pathlib.Path("serveur/config/heraliz_grades/lien.json")
+          if p.exists():
+              s = p.read_text(encoding="utf-8")
+              for marque in ("HERALIBOT_LIEN_URL", "HERALIBOT_LIEN_CLE"):
+                  valeur = os.environ.get(marque, "").strip().replace("\\", "\\\\").replace('"', '\\"')
+                  s = s.replace("__%s__" % marque, valeur)
+              p.write_text(s, encoding="utf-8")
           EOF
 
       # Spartan : les webhooks Discord existent-ils encore ? (Discord répond sur le webhook lui-même, sans rien poster ;

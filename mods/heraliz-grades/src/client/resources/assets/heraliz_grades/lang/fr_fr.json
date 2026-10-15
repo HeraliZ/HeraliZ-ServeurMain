@@ -51,5 +51,14 @@
   "message.heraliz_grades.kit.place": "Fais de la place : il faut %s cases libres dans ton inventaire.",
   "message.heraliz_grades.kit.recu": "Kit %s récupéré.",
   "message.heraliz_grades.kit.reset": "Recharge des kits remise à zéro pour %s.",
-  "message.heraliz_grades.kit.reset_rien": "%s n'avait pas de recharge en cours."
+  "message.heraliz_grades.kit.reset_rien": "%s n'avait pas de recharge en cours.",
+  "message.heraliz_grades.lien.indisponible": "Le lien avec Discord n'est pas disponible pour le moment.",
+  "message.heraliz_grades.lien.attends": "Attends un peu avant de recommencer.",
+  "message.heraliz_grades.lien.erreur": "Impossible de joindre Discord, réessaie dans un moment.",
+  "message.heraliz_grades.lien.copier": "Cliquer pour copier",
+  "message.heraliz_grades.lien.code": "Ton code : %1$s. Sur Discord, dans le salon #lien, tape /lier %2$s (valable 5 minutes).",
+  "message.heraliz_grades.lien.lie": "Ton compte est maintenant lié au Discord %s.",
+  "message.heraliz_grades.lien.expire": "Ton code a expiré : refais /lier pour en avoir un nouveau.",
+  "message.heraliz_grades.lien.delie": "Ton compte n'est plus lié à Discord.",
+  "message.heraliz_grades.lien.pas_lie": "Ton compte n'était lié à aucun Discord."
 }

@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Partie serveur : registre des grades, commandes /grade et /kit, préfixe du grade devant le pseudo (liste Tab, chat).
+ * Partie serveur : registre des grades, commandes /grade, /kit, /lier et /delier, préfixe du grade devant le pseudo (liste Tab, chat).
  * <p>
  * Préfixe : NameFormat (nom affiché Forge, repris par la liste Tab et par le tag de clan de heraliz-clansetbases, qui se
  * place devant : « [CLAN] [Traqueur] Pseudo ») et nom affiché Bukkit (chat des serveurs hybrides).
@@ -36,6 +36,7 @@ public final class ServeurGrades implements Partie {
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::arret);
         MinecraftForge.EVENT_BUS.addListener(CommandesGrades::enregistrer);
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> KitsServeur.enregistrer(e.getDispatcher()));
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> LienDiscord.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::nomAffiche);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ServeurGrades::nomTab);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::connexion);
@@ -48,12 +49,14 @@ public final class ServeurGrades implements Partie {
         java.nio.file.Path dossier = e.getServer().getServerDirectory().toPath().resolve("heraliz_grades");
         registre = new RegistreGrades(dossier);
         KitsServeur.demarrer(dossier);
+        LienDiscord.demarrer(e.getServer());
         AUTH.clear();
     }
 
     private static void arret(ServerStoppedEvent e) {
         registre = null;
         KitsServeur.arreter();
+        LienDiscord.arreter();
         AUTH.clear();
     }
 
@@ -77,11 +80,13 @@ public final class ServeurGrades implements Partie {
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
         AUTH.remove(e.getEntity().getUUID());
         KitsServeur.oublier(e.getEntity().getUUID());
+        LienDiscord.oublier(e.getEntity().getUUID());
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || registre == null || ++ticks % 40 != 0) return;
-        if (ticks % 100 == 0) KitsServeur.relireSiChange();
+        if (ticks % 200 == 0) KitsServeur.relireSiChange();
+        if (ticks % 120 == 0) LienDiscord.suivre();
         MinecraftServer srv = e.getServer();
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
             boolean auth = PontBukkit.authentifie(p);

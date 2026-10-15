@@ -1,0 +1,5 @@
+{
+  "_note": "Lien Discord <-> Minecraft avec HeraliBot (mod heraliz-grades). Rempli par la mise en ligne depuis les secrets GitHub HERALIBOT_LIEN_URL (adresse du bot, ex. http://<machine>:<port>) et HERALIBOT_LIEN_CLE (contenu de data/cle-lien.txt du bot). Ne JAMAIS écrire l'adresse ni la clé ici.",
+  "url": "__HERALIBOT_LIEN_URL__",
+  "cle": "__HERALIBOT_LIEN_CLE__"
+}
