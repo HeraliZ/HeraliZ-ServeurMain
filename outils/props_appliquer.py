@@ -2,7 +2,7 @@
 Pterodactyl), ou l'annule. Ne lit ni n'écrit aucun fichier du monde : ce sont les commandes du plan, jouées par le
 serveur lui-même, qui changent les blocs, et chacune ne change un bloc que s'il est ENCORE celui relevé dans la copie.
 
-    python outils/props_appliquer.py <dossier du plan> [--etapes a,b] [--lots 1-20] [--pause 5] [--envoyer]
+    python outils/props_appliquer.py <dossier du plan> [--etapes diversification,ajouts] [--lots 1-20] [--pause 5] [--envoyer]
                                      [--annuler] [--journal props_carte/journal.txt] [--budget-minutes 330]
     python outils/props_appliquer.py <dossier du plan> --verifier <latest.log> [--journal ...]
 
@@ -182,7 +182,7 @@ def main():
         a_jouer = [l for l in reversed(tous) if etat.get(l) == "joue"]
         sous, action = "annulation", "annule"
     else:
-        etapes = set((opt("--etapes") or "correction,couverture,equilibrage,cfm").split(","))
+        etapes = set((opt("--etapes") or "diversification").split(","))
         nums = plage(opt("--lots"), len(tous))
         a_jouer = []
         for k, l in enumerate(tous, 1):

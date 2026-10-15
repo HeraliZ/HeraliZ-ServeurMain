@@ -1,6 +1,7 @@
-"""Props et conteneurs de loot de la carte : analyse, plan de diversification, rendus. LECTURE SEULE du monde : rien
-n'est jamais écrit dans ses fichiers. Les changements passent par des lots de commandes que le SERVEUR joue lui-même
-(workflow « Props de la carte », console du Ptero), chacune conditionnelle et annulable.
+"""Props et conteneurs de loot de la carte : analyse, plan de diversification des conteneurs de HeraliZ Loot (T1 à T6),
+rendus. LECTURE SEULE du monde : rien n'est jamais écrit dans ses fichiers. Les changements passent par des lots de
+commandes que le SERVEUR joue lui-même (workflow « Props de la carte », console du Ptero), chacune conditionnelle et
+annulable.
 
     python outils/props_carte.py analyser <monde> [--sortie DOSSIER] [--zones DOSSIER] [--processus N]
     python outils/props_carte.py plan <DOSSIER d'analyse> [--graine N] [--lot N] [--ajouts] [--max-changements N]
@@ -15,14 +16,18 @@ analyser : relève chaque prop (cfm, HeraliZ Utils, HeraliZ Décors) et chaque c
   Sortie : rapport.md (court, pour le résumé du workflow), rapport_complet.md, analyse.json.gz (détails, pour le plan).
   --zones : dossier des zones de loot (défaut : <monde>/datapacks/heraliz_carte/data/heraliz_loot/zones).
 
-plan : à partir de l'analyse, choisit les remplacements (règles de outils/props_catalogue.py : pièces, extérieur,
-  groupes uniques par pièce, même palier de loot, même orientation, place libre sans boucher de porte ni de passage),
-  pour que chaque prop et chaque palier soient présents et que les pièces soient cohérentes. Sortie dans
-  <analyse>/plan/ : lots_NNN.txt (commandes), annulation_NNN.txt (commandes inverses, état exact d'avant, données de
-  bloc comprises), plan.json, plan.md. Les commandes ne changent un bloc que s'il est ENCORE celui relevé
-  (« execute if block ... run setblock ... ») : un prop déplacé ou un mur posé entre-temps par les constructeurs n'est
-  pas touché. --ajouts : pose aussi des meubles cfm jamais posés dans des pièces du bon type (sur des cases vides le
-  long d'un mur, jamais devant une porte ni dans un passage) ; sans cette option, rien n'est posé dans le vide.
+plan : consigne du propriétaire (15/10) : 100 % des modèles T1 à T6 de HeraliZ Loot posés sur la carte, en nombre
+  équilibré ; T7 réservé aux événements (rien posé), ni meubles cfm, ni familles (nourriture, soins, munitions). À
+  partir de l'analyse, le plan remplace des conteneurs T1 à T6 déjà posés par d'autres modèles du MÊME palier (règles
+  de outils/props_catalogue.py : même gabarit, même orientation, pièce ou extérieur compatibles, une cuisinière / un
+  frigo par pièce, place libre exacte pour un gros conteneur, sans boucher de porte ni de passage). Sortie dans
+  <analyse>/plan/ : lots/NNN_etape.txt (commandes), annulation/NNN_etape.txt (commandes inverses, état exact d'avant,
+  données de bloc comprises), plan.json, plan.md (modèles posés avant / après, absents et pourquoi). Les commandes ne
+  changent un bloc que s'il est ENCORE celui relevé (« execute if block ... run setblock ... ») : un prop déplacé ou
+  un mur posé entre-temps par les constructeurs n'est pas touché. --ajouts : un modèle qui n'a AUCUNE place de
+  remplacement cohérente est aussi posé sur une case libre (près d'un conteneur de son palier, dos au mur, jamais
+  devant une porte ni dans un passage ; étape « ajouts », signalée à part) ; sans cette option, rien n'est posé dans
+  le vide.
 
 rendus : vues de dessus (avant / après) de quelques pièces, en PNG (Pillow).
 """
@@ -409,7 +414,7 @@ class Analyse:
                 if pr is None or not pr.pieces or len(pr.pieces) > 8:
                     continue
                 poids = (1.0 if pr.mod == "heraliz_loot" else 0.5) / len(pr.pieces)
-                for t in pr.pieces:
+                for t in sorted(pr.pieces):
                     votes[t] += poids
             info = self.pieces.get(pid, {})
             if votes:
@@ -478,8 +483,9 @@ class Analyse:
                   sum(1 for p in self.props if p["id"].split(":")[0] in ("heralisz_utils", "heraliz_decors")),
                   self.parties, sum(1 for v in self.pieces.values() if not v.get("couloir") and not v.get("vide")),
                   sum(1 for v in self.pieces.values() if v.get("couloir"))),
-              "%d petites pièces fermées et vides dans ces bâtiments (salles de bain, réserves... : places pour l'option "
-              "« ajouts » du plan)." % sum(1 for v in self.pieces.values() if v.get("vide")), ""]
+              "%d petites pièces fermées et vides dans ces bâtiments (salles de bain, réserves... : places possibles "
+              "de l'option « ajouts » du plan, pour les modèles de salle de bain sans autre place)."
+              % sum(1 for v in self.pieces.values() if v.get("vide")), ""]
         # ---- paliers
         par_niv = Counter()
         types_niv = defaultdict(set)
@@ -499,8 +505,8 @@ class Analyse:
                                                     ", ".join(j.split(":")[1] for j in jam[:12]) + (" …" if len(jam) > 12 else "")))
         L.append("")
         if not any(cat[p["id"]].niveau == 7 for p in conts):
-            L.append("Aucun coffre T7 posé : c'est normal, un T7 n'apparaît qu'à un point d'apparition "
-                     "(`/heralizloot point ajouter`), il n'est jamais là en permanence. Le plan propose des points.")
+            L.append("Aucun coffre T7 posé : c'est normal, les T7 sont réservés aux événements (point d'apparition, "
+                     "`/heralizloot point ajouter`) ; le plan n'en pose pas.")
             L.append("")
         # ---- par lieu
         lieux = defaultdict(Counter)
@@ -532,7 +538,8 @@ class Analyse:
             L += ["## Anciens meubles cfm retirés du jar", "",
                   "%d blocs de %d sortes de meubles cfm de la carte n'existent plus dans cfm « PATCH » : au chargement de "
                   "leur secteur, le jeu les remplace par de l'air (ils sont devenus des conteneurs de HeraliZ Loot). "
-                  "%d ont un équivalent exact dans HeraliZ Loot (même modèle) : le plan les reposera là où ils étaient." % (
+                  "%d ont un équivalent exact dans HeraliZ Loot (même modèle). Pour information : le plan ne les "
+                  "repose pas (consigne du 15/10 : seulement les conteneurs T1 à T6 déjà posés)." % (
                       sum(retires.values()), len(retires), eq), ""]
             if not court:
                 L.append(", ".join("`%s` ×%d" % (i.split(":")[1], n) for i, n in retires.most_common()))

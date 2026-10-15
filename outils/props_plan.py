@@ -1,26 +1,29 @@
-"""Plan de diversification des props de la carte et rendus avant / après (appelés par outils/props_carte.py).
+"""Plan de diversification des conteneurs de loot de la carte et rendus avant / après (appelés par
+outils/props_carte.py).
+
+Consigne du propriétaire (15/10) : utiliser les modèles de HeraliZ Loot, T1 à T6 seulement (T7 = événements), et que
+100 % des modèles T1 à T6 soient posés sur la carte, en nombre équilibré (plus « toujours les mêmes »). C'est tout :
+ni meubles cfm, ni anciens meubles cfm à reposer, ni points T7, ni familles (nourriture, soins, munitions).
 
 Rien n'est écrit dans le monde : le plan produit des lots de commandes que le serveur jouera lui-même (workflow
 « Props de la carte »), chacune conditionnelle (« le bloc est-il encore celui relevé ? ») et annulable.
 
-Étapes du plan (chaque changement porte son étape ; le workflow choisit lesquelles appliquer) :
-  restauration  anciens meubles cfm retirés du jar (devenus de l'air au chargement) : le conteneur de HeraliZ Loot qui
-                reprend le même modèle est reposé à leur place, s'il y a toujours de l'air ;
-  correction    incohérences : doublons dans une pièce (2 frigos, 2 cuisinières...), prop d'extérieur dans une pièce
-                fermée, prop d'intérieur à ciel ouvert, prop qui ne va pas avec sa pièce, même conteneur répété ;
-  couverture    chaque conteneur (et chaque palier) au moins N fois sur la carte, à des places cohérentes ;
-  equilibrage   les conteneurs trop répétés (range-chaussures, poubelle en tôle...) cèdent une partie de leurs places
-                aux autres modèles de leur palier ;
-  cfm           variantes des meubles cfm déjà posés (chaises, palettes, poubelles...) ;
-  t7            points d'apparition des coffres T7 (un par modèle) dans des lieux T6 ;
-  ajouts        (option --ajouts) props posés sur des cases vides : salle de bain dans les petites pièces vides des
-                maisons, meubles cfm jamais posés dans les pièces de leur type.
+Étapes du plan (chaque changement porte son étape ; le workflow choisit lesquelles jouer) :
+  diversification  un conteneur T1 à T6 déjà posé est remplacé par un autre modèle du MÊME palier, dans cet ordre :
+                   cohérence (deux cuisinières ou deux frigos dans la même pièce, prop d'extérieur dans une pièce
+                   fermée...), couverture (chaque modèle au moins N fois, N selon le palier), équilibrage (les modèles
+                   trop répétés cèdent des places aux modèles sous leur part) ;
+  ajouts           (option --ajouts, signalé à part) seulement pour un modèle qui n'a AUCUNE place de remplacement
+                   cohérente : posé sur une case libre près d'un conteneur de son palier ; la part d'actifs de la zone
+                   est baissée d'autant (le loot de la zone ne change pas).
 
 Règles de chaque remplacement : même palier de loot (le loot d'une zone ne change pas de niveau), même gabarit (un
-meuble par un meuble, un objet par un objet, un cadavre par un cadavre), même orientation, pièce ou extérieur
-compatibles (outils/props_catalogue.py), groupes uniques respectés (une cuisinière, un frigo... par pièce), place
-libre pour les cases en plus (de l'air, un sol dessous, dans la même pièce, ni devant une porte, ni dans un passage
-d'un bloc, ni devant un autre meuble, sans couper la pièce en deux).
+meuble par un meuble, un objet par un objet, un cadavre par un cadavre, un véhicule par un véhicule), même
+orientation, pièce ou extérieur compatibles (outils/props_catalogue.py : pas de prop d'extérieur dans une maison ni
+l'inverse), groupes uniques respectés (une cuisinière, un frigo... par pièce), place libre exacte pour les cases en
+plus d'un gros conteneur (de l'air, un sol dessous, dans la même pièce, ni devant une porte, ni dans un passage d'un
+bloc, ni devant un autre meuble, sans couper la pièce en deux). Un conteneur qui garde des données (inventaire) n'est
+jamais touché.
 """
 import json
 import math
@@ -39,17 +42,20 @@ import props_monde as pm  # noqa: E402
 
 R = pk.R
 DIRS = {"north": (0, -1), "south": (0, 1), "east": (1, 0), "west": (-1, 0)}
-OPP = {"north": "south", "south": "north", "east": "west", "west": "east"}
-YAW = {"south": 0, "west": 90, "north": 180, "east": -90}
-# minimum de places sur la carte pour chaque modèle (s'il a des places cohérentes)
-QUOTA = {1: 6, 2: 6, 3: 4, 4: 4, 5: 3, 6: 2}
-QUOTA_FAMILLE, QUOTA_CADAVRE, QUOTA_CFM = 3, 3, 2
-SEUIL = 2.0        # un modèle posé plus de SEUIL fois sa part de son palier est « trop répété »
+PALIERS = (1, 2, 3, 4, 5, 6)
+GABARITS = ("meuble", "objet", "cadavre", "véhicule")
+# minimum de places sur la carte pour chaque modèle, selon son palier (plafonné par les places du palier : T6 n'a que
+# quelques dizaines de conteneurs pour presque autant de modèles)
+QUOTA = {1: 8, 2: 6, 3: 4, 4: 4, 5: 3, 6: 2}
+QUOTA_AJOUT = 2    # places au plus par modèle posé par l'étape « ajouts »
+SEUIL = 1.5        # un modèle posé plus de SEUIL fois sa part de son groupe (palier + gabarit) est « trop répété »
+PASSES = 3         # passes d'équilibrage
 # lieux (dossiers des zones de loot) -> extérieurs
 LIEU_EXT = {"aerodrome": "base", "silo": "base", "arctique": "base", "radio": "base", "bunker": "base", "prison": "base",
             "petrole": "chantier", "port": "quai rue", "jetee": "quai", "campagne": "ferme route jardin",
             "routes": "route", "gaz": "chantier rue", "faille": "camp route", "halte_aerodrome": "route base"}
-ETAPES = ["restauration", "correction", "couverture", "equilibrage", "cfm", "t7", "ajouts"]
+ETAPES = ["diversification", "ajouts"]
+MOTIFS = ["cohérence", "couverture", "équilibrage"]
 
 
 def cle_palier(pr):
@@ -57,10 +63,18 @@ def cle_palier(pr):
     return (m.group(1), int(m.group(2))) if m else ("?", 0)
 
 
+def vise(pr):
+    """Modèle concerné par le plan : conteneur de HeraliZ Loot T1 à T6 (pas T7, pas les familles), avec du loot."""
+    if pr is None or pr.mod != "heraliz_loot" or not pr.loot or pr.be or pr.gab not in GABARITS:
+        return False
+    f, n = cle_palier(pr)
+    return f == "t" and n in PALIERS
+
+
 class Emplacement:
-    """Un prop remplaçable de la carte."""
-    __slots__ = ("p", "pr", "facing", "cells", "env", "rtype", "rsur", "piece", "ctx", "cle", "gab", "porteur", "v",
-                 "change", "lieu")
+    """Un conteneur remplaçable de la carte."""
+    __slots__ = ("p", "pr", "pr0", "facing", "cells", "env", "rtype", "rsur", "piece", "ctx", "cle", "gab", "porteur",
+                 "v", "change", "lieu")
 
     def __init__(self, **k):
         for s in self.__slots__:
@@ -76,9 +90,11 @@ class Planif:
         self.ajouts = ajouts
         self.compte = Counter(p["id"] for p in a.props)
         self.changes = []
+        self.ajouts_proposes = []
         self.non_corriges = Counter()
+        self.motifs = Counter()
         self.max = max_changements
-        # cases devant la face avant des meubles (on n'y pose rien)
+        # cases devant la face avant des meubles (on n'y pose rien) et cases occupées
         self.devant = set()
         self.occupe = {}
         for p in a.props:
@@ -108,12 +124,18 @@ class Planif:
 
     # ------------------------------------------------------------------ préparation
     def _contextes(self):
-        """Extérieurs autour de chaque prop du dehors : lieu + votes des props d'extérieur voisins (12 blocs)."""
+        """Extérieurs autour de chaque prop du dehors : lieu + votes des props d'extérieur voisins (12 blocs) :
+        conteneurs de HeraliZ Loot, et à demi-voix les décors (cfm, Utils, Décors) propres à un ou deux extérieurs
+        (tombes d'un cimetière, épaves d'une route...)."""
         grille = defaultdict(list)
         for p in self.a.props:
             pr = self.cat.get(p["id"])
-            if pr and pr.ext and not p["piece"] and pr.mod == "heraliz_loot":
-                grille[(p["x"] >> 4, p["z"] >> 4)].append((p, pr))
+            if not pr or not pr.ext or p["piece"]:
+                continue
+            if pr.mod == "heraliz_loot":
+                grille[(p["x"] >> 4, p["z"] >> 4)].append((p, pr, 1.0))
+            elif pr.dayz and not pr.structure and len(pr.ext) <= 2:
+                grille[(p["x"] >> 4, p["z"] >> 4)].append((p, pr, 0.5))
         self.ctx_de = {}
         for p in self.a.props:
             if p["piece"] and self.a.env(p) == "int":
@@ -121,10 +143,10 @@ class Planif:
             votes = Counter()
             for gx in range((p["x"] >> 4) - 1, (p["x"] >> 4) + 2):
                 for gz in range((p["z"] >> 4) - 1, (p["z"] >> 4) + 2):
-                    for q, pr in grille.get((gx, gz), ()):
+                    for q, pr, poids in grille.get((gx, gz), ()):
                         if (q["x"] - p["x"]) ** 2 + (q["z"] - p["z"]) ** 2 <= 144 and len(pr.ext) <= 4:
-                            for e in pr.ext:
-                                votes[e] += 1.0 / len(pr.ext)
+                            for e in sorted(pr.ext):
+                                votes[e] += poids / len(pr.ext)
             top = votes.most_common(3)
             ctx = {e for e, n in top if n >= 0.5 * top[0][1]} if top else set()
             lieu = p.get("lieu") or ""
@@ -133,25 +155,13 @@ class Planif:
 
     def _emplacements(self):
         self.emps = []
-        self.restaurations = []
-        cat = self.cat
+        self.avec_donnees = Counter()
         for p in self.a.props:
-            pr = cat.get(p["id"])
-            if pr is None:
-                if p["id"].startswith("cfm:"):
-                    eq = pc.equivalent_loot(p["id"].split(":", 1)[1], cat)
-                    if eq:
-                        self.restaurations.append((p, cat[eq]))
+            pr = self.cat.get(p["id"])
+            if not vise(pr):
                 continue
             if p["be"]:
-                continue
-            if pr.mod == "heraliz_loot":
-                if not pr.loot or pr.gab not in ("meuble", "objet", "cadavre"):
-                    continue
-            elif pr.mod == "cfm":
-                if not pr.dayz or pr.structure:
-                    continue
-            else:
+                self.avec_donnees[p["id"]] += 1      # inventaire ou données : jamais touché
                 continue
             f = (p["etat"] or {}).get("facing")
             if f not in DIRS:
@@ -161,66 +171,64 @@ class Planif:
             cells = pr.cellules_monde(f)
             porteur = dessus == pm.PROP and (0, 1, 0) not in cells
             info = self.a.pieces.get(p["piece"]) if p["piece"] else None
-            e = Emplacement(p=p, pr=pr, facing=f, cells=cells, env=self.a.env(p), piece=p["piece"],
+            e = Emplacement(p=p, pr=pr, pr0=pr, facing=f, cells=cells, env=self.a.env(p), piece=p["piece"],
                             rtype=info.get("type") if info else None, rsur=info.get("sur", 0) if info else 0,
-                            ctx=self.ctx_de.get(p["i"], set()), cle=cle_palier(pr) if pr.mod == "heraliz_loot" else ("cfm", pr.famille),
-                            gab=pr.gab, porteur=porteur, v=v, change=None, lieu=p.get("lieu"))
+                            ctx=self.ctx_de.get(p["i"], set()), cle=cle_palier(pr), gab=pr.gab, porteur=porteur, v=v,
+                            change=None, lieu=p.get("lieu"))
             self.emps.append(e)
         self.par_i = {e.p["i"]: e for e in self.emps}
 
     def _pools(self):
-        """Modèles interchangeables : même palier et même gabarit (loot) ; même famille de variantes (cfm)."""
+        """Modèles interchangeables : même palier et même gabarit ; part et minimum de chaque modèle."""
         self.pools = defaultdict(list)
-        for i, pr in self.cat.items():
-            if pr.mod == "heraliz_loot" and pr.loot and pr.gab in ("meuble", "objet", "cadavre") and not pr.be:
+        self.modeles = []
+        for i, pr in sorted(self.cat.items()):
+            if vise(pr):
                 self.pools[(cle_palier(pr), pr.gab)].append(pr)
-            elif pr.mod == "cfm" and pr.dayz and not pr.structure:
-                self.pools[(("cfm", pr.famille), "decor")].append(pr)
-        # part de chaque modèle dans son palier : places du palier / modèles du palier
+                self.modeles.append(pr)
         n_pool = Counter((e.cle, e.gab) for e in self.emps)
-        self.cible = {}
+        self.n_pool = n_pool
+        self.cible, self.mini = {}, {}
         for k, prs in self.pools.items():
             poids = sum(pc.frequence(pr.id.split(":")[1]) for pr in prs)
+            mini = max(1, min(QUOTA.get(k[0][1], 2), n_pool.get(k, 0) // max(1, len(prs))))
             for pr in prs:
                 part = n_pool.get(k, 0) * pc.frequence(pr.id.split(":")[1]) / max(1e-6, poids)
-                self.cible[pr.id] = max(self.quota(pr), part)
+                self.mini[pr.id] = mini
+                self.cible[pr.id] = max(mini, part)
 
     def quota(self, pr):
-        if pr.mod == "cfm":
-            return QUOTA_CFM
-        if pr.gab == "cadavre":
-            return QUOTA_CADAVRE
-        fam, niv = cle_palier(pr)
-        return QUOTA.get(niv, 2) if fam == "t" else QUOTA_FAMILLE
+        return self.mini.get(pr.id, 1)
+
+    def ratio(self, pr):
+        return self.compte[pr.id] / max(1.0, self.cible.get(pr.id, 1.0))
 
     # ------------------------------------------------------------------ règles
-    def compatible(self, e, q, raison=None):
-        """q peut-il prendre la place de e ? (pièce, extérieur, groupes, place)"""
-        if q.id == e.pr.id:
+    def compatible(self, e, q):
+        """q peut-il prendre la place de e ? (même groupe palier + gabarit, pièce, extérieur, groupes, place)"""
+        if q.id == e.pr.id or cle_palier(q) != e.cle or q.gab != e.gab:
             return False
-        if e.pr.mod == "heraliz_loot":
-            if e.env == "int" or (e.env == "abri" and e.piece):
-                if not q.pieces:
+        if e.env == "int" or (e.env == "abri" and e.piece):
+            if not q.pieces:
+                return False
+            sur = e.rtype and e.rsur >= 0.35 and len(self.a.par_piece.get(e.piece, ())) >= 2
+            if sur:
+                if e.rtype not in q.pieces:
                     return False
-                sur = e.rtype and e.rsur >= 0.35 and len(self.a.par_piece.get(e.piece, ())) >= 2
-                if sur:
-                    if e.rtype not in q.pieces:
-                        return False
-                elif not (q.pieces & (e.pr.pieces or set())):
-                    return False
-                # un prop propre à une ou deux sortes de pièces (matelas, lavabo...) : seulement dans une pièce
-                # dont le type est sûr
-                if len(q.pieces) <= 2 and not (e.rtype in q.pieces and e.rsur >= 0.5):
-                    return False
-            else:
-                if not (q.ext & e.ctx):
-                    return False
+            elif not (q.pieces & (e.pr0.pieces or set())):
+                return False
+            # un prop propre à une ou deux sortes de pièces (matelas, lavabo...) : seulement dans une pièce dont le
+            # type est sûr (la moitié des votes, ou un bon tiers dans une pièce d'au moins 3 props)
+            if len(q.pieces) <= 2 and not (e.rtype in q.pieces and self.type_sur(e)):
+                return False
+        else:
+            if not (q.ext & e.ctx):
+                return False
         if e.piece:
             ids = self.r_ids[e.piece]
             if q.groupe:
                 n = self.r_grp[e.piece][q.groupe] - (1 if e.pr.groupe == q.groupe else 0)
-                maxi = pc.maxi_groupe(q.groupe, self.a.pieces.get(e.piece, {}))
-                if n >= maxi:
+                if n >= pc.maxi_groupe(q.groupe, self.a.pieces.get(e.piece, {})):
                     return False
             if ids[q.id] >= (1 if q.gab == "meuble" else 2):
                 return False
@@ -231,12 +239,15 @@ class Planif:
             return False
         return self.place(e, q)
 
+    def type_sur(self, e):
+        return e.rsur >= 0.5 or (e.rsur >= 0.35 and len(self.a.par_piece.get(e.piece, ())) >= 3)
+
     def place(self, e, q):
+        """Les cases en plus de q (gros conteneur) sont-elles libres, au sol, dans la pièce, hors passage ?"""
         v = e.v
         x, y, z = e.p["x"], e.p["y"], e.p["z"]
         old = set(e.cells)
-        new = q.cellules_monde(e.facing)
-        extra = [c for c in new if c not in old]
+        extra = [c for c in q.cellules_monde(e.facing) if c not in old]
         bas = []
         for (dx, dy, dz) in extra:
             if abs(dx) > R or abs(dz) > R or not (0 <= dy <= 3):
@@ -244,6 +255,8 @@ class Planif:
             code = v[dy + 1][dz + R][dx + R]
             if code & 7 != pm.VIDE:
                 return False
+            if self.occupe.get((x + dx, y + dy, z + dz), e.p["i"]) != e.p["i"]:
+                return False        # case déjà prise par un autre changement du plan
             if dy == 0:
                 if code & (pk.F_PASSAGE | pk.F_PORTE):
                     return False
@@ -254,15 +267,6 @@ class Planif:
                 if (x + dx, y, z + dz) in self.devant:
                     return False
                 bas.append((dx, dz))
-        if q.mod == "cfm":
-            vis_old = set(e.pr.visuel_monde(e.facing))
-            for (dx, dy, dz) in q.visuel_monde(e.facing):
-                if (dx, dy, dz) in vis_old or (dx, dy, dz) == (0, 0, 0):
-                    continue
-                if abs(dx) > R or abs(dz) > R or not (-1 <= dy <= 3):
-                    return False
-                if v[dy + 1][dz + R][dx + R] & 7 not in (pm.VIDE, pm.FIN):
-                    return False
         if bas:
             from scipy import ndimage
             libre = np.isin(v[1] & 7, (pm.VIDE, pm.FIN))
@@ -281,13 +285,7 @@ class Planif:
         return True
 
     def candidats(self, e, filtre=None):
-        out = []
-        for q in self.pools.get((e.cle, e.gab), ()):
-            if filtre and not filtre(q):
-                continue
-            if self.compatible(e, q):
-                out.append(q)
-        return out
+        return [q for q in self.pools.get((e.cle, e.gab), ()) if (not filtre or filtre(q)) and self.compatible(e, q)]
 
     def score(self, e, q):
         s = (self.compte[q.id] + 1) / max(1.0, self.cible.get(q.id, 1.0))
@@ -297,10 +295,12 @@ class Planif:
             s += 0.2
         return s + self.rnd.random() * 0.05
 
-    def appliquer(self, e, q, etape, raison):
+    def appliquer(self, e, q, motif, raison):
         if self.max is not None and len(self.changes) >= self.max:
             return False
         old = e.pr
+        if self.compte[old.id] <= 1:
+            return False            # un modèle posé ne disparaît jamais de la carte
         self.compte[old.id] -= 1
         self.compte[q.id] += 1
         if e.piece:
@@ -311,73 +311,76 @@ class Planif:
             if q.groupe:
                 self.r_grp[e.piece][q.groupe] += 1
             self.r_chg[e.piece] += 1
-        # cases en plus : elles deviennent occupées (et le devant du nouveau meuble est réservé)
         x, y, z = e.p["x"], e.p["y"], e.p["z"]
         old_cells = set(e.cells)
-        extra = [c for c in q.cellules_monde(e.facing) if c not in old_cells]
+        new_cells = q.cellules_monde(e.facing)
+        for c in old_cells - set(new_cells):
+            self.occupe.pop((x + c[0], y + c[1], z + c[2]), None)
+        extra = [c for c in new_cells if c not in old_cells]
         for c in extra:
             self.occupe[(x + c[0], y + c[1], z + c[2])] = e.p["i"]
             if 0 <= c[1] + 1 <= 4 and abs(c[0]) <= R and abs(c[2]) <= R:
                 e.v[c[1] + 1][c[2] + R][c[0] + R] = (e.v[c[1] + 1][c[2] + R][c[0] + R] & 0xF8) | pm.PROP
-        self.changes.append({"etape": etape, "raison": raison, "x": x, "y": y, "z": z, "avant": old.id,
-                             "etat_avant": dict(e.p["etat"] or {}), "be": e.p["be"], "apres": q.id,
-                             "etat_apres": {"facing": e.facing} if q.mod == "heraliz_loot" or "facing" in (e.p["etat"] or {}) else {},
-                             "cases_libres": [[x + c[0], y + c[1], z + c[2]] for c in extra],
-                             "cases_avant": [[x + c[0], y + c[1], z + c[2]] for c in e.cells if c != (0, 0, 0)],
+        if q.gab == "meuble":
+            fx, fz = DIRS[q.avant(e.facing)]
+            for c in new_cells:
+                if c[1] == 0:
+                    self.devant.add((x + c[0] + fx, y, z + c[2] + fz))
+        # un même emplacement changé deux fois (cohérence puis équilibrage) : un seul changement, depuis l'état relevé
+        precedent = next((c for c in self.changes if c["i"] == e.p["i"]), None) if e.change else None
+        if precedent is not None:
+            self.changes.remove(precedent)
+        avant0 = e.pr0
+        extra0 = [c for c in new_cells if c not in set(avant0.cellules_monde(e.facing))]
+        self.changes.append({"etape": "diversification", "motif": motif, "raison": raison, "i": e.p["i"],
+                             "x": x, "y": y, "z": z, "avant": avant0.id, "etat_avant": dict(e.p["etat"] or {}),
+                             "be": e.p["be"], "apres": q.id, "etat_apres": {"facing": e.facing},
+                             "cases_libres": [[x + c[0], y + c[1], z + c[2]] for c in extra0],
+                             "cases_avant": [[x + c[0], y + c[1], z + c[2]] for c in avant0.cellules_monde(e.facing)
+                                             if c != (0, 0, 0)],
                              "piece": e.piece, "lieu": e.lieu})
-        if q.mod == "cfm":
-            # garder les autres propriétés du bloc (waterlogged...) si le nouveau les a aussi
-            et = dict(e.p["etat"] or {})
-            et["facing"] = e.facing
-            self.changes[-1]["etat_apres"] = et
-        e.change = q.id
+        if q.id == avant0.id:       # revenu au modèle d'origine : plus rien à faire
+            self.changes.pop()
+            e.change = None
+        else:
+            e.change = q.id
         e.pr = q
-        e.cells = q.cellules_monde(e.facing)
+        e.cells = new_cells
+        self.motifs[motif] += 1
         return True
 
-    def meilleur(self, e, etape, raison, filtre=None):
+    def meilleur(self, e, motif, raison, filtre=None):
         cands = self.candidats(e, filtre)
         if not cands:
             return False
         q = min(cands, key=lambda q: self.score(e, q))
-        return self.appliquer(e, q, etape, raison)
+        return self.appliquer(e, q, motif, raison)
 
-    # ------------------------------------------------------------------ étapes
-    def etape_restauration(self):
-        n = 0
-        for p, q in self.restaurations:
-            ancien = p["id"].split(":", 1)[1]
-            f_old = (p["etat"] or {}).get("facing", "north")
-            # cfm : facing=north -> rotation 0, east 90, south 180, west 270 ; même rotation dans HeraliZ Loot
-            y_old = {"north": 0, "east": 90, "south": 180, "west": 270}.get(f_old, 0)
-            f_new = next((f for f, yy in (q.rot or {}).items() if yy == y_old), OPP.get(f_old, "north"))
-            x, y, z = p["x"], p["y"], p["z"]
-            self.changes.append({"etape": "restauration", "raison": "cfm:%s retiré du jar (même modèle)" % ancien,
-                                 "x": x, "y": y, "z": z, "avant": "minecraft:air", "etat_avant": {}, "be": None,
-                                 "apres": q.id, "etat_apres": {"facing": f_new}, "cases_libres": [], "cases_avant": [],
-                                 "piece": p["piece"], "lieu": p.get("lieu"), "ancien": p["id"]})
-            self.compte[q.id] += 1
-            n += 1
-        return n
-
-    def etape_correction(self):
+    # ------------------------------------------------------------------ diversification
+    def etape_diversification(self):
+        n0 = len(self.changes)
         self.garder_groupes = False
         try:
-            return self._correction()
+            self._coherence()
         finally:
             self.garder_groupes = True
+        self._couverture()
+        for _k in range(PASSES):
+            if not self._equilibrage():
+                break
+        self._couverture()          # un modèle encore sous son minimum après l'équilibrage
+        return len(self.changes) - n0
 
-    def _correction(self):
+    def _coherence(self):
+        """Incohérences de la carte : la place est rendue à un autre modèle du même palier (le moins posé)."""
         inc = self.a.inc
-        n = 0
         a_corriger = []
         for pid, g, lst in inc["doublon"]:
             garde = pc.maxi_groupe(g, self.a.pieces.get(pid, {}))
             for p in sorted(lst, key=lambda p: (p["x"], p["z"]))[garde:]:
                 a_corriger.append((p, "doublon : %s en trop dans la pièce" % g))
         for pid, i, nb in inc["repetition"]:
-            ps = [p for p in self.a.par_piece[pid] if p["id"] == i][1:]
-            for p in ps:
+            for p in [p for p in self.a.par_piece[pid] if p["id"] == i][1:]:
                 a_corriger.append((p, "même conteneur répété dans une petite pièce"))
         for p in inc["exterieur_dedans"]:
             a_corriger.append((p, "prop d'extérieur dans une pièce fermée"))
@@ -387,6 +390,8 @@ class Planif:
             a_corriger.append((p, "ne va pas avec la pièce"))
         vus = set()
         for p, raison in a_corriger:
+            if not vise(self.cat.get(p["id"])):
+                continue            # familles, véhicules de décor... : hors du plan
             e = self.par_i.get(p["i"])
             if e is None or p["i"] in vus or e.change:
                 if e is None:
@@ -394,146 +399,221 @@ class Planif:
                 continue
             vus.add(p["i"])
             if raison.startswith("prop d'extérieur"):
-                # forcer un prop d'intérieur
-                ok = self.meilleur(e, "correction", raison, lambda q: bool(q.pieces))
+                ok = self.meilleur(e, "cohérence", raison, lambda q: bool(q.pieces))
             elif raison.startswith("prop d'intérieur"):
                 e.env = "ext"
-                ok = self.meilleur(e, "correction", raison, lambda q: bool(q.ext))
+                ok = self.meilleur(e, "cohérence", raison, lambda q: bool(q.ext))
             else:
-                ok = self.meilleur(e, "correction", raison)
-            if ok:
-                n += 1
-            else:
+                ok = self.meilleur(e, "cohérence", raison)
+            if not ok:
                 self.non_corriges[raison] += 1
-        return n
 
-    def etape_couverture(self):
-        n = 0
-        manque = []
-        for k, prs in self.pools.items():
-            if k[1] == "decor":
-                continue
-            for q in prs:
-                if self.compte[q.id] < self.quota(q):
-                    manque.append(q)
+    def _places(self, q):
+        """Emplacements où q peut aller sans faire passer leur modèle sous son minimum."""
+        return [e for e in self.emps if e.cle == cle_palier(q) and e.gab == q.gab and e.pr.id != q.id
+                and self.compte[e.pr.id] > self.quota(e.pr) and self.compatible(e, q)]
+
+    def _couverture(self):
+        """Chaque modèle au moins à son minimum : places prises d'abord aux modèles les plus répétés, étalées sur
+        plusieurs lieux."""
+        manque = [q for q in self.modeles if self.compte[q.id] < self.quota(q)]
         self.rnd.shuffle(manque)
-        par_cle = defaultdict(list)
-        for e in self.emps:
-            if not e.change and e.gab != "decor":
-                par_cle[(e.cle[1], e.gab)].append(e)
-                if e.gab == "cadavre":
-                    par_cle[("*", "cadavre")].append(e)
-        self.sans_place = []
-        # les modèles qui ont le moins de places possibles d'abord
-        essais = []
-        for q in manque:
-            cle = (cle_palier(q)[1], q.gab)
-            if q.gab == "cadavre" and not any(x.pr.niveau == q.niveau for x in par_cle[cle]):
-                cle = ("*", "cadavre")
-            places = [e for e in par_cle[cle] if not e.change
-                      and self.compte[e.pr.id] > self.quota(e.pr) and self.compatible(e, q)]
-            essais.append((len(places), q, places))
-        essais.sort(key=lambda t: t[0])
+        essais = sorted(((len(pl), q, pl) for q in manque for pl in [self._places(q)]), key=lambda t: t[0])
         for _n, q, places in essais:
             besoin = self.quota(q) - self.compte[q.id]
-            if not places:
-                self.sans_place.append(q.id)
+            if besoin <= 0 or not places:
                 continue
             self.rnd.shuffle(places)
-            places.sort(key=lambda e: (0 if e.rtype in q.pieces and e.rsur >= 0.5 else 1, self.r_chg[e.piece] if e.piece else 0))
-            # étaler sur plusieurs lieux : au plus 2 par lieu tant que d'autres lieux sont possibles
+            places.sort(key=lambda e: (0 if e.rtype in q.pieces and e.rsur >= 0.5 else 1, -self.ratio(e.pr),
+                                       self.r_chg[e.piece] if e.piece else 0))
             par_lieu = Counter()
-            for e in places:
-                if besoin <= 0:
-                    break
-                if e.change or not self.compatible(e, q) or self.compte[e.pr.id] <= self.quota(e.pr):
-                    continue
-                if par_lieu[e.lieu] >= 2 and len({x.lieu for x in places}) > len(par_lieu):
-                    continue
-                if self.appliquer(e, q, "couverture", "%s jamais ou trop peu posé" % q.id.split(":")[1]):
-                    par_lieu[e.lieu] += 1
-                    besoin -= 1
-                    n += 1
-            if besoin > 0 and self.compte[q.id] == 0:
-                self.sans_place.append(q.id)
-        return n
+            nb_lieux = len({x.lieu for x in places})
+            for tour in range(2):
+                for e in places:
+                    if besoin <= 0:
+                        break
+                    if e.pr.id == q.id or self.compte[e.pr.id] <= self.quota(e.pr) or not self.compatible(e, q):
+                        continue
+                    # au plus 2 par lieu tant que d'autres lieux sont possibles (second tour : sans limite)
+                    if tour == 0 and par_lieu[e.lieu] >= 2 and nb_lieux > len(par_lieu):
+                        continue
+                    if self.appliquer(e, q, "couverture", "%s absent ou trop peu posé" % q.id.split(":")[1]):
+                        par_lieu[e.lieu] += 1
+                        besoin -= 1
 
-    def etape_equilibrage(self):
+    def _equilibrage(self):
         n = 0
-        ordre = [e for e in self.emps if not e.change and e.gab != "decor"]
+        ordre = list(self.emps)
         self.rnd.shuffle(ordre)
         for e in ordre:
             p = e.pr
             if self.compte[p.id] <= SEUIL * self.cible.get(p.id, 1):
                 continue
+            # au plus la moitié des conteneurs d'une pièce changent
             if e.piece and self.r_chg[e.piece] >= max(1, math.ceil(len(self.a.par_piece.get(e.piece, ())) / 2)):
                 continue
-            if self.meilleur(e, "equilibrage", "%s trop répété" % p.id.split(":")[1],
-                             lambda q: self.compte[q.id] < self.cible.get(q.id, 1)):
+            if self.meilleur(e, "équilibrage", "%s trop répété" % p.id.split(":")[1],
+                             lambda q: self.compte[q.id] + 1 <= self.cible.get(q.id, 1)):
                 n += 1
         return n
 
-    def etape_cfm(self):
-        n = 0
-        ordre = [e for e in self.emps if not e.change and e.gab == "decor"]
-        self.rnd.shuffle(ordre)
-        for e in ordre:
-            prs = self.pools.get((e.cle, e.gab), ())
-            if len(prs) < 2:
-                continue
-            moy = sum(self.compte[q.id] for q in prs) / len(prs)
-            if self.compte[e.pr.id] <= max(1.5 * moy, QUOTA_CFM):
-                continue
-            if self.meilleur(e, "cfm", "variante de %s" % e.pr.famille, lambda q: self.compte[q.id] < moy):
-                n += 1
-        return n
+    # ------------------------------------------------------------------ absents et ajouts
+    def raison_absent(self, q):
+        """Pourquoi q n'a aucune place de remplacement."""
+        k = (cle_palier(q), q.gab)
+        if not self.n_pool.get(k):
+            return "aucun conteneur T%d de gabarit « %s » sur la carte à remplacer (même palier, même gabarit)" % (
+                k[0][1], q.gab)
+        dedans = sorted(q.pieces)
+        dehors = sorted(q.ext)
+        if not dedans and not any(q.ext & e.ctx for e in self.emps if e.env != "int"):
+            return "aucun extérieur « %s » repéré sur la carte (ni conteneur ni décor de ce genre autour des lieux)" % (
+                " / ".join(dehors))
+        quoi = []
+        if dedans:
+            quoi.append("pièces : " + " ".join(dedans))
+        if dehors:
+            quoi.append("dehors : " + " ".join(dehors))
+        xs = [c[0] for c in q.cellules]; zs = [c[2] for c in q.cellules]
+        taille = "%d×%d" % (max(xs) - min(xs) + 1, max(zs) - min(zs) + 1)
+        return "aucun des %d conteneurs T%d « %s » n'est dans une place qui lui va (%s ; %s cases au sol)" % (
+            self.n_pool[k], k[0][1], q.gab, " ; ".join(quoi) or "nulle part", taille)
 
-    def etape_t7(self):
-        """Un point d'apparition par modèle de coffre T7, dans des pièces (ou cours) des lieux T6."""
-        self.points = []
-        types = [i for i in self.cat if i.startswith("heraliz_loot:t7_")]
-        voulu = {"t7_coffre_fort": ("banque", "int"), "t7_coffre_armes": ("militaire", "int"),
-                 "t7_largage": ("base", "ext"), "t7_mallette": ("labo", "int"), "t7_reliquaire": ("militaire", "int"),
-                 "t7_capsule": ("labo", "int"), "t7_conteneur_heraliz": ("militaire", "int")}
-        existants = {pt.get("type") for pt in self.a.loot.get("points") or []}
-        noms_pris = {pt.get("nom") for pt in self.a.loot.get("points") or []}
-        types = [t for t in types if t.split(":")[1] not in existants]
-        hotes = [p for p in self.a.props if self.cat.get(p["id"]) and self.cat[p["id"]].niveau >= 5
-                 and self.cat[p["id"]].mod == "heraliz_loot"]
-        self.rnd.shuffle(hotes)
-        lieux_pris = Counter()
-        for t in sorted(types):
-            court = t.split(":")[1]
-            ou, env = voulu.get(court, ("militaire", "int"))
-            q = self.cat[t]
-            meilleur = None
-            for p in sorted(hotes, key=lambda p: (lieux_pris[p.get("lieu")], -self.cat[p["id"]].niveau)):
-                pr = self.cat[p["id"]]
-                env_p = self.a.env(p)
-                if env == "ext" and not (env_p == "ext" and p["ciel"]):
-                    continue
-                if env == "int" and env_p != "int":
-                    continue
-                info = self.a.pieces.get(p["piece"], {}) if p["piece"] else {}
-                if env == "int" and ou not in pr.pieces and info.get("type") != ou and ou != "militaire":
-                    continue
-                spot = self._place_libre(p, q)
-                if spot:
-                    meilleur = (p, spot)
-                    break
-            if meilleur is None:
-                continue
-            p, (dx, dz, f) = meilleur
-            lieux_pris[p.get("lieu")] += 1
-            nom = "heraliz_%s_%d" % (court[3:], len(self.points) + 1)
-            while nom in noms_pris:
-                nom += "b"
-            self.points.append({"etape": "t7", "nom": nom, "type": court, "x": p["x"] + dx, "y": p["y"], "z": p["z"] + dz,
-                                "facing": f, "lieu": p.get("lieu"), "pres_de": p["id"]})
-        return len(self.points)
+    def _proche_palier(self, x, y, z, n, d=48):
+        """Un conteneur T<n> déjà sur la carte à moins de d blocs ? (le conteneur ajouté rejoint alors la zone de son
+        palier : HeraliZ Loot la cherche à 64 blocs)"""
+        if not hasattr(self, "_grille_paliers"):
+            self._grille_paliers = defaultdict(list)
+            for p in self.a.props:
+                pr = self.cat.get(p["id"])
+                if vise(pr) or (pr and pr.mod == "heraliz_loot" and cle_palier(pr)[0] == "t"):
+                    self._grille_paliers[(cle_palier(pr)[1], p["x"] >> 6, p["z"] >> 6)].append((p["x"], p["y"], p["z"]))
+        for gx in range((x >> 6) - 1, (x >> 6) + 2):
+            for gz in range((z >> 6) - 1, (z >> 6) + 2):
+                for (a, b, c) in self._grille_paliers.get((n, gx, gz), ()):
+                    if (a - x) ** 2 + (c - z) ** 2 <= d * d and abs(b - y) <= 16:
+                        return True
+        return False
+
+    def etape_ajouts(self):
+        """Modèles sans aucune place de remplacement : posés sur une case libre, dans une pièce de leur type (dos au
+        mur, face à une case libre), dans une petite pièce vide d'une maison (salle de bain) ou dehors dans un
+        extérieur qui leur va, toujours à moins de 48 blocs d'un conteneur de leur palier (le loot de la zone ne change
+        pas de niveau). Signalés à part : joués seulement avec l'option --ajouts."""
+        self.ajouts_proposes = []
+        absents = [q for q in self.modeles if self.compte[q.id] == 0]
+        self.raisons = {q.id: self.raison_absent(q) for q in absents}
+        self.rnd.shuffle(absents)
+        hotes_int, hotes_ext = defaultdict(list), []
+        for e in self.emps:
+            # pièce de type sûr, ou type en tête des votes d'une pièce d'au moins 3 props (un quart des votes)
+            if e.env == "int" and e.piece and e.rtype and (self.type_sur(e) or (
+                    e.rsur >= 0.25 and len(self.a.par_piece.get(e.piece, ())) >= 3)):
+                hotes_int[e.rtype].append(e)
+            elif e.env == "ext" and e.p["ciel"]:
+                hotes_ext.append(e)
+        # petites pièces fermées et vides des maisons (bâtiments avec cuisine, chambre ou salon) : salles de bain
+        maisons = {self.a.pieces[pid].get("batiment") for pid in self.a.par_piece
+                   if self.a.pieces.get(pid, {}).get("type") in ("cuisine", "chambre", "salon")}
+        maisons.discard(None)
+        lieu_bat = defaultdict(Counter)
+        for p in self.a.props:
+            if p.get("batiment") and p.get("lieu"):
+                lieu_bat[p["batiment"]][p["lieu"]] += 1
+        petites = [(pid, info) for pid, info in self.a.pieces.items() if info.get("vide") and 4 <= info.get("cases", 0) <= 12
+                   and info.get("batiment") in maisons and info.get("plan")]
+        par_piece, hotes_pris = Counter(), set()
+
+        def hotes(q):
+            cands = []
+            for t in sorted(q.pieces):
+                cands += [("int", e) for e in hotes_int.get(t, ())]
+            if q.ext:
+                cands += [("ext", e) for e in hotes_ext if q.ext & e.ctx]
+            if q.pieces and q.pieces <= {"sdb", "buanderie"}:
+                cands += [("vide", (pid, info)) for pid, info in petites]
+            return cands
+        # les modèles qui ont le moins d'hôtes possibles d'abord
+        for _n, _k, q, cands in sorted((len(c), k, q, c) for k, q in enumerate(absents) for c in [hotes(q)]):
+            n = q.niveau
+            self.rnd.shuffle(cands)
+            # d'abord près des conteneurs de son palier, en étalant sur les lieux
+            cands.sort(key=lambda t: 0 if t[0] != "vide" and t[1].cle[1] == n else 1)
+            voulu = min(QUOTA_AJOUT, self.quota(q))
+            faits, par_lieu = 0, Counter()
+            for tour in range(2):
+                for env, h in cands:
+                    if faits >= voulu:
+                        break
+                    if env == "vide":
+                        pid, info = h
+                        lieu = (lieu_bat[info["batiment"]].most_common(1) or [(None, 0)])[0][0]
+                        piece, cases = pid, info["cases"]
+                        cle_hote = ("vide", pid)
+                    else:
+                        lieu, piece = h.lieu, (h.piece if env == "int" else None)
+                        cases = self.a.pieces.get(piece, {}).get("cases", 0) if piece else 0
+                        cle_hote = h.p["i"]
+                    if cle_hote in hotes_pris or (tour == 0 and par_lieu[lieu] >= 1):
+                        continue
+                    if piece and par_piece[piece] >= (2 if cases >= 24 else 1):
+                        continue
+                    if env == "vide":
+                        plan = info["plan"]
+                        v = np.frombuffer(__import__("zlib").decompress(__import__("base64").b64decode(plan["v"])),
+                                          dtype=np.uint8).reshape(5, plan["p"], plan["l"]).copy()
+                        spot = self._place_mur(v, q)
+                        if spot is None:
+                            continue
+                        lx, lz, f = spot
+                        x, y, z = plan["x"] + lx, info["y"], plan["z"] + lz
+                    elif env == "int":
+                        spot = self._place_mur(h.v, q, centre=True)
+                        if spot is None:
+                            continue
+                        lx, lz, f = spot
+                        x, y, z = h.p["x"] + lx - R, h.p["y"], h.p["z"] + lz - R
+                    else:
+                        spot = self._place_libre(h.p, q)
+                        if spot is None:
+                            continue
+                        dx, dz, f = spot
+                        x, y, z = h.p["x"] + dx, h.p["y"], h.p["z"] + dz
+                    if not self._proche_palier(x, y, z, n):
+                        continue
+                    cells = q.cellules_monde(f)
+                    if any((x + c[0], y + c[1], z + c[2]) in self.occupe or (c[1] == 0 and (x + c[0], y, z + c[2]) in self.devant)
+                           for c in cells):
+                        continue
+                    self.ajouts_proposes.append({
+                        "etape": "ajouts", "motif": "ajout",
+                        "raison": "%s : aucune place de remplacement cohérente (%s)" % (
+                            q.id.split(":")[1], {"vide": "petite pièce vide d'une maison", "int": "pièce %s" % (h.rtype if env == "int" else ""),
+                                                 "ext": "dehors"}[env]),
+                        "x": x, "y": y, "z": z, "avant": "minecraft:air", "etat_avant": {}, "be": None, "apres": q.id,
+                        "etat_apres": {"facing": f}, "cases_libres": [[x + c[0], y + c[1], z + c[2]] for c in cells if c != (0, 0, 0)],
+                        "cases_avant": [], "piece": piece, "lieu": lieu})
+                    for c in cells:
+                        self.occupe[(x + c[0], y + c[1], z + c[2])] = -1
+                        if env == "int" and 0 <= c[1] + 1 <= 4 and 0 <= lz + c[2] < h.v.shape[1] and 0 <= lx + c[0] < h.v.shape[2]:
+                            h.v[c[1] + 1][lz + c[2]][lx + c[0]] = (h.v[c[1] + 1][lz + c[2]][lx + c[0]] & 0xF8) | pm.PROP
+                    if q.gab == "meuble":
+                        fx, fz = DIRS[f]
+                        for c in cells:
+                            if c[1] == 0:
+                                self.devant.add((x + c[0] + fx, y, z + c[2] + fz))
+                    hotes_pris.add(cle_hote)
+                    if piece:
+                        par_piece[piece] += 1
+                    par_lieu[lieu] += 1
+                    faits += 1
+        if self.ajouts:
+            for ch in self.ajouts_proposes:
+                self.compte[ch["apres"]] += 1
+        return len(self.ajouts_proposes) if self.ajouts else 0
 
     def _place_libre(self, p, q):
-        """(dx, dz, facing) d'une place libre près du prop p pour le coffre q (toutes ses cases), ou None."""
+        """(dx, dz, facing) d'une place libre dehors près du prop p pour q (toutes ses cases), ou None."""
         v = pk.voisinage(p)
         options = []
         for f in ("north", "south", "east", "west"):
@@ -549,10 +629,12 @@ class Planif:
                             ok = False
                             break
                         code = v[cy + 1][Z + R][X + R]
-                        if code & 7 != pm.VIDE or (cy == 0 and (code & (pk.F_PASSAGE | pk.F_PORTE) or v[0][Z + R][X + R] & 7 != pm.MUR)):
+                        if code & 7 != pm.VIDE or (cy == 0 and (code & (pk.F_PASSAGE | pk.F_PORTE | pk.F_COUVERT)
+                                                                 or v[0][Z + R][X + R] & 7 != pm.MUR)):
                             ok = False
                             break
-                        if (p["x"] + X, p["y"] + cy, p["z"] + Z) in self.devant or (p["x"] + X, p["y"] + cy, p["z"] + Z) in self.occupe:
+                        pos = (p["x"] + X, p["y"] + cy, p["z"] + Z)
+                        if pos in self.devant or pos in self.occupe:
                             ok = False
                             break
                     if ok:
@@ -566,117 +648,25 @@ class Planif:
         _d, dx, dz, f = options[0]
         return dx, dz, f
 
-    def etape_ajouts(self):
-        """Salles de bain dans les petites pièces vides des maisons, meubles cfm jamais posés dans les pièces de leur type."""
-        self.ajouts_faits = []
-        maisons = set()
-        for pid, ps in self.a.par_piece.items():
-            info = self.a.pieces.get(pid, {})
-            if info.get("type") in ("cuisine", "chambre", "salon") and info.get("batiment"):
-                maisons.add(info["batiment"])
-        sdb = [self.cat[i] for i in ("heraliz_loot:t1_meuble_vasque", "heraliz_loot:t1_panier_linge",
-                                     "heraliz_loot:t1_loot_civil_19", "heraliz_loot:t1_lave_linge") if i in self.cat]
-        vides = [(pid, info) for pid, info in self.a.pieces.items() if info.get("vide") and 4 <= info["cases"] <= 12
-                 and info.get("batiment") in maisons and info.get("plan")]
-        lieu_bat = defaultdict(Counter)
-        for p in self.a.props:
-            if p.get("batiment") and p.get("lieu"):
-                lieu_bat[p["batiment"]][p["lieu"]] += 1
-        self.rnd.shuffle(vides)
-        par_bat = Counter()
-        for pid, info in vides:
-            if par_bat[info["batiment"]] >= 1:
-                continue
-            plan = info["plan"]
-            v = np.frombuffer(__import__("zlib").decompress(__import__("base64").b64decode(plan["v"])),
-                              dtype=np.uint8).reshape(5, plan["p"], plan["l"])
-            q = min(sdb, key=lambda q: self.compte[q.id] + self.rnd.random())
-            spot = self._place_mur(v, q)
-            if spot is None:
-                continue
-            lx, lz, f = spot
-            x, z = plan["x"] + lx, plan["z"] + lz
-            y = info["y"]
-            if (x, y, z) in self.occupe:
-                continue
-            cells = q.cellules_monde(f)
-            self.ajouts_faits.append({"etape": "ajouts", "raison": "salle de bain (petite pièce vide d'une maison)",
-                                      "x": x, "y": y, "z": z, "avant": "minecraft:air", "etat_avant": {}, "be": None,
-                                      "apres": q.id, "etat_apres": {"facing": f},
-                                      "cases_libres": [[x + c[0], y + c[1], z + c[2]] for c in cells if c != (0, 0, 0)],
-                                      "cases_avant": [], "piece": pid,
-                                      "lieu": (lieu_bat[info["batiment"]].most_common(1) or [(None, 0)])[0][0]})
-            for c in cells:
-                self.occupe[(x + c[0], y + c[1], z + c[2])] = -1
-            self.compte[q.id] += 1
-            par_bat[info["batiment"]] += 1
-        # conteneurs de loot encore absents et meubles cfm jamais posés : dans une pièce de leur type (sûre), case libre
-        # le long d'un mur, hors passage et porte, sans couper la pièce
-        loot_absents = [pr for k, prs in self.pools.items() if k[1] != "decor" for pr in prs
-                        if self.compte[pr.id] == 0 and pr.pieces]
-        jamais = loot_absents + [pr for pr in self.cat.values() if pr.mod == "cfm" and pr.dayz and not pr.structure
-                                 and self.compte[pr.id] == 0 and pr.pieces and len(pr.pieces) <= 4]
-        self.rnd.shuffle(jamais)
-        pieces_par_type = defaultdict(list)
-        for e in self.emps:
-            if e.piece and e.env == "int" and e.rtype and e.rsur >= 0.5:
-                pieces_par_type[e.rtype].append(e)
-        deja = Counter()
-        for q in jamais:
-            hotes = [e for t in q.pieces for e in pieces_par_type.get(t, ())]
-            self.rnd.shuffle(hotes)
-            voulu = QUOTA_CFM if q.mod == "cfm" else min(2, self.quota(q))
-            for e in hotes:
-                if self.compte[q.id] >= voulu:
-                    break
-                if q.mod == "heraliz_loot" and (e.pr.mod != "heraliz_loot" or e.pr.niveau != q.niveau and q.gab != "cadavre"):
-                    continue    # un conteneur ajouté va près des conteneurs de son palier
-                if deja[e.piece] >= 1:
-                    continue
-                spot = self._place_mur(e.v, q, centre=True)
-                if spot is None:
-                    continue
-                lx, lz, f = spot
-                x, y, z = e.p["x"] + lx - R, e.p["y"], e.p["z"] + lz - R
-                if (x, y, z) in self.occupe:
-                    continue
-                cells = q.cellules_monde(f) if q.mod == "heraliz_loot" else [(0, 0, 0)]
-                if any((x + c[0], y + c[1], z + c[2]) in self.occupe or (x + c[0], y, z + c[2]) in self.devant
-                       for c in cells):
-                    continue
-                self.ajouts_faits.append({"etape": "ajouts", "raison": "%s jamais posé (%s)" % (
-                    "meuble cfm" if q.mod == "cfm" else "conteneur", e.rtype),
-                                          "x": x, "y": y, "z": z, "avant": "minecraft:air", "etat_avant": {}, "be": None,
-                                          "apres": q.id, "etat_apres": {"facing": f},
-                                          "cases_libres": [[x + c[0], y + c[1], z + c[2]] for c in cells if c != (0, 0, 0)],
-                                          "cases_avant": [], "piece": e.piece, "lieu": e.lieu})
-                for c in cells:
-                    self.occupe[(x + c[0], y + c[1], z + c[2])] = -1
-                    if c[1] == 0 and 0 <= lz + c[2] < e.v.shape[1] and 0 <= lx + c[0] < e.v.shape[2]:
-                        e.v[1][lz + c[2]][lx + c[0]] = (e.v[1][lz + c[2]][lx + c[0]] & 0xF8) | pm.PROP
-                self.compte[q.id] += 1
-                deja[e.piece] += 1
-        return len(self.ajouts_faits)
-
     def _place_mur(self, v, q, centre=False):
         """(lx, lz, facing) : case du plan v (couche 1 = étage du prop) libre, sol dessous, dans la pièce, dos à un
-        mur et face à une case libre, hors passage et porte ; toutes les cases de q libres."""
+        mur et face à une case libre, hors passage et porte ; toutes les cases de q libres. Pour un gros conteneur :
+        tout son dos contre le mur, tout son devant libre."""
         P, L_ = v.shape[1], v.shape[2]
         options = []
         for lz in range(1, P - 1):
             for lx in range(1, L_ - 1):
                 for f in ("north", "south", "east", "west"):
-                    fx, fz = DIRS[f]
-                    if q.mod == "heraliz_loot":
-                        avant = f
-                    else:
-                        avant = q.avant(f)
-                    ax, az = DIRS[avant]
-                    bx, bz = lx - ax, lz - az
-                    if not (0 <= bx < L_ and 0 <= bz < P) or v[1][bz][bx] & 7 != pm.MUR:
+                    ax, az = DIRS[f]
+                    cells = q.cellules_monde(f)
+                    sol = {(cx, cz) for (cx, cy, cz) in cells if cy == 0}
+                    dos = [(lx + cx - ax, lz + cz - az) for (cx, cz) in sol if (cx - ax, cz - az) not in sol]
+                    face = [(lx + cx + ax, lz + cz + az) for (cx, cz) in sol if (cx + ax, cz + az) not in sol]
+                    if not all(0 <= bx < L_ and 0 <= bz < P and v[1][bz][bx] & 7 == pm.MUR for bx, bz in dos):
+                        continue
+                    if not all(0 <= fx < L_ and 0 <= fz < P and v[1][fz][fx] & 7 in (pm.VIDE, pm.FIN) for fx, fz in face):
                         continue
                     ok = True
-                    cells = q.cellules_monde(f) if q.mod == "heraliz_loot" else [(0, 0, 0)]
                     for (cx, cy, cz) in cells:
                         X, Z = lx + cx, lz + cz
                         if not (0 <= X < L_ and 0 <= Z < P and 0 <= cy <= 3):
@@ -690,18 +680,6 @@ class Planif:
                             ok = False
                             break
                     if not ok:
-                        continue
-                    if q.mod == "cfm":
-                        for (cx, cy, cz) in q.visuel_monde(f):
-                            X, Z = lx + cx, lz + cz
-                            if not (0 <= X < L_ and 0 <= Z < P and -1 <= cy <= 3) or v[cy + 1][Z][X] & 7 not in (pm.VIDE, pm.FIN):
-                                if (cx, cy, cz) != (0, 0, 0):
-                                    ok = False
-                                    break
-                        if not ok:
-                            continue
-                    dx_, dz_ = lx + ax, lz + az
-                    if not (0 <= dx_ < L_ and 0 <= dz_ < P) or v[1][dz_][dx_] & 7 not in (pm.VIDE, pm.FIN):
                         continue
                     from scipy import ndimage
                     libre = np.isin(v[1] & 7, (pm.VIDE, pm.FIN)) & ((v[1] & pk.F_PIECE) > 0)
@@ -722,10 +700,10 @@ class Planif:
 
     # ------------------------------------------------------------------ parts d'actifs
     def compensation(self, etape):
-        """Commandes qui gardent le même nombre de conteneurs remplis par zone malgré les conteneurs AJOUTÉS par une
-        étape (restauration, ajouts) : HeraliZ Loot range un conteneur posé dans la zone de son niveau la plus proche
-        (64 blocs), sinon il crée une zone « ajouts/tN_x_z » ; la part d'actifs de la zone est baissée d'autant, et une
-        zone créée par ces props reçoit la part 0 (props de décor, sans loot). -> [(commande, annulation)]"""
+        """Commandes qui gardent le même nombre de conteneurs remplis par zone malgré les conteneurs AJOUTÉS (étape
+        « ajouts ») : HeraliZ Loot range un conteneur posé dans la zone de son niveau la plus proche (64 blocs), sinon
+        il crée une zone « ajouts/tN_x_z » ; la part d'actifs de la zone est baissée d'autant, et une zone créée par ces
+        props reçoit la part 0 (props de décor, sans loot). -> [(commande, annulation, zone créée)]"""
         ajoutes = [c for c in self.changes if c["etape"] == etape and c["apres"].startswith("heraliz_loot:")
                    and self.cat[c["apres"]].loot]
         if not ajoutes:
@@ -781,20 +759,25 @@ class Planif:
     # ------------------------------------------------------------------ tout le plan
     def calculer(self, etapes):
         self.resume = {}
-        for et in ETAPES:
-            if et not in etapes:
-                continue
-            if et == "ajouts" and not self.ajouts:
-                continue
-            n = getattr(self, "etape_" + et)()
-            self.resume[et] = n
-            print("[plan] %-12s %d" % (et, n), flush=True)
-        if "ajouts" in self.resume:
-            self.changes += self.ajouts_faits
+        self.avant_ajouts = None
+        if "diversification" in etapes:
+            n = self.etape_diversification()
+            self.resume["diversification"] = n
+            print("[plan] diversification %d (%s)" % (n, ", ".join("%s %d" % (m, self.motifs[m]) for m in MOTIFS)),
+                  flush=True)
+        self.avant_ajouts = Counter(self.compte)
+        n = self.etape_ajouts()       # toujours calculée (pour le rapport) ; jouée seulement avec --ajouts
+        if self.ajouts and "ajouts" in etapes:
+            self.changes += self.ajouts_proposes
+            self.resume["ajouts"] = n
+            print("[plan] ajouts          %d" % n, flush=True)
+        else:
+            print("[plan] ajouts possibles %d (option --ajouts)" % len(self.ajouts_proposes), flush=True)
+        for ch in self.changes:
+            ch.pop("i", None)
         self.parts = {}
         if self.compenser:
-            for et in ("restauration", "ajouts"):
-                self.parts[et] = self.compensation(et)
+            self.parts["ajouts"] = self.compensation("ajouts")
         return self.changes
 
 
@@ -826,7 +809,7 @@ def _pct(p):
     return ("%.2f" % (100.0 * p)).rstrip("0").rstrip(".")
 
 
-def lots(changes, points, taille, forces, parts=None):
+def lots(changes, taille, forces, parts=None):
     """Lots par étape et par carré de 64 blocs : [(nom, étape, zone, commandes, annulations, chunks)]."""
     out = []
     par = defaultdict(list)
@@ -845,26 +828,20 @@ def lots(changes, points, taille, forces, parts=None):
                 cmds.append(f)
                 ann.append(d)
             out.append([etape, zone, cmds, ann])
-    # parts d'actifs : juste après les lots de blocs de leur étape
+    # parts d'actifs : zones qui existent déjà, part baissée AVANT la pose (jamais plus de conteneurs remplis
+    # qu'avant) ; zones créées par la pose, part 0 juste APRÈS (elles n'existent pas avant)
     parts = parts or {}
     ordre = []
     for et in ETAPES:
-        # zones qui existent déjà : part baissée AVANT la pose (jamais plus de conteneurs remplis qu'avant) ;
-        # zones créées par la pose : part 0 juste APRÈS (elles n'existent pas avant)
         av = [(c, d) for c, d, cree in parts.get(et) or [] if not cree]
         ap = [(c, d) for c, d, cree in parts.get(et) or [] if cree]
-        if av:
+        if av and any(l[0] == et for l in out):
             ordre.append([et + "_parts_avant", None, [c for c, _d in av], [d for _c, d in av]])
         ordre += [l for l in out if l[0] == et]
-        if ap:
+        if ap and any(l[0] == et for l in out):
             ordre.append([et + "_parts", None, [c for c, _d in ap], [d for _c, d in ap]])
-    out = ordre
-    if points:
-        cmds = ["execute positioned %d.5 %d %d.5 rotated %d 0 run heralizloot point ajouter %s %s auto" % (
-            p["x"], p["y"], p["z"], YAW[p["facing"]], p["nom"], p["type"]) for p in points]
-        out.append(["t7", None, cmds, ["heralizloot point retirer %s" % p["nom"] for p in points]])
     res = []
-    for k, (etape, zone, cmds, ann) in enumerate(out, 1):
+    for k, (etape, zone, cmds, ann) in enumerate(ordre, 1):
         nom = "%03d_%s" % (k, etape)
         res.append((nom, etape, zone, cmds, ann, _chunks(zone, forces)))
     return res
@@ -900,7 +877,7 @@ def main_plan(dossier, args):
     def opt(nom, defaut=None):
         return args[args.index(nom) + 1] if nom in args else defaut
     a = pk.charger(dossier)
-    etapes = (opt("--etapes") or ",".join(ETAPES)).split(",")
+    etapes = [e for e in (opt("--etapes") or ",".join(ETAPES)).split(",") if e in ETAPES]
     mx = opt("--max-changements")
     pl = Planif(a, int(opt("--graine", "1")), int(mx) if mx else None, "--ajouts" in args,
                 compenser="--sans-compensation" not in args)
@@ -912,11 +889,19 @@ def main_plan(dossier, args):
             f.unlink()
     (sortie / "lots").mkdir(parents=True, exist_ok=True)
     (sortie / "annulation").mkdir(parents=True, exist_ok=True)
-    les_lots = lots(changes, getattr(pl, "points", []), int(opt("--lot", "40")), a.forces, pl.parts)
+    les_lots = lots(changes, int(opt("--lot", "40")), a.forces, pl.parts)
     for nom, etape, zone, cmds, ann, chunks in les_lots:
         ecrire_lot(sortie / "lots" / (nom + ".txt"), nom, etape, zone, cmds, chunks)
         ecrire_lot(sortie / "annulation" / (nom + ".txt"), nom, etape, zone, list(reversed(ann)), chunks, annulation=True)
-    json.dump({"changements": changes, "points_t7": getattr(pl, "points", []), "resume": pl.resume,
+    modeles = {}
+    for q in pl.modeles:
+        modeles[q.id.split(":")[1]] = {"palier": q.niveau, "gabarit": q.gab, "avant": avant[q.id],
+                                       "apres": pl.avant_ajouts[q.id], "minimum": pl.quota(q),
+                                       "part": round(pl.cible.get(q.id, 0), 1),
+                                       "ajouts_possibles": sum(1 for c in pl.ajouts_proposes if c["apres"] == q.id)}
+    json.dump({"consigne": "modèles HeraliZ Loot T1 à T6, tous posés, même palier", "changements": changes,
+               "ajouts_proposes": pl.ajouts_proposes, "resume": pl.resume, "motifs": dict(pl.motifs),
+               "modeles": modeles, "absents": getattr(pl, "raisons", {}),
                "lots": [(n, e, len(c)) for n, e, _z, c, _a, _ch in les_lots]},
               open(sortie / "plan.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     md = rapport_plan(pl, avant, les_lots)
@@ -925,65 +910,86 @@ def main_plan(dossier, args):
 
 
 def rapport_plan(pl, avant, les_lots):
-    cat = pl.cat
-    L = ["# Plan de diversification des props", ""]
-    tot = sum(pl.resume.values())
-    L.append("%d changements en %d lots (%s)." % (tot, len(les_lots), ", ".join("%s %d" % kv for kv in pl.resume.items())))
+    apres = pl.avant_ajouts              # après la diversification seule (sans les ajouts)
+    final = pl.compte                    # avec les ajouts, s'ils sont joués
+    mods = pl.modeles
+    av0 = sum(1 for q in mods if avant[q.id] > 0)
+    ap0 = sum(1 for q in mods if apres[q.id] > 0)
+    fi0 = sum(1 for q in mods if final[q.id] > 0)
+    aj = Counter(c["apres"] for c in pl.ajouts_proposes)
+    po0 = sum(1 for q in mods if apres[q.id] > 0 or aj[q.id])
+    L = ["# Plan des conteneurs de loot : modèles HeraliZ Loot T1 à T6", ""]
+    L.append("Consigne : chaque modèle T1 à T6 de HeraliZ Loot posé sur la carte, en remplaçant des conteneurs déjà "
+             "posés par d'autres modèles du même palier (même gabarit, même orientation, pièce cohérente). T7 réservé "
+             "aux événements : rien n'est posé. Ni meubles cfm, ni familles (nourriture, soins, munitions).")
     L.append("")
+    n_div = pl.resume.get("diversification", 0)
+    def pct(n):
+        return ("%.1f" % (100.0 * n / max(1, len(mods)))).replace(".0", "").replace(".", ",")
+    L.append("**Modèles T1 à T6 : %d au total. Posés avant le plan : %d (%s %%) ; après la diversification : %d (%s %%)%s.**" % (
+        len(mods), av0, pct(av0), ap0, pct(ap0),
+        (" ; avec les ajouts : %d (%s %%)" % (fi0, pct(fi0))) if "ajouts" in pl.resume else
+        (" ; avec les %d ajouts proposés à part (option --ajouts, non joués) : %d (%s %%)" % (
+            len(pl.ajouts_proposes), po0, pct(po0)) if pl.ajouts_proposes else "")))
+    L.append("")
+    L.append("%d changements en %d lots : diversification %d (%s)%s." % (
+        sum(pl.resume.values()), len(les_lots), n_div, ", ".join("%s %d" % (m, pl.motifs[m]) for m in MOTIFS),
+        (", ajouts %d" % pl.resume["ajouts"]) if "ajouts" in pl.resume else ""))
+    tot = sum(avant[q.id] for q in mods)
+    L.append("Conteneurs T1 à T6 sur la carte : %d (%d changent de modèle, soit %s %%). Gardés tels quels : %d "
+             "conteneurs avec des données (inventaire)." % (tot, n_div, ("%.1f" % (100.0 * n_div / max(1, tot))).replace(".", ","),
+                                                           sum(pl.avec_donnees.values())))
+    L.append("")
+    L += ["| palier | modèles | posés avant | après | conteneurs | le plus répété avant | après | 3 plus posés avant → après | minimum par modèle |",
+          "|---|---|---|---|---|---|---|---|---|"]
+    for n in PALIERS:
+        prs = [q for q in mods if q.niveau == n]
+        if not prs:
+            continue
+        top_av = max(prs, key=lambda q: avant[q.id])
+        top_ap = max(prs, key=lambda q: apres[q.id])
+        minis = sorted({pl.quota(q) for q in prs})
+        tot_n = max(1, sum(avant[q.id] for q in prs))
+        top3 = lambda c: sum(sorted((c[q.id] for q in prs), reverse=True)[:3]) * 100 // max(1, sum(c[q.id] for q in prs))  # noqa: E731
+        L.append("| T%d | %d | %d | %d | %d | %s ×%d | %s ×%d | %d %% → %d %% | %s |" % (
+            n, len(prs), sum(1 for q in prs if avant[q.id] > 0), sum(1 for q in prs if apres[q.id] > 0),
+            tot_n, top_av.id.split(":")[1], avant[top_av.id], top_ap.id.split(":")[1],
+            apres[top_ap.id], top3(avant), top3(apres),
+            "-".join(str(m) for m in (minis[0], minis[-1])) if len(minis) > 1 else minis[0]))
+    L.append("")
+    sous = [q for q in mods if 0 < apres[q.id] < pl.quota(q)]
+    if sous:
+        L.append("Posés mais sous leur minimum (places cohérentes trop rares) : " +
+                 ", ".join("`%s` ×%d / %d" % (q.id.split(":")[1], apres[q.id], pl.quota(q)) for q in sous))
+        L.append("")
+    reste = [q for q in mods if apres[q.id] == 0]
+    if reste:
+        L.append("### Modèles encore absents après la diversification (%d)" % len(reste))
+        L.append("")
+        for q in sorted(reste, key=lambda q: q.id):
+            L.append("- `%s` (T%d, %s) : %s.%s" % (
+                q.id.split(":")[1], q.niveau, q.gab, pl.raisons.get(q.id, "?"),
+                (" Ajout possible ×%d sur une case libre (%s)." % (aj[q.id], "joué" if "ajouts" in pl.resume else
+                                                                  "seulement avec l'option --ajouts"))
+                if aj[q.id] else " Aucune case libre cohérente non plus : à poser à la main."))
+        L.append("")
     if pl.non_corriges:
-        L.append("Incohérences sans remplaçant possible (laissées, à voir à la main) : " +
+        L.append("Incohérences sans remplaçant du même palier (laissées) : " +
                  ", ".join("%s ×%d" % kv for kv in pl.non_corriges.most_common()))
         L.append("")
-    # présence des modèles
-    loot = [pr for pr in cat.values() if pr.mod == "heraliz_loot" and pr.loot and pr.gab in ("meuble", "objet", "cadavre")]
-    av0 = sum(1 for pr in loot if avant[pr.id] > 0)
-    ap0 = sum(1 for pr in loot if pl.compte[pr.id] > 0)
-    L.append("Conteneurs de loot présents sur la carte : %d / %d avant, %d / %d après (T7 : %d points d'apparition)." % (
-        av0, len(loot), ap0, len(loot), len(getattr(pl, "points", []))))
-    reste = sorted(pr.id.split(":")[1] for pr in loot if pl.compte[pr.id] == 0)
-    if reste:
-        L.append("Toujours absents (aucune place cohérente dans la carte actuelle : à poser à la main, ou option --ajouts) : " +
-                 ", ".join("`%s`" % r for r in reste))
-    L.append("")
-    cfm = [pr for pr in cat.values() if pr.mod == "cfm" and pr.dayz and not pr.structure]
-    L.append("Meubles cfm (thème DayZ) présents : %d / %d avant, %d / %d après." % (
-        sum(1 for pr in cfm if avant[pr.id] > 0), len(cfm), sum(1 for pr in cfm if pl.compte[pr.id] > 0), len(cfm)))
-    L.append("")
-    # par palier : modèles différents
-    L += ["| palier | modèles posés avant | après | le plus répété avant | après |", "|---|---|---|---|---|"]
-    par = defaultdict(list)
-    for pr in loot:
-        par[cle_palier(pr)].append(pr)
-    for k in sorted(par, key=lambda k: (k[0] != "t", k)):
-        prs = par[k]
-        top_av = max(prs, key=lambda pr: avant[pr.id])
-        top_ap = max(prs, key=lambda pr: pl.compte[pr.id])
-        L.append("| %s | %d / %d | %d / %d | %s ×%d | %s ×%d |" % (
-            ("T%d" % k[1]) if k[0] == "t" else "%s %d" % k, sum(1 for pr in prs if avant[pr.id] > 0), len(prs),
-            sum(1 for pr in prs if pl.compte[pr.id] > 0), len(prs), top_av.id.split(":")[1], avant[top_av.id],
-            top_ap.id.split(":")[1], pl.compte[top_ap.id]))
-    L.append("")
-    # paliers par lieu : changement du nombre de conteneurs (restauration et ajouts seulement : les autres étapes
-    # gardent le palier)
-    plus = Counter()
-    for ch in pl.changes:
-        if ch["etape"] in ("restauration", "ajouts") and ch["apres"].startswith("heraliz_loot:"):
-            plus[(ch.get("lieu") or "?", "T%d" % cat[ch["apres"]].niveau if cle_palier(cat[ch["apres"]])[0] == "t"
-                  else cle_palier(cat[ch["apres"]])[0])] += 1
-    if plus:
-        L.append("Conteneurs AJOUTÉS (restauration, ajouts) par lieu et palier : " +
-                 ", ".join("%s %s +%d" % (l, t, n) for (l, t), n in sorted(plus.items())))
-        L.append("")
-    if getattr(pl, "points", None):
-        L.append("Points T7 proposés : " + ", ".join("%s (%s, %s %d %d %d)" % (p["nom"], p["type"], p["lieu"], p["x"], p["y"], p["z"])
-                                                   for p in pl.points))
-        L.append("")
-    raisons = Counter(ch["raison"] for ch in pl.changes if ch["etape"] == "correction")
+    raisons = Counter(ch["raison"] for ch in pl.changes if ch.get("motif") == "cohérence")
     if raisons:
-        L.append("Corrections : " + ", ".join("%s ×%d" % kv for kv in raisons.most_common()))
+        L.append("Cohérence : " + ", ".join("%s ×%d" % kv for kv in raisons.most_common()))
         L.append("")
-    ex = Counter((ch["avant"].split(":")[-1], ch["apres"].split(":")[-1]) for ch in pl.changes)
-    L.append("Remplacements les plus fréquents : " + ", ".join("%s → %s ×%d" % (a, b, n) for (a, b), n in ex.most_common(15)))
+    if "ajouts" in pl.resume:
+        plus = Counter((ch.get("lieu") or "?", "T%d" % pl.cat[ch["apres"]].niveau) for ch in pl.changes
+                       if ch["etape"] == "ajouts")
+        if plus:
+            L.append("Conteneurs AJOUTÉS par lieu et palier (part d'actifs de la zone baissée d'autant) : " +
+                     ", ".join("%s %s +%d" % (l, t, n) for (l, t), n in sorted(plus.items())))
+            L.append("")
+    ex = Counter((ch["avant"].split(":")[-1], ch["apres"].split(":")[-1]) for ch in pl.changes if ch["etape"] == "diversification")
+    L.append("Remplacements les plus fréquents : " + ", ".join("%s → %s ×%d" % (a, b, n) for (a, b), n in ex.most_common(12)))
     L.append("")
     return "\n".join(L) + "\n"
 
@@ -1016,17 +1022,17 @@ def main_rendus(monde, dossier, args):
     if opt("--pieces"):
         choix = opt("--pieces").split(",")
     else:
-        # une pièce avec un doublon corrigé (deux cuisinières, deux frigos...), une pièce corrigée pour son type,
-        # une pièce diversifiée : assez petites pour rester lisibles
+        # une pièce avec un doublon corrigé (deux cuisinières, deux frigos...), une pièce où arrive un modèle absent
+        # jusque-là, une pièce de maison diversifiée : assez petites pour rester lisibles
         def bon(pid, test, types=None):
             info = a.pieces.get(pid, {})
             return (not info.get("couloir") and 16 <= info.get("cases", 0) <= 160 and len(a.par_piece.get(pid, ())) >= 3
                     and any(test(c) for c in par_piece[pid]) and (types is None or info.get("type") in types))
+        absents_avant = {"heraliz_loot:" + m for m, d in (plan.get("modeles") or {}).items() if not d.get("avant")}
         choix = []
         for test, types in ((lambda c: c["raison"].startswith("doublon"), None),
-                            (lambda c: c["etape"] == "correction", ("cuisine", "salon", "chambre", "garage")),
-                            (lambda c: c["etape"] in ("equilibrage", "couverture"), ("cuisine", "chambre", "salon")),
-                            (lambda c: c["etape"] == "restauration", None)):
+                            (lambda c: c.get("motif") == "couverture" and c["apres"] in absents_avant, None),
+                            (lambda c: c.get("motif") == "équilibrage", ("cuisine", "chambre", "salon"))):
             cands = sorted((pid for pid in par_piece if pid not in choix and bon(pid, test, types)),
                            key=lambda pid: (-len(par_piece[pid]), pid))
             if cands:
