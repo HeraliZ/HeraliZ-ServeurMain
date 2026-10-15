@@ -256,6 +256,7 @@ final class KitsServeur {
                                         return 0;
                                     }
                                     ServeurGrades.registre.journaliser("console | kit reset | " + pseudo + " (" + p.getUUID() + ")");
+                                    LienDiscord.evenement("🎒 Console du serveur : recharge des kits remise à zéro pour **" + pseudo + "**.");
                                     s.sendSuccess(() -> msg("reset", "Recharge des kits remise à zéro pour %s.", pseudo), true);
                                     return 1;
                                 }))));

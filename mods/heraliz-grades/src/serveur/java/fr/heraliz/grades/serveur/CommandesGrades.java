@@ -109,6 +109,7 @@ final class CommandesGrades {
         switch (r.changer(cible.getKey(), pseudo, g, donner, "console")) {
             case OK -> {
                 s.sendSuccess(() -> donner ? msg("donne", "Grade %2$s donné à %1$s.", pseudo, g.nom()) : msg("retire", "Grade %2$s retiré à %1$s.", pseudo, g.nom()), true);
+                LienDiscord.evenement("🎖️ Console du serveur : grade **" + g.nomFr + "** " + (donner ? "donné à" : "retiré à") + " **" + pseudo + "**.");
                 ServerPlayer p = s.getServer().getPlayerList().getPlayer(cible.getKey());
                 if (p != null) {
                     ServeurGrades.rafraichir(p);
