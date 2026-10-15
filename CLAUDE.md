@@ -845,6 +845,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   « horriblement moche ») : badge arrondi en verre sombre, bord de la couleur de l'équipe, lettre, pointe vers le site et
   distance en mètres dessous ; bombe amorcée et ordinateur au sol au même style (« ! » rouge / ambre) ; mêmes règles de
   visibilité qu'avant (bien visibles 8 s, puis pâles et sans distance). Rien testé en jeu ;
+- duels (15/10, Matchs 0.9.0) : stuff équitable : dans un /duel (1v1, 2v2, les deux équipes), tout le monde choisit parmi les 5 classes de l'hôte (celui qui a lancé le défi), copiées au lancement (`DuelPartie.classesHote`) : s'il modifie ses classes ou se déconnecte pendant la partie, rien ne change pour ce duel. Le serveur n'accepte qu'un numéro de 1 à 5 et construit le kit depuis la classe de l'hôte (aucun camo ni marque de camo à vie) ; le dernier choix mémorisé de chacun n'est ni lu ni écrit (tous partent de la classe 1 de l'hôte). Écran de choix : « Classes de <hôte> · les mêmes pour tous ». Entraînement (`/duel entrainement`) : ses propres classes, comme avant ; cible d'entraînement gardée tant que le duel dure (corrigé en 0.9.0) ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
@@ -1072,8 +1073,6 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Bugs repérés, non corrigés** (attendre l'accord du propriétaire) :
   - Sylvorn : les attributs de `SapNode` ne sont pas déclarés (risque de plantage à l'attaque CHANNEL ; correction d'une
     ligne dans `HeraliszSylvorn.attributes`) ;
-  - Matchs : la cible d'entraînement (`/duel entrainement`) est retirée par le serveur dès la première seconde
-    (`CibleEntrainementServeur.tick` appelle `super.tick`, qui la retire toujours) ;
   - Tactique : le C4 posé disparaît au redémarrage du serveur ; le feu au sol des molotovs dure toujours 2 s ;
     l'éclaboussure des grenades à effet est limitée à 4 blocs.
 - **Carte du monde** (HeraliZ Utils 2.8.0, Clans 2.4.0, Interface 1.7.0) : fond provisoire du 12/10 (carte en
