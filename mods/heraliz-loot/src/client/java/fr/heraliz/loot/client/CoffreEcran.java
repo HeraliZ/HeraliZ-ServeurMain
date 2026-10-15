@@ -139,6 +139,7 @@ public class CoffreEcran extends AbstractContainerScreen<CoffreMenu> {
         String nom = title.getString().replaceFirst("^\\[T\\d] ", "");
         g.drawString(font, nom, 8, 7, TITRE, false);
         g.fill(8, 17, 8 + font.width(nom), 18, FILET);
+        BadgePalier.dessiner(g, font, 7, 8 + font.width(nom) + 4, 6);
         int n = menu.donnees.get(CoffreMenu.D_RESTANTS);
         String droite = n > 0 ? I18n.get("heraliz_loot.coffre.a_identifier", n) : I18n.get("heraliz_loot.coffre.tout_identifie");
         g.drawString(font, droite, imageWidth - 8 - font.width(droite), 7, TEXTE, false);
