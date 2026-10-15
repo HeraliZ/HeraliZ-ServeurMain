@@ -22,7 +22,7 @@ on:
         type: boolean
         default: false
       deposer_spawn:
-        description: "Monde du spawn : déposer la grotte (monde/spawn du dépôt, sinon celle générée) dans dimensions/heralisz/spawn du monde (une seule fois, refusé si déjà là ; puis redémarrer)"
+        description: "Monde du spawn : déposer monde/spawn du dépôt (grotte + schematic du spawn ; sinon la grotte générée) dans dimensions/heralisz/spawn du monde (une seule fois, refusé si déjà là ; puis redémarrer)"
         type: boolean
         default: false
       tester_discord:
@@ -516,8 +516,8 @@ jobs:
           esac
 
       # Monde du spawn (case « deposer_spawn ») : la grotte du spawn est déposée UNE fois dans dimensions/heralisz/spawn/
-      # du monde en service. C'est monde/spawn/ du dépôt s'il existe (grotte recopiée de l'ancienne carte par le workflow
-      # « Grotte du spawn »), sinon la grotte du terminus fabriquée par outils/monde_spawn.py grotte (toujours la même :
+      # du monde en service. C'est monde/spawn/ du dépôt s'il existe (grotte du terminus + schematic du spawn composés par
+      # le workflow « Schematic du spawn », ou grotte recopiée de l'ancienne carte par « Grotte du spawn »), sinon la grotte du terminus fabriquée par outils/monde_spawn.py grotte (toujours la même :
       # rien de tiré au hasard). Dossier
       # à part que HeraliZ Utils déclare (heralisz:spawn). Le monde de la carte n'est jamais touché : ni ses régions, ni
       # ses réglages. Refusé si ce dossier existe déjà (rien n'est jamais écrasé). Envoi dans un dossier temporaire,
