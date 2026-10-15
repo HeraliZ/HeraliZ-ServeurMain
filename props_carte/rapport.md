@@ -1,7 +1,7 @@
 # Props et conteneurs de loot de la carte
 
 65540 chunks lus. 43047 props relevés (28868 conteneurs de loot, 224 véhicules de décor, 915 meubles cfm, 13040 décors), 51593 blocs « partie » (cases des gros conteneurs). 7345 pièces fermées avec des props, 1194 couloirs.
-10592 petites pièces fermées et vides dans ces bâtiments (salles de bain, réserves... : places pour l'option « ajouts » du plan).
+10592 petites pièces fermées et vides dans ces bâtiments (salles de bain, réserves... : places possibles de l'option « ajouts » du plan, pour les modèles de salle de bain sans autre place).
 
 ## Paliers de loot
 
@@ -28,7 +28,7 @@
 | soins 2 | 30 | 2 / 5 | soins2_loot_medical_5, soins2_loot_medical_6, soins2_loot_medical_7 |
 | soins 3 | 4 | 3 / 4 | soins3_loot_medical_2 |
 
-Aucun coffre T7 posé : c'est normal, un T7 n'apparaît qu'à un point d'apparition (`/heralizloot point ajouter`), il n'est jamais là en permanence. Le plan propose des points.
+Aucun coffre T7 posé : c'est normal, les T7 sont réservés aux événements (point d'apparition, `/heralizloot point ajouter`) ; le plan n'en pose pas.
 
 ## Paliers par lieu
 
@@ -101,7 +101,7 @@ Exemples de doublons :
 
 ## Pièces
 
-Type de chaque pièce d'après ses props (vote) : entree ×2087, inconnue ×1044, cuisine ×988, chambre ×947, commerce ×377, salon ×376, entrepot ×320, militaire ×277, grange ×230, garage ×200, cave ×102, secours ×85, police ×80, bureau ×51, ecole ×48, hopital ×48, sdb ×29, gare ×25, chasse ×20, labo ×11, banque ×9, prison ×1, buanderie ×1, onu ×1
+Type de chaque pièce d'après ses props (vote) : entree ×1768, chambre ×1464, inconnue ×1044, cuisine ×890, commerce ×399, salon ×373, garage ×269, militaire ×267, cave ×244, entrepot ×147, bureau ×129, police ×79, grange ×63, secours ×46, hopital ×45, buanderie ×36, gare ×25, chasse ×22, ecole ×15, port ×13, banque ×9, labo ×5, sdb ×3, prison ×1, onu ×1
 
 ## Zones de loot (pack de données)
 

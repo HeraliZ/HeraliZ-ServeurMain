@@ -1,7 +1,7 @@
 # Props et conteneurs de loot de la carte
 
 65540 chunks lus. 43047 props relevés (28868 conteneurs de loot, 224 véhicules de décor, 915 meubles cfm, 13040 décors), 51593 blocs « partie » (cases des gros conteneurs). 7345 pièces fermées avec des props, 1194 couloirs.
-10592 petites pièces fermées et vides dans ces bâtiments (salles de bain, réserves... : places pour l'option « ajouts » du plan).
+10592 petites pièces fermées et vides dans ces bâtiments (salles de bain, réserves... : places possibles de l'option « ajouts » du plan, pour les modèles de salle de bain sans autre place).
 
 ## Paliers de loot
 
@@ -28,7 +28,7 @@
 | soins 2 | 30 | 2 / 5 | soins2_loot_medical_5, soins2_loot_medical_6, soins2_loot_medical_7 |
 | soins 3 | 4 | 3 / 4 | soins3_loot_medical_2 |
 
-Aucun coffre T7 posé : c'est normal, un T7 n'apparaît qu'à un point d'apparition (`/heralizloot point ajouter`), il n'est jamais là en permanence. Le plan propose des points.
+Aucun coffre T7 posé : c'est normal, les T7 sont réservés aux événements (point d'apparition, `/heralizloot point ajouter`) ; le plan n'en pose pas.
 
 ## Paliers par lieu
 
@@ -101,7 +101,7 @@ Exemples de doublons :
 - pièce -131 66 1186 (cuisine, 24 cases) : 2 × cuisson — t1_cuisiniere -130 66 1189, t2_cuisiniere_bois -129 66 1187
 - pièce 19 66 1233 (cuisine, 24 cases) : 2 × cuisson — t1_cuisiniere 18 66 1235, t2_cuisiniere_bois 18 66 1236
 - pièce 19 66 1233 (cuisine, 24 cases) : 2 × poubelle_cuisine — t1_poubelle_cuisine 19 66 1231, t1_poubelle_cuisine 21 66 1234
-- pièce 83 74 -766 (entree, 26 cases) : 2 × range_chaussures — t1_range_chaussures 82 74 -769, t1_range_chaussures 84 74 -763
+- pièce 83 74 -766 (chambre, 26 cases) : 2 × range_chaussures — t1_range_chaussures 82 74 -769, t1_range_chaussures 84 74 -763
 - pièce 138 64 -1172 (cuisine, 24 cases) : 2 × cuisson — t1_cuisiniere 137 64 -1173, t2_cuisiniere_bois 141 64 -1172
 - pièce 170 66 991 (chambre, 171 cases) : 6 × machine_coudre — t2_machine_coudre 161 66 987, t2_machine_coudre 161 66 990, t2_machine_coudre 163 66 987, t2_machine_coudre 163 66 990, t2_machine_coudre 165 66 987, t2_machine_coudre 165 66 990
 - pièce 191 66 994 (entree, 82 cases) : 2 × boite_aux_lettres — t2_boite_aux_lettres 189 66 997, t2_boite_aux_lettres 196 66 993
@@ -122,7 +122,7 @@ Exemples de doublons :
 - t3_coffre_pickup 312 94 -473 (pièce None)
 - t3_coffre_pickup 316 94 -460 (pièce militaire)
 - t6_boite_noire 808 60 535 (pièce militaire)
-- t1_fut_brule 1056 80 -440 (pièce grange)
+- t1_fut_brule 1056 80 -440 (pièce entrepot)
 
 ### interieur_dehors
 - t2_etagere_conserves -1118 68 46 (pièce -)
@@ -370,7 +370,7 @@ Exemples de doublons :
 
 ## Pièces
 
-Type de chaque pièce d'après ses props (vote) : entree ×2087, inconnue ×1044, cuisine ×988, chambre ×947, commerce ×377, salon ×376, entrepot ×320, militaire ×277, grange ×230, garage ×200, cave ×102, secours ×85, police ×80, bureau ×51, ecole ×48, hopital ×48, sdb ×29, gare ×25, chasse ×20, labo ×11, banque ×9, prison ×1, buanderie ×1, onu ×1
+Type de chaque pièce d'après ses props (vote) : entree ×1768, chambre ×1464, inconnue ×1044, cuisine ×890, commerce ×399, salon ×373, garage ×269, militaire ×267, cave ×244, entrepot ×147, bureau ×129, police ×79, grange ×63, secours ×46, hopital ×45, buanderie ×36, gare ×25, chasse ×22, ecole ×15, port ×13, banque ×9, labo ×5, sdb ×3, prison ×1, onu ×1
 
 ## Zones de loot (pack de données)
 
