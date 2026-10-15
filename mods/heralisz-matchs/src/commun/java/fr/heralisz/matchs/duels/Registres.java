@@ -50,7 +50,7 @@ public final class Registres {
 
     /** Bombe d'un site (A ou B), posee par la partie pendant un duel de recherche et destruction. */
     public static final RegistryObject<EntityType<BombeDuel>> BOMBE = ENTITES.register("duel_bombe",
-            () -> EntityType.Builder.<BombeDuel>of(BombeDuel::new, MobCategory.MISC).sized(0.9f, 1.0f).clientTrackingRange(8).updateInterval(20)
+            () -> EntityType.Builder.<BombeDuel>of(BombeDuel::new, MobCategory.MISC).sized(1.6f, 1.75f).clientTrackingRange(8).updateInterval(20)
                     .noSummon().fireImmune().build(HeraliszMatchs.MODID + ":duel_bombe"));
     /** Ordinateur d'amorcage pose (au sol, en amorcage, amorce, pirate, desamorce). */
     public static final RegistryObject<EntityType<OrdinateurDuel>> ORDINATEUR = ENTITES.register("duel_ordinateur",

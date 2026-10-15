@@ -1242,7 +1242,9 @@ public class DuelPartie extends Partie {
         double axX = -Math.cos(psi), axZ = -Math.sin(psi), azX = Math.sin(psi), azZ = -Math.cos(psi);
         double rx = x - b.x(), rz = z - b.z();
         double lx = rx * axX + rz * axZ, lz = rx * azX + rz * azZ;
-        double x0 = -1.12, x1 = 1.18, z0 = -0.76, z1 = 0.64;
+        // emprise du modele d'origine (pixels / 16, elargie de l'ordinateur), a l'echelle du rendu
+        double k = BombeDuel.ECHELLE, marge = 0.35;
+        double x0 = (-1.12 + marge) * k - marge, x1 = (1.18 - marge) * k + marge, z0 = (-0.76 + marge) * k - marge, z1 = (0.64 - marge) * k + marge;
         if (lx > x0 && lx < x1 && lz > z0 && lz < z1) {
             double dx0 = lx - x0, dx1 = x1 - lx, dz0 = lz - z0, dz1 = z1 - lz;
             double m = Math.min(Math.min(dx0, dx1), Math.min(dz0, dz1));
