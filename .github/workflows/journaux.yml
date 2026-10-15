@@ -1,0 +1,74 @@
+# Journaux du serveur : LECTURE SEULE. Montre dans le résumé les erreurs Java du journal du serveur (logs/latest.log et
+# les deux journaux précédents) et la liste des rapports de plantage récents, avec leur cause. Les adresses IP sont
+# masquées. Rien n'est écrit ni supprimé sur le Ptero. Part d'une branche de travail quand ce fichier change, ou par
+# « Run workflow » (filtre facultatif : un mot à chercher, ex. « duel »).
+name: Journaux du serveur
+
+on:
+  workflow_dispatch:
+    inputs:
+      filtre:
+        description: "Mot à chercher en plus des erreurs (facultatif)"
+        type: string
+        default: ""
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/journaux.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  journaux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      FILTRE: ${{ inputs.filtre }}
+    steps:
+      - name: Accès au Ptero
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+
+      - name: Erreurs et plantages (lecture seule)
+        run: |
+          R="set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30;"
+          l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye"; }
+          mkdir -p j c
+          l "lcd j; get -E /logs/latest.log" || true
+          for f in $(l "cls -1t /logs/" 2>/dev/null | grep '\.log\.gz$' | head -2); do l "lcd j; get $f" || true; done
+          for f in $(l "cls -1t /crash-reports/" 2>/dev/null | head -4); do l "lcd c; get $f" || true; done
+          masque() { sed -E 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g'; }
+          {
+            echo "## Rapports de plantage récents"
+            for f in c/*; do [ -f "$f" ] || continue
+              echo "### $(basename "$f")"; echo '```'
+              grep -m1 -A40 -E '^Description:' "$f" | masque | head -60
+              echo '```'
+            done
+            for f in j/*; do [ -f "$f" ] || continue
+              case "$f" in *.gz) txt=$(zcat "$f");; *) txt=$(cat "$f");; esac
+              echo "## Erreurs Java dans $(basename "$f")"; echo '```'
+              printf '%s\n' "$txt" | grep -E -B2 -A25 'Exception|Error:|\bat fr\.|\bat com\.(heraliz|Spartan|caracrea)' \
+                | grep -v -E 'password|login|register' | masque | head -400
+              echo '```'
+              if [ -n "$FILTRE" ]; then
+                echo "### Lignes avec « $FILTRE »"; echo '```'
+                printf '%s\n' "$txt" | grep -i -F -- "$FILTRE" | grep -v -E 'password|login|register' | masque | tail -100
+                echo '```'
+              fi
+            done
+            echo; echo "Rien n'a été modifié sur le Ptero."
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"
