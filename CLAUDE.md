@@ -740,6 +740,20 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     les blocs posés dans chaque monde du Ptero) : un bloc retiré qui est posé disparaît de la carte au chargement.
     Si le propriétaire fournit une nouvelle version d'un de ces mods pour la carte, la rapporter ici de la même façon (assembler avec ce
     qui a été fait ici entre-temps, fabriquer, vérifier). Rien de tout cela n'a été testé sur le serveur.
+- **Monde du spawn** (Utils 2.12.0, 15/10) : dimension `heralisz:spawn`, déclarée par `src/serveur/resources/data/heralisz/`
+  de HeraliZ Utils. Vide autour, rien ne s'y génère, pas de monstres ni de combat entre joueurs, nuit fixe, sa propre
+  bordure. Son contenu est la grotte du terminus de la cinématique : l'ancien monde du spawn de l'ancienne carte n'a été
+  retrouvé ni dans Git ni sur le Ptero. Elle est **générée** par `python outils/monde_spawn.py grotte --rendus <dossier>`,
+  jamais retouchée à la main (`copier <monde> --zone ...` recopie une zone d'un monde, en lecture seule). Dépôt UNE fois
+  dans `dimensions/heralisz/spawn/` du monde en service : workflow « Serveur HeraliZ », case `deposer_spawn` (refus si le
+  dossier existe), puis redémarrer. Arrivée : première connexion et mort sans lit → point de réveil (cinématique).
+  Extraction : retour au même point (`useHeralizSpawn` de `heraliz_extraction-common.toml`, par
+  `fr.heralisz.utils.api.SpawnApi`, à ne jamais renommer). **Borne de départ** (`heralisz_utils:borne_depart`, modèle de
+  `mods/heralisz-utils/outils/borne_depart.py`, provisoire à valider) : clic droit au spawn → 5 s sans bouger → vraie
+  téléportation sur la carte, à un point sûr tiré au hasard (sol naturel à ciel ouvert, pas d'eau, loin des joueurs,
+  hors zones dangereuses, jamais de terrain généré), fondu et 5 s de protection. Staff : `/depart borne | point
+  ajouter|retirer|tp|liste <nom> | zone ajouter <nom> <rayon> | essai [tp] | joueur <cibles> | info`. Points gardés avec
+  la carte (`data/heraliz_depart.dat`), réglages dans `heraliz_spawn-server.toml`.
 - **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
   1024 px au plus avec `carte.json`, dans `mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte/` (jar
   joueur de HeraliZ Utils). Jamais dessiné à la main : refait par `python outils/carte_monde.py <copie du monde>
