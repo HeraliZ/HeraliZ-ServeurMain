@@ -36,7 +36,10 @@ quand un choix leur revient.
     propriétaires en jeu (détails, améliorations). **On ne touche JAMAIS aux fichiers du monde** : ni ici, ni sur le
     Ptero (pas de case « deposer_carte », pas de copie, pas de retouche). Quand la construction sera finie, le monde du
     Ptero sera copié dans GitHub : ce sera la carte « finale » de référence (section 9). Un mod ou un pack de textures
-    fourni pour la carte (jar + sources) s'ajoute ici comme d'habitude (section 9).
+    fourni pour la carte (jar + sources) s'ajoute ici comme d'habitude (section 9). Exception (props, demande du
+    propriétaire du 15/10) : les props et conteneurs de loot de la carte peuvent être changés, jamais par fichier :
+    seulement par les lots de commandes conditionnelles du plan des props (section 8, « Props de la carte »), joués par
+    le serveur, après validation du propriétaire, et annulables.
 
 ---
 
@@ -543,6 +546,16 @@ roses : MP5, AWP, M107, Kar98, Rhino…) et ses fichiers, différents des versio
 aux mêmes chemins, pouvaient passer devant sur le serveur selon l'ordre de lecture. Ses armes citées ailleurs ont été
 remplacées par celles de nos packs (largages, caisses, Annihilator des Zombies). Les joueurs n'ont jamais ces gunpacks
 (pack du launcher = dépôt). À lancer après avoir retiré un gunpack ou une arme du dépôt.
+
+**Props de la carte** : « Inventaire de la carte », case « props » (lecture seule) : `outils/props_carte.py` découpe les
+pièces, relève doublons (2 frigos, 2 cuisinières), props d'extérieur dedans, modèles et paliers absents, anciens meubles
+cfm retirés du jar (devenus de l'air), puis fait le plan (règles dans `outils/props_catalogue.py` : même palier, même
+gabarit, même orientation, place libre, une cuisinière / un frigo par pièce de maison) et des rendus avant / après ; plan
+enregistré dans `props_carte/` sur la branche de travail (jamais `main`). Après validation du propriétaire : workflow
+« Props de la carte » sur cette branche (essai à blanc par défaut ; « envoyer », sauvegarde du panel, étapes, lots,
+pause ; « annuler » rejoue le journal). Chaque commande est `execute if block <état relevé> … run setblock …` : un prop
+changé entre-temps par les constructeurs n'est pas touché. Les conteneurs ajoutés (étapes restauration et ajouts)
+baissent d'autant la part d'actifs de leur zone (loot inchangé). Rien testé en jeu.
 
 **Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
 fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets
