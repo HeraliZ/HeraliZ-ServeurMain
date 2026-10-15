@@ -1,6 +1,7 @@
 package fr.heralisz.bunker.keycard;
 
 import fr.heralisz.bunker.HeraliszBunker;
+import fr.heralisz.bunker.salle.BaguetteSalleItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -21,6 +22,8 @@ public final class KeycardRegistry {
    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, HeraliszBunker.MODID);
    public static final Map<AccessLevel, RegistryObject<Item>> CARDS = new EnumMap<>(AccessLevel.class);
    public static final Map<AccessLevel, RegistryObject<Block>> READERS = new EnumMap<>(AccessLevel.class);
+   /** Baguette du staff pour délimiter les salles à carte (/salle). */
+   public static final RegistryObject<Item> BAGUETTE_SALLE;
 
    static {
       for (AccessLevel level : AccessLevel.values()) {
@@ -34,6 +37,7 @@ public final class KeycardRegistry {
          READERS.put(level, reader);
          ITEMS.register("card_reader_" + level.id, () -> new BlockItem(reader.get(), new Item.Properties()));
       }
+      BAGUETTE_SALLE = ITEMS.register("baguette_salle", BaguetteSalleItem::new);
    }
 
    public static void register(IEventBus bus) {

@@ -1,6 +1,7 @@
 package fr.heralisz.bunker.keycard;
 
 import com.hbm_m.block.entity.doors.DoorBlockEntity;
+import fr.heralisz.bunker.salle.SallesPont;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -106,6 +107,8 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
             if (!state.getValue(POWERED)) {
                level.setBlock(pos, state.setValue(POWERED, true), Block.UPDATE_ALL);
                this.updateSupport(level, pos, state);
+               // salle à carte derrière la porte : 10 s pour entrer, puis porte tenue tant que quelqu'un est dedans
+               SallesPont.accesAccorde(level, pos, this.level);
                KeycardDoors.notifyDoors(level, pos, this.level);
                // le signal dure au moins le temps d'ouverture de la porte (sinon elle resterait ouverte)
                int openTime = KeycardDoors.doorsNear(level, pos, this.level).stream().mapToInt(d -> d.getDoorDecl().getOpenTime()).max().orElse(0);

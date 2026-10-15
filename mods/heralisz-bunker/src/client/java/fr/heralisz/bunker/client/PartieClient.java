@@ -10,7 +10,10 @@ import com.hbm_m.client.render.DoorChunkInvalidationHelper;
 import fr.heralisz.bunker.keycard.KeycardClientHooks;
 import fr.heralisz.bunker.keycard.KeycardNetwork;
 import fr.heralisz.bunker.pont.Partie;
+import fr.heralisz.bunker.salle.ContoursPacket;
+import fr.heralisz.bunker.salle.client.ContoursSalle;
 import net.minecraft.core.BlockPos;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
@@ -51,5 +54,8 @@ public final class PartieClient implements Partie {
          }
       };
       KeycardNetwork.RECEPTION_CLIENT.brancher(KeycardClientHooks::onSwipe);
+      // salles à carte : contours envoyés par le serveur au staff (baguette, /salle voir)
+      ContoursPacket.RECEPTION_CLIENT.brancher(ContoursSalle::recevoir);
+      MinecraftForge.EVENT_BUS.addListener(ContoursSalle::rendu);
    }
 }

@@ -14,3 +14,21 @@
 	#Range: 10 ~ 12000
 	pulseTicks = 100
 
+#Salles à carte (délimitées par le staff avec /salle) : porte tenue ouverte et loot de la salle
+[salles]
+	#Secondes pour entrer dans la salle une fois la porte ouverte ; personne dedans à la fin : elle se referme
+	#Range: 1 ~ 600
+	entreeSecondes = 10
+	#Secondes d'attente avant que la porte se referme quand le dernier joueur est sorti
+	#Range: 0 ~ 60
+	fermetureSecondes = 2
+	#Minutes, après la sortie du dernier joueur, avant que le loot d'une salle verte réapparaisse
+	#Range: 1 ~ 10080
+	rechargeVerteMinutes = 30
+	#Minutes avant que le loot d'une salle bleue réapparaisse
+	#Range: 1 ~ 10080
+	rechargeBleueMinutes = 120
+	#Minutes avant que le loot d'une salle rouge réapparaisse
+	#Range: 1 ~ 10080
+	rechargeRougeMinutes = 240
+

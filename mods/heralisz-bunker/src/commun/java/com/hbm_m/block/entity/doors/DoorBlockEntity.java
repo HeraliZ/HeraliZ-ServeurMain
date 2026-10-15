@@ -2,6 +2,7 @@ package com.hbm_m.block.entity.doors;
 
 import fr.heralisz.bunker.keycard.AccessLevel;
 import fr.heralisz.bunker.keycard.KeycardDoors;
+import fr.heralisz.bunker.salle.SallesPont;
 import com.hbm_m.block.UniversalMachinePartBlock;
 import com.hbm_m.block.decorations.DoorBlock;
 import com.hbm_m.blockentity.ModBlockEntities;
@@ -217,10 +218,12 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
          if (blockState.getBlock() instanceof DoorBlock doorBlock) {
             MultiblockStructureHelper var8 = doorBlock.getStructureHelper();
             Direction facing = (Direction)blockState.getValue(DoorBlock.FACING);
-            // HeralisZ : porte à carte -> seule compte l'activation d'un lecteur de sa couleur
+            // HeralisZ : porte à carte -> seule compte l'activation d'un lecteur de sa couleur, ou sa salle à carte
+            // (10 s pour entrer, puis ouverte tant que quelqu'un est dedans : SallesPont, décidé par le serveur)
             AccessLevel keycard = KeycardDoors.levelOf(doorBlock);
             if (keycard != null) {
-               this.updateRedstoneState(KeycardDoors.readerGranted(this.level, KeycardDoors.parts(this), keycard));
+               this.updateRedstoneState(SallesPont.tenueOuverte(this.level, this.worldPosition)
+                  || KeycardDoors.readerGranted(this.level, KeycardDoors.parts(this), keycard));
                return;
             }
             boolean isPowered = this.level.hasNeighborSignal(this.worldPosition);

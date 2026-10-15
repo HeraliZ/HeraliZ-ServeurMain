@@ -3,6 +3,7 @@ package fr.heralisz.bunker.keycard;
 import fr.heralisz.bunker.pont.Crochet;
 import com.hbm_m.block.entity.doors.DoorBlockEntity;
 import fr.heralisz.bunker.HeraliszBunker;
+import fr.heralisz.bunker.salle.ContoursPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
@@ -22,12 +23,13 @@ public final class KeycardNetwork {
    /** Réception du passage de carte côté client (KeycardClientHooks.onSwipe) : branchée par la partie client. */
    public static final Crochet<SwipePacket> RECEPTION_CLIENT = new Crochet<>();
 
-   private static final String VERSION = "2";
+   private static final String VERSION = "3";   // 3 : contours des salles à carte (ContoursPacket)
    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
       new ResourceLocation(HeraliszBunker.MODID, "keycard"), () -> VERSION, VERSION::equals, VERSION::equals);
 
    public static void init() {
       CHANNEL.registerMessage(0, SwipePacket.class, SwipePacket::encode, SwipePacket::decode, SwipePacket::handle);
+      CHANNEL.registerMessage(1, ContoursPacket.class, ContoursPacket::encode, ContoursPacket::decode, ContoursPacket::handle);
    }
 
    /** Rayon dans lequel tous les joueurs voient la cinématique. */

@@ -52,6 +52,8 @@ public final class HeraliszBunker {
       ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, KeycardConfig.SPEC);
       bus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(KeycardNetwork::init));
       TABS.register(bus);
+      // partie serveur : salles à carte (porte tenue ouverte, loot de la salle, commande /salle et baguette)
+      Parties.serveur(MODID, "fr.heralisz.bunker.serveur.PartieServeur", bus);
       // partie client coupée (docs/METHODE_CLIENT_SERVEUR.md) : portes animées, passage de carte, blocs fantômes
       Parties.client(MODID, "fr.heralisz.bunker.client.PartieClient", bus);
    }
