@@ -341,6 +341,7 @@
   "duel.type.mg": "Пулемёт",
   "duel.type.pistol": "Пистолет",
   "duel.choix.titre": "Выберите класс",
+  "duel.choix.classes_de": "Классы игрока %s · одни для всех",
   "duel.choix.choisie": "Выбран",
   "duel.choix.manche": "Раунд %s · %s",
   "duel.choix.reapparition": "Возрождение · клавиши 1–5",

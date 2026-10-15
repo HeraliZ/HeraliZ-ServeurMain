@@ -72,9 +72,12 @@ public final class DuelsConfig {
     // ------------------------------------------------------------------ equipement
     /** Chargeurs de reserve virtuelle donnes avec chaque arme a feu. */
     public static final int CHARGEURS_RESERVE = 4;
-    /** Cles NBT retirees de tout objet donne en duel (camo, decor, StatTrak, skins TaCZ et heralisz_tactical). */
-    public static final List<String> NBT_INTERDITS = List.of("HeraliszCamo", "HeraliszDecor", "HeraliszKills", "Skin", "GunDisplayId",
-            "DisplayId");
+    /**
+     * Cles NBT retirees de tout objet donne en duel (camo et marques d'un camo a vie, decor, StatTrak, skins TaCZ et
+     * heralisz_tactical).
+     */
+    public static final List<String> NBT_INTERDITS = List.of("HeraliszCamo", "HeraliszCamoProprio", "HeraliszCamoJeton", "HeraliszDecor",
+            "HeraliszKills", "Skin", "GunDisplayId", "DisplayId");
     /** Espaces de noms exclus du catalogue (armes et armes de melee « skin », Wonder Weapons reservees aux zombies). */
     public static final List<String> ESPACES_EXCLUS = List.of("heralisz_skins", "heraliz_wonder");
     /** Types TaCZ exclus (lanceurs) ; les balles explosives sont exclues a part. */

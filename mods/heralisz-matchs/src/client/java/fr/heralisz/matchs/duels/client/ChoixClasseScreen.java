@@ -21,8 +21,9 @@ import java.util.List;
 /**
  * Choix de la classe (5 s) au debut d'une manche de recherche et destruction ou a la reapparition en match a mort :
  * 5 cartes (numero, nom, arme principale en grand, secondaire, melee, soins, grenades, tenue), barre du temps restant,
- * touches 1 a 5. La carte choisie prend la couleur de l'equipe. Sans choix, la classe deja retenue (la derniere) est
- * donnee. Le serveur revalide ; en reapparition l'ecran se ferme au choix.
+ * touches 1 a 5. La carte choisie prend la couleur de l'equipe. Sans choix, la classe deja retenue est donnee. En duel,
+ * les 5 classes sont celles de l'hote, les memes pour tous (ligne « Classes de X » sous le titre) ; en entrainement, les
+ * siennes. Le serveur revalide et construit le kit ; en reapparition l'ecran se ferme au choix.
  */
 public class ChoixClasseScreen extends Screen implements EcranDuels {
     private static final int CW = 112, CH = 156, GAP = 8;
@@ -31,7 +32,7 @@ public class ChoixClasseScreen extends Screen implements EcranDuels {
     private int choisie;
     private int x0, y0;
     private final List<Carte> cartes = new ArrayList<>();
-    private String titre = "", contexte = "", choisieTxt = "";
+    private String titre = "", hote = "", contexte = "", choisieTxt = "";
 
     /** Textes et icones d'une carte, prepares a l'ouverture. */
     private record Carte(String nom, String principale, ItemStack icone, String secondaire, String melee, String soins, String grenades, String tenue) {
@@ -50,6 +51,7 @@ public class ChoixClasseScreen extends Screen implements EcranDuels {
         x0 = (width - total) / 2;
         y0 = (height - CH) / 2 + 14;
         titre = Component.translatable("duel.choix.titre").getString();
+        hote = donnees.hote().isEmpty() ? "" : Component.translatable("duel.choix.classes_de", donnees.hote()).getString();
         contexte = donnees.contexte().getString();
         choisieTxt = Component.translatable("duel.choix.choisie").getString();
         Catalogue c = DuelsClient.catalogue().vide() ? Catalogue.factice() : DuelsClient.catalogue();
@@ -100,7 +102,10 @@ public class ChoixClasseScreen extends Screen implements EcranDuels {
         Font f = font;
         int couleur = donnees.couleur() == 0 ? Ui.accent() : donnees.couleur();
         float cx = width / 2f;
-        Ui.spacedCentered(g, f, titre, Ui.BOLD, cx, y0 - 44, Ui.argb(Ui.TEXT, 255), 1.8f);
+        // classes de l'hote : une ligne de plus sous le titre, le reste remonte d'autant
+        int dy = hote.isEmpty() ? 0 : 12;
+        Ui.spacedCentered(g, f, titre, Ui.BOLD, cx, y0 - 44 - dy, Ui.argb(Ui.TEXT, 255), 1.8f);
+        if (!hote.isEmpty()) Ui.spacedCentered(g, f, hote, Ui.FONT, cx, y0 - 42, Ui.argb(Ui.TEXT, 255), 0.6f);
         Ui.spacedCentered(g, f, contexte, Ui.SMALL, cx, y0 - 30, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.3f), 255), 0.8f);
         float r = reste();
         Ui.bar(g, (int) (cx - 120), y0 - 18, 240, 2, r, r < 0.3f ? Ui.DANGER : couleur);
