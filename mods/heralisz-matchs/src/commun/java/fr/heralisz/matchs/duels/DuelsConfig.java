@@ -41,13 +41,13 @@ public final class DuelsConfig {
     /** Minuterie de la bombe amorcee (40 s). */
     public static final int RD_MINUTERIE_TICKS = 40 * 20;
     /** Distance a plat (blocs) du centre de la bombe jusqu'a laquelle le porteur peut l'amorcer. */
-    public static final double RD_AMORCAGE_PORTEE = 2.0;
+    public static final double RD_AMORCAGE_PORTEE = 2.8;
     /** Pendant l'amorcage, l'attaquant reste a cette distance (blocs, a plat) de l'ordinateur qu'il a ouvert. */
     public static final double RD_AMORCAGE_ECART = 1.6;
     /** Distance a plat (blocs) de l'ordinateur pose jusqu'a laquelle un defenseur accroupi le ramasse pour le pirater. */
     public static final double RD_PIRATAGE_PORTEE = 1.6;
     /** Longueur du cable (blocs, a plat depuis le centre de la bombe) : plus loin, le pirate lache l'ordinateur. */
-    public static final double RD_CABLE = 4.0;
+    public static final double RD_CABLE = 4.8;
     /** Ecart de hauteur maximal (blocs) pour amorcer ou ramasser l'ordinateur. */
     public static final double RD_HAUTEUR = 1.5;
     /** Manches gagnantes (premier a 4). */
@@ -72,9 +72,12 @@ public final class DuelsConfig {
     // ------------------------------------------------------------------ equipement
     /** Chargeurs de reserve virtuelle donnes avec chaque arme a feu. */
     public static final int CHARGEURS_RESERVE = 4;
-    /** Cles NBT retirees de tout objet donne en duel (camo, decor, StatTrak, skins TaCZ et heralisz_tactical). */
-    public static final List<String> NBT_INTERDITS = List.of("HeraliszCamo", "HeraliszDecor", "HeraliszKills", "Skin", "GunDisplayId",
-            "DisplayId");
+    /**
+     * Cles NBT retirees de tout objet donne en duel (camo et marques d'un camo a vie, decor, StatTrak, skins TaCZ et
+     * heralisz_tactical).
+     */
+    public static final List<String> NBT_INTERDITS = List.of("HeraliszCamo", "HeraliszCamoProprio", "HeraliszCamoJeton", "HeraliszDecor",
+            "HeraliszKills", "Skin", "GunDisplayId", "DisplayId");
     /** Espaces de noms exclus du catalogue (armes et armes de melee « skin », Wonder Weapons reservees aux zombies). */
     public static final List<String> ESPACES_EXCLUS = List.of("heralisz_skins", "heraliz_wonder");
     /** Types TaCZ exclus (lanceurs) ; les balles explosives sont exclues a part. */

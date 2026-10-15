@@ -38,6 +38,12 @@ public class BombeDuel extends Entity implements GeoEntity {
      * avant du modèle vers le nord, sol en y = 0) : voir outils/bombe/modeles.py (module de la face nord).
      */
     public static final float PRISE_X = -2.6f, PRISE_Y = 8.35f, PRISE_Z = -6.75f;
+    /**
+     * Échelle du modèle au rendu (16/10, Matchs 0.10.0 : « bombe trop petite ») : 2,9 blocs de long, 1,75 de haut. Les
+     * prises ({@link #PRISE_X}...) sont en pixels du modèle d'origine : les multiplier par l'échelle. L'emprise au sol
+     * (DuelPartie.horsBombe) et les portées (DuelsConfig) en tiennent compte.
+     */
+    public static final float ECHELLE = 1.75f;
 
     private static final EntityDataAccessor<Byte> SITE = SynchedEntityData.defineId(BombeDuel.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Byte> ETAT = SynchedEntityData.defineId(BombeDuel.class, EntityDataSerializers.BYTE);
@@ -155,10 +161,10 @@ public class BombeDuel extends Entity implements GeoEntity {
         return distance < d * d;
     }
 
-    /** Le modèle (1,6 bloc de long, gyrophare compris) dépasse la boîte de l'entité. */
+    /** Le modèle (2,9 blocs de long à l'échelle {@link #ECHELLE}, gyrophare compris) dépasse la boîte de l'entité. */
     @Override
     public AABB getBoundingBoxForCulling() {
-        return getBoundingBox().inflate(0.5, 0.3, 0.5);
+        return getBoundingBox().inflate(0.9, 0.5, 0.9);
     }
 
     // ------------------------------------------------------------------ GeckoLib (aucune animation : os tournés par le rendu)

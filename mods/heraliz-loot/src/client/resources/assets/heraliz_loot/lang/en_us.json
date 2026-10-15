@@ -517,5 +517,6 @@
   "heraliz_loot.cmd.rarete.origine.defaut": "(default rarity)",
   "heraliz_loot.cmd.rarete.origine.jeu": "(set in game)",
   "heraliz_loot.cmd.rarete.aucun_choix": "No in-game choice for %s.",
-  "heraliz_loot.cmd.rarete.defaut": "Default rarity: %s"
+  "heraliz_loot.cmd.rarete.defaut": "Default rarity: %s",
+  "heraliz_loot.vanilla.scelle": "This container is empty and sealed."
 }

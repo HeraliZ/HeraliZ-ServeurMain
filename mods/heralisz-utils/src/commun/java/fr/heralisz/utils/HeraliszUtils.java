@@ -75,6 +75,7 @@ public final class HeraliszUtils {
                     output.accept(fr.heralisz.utils.train.Train.TABLEAU.get());
                     output.accept(fr.heralisz.utils.ascenseur.Ascenseur.MACHINE.get());
                     output.accept(fr.heralisz.utils.ascenseur.Ascenseur.PALIER.get());
+                    output.accept(fr.heralisz.utils.spawn.Depart.BORNE_OBJET.get());
                 });
         // groupes des autres mods du jar, déclarés ICI pour un ordre fixe (FML construit les mods en parallèle : des
         // ajouts faits dans leurs @Mod changeraient d'ordre d'un lancement à l'autre) ; leur contenu est lu par lambdas
@@ -112,6 +113,7 @@ public final class HeraliszUtils {
         fr.heralisz.utils.deco.VentParticules.register(bus);         // particules du vent de la faille (rafales)
         fr.heralisz.utils.ascenseur.Ascenseur.register(bus);         // grand ascenseur de la faille des nains (idem)
         fr.heralisz.utils.train.Train.registres(bus);                // voyageurs du train, panneaux de gare (idem)
+        fr.heralisz.utils.spawn.Depart.register(bus);                // monde du spawn : borne de départ et réglages (idem)
         MapBlocks.BLOCKS.register(bus);
         ITEMS.register(bus);
         TABS.register(bus);

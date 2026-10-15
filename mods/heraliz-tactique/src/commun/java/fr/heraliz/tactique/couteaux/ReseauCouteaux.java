@@ -14,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
  * message clair.
  */
 public final class ReseauCouteaux {
-   private static final String VERSION = "2";
+   private static final String VERSION = "3";
    public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(
       new ResourceLocation(HeralizTactique.MODID, "couteaux"), () -> VERSION, VERSION::equals, VERSION::equals);
 

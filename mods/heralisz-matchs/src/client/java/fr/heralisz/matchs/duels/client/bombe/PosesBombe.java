@@ -45,11 +45,15 @@ public final class PosesBombe {
 
     /** Appelé par chaque ordinateur du monde du joueur, à chaque tick. */
     public static void suivre(OrdinateurDuel o) {
-        int e = o.etat();
-        int u = o.utilisateurId();
-        if (u < 0 || (e != OrdinateurDuel.AMORCAGE && e != OrdinateurDuel.PIRATAGE)) return;
-        SUIVIS.put(u, new Suivi(o, o.level().getGameTime()));
-        if (o.level().getEntity(u) instanceof AbstractClientPlayer p) installer(p);
+        try {
+            int e = o.etat();
+            int u = o.utilisateurId();
+            if (u < 0 || (e != OrdinateurDuel.AMORCAGE && e != OrdinateurDuel.PIRATAGE)) return;
+            SUIVIS.put(u, new Suivi(o, o.level().getGameTime()));
+            if (o.level().getEntity(u) instanceof AbstractClientPlayer p) installer(p);
+        } catch (RuntimeException | LinkageError ex) {
+            desactiver(ex);
+        }
     }
 
     /** Ordinateur que ce joueur tape ou tient en ce moment, ou null. */
@@ -107,6 +111,13 @@ public final class PosesBombe {
         return dispo;
     }
 
+    /** Une erreur pendant le rendu : plus de poses de la bombe jusqu'au redémarrage du jeu (journal une fois). */
+    private static void desactiver(Throwable ex) {
+        if (!dispo) return;
+        dispo = false;
+        HeraliszMatchs.LOG.warn("[duels] poses de la bombe coupées (Player Animator) : {}", ex.toString());
+    }
+
     private static void installer(AbstractClientPlayer p) {
         if (INSTALLES.contains(p) || !pret()) return;
         INSTALLES.add(p);
@@ -132,28 +143,71 @@ public final class PosesBombe {
             this.joueur = joueur;
         }
 
+        /**
+         * Appelé par Player Animator pendant le rendu du joueur : JAMAIS d'exception qui en sorte (elle ferait planter le
+         * jeu au rendu du personnage). Toute erreur coupe les poses de la bombe pour la session (journal une fois) et la
+         * couche rend la pose reçue telle quelle.
+         */
         @Override
-        public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
-            switch (m.getName()) {
-                case "isActive":
-                    return utilise(this.joueur) != null;
-                case "setupAnim":
-                    this.partial = (Float) args[0];
-                    return null;
-                case "tick":
-                    return null;
-                case "get3DTransform":
-                    return transformer((String) args[0], (Enum<?>) args[1], args[3]);
-                case "equals":
-                    return proxy == args[0];
-                case "hashCode":
-                    return System.identityHashCode(proxy);
-                case "toString":
-                    return "heralisz_matchs:bombe";
-                default:
-                    if (m.isDefault()) return InvocationHandler.invokeDefault(proxy, m, args);
-                    return null;
+        public Object invoke(Object proxy, Method m, Object[] args) {
+            String nom = m.getName();
+            try {
+                switch (nom) {
+                    case "equals":
+                        return args != null && args.length == 1 && proxy == args[0];
+                    case "hashCode":
+                        return System.identityHashCode(proxy);
+                    case "toString":
+                        return "heralisz_matchs:bombe";
+                    default:
+                        break;
+                }
+                if (!dispo) return neutre(proxy, m, args);
+                switch (nom) {
+                    case "isActive":
+                        return utilise(this.joueur) != null;
+                    case "setupAnim":
+                        if (args != null && args.length > 0 && args[0] instanceof Number n) this.partial = n.floatValue();
+                        return null;
+                    case "tick":
+                        return null;
+                    case "get3DTransform":
+                        if (args == null || args.length < 4) return args != null && args.length > 0 ? args[args.length - 1] : null;
+                        if (!(args[0] instanceof String partie) || !(args[1] instanceof Enum<?> type)) return args[3];
+                        return transformer(partie, type, args[3]);
+                    default:
+                        return neutre(proxy, m, args);
+                }
+            } catch (Throwable ex) {
+                desactiver(ex);
+                return neutre(proxy, m, args);
             }
+        }
+
+        /** Réponse sans effet : méthode par défaut de l'interface, sinon une valeur neutre du bon type. */
+        private static Object neutre(Object proxy, Method m, Object[] args) {
+            String nom = m.getName();
+            if ("isActive".equals(nom)) return false;
+            if ("get3DTransform".equals(nom) && args != null && args.length >= 4) return args[3];
+            if (m.isDefault()) {
+                try {
+                    return InvocationHandler.invokeDefault(proxy, m, args);
+                } catch (Throwable ignore) {
+                    // repli ci-dessous
+                }
+            }
+            Class<?> r = m.getReturnType();
+            if (r == boolean.class) return false;
+            if (r == int.class) return 0;
+            if (r == float.class) return 0f;
+            if (r == double.class) return 0d;
+            if (r == long.class) return 0L;
+            if (r.isEnum()) {
+                Object[] valeurs = r.getEnumConstants();
+                for (Object v : valeurs) if ("NONE".equals(((Enum<?>) v).name())) return v;
+                return valeurs.length > 0 ? valeurs[0] : null;
+            }
+            return null;
         }
 
         private Object transformer(String partie, Enum<?> type, Object v0) throws ReflectiveOperationException {

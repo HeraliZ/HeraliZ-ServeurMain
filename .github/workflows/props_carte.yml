@@ -1,0 +1,154 @@
+# Props de la carte : joue sur le serveur le plan de diversification des conteneurs de loot validé par le propriétaire
+# (ou l'annule). Consigne du 15/10 : 100 % des modèles T1 à T6 de HeraliZ Loot posés, en remplaçant des conteneurs déjà
+# posés par d'autres modèles du même palier (étape « diversification ») ; T7 réservé aux événements, rien sur les
+# meubles cfm. Étape « ajouts » à part : seulement si le plan a été fait avec l'option --ajouts (modèles sans aucune
+# place de remplacement, posés sur une case libre). Le plan (props_carte/plan.tar.gz) a été fait par « Inventaire de
+# la carte », case « props », et enregistré sur la branche de travail : on lance ce workflow SUR CETTE BRANCHE (jamais
+# main).
+#
+# Aucun fichier du monde n'est lu ni écrit : les commandes du plan sont envoyées à la console du serveur (API du
+# panel), et c'est le serveur qui les joue. Chaque commande ne change un bloc que s'il est ENCORE le prop relevé dans la
+# copie (« execute if block ... run setblock ... ») ; les cases qu'un prop plus grand occupe doivent être vides
+# (« if block ... minecraft:air »). Un prop que les constructeurs ont déplacé ou remplacé entre-temps n'est pas touché.
+# Les secteurs sont chargés le temps d'un lot (/forceload add puis remove ; ceux qui étaient déjà forcés ne sont pas
+# touchés). Une pause sépare deux lots.
+#
+# Cases : « envoyer » (sinon essai à blanc : rien ne part, le résumé montre ce qui serait joué) ; « sauvegarde »
+# (sauvegarde du panel avant de commencer) ; « annuler » (rejoue les annulations des lots déjà joués, du dernier au
+# premier : chaque bloc revient à son état exact d'avant, données comprises, s'il est encore celui posé par le plan).
+# Le journal (props_carte/journal.txt, enregistré sur la branche) permet de reprendre un envoi coupé ou trop long.
+name: Props de la carte
+
+on:
+  workflow_dispatch:
+    inputs:
+      envoyer:
+        description: "Envoyer vraiment les commandes au serveur (sinon : essai à blanc, rien n'est envoyé)"
+        type: boolean
+        default: false
+      etapes:
+        description: "Étapes du plan à jouer : « diversification » (remplacements, même palier) ; « ajouts » à part (seulement si le plan a été fait avec --ajouts)"
+        type: string
+        default: "diversification"
+      lots:
+        description: "Numéros des lots (ex. « 1-30 ») ; vide = tous ceux des étapes choisies pas encore joués"
+        type: string
+        default: ""
+      pause:
+        description: "Pause entre deux lots (secondes)"
+        type: string
+        default: "5"
+      sauvegarde:
+        description: "Faire une sauvegarde du serveur (panel) avant de commencer"
+        type: boolean
+        default: true
+      annuler:
+        description: "ANNULER : rejouer le journal d'annulation (tous les lots joués, du dernier au premier)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # enregistrer le journal sur la branche de travail
+
+concurrency:
+  group: props-carte
+  cancel-in-progress: false
+
+jobs:
+  props:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Plan à jouer
+        env:
+          ETAPES: ${{ inputs.etapes }}
+          LOTS: ${{ inputs.lots }}
+          PAUSE: ${{ inputs.pause }}
+        run: |
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "::error::À lancer sur la branche de travail qui porte le plan (props_carte/), jamais sur main."; exit 1
+          fi
+          test -s props_carte/plan.tar.gz || { echo "::error::Pas de plan (props_carte/plan.tar.gz) sur cette branche : lancer d'abord « Inventaire de la carte », case « props »."; exit 1; }
+          mkdir -p plan && tar xzf props_carte/plan.tar.gz -C plan
+          echo "ETAPES=$(printf '%s' "$ETAPES" | tr -cd 'a-z,_')" >> "$GITHUB_ENV"
+          echo "LOTS=$(printf '%s' "$LOTS" | tr -cd '0-9,-')" >> "$GITHUB_ENV"
+          echo "PAUSE=$(printf '%s' "${PAUSE:-5}" | tr -cd '0-9.')" >> "$GITHUB_ENV"
+          ls plan/lots | wc -l
+          { echo "## Props de la carte"; echo; sed -n '1,12p' props_carte/plan.md; echo; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Sauvegarde du serveur (panel)
+        if: ${{ inputs.envoyer && inputs.sauvegarde }}
+        run: |
+          API="${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID"
+          H=(-H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" -H "Accept: Application/vnd.pterodactyl.v1+json")
+          REP=$(curl -sS -X POST "$API/backups" "${H[@]}" -d "{\"name\":\"avant props $(date -u +%Y-%m-%d_%H%M)\"}" -w '\n%{http_code}')
+          CODE=$(printf '%s' "$REP" | tail -n1)
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Le panel refuse la sauvegarde (HTTP $CODE ; limite de sauvegardes atteinte ?) : rien n'est envoyé. Décocher « sauvegarde » pour jouer sans."
+            exit 1
+          fi
+          UUID=$(printf '%s' "$REP" | head -n -1 | python3 -c 'import json,sys; print(json.load(sys.stdin)["attributes"]["uuid"])')
+          for i in $(seq 1 120); do
+            sleep 15
+            FINI=$(curl -sS "$API/backups/$UUID" "${H[@]}" | python3 -c 'import json,sys; a=json.load(sys.stdin)["attributes"]; print("ok" if a.get("completed_at") and a.get("is_successful") else ("echec" if a.get("completed_at") else ""))' || true)
+            [ "$FINI" = "ok" ] && { echo "Sauvegarde faite."; echo "Sauvegarde du panel faite avant l'envoi." >> "$GITHUB_STEP_SUMMARY"; break; }
+            [ "$FINI" = "echec" ] && { echo "::error::Sauvegarde ratée : rien n'est envoyé."; exit 1; }
+          done
+          [ "$FINI" = "ok" ] || { echo "::error::Sauvegarde trop longue : rien n'est envoyé."; exit 1; }
+
+      - name: Envoi des lots
+        env:
+          ENVOYER: ${{ inputs.envoyer && 'oui' || 'non' }}
+          ANNULER: ${{ inputs.annuler && 'oui' || 'non' }}
+        run: |
+          ARGS=(plan --journal props_carte/journal.txt --pause "$PAUSE" --budget-minutes 300)
+          if [ -n "$ETAPES" ]; then ARGS+=(--etapes "$ETAPES"); fi
+          if [ -n "$LOTS" ]; then ARGS+=(--lots "$LOTS"); fi
+          if [ "$ENVOYER" = "oui" ]; then ARGS+=(--envoyer); fi
+          if [ "$ANNULER" = "oui" ]; then ARGS+=(--annuler); fi
+          python outils/props_appliquer.py "${ARGS[@]}" | tee envoi.log
+          { echo '```'; tail -n 40 envoi.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      # Contrôle : le journal du serveur (logs/latest.log, copié en lecture seule) dit quels blocs ont changé.
+      - name: Contrôle dans le journal du serveur
+        if: ${{ inputs.envoyer && always() }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"; HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          sleep 10
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PORT" "sftp://$HOTE" \
+            -e "set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30; get /logs/latest.log -o latest.log; bye" < /dev/null || true
+          if [ -s latest.log ]; then
+            { echo "### Blocs confirmés par le serveur"; echo; python outils/props_appliquer.py plan --journal props_carte/journal.txt --verifier latest.log; } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Journal du serveur illisible : contrôle sauté." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Enregistrer le journal (branche de travail)
+        if: ${{ inputs.envoyer && always() }}
+        run: |
+          git config user.name "HeraliZ"
+          git config user.email "heraliz@users.noreply.github.com"
+          git add props_carte/journal.txt 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Journal inchangé."; exit 0; fi
+          git commit -q -m "Props de la carte : journal de l'envoi (${{ inputs.annuler && 'annulation' || 'lots joués' }})"
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}" || { git pull --rebase -q origin "$GITHUB_REF_NAME" && git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"; }

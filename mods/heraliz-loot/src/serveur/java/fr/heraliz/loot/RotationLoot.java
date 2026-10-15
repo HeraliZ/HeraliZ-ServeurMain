@@ -73,12 +73,32 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * conteneur cassé : sa place d'origine attend un conteneur (« invalide »), un conteneur posé en jeu sort de la rotation
  * (une zone créée en jeu qui se vide disparaît). Ces changements et les parts réglées par commande sont gardés avec le
  * monde ({@link #places}, {@link #zonesAjoutees}, {@link #parts}).</p>
+ * <p>Salles à carte d'accès (HeraliZ Bunker, par {@link SallesLoot}) : les conteneurs posés dans la boîte d'une salle
+ * forment une zone à part, « salles_carte/&lt;nom&gt; », qui ne se remplit JAMAIS d'elle-même (ni réapparition après un
+ * conteneur vidé, ni complément au démarrage) : seulement quand Bunker la recharge (salle vide depuis le délai de sa
+ * couleur), et alors tous ses conteneurs à la fois (ou la part réglée par « /heralizloot zone ... part »).</p>
  */
 public final class RotationLoot extends SavedData {
     private static final String FICHIER = "heraliz_loot_rotation";
     static final int TAILLE = 27;
     /** Pas de position exclue. */
     static final long AUCUNE = Long.MIN_VALUE;
+    /** Préfixe des zones des salles à carte (« salles_carte/labo »). */
+    static final String PREFIXE_SALLE = "salles_carte/";
+
+    /** Zone d'une salle à carte : remplie seulement sur demande de Bunker ({@link SallesLoot#recharger}). */
+    static boolean estSalle(String zone) {
+        return zone.startsWith(PREFIXE_SALLE);
+    }
+
+    /** Une salle à carte : son nom affiché et sa boîte (blocs min et max compris). */
+    record Salle(String nom, long min, long max) {
+        boolean contient(long k) {
+            int x = BlockPos.getX(k), y = BlockPos.getY(k), z = BlockPos.getZ(k);
+            return x >= BlockPos.getX(min) && x <= BlockPos.getX(max) && y >= BlockPos.getY(min) && y <= BlockPos.getY(max)
+                    && z >= BlockPos.getZ(min) && z <= BlockPos.getZ(max);
+        }
+    }
 
     /** Un conteneur actif : sa zone, son nom, son contenu (null tant que personne ne l'a ouvert). */
     static final class Actif {
@@ -112,6 +132,8 @@ public final class RotationLoot extends SavedData {
     final Map<String, ZoneAjoutee> zonesAjoutees = new java.util.TreeMap<>();
     /** Parts d'actifs réglées par commande (identifiant de zone -> part, 0 à 1). */
     final Map<String, Double> parts = new java.util.TreeMap<>();
+    /** Salles à carte déclarées par HeraliZ Bunker (nom de la salle -> boîte). */
+    final Map<String, Salle> salles = new java.util.TreeMap<>();
     /** Actifs dont le contenu est tiré. */
     private final LongOpenHashSet tires = new LongOpenHashSet();
     /** Index spatial des actifs (étoiles) : secteur -> positions. */
@@ -161,6 +183,10 @@ public final class RotationLoot extends SavedData {
         for (Tag x : t.getList("Parts", Tag.TAG_COMPOUND)) {
             CompoundTag c = (CompoundTag) x;
             r.parts.put(c.getString("Zone"), c.getDouble("Part"));
+        }
+        for (Tag x : t.getList("Salles", Tag.TAG_COMPOUND)) {
+            CompoundTag c = (CompoundTag) x;
+            r.salles.put(c.getString("Id"), new Salle(c.getString("Nom"), c.getLong("Min"), c.getLong("Max")));
         }
         return r;
     }
@@ -224,6 +250,16 @@ public final class RotationLoot extends SavedData {
             lq.add(c);
         });
         t.put("Parts", lq);
+        ListTag ls = new ListTag();
+        salles.forEach((id, s) -> {
+            CompoundTag c = new CompoundTag();
+            c.putString("Id", id);
+            c.putString("Nom", s.nom());
+            c.putLong("Min", s.min());
+            c.putLong("Max", s.max());
+            ls.add(c);
+        });
+        t.put("Salles", ls);
         return t;
     }
 
@@ -288,6 +324,7 @@ public final class RotationLoot extends SavedData {
     private void vider(long k) {
         Actif a = retirerActif(k);
         if (a == null || niveau == null) return;
+        if (estSalle(a.zone)) return;                                   // salle à carte : rechargée par Bunker seulement
         attentes.add(new Attente(a.zone, niveau.getGameTime() + ConfigLoot.delaiTicks(niveau.random), k));
         setDirty();
     }
@@ -322,7 +359,7 @@ public final class RotationLoot extends SavedData {
                     a.nom, BlockPos.of(k).toShortString(), a.zone, trouve);
         }
         ZonesLoot.Zone z = ZonesLoot.zone(dim, a.zone);
-        if (z != null) activerUn(z, k, l.random);
+        if (z != null && !estSalle(z.id)) activerUn(z, k, l.random);
     }
 
     /**
@@ -332,9 +369,10 @@ public final class RotationLoot extends SavedData {
     @Nullable
     ZonesLoot.Zone adopter(ServerLevel l, long k, String nom) {
         ResourceKey<Level> dim = l.dimension();
+        String salle = salleDe(k);
         ZonesLoot.Zone origine = ZonesLoot.origine(dim, k);
-        boolean chezLui = origine != null && nom.equals(origine.duFichier(k));
-        ZonesLoot.Zone z = chezLui ? origine : ZonesLoot.rattacher(dim, k, nom);
+        boolean chezLui = salle == null && origine != null && nom.equals(origine.duFichier(k));
+        ZonesLoot.Zone z = salle != null ? zoneSalle(l, salle) : chezLui ? origine : ZonesLoot.rattacher(dim, k, nom);
         if (z == null) z = creerZone(l, k, nom);
         ZonesLoot.Zone avant = ZonesLoot.zoneDe(dim, k);
         ZonesLoot.placer(z, k, nom);
@@ -351,15 +389,148 @@ public final class RotationLoot extends SavedData {
             } else {                                                    // autre zone : l'ancienne en active un autre
                 retirerActif(k);
                 ZonesLoot.Zone za = ZonesLoot.zone(dim, a.zone);
-                if (za != null) activerUn(za, k, l.random);
+                if (za != null && !estSalle(za.id)) activerUn(za, k, l.random);
             }
         }
         if (avant != z) {
             HeralizLoot.LOG.info("Rotation : {} posé en {}, rejoint la zone {}", nom, BlockPos.of(k).toShortString(), z.id);
         }
-        completer(l, z);
+        if (!estSalle(z.id)) completer(l, z);                           // une salle attend sa recharge (Bunker)
         setDirty();
         return z;
+    }
+
+    // ------------------------------------------------------------------------------------------ salles à carte
+    /** Salle à carte dont la boîte contient k (null : aucune). */
+    @Nullable
+    String salleDe(long k) {
+        for (Map.Entry<String, Salle> e : salles.entrySet()) {
+            if (e.getValue().contient(k)) return e.getKey();
+        }
+        return null;
+    }
+
+    /** Zone de la salle id (créée si besoin) : part d'actifs 1 (tout se remplit), niveau -1 (aucun conteneur posé
+     *  ailleurs ne s'y rattache). */
+    private ZonesLoot.Zone zoneSalle(ServerLevel l, String id) {
+        Salle s = salles.get(id);
+        ZonesLoot.Zone z = ZonesLoot.creer(l.dimension(), PREFIXE_SALLE + id, s == null ? id : s.nom(), 1.0, -1);
+        Double p = parts.get(z.id);
+        if (p != null) z.partForcee = p;
+        return z;
+    }
+
+    /** État à jour des zones (démarrage, /reload) avant de toucher aux salles. */
+    void aJour(ServerLevel l) {
+        int v = ZonesLoot.version();
+        if (versionVue != v) {
+            versionVue = v;
+            reconcilier(l);
+        }
+    }
+
+    /**
+     * Déclare la salle id (boîte min..max, blocs compris) : les conteneurs de loot qui y sont (connus des zones, ou posés
+     * dans un secteur chargé) quittent leur zone pour celle de la salle, vides jusqu'à la prochaine recharge. Même boîte
+     * qu'avant : rien ne change. -> nombre de conteneurs de la salle.
+     */
+    int declarerSalle(ServerLevel l, String id, String nom, BlockPos a, BlockPos b) {
+        aJour(l);
+        long min = BlockPos.asLong(Math.min(a.getX(), b.getX()), Math.min(a.getY(), b.getY()), Math.min(a.getZ(), b.getZ()));
+        long max = BlockPos.asLong(Math.max(a.getX(), b.getX()), Math.max(a.getY(), b.getY()), Math.max(a.getZ(), b.getZ()));
+        Salle avant = salles.get(id);
+        if (avant != null && avant.min() == min && avant.max() == max) {
+            ZonesLoot.Zone z = ZonesLoot.zone(l.dimension(), PREFIXE_SALLE + id);
+            return z == null ? 0 : z.taille();
+        }
+        if (avant != null) retirerSalle(l, id);
+        Salle s = new Salle(nom, min, max);
+        salles.put(id, s);
+        setDirty();
+        ResourceKey<Level> dim = l.dimension();
+        ZonesLoot.Zone zs = zoneSalle(l, id);
+        // 1. conteneurs déjà dans une zone (même dans un secteur non chargé)
+        Map<Long, String> dedans = new HashMap<>();
+        for (Long2ObjectMap.Entry<ZonesLoot.Zone> e : ZonesLoot.index(dim).long2ObjectEntrySet()) {
+            long k = e.getLongKey();
+            if (e.getValue() == zs || invalides.containsKey(k) || !s.contient(k) || !id.equals(salleDe(k))) continue;
+            String n = e.getValue().conteneur(k);
+            if (n != null) dedans.put(k, n);
+        }
+        // 2. conteneurs des secteurs chargés (le modèle réellement posé l'emporte)
+        int x0 = BlockPos.getX(min), y0 = BlockPos.getY(min), z0 = BlockPos.getZ(min);
+        int x1 = BlockPos.getX(max), y1 = BlockPos.getY(max), z1 = BlockPos.getZ(max);
+        BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+        for (int cx = x0 >> 4; cx <= x1 >> 4; cx++) {
+            for (int cz = z0 >> 4; cz <= z1 >> 4; cz++) {
+                net.minecraft.world.level.chunk.LevelChunk ch = l.getChunkSource().getChunkNow(cx, cz);
+                if (ch == null) continue;
+                for (int x = Math.max(x0, cx << 4); x <= Math.min(x1, (cx << 4) + 15); x++) {
+                    for (int z = Math.max(z0, cz << 4); z <= Math.min(z1, (cz << 4) + 15); z++) {
+                        for (int y = y0; y <= y1; y++) {
+                            BlockState st = ch.getBlockState(mp.set(x, y, z));
+                            if (st.getBlock() instanceof ConteneurBlock cb && avecLoot(cb)) {
+                                long k = mp.asLong();
+                                if (id.equals(salleDe(k))) dedans.put(k, cb.nom);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        dedans.forEach((k, n) -> adopter(l, k, n));
+        ZonesLoot.invalider();                                          // les zones quittées refont leurs comptes
+        HeralizLoot.LOG.info("Rotation : salle à carte {} ({}), {} conteneurs", id, nom, zs.taille());
+        return zs.taille();
+    }
+
+    /** Retire la salle id : ses conteneurs retournent dans les zones (comme posés en jeu), sans leur loot. */
+    boolean retirerSalle(ServerLevel l, String id) {
+        aJour(l);
+        if (salles.remove(id) == null) return false;
+        setDirty();
+        ResourceKey<Level> dim = l.dimension();
+        String zid = PREFIXE_SALLE + id;
+        parts.remove(zid);
+        ZonesLoot.Zone zs = ZonesLoot.zone(dim, zid);
+        if (zs != null) {
+            Map<Long, String> siens = new HashMap<>();
+            for (int i = 0; i < zs.taille(); i++) siens.put(zs.position(i), zs.conteneur(i));
+            for (long k : siens.keySet()) {
+                Actif a = actifs.get(k);
+                if (a != null && a.zone.equals(zid)) retirerActif(k);
+                places.remove(k);
+            }
+            ZonesLoot.supprimer(dim, zid);
+            siens.forEach((k, n) -> adopter(l, k, n));
+        }
+        ZonesLoot.invalider();
+        HeralizLoot.LOG.info("Rotation : salle à carte {} retirée", id);
+        return true;
+    }
+
+    /** Recharge la salle id : tous ses conteneurs (ou la part réglée) se remplissent, contenus en cours oubliés.
+     *  -> conteneurs remplis, -1 si la salle est inconnue. */
+    int rechargerSalle(ServerLevel l, String id) {
+        aJour(l);
+        if (!salles.containsKey(id)) return -1;
+        return retirerZone(l, zoneSalle(l, id));
+    }
+
+    /** {conteneurs, remplis, déjà ouverts} de la salle id, null si elle est inconnue. */
+    @Nullable
+    int[] etatSalle(ServerLevel l, String id) {
+        aJour(l);
+        if (!salles.containsKey(id)) return null;
+        String zid = PREFIXE_SALLE + id;
+        ZonesLoot.Zone z = ZonesLoot.zone(l.dimension(), zid);
+        int n = 0, o = 0;
+        for (Actif a : actifs.values()) {
+            if (!a.zone.equals(zid)) continue;
+            n++;
+            if (a.contenu != null) o++;
+        }
+        return new int[]{z == null ? 0 : z.taille(), n, o};
     }
 
     /** Nouvelle zone pour un conteneur posé loin de toute zone de son niveau : « ajouts/t3_120_-450 ». */
@@ -430,6 +601,7 @@ public final class RotationLoot extends SavedData {
     private void remettrePlaces(ServerLevel l) {
         ResourceKey<Level> dim = l.dimension();
         zonesAjoutees.forEach((id, za) -> ZonesLoot.creer(dim, id, za.nom(), za.actifs(), niveauAjout(id)));
+        salles.forEach((id, s) -> ZonesLoot.creer(dim, PREFIXE_SALLE + id, s.nom(), 1.0, -1));
         if (parts.keySet().removeIf(id -> ZonesLoot.zone(dim, id) == null)) setDirty();
         parts.forEach((id, p) -> ZonesLoot.zone(dim, id).partForcee = p);
         if (places.isEmpty()) return;
@@ -467,6 +639,16 @@ public final class RotationLoot extends SavedData {
      */
     void reconcilier(ServerLevel l) {
         remettrePlaces(l);
+        if (!salles.isEmpty()) {                                        // conteneur d'un fichier ajouté depuis dans une salle
+            Map<Long, String> dedans = new HashMap<>();
+            for (Long2ObjectMap.Entry<ZonesLoot.Zone> e : ZonesLoot.index(l.dimension()).long2ObjectEntrySet()) {
+                long k = e.getLongKey();
+                if (estSalle(e.getValue().id) || invalides.containsKey(k) || salleDe(k) == null) continue;
+                String n = e.getValue().conteneur(k);
+                if (n != null) dedans.put(k, n);
+            }
+            dedans.forEach((k, n) -> adopter(l, k, n));
+        }
         Map<String, ZonesLoot.Zone> zones = ZonesLoot.zones(l.dimension());
         Object2IntOpenHashMap<String> nbInvalides = new Object2IntOpenHashMap<>();
         ObjectIterator<Long2ObjectMap.Entry<String>> ii = invalides.long2ObjectEntrySet().iterator();
@@ -502,6 +684,7 @@ public final class RotationLoot extends SavedData {
         for (Attente a : attentes) nbAttentes.addTo(a.zone(), 1);
         int ajoutes = 0, retires = perimes.size();
         for (ZonesLoot.Zone z : zones.values()) {
+            if (estSalle(z.id)) continue;                               // salle à carte : rien sans recharge de Bunker
             int cible = z.cible(z.taille() - nbInvalides.getInt(z.id));
             LongArrayList act = parZone.getOrDefault(z.id, new LongArrayList());
             int a = act.size(), p = nbAttentes.getInt(z.id);
@@ -559,11 +742,7 @@ public final class RotationLoot extends SavedData {
     // ------------------------------------------------------------------------------------------ chaque seconde
     static void tick(ServerLevel l) {
         RotationLoot e = get(l);
-        int v = ZonesLoot.version();
-        if (e.versionVue != v) {
-            e.versionVue = v;
-            e.reconcilier(l);
-        }
+        e.aJour(l);
         if (!e.attentes.isEmpty()) {
             long now = l.getGameTime();
             List<Attente> dues = new ArrayList<>();

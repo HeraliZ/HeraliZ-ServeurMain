@@ -36,6 +36,8 @@ public final class Clip {
     public static final int FRAPPE = 32;
     /** Mort ou elimine a cette image. */
     public static final int MORT = 64;
+    /** Vise avec son arme TaCZ (Matchs 0.10.0 : la killcam montre l'arme du tueur en position de visee). */
+    public static final int VISE = 128;
 
     // ---- raisons
     /** Killcam de sa propre mort, envoyee a la victime. */

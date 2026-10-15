@@ -50,7 +50,12 @@ public class CibleEntrainement extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide && tickCount % 20 == 0) discard();
+        if (!level().isClientSide && tickCount % 20 == 0 && !rattachee()) discard();
+    }
+
+    /** Vrai si la cible a encore sa partie de duel (version serveur) ; ici, jamais : elle disparait. */
+    protected boolean rattachee() {
+        return false;
     }
 
     @Override

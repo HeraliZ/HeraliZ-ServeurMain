@@ -40,17 +40,14 @@ import org.lwjgl.glfw.GLFW;
  *    <li>pas de coup pendant que le couteau sort (temps de sortie de son arme TaCZ, compté depuis qu'il est en main, puis
  *    tant que le serveur le voit sortir, comme pour les tirs de TaCZ), ni à terre ou en train de fouiller ou de réanimer,
  *    ni avec un écran ouvert ;</li>
- *    <li>coup accepté : paquet au serveur, puis comme la touche « Mêlée » de TaCZ (LocalPlayerMelee) : bruit « melee_push »
- *    du couteau et animation « melee_push » (signal « bayonet_push » de sa machine à états) ; coup puissant : animation
- *    « melee_stock » (CoupLourdClient, 14/10), différente du coup rapide.</li>
+ *    <li>coup accepté : paquet au serveur, puis l'animation du coup, bien différente d'un coup à l'autre comme pour les
+ *    couteaux de LR (AnimCouteaux, 15/10) : coup rapide = tranche latérale vive, de gauche à droite puis de droite à
+ *    gauche ; coup puissant = estoc, bras armé puis poussé vers l'avant, plus lent ; bruits des couteaux de LR et petit
+ *    mouvement de caméra (SecousseCouteau). En secours (animations HeraliZ impossibles) : animation « melee_push » du
+ *    gunpack et son bruit, comme la touche « Mêlée » de TaCZ.</li>
  * </ul>
  */
 public final class CouteauxClient {
-   /** Signal de la machine à états de TaCZ qui joue l'animation « melee_push » (coup sans accessoire de mêlée). */
-   private static final String SIGNAL_COUP = "bayonet_push";
-   /** Signal qui joue « melee_stock » : le coup puissant (CoupLourdClient). */
-   private static final String SIGNAL_COUP_LOURD = "bayonet_stock";
-
    /** Horloge du joueur, en ticks (avance à chaque tick du jeu). */
    private static long horloge;
    /** Tick à partir duquel un nouveau coup est permis (cadence du dernier coup, ou couteau qui sort). */
@@ -76,11 +73,13 @@ public final class CouteauxClient {
          }
       });
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, GunMeleeEvent.class, CouteauxClient::coupDeTacz);
-      ReseauCouteaux.COUP_VU_CLIENT.brancher(CoupLourdClient::vu);
+      ReseauCouteaux.COUP_VU_CLIENT.brancher(AnimCouteaux::vu);
+      SecousseCouteau.brancher();
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ClientPlayerNetworkEvent.LoggingIn.class, e -> {
          pretA = 0L;
          caseVue = -1;
          armeVue = null;
+         AnimCouteaux.oublierJoueurs();
       });
    }
 
@@ -110,12 +109,12 @@ public final class CouteauxClient {
       ReseauCouteaux.envoyerAuServeur(new PaquetCoupCouteau(lourd));
       ItemStack main = joueur.getMainHandItem();
       TimelessAPI.getGunDisplay(main).ifPresent(affichage -> {
-         SoundPlayManager.playMeleePushSound(joueur, affichage);
+         IGun ig = IGun.getIGunOrNull(main);
          AnimationStateMachine<?> etats = affichage.getAnimationStateMachine();
-         if (etats != null) {
-            IGun ig = IGun.getIGunOrNull(main);
-            boolean clipLourd = lourd && ig != null && CoupLourdClient.preparer(etats.getAnimationController(), ig.getGunId(main));
-            etats.trigger(clipLourd ? SIGNAL_COUP_LOURD : SIGNAL_COUP);
+         if (AnimCouteaux.jouer(etats, ig == null ? null : ig.getGunId(main), lourd)) {
+            SecousseCouteau.lancer(lourd, AnimCouteaux.derniereTranchePremiere());
+         } else {
+            SoundPlayManager.playMeleePushSound(joueur, affichage); // secours : coup du gunpack, avec son bruit
          }
       });
       return true;

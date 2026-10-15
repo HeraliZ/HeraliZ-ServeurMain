@@ -27,7 +27,8 @@ public final class BombeRendu extends GeoEntityRenderer<BombeDuel> implements Ca
 
     public BombeRendu(EntityRendererProvider.Context ctx) {
         super(ctx, new Modele());
-        this.shadowRadius = 0.7f;
+        withScale(BombeDuel.ECHELLE);
+        this.shadowRadius = 0.7f * BombeDuel.ECHELLE;
         this.shadowStrength = 0.6f;
         addRenderLayer(new CalqueLumineux<>(this));
     }

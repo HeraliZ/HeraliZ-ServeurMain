@@ -133,7 +133,8 @@ final class KillcamHud {
             int tf = (int) (ta * fp);
             if (tf >= 8) {
                 vueTueur.dessiner(g, font, 27, 21, Ui.argb(Ui.mix(ROUGE, 0xFFFFFF, 0.45f), tf));
-                viseur(g, W / 2, H / 2, (int) (190 * a * fp));
+                // en visee, l'organe de visee de l'arme fait office de viseur
+                viseur(g, W / 2, H / 2, (int) (220 * a * fp * (1f - 0.9f * l.visee())));
             }
             // raison (en haut a droite)
             if (raison != null) {

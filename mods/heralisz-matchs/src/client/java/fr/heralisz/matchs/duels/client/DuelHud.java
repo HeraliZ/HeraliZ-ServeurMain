@@ -32,12 +32,13 @@ import java.util.Locale;
  * l'explosion, toasts de fin des defis (refuse, annule, expire : en haut a gauche ; les defis recus sont dans
  * {@link NotifDefis}, en haut a droite). DM Sans, verre, aucun element vanilla. Les textes sont prepares a la
  * reception (pas d'allocation par image hors chiffres qui changent).
- * <p>Reperes A / B (retour des proprietaires : ils genaient la visee) : bien visibles seulement pendant le choix de
- * classe et les {@link #REPERES_DEBUT_MS} premieres secondes de chaque manche (fondu de {@link #REPERES_FONDU_MS}) ;
- * ensuite un badge tres pale, sans distance. Badge (14/10, l'ancien carre de 13 px etait trop laid) : carre aux coins
- * arrondis en verre sombre, bord a la couleur de l'equipe, lettre, pointe vers le site et distance en metres dessous ;
- * formes lisses tirees de {@code textures/gui/duel_repere.png} (outils/reperes/reperes_sites.py). Toujours effaces pres du viseur (centre de l'ecran) et quand le joueur est sur le
- * site ; touche « liste des joueurs » (Tab) enfoncee = reperes bien visibles. Rien pendant une killcam.
+ * <p>Reperes A / B (16/10, Matchs 0.10.0 : le badge a pointe et distance faisait « bulle de texte ») : petit carre de
+ * {@link #TAILLE} px d'interface, contour fin, fond presque transparent, lettre fine, couleur de l'equipe attenuee ; ni
+ * pointe, ni distance. Toujours legers ({@link #OPACITE_DISCRETE}), un peu plus pendant le choix de classe, les
+ * {@link #REPERES_DEBUT_MS} premieres secondes de chaque manche et Tab enfonce ({@link #OPACITE_FORTE}) ; encore plus pales
+ * pres du viseur (jamais devant la cible) ; effaces quand le joueur est sur le site. Meme carre avec « ! » pour la bombe
+ * amorcee et l'ordinateur au sol. Formes lisses tirees de {@code textures/gui/duel_repere.png} (outils/reperes/reperes_sites.py,
+ * jamais retouchee a la main). Rien pendant une killcam.
  */
 final class DuelHud {
     private DuelHud() {
@@ -47,10 +48,13 @@ final class DuelHud {
     static final long REPERES_DEBUT_MS = 8000;
     /** Passage de « bien visibles » a « discrets » (ms). */
     static final long REPERES_FONDU_MS = 1200;
-    /** Opacite d'un repere discret (badge pale, sans distance). */
-    private static final float REPERES_DISCRETS = 0.32f;
-    /** Pres du viseur (pixels d'interface depuis le centre) : efface en dessous de MIN, entier au-dela de MAX. */
-    private static final float VISEUR_MIN = 18f, VISEUR_MAX = 64f;
+    /** Opacite d'un repere : en temps normal, et bien visible (debut de manche, Tab). */
+    private static final float OPACITE_DISCRETE = 0.40f, OPACITE_FORTE = 0.62f, OPACITE_ALERTE = 0.55f;
+    /** Pres du viseur (pixels d'interface depuis le centre) : opacite x VISEUR_RESTE en dessous de MIN, entiere au-dela de MAX. */
+    private static final float VISEUR_MIN = 10f, VISEUR_MAX = 48f, VISEUR_RESTE = 0.22f;
+    /** Couleur de l'equipe melee de ce gris clair (attenuee). */
+    private static final int GRIS = 0xC8CCD2;
+    private static final float ATTENUE = 0.45f;
     /** Pres du site (blocs, a plat) : efface en dessous de MIN, entier au-dela de MAX. */
     private static final double SITE_MIN = 8, SITE_MAX = 14;
     /** Reperes bien visibles jusqu'a cette heure (Util.getMillis) ; MAX_VALUE pendant le choix de classe. */
@@ -67,13 +71,11 @@ final class DuelHud {
     private static int derniereSeconde = -1;
     private static Component texteMinuterie = Component.empty();
     private static int prochainBip;
-    private static final Component LETTRE_A = Ui.lit("A", Ui.BOLD), LETTRE_B = Ui.lit("B", Ui.BOLD), ALERTE = Ui.lit("!", Ui.BOLD);
-    /** Formes du badge (fond, bord, reflet ; cases de 64 x 80 sur une planche de 256 x 128, filtrage lisse). */
-    private static final ResourceLocation BADGE = HeraliszMatchs.id("textures/gui/duel_repere.png");
-    /** Badge de 22 px d'interface de large (case de 64 px) ; du centre du carre a la pointe : 44 px de la case. */
-    private static final float BADGE_ECHELLE = 22f / 64f, BADGE_POINTE = 44f * BADGE_ECHELLE;
-    /** « 27 m » : textes des distances gardes une fois crees. */
-    private static final Component[] DISTANCES = new Component[1000];
+    /** Formes du repere (planche de 256 x 32, cases de 32 x 32 : contour, fond, A, B, « ! » ; filtrage lisse). */
+    private static final ResourceLocation REPERE = HeraliszMatchs.id("textures/gui/duel_repere.png");
+    private static final int CASE = 32, CASE_CONTOUR = 0, CASE_FOND = 1, CASE_A = 2, CASE_B = 3, CASE_ALERTE = 4;
+    /** Cote du carre, en pixels d'interface. */
+    private static final float TAILLE = 10f;
     /** Couleur du piratage (ecran de l'ordinateur, barre du HUD). */
     private static final int PIRATE = 0x46DCFF;
     /** Libelle de la barre d'action garde tant qu'il ne change pas (code n / 3, dixiemes de seconde du piratage). */
@@ -272,7 +274,7 @@ final class DuelHud {
             Ui.centered(g, font, ligneHaut, cx, y, Ui.argb(Ui.mix(couleurHaut, 0xFFFFFF, 0.3f), 255));
         }
         // reperes a l'ecran
-        reperes(g, font, w, h, v, now);
+        reperes(g, w, h, v, now);
         // barre d'action (amorcage : code n / 3 ; piratage : secondes restantes)
         if (v.action() != Vues.ACTION_AUCUNE) {
             float fait = Math.min(v.totalTicks(), v.faitTicks() + (now - rdRecuMs) / 50f);
@@ -310,76 +312,66 @@ final class DuelHud {
         return ligneAction;
     }
 
-    private static void reperes(GuiGraphics g, Font font, int w, int h, Vues.RdVue v, long now) {
+    private static void reperes(GuiGraphics g, int w, int h, Vues.RdVue v, long now) {
         double[] s = v.sites();
         boolean sitesConnus = s.length >= 6 && (s[0] != 0 || s[2] != 0);
         if (sitesConnus && v.etat() != Vues.CHARGE_POSEE) {
             Minecraft mc = Minecraft.getInstance();
-            // Tab (liste des joueurs) enfonce : on regarde ou sont les sites, reperes bien visibles
+            // Tab (liste des joueurs) enfonce : on regarde ou sont les sites, reperes un peu plus visibles
             float force = mc.options.keyPlayerList.isDown() ? 1f : forceReperes(now);
             int c = v.attaque() ? Ui.AMBRE : Ui.ACCENT_NEUTRE;
-            repere(g, font, w, h, s[0], s[1] + 1.2, s[2], LETTRE_A, c, force);
-            repere(g, font, w, h, s[3], s[4] + 1.2, s[5], LETTRE_B, c, force);
+            // au-dessus de la bombe (1,75 bloc de haut, gyrophare compris)
+            repere(g, w, h, s[0], s[1] + 1.9, s[2], CASE_A, c, force);
+            repere(g, w, h, s[3], s[4] + 1.9, s[5], CASE_B, c, force);
         }
         boolean chargeVisible = v.etat() == Vues.CHARGE_POSEE || (v.attaque() && v.etat() == Vues.CHARGE_AU_SOL);
         if (chargeVisible && projeter(v.x(), v.y() + 0.9, v.z(), w, h)) {
             int c = v.etat() == Vues.CHARGE_POSEE ? Ui.DANGER : Ui.AMBRE;
-            float pulse = 0.7f + 0.3f * (float) Math.abs(Math.sin(now / 220.0));
-            Minecraft mc = Minecraft.getInstance();
-            int m = mc.player == null ? -1 : (int) Math.round(Math.sqrt(mc.player.distanceToSqr(v.x(), v.y(), v.z())));
-            badge(g, font, sx, sy, ALERTE, c, pulse, m);
+            float pulse = 0.85f + 0.15f * (float) Math.abs(Math.sin(now / 260.0));
+            carre(g, sx, sy, CASE_ALERTE, c, OPACITE_ALERTE * pulse * pres(sx, sy, w, h));
         }
     }
 
+    /** Facteur d'opacite pres du viseur (centre de l'ecran) : VISEUR_RESTE au centre, 1 au-dela de VISEUR_MAX. */
+    private static float pres(float x, float y, int w, int h) {
+        double ex = x - w / 2.0, ey = y - h / 2.0;
+        return VISEUR_RESTE + (1f - VISEUR_RESTE) * lisse(VISEUR_MIN, VISEUR_MAX, Math.sqrt(ex * ex + ey * ey));
+    }
+
     /**
-     * Un repere de site : {@code force} 1 = badge bien visible avec la distance (debut de manche), 0 = badge tres pale
-     * sans distance. Efface pres du viseur (jamais devant un adversaire qu'on vise) et quand le joueur est sur le site.
+     * Un repere de site : {@code force} 1 = un peu plus visible (debut de manche, Tab), 0 = discret. Plus pale pres du
+     * viseur (jamais devant un adversaire qu'on vise), efface quand le joueur est sur le site.
      */
-    private static void repere(GuiGraphics g, Font font, int w, int h, double x, double y, double z, Component lettre, int couleur, float force) {
+    private static void repere(GuiGraphics g, int w, int h, double x, double y, double z, int caseLettre, int couleur, float force) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || !projeter(x, y, z, w, h)) return;
         double dx = x - mc.player.getX(), dz = z - mc.player.getZ();
-        double plat = Math.sqrt(dx * dx + dz * dz);
-        float loin = lisse(SITE_MIN, SITE_MAX, plat);
-        double ex = sx - w / 2.0, ey = sy - h / 2.0;
-        float horsViseur = lisse(VISEUR_MIN, VISEUR_MAX, Math.sqrt(ex * ex + ey * ey));
-        // bien visible : un peu attenue pres du viseur seulement ; discret : rien du tout pres du viseur
-        float plein = loin * (0.35f + 0.65f * horsViseur), discret = REPERES_DISCRETS * loin * horsViseur;
-        float a = discret + (plein - discret) * force;
+        float loin = lisse(SITE_MIN, SITE_MAX, Math.sqrt(dx * dx + dz * dz));
+        float a = (OPACITE_DISCRETE + (OPACITE_FORTE - OPACITE_DISCRETE) * force) * loin * pres(sx, sy, w, h);
         if (a < 0.03f) return;
-        badge(g, font, sx, sy, lettre, couleur, a, force > 0.5f ? (int) Math.round(Math.sqrt(mc.player.distanceToSqr(x, y, z))) : -1);
+        carre(g, sx, sy, caseLettre, couleur, a);
     }
 
     /**
-     * Badge dont la pointe touche (px, py) : verre sombre, bord {@code couleur}, reflet, lettre, et la distance dessous si
-     * {@code metres} >= 0. {@code a} : opacite (0 a 1).
+     * Petit carre centre sur (px, py) : fond sombre presque transparent, contour fin et lettre de la couleur attenuee
+     * {@code couleur}. {@code a} : opacite (0 a 1).
      */
-    private static void badge(GuiGraphics g, Font font, float px, float py, Component lettre, int couleur, float a, int metres) {
-        float cx = px, cy = py - BADGE_POINTE;
+    private static void carre(GuiGraphics g, float px, float py, int caseLettre, int couleur, float a) {
+        int c = Ui.mix(couleur, GRIS, ATTENUE);
+        float e = TAILLE / CASE;
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         g.pose().pushPose();
-        g.pose().translate(cx, cy, 0);
-        g.pose().scale(BADGE_ECHELLE, BADGE_ECHELLE, 1f);
-        teinte(0x0D0F14, 0.82f * a);
-        g.blit(BADGE, -32, -32, 0f, 0f, 64, 80, 256, 128);
-        teinte(couleur, 0.95f * a);
-        g.blit(BADGE, -32, -32, 64f, 0f, 64, 80, 256, 128);
-        teinte(0xFFFFFF, 0.16f * a);
-        g.blit(BADGE, -32, -32, 128f, 0f, 64, 80, 256, 128);
+        g.pose().translate(px, py, 0);
+        g.pose().scale(e, e, 1f);
+        teinte(0x0D0F14, 0.18f * a);
+        g.blit(REPERE, -CASE / 2, -CASE / 2, CASE_FOND * CASE, 0f, CASE, CASE, 256, 32);
+        teinte(c, a);
+        g.blit(REPERE, -CASE / 2, -CASE / 2, CASE_CONTOUR * CASE, 0f, CASE, CASE, 256, 32);
+        teinte(Ui.mix(c, 0xFFFFFF, 0.35f), Math.min(1f, a * 1.1f));
+        g.blit(REPERE, -CASE / 2, -CASE / 2, caseLettre * CASE, 0f, CASE, CASE, 256, 32);
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         g.pose().popPose();
-        int alpha = Math.max(4, (int) (255 * a));
-        g.pose().pushPose();
-        g.pose().translate(cx, cy, 0);
-        g.pose().scale(1.2f, 1.2f, 1f);
-        Ui.centered(g, font, lettre, 0.5f, -3.6f, Ui.argb(Ui.mix(couleur, 0xFFFFFF, 0.55f), alpha));
-        g.pose().popPose();
-        if (metres >= 0) {
-            Component d = DISTANCES[Math.min(metres, DISTANCES.length - 1)];
-            if (d == null) d = DISTANCES[Math.min(metres, DISTANCES.length - 1)] = Ui.lit(Math.min(metres, DISTANCES.length - 1) + " m", Ui.SMALL);
-            Ui.centered(g, font, d, cx + 0.5f, py + 3f, Ui.argb(Ui.TEXT, (int) (230 * a)));
-        }
     }
 
     private static void teinte(int rgb, float a) {

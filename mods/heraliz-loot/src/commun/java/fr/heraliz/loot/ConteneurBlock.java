@@ -70,6 +70,21 @@ public class ConteneurBlock extends HorizontalDirectionalBlock implements Encomb
         return encombrement;
     }
 
+    /**
+     * Palier (1 à 7) d'un conteneur d'après le chiffre de son préfixe : t3_frigo -> 3, nourriture2_... -> 2, t7_largage
+     * -> 7 ; 0 sans chiffre (véhicules) ou hors de 1 à 7. Même lecture que les zones de la rotation (ZonesLoot.niveau).
+     * Lu aussi par le jeu du joueur (badge « T3 » de l'écran de fouille), d'après le nom du bloc reçu dans le titre.
+     */
+    public static int palier(String nom) {
+        int i = nom.indexOf('_');
+        String p = i > 0 ? nom.substring(0, i) : nom;
+        int j = p.length();
+        while (j > 0 && Character.isDigit(p.charAt(j - 1))) j--;
+        if (j == p.length() || p.length() - j > 1) return 0;
+        int n = p.charAt(p.length() - 1) - '0';
+        return n >= 1 && n <= 7 ? n : 0;
+    }
+
     /** Conteneur portant ce nom (sans namespace), ou null. */
     @Nullable
     public static ConteneurBlock parNom(String nom) {

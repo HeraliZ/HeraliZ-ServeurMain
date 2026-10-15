@@ -38,6 +38,7 @@
   "execution.reanimation.home_run": "Home Run",
   "gui.reanimation.search": "Fouille : %s",
   "gui.reanimation.backpack": "Sac",
+  "gui.reanimation.curios_slot": "Emplacement : %s",
   "gui.reanimation.bleed": "%s s",
   "message.reanimation.already_searched": "%s est déjà en train d'être fouillé",
   "message.reanimation.being_revived": "%s est déjà en train d'être réanimé",

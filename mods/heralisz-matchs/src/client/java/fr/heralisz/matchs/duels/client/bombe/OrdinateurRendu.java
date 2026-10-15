@@ -81,12 +81,13 @@ public final class OrdinateurRendu extends GeoEntityRenderer<OrdinateurDuel> {
         // prise de la bombe (même rotation que son rendu) et direction vers laquelle regarde son module
         double bx = Mth.lerp(partial, b.xo, b.getX()), by = Mth.lerp(partial, b.yo, b.getY()), bz = Mth.lerp(partial, b.zo, b.getZ());
         double t = Math.toRadians(180.0 - b.getYRot());
-        double px = BombeDuel.PRISE_X / 16.0, py = BombeDuel.PRISE_Y / 16.0 + 0.01, pz = BombeDuel.PRISE_Z / 16.0;
+        double k = BombeDuel.ECHELLE / 16.0;
+        double px = BombeDuel.PRISE_X * k, py = BombeDuel.PRISE_Y * k + 0.01, pz = BombeDuel.PRISE_Z * k;
         double qx = bx + px * Math.cos(t) + pz * Math.sin(t), qy = by + py, qz = bz - px * Math.sin(t) + pz * Math.cos(t);
         double psi = Math.toRadians(b.getYRot());
         double fx = -Math.sin(psi), fz = Math.cos(psi);
         double sol = p.sol + 0.02;
-        double pied1x = qx + fx * 0.14, pied1z = qz + fz * 0.14;
+        double pied1x = qx + fx * 0.14 * BombeDuel.ECHELLE, pied1z = qz + fz * 0.14 * BombeDuel.ECHELLE;
         double[] pts;
         if (p.tenu) {
             // des mains au sol, un peu vers la bombe, puis au pied du module

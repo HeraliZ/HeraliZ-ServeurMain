@@ -36,7 +36,11 @@ quand un choix leur revient.
     propriétaires en jeu (détails, améliorations). **On ne touche JAMAIS aux fichiers du monde** : ni ici, ni sur le
     Ptero (pas de case « deposer_carte », pas de copie, pas de retouche). Quand la construction sera finie, le monde du
     Ptero sera copié dans GitHub : ce sera la carte « finale » de référence (section 9). Un mod ou un pack de textures
-    fourni pour la carte (jar + sources) s'ajoute ici comme d'habitude (section 9).
+    fourni pour la carte (jar + sources) s'ajoute ici comme d'habitude (section 9). Exception (demande du propriétaire
+    du 15/10) : les conteneurs de loot HeraliZ Loot T1 à T6 déjà posés peuvent être remplacés par d'autres modèles du
+    même palier (et, avec `--ajouts` seulement, un modèle sans aucune place posé sur une case libre), jamais par
+    fichier : seulement par les lots de commandes conditionnelles du plan des props (section 8, « Props de la carte »),
+    joués par le serveur, après validation du propriétaire, et annulables. Rien d'autre (ni meubles cfm, ni T7).
 
 ---
 
@@ -135,14 +139,14 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
-| heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) |
+| heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) ; zones des salles à carte (`salles_carte/<nom>`), remplies seulement quand Bunker les recharge ; palier « T1 » à « T7 » en petit badge coloré à côté du nom dans l'écran de fouille et conteneurs de Minecraft scellés en survie (0.8.0) |
 | heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Seulement les blocs posés sur la carte (1.9.0 : 48 blocs jamais posés retirés, d'après le workflow « Inventaire de la carte » ; gardés aussi `tole_toit_bleue` et `tole_toit_rouille`, dont les escaliers et dalles sont posés). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
 | heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons ; une seule protection par pièce et six raretés (0.15.0, section 10 « équilibrage ») |
 | heraliz-composants | heraliz_composants | heraliz_composants | 47 composants de craft (armes, soins, viseurs, munitions, protection, divers) et objets de récupération à revendre, modèles 3D et icônes ; rareté = couleur du nom ; tags `heraliz_composants:<catégorie>` et `tous`. Aucune recette ni loot (refonte à venir). Modèles, icônes, traductions, tags et `ComponentDefs.java` refaits par `python mods/heraliz-composants/outils/build.py mods/heraliz-composants` (catalogue : `outils/composants.py`) |
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
 | heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) |
-| heralisz-bunker | heralisz_bunker | heralisz_bunker | portes animées (reprises de HBM Modernized, GPL), cartes d'accès, barricades |
-| reanimation | reanimation | reanimation | joueurs à terre, réanimation, fouille, exécutions |
+| heralisz-bunker | heralisz_bunker | heralisz_bunker | portes animées (reprises de HBM Modernized, GPL), cartes d'accès, barricades ; salles à carte (`/salle`, baguette du staff) : porte tenue ouverte tant que quelqu'un est dedans, loot de la salle (avec HeraliZ Loot) |
+| reanimation | reanimation | reanimation | joueurs à terre, réanimation, fouille (Curios compris), exécutions |
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
@@ -312,6 +316,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `fr.heralisz.tactical.api.HeraliszTacticalAPI` | tactique (commun) | index des objets tactiques |
 | `com.heraliz.extraction.api.ExtractionApi` | extraction (commun, rempli chez le joueur) | extractions ouvertes (`ouvertes()`, `version()`) pour la carte du monde |
 | `fr.heralisz.clans.api.CarteApi` (paquets `CarteDemandeC2S` / `CarteS2C`) | clansetbases (commun, rempli chez le joueur) | pour la carte du monde (lue par réflexion par utils) : `demander()` (au plus 1 par seconde), `zones()` (état public de chaque zone, celui du drapeau), `allies()` (membres de son clan dans le même monde, personne en match), `monClan()`, `version()`, `dessinerBanniere(...)`, `ravitailler(id)` |
+| `fr.heraliz.loot.SallesLoot` (`declarer`, `retirer`, `recharger`, `etat`) | loot (serveur, appelée par réflexion par Bunker) | salles à carte : leurs conteneurs quittent la rotation et ne se remplissent qu'à la recharge |
 | `fr.heraliz.loot.client.RaretesClient.couleur(ItemStack)` | loot (client, lu par réflexion par dayzhotbar) | couleur de rareté d'un objet (0 : aucune) |
 | données persistantes du joueur `PlayerPersisted.HeralizBonusLoot.<source>` | lues par loot (serveur), écrites par clansetbases (`clan`) et utils (`objet`) | bonus de loot : `{Pct, Fin (heure en ms)}` ou `{Pct, Restant (ticks de jeu)}`, sources additionnées, plafond 25 % (`fr.heraliz.loot.BonusLoot`) |
 
@@ -543,6 +548,30 @@ aux mêmes chemins, pouvaient passer devant sur le serveur selon l'ordre de lect
 remplacées par celles de nos packs (largages, caisses, Annihilator des Zombies). Les joueurs n'ont jamais ces gunpacks
 (pack du launcher = dépôt). À lancer après avoir retiré un gunpack ou une arme du dépôt.
 
+**Props de la carte** (consigne du propriétaire du 15/10) : utiliser les modèles de HeraliZ Loot, T1 à T6 seulement
+(T7 = événements, jamais posé par le plan), et que **100 % des modèles T1 à T6** soient sur la carte, en nombre
+équilibré (plus « toujours les mêmes »). C'est tout : ni meubles cfm (ni anciens meubles cfm à reposer, ni
+variantes), ni points T7, ni familles (nourriture, soins, munitions). « Inventaire de la carte », case « props »
+(lecture seule) : `outils/props_carte.py` découpe les pièces et relève les incohérences, puis `outils/props_plan.py`
+fait le plan, étape **`diversification`** : un conteneur T1 à T6 déjà posé est remplacé par un autre modèle du MÊME
+palier (le loot de la zone ne change pas de niveau), d'abord là où il y a une incohérence (2 cuisinières, 2 frigos,
+prop d'extérieur dans une maison...), puis pour que chaque modèle ait son minimum de places (8 en T1, 6 en T2, 4 en T3
+et T4, 3 en T5, 2 en T6, plafonné par les places du palier), puis pour équilibrer (un modèle à plus de 1,5 fois sa part
+cède des places) ; un modèle posé ne disparaît jamais. Règles (`outils/props_catalogue.py`) : même gabarit (meuble ↔
+meuble, objet ↔ objet, cadavre ↔ cadavre, véhicule ↔ véhicule ; un gros conteneur seulement s'il a la place libre
+exacte), même orientation, type de pièce (pas de prop d'extérieur dans une maison ni l'inverse), une cuisinière / un
+frigo par pièce ; conteneur avec des données (inventaire) jamais touché. Étape **`ajouts`** à part, seulement avec
+l'option `--ajouts` (« props_options ») : un modèle sans AUCUNE place de remplacement cohérente (cadavres T2 à T4, dont
+aucun n'est posé ; mobilier de salle de bain, de caserne de pompiers, de banque...) est posé sur une case libre, à
+moins de 48 blocs d'un conteneur de son palier ; la part d'actifs de la zone baisse d'autant. Le rapport (`plan.md`)
+donne les modèles posés avant / après et les absents avec leur raison. Sur la copie v3 : 366 modèles T1 à T6, 256
+posés avant (70 %), 337 après la diversification (92 %, 4 615 remplacements sur 27 954 conteneurs), 366 (100 %) avec
+les 39 ajouts. Plan enregistré dans `props_carte/` sur la branche de travail (jamais `main`). Après validation du
+propriétaire : workflow « Props de la carte » sur cette branche (essai à blanc par défaut ; « envoyer », sauvegarde du
+panel, étapes, lots, pause ; « annuler » rejoue le journal). Chaque commande est `execute if block <état relevé> … run
+setblock …` (cases en plus d'un gros conteneur : `if block … minecraft:air`) : un prop changé entre-temps par les
+constructeurs n'est pas touché ; HeraliZ Loot retire et repose seul les blocs « partie ». Rien testé en jeu.
+
 **Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
 fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets
 « test-mods-serveur » et « test-mods-client », pour essayer en jeu). Ne faire passer une branche sur `main` que quand il
@@ -739,6 +768,31 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
     les blocs posés dans chaque monde du Ptero) : un bloc retiré qui est posé disparaît de la carte au chargement.
     Si le propriétaire fournit une nouvelle version d'un de ces mods pour la carte, la rapporter ici de la même façon (assembler avec ce
     qui a été fait ici entre-temps, fabriquer, vérifier). Rien de tout cela n'a été testé sur le serveur.
+- **Monde du spawn** (Utils 2.12.0, 15/10) : dimension `heralisz:spawn`, déclarée par `src/serveur/resources/data/heralisz/`
+  de HeraliZ Utils. Vide autour, rien ne s'y génère, pas de monstres ni de combat entre joueurs, nuit fixe, sa propre
+  bordure. Son contenu est la grotte du terminus de la cinématique : l'ancien monde du spawn de l'ancienne carte n'a été
+  retrouvé ni dans Git ni sur le Ptero. Elle est **générée** par `python outils/monde_spawn.py grotte --rendus <dossier>`,
+  jamais retouchée à la main (`copier <monde> --zone ...` recopie une zone d'un monde, en lecture seule). Dépôt UNE fois
+  dans `dimensions/heralisz/spawn/` du monde en service : workflow « Serveur HeraliZ », case `deposer_spawn` (refus si le
+  dossier existe), puis redémarrer. Arrivée : première connexion et mort sans lit → point de réveil (cinématique).
+  Extraction : retour au même point (`useHeralizSpawn` de `heraliz_extraction-common.toml`, par
+  `fr.heralisz.utils.api.SpawnApi`, à ne jamais renommer). **Borne de départ** (`heralisz_utils:borne_depart`, modèle de
+  `mods/heralisz-utils/outils/borne_depart.py`, provisoire à valider) : clic droit au spawn → 5 s sans bouger → vraie
+  téléportation sur la carte, à un point sûr tiré au hasard (sol naturel à ciel ouvert, pas d'eau, loin des joueurs,
+  hors zones dangereuses, jamais de terrain généré), fondu et 5 s de protection. Staff : `/depart borne | point
+  ajouter|retirer|tp|liste <nom> | zone ajouter <nom> <rayon> | essai [tp] | joueur <cibles> | info`. Points gardés avec
+  la carte (`data/heraliz_depart.dat`), réglages dans `heraliz_spawn-server.toml`.
+  **Spawn composé** (15/10) : grotte du terminus (réveil -61 265 2, épave, inchangés ; porte de service de la niche
+  retirée) + le schematic du spawn `spawnbangerdelamort` à l'est, relié par un tunnel de pierre de taille (3 × 3,
+  escaliers si besoin) qui part de la niche ; la borne de départ est dans la partie spawn. Workflow « Schematic du
+  spawn » (`.github/workflows/spawn_schematic.yml`, lecture seule sur le Ptero) : cherche le schematic (racine,
+  `plugins/`, `schematics/`, `config/`, structures du monde), le copie dans `monde/spawn_schematic/` avec son rapport,
+  contrôle l'arrivée, puis compose `monde/spawn/` et `monde/spawn_rendus/` par `python outils/monde_spawn.py composer
+  <schematic>` (`--position`, `--borne`, `--ecart`), sur la branche de travail seulement ; jamais retouché à la main.
+  Formats : `.schem` de WorldEdit et `.nbt` (pas l'ancien `.schematic` de MCEdit). Si l'ensemble dépasse la bordure
+  (256 blocs autour du réveil), la taille conseillée est écrite dans `serveur/defaultconfigs/heraliz_spawn-server.toml`.
+  `deposer_spawn` dépose `monde/spawn/` tel quel. La cinématique ne dépend pas de l'ancienne carte : seul un décor réglé
+  en jeu (`data/heraliz_cinematique.dat` de la carte, `/cinematique reveil`) passe avant celui du mod. Rien testé en jeu.
 - **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
   1024 px au plus avec `carte.json`, dans `mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte/` (jar
   joueur de HeraliZ Utils). Jamais dessiné à la main : refait par `python outils/carte_monde.py <copie du monde>
@@ -821,6 +875,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - barricade en bois (heralisz_bunker) : modèle « mur de rondins couchés » choisi par le propriétaire (rondins entre trois
   poteaux, agrafes de fer, jambes de force), même taille, pose et collision qu'avant ; modèle et textures (4 états
   d'usure) refaits par `python outils/barricade_modele.py` (modèle : `mods/heralisz-bunker/outils/BarricadeModele.java`) ;
+- salles à carte (15/10, Bunker 0.12.0, Loot 0.7.0) : le staff délimite une salle au bloc près, avec la baguette (`/salle baguette` : clic gauche = coin 1, clic droit = coin 2, contour visible chez lui) ou avec `/salle coin1|coin2 [x y z]`, puis `/salle creer <nom> [verte|bleue|rouge]`. Les portes à carte à 3 blocs sont liées et la couleur est prise d'elles ; `/salle lier|delier <nom>` en regardant la porte ou son lecteur ; aussi `liste`, `voir`, `redefinir`, `recharger`, `retirer`. Données gardées avec le monde (`heralisz_bunker_salles.dat`). Après la carte, 10 s pour entrer (en plus du temps d'ouverture). Personne dedans : la porte se referme. Tant qu'un joueur vivant est dans la salle ou dans l'encadrement, elle reste ouverte, puis se referme 2 s après la sortie du dernier. Un déconnecté ne compte pas ; un joueur qui se reconnecte dedans fait rouvrir la porte. Loot (conteneurs de HeraliZ Loot dans la boîte, zone `salles_carte/<nom>`) : jamais tant que quelqu'un est dedans ; il réapparaît en entier 30 min (verte), 2 h (bleue), 4 h (rouge) après la sortie du dernier, en temps de jeu. Réglages : section `[salles]` de `heralisz_bunker-common.toml`. Coffres T7 non concernés. Rien testé en jeu ;
 - Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
   I, menu =, abandon Retour arrière ;
 - Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
@@ -845,6 +900,22 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   « horriblement moche ») : badge arrondi en verre sombre, bord de la couleur de l'équipe, lettre, pointe vers le site et
   distance en mètres dessous ; bombe amorcée et ordinateur au sol au même style (« ! » rouge / ambre) ; mêmes règles de
   visibilité qu'avant (bien visibles 8 s, puis pâles et sans distance). Rien testé en jeu ;
+- duels (15/10, Matchs 0.9.0) : stuff équitable : dans un /duel (1v1, 2v2, les deux équipes), tout le monde choisit parmi les 5 classes de l'hôte (celui qui a lancé le défi), copiées au lancement (`DuelPartie.classesHote`) : s'il modifie ses classes ou se déconnecte pendant la partie, rien ne change pour ce duel. Le serveur n'accepte qu'un numéro de 1 à 5 et construit le kit depuis la classe de l'hôte (aucun camo ni marque de camo à vie) ; le dernier choix mémorisé de chacun n'est ni lu ni écrit (tous partent de la classe 1 de l'hôte). Écran de choix : « Classes de <hôte> · les mêmes pour tous ». Entraînement (`/duel entrainement`) : ses propres classes, comme avant ; cible d'entraînement gardée tant que le duel dure (corrigé en 0.9.0) ;
+- duels (16/10, Matchs 0.10.0) : plantage du jeu à l'amorçage de la bombe corrigé : l'écran animé de l'ordinateur
+  (`duels/client/bombe/EcranVif`) écrivait ses cases et barres dans un tampon de dessin déjà terminé par le texte
+  (chiffres tapés) ; ses textes sont maintenant dessinés après toutes les formes ; la pose des bras par Player Animator
+  (`PosesBombe`) ne peut plus faire planter le rendu (erreur = poses coupées, accroupi normal). Repères des sites A et B
+  refaits (le badge « faisait bulle de texte ») : petit carré de 10 px d'interface, contour fin, fond presque
+  transparent, lettre fine, couleur de l'équipe atténuée, ni pointe ni distance ; opacité 0,40 (0,62 en début de manche
+  et avec Tab), jusqu'à 5 fois plus pâle près du viseur, effacé sur le site ; même carré avec « ! » pour la bombe
+  amorcée et l'ordinateur au sol ; texture générée par `outils/reperes/reperes_sites.py` (`--apercu`), jamais à la
+  main. Bombe des sites 1,75 fois plus grande au rendu (`BombeDuel.ECHELLE`, modèle de `outils/bombe/modeles.py`
+  inchangé : 2,9 blocs de long, 1,75 de haut) ; amorçage jusqu'à 2,8 blocs du centre de la bombe, câble du piratage
+  4,8 blocs (`DuelsConfig`) ; pas de collision. Killcam : l'arme du tueur est dessinée à la fin du rendu du monde
+  (`ArmeEnMain`, étape AFTER_LEVEL) et non plus à l'évènement de la main (le joueur mort est spectateur : Minecraft ne
+  dessine jamais sa main, on ne voyait rien) ; le serveur enregistre la visée TaCZ du tueur (`Clip.VISE`, par
+  réflexion) : arme en position de visée de TaCZ, léger zoom, petit viseur effacé ; chaque tir joue l'animation
+  « shoot » de l'arme et un petit recul. Jars joueurs et serveur de la même fabrication. Rien testé en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
@@ -886,11 +957,18 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
-  - couteaux : le coup puissant (clic droit) a sa propre animation « melee_stock » (générée par
-    `python mods/heraliz-tactique/outils/couteaux_coup_lourd.py` depuis le coup de chaque modèle, réglages `LENTEUR`,
-    `SURCOUCHE` en tête du script ; donnée à TaCZ chez le joueur, `couteaux/CoupLourdClient`) ; vu des autres : grand coup
-    de haut en bas (« melee_3_upper ») pour le coup puissant, deux gestes en alternance pour le coup rapide
-    (`PaquetCoupVu`, canal « couteaux » version 2) ;
+  - couteaux : coups rapide et puissant bien différents, comme les couteaux de LR (15/10, Tactique 2.16.0) : clic gauche =
+    tranche latérale vive, de gauche à droite puis de droite à gauche en alternance (0,45 s, sans préparation) ; clic
+    droit = estoc : bras armé, levé et ramené vers soi (0,22 s, bruit de lame qu'on arme), poussé au fond, tenu, retour
+    lent (0,85 s), bruit plus lourd et petit mouvement de caméra (`couteaux/SecousseCouteau`, image seulement).
+    Animations 1re personne (« heraliz_tranche_1 », « heraliz_tranche_2 », « melee_stock » de chaque modèle) écrites par
+    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableaux `COUPS` et `AMPLITUDE` en tête du script ;
+    `--apercu DOSSIER`), jamais à la main ; jouées directement par `couteaux/AnimCouteaux` avec un fondu de 0,04 s (le
+    signal de TaCZ imposait 0,2 s : la tranche partait en retard et ressemblait au coup puissant), secours : coup du
+    gunpack. Vu des autres : gestes des couteaux de LR (`heralisz_skins:melee/knife` : « slash_upper » / « slash2_upper »
+    en alternance, « stab_upper » ; `couteaux/GesteCouteau`). Le serveur ne touche qu'après la préparation de l'estoc
+    (`CoupsCouteau.DELAI_COUP_LOURD`, 5 ticks ; `cadence_lourd` au moins 7) ; dégâts, cadence et portée inchangés. Temps
+    de l'animation, de la caméra et du délai serveur à changer ensemble. Canal « couteaux » version 3 ;
   - corps des joueurs « démembré » et tête vers le ciel en s'allongeant : la remise à zéro de Réanimation 1.15.0
     (`client/Poses.apply`) n'efface plus les poses de Player Animator ; l'animation « allongé » de TaCZ suit le corps
     couché (`mixin/client/TaczAllongeAnimationMixin`) et le regard de la tête allongé est limité
@@ -966,6 +1044,23 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   yeux au corps pour ouvrir, 6 pour garder ouvert) ; boîte du cadavre dans le sens du corps (1 × 1,9 bloc, carré de
   1,6 en diagonale, 0,45 de haut), sans collision. Fouiller un joueur À TERRE (Réanimation 1.14.0) ne téléporte plus
   à côté de lui non plus (la réanimation, elle, garde sa place à genoux) ;
+- loot (15/10, Loot 0.8.0) : dans l'écran de fouille des conteneurs de HeraliZ Loot (salles à carte comprises) et des
+  coffres T7, petit badge du palier « T1 » à « T7 » juste après le nom (T1 gris, T2 vert, T3 bleu, T4 violet, T5 or,
+  T6 orange, T7 rouge ; `client/BadgePalier`, `EcranConteneur`), style de base façon DayZ inchangé ; palier lu chez le
+  joueur dans le nom du bloc (`ConteneurBlock.palier`, chiffre du préfixe), rien de plus sur le réseau. Conteneurs de
+  Minecraft scellés (`ConteneursVanilla`, serveur) : en survie et en aventure, coffres, barils, fours, alambic,
+  entonnoir, distributeur, dropper, boîtes de Shulker, juke-box, bibliothèque sculptée et tout autre bloc `minecraft:` à
+  inventaire refusent l'ouverture (« Ce conteneur est vide et scellé. »), comme les wagonnets à coffre ou à entonnoir et
+  le coffre des bateaux. Libres : créatif, spectateur, staff (permission 2), coffre de l'Ender, pupitre, feux de camp,
+  postes de travail sans stockage, blocs de nos mods et de cfm, et par défaut les blocs posés dans un claim de CRac
+  (rangements des bases). Réglages : section `[conteneurs_vanilla]` de `heraliz_loot-server.toml` (`actif`, `bloques`,
+  `inventaires_auto`, `exceptions`, `coffre_ender`, `permis_claims_crac`, `entites`). Rien testé en jeu ;
+- fouille d'un joueur à terre (15/10, Réanimation 1.16.0) : ses emplacements Curios (masque, gilet, gants, genouillère,
+  sac à dos, ghillie, brassard) sont montrés dans une colonne à gauche de la fouille, avec leurs icônes de case vide
+  (`menu/SearchMenu`, cases 77 et suivantes ; serveur : `compat/CuriosFouille`, branché sur les vrais emplacements de la
+  victime : objets déplacés, jamais copiés, sac à dos avec son contenu). Prendre : toujours (même un sac plein, comme les
+  cadavres) ; déposer : validateurs de Curios et règle des combinaisons de l'Armurerie (par réflexion). Sans Curios :
+  fouille comme avant. Les cadavres ne changent pas. Rien testé en jeu ;
 - usure (12/10, 13/10, Utils 2.9.0) : l'indicateur de l'arme en main est en bas à droite, sous le HUD de TaCZ
   (`HudUsure`) ; habillage C « anneau » choisi par le propriétaire : pastille de verre de 16 px de haut (≈ 45 px de
   large), petit anneau de la couleur de l'état qui se vide dans le sens horaire (part perdue aux réparations en rouge au
@@ -1072,8 +1167,6 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Bugs repérés, non corrigés** (attendre l'accord du propriétaire) :
   - Sylvorn : les attributs de `SapNode` ne sont pas déclarés (risque de plantage à l'attaque CHANNEL ; correction d'une
     ligne dans `HeraliszSylvorn.attributes`) ;
-  - Matchs : la cible d'entraînement (`/duel entrainement`) est retirée par le serveur dès la première seconde
-    (`CibleEntrainementServeur.tick` appelle `super.tick`, qui la retire toujours) ;
   - Tactique : le C4 posé disparaît au redémarrage du serveur ; le feu au sol des molotovs dure toujours 2 s ;
     l'éclaboussure des grenades à effet est limitée à 4 blocs.
 - **Carte du monde** (HeraliZ Utils 2.8.0, Clans 2.4.0, Interface 1.7.0) : fond provisoire du 12/10 (carte en

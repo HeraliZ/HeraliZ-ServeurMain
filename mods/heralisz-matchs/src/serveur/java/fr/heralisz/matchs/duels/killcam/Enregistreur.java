@@ -141,7 +141,38 @@ public final class Enregistreur {
         if (e.hurtTime > 0) drapeaux |= Clip.BLESSE;
         if (e.swinging) drapeaux |= Clip.FRAPPE;
         if (e.isDeadOrDying()) drapeaux |= Clip.MORT;
+        if (vise(e)) drapeaux |= Clip.VISE;
         p.ecrire(t, e.getX(), e.getY(), e.getZ(), e.yBodyRot, e.getYHeadRot(), e.getXRot(), drapeaux, e.getMainHandItem());
+    }
+
+    // ------------------------------------------------------------------ visee TaCZ (reflexion : TaCZ facultatif)
+    private static boolean viseCherche;
+    @Nullable
+    private static java.lang.reflect.Method operateur, enVisee;
+
+    /** Vrai si l'entite vise avec son arme TaCZ ({@code IGunOperator.getSynIsAiming}) ; faux sans TaCZ ou en cas d'erreur. */
+    private static boolean vise(LivingEntity e) {
+        if (!viseCherche) {
+            viseCherche = true;
+            try {
+                if (net.minecraftforge.fml.ModList.get() != null && net.minecraftforge.fml.ModList.get().isLoaded("tacz")) {
+                    Class<?> c = Class.forName("com.tacz.guns.api.entity.IGunOperator");
+                    operateur = c.getMethod("fromLivingEntity", LivingEntity.class);
+                    enVisee = c.getMethod("getSynIsAiming");
+                }
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+                operateur = null;
+                enVisee = null;
+            }
+        }
+        if (operateur == null || enVisee == null) return false;
+        try {
+            Object op = operateur.invoke(null, e);
+            return op != null && Boolean.TRUE.equals(enVisee.invoke(op));
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+            operateur = null;
+            return false;
+        }
     }
 
     private static String nom(LivingEntity e) {

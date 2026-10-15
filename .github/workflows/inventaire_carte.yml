@@ -7,6 +7,12 @@
 # (« Run workflow » sur une branche de travail, jamais main) : le fond est aussi mis dans le mod HeraliZ Utils et
 # enregistré sur cette branche (utile quand le quota des paquets de GitHub est plein ; ~3 Mo de plus dans le dépôt à
 # chaque fois : à faire rarement). Le monde du Ptero n'est jamais modifié.
+# Case « props » : analyse des props et des conteneurs de loot (outils/props_carte.py : pièces, doublons, props
+# d'extérieur à l'intérieur, modèles absents...), plan de diversification des conteneurs de HeraliZ Loot (consigne du
+# 15/10 : 100 % des modèles T1 à T6 posés, en remplaçant des conteneurs déjà posés par d'autres du même palier ; T7
+# réservé aux événements ; rien sur les meubles cfm) et rendus avant / après, depuis la même copie (plus les zones de
+# loot du pack de données et trois petits fichiers data/, copiés eux aussi en lecture seule). Le plan est enregistré
+# sur la branche de travail (props_carte/) ; on le joue ensuite avec le workflow « Props de la carte ».
 name: Inventaire de la carte
 
 on:
@@ -16,6 +22,14 @@ on:
         description: "Mettre le fond de la carte du monde dans le mod (branche de travail seulement, jamais main)"
         type: boolean
         default: false
+      props:
+        description: "Conteneurs de loot : analyse, plan (100 % des modèles T1 à T6 posés, même palier) et rendus (lecture seule ; plan enregistré sur la branche de travail)"
+        type: boolean
+        default: false
+      props_options:
+        description: "Options du plan (ex. « --ajouts » : poser aussi, à part, les modèles sans place de remplacement ; « --max-changements 2000 », « --graine 2 »)"
+        type: string
+        default: ""
   push:
     branches-ignore: [main]
     paths: [".github/workflows/inventaire_carte.yml", "outils/carte_monde.py"]
@@ -75,6 +89,21 @@ jobs:
           du -sh copie/* 2>/dev/null || true
           find copie -name '*.mca' | wc -l
 
+      # Pour l'analyse des props : zones de loot du pack de données de la carte, chunks forcés, données de HeraliZ Loot
+      # (parts d'actifs réglées en jeu, points T7). Petits fichiers, COPIÉS en lecture seule ; rien n'est écrit sur le Ptero.
+      - name: Copie des zones de loot et des données de HeraliZ Loot (lecture seule)
+        if: ${{ inputs.props }}
+        run: |
+          mkdir -p "copie/$MONDE/data" "copie/$MONDE/datapacks/heraliz_carte/data/heraliz_loot/zones"
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+            -e "$LFTP_REGLAGES mirror --parallel=2 --include-glob '*.json' /$MONDE/datapacks/heraliz_carte/data/heraliz_loot/zones copie/$MONDE/datapacks/heraliz_carte/data/heraliz_loot/zones; bye" < /dev/null \
+            || echo "::warning::Zones de loot du pack de données introuvables : l'analyse se fera sans les lieux."
+          for F in chunks.dat heraliz_loot_rotation.dat heraliz_loot_points_t7.dat; do
+            lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+              -e "$LFTP_REGLAGES set xfer:clobber on; get /$MONDE/data/$F -o copie/$MONDE/data/$F; bye" < /dev/null || echo "(pas de data/$F)"
+          done
+          find "copie/$MONDE/datapacks" -name '*.json' | wc -l
+
       - name: Inventaire
         run: |
           python outils/inventaire_carte.py copie/* --sortie inventaire.md
@@ -100,6 +129,65 @@ jobs:
             echo "Images dans le paquet « fond-carte » de cette exécution (7 jours), avec deux aperçus. Pour les mettre dans le jeu :"
             echo "les poser dans le mod HeraliZ Utils (assets/heraliz_carte/carte/), puis fabriquer heralisz-utils et l'envoyer."
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Props et conteneurs de loot (outils/props_carte.py) : analyse des pièces et des incohérences, plan de
+      # diversification des conteneurs T1 à T6 (lots de commandes conditionnelles + annulation), rendus avant / après.
+      # Rien n'est envoyé au serveur ici : on joue le plan, après validation du propriétaire, avec le workflow « Props
+      # de la carte ».
+      - name: Props et conteneurs (analyse, plan, rendus)
+        if: ${{ inputs.props }}
+        env:
+          PROPS_OPTIONS: ${{ inputs.props_options }}
+        run: |
+          python -m pip install --quiet numpy pillow scipy
+          python outils/props_carte.py analyser "copie/$MONDE" --sortie props > props_analyse.log 2>&1 || { tail -n 40 props_analyse.log; exit 1; }
+          OPTS="$(printf '%s' "$PROPS_OPTIONS" | tr -cd 'A-Za-z0-9 ,_-')"
+          python outils/props_carte.py plan props $OPTS > props_plan.log 2>&1 || { tail -n 40 props_plan.log; exit 1; }
+          python outils/props_carte.py rendus "copie/$MONDE" props > props_rendus.log 2>&1 || { tail -n 20 props_rendus.log; echo "::warning::Rendus impossibles."; }
+          python outils/props_catalogue.py --sortie props/catalogue.md
+          {
+            cat props/rapport.md
+            echo
+            cat props/plan/plan.md
+            echo
+            echo "Rendus avant / après, lots de commandes et annulations : paquet « props-carte » de cette exécution (7 jours)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Garder l'analyse des props
+        if: ${{ inputs.props }}
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: props-carte
+          path: props/
+          retention-days: 7
+          if-no-files-found: warn
+
+      # Le plan validé par le propriétaire doit être EXACTEMENT celui qu'on jouera : il est enregistré sur la branche
+      # de travail (props_carte/plan.tar.gz : lots, annulations, plan.json ; ~0,5 Mo), avec le rapport, le plan lisible
+      # et les rendus. Un plan déjà en partie joué (journal) n'est pas écrasé sans être archivé.
+      - name: Enregistrer le plan des props (branche de travail)
+        if: ${{ inputs.props && github.ref_name != 'main' }}
+        run: |
+          test -s props/plan/plan.json || { echo "::error::Plan des props absent : rien n'est enregistré."; exit 1; }
+          mkdir -p props_carte/rendus props_carte/archives
+          if [ -s props_carte/journal.txt ]; then
+            D=$(date -u +%Y%m%d_%H%M)
+            { echo "# journal du plan précédent (commit $(git rev-parse --short HEAD)), archivé le $D"; cat props_carte/journal.txt; } > "props_carte/archives/journal_$D.txt"
+            git rm -q props_carte/journal.txt
+            echo "::warning::Un plan précédent avait déjà été joué : son journal est archivé (props_carte/archives/journal_$D.txt) ; pour l'annuler, repartir du commit $(git rev-parse --short HEAD)."
+          fi
+          rm -f props_carte/rendus/*.png
+          cp props/rapport.md props/rapport_complet.md props/plan/plan.md props_carte/
+          cp props/rendus/*.png props_carte/rendus/ 2>/dev/null || true
+          tar czf props_carte/plan.tar.gz -C props/plan lots annulation plan.json
+          git config user.name "HeraliZ"
+          git config user.email "heraliz@users.noreply.github.com"
+          git add -A props_carte
+          if git diff --cached --quiet; then echo "Plan inchangé : rien à enregistrer."; exit 0; fi
+          git commit -q -m "Props de la carte : analyse et plan refaits depuis le monde du serveur ($MONDE, lecture seule)"
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"
+          echo "Plan des props enregistré sur la branche ${GITHUB_REF_NAME} (props_carte/) : à valider, puis workflow « Props de la carte »." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Garder le fond de la carte
         uses: actions/upload-artifact@v4

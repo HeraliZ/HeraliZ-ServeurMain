@@ -35,7 +35,8 @@ public final class CineDecor {
         }
     }
 
-    /** Monde du spawn de HeraliZ (monde à part : la grotte du serveur, le train couché ; datapack heralisz_map). */
+    /** Monde du spawn de HeraliZ (monde à part : la grotte du terminus, le train couché ; déclaré par les données du jar
+     *  serveur, data/heralisz/dimension/spawn.json ; ses blocs : outils/monde_spawn.py, déposés une fois sur le serveur). */
     public static final ResourceLocation SPAWN = new ResourceLocation("heralisz", "spawn");
     public static final ResourceLocation MONDE_PRINCIPAL = new ResourceLocation("minecraft", "overworld");
 

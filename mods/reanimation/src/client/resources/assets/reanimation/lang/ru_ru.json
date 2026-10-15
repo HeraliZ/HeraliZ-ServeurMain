@@ -38,6 +38,7 @@
   "execution.reanimation.home_run": "Хоум-ран",
   "gui.reanimation.search": "Обыск: %s",
   "gui.reanimation.backpack": "Рюкзак",
+  "gui.reanimation.curios_slot": "Слот: %s",
   "gui.reanimation.bleed": "%s с",
   "message.reanimation.already_searched": "%s уже обыскивают",
   "message.reanimation.being_revived": "%s уже поднимают",

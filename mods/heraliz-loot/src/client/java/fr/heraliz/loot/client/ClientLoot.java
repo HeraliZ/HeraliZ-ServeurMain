@@ -1,5 +1,6 @@
 package fr.heraliz.loot.client;
 
+import fr.heraliz.loot.ConteneurBlock;
 import fr.heraliz.loot.HeralizLoot;
 import fr.heraliz.loot.Rarete;
 import fr.heraliz.loot.RaretesObjets;
@@ -80,7 +81,8 @@ public final class ClientLoot {
 
         /**
          * Inventaire d'un conteneur de loot : le serveur envoie le nom du bloc (« [T2] Caisse à outils », dans la langue du
-         * joueur) ; l'étiquette de tiers est retirée ici, comme avant la traduction. Seulement l'écran de coffre vanilla.
+         * joueur) ; l'étiquette de tiers est retirée ici, comme avant la traduction, et remplacée par le badge du palier
+         * (« T3 », lu dans le nom du bloc, {@link EcranConteneur}). Seulement l'écran de coffre vanilla.
          */
         @SubscribeEvent
         public static void titreConteneur(ScreenEvent.Opening e) {
@@ -90,7 +92,8 @@ public final class ClientLoot {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null) return;
             String nom = s.getTitle().getString().replaceFirst("^\\[[^\\]]*\\]\\s*", "");
-            e.setNewScreen(new ContainerScreen(s.getMenu(), mc.player.getInventory(), Component.literal(nom)));
+            int palier = ConteneurBlock.palier(tc.getKey().substring(PREFIXE_BLOC.length()));
+            e.setNewScreen(new EcranConteneur(s.getMenu(), mc.player.getInventory(), Component.literal(nom), palier));
         }
 
         private static final String PREFIXE_BLOC = "block." + HeralizLoot.MODID + ".";

@@ -129,8 +129,15 @@ public final class PaquetsDuels {
      * @param contexte      ligne de contexte (« MANCHE 2 · ATTAQUE »)
      * @param couleur       couleur de l'equipe du joueur
      * @param fermerAuChoix l'ecran se ferme des le choix (reapparition) ; sinon il reste ouvert jusqu'au bout (gel)
+     * @param hote          pseudo de l'hote du duel quand les classes proposees sont les siennes (les memes pour tous) ;
+     *                      vide = les propres classes du joueur (entrainement), qui remplacent alors sa liste cote client
      */
-    public record ChoixS2C(int secondes, List<ClassePerso> classes, int choisie, Component contexte, int couleur, boolean fermerAuChoix) {
+    public record ChoixS2C(int secondes, List<ClassePerso> classes, int choisie, Component contexte, int couleur, boolean fermerAuChoix,
+                           String hote) {
+        public ChoixS2C {
+            hote = hote == null ? "" : hote;
+        }
+
         public void write(FriendlyByteBuf b) {
             b.writeVarInt(secondes);
             ClassePerso.ecrireListe(b, classes);
@@ -138,10 +145,12 @@ public final class PaquetsDuels {
             b.writeComponent(contexte);
             b.writeInt(couleur);
             b.writeBoolean(fermerAuChoix);
+            b.writeUtf(hote, 64);
         }
 
         public static ChoixS2C read(FriendlyByteBuf b) {
-            return new ChoixS2C(b.readVarInt(), ClassePerso.lireListe(b), b.readVarInt(), b.readComponent(), b.readInt(), b.readBoolean());
+            return new ChoixS2C(b.readVarInt(), ClassePerso.lireListe(b), b.readVarInt(), b.readComponent(), b.readInt(), b.readBoolean(),
+                    b.readUtf(64));
         }
 
         public static void handle(ChoixS2C p, Supplier<NetworkEvent.Context> ctx) {

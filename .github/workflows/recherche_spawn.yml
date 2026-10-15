@@ -1,0 +1,68 @@
+# Recherche de l'ancien monde du spawn (grotte du train de la cinématique) sur le Ptero. LECTURE SEULE : liste les
+# dossiers de la racine du serveur et cherche, jusqu'à 4 niveaux, les dossiers « dimensions/heralisz/spawn » et les
+# mondes mis de côté (« _ancien_ », « _nouvelle_ »), avec le nombre et la taille de leurs fichiers de régions.
+# Rien n'est écrit ni supprimé. Part d'une branche de travail quand ce fichier change, ou par « Run workflow ».
+name: Recherche du spawn
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/recherche_spawn.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  recherche:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+    steps:
+      - name: Accès au Ptero
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+
+      - name: Dossiers de la racine et mondes du spawn (lecture seule)
+        run: |
+          R="set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30;"
+          l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye"; }
+          {
+            echo "### Racine du serveur"
+            echo '```'
+            l "cls -l /" | grep '^d' | awk '{print $NF}'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          l "cls -1 /" | grep '/$' | sed 's#/$##' > dossiers.txt
+          echo "### Mondes trouvés (level.dat) et leurs dimensions" >> "$GITHUB_STEP_SUMMARY"
+          while read -r d; do
+            case "$d" in mods|config|libraries|logs|plugins|tacz|defaultconfigs|crash-reports|cache|heralisz_matchs|mohist-config) continue;; esac
+            if l "cls /$d/level.dat" >/dev/null 2>&1 || l "cls -1 /$d/dimensions/" >/dev/null 2>&1; then
+              echo "- **$d**" >> "$GITHUB_STEP_SUMMARY"
+              for ns in $(l "cls -1 /$d/dimensions/" 2>/dev/null | sed 's#/$##; s#.*/##'); do
+                for nom in $(l "cls -1 /$d/dimensions/$ns/" 2>/dev/null | sed 's#/$##; s#.*/##'); do
+                  p="/$d/dimensions/$ns/$nom"
+                  n=$(l "cls -1 $p/region/" 2>/dev/null | grep -c '\.mca$' || true)
+                  taille=$(l "du -sm $p" 2>/dev/null | awk '{print $1}')
+                  echo "  - dimension \`$ns:$nom\` : $n régions, ${taille:-?} Mo" >> "$GITHUB_STEP_SUMMARY"
+                done
+              done
+              n=$(l "cls -1 /$d/region/" 2>/dev/null | grep -c '\.mca$' || true)
+              echo "  - monde principal : $n régions" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done < dossiers.txt
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Rien n'a été modifié sur le Ptero." >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"

@@ -6,9 +6,9 @@ import net.minecraftforge.network.NetworkEvent;
 
 /**
  * Serveur -> joueurs qui voient le frappeur : un coup de couteau accepté, rapide ou puissant (14/10). Chez eux, le coup en
- * 3e personne de TaCZ : grand coup de haut en bas pour le coup puissant, deux gestes en alternance pour le coup rapide
- * (avant : le paquet « mêlée » de TaCZ, qui tirait l'un des trois gestes au hasard). Branché par la partie client
- * ({@link ReseauCouteaux#COUP_VU_CLIENT}).
+ * 3e personne (15/10 : gestes des couteaux de LR, tranches en alternance pour le coup rapide, estoc pour le coup puissant,
+ * avec ses bruits ; à défaut ceux de TaCZ). Avant : le paquet « mêlée » de TaCZ, qui tirait l'un des trois gestes au
+ * hasard. Branché par la partie client ({@link ReseauCouteaux#COUP_VU_CLIENT}).
  */
 public record PaquetCoupVu(int entite, boolean lourd) {
    public static void encode(PaquetCoupVu p, FriendlyByteBuf buf) {

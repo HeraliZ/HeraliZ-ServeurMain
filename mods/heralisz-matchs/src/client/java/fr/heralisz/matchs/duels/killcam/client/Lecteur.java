@@ -83,6 +83,11 @@ final class Lecteur {
     int i0, i1;
     float fraction;
 
+    /** Visee du tueur (0 hanche, 1 vise), lissee en temps reel ; recul du dernier tir (1 au tir, puis s'eteint). */
+    private double visee, reculTir;
+    /** Tirs du tueur deja joues (l'arme en premiere personne declenche son animation de tir a chaque nouveau). */
+    private int tirsTueur;
+
     // camera lissee
     private boolean camInit;
     private double camX, camY, camZ, recul = 1, reculCible = 1;
@@ -408,7 +413,28 @@ final class Lecteur {
         while (tirSuivant < clip.tirs.size() && clip.tirs.get(tirSuivant).temps() <= temps) {
             tirer(clip.tirs.get(tirSuivant++));
         }
+        // visee du tueur (drapeau VISE de son image) et recul de son arme
+        Clip.Participant t = clip.participants.get(clip.tueur);
+        double viseeCible = t.present(i0) && t.a(i0, Clip.VISE) ? 1 : 0;
+        visee += (viseeCible - visee) * (1 - Math.exp(-dt * 12));
+        reculTir *= Math.exp(-dt * 16);
         poserCamera(dt);
+    }
+
+    /** Visee du tueur a cette image (0 a la hanche, 1 en visee), courbe douce. */
+    float visee() {
+        float v = (float) Mth.clamp(visee, 0, 1);
+        return v * v * (3 - 2 * v);
+    }
+
+    /** Recul du dernier tir du tueur (1 au tir, 0 au repos). */
+    float reculTir() {
+        return (float) reculTir;
+    }
+
+    /** Nombre de tirs du tueur deja joues dans cette lecture. */
+    int tirsTueur() {
+        return tirsTueur;
     }
 
     private void poserFaux(int k) {
@@ -501,6 +527,10 @@ final class Lecteur {
         }
         // vu par les yeux du tueur, l'eclair de sa bouche est a moins d'un bloc de la camera : beaucoup plus petit
         double flash = k == clip.tueur && premiere() > 0.5f ? 0.4 : 1.0;
+        if (k == clip.tueur) {
+            tirsTueur++;
+            reculTir = 1;
+        }
         traceurs.ajouter(mx, my, mz, fin.x, fin.y, fin.z, surJoueur, t.temps(), flash);
         ItemStack arme = p.objet[i] >= 0 && p.objet[i] < clip.objets.size() ? clip.objets.get(p.objet[i]) : ItemStack.EMPTY;
         SonsTir.jouer(f, arme, mx, my, mz);

@@ -1,0 +1,1210 @@
+{
+ "analyses": [
+  {
+   "nom": "reveil_mod_dayz_map_ancien_2026-10-11_00h46",
+   "candidat": {
+    "nom": "reveil_mod_dayz_map_ancien_2026-10-11_00h46",
+    "source": "réveil par défaut du mod (-61 265 2), monde principal",
+    "reveil": true,
+    "monde": "copie/dayz_map_ancien_2026-10-11_00h46",
+    "prefixe": "/dayz_map_ancien_2026-10-11_00h46",
+    "dim": "minecraft:overworld",
+    "x": -61,
+    "y": 265,
+    "z": 2,
+    "cap": 45.0
+   },
+   "cavites": [
+    {
+     "num": 1,
+     "volume": 147212,
+     "ouvertures": 0,
+     "bord": true,
+     "x": [
+      -317,
+      195
+     ],
+     "y": [
+      21,
+      31
+     ],
+     "z": [
+      -254,
+      258
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 43.6
+    },
+    {
+     "num": 3145,
+     "volume": 128463,
+     "ouvertures": 56464,
+     "bord": false,
+     "x": [
+      -172,
+      -2
+     ],
+     "y": [
+      56,
+      108
+     ],
+     "z": [
+      -158,
+      3
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 24.2
+    },
+    {
+     "num": 5,
+     "volume": 108921,
+     "ouvertures": 46978,
+     "bord": true,
+     "x": [
+      -317,
+      -197
+     ],
+     "y": [
+      47,
+      93
+     ],
+     "z": [
+      55,
+      258
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": -15.5
+    },
+    {
+     "num": 6914,
+     "volume": 48047,
+     "ouvertures": 20898,
+     "bord": false,
+     "x": [
+      -4,
+      93
+     ],
+     "y": [
+      57,
+      90
+     ],
+     "z": [
+      131,
+      238
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": -16.0
+    },
+    {
+     "num": 8416,
+     "volume": 17833,
+     "ouvertures": 0,
+     "bord": true,
+     "x": [
+      105,
+      195
+     ],
+     "y": [
+      21,
+      31
+     ],
+     "z": [
+      21,
+      258
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": -21.1
+    },
+    {
+     "num": 2,
+     "volume": 6968,
+     "ouvertures": 0,
+     "bord": true,
+     "x": [
+      -317,
+      -215
+     ],
+     "y": [
+      21,
+      31
+     ],
+     "z": [
+      244,
+      258
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": -26.5
+    }
+   ],
+   "cavite_du_point": null,
+   "chunks": 1089,
+   "regions_manquantes": [],
+   "rendus": [
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_boite.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite1_dessus.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite1_coupe_long.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite1_coupe_travers.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite3145_dessus.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite3145_coupe_long.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite3145_coupe_travers.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite5_dessus.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite5_coupe_long.png",
+    "rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite5_coupe_travers.png"
+   ],
+   "etat": "analyse"
+  },
+  {
+   "nom": "apparition_dayz_map_ancien_2026-10-11_00h46",
+   "candidat": {
+    "nom": "apparition_dayz_map_ancien_2026-10-11_00h46",
+    "source": "point d'apparition du level.dat",
+    "reveil": false,
+    "apparition": true,
+    "monde": "copie/dayz_map_ancien_2026-10-11_00h46",
+    "prefixe": "/dayz_map_ancien_2026-10-11_00h46",
+    "dim": "minecraft:overworld",
+    "x": 3355,
+    "y": 77,
+    "z": 3250
+   },
+   "cavites": [
+    {
+     "num": 3239,
+     "volume": 473,
+     "ouvertures": 43,
+     "bord": false,
+     "x": [
+      3351,
+      3363
+     ],
+     "y": [
+      77,
+      81
+     ],
+     "z": [
+      3245,
+      3255
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": -39.8,
+     "graine": true
+    },
+    {
+     "num": 575,
+     "volume": 30978,
+     "ouvertures": 11729,
+     "bord": false,
+     "x": [
+      3175,
+      3246
+     ],
+     "y": [
+      75,
+      112
+     ],
+     "z": [
+      3150,
+      3245
+     ],
+     "rails": 1,
+     "lanternes": 17,
+     "chaînes": 0,
+     "barrières": 19,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 133.5
+    },
+    {
+     "num": 1648,
+     "volume": 1484,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      3231,
+      3255
+     ],
+     "y": [
+      56,
+      77
+     ],
+     "z": [
+      3210,
+      3215
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 105,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 105.7
+    },
+    {
+     "num": 2039,
+     "volume": 292,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      3277,
+      3316
+     ],
+     "y": [
+      83,
+      86
+     ],
+     "z": [
+      3172,
+      3182
+     ],
+     "rails": 1,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 3.1
+    },
+    {
+     "num": 3929,
+     "volume": 1070,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      3404,
+      3410
+     ],
+     "y": [
+      48,
+      71
+     ],
+     "z": [
+      3278,
+      3291
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 0.5
+    },
+    {
+     "num": 1381,
+     "volume": 544,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      3216,
+      3228
+     ],
+     "y": [
+      86,
+      91
+     ],
+     "z": [
+      3190,
+      3202
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 0.3
+    }
+   ],
+   "cavite_du_point": {
+    "num": 3239,
+    "volume": 473,
+    "ouvertures": 43,
+    "bord": false,
+    "x": [
+     3351,
+     3363
+    ],
+    "y": [
+     77,
+     81
+    ],
+    "z": [
+     3245,
+     3255
+    ],
+    "rails": 0,
+    "lanternes": 0,
+    "chaînes": 0,
+    "barrières": 0,
+    "portes": 0,
+    "blocs HeraliZ": 0,
+    "ascenseur": 0,
+    "score": -39.8,
+    "graine": true
+   },
+   "chunks": 1089,
+   "regions_manquantes": [],
+   "rendus": [
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_boite.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite3239_dessus.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite3239_coupe_long.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite3239_coupe_travers.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite575_dessus.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite575_coupe_long.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite575_coupe_travers.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite1648_dessus.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite1648_coupe_long.png",
+    "rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite1648_coupe_travers.png"
+   ],
+   "etat": "analyse"
+  },
+  {
+   "nom": "reveil_mod_HeraliZ_ancien_2026-10-11_00h26",
+   "candidat": {
+    "nom": "reveil_mod_HeraliZ_ancien_2026-10-11_00h26",
+    "source": "réveil par défaut du mod (-61 265 2), monde principal",
+    "reveil": true,
+    "monde": "copie/HeraliZ_ancien_2026-10-11_00h26",
+    "prefixe": "/HeraliZ_ancien_2026-10-11_00h26",
+    "dim": "minecraft:overworld",
+    "x": -61,
+    "y": 265,
+    "z": 2,
+    "cap": 45.0
+   },
+   "etat": "absent"
+  },
+  {
+   "nom": "amas1",
+   "candidat": {
+    "nom": "amas1",
+    "source": "amas d'indices n° 1 du balayage (score 636 : rails, barrières, portes)",
+    "reveil": false,
+    "monde": "copie/dayz_map_ancien_2026-10-11_00h46",
+    "prefixe": "/dayz_map_ancien_2026-10-11_00h46",
+    "dim": "minecraft:overworld",
+    "x": -72,
+    "y": 80,
+    "z": 2936
+   },
+   "cavites": [
+    {
+     "num": 1939,
+     "volume": 10120,
+     "ouvertures": 3415,
+     "bord": false,
+     "x": [
+      -96,
+      -64
+     ],
+     "y": [
+      48,
+      110
+     ],
+     "z": [
+      2919,
+      2955
+     ],
+     "rails": 15,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 57,
+     "portes": 42,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 67.1
+    },
+    {
+     "num": 2746,
+     "volume": 2570,
+     "ouvertures": 20,
+     "bord": true,
+     "x": [
+      -41,
+      -10
+     ],
+     "y": [
+      48,
+      56
+     ],
+     "z": [
+      2680,
+      2700
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 94,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 59.1
+    },
+    {
+     "num": 1949,
+     "volume": 2241,
+     "ouvertures": 10,
+     "bord": false,
+     "x": [
+      -94,
+      -69
+     ],
+     "y": [
+      47,
+      58
+     ],
+     "z": [
+      3036,
+      3071
+     ],
+     "rails": 15,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 4,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 42.6
+    },
+    {
+     "num": 1247,
+     "volume": 99936,
+     "ouvertures": 0,
+     "bord": true,
+     "x": [
+      -171,
+      184
+     ],
+     "y": [
+      21,
+      31
+     ],
+     "z": [
+      2924,
+      3074
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 20.0
+    },
+    {
+     "num": 3621,
+     "volume": 8960,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      80,
+      132
+     ],
+     "y": [
+      49,
+      63
+     ],
+     "z": [
+      2858,
+      2906
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 140,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 4.5
+    },
+    {
+     "num": 1496,
+     "volume": 1335,
+     "ouvertures": 9,
+     "bord": false,
+     "x": [
+      -149,
+      -126
+     ],
+     "y": [
+      48,
+      55
+     ],
+     "z": [
+      2817,
+      2839
+     ],
+     "rails": 0,
+     "lanternes": 1,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 20,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 3.3
+    }
+   ],
+   "cavite_du_point": null,
+   "chunks": 1089,
+   "regions_manquantes": [],
+   "rendus": [
+    "rendus/amas1_boite.png",
+    "rendus/amas1_cavite1939_dessus.png",
+    "rendus/amas1_cavite1939_coupe_long.png",
+    "rendus/amas1_cavite1939_coupe_travers.png",
+    "rendus/amas1_cavite2746_dessus.png",
+    "rendus/amas1_cavite2746_coupe_long.png",
+    "rendus/amas1_cavite2746_coupe_travers.png",
+    "rendus/amas1_cavite1949_dessus.png",
+    "rendus/amas1_cavite1949_coupe_long.png",
+    "rendus/amas1_cavite1949_coupe_travers.png"
+   ],
+   "etat": "analyse",
+   "grotte": {
+    "cavite": 1939,
+    "pourquoi": "signature",
+    "confiance": "faible",
+    "zone": [
+     -104,
+     40,
+     2911,
+     -56,
+     118,
+     2963
+    ],
+    "cavites_incluses": [
+     1939,
+     1995
+    ],
+    "reveil_source": [
+     -81,
+     49,
+     2936
+    ],
+    "decalage": [
+     20,
+     0,
+     -2934
+    ],
+    "note": "décalage vertical impossible (la grotte sortirait de la hauteur du monde) : réveil à mettre en y = 49 dans heralisz_utils_cinematique.json",
+    "dim": "minecraft:overworld",
+    "monde": "copie/dayz_map_ancien_2026-10-11_00h46",
+    "score": 67.1,
+    "volume": 10120
+   }
+  },
+  {
+   "nom": "amas2",
+   "candidat": {
+    "nom": "amas2",
+    "source": "amas d'indices n° 2 du balayage (score 513 : rails, lanternes, barrières, portes)",
+    "reveil": false,
+    "monde": "copie/dayz_map_ancien_2026-10-11_00h46",
+    "prefixe": "/dayz_map_ancien_2026-10-11_00h46",
+    "dim": "minecraft:overworld",
+    "x": 3240,
+    "y": 80,
+    "z": 3240
+   },
+   "cavites": [
+    {
+     "num": 931,
+     "volume": 30978,
+     "ouvertures": 11729,
+     "bord": false,
+     "x": [
+      3175,
+      3246
+     ],
+     "y": [
+      75,
+      112
+     ],
+     "z": [
+      3150,
+      3245
+     ],
+     "rails": 1,
+     "lanternes": 17,
+     "chaînes": 0,
+     "barrières": 19,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 133.5
+    },
+    {
+     "num": 2004,
+     "volume": 1484,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      3231,
+      3255
+     ],
+     "y": [
+      56,
+      77
+     ],
+     "z": [
+      3210,
+      3215
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 105,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 105.7
+    },
+    {
+     "num": 352,
+     "volume": 644,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      3096,
+      3113
+     ],
+     "y": [
+      72,
+      78
+     ],
+     "z": [
+      3227,
+      3242
+     ],
+     "rails": 0,
+     "lanternes": 3,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 24.3
+    },
+    {
+     "num": 12,
+     "volume": 90185,
+     "ouvertures": 231,
+     "bord": true,
+     "x": [
+      2996,
+      3396
+     ],
+     "y": [
+      21,
+      31
+     ],
+     "z": [
+      2984,
+      3376
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 13.0
+    },
+    {
+     "num": 2395,
+     "volume": 292,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      3277,
+      3316
+     ],
+     "y": [
+      83,
+      86
+     ],
+     "z": [
+      3172,
+      3182
+     ],
+     "rails": 1,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 3.1
+    },
+    {
+     "num": 4323,
+     "volume": 1070,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      3404,
+      3410
+     ],
+     "y": [
+      48,
+      71
+     ],
+     "z": [
+      3278,
+      3291
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 0.5
+    }
+   ],
+   "cavite_du_point": null,
+   "chunks": 1089,
+   "regions_manquantes": [],
+   "rendus": [
+    "rendus/amas2_boite.png",
+    "rendus/amas2_cavite931_dessus.png",
+    "rendus/amas2_cavite931_coupe_long.png",
+    "rendus/amas2_cavite931_coupe_travers.png",
+    "rendus/amas2_cavite2004_dessus.png",
+    "rendus/amas2_cavite2004_coupe_long.png",
+    "rendus/amas2_cavite2004_coupe_travers.png",
+    "rendus/amas2_cavite352_dessus.png",
+    "rendus/amas2_cavite352_coupe_long.png",
+    "rendus/amas2_cavite352_coupe_travers.png"
+   ],
+   "etat": "analyse"
+  },
+  {
+   "nom": "amas3",
+   "candidat": {
+    "nom": "amas3",
+    "source": "amas d'indices n° 3 du balayage (score 444 : rails, barrières, portes)",
+    "reveil": false,
+    "monde": "copie/dayz_map_ancien_2026-10-11_00h46",
+    "prefixe": "/dayz_map_ancien_2026-10-11_00h46",
+    "dim": "minecraft:overworld",
+    "x": 2776,
+    "y": 64,
+    "z": 1048
+   },
+   "cavites": [
+    {
+     "num": 3044,
+     "volume": 5644,
+     "ouvertures": 815,
+     "bord": false,
+     "x": [
+      2768,
+      2812
+     ],
+     "y": [
+      51,
+      64
+     ],
+     "z": [
+      1031,
+      1059
+     ],
+     "rails": 30,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 6,
+     "portes": 74,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 58.8
+    },
+    {
+     "num": 3533,
+     "volume": 696,
+     "ouvertures": 9,
+     "bord": false,
+     "x": [
+      2795,
+      2818
+     ],
+     "y": [
+      51,
+      54
+     ],
+     "z": [
+      1007,
+      1021
+     ],
+     "rails": 7,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 3,
+     "portes": 20,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 14.0
+    },
+    {
+     "num": 2,
+     "volume": 86735,
+     "ouvertures": 0,
+     "bord": true,
+     "x": [
+      2520,
+      3032
+     ],
+     "y": [
+      21,
+      31
+     ],
+     "z": [
+      862,
+      1304
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 13.4
+    },
+    {
+     "num": 1844,
+     "volume": 725,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      2698,
+      2704
+     ],
+     "y": [
+      52,
+      59
+     ],
+     "z": [
+      965,
+      977
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 0.4
+    },
+    {
+     "num": 2462,
+     "volume": 348,
+     "ouvertures": 6,
+     "bord": false,
+     "x": [
+      2736,
+      2754
+     ],
+     "y": [
+      52,
+      54
+     ],
+     "z": [
+      1013,
+      1027
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": -13.6
+    },
+    {
+     "num": 4073,
+     "volume": 51427,
+     "ouvertures": 21903,
+     "bord": false,
+     "x": [
+      2830,
+      2965
+     ],
+     "y": [
+      54,
+      93
+     ],
+     "z": [
+      1120,
+      1211
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": -14.3
+    }
+   ],
+   "cavite_du_point": null,
+   "chunks": 1089,
+   "regions_manquantes": [],
+   "rendus": [
+    "rendus/amas3_boite.png",
+    "rendus/amas3_cavite3044_dessus.png",
+    "rendus/amas3_cavite3044_coupe_long.png",
+    "rendus/amas3_cavite3044_coupe_travers.png",
+    "rendus/amas3_cavite3533_dessus.png",
+    "rendus/amas3_cavite3533_coupe_long.png",
+    "rendus/amas3_cavite3533_coupe_travers.png",
+    "rendus/amas3_cavite2_dessus.png",
+    "rendus/amas3_cavite2_coupe_long.png",
+    "rendus/amas3_cavite2_coupe_travers.png"
+   ],
+   "etat": "analyse"
+  },
+  {
+   "nom": "amas4",
+   "candidat": {
+    "nom": "amas4",
+    "source": "amas d'indices n° 4 du balayage (score 336 : rails, barrières, portes)",
+    "reveil": false,
+    "monde": "copie/dayz_map_ancien_2026-10-11_00h46",
+    "prefixe": "/dayz_map_ancien_2026-10-11_00h46",
+    "dim": "minecraft:overworld",
+    "x": 2376,
+    "y": 96,
+    "z": 3528
+   },
+   "cavites": [
+    {
+     "num": 1738,
+     "volume": 495187,
+     "ouvertures": 0,
+     "bord": true,
+     "x": [
+      2334,
+      2532
+     ],
+     "y": [
+      -58,
+      103
+     ],
+     "z": [
+      3272,
+      3533
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 70.0
+    },
+    {
+     "num": 247,
+     "volume": 254505,
+     "ouvertures": 134,
+     "bord": true,
+     "x": [
+      2226,
+      2392
+     ],
+     "y": [
+      -60,
+      89
+     ],
+     "z": [
+      3272,
+      3644
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 69.6
+    },
+    {
+     "num": 2315,
+     "volume": 88839,
+     "ouvertures": 26,
+     "bord": true,
+     "x": [
+      2364,
+      2515
+     ],
+     "y": [
+      57,
+      98
+     ],
+     "z": [
+      3272,
+      3525
+     ],
+     "rails": 8,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 18,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 38.2
+    },
+    {
+     "num": 3922,
+     "volume": 16698,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      2446,
+      2511
+     ],
+     "y": [
+      66,
+      73
+     ],
+     "z": [
+      3345,
+      3395
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 0,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 8.3
+    },
+    {
+     "num": 1105,
+     "volume": 3197,
+     "ouvertures": 438,
+     "bord": false,
+     "x": [
+      2292,
+      2313
+     ],
+     "y": [
+      94,
+      103
+     ],
+     "z": [
+      3477,
+      3517
+     ],
+     "rails": 1,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 39,
+     "portes": 24,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 3.6
+    },
+    {
+     "num": 2570,
+     "volume": 1923,
+     "ouvertures": 0,
+     "bord": false,
+     "x": [
+      2377,
+      2415
+     ],
+     "y": [
+      94,
+      100
+     ],
+     "z": [
+      3470,
+      3503
+     ],
+     "rails": 0,
+     "lanternes": 0,
+     "chaînes": 0,
+     "barrières": 0,
+     "portes": 4,
+     "blocs HeraliZ": 0,
+     "ascenseur": 0,
+     "score": 1.0
+    }
+   ],
+   "cavite_du_point": null,
+   "chunks": 1089,
+   "regions_manquantes": [],
+   "rendus": [
+    "rendus/amas4_boite.png",
+    "rendus/amas4_cavite1738_dessus.png",
+    "rendus/amas4_cavite1738_coupe_long.png",
+    "rendus/amas4_cavite1738_coupe_travers.png",
+    "rendus/amas4_cavite247_dessus.png",
+    "rendus/amas4_cavite247_coupe_long.png",
+    "rendus/amas4_cavite247_coupe_travers.png",
+    "rendus/amas4_cavite2315_dessus.png",
+    "rendus/amas4_cavite2315_coupe_long.png",
+    "rendus/amas4_cavite2315_coupe_travers.png"
+   ],
+   "etat": "analyse"
+  }
+ ],
+ "choix": "amas1"
+}

@@ -60,8 +60,10 @@ import java.util.UUID;
  * <b>recherche et destruction</b> (une vie par manche, bombes des sites A/B amorcees avec l'ordinateur porte par un
  * attaquant, pirate par un defenseur ; premier a 4 manches, changement de cote apres 3 manches, killcam de la derniere
  * elimination en fin de manche) ou <b>match a mort</b> (reapparition apres 3 s loin des
- * ennemis, premier a 20 / 30 eliminations ou 10 min, killcam a chaque mort). Classes personnalisees choisies en debut de
- * manche ou a chaque reapparition (5 s). Fin : tableau des scores, statistiques de duel, Coffre rendu.
+ * ennemis, premier a 20 / 30 eliminations ou 10 min, killcam a chaque mort). Classes choisies en debut de manche ou a
+ * chaque reapparition (5 s) : <b>les 5 classes de l'hote</b> (le defiant, qui a lance le defi), les memes pour tous les
+ * joueurs des deux equipes, copiees au lancement ({@link #classesHote}) ; en entrainement, chacun ses propres classes.
+ * Fin : tableau des scores, statistiques de duel, Coffre rendu.
  * <p>Phases ({@link Partie.Phase}) : ATTENTE (pose de l'instance) -> CHOIX (gel, choix de classe) -> COMBAT ->
  * PREPARATION (entre deux manches de R&D : annonces, killcam) -> ... -> FIN (scores) -> TERMINEE.
  * <p>Fil serveur ; pas d'allocation par tick hors evenements (listes tampons reutilisees).
@@ -104,6 +106,17 @@ public class DuelPartie extends Partie {
     private final boolean rd;
     private final String modeId, format, carteId;
     private final boolean entrainement;
+    /**
+     * Les 5 classes proposees a tous les joueurs : celles de l'hote (premier du camp A = le defiant), copiees a la
+     * construction de la partie et jamais relues (l'hote peut modifier ses classes ou se deconnecter, rien ne change
+     * pour ce duel). Null en entrainement : le joueur choisit dans ses propres classes, lues a jour.
+     */
+    @Nullable
+    private final List<ClassePerso> classesHote;
+    /** Hote du duel (proprietaire des {@link #classesHote}) et son pseudo, affiche a l'ecran de choix. */
+    @Nullable
+    private final UUID hote;
+    private final String nomHote;
     private final Equipe a, b;
     private final Map<UUID, Fiche> fiches = new LinkedHashMap<>();
     private final List<ServerPlayer> tampon = new ArrayList<>();
@@ -166,6 +179,10 @@ public class DuelPartie extends Partie {
         this.format = format;
         this.carteId = carteId;
         this.entrainement = entrainement;
+        ServerPlayer h = campA.isEmpty() ? null : campA.get(0);
+        this.hote = h == null ? null : h.getUUID();
+        this.nomHote = h == null ? "" : h.getGameProfile().getName();
+        this.classesHote = entrainement || h == null ? null : List.copyOf(DuelsStore.classes(h.getUUID(), Armurerie.catalogue()));
         this.a = new Equipe("a", nomCamp(campA, "A"), DuelsConfig.COULEUR_A);
         this.b = new Equipe("b", entrainement ? NOM_CIBLE : nomCamp(campB, "B"), DuelsConfig.COULEUR_B);
         ajouterEquipe(a);
@@ -189,7 +206,9 @@ public class DuelPartie extends Partie {
     private void inscrire(ServerPlayer p, Equipe e) {
         e.ajouter(p.getUUID());
         Fiche f = new Fiche(p.getUUID(), p.getGameProfile().getName(), e, false);
-        f.classe = DuelsStore.derniere(p.getUUID());
+        // classes de l'hote : tout le monde part de sa classe 1 (le dernier choix memorise ne vaut que pour ses propres
+        // classes, en entrainement)
+        f.classe = classesHote == null ? DuelsStore.derniere(p.getUUID()) : 0;
         fiches.put(p.getUUID(), f);
     }
 
@@ -407,8 +426,23 @@ public class DuelPartie extends Partie {
         Fiche f = fiches.get(p.getUUID());
         if (f == null) return;
         DuelsLogique.assurerCatalogue(p);
-        MatchsNet.versJoueur(p, new PaquetsDuels.ChoixS2C(DuelsConfig.CHOIX_TICKS / 20, DuelsStore.classes(p.getUUID(), cat), f.classe, contexte,
-                f.equipe.couleur(), phase() == Phase.COMBAT));
+        MatchsNet.versJoueur(p, new PaquetsDuels.ChoixS2C(DuelsConfig.CHOIX_TICKS / 20, classesProposees(p.getUUID(), cat), f.classe, contexte,
+                f.equipe.couleur(), phase() == Phase.COMBAT, classesHote == null ? "" : nomHote));
+    }
+
+    /** Les 5 classes proposees a ce joueur : celles de l'hote (assainies contre le catalogue courant), ou les siennes en entrainement. */
+    private List<ClassePerso> classesProposees(UUID joueur, Catalogue cat) {
+        if (classesHote == null) return DuelsStore.classes(joueur, cat);
+        List<ClassePerso> l = new ArrayList<>(classesHote.size());
+        for (ClassePerso c : classesHote) l.add(c.assainir(cat));
+        return l;
+    }
+
+    /** Classe n (0..4) proposee a ce joueur, voir {@link #classesProposees}. */
+    private ClassePerso classeProposee(UUID joueur, int n, Catalogue cat) {
+        if (classesHote == null) return DuelsStore.classe(joueur, n, cat);
+        int k = Math.max(0, Math.min(classesHote.size() - 1, n));
+        return classesHote.get(k).assainir(cat);
     }
 
     /** Choix d'une classe (paquet du client, revalide). */
@@ -417,7 +451,8 @@ public class DuelPartie extends Partie {
         if (f == null || f.parti || n < 0 || n >= ClassePerso.EMPLACEMENTS) return;
         if (phase() == Phase.FIN || phase() == Phase.TERMINEE) return;
         f.classe = n;
-        DuelsStore.derniere(p.getUUID(), n);
+        // dernier choix memorise : seulement pour ses propres classes (entrainement), jamais pour celles de l'hote
+        if (classesHote == null) DuelsStore.derniere(p.getUUID(), n);
         // match a mort : changement juste apres la reapparition = re-equipement immediat, fin de la protection
         if (!rd && phase() == Phase.COMBAT && f.equipe.estVivant(f.id) && f.reapparition < 0 && ticks() - f.apparition <= DuelsConfig.GRACE_CLASSE_TICKS) {
             equiper(p, f);
@@ -428,8 +463,8 @@ public class DuelPartie extends Partie {
     /** Donne la classe choisie (equipement prete du match, sans aucun skin). */
     private void equiper(ServerPlayer p, Fiche f) {
         Catalogue cat = Armurerie.catalogue();
-        ClassePerso c = DuelsStore.classe(p.getUUID(), f.classe, cat);
-        Kit kit = c.versKit(p.getUUID(), f.classe, cat);
+        ClassePerso c = classeProposee(p.getUUID(), f.classe, cat);
+        Kit kit = c.versKit(classesHote == null || hote == null ? p.getUUID() : hote, f.classe, cat);
         Equipement.retirer(p);
         Equipement.donner(p, kit, id());
         int n = 0;
@@ -500,7 +535,7 @@ public class DuelPartie extends Partie {
             // l'equipement vide l'inventaire : l'ordinateur du porteur est donne apres
             if (rd && f.id.equals(porteur)) donnerObjetCharge(p);
             f.apparition = ticks();
-            MatchsNet.versJoueur(p, new PaquetsDuels.ChoixS2C(0, List.of(), f.classe, Component.empty(), 0, true));
+            MatchsNet.versJoueur(p, new PaquetsDuels.ChoixS2C(0, List.of(), f.classe, Component.empty(), 0, true, ""));
         }
         phase(Phase.COMBAT);
         Annonces.grande(enLigneCopie(), new Annonces.Annonce(Component.translatable("duel.annonce.combat"), Component.empty(), Ui.BLANC, "", 30,
@@ -1207,7 +1242,9 @@ public class DuelPartie extends Partie {
         double axX = -Math.cos(psi), axZ = -Math.sin(psi), azX = Math.sin(psi), azZ = -Math.cos(psi);
         double rx = x - b.x(), rz = z - b.z();
         double lx = rx * axX + rz * axZ, lz = rx * azX + rz * azZ;
-        double x0 = -1.12, x1 = 1.18, z0 = -0.76, z1 = 0.64;
+        // emprise du modele d'origine (pixels / 16, elargie de l'ordinateur), a l'echelle du rendu
+        double k = BombeDuel.ECHELLE, marge = 0.35;
+        double x0 = (-1.12 + marge) * k - marge, x1 = (1.18 - marge) * k + marge, z0 = (-0.76 + marge) * k - marge, z1 = (0.64 - marge) * k + marge;
         if (lx > x0 && lx < x1 && lz > z0 && lz < z1) {
             double dx0 = lx - x0, dx1 = x1 - lx, dz0 = lz - z0, dz1 = z1 - lz;
             double m = Math.min(Math.min(dx0, dx1), Math.min(dz0, dz1));

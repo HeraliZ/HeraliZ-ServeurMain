@@ -51,6 +51,22 @@ public final class CineReseauServeur {
         return CineDecorServeur.libre(d.niveau(server), d.etat().reveil());
     }
 
+    /** Le point de réveil est-il praticable (monde du spawn déposé, place libre, sol dessous) ? */
+    public static boolean reveilPraticable(MinecraftServer server) {
+        return decorPresent(server);
+    }
+
+    /** SpawnApi.allerAuSpawn (extraction...) : pose le joueur au point de réveil s'il est praticable, sans cinématique. */
+    public static boolean auSpawn(ServerPlayer sp) {
+        if (!decorPresent(sp.server)) {
+            return false;
+        }
+        sp.stopRiding();
+        allerAuReveil(sp);
+        sp.resetFallDistance();
+        return true;
+    }
+
     /** Pose le joueur au point de réveil, le regard réglé (le train couché derrière lui). */
     public static void allerAuReveil(ServerPlayer sp) {
         CineDecorServeur dec = CineDecorServeur.get(sp.server);

@@ -341,6 +341,7 @@
   "duel.type.mg": "Mitrailleuse",
   "duel.type.pistol": "Poing",
   "duel.choix.titre": "Choisissez votre classe",
+  "duel.choix.classes_de": "Classes de %s · les mêmes pour tous",
   "duel.choix.choisie": "Choisie",
   "duel.choix.manche": "Manche %s · %s",
   "duel.choix.reapparition": "Réapparition · touches 1 à 5",

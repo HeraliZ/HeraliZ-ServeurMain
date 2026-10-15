@@ -18,6 +18,7 @@ public final class ExtractionConfig {
     public static final ForgeConfigSpec.IntValue ROTATION_MAX_MINUTES;
     public static final ForgeConfigSpec.IntValue ROTATION_WARN_MINUTES;
     public static final ForgeConfigSpec.BooleanValue ROTATION_ANNOUNCE;
+    public static final ForgeConfigSpec.BooleanValue USE_HERALIZ_SPAWN;
     public static final ForgeConfigSpec.BooleanValue USE_WORLD_SPAWN;
     public static final ForgeConfigSpec.ConfigValue<String> SPAWN_DIMENSION;
     public static final ForgeConfigSpec.DoubleValue SPAWN_X;
@@ -66,6 +67,9 @@ public final class ExtractionConfig {
         b.pop();
 
         b.push("destination");
+        USE_HERALIZ_SPAWN = b.comment("true = retour au monde du spawn de HeraliZ (point de réveil de la grotte du terminus, HeraliZ Utils)",
+                        "s'il est en place ; sinon (Utils absent, monde du spawn pas encore déposé), les réglages ci-dessous.")
+                .define("useHeralizSpawn", true);
         USE_WORLD_SPAWN = b.comment("true = TP au spawn du monde (/setworldspawn). false = coordonnées ci-dessous.")
                 .define("useWorldSpawn", true);
         SPAWN_DIMENSION = b.comment("Dimension de destination si useWorldSpawn = false.")

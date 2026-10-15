@@ -164,7 +164,8 @@ public final class DuelsClient {
             if (mc.screen instanceof ChoixClasseScreen) mc.setScreen(null);
             return;
         }
-        if (!p.classes().isEmpty()) {
+        // les classes de l'hote (duel) ne sont pas celles du joueur : elles ne remplacent jamais sa liste (ecran CLASSES)
+        if (!p.classes().isEmpty() && p.hote().isEmpty()) {
             classes = List.copyOf(p.classes());
             versionClasses++;
         }
@@ -326,7 +327,7 @@ public final class DuelsClient {
                         List.of("Dev", "Ravenn")), true);
             }
             case "choix" -> mc.setScreen(new ChoixClasseScreen(new PaquetsDuels.ChoixS2C(5, classes, 1,
-                    Component.translatable("duel.choix.manche", 2, Component.translatable("duel.role.attaque")), 0xE8C547, false)));
+                    Component.translatable("duel.choix.manche", 2, Component.translatable("duel.role.attaque")), 0xE8C547, false, "Nova_77")));
             case "scores", "scores_mam" -> {
                 boolean rd = q.equals("scores");
                 mc.setScreen(new ScoresScreen(new Vues.Tableau(rd ? Vues.MODE_RD : Vues.MODE_MAM, "2v2", "Nuketown", "a",

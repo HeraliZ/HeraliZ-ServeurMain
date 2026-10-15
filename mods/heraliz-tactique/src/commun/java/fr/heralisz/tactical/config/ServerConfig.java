@@ -179,8 +179,9 @@ public class ServerConfig {
             "Ticks (20 par seconde) avant le coup suivant, après un coup rapide (9 : 0,45 s, comme la Dague tactique).")
          .defineInRange("cadence_rapide", CoupsCouteau.DEFAUT_CADENCE_RAPIDE, CoupsCouteau.CADENCE_MIN, 200);
       COUTEAUX_CADENCE_LOURD = builder.comment(
-            "Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique).")
-         .defineInRange("cadence_lourd", CoupsCouteau.DEFAUT_CADENCE_LOURD, CoupsCouteau.CADENCE_MIN, 400);
+            "Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique). Au moins 7 : le",
+            "coup puissant ne touche qu'après sa préparation (0,25 s).")
+         .defineInRange("cadence_lourd", CoupsCouteau.DEFAUT_CADENCE_LOURD, CoupsCouteau.CADENCE_MIN_LOURD, 400);
       COUTEAUX_ANGLE_RAPIDE = builder.comment(
             "Ouverture (en degrés) du cône du coup rapide devant le regard, moitié de chaque côté (65, comme la Dague",
             "tactique). Tous les êtres vivants dans le cône, à portée ([melee] portee_max) et en vue, sont touchés.")
