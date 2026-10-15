@@ -241,6 +241,12 @@ public final class CineDecorServeur extends SavedData {
 
     /** Le joueur tient-il debout au point de réveil (place libre, sol dessous) ? Charge le chunk au besoin. */
     static boolean libre(ServerLevel l, Vec3 p) {
+        // monde du spawn pas encore déposé : rien à charger (sinon le jeu y génèrerait du vide, et le dossier
+        // dimensions/heralisz/spawn/ existerait avant le dépôt du vrai monde)
+        if (l.dimension().location().equals(CineDecor.SPAWN)
+                && !fr.heralisz.utils.spawn.DepartServeur.regionPresente(l, net.minecraft.util.Mth.floor(p.x), net.minecraft.util.Mth.floor(p.z))) {
+            return false;
+        }
         l.getChunk(BlockPos.containing(p));
         AABB corps = EntityType.PLAYER.getDimensions().makeBoundingBox(p);
         return l.noCollision(corps) && !l.noCollision(new AABB(p.x - 0.25, p.y - 0.6, p.z - 0.25, p.x + 0.25, p.y - 0.01, p.z + 0.25));

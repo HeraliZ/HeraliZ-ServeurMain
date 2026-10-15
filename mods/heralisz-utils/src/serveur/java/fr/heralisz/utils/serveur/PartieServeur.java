@@ -31,8 +31,10 @@ public final class PartieServeur implements Partie {
         Ascenseur.MACHINE_USINE.serveur(MachineBlockEntityServeur::new);
         Ascenseur.CABINE_USINE.serveur(CabineServeur::new);
         Train.VOYAGEUR_USINE.serveur(VoyageurServeur::new);
+        fr.heralisz.utils.spawn.Depart.BORNE_USINE.serveur(fr.heralisz.utils.spawn.BorneDepartServeur::new);
         // logique serveur (à l'origine : CineReseau.init puis Train.init, dans le constructeur @Mod)
         CineReseauServeur.init();
+        fr.heralisz.utils.spawn.DepartServeur.init();               // borne de départ, monde du spawn, /depart
         TrainServeur.init(busMod);
         Suicide.init();
     }
