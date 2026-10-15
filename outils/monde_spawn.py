@@ -8,6 +8,9 @@ case « deposer_spawn ») ; la carte (dayz_map) n'est jamais touchée.
     python outils/monde_spawn.py copier <monde> --zone X0 Y0 Z0 X1 Y1 Z1 [--dimension ID] [--decalage DX DY DZ]
                                         [--reveil X Y Z] [--cap DEGRES] [--sortie DOSSIER] [--rendus DOSSIER]
     python outils/monde_spawn.py rendu <dossier de la dimension> --rendus DOSSIER
+    python outils/monde_spawn.py schematic <fichier> [--rapport FICHIER.md]
+    python outils/monde_spawn.py composer <fichier> [--sortie DOSSIER] [--rendus DOSSIER] [--rapport FICHIER.md]
+                                        [--position X Y Z] [--borne X Y Z] [--ecart N] [--config-bordure FICHIER.toml]
 
 grotte : la grotte du terminus, celle de la cinématique d'arrivée (HeraliZ Utils, PlateauRendu : même profil de roche,
     même bruit, même tunnel, même voie, même heurtoir), en blocs, à l'endroit que la cinématique attend (réveil en
@@ -23,6 +26,18 @@ copier : recopie SEULEMENT la zone donnée (blocs, entités de blocs, entités) 
     spawn (outils/recherche_grotte.py, workflow « Grotte du spawn »). Le point de réveil et l'épave se règlent ensuite
     en jeu s'il le faut (/cinematique reveil, /cinematique epave ...), la borne se pose avec /depart borne.
 rendu : vues de contrôle d'une dimension déjà fabriquée.
+schematic : lit un schematic (Sponge v1/v2/v3 .schem de WorldEdit, ou structure .nbt de Minecraft ; l'ancien
+    .schematic de MCEdit est refusé) et en fait le rapport : taille, palette, entités, blocs de nos mods, où l'on marche.
+composer : la grotte (comme « grotte », réveil et épave inchangés, porte de service de la niche retirée et borne pas
+    posée là) + le schematic du spawn à l'est, relié par un tunnel de 3 × 3 (pierre de taille, lanternes, escaliers si
+    le niveau change) qui part de la niche. Le schematic est posé pour qu'on y marche à la hauteur de la grotte (sinon
+    le plus près possible) et pour que la rangée du tunnel rejoigne au moindre coût la plus grande zone où l'on marche ;
+    sur cette rangée, le raccord creuse 3 × 3 là où c'est bouché et pose un sol là où il manque (rien d'autre n'est
+    touché). La borne de départ : celle du schematic s'il en a une, sinon --borne (repère du schematic), sinon au cœur
+    de la grande zone, avec de la place autour, visible en sortant du tunnel, écran tourné vers l'arrivée. --position :
+    coin bas nord-ouest du schematic donné à la main (la rangée de la niche, z = 9, doit le traverser). La bordure du
+    monde du spawn (centrée sur le réveil, 256 par défaut) est vérifiée : si elle doit grandir, la taille conseillée est
+    écrite dans --config-bordure (heraliz_spawn-server.toml, section [spawn]).
 
 Sortie (--sortie, défaut livraison/monde_spawn, hors Git) : <sortie>/spawn/region/*.mca (et entities/ pour une copie),
 <sortie>/spawn/heraliz_spawn.json (ce qui a été fait, point de réveil conseillé, borne). Le dossier <sortie>/spawn est
@@ -454,8 +469,10 @@ def rocher(xp, k, graine=11):
     return int(bruit(xp * 0.3, k * 0.5, graine) * 4.99)
 
 
-def generer_grotte(m):
-    """Construit la grotte dans le Monde m ; renvoie les informations du manifeste."""
+def generer_grotte(m, sortie_ouverte=False):
+    """Construit la grotte dans le Monde m ; renvoie les informations du manifeste. sortie_ouverte (composition avec le
+    schematic du spawn) : la porte de service de la niche est retirée (passage de 3 de large vers le tunnel du spawn) et
+    la borne de départ n'est pas posée ici (elle va dans la partie spawn)."""
     cine = json.loads(CINE_JSON.read_text(encoding="utf-8"))
     reveil = cine["reveil"]
     epave = [tuple(p) for p in cine["epave"]]
@@ -631,15 +648,22 @@ def generer_grotte(m):
         for x in range(bord - 1, niche_x + 1):
             m.poser(x, SOL_Y - 1, z, E("polished_andesite"))
     porte_x = niche_x + 1
-    m.poser(porte_x, SOL_Y, zn, E("iron_door", facing="west", half="lower", hinge="left", open=False, powered=False))
-    m.poser(porte_x, SOL_Y + 1, zn, E("iron_door", facing="west", half="upper", hinge="left", open=False, powered=False))
     m.poser(porte_x, SOL_Y + 2, zn, E("verdant_froglight", axis="y"))
-    for dz in (-1, 1):
-        m.poser(porte_x, SOL_Y, zn + dz, E("polished_andesite"))
-        m.poser(porte_x, SOL_Y + 1, zn + dz, E("polished_andesite"))
-    borne = (niche_x - 1, SOL_Y, zn)
-    m.poser(*borne, E("heralisz_utils:borne_depart", facing="west"))
-    pris.add(borne)
+    if sortie_ouverte:
+        # passage vers le spawn : 3 de large, 2 de haut, sous la lampe verte (le tunnel part de porte_x + 1)
+        for dz in (-1, 0, 1):
+            for y in (SOL_Y, SOL_Y + 1):
+                m.poser(porte_x, y, zn + dz, 0)
+        borne = None
+    else:
+        m.poser(porte_x, SOL_Y, zn, E("iron_door", facing="west", half="lower", hinge="left", open=False, powered=False))
+        m.poser(porte_x, SOL_Y + 1, zn, E("iron_door", facing="west", half="upper", hinge="left", open=False, powered=False))
+        for dz in (-1, 1):
+            m.poser(porte_x, SOL_Y, zn + dz, E("polished_andesite"))
+            m.poser(porte_x, SOL_Y + 1, zn + dz, E("polished_andesite"))
+        borne = (niche_x - 1, SOL_Y, zn)
+        m.poser(*borne, E("heralisz_utils:borne_depart", facing="west"))
+        pris.add(borne)
     # lumière d'appoint invisible (blocs « light » de niveau LUMIERE_FOND, sans collision, que personne ne peut prendre) :
     # la grotte reste sombre, mais on y voit où l'on marche et la niche se trouve
     for x in range(x0, x1 + 1, 6):
@@ -656,15 +680,18 @@ def generer_grotte(m):
     if not ok:
         raise SystemExit("Le point de réveil %s n'est pas praticable dans la grotte : réglages à revoir." % (reveil,))
     hors = sum(1 for p in epave for b in volume_epave(p, 0.0) if not vide_ici(*b) and b[1] >= SOL_Y)
-    return {
+    info = {
         "source": "grotte du terminus (cinématique d'arrivée), générée par outils/monde_spawn.py",
         "emprise": {"x": [x0, x1], "y": [y0, y1], "z": [z0, z1]},
         "reveil": reveil, "cap": cine.get("cap", 0),
-        "borne": {"x": borne[0], "y": borne[1], "z": borne[2], "facing": "west"},
         "barrieres_epave": len(barrieres),
         "epave_dans_la_roche": hors,
         "centre_bordure": [XC, (z0 + z1) / 2.0],
+        "sortie": {"x": porte_x, "y": SOL_Y, "z": zn},
     }
+    if borne:
+        info["borne"] = {"x": borne[0], "y": borne[1], "z": borne[2], "facing": "west"}
+    return info
 
 
 # ================================================================== copie d'une zone d'un monde
@@ -774,13 +801,580 @@ def _i32(v):
     return v - (1 << 32) if v >> 31 else v
 
 
+# ================================================================== schematic du spawn (WorldEdit .schem, structure .nbt)
+AIR_NOMS = ("minecraft:air", "minecraft:cave_air", "minecraft:void_air", "minecraft:structure_void")
+LIQUIDES = ("minecraft:water", "minecraft:lava", "minecraft:bubble_column")
+# nos mods (CLAUDE.md, section 3.1) : espaces de noms des blocs à signaler dans le rapport
+NOS_ESPACES = ("crac", "reanimation", "airstrike", "caracrea", "spartan", "dayzhotbar", "backpacked")
+
+
+def est_a_nous(nom):
+    ns = nom.partition(":")[0]
+    return ns.startswith(("heraliz", "heralisz")) or ns in NOS_ESPACES
+
+
+def etat_texte(s):
+    """« minecraft:oak_stairs[facing=east,half=bottom] » -> (nom, {propriétés})."""
+    nom, _, reste = s.strip().partition("[")
+    props = {}
+    for kv in reste.rstrip("]").split(","):
+        if "=" in kv:
+            k, _, v = kv.partition("=")
+            props[k.strip()] = v.strip()
+    nom = nom.strip()
+    if ":" not in nom:
+        nom = "minecraft:" + nom
+    return nom, props
+
+
+def traversable(nom, props):
+    """Le joueur passe-t-il à travers ce bloc (pas de collision, ou presque) ? Estimation par le nom, pour trouver où
+    l'on marche dans le schematic."""
+    if nom in AIR_NOMS or nom == "minecraft:light":
+        return True
+    n = nom.split(":")[-1]
+    if props.get("open") == "true" and ("door" in n or "gate" in n):
+        return True
+    if n in ("grass", "tall_grass", "fern", "large_fern", "dead_bush", "seagrass", "tall_seagrass", "snow", "cobweb",
+             "redstone_wire", "tripwire", "string", "lever", "hanging_roots", "glow_lichen", "sculk_vein", "moss_carpet",
+             "sugar_cane", "wheat", "carrots", "potatoes", "beetroots", "nether_sprouts", "warped_roots", "crimson_roots",
+             "spore_blossom", "big_dripleaf_stem", "small_dripleaf", "pink_petals"):
+        return True
+    cles = ("torch", "rail", "button", "_sign", "banner", "sapling", "flower", "tulip", "orchid", "allium", "bluet",
+            "daisy", "dandelion", "poppy", "cornflower", "lily_of_the_valley", "rose_bush", "lilac", "peony", "vine",
+            "pressure_plate", "carpet", "mushroom", "coral_fan", "_roots", "lichen", "fungus")
+    return any(c in n for c in cles) and not n.endswith("_block") and "wall_fan" not in n
+
+
+class Schematic:
+    """Un schematic lu : taille (W, H, LZ), états (0 = air), blocs[x][y][z], entités de blocs et entités (positions
+    relatives au coin bas nord-ouest du volume)."""
+
+    def __init__(self):
+        self.format = ""
+        self.data_version = None
+        self.taille = (0, 0, 0)
+        self.etats = [("minecraft:air", {})]
+        self.blocs = None
+        self.blocs_entites = []      # (x, y, z, id, {clé: Tag})
+        self.entites = []            # ((x, y, z), Tag compound complet, id compris)
+        self.entites_ignorees = 0
+        self.offset = None
+
+    def _etat(self, nom, props, index):
+        if nom in AIR_NOMS:
+            return 0
+        cle = (nom, tuple(sorted(props.items())))
+        i = index.get(cle)
+        if i is None:
+            i = index[cle] = len(self.etats)
+            self.etats.append((nom, dict(props)))
+        return i
+
+
+def _varints(b, n):
+    a = np.frombuffer(bytes(b), dtype=np.uint8)
+    if a.size == n and (a < 128).all():
+        return a.astype(np.int32)
+    fins = np.nonzero(a < 128)[0]
+    debuts = np.concatenate([[0], fins[:-1] + 1]).astype(np.int64)
+    longs = fins - debuts + 1
+    v = (a[debuts] & 127).astype(np.int64)
+    for t in range(1, int(longs.max()) if longs.size else 1):
+        q = longs > t
+        v[q] |= (a[debuts[q] + t].astype(np.int64) & 127) << (7 * t)
+    if v.size < n:
+        raise SystemExit("schematic abîmé : %d blocs lus sur %d" % (v.size, n))
+    return v[:n].astype(np.int32)
+
+
+def _court(t):
+    return t.v & 0xFFFF if t.t == 2 else int(t.v)
+
+
+def lire_schematic(chemin):
+    """Lit un schematic : Sponge v1/v2/v3 (.schem de WorldEdit 7) ou structure de Minecraft (.nbt). L'ancien format
+    MCEdit (.schematic, identifiants numériques d'avant 1.13) est refusé avec un message clair."""
+    import gzip
+    data = open(chemin, "rb").read()
+    if data[:2] == b"\x1f\x8b":
+        data = gzip.decompress(data)
+    elif data[:1] == b"\x78":
+        data = zlib.decompress(data)
+    r = nbt_lire(data).v
+    if "Schematic" in r and r["Schematic"].t == 10:
+        r = r["Schematic"].v
+    sc = Schematic()
+    index = {}
+    if r.get("DataVersion") is not None:
+        sc.data_version = r["DataVersion"].v
+    v3 = "Blocks" in r and r["Blocks"].t == 10
+    if v3 or ("Palette" in r and "BlockData" in r):
+        W, H, LZ = _court(r["Width"]), _court(r["Height"]), _court(r["Length"])
+        sc.taille = (W, H, LZ)
+        sc.format = "Sponge v%s (.schem)" % (r["Version"].v if r.get("Version") is not None else ("3" if v3 else "2"))
+        if r.get("Offset") is not None:
+            sc.offset = list(r["Offset"].v)
+        bl = r["Blocks"].v if v3 else r
+        pal = bl["Palette"].v
+        lut = np.zeros(max([x.v for x in pal.values()] + [0]) + 1, dtype=np.int32)
+        for texte, i in pal.items():
+            nom, props = etat_texte(texte)
+            lut[i.v] = sc._etat(nom, props, index)
+        idx = _varints(bl["Data"].v if v3 else bl["BlockData"].v, W * H * LZ)
+        sc.blocs = lut[idx].reshape(H, LZ, W).transpose(2, 0, 1).copy()
+        bes = bl.get("BlockEntities") or bl.get("TileEntities")
+        for be in (bes.v[1] if bes is not None else []):
+            p = list(be["Pos"].v) if be["Pos"].t == 11 else [x.v for x in be["Pos"].v[1]]
+            ident = be.get("Id") or be.get("id")
+            if v3 and be.get("Data") is not None:
+                donnees = dict(be["Data"].v)
+            else:
+                donnees = {k: x for k, x in be.v.items() if k not in ("Pos", "Id", "id", "ContentVersion")}
+            for k in ("x", "y", "z", "id", "keepPacked"):
+                donnees.pop(k, None)
+            sc.blocs_entites.append((p[0], p[1], p[2], ident.v if ident is not None else "", donnees))
+        ents = r.get("Entities")
+        for e in (ents.v[1] if ents is not None else []):
+            p = [x.v for x in e["Pos"].v[1]]
+            ident = e.get("Id") or e.get("id")
+            donnees = dict(e["Data"].v) if (v3 and e.get("Data") is not None) else {k: x for k, x in e.v.items() if k not in ("Pos", "Id")}
+            donnees["id"] = S(ident.v if ident is not None else "minecraft:marker")
+            donnees["Pos"] = L(6, [T(6, float(c)) for c in p])
+            sc.entites.append((tuple(p), T(10, donnees)))
+    elif "size" in r and "blocks" in r and ("palette" in r or "palettes" in r):
+        W, H, LZ = [x.v for x in r["size"].v[1]]
+        sc.taille = (W, H, LZ)
+        sc.format = "structure de Minecraft (.nbt)"
+        pal = r["palette"].v[1] if "palette" in r else r["palettes"].v[1][0].v[1]
+        lut = []
+        for p in pal:
+            props = {k: x.v for k, x in p["Properties"].v.items()} if p.get("Properties") is not None else {}
+            lut.append(sc._etat(p["Name"].v, props, index))
+        sc.blocs = np.zeros((W, H, LZ), dtype=np.int32)
+        for b in r["blocks"].v[1]:
+            x, y, z = [c.v for c in b["pos"].v[1]]
+            sc.blocs[x, y, z] = lut[b["state"].v]
+            if b.get("nbt") is not None:
+                d = dict(b["nbt"].v)
+                ident = d.pop("id", None)
+                for k in ("x", "y", "z", "keepPacked"):
+                    d.pop(k, None)
+                sc.blocs_entites.append((x, y, z, ident.v if ident is not None else "", d))
+        for e in (r["entities"].v[1] if r.get("entities") is not None else []):
+            p = [c.v for c in e["pos"].v[1]]
+            d = dict(e["nbt"].v)
+            d["Pos"] = L(6, [T(6, float(c)) for c in p])
+            sc.entites.append((tuple(p), T(10, d)))
+    elif "Blocks" in r and r["Blocks"].t == 7:
+        raise SystemExit("%s : ancien format MCEdit (.schematic, identifiants numériques d'avant 1.13), illisible ici. "
+                         "Le réenregistrer avec WorldEdit sur le serveur : //schem load <nom> puis //schem save <nom> sponge."
+                         % chemin)
+    else:
+        raise SystemExit("%s : format de schematic inconnu (clés : %s)" % (chemin, ", ".join(sorted(r)[:20])))
+    # entités : WorldEdit note leur position par rapport au coin du volume ; hors du volume = autre repère, ignorées
+    W, H, LZ = sc.taille
+    garde = []
+    for p, e in sc.entites:
+        if -1 <= p[0] <= W + 1 and -1 <= p[1] <= H + 1 and -1 <= p[2] <= LZ + 1:
+            garde.append((p, e))
+        else:
+            sc.entites_ignorees += 1
+    sc.entites = garde
+    return sc
+
+
+def masques_schematic(sc):
+    """(obstacle, liquide, praticable) : cases où l'on marche (deux cases libres sur un sol), estimées par les noms."""
+    passe = np.array([traversable(n, p) for n, p in sc.etats])
+    liq = np.array([n in LIQUIDES or (p.get("waterlogged") == "true" and traversable(n, p)) for n, p in sc.etats])
+    ob = ~passe[sc.blocs]
+    lq = liq[sc.blocs]
+    sol = ob & ~lq
+    libre = ~ob & ~lq
+    tete = np.ones_like(libre)
+    tete[:, :-1, :] = libre[:, 1:, :]
+    dessous = np.zeros_like(libre)
+    dessous[:, 1:, :] = sol[:, :-1, :]
+    return ob, lq, libre & tete & dessous
+
+
+def zone_principale(prat):
+    """La plus grande étendue praticable d'un seul tenant (cases voisines, marche de 1 au plus) : tableau booléen."""
+    from collections import deque
+    W, H, LZ = prat.shape
+    lab = np.zeros(prat.shape, dtype=np.int32)
+    tailles = [0]
+    for x0, y0, z0 in zip(*np.nonzero(prat)):
+        if lab[x0, y0, z0]:
+            continue
+        n = len(tailles)
+        lab[x0, y0, z0] = n
+        q = deque([(x0, y0, z0)])
+        c = 0
+        while q:
+            x, y, z = q.popleft()
+            c += 1
+            for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                a, b = x + dx, z + dz
+                if not (0 <= a < W and 0 <= b < LZ):
+                    continue
+                for dy in (0, 1, -1):
+                    yy = y + dy
+                    if 0 <= yy < H and prat[a, yy, b] and not lab[a, yy, b]:
+                        lab[a, yy, b] = n
+                        q.append((a, yy, b))
+        tailles.append(c)
+    if len(tailles) == 1:
+        return None
+    return lab == int(np.argmax(tailles))
+
+
+def rapport_schematic(sc, chemin, md=None):
+    """Résumé du schematic (taille, palette, entités, blocs de nos mods) ; écrit en Markdown si md est donné."""
+    from collections import Counter
+    W, H, LZ = sc.taille
+    compte = Counter()
+    ids, nb = np.unique(sc.blocs, return_counts=True)
+    for i, n in zip(ids, nb):
+        if i:
+            compte[sc.etats[i][0]] += int(n)
+    ents = Counter(e.get("id").v if e.get("id") is not None else "?" for p, e in sc.entites)
+    bes = Counter(b[3] for b in sc.blocs_entites)
+    nous = {k: v for k, v in compte.items() if est_a_nous(k)}
+    autres = {k: v for k, v in compte.items() if not k.startswith("minecraft:") and not est_a_nous(k)}
+    _, _, prat = masques_schematic(sc)
+    princ = zone_principale(prat)
+    info = {"fichier": Path(chemin).name, "octets": os.path.getsize(chemin), "format": sc.format,
+            "data_version": sc.data_version, "taille": [W, H, LZ], "blocs": int(sum(compte.values())),
+            "etats": len(sc.etats) - 1, "types_de_blocs": len(compte), "entites": dict(ents),
+            "entites_ignorees": sc.entites_ignorees, "entites_de_blocs": dict(bes), "blocs_de_nos_mods": nous,
+            "blocs_d_autres_mods": autres, "cases_praticables": int(prat.sum()),
+            "zone_principale": int(princ.sum()) if princ is not None else 0}
+    if md:
+        def liste(c):
+            return ", ".join("`%s` %d" % kv for kv in sorted(c.items(), key=lambda e: -e[1])) or "aucun"
+        o = ["## Schematic `%s`" % info["fichier"], "",
+             "- fichier : %d octets, %s, DataVersion %s%s" % (info["octets"], sc.format, sc.data_version,
+                                                               "" if sc.data_version == DATA_VERSION else " (Minecraft 1.20.1 = 3465)"),
+             "- dimensions : **%d × %d × %d** (largeur x, hauteur y, longueur z) ; %d blocs posés (hors air), %d types de blocs, %d états"
+             % (W, H, LZ, info["blocs"], len(compte), info["etats"]),
+             "- entités : %d%s%s" % (sum(ents.values()), (" — " + liste(ents)) if ents else "",
+                                    (" ; %d hors du volume, ignorées" % sc.entites_ignorees) if sc.entites_ignorees else ""),
+             "- entités de blocs (coffres, panneaux...) : %d%s" % (sum(bes.values()), (" — " + liste(bes)) if bes else ""),
+             "- blocs de nos mods : %s" % liste(nous),
+             "- blocs d'autres mods : %s" % liste(autres),
+             "- cases où l'on marche : %d, dont %d dans la plus grande zone d'un seul tenant" % (info["cases_praticables"], info["zone_principale"]),
+             "", "<details><summary>Palette complète (%d types)</summary>" % len(compte), "", "| bloc | nombre |", "|---|---|"]
+        o += ["| `%s` | %d |" % kv for kv in compte.most_common()]
+        o += ["", "</details>", ""]
+        Path(md).write_text("\n".join(o), encoding="utf-8")
+    return info
+
+
+# ================================================================== composition : grotte du terminus + schematic du spawn
+ECART = 10             # longueur minimale du tunnel entre la niche de la grotte et le schematic
+BORDURE_DEFAUT = 256   # heraliz_spawn-server.toml, [spawn] bordure (défaut de HeraliZ Utils)
+
+
+def composer(m, sc, chemin, position=None, borne_rel=None, ecart=ECART):
+    """La grotte du terminus (réveil et épave inchangés) + le schematic du spawn à l'est, relié par un tunnel qui part de
+    la niche de la grotte (porte de service retirée) ; la borne de départ dans la partie spawn. Renvoie le manifeste."""
+    info = generer_grotte(m, sortie_ouverte=True)
+    E = m.etat
+    W, H, LZ = sc.taille
+    ob, lq, prat = masques_schematic(sc)
+    princ = zone_principale(prat)
+    if princ is None:
+        raise SystemExit("Le schematic n'a aucune case où l'on peut marcher (deux cases libres sur un sol).")
+    yl = int(np.bincount(np.nonzero(princ)[1]).argmax())    # niveau où l'on marche le plus (repère du schematic)
+    niv = princ[:, yl, :]                                    # grande zone à ce niveau (x, z)
+    sx, sy, sz = info["sortie"]["x"], info["sortie"]["y"], info["sortie"]["z"]
+
+    def obst(x, y, z):
+        return bool(ob[x, y, z] or lq[x, y, z]) if 0 <= y < H else False
+
+    def cout_ligne(z, xe):
+        c = 0
+        for x in range(xe):
+            if obst(x, yl, z) or obst(x, yl + 1, z):
+                c += sum(obst(x, yl + d, z + k) for d in (0, 1, 2) for k in (-1, 0, 1))
+                c += 50 * sum(bool(lq[x, yl + d, z + k]) for d in (0, 1, 2) for k in (-1, 0, 1) if yl + d < H)
+        return c
+
+    # entrée : la rangée (z) où rejoindre la grande zone depuis la face ouest coûte le moins de blocs retirés
+    if position is not None:
+        rangs = [sz - position[2]]
+        if not 1 <= rangs[0] <= LZ - 2:
+            raise SystemExit("Avec --position, la rangée de la niche (z = %d) doit traverser le schematic (z de %d à %d)."
+                             % (sz, position[2] + 1, position[2] + LZ - 2))
+    else:
+        rangs = range(1, LZ - 1)
+    best = None
+    for z in rangs:
+        xs = np.nonzero(niv[:, z])[0]
+        if xs.size == 0:
+            continue
+        xe = int(xs.min())
+        score = cout_ligne(z, xe) + 0.25 * xe + 0.05 * abs(z - LZ / 2.0)
+        if best is None or score < best[0]:
+            best = (score, z, xe)
+    if best is None:
+        raise SystemExit("Aucune entrée possible dans le schematic depuis l'ouest (rangée de la niche : voir --position).")
+    _, ze, xe = best
+    # placement : niveau de marche du schematic à la hauteur de la grotte si la hauteur du monde le permet
+    if position is not None:
+        x0s, y0s, z0s = position
+    else:
+        y0s = max(min(SOL_Y - yl, Y_MAX - H + 1), Y_MIN)
+        z0s = sz - ze
+        x0s = None
+    yw = y0s + yl                                           # niveau de marche (absolu) dans le schematic
+    montee = yw - sy
+    if x0s is None:
+        x0s = sx + 1 + max(ecart, abs(montee) + 4)
+    n = x0s - (sx + 1)                                      # longueur du tunnel
+    if n < abs(montee) + 2:
+        raise SystemExit("Tunnel trop court (%d) pour monter de %d : écarter le schematic (--ecart ou --position)." % (n, montee))
+
+    # 1. le schematic, ses entités de blocs et ses entités
+    lut = np.array([0] + [E(nom, **p) for nom, p in sc.etats[1:]], dtype=np.int32)
+    m.poser_grille(x0s, y0s, z0s, lut[sc.blocs])
+    nbe = 0
+    for (x, y, z, ident, d) in sc.blocs_entites:
+        if not (0 <= x < W and 0 <= y < H and 0 <= z < LZ) or not sc.blocs[x, y, z] or not ident:
+            continue
+        ax, ay, az = x0s + x, y0s + y, z0s + z
+        m.blocs_entites[(ax, ay, az)] = C(id=S(ident), x=I(ax), y=I(ay), z=I(az), **d)
+        nbe += 1
+    # cadres et tableaux : TileX/Y/Z recalés avec le même écart que leur position (repère du schematic ou du monde d'origine)
+    ecarts = {}
+    for p, e in sc.entites:
+        if e.get("TileX") is not None:
+            k = (e["TileX"].v - math.floor(p[0]), e["TileY"].v - math.floor(p[1]), e["TileZ"].v - math.floor(p[2]))
+            ecarts[k] = ecarts.get(k, 0) + 1
+    o = max(ecarts, key=ecarts.get) if ecarts else (0, 0, 0)
+    for i, (p, e) in enumerate(sc.entites):
+        e.v["Pos"] = L(6, [T(6, p[0] + x0s), T(6, p[1] + y0s), T(6, p[2] + z0s)])
+        for k, c, b in (("TileX", 0, x0s), ("TileY", 1, y0s), ("TileZ", 2, z0s)):
+            if e.get(k) is not None:
+                e.v[k] = I(e[k].v - o[c] + b)
+        u = uuid.uuid5(uuid.NAMESPACE_URL, "heraliz-spawn/schematic/%d/%r" % (i, p)).int
+        hi, lo = u >> 64, u & M64
+        e.v["UUID"] = T(11, [_i32(hi >> 32), _i32(hi), _i32(lo >> 32), _i32(lo)])
+        e.v.pop("Passengers", None)
+        m.entites.append(e)
+
+    # 2. le tunnel : de la niche (porte_x + 1) à la face ouest du schematic, 3 de large, 3 de haut, escaliers si la
+    #    hauteur change (même pierre de taille que le tunnel de la voie, lanternes pendues tous les 6 blocs)
+    pierre = [E("stone_bricks"), E("stone_bricks"), E("cracked_stone_bricks"), E("andesite"), E("mossy_stone_bricks")]
+    x_deb = sx + 1
+    haut, h = [], sy
+    for i in range(n):
+        if h != yw and i >= 2:
+            h += 1 if yw > h else -1
+        haut.append(h)
+    if haut[-1] != yw:
+        raise SystemExit("Rampe du tunnel impossible (%d -> %d en %d blocs)." % (sy, yw, n))
+    vide_tunnel = set()
+    for i in range(n):
+        x, h = x_deb + i, haut[i]
+        hp, hn = (haut[i - 1] if i else sy), (haut[i + 1] if i + 1 < n else yw)
+        for dz in (-1, 0, 1):
+            for y in range(h, max(h, hp, hn) + 3):
+                m.poser(x, y, sz + dz, 0)
+                vide_tunnel.add((x, y, sz + dz))
+    for i in range(n):
+        x, h = x_deb + i, haut[i]
+        hp, hn = (haut[i - 1] if i else sy), (haut[i + 1] if i + 1 < n else yw)
+        for dz in range(-2, 3):
+            for y in range(min(h, hp, hn) - 1, max(h, hp, hn) + 4):
+                if (x, y, sz + dz) in vide_tunnel:
+                    continue
+                if abs(dz) <= 1 and y == h - 1:
+                    if h > hp:              # on monte en allant vers l'est : la marche est sous ses pieds
+                        b = E("stone_brick_stairs", facing="east", half="bottom", shape="straight", waterlogged=False)
+                    elif hn < h:            # on descend vers l'est : la marche est ici, elle monte vers l'ouest
+                        b = E("stone_brick_stairs", facing="west", half="bottom", shape="straight", waterlogged=False)
+                    else:
+                        b = E("gravel") if dz == 0 and bruit(x * 0.6, 3.0, 71) < 0.35 else E("polished_andesite")
+                    m.poser(x, y, sz + dz, b)
+                elif m.lire(x, y, sz + dz) == 0:
+                    m.poser(x, y, sz + dz, pierre[int(bruit(x * 0.45, y * 0.45 + dz * 3.1, 73) * 4.99)])
+        if i % 6 == 3:
+            m.poser(x, h + 2, sz, E("lantern", hanging=True))
+
+    # 3. raccord dans le schematic, sur la rangée de l'entrée : creusé (3 × 3) là où elle est bouchée, sol posé où il manque
+    retires = ajoutes = 0
+    passe_m = {}
+
+    def passe(i):
+        v = passe_m.get(i)
+        if v is None:
+            nom, p = m.etats[i]
+            v = passe_m[i] = traversable(nom, dict(p)) and nom not in LIQUIDES
+        return v
+
+    az = z0s + ze
+    for xl in range(xe):
+        ax = x0s + xl
+        bouche = not passe(m.lire(ax, yw, az)) or not passe(m.lire(ax, yw + 1, az))
+        if bouche:
+            for d in (0, 1, 2):
+                for k in (-1, 0, 1):
+                    c = (ax, yw + d, az + k)
+                    if m.lire(*c):
+                        m.poser(*c, 0)
+                        m.blocs_entites.pop(c, None)
+                        retires += 1
+        for k in (-1, 0, 1):
+            c = (ax, yw - 1, az + k)
+            if passe(m.lire(*c)) and (bouche or k == 0 or passe(m.lire(ax, yw, az + k))):
+                m.poser(*c, E("polished_andesite"))
+                ajoutes += 1
+    arrivee = (x0s + xe, yw, az)
+
+    # 4. la borne de départ : celle du schematic s'il en a une, sinon au cœur de la grande zone, écran vers l'arrivée
+    deja = [i for i, (nom, p) in enumerate(sc.etats) if nom == "heralisz_utils:borne_depart"]
+    if deja:
+        pos = np.argwhere(np.isin(sc.blocs, deja))[0]
+        bx, by, bz = x0s + int(pos[0]), y0s + int(pos[1]), z0s + int(pos[2])
+        face = sc.etats[int(sc.blocs[tuple(pos)])][1].get("facing", "north")
+        origine = "déjà dans le schematic"
+    else:
+        if borne_rel is not None:
+            bl = tuple(borne_rel)
+            origine = "donnée à la main (--borne, repère du schematic)"
+        else:
+            libre = niv.copy()
+            libre[max(0, xe - 2):xe + 3, max(0, ze - 2):ze + 3] = False      # pas sur l'arrivée du tunnel
+            if not libre.any():
+                libre = niv.copy()
+            dist = np.zeros(libre.shape, dtype=np.int32)
+            e_ = libre.copy()
+            k = 0
+            while e_.any() and k < 12:                       # place libre autour (distance de Tchebychev au bord)
+                dist[e_] = k
+                p_ = np.pad(e_, 1, constant_values=False)
+                for dx in (-1, 0, 1):
+                    for dz in (-1, 0, 1):
+                        e_ = e_ & p_[1 + dx:1 + dx + e_.shape[0], 1 + dz:1 + dz + e_.shape[1]]
+                k += 1
+            cand = np.argwhere(libre & (dist >= min(2, int(dist.max()))))
+            cx, cz = np.argwhere(niv).mean(axis=0)
+
+            def vue_degagee(c):        # on la voit en arrivant : la ligne droite depuis l'arrivée reste praticable
+                n_ = int(max(abs(c[0] - xe), abs(c[1] - ze)))
+                return all(niv[int(round(xe + (c[0] - xe) * t / n_)), int(round(ze + (c[1] - ze) * t / n_))]
+                           for t in range(1, n_)) if n_ > 1 else True
+
+            score = np.sqrt(((cand - [cx, cz]) ** 2).sum(axis=1))
+            for j in np.argsort(score)[:400]:
+                if not vue_degagee(cand[j]):
+                    score[j] += 1000
+            j = int(np.argmin(score))
+            bl = (int(cand[j][0]), yl, int(cand[j][1]))
+            origine = "au cœur de la grande zone du spawn, avec de la place autour" + (
+                ", visible en sortant du tunnel" if score[j] < 1000 else "")
+        bx, by, bz = x0s + bl[0], y0s + bl[1], z0s + bl[2]
+        dx, dz = arrivee[0] - bx, arrivee[2] - bz
+        face = ("east" if dx > 0 else "west") if abs(dx) >= abs(dz) else ("south" if dz > 0 else "north")
+        m.poser(bx, by, bz, E("heralisz_utils:borne_depart", facing=face))
+        m.blocs_entites.pop((bx, by, bz), None)
+        if m.lire(bx, by + 2, bz) == 0:
+            m.poser(bx, by + 2, bz, E("light", level=10))
+    # point de vue des rendus : sur le chemin de l'arrivée du tunnel à la borne, à 5 à 9 blocs d'elle, pieds et tête libres
+    oeil = [arrivee[0] + 0.5, arrivee[1] + 1.62, arrivee[2] + 0.5]
+    dist = math.hypot(arrivee[0] - bx, arrivee[2] - bz)
+    for r in (6, 7, 5, 8, 9):
+        if r >= dist:
+            continue
+        px, pz = bx + 0.5 + (arrivee[0] - bx) * r / dist, bz + 0.5 + (arrivee[2] - bz) * r / dist
+        cx_, cz_ = math.floor(px), math.floor(pz)
+        if all(passe(m.lire(cx_, by + d, cz_)) for d in (0, 1)) and not passe(m.lire(cx_, by - 1, cz_)):
+            oeil = [px, by + 1.62, pz]
+            break
+
+    # bordure du monde du spawn : centrée sur le point de réveil, elle doit tout contenir (marge de 8)
+    xr, zr = info["reveil"][0] + 0.5, info["reveil"][2] + 0.5
+    e0 = info["emprise"]
+    xmin, xmax = min(e0["x"][0], sx), max(e0["x"][1], x0s + W - 1)
+    zmin, zmax = min(e0["z"][0], z0s, sz - 2), max(e0["z"][1], z0s + LZ - 1, sz + 2)
+    demi = max(xr - xmin, xmax + 1 - xr, zr - zmin, zmax + 1 - zr) + 8
+    bord = max(BORDURE_DEFAUT, int(math.ceil(2 * demi / 32.0)) * 32)
+    info.update({
+        "source": "composition : grotte du terminus + schematic %s (outils/monde_spawn.py composer)" % Path(chemin).name,
+        "emprise": {"x": [xmin, xmax], "y": [min(e0["y"][0], y0s, min(haut) - 1), max(e0["y"][1], y0s + H - 1)],
+                    "z": [zmin, zmax]},
+        "borne": {"x": bx, "y": by, "z": bz, "facing": face, "origine": origine},
+        "oeil_borne": oeil,
+        "tunnel": {"de": [x_deb, sy, sz], "a": [x0s - 1, yw, sz], "longueur": n, "montee": montee, "arrivee": list(arrivee)},
+        "schematic": {"fichier": Path(chemin).name, "format": sc.format, "taille": [W, H, LZ], "position": [x0s, y0s, z0s],
+                      "niveau_de_marche": yw, "entree_rangee_z": az, "blocs_retires": retires, "sols_ajoutes": ajoutes,
+                      "entites_de_blocs": nbe, "entites": len(sc.entites), "entites_ignorees": sc.entites_ignorees},
+        "bordure_conseillee": bord,
+        "bordure_suffit": bord <= BORDURE_DEFAUT,
+        "centre_bordure": [xr, zr],
+    })
+    return info
+
+
+def ecrire_config_bordure(chemin, taille):
+    """[spawn] bordure de heraliz_spawn-server.toml (defaultconfigs du dépôt) : seule cette valeur est écrite ; Forge
+    complète le reste du fichier avec les valeurs par défaut au chargement."""
+    import re
+    p = Path(chemin)
+    texte = p.read_text(encoding="utf-8") if p.exists() else ""
+    if re.search(r"(?m)^\s*bordure\s*=", texte):
+        texte = re.sub(r"(?m)^(\s*bordure\s*=\s*)\d+", r"\g<1>%d" % taille, texte)
+    elif "[spawn]" in texte:
+        texte = texte.replace("[spawn]", "[spawn]\n\tbordure = %d" % taille, 1)
+    else:
+        texte += ("\n" if texte else "") + (
+            "# Monde du spawn composé par outils/monde_spawn.py composer : bordure agrandie pour contenir la grotte, le\n"
+            "# tunnel et le schematic du spawn (centrée sur le point de réveil). Les autres réglages gardent leur défaut.\n"
+            "[spawn]\n\tbordure = %d\n" % taille)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(texte, encoding="utf-8")
+
+
 # ================================================================== rendus de contrôle
-FIXES = {"minecraft:barrier": (150, 150, 158), "minecraft:chain": (60, 64, 72), "minecraft:lantern": (250, 200, 110),
+FIXES = {"minecraft:barrier": (150, 150, 158), "minecraft:grass_block": (92, 128, 58), "minecraft:water": (45, 75, 170), "minecraft:chain": (60, 64, 72), "minecraft:lantern": (250, 200, 110),
          "minecraft:redstone_torch": (230, 40, 30), "minecraft:pointed_dripstone": (130, 105, 90),
          "minecraft:hanging_roots": (150, 110, 80)}
 VIDES = ("minecraft:air", "minecraft:cave_air", "minecraft:light")
 TEXTURES_MOD = {"heralisz_utils:borne_depart":
                 DEPOT / "mods/heralisz-utils/src/client/resources/assets/heralisz_utils/textures/block/borne_depart_ecran.png"}
+
+
+_TEX_MODS = None
+
+
+def textures_des_mods():
+    """{espace de noms: [dossiers textures/block]} de nos mods (sources du dépôt), pour les rendus de leurs blocs."""
+    global _TEX_MODS
+    if _TEX_MODS is None:
+        _TEX_MODS = {}
+        for d in sorted(DEPOT.glob("mods/*/src/*/resources/assets/*/textures/block")):
+            _TEX_MODS.setdefault(d.parent.parent.name, []).append(d)
+    return _TEX_MODS
+
+
+def couleur_par_nom(n):
+    """Couleur approchée d'un bloc sans texture connue (rendus seulement) ; magenta : inconnu."""
+    nom = n.split(":")[-1]
+    for cles, c in ((("water",), (50, 80, 200)), (("lava",), (220, 100, 30)), (("leaves",), (60, 110, 45)),
+                    (("glass", "pane"), (170, 200, 215)), (("oak", "spruce", "birch", "jungle", "acacia", "mangrove",
+                                                            "planks", "log", "wood", "crate", "barrel"), (125, 95, 60)),
+                    (("iron", "metal", "steel", "tole", "grillage", "fence"), (150, 150, 155)),
+                    (("concrete", "beton", "cement"), (140, 140, 140)), (("brick",), (150, 85, 70)),
+                    (("stone", "cobble", "andesite", "deepslate", "tuff", "gravel", "rock"), (120, 120, 118)),
+                    (("sand", "sable"), (210, 195, 140)), (("dirt", "mud", "terre"), (110, 80, 55)),
+                    (("grass", "herbe", "moss"), (90, 130, 60)), (("snow", "ice", "neige"), (225, 235, 240)),
+                    (("wool", "carpet"), (200, 200, 200)), (("lamp", "lantern", "light", "lampe"), (240, 200, 120))):
+        if any(k in nom for k in cles):
+            return c
+    return (180, 60, 180)
 
 
 def textures_blocs(noms):
@@ -795,13 +1389,22 @@ def textures_blocs(noms):
         f = TEXTURES_MOD.get(n)
         if f is None or not f.exists():
             f = None
-            base = n.split(":")[-1].replace("_slab", "").replace("_stairs", "")
-            for cand in (base, base + "_side", base + "_top", base + "s", base.replace("bricks", "brick"), base + "_bottom"):
-                if (PACK / (cand + ".png")).exists():
-                    f = PACK / (cand + ".png")
+            ns, _, nom = n.partition(":")
+            base = nom
+            for suffixe in ("_slab", "_stairs", "_wall", "_fence_gate", "_fence", "_pressure_plate", "_button"):
+                base = base.replace(suffixe, "")
+            cands = (nom, base, base + "_side", base + "_top", base + "s", base.replace("bricks", "brick"), base + "_bottom",
+                     base + "_planks", base.replace("brick", "bricks"))
+            dossiers = [PACK] if ns == "minecraft" else [d for d in textures_des_mods().get(ns, [])]
+            for cand in cands:
+                for d in dossiers:
+                    if (d / (cand + ".png")).exists():
+                        f = d / (cand + ".png")
+                        break
+                if f is not None:
                     break
         if n in FIXES or f is None:
-            out.append((FIXES.get(n, (180, 60, 180)), None))
+            out.append((FIXES.get(n, couleur_par_nom(n)), None))
             continue
         im = np.asarray(Image.open(f).convert("RGBA").crop((0, 0, 16, 16)).resize((16, 16)), dtype=np.float64)
         a = im[..., 3:4] / 255.0
@@ -855,19 +1458,25 @@ PASSE = ("minecraft:air", "minecraft:light", "minecraft:barrier", "minecraft:cha
          "minecraft:iron_door")
 
 
+LUNE = 6               # lumière du ciel de nuit dans les rendus (le jeu la montre à peu près ainsi)
+
+
 def lumiere(A, etats):
     """Lumière des blocs approchée (sources, -1 par bloc, arrêtée par les blocs pleins) : pour les rendus seulement."""
     vals = np.array([SOURCES.get(n, int(dict(p).get("level", 0)) if n == "minecraft:light" else 0) for n, p in etats])
-    opaque = np.array([n not in PASSE and not n.endswith("_slab") for n, p in etats])
-    Lm = vals[A].astype(np.int16)
+    opaque = np.array([n not in PASSE and not n.endswith("_slab") and not traversable(n, dict(p)) for n, p in etats])
     bloque = opaque[A]
+    # ciel de nuit (le monde du spawn est figé à minuit) : les cases à ciel ouvert reçoivent une lumière de lune
+    couvert = np.flip(np.maximum.accumulate(np.flip(bloque, 1), axis=1), 1)
+    src = np.maximum(vals[A], np.where(couvert, 0, LUNE)).astype(np.int16)
+    Lm = src.copy()
     for _ in range(15):
         n = Lm.copy()
         for ax in range(3):
             for d in (-1, 1):
                 n = np.maximum(n, np.roll(Lm, d, ax) - 1)
         n[bloque] = 0
-        n = np.maximum(n, vals[A])
+        n = np.maximum(n, src)
         if (n == Lm).all():
             break
         Lm = n
@@ -911,7 +1520,7 @@ def rendus(m, dossier, info):
             h = (j + oy - sol) / 25.0
             lum = 0.55 + 0.45 * Lm[i, min(j + 1, ny - 1), k] / 15.0
             img[k, i] = np.clip(pal[A[i, j, k]] * (0.85 + 0.5 * h) * lum, 0, 255)
-    e = 8
+    e = max(2, min(8, 1400 // max(nx, nz)))      # petites images : 1400 px au plus de côté
     im = Image.fromarray(img.astype(np.uint8)).resize((nx * e, nz * e), Image.NEAREST)
     canvas = Image.new("RGB", (max(im.width, 900), im.height + 34), (10, 12, 16))
     canvas.paste(im, (0, 34))
@@ -925,13 +1534,20 @@ def rendus(m, dossier, info):
         bx, bz = info["borne"]["x"] - ox, info["borne"]["z"] - oz
         d.rectangle((bx * e - 3, 34 + bz * e - 3, bx * e + e + 3, 34 + bz * e + e + 3), outline=(80, 255, 140), width=3)
         d.text((bx * e - 4, 34 + bz * e + 14), "borne", fill=(80, 255, 140), font=f)
+    if "tunnel" in info:
+        for cle, nom in (("de", "tunnel"), ("arrivee", "arrivée")):
+            tx_, tz_ = info["tunnel"][cle][0] - ox, info["tunnel"][cle][2] - oz
+            d.ellipse((tx_ * e - 5, 34 + tz_ * e - 5, tx_ * e + e + 5, 34 + tz_ * e + e + 5), outline=(255, 210, 80), width=2)
+            d.text((tx_ * e - 10, 34 + tz_ * e - 26), nom, fill=(255, 210, 80), font=f)
     canvas.save(os.path.join(dossier, "spawn_dessus.png"))
     # 2. coupe de côté : tout ce qui est à l'est de l'axe de la voie est retiré, on regarde vers l'ouest
     if "reveil" in info:      # grotte générée : axe de la voie ; copie : à travers le point de réveil
-        xc = (int(math.floor(XC)) if str(info.get("source", "")).startswith("grotte") else int(info["reveil"][0])) - ox
+        xc = (int(math.floor(XC)) if str(info.get("source", "")).startswith(("grotte", "composition"))
+              else int(info["reveil"][0])) - ox
         xc = min(max(xc, 0), nx - 1)
     else:
         xc = nx // 2
+    e = max(2, min(8, 1400 // max(nz, ny)))
     img = np.zeros((ny, nz, 3))
     for k in range(nz):
         for j in range(ny):
@@ -946,6 +1562,24 @@ def rendus(m, dossier, info):
     canvas.paste(im, (0, 34))
     legende(canvas, "Coupe de côté le long de la voie (moitié est retirée, on regarde vers l'ouest, sud à droite)")
     canvas.save(os.path.join(dossier, "spawn_cote.png"))
+    # 2 bis. coupe le long du tunnel du spawn : moitié sud retirée, on regarde vers le nord (est à droite)
+    if "tunnel" in info:
+        zc = min(max(info["tunnel"]["de"][2] - oz, 0), nz - 1)
+        e = max(2, min(8, 1400 // max(nx, ny)))
+        img = np.zeros((ny, nx, 3))
+        for i in range(nx):
+            for j in range(ny):
+                for k in range(zc, -1, -1):
+                    b = A[i, j, k]
+                    if not air[b]:
+                        lum = 0.3 + 0.7 * Lm[i, j, min(k + 1, nz - 1)] / 15.0
+                        img[ny - 1 - j, i] = pal[b] * (lum if k < zc else 0.45)
+                        break
+        im = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).resize((nx * e, ny * e), Image.NEAREST)
+        canvas = Image.new("RGB", (max(im.width, 900), im.height + 34), (10, 12, 16))
+        canvas.paste(im, (0, 34))
+        legende(canvas, "Coupe le long du tunnel (grotte à gauche, spawn à droite ; on regarde vers le nord)")
+        canvas.save(os.path.join(dossier, "spawn_tunnel.png"))
     # 3. vues du joueur : au réveil, et tourné vers la borne
     if "reveil" in info:
         vue_joueur(A, (ox, oy, oz), tx, air, Lm, info, os.path.join(dossier, "spawn_reveil.png"))
@@ -961,7 +1595,10 @@ def vue_joueur(A, o, tx, air, Lm, info, chemin, vers_borne=False):
     yaw = math.radians(info.get("cap", 0))
     if vers_borne:
         b = info["borne"]
-        ex, ez = b["x"] - 7.5, b["z"] + 0.5
+        if info.get("oeil_borne"):
+            ex, ey, ez = info["oeil_borne"]
+        else:
+            ex, ez = b["x"] - 7.5, b["z"] + 0.5
         yaw = math.atan2(-(b["x"] + 0.5 - ex), b["z"] + 0.5 - ez)
     pitch = math.radians(8)
     fwd = np.array([-math.sin(yaw) * math.cos(pitch), -math.sin(pitch), math.cos(yaw) * math.cos(pitch)])
@@ -1018,15 +1655,18 @@ def vue_joueur(A, o, tx, air, Lm, info, chemin, vers_borne=False):
     im = Image.fromarray(img).resize((W * 2, H * 2), Image.NEAREST)
     canvas = Image.new("RGB", (im.width, im.height + 34), (10, 12, 16))
     canvas.paste(im, (0, 34))
-    legende(canvas, ("Face à la niche de la borne de départ" if vers_borne else "Au réveil, regard de la cinématique")
-            + " — volumes gris : place de l'épave (le train lui-même est dessiné par le jeu)")
+    if vers_borne and info.get("oeil_borne"):
+        legende(canvas, "En arrivant du tunnel, face à la borne de départ (dans la partie spawn)")
+    else:
+        legende(canvas, ("Face à la borne de départ" if vers_borne else "Au réveil, regard de la cinématique")
+                + " — volumes gris : place de l'épave (le train lui-même est dessiné par le jeu)")
     canvas.save(chemin)
 
 
 # ================================================================== commande
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("mode", choices=["grotte", "copier", "rendu"])
+    ap.add_argument("mode", choices=["grotte", "copier", "rendu", "schematic", "composer"])
     ap.add_argument("monde", nargs="?")
     ap.add_argument("--zone", nargs=6, type=int)
     ap.add_argument("--dimension", default="minecraft:overworld")
@@ -1035,7 +1675,18 @@ def main():
     ap.add_argument("--rendus")
     ap.add_argument("--reveil", nargs=3, type=int)
     ap.add_argument("--cap", type=float)
+    ap.add_argument("--position", nargs=3, type=int, help="composer : coin bas nord-ouest du schematic (sinon automatique)")
+    ap.add_argument("--borne", nargs=3, type=int, help="composer : place de la borne dans le repère du schematic")
+    ap.add_argument("--ecart", type=int, default=ECART, help="composer : longueur minimale du tunnel")
+    ap.add_argument("--rapport", help="schematic, composer : rapport Markdown du schematic")
+    ap.add_argument("--config-bordure", help="composer : heraliz_spawn-server.toml à régler si la bordure doit grandir")
     a = ap.parse_args()
+    if a.mode == "schematic":
+        if not a.monde:
+            ap.error("schematic : fichier du schematic attendu")
+        info = rapport_schematic(lire_schematic(a.monde), a.monde, a.rapport)
+        print(json.dumps(info, ensure_ascii=False, indent=1))
+        return
     if a.mode == "rendu":
         if not a.monde or not a.rendus:
             ap.error("rendu : dossier de la dimension et --rendus attendus")
@@ -1050,6 +1701,18 @@ def main():
     m = Monde()
     if a.mode == "grotte":
         info = generer_grotte(m)
+    elif a.mode == "composer":
+        if not a.monde:
+            ap.error("composer : fichier du schematic attendu")
+        sc = lire_schematic(a.monde)
+        if a.rapport:
+            rapport_schematic(sc, a.monde, a.rapport)
+        info = composer(m, sc, a.monde, a.position, a.borne, a.ecart)
+        if not info["bordure_suffit"]:
+            print("[spawn] ATTENTION : bordure du monde du spawn à agrandir : %d blocs (défaut %d)" % (info["bordure_conseillee"], BORDURE_DEFAUT))
+            if a.config_bordure:
+                ecrire_config_bordure(a.config_bordure, info["bordure_conseillee"])
+                print("[spawn]   écrite dans %s" % a.config_bordure)
     else:
         if not a.monde or not a.zone:
             ap.error("copier : dossier du monde et --zone X0 Y0 Z0 X1 Y1 Z1 attendus")
@@ -1079,7 +1742,8 @@ def main():
     (dossier / "heraliz_spawn.json").write_text(json.dumps(info, ensure_ascii=False, indent=1), encoding="utf-8")
     taille = sum(f.stat().st_size for f in dossier.rglob("*") if f.is_file())
     print("[spawn] %s : %d chunks, %d Ko -> %s" % (info["source"], n, taille // 1024, dossier))
-    for k in ("reveil", "reveil_praticable", "borne", "barrieres_epave", "epave_dans_la_roche", "emprise", "blocs", "entites"):
+    for k in ("reveil", "reveil_praticable", "borne", "barrieres_epave", "epave_dans_la_roche", "emprise", "blocs", "entites",
+              "tunnel", "schematic", "bordure_conseillee"):
         if k in info:
             print("[spawn]   %s : %s" % (k, info[k]))
     if a.rendus:
