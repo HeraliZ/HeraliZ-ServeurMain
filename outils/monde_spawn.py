@@ -6,7 +6,7 @@ case « deposer_spawn ») ; la carte (dayz_map) n'est jamais touchée.
 
     python outils/monde_spawn.py grotte [--sortie DOSSIER] [--rendus DOSSIER]
     python outils/monde_spawn.py copier <monde> --zone X0 Y0 Z0 X1 Y1 Z1 [--dimension ID] [--decalage DX DY DZ]
-                                        [--sortie DOSSIER] [--rendus DOSSIER]
+                                        [--reveil X Y Z] [--cap DEGRES] [--sortie DOSSIER] [--rendus DOSSIER]
     python outils/monde_spawn.py rendu <dossier de la dimension> --rendus DOSSIER
 
 grotte : la grotte du terminus, celle de la cinématique d'arrivée (HeraliZ Utils, PlateauRendu : même profil de roche,
@@ -17,9 +17,11 @@ grotte : la grotte du terminus, celle de la cinématique d'arrivée (HeraliZ Uti
     heralisz_utils:borne_depart) est posée dans une niche de la paroi, sous une lampe verte.
 copier : recopie SEULEMENT la zone donnée (blocs, entités de blocs, entités) d'un monde (LECTURE SEULE) ; tout le reste
     est du vide. --dimension : minecraft:overworld (défaut, dossier region/), minecraft:the_nether, ou ns:nom
-    (dimensions/ns/nom/). --decalage : déplacement des coordonnées (0 0 0 par défaut). Sert le jour où la copie du
-    monde qui contient l'ancien spawn est retrouvée. Le point de réveil et l'épave se règlent ensuite en jeu
-    (/cinematique reveil, /cinematique epave ...), la borne se pose avec /depart borne.
+    (dimensions/ns/nom/). --decalage : déplacement des coordonnées (0 0 0 par défaut). --reveil : point de réveil dans
+    la copie (après décalage), contrôlé (place libre, sol dessous) et noté dans heraliz_spawn.json, avec --cap (regard ;
+    celui de la cinématique par défaut) ; les rendus montrent alors aussi la vue au réveil. Sert à recopier l'ancien
+    spawn (outils/recherche_grotte.py, workflow « Grotte du spawn »). Le point de réveil et l'épave se règlent ensuite
+    en jeu s'il le faut (/cinematique reveil, /cinematique epave ...), la borne se pose avec /depart borne.
 rendu : vues de contrôle d'une dimension déjà fabriquée.
 
 Sortie (--sortie, défaut livraison/monde_spawn, hors Git) : <sortie>/spawn/region/*.mca (et entities/ pour une copie),
@@ -925,7 +927,11 @@ def rendus(m, dossier, info):
         d.text((bx * e - 4, 34 + bz * e + 14), "borne", fill=(80, 255, 140), font=f)
     canvas.save(os.path.join(dossier, "spawn_dessus.png"))
     # 2. coupe de côté : tout ce qui est à l'est de l'axe de la voie est retiré, on regarde vers l'ouest
-    xc = int(math.floor(XC)) - ox if "reveil" in info else nx // 2
+    if "reveil" in info:      # grotte générée : axe de la voie ; copie : à travers le point de réveil
+        xc = (int(math.floor(XC)) if str(info.get("source", "")).startswith("grotte") else int(info["reveil"][0])) - ox
+        xc = min(max(xc, 0), nx - 1)
+    else:
+        xc = nx // 2
     img = np.zeros((ny, nz, 3))
     for k in range(nz):
         for j in range(ny):
@@ -1027,6 +1033,8 @@ def main():
     ap.add_argument("--decalage", nargs=3, type=int, default=[0, 0, 0])
     ap.add_argument("--sortie", default=str(DEPOT / "livraison/monde_spawn"))
     ap.add_argument("--rendus")
+    ap.add_argument("--reveil", nargs=3, type=int)
+    ap.add_argument("--cap", type=float)
     a = ap.parse_args()
     if a.mode == "rendu":
         if not a.monde or not a.rendus:
@@ -1046,6 +1054,20 @@ def main():
         if not a.monde or not a.zone:
             ap.error("copier : dossier du monde et --zone X0 Y0 Z0 X1 Y1 Z1 attendus")
         info = copier_zone(m, a.monde, a.dimension, a.zone, a.decalage)
+        if a.reveil:
+            xr, yr, zr = a.reveil
+            info["reveil"] = list(a.reveil)
+            info["cap"] = a.cap if a.cap is not None else json.loads(CINE_JSON.read_text(encoding="utf-8")).get("cap", 0)
+
+            def nom(x, y, z):
+                return m.etats[m.lire(x, y, z)][0]
+
+            libres = ("minecraft:air", "minecraft:cave_air", "minecraft:light")
+            info["reveil_praticable"] = nom(xr, yr, zr) in libres and nom(xr, yr + 1, zr) in libres \
+                and nom(xr, yr - 1, zr) not in libres
+            if not info["reveil_praticable"]:
+                print("[spawn] ATTENTION : réveil %s pas praticable dans la copie (pieds %s, tête %s, sol %s)" % (
+                    a.reveil, nom(xr, yr, zr), nom(xr, yr + 1, zr), nom(xr, yr - 1, zr)))
     dossier = Path(a.sortie) / "spawn"
     if dossier.exists():
         import shutil
@@ -1057,7 +1079,7 @@ def main():
     (dossier / "heraliz_spawn.json").write_text(json.dumps(info, ensure_ascii=False, indent=1), encoding="utf-8")
     taille = sum(f.stat().st_size for f in dossier.rglob("*") if f.is_file())
     print("[spawn] %s : %d chunks, %d Ko -> %s" % (info["source"], n, taille // 1024, dossier))
-    for k in ("reveil", "borne", "barrieres_epave", "epave_dans_la_roche", "emprise"):
+    for k in ("reveil", "reveil_praticable", "borne", "barrieres_epave", "epave_dans_la_roche", "emprise", "blocs", "entites"):
         if k in info:
             print("[spawn]   %s : %s" % (k, info[k]))
     if a.rendus:
