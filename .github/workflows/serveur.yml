@@ -21,6 +21,10 @@ on:
         description: "Nouvelle carte : la carte de monde/HeraliZ devient le monde du serveur (ancien monde gardé en copie, serveur redémarré)"
         type: boolean
         default: false
+      deposer_spawn:
+        description: "Monde du spawn : déposer la grotte du terminus dans dimensions/heralisz/spawn du monde (une seule fois, refusé si déjà là ; puis redémarrer)"
+        type: boolean
+        default: false
       tester_discord:
         description: "Envoyer un message de test dans le salon Discord privé des alertes de Spartan"
         type: boolean
@@ -510,6 +514,81 @@ jobs:
                      exit 1;;
             *) echo "::warning::Démarrage pas encore terminé après 15 minutes (état : $E) : voir la console du panel. Ancien monde gardé : $GARDE.";;
           esac
+
+      # Monde du spawn (case « deposer_spawn ») : la grotte du terminus, fabriquée par outils/monde_spawn.py (toujours la
+      # même : rien de tiré au hasard), est déposée UNE fois dans dimensions/heralisz/spawn/ du monde en service, dossier
+      # à part que HeraliZ Utils déclare (heralisz:spawn). Le monde de la carte n'est jamais touché : ni ses régions, ni
+      # ses réglages. Refusé si ce dossier existe déjà (rien n'est jamais écrasé). Envoi dans un dossier temporaire,
+      # contrôle fichier par fichier, puis renommage. Redémarrer ensuite (case « redemarrer ») pour être sûr que le
+      # serveur le lit. Rendus de contrôle dans le paquet « monde-spawn » de l'exécution.
+      - name: Déposer le monde du spawn
+        if: github.event_name == 'workflow_dispatch' && inputs.deposer_spawn
+        timeout-minutes: 20
+        run: |
+          if [ -z "$PTERO_SFTP_HOST" ]; then
+            echo "::error::Il faut les secrets du SFTP du Ptero pour déposer le monde du spawn."
+            exit 1
+          fi
+          python -m pip install --quiet numpy pillow
+          python outils/monde_spawn.py grotte --sortie spawn_monde --rendus spawn_rendus
+          sftp() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$LFTP_REGLAGES set cmd:fail-exit yes; set xfer:clobber off; $1 bye" < /dev/null; }
+          existe() { sftp "cls -d \"$1\";" > /dev/null 2>&1; }
+          # le monde en service : level-name du server.properties DU PTERO, obligatoirement
+          MONDE=""
+          if sftp "get /server.properties -o server_ptero_spawn.properties;"; then
+            MONDE=$(tr -d '\r' < server_ptero_spawn.properties | sed -n 's/^level-name=//p' | head -n 1)
+          fi
+          case "$MONDE" in
+            ""|.|..|*[!A-Za-z0-9_.-]*|mods|plugins|config|defaultconfigs|libraries|logs|tacz|heralisz_*|heraliz_*|mohist-config)
+              echo "::error::Nom du monde illisible ou inattendu dans le server.properties du Ptero : « $MONDE ». Rien n'a été envoyé."
+              exit 1;;
+          esac
+          if ! existe "/$MONDE/level.dat"; then
+            echo "::error::/$MONDE/level.dat introuvable sur le Ptero : ce n'est pas le monde en service. Rien n'a été envoyé."
+            exit 1
+          fi
+          CIBLE="/$MONDE/dimensions/heralisz/spawn"
+          if existe "$CIBLE"; then
+            N=$(sftp "find \"$CIBLE\";" 2> /dev/null | grep -c '\.mca$' || true)
+            echo "::error::$CIBLE existe déjà ($N fichiers de régions) : rien n'est envoyé, rien n'est écrasé. Si c'est du vide créé par erreur (staff téléporté dans le monde du spawn avant le dépôt), supprimer ce dossier depuis le panel, serveur arrêté, puis relancer."
+            exit 1
+          fi
+          DATE=$(date -u +%Y-%m-%d_%Hh%M)
+          ENVOI="/$MONDE/dimensions/heralisz/spawn_envoi_$DATE"
+          sftp "mkdir -p -f \"/$MONDE/dimensions/heralisz\"; mirror -R -P 2 spawn_monde/spawn \"$ENVOI\";"
+          # contrôle : chaque fichier présent avec la bonne taille (seule la ligne « mkdir -p » du dossier est attendue)
+          sftp "mirror -R --dry-run --ignore-time --no-perms spawn_monde/spawn \"$ENVOI\";" > controle_spawn.txt 2>&1 || echo "contrôle impossible" >> controle_spawn.txt
+          grep -v '^mkdir -p ' controle_spawn.txt | sed -E 's#//[^/@]*@#//#g' > ecarts_spawn.txt || true
+          if [ -s ecarts_spawn.txt ]; then
+            head -n 30 ecarts_spawn.txt
+            echo "::error::Monde du spawn envoyé incomplet : il reste dans $ENVOI (à supprimer depuis le panel). $CIBLE n'a pas été créé."
+            exit 1
+          fi
+          if existe "$CIBLE"; then
+            echo "::error::$CIBLE est apparu pendant l'envoi (quelqu'un est allé dans le monde du spawn ?) : rien n'est remplacé ; envoi laissé dans $ENVOI."
+            exit 1
+          fi
+          sftp "mv \"$ENVOI\" \"$CIBLE\";"
+          {
+            echo "### Monde du spawn déposé"
+            echo "- \`$CIBLE\` : $(find spawn_monde/spawn -name '*.mca' | wc -l) fichiers de régions, contrôlés"
+            echo "- point de réveil, borne de départ : voir \`heraliz_spawn.json\` et les rendus du paquet « monde-spawn »"
+            echo "- la carte (\`/$MONDE/region\`) n'a pas été touchée"
+            echo "- à faire : redémarrer le serveur, puis en jeu \`/depart info\` (monde du spawn « prêt ») et poser les points d'arrivée (\`/depart point ajouter\`, \`/depart zone ajouter\`)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Monde du spawn déposé dans $CIBLE."
+
+      - name: Garder les rendus du monde du spawn
+        if: github.event_name == 'workflow_dispatch' && inputs.deposer_spawn && always()
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: monde-spawn
+          path: |
+            spawn_rendus/
+            spawn_monde/spawn/heraliz_spawn.json
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Redémarrer le serveur
         if: env.PTERO_API_KEY != '' && github.event_name == 'workflow_dispatch' && inputs.redemarrer && !inputs.deposer_carte
