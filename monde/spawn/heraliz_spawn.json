@@ -1,0 +1,91 @@
+{
+ "source": "composition : grotte du terminus + schematic 1-spawnbangerdelamort.schem (outils/monde_spawn.py composer)",
+ "emprise": {
+  "x": [
+   -92,
+   122
+  ],
+  "y": [
+   227,
+   319
+  ],
+  "z": [
+   -39,
+   113
+  ]
+ },
+ "reveil": [
+  -61,
+  265,
+  2
+ ],
+ "cap": 45.0,
+ "barrieres_epave": 1167,
+ "epave_dans_la_roche": 0,
+ "centre_bordure": [
+  -60.5,
+  2.5
+ ],
+ "sortie": {
+  "x": -47,
+  "y": 265,
+  "z": 9
+ },
+ "borne": {
+  "x": 29,
+  "y": 245,
+  "z": -27,
+  "facing": "west",
+  "origine": "au cœur de la grande zone du spawn, avec de la place autour, visible en sortant du tunnel"
+ },
+ "oeil_borne": [
+  24.59819282041143,
+  246.62,
+  -23.039900814408067
+ ],
+ "tunnel": {
+  "de": [
+   -46,
+   265,
+   9
+  ],
+  "a": [
+   -23,
+   245,
+   9
+  ],
+  "longueur": 24,
+  "montee": -20,
+  "arrivee": [
+   -22,
+   245,
+   9
+  ]
+ },
+ "schematic": {
+  "fichier": "1-spawnbangerdelamort.schem",
+  "format": "Sponge v2 (.schem)",
+  "taille": [
+   145,
+   93,
+   147
+  ],
+  "position": [
+   -22,
+   227,
+   -33
+  ],
+  "niveau_de_marche": 245,
+  "entree_rangee_z": 9,
+  "blocs_retires": 0,
+  "sols_ajoutes": 0,
+  "entites_de_blocs": 249,
+  "entites": 0,
+  "entites_ignorees": 0
+ },
+ "bordure_conseillee": 384,
+ "bordure_suffit": false,
+ "chunks": 132,
+ "dimension": "heralisz:spawn",
+ "fabrique_par": "outils/monde_spawn.py composer"
+}

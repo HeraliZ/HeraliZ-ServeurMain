@@ -1,0 +1,4 @@
+# Monde du spawn composé par outils/monde_spawn.py composer : bordure agrandie pour contenir la grotte, le
+# tunnel et le schematic du spawn (centrée sur le point de réveil). Les autres réglages gardent leur défaut.
+[spawn]
+	bordure = 384
