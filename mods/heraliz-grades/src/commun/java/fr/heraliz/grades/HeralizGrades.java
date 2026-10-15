@@ -1,6 +1,7 @@
 package fr.heraliz.grades;
 
 import fr.heraliz.grades.pont.Parties;
+import fr.heraliz.grades.reseau.ReseauGrades;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -18,6 +19,7 @@ public class HeralizGrades {
 
    public HeralizGrades() {
       IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+      ReseauGrades.enregistrer();
       Parties.serveur(MODID, "fr.heraliz.grades.serveur.ServeurGrades", bus);
       Parties.client(MODID, "fr.heraliz.grades.client.ClientGrades", bus);
    }

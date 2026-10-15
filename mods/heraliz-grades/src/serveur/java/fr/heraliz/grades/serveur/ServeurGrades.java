@@ -2,6 +2,7 @@ package fr.heraliz.grades.serveur;
 
 import fr.heraliz.grades.Grade;
 import fr.heraliz.grades.pont.Partie;
+import fr.heraliz.grades.reseau.ReseauGrades;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Partie serveur : registre des grades, commandes /grade, préfixe du grade devant le pseudo (liste Tab, chat).
+ * Partie serveur : registre des grades, commandes /grade et /kit, préfixe du grade devant le pseudo (liste Tab, chat).
  * <p>
  * Préfixe : NameFormat (nom affiché Forge, repris par la liste Tab et par le tag de clan de heraliz-clansetbases, qui se
  * place devant : « [CLAN] [Traqueur] Pseudo ») et nom affiché Bukkit (chat des serveurs hybrides).
@@ -34,20 +35,25 @@ public final class ServeurGrades implements Partie {
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::demarrage);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::arret);
         MinecraftForge.EVENT_BUS.addListener(CommandesGrades::enregistrer);
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> KitsServeur.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::nomAffiche);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ServeurGrades::nomTab);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::connexion);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::tick);
+        ReseauGrades.RECEPTION_SERVEUR.brancher(KitsServeur::demande);
     }
 
     private static void demarrage(ServerAboutToStartEvent e) {
-        registre = new RegistreGrades(e.getServer().getServerDirectory().toPath().resolve("heraliz_grades"));
+        java.nio.file.Path dossier = e.getServer().getServerDirectory().toPath().resolve("heraliz_grades");
+        registre = new RegistreGrades(dossier);
+        KitsServeur.demarrer(dossier);
         AUTH.clear();
     }
 
     private static void arret(ServerStoppedEvent e) {
         registre = null;
+        KitsServeur.arreter();
         AUTH.clear();
     }
 
@@ -70,10 +76,12 @@ public final class ServeurGrades implements Partie {
 
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
         AUTH.remove(e.getEntity().getUUID());
+        KitsServeur.oublier(e.getEntity().getUUID());
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || registre == null || ++ticks % 40 != 0) return;
+        if (ticks % 100 == 0) KitsServeur.relireSiChange();
         MinecraftServer srv = e.getServer();
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
             boolean auth = PontBukkit.authentifie(p);

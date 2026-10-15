@@ -58,6 +58,11 @@ public enum Grade {
       return Component.translatableWithFallback("grade.heraliz_grades." + id, nomFr).withStyle(st -> st.withColor(TextColor.fromRgb(couleur)));
    }
 
+   /** Nom du grade dans la langue du joueur, sans couleur. */
+   public MutableComponent nomSansCouleur() {
+      return Component.translatableWithFallback("grade.heraliz_grades." + id, nomFr);
+   }
+
    /** Préfixe « [Traqueur] » placé devant le pseudo. */
    public MutableComponent prefixe() {
       return Component.literal("[").append(Component.translatableWithFallback("grade.heraliz_grades." + id, nomFr)).append("] ")
