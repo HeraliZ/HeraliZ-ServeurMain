@@ -957,11 +957,18 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
-  - couteaux : le coup puissant (clic droit) a sa propre animation « melee_stock » (générée par
-    `python mods/heraliz-tactique/outils/couteaux_coup_lourd.py` depuis le coup de chaque modèle, réglages `LENTEUR`,
-    `SURCOUCHE` en tête du script ; donnée à TaCZ chez le joueur, `couteaux/CoupLourdClient`) ; vu des autres : grand coup
-    de haut en bas (« melee_3_upper ») pour le coup puissant, deux gestes en alternance pour le coup rapide
-    (`PaquetCoupVu`, canal « couteaux » version 2) ;
+  - couteaux : coups rapide et puissant bien différents, comme les couteaux de LR (15/10, Tactique 2.16.0) : clic gauche =
+    tranche latérale vive, de gauche à droite puis de droite à gauche en alternance (0,45 s, sans préparation) ; clic
+    droit = estoc : bras armé, levé et ramené vers soi (0,22 s, bruit de lame qu'on arme), poussé au fond, tenu, retour
+    lent (0,85 s), bruit plus lourd et petit mouvement de caméra (`couteaux/SecousseCouteau`, image seulement).
+    Animations 1re personne (« heraliz_tranche_1 », « heraliz_tranche_2 », « melee_stock » de chaque modèle) écrites par
+    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableaux `COUPS` et `AMPLITUDE` en tête du script ;
+    `--apercu DOSSIER`), jamais à la main ; jouées directement par `couteaux/AnimCouteaux` avec un fondu de 0,04 s (le
+    signal de TaCZ imposait 0,2 s : la tranche partait en retard et ressemblait au coup puissant), secours : coup du
+    gunpack. Vu des autres : gestes des couteaux de LR (`heralisz_skins:melee/knife` : « slash_upper » / « slash2_upper »
+    en alternance, « stab_upper » ; `couteaux/GesteCouteau`). Le serveur ne touche qu'après la préparation de l'estoc
+    (`CoupsCouteau.DELAI_COUP_LOURD`, 5 ticks ; `cadence_lourd` au moins 7) ; dégâts, cadence et portée inchangés. Temps
+    de l'animation, de la caméra et du délai serveur à changer ensemble. Canal « couteaux » version 3 ;
   - corps des joueurs « démembré » et tête vers le ciel en s'allongeant : la remise à zéro de Réanimation 1.15.0
     (`client/Poses.apply`) n'efface plus les poses de Player Animator ; l'animation « allongé » de TaCZ suit le corps
     couché (`mixin/client/TaczAllongeAnimationMixin`) et le regard de la tête allongé est limité
