@@ -517,5 +517,6 @@
   "heraliz_loot.cmd.rarete.origine.defaut": "(редкость по умолчанию)",
   "heraliz_loot.cmd.rarete.origine.jeu": "(задана в игре)",
   "heraliz_loot.cmd.rarete.aucun_choix": "Для %s нет выбора, сделанного в игре.",
-  "heraliz_loot.cmd.rarete.defaut": "Редкость по умолчанию: %s"
+  "heraliz_loot.cmd.rarete.defaut": "Редкость по умолчанию: %s",
+  "heraliz_loot.vanilla.scelle": "Этот контейнер пуст и запечатан."
 }

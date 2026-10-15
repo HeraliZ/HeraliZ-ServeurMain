@@ -517,5 +517,6 @@
  "heraliz_loot.cmd.rarete.origine.defaut": "(rareté par défaut)",
  "heraliz_loot.cmd.rarete.origine.jeu": "(choisie en jeu)",
  "heraliz_loot.cmd.rarete.aucun_choix": "Aucun choix fait en jeu pour %s.",
- "heraliz_loot.cmd.rarete.defaut": "Rareté par défaut : %s"
+ "heraliz_loot.cmd.rarete.defaut": "Rareté par défaut : %s",
+ "heraliz_loot.vanilla.scelle": "Ce conteneur est vide et scellé."
 }
