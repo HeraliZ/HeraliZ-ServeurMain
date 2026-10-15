@@ -2,6 +2,7 @@ package fr.heraliz.reanimation.core;
 
 import fr.heraliz.reanimation.ReanimationConfig;
 import fr.heraliz.reanimation.ReanimationMod;
+import fr.heraliz.reanimation.compat.CuriosFouille;
 import fr.heraliz.reanimation.entity.BotEntity;
 import fr.heraliz.reanimation.entity.BotEntityServeur;
 import fr.heraliz.reanimation.execution.Executions;
@@ -463,13 +464,18 @@ public final class DownedManagerServeur {
                      return;
                   }
 
+                  // emplacements Curios de la victime (colonne a gauche de la fouille) ; aucun sans Curios
+                  SearchMenu.Accessoires curios = CuriosFouille.de(target);
                   NetworkHooks.openScreen(
                      p,
                      new SimpleMenuProvider(
-                        (id, playerInventory, player) -> new SearchMenu(id, playerInventory, inventory, target),
+                        (id, playerInventory, player) -> new SearchMenu(id, playerInventory, inventory, target, curios),
                         Component.translatable("gui.reanimation.search", new Object[]{target.getDisplayName()})
                      ),
-                     buf -> buf.writeVarInt(target.getId())
+                     buf -> {
+                        buf.writeVarInt(target.getId());
+                        curios.ecrire(buf);
+                     }
                   );
                   if (!(p.containerMenu instanceof SearchMenu menu) || menu.owner() != target) {
                      s.searcher = null;

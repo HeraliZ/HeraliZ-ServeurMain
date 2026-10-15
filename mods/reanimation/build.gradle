@@ -64,6 +64,9 @@ dependencies {
     if (file("libs/geckolib222-${geckolib_libs_version}.jar").exists()) {
         compileOnly fg.deobf("blank:geckolib222:${geckolib_libs_version}")
     }
+    // Curios 5.14.1 (copie de serveur/mods-tiers) : emplacements Curios d'un joueur à terre montrés à la fouille ;
+    // facultatif en jeu (compat/CuriosFouille, partie serveur, chargée seulement si Curios est là). Jamais embarqué.
+    compileOnly fg.deobf("blank:curios-forge:5.14.1-hzreanim")
     // Autres mods du modpack nécessaires à la compilation : libs/<nom>-<version>-<suffixe du projet>.jar, puis
     //   compileOnly fg.deobf("blank:<nom>:<version>-<suffixe du projet>")   (suffixe unique : cache de deobf partagé)
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'

@@ -38,6 +38,7 @@
   "execution.reanimation.home_run": "Home Run",
   "gui.reanimation.search": "Search: %s",
   "gui.reanimation.backpack": "Bag",
+  "gui.reanimation.curios_slot": "Slot: %s",
   "gui.reanimation.bleed": "%s s",
   "message.reanimation.already_searched": "%s is already being searched",
   "message.reanimation.being_revived": "%s is already being revived",

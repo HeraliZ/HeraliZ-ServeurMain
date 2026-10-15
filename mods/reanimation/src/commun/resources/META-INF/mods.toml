@@ -24,3 +24,11 @@ description='''Etat a terre au lieu de la mort : ramper, se vider de son sang, s
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+# Curios : facultatif (emplacements Curios d'un joueur à terre montrés à la fouille, s'il est là)
+[[dependencies.reanimation]]
+    modId="curios"
+    mandatory=false
+    versionRange="[5.14,)"
+    ordering="NONE"
+    side="BOTH"
