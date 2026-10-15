@@ -146,7 +146,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
 | heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) |
 | heralisz-bunker | heralisz_bunker | heralisz_bunker | portes animées (reprises de HBM Modernized, GPL), cartes d'accès, barricades ; salles à carte (`/salle`, baguette du staff) : porte tenue ouverte tant que quelqu'un est dedans, loot de la salle (avec HeraliZ Loot) |
-| reanimation | reanimation | reanimation | joueurs à terre, réanimation, fouille, exécutions |
+| reanimation | reanimation | reanimation | joueurs à terre, réanimation, fouille (Curios compris), exécutions |
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
@@ -1022,6 +1022,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   yeux au corps pour ouvrir, 6 pour garder ouvert) ; boîte du cadavre dans le sens du corps (1 × 1,9 bloc, carré de
   1,6 en diagonale, 0,45 de haut), sans collision. Fouiller un joueur À TERRE (Réanimation 1.14.0) ne téléporte plus
   à côté de lui non plus (la réanimation, elle, garde sa place à genoux) ;
+- fouille d'un joueur à terre (15/10, Réanimation 1.16.0) : ses emplacements Curios (masque, gilet, gants, genouillère,
+  sac à dos, ghillie, brassard) sont montrés dans une colonne à gauche de la fouille, avec leurs icônes de case vide
+  (`menu/SearchMenu`, cases 77 et suivantes ; serveur : `compat/CuriosFouille`, branché sur les vrais emplacements de la
+  victime : objets déplacés, jamais copiés, sac à dos avec son contenu). Prendre : toujours (même un sac plein, comme les
+  cadavres) ; déposer : validateurs de Curios et règle des combinaisons de l'Armurerie (par réflexion). Sans Curios :
+  fouille comme avant. Les cadavres ne changent pas. Rien testé en jeu ;
 - usure (12/10, 13/10, Utils 2.9.0) : l'indicateur de l'arme en main est en bas à droite, sous le HUD de TaCZ
   (`HudUsure`) ; habillage C « anneau » choisi par le propriétaire : pastille de verre de 16 px de haut (≈ 45 px de
   large), petit anneau de la couleur de l'état qui se vide dans le sens horaire (part perdue aux réparations en rouge au
