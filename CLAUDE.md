@@ -782,6 +782,17 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   hors zones dangereuses, jamais de terrain généré), fondu et 5 s de protection. Staff : `/depart borne | point
   ajouter|retirer|tp|liste <nom> | zone ajouter <nom> <rayon> | essai [tp] | joueur <cibles> | info`. Points gardés avec
   la carte (`data/heraliz_depart.dat`), réglages dans `heraliz_spawn-server.toml`.
+  **Spawn composé** (15/10) : grotte du terminus (réveil -61 265 2, épave, inchangés ; porte de service de la niche
+  retirée) + le schematic du spawn `spawnbangerdelamort` à l'est, relié par un tunnel de pierre de taille (3 × 3,
+  escaliers si besoin) qui part de la niche ; la borne de départ est dans la partie spawn. Workflow « Schematic du
+  spawn » (`.github/workflows/spawn_schematic.yml`, lecture seule sur le Ptero) : cherche le schematic (racine,
+  `plugins/`, `schematics/`, `config/`, structures du monde), le copie dans `monde/spawn_schematic/` avec son rapport,
+  contrôle l'arrivée, puis compose `monde/spawn/` et `monde/spawn_rendus/` par `python outils/monde_spawn.py composer
+  <schematic>` (`--position`, `--borne`, `--ecart`), sur la branche de travail seulement ; jamais retouché à la main.
+  Formats : `.schem` de WorldEdit et `.nbt` (pas l'ancien `.schematic` de MCEdit). Si l'ensemble dépasse la bordure
+  (256 blocs autour du réveil), la taille conseillée est écrite dans `serveur/defaultconfigs/heraliz_spawn-server.toml`.
+  `deposer_spawn` dépose `monde/spawn/` tel quel. La cinématique ne dépend pas de l'ancienne carte : seul un décor réglé
+  en jeu (`data/heraliz_cinematique.dat` de la carte, `/cinematique reveil`) passe avant celui du mod. Rien testé en jeu.
 - **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
   1024 px au plus avec `carte.json`, dans `mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte/` (jar
   joueur de HeraliZ Utils). Jamais dessiné à la main : refait par `python outils/carte_monde.py <copie du monde>
