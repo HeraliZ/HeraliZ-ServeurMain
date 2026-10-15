@@ -984,6 +984,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   véhicule qu'on regarde (`showVehicleInfoDistance` de `ywzj_vehicle-server.toml`, 0 pour la retirer). Réglages
   `coffre_retire` et `pv_pourcent` de `heraliz_vehicules-server.toml`. Seuil de blindage d'ywzj inchangé (un coup sous
   50, ou 10 pour le buggy, n'enlève que 0,1 PV) ;
+- physique des véhicules (15/10, Utils 2.11.0, `fr.heraliz.vehicules.Stabilite`, mixins serveur `VehiculeStableMixin` sur
+  `PhysicsEngine` et `VehiculeConduiteMixin` sur `WheeledVehicle` d'ywzj, jar d'ywzj intact) : le moteur décalait le centre
+  de gravité de (changement de vitesse × hauteur × 8) à chaque choc (≈ 10 blocs contre une dalle) et faisait basculer à
+  17° par tick : retournements au moindre obstacle. Décalage réduit et borné (un choc seul ne retourne plus un véhicule à
+  plat ; pente trop forte ou vide : il bascule toujours, moins vite), dalles et petites marches (0,55 bloc) franchies
+  sans s'arrêter net dans le sens de la marche (pas par les flancs), plus de bonds (vitesse vers le haut donnée par les
+  contacts plafonnée), meilleure adhérence à pleine vitesse (plus de glissade façon glace), volant du camion plus
+  rapide. Section `[physique]` de `heraliz_vehicules-server.toml` (`stable = false` : moteur d'origine). Calculé par le
+  serveur seulement (seul le jar `-serveur` compte). Rien testé en jeu ;
 - couteaux TaCZ (13/10, Tactique 2.13.0, `fr.heraliz.tactique.couteaux`) : « Knife » CT et T, karambits, papillons, M9
   (fiche `arkaniaz:knife_data`) frappent comme les armes de mêlée de LR, réglés comme la Dague tactique : clic gauche
   (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,45 s, touche tenue = coups
