@@ -29,6 +29,7 @@ import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -267,7 +268,21 @@ public final class KillcamClient {
             tampons.endBatch();
         } else if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
             l.traceurs.dessiner(e.getPoseStack(), e.getCamera(), mc.renderBuffers().bufferSource(), l.horloge);
+        } else if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL && l.etat != Lecteur.Etat.FINI) {
+            // arme du tueur en premiere personne, dessinee ici et non a l'evenement de la main : le joueur qui regarde
+            // est le plus souvent mort, donc spectateur, et Minecraft ne dessine jamais la main d'un spectateur (ni
+            // l'evenement RenderHandEvent) : jusqu'a Matchs 0.9.0, on ne voyait aucune arme
+            ArmeEnMain.dessiner(l, e.getPartialTick());
         }
+    }
+
+    /** Zoom de la visee du tueur (champ de vision du monde seulement, pas celui de la main). */
+    @SubscribeEvent
+    public static void champ(ViewportEvent.ComputeFov e) {
+        Lecteur l = lecteur;
+        if (l == null || !e.usedConfiguredFov()) return;
+        float v = l.visee();
+        if (v > 0.001f) e.setFOV(e.getFOV() * (1.0 - 0.2 * v));
     }
 
     /** Pendant la lecture : vrais joueurs et entites du clip masques (seuls les faux joueurs sont dessines). */
@@ -283,17 +298,12 @@ public final class KillcamClient {
     }
 
     /**
-     * Main du joueur remplacee par l'arme du tueur (premiere personne). Annule en premier : sinon TaCZ dessinerait l'arme
-     * du joueur qui regarde la killcam.
+     * Main du joueur qui regarde : jamais pendant la killcam (annule en premier : sinon TaCZ dessinerait SON arme). L'arme
+     * du tueur est dessinee a part ({@link #rendu}, etape AFTER_LEVEL), meme quand le joueur est spectateur.
      */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void main(RenderHandEvent e) {
-        Lecteur l = lecteur;
-        if (l == null) return;
-        e.setCanceled(true);
-        if (e.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && l.etat == Lecteur.Etat.LECTURE) {
-            ArmeEnMain.dessiner(e, l.objetTueur());
-        }
+        if (lecteur != null) e.setCanceled(true);
     }
 
     /** Tous les calques de HUD sauf le bandeau sont masques pendant la lecture. */
