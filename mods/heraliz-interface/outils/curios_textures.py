@@ -7,9 +7,12 @@ clair de Curios. Refait, dans le pack (`src/main/resources/resourcepacks/texture
 - `curios/textures/gui/inventory_revamp.png` : texture de l'écran de Curios 5.14 (menu « V2 »), même disposition que
   celle du jar de Curios (lu dans `serveur/mods-tiers/`, jamais modifié) : panneau, colonne de cases, pastilles
   « afficher sur le joueur » ; les autres zones (boutons de page, onglet cosmétique) passent aux gris du pack ;
-- `heraliz_armory/textures/slot/*.png` : icônes des slots vides de l'Armurerie (masque, gilet, gants, genouillères),
-  dessinées en gris foncé pour les cases claires de Curios, éclaircies au gris des icônes d'armure du pack (sinon
-  invisibles sur les cases sombres).
+- icônes des slots vides du panneau (15/10, refaites au propre) : dessinées ici pixel par pixel (`ICONES`, 16 x 16,
+  contour d'un pixel au gris des icônes d'armure du pack, remplissage en demi-teinte), dans le pack :
+  `heraliz_armory/textures/slot/*.png` (masque à gaz, gilet porte-plaques, gants, genouillère) et, à la place de celles
+  de Curios, `curios/textures/slot/empty_back_slot.png` (sac à dos), `empty_body_slot.png` (ghillie) et
+  `empty_bracelet_slot.png` (brassard). Les mêmes dessins, en gris foncé pour les cases claires de Curios (jeu sans le
+  pack), vont dans les textures de l'Armurerie (`mods/heraliz-armory/src/client/resources/.../textures/slot/`).
 
 Jamais retouché à la main : on modifie cet outil puis on le relance.
 
@@ -32,6 +35,133 @@ ICONES_ARMURERIE = os.path.join(RACINE, "mods", "heraliz-armory", "src", "client
                                 "heraliz_armory", "textures", "slot")
 SORTIE_ICONES = os.path.join(PACK, "heraliz_armory", "textures", "slot")
 TEXTURE_CURIOS = "assets/curios/textures/gui/inventory_revamp.png"
+SORTIE_CURIOS = os.path.join(PACK, "curios", "textures", "slot")
+
+# Icônes des slots vides : « # » contour, « + » remplissage en demi-teinte, « . » vide. Une icône par slot de joueur
+# (data/heraliz_armory/curios/entities/players.json) ; (dossier, nom du fichier) : ARMURERIE = textures de l'Armurerie
+# (et leur copie claire dans le pack), CURIOS = remplace l'icône de Curios dans le pack seulement.
+ARMURERIE, CURIOS = "armurerie", "curios"
+ICONES = {
+    (ARMURERIE, "face"): """
+................
+.....######.....
+....#......#....
+...#........#...
+..#.###..###.#..
+.#.#+++##+++#.#.
+.#.#+++##+++#.#.
+.#..###..###..#.
+.#.....##.....#.
+..#...####...#..
+..#..#++++#..#..
+...#.#++++#.#...
+....##++++##....
+.....#++++#.....
+.....######.....
+................""",
+    (ARMURERIE, "vest"): """
+................
+...###....###...
+...#.#....#.#...
+...#..#..#..#...
+..##...##...##..
+.#............#.
+.#.##########.#.
+.#.#++#++#++#.#.
+.#.#++#++#++#.#.
+.#.##########.#.
+.#............#.
+.#............#.
+.##############.
+.#++++++++++++#.
+.##############.
+................""",
+    (ARMURERIE, "hands"): """
+................
+.......#........
+.....#.#.#......
+....#+#+#+#.....
+....#+#+#+#.....
+....#+#+#+#.##..
+....#+#+#+#+#...
+.##.#++++++#....
+.#+##++++++#....
+..#+#++++++#....
+...##+++++#.....
+....#+++++#.....
+....#######.....
+....#.....#.....
+....#######.....
+................""",
+    (ARMURERIE, "knees"): """
+...######.......
+...#.....#......
+....#.....#.....
+.....#.....#....
+......#.....#...
+.......#...####.
+.......#..#+++#.
+........#.#+++#.
+........#.#+++#.
+........#..####.
+........#...#...
+........#...#...
+........#...#...
+........#...###.
+........#.....#.
+........#######.""",
+    (CURIOS, "empty_back_slot"): """
+......####......
+......#..#......
+...##########...
+..#..........#..
+..#.########.#..
+..#.#++++++#.#..
+..#..##++##..#..
+..#....##....#..
+..#..........#..
+..#.########.#..
+.##.#++++++#.##.
+.##.#++++++#.##.
+.##.########.##.
+..#..........#..
+...##########...
+................""",
+    (CURIOS, "empty_body_slot"): """
+......####......
+.....#....#.....
+....#.####.#....
+....#.#..#.#....
+...#..#..#..#...
+..#+..####..+#..
+.#++........++#.
+#+#+........+#+#
+#+.#........#.+#
+.#+#........#+#.
+#+.#........#.+#
+.#+#........#+#.
+..##........##..
+..#.#.#..#.#.#..
+...#.#.##.#.#...
+................""",
+    (CURIOS, "empty_bracelet_slot"): """
+................
+................
+...##########...
+..#..........#..
+.#..########..#.
+.#.#........#.#.
+.#..########..#.
+.#++++++++++++#.
+.#++++++++++++#.
+.##############.
+.#++++++++++++#.
+.#++++++++++++#.
+..#++++++++++#..
+...##########...
+................
+................""",
+}
 
 # Couleurs de l'inventaire du pack (relevées dans inventory.png, voir lire_palette)
 NOIR = (0, 0, 0, 255)
@@ -41,6 +171,8 @@ DROITE = (0x59, 0x59, 0x59, 255)    # bord droit, trait au-dessus du bas
 OMBRE = (0x2A, 0x2A, 0x28, 255)     # bas des panneaux, haut et gauche des cases
 CASE = (0x3E, 0x3F, 0x3F, 255)      # fond des cases
 ICONE = (0x55, 0x55, 0x55, 255)     # icônes des cases vides (armure, bouclier) du pack
+ICONE_SOMBRE = (0x3E, 0x3E, 0x42, 255)  # mêmes icônes pour les cases claires de Curios (Armurerie, jeu sans le pack)
+DEMI_TEINTE = 110                   # opacité du remplissage (« + » des dessins)
 
 # Gris de l'interface de Minecraft (texture de Curios) -> gris du pack, pour les zones que l'écran n'utilise pas ici
 REMPLACEMENTS = {
@@ -167,20 +299,33 @@ def texture(inv):
     return img
 
 
+def dessin(grille, couleur):
+    """Icône 16 x 16 d'un dessin de ICONES, dans la couleur donnée."""
+    lignes = grille.strip("\n").split("\n")
+    if len(lignes) != 16 or any(len(l) != 16 for l in lignes):
+        sys.exit("dessin d'icône qui n'est pas en 16 x 16")
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for y, ligne in enumerate(lignes):
+        for x, c in enumerate(ligne):
+            if c == "#":
+                im.putpixel((x, y), couleur[:3] + (255,))
+            elif c == "+":
+                im.putpixel((x, y), couleur[:3] + (DEMI_TEINTE,))
+    return im
+
+
 def icones():
-    """Icônes de l'Armurerie éclaircies (même forme, gris des icônes d'armure du pack)."""
+    """Icônes des slots vides : dans le pack (gris du pack) et, pour celles de l'Armurerie, dans son jar (gris foncé)."""
     faites = []
-    for f in sorted(glob.glob(os.path.join(ICONES_ARMURERIE, "*.png"))):
-        im = Image.open(f).convert("RGBA")
-        px = im.load()
-        for y in range(im.height):
-            for x in range(im.width):
-                a = px[x, y][3]
-                if a:
-                    px[x, y] = ICONE[:3] + (a,)
-        os.makedirs(SORTIE_ICONES, exist_ok=True)
-        im.save(os.path.join(SORTIE_ICONES, os.path.basename(f)))
-        faites.append(os.path.basename(f))
+    for (ou, nom), grille in ICONES.items():
+        sorties = [(SORTIE_ICONES if ou == ARMURERIE else SORTIE_CURIOS, ICONE)]
+        if ou == ARMURERIE:
+            sorties.append((ICONES_ARMURERIE, ICONE_SOMBRE))
+        for dossier, couleur in sorties:
+            os.makedirs(dossier, exist_ok=True)
+            chemin = os.path.join(dossier, nom + ".png")
+            dessin(grille, couleur).save(chemin)
+            faites.append(chemin)
     return faites
 
 
@@ -191,8 +336,8 @@ def main():
     os.makedirs(os.path.dirname(SORTIE), exist_ok=True)
     img.save(SORTIE)
     print("écrit :", os.path.relpath(SORTIE, RACINE))
-    for n in icones():
-        print("écrit :", os.path.relpath(os.path.join(SORTIE_ICONES, n), RACINE))
+    for chemin in icones():
+        print("écrit :", os.path.relpath(chemin, RACINE))
 
 
 if __name__ == "__main__":
