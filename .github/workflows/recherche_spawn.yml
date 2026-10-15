@@ -49,13 +49,15 @@ jobs:
           echo "### Mondes trouvés (level.dat) et leurs dimensions" >> "$GITHUB_STEP_SUMMARY"
           while read -r d; do
             case "$d" in mods|config|libraries|logs|plugins|tacz|defaultconfigs|crash-reports|cache|heralisz_matchs|mohist-config) continue;; esac
-            if l "cls /$d/level.dat" >/dev/null 2>&1; then
+            if l "cls /$d/level.dat" >/dev/null 2>&1 || l "cls -1 /$d/dimensions/" >/dev/null 2>&1; then
               echo "- **$d**" >> "$GITHUB_STEP_SUMMARY"
-              for p in $(l "find --maxdepth=2 /$d/dimensions/" 2>/dev/null | grep -E '/dimensions/[^/]+/[^/]+/?$' | sed 's#/$##'); do
-                dim="${p#*/dimensions/}"
-                n=$(l "cls -1 $p/region/" 2>/dev/null | grep -c '\.mca$' || true)
-                taille=$(l "du -sm $p" 2>/dev/null | awk '{print $1}')
-                echo "  - dimension \`$dim\` : $n régions, ${taille:-?} Mo" >> "$GITHUB_STEP_SUMMARY"
+              for ns in $(l "cls -1 /$d/dimensions/" 2>/dev/null | sed 's#/$##; s#.*/##'); do
+                for nom in $(l "cls -1 /$d/dimensions/$ns/" 2>/dev/null | sed 's#/$##; s#.*/##'); do
+                  p="/$d/dimensions/$ns/$nom"
+                  n=$(l "cls -1 $p/region/" 2>/dev/null | grep -c '\.mca$' || true)
+                  taille=$(l "du -sm $p" 2>/dev/null | awk '{print $1}')
+                  echo "  - dimension \`$ns:$nom\` : $n régions, ${taille:-?} Mo" >> "$GITHUB_STEP_SUMMARY"
+                done
               done
               n=$(l "cls -1 /$d/region/" 2>/dev/null | grep -c '\.mca$' || true)
               echo "  - monde principal : $n régions" >> "$GITHUB_STEP_SUMMARY"
