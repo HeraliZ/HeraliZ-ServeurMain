@@ -8,9 +8,11 @@
 # enregistré sur cette branche (utile quand le quota des paquets de GitHub est plein ; ~3 Mo de plus dans le dépôt à
 # chaque fois : à faire rarement). Le monde du Ptero n'est jamais modifié.
 # Case « props » : analyse des props et des conteneurs de loot (outils/props_carte.py : pièces, doublons, props
-# d'extérieur à l'intérieur, paliers absents...), plan de diversification et rendus avant / après, depuis la même copie
-# (plus les zones de loot du pack de données et trois petits fichiers data/, copiés eux aussi en lecture seule). Le plan
-# est enregistré sur la branche de travail (props_carte/) ; on le joue ensuite avec le workflow « Props de la carte ».
+# d'extérieur à l'intérieur, modèles absents...), plan de diversification des conteneurs de HeraliZ Loot (consigne du
+# 15/10 : 100 % des modèles T1 à T6 posés, en remplaçant des conteneurs déjà posés par d'autres du même palier ; T7
+# réservé aux événements ; rien sur les meubles cfm) et rendus avant / après, depuis la même copie (plus les zones de
+# loot du pack de données et trois petits fichiers data/, copiés eux aussi en lecture seule). Le plan est enregistré
+# sur la branche de travail (props_carte/) ; on le joue ensuite avec le workflow « Props de la carte ».
 name: Inventaire de la carte
 
 on:
@@ -21,11 +23,11 @@ on:
         type: boolean
         default: false
       props:
-        description: "Props et conteneurs de loot : analyse, plan de diversification et rendus (lecture seule ; plan enregistré sur la branche de travail)"
+        description: "Conteneurs de loot : analyse, plan (100 % des modèles T1 à T6 posés, même palier) et rendus (lecture seule ; plan enregistré sur la branche de travail)"
         type: boolean
         default: false
       props_options:
-        description: "Options du plan des props (ex. « --ajouts », « --max-changements 2000 », « --graine 2 »)"
+        description: "Options du plan (ex. « --ajouts » : poser aussi, à part, les modèles sans place de remplacement ; « --max-changements 2000 », « --graine 2 »)"
         type: string
         default: ""
   push:
@@ -129,8 +131,9 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       # Props et conteneurs de loot (outils/props_carte.py) : analyse des pièces et des incohérences, plan de
-      # diversification (lots de commandes conditionnelles + annulation), rendus avant / après. Rien n'est envoyé au
-      # serveur ici : on joue le plan, après validation du propriétaire, avec le workflow « Props de la carte ».
+      # diversification des conteneurs T1 à T6 (lots de commandes conditionnelles + annulation), rendus avant / après.
+      # Rien n'est envoyé au serveur ici : on joue le plan, après validation du propriétaire, avec le workflow « Props
+      # de la carte ».
       - name: Props et conteneurs (analyse, plan, rendus)
         if: ${{ inputs.props }}
         env:

@@ -1,6 +1,10 @@
-# Props de la carte : joue sur le serveur le plan de diversification des props validé par le propriétaire (ou
-# l'annule). Le plan (props_carte/plan.tar.gz) a été fait par « Inventaire de la carte », case « props », et enregistré
-# sur la branche de travail : on lance ce workflow SUR CETTE BRANCHE (jamais main).
+# Props de la carte : joue sur le serveur le plan de diversification des conteneurs de loot validé par le propriétaire
+# (ou l'annule). Consigne du 15/10 : 100 % des modèles T1 à T6 de HeraliZ Loot posés, en remplaçant des conteneurs déjà
+# posés par d'autres modèles du même palier (étape « diversification ») ; T7 réservé aux événements, rien sur les
+# meubles cfm. Étape « ajouts » à part : seulement si le plan a été fait avec l'option --ajouts (modèles sans aucune
+# place de remplacement, posés sur une case libre). Le plan (props_carte/plan.tar.gz) a été fait par « Inventaire de
+# la carte », case « props », et enregistré sur la branche de travail : on lance ce workflow SUR CETTE BRANCHE (jamais
+# main).
 #
 # Aucun fichier du monde n'est lu ni écrit : les commandes du plan sont envoyées à la console du serveur (API du
 # panel), et c'est le serveur qui les joue. Chaque commande ne change un bloc que s'il est ENCORE le prop relevé dans la
@@ -23,9 +27,9 @@ on:
         type: boolean
         default: false
       etapes:
-        description: "Étapes du plan à jouer (restauration, correction, couverture, equilibrage, cfm, t7, ajouts)"
+        description: "Étapes du plan à jouer : « diversification » (remplacements, même palier) ; « ajouts » à part (seulement si le plan a été fait avec --ajouts)"
         type: string
-        default: "correction,couverture,equilibrage,cfm"
+        default: "diversification"
       lots:
         description: "Numéros des lots (ex. « 1-30 ») ; vide = tous ceux des étapes choisies pas encore joués"
         type: string
