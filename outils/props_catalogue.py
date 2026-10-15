@@ -699,7 +699,7 @@ def catalogue(res=None):
                  groupe=_groupe_cfm(decrit), cellules=[(0, 0, 0)], visuel=vis, rot=rotation_y(bs),
                  modele=mods[0] if mods else nom, dayz=dayz and not admin and not structure, structure=structure or admin,
                  loot=False, decrit=decrit or texs[:60], existe=True, be=None, gab="decor",
-                 haut=max([b[4] for b in boites] or [16]), famille=famille_cfm(nom))
+                 haut=max([b[4] for b in boites] or [16]), famille=famille_cfm(nom, decrit))
         out[p.id] = p
         modeles.setdefault(p.modele, []).append(p.id)
     # ---- décors de HeraliZ Utils et HeraliZ Décors (seulement ceux qui sont des objets posés, pas des matériaux)
@@ -726,8 +726,18 @@ def catalogue(res=None):
     return out
 
 
-def famille_cfm(nom):
+# ce que montrent des modèles cfm assez semblables pour être échangés entre eux
+FAMILLES_VUES = {"cartons", "fûts", "feuilles mortes", "bouteilles au sol", "sang", "cadavre", "pneus", "banc",
+                 "poubelle", "brasero", "caisse d'armes"}
+# meubles cfm aux noms numérotés sans rapport entre eux (« Model 207 », « Detritus 12 »...) : une famille par ce
+# qu'ils montrent (cartons, fûts, feuilles mortes...), sinon aucune (jamais échangés)
+CFM_NUMEROTES = re.compile(r"^(model|detritus|eta|si_ren|board|sign_map|safe_planque|graffiti|bedrock)_\d+$")
+
+
+def famille_cfm(nom, decrit=""):
     """Famille visuelle d'un meuble cfm (variantes d'un même objet) : nom sans numéro, couleur ni « _a »."""
+    if CFM_NUMEROTES.match(nom):
+        return ("vu:" + decrit) if decrit in FAMILLES_VUES else nom
     f = re.sub(r"(_a)?$", "", nom)
     f = re.sub(r"_?\d+(_\d+)?$", "", f)
     f = re.sub(r"_(gray|grey|purple|red|blue|green|white|brown|open|closed|single|with_.*)$", "", f)
