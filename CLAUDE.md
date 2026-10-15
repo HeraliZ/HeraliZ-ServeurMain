@@ -36,10 +36,11 @@ quand un choix leur revient.
     propriétaires en jeu (détails, améliorations). **On ne touche JAMAIS aux fichiers du monde** : ni ici, ni sur le
     Ptero (pas de case « deposer_carte », pas de copie, pas de retouche). Quand la construction sera finie, le monde du
     Ptero sera copié dans GitHub : ce sera la carte « finale » de référence (section 9). Un mod ou un pack de textures
-    fourni pour la carte (jar + sources) s'ajoute ici comme d'habitude (section 9). Exception (props, demande du
-    propriétaire du 15/10) : les props et conteneurs de loot de la carte peuvent être changés, jamais par fichier :
-    seulement par les lots de commandes conditionnelles du plan des props (section 8, « Props de la carte »), joués par
-    le serveur, après validation du propriétaire, et annulables.
+    fourni pour la carte (jar + sources) s'ajoute ici comme d'habitude (section 9). Exception (demande du propriétaire
+    du 15/10) : les conteneurs de loot HeraliZ Loot T1 à T6 déjà posés peuvent être remplacés par d'autres modèles du
+    même palier (et, avec `--ajouts` seulement, un modèle sans aucune place posé sur une case libre), jamais par
+    fichier : seulement par les lots de commandes conditionnelles du plan des props (section 8, « Props de la carte »),
+    joués par le serveur, après validation du propriétaire, et annulables. Rien d'autre (ni meubles cfm, ni T7).
 
 ---
 
@@ -547,15 +548,29 @@ aux mêmes chemins, pouvaient passer devant sur le serveur selon l'ordre de lect
 remplacées par celles de nos packs (largages, caisses, Annihilator des Zombies). Les joueurs n'ont jamais ces gunpacks
 (pack du launcher = dépôt). À lancer après avoir retiré un gunpack ou une arme du dépôt.
 
-**Props de la carte** : « Inventaire de la carte », case « props » (lecture seule) : `outils/props_carte.py` découpe les
-pièces, relève doublons (2 frigos, 2 cuisinières), props d'extérieur dedans, modèles et paliers absents, anciens meubles
-cfm retirés du jar (devenus de l'air), puis fait le plan (règles dans `outils/props_catalogue.py` : même palier, même
-gabarit, même orientation, place libre, une cuisinière / un frigo par pièce de maison) et des rendus avant / après ; plan
-enregistré dans `props_carte/` sur la branche de travail (jamais `main`). Après validation du propriétaire : workflow
-« Props de la carte » sur cette branche (essai à blanc par défaut ; « envoyer », sauvegarde du panel, étapes, lots,
-pause ; « annuler » rejoue le journal). Chaque commande est `execute if block <état relevé> … run setblock …` : un prop
-changé entre-temps par les constructeurs n'est pas touché. Les conteneurs ajoutés (étapes restauration et ajouts)
-baissent d'autant la part d'actifs de leur zone (loot inchangé). Rien testé en jeu.
+**Props de la carte** (consigne du propriétaire du 15/10) : utiliser les modèles de HeraliZ Loot, T1 à T6 seulement
+(T7 = événements, jamais posé par le plan), et que **100 % des modèles T1 à T6** soient sur la carte, en nombre
+équilibré (plus « toujours les mêmes »). C'est tout : ni meubles cfm (ni anciens meubles cfm à reposer, ni
+variantes), ni points T7, ni familles (nourriture, soins, munitions). « Inventaire de la carte », case « props »
+(lecture seule) : `outils/props_carte.py` découpe les pièces et relève les incohérences, puis `outils/props_plan.py`
+fait le plan, étape **`diversification`** : un conteneur T1 à T6 déjà posé est remplacé par un autre modèle du MÊME
+palier (le loot de la zone ne change pas de niveau), d'abord là où il y a une incohérence (2 cuisinières, 2 frigos,
+prop d'extérieur dans une maison...), puis pour que chaque modèle ait son minimum de places (8 en T1, 6 en T2, 4 en T3
+et T4, 3 en T5, 2 en T6, plafonné par les places du palier), puis pour équilibrer (un modèle à plus de 1,5 fois sa part
+cède des places) ; un modèle posé ne disparaît jamais. Règles (`outils/props_catalogue.py`) : même gabarit (meuble ↔
+meuble, objet ↔ objet, cadavre ↔ cadavre, véhicule ↔ véhicule ; un gros conteneur seulement s'il a la place libre
+exacte), même orientation, type de pièce (pas de prop d'extérieur dans une maison ni l'inverse), une cuisinière / un
+frigo par pièce ; conteneur avec des données (inventaire) jamais touché. Étape **`ajouts`** à part, seulement avec
+l'option `--ajouts` (« props_options ») : un modèle sans AUCUNE place de remplacement cohérente (cadavres T2 à T4, dont
+aucun n'est posé ; mobilier de salle de bain, de caserne de pompiers, de banque...) est posé sur une case libre, à
+moins de 48 blocs d'un conteneur de son palier ; la part d'actifs de la zone baisse d'autant. Le rapport (`plan.md`)
+donne les modèles posés avant / après et les absents avec leur raison. Sur la copie v3 : 366 modèles T1 à T6, 256
+posés avant (70 %), 337 après la diversification (92 %, 4 615 remplacements sur 27 954 conteneurs), 366 (100 %) avec
+les 39 ajouts. Plan enregistré dans `props_carte/` sur la branche de travail (jamais `main`). Après validation du
+propriétaire : workflow « Props de la carte » sur cette branche (essai à blanc par défaut ; « envoyer », sauvegarde du
+panel, étapes, lots, pause ; « annuler » rejoue le journal). Chaque commande est `execute if block <état relevé> … run
+setblock …` (cases en plus d'un gros conteneur : `if block … minecraft:air`) : un prop changé entre-temps par les
+constructeurs n'est pas touché ; HeraliZ Loot retire et repose seul les blocs « partie ». Rien testé en jeu.
 
 **Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
 fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets
