@@ -28,10 +28,10 @@ public class CibleEntrainementServeur extends CibleEntrainement {
     }
 
 
+    /** Gardee tant que sa partie existe (avant, le tick commun la retirait toujours des la premiere seconde). */
     @Override
-    public void tick() {
-        super.tick();
-        if (!level().isClientSide && tickCount % 20 == 0 && partie() == null) discard();
+    protected boolean rattachee() {
+        return partie() != null;
     }
 
     @Override
