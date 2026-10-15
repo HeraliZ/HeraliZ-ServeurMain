@@ -16,6 +16,10 @@ public final class Destination {
 
     /** Téléporte le joueur au point d'extraction configuré (vraie téléportation : suivie par l'anticheat). */
     public static void teleport(ServerPlayer player) {
+        // d'abord le monde du spawn de HeraliZ (Utils, par réflexion : facultatif), s'il est en place
+        if (ExtractionConfig.USE_HERALIZ_SPAWN.get() && versSpawnHeraliz(player)) {
+            return;
+        }
         MinecraftServer server = player.server;
         ServerLevel target = server.overworld();
         double x;
@@ -43,5 +47,32 @@ public final class Destination {
         player.stopRiding();
         player.teleportTo(target, x, y, z, player.getYRot(), player.getXRot());
         player.resetFallDistance();
+    }
+
+    private static java.lang.reflect.Method spawnApi;
+    private static boolean spawnApiCherchee;
+
+    /**
+     * HeraliZ Utils : fr.heralisz.utils.api.SpawnApi.allerAuSpawn(ServerPlayer) (point de réveil du monde du spawn, vraie
+     * téléportation). Faux si Utils est absent, trop ancien, ou si le monde du spawn n'est pas en place.
+     */
+    private static boolean versSpawnHeraliz(ServerPlayer player) {
+        if (!spawnApiCherchee) {
+            spawnApiCherchee = true;
+            try {
+                spawnApi = Class.forName("fr.heralisz.utils.api.SpawnApi").getMethod("allerAuSpawn", ServerPlayer.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                spawnApi = null;
+            }
+        }
+        if (spawnApi == null) {
+            return false;
+        }
+        try {
+            return Boolean.TRUE.equals(spawnApi.invoke(null, player));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[extraction] retour au spawn de HeraliZ impossible : {}", e.toString());
+            return false;
+        }
     }
 }
