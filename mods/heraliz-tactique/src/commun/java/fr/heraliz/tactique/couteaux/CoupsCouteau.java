@@ -29,14 +29,16 @@ import net.minecraftforge.common.ForgeConfigSpec;
  *    cibles : tout être vivant dans un cône devant les yeux (portée : {@code portee_max} de la section {@code [melee]},
  *    commune à toutes les armes de corps à corps, {@link PorteeMelee} ; {@code angle_rapide} / {@code angle_lourd}, vue
  *    dégagée), plusieurs à la fois comme avec LR ;</li>
- *    <li>animation « melee_push » du couteau et son bruit (ceux de la touche « Mêlée » de TaCZ) ; les autres joueurs voient
- *    le coup de TaCZ en 3e personne et entendent le coup et l'impact ;</li>
+ *    <li>deux coups bien différents à voir et à entendre, comme les couteaux de LR (15/10) : coup rapide = tranche
+ *    latérale vive (de gauche à droite, puis de droite à gauche), coup puissant = estoc préparé (bras armé 0,22 s) puis
+ *    poussé, qui ne touche qu'après la préparation ({@link #DELAI_COUP_LOURD}) ; les autres joueurs voient les gestes
+ *    des couteaux de LR en 3e personne et entendent le coup et l'impact ;</li>
  *    <li>pas de coup pendant que le couteau est sorti (temps de sortie de TaCZ), ni à terre ou en train de fouiller ou de
  *    réanimer (Réanimation).</li>
  * </ul>
  * Le joueur ne fait que demander un coup (paquet {@link PaquetCoupCouteau}) : cadence, couteau en main, cibles et dégâts
  * sont décidés par le serveur ({@code fr.heraliz.tactique.serveur.CouteauxServeur}), qui touche
- * {@link #DELAI_COUP} ticks après la demande (moment où la lame passe dans l'animation). Le joueur joue l'animation et le
+ * {@link #delai} ticks après la demande (moment où la lame passe dans l'animation). Le joueur joue l'animation et le
  * bruit tout de suite ({@code fr.heraliz.tactique.client.couteaux.CouteauxClient}).
  * <p>
  * Réglages : config serveur de heralisz_tactical ({@code heralisz_tactical-server.toml}, section {@code [couteaux]}),
@@ -60,10 +62,19 @@ public final class CoupsCouteau {
    /** Recul donné aux cibles (Dague tactique : 0,05 et 0,08). */
    public static final float RECUL_RAPIDE = 0.05F;
    public static final float RECUL_LOURD = 0.08F;
-   /** Ticks entre la demande et le coup ({@code delay} de la Dague tactique : la lame passe vers 0,1 s dans « melee_push »). */
+   /**
+    * Ticks entre la demande et le coup rapide ({@code delay} de la Dague tactique : la lame de la tranche passe au milieu
+    * de l'écran vers 0,11 s, animations de {@code outils/couteaux_coups.py}).
+    */
    public static final int DELAI_COUP = 2;
-   /** Cadence minimale permise par la config : plus que le délai du coup (un coup à la fois). */
+   /**
+    * Ticks entre la demande et le coup puissant (15/10) : l'estoc est préparé (bras armé pendant 0,22 s) puis poussé, la
+    * lame arrive au fond vers 0,27 s ; le serveur ne touche qu'après la préparation.
+    */
+   public static final int DELAI_COUP_LOURD = 5;
+   /** Cadences minimales permises par la config : plus que le délai du coup (un coup à la fois). */
    public static final int CADENCE_MIN = DELAI_COUP + 2;
+   public static final int CADENCE_MIN_LOURD = DELAI_COUP_LOURD + 2;
 
    private CoupsCouteau() {
    }
@@ -98,6 +109,11 @@ public final class CoupsCouteau {
    public static double angle(boolean lourd) {
       return lourd ? valeur(ServerConfig.COUTEAUX_ANGLE_LOURD, DEFAUT_ANGLE_LOURD)
          : valeur(ServerConfig.COUTEAUX_ANGLE_RAPIDE, DEFAUT_ANGLE_RAPIDE);
+   }
+
+   /** Ticks entre la demande et le coup, rapide ou puissant. */
+   public static int delai(boolean lourd) {
+      return lourd ? DELAI_COUP_LOURD : DELAI_COUP;
    }
 
    public static float recul(boolean lourd) {

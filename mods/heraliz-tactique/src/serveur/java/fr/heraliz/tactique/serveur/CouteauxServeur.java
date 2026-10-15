@@ -32,8 +32,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
 
 /**
  * Coups de couteau TaCZ, décidés par le serveur seul (voir {@link CoupsCouteau}). Le joueur demande un coup
- * ({@link PaquetCoupCouteau}) ; le serveur vérifie tout de son côté, puis frappe {@link CoupsCouteau#DELAI_COUP} ticks
- * plus tard, comme une arme de mêlée de LR (MeleeItemServeur) :
+ * ({@link PaquetCoupCouteau}) ; le serveur vérifie tout de son côté, puis frappe {@link CoupsCouteau#delai} ticks
+ * plus tard (coup puissant : après la préparation de l'estoc), comme une arme de mêlée de LR (MeleeItemServeur) :
  * <ul>
  *    <li><b>refus</b> (rien ne se passe) : couteaux non frappés par HeraliZ ({@code actif}), joueur mort ou spectateur, pas
  *    de couteau TaCZ en main, à terre ou en train de fouiller ou réanimer (Réanimation), couteau en train d'être sorti
@@ -42,10 +42,11 @@ import net.minecraftforge.eventbus.api.EventPriority;
  *    d'un joueur honnête), à {@link #TOLERANCE_MS} près pour le décalage du réseau : un coup arrivé en avance est accepté,
  *    mais le suivant est compté depuis l'heure où il était dû, si bien qu'un jeu modifié ne frappe jamais plus vite que
  *    la cadence ;</li>
- *    <li><b>accepté</b> : les autres joueurs voient le coup en 3e personne (PaquetCoupVu, 14/10 : grand coup de haut en bas
- *    « melee_3_upper » de TaCZ pour le coup puissant, « melee_upper » et « melee_2_upper » en alternance pour le coup
- *    rapide) et l'entendent (son « melee_push » du couteau, à la distance des
- *    bruits d'arme de TaCZ, DefaultGunOtherSoundDistance) ;</li>
+ *    <li><b>accepté</b> : les autres joueurs voient le coup en 3e personne (PaquetCoupVu, 15/10 : gestes des couteaux de
+ *    LR, tranches en alternance pour le coup rapide, estoc pour le coup puissant) et l'entendent : coup rapide, son
+ *    « melee_push » du couteau envoyé d'ici, à la distance des bruits d'arme de TaCZ (DefaultGunOtherSoundDistance) ;
+ *    estoc, bruits plus lourds joués chez eux à la réception de PaquetCoupVu (rien d'ici, sinon il s'entendrait deux
+ *    fois) ;</li>
  *    <li><b>coup</b> (si le même couteau est toujours en main, dans la même case) : tout être vivant dans le cône
  *    ({@link ConeFilter} de LR : portée jusqu'au point le plus proche de la cible, ouverture, vue dégagée), dégâts
  *    (attaque du joueur + {@code degats}) × 1 ou × {@code multiplicateur_lourd}, donnés par le coup de LR
@@ -117,13 +118,16 @@ final class CouteauxServeur {
          return;
       }
       etat.pretMs = Math.max(maintenant - TOLERANCE_MS, etat.pretMs) + CoupsCouteau.cadence(d.lourd()) * MS_PAR_TICK;
-      etat.frappeA = joueur.server.getTickCount() + CoupsCouteau.DELAI_COUP;
+      etat.frappeA = joueur.server.getTickCount() + CoupsCouteau.delai(d.lourd());
       etat.lourd = d.lourd();
       etat.caseBarre = joueur.getInventory().selected;
       etat.arme = arme.getGunId(main);
-      // les autres joueurs : le coup en 3e personne (puissant : grand coup de haut en bas, PaquetCoupVu) et son bruit
+      // les autres joueurs : le coup en 3e personne (tranche ou estoc, PaquetCoupVu) ; bruit de la tranche envoyé d'ici,
+      // ceux de l'estoc joués chez eux à la réception du paquet
       ReseauCouteaux.envoyerAutour(joueur, new PaquetCoupVu(joueur.getId(), d.lourd()));
-      son(joueur, arme, main, SoundManager.MELEE_PUSH, false);
+      if (!d.lourd()) {
+         son(joueur, arme, main, SoundManager.MELEE_PUSH, false);
+      }
    }
 
    private static void tick(TickEvent.PlayerTickEvent e) {
