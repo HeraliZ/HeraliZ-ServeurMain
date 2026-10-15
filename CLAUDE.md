@@ -901,6 +901,21 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   distance en mètres dessous ; bombe amorcée et ordinateur au sol au même style (« ! » rouge / ambre) ; mêmes règles de
   visibilité qu'avant (bien visibles 8 s, puis pâles et sans distance). Rien testé en jeu ;
 - duels (15/10, Matchs 0.9.0) : stuff équitable : dans un /duel (1v1, 2v2, les deux équipes), tout le monde choisit parmi les 5 classes de l'hôte (celui qui a lancé le défi), copiées au lancement (`DuelPartie.classesHote`) : s'il modifie ses classes ou se déconnecte pendant la partie, rien ne change pour ce duel. Le serveur n'accepte qu'un numéro de 1 à 5 et construit le kit depuis la classe de l'hôte (aucun camo ni marque de camo à vie) ; le dernier choix mémorisé de chacun n'est ni lu ni écrit (tous partent de la classe 1 de l'hôte). Écran de choix : « Classes de <hôte> · les mêmes pour tous ». Entraînement (`/duel entrainement`) : ses propres classes, comme avant ; cible d'entraînement gardée tant que le duel dure (corrigé en 0.9.0) ;
+- duels (16/10, Matchs 0.10.0) : plantage du jeu à l'amorçage de la bombe corrigé : l'écran animé de l'ordinateur
+  (`duels/client/bombe/EcranVif`) écrivait ses cases et barres dans un tampon de dessin déjà terminé par le texte
+  (chiffres tapés) ; ses textes sont maintenant dessinés après toutes les formes ; la pose des bras par Player Animator
+  (`PosesBombe`) ne peut plus faire planter le rendu (erreur = poses coupées, accroupi normal). Repères des sites A et B
+  refaits (le badge « faisait bulle de texte ») : petit carré de 10 px d'interface, contour fin, fond presque
+  transparent, lettre fine, couleur de l'équipe atténuée, ni pointe ni distance ; opacité 0,40 (0,62 en début de manche
+  et avec Tab), jusqu'à 5 fois plus pâle près du viseur, effacé sur le site ; même carré avec « ! » pour la bombe
+  amorcée et l'ordinateur au sol ; texture générée par `outils/reperes/reperes_sites.py` (`--apercu`), jamais à la
+  main. Bombe des sites 1,75 fois plus grande au rendu (`BombeDuel.ECHELLE`, modèle de `outils/bombe/modeles.py`
+  inchangé : 2,9 blocs de long, 1,75 de haut) ; amorçage jusqu'à 2,8 blocs du centre de la bombe, câble du piratage
+  4,8 blocs (`DuelsConfig`) ; pas de collision. Killcam : l'arme du tueur est dessinée à la fin du rendu du monde
+  (`ArmeEnMain`, étape AFTER_LEVEL) et non plus à l'évènement de la main (le joueur mort est spectateur : Minecraft ne
+  dessine jamais sa main, on ne voyait rien) ; le serveur enregistre la visée TaCZ du tueur (`Clip.VISE`, par
+  réflexion) : arme en position de visée de TaCZ, léger zoom, petit viseur effacé ; chaque tir joue l'animation
+  « shoot » de l'arme et un petit recul. Jars joueurs et serveur de la même fabrication. Rien testé en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
