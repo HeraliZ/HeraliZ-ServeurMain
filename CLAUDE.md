@@ -793,6 +793,13 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   (256 blocs autour du réveil), la taille conseillée est écrite dans `serveur/defaultconfigs/heraliz_spawn-server.toml`.
   `deposer_spawn` dépose `monde/spawn/` tel quel. La cinématique ne dépend pas de l'ancienne carte : seul un décor réglé
   en jeu (`data/heraliz_cinematique.dat` de la carte, `/cinematique reveil`) passe avant celui du mod. Rien testé en jeu.
+  **Protection du spawn** (Utils 2.13.0, 16/10, `spawn/ProtectionSpawn`, serveur) : dans `heralisz:spawn`, aucun dégât
+  pour les joueurs, quelle que soit la source ; seul `/kill` passe. Chaque tick : feu éteint, chute, gel et air remis à
+  zéro, faim gardée pleine. Effets négatifs refusés et retirés. Un joueur tombé sous le monde est ramené au point de
+  réveil par une vraie téléportation. Aucune créature (même celles des mods de zombies) ; celles déjà là sont retirées
+  chaque seconde, sauf `entites_permises`. Les explosions n'y cassent rien et ne touchent personne. `/suicide` y est
+  refusé, sauf au staff. Réglage `[protection] actif` de `heraliz_spawn-server.toml` ; `/depart info` montre l'état.
+  Rien testé en jeu.
 - **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
   1024 px au plus avec `carte.json`, dans `mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte/` (jar
   joueur de HeraliZ Utils). Jamais dessiné à la main : refait par `python outils/carte_monde.py <copie du monde>
