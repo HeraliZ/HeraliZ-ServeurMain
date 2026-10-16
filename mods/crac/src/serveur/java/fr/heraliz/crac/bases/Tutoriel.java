@@ -47,7 +47,7 @@ import net.minecraftforge.fml.ModList;
  *   premier pas du joueur, ou au plus {@code attente_max_s} secondes (la cinématique dure environ 122 s ; Utils n'envoie
  *   pas d'évènement de fin).</li>
  *   <li>Titres à l'écran, puis le kit : de quoi bâtir avec CRac une cabane 2 × 1 avec une porte (2 fondations, 5 murs,
- *   1 cadre de porte, 2 planchers en toit), calculé avec les coûts réels de crac-building.toml, plus la mise en bois au
+ *   1 pièce « Porte », 2 planchers en toit), calculé avec les coûts réels de crac-building.toml, plus la mise en bois au
  *   marteau, un jour d'entretien du Claim Block et une marge de 10 % ; un groupe CRac est créé pour lui s'il n'en a pas.</li>
  *   <li>Envoi dans le monde des bases, à un point plat tiré au hasard loin des autres bases : il y est protégé
  *   ({@link Protections}) tant que sa base n'est pas posée.</li>
@@ -259,7 +259,7 @@ public final class Tutoriel {
             T.duree(max)), ChatFormatting.YELLOW);
         T.chat(p, T.t("crac.tuto.etape2", "[Tuto] 2. Plan de construction en main, clic droit : pose %s fondations côte à côte.",
             String.valueOf(fond)), ChatFormatting.YELLOW);
-        T.chat(p, T.t("crac.tuto.etape3", "[Tuto] 3. Puis 5 murs, 1 cadre de porte (pose la porte dedans) et 2 planchers par-dessus pour le toit."),
+        T.chat(p, T.t("crac.tuto.etape3", "[Tuto] 3. Puis 5 murs, 1 porte (pièce « Porte » du plan, la porte est comprise) et 2 planchers par-dessus pour le toit."),
             ChatFormatting.YELLOW);
         T.chat(p, T.t("crac.tuto.etape4", "[Tuto] 4. Pose le Claim Block sur une fondation, à l'intérieur : ta base est à toi, et protégée des raids."),
             ChatFormatting.YELLOW);
@@ -277,7 +277,7 @@ public final class Tutoriel {
         m.put(ModItems.BUILDING_PLAN.get(), 1);
         m.put(ModItems.BUILDING_HAMMER.get(), 1);
         m.put(ModItems.CLAIM_BLOCK.get(), 1);
-        m.put(Items.OAK_DOOR, 1);
+        // la porte est dans la pièce « Porte » (cadre + battant) : pas d'objet porte à donner
         Map<Item, Integer> matieres = new LinkedHashMap<>();
         int pieces = 0;
         for (Map.Entry<PieceKind, Integer> e : CABANE.entrySet()) {
