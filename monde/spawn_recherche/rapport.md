@@ -46,7 +46,7 @@ Blocs autour de la cavité #1 (avec 8 blocs de marge) : `minecraft:stone` 688400
 
 Rendus : `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_boite.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite1_dessus.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite1_coupe_long.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite1_coupe_travers.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite3145_dessus.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite3145_coupe_long.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite3145_coupe_travers.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite5_dessus.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite5_coupe_long.png`, `rendus/reveil_mod_dayz_map_ancien_2026-10-11_00h46_cavite5_coupe_travers.png`
 
-_(analyse : 11 s)_
+_(analyse : 14 s)_
 
 ### Point `apparition_dayz_map_ancien_2026-10-11_00h46`
 
@@ -67,7 +67,7 @@ Blocs autour de la cavité #3239 (avec 8 blocs de marge) : `minecraft:dirt` 2848
 
 Rendus : `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_boite.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite3239_dessus.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite3239_coupe_long.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite3239_coupe_travers.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite575_dessus.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite575_coupe_long.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite575_coupe_travers.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite1648_dessus.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite1648_coupe_long.png`, `rendus/apparition_dayz_map_ancien_2026-10-11_00h46_cavite1648_coupe_travers.png`
 
-_(analyse : 8 s)_
+_(analyse : 9 s)_
 
 ### Point `reveil_mod_HeraliZ_ancien_2026-10-11_00h26`
 
@@ -166,7 +166,7 @@ Rendus : `rendus/amas1_boite.png`, `rendus/amas1_cavite1939_dessus.png`, `rendus
 
 **Grotte retenue ici** (cavité #1939, confiance faible) : zone x -104 à -56, y 40 à 118, z 2911 à 2963 ; réveil d'origine -81 49 2936 ; décalage 20 0 -2934 pour que le réveil tombe en -61 265 2. décalage vertical impossible (la grotte sortirait de la hauteur du monde) : réveil à mettre en y = 49 dans heralisz_utils_cinematique.json
 
-_(analyse : 9 s)_
+_(analyse : 10 s)_
 
 ### Point `amas2`
 
@@ -188,7 +188,7 @@ Blocs autour de la cavité #931 (avec 8 blocs de marge) : `minecraft:stone` 9501
 
 Rendus : `rendus/amas2_boite.png`, `rendus/amas2_cavite931_dessus.png`, `rendus/amas2_cavite931_coupe_long.png`, `rendus/amas2_cavite931_coupe_travers.png`, `rendus/amas2_cavite2004_dessus.png`, `rendus/amas2_cavite2004_coupe_long.png`, `rendus/amas2_cavite2004_coupe_travers.png`, `rendus/amas2_cavite352_dessus.png`, `rendus/amas2_cavite352_coupe_long.png`, `rendus/amas2_cavite352_coupe_travers.png`
 
-_(analyse : 8 s)_
+_(analyse : 10 s)_
 
 ### Point `amas3`
 
@@ -211,7 +211,7 @@ Blocs des mods : `cfm:arkaniaz_crate`, `cfm:arkaniaz_old_tv_3`, `cfm:box_food`, 
 
 Rendus : `rendus/amas3_boite.png`, `rendus/amas3_cavite3044_dessus.png`, `rendus/amas3_cavite3044_coupe_long.png`, `rendus/amas3_cavite3044_coupe_travers.png`, `rendus/amas3_cavite3533_dessus.png`, `rendus/amas3_cavite3533_coupe_long.png`, `rendus/amas3_cavite3533_coupe_travers.png`, `rendus/amas3_cavite2_dessus.png`, `rendus/amas3_cavite2_coupe_long.png`, `rendus/amas3_cavite2_coupe_travers.png`
 
-_(analyse : 9 s)_
+_(analyse : 12 s)_
 
 ### Point `amas4`
 
@@ -234,7 +234,7 @@ Blocs des mods : `cfm:ambulance`, `cfm:arkaniaz_corpse_1`, `cfm:arkaniaz_corpse_
 
 Rendus : `rendus/amas4_boite.png`, `rendus/amas4_cavite1738_dessus.png`, `rendus/amas4_cavite1738_coupe_long.png`, `rendus/amas4_cavite1738_coupe_travers.png`, `rendus/amas4_cavite247_dessus.png`, `rendus/amas4_cavite247_coupe_long.png`, `rendus/amas4_cavite247_coupe_travers.png`, `rendus/amas4_cavite2315_dessus.png`, `rendus/amas4_cavite2315_coupe_long.png`, `rendus/amas4_cavite2315_coupe_travers.png`
 
-_(analyse : 9 s)_
+_(analyse : 12 s)_
 
 ## Pas de copie
 
