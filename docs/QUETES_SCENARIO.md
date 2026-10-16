@@ -10,6 +10,7 @@
 
 ## Sommaire
 
+0. La version « spawn » (PNJ placés par le staff, interactions sur la carte)
 1. L'idée en une page
 2. L'histoire de la Zone (le « lore »)
 3. Les 8 PNJ
@@ -23,6 +24,91 @@
 11. Règles contre la triche et l'abus
 12. Ce qu'il faudra construire (aperçu pour la phase code)
 13. Questions pour les propriétaires
+
+---
+
+## 0. La version « spawn » (demande du propriétaire du 16/10) — c'est elle qui compte
+
+> Précision du propriétaire : les PNJ sont **au spawn**, **placés par lui où il veut** (camp d'entraînement, etc.),
+> chacun a **son nom**, une **phrase d'ambiance** liée à son coin, se **présente** au nouveau joueur, puis lui
+> **demande de l'aide**. Les quêtes envoient sur la carte chercher des **objets de quête posés par le staff dans les
+> villes**. Le reste du document (histoire, actes) devient un fil rouge facultatif qu'on pourra brancher plus tard.
+
+### 0.1 Un PNJ, en 4 temps (exemple : Jack, au camp d'entraînement)
+
+| Moment | Ce qui se passe | Exemple |
+|---|---|---|
+| **Ambiance** | quand un joueur passe à moins de 8 blocs, une petite bulle au-dessus du PNJ (au plus une fois par minute et par joueur) | « Si tu tiens ton arme comme ça, c'est toi que tu vas toucher. » / « On vise la cible, pas le copain. » |
+| **Présentation** | 1re fois qu'on lui parle (clic droit) : écran de dialogue | « Hé, toi. Attends. T'es nouveau, je te connais pas. Moi c'est Jack, je m'occupe du camp. Ici on apprend à pas mourir bêtement. » |
+| **Demande** | il propose une quête ; « J'accepte » / « Plus tard » | « Tu veux te rendre utile ? Un gars à moi a laissé son carnet de tir à **Belcourt**, dans le **commissariat**. Ramène-le-moi. » |
+| **Ensuite** | à chaque visite : une phrase « on se connaît », l'avancement, la quête suivante | « Alors, ce carnet ? » → « Bien joué. Tiens, 200 hérals. J'aurai autre chose demain. » |
+
+Chaque PNJ a donc : un **nom**, un **skin**, une **liste de phrases d'ambiance**, une **présentation**, des
+**phrases d'accueil** (inconnu / connu / ami) et **ses quêtes** (dans l'ordre, ou au hasard pour les contrats du jour).
+
+### 0.2 Ce que le staff fait EN JEU (aucun fichier du monde touché)
+
+**Poser un PNJ** : se placer à l'endroit, regarder dans la bonne direction, puis
+`/pnj creer jack "Jack"` → le PNJ apparaît, invincible, regarde les joueurs qui passent. Ensuite
+`/pnj skin jack <pseudo ou fichier>`, `/pnj deplacer jack` (à l'endroit où l'on est), `/pnj geste jack <emote>`,
+`/pnj retirer jack`. Ses textes et ses quêtes sont dans son fichier (`serveur/config/heraliz_quetes/pnj/jack.json`),
+qu'on remplit avec Claude en lui disant simplement en français ce qu'on veut.
+
+**Poser les interactions sur la carte** avec une **baguette de quête** (comme la baguette des salles à carte) :
+on se met en créatif, on prend la baguette, on choisit le point de quête à poser (`/quete baguette carnet_jack`), puis
+on fait **clic droit sur le bloc** voulu (un bureau, un tiroir, un casier, un ordinateur, un cadavre, une étagère...).
+Ce bloc devient un **point de quête**, sans être modifié (le point est gardé à part, comme les salles à carte). Sortes
+de points :
+
+| Point | Ce que voit / fait le joueur qui a la quête | Les autres joueurs |
+|---|---|---|
+| **Objet à ramasser** | une petite lueur sur le bloc ; clic droit = « Vous trouvez : Carnet de tir de Jack » (objet de quête dans l'inventaire) | rien, le bloc est normal |
+| **Indice à lire** | clic droit = une lettre, une note, une photo s'affiche (ex. le code d'un coffre) | rien |
+| **Endroit à atteindre** | zone (rayon réglable) : « Vous êtes arrivé au commissariat » | rien |
+| **Coffre à code** | clic droit = petit clavier, il faut taper le code trouvé ailleurs | rien |
+| **Objet à déposer** | clic droit avec l'objet en main = il est déposé (« la radio est réparée ») | rien |
+| **Fouille par le loot** | un conteneur HeraliZ Loot précis donne l'objet de quête en plus de son loot, seulement à celui qui a la quête | loot normal |
+
+`/quete points` liste les points posés, `/quete point voir <id>` y emmène, `/quete point retirer <id>` l'efface.
+En créatif, le staff voit tous les points (petites étiquettes) pour vérifier son travail.
+
+**Les objets de quête** sont des objets génériques du mod, renommés selon la quête : document, carnet, lettre,
+photo, clé, clé USB, colis, échantillon, plaque d'identité, pièce mécanique (modèles à faire valider en rendus
+d'abord). Le nom et la description viennent de la quête (« Carnet de tir de Jack »). Ils ne servent qu'à la quête.
+
+### 0.3 Écrire une quête (sans être développeur)
+
+On dit à Claude, en français : « Jack demande de ramener son carnet de tir, au commissariat de Belcourt, dans le
+tiroir du bureau du chef ; récompense 200 hérals. » Claude écrit la quête dans le fichier de Jack ; il reste au staff
+à poser le point avec la baguette, à l'endroit exact, puis `/quete recharger`. Plus tard, si besoin : un écran
+d'édition en jeu.
+
+Exemple de ce que donne le fichier (pour info, c'est Claude qui l'écrit) :
+
+```
+PNJ « jack » — Jack, instructeur du camp
+  ambiance : « On vise la cible, pas le copain. » | « Recharge AVANT d'être à sec. » | « Moins de bruit, plus de balles. »
+  presentation : « Hé, toi. Attends. T'es nouveau, je te connais pas. Moi c'est Jack... »
+  quete « carnet_jack » :
+    demande : « Un gars à moi a laissé son carnet de tir à Belcourt, au commissariat. Ramène-le-moi. »
+    etape 1 : RAMASSER au point « carnet_jack » → objet « Carnet de tir de Jack »
+    etape 2 : RAPPORTER le carnet à Jack
+    fin : « Bien joué. Tiens. J'aurai autre chose demain. » → 200 hérals
+```
+
+### 0.4 Idées de PNJ du spawn (noms et places à choisir par le propriétaire)
+
+| PNJ | Où au spawn | Phrase d'ambiance | Genre de quêtes |
+|---|---|---|---|
+| **Jack**, instructeur | camp d'entraînement | « On vise la cible, pas le copain. » | carnets et caisses de munitions à retrouver, tuer des zombies avec telle arme, apprendre à se soigner |
+| la **docteure** | infirmerie | « Si tu saignes, assieds-toi. Si tu tousses, va-t'en. » | médicaments à ramener d'un hôpital, échantillons, réanimer quelqu'un |
+| le **mécano** | atelier / garage | « T'aurais pas un ressort ? Non ? T'as une tête à en trouver. » | pièces (composants), réparer un objet posé sur la carte, ramener un véhicule |
+| l'**opératrice radio** | poste radio | « Fréquence 104.7... toujours rien. » | documents dans des bureaux, coffres à code, balises à relever |
+| la **contrebandière** | marché | « Tout se vend. Même toi. » | objets de valeur à revendre, colis à livrer |
+| le **patron du casino** | entrée du casino | « Ici on meurt de rire, pas de faim. » | essayer les jeux, petits paris |
+| le **chef du refuge** | au centre du spawn | « Doucement, petit. T'es au terminus. » | le premier qu'on voit : il envoie vers les autres |
+
+On peut en ajouter autant qu'on veut : un PNJ = un fichier + `/pnj creer` en jeu.
 
 ---
 
@@ -99,7 +185,7 @@ clans**.
 | 4 | **La Voix** (Nadia Orlov) | opératrice radio | Refuge, poste radio (+ antenne de `radio`) | mystérieuse, parle en codes, fréquences | renseignements, documents, balises, énigmes |
 | 5 | **Commandant Ressac** | ancien officier du Convoi 12 | Refuge, poste de garde | militaire, ordres, vouvoie | nettoyer des zones, boss, salles à carte, armes |
 | 6 | **Mila la Contrebandière** | marchande, passeuse | Refuge, coin du marché (+ `port` la nuit) | charmeuse, menteuse, tout se négocie | objets de valeur, livraisons, vols, clans |
-| 7 | **Monsieur Jack** | patron du casino | au casino | showman, flamboyant, aime le risque | jouer, parier, gagner, perdre avec panache |
+| 7 | **Monsieur Lucky** | patron du casino | au casino | showman, flamboyant, aime le risque | jouer, parier, gagner, perdre avec panache |
 | 8 | **Le Vieil Oskar** | ermite, dernier de la tribu du nord | **pas au Refuge** : cabane cachée (`arctique` ou forêt) | lent, mystique, parle par images | légendes, Ymirak, Sylvorn, secrets, énigmes |
 
 Et un « PNJ » qu'on ne voit jamais : **le docteur Kessel**, qui parle par des **enregistrements** et des **terminaux**
@@ -150,7 +236,7 @@ Veut reprendre la Zone aux goules « secteur par secteur ».
 - Donne : hérals (souvent **plus** que les autres, mais avec un **piège** de temps en temps), rachat des objets de
   valeur au meilleur prix pour les joueurs qui ont sa confiance.
 
-**7. Monsieur Jack** — « Le seul endroit de la Zone où on meurt de rire et pas de faim. »
+**7. Monsieur Lucky** — « Le seul endroit de la Zone où on meurt de rire et pas de faim. »
 - *Accueil* : « Bienvenue, bienvenue ! Un nouveau visage ! J'adore les nouveaux visages, ils perdent toujours. »
 - Demande : **découvrir chaque jeu du casino** (roulette, blackjack, crash, mines, plinko, course, bataille navale,
   lumières, pierre-feuille-ciseaux, machines « Portes de l'Olympe », « Souffle du loup », « La Niche »...), faire un
@@ -252,8 +338,8 @@ Fin du prologue : le Doyen donne **500 hérals** et présente les autres PNJ. Le
 6. **La loco** (Ferraille) : la locomotive du terminus peut-elle repartir ? Inspection (INSPECTER 3 points de la loco),
    liste de pièces : 2 kits de pièces, 1 batterie, 1 circuit imprimé (APPORTER). *Lance l'événement serveur « Remettre
    la loco en route », section 8.*
-7. **Bienvenue chez Jack** (Jack) : découvrir le casino, jouer **3 jeux différents** (CASINO), mise de 10 hérals au
-   moins. Jack rembourse les mises.
+7. **Bienvenue chez Lucky** (Lucky) : découvrir le casino, jouer **3 jeux différents** (CASINO), mise de 10 hérals au
+   moins. Lucky rembourse les mises.
 8. **Ce qui se vend** (Mila) : lui vendre un objet de la catégorie « À vendre » (APPORTER, n'importe lequel). Elle
    paie le double cette fois « pour la première fois ».
 9. **Fin de l'acte — Le conseil** (Doyen) : réunion au Refuge (dialogue à choix : à qui le joueur fait-il le plus
@@ -395,20 +481,20 @@ complets ; les autres sont à écrire de la même façon.
 2. **Le colis** : LIVRER un colis au **port**, de nuit, en moins de 30 min (perdu à la mort, ramassable).
 3. **Le grand bijou** : APPORTER un objet « À vendre » **Rare ou mieux** (couronne, crâne de cristal, sceptre...).
 4. **Faux papiers** : RÉCUPÉRER des tampons officiels à la mairie de Belcourt.
-5. **Concurrence** : vendre à Mila **plutôt** qu'à… (dialogue : elle fait monter les enchères contre Jack).
+5. **Concurrence** : vendre à Mila **plutôt** qu'à… (dialogue : elle fait monter les enchères contre Lucky).
 6. **Le casse** (en groupe) : ouvrir la **salle à carte rouge** de l'aérodrome et en rapporter la caisse (LIVRER,
    un seul porteur, les autres l'escortent).
 7. **Le piège** : un contrat trop beau. Si le joueur accepte sans réfléchir, il est envoyé dans une zone de goules ;
    s'il pose les bonnes questions (dialogue), il découvre l'arnaque et gagne plus de réputation.
 
-### Monsieur Jack — « La maison gagne toujours »
+### Monsieur Lucky — « La maison gagne toujours »
 1. **Tour de piste** : jouer à **tous** les jeux du casino au moins une fois (liste cochée dans le journal).
 2. **Le flambeur** : gagner un multiplicateur ×5 ou plus, une fois.
-3. **Le stoïque** : perdre 5 parties d'affilée sans quitter la table (petite mise). Jack adore.
+3. **Le stoïque** : perdre 5 parties d'affilée sans quitter la table (petite mise). Lucky adore.
 4. **Le duel de cartes** : battre un autre joueur à pierre-feuille-ciseaux ou bataille navale.
 5. **Le jackpot** : être à la machine quand le jackpot tombe (ou s'en approcher : gain ≥ 10×).
-6. **La dette** : un joueur (PNJ fictif) doit de l'argent à Jack : retrouver son cadavre et sa **montre à gousset**.
-7. **All-in** : miser **toute** une petite somme (100 hérals max) d'un coup : gagné ou perdu, Jack paie le panache.
+6. **La dette** : un joueur (PNJ fictif) doit de l'argent à Lucky : retrouver son cadavre et sa **montre à gousset**.
+7. **All-in** : miser **toute** une petite somme (100 hérals max) d'un coup : gagné ou perdu, Lucky paie le panache.
 
 ### Le Vieil Oskar — « Les anciens »
 1. **L'écoute** : passer 5 minutes assis près de sa cabane sans rien faire (TENIR, aucune action).
@@ -517,7 +603,7 @@ Une **barre commune** au Refuge (et dans le journal) : tout le monde contribue, 
 2. **« La grande antenne »** (La Voix) : rallumer l'antenne de `radio`. À 100 % : La Voix annonce en direct les
    largages et les extractions ouvertes (message aux joueurs).
 3. **« La Saison de la Fièvre »** (Vasseur) : semaine de goules plus nombreuses ; les contrats de Vasseur paient double.
-4. **« Le grand tournoi de Jack »** : un week-end de défis casino, classement, titre au premier.
+4. **« Le grand tournoi de Lucky »** : un week-end de défis casino, classement, titre au premier.
 5. **« Le choix de la Zone »** : quand 100 joueurs ont fini l'acte IV, la fin la plus choisie change le Refuge
    (décor, réplique des PNJ). **[À VALIDER]**
 
