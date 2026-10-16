@@ -66,12 +66,12 @@ public final class EcranKits extends Screen {
         return etat.kits().isEmpty() ? null : etat.kits().get(choix);
     }
 
-    private boolean estLeSien(ReseauGrades.VueKit k) {
-        return k != null && k.id().equals(etat.kitJoueur());
+    private static boolean soutien(ReseauGrades.VueKit k) {
+        return k != null && Grade.SOUTIEN.id.equals(k.id());
     }
 
-    private long reste() {
-        return Math.max(0, etat.resteMs() - (System.currentTimeMillis() - recuA));
+    private long reste(ReseauGrades.VueKit k) {
+        return Math.max(0, k.resteMs() - (System.currentTimeMillis() - recuA));
     }
 
     private static int couleur(String id) {
@@ -122,8 +122,8 @@ public final class EcranKits extends Screen {
         ReseauGrades.VueKit k = choisi();
         bouton.visible = k != null;
         if (k == null) return;
-        boolean sien = estLeSien(k), pret = sien && reste() <= 0;
-        String cle = !sien ? "pas_le_tien" : attente ? "attente_serveur" : pret ? "recuperer" : "en_recharge";
+        boolean sien = k.debloque(), pret = sien && reste(k) <= 0;
+        String cle = !sien ? "non_debloque" : attente ? "attente_serveur" : pret ? "recuperer" : "en_recharge";
         String nouvel = cle + ":" + k.id();
         if (nouvel.equals(etatBouton)) return;
         etatBouton = nouvel;
@@ -198,16 +198,14 @@ public final class EcranKits extends Screen {
                 Ui.soft(g, x0, y, w, LIGNE_H, Ui.argb(0xFFFFFF, 10));
             }
             Ui.soft(g, x0 + 8, y + 10, 6, 6, Ui.argb(couleur(k.id()), 255));
-            boolean sien = estLeSien(k);
+            boolean sien = k.debloque();
             Grade gk = Grade.parId(k.id());
             g.drawString(f, Ui.in(gk == null ? Component.literal(k.id()) : gk.nomSansCouleur(), Ui.FONT), x0 + 20, y + 9,
                     Ui.argb(sien ? Ui.TEXT : Ui.MUTED, 255), false);
-            if (sien) {
-                boolean pret = reste() <= 0;
-                String chip = t(pret ? "pret" : "attente");
-                int cw = (int) Ui.spacedWidth(f, chip.toUpperCase(java.util.Locale.ROOT), Ui.SMALL, 0.6f) + 10;
-                Ui.chip(g, f, chip, x0 + w - cw - 6, y + 8, pret ? Ui.OK : Ui.AMBRE);
-            }
+            boolean pret = sien && reste(k) <= 0;
+            String chip = t(!sien ? "verrou" : pret ? "pret" : "attente");
+            int cw = (int) Ui.spacedWidth(f, chip.toUpperCase(java.util.Locale.ROOT), Ui.SMALL, 0.6f) + 10;
+            Ui.chip(g, f, chip, x0 + w - cw - 6, y + 8, !sien ? Ui.FAINT : pret ? Ui.OK : Ui.AMBRE);
         }
         if (etat.kits().isEmpty()) Ui.spaced(g, f, t("aucun"), Ui.SMALL, lx + 10, ly + 28, Ui.argb(Ui.FAINT, 255), 0.6f);
 
@@ -218,11 +216,11 @@ public final class EcranKits extends Screen {
         ItemStack survole = ItemStack.EMPTY;
         if (k != null) {
             int c = couleur(k.id());
-            boolean sien = estLeSien(k);
+            boolean sien = k.debloque();
             Ui.gros(g, f, Ui.in(nom(k.id()).copy(), Ui.BOLD), rx + 14, ly + 12, 1.4f, Ui.argb(c, 255));
             int nw = (int) (f.width(Ui.in(nom(k.id()).copy(), Ui.BOLD)) * 1.4f);
-            Ui.chip(g, f, t(sien ? "ton_kit" : "autre_grade"), rx + 14 + nw + 10, ly + 13, sien ? Ui.OK : Ui.MUTED);
-            String desc = sien ? t("desc_sien") : Component.translatable("gui.heraliz_grades.kits.desc_autre", nom(k.id())).getString();
+            Ui.chip(g, f, t(sien ? "debloque" : "non_debloque"), rx + 14 + nw + 10, ly + 13, sien ? Ui.OK : Ui.MUTED);
+            String desc = soutien(k) ? t("desc_soutien") : sien ? t("desc_sien") : Component.translatable("gui.heraliz_grades.kits.desc_autre", nom(k.id())).getString();
             g.drawString(f, Ui.lit(desc, Ui.SMALL), rx + 14, ly + 30, Ui.argb(Ui.MUTED, 255), false);
 
             Ui.section(g, f, t("contenu"), rx + 14, ly + 48, rw - 28);
@@ -240,11 +238,11 @@ public final class EcranKits extends Screen {
 
             // recharge
             int bas = ly + lh - 14;
-            long reste = reste();
+            long reste = reste(k);
             String gauche, droite = "";
             float ratio;
             if (!sien) {
-                gauche = Component.translatable("gui.heraliz_grades.kits.reserve", nom(k.id())).getString();
+                gauche = soutien(k) ? t("reserve_soutien") : Component.translatable("gui.heraliz_grades.kits.reserve", nom(k.id())).getString();
                 ratio = 0;
             } else if (reste <= 0) {
                 gauche = t("disponible");

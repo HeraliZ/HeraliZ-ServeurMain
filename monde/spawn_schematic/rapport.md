@@ -1,6 +1,6 @@
 ## Recherche de « spawnbangerdelamort » sur le Ptero (lecture seule)
 
-Monde en service (server.properties du Ptero) : `dayz_map`. Dossiers fouillés : racine, `plugins/`, `schematics/`, `config/`, `dayz_map/generated/` (22446 chemins).
+Monde en service (server.properties du Ptero) : `dayz_map`. Dossiers fouillés : racine, `plugins/`, `schematics/`, `config/`, `dayz_map/generated/` (22453 chemins).
 
 Fichiers trouvés :
 - `/plugins/WorldEdit/schematics/spawnbangerdelamort.schem`
@@ -9,8 +9,8 @@ Choisi : `/plugins/WorldEdit/schematics/spawnbangerdelamort.schem` (135186 octet
 
 ## Arrivée des joueurs (monde `dayz_map` du Ptero, lecture seule)
 
-- monde du spawn pas encore déposé (`dayz_map/dimensions/heralisz/spawn/` absent ou vide) : la case « deposer_spawn » le posera.
-- **ATTENTION** : décor de la cinématique réglé en jeu dans `minecraft:overworld` (réveil en -1128.6 68.0 41.0). Il passe avant celui du mod : première connexion, mort sans lit et extraction mènent LÀ, pas au monde du spawn. Une fois le monde du spawn déposé : `/cinematique reveil` debout au point de réveil de la grotte (-61 265 2 dans `heralisz:spawn`, regard 45°), puis `/cinematique epave poser`.
+- `dayz_map/dimensions/heralisz/spawn/` existe déjà (20 fichiers de régions) : la case « deposer_spawn » REFUSERA de l'écraser. Si c'est l'ancien spawn à remplacer : le supprimer depuis le panel, serveur arrêté, avant le dépôt.
+- décor réglé en jeu : réveil en 43.5 249.0 98.5 dans `heralisz:spawn` (il passe avant celui du mod ; vérifier qu'il tombe bien dans la grotte : `/cinematique info`).
 
 ## Schematic `1-spawnbangerdelamort.schem`
 
