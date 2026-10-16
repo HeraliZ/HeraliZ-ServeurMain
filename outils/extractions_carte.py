@@ -19,6 +19,8 @@ Options :
   --trou <blocs>          un endroit de la carte est « mal couvert » au-delà de tant de blocs de toute zone (défaut 600)
   --propositions <n>      nombre de points proposés au plus (défaut 10)
   --marge <blocs>         pas de point proposé à moins de tant de blocs du bord de la carte (défaut 200)
+  --bordure <x0,z0,x1,z1> bordure du monde : la couverture et les points proposés ne comptent que ce qui est dedans, et
+                          aucun point à moins de --marge blocs d'elle ; défaut : « bordure » de carte.json du fond
   --simulations <n>       vagues simulées pour juger le tirage du serveur (défaut 2000)
 
 Images : carte_extractions.png (fond satellite, grille de 500 m comme l'écran de la carte, zones, distance entre
@@ -570,7 +572,7 @@ def eroder(m, r=2):
 # ================================================================== programme
 def options(argv):
     o = {"zones": None, "sortie": str(DEPOT / "livraison/extractions"), "monde": None, "level": None, "config": None,
-         "fond": str(FOND_MOD), "dimension": None, "trou": 600, "propositions": 10, "marge": 200, "simulations": 2000}
+         "fond": str(FOND_MOD), "dimension": None, "trou": 600, "propositions": 10, "marge": 200, "simulations": 2000, "bordure": None}
     i = 0
     while i < len(argv):
         a = argv[i]
@@ -649,6 +651,18 @@ def main():
             eau = np.zeros((nz, nx), bool)
         prat = eroder(joue & ~eau)
         source_points = "fond de la carte seulement (couleurs : ni vide ni eau) : hauteur, toits et pente inconnus"
+    # bordure du monde : rien de ce qui est dehors ne compte (les joueurs n'y vont pas)
+    bordure = o["bordure"] or (fond.info.get("bordure") if fond.ok else None)
+    if isinstance(bordure, str):
+        bordure = [int(float(t)) for t in bordure.split(",")]
+    dedans = np.ones((nz, nx), bool)
+    loin_bord = np.ones((nz, nx), bool)
+    if bordure:
+        bx0, bz0, bx1, bz1 = bordure
+        dedans = ((cx[None, :] >= bx0) & (cx[None, :] <= bx1)) & ((cz[:, None] >= bz0) & (cz[:, None] <= bz1))
+        m = o["marge"]
+        loin_bord = ((cx[None, :] >= bx0 + m) & (cx[None, :] <= bx1 - m)) & ((cz[:, None] >= bz0 + m) & (cz[:, None] <= bz1 - m))
+        joue = joue & dedans
     terre = grandes_terres(joue & ~eau)    # ce qu'on juge pour la couverture : la carte, sans les îlots
 
     def champ(points):
@@ -666,7 +680,7 @@ def main():
 
     # ------------------------------------------------ points proposés : le plus loin de toute zone, tant qu'il y a un trou
     marge = o["marge"] // CELLULE
-    permis = prat & terre
+    permis = prat & terre & loin_bord
     if marge > 0:
         permis[:marge, :] = permis[-marge:, :] = False
         permis[:, :marge] = permis[:, -marge:] = False
@@ -797,6 +811,14 @@ def main():
         if proches:
             L.append("- Distance à la voisine la plus proche : %d m au plus près, %d m en médiane, %d m au plus loin."
                      % (min(proches), mediane(proches), max(proches)))
+        doublons = [(a["nom"], b["nom"]) for n, a in enumerate(comptees) for b in comptees[n + 1:] if dist(a, b) < 16]
+        if doublons:
+            L.append("- **Zones au même endroit** (une seule suffit, retirer l'autre avec `/extraction remove <nom>`) : %s."
+                     % ", ".join("`%s` et `%s`" % d for d in doublons))
+        if bordure:
+            hors = [z["nom"] for z in comptees if not (bordure[0] <= z["x"] <= bordure[2] and bordure[1] <= z["z"] <= bordure[3])]
+            L.append("- Bordure du monde : x %d à %d, z %d à %d ; %s." % (bordure[0], bordure[2], bordure[1], bordure[3],
+                     ("**hors de la bordure** : " + ", ".join("`%s`" % n for n in hors)) if hors else "toutes les zones sont dedans"))
         c = centre(pool or comptees)
         par_q = [sum(1 for z in (pool or comptees) if quart(z, c) == q) for q in range(4)]
         L.append("- Quarts de la carte (autour du centre des zones en rotation, x %d, z %d, comme le serveur) : %s."
