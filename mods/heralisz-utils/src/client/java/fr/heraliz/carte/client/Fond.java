@@ -39,10 +39,24 @@ final class Fond {
 
     /** Ce que dit carte.json : monde, emprise en blocs, blocs par pixel, découpage en tuiles, vues fabriquées. */
     record Info(ResourceLocation dimension, int x0, int z0, int largeur, int hauteur, int blocsParPixel, int pixelsL, int pixelsH,
-                int tuile, int colonnes, int lignes, List<String> vues, String fait) {
+                int tuile, int colonnes, int lignes, List<String> vues, String fait, @Nullable int[] bordure) {
         boolean a(String vue) {
             return vues.contains(vue);
         }
+    }
+
+    /**
+     * Rectangle (x1, z1, x2, z2) de la clé « bordure » de carte.json (écrite par outils/carte_monde.py : bordure du
+     * monde, ou rectangle donné) ; null si absente ou fausse.
+     */
+    @Nullable
+    private static int[] bordure(JsonObject o) {
+        if (!o.has("bordure") || !o.get("bordure").isJsonArray()) return null;
+        JsonArray a = o.getAsJsonArray("bordure");
+        if (a.size() != 4) return null;
+        int x1 = a.get(0).getAsInt(), z1 = a.get(1).getAsInt(), x2 = a.get(2).getAsInt(), z2 = a.get(3).getAsInt();
+        if (x2 <= x1 || z2 <= z1) return null;
+        return new int[]{x1, z1, x2, z2};
     }
 
     private static final ResourceLocation JSON = HeralizCarte.id("carte/carte.json");
@@ -79,7 +93,8 @@ final class Fond {
             Info i = new Info(dim == null ? new ResourceLocation("minecraft", "overworld") : dim, o.get("x0").getAsInt(), o.get("z0").getAsInt(),
                     o.get("largeur").getAsInt(), o.get("hauteur").getAsInt(), Math.max(1, o.get("blocsParPixel").getAsInt()),
                     o.get("pixelsLargeur").getAsInt(), o.get("pixelsHauteur").getAsInt(), Math.max(16, o.get("tuile").getAsInt()),
-                    o.get("colonnes").getAsInt(), o.get("lignes").getAsInt(), vues, o.has("fait") ? o.get("fait").getAsString() : "");
+                    o.get("colonnes").getAsInt(), o.get("lignes").getAsInt(), vues, o.has("fait") ? o.get("fait").getAsString() : "",
+                    bordure(o));
             if (i.largeur() <= 0 || i.hauteur() <= 0 || i.colonnes() <= 0 || i.lignes() <= 0) return null;
             return i;
         } catch (Exception ex) {

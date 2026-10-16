@@ -98,6 +98,65 @@ final class Texte {
         espacee(g, font, s, police, xd - largeurEspacee(font, s, police, echelle, espacement), y, argb, echelle, espacement, false);
     }
 
+    /** Hauteur de ligne de la police (taille des fichiers de police du kit : 9 pour la petite, 11 pour les autres). */
+    static float em(ResourceLocation police) {
+        return police.equals(Ui.SMALL) ? 9f : 11f;
+    }
+
+    /** Largeur d'une étiquette (capitales espacées ou texte simple). */
+    static float largeurEtiquette(Font font, String s, ResourceLocation police, float echelle, float espacement, boolean capitales) {
+        return capitales ? largeurEspacee(font, s, police, echelle, espacement) : largeur(font, s, police, echelle);
+    }
+
+    /**
+     * Étiquette de la carte centrée en (cx, cy), entourée d'un halo sombre d'environ {@code halo} unités d'interface
+     * (lisible sur la neige comme sur la mer). Capitales espacées si {@code capitales}, sinon texte tel quel.
+     */
+    static void etiquette(GuiGraphics g, Font font, String s, ResourceLocation police, float cx, float cy, int argb, float echelle,
+                          float espacement, boolean capitales, float halo) {
+        float w = largeurEtiquette(font, s, police, echelle, espacement, capitales);
+        float x = cx - w / 2f, y = cy - em(police) * echelle * 0.5f;
+        int a = Math.min(LISERE >>> 24, argb >>> 24);
+        int l = (a << 24) | (LISERE & 0xFFFFFF);
+        float o = halo / echelle;
+        if (!capitales) {
+            MutableComponent c = lit(s, police);
+            g.pose().pushPose();
+            g.pose().translate(x, y, 0);
+            g.pose().scale(echelle, echelle, 1);
+            if (halo > 0) {
+                for (float[] d : HUIT) {
+                    g.pose().pushPose();
+                    g.pose().translate(d[0] * o, d[1] * o, 0);
+                    g.drawString(font, c, 0, 0, l, false);
+                    g.pose().popPose();
+                }
+            }
+            g.drawString(font, c, 0, 0, argb, false);
+            g.pose().popPose();
+            return;
+        }
+        String up = s.toUpperCase(Locale.ROOT);
+        float px = x;
+        for (int i = 0; i < up.length(); i = up.offsetByCodePoints(i, 1)) {
+            MutableComponent c = lit(new String(Character.toChars(up.codePointAt(i))), police);
+            g.pose().pushPose();
+            g.pose().translate(px, y, 0);
+            g.pose().scale(echelle, echelle, 1);
+            if (halo > 0) {
+                for (float[] d : HUIT) {
+                    g.pose().pushPose();
+                    g.pose().translate(d[0] * o, d[1] * o, 0);
+                    g.drawString(font, c, 0, 0, l, false);
+                    g.pose().popPose();
+                }
+            }
+            g.drawString(font, c, 0, 0, argb, false);
+            g.pose().popPose();
+            px += font.width(c) * echelle + espacement;
+        }
+    }
+
     /** Texte coupé avec « … » s'il dépasse la largeur (à l'échelle donnée). */
     static String couper(Font font, String s, ResourceLocation police, float echelle, float max) {
         if (largeur(font, s, police, echelle) <= max) return s;
