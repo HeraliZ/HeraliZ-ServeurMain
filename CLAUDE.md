@@ -530,8 +530,10 @@ raison) ; la clé des jetons du launcher est lue sur la VM du site (section 6 bi
 `LITEBANS_DB_PASSWORD` (base MySQL du Ptero, onglet « Databases » du panel) ; sans eux, LiteBans passe en base locale
 (H2) et repart sans historique. Lien Discord ↔ Minecraft (heraliz-grades, `/lier`) : `HERALIBOT_LIEN_URL` (adresse
 du bot HeraliBot sur le Ptero, `http://<machine>:<port du bot>`) et `HERALIBOT_LIEN_CLE` (contenu de
-`data/cle-lien.txt`, créé par le bot à son premier démarrage), écrits dans `config/heraliz_grades/lien.json` ; sans
-eux, le lien est désactivé. Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
+`data/cle-lien.txt`, créé par le bot à son premier démarrage), écrits dans `config/heraliz_grades/lien.json`. Ces deux
+secrets sont FACULTATIFS : sans eux, la mise en ligne les lit elle-même sur le Ptero avec `PTERO_API_KEY` (serveur
+nommé « HeraliBot » du même compte : sa clé et son port), clé masquée dans les journaux ; si c'est impossible, le lien
+est désactivé (avertissement). Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
 écrire ailleurs.
 
 **Gunpacks du serveur** (`.github/workflows/gunpacks.yml`, « Run workflow ») : compare le dossier `tacz` du Ptero au
