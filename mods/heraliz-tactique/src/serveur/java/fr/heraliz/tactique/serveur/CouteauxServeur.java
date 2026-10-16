@@ -33,7 +33,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 /**
  * Coups de couteau TaCZ, décidés par le serveur seul (voir {@link CoupsCouteau}). Le joueur demande un coup
  * ({@link PaquetCoupCouteau}) ; le serveur vérifie tout de son côté, puis frappe {@link CoupsCouteau#delai} ticks
- * plus tard (coup puissant : après la préparation de l'estoc), comme une arme de mêlée de LR (MeleeItemServeur) :
+ * plus tard (coup puissant : à l'impact de son animation), comme une arme de mêlée de LR (MeleeItemServeur) :
  * <ul>
  *    <li><b>refus</b> (rien ne se passe) : couteaux non frappés par HeraliZ ({@code actif}), joueur mort ou spectateur, pas
  *    de couteau TaCZ en main, à terre ou en train de fouiller ou réanimer (Réanimation), couteau en train d'être sorti
@@ -42,8 +42,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
  *    d'un joueur honnête), à {@link #TOLERANCE_MS} près pour le décalage du réseau : un coup arrivé en avance est accepté,
  *    mais le suivant est compté depuis l'heure où il était dû, si bien qu'un jeu modifié ne frappe jamais plus vite que
  *    la cadence ;</li>
- *    <li><b>accepté</b> : les autres joueurs voient le coup en 3e personne (PaquetCoupVu, 15/10 : gestes des couteaux de
- *    LR, tranches en alternance pour le coup rapide, estoc pour le coup puissant) et l'entendent : coup rapide, son
+ *    <li><b>accepté</b> : les autres joueurs voient le coup en 3e personne (PaquetCoupVu, 16/10 : gestes de TaCZ en
+ *    alternance pour le coup rapide, estoc des couteaux de LR pour le coup puissant) et l'entendent : coup rapide, son
  *    « melee_push » du couteau envoyé d'ici, à la distance des bruits d'arme de TaCZ (DefaultGunOtherSoundDistance) ;
  *    estoc, bruits plus lourds joués chez eux à la réception de PaquetCoupVu (rien d'ici, sinon il s'entendrait deux
  *    fois) ;</li>
@@ -122,8 +122,8 @@ final class CouteauxServeur {
       etat.lourd = d.lourd();
       etat.caseBarre = joueur.getInventory().selected;
       etat.arme = arme.getGunId(main);
-      // les autres joueurs : le coup en 3e personne (tranche ou estoc, PaquetCoupVu) ; bruit de la tranche envoyé d'ici,
-      // ceux de l'estoc joués chez eux à la réception du paquet
+      // les autres joueurs : le coup en 3e personne (PaquetCoupVu) ; bruit du coup rapide envoyé d'ici, ceux du coup
+      // puissant joués chez eux à la réception du paquet
       ReseauCouteaux.envoyerAutour(joueur, new PaquetCoupVu(joueur.getId(), d.lourd()));
       if (!d.lourd()) {
          son(joueur, arme, main, SoundManager.MELEE_PUSH, false);

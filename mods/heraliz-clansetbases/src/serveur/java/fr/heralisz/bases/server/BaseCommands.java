@@ -322,6 +322,11 @@ public final class BaseCommands {
     }
 
     private static int creerAdmin(CommandSourceStack src, String tag) {
+        if (!fr.heralisz.bases.BasesConfig.CREATION.get()) {
+            Reponses.erreur(src, Component.translatableWithFallback("msg.heralisz_bases.creation_coupee_admin",
+                    "Création de bunkers coupée (réglage [bases] creation de heralisz_bases-common.toml) : bases CRac à la place."));
+            return 0;
+        }
         Optional<ClanInfo> ci = ClansApi.parTag(tag);
         if (ci.isEmpty()) {
             Reponses.erreur(src, Component.translatable("cmd.heralisz_bases.clan_inconnu", tag));

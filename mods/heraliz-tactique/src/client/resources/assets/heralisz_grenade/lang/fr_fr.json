@@ -1,6 +1,4 @@
 {
-  "item.heralisz_grenade.c4": "C4 [WIP]",
-  "item.heralisz_grenade.c4.desc": "Explosif à distance : se colle et explose de loin.",
   "item.heralisz_grenade.flash_grenade": "Grenade aveuglante",
   "item.heralisz_grenade.flash_grenade.desc": "Aveugle d'une lumière intense et assourdit d'un bruit fort,\nse détourner ou s'éloigner pour l'éviter.",
   "item.heralisz_grenade.m67": "Grenade M67",

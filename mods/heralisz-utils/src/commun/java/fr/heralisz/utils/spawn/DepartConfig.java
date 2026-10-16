@@ -18,6 +18,8 @@ public final class DepartConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SOLS;
     public static final ForgeConfigSpec.BooleanValue MONSTRES, PVP;
     public static final ForgeConfigSpec.IntValue BORDURE;
+    public static final ForgeConfigSpec.BooleanValue PROTEGER;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ENTITES_PERMISES;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -59,6 +61,15 @@ public final class DepartConfig {
         PVP = b.comment("Combat entre joueurs dans le monde du spawn.").define("pvp", false);
         BORDURE = b.comment("Taille de la bordure du monde du spawn (blocs), centrée sur le point de réveil. 0 : celle de la carte.")
                 .defineInRange("bordure", 256, 0, 60000000);
+        b.pop();
+        b.comment("Protection du monde du spawn (heralisz:spawn).").push("protection");
+        PROTEGER = b.comment("Aucun dégât pour les joueurs (feu, chute, lave, noyade, faim, gel, vide, explosions, autres joueurs...) :",
+                "feu éteint, faim et air gardés pleins, effets négatifs retirés et refusés, chute dans le vide = retour au point de",
+                "réveil ; aucune créature (monstres, animaux, PNJ : retirées) ; explosions sans effet sur les blocs et les entités ;",
+                "/suicide refusé (sauf staff). Seul /kill passe. false : seulement les réglages de la section [spawn].")
+                .define("actif", true);
+        ENTITES_PERMISES = b.comment("Créatures gardées malgré tout dans le monde du spawn (identifiants, ex. \"minecraft:villager\").")
+                .defineListAllowEmpty(List.of("entites_permises"), () -> List.<String>of(), o -> o instanceof String);
         b.pop();
         SPEC = b.build();
     }

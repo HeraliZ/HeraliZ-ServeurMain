@@ -56,6 +56,10 @@ public final class RaidBlocks {
         if (ClaimManager.getAt(level, pos) == null) {
             return false;
         }
+        // base d'un nouveau joueur encore protégée (monde des bases, 1.5.0) : aucun bloc cassé par un explosif
+        if (fr.heraliz.crac.bases.Protections.baseProtegee(level, pos)) {
+            return false;
+        }
         if (state.is(TERRAIN) && !PlacedTerrainData.get(level).contains(pos)) {
             return false;
         }

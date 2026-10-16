@@ -249,5 +249,7 @@
   "heralisz_bases.modele.non_charge": "не загружена",
   "heralisz_bases.modele.absent": "%s отсутствует в data/heralisz_bases/structures",
   "heralisz_bases.modele.absents": "%s и %s отсутствуют в data/heralisz_bases/structures",
-  "heralisz_bases.modele.illisible": "не удалось прочитать: %s"
+  "heralisz_bases.modele.illisible": "не удалось прочитать: %s",
+  "msg.heralisz_bases.creation_coupee": "Клановые бункеры больше не создаются: каждый игрок строит базу в мире баз (/home со спавна).",
+  "msg.heralisz_bases.creation_coupee_admin": "Создание бункеров отключено ([bases] creation в heralisz_bases-common.toml): вместо них базы CRac."
 }

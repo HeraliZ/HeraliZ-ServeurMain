@@ -39,6 +39,10 @@ import java.util.Locale;
  * pres du viseur (jamais devant la cible) ; effaces quand le joueur est sur le site. Meme carre avec « ! » pour la bombe
  * amorcee et l'ordinateur au sol. Formes lisses tirees de {@code textures/gui/duel_repere.png} (outils/reperes/reperes_sites.py,
  * jamais retouchee a la main). Rien pendant une killcam.
+ * <p>Tout en petit (16/10, Matchs 0.11.0) : ligne d'etat (« vous portez l'ordinateur », bombe amorcee avec sa minuterie)
+ * en petite pastille juste sous le bandeau reduit du moteur, en haut au centre ; barre d'amorcage / de piratage en petit
+ * texte et barre fine juste sous le viseur ; invite en petit au-dessus de la barre d'objets ; eclair de l'explosion adouci.
+ * Plus rien de gros au milieu de l'ecran.
  */
 final class DuelHud {
     private DuelHud() {
@@ -80,6 +84,15 @@ final class DuelHud {
     private static final int PIRATE = 0x46DCFF;
     /** Libelle de la barre d'action garde tant qu'il ne change pas (code n / 3, dixiemes de seconde du piratage). */
     private static int cleAction = Integer.MIN_VALUE;
+    /**
+     * HUD compact (16/10, Matchs 0.11.0 : « les UI sont trop grosses, elles gênent pendant le combat ») : ligne d'etat sous
+     * le bandeau reduit du moteur (y), echelles des textes (etat, minuterie de la bombe, barre d'action, invite) et
+     * largeur minimale de la barre d'action sous le viseur.
+     */
+    static final int Y_ETAT = fr.heralisz.matchs.moteur.client.HudMoteur.BAS_BANDEAU_COMPACT + 2;
+    private static final float K_ETAT = 0.72f, K_MINUTERIE = 0.82f, K_ACTION = 0.8f, K_INVITE = 0.85f;
+    private static final int LARGEUR_ACTION = 64;
+    private static int largeurMinuterie;
 
     // ------------------------------------------------------------------ toasts, eclair
     private record Toast(Component titre, Component texte, long debutMs, boolean defi) {
@@ -233,8 +246,9 @@ final class DuelHud {
             long t = now - flashMs;
             if (t > 900) flashMs = -1;
             else {
+                // eclair adouci (Matchs 0.11.0) : il ne masque plus l'ecran
                 float a = t < 80 ? 1f : 1f - (t - 80) / 820f;
-                g.fill(0, 0, w, h, Ui.argb(0xFFF4E0, (int) (230 * a * a)));
+                g.fill(0, 0, w, h, Ui.argb(0xFFF4E0, (int) (120 * a * a)));
             }
         }
     }
@@ -243,53 +257,63 @@ final class DuelHud {
         Vues.RdVue v = rd;
         if (v == null) return;
         float cx = w / 2f;
-        // sous le bandeau du moteur (titre, pastilles, temps et score : jusqu'a y 64 environ)
-        int y = 72;
-        // ligne d'etat (masquee pendant une grande annonce du moteur, dessinee dans la meme zone de l'ecran)
-        boolean annonce = !fr.heralisz.matchs.moteur.client.MoteurClient.annonces().isEmpty();
-        if (annonce) {
-            // rien : l'annonce (« charge posee », « manche gagnee »...) a la priorite
-        } else if (v.etat() == Vues.CHARGE_POSEE) {
+        // ligne d'etat, petite, juste sous le bandeau du moteur (reduit pendant un duel, HudMoteur.compact) ; les annonces
+        // du moteur passent dessous (HudMoteur.Y_ANNONCE_COMPACTE) : plus rien ne la masque
+        int y = Y_ETAT;
+        if (v.etat() == Vues.CHARGE_POSEE) {
             int resteMs = (int) Math.max(0, v.resteTicks() * 50L - (now - rdRecuMs));
             int s = (resteMs + 999) / 1000;
             if (s != derniereSeconde) {
                 derniereSeconde = s;
                 texteMinuterie = Ui.lit(String.format(Locale.ROOT, "%d:%02d", s / 60, s % 60), Ui.BOLD);
+                largeurMinuterie = font.width(Ui.lit("0:00", Ui.BOLD));
             }
+            // pastille rouge : point qui pulse, « BOMBE AMORCEE · SITE A », minuterie en gras a droite
             float pulse = s <= 10 ? 0.55f + 0.45f * (float) Math.abs(Math.sin(now / (s <= 5 ? 90.0 : 160.0))) : 1f;
-            int lw = font.width(ligneHaut) + 20;
-            Ui.glass(g, (int) (cx - Math.max(lw, 90) / 2f), y - 4, Math.max(lw, 90), 40, 170);
-            Ui.centered(g, font, ligneHaut, cx, y + 2, Ui.argb(Ui.DANGER, 255));
-            g.pose().pushPose();
-            float sc = 1.8f;
-            float tw = font.width(texteMinuterie) * sc;
-            g.pose().translate(cx - tw / 2f, y + 14, 0);
-            g.pose().scale(sc, sc, 1);
-            g.drawString(font, texteMinuterie, 0, 0, Ui.argb(Ui.mix(Ui.DANGER, 0xFFFFFF, 0.25f), (int) (255 * pulse)), false);
-            g.pose().popPose();
+            float lt = font.width(ligneHaut) * K_ETAT, lm = Math.max(largeurMinuterie, font.width(texteMinuterie)) * K_MINUTERIE;
+            int pw = (int) (14 + lt + 8 + lm + 8), ph = 13, px = (int) (cx - pw / 2f);
+            Ui.glass(g, px, y, pw, ph, 150);
+            Ui.soft(g, px + 1, y + 1, pw - 2, ph - 2, Ui.argb(Ui.DANGER, 26));
+            Ui.soft(g, px + 5, y + 5, 4, 4, Ui.argb(Ui.DANGER, (int) (230 * pulse)));
+            texte(g, font, ligneHaut, px + 13, y + 3.5f, K_ETAT, Ui.argb(Ui.mix(Ui.DANGER, 0xFFFFFF, 0.35f), 235));
+            texte(g, font, texteMinuterie, px + pw - 7 - font.width(texteMinuterie) * K_MINUTERIE, y + 2.5f, K_MINUTERIE,
+                    Ui.argb(Ui.mix(Ui.DANGER, 0xFFFFFF, 0.25f), (int) (245 * pulse)));
         } else if (aLigneHaut) {
-            int lw = font.width(ligneHaut) + 20;
-            Ui.soft(g, (int) (cx - lw / 2f), y - 3, lw, 14, Ui.argb(couleurHaut, 30));
-            Ui.softOutline(g, (int) (cx - lw / 2f) + 1, y - 2, lw - 2, 12, Ui.argb(couleurHaut, 90));
-            Ui.centered(g, font, ligneHaut, cx, y, Ui.argb(Ui.mix(couleurHaut, 0xFFFFFF, 0.3f), 255));
+            float lt = font.width(ligneHaut) * K_ETAT;
+            int pw = (int) (lt + 14), ph = 11, px = (int) (cx - pw / 2f);
+            Ui.soft(g, px, y, pw, ph, Ui.argb(Ui.VERRE, 120));
+            Ui.softOutline(g, px + 1, y + 1, pw - 2, ph - 2, Ui.argb(couleurHaut, 70));
+            texte(g, font, ligneHaut, cx - lt / 2f, y + 2.5f, K_ETAT, Ui.argb(Ui.mix(couleurHaut, 0xFFFFFF, 0.3f), 220));
         }
         // reperes a l'ecran
         reperes(g, w, h, v, now);
-        // barre d'action (amorcage : code n / 3 ; piratage : secondes restantes)
+        // barre d'action, petite, juste sous le viseur (amorcage : code n / 3 ; piratage : secondes restantes)
         if (v.action() != Vues.ACTION_AUCUNE) {
             float fait = Math.min(v.totalTicks(), v.faitTicks() + (now - rdRecuMs) / 50f);
             float r = fait / v.totalTicks();
             Component lib = libelleAction(v.action(), r, (v.totalTicks() - fait) / 20f);
-            int bw = 180, bx = (int) (cx - bw / 2f), by = h / 2 + 26;
-            Ui.glass(g, bx - 10, by - 16, bw + 20, 30, 190);
-            Ui.centered(g, font, lib, cx, by - 10, Ui.argb(Ui.TEXT, 255));
+            float ll = font.width(lib) * K_ACTION;
+            int bw = (int) Math.max(LARGEUR_ACTION, ll), bx = (int) (cx - bw / 2f), by = h / 2 + 14;
+            Ui.soft(g, bx - 5, by - 2, bw + 10, 15, Ui.argb(Ui.VERRE, 110));
+            texte(g, font, lib, cx - ll / 2f, by, K_ACTION, Ui.argb(Ui.TEXT, 230));
             int c = v.action() == Vues.ACTION_POSE ? Ui.AMBRE : PIRATE;
-            Ui.bar(g, bx, by + 2, bw, 4, r, c);
+            Ui.bar(g, bx, by + 9, bw, 2, r, c);
         } else if (aInvite) {
-            int iw = font.width(ligneInvite) + 24, iy = h - 78;
-            Ui.glass(g, (int) (cx - iw / 2f), iy - 5, iw, 18, 170);
-            Ui.centered(g, font, ligneInvite, cx, iy, Ui.argb(Ui.TEXT, 255));
+            // invite (« restez accroupi... ») : petite, au-dessus de la barre d'objets
+            float li = font.width(ligneInvite) * K_INVITE;
+            int iw = (int) (li + 16), iy = h - 66;
+            Ui.soft(g, (int) (cx - iw / 2f), iy - 3, iw, 12, Ui.argb(Ui.VERRE, 115));
+            texte(g, font, ligneInvite, cx - li / 2f, iy, K_INVITE, Ui.argb(Ui.TEXT, 215));
         }
+    }
+
+    /** Texte a l'echelle {@code k}, coin haut gauche en (x, y). */
+    private static void texte(GuiGraphics g, Font font, Component c, float x, float y, float k, int argb) {
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(k, k, 1);
+        g.drawString(font, c, 0, 0, argb, false);
+        g.pose().popPose();
     }
 
     /**

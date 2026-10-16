@@ -66,6 +66,8 @@ public final class PartieServeur implements Partie {
     @Override
     public void init(IEventBus busMod) {
         Serveur.MOTEUR = new Moteur();
+        // monde des bases (1.5.0) : décision des carrières
+        fr.heraliz.crac.bases.CarrieresServeur.brancher();
         NetworkHandler.RECEPTION_SERVEUR.brancher(PartieServeur::recevoir);
     }
 

@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -21,7 +22,9 @@ import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -34,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Implementation des arenes (MATCHS_SPEC §1.5) : reservation, pose par tranches de {@link Arenes#BLOCS_PAR_TICK} blocs
@@ -184,21 +188,61 @@ public final class ArenesService {
     }
 
     /**
-     * Retire de l'instance (bornes elargies de 16) les objets au sol, orbes, projectiles et grenades, explosifs, mobs,
-     * corps (mod corpse) et entites TaCZ/tactiques ; garde les decors (tableaux, cadres, supports, affichages) et les
-     * joueurs. Rend le nombre d'entites retirees.
+     * Retire de l'instance (bornes elargies de 16) les objets au sol, orbes, projectiles et grenades (C4 colles et
+     * fumigenes compris), explosifs, nuages d'effet (feu au sol des molotovs, gaz), mobs, corps (mod corpse) et entites
+     * TaCZ/tactiques ; garde les decors (tableaux, cadres, supports, affichages) et les joueurs. Rend le nombre d'entites
+     * retirees.
      */
     public static int nettoyer(Instance inst) {
+        return nettoyer(inst, e -> false);
+    }
+
+    /**
+     * Comme {@link #nettoyer(Instance)}, en gardant aussi les entites pour lesquelles {@code garder} est vrai (entites
+     * permanentes du mode : bombes des duels, cible d'entrainement...). Appele aussi en cours de partie (debut de manche
+     * des duels). Rend le nombre d'entites retirees.
+     */
+    public static int nettoyer(Instance inst, Predicate<Entity> garder) {
         AABB zone = inst.bornes().inflate(16);
-        List<Entity> l = inst.niveau().getEntities((Entity) null, zone, ArenesService::aNettoyer);
+        List<Entity> l = inst.niveau().getEntities((Entity) null, zone, e -> aNettoyer(e) && !garder.test(e));
         for (Entity e : l) e.discard();
         if (!l.isEmpty()) HeraliszMatchs.LOG.info("[matchs] instance {} nettoyee : {} entites", inst.id(), l.size());
         return l.size();
     }
 
+    /**
+     * Eteint les feux poses dans les bornes de l'instance (balles incendiaires, molotovs) : blocs de feu remplaces par de
+     * l'air ; seulement dans les troncons charges. Rend le nombre de feux eteints.
+     */
+    public static int eteindreFeux(Instance inst) {
+        AABB b = inst.bornes();
+        ServerLevel niveau = inst.niveau();
+        int x0 = (int) Math.floor(b.minX), y0 = Math.max(niveau.getMinBuildHeight(), (int) Math.floor(b.minY)),
+                z0 = (int) Math.floor(b.minZ);
+        int x1 = (int) Math.ceil(b.maxX), y1 = Math.min(niveau.getMaxBuildHeight(), (int) Math.ceil(b.maxY)), z1 = (int) Math.ceil(b.maxZ);
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        int n = 0;
+        for (int x = x0; x < x1; x++) {
+            for (int z = z0; z < z1; z++) {
+                p.set(x, y0, z);
+                if (!niveau.hasChunkAt(p)) continue;
+                for (int y = y0; y < y1; y++) {
+                    p.setY(y);
+                    if (niveau.getBlockState(p).getBlock() instanceof BaseFireBlock) {
+                        niveau.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                        n++;
+                    }
+                }
+            }
+        }
+        if (n > 0) HeraliszMatchs.LOG.info("[matchs] instance {} : {} feu(x) eteint(s)", inst.id(), n);
+        return n;
+    }
+
     private static boolean aNettoyer(Entity e) {
         if (e instanceof Player) return false;
-        if (e instanceof ItemEntity || e instanceof ExperienceOrb || e instanceof Projectile || e instanceof PrimedTnt || e instanceof Mob) return true;
+        if (e instanceof ItemEntity || e instanceof ExperienceOrb || e instanceof Projectile || e instanceof PrimedTnt || e instanceof Mob
+                || e instanceof AreaEffectCloud) return true;
         ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
         return id != null && NAMESPACES_NETTOYES.contains(id.getNamespace());
     }

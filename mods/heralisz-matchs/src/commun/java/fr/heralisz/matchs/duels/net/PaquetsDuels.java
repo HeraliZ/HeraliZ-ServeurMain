@@ -192,9 +192,12 @@ public final class PaquetsDuels {
         }
     }
 
-    /** Effets ponctuels : {@link #EXPLOSION} (eclair blanc + son), {@link #FIN} (fin du duel : tout l'etat client efface). */
+    /**
+     * Effets ponctuels : {@link #EXPLOSION} (eclair blanc + son), {@link #FIN} (fin du duel : tout l'etat client efface),
+     * {@link #NETTOYAGE} (arene remise au propre, debut de manche et fin du duel : particules effacees chez le joueur).
+     */
     public record EffetS2C(int effet, double x, double y, double z) {
-        public static final int EXPLOSION = 1, FIN = 2, POSEE = 3, DESAMORCEE = 4;
+        public static final int EXPLOSION = 1, FIN = 2, POSEE = 3, DESAMORCEE = 4, NETTOYAGE = 5;
 
         public void write(FriendlyByteBuf b) {
             b.writeVarInt(effet);

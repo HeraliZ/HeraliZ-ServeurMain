@@ -136,6 +136,11 @@ public final class ClaimBlockHandler {
         if (problem != null) {
             return problem;
         }
+        // monde des bases (1.5.0) : la zone du claim ne touche aucune carrière
+        problem = fr.heraliz.crac.bases.CarrieresServeur.probleme(level, pos, Config.claimRadius(tier));
+        if (problem != null) {
+            return problem;
+        }
         Building own = ClaimManager.buildingUnder(level, pos);
         if (ClaimManager.foreignBuildingIn(level, new Claim(g.id(), pos, tier), own, g.id()) != null) {
             return "crac.claim.foreign_building";

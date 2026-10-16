@@ -15,8 +15,17 @@ public final class ConfigLoot {
     public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX;
     public static final ForgeConfigSpec.BooleanValue ETOILES;
     /** Conteneurs de Minecraft scellés (src/serveur : ConteneursVanilla). */
-    public static final ForgeConfigSpec.BooleanValue VANILLA_ACTIF, VANILLA_AUTO, VANILLA_ENDER, VANILLA_ENTITES, VANILLA_CLAIMS;
+    public static final ForgeConfigSpec.BooleanValue VANILLA_ACTIF, VANILLA_AUTO, VANILLA_ENTITES, VANILLA_CLAIMS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> VANILLA_BLOQUES, VANILLA_EXCEPTIONS;
+    /** Postes de travail et blocs à usage de Minecraft hors service (src/serveur : ConteneursVanilla). */
+    public static final ForgeConfigSpec.BooleanValue POSTES_ACTIF, POSTES_MENUS_AUTO, POSTES_CLAIMS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> POSTES_BLOQUES, POSTES_EXCEPTIONS;
+    /** Présentoirs protégés : cadres, porte-armures, mannequins, peintures (src/serveur : Presentoirs). */
+    public static final ForgeConfigSpec.BooleanValue PRES_ACTIF, PRES_AUTO, PRES_POSE, PRES_CLAIMS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> PRES_ENTITES, PRES_EXCEPTIONS, PRES_OBJETS;
+    /** Autres façons d'abîmer la carte : seaux, feu, outils, engrais, panneaux (src/serveur : Nuisances). */
+    public static final ForgeConfigSpec.BooleanValue NUIS_ACTIF, NUIS_SEAUX, NUIS_FEU, NUIS_OUTILS, NUIS_ENGRAIS, NUIS_PANNEAUX,
+            NUIS_CLAIMS;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -40,7 +49,7 @@ public final class ConfigLoot {
         b.comment("Conteneurs de Minecraft (coffre, baril, four, alambic, entonnoir...) : un joueur en survie ou en aventure ne",
                 "peut pas les ouvrir (« Ce conteneur est vide et scellé. »). Créatif, spectateur et staff (permission 2) : libres.",
                 "Seulement les blocs et entités de Minecraft (namespace minecraft) : jamais ceux de nos mods ni de cfm.",
-                "Postes de travail sans stockage (établi, enclume, meule, métier, tailleur de pierre...) et pupitre : permis.")
+                "Postes de travail (établi, enclume, table d'enchantement...), coffre de l'Ender, pupitre : section [postes_vanilla].")
                 .push("conteneurs_vanilla");
         VANILLA_ACTIF = b.comment("Sceller les conteneurs de Minecraft.").define("actif", true);
         VANILLA_BLOQUES = b.comment("Blocs scellés : identifiants (minecraft:chest) ou tags (#minecraft:shulker_boxes).")
@@ -50,15 +59,78 @@ public final class ConfigLoot {
                         "#minecraft:shulker_boxes", "minecraft:jukebox", "minecraft:chiseled_bookshelf"), ConfigLoot::idValide);
         VANILLA_AUTO = b.comment("Sceller aussi tout autre bloc de Minecraft dont l'entité de bloc garde des objets (inventaire).")
                 .define("inventaires_auto", true);
-        VANILLA_EXCEPTIONS = b.comment("Blocs toujours permis, même s'ils sont dans la liste ou ont un inventaire (identifiants ou tags).")
-                .defineListAllowEmpty(List.of("exceptions"), () -> List.of("minecraft:lectern", "minecraft:campfire",
-                        "minecraft:soul_campfire"), ConfigLoot::idValide);
-        VANILLA_ENDER = b.comment("Sceller aussi le coffre de l'Ender (false : il reste permis, c'est l'inventaire personnel du joueur).")
-                .define("coffre_ender", false);
-        VANILLA_CLAIMS = b.comment("Laisser ouvrir les blocs posés dans un claim de CRac (rangements des bases des joueurs ;",
+        VANILLA_EXCEPTIONS = b.comment("Conteneurs toujours permis, même s'ils sont dans la liste ou ont un inventaire (identifiants ou",
+                        "tags). Un bloc mis ici passe ensuite par [postes_vanilla] : un pupitre ou un feu de camp y reste hors service.")
+                .defineListAllowEmpty(List.of("exceptions"), () -> List.<String>of(), ConfigLoot::idValide);
+        VANILLA_CLAIMS = b.comment("Laisser ouvrir les conteneurs posés dans un claim de CRac (rangements des bases des joueurs ;",
                 "CRac décide ensuite qui peut les ouvrir). false : scellés là aussi.").define("permis_claims_crac", true);
         VANILLA_ENTITES = b.comment("Sceller aussi les wagonnets à coffre et à entonnoir, et le coffre des bateaux à coffre",
                 "(on peut toujours monter dans le bateau).").define("entites", true);
+        b.pop();
+        b.comment("Postes de travail et blocs à usage de Minecraft (établi, enclumes, table d'enchantement, métier à tisser,",
+                "coffre de l'Ender, cartographie, tailleur de pierre, table de forge, balise, meule, pupitre, composteur, chaudron,",
+                "pots de fleurs, feux de camp, bougies, gâteau, bloc musical, répéteur, comparateur, blocs de commande...) : un joueur",
+                "en survie ou en aventure ne peut pas s'en servir (« Ce poste est hors service. »). Créatif, spectateur et staff",
+                "(permission 2) : libres. Restent permis (jamais dans la liste) : portes, trappes, portillons, boutons, leviers,",
+                "plaques de pression, lits, échelles, cloches. Seulement les blocs de Minecraft (namespace minecraft).")
+                .push("postes_vanilla");
+        POSTES_ACTIF = b.comment("Mettre hors service les postes de travail de Minecraft.").define("actif", true);
+        POSTES_BLOQUES = b.comment("Blocs hors service : identifiants (minecraft:loom) ou tags (#minecraft:cauldrons).")
+                .defineListAllowEmpty(List.of("bloques"), () -> List.of("minecraft:crafting_table", "#minecraft:anvil",
+                        "minecraft:enchanting_table", "minecraft:loom", "minecraft:ender_chest", "minecraft:cartography_table",
+                        "minecraft:stonecutter", "minecraft:smithing_table", "minecraft:beacon", "minecraft:grindstone",
+                        "minecraft:fletching_table", "minecraft:lectern", "minecraft:composter", "#minecraft:cauldrons",
+                        "#minecraft:flower_pots", "minecraft:decorated_pot", "#minecraft:campfires", "#minecraft:candles",
+                        "#minecraft:candle_cakes", "minecraft:cake", "minecraft:respawn_anchor", "minecraft:note_block",
+                        "minecraft:repeater", "minecraft:comparator", "minecraft:daylight_detector", "minecraft:redstone_wire",
+                        "minecraft:command_block", "minecraft:chain_command_block", "minecraft:repeating_command_block",
+                        "minecraft:structure_block", "minecraft:jigsaw", "minecraft:end_portal_frame", "minecraft:dragon_egg",
+                        "minecraft:spawner", "minecraft:pumpkin", "#minecraft:beehives"), ConfigLoot::idValide);
+        POSTES_MENUS_AUTO = b.comment("Mettre hors service aussi tout autre bloc de Minecraft qui ouvre un menu (les conteneurs restent",
+                "réglés par [conteneurs_vanilla]).").define("menus_auto", true);
+        POSTES_EXCEPTIONS = b.comment("Blocs toujours permis, même s'ils sont dans la liste ou ouvrent un menu (identifiants ou tags).")
+                .defineListAllowEmpty(List.of("exceptions"), () -> List.<String>of(), ConfigLoot::idValide);
+        POSTES_CLAIMS = b.comment("Laisser servir les postes posés dans un claim de CRac (bases des joueurs). false (choix du",
+                "propriétaire : bloquer en trop) : hors service là aussi. Les coffres et barils des bases suivent",
+                "permis_claims_crac de [conteneurs_vanilla].").define("permis_claims_crac", false);
+        b.pop();
+        b.comment("Présentoirs (cadres, cadres lumineux, porte-armures, mannequins de l'Armurerie, peintures, noeuds de laisse) : un",
+                "joueur en survie ou en aventure ne peut ni les casser, ni les frapper, ni tourner ou prendre l'objet d'un cadre, ni",
+                "prendre ou poser un objet sur un porte-armure ou un mannequin (« Ce présentoir est protégé. »). Ni ses projectiles",
+                "ni les balles de TaCZ ne les touchent, et aucune explosion ne les abîme ni ne casse le bloc qui les porte.",
+                "Créatif, spectateur et staff (permission 2) : libres.")
+                .push("presentoirs");
+        PRES_ACTIF = b.comment("Protéger les présentoirs.").define("actif", true);
+        PRES_ENTITES = b.comment("Entités protégées (identifiants).")
+                .defineListAllowEmpty(List.of("entites"), () -> List.of("minecraft:item_frame", "minecraft:glow_item_frame",
+                        "minecraft:armor_stand", "minecraft:painting", "minecraft:leash_knot", "heraliz_armory:mannequin"),
+                        ConfigLoot::idValide);
+        PRES_AUTO = b.comment("Protéger aussi toute autre entité accrochée à un bloc (cadres, peintures d'autres mods) et tout",
+                "porte-armure d'un autre mod (sauf les marqueurs invisibles).").define("auto", true);
+        PRES_EXCEPTIONS = b.comment("Entités jamais protégées, même si elles sont dans la liste ou reconnues d'office (identifiants).")
+                .defineListAllowEmpty(List.of("exceptions"), () -> List.<String>of(), ConfigLoot::idValide);
+        PRES_POSE = b.comment("Interdire aussi de poser un cadre, une peinture, un porte-armure ou un mannequin (objets de la liste",
+                "objets, plus tout objet qui pose une entité accrochée ou un porte-armure).").define("poser", true);
+        PRES_OBJETS = b.comment("Objets qui posent un présentoir, en plus de ceux reconnus d'office (identifiants).")
+                .defineListAllowEmpty(List.of("objets"), () -> List.of("heraliz_armory:mannequin"), ConfigLoot::idValide);
+        PRES_CLAIMS = b.comment("Dans un claim de CRac (bases des joueurs) : présentoirs libres (poser, décorer, retirer ; CRac",
+                "décide ensuite). false : protégés là aussi.").define("permis_claims_crac", true);
+        b.pop();
+        b.comment("Autres façons d'abîmer la carte, refusées à un joueur en survie ou en aventure (« Impossible ici. ») ; créatif,",
+                "spectateur et staff (permission 2) : libres. Permis dans un claim de CRac si permis_claims_crac (CRac décide ensuite).")
+                .push("nuisances");
+        NUIS_ACTIF = b.comment("Refuser les nuisances ci-dessous.").define("actif", true);
+        NUIS_SEAUX = b.comment("Seaux : poser ou ramasser de l'eau, de la lave, de la neige poudreuse, un poisson en seau.")
+                .define("seaux", true);
+        NUIS_FEU = b.comment("Feu : briquet et boule de feu sur un bloc (allumer un feu, une bougie, un feu de camp, de la TNT).")
+                .define("feu", true);
+        NUIS_OUTILS = b.comment("Outils sur un bloc : écorcer à la hache, gratter ou décirer le cuivre, cirer au rayon de miel,",
+                "faire un chemin à la pelle, labourer à la houe.").define("outils", true);
+        NUIS_ENGRAIS = b.comment("Poudre d'os sur un bloc (arbres, herbes et fleurs qui poussent).").define("engrais", true);
+        NUIS_PANNEAUX = b.comment("Panneaux : écrire sur un panneau posé, le teindre, le faire briller, le cirer, et poser un panneau.",
+                "Un panneau ciré (par le staff) reste utilisable : ses commandes au clic marchent.").define("panneaux", true);
+        NUIS_CLAIMS = b.comment("Tout cela reste permis dans un claim de CRac (bases des joueurs). false : refusé là aussi.")
+                .define("permis_claims_crac", true);
         b.pop();
         SPEC = b.build();
     }

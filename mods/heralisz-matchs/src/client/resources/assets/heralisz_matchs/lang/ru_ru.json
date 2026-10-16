@@ -675,8 +675,6 @@
   "zombies.jeu.pap.lore": "Pack-a-Punch · урон ×2, увеличены магазин и запас",
   "zombies.jeu.recette.grenade": "Граната",
   "zombies.jeu.recette.grenade.desc": "Ещё одна осколочная граната (не больше 4)",
-  "zombies.jeu.recette.grenade_collante": "Липкий заряд",
-  "zombies.jeu.recette.grenade_collante.desc": "Заряд C4: прилепить и подорвать на расстоянии",
   "zombies.jeu.recette.plaque_armure": "Бронепластина",
   "zombies.jeu.recette.plaque_armure.desc": "Поглощает 3 сердца урона (не больше 3 пластин)",
   "zombies.jeu.recette.auto_reanimation": "Набор самореанимации",

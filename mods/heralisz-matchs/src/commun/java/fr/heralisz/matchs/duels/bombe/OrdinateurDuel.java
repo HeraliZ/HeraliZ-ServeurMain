@@ -38,6 +38,10 @@ import javax.annotation.Nullable;
  * site, début de l'action et fin de la minuterie (temps du monde, le client en tire la progression et le compte à
  * rebours sans paquet de plus), bombe reliée (câble) et joueur qui l'utilise (pose du personnage, ordinateur dans ses
  * mains pendant le piratage). Chez le joueur, il joue aussi la frappe au clavier et les bips de piratage.
+ * <p>Au sol (fermé, en amorçage, amorcé, désamorcé), les balles s'y arrêtent sans dégât ({@link #isPickable}, comme la
+ * bombe) ; jamais pendant le piratage (il est dans les mains du défenseur : sa petite boîte, à ses pieds, aurait
+ * protégé ses jambes). Les joueurs le traversent (0,4 bloc de haut, posé juste devant l'attaquant qui l'ouvre : solide,
+ * il l'aurait coincé).
  */
 public class OrdinateurDuel extends Entity implements GeoEntity {
     public static final int FERME = 0, AMORCAGE = 1, AMORCEE = 2, PIRATAGE = 3, DESAMORCEE = 4;
@@ -212,9 +216,10 @@ public class OrdinateurDuel extends Entity implements GeoEntity {
         return false;
     }
 
+    /** Les balles s'y arrêtent quand il est posé au sol (pas pendant le piratage, dans les mains du défenseur). */
     @Override
     public boolean isPickable() {
-        return false;
+        return etat() != PIRATAGE && !isRemoved();
     }
 
     @Override

@@ -133,8 +133,8 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | Projet | Jar | modIds dedans | Rôle |
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
-| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
-| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
+| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10). Moteur repris de LR Tactical (licence GPL gardée) |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals ; zone du casino (entrée payante) et zone VIP (grades boutique, section 10), chacune avec ses entrées et ses videurs |
@@ -150,7 +150,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, section 9) : `/home` (du spawn vers sa base, toutes les 3 min) et `/spawn` (de sa base vers le spawn), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur »), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (5 à 6 à la fois tirées au hasard, 30 à 60 min, 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
@@ -800,6 +800,29 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   (256 blocs autour du réveil), la taille conseillée est écrite dans `serveur/defaultconfigs/heraliz_spawn-server.toml`.
   `deposer_spawn` dépose `monde/spawn/` tel quel. La cinématique ne dépend pas de l'ancienne carte : seul un décor réglé
   en jeu (`data/heraliz_cinematique.dat` de la carte, `/cinematique reveil`) passe avant celui du mod. Rien testé en jeu.
+  **Protection du spawn** (Utils 2.13.0, 16/10, `spawn/ProtectionSpawn`, serveur) : dans `heralisz:spawn`, aucun dégât
+  pour les joueurs, quelle que soit la source ; seul `/kill` passe. Chaque tick : feu éteint, chute, gel et air remis à
+  zéro, faim gardée pleine. Effets négatifs refusés et retirés. Un joueur tombé sous le monde est ramené au point de
+  réveil par une vraie téléportation. Aucune créature (même celles des mods de zombies) ; celles déjà là sont retirées
+  chaque seconde, sauf `entites_permises`. Les explosions n'y cassent rien et ne touchent personne. `/suicide` y est
+  refusé, sauf au staff. Réglage `[protection] actif` de `heraliz_spawn-server.toml` ; `/depart info` montre l'état.
+  Rien testé en jeu.
+- **Monde des bases** (CRac 1.5.0, 16/10) : dimension `crac:bases`, déclarée par `mods/crac/src/serveur/resources/data/crac/`
+  (dimension, type, worldgen) ; Minecraft la crée seul au démarrage, **rien à déposer**. Reliefs, collines, vallées et
+  grandes plaines ; ni océan, ni grotte, ni minerai, ni structure, ni monstre ; 7 biomes propres (`crac:bases_*`) ;
+  bordure propre de 6 000 blocs. Fichiers **écrits** par `python mods/crac/outils/monde_bases.py` (`--apercu x.png` =
+  aperçu grossier), jamais à la main. En survie, on ne construit que là (`construction_ici_seulement`). Déplacements :
+  `/home` seulement depuis le spawn (vers sa base, sinon un point au hasard ; toutes les 3 min), `/spawn` seulement
+  depuis sa base, hors combat ; 3 s immobile ; carte DayZ par la borne de départ. Tutoriel après la cinématique (joueur
+  sans base) : titres, kit calculé sur les coûts réels de `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172
+  bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, ni blessé ni blessant) jusqu'à sa base
+  posée (Claim Block sur 2 fondations), 2 h de jeu au plus ou départ sur la carte ; puis base protégée 4 jours (ni raid
+  ni usure, texte flottant ; tombe au-delà de 2 membres). Carrières : `/carriere creer <nom> <rayon> <type>` (pierre,
+  minerais, fer, bois, sable, argile, terre ; listes `#crac:carriere/<type>`), `liste|retirer|tp|regenerer` ; casse
+  permise en survie, repousse en 10 min (jamais sous un joueur), rien ne s'y pose ; le staff bâtit la carrière
+  (WorldEdit) puis la déclare. Staff : `/tuto rejouer <joueur>`, `/protection voir|retirer|donner <joueur> [jours]`.
+  Réglages : `serveur/defaultconfigs/crac-bases.toml` (`[bases]`, `[home]`, `[tuto]`, `[protection]`, `[carrieres]`).
+  Données : `data/crac_bases.dat` du monde principal, `dimensions/crac/bases/data/crac_carrieres.dat`. Rien testé en jeu.
 - **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
   1024 px au plus avec `carte.json`, dans `mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte/` (jar
   joueur de HeraliZ Utils). Jamais dessiné à la main : refait par `python outils/carte_monde.py <copie du monde>
@@ -931,6 +954,18 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   dessine jamais sa main, on ne voyait rien) ; le serveur enregistre la visée TaCZ du tueur (`Clip.VISE`, par
   réflexion) : arme en position de visée de TaCZ, léger zoom, petit viseur effacé ; chaque tir joue l'animation
   « shoot » de l'arme et un petit recul. Jars joueurs et serveur de la même fabrication. Rien testé en jeu ;
+- duels (16/10, Matchs 0.11.0) : bombe des sites solide : les joueurs ne la traversent plus (boîte de collision qui suit
+  son orientation, `BombeDuel.makeBoundingBox`, gyrophare non compris) et les balles de TaCZ s'y arrêtent sans dégât ni
+  perforation (`duels/bombe/ReglesBombe`) ; l'ordinateur posé au sol arrête aussi les balles (pas pendant le piratage),
+  les joueurs le traversent. HUD des duels en petit (`HudMoteur.compact`) : bandeau réduit, annonces en petit panneau
+  sous le bandeau (plus rien au milieu de l'écran), bombe amorcée = petite pastille rouge avec le temps restant en haut
+  au centre, « vous portez l'ordinateur » en petite ligne, amorçage / piratage en petit texte et barre fine sous le
+  viseur ; ClashWar et zombies gardent leurs grandes annonces. Plus de killcam en duel (`DuelsConfig.KILLCAM = false`).
+  Arène remise au propre à chaque début de manche et à la fin du duel (`DuelPartie.nettoyerArene`) : grenades, C4,
+  fumigènes, molotovs et feu au sol, nuages, balles, objets au sol retirés dans les bornes du duel, feux éteints,
+  particules effacées chez les joueurs ; bombes, ordinateur et cible gardés. Pendant l'amorçage et le piratage : joueur
+  immobilisé (vitesse ×0 par un modificateur temporaire), ni tir, ni rechargement, ni visée, ni changement d'arme, ni
+  coup, ni objet utilisé (refusé par le serveur) ; il peut regarder autour de lui. Rien testé en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
@@ -972,24 +1007,33 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
-  - couteaux : coups rapide et puissant bien différents, comme les couteaux de LR (15/10, Tactique 2.16.0) : clic gauche =
-    tranche latérale vive, de gauche à droite puis de droite à gauche en alternance (0,45 s, sans préparation) ; clic
-    droit = estoc : bras armé, levé et ramené vers soi (0,22 s, bruit de lame qu'on arme), poussé au fond, tenu, retour
-    lent (0,85 s), bruit plus lourd et petit mouvement de caméra (`couteaux/SecousseCouteau`, image seulement).
-    Animations 1re personne (« heraliz_tranche_1 », « heraliz_tranche_2 », « melee_stock » de chaque modèle) écrites par
-    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableaux `COUPS` et `AMPLITUDE` en tête du script ;
-    `--apercu DOSSIER`), jamais à la main ; jouées directement par `couteaux/AnimCouteaux` avec un fondu de 0,04 s (le
-    signal de TaCZ imposait 0,2 s : la tranche partait en retard et ressemblait au coup puissant), secours : coup du
-    gunpack. Vu des autres : gestes des couteaux de LR (`heralisz_skins:melee/knife` : « slash_upper » / « slash2_upper »
-    en alternance, « stab_upper » ; `couteaux/GesteCouteau`). Le serveur ne touche qu'après la préparation de l'estoc
-    (`CoupsCouteau.DELAI_COUP_LOURD`, 5 ticks ; `cadence_lourd` au moins 7) ; dégâts, cadence et portée inchangés. Temps
-    de l'animation, de la caméra et du délai serveur à changer ensemble. Canal « couteaux » version 3 ;
+  - couteaux (16/10, Tactique 2.17.0, après les retours du propriétaire sur la 2.16.0) : clic gauche = le coup rapide
+    d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, son bruit, gestes
+    de TaCZ « melee_upper » / « melee_2_upper » vus des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant
+    comme le coup lourd des couteaux de LR : LE COUTEAU LUI-MÊME TOURNE avec le geste (os du bras, du poignet et du
+    couteau ; armé à 0,16 s, lame dressée ; impact à 0,24 s, pointe amenée sur le réticule ; torsion, dégagement, retour
+    lent, 0,85 s ; karambit : crochet vers le bas puis tour autour de son anneau), bruits des couteaux de LR, petit
+    mouvement de caméra (`couteaux/SecousseCouteau`). Animation « melee_stock » de chaque modèle écrite par
+    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableau `GESTES` ; `--apercu DOSSIER`), jamais à la main ;
+    jouée par `couteaux/AnimCouteaux` (fondu 0,05 s), secours `bayonet_stock` puis coup du gunpack. Vu des autres : estoc
+    de LR « stab_upper » (`couteaux/GesteCouteau`). Le serveur touche le coup puissant à l'impact
+    (`CoupsCouteau.DELAI_COUP_LOURD`, 5 ticks) ; dégâts, cadence et portée inchangés. Impact de l'animation (`IMPACT` du
+    script), caméra et délai serveur à changer ensemble. Canal « couteaux » version 3 ;
   - corps des joueurs « démembré » et tête vers le ciel en s'allongeant : la remise à zéro de Réanimation 1.15.0
     (`client/Poses.apply`) n'efface plus les poses de Player Animator ; l'animation « allongé » de TaCZ suit le corps
     couché (`mixin/client/TaczAllongeAnimationMixin`) et le regard de la tête allongé est limité
     (`TaczTeteAllongeMixin`) ; gestes debout de la mêlée de LR arrêtés allongé (`IdleAnimationHandler`). CaraCrea ne
     déforme rien lui-même (il recopie le modèle de Minecraft) ; pistes restantes s'il reste des défauts : ses cubes
     ignorent les parties cachées par d'autres mods (jambes du terminal d'extraction), emotes permises allongé.
+- C4 [WIP] (`heralisz_grenade:c4`) retiré de tout le jeu le 16/10 (Tactique 2.17.0 : fiche, modèles, textes ; coffres T6
+  avec le détonateur, caisses, ravitaillement, recette de heralisz_bases, établis Zombies). La charge de C4 de CRac
+  (`crac:c4`) reste et abîme seule les constructions ; `c4ThrowableIds` de `crac-server.toml` et la source
+  `heralisz_grenade:c4` du blindage des bases ne visent plus rien. Le moteur des explosifs collants et l'objet détonateur
+  restent dans le code, sans source ;
+- bases (16/10, CRac 1.5.0, Clans 2.5.0) : plus de bunkers de clan, chaque joueur bâtit sa base CRac dans le monde des
+  bases ; ressources de base (bois, pierre) dans les carrières, ressources d'amélioration (fer, diamant) sur la carte
+  DayZ ; contour vert des protégés : variante « fin et net » codée, halo en réserve ; indication de base protégée :
+  texte flottant codé, panneau sur la porte en réserve (maquettes à valider) ;
 - casse des blocs (14/10, CRac 1.4.0-beta, `event/CasseBlocs` + `serveur/event/CasseBlocsServeur`) : en survie, un joueur ne
   casse AUCUN bloc et ne peut même pas commencer (pas de fissures ; avant, casser un bloc qui revenait permettait de se
   glisser dedans accroupi). Libres : créatif, spectateur, staff (permission 2). Exceptions laissées aux règles de CRac :
@@ -1059,17 +1103,34 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   yeux au corps pour ouvrir, 6 pour garder ouvert) ; boîte du cadavre dans le sens du corps (1 × 1,9 bloc, carré de
   1,6 en diagonale, 0,45 de haut), sans collision. Fouiller un joueur À TERRE (Réanimation 1.14.0) ne téléporte plus
   à côté de lui non plus (la réanimation, elle, garde sa place à genoux) ;
-- loot (15/10, Loot 0.8.0) : dans l'écran de fouille des conteneurs de HeraliZ Loot (salles à carte comprises) et des
-  coffres T7, petit badge du palier « T1 » à « T7 » juste après le nom (T1 gris, T2 vert, T3 bleu, T4 violet, T5 or,
-  T6 orange, T7 rouge ; `client/BadgePalier`, `EcranConteneur`), style de base façon DayZ inchangé ; palier lu chez le
-  joueur dans le nom du bloc (`ConteneurBlock.palier`, chiffre du préfixe), rien de plus sur le réseau. Conteneurs de
-  Minecraft scellés (`ConteneursVanilla`, serveur) : en survie et en aventure, coffres, barils, fours, alambic,
-  entonnoir, distributeur, dropper, boîtes de Shulker, juke-box, bibliothèque sculptée et tout autre bloc `minecraft:` à
-  inventaire refusent l'ouverture (« Ce conteneur est vide et scellé. »), comme les wagonnets à coffre ou à entonnoir et
-  le coffre des bateaux. Libres : créatif, spectateur, staff (permission 2), coffre de l'Ender, pupitre, feux de camp,
-  postes de travail sans stockage, blocs de nos mods et de cfm, et par défaut les blocs posés dans un claim de CRac
-  (rangements des bases). Réglages : section `[conteneurs_vanilla]` de `heraliz_loot-server.toml` (`actif`, `bloques`,
-  `inventaires_auto`, `exceptions`, `coffre_ender`, `permis_claims_crac`, `entites`). Rien testé en jeu ;
+- loot (15/10, Loot 0.8.0 ; 16/10, Loot 0.9.0) : dans l'écran de fouille des conteneurs de HeraliZ Loot (salles à carte
+  comprises) et des coffres T7, petit badge du palier « T1 » à « T7 » juste après le nom (T1 gris, T2 vert, T3 bleu,
+  T4 violet, T5 or, T6 orange, T7 rouge ; `client/BadgePalier`, `EcranConteneur`), style de base façon DayZ inchangé ;
+  palier lu chez le joueur dans le nom du bloc (`ConteneurBlock.palier`). Côté serveur, en survie et en aventure
+  (libres : créatif, spectateur, staff permission 2 ; réglages dans `heraliz_loot-server.toml`) :
+  - **conteneurs de Minecraft scellés** (`ConteneursVanilla`, `[conteneurs_vanilla]`) : coffres, barils, fours, alambic,
+    entonnoir, distributeur, dropper, boîtes de Shulker, juke-box, bibliothèque sculptée et tout autre bloc `minecraft:` à
+    inventaire (« Ce conteneur est vide et scellé. »), wagonnets à coffre ou à entonnoir, coffre des bateaux ; permis
+    dans un claim de CRac (rangements des bases, `permis_claims_crac = true`) ; jamais nos blocs ni ceux de cfm ;
+  - **postes de Minecraft hors service** (0.9.0, `[postes_vanilla]`, « Ce poste est hors service. ») : établi, enclumes,
+    table d'enchantement, métier à tisser, coffre de l'Ender, cartographie, tailleur de pierre, table de forge, balise,
+    meule, table d'archerie, pupitre, composteur, chaudrons, pots de fleurs, pot décoré, feux de camp, bougies, gâteau,
+    ancre de réapparition, bloc musical, répéteur, comparateur, détecteur de lumière, fil de redstone, blocs de commande,
+    de structure et jigsaw, cadre de portail de l'End, œuf de dragon, générateur de monstres, citrouille, ruches, et tout
+    autre bloc `minecraft:` qui ouvre un menu (`menus_auto`) ; aussi dans les bases de CRac (`permis_claims_crac =
+    false`, choix « bloquer en trop »). Restent permis : portes, trappes, portillons, boutons, leviers, plaques, lits,
+    échelles, cloches. Rouvrir un bloc : liste `exceptions`. L'ancienne clé `coffre_ender` n'existe plus ;
+  - **présentoirs protégés** (0.9.0, `Presentoirs`, `[presentoirs]`, « Ce présentoir est protégé. ») : cadres et cadres
+    lumineux, porte-armures, mannequins de l'Armurerie (`heraliz_armory:mannequin`, un porte-armure), peintures, nœuds de
+    laisse, et d'office toute entité accrochée ou tout porte-armure d'un autre mod (`auto`). Ni coup (y compris mêlée de
+    Tactique et couteaux), ni interaction, ni projectile, ni balle de TaCZ (`EntityHurtByGunEvent.Pre`, par réflexion) ;
+    aucune explosion ne les abîme ni ne casse le bloc qui les porte ; pose refusée hors d'une base. Libres dans les bases
+    de CRac (`permis_claims_crac = true`) ;
+  - **nuisances refusées hors des bases** (0.9.0, `Nuisances`, `[nuisances]`, « Impossible ici. » ; CRac laisse tout
+    faire hors des claims) : seaux (eau, lave, neige poudreuse, poisson), briquet et boule de feu, outils sur un bloc
+    (écorcer, gratter ou décirer le cuivre, cire, chemin, labour), poudre d'os, panneaux (écrire, teindre, faire
+    briller, cirer, poser). Un panneau ciré reste utilisable : le staff cire les panneaux à commande du spawn.
+  Rien testé en jeu ;
 - fouille d'un joueur à terre (15/10, Réanimation 1.16.0) : ses emplacements Curios (masque, gilet, gants, genouillère,
   sac à dos, ghillie, brassard) sont montrés dans une colonne à gauche de la fouille, avec leurs icônes de case vide
   (`menu/SearchMenu`, cases 77 et suivantes ; serveur : `compat/CuriosFouille`, branché sur les vrais emplacements de la
@@ -1182,7 +1243,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Bugs repérés, non corrigés** (attendre l'accord du propriétaire) :
   - Sylvorn : les attributs de `SapNode` ne sont pas déclarés (risque de plantage à l'attaque CHANNEL ; correction d'une
     ligne dans `HeraliszSylvorn.attributes`) ;
-  - Tactique : le C4 posé disparaît au redémarrage du serveur ; le feu au sol des molotovs dure toujours 2 s ;
+  - Tactique : le feu au sol des molotovs dure toujours 2 s ;
     l'éclaboussure des grenades à effet est limitée à 4 blocs.
 - **Carte du monde** (HeraliZ Utils 2.8.0, Clans 2.4.0, Interface 1.7.0) : fond provisoire du 12/10 (carte en
   construction), à refaire quand la carte est finie (workflow « Inventaire de la carte », case « installer_fond »,

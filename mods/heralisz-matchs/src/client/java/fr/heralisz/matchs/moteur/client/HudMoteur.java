@@ -49,6 +49,7 @@ import java.util.Map;
  *     <li>bandeau spectateur en bas (cible, fleches gauche/droite) ; la barre vanilla du spectateur est masquee ;</li>
  *     <li>toasts d'invitation de groupe a droite.</li>
  * </ul>
+ * HUD compact ({@link #compact}, duels) : bandeau reduit, annonces et compte a rebours en petit en haut de l'ecran.
  * Les textes sont mis en forme a la reception ou au changement de valeur (une fois par seconde au plus), jamais a
  * chaque image.
  */
@@ -61,6 +62,20 @@ public final class HudMoteur {
      * le HUD occupe le haut droit le redefinit (zombies : sous le numero de manche). Les invitations de groupe suivent.
      */
     public static java.util.function.IntUnaryOperator hautFil = h -> -1;
+
+    /**
+     * HUD compact (16/10, Matchs 0.11.0, duels : « les UI sont trop grosses, elles gênent pendant le combat ») : branché
+     * par le mode de jeu qui le veut (vrai pendant un duel). Bandeau reduit ({@link #ECHELLE_COMPACTE}), annonces et
+     * compte a rebours en petit, en haut de l'ecran sous le bandeau ({@link #Y_ANNONCE_COMPACTE}, jamais au milieu),
+     * bandeau du spectateur reduit. Les autres modes (ClashWar, zombies) gardent les grandes annonces.
+     */
+    public static java.util.function.BooleanSupplier compact = () -> false;
+    /** Echelle du bandeau en HUD compact. */
+    public static final float ECHELLE_COMPACTE = 0.72f;
+    /** Bas du bandeau en HUD compact (y, echelle du joueur) : le HUD du mode (etat de la bombe) se place dessous. */
+    public static final int BAS_BANDEAU_COMPACT = 40;
+    /** Haut des annonces et du compte a rebours en HUD compact (sous la ligne d'etat du mode). */
+    public static final int Y_ANNONCE_COMPACTE = 58;
 
     public static void enregistrer(IEventBus modBus) {
         modBus.addListener(HudMoteur::overlays);
@@ -144,15 +159,39 @@ public final class HudMoteur {
         if (mc.options.hideGui || mc.player == null || ecranANous()) return;
         long now = Util.getMillis();
         Font font = mc.font;
-        dessinerBandeau(g, font, w);
+        boolean petit = compact.getAsBoolean();
+        if (petit) {
+            // bandeau reduit autour du haut de l'ecran (memes formes, plus petites)
+            g.pose().pushPose();
+            g.pose().translate(w / 2f, 1, 0);
+            g.pose().scale(ECHELLE_COMPACTE, ECHELLE_COMPACTE, 1);
+            g.pose().translate(-w / 2f, 0, 0);
+            dessinerBandeau(g, font, w);
+            g.pose().popPose();
+        } else {
+            dessinerBandeau(g, font, w);
+        }
         int yFil = hautFil.applyAsInt(h);
         if (yFil < 0) yFil = 6;
         dessinerFil(g, font, w, yFil, now);
         dessinerToasts(g, font, w, yFil, now);
         dessinerCombat(g, font, w, h);
-        dessinerSpectateur(g, font, w, h);
-        dessinerCompte(g, font, w, h);
-        dessinerAnnonce(g, font, w, h, now);
+        if (petit) {
+            // bandeau du spectateur reduit autour du bas de l'ecran
+            float k = 0.8f;
+            g.pose().pushPose();
+            g.pose().translate(w / 2f, h, 0);
+            g.pose().scale(k, k, 1);
+            g.pose().translate(-w / 2f, -h, 0);
+            dessinerSpectateur(g, font, w, h);
+            g.pose().popPose();
+            dessinerComptePetit(g, font, w);
+            dessinerAnnoncePetite(g, font, w, now);
+        } else {
+            dessinerSpectateur(g, font, w, h);
+            dessinerCompte(g, font, w, h);
+            dessinerAnnonce(g, font, w, h, now);
+        }
     }
 
     // ---------------------------------------------------------------- bandeau
@@ -353,6 +392,51 @@ public final class HudMoteur {
         }
     }
 
+    /**
+     * Annonce en HUD compact : petit panneau de verre en haut au centre, sous le bandeau et la ligne d'etat du mode
+     * ({@link #Y_ANNONCE_COMPACTE}) : titre en capitales espacees (taille du texte normal), sous-titre plus petit, filet
+     * d'accent en bas ; fondus doux, aucune bande sur toute la largeur, opacite moderee (le combat reste lisible).
+     */
+    private static void dessinerAnnoncePetite(GuiGraphics g, Font font, int w, long now) {
+        Annonces.Annonce a = avancerAnnonce(now);
+        if (a == null || MoteurClient.compteSecondes() > 0) return;
+        float age = (now - debutAnnonce) / 50f;
+        float alpha = Math.min(1f, age / 4f);
+        float reste = a.dureeTicks() - age;
+        if (reste < 10) alpha = Math.min(alpha, reste / 10f);
+        alpha *= 0.9f;
+        if (alpha < 0.03f) return;
+        int accent = a.couleur();
+        int couleurTitre = switch (a.style()) {
+            case VICTOIRE -> Ui.mix(Ui.OR, 0xFFFFFF, 0.25f);
+            case DEFAITE -> 0xC9CBD1;
+            case FINALE -> Ui.mix(accent, 0xFFFFFF, 0.35f);
+            case MANCHE -> Ui.mix(0xC8322D, 0xFFFFFF, 0.15f);
+            default -> 0xF4F5F8;
+        };
+        boolean aSous = !a.sousTitre().getString().isEmpty();
+        float kt = 0.9f, ks = 0.8f;
+        float lt = TITRE_ANNONCE.largeur() * kt, ls = aSous ? font.width(sousTitre) * ks : 0;
+        int pw = (int) Math.min(w - 40, Math.max(lt, ls) + 22), ph = aSous ? 23 : 14;
+        int cx = w / 2, y = Y_ANNONCE_COMPACTE;
+        int a255 = Math.max(4, (int) (255 * alpha));
+        Ui.glass(g, cx - pw / 2, y, pw, ph, (int) (150 * alpha));
+        Ui.hairline(g, cx - pw / 2 + 4, cx + pw / 2 - 4, y + ph - 1, accent, (int) (200 * alpha), true, true);
+        g.pose().pushPose();
+        g.pose().translate(cx, y + 3, 0);
+        g.pose().scale(kt, kt, 1);
+        TITRE_ANNONCE.centre(g, 0, 0, Ui.argb(couleurTitre, a255));
+        g.pose().popPose();
+        if (aSous) {
+            int cs = a.style() == Annonces.Style.DEFAITE ? 0x9AA0AA : Ui.mix(accent, 0xFFFFFF, 0.4f);
+            g.pose().pushPose();
+            g.pose().translate(cx, y + 13, 0);
+            g.pose().scale(ks, ks, 1);
+            g.drawString(font, sousTitre, -font.width(sousTitre) / 2, 0, Ui.argb(cs, a255), false);
+            g.pose().popPose();
+        }
+    }
+
     // ---------------------------------------------------------------- compte a rebours
     private static int compteMontre = Integer.MIN_VALUE;
     private static MutableComponent compteC = Component.empty();
@@ -401,6 +485,48 @@ public final class HudMoteur {
             g.pose().scale(s, s, 1);
             GO.centre(g, 0, 0, Ui.argb(Ui.mix(Ui.accent(), 0xFFFFFF, 0.3f), Math.max(4, a)));
             g.pose().popPose();
+        }
+    }
+
+    /** Compte a rebours en HUD compact : chiffre en gras dans un petit panneau, en haut au centre (meme place que les annonces). */
+    private static void dessinerComptePetit(GuiGraphics g, Font font, int w) {
+        int r = MoteurClient.compteSecondes();
+        long fin = MoteurClient.depuisFinCompteMs();
+        if (r < 0 && (fin < 0 || fin > 900)) {
+            compteMontre = Integer.MIN_VALUE;
+            return;
+        }
+        int cx = w / 2, y = Y_ANNONCE_COMPACTE;
+        if (r > 0) {
+            if (r != compteMontre) {
+                compteMontre = r;
+                compteC = Ui.lit(Integer.toString(r), Ui.BOLD);
+                jouer(MoteurSons.COMPTE.get(), 0.7f);
+                Component t = MoteurClient.compteTitre();
+                TITRE_COMPTE.texte(t == null ? "" : t.getString());
+            }
+            int pw = (int) Math.max(46, TITRE_COMPTE.largeur() * 0.8f + 18);
+            Ui.glass(g, cx - pw / 2, y, pw, 26, 150);
+            g.pose().pushPose();
+            g.pose().translate(cx, y + 3, 0);
+            g.pose().scale(0.8f, 0.8f, 1);
+            TITRE_COMPTE.centre(g, 0, 0, Ui.argb(0xC9CDD6, 230));
+            g.pose().popPose();
+            g.pose().pushPose();
+            g.pose().translate(cx, y + 12, 0);
+            g.pose().scale(1.1f, 1.1f, 1);
+            g.drawString(font, compteC, -font.width(compteC) / 2, 0, Ui.argb(r <= 3 ? Ui.mix(Ui.DANGER, 0xFFFFFF, 0.25f) : Ui.TEXT, 235), false);
+            g.pose().popPose();
+        } else {
+            if (compteMontre != 0) {
+                compteMontre = 0;
+                GO.texte(Component.translatable("matchs.compte.go").getString());
+                jouer(MoteurSons.DEPART.get(), 0.9f);
+            }
+            long d = r == 0 ? MoteurClient.compteFractionMs() : 1000 + Math.max(0, fin);
+            float t = Math.min(1f, d / 1900f);
+            int a = (int) (230 * (1f - t));
+            GO.centre(g, cx, y + 4, Ui.argb(Ui.mix(Ui.accent(), 0xFFFFFF, 0.3f), Math.max(4, a)));
         }
     }
 

@@ -6,38 +6,24 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 
 /**
- * Petit mouvement de caméra des coups de couteau, chez le joueur qui frappe, en 1re personne seulement (comme l'os
- * « camera » des animations des couteaux de LR, que les modèles des gunpacks n'ont pas). Rien n'est envoyé au serveur :
- * seule l'image bouge, pas le regard.
- * <ul>
- *    <li>tranche (coup rapide) : la vue suit à peine la lame, vers la droite ou vers la gauche (moins de 1°) ;</li>
- *    <li>estoc (coup puissant) : la vue se relève un peu pendant qu'on arme, puis plonge et avance avec la poussée (champ
- *    de vision resserré), et revient doucement.</li>
- * </ul>
- * Temps calés sur les animations de {@code outils/couteaux_coups.py} (lame au milieu à 0,11 s, poussée de l'estoc de
- * 0,22 à 0,27 s) : à changer ensemble.
+ * Petit mouvement de caméra du coup puissant des couteaux, chez le joueur qui frappe, en 1re personne seulement (comme
+ * l'os « camera » des animations des couteaux de LR, que les modèles des gunpacks n'ont pas). Rien n'est envoyé au
+ * serveur : seule l'image bouge, pas le regard. La vue se relève un peu pendant qu'on arme, puis plonge et avance avec
+ * la poussée (champ de vision resserré), et revient doucement. Le coup rapide n'en a pas (comme avant la 2.16.0).
+ * Temps calés sur l'animation de {@code outils/couteaux_coups.py} (armé à 0,16 s, impact à 0,24 s) : à changer ensemble.
  */
 final class SecousseCouteau {
    // clés : temps (s), tangage (+ = vers le bas), lacet (+ = vers la droite), roulis (°), champ de vision ajouté (°)
-   private static final float[][] TRANCHE = {
-      {0.00F, 0.0F, 0.0F, 0.0F, 0.0F},
-      {0.06F, -0.3F, -0.5F, -0.6F, 0.0F},
-      {0.14F, 0.4F, 0.8F, 0.9F, 0.0F},
-      {0.26F, 0.1F, 0.2F, 0.2F, 0.0F},
-      {0.40F, 0.0F, 0.0F, 0.0F, 0.0F},
-   };
    private static final float[][] ESTOC = {
       {0.00F, 0.0F, 0.0F, 0.0F, 0.0F},
-      {0.20F, -1.2F, 0.3F, -1.0F, 0.6F},
-      {0.27F, 2.4F, -0.4F, 1.4F, -3.5F},
-      {0.34F, 2.0F, -0.3F, 0.9F, -3.0F},
-      {0.50F, 0.8F, 0.0F, 0.3F, -1.2F},
+      {0.16F, -1.2F, 0.3F, -1.0F, 0.6F},
+      {0.24F, 2.4F, -0.4F, 1.4F, -3.5F},
+      {0.31F, 2.0F, -0.3F, 0.9F, -3.0F},
+      {0.48F, 0.8F, 0.0F, 0.3F, -1.2F},
       {0.80F, 0.0F, 0.0F, 0.0F, 0.0F},
    };
 
    private static float[][] courbe;
-   /** Sens de la tranche : 1 de gauche à droite, -1 de droite à gauche. */
-   private static float sens = 1.0F;
    private static long debutNs;
 
    private SecousseCouteau() {
@@ -48,10 +34,9 @@ final class SecousseCouteau {
       MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, false, ViewportEvent.ComputeFov.class, SecousseCouteau::champ);
    }
 
-   /** Coup parti : tranche (sens : vrai = de gauche à droite) ou estoc. */
-   static void lancer(boolean lourd, boolean gaucheDroite) {
-      courbe = lourd ? ESTOC : TRANCHE;
-      sens = gaucheDroite ? 1.0F : -1.0F;
+   /** Coup puissant parti. */
+   static void lancer() {
+      courbe = ESTOC;
       debutNs = System.nanoTime();
    }
 
@@ -83,10 +68,9 @@ final class SecousseCouteau {
    private static void angles(ViewportEvent.ComputeCameraAngles e) {
       float[] v = valeur();
       if (v != null) {
-         float s = courbe == TRANCHE ? sens : 1.0F;
          e.setPitch(e.getPitch() + v[0]);
-         e.setYaw(e.getYaw() + v[1] * s);
-         e.setRoll(e.getRoll() + v[2] * s);
+         e.setYaw(e.getYaw() + v[1]);
+         e.setRoll(e.getRoll() + v[2]);
       }
    }
 

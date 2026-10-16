@@ -2,3 +2,8 @@
 # tunnel et le schematic du spawn (centrée sur le point de réveil). Les autres réglages gardent leur défaut.
 [spawn]
 	bordure = 384
+
+# Protection du monde du spawn : aucun dégât, aucune créature, explosions sans effet.
+[protection]
+	actif = true
+	entites_permises = []

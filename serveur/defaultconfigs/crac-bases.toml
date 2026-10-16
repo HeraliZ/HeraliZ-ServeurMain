@@ -1,0 +1,73 @@
+#Monde des bases (dimension crac:bases) : reliefs et grands endroits plats, ou les joueurs construisent.
+[bases]
+	#Taille de la bordure du monde des bases (blocs de cote, centree sur 0 0). 0 = laisser celle du jeu.
+	#Range: 0 ~ 60000000
+	bordure = 6000
+	#Vrai : en survie, les pieces de construction et le Claim Block ne se posent QUE dans le monde des bases
+	#(carte DayZ, spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.
+	construction_ici_seulement = true
+	#Faux : aucun monstre n'apparait de lui-meme dans le monde des bases (les animaux restent).
+	monstres = false
+	#Rayon (blocs, autour de 0 0) ou l'on tire le point d'arrivee d'un joueur sans base ;
+	#ramene a l'interieur de la bordure (200 blocs de marge).
+	#Range: 64 ~ 1000000
+	rayon_depart = 2500
+	#Distance minimale (blocs) entre ce point d'arrivee et le Claim Block d'une autre base.
+	#Range: 0 ~ 4096
+	ecart_bases = 120
+
+#/home (du spawn vers sa base) et /spawn (de sa base vers le spawn).
+[home]
+	#Secondes entre deux /home d'un meme joueur (gardees au redemarrage).
+	#Range: 0 ~ 86400
+	delai_s = 180
+	#Secondes sans bouger ni etre blesse avant le depart (/home et /spawn).
+	#Range: 0 ~ 60
+	immobile_s = 3
+
+#Tutoriel apres la cinematique d'arrivee (joueur qui n'a jamais eu de base).
+[tuto]
+	#Faux : pas de tutoriel ni de kit.
+	actif = true
+	#Secondes au moins apres le debut de la cinematique ; le tuto part au premier pas du joueur ensuite.
+	#Range: 0 ~ 3600
+	attente_min_s = 15
+	#Secondes au plus apres le debut de la cinematique (la cinematique dure environ 122 s).
+	#Range: 1 ~ 3600
+	attente_max_s = 130
+	#Vrai : le kit contient aussi de quoi passer toute la cabane en bois au marteau.
+	amelioration_bois = true
+	#Matieres en plus dans le kit (pourcentage), pour une piece ratee.
+	#Range: 0 ~ 200
+	marge_pourcent = 10
+	#Heures d'entretien du Claim Block donnees dans le kit (0 = rien).
+	#Range: 0 ~ 720
+	entretien_heures = 24
+	#Minutes de jeu au plus de la protection « nouveau joueur » (contour vert) si la base n'est pas posee.
+	#Range: 1 ~ 100000
+	phase_max_min = 120
+	#Fondations au moins sous le Claim Block pour que la base compte comme posee.
+	#Range: 1 ~ 64
+	fondations_min = 2
+
+#Protection de la base d'un nouveau joueur, une fois posee (pas de raid).
+[protection]
+	#Jours (temps reel) de protection de la base.
+	#Range: 0.0 ~ 365.0
+	jours = 4.0
+	#La protection tombe si le groupe de la base compte plus de membres que ca (anti-abus).
+	#Range: 1 ~ 64
+	membres_max = 2
+	#Vrai : la base protegee ne s'use pas non plus (entretien impaye).
+	pause_usure = true
+	#Vrai : texte « Base protegee » flottant au-dessus de la base, visible de tous.
+	panneau = true
+
+#Carrieres : zones du monde des bases ou les joueurs cassent les blocs naturels de leur type.
+[carrieres]
+	#Minutes avant qu'un bloc casse dans une carriere repousse (jamais sous un joueur).
+	#Range: 1 ~ 10080
+	repousse_min = 10
+	#Rayon maximal d'une carriere (blocs).
+	#Range: 2 ~ 256
+	rayon_max = 64
