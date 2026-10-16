@@ -370,6 +370,7 @@
   "biome.crac.bases_taiga": "Тайга",
   "crac.bases.absent": "Мира баз нет на этом сервере (crac:bases).",
   "crac.bases.construire_ailleurs": "Строить можно только в мире баз (/zone base со спавна).",
+  "crac.bases.seau": "В мире баз нет воды.",
   "crac.carriere.aucune": "В мире баз нет карьеров.",
   "crac.carriere.claim_trop_pres": "Слишком близко к карьеру %s: зона базы не должна его касаться.",
   "crac.carriere.creee": "Карьер %s создан: %s, радиус %s, центр %s.",

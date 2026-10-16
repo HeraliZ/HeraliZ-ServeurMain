@@ -370,6 +370,7 @@
   "biome.crac.bases_taiga": "Taiga",
   "crac.bases.absent": "The bases world does not exist on this server (crac:bases).",
   "crac.bases.construire_ailleurs": "You can only build in the bases world (/zone base from the spawn).",
+  "crac.bases.seau": "No water in the bases world.",
   "crac.carriere.aucune": "No quarry in the bases world.",
   "crac.carriere.claim_trop_pres": "Too close to quarry %s: your base's zone must not touch it.",
   "crac.carriere.creee": "Quarry %s created: %s, radius %s, centre %s.",

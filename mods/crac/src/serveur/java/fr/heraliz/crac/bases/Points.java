@@ -69,8 +69,8 @@ final class Points {
     static Vec3 auHasard(ServerLevel level, ServerPlayer p) {
         RandomSource rnd = level.getRandom();
         WorldBorder b = level.getWorldBorder();
-        double demi = Math.max(32.0, b.getSize() / 2.0 - 200.0);
-        double rayon = Math.min(BasesReglages.i(BasesReglages.RAYON_DEPART, 2500), demi);
+        double demi = Math.max(32.0, b.getSize() / 2.0 - 100.0);
+        double rayon = Math.min(BasesReglages.i(BasesReglages.RAYON_DEPART, 1150), demi);
         int ecart = BasesReglages.i(BasesReglages.ECART_BASES, 120);
         for (int i = 0; i < ESSAIS; i++) {
             int x = (int) Math.floor(b.getCenterX() + (rnd.nextDouble() * 2 - 1) * rayon);

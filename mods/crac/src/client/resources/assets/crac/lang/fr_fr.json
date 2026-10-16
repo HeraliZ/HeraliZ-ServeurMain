@@ -370,6 +370,7 @@
   "biome.crac.bases_taiga": "Taïga",
   "crac.bases.absent": "Le monde des bases n'existe pas sur ce serveur (crac:bases).",
   "crac.bases.construire_ailleurs": "On ne construit que dans le monde des bases (/zone base depuis le spawn).",
+  "crac.bases.seau": "Pas d'eau dans le monde des bases.",
   "crac.carriere.aucune": "Aucune carrière dans le monde des bases.",
   "crac.carriere.claim_trop_pres": "Trop près de la carrière %s : la zone de ta base ne doit pas la toucher.",
   "crac.carriere.creee": "Carrière %s créée : %s, rayon %s, centre %s.",

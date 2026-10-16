@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:max",
+    "argument1": "crac:bases/bruit_collines",
+    "argument2": {
+      "type": "minecraft:add",
+      "argument1": 0.06,
+      "argument2": "crac:bases/bruit_reliefs"
+    }
+  }
+}

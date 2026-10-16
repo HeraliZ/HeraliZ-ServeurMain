@@ -2,16 +2,23 @@
 [bases]
 	#Taille de la bordure du monde des bases (blocs de cote, centree sur 0 0). 0 = laisser celle du jeu.
 	#Range: 0 ~ 60000000
-	bordure = 6000
+	bordure = 2500
 	#Vrai : en survie, les pieces de construction et le Claim Block ne se posent QUE dans le monde des bases
 	#(carte DayZ, spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.
 	construction_ici_seulement = true
-	#Faux : aucun monstre n'apparait de lui-meme dans le monde des bases (les animaux restent).
-	monstres = false
+	#Faux : aucune creature dans le monde des bases (toute entite « Mob » : animaux, monstres, villageois,
+	#marchands, golems, PNJ et zombies des mods ; apparitions, oeufs, cages, mods) ; celles deja la sont retirees.
+	#Les autres entites restent (textes flottants, objets poses, vehicules, cadavres, porte-armures).
+	creatures = false
+	#Creatures gardees malgre tout dans le monde des bases (identifiants, ex. "minecraft:villager").
+	creatures_permises = []
+	#Faux : dans le monde des bases, aucun seau ne se vide (eau, lave, poissons), meme dans une base.
+	#Le staff en creatif n'est pas concerne.
+	seaux = false
 	#Rayon (blocs, autour de 0 0) ou l'on tire le point d'arrivee d'un joueur sans base ;
-	#ramene a l'interieur de la bordure (200 blocs de marge).
+	#ramene a l'interieur de la bordure (100 blocs de marge).
 	#Range: 64 ~ 1000000
-	rayon_depart = 2500
+	rayon_depart = 1150
 	#Distance minimale (blocs) entre ce point d'arrivee et le Claim Block d'une autre base.
 	#Range: 0 ~ 4096
 	ecart_bases = 120

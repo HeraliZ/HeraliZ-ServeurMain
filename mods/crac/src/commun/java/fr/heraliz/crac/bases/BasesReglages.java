@@ -5,6 +5,8 @@ import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 
+import java.util.List;
+
 /**
  * Réglages du monde des bases (config/serverconfig {@code crac-bases.toml}, type SERVER : lus par le serveur, recopiés
  * chez le joueur). Sections {@code [bases]}, {@code [home]}, {@code [tuto]}, {@code [protection]}, {@code [carrieres]}.
@@ -15,7 +17,9 @@ public final class BasesReglages {
     // [bases]
     public static final IntValue BORDURE;
     public static final BooleanValue CONSTRUCTION_ICI_SEULEMENT;
-    public static final BooleanValue MONSTRES;
+    public static final BooleanValue CREATURES;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CREATURES_PERMISES;
+    public static final BooleanValue SEAUX;
     public static final IntValue RAYON_DEPART;
     public static final IntValue ECART_BASES;
     // [home]
@@ -47,16 +51,23 @@ public final class BasesReglages {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.comment("Monde des bases (dimension crac:bases) : reliefs et grands endroits plats, ou les joueurs construisent.").push("bases");
         BORDURE = b.comment("Taille de la bordure du monde des bases (blocs de cote, centree sur 0 0). 0 = laisser celle du jeu.")
-            .defineInRange("bordure", 6000, 0, 60_000_000);
+            .defineInRange("bordure", 2500, 0, 60_000_000);
         CONSTRUCTION_ICI_SEULEMENT = b.comment(
                 "Vrai : en survie, les pieces de construction et le Claim Block ne se posent QUE dans le monde des bases",
                 "(carte DayZ, spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.")
             .define("construction_ici_seulement", true);
-        MONSTRES = b.comment("Faux : aucun monstre n'apparait de lui-meme dans le monde des bases (les animaux restent).")
-            .define("monstres", false);
+        CREATURES = b.comment("Faux : aucune creature dans le monde des bases (toute entite « Mob » : animaux, monstres, villageois,",
+                "marchands, golems, PNJ et zombies des mods ; apparitions, oeufs, cages, mods) ; celles deja la sont retirees.",
+                "Les autres entites restent (textes flottants, objets poses, vehicules, cadavres, porte-armures).")
+            .define("creatures", false);
+        CREATURES_PERMISES = b.comment("Creatures gardees malgre tout dans le monde des bases (identifiants, ex. \"minecraft:villager\").")
+            .defineListAllowEmpty(List.of("creatures_permises"), () -> List.<String>of(), o -> o instanceof String);
+        SEAUX = b.comment("Faux : dans le monde des bases, aucun seau ne se vide (eau, lave, poissons), meme dans une base.",
+                "Le staff en creatif n'est pas concerne.")
+            .define("seaux", false);
         RAYON_DEPART = b.comment("Rayon (blocs, autour de 0 0) ou l'on tire le point d'arrivee d'un joueur sans base ;",
-                "ramene a l'interieur de la bordure (200 blocs de marge).")
-            .defineInRange("rayon_depart", 2500, 64, 1_000_000);
+                "ramene a l'interieur de la bordure (100 blocs de marge).")
+            .defineInRange("rayon_depart", 1150, 64, 1_000_000);
         ECART_BASES = b.comment("Distance minimale (blocs) entre ce point d'arrivee et le Claim Block d'une autre base.")
             .defineInRange("ecart_bases", 120, 0, 4096);
         b.pop();
