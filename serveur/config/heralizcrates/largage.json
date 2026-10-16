@@ -95,12 +95,6 @@
       "nbt": "{AmmoId:\"tacz:338\"}"
     },
     {
-      "item": "heralisz_grenade:c4",
-      "count": 1,
-      "weight": 15,
-      "rarity": "rare"
-    },
-    {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 20,

@@ -54,7 +54,7 @@ public class HeralizTactique {
       ONGLET.ajouter("melee", "onglet.heraliz_tactique.melee", () -> ModItems.getMeleeIcon(), out -> ModItems.remplirMelee(out));
       // soins (contenu heralisz_heal, objet heralisz_tactical:consumable)
       ONGLET.ajouter("soins", "onglet.heraliz_tactique.soins", () -> ModItems.getConsumableIcon(), out -> ModItems.remplirSoins(out));
-      // lancers et détonateur (contenu heralisz_grenade dont le C4, objets heralisz_tactical:throwable et :detonator)
+      // lancers et détonateur (contenu heralisz_grenade, objets heralisz_tactical:throwable et :detonator)
       ONGLET.ajouter("grenades", "onglet.heraliz_tactique.grenades", () -> ModItems.getThrowableIcon(), out -> ModItems.remplirGrenades(out));
       // camos et skins X des armes TaCZ (heralisz_camo)
       ONGLET.ajouter("camos", "onglet.heraliz_tactique.camos", () -> HeraliszCamo.iconeCamos(), out -> HeraliszCamo.remplirCamos(out));
