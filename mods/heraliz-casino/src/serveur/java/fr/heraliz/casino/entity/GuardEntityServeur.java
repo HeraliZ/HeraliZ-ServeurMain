@@ -1,5 +1,6 @@
 package fr.heraliz.casino.entity;
 
+import fr.heraliz.casino.zone.CasinoZone;
 import fr.heraliz.casino.zone.ZoneManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -32,10 +33,13 @@ public class GuardEntityServeur extends GuardEntity {
     private float postYaw;
     private boolean temporary;
     private int life = 900;
+    /** Zone gardee : le casino (videurs d'avant la zone VIP compris) ou la zone VIP. */
+    private CasinoZone.Kind zone = CasinoZone.Kind.CASINO;
 
     /** Videur en poste : il y reste (et y revient si on le deplace). */
-    public static GuardEntityServeur post(ServerLevel level, Vec3 at, float yaw, int side) {
+    public static GuardEntityServeur post(ServerLevel level, Vec3 at, float yaw, int side, CasinoZone.Kind zone) {
         GuardEntityServeur g = new GuardEntityServeur(fr.heraliz.casino.registry.ModRegistry.GUARD.get(), level);
+        g.zone = zone;
         g.post = at;
         g.postYaw = yaw;
         g.entityData.set(SIDE, (byte) side);
@@ -59,6 +63,10 @@ public class GuardEntityServeur extends GuardEntity {
 
     public boolean isTemporary() {
         return temporary;
+    }
+
+    public CasinoZone.Kind zone() {
+        return zone;
     }
 
     /** Partie serveur du tick : renfort oublie qui s'en va. */
@@ -129,6 +137,7 @@ public class GuardEntityServeur extends GuardEntity {
             tag.putFloat("PostYaw", postYaw);
         }
         tag.putByte("Side", (byte) side());
+        tag.putString("Zone", zone.id);
     }
 
     @Override
@@ -139,5 +148,6 @@ public class GuardEntityServeur extends GuardEntity {
             postYaw = tag.getFloat("PostYaw");
         }
         if (tag.contains("Side")) entityData.set(SIDE, tag.getByte("Side"));
+        if (tag.contains("Zone")) zone = CasinoZone.Kind.byId(tag.getString("Zone"));
     }
 }

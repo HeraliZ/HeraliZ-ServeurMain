@@ -54,6 +54,8 @@ jobs:
       SPARTAN_DISCORD_SANCTIONS: ${{ secrets.SPARTAN_DISCORD_SANCTIONS }}
       LITEBANS_DB_USER: ${{ secrets.LITEBANS_DB_USER }}
       LITEBANS_DB_PASSWORD: ${{ secrets.LITEBANS_DB_PASSWORD }}
+      HERALIBOT_LIEN_URL: ${{ secrets.HERALIBOT_LIEN_URL }}
+      HERALIBOT_LIEN_CLE: ${{ secrets.HERALIBOT_LIEN_CLE }}
       # accès à la VM du site réglés (pack du launcher) ; les secrets eux-mêmes ne sont donnés qu'à l'étape du pack
       SITE_PRET: ${{ secrets.SITE_SSH_HOTE != '' && secrets.SITE_SSH_UTILISATEUR != '' && secrets.SITE_SSH_MDP != '' }}
       PYTHONIOENCODING: utf-8
@@ -168,8 +170,9 @@ jobs:
           fi
 
       # secrets écrits dans les fichiers envoyés, jamais dans le dépôt : webhooks Discord et clé des jetons de Spartan ;
-      # base de données de LiteBans (sans ses secrets : base locale H2, sans historique des sanctions)
-      - name: Secrets (Spartan, LiteBans)
+      # base de données de LiteBans (sans ses secrets : base locale H2, sans historique des sanctions) ; adresse et clé du
+      # lien Discord <-> Minecraft avec HeraliBot (heraliz-grades ; sans elles, le lien est simplement désactivé)
+      - name: Secrets (Spartan, LiteBans, lien Discord)
         if: env.PTERO_SFTP_HOST != ''
         run: |
           python - <<'EOF'
@@ -197,6 +200,39 @@ jobs:
           for marque, valeur in (("LITEBANS_DB_USER", user), ("LITEBANS_DB_PASSWORD", mdp)):
               s = s.replace("__%s__" % marque, valeur.replace("'", "''"))
           p.write_text(s, encoding="utf-8")
+          # lien Discord : secrets HERALIBOT_LIEN_* s'ils existent, sinon lus sur le Ptero avec la clé client du compte :
+          # serveur nommé « HeraliBot », sa clé data/cle-lien.txt (créée par le bot) et son port (même machine que le panel).
+          # La clé n'est jamais affichée (masquée dans les journaux) ; sans elle, le lien est simplement désactivé.
+          url_lien = os.environ.get("HERALIBOT_LIEN_URL", "").strip()
+          cle_lien = os.environ.get("HERALIBOT_LIEN_CLE", "").strip()
+          if not (url_lien and cle_lien) and os.environ.get("PTERO_URL") and os.environ.get("PTERO_API_KEY"):
+              import json, urllib.parse, urllib.request
+              base = os.environ["PTERO_URL"].strip().rstrip("/")
+              def api(chemin):
+                  req = urllib.request.Request(base + chemin, headers={"Authorization": "Bearer " + os.environ["PTERO_API_KEY"], "Accept": "application/json"})
+                  with urllib.request.urlopen(req, timeout=20) as r:
+                      return r.read()
+              try:
+                  serveurs = json.loads(api("/api/client?per_page=100"))["data"]
+                  bot = next((x["attributes"] for x in serveurs if x["attributes"]["name"].strip().lower() == "heralibot"), None)
+                  if bot is None:
+                      raise LookupError("serveur « HeraliBot » absent du compte")
+                  if not cle_lien:
+                      cle_lien = api("/api/client/servers/%s/files/contents?file=%s" % (bot["identifier"], urllib.parse.quote("/data/cle-lien.txt"))).decode("utf-8").strip()
+                  if cle_lien:
+                      print("::add-mask::" + cle_lien)
+                  if not url_lien:
+                      alloc = next(a["attributes"] for a in bot["relationships"]["allocations"]["data"] if a["attributes"]["is_default"])
+                      url_lien = "http://%s:%d" % (urllib.parse.urlparse(base).hostname, alloc["port"])
+                  print("Lien Discord : adresse et clé de HeraliBot lues sur le Ptero")
+              except Exception as e:
+                  print("::warning::Lien Discord (heraliz-grades) : réglages de HeraliBot illisibles sur le Ptero (%s) : lien désactivé" % type(e).__name__)
+          p = pathlib.Path("serveur/config/heraliz_grades/lien.json")
+          if p.exists():
+              s = p.read_text(encoding="utf-8")
+              for marque, valeur in (("HERALIBOT_LIEN_URL", url_lien), ("HERALIBOT_LIEN_CLE", cle_lien)):
+                  s = s.replace("__%s__" % marque, valeur.replace("\\", "\\\\").replace('"', '\\"'))
+              p.write_text(s, encoding="utf-8")
           EOF
 
       # Spartan : les webhooks Discord existent-ils encore ? (Discord répond sur le webhook lui-même, sans rien poster ;
