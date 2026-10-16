@@ -78,6 +78,21 @@ public final class DuelsClient {
         MinecraftForge.EVENT_BUS.addListener(DuelHud::matrices);
         MinecraftForge.EVENT_BUS.addListener(DuelsClient::tick);
         MinecraftForge.EVENT_BUS.addListener(DuelsClient::deconnexion);
+        // amorcage / piratage : ni tir, ni visee, ni changement d'arme chez le joueur (le serveur decide)
+        ActionClient.enregistrer();
+        // HUD du moteur en petit pendant un duel (bandeau reduit, annonces en haut, jamais au milieu)
+        fr.heralisz.matchs.moteur.client.HudMoteur.compact = DuelsClient::enDuel;
+    }
+
+    /**
+     * Vrai pendant un duel : vue R&D recue, ou bandeau du moteur d'un duel (titre {@code duel.hud.*}, match a mort
+     * compris). Sans allocation (lu a chaque image par le HUD du moteur).
+     */
+    static boolean enDuel() {
+        if (DuelHud.vue() != null) return true;
+        var b = fr.heralisz.matchs.moteur.client.MoteurClient.bandeau();
+        return b != null && b.titre().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+                && t.getKey().startsWith("duel.hud.");
     }
 
     /** Rendu de l'ordinateur ferme en main (une instance : Forge appelle initializeClient une fois par objet). */
@@ -215,6 +230,10 @@ public final class DuelsClient {
             }
             case PaquetsDuels.EffetS2C.DESAMORCEE -> {
                 if (mc.level != null) mc.level.playLocalSound(x, y, z, Registres.DESAMORCE.get(), SoundSource.PLAYERS, 1.5f, 1f, false);
+            }
+            case PaquetsDuels.EffetS2C.NETTOYAGE -> {
+                // arene remise au propre par le serveur : plus de nuage de fumee ni d'etincelles de la manche d'avant
+                if (mc.level != null) mc.particleEngine.setLevel(mc.level);
             }
             case PaquetsDuels.EffetS2C.FIN -> {
                 DuelHud.rd(null);

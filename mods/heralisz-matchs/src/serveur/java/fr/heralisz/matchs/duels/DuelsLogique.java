@@ -68,6 +68,8 @@ public final class DuelsLogique {
         MinecraftForge.EVENT_BUS.addListener(DuelsLogique::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(DuelsLogique::demarrage);
         MinecraftForge.EVENT_BUS.addListener(DuelsLogique::arret);
+        // bombe : balles arretees, joueur qui amorce ou pirate immobilise (sans tir)
+        fr.heralisz.matchs.duels.bombe.ReglesBombe.construire();
     }
 
 
@@ -105,12 +107,14 @@ public final class DuelsLogique {
 
     private static void demarrage(ServerStartedEvent e) {
         TirsTacz.brancher();
+        fr.heralisz.matchs.duels.bombe.ReglesBombe.brancherTacz();
     }
 
     private static void arret(ServerStoppedEvent e) {
         DuelsStore.fermer();
         Armurerie.invalider();
         TirsTacz.vider();
+        fr.heralisz.matchs.duels.bombe.ReglesBombe.vider();
         Defis.vider();
         CATALOGUE_ENVOYE.clear();
     }

@@ -10,6 +10,7 @@ import fr.heralisz.matchs.duels.armes.Catalogue;
 import fr.heralisz.matchs.duels.armes.TirsTacz;
 import fr.heralisz.matchs.duels.bombe.BombeDuel;
 import fr.heralisz.matchs.duels.bombe.OrdinateurDuel;
+import fr.heralisz.matchs.duels.bombe.ReglesBombe;
 import fr.heralisz.matchs.duels.classes.ClassePerso;
 import fr.heralisz.matchs.duels.donnees.DuelsStore;
 import fr.heralisz.matchs.duels.killcam.Enregistreur;
@@ -27,6 +28,7 @@ import fr.heralisz.matchs.moteur.api.Kit;
 import fr.heralisz.matchs.moteur.api.MatchApi;
 import fr.heralisz.matchs.moteur.api.Partie;
 import fr.heralisz.matchs.moteur.api.Pose;
+import fr.heralisz.matchs.moteur.arenes.ArenesService;
 import fr.heralisz.matchs.moteur.spectateur.Spectateurs;
 import fr.heralisz.matchs.reseau.MatchsNet;
 import net.minecraft.core.BlockPos;
@@ -58,14 +60,18 @@ import java.util.UUID;
 /**
  * Un duel (MATCHS_SPEC §3) : deux equipes (A = maison jaune, B = maison verte de Nuketown) en 1v1 ou 2v2, mode
  * <b>recherche et destruction</b> (une vie par manche, bombes des sites A/B amorcees avec l'ordinateur porte par un
- * attaquant, pirate par un defenseur ; premier a 4 manches, changement de cote apres 3 manches, killcam de la derniere
- * elimination en fin de manche) ou <b>match a mort</b> (reapparition apres 3 s loin des
- * ennemis, premier a 20 / 30 eliminations ou 10 min, killcam a chaque mort). Classes choisies en debut de manche ou a
+ * attaquant, pirate par un defenseur ; premier a 4 manches, changement de cote apres 3 manches) ou <b>match a mort</b>
+ * (reapparition apres 3 s loin des ennemis, premier a 20 / 30 eliminations ou 10 min). Plus de killcam depuis Matchs
+ * 0.11.0 ({@link DuelsConfig#KILLCAM} : rien n'est enregistre, le mort passe tout de suite en spectateur).
+ * <p>Matchs 0.11.0 : arene remise au propre a chaque debut de manche et a la fin ({@link #nettoyerArene} : grenades, C4,
+ * fumigenes, feu au sol, objets au sol, balles ; feux eteints ; particules effacees chez les joueurs) ; le joueur qui
+ * amorce ou pirate est immobilise, sans tir, visee, rechargement ni changement d'arme ({@link #majAction},
+ * {@link ReglesBombe}). Classes choisies en debut de manche ou a
  * chaque reapparition (5 s) : <b>les 5 classes de l'hote</b> (le defiant, qui a lance le defi), les memes pour tous les
  * joueurs des deux equipes, copiees au lancement ({@link #classesHote}) ; en entrainement, chacun ses propres classes.
  * Fin : tableau des scores, statistiques de duel, Coffre rendu.
  * <p>Phases ({@link Partie.Phase}) : ATTENTE (pose de l'instance) -> CHOIX (gel, choix de classe) -> COMBAT ->
- * PREPARATION (entre deux manches de R&D : annonces, killcam) -> ... -> FIN (scores) -> TERMINEE.
+ * PREPARATION (entre deux manches de R&D : annonces) -> ... -> FIN (scores) -> TERMINEE.
  * <p>Fil serveur ; pas d'allocation par tick hors evenements (listes tampons reutilisees).
  */
 public class DuelPartie extends Partie {
@@ -131,6 +137,9 @@ public class DuelPartie extends Partie {
     private boolean killcamFinManche;
     @Nullable
     private Enregistreur enregistreur;
+    /** Joueur immobilise en ce moment (amorce ou pirate), voir {@link #majAction}. */
+    @Nullable
+    private UUID bloque;
 
     // ------------------------------------------------------------------ recherche et destruction
     private int manche;
@@ -259,7 +268,8 @@ public class DuelPartie extends Partie {
     /** Instance prete : premiere mise en place (appele par {@link Defis} via {@link Instance#quandPrete}). */
     public void demarrer() {
         if (phase() != Phase.ATTENTE || instance() == null) return;
-        enregistreur = KillcamLogique.enregistreur(this);
+        // killcam coupee (Matchs 0.11.0) : aucun enregistrement des pistes, rien a garder ni a envoyer
+        enregistreur = DuelsConfig.KILLCAM ? KillcamLogique.enregistreur(this) : null;
         lireSites();
         if (entrainement) poserCible();
         if (rd) {
@@ -267,6 +277,7 @@ public class DuelPartie extends Partie {
             manche = 0;
             nouvelleManche();
         } else {
+            nettoyerArene();
             placerTous(a, "spawn_a");
             placerTous(b, "spawn_b");
             ouvrirChoix(Component.translatable("duel.mode.match_a_mort"));
@@ -506,6 +517,8 @@ public class DuelPartie extends Partie {
             default -> {
             }
         }
+        // joueur qui amorce ou pirate : immobilise, sans tir (ReglesBombe)
+        majAction();
         if (phase() != Phase.TERMINEE && ticks() % 20 == 0) {
             envoyerHud(false);
             DuelsStore.sauverSiBesoin(false);
@@ -736,6 +749,9 @@ public class DuelPartie extends Partie {
         acteur = null;
         siteCharge = "";
         minuterie = 0;
+        majAction();
+        // arene propre : rien de la manche precedente (grenades, C4, fumee, feu, objets au sol)
+        nettoyerArene();
         placerTous(attaquants, "spawn_a");
         placerTous(defenseurs, "spawn_b");
         // l'ordinateur va a un attaquant connecte au hasard (dans son inventaire au debut du combat), sinon il attend
@@ -1071,6 +1087,43 @@ public class DuelPartie extends Partie {
         else nouvelleManche();
     }
 
+    // ------------------------------------------------------------------ action en cours (amorcage, piratage)
+    /**
+     * Le joueur qui amorce (charge portee, codes en cours) ou qui pirate (charge posee, ordinateur en main) est
+     * immobilise et ne peut ni tirer, ni viser, ni recharger, ni changer d'arme ({@link ReglesBombe}) ; les autres sont
+     * liberes. Appele a chaque tick et a chaque changement de manche ; hors combat, personne n'est bloque.
+     */
+    private void majAction() {
+        UUID u = phase() == Phase.COMBAT && rd && acteur != null && (etatCharge == Vues.CHARGE_POSEE || progression > 0) ? acteur : null;
+        if (Objects.equals(u, bloque)) return;
+        if (bloque != null) {
+            ServerPlayer avant = joueur(bloque);
+            if (avant != null) ReglesBombe.bloquer(avant, false);
+            else ReglesBombe.oublier(bloque);
+        }
+        ServerPlayer p = u == null ? null : joueur(u);
+        bloque = p == null ? null : u;
+        if (p != null) ReglesBombe.bloquer(p, true);
+    }
+
+    // ------------------------------------------------------------------ arene propre
+    /**
+     * Remet l'arene de CE duel au propre (16/10, Matchs 0.11.0 : un C4 ou un fumigene jete en fin de manche restait a la
+     * manche suivante) : au debut de chaque manche et a la fin du duel. Retire dans les bornes de l'instance (elargies de
+     * 16 blocs) tout ce qui n'est ni un joueur, ni une entite permanente du duel (bombes, ordinateur, gere a part, cible
+     * d'entrainement) : grenades, C4 colles, fumigenes, molotovs et leur feu au sol, nuages de gaz, balles et projectiles,
+     * objets au sol ({@link ArenesService#nettoyer(Instance, java.util.function.Predicate)}) ; eteint les feux poses ; les
+     * joueurs effacent les particules (nuages de fumee deja dessines, paquet NETTOYAGE). Les effets des joueurs
+     * (aveuglement d'une flash, surdite...) sont retires a leur placement ({@link #preparerCorps}).
+     */
+    private void nettoyerArene() {
+        Instance inst = instance();
+        if (inst == null) return;
+        ArenesService.nettoyer(inst, e -> e instanceof CibleEntrainement || e instanceof BombeDuel || e instanceof OrdinateurDuel);
+        ArenesService.eteindreFeux(inst);
+        MatchsNet.versJoueurs(enLigneCopie(), new PaquetsDuels.EffetS2C(PaquetsDuels.EffetS2C.NETTOYAGE, 0, 0, 0));
+    }
+
     // ------------------------------------------------------------------ bombes et ordinateur (entites d'affichage)
     /** Poses des bombes : points bombe_a / bombe_b de la carte (a defaut site_a / site_b). */
     private void lirePosesBombes() {
@@ -1390,8 +1443,12 @@ public class DuelPartie extends Partie {
     @Override
     protected void surFin(@Nullable Equipe gagnante) {
         etatCharge = Vues.CHARGE_AUCUNE;
+        acteur = null;
+        progression = 0;
+        majAction();
         retirerOrdinateur();
         retirerBombes();
+        nettoyerArene();
         if (annulee) return;
         // statistiques globales (jamais les stats de clan)
         if (!entrainement) {
@@ -1458,6 +1515,8 @@ public class DuelPartie extends Partie {
     }
 
     private void rendre(ServerPlayer p) {
+        ReglesBombe.bloquer(p, false);
+        if (p.getUUID().equals(bloque)) bloque = null;
         Spectateurs.arreter(p, false);
         KillcamLogique.arreter(p);
         Equipement.retirer(p);
