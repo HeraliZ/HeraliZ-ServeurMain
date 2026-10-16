@@ -1,0 +1,74 @@
+
+[extraction]
+	#Temps (en secondes) à tenir dans la zone pour être extrait.
+	#Range: 5 ~ 3600
+	durationSeconds = 90
+	#Rayon (en blocs) de la zone d'extraction autour du terminal.
+	#La zone ne traverse pas les blocs : il faut rester à vue du terminal et à ciel ouvert.
+	#Range: 1.0 ~ 64.0
+	radius = 8.0
+	#Durée (en secondes) pendant laquelle la zone reste ouverte après la pose du terminal.
+	#Pendant ce temps, n'importe quel joueur peut s'extraire en tenant la zone.
+	#Range: 10 ~ 7200
+	zoneLifetimeSeconds = 300
+
+[zones]
+	#Temps (en secondes) à tenir dans une zone fixe de la carte créée sans temps
+	#(/extraction create <nom> [rayon]). Une zone créée avec son propre temps garde le sien.
+	#Range: 5 ~ 3600
+	durationSeconds = 30
+	#Colonne de fumée au-dessus des zones fixes ouvertes (repère visible de loin).
+	smoke = true
+
+[rotation]
+	#Rotation des zones fixes : seules quelques zones sont ouvertes en même temps, pour un temps,
+	#puis d'autres prennent le relais. false = les zones en rotation restent fermées
+	#(ouverture à la main : /extraction open <nom>).
+	enabled = true
+	#Nombre de zones ouvertes en même temps, au moins (si la carte en a moins, elles restent toutes
+	#ouvertes). Le nombre réel est tiré au hasard entre openAtOnce et openAtOnceMax (à chaque vague avec
+	#waves = true, sinon à chaque fermeture).
+	#Range: 1 ~ 32
+	openAtOnce = 4
+	#Nombre de zones ouvertes en même temps, au plus (voir openAtOnce).
+	#Range: 1 ~ 32
+	openAtOnceMax = 4
+	#Durée d'ouverture d'une zone (minutes), tirée au hasard entre minMinutes et maxMinutes
+	#(avec waves = true : durée de chaque vague).
+	#Range: 1 ~ 1440
+	minMinutes = 60
+	#Range: 1 ~ 1440
+	maxMinutes = 60
+	#Prévenir les joueurs proches d'une zone tant de minutes avant sa fermeture (0 = jamais).
+	#Range: 0 ~ 60
+	warnMinutes = 2
+	#Annoncer dans le chat chaque zone qui ouvre (aux joueurs de la même dimension).
+	announce = true
+	#true = par vagues : les zones de la rotation ouvrent et ferment ensemble, puis TOUTES changent
+	#(aucune zone de la vague précédente n'est reprise si la carte en a assez). Une zone fermée à la main
+	#pendant une vague est remplacée jusqu'à la fin de la vague. false = chaque zone a sa propre durée
+	#et une autre prend le relais à sa fermeture (comme avant la 1.5.0).
+	waves = true
+	#Distance minimale (blocs, à plat) entre deux zones ouvertes en même temps. Si les zones de la
+	#carte ne le permettent pas, le tirage la baisse peu à peu (noté dans le journal du serveur). 0 = aucune.
+	#Range: 0 ~ 100000
+	minDistance = 800
+	#Répartir les zones ouvertes sur la carte : au plus une par quart de la carte (quarts autour du
+	#centre des zones de la rotation ; plus d'une seulement s'il y a plus de 4 zones ouvertes). Relâché
+	#si impossible (noté dans le journal).
+	spread = true
+
+[destination]
+	#true = retour au monde du spawn de HeraliZ (point de réveil de la grotte du terminus, HeraliZ Utils)
+	#s'il est en place ; sinon (Utils absent, monde du spawn pas encore déposé), les réglages ci-dessous.
+	useHeralizSpawn = true
+	#true = TP au spawn du monde (/setworldspawn). false = coordonnées ci-dessous.
+	useWorldSpawn = true
+	#Dimension de destination si useWorldSpawn = false.
+	dimension = "minecraft:overworld"
+	#Range: -3.0E7 ~ 3.0E7
+	x = 0.5
+	#Range: -2048.0 ~ 2048.0
+	y = 100.0
+	#Range: -3.0E7 ~ 3.0E7
+	z = 0.5

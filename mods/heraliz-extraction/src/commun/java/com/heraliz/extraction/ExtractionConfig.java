@@ -18,6 +18,9 @@ public final class ExtractionConfig {
     public static final ForgeConfigSpec.IntValue ROTATION_MAX_MINUTES;
     public static final ForgeConfigSpec.IntValue ROTATION_WARN_MINUTES;
     public static final ForgeConfigSpec.BooleanValue ROTATION_ANNOUNCE;
+    public static final ForgeConfigSpec.BooleanValue ROTATION_WAVES;
+    public static final ForgeConfigSpec.IntValue ROTATION_MIN_DISTANCE;
+    public static final ForgeConfigSpec.BooleanValue ROTATION_SPREAD;
     public static final ForgeConfigSpec.BooleanValue USE_HERALIZ_SPAWN;
     public static final ForgeConfigSpec.BooleanValue USE_WORLD_SPAWN;
     public static final ForgeConfigSpec.ConfigValue<String> SPAWN_DIMENSION;
@@ -53,17 +56,31 @@ public final class ExtractionConfig {
                         "(ouverture à la main : /extraction open <nom>).")
                 .define("enabled", true);
         ROTATION_OPEN = b.comment("Nombre de zones ouvertes en même temps, au moins (si la carte en a moins, elles restent toutes",
-                        "ouvertes). Le nombre réel est tiré au hasard entre openAtOnce et openAtOnceMax à chaque fermeture.")
-                .defineInRange("openAtOnce", 5, 1, 32);
+                        "ouvertes). Le nombre réel est tiré au hasard entre openAtOnce et openAtOnceMax (à chaque vague avec",
+                        "waves = true, sinon à chaque fermeture).")
+                .defineInRange("openAtOnce", 4, 1, 32);
         ROTATION_OPEN_MAX = b.comment("Nombre de zones ouvertes en même temps, au plus (voir openAtOnce).")
-                .defineInRange("openAtOnceMax", 6, 1, 32);
-        ROTATION_MIN_MINUTES = b.comment("Durée d'ouverture d'une zone (minutes), tirée au hasard entre minMinutes et maxMinutes.")
-                .defineInRange("minMinutes", 30, 1, 1440);
+                .defineInRange("openAtOnceMax", 4, 1, 32);
+        ROTATION_MIN_MINUTES = b.comment("Durée d'ouverture d'une zone (minutes), tirée au hasard entre minMinutes et maxMinutes",
+                        "(avec waves = true : durée de chaque vague).")
+                .defineInRange("minMinutes", 60, 1, 1440);
         ROTATION_MAX_MINUTES = b.defineInRange("maxMinutes", 60, 1, 1440);
         ROTATION_WARN_MINUTES = b.comment("Prévenir les joueurs proches d'une zone tant de minutes avant sa fermeture (0 = jamais).")
                 .defineInRange("warnMinutes", 2, 0, 60);
         ROTATION_ANNOUNCE = b.comment("Annoncer dans le chat chaque zone qui ouvre (aux joueurs de la même dimension).")
                 .define("announce", true);
+        ROTATION_WAVES = b.comment("true = par vagues : les zones de la rotation ouvrent et ferment ensemble, puis TOUTES changent",
+                        "(aucune zone de la vague précédente n'est reprise si la carte en a assez). Une zone fermée à la main",
+                        "pendant une vague est remplacée jusqu'à la fin de la vague. false = chaque zone a sa propre durée",
+                        "et une autre prend le relais à sa fermeture (comme avant la 1.5.0).")
+                .define("waves", true);
+        ROTATION_MIN_DISTANCE = b.comment("Distance minimale (blocs, à plat) entre deux zones ouvertes en même temps. Si les zones de la",
+                        "carte ne le permettent pas, le tirage la baisse peu à peu (noté dans le journal du serveur). 0 = aucune.")
+                .defineInRange("minDistance", 800, 0, 100000);
+        ROTATION_SPREAD = b.comment("Répartir les zones ouvertes sur la carte : au plus une par quart de la carte (quarts autour du",
+                        "centre des zones de la rotation ; plus d'une seulement s'il y a plus de 4 zones ouvertes). Relâché",
+                        "si impossible (noté dans le journal).")
+                .define("spread", true);
         b.pop();
 
         b.push("destination");

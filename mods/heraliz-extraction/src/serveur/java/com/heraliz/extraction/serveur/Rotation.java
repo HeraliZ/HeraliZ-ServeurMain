@@ -5,6 +5,7 @@ import com.heraliz.extraction.HeralizExtraction;
 import com.heraliz.extraction.ModRegistry;
 import com.heraliz.extraction.api.ExtractionApi;
 import com.heraliz.extraction.reseau.Reseau;
+import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -26,17 +27,26 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Rotation des zones d'extraction fixes : quelques zones ouvertes à la fois (réglage rotation.openAtOnce), chacune pour
  * un temps tiré au hasard, puis d'autres prennent le relais (d'abord celles fermées depuis le plus longtemps). Annonces
  * dans le chat, rappel aux joueurs proches avant la fermeture, liste des zones ouvertes envoyée aux joueurs (carte du
  * monde : {@link ExtractionApi}). Une fois par seconde, presque rien à faire.
+ * <p>
+ * Par vagues (réglage rotation.waves, 1.5.0) : les zones tirées ouvrent ensemble pour la même durée, puis toutes ferment
+ * et une nouvelle vague est tirée sans reprendre celles de la précédente (si la carte en a assez). Le tirage
+ * ({@link Repartition}) garde les zones ouvertes loin les unes des autres (rotation.minDistance) et réparties par quarts
+ * de la carte (rotation.spread) ; s'il doit relâcher ces règles, il le note dans le journal.
  */
 @Mod.EventBusSubscriber(modid = HeralizExtraction.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class Rotation {
@@ -44,6 +54,9 @@ public final class Rotation {
     /** Joueurs prévenus de la fermeture d'une zone : à moins de tant de blocs. */
     private static final double NEARBY = 200.0D;
     private static final RandomSource RANDOM = RandomSource.create();
+    private static final Logger LOGGER = LogUtils.getLogger();
+    /** Une zone qui remplace une zone fermée à la main en pleine vague : seulement s'il reste au moins tant de ticks. */
+    private static final long RESTE_MIN = TICKS_PER_MINUTE;
     /** Directions (clé {@code heraliz_extraction.direction.<id>}, texte français de secours). */
     private static final String[][] DIRECTIONS = {{"n", "au nord"}, {"ne", "au nord-est"}, {"e", "à l'est"},
             {"se", "au sud-est"}, {"s", "au sud"}, {"so", "au sud-ouest"}, {"o", "à l'ouest"}, {"no", "au nord-ouest"}};
@@ -70,12 +83,15 @@ public final class Rotation {
 
     /** Nombre de zones à garder ouvertes, tiré entre openAtOnce et openAtOnceMax (-1 : à tirer). */
     private static int cible = -1;
+    /** Distance minimale tenue au dernier tirage (-1 : pas encore de tirage depuis le démarrage), pour /extraction rotation. */
+    private static int derniereDistance = -1;
 
     static void tick(MinecraftServer server) {
         ExtractionZones data = ExtractionZones.get(server);
         long now = now(server);
         boolean changed = false;
         boolean rotation = ExtractionConfig.ROTATION_ENABLED.get();
+        boolean vagues = rotation && ExtractionConfig.ROTATION_WAVES.get();
         int warn = ExtractionConfig.ROTATION_WARN_MINUTES.get() * TICKS_PER_MINUTE;
 
         for (ExtractionZones.Zone zone : List.copyOf(data.all())) {
@@ -85,12 +101,14 @@ public final class Rotation {
             }
             long left = until - now;
             if (left <= 0L) {
-                if (zone.mode() == ExtractionZones.Mode.ROTATION && rotation && closedCandidates(data, now, zone).isEmpty()) {
+                if (!vagues && zone.mode() == ExtractionZones.Mode.ROTATION && rotation && closedCandidates(data, now, zone).isEmpty()) {
                     // personne pour prendre le relais : la zone reste ouverte un tour de plus, sans rien annoncer
                     data.open(zone.name(), now + randomDuration());
                 } else {
                     data.close(zone.name(), now);
-                    cible = -1;                                                     // nouveau tirage du nombre ouvert
+                    if (!vagues) {
+                        cible = -1;                                                 // nouveau tirage du nombre ouvert
+                    }
                     tellNearby(server, zone, "heraliz_extraction.zone.fermee", "%s est fermée.", ChatFormatting.GRAY);
                 }
                 changed = true;
@@ -99,13 +117,11 @@ public final class Rotation {
             }
         }
 
-        if (rotation) {
+        if (vagues) {
+            changed |= remplirVague(server, data, now);
+        } else if (rotation) {
             List<ExtractionZones.Zone> pool = data.all().stream().filter(z -> z.mode() == ExtractionZones.Mode.ROTATION).toList();
-            int min = ExtractionConfig.ROTATION_OPEN.get();
-            int max = Math.max(min, ExtractionConfig.ROTATION_OPEN_MAX.get());
-            if (cible < min || cible > max) {
-                cible = min + RANDOM.nextInt(max - min + 1);
-            }
+            tirerCible();
             int target = Math.min(cible, pool.size());
             int open = (int) pool.stream().filter(z -> data.isOpen(z, now)).count();
             while (open < target) {
@@ -114,9 +130,19 @@ public final class Rotation {
                     break;
                 }
                 // au hasard parmi toutes les zones fermées, sauf celles qui viennent de fermer (le quart le plus récent),
-                // pour qu'une zone ne rouvre pas aussitôt
+                // pour qu'une zone ne rouvre pas aussitôt ; loin des zones ouvertes et dans un quart libre si possible
                 int choix = Math.max(1, candidates.size() - candidates.size() / 4);
-                ExtractionZones.Zone pick = candidates.get(RANDOM.nextInt(choix));
+                Set<String> recentes = new HashSet<>();
+                for (int i = choix; i < candidates.size(); i++) {
+                    recentes.add(candidates.get(i).name());
+                }
+                Repartition.Choix tirage = Repartition.choisir(pool, ouvertes(data, now), candidates, recentes, 1,
+                        ExtractionConfig.ROTATION_MIN_DISTANCE.get(), ExtractionConfig.ROTATION_SPREAD.get(), RANDOM);
+                if (tirage.zones().isEmpty()) {
+                    break;
+                }
+                noterTirage(tirage, 1);
+                ExtractionZones.Zone pick = tirage.zones().get(0);
                 long duration = randomDuration();
                 data.open(pick.name(), now + duration);
                 announceOpening(server, pick, duration);
@@ -129,6 +155,106 @@ public final class Rotation {
         if (changed) {
             sync(server);
         }
+    }
+
+    /**
+     * Rotation par vagues : complète les places libres. Pas de vague en cours (fin passée, ou première fois) = nouvelle
+     * vague : nombre de zones et durée tirés, zones de la vague précédente évitées. En pleine vague (zone fermée ou
+     * supprimée à la main) : une remplaçante, jusqu'à la fin de la vague, en évitant les zones de cette vague.
+     */
+    private static boolean remplirVague(MinecraftServer server, ExtractionZones data, long now) {
+        List<ExtractionZones.Zone> pool = data.all().stream().filter(z -> z.mode() == ExtractionZones.Mode.ROTATION).toList();
+        if (pool.isEmpty()) {
+            return false;
+        }
+        long fin = data.vagueFin();
+        boolean nouvelle = fin <= now;
+        if (nouvelle) {
+            cible = -1;                                                             // nombre de zones tiré à chaque vague
+        }
+        tirerCible();
+        List<ExtractionZones.Zone> ouvertesRotation = new ArrayList<>();
+        List<ExtractionZones.Zone> candidates = new ArrayList<>();
+        for (ExtractionZones.Zone z : pool) {
+            (data.isOpen(z, now) ? ouvertesRotation : candidates).add(z);
+        }
+        int manque = Math.min(cible, pool.size()) - ouvertesRotation.size();
+        if (manque <= 0 || candidates.isEmpty()) {
+            return false;
+        }
+        long duree;
+        if (nouvelle) {
+            duree = randomDuration();
+            fin = now + duree;
+        } else {
+            duree = fin - now;
+            if (duree < RESTE_MIN) {
+                return false; // la vague finit bientôt : la suivante prendra la place
+            }
+        }
+        Repartition.Choix tirage = Repartition.choisir(pool, ouvertes(data, now), candidates, data.vagueZones(), manque,
+                ExtractionConfig.ROTATION_MIN_DISTANCE.get(), ExtractionConfig.ROTATION_SPREAD.get(), RANDOM);
+        if (tirage.zones().isEmpty()) {
+            return false;
+        }
+        noterTirage(tirage, manque);
+        Set<String> membres = nouvelle ? new LinkedHashSet<>() : data.vagueZones();
+        for (ExtractionZones.Zone z : tirage.zones()) {
+            data.open(z.name(), fin);
+            announceOpening(server, z, duree);
+            membres.add(z.name());
+        }
+        data.vague(fin, membres);
+        if (nouvelle) {
+            LOGGER.info("[extraction] nouvelle vague pour {} min : {}", duree / TICKS_PER_MINUTE,
+                    String.join(", ", tirage.zones().stream().map(ExtractionZones.Zone::name).toList()));
+        }
+        return true;
+    }
+
+    /** Tire le nombre de zones ouvertes entre openAtOnce et openAtOnceMax s'il n'est pas (ou plus) dans les bornes. */
+    private static void tirerCible() {
+        int min = ExtractionConfig.ROTATION_OPEN.get();
+        int max = Math.max(min, ExtractionConfig.ROTATION_OPEN_MAX.get());
+        if (cible < min || cible > max) {
+            cible = min + RANDOM.nextInt(max - min + 1);
+        }
+    }
+
+    /** Toutes les zones ouvertes (permanentes comprises) : les zones tirées doivent s'en tenir loin. */
+    private static List<ExtractionZones.Zone> ouvertes(ExtractionZones data, long now) {
+        List<ExtractionZones.Zone> out = new ArrayList<>();
+        for (ExtractionZones.Zone z : data.all()) {
+            if (data.isOpen(z, now)) {
+                out.add(z);
+            }
+        }
+        return out;
+    }
+
+    /** Journal du serveur quand le tirage a dû relâcher ses règles (distance, quarts, zones à éviter, nombre). */
+    private static void noterTirage(Repartition.Choix tirage, int voulues) {
+        derniereDistance = tirage.distance();
+        int voulue = ExtractionConfig.ROTATION_MIN_DISTANCE.get();
+        if (tirage.distance() < voulue) {
+            LOGGER.info("[extraction] distance minimale entre zones ouvertes ramenée de {} à {} blocs : les zones de la carte ne permettent pas mieux",
+                    voulue, tirage.distance());
+        }
+        if (!tirage.quarts()) {
+            LOGGER.info("[extraction] répartition par quarts de la carte relâchée : pas assez de zones dans les quarts libres");
+        }
+        if (!tirage.evitees()) {
+            LOGGER.info("[extraction] pas assez de zones nouvelles : une zone de la vague précédente (ou qui vient de fermer) est reprise");
+        }
+        if (tirage.zones().size() < voulues) {
+            LOGGER.info("[extraction] {} zone(s) ouverte(s) sur {} voulues : pas assez de zones fermées dans la rotation",
+                    tirage.zones().size(), voulues);
+        }
+    }
+
+    /** Distance minimale tenue au dernier tirage (-1 : aucun tirage depuis le démarrage). */
+    static int derniereDistance() {
+        return derniereDistance;
     }
 
     /** Zones de la rotation fermées, triées de la plus anciennement fermée à la plus récente ({@code except} exclue). */

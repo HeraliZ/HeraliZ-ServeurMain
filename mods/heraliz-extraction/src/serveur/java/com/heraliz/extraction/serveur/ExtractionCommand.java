@@ -322,6 +322,21 @@ public final class ExtractionCommand {
                 : Component.translatableWithFallback("heraliz_extraction.commande.rotation_coupee",
                 "Rotation coupée (rotation.enabled = false) : seules les ouvertures à la main et les zones permanentes comptent."))
                 .withStyle(ChatFormatting.GOLD), false);
+        if (on) {
+            int derniere = Rotation.derniereDistance();
+            source.sendSuccess(() -> Component.literal(" ").append(Component.translatableWithFallback(
+                    ExtractionConfig.ROTATION_WAVES.get() ? "heraliz_extraction.commande.rotation_vagues"
+                            : "heraliz_extraction.commande.rotation_relais",
+                    ExtractionConfig.ROTATION_WAVES.get()
+                            ? "Par vagues : toutes les zones changent ensemble. Au moins %s blocs entre deux zones ouvertes (dernier tirage : %s), %s."
+                            : "Chaque zone a sa durée, une autre prend le relais. Au moins %s blocs entre deux zones ouvertes (dernier tirage : %s), %s.",
+                    String.valueOf(ExtractionConfig.ROTATION_MIN_DISTANCE.get()),
+                    derniere < 0 ? "-" : String.valueOf(derniere),
+                    ExtractionConfig.ROTATION_SPREAD.get()
+                            ? Component.translatableWithFallback("heraliz_extraction.commande.rotation_quarts", "une par quart de la carte")
+                            : Component.translatableWithFallback("heraliz_extraction.commande.rotation_sans_quarts", "sans répartition par quarts")))
+                    .withStyle(ChatFormatting.GRAY), false);
+        }
         int open = 0;
         for (ExtractionZones.Zone zone : zones.all()) {
             if (zones.isOpen(zone, now)) {
@@ -352,6 +367,7 @@ public final class ExtractionCommand {
         for (ExtractionZones.Zone zone : open) {
             Rotation.close(server, zone);
         }
+        zones.finirVague(); // par vagues : une vague entière est tirée tout de suite, sans les zones qu'on vient de fermer
         Rotation.tick(server);
         source.sendSuccess(() -> Component.translatableWithFallback("heraliz_extraction.commande.suivantes",
                 "%s zone(s) fermée(s), la rotation a ouvert les suivantes.", String.valueOf(open.size()))
