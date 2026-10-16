@@ -27,8 +27,8 @@ import java.util.Locale;
 
 /**
  * La carte du monde, au style des écrans de clan (panneaux de verre, DM Sans, canevas 640 x 360). Version « AAA »
- * (proposition 1 des maquettes du 16/10, à valider) : textes lisibles (jamais moins de 7,5 unités d'interface),
- * étiquettes avec halo qui ne se chevauchent pas, carte coupée à la bordure du monde.
+ * (proposition 1 « Verre » des maquettes du 16/10, validée ; icônes au trait fin sur petite pastille ronde en 2.14.1) :
+ * textes lisibles (jamais moins de 7,5 unités d'interface), étiquettes avec halo qui ne se chevauchent pas, carte coupée à la bordure du monde.
  * <ul>
  *     <li>Fond : vue de dessus du monde ({@link Fond}), coupée à la <b>bordure</b> : bordure du monde envoyée par le
  *     serveur, bordure écrite dans carte.json et emprise des images (la plus petite des trois). Dehors : fond sombre
@@ -262,10 +262,38 @@ public final class EcranCarte extends Screen {
         return Math.max(0.005f, Math.min(K_MAX, ajuste * 0.96f));
     }
 
-    /** Facteur d'agrandissement des marqueurs et des étiquettes : un peu plus grands quand on zoome. */
+    /**
+     * Facteur d'agrandissement des marqueurs : à peine plus grands quand on zoome (0,92 en vue d'ensemble, 1,1 de près),
+     * pour garder des icônes fines et une carte peu chargée.
+     */
     private float e() {
-        return 1f + zoom01() * 0.3f;
+        return 0.92f + zoom01() * 0.18f;
     }
+
+    /** Fondu de 0 (z ≤ a) à 1 (z ≥ b), adouci : les marqueurs apparaissent avec le zoom au lieu de surgir. */
+    static float fondu(float z, float a, float b) {
+        float t = Mth.clamp((z - a) / (b - a), 0f, 1f);
+        return t * t * (3 - 2 * t);
+    }
+
+    /**
+     * Visibilité d'un lieu selon le zoom : les grands lieux (villes, aérodromes, bases militaires, ports, centrales)
+     * toujours ; villages et petits points d'intérêt (usine, hôpital, gare, point) seulement quand on s'approche.
+     */
+    private float visibilite(Lieu l) {
+        return switch (l.type()) {
+            case VILLE, AERODROME, MILITAIRE, PORT, CENTRALE -> 1f;
+            default -> fondu(zoom01(), 0.08f, 0.28f);
+        };
+    }
+
+    /** Opacité des drapeaux des territoires (seulement de près). */
+    private float visibiliteDrapeaux() {
+        return fondu(k, 0.28f, 0.40f);
+    }
+
+    /** Demi-côté des pastilles des lieux, des extractions et des drapeaux. */
+    private static final float R_LIEU = 5.2f, R_EXTRACTION = 5.8f, R_DRAPEAU = 4.4f;
 
     /** 0 en vue d'ensemble, 1 de près (sert à la taille des noms de villes). */
     private float zoom01() {
@@ -359,6 +387,7 @@ public final class EcranCarte extends Screen {
         if (fondIci && fond.a(vue)) Fond.dessiner(g, fond, vue, ox, oy, cx, cz, k, width, height);
 
         float e = e();
+        Icones.echelle(1f / unPixel);
         // ---- formes
         Formes.debut(g);
         if (grille) grilleTraits();
@@ -366,7 +395,6 @@ public final class EcranCarte extends Screen {
         if (extractions) extractionsFormes(e);
         if (pings) pingsFormes(e);
         joueurFormes(e);
-        if (clan) alliesFormes(e);
         horsCarte();
         vignette();
         Formes.fin();
@@ -376,6 +404,7 @@ public final class EcranCarte extends Screen {
         if (lieux) lieuxIcones(e);
         if (extractions) extractionsIcones(e);
         if (pings) pingsIcones(e);
+        if (clan) alliesIcones(e);
         joueurIcones(e);
         Icones.fin();
         // ---- bannières des clans au centre des zones
@@ -550,10 +579,10 @@ public final class EcranCarte extends Screen {
 
     private void extractionsFormes(float e) {
         for (Sources.Extraction x : ouvertes) {
-            float X = sx(x.x()), Y = sy(x.z()), R = Math.max(x.rayon() * k, 8.5f * e);
+            float X = sx(x.x()), Y = sy(x.z()), R = Math.max(x.rayon() * k, 7.5f * e);
             if (horsEcran(X, Y, R + 8)) continue;
-            Formes.disque(X, Y, R, Formes.argb(EXTRACTION, 0.15f));
-            Formes.anneauPointille(X, Y, R, 0.9f, 2.2f, 1.8f, Formes.argb(EXTRACTION, 1f));
+            Formes.disque(X, Y, R, Formes.argb(EXTRACTION, 0.12f));
+            Formes.anneauPointille(X, Y, R, 0.7f, 2.2f, 1.8f, Formes.argb(EXTRACTION, 0.85f));
         }
     }
 
@@ -562,29 +591,28 @@ public final class EcranCarte extends Screen {
             PingsClient.Visuel v = PingsClient.PINGS[i];
             float X = sx(v.x), Y = sy(v.z);
             if (horsEcran(X, Y, 10 * e)) continue;
-            Formes.anneau(X, Y, 8.5f * e, 0.9f, Formes.argb(v.type.couleur, 0.65f));
+            Formes.anneau(X, Y, 7f * e, 0.7f, Formes.argb(v.type.couleur, 0.5f));
         }
     }
 
     private void joueurFormes(float e) {
         float X = sx(px), Y = sy(pz);
-        Formes.cone(X, Y, 55f * e, cap, 0.9f, Formes.argb(0xFFFFFF, 0.26f));
-        Formes.disque(X, Y, 8f * e, Formes.argb(0xFFFFFF, 0.16f));
-        Formes.disque(X, Y, 6.2f * e, 0xF0101319);
-        Formes.anneau(X, Y, 6.2f * e, 1.1f, 0xFFFFFFFF);
+        Formes.cone(X, Y, 50f * e, cap, 0.9f, Formes.argb(0xFFFFFF, 0.22f));
     }
 
     private int couleurClan() {
         return monClan != null ? monClan.couleur() : Ui.accent();
     }
 
-    private void alliesFormes(float e) {
+    /** Membres du clan : petit point de la couleur du clan, liseré blanc et ombre douce (icônes lissées). */
+    private void alliesIcones(float e) {
         int c = couleurClan();
         for (Sources.Allie a : allies) {
             float X = sx(a.x()), Y = sy(a.z());
-            if (horsEcran(X, Y, 4)) continue;
-            Formes.disque(X, Y, 4f * e, 0xFFFFFFFF);
-            Formes.disque(X, Y, 3.1f * e, 0xFF000000 | c);
+            if (horsEcran(X, Y, 6)) continue;
+            Icones.icone(Icones.OMBRE, X, Y, 4.6f * e, Formes.argb(0x000000, 0.5f));
+            Icones.icone(Icones.DISQUE, X, Y, 3.7f * e, 0xFFFFFFFF);
+            Icones.icone(Icones.DISQUE, X, Y, 2.9f * e, 0xFF000000 | c);
         }
     }
 
@@ -600,12 +628,13 @@ public final class EcranCarte extends Screen {
 
     // =================================================================== calques : icônes
     private void drapeauxIcones(float e) {
-        if (k <= 0.33f) return;
+        float a = visibiliteDrapeaux();
+        if (a <= 0.01f) return;
         for (Sources.Zone z : zones) {
             if (!z.drapeau()) continue;
             float X = sx(z.drapeauX() + 0.5), Y = sy(z.drapeauZ() + 0.5);
             if (horsEcran(X, Y, 10)) continue;
-            Icones.encadree(Icones.DRAPEAU, X, Y, 5.4f * e, couleurZone(z), 1f);
+            Icones.pastille(Icones.DRAPEAU, X, Y, R_DRAPEAU * e, couleurZone(z), a);
         }
     }
 
@@ -614,7 +643,7 @@ public final class EcranCarte extends Screen {
             if (l.type().texteSeul()) continue;
             float X = sx(l.x() + 0.5), Y = sy(l.z() + 0.5);
             if (horsEcran(X, Y, 10)) continue;
-            Icones.encadree(Icones.index(l.type().icone), X, Y, 5.6f * e, l.type().couleur, 1f);
+            Icones.pastille(Icones.index(l.type().icone), X, Y, R_LIEU * e, l.type().couleur, visibilite(l));
         }
     }
 
@@ -622,23 +651,30 @@ public final class EcranCarte extends Screen {
         for (Sources.Extraction x : ouvertes) {
             float X = sx(x.x()), Y = sy(x.z());
             if (horsEcran(X, Y, 10)) continue;
-            Icones.encadree(Icones.SORTIE, X, Y, 5.6f * e, EXTRACTION, 1f);
+            Icones.pastille(Icones.SORTIE, X, Y, R_EXTRACTION * e, EXTRACTION, 1f);
         }
     }
 
+    /** Pings : losange de la couleur du type, fin liseré blanc et ombre douce (plus de gros contour noir). */
     private void pingsIcones(float e) {
         for (int i = 0; i < PingsClient.n; i++) {
             PingsClient.Visuel v = PingsClient.PINGS[i];
             float X = sx(v.x), Y = sy(v.z);
             if (horsEcran(X, Y, 10)) continue;
-            Icones.icone(Icones.LOSANGE, X, Y, 6f * e, 0xFF0D0F14);
-            Icones.icone(Icones.LOSANGE, X, Y, 5f * e, 0xFF000000 | v.type.couleur);
+            Icones.icone(Icones.OMBRE, X, Y, 6f * e, Formes.argb(0x000000, 0.5f));
+            Icones.icone(Icones.LOSANGE, X, Y, 4.9f * e, Formes.argb(0xFFFFFF, 0.9f));
+            Icones.icone(Icones.LOSANGE, X, Y, 4.2f * e, 0xFF000000 | v.type.couleur);
         }
     }
 
+    /** Le joueur : halo léger, pastille sombre au bord blanc fin et flèche dans sa direction. */
     private void joueurIcones(float e) {
         float X = sx(px), Y = sy(pz);
-        Icones.tournee(Icones.FLECHE, X, Y, 4.6f * e, cap, 0xFFFFFFFF);
+        Icones.icone(Icones.HALO, X, Y, 9f * e, Formes.argb(0xFFFFFF, 0.22f));
+        Icones.icone(Icones.OMBRE, X, Y, 7f * e, Formes.argb(0x000000, 0.55f));
+        Icones.icone(Icones.PASTILLE, X, Y, 6.2f * e, Formes.argb(0x101319, 0.94f));
+        Icones.icone(Icones.PASTILLE_BORD, X, Y, 6.2f * e, 0xFFFFFFFF);
+        Icones.tournee(Icones.FLECHE, X, Y, 3.6f * e, cap, 0xFFFFFFFF);
     }
 
     private void zonesBannieres(float e) {
@@ -666,6 +702,8 @@ public final class EcranCarte extends Screen {
     /** Étiquette posée si la place est libre (halo sombre, centrée en (X, Y)). */
     private boolean etiquette(String s, ResourceLocation police, float X, float Y, int argb, float echelle, float espacement,
                               boolean capitales, float halo) {
+        // presque transparente : rien (Minecraft dessine opaque un texte d'alpha < 4)
+        if ((argb >>> 24) < 10) return false;
         float w = Texte.largeurEtiquette(font, s, police, echelle, espacement, capitales), h = Texte.em(police) * echelle;
         if (sousPanneau(X - w / 2, Y) || sousPanneau(X + w / 2, Y) || !placer(X, Y, w, h)) return false;
         textes.add(() -> Texte.etiquette(gr, font, s, police, X, Y, argb, echelle, espacement, capitales, halo));
@@ -684,13 +722,13 @@ public final class EcranCarte extends Screen {
             if (horsEcran(X, Y, 60)) continue;
             switch (l.type()) {
                 case VILLE -> etiquette(l.nom(), Ui.BOLD, X, Y, 0xFFFFFFFF, (9.5f + 4.5f * z) / 11f, 1.1f + 0.4f * z, true, 0.9f);
-                case VILLAGE -> etiquette(l.nom(), Ui.BOLD, X, Y, Formes.argb(0xE1E5EC, 1f), (8.2f + 2.6f * z) / 11f, 0, false, 0.8f);
+                // villages : seulement quand on s'approche, en fondu
+                case VILLAGE -> etiquette(l.nom(), Ui.BOLD, X, Y, Formes.argb(0xE1E5EC, visibilite(l)), (8.2f + 2.6f * z) / 11f, 0, false, 0.8f);
                 default -> {
-                    // icône toujours là ; son nom quand on s'approche (ou pour les grands lieux)
+                    // nom sous l'icône : grands lieux dès la vue d'ensemble, les autres de près, toujours en fondu
                     boolean grand = l.type() == Lieu.Type.AERODROME || l.type() == Lieu.Type.MILITAIRE || l.type() == Lieu.Type.PORT;
-                    if (z > 0.35f || grand) {
-                        etiquette(l.nom(), Ui.BOLD, X, Y + 5.6f * e + 5.5f, Formes.argb(l.type().couleur, 1f), 0.73f, 0, false, 0.7f);
-                    }
+                    float a = (grand ? 1f : fondu(z, 0.32f, 0.5f)) * visibilite(l);
+                    etiquette(l.nom(), Ui.BOLD, X, Y + R_LIEU * e + 5f, Formes.argb(l.type().couleur, a), 0.73f, 0, false, 0.7f);
                 }
             }
         }
@@ -725,22 +763,29 @@ public final class EcranCarte extends Screen {
             float X = sx(z.x() + 0.5), Y = sy(z.z() + 0.5);
             if (horsEcran(X, Y, 60)) continue;
             int c = couleurZone(z);
-            if (k > 0.33f && z.drapeau()) {
-                etiquette(I18n.get("heraliz_carte.panneau.drapeau"), Ui.BOLD, sx(z.drapeauX() + 0.5), sy(z.drapeauZ() + 0.5) + 5.4f * e + 5,
-                        Formes.argb(c, 1f), S_CAPS, 0.5f, true, 0.6f);
+            float ad = visibiliteDrapeaux();
+            if (ad > 0.04f && z.drapeau()) {
+                etiquette(I18n.get("heraliz_carte.panneau.drapeau"), Ui.BOLD, sx(z.drapeauX() + 0.5), sy(z.drapeauZ() + 0.5) + R_DRAPEAU * e + 4.5f,
+                        Formes.argb(c, ad), S_CAPS, 0.5f, true, 0.6f);
             }
             etiquette(z.nom(), Ui.BOLD, X, Y, 0xFFFFFFFF, (9.5f + 4.5f * z01) / 11f, 1.1f + 0.4f * z01, true, 0.9f);
-            // pastille d'état : fond sombre, contour de la couleur, capitales
+            // pastille d'état : fond sombre, contour de la couleur, capitales. En vue d'ensemble, seulement les états qui
+            // demandent l'attention (capture, contestée) ; les autres apparaissent en fondu quand on s'approche
             String s = pastilleZone(z);
             int cs = couleurPastille(z);
-            float w = Texte.largeurEspacee(font, s, Ui.BOLD, S_CAPS, 0.5f) + 8, h = 10.5f, py = Y + 7.5f + 3.5f * z01;
+            boolean urgent = "CAPTURE".equals(z.etat()) || "CONTESTE".equals(z.etat());
+            float ap = urgent ? 1f : fondu(z01, 0.15f, 0.35f);
+            if (ap < 0.05f) continue;
+            // sous le nom (demi-hauteur du nom + 2) : avant, la pastille touchait le nom d'une ville du même endroit et
+            // n'était jamais posée
+            float w = Texte.largeurEspacee(font, s, Ui.BOLD, S_CAPS, 0.5f) + 8, h = 10.5f, py = Y + (9.5f + 4.5f * z01) / 2 + 2 + h / 2;
             if (sousPanneau(X - w / 2, py) || sousPanneau(X + w / 2, py) || !placer(X, py, w, h)) continue;
             fonds.add(() -> {
-                Ui.soft(gr, Math.round(X - w / 2), Math.round(py - h / 2), Math.round(w), Math.round(h), 0xD80A0C10);
+                Ui.soft(gr, Math.round(X - w / 2), Math.round(py - h / 2), Math.round(w), Math.round(h), Formes.argb(0x0A0C10, 0.85f * ap));
                 Ui.softOutline(gr, Math.round(X - w / 2) + 1, Math.round(py - h / 2) + 1, Math.round(w) - 2, Math.round(h) - 2,
-                        Formes.argb(cs, 0.6f));
+                        Formes.argb(cs, 0.5f * ap));
             });
-            textes.add(() -> Texte.espaceeCentree(gr, font, s, Ui.BOLD, X, py - 11 * S_CAPS / 2, Formes.argb(cs, 1f), S_CAPS, 0.5f, false));
+            textes.add(() -> Texte.espaceeCentree(gr, font, s, Ui.BOLD, X, py - 11 * S_CAPS / 2, Formes.argb(cs, ap), S_CAPS, 0.5f, false));
         }
     }
 
@@ -751,7 +796,7 @@ public final class EcranCarte extends Screen {
             String t = I18n.get("heraliz_carte.extraction", x.nom());
             int s = x.secondesRestantes(heureDeJeu);
             if (s >= 0) t += " · " + duree(s * 1000L);
-            etiquette(t, Ui.BOLD, X, Y + Math.max(x.rayon() * k, 8.5f * e) + 5.5f, Formes.argb(EXTRACTION_TEXTE, 1f), 0.73f, 0, false, 0.7f);
+            etiquette(t, Ui.BOLD, X, Y + Math.max(x.rayon() * k, 7.5f * e) + 5.5f, Formes.argb(EXTRACTION_TEXTE, 1f), 0.73f, 0, false, 0.7f);
         }
     }
 
@@ -761,7 +806,7 @@ public final class EcranCarte extends Screen {
             float X = sx(v.x), Y = sy(v.z);
             if (horsEcran(X, Y, 60)) continue;
             String t = I18n.get(v.type.cle()) + " · " + metres(Math.hypot(v.x - px, v.z - pz));
-            etiquette(t, Ui.BOLD, X, Y - 9 * e - 5, Formes.argb(v.type.couleur, 1f), 0.73f, 0, false, 0.7f);
+            etiquette(t, Ui.BOLD, X, Y - 7.5f * e - 5, Formes.argb(v.type.couleur, 1f), 0.73f, 0, false, 0.7f);
         }
     }
 
@@ -770,7 +815,7 @@ public final class EcranCarte extends Screen {
             float X = sx(a.x()), Y = sy(a.z());
             if (horsEcran(X, Y, 60)) continue;
             float w = Texte.largeur(font, a.nom(), Ui.BOLD, 0.73f);
-            etiquette(a.nom(), Ui.BOLD, X + 5.5f * e + w / 2, Y, 0xFFFFFFFF, 0.73f, 0, false, 0.7f);
+            etiquette(a.nom(), Ui.BOLD, X + 4.8f * e + w / 2, Y, 0xFFFFFFFF, 0.73f, 0, false, 0.7f);
         }
     }
 
@@ -1303,7 +1348,7 @@ public final class EcranCarte extends Screen {
         }
         if (lignes.isEmpty() && lieux) {
             for (Lieu l : lieuxIci) {
-                if (l.type().texteSeul() || Math.hypot(sx(l.x() + 0.5) - mx, sy(l.z() + 0.5) - my) > 7 * e) continue;
+                if (l.type().texteSeul() || visibilite(l) < 0.5f || Math.hypot(sx(l.x() + 0.5) - mx, sy(l.z() + 0.5) - my) > 7 * e) continue;
                 lignes.add(Ui.lit(l.nom(), Ui.BOLD));
                 lignes.add(Ui.lit(I18n.get(l.type().cle()), Ui.FONT));
                 lignes.add(Ui.lit(metres(Math.hypot(l.x() + 0.5 - px, l.z() + 0.5 - pz)), Ui.FONT));

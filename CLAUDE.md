@@ -1108,11 +1108,18 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   port|hopital|gare|point> <nom>` (ailleurs : `/execute positioned X Y Z run carte lieu ajouter ...`), `/carte lieu
   retirer <nom>`, `/carte lieu liste`, `/carte nom <nom>` (sous-titre « Monde · … ») ; gardés avec le monde
   (`data/heraliz_carte_lieux.dat`, ils suivront la copie finale de la carte). Fond : section 9 ;
-- carte du monde, refonte « AAA » (16/10, Utils 2.14.0, proposition 1 « Verre » des maquettes, À VALIDER ; proposition 2
+- carte du monde, refonte « AAA » (16/10, Utils 2.14.0, proposition 1 « Verre » des maquettes, VALIDÉE ; proposition 2
   « Tactique » en réserve) : aucun texte sous 7,5 unités d'interface ; noms de villes en capitales avec halo, plus grands
   de près ; étiquettes sans chevauchement (villes d'abord) ; pastille d'état sous chaque territoire ; interrupteurs des
   calques ; boutons + et − ; grille depuis le coin nord-ouest de la bordure ; déplacement et zoom bornés à la carte ;
   territoires, lieux et extractions hors de la bordure non affichés (« N hors de la carte (à reposer) ») ;
+  icônes jugées « trop grossières » puis refaites (Utils 2.14.1) : pictogrammes au trait fin sur une petite pastille ronde
+  de verre avec ombre douce (plus de cadre carré à gros bord), atlas à trois niveaux de détail (128, 64, 32 px, choisi
+  selon la taille affichée, jamais réduit plus de 2 fois : net sans scintillement), refait par
+  `python mods/heralisz-utils/outils/icones_carte.py` (`--planche FICHIER` : planche de contrôle), jamais à la main ;
+  tailles mesurées (lieux 10 unités de large environ, extractions 11, drapeaux 8,5), à peine plus grandes de près ;
+  vue d'ensemble allégée : villages, usines, hôpitaux, gares et points n'apparaissent qu'en zoomant, en fondu ;
+  pastille d'état d'un territoire seulement de près (sauf capture et contestée, toujours), posée sous le nom ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
   du logo « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (« Bientôt »), trois nouveautés non cliquables
