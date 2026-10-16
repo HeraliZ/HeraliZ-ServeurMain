@@ -518,5 +518,9 @@
   "heraliz_loot.cmd.rarete.origine.jeu": "(set in game)",
   "heraliz_loot.cmd.rarete.aucun_choix": "No in-game choice for %s.",
   "heraliz_loot.cmd.rarete.defaut": "Default rarity: %s",
-  "heraliz_loot.vanilla.scelle": "This container is empty and sealed."
+  "heraliz_loot.vanilla.scelle": "This container is empty and sealed.",
+  "heraliz_loot.vanilla.poste": "This station is out of order.",
+  "heraliz_loot.presentoir.protege": "This display is protected.",
+  "heraliz_loot.nuisance.interdit": "You can't do that here.",
+  "heraliz_loot.nuisance.panneau": "This sign can't be edited."
 }
