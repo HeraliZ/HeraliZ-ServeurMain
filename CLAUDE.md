@@ -134,8 +134,8 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10). Moteur repris de LR Tactical (licence GPL gardée) |
-| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
-| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) |
+| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : carte coupée à la bordure du monde, vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals ; zone du casino (entrée payante) et zone VIP (grades boutique, section 10), chacune avec ses entrées et ses videurs |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
@@ -865,6 +865,11 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   montre « Carte en préparation ». À refaire quand la carte est finie,
   et seulement depuis une carte propre (une construction de joueur posée sur la carte apparaîtrait sur le fond ; les
   blocs de CRac sont ignorés d'office) ; chaque version ajoute environ 3 Mo au dépôt pour toujours : la refaire rarement.
+  Recadré sur la bordure du monde (Utils 2.14.0, 16/10) : `carte_monde.py` lit la bordure dans le `level.dat` du monde
+  (défaut ; `--bordure x1 z1 x2 z2` ou `--bordure aucune`) et l'écrit dans `carte.json` (clé `bordure`). Au-delà, le
+  terrain est « étiré » (bandes de neige au nord, traits dans la mer) : c'était la « zone neige étirée ». L'écran
+  n'affiche rien au-delà de la plus petite de : bordure envoyée par le serveur, clé `bordure`, emprise des images. Fond
+  actuel : `bordure` mise à la main à -1500 / 1500 (celle de la v3).
 
 ---
 
@@ -1099,6 +1104,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   port|hopital|gare|point> <nom>` (ailleurs : `/execute positioned X Y Z run carte lieu ajouter ...`), `/carte lieu
   retirer <nom>`, `/carte lieu liste`, `/carte nom <nom>` (sous-titre « Monde · … ») ; gardés avec le monde
   (`data/heraliz_carte_lieux.dat`, ils suivront la copie finale de la carte). Fond : section 9 ;
+- carte du monde, refonte « AAA » (16/10, Utils 2.14.0, proposition 1 « Verre » des maquettes, À VALIDER ; proposition 2
+  « Tactique » en réserve) : aucun texte sous 7,5 unités d'interface ; noms de villes en capitales avec halo, plus grands
+  de près ; étiquettes sans chevauchement (villes d'abord) ; pastille d'état sous chaque territoire ; interrupteurs des
+  calques ; boutons + et − ; grille depuis le coin nord-ouest de la bordure ; déplacement et zoom bornés à la carte ;
+  territoires, lieux et extractions hors de la bordure non affichés (« N hors de la carte (à reposer) ») ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
   du logo « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (« Bientôt »), trois nouveautés non cliquables
@@ -1271,6 +1281,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : suivent l'ancienne carte, à refaire pour la
   nouvelle, en donnant sa valeur (niveau de loot) à chaque ville. Les statistiques par ville (captures, temps tenu)
   sont enregistrées mais pas encore affichées dans l'écran du clan (interface à valider d'abord).
+  Les zones de l'ancienne carte hors de la bordure (Rudnik, Pristan, Gorny…) sont cachées sur la carte ; les reposer en
+  jeu avec `/territoire deplacer <id> [rayon]` (Clans 2.6.0, centre à la position du staff) ou `/territoire drapeau
+  <id>` ; `/territoire liste` marque « HORS DE LA BORDURE ». Bordure du monde `dayz_map` à vérifier (`/worldborder get`).
 - **Loot dans le train** (souhaité, T1 à T4, T4 rare ; pas fait) : le train n'est pas fait de blocs, donc pas de
   conteneur posé ; prévu : des emplacements fixes dans chaque voiture (coordonnées de la voiture, comme les banquettes),
   tirés par HeraliZ Loot (paliers T1 à T4) et gardés par le serveur voiture par voiture (vidés à chaque tour de boucle),
