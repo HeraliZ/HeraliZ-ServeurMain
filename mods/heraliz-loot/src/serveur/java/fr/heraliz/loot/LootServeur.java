@@ -41,12 +41,14 @@ public final class LootServeur {
             if (e.getConfig().getSpec() == ConfigLoot.SPEC) {
                 ZonesLoot.invalider();
                 ConteneursVanilla.invalider();
+                Presentoirs.invalider();
             }
         });
         bus.addListener((ModConfigEvent.Reloading e) -> {
             if (e.getConfig().getSpec() == ConfigLoot.SPEC) {
                 ZonesLoot.invalider();
                 ConteneursVanilla.invalider();
+                Presentoirs.invalider();
             }
         });
         MinecraftForge.EVENT_BUS.addListener((AddReloadListenerEvent e) -> {
@@ -57,8 +59,12 @@ public final class LootServeur {
             Commandes.enregistrer(e.getDispatcher());
             CommandesRarete.enregistrer(e.getDispatcher());
         });
-        // conteneurs de Minecraft scellés pour les joueurs en survie ([conteneurs_vanilla])
+        // conteneurs de Minecraft scellés et postes hors service pour les joueurs en survie ([conteneurs_vanilla], [postes_vanilla])
         ConteneursVanilla.brancher();
+        // cadres, porte-armures, mannequins, peintures protégés ([presentoirs])
+        Presentoirs.brancher();
+        // seaux, feu, outils, engrais, panneaux ([nuisances])
+        Nuisances.brancher();
         // raretés des objets : config/heraliz_loot/raretes.json, envoyées aux joueurs
         RaretesServeur.brancher();
         // toutes les secondes : réapparitions des coffres T7 ; rotation du loot (réapparitions, étoiles)

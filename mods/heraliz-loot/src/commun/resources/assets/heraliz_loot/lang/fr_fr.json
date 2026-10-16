@@ -518,5 +518,9 @@
  "heraliz_loot.cmd.rarete.origine.jeu": "(choisie en jeu)",
  "heraliz_loot.cmd.rarete.aucun_choix": "Aucun choix fait en jeu pour %s.",
  "heraliz_loot.cmd.rarete.defaut": "Rareté par défaut : %s",
- "heraliz_loot.vanilla.scelle": "Ce conteneur est vide et scellé."
+ "heraliz_loot.vanilla.scelle": "Ce conteneur est vide et scellé.",
+ "heraliz_loot.vanilla.poste": "Ce poste est hors service.",
+ "heraliz_loot.presentoir.protege": "Ce présentoir est protégé.",
+ "heraliz_loot.nuisance.interdit": "Impossible ici.",
+ "heraliz_loot.nuisance.panneau": "Ce panneau ne peut pas être modifié."
 }

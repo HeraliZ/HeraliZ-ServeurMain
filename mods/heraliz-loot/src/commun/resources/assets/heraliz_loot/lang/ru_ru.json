@@ -518,5 +518,9 @@
   "heraliz_loot.cmd.rarete.origine.jeu": "(задана в игре)",
   "heraliz_loot.cmd.rarete.aucun_choix": "Для %s нет выбора, сделанного в игре.",
   "heraliz_loot.cmd.rarete.defaut": "Редкость по умолчанию: %s",
-  "heraliz_loot.vanilla.scelle": "Этот контейнер пуст и запечатан."
+  "heraliz_loot.vanilla.scelle": "Этот контейнер пуст и запечатан.",
+  "heraliz_loot.vanilla.poste": "Это устройство не работает.",
+  "heraliz_loot.presentoir.protege": "Эта витрина защищена.",
+  "heraliz_loot.nuisance.interdit": "Здесь этого делать нельзя.",
+  "heraliz_loot.nuisance.panneau": "Эту табличку нельзя изменить."
 }
