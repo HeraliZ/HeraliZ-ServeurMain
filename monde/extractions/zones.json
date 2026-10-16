@@ -10,7 +10,7 @@
       "rayon": 4.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 0,
+      "ouverteJusqua": 10109994,
       "fermeeA": 9280612
     },
     {
@@ -23,7 +23,7 @@
       "rayon": 8.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 0,
+      "ouverteJusqua": 10065449,
       "fermeeA": 9754552
     },
     {
@@ -62,8 +62,8 @@
       "rayon": 8.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 10021624,
-      "fermeeA": 9563652
+      "ouverteJusqua": 0,
+      "fermeeA": 10021632
     },
     {
       "nom": "Sable",
@@ -296,7 +296,7 @@
       "rayon": 8.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 0,
+      "ouverteJusqua": 10113088,
       "fermeeA": 9907992
     },
     {
@@ -309,7 +309,7 @@
       "rayon": 8.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 0,
+      "ouverteJusqua": 10066791,
       "fermeeA": 8656742
     },
     {
@@ -413,8 +413,8 @@
       "rayon": 8.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 10042336,
-      "fermeeA": 9710992
+      "ouverteJusqua": 0,
+      "fermeeA": 10042352
     },
     {
       "nom": "grange5",
@@ -439,8 +439,8 @@
       "rayon": 8.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 10021022,
-      "fermeeA": 9585212
+      "ouverteJusqua": 0,
+      "fermeeA": 10021032
     },
     {
       "nom": "Arbre",
@@ -491,7 +491,7 @@
       "rayon": 5.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 0,
+      "ouverteJusqua": 10099994,
       "fermeeA": 9330892
     },
     {
@@ -569,8 +569,8 @@
       "rayon": 8.0,
       "secondes": 30,
       "mode": "rotation",
-      "ouverteJusqua": 10021791,
-      "fermeeA": 9543552
+      "ouverteJusqua": 0,
+      "fermeeA": 10021792
     },
     {
       "nom": "Plaine13",
@@ -588,5 +588,5 @@
   ],
   "vagueFin": 0,
   "vague": [],
-  "heureJeu": 10018392
+  "heureJeu": 10042392
 }
