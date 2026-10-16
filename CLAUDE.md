@@ -1048,18 +1048,22 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
-  - couteaux (16/10, Tactique 2.17.0, après les retours du propriétaire sur la 2.16.0) : clic gauche = le coup rapide
-    d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, son bruit, gestes
-    de TaCZ « melee_upper » / « melee_2_upper » vus des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant
-    comme le coup lourd des couteaux de LR : LE COUTEAU LUI-MÊME TOURNE avec le geste (os du bras, du poignet et du
-    couteau ; armé à 0,16 s, lame dressée ; impact à 0,24 s, pointe amenée sur le réticule ; torsion, dégagement, retour
-    lent, 0,85 s ; karambit : crochet vers le bas puis tour autour de son anneau), bruits des couteaux de LR, petit
-    mouvement de caméra (`couteaux/SecousseCouteau`). Animation « melee_stock » de chaque modèle écrite par
-    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableau `GESTES` ; `--apercu DOSSIER`), jamais à la main ;
-    jouée par `couteaux/AnimCouteaux` (fondu 0,05 s), secours `bayonet_stock` puis coup du gunpack. Vu des autres : estoc
-    de LR « stab_upper » (`couteaux/GesteCouteau`). Le serveur touche le coup puissant à l'impact
-    (`CoupsCouteau.DELAI_COUP_LOURD`, 5 ticks) ; dégâts, cadence et portée inchangés. Impact de l'animation (`IMPACT` du
-    script), caméra et délai serveur à changer ensemble. Canal « couteaux » version 3 ;
+  - couteaux (16/10, Tactique 2.17.0 puis 2.18.0, après les retours du propriétaire) : clic gauche = le coup rapide
+    d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, gestes de TaCZ vus
+    des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant où LE COUTEAU LUI-MÊME TOURNE avec le geste.
+    Knife CT et T : geste écrit comme le coup lourd de la Dague tactique de LR (impact à 0,24 s, 0,85 s). M9, papillon et
+    karambit (et leurs skins, 2.18.0) : coup lourd « melee_3 » repris tel quel de la Miséricorde (`mercy`, 1,79 s), de la
+    Lame de Desmoulins (`desmoulins_edge`, modèle `polaris`, 2,75 s) et du Credo (`creed`, modèle `treasure_kn`, 2,18 s) :
+    bras à la même place vus des yeux, lame dans la même orientation (tours compris) et tenue comme celle de LR, même
+    rythme, fondu 0,2 s, retour en douceur à la pose de repos, sons de LR (joueur et autres joueurs), caméra de LR rejouée
+    par `couteaux/SecousseCouteau` (rien sans « Balancement de la vue »). Animations « melee_stock » écrites par
+    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableau `GESTES` pour CT et T, `REPRISES` /
+    `--reprendre COUTEAU=ARME` pour les armes de LR ; `--apercu DOSSIER` : planches LR / TaCZ côte à côte), jamais à la
+    main ; jouées par `couteaux/AnimCouteaux` (fondu et sons lus dans l'entrée `heraliz` du fichier). Vu des autres : estoc
+    de LR « stab_upper » (`couteaux/GesteCouteau`). Le serveur touche à l'impact de l'animation du modèle en main et compte
+    sa cadence avec l'écart de l'arme de LR, valeurs écrites par le script dans `couteaux/CoupsLourds` (CT et T 5 ticks /
+    18 ; M9 6 / 22 ; papillon 6 / 24 ; karambit 5 / 16 avec `cadence_lourd` = 18 ; `ECARTS_CADENCE` à 0 pour garder 18
+    partout) ; dégâts et portée inchangés. Canal « couteaux » version 3 ;
   - corps des joueurs « démembré » et tête vers le ciel en s'allongeant : la remise à zéro de Réanimation 1.15.0
     (`client/Poses.apply`) n'efface plus les poses de Player Animator ; l'animation « allongé » de TaCZ suit le corps
     couché (`mixin/client/TaczAllongeAnimationMixin`) et le regard de la tête allongé est limité
