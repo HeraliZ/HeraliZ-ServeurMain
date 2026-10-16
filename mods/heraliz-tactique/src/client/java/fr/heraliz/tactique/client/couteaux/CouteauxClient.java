@@ -40,14 +40,17 @@ import org.lwjgl.glfw.GLFW;
  *    <li>pas de coup pendant que le couteau sort (temps de sortie de son arme TaCZ, compté depuis qu'il est en main, puis
  *    tant que le serveur le voit sortir, comme pour les tirs de TaCZ), ni à terre ou en train de fouiller ou de réanimer,
  *    ni avec un écran ouvert ;</li>
- *    <li>coup accepté : paquet au serveur, puis l'animation du coup, bien différente d'un coup à l'autre comme pour les
- *    couteaux de LR (AnimCouteaux, 15/10) : coup rapide = tranche latérale vive, de gauche à droite puis de droite à
- *    gauche ; coup puissant = estoc, bras armé puis poussé vers l'avant, plus lent ; bruits des couteaux de LR et petit
- *    mouvement de caméra (SecousseCouteau). En secours (animations HeraliZ impossibles) : animation « melee_push » du
- *    gunpack et son bruit, comme la touche « Mêlée » de TaCZ.</li>
+ *    <li>coup accepté : paquet au serveur, puis l'animation. Coup rapide : comme avant la 2.16.0 et comme la touche
+ *    « Mêlée » de TaCZ (LocalPlayerMelee), bruit « melee_push » du couteau et animation « melee_push » du gunpack (signal
+ *    « bayonet_push » de sa machine à états). Coup puissant (16/10) : animation « melee_stock » où le couteau tourne avec
+ *    le geste du bras, comme le coup lourd des couteaux de LR (AnimCouteaux), bruits des couteaux de LR et petit
+ *    mouvement de caméra (SecousseCouteau) ; en secours, le coup du gunpack.</li>
  * </ul>
  */
 public final class CouteauxClient {
+   /** Signal de la machine à états de TaCZ qui joue l'animation « melee_push » (coup sans accessoire de mêlée). */
+   private static final String SIGNAL_COUP = "bayonet_push";
+
    /** Horloge du joueur, en ticks (avance à chaque tick du jeu). */
    private static long horloge;
    /** Tick à partir duquel un nouveau coup est permis (cadence du dernier coup, ou couteau qui sort). */
@@ -111,10 +114,14 @@ public final class CouteauxClient {
       TimelessAPI.getGunDisplay(main).ifPresent(affichage -> {
          IGun ig = IGun.getIGunOrNull(main);
          AnimationStateMachine<?> etats = affichage.getAnimationStateMachine();
-         if (AnimCouteaux.jouer(etats, ig == null ? null : ig.getGunId(main), lourd)) {
-            SecousseCouteau.lancer(lourd, AnimCouteaux.derniereTranchePremiere());
-         } else {
-            SoundPlayManager.playMeleePushSound(joueur, affichage); // secours : coup du gunpack, avec son bruit
+         if (lourd && AnimCouteaux.jouerLourd(etats, ig == null ? null : ig.getGunId(main))) {
+            SecousseCouteau.lancer();
+            return;
+         }
+         // coup rapide (et secours du coup puissant) : comme la touche « Mêlée » de TaCZ, bruit et animation du gunpack
+         SoundPlayManager.playMeleePushSound(joueur, affichage);
+         if (etats != null) {
+            etats.trigger(SIGNAL_COUP);
          }
       });
       return true;

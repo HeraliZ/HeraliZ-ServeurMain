@@ -13,12 +13,11 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Coup de couteau d'un autre joueur, vu en 3e personne, avec les gestes des couteaux de LR Tactical (ceux de la Dague
- * tactique et du karambit de LR, {@code heralisz_skins:melee/knife} du gunpack heralisz_skins) : tranche « slash_upper »
- * puis « slash2_upper » en alternance pour le coup rapide, estoc « stab_upper » (bras ramené puis poussé, buste qui
- * tourne) pour le coup puissant. Joués sur la couche « une fois » du haut du corps de TaCZ, en remplaçant le geste en
- * cours (coups enchaînés). Classe chargée seulement si Player Animator est là (appelée après
- * {@code PlayerAnimatorCompat.isInstalled()}).
+ * Coup puissant d'un autre joueur, vu en 3e personne, avec l'estoc des couteaux de LR Tactical (celui de la Dague
+ * tactique et du karambit de LR, {@code heralisz_skins:melee/knife} du gunpack heralisz_skins) : « stab_upper », bras
+ * ramené puis poussé, buste qui tourne. Joué sur la couche « une fois » du haut du corps de TaCZ, en remplaçant le geste
+ * en cours. Le coup rapide garde les gestes de TaCZ (comme avant la 2.16.0). Classe chargée seulement si Player Animator
+ * est là (appelée après {@code PlayerAnimatorCompat.isInstalled()}).
  */
 final class GesteCouteau {
    private static final ResourceLocation GESTES = new ResourceLocation("heralisz_skins", "melee/knife");
@@ -28,11 +27,10 @@ final class GesteCouteau {
    private GesteCouteau() {
    }
 
-   /** Vrai si le geste de LR est parti ; faux s'il manque (l'appelant joue alors celui de TaCZ). */
+   /** Vrai si l'estoc de LR est parti ; faux s'il manque (l'appelant joue alors le geste de TaCZ). */
    @SuppressWarnings("unchecked")
-   static boolean jouer(AbstractClientPlayer joueur, boolean lourd, boolean second) {
-      String nom = lourd ? "stab_upper" : second ? "slash2_upper" : "slash_upper";
-      KeyframeAnimation geste = IPAAssetManager.getAnimations(GESTES, nom).orElse(null);
+   static boolean estoc(AbstractClientPlayer joueur) {
+      KeyframeAnimation geste = IPAAssetManager.getAnimations(GESTES, "stab_upper").orElse(null);
       if (geste == null) {
          return false;
       }
