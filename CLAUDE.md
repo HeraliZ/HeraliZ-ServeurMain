@@ -929,6 +929,18 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   dessine jamais sa main, on ne voyait rien) ; le serveur enregistre la visée TaCZ du tueur (`Clip.VISE`, par
   réflexion) : arme en position de visée de TaCZ, léger zoom, petit viseur effacé ; chaque tir joue l'animation
   « shoot » de l'arme et un petit recul. Jars joueurs et serveur de la même fabrication. Rien testé en jeu ;
+- duels (16/10, Matchs 0.11.0) : bombe des sites solide : les joueurs ne la traversent plus (boîte de collision qui suit
+  son orientation, `BombeDuel.makeBoundingBox`, gyrophare non compris) et les balles de TaCZ s'y arrêtent sans dégât ni
+  perforation (`duels/bombe/ReglesBombe`) ; l'ordinateur posé au sol arrête aussi les balles (pas pendant le piratage),
+  les joueurs le traversent. HUD des duels en petit (`HudMoteur.compact`) : bandeau réduit, annonces en petit panneau
+  sous le bandeau (plus rien au milieu de l'écran), bombe amorcée = petite pastille rouge avec le temps restant en haut
+  au centre, « vous portez l'ordinateur » en petite ligne, amorçage / piratage en petit texte et barre fine sous le
+  viseur ; ClashWar et zombies gardent leurs grandes annonces. Plus de killcam en duel (`DuelsConfig.KILLCAM = false`).
+  Arène remise au propre à chaque début de manche et à la fin du duel (`DuelPartie.nettoyerArene`) : grenades, C4,
+  fumigènes, molotovs et feu au sol, nuages, balles, objets au sol retirés dans les bornes du duel, feux éteints,
+  particules effacées chez les joueurs ; bombes, ordinateur et cible gardés. Pendant l'amorçage et le piratage : joueur
+  immobilisé (vitesse ×0 par un modificateur temporaire), ni tir, ni rechargement, ni visée, ni changement d'arme, ni
+  coup, ni objet utilisé (refusé par le serveur) ; il peut regarder autour de lui. Rien testé en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
