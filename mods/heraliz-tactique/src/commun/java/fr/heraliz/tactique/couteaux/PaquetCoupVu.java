@@ -6,8 +6,8 @@ import net.minecraftforge.network.NetworkEvent;
 
 /**
  * Serveur -> joueurs qui voient le frappeur : un coup de couteau accepté, rapide ou puissant (14/10). Chez eux, le coup en
- * 3e personne (15/10 : gestes des couteaux de LR, tranches en alternance pour le coup rapide, estoc pour le coup puissant,
- * avec ses bruits ; à défaut ceux de TaCZ). Avant : le paquet « mêlée » de TaCZ, qui tirait l'un des trois gestes au
+ * 3e personne (16/10 : gestes de TaCZ en alternance pour le coup rapide, comme avant la 2.16.0 ; estoc des couteaux de
+ * LR pour le coup puissant, avec ses bruits, à défaut le grand coup de TaCZ). Avant : le paquet « mêlée » de TaCZ, qui tirait l'un des trois gestes au
  * hasard. Branché par la partie client ({@link ReseauCouteaux#COUP_VU_CLIENT}).
  */
 public record PaquetCoupVu(int entite, boolean lourd) {

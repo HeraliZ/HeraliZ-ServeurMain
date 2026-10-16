@@ -29,10 +29,11 @@ import net.minecraftforge.common.ForgeConfigSpec;
  *    cibles : tout être vivant dans un cône devant les yeux (portée : {@code portee_max} de la section {@code [melee]},
  *    commune à toutes les armes de corps à corps, {@link PorteeMelee} ; {@code angle_rapide} / {@code angle_lourd}, vue
  *    dégagée), plusieurs à la fois comme avec LR ;</li>
- *    <li>deux coups bien différents à voir et à entendre, comme les couteaux de LR (15/10) : coup rapide = tranche
- *    latérale vive (de gauche à droite, puis de droite à gauche), coup puissant = estoc préparé (bras armé 0,22 s) puis
- *    poussé, qui ne touche qu'après la préparation ({@link #DELAI_COUP_LOURD}) ; les autres joueurs voient les gestes
- *    des couteaux de LR en 3e personne et entendent le coup et l'impact ;</li>
+ *    <li>coup rapide : animation « melee_push » du couteau et son bruit (ceux de la touche « Mêlée » de TaCZ, comme
+ *    avant la 2.16.0) ; coup puissant (16/10) : animation HeraliZ où le couteau tourne avec le geste du bras, comme le
+ *    coup lourd des couteaux de LR (lame dressée en armant, pointe sur le réticule à l'impact, 0,24 s), qui ne touche
+ *    qu'à l'impact ({@link #DELAI_COUP_LOURD}) ; les autres joueurs voient le coup en 3e personne (gestes de TaCZ pour
+ *    le coup rapide, estoc des couteaux de LR pour le coup puissant) et entendent le coup et l'impact ;</li>
  *    <li>pas de coup pendant que le couteau est sorti (temps de sortie de TaCZ), ni à terre ou en train de fouiller ou de
  *    réanimer (Réanimation).</li>
  * </ul>
@@ -63,13 +64,13 @@ public final class CoupsCouteau {
    public static final float RECUL_RAPIDE = 0.05F;
    public static final float RECUL_LOURD = 0.08F;
    /**
-    * Ticks entre la demande et le coup rapide ({@code delay} de la Dague tactique : la lame de la tranche passe au milieu
-    * de l'écran vers 0,11 s, animations de {@code outils/couteaux_coups.py}).
+    * Ticks entre la demande et le coup rapide ({@code delay} de la Dague tactique : la lame passe vers 0,1 s dans
+    * « melee_push »).
     */
    public static final int DELAI_COUP = 2;
    /**
-    * Ticks entre la demande et le coup puissant (15/10) : l'estoc est préparé (bras armé pendant 0,22 s) puis poussé, la
-    * lame arrive au fond vers 0,27 s ; le serveur ne touche qu'après la préparation.
+    * Ticks entre la demande et le coup puissant (16/10) : le couteau est armé (0,16 s) puis poussé, la pointe arrive sur
+    * le réticule à 0,24 s ({@code IMPACT} de {@code outils/couteaux_coups.py}) ; le serveur touche à cet instant.
     */
    public static final int DELAI_COUP_LOURD = 5;
    /** Cadences minimales permises par la config : plus que le délai du coup (un coup à la fois). */

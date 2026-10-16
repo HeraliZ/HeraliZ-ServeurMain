@@ -20,6 +20,7 @@ import fr.heraliz.tactique.couteaux.PaquetCoupVu;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -29,80 +30,67 @@ import net.minecraft.util.RandomSource;
 import org.slf4j.Logger;
 
 /**
- * Animations des deux coups de couteau, bien différentes comme celles des couteaux de LR Tactical (15/10) :
+ * Animations des coups de couteau (16/10) :
  * <ul>
- *    <li>1re personne : « heraliz_tranche_1 » / « heraliz_tranche_2 » (coup rapide : tranche de gauche à droite, puis de
- *    droite à gauche) et « melee_stock » (coup puissant : estoc, bras armé puis poussé vers l'avant), écrites par
- *    {@code outils/couteaux_coups.py} ({@code assets/heraliz_tactique/couteaux/<modèle>.animation.json}). Données au
- *    contrôleur d'animation de TaCZ du couteau tenu, puis jouées directement sur la piste principale de sa machine à
- *    états par défaut, avec une transition courte (le signal de TaCZ imposerait 0,2 s de fondu : la tranche partirait
- *    en retard et ressemblerait à l'estoc). Bruits du joueur dans les animations (ceux des couteaux de LR). En secours
- *    (modèle sans fichier, machine à états inattendue) : signaux de TaCZ (« melee_push » du gunpack, « melee_stock ») ;</li>
- *    <li>3e personne (autres joueurs, {@link PaquetCoupVu}) : gestes du couteau de LR ({@code heralisz_skins:melee/knife} :
- *    « slash_upper » / « slash2_upper » en alternance, « stab_upper » pour l'estoc, voir {@link GesteCouteau}), sinon
- *    ceux de TaCZ ; estoc : bruit de lame qu'on arme puis coup lourd, joués chez ceux qui sont à portée d'oreille.</li>
+ *    <li>coup rapide (clic gauche) : comme avant la 2.16.0, le coup « melee_push » du gunpack, joué par le signal
+ *    « bayonet_push » de TaCZ avec son bruit (voir {@link CouteauxClient}) ; vu des autres : gestes de TaCZ
+ *    « melee_upper » / « melee_2_upper » en alternance ;</li>
+ *    <li>coup puissant (clic droit), 1re personne : « melee_stock », écrite pour chaque modèle par
+ *    {@code outils/couteaux_coups.py} ({@code assets/heraliz_tactique/couteaux/<modèle>.animation.json}) comme le coup
+ *    lourd des couteaux de LR : le couteau lui-même tourne avec le geste du bras (lame dressée en armant, pointe amenée
+ *    sur le réticule à l'impact, 0,24 s). Donnée au contrôleur d'animation de TaCZ du couteau tenu, puis jouée
+ *    directement sur la piste principale de sa machine à états par défaut avec une transition courte (le signal de TaCZ
+ *    imposerait 0,2 s de fondu, qui mangerait la préparation). Bruits du joueur dans l'animation (ceux des couteaux de
+ *    LR). En secours (piste introuvable) : signal « bayonet_stock » ; modèle sans fichier : coup du gunpack ;</li>
+ *    <li>coup puissant vu des autres ({@link PaquetCoupVu}) : estoc du couteau de LR ({@code heralisz_skins:melee/knife}
+ *    « stab_upper », voir {@link GesteCouteau}), sinon grand coup « melee_3_upper » de TaCZ ; bruit de lame qu'on arme
+ *    puis coup lourd, joués chez ceux qui sont à portée d'oreille.</li>
  * </ul>
  */
 final class AnimCouteaux {
    private static final Logger LOG = LogUtils.getLogger();
-   static final String TRANCHE_1 = "heraliz_tranche_1";
-   static final String TRANCHE_2 = "heraliz_tranche_2";
    static final String ESTOC = "melee_stock";
-   private static final String[] CLIPS = {TRANCHE_1, TRANCHE_2, ESTOC};
-   /** Signaux de TaCZ (secours) : « melee_push » du gunpack, « melee_stock » (l'estoc ci-dessus). */
-   private static final String SIGNAL_COUP = "bayonet_push";
+   /** Signal de TaCZ qui joue « melee_stock » (secours du coup puissant). */
    private static final String SIGNAL_COUP_LOURD = "bayonet_stock";
    /** Piste principale de la machine à états par défaut de TaCZ (default_state_machine.lua : ligne 0, piste MAIN_TRACK). */
    private static final int LIGNE_STATIQUE = 0;
    private static final int PISTE_PRINCIPALE = 9;
-   /** Fondu d'entrée des coups, en secondes (le signal de TaCZ en impose 0,2). */
-   private static final float TRANSITION = 0.04F;
+   /** Fondu d'entrée du coup puissant, en secondes (le signal de TaCZ en impose 0,2). */
+   private static final float TRANSITION = 0.05F;
    /** Bruits de l'estoc entendus par les autres (tacz_sounds des couteaux de LR). */
    private static final ResourceLocation SON_ARMER = new ResourceLocation("heralisz_tactical", "melee/knife/melee_knife_charge_01");
    private static final ResourceLocation SON_ESTOC = new ResourceLocation("heralisz_tactical", "melee/knife/melee_attack_knife_plr_02");
    private static final int DISTANCE_SON_DEFAUT = 16;
 
-   /** Modèle -> animations lues (absentes si le fichier manque ou est illisible). */
-   private static final Map<String, Map<String, ObjectAnimation>> CACHE = new HashMap<>();
-   /** Alternance des deux tranches chez ce joueur : vrai si la dernière jouée est la première. */
-   private static boolean premiere;
+   /** Modèle -> coup puissant lu (vide si le fichier manque ou est illisible). */
+   private static final Map<String, Optional<ObjectAnimation>> CACHE = new HashMap<>();
 
    private AnimCouteaux() {
    }
 
    /**
-    * Joue le coup en 1re personne. Vrai si l'animation HeraliZ est partie (elle porte ses bruits) ; faux si c'est le
-    * secours de TaCZ (l'appelant joue alors le bruit du coup de TaCZ).
+    * Joue le coup puissant en 1re personne. Vrai s'il est parti (animation HeraliZ, qui porte ses bruits, ou son secours
+    * « bayonet_stock ») ; faux si ce couteau n'a pas d'animation HeraliZ (l'appelant joue alors le coup du gunpack).
     */
-   static boolean jouer(@Nullable AnimationStateMachine<?> etats, @Nullable ResourceLocation arme, boolean lourd) {
-      if (etats == null) {
+   static boolean jouerLourd(@Nullable AnimationStateMachine<?> etats, @Nullable ResourceLocation arme) {
+      if (etats == null || arme == null || !fournir(etats.getAnimationController(), arme)) {
          return false;
       }
-      String clip = lourd ? ESTOC : (premiere = !premiere) ? TRANCHE_1 : TRANCHE_2;
-      boolean fourni = arme != null && fournir(etats.getAnimationController(), arme);
-      if (fourni) {
-         try {
-            AnimationStateContext contexte = etats.getContext();
-            int piste = contexte == null ? -1 : contexte.getTrack(LIGNE_STATIQUE, PISTE_PRINCIPALE);
-            if (piste >= 0) {
-               contexte.runAnimation(clip, piste, false, ObjectAnimation.PlayType.PLAY_ONCE_STOP.ordinal(), TRANSITION);
-               return true;
-            }
-         } catch (RuntimeException e) {
-            LOG.debug("[couteaux] piste principale de TaCZ introuvable : signal de secours", e);
+      try {
+         AnimationStateContext contexte = etats.getContext();
+         int piste = contexte == null ? -1 : contexte.getTrack(LIGNE_STATIQUE, PISTE_PRINCIPALE);
+         if (piste >= 0) {
+            contexte.runAnimation(ESTOC, piste, false, ObjectAnimation.PlayType.PLAY_ONCE_STOP.ordinal(), TRANSITION);
+            return true;
          }
+      } catch (RuntimeException e) {
+         LOG.debug("[couteaux] piste principale de TaCZ introuvable : signal de secours", e);
       }
-      // secours : l'estoc passe par « bayonet_stock » s'il a été fourni, sinon le coup du gunpack
-      etats.trigger(lourd && fourni ? SIGNAL_COUP_LOURD : SIGNAL_COUP);
-      return false;
+      etats.trigger(SIGNAL_COUP_LOURD);
+      return true;
    }
 
-   /** Vrai si la dernière tranche jouée est la première (de gauche à droite), faux pour le retour (de droite à gauche). */
-   static boolean derniereTranchePremiere() {
-      return premiere;
-   }
-
-   /** Donne au contrôleur les animations HeraliZ de ce couteau s'il ne les a pas ; vrai si elles y sont. */
+   /** Donne au contrôleur le coup puissant HeraliZ de ce couteau s'il ne l'a pas ; vrai s'il y est. */
    private static boolean fournir(@Nullable AnimationController controleur, ResourceLocation arme) {
       if (controleur == null) {
          return false;
@@ -111,18 +99,12 @@ final class AnimCouteaux {
       if (modele == null) {
          return false;
       }
-      Map<String, ObjectAnimation> anims = CACHE.computeIfAbsent(modele, AnimCouteaux::charger);
-      for (String nom : CLIPS) {
-         ObjectAnimation a = anims.get(nom);
-         if (a == null) {
-            return false;
-         }
-         controleur.providePrototypeIfAbsent(nom, () -> a);
-         if (!controleur.containPrototype(nom)) {
-            return false;
-         }
+      ObjectAnimation anim = CACHE.computeIfAbsent(modele, AnimCouteaux::charger).orElse(null);
+      if (anim == null) {
+         return false;
       }
-      return true;
+      controleur.providePrototypeIfAbsent(ESTOC, () -> anim);
+      return controleur.containPrototype(ESTOC);
    }
 
    /** Modèle d'animation d'un couteau d'après son identifiant d'arme (skins compris : karambit__..., m9__...). */
@@ -136,56 +118,55 @@ final class AnimCouteaux {
       return null;
    }
 
-   private static Map<String, ObjectAnimation> charger(String modele) {
-      Map<String, ObjectAnimation> anims = new HashMap<>();
+   private static Optional<ObjectAnimation> charger(String modele) {
       ResourceLocation rl = new ResourceLocation(HeralizTactique.MODID, "couteaux/" + modele + ".animation.json");
       Resource res = Minecraft.getInstance().getResourceManager().getResource(rl).orElse(null);
       if (res == null) {
-         LOG.warn("[couteaux] animations de {} absentes : coups de TaCZ", modele);
-         return anims;
+         LOG.warn("[couteaux] coup puissant de {} absent : coup du gunpack", modele);
+         return Optional.empty();
       }
       try (Reader r = res.openAsReader()) {
          JsonObject json = JsonParser.parseReader(r).getAsJsonObject();
          BedrockAnimationFile file = ClientAssetsManager.GSON.fromJson(json, BedrockAnimationFile.class);
-         for (ObjectAnimation a : Animations.createAnimationFromBedrock(file)) {
-            anims.put(a.name, a);
-         }
+         return Animations.createAnimationFromBedrock(file).stream().filter(a -> ESTOC.equals(a.name)).findFirst();
       } catch (Exception e) {
-         LOG.warn("[couteaux] animations de {} illisibles : coups de TaCZ", modele, e);
-         anims.clear();
+         LOG.warn("[couteaux] coup puissant de {} illisible : coup du gunpack", modele, e);
+         return Optional.empty();
       }
-      return anims;
    }
 
-   /** Alternance des tranches vues en 3e personne, par joueur (identifiant d'entité). */
+   /** Alternance des deux gestes du coup rapide vu en 3e personne, par joueur (identifiant d'entité). */
    private static final Map<Integer, Boolean> ALTERNANCE_VUE = new HashMap<>();
 
    static void oublierJoueurs() {
       ALTERNANCE_VUE.clear();
    }
 
-   /** Coup d'un autre joueur, vu en 3e personne (et entendu, pour l'estoc). */
+   /** Coup d'un autre joueur, vu en 3e personne (et entendu, pour le coup puissant). */
    static void vu(PaquetCoupVu p) {
       Minecraft mc = Minecraft.getInstance();
       if (mc.level == null || !(mc.level.getEntity(p.entite()) instanceof AbstractClientPlayer joueur)) {
          return;
       }
-      boolean second = !ALTERNANCE_VUE.getOrDefault(p.entite(), Boolean.TRUE);
-      if (ALTERNANCE_VUE.size() > 256) {
-         ALTERNANCE_VUE.clear();
-      }
-      ALTERNANCE_VUE.put(p.entite(), second);
-      if (p.lourd()) {
+      boolean second = false;
+      if (!p.lourd()) {
+         second = !ALTERNANCE_VUE.getOrDefault(p.entite(), Boolean.TRUE);
+         if (ALTERNANCE_VUE.size() > 256) {
+            ALTERNANCE_VUE.clear();
+         }
+         ALTERNANCE_VUE.put(p.entite(), second);
+      } else {
          sonsEstoc(mc, joueur);
       }
+      boolean geste2 = second;
       TimelessAPI.getGunDisplay(joueur.getMainHandItem()).ifPresent(affichage -> {
          try {
             if (!PlayerAnimatorCompat.isInstalled() || !AnimationManager.hasPlayerAnimator3rd(affichage)) {
                return;
             }
-            if (!GesteCouteau.jouer(joueur, p.lourd(), second)) {
-               // gestes de LR absents : ceux de TaCZ (grand coup de haut en bas pour l'estoc, deux gestes sinon)
-               String geste = p.lourd() ? "melee_3_upper" : second ? "melee_2_upper" : "melee_upper";
+            // coup puissant : estoc du couteau de LR ; sinon (ou geste de LR absent) gestes de TaCZ, comme avant la 2.16.0
+            if (!p.lourd() || !GesteCouteau.estoc(joueur)) {
+               String geste = p.lourd() ? "melee_3_upper" : geste2 ? "melee_2_upper" : "melee_upper";
                AnimationManager.playOnceAnimation(joueur, affichage, PlayerAnimatorCompat.ONCE_UPPER_ANIMATION, geste);
             }
          } catch (RuntimeException | LinkageError ex) {
@@ -194,7 +175,7 @@ final class AnimCouteaux {
       });
    }
 
-   /** Estoc d'un autre joueur : lame qu'on arme puis coup lourd, à la portée des bruits d'arme de TaCZ. */
+   /** Coup puissant d'un autre joueur : lame qu'on arme puis coup lourd, à la portée des bruits d'arme de TaCZ. */
    private static void sonsEstoc(Minecraft mc, AbstractClientPlayer joueur) {
       int distance = distanceSon();
       if (distance <= 0 || mc.player == null || mc.player.distanceToSqr(joueur) > (double) distance * distance) {
