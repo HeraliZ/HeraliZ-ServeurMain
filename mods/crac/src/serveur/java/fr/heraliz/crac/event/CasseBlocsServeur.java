@@ -21,6 +21,10 @@ public final class CasseBlocsServeur {
         if (CasseBlocs.libre(e.getPlayer())) {
             return;
         }
+        // carrière du monde des bases (1.5.0) : ses blocs naturels se cassent, puis repoussent (bases.CarrieresServeur)
+        if (fr.heraliz.crac.bases.Carrieres.permet(e.getPlayer().level(), e.getPos(), e.getState())) {
+            return;
+        }
         if (CasseBlocs.exception(e.getState())) {
             boolean accesHorsBase = e.getState().is(CasseBlocs.ACCES_RAID) && e.getLevel() instanceof ServerLevel sl
                 && ClaimManager.getAt(sl, e.getPos()) == null;

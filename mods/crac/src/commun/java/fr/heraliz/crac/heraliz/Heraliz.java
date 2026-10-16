@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import fr.heraliz.crac.Config;
+import fr.heraliz.crac.bases.BasesReglages;
+import fr.heraliz.crac.bases.MondeBases;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -130,12 +132,30 @@ public final class Heraliz {
         return gameTestOriginalRules || Config.decayInactivity.get();
     }
 
-    /** The first refusal among the dimension and the combat tag, or null. */
+    /** The first refusal among the dimension, the bases world rule and the combat tag, or null. */
     @Nullable
     public static Component buildProblem(ServerPlayer player) {
         if (blocked(player.level())) {
             return blockedMessage();
         }
+        Component hors = horsMondeBases(player);
+        if (hors != null) {
+            return hors;
+        }
         return combatProblem(player);
+    }
+
+    /**
+     * Monde des bases (1.5.0, {@code [bases] construction_ici_seulement} de crac-bases.toml) : en survie, les pièces et le
+     * Claim Block ne se posent que dans le monde des bases. Null quand c'est permis (créatif, réglage coupé, GameTests).
+     */
+    @Nullable
+    public static Component horsMondeBases(@Nullable net.minecraft.world.entity.player.Player player) {
+        if (gameTestOriginalRules || player == null || player.getAbilities().instabuild
+            || !BasesReglages.b(BasesReglages.CONSTRUCTION_ICI_SEULEMENT, false) || MondeBases.estBases(player.level())) {
+            return null;
+        }
+        return Component.translatableWithFallback("crac.bases.construire_ailleurs",
+            "On ne construit que dans le monde des bases (/home depuis le spawn).");
     }
 }

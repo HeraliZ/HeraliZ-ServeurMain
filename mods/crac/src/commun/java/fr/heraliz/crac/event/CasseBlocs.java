@@ -1,5 +1,6 @@
 package fr.heraliz.crac.event;
 
+import fr.heraliz.crac.bases.Carrieres;
 import fr.heraliz.crac.registry.ModBlocks;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
@@ -21,7 +22,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
  * <p>Libres : créatif, spectateur, staff (permission 2). Exceptions (les règles de CRac décident ensuite) : le bloc de
  * revendication (son groupe le retire) et les échelles et trappes posées par des pillards dans une base
  * ({@code #crac:raid_access}, retirées par les membres). Les objets posés de CRac se ramassent par leur touche, sans les
- * casser.
+ * casser. Dans le monde des bases, les blocs naturels d'une carrière se cassent ({@link Carrieres}, 1.5.0).
  */
 @EventBusSubscriber(modid = "crac")
 public final class CasseBlocs {
@@ -42,7 +43,8 @@ public final class CasseBlocs {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void clic(LeftClickBlock e) {
-        if (libre(e.getEntity()) || exception(e.getLevel().getBlockState(e.getPos()))) {
+        BlockState s = e.getLevel().getBlockState(e.getPos());
+        if (libre(e.getEntity()) || exception(s) || Carrieres.permet(e.getLevel(), e.getPos(), s)) {
             return;
         }
         e.setCanceled(true);
@@ -52,6 +54,10 @@ public final class CasseBlocs {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void vitesse(PlayerEvent.BreakSpeed e) {
         if (libre(e.getEntity()) || exception(e.getState())) {
+            return;
+        }
+        // carrière du monde des bases (1.5.0) : ses blocs naturels se cassent à la vitesse normale
+        if (e.getPosition().isPresent() && Carrieres.permet(e.getEntity().level(), e.getPosition().get(), e.getState())) {
             return;
         }
         e.setCanceled(true);

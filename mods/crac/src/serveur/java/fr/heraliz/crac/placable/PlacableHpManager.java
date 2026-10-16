@@ -246,6 +246,10 @@ public final class PlacableHpManager {
     }
 
     private static void apply(ServerLevel level, BlockPos pos, int amount, boolean triggerRaid) {
+        // base d'un nouveau joueur encore protégée (monde des bases, 1.5.0) : ses objets posés ne perdent rien
+        if (amount > 0 && fr.heraliz.crac.bases.Protections.baseProtegee(level, pos)) {
+            return;
+        }
         if (amount > 0) {
             BlockState state = level.getBlockState(pos);
             if (isTracked(state)) {

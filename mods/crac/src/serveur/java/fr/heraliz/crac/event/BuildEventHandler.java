@@ -172,6 +172,10 @@ public class BuildEventHandler {
             return Config.protectOutsideClaims.get() ? "crac.claim.only_inside" : null;
         }
         if (!isMember(sl, player, claim, ClanAccess.Action.BUILD)) {
+            // base d'un nouveau joueur encore protégée (1.5.0) : ni échelle ni trappe de pillard
+            if (fr.heraliz.crac.bases.Protections.groupeProtege(sl.getServer(), claim.groupId())) {
+                return "crac.protection.base_protegee";
+            }
             // a raider's ladder, scaffolding, vine or trapdoor in a base under raid block
             return null;
         }
