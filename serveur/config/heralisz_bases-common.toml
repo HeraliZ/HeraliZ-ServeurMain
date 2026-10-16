@@ -1,6 +1,9 @@
 
 #Bases de clan HeraliZ (bunkers)
 [bases]
+	#Creation de nouveaux bunkers de clan (joueurs et /base admin creer). Faux depuis la 2.5.0 :
+	#remplace par les bases CRac du monde des bases. Les bunkers deja crees restent (donnees, entree, API).
+	creation = false
 	#Cout de creation d'une base (hérals pris dans la banque du clan)
 	#Range: 0 ~ 1000000000
 	cout_creation = 10000

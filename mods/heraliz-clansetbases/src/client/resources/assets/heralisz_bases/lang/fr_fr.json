@@ -249,5 +249,7 @@
   "heralisz_bases.modele.non_charge": "non chargé",
   "heralisz_bases.modele.absent": "%s absent de data/heralisz_bases/structures",
   "heralisz_bases.modele.absents": "%s et %s absents de data/heralisz_bases/structures",
-  "heralisz_bases.modele.illisible": "lecture impossible : %s"
+  "heralisz_bases.modele.illisible": "lecture impossible : %s",
+  "msg.heralisz_bases.creation_coupee": "Les bunkers de clan ne se créent plus : chaque joueur bâtit sa base dans le monde des bases (/home depuis le spawn).",
+  "msg.heralisz_bases.creation_coupee_admin": "Création de bunkers coupée (réglage [bases] creation de heralisz_bases-common.toml) : bases CRac à la place."
 }
