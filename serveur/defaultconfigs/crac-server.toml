@@ -250,5 +250,5 @@
 	#HeraliZ: dimensions where NO explosion breaks any block (C4, grenades, TNT, creepers, airstrikes, other mods...),
 	#e.g. the map while it is being built: ["minecraft:overworld", "heralisz:spawn"]. Blasts still hurt players
 	#and mobs, and C4 still damage CRac pieces. Empty = off.
-	protectedDimensions = ["minecraft:overworld", "heralisz:spawn"]
+	protectedDimensions = ["minecraft:overworld", "heralisz:spawn", "crac:bases"]
 

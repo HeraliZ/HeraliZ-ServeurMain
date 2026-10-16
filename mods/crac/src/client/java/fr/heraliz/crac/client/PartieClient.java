@@ -86,6 +86,9 @@ public final class PartieClient implements Partie {
             ReceptionClient.s2COpenInvites(p);
         } else if (paquet instanceof S2CPieceInfo p) {
             ReceptionClientBuild.s2CPieceInfo(p);
+        } else if (paquet instanceof S2CProteges p) {
+            // monde des bases (1.5.0) : joueurs entourés de vert
+            fr.heraliz.crac.bases.ContourProtege.proteges(p.joueurs());
         }
     }
 }

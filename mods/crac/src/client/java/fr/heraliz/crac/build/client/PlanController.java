@@ -258,6 +258,9 @@ public final class PlanController {
         if (Heraliz.blocked(mc.level)) {
             return Status.error(Heraliz.blockedMessage());
         }
+        if (player != null && Heraliz.horsMondeBases(player) != null) {
+            return Status.error(Heraliz.horsMondeBases(player));
+        }
         StructureView view = ClientMirror.view();
         MirrorStability.refresh(BuildClient.stability());
         PlacementRules.Plan plan = PlacementRules.check(view, new LevelEnv(mc.level), key, BuildClient.stability(), BuildClient.maxSkirt());

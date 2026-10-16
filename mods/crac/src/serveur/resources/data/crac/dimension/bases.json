@@ -1,0 +1,201 @@
+{
+  "type": "crac:bases",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "crac:bases",
+    "biome_source": {
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        {
+          "biome": "crac:bases_plaine",
+          "parameters": {
+            "temperature": [
+              -0.45,
+              0.55
+            ],
+            "humidity": [
+              -1.0,
+              0.1
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              0.05,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "crac:bases_prairie",
+          "parameters": {
+            "temperature": [
+              -0.45,
+              0.55
+            ],
+            "humidity": [
+              0.1,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              0.05,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "crac:bases_foret",
+          "parameters": {
+            "temperature": [
+              -0.45,
+              0.2
+            ],
+            "humidity": [
+              -0.1,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              -0.45,
+              0.05
+            ],
+            "weirdness": [
+              -1.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "crac:bases_bouleaux",
+          "parameters": {
+            "temperature": [
+              0.2,
+              0.55
+            ],
+            "humidity": [
+              -0.1,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              -0.45,
+              0.05
+            ],
+            "weirdness": [
+              -1.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "crac:bases_savane",
+          "parameters": {
+            "temperature": [
+              0.55,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              -0.45,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "crac:bases_collines",
+          "parameters": {
+            "temperature": [
+              -1.0,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              -1.0,
+              -0.45
+            ],
+            "weirdness": [
+              -1.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "crac:bases_taiga",
+          "parameters": {
+            "temperature": [
+              -1.0,
+              -0.45
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              -0.45,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        }
+      ]
+    }
+  }
+}

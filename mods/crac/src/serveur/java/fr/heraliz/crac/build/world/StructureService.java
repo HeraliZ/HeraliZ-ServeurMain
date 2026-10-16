@@ -685,6 +685,10 @@ public final class StructureService {
         if (amount <= 0 || store(level).index.piece(p.id) == null) {
             return;
         }
+        // base d'un nouveau joueur encore protégée (monde des bases, 1.5.0) : ni raid ni usure
+        if (fr.heraliz.crac.bases.Protections.pieceProtegee(level, p, cause)) {
+            return;
+        }
         int stage = p.crackStage();
         p.hp -= amount;
         store(level).setDirty();

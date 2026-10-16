@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:coal_ores",
+    "#minecraft:copper_ores",
+    "#minecraft:base_stone_overworld",
+    "minecraft:cobblestone",
+    "minecraft:mossy_cobblestone",
+    "minecraft:cobbled_deepslate",
+    "minecraft:calcite",
+    "minecraft:smooth_basalt"
+  ]
+}
