@@ -45,6 +45,7 @@ final class Ejection {
     /** Durees fixes (ticks) : prise du joueur, elan, vol plane, scene de fin. */
     private static final int GRAB = 24, WINDUP = 12, FLIGHT = 14, AFTER = 66;
 
+    private final CasinoZone zone;
     private final ServerLevel level;
     private final ServerPlayer player;
     private final UUID id;
@@ -63,7 +64,8 @@ final class Ejection {
     private int t;
     private boolean done, landed;
 
-    private Ejection(ServerLevel level, ServerPlayer player, int reason, CasinoZone.Entrance door, List<Vec3> path, Vec3 inside, Vec3 land) {
+    private Ejection(CasinoZone zone, ServerLevel level, ServerPlayer player, int reason, CasinoZone.Entrance door, List<Vec3> path, Vec3 inside, Vec3 land) {
+        this.zone = zone;
         this.level = level;
         this.player = player;
         this.id = player.getUUID();
@@ -123,7 +125,7 @@ final class Ejection {
         }
         if (land == null) land = door.at(0.4);
         List<Vec3> path = route(level, inside, from);
-        Ejection e = new Ejection(level, player, reason, door, path, inside, land);
+        Ejection e = new Ejection(zone, level, player, reason, door, path, inside, land);
         if (!player.startRiding(e.escort, true)) {
             e.cleanup();
             return null;
@@ -388,7 +390,7 @@ final class Ejection {
         sound(land, SoundEvents.PLAYER_BIG_FALL, 1f, 0.8f);
         level.sendParticles(ParticleTypes.POOF, land.x, land.y + 0.15, land.z, 14, 0.45, 0.08, 0.45, 0.03);
         level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, land.x, land.y + 0.1, land.z, 3, 0.3, 0.02, 0.3, 0.005);
-        ZoneManager.ejected(level, player);
+        ZoneManager.ejected(zone, level, player);
         player.displayClientMessage(Component.translatable(reason == BROKE ? "message.heralizcasino.zone.you_out" : "message.heralizcasino.zone.you_out_staff")
                 .withStyle(ChatFormatting.RED), true);
     }
@@ -432,7 +434,7 @@ final class Ejection {
                 EscortEntity.allowDismount = false;
             }
             // il n'echappe pas a la sortie en se deconnectant : sans ticket, il sera refoule a son retour
-            CasinoZone.get(level.getServer()).revoke(id);
+            zone.revoke(id);
         }
         player.setForcedPose(null);
         cleanup();
