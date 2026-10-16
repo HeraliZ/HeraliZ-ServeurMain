@@ -6,17 +6,21 @@ import net.minecraft.util.RandomSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.ToLongFunction;
 
 /**
  * Tirage des zones à ouvrir : au hasard, mais assez loin les unes des autres (distance minimale à plat entre deux zones
  * ouvertes en même temps, réglage rotation.minDistance) et réparties sur la carte (au plus une par quart, réglage
  * rotation.spread), en évitant les zones à ne pas reprendre (vague précédente). Si c'est impossible, les règles sont
  * relâchées dans cet ordre : les quarts, puis la distance (baissée peu à peu), et seulement à la fin les zones évitées.
- * Le résultat dit ce qui a été tenu, pour le journal.
+ * Pour que toutes les zones tournent, celles qui attendent depuis le plus longtemps passent un peu devant (sinon une
+ * zone isolée, compatible avec toutes les autres, sortirait bien plus souvent que ses voisines serrées). Le résultat
+ * dit ce qui a été tenu, pour le journal.
  */
 final class Repartition {
     /** Mélanges essayés à chaque niveau de règles (une quarantaine de zones : presque rien à calculer). */
@@ -42,10 +46,12 @@ final class Repartition {
      * @param candidates zones qu'on peut ouvrir
      * @param eviter     noms des zones à ne pas reprendre si possible
      * @param n          nombre de zones voulues
+     * @param fermeeA    heure de jeu de la dernière fermeture de chaque zone (0 : jamais ouverte) : les plus anciennes
+     *                   passent un peu devant
      */
     static Choix choisir(List<ExtractionZones.Zone> pool, List<ExtractionZones.Zone> ouvertes,
                          List<ExtractionZones.Zone> candidates, Set<String> eviter, int n, int distanceMin,
-                         boolean repartir, RandomSource random) {
+                         boolean repartir, ToLongFunction<ExtractionZones.Zone> fermeeA, RandomSource random) {
         if (n <= 0 || candidates.isEmpty()) {
             return new Choix(List.of(), Math.max(0, distanceMin), repartir, true);
         }
@@ -75,7 +81,7 @@ final class Repartition {
             List<ExtractionZones.Zone> liste = evite ? sansEvitees : candidates;
             for (int d : distances) {
                 for (boolean q : repartir ? new boolean[]{true, false} : new boolean[]{false}) {
-                    List<ExtractionZones.Zone> tirees = essayer(liste, ouvertes, n, d, q, parQuart, centres, random);
+                    List<ExtractionZones.Zone> tirees = essayer(liste, ouvertes, n, d, q, parQuart, centres, fermeeA, random);
                     if (tirees.size() >= n) {
                         return new Choix(tirees, d, q || !repartir, evite || sansEvitees.size() == candidates.size());
                     }
@@ -93,11 +99,13 @@ final class Repartition {
     /** Plusieurs tirages gloutons sur des ordres mélangés : le premier complet, sinon le plus grand. */
     private static List<ExtractionZones.Zone> essayer(List<ExtractionZones.Zone> liste, List<ExtractionZones.Zone> ouvertes,
                                                       int n, int distance, boolean quarts, int parQuart,
-                                                      Map<ResourceLocation, double[]> centres, RandomSource random) {
+                                                      Map<ResourceLocation, double[]> centres,
+                                                      ToLongFunction<ExtractionZones.Zone> fermeeA, RandomSource random) {
         List<ExtractionZones.Zone> meilleur = new ArrayList<>();
-        List<ExtractionZones.Zone> ordre = new ArrayList<>(liste);
+        List<ExtractionZones.Zone> parAttente = new ArrayList<>(liste);
+        parAttente.sort(Comparator.comparingLong(fermeeA));
         for (int essai = 0; essai < ESSAIS; essai++) {
-            melanger(ordre, random);
+            List<ExtractionZones.Zone> ordre = ordre(parAttente, random);
             List<ExtractionZones.Zone> tirees = new ArrayList<>();
             List<ExtractionZones.Zone> placees = new ArrayList<>(ouvertes);
             for (ExtractionZones.Zone z : ordre) {
@@ -178,12 +186,24 @@ final class Repartition {
         return v.length % 2 == 1 ? v[m] : (v[m - 1] + v[m]) / 2.0D;
     }
 
-    private static <T> void melanger(List<T> l, RandomSource random) {
-        for (int i = l.size() - 1; i > 0; i--) {
-            int j = random.nextInt(i + 1);
-            T t = l.get(i);
-            l.set(i, l.get(j));
-            l.set(j, t);
+    /**
+     * Ordre d'essai : rang d'attente (la plus anciennement fermée d'abord) plus un écart au hasard de la moitié de la
+     * liste : au hasard, mais les zones qui attendent depuis longtemps passent plutôt devant.
+     */
+    private static List<ExtractionZones.Zone> ordre(List<ExtractionZones.Zone> parAttente, RandomSource random) {
+        int n = parAttente.size();
+        int ecart = Math.max(2, n / 2);
+        double[] cle = new double[n];
+        Integer[] idx = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            cle[i] = i + random.nextInt(ecart) + random.nextDouble();
+            idx[i] = i;
         }
+        Arrays.sort(idx, Comparator.comparingDouble(i -> cle[i]));
+        List<ExtractionZones.Zone> out = new ArrayList<>(n);
+        for (Integer i : idx) {
+            out.add(parAttente.get(i));
+        }
+        return out;
     }
 }

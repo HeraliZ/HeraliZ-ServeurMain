@@ -137,7 +137,8 @@ public final class Rotation {
                     recentes.add(candidates.get(i).name());
                 }
                 Repartition.Choix tirage = Repartition.choisir(pool, ouvertes(data, now), candidates, recentes, 1,
-                        ExtractionConfig.ROTATION_MIN_DISTANCE.get(), ExtractionConfig.ROTATION_SPREAD.get(), RANDOM);
+                        ExtractionConfig.ROTATION_MIN_DISTANCE.get(), ExtractionConfig.ROTATION_SPREAD.get(),
+                        z -> data.closedAt(z.name()), RANDOM);
                 if (tirage.zones().isEmpty()) {
                     break;
                 }
@@ -193,7 +194,8 @@ public final class Rotation {
             }
         }
         Repartition.Choix tirage = Repartition.choisir(pool, ouvertes(data, now), candidates, data.vagueZones(), manque,
-                ExtractionConfig.ROTATION_MIN_DISTANCE.get(), ExtractionConfig.ROTATION_SPREAD.get(), RANDOM);
+                ExtractionConfig.ROTATION_MIN_DISTANCE.get(), ExtractionConfig.ROTATION_SPREAD.get(),
+                z -> data.closedAt(z.name()), RANDOM);
         if (tirage.zones().isEmpty()) {
             return false;
         }
