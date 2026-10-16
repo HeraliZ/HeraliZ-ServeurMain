@@ -42,9 +42,10 @@ import org.lwjgl.glfw.GLFW;
  *    ni avec un écran ouvert ;</li>
  *    <li>coup accepté : paquet au serveur, puis l'animation. Coup rapide : comme avant la 2.16.0 et comme la touche
  *    « Mêlée » de TaCZ (LocalPlayerMelee), bruit « melee_push » du couteau et animation « melee_push » du gunpack (signal
- *    « bayonet_push » de sa machine à états). Coup puissant (16/10) : animation « melee_stock » où le couteau tourne avec
- *    le geste du bras, comme le coup lourd des couteaux de LR (AnimCouteaux), bruits des couteaux de LR et petit
- *    mouvement de caméra (SecousseCouteau) ; en secours, le coup du gunpack.</li>
+ *    « bayonet_push » de sa machine à états). Coup puissant (16/10) : animation « melee_stock » du modèle où le couteau
+ *    tourne avec le geste du bras (AnimCouteaux : geste écrit pour Knife CT et T, coup lourd de la Miséricorde, de la
+ *    Lame de Desmoulins et du Credo de LR pour M9, papillon et karambit), ses bruits et son mouvement de caméra
+ *    (SecousseCouteau) ; cadence du coup puissant propre au modèle (CoupsCouteau) ; en secours, le coup du gunpack.</li>
  * </ul>
  */
 public final class CouteauxClient {
@@ -108,14 +109,15 @@ public final class CouteauxClient {
       if (horloge < pretA || IGunOperator.fromLivingEntity(joueur).getSynDrawCoolDown() > 0L || CompatReanimation.empeche(joueur)) {
          return false;
       }
-      pretA = horloge + CoupsCouteau.cadence(lourd);
-      ReseauCouteaux.envoyerAuServeur(new PaquetCoupCouteau(lourd));
       ItemStack main = joueur.getMainHandItem();
+      IGun ig = IGun.getIGunOrNull(main);
+      ResourceLocation id = ig == null ? null : ig.getGunId(main);
+      pretA = horloge + CoupsCouteau.cadence(lourd, CoupsCouteau.modele(id));
+      ReseauCouteaux.envoyerAuServeur(new PaquetCoupCouteau(lourd));
       TimelessAPI.getGunDisplay(main).ifPresent(affichage -> {
-         IGun ig = IGun.getIGunOrNull(main);
          AnimationStateMachine<?> etats = affichage.getAnimationStateMachine();
-         if (lourd && AnimCouteaux.jouerLourd(etats, ig == null ? null : ig.getGunId(main))) {
-            SecousseCouteau.lancer();
+         // coup puissant : animation HeraliZ du modèle (bruits et mouvement de caméra compris, AnimCouteaux)
+         if (lourd && AnimCouteaux.jouerLourd(etats, id)) {
             return;
          }
          // coup rapide (et secours du coup puissant) : comme la touche « Mêlée » de TaCZ, bruit et animation du gunpack
@@ -132,6 +134,7 @@ public final class CouteauxClient {
          return;
       }
       horloge++;
+      AnimCouteaux.sonsEnAttente();
       LocalPlayer joueur = Minecraft.getInstance().player;
       if (joueur == null) {
          caseVue = -1;

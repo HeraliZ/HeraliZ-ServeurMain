@@ -15,8 +15,10 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * Coup puissant d'un autre joueur, vu en 3e personne, avec l'estoc des couteaux de LR Tactical (celui de la Dague
  * tactique et du karambit de LR, {@code heralisz_skins:melee/knife} du gunpack heralisz_skins) : « stab_upper », bras
- * ramené puis poussé, buste qui tourne. Joué sur la couche « une fois » du haut du corps de TaCZ, en remplaçant le geste
- * en cours. Le coup rapide garde les gestes de TaCZ (comme avant la 2.16.0). Classe chargée seulement si Player Animator
+ * ramené puis poussé, buste qui tourne. C'est aussi le geste du clic droit de la Miséricorde, de la Lame de Desmoulins
+ * et du Credo (leurs fiches d'affichage, « attack_right ») : M9, papillon et karambit, qui reprennent leur coup lourd en
+ * 1re personne (Tactique 2.18.0), gardent donc ce geste vu des autres. Joué sur la couche « une fois » du haut du corps
+ * de TaCZ, en remplaçant le geste en cours. Le coup rapide garde les gestes de TaCZ (comme avant la 2.16.0). Classe chargée seulement si Player Animator
  * est là (appelée après {@code PlayerAnimatorCompat.isInstalled()}).
  */
 final class GesteCouteau {
