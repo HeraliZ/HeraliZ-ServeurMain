@@ -1181,10 +1181,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   section 9) ; lieux et nom
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
-- **PNJ et quêtes** (16/10, pas encore codé) : scénario complet proposé dans `docs/QUETES_SCENARIO.md` (8 PNJ au
-  Refuge, histoire « Le Dernier Convoi » en prologue + 4 actes, chaînes par PNJ, contrats du jour tirés de modèles,
-  événements du serveur, secrets ; futur mod `heraliz-quetes`). Questions en fin de document à faire trancher par le
-  propriétaire avant tout code.
+- **PNJ et quêtes** (16/10, pas encore codé) : scénario v2 dans `docs/QUETES_SCENARIO.md` (8 PNJ posés au spawn
+  par le staff, chacun son métier ; suite de quêtes par PNJ + tableau de contrats toujours plein, sans limite par
+  jour ; `/quetes` avec bouton « Suivre » et suivi à droite de l'écran ; points de quête posés à la baguette ; futur
+  mod `heraliz-quetes`). Questions en fin de document à faire trancher avant tout code.
 - **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
   Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
