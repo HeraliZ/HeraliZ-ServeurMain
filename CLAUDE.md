@@ -1057,17 +1057,34 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   yeux au corps pour ouvrir, 6 pour garder ouvert) ; boîte du cadavre dans le sens du corps (1 × 1,9 bloc, carré de
   1,6 en diagonale, 0,45 de haut), sans collision. Fouiller un joueur À TERRE (Réanimation 1.14.0) ne téléporte plus
   à côté de lui non plus (la réanimation, elle, garde sa place à genoux) ;
-- loot (15/10, Loot 0.8.0) : dans l'écran de fouille des conteneurs de HeraliZ Loot (salles à carte comprises) et des
-  coffres T7, petit badge du palier « T1 » à « T7 » juste après le nom (T1 gris, T2 vert, T3 bleu, T4 violet, T5 or,
-  T6 orange, T7 rouge ; `client/BadgePalier`, `EcranConteneur`), style de base façon DayZ inchangé ; palier lu chez le
-  joueur dans le nom du bloc (`ConteneurBlock.palier`, chiffre du préfixe), rien de plus sur le réseau. Conteneurs de
-  Minecraft scellés (`ConteneursVanilla`, serveur) : en survie et en aventure, coffres, barils, fours, alambic,
-  entonnoir, distributeur, dropper, boîtes de Shulker, juke-box, bibliothèque sculptée et tout autre bloc `minecraft:` à
-  inventaire refusent l'ouverture (« Ce conteneur est vide et scellé. »), comme les wagonnets à coffre ou à entonnoir et
-  le coffre des bateaux. Libres : créatif, spectateur, staff (permission 2), coffre de l'Ender, pupitre, feux de camp,
-  postes de travail sans stockage, blocs de nos mods et de cfm, et par défaut les blocs posés dans un claim de CRac
-  (rangements des bases). Réglages : section `[conteneurs_vanilla]` de `heraliz_loot-server.toml` (`actif`, `bloques`,
-  `inventaires_auto`, `exceptions`, `coffre_ender`, `permis_claims_crac`, `entites`). Rien testé en jeu ;
+- loot (15/10, Loot 0.8.0 ; 16/10, Loot 0.9.0) : dans l'écran de fouille des conteneurs de HeraliZ Loot (salles à carte
+  comprises) et des coffres T7, petit badge du palier « T1 » à « T7 » juste après le nom (T1 gris, T2 vert, T3 bleu,
+  T4 violet, T5 or, T6 orange, T7 rouge ; `client/BadgePalier`, `EcranConteneur`), style de base façon DayZ inchangé ;
+  palier lu chez le joueur dans le nom du bloc (`ConteneurBlock.palier`). Côté serveur, en survie et en aventure
+  (libres : créatif, spectateur, staff permission 2 ; réglages dans `heraliz_loot-server.toml`) :
+  - **conteneurs de Minecraft scellés** (`ConteneursVanilla`, `[conteneurs_vanilla]`) : coffres, barils, fours, alambic,
+    entonnoir, distributeur, dropper, boîtes de Shulker, juke-box, bibliothèque sculptée et tout autre bloc `minecraft:` à
+    inventaire (« Ce conteneur est vide et scellé. »), wagonnets à coffre ou à entonnoir, coffre des bateaux ; permis
+    dans un claim de CRac (rangements des bases, `permis_claims_crac = true`) ; jamais nos blocs ni ceux de cfm ;
+  - **postes de Minecraft hors service** (0.9.0, `[postes_vanilla]`, « Ce poste est hors service. ») : établi, enclumes,
+    table d'enchantement, métier à tisser, coffre de l'Ender, cartographie, tailleur de pierre, table de forge, balise,
+    meule, table d'archerie, pupitre, composteur, chaudrons, pots de fleurs, pot décoré, feux de camp, bougies, gâteau,
+    ancre de réapparition, bloc musical, répéteur, comparateur, détecteur de lumière, fil de redstone, blocs de commande,
+    de structure et jigsaw, cadre de portail de l'End, œuf de dragon, générateur de monstres, citrouille, ruches, et tout
+    autre bloc `minecraft:` qui ouvre un menu (`menus_auto`) ; aussi dans les bases de CRac (`permis_claims_crac =
+    false`, choix « bloquer en trop »). Restent permis : portes, trappes, portillons, boutons, leviers, plaques, lits,
+    échelles, cloches. Rouvrir un bloc : liste `exceptions`. L'ancienne clé `coffre_ender` n'existe plus ;
+  - **présentoirs protégés** (0.9.0, `Presentoirs`, `[presentoirs]`, « Ce présentoir est protégé. ») : cadres et cadres
+    lumineux, porte-armures, mannequins de l'Armurerie (`heraliz_armory:mannequin`, un porte-armure), peintures, nœuds de
+    laisse, et d'office toute entité accrochée ou tout porte-armure d'un autre mod (`auto`). Ni coup (y compris mêlée de
+    Tactique et couteaux), ni interaction, ni projectile, ni balle de TaCZ (`EntityHurtByGunEvent.Pre`, par réflexion) ;
+    aucune explosion ne les abîme ni ne casse le bloc qui les porte ; pose refusée hors d'une base. Libres dans les bases
+    de CRac (`permis_claims_crac = true`) ;
+  - **nuisances refusées hors des bases** (0.9.0, `Nuisances`, `[nuisances]`, « Impossible ici. » ; CRac laisse tout
+    faire hors des claims) : seaux (eau, lave, neige poudreuse, poisson), briquet et boule de feu, outils sur un bloc
+    (écorcer, gratter ou décirer le cuivre, cire, chemin, labour), poudre d'os, panneaux (écrire, teindre, faire
+    briller, cirer, poser). Un panneau ciré reste utilisable : le staff cire les panneaux à commande du spawn.
+  Rien testé en jeu ;
 - fouille d'un joueur à terre (15/10, Réanimation 1.16.0) : ses emplacements Curios (masque, gilet, gants, genouillère,
   sac à dos, ghillie, brassard) sont montrés dans une colonne à gauche de la fouille, avec leurs icônes de case vide
   (`menu/SearchMenu`, cases 77 et suivantes ; serveur : `compat/CuriosFouille`, branché sur les vrais emplacements de la
