@@ -137,7 +137,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
-| heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
+| heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals ; zone du casino (entrée payante) et zone VIP (grades boutique, section 10), chacune avec ses entrées et ses videurs |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
 | heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) ; zones des salles à carte (`salles_carte/<nom>`), remplies seulement quand Bunker les recharge ; palier « T1 » à « T7 » en petit badge coloré à côté du nom dans l'écran de fouille et conteneurs de Minecraft scellés en survie (0.8.0) |
 | heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Seulement les blocs posés sur la carte (1.9.0 : 48 blocs jamais posés retirés, d'après le workflow « Inventaire de la carte » ; gardés aussi `tole_toit_bleue` et `tole_toit_rouille`, dont les escaliers et dalles sont posés). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
@@ -319,6 +319,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `fr.heralisz.clans.api.CarteApi` (paquets `CarteDemandeC2S` / `CarteS2C`) | clansetbases (commun, rempli chez le joueur) | pour la carte du monde (lue par réflexion par utils) : `demander()` (au plus 1 par seconde), `zones()` (état public de chaque zone, celui du drapeau), `allies()` (membres de son clan dans le même monde, personne en match), `monClan()`, `version()`, `dessinerBanniere(...)`, `ravitailler(id)` |
 | `fr.heraliz.loot.SallesLoot` (`declarer`, `retirer`, `recharger`, `etat`) | loot (serveur, appelée par réflexion par Bunker) | salles à carte : leurs conteneurs quittent la rotation et ne se remplissent qu'à la recharge |
 | `fr.heraliz.loot.client.RaretesClient.couleur(ItemStack)` | loot (client, lu par réflexion par dayzhotbar) | couleur de rareté d'un objet (0 : aucune) |
+| `fr.heraliz.grades.serveur.GradesApi` (`rangBoutique(UUID)` : 0 à 3, `gradeAffiche(UUID)`) | grades (serveur, lue par réflexion par le casino) | grade d'un joueur (zone VIP du casino) |
 | données persistantes du joueur `PlayerPersisted.HeralizBonusLoot.<source>` | lues par loot (serveur), écrites par clansetbases (`clan`) et utils (`objet`) | bonus de loot : `{Pct, Fin (heure en ms)}` ou `{Pct, Restant (ticks de jeu)}`, sources additionnées, plafond 25 % (`fr.heraliz.loot.BonusLoot`) |
 
 **Pour qu'un nouveau mod utilise un des nôtres :**
@@ -850,6 +851,14 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - CRac : aucun sac de couchage (retour à la base par la commande de téléportation, lits normaux) ; seuls les C4
   abîment les constructions ;
 - casino : revente avec 5 % de commission, échanges d'objets coupés, entrée non payable avec le compte ;
+- zone VIP du casino (16/10, Casino 2.3.0, Grades 1.1.0) : deuxième zone, à part de celle du casino (dedans ou
+  ailleurs), réservée aux grades de la boutique Rescapé, Traqueur et Roi de la Zone, sans payer (le staff sans grade
+  boutique n'entre qu'en créatif ou spectateur). Commandes : `/casino zone vip a|b` (coins, ou la Tablette du Directeur),
+  `creer`, `entree` (deux videurs VIP flanquent la porte), `garde` (un videur VIP de plus), `info`, `supprimer`. Un
+  joueur sans grade est remis dehors et le videur VIP lui dit « Non, tu n'es pas désigné comme VIP (grade Rescapé,
+  Traqueur ou Roi de la Zone). » (aussi dans son chat). Fauché dedans : sorti par les videurs comme au casino (mêmes
+  réglages `expulserFauches`, `delaiExpulsion`). Grade lu par réflexion (`AccesVip` → `GradesApi.rangBoutique`) : sans
+  HeraliZ Grades, la zone VIP est fermée. Chaque videur sait sa zone (NBT `Zone`, `casino` par défaut). Rien testé en jeu ;
 - bonus de loot (HeraliZ Loot, au premier tirage d'un conteneur) : chaque objet a 10 % de chances d'être tiré une
   seconde fois (le plus rare est gardé) et les quantités montent de 10 % ; sources cumulables, plafond 25 % : membre
   dans une zone tenue par son clan, objet « Bonus de loot » de la boutique (`heralisz_utils:document_lootbonus`, 2 h de

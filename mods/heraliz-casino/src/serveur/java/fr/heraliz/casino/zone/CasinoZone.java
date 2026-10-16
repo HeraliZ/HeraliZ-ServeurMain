@@ -21,11 +21,32 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * La zone du casino (sauvegardee avec le monde) : une salle delimitee par deux coins, ses entrees (la ou se tiennent
- * les videurs, et par ou l'on sort les fauches) et les tickets d'entree des joueurs.
+ * Une zone du casino (sauvegardee avec le monde) : une salle delimitee par deux coins, ses entrees (la ou se tiennent
+ * les videurs, et par ou l'on sort les fauches) et les tickets d'entree des joueurs (zone payante seulement).
  */
 public class CasinoZone extends SavedData {
-    private static final String NAME = "heralizcasino_zone";
+    /**
+     * Les zones : le casino (entree payante) et la zone VIP (reservee aux grades de la boutique, Rescape au moins).
+     * Chacune a sa salle, ses entrees et ses videurs ; la zone VIP peut etre dans le casino ou a part.
+     */
+    public enum Kind {
+        CASINO("heralizcasino_zone", "casino"), VIP("heralizcasino_zone_vip", "vip");
+
+        final String file;
+        /** Identifiant (sauvegarde des videurs, commandes). */
+        public final String id;
+
+        Kind(String file, String id) {
+            this.file = file;
+            this.id = id;
+        }
+
+        public static Kind byId(String id) {
+            return VIP.id.equals(id) ? VIP : CASINO;
+        }
+    }
+
+    private final Kind kind;
 
     /** Une entree : point de passage (au sol, sur le bord de la zone) et direction de l'exterieur (horizontale). */
     public record Entrance(Vec3 door, double nx, double nz) {
@@ -53,8 +74,25 @@ public class CasinoZone extends SavedData {
     /** Jetons encaisses aux entrees depuis la creation de la zone. */
     private long revenue;
 
+    public CasinoZone(Kind kind) {
+        this.kind = kind;
+    }
+
+    /** La zone du casino (entree payante). */
     public static CasinoZone get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(CasinoZone::load, CasinoZone::new, NAME);
+        return get(server, Kind.CASINO);
+    }
+
+    public static CasinoZone get(MinecraftServer server, Kind kind) {
+        return server.overworld().getDataStorage().computeIfAbsent(tag -> load(kind, tag), () -> new CasinoZone(kind), kind.file);
+    }
+
+    public Kind kind() {
+        return kind;
+    }
+
+    public boolean vip() {
+        return kind == Kind.VIP;
     }
 
     // =================================================================== la salle
@@ -195,8 +233,8 @@ public class CasinoZone extends SavedData {
     }
 
     // =================================================================== sauvegarde
-    public static CasinoZone load(CompoundTag tag) {
-        CasinoZone z = new CasinoZone();
+    public static CasinoZone load(Kind kind, CompoundTag tag) {
+        CasinoZone z = new CasinoZone(kind);
         if (tag.contains("Dim")) {
             ResourceLocation id = ResourceLocation.tryParse(tag.getString("Dim"));
             if (id != null) z.dimension = ResourceKey.create(Registries.DIMENSION, id);

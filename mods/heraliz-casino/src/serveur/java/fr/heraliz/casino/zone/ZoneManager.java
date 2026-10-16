@@ -50,9 +50,10 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * La zone du casino cote serveur : les videurs arretent a l'entree les joueurs qui n'ont pas paye (retour dehors,
- * dialogue pour payer), et sortent ceux qui n'ont plus de quoi jouer. Les joueurs en creatif ou spectateur passent
- * librement (ils construisent le casino).
+ * Les zones du casino cote serveur : les videurs arretent a l'entree les joueurs qui n'ont pas paye (retour dehors,
+ * dialogue pour payer), et sortent ceux qui n'ont plus de quoi jouer. Zone VIP : meme chose, mais l'entree ne se paie
+ * pas, elle est reservee aux grades de la boutique (Rescape au moins, {@link AccesVip}). Les joueurs en creatif ou
+ * spectateur passent librement (ils construisent le casino).
  */
 @Mod.EventBusSubscriber(modid = HeralizCasino.MODID)
 public final class ZoneManager {
@@ -94,7 +95,7 @@ public final class ZoneManager {
         }
     }
 
-    private static final Map<UUID, Visit> VISITS = new HashMap<>();
+    private static final Map<CasinoZone.Kind, Map<UUID, Visit>> VISITS = new java.util.EnumMap<>(CasinoZone.Kind.class);
     private static final Map<UUID, Selection> SELECTIONS = new HashMap<>();
     private static final List<Ejection> EJECTIONS = new ArrayList<>();
     /** Joueurs qu'on vient de jeter dehors : ni chute ni coup pendant quelques instants (fin, en ticks du monde). */
@@ -109,13 +110,16 @@ public final class ZoneManager {
         if (event.phase != TickEvent.Phase.END) return;
         MinecraftServer server = event.getServer();
         EJECTIONS.removeIf(e -> !e.tick());
-        CasinoZone zone = CasinoZone.get(server);
-        if (!zone.exists()) return;
-        ServerLevel level = server.getLevel(zone.dimension());
-        if (level == null) return;
-        long now = level.getGameTime();
-        List<ServerPlayer> players = new ArrayList<>(level.players());
-        for (ServerPlayer p : players) tickPlayer(zone, level, p, now);
+        for (CasinoZone.Kind kind : CasinoZone.Kind.values()) {
+            CasinoZone zone = CasinoZone.get(server, kind);
+            if (!zone.exists()) continue;
+            ServerLevel level = server.getLevel(zone.dimension());
+            if (level == null) continue;
+            long now = level.getGameTime();
+            List<ServerPlayer> players = new ArrayList<>(level.players());
+            for (ServerPlayer p : players) tickPlayer(zone, level, p, now);
+        }
+        long now = server.overworld().getGameTime();
         if (now % 200 == 0) SAFE_UNTIL.values().removeIf(until -> until < now);
     }
 
@@ -123,13 +127,13 @@ public final class ZoneManager {
         return p.isCreative() || p.isSpectator() || p instanceof FakePlayer;
     }
 
-    static Visit visit(ServerPlayer p) {
-        return VISITS.computeIfAbsent(p.getUUID(), k -> new Visit());
+    static Visit visit(ServerPlayer p, CasinoZone.Kind kind) {
+        return VISITS.computeIfAbsent(kind, k -> new HashMap<>()).computeIfAbsent(p.getUUID(), k -> new Visit());
     }
 
     private static void tickPlayer(CasinoZone zone, ServerLevel level, ServerPlayer p, long now) {
         if (!p.isAlive()) return;
-        Visit v = visit(p);
+        Visit v = visit(p, zone.kind());
         boolean inside = zone.contains(p.getX(), p.getY(), p.getZ());
         if (ejecting(p.getUUID())) return;
         if (exempt(p)) {
@@ -138,8 +142,8 @@ public final class ZoneManager {
             return;
         }
         if (!inside) {
-            // il ressort : le ticket ne vaut que pour une entree, il faudra repayer pour revenir
-            if (v.admitted) {
+            // il ressort : le ticket ne vaut que pour une entree, il faudra repayer pour revenir (la zone VIP ne se paie pas)
+            if (v.admitted && !zone.vip()) {
                 zone.revoke(p.getUUID());
                 p.displayClientMessage(Component.translatable("message.heralizcasino.zone.left").withStyle(ChatFormatting.GRAY), true);
             }
@@ -150,6 +154,19 @@ public final class ZoneManager {
             return;
         }
         CasinoConfig.Entree cfg = CasinoConfig.get().caisse.entree;
+        if (!v.admitted && zone.vip()) {
+            if (AccesVip.autorise(p)) {
+                v.admitted = true;
+                v.played = false;
+                v.enteredAt = now;
+                v.brokeTicks = 0;
+                p.displayClientMessage(Component.translatableWithFallback("message.heralizcasino.zone.vip_welcome", "Bienvenue en zone VIP.")
+                        .withStyle(ChatFormatting.GOLD), true);
+            } else {
+                block(zone, level, p, v, now);
+            }
+            return;
+        }
         if (!v.admitted) {
             if (cfg.prix <= 0 || zone.hasPass(p.getUUID())) {
                 v.admitted = true;
@@ -180,7 +197,7 @@ public final class ZoneManager {
         v.brokeTicks += 10;
         if (v.brokeTicks >= delay) {
             v.brokeTicks = 0;
-            eject(level, p, Ejection.BROKE);
+            eject(zone, level, p, Ejection.BROKE);
         }
     }
 
@@ -188,7 +205,10 @@ public final class ZoneManager {
     private static final int SELL_GRACE = 30 * 20;
 
     // =================================================================== entree
-    /** Joueur sans ticket dans la zone : retour dehors, et un videur l'interpelle (au plus une fois toutes les 3 s). */
+    /**
+     * Joueur sans ticket (ou sans grade, zone VIP) dans la zone : retour dehors, et un videur l'interpelle (au plus une
+     * fois toutes les 3 s).
+     */
     private static void block(CasinoZone zone, ServerLevel level, ServerPlayer p, Visit v, long now) {
         // il ressort par ou il est entre (le mur de la salle le plus proche) ; s'il arrive de loin (teleportation),
         // il est depose devant l'entree
@@ -215,11 +235,24 @@ public final class ZoneManager {
         v.lastOutside = back;
         if (now - v.blockedAt < BLOCK_COOLDOWN) return;
         v.blockedAt = now;
+        if (zone.vip()) {
+            refuseVip(p, nearestGuard(level, p.position(), 20, CasinoZone.Kind.VIP));
+            return;
+        }
         long price = CasinoConfig.get().caisse.entree.prix;
         Component line = Component.translatable("guard.heralizcasino.stop." + level.random.nextInt(3), Chips.format(price));
-        GuardEntity g = nearestGuard(level, p.position(), 20);
+        GuardEntity g = nearestGuard(level, p.position(), 20, CasinoZone.Kind.CASINO);
         if (g != null) g.challenge(p, line);
         sendDialog(p, g, line);
+    }
+
+    /** Le videur VIP refuse le joueur sans grade : il le dit (bulle) et le joueur le lit aussi dans son chat. */
+    private static void refuseVip(ServerPlayer p, @Nullable GuardEntity g) {
+        Component line = Component.translatableWithFallback("guard.heralizcasino.vip.stop",
+                "Non, tu n'es pas désigné comme VIP (grade Rescapé, Traqueur ou Roi de la Zone).");
+        if (g != null) g.challenge(p, line);
+        p.displayClientMessage(Component.translatableWithFallback("message.heralizcasino.zone.vip_refused",
+                "Accès refusé : tu n'es pas désigné comme VIP (grade Rescapé, Traqueur ou Roi de la Zone).").withStyle(ChatFormatting.RED), false);
     }
 
     private static void sendDialog(ServerPlayer p, @Nullable GuardEntity g, Component line) {
@@ -229,20 +262,25 @@ public final class ZoneManager {
     }
 
     /** Clic droit sur un videur : il dit ou en est le joueur, et propose de payer s'il n'a pas de ticket. */
-    public static void talk(ServerPlayer p, GuardEntity g) {
+    public static void talk(ServerPlayer p, GuardEntityServeur g) {
         MinecraftServer server = p.getServer();
         if (server == null) return;
-        CasinoZone zone = CasinoZone.get(server);
+        CasinoZone zone = CasinoZone.get(server, g.zone());
         CasinoConfig.Entree cfg = CasinoConfig.get().caisse.entree;
         if (p.isCreative()) {
             p.displayClientMessage(Component.translatable("message.heralizcasino.zone.creative").withStyle(ChatFormatting.YELLOW), true);
+            return;
+        }
+        if (zone.vip()) {
+            if (AccesVip.autorise(p)) g.say(Component.translatableWithFallback("guard.heralizcasino.vip.welcome", "Bienvenue en zone VIP. Fais comme chez toi."));
+            else refuseVip(p, g);
             return;
         }
         if (!zone.exists() || cfg.prix <= 0) {
             g.say(Component.translatable("guard.heralizcasino.free"));
             return;
         }
-        if (zone.hasPass(p.getUUID()) || visit(p).admitted) {
+        if (zone.hasPass(p.getUUID()) || visit(p, CasinoZone.Kind.CASINO).admitted) {
             g.say(Component.translatable("guard.heralizcasino.pass"));
             return;
         }
@@ -283,7 +321,7 @@ public final class ZoneManager {
         CasinoConfig.Entree cfg = CasinoConfig.get().caisse.entree;
         if (!zone.exists() || cfg.prix <= 0 || zone.hasPass(p.getUUID())) return false;
         Offer o = offer(p, cfg.prix);
-        GuardEntity g = p.level() instanceof ServerLevel sl ? nearestGuard(sl, p.position(), 20) : null;
+        GuardEntity g = p.level() instanceof ServerLevel sl ? nearestGuard(sl, p.position(), 20, CasinoZone.Kind.CASINO) : null;
         if (!o.possible()) {
             p.displayClientMessage(Component.translatable("message.heralizcasino.zone.cant_pay", Chips.format(cfg.prix)).withStyle(ChatFormatting.RED), true);
             if (g != null) g.say(Component.translatable("guard.heralizcasino.no_money"));
@@ -331,8 +369,11 @@ public final class ZoneManager {
     // =================================================================== fauches
     /** Une mise vient d'etre posee : le joueur "a joue" (il pourra etre sorti s'il tombe a zero). */
     public static void onWager(@Nullable UUID player) {
-        Visit v = player == null ? null : VISITS.get(player);
-        if (v != null && v.admitted) v.played = true;
+        if (player == null) return;
+        for (Map<UUID, Visit> visits : VISITS.values()) {
+            Visit v = visits.get(player);
+            if (v != null && v.admitted) v.played = true;
+        }
     }
 
     /**
@@ -393,11 +434,17 @@ public final class ZoneManager {
     }
 
     /**
-     * Les videurs sortent le joueur (animation d'une douzaine de secondes).
+     * Les videurs sortent le joueur de la zone ou il se trouve (la zone VIP d'abord, si elle est dans le casino).
      * @return false si c'est impossible (pas de zone, joueur ailleurs, deja en cours)
      */
     public static boolean eject(ServerLevel level, ServerPlayer p, int reason) {
-        CasinoZone zone = CasinoZone.get(level.getServer());
+        CasinoZone vip = CasinoZone.get(level.getServer(), CasinoZone.Kind.VIP);
+        CasinoZone zone = vip.in(level) && vip.contains(p.position()) ? vip : CasinoZone.get(level.getServer());
+        return eject(zone, level, p, reason);
+    }
+
+    /** Les videurs sortent le joueur de cette zone (animation d'une douzaine de secondes). */
+    static boolean eject(CasinoZone zone, ServerLevel level, ServerPlayer p, int reason) {
         if (!zone.in(level) || p.level() != level || !p.isAlive() || ejecting(p.getUUID())) return false;
         Ejection e = Ejection.begin(zone, level, p, reason);
         if (e == null) return false;
@@ -406,9 +453,9 @@ public final class ZoneManager {
     }
 
     /** Fin d'une expulsion : ticket perdu, visite terminee, quelques secondes a l'abri des chutes et des coups. */
-    static void ejected(ServerLevel level, ServerPlayer p) {
-        CasinoZone.get(level.getServer()).revoke(p.getUUID());
-        Visit v = visit(p);
+    static void ejected(CasinoZone zone, ServerLevel level, ServerPlayer p) {
+        zone.revoke(p.getUUID());
+        Visit v = visit(p, zone.kind());
         v.admitted = false;
         v.played = false;
         v.brokeTicks = 0;
@@ -442,7 +489,7 @@ public final class ZoneManager {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         UUID id = event.getEntity().getUUID();
         for (Ejection e : EJECTIONS) if (e.player().equals(id)) e.abort();
-        VISITS.remove(id);
+        for (Map<UUID, Visit> visits : VISITS.values()) visits.remove(id);
         SELECTIONS.remove(id);
     }
 
@@ -471,18 +518,18 @@ public final class ZoneManager {
     }
 
     /** Cree la zone a partir de la selection de l'operateur ; les joueurs deja dedans restent admis. */
-    public static boolean create(ServerPlayer op) {
+    public static boolean create(ServerPlayer op, CasinoZone.Kind kind) {
         Selection s = selection(op.getUUID());
         MinecraftServer server = op.getServer();
         if (!s.complete() || server == null) return false;
-        CasinoZone zone = CasinoZone.get(server);
+        CasinoZone zone = CasinoZone.get(server, kind);
         if (zone.exists()) removeGuards(server, zone);
         zone.clear();
         zone.define(s.dim(), s.a(), s.b());
         ServerLevel level = server.getLevel(s.dim());
         if (level != null) {
             for (ServerPlayer p : level.players()) {
-                Visit v = visit(p);
+                Visit v = visit(p, kind);
                 v.admitted = zone.contains(p.position());
                 v.enteredAt = level.getGameTime();
                 v.lastOutside = v.admitted ? null : p.position();
@@ -494,16 +541,16 @@ public final class ZoneManager {
     }
 
     /** Entree a l'endroit ou se tient l'operateur : la porte est ramenee sur la facade, deux videurs la flanquent. */
-    public static int addEntrance(ServerPlayer op) {
+    public static int addEntrance(ServerPlayer op, CasinoZone.Kind kind) {
         MinecraftServer server = op.getServer();
         if (server == null || !(op.level() instanceof ServerLevel level)) return -1;
-        CasinoZone zone = CasinoZone.get(server);
+        CasinoZone zone = CasinoZone.get(server, kind);
         if (!zone.in(level)) return -1;
         CasinoZone.Entrance e = zone.addEntrance(op.position());
-        return postGuards(level, e);
+        return postGuards(level, e, kind);
     }
 
-    private static int postGuards(ServerLevel level, CasinoZone.Entrance e) {
+    private static int postGuards(ServerLevel level, CasinoZone.Entrance e, CasinoZone.Kind kind) {
         Vec3 t = e.tangent();
         float yaw = yaw(e.nx(), e.nz());
         int n = 0;
@@ -518,35 +565,43 @@ public final class ZoneManager {
                 }
             }
             if (spot == null) continue;
-            fr.heraliz.casino.entity.GuardEntityServeur.post(level, spot, yaw, side);
+            GuardEntityServeur.post(level, spot, yaw, side, kind);
             n++;
         }
         return n;
     }
 
     /** Videur supplementaire, exactement la ou se tient l'operateur, tourne comme lui. */
-    public static void addGuard(ServerPlayer op) {
-        if (op.level() instanceof ServerLevel level) fr.heraliz.casino.entity.GuardEntityServeur.post(level, op.position(), op.getYRot(), op.getRandom().nextBoolean() ? 1 : -1);
+    public static void addGuard(ServerPlayer op, CasinoZone.Kind kind) {
+        if (op.level() instanceof ServerLevel level) GuardEntityServeur.post(level, op.position(), op.getYRot(), op.getRandom().nextBoolean() ? 1 : -1, kind);
     }
 
-    public static boolean delete(MinecraftServer server) {
-        CasinoZone zone = CasinoZone.get(server);
+    public static boolean delete(MinecraftServer server, CasinoZone.Kind kind) {
+        CasinoZone zone = CasinoZone.get(server, kind);
         if (!zone.exists()) return false;
         removeGuards(server, zone);
         zone.clear();
-        for (Visit v : VISITS.values()) v.admitted = false;
+        Map<UUID, Visit> visits = VISITS.get(kind);
+        if (visits != null) for (Visit v : visits.values()) v.admitted = false;
         return true;
     }
 
-    /** Retire les videurs en poste (charges) autour de la zone. */
+    /** Retire les videurs en poste (charges) de cette zone, autour d'elle ; ceux de l'autre zone restent. */
     private static void removeGuards(MinecraftServer server, CasinoZone zone) {
         ServerLevel level = zone.dimension() == null ? null : server.getLevel(zone.dimension());
         if (level == null) return;
-        for (GuardEntity g : level.getEntitiesOfClass(GuardEntity.class, zone.box().inflate(24))) g.discard();
+        for (GuardEntityServeur g : level.getEntitiesOfClass(GuardEntityServeur.class, zone.box().inflate(24), x -> !x.isTemporary() && x.zone() == zone.kind())) {
+            g.discard();
+        }
     }
 
     public static int guardCount(ServerLevel level, CasinoZone zone) {
-        return level.getEntitiesOfClass(GuardEntityServeur.class, zone.box().inflate(24), g -> !g.isTemporary()).size();
+        return level.getEntitiesOfClass(GuardEntityServeur.class, zone.box().inflate(24), g -> !g.isTemporary() && g.zone() == zone.kind()).size();
+    }
+
+    /** Le mod des grades est la : la zone VIP peut s'ouvrir aux joueurs gradés. */
+    public static boolean vipDisponible() {
+        return AccesVip.disponible();
     }
 
     /** Ticket offert (sans payer) pour "minutes" minutes. */
@@ -556,10 +611,10 @@ public final class ZoneManager {
 
     // =================================================================== outils
     @Nullable
-    static GuardEntity nearestGuard(ServerLevel level, Vec3 at, double radius) {
+    static GuardEntity nearestGuard(ServerLevel level, Vec3 at, double radius, CasinoZone.Kind kind) {
         GuardEntity best = null;
         double bd = Double.MAX_VALUE;
-        for (GuardEntityServeur g : level.getEntitiesOfClass(GuardEntityServeur.class, new AABB(at, at).inflate(radius), x -> !x.isTemporary())) {
+        for (GuardEntityServeur g : level.getEntitiesOfClass(GuardEntityServeur.class, new AABB(at, at).inflate(radius), x -> !x.isTemporary() && x.zone() == kind)) {
             double d = g.distanceToSqr(at);
             if (d < bd) {
                 bd = d;
