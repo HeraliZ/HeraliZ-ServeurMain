@@ -150,7 +150,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, section 9) : `/home` (du spawn vers sa base, toutes les 3 min) et `/spawn` (de sa base vers le spawn), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur »), base protégée 4 jours, carrières (`/carriere`) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer`), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (5 à 6 à la fois tirées au hasard, 30 à 60 min, 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
@@ -811,16 +811,26 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   (dimension, type, worldgen) ; Minecraft la crée seul au démarrage, **rien à déposer**. Reliefs, collines, vallées et
   grandes plaines ; ni océan, ni grotte, ni minerai, ni structure, ni monstre ; 7 biomes propres (`crac:bases_*`) ;
   bordure propre de 6 000 blocs. Fichiers **écrits** par `python mods/crac/outils/monde_bases.py` (`--apercu x.png` =
-  aperçu grossier), jamais à la main. En survie, on ne construit que là (`construction_ici_seulement`). Déplacements :
-  `/home` seulement depuis le spawn (vers sa base, sinon un point au hasard ; toutes les 3 min), `/spawn` seulement
-  depuis sa base, hors combat ; 3 s immobile ; carte DayZ par la borne de départ. Tutoriel après la cinématique (joueur
-  sans base) : titres, kit calculé sur les coûts réels de `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172
-  bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, ni blessé ni blessant) jusqu'à sa base
+  aperçu grossier), jamais à la main. En survie, on ne construit que là (`construction_ici_seulement`). Déplacements
+  (CRac 1.6.0, 16/10) : « au spawn » = monde `heralisz:spawn` ou à moins de `spawn_rayon` (48) blocs du point /spawn.
+  `/home [nom]` seulement depuis le spawn, vers un de ses homes (toutes les 3 min) ; sans home : un message, AUCUNE
+  téléportation. `/sethome [nom]` seulement dans sa base (claim de son groupe, ou du clan avec le droit d'entrer) ;
+  `/delhome <nom>`, `/homes`. 1 home sans grade boutique, +1 par rang (Rescapé 2, Traqueur 3, Roi de la Zone 4 ;
+  `GradesApi.rangBoutique` par réflexion) ; staff sans limite. Home « base » créé tout seul à la pose du premier Claim
+  Block ; home qui n'est plus dans sa base : supprimé, pas de téléportation. `/zone base` (alias `/rtp`) seulement
+  depuis le spawn, vers un point plat au hasard loin des autres bases (toutes les 5 min). `/spawn` seulement depuis sa
+  base, hors combat, vers le point posé par le staff (`/spawn definir|effacer|voir`, gardé dans `crac/spawn.json` à la
+  racine du serveur), sinon le point de réveil ; la première arrivée (cinématique) ne change pas. 3 s immobile ; carte
+  DayZ par la borne de départ ; tous les messages dans le chat. Tutoriel après la cinématique (joueur en survie, sans
+  base, jamais fait ; rien en créatif ou en spectateur) : titres, kit calculé sur les coûts réels de
+  `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172 bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, ni blessé ni blessant) jusqu'à sa base
   posée (Claim Block sur 2 fondations), 2 h de jeu au plus ou départ sur la carte ; puis base protégée 4 jours (ni raid
   ni usure, texte flottant ; tombe au-delà de 2 membres). Carrières : `/carriere creer <nom> <rayon> <type>` (pierre,
   minerais, fer, bois, sable, argile, terre ; listes `#crac:carriere/<type>`), `liste|retirer|tp|regenerer` ; casse
   permise en survie, repousse en 10 min (jamais sous un joueur), rien ne s'y pose ; le staff bâtit la carrière
-  (WorldEdit) puis la déclare. Staff : `/tuto rejouer <joueur>`, `/protection voir|retirer|donner <joueur> [jours]`.
+  (WorldEdit) puis la déclare. Staff : `/tuto lancer <joueur>` (tutoriel complet tout de suite, même en créatif, même
+  avec une base), `/tuto rejouer <joueur>` (remise à zéro), cinématique rejouée par le staff = tutoriel relancé à la
+  fin ; `/protection voir|retirer|donner <joueur> [jours]`.
   Réglages : `serveur/defaultconfigs/crac-bases.toml` (`[bases]`, `[home]`, `[tuto]`, `[protection]`, `[carrieres]`).
   Données : `data/crac_bases.dat` du monde principal, `dimensions/crac/bases/data/crac_carrieres.dat`. Rien testé en jeu.
 - **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
