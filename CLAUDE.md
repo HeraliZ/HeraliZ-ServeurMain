@@ -85,6 +85,7 @@ quand un choix leur revient.
 ```
 CLAUDE.md                 ce fichier
 docs/METHODE_CLIENT_SERVEUR.md   la méthode détaillée de séparation client / serveur (à lire avant de découper du code)
+docs/QUETES_SCENARIO.md          le scénario des PNJ et des quêtes (à valider, pas encore codé)
 mods/<projet>/            les sources de NOS mods (un projet Gradle par jar)
 mods/_gabarit/            modèle de projet coupé, pour créer un nouveau mod (outils/fusion_nouveau.py)
 serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
@@ -1180,6 +1181,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   section 9) ; lieux et nom
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
+- **PNJ et quêtes** (16/10, pas encore codé) : scénario complet proposé dans `docs/QUETES_SCENARIO.md` (8 PNJ au
+  Refuge, histoire « Le Dernier Convoi » en prologue + 4 actes, chaînes par PNJ, contrats du jour tirés de modèles,
+  événements du serveur, secrets ; futur mod `heraliz-quetes`). Questions en fin de document à faire trancher par le
+  propriétaire avant tout code.
 - **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
   Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
