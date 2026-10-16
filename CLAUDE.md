@@ -150,7 +150,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer`), base protégée 4 jours, carrières (`/carriere`) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer`), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (par vagues depuis la 1.5.0 : 4 à la fois pendant 1 h, puis toutes changent ; tirées au hasard à 800 blocs au moins les unes des autres et une par quart de la carte, règles relâchées si impossible et notées dans le journal ; 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
@@ -542,6 +542,10 @@ nommé « HeraliBot » du même compte : sa clé et son port), clé masquée dan
 est désactivé (avertissement). Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
 écrire ailleurs.
 
+**Monde des bases à neuf** : « Run workflow » avec la case « reinitialiser_bases » : le serveur est arrêté,
+`<monde>/dimensions/crac/bases` est renommé `bases_ancien_<date>` (jamais supprimé), puis le serveur redémarre et Minecraft
+recrée le monde des bases avec le terrain du jar CRac en place. Rien d'autre du monde n'est touché.
+
 **Gunpacks du serveur** (`.github/workflows/gunpacks.yml`, « Run workflow ») : compare le dossier `tacz` du Ptero au
 dépôt (`outils/gunpacks_serveur.py`). Le serveur envoie aux joueurs les objets de TOUS les gunpacks de son `tacz`, mais
 les joueurs n'ont que les images du dépôt : un gunpack (ou un index d'arme) resté sur le Ptero sans être dans le dépôt
@@ -816,11 +820,19 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   refusé, sauf au staff. Réglage `[protection] actif` de `heraliz_spawn-server.toml` ; `/depart info` montre l'état.
   Rien testé en jeu.
 - **Monde des bases** (CRac 1.5.0, 16/10) : dimension `crac:bases`, déclarée par `mods/crac/src/serveur/resources/data/crac/`
-  (dimension, type, worldgen) ; Minecraft la crée seul au démarrage, **rien à déposer**. Reliefs, collines, vallées et
-  grandes plaines ; ni océan, ni grotte, ni minerai, ni structure, ni monstre ; 7 biomes propres (`crac:bases_*`) ;
-  bordure propre de 6 000 blocs. Fichiers **écrits** par `python mods/crac/outils/monde_bases.py` (`--apercu x.png` =
-  aperçu grossier), jamais à la main. En survie, on ne construit que là (`construction_ici_seulement`). Déplacements
-  (CRac 1.6.0, 16/10) : « au spawn » = monde `heralisz:spawn` ou à moins de `spawn_rayon` (48) blocs du point /spawn.
+  (dimension, type, worldgen) ; Minecraft la crée seul au démarrage, **rien à déposer**. Terrain (CRac 1.6.0, 16/10) :
+  grands plateaux parfaitement plats à 3 hauteurs (sol en 67, 71, 75 ; environ 65 % de la carte), pentes douces entre
+  eux, collines basses et arrondies (jusqu'à +16), 0 à 3 grands reliefs lisses (jusqu'à +38) ; ni eau (ni océan,
+  rivière, lac, source ni nappe), ni lave, ni grotte, ni minerai, ni structure ; 7 biomes propres (`crac:bases_*`) ;
+  **aucune créature** (biomes sans apparitions, toute entité `Mob` refusée à l'entrée et retirée chaque seconde,
+  `NatureBases` ; exceptions : `creatures_permises`) ; aucun seau ne s'y vide, même dans une base (`seaux`). Bordure
+  propre de 2 500 blocs (rayon 1 250 autour de 0 0), points d'arrivée à 100 blocs au moins de la bordure
+  (`rayon_depart` 1 150). Fichiers **écrits** par `python mods/crac/outils/monde_bases.py` (`--apercu DOSSIER [--graine
+  N]` : vraies formes et proportions, pas les vrais emplacements), jamais à la main. Minecraft ne refait pas un morceau
+  déjà créé : après un changement de terrain, workflow « Serveur HeraliZ », case `reinitialiser_bases` (serveur arrêté,
+  `dimensions/crac/bases` renommé `bases_ancien_<date>`, jamais supprimé, puis redémarré ; perdus : constructions,
+  claims et carrières du monde des bases ; gardés : `data/crac_bases.dat`, groupes). En survie, on ne construit que là
+  (`construction_ici_seulement`). Déplacements (CRac 1.6.0, 16/10) : « au spawn » = monde `heralisz:spawn` ou à moins de `spawn_rayon` (48) blocs du point /spawn.
   `/home [nom]` seulement depuis le spawn, vers un de ses homes (toutes les 3 min) ; sans home : un message, AUCUNE
   téléportation. `/sethome [nom]` seulement dans sa base (claim de son groupe, ou du clan avec le droit d'entrer) ;
   `/delhome <nom>`, `/homes`. 1 home sans grade boutique, +1 par rang (Rescapé 2, Traqueur 3, Roi de la Zone 4 ;
