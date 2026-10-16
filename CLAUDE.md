@@ -1110,7 +1110,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (`data/heraliz_carte_lieux.dat`, ils suivront la copie finale de la carte). Fond : section 9 ;
 - carte du monde, refonte « AAA » (16/10, Utils 2.14.0, proposition 1 « Verre » des maquettes, VALIDÉE ; proposition 2
   « Tactique » en réserve) : aucun texte sous 7,5 unités d'interface ; noms de villes en capitales avec halo, plus grands
-  de près ; étiquettes sans chevauchement (villes d'abord) ; pastille d'état sous chaque territoire ; interrupteurs des
+  de près (Utils 2.14.2, « encore un peu trop gros » : villes et territoires 8 à 10,5 unités, villages 7,5 à 8,8, petites
+  étiquettes 7,5) ; étiquettes sans chevauchement (villes d'abord) ; pastille d'état sous chaque territoire ; interrupteurs des
   calques ; boutons + et − ; grille depuis le coin nord-ouest de la bordure ; déplacement et zoom bornés à la carte ;
   territoires, lieux et extractions hors de la bordure non affichés (« N hors de la carte (à reposer) ») ;
   icônes jugées « trop grossières » puis refaites (Utils 2.14.1) : pictogrammes au trait fin sur une petite pastille ronde

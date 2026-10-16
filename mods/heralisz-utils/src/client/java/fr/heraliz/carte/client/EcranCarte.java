@@ -58,6 +58,8 @@ public final class EcranCarte extends Screen {
      * 7,5, texte 8,5 à 9,5, titres 12,5 à 14 unités. Rien sous 7,5 : en 1080p, c'est 22 px d'écran.
      */
     private static final float S_CAPS = 0.68f, S_PETIT = 0.77f, S_TEXTE = 0.82f, S_NOM = 0.86f, S_TITRE_FICHE = 1.14f, S_TITRE = 1.27f;
+    /** Petites étiquettes posées sur la carte (lieux, extractions, pings, grille) : 7,5 unités, le plancher. */
+    private static final float S_ETIQUETTE = 0.68f;
     private static final int GRILLE = 500;
     private static final float K_MAX = 3f;
     private static final float[] ECHELLES = {5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000};
@@ -528,14 +530,14 @@ public final class EcranCarte extends Screen {
             float X = sx(x + GRILLE / 2.0);
             if (X < gauche + 6 || X > vueX0 - 6 && haut < MARGE + VUE_H + 6 || X > width - 6) continue;
             String lettre = colonne((int) ((x - gx0) / GRILLE));
-            textes.add(() -> Texte.etiquette(gr, font, lettre, Ui.BOLD, X, haut, c, 0.73f, 0, false, 0.6f));
+            textes.add(() -> Texte.etiquette(gr, font, lettre, Ui.BOLD, X, haut, c, S_ETIQUETTE, 0, false, 0.6f));
         }
         for (long z = (long) Math.floor(za / GRILLE) * GRILLE; z <= zb; z += GRILLE) {
             if (z < gz0 || z >= lim[3]) continue;
             float Y = sy(z + GRILLE / 2.0);
             if (Y < haut + 8 || Y > height - BAS_H - MARGE - 8) continue;
             String chiffre = String.valueOf((z - gz0) / GRILLE + 1);
-            textes.add(() -> Texte.etiquette(gr, font, chiffre, Ui.BOLD, gauche, Y, c, 0.73f, 0, false, 0.6f));
+            textes.add(() -> Texte.etiquette(gr, font, chiffre, Ui.BOLD, gauche, Y, c, S_ETIQUETTE, 0, false, 0.6f));
         }
     }
 
@@ -721,14 +723,14 @@ public final class EcranCarte extends Screen {
             float X = sx(l.x() + 0.5), Y = sy(l.z() + 0.5);
             if (horsEcran(X, Y, 60)) continue;
             switch (l.type()) {
-                case VILLE -> etiquette(l.nom(), Ui.BOLD, X, Y, 0xFFFFFFFF, (9.5f + 4.5f * z) / 11f, 1.1f + 0.4f * z, true, 0.9f);
+                case VILLE -> etiquette(l.nom(), Ui.BOLD, X, Y, 0xFFFFFFFF, (8f + 2.5f * z) / 11f, 0.8f + 0.3f * z, true, 0.9f);
                 // villages : seulement quand on s'approche, en fondu
-                case VILLAGE -> etiquette(l.nom(), Ui.BOLD, X, Y, Formes.argb(0xE1E5EC, visibilite(l)), (8.2f + 2.6f * z) / 11f, 0, false, 0.8f);
+                case VILLAGE -> etiquette(l.nom(), Ui.BOLD, X, Y, Formes.argb(0xE1E5EC, visibilite(l)), (7.5f + 1.3f * z) / 11f, 0, false, 0.8f);
                 default -> {
                     // nom sous l'icône : grands lieux dès la vue d'ensemble, les autres de près, toujours en fondu
                     boolean grand = l.type() == Lieu.Type.AERODROME || l.type() == Lieu.Type.MILITAIRE || l.type() == Lieu.Type.PORT;
                     float a = (grand ? 1f : fondu(z, 0.32f, 0.5f)) * visibilite(l);
-                    etiquette(l.nom(), Ui.BOLD, X, Y + R_LIEU * e + 5f, Formes.argb(l.type().couleur, a), 0.73f, 0, false, 0.7f);
+                    etiquette(l.nom(), Ui.BOLD, X, Y + R_LIEU * e + 5f, Formes.argb(l.type().couleur, a), S_ETIQUETTE, 0, false, 0.7f);
                 }
             }
         }
@@ -768,7 +770,7 @@ public final class EcranCarte extends Screen {
                 etiquette(I18n.get("heraliz_carte.panneau.drapeau"), Ui.BOLD, sx(z.drapeauX() + 0.5), sy(z.drapeauZ() + 0.5) + R_DRAPEAU * e + 4.5f,
                         Formes.argb(c, ad), S_CAPS, 0.5f, true, 0.6f);
             }
-            etiquette(z.nom(), Ui.BOLD, X, Y, 0xFFFFFFFF, (9.5f + 4.5f * z01) / 11f, 1.1f + 0.4f * z01, true, 0.9f);
+            etiquette(z.nom(), Ui.BOLD, X, Y, 0xFFFFFFFF, (8f + 2.5f * z01) / 11f, 0.8f + 0.3f * z01, true, 0.9f);
             // pastille d'état : fond sombre, contour de la couleur, capitales. En vue d'ensemble, seulement les états qui
             // demandent l'attention (capture, contestée) ; les autres apparaissent en fondu quand on s'approche
             String s = pastilleZone(z);
@@ -778,7 +780,7 @@ public final class EcranCarte extends Screen {
             if (ap < 0.05f) continue;
             // sous le nom (demi-hauteur du nom + 2) : avant, la pastille touchait le nom d'une ville du même endroit et
             // n'était jamais posée
-            float w = Texte.largeurEspacee(font, s, Ui.BOLD, S_CAPS, 0.5f) + 8, h = 10.5f, py = Y + (9.5f + 4.5f * z01) / 2 + 2 + h / 2;
+            float w = Texte.largeurEspacee(font, s, Ui.BOLD, S_CAPS, 0.5f) + 8, h = 10.5f, py = Y + (8f + 2.5f * z01) / 2 + 2 + h / 2;
             if (sousPanneau(X - w / 2, py) || sousPanneau(X + w / 2, py) || !placer(X, py, w, h)) continue;
             fonds.add(() -> {
                 Ui.soft(gr, Math.round(X - w / 2), Math.round(py - h / 2), Math.round(w), Math.round(h), Formes.argb(0x0A0C10, 0.85f * ap));
@@ -796,7 +798,7 @@ public final class EcranCarte extends Screen {
             String t = I18n.get("heraliz_carte.extraction", x.nom());
             int s = x.secondesRestantes(heureDeJeu);
             if (s >= 0) t += " · " + duree(s * 1000L);
-            etiquette(t, Ui.BOLD, X, Y + Math.max(x.rayon() * k, 7.5f * e) + 5.5f, Formes.argb(EXTRACTION_TEXTE, 1f), 0.73f, 0, false, 0.7f);
+            etiquette(t, Ui.BOLD, X, Y + Math.max(x.rayon() * k, 7.5f * e) + 5.5f, Formes.argb(EXTRACTION_TEXTE, 1f), S_ETIQUETTE, 0, false, 0.7f);
         }
     }
 
@@ -806,7 +808,7 @@ public final class EcranCarte extends Screen {
             float X = sx(v.x), Y = sy(v.z);
             if (horsEcran(X, Y, 60)) continue;
             String t = I18n.get(v.type.cle()) + " · " + metres(Math.hypot(v.x - px, v.z - pz));
-            etiquette(t, Ui.BOLD, X, Y - 7.5f * e - 5, Formes.argb(v.type.couleur, 1f), 0.73f, 0, false, 0.7f);
+            etiquette(t, Ui.BOLD, X, Y - 7.5f * e - 5, Formes.argb(v.type.couleur, 1f), S_ETIQUETTE, 0, false, 0.7f);
         }
     }
 
@@ -814,8 +816,8 @@ public final class EcranCarte extends Screen {
         for (Sources.Allie a : allies) {
             float X = sx(a.x()), Y = sy(a.z());
             if (horsEcran(X, Y, 60)) continue;
-            float w = Texte.largeur(font, a.nom(), Ui.BOLD, 0.73f);
-            etiquette(a.nom(), Ui.BOLD, X + 4.8f * e + w / 2, Y, 0xFFFFFFFF, 0.73f, 0, false, 0.7f);
+            float w = Texte.largeur(font, a.nom(), Ui.BOLD, S_ETIQUETTE);
+            etiquette(a.nom(), Ui.BOLD, X + 4.8f * e + w / 2, Y, 0xFFFFFFFF, S_ETIQUETTE, 0, false, 0.7f);
         }
     }
 
