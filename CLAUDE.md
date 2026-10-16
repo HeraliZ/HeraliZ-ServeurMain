@@ -133,7 +133,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | Projet | Jar | modIds dedans | Rôle |
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
-| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, C4, camos et décorations d'armes. Moteur repris de LR Tactical (licence GPL gardée) |
+| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10). Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
@@ -976,24 +976,29 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
-  - couteaux : coups rapide et puissant bien différents, comme les couteaux de LR (15/10, Tactique 2.16.0) : clic gauche =
-    tranche latérale vive, de gauche à droite puis de droite à gauche en alternance (0,45 s, sans préparation) ; clic
-    droit = estoc : bras armé, levé et ramené vers soi (0,22 s, bruit de lame qu'on arme), poussé au fond, tenu, retour
-    lent (0,85 s), bruit plus lourd et petit mouvement de caméra (`couteaux/SecousseCouteau`, image seulement).
-    Animations 1re personne (« heraliz_tranche_1 », « heraliz_tranche_2 », « melee_stock » de chaque modèle) écrites par
-    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableaux `COUPS` et `AMPLITUDE` en tête du script ;
-    `--apercu DOSSIER`), jamais à la main ; jouées directement par `couteaux/AnimCouteaux` avec un fondu de 0,04 s (le
-    signal de TaCZ imposait 0,2 s : la tranche partait en retard et ressemblait au coup puissant), secours : coup du
-    gunpack. Vu des autres : gestes des couteaux de LR (`heralisz_skins:melee/knife` : « slash_upper » / « slash2_upper »
-    en alternance, « stab_upper » ; `couteaux/GesteCouteau`). Le serveur ne touche qu'après la préparation de l'estoc
-    (`CoupsCouteau.DELAI_COUP_LOURD`, 5 ticks ; `cadence_lourd` au moins 7) ; dégâts, cadence et portée inchangés. Temps
-    de l'animation, de la caméra et du délai serveur à changer ensemble. Canal « couteaux » version 3 ;
+  - couteaux (16/10, Tactique 2.17.0, après les retours du propriétaire sur la 2.16.0) : clic gauche = le coup rapide
+    d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, son bruit, gestes
+    de TaCZ « melee_upper » / « melee_2_upper » vus des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant
+    comme le coup lourd des couteaux de LR : LE COUTEAU LUI-MÊME TOURNE avec le geste (os du bras, du poignet et du
+    couteau ; armé à 0,16 s, lame dressée ; impact à 0,24 s, pointe amenée sur le réticule ; torsion, dégagement, retour
+    lent, 0,85 s ; karambit : crochet vers le bas puis tour autour de son anneau), bruits des couteaux de LR, petit
+    mouvement de caméra (`couteaux/SecousseCouteau`). Animation « melee_stock » de chaque modèle écrite par
+    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableau `GESTES` ; `--apercu DOSSIER`), jamais à la main ;
+    jouée par `couteaux/AnimCouteaux` (fondu 0,05 s), secours `bayonet_stock` puis coup du gunpack. Vu des autres : estoc
+    de LR « stab_upper » (`couteaux/GesteCouteau`). Le serveur touche le coup puissant à l'impact
+    (`CoupsCouteau.DELAI_COUP_LOURD`, 5 ticks) ; dégâts, cadence et portée inchangés. Impact de l'animation (`IMPACT` du
+    script), caméra et délai serveur à changer ensemble. Canal « couteaux » version 3 ;
   - corps des joueurs « démembré » et tête vers le ciel en s'allongeant : la remise à zéro de Réanimation 1.15.0
     (`client/Poses.apply`) n'efface plus les poses de Player Animator ; l'animation « allongé » de TaCZ suit le corps
     couché (`mixin/client/TaczAllongeAnimationMixin`) et le regard de la tête allongé est limité
     (`TaczTeteAllongeMixin`) ; gestes debout de la mêlée de LR arrêtés allongé (`IdleAnimationHandler`). CaraCrea ne
     déforme rien lui-même (il recopie le modèle de Minecraft) ; pistes restantes s'il reste des défauts : ses cubes
     ignorent les parties cachées par d'autres mods (jambes du terminal d'extraction), emotes permises allongé.
+- C4 [WIP] (`heralisz_grenade:c4`) retiré de tout le jeu le 16/10 (Tactique 2.17.0 : fiche, modèles, textes ; coffres T6
+  avec le détonateur, caisses, ravitaillement, recette de heralisz_bases, établis Zombies). La charge de C4 de CRac
+  (`crac:c4`) reste et abîme seule les constructions ; `c4ThrowableIds` de `crac-server.toml` et la source
+  `heralisz_grenade:c4` du blindage des bases ne visent plus rien. Le moteur des explosifs collants et l'objet détonateur
+  restent dans le code, sans source ;
 - casse des blocs (14/10, CRac 1.4.0-beta, `event/CasseBlocs` + `serveur/event/CasseBlocsServeur`) : en survie, un joueur ne
   casse AUCUN bloc et ne peut même pas commencer (pas de fissures ; avant, casser un bloc qui revenait permettait de se
   glisser dedans accroupi). Libres : créatif, spectateur, staff (permission 2). Exceptions laissées aux règles de CRac :
@@ -1203,7 +1208,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Bugs repérés, non corrigés** (attendre l'accord du propriétaire) :
   - Sylvorn : les attributs de `SapNode` ne sont pas déclarés (risque de plantage à l'attaque CHANNEL ; correction d'une
     ligne dans `HeraliszSylvorn.attributes`) ;
-  - Tactique : le C4 posé disparaît au redémarrage du serveur ; le feu au sol des molotovs dure toujours 2 s ;
+  - Tactique : le feu au sol des molotovs dure toujours 2 s ;
     l'éclaboussure des grenades à effet est limitée à 4 blocs.
 - **Carte du monde** (HeraliZ Utils 2.8.0, Clans 2.4.0, Interface 1.7.0) : fond provisoire du 12/10 (carte en
   construction), à refaire quand la carte est finie (workflow « Inventaire de la carte », case « installer_fond »,
