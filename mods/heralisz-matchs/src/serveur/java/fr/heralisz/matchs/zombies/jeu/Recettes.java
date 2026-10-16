@@ -30,7 +30,6 @@ final class Recettes {
 
     private static final List<Recette> DEFAUT = List.of(
             new Recette("grenade", 3, "grenade", "heralisz_grenade:m67", 1, 4),
-            new Recette("grenade_collante", 5, "tactique", "heralisz_grenade:c4", 1, 2),
             new Recette("plaque_armure", 4, "plaque", "", 1, 3),
             new Recette("auto_reanimation", 10, "auto_reanimation", "", 1, 1));
 

@@ -240,7 +240,6 @@ final class DefaultLoot {
                 l.add(gun("glock_17", "SEMI", 35, UNCOMMON));
                 l.add(gun("m1911", "SEMI", 30, UNCOMMON));
                 l.add(ammo("338", 10, 15, RARE));
-                l.add(e("heralisz_tactical:throwable", 1, 15, RARE).nbt("{ThrowableId:\"heralisz_grenade:c4\"}"));
                 l.add(gun("deagle", "SEMI", 20, RARE));
                 l.add(gun("ump45", "AUTO", 22, RARE));
                 l.add(gun("maxstuff:hk_mp5k", "AUTO", 22, RARE));

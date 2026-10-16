@@ -675,8 +675,6 @@
   "zombies.jeu.pap.lore": "Pack-a-Punch · x2 damage, bigger magazine and reserve",
   "zombies.jeu.recette.grenade": "Grenade",
   "zombies.jeu.recette.grenade.desc": "One more frag grenade (4 max)",
-  "zombies.jeu.recette.grenade_collante": "Sticky charge",
-  "zombies.jeu.recette.grenade_collante.desc": "C4 charge to stick, then detonate remotely",
   "zombies.jeu.recette.plaque_armure": "Armor plate",
   "zombies.jeu.recette.plaque_armure.desc": "Absorbs 3 hearts of damage (3 plates max)",
   "zombies.jeu.recette.auto_reanimation": "Self-revive kit",

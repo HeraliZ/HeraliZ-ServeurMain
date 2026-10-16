@@ -30,7 +30,6 @@
     {"item": "heralisz_tactical:throwable", "nbt": "{ThrowableId:\"heralisz_grenade:m67\"}", "min": 1, "max": 2, "poids": 30},
     {"item": "heralisz_tactical:throwable", "nbt": "{ThrowableId:\"heralisz_grenade:flash_grenade\"}", "min": 1, "max": 2, "poids": 25},
     {"item": "heralisz_tactical:throwable", "nbt": "{ThrowableId:\"heralisz_grenade:molotov\"}", "min": 1, "max": 1, "poids": 20},
-    {"item": "heralisz_tactical:throwable", "nbt": "{ThrowableId:\"heralisz_grenade:c4\"}", "min": 1, "max": 1, "poids": 8},
 
     {"item": "tacz:modern_kinetic_gun", "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}", "min": 1, "max": 1, "poids": 22},
     {"item": "tacz:modern_kinetic_gun", "nbt": "{GunId:\"tacz:m1911\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}", "min": 1, "max": 1, "poids": 20},
