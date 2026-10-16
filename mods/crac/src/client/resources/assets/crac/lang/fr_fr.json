@@ -420,7 +420,7 @@
   "crac.spawn.indisponible": "Le spawn n'est pas disponible pour l'instant : préviens le staff.",
   "crac.tuto.etape1": "[Tuto] 1. Trouve un coin plat qui te plaît. Le monde des bases est en PvP : seul ton contour vert te protège, pendant %s au plus.",
   "crac.tuto.etape2": "[Tuto] 2. Plan de construction en main, clic droit : pose %s fondations côte à côte.",
-  "crac.tuto.etape3": "[Tuto] 3. Puis 5 murs, 1 cadre de porte (pose la porte dedans) et 2 planchers par-dessus pour le toit.",
+  "crac.tuto.etape3": "[Tuto] 3. Puis 5 murs, 1 porte (pièce « Porte » du plan, la porte est comprise) et 2 planchers par-dessus pour le toit.",
   "crac.tuto.etape4": "[Tuto] 4. Pose le Claim Block sur une fondation, à l'intérieur : ta base est à toi, et protégée des raids.",
   "crac.tuto.etape5": "[Tuto] 5. Marteau en main : passe tes pièces en bois, et mets des planches dans le Claim Block (entretien).",
   "crac.tuto.etape6": "[Tuto] Depuis ta base, /spawn ramène au spawn ; du spawn, /home ramène chez toi (toutes les 3 min).",
