@@ -68,5 +68,10 @@
   "gui.heraliz_grades.kits.verrou": "Locked",
   "gui.heraliz_grades.kits.desc_soutien": "For players wearing the HeraliZ tag on Discord.",
   "gui.heraliz_grades.kits.reserve_soutien": "Wear the HZ tag on Discord and link your account (/lier)",
-  "message.heraliz_grades.soutien_discord": "Supporter comes from the HeraliZ tag worn on Discord (account linked with /lier): it can't be given by hand."
+  "message.heraliz_grades.soutien_discord": "Supporter comes from the HeraliZ tag worn on Discord (account linked with /lier): it can't be given by hand.",
+  "gui.heraliz_grades.tab.en_ligne": "%s online",
+  "gui.heraliz_grades.tab.staff": "Staff · %s",
+  "gui.heraliz_grades.tab.survivants": "Survivors · %s",
+  "gui.heraliz_grades.tab.plus": "+ %s more",
+  "gui.heraliz_grades.tab.ping": "Your ping · %s ms"
 }

@@ -58,6 +58,7 @@ public final class ServeurGrades implements Partie {
     private static void arret(ServerStoppedEvent e) {
         registre = null;
         KitsServeur.arreter();
+        TabServeur.oublier();
         LienDiscord.arreter();
         AUTH.clear();
     }
@@ -80,6 +81,7 @@ public final class ServeurGrades implements Partie {
         if (registre == null || !(e.getEntity() instanceof ServerPlayer p)) return;
         registre.noterNom(p.getUUID(), p.getGameProfile().getName());
         rafraichir(p);
+        TabServeur.maj(p.server, true);
     }
 
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
@@ -93,6 +95,7 @@ public final class ServeurGrades implements Partie {
         if (e.phase != TickEvent.Phase.END || registre == null || ++ticks % 40 != 0) return;
         if (ticks % 200 == 0) KitsServeur.relireSiChange();
         if (ticks % 120 == 0) LienDiscord.suivre();
+        TabServeur.maj(e.getServer(), false);
         MinecraftServer srv = e.getServer();
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
             String clan = TagClan.texte(TagClan.prefixe(p));

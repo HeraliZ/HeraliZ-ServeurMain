@@ -12,9 +12,10 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * Canal réseau de HeraliZ Grades (protocole 2) : menu /kit. Le serveur envoie l'état des kits (contenu, recharge) ; le
+ * Canal réseau de HeraliZ Grades (protocole 2) : menu /kit et tab (grades et clans des joueurs connectés). Le serveur envoie l'état des kits (contenu, recharge) ; le
  * joueur ne peut que DEMANDER un kit par son identifiant : grade, recharge, place et contenu sont décidés et vérifiés par
  * le serveur. Un joueur avec un jar plus ancien (sans ce canal) est refusé à la connexion : il doit prendre le nouveau jar.
  */
@@ -27,10 +28,12 @@ public final class ReseauGrades {
             () -> VERSION, VERSION::equals, VERSION::equals);
 
     /** Bornes de lecture (un paquet trafiqué ne fait pas exploser la mémoire). */
-    private static final int MAX_KITS = 16, MAX_OBJETS = 36, MAX_ID = 32;
+    private static final int MAX_KITS = 16, MAX_OBJETS = 36, MAX_ID = 32, MAX_LIGNES = 500;
 
     /** État reçu par le joueur : branché par la partie client (ouvre ou met à jour le menu). */
     public static final Crochet<EtatKits> RECEPTION_CLIENT = new Crochet<>();
+    /** Infos du tab reçues par le joueur : branchées par la partie client (nouveau tab). */
+    public static final Crochet<InfosTab> RECEPTION_TAB = new Crochet<>();
     /** Demande d'un kit reçue par le serveur : branchée par la partie serveur. */
     public static final Crochet<Demande> RECEPTION_SERVEUR = new Crochet<>();
 
@@ -46,6 +49,14 @@ public final class ReseauGrades {
      * kitJoueur = le kit de son grade.
      */
     public record EtatKits(boolean ouvrir, List<VueKit> kits, String kitJoueur) {
+    }
+
+    /** Une ligne du tab : grade affiché (id) et tag de clan (vide sans clan) avec sa couleur. */
+    public record LigneTab(UUID uuid, String grade, String clan, int couleurClan) {
+    }
+
+    /** Grades et clans des joueurs connectés (serveur -> tous), renvoyés quand quelque chose change. */
+    public record InfosTab(List<LigneTab> lignes) {
     }
 
     /** Demande d'un kit (joueur -> serveur). */
@@ -71,6 +82,29 @@ public final class ReseauGrades {
                 .consumerMainThread((m, ctx) -> {
                     ServerPlayer p = ctx.get().getSender();
                     if (p != null) RECEPTION_SERVEUR.accept(new Demande(p, m.id()));
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+        CANAL.messageBuilder(InfosTab.class, 2, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((m, b) -> {
+                    int n = Math.min(m.lignes().size(), MAX_LIGNES);
+                    b.writeVarInt(n);
+                    for (int i = 0; i < n; i++) {
+                        LigneTab l = m.lignes().get(i);
+                        b.writeUUID(l.uuid());
+                        b.writeUtf(l.grade(), MAX_ID);
+                        b.writeUtf(l.clan(), MAX_ID);
+                        b.writeInt(l.couleurClan());
+                    }
+                })
+                .decoder(b -> {
+                    int n = Math.min(b.readVarInt(), MAX_LIGNES);
+                    List<LigneTab> lignes = new ArrayList<>(n);
+                    for (int i = 0; i < n; i++) lignes.add(new LigneTab(b.readUUID(), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readInt()));
+                    return new InfosTab(lignes);
+                })
+                .consumerMainThread((m, ctx) -> {
+                    RECEPTION_TAB.accept(m);
                     ctx.get().setPacketHandled(true);
                 })
                 .add();

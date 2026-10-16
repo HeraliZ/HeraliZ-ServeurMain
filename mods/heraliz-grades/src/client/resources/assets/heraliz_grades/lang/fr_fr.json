@@ -68,5 +68,10 @@
   "gui.heraliz_grades.kits.verrou": "Verrouillé",
   "gui.heraliz_grades.kits.desc_soutien": "Pour ceux qui portent le tag HeraliZ sur Discord.",
   "gui.heraliz_grades.kits.reserve_soutien": "Porte le tag HZ sur Discord et lie ton compte (/lier)",
-  "message.heraliz_grades.soutien_discord": "Soutien vient du tag HeraliZ porté sur Discord (compte lié avec /lier) : il ne se donne pas à la main."
+  "message.heraliz_grades.soutien_discord": "Soutien vient du tag HeraliZ porté sur Discord (compte lié avec /lier) : il ne se donne pas à la main.",
+  "gui.heraliz_grades.tab.en_ligne": "%s en ligne",
+  "gui.heraliz_grades.tab.staff": "Staff · %s",
+  "gui.heraliz_grades.tab.survivants": "Survivants · %s",
+  "gui.heraliz_grades.tab.plus": "+ %s autres",
+  "gui.heraliz_grades.tab.ping": "Ton ping · %s ms"
 }

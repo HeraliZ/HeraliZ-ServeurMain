@@ -68,5 +68,10 @@
   "gui.heraliz_grades.kits.verrou": "Закрыт",
   "gui.heraliz_grades.kits.desc_soutien": "Для тех, кто носит тег HeraliZ в Discord.",
   "gui.heraliz_grades.kits.reserve_soutien": "Носите тег HZ в Discord и привяжите аккаунт (/lier)",
-  "message.heraliz_grades.soutien_discord": "Поддержка даётся за тег HeraliZ в Discord (аккаунт привязан через /lier): её нельзя выдать вручную."
+  "message.heraliz_grades.soutien_discord": "Поддержка даётся за тег HeraliZ в Discord (аккаунт привязан через /lier): её нельзя выдать вручную.",
+  "gui.heraliz_grades.tab.en_ligne": "%s в сети",
+  "gui.heraliz_grades.tab.staff": "Персонал · %s",
+  "gui.heraliz_grades.tab.survivants": "Выжившие · %s",
+  "gui.heraliz_grades.tab.plus": "+ ещё %s",
+  "gui.heraliz_grades.tab.ping": "Ваш пинг · %s мс"
 }
