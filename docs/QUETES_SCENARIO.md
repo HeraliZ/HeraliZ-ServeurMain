@@ -110,6 +110,50 @@ PNJ « jack » — Jack, instructeur du camp
 
 On peut en ajouter autant qu'on veut : un PNJ = un fichier + `/pnj creer` en jeu.
 
+### 0.5 Les quêtes de Jack (exemple complet d'un PNJ)
+
+**Quêtes de suite** (une seule fois, dans l'ordre : la suivante s'ouvre quand la précédente est finie) :
+
+1. **Le carnet de tir** : ramasser son carnet au commissariat de Belcourt (point posé), le lui rapporter. — 200 hérals
+2. **Premier sang** : tuer 10 zombies avec n'importe quelle arme à feu. — 150
+3. **Au couteau** : tuer 5 zombies au couteau ou à la mêlée (« les balles, ça se garde »). — 150
+4. **Savoir se soigner** : se soigner une jambe cassée avec une attelle (`SOIGNER`). — 100
+5. **Les munitions perdues** : 3 caisses de munitions oubliées dans 3 villages (3 points posés, ordre libre). — 300
+6. **Silence** : tuer 10 zombies avec une arme équipée d'un silencieux. — 200
+7. **Tireur d'élite** : tuer 5 zombies à plus de 50 blocs. — 250
+8. **La plaque du sergent** : retrouver la plaque d'identité d'un ancien du camp sur un cadavre posé dans une ville
+   (point), lire sa dernière lettre (indice) et la rapporter. — 300
+9. **La caserne** : aller à la base militaire (endroit à atteindre), ouvrir l'armoire du chef avec le code écrit sur
+   un tableau dans la salle de briefing (indice + coffre à code), rapporter le **registre d'entraînement**. — 500
+10. **Le duel** : gagner un duel contre un autre joueur (`/duel`). — 300
+11. **Rentrer vivant** : sortir sur la carte et réussir une extraction. — 200
+12. **L'examen final** : en une seule sortie sans mourir : tuer 20 zombies, ouvrir 5 conteneurs T3 ou plus, revenir
+    par extraction. — 800 + titre « Diplômé du camp »
+
+**Contrats du jour de Jack** (après la quête 3 ; 3 tirés au hasard chaque jour, remis à zéro chaque matin) :
+
+| Contrat | Exemple tiré | Hérals |
+|---|---|---|
+| Chasse | « Tue {20 à 40} zombies à {ville au hasard}. » | 120–250 |
+| Arme imposée | « Aujourd'hui, c'est {pistolet / pompe / fusil de précision / mitraillette} : {10} zombies avec. » | 150 |
+| Ravitaillement | « Rapporte-moi {2 à 4} {chargeurs / boîtes de munitions / grenades}. » (pris dans l'inventaire) | 100–200 |
+| Pièces | « Il me faut {2} {ressorts / canons / kits de pièces} pour réparer les armes du camp. » | 120–240 |
+| Arme abîmée | « Ramène une arme à moins de 30 % d'usure, je m'en sers pour les cours de démontage. » | 150 |
+| Caisse perdue | « Une caisse du camp traîne à {un des points « caisse » posés par le staff}. » | 200 |
+| Sans mourir | « Survis 30 minutes sur la carte sans mourir. » | 150 |
+| Tir de loin | « {5} zombies à plus de {40} blocs. » | 200 |
+| Grenade | « Tue {3} zombies d'une seule grenade. » | 200 |
+| Réanimer | « Relève un joueur à terre. Au camp on n'abandonne personne. » | 150 |
+| Duel | « Gagne un duel. » (une fois par jour contre la même personne au plus) | 200 |
+| Extraction | « Rentre par l'extraction de {zone ouverte au hasard}. » | 150 |
+
+**Prime de la semaine de Jack** : « Le grand nettoyage » — 300 zombies dans une ville tirée au hasard, en groupe
+(tout le monde compte), 1 500 hérals à partager.
+
+Pour avoir toujours des quêtes nouvelles : le staff pose une vingtaine de points « caisse », « carnet », « plaque »
+dans les villes ; les contrats tirent dedans au hasard, et une quête de suite peut s'ajouter à tout moment dans le
+fichier de Jack.
+
 ---
 
 ## 1. L'idée en une page
