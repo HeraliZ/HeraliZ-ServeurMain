@@ -152,7 +152,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
 | crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer`), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
-| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (5 à 6 à la fois tirées au hasard, 30 à 60 min, 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
+| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (par vagues depuis la 1.5.0 : 4 à la fois pendant 1 h, puis toutes changent ; tirées au hasard à 800 blocs au moins les unes des autres et une par quart de la carte, règles relâchées si impossible et notées dans le journal ; 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | heraliz-grades | heraliz_grades | heraliz_grades | **grades HeraliZ** (100 % maison) : Fondateur, Modérateur, Helper (staff), Roi de la Zone, Traqueur, Rescapé (boutique), Survivant (tout le monde) ; nom affiché « [CLAN] [Grade] Pseudo » (tag de clan lu par réflexion dans les clans) ; chat « Pseudo » message » sans < > (clé `chat.type.text` des langues du mod) ; **nouveau tab** (`TabHeraliz`, maquette validée : verre, staff puis survivants sur deux colonnes, grade, clan, voix CaraCrea, ping ; grades et clans envoyés par le serveur, paquet `InfosTab`). `grade donner|retirer <joueur> <grade>` et `kit reset <joueur>` : **console du serveur seulement** (ni joueur, ni op, ni bloc de commande, ni RCON) ; `/grade voir` (Helper+), `/grade liste` (Modérateur+), droits seulement après le `/login` AuthMe (lu par réflexion ; AuthMe injoignable = droits refusés). Menu `/kit` : un seul kit par recharge, celui du grade boutique sinon Survivant, pas d'arme ni d'armure en plus (pas de pay2win) ; kit Soutien en plus (recharge à part) pour ceux qui portent le tag HeraliZ sur Discord, compte lié (HeraliBot répond à `/mc/soutien/<uuid>`) ; contenu dans `serveur/config/heraliz_grades/kits.json`, relu tout seul. Données hors du monde : `heraliz_grades/grades.json`, `recharges.json`, `journal.log` (fichier illisible jamais écrasé). `/lier` (code de 6 caractères, 5 min, à taper sur Discord dans #lien) et `/delier` : lien avec HeraliBot, requêtes signées HMAC (secrets `HERALIBOT_LIEN_*`, section 8) ; grades donnés ou retirés à la console annoncés au staff sur Discord. Lien boutique : à venir |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
@@ -579,6 +579,14 @@ panel, étapes, lots, pause ; « annuler » rejoue le journal). Chaque commande 
 setblock …` (cases en plus d'un gros conteneur : `if block … minecraft:air`) : un prop changé entre-temps par les
 constructeurs n'est pas touché ; HeraliZ Loot retire et repose seul les blocs « partie ». Rien testé en jeu.
 
+**Extractions de la carte** (`.github/workflows/extractions.yml`, « Run workflow » ou envoi sur une branche de travail qui
+touche le workflow ou `outils/extractions_carte.py`) : LECTURE SEULE sur le Ptero (registre
+`data/heraliz_extraction_zones.dat` du monde en service, `level.dat`, config et, au choix, régions) ; liste les zones
+d'extraction posées en jeu, dessine leur répartition (fond de la carte du monde, grille de 500 m) et leur couverture,
+simule le tirage du serveur et propose des points pour combler les trous, avec la commande à taper en jeu
+(`/execute in minecraft:overworld positioned X Y Z run extraction create <nom>`, à vérifier sur place) ; enregistré dans
+`monde/extractions/` de la branche de travail (jamais `main`).
+
 **Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
 fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets
 « test-mods-serveur » et « test-mods-client », pour essayer en jeu). Ne faire passer une branche sur `main` que quand il
@@ -902,8 +910,14 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `serveur/config/heraliz_loot/raretes.json` (sections `objets`, `armes`, `accessoires`, `munitions`, `soins` ; remplie
   le 14/10 pour l'Armurerie, les armes, accessoires, munitions et soins, voir « équilibrage ») ; le staff, objet en main :
   `/rarete <niveau|aucune|effacer|voir|defaut|recharger>` (choix en jeu dans `raretes_jeu.json`, jamais écrasé) ;
-- extractions de la carte : 35 à 40 points possibles, 5 à 6 ouverts à la fois au hasard (`openAtOnce` / `openAtOnceMax` de
-  `heraliz_extraction-common.toml`), 30 à 60 min chacun, 30 s à tenir, retour au spawn ;
+- extractions de la carte (16/10, Extraction 1.5.0) : 35 à 40 points possibles ; rotation par vagues (`waves` de
+  `serveur/config/heraliz_extraction-common.toml`, fichier du dépôt qui fait foi) : 4 zones ouvertes ensemble pendant
+  1 h, puis toutes changent, sans reprendre celles de la vague précédente si possible ; tirage au hasard
+  (`serveur/Repartition`), au moins 800 blocs entre deux zones ouvertes (`minDistance`) et une par quart de la carte
+  (`spread`) ; si c'est impossible, les quarts puis la distance (−15 % à chaque pas) puis la vague précédente sont
+  relâchés (noté dans le journal) ; les zones qui attendent depuis le plus longtemps passent un peu devant ;
+  `/extraction rotation next` lance une vague entière. Répartition : workflow « Extractions de la carte » (§8) et
+  `python outils/extractions_carte.py`. Retour au spawn. Rien testé en jeu ;
 - camos à vie (pour la boutique) : clic droit sur un objet camo = il entre pour toujours dans la collection du joueur
   (objet consommé ; stockée hors du monde, `heralisz_camo/collections.json` à la racine du serveur, elle survit aux
   changements de carte). Onglet Skin : camos de l'inventaire (posés depuis l'objet : définitifs, comme avant) ou de la
