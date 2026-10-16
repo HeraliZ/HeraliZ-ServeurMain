@@ -17,7 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 /**
- * Le monde des bases au serveur : horloge (chaque tick : départs de /home et /spawn, tutoriel ; chaque seconde :
+ * Le monde des bases au serveur : horloge (chaque tick : départs de /home, /zone base et /spawn, messages, tutoriel ; chaque seconde :
  * tutoriel, protections, carrières, bordure), sa propre bordure (en Forge 1.20.1, chaque dimension reçoit celle de la
  * carte : elle est remise chaque seconde, comme pour les arènes de HeraliZ Matchs), pas de monstres, commandes.
  * Le monde lui-même est créé par Minecraft au démarrage (data/crac/dimension/bases.json) : rien à déposer.
@@ -32,6 +32,7 @@ public final class MondeBasesServeur {
     @SubscribeEvent
     public static void commandes(RegisterCommandsEvent e) {
         Deplacements.commandes(e.getDispatcher());
+        Homes.commandes(e.getDispatcher());
         CarrieresServeur.commandes(e.getDispatcher());
         Protections.commandes(e.getDispatcher());
         Tutoriel.commandes(e.getDispatcher());
@@ -41,7 +42,7 @@ public final class MondeBasesServeur {
     public static void demarre(ServerStartedEvent e) {
         ServerLevel l = e.getServer().getLevel(MondeBases.BASES);
         if (l == null) {
-            Crac.LOGGER.warn("[CRac] monde des bases (crac:bases) absent : /home, tutoriel et carrières ne marcheront pas");
+            Crac.LOGGER.warn("[CRac] monde des bases (crac:bases) absent : /home, /zone base, tutoriel et carrières ne marcheront pas");
             return;
         }
         Crac.LOGGER.info("[CRac] monde des bases prêt ({})", l.dimension().location());

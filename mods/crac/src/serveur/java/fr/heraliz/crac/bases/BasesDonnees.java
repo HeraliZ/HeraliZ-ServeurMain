@@ -1,6 +1,7 @@
 package fr.heraliz.crac.bases;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import fr.heraliz.crac.Crac;
@@ -8,14 +9,16 @@ import fr.heraliz.crac.data.SafeSavedData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Données du monde des bases gardées avec le monde principal ({@code data/crac_bases.dat}, comme les groupes) :
- * par joueur, l'étape du tutoriel, le temps passé en protection « nouveau joueur », le dernier /home et la protection
- * de base encore due ; par groupe, la fin de la protection anti-raid de sa base (heure en ms).
+ * par joueur, l'étape du tutoriel, le temps passé en protection « nouveau joueur », le dernier /home, le dernier
+ * /zone base, ses homes (/sethome) et la protection de base encore due ; par groupe, la fin de la protection anti-raid
+ * de sa base (heure en ms).
  */
 public final class BasesDonnees extends SafeSavedData {
     public static final String ID = "crac_bases";
@@ -37,21 +40,53 @@ public final class BasesDonnees extends SafeSavedData {
         }
     }
 
+    /** Un home (/sethome) : monde, pieds du joueur, regard. */
+    public record Home(ResourceLocation monde, double x, double y, double z, float lacet, float tangage) {
+        CompoundTag save(String nom) {
+            CompoundTag t = new CompoundTag();
+            t.putString("Nom", nom);
+            t.putString("Monde", this.monde.toString());
+            t.putDouble("X", this.x);
+            t.putDouble("Y", this.y);
+            t.putDouble("Z", this.z);
+            t.putFloat("Lacet", this.lacet);
+            t.putFloat("Tangage", this.tangage);
+            return t;
+        }
+
+        @Nullable
+        static Home load(CompoundTag t) {
+            ResourceLocation m = ResourceLocation.tryParse(t.getString("Monde"));
+            return m == null ? null : new Home(m, t.getDouble("X"), t.getDouble("Y"), t.getDouble("Z"), t.getFloat("Lacet"), t.getFloat("Tangage"));
+        }
+    }
+
     public static final class Joueur {
         public Etape etape = Etape.AUCUNE;
         /** Ticks de jeu passés en protection « nouveau joueur ». */
         public long phaseTicks;
         /** Heure (ms) du dernier /home réussi. */
         public long dernierHome;
+        /** Heure (ms) du dernier /zone base réussi. */
+        public long dernierZone;
         /** La première base posée recevra la protection anti-raid. */
         public boolean protectionDue;
+        /** Le home « base » automatique a déjà été donné (première base ou migration) : jamais redonné. */
+        public boolean homeAuto;
+        /** Homes du joueur, par nom (ordre de création). */
+        public final Map<String, Home> homes = new LinkedHashMap<>();
 
         CompoundTag save() {
             CompoundTag t = new CompoundTag();
             t.putInt("Etape", this.etape.ordinal());
             t.putLong("Phase", this.phaseTicks);
             t.putLong("Home", this.dernierHome);
+            t.putLong("Zone", this.dernierZone);
             t.putBoolean("Due", this.protectionDue);
+            t.putBoolean("HomeAuto", this.homeAuto);
+            ListTag hs = new ListTag();
+            this.homes.forEach((nom, h) -> hs.add(h.save(nom)));
+            t.put("Homes", hs);
             return t;
         }
 
@@ -60,7 +95,17 @@ public final class BasesDonnees extends SafeSavedData {
             j.etape = Etape.parRang(t.getInt("Etape"));
             j.phaseTicks = t.getLong("Phase");
             j.dernierHome = t.getLong("Home");
+            j.dernierZone = t.getLong("Zone");
             j.protectionDue = t.getBoolean("Due");
+            j.homeAuto = t.getBoolean("HomeAuto");
+            ListTag hs = t.getList("Homes", Tag.TAG_COMPOUND);
+            for (int i = 0; i < hs.size(); i++) {
+                CompoundTag h = hs.getCompound(i);
+                Home home = Home.load(h);
+                if (home != null && !h.getString("Nom").isEmpty()) {
+                    j.homes.put(h.getString("Nom"), home);
+                }
+            }
             return j;
         }
     }

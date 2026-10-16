@@ -1,13 +1,19 @@
 package fr.heraliz.crac.bases;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import fr.heraliz.crac.Config;
 import fr.heraliz.crac.Crac;
@@ -21,6 +27,7 @@ import fr.heraliz.crac.group.Group;
 import fr.heraliz.crac.group.GroupData;
 import fr.heraliz.crac.group.GroupNames;
 import fr.heraliz.crac.heraliz.ClanAccess;
+import fr.heraliz.crac.heraliz.Reply;
 import fr.heraliz.crac.registry.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -37,7 +44,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.CommandEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 /**
  * Tutoriel du monde des bases, après la cinématique d'arrivée de HeraliZ Utils, pour un joueur qui n'a jamais eu de base.
@@ -52,8 +62,19 @@ import net.minecraftforge.fml.ModList;
  *   <li>Envoi dans le monde des bases, à un point plat tiré au hasard loin des autres bases : il y est protégé
  *   ({@link Protections}) tant que sa base n'est pas posée.</li>
  * </ol>
- * Staff : {@code /tuto rejouer <joueur>}.
+ * Le tutoriel automatique ne vise que les joueurs en survie ou en aventure (en créatif ou en spectateur, rien), à l'étape
+ * AUCUNE (jamais fait) et sans base. Staff (permission 2) :
+ * <ul>
+ *   <li>{@code /tuto lancer <joueur>} : le tutoriel complet TOUT DE SUITE (titres, kit, envoi), où que soit le joueur,
+ *   même en créatif, même s'il a déjà une base ou l'a déjà fait (la protection de base n'est redonnée qu'à un joueur
+ *   sans base) ;</li>
+ *   <li>{@code /tuto rejouer <joueur>} : remise à zéro (il repart au spawn, comme un nouveau joueur) ;</li>
+ *   <li>la cinématique rejouée par le staff ({@code /cinematique} pour soi, {@code /cinematique joueur <cibles>})
+ *   relance aussi le tutoriel du joueur à la fin de la cinématique, comme {@code /tuto lancer} (un joueur qui rejoue sa
+ *   propre cinématique ne reçoit pas de nouveau kit).</li>
+ * </ul>
  */
+@EventBusSubscriber(modid = "crac")
 public final class Tutoriel {
     /** Donnée persistante (PlayerPersisted) posée par HeraliZ Utils au lancement de la cinématique. */
     private static final String CINEMATIQUE_VUE = "heraliz_cinematique_vue";
@@ -67,13 +88,19 @@ public final class Tutoriel {
         CABANE.put(PieceKind.FLOOR, 2);
     }
 
-    private record Attente(long debut, Vec3 pos) {
+    /** Attente de la fin de la cinématique : heure de jeu du début, position, relancée par le staff (cinématique rejouée). */
+    private record Attente(long debut, Vec3 pos, boolean force) {
     }
 
     /** Joueurs qui attendent la fin de la cinématique (heure de jeu du début, position). */
     private static final Map<UUID, Attente> ATTENTES = new HashMap<>();
     /** Séquences en cours (tick de la séquence), étape KIT comprise. */
     private static final Map<UUID, Integer> SEQUENCES = new HashMap<>();
+    /** Séquences lancées par le staff : elles se déroulent où que soit le joueur (pas seulement au spawn). */
+    private static final Set<UUID> FORCES = new HashSet<>();
+    /** Essais d'envoi ratés (aucune place trouvée) d'une séquence lancée par le staff. */
+    private static final Map<UUID, Integer> ESSAIS = new HashMap<>();
+    private static final int ESSAIS_MAX = 5;
 
     private static final int T_TITRE_2 = 80;
     private static final int T_TITRE_3 = 170;
@@ -97,7 +124,19 @@ public final class Tutoriel {
         long now = server.overworld().getGameTime();
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             UUID id = p.getUUID();
-            if (p.isSpectator() || p.isCreative() || SEQUENCES.containsKey(id)) {
+            if (SEQUENCES.containsKey(id)) {
+                continue;
+            }
+            Attente f = ATTENTES.get(id);
+            if (f != null && f.force()) {
+                // cinématique rejouée par le staff : tuto à la fin, quels que soient le mode de jeu et l'étape
+                if (pret(p, f, now)) {
+                    ATTENTES.remove(id);
+                    lancer(p);
+                }
+                continue;
+            }
+            if (p.isSpectator() || p.isCreative()) {
                 continue;
             }
             BasesDonnees.Joueur j = d.joueur(id);
@@ -113,11 +152,8 @@ public final class Tutoriel {
                         ATTENTES.remove(id);
                         continue;
                     }
-                    Attente a = ATTENTES.computeIfAbsent(id, k -> new Attente(now, p.position()));
-                    long ecoule = (now - a.debut()) / 20L;
-                    boolean bouge = p.position().distanceToSqr(a.pos()) > 1.0;
-                    if (ecoule >= BasesReglages.i(BasesReglages.ATTENTE_MAX_S, 130)
-                        || ecoule >= BasesReglages.i(BasesReglages.ATTENTE_MIN_S, 15) && bouge) {
+                    Attente a = ATTENTES.computeIfAbsent(id, k -> new Attente(now, p.position(), false));
+                    if (pret(p, a, now)) {
                         ATTENTES.remove(id);
                         SEQUENCES.put(id, 0);
                     }
@@ -133,6 +169,31 @@ public final class Tutoriel {
         }
     }
 
+    /** Fin de l'attente : {@code attente_min_s} passées et un premier pas, ou {@code attente_max_s} passées. */
+    private static boolean pret(ServerPlayer p, Attente a, long now) {
+        long ecoule = (now - a.debut()) / 20L;
+        boolean bouge = p.position().distanceToSqr(a.pos()) > 1.0;
+        return ecoule >= BasesReglages.i(BasesReglages.ATTENTE_MAX_S, 130)
+            || ecoule >= BasesReglages.i(BasesReglages.ATTENTE_MIN_S, 15) && bouge;
+    }
+
+    /**
+     * Le tutoriel complet tout de suite (titres, kit, envoi), où que soit le joueur : étape remise à AUCUNE pour que le
+     * kit soit donné ; protection de base due seulement s'il n'a pas de base (dans le kit).
+     */
+    static void lancer(ServerPlayer p) {
+        BasesDonnees d = BasesDonnees.get(p.server);
+        BasesDonnees.Joueur j = d.joueur(p.getUUID());
+        j.etape = BasesDonnees.Etape.AUCUNE;
+        j.phaseTicks = 0;
+        d.marquer();
+        ATTENTES.remove(p.getUUID());
+        ESSAIS.remove(p.getUUID());
+        FORCES.add(p.getUUID());
+        SEQUENCES.put(p.getUUID(), 0);
+        Crac.LOGGER.info("[CRac] tutoriel lancé pour {}", p.getGameProfile().getName());
+    }
+
     /** Chaque tick (MondeBasesServeur) : déroulé des séquences. */
     static void tick(MinecraftServer server) {
         if (SEQUENCES.isEmpty()) {
@@ -143,8 +204,11 @@ public final class Tutoriel {
         while (it.hasNext()) {
             Map.Entry<UUID, Integer> e = it.next();
             ServerPlayer p = server.getPlayerList().getPlayer(e.getKey());
-            if (p == null || !MondeBases.estSpawn(p.level()) || !p.isAlive()) {
+            boolean force = FORCES.contains(e.getKey());
+            if (p == null || !force && !MondeBases.estSpawn(p.level()) || !p.isAlive()) {
                 it.remove();
+                FORCES.remove(e.getKey());
+                ESSAIS.remove(e.getKey());
                 continue;
             }
             int t = e.getValue();
@@ -156,7 +220,7 @@ public final class Tutoriel {
                 actions.add(() -> titre3(p));
             } else if (t >= T_ENVOI) {
                 it.remove();
-                actions.add(() -> envoyer(p));
+                actions.add(() -> envoyer(p, force));
                 continue;
             }
             e.setValue(t + 1);
@@ -173,6 +237,8 @@ public final class Tutoriel {
     static void oublier(UUID joueur) {
         ATTENTES.remove(joueur);
         SEQUENCES.remove(joueur);
+        FORCES.remove(joueur);
+        ESSAIS.remove(joueur);
     }
 
     static boolean aUneBase(ServerPlayer p) {
@@ -217,7 +283,8 @@ public final class Tutoriel {
                 liste.append(e.getValue() + " × ").append(new ItemStack(e.getKey()).getHoverName());
             }
             j.etape = BasesDonnees.Etape.KIT;
-            j.protectionDue = true;
+            // un joueur qui a déjà une base (tuto relancé par le staff) ne regagne pas la protection de base
+            j.protectionDue = !aUneBase(p);
             j.phaseTicks = 0;
             d.marquer();
             T.chat(p, T.t("crac.tuto.kit", "[Tuto] Kit reçu : %s.", liste), ChatFormatting.YELLOW);
@@ -234,17 +301,28 @@ public final class Tutoriel {
             T.t("crac.tuto.sous3", "Tu es protégé (contour vert) tant que ta base n'est pas posée."), 80);
     }
 
-    private static void envoyer(ServerPlayer p) {
+    private static void envoyer(ServerPlayer p, boolean force) {
         ServerLevel bases = p.server.getLevel(MondeBases.BASES);
         if (bases == null) {
+            FORCES.remove(p.getUUID());
             return;
         }
         Vec3 dest = Points.auHasard(bases, p);
         if (dest == null) {
             T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée dans le monde des bases : réessaie dans un instant."),
                 ChatFormatting.RED);
-            return;   // étape KIT : nouvel essai à la prochaine seconde
+            int n = ESSAIS.merge(p.getUUID(), 1, Integer::sum);
+            if (force && n < ESSAIS_MAX) {
+                FORCES.add(p.getUUID());
+                SEQUENCES.put(p.getUUID(), T_ENVOI - 20);   // nouvel essai dans une seconde, où qu'il soit
+            } else {
+                FORCES.remove(p.getUUID());
+                ESSAIS.remove(p.getUUID());
+            }
+            return;   // étape KIT : au spawn, nouvel essai à la prochaine seconde
         }
+        FORCES.remove(p.getUUID());
+        ESSAIS.remove(p.getUUID());
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
         p.stopRiding();
@@ -255,18 +333,19 @@ public final class Tutoriel {
         d.marquer();
         long max = BasesReglages.i(BasesReglages.PHASE_MAX_MIN, 120) * 60_000L;
         int fond = BasesReglages.i(BasesReglages.FONDATIONS_MIN, 2);
-        T.chat(p, T.t("crac.tuto.etape1", "[Tuto] 1. Trouve un coin plat qui te plaît. Le monde des bases est en PvP : seul ton contour vert te protège, pendant %s au plus.",
-            T.duree(max)), ChatFormatting.YELLOW);
-        T.chat(p, T.t("crac.tuto.etape2", "[Tuto] 2. Plan de construction en main, clic droit : pose %s fondations côte à côte.",
-            String.valueOf(fond)), ChatFormatting.YELLOW);
-        T.chat(p, T.t("crac.tuto.etape3", "[Tuto] 3. Puis 5 murs, 1 porte (pièce « Porte » du plan, la porte est comprise) et 2 planchers par-dessus pour le toit."),
-            ChatFormatting.YELLOW);
-        T.chat(p, T.t("crac.tuto.etape4", "[Tuto] 4. Pose le Claim Block sur une fondation, à l'intérieur : ta base est à toi, et protégée des raids."),
-            ChatFormatting.YELLOW);
-        T.chat(p, T.t("crac.tuto.etape5", "[Tuto] 5. Marteau en main : passe tes pièces en bois, et mets des planches dans le Claim Block (entretien)."),
-            ChatFormatting.YELLOW);
-        T.chat(p, T.t("crac.tuto.etape6", "[Tuto] Depuis ta base, /spawn ramène au spawn ; du spawn, /home ramène chez toi (toutes les 3 min)."),
-            ChatFormatting.GRAY);
+        // dans le chat une demi-seconde après l'arrivée (écran de chargement du monde passé)
+        Deplacements.apres(p, T.t("crac.tuto.etape1", "[Tuto] 1. Trouve un coin plat qui te plaît. Le monde des bases est en PvP : seul ton contour vert te protège, pendant %s au plus.",
+            T.duree(max)).withStyle(ChatFormatting.YELLOW));
+        Deplacements.apres(p, T.t("crac.tuto.etape2", "[Tuto] 2. Plan de construction en main, clic droit : pose %s fondations côte à côte.",
+            String.valueOf(fond)).withStyle(ChatFormatting.YELLOW));
+        Deplacements.apres(p, T.t("crac.tuto.etape3", "[Tuto] 3. Puis 5 murs, 1 porte (pièce « Porte » du plan, la porte est comprise) et 2 planchers par-dessus pour le toit.")
+            .withStyle(ChatFormatting.YELLOW));
+        Deplacements.apres(p, T.t("crac.tuto.etape4", "[Tuto] 4. Pose le Claim Block sur une fondation, à l'intérieur : ta base est à toi, et protégée des raids.")
+            .withStyle(ChatFormatting.YELLOW));
+        Deplacements.apres(p, T.t("crac.tuto.etape5", "[Tuto] 5. Marteau en main : passe tes pièces en bois, et mets des planches dans le Claim Block (entretien).")
+            .withStyle(ChatFormatting.YELLOW));
+        Deplacements.apres(p, T.t("crac.tuto.etape6", "[Tuto] Ta base posée, ton home y est créé : du spawn, /home t'y ramène (toutes les 3 min). Depuis ta base, /spawn ramène au spawn ; du spawn, /zone base mène à un coin au hasard de la zone de construction.")
+            .withStyle(ChatFormatting.GRAY));
     }
 
     // ---------------------------------------------------------------------------------------------- kit
@@ -389,7 +468,66 @@ public final class Tutoriel {
     static void commandes(CommandDispatcher<CommandSourceStack> d) {
         d.register(Commands.literal("tuto").requires(s -> s.hasPermission(2))
             .then(Commands.literal("rejouer").then(Commands.argument("joueur", EntityArgument.player())
-                .executes(c -> rejouer(c.getSource(), EntityArgument.getPlayer(c, "joueur"))))));
+                .executes(c -> rejouer(c.getSource(), EntityArgument.getPlayer(c, "joueur")))))
+            .then(Commands.literal("lancer").then(Commands.argument("joueur", EntityArgument.player())
+                .executes(c -> lancer(c.getSource(), EntityArgument.getPlayer(c, "joueur"))))));
+    }
+
+    private static int lancer(CommandSourceStack src, ServerPlayer p) {
+        if (src.getServer().getLevel(MondeBases.BASES) == null) {
+            Reply.fail(src, T.t("crac.bases.absent", "Le monde des bases n'existe pas sur ce serveur (crac:bases)."));
+            return 0;
+        }
+        boolean base = aUneBase(p);
+        lancer(p);
+        Reply.ok(src, (base
+            ? T.t("crac.tuto.lance_base", "Tutoriel lancé pour %s : titres, kit, puis envoi dans le monde des bases. Il a déjà une base : pas de nouvelle protection de base.",
+                p.getGameProfile().getName())
+            : T.t("crac.tuto.lance", "Tutoriel lancé pour %s : titres, kit, puis envoi dans le monde des bases.", p.getGameProfile().getName()))
+            .withStyle(ChatFormatting.GREEN));
+        return 1;
+    }
+
+    /**
+     * Cinématique rejouée par le staff ({@code /cinematique} pour soi, {@code /cinematique joueur <cibles>}) : le tutoriel
+     * du joueur repart à la fin de la cinématique (attente comme à la première arrivée), même en créatif, même s'il l'a
+     * déjà fait ou a une base. Avant, rejouer la cinématique ne changeait rien au tutoriel. Lu avant la commande
+     * (évènement de Forge) ; une commande mal tapée ne change rien.
+     */
+    @SubscribeEvent
+    public static void commande(CommandEvent e) {
+        try {
+            ParseResults<CommandSourceStack> r = e.getParseResults();
+            CommandContextBuilder<CommandSourceStack> b = r.getContext();
+            if (b.getNodes().isEmpty() || !"cinematique".equals(b.getNodes().get(0).getNode().getName())
+                || r.getReader().canRead() || !r.getExceptions().isEmpty() || !actif()) {
+                return;
+            }
+            CommandSourceStack src = b.getSource();
+            if (!src.hasPermission(2) || src.getServer().getLevel(MondeBases.BASES) == null) {
+                return;
+            }
+            List<ServerPlayer> cibles = new ArrayList<>();
+            if (b.getNodes().size() == 1) {
+                // pour soi, la cinématique ne se rejoue que depuis le spawn (sinon Utils la refuse)
+                if (src.getEntity() instanceof ServerPlayer sp && MondeBases.estSpawn(sp.level())) {
+                    cibles.add(sp);
+                }
+            } else if ("joueur".equals(b.getNodes().get(1).getNode().getName()) && b.getArguments().containsKey("cibles")) {
+                CommandContext<CommandSourceStack> ctx = b.build(r.getReader().getString());
+                cibles.addAll(EntityArgument.getPlayers(ctx, "cibles"));
+            }
+            long now = src.getServer().overworld().getGameTime();
+            for (ServerPlayer p : cibles) {
+                SEQUENCES.remove(p.getUUID());
+                FORCES.remove(p.getUUID());
+                ATTENTES.put(p.getUUID(), new Attente(now, p.position(), true));
+                Reply.ok(src, T.t("crac.tuto.apres_cinematique", "Le tutoriel de %s repartira à la fin de la cinématique (/tuto lancer %s pour tout de suite).",
+                    p.getGameProfile().getName(), p.getGameProfile().getName()).withStyle(ChatFormatting.GRAY));
+            }
+        } catch (CommandSyntaxException | RuntimeException ex) {
+            Crac.LOGGER.debug("[CRac] tutoriel : lecture de /cinematique impossible ({})", ex.toString());
+        }
     }
 
     private static int rejouer(CommandSourceStack src, ServerPlayer p) {

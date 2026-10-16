@@ -21,6 +21,10 @@ public final class BasesReglages {
     // [home]
     public static final IntValue HOME_DELAI_S;
     public static final IntValue IMMOBILE_S;
+    public static final IntValue ZONE_DELAI_S;
+    public static final IntValue HOMES_BASE;
+    public static final IntValue HOMES_PAR_GRADE;
+    public static final IntValue SPAWN_RAYON;
     // [tuto]
     public static final BooleanValue TUTO_ACTIF;
     public static final IntValue ATTENTE_MIN_S;
@@ -57,11 +61,20 @@ public final class BasesReglages {
             .defineInRange("ecart_bases", 120, 0, 4096);
         b.pop();
 
-        b.comment("/home (du spawn vers sa base) et /spawn (de sa base vers le spawn).").push("home");
+        b.comment("/home (du spawn vers un de ses homes), /zone base (du spawn vers un point au hasard du monde des bases) et /spawn (de sa base vers le spawn).").push("home");
         HOME_DELAI_S = b.comment("Secondes entre deux /home d'un meme joueur (gardees au redemarrage).")
             .defineInRange("delai_s", 180, 0, 86_400);
-        IMMOBILE_S = b.comment("Secondes sans bouger ni etre blesse avant le depart (/home et /spawn).")
+        IMMOBILE_S = b.comment("Secondes sans bouger ni etre blesse avant le depart (/home, /zone base et /spawn).")
             .defineInRange("immobile_s", 3, 0, 60);
+        ZONE_DELAI_S = b.comment("Secondes entre deux /zone base (alias /rtp) d'un meme joueur (gardees au redemarrage).")
+            .defineInRange("zone_delai_s", 300, 0, 86_400);
+        HOMES_BASE = b.comment("Homes (/sethome) d'un joueur sans grade de la boutique (le staff n'a pas de limite).")
+            .defineInRange("homes_base", 1, 0, 100);
+        HOMES_PAR_GRADE = b.comment("Homes en plus par rang de grade de la boutique (HeraliZ Grades : Rescape 1, Traqueur 2, Roi de la Zone 3).")
+            .defineInRange("homes_par_grade", 1, 0, 100);
+        SPAWN_RAYON = b.comment("Blocs autour du point /spawn defini par le staff (/spawn definir) qui comptent comme « au spawn »",
+                "pour /home et /zone base (le monde du spawn heralisz:spawn compte toujours en entier).")
+            .defineInRange("spawn_rayon", 48, 0, 4096);
         b.pop();
 
         b.comment("Tutoriel apres la cinematique d'arrivee (joueur qui n'a jamais eu de base).").push("tuto");

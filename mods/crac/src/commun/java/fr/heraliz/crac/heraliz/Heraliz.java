@@ -156,6 +156,6 @@ public final class Heraliz {
             return null;
         }
         return Component.translatableWithFallback("crac.bases.construire_ailleurs",
-            "On ne construit que dans le monde des bases (/home depuis le spawn).");
+            "On ne construit que dans le monde des bases (/zone base depuis le spawn).");
     }
 }
