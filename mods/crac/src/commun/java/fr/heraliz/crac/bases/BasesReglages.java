@@ -5,6 +5,8 @@ import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 
+import java.util.List;
+
 /**
  * Réglages du monde des bases (config/serverconfig {@code crac-bases.toml}, type SERVER : lus par le serveur, recopiés
  * chez le joueur). Sections {@code [bases]}, {@code [home]}, {@code [tuto]}, {@code [protection]}, {@code [carrieres]}.
@@ -15,12 +17,18 @@ public final class BasesReglages {
     // [bases]
     public static final IntValue BORDURE;
     public static final BooleanValue CONSTRUCTION_ICI_SEULEMENT;
-    public static final BooleanValue MONSTRES;
+    public static final BooleanValue CREATURES;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CREATURES_PERMISES;
+    public static final BooleanValue SEAUX;
     public static final IntValue RAYON_DEPART;
     public static final IntValue ECART_BASES;
     // [home]
     public static final IntValue HOME_DELAI_S;
     public static final IntValue IMMOBILE_S;
+    public static final IntValue ZONE_DELAI_S;
+    public static final IntValue HOMES_BASE;
+    public static final IntValue HOMES_PAR_GRADE;
+    public static final IntValue SPAWN_RAYON;
     // [tuto]
     public static final BooleanValue TUTO_ACTIF;
     public static final IntValue ATTENTE_MIN_S;
@@ -43,25 +51,41 @@ public final class BasesReglages {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.comment("Monde des bases (dimension crac:bases) : reliefs et grands endroits plats, ou les joueurs construisent.").push("bases");
         BORDURE = b.comment("Taille de la bordure du monde des bases (blocs de cote, centree sur 0 0). 0 = laisser celle du jeu.")
-            .defineInRange("bordure", 6000, 0, 60_000_000);
+            .defineInRange("bordure", 2500, 0, 60_000_000);
         CONSTRUCTION_ICI_SEULEMENT = b.comment(
                 "Vrai : en survie, les pieces de construction et le Claim Block ne se posent QUE dans le monde des bases",
                 "(carte DayZ, spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.")
             .define("construction_ici_seulement", true);
-        MONSTRES = b.comment("Faux : aucun monstre n'apparait de lui-meme dans le monde des bases (les animaux restent).")
-            .define("monstres", false);
+        CREATURES = b.comment("Faux : aucune creature dans le monde des bases (toute entite « Mob » : animaux, monstres, villageois,",
+                "marchands, golems, PNJ et zombies des mods ; apparitions, oeufs, cages, mods) ; celles deja la sont retirees.",
+                "Les autres entites restent (textes flottants, objets poses, vehicules, cadavres, porte-armures).")
+            .define("creatures", false);
+        CREATURES_PERMISES = b.comment("Creatures gardees malgre tout dans le monde des bases (identifiants, ex. \"minecraft:villager\").")
+            .defineListAllowEmpty(List.of("creatures_permises"), () -> List.<String>of(), o -> o instanceof String);
+        SEAUX = b.comment("Faux : dans le monde des bases, aucun seau ne se vide (eau, lave, poissons), meme dans une base.",
+                "Le staff en creatif n'est pas concerne.")
+            .define("seaux", false);
         RAYON_DEPART = b.comment("Rayon (blocs, autour de 0 0) ou l'on tire le point d'arrivee d'un joueur sans base ;",
-                "ramene a l'interieur de la bordure (200 blocs de marge).")
-            .defineInRange("rayon_depart", 2500, 64, 1_000_000);
+                "ramene a l'interieur de la bordure (100 blocs de marge).")
+            .defineInRange("rayon_depart", 1150, 64, 1_000_000);
         ECART_BASES = b.comment("Distance minimale (blocs) entre ce point d'arrivee et le Claim Block d'une autre base.")
             .defineInRange("ecart_bases", 120, 0, 4096);
         b.pop();
 
-        b.comment("/home (du spawn vers sa base) et /spawn (de sa base vers le spawn).").push("home");
+        b.comment("/home (du spawn vers un de ses homes), /zone base (du spawn vers un point au hasard du monde des bases) et /spawn (de sa base vers le spawn).").push("home");
         HOME_DELAI_S = b.comment("Secondes entre deux /home d'un meme joueur (gardees au redemarrage).")
             .defineInRange("delai_s", 180, 0, 86_400);
-        IMMOBILE_S = b.comment("Secondes sans bouger ni etre blesse avant le depart (/home et /spawn).")
+        IMMOBILE_S = b.comment("Secondes sans bouger ni etre blesse avant le depart (/home, /zone base et /spawn).")
             .defineInRange("immobile_s", 3, 0, 60);
+        ZONE_DELAI_S = b.comment("Secondes entre deux /zone base (alias /rtp) d'un meme joueur (gardees au redemarrage).")
+            .defineInRange("zone_delai_s", 300, 0, 86_400);
+        HOMES_BASE = b.comment("Homes (/sethome) d'un joueur sans grade de la boutique (le staff n'a pas de limite).")
+            .defineInRange("homes_base", 1, 0, 100);
+        HOMES_PAR_GRADE = b.comment("Homes en plus par rang de grade de la boutique (HeraliZ Grades : Rescape 1, Traqueur 2, Roi de la Zone 3).")
+            .defineInRange("homes_par_grade", 1, 0, 100);
+        SPAWN_RAYON = b.comment("Blocs autour du point /spawn defini par le staff (/spawn definir) qui comptent comme « au spawn »",
+                "pour /home et /zone base (le monde du spawn heralisz:spawn compte toujours en entier).")
+            .defineInRange("spawn_rayon", 48, 0, 4096);
         b.pop();
 
         b.comment("Tutoriel apres la cinematique d'arrivee (joueur qui n'a jamais eu de base).").push("tuto");

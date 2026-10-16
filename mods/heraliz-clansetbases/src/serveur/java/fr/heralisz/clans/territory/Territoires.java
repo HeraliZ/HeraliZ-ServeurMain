@@ -765,6 +765,29 @@ public final class Territoires {
         return new Pose(ax, az, suit, avait);
     }
 
+    /**
+     * Deplace le centre de la zone en (x, z), et change son rayon si {@code rayon} &gt; 0 (reposer une zone de l'ancienne
+     * carte sur la nouvelle). L'etat de jeu (proprietaire, protection, statistiques) est garde. Un drapeau qui se
+     * retrouve hors du nouveau cercle est retire du monde (a reposer avec /territoire drapeau) ; rend vrai dans ce cas.
+     */
+    public boolean deplacer(Zone zone, int x, int z, int rayon) {
+        int ax = zone.x, az = zone.z;
+        zone.x = x;
+        zone.z = z;
+        if (rayon > 0) zone.rayon = Math.max(5, rayon);
+        boolean retire = false;
+        if (zone.drapeau != null && !zone.contientHorizontal(zone.drapeau.getX() + 0.5, zone.drapeau.getZ() + 0.5)) {
+            retirerBlocDrapeau(zone);
+            retire = true;
+        }
+        zone.calerHauteur(monde());
+        sauvegarderZones();
+        if (zone.drapeau != null) rafraichirDrapeau(zone, data.etat(zone.id));
+        HeraliszClans.LOG.info("[clans] zone {} deplacee : centre {}, {} (avant {}, {}), rayon {}{}", zone.id, zone.x, zone.z, ax, az, zone.rayon,
+                retire ? ", drapeau retire" : "");
+        return retire;
+    }
+
     /** Remet la zone libre (le proprietaire la perd). */
     public void reset(Zone zone) {
         EtatTerritoire e = data.etat(zone.id);

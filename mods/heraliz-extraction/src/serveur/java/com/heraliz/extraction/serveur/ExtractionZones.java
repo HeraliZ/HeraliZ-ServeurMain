@@ -3,6 +3,7 @@ package com.heraliz.extraction.serveur;
 import com.heraliz.extraction.ExtractionConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -15,8 +16,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Registre des zones d'extraction fixes créées par les admins (sauvegardé avec le monde,
@@ -24,7 +27,8 @@ import java.util.Map;
  * dans le monde ; une entité dont le nom n'est plus dans ce registre se supprime d'elle-même.
  * <p>
  * Le registre garde aussi l'état d'ouverture de chaque zone (heure de jeu de fermeture, dernière fermeture), mené par
- * {@link Rotation} et les commandes : il survit aux redémarrages.
+ * {@link Rotation} et les commandes : il survit aux redémarrages. Avec la rotation par vagues (réglage rotation.waves),
+ * il garde aussi la fin de la vague en cours et les zones qu'elle a ouvertes (exclues de la vague suivante).
  */
 public class ExtractionZones extends SavedData {
     private static final String FILE = "heraliz_extraction_zones";
@@ -99,6 +103,10 @@ public class ExtractionZones extends SavedData {
     private final Map<String, Long> openUntil = new HashMap<>();
     /** Heure de jeu de la dernière fermeture (la rotation rouvre d'abord les zones fermées depuis longtemps). */
     private final Map<String, Long> closedAt = new HashMap<>();
+    /** Heure de jeu de la fin de la vague en cours (0 : aucune vague en cours). */
+    private long vagueFin;
+    /** Zones ouvertes par la vague en cours (ou la dernière vague finie) : la vague suivante les évite. */
+    private final Set<String> vagueZones = new LinkedHashSet<>();
 
     public static ExtractionZones get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(ExtractionZones::load, ExtractionZones::new, FILE);
@@ -126,6 +134,35 @@ public class ExtractionZones extends SavedData {
         if (this.zones.remove(name) != null) {
             this.openUntil.remove(name);
             this.closedAt.remove(name);
+            this.vagueZones.remove(name);
+            setDirty();
+        }
+    }
+
+    // ------------------------------------------------------------------ vagues (rotation.waves)
+
+    /** Heure de jeu de la fin de la vague en cours, 0 si aucune. */
+    public long vagueFin() {
+        return this.vagueFin;
+    }
+
+    /** Zones ouvertes par la vague en cours, ou par la dernière vague finie (copie). */
+    public Set<String> vagueZones() {
+        return new LinkedHashSet<>(this.vagueZones);
+    }
+
+    /** Nouvelle vague, ou vague en cours complétée : fin et zones qu'elle a ouvertes. */
+    public void vague(long fin, Collection<String> zones) {
+        this.vagueFin = fin;
+        this.vagueZones.clear();
+        this.vagueZones.addAll(zones);
+        setDirty();
+    }
+
+    /** Termine la vague en cours tout de suite (ses zones restent celles à éviter au tirage suivant). */
+    public void finirVague() {
+        if (this.vagueFin != 0L) {
+            this.vagueFin = 0L;
             setDirty();
         }
     }
@@ -188,6 +225,11 @@ public class ExtractionZones extends SavedData {
                 data.closedAt.put(name, z.getLong("ClosedAt"));
             }
         }
+        data.vagueFin = Math.max(0L, tag.getLong("VagueFin"));
+        ListTag vague = tag.getList("Vague", Tag.TAG_STRING);
+        for (int i = 0; i < vague.size(); i++) {
+            data.vagueZones.add(vague.getString(i));
+        }
         return data;
     }
 
@@ -218,6 +260,16 @@ public class ExtractionZones extends SavedData {
             list.add(z);
         }
         tag.put("Zones", list);
+        if (this.vagueFin > 0L) {
+            tag.putLong("VagueFin", this.vagueFin);
+        }
+        if (!this.vagueZones.isEmpty()) {
+            ListTag vague = new ListTag();
+            for (String name : this.vagueZones) {
+                vague.add(StringTag.valueOf(name));
+            }
+            tag.put("Vague", vague);
+        }
         return tag;
     }
 }

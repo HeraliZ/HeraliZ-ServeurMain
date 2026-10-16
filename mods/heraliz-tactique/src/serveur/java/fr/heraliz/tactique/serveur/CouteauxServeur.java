@@ -33,7 +33,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
 /**
  * Coups de couteau TaCZ, décidés par le serveur seul (voir {@link CoupsCouteau}). Le joueur demande un coup
  * ({@link PaquetCoupCouteau}) ; le serveur vérifie tout de son côté, puis frappe {@link CoupsCouteau#delai} ticks
- * plus tard (coup puissant : à l'impact de son animation), comme une arme de mêlée de LR (MeleeItemServeur) :
+ * plus tard (coup puissant : à l'impact de l'animation du modèle en main, CoupsLourds ; cadence du coup puissant avec
+ * l'écart de ce modèle), comme une arme de mêlée de LR (MeleeItemServeur) :
  * <ul>
  *    <li><b>refus</b> (rien ne se passe) : couteaux non frappés par HeraliZ ({@code actif}), joueur mort ou spectateur, pas
  *    de couteau TaCZ en main, à terre ou en train de fouiller ou réanimer (Réanimation), couteau en train d'être sorti
@@ -117,11 +118,13 @@ final class CouteauxServeur {
       if (etat.frappeA >= 0 || maintenant < etat.pretMs - TOLERANCE_MS) {
          return;
       }
-      etat.pretMs = Math.max(maintenant - TOLERANCE_MS, etat.pretMs) + CoupsCouteau.cadence(d.lourd()) * MS_PAR_TICK;
-      etat.frappeA = joueur.server.getTickCount() + CoupsCouteau.delai(d.lourd());
+      ResourceLocation id = arme.getGunId(main);
+      String modele = CoupsCouteau.modele(id);
+      etat.pretMs = Math.max(maintenant - TOLERANCE_MS, etat.pretMs) + CoupsCouteau.cadence(d.lourd(), modele) * MS_PAR_TICK;
+      etat.frappeA = joueur.server.getTickCount() + CoupsCouteau.delai(d.lourd(), modele);
       etat.lourd = d.lourd();
       etat.caseBarre = joueur.getInventory().selected;
-      etat.arme = arme.getGunId(main);
+      etat.arme = id;
       // les autres joueurs : le coup en 3e personne (PaquetCoupVu) ; bruit du coup rapide envoyé d'ici, ceux du coup
       // puissant joués chez eux à la réception du paquet
       ReseauCouteaux.envoyerAutour(joueur, new PaquetCoupVu(joueur.getId(), d.lourd()));

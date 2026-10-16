@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:cache_2d",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": "crac:bases/plateaux",
+    "argument2": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": "crac:bases/collines",
+        "argument2": "crac:bases/reliefs"
+      },
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": {
+          "type": "minecraft:clamp",
+          "min": 0.0,
+          "max": 1.0,
+          "input": {
+            "type": "minecraft:mul",
+            "argument1": 0.25,
+            "argument2": {
+              "type": "minecraft:add",
+              "argument1": "crac:bases/collines",
+              "argument2": "crac:bases/reliefs"
+            }
+          }
+        },
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": 1.5,
+          "argument2": "crac:bases/bruit_detail"
+        }
+      }
+    }
+  }
+}

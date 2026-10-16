@@ -95,6 +95,8 @@ public final class ClaimBlockHandler {
         }
         C2SRequestNearbyClaimsTraitement.pushAll(level);
         player.displayClientMessage(Txt.green("crac.claim.created", g.name(), tier, Config.claimRadius(tier)), false);
+        // monde des bases : home « base » du joueur s'il n'en a aucun (/home du spawn)
+        fr.heraliz.crac.bases.Homes.premiereBase(player, level, pos);
         return null;
     }
 

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:add",
+  "argument1": "crac:bases/hauteur",
+  "argument2": {
+    "type": "minecraft:y_clamped_gradient",
+    "from_y": -64,
+    "to_y": 320,
+    "from_value": 64.0,
+    "to_value": -320.0
+  }
+}

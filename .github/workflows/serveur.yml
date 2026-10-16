@@ -25,6 +25,10 @@ on:
         description: "Monde du spawn : déposer monde/spawn du dépôt (grotte + schematic du spawn ; sinon la grotte générée) dans dimensions/heralisz/spawn du monde (une seule fois, refusé si déjà là ; puis redémarrer)"
         type: boolean
         default: false
+      reinitialiser_bases:
+        description: "Monde des bases : mettre de côté dimensions/crac/bases (renommé bases_ancien_<date>, jamais supprimé) pour que Minecraft le refasse avec le nouveau terrain (serveur arrêté puis redémarré ; bases posées perdues)"
+        type: boolean
+        default: false
       tester_discord:
         description: "Envoyer un message de test dans le salon Discord privé des alertes de Spartan"
         type: boolean
@@ -636,8 +640,116 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+      # Monde des bases (case « reinitialiser_bases ») : Minecraft ne refait jamais un tronçon déjà créé ; pour que le
+      # monde des bases (crac:bases) suive le nouveau terrain de CRac, son dossier <monde>/dimensions/crac/bases est mis
+      # de côté (renommé bases_ancien_<date>, JAMAIS supprimé) et Minecraft en recrée un neuf au démarrage. Serveur
+      # ARRÊTÉ avant (sinon il réécrirait les anciens tronçons chargés en mémoire), puis redémarré. Rien d'autre du monde
+      # n'est touché : ni la carte, ni le spawn, ni data/crac_bases.dat (les données des joueurs de CRac) ni les claims.
+      - name: Remettre à neuf le monde des bases
+        if: github.event_name == 'workflow_dispatch' && inputs.reinitialiser_bases
+        timeout-minutes: 40
+        run: |
+          if [ "${{ inputs.deposer_carte }}" = "true" ]; then
+            echo "::warning::« reinitialiser_bases » ignoré : « deposer_carte » change déjà tout le monde (relancer seul ensuite si besoin)."
+            exit 0
+          fi
+          if [ -z "$PTERO_SFTP_HOST" ] || [ -z "$PTERO_URL" ] || [ -z "$PTERO_SERVER_ID" ] || [ -z "$PTERO_API_KEY" ]; then
+            echo "::error::Il faut les secrets du SFTP et de l'API du Ptero : le serveur doit être arrêté pour mettre le monde des bases de côté."
+            exit 1
+          fi
+          API="${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID"
+          ptero() {
+            curl -sS -f --retry 3 --retry-all-errors -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \
+              -H "Accept: Application/vnd.pterodactyl.v1+json" "$@"
+          }
+          etat() { ptero "$API/resources" | python -c 'import json, sys; print(json.load(sys.stdin)["attributes"]["current_state"])'; }
+          sftp() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$LFTP_REGLAGES set cmd:fail-exit yes; $1 bye" < /dev/null; }
+          existe() { sftp "cls -d \"$1\";" > /dev/null 2>&1; }
+          # le monde en service : level-name du server.properties DU PTERO, obligatoirement
+          MONDE=""
+          if sftp "get /server.properties -o server_ptero_bases.properties;"; then
+            MONDE=$(tr -d '\r' < server_ptero_bases.properties | sed -n 's/^level-name=//p' | head -n 1)
+          fi
+          case "$MONDE" in
+            ""|.|..|*[!A-Za-z0-9_.-]*|mods|plugins|config|defaultconfigs|libraries|logs|tacz|heralisz_*|heraliz_*|mohist-config)
+              echo "::error::Nom du monde illisible ou inattendu dans le server.properties du Ptero : « $MONDE ». Rien n'a été changé."
+              exit 1;;
+          esac
+          if ! existe "/$MONDE/level.dat"; then
+            echo "::error::/$MONDE/level.dat introuvable sur le Ptero : ce n'est pas le monde en service. Rien n'a été changé."
+            exit 1
+          fi
+          CIBLE="/$MONDE/dimensions/crac/bases"
+          if ! existe "$CIBLE"; then
+            echo "Pas de $CIBLE sur le Ptero : rien à mettre de côté (Minecraft créera le monde des bases neuf au prochain démarrage)."
+            echo "### Monde des bases : rien à mettre de côté (\`$CIBLE\` absent)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          N=$(sftp "find \"$CIBLE\";" 2> /dev/null | grep -c '\.mca$' || true)
+          DATE=$(date -u +%Y-%m-%d_%Hh%M)
+          GARDE="/$MONDE/dimensions/crac/bases_ancien_$DATE"
+
+          # 1. arrêt propre : le serveur enregistre tout avant
+          if ! E=$(etat); then
+            echo "::error::L'API du Ptero ne répond pas : rien n'a été changé."
+            exit 1
+          fi
+          echo "Serveur : $E"
+          if [ "$E" != "offline" ]; then
+            if [ "$E" = "running" ]; then
+              ptero -X POST "$API/command" -d '{"command":"say Monde des bases remis à neuf : redémarrage du serveur dans 1 minute."}' > /dev/null || true
+              sleep 60
+            fi
+            if ! ptero -X POST "$API/power" -d '{"signal":"stop"}'; then
+              echo "::error::Le panel refuse d'arrêter le serveur : rien n'a été changé."
+              exit 1
+            fi
+            for _ in $(seq 90); do
+              sleep 10
+              E=$(etat || echo inconnu)
+              [ "$E" = "offline" ] && break
+            done
+            if [ "$E" != "offline" ]; then
+              echo "::error::Le serveur ne s'est pas arrêté en 15 minutes (état : $E) : rien n'a été changé. Vérifier le serveur dans le panel."
+              exit 1
+            fi
+          fi
+          echo "Serveur arrêté."
+
+          # 2. mise de côté (renommage, rien n'est supprimé), puis redémarrage dans tous les cas
+          RESULTAT="ok"
+          if ! sftp "mv \"$CIBLE\" \"$GARDE\";" || existe "$CIBLE"; then
+            RESULTAT="echec"
+            echo "::error::$CIBLE n'a pas pu être renommé : le monde des bases est inchangé. Le serveur redémarre quand même."
+          fi
+          ptero -X POST "$API/power" -d '{"signal":"start"}' || echo "::error::Le serveur n'a pas pu être démarré : le démarrer depuis le panel."
+          debut=$SECONDS
+          E=""
+          while [ $((SECONDS - debut)) -lt 900 ]; do
+            sleep 15
+            E=$(etat || echo inconnu)
+            [ "$E" = "running" ] && break
+            [ "$E" = "offline" ] && [ $((SECONDS - debut)) -gt 60 ] && break
+          done
+          {
+            echo "### Monde des bases remis à neuf"
+            if [ "$RESULTAT" = "ok" ]; then
+              echo "- ancien monde des bases gardé tel quel : \`$GARDE\` ($N fichiers de régions ; à supprimer depuis le panel quand tout va bien)"
+              echo "- Minecraft crée un monde des bases neuf, avec le terrain de CETTE version de CRac, au fil des visites"
+              echo "- **perdu** (partis avec le dossier) : tout ce qui était construit dans le monde des bases (bases, Claim Blocks, coffres), les claims et les carrières déclarées (à recréer : \`/carriere creer\`)"
+              echo "- **gardé** : \`data/crac_bases.dat\` du monde principal (étape du tutoriel, dernier /home, protections de base) et les groupes : un joueur qui avait fini le tutoriel ne reçoit pas de nouveau kit (\`/tuto rejouer <joueur>\`) ; \`/home\` l'envoie au hasard tant qu'il n'a pas reposé de base"
+              echo "- un joueur déconnecté DANS le monde des bases revient à la même position, sur le terrain neuf (dans le sol ou hors de la bordure de 2 500 blocs possible) : le ramener au spawn"
+            else
+              echo "- **échec** du renommage de \`$CIBLE\` : monde des bases inchangé"
+            fi
+            echo "- la carte et le monde du spawn n'ont pas été touchés"
+            echo "- état du serveur après le démarrage : $E"
+          } >> "$GITHUB_STEP_SUMMARY"
+          [ "$RESULTAT" = "ok" ] || exit 1
+          [ "$E" = "running" ] || { echo "::warning::Serveur pas encore « running » (état : $E) : voir la console du panel."; }
+
       - name: Redémarrer le serveur
-        if: env.PTERO_API_KEY != '' && github.event_name == 'workflow_dispatch' && inputs.redemarrer && !inputs.deposer_carte
+        if: env.PTERO_API_KEY != '' && github.event_name == 'workflow_dispatch' && inputs.redemarrer && !inputs.deposer_carte && !inputs.reinitialiser_bases
         run: |
           curl -sS -f -X POST "$PTERO_URL/api/client/servers/$PTERO_SERVER_ID/power" \
             -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \

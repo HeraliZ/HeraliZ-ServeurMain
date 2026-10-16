@@ -118,6 +118,10 @@ jobs:
         continue-on-error: true
         run: |
           python -m pip install --quiet numpy pillow
+          # bordure du monde (level.dat, COPIÉ en lecture seule) : le fond est recadré dessus (rien au-delà sur la carte)
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+            -e "$LFTP_REGLAGES set xfer:clobber on; get /$MONDE/level.dat -o copie/$MONDE/level.dat; bye" < /dev/null \
+            || echo "(level.dat illisible : fond sans recadrage sur la bordure)"
           python outils/carte_monde.py "copie/$MONDE" --sortie fond_carte --stats 2>&1 | tee fond_carte.log
           {
             echo "## Fond de la carte du monde"

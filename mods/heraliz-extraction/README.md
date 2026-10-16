@@ -25,9 +25,18 @@ La zone (rayon 8 par défaut) suit le relief, s'arrête sur les murs et n'entre 
 ## Zones fixes de la carte (admins, OP 2)
 
 Les extractions de la carte : zone rouge (sans PC), qui survit aux redémarrages, utilisable avec ou sans toit, retour
-au spawn au bout du temps à tenir (30 s par défaut). Elles **tournent** : seules quelques-unes sont ouvertes en même
-temps (3 par défaut), chacune pour 30 à 60 min tirées au hasard, puis d'autres prennent le relais (d'abord celles
-fermées depuis le plus longtemps). Une zone ouverte a sa colonne de fumée (repère de loin).
+au spawn au bout du temps à tenir (30 s par défaut). Elles **tournent par vagues** (1.5.0) : 4 zones ouvertes
+ensemble pendant 1 heure, puis toutes ferment et 4 autres ouvrent (aucune de la vague précédente si la carte en a
+assez). Le tirage est au hasard, mais les zones ouvertes sont à 800 blocs au moins les unes des autres et au plus une
+par quart de la carte (quarts autour du centre des zones) ; si les zones posées ne le permettent pas, la distance est
+baissée peu à peu, puis les quarts relâchés, et c'est noté dans le journal du serveur (`[extraction] ...`). Une zone
+fermée ou supprimée à la main pendant une vague est remplacée jusqu'à la fin de la vague. `waves = false` : l'ancienne
+rotation (chaque zone sa durée, une autre prend le relais), avec la même règle de distance. Une zone ouverte a sa
+colonne de fumée (repère de loin).
+
+Répartition des zones sur la carte : workflow « Extractions de la carte » (`.github/workflows/extractions.yml`, lecture
+seule) et `outils/extractions_carte.py` : liste, carte des zones, couverture et points proposés pour combler les trous
+(dans `monde/extractions/` de la branche de travail).
 
 - Ouverture : annoncée dans le chat à tous les joueurs de la dimension (« [Extraction] Aérodrome nord ouverte pendant
   45 min · 850 m au nord-est », clic = `/extractions`).
@@ -66,10 +75,13 @@ leur fermeture.
 | `zones.durationSeconds` | 30 | temps à tenir dans une zone fixe créée sans temps |
 | `zones.smoke` | true | colonne de fumée au-dessus des zones fixes ouvertes |
 | `rotation.enabled` | true | rotation des zones fixes (false : ouvertures à la main seulement) |
-| `rotation.openAtOnce` | 3 | zones ouvertes en même temps |
-| `rotation.minMinutes` / `maxMinutes` | 30 / 60 | durée d'ouverture d'une zone (au hasard entre les deux) |
+| `rotation.openAtOnce` / `openAtOnceMax` | 4 / 4 | zones ouvertes en même temps (au hasard entre les deux) |
+| `rotation.minMinutes` / `maxMinutes` | 60 / 60 | durée d'ouverture d'une zone ou d'une vague (au hasard entre les deux) |
 | `rotation.warnMinutes` | 2 | rappel aux joueurs proches avant la fermeture (0 = jamais) |
 | `rotation.announce` | true | annonce de chaque ouverture dans le chat |
+| `rotation.waves` | true | par vagues : toutes les zones changent ensemble |
+| `rotation.minDistance` | 800 | distance minimale (blocs, à plat) entre deux zones ouvertes (baissée si impossible) |
+| `rotation.spread` | true | au plus une zone ouverte par quart de la carte (relâché si impossible) |
 | `useWorldSpawn` | true | TP au spawn du monde, sinon `dimension` / `x` `y` `z` |
 
 ## Où toucher

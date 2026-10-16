@@ -134,8 +134,8 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10). Moteur repris de LR Tactical (licence GPL gardée) |
-| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
-| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) |
+| heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : carte coupée à la bordure du monde, vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals ; zone du casino (entrée payante) et zone VIP (grades boutique, section 10), chacune avec ses entrées et ses videurs |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin |
@@ -150,9 +150,9 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, section 9) : `/home` (du spawn vers sa base, toutes les 3 min) et `/spawn` (de sa base vers le spawn), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur »), base protégée 4 jours, carrières (`/carriere`) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer`), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
-| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (5 à 6 à la fois tirées au hasard, 30 à 60 min, 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
+| heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (par vagues depuis la 1.5.0 : 4 à la fois pendant 1 h, puis toutes changent ; tirées au hasard à 800 blocs au moins les unes des autres et une par quart de la carte, règles relâchées si impossible et notées dans le journal ; 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | heraliz-grades | heraliz_grades | heraliz_grades | **grades HeraliZ** (100 % maison) : Fondateur, Modérateur, Helper (staff), Roi de la Zone, Traqueur, Rescapé (boutique), Survivant (tout le monde) ; nom affiché « [CLAN] [Grade] Pseudo » (tag de clan lu par réflexion dans les clans) ; chat « Pseudo » message » sans < > (clé `chat.type.text` des langues du mod) ; **nouveau tab** (`TabHeraliz`, maquette validée : verre, staff puis survivants sur deux colonnes, grade, clan, voix CaraCrea, ping ; grades et clans envoyés par le serveur, paquet `InfosTab`). `grade donner|retirer <joueur> <grade>` et `kit reset <joueur>` : **console du serveur seulement** (ni joueur, ni op, ni bloc de commande, ni RCON) ; `/grade voir` (Helper+), `/grade liste` (Modérateur+), droits seulement après le `/login` AuthMe (lu par réflexion ; AuthMe injoignable = droits refusés). Menu `/kit` : un seul kit par recharge, celui du grade boutique sinon Survivant, pas d'arme ni d'armure en plus (pas de pay2win) ; kit Soutien en plus (recharge à part) pour ceux qui portent le tag HeraliZ sur Discord, compte lié (HeraliBot répond à `/mc/soutien/<uuid>`) ; contenu dans `serveur/config/heraliz_grades/kits.json`, relu tout seul. Données hors du monde : `heraliz_grades/grades.json`, `recharges.json`, `journal.log` (fichier illisible jamais écrasé). `/lier` (code de 6 caractères, 5 min, à taper sur Discord dans #lien) et `/delier` : lien avec HeraliBot, requêtes signées HMAC (secrets `HERALIBOT_LIEN_*`, section 8) ; grades donnés ou retirés à la console annoncés au staff sur Discord. Lien boutique : à venir |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
@@ -542,6 +542,10 @@ nommé « HeraliBot » du même compte : sa clé et son port), clé masquée dan
 est désactivé (avertissement). Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
 écrire ailleurs.
 
+**Monde des bases à neuf** : « Run workflow » avec la case « reinitialiser_bases » : le serveur est arrêté,
+`<monde>/dimensions/crac/bases` est renommé `bases_ancien_<date>` (jamais supprimé), puis le serveur redémarre et Minecraft
+recrée le monde des bases avec le terrain du jar CRac en place. Rien d'autre du monde n'est touché.
+
 **Gunpacks du serveur** (`.github/workflows/gunpacks.yml`, « Run workflow ») : compare le dossier `tacz` du Ptero au
 dépôt (`outils/gunpacks_serveur.py`). Le serveur envoie aux joueurs les objets de TOUS les gunpacks de son `tacz`, mais
 les joueurs n'ont que les images du dépôt : un gunpack (ou un index d'arme) resté sur le Ptero sans être dans le dépôt
@@ -578,6 +582,14 @@ propriétaire : workflow « Props de la carte » sur cette branche (essai à bla
 panel, étapes, lots, pause ; « annuler » rejoue le journal). Chaque commande est `execute if block <état relevé> … run
 setblock …` (cases en plus d'un gros conteneur : `if block … minecraft:air`) : un prop changé entre-temps par les
 constructeurs n'est pas touché ; HeraliZ Loot retire et repose seul les blocs « partie ». Rien testé en jeu.
+
+**Extractions de la carte** (`.github/workflows/extractions.yml`, « Run workflow » ou envoi sur une branche de travail qui
+touche le workflow ou `outils/extractions_carte.py`) : LECTURE SEULE sur le Ptero (registre
+`data/heraliz_extraction_zones.dat` du monde en service, `level.dat`, config et, au choix, régions) ; liste les zones
+d'extraction posées en jeu, dessine leur répartition (fond de la carte du monde, grille de 500 m) et leur couverture,
+simule le tirage du serveur et propose des points pour combler les trous, avec la commande à taper en jeu
+(`/execute in minecraft:overworld positioned X Y Z run extraction create <nom>`, à vérifier sur place) ; enregistré dans
+`monde/extractions/` de la branche de travail (jamais `main`).
 
 **Contrôle de branche** (`.github/workflows/branches.yml`) : à chaque envoi sur une autre branche que `main`, mêmes
 fabrication et contrôles que la mise en ligne, sans rien envoyer au Ptero ni au site ; jars gardés 3 jours (paquets
@@ -808,19 +820,37 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   refusé, sauf au staff. Réglage `[protection] actif` de `heraliz_spawn-server.toml` ; `/depart info` montre l'état.
   Rien testé en jeu.
 - **Monde des bases** (CRac 1.5.0, 16/10) : dimension `crac:bases`, déclarée par `mods/crac/src/serveur/resources/data/crac/`
-  (dimension, type, worldgen) ; Minecraft la crée seul au démarrage, **rien à déposer**. Reliefs, collines, vallées et
-  grandes plaines ; ni océan, ni grotte, ni minerai, ni structure, ni monstre ; 7 biomes propres (`crac:bases_*`) ;
-  bordure propre de 6 000 blocs. Fichiers **écrits** par `python mods/crac/outils/monde_bases.py` (`--apercu x.png` =
-  aperçu grossier), jamais à la main. En survie, on ne construit que là (`construction_ici_seulement`). Déplacements :
-  `/home` seulement depuis le spawn (vers sa base, sinon un point au hasard ; toutes les 3 min), `/spawn` seulement
-  depuis sa base, hors combat ; 3 s immobile ; carte DayZ par la borne de départ. Tutoriel après la cinématique (joueur
-  sans base) : titres, kit calculé sur les coûts réels de `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172
-  bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, ni blessé ni blessant) jusqu'à sa base
+  (dimension, type, worldgen) ; Minecraft la crée seul au démarrage, **rien à déposer**. Terrain (CRac 1.6.0, 16/10) :
+  grands plateaux parfaitement plats à 3 hauteurs (sol en 67, 71, 75 ; environ 65 % de la carte), pentes douces entre
+  eux, collines basses et arrondies (jusqu'à +16), 0 à 3 grands reliefs lisses (jusqu'à +38) ; ni eau (ni océan,
+  rivière, lac, source ni nappe), ni lave, ni grotte, ni minerai, ni structure ; 7 biomes propres (`crac:bases_*`) ;
+  **aucune créature** (biomes sans apparitions, toute entité `Mob` refusée à l'entrée et retirée chaque seconde,
+  `NatureBases` ; exceptions : `creatures_permises`) ; aucun seau ne s'y vide, même dans une base (`seaux`). Bordure
+  propre de 2 500 blocs (rayon 1 250 autour de 0 0), points d'arrivée à 100 blocs au moins de la bordure
+  (`rayon_depart` 1 150). Fichiers **écrits** par `python mods/crac/outils/monde_bases.py` (`--apercu DOSSIER [--graine
+  N]` : vraies formes et proportions, pas les vrais emplacements), jamais à la main. Minecraft ne refait pas un morceau
+  déjà créé : après un changement de terrain, workflow « Serveur HeraliZ », case `reinitialiser_bases` (serveur arrêté,
+  `dimensions/crac/bases` renommé `bases_ancien_<date>`, jamais supprimé, puis redémarré ; perdus : constructions,
+  claims et carrières du monde des bases ; gardés : `data/crac_bases.dat`, groupes). En survie, on ne construit que là
+  (`construction_ici_seulement`). Déplacements (CRac 1.6.0, 16/10) : « au spawn » = monde `heralisz:spawn` ou à moins de `spawn_rayon` (48) blocs du point /spawn.
+  `/home [nom]` seulement depuis le spawn, vers un de ses homes (toutes les 3 min) ; sans home : un message, AUCUNE
+  téléportation. `/sethome [nom]` seulement dans sa base (claim de son groupe, ou du clan avec le droit d'entrer) ;
+  `/delhome <nom>`, `/homes`. 1 home sans grade boutique, +1 par rang (Rescapé 2, Traqueur 3, Roi de la Zone 4 ;
+  `GradesApi.rangBoutique` par réflexion) ; staff sans limite. Home « base » créé tout seul à la pose du premier Claim
+  Block ; home qui n'est plus dans sa base : supprimé, pas de téléportation. `/zone base` (alias `/rtp`) seulement
+  depuis le spawn, vers un point plat au hasard loin des autres bases (toutes les 5 min). `/spawn` seulement depuis sa
+  base, hors combat, vers le point posé par le staff (`/spawn definir|effacer|voir`, gardé dans `crac/spawn.json` à la
+  racine du serveur), sinon le point de réveil ; la première arrivée (cinématique) ne change pas. 3 s immobile ; carte
+  DayZ par la borne de départ ; tous les messages dans le chat. Tutoriel après la cinématique (joueur en survie, sans
+  base, jamais fait ; rien en créatif ou en spectateur) : titres, kit calculé sur les coûts réels de
+  `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172 bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, ni blessé ni blessant) jusqu'à sa base
   posée (Claim Block sur 2 fondations), 2 h de jeu au plus ou départ sur la carte ; puis base protégée 4 jours (ni raid
   ni usure, texte flottant ; tombe au-delà de 2 membres). Carrières : `/carriere creer <nom> <rayon> <type>` (pierre,
   minerais, fer, bois, sable, argile, terre ; listes `#crac:carriere/<type>`), `liste|retirer|tp|regenerer` ; casse
   permise en survie, repousse en 10 min (jamais sous un joueur), rien ne s'y pose ; le staff bâtit la carrière
-  (WorldEdit) puis la déclare. Staff : `/tuto rejouer <joueur>`, `/protection voir|retirer|donner <joueur> [jours]`.
+  (WorldEdit) puis la déclare. Staff : `/tuto lancer <joueur>` (tutoriel complet tout de suite, même en créatif, même
+  avec une base), `/tuto rejouer <joueur>` (remise à zéro), cinématique rejouée par le staff = tutoriel relancé à la
+  fin ; `/protection voir|retirer|donner <joueur> [jours]`.
   Réglages : `serveur/defaultconfigs/crac-bases.toml` (`[bases]`, `[home]`, `[tuto]`, `[protection]`, `[carrieres]`).
   Données : `data/crac_bases.dat` du monde principal, `dimensions/crac/bases/data/crac_carrieres.dat`. Rien testé en jeu.
 - **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
@@ -835,6 +865,11 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   montre « Carte en préparation ». À refaire quand la carte est finie,
   et seulement depuis une carte propre (une construction de joueur posée sur la carte apparaîtrait sur le fond ; les
   blocs de CRac sont ignorés d'office) ; chaque version ajoute environ 3 Mo au dépôt pour toujours : la refaire rarement.
+  Recadré sur la bordure du monde (Utils 2.14.0, 16/10) : `carte_monde.py` lit la bordure dans le `level.dat` du monde
+  (défaut ; `--bordure x1 z1 x2 z2` ou `--bordure aucune`) et l'écrit dans `carte.json` (clé `bordure`). Au-delà, le
+  terrain est « étiré » (bandes de neige au nord, traits dans la mer) : c'était la « zone neige étirée ». L'écran
+  n'affiche rien au-delà de la plus petite de : bordure envoyée par le serveur, clé `bordure`, emprise des images. Fond
+  actuel : `bordure` mise à la main à -1500 / 1500 (celle de la v3).
 
 ---
 
@@ -892,8 +927,14 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `serveur/config/heraliz_loot/raretes.json` (sections `objets`, `armes`, `accessoires`, `munitions`, `soins` ; remplie
   le 14/10 pour l'Armurerie, les armes, accessoires, munitions et soins, voir « équilibrage ») ; le staff, objet en main :
   `/rarete <niveau|aucune|effacer|voir|defaut|recharger>` (choix en jeu dans `raretes_jeu.json`, jamais écrasé) ;
-- extractions de la carte : 35 à 40 points possibles, 5 à 6 ouverts à la fois au hasard (`openAtOnce` / `openAtOnceMax` de
-  `heraliz_extraction-common.toml`), 30 à 60 min chacun, 30 s à tenir, retour au spawn ;
+- extractions de la carte (16/10, Extraction 1.5.0) : 35 à 40 points possibles ; rotation par vagues (`waves` de
+  `serveur/config/heraliz_extraction-common.toml`, fichier du dépôt qui fait foi) : 4 zones ouvertes ensemble pendant
+  1 h, puis toutes changent, sans reprendre celles de la vague précédente si possible ; tirage au hasard
+  (`serveur/Repartition`), au moins 800 blocs entre deux zones ouvertes (`minDistance`) et une par quart de la carte
+  (`spread`) ; si c'est impossible, les quarts puis la distance (−15 % à chaque pas) puis la vague précédente sont
+  relâchés (noté dans le journal) ; les zones qui attendent depuis le plus longtemps passent un peu devant ;
+  `/extraction rotation next` lance une vague entière. Répartition : workflow « Extractions de la carte » (§8) et
+  `python outils/extractions_carte.py`. Retour au spawn. Rien testé en jeu ;
 - camos à vie (pour la boutique) : clic droit sur un objet camo = il entre pour toujours dans la collection du joueur
   (objet consommé ; stockée hors du monde, `heralisz_camo/collections.json` à la racine du serveur, elle survit aux
   changements de carte). Onglet Skin : camos de l'inventaire (posés depuis l'objet : définitifs, comme avant) ou de la
@@ -1007,18 +1048,22 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
-  - couteaux (16/10, Tactique 2.17.0, après les retours du propriétaire sur la 2.16.0) : clic gauche = le coup rapide
-    d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, son bruit, gestes
-    de TaCZ « melee_upper » / « melee_2_upper » vus des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant
-    comme le coup lourd des couteaux de LR : LE COUTEAU LUI-MÊME TOURNE avec le geste (os du bras, du poignet et du
-    couteau ; armé à 0,16 s, lame dressée ; impact à 0,24 s, pointe amenée sur le réticule ; torsion, dégagement, retour
-    lent, 0,85 s ; karambit : crochet vers le bas puis tour autour de son anneau), bruits des couteaux de LR, petit
-    mouvement de caméra (`couteaux/SecousseCouteau`). Animation « melee_stock » de chaque modèle écrite par
-    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableau `GESTES` ; `--apercu DOSSIER`), jamais à la main ;
-    jouée par `couteaux/AnimCouteaux` (fondu 0,05 s), secours `bayonet_stock` puis coup du gunpack. Vu des autres : estoc
-    de LR « stab_upper » (`couteaux/GesteCouteau`). Le serveur touche le coup puissant à l'impact
-    (`CoupsCouteau.DELAI_COUP_LOURD`, 5 ticks) ; dégâts, cadence et portée inchangés. Impact de l'animation (`IMPACT` du
-    script), caméra et délai serveur à changer ensemble. Canal « couteaux » version 3 ;
+  - couteaux (16/10, Tactique 2.17.0 puis 2.18.0, après les retours du propriétaire) : clic gauche = le coup rapide
+    d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, gestes de TaCZ vus
+    des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant où LE COUTEAU LUI-MÊME TOURNE avec le geste.
+    Knife CT et T : geste écrit comme le coup lourd de la Dague tactique de LR (impact à 0,24 s, 0,85 s). M9, papillon et
+    karambit (et leurs skins, 2.18.0) : coup lourd « melee_3 » repris tel quel de la Miséricorde (`mercy`, 1,79 s), de la
+    Lame de Desmoulins (`desmoulins_edge`, modèle `polaris`, 2,75 s) et du Credo (`creed`, modèle `treasure_kn`, 2,18 s) :
+    bras à la même place vus des yeux, lame dans la même orientation (tours compris) et tenue comme celle de LR, même
+    rythme, fondu 0,2 s, retour en douceur à la pose de repos, sons de LR (joueur et autres joueurs), caméra de LR rejouée
+    par `couteaux/SecousseCouteau` (rien sans « Balancement de la vue »). Animations « melee_stock » écrites par
+    `python mods/heraliz-tactique/outils/couteaux_coups.py` (tableau `GESTES` pour CT et T, `REPRISES` /
+    `--reprendre COUTEAU=ARME` pour les armes de LR ; `--apercu DOSSIER` : planches LR / TaCZ côte à côte), jamais à la
+    main ; jouées par `couteaux/AnimCouteaux` (fondu et sons lus dans l'entrée `heraliz` du fichier). Vu des autres : estoc
+    de LR « stab_upper » (`couteaux/GesteCouteau`). Le serveur touche à l'impact de l'animation du modèle en main et compte
+    sa cadence avec l'écart de l'arme de LR, valeurs écrites par le script dans `couteaux/CoupsLourds` (CT et T 5 ticks /
+    18 ; M9 6 / 22 ; papillon 6 / 24 ; karambit 5 / 16 avec `cadence_lourd` = 18 ; `ECARTS_CADENCE` à 0 pour garder 18
+    partout) ; dégâts et portée inchangés. Canal « couteaux » version 3 ;
   - corps des joueurs « démembré » et tête vers le ciel en s'allongeant : la remise à zéro de Réanimation 1.15.0
     (`client/Poses.apply`) n'efface plus les poses de Player Animator ; l'animation « allongé » de TaCZ suit le corps
     couché (`mixin/client/TaczAllongeAnimationMixin`) et le regard de la tête allongé est limité
@@ -1063,6 +1108,19 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   port|hopital|gare|point> <nom>` (ailleurs : `/execute positioned X Y Z run carte lieu ajouter ...`), `/carte lieu
   retirer <nom>`, `/carte lieu liste`, `/carte nom <nom>` (sous-titre « Monde · … ») ; gardés avec le monde
   (`data/heraliz_carte_lieux.dat`, ils suivront la copie finale de la carte). Fond : section 9 ;
+- carte du monde, refonte « AAA » (16/10, Utils 2.14.0, proposition 1 « Verre » des maquettes, VALIDÉE ; proposition 2
+  « Tactique » en réserve) : aucun texte sous 7,5 unités d'interface ; noms de villes en capitales avec halo, plus grands
+  de près (Utils 2.14.2, « encore un peu trop gros » : villes et territoires 8 à 10,5 unités, villages 7,5 à 8,8, petites
+  étiquettes 7,5) ; étiquettes sans chevauchement (villes d'abord) ; pastille d'état sous chaque territoire ; interrupteurs des
+  calques ; boutons + et − ; grille depuis le coin nord-ouest de la bordure ; déplacement et zoom bornés à la carte ;
+  territoires, lieux et extractions hors de la bordure non affichés (« N hors de la carte (à reposer) ») ;
+  icônes jugées « trop grossières » puis refaites (Utils 2.14.1) : pictogrammes au trait fin sur une petite pastille ronde
+  de verre avec ombre douce (plus de cadre carré à gros bord), atlas à trois niveaux de détail (128, 64, 32 px, choisi
+  selon la taille affichée, jamais réduit plus de 2 fois : net sans scintillement), refait par
+  `python mods/heralisz-utils/outils/icones_carte.py` (`--planche FICHIER` : planche de contrôle), jamais à la main ;
+  tailles mesurées (lieux 10 unités de large environ, extractions 11, drapeaux 8,5), à peine plus grandes de près ;
+  vue d'ensemble allégée : villages, usines, hôpitaux, gares et points n'apparaissent qu'en zoomant, en fondu ;
+  pastille d'état d'un territoire seulement de près (sauf capture et contestée, toujours), posée sous le nom ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
   du logo « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (« Bientôt »), trois nouveautés non cliquables
@@ -1235,6 +1293,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : suivent l'ancienne carte, à refaire pour la
   nouvelle, en donnant sa valeur (niveau de loot) à chaque ville. Les statistiques par ville (captures, temps tenu)
   sont enregistrées mais pas encore affichées dans l'écran du clan (interface à valider d'abord).
+  Les zones de l'ancienne carte hors de la bordure (Rudnik, Pristan, Gorny…) sont cachées sur la carte ; les reposer en
+  jeu avec `/territoire deplacer <id> [rayon]` (Clans 2.6.0, centre à la position du staff) ou `/territoire drapeau
+  <id>` ; `/territoire liste` marque « HORS DE LA BORDURE ». Bordure du monde `dayz_map` à vérifier (`/worldborder get`).
 - **Loot dans le train** (souhaité, T1 à T4, T4 rare ; pas fait) : le train n'est pas fait de blocs, donc pas de
   conteneur posé ; prévu : des emplacements fixes dans chaque voiture (coordonnées de la voiture, comme les banquettes),
   tirés par HeraliZ Loot (paliers T1 à T4) et gardés par le serveur voiture par voiture (vidés à chaque tour de boucle),

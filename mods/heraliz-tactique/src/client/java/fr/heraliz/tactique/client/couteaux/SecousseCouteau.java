@@ -1,9 +1,12 @@
 package fr.heraliz.tactique.client.couteaux;
 
+import com.tacz.guns.api.client.event.BeforeRenderHandEvent;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
+import org.joml.Quaternionf;
 
 /**
  * Petit mouvement de caméra du coup puissant des couteaux, chez le joueur qui frappe, en 1re personne seulement (comme
@@ -11,6 +14,12 @@ import net.minecraftforge.eventbus.api.EventPriority;
  * serveur : seule l'image bouge, pas le regard. La vue se relève un peu pendant qu'on arme, puis plonge et avance avec
  * la poussée (champ de vision resserré), et revient doucement. Le coup rapide n'en a pas (comme avant la 2.16.0).
  * Temps calés sur l'animation de {@code outils/couteaux_coups.py} (armé à 0,16 s, impact à 0,24 s) : à changer ensemble.
+ * <p>
+ * Coups repris d'une arme de LR (M9, papillon, karambit ; Tactique 2.18.0) : la courbe vient de l'os « camera » de
+ * l'animation de cette arme (écrite dans le fichier du coup par le script) et est rejouée comme TaCZ le fait pour les
+ * armes de LR : tangage, lacet et roulis ajoutés à la vue, la même rotation appliquée au rendu de la main (événement
+ * BeforeRenderHandEvent de TaCZ), lecture en ligne droite entre les clés, rien si l'option « Balancement de la vue » est
+ * coupée (comme TaCZ).
  */
 final class SecousseCouteau {
    // clés : temps (s), tangage (+ = vers le bas), lacet (+ = vers la droite), roulis (°), champ de vision ajouté (°)
@@ -24,6 +33,8 @@ final class SecousseCouteau {
    };
 
    private static float[][] courbe;
+   /** Courbe reprise d'une arme de LR : en ligne droite, main comprise, seulement avec le balancement de la vue. */
+   private static boolean reprise;
    private static long debutNs;
 
    private SecousseCouteau() {
@@ -32,18 +43,24 @@ final class SecousseCouteau {
    static void brancher() {
       MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, false, ViewportEvent.ComputeCameraAngles.class, SecousseCouteau::angles);
       MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, false, ViewportEvent.ComputeFov.class, SecousseCouteau::champ);
+      MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, false, BeforeRenderHandEvent.class, SecousseCouteau::main);
    }
 
-   /** Coup puissant parti. */
-   static void lancer() {
-      courbe = ESTOC;
+   /**
+    * Coup puissant parti : courbe de l'arme de LR reprise ({temps, tangage, lacet, roulis, champ} par clé), ou null pour
+    * le mouvement du geste écrit (ESTOC).
+    */
+   static void lancer(@Nullable float[][] courbeReprise) {
+      reprise = courbeReprise != null && courbeReprise.length > 1;
+      courbe = reprise ? courbeReprise : ESTOC;
       debutNs = System.nanoTime();
    }
 
    private static float[] valeur() {
       float[][] c = courbe;
       Minecraft mc = Minecraft.getInstance();
-      if (c == null || mc.player == null || !mc.options.getCameraType().isFirstPerson()) {
+      if (c == null || mc.player == null || !mc.options.getCameraType().isFirstPerson()
+            || (reprise && !mc.options.bobView().get())) {
          return null;
       }
       float t = (System.nanoTime() - debutNs) / 1.0E9F;
@@ -53,8 +70,10 @@ final class SecousseCouteau {
       }
       for (int i = 1; i < c.length; i++) {
          if (t <= c[i][0]) {
-            float f = (t - c[i - 1][0]) / (c[i][0] - c[i - 1][0]);
-            f = f * f * (3.0F - 2.0F * f);
+            float f = c[i][0] > c[i - 1][0] ? (t - c[i - 1][0]) / (c[i][0] - c[i - 1][0]) : 1.0F;
+            if (!reprise) {
+               f = f * f * (3.0F - 2.0F * f);
+            }
             float[] v = new float[4];
             for (int k = 0; k < 4; k++) {
                v[k] = c[i - 1][k + 1] + (c[i][k + 1] - c[i - 1][k + 1]) * f;
@@ -71,6 +90,19 @@ final class SecousseCouteau {
          e.setPitch(e.getPitch() + v[0]);
          e.setYaw(e.getYaw() + v[1]);
          e.setRoll(e.getRoll() + v[2]);
+      }
+   }
+
+   /** Coup repris d'une arme de LR : la main tourne avec la vue, comme TaCZ (applyItemInHandCameraAnimation). */
+   private static void main(BeforeRenderHandEvent e) {
+      if (!reprise) {
+         return;
+      }
+      float[] v = valeur();
+      if (v != null) {
+         // même rotation que TaCZ : MathUtil.toQuaternion(tangage, lacet, roulis) = Rz(roulis) Ry(lacet) Rx(tangage)
+         e.getPoseStack().mulPose(new Quaternionf().rotationZYX((float) Math.toRadians(v[2]), (float) Math.toRadians(v[1]),
+            (float) Math.toRadians(v[0])));
       }
    }
 

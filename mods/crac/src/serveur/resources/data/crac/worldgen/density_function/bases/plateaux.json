@@ -1,0 +1,38 @@
+{
+  "type": "minecraft:spline",
+  "spline": {
+    "coordinate": "crac:bases/bruit_plateaux",
+    "points": [
+      {
+        "location": -1.0,
+        "value": 67.5,
+        "derivative": 0.0
+      },
+      {
+        "location": -0.29,
+        "value": 67.5,
+        "derivative": 0.0
+      },
+      {
+        "location": -0.15,
+        "value": 71.5,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.17,
+        "value": 71.5,
+        "derivative": 0.0
+      },
+      {
+        "location": 0.31,
+        "value": 75.5,
+        "derivative": 0.0
+      },
+      {
+        "location": 1.0,
+        "value": 75.5,
+        "derivative": 0.0
+      }
+    ]
+  }
+}

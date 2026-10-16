@@ -37,7 +37,9 @@ import java.util.List;
 
 /**
  * Commandes op (niveau 2) : /territoire creer &lt;id&gt; &lt;rayon&gt; &lt;nom...&gt; (centre = ma position), supprimer &lt;id&gt;,
- * drapeau &lt;id&gt; (sur le bloc vise, sinon a mes pieds ; le centre de la zone suit le drapeau), liste, info [id],
+ * drapeau &lt;id&gt; (sur le bloc vise, sinon a mes pieds ; le centre de la zone suit le drapeau), deplacer &lt;id&gt; [rayon]
+ * (centre = ma position, etat garde : reposer une zone de l'ancienne carte), liste (signale les zones hors de la bordure
+ * du monde), info [id],
  * reset &lt;id&gt;, capturer &lt;id&gt; &lt;tag&gt;, ravitailler &lt;id&gt; (largage immediat), valeur &lt;id&gt; &lt;1-7&gt; (niveau de loot de la
  * ville : XP et points de territoire du clan qui la tient), recharger (zones.json + table de butin).
  * <p>Reponses : chaque commande repond, et directement au joueur ({@link #ok}) : un {@code sendSuccess} ne s'affiche
@@ -78,6 +80,8 @@ public final class TerritoireCommands {
                                 .then(Commands.argument("nom", StringArgumentType.greedyString()).executes(TerritoireCommands::creer)))))
                 .then(lit("supprimer").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(TerritoireCommands::supprimer)))
                 .then(lit("drapeau").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(TerritoireCommands::drapeau)))
+                .then(lit("deplacer").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(c -> deplacer(c, false))
+                        .then(Commands.argument("rayon", IntegerArgumentType.integer(5, 2000)).executes(c -> deplacer(c, true)))))
                 .then(lit("liste").executes(TerritoireCommands::liste))
                 .then(lit("info").executes(c -> info(c, false))
                         .then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(c -> info(c, true))))
@@ -93,6 +97,11 @@ public final class TerritoireCommands {
     // ------------------------------------------------------------------ reponses
     private static MutableComponent tr(String cle, Object... args) {
         return Component.translatable(cle, args);
+    }
+
+    /** Message traduit chez le joueur, en francais a la console (cles ajoutees en 2.6.0). */
+    private static MutableComponent trf(String cle, String francais, Object... args) {
+        return Component.translatableWithFallback(cle, francais, args);
     }
 
     /**
@@ -319,6 +328,32 @@ public final class TerritoireCommands {
         return null;
     }
 
+    // ------------------------------------------------------------------ deplacer
+    /**
+     * Reposer une zone (de l'ancienne carte) sur la nouvelle : son centre vient a ma position, son rayon change si
+     * donne ; proprietaire, protection et statistiques sont gardes. Un drapeau reste hors du nouveau cercle est retire.
+     */
+    private static int deplacer(CommandContext<CommandSourceStack> ctx, boolean avecRayon) throws CommandSyntaxException {
+        CommandSourceStack src = ctx.getSource();
+        Territoires t = moteur(ctx);
+        Zone z = t == null ? null : zone(ctx);
+        if (z == null) return 0;
+        ServerPlayer p = src.getPlayerOrException();
+        if (!memeMonde(src, t, p) || !aPied(src, p)) return 0;
+        int ax = z.x, az = z.z;
+        boolean retire = t.deplacer(z, p.getBlockX(), p.getBlockZ(), avecRayon ? IntegerArgumentType.getInteger(ctx, "rayon") : 0);
+        ok(src, trf("zone.cmd.deplacee", "Zone « %s » (%s) déplacée ici : centre %s, %s (avant : %s, %s), rayon %s blocs.",
+                z.nom, z.id, z.x, z.z, ax, az, z.rayon));
+        if (retire) {
+            avert(src, trf("zone.cmd.deplacee_drapeau", "Son drapeau était hors du nouveau cercle : il est retiré. Reposez-le avec %s.",
+                    lien("/territoire drapeau " + z.id)));
+        } else if (z.drapeau == null) {
+            ligne(src, tr("zone.cmd.creee_suite", lien("/territoire drapeau " + z.id)).withStyle(s -> s.withColor(ATTENUE)));
+        }
+        chevauchements(src, z);
+        return 1;
+    }
+
     // ------------------------------------------------------------------ valeur
     /** Valeur de la zone (niveau de loot de la ville, 1 a 7) : XP et points de territoire du clan qui la tient. */
     private static int valeur(CommandContext<CommandSourceStack> ctx) {
@@ -347,6 +382,11 @@ public final class TerritoireCommands {
         for (Zone z : Territoires.zones()) {
             EtatTerritoire e = t.etat(z);
             MutableComponent l = tr("zone.cmd.liste_ligne", z.id, z.nom, z.x, z.z, z.rayon, drapeauTexte(z), proprioTexte(e), etatTexte(t, z, e, now));
+            if (!t.monde().getWorldBorder().isWithinBounds(z.x + 0.5, z.z + 0.5)) {
+                // zone de l'ancienne carte : la carte du monde (touche M) ne la montre pas
+                l.append(trf("zone.cmd.liste_hors_bordure", " · HORS DE LA BORDURE (à reposer : /territoire deplacer %s)", z.id)
+                        .withStyle(s -> s.withColor(AVERT)));
+            }
             if (p != null && p.level() == t.monde()) {
                 boolean dedans = t.localisable(p) && t.zoneA(p.getX(), p.getY(), p.getZ()) == z;
                 l.append(tr("zone.cmd.liste_vous", Math.round(z.distance(p.getX(), p.getZ())), tr(dedans ? "zone.cmd.dedans" : "zone.cmd.dehors")));

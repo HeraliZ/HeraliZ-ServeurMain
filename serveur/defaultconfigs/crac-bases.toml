@@ -2,28 +2,48 @@
 [bases]
 	#Taille de la bordure du monde des bases (blocs de cote, centree sur 0 0). 0 = laisser celle du jeu.
 	#Range: 0 ~ 60000000
-	bordure = 6000
+	bordure = 2500
 	#Vrai : en survie, les pieces de construction et le Claim Block ne se posent QUE dans le monde des bases
 	#(carte DayZ, spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.
 	construction_ici_seulement = true
-	#Faux : aucun monstre n'apparait de lui-meme dans le monde des bases (les animaux restent).
-	monstres = false
+	#Faux : aucune creature dans le monde des bases (toute entite « Mob » : animaux, monstres, villageois,
+	#marchands, golems, PNJ et zombies des mods ; apparitions, oeufs, cages, mods) ; celles deja la sont retirees.
+	#Les autres entites restent (textes flottants, objets poses, vehicules, cadavres, porte-armures).
+	creatures = false
+	#Creatures gardees malgre tout dans le monde des bases (identifiants, ex. "minecraft:villager").
+	creatures_permises = []
+	#Faux : dans le monde des bases, aucun seau ne se vide (eau, lave, poissons), meme dans une base.
+	#Le staff en creatif n'est pas concerne.
+	seaux = false
 	#Rayon (blocs, autour de 0 0) ou l'on tire le point d'arrivee d'un joueur sans base ;
-	#ramene a l'interieur de la bordure (200 blocs de marge).
+	#ramene a l'interieur de la bordure (100 blocs de marge).
 	#Range: 64 ~ 1000000
-	rayon_depart = 2500
+	rayon_depart = 1150
 	#Distance minimale (blocs) entre ce point d'arrivee et le Claim Block d'une autre base.
 	#Range: 0 ~ 4096
 	ecart_bases = 120
 
-#/home (du spawn vers sa base) et /spawn (de sa base vers le spawn).
+#/home (du spawn vers un de ses homes), /zone base (du spawn vers un point au hasard du monde des bases) et /spawn (de sa base vers le spawn).
 [home]
 	#Secondes entre deux /home d'un meme joueur (gardees au redemarrage).
 	#Range: 0 ~ 86400
 	delai_s = 180
-	#Secondes sans bouger ni etre blesse avant le depart (/home et /spawn).
+	#Secondes sans bouger ni etre blesse avant le depart (/home, /zone base et /spawn).
 	#Range: 0 ~ 60
 	immobile_s = 3
+	#Secondes entre deux /zone base (alias /rtp) d'un meme joueur (gardees au redemarrage).
+	#Range: 0 ~ 86400
+	zone_delai_s = 300
+	#Homes (/sethome) d'un joueur sans grade de la boutique (le staff n'a pas de limite).
+	#Range: 0 ~ 100
+	homes_base = 1
+	#Homes en plus par rang de grade de la boutique (HeraliZ Grades : Rescape 1, Traqueur 2, Roi de la Zone 3).
+	#Range: 0 ~ 100
+	homes_par_grade = 1
+	#Blocs autour du point /spawn defini par le staff (/spawn definir) qui comptent comme « au spawn »
+	#pour /home et /zone base (le monde du spawn heralisz:spawn compte toujours en entier).
+	#Range: 0 ~ 4096
+	spawn_rayon = 48
 
 #Tutoriel apres la cinematique d'arrivee (joueur qui n'a jamais eu de base).
 [tuto]
