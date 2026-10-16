@@ -46,7 +46,7 @@
   "gui.heraliz_grades.duree.s": "%s s",
   "message.heraliz_grades.kit.connexion": "Log in first with /login.",
   "message.heraliz_grades.kit.indisponible": "Kits are unavailable right now.",
-  "message.heraliz_grades.kit.pas_le_tien": "This kit isn't your rank's kit.",
+  "message.heraliz_grades.kit.pas_le_tien": "This kit isn't unlocked for you.",
   "message.heraliz_grades.kit.attente": "Your next kit is ready in %1$s h %2$s min.",
   "message.heraliz_grades.kit.place": "Make some room: you need %s free slots in your inventory.",
   "message.heraliz_grades.kit.recu": "Kit %s claimed.",
@@ -60,5 +60,13 @@
   "message.heraliz_grades.lien.lie": "Your account is now linked to the Discord account %s.",
   "message.heraliz_grades.lien.expire": "Your code expired: use /lier again to get a new one.",
   "message.heraliz_grades.lien.delie": "Your account is no longer linked to Discord.",
-  "message.heraliz_grades.lien.pas_lie": "Your account wasn't linked to any Discord account."
+  "message.heraliz_grades.lien.pas_lie": "Your account wasn't linked to any Discord account.",
+  "chat.type.text": "%s §8»§r %s",
+  "grade.heraliz_grades.soutien": "Supporter",
+  "gui.heraliz_grades.kits.non_debloque": "Locked",
+  "gui.heraliz_grades.kits.debloque": "Unlocked",
+  "gui.heraliz_grades.kits.verrou": "Locked",
+  "gui.heraliz_grades.kits.desc_soutien": "For players wearing the HeraliZ tag on Discord.",
+  "gui.heraliz_grades.kits.reserve_soutien": "Wear the HZ tag on Discord and link your account (/lier)",
+  "message.heraliz_grades.soutien_discord": "Supporter comes from the HeraliZ tag worn on Discord (account linked with /lier): it can't be given by hand."
 }

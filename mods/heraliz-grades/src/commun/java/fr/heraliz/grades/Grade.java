@@ -18,9 +18,11 @@ public enum Grade {
    ROI_DE_LA_ZONE("roi_de_la_zone", "Roi de la Zone", 0xFFC23A, Type.BOUTIQUE, 3),
    TRAQUEUR("traqueur", "Traqueur", 0x8FD3FF, Type.BOUTIQUE, 2),
    RESCAPE("rescape", "Rescapé", 0xE39B5E, Type.BOUTIQUE, 1),
-   SURVIVANT("survivant", "Survivant", 0xA0A6B0, Type.BASE, 0);
+   SURVIVANT("survivant", "Survivant", 0xA0A6B0, Type.BASE, 0),
+   /** Pour ceux qui portent le tag HeraliZ sur Discord (compte lié) : donne seulement le kit Soutien, jamais de préfixe. */
+   SOUTIEN("soutien", "Soutien", 0xF5C842, Type.SOUTIEN, 0);
 
-   public enum Type { STAFF, BOUTIQUE, BASE }
+   public enum Type { STAFF, BOUTIQUE, BASE, SOUTIEN }
 
    public final String id;
    /** Nom français : texte de secours des messages du serveur et de la console. */
@@ -48,9 +50,9 @@ public enum Grade {
       return null;
    }
 
-   /** Vrai si ce grade s'enregistre (staff ou boutique) : Survivant ne se donne ni ne se retire. */
+   /** Vrai si ce grade s'enregistre (staff ou boutique) : Survivant et Soutien ne se donnent ni ne se retirent. */
    public boolean attribuable() {
-      return type != Type.BASE;
+      return type == Type.STAFF || type == Type.BOUTIQUE;
    }
 
    /** Nom du grade dans la langue du joueur, en couleur. */

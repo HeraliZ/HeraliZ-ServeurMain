@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Canal réseau de HeraliZ Grades (protocole 1) : menu /kit. Le serveur envoie l'état des kits (contenu, recharge) ; le
+ * Canal réseau de HeraliZ Grades (protocole 2) : menu /kit. Le serveur envoie l'état des kits (contenu, recharge) ; le
  * joueur ne peut que DEMANDER un kit par son identifiant : grade, recharge, place et contenu sont décidés et vérifiés par
  * le serveur. Un joueur avec un jar plus ancien (sans ce canal) est refusé à la connexion : il doit prendre le nouveau jar.
  */
@@ -22,7 +22,7 @@ public final class ReseauGrades {
     private ReseauGrades() {
     }
 
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -34,15 +34,18 @@ public final class ReseauGrades {
     /** Demande d'un kit reçue par le serveur : branchée par la partie serveur. */
     public static final Crochet<Demande> RECEPTION_SERVEUR = new Crochet<>();
 
-    /** Un kit tel qu'affiché : identifiant (= grade), contenu, recharge. */
-    public record VueKit(String id, List<ItemStack> objets, long rechargeMs) {
+    /**
+     * Un kit tel qu'affiché : identifiant (= grade), contenu, recharge ; debloque = ce joueur peut le prendre (kit de son
+     * grade, ou kit Soutien s'il porte le tag) ; resteMs = temps avant de pouvoir le reprendre.
+     */
+    public record VueKit(String id, List<ItemStack> objets, long rechargeMs, boolean debloque, long resteMs) {
     }
 
     /**
      * État des kits pour un joueur (serveur -> joueur) : ouvrir = ouvrir le menu (sinon mise à jour s'il est ouvert) ;
-     * kitJoueur = le seul kit qu'il peut prendre (celui de son grade) ; resteMs = temps avant de pouvoir le reprendre.
+     * kitJoueur = le kit de son grade.
      */
-    public record EtatKits(boolean ouvrir, List<VueKit> kits, String kitJoueur, long resteMs) {
+    public record EtatKits(boolean ouvrir, List<VueKit> kits, String kitJoueur) {
     }
 
     /** Demande d'un kit (joueur -> serveur). */
@@ -83,9 +86,10 @@ public final class ReseauGrades {
             b.writeVarInt(n);
             for (int j = 0; j < n; j++) b.writeItem(k.objets().get(j));
             b.writeVarLong(k.rechargeMs());
+            b.writeBoolean(k.debloque());
+            b.writeVarLong(Math.max(0, k.resteMs()));
         }
         b.writeUtf(m.kitJoueur(), MAX_ID);
-        b.writeVarLong(Math.max(0, m.resteMs()));
     }
 
     private static EtatKits lire(FriendlyByteBuf b) {
@@ -97,8 +101,8 @@ public final class ReseauGrades {
             int n = Math.min(b.readVarInt(), MAX_OBJETS);
             List<ItemStack> objets = new ArrayList<>(n);
             for (int j = 0; j < n; j++) objets.add(b.readItem());
-            kits.add(new VueKit(id, objets, b.readVarLong()));
+            kits.add(new VueKit(id, objets, b.readVarLong(), b.readBoolean(), b.readVarLong()));
         }
-        return new EtatKits(ouvrir, kits, b.readUtf(MAX_ID), b.readVarLong());
+        return new EtatKits(ouvrir, kits, b.readUtf(MAX_ID));
     }
 }

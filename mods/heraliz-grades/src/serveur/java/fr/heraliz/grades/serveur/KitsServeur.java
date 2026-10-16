@@ -42,7 +42,9 @@ import java.util.UUID;
  * <p>
  * Règles (pas de pay2win, pas de give) :
  * <ul>
- *    <li>chaque joueur ne peut prendre QU'UN kit par recharge : celui de son grade boutique, sinon Survivant ;</li>
+ *    <li>chaque joueur ne peut prendre QU'UN kit de grade par recharge : celui de son grade boutique, sinon Survivant ;</li>
+ *    <li>en plus, le kit Soutien (recharge à part) pour ceux qui portent le tag HeraliZ sur Discord (compte lié, vu par
+ *    HeraliBot) ;</li>
  *    <li>le joueur ne fait qu'envoyer un identifiant : grade, recharge, connexion AuthMe, place dans l'inventaire et
  *    contenu sont vérifiés ici ;</li>
  *    <li>la recharge est écrite AVANT de donner les objets (si l'écriture échoue, rien n'est donné) ;</li>
@@ -152,9 +154,19 @@ final class KitsServeur {
         return kits.get(Grade.SURVIVANT);
     }
 
+    /** Ordre d'affichage du menu. */
+    private static final Grade[] ORDRE = {Grade.SURVIVANT, Grade.RESCAPE, Grade.TRAQUEUR, Grade.ROI_DE_LA_ZONE, Grade.SOUTIEN};
+
+    /** Vrai si ce joueur peut prendre ce kit : celui de son grade, ou le kit Soutien s'il porte le tag. */
+    private static boolean debloque(UUID uuid, Kit k) {
+        if (k == null) return false;
+        if (k.grade() == Grade.SOUTIEN) return LienDiscord.estSoutien(uuid);
+        return k == kitDe(uuid);
+    }
+
     private static long reste(UUID uuid, Kit k, long maintenant) {
         if (k == null || recharges == null) return 0;
-        long d = recharges.dernier(uuid);
+        long d = recharges.dernier(Recharges.cle(uuid, k.grade() == Grade.SOUTIEN));
         return d <= 0 ? 0 : Math.max(0, d + k.rechargeMs() - maintenant);
     }
 
@@ -165,13 +177,15 @@ final class KitsServeur {
     /** Ouvre (ou met à jour) le menu des kits chez le joueur. */
     static void envoyerEtat(ServerPlayer p, boolean ouvrir) {
         List<ReseauGrades.VueKit> vues = new ArrayList<>();
-        for (Grade g : Grade.values()) {
+        long maintenant = System.currentTimeMillis();
+        for (Grade g : ORDRE) {
             Kit k = kits.get(g);
-            if (k != null) vues.add(new ReseauGrades.VueKit(g.id, k.objets(), k.rechargeMs()));
+            if (k == null) continue;
+            boolean ok = debloque(p.getUUID(), k);
+            vues.add(new ReseauGrades.VueKit(g.id, k.objets(), k.rechargeMs(), ok, ok ? reste(p.getUUID(), k, maintenant) : 0));
         }
         Kit sien = kitDe(p.getUUID());
-        ReseauGrades.EtatKits etat = new ReseauGrades.EtatKits(ouvrir, vues, sien == null ? "" : sien.grade().id,
-                reste(p.getUUID(), sien, System.currentTimeMillis()));
+        ReseauGrades.EtatKits etat = new ReseauGrades.EtatKits(ouvrir, vues, sien == null ? "" : sien.grade().id);
         ReseauGrades.CANAL.send(PacketDistributor.PLAYER.with(() -> p), etat);
     }
 
@@ -190,9 +204,10 @@ final class KitsServeur {
             p.sendSystemMessage(msg("indisponible", "Les kits sont indisponibles pour le moment."));
             return;
         }
-        Kit k = kitDe(p.getUUID());
-        if (k == null || !k.grade().id.equals(d.id())) {
-            p.sendSystemMessage(msg("pas_le_tien", "Ce kit n'est pas celui de ton grade."));
+        Grade voulu = Grade.parId(d.id());
+        Kit k = voulu == null ? null : kits.get(voulu);
+        if (!debloque(p.getUUID(), k)) {
+            p.sendSystemMessage(msg("pas_le_tien", "Ce kit n'est pas débloqué pour toi."));
             envoyerEtat(p, false);
             return;
         }
@@ -212,7 +227,7 @@ final class KitsServeur {
             return;
         }
         // la recharge d'abord : si elle ne peut pas être écrite, rien n'est donné
-        if (!recharges.noter(p.getUUID(), maintenant)) {
+        if (!recharges.noter(Recharges.cle(p.getUUID(), k.grade() == Grade.SOUTIEN), maintenant)) {
             p.sendSystemMessage(msg("indisponible", "Les kits sont indisponibles pour le moment."));
             return;
         }
@@ -235,7 +250,11 @@ final class KitsServeur {
                         p.sendSystemMessage(msg("connexion", "Connecte-toi d'abord avec /login."));
                         return 0;
                     }
-                    envoyerEtat(p, true);
+                    java.util.UUID uuid = p.getUUID();
+                    LienDiscord.verifierSoutien(uuid, () -> {
+                        ServerPlayer j = c.getSource().getServer().getPlayerList().getPlayer(uuid);
+                        if (j != null) envoyerEtat(j, true);
+                    });
                     return 1;
                 })
                 .then(Commands.literal("reset").requires(CommandesGrades::console)

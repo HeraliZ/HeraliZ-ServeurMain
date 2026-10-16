@@ -46,7 +46,7 @@
   "gui.heraliz_grades.duree.s": "%s с",
   "message.heraliz_grades.kit.connexion": "Сначала войдите с помощью /login.",
   "message.heraliz_grades.kit.indisponible": "Наборы сейчас недоступны.",
-  "message.heraliz_grades.kit.pas_le_tien": "Это не набор вашего ранга.",
+  "message.heraliz_grades.kit.pas_le_tien": "Этот набор для вас не открыт.",
   "message.heraliz_grades.kit.attente": "Следующий набор будет доступен через %1$s ч %2$s мин.",
   "message.heraliz_grades.kit.place": "Освободите место: нужно %s свободных ячеек в инвентаре.",
   "message.heraliz_grades.kit.recu": "Набор %s получен.",
@@ -60,5 +60,13 @@
   "message.heraliz_grades.lien.lie": "Ваш аккаунт теперь привязан к Discord %s.",
   "message.heraliz_grades.lien.expire": "Срок действия кода истёк: введите /lier, чтобы получить новый.",
   "message.heraliz_grades.lien.delie": "Ваш аккаунт больше не привязан к Discord.",
-  "message.heraliz_grades.lien.pas_lie": "Ваш аккаунт не был привязан ни к одному Discord."
+  "message.heraliz_grades.lien.pas_lie": "Ваш аккаунт не был привязан ни к одному Discord.",
+  "chat.type.text": "%s §8»§r %s",
+  "grade.heraliz_grades.soutien": "Поддержка",
+  "gui.heraliz_grades.kits.non_debloque": "Не открыт",
+  "gui.heraliz_grades.kits.debloque": "Открыт",
+  "gui.heraliz_grades.kits.verrou": "Закрыт",
+  "gui.heraliz_grades.kits.desc_soutien": "Для тех, кто носит тег HeraliZ в Discord.",
+  "gui.heraliz_grades.kits.reserve_soutien": "Носите тег HZ в Discord и привяжите аккаунт (/lier)",
+  "message.heraliz_grades.soutien_discord": "Поддержка даётся за тег HeraliZ в Discord (аккаунт привязан через /lier): её нельзя выдать вручную."
 }

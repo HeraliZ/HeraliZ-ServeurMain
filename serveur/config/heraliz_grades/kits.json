@@ -1,5 +1,5 @@
 {
-  "_note": "Kits HeraliZ (mod heraliz-grades, menu /kit). Un kit par grade boutique + celui de Survivant (tout le monde). Chaque joueur ne prend QU'UN kit par recharge : celui de son grade boutique, sinon Survivant. Pas de pay2win : pas d'arme en plus ni d'armure dans les kits payants. Relu tout seul par le serveur quand ce fichier change (fichier faux : les kits d'avant sont gardés, erreur dans la console). grade : survivant, rescape, traqueur, roi_de_la_zone ; recharge_heures : 1 à 720 ; objets : item (identifiant), nombre (1 à 64), nbt (facultatif).",
+  "_note": "Kits HeraliZ (mod heraliz-grades, menu /kit). Un kit par grade boutique + celui de Survivant (tout le monde). Chaque joueur ne prend QU'UN kit par recharge : celui de son grade boutique, sinon Survivant. Pas de pay2win : pas d'arme en plus ni d'armure dans les kits payants. Relu tout seul par le serveur quand ce fichier change (fichier faux : les kits d'avant sont gardés, erreur dans la console). grade : survivant, rescape, traqueur, roi_de_la_zone, soutien (kit en plus, recharge à part, pour ceux qui portent le tag HeraliZ sur Discord avec un compte lié) ; recharge_heures : 1 à 720 ; objets : item (identifiant), nombre (1 à 64), nbt (facultatif).",
   "kits": [
     {
       "grade": "survivant",
@@ -43,6 +43,14 @@
         {"item": "geckolib:item_water_bottle", "nombre": 1},
         {"item": "geckolib:flash_light", "nombre": 1},
         {"item": "geckolib:radio", "nombre": 1}
+      ]
+    },
+    {
+      "grade": "soutien",
+      "recharge_heures": 24,
+      "objets": [
+        {"item": "geckolib:item_canned_peaches", "nombre": 1},
+        {"item": "geckolib:item_water_bottle", "nombre": 1}
       ]
     }
   ]

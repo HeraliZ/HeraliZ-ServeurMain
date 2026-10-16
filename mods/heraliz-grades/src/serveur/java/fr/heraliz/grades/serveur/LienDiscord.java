@@ -62,6 +62,8 @@ final class LienDiscord {
     private static MinecraftServer serveur;
     private static final Map<UUID, Attente> CODES = new HashMap<>();
     private static final Map<UUID, Long> DERNIER = new HashMap<>();
+    /** Joueurs qui portent le tag HeraliZ sur Discord (rôle Soutien, compte lié), d'après HeraliBot. */
+    private static final Map<UUID, Boolean> SOUTIENS = new HashMap<>();
 
     private LienDiscord() {
     }
@@ -72,6 +74,7 @@ final class LienDiscord {
         cle = null;
         CODES.clear();
         DERNIER.clear();
+        SOUTIENS.clear();
         Path f = FMLPaths.CONFIGDIR.get().resolve("heraliz_grades").resolve("lien.json");
         try {
             if (Files.exists(f)) {
@@ -90,12 +93,31 @@ final class LienDiscord {
 
     static void arreter() {
         serveur = null;
+        SOUTIENS.clear();
         CODES.clear();
         DERNIER.clear();
     }
 
     static void oublier(UUID uuid) {
         CODES.remove(uuid);
+        SOUTIENS.remove(uuid);
+    }
+
+    /** Vrai si le joueur porte le tag HeraliZ sur Discord (dernière réponse de HeraliBot). */
+    static boolean estSoutien(UUID uuid) {
+        return Boolean.TRUE.equals(SOUTIENS.get(uuid));
+    }
+
+    /** Redemande à HeraliBot si le joueur porte le tag, puis lance la suite (sur le fil serveur, même si le bot ne répond pas). */
+    static void verifierSoutien(UUID uuid, Runnable suite) {
+        if (!actif()) {
+            suite.run();
+            return;
+        }
+        appeler("GET", "/mc/soutien/" + uuid, null, r -> {
+            if (r != null && r.has("soutien")) SOUTIENS.put(uuid, r.get("soutien").getAsBoolean());
+            suite.run();
+        });
     }
 
     static boolean actif() {
