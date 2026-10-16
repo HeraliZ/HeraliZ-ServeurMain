@@ -134,7 +134,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10). Moteur repris de LR Tactical (licence GPL gardée) |
-| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals |
@@ -150,7 +150,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, armoire à outils, raids) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, section 9) : `/home` (du spawn vers sa base, toutes les 3 min) et `/spawn` (de sa base vers le spawn), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur »), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (5 à 6 à la fois tirées au hasard, 30 à 60 min, 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
@@ -800,6 +800,22 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   chaque seconde, sauf `entites_permises`. Les explosions n'y cassent rien et ne touchent personne. `/suicide` y est
   refusé, sauf au staff. Réglage `[protection] actif` de `heraliz_spawn-server.toml` ; `/depart info` montre l'état.
   Rien testé en jeu.
+- **Monde des bases** (CRac 1.5.0, 16/10) : dimension `crac:bases`, déclarée par `mods/crac/src/serveur/resources/data/crac/`
+  (dimension, type, worldgen) ; Minecraft la crée seul au démarrage, **rien à déposer**. Reliefs, collines, vallées et
+  grandes plaines ; ni océan, ni grotte, ni minerai, ni structure, ni monstre ; 7 biomes propres (`crac:bases_*`) ;
+  bordure propre de 6 000 blocs. Fichiers **écrits** par `python mods/crac/outils/monde_bases.py` (`--apercu x.png` =
+  aperçu grossier), jamais à la main. En survie, on ne construit que là (`construction_ici_seulement`). Déplacements :
+  `/home` seulement depuis le spawn (vers sa base, sinon un point au hasard ; toutes les 3 min), `/spawn` seulement
+  depuis sa base, hors combat ; 3 s immobile ; carte DayZ par la borne de départ. Tutoriel après la cinématique (joueur
+  sans base) : titres, kit calculé sur les coûts réels de `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172
+  bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, ni blessé ni blessant) jusqu'à sa base
+  posée (Claim Block sur 2 fondations), 2 h de jeu au plus ou départ sur la carte ; puis base protégée 4 jours (ni raid
+  ni usure, texte flottant ; tombe au-delà de 2 membres). Carrières : `/carriere creer <nom> <rayon> <type>` (pierre,
+  minerais, fer, bois, sable, argile, terre ; listes `#crac:carriere/<type>`), `liste|retirer|tp|regenerer` ; casse
+  permise en survie, repousse en 10 min (jamais sous un joueur), rien ne s'y pose ; le staff bâtit la carrière
+  (WorldEdit) puis la déclare. Staff : `/tuto rejouer <joueur>`, `/protection voir|retirer|donner <joueur> [jours]`.
+  Réglages : `serveur/defaultconfigs/crac-bases.toml` (`[bases]`, `[home]`, `[tuto]`, `[protection]`, `[carrieres]`).
+  Données : `data/crac_bases.dat` du monde principal, `dimensions/crac/bases/data/crac_carrieres.dat`. Rien testé en jeu.
 - **Le fond de la carte du monde** (écran « Carte », touche M) : vue de dessus satellite et relief, en tuiles PNG de
   1024 px au plus avec `carte.json`, dans `mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte/` (jar
   joueur de HeraliZ Utils). Jamais dessiné à la main : refait par `python outils/carte_monde.py <copie du monde>
@@ -999,6 +1015,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (`crac:c4`) reste et abîme seule les constructions ; `c4ThrowableIds` de `crac-server.toml` et la source
   `heralisz_grenade:c4` du blindage des bases ne visent plus rien. Le moteur des explosifs collants et l'objet détonateur
   restent dans le code, sans source ;
+- bases (16/10, CRac 1.5.0, Clans 2.5.0) : plus de bunkers de clan, chaque joueur bâtit sa base CRac dans le monde des
+  bases ; ressources de base (bois, pierre) dans les carrières, ressources d'amélioration (fer, diamant) sur la carte
+  DayZ ; contour vert des protégés : variante « fin et net » codée, halo en réserve ; indication de base protégée :
+  texte flottant codé, panneau sur la porte en réserve (maquettes à valider) ;
 - casse des blocs (14/10, CRac 1.4.0-beta, `event/CasseBlocs` + `serveur/event/CasseBlocsServeur`) : en survie, un joueur ne
   casse AUCUN bloc et ne peut même pas commencer (pas de fissures ; avant, casser un bloc qui revenait permettait de se
   glisser dedans accroupi). Libres : créatif, spectateur, staff (permission 2). Exceptions laissées aux règles de CRac :
