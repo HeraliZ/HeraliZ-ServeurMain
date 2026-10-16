@@ -9,7 +9,8 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 /**
  * /suicide : le joueur meurt tout de suite (coincé, perdu…). Mort normale : son équipement reste sur son cadavre comme
  * pour toute autre mort ; pas de passage « à terre » (dégâts « kill », comme /kill). Refusé en créatif et en spectateur.
- * Les arènes des matchs bloquent déjà la commande (liste de heralisz_matchs).
+ * Les arènes des matchs bloquent déjà la commande (liste de heralisz_matchs). Refusé dans le monde du spawn protégé
+ * (ProtectionSpawn), sauf pour le staff.
  */
 public final class Suicide {
     private Suicide() {
@@ -25,6 +26,11 @@ public final class Suicide {
             if (p.isCreative() || p.isSpectator() || !p.isAlive()) {
                 ctx.getSource().sendFailure(Component.translatableWithFallback("heralisz_utils.suicide.refus",
                         "Impossible en créatif ou en spectateur."));
+                return 0;
+            }
+            if (fr.heralisz.utils.spawn.ProtectionSpawn.protege(p) && !p.hasPermissions(2)) {
+                ctx.getSource().sendFailure(Component.translatableWithFallback("heralisz_utils.suicide.spawn",
+                        "Impossible au spawn : tu y es à l'abri."));
                 return 0;
             }
             p.hurt(p.damageSources().genericKill(), Float.MAX_VALUE);
