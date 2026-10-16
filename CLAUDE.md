@@ -154,6 +154,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (5 à 6 à la fois tirées au hasard, 30 à 60 min, 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
+| heraliz-grades | heraliz_grades | heraliz_grades | **grades HeraliZ** (100 % maison) : Fondateur, Modérateur, Helper (staff), Roi de la Zone, Traqueur, Rescapé (boutique), Survivant (tout le monde) ; préfixe en couleur (Tab, chat, après le tag de clan). `grade donner|retirer <joueur> <grade>` et `kit reset <joueur>` : **console du serveur seulement** (ni joueur, ni op, ni bloc de commande, ni RCON) ; `/grade voir` (Helper+), `/grade liste` (Modérateur+), droits seulement après le `/login` AuthMe (lu par réflexion ; AuthMe injoignable = droits refusés). Menu `/kit` : un seul kit par recharge, celui du grade boutique sinon Survivant, pas d'arme ni d'armure en plus (pas de pay2win) ; contenu dans `serveur/config/heraliz_grades/kits.json`, relu tout seul. Données hors du monde : `heraliz_grades/grades.json`, `recharges.json`, `journal.log` (fichier illisible jamais écrasé). `/lier` (code de 6 caractères, 5 min, à taper sur Discord dans #lien) et `/delier` : lien avec HeraliBot, requêtes signées HMAC (secrets `HERALIBOT_LIEN_*`, section 8) ; grades donnés ou retirés à la console annoncés au staff sur Discord. Lien boutique : à venir |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
 
 Les modIds ne changent JAMAIS (mondes, configs, gunpacks et autres mods en dépendent). Même règle pour les noms de
@@ -532,7 +533,12 @@ Secrets à créer par le propriétaire (Settings → Secrets and variables → A
 staff : alertes et rapports), `SPARTAN_DISCORD_SANCTIONS` (webhook du salon public des sanctions : pseudo, durée,
 raison) ; la clé des jetons du launcher est lue sur la VM du site (section 6 bis). LiteBans : `LITEBANS_DB_USER` et
 `LITEBANS_DB_PASSWORD` (base MySQL du Ptero, onglet « Databases » du panel) ; sans eux, LiteBans passe en base locale
-(H2) et repart sans historique. Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
+(H2) et repart sans historique. Lien Discord ↔ Minecraft (heraliz-grades, `/lier`) : `HERALIBOT_LIEN_URL` (adresse
+du bot HeraliBot sur le Ptero, `http://<machine>:<port du bot>`) et `HERALIBOT_LIEN_CLE` (contenu de
+`data/cle-lien.txt`, créé par le bot à son premier démarrage), écrits dans `config/heraliz_grades/lien.json`. Ces deux
+secrets sont FACULTATIFS : sans eux, la mise en ligne les lit elle-même sur le Ptero avec `PTERO_API_KEY` (serveur
+nommé « HeraliBot » du même compte : sa clé et son port), clé masquée dans les journaux ; si c'est impossible, le lien
+est désactivé (avertissement). Pack du launcher : les secrets `SITE_*` du site (section 8 bis). Personne ne doit les
 écrire ailleurs.
 
 **Gunpacks du serveur** (`.github/workflows/gunpacks.yml`, « Run workflow ») : compare le dossier `tacz` du Ptero au
