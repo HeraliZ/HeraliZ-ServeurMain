@@ -96,6 +96,10 @@ final class CommandesGrades {
             s.sendFailure(msg("grade_inconnu", "Grade inconnu : %s. Grades possibles : fondateur, moderateur, helper, rescape, traqueur, roi_de_la_zone.", id));
             return 0;
         }
+        if (g.type == Grade.Type.SOUTIEN) {
+            s.sendFailure(msg("soutien_discord", "Soutien vient du tag HeraliZ porté sur Discord (compte lié avec /lier) : il ne se donne pas à la main."));
+            return 0;
+        }
         if (!g.attribuable()) {
             s.sendFailure(msg("survivant", "Survivant est le grade de tout le monde : il ne se donne pas et ne se retire pas."));
             return 0;
