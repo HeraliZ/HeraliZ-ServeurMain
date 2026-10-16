@@ -30,6 +30,12 @@ public final class DuelsConfig {
     public static final int ATTENTE_MAX_TICKS = 60 * 20;
     /** Duree de l'ecran des scores avant le retour au Coffre. */
     public static final int FIN_TICKS = 12 * 20;
+    /**
+     * Killcam des duels (16/10, Matchs 0.11.0 : retiree a la demande du proprietaire) : faux = aucune killcam, ni a la mort
+     * ni en fin de manche, et le serveur n'enregistre plus les pistes des joueurs (rien n'est garde ni envoye) ; le mort
+     * passe tout de suite en spectateur. Vrai = comme avant (Matchs 0.10.0).
+     */
+    public static final boolean KILLCAM = false;
 
     // ------------------------------------------------------------------ recherche et destruction
     /** Duree d'une manche (2 min). */
@@ -54,7 +60,7 @@ public final class DuelsConfig {
     public static final int RD_MANCHES_GAGNANTES = 4;
     /** Changement de cote apres ce nombre de manches jouees. */
     public static final int RD_CHANGEMENT_COTE = 3;
-    /** Pause entre deux manches (killcam de la derniere elimination, annonces). */
+    /** Pause entre deux manches (annonces ; killcam de la derniere elimination si {@link #KILLCAM}). */
     public static final int RD_INTERMANCHE_TICKS = 7 * 20;
     /** Distance de ramassage de l'ordinateur ferme au sol par un attaquant (blocs). */
     public static final double RD_RAMASSAGE = 1.6;
