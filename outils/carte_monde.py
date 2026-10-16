@@ -27,6 +27,15 @@ Options :
   --niveau-mer <y>      niveau de la mer (défaut 63)
   --processus <n>       processus de lecture (défaut : nombre de cœurs)
   --stats               liste les blocs du dessus les plus fréquents, leur classe et d'où vient leur couleur
+  --bordure x1 z1 x2 z2 recadre le fond sur ce rectangle (coins en blocs, dans n'importe quel ordre)
+  --bordure monde       recadre sur la bordure du monde lue dans son level.dat (DÉFAUT pour l'overworld quand le
+                        level.dat est là ; sinon rien n'est recadré)
+  --bordure aucune      pas de recadrage (tous les chunks lus)
+
+Recadrage sur la bordure : au-delà de la bordure, les cartes faites à la main ont souvent un terrain « étiré » (dernière
+ligne du relief répétée jusqu'au bout des régions : bandes de neige ou fond de mer en traits) ; personne ne peut y
+aller, il n'a rien à faire sur la carte. Le rectangle retenu est écrit dans carte.json (« bordure ») : l'écran de la
+carte n'affiche rien au-delà (ni fond, ni zones, ni lieux), en plus de la vraie bordure envoyée par le serveur.
 
 Les constructions des joueurs posées sur la carte apparaîtraient sur le fond : le refaire depuis la carte propre (copie
 finale, ou monde en construction avant l'ouverture). Les blocs de CRac sont ignorés d'office.
@@ -694,7 +703,9 @@ def rendu_satellite(surf_y, surf_id, fond_y, biome, present, couleurs, teintes, 
 
 
 def present_pixels(present, forme):
-    """Masque des colonnes lues (chunks présents), à la taille des tableaux par bloc."""
+    """Masque des colonnes lues (chunks présents), à la taille des tableaux par bloc (déjà par bloc : rendu tel quel)."""
+    if present.shape == tuple(forme[:2]):
+        return present
     return np.repeat(np.repeat(present, 16, axis=0), 16, axis=1)[:forme[0], :forme[1]]
 
 
@@ -776,6 +787,55 @@ def ecrire_tuiles(img, prefixe, sortie):
     return noms, total
 
 
+# ------------------------------------------------------------------ bordure du monde
+def bordure_level_dat(monde):
+    """(x1, z1, x2, z2) de la bordure du monde lue dans <monde>/level.dat (gzip, NBT), ou None (absent, illisible, ou
+    bordure par défaut de Minecraft, immense)."""
+    import gzip
+    f = Path(monde) / "level.dat"
+    if Path(monde).name == "region":
+        f = Path(monde).parent / "level.dat"
+    if not f.is_file():
+        return None
+    try:
+        d = gzip.decompress(f.read_bytes())
+    except Exception:
+        return None
+
+    def double(nom):
+        cle = bytes([6]) + struct.pack(">H", len(nom)) + nom.encode()
+        i = d.find(cle)
+        if i < 0:
+            return None
+        return struct.unpack_from(">d", d, i + len(cle))[0]
+
+    cx, cz, taille = double("BorderCenterX"), double("BorderCenterZ"), double("BorderSize")
+    if cx is None or cz is None or taille is None or not (16 <= taille <= 200000):
+        return None
+    r = taille / 2.0
+    return (int(math.floor(cx - r)), int(math.floor(cz - r)), int(math.ceil(cx + r)), int(math.ceil(cz + r)))
+
+
+def bordure_voulue(o):
+    """Rectangle de recadrage (x1, z1, x2, z2) ou None, d'après --bordure."""
+    b = o["bordure"]
+    if b == "aucune":
+        return None
+    if b in (None, "monde"):
+        if o["dimension"] not in ("minecraft:overworld", "overworld", ""):
+            if b == "monde":
+                print("[carte] --bordure monde : seulement pour l'overworld (level.dat), pas de recadrage")
+            return None
+        r = bordure_level_dat(o["monde"])
+        if r is None:
+            print("[carte] bordure du monde introuvable (level.dat absent, illisible ou bordure par défaut) : pas de recadrage")
+        else:
+            print("[carte] bordure du monde (level.dat) : x %d à %d, z %d à %d" % (r[0], r[2], r[1], r[3]))
+        return r
+    x1, z1, x2, z2 = b
+    return (min(x1, x2), min(z1, z2), max(x1, x2), max(z1, z2))
+
+
 # ------------------------------------------------------------------ programme
 def regions_de(monde, dimension):
     m = Path(monde)
@@ -801,7 +861,8 @@ def sources_defaut():
 
 def options(argv):
     o = {"sortie": None, "installer": False, "dimension": "minecraft:overworld", "pixels": 2048, "echelle": None,
-         "ignorer": "crac", "textures": None, "mer": 63, "processus": os.cpu_count() or 2, "stats": False}
+         "ignorer": "crac", "textures": None, "mer": 63, "processus": os.cpu_count() or 2, "stats": False,
+         "bordure": None}
     libres = []
     i = 0
     while i < len(argv):
@@ -824,6 +885,17 @@ def options(argv):
             o["processus"] = max(1, int(argv[i + 1])); i += 2
         elif a == "--stats":
             o["stats"] = True; i += 1
+        elif a == "--bordure":
+            if i + 1 < len(argv) and argv[i + 1] in ("monde", "aucune"):
+                o["bordure"] = argv[i + 1]; i += 2
+            else:
+                try:
+                    o["bordure"] = tuple(int(v) for v in argv[i + 1:i + 5])
+                except ValueError:
+                    raise SystemExit("--bordure : quatre nombres entiers (x1 z1 x2 z2), ou « monde », ou « aucune »")
+                if len(o["bordure"]) != 4:
+                    raise SystemExit("--bordure : quatre nombres entiers (x1 z1 x2 z2), ou « monde », ou « aucune »")
+                i += 5
         elif a == "--textures":
             o["textures"] = []
             i += 1
@@ -887,17 +959,26 @@ def main():
         raise SystemExit("[carte] aucun chunk lisible : rien à dessiner")
     noms = sorted(index_noms, key=index_noms.get)
     biomes = sorted(index_biomes, key=index_biomes.get)
-    # emprise : les chunks présents (bords de la région vide retirés), alignée sur l'échelle
+    # emprise : les chunks présents (bords de la région vide retirés), recadrée sur la bordure, alignée sur l'échelle.
+    # Tout est en blocs, relatif au coin des tableaux (rx0 * 512, rz0 * 512) : un pixel = k x k blocs, le même pas en X
+    # et en Z (jamais d'image étirée).
     zs, xs = np.nonzero(present)
-    cx0, cx1, cz0, cz1 = xs.min(), xs.max() + 1, zs.min(), zs.max() + 1
-    largeur, hauteur = (cx1 - cx0) * 16, (cz1 - cz0) * 16
+    bx, bz = int(xs.min()) * 16, int(zs.min()) * 16
+    ex, ez = (int(xs.max()) + 1) * 16, (int(zs.max()) + 1) * 16
+    bordure = bordure_voulue(o)
+    if bordure is not None:
+        ox_, oz_ = rx0 * 512, rz0 * 512
+        bx, bz = max(bx, bordure[0] - ox_), max(bz, bordure[1] - oz_)
+        ex, ez = min(ex, bordure[2] - ox_), min(ez, bordure[3] - oz_)
+        if ex <= bx or ez <= bz:
+            raise SystemExit("[carte] la bordure %s ne contient aucun chunk lu" % (bordure,))
+    largeur, hauteur = ex - bx, ez - bz
     k = o["echelle"] or 1
     if not o["echelle"]:
         while max(largeur, hauteur) / k > o["pixels"]:
             k *= 2
     # agrandit l'emprise d'un multiple de k (tableaux réduits sans reste)
     largeur, hauteur = -(-largeur // k) * k, -(-hauteur // k) * k
-    bx, bz = cx0 * 16, cz0 * 16
     pad_x = max(0, bx + largeur - W)
     pad_z = max(0, bz + hauteur - H)
 
@@ -908,8 +989,9 @@ def main():
 
     surf_y, fond_y, sol_y = coupe(surf_y, o["mer"]), coupe(fond_y, o["mer"]), coupe(sol_y, o["mer"])
     surf_id, biome = coupe(surf_id, 0), coupe(biome, 0)
-    pres = present[cz0:cz1, cx0:cx1]
-    pres = np.pad(pres, ((0, hauteur // 16 - pres.shape[0]), (0, largeur // 16 - pres.shape[1])), constant_values=False)
+    # chunks présents, bloc par bloc puis ramenés à 16 (le recadrage peut couper un chunk : on garde le masque par bloc)
+    pres_blocs = np.repeat(np.repeat(present, 16, axis=0), 16, axis=1)
+    pres_blocs = np.pad(pres_blocs, ((0, pad_z), (0, pad_x)), constant_values=False)[bz:bz + hauteur, bx:bx + largeur]
     x0, z0 = (rx0 * 512) + bx, (rz0 * 512) + bz
     print("[carte] emprise : x %d à %d, z %d à %d (%d x %d blocs), %d bloc(s) par pixel"
           % (x0, x0 + largeur, z0, z0 + hauteur, largeur, hauteur, k))
@@ -927,7 +1009,7 @@ def main():
         origines[nm] = src
     classes_px = classes[surf_id]
     if o["stats"]:
-        compte = np.bincount(surf_id[present_pixels(pres, surf_id.shape)].reshape(-1), minlength=len(noms))
+        compte = np.bincount(surf_id[pres_blocs].reshape(-1), minlength=len(noms))
         print("\n[carte] blocs du dessus les plus fréquents :")
         for i in np.argsort(-compte)[:80]:
             if compte[i] == 0:
@@ -935,8 +1017,8 @@ def main():
             print("  %8d  %-48s %-9s %-15s %s" % (compte[i], noms[i], NOMS_CLASSES[classes[i]], origines[noms[i]],
                                                   "#%02X%02X%02X" % tuple(int(v) for v in couleurs[i])))
         print()
-    sat = rendu_satellite(surf_y, surf_id, fond_y, biome, pres, couleurs, teintes, biomes, k, o["mer"])
-    rel = rendu_relief(surf_y, sol_y, classes_px, pres, k, o["mer"])
+    sat = rendu_satellite(surf_y, surf_id, fond_y, biome, pres_blocs, couleurs, teintes, biomes, k, o["mer"])
+    rel = rendu_relief(surf_y, sol_y, classes_px, pres_blocs, k, o["mer"])
     sortie.mkdir(parents=True, exist_ok=True)
     for f in list(sortie.glob("satellite_*.png")) + list(sortie.glob("relief_*.png")):
         f.unlink()
@@ -950,6 +1032,7 @@ def main():
         "blocsParPixel": int(k), "pixelsLargeur": int(w), "pixelsHauteur": int(h), "tuile": TUILE,
         "colonnes": int(-(-w // TUILE)), "lignes": int(-(-h // TUILE)),
         "vues": ["satellite", "relief"], "niveauMer": int(o["mer"]),
+        "bordure": [int(v) for v in bordure] if bordure is not None else None,
         "fait": time.strftime("%Y-%m-%d"), "chunks": int(lus),
     }
     (sortie / "carte.json").write_text(json.dumps(info, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
