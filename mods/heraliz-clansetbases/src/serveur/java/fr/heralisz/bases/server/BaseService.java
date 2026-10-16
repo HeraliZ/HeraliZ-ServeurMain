@@ -216,6 +216,11 @@ public final class BaseService {
     // =================================================================== creation
     /** Creation de la base du clan du joueur (BASE_GERER, cout pris dans la banque du clan). */
     public static boolean creer(ServerPlayer p) {
+        // 2.5.0 : plus de nouveaux bunkers de clan (bases CRac du monde des bases à la place)
+        if (!BasesConfig.CREATION.get()) {
+            erreur(p, "msg.heralisz_bases.creation_coupee");
+            return false;
+        }
         BasesStore s = store();
         Modele m = modele();
         ServerLevel level = Grille.niveau(p.server);

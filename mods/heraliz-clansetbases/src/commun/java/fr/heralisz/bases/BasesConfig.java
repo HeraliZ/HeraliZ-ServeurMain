@@ -15,6 +15,7 @@ public final class BasesConfig {
     public static final ForgeConfigSpec SPEC;
 
     // ---- bases (§2, §3)
+    public static final ForgeConfigSpec.BooleanValue CREATION;
     public static final ForgeConfigSpec.LongValue COUT_CREATION;
     public static final ForgeConfigSpec.ConfigValue<List<? extends Long>> COUTS_SALLES;
     public static final ForgeConfigSpec.IntValue DELAI_ENTREE_S;
@@ -33,6 +34,9 @@ public final class BasesConfig {
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.comment("Bases de clan HeraliZ (bunkers)").push("bases");
+        CREATION = b.comment("Creation de nouveaux bunkers de clan (joueurs et /base admin creer). Faux depuis la 2.5.0 :",
+                        "remplace par les bases CRac du monde des bases. Les bunkers deja crees restent (donnees, entree, API).")
+                .define("creation", false);
         COUT_CREATION = b.comment("Cout de creation d'une base (hérals pris dans la banque du clan)")
                 .defineInRange("cout_creation", 10_000L, 0L, 1_000_000_000L);
         COUTS_SALLES = b.comment("Cout de deblocage des salles fermees au depart, dans l'ordre du modele (salles 2 a 6) ;",
