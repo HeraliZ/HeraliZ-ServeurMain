@@ -124,6 +124,7 @@ public final class DepartServeur {
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::connexion);
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::reapparition);
         SpawnApi.brancher(CineReseauServeur::auSpawn);
+        ProtectionSpawn.init();                                     // aucun dégât, aucune créature, explosions sans effet
     }
 
     // ---------------------------------------------------------------------------------------------- outils
@@ -730,6 +731,9 @@ public final class DepartServeur {
             PointsDepart pd = PointsDepart.get(c);
             s.append("\n").append(t("info_points", "Points d'arrivée : %s, zones : %s.", String.valueOf(pd.points.size()), String.valueOf(pd.zones.size())));
         }
+        s.append("\n").append(ProtectionSpawn.active()
+                ? t("info_protection", "Protection du spawn : active (aucun dégât, aucune créature, explosions sans effet).")
+                : t("info_protection_coupee", "Protection du spawn : coupée (réglage [protection] actif)."));
         s.append("\n").append(t("info_regles", "Délai %s s, aucun joueur à moins de %s blocs, protection %s s à l'arrivée.",
                 String.valueOf(DepartConfig.lire(DepartConfig.DELAI)), String.valueOf(DepartConfig.lire(DepartConfig.DISTANCE_JOUEURS)),
                 String.valueOf(DepartConfig.lire(DepartConfig.PROTECTION))));
