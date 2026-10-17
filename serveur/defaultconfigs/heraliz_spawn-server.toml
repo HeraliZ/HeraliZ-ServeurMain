@@ -6,4 +6,5 @@
 # Protection du monde du spawn : aucun dégât, aucune créature, explosions sans effet.
 [protection]
 	actif = true
-	entites_permises = []
+	# Vigiles du casino (zone du casino et zone VIP) : sans eux, retirés dans la seconde.
+	entites_permises = ["heralizcasino:videur"]
