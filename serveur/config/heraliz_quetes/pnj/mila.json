@@ -1,0 +1,479 @@
+{
+  "id": "mila",
+  "nom": "Mila",
+  "role": {
+    "fr": "Contrebandière",
+    "en": "Smuggler",
+    "ru": "Контрабандистка"
+  },
+  "skin": "mila",
+  "bras_fins": true,
+  "ambiance": [
+    "Tout se vend. Même toi.",
+    "Pas de crédit. Jamais.",
+    "Tu cherches quelque chose ? Moi, je cherche toujours quelque chose.",
+    "Ce que tu ramènes de dehors vaut plus que tu ne crois."
+  ],
+  "presentation": "Tu as des poches ? Alors on va bien s'entendre. Moi c'est Mila. J'achète, je vends, je fais passer des choses d'un endroit à l'autre. Ne pose pas de questions, et tu gagneras plus que les autres.",
+  "accueil": {
+    "inconnu": "Tu as quelque chose à vendre ?",
+    "connu": "Mon livreur préféré. Enfin, presque.",
+    "ami": "Associé ! J'ai une affaire en or pour toi."
+  },
+  "suite": [
+    {
+      "id": "brocante",
+      "titre": "Brocante",
+      "difficulte": 1,
+      "demande": "Montre-moi ce que tu sais trouver. Trois objets de valeur, trois sortes différentes : montres, bagues, briquets, ce que tu veux.",
+      "fin": "Pas mal pour un débutant. Tiens, ta part.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 3 objets de valeur différents",
+          "tag": "heraliz_composants:vente",
+          "nombre": 3,
+          "differents": true
+        }
+      ],
+      "recompense": {
+        "herals": 300,
+        "reputation": 30
+      }
+    },
+    {
+      "id": "le_colis",
+      "titre": "Le colis",
+      "difficulte": 2,
+      "demande": "Un colis à déposer au port, dans la cachette. Tu as quarante-cinq minutes. Si tu meurs, quelqu'un d'autre le ramassera peut-être... et je ne veux pas savoir qui.",
+      "fin": "Livré à l'heure. On va faire de grandes choses ensemble.",
+      "donne": [
+        {
+          "objet": "colis",
+          "ref": "colis",
+          "nom": "Colis de Mila",
+          "desc": "Ne pas ouvrir. Vraiment."
+        }
+      ],
+      "etapes": [
+        {
+          "type": "deposer",
+          "libelle": "Déposer le colis dans la cachette du port",
+          "groupe": "cachette_port",
+          "objet_quete": "colis",
+          "delai": 2700
+        }
+      ],
+      "recompense": {
+        "herals": 300,
+        "reputation": 40
+      }
+    },
+    {
+      "id": "grand_bijou",
+      "titre": "Le grand bijou",
+      "difficulte": 3,
+      "demande": "J'ai un acheteur pour une pièce rare. Couronne, crâne de cristal, sceptre, calice... quelque chose de beau.",
+      "fin": "Magnifique. Mon acheteur va pleurer de joie. Et payer.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner un objet de grande valeur",
+          "objet": [
+            "heraliz_composants:diamant",
+            "heraliz_composants:couronne",
+            "heraliz_composants:idole_doree",
+            "heraliz_composants:oeuf_orne",
+            "heraliz_composants:crane_cristal",
+            "heraliz_composants:sceptre",
+            "heraliz_composants:calice"
+          ]
+        }
+      ],
+      "recompense": {
+        "herals": 800,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "faux_papiers",
+      "titre": "Faux papiers",
+      "difficulte": 2,
+      "demande": "Il me faut les tampons officiels de la mairie. Ne demande pas pourquoi.",
+      "fin": "Parfait. Avec ça, on peut tout faire passer.",
+      "etapes": [
+        {
+          "type": "ramasser",
+          "libelle": "Prendre les tampons de la mairie",
+          "groupe": "mairie_tampons",
+          "objet": "piece",
+          "ref": "tampons",
+          "nom": "Tampons officiels"
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter les tampons",
+          "objet_quete": "tampons"
+        }
+      ],
+      "recompense": {
+        "herals": 400,
+        "reputation": 50
+      }
+    },
+    {
+      "id": "livreur",
+      "titre": "Le livreur",
+      "difficulte": 3,
+      "demande": "Trois colis, trois adresses, dans l'ordre, en une seule sortie. Si tu meurs, tout recommence.",
+      "fin": "Trois sur trois. Tu es un pro.",
+      "sans_mourir": true,
+      "donne": [
+        {
+          "objet": "colis",
+          "ref": "colis_a",
+          "nom": "Colis A"
+        },
+        {
+          "objet": "colis",
+          "ref": "colis_b",
+          "nom": "Colis B"
+        },
+        {
+          "objet": "colis",
+          "ref": "colis_c",
+          "nom": "Colis C"
+        }
+      ],
+      "etapes": [
+        {
+          "type": "deposer",
+          "libelle": "Livrer le premier colis",
+          "groupe": "livraison",
+          "objet_quete": "colis_a"
+        },
+        {
+          "type": "deposer",
+          "libelle": "Livrer le deuxième colis",
+          "groupe": "livraison",
+          "objet_quete": "colis_b"
+        },
+        {
+          "type": "deposer",
+          "libelle": "Livrer le troisième colis",
+          "groupe": "livraison",
+          "objet_quete": "colis_c"
+        },
+        {
+          "type": "extraction",
+          "libelle": "Rentrer par une extraction"
+        }
+      ],
+      "recompense": {
+        "herals": 700,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "caisse_noire",
+      "titre": "La caisse noire",
+      "difficulte": 3,
+      "demande": "J'ai une caisse au port, fermée par un code. Mes trois contacts en ont chacun un morceau. Va les voir... enfin, leurs messages.",
+      "fin": "Ma caisse ! Tu ne veux pas savoir ce qu'il y a dedans.",
+      "etapes": [
+        {
+          "type": "indice",
+          "libelle": "Lire les messages des 3 contacts",
+          "groupe": "contact_mila",
+          "nombre": 3,
+          "titre": "Message de contact",
+          "texte": "« Mon morceau du code : voir les deux autres. Ils ont 5 et 9. Moi, 2. Dans l'ordre : 2, 5, 9. »"
+        },
+        {
+          "type": "code",
+          "libelle": "Ouvrir la caisse noire du port",
+          "groupe": "caisse_noire",
+          "code": "259",
+          "titre": "Caisse noire"
+        }
+      ],
+      "recompense": {
+        "herals": 700,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "diamant",
+      "titre": "Le diamant",
+      "difficulte": 3,
+      "demande": "Un diamant. Rien de plus, rien de moins.",
+      "fin": "Il brille. Comme mes yeux.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner un diamant",
+          "objet": "heraliz_composants:diamant"
+        }
+      ],
+      "recompense": {
+        "herals": 1000,
+        "reputation": 100
+      }
+    },
+    {
+      "id": "le_piege",
+      "titre": "Le piège",
+      "difficulte": 2,
+      "demande": "Un client m'a commandé un colis à livrer à la vieille ferme. Simple. Peut-être trop simple. Fais attention.",
+      "fin": "Une embuscade ? Je m'en doutais. Bien joué de t'en être sorti. Ce client ne commandera plus rien.",
+      "etapes": [
+        {
+          "type": "endroit",
+          "libelle": "Aller à la vieille ferme",
+          "groupe": "ferme_piege",
+          "rayon": 25
+        },
+        {
+          "type": "tuer",
+          "libelle": "Survivre à l'embuscade (10 zombies)",
+          "cible": "zombies",
+          "nombre": 10,
+          "groupe": "ferme_piege",
+          "rayon": 80,
+          "meme_point": true
+        }
+      ],
+      "recompense": {
+        "herals": 500,
+        "reputation": 60
+      }
+    },
+    {
+      "id": "collectionneuse",
+      "titre": "La collectionneuse",
+      "difficulte": 4,
+      "demande": "Je collectionne. Ramène-moi vingt objets de valeur, tous différents. En plusieurs fois.",
+      "fin": "Ma collection est complète. Associé, désormais : je t'achète tout au meilleur prix.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 20 objets de valeur différents",
+          "tag": "heraliz_composants:vente",
+          "nombre": 20,
+          "differents": true
+        }
+      ],
+      "recompense": {
+        "herals": 3000,
+        "reputation": 250,
+        "titre": {
+          "fr": "Contrebandier",
+          "en": "Smuggler",
+          "ru": "Контрабандист"
+        }
+      }
+    }
+  ],
+  "contrats": [
+    {
+      "id": "vente",
+      "poids": 4,
+      "variables": {
+        "o": {
+          "choix": [
+            {
+              "valeur": "heraliz_composants:montre_gousset",
+              "nom": {
+                "fr": "une montre à gousset",
+                "en": "a pocket watch",
+                "ru": "карманные часы"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:bague_argent",
+              "nom": {
+                "fr": "une bague en argent",
+                "en": "a silver ring",
+                "ru": "серебряное кольцо"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:briquet",
+              "nom": {
+                "fr": "un briquet en laiton",
+                "en": "a brass lighter",
+                "ru": "латунную зажигалку"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:chronographe",
+              "nom": {
+                "fr": "un chronographe",
+                "en": "a chronograph",
+                "ru": "хронограф"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:collier_perles",
+              "nom": {
+                "fr": "un collier de perles",
+                "en": "a pearl necklace",
+                "ru": "жемчужное ожерелье"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:appareil_photo",
+              "nom": {
+                "fr": "un appareil photo",
+                "en": "a camera",
+                "ru": "фотоаппарат"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:amulette",
+              "nom": {
+                "fr": "une amulette",
+                "en": "an amulet",
+                "ru": "амулет"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:statuette_jade",
+              "nom": {
+                "fr": "une statuette de jade",
+                "en": "a jade statuette",
+                "ru": "нефритовую статуэтку"
+              }
+            }
+          ]
+        }
+      },
+      "quete": {
+        "id": "vente",
+        "titre": {
+          "fr": "Le marché du jour : {o.nom}",
+          "en": "Today's market: {o.nom}",
+          "ru": "Рынок дня: {o.nom}"
+        },
+        "difficulte": 1,
+        "demande": {
+          "fr": "Aujourd'hui, j'achète {o.nom}. Bon prix.",
+          "en": "Today I'm buying {o.nom}. Good price."
+        },
+        "fin": "Affaire conclue.",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": {
+              "fr": "Donner {o.nom}",
+              "en": "Give {o.nom}",
+              "ru": "Отдать {o.nom}"
+            },
+            "objet": "{o}"
+          }
+        ],
+        "recompense": {
+          "herals": 220,
+          "reputation": 10
+        }
+      }
+    },
+    {
+      "id": "livraison",
+      "poids": 3,
+      "variables": {
+        "t": {
+          "min": 20,
+          "max": 40,
+          "pas": 5
+        }
+      },
+      "quete": {
+        "id": "livraison",
+        "titre": "Livraison express",
+        "difficulte": 2,
+        "demande": "Un colis à déposer. Tu as {t} minutes.",
+        "fin": "À l'heure. Bien.",
+        "donne": [
+          {
+            "objet": "colis",
+            "ref": "colis",
+            "nom": "Colis de Mila"
+          }
+        ],
+        "etapes": [
+          {
+            "type": "deposer",
+            "libelle": "Déposer le colis",
+            "groupe": "livraison",
+            "objet_quete": "colis",
+            "delai": "{t}*60"
+          }
+        ],
+        "recompense": {
+          "herals": "6000/{t}+100",
+          "reputation": 12
+        }
+      }
+    },
+    {
+      "id": "cachette",
+      "poids": 2,
+      "quete": {
+        "id": "cachette",
+        "titre": "La cachette",
+        "difficulte": 2,
+        "demande": "Une de mes cachettes. Vide-la et rapporte-moi ce qu'il y a dedans.",
+        "fin": "Merci. Rien vu, rien entendu.",
+        "etapes": [
+          {
+            "type": "ramasser",
+            "libelle": "Vider la cachette",
+            "groupe": "cachette",
+            "objet": "colis",
+            "ref": "butin",
+            "nom": "Paquet de Mila"
+          },
+          {
+            "type": "donner",
+            "libelle": "Rapporter le paquet",
+            "objet_quete": "butin"
+          }
+        ],
+        "recompense": {
+          "herals": 350,
+          "reputation": 12
+        }
+      }
+    },
+    {
+      "id": "lot",
+      "poids": 2,
+      "variables": {
+        "n": {
+          "min": 3,
+          "max": 5
+        }
+      },
+      "quete": {
+        "id": "lot",
+        "titre": "Un lot",
+        "difficulte": 1,
+        "demande": "{n} objets de valeur, n'importe lesquels.",
+        "fin": "Merci.",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": "Donner {n} objets de valeur",
+            "tag": "heraliz_composants:vente",
+            "nombre": "{n}"
+          }
+        ],
+        "recompense": {
+          "herals": "{n}*70",
+          "reputation": 10
+        }
+      }
+    }
+  ]
+}

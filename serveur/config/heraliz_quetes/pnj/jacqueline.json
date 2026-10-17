@@ -1,0 +1,620 @@
+{
+  "id": "jacqueline",
+  "nom": "Jacqueline",
+  "role": {
+    "fr": "Infirmière",
+    "en": "Nurse",
+    "ru": "Медсестра"
+  },
+  "skin": "jacqueline",
+  "bras_fins": true,
+  "ambiance": [
+    "Si tu saignes, assieds-toi. Si tu tousses, va-t'en.",
+    "Lave-toi les mains. Non. Avec du savon.",
+    "Un bandage, ça ne remplace pas la prudence.",
+    "J'ai plus de patients que de lits. Ne viens pas grossir la liste."
+  ],
+  "presentation": "Ne touche à rien. Je suis Jacqueline, l'infirmière, la seule qui reste. Si tu es blessé, je te soigne. Si tu es en forme, tu vas m'aider : il me manque tout, ici.",
+  "accueil": {
+    "inconnu": "Tu saignes ? Non ? Alors qu'est-ce que tu veux ?",
+    "connu": "Ah, toi. Tu as besoin de quelque chose, ou c'est moi qui ai besoin de toi ?",
+    "ami": "Mon aide préféré ! Tu tombes bien."
+  },
+  "suite": [
+    {
+      "id": "pharmacie",
+      "titre": "Ma pharmacie",
+      "difficulte": 1,
+      "demande": "Ma pharmacie est vide. Rapporte-moi cinq objets de soin, de cinq sortes différentes.",
+      "fin": "Cinq sortes ! Je vais pouvoir soigner autre chose que des égratignures.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 5 soins différents",
+          "objet": [
+            "heralisz_heal:vaseline",
+            "heralisz_heal:ibuprofen",
+            "heralisz_heal:condensed_milk",
+            "heralisz_heal:goldenstar",
+            "heralisz_heal:amoxycillin",
+            "heralisz_heal:ai2",
+            "heralisz_heal:attelle_bandage",
+            "heralisz_heal:carfak",
+            "heralisz_heal:blood_pack",
+            "heralisz_heal:surv12",
+            "heralisz_heal:cms"
+          ],
+          "nombre": 5,
+          "differents": true
+        }
+      ],
+      "recompense": {
+        "herals": 150,
+        "reputation": 30
+      }
+    },
+    {
+      "id": "hopital",
+      "titre": "L'hôpital",
+      "difficulte": 2,
+      "demande": "L'hôpital de la ville avait un carnet de commandes : tout ce qui restait en stock, et où. Il était dans l'armoire de la salle de soins.",
+      "fin": "Ce carnet vaut de l'or. Je sais enfin où chercher.",
+      "etapes": [
+        {
+          "type": "ramasser",
+          "libelle": "Trouver le carnet de commandes de l'hôpital",
+          "groupe": "hopital_armoire",
+          "objet": "carnet",
+          "ref": "commandes",
+          "nom": "Carnet de commandes de l'hôpital",
+          "desc": "Stocks, livraisons, et des noms de médecins."
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter le carnet à Jacqueline",
+          "objet_quete": "commandes"
+        }
+      ],
+      "recompense": {
+        "herals": 300,
+        "reputation": 40
+      }
+    },
+    {
+      "id": "sang_frais",
+      "titre": "Du sang frais",
+      "difficulte": 2,
+      "demande": "Pour étudier la maladie, il me faut du sang de zombie. Frais. Prends ce flacon, tue-en quinze au corps à corps, et rapporte-le-moi.",
+      "fin": "Parfait. Je mets ça au froid tout de suite.",
+      "donne": [
+        {
+          "objet": "echantillon",
+          "ref": "flacon",
+          "nom": "Flacon de Jacqueline",
+          "desc": "Un flacon stérile, à remplir de sang de zombie."
+        }
+      ],
+      "etapes": [
+        {
+          "type": "tuer",
+          "libelle": "Tuer 15 zombies au corps à corps",
+          "cible": "zombies",
+          "nombre": 15,
+          "arme": "melee"
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter le flacon à Jacqueline",
+          "objet_quete": "flacon"
+        }
+      ],
+      "recompense": {
+        "herals": 300,
+        "reputation": 40
+      }
+    },
+    {
+      "id": "analyses",
+      "titre": "Analyses",
+      "difficulte": 1,
+      "demande": "Laisse-moi le temps d'analyser ton flacon. Reviens dans une heure.",
+      "fin": "J'ai trouvé quelque chose. Ce n'est pas un virus ordinaire...",
+      "etapes": [
+        {
+          "type": "attendre",
+          "libelle": "Attendre les résultats (1 heure)",
+          "secondes": 3600
+        },
+        {
+          "type": "parler",
+          "libelle": "Revoir Jacqueline"
+        }
+      ],
+      "recompense": {
+        "herals": 200,
+        "reputation": 30
+      }
+    },
+    {
+      "id": "air_qui_tue",
+      "titre": "L'air qui tue",
+      "difficulte": 2,
+      "demande": "Il y a une zone de gaz sur la carte. Je veux savoir ce qu'il y a dedans. Mets un masque, reste une minute au point de mesure, et rapporte-moi le filtre.",
+      "fin": "Le filtre est noir... Ce gaz n'est pas naturel.",
+      "etapes": [
+        {
+          "type": "tenir",
+          "libelle": "Rester 60 s au point de mesure dans le gaz",
+          "groupe": "mesure_gaz",
+          "rayon": 6,
+          "secondes": 60
+        },
+        {
+          "type": "ramasser",
+          "libelle": "Prendre le filtre usé",
+          "groupe": "mesure_gaz",
+          "objet": "echantillon",
+          "ref": "filtre",
+          "nom": "Filtre usé",
+          "meme_point": true
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter le filtre à Jacqueline",
+          "objet_quete": "filtre"
+        }
+      ],
+      "recompense": {
+        "herals": 400,
+        "reputation": 60
+      }
+    },
+    {
+      "id": "le_froid",
+      "titre": "Le froid",
+      "difficulte": 2,
+      "demande": "Dans le grand nord, le froid tue plus vite que les balles. J'ai laissé un thermomètre là-haut. Tiens deux minutes sur place et ramène-le.",
+      "fin": "Moins quarante. Personne ne survit à ça sans équipement.",
+      "etapes": [
+        {
+          "type": "tenir",
+          "libelle": "Tenir 2 minutes au point de relevé",
+          "groupe": "releve_froid",
+          "rayon": 6,
+          "secondes": 120
+        },
+        {
+          "type": "ramasser",
+          "libelle": "Prendre le thermomètre",
+          "groupe": "releve_froid",
+          "objet": "piece",
+          "ref": "thermometre",
+          "nom": "Thermomètre de Jacqueline",
+          "meme_point": true
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter le thermomètre",
+          "objet_quete": "thermometre"
+        }
+      ],
+      "recompense": {
+        "herals": 400,
+        "reputation": 60
+      }
+    },
+    {
+      "id": "rayons",
+      "titre": "Rayons",
+      "difficulte": 3,
+      "demande": "Il y a des radiations près du silo. Il me faut le dosimètre qui est resté là-bas. Avec une combinaison, sinon tu ne reviens pas.",
+      "fin": "Ce chiffre... Il ne faut plus jamais envoyer personne là-bas sans combinaison.",
+      "etapes": [
+        {
+          "type": "tenir",
+          "libelle": "Tenir 60 s au point de mesure",
+          "groupe": "mesure_radiation",
+          "rayon": 6,
+          "secondes": 60
+        },
+        {
+          "type": "ramasser",
+          "libelle": "Prendre le dosimètre",
+          "groupe": "mesure_radiation",
+          "objet": "piece",
+          "ref": "dosimetre",
+          "nom": "Dosimètre",
+          "meme_point": true
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter le dosimètre",
+          "objet_quete": "dosimetre"
+        }
+      ],
+      "recompense": {
+        "herals": 600,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "medecin_disparu",
+      "titre": "Le médecin disparu",
+      "difficulte": 3,
+      "demande": "Un médecin vivait en ville. Il a laissé des notes un peu partout avant de disparaître. Trouve-les : la dernière doit dire où est son dossier.",
+      "fin": "Son dossier... Il savait. Il savait depuis le début d'où venait la maladie.",
+      "etapes": [
+        {
+          "type": "indice",
+          "libelle": "Lire les 3 notes du médecin",
+          "groupe": "medecin_notes",
+          "nombre": 3,
+          "titre": "Note du docteur",
+          "texte": "« ...ne pas oublier : le code du cabinet est la date de naissance de ma fille, 1-2-0-8... »"
+        },
+        {
+          "type": "code",
+          "libelle": "Ouvrir le cabinet du médecin",
+          "groupe": "medecin_cabinet",
+          "code": "1208",
+          "titre": "Cabinet du docteur"
+        },
+        {
+          "type": "ramasser",
+          "libelle": "Prendre son dossier",
+          "groupe": "medecin_cabinet",
+          "objet": "document",
+          "ref": "dossier",
+          "nom": "Dossier du docteur",
+          "meme_point": true
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter le dossier à Jacqueline",
+          "objet_quete": "dossier"
+        }
+      ],
+      "recompense": {
+        "herals": 700,
+        "reputation": 100
+      }
+    },
+    {
+      "id": "rupture",
+      "titre": "Rupture de stock",
+      "difficulte": 3,
+      "demande": "Il me faut des soins sérieux. Trois soins Épiques.",
+      "fin": "Avec ça, je peux sauver quelqu'un qui est vraiment mal.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 3 soins Épiques",
+          "objet": [
+            "heralisz_heal:vaseline",
+            "heralisz_heal:ibuprofen",
+            "heralisz_heal:condensed_milk",
+            "heralisz_heal:goldenstar",
+            "heralisz_heal:amoxycillin",
+            "heralisz_heal:ai2",
+            "heralisz_heal:attelle_bandage",
+            "heralisz_heal:carfak",
+            "heralisz_heal:blood_pack",
+            "heralisz_heal:surv12",
+            "heralisz_heal:cms"
+          ],
+          "rarete_min": "epique",
+          "nombre": 3
+        }
+      ],
+      "recompense": {
+        "herals": 800,
+        "reputation": 100
+      }
+    },
+    {
+      "id": "postes_secours",
+      "titre": "Postes de secours",
+      "difficulte": 3,
+      "demande": "J'ai préparé trois trousses de secours. Pose-les dans trois postes de secours, en ville. Ça sauvera des inconnus.",
+      "fin": "Trois trousses posées. Quelque part, quelqu'un va te devoir la vie.",
+      "donne": [
+        {
+          "objet": "colis",
+          "ref": "trousse",
+          "nom": "Trousse de secours",
+          "desc": "À poser dans un poste de secours.",
+          "nombre": 3
+        }
+      ],
+      "etapes": [
+        {
+          "type": "deposer",
+          "libelle": "Poser les 3 trousses dans 3 postes de secours",
+          "groupe": "poste_secours",
+          "nombre": 3,
+          "objet_quete": "trousse"
+        }
+      ],
+      "recompense": {
+        "herals": 600,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "la_mere",
+      "titre": "La Mère",
+      "difficulte": 4,
+      "demande": "La Mère des Ruines... Son venin pourrait tout changer. Il me le faut. Tu ne pourras pas y aller seul.",
+      "fin": "Du venin. De vrai venin. Je ne sais pas comment te remercier.",
+      "etapes": [
+        {
+          "type": "tuer",
+          "libelle": "Participer à la mort de la Mère des Ruines",
+          "cible": "heralisz_mere:ruin_mother",
+          "participation": 64
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner un venin des Ruines",
+          "objet": "heralisz_mere:ruin_venom"
+        }
+      ],
+      "recompense": {
+        "herals": 1500,
+        "reputation": 150
+      }
+    },
+    {
+      "id": "le_porteur",
+      "titre": "Le porteur",
+      "difficulte": 4,
+      "demande": "Le Porteur de Peste. Le premier malade, peut-être. Rapporte-moi ses spores. Dans un récipient fermé, je t'en supplie.",
+      "fin": "Les spores... On approche du but.",
+      "etapes": [
+        {
+          "type": "tuer",
+          "libelle": "Participer à la mort du Porteur de Peste",
+          "cible": "heralisz_plague:plague_bearer",
+          "participation": 64
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner des spores de peste",
+          "objet": "heralisz_plague:plague_spores"
+        }
+      ],
+      "recompense": {
+        "herals": 1500,
+        "reputation": 150
+      }
+    },
+    {
+      "id": "sous_pression",
+      "titre": "Sous pression",
+      "difficulte": 3,
+      "demande": "Je veux savoir combien de temps un blessé tient dehors. Reste vingt minutes sur la carte avec moins de quatre cœurs. Sans mourir.",
+      "fin": "Vingt minutes, blessé. Tu es plus solide que tu en as l'air.",
+      "etapes": [
+        {
+          "type": "survivre",
+          "libelle": "20 min sur la carte avec moins de 4 cœurs",
+          "secondes": 1200,
+          "vie_max": 8
+        }
+      ],
+      "recompense": {
+        "herals": 600,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "infirmier",
+      "titre": "Infirmier de la Zone",
+      "difficulte": 4,
+      "demande": "Dernière chose : une heure dehors, sans mourir, et tu rentres. Un vrai infirmier doit d'abord savoir rester en vie.",
+      "fin": "Tu es des nôtres. L'infirmerie est aussi ta maison.",
+      "sans_mourir": true,
+      "etapes": [
+        {
+          "type": "survivre",
+          "libelle": "Survivre 1 heure sur la carte",
+          "secondes": 3600
+        },
+        {
+          "type": "extraction",
+          "libelle": "Rentrer par une extraction"
+        }
+      ],
+      "recompense": {
+        "herals": 2000,
+        "reputation": 200,
+        "titre": {
+          "fr": "Infirmier de la Zone",
+          "en": "Zone medic",
+          "ru": "Медик Зоны"
+        }
+      }
+    }
+  ],
+  "contrats": [
+    {
+      "id": "soins",
+      "poids": 3,
+      "variables": {
+        "n": {
+          "min": 2,
+          "max": 4
+        }
+      },
+      "quete": {
+        "id": "soins",
+        "titre": "Des soins",
+        "difficulte": 1,
+        "demande": "Rapporte-moi {n} objets de soin.",
+        "fin": "Merci.",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": "Donner {n} objets de soin",
+            "objet": [
+              "heralisz_heal:vaseline",
+              "heralisz_heal:ibuprofen",
+              "heralisz_heal:condensed_milk",
+              "heralisz_heal:goldenstar",
+              "heralisz_heal:amoxycillin",
+              "heralisz_heal:ai2",
+              "heralisz_heal:attelle_bandage",
+              "heralisz_heal:carfak",
+              "heralisz_heal:blood_pack",
+              "heralisz_heal:surv12",
+              "heralisz_heal:cms"
+            ],
+            "nombre": "{n}"
+          }
+        ],
+        "recompense": {
+          "herals": "{n}*60",
+          "reputation": 10
+        }
+      }
+    },
+    {
+      "id": "soin_rare",
+      "poids": 1,
+      "quete": {
+        "id": "soin_rare",
+        "titre": "Un soin rare",
+        "difficulte": 2,
+        "demande": "Il me faut un soin Rare ou mieux. Un patient ne passera pas la nuit sans ça.",
+        "fin": "Juste à temps.",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": "Donner un soin Rare ou mieux",
+            "objet": [
+              "heralisz_heal:vaseline",
+              "heralisz_heal:ibuprofen",
+              "heralisz_heal:condensed_milk",
+              "heralisz_heal:goldenstar",
+              "heralisz_heal:amoxycillin",
+              "heralisz_heal:ai2",
+              "heralisz_heal:attelle_bandage",
+              "heralisz_heal:carfak",
+              "heralisz_heal:blood_pack",
+              "heralisz_heal:surv12",
+              "heralisz_heal:cms"
+            ],
+            "rarete_min": "rare"
+          }
+        ],
+        "recompense": {
+          "herals": 300,
+          "reputation": 15
+        }
+      }
+    },
+    {
+      "id": "trousse",
+      "poids": 2,
+      "quete": {
+        "id": "trousse",
+        "titre": "La trousse oubliée",
+        "difficulte": 2,
+        "demande": "Une trousse de secours a été oubliée dehors. Ramène-la.",
+        "fin": "Merci, elle va servir.",
+        "etapes": [
+          {
+            "type": "ramasser",
+            "libelle": "Trouver la trousse",
+            "groupe": "trousse",
+            "objet": "colis",
+            "ref": "trousse",
+            "nom": "Trousse oubliée"
+          },
+          {
+            "type": "donner",
+            "libelle": "Rapporter la trousse",
+            "objet_quete": "trousse"
+          }
+        ],
+        "recompense": {
+          "herals": 300,
+          "reputation": 15
+        }
+      }
+    },
+    {
+      "id": "sang",
+      "poids": 2,
+      "variables": {
+        "n": {
+          "min": 10,
+          "max": 15
+        }
+      },
+      "quete": {
+        "id": "sang",
+        "titre": "Prélèvement",
+        "difficulte": 2,
+        "demande": "Encore du sang frais : {n} zombies au corps à corps, et rapporte le flacon.",
+        "fin": "Parfait.",
+        "donne": [
+          {
+            "objet": "echantillon",
+            "ref": "flacon",
+            "nom": "Flacon de Jacqueline"
+          }
+        ],
+        "etapes": [
+          {
+            "type": "tuer",
+            "libelle": "Tuer {n} zombies au corps à corps",
+            "cible": "zombies",
+            "nombre": "{n}",
+            "arme": "melee"
+          },
+          {
+            "type": "donner",
+            "libelle": "Rapporter le flacon",
+            "objet_quete": "flacon"
+          }
+        ],
+        "recompense": {
+          "herals": "{n}*20",
+          "reputation": 12
+        }
+      }
+    },
+    {
+      "id": "gaz",
+      "poids": 1,
+      "variables": {
+        "s": {
+          "min": 30,
+          "max": 90,
+          "pas": 30
+        }
+      },
+      "quete": {
+        "id": "gaz",
+        "titre": "Mesures dans le gaz",
+        "difficulte": 2,
+        "demande": "Retourne au point de mesure dans le gaz : {s} secondes, avec un masque.",
+        "fin": "Les mesures changent... Merci.",
+        "etapes": [
+          {
+            "type": "tenir",
+            "libelle": "Tenir {s} s au point de mesure",
+            "groupe": "mesure_gaz",
+            "rayon": 6,
+            "secondes": "{s}"
+          }
+        ],
+        "recompense": {
+          "herals": "{s}*5",
+          "reputation": 12
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,276 @@
+{
+  "id": "doyen",
+  "nom": "Le Doyen",
+  "role": {
+    "fr": "Chef du refuge",
+    "en": "Head of the shelter",
+    "ru": "Глава убежища"
+  },
+  "skin": "doyen",
+  "ambiance": [
+    "Doucement, petit. T'es au terminus.",
+    "Personne ne revient sans s'extraire. Retiens ça.",
+    "Trente ans que je vois passer des trains. Celui-là, je ne l'oublierai pas.",
+    "Ici, on partage. Dehors, on survit."
+  ],
+  "presentation": "Doucement. Tu as pris un sacré coup. Tu es au terminus, petit, le dernier arrêt de la ligne. Le train n'ira pas plus loin. Moi, on m'appelle le Doyen : j'étais chef de gare avant tout ça. Ici, c'est le refuge. On va t'apprendre à tenir debout.",
+  "accueil": {
+    "inconnu": "Alors, petit, tu tiens le coup ?",
+    "connu": "Te revoilà. Les autres parlent de toi, tu sais.",
+    "ami": "Ah ! Assieds-toi deux minutes. Tu l'as bien mérité."
+  },
+  "suite": [
+    {
+      "id": "fais_le_tour",
+      "titre": "Fais le tour",
+      "difficulte": 1,
+      "demande": "Avant de sortir, va dire bonjour aux autres. Jack au camp d'entraînement, Jacqueline à l'infirmerie, Ferraille à l'atelier et Nadia au poste radio. Ils auront tous besoin de toi.",
+      "fin": "Bien. Maintenant, ils te connaissent.",
+      "resume": "Aller saluer Jack, Jacqueline, Ferraille et Nadia.",
+      "etapes": [
+        {
+          "type": "parler",
+          "libelle": "Parler à Jack",
+          "pnj": "jack"
+        },
+        {
+          "type": "parler",
+          "libelle": "Parler à Jacqueline",
+          "pnj": "jacqueline"
+        },
+        {
+          "type": "parler",
+          "libelle": "Parler à Ferraille",
+          "pnj": "ferraille"
+        },
+        {
+          "type": "parler",
+          "libelle": "Parler à Nadia",
+          "pnj": "nadia"
+        }
+      ],
+      "recompense": {
+        "herals": 50,
+        "reputation": 20
+      }
+    },
+    {
+      "id": "poches_des_morts",
+      "titre": "Les poches des morts",
+      "difficulte": 1,
+      "demande": "Dehors, tout ce qui traîne est à toi. Va fouiller cinq conteneurs, n'importe lesquels, et rentre par une extraction. La borne de départ t'emmène sur la carte.",
+      "fin": "Tu vois ? Sortir, fouiller, rentrer. C'est toute notre vie, maintenant.",
+      "etapes": [
+        {
+          "type": "fouiller",
+          "libelle": "Fouiller 5 conteneurs",
+          "nombre": 5
+        },
+        {
+          "type": "extraction",
+          "libelle": "Rentrer par une extraction"
+        }
+      ],
+      "recompense": {
+        "herals": 200,
+        "reputation": 30
+      }
+    },
+    {
+      "id": "une_sortie_propre",
+      "titre": "Une sortie propre",
+      "difficulte": 2,
+      "demande": "Cette fois, sans mourir : dix conteneurs fouillés, et tu rentres. Si tu meurs, tu recommences.",
+      "fin": "Propre. Tu apprends vite.",
+      "sans_mourir": true,
+      "etapes": [
+        {
+          "type": "fouiller",
+          "libelle": "Fouiller 10 conteneurs",
+          "nombre": 10
+        },
+        {
+          "type": "extraction",
+          "libelle": "Rentrer par une extraction"
+        }
+      ],
+      "recompense": {
+        "herals": 300,
+        "reputation": 40
+      }
+    },
+    {
+      "id": "les_autres",
+      "titre": "Les autres",
+      "difficulte": 1,
+      "demande": "Il y a aussi Mila au marché, Lucky au casino et le Commandant Varga au poste de commandement. Va les voir. Méfie-toi un peu de Mila.",
+      "fin": "Tu connais tout le monde, maintenant. Ou presque.",
+      "etapes": [
+        {
+          "type": "parler",
+          "libelle": "Parler à Mila",
+          "pnj": "mila"
+        },
+        {
+          "type": "parler",
+          "libelle": "Parler à Lucky",
+          "pnj": "lucky"
+        },
+        {
+          "type": "parler",
+          "libelle": "Parler au Commandant Varga",
+          "pnj": "varga"
+        }
+      ],
+      "recompense": {
+        "herals": 50,
+        "reputation": 20
+      }
+    },
+    {
+      "id": "survivre",
+      "titre": "Tenir dehors",
+      "difficulte": 2,
+      "demande": "Une heure dehors, c'est long. Commence par vingt minutes sur la carte sans mourir.",
+      "fin": "Vingt minutes. La prochaine fois, ce sera une heure.",
+      "etapes": [
+        {
+          "type": "survivre",
+          "libelle": "Survivre 20 minutes sur la carte",
+          "secondes": 1200
+        }
+      ],
+      "recompense": {
+        "herals": 300,
+        "reputation": 40
+      }
+    },
+    {
+      "id": "un_vrai_survivant",
+      "titre": "Un vrai survivant",
+      "difficulte": 3,
+      "demande": "Reviens me voir quand tu auras aidé tout le monde. Je veux voir ta réputation grimper chez Jack, Jacqueline et Ferraille.",
+      "fin": "Les autres ne jurent que par toi. Tu es des nôtres, maintenant.",
+      "reputation_min": 100,
+      "etapes": [
+        {
+          "type": "survivre",
+          "libelle": "Survivre 1 heure sur la carte",
+          "secondes": 3600
+        },
+        {
+          "type": "extraction",
+          "libelle": "Rentrer par une extraction"
+        }
+      ],
+      "recompense": {
+        "herals": 1000,
+        "reputation": 100,
+        "titre": {
+          "fr": "Survivant du terminus",
+          "en": "Terminus survivor",
+          "ru": "Выживший с конечной"
+        }
+      }
+    }
+  ],
+  "contrats": [
+    {
+      "id": "refuge_bois",
+      "poids": 2,
+      "variables": {
+        "n": {
+          "min": 8,
+          "max": 16,
+          "pas": 4
+        }
+      },
+      "quete": {
+        "id": "refuge_bois",
+        "titre": "Du bois pour le refuge",
+        "difficulte": 1,
+        "demande": "Le refuge a besoin de planches. Rapporte-m'en {n}.",
+        "fin": "Merci, petit.",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": "Donner {n} planches",
+            "objet": "heraliz_composants:planche",
+            "nombre": "{n}"
+          }
+        ],
+        "recompense": {
+          "herals": "{n}*12",
+          "reputation": 8
+        }
+      }
+    },
+    {
+      "id": "refuge_soins",
+      "poids": 2,
+      "variables": {
+        "n": {
+          "min": 2,
+          "max": 4
+        }
+      },
+      "quete": {
+        "id": "refuge_soins",
+        "titre": "Pour les blessés",
+        "difficulte": 1,
+        "demande": "On a des blessés au refuge. {n} objets de soin, n'importe lesquels.",
+        "fin": "Ça va sauver du monde.",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": "Donner {n} objets de soin",
+            "objet": [
+              "heralisz_heal:vaseline",
+              "heralisz_heal:ibuprofen",
+              "heralisz_heal:condensed_milk",
+              "heralisz_heal:goldenstar",
+              "heralisz_heal:amoxycillin",
+              "heralisz_heal:ai2",
+              "heralisz_heal:attelle_bandage",
+              "heralisz_heal:carfak",
+              "heralisz_heal:blood_pack",
+              "heralisz_heal:surv12",
+              "heralisz_heal:cms"
+            ],
+            "nombre": "{n}"
+          }
+        ],
+        "recompense": {
+          "herals": "{n}*60",
+          "reputation": 10
+        }
+      }
+    },
+    {
+      "id": "refuge_sortie",
+      "poids": 1,
+      "quete": {
+        "id": "refuge_sortie",
+        "titre": "Nouvelles du dehors",
+        "difficulte": 1,
+        "demande": "Sors, fouille ce que tu trouves et reviens me raconter.",
+        "fin": "Merci des nouvelles.",
+        "etapes": [
+          {
+            "type": "fouiller",
+            "libelle": "Fouiller 8 conteneurs",
+            "nombre": 8
+          },
+          {
+            "type": "extraction",
+            "libelle": "Rentrer par une extraction"
+          }
+        ],
+        "recompense": {
+          "herals": 250,
+          "reputation": 10
+        }
+      }
+    }
+  ]
+}

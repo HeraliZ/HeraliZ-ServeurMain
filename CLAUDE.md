@@ -85,6 +85,7 @@ quand un choix leur revient.
 ```
 CLAUDE.md                 ce fichier
 docs/METHODE_CLIENT_SERVEUR.md   la méthode détaillée de séparation client / serveur (à lire avant de découper du code)
+docs/QUETES_SCENARIO.md          le scénario des PNJ et des quêtes (v1 codée : mods/heraliz-quetes)
 mods/<projet>/            les sources de NOS mods (un projet Gradle par jar)
 mods/_gabarit/            modèle de projet coupé, pour créer un nouveau mod (outils/fusion_nouveau.py)
 serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
@@ -108,8 +109,8 @@ monde/HeraliZ/            ancienne copie de la carte (v3 du 11/10) ; sera rempla
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
-Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 23 mods (sources, fabriqués en 21 jars
-`-serveur` pour le Ptero) = les 42 jars du dossier `mods/` du serveur, et les 45 jars des joueurs.
+Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 25 mods (sources, fabriqués en 23 jars
+`-serveur` pour le Ptero) = les 44 jars du dossier `mods/` du serveur, et les 47 jars des joueurs.
 
 Jamais dans Git (voir `.gitignore`) :
 - `build/`, `run/`, `dist/`, `livraison/` (refaits à chaque fabrication) ;
@@ -155,6 +156,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (par vagues depuis la 1.5.0 : 4 à la fois pendant 1 h, puis toutes changent ; tirées au hasard à 800 blocs au moins les unes des autres et une par quart de la carte, règles relâchées si impossible et notées dans le journal ; 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | heraliz-grades | heraliz_grades | heraliz_grades | **grades HeraliZ** (100 % maison) : Fondateur, Modérateur, Helper (staff), Roi de la Zone, Traqueur, Rescapé (boutique), Survivant (tout le monde) ; nom affiché « [CLAN] [Grade] Pseudo » (tag de clan lu par réflexion dans les clans) ; chat « Pseudo » message » sans < > (clé `chat.type.text` des langues du mod) ; **nouveau tab** (`TabHeraliz`, maquette validée : verre, staff puis survivants sur deux colonnes, grade, clan, voix CaraCrea, ping ; grades et clans envoyés par le serveur, paquet `InfosTab`). `grade donner|retirer <joueur> <grade>` et `kit reset <joueur>` : **console du serveur seulement** (ni joueur, ni op, ni bloc de commande, ni RCON) ; `/grade voir` (Helper+), `/grade liste` (Modérateur+), droits seulement après le `/login` AuthMe (lu par réflexion ; AuthMe injoignable = droits refusés). Menu `/kit` : un seul kit par recharge, celui du grade boutique sinon Survivant, pas d'arme ni d'armure en plus (pas de pay2win) ; kit Soutien en plus (recharge à part) pour ceux qui portent le tag HeraliZ sur Discord, compte lié (HeraliBot répond à `/mc/soutien/<uuid>`) ; contenu dans `serveur/config/heraliz_grades/kits.json`, relu tout seul. Données hors du monde : `heraliz_grades/grades.json`, `recharges.json`, `journal.log` (fichier illisible jamais écrasé). `/lier` (code de 6 caractères, 5 min, à taper sur Discord dans #lien) et `/delier` : lien avec HeraliBot, requêtes signées HMAC (secrets `HERALIBOT_LIEN_*`, section 8) ; grades donnés ou retirés à la console annoncés au staff sur Discord. Lien boutique : à venir |
+| heraliz-quetes | heraliz_quetes | heraliz_quetes | **PNJ et quêtes** (v1 du 17/10, rien testé en jeu) : PNJ posés au spawn par le staff (`/pnj creer <id>`), dialogues, suite de quêtes par PNJ + tableau de 3 contrats toujours plein (sans limite par jour), `/quetes` (touche J) avec « Suivre » et suivi à droite de l'écran, points de quête posés à la baguette (`/quete baguette <groupe>`, gardés avec le monde), objets de quête, réputation et titres. Quêtes dans `serveur/config/heraliz_quetes/pnj/*.json` (guide : `serveur/config/heraliz_quetes/LISEZMOI.md`), progression hors du monde (`heraliz_quetes/joueurs/`). Scénario : `docs/QUETES_SCENARIO.md` |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
 
 Les modIds ne changent JAMAIS (mondes, configs, gunpacks et autres mods en dépendent). Même règle pour les noms de
@@ -203,6 +205,9 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   paramètres et codes couleur) ; les polices DM Sans n'ont pas le cyrillique : `python outils/polices_cyrillique.py`
   ajoute Onest (OFL) en secours à toute nouvelle police d'un mod. Restent en français : journaux, configs, alertes du
   staff de Spartan.
+- HeraliZ Quêtes : ses fichiers de langue sont **écrits** par `python mods/heraliz-quetes/outils/langues.py` (tableau
+  `TEXTES`, trois langues) et ses icônes par `python mods/heraliz-quetes/outils/icones.py` ; jamais à la main. Les textes
+  des PNJ et des quêtes sont dans `serveur/config/heraliz_quetes/pnj/*.json` (`"texte"` ou `{"fr", "en", "ru"}`).
 - la bombe et l'ordinateur des duels (modèles, textures HD, masques lumineux, sons de clavier et de piratage) sont
   **générés** par `python mods/heralisz-matchs/outils/bombe/modeles.py` et `sons.py` (`--sortie` pour essayer ailleurs) ;
   jamais retouchés à la main. Matchs dépend de GeckoLib depuis la 0.7.0 (geckolib222, compileOnly, jamais embarqué).
@@ -302,7 +307,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 
 | API | Où (côté) | Pour quoi |
 |---|---|---|
-| `fr.heralisz.economie.api.EconomieApi` | clansetbases (commun) | soldes en hérals, paiements |
+| `fr.heralisz.economie.api.EconomieApi` | clansetbases (commun) | soldes en hérals, paiements (aussi lu par réflexion par quetes : récompenses, étapes « payer ») |
 | `fr.heralisz.clans.api.ClansApi`, `ClanInfo`, événements `ClanDissousEvent` / `MembreQuitteEvent` | clansetbases (commun) | clan d'un joueur, membres, droits |
 | `fr.heralisz.bases.api.BasesApi`, `PillageHooks` | clansetbases (serveur) | bunkers, pillage |
 | `fr.heralisz.matchs.moteur.api.MatchApi` | matchs (commun) | `partieDe(ServerPlayer)`, `partie(id)`, en match ou pas |
@@ -320,6 +325,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `fr.heraliz.loot.SallesLoot` (`declarer`, `retirer`, `recharger`, `etat`) | loot (serveur, appelée par réflexion par Bunker) | salles à carte : leurs conteneurs quittent la rotation et ne se remplissent qu'à la recharge |
 | `fr.heraliz.loot.client.RaretesClient.couleur(ItemStack)` | loot (client, lu par réflexion par dayzhotbar) | couleur de rareté d'un objet (0 : aucune) |
 | `fr.heraliz.grades.serveur.GradesApi` (`rangBoutique(UUID)` : 0 à 3, `gradeAffiche(UUID)`) | grades (serveur, lue par réflexion par le casino) | grade d'un joueur (zone VIP du casino) |
+| `fr.heraliz.loot.RaretesObjets.de(ItemStack)` | loot (commun, lu par réflexion par quetes) | rareté d'un objet demandé par une quête (`rarete_min`) |
 | données persistantes du joueur `PlayerPersisted.HeralizBonusLoot.<source>` | lues par loot (serveur), écrites par clansetbases (`clan`) et utils (`objet`) | bonus de loot : `{Pct, Fin (heure en ms)}` ou `{Pct, Restant (ticks de jeu)}`, sources additionnées, plafond 25 % (`fr.heraliz.loot.BonusLoot`) |
 
 **Pour qu'un nouveau mod utilise un des nôtres :**
@@ -1311,6 +1317,14 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   section 9) ; lieux et nom
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
+- **PNJ et quêtes** (heraliz-quetes 1.0.0, 17/10, rien testé en jeu) : scénario dans `docs/QUETES_SCENARIO.md`, quêtes
+  des 8 PNJ dans `serveur/config/heraliz_quetes/pnj/` (89 quêtes de suite, 34 modèles de contrats ; textes en français
+  seulement pour l'instant : anglais et russe à ajouter dans les fichiers). À faire en jeu par le staff : poser les PNJ
+  et les points de quête (liste des groupes dans `serveur/config/heraliz_quetes/LISEZMOI.md`) ; skins des PNJ à fournir
+  (sinon Steve / Alex). Pas encore branché (demande des signaux aux autres mods) : casino, duels / ClashWar / Zombies,
+  réanimation, soins utilisés, territoires, CRac, train, jumelles, calque « Quêtes » de la carte du monde, stand de tir ;
+  titres seulement dans /quetes (pas à côté du pseudo). Écrans faits sans maquette validée (demande du propriétaire :
+  « fais, on verra ») ; icônes des objets de quête provisoires (`mods/heraliz-quetes/outils/icones.py`).
 - **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
   Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent

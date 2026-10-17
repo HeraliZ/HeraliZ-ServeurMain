@@ -1,0 +1,673 @@
+{
+  "id": "ferraille",
+  "nom": "Ferraille",
+  "role": {
+    "fr": "Mécano",
+    "en": "Mechanic",
+    "ru": "Механик"
+  },
+  "skin": "ferraille",
+  "ambiance": [
+    "T'aurais pas un ressort ? Non ? T'as une tête à en trouver.",
+    "Ça, c'est pas cassé. C'est fatigué.",
+    "Avec du scotch et de la patience, je te répare un train.",
+    "Touche pas à ça. Si. Non. Touche pas."
+  ],
+  "presentation": "Ah, un vivant ! Super. Moi c'est Ferraille. Tout ce qui a un moteur ou une gâchette, je le répare. Enfin, je le réparerais, si j'avais des pièces. Et devine qui va m'en trouver ?",
+  "accueil": {
+    "inconnu": "Oui ? T'as des pièces ?",
+    "connu": "Ah, toi ! T'as ramené quelque chose ?",
+    "ami": "Mon fournisseur préféré ! Viens voir, viens voir."
+  },
+  "suite": [
+    {
+      "id": "un_ressort",
+      "titre": "Un ressort !",
+      "difficulte": 1,
+      "demande": "J'ai besoin de deux ressorts. Ça a l'air de rien, un ressort. Sans ressort, rien ne marche.",
+      "fin": "Deux beaux ressorts. Merci, l'ami.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 2 ressorts",
+          "objet": "heraliz_composants:ressort",
+          "nombre": 2
+        }
+      ],
+      "recompense": {
+        "herals": 100,
+        "reputation": 25
+      }
+    },
+    {
+      "id": "ferraille",
+      "titre": "Ferraille pour Ferraille",
+      "difficulte": 1,
+      "demande": "Dix ferrailles. Oui, je sais, c'est mon nom. Très drôle.",
+      "fin": "Parfait, de quoi bricoler une semaine.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 10 ferrailles",
+          "objet": "heraliz_composants:ferraille",
+          "nombre": 10
+        }
+      ],
+      "recompense": {
+        "herals": 150,
+        "reputation": 25
+      }
+    },
+    {
+      "id": "circuit",
+      "titre": "Le circuit",
+      "difficulte": 2,
+      "demande": "Une batterie et un circuit imprimé. Ne me demande pas pour quoi faire, c'est une surprise.",
+      "fin": "Hé hé. Tu verras bien.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner une batterie",
+          "objet": "heraliz_composants:batterie"
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner un circuit imprimé",
+          "objet": "heraliz_composants:circuit_imprime"
+        }
+      ],
+      "recompense": {
+        "herals": 250,
+        "reputation": 40
+      }
+    },
+    {
+      "id": "pneus",
+      "titre": "Pneus",
+      "difficulte": 2,
+      "demande": "Il me faut des roues. Les épaves de la carte en ont encore : quatre roues, sur quatre épaves.",
+      "fin": "Quatre roues ! On va pouvoir faire rouler quelque chose.",
+      "etapes": [
+        {
+          "type": "ramasser",
+          "libelle": "Démonter 4 roues sur 4 épaves",
+          "groupe": "roue",
+          "nombre": 4,
+          "objet": "piece",
+          "ref": "roue",
+          "nom": "Roue d'épave"
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter les 4 roues",
+          "objet_quete": "roue",
+          "nombre": 4
+        }
+      ],
+      "recompense": {
+        "herals": 300,
+        "reputation": 40
+      }
+    },
+    {
+      "id": "scotch",
+      "titre": "Ça tient avec du scotch",
+      "difficulte": 1,
+      "demande": "Cinq rouleaux de scotch et trois planches. Le toit de l'atelier fuit.",
+      "fin": "Le toit tiendra. Jusqu'à la prochaine pluie.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 5 rouleaux de scotch",
+          "objet": "heraliz_composants:scotch",
+          "nombre": 5
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner 3 planches",
+          "objet": "heraliz_composants:planche",
+          "nombre": 3
+        }
+      ],
+      "recompense": {
+        "herals": 150,
+        "reputation": 25
+      }
+    },
+    {
+      "id": "groupe_electrogene",
+      "titre": "Le groupe électrogène",
+      "difficulte": 3,
+      "demande": "Il y a un groupe électrogène en ville. Pose dessus une batterie et un kit de pièces, et tiens deux minutes pendant qu'il démarre. Ça va faire du bruit, ils vont venir.",
+      "fin": "Il tourne ? Il tourne ! Tu vois, quand on veut.",
+      "etapes": [
+        {
+          "type": "deposer",
+          "libelle": "Poser une batterie sur le groupe",
+          "groupe": "groupe_electrogene",
+          "objet": "heraliz_composants:batterie"
+        },
+        {
+          "type": "deposer",
+          "libelle": "Poser un kit de pièces sur le groupe",
+          "groupe": "groupe_electrogene",
+          "objet": "heraliz_composants:kit_pieces",
+          "meme_point": true
+        },
+        {
+          "type": "tenir",
+          "libelle": "Tenir 2 minutes pendant le démarrage",
+          "groupe": "groupe_electrogene",
+          "rayon": 12,
+          "secondes": 120,
+          "meme_point": true
+        }
+      ],
+      "recompense": {
+        "herals": 500,
+        "reputation": 60
+      }
+    },
+    {
+      "id": "plaques",
+      "titre": "Les plaques",
+      "difficulte": 3,
+      "demande": "Je veux blinder l'atelier. Une plaque de chaque sorte : recyclée, soudée, en métal et renforcée.",
+      "fin": "L'atelier ne craint plus rien.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner une plaque recyclée",
+          "objet": "heraliz_composants:plaque_recyclee"
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner une plaque soudée",
+          "objet": "heraliz_composants:plaque_soudee"
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner une plaque en métal",
+          "objet": "heraliz_composants:plaque_metal"
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner une plaque renforcée",
+          "objet": "heraliz_composants:plaque_renforcee"
+        }
+      ],
+      "recompense": {
+        "herals": 600,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "rails",
+      "titre": "Les rails",
+      "difficulte": 2,
+      "demande": "Le train passe encore, mais les aiguillages sont dans un sale état. Va inspecter quatre aiguillages le long de la voie.",
+      "fin": "Quatre aiguillages, pas un en bon état. Il va falloir s'en occuper.",
+      "etapes": [
+        {
+          "type": "indice",
+          "libelle": "Inspecter 4 aiguillages",
+          "groupe": "aiguillage",
+          "nombre": 4,
+          "titre": "Aiguillage",
+          "texte": "Rouillé, mais il bouge encore. Une plaque indique : « Réseau Héral · Voie 3 »."
+        }
+      ],
+      "recompense": {
+        "herals": 400,
+        "reputation": 50
+      }
+    },
+    {
+      "id": "pieces_armes",
+      "titre": "Les pièces d'armes",
+      "difficulte": 3,
+      "demande": "Pour les armes du camp de Jack : deux canons, deux ressorts, deux kits de pièces.",
+      "fin": "Jack va être content. Enfin, il ne le dira pas.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 2 canons",
+          "objet": "heraliz_composants:canon",
+          "nombre": 2
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner 2 ressorts",
+          "objet": "heraliz_composants:ressort",
+          "nombre": 2
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner 2 kits de pièces",
+          "objet": "heraliz_composants:kit_pieces",
+          "nombre": 2
+        }
+      ],
+      "recompense": {
+        "herals": 700,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "radio_nadia",
+      "titre": "La radio de Nadia",
+      "difficulte": 2,
+      "demande": "Nadia veut un deuxième poste radio. Rapporte-moi deux radios cassées et un circuit imprimé, je lui en fabrique un.",
+      "fin": "Nadia va pouvoir écouter deux fréquences à la fois. Ça ne va pas la rendre plus bavarde.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 2 radios cassées",
+          "objet": "heraliz_composants:radio_cassee",
+          "nombre": 2
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner un circuit imprimé",
+          "objet": "heraliz_composants:circuit_imprime"
+        }
+      ],
+      "recompense": {
+        "herals": 400,
+        "reputation": 50
+      }
+    },
+    {
+      "id": "projecteurs",
+      "titre": "Les projecteurs",
+      "difficulte": 3,
+      "demande": "Le camp militaire a des projecteurs sans ampoule. Prends ces trois ampoules et va les poser.",
+      "fin": "Le camp est éclairé. Les zombies vont adorer. Nous, on y verra quelque chose.",
+      "donne": [
+        {
+          "objet": "piece",
+          "ref": "ampoule",
+          "nom": "Ampoule de projecteur",
+          "nombre": 3
+        }
+      ],
+      "etapes": [
+        {
+          "type": "deposer",
+          "libelle": "Poser 3 ampoules sur 3 projecteurs",
+          "groupe": "projecteur",
+          "nombre": 3,
+          "objet_quete": "ampoule"
+        }
+      ],
+      "recompense": {
+        "herals": 600,
+        "reputation": 80
+      }
+    },
+    {
+      "id": "vanne",
+      "titre": "La vanne",
+      "difficulte": 3,
+      "demande": "La raffinerie a une vanne neuve, au fond, dans le gaz. C'est la pièce qui me manque pour la locomotive. Mets un masque.",
+      "fin": "Elle est parfaite ! On va pouvoir parler de la loco sérieusement.",
+      "etapes": [
+        {
+          "type": "ramasser",
+          "libelle": "Récupérer la vanne au fond de la raffinerie",
+          "groupe": "raffinerie_vanne",
+          "objet": "piece",
+          "ref": "vanne",
+          "nom": "Vanne de la raffinerie"
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter la vanne",
+          "objet_quete": "vanne"
+        }
+      ],
+      "recompense": {
+        "herals": 800,
+        "reputation": 100
+      }
+    },
+    {
+      "id": "la_loco",
+      "titre": "La loco",
+      "difficulte": 2,
+      "demande": "Avec la vanne, il me faut encore l'œil de quelqu'un. Inspecte la locomotive du spawn avec moi : trois points à vérifier.",
+      "fin": "Elle peut repartir. Pas aujourd'hui. Mais elle peut.",
+      "etapes": [
+        {
+          "type": "indice",
+          "libelle": "Inspecter la locomotive (3 points)",
+          "groupe": "loco",
+          "nombre": 3,
+          "titre": "Locomotive",
+          "texte": "Ça a l'air d'aller. Ferraille hoche la tête dans ton dos."
+        }
+      ],
+      "recompense": {
+        "herals": 800,
+        "reputation": 100
+      }
+    },
+    {
+      "id": "blinde",
+      "titre": "Le blindé",
+      "difficulte": 4,
+      "demande": "Dernier projet : un véhicule blindé. Quatre plaques renforcées et deux kits de pièces.",
+      "fin": "Le blindé de Ferraille. Tu seras le premier à monter dedans. Promis.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner 4 plaques renforcées",
+          "objet": "heraliz_composants:plaque_renforcee",
+          "nombre": 4
+        },
+        {
+          "type": "donner",
+          "libelle": "Donner 2 kits de pièces",
+          "objet": "heraliz_composants:kit_pieces",
+          "nombre": 2
+        }
+      ],
+      "recompense": {
+        "herals": 1200,
+        "reputation": 150,
+        "titre": {
+          "fr": "Mécano",
+          "en": "Mechanic",
+          "ru": "Механик"
+        }
+      }
+    }
+  ],
+  "contrats": [
+    {
+      "id": "pieces",
+      "poids": 4,
+      "variables": {
+        "n": {
+          "min": 2,
+          "max": 4
+        },
+        "p": {
+          "choix": [
+            {
+              "valeur": "heraliz_composants:ressort",
+              "nom": {
+                "fr": "ressorts",
+                "en": "springs",
+                "ru": "пружин"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:canon",
+              "nom": {
+                "fr": "canons",
+                "en": "barrels",
+                "ru": "стволов"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:kit_pieces",
+              "nom": {
+                "fr": "kits de pièces",
+                "en": "parts kits",
+                "ru": "наборов деталей"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:batterie",
+              "nom": {
+                "fr": "batteries",
+                "en": "batteries",
+                "ru": "батарей"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:circuit_imprime",
+              "nom": {
+                "fr": "circuits imprimés",
+                "en": "circuit boards",
+                "ru": "плат"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:scotch",
+              "nom": {
+                "fr": "rouleaux de scotch",
+                "en": "rolls of tape",
+                "ru": "мотков скотча"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:plaque_recyclee",
+              "nom": {
+                "fr": "plaques recyclées",
+                "en": "recycled plates",
+                "ru": "переработанных пластин"
+              }
+            }
+          ]
+        }
+      },
+      "quete": {
+        "id": "pieces",
+        "titre": {
+          "fr": "Des pièces : {p.nom}",
+          "en": "Parts: {p.nom}",
+          "ru": "Детали: {p.nom}"
+        },
+        "difficulte": 1,
+        "demande": {
+          "fr": "J'ai besoin de {n} {p.nom}. Pas pour demain : pour tout à l'heure.",
+          "en": "I need {n} {p.nom}. Not tomorrow: today."
+        },
+        "fin": "Merci, l'ami !",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": {
+              "fr": "Donner {n} {p.nom}",
+              "en": "Give {n} {p.nom}",
+              "ru": "Отдать {n} {p.nom}"
+            },
+            "objet": "{p}",
+            "nombre": "{n}"
+          }
+        ],
+        "recompense": {
+          "herals": "{n}*60",
+          "reputation": 10
+        }
+      }
+    },
+    {
+      "id": "vrac",
+      "poids": 2,
+      "variables": {
+        "n": {
+          "min": 6,
+          "max": 15,
+          "pas": 3
+        },
+        "v": {
+          "choix": [
+            {
+              "valeur": "heraliz_composants:clou",
+              "nom": {
+                "fr": "clous",
+                "en": "nails",
+                "ru": "гвоздей"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:planche",
+              "nom": {
+                "fr": "planches",
+                "en": "planks",
+                "ru": "досок"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:caoutchouc",
+              "nom": {
+                "fr": "morceaux de caoutchouc",
+                "en": "pieces of rubber",
+                "ru": "кусков резины"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:plastique",
+              "nom": {
+                "fr": "morceaux de plastique",
+                "en": "pieces of plastic",
+                "ru": "кусков пластика"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:ferraille",
+              "nom": {
+                "fr": "ferrailles",
+                "en": "scrap metal",
+                "ru": "металлолома"
+              }
+            },
+            {
+              "valeur": "heraliz_composants:corde",
+              "nom": {
+                "fr": "cordes",
+                "en": "ropes",
+                "ru": "верёвок"
+              }
+            }
+          ]
+        }
+      },
+      "quete": {
+        "id": "vrac",
+        "titre": {
+          "fr": "En vrac : {v.nom}",
+          "en": "Bulk: {v.nom}",
+          "ru": "Россыпью: {v.nom}"
+        },
+        "difficulte": 1,
+        "demande": {
+          "fr": "Il me faut {n} {v.nom}.",
+          "en": "I need {n} {v.nom}."
+        },
+        "fin": "Parfait.",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": {
+              "fr": "Donner {n} {v.nom}",
+              "en": "Give {n} {v.nom}",
+              "ru": "Отдать {n} {v.nom}"
+            },
+            "objet": "{v}",
+            "nombre": "{n}"
+          }
+        ],
+        "recompense": {
+          "herals": "{n}*15",
+          "reputation": 8
+        }
+      }
+    },
+    {
+      "id": "roue",
+      "poids": 2,
+      "quete": {
+        "id": "roue",
+        "titre": "Une roue",
+        "difficulte": 2,
+        "demande": "Une roue, sur une épave. Celle-là.",
+        "fin": "Merci !",
+        "etapes": [
+          {
+            "type": "ramasser",
+            "libelle": "Démonter la roue",
+            "groupe": "roue",
+            "objet": "piece",
+            "ref": "roue",
+            "nom": "Roue d'épave"
+          },
+          {
+            "type": "donner",
+            "libelle": "Rapporter la roue",
+            "objet_quete": "roue"
+          }
+        ],
+        "recompense": {
+          "herals": 250,
+          "reputation": 12
+        }
+      }
+    },
+    {
+      "id": "groupe",
+      "poids": 1,
+      "quete": {
+        "id": "groupe",
+        "titre": "Remettre le courant",
+        "difficulte": 3,
+        "demande": "Le groupe électrogène s'est encore arrêté. Une batterie, et tiens deux minutes.",
+        "fin": "Il tourne !",
+        "etapes": [
+          {
+            "type": "deposer",
+            "libelle": "Poser une batterie sur le groupe",
+            "groupe": "groupe_electrogene",
+            "objet": "heraliz_composants:batterie"
+          },
+          {
+            "type": "tenir",
+            "libelle": "Tenir 2 minutes",
+            "groupe": "groupe_electrogene",
+            "rayon": 12,
+            "secondes": 120,
+            "meme_point": true
+          }
+        ],
+        "recompense": {
+          "herals": 450,
+          "reputation": 15
+        }
+      }
+    },
+    {
+      "id": "arme_usee",
+      "poids": 2,
+      "variables": {
+        "u": {
+          "min": 10,
+          "max": 30,
+          "pas": 10
+        }
+      },
+      "quete": {
+        "id": "arme_usee",
+        "titre": "Une arme fatiguée",
+        "difficulte": 2,
+        "demande": "Rapporte-moi une arme usée, à moins de {u} %. Je la démonte pour les pièces.",
+        "fin": "Elle a bien servi.",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": "Donner une arme à moins de {u} %",
+            "objet": "tacz:modern_kinetic_gun",
+            "arme": "feu",
+            "usure_max": "{u}"
+          }
+        ],
+        "recompense": {
+          "herals": 200,
+          "reputation": 12
+        }
+      }
+    }
+  ]
+}

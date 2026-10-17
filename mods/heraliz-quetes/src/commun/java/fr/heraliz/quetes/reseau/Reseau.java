@@ -1,0 +1,334 @@
+package fr.heraliz.quetes.reseau;
+
+import fr.heraliz.quetes.HeralizQuetes;
+import fr.heraliz.quetes.Texte;
+import fr.heraliz.quetes.pont.Crochet;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+/**
+ * Canal réseau de HeraliZ Quêtes (protocole 1). Le serveur décide de tout et envoie ce qu'il faut afficher (dialogue,
+ * journal, suivi, notes, bulles, lueurs des points) ; le joueur ne fait que CHOISIR (une réponse du dialogue, suivre ou
+ * abandonner une quête, un code tapé) : chaque demande est revérifiée par le serveur. Un joueur avec un jar sans ce
+ * canal est refusé à la connexion.
+ */
+public final class Reseau {
+    private Reseau() {
+    }
+
+    private static final String VERSION = "1";
+    public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
+            () -> VERSION, VERSION::equals, VERSION::equals);
+
+    private static final int MAX_LISTE = 64, MAX_CLE = 96;
+
+    // ------------------------------------------------------------------ messages
+    /** Réponse proposée dans un dialogue. style : 0 normal, 1 nouvelle quête, 2 donner / rendre, 3 retour / au revoir, 4 accepter. */
+    public record Option(int id, Texte libelle, int style) {
+    }
+
+    /** Page de dialogue (serveur -> joueur) ; entite = l'entité PNJ (pour la caméra et la distance). */
+    public record Dialogue(int entite, Texte nom, Texte role, Texte texte, List<Option> options) {
+    }
+
+    /** Réponse choisie (joueur -> serveur) ; option -1 = dialogue fermé. */
+    public record Choix(int entite, int option) {
+    }
+
+    /** etat : 0 à venir, 1 en cours, 2 fait. */
+    public record JEtape(Texte libelle, int fait, int total, int etat) {
+    }
+
+    public record JQuete(String cle, Texte titre, int difficulte, boolean contrat, boolean suivie, boolean aRendre,
+                         Texte recompense, Texte resume, List<JEtape> etapes) {
+    }
+
+    public record JPnj(String id, Texte nom, Texte role, int niveau, int rep, int repSuivant, List<JQuete> quetes) {
+    }
+
+    /** Journal des quêtes (/quetes) ; ouvrir = ouvrir l'écran, sinon mettre à jour celui qui est ouvert. */
+    public record Journal(boolean ouvrir, List<JPnj> pnj, List<Texte> titres, int finies) {
+    }
+
+    /** Demande du journal (touche ou /quetes côté joueur). */
+    public record DemandeJournal(boolean ouvrir) {
+    }
+
+    /** type : 1 suivre, 2 ne plus suivre, 3 abandonner. */
+    public record Action(int type, String cle) {
+    }
+
+    /** distance : mètres jusqu'au but le plus proche, -1 = rien à montrer ; approx = zone floue (« ≈ 300 m »). */
+    public record SLigne(Texte libelle, int fait, int total, int distance, boolean approx, int etat) {
+    }
+
+    /** Quête suivie, affichée à droite de l'écran ; titre vide = rien de suivi. */
+    public record Suivi(Texte pnj, Texte titre, List<SLigne> lignes) {
+    }
+
+    /** Note, lettre, indice (clic droit sur un point « indice »). */
+    public record Note(Texte titre, Texte texte) {
+    }
+
+    /** Clavier d'un coffre à code (clic droit sur un point « code »). */
+    public record Clavier(String point, Texte titre) {
+    }
+
+    /** Code tapé (joueur -> serveur). */
+    public record Code(String point, String code) {
+    }
+
+    /** Phrase d'ambiance au-dessus d'un PNJ. */
+    public record Bulle(int entite, Texte texte) {
+    }
+
+    /** Lueurs à montrer : points de la quête en cours (près du joueur), et tous les points pour le staff à la baguette. */
+    public record Lueurs(List<BlockPos> quete, List<BlockPos> staff) {
+    }
+
+    /** Petite notification en haut à droite ; couleur RGB. */
+    public record Notif(Texte texte, int couleur) {
+    }
+
+    /** Message reçu par le serveur, avec le joueur qui l'envoie. */
+    public record Recu<T>(ServerPlayer joueur, T message) {
+    }
+
+    // ------------------------------------------------------------------ crochets (branchés par chaque côté)
+    public static final Crochet<Dialogue> DIALOGUE = new Crochet<>();
+    public static final Crochet<Journal> JOURNAL = new Crochet<>();
+    public static final Crochet<Suivi> SUIVI = new Crochet<>();
+    public static final Crochet<Note> NOTE = new Crochet<>();
+    public static final Crochet<Clavier> CLAVIER = new Crochet<>();
+    public static final Crochet<Bulle> BULLE = new Crochet<>();
+    public static final Crochet<Lueurs> LUEURS = new Crochet<>();
+    public static final Crochet<Notif> NOTIF = new Crochet<>();
+
+    public static final Crochet<Recu<Choix>> CHOIX = new Crochet<>();
+    public static final Crochet<Recu<DemandeJournal>> DEMANDE_JOURNAL = new Crochet<>();
+    public static final Crochet<Recu<Action>> ACTION = new Crochet<>();
+    public static final Crochet<Recu<Code>> CODE = new Crochet<>();
+
+    private static int prochain;
+
+    public static void enregistrer() {
+        versJoueur(Dialogue.class, Reseau::ecrireDialogue, Reseau::lireDialogue, DIALOGUE);
+        versJoueur(Journal.class, Reseau::ecrireJournal, Reseau::lireJournal, JOURNAL);
+        versJoueur(Suivi.class, Reseau::ecrireSuivi, Reseau::lireSuivi, SUIVI);
+        versJoueur(Note.class, (m, b) -> {
+            m.titre().ecrire(b);
+            m.texte().ecrire(b);
+        }, b -> new Note(Texte.lire(b), Texte.lire(b)), NOTE);
+        versJoueur(Clavier.class, (m, b) -> {
+            b.writeUtf(m.point(), MAX_CLE);
+            m.titre().ecrire(b);
+        }, b -> new Clavier(b.readUtf(MAX_CLE), Texte.lire(b)), CLAVIER);
+        versJoueur(Bulle.class, (m, b) -> {
+            b.writeVarInt(m.entite());
+            m.texte().ecrire(b);
+        }, b -> new Bulle(b.readVarInt(), Texte.lire(b)), BULLE);
+        versJoueur(Lueurs.class, (m, b) -> {
+            ecrirePos(b, m.quete());
+            ecrirePos(b, m.staff());
+        }, b -> new Lueurs(lirePos(b), lirePos(b)), LUEURS);
+        versJoueur(Notif.class, (m, b) -> {
+            m.texte().ecrire(b);
+            b.writeInt(m.couleur());
+        }, b -> new Notif(Texte.lire(b), b.readInt()), NOTIF);
+
+        versServeur(Choix.class, (m, b) -> {
+            b.writeVarInt(m.entite());
+            b.writeVarInt(m.option());
+        }, b -> new Choix(b.readVarInt(), b.readVarInt()), CHOIX);
+        versServeur(DemandeJournal.class, (m, b) -> b.writeBoolean(m.ouvrir()), b -> new DemandeJournal(b.readBoolean()), DEMANDE_JOURNAL);
+        versServeur(Action.class, (m, b) -> {
+            b.writeVarInt(m.type());
+            b.writeUtf(m.cle(), MAX_CLE);
+        }, b -> new Action(b.readVarInt(), b.readUtf(MAX_CLE)), ACTION);
+        versServeur(Code.class, (m, b) -> {
+            b.writeUtf(m.point(), MAX_CLE);
+            b.writeUtf(m.code(), 32);
+        }, b -> new Code(b.readUtf(MAX_CLE), b.readUtf(32)), CODE);
+    }
+
+    private static <T> void versJoueur(Class<T> c, BiConsumer<T, FriendlyByteBuf> ecrire, Function<FriendlyByteBuf, T> lire, Crochet<T> crochet) {
+        CANAL.messageBuilder(c, prochain++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ecrire)
+                .decoder(lire)
+                .consumerMainThread((T m, Supplier<NetworkEvent.Context> ctx) -> {
+                    crochet.accept(m);
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+    }
+
+    private static <T> void versServeur(Class<T> c, BiConsumer<T, FriendlyByteBuf> ecrire, Function<FriendlyByteBuf, T> lire, Crochet<Recu<T>> crochet) {
+        CANAL.messageBuilder(c, prochain++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ecrire)
+                .decoder(lire)
+                .consumerMainThread((T m, Supplier<NetworkEvent.Context> ctx) -> {
+                    ServerPlayer p = ctx.get().getSender();
+                    if (p != null) crochet.accept(new Recu<>(p, m));
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+    }
+
+    /** Envoie un message à un joueur. */
+    public static void envoyer(ServerPlayer p, Object message) {
+        CANAL.send(PacketDistributor.PLAYER.with(() -> p), message);
+    }
+
+    // ------------------------------------------------------------------ codecs
+    private static void ecrireDialogue(Dialogue m, FriendlyByteBuf b) {
+        b.writeVarInt(m.entite());
+        m.nom().ecrire(b);
+        m.role().ecrire(b);
+        m.texte().ecrire(b);
+        int n = Math.min(m.options().size(), 12);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            Option o = m.options().get(i);
+            b.writeVarInt(o.id());
+            o.libelle().ecrire(b);
+            b.writeVarInt(o.style());
+        }
+    }
+
+    private static Dialogue lireDialogue(FriendlyByteBuf b) {
+        int e = b.readVarInt();
+        Texte nom = Texte.lire(b), role = Texte.lire(b), texte = Texte.lire(b);
+        int n = Math.min(b.readVarInt(), 12);
+        List<Option> o = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) o.add(new Option(b.readVarInt(), Texte.lire(b), b.readVarInt()));
+        return new Dialogue(e, nom, role, texte, o);
+    }
+
+    private static void ecrireEtapes(FriendlyByteBuf b, List<JEtape> l) {
+        int n = Math.min(l.size(), MAX_LISTE);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            JEtape e = l.get(i);
+            e.libelle().ecrire(b);
+            b.writeVarInt(e.fait());
+            b.writeVarInt(e.total());
+            b.writeVarInt(e.etat());
+        }
+    }
+
+    private static List<JEtape> lireEtapes(FriendlyByteBuf b) {
+        int n = Math.min(b.readVarInt(), MAX_LISTE);
+        List<JEtape> l = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) l.add(new JEtape(Texte.lire(b), b.readVarInt(), b.readVarInt(), b.readVarInt()));
+        return l;
+    }
+
+    private static void ecrireJournal(Journal m, FriendlyByteBuf b) {
+        b.writeBoolean(m.ouvrir());
+        int np = Math.min(m.pnj().size(), MAX_LISTE);
+        b.writeVarInt(np);
+        for (int i = 0; i < np; i++) {
+            JPnj p = m.pnj().get(i);
+            b.writeUtf(p.id(), MAX_CLE);
+            p.nom().ecrire(b);
+            p.role().ecrire(b);
+            b.writeVarInt(p.niveau());
+            b.writeVarInt(p.rep());
+            b.writeVarInt(p.repSuivant());
+            int nq = Math.min(p.quetes().size(), MAX_LISTE);
+            b.writeVarInt(nq);
+            for (int j = 0; j < nq; j++) {
+                JQuete q = p.quetes().get(j);
+                b.writeUtf(q.cle(), MAX_CLE);
+                q.titre().ecrire(b);
+                b.writeVarInt(q.difficulte());
+                b.writeBoolean(q.contrat());
+                b.writeBoolean(q.suivie());
+                b.writeBoolean(q.aRendre());
+                q.recompense().ecrire(b);
+                q.resume().ecrire(b);
+                ecrireEtapes(b, q.etapes());
+            }
+        }
+        int nt = Math.min(m.titres().size(), MAX_LISTE);
+        b.writeVarInt(nt);
+        for (int i = 0; i < nt; i++) m.titres().get(i).ecrire(b);
+        b.writeVarInt(m.finies());
+    }
+
+    private static Journal lireJournal(FriendlyByteBuf b) {
+        boolean ouvrir = b.readBoolean();
+        int np = Math.min(b.readVarInt(), MAX_LISTE);
+        List<JPnj> pnj = new ArrayList<>(np);
+        for (int i = 0; i < np; i++) {
+            String id = b.readUtf(MAX_CLE);
+            Texte nom = Texte.lire(b), role = Texte.lire(b);
+            int niveau = b.readVarInt(), rep = b.readVarInt(), suivant = b.readVarInt();
+            int nq = Math.min(b.readVarInt(), MAX_LISTE);
+            List<JQuete> q = new ArrayList<>(nq);
+            for (int j = 0; j < nq; j++) {
+                String cle = b.readUtf(MAX_CLE);
+                Texte titre = Texte.lire(b);
+                int diff = b.readVarInt();
+                boolean contrat = b.readBoolean(), suivie = b.readBoolean(), aRendre = b.readBoolean();
+                Texte rec = Texte.lire(b), resume = Texte.lire(b);
+                q.add(new JQuete(cle, titre, diff, contrat, suivie, aRendre, rec, resume, lireEtapes(b)));
+            }
+            pnj.add(new JPnj(id, nom, role, niveau, rep, suivant, q));
+        }
+        int nt = Math.min(b.readVarInt(), MAX_LISTE);
+        List<Texte> titres = new ArrayList<>(nt);
+        for (int i = 0; i < nt; i++) titres.add(Texte.lire(b));
+        return new Journal(ouvrir, pnj, titres, b.readVarInt());
+    }
+
+    private static void ecrireSuivi(Suivi m, FriendlyByteBuf b) {
+        m.pnj().ecrire(b);
+        m.titre().ecrire(b);
+        int n = Math.min(m.lignes().size(), 8);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            SLigne l = m.lignes().get(i);
+            l.libelle().ecrire(b);
+            b.writeVarInt(l.fait());
+            b.writeVarInt(l.total());
+            b.writeVarInt(l.distance() + 1);
+            b.writeBoolean(l.approx());
+            b.writeVarInt(l.etat());
+        }
+    }
+
+    private static Suivi lireSuivi(FriendlyByteBuf b) {
+        Texte pnj = Texte.lire(b), titre = Texte.lire(b);
+        int n = Math.min(b.readVarInt(), 8);
+        List<SLigne> l = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) l.add(new SLigne(Texte.lire(b), b.readVarInt(), b.readVarInt(), b.readVarInt() - 1, b.readBoolean(), b.readVarInt()));
+        return new Suivi(pnj, titre, l);
+    }
+
+    private static void ecrirePos(FriendlyByteBuf b, List<BlockPos> l) {
+        int n = Math.min(l.size(), 128);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) b.writeBlockPos(l.get(i));
+    }
+
+    private static List<BlockPos> lirePos(FriendlyByteBuf b) {
+        int n = Math.min(b.readVarInt(), 128);
+        List<BlockPos> l = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) l.add(b.readBlockPos());
+        return l;
+    }
+}
