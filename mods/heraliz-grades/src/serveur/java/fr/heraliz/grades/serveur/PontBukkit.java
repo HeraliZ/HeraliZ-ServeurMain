@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.UUID;
 
 /**
@@ -91,6 +92,65 @@ final class PontBukkit {
         estConnecte = m;
         if (alerte) LOG.info("[grades] AuthMe de nouveau joignable");
         alerte = false;
+    }
+
+    /** Format du chat : « [ZK] FONDATEUR Naro » message » (le nom affiché porte déjà clan et grade). */
+    private static final String FORMAT_CHAT = "%1$s §8» §f%2$s";
+    private static boolean chatBranche;
+
+    /**
+     * Chat des serveurs hybrides : Mohist fabrique lui-même « <nom> message » (événement Bukkit AsyncPlayerChatEvent). On
+     * change seulement son format, en priorité HIGHEST et sans toucher aux messages annulés (mute de LiteBans, joueur pas
+     * encore connecté sur AuthMe...). Écouteur Bukkit créé par réflexion (Proxy), rattaché à un plugin déjà chargé (le
+     * mod n'est pas un plugin). Sans Bukkit (solo), rien : le chat de Minecraft prend la clé chat.type.text des langues.
+     */
+    static void brancherChat() {
+        if (chatBranche || bukkit() == null) return;
+        chatBranche = true;
+        try {
+            ClassLoader cl = bukkit.getClassLoader();
+            Class<?> ecouteur = Class.forName("org.bukkit.event.Listener", false, cl);
+            Class<?> executeur = Class.forName("org.bukkit.plugin.EventExecutor", false, cl);
+            Class<?> priorite = Class.forName("org.bukkit.event.EventPriority", false, cl);
+            Class<?> evenement = Class.forName("org.bukkit.event.player.AsyncPlayerChatEvent", false, cl);
+            Class<?> plugin = Class.forName("org.bukkit.plugin.Plugin", false, cl);
+            Object pm = bukkit.getMethod("getPluginManager").invoke(null);
+            Object proprio = null;
+            for (String nom : new String[]{"spark", "LuckPerms", "AuthMe", "WorldGuard"}) {
+                Object p = pm.getClass().getMethod("getPlugin", String.class).invoke(pm, nom);
+                if (p != null && Boolean.TRUE.equals(p.getClass().getMethod("isEnabled").invoke(p))) {
+                    proprio = p;
+                    break;
+                }
+            }
+            if (proprio == null) throw new IllegalStateException("aucun plugin chargé pour porter l'écouteur");
+            Method setFormat = evenement.getMethod("setFormat", String.class);
+            Object e = Proxy.newProxyInstance(cl, new Class<?>[]{ecouteur}, (px, m, a) -> objet(px, m, a));
+            Object x = Proxy.newProxyInstance(cl, new Class<?>[]{executeur}, (px, m, a) -> {
+                if (m.getName().equals("execute") && a != null && a.length == 2 && evenement.isInstance(a[1])) {
+                    setFormat.invoke(a[1], FORMAT_CHAT);
+                    return null;
+                }
+                return objet(px, m, a);
+            });
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            Object haute = Enum.valueOf((Class) priorite, "HIGHEST");
+            pm.getClass().getMethod("registerEvent", Class.class, ecouteur, priorite, executeur, plugin, boolean.class)
+                    .invoke(pm, evenement, e, haute, x, proprio, true);
+            LOG.info("[grades] format du chat branché (« Pseudo » message »)");
+        } catch (Throwable ex) {
+            LOG.warn("[grades] format du chat impossible à brancher, chat de Mohist inchangé : {}", ex.toString());
+        }
+    }
+
+    /** Méthodes d'Object des proxys (hashCode, equals, toString). */
+    private static Object objet(Object px, Method m, Object[] a) {
+        return switch (m.getName()) {
+            case "hashCode" -> System.identityHashCode(px);
+            case "equals" -> a != null && a.length == 1 && px == a[0];
+            case "toString" -> "HeraliZ Grades (format du chat)";
+            default -> null;
+        };
     }
 
     /** Met le nom affiché Bukkit (chat des serveurs hybrides) ; sans Bukkit, rien. */

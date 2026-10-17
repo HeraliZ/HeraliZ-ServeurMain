@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Nouveau tab HeraliZ (maquette validée) : panneau « verre » en haut de l'écran, le staff puis les survivants, sur deux
- * colonnes ; pour chacun une barre à la couleur du grade, le grade, le tag de clan, le pseudo, l'icône de voix de CaraCrea
+ * Nouveau tab HeraliZ (maquette validée) : panneau « verre » en haut de l'écran, à la taille du contenu, le staff puis les
+ * survivants, sur une colonne (jusqu'à 8 joueurs) ou deux ; pour chacun une barre à la couleur du grade, le grade, le tag de clan, le pseudo, l'icône de voix de CaraCrea
  * (lue par réflexion) et le ping en barres. Grades et clans viennent du serveur ({@link ReseauGrades.InfosTab}) ; le
  * pseudo et le ping, de la liste de Minecraft. Remplace la liste de Minecraft (même touche).
  */
@@ -92,8 +92,19 @@ public final class TabHeraliz {
         int cachés = Math.max(0, autres.size() - MAX_LIGNES_COLONNE * 2);
         if (cachés > 0) autres = autres.subList(0, MAX_LIGNES_COLONNE * 2);
 
-        int w = Math.min(largeurEcran - 24, 440), x0 = (largeurEcran - w) / 2, y0 = 8, colW = (w - 24 - 10) / 2;
-        int lignesStaff = (staff.size() + 1) / 2, lignesAutres = (autres.size() + 1) / 2;
+        // taille au plus juste : une colonne jusqu'à 8 joueurs, deux au-delà ; largeur = la ligne la plus longue
+        int cols = tous.size() > 8 ? 2 : 1, colW = 110;
+        for (Joueur j : tous) colW = Math.max(colW, largeurLigne(f, mc, j));
+        float tw = Ui.spacedWidth(f, "HERALIZ", Ui.BOLD, 2.2f);
+        String enLigne = t("en_ligne", String.valueOf(tous.size())), pingTxt = t("ping", "000");
+        float wEnLigne = Ui.spacedWidth(f, enLigne.toUpperCase(Locale.ROOT), Ui.SMALL, 1.0f), wSous = Ui.spacedWidth(f, "MINECRAFT-DAYZ", Ui.SMALL, 1.0f);
+        int interieur = Math.max(cols * colW + (cols - 1) * 8, (int) (tw + 14 + wEnLigne));
+        interieur = Math.max(interieur, (int) (Ui.spacedWidth(f, "PLAY.HERALIZ.FR", Ui.SMALL, 1.0f) + 14 + Ui.spacedWidth(f, pingTxt.toUpperCase(Locale.ROOT), Ui.SMALL, 1.0f)));
+        if (cols == 2) colW = (interieur - 8) / 2;
+        else colW = interieur;
+        boolean sousTitre = interieur >= tw + wSous + wEnLigne + 26;
+        int w = Math.min(largeurEcran - 16, interieur + 24), x0 = (largeurEcran - w) / 2, y0 = 8;
+        int lignesStaff = (staff.size() + cols - 1) / cols, lignesAutres = (autres.size() + cols - 1) / cols;
         int h = 10 + 12 + 8 + (staff.isEmpty() ? 0 : 12 + lignesStaff * LIGNE_H + 4) + 12 + lignesAutres * LIGNE_H + (cachés > 0 ? LIGNE_H : 0) + 8 + 12 + 6;
 
         g.pose().pushPose();
@@ -103,9 +114,8 @@ public final class TabHeraliz {
 
         // en-tête
         Ui.spaced(g, f, "HERALIZ", Ui.BOLD, x, y, Ui.argb(Ui.TEXT, 255), 2.2f);
-        float tw = Ui.spacedWidth(f, "HERALIZ", Ui.BOLD, 2.2f);
-        Ui.spaced(g, f, "Minecraft-DayZ", Ui.SMALL, x + tw + 10, y + 1.5f, Ui.argb(Ui.MUTED, 255), 1.0f);
-        Ui.spacedRight(g, f, t("en_ligne", String.valueOf(tous.size())), Ui.SMALL, x0 + w - 12, y + 1.5f, Ui.argb(Ui.MUTED, 255), 1.0f);
+        if (sousTitre) Ui.spaced(g, f, "Minecraft-DayZ", Ui.SMALL, x + tw + 10, y + 1.5f, Ui.argb(Ui.MUTED, 255), 1.0f);
+        Ui.spacedRight(g, f, enLigne, Ui.SMALL, x0 + w - 12, y + 1.5f, Ui.argb(Ui.MUTED, 255), 1.0f);
         y += 14;
         Ui.hairline(g, x, x0 + w - 12, y, 0xFFFFFF, 60, false, true);
         y += 6;
@@ -114,11 +124,11 @@ public final class TabHeraliz {
         if (!staff.isEmpty()) {
             Ui.spaced(g, f, t("staff", String.valueOf(staff.size())), Ui.SMALL, x, y, Ui.argb(Ui.MUTED, 255), 1.0f);
             y += 12;
-            y = lignes(g, f, mc, staff, x, y, colW) + 4;
+            y = lignes(g, f, mc, staff, x, y, colW, cols) + 4;
         }
         Ui.spaced(g, f, t("survivants", String.valueOf(tous.size() - staff.size())), Ui.SMALL, x, y, Ui.argb(Ui.MUTED, 255), 1.0f);
         y += 12;
-        y = lignes(g, f, mc, autres, x, y, colW);
+        y = lignes(g, f, mc, autres, x, y, colW, cols);
         if (cachés > 0) {
             Ui.spaced(g, f, t("plus", String.valueOf(cachés)), Ui.SMALL, x, y + 2, Ui.argb(Ui.FAINT, 255), 0.6f);
             y += LIGNE_H;
@@ -134,12 +144,23 @@ public final class TabHeraliz {
         g.pose().popPose();
     }
 
-    /** Les joueurs sur deux colonnes ; rend le y sous la dernière ligne. */
-    private static int lignes(GuiGraphics g, Font f, Minecraft mc, List<Joueur> liste, int x, int y, int colW) {
+    /** Largeur d'une ligne : barre, grade, clan, pseudo, voix, ping. */
+    private static int largeurLigne(Font f, Minecraft mc, Joueur j) {
+        int w = 9;
+        if (j.grade() != Grade.SURVIVANT) w += (int) Ui.spacedWidth(f, j.grade().nomSansCouleur().getString().toUpperCase(Locale.ROOT), Ui.SMALL, 0.4f) + 5;
+        if (!j.clan().isEmpty()) w += f.width(Ui.lit("[" + j.clan() + "]", Ui.BOLD)) + 4;
+        w += f.width(Ui.lit(j.nom(), Ui.BOLD));
+        Component v = voix(j.info().getProfile().getId());
+        if (v != null) w += 3 + f.width(v);
+        return w + 10 + 14;
+    }
+
+    /** Les joueurs sur une ou deux colonnes ; rend le y sous la dernière ligne. */
+    private static int lignes(GuiGraphics g, Font f, Minecraft mc, List<Joueur> liste, int x, int y, int colW, int cols) {
         for (int i = 0; i < liste.size(); i++) {
-            int cx = x + (i % 2) * (colW + 10), cy = y + (i / 2) * LIGNE_H;
+            int cx = x + (i % cols) * (colW + 8), cy = y + (i / cols) * LIGNE_H;
             Joueur j = liste.get(i);
-            if ((i / 2) % 2 == 0) g.fill(cx, cy, cx + colW, cy + LIGNE_H - 1, Ui.argb(0xFFFFFF, 9));
+            if ((i / cols) % 2 == 0) g.fill(cx, cy, cx + colW, cy + LIGNE_H - 1, Ui.argb(0xFFFFFF, 9));
             g.fill(cx + 3, cy + 2, cx + 5, cy + LIGNE_H - 3, Ui.argb(j.grade().couleur, 255));
             int tx = cx + 9;
             if (j.grade() != Grade.SURVIVANT) {
@@ -156,7 +177,7 @@ public final class TabHeraliz {
             if (v != null) g.drawString(f, v, tx + 3, cy + 1, 0xFFFFFFFF, false);
             ping(g, cx + colW - 14, cy + 2, j.info().getLatency());
         }
-        return y + ((liste.size() + 1) / 2) * LIGNE_H;
+        return y + ((liste.size() + cols - 1) / cols) * LIGNE_H;
     }
 
     /** Ping en 5 barres : vert (bon), ambre (moyen), rouge (mauvais). */

@@ -1,13 +1,15 @@
 package fr.heraliz.grades.serveur;
 
 import com.mojang.logging.LogUtils;
+import fr.heraliz.grades.Grade;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Method;
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -58,15 +60,27 @@ final class TagClan {
         return c == null ? "" : c.getString() + "#" + (c.getStyle().getColor() == null ? "" : c.getStyle().getColor().serialize());
     }
 
-    /** Le tag en codes couleur Bukkit (§x§R§R§G§G§B§B), "" sans clan. */
+    /** Le tag seul, sans crochets ni espace (« ZK »). */
+    static String tag(MutableComponent c) {
+        return c == null ? "" : c.getString().trim().replaceAll("^\\[|\\]$", "").replace('§', ' ');
+    }
+
+    private static int couleur(MutableComponent c) {
+        TextColor tc = c.getStyle().getColor();
+        return tc == null ? 0xFFFFFF : tc.getValue();
+    }
+
+    /** « [ZK] » : crochets gris foncé, tag à la couleur du clan ; null sans clan. */
+    static MutableComponent joli(MutableComponent c) {
+        if (c == null) return null;
+        return Component.literal("[").withStyle(ChatFormatting.DARK_GRAY)
+                .append(Component.literal(tag(c)).withStyle(st -> st.withColor(TextColor.fromRgb(couleur(c)))))
+                .append(Component.literal("] ").withStyle(ChatFormatting.DARK_GRAY));
+    }
+
+    /** Le même tag en codes couleur Bukkit, "" sans clan. */
     static String bukkit(MutableComponent c) {
         if (c == null) return "";
-        TextColor tc = c.getStyle().getColor();
-        StringBuilder sb = new StringBuilder();
-        if (tc != null) {
-            sb.append("§x");
-            for (char ch : String.format(Locale.ROOT, "%06X", tc.getValue() & 0xFFFFFF).toCharArray()) sb.append('§').append(ch);
-        }
-        return sb.append(c.getString().replace('§', ' ')).append("§r").toString();
+        return "§8[" + Grade.couleurBukkit(couleur(c)) + tag(c) + "§8]§r ";
     }
 }

@@ -67,8 +67,11 @@ public final class ServeurGrades implements Partie {
         if (registre == null || !(e.getEntity() instanceof ServerPlayer p)) return;
         net.minecraft.network.chat.MutableComponent clan = TagClan.prefixe(p);
         CLANS.put(p.getUUID(), TagClan.texte(clan));
-        net.minecraft.network.chat.MutableComponent nom = registre.affiche(p.getUUID()).prefixe().append(e.getDisplayname());
-        e.setDisplayname(clan == null ? nom : clan.append(nom));
+        // morceaux côte à côte (pas imbriqués) : le pseudo garde sa couleur au lieu d'hériter de celle du grade ou du clan
+        net.minecraft.network.chat.MutableComponent nom = net.minecraft.network.chat.Component.empty();
+        if (clan != null) nom.append(TagClan.joli(clan));
+        nom.append(registre.affiche(p.getUUID()).prefixe()).append(e.getDisplayname());
+        e.setDisplayname(nom);
     }
 
     /** Liste Tab : le nom affiché complet (clan + grade + pseudo), à la place du nom posé par les clans (tag en double). */
@@ -79,6 +82,7 @@ public final class ServeurGrades implements Partie {
 
     private static void connexion(PlayerEvent.PlayerLoggedInEvent e) {
         if (registre == null || !(e.getEntity() instanceof ServerPlayer p)) return;
+        PontBukkit.brancherChat();
         registre.noterNom(p.getUUID(), p.getGameProfile().getName());
         rafraichir(p);
         TabServeur.maj(p.server, true);
@@ -117,6 +121,6 @@ public final class ServeurGrades implements Partie {
 
     private static String nomBukkit(ServerPlayer p) {
         Grade g = registre == null ? Grade.SURVIVANT : registre.affiche(p.getUUID());
-        return TagClan.bukkit(TagClan.prefixe(p)) + g.prefixeBukkit() + p.getGameProfile().getName();
+        return TagClan.bukkit(TagClan.prefixe(p)) + g.prefixeBukkit() + "§f" + p.getGameProfile().getName();
     }
 }

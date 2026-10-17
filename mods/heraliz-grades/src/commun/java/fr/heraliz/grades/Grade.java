@@ -65,17 +65,25 @@ public enum Grade {
       return Component.translatableWithFallback("grade.heraliz_grades." + id, nomFr);
    }
 
-   /** Préfixe « [Traqueur] » placé devant le pseudo. */
+   /**
+    * Préfixe placé devant le pseudo : le nom du grade en couleur et en gras, sans crochets (« TRAQUEUR Pseudo ») ;
+    * Survivant, discret (gris, pas en gras).
+    */
    public MutableComponent prefixe() {
-      return Component.literal("[").append(Component.translatableWithFallback("grade.heraliz_grades." + id, nomFr)).append("] ")
-            .withStyle(st -> st.withColor(TextColor.fromRgb(couleur)));
+      boolean discret = this == SURVIVANT;
+      return Component.literal(nomFr.toUpperCase(Locale.ROOT)).withStyle(st -> st.withColor(TextColor.fromRgb(couleur)).withBold(!discret))
+            .append(Component.literal(" ").withStyle(st -> st.withBold(false)));
    }
 
-   /** Préfixe en codes couleur Bukkit (§x§R§R§G§G§B§B), pour le nom affiché dans le chat des serveurs hybrides. */
+   /** Le même préfixe en codes couleur Bukkit (§x§R§R§G§G§B§B), pour le nom affiché dans le chat des serveurs hybrides. */
    public String prefixeBukkit() {
-      String hex = String.format(Locale.ROOT, "%06X", couleur);
+      return couleurBukkit(couleur) + (this == SURVIVANT ? "" : "§l") + nomFr.toUpperCase(Locale.ROOT) + "§r ";
+   }
+
+   /** Code couleur Bukkit d'une couleur RGB (§x§R§R§G§G§B§B). */
+   public static String couleurBukkit(int rgb) {
       StringBuilder sb = new StringBuilder("§x");
-      for (char c : hex.toCharArray()) sb.append('§').append(c);
-      return sb.append('[').append(nomFr).append("] §r").toString();
+      for (char c : String.format(Locale.ROOT, "%06X", rgb & 0xFFFFFF).toCharArray()) sb.append('§').append(c);
+      return sb.toString();
    }
 }

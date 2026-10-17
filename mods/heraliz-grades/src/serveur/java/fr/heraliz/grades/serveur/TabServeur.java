@@ -29,7 +29,7 @@ final class TabServeur {
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
             Grade g = ServeurGrades.registre == null ? Grade.SURVIVANT : ServeurGrades.registre.affiche(p.getUUID());
             MutableComponent clan = TagClan.prefixe(p);
-            String tag = clan == null ? "" : clan.getString().trim().replaceAll("^\\[|\\]$", "");
+            String tag = TagClan.tag(clan);
             int couleur = clan == null || clan.getStyle().getColor() == null ? 0xFFFFFF : clan.getStyle().getColor().getValue();
             out.add(new ReseauGrades.LigneTab(p.getUUID(), g.id, tag.length() > 16 ? tag.substring(0, 16) : tag, couleur));
         }
