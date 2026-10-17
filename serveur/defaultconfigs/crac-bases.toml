@@ -69,6 +69,10 @@
 	#Fondations au moins sous le Claim Block pour que la base compte comme posee.
 	#Range: 1 ~ 64
 	fondations_min = 2
+	#Temps de lecture des etapes du tutoriel qui avancent seules (pourcentage : 100 = normal,
+	#150 = moitie plus long). Les etapes a faire avancent quand le joueur l'a fait.
+	#Range: 25 ~ 400
+	lecture_pourcent = 100
 
 #Protection de la base d'un nouveau joueur, une fois posee (pas de raid).
 [protection]

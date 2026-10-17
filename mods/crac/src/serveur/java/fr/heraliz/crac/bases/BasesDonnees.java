@@ -73,6 +73,11 @@ public final class BasesDonnees extends SafeSavedData {
         public boolean protectionDue;
         /** Le home « base » automatique a déjà été donné (première base ou migration) : jamais redonné. */
         public boolean homeAuto;
+        /**
+         * Étape du tutoriel affichée à l'écran (identifiant de {@link EtapesTuto}) : vide = pas commencé (ou données
+         * d'avant la 1.7.0), {@link EtapesTuto#FINI} = parcours terminé.
+         */
+        public String tuto = "";
         /** Homes du joueur, par nom (ordre de création). */
         public final Map<String, Home> homes = new LinkedHashMap<>();
 
@@ -84,6 +89,7 @@ public final class BasesDonnees extends SafeSavedData {
             t.putLong("Zone", this.dernierZone);
             t.putBoolean("Due", this.protectionDue);
             t.putBoolean("HomeAuto", this.homeAuto);
+            t.putString("Tuto", this.tuto);
             ListTag hs = new ListTag();
             this.homes.forEach((nom, h) -> hs.add(h.save(nom)));
             t.put("Homes", hs);
@@ -98,6 +104,7 @@ public final class BasesDonnees extends SafeSavedData {
             j.dernierZone = t.getLong("Zone");
             j.protectionDue = t.getBoolean("Due");
             j.homeAuto = t.getBoolean("HomeAuto");
+            j.tuto = t.getString("Tuto");
             ListTag hs = t.getList("Homes", Tag.TAG_COMPOUND);
             for (int i = 0; i < hs.size(); i++) {
                 CompoundTag h = hs.getCompound(i);

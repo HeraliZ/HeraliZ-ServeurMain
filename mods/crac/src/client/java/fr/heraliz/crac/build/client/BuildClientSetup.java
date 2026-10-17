@@ -37,6 +37,8 @@ public final class BuildClientSetup {
             event.registerAbove(VanillaGuiOverlay.CROSSHAIR.id(), "building", BuildHud::render);
             // once per frame, above everything (it used to be drawn after every overlay of the HUD)
             event.registerAboveAll("raid_block", RaidBlockOverlay::render);
+            // tutoriel des bases (1.7.0) : une étape à la fois, petite carte en haut à gauche
+            event.registerAboveAll("tutoriel", fr.heraliz.crac.bases.HudTutoriel::render);
         }
 
         @SubscribeEvent

@@ -7,13 +7,11 @@ import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import fr.heraliz.crac.Config;
 import fr.heraliz.crac.Crac;
@@ -28,14 +26,14 @@ import fr.heraliz.crac.group.GroupData;
 import fr.heraliz.crac.group.GroupNames;
 import fr.heraliz.crac.heraliz.ClanAccess;
 import fr.heraliz.crac.heraliz.Reply;
+import fr.heraliz.crac.network.NetworkHandler;
+import fr.heraliz.crac.network.S2CTutoriel;
 import fr.heraliz.crac.registry.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -48,26 +46,33 @@ import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.network.PacketDistributor;
 
 /**
  * Tutoriel du monde des bases, après la cinématique d'arrivée de HeraliZ Utils, pour un joueur qui n'a jamais eu de base.
+ * Depuis la 1.7.0 : <b>une étape à la fois</b>, dans une petite carte en haut à gauche de l'écran (S2CTutoriel, dessinée
+ * par {@code bases.HudTutoriel} du jar joueur) ; plus de grands titres au milieu de l'écran ni de pluie de messages dans
+ * le chat (une ligne au début, une à la fin). Le parcours est dans {@link EtapesTuto} ; le serveur seul le fait avancer.
  * <ol>
  *   <li>Au spawn ({@code heralisz:spawn}), quand la cinématique a commencé (donnée persistante
  *   {@code heraliz_cinematique_vue} de Utils, lue par son nom) : on attend {@code [tuto] attente_min_s} secondes puis le
  *   premier pas du joueur, ou au plus {@code attente_max_s} secondes (la cinématique dure environ 122 s ; Utils n'envoie
  *   pas d'évènement de fin).</li>
- *   <li>Titres à l'écran, puis le kit : de quoi bâtir avec CRac une cabane 2 × 1 avec une porte (2 fondations, 5 murs,
- *   1 pièce « Porte », 2 planchers en toit), calculé avec les coûts réels de crac-building.toml, plus la mise en bois au
- *   marteau, un jour d'entretien du Claim Block et une marge de 10 % ; un groupe CRac est créé pour lui s'il n'en a pas.</li>
- *   <li>Envoi dans le monde des bases, à un point plat tiré au hasard loin des autres bases : il y est protégé
- *   ({@link Protections}) tant que sa base n'est pas posée.</li>
+ *   <li>Étapes du spawn : accueil, kit (de quoi bâtir avec CRac une cabane 2 × 1 avec une porte, calculé avec les coûts
+ *   réels de crac-building.toml, plus la mise en bois au marteau, un jour d'entretien du Claim Block et une marge de
+ *   10 % ; un groupe CRac est créé pour lui s'il n'en a pas), départ : envoi dans le monde des bases, à un point plat
+ *   tiré au hasard loin des autres bases, où il est protégé ({@link Protections}) tant que sa base n'est pas posée.</li>
+ *   <li>Étapes du monde des bases : plan en main, première fondation, Claim Block, deuxième fondation (base posée), murs,
+ *   porte, toit, mise en bois, entretien, commandes. Chaque étape « action » avance quand le serveur voit la chose faite.</li>
  * </ol>
- * Le tutoriel automatique ne vise que les joueurs en survie ou en aventure (en créatif ou en spectateur, rien), à l'étape
- * AUCUNE (jamais fait) et sans base. Staff (permission 2) :
+ * Une étape qui n'est pas dans son monde (spawn ou monde des bases) attend, carte cachée ; à la reconnexion, le joueur
+ * reprend à son étape (gardée dans {@link BasesDonnees.Joueur#tuto}). Le tutoriel automatique ne vise que les joueurs
+ * en survie ou en aventure (en créatif ou en spectateur, rien), à l'étape AUCUNE (jamais fait) et sans base. Staff
+ * (permission 2) :
  * <ul>
- *   <li>{@code /tuto lancer <joueur>} : le tutoriel complet TOUT DE SUITE (titres, kit, envoi), où que soit le joueur,
- *   même en créatif, même s'il a déjà une base ou l'a déjà fait (la protection de base n'est redonnée qu'à un joueur
- *   sans base) ;</li>
+ *   <li>{@code /tuto lancer <joueur>} : le tutoriel complet TOUT DE SUITE, où que soit le joueur (étapes du spawn
+ *   comprises), même en créatif, même s'il a déjà une base ou l'a déjà fait (la protection de base n'est redonnée qu'à un
+ *   joueur sans base) ;</li>
  *   <li>{@code /tuto rejouer <joueur>} : remise à zéro (il repart au spawn, comme un nouveau joueur) ;</li>
  *   <li>la cinématique rejouée par le staff ({@code /cinematique} pour soi, {@code /cinematique joueur <cibles>})
  *   relance aussi le tutoriel du joueur à la fin de la cinématique, comme {@code /tuto lancer} (un joueur qui rejoue sa
@@ -88,29 +93,52 @@ public final class Tutoriel {
         CABANE.put(PieceKind.FLOOR, 2);
     }
 
+    /** Ticks d'affichage au moins d'une étape « action », même déjà faite (jamais deux étapes d'un coup). */
+    static final int MIN_ACTION = 50;
+    /** Ticks du moment « Étape terminée » avant la suivante. */
+    static final int T_FAIT = 40;
+    /** Constat des étapes « action » tous les N ticks (pièces relevées dans le monde des bases). */
+    private static final int T_CONSTAT = 10;
+
     /** Attente de la fin de la cinématique : heure de jeu du début, position, relancée par le staff (cinématique rejouée). */
     private record Attente(long debut, Vec3 pos, boolean force) {
     }
 
+    /** Où en est un joueur connecté dans le parcours (l'étape elle-même est gardée dans les données). */
+    private static final class Suivi {
+        int index;
+        /** Lancé par le staff : les étapes du spawn se déroulent où que soit le joueur. */
+        boolean force;
+        /** Ticks passés sur l'étape (seulement quand le joueur est dans le monde de l'étape). */
+        int ticks;
+        /** Ticks depuis la fin de l'étape, -1 tant qu'elle n'est pas faite. */
+        int faitDepuis = -1;
+        int compte;
+        int objectif;
+        /** Le joueur peut avoir une carte à l'écran (celle de l'étape d'avant au début) : à cacher s'il n'est pas au bon endroit. */
+        boolean visible = true;
+        /** L'étape a été envoyée au joueur. */
+        boolean montre;
+        /** Envois ratés d'une étape « départ » lancée par le staff. */
+        int essais;
+    }
+
     /** Joueurs qui attendent la fin de la cinématique (heure de jeu du début, position). */
     private static final Map<UUID, Attente> ATTENTES = new HashMap<>();
-    /** Séquences en cours (tick de la séquence), étape KIT comprise. */
-    private static final Map<UUID, Integer> SEQUENCES = new HashMap<>();
-    /** Séquences lancées par le staff : elles se déroulent où que soit le joueur (pas seulement au spawn). */
-    private static final Set<UUID> FORCES = new HashSet<>();
-    /** Essais d'envoi ratés (aucune place trouvée) d'une séquence lancée par le staff. */
-    private static final Map<UUID, Integer> ESSAIS = new HashMap<>();
+    /** Joueurs connectés dont le tutoriel est en cours. */
+    private static final Map<UUID, Suivi> SUIVIS = new HashMap<>();
     private static final int ESSAIS_MAX = 5;
-
-    private static final int T_TITRE_2 = 80;
-    private static final int T_TITRE_3 = 170;
-    private static final int T_ENVOI = 230;
 
     private Tutoriel() {
     }
 
     private static boolean actif() {
         return BasesReglages.b(BasesReglages.TUTO_ACTIF, true);
+    }
+
+    /** Le tutoriel de ce joueur est en cours (carte à l'écran). */
+    static boolean enCours(UUID joueur) {
+        return SUIVIS.containsKey(joueur);
     }
 
     // ---------------------------------------------------------------------------------------------- détection
@@ -124,7 +152,7 @@ public final class Tutoriel {
         long now = server.overworld().getGameTime();
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             UUID id = p.getUUID();
-            if (SEQUENCES.containsKey(id)) {
+            if (SUIVIS.containsKey(id)) {
                 continue;
             }
             Attente f = ATTENTES.get(id);
@@ -136,10 +164,17 @@ public final class Tutoriel {
                 }
                 continue;
             }
+            BasesDonnees.Joueur j = d.joueur(id);
+            // reprise après une déconnexion ou un redémarrage, à l'étape gardée
+            if (!j.tuto.isEmpty() && !EtapesTuto.FINI.equals(j.tuto)) {
+                if (!p.isSpectator()) {
+                    reprendre(p, j.tuto, false);
+                }
+                continue;
+            }
             if (p.isSpectator() || p.isCreative()) {
                 continue;
             }
-            BasesDonnees.Joueur j = d.joueur(id);
             switch (j.etape) {
                 case AUCUNE -> {
                     if (aUneBase(p)) {
@@ -148,20 +183,25 @@ public final class Tutoriel {
                         ATTENTES.remove(id);
                         continue;
                     }
-                    if (!MondeBases.estSpawn(p.level()) || !cinematiqueVue(p)) {
+                    if (EtapesTuto.FINI.equals(j.tuto) || !MondeBases.estSpawn(p.level()) || !cinematiqueVue(p)) {
                         ATTENTES.remove(id);
                         continue;
                     }
                     Attente a = ATTENTES.computeIfAbsent(id, k -> new Attente(now, p.position(), false));
                     if (pret(p, a, now)) {
                         ATTENTES.remove(id);
-                        SEQUENCES.put(id, 0);
+                        demarrer(p, false);
                     }
                 }
+                // données d'avant la 1.7.0 (pas d'étape gardée) : kit reçu, pas encore envoyé ; ou déjà dans le monde des bases
                 case KIT -> {
-                    // kit déjà reçu (déconnecté avant l'envoi) : de retour au spawn, on repart à l'envoi
-                    if (MondeBases.estSpawn(p.level())) {
-                        SEQUENCES.put(id, T_TITRE_3 - 20);
+                    if (j.tuto.isEmpty()) {
+                        reprendre(p, "depart", false);
+                    }
+                }
+                case PHASE -> {
+                    if (j.tuto.isEmpty()) {
+                        reprendre(p, "coin", false);
                     }
                 }
                 default -> ATTENTES.remove(id);
@@ -178,52 +218,141 @@ public final class Tutoriel {
     }
 
     /**
-     * Le tutoriel complet tout de suite (titres, kit, envoi), où que soit le joueur : étape remise à AUCUNE pour que le
-     * kit soit donné ; protection de base due seulement s'il n'a pas de base (dans le kit).
+     * Le tutoriel complet tout de suite, où que soit le joueur : étape remise à AUCUNE pour que le kit soit donné ;
+     * protection de base due seulement s'il n'a pas de base (dans le kit).
      */
     static void lancer(ServerPlayer p) {
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
         j.etape = BasesDonnees.Etape.AUCUNE;
         j.phaseTicks = 0;
+        j.tuto = "";
         d.marquer();
         ATTENTES.remove(p.getUUID());
-        ESSAIS.remove(p.getUUID());
-        FORCES.add(p.getUUID());
-        SEQUENCES.put(p.getUUID(), 0);
+        demarrer(p, true);
         Crac.LOGGER.info("[CRac] tutoriel lancé pour {}", p.getGameProfile().getName());
     }
 
-    /** Chaque tick (MondeBasesServeur) : déroulé des séquences. */
+    /** Début du parcours : première étape utile, une ligne dans le chat. */
+    private static void demarrer(ServerPlayer p, boolean force) {
+        int i = suivante(p, -1);
+        if (i < 0) {
+            return;
+        }
+        T.chat(p, T.t("crac.tuto.debut", "[Tuto] Suis les étapes en haut à gauche de ton écran."), ChatFormatting.YELLOW);
+        entrer(p, i, force);
+    }
+
+    /** Reprise à l'étape {@code id} (inconnue : au début). */
+    private static void reprendre(ServerPlayer p, String id, boolean force) {
+        int i = EtapesTuto.index(id);
+        if (i < 0 || !EtapesTuto.PARCOURS.get(i).utile().test(p)) {
+            i = suivante(p, Math.max(-1, i));
+        }
+        if (i < 0) {
+            finir(p);
+            return;
+        }
+        entrer(p, i, force);
+    }
+
+    /** Index de la prochaine étape utile après {@code i}, -1 s'il n'y en a plus. */
+    private static int suivante(ServerPlayer p, int i) {
+        for (int k = i + 1; k < EtapesTuto.PARCOURS.size(); k++) {
+            if (EtapesTuto.PARCOURS.get(k).utile().test(p)) {
+                return k;
+            }
+        }
+        return -1;
+    }
+
+    private static void entrer(ServerPlayer p, int i, boolean force) {
+        EtapesTuto.Pas pas = EtapesTuto.PARCOURS.get(i);
+        Suivi s = new Suivi();
+        s.index = i;
+        s.force = force;
+        SUIVIS.put(p.getUUID(), s);
+        BasesDonnees d = BasesDonnees.get(p.server);
+        d.joueur(p.getUUID()).tuto = pas.id();
+        d.marquer();
+        if (pas.entree() != null) {
+            try {
+                pas.entree().accept(p);
+            } catch (RuntimeException ex) {
+                Crac.LOGGER.error("[CRac] tutoriel : étape {} en erreur", pas.id(), ex);
+            }
+        }
+    }
+
+    /** Fin du parcours : carte retirée, une ligne dans le chat (les commandes à retenir). */
+    private static void finir(ServerPlayer p) {
+        SUIVIS.remove(p.getUUID());
+        BasesDonnees d = BasesDonnees.get(p.server);
+        BasesDonnees.Joueur j = d.joueur(p.getUUID());
+        j.tuto = EtapesTuto.FINI;
+        if (j.etape == BasesDonnees.Etape.AUCUNE || j.etape == BasesDonnees.Etape.KIT) {
+            j.etape = BasesDonnees.Etape.FINI;
+        }
+        d.marquer();
+        paquet(p, S2CTutoriel.cache());
+        T.chat(p, T.t("crac.tuto.fin", "[Tuto] Terminé. Du spawn : /home vers ta base. De ta base : /spawn. Amis : /group."),
+            ChatFormatting.GRAY);
+        Crac.LOGGER.info("[CRac] tutoriel terminé pour {}", p.getGameProfile().getName());
+    }
+
+    /** Chaque tick (MondeBasesServeur) : déroulé des étapes. */
     static void tick(MinecraftServer server) {
-        if (SEQUENCES.isEmpty()) {
+        if (SUIVIS.isEmpty()) {
             return;
         }
         List<Runnable> actions = new ArrayList<>();
-        Iterator<Map.Entry<UUID, Integer>> it = SEQUENCES.entrySet().iterator();
+        Iterator<Map.Entry<UUID, Suivi>> it = SUIVIS.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<UUID, Integer> e = it.next();
+            Map.Entry<UUID, Suivi> e = it.next();
             ServerPlayer p = server.getPlayerList().getPlayer(e.getKey());
-            boolean force = FORCES.contains(e.getKey());
-            if (p == null || !force && !MondeBases.estSpawn(p.level()) || !p.isAlive()) {
+            if (p == null) {
                 it.remove();
-                FORCES.remove(e.getKey());
-                ESSAIS.remove(e.getKey());
                 continue;
             }
-            int t = e.getValue();
-            if (t == 0) {
-                actions.add(() -> titre1(p));
-            } else if (t == T_TITRE_2) {
-                actions.add(() -> kit(p));
-            } else if (t == T_TITRE_3) {
-                actions.add(() -> titre3(p));
-            } else if (t >= T_ENVOI) {
-                it.remove();
-                actions.add(() -> envoyer(p, force));
+            Suivi s = e.getValue();
+            EtapesTuto.Pas pas = EtapesTuto.PARCOURS.get(s.index);
+            boolean ici = p.isAlive() && (s.force && pas.lieu() == EtapesTuto.Lieu.SPAWN || pas.lieu().ok(p));
+            if (!ici) {
+                // hors du monde de l'étape (ou mort) : elle attend, carte cachée
+                if (s.visible) {
+                    s.visible = false;
+                    paquet(p, S2CTutoriel.cache());
+                }
                 continue;
             }
-            e.setValue(t + 1);
+            if (!s.visible || !s.montre) {
+                s.visible = true;
+                s.montre = true;
+                if (s.ticks == 0 && pas.progres() != null) {
+                    constater(p, s, pas);
+                }
+                montrer(p, s, pas);
+            }
+            s.ticks++;
+            if (s.faitDepuis >= 0) {
+                if (++s.faitDepuis >= T_FAIT) {
+                    actions.add(() -> quitter(p, s, pas));
+                }
+                continue;
+            }
+            boolean fait;
+            if (pas.progres() == null) {
+                fait = s.ticks >= lecture(pas);
+            } else {
+                if (s.ticks % T_CONSTAT == 0 && constater(p, s, pas)) {
+                    montrer(p, s, pas);
+                }
+                fait = s.ticks >= MIN_ACTION && s.compte >= Math.max(1, s.objectif);
+            }
+            if (fait) {
+                s.faitDepuis = 0;
+                montrer(p, s, pas);
+            }
         }
         for (Runnable r : actions) {
             try {
@@ -234,11 +363,77 @@ public final class Tutoriel {
         }
     }
 
+    /** Relève l'avancée d'une étape « action » ; vrai si elle a changé. */
+    private static boolean constater(ServerPlayer p, Suivi s, EtapesTuto.Pas pas) {
+        int[] r;
+        try {
+            r = pas.progres().apply(p);
+        } catch (RuntimeException ex) {
+            Crac.LOGGER.debug("[CRac] tutoriel : constat de {} impossible ({})", pas.id(), ex.toString());
+            return false;
+        }
+        boolean change = r[0] != s.compte || r[1] != s.objectif;
+        s.compte = r[0];
+        s.objectif = r[1];
+        return change;
+    }
+
+    /** Fin du moment « Étape terminée » : action de sortie (envoi...), puis étape suivante. */
+    private static void quitter(ServerPlayer p, Suivi s, EtapesTuto.Pas pas) {
+        if (SUIVIS.get(p.getUUID()) != s) {
+            return;
+        }
+        if (pas.sortie() != null && !pas.sortie().test(p)) {
+            // à réessayer dans une seconde (aucune place libre pour l'envoi) ; lancé par le staff : 5 essais au plus,
+            // ensuite l'étape attend que le joueur soit au spawn
+            s.faitDepuis = T_FAIT - 20;
+            if (s.force && ++s.essais >= ESSAIS_MAX) {
+                s.force = false;
+            }
+            return;
+        }
+        int i = suivante(p, s.index);
+        if (i < 0) {
+            finir(p);
+            return;
+        }
+        // la nouvelle carte est montrée au tick suivant, si le joueur est dans le monde de l'étape (sinon : cachée)
+        entrer(p, i, s.force);
+    }
+
+    /** Ticks de lecture d'une étape « lecture » ({@code [tuto] lecture_pourcent}). */
+    private static int lecture(EtapesTuto.Pas pas) {
+        return Math.max(40, pas.lectureS() * 20 * BasesReglages.i(BasesReglages.LECTURE_POURCENT, 100) / 100);
+    }
+
+    /** Envoie l'état de l'étape au joueur. */
+    private static void montrer(ServerPlayer p, Suivi s, EtapesTuto.Pas pas) {
+        int numero = 0, total = 0;
+        for (int k = 0; k < EtapesTuto.PARCOURS.size(); k++) {
+            if (k == s.index || EtapesTuto.PARCOURS.get(k).utile().test(p)) {
+                total++;
+                if (k <= s.index) {
+                    numero = total;
+                }
+            }
+        }
+        List<String> touches = new ArrayList<>(), legendes = new ArrayList<>();
+        for (EtapesTuto.Touche t : pas.touches()) {
+            touches.add(t.jeton());
+            legendes.add(t.legende());
+        }
+        boolean lecture = pas.progres() == null;
+        paquet(p, new S2CTutoriel(true, numero, total, s.faitDepuis >= 0, pas.titre(), pas.texte().apply(p), touches, legendes,
+            lecture ? 0 : s.compte, lecture || !pas.compteur() ? 0 : s.objectif, lecture ? Math.max(0, lecture(pas) - s.ticks) : 0));
+    }
+
+    private static void paquet(ServerPlayer p, S2CTutoriel msg) {
+        NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), msg);
+    }
+
     static void oublier(UUID joueur) {
         ATTENTES.remove(joueur);
-        SEQUENCES.remove(joueur);
-        FORCES.remove(joueur);
-        ESSAIS.remove(joueur);
+        SUIVIS.remove(joueur);
     }
 
     static boolean aUneBase(ServerPlayer p) {
@@ -254,98 +449,50 @@ public final class Tutoriel {
         return root.contains(Player.PERSISTED_NBT_TAG) && root.getCompound(Player.PERSISTED_NBT_TAG).getBoolean(CINEMATIQUE_VUE);
     }
 
-    // ---------------------------------------------------------------------------------------------- étapes
+    // ---------------------------------------------------------------------------------------------- actions des étapes
 
-    private static void titre1(ServerPlayer p) {
-        T.titre(p, T.t("crac.tuto.titre1", "Bienvenue, survivant").withStyle(ChatFormatting.GOLD),
-            T.t("crac.tuto.sous1", "Il te faut un abri avant la nuit."), 70);
-    }
-
-    private static void kit(ServerPlayer p) {
+    /** Étape « kit » (à l'entrée) : le kit et le groupe, une seule fois (étape AUCUNE). */
+    static void donnerKit(ServerPlayer p) {
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
-        T.titre(p, T.t("crac.tuto.titre2", "Ta première base").withStyle(ChatFormatting.GOLD),
-            T.t("crac.tuto.sous2", "Voici de quoi bâtir une cabane 2 × 1 avec une porte."), 80);
-        if (j.etape == BasesDonnees.Etape.AUCUNE) {
-            Group g = groupe(p);
-            List<ItemStack> kit = contenuKit();
-            for (ItemStack s : kit) {
-                donner(p, s.copy());
-            }
-            // noms des objets traduits chez le joueur (le serveur n'a pas les langues des mods)
-            MutableComponent liste = Component.empty();
-            boolean premier = true;
-            for (Map.Entry<Item, Integer> e : totaux(kit).entrySet()) {
-                if (!premier) {
-                    liste.append(", ");
-                }
-                premier = false;
-                liste.append(e.getValue() + " × ").append(new ItemStack(e.getKey()).getHoverName());
-            }
-            j.etape = BasesDonnees.Etape.KIT;
-            // un joueur qui a déjà une base (tuto relancé par le staff) ne regagne pas la protection de base
-            j.protectionDue = !aUneBase(p);
-            j.phaseTicks = 0;
-            d.marquer();
-            T.chat(p, T.t("crac.tuto.kit", "[Tuto] Kit reçu : %s.", liste), ChatFormatting.YELLOW);
-            if (g != null) {
-                T.chat(p, T.t("crac.tuto.groupe", "[Tuto] Ta base appartient à ton groupe « %s » (/group pour y inviter tes amis).",
-                    g.name()), ChatFormatting.YELLOW);
-            }
-            Crac.LOGGER.info("[CRac] tutoriel : kit de base donné à {}", p.getGameProfile().getName());
+        if (j.etape != BasesDonnees.Etape.AUCUNE) {
+            return;
         }
+        groupe(p);
+        for (ItemStack s : contenuKit()) {
+            donner(p, s.copy());
+        }
+        j.etape = BasesDonnees.Etape.KIT;
+        // un joueur qui a déjà une base (tuto relancé par le staff) ne regagne pas la protection de base
+        j.protectionDue = !aUneBase(p);
+        j.phaseTicks = 0;
+        d.marquer();
+        Crac.LOGGER.info("[CRac] tutoriel : kit de base donné à {}", p.getGameProfile().getName());
     }
 
-    private static void titre3(ServerPlayer p) {
-        T.titre(p, T.t("crac.tuto.titre3", "Monde des bases").withStyle(ChatFormatting.GOLD),
-            T.t("crac.tuto.sous3", "Tu es protégé (contour vert) tant que ta base n'est pas posée."), 80);
-    }
-
-    private static void envoyer(ServerPlayer p, boolean force) {
+    /** Étape « départ » (à la sortie) : envoi dans le monde des bases ; faux si aucune place sûre n'a été trouvée. */
+    static boolean envoyer(ServerPlayer p) {
         ServerLevel bases = p.server.getLevel(MondeBases.BASES);
         if (bases == null) {
-            FORCES.remove(p.getUUID());
-            return;
+            return false;
         }
         Vec3 dest = Points.auHasard(bases, p);
         if (dest == null) {
-            T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée dans le monde des bases : réessaie dans un instant."),
+            T.barre(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée dans le monde des bases : réessaie dans un instant."),
                 ChatFormatting.RED);
-            int n = ESSAIS.merge(p.getUUID(), 1, Integer::sum);
-            if (force && n < ESSAIS_MAX) {
-                FORCES.add(p.getUUID());
-                SEQUENCES.put(p.getUUID(), T_ENVOI - 20);   // nouvel essai dans une seconde, où qu'il soit
-            } else {
-                FORCES.remove(p.getUUID());
-                ESSAIS.remove(p.getUUID());
-            }
-            return;   // étape KIT : au spawn, nouvel essai à la prochaine seconde
+            return false;
         }
-        FORCES.remove(p.getUUID());
-        ESSAIS.remove(p.getUUID());
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
         p.stopRiding();
         p.teleportTo(bases, dest.x, dest.y, dest.z, p.getYRot(), 0f);
         p.resetFallDistance();
-        j.etape = BasesDonnees.Etape.PHASE;
-        j.phaseTicks = 0;
+        if (j.etape == BasesDonnees.Etape.AUCUNE || j.etape == BasesDonnees.Etape.KIT) {
+            j.etape = BasesDonnees.Etape.PHASE;
+            j.phaseTicks = 0;
+        }
         d.marquer();
-        long max = BasesReglages.i(BasesReglages.PHASE_MAX_MIN, 120) * 60_000L;
-        int fond = BasesReglages.i(BasesReglages.FONDATIONS_MIN, 2);
-        // dans le chat une demi-seconde après l'arrivée (écran de chargement du monde passé)
-        Deplacements.apres(p, T.t("crac.tuto.etape1", "[Tuto] 1. Trouve un coin plat qui te plaît. Le monde des bases est en PvP : seul ton contour vert te protège, pendant %s au plus.",
-            T.duree(max)).withStyle(ChatFormatting.YELLOW));
-        Deplacements.apres(p, T.t("crac.tuto.etape2", "[Tuto] 2. Plan de construction en main, clic droit : pose %s fondations côte à côte.",
-            String.valueOf(fond)).withStyle(ChatFormatting.YELLOW));
-        Deplacements.apres(p, T.t("crac.tuto.etape3", "[Tuto] 3. Puis 5 murs, 1 porte (pièce « Porte » du plan, la porte est comprise) et 2 planchers par-dessus pour le toit.")
-            .withStyle(ChatFormatting.YELLOW));
-        Deplacements.apres(p, T.t("crac.tuto.etape4", "[Tuto] 4. Pose le Claim Block sur une fondation, à l'intérieur : ta base est à toi, et protégée des raids.")
-            .withStyle(ChatFormatting.YELLOW));
-        Deplacements.apres(p, T.t("crac.tuto.etape5", "[Tuto] 5. Marteau en main : passe tes pièces en bois, et mets des planches dans le Claim Block (entretien).")
-            .withStyle(ChatFormatting.YELLOW));
-        Deplacements.apres(p, T.t("crac.tuto.etape6", "[Tuto] Ta base posée, ton home y est créé : du spawn, /home t'y ramène (toutes les 3 min). Depuis ta base, /spawn ramène au spawn ; du spawn, /zone base mène à un coin au hasard de la zone de construction.")
-            .withStyle(ChatFormatting.GRAY));
+        return true;
     }
 
     // ---------------------------------------------------------------------------------------------- kit
@@ -411,14 +558,6 @@ public final class Tutoriel {
         }
     }
 
-    private static Map<Item, Integer> totaux(List<ItemStack> kit) {
-        Map<Item, Integer> m = new LinkedHashMap<>();
-        for (ItemStack s : kit) {
-            m.merge(s.getItem(), s.getCount(), Integer::sum);
-        }
-        return m;
-    }
-
     private static void donner(ServerPlayer p, ItemStack s) {
         if (!p.getInventory().add(s) && !s.isEmpty()) {
             p.drop(s, false);
@@ -481,9 +620,9 @@ public final class Tutoriel {
         boolean base = aUneBase(p);
         lancer(p);
         Reply.ok(src, (base
-            ? T.t("crac.tuto.lance_base", "Tutoriel lancé pour %s : titres, kit, puis envoi dans le monde des bases. Il a déjà une base : pas de nouvelle protection de base.",
+            ? T.t("crac.tuto.lance_base", "Tutoriel lancé pour %s : étapes à l'écran, kit, puis envoi dans le monde des bases. Il a déjà une base : pas de nouvelle protection de base.",
                 p.getGameProfile().getName())
-            : T.t("crac.tuto.lance", "Tutoriel lancé pour %s : titres, kit, puis envoi dans le monde des bases.", p.getGameProfile().getName()))
+            : T.t("crac.tuto.lance", "Tutoriel lancé pour %s : étapes à l'écran, kit, puis envoi dans le monde des bases.", p.getGameProfile().getName()))
             .withStyle(ChatFormatting.GREEN));
         return 1;
     }
@@ -519,8 +658,9 @@ public final class Tutoriel {
             }
             long now = src.getServer().overworld().getGameTime();
             for (ServerPlayer p : cibles) {
-                SEQUENCES.remove(p.getUUID());
-                FORCES.remove(p.getUUID());
+                if (SUIVIS.remove(p.getUUID()) != null) {
+                    paquet(p, S2CTutoriel.cache());
+                }
                 ATTENTES.put(p.getUUID(), new Attente(now, p.position(), true));
                 Reply.ok(src, T.t("crac.tuto.apres_cinematique", "Le tutoriel de %s repartira à la fin de la cinématique (/tuto lancer %s pour tout de suite).",
                     p.getGameProfile().getName(), p.getGameProfile().getName()).withStyle(ChatFormatting.GRAY));
@@ -538,14 +678,18 @@ public final class Tutoriel {
         j.phaseTicks = 0;
         // un joueur qui a déjà une base ne regagne pas la protection de base par cette commande (/protection donner)
         j.protectionDue = !base;
+        j.tuto = "";
         d.marquer();
+        if (SUIVIS.containsKey(p.getUUID())) {
+            paquet(p, S2CTutoriel.cache());
+        }
         oublier(p.getUUID());
         fr.heraliz.crac.heraliz.Reply.ok(src, (base
             ? T.t("crac.tuto.rejouer_base", "%s a déjà une base : le tutoriel ne repartira que s'il la perd.", p.getGameProfile().getName())
             : T.t("crac.tuto.rejouer", "Tutoriel remis à zéro pour %s : il repart au spawn.", p.getGameProfile().getName()))
             .withStyle(base ? ChatFormatting.YELLOW : ChatFormatting.GREEN));
         if (!base && MondeBases.estSpawn(p.level()) && actif()) {
-            SEQUENCES.put(p.getUUID(), 0);
+            demarrer(p, false);
         }
         return 1;
     }

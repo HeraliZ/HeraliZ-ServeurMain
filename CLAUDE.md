@@ -153,7 +153,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer`), base protégée 4 jours, carrières (`/carriere`) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel après la cinématique, une étape à la fois dans une petite carte en haut à gauche (1.7.0, HUD : maquettes à valider ; kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer`), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (par vagues depuis la 1.5.0 : 4 à la fois pendant 1 h, puis toutes changent ; tirées au hasard à 800 blocs au moins les unes des autres et une par quart de la carte, règles relâchées si impossible et notées dans le journal ; 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
@@ -845,7 +845,16 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   base, hors combat, vers le point posé par le staff (`/spawn definir|effacer|voir`, gardé dans `crac/spawn.json` à la
   racine du serveur), sinon le point de réveil ; la première arrivée (cinématique) ne change pas. 3 s immobile ; carte
   DayZ par la borne de départ ; tous les messages dans le chat. Tutoriel après la cinématique (joueur en survie, sans
-  base, jamais fait ; rien en créatif ou en spectateur) : titres, kit calculé sur les coûts réels de
+  base, jamais fait ; rien en créatif ou en spectateur) : depuis CRac 1.7.0 (17/10, retour du propriétaire : titres
+  trop gros, six messages d'un coup dans le chat), **une étape à la fois** dans une petite carte de verre en haut à
+  gauche (`bases/HudTutoriel` du jar joueur, paquet `S2CTutoriel` ; « TUTORIEL · ÉTAPE n/N », titre, consigne, touches
+  réglées chez le joueur, barre d'avancée, « ✓ Étape terminée » 2 s avant la suivante ; **HUD du tutoriel : maquettes à
+  valider**). Plus aucun grand titre ; chat : une ligne au début, une à la fin. Le serveur seul fait avancer
+  (`bases/EtapesTuto`, 15 étapes : accueil, kit, départ au spawn ; coin, plan en main, fondation, Claim Block,
+  2e fondation, base protégée, 5 murs, porte, 2 planchers, mise en bois, entretien, commandes dans le monde des bases) :
+  étape à lire = temps de lecture (`lecture_pourcent`), étape à faire = quand le serveur la voit faite (au moins 2,5 s
+  affichée, jamais deux d'un coup). Étape gardée avec le joueur (reprise à la reconnexion), carte cachée hors du monde
+  de l'étape ; la visite du spawn prévue s'ajoutera en tête de `EtapesTuto.PARCOURS`. Kit calculé sur les coûts réels de
   `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172 bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, ni blessé ni blessant) jusqu'à sa base
   posée (Claim Block sur 2 fondations), 2 h de jeu au plus ou départ sur la carte ; puis base protégée 4 jours (ni raid
   ni usure, texte flottant ; tombe au-delà de 2 membres). Carrières : `/carriere creer <nom> <rayon> <type>` (pierre,

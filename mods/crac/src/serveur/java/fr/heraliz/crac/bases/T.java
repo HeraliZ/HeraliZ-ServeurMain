@@ -3,9 +3,6 @@ package fr.heraliz.crac.bases;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -26,13 +23,6 @@ final class T {
 
     static void barre(ServerPlayer p, MutableComponent c, ChatFormatting couleur) {
         p.displayClientMessage(c.withStyle(couleur), true);
-    }
-
-    /** Grand titre et sous-titre au milieu de l'écran ({@code ticks} affichés, fondus de 10 et 20 ticks). */
-    static void titre(ServerPlayer p, Component titre, Component sousTitre, int ticks) {
-        p.connection.send(new ClientboundSetTitlesAnimationPacket(10, ticks, 20));
-        p.connection.send(new ClientboundSetSubtitleTextPacket(sousTitre));
-        p.connection.send(new ClientboundSetTitleTextPacket(titre));
     }
 
     /** Durée lisible : « 3 j 12 h », « 5 h 20 min », « 42 min », « 15 s ». */

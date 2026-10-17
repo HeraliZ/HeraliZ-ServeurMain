@@ -38,6 +38,7 @@ public final class BasesReglages {
     public static final IntValue ENTRETIEN_HEURES;
     public static final IntValue PHASE_MAX_MIN;
     public static final IntValue FONDATIONS_MIN;
+    public static final IntValue LECTURE_POURCENT;
     // [protection]
     public static final DoubleValue PROTECTION_JOURS;
     public static final IntValue MEMBRES_MAX;
@@ -104,6 +105,9 @@ public final class BasesReglages {
             .defineInRange("phase_max_min", 120, 1, 100_000);
         FONDATIONS_MIN = b.comment("Fondations au moins sous le Claim Block pour que la base compte comme posee.")
             .defineInRange("fondations_min", 2, 1, 64);
+        LECTURE_POURCENT = b.comment("Temps de lecture des etapes du tutoriel qui avancent seules (pourcentage : 100 = normal,",
+                "150 = moitie plus long). Les etapes a faire avancent quand le joueur l'a fait.")
+            .defineInRange("lecture_pourcent", 100, 25, 400);
         b.pop();
 
         b.comment("Protection de la base d'un nouveau joueur, une fois posee (pas de raid).").push("protection");

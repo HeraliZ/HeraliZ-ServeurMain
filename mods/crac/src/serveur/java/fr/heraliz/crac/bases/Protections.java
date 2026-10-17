@@ -234,10 +234,11 @@ public final class Protections {
         long fin = System.currentTimeMillis() + (long) (jours * 86_400_000L);
         d.proteger(g.id(), Math.max(fin, d.finProtection(g.id())));
         String nb = jours == Math.rint(jours) ? String.valueOf((long) jours) : String.valueOf(jours);
-        T.titre(p, T.t("crac.protection.titre", "Base protégée %s jours", nb).withStyle(ChatFormatting.GREEN),
-            T.t("crac.protection.sous_titre", "Personne ne peut la raider d'ici là."), 80);
-        T.chat(p, T.t("crac.protection.accordee", "Ta base est protégée %s jours : personne ne peut la raider. Le monde des bases reste en PvP.",
-            nb), ChatFormatting.GREEN);
+        // plus de grand titre (1.7.0) : pendant le tutoriel, son étape « Ta base est à toi » le dit déjà
+        if (!Tutoriel.enCours(p.getUUID())) {
+            T.chat(p, T.t("crac.protection.accordee", "Ta base est protégée %s jours : personne ne peut la raider. Le monde des bases reste en PvP.",
+                nb), ChatFormatting.GREEN);
+        }
         Crac.LOGGER.info("[CRac] base du groupe {} ({}) protégée {} jours", g.name(), p.getGameProfile().getName(), nb);
         majTextes(p.server);
     }
