@@ -1,0 +1,51 @@
+# Liste blanche (17/10, demande du propriétaire) : ajoute les deux propriétaires (pseudos exacts lus dans usercache.json),
+# active la liste blanche puis lève le ban d'iZcoKs. Commandes fixes, rien d'autre. Part d'une branche de travail quand
+# ce fichier change.
+name: Liste blanche
+
+on:
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/liste_blanche.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  liste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+    steps:
+      - name: Commandes
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"; HOTE="${HOTE%%/*}"; PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"; echo "::add-mask::$HOTE"
+          R="set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30;"
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PORT" "sftp://$HOTE" -e "$R get -E /usercache.json -o u.json; bye" || echo '[]' > u.json
+          N=$(python3 -c "import json;print(' '.join(sorted({e['name'] for e in json.load(open('u.json')) if 'naro' in e['name'].lower() or 'patoche' in e['name'].lower()})))")
+          echo "Propriétaires trouvés : $N"
+          API="${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID"
+          envoyer() {
+            C=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$API/command" -H "Authorization: Bearer $PTERO_API_KEY" \
+              -H "Content-Type: application/json" -H "Accept: Application/vnd.pterodactyl.v1+json" -d "{\"command\":\"$1\"}")
+            echo "« $1 » -> $C" | tee -a "$GITHUB_STEP_SUMMARY"; sleep 2
+          }
+          for n in $N Naro Patoche; do envoyer "whitelist add $n"; done
+          envoyer "whitelist on"
+          envoyer "whitelist reload"
+          envoyer "sunban iZcoKs"
+          envoyer "unban iZcoKs"
+          envoyer "whitelist list"
+          sleep 5
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PORT" "sftp://$HOTE" -e "$R get -E /logs/latest.log -o l.log; bye" || true
+          { echo '```'; tail -n 30 l.log 2>/dev/null | sed -E 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g' | grep -v -i -E 'password|login|register'; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"
