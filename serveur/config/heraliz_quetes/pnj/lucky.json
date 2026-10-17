@@ -1,0 +1,117 @@
+{
+  "id": "lucky",
+  "nom": "Lucky",
+  "role": {
+    "fr": "Patron du casino",
+    "en": "Casino owner",
+    "ru": "Владелец казино"
+  },
+  "skin": "lucky",
+  "ambiance": [
+    "Ici on meurt de rire, pas de faim.",
+    "La chance, ça se travaille.",
+    "Approchez, approchez ! La maison est généreuse... parfois.",
+    "Les nouveaux visages perdent toujours. J'adore les nouveaux visages."
+  ],
+  "presentation": "Bienvenue, bienvenue ! Un nouveau visage ! Moi c'est Lucky, et voici le seul endroit de la Zone où on meurt de rire et pas de faim. Tu veux jouer ? Plus tard. D'abord, j'ai des petits services à te demander.",
+  "accueil": {
+    "inconnu": "Alors, on tente sa chance ?",
+    "connu": "Mon client préféré ! Enfin, un de mes clients préférés.",
+    "ami": "Ah ! La maison t'adore. Vraiment."
+  },
+  "suite": [
+    {
+      "id": "tour_de_piste",
+      "titre": "Tour de piste",
+      "difficulte": 1,
+      "demande": "Fais le tour du casino. Va voir chaque table, que tu saches où tout se trouve.",
+      "fin": "Voilà, tu connais la maison. Reviens quand tu veux.",
+      "etapes": [
+        {
+          "type": "endroit",
+          "libelle": "Faire le tour des tables du casino",
+          "groupe": "casino_tables",
+          "nombre": 4,
+          "rayon": 3,
+          "marqueur": "aucun"
+        }
+      ],
+      "recompense": {
+        "herals": 100,
+        "reputation": 25
+      }
+    },
+    {
+      "id": "la_dette",
+      "titre": "La dette",
+      "difficulte": 3,
+      "demande": "Un joueur me doit de l'argent. Il est parti dehors et ne reviendra pas. Il avait une montre à gousset. Retrouve son corps, rapporte-moi la montre.",
+      "fin": "La montre... Bon. La dette est réglée. Paix à son âme.",
+      "etapes": [
+        {
+          "type": "ramasser",
+          "libelle": "Retrouver le corps du joueur",
+          "groupe": "corps_joueur",
+          "objet": "piece",
+          "ref": "montre",
+          "nom": "Montre à gousset gravée « L. »",
+          "marqueur": "zone"
+        },
+        {
+          "type": "donner",
+          "libelle": "Rapporter la montre à Lucky",
+          "objet_quete": "montre"
+        }
+      ],
+      "recompense": {
+        "herals": 600,
+        "reputation": 60
+      }
+    },
+    {
+      "id": "collection",
+      "titre": "Le collectionneur",
+      "difficulte": 3,
+      "demande": "Je décore le casino. Rapporte-moi une couronne ou une idole dorée. Quelque chose qui brille.",
+      "fin": "Ça brillera au-dessus de la roulette.",
+      "etapes": [
+        {
+          "type": "donner",
+          "libelle": "Donner une couronne ou une idole dorée",
+          "objet": [
+            "heraliz_composants:couronne",
+            "heraliz_composants:idole_doree"
+          ]
+        }
+      ],
+      "recompense": {
+        "herals": 900,
+        "reputation": 80
+      }
+    }
+  ],
+  "contrats": [
+    {
+      "id": "deco",
+      "poids": 2,
+      "quete": {
+        "id": "deco",
+        "titre": "De la déco",
+        "difficulte": 1,
+        "demande": "Un objet de valeur, n'importe lequel, pour la déco.",
+        "fin": "Joli !",
+        "etapes": [
+          {
+            "type": "donner",
+            "libelle": "Donner un objet de valeur",
+            "tag": "heraliz_composants:vente"
+          }
+        ],
+        "recompense": {
+          "herals": 150,
+          "reputation": 10
+        }
+      }
+    }
+  ]
+}

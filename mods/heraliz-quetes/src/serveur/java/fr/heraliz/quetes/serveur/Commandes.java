@@ -1,0 +1,299 @@
+package fr.heraliz.quetes.serveur;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+import fr.heraliz.quetes.HeralizQuetes;
+import fr.heraliz.quetes.Texte;
+import fr.heraliz.quetes.entite.Pnj;
+import fr.heraliz.quetes.objet.Baguette;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.Registries;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Commandes : {@code /quetes} (tous les joueurs : le journal) ; {@code /pnj} et {@code /quete} (staff, permission 2) pour
+ * poser les PNJ, les points de quête, relire les fichiers et aider un joueur. Réponses en message direct.
+ */
+final class Commandes {
+    private Commandes() {
+    }
+
+    private static final SuggestionProvider<CommandSourceStack> PNJ_IDS = (c, b) ->
+            SharedSuggestionProvider.suggest(Catalogue.tous().stream().map(p -> p.id), b);
+    private static final SuggestionProvider<CommandSourceStack> POINTS = (c, b) ->
+            SharedSuggestionProvider.suggest(Moteur.points().tous().stream().map(Points.Point::id), b);
+    private static final SuggestionProvider<CommandSourceStack> GROUPES = (c, b) ->
+            SharedSuggestionProvider.suggest(Moteur.points().tous().stream().map(Points.Point::groupe).distinct(), b);
+
+    static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
+        d.register(Commands.literal("quetes").executes(c -> {
+            Moteur.envoyerJournal(c.getSource().getPlayerOrException(), true);
+            return 1;
+        }));
+
+        d.register(Commands.literal("pnj").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("creer").then(Commands.argument("id", StringArgumentType.word()).suggests(PNJ_IDS)
+                        .executes(c -> creer(c, StringArgumentType.getString(c, "id")))))
+                .then(Commands.literal("deplacer").then(Commands.argument("id", StringArgumentType.word()).suggests(PNJ_IDS)
+                        .executes(c -> deplacer(c, StringArgumentType.getString(c, "id")))))
+                .then(Commands.literal("retirer").then(Commands.argument("id", StringArgumentType.word()).suggests(PNJ_IDS)
+                        .executes(c -> retirer(c, StringArgumentType.getString(c, "id")))))
+                .then(Commands.literal("skin").then(Commands.argument("id", StringArgumentType.word()).suggests(PNJ_IDS)
+                        .then(Commands.argument("skin", StringArgumentType.word())
+                                .executes(c -> skin(c, StringArgumentType.getString(c, "id"), StringArgumentType.getString(c, "skin"))))))
+                .then(Commands.literal("bras").then(Commands.argument("id", StringArgumentType.word()).suggests(PNJ_IDS)
+                        .then(Commands.literal("fins").executes(c -> bras(c, StringArgumentType.getString(c, "id"), true)))
+                        .then(Commands.literal("larges").executes(c -> bras(c, StringArgumentType.getString(c, "id"), false)))))
+                .then(Commands.literal("liste").executes(Commandes::listePnj)));
+
+        d.register(Commands.literal("quete").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("baguette").then(Commands.argument("groupe", StringArgumentType.word()).suggests(GROUPES)
+                        .executes(c -> baguette(c, StringArgumentType.getString(c, "groupe")))))
+                .then(Commands.literal("point")
+                        .then(Commands.literal("ajouter").then(Commands.argument("groupe", StringArgumentType.word()).suggests(GROUPES)
+                                .executes(c -> ajouterPoint(c, StringArgumentType.getString(c, "groupe"), ""))
+                                .then(Commands.argument("nom", StringArgumentType.greedyString())
+                                        .executes(c -> ajouterPoint(c, StringArgumentType.getString(c, "groupe"), StringArgumentType.getString(c, "nom"))))))
+                        .then(Commands.literal("retirer").then(Commands.argument("id", StringArgumentType.word()).suggests(POINTS)
+                                .executes(c -> retirerPoint(c, StringArgumentType.getString(c, "id")))))
+                        .then(Commands.literal("nom").then(Commands.argument("id", StringArgumentType.word()).suggests(POINTS)
+                                .then(Commands.argument("nom", StringArgumentType.greedyString())
+                                        .executes(c -> nommerPoint(c, StringArgumentType.getString(c, "id"), StringArgumentType.getString(c, "nom"))))))
+                        .then(Commands.literal("tp").then(Commands.argument("id", StringArgumentType.word()).suggests(POINTS)
+                                .executes(c -> tpPoint(c, StringArgumentType.getString(c, "id"))))))
+                .then(Commands.literal("points").executes(c -> listePoints(c, ""))
+                        .then(Commands.argument("groupe", StringArgumentType.word()).suggests(GROUPES)
+                                .executes(c -> listePoints(c, StringArgumentType.getString(c, "groupe")))))
+                .then(Commands.literal("recharger").executes(Commandes::recharger))
+                .then(Commands.literal("joueur").then(Commands.argument("joueur", EntityArgument.player())
+                        .executes(c -> voirJoueur(c, EntityArgument.getPlayer(c, "joueur")))))
+                .then(Commands.literal("donner").then(Commands.argument("joueur", EntityArgument.player())
+                        .then(Commands.argument("pnj", StringArgumentType.word()).suggests(PNJ_IDS)
+                                .then(Commands.argument("quete", StringArgumentType.word())
+                                        .executes(c -> donnerQuete(c, EntityArgument.getPlayer(c, "joueur"),
+                                                StringArgumentType.getString(c, "pnj"), StringArgumentType.getString(c, "quete")))))))
+                .then(Commands.literal("finir").then(Commands.argument("joueur", EntityArgument.player())
+                        .then(Commands.argument("cle", StringArgumentType.greedyString())
+                                .executes(c -> finir(c, EntityArgument.getPlayer(c, "joueur"), StringArgumentType.getString(c, "cle"))))))
+                .then(Commands.literal("reset").then(Commands.argument("joueur", EntityArgument.player())
+                        .executes(c -> reset(c, EntityArgument.getPlayer(c, "joueur"))))));
+    }
+
+    private static void dire(CommandContext<CommandSourceStack> c, String cle, String fr, Object... args) {
+        c.getSource().sendSuccess(() -> Component.translatableWithFallback(cle, fr, args), false);
+    }
+
+    private static int erreur(CommandContext<CommandSourceStack> c, String cle, String fr, Object... args) {
+        c.getSource().sendFailure(Component.translatableWithFallback(cle, fr, args));
+        return 0;
+    }
+
+    // ------------------------------------------------------------------ PNJ
+    private static List<Pnj> trouver(String id) {
+        List<Pnj> l = new ArrayList<>();
+        for (ServerLevel lvl : Moteur.serveur.getAllLevels()) {
+            for (Entity e : lvl.getAllEntities()) if (e instanceof Pnj p && p.pnjId().equals(id)) l.add(p);
+        }
+        return l;
+    }
+
+    private static int creer(CommandContext<CommandSourceStack> c, String id) throws CommandSyntaxException {
+        ServerPlayer moi = c.getSource().getPlayerOrException();
+        id = id.toLowerCase(Locale.ROOT);
+        Defs.Pnj def = Catalogue.pnj(id);
+        Pnj pnj = HeralizQuetes.PNJ.get().create(moi.serverLevel());
+        if (pnj == null) return 0;
+        pnj.moveTo(moi.getX(), moi.getY(), moi.getZ(), moi.getYRot(), 0);
+        pnj.setYHeadRot(moi.getYRot());
+        pnj.setYBodyRot(moi.getYRot());
+        pnj.definirId(id);
+        pnj.definirNom(def == null || def.nom.vide() ? Texte.fr(id) : def.nom);
+        if (def != null) {
+            pnj.definirSkin(def.skin);
+            pnj.definirBrasFins(def.brasFins);
+        }
+        moi.serverLevel().addFreshEntity(pnj);
+        int deja = trouver(id).size() - 1;
+        dire(c, "heraliz_quetes.cmd.pnj_cree", "PNJ « %s » posé ici.", id);
+        if (def == null) erreur(c, "heraliz_quetes.cmd.pnj_sans_fichier", "Ce PNJ (%s) n'a pas de fichier dans config/heraliz_quetes/pnj/.", id);
+        if (deja > 0) erreur(c, "heraliz_quetes.cmd.pnj_double", "Attention : %s autre(s) PNJ « %s » existe(nt) déjà (/pnj retirer pour les enlever).", deja, id);
+        return 1;
+    }
+
+    private static int deplacer(CommandContext<CommandSourceStack> c, String id) throws CommandSyntaxException {
+        ServerPlayer moi = c.getSource().getPlayerOrException();
+        List<Pnj> l = trouver(id);
+        if (l.isEmpty()) return erreur(c, "heraliz_quetes.cmd.pnj_introuvable", "Aucun PNJ « %s » chargé (il faut être près de lui, ou le recréer).", id);
+        Pnj p = l.get(0);
+        if (p.level() != moi.level()) {
+            p.discard();
+            return creer(c, id);
+        }
+        p.moveTo(moi.getX(), moi.getY(), moi.getZ(), moi.getYRot(), 0);
+        p.setYHeadRot(moi.getYRot());
+        p.setYBodyRot(moi.getYRot());
+        dire(c, "heraliz_quetes.cmd.pnj_deplace", "PNJ « %s » déplacé ici.", id);
+        return 1;
+    }
+
+    private static int retirer(CommandContext<CommandSourceStack> c, String id) {
+        List<Pnj> l = trouver(id);
+        for (Pnj p : l) p.discard();
+        dire(c, "heraliz_quetes.cmd.pnj_retire", "%s PNJ « %s » retiré(s).", l.size(), id);
+        return l.size();
+    }
+
+    private static int skin(CommandContext<CommandSourceStack> c, String id, String skin) {
+        List<Pnj> l = trouver(id);
+        for (Pnj p : l) p.definirSkin(skin.equals("defaut") ? "" : skin);
+        dire(c, "heraliz_quetes.cmd.pnj_skin", "Skin « %s » pour %s PNJ (fichier textures/pnj/%s.png du jar joueur).", skin, l.size(), skin);
+        return l.size();
+    }
+
+    private static int bras(CommandContext<CommandSourceStack> c, String id, boolean fins) {
+        List<Pnj> l = trouver(id);
+        for (Pnj p : l) p.definirBrasFins(fins);
+        dire(c, "heraliz_quetes.cmd.pnj_bras", "Bras changés pour %s PNJ.", l.size());
+        return l.size();
+    }
+
+    private static int listePnj(CommandContext<CommandSourceStack> c) {
+        for (Defs.Pnj p : Catalogue.tous()) {
+            dire(c, "heraliz_quetes.cmd.pnj_ligne", "%s (%s) : %s quêtes de suite, %s modèles de contrats, %s posé(s) et chargé(s)",
+                    p.id, p.nom.francais(), p.suite.size(), p.contrats.size(), trouver(p.id).size());
+        }
+        return 1;
+    }
+
+    // ------------------------------------------------------------------ points
+    private static int baguette(CommandContext<CommandSourceStack> c, String groupe) throws CommandSyntaxException {
+        ServerPlayer moi = c.getSource().getPlayerOrException();
+        ItemStack s = new ItemStack(HeralizQuetes.BAGUETTE.get());
+        s.getOrCreateTag().putString(Baguette.GROUPE, groupe.toLowerCase(Locale.ROOT));
+        s.setHoverName(Component.translatableWithFallback("item.heraliz_quetes.baguette.nom", "Baguette de quête : %s", groupe.toLowerCase(Locale.ROOT)));
+        if (!moi.getInventory().add(s)) moi.drop(s, false);
+        dire(c, "heraliz_quetes.cmd.baguette", "Baguette du groupe « %s » : clic droit sur un bloc = un point ; accroupi + clic droit = retirer.", groupe);
+        return 1;
+    }
+
+    private static int ajouterPoint(CommandContext<CommandSourceStack> c, String groupe, String nom) throws CommandSyntaxException {
+        ServerPlayer moi = c.getSource().getPlayerOrException();
+        Points.Point p = Moteur.points().ajouter(groupe, moi.level().dimension().location(), moi.blockPosition(), nom);
+        dire(c, "heraliz_quetes.cmd.point_ajoute", "Point %s posé en %s %s %s.", p.id(), p.pos().getX(), p.pos().getY(), p.pos().getZ());
+        return 1;
+    }
+
+    private static int retirerPoint(CommandContext<CommandSourceStack> c, String id) {
+        if (!Moteur.points().retirer(id)) return erreur(c, "heraliz_quetes.cmd.point_inconnu", "Point inconnu : %s", id);
+        dire(c, "heraliz_quetes.cmd.point_retire", "Point %s retiré.", id);
+        return 1;
+    }
+
+    private static int nommerPoint(CommandContext<CommandSourceStack> c, String id, String nom) {
+        if (!Moteur.points().nommer(id, nom)) return erreur(c, "heraliz_quetes.cmd.point_inconnu", "Point inconnu : %s", id);
+        dire(c, "heraliz_quetes.cmd.point_nomme", "Point %s : « %s ».", id, nom);
+        return 1;
+    }
+
+    private static int tpPoint(CommandContext<CommandSourceStack> c, String id) throws CommandSyntaxException {
+        ServerPlayer moi = c.getSource().getPlayerOrException();
+        Points.Point p = Moteur.points().point(id);
+        if (p == null) return erreur(c, "heraliz_quetes.cmd.point_inconnu", "Point inconnu : %s", id);
+        ResourceLocation rl = ResourceLocation.tryParse(p.monde());
+        ServerLevel lvl = rl == null ? null : Moteur.serveur.getLevel(ResourceKey.create(Registries.DIMENSION, rl));
+        if (lvl == null) return erreur(c, "heraliz_quetes.cmd.monde_inconnu", "Monde introuvable : %s", p.monde());
+        BlockPos b = p.pos();
+        moi.teleportTo(lvl, b.getX() + 0.5, b.getY() + 1, b.getZ() + 0.5, moi.getYRot(), moi.getXRot());
+        return 1;
+    }
+
+    private static int listePoints(CommandContext<CommandSourceStack> c, String groupe) {
+        int n = 0;
+        for (Points.Point p : Moteur.points().tous()) {
+            if (!groupe.isEmpty() && !p.groupe().equals(groupe)) continue;
+            n++;
+            dire(c, "heraliz_quetes.cmd.point_ligne", "%s · %s %s %s %s %s", p.id(), p.monde(), p.pos().getX(), p.pos().getY(), p.pos().getZ(),
+                    p.nom().isEmpty() ? "" : "« " + p.nom() + " »");
+        }
+        dire(c, "heraliz_quetes.cmd.points_total", "%s point(s).", n);
+        return n;
+    }
+
+    private static int recharger(CommandContext<CommandSourceStack> c) {
+        List<String> erreurs = Catalogue.charger();
+        Moteur.oublierContrats();
+        Ponts.relireArmes();
+        dire(c, "heraliz_quetes.cmd.recharge", "%s PNJ relus.", Catalogue.tous().size());
+        for (String e : erreurs) c.getSource().sendFailure(Component.literal(e));
+        if (Moteur.serveur != null) for (ServerPlayer p : Moteur.serveur.getPlayerList().getPlayers()) Moteur.envoyerSuivi(p);
+        return 1;
+    }
+
+    // ------------------------------------------------------------------ aider un joueur
+    private static int voirJoueur(CommandContext<CommandSourceStack> c, ServerPlayer p) {
+        Donnees.DJoueur j = Donnees.de(p.getUUID());
+        dire(c, "heraliz_quetes.cmd.joueur", "%s : %s quête(s) en cours, %s finie(s), %s contrat(s) fini(s).", p.getGameProfile().getName(),
+                j.actives.size(), j.finies.size(), j.contratsFinis);
+        for (Donnees.DActive a : j.actives.values()) {
+            Defs.Quete q = Moteur.def(a);
+            dire(c, "heraliz_quetes.cmd.joueur_quete", "· %s « %s » étape %s/%s%s", a.cle, q == null ? "?" : q.titre.francais(), a.etape + 1,
+                    q == null ? "?" : q.etapes.size(), a.aRendre ? " (à rendre)" : "");
+        }
+        for (var e : j.pnj.entrySet()) {
+            dire(c, "heraliz_quetes.cmd.joueur_pnj", "· %s : réputation %s, suite %s", e.getKey(), e.getValue().rep, e.getValue().suite);
+        }
+        return 1;
+    }
+
+    private static int donnerQuete(CommandContext<CommandSourceStack> c, ServerPlayer p, String pnj, String quete) {
+        Defs.Pnj def = Catalogue.pnj(pnj);
+        Defs.Quete q = def == null ? null : def.quete(quete);
+        if (q == null) return erreur(c, "heraliz_quetes.cmd.quete_inconnue", "Quête inconnue : %s / %s", pnj, quete);
+        if (Donnees.de(p.getUUID()).actives.containsKey("s:" + pnj + ":" + quete))
+            return erreur(c, "heraliz_quetes.cmd.deja", "Il a déjà cette quête.");
+        Moteur.accepter(p, def, q, null);
+        dire(c, "heraliz_quetes.cmd.donnee", "Quête « %s » donnée à %s.", q.titre.francais(), p.getGameProfile().getName());
+        return 1;
+    }
+
+    private static int finir(CommandContext<CommandSourceStack> c, ServerPlayer p, String cle) {
+        Donnees.DActive a = Donnees.de(p.getUUID()).actives.get(cle);
+        Defs.Quete q = a == null ? null : Moteur.def(a);
+        if (q == null) return erreur(c, "heraliz_quetes.cmd.pas_en_cours", "Pas de quête en cours « %s » (voir /quete joueur).", cle);
+        Moteur.terminer(p, a, q);
+        dire(c, "heraliz_quetes.cmd.finie", "Quête finie pour %s.", p.getGameProfile().getName());
+        return 1;
+    }
+
+    private static int reset(CommandContext<CommandSourceStack> c, ServerPlayer p) {
+        Donnees.DJoueur j = Donnees.de(p.getUUID());
+        for (String cle : new ArrayList<>(j.actives.keySet())) Moteur.retirerObjets(p, cle);
+        j.actives.clear();
+        j.pnj.clear();
+        j.finies.clear();
+        j.titres.clear();
+        j.suivie = "";
+        j.contratsFinis = 0;
+        Donnees.sale(p.getUUID());
+        Moteur.envoyerSuivi(p);
+        dire(c, "heraliz_quetes.cmd.reset", "Progression des quêtes de %s remise à zéro.", p.getGameProfile().getName());
+        return 1;
+    }
+}

@@ -1,0 +1,24 @@
+# HeraliZ Quêtes : PNJ du spawn, quêtes, contrats, /quetes et suivi à l'écran (docs/QUETES_SCENARIO.md).
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heraliz_quetes"
+version="${mod_version}"
+displayName="HeraliZ Quêtes"
+authors="${mod_authors}"
+description='''PNJ posés par le staff, quêtes et contrats, points de quête sur la carte, /quetes et suivi à l'écran.'''
+[[dependencies.heraliz_quetes]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_quetes]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

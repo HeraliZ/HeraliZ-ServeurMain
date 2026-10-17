@@ -450,3 +450,17 @@ objets de quête, quêtes « donner / tuer / ramasser / endroit » ; le Doyen et
 3. Les **montants** de hérals vous paraissent-ils bien (ni trop, ni trop peu) ?
 4. On commence par **le Doyen et Jack** pour essayer, puis les autres ?
 5. Les **écrans** (`/quetes`, dialogue, suivi à droite) : d'abord des images à valider, comme d'habitude.
+
+---
+
+## 10. État (17/10) : version 1 codée
+
+Le mod `mods/heraliz-quetes` (HeraliZ Quêtes 1.0.0) fait la version « spawn » : PNJ posés en jeu, dialogues,
+quêtes de suite + contrats sans limite, `/quetes` (touche J) avec « Suivre », suivi à droite de l'écran, notifications,
+points de quête à la baguette, objets de quête, réputation, titres, hérals. Les quêtes des 8 PNJ sont dans
+`serveur/config/heraliz_quetes/pnj/` (89 de suite, 34 modèles de contrats) ; le guide du staff (points à poser, format
+d'une quête) est `serveur/config/heraliz_quetes/LISEZMOI.md`.
+
+Différences avec ce document : les quêtes qui demandent le casino, les duels, ClashWar, les Zombies, la réanimation, les
+soins utilisés, les territoires, CRac, le train, les jumelles ou le stand de tir ne sont pas encore dans les fichiers (il
+faut d'abord que ces mods préviennent le mod de quêtes) ; Lucky n'a donc que 3 quêtes. Rien n'a été testé en jeu.
