@@ -47,6 +47,9 @@ quand un choix leur revient.
 ## 1. Le serveur en bref
 
 - Minecraft **1.20.1**, Forge **47** ; sur le Ptero : **Mohist 1.20.1-916** (`mohist-1.20.1-916-server.jar`), Java 17.
+- **Liste blanche pendant le développement** (17/10, demande du propriétaire) : seuls les comptes des propriétaires
+  entrent (`whitelist on`, `whitelist add <pseudo>` à la console ; `white-list` et `enforce-whitelist` à `true` dans
+  `serveur/server.properties`). `whitelist.json` reste hors de Git. À rouvrir (`whitelist off`) à l'ouverture.
 - Joueurs en version crackée : `online-mode=false` + plugin **AuthMe** (comptes par mot de passe : `/register` à la
   première connexion puis `/login` ; BCRYPT, 8 caractères minimum, IP bloquée 30 min après 6 erreurs). À venir : le
   compte HeraliZ du site (Azuriom) dans le launcher, avec code par mail sur un nouveau PC ; AuthMe reste la 3e barrière.
