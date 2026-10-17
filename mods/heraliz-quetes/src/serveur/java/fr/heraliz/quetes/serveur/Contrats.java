@@ -99,7 +99,7 @@ final class Contrats {
                 vars.put(e.getKey(), new Valeur(p.id(), Map.of("nom", Texte.fr(p.nomOuId()))));
             } else if (v.has("choix") && v.get("choix").isJsonArray()) {
                 JsonArray a = v.getAsJsonArray("choix");
-                if (a.isEmpty()) return null;
+                if (a.size() == 0) return null;
                 JsonElement c = a.get(r.nextInt(a.size()));
                 if (c.isJsonObject()) {
                     Map<String, Texte> champs = new HashMap<>();
@@ -142,7 +142,7 @@ final class Contrats {
             return a;
         }
         JsonObject o = e.getAsJsonObject(), c = new JsonObject();
-        boolean texte = !o.isEmpty() && o.keySet().stream().allMatch(Texte.LANGUES::contains);
+        boolean texte = o.size() > 0 && o.keySet().stream().allMatch(Texte.LANGUES::contains);
         for (Map.Entry<String, JsonElement> x : o.entrySet()) {
             c.add(x.getKey(), remplacer(x.getValue(), vars, texte ? x.getKey() : langue));
         }
