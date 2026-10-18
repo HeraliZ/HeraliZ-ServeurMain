@@ -176,12 +176,11 @@ public class ServerConfig {
             "Dégâts du coup puissant (clic droit) : ceux du coup rapide multipliés par cette valeur (1,5 : 9,75 dégâts).")
          .defineInRange("multiplicateur_lourd", CoupsCouteau.DEFAUT_MULTIPLICATEUR_LOURD, 1.0, 10.0);
       COUTEAUX_CADENCE_RAPIDE = builder.comment(
-            "Ticks (20 par seconde) avant le coup suivant, après un coup rapide (22 : 1,1 s ; la Dague tactique en a 9).")
+            "Ticks (20 par seconde) avant le coup suivant, après un coup rapide (24 : 1,2 s, comme toutes les armes de mêlée).")
          .defineInRange("cadence_rapide", CoupsCouteau.DEFAUT_CADENCE_RAPIDE, CoupsCouteau.CADENCE_MIN, 200);
       COUTEAUX_CADENCE_LOURD = builder.comment(
-            "Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique). M9, papillon et",
-            "karambit y ajoutent l'écart de l'arme de LR dont ils reprennent le coup (Miséricorde +4, Lame de Desmoulins",
-            "+6, Credo -2). Au moins 8 : le coup puissant ne touche qu'à l'impact de son animation (jusqu'à 0,3 s).")
+            "Ticks avant le coup suivant, après un coup puissant (24 : 1,2 s, comme toutes les armes de mêlée).",
+            "Au moins 8 : le coup puissant ne touche qu'à l'impact de son animation (jusqu'à 0,3 s).")
          .defineInRange("cadence_lourd", CoupsCouteau.DEFAUT_CADENCE_LOURD, CoupsCouteau.CADENCE_MIN_LOURD, 400);
       COUTEAUX_ANGLE_RAPIDE = builder.comment(
             "Ouverture (en degrés) du cône du coup rapide devant le regard, moitié de chaque côté (65, comme la Dague",

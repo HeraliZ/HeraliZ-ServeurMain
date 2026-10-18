@@ -8,9 +8,9 @@ import javax.annotation.Nullable;
  * <ul>
  *    <li>ct_knife : geste « poignard » écrit ici, 0,85 s, impact à 0,24 s</li>
  *    <li>t_knife : geste « poignard » écrit ici, 0,85 s, impact à 0,24 s</li>
- *    <li>m9 : coup lourd repris de « Miséricorde » de LR (mercy), 1,79 s, impact à 0,31 s, cadence de LR 22 ticks (écart +4)</li>
- *    <li>butterfly_knife : coup lourd repris de « Lame de Desmoulins » de LR (desmoulins_edge), 2,75 s, impact à 0,28 s, cadence de LR 24 ticks (écart +6)</li>
- *    <li>karambit : coup lourd repris de « Credo » de LR (creed), 2,18 s, impact à 0,23 s, cadence de LR 16 ticks (écart -2)</li>
+ *    <li>m9 : coup lourd repris de « Miséricorde » de LR (mercy), 1,79 s, impact à 0,31 s, cadence de LR 24 ticks (écart +0)</li>
+ *    <li>butterfly_knife : coup lourd repris de « Lame de Desmoulins » de LR (desmoulins_edge), 2,75 s, impact à 0,28 s, cadence de LR 24 ticks (écart +0)</li>
+ *    <li>karambit : coup lourd repris de « Credo » de LR (creed), 2,18 s, impact à 0,23 s, cadence de LR 24 ticks (écart +0)</li>
  * </ul>
  * Délai : ticks entre la demande et le coup donné par le serveur, à l'impact de l'animation du joueur. Écart de cadence :
  * ajouté au réglage {@code cadence_lourd} (celui de la Dague tactique), comme l'arme de LR dont le coup est repris.
@@ -19,7 +19,7 @@ public final class CoupsLourds {
    /** Modèles d'animation des couteaux (fichiers {@code assets/heraliz_tactique/couteaux/<modèle>.animation.json}). */
    private static final String[] MODELES = {"ct_knife", "t_knife", "m9", "butterfly_knife", "karambit"};
    private static final int[] DELAIS = {5, 5, 6, 6, 5};
-   private static final int[] ECARTS_CADENCE = {0, 0, 4, 6, -2};
+   private static final int[] ECARTS_CADENCE = {0, 0, 0, 0, 0};
    /** Délai d'un couteau inconnu (coup puissant du gunpack), en ticks. */
    public static final int DELAI_DEFAUT = 5;
    /** Plus grand délai : une cadence doit le dépasser (un coup à la fois). */
