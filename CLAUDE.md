@@ -1357,8 +1357,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   serveur seulement (seul le jar `-serveur` compte). Rien testé en jeu ;
 - couteaux TaCZ (13/10, Tactique 2.13.0, `fr.heraliz.tactique.couteaux`) : « Knife » CT et T, karambits, papillons, M9
   (fiche `arkaniaz:knife_data`) frappent comme les armes de mêlée de LR, réglés comme la Dague tactique : clic gauche
-  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,9 s (18/10, Tactique 2.20.1 :
-  0,45 puis 0,7 s jugés trop rapides ; le serveur ne laisse plus passer un 2e coup 0,25 s après le premier), touche tenue = coups
+  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 1,1 s (18/10, Tactique 2.21.1 :
+  0,45, 0,7 puis 0,9 s jugés trop rapides ; le serveur ne laisse plus passer un 2e coup 0,25 s après le premier), touche tenue = coups
   enchaînés ; clic droit (Viser) = coup puissant ×1,5 toutes les 0,9 s, plus de visée au couteau, rien si le viseur est
   sur un joueur à terre (Réanimation) ; V (« Mêlée » de TaCZ) = coup rapide (le coup de TaCZ n'est plus donné aux
   couteaux). Cône de 3 blocs (65° / 75°), plusieurs cibles, vue dégagée ; coup décidé et donné par le serveur
