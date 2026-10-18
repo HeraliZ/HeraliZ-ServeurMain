@@ -23,18 +23,16 @@ public enum KnifeType {
    DAGGER("dagger", Map.of(), 0.55F, -1),
    TAC_DAGGER("tac_dagger", Map.of(), 0.4F, -1),
    CREED("creed", Map.of(), 0.5F, -1),
-   // manche orné : noir, étoile et pierres (motifs colorés de la texture d'origine) dans la finition de la lame ; lame à
-   // pans : reflets adoucis par le shader, qui la reconnaît à son rang (ordinal 8 : ne pas insérer de couteau avant elle)
+   // manche orné : noir, étoile et pierres (motifs colorés de la texture d'origine) dans la finition de la lame ; le skin
+   // utilise polaris_lore_geo (outils/skins_melee.py : une face de lame = un morceau de texture)
    DESMOULINS_EDGE("desmoulins_edge", Map.of("hand", Part.ORNATE), 0F, 0),
    DRAGONS_FANG("dragons_fang", Map.of(), 0.3F, -1),
    EXECUTOR("executor", Map.of("handle", Part.GRIP), 0F, 0),
    FIERY_OWL("fiery_owl", Map.of(), 0.5F, -1),
    MERCY("mercy", Map.of("body", Part.GRIP), 0F, 0),
    SEA_GLEAM("sea_gleam", Map.of("h2", Part.GRIP, "h4", Part.GRIP, "h5", Part.GRIP), 0F, 0),
-   // batte (moteur HeralisZ Tactical) : un seul bloc dont le cœur court d'un bout à l'autre -> pommeau coupé (repère du
-   // manche), puis tout le manche en grip point par point (manche), jusqu'au début de la partie épaisse (11,5 px du
-   // modèle, avant les pièces collées au cœur : une limite au milieu de faces superposées clignotait)
-   BASEBALL_BAT("baseball_bat", Map.of(), 0.1F, 1, 0.255F);
+   // batte : le skin utilise baseball_bat_skin_geo (outils/skins_melee.py), batte refaite propre, manche dans l'os « manche »
+   BASEBALL_BAT("baseball_bat", Map.of("manche", Part.GRIP), 0F, 0);
 
    public final String id;
    private final Map<String, Part> parts;
@@ -49,11 +47,6 @@ public enum KnifeType {
    public final float cut;
    /** Côté de la pointe sur l'axe long, dans le repère de l'outil d'aperçu (tools/camo_preview/export_gun.py) : +1 / -1. */
    public final int tip;
-   /**
-    * Fraction de la longueur de la lame, depuis la garde, dessinée en grip texel par texel (carte de positions) : pour les
-    * modèles dont une même face va du manche à la pointe ; 0 = aucune.
-    */
-   public final float manche;
 
    KnifeType(String id, float inlayWidth, float pivotRadius, Map<String, Part> parts) {
       this(id, inlayWidth, pivotRadius, parts, 0F, 0);
@@ -63,17 +56,8 @@ public enum KnifeType {
       this(id, 0F, 0F, parts, cut, tip);
    }
 
-   KnifeType(String id, Map<String, Part> parts, float cut, int tip, float manche) {
-      this(id, 0F, 0F, parts, cut, tip, manche);
-   }
-
    KnifeType(String id, float inlayWidth, float pivotRadius, Map<String, Part> parts, float cut, int tip) {
-      this(id, inlayWidth, pivotRadius, parts, cut, tip, 0F);
-   }
-
-   KnifeType(String id, float inlayWidth, float pivotRadius, Map<String, Part> parts, float cut, int tip, float manche) {
       this.id = id;
-      this.manche = manche;
       this.inlayWidth = inlayWidth;
       this.pivotRadius = pivotRadius;
       this.parts = parts;

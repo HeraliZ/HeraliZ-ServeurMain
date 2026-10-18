@@ -1359,9 +1359,6 @@ vec3 uniqueFinish(vec3 p, out vec3 em) {
     return metalShade(p, base, tint, gloss);
 }
 
-#ifndef LISSE_DESMOULINS
-#define LISSE_DESMOULINS 0.6
-#endif
 // Manche orné (Lame de Desmoulins…) : manche noir ; les motifs colorés de la texture d'origine (étoile, pierres, filets
 // bleus) prennent la finition de la lame (motif), le reste (plaques argentées comprises) reste noir
 vec3 ornateHandle(vec3 p, vec3 motif) {
@@ -1373,11 +1370,6 @@ vec3 ornateHandle(vec3 p, vec3 motif) {
 }
 vec3 knifeFinish(vec3 p, out vec3 em) {
     em = vec3(0.0);
-    // Lame de Desmoulins (KnifeType.DESMOULINS_EDGE, ordinal 8 -> CamoParts >> 4 == 9) : lame à pans en diamant, chaque
-    // facette prenait un reflet différent (pan clair / pan sombre de part et d'autre de l'arête) ; normale adoucie
-    if ((CamoParts >> 4) == 9) {
-        VN_DETAIL = normalize(mix(VN_DETAIL, vec3(0.0, 0.0, 1.0), LISSE_DESMOULINS));
-    }
     bool orne = abs(PART - 0.68) < 0.02;                                            // manche orné : motifs sur fond noir
     if (orne) {
         PART = 1.0;

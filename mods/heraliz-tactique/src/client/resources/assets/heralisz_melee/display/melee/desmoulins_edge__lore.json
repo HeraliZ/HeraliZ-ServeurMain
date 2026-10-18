@@ -1,8 +1,8 @@
 {
-  "model": "heralisz_melee:melee/polaris_geo",
+  "model": "heralisz_melee:melee/polaris_lore_geo",
   "animation": "heralisz_melee:melee/polaris",
   "state_machine": "heralisz_melee:polaris_state_machine",
-  "texture": "heralisz_melee:melee/polaris_uv",
+  "texture": "heralisz_melee:melee/polaris_lore_uv",
   "slot_texture": "heralisz_melee:melee/slot/polaris_lore",
   "sounds": {
     "attack_left_hit": "heralisz_melee:entity.player.flash.hit",

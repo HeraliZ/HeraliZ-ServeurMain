@@ -308,7 +308,8 @@ public final class PosMap {
       int[] owner = new int[n * n];
       java.util.Arrays.fill(owner, -1);
       // ordre d'écriture (un texel partagé par plusieurs faces garde la dernière) : pièces exclues d'office, puis le corps,
-      // puis les faces lumineuses vives ; les couteaux gardent l'ordre du modèle
+      // puis les faces lumineuses vives ; les couteaux : pièces exclues d'abord, puis l'ordre du modèle (les repères des mains
+      // de la batte, dessinés après elle, effaçaient la moitié de ses faces : skin absent par endroits)
       int[] ordre = new int[quads.size()];
       int no = 0;
       if (knife == null) {
@@ -316,7 +317,8 @@ public final class PosMap {
             for (int qi = 0; qi < quads.size(); qi++) if (quads.get(qi).kind == k) ordre[no++] = qi;
          }
       } else {
-         for (int qi = 0; qi < quads.size(); qi++) ordre[no++] = qi;
+         for (int qi = 0; qi < quads.size(); qi++) if (quads.get(qi).part == NONE) ordre[no++] = qi;
+         for (int qi = 0; qi < quads.size(); qi++) if (quads.get(qi).part != NONE) ordre[no++] = qi;
       }
       for (int oi = 0; oi < no; oi++) {
          int qn = ordre[oi];
@@ -344,9 +346,7 @@ public final class PosMap {
                px[i * 4] = sa * (lerp2(corner, a, s, t) - c[a]) / len;
                px[i * 4 + 1] = sb * (lerp2(corner, b, s, t) - c[b]) / len;
                px[i * 4 + 2] = (lerp2(corner, d, s, t) - c[d]) / len;
-               // manche coupé texel par texel (batte : la même face va du pommeau au bout)
-               px[i * 4 + 3] = knife != null && knife.manche > 0 && q.part == KnifeType.Part.BLADE.code
-                  && px[i * 4] < -0.5F + knife.manche ? KnifeType.Part.GRIP.code : q.part;
+               px[i * 4 + 3] = q.part;
                filled[i] = true;
                owner[i] = qn;
             }

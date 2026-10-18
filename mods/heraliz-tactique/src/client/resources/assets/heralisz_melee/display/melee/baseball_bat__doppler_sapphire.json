@@ -1,12 +1,12 @@
 {
   // 模型位置
-  "model": "heralisz_melee:melee/baseball_bat_geo",
+  "model": "heralisz_melee:melee/baseball_bat_skin_geo",
   // 第一人称动画位置
   "animation": "heralisz_melee:melee/baseball_bat",
   // 第一人称状态机
   "state_machine": "heralisz_melee:default_melee_state_machine",
   // 模型材质
-  "texture": "heralisz_melee:melee/baseball_bat_uv",
+  "texture": "heralisz_melee:melee/baseball_bat_skin_uv",
   // 物品栏材质
   "slot_texture": "heralisz_melee:melee/slot/baseball_bat_doppler_sapphire",
   // 音效，在特定时机触发，为原版音效，需要在sounds.json注册
