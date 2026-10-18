@@ -11,7 +11,7 @@
 	#Les autres entites restent (textes flottants, objets poses, vehicules, cadavres, porte-armures).
 	creatures = false
 	#Creatures gardees malgre tout dans le monde des bases (identifiants, ex. "minecraft:villager").
-	creatures_permises = ["heralizcasino:videur"]
+	creatures_permises = ["heralizcasino:videur", "heraliz_quetes:pnj"]
 	#Faux : dans le monde des bases, aucun seau ne se vide (eau, lave, poissons), meme dans une base.
 	#Le staff en creatif n'est pas concerne.
 	seaux = false

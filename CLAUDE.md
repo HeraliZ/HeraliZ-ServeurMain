@@ -822,7 +822,8 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   pour les joueurs, quelle que soit la source ; seul `/kill` passe. Chaque tick : feu éteint, chute, gel et air remis à
   zéro, faim gardée pleine. Effets négatifs refusés et retirés. Un joueur tombé sous le monde est ramené au point de
   réveil par une vraie téléportation. Aucune créature (même celles des mods de zombies) ; celles déjà là sont retirées
-  chaque seconde, sauf `entites_permises`. Les explosions n'y cassent rien et ne touchent personne. `/suicide` y est
+  chaque seconde, sauf `entites_permises` ; les vigiles du casino (`heralizcasino:videur`) et les PNJ des quêtes
+  (`heraliz_quetes:pnj`) sont toujours gardés (Utils 2.14.3, `TOUJOURS_PERMISES`). Les explosions n'y cassent rien et ne touchent personne. `/suicide` y est
   refusé, sauf au staff. Réglage `[protection] actif` de `heraliz_spawn-server.toml` ; `/depart info` montre l'état.
   Rien testé en jeu.
 - **Monde des bases** (CRac 1.5.0, 16/10) : dimension `crac:bases`, déclarée par `mods/crac/src/serveur/resources/data/crac/`
@@ -1076,6 +1077,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     (`TaczTeteAllongeMixin`) ; gestes debout de la mêlée de LR arrêtés allongé (`IdleAnimationHandler`). CaraCrea ne
     déforme rien lui-même (il recopie le modèle de Minecraft) ; pistes restantes s'il reste des défauts : ses cubes
     ignorent les parties cachées par d'autres mods (jambes du terminal d'extraction), emotes permises allongé.
+- WorldGuard (17/10) : `block-plugin-spawning: false` (`serveur/plugins/WorldGuard/config.yml`) : le réglage « pas de
+  créatures » d'une région ne bloque que les apparitions naturelles ; avant, les vigiles du casino et `/summon` étaient
+  refusés sans message dans la région du spawn ;
 - C4 [WIP] (`heralisz_grenade:c4`) retiré de tout le jeu le 16/10 (Tactique 2.17.0 : fiche, modèles, textes ; coffres T6
   avec le détonateur, caisses, ravitaillement, recette de heralisz_bases, établis Zombies). La charge de C4 de CRac
   (`crac:c4`) reste et abîme seule les constructions ; `c4ThrowableIds` de `crac-server.toml` et la source

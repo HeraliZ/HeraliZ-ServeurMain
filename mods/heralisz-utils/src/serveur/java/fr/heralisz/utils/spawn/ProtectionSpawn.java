@@ -119,15 +119,21 @@ public final class ProtectionSpawn {
     }
 
     // ---------------------------------------------------------------------------------------------- créatures
+    /**
+     * Personnages posés par le staff au spawn, toujours gardés (en plus de {@code entites_permises}) : vigiles du casino
+     * et PNJ des quêtes. Sans eux, ils étaient retirés dans la seconde (et refusés à la pose).
+     */
+    private static final java.util.Set<String> TOUJOURS_PERMISES = java.util.Set.of("heralizcasino:videur", "heraliz_quetes:pnj");
+
     private static boolean creatureInterdite(Entity e) {
         if (!(e instanceof Mob)) {
             return false;
         }
-        List<? extends String> permises = DepartConfig.lire(DepartConfig.ENTITES_PERMISES);
-        if (permises.isEmpty()) {
-            return true;
-        }
         ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
+        if (id != null && TOUJOURS_PERMISES.contains(id.toString())) {
+            return false;
+        }
+        List<? extends String> permises = DepartConfig.lire(DepartConfig.ENTITES_PERMISES);
         return id == null || !permises.contains(id.toString());
     }
 

@@ -7,4 +7,4 @@
 [protection]
 	actif = true
 	# Vigiles du casino (zone du casino et zone VIP) : sans eux, retirés dans la seconde.
-	entites_permises = ["heralizcasino:videur"]
+	entites_permises = ["heralizcasino:videur", "heraliz_quetes:pnj"]
