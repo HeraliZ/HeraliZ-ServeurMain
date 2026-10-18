@@ -1,0 +1,6 @@
+{
+  "credit": "HeraliZ, mods/crac/outils/tc_modele.py",
+  "textures": {
+    "particle": "crac:block/claim_block"
+  }
+}

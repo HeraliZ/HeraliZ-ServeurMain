@@ -100,6 +100,8 @@ public final class PartieServeur implements Partie {
             C2SPieceInfoTraitement.traiter(p, recu.ctx());
         } else if (paquet instanceof C2SPlacePiece p) {
             C2SPlacePieceTraitement.traiter(p, recu.ctx());
+        } else if (paquet instanceof fr.heraliz.crac.network.C2SAccesBase p) {
+            fr.heraliz.crac.bases.AccesBaseTraitement.traiter(p, recu.ctx());
         }
     }
 

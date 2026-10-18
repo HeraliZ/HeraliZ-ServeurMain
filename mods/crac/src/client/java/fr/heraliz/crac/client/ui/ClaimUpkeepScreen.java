@@ -90,6 +90,13 @@ public class ClaimUpkeepScreen extends AbstractContainerScreen<ClaimUpkeepMenu> 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
         g.drawString(this.font, Component.translatable("crac.upkeep.title"), this.titleLabelX, this.titleLabelY, -6504193, false);
+        // onglet Accès de l'armoire (1.10.0) : qui a l'accès à la base, donné par le propriétaire
+        Component acces = Component.translatable("crac.upkeep.onglet_acces");
+        int[] r = this.ongletAcces();
+        boolean survol = mouseX >= this.leftPos + r[0] && mouseX < this.leftPos + r[0] + r[2] && mouseY >= this.topPos + r[1] && mouseY < this.topPos + r[1] + r[3];
+        g.fill(r[0], r[1], r[0] + r[2], r[1] + r[3], survol ? 0x405FD08A : 0x205FD08A);
+        GroupTheme.border(g, r[0], r[1], r[2], r[3], survol ? 0xFF5FD08A : 0xA05FD08A);
+        g.drawString(this.font, acces, r[0] + 4, r[1] + 2, survol ? 0xFFFFFFFF : 0xFF9BE3B3, false);
         g.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -9536363, false);
 
         for (int i = 0; i < ClaimBlockEntity.SLOTS; i++) {
@@ -133,6 +140,22 @@ public class ClaimUpkeepScreen extends AbstractContainerScreen<ClaimUpkeepMenu> 
         }
 
         g.drawCenteredString(this.font, text, this.imageWidth / 2, 50, col);
+    }
+
+    /** Bouton « Accès » en haut à droite (x, y, w, h dans l'écran). */
+    private int[] ongletAcces() {
+        int w = this.font.width(Component.translatable("crac.upkeep.onglet_acces")) + 8;
+        return new int[]{this.imageWidth - 7 - w, 3, w, 12};
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int bouton) {
+        int[] r = this.ongletAcces();
+        if (bouton == 0 && mx >= this.leftPos + r[0] && mx < this.leftPos + r[0] + r[2] && my >= this.topPos + r[1] && my < this.topPos + r[1] + r[3]) {
+            EcranAccesBase.demander(this.menu.pos());
+            return true;
+        }
+        return super.mouseClicked(mx, my, bouton);
     }
 
     /** Même échelle que l'inventaire (avant : échelle forcée, écran tout petit en grande interface). */

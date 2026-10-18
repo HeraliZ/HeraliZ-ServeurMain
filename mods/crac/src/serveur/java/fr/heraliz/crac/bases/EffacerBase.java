@@ -81,6 +81,7 @@ final class EffacerBase {
                 // le Claim Block sans le faire tomber, puis le claim
                 level.removeBlock(a, false);
                 ClaimManager.releaseClaim(level, g.id());
+                AccesBase.get(server).effacer(g.id());   // accès donnés dans l'armoire
                 C2SRequestNearbyClaimsTraitement.pushAll(level);
                 ramasser(level, min, max);
                 claim = true;

@@ -94,6 +94,9 @@ public final class PartieClient implements Partie {
             fr.heraliz.crac.bases.TutoClient.recevoir(p);
         } else if (paquet instanceof S2CTutoFin p) {
             fr.heraliz.crac.bases.TutoClient.fin(p);
+        } else if (paquet instanceof fr.heraliz.crac.network.S2CAccesBase p) {
+            // armoire à outils (1.10.0) : onglets Accès et Base
+            fr.heraliz.crac.client.ui.EcranAccesBase.recevoir(p);
         }
     }
 }

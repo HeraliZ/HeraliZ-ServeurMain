@@ -144,8 +144,8 @@ public final class Protections {
             return;
         }
         Group g = GroupData.get(p.server).getById(c.groupId());
-        if (g != null && g.isMember(p.getUUID())) {
-            return;
+        if (g != null && fr.heraliz.crac.heraliz.ClanAccess.allows(g, p.getUUID(), fr.heraliz.crac.heraliz.ClanAccess.Action.CHESTS)) {
+            return;   // son groupe et ceux qui ont l'accès dans l'armoire
         }
         e.setCanceled(true);
         e.setCancellationResult(InteractionResult.FAIL);
@@ -366,7 +366,7 @@ public final class Protections {
 
     /** Point le plus haut de la base (pièces de son bâtiment), au moins le Claim Block. */
     private static int haut(ServerLevel level, Claim c) {
-        int y = c.anchor().getY();
+        int y = c.anchor().getY() + 1;   // l'armoire fait 2 blocs de haut (1.10.0)
         Building b = StructureService.buildingOfClaim(level, c.anchor());
         if (b != null) {
             for (Piece p : StructureService.store(level).piecesOf(b)) {

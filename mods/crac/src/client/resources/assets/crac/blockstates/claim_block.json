@@ -1,7 +1,49 @@
 {
   "variants": {
-    "tier=1": { "model": "crac:block/claim_block_tier1" },
-    "tier=2": { "model": "crac:block/claim_block_tier2" },
-    "tier=3": { "model": "crac:block/claim_block_tier3" }
+    "facing=north,tier=1": {
+      "model": "crac:block/claim_block"
+    },
+    "facing=north,tier=2": {
+      "model": "crac:block/claim_block"
+    },
+    "facing=north,tier=3": {
+      "model": "crac:block/claim_block"
+    },
+    "facing=east,tier=1": {
+      "model": "crac:block/claim_block",
+      "y": 90
+    },
+    "facing=east,tier=2": {
+      "model": "crac:block/claim_block",
+      "y": 90
+    },
+    "facing=east,tier=3": {
+      "model": "crac:block/claim_block",
+      "y": 90
+    },
+    "facing=south,tier=1": {
+      "model": "crac:block/claim_block",
+      "y": 180
+    },
+    "facing=south,tier=2": {
+      "model": "crac:block/claim_block",
+      "y": 180
+    },
+    "facing=south,tier=3": {
+      "model": "crac:block/claim_block",
+      "y": 180
+    },
+    "facing=west,tier=1": {
+      "model": "crac:block/claim_block",
+      "y": 270
+    },
+    "facing=west,tier=2": {
+      "model": "crac:block/claim_block",
+      "y": 270
+    },
+    "facing=west,tier=3": {
+      "model": "crac:block/claim_block",
+      "y": 270
+    }
   }
 }

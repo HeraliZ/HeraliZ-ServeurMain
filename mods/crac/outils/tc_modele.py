@@ -6,6 +6,9 @@ Modèle « casier militaire » de l'armoire à outils (Claim Block façon TC de 
 (vert armée, tôles nervurées, bords usés, rivets, rouille). Rien n'est dessiné à la main : on modifie ce script.
 
     python mods/crac/outils/tc_modele.py --apercu DOSSIER     écrit tc_casier.json + tc_casier.png dans DOSSIER
+    python mods/crac/outils/tc_modele.py --installer          écrit le modèle dans le mod (CRac 1.10.0) : modèle et
+                                                              texture du Claim Block, ses états (sens et tier), sa case
+                                                              du haut invisible et le modèle de l'objet
 
 Le casier fait 1 bloc de large et 2 de haut (y de 0 à 32), face avant au nord (-z), dos contre le mur (z = 16).
 2 pixels de texture par pixel de modèle (32 px par bloc, comme la texture de la caisse).
@@ -18,6 +21,22 @@ from pathlib import Path
 from PIL import Image
 
 DENSITE = 2           # pixels de texture par unité de modèle
+TEXTURE = "crac:block/claim_block"
+ASSETS = Path(__file__).resolve().parents[1] / "src" / "client" / "resources" / "assets" / "crac"
+# en main et dans l'inventaire : le casier fait 2 blocs de haut, réduit et redescendu au centre
+AFFICHAGE = {
+    "gui": {"rotation": [30, 225, 0], "translation": [0, -3.2, 0], "scale": [0.4, 0.4, 0.4]},
+    "ground": {"rotation": [0, 0, 0], "translation": [0, 1, 0], "scale": [0.2, 0.2, 0.2]},
+    "fixed": {"rotation": [0, 180, 0], "translation": [0, -3.2, 0], "scale": [0.4, 0.4, 0.4]},
+    "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 0.5, 0], "scale": [0.25, 0.25, 0.25]},
+    "thirdperson_lefthand": {"rotation": [75, 45, 0], "translation": [0, 0.5, 0], "scale": [0.25, 0.25, 0.25]},
+    "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, -2, 0], "scale": [0.25, 0.25, 0.25]},
+    "firstperson_lefthand": {"rotation": [0, 225, 0], "translation": [0, -2, 0], "scale": [0.25, 0.25, 0.25]},
+}
+ROTATION = {"north": 0, "east": 90, "south": 180, "west": 270}
+# anciens fichiers du Claim Block (piquet et drapeau, avant la 1.10.0), retirés par --installer
+ANCIENS = ["models/block/claim_block_tier1.json", "models/block/claim_block_tier2.json", "models/block/claim_block_tier3.json",
+           "textures/block/claim_block_crate.png", "textures/block/claim_block_flag.png", "textures/item/claim_block.png"]
 TAILLE = 256          # texture carrée
 GRAINE = 7
 
@@ -193,7 +212,7 @@ def construire():
     # rangement des faces dans la texture, en lignes
     x = y = haut_ligne = 0
     modele = {"credit": "HeraliZ, mods/crac/outils/tc_modele.py", "texture_size": [TAILLE, TAILLE],
-              "textures": {"0": "crac:block/tc_casier", "particle": "crac:block/tc_casier"}, "elements": []}
+              "textures": {"0": TEXTURE, "particle": TEXTURE}, "elements": [], "display": AFFICHAGE}
     porte = None
     for nom, a, b, mat, faces in elements():
         el = {"name": nom, "from": list(a), "to": list(b), "faces": {}}
@@ -218,10 +237,36 @@ def construire():
     return modele, img
 
 
+def ecrire(chemin, donnees):
+    chemin.parent.mkdir(parents=True, exist_ok=True)
+    chemin.write_text(json.dumps(donnees, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def installer():
+    modele, img = construire()
+    ecrire(ASSETS / "models/block/claim_block.json", modele)
+    img.save(ASSETS / "textures/block/claim_block.png")
+    ecrire(ASSETS / "models/block/claim_block_haut.json", {"credit": modele["credit"], "textures": {"particle": TEXTURE}})
+    ecrire(ASSETS / "models/item/claim_block.json", {"parent": "crac:block/claim_block"})
+    ecrire(ASSETS / "blockstates/claim_block.json", {"variants": {
+        f"facing={f},tier={t}": ({"model": "crac:block/claim_block", "y": r} if r else {"model": "crac:block/claim_block"})
+        for f, r in ROTATION.items() for t in (1, 2, 3)}})
+    ecrire(ASSETS / "blockstates/claim_block_haut.json", {"variants": {
+        f"facing={f}": {"model": "crac:block/claim_block_haut"} for f in ROTATION}})
+    for a in ANCIENS:
+        (ASSETS / a).unlink(missing_ok=True)
+    print(f"[tc_modele] {len(modele['elements'])} éléments installés dans {ASSETS}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--apercu", required=True, help="dossier où écrire tc_casier.json et tc_casier.png")
+    g = ap.add_mutually_exclusive_group(required=True)
+    g.add_argument("--apercu", help="dossier où écrire tc_casier.json et tc_casier.png")
+    g.add_argument("--installer", action="store_true", help="écrit le modèle dans le mod")
     args = ap.parse_args()
+    if args.installer:
+        installer()
+        return
     out = Path(args.apercu)
     out.mkdir(parents=True, exist_ok=True)
     modele, img = construire()

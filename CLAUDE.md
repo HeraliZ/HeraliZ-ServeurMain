@@ -151,7 +151,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel des bases lancé par le Commandant Varga (1.8.0 : obligatoire, 9 étapes guidées à la radio par HeraliZ Quêtes et par des pièces vertes qui clignotent, tour de caméra à la fin, `TutorielApi`, section 10 « arrivée ») : kit de cabane 2 × 1 et caisse en métal, contour vert « nouveau joueur », `/tuto lancer|rejouer|finir`), base protégée 4 jours, carrières (`/carriere`) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils « casier militaire » de 2 blocs de haut avec ses accès donnés par le propriétaire, 1.10.0, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel des bases lancé par le Commandant Varga (1.8.0 : obligatoire, 9 étapes guidées à la radio par HeraliZ Quêtes et par des pièces vertes qui clignotent, tour de caméra à la fin, `TutorielApi`, section 10 « arrivée ») : kit de cabane 2 × 1 et caisse en métal, contour vert « nouveau joueur », `/tuto lancer|rejouer|finir`), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (par vagues depuis la 1.5.0 : 4 à la fois pendant 1 h, puis toutes changent ; tirées au hasard à 800 blocs au moins les unes des autres et une par quart de la carte, règles relâchées si impossible et notées dans le journal ; 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ ; case surlignée en vert par un autre mod (`HotbarOverlay.surligner`, tutoriel des bases, 1.5.0) |
@@ -1170,9 +1170,22 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   ComputeCameraAngles`), bras caché. Base protégée (premiers jours) : ses coffres et conteneurs ne s'ouvrent que pour
   son groupe (`Protections.coffres`). Faim figée à chaque tick pendant le tutoriel. Monter sur un plancher posé sur un
   demi-mur (1,5 bloc) : au pied d'un sol de construction dont le dessus est 1,25 à 1,75 bloc plus haut, Saut amélioré I
-  invisible de 8 ticks (`event/SautRebord`, 1,8 bloc ; les pièces gardent leur hauteur). En attente de maquettes
-  validées : nouveau modèle du Claim Block façon « TC » de Rust, écran des accès à la base dans le Claim Block (accès
-  donnés par le propriétaire, plus d'accès automatique par le clan).
+  invisible de 8 ticks (`event/SautRebord`, 1,8 bloc ; les pièces gardent leur hauteur).
+  **Armoire à outils** (CRac 1.10.0-beta, 18/10, maquettes validées) : le Claim Block devient le « casier militaire »
+  façon TC de Rust (tôle verte nervurée, porte à fentes et cadenas, niche à outils, voyant), 1 bloc de large et 2 de haut,
+  face avant vers le joueur qui le pose (`ClaimBlock.FACING`) ; la case du haut est le bloc invisible
+  `crac:claim_block_haut` (`ClaimBlockHaut` : forme, clics renvoyés au bas, incassable seule, part avec l'armoire ;
+  posée aussi au premier usage d'une armoire d'avant). Il faut la case du dessus libre pour la poser ; place du tutoriel
+  choisie avec 2 cases libres, cadre vert de 2 blocs. Modèle, texture, états et objet **écrits** par
+  `python mods/crac/outils/tc_modele.py --installer` (`--apercu DOSSIER` : fichiers à part), jamais à la main. **Accès à
+  la base** : bouton « Accès » de l'écran d'entretien → onglets Entretien / Accès / Base (`client/ui/EcranAccesBase`,
+  paquets `C2SAccesBase` / `S2CAccesBase`, canal CRac version 20, serveur `bases/AccesBaseTraitement`) : le propriétaire
+  du groupe cherche un joueur (connectés dont le pseudo contient le texte, ou un déconnecté par son pseudo exact) et lui
+  donne ou retire l'accès ; les autres voient la liste. Un seul niveau (choix par défaut, changeable) : avec l'accès, on
+  ouvre portes et coffres, on construit et on répare, comme un membre (`ClanAccess.allows`). Les membres du groupe
+  gardent leur accès (les bases déjà posées ne changent pas) ; **plus aucun accès donné par le clan** (`viaClan` rend
+  faux ; un chef de clan peut toujours poser l'armoire sans groupe). Liste par groupe, 32 joueurs au plus, gardée avec le
+  monde principal (`data/crac_acces_bases.dat`, `bases/AccesBase`), effacée par `/base effacer`. Rien testé en jeu.
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;

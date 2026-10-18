@@ -281,6 +281,9 @@ final class Cabane {
         BlockPos best = null;
         long score = Long.MIN_VALUE;
         for (BlockPos q : casesSur(level, s)) {
+            if (!level.getBlockState(q.above()).isAir()) {
+                continue;   // l'armoire fait 2 blocs de haut (1.10.0)
+            }
             long v = 1000L * (q.getX() * d.getStepX() + q.getZ() * d.getStepZ()) - (q.getX() * droite.getStepX() + q.getZ() * droite.getStepZ());
             if (v > score) {
                 score = v;
