@@ -56,13 +56,14 @@ public final class CoupsCouteau {
    public static final double DEFAUT_DEGATS = 5.5D;
    /** Réglage par défaut : multiplicateur du coup puissant ({@code factor} de l'attaque droite de la Dague tactique). */
    public static final double DEFAUT_MULTIPLICATEUR_LOURD = 1.5D;
-   /** Réglage par défaut : ticks entre deux coups rapides (1,1 s ; la Dague tactique en a 9, jugé trop rapide). */
-   public static final int DEFAUT_CADENCE_RAPIDE = 22;
+   /** Réglage par défaut : ticks entre deux coups rapides (1,2 s : le clic droit de la Lame de Desmoulins, comme
+    * toutes les armes de mêlée ; la Dague tactique en avait 9, jugé beaucoup trop rapide). */
+   public static final int DEFAUT_CADENCE_RAPIDE = 24;
    /**
-    * Réglage par défaut : ticks après un coup puissant ({@code cooldown} de l'attaque droite de la Dague tactique). Chaque
+    * Réglage par défaut : ticks après un coup puissant (1,2 s, comme toutes les armes de mêlée). Chaque
     * modèle y ajoute son écart ({@link CoupsLourds#ecartCadence}) : celui de l'arme de LR dont il reprend le coup.
     */
-   public static final int DEFAUT_CADENCE_LOURD = 18;
+   public static final int DEFAUT_CADENCE_LOURD = 24;
    /** Réglage par défaut : ouverture du cône du coup rapide, en degrés (Dague tactique : 65). */
    public static final double DEFAUT_ANGLE_RAPIDE = 65.0D;
    /** Réglage par défaut : ouverture du cône du coup puissant, en degrés (Dague tactique : 75). */

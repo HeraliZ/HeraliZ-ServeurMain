@@ -28,7 +28,7 @@
         // 击退
         "knockback": 0.25,
         // 攻击冷却(tick)
-        "cooldown": 16,
+        "cooldown": 24,
         // 延迟出伤(tick)
         "delay": 7,
         // 判定类型
@@ -51,7 +51,7 @@
         // 击退
         "knockback": 0.3,
         // 攻击冷却(tick)
-        "cooldown": 36,
+        "cooldown": 24,
         // 延迟出伤(tick)
         "delay": 12,
         // 判定类型

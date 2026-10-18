@@ -18,7 +18,7 @@
       "attack_left": {
         "factor": 1,
         "knockback": 0.08,
-        "cooldown": 10,
+        "cooldown": 24,
         "delay": 2,
         "hitbox": {
           "type": "cone",
@@ -31,7 +31,7 @@
       "attack_right": {
         "factor": 1.5,
         "knockback": 0.12,
-        "cooldown": 22,
+        "cooldown": 24,
         "delay": 6,
         "hitbox": {
           "type": "cone",

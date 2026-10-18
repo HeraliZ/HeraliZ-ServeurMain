@@ -119,12 +119,13 @@
 	#Dégâts du coup puissant (clic droit) : ceux du coup rapide multipliés par cette valeur (1,5 : 9,75 dégâts).
 	#Range: 1.0 ~ 10.0
 	multiplicateur_lourd = 1.5
-	#Ticks (20 par seconde) avant le coup suivant, après un coup rapide (22 : 1,1 s ; la Dague tactique en a 9).
+	#Ticks (20 par seconde) avant le coup suivant, après un coup rapide (24 : 1,2 s, comme toutes les armes de mêlée).
 	#Range: 4 ~ 200
-	cadence_rapide = 22
-	#Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique).
+	cadence_rapide = 24
+	#Ticks avant le coup suivant, après un coup puissant (24 : 1,2 s, comme toutes les armes de mêlée).
+	#Au moins 8 : le coup puissant ne touche qu'à l'impact de son animation (jusqu'à 0,3 s).
 	#Range: 4 ~ 400
-	cadence_lourd = 18
+	cadence_lourd = 24
 	#Ouverture (en degrés) du cône du coup rapide devant le regard, moitié de chaque côté (65, comme la Dague
 	#tactique). Tous les êtres vivants dans le cône, à portée ([melee] portee_max) et en vue, sont touchés.
 	#Range: 5.0 ~ 180.0
