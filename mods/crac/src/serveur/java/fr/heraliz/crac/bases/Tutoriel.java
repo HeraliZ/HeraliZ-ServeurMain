@@ -76,9 +76,10 @@ import org.jetbrains.annotations.Nullable;
  *   1 pièce « Porte », 2 planchers en toit), calculé avec les coûts réels de crac-building.toml, plus la mise en bois au
  *   marteau, un jour d'entretien du Claim Block et une marge de 10 % ; un groupe CRac est créé pour lui s'il n'en a pas.</li>
  *   <li>Envoi dans le monde des bases, à un point plat tiré au hasard loin des autres bases. Six étapes, suivies ici
- *   d'après la cabane elle-même ({@link #progression}) et dites par Varga à la radio (HeraliZ Quêtes) : un coin plat (la
- *   première fondation), 2 fondations, 5 murs + la porte + 2 planchers, le Claim Block sur une fondation de la cabane,
- *   toute la cabane en bois, des planches dans le Claim Block (entretien). Le tutoriel finit avec la dernière.</li>
+ *   d'après la cabane elle-même ({@link #progression}) et dites par Varga à la radio (HeraliZ Quêtes) : la première
+ *   fondation sur un coin plat, le Claim Block dessus (hors d'un claim, CRac n'accepte rien d'autre), la deuxième
+ *   fondation, 5 murs + la porte + 2 planchers, toute la cabane en bois, des planches dans le Claim Block (entretien).
+ *   Le tutoriel finit avec la dernière. Avec Varga, aucun titre au milieu de l'écran.</li>
  * </ol>
  * Tutoriel OBLIGATOIRE (choix du propriétaire, 18/10) : tant qu'il dure (étapes KIT et PHASE, hors créatif et
  * spectateur), le joueur ne peut ni le quitter ({@code /spawn}, {@code /home}, {@code /zone base}, {@code /rtp},
@@ -131,6 +132,8 @@ public final class Tutoriel {
     private static final int T_TITRE_2 = 80;
     private static final int T_TITRE_3 = 170;
     private static final int T_ENVOI = 230;
+    /** Avec Varga (pas de titres) : envoi 2 s après le kit. */
+    private static final int T_ENVOI_VARGA = 40;
 
     /** Étapes de la cabane (1 à 6) ; {@link #progression} rend FINIE quand tout est fait. */
     static final int ETAPES = 6;
@@ -311,7 +314,16 @@ public final class Tutoriel {
                 continue;
             }
             int t = e.getValue();
-            if (t == 0) {
+            if (parVarga()) {
+                // avec Varga : ni titres au milieu de l'écran ni attente, le kit puis l'envoi (Varga parle à la radio)
+                if (t == 0) {
+                    actions.add(() -> kit(p));
+                } else if (t >= T_ENVOI_VARGA) {
+                    it.remove();
+                    actions.add(() -> envoyer(p, force));
+                    continue;
+                }
+            } else if (t == 0) {
                 actions.add(() -> titre1(p));
             } else if (t == T_TITRE_2) {
                 actions.add(() -> kit(p));
@@ -364,8 +376,10 @@ public final class Tutoriel {
     private static void kit(ServerPlayer p) {
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
-        T.titre(p, T.t("crac.tuto.titre2", "Ta première base").withStyle(ChatFormatting.GOLD),
-            T.t("crac.tuto.sous2", "Voici de quoi bâtir une cabane 2 × 1 avec une porte."), 80);
+        if (!parVarga()) {
+            T.titre(p, T.t("crac.tuto.titre2", "Ta première base").withStyle(ChatFormatting.GOLD),
+                T.t("crac.tuto.sous2", "Voici de quoi bâtir une cabane 2 × 1 avec une porte."), 80);
+        }
         if (j.etape == BasesDonnees.Etape.AUCUNE) {
             Group g = groupe(p);
             List<ItemStack> kit = contenuKit();
@@ -486,9 +500,9 @@ public final class Tutoriel {
     }
 
     /**
-     * Où en est la cabane : {étape (1 à 6, {@link #FINIE} quand tout est fait), fait, total}. 1 : un coin plat (aucune
-     * fondation) ; 2 : les fondations ; 3 : murs, porte et planchers ; 4 : le Claim Block ; 5 : tout en bois ; 6 :
-     * l'entretien (des planches dans le Claim Block). {0, 0, 0} hors de l'étape PHASE ou hors du monde des bases.
+     * Où en est la cabane : {étape (1 à 6, {@link #FINIE} quand tout est fait), fait, total}. 1 : la première fondation,
+     * sur un coin plat ; 2 : le Claim Block dessus (CRac n'accepte rien d'autre hors d'un claim) ; 3 : la deuxième
+     * fondation ; 4 : murs, porte et planchers ; 5 : tout en bois ; 6 : l'entretien (des planches dans le Claim Block). {0, 0, 0} hors de l'étape PHASE ou hors du monde des bases.
      */
     static int[] progression(ServerPlayer p) {
         BasesDonnees.Joueur j = BasesDonnees.get(p.server).siConnu(p.getUUID());
@@ -514,21 +528,22 @@ public final class Tutoriel {
                 }
             }
         }
-        int nf = CABANE.get(PieceKind.FOUNDATION);
+        // ordre imposé par CRac : hors d'un claim, une seule fondation, puis le Claim Block dessus, puis le reste
         if (fond == 0) {
             return new int[]{1, 0, 1};
         }
+        Claim c = StructureService.claimOf(bases, b);
+        if (c == null) {
+            return new int[]{2, 0, 1};
+        }
+        int nf = CABANE.get(PieceKind.FOUNDATION);
         if (fond < nf) {
-            return new int[]{2, fond, nf};
+            return new int[]{3, fond, nf};
         }
         int nm = CABANE.get(PieceKind.WALL), np = CABANE.get(PieceKind.DOORWAY), nr = CABANE.get(PieceKind.FLOOR);
         int m = Math.min(murs, nm) + Math.min(portes, np) + Math.min(planchers, nr);
         if (m < nm + np + nr) {
-            return new int[]{3, m, nm + np + nr};
-        }
-        Claim c = StructureService.claimOf(bases, b);
-        if (c == null) {
-            return new int[]{4, 0, 1};
+            return new int[]{4, m, nm + np + nr};
         }
         if (bois < total) {
             return new int[]{5, bois, total};
@@ -570,8 +585,8 @@ public final class Tutoriel {
             return refus(p, T.t("crac.tuto.refus.cabane", "Construis contre ta cabane, pas ailleurs."));
         }
         boolean ok = switch (kind) {
-            case FOUNDATION -> pr[0] <= 2;
-            case WALL, DOORWAY, FLOOR -> pr[0] == 3 && manque(bases, b, kind);
+            case FOUNDATION -> pr[0] == 1 || pr[0] == 3;
+            case WALL, DOORWAY, FLOOR -> pr[0] == 4 && manque(bases, b, kind);
             default -> false;
         };
         return ok ? null : refus(p, T.t("crac.tuto.refus.piece", "Pas cette pièce pour l'instant : suis les consignes de Varga."));
@@ -610,8 +625,8 @@ public final class Tutoriel {
             return null;
         }
         BasesDonnees.Joueur j = BasesDonnees.get(p.server).joueur(p.getUUID());
-        if (j.etape != BasesDonnees.Etape.PHASE || progression(p)[0] != 4) {
-            return T.t("crac.tuto.refus.claim_tot", "Le Claim Block, pas encore : finis d'abord ta cabane.");
+        if (j.etape != BasesDonnees.Etape.PHASE || progression(p)[0] != 2) {
+            return T.t("crac.tuto.refus.claim_tot", "Le Claim Block, pas maintenant : suis les consignes de Varga.");
         }
         Piece siege = StructureService.seatUnder(level, pos);
         Building b = batiment(level, p, j);

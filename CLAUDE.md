@@ -1096,10 +1096,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   notée `heraliz_cinematique_finie` (données persistantes) ; 4. le suivi à droite dit « Va voir le Commandant Varga pour
   commencer le tutoriel » (distance, lueurs sur lui) ; 5. Varga ne propose QUE « Faire ma base » et « Au revoir » ; 6. le
   tutoriel des bases (CRac) : Varga donne les 6 consignes une par une à la radio, en bas à gauche (portrait = sa vraie
-  apparence, texte lettre par lettre, « ÉTAPE n/6 », canal des quêtes version 3), le suivi montre l'étape en cours ; les
-  étapes sont lues sur la cabane elle-même (`Tutoriel.progression`) : un coin plat (1re fondation), 2 fondations, 5 murs +
-  la porte + 2 planchers, le Claim Block sur une fondation de la cabane, toute la cabane en bois, des planches dans le
-  Claim Block (au moins la moitié de l'entretien du kit) ; 7. à la fin, Varga : « je te laisse te débrouiller, reviens me
+  apparence, texte lettre par lettre, « ÉTAPE n/6 », canal des quêtes version 3) ; chaque consigne RESTE affichée jusqu'à
+  ce que l'étape soit faite (choix du propriétaire, 18/10), aucun titre au milieu de l'écran ; le suivi montre l'étape
+  en cours ; les étapes sont lues sur la cabane elle-même (`Tutoriel.progression`), dans l'ordre imposé par CRac (hors
+  d'un claim, une seule fondation puis le Claim Block dessus, `crac.build.claim_first`) : la 1re fondation sur un coin
+  plat, le Claim Block dessus, la 2e fondation, 5 murs + la porte + 2 planchers, toute la cabane en bois, des planches
+  dans le Claim Block (au moins la moitié de l'entretien du kit) ; 7. à la fin, Varga : « je te laisse te débrouiller, reviens me
   voir pour des missions » ; ses quêtes principales s'ouvrent. Tutoriel OBLIGATOIRE pour tout le monde (choix du
   propriétaire, serveur pas encore ouvert) : pendant le tutoriel (hors créatif et spectateur) `/spawn`, `/home`,
   `/zone`, `/rtp`, `/suicide`, `/duel`, `/clashwar`, `/zombies`, `/casino`, `/depart`, `/extractions` refusés ; rien ne
