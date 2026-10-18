@@ -37,5 +37,7 @@ public final class PartieServeur implements Partie {
         fr.heralisz.utils.spawn.DepartServeur.init();               // borne de départ, monde du spawn, /depart
         TrainServeur.init(busMod);
         Suicide.init();
+        fr.heralisz.utils.coffres.CoffresPersonnels.init();      // planque et coffre VIP (coffres-forts du mod de meubles)
+        fr.heralisz.utils.inspecter.Inspecter.init();            // /inspecter (op) : inventaire, sac, coffres, base
     }
 }
