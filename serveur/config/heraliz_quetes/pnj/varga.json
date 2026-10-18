@@ -7,6 +7,7 @@
     "ru": "Операции"
   },
   "skin": "varga",
+  "apparence": {"skin_tone": "light", "eye_shape": "narrow", "eye_color": "blue_grey", "brow_style": "straight", "nose_style": "pointed", "mouth_style": "thin", "hair_style": "crew", "hair_color": "grey", "facial_hair": "short_beard", "shirt_style": "camo", "shirt_color": "olive", "shirt_color2": "forest", "pants_style": "camo", "pants_color": "olive", "shoes_style": "combat_boots", "shoes_color": "black", "marks": ["scar_brow"], "wear": "clean"},
   "ambiance": [
     "Repos. Enfin... pas trop.",
     "Une zone tenue, c'est une zone qui respire.",

@@ -14,6 +14,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -61,6 +62,10 @@ final class Commandes {
                 .then(Commands.literal("bras").then(Commands.argument("id", StringArgumentType.word()).suggests(PNJ_IDS)
                         .then(Commands.literal("fins").executes(c -> bras(c, StringArgumentType.getString(c, "id"), true)))
                         .then(Commands.literal("larges").executes(c -> bras(c, StringArgumentType.getString(c, "id"), false)))))
+                .then(Commands.literal("apparence").then(Commands.argument("id", StringArgumentType.word()).suggests(PNJ_IDS)
+                        .then(Commands.literal("moi").executes(c -> apparenceMoi(c, StringArgumentType.getString(c, "id"))))
+                        .then(Commands.literal("fichier").executes(c -> apparenceFichier(c, StringArgumentType.getString(c, "id"))))
+                        .then(Commands.literal("aucune").executes(c -> apparenceAucune(c, StringArgumentType.getString(c, "id"))))))
                 .then(Commands.literal("liste").executes(Commandes::listePnj)));
 
         d.register(Commands.literal("quete").requires(s -> s.hasPermission(2))
@@ -128,6 +133,7 @@ final class Commandes {
         if (def != null) {
             pnj.definirSkin(def.skin);
             pnj.definirBrasFins(def.brasFins);
+            if (def.apparence != null) pnj.definirApparence(def.apparence, false);
         }
         moi.serverLevel().addFreshEntity(pnj);
         int deja = trouver(id).size() - 1;
@@ -164,6 +170,35 @@ final class Commandes {
         List<Pnj> l = trouver(id);
         for (Pnj p : l) p.definirSkin(skin.equals("defaut") ? "" : skin);
         dire(c, "heraliz_quetes.cmd.pnj_skin", "Skin « %s » pour %s PNJ (fichier textures/pnj/%s.png du jar joueur).", skin, l.size(), skin);
+        return l.size();
+    }
+
+    /** Le PNJ prend le personnage CaraCrea du staff qui tape la commande (fait dans /perso). */
+    private static int apparenceMoi(CommandContext<CommandSourceStack> c, String id) throws CommandSyntaxException {
+        CompoundTag a = Apparences.deJoueur(c.getSource().getPlayerOrException());
+        if (a == null) return erreur(c, "heraliz_quetes.cmd.apparence_sans", "Tu n'as pas encore de personnage CaraCrea (/perso).");
+        List<Pnj> l = trouver(id);
+        if (l.isEmpty()) return erreur(c, "heraliz_quetes.cmd.pnj_introuvable", "Aucun PNJ « %s » chargé (il faut être près de lui, ou le recréer).", id);
+        for (Pnj p : l) p.definirApparence(a, true);
+        dire(c, "heraliz_quetes.cmd.apparence_moi", "%s PNJ « %s » prend ton personnage CaraCrea. Pour la garder dans son fichier : %s", l.size(), id, Apparences.decrire(a));
+        return l.size();
+    }
+
+    /** Retour à l'apparence écrite dans le fichier du PNJ (sinon son skin). */
+    private static int apparenceFichier(CommandContext<CommandSourceStack> c, String id) {
+        Defs.Pnj def = Catalogue.pnj(id);
+        CompoundTag a = def == null ? null : def.apparence;
+        List<Pnj> l = trouver(id);
+        for (Pnj p : l) p.definirApparence(a, false);
+        dire(c, "heraliz_quetes.cmd.apparence_fichier", "%s PNJ « %s » : apparence de son fichier.", l.size(), id);
+        return l.size();
+    }
+
+    /** Plus d'apparence CaraCrea : le skin du PNJ (ou Steve / Alex), jusqu'à /pnj apparence fichier. */
+    private static int apparenceAucune(CommandContext<CommandSourceStack> c, String id) {
+        List<Pnj> l = trouver(id);
+        for (Pnj p : l) p.definirApparence(new CompoundTag(), true);
+        dire(c, "heraliz_quetes.cmd.apparence_aucune", "%s PNJ « %s » : plus d'apparence CaraCrea (skin du PNJ).", l.size(), id);
         return l.size();
     }
 

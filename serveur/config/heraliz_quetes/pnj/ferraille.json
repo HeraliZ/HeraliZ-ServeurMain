@@ -7,6 +7,7 @@
     "ru": "Механик"
   },
   "skin": "ferraille",
+  "apparence": {"skin_tone": "caramel", "eye_shape": "round", "eye_color": "dark_brown", "brow_style": "thick", "nose_style": "wide", "mouth_style": "smile", "hair_style": "short_messy", "hair_color": "black", "facial_hair": "goatee", "shirt_style": "flannel", "shirt_color": "red", "shirt_color2": "charcoal", "pants_style": "jeans", "pants_color": "denim", "shoes_style": "hiking_boots", "shoes_color": "brown", "marks": ["dirt"], "wear": "dirty"},
   "ambiance": [
     "T'aurais pas un ressort ? Non ? T'as une tête à en trouver.",
     "Ça, c'est pas cassé. C'est fatigué.",

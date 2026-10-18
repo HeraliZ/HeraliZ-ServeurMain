@@ -22,3 +22,9 @@ description='''PNJ posés par le staff, quêtes et contrats, points de quête su
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+[[dependencies.heraliz_quetes]]
+    modId="caracrea"
+    mandatory=false
+    versionRange="[1.1.0,)"
+    ordering="AFTER"
+    side="BOTH"

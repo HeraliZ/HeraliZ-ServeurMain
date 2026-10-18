@@ -7,6 +7,7 @@
     "ru": "Инструктор лагеря"
   },
   "skin": "jack",
+  "apparence": {"skin_tone": "tan", "eye_shape": "narrow", "eye_color": "brown", "brow_style": "angled", "nose_style": "medium", "mouth_style": "frown", "hair_style": "buzz", "hair_color": "dark_brown", "facial_hair": "stubble", "shirt_style": "tank_top", "shirt_color": "olive", "shirt_color2": "khaki", "pants_style": "cargo", "pants_color": "khaki", "shoes_style": "combat_boots", "shoes_color": "black", "marks": ["scar_brow", "scar_left"], "wear": "dirty"},
   "ambiance": [
     "On vise la cible, pas le copain.",
     "Recharge AVANT d'être à sec. Toujours.",

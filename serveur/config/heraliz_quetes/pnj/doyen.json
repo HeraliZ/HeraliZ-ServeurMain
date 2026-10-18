@@ -7,6 +7,7 @@
     "ru": "Глава убежища"
   },
   "skin": "doyen",
+  "apparence": {"skin_tone": "light", "eye_shape": "hooded", "eye_color": "grey", "brow_style": "thick", "nose_style": "pointed", "mouth_style": "thin", "hair_style": "side_part", "hair_color": "white", "facial_hair": "full_beard", "shirt_style": "jacket", "shirt_color": "navy", "shirt_color2": "mustard", "pants_style": "trousers", "pants_color": "navy", "shoes_style": "dress_shoes", "shoes_color": "black", "marks": ["mole"], "wear": "clean", "eye_size": 1},
   "ambiance": [
     "Doucement, petit. T'es au terminus.",
     "Personne ne revient sans s'extraire. Retiens ça.",

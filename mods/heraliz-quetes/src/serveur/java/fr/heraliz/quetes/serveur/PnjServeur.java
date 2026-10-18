@@ -10,7 +10,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-/** PNJ côté serveur : il regarde les joueurs qui passent, ouvre son dialogue au clic droit, suit son fichier (nom). */
+/** PNJ côté serveur : il regarde les joueurs qui passent, ouvre son dialogue au clic droit, suit son fichier (nom, apparence CaraCrea). */
 public class PnjServeur extends Pnj {
     private int verif;
 
@@ -35,6 +35,9 @@ public class PnjServeur extends Pnj {
         super.tick();
         if (++verif % 200 != 0) return;
         Defs.Pnj def = Catalogue.pnj(pnjId());
-        if (def != null && !def.nom.vide() && !def.nom.toString().equals(entityData.get(NOM))) definirNom(def.nom);
+        if (def == null) return;
+        if (!def.nom.vide() && !def.nom.toString().equals(entityData.get(NOM))) definirNom(def.nom);
+        // apparence du fichier suivie (après /quete recharger), sauf si le staff a donné la sienne au PNJ
+        if (!apparencePerso() && def.apparence != null && !def.apparence.equals(apparence())) definirApparence(def.apparence, false);
     }
 }

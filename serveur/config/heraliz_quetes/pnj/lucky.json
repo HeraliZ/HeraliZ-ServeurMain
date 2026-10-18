@@ -7,6 +7,7 @@
     "ru": "Владелец казино"
   },
   "skin": "lucky",
+  "apparence": {"skin_tone": "bronze", "eye_shape": "round", "eye_color": "light_blue", "brow_style": "arched", "nose_style": "medium", "mouth_style": "smile", "hair_style": "slicked_back", "hair_color": "soft_black", "facial_hair": "mustache", "shirt_style": "dress_shirt", "shirt_color": "purple", "shirt_color2": "white", "pants_style": "trousers", "pants_color": "charcoal", "shoes_style": "dress_shoes", "shoes_color": "black", "marks": [], "wear": "clean", "mouth_width": 3},
   "ambiance": [
     "Ici on meurt de rire, pas de faim.",
     "La chance, ça se travaille.",

@@ -7,7 +7,7 @@
     "ru": "Контрабандистка"
   },
   "skin": "mila",
-  "bras_fins": true,
+  "apparence": {"skin_tone": "beige", "eye_shape": "almond", "eye_color": "amber", "brow_style": "straight", "nose_style": "pointed", "mouth_style": "smile", "lip_color": "dark", "hair_style": "undercut", "hair_color": "platinum", "facial_hair": "none", "shirt_style": "jacket", "shirt_color": "black", "shirt_color2": "burgundy", "pants_style": "ripped_jeans", "pants_color": "black", "shoes_style": "boots", "shoes_color": "brown", "marks": ["scar_right"], "wear": "clean", "eye_size": 3},
   "ambiance": [
     "Tout se vend. Même toi.",
     "Pas de crédit. Jamais.",
