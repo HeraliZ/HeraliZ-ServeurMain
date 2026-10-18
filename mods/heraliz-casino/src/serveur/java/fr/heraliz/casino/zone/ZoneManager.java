@@ -136,12 +136,9 @@ public final class ZoneManager {
         Visit v = visit(p, zone.kind());
         boolean inside = zone.contains(p.getX(), p.getY(), p.getZ());
         if (ejecting(p.getUUID())) return;
-        // dans la zone VIP, seuls les videurs VIP s'occupent du joueur : jamais d'entree payante a la porte VIP, meme
-        // si la zone VIP touche ou chevauche celle du casino
-        if (inside && !zone.vip()) {
-            CasinoZone vip = CasinoZone.get(level.getServer(), CasinoZone.Kind.VIP);
-            if (vip.in(level) && vip.contains(p.position())) return;
-        }
+        // zone VIP dans le casino : dans la zone VIP et sur son seuil, seuls les videurs VIP s'occupent du joueur (jamais
+        // d'entree payante a la porte VIP), et pour le casino il n'est pas sorti, meme si la zone VIP depasse de la salle
+        if (!zone.vip() && vipDansCasino(level.getServer()) && seuilVip(level.getServer()).contains(p.position())) return;
         if (exempt(p)) {
             v.admitted = inside;
             if (!inside) v.lastOutside = p.position();
@@ -253,20 +250,24 @@ public final class ZoneManager {
     }
 
     /**
-     * Le videur VIP refuse le joueur sans grade : main levee, et sa phrase dans le chat du joueur. Jamais de proposition
-     * de payer : la zone VIP ne s'achete pas.
+     * Le videur VIP refuse le joueur sans grade : main levee, et il le lui dit dans la fenetre de dialogue (sans prix ni
+     * bouton pour payer : la zone VIP ne s'achete pas).
      */
     private static void refuseVip(ServerPlayer p, @Nullable GuardEntity g) {
-        Component line = Component.translatableWithFallback("message.heralizcasino.zone.vip_refused",
-                "Vigile VIP : Non, tu n'es pas désigné comme VIP (grade Rescapé, Traqueur ou Roi de la Zone).");
+        Component line = Component.translatableWithFallback("guard.heralizcasino.vip.stop",
+                "Non, tu n'es pas désigné comme VIP (grade Rescapé, Traqueur ou Roi de la Zone).");
         if (g != null) g.challenge(p, line);
-        p.displayClientMessage(line.copy().withStyle(ChatFormatting.RED), false);
+        vipDialog(p, g, line);
+    }
+
+    private static void vipDialog(ServerPlayer p, @Nullable GuardEntity g, Component line) {
+        CasinoNet.sendTo(p, new ZoneDialogPacket(g == null ? -1 : g.getId(), line, 0, Component.empty(), 0, false, 0, true));
     }
 
     private static void sendDialog(ServerPlayer p, @Nullable GuardEntity g, Component line) {
         CasinoConfig.Entree cfg = CasinoConfig.get().caisse.entree;
         Offer o = offer(p, cfg.prix);
-        CasinoNet.sendTo(p, new ZoneDialogPacket(g == null ? -1 : g.getId(), line, cfg.prix, o.text(), o.change(), o.possible(), cfg.validiteMinutes));
+        CasinoNet.sendTo(p, new ZoneDialogPacket(g == null ? -1 : g.getId(), line, cfg.prix, o.text(), o.change(), o.possible(), cfg.validiteMinutes, false));
     }
 
     /** Clic droit sur un videur : il dit ou en est le joueur, et propose de payer s'il n'a pas de ticket. */
@@ -282,8 +283,7 @@ public final class ZoneManager {
         if (zone.vip()) {
             if (AccesVip.autorise(p)) {
                 g.say(Component.empty());
-                p.displayClientMessage(Component.translatableWithFallback("guard.heralizcasino.vip.welcome",
-                        "Vigile VIP : Bienvenue en zone VIP. Fais comme chez toi.").withStyle(ChatFormatting.GOLD), false);
+                vipDialog(p, g, Component.translatableWithFallback("guard.heralizcasino.vip.welcome", "Bienvenue en zone VIP. Fais comme chez toi."));
             } else {
                 refuseVip(p, g);
             }
@@ -456,8 +456,12 @@ public final class ZoneManager {
         return eject(zone, level, p, reason);
     }
 
-    /** Les videurs sortent le joueur de cette zone (animation d'une douzaine de secondes). */
+    /**
+     * Les videurs sortent le joueur de cette zone (animation d'une douzaine de secondes). Zone VIP dans le casino : ils
+     * le sortent du casino tout entier, devant son entree.
+     */
     static boolean eject(CasinoZone zone, ServerLevel level, ServerPlayer p, int reason) {
+        if (zone.vip() && vipDansCasino(level.getServer())) zone = CasinoZone.get(level.getServer());
         if (!zone.in(level) || p.level() != level || !p.isAlive() || ejecting(p.getUUID())) return false;
         Ejection e = Ejection.begin(zone, level, p, reason);
         if (e == null) return false;
@@ -465,16 +469,32 @@ public final class ZoneManager {
         return true;
     }
 
-    /** Fin d'une expulsion : ticket perdu, visite terminee, quelques secondes a l'abri des chutes et des coups. */
+    /**
+     * Fin d'une expulsion : ticket perdu, visites terminees (casino et zone VIP), quelques secondes a l'abri des chutes
+     * et des coups.
+     */
     static void ejected(CasinoZone zone, ServerLevel level, ServerPlayer p) {
         zone.revoke(p.getUUID());
-        Visit v = visit(p, zone.kind());
-        v.admitted = false;
-        v.played = false;
-        v.brokeTicks = 0;
-        v.lastOutside = p.position();
-        v.blockedAt = level.getGameTime();
+        for (CasinoZone.Kind kind : CasinoZone.Kind.values()) {
+            Visit v = visit(p, kind);
+            v.admitted = false;
+            v.played = false;
+            v.brokeTicks = 0;
+            v.lastOutside = p.position();
+            v.blockedAt = level.getGameTime();
+        }
         SAFE_UNTIL.put(p.getUUID(), level.getGameTime() + 80);
+    }
+
+    /** La zone VIP est dans le casino : meme monde, et sa salle touche ou chevauche celle du casino (a 3 blocs pres). */
+    static boolean vipDansCasino(MinecraftServer server) {
+        CasinoZone casino = CasinoZone.get(server), vip = CasinoZone.get(server, CasinoZone.Kind.VIP);
+        return casino.exists() && vip.exists() && vip.dimension().equals(casino.dimension()) && vip.box().intersects(casino.box().inflate(3));
+    }
+
+    /** La zone VIP et son seuil (3 blocs autour) : la porte VIP, ou les videurs du casino laissent faire ceux de la zone VIP. */
+    private static AABB seuilVip(MinecraftServer server) {
+        return CasinoZone.get(server, CasinoZone.Kind.VIP).box().inflate(3, 1, 3);
     }
 
     static void safe(ServerLevel level, UUID player, int ticks) {

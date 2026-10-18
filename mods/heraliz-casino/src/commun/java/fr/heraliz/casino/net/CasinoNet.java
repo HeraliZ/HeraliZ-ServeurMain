@@ -16,7 +16,7 @@ public final class CasinoNet {
     private CasinoNet() {
     }
 
-    private static final String PROTOCOL = "3";
+    private static final String PROTOCOL = "4";
 
     /**
      * Paquets recus par le client (serveur -> client) : traitement d'affichage branche par la partie client

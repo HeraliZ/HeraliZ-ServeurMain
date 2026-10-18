@@ -16,8 +16,9 @@ import java.util.function.Supplier;
  * @param change  monnaie rendue en jetons (paiement en objets)
  * @param canPay  le joueur a de quoi payer
  * @param minutes duree du ticket (0 : une seule entree)
+ * @param vip     videur de la zone VIP : sa replique seule, sans prix ni bouton pour payer (la zone VIP ne s'achete pas)
  */
-public record ZoneDialogPacket(int guard, Component line, long price, Component payWith, long change, boolean canPay, int minutes) {
+public record ZoneDialogPacket(int guard, Component line, long price, Component payWith, long change, boolean canPay, int minutes, boolean vip) {
     public static void encode(ZoneDialogPacket p, FriendlyByteBuf buf) {
         buf.writeVarInt(p.guard);
         buf.writeComponent(p.line);
@@ -26,11 +27,12 @@ public record ZoneDialogPacket(int guard, Component line, long price, Component 
         buf.writeVarLong(p.change);
         buf.writeBoolean(p.canPay);
         buf.writeVarInt(p.minutes);
+        buf.writeBoolean(p.vip);
     }
 
     public static ZoneDialogPacket decode(FriendlyByteBuf buf) {
         return new ZoneDialogPacket(buf.readVarInt(), buf.readComponent(), buf.readVarLong(), buf.readComponent(), buf.readVarLong(), buf.readBoolean(),
-                buf.readVarInt());
+                buf.readVarInt(), buf.readBoolean());
     }
 
     public static void handle(ZoneDialogPacket p, Supplier<NetworkEvent.Context> ctx) {

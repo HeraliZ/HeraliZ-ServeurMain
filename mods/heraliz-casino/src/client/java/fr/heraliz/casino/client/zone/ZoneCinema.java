@@ -18,6 +18,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -59,6 +60,12 @@ public final class ZoneCinema implements IGuiOverlay {
     private static final long BLEND_IN_MS = 600, BLEND_OUT_MS = 700;
     /** Ticks de la scene de fin (joueur a terre, videurs sur le pas de la porte) avant de rendre la vue au joueur. */
     private static final int OUTRO = 54;
+    /**
+     * Ticks a plat ventre apres la chute (comme le serveur, {@code Ejection.after}). La pose forcee du serveur n'est pas
+     * envoyee au jeu du joueur, qui recalcule la sienne : sans ca, il se voyait debout des l'atterrissage.
+     */
+    private static final int PRONE = 38;
+    private static boolean prone;
     private static final int SHOT_WAIT = 0, SHOT_HELD = 1, SHOT_FRONT = 2, SHOT_BACK = 3, SHOT_DOOR = 4;
 
     private static boolean active, exiting, rode, landed;
@@ -135,6 +142,7 @@ public final class ZoneCinema implements IGuiOverlay {
     }
 
     private static void stop() {
+        relever();
         active = false;
         exiting = false;
         shot = -1;
@@ -173,7 +181,21 @@ public final class ZoneCinema implements IGuiOverlay {
         } else if (!rode && age > 60) {
             exit();
         }
+        if (landed && age - landedAt < PRONE) {
+            mc.player.setForcedPose(Pose.SWIMMING);
+            prone = true;
+        } else {
+            relever();
+        }
         if ((landed && age - landedAt >= OUTRO) || age > 700) exit();
+    }
+
+    /** Fin de la pose a plat ventre (seulement si c'est la scene qui l'a mise). */
+    private static void relever() {
+        if (!prone) return;
+        prone = false;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) mc.player.setForcedPose(null);
     }
 
     @SubscribeEvent

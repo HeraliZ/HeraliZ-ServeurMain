@@ -921,10 +921,17 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   boutique n'entre qu'en créatif ou spectateur). Commandes : `/casino zone vip a|b` (coins, ou la Tablette du Directeur),
   `creer`, `entree` (deux videurs VIP flanquent la porte), `garde` (un videur VIP de plus), `info`, `supprimer`. Un
   joueur sans grade est remis dehors et le videur VIP lui dit « Non, tu n'es pas désigné comme VIP (grade Rescapé,
-  Traqueur ou Roi de la Zone). » dans son chat, sans jamais proposer de payer ; dans la zone VIP, la zone du casino
-  ne s'applique plus (même si elles se touchent). Plus aucune bulle de texte au-dessus des vigiles (Casino 2.3.1, choix du
-  propriétaire : « cringe ») : leurs phrases passent par le chat ou la fenêtre de l'entrée. Fauché dedans : sorti par les videurs comme au casino (mêmes
-  réglages `expulserFauches`, `delaiExpulsion`). Grade lu par réflexion (`AccesVip` → `GradesApi.rangBoutique`) : sans
+  Traqueur ou Roi de la Zone). » dans la fenêtre de dialogue des vigiles (« VIGILE VIP », un seul bouton Partir, ni
+  prix ni paiement ; Casino 2.3.2), jamais dans le chat. Zone VIP dans le casino (même monde, salles qui se touchent ou
+  se chevauchent à 3 blocs près, `ZoneManager.vipDansCasino`) : dans la zone VIP et à 3 blocs autour (sa porte), seuls
+  les videurs VIP s'occupent du joueur, et pour le casino il n'est pas sorti même si la zone VIP dépasse de la salle
+  (avant 2.3.2 : à la porte VIP, les videurs du casino réclamaient l'entrée et les deux zones se renvoyaient le joueur).
+  Plus aucune bulle de texte au-dessus des vigiles (Casino 2.3.1, choix du propriétaire : « cringe ») ; plus de phrase
+  rouge « Tu n'as pas de quoi payer… » dans la fenêtre de l'entrée (2.3.2, le bouton Payer reste éteint). Fauché dans
+  la zone VIP : sorti par les videurs comme au casino (mêmes réglages `expulserFauches`, `delaiExpulsion`) ; zone VIP
+  dans le casino : jeté devant l'entrée du casino, plus seulement hors de la zone VIP (2.3.2). Expulsion : le joueur
+  reste à plat ventre 2 s chez lui aussi (`ZoneCinema.PRONE` ; la pose forcée du serveur n'arrive pas à son jeu, il se
+  voyait debout aussitôt). Grade lu par réflexion (`AccesVip` → `GradesApi.rangBoutique`) : sans
   HeraliZ Grades, la zone VIP est fermée. Chaque videur sait sa zone (NBT `Zone`, `casino` par défaut). Rien testé en jeu ;
 - bonus de loot (HeraliZ Loot, au premier tirage d'un conteneur) : chaque objet a 10 % de chances d'être tiré une
   seconde fois (le plus rare est gardé) et les quantités montent de 10 % ; sources cumulables, plafond 25 % : membre
