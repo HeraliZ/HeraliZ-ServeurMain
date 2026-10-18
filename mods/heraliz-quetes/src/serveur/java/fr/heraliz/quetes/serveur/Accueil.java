@@ -32,8 +32,10 @@ import java.util.UUID;
 final class Accueil {
     /** Le PNJ qui accueille les nouveaux et guide le tutoriel des bases. */
     static final String PNJ = "varga";
-    /** Secondes entre les deux mots de la fin de Varga (le premier pendant le tour de la base par la caméra). */
+    /** Secondes entre les mots de la fin de Varga (le premier pendant le tour de la base par la caméra). */
     private static final int FIN_ECART = 16;
+    /** Les mots de la fin qui suivent le premier : raids et défenses, puis /home, /spawn et missions. */
+    private static final String[] FINS = {"heraliz_quetes.tuto.radio.fin2", "heraliz_quetes.tuto.radio.fin3"};
 
     private record Etat(int tuto, int etape, boolean intro) {
     }
@@ -46,8 +48,11 @@ final class Accueil {
     private static final Map<UUID, Bloque> SUR_ETAPE = new HashMap<>();
     /** Secondes sans avancer avant que Varga donne un conseil de plus. */
     private static final int AIDE_APRES = 30;
-    /** Secondes avant le second mot de la fin. */
-    private static final Map<UUID, Integer> FIN = new HashMap<>();
+    /** Prochain mot de la fin (rang dans FINS) et secondes avant lui. */
+    private record Suite(int rang, int secondes) {
+    }
+
+    private static final Map<UUID, Suite> FIN = new HashMap<>();
     /** Apparence de l'entité Varga vue en dernier (si son fichier n'en a pas : posée par /pnj apparence varga moi). */
     private static CompoundTag apparenceVue;
 
@@ -81,14 +86,18 @@ final class Accueil {
     static void seconde(ServerPlayer p) {
         int tuto = Ponts.tutoEtat(p);
         int etapes = Ponts.tutoEtapes();
-        Integer fin = FIN.get(p.getUUID());
+        Suite fin = FIN.get(p.getUUID());
         if (fin != null) {
-            if (fin <= 1) {
-                FIN.remove(p.getUUID());
-                radio(p, 0, "heraliz_quetes.tuto.radio.fin2");
-                Moteur.notif(p, Texte.cle("heraliz_quetes.tuto.notif_fin"), 0x5FD08A);
+            if (fin.secondes() > 1) {
+                FIN.put(p.getUUID(), new Suite(fin.rang(), fin.secondes() - 1));
             } else {
-                FIN.put(p.getUUID(), fin - 1);
+                radio(p, 0, FINS[fin.rang()]);
+                if (fin.rang() + 1 < FINS.length) {
+                    FIN.put(p.getUUID(), new Suite(fin.rang() + 1, FIN_ECART));
+                } else {
+                    FIN.remove(p.getUUID());
+                    Moteur.notif(p, Texte.cle("heraliz_quetes.tuto.notif_fin"), 0x5FD08A);
+                }
             }
         }
         if (tuto < 0) {
@@ -121,8 +130,9 @@ final class Accueil {
             SUR_ETAPE.put(p.getUUID(), b);
         } else if (tuto == 3 && avant != null && avant.tuto() == 2) {
             // le premier mot de la fin pendant que la caméra fait le tour de la base (CRac), le second après
-            radio(p, 0, "heraliz_quetes.tuto.radio.fin", Texte.brut(Ponts.tutoJours()));
-            FIN.put(p.getUUID(), FIN_ECART);
+            String premier = Ponts.tutoSas(p) ? "heraliz_quetes.tuto.radio.fin" : "heraliz_quetes.tuto.radio.fin_sans_sas";
+            radio(p, 0, premier, Texte.brut(Ponts.tutoJours()));
+            FIN.put(p.getUUID(), new Suite(0, FIN_ECART));
         } else if (tuto != 2 && avant != null && avant.tuto() == 2) {
             // tutoriel arrêté autrement (staff : /tuto finir, rejouer) : la radio se range
             Reseau.envoyer(p, new Reseau.Radio(Texte.VIDE, new CompoundTag(), "", false, 0, etapes, Texte.VIDE));

@@ -127,7 +127,9 @@ public final class AmbianceClient {
             // présence des zones autour du joueur
             float g = 0, ra = 0, fr = 0;
             String nom = "";
-            for (Zone z : zones) {
+            // les zones sont celles de la carte : jamais dans un autre monde (bases, spawn, matchs) aux mêmes coordonnées
+            boolean carte = mc.level.dimension() == net.minecraft.world.level.Level.OVERWORLD;
+            for (Zone z : carte ? zones : List.<Zone>of()) {
                 float n = z.niveau(p.getX(), p.getY(), p.getZ());
                 if (n <= 0) continue;
                 switch (z.genre()) {
