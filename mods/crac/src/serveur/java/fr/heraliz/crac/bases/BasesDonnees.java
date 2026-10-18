@@ -126,6 +126,16 @@ public final class BasesDonnees extends SafeSavedData {
             () -> SafeSavedData.fresh(server.overworld(), ID, new BasesDonnees()), ID);
     }
 
+    /** Les homes de tous les joueurs qui ne sont plus dans une de leurs bases (base effacée) : retirés. */
+    void nettoyerHomes(net.minecraft.server.MinecraftServer server) {
+        this.joueurs.forEach((id, j) -> j.homes.values().removeIf(h -> {
+            var l = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, h.monde()));
+            return l != null && MondeBases.estBases(l)
+                && !Deplacements.baseEn(l, net.minecraft.core.BlockPos.containing(h.x(), h.y(), h.z()), id);
+        }));
+        this.marquer();
+    }
+
     public Joueur joueur(UUID id) {
         return this.joueurs.computeIfAbsent(id, k -> new Joueur());
     }

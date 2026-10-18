@@ -28,6 +28,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -275,6 +277,30 @@ public final class TutoClient {
         if (surligne >= 0) {
             surligne = -1;
             surlignerBarre(-1);
+        }
+    }
+
+    /**
+     * Pendant le tour de caméra, le regard est forcé vers le centre de la base à chaque image (d'autres mods recalent la
+     * caméra sur le regard du joueur : avant, on tournait autour de la base sans la regarder).
+     */
+    @SubscribeEvent
+    public static void regard(ViewportEvent.ComputeCameraAngles e) {
+        if (camera == null || centre == null) {
+            return;
+        }
+        Vec3 c = e.getCamera().getPosition();
+        double dx = centre.x - c.x, dy = centre.y - c.y, dz = centre.z - c.z;
+        e.setYaw((float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90F);
+        e.setPitch((float) (-Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * Mth.RAD_TO_DEG));
+        e.setRoll(0F);
+    }
+
+    /** Ni bras ni objet en main pendant le tour de caméra. */
+    @SubscribeEvent
+    public static void main(RenderHandEvent e) {
+        if (camera != null) {
+            e.setCanceled(true);
         }
     }
 

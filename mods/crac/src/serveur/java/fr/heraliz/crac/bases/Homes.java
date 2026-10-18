@@ -10,6 +10,9 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import fr.heraliz.crac.Crac;
+import fr.heraliz.crac.build.model.Piece;
+import fr.heraliz.crac.build.model.PieceKind;
+import fr.heraliz.crac.build.world.StructureService;
 import fr.heraliz.crac.claim.Claim;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -43,6 +46,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class Homes {
     public static final String DEFAUT = "base";
+    /** Homes posés tout seuls (première base, anciennes bases) : coupés, le joueur pose le sien avec /sethome. */
+    private static final boolean AUTO_COUPE = true;
     private static final Pattern NOM = Pattern.compile("[a-z0-9_-]{1,16}");
 
     @Nullable
@@ -138,6 +143,11 @@ public final class Homes {
                     ChatFormatting.RED);
                 return 0;
             }
+            if (!surSaConstruction(p)) {
+                T.chat(p, T.t("crac.home.sethome_sol", "Mets-toi debout sur une fondation ou un plancher de ta base pour poser ton home."),
+                    ChatFormatting.RED);
+                return 0;
+            }
         }
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
@@ -158,6 +168,18 @@ public final class Homes {
             T.chat(p, T.t("crac.home.deplace", "Home « %s » déplacé ici.", n), ChatFormatting.GREEN);
         }
         return 1;
+    }
+
+    /** Le joueur se tient sur une fondation ou un plancher (un sol de sa construction), pas sur le terrain. */
+    static boolean surSaConstruction(ServerPlayer p) {
+        if (!(p.level() instanceof ServerLevel sl)) {
+            return false;
+        }
+        Piece sol = StructureService.seatUnder(sl, p.blockPosition());
+        if (sol == null) {
+            sol = StructureService.seatUnder(sl, BlockPos.containing(p.getX(), p.getY() + 0.01, p.getZ()));
+        }
+        return sol != null && sol.kind().family == PieceKind.Family.SURFACE && Deplacements.baseEn(sl, sol.key().anchorBlock(), p.getUUID());
     }
 
     private static BasesDonnees.Home ici(ServerPlayer p) {
@@ -313,7 +335,8 @@ public final class Homes {
      * home, son home « base » est posé là où il se tient (dans la zone de la base), sinon juste au-dessus du Claim Block.
      */
     public static void premiereBase(ServerPlayer p, ServerLevel level, BlockPos ancre) {
-        if (!MondeBases.estBases(level)) {
+        // plus de home posé tout seul (choix du propriétaire, 18/10) : le joueur le pose lui-même avec /sethome
+        if (AUTO_COUPE || !MondeBases.estBases(level)) {
             return;
         }
         try {
@@ -340,7 +363,7 @@ public final class Homes {
      * au-dessus de son Claim Block (à l'arrivée, la place libre la plus proche).
      */
     private static void migrer(ServerPlayer p, BasesDonnees.Joueur j) {
-        if (j.homeAuto || !j.homes.isEmpty()) {
+        if (AUTO_COUPE || j.homeAuto || !j.homes.isEmpty()) {
             return;
         }
         Claim c = Deplacements.baseDe(p);

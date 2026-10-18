@@ -1160,6 +1160,19 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   en toit, en bois, sans coût ; rien si le terrain l'empêche, `TutorielApi.sas`) ; mots de la fin en trois messages
   (sas et jours de protection ; raids, raid block, pierre des carrières et métal de la carte pour renforcer ; /home,
   /spawn, missions).
+  Troisième essai (18/10, CRac 1.9.0-beta, Quêtes 1.6.4) : plus aucun home posé tout seul (`Homes.AUTO_COUPE`) :
+  10e étape du tutoriel, le joueur tape lui-même `/sethome` ; `/sethome` seulement debout sur une fondation ou un
+  plancher de sa base (`Homes.surSaConstruction`) ; `/base effacer` retire aussi les homes restés dans la base effacée
+  (`BasesDonnees.nettoyerHomes`). Claim Block dans le coin du fond de la cabane (`Cabane.coinClaim`), caisse juste à sa
+  droite (`placeCaisse`), seulement sur des cases libres. Sas : une porte posée sur un côté d'un triangle (fondation ou
+  plancher) ne s'ouvre pas tant qu'une autre porte de ce triangle est ouverte (`StructureService.autrePorteDuSasOuverte`,
+  pour tous les sas). Tour de caméra de la fin : regard forcé vers la base à chaque image (`ViewportEvent.
+  ComputeCameraAngles`), bras caché. Base protégée (premiers jours) : ses coffres et conteneurs ne s'ouvrent que pour
+  son groupe (`Protections.coffres`). Faim figée à chaque tick pendant le tutoriel. Monter sur un plancher posé sur un
+  demi-mur (1,5 bloc) : au pied d'un sol de construction dont le dessus est 1,25 à 1,75 bloc plus haut, Saut amélioré I
+  invisible de 8 ticks (`event/SautRebord`, 1,8 bloc ; les pièces gardent leur hauteur). En attente de maquettes
+  validées : nouveau modèle du Claim Block façon « TC » de Rust, écran des accès à la base dans le Claim Block (accès
+  donnés par le propriétaire, plus d'accès automatique par le clan).
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;

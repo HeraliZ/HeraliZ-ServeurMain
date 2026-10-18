@@ -28,15 +28,15 @@ public final class TutorielApi {
     }
 
     /**
-     * Étape de la cabane en cours : {étape (1 à 9, 10 = tout est fait), fait, total} ; {0, 0, 0} hors du monde des bases
+     * Étape de la cabane en cours : {étape (1 à 10, 11 = tout est fait), fait, total} ; {0, 0, 0} hors du monde des bases
      * ou avant l'arrivée. 1 : prendre le plan ; 2 : la 1re fondation ; 3 : la 2e ; 4 : les murs et la porte ; 5 : le toit ;
-     * 6 : tout en bois ; 7 : le Claim Block ; 8 : l'entretien ; 9 : la caisse en métal.
+     * 6 : tout en bois ; 7 : le Claim Block ; 8 : l'entretien ; 9 : la caisse en métal ; 10 : son home (/sethome).
      */
     public static int[] progression(ServerPlayer p) {
         return Tutoriel.progression(p);
     }
 
-    /** Nombre d'étapes de la cabane (9). */
+    /** Nombre d'étapes de la cabane (10). */
     public static int etapes() {
         return Tutoriel.ETAPES;
     }

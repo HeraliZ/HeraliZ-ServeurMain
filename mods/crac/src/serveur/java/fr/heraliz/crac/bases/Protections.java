@@ -33,14 +33,19 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -116,6 +121,35 @@ public final class Protections {
         Building b = StructureService.buildingOf(level, p);
         Claim c = StructureService.claimOf(level, b);
         return c != null && groupeProtege(level.getServer(), c.groupId());
+    }
+
+    // ---------------------------------------------------------------------------------------------- coffres
+
+    /**
+     * Base protégée (premiers jours) : seul son groupe ouvre ses coffres et conteneurs (caisses, Claim Block...). Libres :
+     * créatif, spectateur, staff.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void coffres(PlayerInteractEvent.RightClickBlock e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || !(p.level() instanceof ServerLevel level) || p.isCreative() || p.isSpectator()
+            || p.hasPermissions(2) || BasesDonnees.get(p.server).protections().isEmpty()) {
+            return;
+        }
+        BlockEntity be = level.getBlockEntity(e.getPos());
+        if (!(be instanceof Container) && !(be instanceof MenuProvider)) {
+            return;
+        }
+        Claim c = ClaimManager.getAt(level, e.getPos());
+        if (c == null || !groupeProtege(p.server, c.groupId())) {
+            return;
+        }
+        Group g = GroupData.get(p.server).getById(c.groupId());
+        if (g != null && g.isMember(p.getUUID())) {
+            return;
+        }
+        e.setCanceled(true);
+        e.setCancellationResult(InteractionResult.FAIL);
+        p.displayClientMessage(T.t("crac.protection.coffre", "Base protégée : ses coffres ne s'ouvrent pas pour toi.").withStyle(ChatFormatting.YELLOW), true);
     }
 
     // ---------------------------------------------------------------------------------------------- combats

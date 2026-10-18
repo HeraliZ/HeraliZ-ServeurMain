@@ -122,7 +122,7 @@ final class EffacerBase {
         BasesDonnees.Joueur j = d.joueur(joueur);
         j.batiment = -1L;
         j.arete = -1;
-        d.marquer();
+        d.nettoyerHomes(server);   // les homes qui étaient dans la base effacée
         Protections.majTextes(server);
         String nom = profil.getName();
         Crac.LOGGER.info("[CRac] base de {} effacée par {} ({} pièces, claim : {})", nom, src.getTextName(), pieces, claim);

@@ -27,6 +27,7 @@ import fr.heraliz.crac.build.logic.Supports;
 import fr.heraliz.crac.build.logic.Topology;
 import fr.heraliz.crac.build.logic.Variants;
 import fr.heraliz.crac.build.model.Building;
+import fr.heraliz.crac.build.model.EdgeKey;
 import fr.heraliz.crac.build.model.Piece;
 import fr.heraliz.crac.build.model.PieceKey;
 import fr.heraliz.crac.build.model.PieceKind;
@@ -831,6 +832,12 @@ public final class StructureService {
                 return InteractionResult.CONSUME;
             }
             boolean open = !p.isOpen();
+            if (open && autrePorteDuSasOuverte(sl, p)) {
+                // sas (deux portes autour d'un triangle) : jamais les deux ouvertes ensemble, comme dans Rust
+                player.displayClientMessage(Txt.yellow("crac.door.sas"), true);
+                level.playSound(null, pos, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 0.6F, 1.2F);
+                return InteractionResult.CONSUME;
+            }
             if (!open && closingBlocked(sl, p)) {
                 player.displayClientMessage(Txt.yellow("crac.door.someone"), true);
                 return InteractionResult.CONSUME;
@@ -868,6 +875,39 @@ public final class StructureService {
         }
         UUID group = controllingGroup(level, buildingOf(level, p));
         return group == null || isMember(level, player, group, ClanAccess.Action.DOORS);
+    }
+
+    /**
+     * Airlock (HeraliZ): a door on an edge of a triangle foundation or floor does not open while another door on an
+     * edge of the same triangle is open, so the two doors of an airlock never let anyone straight through.
+     */
+    private static boolean autrePorteDuSasOuverte(ServerLevel level, Piece door) {
+        Building b = buildingOf(level, door);
+        if (b == null) {
+            return false;
+        }
+        List<Piece> pieces = store(level).piecesOf(b);
+        EdgeKey edge = bord(door);
+        for (Piece t : pieces) {
+            if (t.kind().shape != PieceKind.Shape.TRIANGLE || t.kind().family != PieceKind.Family.SURFACE) {
+                continue;
+            }
+            List<EdgeKey> bords = t.key().edges();
+            if (!bords.contains(edge)) {
+                continue;
+            }
+            for (Piece o : pieces) {
+                if (o != door && o.kind().hasDoor() && o.isOpen() && bords.contains(bord(o))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** A wall's edge in the canonical form of footprint edges (either direction). */
+    private static EdgeKey bord(Piece wall) {
+        return EdgeKey.of(wall.key().originKey(), wall.key().anchor(), wall.key().orient());
     }
 
     /** A closing door must not shut on a player standing in the opening. */

@@ -7,6 +7,7 @@ import fr.heraliz.crac.block.MetalCrateBlock;
 import fr.heraliz.crac.block.entity.ClaimBlockEntity;
 import fr.heraliz.crac.build.BuildConfig;
 import fr.heraliz.crac.build.logic.PlacementRules;
+import fr.heraliz.crac.build.logic.PieceIndex;
 import fr.heraliz.crac.build.logic.Topology;
 import fr.heraliz.crac.build.model.Building;
 import fr.heraliz.crac.build.model.Dirs;
@@ -46,8 +47,9 @@ import org.jetbrains.annotations.Nullable;
  * </ol>
  */
 final class Cabane {
-    static final int PLAN = 1, FONDATION_1 = 2, FONDATION_2 = 3, MURS = 4, TOIT = 5, BOIS = 6, CLAIM = 7, ENTRETIEN = 8, COFFRE = 9;
-    static final int ETAPES = 9;
+    static final int PLAN = 1, FONDATION_1 = 2, FONDATION_2 = 3, MURS = 4, TOIT = 5, BOIS = 6, CLAIM = 7, ENTRETIEN = 8, COFFRE = 9,
+        HOME = 10;
+    static final int ETAPES = 10;
     static final int FINIE = ETAPES + 1;
 
     /**
@@ -138,7 +140,7 @@ final class Cabane {
         Claim c = StructureService.claimOf(bases, b);
         if (c == null) {
             // au fond de la cabane (la deuxième fondation ; la porte est sur la première)
-            return new Etat(CLAIM, 0, 1, List.of(), List.of(surFondation(s)), ModItems.CLAIM_BLOCK.get(), -1, false);
+            return new Etat(CLAIM, 0, 1, List.of(), List.of(coinClaim(bases, f, s)), ModItems.CLAIM_BLOCK.get(), -1, false);
         }
         int seuil = Math.max(1, Tutoriel.entretienKit(pieces.size()) / 2);
         int stock = bases.getBlockEntity(c.anchor()) instanceof ClaimBlockEntity be ? be.getStored(UpkeepResource.WOOD.slot()) : 0;
@@ -149,6 +151,11 @@ final class Cabane {
         // la caisse en métal, dans la cabane
         if (!caisseDans(bases, pieces)) {
             return new Etat(COFFRE, 0, 1, List.of(), List.of(placeCaisse(bases, c.anchor(), f, s)), ModItems.METAL_CRATE.get(), -1, false);
+        }
+
+        // son home, posé par lui-même (/sethome) sur un sol de la cabane
+        if (!homeDans(bases, p, j)) {
+            return new Etat(HOME, 0, 1, List.of(), List.of(), null, -1, false);
         }
         return new Etat(FINIE, 1, 1, List.of(), List.of(), null, -1, false);
     }
@@ -232,15 +239,61 @@ final class Cabane {
         return true;
     }
 
-    /**
-     * Où poser la caisse : juste à côté du Claim Block, sur un côté (pas devant la porte ni au milieu du passage), sinon
-     * derrière lui ; la première case libre posée sur quelque chose.
-     */
-    static BlockPos placeCaisse(ServerLevel level, BlockPos claim, Piece f, Piece s) {
+    /** Le joueur a un home dans sa base (posé avec /sethome). */
+    private static boolean homeDans(ServerLevel level, ServerPlayer p, BasesDonnees.Joueur j) {
+        for (BasesDonnees.Home h : j.homes.values()) {
+            if (MondeBases.ID.equals(h.monde()) && Deplacements.baseEn(level, BlockPos.containing(h.x(), h.y(), h.z()), p.getUUID())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Le fond de la cabane : la direction de la première fondation (porte) vers la deuxième. */
+    private static Direction fond(Piece f, Piece s) {
         Vec3 fc = f.key().centreWorld(), sc = s.key().centreWorld();
         double dx = sc.x - fc.x, dz = sc.z - fc.z;
-        Direction fond = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? Direction.EAST : Direction.WEST) : (dz > 0 ? Direction.SOUTH : Direction.NORTH);
-        BlockPos[] places = {claim.relative(fond.getClockWise()), claim.relative(fond.getCounterClockWise()), claim.relative(fond)};
+        return Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? Direction.EAST : Direction.WEST) : (dz > 0 ? Direction.SOUTH : Direction.NORTH);
+    }
+
+    /** Les cases libres juste au-dessus d'une fondation (là où un bloc peut se poser, hors murs). */
+    private static List<BlockPos> casesSur(ServerLevel level, Piece fondation) {
+        List<BlockPos> blocs = PieceIndex.blocksOf(fondation);
+        int haut = Integer.MIN_VALUE;
+        for (BlockPos b : blocs) {
+            haut = Math.max(haut, b.getY());
+        }
+        List<BlockPos> out = new ArrayList<>();
+        for (BlockPos b : blocs) {
+            if (b.getY() == haut && level.getBlockState(b.above()).isAir()) {
+                out.add(b.above());
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Où poser le Claim Block : dans le coin du fond de la cabane, à gauche quand on regarde le fond (comme la TC dans
+     * Rust), pour laisser la case de droite à la caisse.
+     */
+    static BlockPos coinClaim(ServerLevel level, Piece f, Piece s) {
+        Direction d = fond(f, s), droite = d.getClockWise();
+        BlockPos best = null;
+        long score = Long.MIN_VALUE;
+        for (BlockPos q : casesSur(level, s)) {
+            long v = 1000L * (q.getX() * d.getStepX() + q.getZ() * d.getStepZ()) - (q.getX() * droite.getStepX() + q.getZ() * droite.getStepZ());
+            if (v > score) {
+                score = v;
+                best = q;
+            }
+        }
+        return best != null ? best : surFondation(s);
+    }
+
+    /** Où poser la caisse : juste à droite du Claim Block (quand on le regarde depuis la porte), sinon à sa gauche ou devant. */
+    static BlockPos placeCaisse(ServerLevel level, BlockPos claim, Piece f, Piece s) {
+        Direction d = fond(f, s), droite = d.getClockWise();
+        BlockPos[] places = {claim.relative(droite), claim.relative(droite.getOpposite()), claim.relative(d.getOpposite())};
         for (BlockPos q : places) {
             if (level.getBlockState(q).isAir() && !level.getBlockState(q.below()).isAir()) {
                 return q;
