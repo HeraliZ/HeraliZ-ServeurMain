@@ -1,8 +1,8 @@
 {
   "item.heralisz_melee.desmoulins_edge__lore": "§e★ Desmoulins' Edge §7| §e§lLore",
   "item.heralisz_melee.desmoulins_edge__lore.desc": "§eUltimate\n§8HeraliZ Exclusive",
-  "item.heralisz_melee.baseball_bat__lore": "§e★ Baseball Bat §7| §e§lLore",
-  "item.heralisz_melee.baseball_bat__lore.desc": "§eUltimate\n§8HeraliZ Exclusive",
+  "item.heralisz_melee.baseball_bat__doppler_sapphire": "§9★ Baseball Bat §7| §9§lDoppler (Sapphire)",
+  "item.heralisz_melee.baseball_bat__doppler_sapphire.desc": "§9Ultimate\n§8HeraliZ Exclusive",
   "item.heralisz_melee.baseball_bat": "Baseball Bat",
   "item.heralisz_melee.baseball_bat.desc": "Solid baseball bat, hits hard.",
   "item.heralisz_melee.executor": "§4Executor",

@@ -1,6 +1,6 @@
 {
-  "name": "item.heralisz_melee.baseball_bat__lore",
-  "tooltip": "item.heralisz_melee.baseball_bat__lore.desc",
+  "name": "item.heralisz_melee.baseball_bat__doppler_sapphire",
+  "tooltip": "item.heralisz_melee.baseball_bat__doppler_sapphire.desc",
   "type": "heralisz_tactical:normal",
   "base_item": "heralisz_tactical:melee",
   // 数据配置

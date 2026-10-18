@@ -8,7 +8,7 @@
   // 模型材质
   "texture": "heralisz_melee:melee/baseball_bat_uv",
   // 物品栏材质
-  "slot_texture": "heralisz_melee:melee/slot/baseball_bat_lore",
+  "slot_texture": "heralisz_melee:melee/slot/baseball_bat_doppler_sapphire",
   // 音效，在特定时机触发，为原版音效，需要在sounds.json注册
   // sounds.json 写法可参见本包或者mcwiki
   "sounds": {

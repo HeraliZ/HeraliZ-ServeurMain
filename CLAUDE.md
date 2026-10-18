@@ -134,7 +134,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | Projet | Jar | modIds dedans | Rôle |
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
-| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins Lore de la Lame de Desmoulins et de la batte (2.19.0) Moteur repris de LR Tactical (licence GPL gardée) |
+| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins de mêlée Desmoulins Lore et batte Doppler Saphir (2.20.0) Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : carte coupée à la bordure du monde, vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
@@ -1068,14 +1068,19 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
-  - skins « Lore » de mêlée (18/10, Tactique 2.19.0, rendus validés en cours) : `heralisz_melee:desmoulins_edge__lore` et
-    `heralisz_melee:baseball_bat__lore` (fiches copiées des armes de base, mêmes dégâts), dessinés avec la finition Lore du
-    M9 (shader `camo_65`, `MeleeCamo`, rôles des pièces dans `KnifeType`). Desmoulins : manche « orné » (`Part.ORNATE`,
-    `ornateHandle` du gabarit) : fond noir, filets clairs de la texture d'origine repris dans la finition, étoile et
-    pierres bleues gardées. Batte : tout le manche en grip noir, coupé texel par texel dans la carte de positions
-    (`KnifeType.manche`, 32 % de la longueur depuis le pommeau). Icônes `slot/polaris_lore.png` et
-    `slot/baseball_bat_lore.png` rendues par `outils/apercu_camos`. Menu créatif (2.19.1) : groupe Mêlée de HeraliZ · Tactique, rangés après
-    les couteaux skinnés (`ModItems.remplirMelee` : toute arme de mêlée « <arme>__<finition> » va après les couteaux). Ni loot ni craft (donnés par le staff). Rien testé en jeu ;
+  - skins de mêlée (18/10, Tactique 2.19.0 puis 2.20.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
+    et `heralisz_melee:baseball_bat__doppler_sapphire` (la batte Lore de la 2.19 est remplacée), fiches copiées des armes
+    de base (mêmes dégâts), dessinées avec les finitions des couteaux (shaders `camo_65` Lore et `camo_56` Doppler Saphir,
+    `MeleeCamo`, rôles des pièces dans `KnifeType`). Desmoulins : manche « orné » (`Part.ORNATE`, `ornateHandle` du
+    gabarit) tout noir, l'étoile et les pierres (motifs colorés de la texture d'origine) dans la finition de la lame ;
+    reflets des pans de la lame adoucis (`LISSE_DESMOULINS`, lame reconnue par son rang dans `KnifeType`, ordinal 8 :
+    ne rien insérer avant). Batte : tout le manche en grip noir, coupé texel par texel dans la carte de positions
+    (`KnifeType.manche` = 0,255, fin juste avant les pièces collées au cœur du modèle : une limite au milieu de faces
+    superposées clignotait). Icônes `slot/polaris_lore.png` et `slot/baseball_bat_doppler_sapphire.png` rendues par
+    `outils/apercu_camos` (`prep.py` ne fait que les armes à feu ; option `parts` des rendus = rang du couteau).
+    Menu créatif (2.19.1) : groupe Mêlée de HeraliZ · Tactique, après les couteaux skinnés (`ModItems.remplirMelee` :
+    toute arme de mêlée « <arme>__<finition> » va après les couteaux). Ni loot ni craft (donnés par le staff). Rien
+    testé en jeu ;
   couteaux (16/10, Tactique 2.17.0 puis 2.18.0, après les retours du propriétaire) : clic gauche = le coup rapide
     d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, gestes de TaCZ vus
     des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant où LE COUTEAU LUI-MÊME TOURNE avec le geste.

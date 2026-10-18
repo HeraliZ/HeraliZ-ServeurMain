@@ -274,7 +274,7 @@ async function rendre(nom, camo, o) {
   gl.uniformMatrix4fv(u('uView'), false, V);
   gl.uniformMatrix3fv(u('IViewRotMat'), false, iview);
   gl.uniform1i(u('CamoId'), camo);
-  gl.uniform1i(u('CamoParts'), 7);
+  gl.uniform1i(u('CamoParts'), o.parts || 7);
   gl.uniform1f(u('CamoTime'), o.temps || 0);
   gl.uniform1f(u('CamoReveal'), -1);
   gl.uniform1f(u('CamoHeat'), 0);

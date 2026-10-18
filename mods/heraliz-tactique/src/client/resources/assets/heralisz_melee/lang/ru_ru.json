@@ -1,8 +1,8 @@
 {
   "item.heralisz_melee.desmoulins_edge__lore": "§e★ Клинок Демулена §7| §e§lLore",
   "item.heralisz_melee.desmoulins_edge__lore.desc": "§eУльтимативный\n§8Эксклюзив HeraliZ",
-  "item.heralisz_melee.baseball_bat__lore": "§e★ Бейсбольная бита §7| §e§lLore",
-  "item.heralisz_melee.baseball_bat__lore.desc": "§eУльтимативный\n§8Эксклюзив HeraliZ",
+  "item.heralisz_melee.baseball_bat__doppler_sapphire": "§9★ Бейсбольная бита §7| §9§lDoppler (Sapphire)",
+  "item.heralisz_melee.baseball_bat__doppler_sapphire.desc": "§9Ультимативный\n§8Эксклюзив HeraliZ",
   "item.heralisz_melee.baseball_bat": "Бейсбольная бита",
   "item.heralisz_melee.baseball_bat.desc": "Крепкая бейсбольная бита, бьёт сильно.",
   "item.heralisz_melee.executor": "§4Палач",
