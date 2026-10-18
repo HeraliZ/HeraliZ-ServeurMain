@@ -18,7 +18,8 @@ import org.lwjgl.glfw.GLFW;
 
 /**
  * Partie client de HeraliZ Quêtes : rendu des PNJ (skin, nom, bulle), écrans (dialogue, journal /quetes, note, clavier),
- * quête suivie à droite de l'écran et notifications, lueurs des points de quête. Tout ce qui s'affiche vient du serveur.
+ * quête suivie à droite de l'écran et notifications, radio du Commandant Varga en bas à gauche (tutoriel des bases),
+ * lueurs des points de quête. Tout ce qui s'affiche vient du serveur.
  */
 public final class ClientQuetes implements Partie {
     public static final KeyMapping JOURNAL = new KeyMapping("key.heraliz_quetes.journal", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J,
@@ -29,10 +30,14 @@ public final class ClientQuetes implements Partie {
         Langue.brancher(() -> Minecraft.getInstance().getLanguageManager().getSelected());
         busMod.addListener((EntityRenderersEvent.RegisterRenderers e) -> e.registerEntityRenderer(HeralizQuetes.PNJ.get(), PnjRendu::new));
         busMod.addListener((RegisterKeyMappingsEvent e) -> e.register(JOURNAL));
-        busMod.addListener((RegisterGuiOverlaysEvent e) -> e.registerAboveAll("quetes", HudQuetes::rendu));
+        busMod.addListener((RegisterGuiOverlaysEvent e) -> {
+            e.registerAboveAll("quetes", HudQuetes::rendu);
+            e.registerAboveAll("radio", RadioVarga::rendu);
+        });
         MinecraftForge.EVENT_BUS.addListener(ClientQuetes::tick);
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             HudQuetes.vider();
+            RadioVarga.vider();
             Bulles.vider();
             Lueurs.vider();
             PnjRendu.vider();
@@ -47,6 +52,7 @@ public final class ClientQuetes implements Partie {
         Reseau.BULLE.brancher(Bulles::recevoir);
         Reseau.LUEURS.brancher(Lueurs::recevoir);
         Reseau.BOUTIQUE.brancher(EcranMarchand::recevoir);
+        Reseau.RADIO.brancher(RadioVarga::recevoir);
     }
 
     private static void tick(TickEvent.ClientTickEvent e) {

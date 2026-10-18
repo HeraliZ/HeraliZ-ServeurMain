@@ -28,8 +28,11 @@ import net.minecraftforge.network.PacketDistributor;
 
 /**
  * Cinématique d'arrivée, côté serveur (jar fusionné : partie serveur de CineReseau, code d'origine déplacé tel quel) :
- * première connexion (pose au point de réveil, lancement 3 s après), réapparition sans lit, /cinematique (rejouer,
- * joueur, info, reveil, epave ...) et envoi du décor aux joueurs.
+ * première connexion (pose au point de réveil, lancement 3 s après, une fois le joueur connecté sur AuthMe et son
+ * personnage fait dans CaraCrea : {@link PontArrivee}), réapparition sans lit, /cinematique (rejouer, joueur, info,
+ * reveil, epave ...) et envoi du décor aux joueurs. La fin de la cinématique (vue jusqu'au bout ou passée) est signalée
+ * par le joueur (paquet Fin) et notée dans ses données ({@value #FINIE}, lue par HeraliZ Quêtes : « Allez voir le
+ * Commandant Varga ») ; sans nouvelles 4 minutes après le lancement, elle est notée finie quand même.
  */
 public final class CineReseauServeur {
     private CineReseauServeur() {}
@@ -40,9 +43,16 @@ public final class CineReseauServeur {
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::reapparition);
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::tick);
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::commandes);
+        CineReseau.FIN_SERVEUR.brancher(CineReseauServeur::fin);
     }
 
     private static final String VUE = "heraliz_cinematique_vue";
+    /** Donnée persistante (PlayerPersisted) : la cinématique d'arrivée est finie (lue par son nom par HeraliZ Quêtes). */
+    public static final String FINIE = "heraliz_cinematique_finie";
+    /** Sans nouvelles du joueur (paquet Fin) ce temps après le lancement, la cinématique est notée finie. */
+    private static final int FIN_MAX_TICKS = 4 * 60 * 20;
+    /** Cinématiques d'arrivée lancées, en attente de leur fin : joueur -> ticks restants. */
+    private static final Map<UUID, Integer> JOUEES = new HashMap<>();
     private static final int RAYON_REFUGE = 160;
     private static final Map<UUID, Integer> EN_ATTENTE = new HashMap<>();
     /** Le point de réveil est-il praticable dans ce monde (place libre, sol dessous) ? */
@@ -99,8 +109,18 @@ public final class CineReseauServeur {
                 if (decorPresent(sp.server)) {
                     allerAuReveil(sp);                              // tout de suite dans le monde du spawn (rien vu d'autre)
                 }
-                EN_ATTENTE.put(sp.getUUID(), 60);                   // cinématique 3 s après l'arrivée
+                EN_ATTENTE.put(sp.getUUID(), 60);                   // cinématique 3 s après l'arrivée (puis login et personnage)
+            } else if (!donnees(sp).getBoolean(FINIE)) {
+                donnees(sp).putBoolean(FINIE, true);                // parti pendant la cinématique : elle ne se rejoue pas
             }
+        }
+    }
+
+    /** Le joueur signale la fin de sa cinématique (vue jusqu'au bout ou passée). */
+    private static void fin(ServerPlayer sp) {
+        JOUEES.remove(sp.getUUID());
+        if (donnees(sp).getBoolean(VUE)) {
+            donnees(sp).putBoolean(FINIE, true);
         }
     }
 
@@ -111,20 +131,43 @@ public final class CineReseauServeur {
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || EN_ATTENTE.isEmpty() || e.getServer() == null) {
+        if (e.phase != TickEvent.Phase.END || e.getServer() == null || EN_ATTENTE.isEmpty() && JOUEES.isEmpty()) {
             return;
         }
+        MinecraftServer server = e.getServer();
         EN_ATTENTE.replaceAll((k, v) -> v - 1);
         EN_ATTENTE.entrySet().removeIf(en -> {
             if (en.getValue() > 0) {
                 return false;
             }
-            ServerPlayer sp = e.getServer().getPlayerList().getPlayer(en.getKey());
-            if (sp != null && decorPresent(e.getServer())) {
-                allerAuReveil(sp);
-                jouer(sp);
-                donnees(sp).putBoolean(VUE, true);
+            ServerPlayer sp = server.getPlayerList().getPlayer(en.getKey());
+            if (sp == null) {
+                return true;
             }
+            if (!decorPresent(server)) {
+                donnees(sp).putBoolean(FINIE, true);               // pas de cinématique dans ce monde : rien à attendre
+                return true;
+            }
+            if (!PontArrivee.pret(sp)) {
+                en.setValue(20);                                    // /login ou personnage pas encore faits : on revoit dans 1 s
+                return false;
+            }
+            allerAuReveil(sp);
+            jouer(sp);
+            donnees(sp).putBoolean(VUE, true);
+            JOUEES.put(sp.getUUID(), FIN_MAX_TICKS);
+            return true;
+        });
+        JOUEES.replaceAll((k, v) -> v - 1);
+        JOUEES.entrySet().removeIf(en -> {
+            ServerPlayer sp = server.getPlayerList().getPlayer(en.getKey());
+            if (sp == null) {
+                return true;
+            }
+            if (en.getValue() > 0) {
+                return false;
+            }
+            donnees(sp).putBoolean(FINIE, true);
             return true;
         });
     }

@@ -347,6 +347,11 @@ public final class StructureService {
         if (deny != null) {
             return Outcome.fail(deny);
         }
+        // HeraliZ : pendant le tutoriel des bases, seulement les pièces de l'étape, contre la cabane
+        Component tuto = fr.heraliz.crac.bases.Tutoriel.refusPiece(player, key.kind(), plan.buildingId());
+        if (tuto != null) {
+            return Outcome.fail(tuto);
+        }
         List<BuildCost> cost = Costs.place(key.kind());
         if (!Costs.has(player, cost)) {
             return Outcome.fail(Component.translatable("crac.build.need", Costs.describe(cost)));
@@ -354,6 +359,7 @@ public final class StructureService {
         Costs.take(player, cost);
         Piece p = commit(level, store, key, plan, Tier.TWIG, player.getUUID());
         playPlace(level, p);
+        fr.heraliz.crac.bases.Tutoriel.piecePosee(player, p);
         return Outcome.ok(p);
     }
 
@@ -767,6 +773,8 @@ public final class StructureService {
 
     public static Outcome demolish(ServerLevel level, ServerPlayer player, Piece p) {
         boolean creative = player.getAbilities().instabuild;
+        // HeraliZ : pendant le tutoriel des bases, une pièce démolie rend ce qu'elle a coûté (le kit est compté)
+        boolean tuto = !creative && fr.heraliz.crac.bases.Tutoriel.enCours(player);
         if (!creative) {
             Component combat = Heraliz.combatProblem(player);
             if (combat != null) return Outcome.fail(combat);
@@ -775,11 +783,14 @@ public final class StructureService {
             boolean allowed = group != null ? isMember(level, player, group, ClanAccess.Action.BUILD) : p.owner.equals(player.getUUID());
             if (!allowed) return Outcome.fail("crac.build.not_yours");
             int window = BuildConfig.demolishWindowSeconds.get();
-            if (window >= 0 && level.getGameTime() - p.modifiedAt > window * 20L) {
+            if (window >= 0 && !tuto && level.getGameTime() - p.modifiedAt > window * 20L) {
                 return Outcome.fail(Txt.k("crac.build.demolish_late", window / 60));
             }
         }
         remove(level, p, Cause.DEMOLISH);
+        if (tuto) {
+            fr.heraliz.crac.bases.Tutoriel.rembourser(player, p);
+        }
         return Outcome.ok(p);
     }
 

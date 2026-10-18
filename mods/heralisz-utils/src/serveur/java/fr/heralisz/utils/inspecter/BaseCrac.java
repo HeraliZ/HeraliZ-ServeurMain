@@ -20,7 +20,7 @@ final class BaseCrac {
             try {
                 base = Class.forName("fr.heraliz.crac.api.BaseCracApi").getMethod("base", MinecraftServer.class, UUID.class);
             } catch (Throwable t) {
-                HeraliszUtils.LOG.warn("[inspecter] CRac 1.6.1 ou plus récent absent : pas de vue des bases ({})", t.toString());
+                HeraliszUtils.LOG.warn("[inspecter] CRac 1.7.1 ou plus récent absent : pas de vue des bases ({})", t.toString());
             }
         }
         if (base == null) {

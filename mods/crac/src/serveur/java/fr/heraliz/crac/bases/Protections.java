@@ -32,6 +32,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -51,9 +52,8 @@ import org.jetbrains.annotations.Nullable;
  * <ul>
  *   <li><b>Joueur</b> (étape PHASE du tutoriel, dans le monde des bases seulement) : personne ne peut le blesser (ni joueur
  *   ni créature) et il ne peut blesser aucun joueur ; son modèle est entouré de vert chez les autres
- *   ({@link S2CProteges}, rendu client {@code client.ContourProtege}). Elle finit quand sa base est posée (Claim Block
- *   sur au moins {@code [tuto] fondations_min} fondations), au bout de {@code [tuto] phase_max_min} minutes de jeu, ou
- *   quand il va sur la carte (tout monde autre que le monde des bases et le spawn).</li>
+ *   ({@link S2CProteges}, rendu client {@code client.ContourProtege}). Il ne prend même aucun dégât (chute, faim...). Elle
+ *   dure jusqu'à la fin du tutoriel, qui est obligatoire ({@link Tutoriel}) ; {@code [tuto] phase_max_min} ne sert plus.</li>
  *   <li><b>Base</b> (posée par un joueur qui a fait le tutoriel, une seule fois) : {@code [protection] jours} jours sans
  *   raid : aucun dégât aux pièces et objets posés de son claim (C4, charges, grenades), aucun bloc cassé par un explosif,
  *   rien posé par un autre (échelles, trappes de pillards) ; pas d'usure non plus ({@code pause_usure}). Elle tombe si le
@@ -120,10 +120,17 @@ public final class Protections {
 
     // ---------------------------------------------------------------------------------------------- combats
 
-    /** Le protégé ne prend aucun coup d'un autre (joueur, créature, projectile) et ne blesse aucun joueur. */
+    /**
+     * Le protégé (tutoriel en cours, dans le monde des bases) ne prend aucun dégât (coups, chute, faim, feu... ; seuls
+     * /kill et le vide passent) et ne blesse aucun joueur : il ne peut pas perdre son kit avant d'avoir fini sa base.
+     */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void attaque(LivingAttackEvent e) {
         if (e.getEntity().level().isClientSide()) {
+            return;
+        }
+        if (joueurProtege(e.getEntity()) && !e.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            e.setCanceled(true);
             return;
         }
         Entity auteur = e.getSource().getEntity();
@@ -147,7 +154,6 @@ public final class Protections {
     /** Toutes les secondes (MondeBasesServeur). */
     static void seconde(MinecraftServer server) {
         BasesDonnees d = BasesDonnees.get(server);
-        long phaseMax = BasesReglages.i(BasesReglages.PHASE_MAX_MIN, 120) * 1200L;
         compteur++;
         Set<UUID> nouveaux = new HashSet<>();
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
@@ -155,31 +161,9 @@ public final class Protections {
             if (j == null) {
                 continue;
             }
-            if (j.etape == BasesDonnees.Etape.PHASE) {
-                boolean dansBases = MondeBases.estBases(p.level());
-                if (!dansBases && !MondeBases.estSpawn(p.level())) {
-                    finirPhase(d, j);
-                    T.chat(p, T.t("crac.protection.perdue_carte", "Tu as quitté le monde des bases : ta protection de nouveau joueur est terminée."),
-                        ChatFormatting.YELLOW);
-                } else if (basePosee(p)) {
-                    finirPhase(d, j);
-                } else {
-                    if (dansBases) {
-                        j.phaseTicks += 20;
-                        d.marquer();
-                    }
-                    if (j.phaseTicks >= phaseMax) {
-                        finirPhase(d, j);
-                        T.chat(p, T.t("crac.protection.temps_ecoule", "Ta protection de nouveau joueur est terminée (temps écoulé). Pose vite ta base !"),
-                            ChatFormatting.YELLOW);
-                    } else if (dansBases) {
-                        nouveaux.add(p.getUUID());
-                        if (compteur % 30 == 0) {
-                            T.barre(p, T.t("crac.protection.barre", "Protégé : base non posée · %s restantes",
-                                T.duree((phaseMax - j.phaseTicks) * 50L)), ChatFormatting.GREEN);
-                        }
-                    }
-                }
+            // tutoriel obligatoire : la protection dure jusqu'à sa fin (Tutoriel), sans limite de temps
+            if (j.etape == BasesDonnees.Etape.PHASE && MondeBases.estBases(p.level())) {
+                nouveaux.add(p.getUUID());
             }
             if (j.protectionDue && basePosee(p)) {
                 accorder(p, d, j);
@@ -192,11 +176,6 @@ public final class Protections {
         if (compteur % 60 == 1) {
             minute(server, d);
         }
-    }
-
-    private static void finirPhase(BasesDonnees d, BasesDonnees.Joueur j) {
-        j.etape = BasesDonnees.Etape.FINI;
-        d.marquer();
     }
 
     /** Le Claim Block du groupe du joueur est posé dans le monde des bases, sur assez de fondations. */

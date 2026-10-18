@@ -94,6 +94,7 @@ public final class ServeurQuetes implements Partie {
         LUEURS.remove(e.getEntity().getUUID());
         Moteur.oublier(e.getEntity().getUUID());
         Marchands.oublier(e.getEntity().getUUID());
+        Accueil.oublier(e.getEntity().getUUID());
         Donnees.liberer(e.getEntity().getUUID());
     }
 
@@ -140,6 +141,7 @@ public final class ServeurQuetes implements Partie {
             Donnees.DJoueur j = Donnees.de(p.getUUID());
             if (!j.suivie.isEmpty()) Moteur.suiviBientot(p);
         }
+        if (t % 20 == 13) Accueil.seconde(p);
         if (t % 40 == 7) {
             lueurs(p);
             bulles(p);
@@ -173,6 +175,7 @@ public final class ServeurQuetes implements Partie {
 
     private static void lueurs(ServerPlayer p) {
         List<BlockPos> quete = Moteur.lueursQuete(p);
+        Accueil.lueurs(p, quete);
         List<BlockPos> staff = new ArrayList<>();
         ItemStack main = p.getMainHandItem();
         if (main.getItem() instanceof Baguette && p.hasPermissions(2)) {

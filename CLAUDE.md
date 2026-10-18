@@ -151,12 +151,12 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel après la cinématique (kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer`), base protégée 4 jours, carrières (`/carriere`) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel des bases lancé par le Commandant Varga (1.7.0 : obligatoire, guidé à la radio par HeraliZ Quêtes, `TutorielApi`, section 10 « arrivée ») : kit de cabane 2 × 1, contour vert « nouveau joueur », `/tuto lancer|rejouer|finir`), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (par vagues depuis la 1.5.0 : 4 à la fois pendant 1 h, puis toutes changent ; tirées au hasard à 800 blocs au moins les unes des autres et une par quart de la carte, règles relâchées si impossible et notées dans le journal ; 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ |
 | heraliz-grades | heraliz_grades | heraliz_grades | **grades HeraliZ** (100 % maison) : Fondateur, Modérateur, Helper (staff), Roi de la Zone, Traqueur, Rescapé (boutique), Survivant (tout le monde) ; nom affiché « [CLAN] [Grade] Pseudo » (tag de clan lu par réflexion dans les clans) ; chat « Pseudo » message » sans < > (clé `chat.type.text` des langues du mod) ; **nouveau tab** (`TabHeraliz`, maquette validée : verre, staff puis survivants sur deux colonnes, grade, clan, voix CaraCrea, ping ; grades et clans envoyés par le serveur, paquet `InfosTab`). `grade donner|retirer <joueur> <grade>` et `kit reset <joueur>` : **console du serveur seulement** (ni joueur, ni op, ni bloc de commande, ni RCON) ; `/grade voir` (Helper+), `/grade liste` (Modérateur+), droits seulement après le `/login` AuthMe (lu par réflexion ; AuthMe injoignable = droits refusés). Menu `/kit` : un seul kit par recharge, celui du grade boutique sinon Survivant, pas d'arme ni d'armure en plus (pas de pay2win) ; kit Soutien en plus (recharge à part) pour ceux qui portent le tag HeraliZ sur Discord, compte lié (HeraliBot répond à `/mc/soutien/<uuid>`) ; contenu dans `serveur/config/heraliz_grades/kits.json`, relu tout seul. Données hors du monde : `heraliz_grades/grades.json`, `recharges.json`, `journal.log` (fichier illisible jamais écrasé). `/lier` (code de 6 caractères, 5 min, à taper sur Discord dans #lien) et `/delier` : lien avec HeraliBot, requêtes signées HMAC (secrets `HERALIBOT_LIEN_*`, section 8) ; grades donnés ou retirés à la console annoncés au staff sur Discord. Lien boutique : à venir |
-| heraliz-quetes | heraliz_quetes | heraliz_quetes | **PNJ et quêtes** (v1 du 17/10, rien testé en jeu ; depuis la 1.3.0 du 18/10, un seul PNJ : le Commandant Varga, 39 quêtes principales en 5 chapitres, paiement et titre à chaque fin de chapitre, Clés de Quêtes en récompense `"objets"`, étapes `executer` (achever un joueur à terre, par réflexion sur Réanimation), `fabriquer` (arme faite à la Table d'armurier de TaCZ), `frappe` (frappe aérienne, `StrikeManager.countActive` par réflexion), conditions `armure` et rareté des composants ; objets 3D insigne, boîte noire, sacoche **écrits** par `python mods/heraliz-quetes/outils/objets.py --installer`, jamais à la main) : PNJ posés au spawn par le staff (`/pnj creer <id>`), dialogues, suite de quêtes par PNJ, sans limite par jour (contrats retirés le 18/10, choix du propriétaire : listes `contrats` vides, le code reste ; chaque quête dit en une phrase quoi faire ; accueil du PNJ selon qu'il a une quête à donner, `besoin`, ou une en cours, `en_cours` ; dons reconnus par le vrai nom des soins et grenades du mod tactique, `ConsumableId`…), `/quetes` (touche J) avec « Suivre » et suivi à droite de l'écran, points de quête posés à la baguette (`/quete baguette <groupe>`, gardés avec le monde), objets de quête, réputation et titres. Apparence des PNJ faite avec le créateur de CaraCrea (1.1.0 : clé `apparence` de leur fichier, `/pnj apparence <id> moi|fichier|aucune`, skin peint par CaraCrea chez le joueur, par réflexion côté serveur). Quêtes dans `serveur/config/heraliz_quetes/pnj/*.json` (guide : `serveur/config/heraliz_quetes/LISEZMOI.md`), progression hors du monde (`heraliz_quetes/joueurs/`). Scénario : `docs/QUETES_SCENARIO.md` |
+| heraliz-quetes | heraliz_quetes | heraliz_quetes | **PNJ et quêtes** (v1 du 17/10, rien testé en jeu ; depuis la 1.3.0 du 18/10, un seul PNJ : le Commandant Varga, 39 quêtes principales en 5 chapitres, paiement et titre à chaque fin de chapitre, Clés de Quêtes en récompense `"objets"`, étapes `executer` (achever un joueur à terre, par réflexion sur Réanimation), `fabriquer` (arme faite à la Table d'armurier de TaCZ), `frappe` (frappe aérienne, `StrikeManager.countActive` par réflexion), conditions `armure` et rareté des composants ; objets 3D insigne, boîte noire, sacoche **écrits** par `python mods/heraliz-quetes/outils/objets.py --installer`, jamais à la main) : PNJ posés au spawn par le staff (`/pnj creer <id>`), dialogues, suite de quêtes par PNJ, sans limite par jour (contrats retirés le 18/10, choix du propriétaire : listes `contrats` vides, le code reste ; chaque quête dit en une phrase quoi faire ; accueil du PNJ selon qu'il a une quête à donner, `besoin`, ou une en cours, `en_cours` ; dons reconnus par le vrai nom des soins et grenades du mod tactique, `ConsumableId`…), `/quetes` (touche J) avec « Suivre » et suivi à droite de l'écran, points de quête posés à la baguette (`/quete baguette <groupe>`, gardés avec le monde), objets de quête, réputation et titres. Apparence des PNJ faite avec le créateur de CaraCrea (1.1.0 : clé `apparence` de leur fichier, `/pnj apparence <id> moi|fichier|aucune`, skin peint par CaraCrea chez le joueur, par réflexion côté serveur). Quêtes dans `serveur/config/heraliz_quetes/pnj/*.json` (guide : `serveur/config/heraliz_quetes/LISEZMOI.md`), progression hors du monde (`heraliz_quetes/joueurs/`). Scénario : `docs/QUETES_SCENARIO.md`. Arrivée des nouveaux (1.5.0, `serveur/Accueil`, client `RadioVarga`) : « Va voir le Commandant Varga pour commencer le tutoriel », puis seulement « Faire ma base » chez Varga, radio de Varga en bas à gauche pendant le tutoriel des bases (section 10 « arrivée ») |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
 
 Les modIds ne changent JAMAIS (mondes, configs, gunpacks et autres mods en dépendent). Même règle pour les noms de
@@ -826,7 +826,7 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   chaque seconde, sauf `entites_permises` ; les vigiles du casino (`heralizcasino:videur`) et les PNJ des quêtes
   (`heraliz_quetes:pnj`) sont toujours gardés (Utils 2.14.3, `TOUJOURS_PERMISES`). Les explosions n'y cassent rien et ne touchent personne. `/suicide` y est
   refusé, sauf au staff. Réglage `[protection] actif` de `heraliz_spawn-server.toml` ; `/depart info` montre l'état.
-  Rien testé en jeu. **Sans brouillard** (Utils 2.15.0, 18/10, `ambiance/Brouillard.brumeSpawn`) : ni brume du spawn
+  Rien testé en jeu. **Sans brouillard** (Utils 2.16.0, 18/10, `ambiance/Brouillard.brumeSpawn`) : ni brume du spawn
   (avant : 2 à 40 blocs dès que le ciel était visible), ni brouillard de la bordure, ni `/brume` de Décors, ni celui de
   Minecraft au bout de la vue ; dans l'eau ou la lave, comme ailleurs.
 - **Monde des bases** (CRac 1.5.0, 16/10) : dimension `crac:bases`, déclarée par `mods/crac/src/serveur/resources/data/crac/`
@@ -851,10 +851,11 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   depuis le spawn, vers un point plat au hasard loin des autres bases (toutes les 5 min). `/spawn` seulement depuis sa
   base, hors combat, vers le point posé par le staff (`/spawn definir|effacer|voir`, gardé dans `crac/spawn.json` à la
   racine du serveur), sinon le point de réveil ; la première arrivée (cinématique) ne change pas. 3 s immobile ; carte
-  DayZ par la borne de départ ; tous les messages dans le chat. Tutoriel après la cinématique (joueur en survie, sans
-  base, jamais fait ; rien en créatif ou en spectateur) : titres, kit calculé sur les coûts réels de
-  `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172 bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, ni blessé ni blessant) jusqu'à sa base
-  posée (Claim Block sur 2 fondations), 2 h de jeu au plus ou départ sur la carte ; puis base protégée 4 jours (ni raid
+  DayZ par la borne de départ ; tous les messages dans le chat. Tutoriel des bases (joueur en survie, sans
+  base, jamais fait ; rien en créatif ou en spectateur), lancé par le bouton « Faire ma base » du Commandant Varga
+  (CRac 1.7.0 ; sans HeraliZ Quêtes, tout seul après la cinématique comme avant) : titres, kit calculé sur les coûts réels de
+  `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172 bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, aucun dégât, ni blessant) jusqu'à la
+  fin du tutoriel, OBLIGATOIRE (section 10 « arrivée ») ; puis base protégée 4 jours (ni raid
   ni usure, texte flottant ; tombe au-delà de 2 membres). Carrières : `/carriere creer <nom> <rayon> <type>` (pierre,
   minerais, fer, bois, sable, argile, terre ; listes `#crac:carriere/<type>`), `liste|retirer|tp|regenerer` ; casse
   permise en survie, repousse en 10 min (jamais sous un joueur), rien ne s'y pose ; le staff bâtit la carrière
@@ -1089,23 +1090,43 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     (`TaczTeteAllongeMixin`) ; gestes debout de la mêlée de LR arrêtés allongé (`IdleAnimationHandler`). CaraCrea ne
     déforme rien lui-même (il recopie le modèle de Minecraft) ; pistes restantes s'il reste des défauts : ses cubes
     ignorent les parties cachées par d'autres mods (jambes du terminal d'extraction), emotes permises allongé.
-- coffres personnels (18/10, Utils 2.15.0, `coffres/CoffresPersonnels`, serveur seulement) : clic droit sur un coffre-fort
+- arrivée d'un nouveau joueur (18/10, maquette A « radio carrée » validée ; CaraCrea 1.6.0, Utils 2.15.0, Quêtes 1.5.0,
+  CRac 1.7.0-beta ; rien testé en jeu) : 1. `/register` ou `/login` d'AuthMe (le créateur de personnage l'attend :
+  `LoginCheck` de CaraCrea, par réflexion, rien de lisible = rien à attendre) ; 2. le créateur de personnage ; 3. la
+  cinématique du train, une fois le personnage enregistré (`PontArrivee` d'Utils, `com.caracrea.api.Arrivee`, à ne
+  jamais renommer) ; sa fin (vue ou passée) est signalée par le joueur (paquet `Fin`, canal cinématique version 4) et
+  notée `heraliz_cinematique_finie` (données persistantes) ; 4. le suivi à droite dit « Va voir le Commandant Varga pour
+  commencer le tutoriel » (distance, lueurs sur lui) ; 5. Varga ne propose QUE « Faire ma base » et « Au revoir » ; 6. le
+  tutoriel des bases (CRac) : Varga donne les 6 consignes une par une à la radio, en bas à gauche (portrait = sa vraie
+  apparence, texte lettre par lettre, « ÉTAPE n/6 », canal des quêtes version 3), le suivi montre l'étape en cours ; les
+  étapes sont lues sur la cabane elle-même (`Tutoriel.progression`) : un coin plat (1re fondation), 2 fondations, 5 murs +
+  la porte + 2 planchers, le Claim Block sur une fondation de la cabane, toute la cabane en bois, des planches dans le
+  Claim Block (au moins la moitié de l'entretien du kit) ; 7. à la fin, Varga : « je te laisse te débrouiller, reviens me
+  voir pour des missions » ; ses quêtes principales s'ouvrent. Tutoriel OBLIGATOIRE pour tout le monde (choix du
+  propriétaire, serveur pas encore ouvert) : pendant le tutoriel (hors créatif et spectateur) `/spawn`, `/home`,
+  `/zone`, `/rtp`, `/suicide`, `/duel`, `/clashwar`, `/zombies`, `/casino`, `/depart`, `/extractions` refusés ; rien ne
+  se jette (l'objet revient), aucun bloc ne se pose sauf le Claim Block à son étape, grille d'artisanat vidée dans
+  l'inventaire, entretien du Claim Block fermé avant l'étape 6 ; seules les pièces de l'étape en cours se posent, contre
+  la cabane ; une pièce démolie rend ce qu'elle a coûté (et se démolit sans limite de temps) ; aucun dégât dans le monde
+  des bases (sauf `/kill`) ; déconnecté, il reprend où il en était ; ramené au spawn, il est renvoyé à sa cabane ; plus
+  de limite de 2 h (`phase_max_min` ne sert plus). Staff : `/tuto finir <joueur>` le libère en cas de souci ;
+- coffres personnels (18/10, Utils 2.16.0, `coffres/CoffresPersonnels`, serveur seulement) : clic droit sur un coffre-fort
   du mod de meubles = le coffre du joueur, le même partout (comme le coffre de l'Ender) : « Safe Planque 1 »
   (`cfm:safe_planque_1`) = planque de 1 ligne pour tous ; « Safe Sentinel 1 » (`cfm:safe_sentinel_1`) = coffre VIP de
   1 ligne en plus, grades boutique Rescapé, Traqueur, Roi de la Zone (`GradesApi.rangBoutique` par réflexion ; grade
   perdu : objets gardés, coffre fermé). Aucun sac à dos dedans. Écran de coffre de Minecraft (9 cases). Gardés avec le
   monde (`data/heraliz_coffres_perso.dat`) : repartent de zéro avec une nouvelle carte, comme les inventaires (choix par
   défaut, à changer si le propriétaire veut les garder). Rien testé en jeu ;
-- `/inspecter <joueur> [inventaire|sac|coffres|base]` (18/10, Utils 2.15.0, `inspecter/`, serveur seulement) : **op
+- `/inspecter <joueur> [inventaire|sac|coffres|base]` (18/10, Utils 2.16.0, `inspecter/`, serveur seulement) : **op
   seulement** (permission 4) et après le `/login` d'AuthMe (`GradesApi.authentifie`, Grades 1.1.1). Voir ET modifier,
   **même joueur déconnecté** : inventaire, armure, main gauche, emplacements Curios et hérals (pièce d'or) ; boutons vers
   le sac à dos, les coffres (planque, VIP, coffre de l'Ender) et la base CRac entière (tous les conteneurs de son claim
-  d'un coup, conteneur par conteneur, page par page ; `fr.heraliz.crac.api.BaseCracApi.base`, CRac 1.6.1, par
+  d'un coup, conteneur par conteneur, page par page ; `fr.heraliz.crac.api.BaseCracApi.base`, CRac 1.7.1, par
   réflexion). Déconnecté : sa sauvegarde (`playerdata/<uuid>.dat`) chargée dans un joueur « fantôme » jamais ajouté au
   monde, réécrite à chaque clic (inventaire, coffre de l'Ender, Curios et sac seulement ; le reste gardé) ; vues fermées
   dès qu'il se connecte (ou, en ligne, se déconnecte) ; une seule copie partagée par tout le staff. Objets toujours
   déplacés, jamais copiés. Écrans de coffre de Minecraft. Rien testé en jeu ;
-- train (18/10, Utils 2.15.0) : les balles passent par les portes intérieures (sas entre deux voitures, cloisons) dès
+- train (18/10, Utils 2.16.0) : les balles passent par les portes intérieures (sas entre deux voitures, cloisons) dès
   qu'elles sont ouvertes à l'écran (`Voyageurs.ouverteServeur` : quelqu'un à moins de 4 blocs, refermée ~0,8 s après ;
   avant, le serveur ne les ouvrait qu'à 1,75 bloc) ; s'allonger dans le train suit le même délai qu'au sol (Tactique,
   `AllongeServeur.restantTrain` / `AllongeClient.allongeTrain` par réflexion, `train/DelaiAllonge`). Rien testé en jeu ;

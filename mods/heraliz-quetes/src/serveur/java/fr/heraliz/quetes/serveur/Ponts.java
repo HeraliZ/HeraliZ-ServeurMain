@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
@@ -33,7 +34,9 @@ import java.util.UUID;
  *    <li>usure d'une arme : étiquette {@code HzUsureEtat} de HeraliZ Utils (millièmes, absente = neuve) ;</li>
  *    <li>rareté des composants et objets de valeur : la rareté Minecraft {@code HERALIZ_*} de HeraliZ Composants ;</li>
  *    <li>frappes aériennes en cours d'un joueur : {@code fr.heraliz.airstrike.strike.StrikeManager.countActive(UUID)} ;</li>
- *    <li>joueur à terre : {@code fr.heraliz.reanimation.core.Downed.isDowned(Entity)} (Réanimation).</li>
+ *    <li>joueur à terre : {@code fr.heraliz.reanimation.core.Downed.isDowned(Entity)} (Réanimation) ;</li>
+ *    <li>tutoriel des bases : {@code fr.heraliz.crac.bases.TutorielApi} (CRac : état, étape de la cabane, lancement) ;</li>
+ *    <li>cinématique d'arrivée finie : donnée persistante {@code heraliz_cinematique_finie} de HeraliZ Utils.</li>
  * </ul>
  */
 final class Ponts {
@@ -335,5 +338,62 @@ final class Ponts {
         CompoundTag t = s.getTag();
         if (t == null || gunId(s) == null || !t.contains("HzUsureEtat", Tag.TAG_ANY_NUMERIC)) return 100;
         return Math.max(0, Math.min(100, t.getInt("HzUsureEtat") / 10));
+    }
+
+    // ------------------------------------------------------------------ tutoriel des bases (CRac)
+    private static Method tutoEtat, tutoProgression, tutoLancer;
+    private static boolean tutoAbsent;
+
+    private static boolean tuto() {
+        if (tutoAbsent) return false;
+        if (tutoEtat != null) return true;
+        try {
+            Class<?> c = Class.forName("fr.heraliz.crac.bases.TutorielApi");
+            tutoEtat = c.getMethod("etat", ServerPlayer.class);
+            tutoProgression = c.getMethod("progression", ServerPlayer.class);
+            tutoLancer = c.getMethod("lancer", ServerPlayer.class);
+            return true;
+        } catch (Throwable t) {
+            tutoAbsent = true;
+            LOG.warn("[heraliz_quetes] CRac absent ou différent ({}) : pas de tutoriel des bases par le Commandant Varga", t.toString());
+            return false;
+        }
+    }
+
+    /** -1 : pas de tutoriel (CRac absent, monde des bases absent) ; 0 : à faire ; 1 : kit reçu ; 2 : en cours ; 3 : fini. */
+    static int tutoEtat(ServerPlayer p) {
+        if (!tuto()) return -1;
+        try {
+            return (int) tutoEtat.invoke(null, p);
+        } catch (Throwable t) {
+            return -1;
+        }
+    }
+
+    /** {étape 1 à 6 (7 = tout est fait), fait, total} de la cabane du tutoriel ; {0, 0, 0} hors du monde des bases. */
+    static int[] tutoProgression(ServerPlayer p) {
+        if (!tuto()) return new int[]{0, 0, 0};
+        try {
+            return (int[]) tutoProgression.invoke(null, p);
+        } catch (Throwable t) {
+            return new int[]{0, 0, 0};
+        }
+    }
+
+    static boolean tutoLancer(ServerPlayer p) {
+        if (!tuto()) return false;
+        try {
+            return (boolean) tutoLancer.invoke(null, p);
+        } catch (Throwable t) {
+            LOG.error("[heraliz_quetes] lancement du tutoriel des bases impossible", t);
+            return false;
+        }
+    }
+
+    /** La cinématique d'arrivée de HeraliZ Utils est finie (vue ou passée) ; vrai sans HeraliZ Utils. */
+    static boolean cinematiqueFinie(Player p) {
+        if (!net.minecraftforge.fml.ModList.get().isLoaded("heralisz_utils")) return true;
+        CompoundTag root = p.getPersistentData();
+        return root.getCompound(Player.PERSISTED_NBT_TAG).getBoolean("heraliz_cinematique_finie");
     }
 }

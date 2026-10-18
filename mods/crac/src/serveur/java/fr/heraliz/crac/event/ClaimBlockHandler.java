@@ -73,6 +73,11 @@ public final class ClaimBlockHandler {
         if (heraliz != null) {
             return heraliz.copy().withStyle(ChatFormatting.RED);
         }
+        // HeraliZ : pendant le tutoriel des bases, seulement à son étape, sur une fondation de la cabane
+        Component tuto = fr.heraliz.crac.bases.Tutoriel.refusClaim(level, player, pos);
+        if (tuto != null) {
+            return tuto.copy().withStyle(ChatFormatting.YELLOW);
+        }
         Group g = GroupData.get(level.getServer()).getByMember(player.getUUID());
         if (g == null) {
             // HeraliZ Clans: the clan chief (or a BASE_GERER rank) claims without making a CRac group first

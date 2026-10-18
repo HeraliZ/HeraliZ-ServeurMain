@@ -55,6 +55,9 @@ final class Vues {
     }
 
     static Reseau.Suivi suivi(ServerPlayer p) {
+        // arrivée et tutoriel des bases (Commandant Varga) : passent avant la quête suivie
+        Reseau.Suivi accueil = Accueil.suivi(p);
+        if (accueil != null) return accueil;
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         Donnees.DActive a = j.actives.get(j.suivie);
         if (a == null) return new Reseau.Suivi(Texte.VIDE, Texte.VIDE, List.of());

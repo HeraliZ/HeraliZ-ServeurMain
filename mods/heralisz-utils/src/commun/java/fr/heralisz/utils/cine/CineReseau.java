@@ -3,6 +3,7 @@ package fr.heralisz.utils.cine;
 import fr.heralisz.utils.HeraliszUtils;
 import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Zombie;
@@ -27,7 +28,7 @@ import net.minecraftforge.registries.RegistryObject;
  * réglages et les commandes sont dans CineReseauServeur (src/serveur), code d'origine déplacé.
  */
 public final class CineReseau {
-    private static final String PROTO = "3";                  // 3 : le décor porte son monde (spawn à part)
+    private static final String PROTO = "4";                  // 3 : le décor porte son monde (spawn à part) ; 4 : fin signalée
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "cinematique"),
             () -> PROTO, PROTO::equals, PROTO::equals);
     public static final DeferredRegister<EntityType<?>> ENTITES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, HeraliszUtils.MODID);
@@ -37,6 +38,8 @@ public final class CineReseau {
 
     /** Paquet Jouer reçu du serveur : la partie client lance la cinématique (Cinematique.demarrer). */
     public static final Crochet<Jouer> RECEPTION_CLIENT = new Crochet<>();
+    /** Paquet Fin reçu d'un joueur : la partie serveur note que sa cinématique est finie (CineReseauServeur). */
+    public static final Crochet<ServerPlayer> FIN_SERVEUR = new Crochet<>();
 
     private CineReseau() {}
 
@@ -45,6 +48,9 @@ public final class CineReseau {
 
     /** Le décor réglé sur le serveur (réveil, regard, épave). */
     public record Decor(CineDecor.Etat etat) {}
+
+    /** Paquet sans contenu, du joueur au serveur : « ma cinématique est finie (vue jusqu'au bout ou passée) ». */
+    public record Fin() {}
 
     public static void init(IEventBus modBus) {
         ENTITES.register(modBus);
@@ -57,6 +63,13 @@ public final class CineReseau {
             ctx.get().enqueueWork(() -> CineDecor.client = m.etat);
             ctx.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CANAL.registerMessage(2, Fin.class, (m, buf) -> {}, buf -> new Fin(), (m, ctx) -> {
+            ServerPlayer sp = ctx.get().getSender();
+            if (sp != null) {
+                ctx.get().enqueueWork(() -> FIN_SERVEUR.accept(sp));
+            }
+            ctx.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         // écouteurs serveur (première connexion, réapparition, lancement, /cinematique) : CineReseauServeur.init
     }
 

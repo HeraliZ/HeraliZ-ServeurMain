@@ -18,7 +18,8 @@ import java.util.UUID;
  * réponses : le joueur ne renvoie que le numéro de la réponse choisie, et rien ne se fait s'il s'est éloigné du PNJ.
  * <p>
  * Déroulé : présentation (la 1re fois) → accueil selon la réputation ; réponses possibles : rendre une quête, donner ou
- * montrer ce qu'il demande, la prochaine quête de sa suite, son tableau de contrats, au revoir.
+ * montrer ce qu'il demande, la prochaine quête de sa suite, son tableau de contrats, au revoir. Le Commandant Varga,
+ * tant que le joueur n'a pas fait le tutoriel des bases, ne propose que « Faire ma base » ({@link Accueil}).
  */
 final class Dialogues {
     private Dialogues() {
@@ -97,6 +98,16 @@ final class Dialogues {
 
     private static void accueil(ServerPlayer p, Pnj ent, Defs.Pnj def, Texte entete) {
         if (Moteur.nettoyer(p)) Moteur.envoyerSuivi(p);
+        // nouveau joueur : le Commandant Varga ne propose que le tutoriel des bases (Accueil), pas encore ses missions
+        if (def.id.equals(Accueil.PNJ) && Accueil.tutoAFaire(p)) {
+            page(p, ent, def, Texte.cle("heraliz_quetes.tuto.varga"), List.of(
+                    new Rep(Texte.cle("heraliz_quetes.tuto.faire_base"), 1, () -> {
+                        fermer(p);
+                        Accueil.lancer(p);
+                    }),
+                    new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p))));
+            return;
+        }
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         Donnees.DPnj dp = j.pnj(def.id);
         Texte texte = entete;
