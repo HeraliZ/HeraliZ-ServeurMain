@@ -257,6 +257,65 @@ TEXTES = {
                                         "Нет активного задания «%s» (см. /quete joueur)."),
     "heraliz_quetes.cmd.finie": ("Quête finie pour %s.", "Quest completed for %s.", "Задание завершено для %s."),
     "heraliz_quetes.cmd.reset": ("Progression des quêtes de %s remise à zéro.", "Quest progress of %s reset.", "Прогресс заданий игрока %s сброшен."),
+
+    # arrivée et tutoriel des bases avec le Commandant Varga (serveur : Accueil ; client : RadioVarga)
+    "heraliz_quetes.tuto.varga_nom": ("Commandant Varga", "Commander Varga", "Командир Варга"),
+    "heraliz_quetes.tuto.varga": ("Écoute-moi bien. Ici, sans abri pour tes affaires, tu ne tiens pas une semaine. Je vais t'aider à "
+                                  "construire ta base. Tu me suis ?",
+                                  "Listen carefully. Out here, without a shelter for your gear, you won't last a week. I'll help you "
+                                  "build your base. Are you with me?",
+                                  "Слушай внимательно. Здесь без укрытия для вещей ты и недели не протянешь. Я помогу тебе построить "
+                                  "базу. Ты со мной?"),
+    "heraliz_quetes.tuto.faire_base": ("Faire ma base", "Build my base", "Построить базу"),
+    "heraliz_quetes.tuto.intro_titre": ("Bienvenue sur HeraliZ", "Welcome to HeraliZ", "Добро пожаловать на HeraliZ"),
+    "heraliz_quetes.tuto.intro": ("Va voir le Commandant Varga pour commencer le tutoriel", "Go see Commander Varga to start the tutorial",
+                                  "Поговори с командиром Варгой, чтобы начать обучение"),
+    "heraliz_quetes.tuto.suivi_pnj": ("Cdt. Varga · Tutoriel", "Cdr. Varga · Tutorial", "Ком. Варга · Обучение"),
+    "heraliz_quetes.tuto.titre": ("Ta première base", "Your first base", "Твоя первая база"),
+    "heraliz_quetes.tuto.kit": ("Écoute Varga : départ pour le monde des bases", "Listen to Varga: off to the bases world",
+                                "Слушай Варгу: отправка в мир баз"),
+    "heraliz_quetes.tuto.retour": ("Retourne dans le monde des bases finir ta cabane", "Go back to the bases world to finish your cabin",
+                                   "Вернись в мир баз и закончи хижину"),
+    "heraliz_quetes.tuto.etape.1": ("Choisir un coin plat", "Pick a flat spot", "Выбрать ровное место"),
+    "heraliz_quetes.tuto.etape.2": ("Poser 2 fondations", "Place 2 foundations", "Поставить 2 фундамента"),
+    "heraliz_quetes.tuto.etape.3": ("Poser 5 murs, la porte et 2 planchers", "Place 5 walls, the door and 2 floors",
+                                    "Поставить 5 стен, дверь и 2 перекрытия"),
+    "heraliz_quetes.tuto.etape.4": ("Poser le Claim Block", "Place the Claim Block", "Поставить Claim Block"),
+    "heraliz_quetes.tuto.etape.5": ("Passer la cabane en bois", "Upgrade the cabin to wood", "Улучшить хижину до дерева"),
+    "heraliz_quetes.tuto.etape.6": ("Mettre des planches dans le Claim Block", "Put planks in the Claim Block", "Положить доски в Claim Block"),
+    "heraliz_quetes.tuto.radio.1": ("Ici Varga. Trouve un coin plat qui te plaît. Ici, c'est PvP : ton contour vert te protège jusqu'à "
+                                    "ce que ta base soit finie.",
+                                    "Varga here. Find a flat spot you like. This is PvP ground: your green outline protects you until "
+                                    "your base is done.",
+                                    "Говорит Варга. Найди ровное место по душе. Здесь PvP: зелёный контур защищает тебя, пока база "
+                                    "не готова."),
+    "heraliz_quetes.tuto.radio.2": ("Plan en main, clic droit. Pose 2 fondations côte à côte.",
+                                    "Plan in hand, right click. Place 2 foundations side by side.",
+                                    "План в руку, правый клик. Поставь 2 фундамента рядом."),
+    "heraliz_quetes.tuto.radio.3": ("Bien. Maintenant 5 murs, la porte, et 2 planchers pour le toit.",
+                                    "Good. Now 5 walls, the door, and 2 floors for the roof.",
+                                    "Хорошо. Теперь 5 стен, дверь и 2 перекрытия на крышу."),
+    "heraliz_quetes.tuto.radio.4": ("Le Claim Block, sur une fondation, à l'intérieur. Là, c'est chez toi.",
+                                    "The Claim Block, on a foundation, inside. Now it's your home.",
+                                    "Claim Block ставь на фундамент, внутри. Теперь это твой дом."),
+    "heraliz_quetes.tuto.radio.5": ("Marteau en main : passe toute la cabane en bois.",
+                                    "Hammer in hand: upgrade the whole cabin to wood.",
+                                    "Молоток в руку: улучши всю хижину до дерева."),
+    "heraliz_quetes.tuto.radio.6": ("Mets des planches dans le Claim Block, sinon ta base s'use.",
+                                    "Put planks in the Claim Block, or your base will decay.",
+                                    "Положи доски в Claim Block, иначе база начнёт разрушаться."),
+    "heraliz_quetes.tuto.radio.fin": ("Voilà, ta base est posée. Je te laisse te débrouiller. Si tu veux des repères et des missions, "
+                                      "reviens me parler au spawn. Du spawn, /home te ramène ici. Rompez.",
+                                      "There, your base is up. I'll let you manage on your own. If you want guidance and missions, "
+                                      "come and talk to me at spawn. From spawn, /home brings you back here. Dismissed.",
+                                      "Вот, база готова. Дальше справляйся сам. Нужны ориентиры и задания — приходи ко мне на спавн. "
+                                      "Со спавна /home вернёт тебя сюда. Вольно."),
+    "heraliz_quetes.tuto.radio_entete": ("Radio · 7e rég.", "Radio · 7th Reg.", "Рация · 7-й полк"),
+    "heraliz_quetes.tuto.radio_etape": ("Étape %s/%s", "Step %s/%s", "Этап %s/%s"),
+    "heraliz_quetes.tuto.radio_fini": ("Terminé", "Done", "Готово"),
+    "heraliz_quetes.tuto.notif_fin": ("Tutoriel terminé : le Commandant Varga t'attend au spawn pour tes missions",
+                                      "Tutorial complete: Commander Varga is waiting for you at spawn with missions",
+                                      "Обучение завершено: командир Варга ждёт тебя на спавне с заданиями"),
 }
 
 

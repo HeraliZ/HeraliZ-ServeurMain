@@ -11,7 +11,8 @@ import java.lang.invoke.MethodType;
 
 /**
  * Whether a player is busy with something the creator must never get in the way of: dead, spectator,
- * in a HeraliZ match (flag {@code heralisz:en_match} of the matchs engine) or downed (Reanimation). Both
+ * in a HeraliZ match (flag {@code heralisz:en_match} of the matchs engine), downed (Reanimation) or not
+ * logged in on AuthMe yet (the first-join creator waits for /register or /login, {@link LoginCheck}). These
  * mods are optional: read through their public flag / API, without a compile dependency. Server thread.
  */
 final class Busy {
@@ -24,7 +25,7 @@ final class Busy {
     }
 
     static boolean busy(ServerPlayer player) {
-        return !player.isAlive() || player.isSpectator() || inMatch(player) || downed(player);
+        return !player.isAlive() || player.isSpectator() || inMatch(player) || downed(player) || !LoginCheck.loggedIn(player);
     }
 
     static boolean inMatch(ServerPlayer player) {

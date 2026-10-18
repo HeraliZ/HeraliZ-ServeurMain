@@ -33,6 +33,12 @@ Se placer à l'endroit voulu, regarder dans la direction où le PNJ doit regarde
 | `/pnj bras <id> fins\|larges` | modèle Alex ou Steve |
 | `/pnj liste` | les PNJ des fichiers, et combien sont posés |
 
+**Le Commandant Varga accueille les nouveaux joueurs** (son `id` doit rester `varga`) : après la cinématique, le
+suivi à droite leur dit d'aller le voir ; tant qu'ils n'ont pas fait le tutoriel des bases, il ne leur propose que
+« Faire ma base » (pas de mission), puis il les guide à la radio pendant le tutoriel. Ses missions s'ouvrent ensuite.
+Ses textes d'accueil et de radio sont dans les langues du mod (`outils/langues.py`, clés `heraliz_quetes.tuto.*`), pas
+dans `varga.json`. Le poser au spawn avant d'ouvrir le serveur : sans lui, les nouveaux ne peuvent pas commencer.
+
 ### Apparence des PNJ : le créateur de personnage (CaraCrea)
 
 Chaque PNJ a une apparence faite avec le créateur de personnage du serveur (le même que `/perso`), écrite dans son

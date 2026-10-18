@@ -96,7 +96,8 @@ public final class HudQuetes {
         cy += 4;
         for (int i = 0; i < lignes.size(); i++) {
             Reseau.SLigne l = suivi.lignes().get(i);
-            int couleur = l.etat() == 0 ? Ui.AMBRE : Ui.TEXT;
+            // etat : 0 à surveiller (ambre), 1 en cours, 2 fait (grisé : étape d'avant du tutoriel des bases)
+            int couleur = l.etat() == 0 ? Ui.AMBRE : l.etat() == 2 ? Ui.MUTED : Ui.TEXT;
             Ui.point(g, x + 9, cy + 2, l.etat() == 0 ? Ui.AMBRE : Ui.OK, 230);
             for (FormattedCharSequence s : lignes.get(i)) {
                 g.drawString(f, s, x + 18, cy, Ui.argb(couleur, 235), false);

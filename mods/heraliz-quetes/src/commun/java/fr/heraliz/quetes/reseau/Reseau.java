@@ -4,6 +4,7 @@ import fr.heraliz.quetes.HeralizQuetes;
 import fr.heraliz.quetes.Texte;
 import fr.heraliz.quetes.pont.Crochet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,7 +22,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Canal réseau de HeraliZ Quêtes (protocole 2 : marchands). Le serveur décide de tout et envoie ce qu'il faut afficher (dialogue,
+ * Canal réseau de HeraliZ Quêtes (protocole 2 : marchands ; 3 : radio du Commandant Varga). Le serveur décide de tout et envoie ce qu'il faut afficher (dialogue,
  * journal, suivi, notes, bulles, lueurs des points) ; le joueur ne fait que CHOISIR (une réponse du dialogue, suivre ou
  * abandonner une quête, un code tapé) : chaque demande est revérifiée par le serveur. Un joueur avec un jar sans ce
  * canal est refusé à la connexion.
@@ -30,7 +31,7 @@ public final class Reseau {
     private Reseau() {
     }
 
-    private static final String VERSION = "2";
+    private static final String VERSION = "3";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -125,6 +126,14 @@ public final class Reseau {
     public record Vente(int entite, List<Integer> cases) {
     }
 
+    /**
+     * Message radio d'un PNJ, en bas à gauche de l'écran (le Commandant Varga pendant le tutoriel des bases) : son nom,
+     * son apparence (CaraCrea, vide sans), son skin de secours, la phrase, et l'étape (étape 0 = sans barre d'étapes).
+     * Phrase vide = ranger la radio.
+     */
+    public record Radio(Texte nom, CompoundTag apparence, String skin, boolean brasFins, int etape, int total, Texte texte) {
+    }
+
     /** Message reçu par le serveur, avec le joueur qui l'envoie. */
     public record Recu<T>(ServerPlayer joueur, T message) {
     }
@@ -139,6 +148,7 @@ public final class Reseau {
     public static final Crochet<Lueurs> LUEURS = new Crochet<>();
     public static final Crochet<Notif> NOTIF = new Crochet<>();
     public static final Crochet<Boutique> BOUTIQUE = new Crochet<>();
+    public static final Crochet<Radio> RADIO = new Crochet<>();
 
     public static final Crochet<Recu<Choix>> CHOIX = new Crochet<>();
     public static final Crochet<Recu<DemandeJournal>> DEMANDE_JOURNAL = new Crochet<>();
@@ -205,6 +215,20 @@ public final class Reseau {
             for (int i = 0; i < n; i++) l.add(b.readVarInt());
             return new Vente(e, l);
         }, VENTE);
+        versJoueur(Radio.class, (m, b) -> {
+            m.nom().ecrire(b);
+            b.writeNbt(m.apparence());
+            b.writeUtf(m.skin(), MAX_CLE);
+            b.writeBoolean(m.brasFins());
+            b.writeVarInt(m.etape());
+            b.writeVarInt(m.total());
+            m.texte().ecrire(b);
+        }, b -> {
+            Texte nom = Texte.lire(b);
+            CompoundTag app = b.readNbt();
+            return new Radio(nom, app == null ? new CompoundTag() : app, b.readUtf(MAX_CLE), b.readBoolean(), b.readVarInt(), b.readVarInt(),
+                    Texte.lire(b));
+        }, RADIO);
     }
 
     private static <T> void versJoueur(Class<T> c, BiConsumer<T, FriendlyByteBuf> ecrire, Function<FriendlyByteBuf, T> lire, Crochet<T> crochet) {

@@ -280,6 +280,10 @@ public final class Cinematique {
     private static void finir() {
         Minecraft mc = Minecraft.getInstance();
         boolean passe = t < REVEIL + 170;
+        if (actif && mc.getConnection() != null) {
+            // le serveur note la fin (HeraliZ Quêtes enchaîne : « Allez voir le Commandant Varga »)
+            CineReseau.CANAL.sendToServer(new CineReseau.Fin());
+        }
         embarque = false;
         actif = false;
         fov = -1;

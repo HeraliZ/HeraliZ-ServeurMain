@@ -17,10 +17,17 @@ import java.util.Set;
 import java.util.UUID;
 import fr.heraliz.crac.Config;
 import fr.heraliz.crac.Crac;
+import fr.heraliz.crac.block.ClaimBlock;
+import fr.heraliz.crac.block.entity.ClaimBlockEntity;
+import fr.heraliz.crac.build.logic.PlacementRules;
+import fr.heraliz.crac.build.model.Building;
+import fr.heraliz.crac.build.model.Piece;
 import fr.heraliz.crac.build.model.PieceKind;
 import fr.heraliz.crac.build.model.Tier;
 import fr.heraliz.crac.build.world.BuildCost;
 import fr.heraliz.crac.build.world.Costs;
+import fr.heraliz.crac.build.world.StructureService;
+import fr.heraliz.crac.claim.Claim;
 import fr.heraliz.crac.claim.ClaimManager;
 import fr.heraliz.crac.claim.UpkeepResource;
 import fr.heraliz.crac.group.Group;
@@ -39,39 +46,58 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.CommandEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Tutoriel du monde des bases, après la cinématique d'arrivée de HeraliZ Utils, pour un joueur qui n'a jamais eu de base.
+ * Tutoriel du monde des bases (« Ta première base »), pour un joueur qui n'a jamais eu de base.
  * <ol>
- *   <li>Au spawn ({@code heralisz:spawn}), quand la cinématique a commencé (donnée persistante
- *   {@code heraliz_cinematique_vue} de Utils, lue par son nom) : on attend {@code [tuto] attente_min_s} secondes puis le
- *   premier pas du joueur, ou au plus {@code attente_max_s} secondes (la cinématique dure environ 122 s ; Utils n'envoie
- *   pas d'évènement de fin).</li>
+ *   <li>Départ : avec HeraliZ Quêtes, seulement par le Commandant Varga (bouton « Faire ma base » de son dialogue,
+ *   {@link TutorielApi#lancer}) ; sans HeraliZ Quêtes, comme avant, tout seul au spawn après la cinématique d'arrivée
+ *   (donnée persistante {@code heraliz_cinematique_vue} de Utils : {@code [tuto] attente_min_s} secondes puis le premier
+ *   pas, ou au plus {@code attente_max_s} secondes).</li>
  *   <li>Titres à l'écran, puis le kit : de quoi bâtir avec CRac une cabane 2 × 1 avec une porte (2 fondations, 5 murs,
  *   1 pièce « Porte », 2 planchers en toit), calculé avec les coûts réels de crac-building.toml, plus la mise en bois au
  *   marteau, un jour d'entretien du Claim Block et une marge de 10 % ; un groupe CRac est créé pour lui s'il n'en a pas.</li>
- *   <li>Envoi dans le monde des bases, à un point plat tiré au hasard loin des autres bases : il y est protégé
- *   ({@link Protections}) tant que sa base n'est pas posée.</li>
+ *   <li>Envoi dans le monde des bases, à un point plat tiré au hasard loin des autres bases. Six étapes, suivies ici
+ *   d'après la cabane elle-même ({@link #progression}) et dites par Varga à la radio (HeraliZ Quêtes) : un coin plat (la
+ *   première fondation), 2 fondations, 5 murs + la porte + 2 planchers, le Claim Block sur une fondation de la cabane,
+ *   toute la cabane en bois, des planches dans le Claim Block (entretien). Le tutoriel finit avec la dernière.</li>
  * </ol>
- * Le tutoriel automatique ne vise que les joueurs en survie ou en aventure (en créatif ou en spectateur, rien), à l'étape
- * AUCUNE (jamais fait) et sans base. Staff (permission 2) :
+ * Tutoriel OBLIGATOIRE (choix du propriétaire, 18/10) : tant qu'il dure (étapes KIT et PHASE, hors créatif et
+ * spectateur), le joueur ne peut ni le quitter ({@code /spawn}, {@code /home}, {@code /zone base}, {@code /rtp},
+ * {@code /suicide}, matchs, casino, borne de départ), ni perdre son kit : rien ne se jette, rien ne se fabrique, aucun
+ * bloc ne se pose (sauf le Claim Block à son étape), seules les pièces de l'étape en cours se posent, et une pièce
+ * démolie rend ce qu'elle a coûté. Il ne prend aucun dégât dans le monde des bases ({@link Protections}). Déconnecté, il
+ * reprend où il en était ; ramené au spawn (mort, staff), il est renvoyé à sa cabane.
+ * <p>
+ * Le tutoriel ne vise que les joueurs en survie ou en aventure, à l'étape AUCUNE (jamais fait) et sans base. Staff
+ * (permission 2) :
  * <ul>
  *   <li>{@code /tuto lancer <joueur>} : le tutoriel complet TOUT DE SUITE (titres, kit, envoi), où que soit le joueur,
  *   même en créatif, même s'il a déjà une base ou l'a déjà fait (la protection de base n'est redonnée qu'à un joueur
  *   sans base) ;</li>
  *   <li>{@code /tuto rejouer <joueur>} : remise à zéro (il repart au spawn, comme un nouveau joueur) ;</li>
- *   <li>la cinématique rejouée par le staff ({@code /cinematique} pour soi, {@code /cinematique joueur <cibles>})
- *   relance aussi le tutoriel du joueur à la fin de la cinématique, comme {@code /tuto lancer} (un joueur qui rejoue sa
- *   propre cinématique ne reçoit pas de nouveau kit).</li>
+ *   <li>{@code /tuto finir <joueur>} : le libère du tutoriel (en cas de souci), comme s'il l'avait fini ;</li>
+ *   <li>sans HeraliZ Quêtes, la cinématique rejouée par le staff ({@code /cinematique} pour soi,
+ *   {@code /cinematique joueur <cibles>}) relance aussi le tutoriel du joueur à la fin de la cinématique, comme
+ *   {@code /tuto lancer} (un joueur qui rejoue sa propre cinématique ne reçoit pas de nouveau kit).</li>
  * </ul>
  */
 @EventBusSubscriber(modid = "crac")
@@ -105,6 +131,15 @@ public final class Tutoriel {
     private static final int T_TITRE_2 = 80;
     private static final int T_TITRE_3 = 170;
     private static final int T_ENVOI = 230;
+
+    /** Étapes de la cabane (1 à 6) ; {@link #progression} rend FINIE quand tout est fait. */
+    static final int ETAPES = 6;
+    static final int FINIE = ETAPES + 1;
+    /** Commandes refusées pendant le tutoriel (elles feraient quitter le monde des bases ou mourir). */
+    private static final Set<String> COMMANDES_BLOQUEES = Set.of("spawn", "home", "zone", "rtp", "suicide", "duel", "clashwar",
+        "zombies", "casino", "depart", "extractions");
+    /** Dernier avertissement (heure en ms) par joueur, pour ne pas inonder sa barre d'action. */
+    private static final Map<UUID, Long> AVERTI = new HashMap<>();
 
     private Tutoriel() {
     }
@@ -148,7 +183,8 @@ public final class Tutoriel {
                         ATTENTES.remove(id);
                         continue;
                     }
-                    if (!MondeBases.estSpawn(p.level()) || !cinematiqueVue(p)) {
+                    // avec HeraliZ Quêtes, le tutoriel ne part que par le Commandant Varga
+                    if (parVarga() || !MondeBases.estSpawn(p.level()) || !cinematiqueVue(p)) {
                         ATTENTES.remove(id);
                         continue;
                     }
@@ -164,9 +200,72 @@ public final class Tutoriel {
                         SEQUENCES.put(id, T_TITRE_3 - 20);
                     }
                 }
+                case PHASE -> {
+                    ATTENTES.remove(id);
+                    suivre(p, d, j);
+                }
                 default -> ATTENTES.remove(id);
             }
         }
+    }
+
+    /** HeraliZ Quêtes est là : le tutoriel part du dialogue du Commandant Varga, qui le guide ensuite à la radio. */
+    static boolean parVarga() {
+        return ModList.get().isLoaded("heraliz_quetes");
+    }
+
+    /**
+     * Étape PHASE, chaque seconde : ramené au spawn (mort, staff), le joueur repart à sa cabane ; la cabane finie, le
+     * tutoriel l'est aussi. Le monde des bases et le spawn mis à part, rien (seul le staff peut l'y avoir mis).
+     */
+    private static void suivre(ServerPlayer p, BasesDonnees d, BasesDonnees.Joueur j) {
+        if (MondeBases.estSpawn(p.level())) {
+            ramener(p, j);
+            return;
+        }
+        if (!MondeBases.estBases(p.level())) {
+            return;
+        }
+        if (progression(p)[0] >= FINIE) {
+            j.etape = BasesDonnees.Etape.FINI;
+            j.batiment = -1L;
+            d.marquer();
+            AVERTI.remove(p.getUUID());
+            Crac.LOGGER.info("[CRac] tutoriel fini par {}", p.getGameProfile().getName());
+            if (!parVarga()) {
+                T.chat(p, T.t("crac.tuto.etape6", "[Tuto] Ta base posée, ton home y est créé : du spawn, /home t'y ramène (toutes les 3 min). Depuis ta base, /spawn ramène au spawn ; du spawn, /zone base mène à un coin au hasard de la zone de construction."),
+                    ChatFormatting.GRAY);
+            }
+        }
+    }
+
+    /** Renvoie le joueur à sa cabane (sur sa première fondation), sinon à un point au hasard du monde des bases. */
+    private static void ramener(ServerPlayer p, BasesDonnees.Joueur j) {
+        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        if (bases == null) {
+            return;
+        }
+        Vec3 dest = null;
+        Building b = batiment(bases, p, j);
+        if (b != null) {
+            for (Piece x : StructureService.store(bases).piecesOf(b)) {
+                if (x.kind() == PieceKind.FOUNDATION) {
+                    AABB box = x.bounds();
+                    dest = new Vec3((box.minX + box.maxX) / 2, box.maxY, (box.minZ + box.maxZ) / 2);
+                    break;
+                }
+            }
+        }
+        if (dest == null) {
+            dest = Points.auHasard(bases, p);
+        }
+        if (dest == null) {
+            return;
+        }
+        p.stopRiding();
+        p.teleportTo(bases, dest.x, dest.y, dest.z, p.getYRot(), 0f);
+        p.resetFallDistance();
+        T.chat(p, T.t("crac.tuto.ramene", "[Tuto] Retour à ta cabane : le tutoriel n'est pas fini."), ChatFormatting.YELLOW);
     }
 
     /** Fin de l'attente : {@code attente_min_s} passées et un premier pas, ou {@code attente_max_s} passées. */
@@ -235,6 +334,7 @@ public final class Tutoriel {
     }
 
     static void oublier(UUID joueur) {
+        AVERTI.remove(joueur);
         ATTENTES.remove(joueur);
         SEQUENCES.remove(joueur);
         FORCES.remove(joueur);
@@ -331,21 +431,297 @@ public final class Tutoriel {
         j.etape = BasesDonnees.Etape.PHASE;
         j.phaseTicks = 0;
         d.marquer();
-        long max = BasesReglages.i(BasesReglages.PHASE_MAX_MIN, 120) * 60_000L;
-        int fond = BasesReglages.i(BasesReglages.FONDATIONS_MIN, 2);
+        j.batiment = -1L;
+        d.marquer();
+        if (parVarga()) {
+            return;   // Varga donne les consignes à la radio, une par une (HeraliZ Quêtes)
+        }
         // dans le chat une demi-seconde après l'arrivée (écran de chargement du monde passé)
-        Deplacements.apres(p, T.t("crac.tuto.etape1", "[Tuto] 1. Trouve un coin plat qui te plaît. Le monde des bases est en PvP : seul ton contour vert te protège, pendant %s au plus.",
-            T.duree(max)).withStyle(ChatFormatting.YELLOW));
+        Deplacements.apres(p, T.t("crac.tuto.etape1", "[Tuto] 1. Trouve un coin plat qui te plaît. Le monde des bases est en PvP : seul ton contour vert te protège, jusqu'à la fin du tutoriel.")
+            .withStyle(ChatFormatting.YELLOW));
         Deplacements.apres(p, T.t("crac.tuto.etape2", "[Tuto] 2. Plan de construction en main, clic droit : pose %s fondations côte à côte.",
-            String.valueOf(fond)).withStyle(ChatFormatting.YELLOW));
+            String.valueOf(CABANE.get(PieceKind.FOUNDATION))).withStyle(ChatFormatting.YELLOW));
         Deplacements.apres(p, T.t("crac.tuto.etape3", "[Tuto] 3. Puis 5 murs, 1 porte (pièce « Porte » du plan, la porte est comprise) et 2 planchers par-dessus pour le toit.")
             .withStyle(ChatFormatting.YELLOW));
         Deplacements.apres(p, T.t("crac.tuto.etape4", "[Tuto] 4. Pose le Claim Block sur une fondation, à l'intérieur : ta base est à toi, et protégée des raids.")
             .withStyle(ChatFormatting.YELLOW));
         Deplacements.apres(p, T.t("crac.tuto.etape5", "[Tuto] 5. Marteau en main : passe tes pièces en bois, et mets des planches dans le Claim Block (entretien).")
             .withStyle(ChatFormatting.YELLOW));
-        Deplacements.apres(p, T.t("crac.tuto.etape6", "[Tuto] Ta base posée, ton home y est créé : du spawn, /home t'y ramène (toutes les 3 min). Depuis ta base, /spawn ramène au spawn ; du spawn, /zone base mène à un coin au hasard de la zone de construction.")
-            .withStyle(ChatFormatting.GRAY));
+    }
+
+    // ---------------------------------------------------------------------------------------------- cabane
+
+    /** Le joueur est dans le tutoriel (kit reçu ou dans le monde des bases), hors créatif et spectateur. */
+    public static boolean enCours(@Nullable Player p) {
+        if (!(p instanceof ServerPlayer sp) || sp.isCreative() || sp.isSpectator()) {
+            return false;
+        }
+        BasesDonnees.Joueur j = BasesDonnees.get(sp.server).siConnu(sp.getUUID());
+        return j != null && (j.etape == BasesDonnees.Etape.KIT || j.etape == BasesDonnees.Etape.PHASE);
+    }
+
+    /** Le bâtiment de la cabane du tutoriel ; perdu (toutes ses pièces démolies), celui d'une autre de ses pièces. */
+    @Nullable
+    private static Building batiment(ServerLevel bases, ServerPlayer p, BasesDonnees.Joueur j) {
+        var store = StructureService.store(bases);
+        if (j.batiment < 0) {
+            return null;   // aucune pièce posée (la première fondation le fixe : piecePosee)
+        }
+        Building b = store.index.building(j.batiment);
+        if (b != null && !b.pieces.isEmpty()) {
+            return b;
+        }
+        long trouve = -1L;
+        for (Piece x : store.index.allPieces()) {
+            if (x.owner.equals(p.getUUID())) {
+                trouve = x.buildingId;
+                break;
+            }
+        }
+        if (trouve != j.batiment) {
+            j.batiment = trouve;
+            BasesDonnees.get(p.server).marquer();
+        }
+        return trouve < 0 ? null : store.index.building(trouve);
+    }
+
+    /**
+     * Où en est la cabane : {étape (1 à 6, {@link #FINIE} quand tout est fait), fait, total}. 1 : un coin plat (aucune
+     * fondation) ; 2 : les fondations ; 3 : murs, porte et planchers ; 4 : le Claim Block ; 5 : tout en bois ; 6 :
+     * l'entretien (des planches dans le Claim Block). {0, 0, 0} hors de l'étape PHASE ou hors du monde des bases.
+     */
+    static int[] progression(ServerPlayer p) {
+        BasesDonnees.Joueur j = BasesDonnees.get(p.server).siConnu(p.getUUID());
+        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        if (j == null || j.etape != BasesDonnees.Etape.PHASE || bases == null) {
+            return new int[]{0, 0, 0};
+        }
+        Building b = batiment(bases, p, j);
+        int fond = 0, murs = 0, portes = 0, planchers = 0, bois = 0, total = 0;
+        if (b != null) {
+            for (Piece x : StructureService.store(bases).piecesOf(b)) {
+                total++;
+                switch (x.kind()) {
+                    case FOUNDATION -> fond++;
+                    case WALL -> murs++;
+                    case DOORWAY -> portes++;
+                    case FLOOR -> planchers++;
+                    default -> {
+                    }
+                }
+                if (x.tier.ordinal() >= Tier.WOOD.ordinal()) {
+                    bois++;
+                }
+            }
+        }
+        int nf = CABANE.get(PieceKind.FOUNDATION);
+        if (fond == 0) {
+            return new int[]{1, 0, 1};
+        }
+        if (fond < nf) {
+            return new int[]{2, fond, nf};
+        }
+        int nm = CABANE.get(PieceKind.WALL), np = CABANE.get(PieceKind.DOORWAY), nr = CABANE.get(PieceKind.FLOOR);
+        int m = Math.min(murs, nm) + Math.min(portes, np) + Math.min(planchers, nr);
+        if (m < nm + np + nr) {
+            return new int[]{3, m, nm + np + nr};
+        }
+        Claim c = StructureService.claimOf(bases, b);
+        if (c == null) {
+            return new int[]{4, 0, 1};
+        }
+        if (bois < total) {
+            return new int[]{5, bois, total};
+        }
+        int seuil = Math.max(1, entretienKit(total) / 2);
+        int stock = bases.getBlockEntity(c.anchor()) instanceof ClaimBlockEntity be ? be.getStored(UpkeepResource.WOOD.slot()) : 0;
+        if (stock < seuil) {
+            return new int[]{6, Math.min(stock, seuil), seuil};
+        }
+        return new int[]{FINIE, 1, 1};
+    }
+
+    /** Planches d'entretien du kit pour {@code pieces} pièces ({@code [tuto] entretien_heures} heures). */
+    private static int entretienKit(int pieces) {
+        int heures = BasesReglages.i(BasesReglages.ENTRETIEN_HEURES, 24);
+        if (heures <= 0 || !Config.SPEC.isLoaded()) {
+            return 0;
+        }
+        return (int) Math.ceil(Config.upkeepPerPiece(UpkeepResource.WOOD) * pieces * heures / Config.upkeepHours.get());
+    }
+
+    /**
+     * Pose d'une pièce pendant le tutoriel (StructureService.place) : seulement les pièces de l'étape en cours, et contre
+     * la cabane (sauf la toute première fondation). Null quand c'est permis.
+     */
+    @Nullable
+    public static Component refusPiece(ServerPlayer p, PieceKind kind, long buildingId) {
+        if (!enCours(p)) {
+            return null;
+        }
+        BasesDonnees.Joueur j = BasesDonnees.get(p.server).joueur(p.getUUID());
+        if (j.etape != BasesDonnees.Etape.PHASE) {
+            return refus(p, T.t("crac.tuto.refus.pas_encore", "Pas encore : attends les consignes de Varga."));
+        }
+        int[] pr = progression(p);
+        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        Building b = bases == null ? null : batiment(bases, p, j);
+        if (b == null ? buildingId != PlacementRules.NEW_BUILDING : buildingId != b.id) {
+            return refus(p, T.t("crac.tuto.refus.cabane", "Construis contre ta cabane, pas ailleurs."));
+        }
+        boolean ok = switch (kind) {
+            case FOUNDATION -> pr[0] <= 2;
+            case WALL, DOORWAY, FLOOR -> pr[0] == 3 && manque(bases, b, kind);
+            default -> false;
+        };
+        return ok ? null : refus(p, T.t("crac.tuto.refus.piece", "Pas cette pièce pour l'instant : suis les consignes de Varga."));
+    }
+
+    /** La cabane n'a pas encore toutes ses pièces de ce genre. */
+    private static boolean manque(@Nullable ServerLevel bases, @Nullable Building b, PieceKind kind) {
+        int n = 0;
+        if (bases != null && b != null) {
+            for (Piece x : StructureService.store(bases).piecesOf(b)) {
+                if (x.kind() == kind) {
+                    n++;
+                }
+            }
+        }
+        return n < CABANE.getOrDefault(kind, 0);
+    }
+
+    /** Une pièce vient d'être posée (StructureService.place) : la première fondation fixe la cabane du tutoriel. */
+    public static void piecePosee(ServerPlayer p, Piece piece) {
+        if (!enCours(p)) {
+            return;
+        }
+        BasesDonnees d = BasesDonnees.get(p.server);
+        BasesDonnees.Joueur j = d.joueur(p.getUUID());
+        if (j.batiment < 0 || StructureService.store(p.serverLevel()).index.building(j.batiment) == null) {
+            j.batiment = piece.buildingId;
+            d.marquer();
+        }
+    }
+
+    /** Claim Block posé pendant le tutoriel (ClaimBlockHandler.claim) : seulement à son étape, sur une fondation de la cabane. */
+    @Nullable
+    public static Component refusClaim(ServerLevel level, ServerPlayer p, net.minecraft.core.BlockPos pos) {
+        if (!enCours(p)) {
+            return null;
+        }
+        BasesDonnees.Joueur j = BasesDonnees.get(p.server).joueur(p.getUUID());
+        if (j.etape != BasesDonnees.Etape.PHASE || progression(p)[0] != 4) {
+            return T.t("crac.tuto.refus.claim_tot", "Le Claim Block, pas encore : finis d'abord ta cabane.");
+        }
+        Piece siege = StructureService.seatUnder(level, pos);
+        Building b = batiment(level, p, j);
+        if (siege == null || b == null || siege.buildingId != b.id) {
+            return T.t("crac.tuto.refus.claim_place", "Pose le Claim Block sur une fondation de ta cabane, à l'intérieur.");
+        }
+        return null;
+    }
+
+    /**
+     * Claim Block ouvert pendant le tutoriel (ClaimBlockLogique.utiliser) : l'entretien attend que la cabane soit en
+     * bois, sinon les planches des améliorations partiraient dedans. Vrai = refusé (le joueur est prévenu).
+     */
+    public static boolean entretienTropTot(ServerPlayer p) {
+        if (!enCours(p) || progression(p)[0] >= ETAPES) {
+            return false;
+        }
+        avertir(p, T.t("crac.tuto.refus.entretien", "L'entretien plus tard : passe d'abord ta cabane en bois."));
+        return true;
+    }
+
+    /** Pièce démolie pendant le tutoriel (StructureService.demolish) : ce qu'elle a coûté est rendu, rien ne se perd. */
+    public static void rembourser(ServerPlayer p, Piece piece) {
+        Map<Item, Integer> m = new LinkedHashMap<>();
+        ajouter(m, Costs.place(piece.kind()));
+        if (piece.tier.ordinal() >= Tier.WOOD.ordinal()) {
+            ajouter(m, Costs.upgrade(piece.kind(), Tier.WOOD));
+        }
+        m.forEach((item, n) -> {
+            int max = Math.max(1, new ItemStack(item).getMaxStackSize());
+            for (int reste = n; reste > 0; reste -= max) {
+                p.getInventory().placeItemBackInInventory(new ItemStack(item, Math.min(max, reste)));
+            }
+        });
+    }
+
+    private static Component refus(ServerPlayer p, MutableComponent texte) {
+        return texte.withStyle(ChatFormatting.YELLOW);
+    }
+
+    /** Avertissement dans la barre d'action, au plus un toutes les 2 secondes. */
+    private static void avertir(ServerPlayer p, MutableComponent texte) {
+        long now = System.currentTimeMillis();
+        Long avant = AVERTI.get(p.getUUID());
+        if (avant == null || now - avant > 2000L) {
+            AVERTI.put(p.getUUID(), now);
+            T.barre(p, texte, ChatFormatting.YELLOW);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------- verrous du tutoriel
+
+    /** Rien ne se jette pendant le tutoriel : l'objet revient dans l'inventaire. */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void jeter(ItemTossEvent e) {
+        if (!(e.getPlayer() instanceof ServerPlayer p) || !enCours(p)) {
+            return;
+        }
+        ItemStack s = e.getEntity().getItem().copy();
+        e.setCanceled(true);
+        if (!p.getInventory().add(s) && !s.isEmpty()) {
+            // inventaire plein (objet tenu à la souris) : remis à la souris
+            p.containerMenu.setCarried(s);
+        }
+        p.containerMenu.broadcastChanges();
+        avertir(p, T.t("crac.tuto.refus.jeter", "Garde ton matériel : tu en as besoin pour ta cabane."));
+    }
+
+    /** Aucun bloc ne se pose pendant le tutoriel (les planches du kit sont comptées), sauf le Claim Block. */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void poser(BlockEvent.EntityPlaceEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || !enCours(p) || e.getPlacedBlock().getBlock() instanceof ClaimBlock) {
+            return;
+        }
+        e.setCanceled(true);
+        avertir(p, T.t("crac.tuto.refus.bloc", "Pas de blocs pendant le tutoriel : construis avec le plan."));
+    }
+
+    /** Commandes qui feraient quitter le tutoriel : refusées jusqu'à la fin. */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void commandeBloquee(CommandEvent e) {
+        CommandContextBuilder<CommandSourceStack> b = e.getParseResults().getContext();
+        if (b.getNodes().isEmpty() || !(b.getSource().getEntity() instanceof ServerPlayer p) || !enCours(p)
+            || !COMMANDES_BLOQUEES.contains(b.getNodes().get(0).getNode().getName())) {
+            return;
+        }
+        e.setCanceled(true);
+        T.chat(p, T.t("crac.tuto.refus.commande", "Pas avant d'avoir fini ta base (tutoriel)."), ChatFormatting.YELLOW);
+    }
+
+    /** Pas d'artisanat pendant le tutoriel : ce qui est posé dans une grille revient dans l'inventaire. */
+    @SubscribeEvent
+    public static void tickJoueur(TickEvent.PlayerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 5 != 0 || !enCours(p)) {
+            return;
+        }
+        boolean rendu = false;
+        for (Slot s : p.containerMenu.slots) {
+            Container c = s.container;
+            if (c instanceof CraftingContainer && s.hasItem()) {
+                ItemStack x = c.removeItemNoUpdate(s.getContainerSlot());
+                p.getInventory().placeItemBackInInventory(x);
+                p.containerMenu.slotsChanged(c);
+                rendu = true;
+            }
+        }
+        if (rendu) {
+            p.containerMenu.broadcastChanges();
+            avertir(p, T.t("crac.tuto.refus.artisanat", "Pas d'artisanat pendant le tutoriel : ton matériel est compté."));
+        }
     }
 
     // ---------------------------------------------------------------------------------------------- kit
@@ -470,7 +846,23 @@ public final class Tutoriel {
             .then(Commands.literal("rejouer").then(Commands.argument("joueur", EntityArgument.player())
                 .executes(c -> rejouer(c.getSource(), EntityArgument.getPlayer(c, "joueur")))))
             .then(Commands.literal("lancer").then(Commands.argument("joueur", EntityArgument.player())
-                .executes(c -> lancer(c.getSource(), EntityArgument.getPlayer(c, "joueur"))))));
+                .executes(c -> lancer(c.getSource(), EntityArgument.getPlayer(c, "joueur")))))
+            .then(Commands.literal("finir").then(Commands.argument("joueur", EntityArgument.player())
+                .executes(c -> finir(c.getSource(), EntityArgument.getPlayer(c, "joueur"))))));
+    }
+
+    /** Staff : libère un joueur du tutoriel (en cas de souci), comme s'il l'avait fini. */
+    private static int finir(CommandSourceStack src, ServerPlayer p) {
+        BasesDonnees d = BasesDonnees.get(src.getServer());
+        BasesDonnees.Joueur j = d.joueur(p.getUUID());
+        j.etape = BasesDonnees.Etape.FINI;
+        j.batiment = -1L;
+        d.marquer();
+        oublier(p.getUUID());
+        Reply.ok(src, T.t("crac.tuto.fini_staff", "Tutoriel de %s terminé : il est libre.", p.getGameProfile().getName())
+            .withStyle(ChatFormatting.GREEN));
+        Crac.LOGGER.info("[CRac] tutoriel de {} terminé par le staff ({})", p.getGameProfile().getName(), src.getTextName());
+        return 1;
     }
 
     private static int lancer(CommandSourceStack src, ServerPlayer p) {
@@ -500,7 +892,7 @@ public final class Tutoriel {
             ParseResults<CommandSourceStack> r = e.getParseResults();
             CommandContextBuilder<CommandSourceStack> b = r.getContext();
             if (b.getNodes().isEmpty() || !"cinematique".equals(b.getNodes().get(0).getNode().getName())
-                || r.getReader().canRead() || !r.getExceptions().isEmpty() || !actif()) {
+                || r.getReader().canRead() || !r.getExceptions().isEmpty() || !actif() || parVarga()) {
                 return;
             }
             CommandSourceStack src = b.getSource();

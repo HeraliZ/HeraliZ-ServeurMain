@@ -73,6 +73,10 @@ public final class ClaimBlockLogique {
                     if (owner && claim.tier() < 3 && tryUpgrade(sl, sp, pos, state, claim, held)) {
                         return InteractionResult.CONSUME;
                     } else {
+                        // HeraliZ : pendant le tutoriel des bases, l'entretien attend la cabane en bois (planches comptées)
+                        if (fr.heraliz.crac.bases.Tutoriel.entretienTropTot(sp)) {
+                            return InteractionResult.CONSUME;
+                        }
                         if (sl.getBlockEntity(pos) instanceof ClaimBlockEntity be) {
                             ClaimUpkeep.recompute(sl, claim, be);
                             NetworkHooks.openScreen(sp, be, buf -> buf.writeBlockPos(pos));
