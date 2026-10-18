@@ -180,6 +180,24 @@ public final class AllongeClient {
       }
    }
 
+   /**
+    * Train de HeraliZ Utils (appelé par réflexion, {@code fr.heralisz.utils.train.VoyageursClient}) : s'allonger dans le
+    * train, même délai qu'au sol. Vrai : permis ; faux : « Tu pourras te rallonger dans N s » est affiché. Ne pas renommer.
+    */
+   public static boolean allongeTrain() {
+      long restant = restantMs();
+      if (restant > 0L) {
+         afficherAttente(restant);
+         return false;
+      }
+      return true;
+   }
+
+   /** Train de HeraliZ Utils (par réflexion) : le passager se relève ; le délai pour se rallonger repart. */
+   public static void releveTrain() {
+      releveA = Allonge.maintenant();
+   }
+
    /** Millisecondes avant de pouvoir se rallonger (0 : tout de suite). */
    public static long restantMs() {
       long t = Allonge.maintenant();
