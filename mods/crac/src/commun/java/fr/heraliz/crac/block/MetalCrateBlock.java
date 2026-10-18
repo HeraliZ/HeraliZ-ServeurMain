@@ -30,30 +30,47 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class MetalCrateBlock extends Block implements EntityBlock {
+/** Caisse en métal ; elle se colle aux murs depuis CRac 1.11.0 ({@link Adosse}). */
+public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossable {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     private static final VoxelShape SHAPE_NS = box(0.0, 0.0, 1.5, 16.0, 9.0, 14.5);
     private static final VoxelShape SHAPE_EW = box(1.5, 0.0, 0.0, 14.5, 9.0, 16.0);
 
+    /** Boîte de la caisse tournée vers le nord (px) : la même qu'outils/adossement.py. */
+    private static final double[] BOITE = {0.0, 1.5, 16.0, 14.5};
+
     private static VoxelShape shapeFor(BlockState state) {
         Direction f = state.getValue(FACING);
-        return f != Direction.EAST && f != Direction.WEST ? SHAPE_NS : SHAPE_EW;
+        VoxelShape s = f != Direction.EAST && f != Direction.WEST ? SHAPE_NS : SHAPE_EW;
+        return Adosse.decaler(s, BOITE, f, state.getValue(Adosse.ADOSSE));
+    }
+
+    @Override
+    public double[] boiteNord() {
+        return BOITE;
+    }
+
+    @Override
+    public double hauteur(BlockState state) {
+        return 9;
     }
 
     public MetalCrateBlock() {
         super(Properties.of().mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false)
+            .setValue(Adosse.ADOSSE, Adosse.AUCUN));
     }
 
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN);
+        builder.add(FACING, OPEN, Adosse.ADOSSE);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite()).setValue(OPEN, false);
+        BlockState s = this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite()).setValue(OPEN, false);
+        return s.setValue(Adosse.ADOSSE, Adosse.choisir(ctx, s));
     }
 
     @Override

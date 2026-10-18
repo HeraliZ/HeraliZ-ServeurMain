@@ -350,9 +350,12 @@ public final class TutoClient {
             VertexConsumer lignes = buffers.getBuffer(RenderType.lines());
             pose.pushPose();
             pose.translate(-cam.x, -cam.y, -cam.z);
-            // l'armoire à outils fait 2 blocs de haut (1.10.0) : sa place aussi
-            double haut = "crac:claim_block".equals(guide.objet()) ? 1 : 0;
+            // deux cases l'une sur l'autre : un seul cadre (l'armoire à outils fait 2 blocs de haut)
             for (BlockPos b : guide.blocs()) {
+                if (guide.blocs().contains(b.below())) {
+                    continue;
+                }
+                double haut = guide.blocs().contains(b.above()) ? 1 : 0;
                 AABB box = new AABB(b).expandTowards(0, haut, 0).deflate(0.02);
                 LevelRenderer.renderLineBox(pose, lignes, box, rouge(VERT), vert(VERT), bleu(VERT), 0.35F + 0.65F * k);
                 LevelRenderer.renderLineBox(pose, lignes, box.inflate(0.08 + 0.06 * k), rouge(VERT), vert(VERT), bleu(VERT), 0.25F * k);

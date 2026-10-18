@@ -512,5 +512,6 @@
   "crac.acces.retire_cible": "%s removed your access to their base.",
   "crac.acces.plein": "The list is full (%s players).",
   "crac.acces.donne": "%s now has access to your base.",
-  "crac.acces.donne_cible": "%s gave you access to their base: doors, chests and building."
+  "crac.acces.donne_cible": "%s gave you access to their base: doors, chests and building.",
+  "crac.claim.une_par_joueur": "You already placed a tool cabinet: only one per player (you can have access to others)."
 }

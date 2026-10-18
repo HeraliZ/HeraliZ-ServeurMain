@@ -663,7 +663,42 @@ public final class Tutoriel {
             j.arete = piece.kind() == PieceKind.FOUNDATION ? Cabane.choisirArete(p, piece) : -1;
             d.marquer();
         }
+        if (piece.kind() == PieceKind.DOORWAY) {
+            // la porte de la cabane s'ouvre vers l'extérieur, quel que soit le sens choisi (1.11.0)
+            ServerLevel level = p.serverLevel();
+            long id = piece.id;
+            plusTard(p, () -> {
+                Cabane.porteVersExterieur(level, id);
+                majGuide(p);
+            });
+        }
         majGuide(p);   // la pièce verte suivante tout de suite
+    }
+
+    /** Au tick suivant (après la fin de la pose en cours). */
+    private static void plusTard(ServerPlayer p, Runnable r) {
+        p.server.tell(new net.minecraft.server.TickTask(p.server.getTickCount() + 1, r));
+    }
+
+    /**
+     * Armoire (Claim Block) posée pendant le tutoriel à sa place : tournée vers la pièce et poussée dans l'angle, comme
+     * le montre la case verte (ClaimBlockHandler.claim, 1.11.0).
+     */
+    public static void armoirePosee(ServerPlayer p, ServerLevel level, net.minecraft.core.BlockPos pos) {
+        Cabane.Coin coin = enCours(p) ? coin(p, level) : null;
+        if (coin != null && coin.claim().equals(pos)) {
+            plusTard(p, () -> {
+                Cabane.orienter(level, pos, coin.face(), coin.adosse());
+                majGuide(p);
+            });
+        }
+    }
+
+    @Nullable
+    private static Cabane.Coin coin(ServerPlayer p, ServerLevel level) {
+        Building b = batiment(level, p, BasesDonnees.get(p.server).joueur(p.getUUID()));
+        Piece[] fs = b == null ? null : Cabane.fondations(level, b);
+        return fs == null ? null : Cabane.coin(fs[0], fs[1]);
     }
 
     /** Claim Block posé pendant le tutoriel (ClaimBlockHandler.claim) : seulement à son étape, sur une fondation de la cabane. */
@@ -760,6 +795,12 @@ public final class Tutoriel {
             Claim c = b == null ? null : StructureService.claimOf(bases, b);
             if (c == null || Math.abs(e.getPos().getX() - c.anchor().getX()) + Math.abs(e.getPos().getZ() - c.anchor().getZ()) <= 2
                 && Math.abs(e.getPos().getY() - c.anchor().getY()) <= 1) {
+                // à sa place prévue : tournée vers la pièce et collée au mur, à côté de l'armoire (1.11.0)
+                Cabane.Coin coin = bases == null ? null : coin(p, bases);
+                net.minecraft.core.BlockPos pos = e.getPos().immutable();
+                if (coin != null && coin.caisse().equals(pos)) {
+                    plusTard(p, () -> Cabane.orienter(bases, pos, coin.face(), coin.adosse()));
+                }
                 return;
             }
             e.setCanceled(true);

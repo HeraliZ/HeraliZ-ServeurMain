@@ -162,6 +162,11 @@ public final class PieceSolids {
             case WALL, HALF_WALL, DOORWAY, DOUBLE_DOORWAY, WINDOW -> {
                 boolean open = (state & Piece.STATE_OPEN) != 0;
                 boolean insert = (state & Piece.INSERT_MASK) != 0;
+                if (kind.hasDoor()) {
+                    // HeraliZ : airlock with both doors open, the leaf collides as if closed (Piece.STATE_SAS)
+                    open &= (state & Piece.STATE_SAS) == 0;
+                    insert = false;
+                }
                 wall(out, kind, key.rot(), !open, open, insert);
             }
             case STAIRS_L -> stairsL(out, key.rot());

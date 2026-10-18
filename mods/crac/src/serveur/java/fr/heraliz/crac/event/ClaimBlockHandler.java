@@ -94,6 +94,7 @@ public final class ClaimBlockHandler {
         }
         Costs.take(player, cost);
         ClaimManager.addClaim(level, pos, g.id(), tier);
+        fr.heraliz.crac.bases.AccesBase.get(level.getServer()).armoirePosee(player.getUUID(), level, pos);
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() instanceof ClaimBlock && state.getValue(ClaimBlock.TIER) != tier) {
             level.setBlock(pos, state.setValue(ClaimBlock.TIER, tier), Block.UPDATE_ALL);
@@ -102,6 +103,8 @@ public final class ClaimBlockHandler {
         player.displayClientMessage(Txt.green("crac.claim.created", g.name(), tier, Config.claimRadius(tier)), false);
         // monde des bases : home « base » du joueur s'il n'en a aucun (/home du spawn)
         fr.heraliz.crac.bases.Homes.premiereBase(player, level, pos);
+        // tutoriel : l'armoire tournée vers la pièce et poussée dans l'angle (1.11.0)
+        fr.heraliz.crac.bases.Tutoriel.armoirePosee(player, level, pos);
         return null;
     }
 
@@ -126,6 +129,12 @@ public final class ClaimBlockHandler {
         }
         if (!g.isOwner(player.getUUID())) {
             return "crac.claim.owner_only";
+        }
+        // une seule armoire posée par joueur (1.11.0) ; l'armoire qu'on restaure est la sienne
+        fr.heraliz.crac.bases.AccesBase.Armoire a = player.getAbilities().instabuild ? null
+            : fr.heraliz.crac.bases.AccesBase.get(level.getServer()).armoireDe(level.getServer(), player.getUUID());
+        if (a != null && a.pos() != pos.asLong()) {
+            return "crac.claim.une_par_joueur";
         }
         if (RaidBlockManager.isRaidBlocked(level, g.id())) {
             return "crac.claim.raid_new";

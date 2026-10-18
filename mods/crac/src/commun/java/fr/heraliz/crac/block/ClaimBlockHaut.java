@@ -25,18 +25,34 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * modèle), elle donne au casier sa forme sur 2 blocs et renvoie les clics au bloc du bas. Sans armoire dessous, elle
  * disparaît. Elle ne se casse pas : on casse l'armoire par le bas, ou n'importe où en créatif.
  */
-public class ClaimBlockHaut extends Block {
+public class ClaimBlockHaut extends Block implements Adosse.Adossable {
     /** Formes du haut, par sens (x 0,5 à 15,5, z 3 à 15,75 dans le modèle tourné au nord). */
     private static final VoxelShape[] HAUT = ClaimBlock.formes(0.5, 3, 15.5, 15.75);
 
     public ClaimBlockHaut(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(ClaimBlock.FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any().setValue(ClaimBlock.FACING, Direction.NORTH).setValue(Adosse.ADOSSE, Adosse.AUCUN));
     }
 
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> b) {
-        b.add(ClaimBlock.FACING);
+        b.add(ClaimBlock.FACING, Adosse.ADOSSE);
+    }
+
+    @Override
+    public double[] boiteNord() {
+        return ClaimBlock.BOITE;
+    }
+
+    /** L'armoire entière : 32 px, dont 16 sous cette case. */
+    @Override
+    public double hauteur(BlockState state) {
+        return 32;
+    }
+
+    @Override
+    public double dessous(BlockState state) {
+        return 16;
     }
 
     @Override
@@ -46,7 +62,8 @@ public class ClaimBlockHaut extends Block {
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-        return HAUT[s.getValue(ClaimBlock.FACING).get2DDataValue()];
+        Direction f = s.getValue(ClaimBlock.FACING);
+        return Adosse.decaler(HAUT[f.get2DDataValue()], ClaimBlock.BOITE, f, s.getValue(Adosse.ADOSSE));
     }
 
     @Override
