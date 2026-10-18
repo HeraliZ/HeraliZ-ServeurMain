@@ -341,7 +341,7 @@ final class Ponts {
     }
 
     // ------------------------------------------------------------------ tutoriel des bases (CRac)
-    private static Method tutoEtat, tutoProgression, tutoLancer;
+    private static Method tutoEtat, tutoProgression, tutoLancer, tutoEtapes, tutoJours;
     private static boolean tutoAbsent;
 
     private static boolean tuto() {
@@ -352,6 +352,12 @@ final class Ponts {
             tutoEtat = c.getMethod("etat", ServerPlayer.class);
             tutoProgression = c.getMethod("progression", ServerPlayer.class);
             tutoLancer = c.getMethod("lancer", ServerPlayer.class);
+            try {
+                tutoEtapes = c.getMethod("etapes");
+                tutoJours = c.getMethod("joursProtection");
+            } catch (NoSuchMethodException ancien) {
+                tutoEtapes = tutoJours = null;   // CRac 1.7 : 6 étapes, 4 jours
+            }
             return true;
         } catch (Throwable t) {
             tutoAbsent = true;
@@ -370,7 +376,27 @@ final class Ponts {
         }
     }
 
-    /** {étape 1 à 6 (7 = tout est fait), fait, total} de la cabane du tutoriel ; {0, 0, 0} hors du monde des bases. */
+    /** Nombre d'étapes de la cabane du tutoriel (CRac 1.8 : 9). */
+    static int tutoEtapes() {
+        if (!tuto() || tutoEtapes == null) return 6;
+        try {
+            return (int) tutoEtapes.invoke(null);
+        } catch (Throwable t) {
+            return 6;
+        }
+    }
+
+    /** Jours de protection de la base à la fin du tutoriel (réglage de CRac). */
+    static int tutoJours() {
+        if (!tuto() || tutoJours == null) return 4;
+        try {
+            return (int) tutoJours.invoke(null);
+        } catch (Throwable t) {
+            return 4;
+        }
+    }
+
+    /** {étape 1 à N (N + 1 = tout est fait), fait, total} de la cabane du tutoriel ; {0, 0, 0} hors du monde des bases. */
     static int[] tutoProgression(ServerPlayer p) {
         if (!tuto()) return new int[]{0, 0, 0};
         try {

@@ -93,6 +93,10 @@ SANS = {"minecraft:glow_lichen", "minecraft:patch_sugar_cane"}
 ANCIENS = ["continents", "erosion", "offset", "factor", "jaggedness", "depth", "sloped_cheese"]
 
 
+# Lumière de fond du monde des bases (0 = noir comme le monde normal, 1 = plein jour partout) : assez pour voir
+# l'intérieur d'une base fermée et la nuit, sans enlever la nuit.
+LUMIERE_FOND = 0.3
+
 def lire(vanilla, chemin):
     nom = chemin.replace("/", "_") + ".json"
     if vanilla:
@@ -205,6 +209,8 @@ def generer(vanilla):
 
     dt = lire(vanilla, "dimension_type/overworld")
     dt["has_raids"] = False
+    # 18/10, choix du propriétaire : on voit quelque chose la nuit et dans les bases fermées (lumière de fond)
+    dt["ambient_light"] = LUMIERE_FOND
     ecrire("dimension_type/bases.json", dt)
 
     liste = []

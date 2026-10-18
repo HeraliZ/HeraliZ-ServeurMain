@@ -117,9 +117,9 @@ public final class BuildHud {
         caps0(g, font, Component.translatable("crac.hud.pieces").getString(), kx, kc, kcol);
     }
 
-    /** Small text after a key (not in capitals); returns its width. */
+    /** Small text after a key (not in capitals), lowered 1 unit to sit level with the key's letters; returns its width. */
     private static float caps0(GuiGraphics g, Font font, String s, float x, float cy, int argb) {
-        texte(g, font, lit(s, MINI), x, cy - 4.21F, argb);
+        texte(g, font, lit(s, MINI), x, cy - 3.21F, argb);
         return largeur(font, s, MINI);
     }
 

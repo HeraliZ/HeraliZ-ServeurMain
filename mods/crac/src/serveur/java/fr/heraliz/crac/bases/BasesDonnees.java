@@ -75,6 +75,8 @@ public final class BasesDonnees extends SafeSavedData {
         public boolean homeAuto;
         /** Bâtiment de la cabane du tutoriel (sa première fondation), -1 avant. */
         public long batiment = -1L;
+        /** Côté de la première fondation où va la deuxième (0 à 3), -1 : n'importe lequel. */
+        public int arete = -1;
         /** Homes du joueur, par nom (ordre de création). */
         public final Map<String, Home> homes = new LinkedHashMap<>();
 
@@ -87,6 +89,7 @@ public final class BasesDonnees extends SafeSavedData {
             t.putBoolean("Due", this.protectionDue);
             t.putBoolean("HomeAuto", this.homeAuto);
             t.putLong("Batiment", this.batiment);
+            t.putInt("Arete", this.arete);
             ListTag hs = new ListTag();
             this.homes.forEach((nom, h) -> hs.add(h.save(nom)));
             t.put("Homes", hs);
@@ -102,6 +105,7 @@ public final class BasesDonnees extends SafeSavedData {
             j.protectionDue = t.getBoolean("Due");
             j.homeAuto = t.getBoolean("HomeAuto");
             j.batiment = t.contains("Batiment") ? t.getLong("Batiment") : -1L;
+            j.arete = t.contains("Arete") ? t.getInt("Arete") : -1;
             ListTag hs = t.getList("Homes", Tag.TAG_COMPOUND);
             for (int i = 0; i < hs.size(); i++) {
                 CompoundTag h = hs.getCompound(i);

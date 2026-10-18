@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -21,7 +22,8 @@ public record LevelEnv(Level level) implements PlacementEnv {
         if (s.getBlock() instanceof StructureBlock) {
             return false;
         }
-        return s.isAir() || s.canBeReplaced();
+        // HeraliZ : fleurs, pousses, champignons et herbes hautes ne gênent pas une pièce : elle les remplace
+        return s.isAir() || s.canBeReplaced() || s.getBlock() instanceof BushBlock;
     }
 
     @Override

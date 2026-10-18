@@ -249,14 +249,34 @@ public final class Protections {
 
     // ---------------------------------------------------------------------------------------------- texte flottant
 
-    /** Texte « Base protégée — nouveau joueur · 3 j 12 h » au-dessus de chaque base protégée dont le tronçon est chargé. */
-    static void majTextes(MinecraftServer server) {
+    /**
+     * Texte « Base protégée — nouveau joueur · 3 j 12 h » au-dessus de chaque base protégée dont le tronçon est chargé.
+     * Un texte qui n'est plus au-dessus d'un Claim Block (base détruite, Claim Block cassé) est retiré : sans Claim
+     * Block, il n'y a plus de base.
+     */
+    public static void majTextes(MinecraftServer server) {
         ServerLevel bases = server.getLevel(MondeBases.BASES);
         if (bases == null) {
             return;
         }
         boolean panneau = BasesReglages.b(BasesReglages.PANNEAU, true);
         long now = System.currentTimeMillis();
+        List<BlockPos> ancres = new ArrayList<>();
+        for (Claim c : ClaimData.get(bases).all()) {
+            ancres.add(c.anchor());
+        }
+        for (Display.TextDisplay d : bases.getEntities(EntityType.TEXT_DISPLAY, e -> e.getPersistentData().contains(MARQUE))) {
+            boolean surUnClaim = false;
+            for (BlockPos a : ancres) {
+                if (Math.abs(a.getX() + 0.5 - d.getX()) < 1 && Math.abs(a.getZ() + 0.5 - d.getZ()) < 1) {
+                    surUnClaim = true;
+                    break;
+                }
+            }
+            if (!surUnClaim) {
+                d.discard();
+            }
+        }
         for (Claim c : new ArrayList<>(ClaimData.get(bases).all())) {
             BlockPos a = c.anchor();
             if (!bases.isLoaded(a)) {

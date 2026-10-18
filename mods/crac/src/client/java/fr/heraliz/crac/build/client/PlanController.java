@@ -272,6 +272,11 @@ public final class PlanController {
         if (!plan.ok()) {
             return Status.error(plan.result().message);
         }
+        // HeraliZ : pendant le tutoriel des bases, seulement la pièce verte qui clignote
+        String tuto = player.getAbilities().instabuild ? null : fr.heraliz.crac.bases.TutoClient.refus(key);
+        if (tuto != null) {
+            return Status.error(tuto);
+        }
         if (!player.getAbilities().instabuild) {
             if (!inReach(player.getEyePosition(), key, plan.blocks())) {
                 return Status.error("crac.build.too_far");
@@ -347,7 +352,8 @@ public final class PlanController {
                 return "crac.build.foreign_claim";
             }
         }
-        if (b != null && b.pieces.size() >= BuildClient.maxPiecesWithoutClaim()) {
+        // HeraliZ : la cabane du tutoriel des bases se bâtit avant son Claim Block (le serveur le vérifie)
+        if (b != null && b.pieces.size() >= BuildClient.maxPiecesWithoutClaim() && !fr.heraliz.crac.bases.TutoClient.actif()) {
             return "crac.build.claim_first";
         }
         return null;

@@ -91,6 +91,8 @@ public final class ClaimBlockLogique {
     public static void retire(ServerLevel sl, BlockPos pos) {
         if (ClaimManager.getByAnchor(sl, pos) != null) {
             ClaimManager.removeByAnchor(sl, pos);
+            // HeraliZ : plus de Claim Block, plus de texte « Base protégée » au-dessus
+            fr.heraliz.crac.bases.Protections.majTextes(sl.getServer());
             C2SRequestNearbyClaimsTraitement.pushAll(sl);
         }
     }

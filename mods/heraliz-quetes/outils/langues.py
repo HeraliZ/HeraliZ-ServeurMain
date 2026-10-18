@@ -276,40 +276,84 @@ TEXTES = {
                                 "Слушай Варгу: отправка в мир баз"),
     "heraliz_quetes.tuto.retour": ("Retourne dans le monde des bases finir ta cabane", "Go back to the bases world to finish your cabin",
                                    "Вернись в мир баз и закончи хижину"),
-    "heraliz_quetes.tuto.etape.1": ("Poser ta première fondation", "Place your first foundation", "Поставить первый фундамент"),
-    "heraliz_quetes.tuto.etape.2": ("Poser le Claim Block sur la fondation", "Place the Claim Block on the foundation", "Поставить Claim Block на фундамент"),
-    "heraliz_quetes.tuto.etape.3": ("Poser la deuxième fondation", "Place the second foundation", "Поставить второй фундамент"),
-    "heraliz_quetes.tuto.etape.4": ("Poser 5 murs, la porte et 2 planchers", "Place 5 walls, the door and 2 floors",
-                                    "Поставить 5 стен, дверь и 2 перекрытия"),
-    "heraliz_quetes.tuto.etape.5": ("Passer la cabane en bois", "Upgrade the cabin to wood", "Улучшить хижину до дерева"),
-    "heraliz_quetes.tuto.etape.6": ("Mettre des planches dans le Claim Block", "Put planks in the Claim Block", "Положить доски в Claim Block"),
-    "heraliz_quetes.tuto.radio.1": ("Ici Varga. Trouve un coin plat qui te plaît et pose ta première fondation. Si tu croises quelqu'un, "
-                                    "t'inquiète pas : personne ne peut te blesser tant que ta base n'est pas construite.",
-                                    "Varga here. Find a flat spot you like and place your first foundation. If you run into someone, "
-                                    "don't worry: nobody can hurt you until your base is built.",
-                                    "Говорит Варга. Найди ровное место по душе и поставь первый фундамент. Если кого-то встретишь — "
-                                    "не бойся: пока база не построена, никто не может тебя ранить."),
-    "heraliz_quetes.tuto.radio.2": ("Bien. Pose le Claim Block sur cette fondation : ce terrain devient le tien.",
-                                    "Good. Place the Claim Block on that foundation: this ground becomes yours.",
-                                    "Хорошо. Поставь Claim Block на этот фундамент: эта земля станет твоей."),
-    "heraliz_quetes.tuto.radio.3": ("Maintenant, une deuxième fondation, collée à la première.",
-                                    "Now a second foundation, right next to the first one.",
-                                    "Теперь второй фундамент, вплотную к первому."),
-    "heraliz_quetes.tuto.radio.4": ("Monte les murs : 5 murs, la porte, et 2 planchers pour le toit.",
-                                    "Put the walls up: 5 walls, the door, and 2 floors for the roof.",
-                                    "Ставь стены: 5 стен, дверь и 2 перекрытия на крышу."),
-    "heraliz_quetes.tuto.radio.5": ("Marteau en main : passe toute la cabane en bois.",
-                                    "Hammer in hand: upgrade the whole cabin to wood.",
-                                    "Молоток в руку: улучши всю хижину до дерева."),
-    "heraliz_quetes.tuto.radio.6": ("Mets des planches dans le Claim Block, sinon ta base s'use.",
-                                    "Put planks in the Claim Block, or your base will decay.",
-                                    "Положи доски в Claim Block, иначе база начнёт разрушаться."),
-    "heraliz_quetes.tuto.radio.fin": ("Voilà, ta base est posée. Je te laisse te débrouiller. Si tu veux des repères et des missions, "
-                                      "reviens me parler au spawn. Du spawn, /home te ramène ici. Rompez.",
-                                      "There, your base is up. I'll let you manage on your own. If you want guidance and missions, "
-                                      "come and talk to me at spawn. From spawn, /home brings you back here. Dismissed.",
-                                      "Вот, база готова. Дальше справляйся сам. Нужны ориентиры и задания — приходи ко мне на спавн. "
-                                      "Со спавна /home вернёт тебя сюда. Вольно."),
+    "heraliz_quetes.tuto.etape.1": ("Prendre le plan de construction en main", "Take the building plan in hand", "Взять план постройки в руку"),
+    "heraliz_quetes.tuto.etape.2": ("Poser ta première fondation", "Place your first foundation", "Поставить первый фундамент"),
+    "heraliz_quetes.tuto.etape.3": ("Poser la deuxième fondation (en vert)", "Place the second foundation (in green)",
+                                    "Поставить второй фундамент (зелёный)"),
+    "heraliz_quetes.tuto.etape.4": ("Poser les 5 murs et la porte", "Place the 5 walls and the door", "Поставить 5 стен и дверь"),
+    "heraliz_quetes.tuto.etape.5": ("Poser les 2 planchers du toit", "Place the 2 roof floors", "Поставить 2 перекрытия крыши"),
+    "heraliz_quetes.tuto.etape.6": ("Passer la cabane en bois (marteau)", "Upgrade the cabin to wood (hammer)",
+                                    "Улучшить хижину до дерева (молоток)"),
+    "heraliz_quetes.tuto.etape.7": ("Poser le Claim Block dans la cabane", "Place the Claim Block in the cabin", "Поставить Claim Block в хижине"),
+    "heraliz_quetes.tuto.etape.8": ("Mettre des planches dans le Claim Block", "Put planks in the Claim Block", "Положить доски в Claim Block"),
+    "heraliz_quetes.tuto.etape.9": ("Poser la caisse en métal", "Place the metal crate", "Поставить металлический ящик"),
+    "heraliz_quetes.tuto.radio.1": ("Ici Varga. On va te bâtir un abri. Prends le plan de construction : la case qui clignote en vert "
+                                    "dans ta barre d'objets. Et pas de stress : personne ne peut te blesser tant que ta base n'est pas finie.",
+                                    "Varga here. Let's build you a shelter. Take the building plan: the slot blinking green in your "
+                                    "hotbar. And relax: nobody can hurt you until your base is finished.",
+                                    "Говорит Варга. Построим тебе укрытие. Возьми план постройки: ячейка, мигающая зелёным на панели "
+                                    "предметов. И не волнуйся: пока база не готова, никто не может тебя ранить."),
+    "heraliz_quetes.tuto.radio.2": ("Bien. Vise un coin plat : la fondation apparaît devant toi. Clic gauche pour la poser, R pour la "
+                                    "tourner. Si tu as une autre pièce, maintiens le clic droit : dans la roue, la Fondation clignote.",
+                                    "Good. Aim at a flat spot: the foundation shows up in front of you. Left click to place it, R to "
+                                    "turn it. If you have another piece, hold right click: the Foundation blinks in the wheel.",
+                                    "Хорошо. Наведись на ровное место: фундамент появится перед тобой. Левый клик — поставить, R — "
+                                    "повернуть. Если выбрана другая деталь, зажми правый клик: в колесе мигает Фундамент."),
+    "heraliz_quetes.tuto.radio.3": ("Parfait. La deuxième fondation clignote en vert, collée à la première. Vise-la et clic gauche : "
+                                    "c'est la seule place permise.",
+                                    "Perfect. The second foundation blinks green, right next to the first one. Aim at it and left "
+                                    "click: it's the only spot allowed.",
+                                    "Отлично. Второй фундамент мигает зелёным рядом с первым. Наведись на него и нажми левый клик: "
+                                    "другое место не подойдёт."),
+    "heraliz_quetes.tuto.radio.4": ("Monte les murs : vise chaque pièce verte qui clignote et clic gauche. Pour changer de pièce, "
+                                    "maintiens le clic droit et choisis celle qui clignote dans la roue : Mur, ou Porte pour l'entrée.",
+                                    "Put the walls up: aim at each blinking green piece and left click. To change piece, hold right "
+                                    "click and pick the one blinking in the wheel: Wall, or Doorway for the entrance.",
+                                    "Ставь стены: наводись на каждую мигающую зелёную деталь и жми левый клик. Чтобы сменить деталь, "
+                                    "зажми правый клик и выбери ту, что мигает в колесе: Стена или Дверь для входа."),
+    "heraliz_quetes.tuto.radio.5": ("Il faut un toit. Dans la roue (clic droit maintenu), prends Plancher, puis pose les 2 planchers "
+                                    "verts au-dessus des murs.",
+                                    "You need a roof. In the wheel (hold right click), pick Floor, then place the 2 green floors on "
+                                    "top of the walls.",
+                                    "Нужна крыша. В колесе (зажатый правый клик) выбери Перекрытие и поставь 2 зелёных перекрытия "
+                                    "поверх стен."),
+    "heraliz_quetes.tuto.radio.6": ("Pour l'instant, c'est de la brindille : ça ne tient rien. Prends le marteau (il clignote), vise "
+                                    "une pièce entourée d'orange, maintiens le clic droit et choisis Bois. Fais-le sur chaque pièce.",
+                                    "Right now it's just twigs: it won't hold anything. Take the hammer (it blinks), aim at a piece "
+                                    "outlined in orange, hold right click and pick Wood. Do it on every piece.",
+                                    "Пока это просто хворост: ничего не выдержит. Возьми молоток (он мигает), наведись на деталь в "
+                                    "оранжевой рамке, зажми правый клик и выбери Дерево. Сделай так с каждой деталью."),
+    "heraliz_quetes.tuto.radio.7": ("Solide. Maintenant le Claim Block : prends-le dans ta barre et pose-le sur la case verte, dans la "
+                                    "cabane. Ce terrain devient le tien.",
+                                    "Solid. Now the Claim Block: take it from your hotbar and place it on the green spot, inside the "
+                                    "cabin. This ground becomes yours.",
+                                    "Крепко. Теперь Claim Block: возьми его с панели и поставь на зелёную клетку внутри хижины. Эта "
+                                    "земля станет твоей."),
+    "heraliz_quetes.tuto.radio.8": ("Une base s'use si personne ne l'entretient. Clic droit sur le Claim Block et mets-y des planches de "
+                                    "chêne : le compteur à droite te dit combien.",
+                                    "A base decays if nobody maintains it. Right click the Claim Block and put oak planks in it: the "
+                                    "counter on the right tells you how many.",
+                                    "База разрушается, если за ней не следить. Нажми правой кнопкой на Claim Block и положи туда "
+                                    "дубовые доски: счётчик справа покажет, сколько нужно."),
+    "heraliz_quetes.tuto.radio.9": ("Dernière chose : pose la caisse en métal sur la case verte et range tes affaires dedans. Et ferme "
+                                    "bien la porte derrière toi : une porte ouverte, c'est une invitation.",
+                                    "One last thing: place the metal crate on the green spot and store your gear in it. And always "
+                                    "close the door behind you: an open door is an invitation.",
+                                    "Последнее: поставь металлический ящик на зелёную клетку и сложи туда вещи. И всегда закрывай "
+                                    "за собой дверь: открытая дверь — это приглашение."),
+    "heraliz_quetes.tuto.radio.fin": ("Beau travail. Regarde-la, ta base. Elle est à l'abri des raids pendant %s jours. Ensuite, n'importe "
+                                      "qui pourra venir la piller : améliore-la en pierre puis en métal, et garde des planches dans le "
+                                      "Claim Block.",
+                                      "Nice work. Look at it, your base. It's safe from raids for %s days. After that, anyone can come "
+                                      "and loot it: upgrade it to stone then metal, and keep planks in the Claim Block.",
+                                      "Хорошая работа. Посмотри на свою базу. Она защищена от рейдов на %s дн. Потом любой сможет её "
+                                      "разграбить: улучшай её до камня, затем до металла, и держи доски в Claim Block."),
+    "heraliz_quetes.tuto.radio.fin2": ("Je te laisse te débrouiller. Du spawn, /home te ramène ici ; depuis ta base, /spawn te ramène au "
+                                       "spawn. Quand tu voudras des missions, viens me voir au spawn. Rompez.",
+                                       "I'll let you manage on your own. From spawn, /home brings you back here; from your base, /spawn "
+                                       "takes you to spawn. When you want missions, come and see me at spawn. Dismissed.",
+                                       "Дальше справляйся сам. Со спавна /home вернёт тебя сюда, а с базы /spawn — на спавн. Когда "
+                                       "захочешь заданий, приходи ко мне на спавн. Вольно."),
     "heraliz_quetes.tuto.radio_entete": ("Radio · 7e rég.", "Radio · 7th Reg.", "Рация · 7-й полк"),
     "heraliz_quetes.tuto.radio_etape": ("Étape %s/%s", "Step %s/%s", "Этап %s/%s"),
     "heraliz_quetes.tuto.radio_fini": ("Terminé", "Done", "Готово"),

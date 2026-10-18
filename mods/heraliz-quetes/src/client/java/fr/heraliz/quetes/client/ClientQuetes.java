@@ -35,6 +35,7 @@ public final class ClientQuetes implements Partie {
             e.registerAboveAll("radio", RadioVarga::rendu);
         });
         MinecraftForge.EVENT_BUS.addListener(ClientQuetes::tick);
+        MinecraftForge.EVENT_BUS.addListener(RadioVarga::cacherChat);
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             HudQuetes.vider();
             RadioVarga.vider();

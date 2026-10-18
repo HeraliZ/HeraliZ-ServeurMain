@@ -41,6 +41,11 @@ public class PlanRadialScreen extends RadialMenuScreen {
     }
 
     @Override
+    protected boolean conseille(int i) {
+        return KINDS[i].ordinal() == fr.heraliz.crac.bases.TutoClient.roue();
+    }
+
+    @Override
     protected Look look(int i) {
         return this.active(i) ? Look.CURRENT : this.affordable(KINDS[i]) ? Look.NORMAL : Look.DIMMED;
     }

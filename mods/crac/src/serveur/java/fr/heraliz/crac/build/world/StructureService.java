@@ -313,7 +313,8 @@ public final class StructureService {
         }
         // protectOutsideClaims: outside a claim only the first foundation (the Claim Block's seat) may be placed
         boolean limited = Config.protectOutsideClaims.get() || b != null && b.pieces.size() >= BuildConfig.maxPiecesWithoutClaim.get();
-        if (b != null && limited && !creative) {
+        // HeraliZ : la cabane du tutoriel des bases se bâtit avant son Claim Block
+        if (b != null && limited && !creative && !fr.heraliz.crac.bases.Tutoriel.sansClaimPermis(player, b)) {
             return "crac.build.claim_first";
         }
         return null;
@@ -348,7 +349,7 @@ public final class StructureService {
             return Outcome.fail(deny);
         }
         // HeraliZ : pendant le tutoriel des bases, seulement les pièces de l'étape, contre la cabane
-        Component tuto = fr.heraliz.crac.bases.Tutoriel.refusPiece(player, key.kind(), plan.buildingId());
+        Component tuto = fr.heraliz.crac.bases.Tutoriel.refusPiece(player, key, plan.buildingId());
         if (tuto != null) {
             return Outcome.fail(tuto);
         }

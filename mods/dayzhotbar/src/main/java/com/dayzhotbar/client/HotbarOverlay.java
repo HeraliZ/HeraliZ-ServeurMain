@@ -25,7 +25,7 @@ import org.joml.Matrix4f;
  * the selected slot, spattered with blood. Sits where the vanilla bar was (its top edge at
  * height - 22), so the hearts, food and XP bar keep their place.
  */
-final class HotbarOverlay implements IGuiOverlay {
+public final class HotbarOverlay implements IGuiOverlay {
     private static final int SLOT = 20;
     private static final int BOTTOM_MARGIN = 2;
     private static final int OFFHAND_GAP = 10;
@@ -40,6 +40,10 @@ final class HotbarOverlay implements IGuiOverlay {
     private static final long FADE_MS = 700;
     private static final float IDLE_LEVEL = 0.45f;
 
+    private static final int HINT_GREEN = 0x55E07A;
+    /** Slot (0-8) another mod asks to point out, -1 for none (CRac's bases tutorial: "take the plan in hand"). */
+    private static volatile int hinted = -1;
+
     private final ChalkAtlas chalk = new ChalkAtlas();
     private boolean frameRequested;
     private float shownSlot = Float.NaN;
@@ -48,6 +52,14 @@ final class HotbarOverlay implements IGuiOverlay {
     private long lastActivityMs;
     private final Item[] lastItems = new Item[10];
     private final int[] lastCounts = new int[10];
+
+    /**
+     * Points a hotbar slot out with a soft green glow that pulses, until called again with -1. Called by reflection
+     * (CRac's bases tutorial): keep its name and signature.
+     */
+    public static void surligner(int slot) {
+        hinted = slot >= 0 && slot < 9 ? slot : -1;
+    }
 
     /** Called when the vanilla hotbar was cancelled in its place this frame. */
     void requestFrame() {
@@ -152,6 +164,20 @@ final class HotbarOverlay implements IGuiOverlay {
             g.flush();
         }
 
+        // Slot pointed out by another mod: pulsing green glow and frame
+        int hint = hinted;
+        if (hint >= 0) {
+            float pulse = 0.5f + 0.5f * (float) Math.sin(now / 160.0);
+            int x = left + hint * step;
+            p.gradient(x + 1, top + 1, x + SLOT - 1, bottom - 1, argb(HINT_GREEN, 0.10f + 0.12f * pulse), argb(HINT_GREEN, 0.28f + 0.22f * pulse));
+            int edge = argb(HINT_GREEN, 0.55f + 0.45f * pulse);
+            p.box(x, top, x + SLOT, top + 1, edge);
+            p.box(x, bottom - 1, x + SLOT, bottom, edge);
+            p.box(x, top, x + 1, bottom, edge);
+            p.box(x + SLOT - 1, top, x + SLOT, bottom, edge);
+            g.flush();
+        }
+
         // Items, with a small count in the bottom corner and the slot number in the top one
         Labels labels = new Labels(g, mc.font, scale);
         int seed = 1;
@@ -216,7 +242,7 @@ final class HotbarOverlay implements IGuiOverlay {
 
     /** 1 while the hotbar is in use, then fades down to IDLE_LEVEL. Items stay fully visible. */
     private float fade(Minecraft mc, Player player, Inventory inv, long now) {
-        boolean active = mc.screen != null || inv.selected != lastSelected;
+        boolean active = mc.screen != null || inv.selected != lastSelected || hinted >= 0;
         for (int i = 0; i < 10; i++) {
             ItemStack stack = i < 9 ? inv.items.get(i) : player.getOffhandItem();
             // Item and count only: a gun's ammo count in its NBT changing while firing is not activity.

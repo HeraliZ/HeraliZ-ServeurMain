@@ -69,6 +69,12 @@ public class HammerRadialScreen extends RadialMenuScreen {
     }
 
     @Override
+    protected boolean conseille(int i) {
+        return fr.heraliz.crac.bases.TutoClient.bois() && this.entries.get(i) == Tier.WOOD.ordinal()
+            && this.target.tier.ordinal() < Tier.WOOD.ordinal();
+    }
+
+    @Override
     protected Look look(int i) {
         int entry = this.entries.get(i);
         if (entry == DEMOLISH) {

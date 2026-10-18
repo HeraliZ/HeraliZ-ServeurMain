@@ -75,6 +75,11 @@ public abstract class RadialMenuScreen extends EcranCanevas {
     /** Draws entry {@code i}: icon box top at y - 17.33, centred on x; {@code alpha} 0..1. */
     protected abstract void drawEntry(GuiGraphics g, int i, float x, float y, boolean hover, float alpha);
 
+    /** Le choix que le tutoriel des bases demande (HeraliZ) : il clignote en vert. */
+    protected boolean conseille(int i) {
+        return false;
+    }
+
     protected abstract void drawHub(GuiGraphics g, float cx, float cy);
 
     /** The line above the wheel. */
@@ -154,6 +159,13 @@ public abstract class RadialMenuScreen extends EcranCanevas {
                     case DANGER -> a(ROUGE, 115);
                     default -> a(BLANC, 31);
                 };
+            }
+            if (!hov && this.conseille(i)) {
+                // HeraliZ : choix demandé par le tutoriel, vert qui pulse
+                float k = 0.5F + 0.5F * (float) Math.sin(now / 1.6e8);
+                fill = a(0x1E5A32, 150 + 60 * k);
+                edge = a(0x55E07A, 150 + 105 * k);
+                t = 2 * this.px;
             }
             secteur(g, cx, cy, R_IN + pop, R_OUT + pop, a0, a1, fill);
             contourSecteur(g, cx, cy, R_IN + pop, R_OUT + pop, a0, a1, t, edge);

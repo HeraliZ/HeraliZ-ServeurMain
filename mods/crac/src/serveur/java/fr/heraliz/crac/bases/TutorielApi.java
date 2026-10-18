@@ -28,12 +28,22 @@ public final class TutorielApi {
     }
 
     /**
-     * Étape de la cabane en cours : {étape (1 à 6, 7 = tout est fait), fait, total} ; {0, 0, 0} hors du monde des bases
-     * ou avant l'arrivée. 1 : un coin plat ; 2 : les fondations ; 3 : murs, porte, planchers ; 4 : le Claim Block ;
-     * 5 : tout en bois ; 6 : l'entretien.
+     * Étape de la cabane en cours : {étape (1 à 9, 10 = tout est fait), fait, total} ; {0, 0, 0} hors du monde des bases
+     * ou avant l'arrivée. 1 : prendre le plan ; 2 : la 1re fondation ; 3 : la 2e ; 4 : les murs et la porte ; 5 : le toit ;
+     * 6 : tout en bois ; 7 : le Claim Block ; 8 : l'entretien ; 9 : la caisse en métal.
      */
     public static int[] progression(ServerPlayer p) {
         return Tutoriel.progression(p);
+    }
+
+    /** Nombre d'étapes de la cabane (9). */
+    public static int etapes() {
+        return Tutoriel.ETAPES;
+    }
+
+    /** Jours de protection de la première base contre les raids ({@code [protection] jours}, 4 aujourd'hui), arrondis. */
+    public static int joursProtection() {
+        return (int) Math.round(BasesReglages.d(BasesReglages.PROTECTION_JOURS, 4.0));
     }
 
     /** Lance le tutoriel (titres, kit, envoi dans le monde des bases) d'un joueur qui ne l'a pas fait ; false sinon. */

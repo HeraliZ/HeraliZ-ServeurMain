@@ -89,6 +89,11 @@ public final class PartieClient implements Partie {
         } else if (paquet instanceof S2CProteges p) {
             // monde des bases (1.5.0) : joueurs entourés de vert
             fr.heraliz.crac.bases.ContourProtege.proteges(p.joueurs());
+        } else if (paquet instanceof S2CTuto p) {
+            // tutoriel des bases (1.8.0) : pièces à poser, objets et choix à montrer
+            fr.heraliz.crac.bases.TutoClient.recevoir(p);
+        } else if (paquet instanceof S2CTutoFin p) {
+            fr.heraliz.crac.bases.TutoClient.fin(p);
         }
     }
 }

@@ -12,7 +12,9 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.fml.ModList;
 
 import java.util.List;
@@ -20,7 +22,7 @@ import java.util.List;
 /**
  * La radio du Commandant Varga, en bas à gauche de l'écran (maquette A « radio carrée », validée le 18/10) : son
  * portrait (sa vraie apparence de PNJ : skin CaraCrea, sinon son skin), son nom, la consigne qui s'écrit lettre par
- * lettre, et l'avancée du tutoriel des bases (6 petites barres, « ÉTAPE n/6 »). Le serveur envoie chaque consigne
+ * lettre, et l'avancée du tutoriel des bases (une petite barre par étape, « ÉTAPE n/9 »). Le serveur envoie chaque consigne
  * ({@link Reseau.Radio}) ; la consigne reste à l'écran tant que l'étape n'est pas faite (la suivante la remplace) ; seul
  * le mot de la fin s'efface tout seul, quelques secondes après.
  * Dessiné dans un repère de 640 × 360 (même taille à l'écran quelle que soit l'échelle de l'interface).
@@ -52,6 +54,18 @@ public final class RadioVarga {
         lettresJouees = 0;
         skin = null;
         SonsUi.ouvrir(0.35F);
+    }
+
+    /**
+     * Pendant le tutoriel (une consigne à l'écran), le chat est caché : ses messages couvraient la radio. Il revient
+     * dès qu'on l'ouvre (touche T) et à la fin du tutoriel.
+     */
+    static void cacherChat(RenderGuiOverlayEvent.Pre e) {
+        Reseau.Radio r = radio;
+        if (r != null && r.etape() > 0 && e.getOverlay() == VanillaGuiOverlay.CHAT_PANEL.type()
+                && !(Minecraft.getInstance().screen instanceof ChatScreen)) {
+            e.setCanceled(true);
+        }
     }
 
     static void vider() {
@@ -143,7 +157,7 @@ public final class RadioVarga {
             g.fill((int) finX + 1, cy, (int) finX + 2, cy + 6, Ui.argb(Ui.TEXT, a));
         }
 
-        // avancée : 6 barres et « ÉTAPE n/6 » (« TERMINÉ » pour le mot de la fin)
+        // avancée : une barre par étape et « ÉTAPE n/9 » (« TERMINÉ » pour le mot de la fin)
         int total = Math.max(1, r.total());
         int bx = tx, by = y + hauteur - 7;
         for (int i = 0; i < total; i++) {

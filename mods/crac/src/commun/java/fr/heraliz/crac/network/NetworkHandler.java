@@ -32,7 +32,7 @@ public final class NetworkHandler {
 
     public static final fr.heraliz.crac.pont.Crochet<Object> RECEPTION_CLIENT = new fr.heraliz.crac.pont.Crochet<>();
 
-    private static final String PROTOCOL = "18";
+    private static final String PROTOCOL = "19";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation("crac", "main"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
     private NetworkHandler() {
@@ -67,6 +67,9 @@ public final class NetworkHandler {
         // monde des bases (1.5.0) : carrières, joueurs protégés « nouveau joueur »
         toClient(id++, S2CCarrieres.class, S2CCarrieres::encode, S2CCarrieres::decode, S2CCarrieres::handle);
         toClient(id++, S2CProteges.class, S2CProteges::encode, S2CProteges::decode, S2CProteges::handle);
+        // tutoriel des bases guidé (1.8.0) : pièces à poser, fin en cinéma
+        toClient(id++, S2CTuto.class, S2CTuto::encode, S2CTuto::decode, S2CTuto::handle);
+        toClient(id++, S2CTutoFin.class, S2CTutoFin::encode, S2CTutoFin::decode, S2CTutoFin::handle);
     }
 
     private static <M> void toServer(

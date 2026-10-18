@@ -32,13 +32,15 @@ import java.util.UUID;
 final class Accueil {
     /** Le PNJ qui accueille les nouveaux et guide le tutoriel des bases. */
     static final String PNJ = "varga";
-    /** Étapes de la cabane (CRac, Tutoriel.ETAPES). */
-    private static final int ETAPES = 6;
+    /** Secondes entre les deux mots de la fin de Varga (le premier pendant le tour de la base par la caméra). */
+    private static final int FIN_ECART = 16;
 
     private record Etat(int tuto, int etape, boolean intro) {
     }
 
     private static final Map<UUID, Etat> DERNIER = new HashMap<>();
+    /** Secondes avant le second mot de la fin. */
+    private static final Map<UUID, Integer> FIN = new HashMap<>();
     /** Apparence de l'entité Varga vue en dernier (si son fichier n'en a pas : posée par /pnj apparence varga moi). */
     private static CompoundTag apparenceVue;
 
@@ -47,6 +49,7 @@ final class Accueil {
 
     static void oublier(UUID u) {
         DERNIER.remove(u);
+        FIN.remove(u);
     }
 
     /** Le joueur doit d'abord faire le tutoriel des bases : Varga ne propose que « Faire ma base ». Jamais en créatif. */
@@ -69,6 +72,17 @@ final class Accueil {
     /** Chaque seconde (ServeurQuetes) : suivi à jour pendant l'arrivée et le tutoriel, radio quand l'étape change. */
     static void seconde(ServerPlayer p) {
         int tuto = Ponts.tutoEtat(p);
+        int etapes = Ponts.tutoEtapes();
+        Integer fin = FIN.get(p.getUUID());
+        if (fin != null) {
+            if (fin <= 1) {
+                FIN.remove(p.getUUID());
+                radio(p, 0, "heraliz_quetes.tuto.radio.fin2");
+                Moteur.notif(p, Texte.cle("heraliz_quetes.tuto.notif_fin"), 0x5FD08A);
+            } else {
+                FIN.put(p.getUUID(), fin - 1);
+            }
+        }
         if (tuto < 0) {
             DERNIER.remove(p.getUUID());
             return;
@@ -80,24 +94,25 @@ final class Accueil {
         if (guide || avant != null && (avant.intro() || avant.tuto() == 1 || avant.tuto() == 2)) {
             Moteur.suiviBientot(p);   // distance et compteurs à jour, ou retour au suivi des quêtes
         }
-        if (tuto == 2 && etape >= 1 && etape <= ETAPES && (avant == null || avant.tuto() != 2 || avant.etape() != etape)) {
-            radio(p, etape);
+        if (tuto == 2 && etape >= 1 && etape <= etapes && (avant == null || avant.tuto() != 2 || avant.etape() != etape)) {
+            radio(p, etape, "heraliz_quetes.tuto.radio." + etape);
         } else if (tuto == 3 && avant != null && avant.tuto() == 2) {
-            radio(p, 0);
-            Moteur.notif(p, Texte.cle("heraliz_quetes.tuto.notif_fin"), 0x5FD08A);
+            // le premier mot de la fin pendant que la caméra fait le tour de la base (CRac), le second après
+            radio(p, 0, "heraliz_quetes.tuto.radio.fin", Texte.brut(Ponts.tutoJours()));
+            FIN.put(p.getUUID(), FIN_ECART);
         } else if (tuto != 2 && avant != null && avant.tuto() == 2) {
             // tutoriel arrêté autrement (staff : /tuto finir, rejouer) : la radio se range
-            Reseau.envoyer(p, new Reseau.Radio(Texte.VIDE, new CompoundTag(), "", false, 0, ETAPES, Texte.VIDE));
+            Reseau.envoyer(p, new Reseau.Radio(Texte.VIDE, new CompoundTag(), "", false, 0, etapes, Texte.VIDE));
         }
     }
 
-    /** Message radio de Varga : la consigne de l'étape (1 à 6), ou le mot de la fin (0). */
-    private static void radio(ServerPlayer p, int etape) {
+    /** Message radio de Varga : la consigne de l'étape (1 à 9), ou un mot de la fin (0). */
+    private static void radio(ServerPlayer p, int etape, String cle, Texte... args) {
         Defs.Pnj def = Catalogue.pnj(PNJ);
         Texte nom = def != null && !def.nom.vide() ? def.nom : Texte.cle("heraliz_quetes.tuto.varga_nom");
         CompoundTag app = def != null && def.apparence != null ? def.apparence : apparenceVue != null ? apparenceVue : new CompoundTag();
-        Texte texte = Texte.cle(etape == 0 ? "heraliz_quetes.tuto.radio.fin" : "heraliz_quetes.tuto.radio." + etape);
-        Reseau.envoyer(p, new Reseau.Radio(nom, app, def == null ? "" : def.skin, def != null && def.brasFins, etape, ETAPES, texte));
+        Reseau.envoyer(p, new Reseau.Radio(nom, app, def == null ? "" : def.skin, def != null && def.brasFins, etape,
+                Ponts.tutoEtapes(), Texte.cle(cle, args)));
     }
 
     /** Le suivi à droite pendant l'arrivée et le tutoriel ; null le reste du temps (la quête suivie, comme avant). */
@@ -122,10 +137,11 @@ final class Accueil {
             return new Reseau.Suivi(entete, titre, List.of(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.retour"), 0, 0, -1, false, 1)));
         }
         List<Reseau.SLigne> lignes = new ArrayList<>();
-        int e = Math.min(pr[0], ETAPES);
+        int etapes = Ponts.tutoEtapes();
+        int e = Math.min(pr[0], etapes);
         // l'étape d'avant (faite), puis celle en cours
         if (e > 1) lignes.add(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.etape." + (e - 1)), 0, 0, -1, false, 2));
-        lignes.add(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.etape." + e), pr[1], pr[2], -1, false, pr[0] > ETAPES ? 2 : 1));
+        lignes.add(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.etape." + e), pr[1], pr[2], -1, false, pr[0] > etapes ? 2 : 1));
         return new Reseau.Suivi(entete, titre, lignes);
     }
 
