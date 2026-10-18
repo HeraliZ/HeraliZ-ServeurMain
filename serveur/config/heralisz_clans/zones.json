@@ -1,90 +1,119 @@
 [
   {
+    "id": "valmont",
+    "nom": "Valmont",
+    "x": 105,
+    "z": 281,
+    "rayon": 260,
+    "valeur": 2,
+    "drapeau": null
+  },
+  {
     "id": "tcherno",
     "nom": "Tcherno",
-    "x": 261,
-    "z": 1483,
-    "rayon": 400,
+    "x": 31,
+    "z": 1094,
+    "rayon": 230,
+    "valeur": 2,
     "drapeau": null
   },
   {
-    "id": "novodar",
-    "nom": "Novodar",
-    "x": -150,
-    "z": -700,
-    "rayon": 250,
-    "drapeau": null
-  },
-  {
-    "id": "lesnoi",
-    "nom": "Lesnoi",
-    "x": -850,
-    "z": 450,
-    "rayon": 140,
-    "drapeau": null
-  },
-  {
-    "id": "krestovo",
-    "nom": "Krestovo",
-    "x": 850,
-    "z": 620,
+    "id": "marbois",
+    "nom": "Marbois",
+    "x": -447,
+    "z": 1114,
     "rayon": 150,
+    "valeur": 2,
     "drapeau": null
   },
   {
-    "id": "zalivka",
-    "nom": "Zalivka",
-    "x": 1260,
-    "z": 1120,
+    "id": "belcourt",
+    "nom": "Belcourt",
+    "x": -669,
+    "z": -165,
+    "rayon": 160,
+    "valeur": 2,
+    "drapeau": null
+  },
+  {
+    "id": "port",
+    "nom": "Port-Margot",
+    "x": 1138,
+    "z": 383,
+    "rayon": 160,
+    "valeur": 2,
+    "drapeau": null
+  },
+  {
+    "id": "mirage",
+    "nom": "Mirage",
+    "x": -1060,
+    "z": 113,
+    "rayon": 180,
+    "valeur": 2,
+    "drapeau": null
+  },
+  {
+    "id": "clairval",
+    "nom": "Clairval",
+    "x": 134,
+    "z": -781,
+    "rayon": 160,
+    "valeur": 2,
+    "drapeau": null
+  },
+  {
+    "id": "gaz",
+    "nom": "Gaz",
+    "x": 932,
+    "z": -61,
+    "rayon": 120,
+    "valeur": 2,
+    "drapeau": null
+  },
+  {
+    "id": "aerodrome",
+    "nom": "Aérodrome",
+    "x": -767,
+    "z": -723,
+    "rayon": 270,
+    "valeur": 5,
+    "drapeau": null
+  },
+  {
+    "id": "silo",
+    "nom": "Silo",
+    "x": 732,
+    "z": 512,
+    "rayon": 180,
+    "valeur": 5,
+    "drapeau": null
+  },
+  {
+    "id": "prison",
+    "nom": "Prison",
+    "x": 725,
+    "z": 942,
     "rayon": 140,
+    "valeur": 4,
     "drapeau": null
   },
   {
-    "id": "nagorny",
-    "nom": "Nagorny",
-    "x": -620,
-    "z": -250,
+    "id": "arctique",
+    "nom": "Arctique",
+    "x": -422,
+    "z": -1264,
     "rayon": 130,
+    "valeur": 5,
     "drapeau": null
   },
   {
-    "id": "vostok",
-    "nom": "Vostok",
-    "x": 1320,
-    "z": -150,
-    "rayon": 130,
-    "drapeau": null
-  },
-  {
-    "id": "pristan",
-    "nom": "Pristan",
-    "x": 1850,
-    "z": 250,
+    "id": "radio",
+    "nom": "Radio",
+    "x": 956,
+    "z": -361,
     "rayon": 170,
-    "drapeau": null
-  },
-  {
-    "id": "pustovo",
-    "nom": "Pustovo",
-    "x": 870,
-    "z": -660,
-    "rayon": 140,
-    "drapeau": null
-  },
-  {
-    "id": "rudnik",
-    "nom": "Rudnik",
-    "x": -1950,
-    "z": -180,
-    "rayon": 130,
-    "drapeau": null
-  },
-  {
-    "id": "gorny",
-    "nom": "Gorny",
-    "x": -120,
-    "z": -1700,
-    "rayon": 100,
+    "valeur": 5,
     "drapeau": null
   },
   {

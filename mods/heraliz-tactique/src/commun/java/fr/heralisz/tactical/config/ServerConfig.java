@@ -176,7 +176,7 @@ public class ServerConfig {
             "Dégâts du coup puissant (clic droit) : ceux du coup rapide multipliés par cette valeur (1,5 : 9,75 dégâts).")
          .defineInRange("multiplicateur_lourd", CoupsCouteau.DEFAUT_MULTIPLICATEUR_LOURD, 1.0, 10.0);
       COUTEAUX_CADENCE_RAPIDE = builder.comment(
-            "Ticks (20 par seconde) avant le coup suivant, après un coup rapide (9 : 0,45 s, comme la Dague tactique).")
+            "Ticks (20 par seconde) avant le coup suivant, après un coup rapide (14 : 0,7 s ; la Dague tactique en a 9).")
          .defineInRange("cadence_rapide", CoupsCouteau.DEFAUT_CADENCE_RAPIDE, CoupsCouteau.CADENCE_MIN, 200);
       COUTEAUX_CADENCE_LOURD = builder.comment(
             "Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique). M9, papillon et",

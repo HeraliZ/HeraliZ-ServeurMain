@@ -121,13 +121,43 @@ public final class Voyageurs {
     /** Une porte intérieure doit-elle être ouverte (quelqu'un à moins de 4 blocs) ? Bien plus large que le seuil de
      *  passage (ouvertureDe) : la porte a fini de s'ouvrir quand on arrive dessus, même en courant. */
     private static boolean appel(int veh, int n) {
+        return appel(CLIENT, veh, n);
+    }
+
+    private static boolean appel(List<Voyageur> vs, int veh, int n) {
         return switch (n) {
-            case 0 -> voiture(veh - 1) && Math.min(distance(CLIENT, veh, VL), distance(CLIENT, veh - 1, -VL)) < 4.0f;
-            case 1 -> voiture(veh + 1) && Math.min(distance(CLIENT, veh, -VL), distance(CLIENT, veh + 1, VL)) < 4.0f;
-            case 4 -> distance(CLIENT, veh, VEST) < 4.0f;
-            case 5 -> distance(CLIENT, veh, -VEST) < 4.0f;
+            case 0 -> voiture(veh - 1) && Math.min(distance(vs, veh, VL), distance(vs, veh - 1, -VL)) < 4.0f;
+            case 1 -> voiture(veh + 1) && Math.min(distance(vs, veh, -VL), distance(vs, veh + 1, VL)) < 4.0f;
+            case 4 -> distance(vs, veh, VEST) < 4.0f;
+            case 5 -> distance(vs, veh, -VEST) < 4.0f;
             default -> false;
         };
+    }
+
+    // ------------------------------------------------------------------------------------------------ portes vues du serveur (balles)
+    /** Dernier moment (ms) où le serveur a vu une porte intérieure appelée (quelqu'un à moins de 4 blocs). */
+    private static final long[][] APPEL_SERVEUR = new long[Horaire.N * Horaire.RAMES][6];
+    /** Après le départ du dernier voyageur : garde de 0,5 s puis moitié de la fermeture (comme l'animation des joueurs). */
+    private static final long GARDE_SERVEUR_MS = 500L + (long) (Voyageurs.DUREE_PORTE * 500f);
+
+    /** Note les portes appelées autour de ce voyageur (appelé à chaque tick du voyageur, côté serveur). */
+    static void noterAppelsServeur(Voyageur v) {
+        int veh = v.vehicule();
+        long t = System.currentTimeMillis();
+        for (int w = veh - 1; w <= veh + 1; w++) {
+            if (w < 1 || w >= APPEL_SERVEUR.length) continue;
+            for (int n : new int[]{0, 1, 4, 5}) {
+                if (appel(SERVEUR, w, n)) APPEL_SERVEUR[w][n] = t;
+            }
+        }
+    }
+
+    /** La porte intérieure est-elle ouverte pour les balles ? Même règle que ce que voient les joueurs (ouverte dès qu'un
+     *  voyageur est à moins de 4 blocs, refermée peu après son départ) ; avant, le serveur ne l'ouvrait qu'à 1,75 bloc
+     *  et les balles s'arrêtaient sur une porte ouverte à l'écran (sas entre deux voitures). */
+    static boolean ouverteServeur(int veh, int n) {
+        if (veh < 0 || veh >= APPEL_SERVEUR.length || n < 0 || n >= 6) return false;
+        return appel(SERVEUR, veh, n) || System.currentTimeMillis() - APPEL_SERVEUR[veh][n] < GARDE_SERVEUR_MS;
     }
 
     static final float DUREE_PORTE = 0.55f;

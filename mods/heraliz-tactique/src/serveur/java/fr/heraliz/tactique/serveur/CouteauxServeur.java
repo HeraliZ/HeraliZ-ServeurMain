@@ -120,7 +120,9 @@ final class CouteauxServeur {
       }
       ResourceLocation id = arme.getGunId(main);
       String modele = CoupsCouteau.modele(id);
-      etat.pretMs = Math.max(maintenant - TOLERANCE_MS, etat.pretMs) + CoupsCouteau.cadence(d.lourd(), modele) * MS_PAR_TICK;
+      // la cadence repart du moment du coup (jamais d'avance gagnée après une pause : avant, le 2e coup d'une série
+      // passait 0,25 s après le premier)
+      etat.pretMs = Math.max(maintenant, etat.pretMs) + CoupsCouteau.cadence(d.lourd(), modele) * MS_PAR_TICK;
       etat.frappeA = joueur.server.getTickCount() + CoupsCouteau.delai(d.lourd(), modele);
       etat.lourd = d.lourd();
       etat.caseBarre = joueur.getInventory().selected;

@@ -1,6 +1,7 @@
 package fr.heraliz.grades.serveur;
 
 import fr.heraliz.grades.Grade;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.UUID;
 
@@ -27,5 +28,13 @@ public final class GradesApi {
     public static String gradeAffiche(UUID joueur) {
         RegistreGrades r = ServeurGrades.registre;
         return r == null || joueur == null ? Grade.SURVIVANT.id : r.affiche(joueur).id;
+    }
+
+    /**
+     * Vrai si le joueur est connecté sur AuthMe (serveur cracké ; toujours vrai sinon). AuthMe injoignable : faux. Sert aux
+     * commandes réservées (par exemple /inspecter de HeraliZ Utils) : un pseudo d'op ne vaut rien avant le /login.
+     */
+    public static boolean authentifie(ServerPlayer joueur) {
+        return joueur != null && PontBukkit.authentifie(joueur);
     }
 }

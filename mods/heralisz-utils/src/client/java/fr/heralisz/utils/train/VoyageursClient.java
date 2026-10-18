@@ -110,11 +110,12 @@ public final class VoyageursClient {
         } else if (v.pallonge) {                                          // allongé : Ramper ou Espace relève
             if (appuiRamper || TrainClient.saut()) {
                 v.pallonge = false;
+                DelaiAllongeClient.releve();                              // le délai pour se rallonger repart
                 v.sautBloque = TrainClient.saut();                        // Espace a servi à se relever : pas de saut
                 change = true;
                 TrainClient.aide(false);
             }
-        } else if (appuiRamper && v.ph <= 0f && v.pvy <= 0f && TrainClient.ramperPermis()) {
+        } else if (appuiRamper && v.ph <= 0f && v.pvy <= 0f && TrainClient.ramperPermis() && DelaiAllongeClient.permis()) {
             v.pallonge = true;                                            // debout, les pieds au plancher : on s'allonge
             change = true;
             TrainClient.aide(false, true);

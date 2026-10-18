@@ -173,7 +173,7 @@ public final class BallesTrain {
                     double[] a = Voyageurs.versLocal(PA, p), b = Voyageurs.versLocal(PB, q);
                     final int v = veh;
                     Blindage.Impact imp = Blindage.traverser(veh, a, b, pq,
-                            n -> Voyageurs.ouvertureDe(Voyageurs.SERVEUR, v, n) > 0.5f, CASSEES::containsKey);
+                            n -> Voyageurs.ouverteServeur(v, n), CASSEES::containsKey);
                     if (imp != null && imp.t() < best) {
                         best = imp.t();
                         s.impact = imp;

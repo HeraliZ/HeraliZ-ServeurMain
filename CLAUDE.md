@@ -826,7 +826,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   chaque seconde, sauf `entites_permises` ; les vigiles du casino (`heralizcasino:videur`) et les PNJ des quêtes
   (`heraliz_quetes:pnj`) sont toujours gardés (Utils 2.14.3, `TOUJOURS_PERMISES`). Les explosions n'y cassent rien et ne touchent personne. `/suicide` y est
   refusé, sauf au staff. Réglage `[protection] actif` de `heraliz_spawn-server.toml` ; `/depart info` montre l'état.
-  Rien testé en jeu.
+  Rien testé en jeu. **Sans brouillard** (Utils 2.16.0, 18/10, `ambiance/Brouillard.brumeSpawn`) : ni brume du spawn
+  (avant : 2 à 40 blocs dès que le ciel était visible), ni brouillard de la bordure, ni `/brume` de Décors, ni celui de
+  Minecraft au bout de la vue ; dans l'eau ou la lave, comme ailleurs.
 - **Monde des bases** (CRac 1.5.0, 16/10) : dimension `crac:bases`, déclarée par `mods/crac/src/serveur/resources/data/crac/`
   (dimension, type, worldgen) ; Minecraft la crée seul au démarrage, **rien à déposer**. Terrain (CRac 1.6.0, 16/10) :
   grands plateaux parfaitement plats à 3 hauteurs (sol en 67, 71, 75 ; environ 65 % de la carte), pentes douces entre
@@ -1129,6 +1131,26 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;
+- coffres personnels (18/10, Utils 2.16.0, `coffres/CoffresPersonnels`, serveur seulement) : clic droit sur un coffre-fort
+  du mod de meubles = le coffre du joueur, le même partout (comme le coffre de l'Ender) : « Safe Planque 1 »
+  (`cfm:safe_planque_1`) = planque de 1 ligne pour tous ; « Safe Sentinel 1 » (`cfm:safe_sentinel_1`) = coffre VIP de
+  1 ligne en plus, grades boutique Rescapé, Traqueur, Roi de la Zone (`GradesApi.rangBoutique` par réflexion ; grade
+  perdu : objets gardés, coffre fermé). Aucun sac à dos dedans. Écran de coffre de Minecraft (9 cases). Gardés avec le
+  monde (`data/heraliz_coffres_perso.dat`) : repartent de zéro avec une nouvelle carte, comme les inventaires (choix par
+  défaut, à changer si le propriétaire veut les garder). Rien testé en jeu ;
+- `/inspecter <joueur> [inventaire|sac|coffres|base]` (18/10, Utils 2.16.0, `inspecter/`, serveur seulement) : **op
+  seulement** (permission 4) et après le `/login` d'AuthMe (`GradesApi.authentifie`, Grades 1.1.1). Voir ET modifier,
+  **même joueur déconnecté** : inventaire, armure, main gauche, emplacements Curios et hérals (pièce d'or) ; boutons vers
+  le sac à dos, les coffres (planque, VIP, coffre de l'Ender) et la base CRac entière (tous les conteneurs de son claim
+  d'un coup, conteneur par conteneur, page par page ; `fr.heraliz.crac.api.BaseCracApi.base`, CRac 1.8.1, par
+  réflexion). Déconnecté : sa sauvegarde (`playerdata/<uuid>.dat`) chargée dans un joueur « fantôme » jamais ajouté au
+  monde, réécrite à chaque clic (inventaire, coffre de l'Ender, Curios et sac seulement ; le reste gardé) ; vues fermées
+  dès qu'il se connecte (ou, en ligne, se déconnecte) ; une seule copie partagée par tout le staff. Objets toujours
+  déplacés, jamais copiés. Écrans de coffre de Minecraft. Rien testé en jeu ;
+- train (18/10, Utils 2.16.0) : les balles passent par les portes intérieures (sas entre deux voitures, cloisons) dès
+  qu'elles sont ouvertes à l'écran (`Voyageurs.ouverteServeur` : quelqu'un à moins de 4 blocs, refermée ~0,8 s après ;
+  avant, le serveur ne les ouvrait qu'à 1,75 bloc) ; s'allonger dans le train suit le même délai qu'au sol (Tactique,
+  `AllongeServeur.restantTrain` / `AllongeClient.allongeTrain` par réflexion, `train/DelaiAllonge`). Rien testé en jeu ;
 - WorldGuard (17/10) : `block-plugin-spawning: false` (`serveur/plugins/WorldGuard/config.yml`) : le réglage « pas de
   créatures » d'une région ne bloque que les apparitions naturelles ; avant, les vigiles du casino et `/summon` étaient
   refusés sans message dans la région du spawn ;
@@ -1286,7 +1308,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   serveur seulement (seul le jar `-serveur` compte). Rien testé en jeu ;
 - couteaux TaCZ (13/10, Tactique 2.13.0, `fr.heraliz.tactique.couteaux`) : « Knife » CT et T, karambits, papillons, M9
   (fiche `arkaniaz:knife_data`) frappent comme les armes de mêlée de LR, réglés comme la Dague tactique : clic gauche
-  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,45 s, touche tenue = coups
+  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,7 s (18/10, Tactique 2.19.2 :
+  0,45 s jugé trop rapide ; le serveur ne laisse plus passer un 2e coup 0,25 s après le premier), touche tenue = coups
   enchaînés ; clic droit (Viser) = coup puissant ×1,5 toutes les 0,9 s, plus de visée au couteau, rien si le viseur est
   sur un joueur à terre (Réanimation) ; V (« Mêlée » de TaCZ) = coup rapide (le coup de TaCZ n'est plus donné aux
   couteaux). Cône de 3 blocs (65° / 75°), plusieurs cibles, vue dégagée ; coup décidé et donné par le serveur
@@ -1352,12 +1375,17 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 
 - **Loot** : 618 des 1 853 entrées des tables de HeraliZ Loot citent encore `heralisz_armor:*` (retiré) : les
   vêtements n'apparaissent plus dans le loot. À régénérer avec les objets de l'Armurerie (avec la refonte du loot).
-- **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : suivent l'ancienne carte, à refaire pour la
-  nouvelle, en donnant sa valeur (niveau de loot) à chaque ville. Les statistiques par ville (captures, temps tenu)
+- **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : replacés le 18/10 sur les 13 villes de la
+  nouvelle carte (Valmont, Tcherno, Marbois, Belcourt, Port-Margot, Mirage, Clairval, Gaz, Aérodrome, Silo, Prison,
+  Arctique, Radio), centre et rayon d'après les conteneurs de loot de chaque ville (pack de données `heraliz_carte`,
+  centre moyen, 98 % des conteneurs dans le cercle). Valeurs PROVISOIRES (palier le plus haut qui fait au moins 8 % des
+  conteneurs : 2 pour les villes, 4 Prison, 5 Aérodrome, Silo, Arctique, Radio) : à confirmer par le propriétaire ;
+  drapeaux à poser en jeu (`/territoire drapeau <id>`). Les statistiques par ville (captures, temps tenu)
   sont enregistrées mais pas encore affichées dans l'écran du clan (interface à valider d'abord).
-  Les zones de l'ancienne carte hors de la bordure (Rudnik, Pristan, Gorny…) sont cachées sur la carte ; les reposer en
-  jeu avec `/territoire deplacer <id> [rayon]` (Clans 2.6.0, centre à la position du staff) ou `/territoire drapeau
-  <id>` ; `/territoire liste` marque « HORS DE LA BORDURE ». Bordure du monde `dayz_map` à vérifier (`/worldborder get`).
+  Les zones de l'ancienne carte (Novodar, Lesnoi, Rudnik, Pristan, Gorny…) sont retirées du fichier ; une zone se
+  repose en jeu avec `/territoire deplacer <id> [rayon]` (Clans 2.6.0) ou `/territoire drapeau <id>`, mais la mise en
+  ligne remet `zones.json` du dépôt : reporter tout changement ici. Bordure du monde `dayz_map` à vérifier
+  (`/worldborder get`).
 - **Loot dans le train** (souhaité, T1 à T4, T4 rare ; pas fait) : le train n'est pas fait de blocs, donc pas de
   conteneur posé ; prévu : des emplacements fixes dans chaque voiture (coordonnées de la voiture, comme les banquettes),
   tirés par HeraliZ Loot (paliers T1 à T4) et gardés par le serveur voiture par voiture (vidés à chaque tour de boucle),

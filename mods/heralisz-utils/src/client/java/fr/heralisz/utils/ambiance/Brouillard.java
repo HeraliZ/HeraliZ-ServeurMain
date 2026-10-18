@@ -96,25 +96,23 @@ public final class Brouillard {
         e.setBlue(C[2]);
     }
 
-    /** Monde du spawn (grotte dans le vide) : brume épaisse dès que le ciel est visible (on ne voit jamais le vide autour) ;
-     *  sous la roche, le réglage d'origine. */
+    /** Monde du spawn : aucun brouillard (18/10, demande du propriétaire), ni celui de Minecraft au bout de la vue, ni
+     *  celui de la bordure du monde, ni le brouillard dynamique de Décors ; avant, brume épaisse (2 à 40 blocs) dès que le
+     *  ciel était visible. Dans l'eau, la lave ou la neige poudreuse : comme ailleurs. */
     private static boolean brumeSpawn(ViewportEvent.RenderFog e) {
         var l = net.minecraft.client.Minecraft.getInstance().level;
         if (l == null || !l.dimension().location().equals(fr.heralisz.utils.cine.CineDecor.SPAWN)
                 || e.getType() != FogType.NONE) {
             return false;
         }
-        var p = net.minecraft.core.BlockPos.containing(e.getCamera().getPosition());
-        float ciel = l.canSeeSky(p) ? 1f : 0f;
-        if (ciel > 0f) {
-            e.setNearPlaneDistance(2f);
-            e.setFarPlaneDistance(Math.min(e.getFarPlaneDistance(), 40f));
-            e.setFogShape(FogShape.SPHERE);
-            e.setCanceled(true);
-            return true;
-        }
-        return false;
+        e.setNearPlaneDistance(SANS_BRUME);
+        e.setFarPlaneDistance(SANS_BRUME + 1f);
+        e.setCanceled(true);
+        return true;
     }
+
+    /** Début du brouillard bien au-delà de toute distance de vue : rien n'est embrumé. */
+    private static final float SANS_BRUME = 100_000f;
 
     /** Pas dans l'eau, la lave ou la neige poudreuse, pas aveuglé : le brouillard d'ambiance s'applique. */
     private static boolean libre(Camera cam, FogType type) {

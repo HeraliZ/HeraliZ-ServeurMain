@@ -20,6 +20,7 @@ public final class VoyageursServeur {
 
     static void tickServeur(Voyageur v) {
         if (!Voyageurs.SERVEUR.contains(v)) Voyageurs.SERVEUR.add(v);
+        Voyageurs.noterAppelsServeur(v);
         MinecraftServer srv = v.getServer();
         Entity rider = v.getFirstPassenger();
         if (rider == null || srv == null) {
@@ -63,6 +64,8 @@ public final class VoyageursServeur {
         float x = m.lx(), z = m.lz();
         boolean assis = m.assis();
         boolean allonge = !assis && m.allonge() && ramperPermis();
+        boolean etaitAllonge = v.getEntityData().get(Voyageur.ALLONGE);
+        if (allonge && !etaitAllonge && DelaiAllonge.restantMs(p) > 0L) allonge = false;   // même délai qu'au sol
         sautVerifie(v, assis || allonge, m.hauteur());
         int ov = v.getEntityData().get(Voyageur.VEHICULE);
         Horaire.Etat e = h.etatRame(TrainServeur.temps(p.getServer()), Horaire.rame(ov));
@@ -85,6 +88,7 @@ public final class VoyageursServeur {
         v.placer(veh, x, z);
         v.getEntityData().set(Voyageur.ASSIS, place);
         v.getEntityData().set(Voyageur.ALLONGE, allonge && !place);
+        if (etaitAllonge && !(allonge && !place)) DelaiAllonge.releve(p);
         boolean course = m.course() && !place && !allonge;
         if (p.isSprinting() != course) p.setSprinting(course);
         if (pq != 0 && Math.signum(z) == pq && Math.abs(z) > Voyageurs.VW + 0.2f) {          // descente sur le quai

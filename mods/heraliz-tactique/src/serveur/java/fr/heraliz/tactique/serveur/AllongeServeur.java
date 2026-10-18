@@ -50,6 +50,27 @@ public final class AllongeServeur {
       PlongeonServeur.brancher();
    }
 
+   /**
+    * Train de HeraliZ Utils (appelé par réflexion, {@code fr.heralisz.utils.train.VoyageursServeur}) : millisecondes avant
+    * que ce passager puisse s'allonger (0 : tout de suite). Même délai qu'au sol : le train a son propre allongé, qui ne
+    * passe pas par TaCZ. Ne pas renommer.
+    */
+   public static long restantTrain(ServerPlayer joueur) {
+      EtatAllonge etat = Allonge.etat(IGunOperator.fromLivingEntity(joueur).getDataHolder());
+      if (etat == null) {
+         return 0L;
+      }
+      return Math.max(0L, etat.heraliz$getReleveA() + Allonge.delaiRallongerServeurMs() - Allonge.maintenant());
+   }
+
+   /** Train de HeraliZ Utils (par réflexion) : ce passager vient de se relever ; le délai pour se rallonger repart. */
+   public static void releveTrain(ServerPlayer joueur) {
+      EtatAllonge etat = Allonge.etat(IGunOperator.fromLivingEntity(joueur).getDataHolder());
+      if (etat != null) {
+         etat.heraliz$setReleveA(Allonge.maintenant());
+      }
+   }
+
    /** Délai pour se rallonger : écoulé ou non depuis que ce joueur s'est relevé (vu par le serveur). */
    private static boolean peutSAllonger(LivingEntity tireur, ShooterDataHolder donnees) {
       if (!(tireur instanceof ServerPlayer joueur)) {
