@@ -1210,6 +1210,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   tailles mesurées (lieux 10 unités de large environ, extractions 11, drapeaux 8,5), à peine plus grandes de près ;
   vue d'ensemble allégée : villages, usines, hôpitaux, gares et points n'apparaissent qu'en zoomant, en fondu ;
   pastille d'état d'un territoire seulement de près (sauf capture et contestée, toujours), posée sous le nom ;
+  extractions marquées seulement « Extraction », sans le nom posé en jeu (Utils 2.16.1, 18/10 : noms au hasard) ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
   du logo « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (« Bientôt »), trois nouveautés non cliquables
@@ -1313,8 +1314,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   serveur seulement (seul le jar `-serveur` compte). Rien testé en jeu ;
 - couteaux TaCZ (13/10, Tactique 2.13.0, `fr.heraliz.tactique.couteaux`) : « Knife » CT et T, karambits, papillons, M9
   (fiche `arkaniaz:knife_data`) frappent comme les armes de mêlée de LR, réglés comme la Dague tactique : clic gauche
-  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,7 s (18/10, Tactique 2.19.2 :
-  0,45 s jugé trop rapide ; le serveur ne laisse plus passer un 2e coup 0,25 s après le premier), touche tenue = coups
+  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,9 s (18/10, Tactique 2.20.1 :
+  0,45 puis 0,7 s jugés trop rapides ; le serveur ne laisse plus passer un 2e coup 0,25 s après le premier), touche tenue = coups
   enchaînés ; clic droit (Viser) = coup puissant ×1,5 toutes les 0,9 s, plus de visée au couteau, rien si le viseur est
   sur un joueur à terre (Réanimation) ; V (« Mêlée » de TaCZ) = coup rapide (le coup de TaCZ n'est plus donné aux
   couteaux). Cône de 3 blocs (65° / 75°), plusieurs cibles, vue dégagée ; coup décidé et donné par le serveur

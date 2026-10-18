@@ -51,7 +51,7 @@
   "heraliz_carte.bas.sur_moi": "ко мне",
   "heraliz_carte.clan.resume": "Территорий: %s · в сети: %s",
   "heraliz_carte.clan.aucun": "Без клана",
-  "heraliz_carte.extraction": "Эвакуация %s",
+  "heraliz_carte.extraction": "Эвакуация",
   "heraliz_carte.extraction.ferme": "Закроется через %s",
   "heraliz_carte.extraction.permanente": "Всегда открыта",
   "heraliz_carte.extraction.tenir": "Продержаться %s с",
