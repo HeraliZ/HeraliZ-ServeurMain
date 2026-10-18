@@ -191,7 +191,7 @@ final class Dialogues {
         // depuis le début (quêtes finies sautées) : une quête ajoutée ou déplacée dans le fichier n'est jamais perdue
         for (int i = 0; i < def.suite.size(); i++) {
             Defs.Quete q = def.suite.get(i);
-            if (j.finies.contains("s:" + def.id + ":" + q.id)) continue;
+            if (q.desactivee || j.finies.contains("s:" + def.id + ":" + q.id)) continue;
             return q.repMin <= dp.rep ? q : null;
         }
         return null;

@@ -48,7 +48,7 @@ public class HeralizQuetes {
 
     /** Modèles des objets de quête : le nom et la description viennent de la quête (« Carnet de tir de Jack »). */
     public static final List<String> MODELES = List.of("document", "carnet", "lettre", "photo", "cle", "cle_usb", "colis",
-            "echantillon", "plaque", "piece");
+            "echantillon", "plaque", "piece", "insigne_regiment", "boite_noire", "sacoche_deserteurs");
     public static final Map<String, RegistryObject<Item>> OBJETS_QUETE = new LinkedHashMap<>();
 
     static {

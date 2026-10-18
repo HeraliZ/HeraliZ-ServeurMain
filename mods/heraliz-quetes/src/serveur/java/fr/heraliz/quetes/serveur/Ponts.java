@@ -6,6 +6,9 @@ import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
@@ -27,12 +30,18 @@ import java.util.UUID;
  *    <li>rareté d'un objet : {@code fr.heraliz.loot.RaretesObjets.de(ItemStack)} (HeraliZ Loot) ;</li>
  *    <li>famille d'une arme TaCZ (« pompe », « fusil_556 »...) : {@code config/heraliz_tactique/armes.json} (écrit par
  *    outils/equilibrage_armes.py) ;</li>
- *    <li>usure d'une arme : étiquette {@code HzUsureEtat} de HeraliZ Utils (millièmes, absente = neuve).</li>
+ *    <li>usure d'une arme : étiquette {@code HzUsureEtat} de HeraliZ Utils (millièmes, absente = neuve) ;</li>
+ *    <li>rareté des composants et objets de valeur : la rareté Minecraft {@code HERALIZ_*} de HeraliZ Composants ;</li>
+ *    <li>frappes aériennes en cours d'un joueur : {@code fr.heraliz.airstrike.strike.StrikeManager.countActive(UUID)} ;</li>
+ *    <li>joueur à terre : {@code fr.heraliz.reanimation.core.Downed.isDowned(Entity)} (Réanimation).</li>
  * </ul>
  */
 final class Ponts {
     private static final Logger LOG = LogUtils.getLogger();
     static final List<String> RARETES = List.of("commun", "peu_commun", "rare", "epique", "legendaire", "unique");
+    /** Raretés de HeraliZ Composants, dans le même ordre (Mythique = le 6e rang, comme Unique). */
+    private static final List<String> RARETES_COMPOSANTS = List.of("HERALIZ_COMMON", "HERALIZ_UNCOMMON", "HERALIZ_RARE",
+            "HERALIZ_EPIC", "HERALIZ_LEGENDARY", "HERALIZ_MYTHIC");
 
     private Ponts() {
     }
@@ -104,6 +113,8 @@ final class Ponts {
 
     /** Rang de rareté de l'objet (0 Commun ... 5 Unique), -1 si aucune ou si HeraliZ Loot est absent. */
     static int rarete(ItemStack s) {
+        int c = RARETES_COMPOSANTS.indexOf(s.getRarity().name());
+        if (c >= 0) return c;
         if (rareteAbsente) return -1;
         try {
             if (rarete == null) rarete = Class.forName("fr.heraliz.loot.RaretesObjets").getMethod("de", ItemStack.class);
@@ -116,7 +127,121 @@ final class Ponts {
     }
 
     static int rangRarete(String id) {
-        return id == null ? -1 : RARETES.indexOf(id.toLowerCase(Locale.ROOT));
+        if (id == null) return -1;
+        String r = id.toLowerCase(Locale.ROOT);
+        return r.equals("mythique") ? 5 : RARETES.indexOf(r);
+    }
+
+    /**
+     * « tete » (casque), « corps » (gilet, veste, combinaison), « tete_ou_corps ». Armure Minecraft, ou pièce de
+     * l'Armurerie (interface {@code fr.heraliz.armory.item.PieceItem} : les gilets se portent dans un emplacement Curios).
+     */
+    static boolean armure(ItemStack s, String voulu) {
+        String piece = piece(s);
+        boolean tete = piece != null ? piece.equals("head")
+                : s.getItem() instanceof ArmorItem a && a.getType() == ArmorItem.Type.HELMET;
+        boolean corps = piece != null ? piece.equals("vest") || piece.equals("chest") || piece.equals("suit")
+                : s.getItem() instanceof ArmorItem a && a.getType() == ArmorItem.Type.CHESTPLATE;
+        return switch (voulu.toLowerCase(Locale.ROOT)) {
+            case "tete" -> tete;
+            case "corps" -> corps;
+            case "tete_ou_corps" -> tete || corps;
+            default -> piece != null || s.getItem() instanceof ArmorItem;
+        };
+    }
+
+    private static Class<?> pieceItem;
+    private static Method pieceDef, pieceNom;
+    private static boolean armurerieAbsente;
+
+    /** Genre d'une pièce de l'Armurerie (« head », « vest », « chest »...), null pour un autre objet. */
+    static String piece(ItemStack s) {
+        if (armurerieAbsente || s.isEmpty()) return null;
+        try {
+            if (pieceItem == null) {
+                pieceItem = Class.forName("fr.heraliz.armory.item.PieceItem");
+                pieceDef = pieceItem.getMethod("def");
+                pieceNom = Class.forName("fr.heraliz.armory.armor.PieceDef").getMethod("piece");
+            }
+            if (!pieceItem.isInstance(s.getItem())) return null;
+            return (String) pieceNom.invoke(pieceDef.invoke(s.getItem()));
+        } catch (Throwable t) {
+            armurerieAbsente = true;
+            return null;
+        }
+    }
+
+    private static Method curiosInventaire, curiosPortes;
+    private static boolean curiosAbsent;
+
+    /** Objets portés dans les emplacements Curios (gilet, masque, sac...) ; vide sans Curios. */
+    static List<ItemStack> curios(Player p) {
+        List<ItemStack> l = new java.util.ArrayList<>();
+        if (curiosAbsent) return l;
+        try {
+            if (curiosInventaire == null) {
+                curiosInventaire = Class.forName("top.theillusivec4.curios.api.CuriosApi")
+                        .getMethod("getCuriosInventory", net.minecraft.world.entity.LivingEntity.class);
+            }
+            var lo = (net.minecraftforge.common.util.LazyOptional<?>) curiosInventaire.invoke(null, p);
+            Object h = lo.resolve().orElse(null);
+            if (h == null) return l;
+            if (curiosPortes == null) curiosPortes = Class.forName("top.theillusivec4.curios.api.type.capability.ICuriosItemHandler")
+                    .getMethod("getEquippedCurios");
+            var portes = (net.minecraftforge.items.IItemHandler) curiosPortes.invoke(h);
+            for (int i = 0; i < portes.getSlots(); i++) l.add(portes.getStackInSlot(i));
+        } catch (Throwable t) {
+            curiosAbsent = true;
+            LOG.warn("[heraliz_quetes] Curios absent ou différent ({}) : « montrer » ne regarde pas ses emplacements", t.toString());
+        }
+        return l;
+    }
+
+    // ------------------------------------------------------------------ frappes aériennes, joueurs à terre
+    private static Method frappes;
+    private static boolean frappesAbsentes;
+
+    /** Frappes aériennes en cours appelées par ce joueur ; -1 si Airstrike est absent. */
+    static int frappes(UUID joueur) {
+        if (frappesAbsentes) return -1;
+        try {
+            if (frappes == null) frappes = Class.forName("fr.heraliz.airstrike.strike.StrikeManager").getMethod("countActive", UUID.class);
+            return (int) frappes.invoke(null, joueur);
+        } catch (Throwable t) {
+            frappesAbsentes = true;
+            LOG.warn("[heraliz_quetes] Airstrike absent ou différent ({}) : les étapes « frappe » n'avanceront pas", t.toString());
+            return -1;
+        }
+    }
+
+    private static Method aTerre;
+    private static boolean aTerreAbsent;
+
+    static boolean aTerre(Entity e) {
+        if (aTerreAbsent) return false;
+        try {
+            if (aTerre == null) aTerre = Class.forName("fr.heraliz.reanimation.core.Downed").getMethod("isDowned", Entity.class);
+            return (boolean) aTerre.invoke(null, e);
+        } catch (Throwable t) {
+            aTerreAbsent = true;
+            LOG.warn("[heraliz_quetes] Réanimation absente ou différente ({}) : les étapes « executer » n'avanceront pas", t.toString());
+            return false;
+        }
+    }
+
+    /** Le joueur a-t-il ouvert la table de fabrication de TaCZ (Table d'armurier) ? */
+    static boolean tableArmes(Player p) {
+        return p.containerMenu != null && p.containerMenu.getClass().getName().equals("com.tacz.guns.inventory.GunSmithTableMenu");
+    }
+
+    /** Nombre d'armes TaCZ (couteaux exclus) dans l'inventaire. */
+    static int armes(Player p) {
+        int n = 0;
+        for (ItemStack s : p.getInventory().items) {
+            String g = gunId(s);
+            if (g != null && !couteau(g)) n += s.getCount();
+        }
+        return n;
     }
 
     // ------------------------------------------------------------------ armes TaCZ

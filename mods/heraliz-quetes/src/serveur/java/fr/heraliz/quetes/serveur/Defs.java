@@ -66,6 +66,8 @@ final class Defs {
         Texte titre = Texte.VIDE, demande = Texte.VIDE, fin = Texte.VIDE, rappel = Texte.VIDE, resume = Texte.VIDE;
         int difficulte = 1, repMin;
         boolean sansMourir;
+        /** « desactivee » : sautée dans la suite (le système dont elle a besoin n'est pas prêt). */
+        boolean desactivee;
         final List<Etape> etapes = new ArrayList<>();
         final List<Don> donne = new ArrayList<>();
         Recompense recompense = new Recompense();
@@ -82,6 +84,8 @@ final class Defs {
         int reputation;
         Texte titre = Texte.VIDE;
         final Map<String, Integer> autres = new LinkedHashMap<>();
+        /** Objets donnés à la fin (« heralizcrates:quete_key » -> 1). */
+        final Map<String, Integer> objets = new LinkedHashMap<>();
     }
 
     static final class Etape {
@@ -207,6 +211,7 @@ final class Defs {
         q.difficulte = Math.max(1, Math.min(4, entier(o, "difficulte", 1)));
         q.repMin = entier(o, "reputation_min", 0);
         q.sansMourir = o.has("sans_mourir") && o.get("sans_mourir").getAsBoolean();
+        q.desactivee = o.has("desactivee") && o.get("desactivee").getAsBoolean();
         if (o.has("donne") && o.get("donne").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("donne")) {
                 if (!e.isJsonObject()) continue;
@@ -238,12 +243,19 @@ final class Defs {
                     q.recompense.autres.put(e.getKey(), (int) nombre(e.getValue()));
                 }
             }
+            // « objets » : {"heralizcrates:quete_key": 1} ou ["heralizcrates:quete_key"]
+            JsonElement ob = r.get("objets");
+            if (ob != null && ob.isJsonObject()) {
+                for (Map.Entry<String, JsonElement> e : ob.getAsJsonObject().entrySet()) q.recompense.objets.put(e.getKey(), Math.max(1, (int) nombre(e.getValue())));
+            } else if (ob != null) {
+                for (String id : liste(r, "objets")) q.recompense.objets.merge(id, 1, Integer::sum);
+            }
         }
         return q;
     }
 
     static final List<String> TYPES = List.of("parler", "donner", "montrer", "payer", "tuer", "ramasser", "indice", "code",
-            "deposer", "endroit", "tenir", "attendre", "survivre", "extraction", "fouiller");
+            "deposer", "endroit", "tenir", "attendre", "survivre", "extraction", "fouiller", "executer", "fabriquer", "frappe", "capturer");
 
     // ------------------------------------------------------------------ outils JSON
     static String chaine(JsonObject o, String cle, String defaut) {

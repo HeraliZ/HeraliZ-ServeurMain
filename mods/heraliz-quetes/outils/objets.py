@@ -1,9 +1,14 @@
 """Objets de quête de HeraliZ Quêtes en 3D, au même style que les composants (même moteur : outils/engine.py de
 heraliz-composants). Ils ne copient aucun composant : ce sont des objets propres aux quêtes.
 
+  python mods/heraliz-quetes/outils/objets.py --installer            modèles, matières et icônes dans le mod
   python mods/heraliz-quetes/outils/objets.py --apercu planche.png    planche d'aperçu (icône, modèle, 1re personne)
 
+On modifie ce script, jamais les fichiers écrits (models/item/3d, models/item/icon, textures/item/mat,
+textures/item/icon et models/item/<id>.json de ces objets).
+
 Modèles de profil : X = longueur, Y = hauteur, Z = épaisseur (centrée sur 8)."""
+import json
 import os
 import sys
 
@@ -101,6 +106,86 @@ def _(m):
     m.box((6.8, 1.8, 10.2), (7.6, 2.6, 10.26), 'white')
 
 
+MODID = 'heraliz_quetes'
+ASSETS = os.path.join(ICI, '..', 'src', 'client', 'resources', 'assets', MODID)
+
+
+def wjson(path, obj):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8', newline='\n') as f:
+        json.dump(obj, f, ensure_ascii=False, indent=2)
+
+
+def r4(v):
+    return [round(float(x), 4) for x in v]
+
+
+def display(hs, fp):
+    """Mêmes tenues que les composants (heraliz-composants/outils/build.py)."""
+    s = lambda k: [round(k * hs, 4)] * 3  # noqa: E731
+    hk = fp.get('k', 1.0)
+    third = {'rotation': [0, 0, 0], 'translation': [0, 3, 1], 'scale': s(0.55 * hk)}
+    main = {'rotation': fp['rotation'], 'translation': fp['translation'], 'scale': s(0.68 * hk)}
+    return {
+        'thirdperson_righthand': third, 'thirdperson_lefthand': dict(third),
+        'firstperson_righthand': main, 'firstperson_lefthand': dict(main),
+        'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': s(0.5)},
+        'head': {'rotation': [0, 180, 0], 'translation': [0, 13, 7], 'scale': s(1.0)},
+        'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': s(1.0)},
+        'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [0.625] * 3},
+    }
+
+
+def model_json(m, hs, fp):
+    used, elements = [], []
+    for b in m.boxes:
+        if b['m'] not in used:
+            used.append(b['m'])
+        e = {'from': r4(b['f']), 'to': r4(b['t']),
+             'faces': {d: {'texture': '#' + b['m']} for d in ('north', 'east', 'south', 'west', 'up', 'down')}}
+        if b['rot'] is not None:
+            axis, ang, org = b['rot']
+            e['rotation'] = {'angle': ang, 'axis': axis, 'origin': r4(org)}
+        for v in e['from'] + e['to']:
+            assert -16 <= v <= 32, v
+        elements.append(e)
+    tex = {name: f'{MODID}:item/mat/{name}' for name in used}
+    tex['particle'] = tex[used[0]]
+    return {'gui_light': 'side', 'textures': tex, 'elements': elements, 'display': display(hs, fp)}
+
+
+def installer():
+    mats = material_textures()
+    for sub in ('models/item/3d', 'models/item/icon', 'textures/item/mat', 'textures/item/icon'):
+        p = os.path.join(ASSETS, sub)
+        if os.path.isdir(p):
+            for f in os.listdir(p):
+                os.remove(os.path.join(p, f))
+    utilises = set()
+    for o in OBJETS:
+        m = Model()
+        o['build'](m)
+        m.recenter()
+        utilises.update(b['m'] for b in m.boxes)
+        iid = o['id']
+        icone = render(m, mats, 32, **o['vue'])
+        os.makedirs(os.path.join(ASSETS, 'textures', 'item', 'icon'), exist_ok=True)
+        icone.save(os.path.join(ASSETS, 'textures', 'item', 'icon', iid + '.png'))
+        wjson(os.path.join(ASSETS, 'models', 'item', '3d', iid + '.json'), model_json(m, o['hs'], o['fp']))
+        wjson(os.path.join(ASSETS, 'models', 'item', 'icon', iid + '.json'),
+              {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'{MODID}:item/icon/{iid}'}})
+        wjson(os.path.join(ASSETS, 'models', 'item', iid + '.json'), {
+            'loader': 'forge:separate_transforms',
+            'base': {'parent': f'{MODID}:item/3d/{iid}'},
+            'perspectives': {'gui': {'parent': f'{MODID}:item/icon/{iid}'}},
+        })
+    for name in sorted(utilises):
+        p = os.path.join(ASSETS, 'textures', 'item', 'mat', name + '.png')
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        Image.fromarray(mats[name].astype('uint8'), 'RGB').save(p)
+    print(len(OBJETS), 'objets,', len(utilises), 'matières installés dans', os.path.normpath(ASSETS))
+
+
 def planche(chemin):
     mats = material_textures()
     try:
@@ -144,5 +229,7 @@ def planche(chemin):
 if __name__ == '__main__':
     if len(sys.argv) >= 3 and sys.argv[1] == '--apercu':
         planche(sys.argv[2])
+    elif len(sys.argv) >= 2 and sys.argv[1] == '--installer':
+        installer()
     else:
         print(__doc__)
