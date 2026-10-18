@@ -123,10 +123,7 @@ final class EffacerBase {
         j.batiment = -1L;
         j.arete = -1;
         d.marquer();
-        ServerLevel bases = server.getLevel(MondeBases.BASES);
-        if (bases != null) {
-            Protections.majTextes(bases);
-        }
+        Protections.majTextes(server);
         String nom = profil.getName();
         Crac.LOGGER.info("[CRac] base de {} effacée par {} ({} pièces, claim : {})", nom, src.getTextName(), pieces, claim);
         if (pieces == 0 && !claim) {
