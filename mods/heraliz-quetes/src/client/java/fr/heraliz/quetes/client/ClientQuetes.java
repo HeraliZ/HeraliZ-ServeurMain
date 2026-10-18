@@ -35,6 +35,7 @@ public final class ClientQuetes implements Partie {
             HudQuetes.vider();
             Bulles.vider();
             Lueurs.vider();
+            PnjRendu.vider();
         });
 
         Reseau.DIALOGUE.brancher(EcranDialogue::recevoir);

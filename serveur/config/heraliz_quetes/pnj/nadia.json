@@ -7,7 +7,7 @@
     "ru": "Радистка"
   },
   "skin": "nadia",
-  "bras_fins": true,
+  "apparence": {"skin_tone": "olive", "eye_shape": "upturned", "eye_color": "hazel", "brow_style": "thin", "nose_style": "small", "mouth_style": "neutral", "lip_color": "natural", "hair_style": "slicked_back", "hair_color": "black", "facial_hair": "none", "shirt_style": "hoodie", "shirt_color": "charcoal", "shirt_color2": "grey", "pants_style": "joggers", "pants_color": "black", "shoes_style": "sneakers", "shoes_color": "grey", "marks": ["mole"], "wear": "clean", "eye_size": 3},
   "ambiance": [
     "Fréquence 104.7... toujours rien.",
     "Chut. J'écoute.",

@@ -18,13 +18,28 @@ Se placer à l'endroit voulu, regarder dans la direction où le PNJ doit regarde
 | `/pnj creer <id>` | pose le PNJ (son `id` = le nom de son fichier : `jack`, `jacqueline`, `doyen`...) |
 | `/pnj deplacer <id>` | le déplace là où l'on est |
 | `/pnj retirer <id>` | l'enlève |
-| `/pnj skin <id> <skin>` | skin = fichier `textures/pnj/<skin>.png` du jar joueur (`defaut` : Steve / Alex) |
+| `/pnj skin <id> <skin>` | skin = fichier `textures/pnj/<skin>.png` du jar joueur (`defaut` : Steve / Alex), utilisé seulement sans apparence CaraCrea |
+| `/pnj apparence <id> moi\|fichier\|aucune` | apparence du créateur de personnage (voir dessous) |
 | `/pnj bras <id> fins\|larges` | modèle Alex ou Steve |
 | `/pnj liste` | les PNJ des fichiers, et combien sont posés |
 
-Les skins des PNJ (un PNG 64 × 64 de skin Minecraft par PNJ : `jack.png`, `jacqueline.png`...) se mettent dans
-`mods/heraliz-quetes/src/client/resources/assets/heraliz_quetes/textures/pnj/` (puis refabriquer le mod). Sans fichier :
-Steve ou Alex.
+### Apparence des PNJ : le créateur de personnage (CaraCrea)
+
+Chaque PNJ a une apparence faite avec le créateur de personnage du serveur (le même que `/perso`), écrite dans son
+fichier, clé `"apparence"` : `{"skin_tone": "tan", "hair_style": "buzz", "facial_hair": "stubble", "shirt_style":
+"tank_top", "shirt_color": "olive", "marks": ["scar_brow"], "wear": "dirty"...}`. Les noms des choix sont ceux du
+créateur (teint, yeux, sourcils, nez, bouche, cheveux, barbe, haut, bas, chaussures et leurs couleurs, marques, usure ;
+liste complète : `mods/caracrea/src/commun/java/com/caracrea/character/Catalog.java`). Le PNJ suit son fichier tout
+seul (après `/quete recharger`).
+
+| Commande | Effet |
+|---|---|
+| `/pnj apparence <id> moi` | le PNJ prend TON personnage (fais-le d'abord dans `/perso`) ; le chat donne ses choix, à recopier dans le fichier pour le garder |
+| `/pnj apparence <id> fichier` | retour à l'apparence de son fichier |
+| `/pnj apparence <id> aucune` | plus d'apparence : son skin (ci-dessous) |
+
+Sans apparence, le skin d'un fichier PNG (64 × 64) : `mods/heraliz-quetes/src/client/resources/assets/heraliz_quetes/textures/pnj/<skin>.png`
+(puis refabriquer le mod), sinon Steve ou Alex.
 
 ## 2. Poser les points de quête (sur la carte, en jeu)
 

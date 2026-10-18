@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import fr.heraliz.quetes.Texte;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,6 +40,8 @@ final class Defs {
         Texte nom = Texte.VIDE, role = Texte.VIDE;
         String skin = "";
         boolean brasFins;
+        /** Apparence CaraCrea du fichier (clé « apparence »), null s'il n'y en a pas. */
+        CompoundTag apparence;
         final List<Texte> ambiance = new ArrayList<>();
         Texte presentation = Texte.VIDE, inconnu = Texte.VIDE, connu = Texte.VIDE, ami = Texte.VIDE;
         final List<Quete> suite = new ArrayList<>();
@@ -143,6 +146,7 @@ final class Defs {
         p.role = Texte.json(o.get("role"));
         p.skin = chaine(o, "skin", "");
         p.brasFins = o.has("bras_fins") && o.get("bras_fins").getAsBoolean();
+        if (o.has("apparence") && o.get("apparence").isJsonObject()) p.apparence = Apparences.depuis(o.getAsJsonObject("apparence"));
         if (o.has("ambiance") && o.get("ambiance").isJsonArray()) o.getAsJsonArray("ambiance").forEach(e -> p.ambiance.add(Texte.json(e)));
         p.presentation = Texte.json(o.get("presentation"));
         if (o.has("accueil") && o.get("accueil").isJsonObject()) {

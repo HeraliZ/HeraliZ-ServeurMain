@@ -7,7 +7,7 @@
     "ru": "Медсестра"
   },
   "skin": "jacqueline",
-  "bras_fins": true,
+  "apparence": {"skin_tone": "fair", "eye_shape": "almond", "eye_color": "green", "brow_style": "arched", "nose_style": "small", "mouth_style": "full", "lip_color": "rosy", "hair_style": "shoulder_length", "hair_color": "auburn", "facial_hair": "none", "shirt_style": "long_sleeve", "shirt_color": "white", "shirt_color2": "red", "pants_style": "trousers", "pants_color": "light_blue", "shoes_style": "sneakers", "shoes_color": "white", "marks": ["freckles"], "wear": "clean", "eye_size": 3},
   "ambiance": [
     "Si tu saignes, assieds-toi. Si tu tousses, va-t'en.",
     "Lave-toi les mains. Non. Avec du savon.",

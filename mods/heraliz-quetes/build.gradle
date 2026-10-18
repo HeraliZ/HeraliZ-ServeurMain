@@ -63,6 +63,8 @@ dependencies {
     }
     // Autres mods du modpack nécessaires à la compilation : libs/<nom>-<version>-<suffixe du projet>.jar, puis
     //   compileOnly fg.deobf("blank:<nom>:<version>-<suffixe du projet>")   (suffixe unique : cache de deobf partagé)
+    // CaraCrea : apparence des PNJ (skin peint par le créateur de personnage), facultatif en jeu (client/CaraCreaPnj)
+    compileOnly fg.deobf("blank:caracrea:1.1.0-hzquetes")
     clientAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

@@ -22,7 +22,7 @@ import net.minecraft.world.level.Level;
 
 /**
  * Un PNJ du spawn (Jack, Jacqueline...), posé par le staff avec /pnj creer. Partie commune : ce que lit l'affichage
- * (identifiant du PNJ, nom en trois langues, skin) et un corps immobile et invincible. Les dialogues, les quêtes et le
+ * (identifiant du PNJ, nom en trois langues, skin ou apparence CaraCrea) et un corps immobile et invincible. Les dialogues, les quêtes et le
  * regard qui suit les joueurs sont dans {@code PnjServeur} (créé par son type, jamais par {@code new}).
  */
 public class Pnj extends PathfinderMob {
@@ -33,6 +33,14 @@ public class Pnj extends PathfinderMob {
     public static final EntityDataAccessor<String> SKIN = SynchedEntityData.defineId(Pnj.class, EntityDataSerializers.STRING);
     /** Bras fins (modèle « Alex ») ou larges. */
     public static final EntityDataAccessor<Boolean> FIN = SynchedEntityData.defineId(Pnj.class, EntityDataSerializers.BOOLEAN);
+    /**
+     * Apparence CaraCrea (personnage du créateur du serveur, {@code {Format, Values}} comme celle d'un joueur) ; vide :
+     * le skin ci-dessus. Peinte chez le joueur par CaraCrea.
+     */
+    public static final EntityDataAccessor<CompoundTag> APPARENCE = SynchedEntityData.defineId(Pnj.class, EntityDataSerializers.COMPOUND_TAG);
+
+    /** Apparence copiée d'un membre du staff (/pnj apparence moi) : celle du fichier du PNJ ne la remplace plus. */
+    private boolean apparencePerso;
 
     private String nomCache = "";
     private Texte nomTexte = Texte.VIDE;
@@ -55,6 +63,7 @@ public class Pnj extends PathfinderMob {
         entityData.define(NOM, "");
         entityData.define(SKIN, "");
         entityData.define(FIN, false);
+        entityData.define(APPARENCE, new CompoundTag());
     }
 
     public String pnjId() {
@@ -94,6 +103,19 @@ public class Pnj extends PathfinderMob {
         entityData.set(FIN, fin);
     }
 
+    public CompoundTag apparence() {
+        return entityData.get(APPARENCE);
+    }
+
+    public boolean apparencePerso() {
+        return apparencePerso;
+    }
+
+    public void definirApparence(CompoundTag t, boolean perso) {
+        entityData.set(APPARENCE, t == null ? new CompoundTag() : t.copy());
+        apparencePerso = perso && t != null;
+    }
+
     @Override
     public Component getName() {
         Texte n = nom();
@@ -112,6 +134,8 @@ public class Pnj extends PathfinderMob {
         t.putString("PnjNom", entityData.get(NOM));
         t.putString("PnjSkin", skin());
         t.putBoolean("PnjFin", brasFins());
+        t.put("PnjApparence", apparence().copy());
+        t.putBoolean("PnjApparencePerso", apparencePerso);
     }
 
     @Override
@@ -121,6 +145,7 @@ public class Pnj extends PathfinderMob {
         entityData.set(NOM, t.getString("PnjNom"));
         definirSkin(t.getString("PnjSkin"));
         definirBrasFins(t.getBoolean("PnjFin"));
+        definirApparence(t.getCompound("PnjApparence"), t.getBoolean("PnjApparencePerso"));
         setInvulnerable(true);
     }
 
