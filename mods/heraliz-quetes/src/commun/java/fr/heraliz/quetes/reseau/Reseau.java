@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
@@ -20,7 +21,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Canal réseau de HeraliZ Quêtes (protocole 1). Le serveur décide de tout et envoie ce qu'il faut afficher (dialogue,
+ * Canal réseau de HeraliZ Quêtes (protocole 2 : marchands). Le serveur décide de tout et envoie ce qu'il faut afficher (dialogue,
  * journal, suivi, notes, bulles, lueurs des points) ; le joueur ne fait que CHOISIR (une réponse du dialogue, suivre ou
  * abandonner une quête, un code tapé) : chaque demande est revérifiée par le serveur. Un joueur avec un jar sans ce
  * canal est refusé à la connexion.
@@ -29,7 +30,7 @@ public final class Reseau {
     private Reseau() {
     }
 
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -103,6 +104,27 @@ public final class Reseau {
     public record Notif(Texte texte, int couleur) {
     }
 
+    /** Un article d'un marchand ; rarete : rang 0 (Commun) à 5, -1 sans rareté. */
+    public record Article(int index, ItemStack objet, long prix, int rarete) {
+    }
+
+    /**
+     * Écran d'un marchand (serveur -> joueur). rachat = il rachète : prixSlots et rarSlots donnent, pour chacune des 36
+     * cases de l'inventaire, le prix de rachat de l'objet (0 = il ne le prend pas) et sa rareté ; sinon il vend ses
+     * articles. ouvrir = ouvrir l'écran, sinon mettre à jour celui qui est ouvert. entite -1 = fermer.
+     */
+    public record Boutique(int entite, boolean ouvrir, Texte nom, Texte role, long solde, boolean rachat, List<Article> articles,
+                           int[] prixSlots, int[] rarSlots) {
+    }
+
+    /** Achat d'un article (joueur -> serveur). */
+    public record Achat(int entite, int index, int quantite) {
+    }
+
+    /** Vente des objets de ces cases de l'inventaire (joueur -> serveur). */
+    public record Vente(int entite, List<Integer> cases) {
+    }
+
     /** Message reçu par le serveur, avec le joueur qui l'envoie. */
     public record Recu<T>(ServerPlayer joueur, T message) {
     }
@@ -116,11 +138,14 @@ public final class Reseau {
     public static final Crochet<Bulle> BULLE = new Crochet<>();
     public static final Crochet<Lueurs> LUEURS = new Crochet<>();
     public static final Crochet<Notif> NOTIF = new Crochet<>();
+    public static final Crochet<Boutique> BOUTIQUE = new Crochet<>();
 
     public static final Crochet<Recu<Choix>> CHOIX = new Crochet<>();
     public static final Crochet<Recu<DemandeJournal>> DEMANDE_JOURNAL = new Crochet<>();
     public static final Crochet<Recu<Action>> ACTION = new Crochet<>();
     public static final Crochet<Recu<Code>> CODE = new Crochet<>();
+    public static final Crochet<Recu<Achat>> ACHAT = new Crochet<>();
+    public static final Crochet<Recu<Vente>> VENTE = new Crochet<>();
 
     private static int prochain;
 
@@ -162,6 +187,24 @@ public final class Reseau {
             b.writeUtf(m.point(), MAX_CLE);
             b.writeUtf(m.code(), 32);
         }, b -> new Code(b.readUtf(MAX_CLE), b.readUtf(32)), CODE);
+        versJoueur(Boutique.class, Reseau::ecrireBoutique, Reseau::lireBoutique, BOUTIQUE);
+        versServeur(Achat.class, (m, b) -> {
+            b.writeVarInt(m.entite());
+            b.writeVarInt(m.index());
+            b.writeVarInt(m.quantite());
+        }, b -> new Achat(b.readVarInt(), b.readVarInt(), b.readVarInt()), ACHAT);
+        versServeur(Vente.class, (m, b) -> {
+            b.writeVarInt(m.entite());
+            int n = Math.min(m.cases().size(), CASES);
+            b.writeVarInt(n);
+            for (int i = 0; i < n; i++) b.writeVarInt(m.cases().get(i));
+        }, b -> {
+            int e = b.readVarInt();
+            int n = Math.min(b.readVarInt(), CASES);
+            List<Integer> l = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) l.add(b.readVarInt());
+            return new Vente(e, l);
+        }, VENTE);
     }
 
     private static <T> void versJoueur(Class<T> c, BiConsumer<T, FriendlyByteBuf> ecrire, Function<FriendlyByteBuf, T> lire, Crochet<T> crochet) {
@@ -317,6 +360,49 @@ public final class Reseau {
         List<SLigne> l = new ArrayList<>(n);
         for (int i = 0; i < n; i++) l.add(new SLigne(Texte.lire(b), b.readVarInt(), b.readVarInt(), b.readVarInt() - 1, b.readBoolean(), b.readVarInt()));
         return new Suivi(pnj, titre, l);
+    }
+
+    /** Cases de l'inventaire principal (barre d'objets comprise). */
+    public static final int CASES = 36;
+    private static final int MAX_ARTICLES = 256;
+
+    private static void ecrireBoutique(Boutique m, FriendlyByteBuf b) {
+        b.writeInt(m.entite());
+        b.writeBoolean(m.ouvrir());
+        m.nom().ecrire(b);
+        m.role().ecrire(b);
+        b.writeVarLong(m.solde());
+        b.writeBoolean(m.rachat());
+        int n = Math.min(m.articles().size(), MAX_ARTICLES);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            Article a = m.articles().get(i);
+            b.writeVarInt(a.index());
+            b.writeItem(a.objet());
+            b.writeVarLong(a.prix());
+            b.writeVarInt(a.rarete() + 1);
+        }
+        for (int i = 0; i < CASES; i++) {
+            b.writeVarInt(m.prixSlots() == null || i >= m.prixSlots().length ? 0 : m.prixSlots()[i]);
+            b.writeVarInt(m.rarSlots() == null || i >= m.rarSlots().length ? 0 : m.rarSlots()[i] + 1);
+        }
+    }
+
+    private static Boutique lireBoutique(FriendlyByteBuf b) {
+        int e = b.readInt();
+        boolean ouvrir = b.readBoolean();
+        Texte nom = Texte.lire(b), role = Texte.lire(b);
+        long solde = b.readVarLong();
+        boolean rachat = b.readBoolean();
+        int n = Math.min(b.readVarInt(), MAX_ARTICLES);
+        List<Article> l = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) l.add(new Article(b.readVarInt(), b.readItem(), b.readVarLong(), b.readVarInt() - 1));
+        int[] prix = new int[CASES], rar = new int[CASES];
+        for (int i = 0; i < CASES; i++) {
+            prix[i] = b.readVarInt();
+            rar[i] = b.readVarInt() - 1;
+        }
+        return new Boutique(e, ouvrir, nom, role, solde, rachat, l, prix, rar);
     }
 
     private static void ecrirePos(FriendlyByteBuf b, List<BlockPos> l) {

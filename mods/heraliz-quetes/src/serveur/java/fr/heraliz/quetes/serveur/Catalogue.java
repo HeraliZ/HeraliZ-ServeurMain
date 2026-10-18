@@ -63,6 +63,7 @@ final class Catalogue {
             }
         }
         pnj = Map.copyOf(m);
+        Marchands.oublierCache();
         LOG.info("[heraliz_quetes] {} PNJ chargés ({} quêtes de suite, {} modèles de contrats){}", m.size(),
                 m.values().stream().mapToInt(p -> p.suite.size()).sum(), m.values().stream().mapToInt(p -> p.contrats.size()).sum(),
                 erreurs.isEmpty() ? "" : " ; " + erreurs.size() + " problème(s)");

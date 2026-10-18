@@ -4,11 +4,7 @@
 # retiré du dépôt qui ne doit plus servir sur le serveur.
 # Un chemin par ligne ; les lignes vides et celles qui commencent par # sont ignorées.
 
-# 18/10 : les 7 PNJ retirés (il ne reste que le Commandant Varga)
-heraliz_quetes/pnj/doyen.json
-heraliz_quetes/pnj/jack.json
-heraliz_quetes/pnj/jacqueline.json
+# 18/10 : PNJ retirés (Jacqueline, Mila, Jack et le Doyen sont revenus en marchands)
 heraliz_quetes/pnj/ferraille.json
 heraliz_quetes/pnj/nadia.json
-heraliz_quetes/pnj/mila.json
 heraliz_quetes/pnj/lucky.json

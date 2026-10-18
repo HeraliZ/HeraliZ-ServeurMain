@@ -1,0 +1,70 @@
+{
+  "id": "mila",
+  "nom": "Mila",
+  "skin": "mila",
+  "apparence": {
+    "skin_tone": "beige",
+    "eye_shape": "almond",
+    "eye_color": "amber",
+    "brow_style": "straight",
+    "nose_style": "pointed",
+    "mouth_style": "smile",
+    "lip_color": "dark",
+    "hair_style": "undercut",
+    "hair_color": "platinum",
+    "facial_hair": "none",
+    "shirt_style": "jacket",
+    "shirt_color": "black",
+    "shirt_color2": "burgundy",
+    "pants_style": "ripped_jeans",
+    "pants_color": "black",
+    "shoes_style": "boots",
+    "shoes_color": "brown",
+    "marks": [
+      "scar_right"
+    ],
+    "wear": "clean",
+    "eye_size": 3
+  },
+  "role": {
+    "fr": "Racheteuse",
+    "en": "Buyer",
+    "ru": "Скупщица"
+  },
+  "ambiance": [
+    "Tout se revend.",
+    "Un bijou, ça ne se mange pas. Moi, je paie."
+  ],
+  "presentation": "Bijoux, objets de valeur, composants : je rachète tout. Montre-moi ce que tu as.",
+  "accueil": {
+    "inconnu": "Bijoux, objets de valeur, composants : je rachète tout. Montre-moi ce que tu as.",
+    "connu": "Bijoux, objets de valeur, composants : je rachète tout."
+  },
+  "marchand": {
+    "type": "rachat",
+    "rachat": [
+      {
+        "tag": "heraliz_composants:vente",
+        "prix": {
+          "commun": 20,
+          "peu_commun": 50,
+          "rare": 120,
+          "epique": 300,
+          "legendaire": 700,
+          "mythique": 1500
+        }
+      },
+      {
+        "tag": "heraliz_composants:tous",
+        "prix": {
+          "commun": 10,
+          "peu_commun": 25,
+          "rare": 60,
+          "epique": 150,
+          "legendaire": 350,
+          "mythique": 750
+        }
+      }
+    ]
+  }
+}

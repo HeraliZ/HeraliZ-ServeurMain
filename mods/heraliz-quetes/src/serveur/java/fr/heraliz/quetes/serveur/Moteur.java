@@ -268,7 +268,9 @@ final class Moteur {
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         boolean retire = false;
         for (Donnees.DActive a : new ArrayList<>(j.actives.values())) {
-            if (Catalogue.pnj(a.pnj) == null || !a.suite.isEmpty() && def(a) == null) {
+            Defs.Pnj pnj = Catalogue.pnj(a.pnj);
+            boolean perdue = pnj == null || (a.suite.isEmpty() ? pnj.contrats.isEmpty() : def(a) == null);
+            if (perdue) {
                 j.actives.remove(a.cle);
                 retirerObjets(p, a.cle);
                 if (a.cle.equals(j.suivie)) j.suivie = "";
