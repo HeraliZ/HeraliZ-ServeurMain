@@ -490,7 +490,7 @@ Règles :
    - `mods/` devient la copie exacte de `livraison/mods serveur` : les anciennes versions sont retirées ;
    - plugins : les jars du Ptero qui ne sont pas dans le dépôt sont SUPPRIMÉS un par un (leurs dossiers de données
      restent), ceux du dépôt sont envoyés avec leurs réglages (jamais de base de données) ;
-   - `config/`, `tacz/`, `heralisz_matchs/` et `mohist-config/` sont complétés ou mis à jour, sans rien supprimer ; `config/spartan/officiel.json` est remplacé
+   - `config/`, `tacz/`, `heralisz_matchs/` et `mohist-config/` sont complétés ou mis à jour, sans rien supprimer (sauf les fichiers listés dans `serveur/config_retires.txt` et `serveur/tacz_retires.txt`, effacés du Ptero) ; `config/spartan/officiel.json` est remplacé
      (les bans et preuves de Spartan, dans `config/spartan/`, ne sont jamais touchés) ;
    - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde (nom lu dans le `server.properties` du Ptero) :
      **les configs du dépôt font foi**, un réglage changé à la main sur le serveur est écrasé au prochain envoi ;

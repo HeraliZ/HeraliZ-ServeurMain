@@ -332,6 +332,16 @@ jobs:
               for n in tacz:
                   f.write('rm -f "/tacz/%s"' % n + chr(10))
           print("fichiers de gunpacks retirés du Ptero (s'ils y sont encore) :", len(tacz))
+          # configs : fichiers retirés du dépôt, listés dans serveur/config_retires.txt, effacés de /config après la copie
+          conf = []
+          for l in open("serveur/config_retires.txt", encoding="utf-8"):
+              l = l.strip()
+              if l and not l.startswith("#") and ".." not in l and not l.startswith("/") and '"' not in l:
+                  conf.append(l)
+          with open("retirer_config.lftp", "w", encoding="utf-8") as f:
+              for n in conf:
+                  f.write('rm -f "/config/%s"' % n + chr(10))
+          print("fichiers de config retirés du Ptero (s'ils y sont encore) :", len(conf))
           EOF
           # le monde en service : level-name du server.properties du Ptero (celui du dépôt à défaut)
           MONDE=""
@@ -351,6 +361,7 @@ jobs:
             mirror -R -P 8 --exclude-glob *.jar --exclude-glob *.db --exclude-glob *.sqlite livraison/plugins /plugins;
             mput -O /plugins livraison/plugins/*.jar;
             mirror -R -P 8 serveur/config /config;
+            source retirer_config.lftp;
             mkdir -p -f /config/spartan; put -O /config/spartan livraison/spartan/officiel.json;
             mirror -R -P 8 serveur/defaultconfigs /defaultconfigs;
             mirror -R -P 8 serveur/defaultconfigs /$MONDE/serverconfig;
