@@ -341,7 +341,7 @@ final class Ponts {
     }
 
     // ------------------------------------------------------------------ tutoriel des bases (CRac)
-    private static Method tutoEtat, tutoProgression, tutoLancer, tutoEtapes, tutoJours;
+    private static Method tutoEtat, tutoProgression, tutoLancer, tutoEtapes, tutoJours, tutoSas;
     private static boolean tutoAbsent;
 
     private static boolean tuto() {
@@ -357,6 +357,11 @@ final class Ponts {
                 tutoJours = c.getMethod("joursProtection");
             } catch (NoSuchMethodException ancien) {
                 tutoEtapes = tutoJours = null;   // CRac 1.7 : 6 étapes, 4 jours
+            }
+            try {
+                tutoSas = c.getMethod("sas", ServerPlayer.class);
+            } catch (NoSuchMethodException ancien) {
+                tutoSas = null;   // avant CRac 1.8.4 : pas de sas posé par Varga
             }
             return true;
         } catch (Throwable t) {
@@ -383,6 +388,16 @@ final class Ponts {
             return (int) tutoEtapes.invoke(null);
         } catch (Throwable t) {
             return 6;
+        }
+    }
+
+    /** Varga vient de poser le sas (2e porte) devant la cabane de ce joueur. */
+    static boolean tutoSas(ServerPlayer p) {
+        if (!tuto() || tutoSas == null) return false;
+        try {
+            return (boolean) tutoSas.invoke(null, p);
+        } catch (Throwable t) {
+            return false;
         }
     }
 

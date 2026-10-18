@@ -1149,6 +1149,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   permission 4 ; `bases/EffacerBase`) : la base d'un joueur (connecté ou non) disparaît d'un coup, contenu compris, rien
   au sol : pièces et objets posés du claim de son groupe, Claim Block et planches, claim libéré, et ses bâtiments sans
   claim ; le tutoriel ne change pas (`/tuto rejouer` pour le refaire).
+  Puis (18/10, CRac 1.8.4-beta, Quêtes 1.6.3) : caisse en métal juste à côté du Claim Block, sur un côté (case verte,
+  `Cabane.placeCaisse` ; refusée à plus de 2 blocs de lui), jamais au milieu du passage devant la porte ; à la fin, Varga
+  pose un sas comme dans Rust (`Cabane.sas` : fondation triangle contre l'entrée, un mur, une 2e porte, plancher triangle
+  en toit, en bois, sans coût ; rien si le terrain l'empêche, `TutorielApi.sas`) ; mots de la fin en trois messages
+  (sas et jours de protection ; raids, raid block, pierre des carrières et métal de la carte pour renforcer ; /home,
+  /spawn, missions).
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;

@@ -326,9 +326,9 @@ TEXTES = {
                                     "counter on the right tells you how many.",
                                     "База разрушается, если за ней не следить. Нажми правой кнопкой на Claim Block и положи туда "
                                     "дубовые доски: счётчик справа покажет, сколько нужно."),
-    "heraliz_quetes.tuto.radio.9": ("Dernière chose : prends la caisse en métal et pose-la sur la case verte, près de la porte. Range tes affaires dedans, et ferme bien la porte derrière toi : une porte ouverte, c'est une invitation.",
-                                   'One last thing: take the metal crate and place it on the green spot, near the door. Store your gear in it, and always close the door behind you: an open door is an invitation.',
-                                   'Последнее: возьми металлический ящик и поставь его на зелёную клетку у двери. Сложи туда вещи и всегда закрывай за собой дверь: открытая дверь — это приглашение.'),
+    "heraliz_quetes.tuto.radio.9": ("Dernière chose : prends la caisse en métal et pose-la sur la case verte, juste à côté du Claim Block. Range tes affaires dedans, et ferme bien la porte derrière toi : une porte ouverte, c'est une invitation.",
+                                   'One last thing: take the metal crate and place it on the green spot, right next to the Claim Block. Store your gear in it, and always close the door behind you: an open door is an invitation.',
+                                   'Последнее: возьми металлический ящик и поставь его на зелёную клетку рядом с Claim Block. Сложи туда вещи и всегда закрывай за собой дверь: открытая дверь — это приглашение.'),
     "heraliz_quetes.tuto.aide.1": ("Regarde ta barre d'objets en bas de l'écran : la case verte, c'est le plan. Appuie sur son chiffre ou fais tourner la molette jusqu'à elle.",
                                'Look at your hotbar at the bottom of the screen: the green slot is the plan. Press its number or scroll the mouse wheel to it.',
                                'Посмотри на панель предметов внизу экрана: зелёная ячейка — это план. Нажми её цифру или прокрути колёсико мыши до неё.'),
@@ -353,22 +353,21 @@ TEXTES = {
     "heraliz_quetes.tuto.aide.8": ("Vise le Claim Block et fais un clic droit : un petit écran s'ouvre. Fais glisser des planches de chêne de ton inventaire dans la case des planches, en haut.",
                                'Aim at the Claim Block and right click: a small screen opens. Drag oak planks from your inventory into the planks slot at the top.',
                                'Наведись на Claim Block и нажми правый клик: откроется окно. Перетащи дубовые доски из инвентаря в ячейку досок сверху.'),
-    "heraliz_quetes.tuto.aide.9": ('La caisse en métal est dans ta barre (elle clignote). Prends-la et vise le carré vert près de la porte : clic droit pour la poser.',
-                               'The metal crate is in your hotbar (it blinks). Take it and aim at the green square near the door: right click to place it.',
-                               'Металлический ящик на твоей панели (он мигает). Возьми его и наведись на зелёный квадрат у двери: правый клик, чтобы поставить.'),
-    "heraliz_quetes.tuto.radio.fin": ("Beau travail. Regarde-la, ta base. Elle est à l'abri des raids pendant %s jours. Ensuite, n'importe "
-                                      "qui pourra venir la piller : améliore-la en pierre puis en métal, et garde des planches dans le "
-                                      "Claim Block.",
-                                      "Nice work. Look at it, your base. It's safe from raids for %s days. After that, anyone can come "
-                                      "and loot it: upgrade it to stone then metal, and keep planks in the Claim Block.",
-                                      "Хорошая работа. Посмотри на свою базу. Она защищена от рейдов на %s дн. Потом любой сможет её "
-                                      "разграбить: улучшай её до камня, затем до металла, и держи доски в Claim Block."),
-    "heraliz_quetes.tuto.radio.fin2": ("Je te laisse te débrouiller. Du spawn, /home te ramène ici ; depuis ta base, /spawn te ramène au "
-                                       "spawn. Quand tu voudras des missions, viens me voir au spawn. Rompez.",
-                                       "I'll let you manage on your own. From spawn, /home brings you back here; from your base, /spawn "
-                                       "takes you to spawn. When you want missions, come and see me at spawn. Dismissed.",
-                                       "Дальше справляйся сам. Со спавна /home вернёт тебя сюда, а с базы /spawn — на спавн. Когда "
-                                       "захочешь заданий, приходи ко мне на спавн. Вольно."),
+    "heraliz_quetes.tuto.aide.9": ('La caisse en métal est dans ta barre (elle clignote). Prends-la et vise le carré vert juste à côté du Claim Block : clic droit pour la poser.',
+                                  'The metal crate is in your hotbar (it blinks). Take it and aim at the green square right next to the Claim Block: right click to place it.',
+                                  'Металлический ящик на твоей панели (он мигает). Возьми его и наведись на зелёный квадрат рядом с Claim Block: правый клик, чтобы поставить.'),
+    "heraliz_quetes.tuto.radio.fin": ("Beau travail. Regarde-la, ta base. Je t'ai ajouté un sas devant l'entrée : deux portes à forcer au lieu d'une. Pendant %s jours, personne ne peut la raider.",
+                                     'Nice work. Look at it, your base. I added an airlock in front of the entrance: two doors to break instead of one. For %s days, nobody can raid it.',
+                                     'Хорошая работа. Посмотри на свою базу. Я добавил тамбур перед входом: две двери вместо одной. %s дн. никто не сможет её рейдить.'),
+    "heraliz_quetes.tuto.radio.fin2": ("Après, n'importe qui pourra l'attaquer. Pendant une attaque, ta base passe en raid block : plus moyen de construire ni de réparer. Alors prépare-toi avant : ramène de la pierre des carrières et du métal de la carte pour renforcer tes murs et tes portes, et garde des planches dans le Claim Block.",
+                                      'After that, anyone can attack it. During an attack, your base goes into raid block: no more building or repairing. So get ready before: bring stone from the quarries and metal from the map to reinforce your walls and doors, and keep planks in the Claim Block.',
+                                      'Потом напасть сможет любой. Во время атаки база попадает в raid block: ни строить, ни чинить нельзя. Так что готовься заранее: принеси камень из карьеров и металл с карты, чтобы укрепить стены и двери, и держи доски в Claim Block.'),
+    "heraliz_quetes.tuto.radio.fin_sans_sas": ('Beau travail. Regarde-la, ta base. Pendant %s jours, personne ne peut la raider.',
+                                              'Nice work. Look at it, your base. For %s days, nobody can raid it.',
+                                              'Хорошая работа. Посмотри на свою базу. %s дн. никто не сможет её рейдить.'),
+    "heraliz_quetes.tuto.radio.fin3": ('Je te laisse te débrouiller. Du spawn, /home te ramène ici ; depuis ta base, /spawn te ramène au spawn. Quand tu voudras des missions, viens me voir au spawn. Rompez.',
+                                      "I'll let you manage on your own. From spawn, /home brings you back here; from your base, /spawn takes you to spawn. When you want missions, come and see me at spawn. Dismissed.",
+                                      'Дальше справляйся сам. Со спавна /home вернёт тебя сюда, а с базы /spawn — на спавн. Когда захочешь заданий, приходи ко мне на спавн. Вольно.'),
     "heraliz_quetes.tuto.radio_entete": ("Radio · 7e rég.", "Radio · 7th Reg.", "Рация · 7-й полк"),
     "heraliz_quetes.tuto.radio_etape": ("Étape %s/%s", "Step %s/%s", "Этап %s/%s"),
     "heraliz_quetes.tuto.radio_fini": ("Terminé", "Done", "Готово"),

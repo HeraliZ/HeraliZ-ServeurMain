@@ -46,6 +46,11 @@ public final class TutorielApi {
         return (int) Math.round(BasesReglages.d(BasesReglages.PROTECTION_JOURS, 4.0));
     }
 
+    /** Varga a posé le sas (2e porte) devant la cabane à la fin du tutoriel de ce joueur (depuis le démarrage du serveur). */
+    public static boolean sas(ServerPlayer p) {
+        return Tutoriel.SAS.contains(p.getUUID());
+    }
+
     /** Lance le tutoriel (titres, kit, envoi dans le monde des bases) d'un joueur qui ne l'a pas fait ; false sinon. */
     public static boolean lancer(ServerPlayer p) {
         if (etat(p) != 0) {

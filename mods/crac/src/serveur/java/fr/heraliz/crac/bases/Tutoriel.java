@@ -150,6 +150,8 @@ public final class Tutoriel {
         "zombies", "casino", "depart", "extractions");
     /** Dernier avertissement (heure en ms) par joueur, pour ne pas inonder sa barre d'action. */
     private static final Map<UUID, Long> AVERTI = new HashMap<>();
+    /** Joueurs à qui Varga vient de poser le sas (pour ce qu'il leur dit à la radio, HeraliZ Quêtes). */
+    static final Set<UUID> SAS = new HashSet<>();
     /** Dernier guide envoyé à chaque joueur (S2CTuto), pour ne renvoyer que ce qui change. */
     private static final Map<UUID, S2CTuto> GUIDES = new HashMap<>();
 
@@ -293,6 +295,11 @@ public final class Tutoriel {
             return;
         }
         if (progression(p)[0] >= FINIE) {
+            ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+            Building b = bases == null ? null : batiment(bases, p, j);
+            if (b != null && Cabane.sas(bases, p, b)) {
+                SAS.add(p.getUUID());
+            }
             cinemaFin(p, j);
             j.etape = BasesDonnees.Etape.FINI;
             j.batiment = -1L;
@@ -742,9 +749,21 @@ public final class Tutoriel {
      */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void poser(BlockEvent.EntityPlaceEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || !enCours(p) || e.getPlacedBlock().getBlock() instanceof ClaimBlock
-            // la caisse est déjà dans le monde quand l'événement part : la cabane se lit alors finie
-            || e.getPlacedBlock().getBlock() instanceof MetalCrateBlock && progression(p)[0] >= Cabane.COFFRE) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || !enCours(p) || e.getPlacedBlock().getBlock() instanceof ClaimBlock) {
+            return;
+        }
+        // la caisse est déjà dans le monde quand l'événement part : la cabane se lit alors finie
+        if (e.getPlacedBlock().getBlock() instanceof MetalCrateBlock && progression(p)[0] >= Cabane.COFFRE) {
+            // seulement contre le Claim Block (la case verte) : jamais au milieu du passage, devant la porte
+            ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+            Building b = bases == null ? null : batiment(bases, p, BasesDonnees.get(p.server).joueur(p.getUUID()));
+            Claim c = b == null ? null : StructureService.claimOf(bases, b);
+            if (c == null || Math.abs(e.getPos().getX() - c.anchor().getX()) + Math.abs(e.getPos().getZ() - c.anchor().getZ()) <= 2
+                && Math.abs(e.getPos().getY() - c.anchor().getY()) <= 1) {
+                return;
+            }
+            e.setCanceled(true);
+            avertir(p, T.t("crac.tuto.refus.caisse", "Pose la caisse sur la case verte, à côté du Claim Block."));
             return;
         }
         e.setCanceled(true);

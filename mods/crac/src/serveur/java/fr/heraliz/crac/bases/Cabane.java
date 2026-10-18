@@ -21,6 +21,7 @@ import fr.heraliz.crac.claim.Claim;
 import fr.heraliz.crac.claim.UpkeepResource;
 import fr.heraliz.crac.registry.ModItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -147,7 +148,7 @@ final class Cabane {
 
         // la caisse en métal, dans la cabane
         if (!caisseDans(bases, pieces)) {
-            return new Etat(COFFRE, 0, 1, List.of(), List.of(surFondation(f)), ModItems.METAL_CRATE.get(), -1, false);
+            return new Etat(COFFRE, 0, 1, List.of(), List.of(placeCaisse(bases, c.anchor(), f, s)), ModItems.METAL_CRATE.get(), -1, false);
         }
         return new Etat(FINIE, 1, 1, List.of(), List.of(), null, -1, false);
     }
@@ -179,7 +180,7 @@ final class Cabane {
     }
 
     /** L'arête de {@code a} que touche {@code b} (0 à 3), -1 si elles ne se touchent pas. */
-    private static int areteCommune(Piece a, Piece b) {
+    static int areteCommune(Piece a, Piece b) {
         for (int i = 0; i < 4; i++) {
             PieceKey voisin = Topology.across(a.key(), i, PieceKind.FOUNDATION, a.key().h());
             if (voisin.footprint().equals(b.key().footprint())) {
@@ -194,6 +195,58 @@ final class Cabane {
         Vec3 c = f.key().centreWorld();
         int y = f.key().origin().getY() + Math.floorDiv(24 * f.key().top(), 16);
         return BlockPos.containing(c.x, y, c.z);
+    }
+
+    /**
+     * Fin du tutoriel : Varga ajoute un sas devant la porte, comme dans Rust : une fondation triangle contre l'entrée,
+     * fermée par un mur et une deuxième porte, avec son plancher en toit, tout en bois. Vrai si le sas est posé (le
+     * terrain peut l'empêcher : rien n'est posé alors).
+     */
+    static boolean sas(ServerLevel level, ServerPlayer p, Building b) {
+        StructureStore store = StructureService.store(level);
+        List<Piece> fondations = new ArrayList<>();
+        for (Piece x : store.piecesOf(b)) {
+            if (x.kind() == PieceKind.FOUNDATION) {
+                fondations.add(x);
+            }
+        }
+        if (fondations.size() < 2) {
+            return false;
+        }
+        fondations.sort(Comparator.comparingLong(x -> x.id));
+        Piece f = fondations.get(0);
+        int af = areteCommune(f, fondations.get(1));
+        if (af < 0) {
+            return false;
+        }
+        PieceKey tri = Topology.across(f.key(), (af + 2) % 4, PieceKind.TRI_FOUNDATION, f.key().h());
+        if (!StructureService.placeAdmin(level, tri, Tier.WOOD, p.getUUID()).ok()) {
+            return false;
+        }
+        int top = f.key().top();
+        PieceKey porte = Topology.wallOn(tri, 1, PieceKind.DOORWAY, top, 0);
+        StructureService.placeAdmin(level, porte, Tier.WOOD, p.getUUID());
+        StructureService.placeAdmin(level, Topology.wallOn(tri, 2, PieceKind.WALL, top, 0), Tier.WOOD, p.getUUID());
+        StructureService.placeAdmin(level, PieceKey.on(PieceKind.TRI_FLOOR, tri.origin(), tri.footprint(), porte.top(), 0),
+            Tier.WOOD, p.getUUID());
+        return true;
+    }
+
+    /**
+     * Où poser la caisse : juste à côté du Claim Block, sur un côté (pas devant la porte ni au milieu du passage), sinon
+     * derrière lui ; la première case libre posée sur quelque chose.
+     */
+    static BlockPos placeCaisse(ServerLevel level, BlockPos claim, Piece f, Piece s) {
+        Vec3 fc = f.key().centreWorld(), sc = s.key().centreWorld();
+        double dx = sc.x - fc.x, dz = sc.z - fc.z;
+        Direction fond = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? Direction.EAST : Direction.WEST) : (dz > 0 ? Direction.SOUTH : Direction.NORTH);
+        BlockPos[] places = {claim.relative(fond.getClockWise()), claim.relative(fond.getCounterClockWise()), claim.relative(fond)};
+        for (BlockPos q : places) {
+            if (level.getBlockState(q).isAir() && !level.getBlockState(q.below()).isAir()) {
+                return q;
+            }
+        }
+        return places[0];
     }
 
     /** Une caisse en métal est posée dans la cabane (au-dessus de ses fondations). */
