@@ -805,7 +805,9 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   `fr.heralisz.utils.api.SpawnApi`, à ne jamais renommer). **Borne de départ** (`heralisz_utils:borne_depart`, modèle de
   `mods/heralisz-utils/outils/borne_depart.py`, provisoire à valider) : clic droit au spawn → 5 s sans bouger → vraie
   téléportation sur la carte, à un point sûr tiré au hasard (sol naturel à ciel ouvert, pas d'eau, loin des joueurs,
-  hors zones dangereuses, jamais de terrain généré), fondu et 5 s de protection. Staff : `/depart borne | point
+  hors zones dangereuses, jamais de terrain généré, jamais sous un arbre ; Utils 2.16.2 : à 200 blocs au moins du bord de
+  chaque ville, cercles de `config/heralisz_clans/zones.json`, réglage `distance_villes`, points posés à la main non
+  concernés), fondu et 5 s de protection. Staff : `/depart borne | point
   ajouter|retirer|tp|liste <nom> | zone ajouter <nom> <rayon> | essai [tp] | joueur <cibles> | info`. Points gardés avec
   la carte (`data/heraliz_depart.dat`), réglages dans `heraliz_spawn-server.toml`.
   **Spawn composé** (15/10) : grotte du terminus (réveil -61 265 2, épave, inchangés ; porte de service de la niche

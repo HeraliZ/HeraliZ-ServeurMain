@@ -67,6 +67,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
@@ -78,7 +79,8 @@ import net.minecraftforge.registries.ForgeRegistries;
  * protection de quelques secondes à l'arrivée.</li>
  * <li>Points d'arrivée : points exacts et zones (disques) posés par le staff (/depart point, /depart zone), tirés au
  * hasard ; dans une zone (ou dans toute la bordure de la carte si rien n'est posé), un sol de la liste « sols » avec le
- * ciel au-dessus (jamais un toit, l'eau ni l'intérieur d'un bâtiment), hors des zones dangereuses de HeraliZ Décors.
+ * ciel au-dessus (jamais un toit, l'eau, l'intérieur d'un bâtiment ni sous un arbre), hors des zones dangereuses de
+ * HeraliZ Décors et à « distance_villes » au moins du bord de chaque ville (territoires des clans).
  * Partout : place libre, aucun autre joueur à moins de « distance_joueurs », dans la bordure, et seulement dans une
  * partie de la carte déjà construite (fichier de régions présent : jamais de terrain généré).</li>
  * <li>Monde du spawn : pas de monstres, pas de combat entre joueurs (réglables), sa propre bordure centrée sur le
@@ -310,8 +312,14 @@ public final class DepartServeur {
             }
             String nom = new ArrayList<>(pd.zones.keySet()).get(k - np);
             PointsDepart.Zone z = pd.zones.get(nom);
-            double a = r.nextDouble() * Math.PI * 2, d = Math.sqrt(r.nextDouble()) * z.rayon();
-            return sol(carte, pour, Mth.floor(z.x() + 0.5 + Math.cos(a) * d), Mth.floor(z.z() + 0.5 + Math.sin(a) * d), r, "zone " + nom);
+            for (int i = 0; i < TIRAGES_VILLES; i++) {             // tirages sans rien charger tant qu'on est près d'une ville
+                double a = r.nextDouble() * Math.PI * 2, d = Math.sqrt(r.nextDouble()) * z.rayon();
+                int x = Mth.floor(z.x() + 0.5 + Math.cos(a) * d), zz = Mth.floor(z.z() + 0.5 + Math.sin(a) * d);
+                if (loinDesVilles(carte, x + 0.5, zz + 0.5)) {
+                    return sol(carte, pour, x, zz, r, "zone " + nom);
+                }
+            }
+            return null;
         }
         if (!DepartConfig.lire(DepartConfig.CARTE_ENTIERE)) {
             return null;
@@ -320,7 +328,60 @@ public final class DepartServeur {
         if (x1 <= x0 || z1 <= z0) {
             return null;
         }
-        return sol(carte, pour, Mth.floor(Mth.lerp(r.nextDouble(), x0, x1)), Mth.floor(Mth.lerp(r.nextDouble(), z0, z1)), r, "carte");
+        for (int i = 0; i < TIRAGES_VILLES; i++) {
+            int x = Mth.floor(Mth.lerp(r.nextDouble(), x0, x1)), z = Mth.floor(Mth.lerp(r.nextDouble(), z0, z1));
+            if (loinDesVilles(carte, x + 0.5, z + 0.5)) {
+                return sol(carte, pour, x, z, r, "carte");
+            }
+        }
+        return null;
+    }
+
+    /** Tirages de colonnes par essai pour trouver une colonne loin des villes (aucun tronçon chargé pour ces tirages). */
+    private static final int TIRAGES_VILLES = 64;
+
+    // villes : cercles des territoires des clans (config/heralisz_clans/zones.json), relus quand le fichier change
+    private static long villesDate = -1;
+    private static List<double[]> villes = List.of();
+
+    /** Vrai si (x, z) est à « distance_villes » au moins du bord de chaque ville (carte principale seulement). */
+    static boolean loinDesVilles(ServerLevel carte, double x, double z) {
+        int marge = DepartConfig.lire(DepartConfig.DISTANCE_VILLES);
+        if (marge <= 0 || carte != carte.getServer().overworld()) {
+            return true;
+        }
+        Path f = FMLPaths.CONFIGDIR.get().resolve("heralisz_clans").resolve("zones.json");
+        try {
+            long date = Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : 0;
+            if (date != villesDate) {
+                villesDate = date;
+                List<double[]> l = new ArrayList<>();
+                if (date != 0) {
+                    try (Reader in = Files.newBufferedReader(f, StandardCharsets.UTF_8)) {
+                        for (JsonElement e : JsonParser.parseReader(in).getAsJsonArray()) {
+                            JsonObject v = e.getAsJsonObject();
+                            if (v.has("id") && "test".equals(v.get("id").getAsString())) {
+                                continue;                          // zone d'essai du staff, pas une ville
+                            }
+                            l.add(new double[]{v.get("x").getAsDouble(), v.get("z").getAsDouble(),
+                                    v.has("rayon") ? v.get("rayon").getAsDouble() : 0.0});
+                        }
+                    }
+                }
+                villes = l;
+                HeraliszUtils.LOG.info("[spawn] {} villes évitées par la borne de départ ({})", l.size(), f);
+            }
+        } catch (Exception ex) {
+            HeraliszUtils.LOG.warn("[spawn] villes illisibles ({}) : ignorées", f, ex);
+            villes = List.of();
+        }
+        for (double[] v : villes) {
+            double dx = x - v[0], dz = z - v[1], loin = v[2] + marge;
+            if (dx * dx + dz * dz < loin * loin) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Un sol sûr dans la colonne (x, z) : sol de la liste, ciel au-dessus, place libre, pas d'eau, loin des autres. */
@@ -335,6 +396,9 @@ public final class DepartServeur {
         int y = carte.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
         if (y <= carte.getMinBuildHeight() + 1 || y >= carte.getMaxBuildHeight() - 2) {
             return null;
+        }
+        if (carte.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) > y) {
+            return null;                                           // feuillage au-dessus : sous un arbre
         }
         BlockPos pieds = new BlockPos(x, y, z);
         BlockState dessous = carte.getBlockState(pieds.below());
