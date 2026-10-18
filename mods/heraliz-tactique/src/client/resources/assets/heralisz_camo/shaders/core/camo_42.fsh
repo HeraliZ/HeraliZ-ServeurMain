@@ -479,6 +479,8 @@ vec3 darkMatterNuclear(vec3 p, out vec3 em) {
 float PART = 1.0;
 // part de la texture d'origine de l'arme à garder (0 : camo seul, 1 : texture d'origine), posée par le camo
 float KEEP_BASE = 0.0;
+// couleur de la texture d'origine au point dessiné (manches ornés : leurs motifs restent visibles sous la finition)
+vec3 BASE_COL = vec3(0.0);
 
 vec3 studio(vec3 n) {
     vec3 r = reflect(vec3(0.0, 0.0, -1.0), n);
@@ -1357,8 +1359,27 @@ vec3 uniqueFinish(vec3 p, out vec3 em) {
     return metalShade(p, base, tint, gloss);
 }
 
+#ifndef ORNE_BAS
+#define ORNE_BAS 0.55
+#define ORNE_HAUT 0.7
+#endif
+// Manche orné (Lame de Desmoulins…) : fond noir, les motifs clairs de la texture d'origine (filets, étoile) repris dans la
+// finition de la lame (motif), les pierres colorées gardent leur couleur, avivées
+vec3 ornateHandle(vec3 p, vec3 motif) {
+    float lum = dot(BASE_COL, vec3(0.299, 0.587, 0.114));
+    float sat = max(max(BASE_COL.r, BASE_COL.g), BASE_COL.b) - min(min(BASE_COL.r, BASE_COL.g), BASE_COL.b);
+    vec3 dark = metalShade(p, mix(hexc(0x0a0a0c), hexc(0x17181b), fbm(p * 40.0, 2)), 0.0, 0.4);
+    float m = smoothstep(ORNE_BAS, ORNE_HAUT, lum) * (1.0 - smoothstep(0.18, 0.32, sat));
+    vec3 col = mix(dark, motif * (0.75 + 0.35 * lum), m);
+    float gem = smoothstep(0.18, 0.32, sat);
+    return mix(col, BASE_COL * 1.35 + 0.12 * studio(normalize(viewNormal)), gem);
+}
 vec3 knifeFinish(vec3 p, out vec3 em) {
     em = vec3(0.0);
+    bool orne = abs(PART - 0.68) < 0.02;                                            // manche orné : motifs sur fond noir
+    if (orne) {
+        PART = 1.0;
+    }
     if (PART > 0.62 && PART <= 0.9) {                                                // manche caoutchouc (Karambit, M9)
 #if CAMO_ID >= 100
         return uniqueHandle(p, em);                                                 // finitions exclusives : manche assorti
@@ -1422,6 +1443,9 @@ vec3 knifeFinish(vec3 p, out vec3 em) {
     // Gamma Doppler Emerald : vert émeraude profond et saturé, nuages vert vif, volutes vert sombre (image de référence)
     col = gemDoppler(p, hexc(0x002a0e), hexc(0x009a3c), hexc(0x12e064), hexc(0xb0ffc8), 0.12, vec3(13.7, 2.1, 5.3), em);
 #endif
+    if (orne) {
+        return ornateHandle(p, col);
+    }
     return col * metal;
 }
 
@@ -2435,6 +2459,7 @@ void main() {
     if (CamoId > 0 && inRect && camoCovers(pm.a, CamoParts)) {
         PART = pm.a;
         KEEP_BASE = 0.0;
+        BASE_COL = base.rgb;
         VN_DETAIL = normalize(viewNormal);
         appliquerRelief(pm.xyz, pm.a);
 #ifdef CAMO_RELIEF

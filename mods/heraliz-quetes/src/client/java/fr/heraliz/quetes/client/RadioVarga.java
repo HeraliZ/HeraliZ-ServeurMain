@@ -21,7 +21,8 @@ import java.util.List;
  * La radio du Commandant Varga, en bas à gauche de l'écran (maquette A « radio carrée », validée le 18/10) : son
  * portrait (sa vraie apparence de PNJ : skin CaraCrea, sinon son skin), son nom, la consigne qui s'écrit lettre par
  * lettre, et l'avancée du tutoriel des bases (6 petites barres, « ÉTAPE n/6 »). Le serveur envoie chaque consigne
- * ({@link Reseau.Radio}) ; l'encadré s'efface quelques secondes après la fin de la phrase et revient à la suivante.
+ * ({@link Reseau.Radio}) ; la consigne reste à l'écran tant que l'étape n'est pas faite (la suivante la remplace) ; seul
+ * le mot de la fin s'efface tout seul, quelques secondes après.
  * Dessiné dans un repère de 640 × 360 (même taille à l'écran quelle que soit l'échelle de l'interface).
  */
 public final class RadioVarga {
@@ -33,8 +34,8 @@ public final class RadioVarga {
     /** Taille du texte dans le repère 640 × 360. */
     private static final float TXT = 0.7F;
     private static final int LARGEUR = 210, HAUTEUR = 54, PORTRAIT = 44;
-    /** Une lettre toutes les 28 ms ; l'encadré reste 10 s après la fin de la phrase (14 s pour le mot de la fin). */
-    private static final long LETTRE_MS = 28, RESTE_MS = 10_000, RESTE_FIN_MS = 14_000, FONDU_MS = 600;
+    /** Une lettre toutes les 28 ms ; le mot de la fin reste 14 s après la fin de la phrase. */
+    private static final long LETTRE_MS = 28, RESTE_FIN_MS = 14_000, FONDU_MS = 600;
 
     private static Reseau.Radio radio;
     private static long debut;
@@ -67,7 +68,8 @@ public final class RadioVarga {
         long age = System.currentTimeMillis() - debut;
         int lettres = (int) Math.min(texte.length(), age / LETTRE_MS);
         long finPhrase = texte.length() * LETTRE_MS;
-        long reste = (r.etape() == 0 ? RESTE_FIN_MS : RESTE_MS) - (age - finPhrase);
+        // une consigne reste jusqu'à la suivante ; le mot de la fin s'efface
+        long reste = r.etape() == 0 ? RESTE_FIN_MS - (age - finPhrase) : Long.MAX_VALUE;
         if (reste <= 0) {
             radio = null;
             return;
@@ -81,14 +83,21 @@ public final class RadioVarga {
         float s = Math.min(w / 640F, h / 360F);
         g.pose().pushPose();
         g.pose().scale(s, s, 1);
-        dessiner(g, mc.font, r, texte.substring(0, lettres), lettres < texte.length(), (int) (h / s), alpha, s);
+        dessiner(g, mc.font, r, texte, lettres, (int) (h / s), alpha, s);
         g.pose().popPose();
     }
 
-    private static void dessiner(GuiGraphics g, Font f, Reseau.Radio r, String montre, boolean tape, int hv, float alpha, float s) {
+    private static void dessiner(GuiGraphics g, Font f, Reseau.Radio r, String texte, int lettres, int hv, float alpha, float s) {
         int a = (int) (255 * alpha);
-        int x = 8, y = hv - 6 - 22 - 8 - HAUTEUR;
-        Ui.glass(g, x, y, LARGEUR, HAUTEUR, (int) (205 * alpha));
+        String montre = texte.substring(0, lettres);
+        boolean tape = lettres < texte.length();
+        // hauteur d'après la phrase entière (l'encadré ne grandit pas pendant qu'elle s'écrit)
+        int tx0 = 8 + 5 + PORTRAIT + 7;
+        int largeurTexte = (int) ((8 + LARGEUR - 8 - tx0) / TXT);
+        int nLignes = f.split(Ui.lit(texte, Ui.FONT), largeurTexte).size();
+        int hauteur = Math.max(HAUTEUR, 16 + (int) Math.ceil(nLignes * 8.5F) + 11);
+        int x = 8, y = hv - 6 - 22 - 8 - hauteur;
+        Ui.glass(g, x, y, LARGEUR, hauteur, (int) (205 * alpha));
 
         // portrait : fond kaki, buste du PNJ, lignes de radio, cadre
         int px = x + 5, py = y + 5;
@@ -117,7 +126,6 @@ public final class RadioVarga {
         }
 
         // la consigne, lettre par lettre
-        int largeurTexte = (int) ((x + LARGEUR - 8 - tx) / TXT);
         List<FormattedCharSequence> lignes = f.split(Ui.lit(montre, Ui.FONT), largeurTexte);
         float ly = y + 16;
         float finX = tx;
@@ -137,7 +145,7 @@ public final class RadioVarga {
 
         // avancée : 6 barres et « ÉTAPE n/6 » (« TERMINÉ » pour le mot de la fin)
         int total = Math.max(1, r.total());
-        int bx = tx, by = y + HAUTEUR - 7;
+        int bx = tx, by = y + hauteur - 7;
         for (int i = 0; i < total; i++) {
             int c = r.etape() == 0 || i < r.etape() - 1 ? Ui.OK : i == r.etape() - 1 ? Ui.AMBRE : 0x3E424A;
             g.fill(bx + i * 9, by, bx + i * 9 + 7, by + 2, Ui.argb(c, a));

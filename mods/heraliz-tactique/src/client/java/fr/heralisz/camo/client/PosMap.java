@@ -344,7 +344,9 @@ public final class PosMap {
                px[i * 4] = sa * (lerp2(corner, a, s, t) - c[a]) / len;
                px[i * 4 + 1] = sb * (lerp2(corner, b, s, t) - c[b]) / len;
                px[i * 4 + 2] = (lerp2(corner, d, s, t) - c[d]) / len;
-               px[i * 4 + 3] = q.part;
+               // manche coupé texel par texel (batte : la même face va du pommeau au bout)
+               px[i * 4 + 3] = knife != null && knife.manche > 0 && q.part == KnifeType.Part.BLADE.code
+                  && px[i * 4] < -0.5F + knife.manche ? KnifeType.Part.GRIP.code : q.part;
                filled[i] = true;
                owner[i] = qn;
             }

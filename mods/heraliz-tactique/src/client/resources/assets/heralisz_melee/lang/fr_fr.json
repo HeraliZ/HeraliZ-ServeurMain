@@ -1,4 +1,8 @@
 {
+  "item.heralisz_melee.desmoulins_edge__lore": "§e★ Lame de Desmoulins §7| §e§lLore",
+  "item.heralisz_melee.desmoulins_edge__lore.desc": "§eUltime\n§8Exclusivité HeraliZ",
+  "item.heralisz_melee.baseball_bat__lore": "§e★ Batte de baseball §7| §e§lLore",
+  "item.heralisz_melee.baseball_bat__lore.desc": "§eUltime\n§8Exclusivité HeraliZ",
   "item.heralisz_melee.baseball_bat": "Batte de baseball",
   "item.heralisz_melee.baseball_bat.desc": "Batte de baseball solide, frappe fort.",
   "item.heralisz_melee.executor": "§4Bourreau",

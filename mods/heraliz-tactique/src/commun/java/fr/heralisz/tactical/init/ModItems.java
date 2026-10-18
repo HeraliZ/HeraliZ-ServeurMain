@@ -75,10 +75,19 @@ public class ModItems {
 
    /** Groupe « Mêlée » de l'onglet HeraliZ · Tactique : toutes les armes de mêlée, puis les couteaux des gunpacks. */
    public static void remplirMelee(Output pOutput) {
+      // armes de mêlée de base, puis les couteaux TaCZ, puis les skins de mêlée (« <arme>__<finition> », ex. Lore) rangés
+      // avec les couteaux skinnés (demande du propriétaire, 18/10)
+      java.util.List<MeleeWeaponIndex<?>> skins = new java.util.ArrayList<>();
       for (MeleeWeaponIndex<?> index : HeraliszTacticalAPI.getMeleeIndexes()) {
-         pOutput.accept(index.createItemStack());
+         if (index.getId() != null && index.getId().getPath().contains("__")) {
+            skins.add(index);
+         } else {
+            pOutput.accept(index.createItemStack());
+         }
       }
       fr.heraliz.tactique.onglets.Couteaux.tous().forEach(pOutput::accept);
+      skins.sort(java.util.Comparator.comparing(i -> i.getId().toString()));
+      skins.forEach(i -> pOutput.accept(i.createItemStack()));
    }
 
    /** Groupe « Soins » : contenu de l'ancien onglet heralisz_tactical:consumable. */

@@ -85,6 +85,9 @@ final class Accueil {
         } else if (tuto == 3 && avant != null && avant.tuto() == 2) {
             radio(p, 0);
             Moteur.notif(p, Texte.cle("heraliz_quetes.tuto.notif_fin"), 0x5FD08A);
+        } else if (tuto != 2 && avant != null && avant.tuto() == 2) {
+            // tutoriel arrêté autrement (staff : /tuto finir, rejouer) : la radio se range
+            Reseau.envoyer(p, new Reseau.Radio(Texte.VIDE, new CompoundTag(), "", false, 0, ETAPES, Texte.VIDE));
         }
     }
 

@@ -134,7 +134,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | Projet | Jar | modIds dedans | Rôle |
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
-| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10). Moteur repris de LR Tactical (licence GPL gardée) |
+| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins Lore de la Lame de Desmoulins et de la batte (2.19.0) Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : carte coupée à la bordure du monde, vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
@@ -1068,7 +1068,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
-  - couteaux (16/10, Tactique 2.17.0 puis 2.18.0, après les retours du propriétaire) : clic gauche = le coup rapide
+  - skins « Lore » de mêlée (18/10, Tactique 2.19.0, rendus validés en cours) : `heralisz_melee:desmoulins_edge__lore` et
+    `heralisz_melee:baseball_bat__lore` (fiches copiées des armes de base, mêmes dégâts), dessinés avec la finition Lore du
+    M9 (shader `camo_65`, `MeleeCamo`, rôles des pièces dans `KnifeType`). Desmoulins : manche « orné » (`Part.ORNATE`,
+    `ornateHandle` du gabarit) : fond noir, filets clairs de la texture d'origine repris dans la finition, étoile et
+    pierres bleues gardées. Batte : tout le manche en grip noir, coupé texel par texel dans la carte de positions
+    (`KnifeType.manche`, 32 % de la longueur depuis le pommeau). Icônes `slot/polaris_lore.png` et
+    `slot/baseball_bat_lore.png` rendues par `outils/apercu_camos`. Menu créatif (2.19.1) : groupe Mêlée de HeraliZ · Tactique, rangés après
+    les couteaux skinnés (`ModItems.remplirMelee` : toute arme de mêlée « <arme>__<finition> » va après les couteaux). Ni loot ni craft (donnés par le staff). Rien testé en jeu ;
+  couteaux (16/10, Tactique 2.17.0 puis 2.18.0, après les retours du propriétaire) : clic gauche = le coup rapide
     d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, gestes de TaCZ vus
     des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant où LE COUTEAU LUI-MÊME TOURNE avec le geste.
     Knife CT et T : geste écrit comme le coup lourd de la Dague tactique de LR (impact à 0,24 s, 0,85 s). M9, papillon et
@@ -1098,10 +1106,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   notée `heraliz_cinematique_finie` (données persistantes) ; 4. le suivi à droite dit « Va voir le Commandant Varga pour
   commencer le tutoriel » (distance, lueurs sur lui) ; 5. Varga ne propose QUE « Faire ma base » et « Au revoir » ; 6. le
   tutoriel des bases (CRac) : Varga donne les 6 consignes une par une à la radio, en bas à gauche (portrait = sa vraie
-  apparence, texte lettre par lettre, « ÉTAPE n/6 », canal des quêtes version 3), le suivi montre l'étape en cours ; les
-  étapes sont lues sur la cabane elle-même (`Tutoriel.progression`) : un coin plat (1re fondation), 2 fondations, 5 murs +
-  la porte + 2 planchers, le Claim Block sur une fondation de la cabane, toute la cabane en bois, des planches dans le
-  Claim Block (au moins la moitié de l'entretien du kit) ; 7. à la fin, Varga : « je te laisse te débrouiller, reviens me
+  apparence, texte lettre par lettre, « ÉTAPE n/6 », canal des quêtes version 3) ; chaque consigne RESTE affichée jusqu'à
+  ce que l'étape soit faite (choix du propriétaire, 18/10), aucun titre au milieu de l'écran ; le suivi montre l'étape
+  en cours ; les étapes sont lues sur la cabane elle-même (`Tutoriel.progression`), dans l'ordre imposé par CRac (hors
+  d'un claim, une seule fondation puis le Claim Block dessus, `crac.build.claim_first`) : la 1re fondation sur un coin
+  plat, le Claim Block dessus, la 2e fondation, 5 murs + la porte + 2 planchers, toute la cabane en bois, des planches
+  dans le Claim Block (au moins la moitié de l'entretien du kit) ; 7. à la fin, Varga : « je te laisse te débrouiller, reviens me
   voir pour des missions » ; ses quêtes principales s'ouvrent. Tutoriel OBLIGATOIRE pour tout le monde (choix du
   propriétaire, serveur pas encore ouvert) : pendant le tutoriel (hors créatif et spectateur) `/spawn`, `/home`,
   `/zone`, `/rtp`, `/suicide`, `/duel`, `/clashwar`, `/zombies`, `/casino`, `/depart`, `/extractions` refusés ; rien ne
@@ -1287,7 +1297,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   serveur seulement (seul le jar `-serveur` compte). Rien testé en jeu ;
 - couteaux TaCZ (13/10, Tactique 2.13.0, `fr.heraliz.tactique.couteaux`) : « Knife » CT et T, karambits, papillons, M9
   (fiche `arkaniaz:knife_data`) frappent comme les armes de mêlée de LR, réglés comme la Dague tactique : clic gauche
-  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,7 s (18/10, Tactique 2.19.0 :
+  (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 0,7 s (18/10, Tactique 2.19.2 :
   0,45 s jugé trop rapide ; le serveur ne laisse plus passer un 2e coup 0,25 s après le premier), touche tenue = coups
   enchaînés ; clic droit (Viser) = coup puissant ×1,5 toutes les 0,9 s, plus de visée au couteau, rien si le viseur est
   sur un joueur à terre (Réanimation) ; V (« Mêlée » de TaCZ) = coup rapide (le coup de TaCZ n'est plus donné aux
