@@ -293,12 +293,9 @@ TEXTES = {
                                     "hotbar. And relax: nobody can hurt you until your base is finished.",
                                     "Говорит Варга. Построим тебе укрытие. Возьми план постройки: ячейка, мигающая зелёным на панели "
                                     "предметов. И не волнуйся: пока база не готова, никто не может тебя ранить."),
-    "heraliz_quetes.tuto.radio.2": ("Bien. Vise un coin plat : la fondation apparaît devant toi. Clic gauche pour la poser, R pour la "
-                                    "tourner. Si tu as une autre pièce, maintiens le clic droit : dans la roue, la Fondation clignote.",
-                                    "Good. Aim at a flat spot: the foundation shows up in front of you. Left click to place it, R to "
-                                    "turn it. If you have another piece, hold right click: the Foundation blinks in the wheel.",
-                                    "Хорошо. Наведись на ровное место: фундамент появится перед тобой. Левый клик — поставить, R — "
-                                    "повернуть. Если выбрана другая деталь, зажми правый клик: в колесе мигает Фундамент."),
+    "heraliz_quetes.tuto.radio.2": ('Bien. Vise un coin plat : la fondation apparaît devant toi. Clic gauche pour la poser. Si tu as une autre pièce, maintiens le clic droit : dans la roue, la Fondation clignote.',
+                                   'Good. Aim at a flat spot: the foundation shows up in front of you. Left click to place it. If you have another piece, hold right click: the Foundation blinks in the wheel.',
+                                   'Хорошо. Наведись на ровное место: фундамент появится перед тобой. Левый клик — поставить. Если выбрана другая деталь, зажми правый клик: в колесе мигает Фундамент.'),
     "heraliz_quetes.tuto.radio.3": ("Parfait. La deuxième fondation clignote en vert, collée à la première. Vise-la et clic gauche : "
                                     "c'est la seule place permise.",
                                     "Perfect. The second foundation blinks green, right next to the first one. Aim at it and left "

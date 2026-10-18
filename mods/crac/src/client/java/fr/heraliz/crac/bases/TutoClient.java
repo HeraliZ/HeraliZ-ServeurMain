@@ -53,6 +53,8 @@ public final class TutoClient {
     private static final int VERT = 0x55E07A, AMBRE = 0xFF9A2E;
     /** Pièce à passer en bois : redessinée un peu plus grande que la vraie, pour se voir par-dessus. */
     private static final float GROSSI = 1.04F;
+    /** Distance (blocs) jusqu'où l'on peut viser une pièce verte. */
+    private static final double PORTEE = 6.5;
     /** Durée du tour de caméra (ticks), hauteur au-dessus du centre (blocs). */
     private static final int TOUR_TICKS = 300;
     private static final double TOUR_HAUT = 5.0;
@@ -114,6 +116,34 @@ public final class TutoClient {
             }
         }
         return "crac.tuto.refus.cible";
+    }
+
+    /**
+     * La pièce verte (de ce genre) que le joueur regarde, à portée : la ligne du regard passe près de son centre. Null
+     * sinon. Permet de poser un mur en visant le mur vert lui-même, et pas le bord de la fondation dessous.
+     */
+    public static PieceKey vise(PieceKind kind, Vec3 oeil, Vec3 regard) {
+        if (!actif() || guide.bois()) {
+            return null;
+        }
+        Vec3 r = regard.normalize();
+        PieceKey best = null;
+        double bestT = PORTEE;
+        for (PieceKey c : guide.cibles()) {
+            if (c.kind() != kind) {
+                continue;
+            }
+            Vec3 d = c.centreWorld().subtract(oeil);
+            double t = d.dot(r);
+            if (t < 0.3 || t > bestT) {
+                continue;
+            }
+            if (d.subtract(r.scale(t)).length() < (kind.isWall() ? 1.2 : 1.0)) {
+                best = c;
+                bestT = t;
+            }
+        }
+        return best;
     }
 
     private static boolean memePlace(PieceKey a, PieceKey b) {

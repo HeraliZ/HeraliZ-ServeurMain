@@ -1140,6 +1140,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   d'entretien du Claim Block à l'échelle de l'inventaire (`ClaimUpkeepScreen`, avant : échelle forcée, tout petit).
   Fondations d'un nouveau bâtiment toujours droites, comme dans Rust (`PlacementRules.freeOrients` : quarts de tour
   seulement ; carré 0°, triangles 0°/90° ; les bâtiments déjà posés de biais restent tels quels).
+  Deuxième essai (18/10, CRac 1.8.3-beta, Quêtes 1.6.2, Décors 1.11.1) : pas de faim pendant le tutoriel (barre gardée
+  pleine) ; une pièce verte se pose aussi en la visant elle-même (`TutoClient.vise`, avant : il fallait viser le pied de
+  la fondation) ; consigne de l'étape 2 sans « R pour tourner » ; fiche du plan : texte des touches centré dans sa case,
+  rangée des touches toujours dans la fiche (elle dépassait sans le réglage « tourner ») ; zones dangereuses (gaz,
+  radiation, froid) affichées seulement sur la carte (overworld) : le jeu du joueur les montrait aussi dans le monde des
+  bases aux mêmes coordonnées (les dégâts, eux, n'existaient que sur la carte). **`/base effacer <joueur>`** (op,
+  permission 4 ; `bases/EffacerBase`) : la base d'un joueur (connecté ou non) disparaît d'un coup, contenu compris, rien
+  au sol : pièces et objets posés du claim de son groupe, Claim Block et planches, claim libéré, et ses bâtiments sans
+  claim ; le tutoriel ne change pas (`/tuto rejouer` pour le refaire).
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;

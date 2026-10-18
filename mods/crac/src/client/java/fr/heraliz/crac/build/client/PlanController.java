@@ -211,6 +211,11 @@ public final class PlanController {
         int rot = PlanState.rotation();
         Sockets.Aim aim = BuildClient.aim(mc, partialTick);
         PieceKey key = Sockets.candidate(ClientMirror.view(), kind, rot, aim);
+        // tutoriel des bases : viser la pièce verte elle-même suffit (pas seulement le pied de la fondation)
+        PieceKey tuto = fr.heraliz.crac.bases.TutoClient.vise(kind, aim.eye(), aim.look());
+        if (tuto != null) {
+            key = tuto;
+        }
         if (key == null) {
             status = new Status(Severity.HINT, Component.translatable(hint(kind)), false);
             return;

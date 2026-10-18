@@ -433,6 +433,8 @@
   "crac.tuto.refus.bloc": "Pas de blocs pendant le tutoriel : construis avec le plan.",
   "crac.tuto.refus.commande": "Pas avant d'avoir fini ta base (tutoriel).",
   "crac.tuto.refus.artisanat": "Pas d'artisanat pendant le tutoriel : ton matériel est compté.",
+  "crac.base.effacer.rien": "%s n'a aucune base.",
+  "crac.base.effacer.fait": "Base de %s effacée (%s pièces).",
   "crac.tuto.refus.cible": "Pose-la sur la pièce verte qui clignote.",
   "crac.tuto.refus.entretien": "L'entretien plus tard : suis les consignes de Varga.",
   "crac.tuto.fini_staff": "Tutoriel de %s terminé : il est libre.",

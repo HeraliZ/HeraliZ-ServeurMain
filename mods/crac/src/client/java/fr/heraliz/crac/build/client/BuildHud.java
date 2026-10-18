@@ -69,7 +69,8 @@ public final class BuildHud {
 
         float margin = Math.max(8, Math.min(32, Math.round(w * 0.05F)));
         float cw = 146.67F;
-        float ch = hasMeaning ? 58.33F : 45.33F;
+        // la rangée des touches (cases de 7 de haut) tient toujours dans la carte, avec la même marge en bas
+        float ch = (hasMeaning ? 42.33F : 36.33F) + 14;
         float x = w - margin - cw;
         float y = h - margin - ch;
         card(g, x, y, cw, ch, px);
@@ -105,15 +106,15 @@ public final class BuildHud {
         }
         rect(g, x + 6.67F, ky, x + cw - 6.67F, ky + px, a(BLANC, 23));
         // keys: R turn, Shift + R back (when R means something), right click pieces
-        float kx = x + 6.67F, kc = ky + 7.33F;
+        float kx = x + 6.67F, kc = ky + 7;
         int kcol = a(TEXTE, 184);
         if (hasMeaning) {
-            kx += touche(g, font, rotKey, kx, kc, 6, 0.3F, 6.67F, px) + 2.67F;
+            kx += touche(g, font, rotKey, kx, kc, 7, 0.3F, 6.67F, px) + 2.67F;
             kx += caps0(g, font, Component.translatable("crac.hud.turn").getString(), kx, kc, kcol) + 3.33F;
-            kx += touche(g, font, Component.translatable("crac.hud.shift", rotKey).getString(), kx, kc, 6, 0.3F, 6.67F, px) + 2.67F;
+            kx += touche(g, font, Component.translatable("crac.hud.shift", rotKey).getString(), kx, kc, 7, 0.3F, 6.67F, px) + 2.67F;
             kx += caps0(g, font, Component.translatable("crac.hud.back").getString(), kx, kc, kcol) + 3.33F;
         }
-        kx += touche(g, font, useKey, kx, kc, 6, 0.3F, 6.67F, px) + 2.67F;
+        kx += touche(g, font, useKey, kx, kc, 7, 0.3F, 6.67F, px) + 2.67F;
         caps0(g, font, Component.translatable("crac.hud.pieces").getString(), kx, kc, kcol);
     }
 
@@ -221,9 +222,9 @@ public final class BuildHud {
             }
             rect(g, ix, y + 39.33F, ix + inner, y + 39.33F + px, a(BLANC, 23));
             int kcol = a(TEXTE, 184);
-            float kx = ix + touche(g, font, keyName(Minecraft.getInstance().options.keyUse, "crac.hud.rmb"), ix, y + 46.67F, 6, 0.3F, 6.67F, px) + 2.67F;
+            float kx = ix + touche(g, font, keyName(Minecraft.getInstance().options.keyUse, "crac.hud.rmb"), ix, y + 46.67F, 7, 0.3F, 6.67F, px) + 2.67F;
             caps0(g, font, Component.translatable("crac.hud.wheel_hint").getString(), kx, y + 46.67F, kcol);
-            kx = ix + touche(g, font, keyName(Minecraft.getInstance().options.keyAttack, "crac.hud.lmb"), ix, y + 55.33F, 6, 0.3F, 6.67F, px) + 2.67F;
+            kx = ix + touche(g, font, keyName(Minecraft.getInstance().options.keyAttack, "crac.hud.lmb"), ix, y + 55.33F, 7, 0.3F, 6.67F, px) + 2.67F;
             caps0(g, font, Component.translatable("crac.hud.repair_hint").getString(), kx, y + 55.33F, kcol);
         }
         float progress = HammerController.progress();

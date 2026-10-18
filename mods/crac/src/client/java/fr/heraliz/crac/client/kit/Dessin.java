@@ -276,7 +276,8 @@ public final class Dessin {
         float y = cy - h / 2;
         rect(g, x, y, x + w, y + h, a(BLANC, 31));
         contour(g, x, y, w, h, px, a(BLANC, 61));
-        Ui.spaced(g, font, up, MINI_GRAS, x + (w - tw) / 2, cy - 4.21F, a(BLANC, 255), espace);
+        // un cran plus bas que les autres textes : les capitales tombent au milieu de la case
+        Ui.spaced(g, font, up, MINI_GRAS, x + (w - tw) / 2, cy - 3.21F, a(BLANC, 255), espace);
         return w;
     }
 

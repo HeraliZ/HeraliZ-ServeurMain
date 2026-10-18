@@ -769,6 +769,9 @@ public final class Tutoriel {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 5 != 0 || !enCours(p)) {
             return;
         }
+        // pas de faim pendant le tutoriel : le nouveau doit pouvoir courir sans manger
+        p.getFoodData().setFoodLevel(20);
+        p.getFoodData().setSaturation(5F);
         boolean rendu = false;
         for (Slot s : p.containerMenu.slots) {
             Container c = s.container;
