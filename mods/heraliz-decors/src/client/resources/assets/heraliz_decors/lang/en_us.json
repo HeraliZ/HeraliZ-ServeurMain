@@ -87,5 +87,6 @@
  "heraliz_decors.brume.profils": "Profiles: %s",
  "heraliz_decors.brume.fixee": "Fog locked: %s (/brume auto to resume the draw)",
  "heraliz_decors.zones.info": "Danger zones: %s",
- "heraliz_decors.zones.rechargees": "Zones reloaded: %s"
+ "heraliz_decors.zones.rechargees": "Zones reloaded: %s",
+ "block.heraliz_decors.garde_corps": "Railing (metal)"
 }

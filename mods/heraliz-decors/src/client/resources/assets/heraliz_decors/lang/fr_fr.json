@@ -87,5 +87,6 @@
  "heraliz_decors.brume.profils": "Profils : %s",
  "heraliz_decors.brume.fixee": "Brume fixée : %s (/brume auto pour reprendre le tirage)",
  "heraliz_decors.zones.info": "Zones dangereuses : %s",
- "heraliz_decors.zones.rechargees": "Zones rechargées : %s"
+ "heraliz_decors.zones.rechargees": "Zones rechargées : %s",
+ "block.heraliz_decors.garde_corps": "Garde-corps (métal)"
 }

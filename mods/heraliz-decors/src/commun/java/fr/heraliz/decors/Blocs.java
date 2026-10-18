@@ -122,6 +122,9 @@ public final class Blocs {
     public static final RegistryObject<Block> GRILLAGE = bloc("grillage", () -> new fr.heraliz.decors.bloc.Grillage(grillage(), false));
     public static final RegistryObject<Block> GRILLAGE_HAUT = bloc("grillage_haut", () -> new fr.heraliz.decors.bloc.Grillage(grillage(), true));
 
+    // ------------------------------------------------------------------ garde-corps en métal (1.10.0) : 1 à 4 côtés par bloc
+    public static final RegistryObject<Block> GARDE_CORPS = bloc("garde_corps", () -> new fr.heraliz.decors.bloc.GardeCorps(grillage()));
+
     private static BlockBehaviour.Properties grillage() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5.0f, 6.0f).sound(SoundType.CHAIN).noOcclusion()
                 .requiresCorrectToolForDrops().isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false);

@@ -87,5 +87,6 @@
  "heraliz_decors.brume.profils": "Профили: %s",
  "heraliz_decors.brume.fixee": "Туман зафиксирован: %s (/brume auto — вернуть автовыбор)",
  "heraliz_decors.zones.info": "Опасные зоны: %s",
- "heraliz_decors.zones.rechargees": "Зоны перезагружены: %s"
+ "heraliz_decors.zones.rechargees": "Зоны перезагружены: %s",
+ "block.heraliz_decors.garde_corps": "Перила (металл)"
 }

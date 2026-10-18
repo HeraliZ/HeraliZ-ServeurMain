@@ -986,6 +986,10 @@ def main():
     GRL.ecrire(A)
     for _n, (_fr, _en) in GRL.NOMS.items():
         NOMS[_n] = (_fr, _en)
+    import garde_corps as GC                                       # garde-corps à plusieurs côtés (1.10.0) : outils/garde_corps.py
+    GC.ecrire(A)
+    for _n, (_fr, _en) in GC.NOMS.items():
+        NOMS[_n] = (_fr, _en)
     etats()
     objets()
     traductions()
