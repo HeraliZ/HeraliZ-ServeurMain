@@ -288,7 +288,8 @@ final class Moteur {
         if (s.getItem() instanceof ObjetQuete) return false;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
         List<String> objets = Defs.liste(e.p, "objet");
-        if (!objets.isEmpty() && (id == null || !objets.contains(id.toString()))) return false;
+        String idTac = Ponts.idTactique(s);
+        if (!objets.isEmpty() && (id == null || !objets.contains(id.toString())) && (idTac == null || !objets.contains(idTac))) return false;
         String tag = e.texte("tag", "");
         if (!tag.isEmpty()) {
             ResourceLocation rl = ResourceLocation.tryParse(tag.startsWith("#") ? tag.substring(1) : tag);
@@ -307,10 +308,12 @@ final class Moteur {
         return true;
     }
 
-    /** Clé d'un objet pour « differents » : l'arme TaCZ, sinon l'objet. */
+    /** Clé d'un objet pour « differents » : l'arme TaCZ, le soin ou la grenade du mod tactique, sinon l'objet. */
     static String sorte(ItemStack s) {
         String g = Ponts.gunId(s);
         if (g != null) return g;
+        String t = Ponts.idTactique(s);
+        if (t != null) return t;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
         return id == null ? "?" : id.toString();
     }

@@ -7,7 +7,28 @@
     "ru": "Операции"
   },
   "skin": "varga",
-  "apparence": {"skin_tone": "light", "eye_shape": "narrow", "eye_color": "blue_grey", "brow_style": "straight", "nose_style": "pointed", "mouth_style": "thin", "hair_style": "crew", "hair_color": "grey", "facial_hair": "short_beard", "shirt_style": "camo", "shirt_color": "olive", "shirt_color2": "forest", "pants_style": "camo", "pants_color": "olive", "shoes_style": "combat_boots", "shoes_color": "black", "marks": ["scar_brow"], "wear": "clean"},
+  "apparence": {
+    "skin_tone": "light",
+    "eye_shape": "narrow",
+    "eye_color": "blue_grey",
+    "brow_style": "straight",
+    "nose_style": "pointed",
+    "mouth_style": "thin",
+    "hair_style": "crew",
+    "hair_color": "grey",
+    "facial_hair": "short_beard",
+    "shirt_style": "camo",
+    "shirt_color": "olive",
+    "shirt_color2": "forest",
+    "pants_style": "camo",
+    "pants_color": "olive",
+    "shoes_style": "combat_boots",
+    "shoes_color": "black",
+    "marks": [
+      "scar_brow"
+    ],
+    "wear": "clean"
+  },
   "ambiance": [
     "Repos. Enfin... pas trop.",
     "Une zone tenue, c'est une zone qui respire.",
@@ -18,14 +39,22 @@
   "accueil": {
     "inconnu": "Repos. Qu'est-ce que vous voulez ?",
     "connu": "Ah, vous. Prêt pour une opération ?",
-    "ami": "Lieutenant ! Enfin... presque. J'ai une mission pour vous."
+    "ami": "Lieutenant ! Enfin... presque. J'ai une mission pour vous.",
+    "besoin": [
+      "Vous ! J'ai une mission pour vous.",
+      "Garde-à-vous. Nouvelle mission."
+    ],
+    "en_cours": [
+      "Votre mission n'est pas terminée. Repos, puis au travail.",
+      "Rapport ? Non ? Alors retournez sur le terrain."
+    ]
   },
   "suite": [
     {
       "id": "recrue",
       "titre": "Recrue",
       "difficulte": 1,
-      "demande": "Vingt-cinq zombies. Montrez-moi que vous savez tenir une arme.",
+      "demande": "Montrez-moi que vous savez vous battre : tuez 25 zombies.",
       "fin": "Correct. On continue.",
       "etapes": [
         {
@@ -44,7 +73,7 @@
       "id": "plaques",
       "titre": "Plaques d'identité",
       "difficulte": 3,
-      "demande": "Nos hommes sont tombés partout sur la carte. Rapportez cinq plaques d'identité. Leurs familles ont le droit de savoir.",
+      "demande": "Retrouvez 5 plaques d'identité sur les corps de mes soldats et rapportez-les-moi.",
       "fin": "Cinq noms de plus sur le mur. Merci, soldat.",
       "etapes": [
         {
@@ -72,7 +101,7 @@
       "id": "salle_verte",
       "titre": "La salle verte",
       "difficulte": 2,
-      "demande": "Les salles à carte gardent ce que l'armée a laissé. Entrez dans une salle verte.",
+      "demande": "Entrez dans une salle à carte verte.",
       "fin": "Bien. Les autres couleurs, maintenant.",
       "etapes": [
         {
@@ -91,7 +120,7 @@
       "id": "salle_bleue",
       "titre": "La salle bleue",
       "difficulte": 3,
-      "demande": "Une salle bleue, maintenant. Il vous faudra une carte bleue.",
+      "demande": "Entrez dans une salle à carte bleue. Il vous faudra une carte bleue.",
       "fin": "Impressionnant.",
       "etapes": [
         {
@@ -110,7 +139,7 @@
       "id": "tenir_gare",
       "titre": "Tenir la gare",
       "difficulte": 2,
-      "demande": "Une gare. Cinq minutes. Personne ne passe.",
+      "demande": "Tenez une gare pendant 5 minutes sans en sortir.",
       "fin": "Position tenue. Bon travail.",
       "etapes": [
         {
@@ -130,7 +159,7 @@
       "id": "secteur_bravo",
       "titre": "Secteur Bravo",
       "difficulte": 3,
-      "demande": "Secteur Bravo : nettoyez une grande ville. Soixante créatures.",
+      "demande": "Allez dans une grande ville et tuez 60 créatures.",
       "fin": "Secteur nettoyé.",
       "etapes": [
         {
@@ -151,7 +180,7 @@
       "id": "deserteurs",
       "titre": "Les déserteurs",
       "difficulte": 3,
-      "demande": "Trois de mes hommes ont déserté. On a retrouvé leurs corps. Leurs carnets disent où ils cachaient ce qu'ils ont volé.",
+      "demande": "Lisez les carnets de mes 3 déserteurs pour trouver leur cachette, et rapportez-moi ce qu'ils ont volé.",
       "fin": "Le butin des déserteurs... et ce carnet qui parle de moi. Oubliez ce que vous avez lu.",
       "etapes": [
         {
@@ -186,7 +215,7 @@
       "id": "salle_rouge",
       "titre": "La salle rouge",
       "difficulte": 4,
-      "demande": "La salle rouge. Personne n'en est revenu depuis des semaines.",
+      "demande": "Entrez dans une salle à carte rouge.",
       "fin": "Vous êtes revenu. Ça, c'est rare.",
       "etapes": [
         {
@@ -205,7 +234,7 @@
       "id": "boss_ymirak",
       "titre": "Opération : Ymirak",
       "difficulte": 4,
-      "demande": "Une opération contre Ymirak. Pas seul. Réunissez une équipe.",
+      "demande": "Participez à la mort d'Ymirak. N'y allez pas seul.",
       "fin": "Opération réussie. Le refuge dormira mieux ce soir.",
       "etapes": [
         {
@@ -224,7 +253,7 @@
       "id": "boss_mere",
       "titre": "Opération : La Mère des Ruines",
       "difficulte": 4,
-      "demande": "Une opération contre la Mère des Ruines. Pas seul. Réunissez une équipe.",
+      "demande": "Participez à la mort de la Mère des Ruines. N'y allez pas seul.",
       "fin": "Opération réussie. Le refuge dormira mieux ce soir.",
       "etapes": [
         {
@@ -243,7 +272,7 @@
       "id": "boss_sylvorn",
       "titre": "Opération : Sylvorn",
       "difficulte": 4,
-      "demande": "Une opération contre Sylvorn. Pas seul. Réunissez une équipe.",
+      "demande": "Participez à la mort de Sylvorn. N'y allez pas seul.",
       "fin": "Opération réussie. Le refuge dormira mieux ce soir.",
       "etapes": [
         {
@@ -262,7 +291,7 @@
       "id": "boss_porteur",
       "titre": "Opération : Le Porteur de Peste",
       "difficulte": 4,
-      "demande": "Une opération contre le Porteur de Peste. Pas seul. Réunissez une équipe.",
+      "demande": "Participez à la mort du Porteur de Peste. N'y allez pas seul.",
       "fin": "Opération réussie. Le refuge dormira mieux ce soir.",
       "etapes": [
         {
@@ -281,7 +310,7 @@
       "id": "officier",
       "titre": "Officier",
       "difficulte": 4,
-      "demande": "Une dernière chose : une heure sur la carte sans mourir, et rentrez par une extraction. Un officier doit d'abord survivre.",
+      "demande": "Dernière épreuve : restez 1 heure sur la carte sans mourir, puis revenez par une extraction.",
       "fin": "Garde-à-vous ! ...Repos. Vous êtes officier, désormais.",
       "sans_mourir": true,
       "etapes": [
@@ -306,180 +335,5 @@
       }
     }
   ],
-  "contrats": [
-    {
-      "id": "nettoyage",
-      "poids": 3,
-      "variables": {
-        "n": {
-          "min": 30,
-          "max": 60,
-          "pas": 10
-        },
-        "ville": {
-          "points": "villes"
-        }
-      },
-      "quete": {
-        "id": "nettoyage",
-        "titre": "Nettoyage : {ville.nom}",
-        "difficulte": 2,
-        "demande": "Nettoyez {ville.nom} : {n} créatures.",
-        "fin": "Zone nettoyée.",
-        "etapes": [
-          {
-            "type": "tuer",
-            "libelle": "Tuer {n} créatures à {ville.nom}",
-            "cible": "monstres",
-            "nombre": "{n}",
-            "point": "{ville}",
-            "rayon": 250
-          }
-        ],
-        "recompense": {
-          "herals": "{n}*7",
-          "reputation": 12
-        }
-      }
-    },
-    {
-      "id": "tenir",
-      "poids": 2,
-      "variables": {
-        "m": {
-          "min": 3,
-          "max": 5
-        },
-        "g": {
-          "points": "gares"
-        }
-      },
-      "quete": {
-        "id": "tenir",
-        "titre": "Tenir : {g.nom}",
-        "difficulte": 2,
-        "demande": "Tenez {g.nom} pendant {m} minutes.",
-        "fin": "Position tenue.",
-        "etapes": [
-          {
-            "type": "tenir",
-            "libelle": "Tenir {g.nom} {m} minutes",
-            "point": "{g}",
-            "rayon": 20,
-            "secondes": "{m}*60"
-          }
-        ],
-        "recompense": {
-          "herals": "{m}*90",
-          "reputation": 12
-        }
-      }
-    },
-    {
-      "id": "plaque",
-      "poids": 2,
-      "quete": {
-        "id": "plaque",
-        "titre": "Une plaque",
-        "difficulte": 2,
-        "demande": "On a signalé un corps de soldat. Rapportez sa plaque.",
-        "fin": "Merci, soldat.",
-        "etapes": [
-          {
-            "type": "ramasser",
-            "libelle": "Trouver la plaque",
-            "groupe": "soldat",
-            "objet": "plaque",
-            "ref": "plaque",
-            "nom": "Plaque d'identité"
-          },
-          {
-            "type": "donner",
-            "libelle": "Rapporter la plaque",
-            "objet_quete": "plaque"
-          }
-        ],
-        "recompense": {
-          "herals": 300,
-          "reputation": 12
-        }
-      }
-    },
-    {
-      "id": "boss",
-      "poids": 1,
-      "variables": {
-        "b": {
-          "choix": [
-            {
-              "valeur": "heralisz_mammoth:mammoth",
-              "nom": {
-                "fr": "Ymirak"
-              }
-            },
-            {
-              "valeur": "heralisz_mere:ruin_mother",
-              "nom": {
-                "fr": "la Mère des Ruines"
-              }
-            },
-            {
-              "valeur": "heralisz_sylvorn:sylvorn",
-              "nom": {
-                "fr": "Sylvorn"
-              }
-            },
-            {
-              "valeur": "heralisz_plague:plague_bearer",
-              "nom": {
-                "fr": "le Porteur de Peste"
-              }
-            }
-          ]
-        }
-      },
-      "quete": {
-        "id": "boss",
-        "titre": "Opération spéciale",
-        "difficulte": 4,
-        "demande": "Opération spéciale contre {b.nom}. Réunissez une équipe.",
-        "fin": "Opération réussie.",
-        "etapes": [
-          {
-            "type": "tuer",
-            "libelle": "Participer à la mort de {b.nom}",
-            "cible": "{b}",
-            "participation": 64
-          }
-        ],
-        "recompense": {
-          "herals": 1500,
-          "reputation": 40
-        }
-      }
-    },
-    {
-      "id": "salle",
-      "poids": 1,
-      "quete": {
-        "id": "salle",
-        "titre": "Inspection",
-        "difficulte": 2,
-        "demande": "Inspection d'une salle verte. Entrez, ressortez vivant.",
-        "fin": "Rapport noté.",
-        "etapes": [
-          {
-            "type": "endroit",
-            "libelle": "Entrer dans une salle verte",
-            "groupe": "salle_verte",
-            "rayon": 4
-          }
-        ],
-        "recompense": {
-          "herals": 300,
-          "reputation": 10
-        }
-      }
-    }
-  ]
+  "contrats": []
 }

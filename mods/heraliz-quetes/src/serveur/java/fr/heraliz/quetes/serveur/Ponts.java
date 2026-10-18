@@ -146,6 +146,21 @@ final class Ponts {
         return t != null && t.contains("GunId", Tag.TAG_STRING) ? t.getString("GunId") : null;
     }
 
+    /** Étiquettes où le mod tactique range le vrai nom de ses objets (soins, grenades, armes de mêlée). */
+    private static final String[] IDS_TACTIQUE = {"ConsumableId", "ThrowableId", "MeleeWeaponId"};
+
+    /**
+     * Nom « logique » d'un objet du mod tactique : tous ses soins sont le même objet Minecraft
+     * ({@code heralisz_tactical:consumable}), leur vrai nom ({@code heralisz_heal:carfak}...) est dans leurs données. Null
+     * pour un autre objet.
+     */
+    static String idTactique(ItemStack s) {
+        CompoundTag t = s.getTag();
+        if (t == null) return null;
+        for (String k : IDS_TACTIQUE) if (t.contains(k, Tag.TAG_STRING)) return t.getString(k);
+        return null;
+    }
+
     static boolean couteau(String gunId) {
         if (gunId == null) return false;
         String p = gunId.toLowerCase(Locale.ROOT);

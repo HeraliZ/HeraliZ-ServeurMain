@@ -44,6 +44,8 @@ final class Defs {
         CompoundTag apparence;
         final List<Texte> ambiance = new ArrayList<>();
         Texte presentation = Texte.VIDE, inconnu = Texte.VIDE, connu = Texte.VIDE, ami = Texte.VIDE;
+        /** Ce qu'il dit quand il a une nouvelle quête à donner / quand une de ses quêtes est en cours (au hasard). */
+        final List<Texte> besoin = new ArrayList<>(), enCours = new ArrayList<>();
         final List<Quete> suite = new ArrayList<>();
         final List<Modele> contrats = new ArrayList<>();
 
@@ -53,7 +55,7 @@ final class Defs {
         }
 
         Texte accueil(int niveau) {
-            Texte t = niveau >= 3 && !ami.vide() ? ami : connu;
+            Texte t = niveau >= 3 && !ami.vide() ? ami : niveau == 0 && !inconnu.vide() ? inconnu : connu;
             return t.vide() ? inconnu : t;
         }
     }
@@ -139,6 +141,13 @@ final class Defs {
     }
 
     // ------------------------------------------------------------------ lecture
+    /** Un texte ou une liste de textes. */
+    private static void textes(JsonElement e, List<Texte> l) {
+        if (e == null || e.isJsonNull()) return;
+        if (e.isJsonArray()) e.getAsJsonArray().forEach(x -> l.add(Texte.json(x)));
+        else l.add(Texte.json(e));
+    }
+
     static Pnj pnj(JsonObject o, List<String> erreurs) {
         Pnj p = new Pnj();
         p.id = chaine(o, "id", "").toLowerCase(Locale.ROOT);
@@ -154,6 +163,8 @@ final class Defs {
             p.inconnu = Texte.json(a.get("inconnu"));
             p.connu = Texte.json(a.get("connu"));
             p.ami = Texte.json(a.get("ami"));
+            textes(a.get("besoin"), p.besoin);
+            textes(a.get("en_cours"), p.enCours);
         }
         if (o.has("suite") && o.get("suite").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("suite")) {

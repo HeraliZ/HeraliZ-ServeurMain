@@ -130,6 +130,15 @@ Le plus simple : demander à Claude en français (« Jack demande de ramener son
 }
 ```
 
+Écrire la demande en une phrase claire qui dit exactement quoi faire (« Tue 10 zombies avec une arme à feu »).
+
+Accueil du PNJ (clé `accueil` de son fichier) : `inconnu`, `connu`, `ami` selon la réputation, et surtout `besoin` (quand
+il a une nouvelle quête à donner) et `en_cours` (quand une de ses quêtes est en cours) : un texte ou une liste, tiré au
+hasard.
+
+Les soins, grenades et armes de mêlée du mod tactique se demandent par leur vrai nom (`heralisz_heal:carfak`...),
+pas par `heralisz_tactical:consumable`.
+
 Un texte peut être en français seulement (`"Bonjour"`) ou dans les trois langues (`{"fr": "...", "en": "...", "ru": "..."}`).
 
 ### Les étapes
@@ -159,7 +168,7 @@ arriver ; sinon « ??? »), `reponse` (ce que dit le PNJ après cette étape).
 Un objet de quête **tombe sur le cadavre** à la mort ; il revient au même point 30 minutes après l'avoir ramassé.
 Une quête dont la dernière étape ne se fait pas chez le PNJ se termine en revenant le voir (donc en s'extrayant).
 
-### Les contrats (sans limite, toujours 3 au tableau)
+### Les contrats (retirés le 18/10 : listes `contrats` vides ; le format reste au cas où)
 
 ```json
 {"id": "chasse", "poids": 3, "reputation_min": 0,

@@ -7,7 +7,29 @@
     "ru": "Глава убежища"
   },
   "skin": "doyen",
-  "apparence": {"skin_tone": "light", "eye_shape": "hooded", "eye_color": "grey", "brow_style": "thick", "nose_style": "pointed", "mouth_style": "thin", "hair_style": "side_part", "hair_color": "white", "facial_hair": "full_beard", "shirt_style": "jacket", "shirt_color": "navy", "shirt_color2": "mustard", "pants_style": "trousers", "pants_color": "navy", "shoes_style": "dress_shoes", "shoes_color": "black", "marks": ["mole"], "wear": "clean", "eye_size": 1},
+  "apparence": {
+    "skin_tone": "light",
+    "eye_shape": "hooded",
+    "eye_color": "grey",
+    "brow_style": "thick",
+    "nose_style": "pointed",
+    "mouth_style": "thin",
+    "hair_style": "side_part",
+    "hair_color": "white",
+    "facial_hair": "full_beard",
+    "shirt_style": "jacket",
+    "shirt_color": "navy",
+    "shirt_color2": "mustard",
+    "pants_style": "trousers",
+    "pants_color": "navy",
+    "shoes_style": "dress_shoes",
+    "shoes_color": "black",
+    "marks": [
+      "mole"
+    ],
+    "wear": "clean",
+    "eye_size": 1
+  },
   "ambiance": [
     "Doucement, petit. T'es au terminus.",
     "Personne ne revient sans s'extraire. Retiens ça.",
@@ -18,14 +40,22 @@
   "accueil": {
     "inconnu": "Alors, petit, tu tiens le coup ?",
     "connu": "Te revoilà. Les autres parlent de toi, tu sais.",
-    "ami": "Ah ! Assieds-toi deux minutes. Tu l'as bien mérité."
+    "ami": "Ah ! Assieds-toi deux minutes. Tu l'as bien mérité.",
+    "besoin": [
+      "Ah, te voilà. J'ai encore besoin de toi, petit.",
+      "Viens par ici. J'ai quelque chose à te demander."
+    ],
+    "en_cours": [
+      "Alors, ça avance ? Prends ton temps, mais reviens entier.",
+      "Tu n'as pas oublié ce que je t'ai demandé ?"
+    ]
   },
   "suite": [
     {
       "id": "fais_le_tour",
       "titre": "Fais le tour",
       "difficulte": 1,
-      "demande": "Avant de sortir, va dire bonjour aux autres. Jack au camp d'entraînement, Jacqueline à l'infirmerie, Ferraille à l'atelier et Nadia au poste radio. Ils auront tous besoin de toi.",
+      "demande": "Avant de sortir, va te présenter aux autres. Parle à Jack, Jacqueline, Ferraille et Nadia : ils sont tous ici, au spawn.",
       "fin": "Bien. Maintenant, ils te connaissent.",
       "resume": "Aller saluer Jack, Jacqueline, Ferraille et Nadia.",
       "etapes": [
@@ -59,7 +89,7 @@
       "id": "poches_des_morts",
       "titre": "Les poches des morts",
       "difficulte": 1,
-      "demande": "Dehors, tout ce qui traîne est à toi. Va fouiller cinq conteneurs, n'importe lesquels, et rentre par une extraction. La borne de départ t'emmène sur la carte.",
+      "demande": "Il est temps de sortir. Prends la borne de départ, fouille 5 conteneurs sur la carte, puis reviens par une extraction.",
       "fin": "Tu vois ? Sortir, fouiller, rentrer. C'est toute notre vie, maintenant.",
       "etapes": [
         {
@@ -81,7 +111,7 @@
       "id": "une_sortie_propre",
       "titre": "Une sortie propre",
       "difficulte": 2,
-      "demande": "Cette fois, sans mourir : dix conteneurs fouillés, et tu rentres. Si tu meurs, tu recommences.",
+      "demande": "Pareil, mais sans mourir cette fois : fouille 10 conteneurs et reviens par une extraction. Si tu meurs, tu recommences.",
       "fin": "Propre. Tu apprends vite.",
       "sans_mourir": true,
       "etapes": [
@@ -104,7 +134,7 @@
       "id": "les_autres",
       "titre": "Les autres",
       "difficulte": 1,
-      "demande": "Il y a aussi Mila au marché, Lucky au casino et le Commandant Varga au poste de commandement. Va les voir. Méfie-toi un peu de Mila.",
+      "demande": "Il te reste trois personnes à rencontrer : Mila, Lucky et le Commandant Varga. Va leur parler.",
       "fin": "Tu connais tout le monde, maintenant. Ou presque.",
       "etapes": [
         {
@@ -132,7 +162,7 @@
       "id": "survivre",
       "titre": "Tenir dehors",
       "difficulte": 2,
-      "demande": "Une heure dehors, c'est long. Commence par vingt minutes sur la carte sans mourir.",
+      "demande": "Reste 20 minutes sur la carte sans mourir. Si tu meurs, le compteur repart de zéro.",
       "fin": "Vingt minutes. La prochaine fois, ce sera une heure.",
       "etapes": [
         {
@@ -150,7 +180,7 @@
       "id": "un_vrai_survivant",
       "titre": "Un vrai survivant",
       "difficulte": 3,
-      "demande": "Reviens me voir quand tu auras aidé tout le monde. Je veux voir ta réputation grimper chez Jack, Jacqueline et Ferraille.",
+      "demande": "Dernière épreuve : reste 1 heure sur la carte sans mourir, puis reviens par une extraction.",
       "fin": "Les autres ne jurent que par toi. Tu es des nôtres, maintenant.",
       "reputation_min": 100,
       "etapes": [
@@ -175,103 +205,5 @@
       }
     }
   ],
-  "contrats": [
-    {
-      "id": "refuge_bois",
-      "poids": 2,
-      "variables": {
-        "n": {
-          "min": 8,
-          "max": 16,
-          "pas": 4
-        }
-      },
-      "quete": {
-        "id": "refuge_bois",
-        "titre": "Du bois pour le refuge",
-        "difficulte": 1,
-        "demande": "Le refuge a besoin de planches. Rapporte-m'en {n}.",
-        "fin": "Merci, petit.",
-        "etapes": [
-          {
-            "type": "donner",
-            "libelle": "Donner {n} planches",
-            "objet": "heraliz_composants:planche",
-            "nombre": "{n}"
-          }
-        ],
-        "recompense": {
-          "herals": "{n}*12",
-          "reputation": 8
-        }
-      }
-    },
-    {
-      "id": "refuge_soins",
-      "poids": 2,
-      "variables": {
-        "n": {
-          "min": 2,
-          "max": 4
-        }
-      },
-      "quete": {
-        "id": "refuge_soins",
-        "titre": "Pour les blessés",
-        "difficulte": 1,
-        "demande": "On a des blessés au refuge. {n} objets de soin, n'importe lesquels.",
-        "fin": "Ça va sauver du monde.",
-        "etapes": [
-          {
-            "type": "donner",
-            "libelle": "Donner {n} objets de soin",
-            "objet": [
-              "heralisz_heal:vaseline",
-              "heralisz_heal:ibuprofen",
-              "heralisz_heal:condensed_milk",
-              "heralisz_heal:goldenstar",
-              "heralisz_heal:amoxycillin",
-              "heralisz_heal:ai2",
-              "heralisz_heal:attelle_bandage",
-              "heralisz_heal:carfak",
-              "heralisz_heal:blood_pack",
-              "heralisz_heal:surv12",
-              "heralisz_heal:cms"
-            ],
-            "nombre": "{n}"
-          }
-        ],
-        "recompense": {
-          "herals": "{n}*60",
-          "reputation": 10
-        }
-      }
-    },
-    {
-      "id": "refuge_sortie",
-      "poids": 1,
-      "quete": {
-        "id": "refuge_sortie",
-        "titre": "Nouvelles du dehors",
-        "difficulte": 1,
-        "demande": "Sors, fouille ce que tu trouves et reviens me raconter.",
-        "fin": "Merci des nouvelles.",
-        "etapes": [
-          {
-            "type": "fouiller",
-            "libelle": "Fouiller 8 conteneurs",
-            "nombre": 8
-          },
-          {
-            "type": "extraction",
-            "libelle": "Rentrer par une extraction"
-          }
-        ],
-        "recompense": {
-          "herals": 250,
-          "reputation": 10
-        }
-      }
-    }
-  ]
+  "contrats": []
 }

@@ -7,7 +7,30 @@
     "ru": "Радистка"
   },
   "skin": "nadia",
-  "apparence": {"skin_tone": "olive", "eye_shape": "upturned", "eye_color": "hazel", "brow_style": "thin", "nose_style": "small", "mouth_style": "neutral", "lip_color": "natural", "hair_style": "slicked_back", "hair_color": "black", "facial_hair": "none", "shirt_style": "hoodie", "shirt_color": "charcoal", "shirt_color2": "grey", "pants_style": "joggers", "pants_color": "black", "shoes_style": "sneakers", "shoes_color": "grey", "marks": ["mole"], "wear": "clean", "eye_size": 3},
+  "apparence": {
+    "skin_tone": "olive",
+    "eye_shape": "upturned",
+    "eye_color": "hazel",
+    "brow_style": "thin",
+    "nose_style": "small",
+    "mouth_style": "neutral",
+    "lip_color": "natural",
+    "hair_style": "slicked_back",
+    "hair_color": "black",
+    "facial_hair": "none",
+    "shirt_style": "hoodie",
+    "shirt_color": "charcoal",
+    "shirt_color2": "grey",
+    "pants_style": "joggers",
+    "pants_color": "black",
+    "shoes_style": "sneakers",
+    "shoes_color": "grey",
+    "marks": [
+      "mole"
+    ],
+    "wear": "clean",
+    "eye_size": 3
+  },
   "ambiance": [
     "Fréquence 104.7... toujours rien.",
     "Chut. J'écoute.",
@@ -18,14 +41,22 @@
   "accueil": {
     "inconnu": "Mmh ? Ah, c'est toi.",
     "connu": "J'ai capté quelque chose. Ça t'intéresse ?",
-    "ami": "Toi. Bien. J'ai besoin de quelqu'un de confiance."
+    "ami": "Toi. Bien. J'ai besoin de quelqu'un de confiance.",
+    "besoin": [
+      "J'ai capté quelque chose. J'ai besoin que tu ailles voir.",
+      "Toi. Bien. J'ai un travail pour toi."
+    ],
+    "en_cours": [
+      "Du nouveau ? Je reste à l'écoute.",
+      "Ne traîne pas. Ce que je cherche peut disparaître."
+    ]
   },
   "suite": [
     {
       "id": "poste_abandonne",
       "titre": "Le poste abandonné",
       "difficulte": 1,
-      "demande": "Il y a un vieux poste radio dans un village. Va voir s'il émet encore.",
+      "demande": "Il y a un vieux poste radio dans un village. Va l'inspecter et dis-moi s'il émet encore.",
       "fin": "Il émettait encore... sur ma fréquence. Quelqu'un l'a réglé exprès.",
       "etapes": [
         {
@@ -45,7 +76,7 @@
       "id": "balises",
       "titre": "Les balises",
       "difficulte": 2,
-      "demande": "Trois balises météo, trois relevés. Ne t'attends pas à ce que je te dise où exactement.",
+      "demande": "Va relever 3 balises météo sur la carte.",
       "fin": "Les relevés sont bizarres. La pression chute près de la faille.",
       "etapes": [
         {
@@ -66,7 +97,7 @@
       "id": "bureau_directeur",
       "titre": "Le bureau du directeur",
       "difficulte": 3,
-      "demande": "Il y avait un homme à Clairval, le directeur de l'usine. Il signait les bons de transport du Secteur 7. Son bureau est au dernier étage. Rapporte-moi tout ce qui porte le tampon « R ». Le coffre de son bureau a un code : sa secrétaire le connaissait. Elle habitait au-dessus de la pharmacie.",
+      "demande": "À Clairval, le directeur de l'usine cachait des papiers. Prends le dossier dans son bureau. Trouve le code de son coffre chez sa secrétaire, au-dessus de la pharmacie. Ouvre le coffre et rapporte-moi le dossier et la clé USB.",
       "fin": "Les bons de transport... et la clé USB. Personne ne doit savoir que tu les as eus.",
       "etapes": [
         {
@@ -122,7 +153,7 @@
       "id": "message_chiffre",
       "titre": "Message chiffré",
       "difficulte": 2,
-      "demande": "J'ai capté un message chiffré. La clé est sur un tableau noir, dans une école. Trouve-la et dis-moi ce que ça veut dire. Le message : « 7 - 15 - 12 - 4 ».",
+      "demande": "J'ai capté un message : « 7 - 15 - 12 - 4 ». La clé est sur un tableau noir, dans une école. Trouve-la, puis tape la réponse sur mon poste radio.",
       "fin": "Le mot était « GOLD »... L'or. Il y a de l'or quelque part.",
       "etapes": [
         {
@@ -150,7 +181,7 @@
       "id": "antenne",
       "titre": "L'antenne",
       "difficulte": 3,
-      "demande": "La tour radio de la carte peut encore émettre. Pose une batterie et un circuit sur l'émetteur, et tiens trois minutes pendant le redémarrage.",
+      "demande": "Va à la tour radio. Pose une batterie et un circuit imprimé sur l'émetteur, puis tiens 3 minutes sur place pendant le redémarrage.",
       "fin": "Je capte tout, maintenant. Absolument tout.",
       "etapes": [
         {
@@ -184,7 +215,7 @@
       "id": "extractions",
       "titre": "Les extractions",
       "difficulte": 2,
-      "demande": "Je veux savoir quelles extractions sont sûres. Rentre trois fois par une extraction.",
+      "demande": "Reviens 3 fois par une extraction.",
       "fin": "Trois retours. Je note tout.",
       "etapes": [
         {
@@ -202,7 +233,7 @@
       "id": "carnet_explorateur",
       "titre": "Carnet d'explorateur",
       "difficulte": 3,
-      "demande": "Un explorateur a semé les pages de son carnet sur toute la carte. Cinq pages. Rapporte-les-moi toutes.",
+      "demande": "Un explorateur a perdu 5 pages de son carnet sur la carte. Trouve-les toutes et rapporte-les-moi.",
       "fin": "Ses cartes sont incroyables. Il avait trouvé des endroits que personne ne connaît.",
       "etapes": [
         {
@@ -231,7 +262,7 @@
       "id": "mouchards",
       "titre": "Le mouchard",
       "difficulte": 3,
-      "demande": "Je veux entendre ce qui se dit dans la grande ville. Pose ces trois micros dans trois bâtiments.",
+      "demande": "Prends ces 3 micros et pose-les dans 3 bâtiments de la grande ville.",
       "fin": "Trois micros. Maintenant, j'entends tout le monde.",
       "donne": [
         {
@@ -259,7 +290,7 @@
       "id": "registre_prison",
       "titre": "Le registre de la prison",
       "difficulte": 3,
-      "demande": "Le registre des transferts de la prison est dans la salle bleue. Il faudra une carte d'accès bleue.",
+      "demande": "Va dans la salle bleue de la prison (il faut une carte bleue) et rapporte-moi le registre.",
       "fin": "« Transfert médical : Secteur 7 ». Quarante noms. Quarante.",
       "etapes": [
         {
@@ -285,7 +316,7 @@
       "id": "journal_bord",
       "titre": "Le journal de bord",
       "difficulte": 3,
-      "demande": "La tour de contrôle de l'aérodrome a un journal de bord. Le dernier vol est parti le jour de l'accident. Je veux savoir où il allait.",
+      "demande": "Va à la tour de contrôle de l'aérodrome et rapporte-moi le journal de bord.",
       "fin": "Destination : nulle part. Le vol a été effacé. Exprès.",
       "etapes": [
         {
@@ -311,7 +342,7 @@
       "id": "bande",
       "titre": "La bande",
       "difficulte": 4,
-      "demande": "Il y a un bunker. Dans sa salle rouge, une bande audio. Ce qu'elle contient... je dois l'entendre.",
+      "demande": "Va dans la salle rouge d'un bunker et rapporte-moi la bande audio. Je mettrai 1 heure à la décoder.",
       "fin": "Laisse-moi l'écouter. Seule.",
       "etapes": [
         {
@@ -347,7 +378,7 @@
       "id": "cartographe",
       "titre": "Cartographe",
       "difficulte": 4,
-      "demande": "Va partout. Je veux que tu aies mis les pieds dans chaque lieu de la carte.",
+      "demande": "Visite tous les lieux de la carte.",
       "fin": "Tu connais la carte mieux que moi, maintenant.",
       "etapes": [
         {
@@ -371,140 +402,5 @@
       }
     }
   ],
-  "contrats": [
-    {
-      "id": "balise",
-      "poids": 3,
-      "quete": {
-        "id": "balise",
-        "titre": "Relevé de balise",
-        "difficulte": 2,
-        "demande": "Une balise ne répond plus. Va la relever.",
-        "fin": "Merci. Les chiffres sont toujours aussi bizarres.",
-        "etapes": [
-          {
-            "type": "indice",
-            "libelle": "Relever la balise",
-            "groupe": "balise",
-            "titre": "Balise météo",
-            "texte": "Relevé noté."
-          }
-        ],
-        "recompense": {
-          "herals": 200,
-          "reputation": 10
-        }
-      }
-    },
-    {
-      "id": "document",
-      "poids": 3,
-      "quete": {
-        "id": "document",
-        "titre": "Un document caché",
-        "difficulte": 2,
-        "demande": "Quelqu'un a caché un document dehors. Trouve-le.",
-        "fin": "Intéressant...",
-        "etapes": [
-          {
-            "type": "ramasser",
-            "libelle": "Trouver le document",
-            "groupe": "document",
-            "objet": "document",
-            "ref": "doc",
-            "nom": "Document confidentiel"
-          },
-          {
-            "type": "donner",
-            "libelle": "Rapporter le document",
-            "objet_quete": "doc"
-          }
-        ],
-        "recompense": {
-          "herals": 350,
-          "reputation": 12
-        }
-      }
-    },
-    {
-      "id": "postes",
-      "poids": 2,
-      "variables": {
-        "n": {
-          "min": 2,
-          "max": 3
-        }
-      },
-      "quete": {
-        "id": "postes",
-        "titre": "Les postes radio",
-        "difficulte": 2,
-        "demande": "Inspecte {n} postes radio. Je veux savoir lesquels marchent encore.",
-        "fin": "Merci.",
-        "etapes": [
-          {
-            "type": "indice",
-            "libelle": "Inspecter {n} postes radio",
-            "groupe": "radio",
-            "nombre": "{n}",
-            "titre": "Poste radio",
-            "texte": "Il grésille. Rien de clair."
-          }
-        ],
-        "recompense": {
-          "herals": "{n}*120",
-          "reputation": 10
-        }
-      }
-    },
-    {
-      "id": "extraction",
-      "poids": 2,
-      "quete": {
-        "id": "extraction",
-        "titre": "Un retour",
-        "difficulte": 1,
-        "demande": "Sors et rentre par une extraction. Je veux savoir si les ondes passent.",
-        "fin": "Bien reçu.",
-        "etapes": [
-          {
-            "type": "extraction",
-            "libelle": "Rentrer par une extraction"
-          }
-        ],
-        "recompense": {
-          "herals": 150,
-          "reputation": 8
-        }
-      }
-    },
-    {
-      "id": "lieu",
-      "poids": 2,
-      "variables": {
-        "l": {
-          "points": "lieux"
-        }
-      },
-      "quete": {
-        "id": "lieu",
-        "titre": "Reconnaissance : {l.nom}",
-        "difficulte": 2,
-        "demande": "Va jeter un œil à {l.nom} et reviens.",
-        "fin": "Merci du rapport.",
-        "etapes": [
-          {
-            "type": "endroit",
-            "libelle": "Aller à {l.nom}",
-            "point": "{l}",
-            "rayon": 40
-          }
-        ],
-        "recompense": {
-          "herals": 250,
-          "reputation": 10
-        }
-      }
-    }
-  ]
+  "contrats": []
 }

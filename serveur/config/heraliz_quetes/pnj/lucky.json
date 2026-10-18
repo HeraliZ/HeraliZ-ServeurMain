@@ -7,7 +7,27 @@
     "ru": "Владелец казино"
   },
   "skin": "lucky",
-  "apparence": {"skin_tone": "bronze", "eye_shape": "round", "eye_color": "light_blue", "brow_style": "arched", "nose_style": "medium", "mouth_style": "smile", "hair_style": "slicked_back", "hair_color": "soft_black", "facial_hair": "mustache", "shirt_style": "dress_shirt", "shirt_color": "purple", "shirt_color2": "white", "pants_style": "trousers", "pants_color": "charcoal", "shoes_style": "dress_shoes", "shoes_color": "black", "marks": [], "wear": "clean", "mouth_width": 3},
+  "apparence": {
+    "skin_tone": "bronze",
+    "eye_shape": "round",
+    "eye_color": "light_blue",
+    "brow_style": "arched",
+    "nose_style": "medium",
+    "mouth_style": "smile",
+    "hair_style": "slicked_back",
+    "hair_color": "soft_black",
+    "facial_hair": "mustache",
+    "shirt_style": "dress_shirt",
+    "shirt_color": "purple",
+    "shirt_color2": "white",
+    "pants_style": "trousers",
+    "pants_color": "charcoal",
+    "shoes_style": "dress_shoes",
+    "shoes_color": "black",
+    "marks": [],
+    "wear": "clean",
+    "mouth_width": 3
+  },
   "ambiance": [
     "Ici on meurt de rire, pas de faim.",
     "La chance, ça se travaille.",
@@ -18,14 +38,22 @@
   "accueil": {
     "inconnu": "Alors, on tente sa chance ?",
     "connu": "Mon client préféré ! Enfin, un de mes clients préférés.",
-    "ami": "Ah ! La maison t'adore. Vraiment."
+    "ami": "Ah ! La maison t'adore. Vraiment.",
+    "besoin": [
+      "Toi ! Approche, j'ai un service à te demander.",
+      "La chance sourit à ceux qui m'aident. J'ai besoin de toi."
+    ],
+    "en_cours": [
+      "Alors, mon petit service ? La maison attend.",
+      "Tu n'as pas oublié notre arrangement ?"
+    ]
   },
   "suite": [
     {
       "id": "tour_de_piste",
       "titre": "Tour de piste",
       "difficulte": 1,
-      "demande": "Fais le tour du casino. Va voir chaque table, que tu saches où tout se trouve.",
+      "demande": "Fais le tour du casino : va voir chaque table de jeu.",
       "fin": "Voilà, tu connais la maison. Reviens quand tu veux.",
       "etapes": [
         {
@@ -46,7 +74,7 @@
       "id": "la_dette",
       "titre": "La dette",
       "difficulte": 3,
-      "demande": "Un joueur me doit de l'argent. Il est parti dehors et ne reviendra pas. Il avait une montre à gousset. Retrouve son corps, rapporte-moi la montre.",
+      "demande": "Un joueur me devait de l'argent et il est mort dehors. Trouve son corps et rapporte-moi sa montre.",
       "fin": "La montre... Bon. La dette est réglée. Paix à son âme.",
       "etapes": [
         {
@@ -73,7 +101,7 @@
       "id": "collection",
       "titre": "Le collectionneur",
       "difficulte": 3,
-      "demande": "Je décore le casino. Rapporte-moi une couronne ou une idole dorée. Quelque chose qui brille.",
+      "demande": "Apporte-moi une couronne ou une idole dorée pour décorer le casino.",
       "fin": "Ça brillera au-dessus de la roulette.",
       "etapes": [
         {
@@ -91,28 +119,5 @@
       }
     }
   ],
-  "contrats": [
-    {
-      "id": "deco",
-      "poids": 2,
-      "quete": {
-        "id": "deco",
-        "titre": "De la déco",
-        "difficulte": 1,
-        "demande": "Un objet de valeur, n'importe lequel, pour la déco.",
-        "fin": "Joli !",
-        "etapes": [
-          {
-            "type": "donner",
-            "libelle": "Donner un objet de valeur",
-            "tag": "heraliz_composants:vente"
-          }
-        ],
-        "recompense": {
-          "herals": 150,
-          "reputation": 10
-        }
-      }
-    }
-  ]
+  "contrats": []
 }
