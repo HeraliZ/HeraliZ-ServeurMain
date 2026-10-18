@@ -88,5 +88,9 @@
  "heraliz_decors.brume.fixee": "Brume fixée : %s (/brume auto pour reprendre le tirage)",
  "heraliz_decors.zones.info": "Zones dangereuses : %s",
  "heraliz_decors.zones.rechargees": "Zones rechargées : %s",
- "block.heraliz_decors.garde_corps": "Garde-corps (métal)"
+ "block.heraliz_decors.garde_corps": "Garde-corps (métal)",
+ "block.heraliz_decors.lavabo_sale": "Lavabo sale",
+ "block.heraliz_decors.toilettes_sales": "Toilettes sales",
+ "block.heraliz_decors.lit_superpose": "Lit superposé",
+ "block.heraliz_decors.lit_prison": "Lit de prison (chaînes)"
 }

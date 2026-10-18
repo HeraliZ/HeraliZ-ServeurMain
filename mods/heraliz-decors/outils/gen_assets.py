@@ -990,6 +990,10 @@ def main():
     GC.ecrire(A)
     for _n, (_fr, _en) in GC.NOMS.items():
         NOMS[_n] = (_fr, _en)
+    import prison as PR                                            # mobilier de prison (1.11.0) : outils/prison.py
+    PR.installer()
+    for _n, (_fr, _en) in PR.NOMS.items():
+        NOMS[_n] = (_fr, _en)
     etats()
     objets()
     traductions()

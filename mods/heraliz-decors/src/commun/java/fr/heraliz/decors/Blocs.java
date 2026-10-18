@@ -125,6 +125,24 @@ public final class Blocs {
     // ------------------------------------------------------------------ garde-corps en métal (1.10.0) : 1 à 4 côtés par bloc
     public static final RegistryObject<Block> GARDE_CORPS = bloc("garde_corps", () -> new fr.heraliz.decors.bloc.GardeCorps(grillage()));
 
+    // ------------------------------------------------------------------ mobilier de prison (1.11.0) : modèles par outils/prison.py
+    public static final RegistryObject<Block> TOILETTES_SALES = bloc("toilettes_sales", () -> new Deco.Oriente(meuble(SoundType.STONE),
+            s -> tourner(Shapes.or(boite(5, 0, 5, 11, 6, 12), boite(3.5, 6, 3.5, 12.5, 10, 14), boite(3, 8, 0, 13, 21, 4.5)),
+                    s.getValue(Deco.Oriente.FACING).getOpposite()), false, Effet.AUCUN));
+    public static final RegistryObject<Block> LAVABO_SALE = bloc("lavabo_sale", () -> new Deco.Oriente(meuble(SoundType.STONE),
+            s -> tourner(Shapes.or(boite(6, 0, 2.5, 10, 11, 6.5), boite(2, 11, 0.5, 14, 15, 11), boite(1.5, 15, 0, 14.5, 19, 1)),
+                    s.getValue(Deco.Oriente.FACING).getOpposite()), false, Effet.AUCUN));
+    public static final RegistryObject<Block> LIT_PRISON = bloc("lit_prison", () -> fr.heraliz.decors.bloc.MeubleDouble.murale(
+            meuble(SoundType.CHAIN), s -> tourner(boite(0, 8, 0, 16, 11.5, 12), s.getValue(Deco.Oriente.FACING).getOpposite())));
+    public static final RegistryObject<Block> LIT_SUPERPOSE = bloc("lit_superpose", () -> fr.heraliz.decors.bloc.MeubleDouble.enLongueur(
+            meuble(SoundType.METAL), s -> tourner(boite(1, 0, 0, 15, 9.5, 16),
+                    s.getValue(Deco.Oriente.FACING).getOpposite())));
+
+    private static BlockBehaviour.Properties meuble(SoundType son) {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(2.0f, 6.0f).sound(son).noOcclusion()
+                .pushReaction(PushReaction.BLOCK).isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false);
+    }
+
     private static BlockBehaviour.Properties grillage() {
         return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5.0f, 6.0f).sound(SoundType.CHAIN).noOcclusion()
                 .requiresCorrectToolForDrops().isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false);

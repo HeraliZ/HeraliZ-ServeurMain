@@ -88,5 +88,9 @@
  "heraliz_decors.brume.fixee": "Туман зафиксирован: %s (/brume auto — вернуть автовыбор)",
  "heraliz_decors.zones.info": "Опасные зоны: %s",
  "heraliz_decors.zones.rechargees": "Зоны перезагружены: %s",
- "block.heraliz_decors.garde_corps": "Перила (металл)"
+ "block.heraliz_decors.garde_corps": "Перила (металл)",
+ "block.heraliz_decors.lavabo_sale": "Грязная раковина",
+ "block.heraliz_decors.toilettes_sales": "Грязный унитаз",
+ "block.heraliz_decors.lit_superpose": "Двухъярусная кровать",
+ "block.heraliz_decors.lit_prison": "Тюремная койка (цепи)"
 }

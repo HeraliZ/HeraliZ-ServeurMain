@@ -88,5 +88,9 @@
  "heraliz_decors.brume.fixee": "Fog locked: %s (/brume auto to resume the draw)",
  "heraliz_decors.zones.info": "Danger zones: %s",
  "heraliz_decors.zones.rechargees": "Zones reloaded: %s",
- "block.heraliz_decors.garde_corps": "Railing (metal)"
+ "block.heraliz_decors.garde_corps": "Railing (metal)",
+ "block.heraliz_decors.lavabo_sale": "Dirty sink",
+ "block.heraliz_decors.toilettes_sales": "Dirty toilet",
+ "block.heraliz_decors.lit_superpose": "Bunk bed",
+ "block.heraliz_decors.lit_prison": "Prison bed (chains)"
 }

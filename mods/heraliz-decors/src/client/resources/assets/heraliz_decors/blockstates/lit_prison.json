@@ -1,0 +1,34 @@
+{
+ "variants": {
+  "cote=gauche,facing=south": {
+   "model": "heraliz_decors:block/lit_prison_gauche"
+  },
+  "cote=droite,facing=south": {
+   "model": "heraliz_decors:block/lit_prison_droite"
+  },
+  "cote=gauche,facing=west": {
+   "model": "heraliz_decors:block/lit_prison_gauche",
+   "y": 90
+  },
+  "cote=droite,facing=west": {
+   "model": "heraliz_decors:block/lit_prison_droite",
+   "y": 90
+  },
+  "cote=gauche,facing=north": {
+   "model": "heraliz_decors:block/lit_prison_gauche",
+   "y": 180
+  },
+  "cote=droite,facing=north": {
+   "model": "heraliz_decors:block/lit_prison_droite",
+   "y": 180
+  },
+  "cote=gauche,facing=east": {
+   "model": "heraliz_decors:block/lit_prison_gauche",
+   "y": 270
+  },
+  "cote=droite,facing=east": {
+   "model": "heraliz_decors:block/lit_prison_droite",
+   "y": 270
+  }
+ }
+}

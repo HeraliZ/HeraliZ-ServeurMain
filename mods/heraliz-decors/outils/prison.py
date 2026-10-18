@@ -396,7 +396,8 @@ def installer():
     for n, m in modeles().items():
         (A / "models/block").mkdir(parents=True, exist_ok=True)
         (A / "models/block" / f"{n}.json").write_text(json.dumps(m, indent=1), encoding="utf-8")
-    rot = (("north", 0), ("east", 90), ("south", 180), ("west", 270))
+    # facing = côté vers le joueur qui pose (Deco.Oriente) : dos du modèle (dessiné au nord) à l'opposé
+    rot = (("south", 0), ("west", 90), ("north", 180), ("east", 270))
     for bloc, prop in ETATS.items():
         v = {}
         for d, y in rot:

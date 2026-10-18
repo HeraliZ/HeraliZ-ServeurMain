@@ -1,0 +1,487 @@
+{
+ "parent": "block/block",
+ "textures": {
+  "porcelaine": "heraliz_decors:block/porcelaine_sale",
+  "vasque": "heraliz_decors:block/lavabo_vasque",
+  "metal": "heraliz_decors:block/metal_rouille",
+  "particle": "heraliz_decors:block/porcelaine_sale"
+ },
+ "elements": [
+  {
+   "from": [
+    6,
+    0,
+    2.5
+   ],
+   "to": [
+    10,
+    11,
+    6.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      6,
+      5,
+      10,
+      16.0
+     ],
+     "texture": "#porcelaine"
+    },
+    "south": {
+     "uv": [
+      6,
+      5,
+      10,
+      16.0
+     ],
+     "texture": "#porcelaine"
+    },
+    "east": {
+     "uv": [
+      2.5,
+      5,
+      6.5,
+      16.0
+     ],
+     "texture": "#porcelaine"
+    },
+    "west": {
+     "uv": [
+      2.5,
+      5,
+      6.5,
+      16.0
+     ],
+     "texture": "#porcelaine"
+    },
+    "up": {
+     "uv": [
+      6,
+      2.5,
+      10,
+      6.5
+     ],
+     "texture": "#porcelaine"
+    },
+    "down": {
+     "uv": [
+      6,
+      2.5,
+      10,
+      6.5
+     ],
+     "texture": "#porcelaine"
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    11,
+    0.5
+   ],
+   "to": [
+    14,
+    15,
+    11
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      2,
+      1,
+      14,
+      5
+     ],
+     "texture": "#porcelaine"
+    },
+    "south": {
+     "uv": [
+      2,
+      1,
+      14,
+      5
+     ],
+     "texture": "#porcelaine"
+    },
+    "east": {
+     "uv": [
+      0.5,
+      1,
+      11,
+      5
+     ],
+     "texture": "#porcelaine"
+    },
+    "west": {
+     "uv": [
+      0.5,
+      1,
+      11,
+      5
+     ],
+     "texture": "#porcelaine"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#vasque"
+    },
+    "down": {
+     "uv": [
+      2,
+      0.5,
+      14,
+      11
+     ],
+     "texture": "#porcelaine"
+    }
+   }
+  },
+  {
+   "from": [
+    7.25,
+    15,
+    1
+   ],
+   "to": [
+    8.75,
+    18.5,
+    2.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      7.25,
+      13.5,
+      8.75,
+      14.5
+     ],
+     "texture": "#metal"
+    },
+    "south": {
+     "uv": [
+      7.25,
+      13.5,
+      8.75,
+      14.5
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      1,
+      13.5,
+      2.5,
+      14.5
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      1,
+      13.5,
+      2.5,
+      14.5
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      7.25,
+      1,
+      8.75,
+      2.5
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      7.25,
+      1,
+      8.75,
+      2.5
+     ],
+     "texture": "#metal"
+    }
+   }
+  },
+  {
+   "from": [
+    7.4,
+    17.4,
+    2.5
+   ],
+   "to": [
+    8.6,
+    18.5,
+    5.5
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      7.4,
+      13.5,
+      8.6,
+      14.6
+     ],
+     "texture": "#metal"
+    },
+    "south": {
+     "uv": [
+      7.4,
+      13.5,
+      8.6,
+      14.6
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      2.5,
+      13.5,
+      5.5,
+      14.6
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      2.5,
+      13.5,
+      5.5,
+      14.6
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      7.4,
+      2.5,
+      8.6,
+      5.5
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      7.4,
+      2.5,
+      8.6,
+      5.5
+     ],
+     "texture": "#metal"
+    }
+   }
+  },
+  {
+   "from": [
+    4.5,
+    15,
+    1.2
+   ],
+   "to": [
+    6,
+    16,
+    2.7
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4.5,
+      0.0,
+      6,
+      1
+     ],
+     "texture": "#metal"
+    },
+    "south": {
+     "uv": [
+      4.5,
+      0.0,
+      6,
+      1
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      1.2,
+      0.0,
+      2.7,
+      1
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      1.2,
+      0.0,
+      2.7,
+      1
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      4.5,
+      1.2,
+      6,
+      2.7
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      4.5,
+      1.2,
+      6,
+      2.7
+     ],
+     "texture": "#metal"
+    }
+   }
+  },
+  {
+   "from": [
+    10,
+    15,
+    1.2
+   ],
+   "to": [
+    11.5,
+    16,
+    2.7
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      10,
+      0.0,
+      11.5,
+      1
+     ],
+     "texture": "#metal"
+    },
+    "south": {
+     "uv": [
+      10,
+      0.0,
+      11.5,
+      1
+     ],
+     "texture": "#metal"
+    },
+    "east": {
+     "uv": [
+      1.2,
+      0.0,
+      2.7,
+      1
+     ],
+     "texture": "#metal"
+    },
+    "west": {
+     "uv": [
+      1.2,
+      0.0,
+      2.7,
+      1
+     ],
+     "texture": "#metal"
+    },
+    "up": {
+     "uv": [
+      10,
+      1.2,
+      11.5,
+      2.7
+     ],
+     "texture": "#metal"
+    },
+    "down": {
+     "uv": [
+      10,
+      1.2,
+      11.5,
+      2.7
+     ],
+     "texture": "#metal"
+    }
+   }
+  },
+  {
+   "from": [
+    1.5,
+    15,
+    0
+   ],
+   "to": [
+    14.5,
+    19,
+    0.6
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      1.5,
+      13,
+      14.5,
+      14
+     ],
+     "texture": "#porcelaine"
+    },
+    "south": {
+     "uv": [
+      1.5,
+      13,
+      14.5,
+      14
+     ],
+     "texture": "#porcelaine"
+    },
+    "east": {
+     "uv": [
+      0.0,
+      13,
+      0.6,
+      14
+     ],
+     "texture": "#porcelaine"
+    },
+    "west": {
+     "uv": [
+      0.0,
+      13,
+      0.6,
+      14
+     ],
+     "texture": "#porcelaine"
+    },
+    "up": {
+     "uv": [
+      1.5,
+      0.0,
+      14.5,
+      0.6
+     ],
+     "texture": "#porcelaine"
+    },
+    "down": {
+     "uv": [
+      1.5,
+      0.0,
+      14.5,
+      0.6
+     ],
+     "texture": "#porcelaine"
+    }
+   }
+  }
+ ]
+}

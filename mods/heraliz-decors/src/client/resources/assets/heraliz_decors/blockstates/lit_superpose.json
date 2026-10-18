@@ -1,0 +1,34 @@
+{
+ "variants": {
+  "facing=south,partie=tete": {
+   "model": "heraliz_decors:block/lit_superpose_tete"
+  },
+  "facing=south,partie=pied": {
+   "model": "heraliz_decors:block/lit_superpose_pied"
+  },
+  "facing=west,partie=tete": {
+   "model": "heraliz_decors:block/lit_superpose_tete",
+   "y": 90
+  },
+  "facing=west,partie=pied": {
+   "model": "heraliz_decors:block/lit_superpose_pied",
+   "y": 90
+  },
+  "facing=north,partie=tete": {
+   "model": "heraliz_decors:block/lit_superpose_tete",
+   "y": 180
+  },
+  "facing=north,partie=pied": {
+   "model": "heraliz_decors:block/lit_superpose_pied",
+   "y": 180
+  },
+  "facing=east,partie=tete": {
+   "model": "heraliz_decors:block/lit_superpose_tete",
+   "y": 270
+  },
+  "facing=east,partie=pied": {
+   "model": "heraliz_decors:block/lit_superpose_pied",
+   "y": 270
+  }
+ }
+}
