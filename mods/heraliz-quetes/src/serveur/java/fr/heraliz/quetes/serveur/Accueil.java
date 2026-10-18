@@ -39,6 +39,13 @@ final class Accueil {
     }
 
     private static final Map<UUID, Etat> DERNIER = new HashMap<>();
+    /** Avancée vue en dernier (étape et pièces faites) et secondes depuis, pour l'aide de Varga. */
+    private record Bloque(int etape, int fait, int secondes) {
+    }
+
+    private static final Map<UUID, Bloque> SUR_ETAPE = new HashMap<>();
+    /** Secondes sans avancer avant que Varga donne un conseil de plus. */
+    private static final int AIDE_APRES = 30;
     /** Secondes avant le second mot de la fin. */
     private static final Map<UUID, Integer> FIN = new HashMap<>();
     /** Apparence de l'entité Varga vue en dernier (si son fichier n'en a pas : posée par /pnj apparence varga moi). */
@@ -50,6 +57,7 @@ final class Accueil {
     static void oublier(UUID u) {
         DERNIER.remove(u);
         FIN.remove(u);
+        SUR_ETAPE.remove(u);
     }
 
     /** Le joueur doit d'abord faire le tutoriel des bases : Varga ne propose que « Faire ma base ». Jamais en créatif. */
@@ -88,7 +96,8 @@ final class Accueil {
             return;
         }
         boolean intro = intro(p, tuto);
-        int etape = tuto == 2 ? Ponts.tutoProgression(p)[0] : 0;
+        int[] pr = tuto == 2 ? Ponts.tutoProgression(p) : new int[]{0, 0, 0};
+        int etape = pr[0];
         Etat avant = DERNIER.put(p.getUUID(), new Etat(tuto, etape, intro));
         boolean guide = intro || tuto == 1 || tuto == 2;
         if (guide || avant != null && (avant.intro() || avant.tuto() == 1 || avant.tuto() == 2)) {
@@ -96,6 +105,20 @@ final class Accueil {
         }
         if (tuto == 2 && etape >= 1 && etape <= etapes && (avant == null || avant.tuto() != 2 || avant.etape() != etape)) {
             radio(p, etape, "heraliz_quetes.tuto.radio." + etape);
+            SUR_ETAPE.put(p.getUUID(), new Bloque(etape, pr[1], 0));
+        } else if (tuto == 2 && etape >= 1 && etape <= etapes) {
+            // 30 s sans rien poser ni améliorer : Varga explique autrement (une fois par étape)
+            Bloque b = SUR_ETAPE.get(p.getUUID());
+            if (b == null || b.etape() != etape) {
+                b = new Bloque(etape, pr[1], 0);
+            } else if (b.secondes() >= 0) {
+                b = b.fait() != pr[1] ? new Bloque(etape, pr[1], 0) : new Bloque(etape, pr[1], b.secondes() + 1);
+                if (b.secondes() >= AIDE_APRES) {
+                    radio(p, etape, "heraliz_quetes.tuto.aide." + etape);
+                    b = new Bloque(etape, pr[1], -1);   // déjà aidé sur cette étape
+                }
+            }
+            SUR_ETAPE.put(p.getUUID(), b);
         } else if (tuto == 3 && avant != null && avant.tuto() == 2) {
             // le premier mot de la fin pendant que la caméra fait le tour de la base (CRac), le second après
             radio(p, 0, "heraliz_quetes.tuto.radio.fin", Texte.brut(Ponts.tutoJours()));

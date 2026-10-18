@@ -317,30 +317,48 @@ TEXTES = {
                                     "top of the walls.",
                                     "Нужна крыша. В колесе (зажатый правый клик) выбери Перекрытие и поставь 2 зелёных перекрытия "
                                     "поверх стен."),
-    "heraliz_quetes.tuto.radio.6": ("Pour l'instant, c'est de la brindille : ça ne tient rien. Prends le marteau (il clignote), vise "
-                                    "une pièce entourée d'orange, maintiens le clic droit et choisis Bois. Fais-le sur chaque pièce.",
-                                    "Right now it's just twigs: it won't hold anything. Take the hammer (it blinks), aim at a piece "
-                                    "outlined in orange, hold right click and pick Wood. Do it on every piece.",
-                                    "Пока это просто хворост: ничего не выдержит. Возьми молоток (он мигает), наведись на деталь в "
-                                    "оранжевой рамке, зажми правый клик и выбери Дерево. Сделай так с каждой деталью."),
-    "heraliz_quetes.tuto.radio.7": ("Solide. Maintenant le Claim Block : prends-le dans ta barre et pose-le sur la case verte, dans la "
-                                    "cabane. Ce terrain devient le tien.",
-                                    "Solid. Now the Claim Block: take it from your hotbar and place it on the green spot, inside the "
-                                    "cabin. This ground becomes yours.",
-                                    "Крепко. Теперь Claim Block: возьми его с панели и поставь на зелёную клетку внутри хижины. Эта "
-                                    "земля станет твоей."),
+    "heraliz_quetes.tuto.radio.6": ("Pour l'instant, c'est de la brindille : ça ne tient rien. Prends le marteau (il clignote), vise une pièce qui clignote en orange, maintiens le clic droit et choisis Bois. Fais-le sur chaque pièce orange.",
+                                   "Right now it's just twigs: it won't hold anything. Take the hammer (it blinks), aim at a piece blinking orange, hold right click and pick Wood. Do it on every orange piece.",
+                                   'Пока это просто хворост: ничего не выдержит. Возьми молоток (он мигает), наведись на деталь, мигающую оранжевым, зажми правый клик и выбери Дерево. Сделай так с каждой оранжевой деталью.'),
+    "heraliz_quetes.tuto.radio.7": ('Solide. Maintenant le Claim Block : prends-le dans ta barre et pose-le sur la case verte, au fond de la cabane. Ce terrain devient le tien.',
+                                   'Solid. Now the Claim Block: take it from your hotbar and place it on the green spot, at the back of the cabin. This ground becomes yours.',
+                                   'Крепко. Теперь Claim Block: возьми его с панели и поставь на зелёную клетку в глубине хижины. Эта земля станет твоей.'),
     "heraliz_quetes.tuto.radio.8": ("Une base s'use si personne ne l'entretient. Clic droit sur le Claim Block et mets-y des planches de "
                                     "chêne : le compteur à droite te dit combien.",
                                     "A base decays if nobody maintains it. Right click the Claim Block and put oak planks in it: the "
                                     "counter on the right tells you how many.",
                                     "База разрушается, если за ней не следить. Нажми правой кнопкой на Claim Block и положи туда "
                                     "дубовые доски: счётчик справа покажет, сколько нужно."),
-    "heraliz_quetes.tuto.radio.9": ("Dernière chose : pose la caisse en métal sur la case verte et range tes affaires dedans. Et ferme "
-                                    "bien la porte derrière toi : une porte ouverte, c'est une invitation.",
-                                    "One last thing: place the metal crate on the green spot and store your gear in it. And always "
-                                    "close the door behind you: an open door is an invitation.",
-                                    "Последнее: поставь металлический ящик на зелёную клетку и сложи туда вещи. И всегда закрывай "
-                                    "за собой дверь: открытая дверь — это приглашение."),
+    "heraliz_quetes.tuto.radio.9": ("Dernière chose : prends la caisse en métal et pose-la sur la case verte, près de la porte. Range tes affaires dedans, et ferme bien la porte derrière toi : une porte ouverte, c'est une invitation.",
+                                   'One last thing: take the metal crate and place it on the green spot, near the door. Store your gear in it, and always close the door behind you: an open door is an invitation.',
+                                   'Последнее: возьми металлический ящик и поставь его на зелёную клетку у двери. Сложи туда вещи и всегда закрывай за собой дверь: открытая дверь — это приглашение.'),
+    "heraliz_quetes.tuto.aide.1": ("Regarde ta barre d'objets en bas de l'écran : la case verte, c'est le plan. Appuie sur son chiffre ou fais tourner la molette jusqu'à elle.",
+                               'Look at your hotbar at the bottom of the screen: the green slot is the plan. Press its number or scroll the mouse wheel to it.',
+                               'Посмотри на панель предметов внизу экрана: зелёная ячейка — это план. Нажми её цифру или прокрути колёсико мыши до неё.'),
+    "heraliz_quetes.tuto.aide.2": ('Le plan en main, regarde le sol devant toi, pas trop loin : la fondation apparaît. Verte, tu peux la poser : clic gauche. Rouge, déplace-toi sur un endroit plus plat.',
+                               'With the plan in hand, look at the ground in front of you, not too far: the foundation shows up. Green means you can place it: left click. Red: move to a flatter spot.',
+                               'С планом в руке посмотри на землю перед собой, не слишком далеко: появится фундамент. Зелёный — можно ставить: левый клик. Красный — найди место ровнее.'),
+    "heraliz_quetes.tuto.aide.3": ('Approche-toi de ta première fondation et regarde la pièce verte qui clignote à côté. Quand la pièce que tu vises se met dessus, clic gauche.',
+                               'Walk up to your first foundation and look at the green piece blinking next to it. When the piece you aim at sits on it, left click.',
+                               'Подойди к первому фундаменту и посмотри на мигающую зелёную деталь рядом. Когда твоя деталь встанет на неё — левый клик.'),
+    "heraliz_quetes.tuto.aide.4": ("Approche-toi d'un bord de fondation et regarde la pièce verte qui clignote. Si la roue montre une autre pièce que celle qui clignote, maintiens le clic droit et prends celle qui clignote.",
+                               'Walk up to the edge of a foundation and look at the blinking green piece. If the wheel shows another piece than the blinking one, hold right click and pick the blinking one.',
+                               'Подойди к краю фундамента и посмотри на мигающую зелёную деталь. Если выбрана не та деталь, зажми правый клик и выбери ту, что мигает.'),
+    "heraliz_quetes.tuto.aide.5": ("Regarde le haut d'un mur : le plancher vert apparaît au-dessus. S'il ne vient pas, maintiens le clic droit et choisis Plancher dans la roue.",
+                               "Look at the top of a wall: the green floor shows up above it. If it doesn't, hold right click and pick Floor in the wheel.",
+                               'Посмотри на верх стены: над ней появится зелёное перекрытие. Если нет — зажми правый клик и выбери Перекрытие в колесе.'),
+    "heraliz_quetes.tuto.aide.6": ("Approche-toi d'un mur orange, marteau en main, et regarde-le bien. Maintiens le clic droit : une roue s'ouvre. Glisse vers Bois, qui clignote, et relâche.",
+                               'Walk up to an orange wall, hammer in hand, and look right at it. Hold right click: a wheel opens. Move to Wood, which blinks, and let go.',
+                               'Подойди к оранжевой стене с молотком в руке и посмотри прямо на неё. Зажми правый клик: откроется колесо. Наведи на мигающее Дерево и отпусти.'),
+    "heraliz_quetes.tuto.aide.7": ('Le Claim Block est dans ta barre (il clignote). Prends-le, entre dans la cabane et vise le carré vert au sol, au fond : clic droit pour le poser.',
+                               'The Claim Block is in your hotbar (it blinks). Take it, go inside the cabin and aim at the green square on the floor, at the back: right click to place it.',
+                               'Claim Block на твоей панели (он мигает). Возьми его, зайди в хижину и наведись на зелёный квадрат на полу в глубине: правый клик, чтобы поставить.'),
+    "heraliz_quetes.tuto.aide.8": ("Vise le Claim Block et fais un clic droit : un petit écran s'ouvre. Fais glisser des planches de chêne de ton inventaire dans la case des planches, en haut.",
+                               'Aim at the Claim Block and right click: a small screen opens. Drag oak planks from your inventory into the planks slot at the top.',
+                               'Наведись на Claim Block и нажми правый клик: откроется окно. Перетащи дубовые доски из инвентаря в ячейку досок сверху.'),
+    "heraliz_quetes.tuto.aide.9": ('La caisse en métal est dans ta barre (elle clignote). Prends-la et vise le carré vert près de la porte : clic droit pour la poser.',
+                               'The metal crate is in your hotbar (it blinks). Take it and aim at the green square near the door: right click to place it.',
+                               'Металлический ящик на твоей панели (он мигает). Возьми его и наведись на зелёный квадрат у двери: правый клик, чтобы поставить.'),
     "heraliz_quetes.tuto.radio.fin": ("Beau travail. Regarde-la, ta base. Elle est à l'abri des raids pendant %s jours. Ensuite, n'importe "
                                       "qui pourra venir la piller : améliore-la en pierre puis en métal, et garde des planches dans le "
                                       "Claim Block.",

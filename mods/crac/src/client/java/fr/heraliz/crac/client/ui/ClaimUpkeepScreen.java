@@ -5,7 +5,6 @@ import java.util.List;
 import fr.heraliz.crac.Config;
 import fr.heraliz.crac.block.entity.ClaimBlockEntity;
 import fr.heraliz.crac.claim.UpkeepResource;
-import fr.heraliz.crac.client.ScaledScreen;
 import fr.heraliz.crac.client.group.GroupTheme;
 import fr.heraliz.crac.menu.ClaimUpkeepMenu;
 import net.minecraft.client.gui.GuiGraphics;
@@ -26,39 +25,6 @@ public class ClaimUpkeepScreen extends AbstractContainerScreen<ClaimUpkeepMenu> 
     /** Text and bar colour of the countdown when the server has decay turned off: nothing to warn about. */
     private static final int NEUTRAL = -9536363;
     private List<Component> pendingTooltip;
-
-    private int guiW() {
-        return (int)Math.round(this.width / ScaledScreen.scaleFactor());
-    }
-
-    private int guiH() {
-        return (int)Math.round(this.height / ScaledScreen.scaleFactor());
-    }
-
-    @Override
-    protected void init() {
-        super.init();
-        this.leftPos = (this.guiW() - this.imageWidth) / 2;
-        this.topPos = (this.guiH() - this.imageHeight) / 2;
-    }
-
-    @Override
-    public boolean mouseClicked(double mx, double my, int button) {
-        double f = ScaledScreen.scaleFactor();
-        return super.mouseClicked(mx / f, my / f, button);
-    }
-
-    @Override
-    public boolean mouseReleased(double mx, double my, int button) {
-        double f = ScaledScreen.scaleFactor();
-        return super.mouseReleased(mx / f, my / f, button);
-    }
-
-    @Override
-    public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
-        double f = ScaledScreen.scaleFactor();
-        return super.mouseDragged(mx / f, my / f, button, dx / f, dy / f);
-    }
 
     public ClaimUpkeepScreen(ClaimUpkeepMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -142,9 +108,9 @@ public class ClaimUpkeepScreen extends AbstractContainerScreen<ClaimUpkeepMenu> 
             String label = need <= 0 ? String.valueOf(have) : have + "/" + need;
             int col = need <= 0 ? -9536363 : (have <= 0 ? -4179669 : -3878166);
             g.pose().pushPose();
-            g.pose().scale(0.5F, 0.5F, 1.0F);
-            int tw = this.font.width(label);
-            g.drawString(this.font, label, (sx + 8) * 2 - tw / 2, (sy + 19) * 2, col, false);
+            g.pose().translate(sx + 8, sy + 18.5F, 0);
+            g.pose().scale(0.75F, 0.75F, 1.0F);
+            g.drawString(this.font, label, -this.font.width(label) / 2, 0, col, false);
             g.pose().popPose();
         }
 
@@ -169,42 +135,18 @@ public class ClaimUpkeepScreen extends AbstractContainerScreen<ClaimUpkeepMenu> 
         g.drawCenteredString(this.font, text, this.imageWidth / 2, 50, col);
     }
 
+    /** Même échelle que l'inventaire (avant : échelle forcée, écran tout petit en grande interface). */
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float pt) {
-        double f = ScaledScreen.scaleFactor();
-        int mx = (int)(mouseX / f);
-        int my = (int)(mouseY / f);
         this.pendingTooltip = null;
-        g.pose().pushPose();
-        g.pose().scale((float)f, (float)f, 1.0F);
-        this.renderScaled(g, mx, my, pt);
-        g.pose().popPose();
+        this.renderBackground(g);
+        super.render(g, mouseX, mouseY, pt);
+        this.collectUpkeepTooltip(mouseX, mouseY);
         if (this.pendingTooltip != null) {
             g.renderComponentTooltip(this.font, this.pendingTooltip, mouseX, mouseY);
         } else if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && this.hoveredSlot.hasItem()) {
             g.renderTooltip(this.font, this.hoveredSlot.getItem(), mouseX, mouseY);
         }
-    }
-
-    @Override
-    public void mouseMoved(double mx, double my) {
-        double f = ScaledScreen.scaleFactor();
-        super.mouseMoved(mx / f, my / f);
-    }
-
-    @Override
-    public void renderBackground(GuiGraphics g) {
-        if (this.minecraft != null && this.minecraft.level != null) {
-            g.fillGradient(0, 0, this.guiW() + 1, this.guiH() + 1, -1072689136, -804253680);
-        } else {
-            super.renderBackground(g);
-        }
-    }
-
-    private void renderScaled(GuiGraphics g, int mouseX, int mouseY, float pt) {
-        this.renderBackground(g);
-        super.render(g, mouseX, mouseY, pt);
-        this.collectUpkeepTooltip(mouseX, mouseY);
     }
 
     private void collectUpkeepTooltip(int mouseX, int mouseY) {

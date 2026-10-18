@@ -1133,6 +1133,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   leur étape, grille d'artisanat vidée dans l'inventaire, entretien du Claim Block fermé avant son étape ; une pièce
   démolie rend ce qu'elle a coûté ; aucun dégât dans le monde des bases (sauf `/kill`) ; déconnecté, il reprend où il en
   était ; ramené au spawn, il est renvoyé à sa cabane. Staff : `/tuto finir <joueur>` le libère en cas de souci.
+  Après le premier essai du propriétaire (18/10, CRac 1.8.2-beta, Quêtes 1.6.1) : pièces à passer en bois redessinées
+  en orange par-dessus (les cadres étaient mal placés) ; 30 s sans avancer sur une étape : Varga donne un conseil de plus
+  (`heraliz_quetes.tuto.aide.N`, une fois par étape) ; Claim Block au fond (2e fondation), caisse près de la porte
+  (1re) ; caisse en métal de nouveau posable (l'événement de pose arrive caisse déjà posée : cabane lue finie) ; écran
+  d'entretien du Claim Block à l'échelle de l'inventaire (`ClaimUpkeepScreen`, avant : échelle forcée, tout petit).
+  Fondations d'un nouveau bâtiment toujours droites, comme dans Rust (`PlacementRules.freeOrients` : quarts de tour
+  seulement ; carré 0°, triangles 0°/90° ; les bâtiments déjà posés de biais restent tels quels).
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;

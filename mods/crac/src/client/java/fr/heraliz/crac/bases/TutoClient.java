@@ -7,7 +7,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.List;
 import fr.heraliz.crac.build.client.render.GhostMesh;
-import fr.heraliz.crac.build.geom.PieceSolids;
 import fr.heraliz.crac.build.logic.Variants;
 import fr.heraliz.crac.build.model.PieceKey;
 import fr.heraliz.crac.build.model.PieceKind;
@@ -40,7 +39,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  * Le tutoriel des bases chez le joueur (HeraliZ, CRac 1.8.0), d'après ce que le serveur envoie ({@link S2CTuto}) :
  * <ul>
  *   <li>les pièces à poser, en fantômes verts qui clignotent à leur place exacte (la seule où le serveur les accepte) ;
- *   à l'étape du bois, les pièces encore en brindilles entourées d'un cadre ambre qui clignote ;</li>
+ *   à l'étape du bois, les pièces encore en brindilles redessinées en orange par-dessus, qui clignotent ;</li>
  *   <li>le Claim Block et la caisse : leur place entourée d'un cadre vert qui clignote ;</li>
  *   <li>l'objet à prendre en main, surligné dans la barre d'objets DayZ ({@code HotbarOverlay.surligner}, par
  *   réflexion) ; la pièce à choisir dans la roue du plan et le choix « Bois » de la roue du marteau clignotent aussi
@@ -51,7 +50,9 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 @Mod.EventBusSubscriber(modid = "crac", value = Dist.CLIENT)
 public final class TutoClient {
-    private static final int VERT = 0x55E07A, AMBRE = 0xE8B34A;
+    private static final int VERT = 0x55E07A, AMBRE = 0xFF9A2E;
+    /** Pièce à passer en bois : redessinée un peu plus grande que la vraie, pour se voir par-dessus. */
+    private static final float GROSSI = 1.04F;
     /** Durée du tour de caméra (ticks), hauteur au-dessus du centre (blocs). */
     private static final int TOUR_TICKS = 300;
     private static final double TOUR_HAUT = 5.0;
@@ -272,15 +273,17 @@ public final class TutoClient {
         PoseStack pose = e.getPoseStack();
         List<PieceKey> cibles = guide.cibles();
         if (guide.bois()) {
-            // pièces encore en brindilles : un cadre ambre autour de chacune
-            VertexConsumer lignes = buffers.getBuffer(RenderType.lines());
-            pose.pushPose();
-            pose.translate(-cam.x, -cam.y, -cam.z);
+            // pièces encore en brindilles : la pièce elle-même redessinée en orange, un peu plus grande, qui clignote
+            int argb = ((int) (50 + 120 * k) << 24) | AMBRE;
             for (PieceKey c : cibles) {
-                AABB box = PieceSolids.worldBounds(c).inflate(0.03);
-                LevelRenderer.renderLineBox(pose, lignes, box, rouge(AMBRE), vert(AMBRE), bleu(AMBRE), 0.35F + 0.65F * k);
+                Vec3 m = c.centreWorld().subtract(cam);
+                pose.pushPose();
+                pose.translate(m.x, m.y, m.z);
+                pose.scale(GROSSI, GROSSI, GROSSI);
+                pose.translate(-m.x, -m.y, -m.z);
+                GhostMesh.render(pose, buffers, cam, c, Tier.TWIG, 0, variante(c), argb);
+                pose.popPose();
             }
-            pose.popPose();
         } else {
             int argb = ((int) (60 + 110 * k) << 24) | VERT;
             for (PieceKey c : cibles) {
