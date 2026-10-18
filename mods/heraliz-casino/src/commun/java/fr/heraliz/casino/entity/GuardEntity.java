@@ -117,10 +117,11 @@ public class GuardEntity extends PathfinderMob {
         return entityData.get(SPEECH);
     }
 
-    /** Le videur parle : bulle au-dessus de sa tete et grognement. */
+    /**
+     * Le videur parle : un grognement seulement. Plus de bulle de texte au-dessus de sa tete (choix du proprietaire) :
+     * ce qu'il dit au joueur passe par le chat ou la fenetre de l'entree.
+     */
     public void say(Component text) {
-        entityData.set(SPEECH, text);
-        entityData.set(SPEECH_ID, entityData.get(SPEECH_ID) + 1);
         if (level() instanceof ServerLevel sl) {
             sl.playSound(null, getX(), getY() + 1.6, getZ(), SoundEvents.VINDICATOR_AMBIENT, SoundSource.NEUTRAL, 1f, 0.72f + random.nextFloat() * 0.12f);
         }

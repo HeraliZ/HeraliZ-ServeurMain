@@ -136,6 +136,12 @@ public final class ZoneManager {
         Visit v = visit(p, zone.kind());
         boolean inside = zone.contains(p.getX(), p.getY(), p.getZ());
         if (ejecting(p.getUUID())) return;
+        // dans la zone VIP, seuls les videurs VIP s'occupent du joueur : jamais d'entree payante a la porte VIP, meme
+        // si la zone VIP touche ou chevauche celle du casino
+        if (inside && !zone.vip()) {
+            CasinoZone vip = CasinoZone.get(level.getServer(), CasinoZone.Kind.VIP);
+            if (vip.in(level) && vip.contains(p.position())) return;
+        }
         if (exempt(p)) {
             v.admitted = inside;
             if (!inside) v.lastOutside = p.position();
@@ -246,13 +252,15 @@ public final class ZoneManager {
         sendDialog(p, g, line);
     }
 
-    /** Le videur VIP refuse le joueur sans grade : il le dit (bulle) et le joueur le lit aussi dans son chat. */
+    /**
+     * Le videur VIP refuse le joueur sans grade : main levee, et sa phrase dans le chat du joueur. Jamais de proposition
+     * de payer : la zone VIP ne s'achete pas.
+     */
     private static void refuseVip(ServerPlayer p, @Nullable GuardEntity g) {
-        Component line = Component.translatableWithFallback("guard.heralizcasino.vip.stop",
-                "Non, tu n'es pas désigné comme VIP (grade Rescapé, Traqueur ou Roi de la Zone).");
+        Component line = Component.translatableWithFallback("message.heralizcasino.zone.vip_refused",
+                "Vigile VIP : Non, tu n'es pas désigné comme VIP (grade Rescapé, Traqueur ou Roi de la Zone).");
         if (g != null) g.challenge(p, line);
-        p.displayClientMessage(Component.translatableWithFallback("message.heralizcasino.zone.vip_refused",
-                "Accès refusé : tu n'es pas désigné comme VIP (grade Rescapé, Traqueur ou Roi de la Zone).").withStyle(ChatFormatting.RED), false);
+        p.displayClientMessage(line.copy().withStyle(ChatFormatting.RED), false);
     }
 
     private static void sendDialog(ServerPlayer p, @Nullable GuardEntity g, Component line) {
@@ -272,8 +280,13 @@ public final class ZoneManager {
             return;
         }
         if (zone.vip()) {
-            if (AccesVip.autorise(p)) g.say(Component.translatableWithFallback("guard.heralizcasino.vip.welcome", "Bienvenue en zone VIP. Fais comme chez toi."));
-            else refuseVip(p, g);
+            if (AccesVip.autorise(p)) {
+                g.say(Component.empty());
+                p.displayClientMessage(Component.translatableWithFallback("guard.heralizcasino.vip.welcome",
+                        "Vigile VIP : Bienvenue en zone VIP. Fais comme chez toi.").withStyle(ChatFormatting.GOLD), false);
+            } else {
+                refuseVip(p, g);
+            }
             return;
         }
         if (!zone.exists() || cfg.prix <= 0) {

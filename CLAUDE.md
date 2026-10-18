@@ -921,7 +921,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   boutique n'entre qu'en créatif ou spectateur). Commandes : `/casino zone vip a|b` (coins, ou la Tablette du Directeur),
   `creer`, `entree` (deux videurs VIP flanquent la porte), `garde` (un videur VIP de plus), `info`, `supprimer`. Un
   joueur sans grade est remis dehors et le videur VIP lui dit « Non, tu n'es pas désigné comme VIP (grade Rescapé,
-  Traqueur ou Roi de la Zone). » (aussi dans son chat). Fauché dedans : sorti par les videurs comme au casino (mêmes
+  Traqueur ou Roi de la Zone). » dans son chat, sans jamais proposer de payer ; dans la zone VIP, la zone du casino
+  ne s'applique plus (même si elles se touchent). Plus aucune bulle de texte au-dessus des vigiles (Casino 2.3.1, choix du
+  propriétaire : « cringe ») : leurs phrases passent par le chat ou la fenêtre de l'entrée. Fauché dedans : sorti par les videurs comme au casino (mêmes
   réglages `expulserFauches`, `delaiExpulsion`). Grade lu par réflexion (`AccesVip` → `GradesApi.rangBoutique`) : sans
   HeraliZ Grades, la zone VIP est fermée. Chaque videur sait sa zone (NBT `Zone`, `casino` par défaut). Rien testé en jeu ;
 - bonus de loot (HeraliZ Loot, au premier tirage d'un conteneur) : chaque objet a 10 % de chances d'être tiré une
