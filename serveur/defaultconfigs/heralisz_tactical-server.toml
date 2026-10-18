@@ -119,9 +119,9 @@
 	#Dégâts du coup puissant (clic droit) : ceux du coup rapide multipliés par cette valeur (1,5 : 9,75 dégâts).
 	#Range: 1.0 ~ 10.0
 	multiplicateur_lourd = 1.5
-	#Ticks (20 par seconde) avant le coup suivant, après un coup rapide (14 : 0,7 s ; la Dague tactique en a 9).
+	#Ticks (20 par seconde) avant le coup suivant, après un coup rapide (18 : 0,9 s ; la Dague tactique en a 9).
 	#Range: 4 ~ 200
-	cadence_rapide = 14
+	cadence_rapide = 18
 	#Ticks avant le coup suivant, après un coup puissant (18 : 0,9 s, comme la Dague tactique).
 	#Range: 4 ~ 400
 	cadence_lourd = 18
