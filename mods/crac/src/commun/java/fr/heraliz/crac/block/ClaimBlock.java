@@ -52,20 +52,32 @@ import org.jetbrains.annotations.Nullable;
  * pose, dos contre le mur. La case du haut est {@link ClaimBlockHaut} (invisible : le modèle de 2 blocs est dessiné par
  * celle du bas), qui renvoie les clics et la casse au bloc du bas.
  */
-public class ClaimBlock extends Block implements EntityBlock {
+public class ClaimBlock extends Block implements EntityBlock, Adosse.Adossable {
     public static final IntegerProperty TIER = IntegerProperty.create("tier", 1, 3);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     /** Formes du bas, par sens (face avant au nord dans le modèle : x 1 à 15, z 3 à 15,75). */
     private static final VoxelShape[] BAS = formes(1, 3, 15, 15.75);
+    /** Boîte du modèle tourné vers le nord (px), pour le pousser contre un mur ({@link Adosse}) : la même qu'adossement.py. */
+    static final double[] BOITE = {0.25, 2.5, 15.75, 15.75};
 
     public ClaimBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(TIER, 1).setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any().setValue(TIER, 1).setValue(FACING, Direction.NORTH).setValue(Adosse.ADOSSE, Adosse.AUCUN));
     }
 
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> b) {
-        b.add(TIER, FACING);
+        b.add(TIER, FACING, Adosse.ADOSSE);
+    }
+
+    @Override
+    public double[] boiteNord() {
+        return BOITE;
+    }
+
+    @Override
+    public double hauteur(BlockState state) {
+        return 32;
     }
 
     /** Une boîte pleine haute de 16, tournée pour chaque sens (index {@link Direction#get2DDataValue()}). */
@@ -90,7 +102,8 @@ public class ClaimBlock extends Block implements EntityBlock {
         if (haut.getY() >= ctx.getLevel().getMaxBuildHeight() || !ctx.getLevel().getBlockState(haut).canBeReplaced(ctx)) {
             return null;
         }
-        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
+        BlockState s = this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
+        return s.setValue(Adosse.ADOSSE, Adosse.choisir(ctx, s));   // collée au mur voisin (1.11.0)
     }
 
     @Override
@@ -105,12 +118,14 @@ public class ClaimBlock extends Block implements EntityBlock {
     public static void poserHaut(Level level, BlockPos pos, BlockState state) {
         BlockPos haut = pos.above();
         BlockState h = level.getBlockState(haut);
+        BlockState voulu = ModBlocks.CLAIM_BLOCK_HAUT.get().defaultBlockState().setValue(FACING, state.getValue(FACING))
+            .setValue(Adosse.ADOSSE, state.getValue(Adosse.ADOSSE));
         if (h.getBlock() instanceof ClaimBlockHaut) {
-            if (h.getValue(FACING) != state.getValue(FACING)) {
-                level.setBlock(haut, h.setValue(FACING, state.getValue(FACING)), Block.UPDATE_ALL);
+            if (h != voulu) {
+                level.setBlock(haut, voulu, Block.UPDATE_ALL);
             }
         } else if (h.isAir() || h.canBeReplaced()) {
-            level.setBlock(haut, ModBlocks.CLAIM_BLOCK_HAUT.get().defaultBlockState().setValue(FACING, state.getValue(FACING)), Block.UPDATE_ALL);
+            level.setBlock(haut, voulu, Block.UPDATE_ALL);
         }
     }
 
@@ -136,7 +151,8 @@ public class ClaimBlock extends Block implements EntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-        return BAS[s.getValue(FACING).get2DDataValue()];
+        Direction f = s.getValue(FACING);
+        return Adosse.decaler(BAS[f.get2DDataValue()], BOITE, f, s.getValue(Adosse.ADOSSE));
     }
 
     @Nullable

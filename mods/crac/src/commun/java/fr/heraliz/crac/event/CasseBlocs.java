@@ -41,9 +41,21 @@ public final class CasseBlocs {
         return s.is(ModBlocks.CLAIM_BLOCK.get()) || s.is(ACCES_RAID);
     }
 
+    /** Le bloc vraiment visé : dans une case de mur, l'objet adossé qu'on vise (armoire, caisse ; Adosse, 1.11.0). */
+    private static BlockState vise(net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos, BlockState s, Player p) {
+        if (p != null && s.getBlock() instanceof fr.heraliz.crac.build.world.StructureBlock) {
+            fr.heraliz.crac.block.Adosse.Voisin o = fr.heraliz.crac.block.Adosse.vise(level, pos, p,
+                s.getCollisionShape(level, pos));
+            if (o != null) {
+                return o.state();
+            }
+        }
+        return s;
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void clic(LeftClickBlock e) {
-        BlockState s = e.getLevel().getBlockState(e.getPos());
+        BlockState s = vise(e.getLevel(), e.getPos(), e.getLevel().getBlockState(e.getPos()), e.getEntity());
         if (libre(e.getEntity()) || exception(s) || Carrieres.permet(e.getLevel(), e.getPos(), s)) {
             return;
         }
@@ -53,7 +65,8 @@ public final class CasseBlocs {
     /** Vitesse de casse nulle (rien n'avance, même si un clic passait) : l'événement annulé rend -1. */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void vitesse(PlayerEvent.BreakSpeed e) {
-        if (libre(e.getEntity()) || exception(e.getState())) {
+        BlockState s = e.getPosition().isPresent() ? vise(e.getEntity().level(), e.getPosition().get(), e.getState(), e.getEntity()) : e.getState();
+        if (libre(e.getEntity()) || exception(s)) {
             return;
         }
         // carrière du monde des bases (1.5.0) : ses blocs naturels se cassent à la vitesse normale

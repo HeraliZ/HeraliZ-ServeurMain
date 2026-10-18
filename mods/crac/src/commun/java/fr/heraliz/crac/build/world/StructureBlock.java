@@ -140,9 +140,28 @@ public class StructureBlock extends BaseEntityBlock {
         return level.getBlockEntity(pos) instanceof StructureBlockEntity be ? be.shape() : Shapes.empty();
     }
 
+    /** Visée : la pièce, plus ce qu'un objet adossé voisin (armoire, caisse) a dans cette case (Adosse, 1.11.0). */
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return shapeAt(level, pos);
+        VoxelShape objets = fr.heraliz.crac.block.Adosse.morceaux(level, pos);
+        return objets.isEmpty() ? shapeAt(level, pos) : Shapes.or(shapeAt(level, pos), objets);
+    }
+
+    /** Visée sur un objet adossé : la case du mur n'est jamais retirée (le serveur casse l'objet, AdosseCasse). */
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest,
+                                       net.minecraft.world.level.material.FluidState fluid) {
+        if (fr.heraliz.crac.block.Adosse.vise(level, pos, player, shapeAt(level, pos)) != null) {
+            return false;
+        }
+        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+    }
+
+    /** Casser l'objet adossé visé dans cette case revient à casser l'objet (le mur, lui, ne se casse pas à la main). */
+    @Override
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+        fr.heraliz.crac.block.Adosse.Voisin o = fr.heraliz.crac.block.Adosse.vise(level, pos, player, shapeAt(level, pos));
+        return o != null ? o.state().getDestroyProgress(player, level, o.pos()) : super.getDestroyProgress(state, player, level, pos);
     }
 
     @Override
@@ -187,6 +206,15 @@ public class StructureBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        // clic sur la partie d'un objet adossé (armoire, caisse) qui est dans cette case : c'est l'objet qu'on utilise
+        fr.heraliz.crac.block.Adosse.Voisin objet = fr.heraliz.crac.block.Adosse.contenant(level, pos, hit.getLocation());
+        if (objet != null) {
+            BlockHitResult h = new BlockHitResult(hit.getLocation(), hit.getDirection(), objet.pos(), hit.isInside());
+            if (!level.isClientSide() && net.minecraftforge.common.ForgeHooks.onRightClickBlock(player, hand, objet.pos(), h).isCanceled()) {
+                return InteractionResult.FAIL;   // mêmes règles que sur l'objet lui-même (base protégée, accès)
+            }
+            return objet.state().use(level, player, hand, h);
+        }
         if (level.isClientSide()) {   // prédiction (corps client d'origine de StructureService.onUse)
             for (Piece p : ClientMirror.view().occupants(pos)) {
                 if (p.kind().hasDoor() || p.kind() == PieceKind.WINDOW) {

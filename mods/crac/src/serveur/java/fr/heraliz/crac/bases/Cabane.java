@@ -100,8 +100,12 @@ final class Cabane {
         List<PieceKey> murs = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             if (i != af) {
-                PieceKind k = af >= 0 && i == (af + 2) % 4 ? PieceKind.DOORWAY : PieceKind.WALL;
-                murs.add(Topology.wallOn(f.key(), i, k, top, 0));
+                if (af >= 0 && i == (af + 2) % 4) {
+                    // la porte de la cabane s'ouvre vers l'extérieur (demande du propriétaire, 18/10)
+                    murs.add(versExterieur(Topology.wallOn(f.key(), i, PieceKind.DOORWAY, top, 0), f.key().centre()));
+                } else {
+                    murs.add(Topology.wallOn(f.key(), i, PieceKind.WALL, top, 0));
+                }
             }
             if (i != as) {
                 murs.add(Topology.wallOn(s.key(), i, PieceKind.WALL, top, 0));
@@ -138,19 +142,21 @@ final class Cabane {
 
         // le Claim Block, puis l'entretien
         Claim c = StructureService.claimOf(bases, b);
+        Coin coin = coin(f, s);
         if (c == null) {
-            // au fond de la cabane (la deuxième fondation ; la porte est sur la première)
-            return new Etat(CLAIM, 0, 1, List.of(), List.of(coinClaim(bases, f, s)), ModItems.CLAIM_BLOCK.get(), -1, false);
+            // dans l'angle du fond de la cabane (la deuxième fondation ; la porte est sur la première)
+            return new Etat(CLAIM, 0, 1, List.of(), List.of(coin.vueClaim(), coin.vueClaim().above()), ModItems.CLAIM_BLOCK.get(), -1, false);
         }
         int seuil = Math.max(1, Tutoriel.entretienKit(pieces.size()) / 2);
         int stock = bases.getBlockEntity(c.anchor()) instanceof ClaimBlockEntity be ? be.getStored(UpkeepResource.WOOD.slot()) : 0;
         if (stock < seuil) {
-            return new Etat(ENTRETIEN, Math.min(stock, seuil), seuil, List.of(), List.of(c.anchor()), null, -1, false);
+            BlockPos vue = vue(bases, c.anchor());
+            return new Etat(ENTRETIEN, Math.min(stock, seuil), seuil, List.of(), List.of(vue, vue.above()), null, -1, false);
         }
 
         // la caisse en métal, dans la cabane
         if (!caisseDans(bases, pieces)) {
-            return new Etat(COFFRE, 0, 1, List.of(), List.of(placeCaisse(bases, c.anchor(), f, s)), ModItems.METAL_CRATE.get(), -1, false);
+            return new Etat(COFFRE, 0, 1, List.of(), List.of(coin.vueCaisse()), ModItems.METAL_CRATE.get(), -1, false);
         }
 
         // son home, posé par lui-même (/sethome) sur un sol de la cabane
@@ -206,36 +212,66 @@ final class Cabane {
 
     /**
      * Fin du tutoriel : Varga ajoute un sas devant la porte, comme dans Rust : une fondation triangle contre l'entrée,
-     * fermée par un mur et une deuxième porte, avec son plancher en toit, tout en bois. Vrai si le sas est posé (le
-     * terrain peut l'empêcher : rien n'est posé alors).
+     * avec son plancher en toit, tout en bois. En sortant par la porte de la cabane (ouverte vers l'extérieur, donc dans
+     * le sas), un mur à droite et une deuxième porte à gauche, qui s'ouvre vers l'intérieur du sas (demande du
+     * propriétaire, 18/10). Vrai si le sas est posé (le terrain peut l'empêcher : rien n'est posé alors).
      */
     static boolean sas(ServerLevel level, ServerPlayer p, Building b) {
-        StructureStore store = StructureService.store(level);
-        List<Piece> fondations = new ArrayList<>();
-        for (Piece x : store.piecesOf(b)) {
-            if (x.kind() == PieceKind.FOUNDATION) {
-                fondations.add(x);
-            }
-        }
-        if (fondations.size() < 2) {
+        Piece[] fs = fondations(level, b);
+        if (fs == null) {
             return false;
         }
-        fondations.sort(Comparator.comparingLong(x -> x.id));
-        Piece f = fondations.get(0);
-        int af = areteCommune(f, fondations.get(1));
+        Piece f = fs[0];
+        int af = areteCommune(f, fs[1]);
         if (af < 0) {
             return false;
         }
-        PieceKey tri = Topology.across(f.key(), (af + 2) % 4, PieceKind.TRI_FOUNDATION, f.key().h());
+        int bordPorte = (af + 2) % 4;
+        PieceKey tri = Topology.across(f.key(), bordPorte, PieceKind.TRI_FOUNDATION, f.key().h());
         if (!StructureService.placeAdmin(level, tri, Tier.WOOD, p.getUUID()).ok()) {
             return false;
         }
         int top = f.key().top();
-        PieceKey porte = Topology.wallOn(tri, 1, PieceKind.DOORWAY, top, 0);
-        StructureService.placeAdmin(level, porte, Tier.WOOD, p.getUUID());
-        StructureService.placeAdmin(level, Topology.wallOn(tri, 2, PieceKind.WALL, top, 0), Tier.WOOD, p.getUUID());
-        StructureService.placeAdmin(level, PieceKey.on(PieceKind.TRI_FLOOR, tri.origin(), tri.footprint(), porte.top(), 0),
-            Tier.WOOD, p.getUUID());
+        Vec3 fc = f.key().centre(), tc = tri.centre();
+        // la porte de la cabane : vers l'extérieur, c'est-à-dire dans le sas
+        Piece porte = null;
+        fr.heraliz.crac.build.model.EdgeKey entree = f.key().edges().get(bordPorte);
+        for (Piece x : StructureService.store(level).piecesOf(b)) {
+            if (x.kind() == PieceKind.DOORWAY && bord(x.key()).equals(entree)) {
+                porte = x;
+            }
+        }
+        if (porte != null && !ouvreVers(porte.key(), tc)) {
+            remplacer(level, porte, versExterieur(porte.key(), fc));
+        }
+        // les deux autres côtés du triangle, vus en sortant (de la cabane vers le sas) : gauche = porte, droite = mur
+        double dx = tc.x - fc.x, dz = tc.z - fc.z;
+        int gauche = -1, droite = -1;
+        fr.heraliz.crac.build.model.LPoint[] v = tri.lattice();
+        for (int e = 0; e < 3; e++) {
+            if (tri.edges().get(e).equals(entree)) {
+                continue;
+            }
+            double mx = (v[e].toX() + v[(e + 1) % 3].toX()) / 2 - tc.x, mz = (v[e].toZ() + v[(e + 1) % 3].toZ()) / 2 - tc.z;
+            if (dz * mx - dx * mz > 0) {
+                gauche = e;
+            } else {
+                droite = e;
+            }
+        }
+        if (gauche < 0 || droite < 0) {
+            return true;
+        }
+        StructureService.placeAdmin(level, Topology.wallOn(tri, droite, PieceKind.WALL, top, 0), Tier.WOOD, p.getUUID());
+        // la deuxième porte s'ouvre dans le sas : le premier sens (charnière) qui tient à côté de la première porte
+        for (int rot = 0; rot < 4; rot++) {
+            PieceKey k = Topology.wallOn(tri, gauche, PieceKind.DOORWAY, top, rot);
+            if (ouvreVers(k, tc) && StructureService.placeAdmin(level, k, Tier.WOOD, p.getUUID()).ok()) {
+                break;
+            }
+        }
+        StructureService.placeAdmin(level, PieceKey.on(PieceKind.TRI_FLOOR, tri.origin(), tri.footprint(), Topology.wallOn(tri, droite,
+            PieceKind.WALL, top, 0).top(), 0), Tier.WOOD, p.getUUID());
         return true;
     }
 
@@ -256,53 +292,134 @@ final class Cabane {
         return Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? Direction.EAST : Direction.WEST) : (dz > 0 ? Direction.SOUTH : Direction.NORTH);
     }
 
-    /** Les cases libres juste au-dessus d'une fondation (là où un bloc peut se poser, hors murs). */
-    private static List<BlockPos> casesSur(ServerLevel level, Piece fondation) {
-        List<BlockPos> blocs = PieceIndex.blocksOf(fondation);
-        int haut = Integer.MIN_VALUE;
-        for (BlockPos b : blocs) {
-            haut = Math.max(haut, b.getY());
-        }
-        List<BlockPos> out = new ArrayList<>();
-        for (BlockPos b : blocs) {
-            if (b.getY() == haut && level.getBlockState(b.above()).isAir()) {
-                out.add(b.above());
+    /**
+     * L'angle du fond de la cabane (CRac 1.11.0, demande du propriétaire du 18/10) : l'armoire dans l'angle du fond à
+     * droite (vu depuis la porte), dos au mur de droite, et la caisse juste à côté contre le même mur, vers la porte.
+     * Les murs occupent les cases du bord des fondations : l'armoire est posée dans la case du milieu de la deuxième
+     * fondation et la caisse dans celle d'à côté (vers la porte), toutes deux poussées vers le mur ({@code Adosse}).
+     * {@code vueClaim}, {@code vueCaisse} : où elles se voient (les cases vertes du guide).
+     */
+    record Coin(BlockPos claim, BlockPos caisse, Direction face, int adosse, BlockPos vueClaim, BlockPos vueCaisse) {
+    }
+
+    static Coin coin(Piece f, Piece s) {
+        Direction d = fond(f, s), droite = d.getClockWise();
+        BlockPos claim = surFondation(s);
+        BlockPos caisse = claim.relative(d.getOpposite());
+        int v = fr.heraliz.crac.block.Adosse.code(droite.getStepX() + d.getStepX(), droite.getStepZ() + d.getStepZ());
+        return new Coin(claim, caisse, droite.getOpposite(), v, claim.relative(d).relative(droite), claim.relative(droite));
+    }
+
+    /** Les deux premières fondations de la cabane (la porte est sur la première), sinon null. */
+    @Nullable
+    static Piece[] fondations(ServerLevel level, Building b) {
+        List<Piece> out = new ArrayList<>();
+        for (Piece x : StructureService.store(level).piecesOf(b)) {
+            if (x.kind() == PieceKind.FOUNDATION) {
+                out.add(x);
             }
         }
-        return out;
+        if (out.size() < 2) {
+            return null;
+        }
+        out.sort(Comparator.comparingLong(x -> x.id));
+        return new Piece[]{out.get(0), out.get(1)};
+    }
+
+    /** La case où se voit un objet adossé posé en {@code pos} (la case de mur vers laquelle il est poussé). */
+    static BlockPos vue(ServerLevel level, BlockPos pos) {
+        net.minecraft.world.level.block.state.BlockState s = level.getBlockState(pos);
+        if (!s.hasProperty(fr.heraliz.crac.block.Adosse.ADOSSE)) {
+            return pos;
+        }
+        int v = s.getValue(fr.heraliz.crac.block.Adosse.ADOSSE);
+        return pos.offset(fr.heraliz.crac.block.Adosse.sx(v), 0, fr.heraliz.crac.block.Adosse.sz(v));
     }
 
     /**
-     * Où poser le Claim Block : dans le coin du fond de la cabane, à gauche quand on regarde le fond (comme la TC dans
-     * Rust), pour laisser la case de droite à la caisse.
+     * Tourne l'armoire ou la caisse du tutoriel comme prévu ({@link #coin}) si elle est à sa place : face à la pièce,
+     * poussée dans l'angle. Rien si la place n'est pas libre (murs différents, autre objet).
      */
-    static BlockPos coinClaim(ServerLevel level, Piece f, Piece s) {
-        Direction d = fond(f, s), droite = d.getClockWise();
-        BlockPos best = null;
-        long score = Long.MIN_VALUE;
-        for (BlockPos q : casesSur(level, s)) {
-            if (!level.getBlockState(q.above()).isAir()) {
-                continue;   // l'armoire fait 2 blocs de haut (1.10.0)
-            }
-            long v = 1000L * (q.getX() * d.getStepX() + q.getZ() * d.getStepZ()) - (q.getX() * droite.getStepX() + q.getZ() * droite.getStepZ());
-            if (v > score) {
-                score = v;
-                best = q;
-            }
+    static void orienter(ServerLevel level, BlockPos pos, Direction face, int adosse) {
+        net.minecraft.world.level.block.state.BlockState s = level.getBlockState(pos);
+        if (!(s.getBlock() instanceof fr.heraliz.crac.block.Adosse.Adossable) || !s.hasProperty(fr.heraliz.crac.block.Adosse.ADOSSE)) {
+            return;
         }
-        return best != null ? best : surFondation(s);
+        net.minecraft.world.level.block.state.BlockState voulu = s.setValue(fr.heraliz.crac.block.ClaimBlock.FACING, face)
+            .setValue(fr.heraliz.crac.block.Adosse.ADOSSE, adosse);
+        if (voulu == s || !fr.heraliz.crac.block.Adosse.tient(level, pos, voulu)) {
+            return;
+        }
+        level.setBlock(pos, voulu, net.minecraft.world.level.block.Block.UPDATE_ALL);
+        if (voulu.getBlock() instanceof fr.heraliz.crac.block.ClaimBlock) {
+            fr.heraliz.crac.block.ClaimBlock.poserHaut(level, pos, voulu);
+        }
     }
 
-    /** Où poser la caisse : juste à droite du Claim Block (quand on le regarde depuis la porte), sinon à sa gauche ou devant. */
-    static BlockPos placeCaisse(ServerLevel level, BlockPos claim, Piece f, Piece s) {
-        Direction d = fond(f, s), droite = d.getClockWise();
-        BlockPos[] places = {claim.relative(droite), claim.relative(droite.getOpposite()), claim.relative(d.getOpposite())};
-        for (BlockPos q : places) {
-            if (level.getBlockState(q).isAir() && !level.getBlockState(q.below()).isAir()) {
-                return q;
+    // ---------------------------------------------------------------- portes
+
+    /** Centre (x, z en px du bâtiment) de la zone où s'ouvre une porte. */
+    private static double[] ouverture(PieceKey k) {
+        double x = 0, z = 0;
+        int n = 0;
+        for (fr.heraliz.crac.build.geom.Prism pr : fr.heraliz.crac.build.geom.PieceSolids.swing(k)) {
+            for (double[] v : pr.poly()) {
+                x += v[0];
+                z += v[1];
+                n++;
             }
         }
-        return places[0];
+        return n == 0 ? null : new double[]{x / n, z / n};
+    }
+
+    /** La porte s'ouvre du côté du point {@code cote} (px du bâtiment). */
+    static boolean ouvreVers(PieceKey porte, Vec3 cote) {
+        double[] o = ouverture(porte);
+        if (o == null) {
+            return false;
+        }
+        Vec3 m = porte.centre();
+        return (o[0] - m.x) * (cote.x - m.x) + (o[1] - m.z) * (cote.z - m.z) > 0;
+    }
+
+    /** La même porte, ouverte du côté opposé à {@code dedans} (px du bâtiment) ; la charnière ne bouge pas. */
+    static PieceKey versExterieur(PieceKey porte, Vec3 dedans) {
+        return ouvreVers(porte, dedans) ? porte.withRot(porte.rot() ^ 1) : porte;
+    }
+
+    /**
+     * La porte de la cabane posée par le joueur s'ouvre toujours vers l'extérieur (tutoriel) : remise dans l'autre sens
+     * si besoin (retirée puis reposée telle quelle, sans coût). Appelé un tick après la pose.
+     */
+    static void porteVersExterieur(ServerLevel level, long id) {
+        StructureStore store = StructureService.store(level);
+        Piece porte = store.index.piece(id);
+        Building b = porte == null || porte.kind() != PieceKind.DOORWAY ? null : store.index.building(porte.buildingId);
+        Piece[] fs = b == null ? null : fondations(level, b);
+        if (fs == null || !fs[0].key().edges().contains(bord(porte.key()))) {
+            return;
+        }
+        remplacer(level, porte, versExterieur(porte.key(), fs[0].key().centre()));
+    }
+
+    private static fr.heraliz.crac.build.model.EdgeKey bord(PieceKey k) {
+        return fr.heraliz.crac.build.model.EdgeKey.of(k.originKey(), k.anchor(), k.orient());
+    }
+
+    /** Remplace une porte par la même à un autre sens ; remise telle quelle si le nouveau sens ne tient pas. */
+    private static boolean remplacer(ServerLevel level, Piece porte, PieceKey neuf) {
+        if (neuf.equals(porte.key())) {
+            return true;
+        }
+        Tier tier = porte.tier;
+        java.util.UUID owner = porte.owner;
+        PieceKey avant = porte.key();
+        StructureService.remove(level, porte, StructureService.Cause.ADMIN);
+        if (StructureService.placeAdmin(level, neuf, tier, owner).ok()) {
+            return true;
+        }
+        StructureService.placeAdmin(level, avant, tier, owner);
+        return false;
     }
 
     /** Une caisse en métal est posée dans la cabane (au-dessus de ses fondations). */

@@ -47,7 +47,7 @@ public final class PieceGeometry {
     /** Collision-relevant bits of a piece state: door open bit, window insert present or not. */
     public static int normalizeState(PieceKind kind, int state) {
         if (kind.hasDoor()) {
-            return state & Piece.STATE_OPEN;
+            return state & (Piece.STATE_OPEN | Piece.STATE_SAS);
         }
         if (kind == PieceKind.WINDOW) {
             return (state & Piece.INSERT_MASK) != 0 ? Piece.INSERT_BARS << Piece.INSERT_SHIFT : 0;

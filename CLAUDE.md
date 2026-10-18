@@ -1186,6 +1186,24 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   gardent leur accès (les bases déjà posées ne changent pas) ; **plus aucun accès donné par le clan** (`viaClan` rend
   faux ; un chef de clan peut toujours poser l'armoire sans groupe). Liste par groupe, 32 joueurs au plus, gardée avec le
   monde principal (`data/crac_acces_bases.dat`, `bases/AccesBase`), effacée par `/base effacer`. Rien testé en jeu.
+  Après le premier essai (18/10, CRac 1.11.0-beta, Quêtes 1.6.5) : **objets adossés** (`block/Adosse`) : les murs
+  occupent toute la rangée de cases du bord d'une fondation, donc aucun bloc ne se pose contre un mur ; l'armoire et la
+  caisse en métal restent posées dans la case libre voisine mais sont poussées d'une case vers le mur ou l'angle, à
+  0,25 px de sa face (propriété `adosse`, modèles décalés **écrits** par `python mods/crac/outils/adossement.py` et
+  `tc_modele.py --installer`) ; visées sur une case de mur, elles se posent dans la case libre voisine, poussées vers la
+  case visée (`ObjetAdossable`) ; jamais devant une porte ; la case du mur renvoie à l'objet la visée, le clic droit, la
+  casse et le ramassage (`StructureBlock.getShape|use|getDestroyProgress`, `CasseBlocsServeur`). Tutoriel : armoire dans
+  l'angle du fond à droite (vu de la porte), dos au mur de droite, caisse juste à côté contre le même mur
+  (`Cabane.coin`, cadres verts à leur vraie place). Modèle de l'armoire sans faces en double (plus de scintillement :
+  `tc_modele.py` rentre de 0,1 px toute face qui en double une autre et refuse d'écrire s'il en reste) et avec 1 px de
+  marge autour de chaque face dans sa texture (512 px). Porte de la cabane du tutoriel toujours ouverte vers l'extérieur
+  (`Cabane.versExterieur`, remise dans l'autre sens un tick après la pose). Sas de la fin : en sortant de la cabane, mur à
+  droite, 2e porte à gauche qui s'ouvre vers l'intérieur du sas. Sas (tous) : plus aucune porte refusée ; quand deux
+  portes d'un même triangle sont ouvertes, chacune bloque son passage comme si elle était fermée tout en restant ouverte
+  à l'écran (`Piece.STATE_SAS`, `StructureService.majSas`) : on ne traverse pas, et on n'est jamais enfermé (refermer une
+  porte libère l'autre). **Une seule armoire posée par joueur** (`crac.claim.une_par_joueur`, `AccesBase.armoireDe`) ; il
+  peut avoir l'accès à d'autres. **Zone de l'armoire** visible plan de construction en main (`client/ZoneArmoire`) : bande
+  translucide au bord du carré protégé, verte pour la sienne, rouge pour les autres. Canal CRac version 21. Rien testé en jeu.
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;

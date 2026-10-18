@@ -3,16 +3,17 @@ package fr.heraliz.crac.item;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
+import fr.heraliz.crac.block.ObjetAdossable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-public class ClaimBlockItem extends BlockItem {
+/** L'armoire à outils tenue : 2 blocs de haut, elle se colle aux murs ({@link ObjetAdossable}). */
+public class ClaimBlockItem extends ObjetAdossable {
     public ClaimBlockItem(Block block, Properties props) {
-        super(block, props);
+        super(block, props, 2);
     }
 
     @Override

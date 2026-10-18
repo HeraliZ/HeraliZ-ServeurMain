@@ -832,12 +832,6 @@ public final class StructureService {
                 return InteractionResult.CONSUME;
             }
             boolean open = !p.isOpen();
-            if (open && autrePorteDuSasOuverte(sl, p)) {
-                // sas (deux portes autour d'un triangle) : jamais les deux ouvertes ensemble, comme dans Rust
-                player.displayClientMessage(Txt.yellow("crac.door.sas"), true);
-                level.playSound(null, pos, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 0.6F, 1.2F);
-                return InteractionResult.CONSUME;
-            }
             if (!open && closingBlocked(sl, p)) {
                 player.displayClientMessage(Txt.yellow("crac.door.someone"), true);
                 return InteractionResult.CONSUME;
@@ -845,6 +839,7 @@ public final class StructureService {
             p.setOpen(open);
             refresh(sl, p);
             playDoor(sl, p, open);
+            majSas(sl, p);
             return InteractionResult.CONSUME;
         }
         if (p.kind() == PieceKind.WINDOW && p.insert() == Piece.INSERT_NONE) {
@@ -878,15 +873,33 @@ public final class StructureService {
     }
 
     /**
-     * Airlock (HeraliZ): a door on an edge of a triangle foundation or floor does not open while another door on an
-     * edge of the same triangle is open, so the two doors of an airlock never let anyone straight through.
+     * Airlock (HeraliZ, CRac 1.10.1): the doors on the edges of a same triangle foundation or floor. Each door always
+     * opens and closes; while two of them are open, each open one collides like a closed leaf (it still looks open,
+     * {@link Piece#STATE_SAS}): nobody walks straight through, and nobody is ever locked in (closing one door frees the
+     * other). A door with someone standing in its opening is left passable.
      */
-    private static boolean autrePorteDuSasOuverte(ServerLevel level, Piece door) {
+    private static void majSas(ServerLevel level, Piece door) {
         Building b = buildingOf(level, door);
-        if (b == null) {
-            return false;
+        List<Piece> portes = b == null ? List.of(door) : portesDuSas(store(level).piecesOf(b), door);
+        int ouvertes = 0;
+        for (Piece d : portes) {
+            if (d.isOpen()) {
+                ouvertes++;
+            }
         }
-        List<Piece> pieces = store(level).piecesOf(b);
+        for (Piece d : portes) {
+            boolean bloque = d.isOpen() && ouvertes >= 2 && !closingBlocked(level, d);
+            if (bloque != d.isSasBloque()) {
+                d.setSasBloque(bloque);
+                refresh(level, d);
+            }
+        }
+    }
+
+    /** {@code door} and the doors that share a triangle foundation or floor with it (an airlock). */
+    private static List<Piece> portesDuSas(List<Piece> pieces, Piece door) {
+        List<Piece> out = new ArrayList<>();
+        out.add(door);
         EdgeKey edge = bord(door);
         for (Piece t : pieces) {
             if (t.kind().shape != PieceKind.Shape.TRIANGLE || t.kind().family != PieceKind.Family.SURFACE) {
@@ -897,12 +910,12 @@ public final class StructureService {
                 continue;
             }
             for (Piece o : pieces) {
-                if (o != door && o.kind().hasDoor() && o.isOpen() && bords.contains(bord(o))) {
-                    return true;
+                if (o != door && o.kind().hasDoor() && !out.contains(o) && bords.contains(bord(o))) {
+                    out.add(o);
                 }
             }
         }
-        return false;
+        return out;
     }
 
     /** A wall's edge in the canonical form of footprint edges (either direction). */

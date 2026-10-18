@@ -26,7 +26,7 @@ public final class ModItems {
     public static final RegistryObject<GlassWindowItem> GLASS_WINDOW = ITEMS.register("glass_window", GlassWindowItem::new);
     public static final RegistryObject<GlassWindowItem> METAL_WINDOW = ITEMS.register("metal_window", GlassWindowItem::new);
     public static final RegistryObject<BlockItem> METAL_CRATE = ITEMS.register(
-        "metal_crate", () -> new BlockItem(ModBlocks.METAL_CRATE.get(), new Properties())
+        "metal_crate", () -> new fr.heraliz.crac.block.ObjetAdossable(ModBlocks.METAL_CRATE.get(), new Properties(), 1)
     );
     public static final RegistryObject<ClaimBlockItem> CLAIM_BLOCK = ITEMS.register(
         "claim_block", () -> new ClaimBlockItem(ModBlocks.CLAIM_BLOCK.get(), new Properties().stacksTo(16))

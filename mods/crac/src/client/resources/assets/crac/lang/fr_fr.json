@@ -512,5 +512,6 @@
   "crac.acces.retire_cible": "%s t'a retiré l'accès à sa base.",
   "crac.acces.plein": "La liste est pleine (%s joueurs).",
   "crac.acces.donne": "%s a maintenant l'accès à ta base.",
-  "crac.acces.donne_cible": "%s t'a donné l'accès à sa base : portes, coffres et construction."
+  "crac.acces.donne_cible": "%s t'a donné l'accès à sa base : portes, coffres et construction.",
+  "crac.claim.une_par_joueur": "Tu as déjà posé une armoire à outils : une seule par joueur (tu peux avoir l'accès à d'autres)."
 }

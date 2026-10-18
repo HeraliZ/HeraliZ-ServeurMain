@@ -18,6 +18,17 @@ public final class CasseBlocsServeur {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void casse(BreakEvent e) {
+        // objet adossé (armoire, caisse) visé dans une case de mur : c'est lui qu'on casse, jamais le mur (1.11.0)
+        if (e.getState().getBlock() instanceof fr.heraliz.crac.build.world.StructureBlock
+            && e.getPlayer() instanceof net.minecraft.server.level.ServerPlayer sp) {
+            fr.heraliz.crac.block.Adosse.Voisin o = fr.heraliz.crac.block.Adosse.vise(e.getLevel(), e.getPos(), sp,
+                e.getState().getCollisionShape(e.getLevel(), e.getPos()));
+            if (o != null) {
+                e.setCanceled(true);
+                sp.gameMode.destroyBlock(o.pos());
+                return;
+            }
+        }
         if (CasseBlocs.libre(e.getPlayer())) {
             return;
         }

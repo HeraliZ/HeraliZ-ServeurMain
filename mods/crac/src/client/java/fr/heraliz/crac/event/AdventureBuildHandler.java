@@ -58,6 +58,13 @@ public final class AdventureBuildHandler {
                 }
             } else {
                 BlockState target = level.getBlockState(pos);
+                // objet adossé (caisse) visé dans une case de mur : c'est lui qu'on ramasse (1.11.0)
+                fr.heraliz.crac.block.Adosse.Voisin objet = target.getBlock() instanceof StructureBlock
+                    ? fr.heraliz.crac.block.Adosse.contenant(level, pos, event.getHitVec().getLocation()) : null;
+                if (objet != null) {
+                    pos = objet.pos();
+                    target = objet.state();
+                }
                 boolean buildPanel = target.getBlock() instanceof StructureBlock;
                 if (PlacableSet.containsClient(target.getBlock()) && !buildPanel) {
                     event.setCanceled(true);

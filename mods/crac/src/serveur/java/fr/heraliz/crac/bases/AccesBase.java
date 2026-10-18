@@ -27,6 +27,35 @@ public final class AccesBase extends SafeSavedData {
 
     /** Groupe -> (joueur -> dernier pseudo connu), dans l'ordre où l'accès a été donné. */
     private final Map<UUID, LinkedHashMap<UUID, String>> acces = new HashMap<>();
+    /**
+     * Joueur -> l'armoire qu'il a posée lui-même (monde, position) : une seule par joueur (demande du propriétaire,
+     * 18/10, CRac 1.11.0) ; il peut avoir l'accès à d'autres.
+     */
+    private final Map<UUID, Armoire> armoires = new HashMap<>();
+
+    public record Armoire(String monde, long pos) {
+    }
+
+    /** L'armoire posée par ce joueur, si elle tient toujours son claim ; sinon null. */
+    @org.jetbrains.annotations.Nullable
+    public Armoire armoireDe(MinecraftServer server, UUID joueur) {
+        Armoire a = this.armoires.get(joueur);
+        if (a == null) {
+            return null;
+        }
+        for (net.minecraft.server.level.ServerLevel l : server.getAllLevels()) {
+            if (l.dimension().location().toString().equals(a.monde())
+                && fr.heraliz.crac.claim.ClaimManager.getByAnchor(l, net.minecraft.core.BlockPos.of(a.pos())) != null) {
+                return a;
+            }
+        }
+        return null;
+    }
+
+    public void armoirePosee(UUID joueur, net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos pos) {
+        this.armoires.put(joueur, new Armoire(level.dimension().location().toString(), pos.asLong()));
+        this.setDirty();
+    }
 
     public static AccesBase get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(AccesBase::load, () -> SafeSavedData.fresh(server.overworld(), ID, new AccesBase()), ID);
@@ -90,6 +119,13 @@ public final class AccesBase extends SafeSavedData {
 
     public static AccesBase load(CompoundTag tag) {
         AccesBase d = new AccesBase();
+        ListTag arm = tag.getList("Armoires", 10);
+        for (int i = 0; i < arm.size(); i++) {
+            CompoundTag a = arm.getCompound(i);
+            if (a.hasUUID("Joueur")) {
+                d.armoires.put(a.getUUID("Joueur"), new Armoire(a.getString("Monde"), a.getLong("Pos")));
+            }
+        }
         ListTag bases = tag.getList("Bases", 10);
         for (int i = 0; i < bases.size(); i++) {
             CompoundTag b = bases.getCompound(i);
@@ -128,6 +164,15 @@ public final class AccesBase extends SafeSavedData {
             bases.add(b);
         }
         tag.put("Bases", bases);
+        ListTag arm = new ListTag();
+        for (Map.Entry<UUID, Armoire> e : this.armoires.entrySet()) {
+            CompoundTag a = new CompoundTag();
+            a.putUUID("Joueur", e.getKey());
+            a.putString("Monde", e.getValue().monde());
+            a.putLong("Pos", e.getValue().pos());
+            arm.add(a);
+        }
+        tag.put("Armoires", arm);
         return tag;
     }
 }

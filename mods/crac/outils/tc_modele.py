@@ -37,7 +37,7 @@ ROTATION = {"north": 0, "east": 90, "south": 180, "west": 270}
 # anciens fichiers du Claim Block (piquet et drapeau, avant la 1.10.0), retirés par --installer
 ANCIENS = ["models/block/claim_block_tier1.json", "models/block/claim_block_tier2.json", "models/block/claim_block_tier3.json",
            "textures/block/claim_block_crate.png", "textures/block/claim_block_flag.png", "textures/item/claim_block.png"]
-TAILLE = 256          # texture carrée
+TAILLE = 512          # texture carrée (faces rangées avec leur gouttière)
 GRAINE = 7
 
 # palette relevée sur la texture de la caisse en métal (chest_one.png)
@@ -207,6 +207,54 @@ FACES = {  # largeur et hauteur (en unités) de chaque face d'une boîte
 }
 
 
+# plan de chaque face : (axe, côté de la boîte, sens) ; deux faces du même plan et du même sens qui se recouvrent
+# scintillent en jeu (« z-fighting ») : la seconde est rentrée de RETRAIT dans sa pièce
+PLANS = {"north": (2, 0), "south": (2, 1), "west": (0, 0), "east": (0, 1), "down": (1, 0), "up": (1, 1)}
+RETRAIT = 0.1
+GOUTTIERE = 1         # pixels recopiés autour de chaque face dans la texture (pas de bavure au loin, mipmaps)
+
+
+def recouvre(a1, b1, a2, b2, axe):
+    """Les deux rectangles (boîtes vues le long de l'axe) se recouvrent avec une aire non nulle."""
+    autres = [i for i in range(3) if i != axe]
+    return all(min(b1[i], b2[i]) - max(a1[i], a2[i]) > 1e-6 for i in autres)
+
+
+def desenchevetrer(liste):
+    """Rentre les faces qui en doublent une autre (même plan, même sens) ; rend le nombre de faces déplacées."""
+    n = 0
+    for _ in range(20):
+        change = False
+        for i, (nom, a, b, mat, faces) in enumerate(liste):
+            for f, (axe, cote) in PLANS.items():
+                plan = (b if cote else a)[axe]
+                for j in range(i):
+                    a2, b2 = liste[j][1], liste[j][2]
+                    if abs((b2 if cote else a2)[axe] - plan) < 1e-6 and recouvre(a, b, a2, b2, axe):
+                        if cote:
+                            b[axe] -= RETRAIT
+                        else:
+                            a[axe] += RETRAIT
+                        n += 1
+                        change = True
+                        break
+        if not change:
+            return n
+    raise SystemExit("faces en double impossibles à séparer")
+
+
+def doublons(liste):
+    """Faces encore en double (contrôle)."""
+    out = []
+    for i, (nom, a, b, _, _) in enumerate(liste):
+        for f, (axe, cote) in PLANS.items():
+            for j in range(i):
+                a2, b2 = liste[j][1], liste[j][2]
+                if abs((b2 if cote else a2)[axe] - (b if cote else a)[axe]) < 1e-6 and recouvre(a, b, a2, b2, axe):
+                    out.append((nom, liste[j][0], f))
+    return out
+
+
 def construire():
     img = Image.new("RGBA", (TAILLE, TAILLE), (0, 0, 0, 0))
     # rangement des faces dans la texture, en lignes
@@ -214,27 +262,50 @@ def construire():
     modele = {"credit": "HeraliZ, mods/crac/outils/tc_modele.py", "texture_size": [TAILLE, TAILLE],
               "textures": {"0": TEXTURE, "particle": TEXTURE}, "elements": [], "display": AFFICHAGE}
     porte = None
-    for nom, a, b, mat, faces in elements():
-        el = {"name": nom, "from": list(a), "to": list(b), "faces": {}}
+    liste = [(nom, list(a), list(b), mat, faces) for nom, a, b, mat, faces in elements()]
+    desenchevetrer(liste)
+    if doublons(liste):
+        raise SystemExit(f"faces en double : {doublons(liste)}")
+    g = GOUTTIERE
+    for nom, a, b, mat, faces in liste:
+        a = [round(v, 4) for v in a]
+        b = [round(v, 4) for v in b]
+        el = {"name": nom, "from": a, "to": b, "faces": {}}
         for f, taille in FACES.items():
             w = max(1, round(taille(a, b)[0] * DENSITE))
             h = max(1, round(taille(a, b)[1] * DENSITE))
-            if x + w > TAILLE:
+            if x + w + 2 * g > TAILLE:
                 x, y, haut_ligne = 0, y + haut_ligne, 0
-            if y + h > TAILLE:
+            if y + h + 2 * g > TAILLE:
                 raise SystemExit("texture trop petite")
             m = faces.get(f, mat)
-            peint(img, x, y, w, h, m)
+            peint(img, x + g, y + g, w, h, m)
+            gouttiere(img, x + g, y + g, w, h, g)
             if nom == "porte" and f == "north":
-                porte = (x, y, w, h)
+                porte = (x + g, y + g, w, h)
             k = 16 / TAILLE
-            el["faces"][f] = {"uv": [round(x * k, 4), round(y * k, 4), round((x + w) * k, 4), round((y + h) * k, 4)], "texture": "#0"}
-            x += w
-            haut_ligne = max(haut_ligne, h)
+            u0, v0 = x + g, y + g
+            el["faces"][f] = {"uv": [round(u0 * k, 4), round(v0 * k, 4), round((u0 + w) * k, 4), round((v0 + h) * k, 4)], "texture": "#0"}
+            x += w + 2 * g
+            haut_ligne = max(haut_ligne, h + 2 * g)
         modele["elements"].append(el)
     if porte:
         pochoir(img, porte[0] + 4, porte[1] + porte[3] - 10, "TC-07")
+        gouttiere(img, porte[0], porte[1], porte[2], porte[3], GOUTTIERE)
     return modele, img
+
+
+def gouttiere(img, x, y, w, h, g):
+    """Recopie les pixels du bord d'une face tout autour (g pixels) : au loin, les mipmaps ne mélangent plus deux faces."""
+    px = img.load()
+    for k in range(1, g + 1):
+        for i in range(w):
+            px[x + i, y - k] = px[x + i, y]
+            px[x + i, y + h - 1 + k] = px[x + i, y + h - 1]
+        for j in range(-k, h + k):
+            jj = min(max(j, 0), h - 1)
+            px[x - k, y + j] = px[x, y + jj]
+            px[x + w - 1 + k, y + j] = px[x + w - 1, y + jj]
 
 
 def ecrire(chemin, donnees):
@@ -248,11 +319,9 @@ def installer():
     img.save(ASSETS / "textures/block/claim_block.png")
     ecrire(ASSETS / "models/block/claim_block_haut.json", {"credit": modele["credit"], "textures": {"particle": TEXTURE}})
     ecrire(ASSETS / "models/item/claim_block.json", {"parent": "crac:block/claim_block"})
-    ecrire(ASSETS / "blockstates/claim_block.json", {"variants": {
-        f"facing={f},tier={t}": ({"model": "crac:block/claim_block", "y": r} if r else {"model": "crac:block/claim_block"})
-        for f, r in ROTATION.items() for t in (1, 2, 3)}})
-    ecrire(ASSETS / "blockstates/claim_block_haut.json", {"variants": {
-        f"facing={f}": {"model": "crac:block/claim_block_haut"} for f in ROTATION}})
+    # états (sens, tier, adossement) et modèles poussés contre les murs : outils/adossement.py
+    import adossement
+    adossement.armoire(modele)
     for a in ANCIENS:
         (ASSETS / a).unlink(missing_ok=True)
     print(f"[tc_modele] {len(modele['elements'])} éléments installés dans {ASSETS}")

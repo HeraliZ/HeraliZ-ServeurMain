@@ -14,6 +14,11 @@ import org.jetbrains.annotations.Nullable;
 /** A placed building block. Server-side source of truth, owned by {@code StructureStore}. */
 public final class Piece {
     public static final int STATE_OPEN = 1;
+    /**
+     * Doors only (HeraliZ, CRac 1.10.1; the insert bits are never used by doors): an open door of an airlock whose other
+     * door is open too. It still looks open, but collides like a closed leaf: nobody walks straight through the airlock.
+     */
+    public static final int STATE_SAS = 0b010;
     public static final int INSERT_SHIFT = 1;
     public static final int INSERT_MASK = 0b110;
     public static final int INSERT_NONE = 0;
@@ -94,6 +99,14 @@ public final class Piece {
             this.centre = c;
         }
         return c;
+    }
+
+    public boolean isSasBloque() {
+        return this.kind().hasDoor() && (this.state & STATE_SAS) != 0;
+    }
+
+    public void setSasBloque(boolean bloque) {
+        this.state = bloque ? this.state | STATE_SAS : this.state & ~STATE_SAS;
     }
 
     public boolean isOpen() {

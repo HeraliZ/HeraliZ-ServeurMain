@@ -1,16 +1,139 @@
 {
   "variants": {
-    "facing=north": {
+    "adosse=0,facing=north": {
       "model": "crac:block/claim_block_haut"
     },
-    "facing=east": {
+    "adosse=1,facing=north": {
       "model": "crac:block/claim_block_haut"
     },
-    "facing=south": {
+    "adosse=2,facing=north": {
       "model": "crac:block/claim_block_haut"
     },
-    "facing=west": {
+    "adosse=3,facing=north": {
       "model": "crac:block/claim_block_haut"
+    },
+    "adosse=4,facing=north": {
+      "model": "crac:block/claim_block_haut"
+    },
+    "adosse=5,facing=north": {
+      "model": "crac:block/claim_block_haut"
+    },
+    "adosse=6,facing=north": {
+      "model": "crac:block/claim_block_haut"
+    },
+    "adosse=7,facing=north": {
+      "model": "crac:block/claim_block_haut"
+    },
+    "adosse=8,facing=north": {
+      "model": "crac:block/claim_block_haut"
+    },
+    "adosse=0,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=1,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=2,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=3,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=4,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=5,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=6,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=7,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=8,facing=east": {
+      "model": "crac:block/claim_block_haut",
+      "y": 90
+    },
+    "adosse=0,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=1,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=2,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=3,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=4,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=5,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=6,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=7,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=8,facing=south": {
+      "model": "crac:block/claim_block_haut",
+      "y": 180
+    },
+    "adosse=0,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
+    },
+    "adosse=1,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
+    },
+    "adosse=2,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
+    },
+    "adosse=3,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
+    },
+    "adosse=4,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
+    },
+    "adosse=5,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
+    },
+    "adosse=6,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
+    },
+    "adosse=7,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
+    },
+    "adosse=8,facing=west": {
+      "model": "crac:block/claim_block_haut",
+      "y": 270
     }
   }
 }
