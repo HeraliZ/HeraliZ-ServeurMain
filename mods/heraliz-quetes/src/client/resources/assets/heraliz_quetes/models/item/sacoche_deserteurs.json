@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_quetes:item/3d/sacoche_deserteurs"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_quetes:item/icon/sacoche_deserteurs"
+    }
+  }
+}

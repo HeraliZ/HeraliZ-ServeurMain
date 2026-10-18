@@ -4,7 +4,9 @@ Ce dossier est copié sur le Ptero par la mise en ligne (`config/heraliz_quetes/
 modification faite à la main sur le serveur est écrasée au prochain envoi. Après un changement : `/quete recharger` en
 jeu (pas besoin de redémarrer).
 
-- `pnj/<id>.json` : un fichier par PNJ (son nom, ses phrases, sa suite de quêtes, ses modèles de contrats).
+- `pnj/<id>.json` : un fichier par PNJ (son nom, ses phrases, sa suite de quêtes). Depuis le 18/10, un seul PNJ :
+  le **Commandant Varga** (`varga.json`, 39 quêtes principales en 5 chapitres : Recrue, Soldat, Caporal, Sergent,
+  Officier ; scénario dans `docs/QUETES_SCENARIO.md`). Les 7 autres PNJ ont été retirés.
 - La progression des joueurs n'est PAS ici : elle est dans `heraliz_quetes/joueurs/` à la racine du serveur (hors du
   monde, elle survit aux changements de carte).
 - Les points de quête posés en jeu sont gardés avec le monde (`data/heraliz_quetes_points.dat`).
@@ -15,7 +17,7 @@ Se placer à l'endroit voulu, regarder dans la direction où le PNJ doit regarde
 
 | Commande | Effet |
 |---|---|
-| `/pnj creer <id>` | pose le PNJ (son `id` = le nom de son fichier : `jack`, `jacqueline`, `doyen`...) |
+| `/pnj creer <id>` | pose le PNJ (son `id` = le nom de son fichier : `varga`) |
 | `/pnj deplacer <id>` | le déplace là où l'on est |
 | `/pnj retirer <id>` | l'enlève |
 | `/pnj skin <id> <skin>` | skin = fichier `textures/pnj/<skin>.png` du jar joueur (`defaut` : Steve / Alex), utilisé seulement sans apparence CaraCrea |
@@ -60,55 +62,17 @@ Avec la baguette en main, le staff voit tous les points autour de lui (particule
 donner la réponse aux autres). Plus il y a de points, mieux c'est. Une quête dont un groupe est vide n'est pas proposée
 (« pas encore prête »).
 
-### Les groupes à poser
+### Les groupes à poser (Commandant Varga)
 
-Points « endroit » (se placer dessus, `/quete point ajouter`) :
-
-| Groupe | Où | Combien |
-|---|---|---|
-| `villes` | centre de chaque ville (+ `/quete point nom`) | toutes les villes |
-| `grandes_villes` | centre des villes T5 / T6 | 2 à 4 |
-| `prison` | centre de la prison | 1 |
-| `caserne` | entrée de la base militaire | 1 |
-| `gares` | chaque gare (+ nom) | toutes |
-| `lieux` | chaque lieu de la carte (+ nom) | 15 à 30 |
-| `salle_verte`, `salle_bleue`, `salle_rouge` | à l'intérieur de chaque salle à carte | toutes |
-| `casino_tables` | à côté de chaque jeu du casino | 4 ou plus |
-| `ferme_piege` | une ferme isolée | 1 |
-| `mesure_gaz`, `mesure_radiation`, `releve_froid` | dans une zone de gaz / radiation / froid (un bloc : il sert aussi à ramasser) | 1 à 3 |
-| `groupe_electrogene`, `tour_radio` | sur un groupe électrogène / l'émetteur de la tour radio (un bloc) | 1 à 3 |
-
-Points « bloc » (baguette, clic droit sur le meuble) :
-
-| Groupe | Sur quoi | Combien | PNJ |
+| Groupe | Où | Combien | Quête |
 |---|---|---|---|
-| `carnet_jack`, `caisse_jack` | tiroirs, caisses, tables (villages) | 10 et plus | Jack |
-| `sergent_corps` → `sergent_plaque` | un cadavre, puis un casier dans un poste de garde | 1 et 1 | Jack |
-| `caserne_tableau` → `caserne_armoire` | tableau de la salle de briefing, armoire du chef (base militaire) | 1 et 1 | Jack |
-| `hopital_armoire` | armoire de la salle de soins d'un hôpital | 1 à 3 | Jacqueline |
-| `medecin_notes` (3) → `medecin_cabinet` | 3 meubles dans 3 maisons d'une même ville, puis le cabinet | 3 et 1 | Jacqueline |
-| `poste_secours`, `trousse` | postes de secours / cachettes en ville | 5 et plus | Jacqueline |
-| `roue` | épaves de voitures | 10 et plus | Ferraille |
-| `aiguillage`, `projecteur` | aiguillages le long de la voie / projecteurs d'un camp militaire | 4 et plus | Ferraille |
-| `raffinerie_vanne` | au fond de la raffinerie (zone de gaz) | 1 | Ferraille |
-| `loco` | 3 blocs de la locomotive du spawn | 3 | Ferraille |
-| `radio`, `balise`, `document` | postes radio, balises, cachettes | 10 et plus | Nadia |
-| `directeur_bureau`, `directeur_coffre` | bureau et coffre du directeur (usine de Clairval) | 1 et 1 | Nadia |
-| `secretaire_photo` | un meuble de l'appartement au-dessus de la pharmacie | 1 | Nadia |
-| `ecole_tableau` | tableau noir d'une école | 1 | Nadia |
-| `poste_nadia` | le poste radio de Nadia, au spawn | 1 | Nadia |
-| `page_explorateur` | 5 cachettes dans 5 villes | 5 et plus | Nadia |
-| `micro` | meubles de bâtiments d'une ville T5 | 3 et plus | Nadia |
-| `prison_registre`, `tour_controle`, `bunker_bande` | salle bleue de la prison / tour de contrôle / salle rouge d'un bunker | 1 | Nadia |
-| `cachette_port`, `caisse_noire` | cachettes du port | 1 | Mila |
-| `mairie_tampons` | bureau de la mairie | 1 | Mila |
-| `livraison`, `cachette` | boîtes aux lettres, portes, cachettes | 10 et plus | Mila |
-| `contact_mila` | 3 meubles dans 3 villes | 3 | Mila |
-| `corps_joueur` | un cadavre | 1 à 3 | Lucky |
-| `soldat`, `deserteur` (3) → `cachette_deserteurs` | cadavres de soldats / 3 cadavres / une cachette au vieux silo | 10 et plus, 3, 1 | Varga |
+| `insigne_varga` | baguette : meubles, cadavres, casiers dans les villes (chacun le sien, 5 par joueur) | 15 et plus, dans plusieurs villes | 9 « Le 7e régiment » |
+| `deserteur` | baguette : 3 cadavres ou meubles (les carnets des déserteurs) | 3 et plus | 22 « Les déserteurs » |
+| `cachette_deserteurs` | baguette : une cachette (caisse, tiroir) | 1 à 3 | 22 |
+| `boite_noire` | baguette : un bloc d'une épave d'avion dans la zone de gaz | 1 à 3 | 29 « La boîte noire » |
+| `salle_verte`, `salle_bleue`, `salle_rouge` | `/quete point ajouter` à l'intérieur de CHAQUE salle à carte de cette couleur (une seule suffit au joueur) | toutes | 24, 31, 38 |
 
-Les textes de certaines quêtes décrivent l'endroit (« au-dessus de la pharmacie », « au vieux silo ») : poser le point
-au bon endroit, ou changer le texte dans le fichier.
+Sans ces points, la quête qui en a besoin attend (« pas encore prête ») et la suite s'arrête là.
 
 ## 3. Écrire une quête
 
@@ -126,9 +90,21 @@ Le plus simple : demander à Claude en français (« Jack demande de ramener son
     {"type": "ramasser", "libelle": "Trouver le carnet", "groupe": "carnet_jack", "objet": "carnet", "ref": "carnet", "nom": "Carnet de Jack"},
     {"type": "donner", "libelle": "Rapporter le carnet", "objet_quete": "carnet"}
   ],
-  "recompense": {"herals": 250, "reputation": 40, "titre": "Diplômé du camp"}
+  "recompense": {"herals": 250, "reputation": 40, "titre": "Diplômé du camp", "objets": {"heralizcrates:quete_key": 1}}
 }
 ```
+
+`objets` de la récompense : objets donnés à la fin (ici une Clé de Quêtes). `"desactivee": true` : la quête est sautée
+(son système n'est pas prêt : capture d'un territoire de clan).
+
+Écrire la demande en une phrase claire qui dit exactement quoi faire (« Tue 10 zombies avec une arme à feu »).
+
+Accueil du PNJ (clé `accueil` de son fichier) : `inconnu`, `connu`, `ami` selon la réputation, et surtout `besoin` (quand
+il a une nouvelle quête à donner) et `en_cours` (quand une de ses quêtes est en cours) : un texte ou une liste, tiré au
+hasard.
+
+Les soins, grenades et armes de mêlée du mod tactique se demandent par leur vrai nom (`heralisz_heal:carfak`...),
+pas par `heralisz_tactical:consumable`.
 
 Un texte peut être en français seulement (`"Bonjour"`) ou dans les trois langues (`{"fr": "...", "en": "...", "ru": "..."}`).
 
@@ -137,20 +113,24 @@ Un texte peut être en français seulement (`"Bonjour"`) ou dans les trois langu
 | type | Le joueur doit | Réglages |
 |---|---|---|
 | `parler` | parler à un PNJ | `pnj` (par défaut : celui de la quête) |
-| `donner` | donner des objets au PNJ (ils sont pris) | `objet` (identifiant ou liste), `tag` (`heraliz_composants:vente`...), `objet_quete` (un objet de quête de la quête), `nombre`, `rarete_min` (`commun` ... `unique`), `usure_max` (pour cent, armes), `arme` (`feu`, `pompe`, `fusil`...), `silencieux`, `differents` (sortes différentes) |
-| `montrer` | avoir ces objets sur lui | comme `donner` (rien n'est pris) |
+| `donner` | donner des objets au PNJ (ils sont pris) | `objet` (identifiant ou liste), `tag` (`heraliz_composants:vente`...), `objet_quete` (un objet de quête de la quête), `nombre`, `rarete_min` (`commun`, `peu_commun`, `rare`, `epique`, `legendaire`, `unique` ou `mythique` ; composants et objets de valeur compris), `armure` (`tete`, `corps`, `tete_ou_corps`), `usure_max` (pour cent, armes), `arme` (`feu`, `pompe`, `fusil`...), `silencieux`, `differents` (sortes différentes) |
+| `montrer` | avoir ces objets sur lui (armure portée comprise) | comme `donner` (rien n'est pris) |
 | `payer` | payer des hérals au PNJ | `herals` |
 | `tuer` | tuer des créatures | `cible` (`zombies`, `monstres`, un identifiant, `#tag`, `mod:*`), `nombre`, `arme` (`feu`, `melee`, `couteau`, ou une famille : `pistolet`, `smg`, `fusil`, `pompe`, `precision`, `mitrailleuse`), `arme_id`, `silencieux`, `distance_min`, `nuit`, `sans_degats` (touché = compteur à zéro), zone : `groupe` ou `point` + `rayon`, `participation` (boss : tous les joueurs à moins de N blocs comptent) |
-| `ramasser` | clic droit sur le point : il reçoit un objet de quête | `groupe`/`point`, `nombre` (de points), `objet` (modèle : document, carnet, lettre, photo, cle, cle_usb, colis, echantillon, plaque, piece), `ref`, `nom`, `desc` |
+| `ramasser` | clic droit sur le point : il reçoit un objet de quête | `groupe`/`point`, `nombre` (de points), `objet` (modèle : document, carnet, lettre, photo, cle, cle_usb, colis, echantillon, plaque, piece ; en 3D : insigne_regiment, boite_noire, sacoche_deserteurs), `ref`, `nom`, `desc` |
 | `indice` | clic droit sur le point : une note s'affiche | `groupe`/`point`, `nombre`, `titre`, `texte` |
 | `code` | clic droit sur le point : taper un code | `groupe`/`point`, `code`, `titre` |
 | `deposer` | clic droit sur le point, l'objet en main | `groupe`/`point`, `nombre`, `objet_quete` ou `objet` / `tag` |
-| `endroit` | aller sur place | `groupe`/`point`, `nombre`, `rayon` |
+| `endroit` | aller sur place | `groupe`/`point`, `nombre`, `rayon`, `un_seul` (tous les points du groupe, le premier atteint suffit) |
 | `tenir` | rester sur place N secondes (sortir = zéro) | `groupe`/`point`, `rayon`, `secondes` |
 | `attendre` | attendre (temps réel) | `secondes` |
 | `survivre` | rester en vie sur la carte | `secondes`, `vie_max` (n'avance que blessé : 8 = 4 cœurs) |
 | `extraction` | rentrer au spawn par une extraction | `nombre` |
 | `fouiller` | ouvrir des conteneurs de HeraliZ Loot | `nombre`, `palier_min` (1 à 7), `modele` (morceau du nom), zone (`groupe` + `rayon`) |
+| `executer` | achever un joueur à terre (exécution de Réanimation ou coup de grâce) | `nombre` |
+| `fabriquer` | fabriquer une arme à feu à la Table d'armurier (TaCZ) | `nombre` |
+| `frappe` | appeler une frappe aérienne (jumelles d'Airstrike) | `nombre` |
+| `capturer` | capturer un territoire avec son clan : PAS ENCORE BRANCHÉ (quête `desactivee`) | |
 
 Réglages communs : `libelle` (texte affiché), `marqueur` (`exact`, `zone` = distance arrondie, `aucun`), `delai`
 (secondes : au-delà, la quête échoue), `meme_point` (mêmes points que l'étape d'avant), `visible` (montrée avant d'y
@@ -159,7 +139,7 @@ arriver ; sinon « ??? »), `reponse` (ce que dit le PNJ après cette étape).
 Un objet de quête **tombe sur le cadavre** à la mort ; il revient au même point 30 minutes après l'avoir ramassé.
 Une quête dont la dernière étape ne se fait pas chez le PNJ se termine en revenant le voir (donc en s'extrayant).
 
-### Les contrats (sans limite, toujours 3 au tableau)
+### Les contrats (retirés le 18/10 : listes `contrats` vides ; le format reste au cas où)
 
 ```json
 {"id": "chasse", "poids": 3, "reputation_min": 0,

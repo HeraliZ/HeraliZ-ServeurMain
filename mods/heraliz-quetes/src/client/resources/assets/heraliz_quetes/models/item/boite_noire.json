@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_quetes:item/3d/boite_noire"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_quetes:item/icon/boite_noire"
+    }
+  }
+}

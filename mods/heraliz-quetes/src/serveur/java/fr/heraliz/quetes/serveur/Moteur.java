@@ -165,7 +165,9 @@ final class Moteur {
                 Collections.shuffle(g, RANDOM);
                 // d'abord les points pas encore faits dans cette quête (trois livraisons = trois adresses)
                 g.sort(java.util.Comparator.comparing(pt -> a.vus.contains("p:" + pt.id())));
-                for (int i = 0; i < Math.min(e.nombre(), g.size()); i++) a.cibles.add(g.get(i).id());
+                // « un_seul » : tous les points du groupe, le premier atteint suffit (n'importe quelle salle verte)
+                int n = e.oui("un_seul") ? g.size() : e.nombre();
+                for (int i = 0; i < Math.min(n, g.size()); i++) a.cibles.add(g.get(i).id());
             }
         }
     }
@@ -202,6 +204,7 @@ final class Moteur {
         dp.rep = Math.max(0, dp.rep + r.reputation);
         r.autres.forEach((pnj, v) -> j.pnj(pnj).rep = Math.max(0, j.pnj(pnj).rep + v));
         if (!r.titre.vide() && !j.titres.contains(r.titre.toString())) j.titres.add(r.titre.toString());
+        r.objets.forEach((id, n) -> donnerRecompense(p, id, n, q));
         if (a.suite.isEmpty()) {
             dp.contrats++;
             j.contratsFinis++;
@@ -223,6 +226,19 @@ final class Moteur {
         LOG.info("[heraliz_quetes] {} a fini « {} » ({}) : {} hérals{}, réputation {} {}", p.getGameProfile().getName(),
                 q.titre.francais(), a.cle, r.herals, paye ? "" : " (NON versés : économie absente)", a.pnj, dp.rep);
         envoyerSuivi(p);
+    }
+
+    /** Objet de récompense (clé de caisse...) : dans l'inventaire, sinon au sol à ses pieds. */
+    static void donnerRecompense(ServerPlayer p, String id, int n, Defs.Quete q) {
+        ResourceLocation rl = ResourceLocation.tryParse(id);
+        var item = rl == null ? null : ForgeRegistries.ITEMS.getValue(rl);
+        if (item == null || item == net.minecraft.world.item.Items.AIR) {
+            LOG.warn("[heraliz_quetes] récompense de « {} » : objet inconnu {}", q.titre.francais(), id);
+            return;
+        }
+        ItemStack s = new ItemStack(item, n);
+        notif(p, Texte.cle("heraliz_quetes.notif.objet_recu", Texte.cle(s.getDescriptionId())), 0xE8C36A);
+        if (!p.getInventory().add(s)) p.drop(s, false);
     }
 
     static int indexSuite(Defs.Pnj def, String id) {
@@ -280,6 +296,14 @@ final class Moteur {
         return l;
     }
 
+    /** Ce que le joueur porte et tient, armure et emplacements Curios compris (ce qu'il peut « montrer »). */
+    static List<ItemStack> surLui(Player p) {
+        List<ItemStack> l = inventaire(p);
+        l.addAll(p.getInventory().armor);
+        l.addAll(Ponts.curios(p));
+        return l;
+    }
+
     // ------------------------------------------------------------------ objets demandés (donner, montrer, déposer)
     static boolean correspond(ItemStack s, Defs.Etape e, ServerPlayer p, Donnees.DActive a) {
         if (s.isEmpty()) return false;
@@ -288,7 +312,8 @@ final class Moteur {
         if (s.getItem() instanceof ObjetQuete) return false;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
         List<String> objets = Defs.liste(e.p, "objet");
-        if (!objets.isEmpty() && (id == null || !objets.contains(id.toString()))) return false;
+        String idTac = Ponts.idTactique(s);
+        if (!objets.isEmpty() && (id == null || !objets.contains(id.toString())) && (idTac == null || !objets.contains(idTac))) return false;
         String tag = e.texte("tag", "");
         if (!tag.isEmpty()) {
             ResourceLocation rl = ResourceLocation.tryParse(tag.startsWith("#") ? tag.substring(1) : tag);
@@ -298,19 +323,23 @@ final class Moteur {
         if (!armes.isEmpty() && !armes.contains(Ponts.gunId(s))) return false;
         String arme = e.texte("arme", "");
         if (!arme.isEmpty() && (Ponts.gunId(s) == null || !Ponts.arme(s, arme))) return false;
+        String armure = e.texte("armure", "");
+        if (!armure.isEmpty() && !Ponts.armure(s, armure)) return false;
         String rar = e.texte("rarete_min", "");
         if (!rar.isEmpty() && Ponts.rarete(s) < Ponts.rangRarete(rar)) return false;
         int usureMax = e.entier("usure_max", -1);
         if (usureMax >= 0 && (Ponts.gunId(s) == null || Ponts.usure(s) > usureMax)) return false;
         if (e.oui("silencieux") && !Ponts.silencieux(s)) return false;
-        if (objets.isEmpty() && tag.isEmpty() && armes.isEmpty() && arme.isEmpty()) return !rar.isEmpty() || usureMax >= 0;
+        if (objets.isEmpty() && tag.isEmpty() && armes.isEmpty() && arme.isEmpty() && armure.isEmpty()) return !rar.isEmpty() || usureMax >= 0;
         return true;
     }
 
-    /** Clé d'un objet pour « differents » : l'arme TaCZ, sinon l'objet. */
+    /** Clé d'un objet pour « differents » : l'arme TaCZ, le soin ou la grenade du mod tactique, sinon l'objet. */
     static String sorte(ItemStack s) {
         String g = Ponts.gunId(s);
         if (g != null) return g;
+        String t = Ponts.idTactique(s);
+        if (t != null) return t;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
         return id == null ? "?" : id.toString();
     }
@@ -320,7 +349,7 @@ final class Moteur {
         boolean diff = e.oui("differents");
         java.util.Set<String> vus = new java.util.HashSet<>(diff ? a.vus : java.util.Set.of());
         int n = 0;
-        for (ItemStack s : inventaire(p)) {
+        for (ItemStack s : e.type.equals("montrer") ? surLui(p) : inventaire(p)) {
             if (!correspond(s, e, p, a)) continue;
             if (diff) {
                 if (vus.add(sorte(s))) n++;
@@ -415,6 +444,48 @@ final class Moteur {
                 else suiviBientot(p);
             }
         }
+    }
+
+    /** Un joueur à terre est achevé (exécution ou coup de grâce) par un autre joueur : étapes « executer » du tueur. */
+    static void execution(ServerPlayer victime, ServerPlayer tueur) {
+        if (tueur == null || tueur == victime) return;
+        avancerType(tueur, "executer");
+    }
+
+    /** Fait avancer d'un pas toutes les étapes de ce type du joueur. */
+    static void avancerType(ServerPlayer p, String type) {
+        Donnees.DJoueur j = Donnees.de(p.getUUID());
+        for (Donnees.DActive a : new ArrayList<>(j.actives.values())) {
+            Defs.Quete q = def(a);
+            Defs.Etape e = etape(a, q);
+            if (e == null || !e.type.equals(type)) continue;
+            a.progres++;
+            Donnees.sale(p.getUUID());
+            if (a.progres >= e.nombre()) avancer(p, a, q, false);
+            else suiviBientot(p);
+        }
+    }
+
+    /** Dernier relevé de chaque joueur : armes dans l'inventaire (table d'armurier ouverte, -1 sinon), frappes en cours. */
+    private static final Map<UUID, Integer> ARMES = new HashMap<>(), FRAPPES = new HashMap<>();
+
+    static void oublier(UUID u) {
+        ARMES.remove(u);
+        FRAPPES.remove(u);
+    }
+
+    /** Étape « fabriquer » : une arme de plus dans l'inventaire pendant que la Table d'armurier (TaCZ) est ouverte. */
+    private static boolean fabrication(ServerPlayer p) {
+        int n = Ponts.tableArmes(p) ? Ponts.armes(p) : -1;
+        Integer avant = ARMES.put(p.getUUID(), n);
+        return avant != null && avant >= 0 && n > avant;
+    }
+
+    /** Étape « frappe » : une frappe aérienne de plus appelée par le joueur. */
+    private static boolean frappe(ServerPlayer p) {
+        int n = Ponts.frappes(p.getUUID());
+        Integer avant = FRAPPES.put(p.getUUID(), n);
+        return avant != null && avant >= 0 && n > avant;
     }
 
     static boolean cible(Defs.Etape e, LivingEntity v) {
@@ -569,7 +640,8 @@ final class Moteur {
         a.faits.add(pt.id());
         a.vus.add("p:" + pt.id());
         Donnees.sale(p.getUUID());
-        if (a.faits.size() >= a.cibles.size()) avancer(p, a, q, false);
+        Defs.Etape e = etape(a, q);
+        if (a.faits.size() >= a.cibles.size() || e != null && e.oui("un_seul")) avancer(p, a, q, false);
         else suiviBientot(p);
     }
 
@@ -641,10 +713,31 @@ final class Moteur {
         ResourceLocation monde = p.level().dimension().location();
         long maintenant = System.currentTimeMillis();
         Points pts = points();
+        Boolean fabrique = null, frappe = null;
         for (Donnees.DActive a : new ArrayList<>(j.actives.values())) {
             Defs.Quete q = def(a);
             Defs.Etape e = etape(a, q);
             if (e == null) continue;
+            if (e.type.equals("fabriquer")) {
+                if (fabrique == null) fabrique = fabrication(p);
+                if (fabrique) {
+                    a.progres++;
+                    Donnees.sale(p.getUUID());
+                    if (a.progres >= e.nombre()) avancer(p, a, q, false);
+                    else suiviBientot(p);
+                }
+                continue;
+            }
+            if (e.type.equals("frappe")) {
+                if (frappe == null) frappe = frappe(p);
+                if (frappe) {
+                    a.progres++;
+                    Donnees.sale(p.getUUID());
+                    if (a.progres >= e.nombre()) avancer(p, a, q, false);
+                    else suiviBientot(p);
+                }
+                continue;
+            }
             int delai = e.entier("delai", 0);
             if (delai > 0 && maintenant - a.debutEtape > delai * 1000L) {
                 abandonner(p, a.cle, true);
@@ -705,8 +798,8 @@ final class Moteur {
     static int[] progression(Donnees.DActive a, Defs.Etape e) {
         long maintenant = System.currentTimeMillis();
         return switch (e.type) {
-            case "ramasser", "indice", "code", "deposer", "endroit" ->
-                    new int[]{a.faits.size(), Math.max(1, a.cibles.isEmpty() ? e.nombre() : a.cibles.size())};
+            case "ramasser", "indice", "code", "deposer", "endroit" -> e.oui("un_seul") ? new int[]{a.faits.size(), 1}
+                    : new int[]{a.faits.size(), Math.max(1, a.cibles.isEmpty() ? e.nombre() : a.cibles.size())};
             case "tenir" -> new int[]{a.tenu / 20, e.entier("secondes", 30)};
             case "attendre" -> new int[]{(int) Math.min(e.entier("secondes", 60), (maintenant - a.debutEtape) / 1000L), e.entier("secondes", 60)};
             case "survivre" -> new int[]{a.progres / 20, e.entier("secondes", 600)};
@@ -716,6 +809,18 @@ final class Moteur {
     }
 
     static Texte recompense(Defs.Recompense r) {
+        Texte t = recompenseBase(r);
+        for (Map.Entry<String, Integer> o : r.objets.entrySet()) {
+            ResourceLocation rl = ResourceLocation.tryParse(o.getKey());
+            var item = rl == null ? null : ForgeRegistries.ITEMS.getValue(rl);
+            Texte nom = item == null ? Texte.brut(o.getKey()) : Texte.cle(item.getDescriptionId());
+            if (o.getValue() > 1) nom = Texte.cle("heraliz_quetes.recompense.objet_nb", Texte.brut(o.getValue()), nom);
+            t = t.vide() ? nom : Texte.cle("heraliz_quetes.recompense.et", t, nom);
+        }
+        return t;
+    }
+
+    private static Texte recompenseBase(Defs.Recompense r) {
         if (r.herals > 0 && r.reputation > 0) return Texte.cle("heraliz_quetes.recompense.herals_rep", Texte.brut(Ponts.nombre(r.herals)), Texte.brut(r.reputation));
         if (r.herals > 0) return Texte.cle("heraliz_quetes.recompense.herals", Texte.brut(Ponts.nombre(r.herals)));
         if (r.reputation > 0) return Texte.cle("heraliz_quetes.recompense.rep", Texte.brut(r.reputation));

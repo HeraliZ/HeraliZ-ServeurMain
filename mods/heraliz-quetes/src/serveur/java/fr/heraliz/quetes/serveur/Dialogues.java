@@ -166,6 +166,12 @@ final class Dialogues {
         }
         reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p)));
 
+        if ((texte == null || texte.vide()) && prochaine != null && !def.besoin.isEmpty()) {
+            texte = def.besoin.get(Moteur.RANDOM.nextInt(def.besoin.size()));
+        }
+        if ((texte == null || texte.vide()) && !def.enCours.isEmpty() && aUneQuete(j, def)) {
+            texte = def.enCours.get(Moteur.RANDOM.nextInt(def.enCours.size()));
+        }
         if (texte == null || texte.vide()) {
             texte = def.accueil(Defs.niveau(dp.rep));
             if ((texte == null || texte.vide()) && !def.ambiance.isEmpty()) texte = def.ambiance.get(Moteur.RANDOM.nextInt(def.ambiance.size()));
@@ -174,12 +180,18 @@ final class Dialogues {
         page(p, ent, def, texte, reps);
     }
 
+    private static boolean aUneQuete(Donnees.DJoueur j, Defs.Pnj def) {
+        for (Donnees.DActive a : j.actives.values()) if (a.pnj.equals(def.id)) return true;
+        return false;
+    }
+
     /** La prochaine quête de la suite, si aucune quête de la suite n'est en cours chez ce PNJ et que la réputation suffit. */
     private static Defs.Quete prochaine(Donnees.DJoueur j, Donnees.DPnj dp, Defs.Pnj def) {
         for (Donnees.DActive a : j.actives.values()) if (a.pnj.equals(def.id) && !a.suite.isEmpty()) return null;
-        for (int i = dp.suite; i < def.suite.size(); i++) {
+        // depuis le début (quêtes finies sautées) : une quête ajoutée ou déplacée dans le fichier n'est jamais perdue
+        for (int i = 0; i < def.suite.size(); i++) {
             Defs.Quete q = def.suite.get(i);
-            if (j.finies.contains("s:" + def.id + ":" + q.id)) continue;
+            if (q.desactivee || j.finies.contains("s:" + def.id + ":" + q.id)) continue;
             return q.repMin <= dp.rep ? q : null;
         }
         return null;

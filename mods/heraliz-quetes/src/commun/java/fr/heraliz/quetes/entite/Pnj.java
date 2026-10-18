@@ -21,7 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 /**
- * Un PNJ du spawn (Jack, Jacqueline...), posé par le staff avec /pnj creer. Partie commune : ce que lit l'affichage
+ * Un PNJ du spawn (le Commandant Varga), posé par le staff avec /pnj creer. Partie commune : ce que lit l'affichage
  * (identifiant du PNJ, nom en trois langues, skin ou apparence CaraCrea) et un corps immobile et invincible. Les dialogues, les quêtes et le
  * regard qui suit les joueurs sont dans {@code PnjServeur} (créé par son type, jamais par {@code new}).
  */

@@ -88,6 +88,7 @@ public final class ServeurQuetes implements Partie {
         if (Moteur.serveur == null) return;
         Dialogues.oublier(e.getEntity().getUUID());
         LUEURS.remove(e.getEntity().getUUID());
+        Moteur.oublier(e.getEntity().getUUID());
         Donnees.liberer(e.getEntity().getUUID());
     }
 
@@ -101,6 +102,8 @@ public final class ServeurQuetes implements Partie {
     private static void mort(LivingDeathEvent e) {
         if (Moteur.serveur == null || e.getEntity().level().isClientSide) return;
         if (e.getEntity() instanceof ServerPlayer p) {
+            // achevé à terre (exécution de Réanimation ou coup de grâce) : l'état « à terre » dure jusqu'à la mort
+            if (Ponts.aTerre(p) && e.getSource().getEntity() instanceof ServerPlayer tueur) Moteur.execution(p, tueur);
             Moteur.mortJoueur(p);
             return;
         }

@@ -44,6 +44,8 @@ final class Defs {
         CompoundTag apparence;
         final List<Texte> ambiance = new ArrayList<>();
         Texte presentation = Texte.VIDE, inconnu = Texte.VIDE, connu = Texte.VIDE, ami = Texte.VIDE;
+        /** Ce qu'il dit quand il a une nouvelle quête à donner / quand une de ses quêtes est en cours (au hasard). */
+        final List<Texte> besoin = new ArrayList<>(), enCours = new ArrayList<>();
         final List<Quete> suite = new ArrayList<>();
         final List<Modele> contrats = new ArrayList<>();
 
@@ -53,7 +55,7 @@ final class Defs {
         }
 
         Texte accueil(int niveau) {
-            Texte t = niveau >= 3 && !ami.vide() ? ami : connu;
+            Texte t = niveau >= 3 && !ami.vide() ? ami : niveau == 0 && !inconnu.vide() ? inconnu : connu;
             return t.vide() ? inconnu : t;
         }
     }
@@ -64,6 +66,8 @@ final class Defs {
         Texte titre = Texte.VIDE, demande = Texte.VIDE, fin = Texte.VIDE, rappel = Texte.VIDE, resume = Texte.VIDE;
         int difficulte = 1, repMin;
         boolean sansMourir;
+        /** « desactivee » : sautée dans la suite (le système dont elle a besoin n'est pas prêt). */
+        boolean desactivee;
         final List<Etape> etapes = new ArrayList<>();
         final List<Don> donne = new ArrayList<>();
         Recompense recompense = new Recompense();
@@ -80,6 +84,8 @@ final class Defs {
         int reputation;
         Texte titre = Texte.VIDE;
         final Map<String, Integer> autres = new LinkedHashMap<>();
+        /** Objets donnés à la fin (« heralizcrates:quete_key » -> 1). */
+        final Map<String, Integer> objets = new LinkedHashMap<>();
     }
 
     static final class Etape {
@@ -139,6 +145,13 @@ final class Defs {
     }
 
     // ------------------------------------------------------------------ lecture
+    /** Un texte ou une liste de textes. */
+    private static void textes(JsonElement e, List<Texte> l) {
+        if (e == null || e.isJsonNull()) return;
+        if (e.isJsonArray()) e.getAsJsonArray().forEach(x -> l.add(Texte.json(x)));
+        else l.add(Texte.json(e));
+    }
+
     static Pnj pnj(JsonObject o, List<String> erreurs) {
         Pnj p = new Pnj();
         p.id = chaine(o, "id", "").toLowerCase(Locale.ROOT);
@@ -154,6 +167,8 @@ final class Defs {
             p.inconnu = Texte.json(a.get("inconnu"));
             p.connu = Texte.json(a.get("connu"));
             p.ami = Texte.json(a.get("ami"));
+            textes(a.get("besoin"), p.besoin);
+            textes(a.get("en_cours"), p.enCours);
         }
         if (o.has("suite") && o.get("suite").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("suite")) {
@@ -196,6 +211,7 @@ final class Defs {
         q.difficulte = Math.max(1, Math.min(4, entier(o, "difficulte", 1)));
         q.repMin = entier(o, "reputation_min", 0);
         q.sansMourir = o.has("sans_mourir") && o.get("sans_mourir").getAsBoolean();
+        q.desactivee = o.has("desactivee") && o.get("desactivee").getAsBoolean();
         if (o.has("donne") && o.get("donne").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("donne")) {
                 if (!e.isJsonObject()) continue;
@@ -227,12 +243,19 @@ final class Defs {
                     q.recompense.autres.put(e.getKey(), (int) nombre(e.getValue()));
                 }
             }
+            // « objets » : {"heralizcrates:quete_key": 1} ou ["heralizcrates:quete_key"]
+            JsonElement ob = r.get("objets");
+            if (ob != null && ob.isJsonObject()) {
+                for (Map.Entry<String, JsonElement> e : ob.getAsJsonObject().entrySet()) q.recompense.objets.put(e.getKey(), Math.max(1, (int) nombre(e.getValue())));
+            } else if (ob != null) {
+                for (String id : liste(r, "objets")) q.recompense.objets.merge(id, 1, Integer::sum);
+            }
         }
         return q;
     }
 
     static final List<String> TYPES = List.of("parler", "donner", "montrer", "payer", "tuer", "ramasser", "indice", "code",
-            "deposer", "endroit", "tenir", "attendre", "survivre", "extraction", "fouiller");
+            "deposer", "endroit", "tenir", "attendre", "survivre", "extraction", "fouiller", "executer", "fabriquer", "frappe", "capturer");
 
     // ------------------------------------------------------------------ outils JSON
     static String chaine(JsonObject o, String cle, String defaut) {
