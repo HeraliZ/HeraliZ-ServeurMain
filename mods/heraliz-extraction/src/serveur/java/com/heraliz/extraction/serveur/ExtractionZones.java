@@ -125,6 +125,26 @@ public class ExtractionZones extends SavedData {
         return this.zones.values();
     }
 
+    /**
+     * Numéro de la zone pour les joueurs (« Extraction 3 ») : son rang parmi toutes les zones, rangées par nom (18/10,
+     * demande du propriétaire : les noms posés en jeu sont pris au hasard et ne sont plus montrés aux joueurs ; le staff
+     * garde les vrais noms). Le même partout : carte du monde, menu Échap, chat.
+     */
+    public int numero(Zone zone) {
+        int n = 1;
+        for (String nom : this.zones.keySet()) {
+            if (nom.compareToIgnoreCase(zone.name()) < 0) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** « Extraction 3 », dans la langue du joueur. */
+    public MutableComponent nomPublic(Zone zone) {
+        return Component.translatableWithFallback("heraliz_extraction.zone.nom", "Extraction %s", String.valueOf(numero(zone)));
+    }
+
     public void add(Zone zone) {
         this.zones.put(zone.name(), zone);
         setDirty();

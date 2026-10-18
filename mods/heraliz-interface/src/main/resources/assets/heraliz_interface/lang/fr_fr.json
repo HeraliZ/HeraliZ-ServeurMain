@@ -70,5 +70,6 @@
   "gui.heraliz_interface.titre.en_ligne": "%s en ligne · %s ms",
   "gui.heraliz_interface.titre.ping": "%s ms",
   "heraliz_interface.pack.textures": "HeraliZ : textures",
-  "heraliz_interface.pack.herbe": "HeraliZ : herbe"
+  "heraliz_interface.pack.herbe": "HeraliZ : herbe",
+  "gui.heraliz_interface.pause.carte.extraction": "Extraction %s"
 }

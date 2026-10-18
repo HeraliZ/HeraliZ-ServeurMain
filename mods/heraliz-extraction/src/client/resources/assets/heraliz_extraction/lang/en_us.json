@@ -80,5 +80,6 @@
   "heraliz_extraction.ecran.fusee_ouverture": "Flare: deploying",
   "heraliz_extraction.ecran.fermeture": "Closing %s",
   "heraliz_extraction.ecran.attente": "Waiting",
-  "heraliz_extraction.ecran.extraction": "Extraction: %s"
+  "heraliz_extraction.ecran.extraction": "Extraction: %s",
+  "heraliz_extraction.zone.nom": "Extraction %s"
 }

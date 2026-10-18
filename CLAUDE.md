@@ -1210,7 +1210,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   tailles mesurées (lieux 10 unités de large environ, extractions 11, drapeaux 8,5), à peine plus grandes de près ;
   vue d'ensemble allégée : villages, usines, hôpitaux, gares et points n'apparaissent qu'en zoomant, en fondu ;
   pastille d'état d'un territoire seulement de près (sauf capture et contestée, toujours), posée sous le nom ;
-  extractions marquées seulement « Extraction », sans le nom posé en jeu (Utils 2.16.1, 18/10 : noms au hasard) ;
+  extractions numérotées pour les joueurs (18/10, noms posés en jeu pris au hasard) : « Extraction 3 » sur la carte, au
+  menu Échap et dans le chat, numéro = rang de la zone parmi toutes, rangées par nom (`ExtractionZones.numero`,
+  Extraction 1.5.1, Utils 2.16.1, Interface 1.7.3 ; le libellé envoyé aux joueurs est ce numéro) ; le staff garde les
+  vrais noms (`/extraction list`, numéro devant) ; ajouter ou retirer une zone peut décaler les numéros ;
 - chat vocal : celui de CaraCrea (Simple Voice Chat retiré) ;
 - launcher (maquettes validées) : fond « carte » (relief sombre, quadrillage, point rouge « Zone HeraliZ »), au-dessus
   du logo « VERSION 1 · SAISON 1 », onglets Accueil / Règlement / Boutique (« Bientôt »), trois nouveautés non cliquables

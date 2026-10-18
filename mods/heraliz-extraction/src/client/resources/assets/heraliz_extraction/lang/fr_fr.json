@@ -80,5 +80,6 @@
   "heraliz_extraction.ecran.fusee_ouverture": "Fusée: ouverture",
   "heraliz_extraction.ecran.fermeture": "Fermeture %s",
   "heraliz_extraction.ecran.attente": "En attente",
-  "heraliz_extraction.ecran.extraction": "Extraction: %s"
+  "heraliz_extraction.ecran.extraction": "Extraction: %s",
+  "heraliz_extraction.zone.nom": "Extraction %s"
 }

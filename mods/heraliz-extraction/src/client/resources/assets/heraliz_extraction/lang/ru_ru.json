@@ -80,5 +80,6 @@
   "heraliz_extraction.ecran.fusee_ouverture": "Ракета: подготовка",
   "heraliz_extraction.ecran.fermeture": "Закрытие %s",
   "heraliz_extraction.ecran.attente": "Ожидание",
-  "heraliz_extraction.ecran.extraction": "Эвакуация: %s"
+  "heraliz_extraction.ecran.extraction": "Эвакуация: %s",
+  "heraliz_extraction.zone.nom": "Эвакуация %s"
 }

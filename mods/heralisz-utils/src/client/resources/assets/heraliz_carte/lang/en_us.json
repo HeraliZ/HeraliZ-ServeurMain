@@ -51,7 +51,7 @@
   "heraliz_carte.bas.sur_moi": "on me",
   "heraliz_carte.clan.resume": "%s territories · %s online",
   "heraliz_carte.clan.aucun": "No clan",
-  "heraliz_carte.extraction": "Extraction",
+  "heraliz_carte.extraction": "Extraction %s",
   "heraliz_carte.extraction.ferme": "Closes in %s",
   "heraliz_carte.extraction.permanente": "Always open",
   "heraliz_carte.extraction.tenir": "%s s to hold",

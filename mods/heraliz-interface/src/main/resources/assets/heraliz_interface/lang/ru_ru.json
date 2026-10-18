@@ -70,5 +70,6 @@
   "gui.heraliz_interface.titre.en_ligne": "%s в сети · %s мс",
   "gui.heraliz_interface.titre.ping": "%s мс",
   "heraliz_interface.pack.textures": "HeraliZ: текстуры",
-  "heraliz_interface.pack.herbe": "HeraliZ: трава"
+  "heraliz_interface.pack.herbe": "HeraliZ: трава",
+  "gui.heraliz_interface.pause.carte.extraction": "Эвакуация %s"
 }

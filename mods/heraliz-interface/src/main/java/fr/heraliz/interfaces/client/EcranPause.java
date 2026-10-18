@@ -439,7 +439,7 @@ public class EcranPause extends Screen {
                 Component cd = Ui.lit(droite, Ui.SMALL);
                 int dw = font.width(cd);
                 Ui.point(g, px, ry + 5, Ui.OK, a);
-                Ui.at(g, font, Ui.lit(Ui.ellipsis(font, e.nom(), Ui.FONT, iw - 12 - dw - 6), Ui.FONT), px + 10, ry + 3, Ui.argb(Ui.TEXT, a));
+                Ui.at(g, font, Ui.lit(Ui.ellipsis(font, t("pause.carte.extraction", e.nom()), Ui.FONT, iw - 12 - dw - 6), Ui.FONT), px + 10, ry + 3, Ui.argb(Ui.TEXT, a));
                 Ui.right(g, font, cd, px + iw, ry + 4, Ui.argb(Ui.MUTED, a));
                 if (n < Math.min(3, extractions.size()) - 1) Ui.hairline(g, px, px + iw, ry + 14, 0xFFFFFF, Math.round(18 * t), false, false);
                 ry += 15;

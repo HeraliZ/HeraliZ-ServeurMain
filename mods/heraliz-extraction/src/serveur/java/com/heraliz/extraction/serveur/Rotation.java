@@ -311,7 +311,7 @@ public final class Rotation {
         for (ExtractionZones.Zone z : data.all()) {
             if (data.isOpen(z, now)) {
                 long left = data.remainingTicks(z, now);
-                out.add(new ExtractionApi.Extraction(z.name(), z.displayName(), z.dimension(), z.pos().x, z.pos().y, z.pos().z,
+                out.add(new ExtractionApi.Extraction(z.name(), String.valueOf(data.numero(z)), z.dimension(), z.pos().x, z.pos().y, z.pos().z,
                         z.radius(), z.holdSeconds(), left < 0L ? -1L : now + left));
             }
         }
@@ -380,7 +380,7 @@ public final class Rotation {
             }
             MutableComponent msg = prefix()
                     .append(Component.translatableWithFallback("heraliz_extraction.zone.ouverte", "%s ouverte pendant %s · %s",
-                                    Component.literal(zone.displayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD),
+                                    ExtractionZones.get(server).nomPublic(zone).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD),
                                     formatMinutes(durationTicks).withStyle(ChatFormatting.WHITE),
                                     where(player, zone).withStyle(ChatFormatting.YELLOW))
                             .withStyle(ChatFormatting.GRAY));
@@ -400,7 +400,7 @@ public final class Rotation {
     private static void tellNearby(MinecraftServer server, ExtractionZones.Zone zone, String key, String fallback,
                                    ChatFormatting color, Object... args) {
         Object[] all = new Object[args.length + 1];
-        all[0] = Component.literal(zone.displayName()).withStyle(ChatFormatting.WHITE);
+        all[0] = ExtractionZones.get(server).nomPublic(zone).withStyle(ChatFormatting.WHITE);
         System.arraycopy(args, 0, all, 1, args.length);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if (player.level().dimension().location().equals(zone.dimension())

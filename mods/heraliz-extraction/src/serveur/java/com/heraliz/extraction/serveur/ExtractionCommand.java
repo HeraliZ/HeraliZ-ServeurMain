@@ -341,7 +341,7 @@ public final class ExtractionCommand {
         for (ExtractionZones.Zone zone : zones.all()) {
             if (zones.isOpen(zone, now)) {
                 open++;
-                MutableComponent line = Component.literal(" - " + zone.displayName() + " (" + zone.name() + ") : ").withStyle(ChatFormatting.GRAY);
+                MutableComponent line = Component.literal(" - " + zones.numero(zone) + ". " + zone.displayName() + " (" + zone.name() + ") : ").withStyle(ChatFormatting.GRAY);
                 line.append(state(zones, zone, now));
                 source.sendSuccess(() -> line, false);
             }
@@ -399,7 +399,7 @@ public final class ExtractionCommand {
         for (ExtractionZones.Zone zone : open) {
             long left = zones.remainingTicks(zone, now);
             player.sendSystemMessage(Component.literal(" • ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal(zone.displayName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
+                    .append(zones.nomPublic(zone).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
                     .append(Component.literal(" — ").append(Rotation.where(player, zone)).withStyle(ChatFormatting.YELLOW))
                     .append(Component.literal(" · ")
                             .append(left < 0L
