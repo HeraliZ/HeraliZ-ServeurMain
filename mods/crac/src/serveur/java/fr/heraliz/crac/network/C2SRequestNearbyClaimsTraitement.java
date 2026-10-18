@@ -60,9 +60,9 @@ public final class C2SRequestNearbyClaimsTraitement {
 
         for (Claim c : ClaimData.get(level).all()) {
             Group g = GroupData.get(player.getServer()).getById(c.groupId());
-            // with HeraliZ Clans, a clan builder of the group's owner builds there like a member (ghost and click)
+            // HeraliZ : a player given access in the Claim Block builds there like a member (ghost and click)
             boolean own = myGroup != null && c.groupId().equals(myGroup.id())
-                || g != null && ClanAccess.viaClan(g, player.getUUID(), ClanAccess.Action.BUILD);
+                || g != null && fr.heraliz.crac.bases.AccesBase.a(g.id(), player.getUUID());
             int range = own ? view : foreignView + c.radius();
             if (Math.abs(c.center().getX() - pp.getX()) <= range && Math.abs(c.center().getZ() - pp.getZ()) <= range) {
                 int color = g == null ? 16777215 : g.color() & 16777215;

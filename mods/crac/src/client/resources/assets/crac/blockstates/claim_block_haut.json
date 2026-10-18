@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "crac:block/claim_block_haut"
+    },
+    "facing=east": {
+      "model": "crac:block/claim_block_haut"
+    },
+    "facing=south": {
+      "model": "crac:block/claim_block_haut"
+    },
+    "facing=west": {
+      "model": "crac:block/claim_block_haut"
+    }
+  }
+}

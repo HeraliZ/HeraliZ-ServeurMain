@@ -62,6 +62,7 @@ public final class ClaimBlockLogique {
             if (claim == null) {
                 return InteractionResult.CONSUME;
             } else {
+                ClaimBlock.poserHaut(sl, pos, state);   // armoire posée avant la 1.10.0 : sa case du haut
                 Group g = GroupData.get(sl.getServer()).getById(claim.groupId());
                 boolean member = ClanAccess.allows(g, sp.getUUID(), ClanAccess.Action.CHESTS);
                 if (!member && !sp.getAbilities().instabuild) {
@@ -69,7 +70,7 @@ public final class ClaimBlockLogique {
                     return InteractionResult.CONSUME;
                 } else {
                     ItemStack held = sp.getItemInHand(hand);
-                    boolean owner = g != null && (g.isOwner(sp.getUUID()) || ClanAccess.viaClan(g, sp.getUUID(), ClanAccess.Action.MANAGE));
+                    boolean owner = g != null && g.isOwner(sp.getUUID());
                     if (owner && claim.tier() < 3 && tryUpgrade(sl, sp, pos, state, claim, held)) {
                         return InteractionResult.CONSUME;
                     } else {

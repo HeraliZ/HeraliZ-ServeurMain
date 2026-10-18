@@ -9,10 +9,12 @@ import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Who may act in a claim. The group that owns it, as before; and when HeraliZ Clans is installed
- * ({@code heraliz.clansAccess}), the members of the clan of the group's owner, each by the permission of his rank
- * ({@code Perm.BASE_*}, the same ones the clan bunkers of HeraliZ Bases use). Soft dependency: the clans classes are
- * only touched through {@link Bridge}, and only when the mod is loaded. Server thread only.
+ * Who may act in a claim: the group that owns it, as before, and the players its owner gave access to in the Claim
+ * Block (HeraliZ, CRac 1.10.0, {@link fr.heraliz.crac.bases.AccesBase}). The members of the owner's clan no longer get in
+ * by their rank (choice of the owner, 18/10). With HeraliZ Clans installed ({@code heraliz.clansAccess}), a clan manager
+ * still claims without making a CRac group first, and an online clan member still keeps the base lived in. Soft
+ * dependency: the clans classes are only touched through {@link Bridge}, and only when the mod is loaded. Server thread
+ * only.
  */
 public final class ClanAccess {
     /** What a player wants to do in the claim, and the clan permission it takes. */
@@ -50,25 +52,23 @@ public final class ClanAccess {
         return clansLoaded() && Config.SPEC.isLoaded() && Config.clansAccess.get();
     }
 
-    /** A member of the group, or a member of its owner's clan holding the permission of {@code action}. */
+    /**
+     * A member of the group, or a player its owner gave access to in the Claim Block (HeraliZ, CRac 1.10.0,
+     * {@link fr.heraliz.crac.bases.AccesBase}). One level only: with access, every action is allowed.
+     */
     public static boolean allows(@Nullable Group group, @Nullable UUID player, Action action) {
         if (group == null || player == null) {
             return false;
         }
-        return group.isMember(player) || viaClan(group, player, action);
+        return group.isMember(player) || fr.heraliz.crac.bases.AccesBase.a(group.id(), player) || viaClan(group, player, action);
     }
 
-    /** Only the clan part of {@link #allows}. */
+    /**
+     * The clan part of {@link #allows}: none since CRac 1.10.0 (choice of the owner, 18/10): a clan member gets into a
+     * base only when its owner gives him access in the Claim Block. {@link #groupForClanManager} is kept.
+     */
     public static boolean viaClan(Group group, UUID player, Action action) {
-        if (!enabled()) {
-            return false;
-        }
-        try {
-            return Bridge.allows(group.owner(), player, action);
-        } catch (LinkageError | RuntimeException e) {
-            warnOnce(e);
-            return false;
-        }
+        return false;
     }
 
     /** Whether a member of the clan of the group's owner is online (the base counts as lived in, no inactivity decay). */
@@ -114,11 +114,6 @@ public final class ClanAccess {
         private Bridge() {
         }
 
-        static boolean allows(UUID owner, UUID player, Action action) {
-            Optional<UUID> clan = fr.heralisz.clans.api.ClansApi.clanDe(owner);
-            return clan.isPresent() && fr.heralisz.clans.api.ClansApi.aPerm(player, clan.get(), perm(action));
-        }
-
         @Nullable
         static Group groupForClanManager(net.minecraft.server.MinecraftServer server, UUID player) {
             Optional<UUID> clan = fr.heralisz.clans.api.ClansApi.clanDe(player);
@@ -144,17 +139,6 @@ public final class ClanAccess {
                 .flatMap(fr.heralisz.clans.api.ClansApi::infos)
                 .map(info -> !info.enLigne().isEmpty())
                 .orElse(false);
-        }
-
-        private static fr.heralisz.clans.model.Perm perm(Action action) {
-            return switch (action) {
-                case ENTER -> fr.heralisz.clans.model.Perm.BASE_ENTRER;
-                case BUILD -> fr.heralisz.clans.model.Perm.BASE_CONSTRUIRE;
-                case BREAK -> fr.heralisz.clans.model.Perm.BASE_CASSER;
-                case DOORS -> fr.heralisz.clans.model.Perm.BASE_PORTES;
-                case CHESTS -> fr.heralisz.clans.model.Perm.BASE_COFFRES;
-                case MANAGE -> fr.heralisz.clans.model.Perm.BASE_GERER;
-            };
         }
     }
 }

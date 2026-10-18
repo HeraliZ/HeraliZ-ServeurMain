@@ -121,7 +121,7 @@ public class BuildEventHandler {
 
     private static boolean isSystemBlock(BlockState state) {
         Block b = state.getBlock();
-        return b instanceof StructureBlock || b == ModBlocks.CLAIM_BLOCK.get();
+        return b instanceof StructureBlock || b == ModBlocks.CLAIM_BLOCK.get() || b == ModBlocks.CLAIM_BLOCK_HAUT.get();
     }
 
     @SubscribeEvent
