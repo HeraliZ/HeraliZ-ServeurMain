@@ -81,6 +81,7 @@ public final class ServeurQuetes implements Partie {
         if (!(e.getEntity() instanceof ServerPlayer p) || Moteur.serveur == null) return;
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         j.nom = p.getGameProfile().getName();
+        Moteur.nettoyer(p);
         Moteur.envoyerSuivi(p);
     }
 

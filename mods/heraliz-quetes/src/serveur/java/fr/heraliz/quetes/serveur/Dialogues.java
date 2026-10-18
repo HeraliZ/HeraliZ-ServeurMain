@@ -96,6 +96,7 @@ final class Dialogues {
     }
 
     private static void accueil(ServerPlayer p, Pnj ent, Defs.Pnj def, Texte entete) {
+        if (Moteur.nettoyer(p)) Moteur.envoyerSuivi(p);
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         Donnees.DPnj dp = j.pnj(def.id);
         Texte texte = entete;

@@ -260,6 +260,29 @@ final class Moteur {
         envoyerSuivi(p);
     }
 
+    /**
+     * Retire les quêtes en cours qui n'existent plus dans les fichiers (PNJ ou quête retirés, comme l'ancienne suite de
+     * Varga) : sinon elles bloquent la suite du PNJ sans pouvoir avancer. Rend vrai si quelque chose a été retiré.
+     */
+    static boolean nettoyer(ServerPlayer p) {
+        Donnees.DJoueur j = Donnees.de(p.getUUID());
+        boolean retire = false;
+        for (Donnees.DActive a : new ArrayList<>(j.actives.values())) {
+            if (!a.suite.isEmpty() && def(a) == null) {
+                j.actives.remove(a.cle);
+                retirerObjets(p, a.cle);
+                if (a.cle.equals(j.suivie)) j.suivie = "";
+                LOG.info("[heraliz_quetes] {} : quête disparue retirée ({})", p.getGameProfile().getName(), a.cle);
+                retire = true;
+            }
+        }
+        if (retire) {
+            if (j.suivie.isEmpty() && !j.actives.isEmpty()) j.suivie = j.actives.keySet().iterator().next();
+            Donnees.sale(p.getUUID());
+        }
+        return retire;
+    }
+
     /** Recommence la quête à sa première étape (mort avec une quête « sans mourir »). */
     static void recommencer(ServerPlayer p, Donnees.DActive a, Defs.Quete q) {
         a.etape = 0;
