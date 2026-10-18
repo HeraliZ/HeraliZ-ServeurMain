@@ -1115,6 +1115,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     (`TaczTeteAllongeMixin`) ; gestes debout de la mêlée de LR arrêtés allongé (`IdleAnimationHandler`). CaraCrea ne
     déforme rien lui-même (il recopie le modèle de Minecraft) ; pistes restantes s'il reste des défauts : ses cubes
     ignorent les parties cachées par d'autres mods (jambes du terminal d'extraction), emotes permises allongé.
+  - haut des cuisses détaché du corps en courant avec une arme (18/10, Tactique 2.21.3, `client/corps/Hanches`) : les
+    animations 3e personne de TaCZ (Player Animator, gunpacks non modifiés) penchent le torse autour du cou (course : 8 à
+    11° vers l'avant, jusqu'à 9° de côté) sans bouger les jambes : le bas du torse glissait de 2 à 3 pixels. Torse relevé
+    juste avant Player Animator (`PlayerModelTorseAvantMixin`, priorité 900), puis chaque jambe déplacée du chemin de sa
+    hanche juste après (`PlayerModelHanchesMixin`, priorité 2100 ; Player Animator est à 2000) ; rotations et pas des
+    jambes inchangés. Seulement debout ou accroupi (allongé, à terre, nage : rien) ; vaut aussi pour les emotes qui
+    tournent le torse. Rien testé en jeu ;
 - arrivée d'un nouveau joueur (18/10, maquette A « radio carrée » validée ; CaraCrea 1.6.0, Utils 2.15.0, Quêtes 1.6.0,
   CRac 1.8.0-beta, dayzhotbar 1.5.0 ; rien testé en jeu) : 1. `/register` ou `/login` d'AuthMe (le créateur de
   personnage l'attend : `LoginCheck` de CaraCrea, par réflexion, rien de lisible = rien à attendre) ; 2. le créateur de
