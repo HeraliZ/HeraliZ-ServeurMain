@@ -261,14 +261,14 @@ final class Moteur {
     }
 
     /**
-     * Retire les quêtes en cours qui n'existent plus dans les fichiers (PNJ ou quête retirés, comme l'ancienne suite de
-     * Varga) : sinon elles bloquent la suite du PNJ sans pouvoir avancer. Rend vrai si quelque chose a été retiré.
+     * Retire les quêtes en cours qui n'existent plus dans les fichiers (PNJ retiré, contrats compris, ou quête retirée,
+     * comme l'ancienne suite de Varga) : sinon elles bloquent la suite du PNJ sans pouvoir avancer. Rend vrai si quelque chose a été retiré.
      */
     static boolean nettoyer(ServerPlayer p) {
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         boolean retire = false;
         for (Donnees.DActive a : new ArrayList<>(j.actives.values())) {
-            if (!a.suite.isEmpty() && def(a) == null) {
+            if (Catalogue.pnj(a.pnj) == null || !a.suite.isEmpty() && def(a) == null) {
                 j.actives.remove(a.cle);
                 retirerObjets(p, a.cle);
                 if (a.cle.equals(j.suivie)) j.suivie = "";
