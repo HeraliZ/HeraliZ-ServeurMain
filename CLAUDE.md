@@ -1331,6 +1331,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   section 9) ; lieux et nom
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
+- **Marchands** (heraliz-quetes 1.4.0, 18/10, rien testé en jeu ; maquettes montrées) : Mila rachète objets de valeur et composants, Jacqueline vend les soins, le Doyen la nourriture, Jack les accessoires Commun à Rare (`Marchands`, écran `EcranMarchand`, canal version 2) ; listes et prix **écrits** par `python outils/marchands.py`.
 - **Quêtes** (heraliz-quetes 1.3.0, 18/10, rien testé en jeu) : un seul PNJ, le Commandant Varga (`varga.json`, 39
   quêtes principales en 5 chapitres, scénario dans `docs/QUETES_SCENARIO.md`) ; textes en français seulement (anglais et
   russe à ajouter dans le fichier). À faire en jeu par le staff : `/pnj creer varga` et les points de quête

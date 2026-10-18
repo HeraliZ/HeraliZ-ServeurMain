@@ -11,6 +11,14 @@ jeu (pas besoin de redémarrer).
   monde, elle survit aux changements de carte).
 - Les points de quête posés en jeu sont gardés avec le monde (`data/heraliz_quetes_points.dat`).
 
+## 0. Les marchands
+
+Quatre PNJ sont des marchands (clé `marchand` de leur fichier, **écrite** par `python outils/marchands.py`, jamais à la
+main : prix et listes en tête du script) : **Mila** rachète les objets de valeur (Commun 20 → Mythique 1 500 hérals) et
+les composants (moitié prix) ; **Jacqueline** vend tous les soins ; **le Doyen** vend 6 aliments en bon état ; **Jack**
+vend les accessoires d'armes Commun à Rare. On leur parle, puis « Voir ce que tu vends » / « Te vendre des objets ».
+Les poser : `/pnj creer mila`, `/pnj creer jacqueline`, `/pnj creer doyen`, `/pnj creer jack`.
+
 ## 1. Poser un PNJ
 
 Se placer à l'endroit voulu, regarder dans la direction où le PNJ doit regarder, puis :

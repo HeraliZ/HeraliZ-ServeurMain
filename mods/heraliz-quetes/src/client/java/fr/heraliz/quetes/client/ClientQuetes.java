@@ -46,6 +46,7 @@ public final class ClientQuetes implements Partie {
         Reseau.CLAVIER.brancher(EcranClavier::ouvrir);
         Reseau.BULLE.brancher(Bulles::recevoir);
         Reseau.LUEURS.brancher(Lueurs::recevoir);
+        Reseau.BOUTIQUE.brancher(EcranMarchand::recevoir);
     }
 
     private static void tick(TickEvent.ClientTickEvent e) {

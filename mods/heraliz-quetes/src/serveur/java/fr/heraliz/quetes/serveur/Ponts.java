@@ -85,6 +85,16 @@ final class Ponts {
         }
     }
 
+    static long solde(UUID joueur) {
+        Class<?> c = eco();
+        if (c == null) return 0;
+        try {
+            return (long) c.getMethod("solde", UUID.class).invoke(null, joueur);
+        } catch (Throwable t) {
+            return 0;
+        }
+    }
+
     static boolean retirer(UUID joueur, long montant, String motif) {
         Class<?> c = eco();
         if (c == null || montant <= 0) return false;

@@ -165,6 +165,15 @@ final class Dialogues {
         if (!def.contrats.isEmpty()) {
             reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.contrats"), 0, () -> tableau(p, ent, def, null)));
         }
+        // 5. son commerce
+        if (def.marchand != null) {
+            Texte bouton = !def.marchand.bouton.vide() ? def.marchand.bouton
+                    : Texte.cle(def.marchand.rachat ? "heraliz_quetes.dialogue.vendre" : "heraliz_quetes.dialogue.acheter");
+            reps.add(new Rep(bouton, 2, () -> {
+                SESSIONS.remove(p.getUUID());
+                Marchands.envoyer(p, ent, def, true);
+            }));
+        }
         reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p)));
 
         if ((texte == null || texte.vide()) && prochaine != null && !def.besoin.isEmpty()) {

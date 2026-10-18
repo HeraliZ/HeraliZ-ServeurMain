@@ -47,6 +47,8 @@ public final class ServeurQuetes implements Partie {
         Reseau.CHOIX.brancher(r -> Dialogues.choix(r.joueur(), r.message()));
         Reseau.DEMANDE_JOURNAL.brancher(r -> Moteur.envoyerJournal(r.joueur(), r.message().ouvrir()));
         Reseau.ACTION.brancher(r -> action(r.joueur(), r.message()));
+        Reseau.ACHAT.brancher(r -> Marchands.achat(r.joueur(), r.message()));
+        Reseau.VENTE.brancher(r -> Marchands.vente(r.joueur(), r.message()));
         Reseau.CODE.brancher(r -> Moteur.code(r.joueur(), r.message().point(), r.message().code()));
 
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::demarrage);
@@ -73,6 +75,7 @@ public final class ServeurQuetes implements Partie {
     private static void arret(ServerStoppingEvent e) {
         Donnees.arreter();
         Dialogues.vider();
+        Marchands.vider();
         Moteur.arreter();
         LUEURS.clear();
     }
@@ -90,6 +93,7 @@ public final class ServeurQuetes implements Partie {
         Dialogues.oublier(e.getEntity().getUUID());
         LUEURS.remove(e.getEntity().getUUID());
         Moteur.oublier(e.getEntity().getUUID());
+        Marchands.oublier(e.getEntity().getUUID());
         Donnees.liberer(e.getEntity().getUUID());
     }
 

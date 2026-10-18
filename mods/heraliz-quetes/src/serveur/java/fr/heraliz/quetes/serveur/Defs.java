@@ -48,6 +48,8 @@ final class Defs {
         final List<Texte> besoin = new ArrayList<>(), enCours = new ArrayList<>();
         final List<Quete> suite = new ArrayList<>();
         final List<Modele> contrats = new ArrayList<>();
+        /** Ce qu'il vend ou rachète (clé « marchand »), null s'il n'est pas marchand. */
+        Marchand marchand;
 
         Quete quete(String id) {
             for (Quete q : suite) if (q.id.equals(id)) return q;
@@ -136,6 +138,48 @@ final class Defs {
         }
     }
 
+    // ------------------------------------------------------------------ marchands
+    /** Un objet vendu : identifiant, données (« {ConsumableId:\"heralisz_heal:cms\"} »), prix à l'unité. */
+    record ArticleDef(String objet, String nbt, long prix) {
+    }
+
+    /** Ce qu'un racheteur prend : les objets du tag, payés selon leur rareté (« commun » ... « mythique »). */
+    record Regle(String tag, Map<String, Long> prix) {
+    }
+
+    static final class Marchand {
+        /** « achat » : le joueur achète ses articles ; « rachat » : il rachète au joueur ce qui suit ses règles. */
+        boolean rachat;
+        final List<ArticleDef> articles = new ArrayList<>();
+        final List<Regle> regles = new ArrayList<>();
+        Texte bouton = Texte.VIDE;
+    }
+
+    static Marchand marchand(JsonObject o) {
+        Marchand m = new Marchand();
+        m.rachat = chaine(o, "type", "achat").equalsIgnoreCase("rachat");
+        m.bouton = Texte.json(o.get("bouton"));
+        if (o.has("articles") && o.get("articles").isJsonArray()) {
+            for (JsonElement e : o.getAsJsonArray("articles")) {
+                if (!e.isJsonObject()) continue;
+                JsonObject a = e.getAsJsonObject();
+                m.articles.add(new ArticleDef(chaine(a, "objet", ""), chaine(a, "nbt", ""), Math.max(1, nombre(a.get("prix")))));
+            }
+        }
+        if (o.has("rachat") && o.get("rachat").isJsonArray()) {
+            for (JsonElement e : o.getAsJsonArray("rachat")) {
+                if (!e.isJsonObject()) continue;
+                JsonObject r = e.getAsJsonObject();
+                Map<String, Long> prix = new LinkedHashMap<>();
+                if (r.has("prix") && r.get("prix").isJsonObject()) {
+                    for (Map.Entry<String, JsonElement> p : r.getAsJsonObject("prix").entrySet()) prix.put(p.getKey().toLowerCase(Locale.ROOT), nombre(p.getValue()));
+                }
+                m.regles.add(new Regle(chaine(r, "tag", ""), prix));
+            }
+        }
+        return m;
+    }
+
     // ------------------------------------------------------------------ contrats
     static final class Modele {
         String id;
@@ -170,6 +214,7 @@ final class Defs {
             textes(a.get("besoin"), p.besoin);
             textes(a.get("en_cours"), p.enCours);
         }
+        if (o.has("marchand") && o.get("marchand").isJsonObject()) p.marchand = marchand(o.getAsJsonObject("marchand"));
         if (o.has("suite") && o.get("suite").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("suite")) {
                 if (!e.isJsonObject()) continue;

@@ -1,0 +1,103 @@
+{
+  "id": "jacqueline",
+  "nom": "Jacqueline",
+  "skin": "jacqueline",
+  "apparence": {
+    "skin_tone": "fair",
+    "eye_shape": "almond",
+    "eye_color": "green",
+    "brow_style": "arched",
+    "nose_style": "small",
+    "mouth_style": "full",
+    "lip_color": "rosy",
+    "hair_style": "shoulder_length",
+    "hair_color": "auburn",
+    "facial_hair": "none",
+    "shirt_style": "long_sleeve",
+    "shirt_color": "white",
+    "shirt_color2": "red",
+    "pants_style": "trousers",
+    "pants_color": "light_blue",
+    "shoes_style": "sneakers",
+    "shoes_color": "white",
+    "marks": [
+      "freckles"
+    ],
+    "wear": "clean",
+    "eye_size": 3
+  },
+  "role": {
+    "fr": "Infirmière",
+    "en": "Nurse",
+    "ru": "Медсестра"
+  },
+  "ambiance": [
+    "Ne saigne pas sur mon comptoir.",
+    "Des soins, propres et neufs."
+  ],
+  "presentation": "Bonjour. Il me reste des soins, si tu en as besoin. Ce n'est pas gratuit, mais c'est propre.",
+  "accueil": {
+    "inconnu": "Bonjour. Il me reste des soins, si tu en as besoin. Ce n'est pas gratuit, mais c'est propre.",
+    "connu": "Bonjour."
+  },
+  "marchand": {
+    "type": "achat",
+    "articles": [
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}",
+        "prix": 30
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}",
+        "prix": 30
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}",
+        "prix": 30
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}",
+        "prix": 80
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:amoxycillin\"}",
+        "prix": 80
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}",
+        "prix": 80
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}",
+        "prix": 80
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}",
+        "prix": 180
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}",
+        "prix": 180
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:cms\"}",
+        "prix": 400
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}",
+        "prix": 400
+      }
+    ]
+  }
+}
