@@ -1072,7 +1072,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `ornateHandle` du gabarit) : fond noir, filets clairs de la texture d'origine repris dans la finition, étoile et
     pierres bleues gardées. Batte : tout le manche en grip noir, coupé texel par texel dans la carte de positions
     (`KnifeType.manche`, 32 % de la longueur depuis le pommeau). Icônes `slot/polaris_lore.png` et
-    `slot/baseball_bat_lore.png` rendues par `outils/apercu_camos`. Ni loot ni craft (donnés par le staff). Rien testé en jeu ;
+    `slot/baseball_bat_lore.png` rendues par `outils/apercu_camos`. Menu créatif (2.19.1) : groupe Mêlée de HeraliZ · Tactique, rangés après
+    les couteaux skinnés (`ModItems.remplirMelee` : toute arme de mêlée « <arme>__<finition> » va après les couteaux). Ni loot ni craft (donnés par le staff). Rien testé en jeu ;
   couteaux (16/10, Tactique 2.17.0 puis 2.18.0, après les retours du propriétaire) : clic gauche = le coup rapide
     d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, gestes de TaCZ vus
     des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant où LE COUTEAU LUI-MÊME TOURNE avec le geste.
