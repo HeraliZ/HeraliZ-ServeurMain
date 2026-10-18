@@ -114,6 +114,9 @@ import java.util.UUID;
  * <p>Fil serveur. Pas d'allocation par tick dans les chemins chauds (listes reutilisees).
  */
 public final class PartieZombies extends Partie {
+    /** Etiquette « reste allonge » (verrou de pose de Reanimation : sans elle, TaCZ remet le joueur a terre debout a chaque tick). */
+    private static final String RESTE_ALLONGE = "heraliz_reste_allonge";
+
     /** Sous-etape de la phase COMBAT. */
     enum Etape { DEPART, MANCHE, PAUSE }
 
@@ -620,6 +623,7 @@ public final class PartieZombies extends Partie {
 
     private void preparerJoueur(ServerPlayer p) {
         p.setGameMode(GameType.ADVENTURE);
+        p.removeTag(RESTE_ALLONGE);
         p.setForcedPose(null);
         p.setCamera(p);
         retirerModificateur(p, Attributes.MAX_HEALTH, MOD_BLINDAGE);
@@ -921,6 +925,7 @@ public final class PartieZombies extends Partie {
         j.cibleIndex = -1;
         envoyerInvite(p, j);
         p.setHealth(p.getMaxHealth());
+        p.addTag(RESTE_ALLONGE);
         p.setForcedPose(net.minecraft.world.entity.Pose.SWIMMING);
         ajouterModificateur(p, Attributes.MOVEMENT_SPEED, MOD_A_TERRE, "heralisz_zombies_a_terre", -0.65, AttributeModifier.Operation.MULTIPLY_TOTAL);
         // pistolet seulement
@@ -955,6 +960,7 @@ public final class PartieZombies extends Partie {
             p.getInventory().selected = j.slotATerre;
             p.connection.send(new ClientboundSetCarriedItemPacket(j.slotATerre));
         }
+        p.addTag(RESTE_ALLONGE);
         if (p.getForcedPose() != net.minecraft.world.entity.Pose.SWIMMING) p.setForcedPose(net.minecraft.world.entity.Pose.SWIMMING);
         if (j.ticksAutoReleve > 0) {
             if (--j.ticksAutoReleve == 0) relever(p, j, null);
@@ -976,6 +982,7 @@ public final class PartieZombies extends Partie {
         j.etat = HudZombies.DEBOUT;
         j.ticksATerre = 0;
         j.ticksAutoReleve = 0;
+        p.removeTag(RESTE_ALLONGE);
         p.setForcedPose(null);
         retirerModificateur(p, Attributes.MOVEMENT_SPEED, MOD_A_TERRE);
         restaurerSlotATerre(p, j);
@@ -1001,6 +1008,7 @@ public final class PartieZombies extends Partie {
         j.bowie = false;
         j.ticksATerre = 0;
         equipe.eliminer(j.id);
+        p.removeTag(RESTE_ALLONGE);
         p.setForcedPose(null);
         retirerModificateur(p, Attributes.MOVEMENT_SPEED, MOD_A_TERRE);
         restaurerSlotATerre(p, j);
@@ -3571,7 +3579,10 @@ public final class PartieZombies extends Partie {
             lignes.add(new PaquetsZombies.LigneFin(j.nom, j.couleur, j.points, j.kills, j.tetes, j.couteau, j.reanimations, j.aTerreFois));
         }
         Records.Resultat r = manche > 0 ? Records.enregistrer(carte.id(), manche, parts) : new Records.Resultat(false, false, Records.recordServeur(carte.id()));
-        for (int i = 0; i < enLigne.size(); i++) enLigne.get(i).setForcedPose(null);
+        for (int i = 0; i < enLigne.size(); i++) {
+            enLigne.get(i).removeTag(RESTE_ALLONGE);
+            enLigne.get(i).setForcedPose(null);
+        }
         try {
             ZombiesApi.decor().ambiance(instance(), ZombiesDecor.Ambiance.FIN_PARTIE);
         } catch (RuntimeException ex) {
@@ -3613,6 +3624,7 @@ public final class PartieZombies extends Partie {
 
     /** Remet le joueur dans son etat d'avant la partie (Coffre) et le detache. */
     private void rendre(ServerPlayer p) {
+        p.removeTag(RESTE_ALLONGE);
         p.setForcedPose(null);
         if (Spectateur.est(p.getUUID())) Spectateur.arreter(p, true);
         p.setCamera(p);

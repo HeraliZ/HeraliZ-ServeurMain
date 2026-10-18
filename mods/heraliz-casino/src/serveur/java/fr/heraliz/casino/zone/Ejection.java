@@ -386,6 +386,7 @@ final class Ejection {
         player.setDeltaMovement(Vec3.ZERO);
         player.fallDistance = 0;
         // a plat ventre dans la poussiere
+        player.addTag(RESTE_ALLONGE);
         player.setForcedPose(Pose.SWIMMING);
         sound(land, SoundEvents.PLAYER_BIG_FALL, 1f, 0.8f);
         level.sendParticles(ParticleTypes.POOF, land.x, land.y + 0.15, land.z, 14, 0.45, 0.08, 0.45, 0.03);
@@ -413,12 +414,23 @@ final class Ejection {
                 g.stance(GuardEntity.IDLE);
             }
         }
-        if (k == 38) player.setForcedPose(null);
+        if (k == 38) relever();
+    }
+
+    /**
+     * Etiquette « reste allonge », lue par le verrou de pose de Reanimation : sans elle, TaCZ remet le joueur debout a
+     * chaque tick. Retiree avant de rendre la pose.
+     */
+    static final String RESTE_ALLONGE = "heraliz_reste_allonge";
+
+    private void relever() {
+        player.removeTag(RESTE_ALLONGE);
+        player.setForcedPose(null);
     }
 
     private void finish() {
         done = true;
-        player.setForcedPose(null);
+        relever();
         cleanup();
     }
 
@@ -436,7 +448,7 @@ final class Ejection {
             // il n'echappe pas a la sortie en se deconnectant : sans ticket, il sera refoule a son retour
             zone.revoke(id);
         }
-        player.setForcedPose(null);
+        relever();
         cleanup();
     }
 

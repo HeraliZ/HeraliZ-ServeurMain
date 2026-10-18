@@ -35,6 +35,9 @@ import java.util.Set;
  */
 @Mod.EventBusSubscriber(modid = HeralizCasino.MODID, value = Dist.CLIENT)
 public final class EscortPoses {
+    /** Etiquette « reste allonge » (verrou de pose de Reanimation : sans elle, TaCZ remet le joueur debout a chaque tick). */
+    public static final String RESTE_ALLONGE = "heraliz_reste_allonge";
+
     private EscortPoses() {
     }
 
@@ -232,6 +235,7 @@ public final class EscortPoses {
                 if (esc.phase() == EscortEntity.THROWN) FLYING.add(p);
             } else if (FLYING.remove(p)) {
                 LANDED.put(p, 0);
+                p.addTag(RESTE_ALLONGE);
                 p.setForcedPose(Pose.SWIMMING);
                 p.setPose(Pose.SWIMMING);
             }
@@ -242,6 +246,7 @@ public final class EscortPoses {
             int k = en.getValue() + 1;
             en.setValue(k);
             if (k < PRONE_TICKS && !p.isRemoved() && p.level() == mc.level) return false;
+            p.removeTag(RESTE_ALLONGE);
             p.setForcedPose(null);
             return true;
         });

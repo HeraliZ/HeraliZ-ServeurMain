@@ -182,6 +182,7 @@ public final class ZoneCinema implements IGuiOverlay {
             exit();
         }
         if (landed && age - landedAt < PRONE) {
+            mc.player.addTag(EscortPoses.RESTE_ALLONGE);
             mc.player.setForcedPose(Pose.SWIMMING);
             prone = true;
         } else {
@@ -195,7 +196,10 @@ public final class ZoneCinema implements IGuiOverlay {
         if (!prone) return;
         prone = false;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null) mc.player.setForcedPose(null);
+        if (mc.player != null) {
+            mc.player.removeTag(EscortPoses.RESTE_ALLONGE);
+            mc.player.setForcedPose(null);
+        }
     }
 
     @SubscribeEvent

@@ -326,6 +326,7 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `fr.heraliz.loot.client.RaretesClient.couleur(ItemStack)` | loot (client, lu par réflexion par dayzhotbar) | couleur de rareté d'un objet (0 : aucune) |
 | `fr.heraliz.grades.serveur.GradesApi` (`rangBoutique(UUID)` : 0 à 3, `gradeAffiche(UUID)`) | grades (serveur, lue par réflexion par le casino) | grade d'un joueur (zone VIP du casino) |
 | `fr.heraliz.loot.RaretesObjets.de(ItemStack)` | loot (commun, lu par réflexion par quetes) | rareté d'un objet demandé par une quête (`rarete_min`) |
+| étiquette de joueur `heraliz_reste_allonge` (entity tag, `addTag` / `removeTag`) | lue par reanimation (commun, `PlayerPoseMixin`), posée par casino (expulsion) et matchs (à terre des Zombies) | « reste allongé » : TaCZ remet chaque joueur debout à chaque tick (pose forcée effacée) ; tant que l'étiquette est là, seule une pose allongée passe. La poser avant `setForcedPose(SWIMMING)`, la retirer AVANT `setForcedPose(null)`, des deux côtés si le joueur doit se voir allongé (Réanimation 1.16.1, Casino 2.3.3, Matchs 0.11.1) |
 | données persistantes du joueur `PlayerPersisted.HeralizBonusLoot.<source>` | lues par loot (serveur), écrites par clansetbases (`clan`) et utils (`objet`) | bonus de loot : `{Pct, Fin (heure en ms)}` ou `{Pct, Restant (ticks de jeu)}`, sources additionnées, plafond 25 % (`fr.heraliz.loot.BonusLoot`) |
 
 **Pour qu'un nouveau mod utilise un des nôtres :**

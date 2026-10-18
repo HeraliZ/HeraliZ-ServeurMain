@@ -23,6 +23,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * quand le joueur se relève ou meurt : l'état « à terre » est effacé AVANT (serveur : DownedManagerServeur, joueur :
  * ClientDowned), la remise à rien passe alors normalement.
  * <p>
+ * Même verrou pour tout joueur qui porte l'étiquette « heraliz_reste_allonge » (entity tag, nom fixe : ne jamais le changer, posé des deux côtés par le mod
+ * qui l'allonge : expulsion du casino, joueur à terre des Zombies...) : TaCZ effaçait aussi leur pose, le joueur se
+ * relevait aussitôt. Le mod retire l'étiquette AVANT de remettre la pose à rien.
+ * <p>
  * setForcedPose est une méthode ajoutée par Forge : même nom en développement et en jeu (remap = false, rien dans la
  * table de correspondance).
  */
@@ -34,7 +38,7 @@ public abstract class PlayerPoseMixin {
          Player joueur = (Player)(Object)this;
          // serveur : simple lecture de l'état (TaCZ passe ici à chaque tick pour chaque joueur) ; joueur : drapeaux reçus
          boolean aTerre = joueur.level().isClientSide ? Downed.isDowned(joueur) : DownedManager.isDowned(joueur);
-         if (aTerre) {
+         if (aTerre || joueur.getTags().contains("heraliz_reste_allonge")) {
             ci.cancel();
          }
       }
