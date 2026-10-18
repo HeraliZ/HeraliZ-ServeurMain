@@ -22,7 +22,11 @@ public final class HudQuetes {
     private HudQuetes() {
     }
 
-    private static final int LARGEUR = 176;
+    private static final int LARGEUR = 150;
+    /** Taille du suivi à l'écran (1 = taille de l'interface du jeu : jugée beaucoup trop grosse). */
+    private static final float ECHELLE = 0.7F;
+    /** Taille des notifications en haut à droite. */
+    private static final float ECHELLE_NOTIFS = 0.8F;
     private static Reseau.Suivi suivi = new Reseau.Suivi(fr.heraliz.quetes.Texte.VIDE, fr.heraliz.quetes.Texte.VIDE, List.of());
 
     private record Notif(String texte, int couleur, long debut) {
@@ -53,8 +57,19 @@ public final class HudQuetes {
         if (mc.options.hideGui || mc.player == null) return;
         if (mc.screen != null && !(mc.screen instanceof ChatScreen)) return;
         Font f = mc.font;
-        notifs(g, f, w);
+        g.pose().pushPose();
+        g.pose().scale(ECHELLE_NOTIFS, ECHELLE_NOTIFS, 1);
+        notifs(g, f, (int) (w / ECHELLE_NOTIFS));
+        g.pose().popPose();
         if (suivi.titre().vide()) return;
+        g.pose().pushPose();
+        g.pose().scale(ECHELLE, ECHELLE, 1);
+        dessinerSuivi(g, f, (int) (w / ECHELLE), (int) (h / ECHELLE));
+        g.pose().popPose();
+    }
+
+    /** La quête suivie, dessinée dans un repère réduit (w, h : taille de l'écran dans ce repère). */
+    private static void dessinerSuivi(GuiGraphics g, Font f, int w, int h) {
 
         // quête suivie : à droite, au tiers de la hauteur
         List<FormattedCharSequence> titre = f.split(Ui.lit(TexteClient.str(suivi.titre()), Ui.BOLD), LARGEUR - 16);
@@ -69,7 +84,7 @@ public final class HudQuetes {
         }
         int hauteur = 14 + titre.size() * 10 + 4;
         for (int i = 0; i < lignes.size(); i++) hauteur += lignes.get(i).size() * 10 + (droites.get(i).isEmpty() ? 0 : 9) + 3;
-        int x = w - LARGEUR - 8, y = Math.max(40, h / 3 - hauteur / 2);
+        int x = w - LARGEUR - 6, y = Math.max(40, h / 3 - hauteur / 2);
         Ui.glass(g, x, y, LARGEUR, hauteur, 120);
         g.fill(x + 1, y + 3, x + 3, y + hauteur - 3, Ui.argb(Ui.OR, 200));
         Ui.spaced(g, f, TexteClient.str(suivi.pnj()), Ui.SMALL, x + 9, y + 6, Ui.argb(Ui.OR, 230), 0.8f);
