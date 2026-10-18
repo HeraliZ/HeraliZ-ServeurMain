@@ -20,6 +20,7 @@ public final class VoyageursServeur {
 
     static void tickServeur(Voyageur v) {
         if (!Voyageurs.SERVEUR.contains(v)) Voyageurs.SERVEUR.add(v);
+        Voyageurs.noterAppelsServeur(v);
         MinecraftServer srv = v.getServer();
         Entity rider = v.getFirstPassenger();
         if (rider == null || srv == null) {
