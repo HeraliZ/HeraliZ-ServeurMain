@@ -59,8 +59,8 @@ public final class PlacementRules {
     /**
      * Orientations a new building's first foundation of {@code kind} may take, in R order: those whose footprint,
      * anchored at the building origin (a block corner), fully covers at least one block column, so that it can seat the
-     * Claim Block (player rules 2-3). Squares: 0°, 30°, 60°; triangles: 0°, 30°, 90° (turned 60°, no block column is
-     * entirely inside it).
+     * Claim Block (player rules 2-3), turned by quarter turns only so that every building stays square with the world
+     * grid (HeraliZ, 18/10). Squares: 0° (90° is the same square); triangles: 0°, 90°, 180°, 270° when they qualify.
      */
     public static int[] newBuildingOrients(PieceKind kind) {
         return (kind.shape == PieceKind.Shape.TRIANGLE ? TRIANGLE_FREE_ORIENTS : SQUARE_FREE_ORIENTS).clone();
@@ -79,7 +79,8 @@ public final class PlacementRules {
     private static int[] freeOrients(PieceKind.Shape shape) {
         PieceKind kind = shape == PieceKind.Shape.TRIANGLE ? PieceKind.TRI_FOUNDATION : PieceKind.FOUNDATION;
         List<Integer> out = new ArrayList<>();
-        for (int orient = 0; orient < shape.orients; orient++) {
+        // bâtiments toujours droits, comme dans Rust (choix du propriétaire, 18/10) : seulement des quarts de tour
+        for (int orient = 0; orient < shape.orients; orient += 3) {
             PieceKey key = new PieceKey(kind, BlockPos.ZERO, LPoint.ORIGIN, 0, orient, 0);
             double[][] poly = Footprints.solidPolygon(key);
             for (int[] c : Footprints.columns(key)) {

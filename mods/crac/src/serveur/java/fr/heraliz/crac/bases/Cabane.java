@@ -136,7 +136,8 @@ final class Cabane {
         // le Claim Block, puis l'entretien
         Claim c = StructureService.claimOf(bases, b);
         if (c == null) {
-            return new Etat(CLAIM, 0, 1, List.of(), List.of(surFondation(f)), ModItems.CLAIM_BLOCK.get(), -1, false);
+            // au fond de la cabane (la deuxième fondation ; la porte est sur la première)
+            return new Etat(CLAIM, 0, 1, List.of(), List.of(surFondation(s)), ModItems.CLAIM_BLOCK.get(), -1, false);
         }
         int seuil = Math.max(1, Tutoriel.entretienKit(pieces.size()) / 2);
         int stock = bases.getBlockEntity(c.anchor()) instanceof ClaimBlockEntity be ? be.getStored(UpkeepResource.WOOD.slot()) : 0;
@@ -146,7 +147,7 @@ final class Cabane {
 
         // la caisse en métal, dans la cabane
         if (!caisseDans(bases, pieces)) {
-            return new Etat(COFFRE, 0, 1, List.of(), List.of(surFondation(s)), ModItems.METAL_CRATE.get(), -1, false);
+            return new Etat(COFFRE, 0, 1, List.of(), List.of(surFondation(f)), ModItems.METAL_CRATE.get(), -1, false);
         }
         return new Etat(FINIE, 1, 1, List.of(), List.of(), null, -1, false);
     }

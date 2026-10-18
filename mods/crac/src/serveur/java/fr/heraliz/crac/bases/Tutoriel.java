@@ -743,7 +743,8 @@ public final class Tutoriel {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void poser(BlockEvent.EntityPlaceEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p) || !enCours(p) || e.getPlacedBlock().getBlock() instanceof ClaimBlock
-            || e.getPlacedBlock().getBlock() instanceof MetalCrateBlock && progression(p)[0] == Cabane.COFFRE) {
+            // la caisse est déjà dans le monde quand l'événement part : la cabane se lit alors finie
+            || e.getPlacedBlock().getBlock() instanceof MetalCrateBlock && progression(p)[0] >= Cabane.COFFRE) {
             return;
         }
         e.setCanceled(true);
