@@ -1,6 +1,7 @@
 package fr.heralisz.matchs.duels;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Reglages des duels (MATCHS_SPEC §3). Valeurs du cahier des charges ; les durees sont en ticks (20 par seconde) sauf
@@ -21,6 +22,12 @@ public final class DuelsConfig {
     public static final String COMMANDE_ACCEPTER = "/duel accepter", COMMANDE_REFUSER = "/duel refuser";
     /** Carte par defaut (v1 : Nuketown). */
     public static final String CARTE_DEFAUT = "duel_nuketown";
+
+    /**
+     * Modificateur de vitesse (x0) du joueur qui amorce ou pirate (pose par le serveur, ReglesBombe) ; lu aussi chez le
+     * joueur pour annuler le zoom que Minecraft deduit d'une vitesse nulle (champ de vision, ActionClient).
+     */
+    public static final UUID IMMOBILE_VITESSE = UUID.fromString("5d0e6a3c-8b1f-4c27-9e44-2f7a91c3d6b8");
 
     /** Choix de la classe (debut de manche en R&D, reapparition en match a mort). */
     public static final int CHOIX_TICKS = 5 * 20;

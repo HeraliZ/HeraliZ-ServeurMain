@@ -1,9 +1,13 @@
 package fr.heralisz.matchs.duels.client;
 
 import fr.heralisz.matchs.HeraliszMatchs;
+import fr.heralisz.matchs.duels.DuelsConfig;
 import fr.heralisz.matchs.duels.net.Vues;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraftforge.client.event.ComputeFovModifierEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -19,7 +23,9 @@ import java.lang.reflect.Method;
  * R&D du serveur) : ni tir, ni rafale, ni rechargement, ni coup de crosse (événements de TaCZ annulés côté joueur : pas
  * de faux tir à l'écran), visée de TaCZ coupée, molette et changement d'arme sans effet (la case en main est gardée).
  * L'immobilisation et les mêmes refus sont décidés par le serveur (duels.bombe.ReglesBombe) : ceci n'est que le
- * reflet chez le joueur. TaCZ par réflexion (absent : rien). Fil client.
+ * reflet chez le joueur. Champ de vision gardé tel quel (Matchs 0.11.2) : Minecraft le resserre quand la vitesse du joueur
+ * baisse, et la vitesse x0 de l'immobilisation donnait un gros zoom pendant l'amorçage et le piratage. TaCZ par réflexion
+ * (absent : rien). Fil client.
  */
 final class ActionClient {
     private ActionClient() {
@@ -33,6 +39,7 @@ final class ActionClient {
     static void enregistrer() {
         MinecraftForge.EVENT_BUS.addListener(ActionClient::tick);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ActionClient::molette);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ActionClient::champ);
         if (ModList.get() == null || !ModList.get().isLoaded("tacz")) return;
         refuser("com.tacz.guns.api.event.common.GunShootEvent", "getShooter");
         refuser("com.tacz.guns.api.event.common.GunFireEvent", "getShooter");
@@ -89,6 +96,18 @@ final class ActionClient {
                 viser = null;
             }
         }
+    }
+
+    /**
+     * Champ de vision : pendant l'action (ou tant que le modificateur d'immobilisation du serveur est sur le joueur), aucun
+     * zoom dû à la vitesse nulle ; le joueur ne court ni ne vole pendant l'action : champ de vision normal (1).
+     */
+    private static void champ(ComputeFovModifierEvent e) {
+        LocalPlayer moi = Minecraft.getInstance().player;
+        if (moi == null || e.getPlayer() != moi) return;
+        AttributeInstance vitesse = moi.getAttribute(Attributes.MOVEMENT_SPEED);
+        boolean immobile = vitesse != null && vitesse.getModifier(DuelsConfig.IMMOBILE_VITESSE) != null;
+        if (immobile || bloque()) e.setNewFovModifier(1.0f);
     }
 
     /** Molette : pas de changement d'arme pendant l'action. */

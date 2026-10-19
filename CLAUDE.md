@@ -1034,6 +1034,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   particules effacées chez les joueurs ; bombes, ordinateur et cible gardés. Pendant l'amorçage et le piratage : joueur
   immobilisé (vitesse ×0 par un modificateur temporaire), ni tir, ni rechargement, ni visée, ni changement d'arme, ni
   coup, ni objet utilisé (refusé par le serveur) ; il peut regarder autour de lui. Rien testé en jeu ;
+- duels (19/10, Matchs 0.11.2) : plus de zoom pendant l'amorçage et le piratage : Minecraft resserre le champ de vision
+  quand la vitesse du joueur baisse, et l'immobilisation (vitesse ×0) le divisait par deux ; chez le joueur, champ de
+  vision normal tant que le modificateur d'immobilisation est sur lui (`ActionClient.champ`, UUID commun
+  `DuelsConfig.IMMOBILE_VITESSE`) ; immobilisation du serveur inchangée. Rien testé en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
