@@ -40,7 +40,7 @@
   "sprint_time": 1,
   "weight": 0,
   "movement_speed": {
-    "base": 0.1,
+    "base": 0.05,
     "aim": 0,
     "reload": 0.0
   },

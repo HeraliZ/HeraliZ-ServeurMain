@@ -42,6 +42,12 @@ public class MeleeItem extends Item implements IAnimationItem, IMeleeWeapon {
          : ImmutableMultimap.of());
    }
 
+   /** Infobulle (19/10) : ni « Dans la main principale : … points d'attaque » ni vitesse ; nom, rareté et description seulement. */
+   @Override
+   public int getDefaultTooltipHideFlags(@NotNull ItemStack stack) {
+      return ItemStack.TooltipPart.MODIFIERS.getMask();
+   }
+
    @Override
    public boolean isSame(ItemStack stack1, ItemStack stack2) {
       return IMeleeWeapon.super.isSame(stack1, stack2);
