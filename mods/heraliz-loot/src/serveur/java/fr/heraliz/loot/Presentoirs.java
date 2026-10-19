@@ -7,8 +7,10 @@ import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.HangingEntity;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ArmorStandItem;
@@ -24,6 +27,7 @@ import net.minecraft.world.item.HangingEntityItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -31,6 +35,7 @@ import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 /**
  * Présentoirs protégés (Loot 0.9.0, section {@code [presentoirs]} de {@code heraliz_loot-server.toml}) : cadres et cadres
@@ -47,6 +52,13 @@ import net.minecraftforge.fml.ModList;
  * Aucune explosion (C4, grenades, TNT, balles explosives) ne les abîme ni ne casse le bloc qui porte un présentoir
  * accroché : ils sont retirés de la liste de l'explosion ({@link ExplosionEvent.Detonate}). Libres : créatif, spectateur,
  * staff (permission 2) ; dans un claim de CRac, les présentoirs sont libres par défaut ({@code permis_claims_crac}).
+ * <p>
+ * Verrou (Loot 0.9.1) : les écouteurs ne voient pas tout (grenades et molotovs de Tactique, feu, chute du bloc porteur,
+ * piston...). Chaque présentoir protégé est donc rendu invulnérable par Minecraft lui-même (seuls le créatif et
+ * {@code /kill} passent) et un cadre qui porte un objet est « fixé » ({@code Fixed}) : il ne se casse plus, ne tombe plus
+ * quand son bloc disparaît, ne se tourne plus et ne rend plus son objet, à personne ; le staff le casse en créatif et le
+ * repose. Un cadre vide reste libre de recevoir un objet du staff, et se fixe au tick suivant. Posé par ce verrou :
+ * étiquette {@value #ETIQUETTE}, retirée (avec le verrou) si le présentoir n'est plus protégé.
  */
 final class Presentoirs {
     private Presentoirs() {
@@ -64,11 +76,52 @@ final class Presentoirs {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, Presentoirs::projectile);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, Presentoirs::explosion);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, Presentoirs::pose);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, Presentoirs::arrivee);
         ecouterBallesTacz();
     }
 
     static void invalider() {
         regles = null;
+        MinecraftServer serveur = ServerLifecycleHooks.getCurrentServer();
+        if (serveur != null) serveur.execute(() -> {
+            for (ServerLevel sl : serveur.getAllLevels()) for (Entity en : sl.getAllEntities()) verrouiller(en);
+        });
+    }
+
+    // ------------------------------------------------------------------ verrou de Minecraft (invulnérable, cadre fixé)
+    static final String ETIQUETTE = "heraliz_presentoir";
+
+    /** Entité chargée ou posée : verrou posé au tick suivant (jamais pendant le chargement d'un tronçon). */
+    private static void arrivee(EntityJoinLevelEvent e) {
+        if (e.getLevel().isClientSide() || !(e.getEntity() instanceof HangingEntity || e.getEntity() instanceof ArmorStand)) return;
+        Entity en = e.getEntity();
+        if (e.getLevel().getServer() != null) e.getLevel().getServer().execute(() -> verrouiller(en));
+    }
+
+    /** Pose ou retire le verrou selon que l'entité est protégée (hors claim permis) ou non. */
+    static void verrouiller(Entity en) {
+        if (en.isRemoved() || !(en.level() instanceof ServerLevel sl)) return;
+        if (!(en instanceof HangingEntity || en instanceof ArmorStand)) return;
+        boolean garder = protege(en) && !(ConfigLoot.PRES_CLAIMS.get() && ConteneursVanilla.dansClaimCrac(sl, en.blockPosition()));
+        boolean marque = en.getTags().contains(ETIQUETTE);
+        if (garder) {
+            if (!marque && en.isInvulnerable() && !(en instanceof ItemFrame)) return; // invulnérable par le staff : rien à faire
+            en.addTag(ETIQUETTE);
+            en.setInvulnerable(true);
+            if (en instanceof ItemFrame f && !f.getItem().isEmpty()) fixer(f, true);
+        } else if (marque) {
+            en.removeTag(ETIQUETTE);
+            en.setInvulnerable(false);
+            if (en instanceof ItemFrame f) fixer(f, false);
+        }
+    }
+
+    /** {@code Fixed} n'a pas d'accès public : réécrit par les données de l'entité, comme {@code /data merge entity}. */
+    private static void fixer(ItemFrame f, boolean fixe) {
+        CompoundTag t = f.saveWithoutId(new CompoundTag());
+        if (t.getBoolean("Fixed") == fixe) return;
+        t.putBoolean("Fixed", fixe);
+        f.load(t);
     }
 
     private static boolean actif() {
@@ -108,7 +161,9 @@ final class Presentoirs {
     }
 
     private static void interaction(PlayerInteractEvent.EntityInteract e) {
-        if (e.getLevel().isClientSide() || !refuse(e.getTarget(), e.getEntity())) return;
+        if (e.getLevel().isClientSide()) return;
+        if (e.getTarget() instanceof ItemFrame f && e.getLevel().getServer() != null) e.getLevel().getServer().execute(() -> verrouiller(f));
+        if (!refuse(e.getTarget(), e.getEntity())) return;
         e.setCanceled(true);
         e.setCancellationResult(InteractionResult.FAIL);
         if (e.getHand() == InteractionHand.MAIN_HAND) prevenir(e.getEntity());

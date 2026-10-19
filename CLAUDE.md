@@ -1398,7 +1398,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     laisse, et d'office toute entité accrochée ou tout porte-armure d'un autre mod (`auto`). Ni coup (y compris mêlée de
     Tactique et couteaux), ni interaction, ni projectile, ni balle de TaCZ (`EntityHurtByGunEvent.Pre`, par réflexion) ;
     aucune explosion ne les abîme ni ne casse le bloc qui les porte ; pose refusée hors d'une base. Libres dans les bases
-    de CRac (`permis_claims_crac = true`) ;
+    de CRac (`permis_claims_crac = true`). Verrou (19/10, Loot 0.9.1 : grenades et molotovs les cassaient encore) :
+    chaque présentoir protégé est rendu invulnérable par Minecraft (seuls le créatif et `/kill` passent : feu, grenades,
+    explosions, balles, tout est refusé) et un cadre qui porte un objet est « fixé » (`Fixed` : ni cassé, ni tombé quand
+    son bloc disparaît, ni tourné, ni vidé, par personne ; le staff le casse en créatif et le repose ; un cadre vide se
+    fixe au tick suivant celui où le staff y met un objet) ; étiquette `heraliz_presentoir`, verrou retiré s'il n'est plus
+    protégé ;
   - **nuisances refusées hors des bases** (0.9.0, `Nuisances`, `[nuisances]`, « Impossible ici. » ; CRac laisse tout
     faire hors des claims) : seaux (eau, lave, neige poudreuse, poisson), briquet et boule de feu, outils sur un bloc
     (écorcer, gratter ou décirer le cuivre, cire, chemin, labour), poudre d'os, panneaux (écrire, teindre, faire
