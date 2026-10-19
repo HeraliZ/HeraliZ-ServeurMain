@@ -4,6 +4,7 @@ import fr.heraliz.crac.build.client.render.PlanHandRenderer;
 import fr.heraliz.crac.build.net.ReceptionClientBuild;
 import fr.heraliz.crac.build.net.S2CPieceInfo;
 import fr.heraliz.crac.client.render.C4ItemRenderer;
+import fr.heraliz.crac.client.render.TenueExplosifs;
 import fr.heraliz.crac.client.render.ExplosiveChargeItemRenderer;
 import fr.heraliz.crac.item.BuildingPlanItem;
 import fr.heraliz.crac.item.C4Item;
@@ -43,7 +44,12 @@ public final class PartieClient implements Partie {
 
     private static final IClientItemExtensions C4_EXT = new IClientItemExtensions() {
                 private C4ItemRenderer renderer;
-    
+
+                @Override
+                public HumanoidModel.ArmPose getArmPose(LivingEntity entity, InteractionHand hand, ItemStack stack) {
+                    return TenueExplosifs.pose(entity, hand);
+                }
+
                 @Override
                 public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                     if (this.renderer == null) {
@@ -56,7 +62,12 @@ public final class PartieClient implements Partie {
 
     private static final IClientItemExtensions CHARGE_EXT = new IClientItemExtensions() {
                 private ExplosiveChargeItemRenderer renderer;
-    
+
+                @Override
+                public HumanoidModel.ArmPose getArmPose(LivingEntity entity, InteractionHand hand, ItemStack stack) {
+                    return TenueExplosifs.pose(entity, hand);
+                }
+
                 @Override
                 public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                     if (this.renderer == null) {

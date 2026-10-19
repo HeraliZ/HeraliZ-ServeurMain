@@ -1221,6 +1221,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (`StructureService.viseBattant`, `PieceSolids.battants`). **Une seule armoire posée par joueur** (`crac.claim.une_par_joueur`, `AccesBase.armoireDe`) ; il
   peut avoir l'accès à d'autres. **Zone de l'armoire** visible plan de construction en main (`client/ZoneArmoire`) : bande
   translucide au bord du carré protégé, verte pour la sienne, rouge pour les autres. Canal CRac version 21. Rien testé en jeu.
+  **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
+  tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
+  tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des
+  modèles d'objet). Nombres **écrits** par `python mods/crac/outils/tenue_explosifs.py --installer` (refait le rendu de
+  Minecraft par le calcul et pose l'objet au milieu des mains ; `--apercu DOSSIER` : images de contrôle), jamais à la
+  main (`TenueExplosifsDonnees`). Crafts à venir : poudre en bocaux pour les charges, en barils pour la C4. Rien testé en jeu.
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;
