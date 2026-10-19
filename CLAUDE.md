@@ -1318,7 +1318,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `heralisz:spawn`, la caméra fait un demi-tour autour du PNJ `batisseur` (14 s, Espace pour passer, `client/Presentation`,
   paquet `Presentation`, canal des quêtes version 5) pendant 3 messages radio de Varga (ce qu'il vend, objets de la carte,
   /base info), puis la fiche s'ouvre (`TutorielApi.ficheBase`, par réflexion). Une fois par joueur (`PlayerPersisted.
-  heraliz_batisseur_presente`) ; sans Bâtisseur posé : radio seule. Rien testé en jeu.
+  heraliz_batisseur_presente`, effacé par `/tuto rejouer`) ; sans Bâtisseur posé : radio seule. Après le premier essai
+  (19/10, CRac 1.13.1-beta, Quêtes 1.8.1) : coûts du mod par défaut = ceux de `crac-building.toml` (brindilles, 5 + 5 ;
+  le serveur affichait encore bâtons, planches de chêne, pierre et tôles : le fichier du monde, relu à moitié envoyé
+  pendant la mise en ligne, avait été « réparé » par Forge avec les anciennes valeurs par défaut) ; fiche plus grande
+  (620 × 344, textes ×1,3) ; caméra arrêtée avant tout mur ou plafond (grotte) ; 16 s par message de Varga, tour
+  complet en 46 s, puis la fiche. Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des

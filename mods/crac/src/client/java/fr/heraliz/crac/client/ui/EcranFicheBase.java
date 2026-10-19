@@ -19,7 +19,9 @@ import static fr.heraliz.crac.client.kit.Dessin.*;
  * Réparer, Entretien et Raids. Rien n'est calculé ici : les chiffres viennent du serveur ({@link S2CFicheBase}).
  */
 public class EcranFicheBase extends EcranGroupe {
-    private static final float W = 540, H = 300, ROW = 30;
+    private static final float W = 620, H = 344, ROW = 38;
+    /** Taille des textes de la fiche (1 = taille des autres écrans de clan : jugée trop petite ici). */
+    private static final float E = 1.3F;
     private static final String[] ONGLETS = {"poser", "ameliorer", "reparer", "entretien", "raids"};
 
     private final S2CFicheBase fiche;
@@ -123,22 +125,29 @@ public class EcranFicheBase extends EcranGroupe {
         }
     }
 
+    /** Texte agrandi ({@link #E}), centré verticalement sur {@code cy}, coupé à {@code maxW} unités. */
+    private float ecrire(GuiGraphics g, String s, ResourceLocation f, float x, float cy, float maxW, int argb) {
+        String c = Ui.ellipsis(this.font, s, f, Math.round(maxW / E));
+        texte(g, this.font, lit(c, f), x, cy - 4.9F * E, E, argb);
+        return largeur(this.font, c, f) * E;
+    }
+
     private void aide(GuiGraphics g, String s, float y) {
-        texte(g, this.font, lit(Ui.ellipsis(this.font, s, MOYEN, Math.round(this.gw())), MOYEN), this.gx(), y, a(GRIS, 255));
+        this.ecrire(g, s, MOYEN, this.gx(), y + 5, this.gw(), a(GRIS, 255));
     }
 
     private void pied(GuiGraphics g, String l1, String l2) {
         float x = this.gx(), w = this.gw();
-        rect(g, x, this.y0 + H - 30, x + w, this.y0 + H - 30 + this.px, a(BLANC, 20));
-        texte(g, this.font, lit(Ui.ellipsis(this.font, l1, MINI, Math.round(w)), MINI), x, this.y0 + H - 24 - 4.21F, a(ATTENUE, 255));
+        rect(g, x, this.y0 + H - 32, x + w, this.y0 + H - 32 + this.px, a(BLANC, 20));
+        this.ecrire(g, l1, MINI, x, this.y0 + H - 22, w, a(ATTENUE, 255));
         if (!l2.isEmpty()) {
-            texte(g, this.font, lit(Ui.ellipsis(this.font, l2, MINI, Math.round(w)), MINI), x, this.y0 + H - 14 - 4.21F, a(ATTENUE, 255));
+            this.ecrire(g, l2, MINI, x, this.y0 + H - 10, w, a(ATTENUE, 255));
         }
     }
 
     private void entetes(GuiGraphics g, float y, float[] cols, String... noms) {
         for (int i = 0; i < noms.length; i++) {
-            caps(g, this.font, noms[i], MINI_GRAS, cols[i], y - 4.21F, 0.6F, a(ATTENUE, 255));
+            caps(g, this.font, noms[i], MINI_GRAS, cols[i], y - 4.21F * 1.15F, 1.15F, 0.6F, a(ATTENUE, 255));
         }
     }
 
@@ -148,7 +157,7 @@ public class EcranFicheBase extends EcranGroupe {
         rect(g, x, y, x + w, y + h, a(BLANC, 12));
         int c = couleur(palier);
         rect(g, x, y + 4, x + 2, y + h - 4, a(c, 255));
-        texte(g, this.font, lit(t("tier.crac." + palier), GRAS_9), this.gx() + 4, y + h / 2 - 5.44F, a(c, 255));
+        this.ecrire(g, t("tier.crac." + palier), GRAS_9, this.gx() + 4, y + h / 2 - 0.6F, this.gw() * 0.16F, a(c, 255));
     }
 
     /** Icône et « 5 planches » ; rend la largeur prise. */
@@ -159,34 +168,32 @@ public class EcranFicheBase extends EcranGroupe {
         }
         ItemStack st = new ItemStack(i);
         g.pose().pushPose();
-        g.pose().translate(x, cy - 7, 0);
-        g.pose().scale(14 / 16F, 14 / 16F, 1);
+        g.pose().translate(x, cy - 9, 0);
+        g.pose().scale(18 / 16F, 18 / 16F, 1);
         g.renderItem(st, 0, 0);
         g.pose().popPose();
-        String s = Ui.ellipsis(this.font, nombre(c.nombre()) + " " + st.getHoverName().getString(), MOYEN, maxW - 18);
-        texte(g, this.font, lit(s, MOYEN), x + 18, cy - 4.9F, a(TEXTE, 255));
-        return 18 + largeur(this.font, s, MOYEN);
+        return 22 + this.ecrire(g, nombre(c.nombre()) + " " + st.getHoverName().getString(), MOYEN, x + 22, cy, maxW - 22, a(TEXTE, 255));
     }
 
     private void tiret(GuiGraphics g, float x, float cy) {
-        texte(g, this.font, lit(t("crac.fiche.rien"), MOYEN), x, cy - 4.9F, a(PALE, 255));
+        this.ecrire(g, t("crac.fiche.rien"), MOYEN, x, cy, 40, a(PALE, 255));
     }
 
     private void poser(GuiGraphics g) {
         this.aide(g, t("crac.fiche.poser.aide"), this.y0 + 66);
         List<S2CFicheBase.Pose> l = this.fiche.poses();
         int parColonne = (l.size() + 1) / 2;
-        float colW = (this.gw() - 12) / 2, h = 19;
+        float colW = (this.gw() - 12) / 2, h = 26;
         for (int i = 0; i < l.size(); i++) {
             S2CFicheBase.Pose p = l.get(i);
             float x = this.gx() + (i / parColonne) * (colW + 12);
-            float y = this.y0 + 82 + (i % parColonne) * h;
+            float y = this.y0 + 88 + (i % parColonne) * h;
             rect(g, x - 2, y, x + colW, y + h - 2, a(BLANC, 10));
             float cy = y + (h - 2) / 2;
-            texte(g, this.font, lit(t("piece.crac." + p.piece()), MOYEN_GRAS), x + 4, cy - 4.9F, a(BLANC, 255));
+            this.ecrire(g, t("piece.crac." + p.piece()), MOYEN_GRAS, x + 4, cy, colW * 0.48F, a(BLANC, 255));
             float cx = x + colW * 0.5F;
             if (p.couts().isEmpty()) {
-                texte(g, this.font, lit(t("crac.fiche.gratuit"), MOYEN), cx, cy - 4.9F, a(VERT_PALE, 255));
+                this.ecrire(g, t("crac.fiche.gratuit"), MOYEN, cx, cy, 160, a(VERT_PALE, 255));
             }
             for (S2CFicheBase.Cout c : p.couts()) {
                 cx += this.cout(g, c, cx, cy, Math.round(x + colW - cx)) + 8;
@@ -202,10 +209,10 @@ public class EcranFicheBase extends EcranGroupe {
         }
         this.aide(g, t(meme ? "crac.fiche.ameliorer.aide" : "crac.fiche.ameliorer.aide_mur"), this.y0 + 66);
         float w = this.gw();
-        float[] cols = {this.gx(), this.gx() + w * 0.17F, this.gx() + w * 0.45F, this.gx() + w * 0.72F, this.gx() + w * 0.85F};
-        this.entetes(g, this.y0 + 86, cols, t("crac.fiche.col.palier"), t("crac.fiche.col.materiau"), t("crac.fiche.col.carte"),
+        float[] cols = {this.gx(), this.gx() + w * 0.15F, this.gx() + w * 0.43F, this.gx() + w * 0.73F, this.gx() + w * 0.86F};
+        this.entetes(g, this.y0 + 92, cols, t("crac.fiche.col.palier"), t("crac.fiche.col.materiau"), t("crac.fiche.col.carte"),
             t("crac.fiche.col.solidite"), t("crac.fiche.col.cout"));
-        float y = this.y0 + 94;
+        float y = this.y0 + 102;
         for (S2CFicheBase.Palier p : this.fiche.paliers()) {
             if (p.ameliorer().isEmpty()) {
                 continue;
@@ -218,12 +225,12 @@ public class EcranFicheBase extends EcranGroupe {
             if (p.ameliorer().size() < 2) {
                 this.tiret(g, cols[2], cy);
             }
-            texte(g, this.font, lit(t("crac.fiche.pv", nombre(p.pvMur())), MOYEN), cols[3], cy - 4.9F, a(TEXTE, 255));
+            this.ecrire(g, t("crac.fiche.pv", nombre(p.pvMur())), MOYEN, cols[3], cy, 160, a(TEXTE, 255));
             int h = this.herals(p.ameliorer());
             if (h < 0) {
                 this.tiret(g, cols[4], cy);
             } else {
-                texte(g, this.font, lit(t("crac.fiche.herals", nombre(h)), MOYEN_GRAS), cols[4], cy - 4.9F, a(OR, 255));
+                this.ecrire(g, t("crac.fiche.herals", nombre(h)), MOYEN_GRAS, cols[4], cy, 160, a(OR, 255));
             }
             y += ROW;
         }
@@ -234,8 +241,8 @@ public class EcranFicheBase extends EcranGroupe {
         this.aide(g, t("crac.fiche.reparer.aide", String.valueOf(this.fiche.reparePourcent()), dixiemes(this.fiche.repareSecondes())), this.y0 + 66);
         float w = this.gw();
         float[] cols = {this.gx(), this.gx() + w * 0.2F, this.gx() + w * 0.6F};
-        this.entetes(g, this.y0 + 86, cols, t("crac.fiche.col.palier"), t("crac.fiche.col.une_reparation"), t("crac.fiche.col.solidite"));
-        float y = this.y0 + 94;
+        this.entetes(g, this.y0 + 92, cols, t("crac.fiche.col.palier"), t("crac.fiche.col.une_reparation"), t("crac.fiche.col.solidite"));
+        float y = this.y0 + 102;
         for (S2CFicheBase.Palier p : this.fiche.paliers()) {
             this.lignePalier(g, y, ROW - 6, p.id());
             float cy = y + (ROW - 6) / 2, cx = cols[1];
@@ -245,7 +252,7 @@ public class EcranFicheBase extends EcranGroupe {
             for (S2CFicheBase.Cout c : p.reparer()) {
                 cx += this.cout(g, c, cx, cy, Math.round(cols[2] - cx - 4)) + 8;
             }
-            texte(g, this.font, lit(t("crac.fiche.pv", nombre(p.pvMur())), MOYEN), cols[2], cy - 4.9F, a(TEXTE, 255));
+            this.ecrire(g, t("crac.fiche.pv", nombre(p.pvMur())), MOYEN, cols[2], cy, 160, a(TEXTE, 255));
             y += ROW - 2;
         }
         this.pied(g, t("crac.fiche.reparer.pied"), "");
@@ -255,8 +262,8 @@ public class EcranFicheBase extends EcranGroupe {
         this.aide(g, t("crac.fiche.entretien.aide", dixiemes(this.fiche.entretienHeures())), this.y0 + 66);
         float w = this.gw();
         float[] cols = {this.gx(), this.gx() + w * 0.2F};
-        this.entetes(g, this.y0 + 86, cols, t("crac.fiche.col.palier"), t("crac.fiche.col.par_piece"));
-        float y = this.y0 + 94;
+        this.entetes(g, this.y0 + 92, cols, t("crac.fiche.col.palier"), t("crac.fiche.col.par_piece"));
+        float y = this.y0 + 102;
         for (S2CFicheBase.Palier p : this.fiche.paliers()) {
             this.lignePalier(g, y, ROW - 6, p.id());
             float cy = y + (ROW - 6) / 2;
@@ -274,15 +281,15 @@ public class EcranFicheBase extends EcranGroupe {
         this.aide(g, t("crac.fiche.raids.aide", nombre(this.fiche.degatsC4()), nombre(this.fiche.degatsCharge())), this.y0 + 66);
         float w = this.gw();
         float[] cols = {this.gx(), this.gx() + w * 0.25F, this.gx() + w * 0.5F, this.gx() + w * 0.75F};
-        this.entetes(g, this.y0 + 86, cols, t("crac.fiche.col.palier"), t("crac.fiche.col.solidite"), t("crac.fiche.col.c4"),
+        this.entetes(g, this.y0 + 92, cols, t("crac.fiche.col.palier"), t("crac.fiche.col.solidite"), t("crac.fiche.col.c4"),
             t("crac.fiche.col.charges"));
-        float y = this.y0 + 94;
+        float y = this.y0 + 102;
         for (S2CFicheBase.Palier p : this.fiche.paliers()) {
             this.lignePalier(g, y, ROW - 6, p.id());
             float cy = y + (ROW - 6) / 2;
-            texte(g, this.font, lit(t("crac.fiche.pv", nombre(p.pvMur())), MOYEN), cols[1], cy - 4.9F, a(TEXTE, 255));
-            texte(g, this.font, lit(nombre(p.c4()), MOYEN_GRAS), cols[2], cy - 4.9F, a(ROUGE_PALE, 255));
-            texte(g, this.font, lit(nombre(p.charges()), MOYEN_GRAS), cols[3], cy - 4.9F, a(ROUGE_PALE, 255));
+            this.ecrire(g, t("crac.fiche.pv", nombre(p.pvMur())), MOYEN, cols[1], cy, 160, a(TEXTE, 255));
+            this.ecrire(g, nombre(p.c4()), MOYEN_GRAS, cols[2], cy, 160, a(ROUGE_PALE, 255));
+            this.ecrire(g, nombre(p.charges()), MOYEN_GRAS, cols[3], cy, 160, a(ROUGE_PALE, 255));
             y += ROW - 2;
         }
         this.pied(g, t("crac.fiche.raids.pied"), "");

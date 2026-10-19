@@ -5,6 +5,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -14,18 +17,24 @@ import net.minecraftforge.event.TickEvent;
 /**
  * Présentation d'un PNJ (Quêtes 1.8.0, demande du propriétaire du 19/10) : la caméra fait lentement le tour du PNJ
  * (le Bâtisseur, à la première arrivée au spawn après le tutoriel des bases), regard toujours sur lui, pendant que
- * le Commandant Varga parle à la radio ; ni bras ni interface, sauf la radio. Espace maintenu 1 s pour passer.
+ * le Commandant Varga parle à la radio ; ni bras ni interface, sauf la radio. Espace maintenu 1 s pour passer. La
+ * caméra ne rentre jamais dans un bloc : elle s'arrête avant le premier mur ou plafond (le spawn est une grotte).
  * Même principe que le tour de la base à la fin du tutoriel (CRac).
  */
 final class Presentation {
     /** Part du tour faite pendant la présentation (un demi-tour : lent et lisible). */
-    private static final double TOUR = 0.5;
-    private static final double HAUT = 1.6;
+    private static final double TOUR = 1.0;
+    /** Hauteur de la caméra au-dessus des yeux du PNJ (bas : le spawn est une grotte). */
+    private static final double HAUT = 0.5;
+    /** Écart gardé avec un mur ou le plafond (blocs). */
+    private static final double MARGE = 0.45;
 
     private static ArmorStand camera;
     private static Vec3 centre;
     private static float rayon;
     private static int ticks, duree, passer;
+    /** Distance de la caméra au PNJ à l'image d'avant (rapprochée d'un coup devant un mur, éloignée en douceur). */
+    private static double dist;
 
     private Presentation() {
     }
@@ -41,6 +50,7 @@ final class Presentation {
         camera = new ArmorStand(EntityType.ARMOR_STAND, mc.level);
         camera.setInvisible(true);
         camera.setNoGravity(true);
+        dist = -1;
         placer(0, true);
         mc.setCameraEntity(camera);
     }
@@ -58,7 +68,14 @@ final class Presentation {
     /** La caméra sur l'arc autour du PNJ, au tick {@code t}, en partant de devant lui. */
     private static void placer(int t, boolean net) {
         double a = 2 * Math.PI * TOUR * t / duree;
-        double x = centre.x + rayon * Math.cos(a), z = centre.z + rayon * Math.sin(a), y = centre.y + HAUT;
+        Vec3 voulu = new Vec3(centre.x + rayon * Math.cos(a), centre.y + HAUT, centre.z + rayon * Math.sin(a));
+        // jamais dans un bloc : la caméra s'arrête avant le premier mur ou plafond entre le PNJ et sa place
+        double libre = voulu.distanceTo(centre);
+        BlockHitResult hit = camera.level().clip(new ClipContext(centre, voulu, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, camera));
+        if (hit.getType() == HitResult.Type.BLOCK) libre = Math.max(0.6, hit.getLocation().distanceTo(centre) - MARGE);
+        dist = dist < 0 || libre < dist ? libre : Math.min(libre, dist + 0.08);
+        Vec3 pos = centre.add(voulu.subtract(centre).normalize().scale(dist));
+        double x = pos.x, y = pos.y, z = pos.z;
         double dx = centre.x - x, dy = centre.y - y, dz = centre.z - z;
         float lacet = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90F;
         float tangage = (float) (-Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * Mth.RAD_TO_DEG);
