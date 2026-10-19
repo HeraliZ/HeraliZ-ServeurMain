@@ -64,7 +64,7 @@ RETIRES = ("heralisz_armor:",)
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
 COMPOSANTS_EXCLUS = {"plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
-COMPOSANTS_PLUS = {"clou": 2.0, "sac_ciment": 2.0, "equerres_acier": 2.0}  # chance multipliée dans leur rareté
+COMPOSANTS_PLUS = {"clou": 3.0, "sac_ciment": 3.0, "equerres_acier": 3.0}  # chance multipliée dans leur rareté
 IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 
 
