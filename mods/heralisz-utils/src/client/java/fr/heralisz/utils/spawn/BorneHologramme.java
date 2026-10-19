@@ -3,11 +3,15 @@ package fr.heralisz.utils.spawn;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import fr.heralisz.utils.HeraliszUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -19,8 +23,9 @@ import org.joml.Vector3f;
  * Hologramme de la borne de départ (maquette « table tactique holographique » validée) : au-dessus du projecteur de la
  * table, un globe de la carte en fil de fer bleu qui tourne lentement (anneaux et méridiens) et une épingle rouge qui
  * saute toutes les 2,5 s vers un nouveau point de la carte de la table (le « départ au hasard »), avec son rayon et sa
- * cible au sol. Lumière pleine, mélange additif (RenderType.lightning) : brille la nuit, rien d'opaque. Joueurs seulement,
- * rien ne vient du serveur. Coordonnées en pixels de bloc (16 par bloc).
+ * cible au sol. Lumière pleine, mélange additif (RenderType.lightning) : brille la nuit, rien d'opaque. Au-dessus, le
+ * panneau « TÉLÉPORTATION ALÉATOIRE » ({@link #panneau}). Joueurs seulement, rien ne vient du serveur. Coordonnées en
+ * pixels de bloc (16 par bloc).
  */
 public class BorneHologramme implements BlockEntityRenderer<BorneDepartEntite> {
     private static final float CX = 8f, CY = 23.5f, CZ = 8f;       // centre du globe
@@ -28,6 +33,11 @@ public class BorneHologramme implements BlockEntityRenderer<BorneDepartEntite> {
     private static final float TABLE = 14.35f;                       // dessus de la carte de la table
     private static final int SEGMENTS = 28;
     private static final float[] BLEU = {0.30f, 0.80f, 1.00f}, ROUGE = {1.00f, 0.25f, 0.18f};
+    /** Panneau « Téléportation aléatoire » : hauteur de son centre au-dessus du pied de la borne (blocs, au-dessus de
+     *  l'épingle qui monte jusqu'à ~2,3), taille d'un pixel de police (blocs), portée (blocs), taille de la 2e ligne. */
+    private static final double PANNEAU_Y = 2.75, PANNEAU_PORTEE = 24;
+    private static final float PANNEAU_ECHELLE = 0.0115f, AIDE_ECHELLE = 0.62f;
+    private static final int PLEINE_LUMIERE = 0xF000F0;
 
     public BorneHologramme(BlockEntityRendererProvider.Context ctx) {}
 
@@ -71,6 +81,60 @@ public class BorneHologramme implements BlockEntityRenderer<BorneDepartEntite> {
         cible(vc, m, px, pz, t);
         losange(vc, m, px, tete, pz, 1.1f, t * 1.5f);
         pose.popPose();
+        panneau(be, pose, buffers);
+    }
+
+    /**
+     * Panneau holographique au-dessus de l'épingle : « TÉLÉPORTATION ALÉATOIRE » et, plus petit, « Clic droit · départ au
+     * hasard sur la carte » (clés de langue heralisz_utils.borne.*), toujours tourné vers le joueur, fond sombre
+     * transparent bordé d'un fin trait bleu ; net jusqu'à 10 blocs, plus pâle ensuite, rien au-delà de 24.
+     */
+    private static void panneau(BorneDepartEntite be, PoseStack pose, MultiBufferSource buffers) {
+        Minecraft mc = Minecraft.getInstance();
+        Vec3 oeil = mc.gameRenderer.getMainCamera().getPosition();
+        double d = oeil.distanceTo(Vec3.atCenterOf(be.getBlockPos()).add(0, PANNEAU_Y - 0.5, 0));
+        if (d > PANNEAU_PORTEE) {
+            return;
+        }
+        float alpha = (float) (d <= 10 ? 1.0 : Mth.lerp((d - 10) / (PANNEAU_PORTEE - 10), 1.0, 0.35));
+        Font police = mc.font;
+        Component titre = Component.translatable("heralisz_utils.borne.titre");
+        Component aide = Component.translatable("heralisz_utils.borne.aide");
+        float lt = police.width(titre), la = police.width(aide) * AIDE_ECHELLE;
+        float demi = Math.max(lt, la) / 2f + 6f;                      // demi-largeur du fond, en pixels de police
+        float haut = -6f, bas = 9f + 2f + 9f * AIDE_ECHELLE + 4f;
+
+        pose.pushPose();
+        pose.translate(0.5, PANNEAU_Y, 0.5);
+        pose.mulPose(mc.getEntityRenderDispatcher().cameraOrientation());
+        pose.scale(-PANNEAU_ECHELLE, -PANNEAU_ECHELLE, PANNEAU_ECHELLE);   // comme les noms : +x à droite, +y vers le bas
+        Matrix4f m = pose.last().pose();
+        VertexConsumer fond = buffers.getBuffer(RenderType.textBackground());
+        rect(fond, m, -demi, haut, demi, bas, 0x0A141C, Math.round(150 * alpha));
+        int bord = Math.round(210 * alpha);
+        rect(fond, m, -demi, haut, demi, haut + 0.8f, 0x4CCCFF, bord);         // fin trait bleu tout autour
+        rect(fond, m, -demi, bas - 0.8f, demi, bas, 0x4CCCFF, bord);
+        rect(fond, m, -demi, haut, -demi + 0.8f, bas, 0x4CCCFF, bord);
+        rect(fond, m, demi - 0.8f, haut, demi, bas, 0x4CCCFF, bord);
+        int a = Math.max(8, Math.round(255 * alpha)) << 24;
+        police.drawInBatch(titre, -lt / 2f, -2f, a | 0xEAF8FF, false, m, buffers, Font.DisplayMode.POLYGON_OFFSET, 0, PLEINE_LUMIERE);
+        pose.translate(0, 9f + 2f, 0);
+        pose.scale(AIDE_ECHELLE, AIDE_ECHELLE, AIDE_ECHELLE);
+        police.drawInBatch(aide, -police.width(aide) / 2f, 0, a | 0x8FD3FF, false, pose.last().pose(), buffers,
+                Font.DisplayMode.POLYGON_OFFSET, 0, PLEINE_LUMIERE);
+        pose.popPose();
+    }
+
+    /** Rectangle plein (fond des textes), dessiné des deux côtés. */
+    private static void rect(VertexConsumer vc, Matrix4f m, float x0, float y0, float x1, float y1, int rgb, int alpha) {
+        int r = rgb >> 16 & 255, g = rgb >> 8 & 255, b = rgb & 255;
+        float[][] p = {{x0, y0}, {x0, y1}, {x1, y1}, {x1, y0}};
+        for (int i = 0; i < 4; i++) {
+            vc.vertex(m, p[i][0], p[i][1], 0).color(r, g, b, alpha).uv2(PLEINE_LUMIERE).endVertex();
+        }
+        for (int i = 3; i >= 0; i--) {
+            vc.vertex(m, p[i][0], p[i][1], 0).color(r, g, b, alpha).uv2(PLEINE_LUMIERE).endVertex();
+        }
     }
 
     /** Point d'arrivée « tiré » sur la carte de la table (à 1,5 px des bords). */

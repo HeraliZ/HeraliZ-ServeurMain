@@ -580,5 +580,7 @@
   "heralisz_utils.inspecter.ferme": "%s vient de se connecter ou de se déconnecter : vue fermée, relance /inspecter.",
   "heralisz_utils.inspecter.hors_ligne": "Hors ligne",
   "heralisz_utils.inspecter.en_ligne": "En ligne",
-  "heralisz_utils.inspecter.page": "Page %s"
+  "heralisz_utils.inspecter.page": "Page %s",
+  "heralisz_utils.borne.titre": "TÉLÉPORTATION ALÉATOIRE",
+  "heralisz_utils.borne.aide": "Clic droit · départ au hasard sur la carte"
 }
