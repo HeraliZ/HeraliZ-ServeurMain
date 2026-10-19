@@ -47,6 +47,8 @@ public final class ServeurGrades implements Partie {
         ReseauGrades.RECEPTION_SERVEUR.brancher(KitsServeur::demande);
         // zones VIP délimitées par le staff (/zonevip), réservées aux grades de la boutique
         ZonesVip.brancher();
+        // warps : menu /warp, seulement depuis le spawn
+        WarpsServeur.brancher();
     }
 
     private static void demarrage(ServerAboutToStartEvent e) {
