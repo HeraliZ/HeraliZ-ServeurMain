@@ -75,7 +75,7 @@ RARETE_ARME = {
     # mitraillettes (dès Peu commun)
     "tacz:uzi": "peu_commun", "arkaniaz:sr_2m": "peu_commun", "arkaniaz:pp19": "peu_commun",
     "heraliz_fuse:mp5k": "peu_commun", "maxstuff:hk_mp5k": "peu_commun", "heraliz_fuse:mp5_classic": "peu_commun",
-    "tacz:ump45": "rare", "arkaniaz:ump9": "rare", "maxstuff:ump9": "rare", "arkaniaz:evo3": "rare",
+    "tacz:ump45": "rare", "arkaniaz:ump9": "rare", "arkaniaz:evo3": "rare",
     "heraliz_fuse:mp7r": "rare", "heraliz_fuse:ro635v3": "rare", "maxstuff:hk_mp5sd": "rare",
     "tacz:p90": "epique", "maxstuff:ar57": "epique", "tacz:vector45": "epique", "maxstuff:vector9": "epique",
     "arkaniaz_custom:vector_firmax": "legendaire", "arkaniaz_custom:vectorhy": "legendaire",

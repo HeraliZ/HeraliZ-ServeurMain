@@ -192,7 +192,6 @@
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 20, "nbt": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:30,HasBulletInBarrel:1b}", "_cat": "pm"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 20, "nbt": "{GunId:\"heraliz_fuse:ro635v3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:32,HasBulletInBarrel:1b}", "_cat": "pm"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 20, "nbt": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "pm"},
-  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 20, "nbt": "{GunId:\"maxstuff:ump9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:25,HasBulletInBarrel:1b}", "_cat": "pm"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 10, "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "pm"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 10, "nbt": "{GunId:\"heraliz_fuse:mp7r\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:30,HasBulletInBarrel:1b}", "_cat": "pm"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 10, "nbt": "{GunId:\"maxstuff:ar57\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:50,HasBulletInBarrel:1b}", "_cat": "pm"},

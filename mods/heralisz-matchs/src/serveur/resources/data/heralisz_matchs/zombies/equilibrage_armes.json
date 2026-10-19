@@ -1480,18 +1480,6 @@
    "dps_brut": 180.0,
    "dps": 85.0
   },
-  "maxstuff:ump9": {
-   "mult": 1.117,
-   "palier": "rare",
-   "origine": "boite",
-   "famille": "smg",
-   "plombs": 1,
-   "rpm": 750.0,
-   "degats_tir_brut": 7.0,
-   "degats_tir": 7.8,
-   "dps_brut": 87.5,
-   "dps": 97.7
-  },
   "maxstuff:vector9": {
    "mult": 0.889,
    "palier": "rare",
