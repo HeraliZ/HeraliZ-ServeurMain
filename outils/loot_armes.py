@@ -34,7 +34,7 @@ PARTS = {
     4: {"peu_commun": 0.5, "rare": 0.5},
     5: {"rare": 0.85, "epique": 0.13, "legendaire": 0.02},   # Épique et Légendaire très rares
     6: {"rare": 0.65, "epique": 0.28, "legendaire": 0.07},   # rares, mais moins qu'en T5
-    7: {"epique": 0.73, "legendaire": 0.27},                 # pas de Rare
+    7: {"rare": 0.55, "epique": 0.33, "legendaire": 0.12},
 }
 ARMURES_POUR_100 = {t: 20 for t in range(1, 8)}
 ARMURE = "heraliz_armory:"
