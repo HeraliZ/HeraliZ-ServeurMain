@@ -1136,7 +1136,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     Gunmetal retiré (103 skins). Toutes les armes de mêlée de LR Unique (`heralisz_tactical:melee` dans la section
     `objets` de `raretes.json`, les couteaux TaCZ l'étaient déjà). Infobulles : plus de lignes de coups (gauche / droite,
     dégâts, recharge) pour la mêlée de LR (`ClientMeleeTooltip`) ; plus de munitions, niveau, type ni dégâts pour les
-    couteaux TaCZ (`ClientGunTooltipMixin`) ;
+    couteaux TaCZ (`ClientGunTooltipMixin`). Tactique 2.26.0 (19/10, choix du propriétaire) : **plus aucune arme de
+    mêlée ni aucun couteau sans skin** dans le jeu : fiches de base des armes de LR sorties du jeu et gardées comme
+    modèles des fiches des skins (`outils/melee_base/`, lues par `skins_couteaux.py`), leurs recettes et le Marteau du
+    châtiment retirés ; couteaux CT et T de base retirés du gunpack `arkaniaz_pack_4_converted` (index seulement, listés
+    dans `serveur/tacz_retires.txt` ; affichages et modèles gardés pour leurs skins) ; plus d'armes de mêlée dans le
+    loot T1 à T6 (Loot 0.9.2) ; couteau des kits ClashWar et des Zombies : Dague TAC Ember Shard (Matchs 0.11.4) ;
+    armes d'exécution par défaut de Réanimation : Éclat marin Tide Stripe et batte Walnut (Réanimation 1.16.2) ;
   - skins de mêlée (18/10, Tactique 2.19.0 à 2.21.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
     et `heralisz_melee:baseball_bat__doppler_sapphire`, fiches copiées des armes de base (mêmes dégâts), dessinées
     EXACTEMENT comme les couteaux de heralisz_skins (même shader `camo_65` Lore / `camo_56` Doppler Saphir, même carte de

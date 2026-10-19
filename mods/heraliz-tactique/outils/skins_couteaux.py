@@ -444,6 +444,8 @@ def verifier_catalogue():
 ROOT = MOD.parent.parent
 GUNPACK = ROOT / "serveur" / "tacz" / "heralisz_skins"
 MELEE_DATA = MOD / "src" / "serveur" / "resources" / "data" / "heralisz_melee" / "index" / "melee"
+# fiches des armes de LR sans skin : modèles des fiches des skins, plus dans le jeu depuis le 19/10 (seuls les skins restent)
+MELEE_BASE = OUTILS / "melee_base"
 MELEE_ASSETS = MOD / "src" / "client" / "resources" / "assets" / "heralisz_melee"
 JAVA_FINITIONS = MOD / "src" / "commun" / "java" / "fr" / "heralisz" / "camo" / "knife" / "KnifeFinish.java"
 ARKANIAZ = ROOT / "serveur" / "tacz" / "arkaniaz_pack_4_converted" / "assets" / "arkaniaz" / "display" / "guns"
@@ -638,7 +640,7 @@ def ecrire_objets():
         elif couteau in MELEE:
             arme = [sans_codes(langues_melee[l]["item.heralisz_melee.%s" % couteau]) for l in LANGUES]
             noms, descs = textes(couteau, nom, pal, arme)
-            fiche = lire_json(MELEE_DATA / (couteau + ".json"))
+            fiche = lire_json(MELEE_BASE / (couteau + ".json"))
             fiche["name"] = "item.heralisz_melee.%s" % cle
             fiche = OrderedDict([("name", fiche["name"]), ("tooltip", "item.heralisz_melee.%s.desc" % cle)]
                                 + [(a, b) for a, b in fiche.items() if a not in ("name", "tooltip")])

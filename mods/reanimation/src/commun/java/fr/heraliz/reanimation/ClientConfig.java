@@ -32,17 +32,17 @@ public final class ClientConfig {
       DEFAULT_WEAPONS = b.comment(
             new String[]{
                "Arme affichée pendant une exécution quand le bourreau ne tient pas la bonne : exécution=arme.",
-               "Arme = un id d'arme TaCZ (ex. heralisz_skins:karambit__tiger_tooth), \"melee:\" + un id HeralisZ (ex. melee:heralisz_melee:sea_gleam) ou un id d'item."
+               "Arme = un id d'arme TaCZ (ex. heralisz_skins:karambit__tiger_tooth), \"melee:\" + un id HeralisZ (ex. melee:heralisz_melee:sea_gleam__tide_stripe) ou un id d'item."
             }
          )
          .defineListAllowEmpty(
             "defaultWeapons",
             List.of(
                "karambit=heralisz_skins:karambit__doppler_ruby",
-               "sea_gleam=melee:heralisz_melee:sea_gleam",
+               "sea_gleam=melee:heralisz_melee:sea_gleam__tide_stripe",
                "butterfly=heralisz_skins:butterfly__fade",
                "m9=heralisz_skins:m9__lore",
-               "home_run=melee:heralisz_melee:baseball_bat"
+               "home_run=melee:heralisz_melee:baseball_bat__walnut"
             ),
             o -> o instanceof String
          );

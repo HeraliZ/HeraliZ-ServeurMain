@@ -122,7 +122,6 @@
   {"item": "geckolib:item_bat", "nombre": [1, 1], "poids": 108, "_cat": "melee_campagne"},
   {"item": "geckolib:item_fire_axe", "nombre": [1, 1], "poids": 108, "_cat": "melee_campagne"},
   {"item": "geckolib:item_lead_pipe", "nombre": [1, 1], "poids": 108, "_cat": "melee_campagne"},
-  {"item": "heralisz_tactical:melee", "nombre": [1, 1], "poids": 54, "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat\"}", "_cat": "melee_campagne"},
   {"item": "heralisz_armor:shorts_black", "nombre": [1, 1], "poids": 13, "_cat": "vetements_civils"},
   {"item": "heralisz_armor:shorts_blue", "nombre": [1, 1], "poids": 13, "_cat": "vetements_civils"},
   {"item": "heralisz_armor:shorts_brown", "nombre": [1, 1], "poids": 13, "_cat": "vetements_civils"},

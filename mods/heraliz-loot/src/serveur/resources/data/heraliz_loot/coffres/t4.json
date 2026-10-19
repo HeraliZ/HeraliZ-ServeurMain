@@ -288,7 +288,6 @@
   {"item": "heralisz_utils:plan_uzi", "nombre": [1, 1], "poids": 6, "_cat": "plans_t4"},
   {"item": "heralisz_utils:plan_xm177", "nombre": [1, 1], "poids": 6, "_cat": "plans_t4"},
   {"item": "heralisz_utils:plan_z15_a", "nombre": [1, 1], "poids": 6, "_cat": "plans_t4"},
-  {"item": "heralisz_tactical:melee", "nombre": [1, 1], "poids": 90, "nbt": "{MeleeWeaponId:\"heralisz_melee:tac_dagger\"}", "_cat": "melee_militaire"},
   {"item": "geckolib:item_machete", "nombre": [1, 1], "poids": 60, "_cat": "melee_militaire"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 40, "nbt": "{GunId:\"maxstuff:m870t\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:1b}", "_cat": "fusils_pompe_mil"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 40, "nbt": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:1b}", "_cat": "fusils_pompe_mil"},
