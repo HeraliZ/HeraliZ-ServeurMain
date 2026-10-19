@@ -1215,7 +1215,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   droite, 2e porte à gauche qui s'ouvre vers l'intérieur du sas. Sas (tous) : plus aucune porte refusée ; quand deux
   portes d'un même triangle sont ouvertes, chacune bloque son passage comme si elle était fermée tout en restant ouverte
   à l'écran (`Piece.STATE_SAS`, `StructureService.majSas`) : on ne traverse pas, et on n'est jamais enfermé (refermer une
-  porte libère l'autre). **Une seule armoire posée par joueur** (`crac.claim.une_par_joueur`, `AccesBase.armoireDe`) ; il
+  porte libère l'autre ; CRac 1.11.1 : seul le passage est bloqué, la porte reste visible et se vise ouverte,
+  `Piece.etatVisible`, `StructureBlockEntity.shapeVisee`, ombres et faces cachées calculées porte ouverte). Une porte ne
+  s'ouvre ou ne se ferme qu'en visant son battant (fermé ou ouvert, à 2 px près), plus son encadrement
+  (`StructureService.viseBattant`, `PieceSolids.battants`). **Une seule armoire posée par joueur** (`crac.claim.une_par_joueur`, `AccesBase.armoireDe`) ; il
   peut avoir l'accès à d'autres. **Zone de l'armoire** visible plan de construction en main (`client/ZoneArmoire`) : bande
   translucide au bord du carré protégé, verte pour la sienne, rouge pour les autres. Canal CRac version 21. Rien testé en jeu.
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases

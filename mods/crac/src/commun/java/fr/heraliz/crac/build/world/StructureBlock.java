@@ -144,7 +144,8 @@ public class StructureBlock extends BaseEntityBlock {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         VoxelShape objets = fr.heraliz.crac.block.Adosse.morceaux(level, pos);
-        return objets.isEmpty() ? shapeAt(level, pos) : Shapes.or(shapeAt(level, pos), objets);
+        VoxelShape piece = level.getBlockEntity(pos) instanceof StructureBlockEntity be ? be.shapeVisee() : Shapes.empty();
+        return objets.isEmpty() ? piece : Shapes.or(piece, objets);
     }
 
     /** Visée sur un objet adossé : la case du mur n'est jamais retirée (le serveur casse l'objet, AdosseCasse). */
