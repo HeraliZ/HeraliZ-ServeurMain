@@ -107,23 +107,25 @@ def desmoulins():
 # batte : (bas, haut, apothème) des tronçons, en unités du modèle, d'après le modèle de LR ; manche = pommeau + poignée
 POMMEAU = (2.72, 3.72, 0.758)
 POIGNEE = (3.72, 11.74, 0.541)
-EVASEMENT = (11.74, 23.72, 0.541, 0.866, 24)
+EVASEMENT = (11.74, 23.72, 0.541, 0.866, 12)
 TONNEAU = (23.72, 32.9, 0.866)
 BOUT = [(32.9, 33.35, 0.76), (33.35, 33.7, 0.52)]
-# 12 côtés (6 pavés tournés de 30°) et morceaux de texture 4 fois plus grands que la face (chapeaux 2), texture de 128
-# unités (32 points de la carte par unité du modèle au lieu de 16) : avec 6 côtés,
-# 8 marches et la taille réelle, la batte faisait des « étages » et la finition des carrés (essai en jeu du 19/10)
+# 12 côtés et morceaux de texture 4 fois plus grands que la face (chapeaux 2), texture de 128 unités (32 points de la
+# carte par unité du modèle au lieu de 16). Évasement en vrai cône : chaque côté est une face inclinée (pavé tourné
+# autour de x dans un os tourné autour de l'axe de la batte), sans aucune marche. Avec des tronçons droits, chaque
+# marche avait un petit dessous dans l'ombre : une fine ligne noire tous les tronçons (essais en jeu du 19/10).
 COTES = 12
 ECHELLE = 4.0
 ECHELLE_CHAPEAU = 2.0
+# épaisseur des pavés du cône (seule leur face extérieure est dessinée)
+EPAISSEUR = 0.01
+# sens de l'inclinaison des faces du cône (repère de Blockbench : le haut de chaque face s'écarte de l'axe)
+ANGLE_SIGNE = 1
 
 
 def troncons():
+    """Tronçons droits (prismes) : (os, bas, haut, apothème)."""
     t = [("manche",) + POMMEAU, ("manche",) + POIGNEE]
-    y0, y1, a0, a1, n = EVASEMENT
-    for i in range(n):
-        ya, yb = y0 + (y1 - y0) * i / n, y0 + (y1 - y0) * (i + 1) / n
-        t.append(("weapon", ya, yb, a0 + (a1 - a0) * (i + 0.5) / n))
     t.append(("weapon",) + TONNEAU)
     t += [("weapon",) + b for b in BOUT]
     return t
@@ -137,14 +139,22 @@ def batte():
     g["description"]["texture_width"], g["description"]["texture_height"] = tw, th
     rang = Etageres(0, 0, tw, th)
     weapon = next(b for b in g["bones"] if b["name"] == "weapon")
+    tan = math.tan(math.pi / COTES)
     t = troncons()
+    # rayon du voisin du dessous / du dessus (le cône raccorde la poignée au tonneau sans marche)
+    y0, y1, a0, a1, n = EVASEMENT
+    rayons = {}
+    for i, (_, yb, yh, a) in enumerate(t):
+        dessous = [x for x in t if abs(x[2] - yb) < 1e-6] or ([(0, 0, 0, a1)] if abs(yb - y1) < 1e-6 else [])
+        dessus = [x for x in t if abs(x[1] - yh) < 1e-6] or ([(0, 0, 0, a0)] if abs(yh - y0) < 1e-6 else [])
+        rayons[i] = (dessous[0][3] if dessous else None, dessus[0][3] if dessus else None)
     cubes = {"weapon": [], "manche": []}
-    for i, (os_, y0, y1, a) in enumerate(t):
-        s = 2 * a * math.tan(math.pi / COTES)   # polygone régulier : côté = 2 x apothème x tan(pi / côtés)
-        h = y1 - y0
+    for i, (os_, yb, yh, a) in enumerate(t):
+        s = 2 * a * tan   # polygone régulier : côté = 2 x apothème x tan(pi / côtés)
+        h = yh - yb
         # chapeaux : seulement là où ce tronçon dépasse son voisin (sinon caché dedans)
-        bas = i == 0 or t[i - 1][3] < a - 1e-6
-        haut = i == len(t) - 1 or t[i + 1][3] < a - 1e-6
+        bas = rayons[i][0] is None or rayons[i][0] < a - 1e-6
+        haut = rayons[i][1] is None or rayons[i][1] < a - 1e-6
         for rot in range(0, 180, 360 // COTES):
             rot = rot if rot <= 90 else rot - 180
             uv = {}
@@ -157,14 +167,36 @@ def batte():
                     w, hh = max(s * ECHELLE_CHAPEAU, MIN_UV), max(2 * a * ECHELLE_CHAPEAU, MIN_UV)
                     u, v = rang.place(w, hh)
                     uv[f] = {"uv": [u, v], "uv_size": [w, hh]}
-            c = {"origin": [-s / 2, y0, -a], "size": [s, h, 2 * a], "uv": uv}
+            c = {"origin": [-s / 2, yb, -a], "size": [s, h, 2 * a], "uv": uv}
             if rot:
-                c["pivot"] = [0, y0, 0]
+                c["pivot"] = [0, yb, 0]
                 c["rotation"] = [0, rot, 0]
             cubes[os_].append(c)
     weapon["cubes"] = cubes["weapon"]
     i = g["bones"].index(weapon)
     g["bones"].insert(i + 1, {"name": "manche", "parent": "weapon", "pivot": weapon["pivot"], "cubes": cubes["manche"]})
+    # cône de l'évasement : un os par côté, tourné autour de l'axe ; dedans, n pavés inclinés autour de x (pivot au milieu
+    # de leur face), chacun aussi large que le haut de son morceau de cône (pas de fente entre deux côtés)
+    pente = (a1 - a0) / (y1 - y0)
+    angle = math.degrees(math.atan(pente))
+    for k in range(COTES):
+        rot = k * 360 / COTES
+        cubes_k = []
+        for j in range(n):
+            yb, yh = y0 + (y1 - y0) * j / n, y0 + (y1 - y0) * (j + 1) / n
+            ym = (yb + yh) / 2
+            am = a0 + pente * (ym - y0)
+            w = 2 * (a0 + pente * (yh - y0)) * tan
+            longueur = (yh - yb) / math.cos(math.atan(pente))
+            uw, uh = max(w * ECHELLE, MIN_UV), max(longueur * ECHELLE, MIN_UV)
+            u, v = rang.place(uw, uh)
+            cubes_k.append({"origin": [-w / 2, ym - longueur / 2, -am], "size": [w, longueur, EPAISSEUR],
+                            "pivot": [0, ym, -am], "rotation": [ANGLE_SIGNE * angle, 0, 0],
+                            "uv": {"north": {"uv": [u, v], "uv_size": [uw, uh]}}})
+        os_k = {"name": "evasement_%d" % k, "parent": "weapon", "pivot": [0, y0, 0], "cubes": cubes_k}
+        if rot:
+            os_k["rotation"] = [0, rot if rot <= 180 else rot - 360, 0]
+        g["bones"].insert(i + 2 + k, os_k)
     ranger_reperes(g, rang)
     (GEO / "baseball_bat_skin_geo.json").write_text(json.dumps(src, separators=(",", ":")), encoding="utf-8")
     # texture de secours (si le shader ne marche pas) : manche noir, reste acier bleuté
@@ -185,7 +217,7 @@ def batte():
                 w, h = f["uv_size"]
                 d.rectangle([u * px - 1, v * px - 1, (u + w) * px, (v + h) * px], fill=col)
     img.save(TEX / "baseball_bat_skin_uv.png")
-    print("[skins_melee] batte : %d tronçons, %d pavés" % (len(t), len(cubes["weapon"]) + len(cubes["manche"])))
+    print("[skins_melee] batte : %d tronçons droits, cône de %d x %d faces" % (len(t), COTES, EVASEMENT[4]))
 
 
 # armes de LR et marteau : copie propre du modèle (modèle d'origine, texture d'origine, os à garder tels quels, nouveaux noms
@@ -198,9 +230,6 @@ PROPRES = [
     ("executor", (), {}),
     ("mercy", (), {}),
     ("thieve_sea", (), {}),
-    # marteau : ses pièces s'appellent « *_illuminated » (dessinées sans ombre, jamais skinnées) : renommées ; la traînée
-    # du coup (1p_effect_1) garde sa texture
-    ("thunder_hammer", ("1p_effect_1",), {"group6_illuminated": "group6", "group_illuminated": "group_tete"}),
 ]
 # texels de la carte des couteaux (1024 de côté) au moins par côté de face
 TEXELS_MIN = 6.0

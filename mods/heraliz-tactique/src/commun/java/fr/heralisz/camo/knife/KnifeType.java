@@ -33,10 +33,7 @@ public enum KnifeType {
    MERCY("mercy", Map.of("body", Part.GRIP), 0F, 0),
    SEA_GLEAM("sea_gleam", Map.of("h2", Part.GRIP, "h4", Part.GRIP, "h5", Part.GRIP), 0F, 0),
    // batte : le skin utilise baseball_bat_skin_geo (outils/skins_melee.py), batte refaite propre, manche dans l'os « manche »
-   BASEBALL_BAT("baseball_bat", Map.of("manche", Part.GRIP), 0F, 0),
-   // marteau du châtiment : le skin utilise thunder_hammer_skin_geo (outils/skins_melee.py : pièces renommées, une face =
-   // un morceau de texture) ; manche = avant 62 % de la longueur depuis le pommeau ; la traînée du coup garde sa texture
-   SMITE_HAMMER("smite_hammer", Map.of("1p_effect_1", Part.ORIGINAL), 0.62F, 1);
+   BASEBALL_BAT("baseball_bat", Map.of("manche", Part.GRIP), 0F, 0);
 
    public final String id;
    private final Map<String, Part> parts;

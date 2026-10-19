@@ -1121,7 +1121,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     marteau pour le manche (`PosMap.cut` ne compte plus les pièces à texture d'origine) ; batte en « étages » : refaite à
     12 côtés, évasement en 24 marches, texture deux fois plus fine (`skins_melee.py`, `COTES`, `ECHELLE`). Objets
     violets et noirs (« heralisz_melee:creed__champagne »…) : skins retirés que le serveur, pas encore redémarré, envoyait
-    encore ;
+    encore. Troisième essai (19/10, Tactique 2.24.2) : plus aucun skin de Marteau du
+    châtiment (copie propre du marteau et `KnifeType.SMITE_HAMMER` retirées ; l'arme de base reste) ; battes Bruiser Hex,
+    Blackwood, Ash Wood, Aluminium, Street Camo et Plasma retirées (104 skins) ; batte : fines lignes noires à chaque
+    tronçon (le dessous de chaque petite marche, dans l'ombre) : l'évasement est maintenant un vrai cône, 12 os tournés
+    autour de l'axe, faces inclinées (`skins_melee.py`, `EVASEMENT`), sans aucune marche ; plus d'anneau de recharge
+    autour du viseur pour la mêlée et les couteaux (délai inchangé, `UsingProgressOverlay`) ;
   - skins de mêlée (18/10, Tactique 2.19.0 à 2.21.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
     et `heralisz_melee:baseball_bat__doppler_sapphire`, fiches copiées des armes de base (mêmes dégâts), dessinées
     EXACTEMENT comme les couteaux de heralisz_skins (même shader `camo_65` Lore / `camo_56` Doppler Saphir, même carte de

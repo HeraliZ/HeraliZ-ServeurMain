@@ -316,6 +316,10 @@ RETIRES = {
     "ct_knife": ["steel_hammered", "sapphire_aurora", "concrete"],
     "butterfly": ["safari_mesh", "midnight_damascus", "kintsugi", "hammered_bronze", "contour", "circuit"],
     "karambit": ["night_stripe", "gold_hex", "amber_fade"],
+    # 19/10 (3e essai) : plus aucun skin de marteau ; 6 battes retirées
+    "smite_hammer": ["forged_iron", "blacksmith", "granite", "antique_bronze", "highland_camo", "slate", "thunder_stripe",
+                     "verdigris", "rune_hex", "aurum_temper", "storm_marble", "runic_gold", "thunderstrike", "nebula"],
+    "baseball_bat": ["bruiser_hex", "blackwood", "ash_wood", "aluminium", "street_camo", "plasma"],
 }
 TOUS = list(SKINS)
 SKINS = [x for x in SKINS if x[2] not in RETIRES.get(x[1], ())]

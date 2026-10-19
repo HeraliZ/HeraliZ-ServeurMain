@@ -1881,7 +1881,7 @@ vec3 K_INLAY = vec3(0.1);
 void skinParams() {
     switch (CamoId) {
     case 120:   // m9 | Night Ops (Classique)
-        K_STYLE = 20;
+        K_STYLE = 18;
         K_C[0] = hexc(0x383a41);
         K_C[1] = hexc(0xe02a36);
         break;
@@ -1895,7 +1895,7 @@ void skinParams() {
         K_F.y = 1.0;
         break;
     case 122:   // m9 | Satin (Classique)
-        K_STYLE = 24;
+        K_STYLE = 22;
         K_C[0] = hexc(0xb9bec6);
         K_F.x = 1.0;
         break;
@@ -1906,14 +1906,14 @@ void skinParams() {
         K_F.x = 90.0;
         break;
     case 124:   // m9 | Blue Steel (Raffiné)
-        K_STYLE = 30;
+        K_STYLE = 28;
         K_C[0] = hexc(0xc8a865);
         K_C[1] = hexc(0x9a5a3a);
         K_C[2] = hexc(0x5a3aa0);
         K_C[3] = hexc(0x2a5ad8);
         break;
     case 125:   // m9 | Ocean Fade (Prestige)
-        K_STYLE = 12;
+        K_STYLE = 11;
         K_C[0] = hexc(0x2c2ab8);
         K_C[1] = hexc(0x1aa0d8);
         K_C[2] = hexc(0x4ef0d0);
@@ -1928,7 +1928,7 @@ void skinParams() {
         K_F.y = 0.0;
         break;
     case 127:   // karambit | Stonewash (Classique)
-        K_STYLE = 28;
+        K_STYLE = 26;
         K_C[0] = hexc(0xb8bcc2);
         K_C[1] = hexc(0x5a5e64);
         break;
@@ -1937,18 +1937,18 @@ void skinParams() {
         K_C[0] = hexc(0x9a7a52);
         break;
     case 130:   // karambit | Copper Patina (Raffiné)
-        K_STYLE = 21;
+        K_STYLE = 19;
         K_C[0] = hexc(0xc8743a);
         K_C[1] = hexc(0x3aa088);
         break;
     case 133:   // butterfly | Scorched (Classique)
-        K_STYLE = 25;
+        K_STYLE = 23;
         K_C[0] = hexc(0xc0c4ca);
         K_C[1] = hexc(0x2a2420);
         K_INLAY = hexc(0x2a2420);
         break;
     case 134:   // butterfly | Gunmetal (Classique)
-        K_STYLE = 24;
+        K_STYLE = 22;
         K_C[0] = hexc(0x6a707a);
         K_F.x = 1.2;
         K_INLAY = hexc(0x2a2e34);
@@ -1959,14 +1959,14 @@ void skinParams() {
         K_INLAY = hexc(0x1a2a4a);
         break;
     case 139:   // tac_dagger | Tiger Stripe (Classique)
-        K_STYLE = 31;
+        K_STYLE = 29;
         K_C[0] = hexc(0x8a8a5a);
         K_C[1] = hexc(0x4a5a30);
         K_C[2] = hexc(0x16180e);
         K_GRIP = 1; K_GD = hexc(0x14160e); K_GL = hexc(0x3a4228); K_GA = hexc(0x8a8a5a); K_GG = 0.0;
         break;
     case 140:   // tac_dagger | Satin Bronze (Classique)
-        K_STYLE = 24;
+        K_STYLE = 22;
         K_C[0] = hexc(0xb07a40);
         K_F.x = 1.0;
         K_GRIP = 1; K_GD = hexc(0x1a120a); K_GL = hexc(0x5a3e22); K_GA = hexc(0xc89050); K_GG = 0.0;
@@ -1978,20 +1978,20 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x1a0a10); K_GL = hexc(0x5a1a30); K_GA = hexc(0xffa030); K_GG = 0.0;
         break;
     case 143:   // tac_dagger | Emerald Web (Prestige)
-        K_STYLE = 34;
+        K_STYLE = 32;
         K_C[0] = hexc(0x0a4a24);
         K_C[1] = hexc(0x16903c);
         K_C[2] = hexc(0x020604);
         K_GRIP = 1; K_GD = hexc(0x020604); K_GL = hexc(0x0a3a1c); K_GA = hexc(0x16c04c); K_GG = 0.0;
         break;
     case 146:   // creed | Blackout (Classique)
-        K_STYLE = 20;
+        K_STYLE = 18;
         K_C[0] = hexc(0x34353a);
         K_C[1] = hexc(0xe8b850);
         K_GRIP = 1; K_GD = hexc(0x0a0a0c); K_GL = hexc(0x1e1e22); K_GA = hexc(0xd8a840); K_GG = 0.0;
         break;
     case 147:   // creed | Freehand (Raffiné)
-        K_STYLE = 13;
+        K_STYLE = 12;
         K_C[0] = hexc(0xe8e4dc);
         K_C[1] = hexc(0x1a1a1a);
         K_C[2] = hexc(0xe02a2a);
@@ -1999,19 +1999,19 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x141414); K_GL = hexc(0x3a3a3a); K_GA = hexc(0xe02a2a); K_GG = 0.0;
         break;
     case 148:   // creed | Twin Tone (Raffiné)
-        K_STYLE = 33;
+        K_STYLE = 31;
         K_C[0] = hexc(0xe8e8e4);
         K_C[1] = hexc(0x16171a);
         K_C[2] = hexc(0xe02030);
         K_GRIP = 1; K_GD = hexc(0x0e0e10); K_GL = hexc(0x2a2a2e); K_GA = hexc(0xe02030); K_GG = 0.0;
         break;
     case 149:   // creed | Prism (Prestige)
-        K_STYLE = 22;
+        K_STYLE = 20;
         K_C[0] = hexc(0xc0c4cc);
         K_GRIP = 1; K_GD = hexc(0x101014); K_GL = hexc(0x3a3a48); K_GA = hexc(0x9ad8ff); K_GG = 0.4;
         break;
     case 152:   // desmoulins_edge | Ash (Classique)
-        K_STYLE = 25;
+        K_STYLE = 23;
         K_C[0] = hexc(0xa8aab0);
         K_C[1] = hexc(0x3a3a3e);
         break;
@@ -2021,7 +2021,7 @@ void skinParams() {
         K_C[1] = hexc(0xf2c8a0);
         break;
     case 155:   // desmoulins_edge | Silver Lore (Prestige)
-        K_STYLE = 10;
+        K_STYLE = 9;
         K_C[0] = hexc(0xd0d6de);
         K_C[1] = hexc(0x1a3a8a);
         break;
@@ -2057,14 +2057,14 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x141518); K_GL = hexc(0x3a3d42); K_GA = hexc(0xa8acb2); K_GG = 0.0;
         break;
     case 165:   // executor | Hazard (Raffiné)
-        K_STYLE = 33;
+        K_STYLE = 31;
         K_C[0] = hexc(0xf0c020);
         K_C[1] = hexc(0x141416);
         K_C[2] = hexc(0xffffff);
         K_GRIP = 1; K_GD = hexc(0x0e0e10); K_GL = hexc(0x2a2a2c); K_GA = hexc(0xf0c020); K_GG = 0.0;
         break;
     case 166:   // executor | Toxic Fade (Prestige)
-        K_STYLE = 12;
+        K_STYLE = 11;
         K_C[0] = hexc(0x1a6a20);
         K_C[1] = hexc(0x7ad020);
         K_C[2] = hexc(0xf0f040);
@@ -2091,7 +2091,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x3a4048); K_GL = hexc(0xb8bec6); K_GA = hexc(0xf0f2f4); K_GG = 0.0;
         break;
     case 170:   // mercy | Azure Temper (Raffiné)
-        K_STYLE = 30;
+        K_STYLE = 28;
         K_C[0] = hexc(0xd8d0b0);
         K_C[1] = hexc(0x9ac0d8);
         K_C[2] = hexc(0x3a7ad8);
@@ -2104,7 +2104,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x0a1020); K_GL = hexc(0x1e2e4a); K_GA = hexc(0x6a8ab8); K_GG = 0.0;
         break;
     case 176:   // sea_gleam | Tide Stripe (Raffiné)
-        K_STYLE = 29;
+        K_STYLE = 27;
         K_C[0] = hexc(0x0e2a3a);
         K_C[1] = hexc(0x1a8a9a);
         K_F.x = 8.0;
@@ -2124,19 +2124,19 @@ void skinParams() {
         K_C[1] = hexc(0xb8bcc2);
         break;
     case 303:   // m9 | Leopard (Raffiné)
-        K_STYLE = 17;
+        K_STYLE = 15;
         K_C[0] = hexc(0xd8b070);
         K_C[1] = hexc(0xa86a2a);
         K_C[2] = hexc(0x1a1208);
         break;
     case 304:   // m9 | Shard (Raffiné)
-        K_STYLE = 11;
+        K_STYLE = 10;
         K_C[0] = hexc(0x1a3a6a);
         K_C[1] = hexc(0x2a6ab8);
         K_C[2] = hexc(0x8ab8e8);
         break;
     case 305:   // m9 | Sakura (Prestige)
-        K_STYLE = 23;
+        K_STYLE = 21;
         K_C[0] = hexc(0x120c10);
         K_C[1] = hexc(0xf0a0c0);
         K_C[2] = hexc(0x3a2418);
@@ -2151,7 +2151,7 @@ void skinParams() {
         K_F.y = 1.0;
         break;
     case 307:   // karambit | Black Satin (Classique)
-        K_STYLE = 24;
+        K_STYLE = 22;
         K_C[0] = hexc(0x3a3d44);
         K_F.x = 1.0;
         break;
@@ -2161,13 +2161,13 @@ void skinParams() {
         K_C[1] = hexc(0xb0b4ba);
         break;
     case 309:   // karambit | Splatter (Raffiné)
-        K_STYLE = 26;
+        K_STYLE = 24;
         K_C[0] = hexc(0x16171a);
         K_C[1] = hexc(0xe02a6a);
         K_C[2] = hexc(0x30c0e0);
         break;
     case 311:   // karambit | Titanium (Prestige)
-        K_STYLE = 32;
+        K_STYLE = 30;
         break;
     case 312:   // butterfly | Forest Camo (Classique)
         K_STYLE = 3;
@@ -2180,13 +2180,13 @@ void skinParams() {
         K_INLAY = hexc(0x2a3a22);
         break;
     case 314:   // butterfly | Polar Spray (Classique)
-        K_STYLE = 27;
+        K_STYLE = 25;
         K_C[0] = hexc(0xe8ecf0);
         K_C[1] = hexc(0x8aa0b8);
         K_INLAY = hexc(0x5a6a80);
         break;
     case 316:   // butterfly | Neon Stripe (Raffiné)
-        K_STYLE = 29;
+        K_STYLE = 27;
         K_C[0] = hexc(0x101014);
         K_C[1] = hexc(0x30e0a0);
         K_F.x = 8.0;
@@ -2199,21 +2199,21 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x0a0b0c); K_GL = hexc(0x1f2225); K_GA = hexc(0xb8bcc2); K_GG = 0.0;
         break;
     case 321:   // tac_dagger | Ember Shard (Raffiné)
-        K_STYLE = 11;
+        K_STYLE = 10;
         K_C[0] = hexc(0x6a1a0a);
         K_C[1] = hexc(0xc04018);
         K_C[2] = hexc(0xf0a040);
         K_GRIP = 1; K_GD = hexc(0x130401); K_GL = hexc(0x3a0e05); K_GA = hexc(0xf0a040); K_GG = 0.0;
         break;
     case 322:   // tac_dagger | Snow Leopard (Raffiné)
-        K_STYLE = 17;
+        K_STYLE = 15;
         K_C[0] = hexc(0xe8e8ea);
         K_C[1] = hexc(0xb8bcc4);
         K_C[2] = hexc(0x2a2c30);
         K_GRIP = 1; K_GD = hexc(0x29292a); K_GL = hexc(0x7f7f80); K_GA = hexc(0xe8e8ea); K_GG = 0.0;
         break;
     case 325:   // creed | Hammered Steel (Classique)
-        K_STYLE = 14;
+        K_STYLE = 13;
         K_C[0] = hexc(0x8a9098);
         K_GRIP = 1; K_GD = hexc(0x18191b); K_GL = hexc(0x4b4f53); K_GA = hexc(0x8a9098); K_GG = 0.0;
         break;
@@ -2228,14 +2228,14 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x07080c); K_GL = hexc(0x171a27); K_GA = hexc(0x3a4460); K_GG = 0.0;
         break;
     case 328:   // creed | Ink Splatter (Raffiné)
-        K_STYLE = 26;
+        K_STYLE = 24;
         K_C[0] = hexc(0xe8e4dc);
         K_C[1] = hexc(0x101012);
         K_C[2] = hexc(0xc01820);
         K_GRIP = 1; K_GD = hexc(0x292927); K_GL = hexc(0x7f7d79); K_GA = hexc(0xc01820); K_GG = 0.0;
         break;
     case 330:   // creed | Imperial Marble (Prestige)
-        K_STYLE = 18;
+        K_STYLE = 16;
         K_C[0] = hexc(0x8a0a1a);
         K_C[1] = hexc(0xf0d080);
         K_C[2] = hexc(0x2a0a0a);
@@ -2262,29 +2262,29 @@ void skinParams() {
         K_F.y = 1.0;
         break;
     case 334:   // desmoulins_edge | Gilded (Classique)
-        K_STYLE = 24;
+        K_STYLE = 22;
         K_C[0] = hexc(0xd8b060);
         K_F.x = 0.8;
         break;
     case 336:   // desmoulins_edge | Crimson Shard (Raffiné)
-        K_STYLE = 11;
+        K_STYLE = 10;
         K_C[0] = hexc(0x3a0610);
         K_C[1] = hexc(0x8a1020);
         K_C[2] = hexc(0xd02040);
         break;
     case 337:   // desmoulins_edge | Obsidian Sakura (Prestige)
-        K_STYLE = 23;
+        K_STYLE = 21;
         K_C[0] = hexc(0x08080a);
         K_C[1] = hexc(0xe02040);
         K_C[2] = hexc(0x2a2a2e);
         break;
     case 338:   // desmoulins_edge | Molten Gold (Ultime)
-        K_STYLE = 19;
+        K_STYLE = 17;
         K_C[0] = hexc(0xe0b040);
         K_C[1] = hexc(0xff8020);
         break;
     case 340:   // dragons_fang | Volcanic (Classique)
-        K_STYLE = 28;
+        K_STYLE = 26;
         K_C[0] = hexc(0x5a4a44);
         K_C[1] = hexc(0x1a1210);
         K_GRIP = 1; K_GD = hexc(0x100d0c); K_GL = hexc(0x312825); K_GA = hexc(0x5a4a44); K_GG = 0.0;
@@ -2306,14 +2306,14 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x060707); K_GL = hexc(0x141618); K_GA = hexc(0x9aa0a8); K_GG = 0.0;
         break;
     case 349:   // executor | Toxic Splatter (Raffiné)
-        K_STYLE = 26;
+        K_STYLE = 24;
         K_C[0] = hexc(0x141614);
         K_C[1] = hexc(0x9af030);
         K_C[2] = hexc(0xf0e040);
         K_GRIP = 1; K_GD = hexc(0x030303); K_GL = hexc(0x0b0c0b); K_GA = hexc(0x9af030); K_GG = 0.0;
         break;
     case 350:   // executor | Violet Shard (Raffiné)
-        K_STYLE = 11;
+        K_STYLE = 10;
         K_C[0] = hexc(0x2a1048);
         K_C[1] = hexc(0x5a2a90);
         K_C[2] = hexc(0xa060e0);
@@ -2343,7 +2343,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x101315); K_GL = hexc(0x313a43); K_GA = hexc(0xd0d4da); K_GG = 0.0;
         break;
     case 356:   // mercy | Celestial Shard (Raffiné)
-        K_STYLE = 11;
+        K_STYLE = 10;
         K_C[0] = hexc(0xd8e4f0);
         K_C[1] = hexc(0x8ab0d8);
         K_C[2] = hexc(0xf0d8a0);
@@ -2366,19 +2366,19 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x26130e); K_GL = hexc(0x763a2c); K_GA = hexc(0xd86a50); K_GG = 0.0;
         break;
     case 362:   // sea_gleam | Deep Hammered (Classique)
-        K_STYLE = 14;
+        K_STYLE = 13;
         K_C[0] = hexc(0x3a5a7a);
         K_GRIP = 1; K_GD = hexc(0x0a1015); K_GL = hexc(0x1f3143); K_GA = hexc(0x3a5a7a); K_GG = 0.0;
         break;
     case 363:   // sea_gleam | Reef Splatter (Raffiné)
-        K_STYLE = 26;
+        K_STYLE = 24;
         K_C[0] = hexc(0x0e2a3a);
         K_C[1] = hexc(0xf08a50);
         K_C[2] = hexc(0x40e0d0);
         K_GRIP = 1; K_GD = hexc(0x02070a); K_GL = hexc(0x07171f); K_GA = hexc(0x40e0d0); K_GG = 0.0;
         break;
     case 365:   // sea_gleam | Tidal Marble (Prestige)
-        K_STYLE = 18;
+        K_STYLE = 16;
         K_C[0] = hexc(0x0a4a8a);
         K_C[1] = hexc(0xf0f4f8);
         K_C[2] = hexc(0x30b0c0);
@@ -2395,68 +2395,33 @@ void skinParams() {
         K_C[4] = vec3(14.4, 6.6, 28.1);
         K_GRIP = 1; K_GD = hexc(0x000708); K_GL = hexc(0x001719); K_GA = hexc(0x30e0d8); K_GG = 0.0;
         break;
-    case 367:   // baseball_bat | Ash Wood (Classique)
-        K_STYLE = 35;
-        K_C[0] = hexc(0xe0c8a0);
-        K_C[1] = hexc(0xa07a50);
-        K_GRIP = 1; K_GD = hexc(0x28241c); K_GL = hexc(0x7b6e58); K_GA = hexc(0xe0c8a0); K_GG = 0.0;
-        break;
     case 368:   // baseball_bat | Walnut (Classique)
-        K_STYLE = 35;
+        K_STYLE = 33;
         K_C[0] = hexc(0x8a5a34);
         K_C[1] = hexc(0x3a2214);
         K_GRIP = 1; K_GD = hexc(0x181009); K_GL = hexc(0x4b311c); K_GA = hexc(0x8a5a34); K_GG = 0.0;
-        break;
-    case 369:   // baseball_bat | Blackwood (Classique)
-        K_STYLE = 35;
-        K_C[0] = hexc(0x4a4044);
-        K_C[1] = hexc(0x161214);
-        K_GRIP = 1; K_GD = hexc(0x0d0b0c); K_GL = hexc(0x282325); K_GA = hexc(0x4a4044); K_GG = 0.0;
-        break;
-    case 370:   // baseball_bat | Aluminium (Classique)
-        K_STYLE = 24;
-        K_C[0] = hexc(0xc8ccd2);
-        K_F.x = 1.2;
-        K_GRIP = 1; K_GD = hexc(0x242425); K_GL = hexc(0x6e7073); K_GA = hexc(0xc8ccd2); K_GG = 0.0;
         break;
     case 371:   // baseball_bat | Graphite (Classique)
         K_STYLE = 6;
         K_C[0] = hexc(0x34363a);
         K_GRIP = 1; K_GD = hexc(0x09090a); K_GL = hexc(0x1c1d1f); K_GA = hexc(0x34363a); K_GG = 0.0;
         break;
-    case 372:   // baseball_bat | Street Camo (Classique)
-        K_STYLE = 3;
-        K_C[0] = hexc(0x7a7e84);
-        K_C[1] = hexc(0x4a4e55);
-        K_C[2] = hexc(0xb8bcc2);
-        K_C[3] = hexc(0x2a2c30);
-        K_F.x = 6.0;
-        K_F.y = 1.0;
-        K_GRIP = 1; K_GD = hexc(0x151617); K_GL = hexc(0x434548); K_GA = hexc(0xb8bcc2); K_GG = 0.0;
-        break;
     case 373:   // baseball_bat | Slugger Stripes (Raffiné)
-        K_STYLE = 29;
+        K_STYLE = 27;
         K_C[0] = hexc(0xe8e8e4);
         K_C[1] = hexc(0xc01820);
         K_F.x = 6.0;
         K_GRIP = 1; K_GD = hexc(0x292929); K_GL = hexc(0x7f7f7d); K_GA = hexc(0xc01820); K_GG = 0.0;
         break;
     case 374:   // baseball_bat | Graffiti (Raffiné)
-        K_STYLE = 26;
+        K_STYLE = 24;
         K_C[0] = hexc(0x1a1a1c);
         K_C[1] = hexc(0xf0e020);
         K_C[2] = hexc(0x20c0f0);
         K_GRIP = 1; K_GD = hexc(0x040405); K_GL = hexc(0x0e0e0f); K_GA = hexc(0xf0e020); K_GG = 0.0;
         break;
-    case 375:   // baseball_bat | Bruiser Hex (Raffiné)
-        K_STYLE = 15;
-        K_C[0] = hexc(0x1a1a1c);
-        K_C[1] = hexc(0x30343a);
-        K_C[2] = hexc(0xf06020);
-        K_GRIP = 1; K_GD = hexc(0x040405); K_GL = hexc(0x0e0e0f); K_GA = hexc(0xf06020); K_GG = 0.0;
-        break;
     case 376:   // baseball_bat | Tempered Alloy (Raffiné)
-        K_STYLE = 30;
+        K_STYLE = 28;
         K_C[0] = hexc(0xd8c890);
         K_C[1] = hexc(0xc07a40);
         K_C[2] = hexc(0x7a3ab0);
@@ -2464,115 +2429,23 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x262419); K_GL = hexc(0x766e4f); K_GA = hexc(0x2a60e0); K_GG = 0.0;
         break;
     case 377:   // baseball_bat | Midnight Fade (Prestige)
-        K_STYLE = 12;
+        K_STYLE = 11;
         K_C[0] = hexc(0x10103a);
         K_C[1] = hexc(0x6a2ab8);
         K_C[2] = hexc(0xe060c0);
         K_GRIP = 1; K_GD = hexc(0x02020a); K_GL = hexc(0x08081f); K_GA = hexc(0xe060c0); K_GG = 0.0;
         break;
     case 378:   // baseball_bat | Red Crackle (Prestige)
-        K_STYLE = 16;
+        K_STYLE = 14;
         K_C[0] = hexc(0x8a1018);
         K_C[1] = hexc(0xf0c050);
         K_GRIP = 1; K_GD = hexc(0x180204); K_GL = hexc(0x4b080d); K_GA = hexc(0xf0c050); K_GG = 0.0;
         break;
     case 379:   // baseball_bat | Molten Steel (Ultime)
-        K_STYLE = 19;
+        K_STYLE = 17;
         K_C[0] = hexc(0xc8ccd4);
         K_C[1] = hexc(0x80c0ff);
         K_GRIP = 1; K_GD = hexc(0x242426); K_GL = hexc(0x6e7074); K_GA = hexc(0x80c0ff); K_GG = 0.0;
-        break;
-    case 380:   // baseball_bat | Plasma (Ultime)
-        K_STYLE = 9;
-        K_C[0] = hexc(0x120818);
-        K_C[1] = hexc(0xff40c0);
-        K_GRIP = 1; K_GD = hexc(0x030104); K_GL = hexc(0x09040d); K_GA = hexc(0xff40c0); K_GG = 0.0;
-        break;
-    case 381:   // smite_hammer | Forged Iron (Classique)
-        K_STYLE = 14;
-        K_C[0] = hexc(0x5a5e66);
-        K_GRIP = 1; K_GD = hexc(0x101012); K_GL = hexc(0x313338); K_GA = hexc(0x5a5e66); K_GG = 0.0;
-        break;
-    case 382:   // smite_hammer | Blacksmith (Classique)
-        K_STYLE = 2;
-        K_C[0] = hexc(0x2a2a2e);
-        K_C[1] = hexc(0xa8a49c);
-        K_GRIP = 1; K_GD = hexc(0x070708); K_GL = hexc(0x171719); K_GA = hexc(0xa8a49c); K_GG = 0.0;
-        break;
-    case 383:   // smite_hammer | Granite (Classique)
-        K_STYLE = 28;
-        K_C[0] = hexc(0xa8a8aa);
-        K_C[1] = hexc(0x4a4a4e);
-        K_GRIP = 1; K_GD = hexc(0x1e1e1e); K_GL = hexc(0x5c5c5d); K_GA = hexc(0xa8a8aa); K_GG = 0.0;
-        break;
-    case 384:   // smite_hammer | Antique Bronze (Classique)
-        K_STYLE = 24;
-        K_C[0] = hexc(0x9a6a38);
-        K_F.x = 1.2;
-        K_GRIP = 1; K_GD = hexc(0x1b130a); K_GL = hexc(0x543a1e); K_GA = hexc(0x9a6a38); K_GG = 0.0;
-        break;
-    case 385:   // smite_hammer | Highland Camo (Classique)
-        K_STYLE = 3;
-        K_C[0] = hexc(0x6a6a4a);
-        K_C[1] = hexc(0x4a4a32);
-        K_C[2] = hexc(0x8a8a6a);
-        K_C[3] = hexc(0x2a2a1a);
-        K_F.x = 5.0;
-        K_F.y = 0.0;
-        K_GRIP = 1; K_GD = hexc(0x13130d); K_GL = hexc(0x3a3a28); K_GA = hexc(0x8a8a6a); K_GG = 0.0;
-        break;
-    case 386:   // smite_hammer | Slate (Classique)
-        K_STYLE = 6;
-        K_C[0] = hexc(0x4a5462);
-        K_GRIP = 1; K_GD = hexc(0x0d0f11); K_GL = hexc(0x282e35); K_GA = hexc(0x4a5462); K_GG = 0.0;
-        break;
-    case 387:   // smite_hammer | Thunder Stripe (Raffiné)
-        K_STYLE = 29;
-        K_C[0] = hexc(0x14161c);
-        K_C[1] = hexc(0x3a7ae0);
-        K_F.x = 7.0;
-        K_GRIP = 1; K_GD = hexc(0x030305); K_GL = hexc(0x0b0c0f); K_GA = hexc(0x3a7ae0); K_GG = 0.0;
-        break;
-    case 388:   // smite_hammer | Verdigris (Raffiné)
-        K_STYLE = 21;
-        K_C[0] = hexc(0xb07a3a);
-        K_C[1] = hexc(0x40b0a0);
-        K_GRIP = 1; K_GD = hexc(0x1f150a); K_GL = hexc(0x60431f); K_GA = hexc(0xb07a3a); K_GG = 0.0;
-        break;
-    case 389:   // smite_hammer | Rune Hex (Raffiné)
-        K_STYLE = 15;
-        K_C[0] = hexc(0x14141a);
-        K_C[1] = hexc(0x24242e);
-        K_C[2] = hexc(0x80a0ff);
-        K_GRIP = 1; K_GD = hexc(0x030304); K_GL = hexc(0x0b0b0e); K_GA = hexc(0x80a0ff); K_GG = 0.0;
-        break;
-    case 390:   // smite_hammer | Aurum Temper (Raffiné)
-        K_STYLE = 30;
-        K_C[0] = hexc(0xf0e0a0);
-        K_C[1] = hexc(0xd0a040);
-        K_C[2] = hexc(0x8a5a20);
-        K_C[3] = hexc(0x3a2a10);
-        K_GRIP = 1; K_GD = hexc(0x2b281c); K_GL = hexc(0x847b58); K_GA = hexc(0xd0a040); K_GG = 0.0;
-        break;
-    case 391:   // smite_hammer | Storm Marble (Prestige)
-        K_STYLE = 18;
-        K_C[0] = hexc(0x1a2a6a);
-        K_C[1] = hexc(0xc8d0e0);
-        K_C[2] = hexc(0x5a7ad8);
-        K_C[3] = hexc(0x02040e);
-        K_GRIP = 1; K_GD = hexc(0x040713); K_GL = hexc(0x0e173a); K_GA = hexc(0x5a7ad8); K_GG = 0.0;
-        break;
-    case 392:   // smite_hammer | Runic Gold (Prestige)
-        K_STYLE = 10;
-        K_C[0] = hexc(0xe0b860);
-        K_C[1] = hexc(0x3a1a08);
-        K_GRIP = 1; K_GD = hexc(0x282111); K_GL = hexc(0x7b6534); K_GA = hexc(0xe0b860); K_GG = 0.0;
-        break;
-    case 393:   // smite_hammer | Thunderstrike (Ultime)
-        K_STYLE = 9;
-        K_C[0] = hexc(0x10121a);
-        K_C[1] = hexc(0x80b0ff);
-        K_GRIP = 1; K_GD = hexc(0x020304); K_GL = hexc(0x08090e); K_GA = hexc(0x80b0ff); K_GG = 0.0;
         break;
     case 394:   // ct_knife | Ranger Digital (Classique)
         K_STYLE = 3;
@@ -2585,7 +2458,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x10130d); K_GL = hexc(0x313a28); K_GA = hexc(0x8a9a6a); K_GG = 0.0;
         break;
     case 395:   // ct_knife | Blue Satin (Classique)
-        K_STYLE = 24;
+        K_STYLE = 22;
         K_C[0] = hexc(0x4a6aa8);
         K_F.x = 1.0;
         K_GRIP = 1; K_GD = hexc(0x0d131e); K_GL = hexc(0x283a5c); K_GA = hexc(0x4a6aa8); K_GG = 0.0;
@@ -2609,14 +2482,14 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x181f2b); K_GL = hexc(0x4b6084); K_GA = hexc(0x8ab0f0); K_GG = 0.0;
         break;
     case 401:   // ct_knife | Ice Shard (Raffiné)
-        K_STYLE = 11;
+        K_STYLE = 10;
         K_C[0] = hexc(0x8ab8e8);
         K_C[1] = hexc(0xd8ecff);
         K_C[2] = hexc(0x3a6ab8);
         K_GRIP = 1; K_GD = hexc(0x182129); K_GL = hexc(0x4b657f); K_GA = hexc(0x3a6ab8); K_GG = 0.0;
         break;
     case 402:   // ct_knife | Blue Stripe (Raffiné)
-        K_STYLE = 29;
+        K_STYLE = 27;
         K_C[0] = hexc(0x0e1428);
         K_C[1] = hexc(0x2a5ad8);
         K_F.x = 8.0;
@@ -2630,7 +2503,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x010204); K_GL = hexc(0x04070e); K_GA = hexc(0x40c0ff); K_GG = 0.0;
         break;
     case 404:   // ct_knife | Glacier Marble (Prestige)
-        K_STYLE = 18;
+        K_STYLE = 16;
         K_C[0] = hexc(0x2a6ad8);
         K_C[1] = hexc(0xf0f6ff);
         K_C[2] = hexc(0x8ac8f0);
@@ -2638,7 +2511,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x071326); K_GL = hexc(0x173a76); K_GA = hexc(0x2a6ad8); K_GG = 0.0;
         break;
     case 406:   // ct_knife | Molten Silver (Ultime)
-        K_STYLE = 19;
+        K_STYLE = 17;
         K_C[0] = hexc(0xd8dee8);
         K_C[1] = hexc(0x80c0ff);
         K_GRIP = 1; K_GD = hexc(0x262729); K_GL = hexc(0x767a7f); K_GA = hexc(0x80c0ff); K_GG = 0.0;
@@ -2660,14 +2533,14 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x180403); K_GL = hexc(0x4b0e0b); K_GA = hexc(0x8a1a14); K_GG = 0.0;
         break;
     case 413:   // t_knife | Sunburst (Raffiné)
-        K_STYLE = 11;
+        K_STYLE = 10;
         K_C[0] = hexc(0xf0a030);
         K_C[1] = hexc(0xe05a20);
         K_C[2] = hexc(0xffd060);
         K_GRIP = 1; K_GD = hexc(0x2b1c08); K_GL = hexc(0x84581a); K_GA = hexc(0xf0a030); K_GG = 0.0;
         break;
     case 415:   // t_knife | Red Splatter (Raffiné)
-        K_STYLE = 26;
+        K_STYLE = 24;
         K_C[0] = hexc(0xd8d0c0);
         K_C[1] = hexc(0xc01818);
         K_C[2] = hexc(0x101010);
@@ -2681,7 +2554,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x030101); K_GL = hexc(0x0b0403); K_GA = hexc(0xff6020); K_GG = 0.0;
         break;
     case 418:   // t_knife | Desert Sakura (Prestige)
-        K_STYLE = 23;
+        K_STYLE = 21;
         K_C[0] = hexc(0x2a1a10);
         K_C[1] = hexc(0xf0b080);
         K_C[2] = hexc(0x0e0806);
@@ -2700,33 +2573,31 @@ vec3 skinCouteau(vec3 p, out vec3 em) {
     if (K_STYLE == 6) return kCerakote(p, K_C[0], em);
     if (K_STYLE == 7) return kCircuit(p, K_C[0], K_C[1], K_C[2], em);
     if (K_STYLE == 8) return kDamascus(p, K_C[0], K_C[1], K_F.x, em);
-    if (K_STYLE == 9) return kElectric(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 10) return kEngraved(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 11) return kFacets(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 12) return kFade(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 13) return kFreehand(p, K_C[0], K_C[1], K_C[2], K_C[3], em);
-    if (K_STYLE == 14) return kHammered(p, K_C[0], em);
-    if (K_STYLE == 15) return kHex(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 16) return kKintsugi(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 17) return kLeopard(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 18) return kMarble(p, K_C[0], K_C[1], K_C[2], K_C[3], em);
-    if (K_STYLE == 19) return kMolten(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 20) return kNightOps(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 21) return kPatina(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 22) return kPrism(p, K_C[0], em);
-    if (K_STYLE == 23) return kSakura(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 24) return kSatin(p, K_C[0], K_F.x, em);
-    if (K_STYLE == 25) return kScorched(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 26) return kSplatter(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 27) return kSpray(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 28) return kStonewash(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 29) return kStripes(p, K_C[0], K_C[1], K_F.x, em);
-    if (K_STYLE == 30) return kTempered(p, K_C[0], K_C[1], K_C[2], K_C[3], em);
-    if (K_STYLE == 31) return kTigerStripe(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 32) return kTitanium(p, em);
-    if (K_STYLE == 33) return kTwoTone(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 34) return kWeb(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 35) return kWood(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 9) return kEngraved(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 10) return kFacets(p, K_C[0], K_C[1], K_C[2], em);
+    if (K_STYLE == 11) return kFade(p, K_C[0], K_C[1], K_C[2], em);
+    if (K_STYLE == 12) return kFreehand(p, K_C[0], K_C[1], K_C[2], K_C[3], em);
+    if (K_STYLE == 13) return kHammered(p, K_C[0], em);
+    if (K_STYLE == 14) return kKintsugi(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 15) return kLeopard(p, K_C[0], K_C[1], K_C[2], em);
+    if (K_STYLE == 16) return kMarble(p, K_C[0], K_C[1], K_C[2], K_C[3], em);
+    if (K_STYLE == 17) return kMolten(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 18) return kNightOps(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 19) return kPatina(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 20) return kPrism(p, K_C[0], em);
+    if (K_STYLE == 21) return kSakura(p, K_C[0], K_C[1], K_C[2], em);
+    if (K_STYLE == 22) return kSatin(p, K_C[0], K_F.x, em);
+    if (K_STYLE == 23) return kScorched(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 24) return kSplatter(p, K_C[0], K_C[1], K_C[2], em);
+    if (K_STYLE == 25) return kSpray(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 26) return kStonewash(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 27) return kStripes(p, K_C[0], K_C[1], K_F.x, em);
+    if (K_STYLE == 28) return kTempered(p, K_C[0], K_C[1], K_C[2], K_C[3], em);
+    if (K_STYLE == 29) return kTigerStripe(p, K_C[0], K_C[1], K_C[2], em);
+    if (K_STYLE == 30) return kTitanium(p, em);
+    if (K_STYLE == 31) return kTwoTone(p, K_C[0], K_C[1], K_C[2], em);
+    if (K_STYLE == 32) return kWeb(p, K_C[0], K_C[1], K_C[2], em);
+    if (K_STYLE == 33) return kWood(p, K_C[0], K_C[1], em);
     return vec3(0.5);
 }
 vec3 skinGrip(vec3 p, out vec3 em) {
