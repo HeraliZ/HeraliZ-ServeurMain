@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Canal réseau de HeraliZ Grades (protocole 2) : menu /kit et tab (grades et clans des joueurs connectés). Le serveur envoie l'état des kits (contenu, recharge) ; le
+ * Canal réseau de HeraliZ Grades (protocole 3) : menu /kit, menu /warp et tab (grades et clans des joueurs connectés). Le serveur envoie l'état des kits (contenu, recharge) ; le
  * joueur ne peut que DEMANDER un kit par son identifiant : grade, recharge, place et contenu sont décidés et vérifiés par
  * le serveur. Un joueur avec un jar plus ancien (sans ce canal) est refusé à la connexion : il doit prendre le nouveau jar.
  */
@@ -23,17 +23,21 @@ public final class ReseauGrades {
     private ReseauGrades() {
     }
 
-    private static final String VERSION = "2";
+    private static final String VERSION = "3";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
     /** Bornes de lecture (un paquet trafiqué ne fait pas exploser la mémoire). */
-    private static final int MAX_KITS = 16, MAX_OBJETS = 36, MAX_ID = 32, MAX_LIGNES = 500;
+    private static final int MAX_KITS = 16, MAX_OBJETS = 36, MAX_ID = 32, MAX_LIGNES = 500, MAX_WARPS = 32, MAX_TEXTE = 200;
 
     /** État reçu par le joueur : branché par la partie client (ouvre ou met à jour le menu). */
     public static final Crochet<EtatKits> RECEPTION_CLIENT = new Crochet<>();
     /** Infos du tab reçues par le joueur : branchées par la partie client (nouveau tab). */
     public static final Crochet<InfosTab> RECEPTION_TAB = new Crochet<>();
+    /** Menu des warps reçu par le joueur : branché par la partie client. */
+    public static final Crochet<EtatWarps> RECEPTION_WARPS = new Crochet<>();
+    /** Demande d'un warp reçue par le serveur : branchée par la partie serveur. */
+    public static final Crochet<Demande> RECEPTION_WARP = new Crochet<>();
     /** Demande d'un kit reçue par le serveur : branchée par la partie serveur. */
     public static final Crochet<Demande> RECEPTION_SERVEUR = new Crochet<>();
 
@@ -61,6 +65,21 @@ public final class ReseauGrades {
 
     /** Demande d'un kit (joueur -> serveur). */
     public record Recuperer(String id) {
+    }
+
+    /**
+     * Un warp tel qu'affiché : identifiant, nom et description (écrits par le staff), monde, rang de grade boutique demandé
+     * (0 : tous), permis = ce joueur peut y aller, icône.
+     */
+    public record VueWarp(String id, String nom, String description, String monde, int rang, boolean permis, ItemStack icone) {
+    }
+
+    /** Menu des warps (serveur -> joueur) ; utilisable = le joueur est au spawn (sinon les boutons sont éteints). */
+    public record EtatWarps(List<VueWarp> warps, boolean utilisable) {
+    }
+
+    /** Demande d'un warp (joueur -> serveur). */
+    public record AllerWarp(String id) {
     }
 
     /** Demande reçue, avec le joueur qui l'envoie (côté serveur). */
@@ -108,6 +127,49 @@ public final class ReseauGrades {
                     ctx.get().setPacketHandled(true);
                 })
                 .add();
+        CANAL.messageBuilder(EtatWarps.class, 3, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ReseauGrades::ecrireWarps)
+                .decoder(ReseauGrades::lireWarps)
+                .consumerMainThread((m, ctx) -> {
+                    RECEPTION_WARPS.accept(m);
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+        CANAL.messageBuilder(AllerWarp.class, 4, NetworkDirection.PLAY_TO_SERVER)
+                .encoder((m, b) -> b.writeUtf(m.id(), MAX_ID))
+                .decoder(b -> new AllerWarp(b.readUtf(MAX_ID)))
+                .consumerMainThread((m, ctx) -> {
+                    ServerPlayer p = ctx.get().getSender();
+                    if (p != null) RECEPTION_WARP.accept(new Demande(p, m.id()));
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+    }
+
+    private static void ecrireWarps(EtatWarps m, FriendlyByteBuf b) {
+        int n = Math.min(m.warps().size(), MAX_WARPS);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            VueWarp w = m.warps().get(i);
+            b.writeUtf(w.id(), MAX_ID);
+            b.writeUtf(w.nom(), MAX_TEXTE);
+            b.writeUtf(w.description(), MAX_TEXTE);
+            b.writeUtf(w.monde(), MAX_TEXTE);
+            b.writeVarInt(w.rang());
+            b.writeBoolean(w.permis());
+            b.writeItem(w.icone());
+        }
+        b.writeBoolean(m.utilisable());
+    }
+
+    private static EtatWarps lireWarps(FriendlyByteBuf b) {
+        int n = Math.min(b.readVarInt(), MAX_WARPS);
+        List<VueWarp> warps = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            warps.add(new VueWarp(b.readUtf(MAX_ID), b.readUtf(MAX_TEXTE), b.readUtf(MAX_TEXTE), b.readUtf(MAX_TEXTE), b.readVarInt(),
+                    b.readBoolean(), b.readItem()));
+        }
+        return new EtatWarps(warps, b.readBoolean());
     }
 
     private static void ecrire(EtatKits m, FriendlyByteBuf b) {

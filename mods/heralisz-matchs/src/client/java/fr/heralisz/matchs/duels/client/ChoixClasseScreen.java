@@ -28,7 +28,7 @@ import java.util.List;
 public class ChoixClasseScreen extends Screen implements EcranDuels {
     private static final int CW = 112, CH = 156, GAP = 8;
     private final PaquetsDuels.ChoixS2C donnees;
-    private final long debutMs = Util.getMillis();
+    private final long debutMs;
     private int choisie;
     private int x0, y0;
     private final List<Carte> cartes = new ArrayList<>();
@@ -39,9 +39,15 @@ public class ChoixClasseScreen extends Screen implements EcranDuels {
     }
 
     public ChoixClasseScreen(PaquetsDuels.ChoixS2C d) {
+        this(d, Util.getMillis(), d.choisie());
+    }
+
+    /** Ecran rouvert pendant le meme choix : meme debut (temps restant juste) et meme classe en surbrillance. */
+    public ChoixClasseScreen(PaquetsDuels.ChoixS2C d, long debutMs, int choisie) {
         super(Component.translatable("duel.choix.titre"));
         this.donnees = d;
-        this.choisie = Math.max(0, Math.min(ClassePerso.EMPLACEMENTS - 1, d.choisie()));
+        this.debutMs = debutMs;
+        this.choisie = Math.max(0, Math.min(ClassePerso.EMPLACEMENTS - 1, choisie));
     }
 
     @Override
@@ -93,6 +99,7 @@ public class ChoixClasseScreen extends Screen implements EcranDuels {
         choisie = i;
         SonsUi.clic(0.7f);
         if (minecraft != null && minecraft.getConnection() != null) MatchsNet.versServeur(new PaquetsDuels.ChoixClasseC2S(i));
+        DuelsClient.choixFait(i);
         if (donnees.fermerAuChoix() && minecraft != null) minecraft.setScreen(null);
     }
 
@@ -156,8 +163,15 @@ public class ChoixClasseScreen extends Screen implements EcranDuels {
             choisir(key - GLFW.GLFW_KEY_1);
             return true;
         }
-        if (key == GLFW.GLFW_KEY_ESCAPE || key == GLFW.GLFW_KEY_ENTER) {
-            if (minecraft != null) minecraft.setScreen(null);
+        if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
+            // Entree : valide la classe en surbrillance (envoyee au serveur), puis ferme
+            choisir(choisie);
+            if (minecraft != null && minecraft.screen == this) minecraft.setScreen(null);
+            return true;
+        }
+        if (key == GLFW.GLFW_KEY_ESCAPE) {
+            // Echap ne ferme qu'une fois la classe choisie : avant, le choix est impose (sinon il serait rouvert)
+            if (DuelsClient.choixFait() && minecraft != null) minecraft.setScreen(null);
             return true;
         }
         return super.keyPressed(key, scan, mods);

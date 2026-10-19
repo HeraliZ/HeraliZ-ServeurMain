@@ -98,15 +98,20 @@ public final class CoupsCouteau {
 
    /**
     * Ticks avant le coup suivant, après un coup rapide ou puissant de ce couteau ({@link #modele}) : coup puissant,
-    * réglage {@code cadence_lourd} plus l'écart du modèle, jamais moins que son délai + 2 (un coup à la fois).
+    * réglage {@code cadence_lourd} plus l'écart du modèle, jamais moins que son délai + 2 (un coup à la fois). Jamais
+    * moins que {@link #CADENCE_PLANCHER} non plus, quel que soit le réglage reçu (choix du propriétaire : 1,2 s pour toute
+    * la mêlée ; un réglage plus bas, ou celui d'un serveur pas encore redémarré, ne fait plus enchaîner les coups).
     */
    public static int cadence(boolean lourd, @Nullable String modele) {
       if (!lourd) {
-         return valeur(ServerConfig.COUTEAUX_CADENCE_RAPIDE, DEFAUT_CADENCE_RAPIDE);
+         return Math.max(CADENCE_PLANCHER, valeur(ServerConfig.COUTEAUX_CADENCE_RAPIDE, DEFAUT_CADENCE_RAPIDE));
       }
       int base = valeur(ServerConfig.COUTEAUX_CADENCE_LOURD, DEFAUT_CADENCE_LOURD);
-      return Math.max(base + CoupsLourds.ecartCadence(modele), CoupsLourds.delai(modele) + 2);
+      return Math.max(CADENCE_PLANCHER, Math.max(base + CoupsLourds.ecartCadence(modele), CoupsLourds.delai(modele) + 2));
    }
+
+   /** Plus petite cadence d'un couteau, en ticks (1,2 s, comme toutes les armes de mêlée). */
+   public static final int CADENCE_PLANCHER = 24;
 
    /** Modèle d'animation d'un couteau TaCZ d'après son identifiant d'arme (skins compris), null s'il est inconnu. */
    @Nullable

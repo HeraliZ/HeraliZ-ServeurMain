@@ -47,7 +47,7 @@ public final class ReglesBombe {
     }
 
     /** Modificateur de vitesse (×0) du joueur qui amorce ou pirate ; temporaire : jamais sauvegardé avec le joueur. */
-    private static final UUID IMMOBILE = UUID.fromString("5d0e6a3c-8b1f-4c27-9e44-2f7a91c3d6b8");
+    private static final UUID IMMOBILE = fr.heralisz.matchs.duels.DuelsConfig.IMMOBILE_VITESSE;
     private static final String NOM_IMMOBILE = "heralisz_matchs:duel_action";
 
     /** Joueurs immobilisés -> case de la barre gardée en main. */

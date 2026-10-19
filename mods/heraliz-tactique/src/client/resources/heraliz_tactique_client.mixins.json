@@ -11,7 +11,9 @@
     "TaczAllongeAnimationMixin",
     "TaczTeteAllongeMixin",
     "PlayerModelTorseAvantMixin",
-    "PlayerModelHanchesMixin"
+    "PlayerModelHanchesMixin",
+    "LivingEntityReleverMixin",
+    "HumanoidModelTeteRelevee"
   ],
   "injectors": {
     "defaultRequire": 1

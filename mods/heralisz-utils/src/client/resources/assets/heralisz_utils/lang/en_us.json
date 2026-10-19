@@ -580,5 +580,7 @@
   "heralisz_utils.inspecter.ferme": "%s just logged in or out: view closed, run /inspecter again.",
   "heralisz_utils.inspecter.hors_ligne": "Offline",
   "heralisz_utils.inspecter.en_ligne": "Online",
-  "heralisz_utils.inspecter.page": "Page %s"
+  "heralisz_utils.inspecter.page": "Page %s",
+  "heralisz_utils.borne.titre": "RANDOM TELEPORT",
+  "heralisz_utils.borne.aide": "Right-click · random drop on the map"
 }

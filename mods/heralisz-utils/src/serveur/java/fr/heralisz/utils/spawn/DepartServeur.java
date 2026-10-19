@@ -30,6 +30,8 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -69,6 +71,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.joml.Vector3f;
 
 /**
  * Borne de départ et monde du spawn, côté serveur.
@@ -96,13 +99,14 @@ public final class DepartServeur {
     private static final class EnCours {
         final ResourceKey<Level> monde;
         final Vec3 depart;
-        final int fin;
+        final int debut, fin;
         int essais;
         Arrivee trouvee;
 
-        EnCours(ResourceKey<Level> monde, Vec3 depart, int fin, int essais) {
+        EnCours(ResourceKey<Level> monde, Vec3 depart, int debut, int fin, int essais) {
             this.monde = monde;
             this.depart = depart;
+            this.debut = debut;
             this.fin = fin;
             this.essais = essais;
         }
@@ -193,7 +197,7 @@ public final class DepartServeur {
             }
             return;
         }
-        EN_COURS.put(sp.getUUID(), new EnCours(ici.dimension(), sp.position(), maintenant + delai, essais));
+        EN_COURS.put(sp.getUUID(), new EnCours(ici.dimension(), sp.position(), maintenant, maintenant + delai, essais));
         sp.displayClientMessage(t("compte", "Départ dans %s s : ne bouge pas.", String.valueOf(delai / 20)), true);
     }
 
@@ -234,9 +238,7 @@ public final class DepartServeur {
             }
             int reste = d.fin - maintenant;
             ServerLevel ici = sp.serverLevel();
-            if (maintenant % 3 == 0) {
-                ici.sendParticles(ParticleTypes.REVERSE_PORTAL, sp.getX(), sp.getY() + 1.0, sp.getZ(), 4, 0.35, 0.7, 0.35, 0.02);
-            }
+            anneau(ici, sp, maintenant, d);
             if (reste > 0) {
                 if (reste % 20 == 0) {
                     sp.displayClientMessage(t("compte", "Départ dans %s s : ne bouge pas.", String.valueOf(reste / 20)), true);
@@ -266,7 +268,7 @@ public final class DepartServeur {
     /** Vraie téléportation vers la carte (suivie par Spartan), effets d'arrivée. */
     public static void partir(ServerPlayer sp, ServerLevel carte, Arrivee a) {
         ServerLevel ici = sp.serverLevel();
-        ici.sendParticles(ParticleTypes.PORTAL, sp.getX(), sp.getY() + 1.0, sp.getZ(), 40, 0.4, 0.9, 0.4, 0.4);
+        envol(ici, sp.getX(), sp.getY(), sp.getZ());
         ici.playSound(null, sp.getX(), sp.getY(), sp.getZ(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.6f, 0.8f);
         sp.stopRiding();
         sp.teleportTo(carte, a.x(), a.y(), a.z(), a.lacet(), 0f);
@@ -279,9 +281,53 @@ public final class DepartServeur {
             PROTEGES.put(sp.getUUID(), sp.server.getTickCount() + protection);
         }
         carte.playSound(null, a.x(), a.y(), a.z(), SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 0.5f, 0.9f);
-        carte.sendParticles(ParticleTypes.CLOUD, a.x(), a.y() + 0.2, a.z(), 12, 0.4, 0.1, 0.4, 0.02);
+        atterrissage(carte, a);
         sp.displayClientMessage(t("arrive", "Te voilà sur la carte. Bonne chance."), true);
         HeraliszUtils.LOG.info("[spawn] {} part sur la carte : {} ({})", sp.getGameProfile().getName(), pos(a.x(), a.y(), a.z()), a.origine());
+    }
+
+    // ---------------------------------------------------------------------------------------------- particules
+    /** Bleu de l'hologramme de la borne (BorneHologramme côté joueur). */
+    private static final DustParticleOptions BLEU = new DustParticleOptions(new Vector3f(0.30f, 0.85f, 1.0f), 1.1f);
+    private static final DustParticleOptions BLEU_PALE = new DustParticleOptions(new Vector3f(0.70f, 0.95f, 1.0f), 0.8f);
+
+    /** Pendant le délai : un anneau de lumière bleue tourne autour du joueur et monte des pieds à la tête. */
+    private static void anneau(ServerLevel ici, ServerPlayer sp, int maintenant, EnCours d) {
+        double duree = Math.max(1, d.fin - d.debut);
+        double p = Mth.clamp((maintenant - d.debut) / duree, 0.0, 1.0);
+        double h = 0.1 + p * 1.9, rayon = 0.95 - 0.25 * p, tour = maintenant * 0.32;
+        for (int i = 0; i < 8; i++) {
+            double a = tour + i * (Math.PI * 2 / 8);
+            ici.sendParticles(BLEU, sp.getX() + Math.cos(a) * rayon, sp.getY() + h, sp.getZ() + Math.sin(a) * rayon, 1, 0, 0, 0, 0);
+        }
+        if (maintenant % 4 == 0) {                                 // étincelles qui montent vers l'anneau
+            ici.sendParticles(BLEU_PALE, sp.getX(), sp.getY() + 0.1, sp.getZ(), 3, 0.5, 0.05, 0.5, 0);
+        }
+    }
+
+    /** Au départ : éclair, colonne de lumière et anneau qui s'ouvre. */
+    private static void envol(ServerLevel ici, double x, double y, double z) {
+        ici.sendParticles(ParticleTypes.FLASH, x, y + 1.0, z, 1, 0, 0, 0, 0);
+        for (int k = 0; k < 16; k++) {
+            ici.sendParticles(ParticleTypes.END_ROD, x, y + 0.2 + k * 0.22, z, 2, 0.12, 0.05, 0.12, 0.01);
+        }
+        for (int i = 0; i < 24; i++) {
+            double a = i * (Math.PI * 2 / 24);
+            ici.sendParticles(BLEU, x + Math.cos(a) * 0.6, y + 0.15, z + Math.sin(a) * 0.6, 0, Math.cos(a), 0.0, Math.sin(a), 0.25);
+        }
+    }
+
+    /** À l'arrivée : nuage de poussière du sol et souffle qui part en anneau. */
+    private static void atterrissage(ServerLevel carte, Arrivee a) {
+        BlockState sol = carte.getBlockState(BlockPos.containing(a.x(), a.y() - 0.5, a.z()));
+        if (!sol.isAir()) {
+            carte.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, sol), a.x(), a.y() + 0.1, a.z(), 40, 0.8, 0.05, 0.8, 0.15);
+        }
+        for (int i = 0; i < 16; i++) {
+            double an = i * (Math.PI * 2 / 16);
+            carte.sendParticles(ParticleTypes.POOF, a.x() + Math.cos(an) * 0.5, a.y() + 0.1, a.z() + Math.sin(an) * 0.5,
+                    0, Math.cos(an), 0.02, Math.sin(an), 0.12);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------- points d'arrivée

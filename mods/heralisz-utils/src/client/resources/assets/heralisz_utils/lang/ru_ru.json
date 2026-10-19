@@ -580,5 +580,7 @@
   "heralisz_utils.inspecter.ferme": "%s вошёл или вышел: окно закрыто, снова введи /inspecter.",
   "heralisz_utils.inspecter.hors_ligne": "Не в сети",
   "heralisz_utils.inspecter.en_ligne": "В сети",
-  "heralisz_utils.inspecter.page": "Страница %s"
+  "heralisz_utils.inspecter.page": "Страница %s",
+  "heralisz_utils.borne.titre": "СЛУЧАЙНАЯ ТЕЛЕПОРТАЦИЯ",
+  "heralisz_utils.borne.aide": "ПКМ · высадка в случайное место на карте"
 }

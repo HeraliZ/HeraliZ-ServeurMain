@@ -83,7 +83,13 @@ public class UsingProgressOverlay implements IGuiOverlay {
          }
          return;
       }
-      // recharge d'un coup : anneau blanc discret, sans texte
+      // recharge d'un coup : anneau blanc discret, sans texte (couteaux TaCZ : leur propre recharge, même anneau)
+      float couteau = fr.heraliz.tactique.client.couteaux.CouteauxClient.recharge(partialTick);
+      if (couteau >= 0.0F) {
+         anneau(g, cx, cy, 1.0F, Ui.argb(0xFFFFFF, 36), 0);
+         anneau(g, cx, cy, couteau, Ui.argb(0xFFFFFF, 170), 0);
+         return;
+      }
       player.getCapability(CombatPropertiesProvider.CAPABILITY).ifPresent(cap -> {
          if (cap.getCoolDownTick() > 0) {
             float max = Math.max(1, cap.getLastMaxTick());

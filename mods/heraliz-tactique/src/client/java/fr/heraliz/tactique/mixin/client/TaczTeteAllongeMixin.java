@@ -17,7 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Tête des joueurs allongés (animation 3e personne de TaCZ, 14/10) : TaCZ ajoute tout le regard vertical du joueur à la
  * tête de l'animation, sans limite. À plat ventre, regarder un peu vers le haut renversait la tête en arrière (« il
- * regarde le ciel »). Allongé (corps couché à plus de moitié, hors de l'eau) : regard ajouté limité à -35° / +30°.
+ * regarde le ciel »). Allongé ou en train de se relever (corps encore penché, hors de l'eau ; 19/10 : en se relevant
+ * aussi, la tête partait vers le ciel) : regard ajouté limité à -35° / +30°.
  * Méthode propre à TaCZ : remap = false ; sans effet si TaCZ change (require = 0).
  */
 @Mixin(value = AdjustmentYRotModifier.class, remap = false)
@@ -33,7 +34,7 @@ public abstract class TaczTeteAllongeMixin {
       if (!"head".equals(partie) || cir.getReturnValue() == null || cir.getReturnValue().isEmpty()) return;
       Player p = this.player;
       float pt = Minecraft.getInstance().getFrameTime();
-      if (p.isSwimming() || p.isInWater() || p.getSwimAmount(pt) <= 0.5F) return;
+      if (p.isSwimming() || p.isInWater() || p.getSwimAmount(pt) <= 0.0F) return;
       float regard = Mth.wrapDegrees(Mth.lerp(pt, p.xRotO, p.getXRot()));
       float limite = Mth.clamp(regard, HAUT_MAX, BAS_MAX);
       cir.setReturnValue(Optional.of(new AdjustmentModifier.PartModifier(new Vec3f(limite * Mth.DEG_TO_RAD, 0.0F, 0.0F), Vec3f.ZERO)));

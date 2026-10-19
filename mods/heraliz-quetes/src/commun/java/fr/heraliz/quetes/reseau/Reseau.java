@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 
 /**
  * Canal réseau de HeraliZ Quêtes (protocole 2 : marchands ; 3 : radio du Commandant Varga). Le serveur décide de tout et envoie ce qu'il faut afficher (dialogue,
- * journal, suivi, notes, bulles, lueurs des points) ; le joueur ne fait que CHOISIR (une réponse du dialogue, suivre ou
+ * journal, suivi, notes, lueurs des points) ; le joueur ne fait que CHOISIR (une réponse du dialogue, suivre ou
  * abandonner une quête, un code tapé) : chaque demande est revérifiée par le serveur. Un joueur avec un jar sans ce
  * canal est refusé à la connexion.
  */
@@ -31,7 +31,7 @@ public final class Reseau {
     private Reseau() {
     }
 
-    private static final String VERSION = "3";
+    private static final String VERSION = "4";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -93,10 +93,6 @@ public final class Reseau {
     public record Code(String point, String code) {
     }
 
-    /** Phrase d'ambiance au-dessus d'un PNJ. */
-    public record Bulle(int entite, Texte texte) {
-    }
-
     /** Lueurs à montrer : points de la quête en cours (près du joueur), et tous les points pour le staff à la baguette. */
     public record Lueurs(List<BlockPos> quete, List<BlockPos> staff) {
     }
@@ -144,7 +140,6 @@ public final class Reseau {
     public static final Crochet<Suivi> SUIVI = new Crochet<>();
     public static final Crochet<Note> NOTE = new Crochet<>();
     public static final Crochet<Clavier> CLAVIER = new Crochet<>();
-    public static final Crochet<Bulle> BULLE = new Crochet<>();
     public static final Crochet<Lueurs> LUEURS = new Crochet<>();
     public static final Crochet<Notif> NOTIF = new Crochet<>();
     public static final Crochet<Boutique> BOUTIQUE = new Crochet<>();
@@ -171,10 +166,6 @@ public final class Reseau {
             b.writeUtf(m.point(), MAX_CLE);
             m.titre().ecrire(b);
         }, b -> new Clavier(b.readUtf(MAX_CLE), Texte.lire(b)), CLAVIER);
-        versJoueur(Bulle.class, (m, b) -> {
-            b.writeVarInt(m.entite());
-            m.texte().ecrire(b);
-        }, b -> new Bulle(b.readVarInt(), Texte.lire(b)), BULLE);
         versJoueur(Lueurs.class, (m, b) -> {
             ecrirePos(b, m.quete());
             ecrirePos(b, m.staff());
