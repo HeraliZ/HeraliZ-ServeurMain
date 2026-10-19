@@ -1034,6 +1034,18 @@ def _(m):
         m.box((x, -0.1, 2.6), (x + 1.0, 4.9, 13.8), 'string')
 
 
+@item('brindilles', 'Brindilles', 'Twigs', ['construction'],
+      'Du petit bois ramassé. De quoi monter le squelette d\'une base.', 'Gathered kindling. Enough to frame a base.',
+      0.6, TOP, 64)
+def _(m):
+    # brindilles en vrac, croisées, quelques feuilles
+    for i, ang in enumerate((-22.5, 0, 22.5, -45, 45, 22.5)):
+        y = 0.5 + i * 0.75
+        m.box((2.0, y, 7.5), (14.0, y + 0.9, 8.4), 'twig' if i % 2 else 'twig_lt', ('y', ang, (8, y, 8)))
+    m.box((10.5, 2.6, 9.5), (12.0, 2.7, 11.0), 'leaf')
+    m.box((4.0, 4.0, 5.0), (5.4, 4.1, 6.2), 'leaf')
+
+
 @item('pierres_taillees', 'Pierres taillées', 'Cut Stone', ['construction'],
       'Des blocs de pierre équarris. Lourds.', 'Squared stone blocks. Heavy.',
       0.6, TOP, 64)

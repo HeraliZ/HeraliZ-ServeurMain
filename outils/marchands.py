@@ -29,6 +29,7 @@ NOURRITURE = [  # (objet, points de faim, prix)
 ]
 PRIX_ACCESSOIRES = {"commun": 60, "peu_commun": 150, "rare": 350}
 MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), prix à l'unité
+    ("heraliz_composants:brindilles", 2),
     ("heraliz_composants:planches", 10),
     ("heraliz_composants:pierres_taillees", 20),
     ("heraliz_composants:fragments_metal", 40),

@@ -117,5 +117,7 @@
   "item.heraliz_composants.equerres_acier": "Стальные уголки",
   "item.heraliz_composants.equerres_acier.desc": "Для соединения металлических листов.",
   "item.heraliz_composants.fil_souder": "Катушка сварочной проволоки",
-  "item.heraliz_composants.fil_souder.desc": "Для сварки усиленного металла."
+  "item.heraliz_composants.fil_souder.desc": "Для сварки усиленного металла.",
+  "item.heraliz_composants.brindilles": "Хворост",
+  "item.heraliz_composants.brindilles.desc": "Собранный хворост. Хватит, чтобы поставить каркас базы."
 }

@@ -3,6 +3,7 @@
   "values": [
     "heraliz_composants:clou",
     "heraliz_composants:planches",
+    "heraliz_composants:brindilles",
     "heraliz_composants:pierres_taillees",
     "heraliz_composants:fragments_metal",
     "heraliz_composants:metal_renforce",

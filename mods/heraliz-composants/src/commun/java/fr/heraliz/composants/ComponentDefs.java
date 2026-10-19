@@ -58,6 +58,7 @@ public final class ComponentDefs {
             new Def("sceptre", "vente", HeralizRarity.MYTHIC, 1),
             new Def("calice", "vente", HeralizRarity.MYTHIC, 1),
             new Def("planches", "construction", HeralizRarity.COMMON, 64),
+            new Def("brindilles", "construction", HeralizRarity.COMMON, 64),
             new Def("pierres_taillees", "construction", HeralizRarity.COMMON, 64),
             new Def("fragments_metal", "construction", HeralizRarity.UNCOMMON, 64),
             new Def("metal_renforce", "construction", HeralizRarity.RARE, 64),

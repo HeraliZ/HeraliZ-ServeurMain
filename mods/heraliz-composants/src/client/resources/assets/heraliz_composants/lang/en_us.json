@@ -106,6 +106,8 @@
   "item.heraliz_composants.calice.desc": "A relic of gold and gems, taken from a ruined cathedral.",
   "item.heraliz_composants.planches": "Planks",
   "item.heraliz_composants.planches.desc": "Sawn planks, ready to nail.",
+  "item.heraliz_composants.brindilles": "Twigs",
+  "item.heraliz_composants.brindilles.desc": "Gathered kindling. Enough to frame a base.",
   "item.heraliz_composants.pierres_taillees": "Cut Stone",
   "item.heraliz_composants.pierres_taillees.desc": "Squared stone blocks. Heavy.",
   "item.heraliz_composants.fragments_metal": "Metal Fragments",
