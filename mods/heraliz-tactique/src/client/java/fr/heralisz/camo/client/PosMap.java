@@ -471,7 +471,9 @@ public final class PosMap {
    private static List<Quad> cut(List<Quad> quads, KnifeType knife) {
       float[] lo = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE}, hi = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
       for (Quad q : quads) {
-         if (q.part == NONE) continue;
+         // pièces à texture d'origine (traînée du coup du marteau, plaque de 11 px devant la tête) hors de la longueur :
+         // comptée, elle faisait de la profondeur l'axe long et tout le marteau passait en manche (marron en main)
+         if (q.part <= KnifeType.Part.ORIGINAL.code) continue;
          for (float[] vx : q.v) {
             for (int k = 0; k < 3; k++) {
                lo[k] = Math.min(lo[k], vx[k]);

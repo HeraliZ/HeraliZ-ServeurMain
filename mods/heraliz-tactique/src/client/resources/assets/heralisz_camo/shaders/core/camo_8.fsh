@@ -1936,22 +1936,10 @@ void skinParams() {
         K_STYLE = 6;
         K_C[0] = hexc(0x9a7a52);
         break;
-    case 129:   // karambit | Night Stripe (Raffiné)
-        K_STYLE = 29;
-        K_C[0] = hexc(0x1a1b1f);
-        K_C[1] = hexc(0x4a4e58);
-        K_F.x = 9.0;
-        break;
     case 130:   // karambit | Copper Patina (Raffiné)
         K_STYLE = 21;
         K_C[0] = hexc(0xc8743a);
         K_C[1] = hexc(0x3aa088);
-        break;
-    case 131:   // karambit | Amber Fade (Prestige)
-        K_STYLE = 12;
-        K_C[0] = hexc(0x8a1a10);
-        K_C[1] = hexc(0xe85a18);
-        K_C[2] = hexc(0xffd040);
         break;
     case 133:   // butterfly | Scorched (Classique)
         K_STYLE = 25;
@@ -2177,12 +2165,6 @@ void skinParams() {
         K_C[0] = hexc(0x16171a);
         K_C[1] = hexc(0xe02a6a);
         K_C[2] = hexc(0x30c0e0);
-        break;
-    case 310:   // karambit | Gold Hex (Raffiné)
-        K_STYLE = 15;
-        K_C[0] = hexc(0x1a1a1c);
-        K_C[1] = hexc(0x2a2a2e);
-        K_C[2] = hexc(0xe0b040);
         break;
     case 311:   // karambit | Titanium (Prestige)
         K_STYLE = 32;
