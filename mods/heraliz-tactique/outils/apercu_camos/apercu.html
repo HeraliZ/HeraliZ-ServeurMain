@@ -267,7 +267,8 @@ async function rendre(nom, camo, o) {
     P = proj(44, w / h, s * 0.05, s * 10);
     iview = transp3(rot3(R));
   }
-  const p = programme(camo);
+  // programme : CAMO_ID du programme compilé (skins de couteaux par paliers : 120, commun à tous), CamoId : le skin dessiné
+  const p = programme(o.programme ?? camo);
   gl.useProgram(p);
   const u = n => gl.getUniformLocation(p, n);
   gl.uniformMatrix4fv(u('uProj'), false, P);

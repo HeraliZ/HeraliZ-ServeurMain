@@ -20,14 +20,36 @@ public enum KnifeFinish {
    SLAUGHTER("slaughter", 63),
    CASE_HARDENED("case_hardened", 64),
    LORE("lore", 65),
-   AUTOTRONIC("autotronic", 66);
+   AUTOTRONIC("autotronic", 66),
+   // skins par paliers (Classique, Raffiné, Prestige, Ultime)
+   // <skins_couteaux> : écrit par outils/skins_couteaux.py (catalogue des skins), ne pas modifier à la main
+   // </skins_couteaux>
+   ;
+
+   /**
+    * Programme de shader commun à tous les skins par paliers (camo_120) : il lit les couleurs du skin dans CamoId au
+    * moment du dessin. Un programme par skin rallongerait le chargement du jeu (chaque programme est compilé au démarrage).
+    */
+   public static final int PROGRAMME_PALIERS = 120;
 
    public final String id;
    public final int shaderId;
+   /** Skin par paliers : dessiné par le programme commun PROGRAMME_PALIERS. */
+   public final boolean palier;
 
    KnifeFinish(String id, int shaderId) {
+      this(id, shaderId, false);
+   }
+
+   KnifeFinish(String id, int shaderId, boolean palier) {
       this.id = id;
       this.shaderId = shaderId;
+      this.palier = palier;
+   }
+
+   /** Programme de shader à charger : camo_&lt;programme&gt;. */
+   public int programme() {
+      return this.palier ? PROGRAMME_PALIERS : this.shaderId;
    }
 
    @Nullable

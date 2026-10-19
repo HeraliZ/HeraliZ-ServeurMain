@@ -5,7 +5,7 @@
         "dstrgb": "1-srcalpha"
     },
     "vertex": "heralisz_camo:camo",
-    "fragment": "heralisz_camo:camo_166",
+    "fragment": "heralisz_camo:camo_103",
     "attributes": [
         "Position",
         "Color",
