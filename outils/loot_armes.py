@@ -21,7 +21,7 @@ COFFRES = RACINE / "mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/co
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
 TACZ = RACINE / "serveur/tacz"
 
-ARMES_POUR_100 = {t: 10 for t in range(1, 8)}  # le même à chaque palier ; le hasard donne de 1 à 20 environ
+ARMES_POUR_100 = {t: 15 for t in range(1, 8)}  # le même à chaque palier ; le hasard donne de 7 à 25 environ
 PARTS = {
     1: {"commun": 1.0},
     2: {"commun": 0.6, "peu_commun": 0.4},
