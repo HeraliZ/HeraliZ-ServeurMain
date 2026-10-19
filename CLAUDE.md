@@ -1042,6 +1042,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   quand la vitesse du joueur baisse, et l'immobilisation (vitesse ×0) le divisait par deux ; chez le joueur, champ de
   vision normal tant que le modificateur d'immobilisation est sur lui (`ActionClient.champ`, UUID commun
   `DuelsConfig.IMMOBILE_VITESSE`) ; immobilisation du serveur inchangée. Rien testé en jeu ;
+- duels (19/10, Matchs 0.11.3) : choix de classe imposé : l'écran n'était ouvert qu'une fois, et pas du tout si un autre
+  écran était ouvert ; un écran de chargement (changement de monde au début du duel) ou Échap le fermait, et le joueur
+  partait avec la classe par défaut sans l'avoir vu. Maintenant (`DuelsClient.ouvrirChoix`, chaque tick), tant que la
+  classe n'est pas choisie et que le temps n'est pas écoulé, l'écran est rouvert (même temps restant, même classe en
+  surbrillance) à la place de tout autre écran (attente seulement pendant un chargement, le chat, l'écran de mort ou une
+  killcam) ; Échap ne ferme plus avant le choix, Entrée valide la classe en surbrillance ; classe par défaut du serveur
+  seulement à la fin du temps. Rien testé en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
