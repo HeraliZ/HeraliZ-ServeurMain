@@ -17,7 +17,7 @@ RACINE = Path(__file__).resolve().parent.parent
 COFFRES = RACINE / "mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres"
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
 
-ARMES_POUR_100 = {1: 5, 2: 10, 3: 15, 4: 20, 5: 25, 6: 30}
+ARMES_POUR_100 = {1: 10, 2: 12, 3: 14, 4: 16, 5: 18, 6: 20}
 FACTEUR = 2
 PRECISION = 20  # plus petit poids d'arme voulu : sinon tous les autres poids sont multipliés par 10
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
