@@ -5,6 +5,9 @@
 /mods/*/.gradle/
 /mods/*/out/
 /mods/*/logs/
+/outils/tournage/mod/build/
+/outils/tournage/mod/.gradle/
+/outils/tournage/mod/run/
 /.gradle/
 /dist/
 /livraison/
