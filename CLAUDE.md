@@ -1429,7 +1429,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (fiche `arkaniaz:knife_data`) frappent comme les armes de mêlée de LR, réglés comme la Dague tactique : clic gauche
   (touche Tirer de TaCZ) = coup rapide, 6,5 dégâts (attaque du joueur + 5,5) toutes les 1,2 s (18/10, Tactique 2.21.2 :
   0,45, 0,7, 0,9 puis 1,1 s jugés beaucoup trop rapides ; le serveur ne laisse plus passer un 2e coup 0,25 s après le
-  premier), touche tenue = coups enchaînés ; clic droit (Viser) = coup puissant ×1,5 toutes les 1,2 s, plus de visée au couteau, rien si le viseur est
+  premier ; Tactique 2.21.4 : 1,2 s au moins quel que soit le réglage reçu, `CoupsCouteau.CADENCE_PLANCHER`, et chez le
+  joueur aussi en temps réel ; anneau de recharge autour du réticule comme la mêlée de LR, `CouteauxClient.recharge` lu par
+  `UsingProgressOverlay`), touche tenue = coups enchaînés ; clic droit (Viser) = coup puissant ×1,5 toutes les 1,2 s, plus de visée au couteau, rien si le viseur est
   sur un joueur à terre (Réanimation) ; V (« Mêlée » de TaCZ) = coup rapide (le coup de TaCZ n'est plus donné aux
   couteaux). Cône de 3 blocs (65° / 75°), plusieurs cibles, vue dégagée ; coup décidé et donné par le serveur
   (`serveur/CouteauxServeur`, coup de LR `IMeleeWeapon.attackTarget`), cadence vérifiée en temps réel. Animation
