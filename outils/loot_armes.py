@@ -5,7 +5,8 @@ mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json à t7.
 - ARMES_POUR_100 : nombre d'armes moyen pour 100 conteneurs ouverts (le même partout) ;
 - PARTS : part de chaque rareté dans les armes du palier (rareté de
   serveur/config/heraliz_loot/raretes.json, section « armes ») ; toutes les armes de cette
-  rareté y sont mises, à chances égales entre elles. Jamais d'Épique ni de Légendaire en T1-T3 ;
+  rareté y sont mises ; armes lourdes (précision, mitrailleuses, lance-grenades) LOURDES fois
+  moins souvent que les autres de la même rareté. Jamais d'Épique ni de Légendaire en T1-T4 ;
 - Unique (couteaux) jamais dans le loot.
 Les autres objets ne changent pas ; les entrées d'un mod absent (heralisz_armor) sont ignorées au
 chargement par le mod, donc aussi ici. À relancer après un changement des raretés ou des gunpacks.
@@ -24,12 +25,22 @@ ARMES_POUR_100 = {t: 10 for t in range(1, 8)}  # le même à chaque palier ; le 
 PARTS = {
     1: {"commun": 1.0},
     2: {"commun": 0.6, "peu_commun": 0.4},
-    3: {"commun": 0.2, "peu_commun": 0.5, "rare": 0.3},
-    4: {"peu_commun": 0.25, "rare": 0.55, "epique": 0.2},
-    5: {"rare": 0.35, "epique": 0.5, "legendaire": 0.15},
-    6: {"rare": 0.1, "epique": 0.6, "legendaire": 0.3},
-    7: {"epique": 0.5, "legendaire": 0.5},
+    3: {"commun": 0.3, "peu_commun": 0.5, "rare": 0.2},
+    4: {"peu_commun": 0.5, "rare": 0.5},
+    5: {"rare": 0.85, "epique": 0.13, "legendaire": 0.02},   # Épique et Légendaire très rares
+    6: {"rare": 0.65, "epique": 0.28, "legendaire": 0.07},   # rares, mais moins qu'en T5
+    7: {"rare": 0.55, "epique": 0.33, "legendaire": 0.12},
 }
+# Armes lourdes (précision, mitrailleuses, lance-grenades) : chance multipliée par LOURDES dans leur rareté.
+LOURDES = 0.35
+ARMES_JSON = RACINE / "serveur/config/heraliz_tactique/armes.json"
+
+
+def lourde(gid, familles):
+    f = familles.get(gid)
+    return f is None or f.startswith(("precision", "mitrailleuse", "minigun"))  # sans famille : lance-grenades
+
+
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
 IGNORES = ("heralisz_armor:",)
 ARME = "tacz:modern_kinetic_gun"
@@ -81,6 +92,7 @@ def ecrire_table(f, data):
 
 def ecrire():
     rar, jeu = raretes(), armes_du_jeu()
+    familles = {g: v["famille"] for g, v in json.load(open(ARMES_JSON, encoding="utf-8"))["armes"].items()}
     par_rarete = {}
     for gid, r in sorted(rar.items()):
         if gid in jeu:
@@ -95,7 +107,11 @@ def ecrire():
         echelle = 1
         while True:
             total = actifs * echelle * part / (1 - part)
-            poids = {g: total * p / len(par_rarete[r]) for r, p in parts.items() for g in par_rarete.get(r, [])}
+            rel = {g: p * (LOURDES if lourde(g, familles) else 1)
+                   for r, p in parts.items() for g in par_rarete.get(r, [])}
+            # chaque rareté garde sa part, ses armes lourdes y sont plus rares
+            somme = {r: sum(rel[g] for g in par_rarete.get(r, [])) for r in parts}
+            poids = {g: total * parts[r] * rel[g] / somme[r] for r in parts for g in par_rarete.get(r, [])}
             if min(poids.values()) >= PRECISION:
                 break
             echelle *= 10
