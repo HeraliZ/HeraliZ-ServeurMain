@@ -801,8 +801,10 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   jamais retouchée à la main (`copier <monde> --zone ...` recopie une zone d'un monde, en lecture seule). Dépôt UNE fois
   dans `dimensions/heralisz/spawn/` du monde en service : workflow « Serveur HeraliZ », case `deposer_spawn` (refus si le
   dossier existe), puis redémarrer. Arrivée : première connexion et mort sans lit → point de réveil (cinématique).
-  Extraction : retour au même point (`useHeralizSpawn` de `heraliz_extraction-common.toml`, par
-  `fr.heralisz.utils.api.SpawnApi`, à ne jamais renommer). **Borne de départ** (`heralisz_utils:borne_depart`, Utils 2.16.3 : « table tactique holographique », maquette
+  Extraction : retour au point posé par le staff avec `/spawn definir` de CRac (19/10, Extraction 1.5.2, CRac
+  1.12.1-beta, `fr.heraliz.crac.api.SpawnCracApi.allerAuSpawnDefini`, par réflexion, à ne jamais renommer), sinon au point
+  de réveil (`useHeralizSpawn` de `heraliz_extraction-common.toml`, par `fr.heralisz.utils.api.SpawnApi`, à ne jamais
+  renommer). **Borne de départ** (`heralisz_utils:borne_depart`, Utils 2.16.3 : « table tactique holographique », maquette
   validée le 19/10 ; table écrite par `mods/heralisz-utils/outils/borne_depart.py` (`--rendus`), hologramme animé dessiné
   chez le joueur par `spawn/BorneHologramme` (globe de la carte qui tourne, épingle rouge qui saute d'un point à l'autre),
   entité de bloc `BorneDepartEntite` : une borne posée avant la 2.16.3 se repose (`/depart borne`) pour avoir
