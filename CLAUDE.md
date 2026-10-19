@@ -1149,6 +1149,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     autres). Mêmes règles que l'allongé avec arme : corps couché à plus de moitié, jamais dans l'eau, ni à terre
     (Réanimation), ni en véhicule. La tête ne suit pas le regard (avec une arme, c'est la couche « rotation » de TaCZ).
     Rien testé en jeu ;
+  - se relever (19/10, Tactique 2.22.1) : hors de l'eau, le corps se redresse en 0,33 s au lieu de 0,6 s (chez le
+    joueur seulement, `mixin/client/LivingEntityReleverMixin` ; se coucher ne change pas) ; pendant ce temps la tête garde
+    le regard par rapport au sol (relevée de l'inclinaison du corps, 45° au plus, `HumanoidModelTeteRelevee`) au lieu de
+    se remettre d'un coup dans l'axe du corps penché, et avec une arme TaCZ le regard ajouté à la tête reste limité
+    (-35° / +30°, `TaczTeteAllongeMixin`) jusqu'à ce que le corps soit droit : avant, la tête partait vers le ciel.
+    Rien testé en jeu ;
 - arrivée d'un nouveau joueur (18/10, maquette A « radio carrée » validée ; CaraCrea 1.6.0, Utils 2.15.0, Quêtes 1.6.0,
   CRac 1.8.0-beta, dayzhotbar 1.5.0 ; rien testé en jeu) : 1. `/register` ou `/login` d'AuthMe (le créateur de
   personnage l'attend : `LoginCheck` de CaraCrea, par réflexion, rien de lisible = rien à attendre) ; 2. le créateur de
