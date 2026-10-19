@@ -308,8 +308,6 @@
   {"item": "geckolib:item_telescopic_baton", "nombre": [1, 1], "poids": 133, "_cat": "melee_police"},
   {"item": "geckolib:item_fire_axe", "nombre": [1, 1], "poids": 67, "_cat": "melee_police"},
   {"item": "geckolib:item_machete", "nombre": [1, 1], "poids": 33, "_cat": "melee_police"},
-  {"item": "heralisz_tactical:melee", "nombre": [1, 1], "poids": 33, "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat\"}", "_cat": "melee_police"},
-  {"item": "heralisz_tactical:melee", "nombre": [1, 1], "poids": 33, "nbt": "{MeleeWeaponId:\"heralisz_melee:tac_dagger\"}", "_cat": "melee_police"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 57, "nbt": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:30,HasBulletInBarrel:1b}", "_cat": "pm_police"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 38, "nbt": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:30,HasBulletInBarrel:1b}", "_cat": "pm_police"},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 38, "nbt": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:25,HasBulletInBarrel:1b}", "_cat": "pm_police"},

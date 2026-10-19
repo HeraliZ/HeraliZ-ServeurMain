@@ -17,7 +17,7 @@
     "gun": "tacz:glock_17",
     "reserve": 51
   },
-  "melee": "heralisz_melee:tac_dagger",
+  "melee": "heralisz_melee:tac_dagger__ember_shard",
   "soins": [
     {
       "id": "heralisz_heal:ai2",

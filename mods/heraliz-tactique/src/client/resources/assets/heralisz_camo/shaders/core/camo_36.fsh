@@ -1947,12 +1947,6 @@ void skinParams() {
         K_C[1] = hexc(0x2a2420);
         K_INLAY = hexc(0x2a2420);
         break;
-    case 134:   // butterfly | Gunmetal (Classique)
-        K_STYLE = 22;
-        K_C[0] = hexc(0x6a707a);
-        K_F.x = 1.2;
-        K_INLAY = hexc(0x2a2e34);
-        break;
     case 136:   // butterfly | Blue Carbon (Raffiné)
         K_STYLE = 4;
         K_C[0] = vec3(0.75, 0.9, 1.25);

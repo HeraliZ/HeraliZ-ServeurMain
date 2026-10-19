@@ -190,7 +190,6 @@
   {"item": "backpacked:backpack_dry_yellow", "nombre": [1, 1], "poids": 6, "_cat": "sacs_civils"},
   {"item": "geckolib:item_bat", "nombre": [1, 1], "poids": 126, "_cat": "melee_basique"},
   {"item": "geckolib:item_lead_pipe", "nombre": [1, 1], "poids": 126, "_cat": "melee_basique"},
-  {"item": "heralisz_tactical:melee", "nombre": [1, 1], "poids": 84, "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat\"}", "_cat": "melee_basique"},
   {"item": "geckolib:item_machete", "nombre": [1, 1], "poids": 42, "_cat": "melee_basique"},
   {"item": "geckolib:item_sledge_hammer", "nombre": [1, 1], "poids": 21, "_cat": "melee_basique"},
   {"item": "tacz:ammo", "nombre": [3, 10], "poids": 90, "nbt": "{AmmoId:\"tacz:9mm\"}", "_cat": "munitions_pistolet"},

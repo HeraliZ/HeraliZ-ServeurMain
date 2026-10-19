@@ -67,7 +67,7 @@ public class ModItems {
       ItemStack stack = new ItemStack((ItemLike)MELEE.get());
       IMeleeWeapon iMeleeWeapon = IMeleeWeapon.of(stack);
       if (iMeleeWeapon != null) {
-         iMeleeWeapon.setId(stack, new ResourceLocation("heralisz_melee", "tac_dagger"));   // HeralisZ : contenu dans heralisz_melee
+         iMeleeWeapon.setId(stack, new ResourceLocation("heralisz_melee", "tac_dagger__ember_shard"));   // HeralisZ : plus d'armes sans skin (19/10)
       }
 
       return stack;
