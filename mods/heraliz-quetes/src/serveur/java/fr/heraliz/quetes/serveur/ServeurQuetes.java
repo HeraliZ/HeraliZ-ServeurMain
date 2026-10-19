@@ -1,7 +1,6 @@
 package fr.heraliz.quetes.serveur;
 
 import fr.heraliz.quetes.HeralizQuetes;
-import fr.heraliz.quetes.Texte;
 import fr.heraliz.quetes.entite.Pnj;
 import fr.heraliz.quetes.objet.Baguette;
 import fr.heraliz.quetes.pont.Partie;
@@ -142,10 +141,7 @@ public final class ServeurQuetes implements Partie {
             if (!j.suivie.isEmpty()) Moteur.suiviBientot(p);
         }
         if (t % 20 == 13) Accueil.seconde(p);
-        if (t % 40 == 7) {
-            lueurs(p);
-            bulles(p);
-        }
+        if (t % 40 == 7) lueurs(p);
     }
 
     private static void tickServeur(TickEvent.ServerTickEvent e) {
@@ -188,19 +184,6 @@ public final class ServeurQuetes implements Partie {
         Integer avant = LUEURS.put(p.getUUID(), h);
         if (avant != null && avant == h) return;
         Reseau.envoyer(p, new Reseau.Lueurs(quete, staff));
-    }
-
-    private static void bulles(ServerPlayer p) {
-        long maintenant = System.currentTimeMillis();
-        for (Pnj ent : p.level().getEntitiesOfClass(Pnj.class, p.getBoundingBox().inflate(8.0D))) {
-            Defs.Pnj def = Catalogue.pnj(ent.pnjId());
-            if (def == null || def.ambiance.isEmpty()) continue;
-            Donnees.DPnj dp = Donnees.de(p.getUUID()).pnj(def.id);
-            if (maintenant - dp.bulle < 60_000L) continue;
-            dp.bulle = maintenant;
-            Texte t = def.ambiance.get(Moteur.RANDOM.nextInt(def.ambiance.size()));
-            Reseau.envoyer(p, new Reseau.Bulle(ent.getId(), t));
-        }
     }
 
     /** Baguette du staff : clic droit = poser un point du groupe ; accroupi = retirer le point du bloc. */
