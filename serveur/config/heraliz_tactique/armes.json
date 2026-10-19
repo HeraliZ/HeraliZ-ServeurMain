@@ -718,8 +718,8 @@
     },
     "heraliz_fuse:stakeout": {
       "famille": "pompe",
-      "rarete": "rare",
-      "degats": 3.0,
+      "rarete": "epique",
+      "degats": 3.12,
       "tete": 1.25
     }
   }

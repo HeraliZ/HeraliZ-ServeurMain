@@ -82,7 +82,7 @@ RARETE_ARME = {
     # fusils à pompe (dès Peu commun)
     "tacz:db_short": "peu_commun", "tacz:db_long": "peu_commun", "arkaniaz:686": "peu_commun",
     "heraliz_fuse:olympia": "peu_commun",
-    "tacz:m870": "rare", "maxstuff:m870t": "rare", "heraliz_fuse:stakeout": "rare", "maxstuff:db_short_tactical": "rare",
+    "tacz:m870": "rare", "maxstuff:m870t": "rare", "heraliz_fuse:stakeout": "epique", "maxstuff:db_short_tactical": "rare",
     "maxstuff:saiga12": "epique", "tacz:aa12": "epique",
     "maxstuff:db_50": "legendaire",
     # fusils d'assaut et de combat (dès Rare)
