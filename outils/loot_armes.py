@@ -32,10 +32,10 @@ COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/c
 
 # nombre moyen pour 100 conteneurs ouverts
 POUR_100 = {
-    "armes":       {1: 15, 2: 15, 3: 15, 4: 15, 5: 15, 6: 15, 7: 60},
-    "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 50},
-    "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 70},
-    "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 90},
+    "armes":       {1: 15, 2: 15, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},
+    "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
+    "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
+    "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 45},
 }
 # part de chaque rareté (en %) ; une arme Bleue est déjà une belle trouvaille
 PARTS = {
@@ -45,7 +45,7 @@ PARTS = {
     4: {"commun": 20, "peu_commun": 52, "rare": 26.8, "epique": 1.1, "legendaire": 0.1},
     5: {"commun": 8, "peu_commun": 42, "rare": 46, "epique": 3.6, "legendaire": 0.4},
     6: {"commun": 3, "peu_commun": 30, "rare": 57, "epique": 9, "legendaire": 1},
-    7: {"peu_commun": 20, "rare": 57.33, "epique": 18, "legendaire": 4, "unique": 0.67},  # Unique (armes seulement) : 1 coffre sur 250
+    7: {"peu_commun": 20, "rare": 56.67, "epique": 18, "legendaire": 4, "unique": 1.33},  # Unique (armes seulement) : 1 coffre sur 250
 }
 LOURDES = 0.35
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
@@ -53,6 +53,7 @@ AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.5), ("nourriture", 0.6)
           ("rations", 0.6), ("plats", 0.6), ("produits_ferme", 0.6)]
 # munitions : part de leur poids d'origine par palier (balles pour 100 conteneurs : environ 40 en T1 à 450 en T7)
 MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
+EMPLACEMENTS = {7: [2, 5]}  # objets par conteneur (sinon ceux de la table)
 PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
 
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
@@ -66,7 +67,7 @@ RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare"
 COMPOSANTS_EXCLUS = {"plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
 COMPOSANTS_PLUS = {"clou": 3.0, "sac_ciment": 3.0, "equerres_acier": 3.0}  # chance multipliée dans leur rareté
 # composants ajoutés en plus dans un palier, hors raretés du palier (nombre pour 100 conteneurs)
-EN_PLUS = {7: {"clou": 4, "sac_ciment": 4}}
+EN_PLUS = {7: {"clou": 2, "sac_ciment": 2}}
 IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 
 
@@ -193,6 +194,8 @@ def ecrire():
                           "Écrit par outils/loot_armes.py (ne pas modifier à la main).")
     for t, parts in PARTS.items():
         data = tables[t]
+        if t in EMPLACEMENTS:
+            data["emplacements"] = EMPLACEMENTS[t]
         cases = sum(data["emplacements"]) / 2
         p = {f: POUR_100[f][t] / 100 / cases for f in fams}
         base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
