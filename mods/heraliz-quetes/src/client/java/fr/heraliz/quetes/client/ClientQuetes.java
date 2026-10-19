@@ -19,7 +19,7 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Partie client de HeraliZ Quêtes : rendu des PNJ (skin, nom, bulle), écrans (dialogue, journal /quetes, note, clavier),
  * quête suivie à droite de l'écran et notifications, radio du Commandant Varga en bas à gauche (tutoriel des bases),
- * lueurs des points de quête. Tout ce qui s'affiche vient du serveur.
+ * lueurs des points de quête, repères des PNJ au spawn (Reperes). Tout ce qui s'affiche vient du serveur.
  */
 public final class ClientQuetes implements Partie {
     public static final KeyMapping JOURNAL = new KeyMapping("key.heraliz_quetes.journal", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J,
@@ -35,6 +35,7 @@ public final class ClientQuetes implements Partie {
             e.registerAboveAll("radio", RadioVarga::rendu);
         });
         MinecraftForge.EVENT_BUS.addListener(ClientQuetes::tick);
+        MinecraftForge.EVENT_BUS.addListener(Reperes::rendu);
         MinecraftForge.EVENT_BUS.addListener(RadioVarga::cacherChat);
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             HudQuetes.vider();

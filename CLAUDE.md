@@ -1239,6 +1239,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Aussi (18/10) : fleurs et herbes hautes ne bloquent plus la pose d'une fondation (`LevelEnv.isFree`) ; monde des bases
   plus clair dans les pièces fermées (`ambient_light` 0,3, `monde_bases.py`) ; texte « Base protégée » retiré quand le
   Claim Block disparaît (`Protections.majTextes`) ; aides des touches du HUD de construction alignées sur leur touche ;
+- repères des PNJ au spawn (19/10, Quêtes 1.6.7, `client/Reperes`, joueurs seulement ; la carte du spawn a été annulée
+  par le propriétaire) : dans `heralisz:spawn`, petite pastille ronde au-dessus de chaque PNJ, vue à travers les murs,
+  discrète (à demi transparente, taille presque constante à l'écran, plus pâle de loin, effacée à moins de 3,5 blocs) ;
+  son nom dessous quand on la vise ou à moins de 20 blocs ; cachée avec F1. Pastille selon l'identifiant du PNJ : varga
+  étoile dorée, jacqueline croix rouge, mila sac de hérals vert, doyen couverts orange, jack viseur bleu, autre PNJ bulle
+  grise ; écrites par `python mods/heraliz-quetes/outils/reperes.py` (ordre des pastilles = `Reperes.indice`), jamais à
+  la main. Rien testé en jeu ;
 - coffres personnels (18/10, Utils 2.16.0, `coffres/CoffresPersonnels`, serveur seulement) : clic droit sur un coffre-fort
   du mod de meubles = le coffre du joueur, le même partout (comme le coffre de l'Ender) : « Safe Planque 1 »
   (`cfm:safe_planque_1`) = planque de 1 ligne pour tous ; « Safe Sentinel 1 » (`cfm:safe_sentinel_1`) = coffre VIP de
