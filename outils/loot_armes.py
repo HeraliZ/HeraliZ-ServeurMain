@@ -1,21 +1,23 @@
-"""Armes à feu et armures dans les conteneurs de HeraliZ Loot (T1 à T7).
+"""Armes, accessoires, armures et composants dans les conteneurs de HeraliZ Loot (T1 à T7).
 
-Réécrit les armes TaCZ (tacz:modern_kinetic_gun) et les pièces de l'Armurerie des tables
-mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json à t7.json :
-- ARMES_POUR_100 : nombre d'armes moyen pour 100 conteneurs ouverts (le même partout) ;
-- PARTS : part de chaque rareté dans les armes du palier (rareté de
-  serveur/config/heraliz_loot/raretes.json, section « armes ») ; toutes les armes de cette
-  rareté y sont mises ; armes lourdes (précision, mitrailleuses, lance-grenades) LOURDES fois
-  moins souvent que les autres de la même rareté. Jamais d'Épique ni de Légendaire en T1-T4 ;
-- Unique (couteaux) jamais dans le loot ;
-- ARMURES_POUR_100 : pièces de l'Armurerie (raretés de la section « objets »), mêmes PARTS ; jamais
-  les tenues complètes (kit_*), les combinaisons intégrales (*_suit) ni les ensembles Unique ;
-  les anciens vêtements heralisz_armor (mod retiré) sont retirés des tables ;
-- COMPOSANTS_POUR_100 : composants de HeraliZ Composants (rareté = couleur du nom, lue dans
-  ComponentDefs.java), mêmes PARTS ; jamais les Mythiques (rouge).
-Les autres objets ne changent pas ; les entrées d'un mod absent (heralisz_armor) sont ignorées au
-chargement par le mod, donc aussi ici. À relancer après un changement des raretés ou des gunpacks.
-`--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte armes et armures.
+Réécrit les tables mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json à t7.json :
+- quatre familles, chacune avec son nombre moyen pour 100 conteneurs ouverts (POUR_100) :
+  armes TaCZ (raretés : section « armes » de serveur/config/heraliz_loot/raretes.json),
+  accessoires TaCZ (section « accessoires »), pièces de l'Armurerie (section « objets » ; jamais les
+  tenues complètes kit_*, les combinaisons intégrales *_suit ni les ensembles Unique) et composants de
+  HeraliZ Composants (rareté = couleur du nom, lue dans ComponentDefs.java ; jamais les Mythiques) ;
+- PARTS : part de chaque rareté dans une famille, par palier. Tout peut sortir partout, mais le haut
+  de gamme est très rare dans les petits paliers ; Unique (armes : les couteaux) seulement en T7 ;
+- armes lourdes (précision, mitrailleuses, lance-grenades) LOURDES fois moins souvent que les autres
+  armes de leur rareté ;
+- les autres objets gardent leur poids d'origine (clé « _base »), multiplié par AUTRES selon leur
+  catégorie : munitions, soins et nourriture ont leurs propres conteneurs (familles munitions, soins,
+  nourriture) et sont donc plus rares dans les conteneurs T1 à T7 ;
+- T7 (coffres d'événement : crash, boss…) : un peu de tout. Ses « autres » objets sont ceux du T6
+  (nourriture, munitions, soins, grenades, sacs…) ; plus d'objets de Minecraft d'essai.
+Les anciens vêtements heralisz_armor (mod retiré) sont retirés des tables. À relancer après un
+changement des raretés, des gunpacks, de l'Armurerie ou des composants.
+`--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte chaque famille.
 """
 import glob, json, random, re, sys
 from collections import Counter
@@ -25,41 +27,41 @@ RACINE = Path(__file__).resolve().parent.parent
 COFFRES = RACINE / "mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres"
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
 TACZ = RACINE / "serveur/tacz"
-
-ARMES_POUR_100 = {t: 15 for t in range(1, 8)}  # le même à chaque palier ; le hasard donne de 7 à 25 environ
-PARTS = {
-    1: {"commun": 1.0},
-    2: {"commun": 0.6, "peu_commun": 0.4},
-    3: {"commun": 0.3, "peu_commun": 0.5, "rare": 0.2},
-    4: {"peu_commun": 0.5, "rare": 0.5},
-    5: {"rare": 0.85, "epique": 0.13, "legendaire": 0.02},   # Épique et Légendaire très rares
-    6: {"rare": 0.65, "epique": 0.28, "legendaire": 0.07},   # rares, mais moins qu'en T5
-    7: {"rare": 0.55, "epique": 0.33, "legendaire": 0.12},
-}
-ARMURES_POUR_100 = {t: 20 for t in range(1, 8)}
-ARMURE = "heraliz_armory:"
-ARMURES_EXCLUES = ("heraliz_armory:kit_",)
-ARMURES_EXCLUES_FIN = ("_suit",)
-COMPOSANTS_POUR_100 = {t: 40 for t in range(1, 8)}
-COMPOSANT = "heraliz_composants:"
-COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
-RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
-                    "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
-# Armes lourdes (précision, mitrailleuses, lance-grenades) : chance multipliée par LOURDES dans leur rareté.
-LOURDES = 0.35
 ARMES_JSON = RACINE / "serveur/config/heraliz_tactique/armes.json"
+COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
 
-
-def lourde(gid, familles):
-    f = familles.get(gid)
-    return f is None or f.startswith(("precision", "mitrailleuse", "minigun"))  # sans famille : lance-grenades
-
+# nombre moyen pour 100 conteneurs ouverts
+POUR_100 = {
+    "armes":       {1: 15, 2: 15, 3: 15, 4: 15, 5: 15, 6: 15, 7: 60},
+    "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 50},
+    "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 70},
+    "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 90},
+}
+# part de chaque rareté (en %) ; une arme Bleue est déjà une belle trouvaille
+PARTS = {
+    1: {"commun": 85, "peu_commun": 13, "rare": 1.94, "epique": 0.05, "legendaire": 0.01},
+    2: {"commun": 65, "peu_commun": 30, "rare": 4.8, "epique": 0.17, "legendaire": 0.03},
+    3: {"commun": 42, "peu_commun": 45, "rare": 12.5, "epique": 0.45, "legendaire": 0.05},
+    4: {"commun": 20, "peu_commun": 52, "rare": 26.8, "epique": 1.1, "legendaire": 0.1},
+    5: {"commun": 8, "peu_commun": 42, "rare": 46, "epique": 3.6, "legendaire": 0.4},
+    6: {"commun": 3, "peu_commun": 30, "rare": 57, "epique": 9, "legendaire": 1},
+    7: {"peu_commun": 20, "rare": 55, "epique": 18, "legendaire": 4, "unique": 3},  # Unique : armes seulement
+}
+LOURDES = 0.35
+# poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
+AUTRES = [("munitions", 0.2), ("soins", 0.6), ("nourriture", 0.6), ("boissons", 0.6), ("rations", 0.6),
+          ("plats", 0.6), ("produits_ferme", 0.6)]
+PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
 
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
-IGNORES = ("heralisz_armor:",)
-RETIRES = ("heralisz_armor:",)  # retirés des tables à l'écriture
 ARME = "tacz:modern_kinetic_gun"
-PRECISION = 20  # plus petit poids d'arme voulu : sinon les autres poids sont multipliés par 10
+ACCESSOIRE = "tacz:attachment"
+ARMURE = "heraliz_armory:"
+COMPOSANT = "heraliz_composants:"
+RETIRES = ("heralisz_armor:",)
+RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
+                    "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
+IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 
 
 def gun_id(e):
@@ -71,26 +73,82 @@ def raretes():
     return json.load(open(RARETES, encoding="utf-8"))["armes"]
 
 
+def lourde(gid, familles):
+    f = familles.get(gid)
+    return f is None or f.startswith(("precision", "mitrailleuse", "minigun"))  # sans famille : lance-grenades
+
+
+def lire_json(f):
+    try:
+        return json.load(open(f, encoding="utf-8-sig"))
+    except Exception:
+        return None
+
+
+def index_tacz(genre):
+    out = {}
+    for f in glob.glob(str(TACZ / f"*/data/*/index/{genre}/*.json")):
+        ns = f.split("/data/")[1].split("/")[0]
+        d = lire_json(f)
+        if d is not None:
+            out[ns + ":" + Path(f).stem] = d
+    return out
+
+
 def armes_du_jeu():
     """id -> nbt de l'arme prête à tirer (mode de tir, chargeur plein), d'après les gunpacks."""
     donnees = {}
     for f in glob.glob(str(TACZ / "*/data/*/data/guns/*.json")):
         ns = f.split("/data/")[1].split("/")[0]
-        try:
-            donnees[ns + ":" + Path(f).stem] = json.load(open(f, encoding="utf-8-sig"))
-        except Exception:
-            pass
+        d = lire_json(f)
+        if d is not None:
+            donnees[ns + ":" + Path(f).stem] = d
     armes = {}
-    for f in glob.glob(str(TACZ / "*/data/*/index/guns/*.json")):
-        ns = f.split("/data/")[1].split("/")[0]
-        gid = ns + ":" + Path(f).stem
-        try:
-            d = donnees.get(json.load(open(f, encoding="utf-8-sig")).get("data", ""), {})
-        except Exception:
-            continue
+    for gid, i in index_tacz("guns").items():
+        d = donnees.get(i.get("data", ""), {})
         mode = (d.get("fire_mode") or ["semi"])[0].upper()
         armes[gid] = f'{{GunId:"{gid}",GunFireMode:"{mode}",GunCurrentAmmoCount:{d.get("ammo_amount", 1)},HasBulletInBarrel:1b}}'
     return armes
+
+
+def familles():
+    """famille -> {rareté: [(entrée sans poids, poids relatif)]}"""
+    tout = json.load(open(RARETES, encoding="utf-8"))
+    fam_armes = {g: v["famille"] for g, v in json.load(open(ARMES_JSON, encoding="utf-8"))["armes"].items()}
+    jeu = armes_du_jeu()
+    out = {k: {} for k in POUR_100}
+
+    def ajouter(f, r, entree, rel=1.0):
+        if r in ORDRE:
+            out[f].setdefault(r, []).append((entree, rel))
+
+    for gid, r in sorted(tout["armes"].items()):
+        if gid in jeu:
+            ajouter("armes", r, {"item": ARME, "nombre": [1, 1], "nbt": jeu[gid], "_cat": "armes"},
+                    LOURDES if lourde(gid, fam_armes) else 1)
+    accessoires = index_tacz("attachments")
+    for aid, r in sorted(tout["accessoires"].items()):
+        if aid in accessoires:
+            ajouter("accessoires", r, {"item": ACCESSOIRE, "nombre": [1, 1], "nbt": f'{{AttachmentId:"{aid}"}}',
+                                       "_cat": "accessoires"})
+    for i, r in sorted(tout["objets"].items()):
+        if i.startswith(ARMURE) and not i.startswith(ARMURE + "kit_") and not i.endswith("_suit") and r != "unique":
+            ajouter("armures", r, {"item": i, "nombre": [1, 1], "_cat": "armures"})
+    for i, r, pile in re.findall(r'new Def\("([a-z_0-9]+)", "[^"]*", HeralizRarity\.([A-Z]+), (\d+)\)',
+                                 COMPOSANTS_DEFS.read_text(encoding="utf-8")):
+        if r in RARETE_COMPOSANT:
+            n = 3 if r == "COMMON" and int(pile) >= 16 else 1
+            ajouter("composants", RARETE_COMPOSANT[r], {"item": COMPOSANT + i, "nombre": [1, n], "_cat": "composants"})
+    return out
+
+
+def de_famille(e):
+    return e.get("_cat") in POUR_100 or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT))
+
+
+def mult_autre(e):
+    cat = e.get("_cat", "")
+    return next((m for mot, m in AUTRES if mot in cat), 1.0)
 
 
 def ecrire_table(f, data):
@@ -105,108 +163,94 @@ def ecrire_table(f, data):
     f.write_text("\n".join(lignes) + "\n", encoding="utf-8")
 
 
-def poids_famille(par_rarete, parts, rel_de):
-    """Poids relatifs (somme 1) : chaque rareté garde sa part de PARTS, partagée selon rel_de."""
-    rel = {g: rel_de(g) for r in parts for g in par_rarete.get(r, [])}
-    somme = {r: sum(rel[g] for g in par_rarete.get(r, [])) for r in parts}
-    return {g: parts[r] * rel[g] / somme[r] for r in parts for g in par_rarete.get(r, []) if somme[r]}
-
-
-def armures_du_jeu():
-    objets = json.load(open(RARETES, encoding="utf-8"))["objets"]
-    par_rarete = {}
-    for i, r in sorted(objets.items()):
-        if i.startswith(ARMURE) and not i.startswith(ARMURES_EXCLUES) and not i.endswith(ARMURES_EXCLUES_FIN) \
-                and r in ORDRE[:5]:
-            par_rarete.setdefault(r, []).append(i)
-    return par_rarete
-
-
-def composants_du_jeu():
-    """rareté -> [(id, quantité max)], d'après ComponentDefs.java."""
-    par_rarete = {}
-    for i, r, pile in re.findall(r'new Def\("([a-z_0-9]+)", "[^"]*", HeralizRarity\.([A-Z]+), (\d+)\)',
-                                 COMPOSANTS_DEFS.read_text(encoding="utf-8")):
-        if r in RARETE_COMPOSANT:
-            par_rarete.setdefault(RARETE_COMPOSANT[r], []).append(COMPOSANT + i)
-            QUANTITE[COMPOSANT + i] = 3 if r == "COMMON" and int(pile) >= 16 else 1
-    return par_rarete
-
-
-QUANTITE = {}
+def autres_de(data):
+    out = []
+    for e in data["objets"]:
+        if de_famille(e) or e["item"].startswith(RETIRES):
+            continue
+        e = dict(e)
+        e.setdefault("_base", e["poids"])
+        out.append(e)
+    return out
 
 
 def ecrire():
-    rar, jeu = raretes(), armes_du_jeu()
-    familles = {g: v["famille"] for g, v in json.load(open(ARMES_JSON, encoding="utf-8"))["armes"].items()}
-    par_rarete = {}
-    for gid, r in sorted(rar.items()):
-        if gid in jeu:
-            par_rarete.setdefault(r, []).append(gid)
-    armures = armures_du_jeu()
-    rar_armures = {i: r for r, l in armures.items() for i in l}
-    composants = composants_du_jeu()
-    rar_comp = {i: r for r, l in composants.items() for i in l}
+    fams = familles()
+    tables = {t: json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8")) for t in PARTS}
+    autres = {t: autres_de(tables[t]) for t in PARTS}
+    # T7 : les autres objets du T6 (plus d'objets de Minecraft d'essai)
+    autres[7] = [dict(e) for e in autres[6]]
+    tables[7]["_note"] = ("Coffres d'événement T7 (crash, boss...) : un peu de tout. "
+                          "Écrit par outils/loot_armes.py (ne pas modifier à la main).")
     for t, parts in PARTS.items():
-        f = COFFRES / f"t{t}.json"
-        data = json.loads(f.read_text(encoding="utf-8"))
-        autres = [e for e in data["objets"] if e["item"] != ARME and not e["item"].startswith((ARMURE, COMPOSANT))
-                  and not e["item"].startswith(RETIRES)]
-        actifs = sum(e["poids"] for e in autres)
+        data = tables[t]
         cases = sum(data["emplacements"]) / 2
-        p_armes = ARMES_POUR_100[t] / 100 / cases
-        p_armures = ARMURES_POUR_100[t] / 100 / cases
-        rel_armes = poids_famille(par_rarete, parts, lambda g: LOURDES if lourde(g, familles) else 1)
-        rel_armures = poids_famille(armures, parts, lambda g: 1)
-        p_comp = COMPOSANTS_POUR_100[t] / 100 / cases
-        rel_comp = poids_famille(composants, parts, lambda g: 1)
+        p = {f: POUR_100[f][t] / 100 / cases for f in fams}
+        base = [e["_base"] * mult_autre(e) for e in autres[t]]
+        actifs = sum(base)
+        rel = []
+        for f, par_r in fams.items():
+            somme_parts = sum(parts.get(r, 0) for r in par_r)
+            for r, liste in par_r.items():
+                if r not in parts:
+                    continue
+                s = sum(x for _, x in liste)
+                for e, x in liste:
+                    rel.append((e, f, parts[r] / somme_parts * x / s, r))
         echelle = 1
         while True:
-            reste = actifs * echelle / (1 - p_armes - p_armures - p_comp)
-            poids = {g: reste * p_armes * v for g, v in rel_armes.items()}
-            poids_a = {i: reste * p_armures * v for i, v in rel_armures.items()}
-            poids_c = {i: reste * p_comp * v for i, v in rel_comp.items()}
-            if min(list(poids.values()) + list(poids_a.values()) + list(poids_c.values())) >= PRECISION:
+            reste = actifs * echelle / (1 - sum(p.values()))
+            poids = [reste * p[f] * v for e, f, v, r in rel]
+            if min(poids) >= PRECISION:
                 break
             echelle *= 10
-        for e in autres:
-            e["poids"] *= echelle
-        armes = [{"item": ARME, "nombre": [1, 1], "poids": round(poids[g]), "nbt": jeu[g], "rarete": rar[g],
-                  "_cat": "armes"} for g in poids]
-        tenues = [{"item": i, "nombre": [1, 1], "poids": round(p), "rarete": rar_armures[i], "_cat": "armures"}
-                  for i, p in poids_a.items()]
-        comps = [{"item": i, "nombre": [1, QUANTITE[i]], "poids": round(p), "rarete": rar_comp[i], "_cat": "composants"}
-                 for i, p in poids_c.items()]
-        if t != 7:  # la rareté inscrite ne sert qu'aux coffres T7 (animations) : HeraliZ Loot la lit sinon dans raretes.json
-            for a in armes + tenues + comps:
-                del a["rarete"]
-        data["objets"] = autres + armes + tenues + comps
-        ecrire_table(f, data)
-        print(f"T{t} : {len(armes)} armes, {len(tenues)} pièces d'armure, {len(comps)} composants ({', '.join(parts)})"
-              )
+        objets = []
+        for e, b in zip(autres[t], base):
+            e["poids"] = round(b * echelle)
+            if e["poids"] > 0:
+                objets.append(e)
+        for (e, f, v, r), w in zip(rel, poids):
+            n = dict(e)
+            n["poids"] = round(w)
+            if t == 7:  # la rareté inscrite ne sert qu'aux coffres T7 (animations) : sinon lue dans raretes.json
+                n["rarete"] = r
+            objets.append(n)
+        data["objets"] = objets
+        ecrire_table(COFFRES / f"t{t}.json", data)
+        print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in parts)} {f}" for f in fams))
+
+
+def classer(e, ra):
+    if e["item"] == ARME:
+        return "armes", ra["armes"].get(gun_id(e), "?")
+    if e["item"] == ACCESSOIRE:
+        m = re.search(r'AttachmentId:"([^"]+)"', e.get("nbt", ""))
+        return "accessoires", ra["accessoires"].get(m.group(1) if m else "", "?")
+    if e.get("_cat") in ("armures", "composants"):
+        return e["_cat"], e.get("rarete") or ra["objets"].get(e["item"]) or ra["comp"].get(e["item"], "?")
+    return None, None
 
 
 def simuler(essais=1000):
-    rar = raretes()
-    ra = {i: r for r, l in armures_du_jeu().items() for i in l}
-    rc = {i: r for r, l in composants_du_jeu().items() for i in l}
+    ra = json.load(open(RARETES, encoding="utf-8"))
+    ra["comp"] = {e["item"]: r for r, l in familles()["composants"].items() for e, _ in l}
     for t in PARTS:
         data = json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8"))
         objs = [e for e in data["objets"] if not e["item"].startswith(IGNORES)]
         w = [e["poids"] for e in objs]
-        c, a, k = Counter(), Counter(), Counter()
+        c = {f: Counter() for f in POUR_100}
+        balles = 0
         for _ in range(essais * 100):
             for _ in range(random.randint(*data["emplacements"])):
                 e = random.choices(objs, w)[0]
-                if e["item"] == ARME:
-                    c[rar.get(gun_id(e), "?")] += 1
-                elif e["item"].startswith(ARMURE):
-                    a[ra.get(e["item"], "?")] += 1
-                elif e["item"].startswith(COMPOSANT):
-                    k[rc.get(e["item"], "?")] += 1
-        print(f"T{t} : {sum(c.values()) / essais:.1f} armes", {r: round(c[r] / essais, 1) for r in ORDRE if c[r]},
-              f"| {sum(a.values()) / essais:.1f} armures", {r: round(a[r] / essais, 1) for r in ORDRE if a[r]},
-              f"| {sum(k.values()) / essais:.1f} composants", {r: round(k[r] / essais, 1) for r in ORDRE if k[r]})
+                f, r = classer(e, ra)
+                if f:
+                    c[f][r] += 1
+                elif e["item"] == "tacz:ammo":
+                    balles += random.randint(*e["nombre"])
+        print(f"T{t} :", " | ".join(f"{sum(c[f].values()) / essais:.1f} {f} "
+                                     + str({r: round(c[f][r] / essais, 2) for r in ORDRE if c[f][r]}) for f in c),
+              f"| {balles / essais:.0f} balles")
 
 
 if __name__ == "__main__":

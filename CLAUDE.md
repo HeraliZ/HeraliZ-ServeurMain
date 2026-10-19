@@ -1049,8 +1049,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     Légendaire ×1,08) ; lance-grenades, couteaux, Wonder Weapons et dégâts contre les créatures : inchangés ;
   - raretés des armes : pistolet dès Commun, mitraillette et pompe dès Peu commun, fusil d'assaut dès Rare, précision
     Rare (anciens à verrou) à Légendaire (.338 et .50), mitrailleuses Épique (minigun Légendaire), lance-grenades
-    Légendaire ; aucune arme Unique ; **tous les couteaux Unique**, jamais dans le loot de la carte (caisse Gemme
-    seulement, rareté Unique aussi dans la caisse) ;
+    Légendaire ; aucune arme Unique ; **tous les couteaux Unique** : caisse Gemme et, depuis le 19/10, coffres d'événement T7 seulement
+    (3 % des armes du T7, `outils/loot_armes.py`) ;
   - accessoires : rareté d'après la force de leurs bonus (moins de recul, de dispersion, visée plus rapide, silencieux,
     dégâts) : plus la rareté est basse, plus les bonus sont faibles ; lunettes par grossissement ; chargeurs par taille ;
     munitions spéciales et crosse « précise » Épique ou Légendaire. Leurs effets eux-mêmes viennent des gunpacks des
@@ -1464,8 +1464,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 
 ## 11. Points ouverts et bugs connus
 
-- **Loot** : 618 des 1 853 entrées des tables de HeraliZ Loot citent encore `heralisz_armor:*` (retiré) : les
-  vêtements n'apparaissent plus dans le loot. À régénérer avec les objets de l'Armurerie (avec la refonte du loot).
+- **Loot** (19/10, rien testé en jeu) : armes, accessoires, pièces de l'Armurerie et composants des tables T1 à T7
+  **écrits** par `python outils/loot_armes.py` (nombre pour 100 conteneurs `POUR_100`, part des raretés par palier
+  `PARTS` : tout peut sortir partout, le haut de gamme très rare en bas ; Unique en T7 seulement ; munitions, soins et
+  nourriture plus rares, ils ont leurs conteneurs ; `--simuler`). T7 = coffres d'événement, un peu de tout ; les
+  largages (airstrike) ont leurs propres tables. Anciens `heralisz_armor:*` retirés des tables.
 - **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : replacés le 18/10 sur les 13 villes de la
   nouvelle carte (Valmont, Tcherno, Marbois, Belcourt, Port-Margot, Mirage, Clairval, Gaz, Aérodrome, Silo, Prison,
   Arctique, Radio), centre et rayon d'après les conteneurs de loot de chaque ville (pack de données `heraliz_carte`,
