@@ -101,6 +101,11 @@ public final class Piece {
         return c;
     }
 
+    /** L'état tel qu'on le voit et le vise : une porte de sas bloquée reste une porte ouverte (seul le passage est fermé). */
+    public static int etatVisible(int state) {
+        return state & ~STATE_SAS;
+    }
+
     public boolean isSasBloque() {
         return this.kind().hasDoor() && (this.state & STATE_SAS) != 0;
     }

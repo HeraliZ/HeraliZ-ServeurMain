@@ -32,6 +32,11 @@ public record Occupant(long pieceId, long buildingId, PieceKey key, Tier tier, i
         return !(this.tier == Tier.TWIG && this.key.kind().isWall());
     }
 
+    /** Forme de visée (contour, clic) : celle de la collision, sauf qu'une porte de sas bloquée se vise ouverte. */
+    public VoxelShape visee(BlockPos pos) {
+        return PieceShapes.shape(this.key, Piece.etatVisible(this.state), this.variant, pos);
+    }
+
     /** Collision shape of the piece inside the world block {@code pos}. */
     public VoxelShape shape(BlockPos pos) {
         return PieceShapes.shape(this.key, this.state, this.variant, pos);
@@ -39,7 +44,8 @@ public record Occupant(long pieceId, long buildingId, PieceKey key, Tier tier, i
 
     /** Occlusion shape (inward raster) of the piece inside the world block {@code pos}. */
     public VoxelShape occlusion(BlockPos pos) {
-        return PieceShapes.occlusion(this.key, this.state, this.variant, pos);
+        // une porte de sas bloquée cache ce qu'une porte ouverte cache (rien de plus : sinon des faces disparaissent)
+        return PieceShapes.occlusion(this.key, Piece.etatVisible(this.state), this.variant, pos);
     }
 
     /**

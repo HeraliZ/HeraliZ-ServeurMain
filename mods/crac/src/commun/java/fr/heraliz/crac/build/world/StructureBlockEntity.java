@@ -79,6 +79,22 @@ public class StructureBlockEntity extends BlockEntity {
         return s;
     }
 
+    /** Forme de visée : {@link #shape()}, sauf les portes de sas bloquées, visées ouvertes (Piece.STATE_SAS). */
+    public VoxelShape shapeVisee() {
+        boolean sas = false;
+        for (Occupant o : this.occupants) {
+            sas |= o.key().kind().hasDoor() && (o.state() & fr.heraliz.crac.build.model.Piece.STATE_SAS) != 0;
+        }
+        if (!sas) {
+            return this.shape();
+        }
+        VoxelShape s = Shapes.empty();
+        for (Occupant o : this.occupants) {
+            s = Shapes.joinUnoptimized(s, o.visee(this.worldPosition), BooleanOp.OR);
+        }
+        return s.optimize();
+    }
+
     /** Union of the occupants that close faces ({@link Occupant#occludes}): drives the block state's face flags. */
     public VoxelShape occlusionShape() {
         VoxelShape s = this.occlusion;

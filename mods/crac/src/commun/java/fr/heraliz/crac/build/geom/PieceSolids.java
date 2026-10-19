@@ -149,6 +149,25 @@ public final class PieceSolids {
         return transform(key, local);
     }
 
+    /**
+     * Les battants d'une porte, ouverts ou fermés, en px du bâtiment (HeraliZ) : là où il faut viser pour l'ouvrir ou la
+     * fermer. Vide pour une autre pièce.
+     */
+    public static List<Prism> battants(PieceKey key, boolean ouvert) {
+        List<Prism> local = new ArrayList<>();
+        if (key.kind().hasDoor()) {
+            EdgeFrame f = EdgeFrame.of(key.rot());
+            if (ouvert) {
+                openLeaves(local, key.kind(), f);
+            } else {
+                double c = CELL / 2.0;
+                double h = key.kind() == PieceKind.DOORWAY ? DOOR_W / 2 : DOOR_W;
+                local.add(new Prism(f.rect(c - h, c + h, -LEAF_HALF, LEAF_HALF), 0, DOOR_H));
+            }
+        }
+        return transform(key, local);
+    }
+
     // ---------------------------------------------------------------- local definitions
 
     /** Solids in the local frame (u, y, v), without skirt. */
