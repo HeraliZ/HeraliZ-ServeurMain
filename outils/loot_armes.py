@@ -45,7 +45,7 @@ PARTS = {
     4: {"commun": 20, "peu_commun": 52, "rare": 26.8, "epique": 1.1, "legendaire": 0.1},
     5: {"commun": 8, "peu_commun": 42, "rare": 46, "epique": 3.6, "legendaire": 0.4},
     6: {"commun": 3, "peu_commun": 30, "rare": 57, "epique": 9, "legendaire": 1},
-    7: {"peu_commun": 20, "rare": 55, "epique": 18, "legendaire": 4, "unique": 3},  # Unique : armes seulement
+    7: {"peu_commun": 20, "rare": 57.33, "epique": 18, "legendaire": 4, "unique": 0.67},  # Unique (armes seulement) : 1 coffre sur 250
 }
 LOURDES = 0.35
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie

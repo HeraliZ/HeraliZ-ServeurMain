@@ -1050,7 +1050,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   - raretés des armes : pistolet dès Commun, mitraillette et pompe dès Peu commun, fusil d'assaut dès Rare, précision
     Rare (anciens à verrou) à Légendaire (.338 et .50), mitrailleuses Épique (minigun Légendaire), lance-grenades
     Légendaire ; aucune arme Unique ; **tous les couteaux Unique** : caisse Gemme et, depuis le 19/10, coffres d'événement T7 seulement
-    (3 % des armes du T7, `outils/loot_armes.py`) ;
+    (1 coffre T7 sur 250, `outils/loot_armes.py` ; chance propre à chaque couteau : à faire) ;
   - accessoires : rareté d'après la force de leurs bonus (moins de recul, de dispersion, visée plus rapide, silencieux,
     dégâts) : plus la rareté est basse, plus les bonus sont faibles ; lunettes par grossissement ; chargeurs par taille ;
     munitions spéciales et crosse « précise » Épique ou Légendaire. Leurs effets eux-mêmes viennent des gunpacks des
