@@ -11,7 +11,7 @@ Réécrit les tables mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/c
 - armes lourdes (précision, mitrailleuses, lance-grenades) LOURDES fois moins souvent que les autres
   armes de leur rareté ;
 - les autres objets gardent leur poids d'origine (clé « _base »), multiplié par AUTRES selon leur
-  catégorie : munitions, soins et nourriture ont leurs propres conteneurs (familles munitions, soins,
+  catégorie (munitions : MUNITIONS par palier) : munitions, soins et nourriture ont leurs propres conteneurs (familles munitions, soins,
   nourriture) et sont donc plus rares dans les conteneurs T1 à T7 ;
 - T7 (coffres d'événement : crash, boss…) : un peu de tout. Ses « autres » objets sont ceux du T6
   (nourriture, munitions, soins, grenades, sacs…) ; plus d'objets de Minecraft d'essai.
@@ -49,8 +49,10 @@ PARTS = {
 }
 LOURDES = 0.35
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
-AUTRES = [("munitions", 0.2), ("soins", 0.6), ("nourriture", 0.6), ("boissons", 0.6), ("rations", 0.6),
-          ("plats", 0.6), ("produits_ferme", 0.6)]
+AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.5), ("nourriture", 0.6), ("boissons", 0.6),
+          ("rations", 0.6), ("plats", 0.6), ("produits_ferme", 0.6)]
+# munitions : part de leur poids d'origine par palier (balles pour 100 conteneurs : environ 40 en T1 à 450 en T7)
+MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
 PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
 
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
@@ -146,8 +148,10 @@ def de_famille(e):
     return e.get("_cat") in POUR_100 or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT))
 
 
-def mult_autre(e):
+def mult_autre(e, t):
     cat = e.get("_cat", "")
+    if "munitions" in cat:
+        return MUNITIONS[t]
     return next((m for mot, m in AUTRES if mot in cat), 1.0)
 
 
@@ -186,7 +190,7 @@ def ecrire():
         data = tables[t]
         cases = sum(data["emplacements"]) / 2
         p = {f: POUR_100[f][t] / 100 / cases for f in fams}
-        base = [e["_base"] * mult_autre(e) for e in autres[t]]
+        base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
         actifs = sum(base)
         rel = []
         for f, par_r in fams.items():
