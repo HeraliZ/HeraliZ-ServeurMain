@@ -1504,6 +1504,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   section 9) ; lieux et nom
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
+- **Journal des quêtes** (heraliz-quetes 1.6.6, 19/10) : la touche J ne montre que les PNJ qui donnent des quêtes (aujourd'hui le Commandant Varga ; plus les marchands). Une quête finie dit seulement « Retourner voir … ». Étapes « au corps à corps » (`arme: melee`) : les couteaux TaCZ comptent (reconnus par leur fiche `arkaniaz:knife_data`, `Couteaux.estCouteau` du mod tactique par réflexion ; avant, les M9 skinnés passaient pour des armes à feu). Rien testé en jeu.
 - **Marchands** (heraliz-quetes 1.4.0, 18/10, rien testé en jeu ; maquettes montrées) : Mila rachète objets de valeur et composants, Jacqueline vend les soins, le Doyen la nourriture, Jack les accessoires Commun à Rare (`Marchands`, écran `EcranMarchand`, canal version 2) ; listes et prix **écrits** par `python outils/marchands.py`.
 - **Quêtes** (heraliz-quetes 1.3.0, 18/10, rien testé en jeu) : un seul PNJ, le Commandant Varga (`varga.json`, 39
   quêtes principales en 5 chapitres, scénario dans `docs/QUETES_SCENARIO.md`) ; textes en français seulement (anglais et

@@ -252,7 +252,7 @@ final class Ponts {
         int n = 0;
         for (ItemStack s : p.getInventory().items) {
             String g = gunId(s);
-            if (g != null && !couteau(g)) n += s.getCount();
+            if (g != null && !couteau(s)) n += s.getCount();
         }
         return n;
     }
@@ -299,10 +299,30 @@ final class Ponts {
         return null;
     }
 
-    static boolean couteau(String gunId) {
-        if (gunId == null) return false;
-        String p = gunId.toLowerCase(Locale.ROOT);
-        return p.contains("knife") || p.contains("karambit") || p.contains("butterfly") || p.contains("bayonet") || p.endsWith(":m9");
+    private static Method estCouteau;
+    private static boolean estCouteauAbsent;
+
+    /**
+     * Couteau TaCZ : arme dont la fiche technique est arkaniaz:knife_data, comme le mod tactique la reconnaît pour ses coups
+     * de mêlée ({@code fr.heraliz.tactique.onglets.Couteaux.estCouteau}, par réflexion) ; à défaut, d'après le nom.
+     */
+    static boolean couteau(ItemStack s) {
+        String g = gunId(s);
+        if (g == null) return false;
+        if (!estCouteauAbsent) {
+            try {
+                if (estCouteau == null) {
+                    estCouteau = Class.forName("fr.heraliz.tactique.onglets.Couteaux").getMethod("estCouteau", ItemStack.class);
+                }
+                if ((boolean) estCouteau.invoke(null, s)) return true;
+            } catch (Throwable t) {
+                estCouteauAbsent = true;
+            }
+        }
+        String p = g.toLowerCase(Locale.ROOT);
+        String nom = p.substring(p.indexOf(':') + 1);
+        return p.contains("knife") || p.contains("karambit") || p.contains("butterfly") || p.contains("bayonet")
+                || nom.equals("m9") || nom.startsWith("m9_");
     }
 
     static String famille(String gunId) {
@@ -326,9 +346,9 @@ final class Ponts {
         if (voulu == null || voulu.isEmpty()) return true;
         String g = gunId(main);
         return switch (voulu.toLowerCase(Locale.ROOT)) {
-            case "feu" -> g != null && !couteau(g);
-            case "melee" -> g == null || couteau(g);
-            case "couteau" -> couteau(g);
+            case "feu" -> g != null && !couteau(main);
+            case "melee" -> g == null || couteau(main);
+            case "couteau" -> couteau(main);
             default -> g != null && famille(g).startsWith(voulu.toLowerCase(Locale.ROOT));
         };
     }
