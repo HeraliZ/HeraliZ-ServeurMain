@@ -5,6 +5,7 @@ import fr.heralisz.tactical.inventory.tooltip.MeleeTooltip;
 
 public class ClientMeleeTooltip extends AbstractClientItemTooltip {
    public ClientMeleeTooltip(MeleeTooltip tooltip) {
-      HeraliszTacticalAPI.getMeleeIndex(tooltip.getStack()).ifPresent(index -> this.build(index.getTooltip(), index.getData().getTooltipLines()));
+      // seulement la description : plus de lignes de coups (« Gauche x1, dégâts, recharge… », 19/10)
+      HeraliszTacticalAPI.getMeleeIndex(tooltip.getStack()).ifPresent(index -> this.build(index.getTooltip(), java.util.List.of()));
    }
 }

@@ -314,7 +314,7 @@ RETIRES = {
                 "copper_satin", "brick"],
     "m9": ["hammered", "desert_spray"],
     "ct_knife": ["steel_hammered", "sapphire_aurora", "concrete"],
-    "butterfly": ["safari_mesh", "midnight_damascus", "kintsugi", "hammered_bronze", "contour", "circuit"],
+    "butterfly": ["safari_mesh", "midnight_damascus", "kintsugi", "hammered_bronze", "contour", "circuit", "gunmetal"],
     "karambit": ["night_stripe", "gold_hex", "amber_fade"],
     # 19/10 (3e essai) : plus aucun skin de marteau ; 6 battes retirées
     "smite_hammer": ["forged_iron", "blacksmith", "granite", "antique_bronze", "highland_camo", "slate", "thunder_stripe",
@@ -475,6 +475,41 @@ MELEE = {
     "baseball_bat": ("baseball_bat_skin_geo", "baseball_bat_skin_uv"),
     "smite_hammer": "thunder_hammer_skin",
 }
+# Rang de chaque skin (19/10, liste du propriétaire) : 1 à 4 étoiles allumées sur 4 dans la description ; tout skin qui
+# n'est pas cité ici en a 4. Vaut aussi pour les skins d'avant le catalogue (Doppler, Lore, Fade…).
+ETOILES = {}
+for _n, _cles in {
+    1: ["tac_dagger__ember_shard", "sea_gleam__tide_stripe", "mercy__celestial_shard", "mercy__snow_camo",
+        "dragons_fang__forged_damascus", "dragons_fang__dragon_gold", "desmoulins_edge__night_digital",
+        "desmoulins_edge__ash", "creed__hammered_steel", "baseball_bat__red_crackle", "baseball_bat__slugger_stripes",
+        "baseball_bat__walnut", "baseball_bat__graphite", "t_knife__sunburst", "t_knife__red_worn",
+        "t_knife__red_splatter", "t_knife__inferno_circuit", "t_knife__desert_sakura", "t_knife__desert_digital",
+        "m9__damascus_steel", "m9__battle_worn", "m9__shard", "m9__forest_ddpat", "m9__satin",
+        "karambit__copper_patina", "butterfly__forest_camo", "karambit__arid_digital", "butterfly__blue_carbon",
+        "ct_knife__blue_satin", "ct_knife__blue_stripe", "ct_knife__steel_blue"],
+    2: ["ct_knife__ranger_digital", "ct_knife__navy_worn", "ct_knife__cobalt_damascus", "ct_knife__ice_shard",
+        "butterfly__marble_fade", "ct_knife__blue_circuit", "butterfly__neon_stripe", "karambit__coyote",
+        "karambit__splatter", "creed__midnight_camo", "creed__freehand", "m9__night_ops", "m9__slaughter",
+        "m9__leopard", "karambit__stonewash", "karambit__ember_worn", "karambit__urban_masked",
+        "executor__neon_circuit", "dragons_fang__phoenix", "dragons_fang__charcoal", "dragons_fang__volcanic",
+        "desmoulins_edge__crimson_shard", "desmoulins_edge__gilded", "desmoulins_edge__obsidian_sakura",
+        "creed__frostbite", "creed__ink_splatter", "executor__urban_digital", "executor__charcoal_worn",
+        "executor__violet_shard", "mercy__steel_worn", "sea_gleam__coral_worn", "sea_gleam__reef_splatter",
+        "sea_gleam__deep_hammered", "tac_dagger__satin_bronze", "tac_dagger__snow_leopard",
+        "tac_dagger__tiger_stripe", "tac_dagger__urban_worn"],
+    3: ["ct_knife__glacier_marble", "butterfly__polar_spray", "butterfly__scorched", "karambit__tiger_tooth",
+        "m9__autotronic", "baseball_bat__graffiti", "baseball_bat__midnight_fade", "creed__blackout",
+        "creed__imperial_marble", "sea_gleam__aquamarine", "executor__toxic_splatter", "executor__toxic_fade",
+        "executor__hazard", "dragons_fang__citrine", "desmoulins_edge__rose_gold", "desmoulins_edge__silver_lore",
+        "desmoulins_edge__molten_gold", "creed__twin_tone", "sea_gleam__navy", "sea_gleam__tidal_marble",
+        "m9__sakura"],
+}.items():
+    for _c in _cles:
+        assert _c not in ETOILES, "deux rangs pour " + _c
+        ETOILES[_c] = _n
+# couleur du nom selon le rang
+COULEURS_ETOILES = {1: "§7", 2: "§3", 3: "§5", 4: "§e"}
+
 LANGUES = ("fr_fr", "en_us", "ru_ru")
 PALIERS_LANGUES = {
     "classique": ("Classique", "Classic", "Классика"),
@@ -526,12 +561,55 @@ def ecrire_java():
         JAVA_FINITIONS.write_bytes(nouveau.encode("utf-8"))
 
 
+def habiller(cle, arme, finition, i):
+    """(nom, description) d'un skin dans la langue i (fr, en, ru) : « Arme | Finition » de la couleur de son rang, sans
+    étoile devant ; description : 4 étoiles, celles du rang allumées, puis « Exclusivité HeraliZ »."""
+    n = ETOILES.get(cle, 4)
+    code = COULEURS_ETOILES[n]
+    nom = "%s%s §7| %s§l%s" % (code, arme, code, finition)
+    desc = "§6%s§8%s\n§8%s" % ("★" * n, "★" * (4 - n), EXCLUSIF[i])
+    return nom, desc
+
+
 def textes(couteau, nom, pal, arme):
     """(nom, description) dans les trois langues ; arme : nom de l'arme de base (fr, en, ru)."""
-    code = PALIERS[pal][1]
-    noms = ["%s★ %s §7| %s§l%s" % (code, arme[i], code, nom) for i in range(3)]
-    descs = ["%s%s\n§8%s" % (code, PALIERS_LANGUES[pal][i], EXCLUSIF[i]) for i in range(3)]
-    return noms, descs
+    cle = "%s__%s" % (couteau, nom_fin(couteau, nom))
+    paires = [habiller(cle, arme[i], nom, i) for i in range(3)]
+    return [p[0] for p in paires], [p[1] for p in paires]
+
+
+def nom_fin(couteau, nom):
+    for _, c, f, n, *_ in SKINS:
+        if c == couteau and n == nom:
+            return f
+    return ""
+
+
+def rhabiller():
+    """Tous les skins des deux fichiers de langue (catalogue et skins d'avant) : nom et description d'après leur rang."""
+    jeux = [(GUNPACK / "assets" / "heralisz_skins" / "lang", r"^heralisz_skins\.knife\.(\w+__\w+)\.name$",
+             "heralisz_skins.knife.%s.name", "heralisz_skins.tooltip.%s.desc"),
+            (MELEE_ASSETS / "lang", r"^item\.heralisz_melee\.(\w+__\w+)$",
+             "item.heralisz_melee.%s", "item.heralisz_melee.%s.desc")]
+    vus = set()
+    for dossier, motif, cle_nom, cle_desc in jeux:
+        for i, l in enumerate(LANGUES):
+            chemin = dossier / (l + ".json")
+            d = lire_json(chemin)
+            for k in list(d):
+                m = re.match(motif, k)
+                if not m:
+                    continue
+                cle = m.group(1)
+                vus.add(cle)
+                texte = sans_codes(d[k])
+                texte = re.sub(r"^★\s*", "", texte)
+                arme, _, finition = texte.partition(" | ")
+                d[cle_nom % cle], d[cle_desc % cle] = habiller(cle, arme.strip(), finition.strip(), i)
+            ecrire_json(chemin, d)
+    inconnus = sorted(set(ETOILES) - vus)
+    if inconnus:
+        sys.exit("[skins_couteaux] rangs pour des skins qui n'existent pas : " + ", ".join(inconnus))
 
 
 def ecrire_objets():
@@ -635,6 +713,7 @@ def main():
     ecrire_java()
     ecrire_objets()
     retirer()
+    rhabiller()
     subprocess.run([sys.executable, str(OUTILS / "generer_camos.py")], check=True)
     print("[skins_couteaux] %d skins, %d programmes ajoutés" % (len(SKINS), n))
 

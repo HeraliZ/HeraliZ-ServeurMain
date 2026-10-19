@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Infobulle des armes TaCZ (choix du propriétaire, 14/10) : plus de lignes « perforation de l'armure Minecraft », « dégâts
  * de tir à la tête », « vitesse de déplacement » (partie EXTRA_DAMAGE_INFO de TaCZ), plus de « Appuyez sur … pour les
  * accessoires » (UPGRADES_TIP) ni du nom du gunpack (PACK_INFO) ; la hauteur et la largeur de l'infobulle suivent (même
- * test de TaCZ). « Dégâts » : ceux contre un joueur (réglage du serveur, armes.DegatsJoueurs), pas ceux du gunpack.
+ * test de TaCZ). Couteaux : plus non plus de munitions ni d'informations de base (niveau, type, dégâts). « Dégâts » : ceux contre un joueur (réglage du serveur, armes.DegatsJoueurs), pas ceux du gunpack.
  * Méthodes propres à TaCZ : pas de nom SRG. Sans effet si TaCZ change (require = 0).
  */
 @Mixin(value = ClientGunTooltip.class, remap = false)
@@ -34,6 +34,11 @@ public abstract class ClientGunTooltipMixin {
    @Inject(method = "shouldShow", at = @At("HEAD"), cancellable = true, require = 0)
    private void heraliz$masquer(GunTooltipPart part, CallbackInfoReturnable<Boolean> cir) {
       if (part == GunTooltipPart.EXTRA_DAMAGE_INFO || part == GunTooltipPart.UPGRADES_TIP || part == GunTooltipPart.PACK_INFO) {
+         cir.setReturnValue(false);
+      } else if ((part == GunTooltipPart.AMMO_INFO || part == GunTooltipPart.BASE_INFO)
+         && fr.heraliz.tactique.onglets.Couteaux.estCouteau(this.gun)) {
+         // couteaux (19/10) : ni munitions (« melee weapon 1/1 »), ni niveau, type « arme lourde » ou dégâts : seulement
+         // le nom et la description
          cir.setReturnValue(false);
       }
    }

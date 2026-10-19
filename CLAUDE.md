@@ -1128,7 +1128,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     Blackwood, Ash Wood, Aluminium, Street Camo et Plasma retirées (104 skins) ; batte : fines lignes noires à chaque
     tronçon (le dessous de chaque petite marche, dans l'ombre) : l'évasement est maintenant un vrai cône, 12 os tournés
     autour de l'axe, faces inclinées (`skins_melee.py`, `EVASEMENT`), sans aucune marche ; plus d'anneau de recharge
-    autour du viseur pour la mêlée et les couteaux (délai inchangé, `UsingProgressOverlay`) ;
+    autour du viseur pour la mêlée et les couteaux (délai inchangé, `UsingProgressOverlay`). Tactique 2.25.0 (19/10) :
+    **rang de 1 à 4 étoiles** choisi par le propriétaire pour chaque skin (tableau `ETOILES` du script ; non cité = 4) :
+    description « ★★☆☆ » (étoiles allumées en or, les autres grisées) puis « Exclusivité HeraliZ », nom « Arme | Finition »
+    sans étoile devant, de la couleur du rang (1 gris, 2 bleu, 3 violet, 4 or) ; vaut aussi pour les skins d'avant le
+    catalogue (Doppler, Lore, Fade…, `rhabiller()`) ; les paliers Classique… ne servent plus qu'au catalogue. Butterfly
+    Gunmetal retiré (103 skins). Toutes les armes de mêlée de LR Unique (`heralisz_tactical:melee` dans la section
+    `objets` de `raretes.json`, les couteaux TaCZ l'étaient déjà). Infobulles : plus de lignes de coups (gauche / droite,
+    dégâts, recharge) pour la mêlée de LR (`ClientMeleeTooltip`) ; plus de munitions, niveau, type ni dégâts pour les
+    couteaux TaCZ (`ClientGunTooltipMixin`) ;
   - skins de mêlée (18/10, Tactique 2.19.0 à 2.21.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
     et `heralisz_melee:baseball_bat__doppler_sapphire`, fiches copiées des armes de base (mêmes dégâts), dessinées
     EXACTEMENT comme les couteaux de heralisz_skins (même shader `camo_65` Lore / `camo_56` Doppler Saphir, même carte de
