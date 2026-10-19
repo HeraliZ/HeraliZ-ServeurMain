@@ -1133,13 +1133,22 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     (`TaczTeteAllongeMixin`) ; gestes debout de la mêlée de LR arrêtés allongé (`IdleAnimationHandler`). CaraCrea ne
     déforme rien lui-même (il recopie le modèle de Minecraft) ; pistes restantes s'il reste des défauts : ses cubes
     ignorent les parties cachées par d'autres mods (jambes du terminal d'extraction), emotes permises allongé.
-  - haut des cuisses détaché du corps en courant avec une arme (18/10, Tactique 2.21.3, `client/corps/Hanches`) : les
-    animations 3e personne de TaCZ (Player Animator, gunpacks non modifiés) penchent le torse autour du cou (course : 8 à
-    11° vers l'avant, jusqu'à 9° de côté) sans bouger les jambes : le bas du torse glissait de 2 à 3 pixels. Torse relevé
-    juste avant Player Animator (`PlayerModelTorseAvantMixin`, priorité 900), puis chaque jambe déplacée du chemin de sa
-    hanche juste après (`PlayerModelHanchesMixin`, priorité 2100 ; Player Animator est à 2000) ; rotations et pas des
-    jambes inchangés. Seulement debout ou accroupi (allongé, à terre, nage : rien) ; vaut aussi pour les emotes qui
-    tournent le torse. Rien testé en jeu ;
+  - haut des cuisses détaché du corps en courant avec une arme (18/10, Tactique 2.21.3, puis vraie cause le 19/10,
+    Tactique 2.22.0, `client/corps/Hanches`) : les animations 3e personne de TaCZ (Player Animator, gunpacks non modifiés)
+    DÉPLACENT le pivot des jambes en plus de les tourner (« run_lower » : 3,1 px en hauteur, 2,7 en profondeur ; marche
+    3,6 ; arrêt 2,9 ; minigun 5,3) : le haut de la cuisse sortait du torse. La 2.21.3 ne compensait que la bascule du
+    torse (2 px) : rien de visible. Maintenant, debout avec une arme TaCZ en main (pas accroupi, pas en véhicule) : torse
+    et jambes relevés juste avant Player Animator (`PlayerModelTorseAvantMixin`, priorité 900), puis chaque jambe remise à
+    la place de Minecraft plus le chemin de sa hanche avec le torse animé (`PlayerModelHanchesMixin`, priorité 2100 ;
+    Player Animator est à 2000) ; rotations (le pas) de TaCZ gardées. Sans arme TaCZ (emotes, mêlée de LR) : rien ne
+    change. Rien testé en jeu ;
+  - allongé sans arme (19/10, Tactique 2.22.0, `client/allonge/RamperSansArme`) : plus la nage de Minecraft, mais les
+    gestes « allongé » de TaCZ (« lie » immobile, « lie_move » en rampant, ceux de `tacz:rifle_default.player_animation`),
+    joués sur une couche Player Animator à nous (`heraliz_tactique:ramper_sans_arme`, priorité 45 ; TaCZ n'arrête que ses
+    couches quand on n'a pas d'arme), décidés chez chaque joueur pour tous les joueurs visibles (soi en 3e personne et les
+    autres). Mêmes règles que l'allongé avec arme : corps couché à plus de moitié, jamais dans l'eau, ni à terre
+    (Réanimation), ni en véhicule. La tête ne suit pas le regard (avec une arme, c'est la couche « rotation » de TaCZ).
+    Rien testé en jeu ;
 - arrivée d'un nouveau joueur (18/10, maquette A « radio carrée » validée ; CaraCrea 1.6.0, Utils 2.15.0, Quêtes 1.6.0,
   CRac 1.8.0-beta, dayzhotbar 1.5.0 ; rien testé en jeu) : 1. `/register` ou `/login` d'AuthMe (le créateur de
   personnage l'attend : `LoginCheck` de CaraCrea, par réflexion, rien de lisible = rien à attendre) ; 2. le créateur de
