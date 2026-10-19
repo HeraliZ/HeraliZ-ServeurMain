@@ -1513,8 +1513,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Journal des quêtes** (heraliz-quetes 1.6.6, 19/10) : la touche J ne montre que les PNJ qui donnent des quêtes (aujourd'hui le Commandant Varga ; plus les marchands). Une quête finie dit seulement « Retourner voir … ». Étapes « au corps à corps » (`arme: melee`) : les couteaux TaCZ comptent (reconnus par leur fiche `arkaniaz:knife_data`, `Couteaux.estCouteau` du mod tactique par réflexion ; avant, les M9 skinnés passaient pour des armes à feu). Rien testé en jeu.
 - **Marchands** (heraliz-quetes 1.4.0, 18/10, rien testé en jeu ; maquettes montrées) : Mila rachète objets de valeur et composants, Jacqueline vend les soins, le Doyen la nourriture, Jack les accessoires Commun à Rare (`Marchands`, écran `EcranMarchand`, canal version 2) ; listes et prix **écrits** par `python outils/marchands.py`.
 - **Quêtes** (heraliz-quetes 1.3.0, 18/10, rien testé en jeu) : un seul PNJ, le Commandant Varga (`varga.json`, 39
-  quêtes principales en 5 chapitres, scénario dans `docs/QUETES_SCENARIO.md`) ; textes en français seulement (anglais et
-  russe à ajouter dans le fichier). À faire en jeu par le staff : `/pnj creer varga` et les points de quête
+  quêtes principales en 5 chapitres, scénario dans `docs/QUETES_SCENARIO.md`) ; tous les textes des PNJ et des quêtes en
+  français, anglais et russe (`{"fr", "en", "ru"}`, 1.6.7 du 19/10 ; tout nouveau texte s'écrit dans les trois langues ;
+  « Commandant Varga » = « Commander Varga » / « Командир Варга », le Doyen = « The Elder » / « Старейшина »). À faire en jeu par le staff : `/pnj creer varga` et les points de quête
   (`insigne_varga`, `deserteur`, `cachette_deserteurs`, `boite_noire`, `salle_verte|bleue|rouge`, guide :
   `serveur/config/heraliz_quetes/LISEZMOI.md`). Quête 32 « Capturer un territoire » écrite mais `desactivee` (étape
   `capturer` pas branchée : territoires à refaire). Pas encore branché : casino, duels / ClashWar / Zombies, soins

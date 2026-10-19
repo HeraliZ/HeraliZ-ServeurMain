@@ -200,7 +200,7 @@ final class Moteur {
         CONTRATS.remove(a.cle);
         retirerObjets(p, a.cle);
         Defs.Recompense r = q.recompense;
-        boolean paye = r.herals <= 0 || Ponts.deposer(p.getUUID(), r.herals, "Quête : " + q.titre.francais());
+        boolean paye = r.herals <= 0 || Ponts.deposer(p.getUUID(), r.herals, "quete:" + q.titre.francais());
         dp.rep = Math.max(0, dp.rep + r.reputation);
         r.autres.forEach((pnj, v) -> j.pnj(pnj).rep = Math.max(0, j.pnj(pnj).rep + v));
         if (!r.titre.vide() && !j.titres.contains(r.titre.toString())) j.titres.add(r.titre.toString());
@@ -428,7 +428,7 @@ final class Moteur {
             }
             case "payer" -> {
                 long v = e.entier("herals", 0);
-                if (v <= 0 || Ponts.retirer(p.getUUID(), v, "Quête : " + q.titre.francais())) return true;
+                if (v <= 0 || Ponts.retirer(p.getUUID(), v, "quete:" + q.titre.francais())) return true;
                 notif(p, Texte.cle("heraliz_quetes.notif.pas_assez", Texte.brut(Ponts.nombre(v))), 0xFF6B6B);
                 return false;
             }

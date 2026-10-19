@@ -1,6 +1,10 @@
 {
   "id": "varga",
-  "nom": "Commandant Varga",
+  "nom": {
+    "fr": "Commandant Varga",
+    "en": "Commander Varga",
+    "ru": "Командир Варга"
+  },
   "role": {
     "fr": "Opérations",
     "en": "Operations",
@@ -30,36 +34,100 @@
     "wear": "clean"
   },
   "ambiance": [
-    "Repos. Enfin... pas trop.",
-    "Le 7e régiment ne laisse personne derrière.",
-    "Chaque galon se mérite.",
-    "Vos ordres sont simples : revenir vivant."
+    {
+      "fr": "Repos. Enfin... pas trop.",
+      "en": "At ease. Well... not too much.",
+      "ru": "Вольно. Ну... не слишком."
+    },
+    {
+      "fr": "Le 7e régiment ne laisse personne derrière.",
+      "en": "The 7th Regiment leaves no one behind.",
+      "ru": "7-й полк своих не бросает."
+    },
+    {
+      "fr": "Chaque galon se mérite.",
+      "en": "Every stripe has to be earned.",
+      "ru": "Каждую нашивку нужно заслужить."
+    },
+    {
+      "fr": "Vos ordres sont simples : revenir vivant.",
+      "en": "Your orders are simple: come back alive.",
+      "ru": "Ваш приказ прост: вернуться живым."
+    }
   ],
-  "presentation": "Nom, matricule ? ...Pas de matricule. Alors tu es civil. Je suis le Commandant Varga, 7e régiment. Ici, tu gagnes tes galons mission après mission : Recrue, Soldat, Caporal, Sergent, Officier.",
+  "presentation": {
+    "fr": "Nom, matricule ? ...Pas de matricule. Alors tu es civil. Je suis le Commandant Varga, 7e régiment. Ici, tu gagnes tes galons mission après mission : Recrue, Soldat, Caporal, Sergent, Officier.",
+    "en": "Name, service number? ...No service number. So you're a civilian. I'm Commander Varga, 7th Regiment. Here, you earn your stripes mission by mission: Recruit, Soldier, Corporal, Sergeant, Officer.",
+    "ru": "Имя, личный номер? ...Номера нет. Значит, гражданский. Я командир Варга, 7-й полк. Здесь нашивки зарабатывают задание за заданием: Новобранец, Солдат, Капрал, Сержант, Офицер."
+  },
   "accueil": {
-    "inconnu": "Repos. Qu'est-ce que vous voulez ?",
-    "connu": "Ah, vous. Prêt pour une opération ?",
-    "ami": "Lieutenant ! Enfin... presque. J'ai une mission pour vous.",
+    "inconnu": {
+      "fr": "Repos. Qu'est-ce que vous voulez ?",
+      "en": "At ease. What do you want?",
+      "ru": "Вольно. Что вам нужно?"
+    },
+    "connu": {
+      "fr": "Ah, vous. Prêt pour une opération ?",
+      "en": "Ah, you. Ready for an operation?",
+      "ru": "А, это вы. Готовы к операции?"
+    },
+    "ami": {
+      "fr": "Lieutenant ! Enfin... presque. J'ai une mission pour vous.",
+      "en": "Lieutenant! Well... almost. I have a mission for you.",
+      "ru": "Лейтенант! Ну... почти. У меня для вас задание."
+    },
     "besoin": [
-      "Vous ! J'ai une mission pour vous.",
-      "Garde-à-vous. Nouvelle mission."
+      {
+        "fr": "Vous ! J'ai une mission pour vous.",
+        "en": "You! I have a mission for you.",
+        "ru": "Вы! У меня для вас задание."
+      },
+      {
+        "fr": "Garde-à-vous. Nouvelle mission.",
+        "en": "Attention! New mission.",
+        "ru": "Смирно. Новое задание."
+      }
     ],
     "en_cours": [
-      "Votre mission n'est pas terminée. Repos, puis au travail.",
-      "Rapport ? Non ? Alors retournez sur le terrain."
+      {
+        "fr": "Votre mission n'est pas terminée. Repos, puis au travail.",
+        "en": "Your mission isn't over. Rest up, then get back to work.",
+        "ru": "Ваше задание не выполнено. Передохните — и за работу."
+      },
+      {
+        "fr": "Rapport ? Non ? Alors retournez sur le terrain.",
+        "en": "Report? No? Then get back out in the field.",
+        "ru": "Доклад? Нет? Тогда марш обратно на задание."
+      }
     ]
   },
   "suite": [
     {
       "id": "c1_tir",
-      "titre": "Premier tir",
+      "titre": {
+        "fr": "Premier tir",
+        "en": "First Shot",
+        "ru": "Первый выстрел"
+      },
       "difficulte": 1,
-      "demande": "Prends une arme à feu et tue 10 zombies avec.",
-      "fin": "Tu sais tenir une arme. C'est un début.",
+      "demande": {
+        "fr": "Prends une arme à feu et tue 10 zombies avec.",
+        "en": "Grab a firearm and kill 10 zombies with it.",
+        "ru": "Возьми огнестрельное оружие и убей из него 10 зомби."
+      },
+      "fin": {
+        "fr": "Tu sais tenir une arme. C'est un début.",
+        "en": "You know how to hold a weapon. It's a start.",
+        "ru": "Оружие держать умеешь. Для начала неплохо."
+      },
       "etapes": [
         {
           "type": "tuer",
-          "libelle": "Tuer 10 zombies avec une arme à feu",
+          "libelle": {
+            "fr": "Tuer 10 zombies avec une arme à feu",
+            "en": "Kill 10 zombies with a firearm",
+            "ru": "Убить 10 зомби из огнестрельного оружия"
+          },
           "cible": "zombies",
           "nombre": 10,
           "arme": "feu"
@@ -72,14 +140,30 @@
     },
     {
       "id": "c1_fouille",
-      "titre": "Fouille",
+      "titre": {
+        "fr": "Fouille",
+        "en": "Scavenging",
+        "ru": "Обыск"
+      },
       "difficulte": 1,
-      "demande": "Fouille 5 conteneurs sur la carte.",
-      "fin": "Tu ne reviens pas les mains vides. Bien.",
+      "demande": {
+        "fr": "Fouille 5 conteneurs sur la carte.",
+        "en": "Search 5 containers on the map.",
+        "ru": "Обыщи 5 контейнеров на карте."
+      },
+      "fin": {
+        "fr": "Tu ne reviens pas les mains vides. Bien.",
+        "en": "You don't come back empty-handed. Good.",
+        "ru": "С пустыми руками не возвращаешься. Хорошо."
+      },
       "etapes": [
         {
           "type": "fouiller",
-          "libelle": "Fouiller 5 conteneurs",
+          "libelle": {
+            "fr": "Fouiller 5 conteneurs",
+            "en": "Search 5 containers",
+            "ru": "Обыскать 5 контейнеров"
+          },
           "nombre": 5
         }
       ],
@@ -90,14 +174,30 @@
     },
     {
       "id": "c1_arme",
-      "titre": "Une vraie arme",
+      "titre": {
+        "fr": "Une vraie arme",
+        "en": "A Real Weapon",
+        "ru": "Настоящее оружие"
+      },
       "difficulte": 1,
-      "demande": "Montre-moi une arme à feu Peu commune ou mieux.",
-      "fin": "Voilà qui ressemble à du matériel.",
+      "demande": {
+        "fr": "Montre-moi une arme à feu Peu commune ou mieux.",
+        "en": "Show me an Uncommon or better firearm.",
+        "ru": "Покажи мне огнестрельное оружие редкости «Необычный» или выше."
+      },
+      "fin": {
+        "fr": "Voilà qui ressemble à du matériel.",
+        "en": "Now that looks like real gear.",
+        "ru": "Вот это уже похоже на снаряжение."
+      },
       "etapes": [
         {
           "type": "montrer",
-          "libelle": "Montrer une arme Peu commune ou mieux",
+          "libelle": {
+            "fr": "Montrer une arme Peu commune ou mieux",
+            "en": "Show an Uncommon or better weapon",
+            "ru": "Показать оружие редкости «Необычный» или выше"
+          },
           "nombre": 1,
           "arme": "feu",
           "rarete_min": "peu_commun"
@@ -110,14 +210,30 @@
     },
     {
       "id": "c1_soins",
-      "titre": "Trousse de secours",
+      "titre": {
+        "fr": "Trousse de secours",
+        "en": "First Aid Kit",
+        "ru": "Аптечка"
+      },
       "difficulte": 1,
-      "demande": "Rapporte-moi 3 soins, n'importe lesquels.",
-      "fin": "Ça ira à l'infirmerie. Merci.",
+      "demande": {
+        "fr": "Rapporte-moi 3 soins, n'importe lesquels.",
+        "en": "Bring me 3 medical items, any kind.",
+        "ru": "Принеси мне 3 медикамента, любых."
+      },
+      "fin": {
+        "fr": "Ça ira à l'infirmerie. Merci.",
+        "en": "That'll go to the infirmary. Thanks.",
+        "ru": "Отправлю в лазарет. Спасибо."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 3 soins",
+          "libelle": {
+            "fr": "Rapporter 3 soins",
+            "en": "Bring back 3 medical items",
+            "ru": "Принести 3 медикамента"
+          },
           "nombre": 3,
           "objet": [
             "heralisz_heal:vaseline",
@@ -141,14 +257,30 @@
     },
     {
       "id": "c1_valeurs",
-      "titre": "Ce qui se revend",
+      "titre": {
+        "fr": "Ce qui se revend",
+        "en": "What Sells",
+        "ru": "Ходовой товар"
+      },
       "difficulte": 1,
-      "demande": "Rapporte-moi 5 objets de valeur, n'importe lesquels.",
-      "fin": "Ça paie les munitions. Tiens, une Clé de Quêtes.",
+      "demande": {
+        "fr": "Rapporte-moi 5 objets de valeur, n'importe lesquels.",
+        "en": "Bring me 5 valuables, any kind.",
+        "ru": "Принеси мне 5 ценных предметов, любых."
+      },
+      "fin": {
+        "fr": "Ça paie les munitions. Tiens, une Clé de Quêtes.",
+        "en": "That pays for ammo. Here, a Quest Key.",
+        "ru": "На патроны хватит. Держи, Ключ заданий."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 5 objets de valeur",
+          "libelle": {
+            "fr": "Rapporter 5 objets de valeur",
+            "en": "Bring back 5 valuables",
+            "ru": "Принести 5 ценных предметов"
+          },
           "nombre": 5,
           "tag": "heraliz_composants:vente"
         }
@@ -163,14 +295,30 @@
     },
     {
       "id": "c1_melee",
-      "titre": "Sans un bruit",
+      "titre": {
+        "fr": "Sans un bruit",
+        "en": "Without a Sound",
+        "ru": "Без единого звука"
+      },
       "difficulte": 1,
-      "demande": "Tue 10 zombies au corps à corps.",
-      "fin": "Les balles, ça s'économise. Tu as compris.",
+      "demande": {
+        "fr": "Tue 10 zombies au corps à corps.",
+        "en": "Kill 10 zombies in melee.",
+        "ru": "Убей 10 зомби в ближнем бою."
+      },
+      "fin": {
+        "fr": "Les balles, ça s'économise. Tu as compris.",
+        "en": "Bullets are worth saving. You get it.",
+        "ru": "Патроны надо беречь. Ты понял."
+      },
       "etapes": [
         {
           "type": "tuer",
-          "libelle": "Tuer 10 zombies au corps à corps",
+          "libelle": {
+            "fr": "Tuer 10 zombies au corps à corps",
+            "en": "Kill 10 zombies in melee",
+            "ru": "Убить 10 зомби в ближнем бою"
+          },
           "cible": "zombies",
           "nombre": 10,
           "arme": "melee"
@@ -183,14 +331,30 @@
     },
     {
       "id": "c1_tenir",
-      "titre": "Tenir le coup",
+      "titre": {
+        "fr": "Tenir le coup",
+        "en": "Hold On",
+        "ru": "Продержаться"
+      },
       "difficulte": 2,
-      "demande": "Reste 15 minutes sur la carte sans mourir.",
-      "fin": "Quinze minutes debout. Tu tiens.",
+      "demande": {
+        "fr": "Reste 15 minutes sur la carte sans mourir.",
+        "en": "Stay on the map for 15 minutes without dying.",
+        "ru": "Продержись на карте 15 минут и не умри."
+      },
+      "fin": {
+        "fr": "Quinze minutes debout. Tu tiens.",
+        "en": "Fifteen minutes on your feet. You're holding up.",
+        "ru": "Пятнадцать минут на ногах. Держишься."
+      },
       "etapes": [
         {
           "type": "survivre",
-          "libelle": "Rester 15 min sur la carte sans mourir",
+          "libelle": {
+            "fr": "Rester 15 min sur la carte sans mourir",
+            "en": "Stay on the map for 15 min without dying",
+            "ru": "Продержаться на карте 15 мин и не умереть"
+          },
           "secondes": 900
         }
       ],
@@ -201,18 +365,38 @@
     },
     {
       "id": "c1_retour",
-      "titre": "Fin de classe",
+      "titre": {
+        "fr": "Fin de classe",
+        "en": "Graduation",
+        "ru": "Выпускной экзамен"
+      },
       "difficulte": 2,
-      "demande": "Reviens par une extraction, puis paie-moi 1 000 hérals pour passer Soldat.",
-      "fin": "Bienvenue chez les Soldats. Tiens, ta Clé de Quêtes.",
+      "demande": {
+        "fr": "Reviens par une extraction, puis paie-moi 1 000 hérals pour passer Soldat.",
+        "en": "Come back through an extraction, then pay me 1,000 herals to make Soldier.",
+        "ru": "Вернись через эвакуацию, потом заплати мне 1 000 гералов, чтобы стать Солдатом."
+      },
+      "fin": {
+        "fr": "Bienvenue chez les Soldats. Tiens, ta Clé de Quêtes.",
+        "en": "Welcome to the Soldiers. Here, your Quest Key.",
+        "ru": "Добро пожаловать в Солдаты. Держи свой Ключ заданий."
+      },
       "etapes": [
         {
           "type": "extraction",
-          "libelle": "Revenir par une extraction"
+          "libelle": {
+            "fr": "Revenir par une extraction",
+            "en": "Come back through an extraction",
+            "ru": "Вернуться через эвакуацию"
+          }
         },
         {
           "type": "payer",
-          "libelle": "Payer 1 000 hérals",
+          "libelle": {
+            "fr": "Payer 1 000 hérals",
+            "en": "Pay 1,000 herals",
+            "ru": "Заплатить 1 000 гералов"
+          },
           "herals": 1000
         }
       ],
@@ -222,29 +406,61 @@
         "objets": {
           "heralizcrates:quete_key": 1
         },
-        "titre": "Recrue"
+        "titre": {
+          "fr": "Recrue",
+          "en": "Recruit",
+          "ru": "Новобранец"
+        }
       }
     },
     {
       "id": "c2_insignes",
-      "titre": "Le 7e régiment",
+      "titre": {
+        "fr": "Le 7e régiment",
+        "en": "The 7th Regiment",
+        "ru": "7-й полк"
+      },
       "difficulte": 2,
-      "demande": "Retrouve 5 insignes du 7e régiment dans les villes et rapporte-les-moi.",
-      "fin": "Cinq hommes de mon régiment. On ne les oubliera pas.",
+      "demande": {
+        "fr": "Retrouve 5 insignes du 7e régiment dans les villes et rapporte-les-moi.",
+        "en": "Find 5 insignia of the 7th Regiment in the towns and bring them back to me.",
+        "ru": "Найди в городах 5 нашивок 7-го полка и принеси их мне."
+      },
+      "fin": {
+        "fr": "Cinq hommes de mon régiment. On ne les oubliera pas.",
+        "en": "Five men from my regiment. They will not be forgotten.",
+        "ru": "Пятеро бойцов моего полка. Мы их не забудем."
+      },
       "etapes": [
         {
           "type": "ramasser",
-          "libelle": "Retrouver 5 insignes du 7e régiment",
+          "libelle": {
+            "fr": "Retrouver 5 insignes du 7e régiment",
+            "en": "Find 5 insignia of the 7th Regiment",
+            "ru": "Найти 5 нашивок 7-го полка"
+          },
           "groupe": "insigne_varga",
           "nombre": 5,
           "objet": "insigne_regiment",
           "ref": "insigne",
-          "nom": "Insigne du 7e régiment",
-          "desc": "Écusson de métal de l'unité du Commandant Varga. Arraché à un uniforme."
+          "nom": {
+            "fr": "Insigne du 7e régiment",
+            "en": "7th Regiment Insignia",
+            "ru": "Нашивка 7-го полка"
+          },
+          "desc": {
+            "fr": "Écusson de métal de l'unité du Commandant Varga. Arraché à un uniforme.",
+            "en": "Metal badge of Commander Varga's unit. Torn from a uniform.",
+            "ru": "Металлическая нашивка подразделения командира Варги. Сорвана с формы."
+          }
         },
         {
           "type": "donner",
-          "libelle": "Rapporter les 5 insignes",
+          "libelle": {
+            "fr": "Rapporter les 5 insignes",
+            "en": "Bring back the 5 insignia",
+            "ru": "Принести 5 нашивок"
+          },
           "objet_quete": "insigne",
           "nombre": 5
         }
@@ -256,14 +472,30 @@
     },
     {
       "id": "c2_nettoyage",
-      "titre": "Nettoyage",
+      "titre": {
+        "fr": "Nettoyage",
+        "en": "Clean-up",
+        "ru": "Зачистка"
+      },
       "difficulte": 2,
-      "demande": "Tue 40 zombies.",
-      "fin": "La zone respire mieux.",
+      "demande": {
+        "fr": "Tue 40 zombies.",
+        "en": "Kill 40 zombies.",
+        "ru": "Убей 40 зомби."
+      },
+      "fin": {
+        "fr": "La zone respire mieux.",
+        "en": "The area breathes easier.",
+        "ru": "Зоне стало легче дышать."
+      },
       "etapes": [
         {
           "type": "tuer",
-          "libelle": "Tuer 40 zombies",
+          "libelle": {
+            "fr": "Tuer 40 zombies",
+            "en": "Kill 40 zombies",
+            "ru": "Убить 40 зомби"
+          },
           "cible": "zombies",
           "nombre": 40
         }
@@ -275,14 +507,30 @@
     },
     {
       "id": "c2_fouille",
-      "titre": "Ratissage",
+      "titre": {
+        "fr": "Ratissage",
+        "en": "Sweep",
+        "ru": "Прочёсывание"
+      },
       "difficulte": 2,
-      "demande": "Fouille 20 conteneurs sur la carte.",
-      "fin": "Rien ne t'échappe.",
+      "demande": {
+        "fr": "Fouille 20 conteneurs sur la carte.",
+        "en": "Search 20 containers on the map.",
+        "ru": "Обыщи 20 контейнеров на карте."
+      },
+      "fin": {
+        "fr": "Rien ne t'échappe.",
+        "en": "Nothing gets past you.",
+        "ru": "От тебя ничего не ускользнёт."
+      },
       "etapes": [
         {
           "type": "fouiller",
-          "libelle": "Fouiller 20 conteneurs",
+          "libelle": {
+            "fr": "Fouiller 20 conteneurs",
+            "en": "Search 20 containers",
+            "ru": "Обыскать 20 контейнеров"
+          },
           "nombre": 20
         }
       ],
@@ -293,20 +541,40 @@
     },
     {
       "id": "c2_radio",
-      "titre": "Pièces de radio",
+      "titre": {
+        "fr": "Pièces de radio",
+        "en": "Radio Parts",
+        "ru": "Детали для рации"
+      },
       "difficulte": 2,
-      "demande": "Rapporte-moi 5 batteries et 5 circuits imprimés.",
-      "fin": "La radio du camp va revivre.",
+      "demande": {
+        "fr": "Rapporte-moi 5 batteries et 5 circuits imprimés.",
+        "en": "Bring me 5 batteries and 5 circuit boards.",
+        "ru": "Принеси мне 5 батареек и 5 печатных плат."
+      },
+      "fin": {
+        "fr": "La radio du camp va revivre.",
+        "en": "The camp radio will live again.",
+        "ru": "Рация лагеря снова заработает."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 5 batteries",
+          "libelle": {
+            "fr": "Rapporter 5 batteries",
+            "en": "Bring back 5 batteries",
+            "ru": "Принести 5 батареек"
+          },
           "nombre": 5,
           "objet": "heraliz_composants:batterie"
         },
         {
           "type": "donner",
-          "libelle": "Rapporter 5 circuits imprimés",
+          "libelle": {
+            "fr": "Rapporter 5 circuits imprimés",
+            "en": "Bring back 5 circuit boards",
+            "ru": "Принести 5 печатных плат"
+          },
           "nombre": 5,
           "objet": "heraliz_composants:circuit_imprime"
         }
@@ -318,14 +586,30 @@
     },
     {
       "id": "c2_valeurs",
-      "titre": "Meilleure prise",
+      "titre": {
+        "fr": "Meilleure prise",
+        "en": "Better Haul",
+        "ru": "Добыча получше"
+      },
       "difficulte": 2,
-      "demande": "Rapporte-moi 10 objets de valeur Peu communs ou mieux.",
-      "fin": "Ça, ça vaut quelque chose. Une Clé de Quêtes pour toi.",
+      "demande": {
+        "fr": "Rapporte-moi 10 objets de valeur Peu communs ou mieux.",
+        "en": "Bring me 10 Uncommon or better valuables.",
+        "ru": "Принеси мне 10 ценных предметов редкости «Необычный» или выше."
+      },
+      "fin": {
+        "fr": "Ça, ça vaut quelque chose. Une Clé de Quêtes pour toi.",
+        "en": "Now that's worth something. A Quest Key for you.",
+        "ru": "Вот это чего-то стоит. Тебе Ключ заданий."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 10 objets de valeur Peu communs ou mieux",
+          "libelle": {
+            "fr": "Rapporter 10 objets de valeur Peu communs ou mieux",
+            "en": "Bring back 10 Uncommon or better valuables",
+            "ru": "Принести 10 ценных предметов редкости «Необычный» или выше"
+          },
           "nombre": 10,
           "tag": "heraliz_composants:vente",
           "rarete_min": "peu_commun"
@@ -341,14 +625,30 @@
     },
     {
       "id": "c2_protection",
-      "titre": "Protection",
+      "titre": {
+        "fr": "Protection",
+        "en": "Protection",
+        "ru": "Защита"
+      },
       "difficulte": 2,
-      "demande": "Montre-moi un gilet ou un casque Peu commun ou mieux.",
-      "fin": "Mieux protégé, tu vivras plus longtemps.",
+      "demande": {
+        "fr": "Montre-moi un gilet ou un casque Peu commun ou mieux.",
+        "en": "Show me an Uncommon or better vest or helmet.",
+        "ru": "Покажи мне бронежилет или шлем редкости «Необычный» или выше."
+      },
+      "fin": {
+        "fr": "Mieux protégé, tu vivras plus longtemps.",
+        "en": "Better protected, you'll live longer.",
+        "ru": "С защитой получше проживёшь дольше."
+      },
       "etapes": [
         {
           "type": "montrer",
-          "libelle": "Montrer un gilet ou un casque Peu commun ou mieux",
+          "libelle": {
+            "fr": "Montrer un gilet ou un casque Peu commun ou mieux",
+            "en": "Show an Uncommon or better vest or helmet",
+            "ru": "Показать бронежилет или шлем редкости «Необычный» или выше"
+          },
           "nombre": 1,
           "armure": "tete_ou_corps",
           "rarete_min": "peu_commun"
@@ -361,20 +661,40 @@
     },
     {
       "id": "c2_poudre",
-      "titre": "Poudre",
+      "titre": {
+        "fr": "Poudre",
+        "en": "Gunpowder",
+        "ru": "Порох"
+      },
       "difficulte": 2,
-      "demande": "Rapporte-moi 5 tonnelets de poudre et 5 bocaux de poudre.",
-      "fin": "De quoi refaire des munitions. Parfait.",
+      "demande": {
+        "fr": "Rapporte-moi 5 tonnelets de poudre et 5 bocaux de poudre.",
+        "en": "Bring me 5 gunpowder kegs and 5 gunpowder jars.",
+        "ru": "Принеси мне 5 бочонков пороха и 5 банок пороха."
+      },
+      "fin": {
+        "fr": "De quoi refaire des munitions. Parfait.",
+        "en": "Enough to make more ammo. Perfect.",
+        "ru": "Хватит, чтобы снарядить патроны. Отлично."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 5 tonnelets de poudre",
+          "libelle": {
+            "fr": "Rapporter 5 tonnelets de poudre",
+            "en": "Bring back 5 gunpowder kegs",
+            "ru": "Принести 5 бочонков пороха"
+          },
           "nombre": 5,
           "objet": "heraliz_composants:tonnelet_poudre"
         },
         {
           "type": "donner",
-          "libelle": "Rapporter 5 bocaux de poudre",
+          "libelle": {
+            "fr": "Rapporter 5 bocaux de poudre",
+            "en": "Bring back 5 gunpowder jars",
+            "ru": "Принести 5 банок пороха"
+          },
           "nombre": 5,
           "objet": "heraliz_composants:bocal_poudre"
         }
@@ -386,19 +706,39 @@
     },
     {
       "id": "c2_fin",
-      "titre": "Fin de classe",
+      "titre": {
+        "fr": "Fin de classe",
+        "en": "Graduation",
+        "ru": "Выпускной экзамен"
+      },
       "difficulte": 3,
-      "demande": "Reste 30 minutes sur la carte sans mourir, puis paie-moi 3 000 hérals pour passer Caporal.",
-      "fin": "Caporal. Tu l'as mérité. Ta Clé de Quêtes.",
+      "demande": {
+        "fr": "Reste 30 minutes sur la carte sans mourir, puis paie-moi 3 000 hérals pour passer Caporal.",
+        "en": "Stay on the map for 30 minutes without dying, then pay me 3,000 herals to make Corporal.",
+        "ru": "Продержись на карте 30 минут и не умри, потом заплати мне 3 000 гералов, чтобы стать Капралом."
+      },
+      "fin": {
+        "fr": "Caporal. Tu l'as mérité. Ta Clé de Quêtes.",
+        "en": "Corporal. You've earned it. Your Quest Key.",
+        "ru": "Капрал. Ты это заслужил. Твой Ключ заданий."
+      },
       "etapes": [
         {
           "type": "survivre",
-          "libelle": "Rester 30 min sur la carte sans mourir",
+          "libelle": {
+            "fr": "Rester 30 min sur la carte sans mourir",
+            "en": "Stay on the map for 30 min without dying",
+            "ru": "Продержаться на карте 30 мин и не умереть"
+          },
           "secondes": 1800
         },
         {
           "type": "payer",
-          "libelle": "Payer 3 000 hérals",
+          "libelle": {
+            "fr": "Payer 3 000 hérals",
+            "en": "Pay 3,000 herals",
+            "ru": "Заплатить 3 000 гералов"
+          },
           "herals": 3000
         }
       ],
@@ -408,19 +748,39 @@
         "objets": {
           "heralizcrates:quete_key": 1
         },
-        "titre": "Soldat"
+        "titre": {
+          "fr": "Soldat",
+          "en": "Soldier",
+          "ru": "Солдат"
+        }
       }
     },
     {
       "id": "c3_execution",
-      "titre": "Pas de pitié",
+      "titre": {
+        "fr": "Pas de pitié",
+        "en": "No Mercy",
+        "ru": "Без жалости"
+      },
       "difficulte": 3,
-      "demande": "Achève un joueur à terre.",
-      "fin": "Dur, mais nécessaire ici. Retiens-le.",
+      "demande": {
+        "fr": "Achève un joueur à terre.",
+        "en": "Finish off a downed player.",
+        "ru": "Добей игрока в нокауте."
+      },
+      "fin": {
+        "fr": "Dur, mais nécessaire ici. Retiens-le.",
+        "en": "Harsh, but necessary out here. Remember that.",
+        "ru": "Жёстко, но здесь иначе нельзя. Запомни это."
+      },
       "etapes": [
         {
           "type": "executer",
-          "libelle": "Achever un joueur à terre",
+          "libelle": {
+            "fr": "Achever un joueur à terre",
+            "en": "Finish off a downed player",
+            "ru": "Добить игрока в нокауте"
+          },
           "nombre": 1
         }
       ],
@@ -431,14 +791,30 @@
     },
     {
       "id": "c3_fouille",
-      "titre": "Zones dangereuses",
+      "titre": {
+        "fr": "Zones dangereuses",
+        "en": "Dangerous Zones",
+        "ru": "Опасные зоны"
+      },
       "difficulte": 3,
-      "demande": "Fouille 10 conteneurs T3 ou mieux.",
-      "fin": "Les bons coins, maintenant. Tu progresses.",
+      "demande": {
+        "fr": "Fouille 10 conteneurs T3 ou mieux.",
+        "en": "Search 10 T3 or better containers.",
+        "ru": "Обыщи 10 контейнеров T3 или выше."
+      },
+      "fin": {
+        "fr": "Les bons coins, maintenant. Tu progresses.",
+        "en": "The good spots now. You're making progress.",
+        "ru": "Теперь хорошие места. Ты растёшь."
+      },
       "etapes": [
         {
           "type": "fouiller",
-          "libelle": "Fouiller 10 conteneurs T3 ou mieux",
+          "libelle": {
+            "fr": "Fouiller 10 conteneurs T3 ou mieux",
+            "en": "Search 10 T3 or better containers",
+            "ru": "Обыскать 10 контейнеров T3 или выше"
+          },
           "nombre": 10,
           "palier_min": 3
         }
@@ -450,20 +826,40 @@
     },
     {
       "id": "c3_plaques",
-      "titre": "Ferraille",
+      "titre": {
+        "fr": "Ferraille",
+        "en": "Scrap Metal",
+        "ru": "Металлолом"
+      },
       "difficulte": 3,
-      "demande": "Rapporte-moi 10 plaques recyclées et 5 plaques soudées.",
-      "fin": "Assez pour renforcer la barricade.",
+      "demande": {
+        "fr": "Rapporte-moi 10 plaques recyclées et 5 plaques soudées.",
+        "en": "Bring me 10 recycled plates and 5 welded plates.",
+        "ru": "Принеси мне 10 самодельных пластин и 5 сварных пластин."
+      },
+      "fin": {
+        "fr": "Assez pour renforcer la barricade.",
+        "en": "Enough to reinforce the barricade.",
+        "ru": "Хватит, чтобы укрепить баррикаду."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 10 plaques recyclées",
+          "libelle": {
+            "fr": "Rapporter 10 plaques recyclées",
+            "en": "Bring back 10 recycled plates",
+            "ru": "Принести 10 самодельных пластин"
+          },
           "nombre": 10,
           "objet": "heraliz_composants:plaque_recyclee"
         },
         {
           "type": "donner",
-          "libelle": "Rapporter 5 plaques soudées",
+          "libelle": {
+            "fr": "Rapporter 5 plaques soudées",
+            "en": "Bring back 5 welded plates",
+            "ru": "Принести 5 сварных пластин"
+          },
           "nombre": 5,
           "objet": "heraliz_composants:plaque_soudee"
         }
@@ -475,14 +871,30 @@
     },
     {
       "id": "c3_armurier",
-      "titre": "Armurier",
+      "titre": {
+        "fr": "Armurier",
+        "en": "Gunsmith",
+        "ru": "Оружейник"
+      },
       "difficulte": 3,
-      "demande": "Fabrique une arme à la table d'armurier.",
-      "fin": "Tu sais faire tes propres armes. Une Clé de Quêtes.",
+      "demande": {
+        "fr": "Fabrique une arme à la table d'armurier.",
+        "en": "Craft a weapon at the gunsmith table.",
+        "ru": "Изготовь оружие на верстаке оружейника."
+      },
+      "fin": {
+        "fr": "Tu sais faire tes propres armes. Une Clé de Quêtes.",
+        "en": "You can make your own weapons. A Quest Key.",
+        "ru": "Ты умеешь делать своё оружие. Ключ заданий."
+      },
       "etapes": [
         {
           "type": "fabriquer",
-          "libelle": "Fabriquer une arme à la table d'armurier",
+          "libelle": {
+            "fr": "Fabriquer une arme à la table d'armurier",
+            "en": "Craft a weapon at the gunsmith table",
+            "ru": "Изготовить оружие на верстаке оружейника"
+          },
           "nombre": 1
         }
       ],
@@ -496,14 +908,30 @@
     },
     {
       "id": "c3_nuit",
-      "titre": "Patrouille de nuit",
+      "titre": {
+        "fr": "Patrouille de nuit",
+        "en": "Night Patrol",
+        "ru": "Ночной патруль"
+      },
       "difficulte": 3,
-      "demande": "Tue 20 zombies pendant la nuit.",
-      "fin": "La nuit ne te fait plus peur.",
+      "demande": {
+        "fr": "Tue 20 zombies pendant la nuit.",
+        "en": "Kill 20 zombies at night.",
+        "ru": "Убей 20 зомби ночью."
+      },
+      "fin": {
+        "fr": "La nuit ne te fait plus peur.",
+        "en": "The night doesn't scare you anymore.",
+        "ru": "Ночь тебя больше не пугает."
+      },
       "etapes": [
         {
           "type": "tuer",
-          "libelle": "Tuer 20 zombies de nuit",
+          "libelle": {
+            "fr": "Tuer 20 zombies de nuit",
+            "en": "Kill 20 zombies at night",
+            "ru": "Убить 20 зомби ночью"
+          },
           "cible": "zombies",
           "nombre": 20,
           "nuit": true
@@ -516,32 +944,72 @@
     },
     {
       "id": "c3_deserteurs",
-      "titre": "Les déserteurs",
+      "titre": {
+        "fr": "Les déserteurs",
+        "en": "The Deserters",
+        "ru": "Дезертиры"
+      },
       "difficulte": 3,
-      "demande": "Lis les carnets de 3 déserteurs, retrouve leur sacoche cachée et rapporte-la-moi.",
-      "fin": "Ces lâches avaient tout planqué. Bon travail.",
+      "demande": {
+        "fr": "Lis les carnets de 3 déserteurs, retrouve leur sacoche cachée et rapporte-la-moi.",
+        "en": "Read the notebooks of 3 deserters, find their hidden satchel and bring it back to me.",
+        "ru": "Прочитай дневники 3 дезертиров, найди их спрятанную сумку и принеси её мне."
+      },
+      "fin": {
+        "fr": "Ces lâches avaient tout planqué. Bon travail.",
+        "en": "Those cowards had stashed everything. Good work.",
+        "ru": "Эти трусы всё припрятали. Хорошая работа."
+      },
       "etapes": [
         {
           "type": "indice",
-          "libelle": "Lire les carnets de 3 déserteurs",
+          "libelle": {
+            "fr": "Lire les carnets de 3 déserteurs",
+            "en": "Read the notebooks of 3 deserters",
+            "ru": "Прочитать дневники 3 дезертиров"
+          },
           "groupe": "deserteur",
           "nombre": 3,
-          "titre": "Carnet d'un déserteur",
-          "texte": "On a tout laissé dans la sacoche, à la cachette. Varga ne doit jamais la trouver."
+          "titre": {
+            "fr": "Carnet d'un déserteur",
+            "en": "Deserter's Notebook",
+            "ru": "Дневник дезертира"
+          },
+          "texte": {
+            "fr": "On a tout laissé dans la sacoche, à la cachette. Varga ne doit jamais la trouver.",
+            "en": "We left everything in the satchel, at the hideout. Varga must never find it.",
+            "ru": "Мы оставили всё в сумке, в тайнике. Варга не должен её найти."
+          }
         },
         {
           "type": "ramasser",
-          "libelle": "Retrouver la sacoche des déserteurs",
+          "libelle": {
+            "fr": "Retrouver la sacoche des déserteurs",
+            "en": "Find the deserters' satchel",
+            "ru": "Найти сумку дезертиров"
+          },
           "groupe": "cachette_deserteurs",
           "nombre": 1,
           "objet": "sacoche_deserteurs",
           "ref": "sacoche",
-          "nom": "Sacoche des déserteurs",
-          "desc": "Sacoche de toile pleine de papiers et de vivres, cachée par les déserteurs."
+          "nom": {
+            "fr": "Sacoche des déserteurs",
+            "en": "Deserters' Satchel",
+            "ru": "Сумка дезертиров"
+          },
+          "desc": {
+            "fr": "Sacoche de toile pleine de papiers et de vivres, cachée par les déserteurs.",
+            "en": "Canvas satchel full of papers and rations, hidden by the deserters.",
+            "ru": "Брезентовая сумка, полная бумаг и провизии, спрятанная дезертирами."
+          }
         },
         {
           "type": "donner",
-          "libelle": "Rapporter la sacoche",
+          "libelle": {
+            "fr": "Rapporter la sacoche",
+            "en": "Bring back the satchel",
+            "ru": "Принести сумку"
+          },
           "objet_quete": "sacoche",
           "nombre": 1
         }
@@ -553,14 +1021,30 @@
     },
     {
       "id": "c3_valeurs",
-      "titre": "Objets rares",
+      "titre": {
+        "fr": "Objets rares",
+        "en": "Rare Items",
+        "ru": "Редкие предметы"
+      },
       "difficulte": 3,
-      "demande": "Rapporte-moi 5 objets de valeur Rares ou mieux.",
-      "fin": "Ça, c'est une belle prise.",
+      "demande": {
+        "fr": "Rapporte-moi 5 objets de valeur Rares ou mieux.",
+        "en": "Bring me 5 Rare or better valuables.",
+        "ru": "Принеси мне 5 ценных предметов редкости «Редкий» или выше."
+      },
+      "fin": {
+        "fr": "Ça, c'est une belle prise.",
+        "en": "Now that's a fine haul.",
+        "ru": "Вот это славная добыча."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 5 objets de valeur Rares ou mieux",
+          "libelle": {
+            "fr": "Rapporter 5 objets de valeur Rares ou mieux",
+            "en": "Bring back 5 Rare or better valuables",
+            "ru": "Принести 5 ценных предметов редкости «Редкий» или выше"
+          },
           "nombre": 5,
           "tag": "heraliz_composants:vente",
           "rarete_min": "rare"
@@ -573,21 +1057,41 @@
     },
     {
       "id": "c3_fin",
-      "titre": "Fin de classe",
+      "titre": {
+        "fr": "Fin de classe",
+        "en": "Graduation",
+        "ru": "Выпускной экзамен"
+      },
       "difficulte": 3,
-      "demande": "Entre dans une salle à carte verte, puis paie-moi 5 000 hérals pour passer Sergent.",
-      "fin": "Sergent. Ta Clé de Quêtes.",
+      "demande": {
+        "fr": "Entre dans une salle à carte verte, puis paie-moi 5 000 hérals pour passer Sergent.",
+        "en": "Enter a green keycard room, then pay me 5,000 herals to make Sergeant.",
+        "ru": "Войди в комнату с зелёной ключ-картой, потом заплати мне 5 000 гералов, чтобы стать Сержантом."
+      },
+      "fin": {
+        "fr": "Sergent. Ta Clé de Quêtes.",
+        "en": "Sergeant. Your Quest Key.",
+        "ru": "Сержант. Твой Ключ заданий."
+      },
       "etapes": [
         {
           "type": "endroit",
-          "libelle": "Entrer dans une salle à carte verte",
+          "libelle": {
+            "fr": "Entrer dans une salle à carte verte",
+            "en": "Enter a green keycard room",
+            "ru": "Войти в комнату с зелёной ключ-картой"
+          },
           "groupe": "salle_verte",
           "un_seul": true,
           "rayon": 4
         },
         {
           "type": "payer",
-          "libelle": "Payer 5 000 hérals",
+          "libelle": {
+            "fr": "Payer 5 000 hérals",
+            "en": "Pay 5,000 herals",
+            "ru": "Заплатить 5 000 гералов"
+          },
           "herals": 5000
         }
       ],
@@ -597,26 +1101,50 @@
         "objets": {
           "heralizcrates:quete_key": 1
         },
-        "titre": "Caporal"
+        "titre": {
+          "fr": "Caporal",
+          "en": "Corporal",
+          "ru": "Капрал"
+        }
       }
     },
     {
       "id": "c4_equipement",
-      "titre": "Bien équipé",
+      "titre": {
+        "fr": "Bien équipé",
+        "en": "Well Equipped",
+        "ru": "Хорошо снаряжён"
+      },
       "difficulte": 3,
-      "demande": "Montre-moi une arme à feu Rare ou mieux et un gilet Rare ou mieux.",
-      "fin": "Là, tu as l'air d'un vrai soldat.",
+      "demande": {
+        "fr": "Montre-moi une arme à feu Rare ou mieux et un gilet Rare ou mieux.",
+        "en": "Show me a Rare or better firearm and a Rare or better vest.",
+        "ru": "Покажи мне огнестрельное оружие и бронежилет редкости «Редкий» или выше."
+      },
+      "fin": {
+        "fr": "Là, tu as l'air d'un vrai soldat.",
+        "en": "Now you look like a real soldier.",
+        "ru": "Вот теперь ты похож на настоящего солдата."
+      },
       "etapes": [
         {
           "type": "montrer",
-          "libelle": "Montrer une arme Rare ou mieux",
+          "libelle": {
+            "fr": "Montrer une arme Rare ou mieux",
+            "en": "Show a Rare or better weapon",
+            "ru": "Показать оружие редкости «Редкий» или выше"
+          },
           "nombre": 1,
           "arme": "feu",
           "rarete_min": "rare"
         },
         {
           "type": "montrer",
-          "libelle": "Montrer un gilet Rare ou mieux",
+          "libelle": {
+            "fr": "Montrer un gilet Rare ou mieux",
+            "en": "Show a Rare or better vest",
+            "ru": "Показать бронежилет редкости «Редкий» или выше"
+          },
           "nombre": 1,
           "armure": "corps",
           "rarete_min": "rare"
@@ -629,14 +1157,30 @@
     },
     {
       "id": "c4_valeurs",
-      "titre": "Trésors",
+      "titre": {
+        "fr": "Trésors",
+        "en": "Treasures",
+        "ru": "Сокровища"
+      },
       "difficulte": 4,
-      "demande": "Rapporte-moi 3 objets de valeur Épiques ou mieux.",
-      "fin": "Rare, de nos jours. Une Clé de Quêtes.",
+      "demande": {
+        "fr": "Rapporte-moi 3 objets de valeur Épiques ou mieux.",
+        "en": "Bring me 3 Epic or better valuables.",
+        "ru": "Принеси мне 3 ценных предмета редкости «Эпический» или выше."
+      },
+      "fin": {
+        "fr": "Rare, de nos jours. Une Clé de Quêtes.",
+        "en": "Rare these days. A Quest Key.",
+        "ru": "Редкость в наши дни. Ключ заданий."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 3 objets de valeur Épiques ou mieux",
+          "libelle": {
+            "fr": "Rapporter 3 objets de valeur Épiques ou mieux",
+            "en": "Bring back 3 Epic or better valuables",
+            "ru": "Принести 3 ценных предмета редкости «Эпический» или выше"
+          },
           "nombre": 3,
           "tag": "heraliz_composants:vente",
           "rarete_min": "epique"
@@ -652,14 +1196,30 @@
     },
     {
       "id": "c4_silence",
-      "titre": "En silence",
+      "titre": {
+        "fr": "En silence",
+        "en": "Silent Approach",
+        "ru": "Без шума"
+      },
       "difficulte": 3,
-      "demande": "Tue 20 zombies avec une arme équipée d'un silencieux.",
-      "fin": "Personne ne t'a entendu venir.",
+      "demande": {
+        "fr": "Tue 20 zombies avec une arme équipée d'un silencieux.",
+        "en": "Kill 20 zombies with a suppressed weapon.",
+        "ru": "Убей 20 зомби из оружия с глушителем."
+      },
+      "fin": {
+        "fr": "Personne ne t'a entendu venir.",
+        "en": "Nobody heard you coming.",
+        "ru": "Никто не услышал, как ты подошёл."
+      },
       "etapes": [
         {
           "type": "tuer",
-          "libelle": "Tuer 20 zombies avec un silencieux",
+          "libelle": {
+            "fr": "Tuer 20 zombies avec un silencieux",
+            "en": "Kill 20 zombies with a suppressor",
+            "ru": "Убить 20 зомби из оружия с глушителем"
+          },
           "cible": "zombies",
           "nombre": 20,
           "arme": "feu",
@@ -673,14 +1233,30 @@
     },
     {
       "id": "c4_fouille",
-      "titre": "Coins gardés",
+      "titre": {
+        "fr": "Coins gardés",
+        "en": "Guarded Spots",
+        "ru": "Охраняемые места"
+      },
       "difficulte": 4,
-      "demande": "Fouille 10 conteneurs T4 ou mieux.",
-      "fin": "Tu vas là où les autres n'osent pas.",
+      "demande": {
+        "fr": "Fouille 10 conteneurs T4 ou mieux.",
+        "en": "Search 10 T4 or better containers.",
+        "ru": "Обыщи 10 контейнеров T4 или выше."
+      },
+      "fin": {
+        "fr": "Tu vas là où les autres n'osent pas.",
+        "en": "You go where others don't dare.",
+        "ru": "Ты идёшь туда, куда другие не суются."
+      },
       "etapes": [
         {
           "type": "fouiller",
-          "libelle": "Fouiller 10 conteneurs T4 ou mieux",
+          "libelle": {
+            "fr": "Fouiller 10 conteneurs T4 ou mieux",
+            "en": "Search 10 T4 or better containers",
+            "ru": "Обыскать 10 контейнеров T4 или выше"
+          },
           "nombre": 10,
           "palier_min": 4
         }
@@ -692,24 +1268,52 @@
     },
     {
       "id": "c4_boite_noire",
-      "titre": "La boîte noire",
+      "titre": {
+        "fr": "La boîte noire",
+        "en": "The Black Box",
+        "ru": "Чёрный ящик"
+      },
       "difficulte": 4,
-      "demande": "Va dans la zone de gaz, retrouve la boîte noire et rapporte-la-moi.",
-      "fin": "Enfin. On va savoir ce qui s'est passé.",
+      "demande": {
+        "fr": "Va dans la zone de gaz, retrouve la boîte noire et rapporte-la-moi.",
+        "en": "Go into the gas zone, find the black box and bring it back to me.",
+        "ru": "Отправляйся в газовую зону, найди чёрный ящик и принеси его мне."
+      },
+      "fin": {
+        "fr": "Enfin. On va savoir ce qui s'est passé.",
+        "en": "Finally. Now we'll find out what happened.",
+        "ru": "Наконец-то. Теперь узнаем, что случилось."
+      },
       "etapes": [
         {
           "type": "ramasser",
-          "libelle": "Retrouver la boîte noire dans la zone de gaz",
+          "libelle": {
+            "fr": "Retrouver la boîte noire dans la zone de gaz",
+            "en": "Find the black box in the gas zone",
+            "ru": "Найти чёрный ящик в газовой зоне"
+          },
           "groupe": "boite_noire",
           "nombre": 1,
           "objet": "boite_noire",
           "ref": "boite_noire",
-          "nom": "Boîte noire",
-          "desc": "Enregistreur de vol orange, cabossé. Il contient les derniers mots de l'équipage."
+          "nom": {
+            "fr": "Boîte noire",
+            "en": "Black Box",
+            "ru": "Чёрный ящик"
+          },
+          "desc": {
+            "fr": "Enregistreur de vol orange, cabossé. Il contient les derniers mots de l'équipage.",
+            "en": "Dented orange flight recorder. It holds the crew's last words.",
+            "ru": "Помятый оранжевый бортовой самописец. В нём последние слова экипажа."
+          }
         },
         {
           "type": "donner",
-          "libelle": "Rapporter la boîte noire",
+          "libelle": {
+            "fr": "Rapporter la boîte noire",
+            "en": "Bring back the black box",
+            "ru": "Принести чёрный ящик"
+          },
           "objet_quete": "boite_noire",
           "nombre": 1
         }
@@ -721,14 +1325,30 @@
     },
     {
       "id": "c4_frappe",
-      "titre": "Appui aérien",
+      "titre": {
+        "fr": "Appui aérien",
+        "en": "Air Support",
+        "ru": "Поддержка с воздуха"
+      },
       "difficulte": 4,
-      "demande": "Appelle une frappe aérienne.",
-      "fin": "Boum. Voilà comment on règle un problème.",
+      "demande": {
+        "fr": "Appelle une frappe aérienne.",
+        "en": "Call in an airstrike.",
+        "ru": "Вызови авиаудар."
+      },
+      "fin": {
+        "fr": "Boum. Voilà comment on règle un problème.",
+        "en": "Boom. That's how you solve a problem.",
+        "ru": "Бум. Вот так решают проблемы."
+      },
       "etapes": [
         {
           "type": "frappe",
-          "libelle": "Appeler une frappe aérienne",
+          "libelle": {
+            "fr": "Appeler une frappe aérienne",
+            "en": "Call in an airstrike",
+            "ru": "Вызвать авиаудар"
+          },
           "nombre": 1
         }
       ],
@@ -739,21 +1359,41 @@
     },
     {
       "id": "c4_fin",
-      "titre": "Fin de classe",
+      "titre": {
+        "fr": "Fin de classe",
+        "en": "Graduation",
+        "ru": "Выпускной экзамен"
+      },
       "difficulte": 4,
-      "demande": "Entre dans une salle à carte bleue, puis paie-moi 7 000 hérals pour passer Officier.",
-      "fin": "Officier. Peu arrivent jusque-là. Ta Clé de Quêtes.",
+      "demande": {
+        "fr": "Entre dans une salle à carte bleue, puis paie-moi 7 000 hérals pour passer Officier.",
+        "en": "Enter a blue keycard room, then pay me 7,000 herals to make Officer.",
+        "ru": "Войди в комнату с синей ключ-картой, потом заплати мне 7 000 гералов, чтобы стать Офицером."
+      },
+      "fin": {
+        "fr": "Officier. Peu arrivent jusque-là. Ta Clé de Quêtes.",
+        "en": "Officer. Few make it this far. Your Quest Key.",
+        "ru": "Офицер. Мало кто доходит до этого. Твой Ключ заданий."
+      },
       "etapes": [
         {
           "type": "endroit",
-          "libelle": "Entrer dans une salle à carte bleue",
+          "libelle": {
+            "fr": "Entrer dans une salle à carte bleue",
+            "en": "Enter a blue keycard room",
+            "ru": "Войти в комнату с синей ключ-картой"
+          },
           "groupe": "salle_bleue",
           "un_seul": true,
           "rayon": 4
         },
         {
           "type": "payer",
-          "libelle": "Payer 7 000 hérals",
+          "libelle": {
+            "fr": "Payer 7 000 hérals",
+            "en": "Pay 7,000 herals",
+            "ru": "Заплатить 7 000 гералов"
+          },
           "herals": 7000
         }
       ],
@@ -763,19 +1403,39 @@
         "objets": {
           "heralizcrates:quete_key": 1
         },
-        "titre": "Sergent"
+        "titre": {
+          "fr": "Sergent",
+          "en": "Sergeant",
+          "ru": "Сержант"
+        }
       }
     },
     {
       "id": "c5_territoire",
-      "titre": "Prendre le terrain",
+      "titre": {
+        "fr": "Prendre le terrain",
+        "en": "Take the Ground",
+        "ru": "Захват территории"
+      },
       "difficulte": 4,
-      "demande": "Capture un territoire avec ton clan.",
-      "fin": "Une zone de plus sous notre contrôle.",
+      "demande": {
+        "fr": "Capture un territoire avec ton clan.",
+        "en": "Capture a territory with your clan.",
+        "ru": "Захвати территорию со своим кланом."
+      },
+      "fin": {
+        "fr": "Une zone de plus sous notre contrôle.",
+        "en": "One more zone under our control.",
+        "ru": "Ещё одна зона под нашим контролем."
+      },
       "etapes": [
         {
           "type": "capturer",
-          "libelle": "Capturer un territoire avec son clan",
+          "libelle": {
+            "fr": "Capturer un territoire avec son clan",
+            "en": "Capture a territory with your clan",
+            "ru": "Захватить территорию со своим кланом"
+          },
           "nombre": 1
         }
       ],
@@ -787,20 +1447,40 @@
     },
     {
       "id": "c5_blindage",
-      "titre": "Blindage",
+      "titre": {
+        "fr": "Blindage",
+        "en": "Armour Plating",
+        "ru": "Бронирование"
+      },
       "difficulte": 4,
-      "demande": "Rapporte-moi 5 plaques en métal et 3 plaques renforcées.",
-      "fin": "De quoi blinder le poste de commandement.",
+      "demande": {
+        "fr": "Rapporte-moi 5 plaques en métal et 3 plaques renforcées.",
+        "en": "Bring me 5 metal plates and 3 reinforced plates.",
+        "ru": "Принеси мне 5 металлических пластин и 3 усиленные пластины."
+      },
+      "fin": {
+        "fr": "De quoi blinder le poste de commandement.",
+        "en": "Enough to armour the command post.",
+        "ru": "Хватит, чтобы забронировать командный пункт."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 5 plaques en métal",
+          "libelle": {
+            "fr": "Rapporter 5 plaques en métal",
+            "en": "Bring back 5 metal plates",
+            "ru": "Принести 5 металлических пластин"
+          },
           "nombre": 5,
           "objet": "heraliz_composants:plaque_metal"
         },
         {
           "type": "donner",
-          "libelle": "Rapporter 3 plaques renforcées",
+          "libelle": {
+            "fr": "Rapporter 3 plaques renforcées",
+            "en": "Bring back 3 reinforced plates",
+            "ru": "Принести 3 усиленные пластины"
+          },
           "nombre": 3,
           "objet": "heraliz_composants:plaque_renforcee"
         }
@@ -812,14 +1492,30 @@
     },
     {
       "id": "c5_tireur",
-      "titre": "Tireur d'élite",
+      "titre": {
+        "fr": "Tireur d'élite",
+        "en": "Marksman",
+        "ru": "Снайпер"
+      },
       "difficulte": 4,
-      "demande": "Tue 10 zombies à plus de 60 mètres.",
-      "fin": "Beau tir. Très beau tir.",
+      "demande": {
+        "fr": "Tue 10 zombies à plus de 60 mètres.",
+        "en": "Kill 10 zombies from more than 60 metres away.",
+        "ru": "Убей 10 зомби с расстояния больше 60 метров."
+      },
+      "fin": {
+        "fr": "Beau tir. Très beau tir.",
+        "en": "Nice shot. Very nice shot.",
+        "ru": "Хороший выстрел. Очень хороший."
+      },
       "etapes": [
         {
           "type": "tuer",
-          "libelle": "Tuer 10 zombies à plus de 60 m",
+          "libelle": {
+            "fr": "Tuer 10 zombies à plus de 60 m",
+            "en": "Kill 10 zombies from over 60 m",
+            "ru": "Убить 10 зомби с расстояния больше 60 м"
+          },
           "cible": "zombies",
           "nombre": 10,
           "arme": "feu",
@@ -833,14 +1529,30 @@
     },
     {
       "id": "c5_valeurs",
-      "titre": "Pièces de musée",
+      "titre": {
+        "fr": "Pièces de musée",
+        "en": "Museum Pieces",
+        "ru": "Музейные экспонаты"
+      },
       "difficulte": 4,
-      "demande": "Rapporte-moi 2 objets de valeur Légendaires ou mieux.",
-      "fin": "Je n'en avais jamais vu d'aussi beaux. Une Clé de Quêtes.",
+      "demande": {
+        "fr": "Rapporte-moi 2 objets de valeur Légendaires ou mieux.",
+        "en": "Bring me 2 Legendary or better valuables.",
+        "ru": "Принеси мне 2 ценных предмета редкости «Легендарный» или выше."
+      },
+      "fin": {
+        "fr": "Je n'en avais jamais vu d'aussi beaux. Une Clé de Quêtes.",
+        "en": "I've never seen any this fine. A Quest Key.",
+        "ru": "Таких красивых я ещё не видел. Ключ заданий."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 2 objets de valeur Légendaires ou mieux",
+          "libelle": {
+            "fr": "Rapporter 2 objets de valeur Légendaires ou mieux",
+            "en": "Bring back 2 Legendary or better valuables",
+            "ru": "Принести 2 ценных предмета редкости «Легендарный» или выше"
+          },
           "nombre": 2,
           "tag": "heraliz_composants:vente",
           "rarete_min": "legendaire"
@@ -856,14 +1568,30 @@
     },
     {
       "id": "c5_arme",
-      "titre": "Arme d'officier",
+      "titre": {
+        "fr": "Arme d'officier",
+        "en": "Officer's Weapon",
+        "ru": "Офицерское оружие"
+      },
       "difficulte": 4,
-      "demande": "Montre-moi une arme à feu Légendaire.",
-      "fin": "Une arme digne d'un officier.",
+      "demande": {
+        "fr": "Montre-moi une arme à feu Légendaire.",
+        "en": "Show me a Legendary firearm.",
+        "ru": "Покажи мне огнестрельное оружие редкости «Легендарный»."
+      },
+      "fin": {
+        "fr": "Une arme digne d'un officier.",
+        "en": "A weapon worthy of an officer.",
+        "ru": "Оружие, достойное офицера."
+      },
       "etapes": [
         {
           "type": "montrer",
-          "libelle": "Montrer une arme Légendaire",
+          "libelle": {
+            "fr": "Montrer une arme Légendaire",
+            "en": "Show a Legendary weapon",
+            "ru": "Показать оружие редкости «Легендарный»"
+          },
           "nombre": 1,
           "arme": "feu",
           "rarete_min": "legendaire"
@@ -876,14 +1604,30 @@
     },
     {
       "id": "c5_mythique",
-      "titre": "L'introuvable",
+      "titre": {
+        "fr": "L'introuvable",
+        "en": "The Unfindable",
+        "ru": "Неуловимое"
+      },
       "difficulte": 4,
-      "demande": "Rapporte-moi 1 objet Mythique (composant ou objet de valeur).",
-      "fin": "Je ne pensais pas que ça existait encore.",
+      "demande": {
+        "fr": "Rapporte-moi 1 objet Mythique (composant ou objet de valeur).",
+        "en": "Bring me 1 Mythic item (component or valuable).",
+        "ru": "Принеси мне 1 предмет редкости «Мифический» (компонент или ценность)."
+      },
+      "fin": {
+        "fr": "Je ne pensais pas que ça existait encore.",
+        "en": "I didn't think those still existed.",
+        "ru": "Не думал, что такое ещё существует."
+      },
       "etapes": [
         {
           "type": "donner",
-          "libelle": "Rapporter 1 objet Mythique",
+          "libelle": {
+            "fr": "Rapporter 1 objet Mythique",
+            "en": "Bring back 1 Mythic item",
+            "ru": "Принести 1 предмет редкости «Мифический»"
+          },
           "nombre": 1,
           "tag": "heraliz_composants:tous",
           "rarete_min": "mythique"
@@ -896,14 +1640,30 @@
     },
     {
       "id": "c5_salle_rouge",
-      "titre": "La salle rouge",
+      "titre": {
+        "fr": "La salle rouge",
+        "en": "The Red Room",
+        "ru": "Красная комната"
+      },
       "difficulte": 4,
-      "demande": "Entre dans une salle à carte rouge.",
-      "fin": "Tu as vu ce qu'il y a derrière. Garde-le pour toi.",
+      "demande": {
+        "fr": "Entre dans une salle à carte rouge.",
+        "en": "Enter a red keycard room.",
+        "ru": "Войди в комнату с красной ключ-картой."
+      },
+      "fin": {
+        "fr": "Tu as vu ce qu'il y a derrière. Garde-le pour toi.",
+        "en": "You've seen what's behind it. Keep it to yourself.",
+        "ru": "Ты видел, что там внутри. Держи язык за зубами."
+      },
       "etapes": [
         {
           "type": "endroit",
-          "libelle": "Entrer dans une salle à carte rouge",
+          "libelle": {
+            "fr": "Entrer dans une salle à carte rouge",
+            "en": "Enter a red keycard room",
+            "ru": "Войти в комнату с красной ключ-картой"
+          },
           "groupe": "salle_rouge",
           "un_seul": true,
           "rayon": 4
@@ -916,26 +1676,50 @@
     },
     {
       "id": "c5_derniere",
-      "titre": "Dernière mission",
+      "titre": {
+        "fr": "Dernière mission",
+        "en": "Final Mission",
+        "ru": "Последнее задание"
+      },
       "difficulte": 4,
-      "demande": "Sans mourir : tue 30 zombies, fouille 3 conteneurs T6, puis reviens par une extraction.",
-      "fin": "Officier. Je n'ai plus rien à t'apprendre. Une dernière Clé de Quêtes, et merci.",
+      "demande": {
+        "fr": "Sans mourir : tue 30 zombies, fouille 3 conteneurs T6, puis reviens par une extraction.",
+        "en": "Without dying: kill 30 zombies, search 3 T6 containers, then come back through an extraction.",
+        "ru": "Не умирая: убей 30 зомби, обыщи 3 контейнера T6, потом вернись через эвакуацию."
+      },
+      "fin": {
+        "fr": "Officier. Je n'ai plus rien à t'apprendre. Une dernière Clé de Quêtes, et merci.",
+        "en": "Officer. I have nothing left to teach you. One last Quest Key, and thank you.",
+        "ru": "Офицер. Мне больше нечему тебя учить. Последний Ключ заданий — и спасибо."
+      },
       "etapes": [
         {
           "type": "tuer",
-          "libelle": "Tuer 30 zombies",
+          "libelle": {
+            "fr": "Tuer 30 zombies",
+            "en": "Kill 30 zombies",
+            "ru": "Убить 30 зомби"
+          },
           "cible": "zombies",
           "nombre": 30
         },
         {
           "type": "fouiller",
-          "libelle": "Fouiller 3 conteneurs T6",
+          "libelle": {
+            "fr": "Fouiller 3 conteneurs T6",
+            "en": "Search 3 T6 containers",
+            "ru": "Обыскать 3 контейнера T6"
+          },
           "nombre": 3,
           "palier_min": 6
         },
         {
           "type": "extraction",
-          "libelle": "Revenir par une extraction"
+          "libelle": {
+            "fr": "Revenir par une extraction",
+            "en": "Come back through an extraction",
+            "ru": "Вернуться через эвакуацию"
+          }
         }
       ],
       "recompense": {
@@ -944,7 +1728,11 @@
         "objets": {
           "heralizcrates:quete_key": 1
         },
-        "titre": "Officier"
+        "titre": {
+          "fr": "Officier",
+          "en": "Officer",
+          "ru": "Офицер"
+        }
       },
       "sans_mourir": true
     }

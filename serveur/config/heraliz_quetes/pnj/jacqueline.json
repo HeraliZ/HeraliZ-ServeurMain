@@ -1,6 +1,10 @@
 {
   "id": "jacqueline",
-  "nom": "Jacqueline",
+  "nom": {
+    "fr": "Jacqueline",
+    "en": "Jacqueline",
+    "ru": "Jacqueline"
+  },
   "skin": "jacqueline",
   "apparence": {
     "skin_tone": "fair",
@@ -32,13 +36,33 @@
     "ru": "Медсестра"
   },
   "ambiance": [
-    "Ne saigne pas sur mon comptoir.",
-    "Des soins, propres et neufs."
+    {
+      "fr": "Ne saigne pas sur mon comptoir.",
+      "en": "Don't bleed on my counter.",
+      "ru": "Не истекай кровью на мой прилавок."
+    },
+    {
+      "fr": "Des soins, propres et neufs.",
+      "en": "Medical supplies, clean and new.",
+      "ru": "Медикаменты, чистые и новые."
+    }
   ],
-  "presentation": "Bonjour. Il me reste des soins, si tu en as besoin. Ce n'est pas gratuit, mais c'est propre.",
+  "presentation": {
+    "fr": "Bonjour. Il me reste des soins, si tu en as besoin. Ce n'est pas gratuit, mais c'est propre.",
+    "en": "Hello. I still have some medical supplies, if you need them. They're not free, but they're clean.",
+    "ru": "Здравствуй. У меня ещё остались медикаменты, если нужно. Не бесплатно, зато всё чистое."
+  },
   "accueil": {
-    "inconnu": "Bonjour. Il me reste des soins, si tu en as besoin. Ce n'est pas gratuit, mais c'est propre.",
-    "connu": "Bonjour."
+    "inconnu": {
+      "fr": "Bonjour. Il me reste des soins, si tu en as besoin. Ce n'est pas gratuit, mais c'est propre.",
+      "en": "Hello. I still have some medical supplies, if you need them. They're not free, but they're clean.",
+      "ru": "Здравствуй. У меня ещё остались медикаменты, если нужно. Не бесплатно, зато всё чистое."
+    },
+    "connu": {
+      "fr": "Bonjour.",
+      "en": "Hello.",
+      "ru": "Здравствуй."
+    }
   },
   "marchand": {
     "type": "achat",

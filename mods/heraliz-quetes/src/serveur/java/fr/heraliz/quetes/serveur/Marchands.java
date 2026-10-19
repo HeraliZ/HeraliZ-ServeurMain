@@ -121,7 +121,7 @@ final class Marchands {
             p.getInventory().items.set(c, ItemStack.EMPTY);
         }
         if (nombre == 0) return;
-        if (!Ponts.deposer(p.getUUID(), total, "Vente à " + def.id)) {
+        if (!Ponts.deposer(p.getUUID(), total, "vente:" + def.id)) {
             LOG.error("[heraliz_quetes] vente de {} : {} hérals NON versés (économie absente)", p.getGameProfile().getName(), total);
         }
         p.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
