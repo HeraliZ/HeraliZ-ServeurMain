@@ -65,6 +65,8 @@ RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare"
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
 COMPOSANTS_EXCLUS = {"plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
 COMPOSANTS_PLUS = {"clou": 3.0, "sac_ciment": 3.0, "equerres_acier": 3.0}  # chance multipliée dans leur rareté
+# composants ajoutés en plus dans un palier, hors raretés du palier (nombre pour 100 conteneurs)
+EN_PLUS = {7: {"clou": 4, "sac_ciment": 4}}
 IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 
 
@@ -204,6 +206,10 @@ def ecrire():
                 s = sum(x for _, x in liste)
                 for e, x in liste:
                     rel.append((e, f, parts[r] / somme_parts * x / s, r))
+        for i, n in EN_PLUS.get(t, {}).items():
+            e, r = next((e, r) for r, l in fams["composants"].items() for e, _ in l if e["item"] == COMPOSANT + i)
+            p["plus_" + i] = n / 100 / cases
+            rel.append((e, "plus_" + i, 1.0, r))
         echelle = 1
         while True:
             reste = actifs * echelle / (1 - sum(p.values()))
