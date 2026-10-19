@@ -63,7 +63,7 @@ ACCESSOIRE = "tacz:attachment"
 ARMURE = "heraliz_armory:"
 COMPOSANT = "heraliz_composants:"
 PLAN = "heralisz_utils:plan_"
-RETIRES = ("heralisz_armor:",)
+RETIRES = ("heralisz_armor:", "simplefarming:")  # retirés des tables (mod retiré ; Simple Farming : choix du propriétaire)
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
 COMPOSANTS_EXCLUS = {"plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
