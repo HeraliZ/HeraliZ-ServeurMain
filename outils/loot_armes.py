@@ -33,6 +33,7 @@ COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/c
 # nombre moyen pour 100 conteneurs ouverts
 POUR_100 = {
     "armes":       {1: 15, 2: 15, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},
+    "plans":       {1: 15, 2: 15, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},  # plan de fabrication = rareté de son arme
     "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
     "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
     "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 45},
@@ -61,6 +62,7 @@ ARME = "tacz:modern_kinetic_gun"
 ACCESSOIRE = "tacz:attachment"
 ARMURE = "heraliz_armory:"
 COMPOSANT = "heraliz_composants:"
+PLAN = "heralisz_utils:plan_"
 RETIRES = ("heralisz_armor:",)
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
@@ -133,6 +135,13 @@ def familles():
         if gid in jeu:
             ajouter("armes", r, {"item": ARME, "nombre": [1, 1], "nbt": jeu[gid], "_cat": "armes"},
                     LOURDES if lourde(gid, fam_armes) else 1)
+    for f in sorted(glob.glob(str(TACZ / "*/data/*/recipes/gun/*.json"))):
+        d = lire_json(f) or {}
+        gid = (d.get("result") or {}).get("id")
+        plans = [m["item"]["item"] for m in d.get("materials", []) if str(m.get("item", {}).get("item", "")).startswith(PLAN)]
+        if gid in jeu and gid in tout["armes"] and plans and not any(e["item"] == plans[0] for r in out["plans"].values() for e, _ in r):
+            ajouter("plans", tout["armes"][gid], {"item": plans[0], "nombre": [1, 1], "_cat": "plans"},
+                    LOURDES if lourde(gid, fam_armes) else 1)
     accessoires = index_tacz("attachments")
     for aid, r in sorted(tout["accessoires"].items()):
         if aid in accessoires:
@@ -151,7 +160,7 @@ def familles():
 
 
 def de_famille(e):
-    return e.get("_cat") in POUR_100 or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT))
+    return e.get("_cat") in POUR_100 or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT, PLAN))
 
 
 def mult_autre(e, t):
@@ -242,6 +251,8 @@ def classer(e, ra):
     if e["item"] == ACCESSOIRE:
         m = re.search(r'AttachmentId:"([^"]+)"', e.get("nbt", ""))
         return "accessoires", ra["accessoires"].get(m.group(1) if m else "", "?")
+    if e.get("_cat") == "plans":
+        return "plans", e.get("rarete") or ra["plans"].get(e["item"], "?")
     if e.get("_cat") in ("armures", "composants"):
         return e["_cat"], e.get("rarete") or ra["objets"].get(e["item"]) or ra["comp"].get(e["item"], "?")
     return None, None
@@ -249,7 +260,9 @@ def classer(e, ra):
 
 def simuler(essais=1000):
     ra = json.load(open(RARETES, encoding="utf-8"))
-    ra["comp"] = {e["item"]: r for r, l in familles()["composants"].items() for e, _ in l}
+    fams = familles()
+    ra["comp"] = {e["item"]: r for r, l in fams["composants"].items() for e, _ in l}
+    ra["plans"] = {e["item"]: r for r, l in fams["plans"].items() for e, _ in l}
     for t in PARTS:
         data = json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8"))
         objs = [e for e in data["objets"] if not e["item"].startswith(IGNORES)]
