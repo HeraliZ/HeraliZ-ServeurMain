@@ -181,6 +181,107 @@ def batte():
     print("[skins_melee] batte : %d tronçons, %d pavés" % (len(t), len(cubes["weapon"]) + len(cubes["manche"])))
 
 
+# armes de LR et marteau : copie propre du modèle (modèle d'origine, texture d'origine, os à garder tels quels, nouveaux noms
+# d'os). Les os gardés (effet de coup du marteau) gardent leurs coordonnées de texture : la texture d'origine est recopiée
+# dans le quart en haut à gauche d'une texture deux fois plus grande.
+PROPRES = [
+    ("silencefd", (), {}),
+    ("treasure_kn", (), {}),
+    ("quenching", (), {}),
+    ("executor", (), {}),
+    ("mercy", (), {}),
+    ("thieve_sea", (), {}),
+    # marteau : ses pièces s'appellent « *_illuminated » (dessinées sans ombre, jamais skinnées) : renommées ; la traînée
+    # du coup (1p_effect_1) garde sa texture
+    ("thunder_hammer", ("1p_effect_1",), {"group6_illuminated": "group6", "group_illuminated": "group_tete"}),
+]
+# texels de la carte des couteaux (1024 de côté) au moins par côté de face
+TEXELS_MIN = 6.0
+
+
+def faces_a_ranger(g, garder):
+    """(cube, face, largeur, hauteur) de chaque face dessinée hors des os gardés."""
+    out = []
+    for b in g["bones"]:
+        if b["name"] in garder:
+            continue
+        for c in b.get("cubes", []) or []:
+            uv = c.get("uv")
+            for f in FACES:
+                # faces absentes du modèle d'origine (coordonnées par face sans cette face) : jamais dessinées
+                if isinstance(uv, dict) and f not in uv:
+                    continue
+                a, bb = dims(f, c["size"])
+                if a < 1e-4 or bb < 1e-4:
+                    continue
+                out.append((c, f, a, bb))
+    return out
+
+
+def ranger(faces, U, reserve, echelle, m):
+    """Range les faces (taille x echelle, au moins m) en étagères dans un carré de U unités, hors du coin réservé
+    (reserve x reserve en haut à gauche). Rend [(u, v, w, h)] ou None si ça ne tient pas."""
+    pad = m * 0.25
+    x = y = ligne = 0.0
+    res = []
+    for c, f, a, bb in sorted(faces, key=lambda t: -max(t[3] * echelle, m)):
+        w, h = max(a * echelle, m), max(bb * echelle, m)
+        x0 = reserve if y < reserve else 0.0
+        if x < x0:
+            x = x0
+        if x + w + pad > U:
+            y += ligne
+            x, ligne = (reserve if y < reserve else 0.0), 0.0
+        if y + h + pad > U:
+            return None
+        res.append((c, f, x, y, w, h))
+        x += w + pad
+        ligne = max(ligne, h + pad)
+    return res
+
+
+def propre(nom, garder, renommer):
+    src = json.loads((GEO / (nom + "_geo.json")).read_text(encoding="utf-8"))
+    g = src["minecraft:geometry"][0]
+    tw, th = g["description"]["texture_width"], g["description"]["texture_height"]
+    g["description"]["identifier"] = "geometry.%s_skin" % nom
+    for b in g["bones"]:
+        for k in ("name", "parent"):
+            if b.get(k) in renommer:
+                b[k] = renommer[b[k]]
+    faces = faces_a_ranger(g, garder)
+    # texture carrée ; avec des os gardés, la texture d'origine occupe le quart en haut à gauche
+    reserve = float(max(tw, th)) if garder else 0.0
+    U = 2.0 * reserve if garder else float(max(tw, th))
+    m = TEXELS_MIN * U / 1024.0
+    # plus grande échelle qui tient (les faces gardent leurs proportions)
+    lo, hi = 0.0, 64.0
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if ranger(faces, U, reserve, mid, m) is None:
+            hi = mid
+        else:
+            lo = mid
+    places = ranger(faces, U, reserve, lo, m)
+    if places is None:
+        sys.exit("[skins_melee] %s : les faces ne tiennent pas dans la texture" % nom)
+    for c in {id(c): c for c, *_ in places}.values():
+        c["uv"] = {}
+    for c, f, u, v, w, h in places:
+        c["uv"][f] = {"uv": [round(u, 4), round(v, 4)], "uv_size": [round(w, 4), round(h, 4)]}
+    g["description"]["texture_width"] = g["description"]["texture_height"] = int(U)
+    (GEO / (nom + "_skin_geo.json")).write_text(json.dumps(src, separators=(",", ":")), encoding="utf-8")
+    img = Image.open(TEX / (nom + "_uv.png")).convert("RGBA")
+    k = img.width / tw
+    out = Image.new("RGBA", (int(U * k), int(U * k)), (150, 154, 160, 255))   # acier : toutes les faces rangées
+    if garder:
+        out.paste(img, (0, 0))
+    out.save(TEX / (nom + "_skin_uv.png"))
+    print("[skins_melee] %s : %d faces rangées (échelle %.2f, %d texels au moins)" % (nom, len(places), lo, TEXELS_MIN))
+
+
 if __name__ == "__main__":
     desmoulins()
     batte()
+    for nom, garder, renommer in PROPRES:
+        propre(nom, set(garder), renommer)

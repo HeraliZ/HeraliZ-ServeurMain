@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.butterfly__contour.name",
+  "display": "heralisz_skins:butterfly__contour_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.butterfly__contour.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 316
+}

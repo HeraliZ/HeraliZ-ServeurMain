@@ -1,0 +1,47 @@
+{
+  "name": "item.heralisz_melee.dragons_fang__lava_spray",
+  "tooltip": "item.heralisz_melee.dragons_fang__lava_spray.desc",
+  "type": "heralisz_tactical:normal",
+  "base_item": "heralisz_tactical:melee",
+  "data": {
+    "attributes": {
+      "generic.attack_damage": 7,
+      "minecraft:generic.movement_speed": {
+        "amount": 0.03,
+        "operation": "percent"
+      }
+    },
+    "draw_time": 20,
+    "put_away_time": 0,
+    "max_durability": 1400,
+    "enchantment_value": 10,
+    "attack": {
+      "attack_left": {
+        "factor": 1,
+        "knockback": 0.18,
+        "cooldown": 24,
+        "delay": 4,
+        "hitbox": {
+          "type": "cone",
+          "max_range": 4,
+          "max_angle": 65,
+          "exclude_self": true
+        },
+        "durability_damage": 1
+      },
+      "attack_right": {
+        "factor": 1.5,
+        "knockback": 0.22,
+        "cooldown": 24,
+        "delay": 8,
+        "hitbox": {
+          "type": "cone",
+          "max_range": 4,
+          "max_angle": 40,
+          "exclude_self": true
+        },
+        "durability_damage": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.t_knife__sand_hammered.name",
+  "display": "heralisz_skins:t_knife__sand_hammered_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.t_knife__sand_hammered.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 354
+}

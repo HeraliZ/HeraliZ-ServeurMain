@@ -1,0 +1,106 @@
+{
+  "model": "heralisz_melee:melee/quenching_skin_geo",
+  "animation": "heralisz_melee:melee/quenching",
+  "state_machine": "heralisz_melee:quenching_state_machine",
+  "texture": "heralisz_melee:melee/quenching_skin_uv",
+  "slot_texture": "heralisz_melee:melee/slot/dragons_fang__phoenix",
+  "sounds": {
+    "attack_left_hit": "heralisz_melee:entity.player.flash.hit",
+    "attack_right_hit": "heralisz_melee:entity.player.flash.hit",
+    "crit": "heralisz_melee:entity.player.flash.hit"
+  },
+  "transforms": {
+    "thirdperson_righthand": {
+      "translation": [
+        0,
+        2.5,
+        1
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        0,
+        2.5,
+        1
+      ]
+    },
+    "ground": {
+      "rotation": [
+        45,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        6,
+        0
+      ]
+    },
+    "gui": {
+      "rotation": [
+        0,
+        0,
+        -45
+      ],
+      "translation": [
+        4.5,
+        4,
+        0
+      ]
+    },
+    "head": {
+      "translation": [
+        0,
+        4.75,
+        0
+      ]
+    },
+    "fixed": {
+      "translation": [
+        0,
+        11,
+        0
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        2,
+        2,
+        2
+      ]
+    }
+  },
+  "third_person_animation": {
+    "animation": "heralisz_skins:melee/knife",
+    "upper": {
+      "walk": "walk_upper",
+      "run": "run_upper",
+      "sprint": "run_upper",
+      "sneak": "hold_upper",
+      "sneak_walk": "hold_upper",
+      "jump": "hold_upper",
+      "fall": "hold_upper",
+      "idle": "hold_upper",
+      "attack_left": [
+        "slash_upper",
+        "slash2_upper"
+      ],
+      "attack_right": [
+        "stab_upper"
+      ]
+    },
+    "lower": {
+      "idle": "hold_lower",
+      "walk": "walk_lower",
+      "run": "run_lower",
+      "sprint": "run_lower",
+      "sneak": "crouch_lower",
+      "sneak_walk": "crouch_walk_lower",
+      "jump": "hold_lower",
+      "fall": "hold_lower"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.karambit__amber_fade.name",
+  "display": "heralisz_skins:karambit__amber_fade_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.karambit__amber_fade.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 312
+}

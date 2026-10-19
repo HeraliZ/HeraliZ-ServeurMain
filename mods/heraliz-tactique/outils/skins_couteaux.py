@@ -10,10 +10,17 @@ dans le gabarit sont reprises telles quelles) qui appelle un style du gabarit (k
 « skins de couteaux par paliers » de outils/camo_gabarit.fsh) avec sa palette.
 
 Écrit :
-  - le bloc <skins_couteaux> du gabarit (fonctions skinCouteau / skinGrip et teinte de l'insert du Butterfly, par skin) ;
-  - les camo_<id>.json manquants (copies de camo_65.json), puis relance generer_camos.py.
+  - le bloc <skins_couteaux> du gabarit (programme commun camo_120 : couleurs de chaque skin, style, manche, insert) ;
+  - camo_120.json et ceux des finitions exclusives reprises, puis relance generer_camos.py ;
+  - les finitions dans KnifeFinish (bloc <skins_couteaux>) ;
+  - les objets : couteaux TaCZ (M9, Karambit, Butterfly, CT, T) dans le gunpack serveur/tacz/heralisz_skins (fiche,
+    affichage, noms) ; armes de mêlée de LR dans heralisz_melee (fiche copiée de l'arme de base, affichage sur le modèle
+    propre écrit par skins_melee.py, noms) ; noms en français, anglais et russe.
+Les icônes (textures/.../slot/<couteau>__<finition>.png) sont rendues par l'outil d'aperçu (outils/apercu_camos, vue
+« icone »), sur les modèles tels que le jeu les dessine.
 """
 import json
+from collections import OrderedDict
 import re
 import subprocess
 import sys
@@ -407,10 +414,152 @@ def verifier_catalogue():
         vus.add(fin)
 
 
+# --- objets
+ROOT = MOD.parent.parent
+GUNPACK = ROOT / "serveur" / "tacz" / "heralisz_skins"
+MELEE_DATA = MOD / "src" / "serveur" / "resources" / "data" / "heralisz_melee" / "index" / "melee"
+MELEE_ASSETS = MOD / "src" / "client" / "resources" / "assets" / "heralisz_melee"
+JAVA_FINITIONS = MOD / "src" / "commun" / "java" / "fr" / "heralisz" / "camo" / "knife" / "KnifeFinish.java"
+ARKANIAZ = ROOT / "serveur" / "tacz" / "arkaniaz_pack_4_converted" / "assets" / "arkaniaz" / "display" / "guns"
+
+# couteaux TaCZ (gunpack heralisz_skins) : affichage pris pour modèle
+TACZ = {
+    "m9": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "m9__lore_display.json",
+    "karambit": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "karambit__fade_display.json",
+    "butterfly": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "butterfly__fade_display.json",
+    "ct_knife": ARKANIAZ / "ct_knife_display.json",
+    "t_knife": ARKANIAZ / "t_knife_display.json",
+}
+NOMS_TACZ = {
+    "m9": ("M9 Bayonet", "M9 Bayonet", "M9 Bayonet"),
+    "karambit": ("Karambit", "Karambit", "Karambit"),
+    "butterfly": ("Butterfly Knife", "Butterfly Knife", "Butterfly Knife"),
+    "ct_knife": ("Couteau CT", "CT Knife", "Нож CT"),
+    "t_knife": ("Couteau T", "T Knife", "Нож T"),
+}
+# armes de mêlée de LR : modèle et texture propres (outils/skins_melee.py)
+MELEE = {
+    "tac_dagger": "silencefd_skin",
+    "creed": "treasure_kn_skin",
+    "desmoulins_edge": ("polaris_lore_geo", "polaris_lore_uv"),
+    "dragons_fang": "quenching_skin",
+    "executor": "executor_skin",
+    "mercy": "mercy_skin",
+    "sea_gleam": "thieve_sea_skin",
+    "baseball_bat": ("baseball_bat_skin_geo", "baseball_bat_skin_uv"),
+    "smite_hammer": "thunder_hammer_skin",
+}
+LANGUES = ("fr_fr", "en_us", "ru_ru")
+PALIERS_LANGUES = {
+    "classique": ("Classique", "Classic", "Классика"),
+    "raffine": ("Raffiné", "Refined", "Изысканный"),
+    "prestige": ("Prestige", "Prestige", "Престиж"),
+    "ultime": ("Ultime", "Ultimate", "Ультимативный"),
+}
+EXCLUSIF = ("Exclusivité HeraliZ", "HeraliZ Exclusive", "Эксклюзив HeraliZ")
+
+
+def ecrire_json(chemin, donnees):
+    texte = json.dumps(donnees, ensure_ascii=False, indent=2) + "\n"
+    if not chemin.exists() or chemin.read_text(encoding="utf-8") != texte:
+        chemin.parent.mkdir(parents=True, exist_ok=True)
+        chemin.write_bytes(texte.encode("utf-8"))
+
+
+def sans_commentaires(texte):
+    """JSON avec commentaires « // » (fiches de LR) : commentaires et virgules finales retirés."""
+    lignes = []
+    for ligne in texte.splitlines():
+        i = ligne.find("//")
+        while i >= 0 and ligne[:i].count('"') % 2:
+            i = ligne.find("//", i + 2)
+        lignes.append(ligne if i < 0 else ligne[:i])
+    return re.sub(r",(\s*[}\]])", r"\1", "\n".join(lignes))
+
+
+def lire_json(chemin):
+    if not chemin.exists():
+        return OrderedDict()
+    return json.loads(sans_commentaires(chemin.read_text(encoding="utf-8")), object_pairs_hook=OrderedDict)
+
+
+def sans_codes(t):
+    return re.sub("§.", "", t).strip()
+
+
+def ecrire_java():
+    texte = JAVA_FINITIONS.read_text(encoding="utf-8")
+    debut = "   // <skins_couteaux> : écrit par outils/skins_couteaux.py (catalogue des skins), ne pas modifier à la main\n"
+    fin = "   // </skins_couteaux>"
+    lignes = []
+    for sid, couteau, f, nom, pal, style, *_ in SKINS:
+        lignes.append('   %s("%s", %d, %s),' % (re.sub(r"[^A-Z0-9]", "_", f.upper()), f, sid, "true" if style else "false"))
+    i, j = texte.index(debut) + len(debut), texte.index(fin)
+    nouveau = texte[:i] + "\n".join(lignes) + "\n" + texte[j:]
+    if nouveau != texte:
+        JAVA_FINITIONS.write_bytes(nouveau.encode("utf-8"))
+
+
+def textes(couteau, nom, pal, arme):
+    """(nom, description) dans les trois langues ; arme : nom de l'arme de base (fr, en, ru)."""
+    code = PALIERS[pal][1]
+    noms = ["%s★ %s §7| %s§l%s" % (code, arme[i], code, nom) for i in range(3)]
+    descs = ["%s%s\n§8%s" % (code, PALIERS_LANGUES[pal][i], EXCLUSIF[i]) for i in range(3)]
+    return noms, descs
+
+
+def ecrire_objets():
+    langues_pack = {l: lire_json(GUNPACK / "assets" / "heralisz_skins" / "lang" / (l + ".json")) for l in LANGUES}
+    if not langues_pack["ru_ru"]:
+        langues_pack["ru_ru"] = OrderedDict(langues_pack["en_us"])          # le gunpack n'avait pas de russe
+    langues_melee = {l: lire_json(MELEE_ASSETS / "lang" / (l + ".json")) for l in LANGUES}
+    ordre = 300
+    for sid, couteau, f, nom, pal, style, *_ in SKINS:
+        cle = "%s__%s" % (couteau, f)
+        if couteau in TACZ:
+            ordre += 1
+            noms, descs = textes(couteau, nom, pal, NOMS_TACZ[couteau])
+            ecrire_json(GUNPACK / "data" / "heralisz_skins" / "index" / "guns" / (cle + ".json"), OrderedDict([
+                ("name", "heralisz_skins.knife.%s.name" % cle), ("display", "heralisz_skins:%s_display" % cle),
+                ("data", "arkaniaz:knife_data"), ("tooltip", "heralisz_skins.tooltip.%s.desc" % cle),
+                ("type", "rpg"), ("item_type", "modern_kinetic"), ("sort", ordre)]))
+            affichage = lire_json(TACZ[couteau])
+            affichage["slot"] = "heralisz_skins:gun/slot/%s" % cle
+            ecrire_json(GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / (cle + "_display.json"), affichage)
+            for i, l in enumerate(LANGUES):
+                langues_pack[l]["heralisz_skins.knife.%s.name" % cle] = noms[i]
+                langues_pack[l]["heralisz_skins.tooltip.%s.desc" % cle] = descs[i]
+        elif couteau in MELEE:
+            arme = [sans_codes(langues_melee[l]["item.heralisz_melee.%s" % couteau]) for l in LANGUES]
+            noms, descs = textes(couteau, nom, pal, arme)
+            fiche = lire_json(MELEE_DATA / (couteau + ".json"))
+            fiche["name"] = "item.heralisz_melee.%s" % cle
+            fiche = OrderedDict([("name", fiche["name"]), ("tooltip", "item.heralisz_melee.%s.desc" % cle)]
+                                + [(a, b) for a, b in fiche.items() if a not in ("name", "tooltip")])
+            ecrire_json(MELEE_DATA / (cle + ".json"), fiche)
+            m = MELEE[couteau]
+            geo, tex = m if isinstance(m, tuple) else (m + "_geo", m + "_uv")
+            affichage = lire_json(MELEE_ASSETS / "display" / "melee" / (couteau + ".json"))
+            affichage["model"] = "heralisz_melee:melee/%s" % geo
+            affichage["texture"] = "heralisz_melee:melee/%s" % tex
+            affichage["slot_texture"] = "heralisz_melee:melee/slot/%s" % cle
+            ecrire_json(MELEE_ASSETS / "display" / "melee" / (cle + ".json"), affichage)
+            for i, l in enumerate(LANGUES):
+                langues_melee[l]["item.heralisz_melee.%s" % cle] = noms[i]
+                langues_melee[l]["item.heralisz_melee.%s.desc" % cle] = descs[i]
+        else:
+            sys.exit("[skins_couteaux] arme inconnue : " + couteau)
+    for l in LANGUES:
+        ecrire_json(GUNPACK / "assets" / "heralisz_skins" / "lang" / (l + ".json"), langues_pack[l])
+        ecrire_json(MELEE_ASSETS / "lang" / (l + ".json"), langues_melee[l])
+
+
 def main():
     verifier_catalogue()
     ecrire_gabarit()
     n = ecrire_programmes()
+    ecrire_java()
+    ecrire_objets()
     subprocess.run([sys.executable, str(OUTILS / "generer_camos.py")], check=True)
     print("[skins_couteaux] %d skins, %d programmes ajoutés" % (len(SKINS), n))
 

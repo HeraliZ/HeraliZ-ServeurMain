@@ -1,0 +1,87 @@
+{
+  "model": "heralisz_melee:melee/thunder_hammer_skin_geo",
+  "animation": "heralisz_melee:melee/thunder_hammer",
+  "state_machine": "heralisz_melee:wtyj_default_melee_state_machine",
+  "texture": "heralisz_melee:melee/thunder_hammer_skin_uv",
+  "slot_texture": "heralisz_melee:melee/slot/smite_hammer__rune_hex",
+  "sounds": {
+    "attack_left_hit": "heralisz_melee:entity.player.flash.hit",
+    "attack_right_hit": "heralisz_melee:entity.player.flash.hit",
+    "crit": "heralisz_melee:entity.player.flash.hit"
+  },
+  "transforms": {
+    "ground": {
+      "translation": [
+        0,
+        4,
+        0
+      ],
+      "rotation": [
+        45,
+        0,
+        0
+      ]
+    },
+    "thirdperson_righthand": {
+      "translation": [
+        0,
+        6,
+        1
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        0,
+        6,
+        1
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        -154.95,
+        27.37,
+        -43.25
+      ],
+      "translation": [
+        4,
+        -6.25,
+        -2.5
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    }
+  },
+  "third_person_animation": {
+    "animation": "heralisz_melee:melee/baseball_bat",
+    "upper": {
+      "walk": "walk_upper",
+      "run": "run_upper",
+      "sprint": "run_upper",
+      "sneak": "hold_upper",
+      "sneak_walk": "hold_upper",
+      "jump": "hold_upper",
+      "fall": "hold_upper",
+      "idle": "hold_upper",
+      "attack_left": [
+        "melee_upper",
+        "melee_upper2"
+      ],
+      "attack_right": [
+        "melee_upper3"
+      ]
+    },
+    "lower": {
+      "idle": "hold_lower",
+      "walk": "walk_lower",
+      "run": "run_lower",
+      "sprint": "run_lower",
+      "sneak": "crouch_lower",
+      "sneak_walk": "crouch_walk_lower",
+      "jump": "hold_lower",
+      "fall": "hold_lower"
+    }
+  }
+}

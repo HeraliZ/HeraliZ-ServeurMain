@@ -134,7 +134,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | Projet | Jar | modIds dedans | Rôle |
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
-| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins de mêlée Desmoulins Lore et batte Doppler Saphir (2.21.0, modèles écrits par `outils/skins_melee.py`) Moteur repris de LR Tactical (licence GPL gardée) |
+| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins de mêlée Desmoulins Lore et batte Doppler Saphir (2.21.0, modèles écrits par `outils/skins_melee.py`) ; 190 skins de couteaux par paliers (2.23.0, catalogue `outils/skins_couteaux.py`, section 10) Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : carte coupée à la bordure du monde, vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
@@ -1093,6 +1093,23 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
+  - skins de couteaux par paliers (19/10, Tactique 2.23.0, tous ajoutés pour que le propriétaire les trie en jeu ; caisses et
+    chances à décider ensuite) : 190 skins sur 14 armes, quatre paliers de beauté, du plus courant au plus rare : Classique
+    (§7), Raffiné (§3), Prestige (§5), Ultime (§e) ; nom « ★ Arme | Finition » de la couleur du palier, palier dans
+    l'infobulle. M9, Karambit, Butterfly : 12 de plus chacun (en plus des Doppler, Fade…) ; armes de LR (Dague TAC, Credo,
+    Desmoulins, Croc du dragon, Bourreau, Miséricorde, Éclat marin) : 14 chacune ; batte, Marteau du châtiment, couteaux CT
+    et T : 14 chacun. Tout est **écrit** par `python mods/heraliz-tactique/outils/skins_couteaux.py` (tableaux `SKINS` et
+    `_LOT2` : arme, finition, nom, palier, style, couleurs, manche), jamais à la main : bloc <skins_couteaux> du gabarit des
+    camos et de `KnifeFinish`, fiches et affichages (couteaux TaCZ dans le gunpack `serveur/tacz/heralisz_skins`, qui a
+    maintenant aussi son russe ; armes de LR dans `heralisz_melee`), noms en trois langues. Styles (`kSatin`, `kCamo`,
+    `kDamascus`, `kFade`, `kSakura`, `kAurora`, gemmes `gemDoppler`…) dans la section « skins de couteaux par paliers » du
+    gabarit. **Un seul programme de shader pour tous ces skins** (`camo_120`, `KnifeFinish.PROGRAMME_PALIERS` : il lit les
+    couleurs du skin dans `CamoId`) : un programme par skin aurait rallongé le chargement du jeu (71 programmes au lieu de
+    129 avant). Les finitions exclusives déjà écrites (Lava Core, Frostbite, Dragon Gold, Phoenix, Abyssal Pearl, Bright
+    Water, Nebula, Ultraviolet) gardent leur programme. Armes de LR et marteau dessinés sur une copie propre de leur modèle
+    (`*_skin_geo`, `outils/skins_melee.py`, `PROPRES` : une face = un morceau de texture ; le marteau a ses pièces
+    « *_illuminated » renommées et garde la texture de sa traînée de coup, `KnifeType.SMITE_HAMMER`). Icônes rendues par
+    `outils/apercu_camos` (vue « icone ») sur les modèles tels que le jeu les dessine. Ni loot ni caisse. Rien testé en jeu ;
   - skins de mêlée (18/10, Tactique 2.19.0 à 2.21.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
     et `heralisz_melee:baseball_bat__doppler_sapphire`, fiches copiées des armes de base (mêmes dégâts), dessinées
     EXACTEMENT comme les couteaux de heralisz_skins (même shader `camo_65` Lore / `camo_56` Doppler Saphir, même carte de

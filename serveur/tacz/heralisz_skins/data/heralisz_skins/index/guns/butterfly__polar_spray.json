@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.butterfly__polar_spray.name",
+  "display": "heralisz_skins:butterfly__polar_spray_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.butterfly__polar_spray.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 333
+}

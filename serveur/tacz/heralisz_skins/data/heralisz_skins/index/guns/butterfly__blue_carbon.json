@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.butterfly__blue_carbon.name",
+  "display": "heralisz_skins:butterfly__blue_carbon_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.butterfly__blue_carbon.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 317
+}
