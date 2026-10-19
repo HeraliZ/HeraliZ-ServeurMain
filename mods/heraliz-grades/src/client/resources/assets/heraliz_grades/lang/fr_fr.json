@@ -73,5 +73,16 @@
   "gui.heraliz_grades.tab.staff": "Staff · %s",
   "gui.heraliz_grades.tab.survivants": "Survivants · %s",
   "gui.heraliz_grades.tab.plus": "+ %s autres",
-  "gui.heraliz_grades.tab.ping": "Ton ping · %s ms"
+  "gui.heraliz_grades.tab.ping": "Ton ping · %s ms",
+  "heraliz_grades.zonevip.refus": "Zone VIP : réservée aux grades Rescapé, Traqueur et Roi de la Zone.",
+  "heraliz_grades.zonevip.coin": "Coin %s : %s",
+  "heraliz_grades.zonevip.baguette": "Baguette des zones VIP",
+  "heraliz_grades.zonevip.baguette.aide": "Clic gauche sur un bloc = coin 1, clic droit = coin 2, puis /zonevip creer <nom>.",
+  "heraliz_grades.zonevip.sans_coins": "Pose d'abord les deux coins (/zonevip baguette, ou /zonevip coin1 et coin2).",
+  "heraliz_grades.zonevip.creee": "Zone VIP « %s » créée (%s blocs).",
+  "heraliz_grades.zonevip.redefinie": "Zone VIP « %s » redéfinie (%s blocs).",
+  "heraliz_grades.zonevip.retiree": "Zone VIP « %s » retirée.",
+  "heraliz_grades.zonevip.aucune": "Aucune zone VIP.",
+  "heraliz_grades.zonevip.ligne": "%s : %s, de %s à %s",
+  "heraliz_grades.zonevip.inconnue": "Zone VIP inconnue : %s"
 }

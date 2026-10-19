@@ -45,6 +45,8 @@ public final class ServeurGrades implements Partie {
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::tick);
         ReseauGrades.RECEPTION_SERVEUR.brancher(KitsServeur::demande);
+        // zones VIP délimitées par le staff (/zonevip), réservées aux grades de la boutique
+        ZonesVip.brancher();
     }
 
     private static void demarrage(ServerAboutToStartEvent e) {

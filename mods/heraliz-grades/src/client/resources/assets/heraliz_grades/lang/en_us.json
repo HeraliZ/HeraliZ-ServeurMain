@@ -73,5 +73,16 @@
   "gui.heraliz_grades.tab.staff": "Staff · %s",
   "gui.heraliz_grades.tab.survivants": "Survivors · %s",
   "gui.heraliz_grades.tab.plus": "+ %s more",
-  "gui.heraliz_grades.tab.ping": "Your ping · %s ms"
+  "gui.heraliz_grades.tab.ping": "Your ping · %s ms",
+  "heraliz_grades.zonevip.refus": "VIP zone: reserved for the Rescued, Tracker and King of the Zone ranks.",
+  "heraliz_grades.zonevip.coin": "Corner %s: %s",
+  "heraliz_grades.zonevip.baguette": "VIP zone wand",
+  "heraliz_grades.zonevip.baguette.aide": "Left click a block = corner 1, right click = corner 2, then /zonevip creer <name>.",
+  "heraliz_grades.zonevip.sans_coins": "Set both corners first (/zonevip baguette, or /zonevip coin1 and coin2).",
+  "heraliz_grades.zonevip.creee": "VIP zone \"%s\" created (%s blocks).",
+  "heraliz_grades.zonevip.redefinie": "VIP zone \"%s\" redefined (%s blocks).",
+  "heraliz_grades.zonevip.retiree": "VIP zone \"%s\" removed.",
+  "heraliz_grades.zonevip.aucune": "No VIP zone.",
+  "heraliz_grades.zonevip.ligne": "%s: %s, from %s to %s",
+  "heraliz_grades.zonevip.inconnue": "Unknown VIP zone: %s"
 }
