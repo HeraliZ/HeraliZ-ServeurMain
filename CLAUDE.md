@@ -807,7 +807,10 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   chez le joueur par `spawn/BorneHologramme` (globe de la carte qui tourne, épingle rouge qui saute d'un point à l'autre),
   entité de bloc `BorneDepartEntite` : une borne posée avant la 2.16.3 se repose (`/depart borne`) pour avoir
   l'hologramme ; particules : anneau bleu qui monte autour du joueur pendant le délai, éclair et colonne de lumière au
-  départ, poussière du sol et souffle à l'arrivée) : clic droit au spawn → 5 s sans bouger → vraie
+  départ, poussière du sol et souffle à l'arrivée ; Utils 2.16.4 : panneau holographique au-dessus, toujours tourné vers
+  le joueur, « TÉLÉPORTATION ALÉATOIRE » et « Clic droit · départ au hasard sur la carte » (clés
+  `heralisz_utils.borne.titre` / `aide`, 3 langues), fond sombre bordé de bleu, net à 10 blocs, plus pâle ensuite, rien
+  au-delà de 24, `BorneHologramme.panneau`) : clic droit au spawn → 5 s sans bouger → vraie
   téléportation sur la carte, à un point sûr tiré au hasard (sol naturel à ciel ouvert, pas d'eau, loin des joueurs,
   hors zones dangereuses, jamais de terrain généré, jamais sous un arbre ; Utils 2.16.2 : à 200 blocs au moins du bord de
   chaque ville, cercles de `config/heralisz_clans/zones.json`, réglage `distance_villes`, points posés à la main non
