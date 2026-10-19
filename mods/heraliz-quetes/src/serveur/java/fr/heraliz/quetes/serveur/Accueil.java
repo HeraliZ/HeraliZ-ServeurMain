@@ -58,9 +58,10 @@ final class Accueil {
     /** Donnée persistante du joueur : le Bâtisseur lui a été présenté (une seule fois). */
     private static final String PRESENTE = "heraliz_batisseur_presente";
     /** Durée du tour de caméra autour du Bâtisseur (ticks), rayon (blocs), secondes de chaque mot de Varga, fiche après. */
-    private static final int PRES_TICKS = 280, PRES_FICHE = 15;
+    private static final int PRES_TICKS = 920, PRES_FICHE = 46;
     private static final float PRES_RAYON = 4.5F;
-    private static final int[] PRES_MOTS = {0, 5, 10};
+    /** 16 s par message : le temps qu'il s'écrive lettre par lettre (≈ 7 s) et qu'on le lise (retour du propriétaire). */
+    private static final int[] PRES_MOTS = {0, 16, 32};
     /** Secondes depuis le début de la présentation (et Bâtisseur trouvé ou non). */
     private record Pres(int secondes, boolean vu) {
     }
@@ -181,6 +182,9 @@ final class Accueil {
      * (CRac) s'ouvre. Une seule fois par joueur. Sans Bâtisseur posé au spawn : la radio seule, sans caméra.
      */
     private static void presentation(ServerPlayer p, int tuto) {
+        if (tuto == 0 && persiste(p).getBoolean(PRESENTE)) {
+            persiste(p).remove(PRESENTE);   // tutoriel remis à zéro (/tuto rejouer) : la présentation sera revue
+        }
         Pres pr = PRES.get(p.getUUID());
         if (pr == null) {
             if (!presenterBientot(p, tuto) || FIN.containsKey(p.getUUID()) || !auSpawn(p)) return;

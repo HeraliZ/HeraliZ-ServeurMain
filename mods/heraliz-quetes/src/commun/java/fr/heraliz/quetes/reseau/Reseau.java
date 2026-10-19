@@ -236,7 +236,7 @@ public final class Reseau {
             b.writeFloat(m.rayon());
             b.writeVarInt(m.ticks());
         }, b -> new Presentation(b.readDouble(), b.readDouble(), b.readDouble(), Math.max(2F, Math.min(20F, b.readFloat())),
-                Math.max(20, Math.min(600, b.readVarInt()))), PRESENTATION);
+                Math.max(20, Math.min(1200, b.readVarInt()))), PRESENTATION);
     }
 
     private static <T> void versJoueur(Class<T> c, BiConsumer<T, FriendlyByteBuf> ecrire, Function<FriendlyByteBuf, T> lire, Crochet<T> crochet) {
