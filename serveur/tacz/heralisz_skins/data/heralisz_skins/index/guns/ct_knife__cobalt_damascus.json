@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.ct_knife__cobalt_damascus.name",
+  "display": "heralisz_skins:ct_knife__cobalt_damascus_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.ct_knife__cobalt_damascus.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 330
+}

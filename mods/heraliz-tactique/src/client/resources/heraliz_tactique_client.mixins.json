@@ -9,7 +9,11 @@
     "LocalPlayerShootCouteauMixin",
     "LocalPlayerAimCouteauMixin",
     "TaczAllongeAnimationMixin",
-    "TaczTeteAllongeMixin"
+    "TaczTeteAllongeMixin",
+    "PlayerModelTorseAvantMixin",
+    "PlayerModelHanchesMixin",
+    "LivingEntityReleverMixin",
+    "HumanoidModelTeteRelevee"
   ],
   "injectors": {
     "defaultRequire": 1

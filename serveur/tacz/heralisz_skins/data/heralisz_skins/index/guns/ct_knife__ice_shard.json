@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.ct_knife__ice_shard.name",
+  "display": "heralisz_skins:ct_knife__ice_shard_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.ct_knife__ice_shard.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 331
+}

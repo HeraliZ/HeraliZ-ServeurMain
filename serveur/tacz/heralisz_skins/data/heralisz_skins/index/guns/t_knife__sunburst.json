@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.t_knife__sunburst.name",
+  "display": "heralisz_skins:t_knife__sunburst_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.t_knife__sunburst.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 339
+}

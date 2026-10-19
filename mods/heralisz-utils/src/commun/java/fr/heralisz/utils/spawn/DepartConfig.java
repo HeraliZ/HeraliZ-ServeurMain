@@ -13,7 +13,7 @@ public final class DepartConfig {
     public static final ForgeConfigSpec.DoubleValue BOUGER;
     public static final ForgeConfigSpec.BooleanValue SEULEMENT_AU_SPAWN, AVEUGLEMENT;
     public static final ForgeConfigSpec.ConfigValue<String> MONDE;
-    public static final ForgeConfigSpec.IntValue DISTANCE_JOUEURS, ESSAIS, MARGE_BORDURE;
+    public static final ForgeConfigSpec.IntValue DISTANCE_JOUEURS, DISTANCE_VILLES, ESSAIS, MARGE_BORDURE;
     public static final ForgeConfigSpec.BooleanValue CARTE_ENTIERE, EVITER_ZONES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SOLS;
     public static final ForgeConfigSpec.BooleanValue MONSTRES, PVP;
@@ -40,6 +40,9 @@ public final class DepartConfig {
         MONDE = b.comment("Monde de la carte (dimension) où mène la borne.").define("monde", "minecraft:overworld");
         DISTANCE_JOUEURS = b.comment("Aucun autre joueur à moins de tant de blocs du point d'arrivée.")
                 .defineInRange("distance_joueurs", 64, 0, 1024);
+        DISTANCE_VILLES = b.comment("Zones et carte entière : distance minimale (blocs) entre le point d'arrivée et le bord de chaque",
+                "ville (cercles des territoires des clans, config/heralisz_clans/zones.json). 0 : aucune. Les points posés à la",
+                "main ne sont pas concernés.").defineInRange("distance_villes", 200, 0, 4096);
         ESSAIS = b.comment("Points essayés au plus pour un départ (un par tick, pendant le délai puis après).")
                 .defineInRange("essais", 60, 1, 400);
         CARTE_ENTIERE = b.comment("Sans aucun point ni zone posés : chercher un sol sûr n'importe où dans la bordure de la carte.")

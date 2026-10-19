@@ -1,0 +1,46 @@
+{
+  "name": "item.heralisz_melee.baseball_bat__graffiti",
+  "tooltip": "item.heralisz_melee.baseball_bat__graffiti.desc",
+  "type": "heralisz_tactical:normal",
+  "base_item": "heralisz_tactical:melee",
+  "data": {
+    "attributes": {
+      "generic.attack_damage": 11,
+      "minecraft:generic.movement_speed": {
+        "amount": -0.05,
+        "operation": "percent"
+      }
+    },
+    "draw_time": 24,
+    "put_away_time": 14,
+    "max_durability": 240,
+    "enchantment_value": 8,
+    "attack": {
+      "attack_left": {
+        "factor": 1,
+        "knockback": 0.25,
+        "cooldown": 24,
+        "delay": 7,
+        "hitbox": {
+          "type": "cone",
+          "max_range": 4,
+          "max_angle": 110,
+          "exclude_self": true
+        },
+        "durability_damage": 1
+      },
+      "attack_right": {
+        "factor": 1.5,
+        "knockback": 0.3,
+        "cooldown": 24,
+        "delay": 12,
+        "hitbox": {
+          "type": "cone",
+          "max_range": 4,
+          "max_angle": 60,
+          "exclude_self": true
+        }
+      }
+    }
+  }
+}

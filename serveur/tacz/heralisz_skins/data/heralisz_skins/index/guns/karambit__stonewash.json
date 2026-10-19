@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.karambit__stonewash.name",
+  "display": "heralisz_skins:karambit__stonewash_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.karambit__stonewash.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 308
+}

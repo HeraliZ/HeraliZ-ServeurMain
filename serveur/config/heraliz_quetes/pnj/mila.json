@@ -1,6 +1,10 @@
 {
   "id": "mila",
-  "nom": "Mila",
+  "nom": {
+    "fr": "Mila",
+    "en": "Mila",
+    "ru": "Mila"
+  },
   "skin": "mila",
   "apparence": {
     "skin_tone": "beige",
@@ -32,13 +36,33 @@
     "ru": "Скупщица"
   },
   "ambiance": [
-    "Tout se revend.",
-    "Un bijou, ça ne se mange pas. Moi, je paie."
+    {
+      "fr": "Tout se revend.",
+      "en": "Everything can be sold.",
+      "ru": "Продать можно всё."
+    },
+    {
+      "fr": "Un bijou, ça ne se mange pas. Moi, je paie.",
+      "en": "You can't eat jewellery. I pay for it.",
+      "ru": "Украшения не съешь. А я за них плачу."
+    }
   ],
-  "presentation": "Bijoux, objets de valeur, composants : je rachète tout. Montre-moi ce que tu as.",
+  "presentation": {
+    "fr": "Bijoux, objets de valeur, composants : je rachète tout. Montre-moi ce que tu as.",
+    "en": "Jewellery, valuables, components: I buy it all. Show me what you've got.",
+    "ru": "Украшения, ценности, компоненты: скупаю всё. Показывай, что у тебя есть."
+  },
   "accueil": {
-    "inconnu": "Bijoux, objets de valeur, composants : je rachète tout. Montre-moi ce que tu as.",
-    "connu": "Bijoux, objets de valeur, composants : je rachète tout."
+    "inconnu": {
+      "fr": "Bijoux, objets de valeur, composants : je rachète tout. Montre-moi ce que tu as.",
+      "en": "Jewellery, valuables, components: I buy it all. Show me what you've got.",
+      "ru": "Украшения, ценности, компоненты: скупаю всё. Показывай, что у тебя есть."
+    },
+    "connu": {
+      "fr": "Bijoux, objets de valeur, composants : je rachète tout.",
+      "en": "Jewellery, valuables, components: I buy it all.",
+      "ru": "Украшения, ценности, компоненты: скупаю всё."
+    }
   },
   "marchand": {
     "type": "rachat",

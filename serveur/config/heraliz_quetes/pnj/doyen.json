@@ -1,6 +1,10 @@
 {
   "id": "doyen",
-  "nom": "Le Doyen",
+  "nom": {
+    "fr": "Le Doyen",
+    "en": "The Elder",
+    "ru": "Старейшина"
+  },
   "skin": "doyen",
   "apparence": {
     "skin_tone": "light",
@@ -31,13 +35,33 @@
     "ru": "Снабжение"
   },
   "ambiance": [
-    "Des conserves en bon état.",
-    "Le ventre vide, on ne va pas loin."
+    {
+      "fr": "Des conserves en bon état.",
+      "en": "Canned food in good condition.",
+      "ru": "Консервы в хорошем состоянии."
+    },
+    {
+      "fr": "Le ventre vide, on ne va pas loin.",
+      "en": "You won't get far on an empty stomach.",
+      "ru": "На пустой желудок далеко не уйдёшь."
+    }
   ],
-  "presentation": "Tu as faim ? J'ai des conserves en bon état. Ça se paie.",
+  "presentation": {
+    "fr": "Tu as faim ? J'ai des conserves en bon état. Ça se paie.",
+    "en": "Hungry? I've got canned food in good condition. It isn't free.",
+    "ru": "Голоден? У меня есть консервы в хорошем состоянии. Не бесплатно."
+  },
   "accueil": {
-    "inconnu": "Tu as faim ? J'ai des conserves en bon état. Ça se paie.",
-    "connu": "Tu as faim ? J'ai des conserves en bon état."
+    "inconnu": {
+      "fr": "Tu as faim ? J'ai des conserves en bon état. Ça se paie.",
+      "en": "Hungry? I've got canned food in good condition. It isn't free.",
+      "ru": "Голоден? У меня есть консервы в хорошем состоянии. Не бесплатно."
+    },
+    "connu": {
+      "fr": "Tu as faim ? J'ai des conserves en bon état.",
+      "en": "Hungry? I've got canned food in good condition.",
+      "ru": "Голоден? У меня есть консервы в хорошем состоянии."
+    }
   },
   "marchand": {
     "type": "achat",

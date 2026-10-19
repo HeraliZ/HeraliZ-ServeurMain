@@ -1,6 +1,10 @@
 {
   "id": "jack",
-  "nom": "Jack",
+  "nom": {
+    "fr": "Jack",
+    "en": "Jack",
+    "ru": "Jack"
+  },
   "skin": "jack",
   "apparence": {
     "skin_tone": "tan",
@@ -31,13 +35,33 @@
     "ru": "Оружейник"
   },
   "ambiance": [
-    "Une bonne lunette change tout.",
-    "Mes accessoires vont sur presque toutes les armes."
+    {
+      "fr": "Une bonne lunette change tout.",
+      "en": "A good scope changes everything.",
+      "ru": "Хороший прицел решает всё."
+    },
+    {
+      "fr": "Mes accessoires vont sur presque toutes les armes.",
+      "en": "My attachments fit almost any weapon.",
+      "ru": "Мои обвесы подходят почти к любому оружию."
+    }
   ],
-  "presentation": "Lunettes, silencieux, poignées... J'ai de quoi améliorer ton arme.",
+  "presentation": {
+    "fr": "Lunettes, silencieux, poignées... J'ai de quoi améliorer ton arme.",
+    "en": "Scopes, suppressors, grips... I've got what you need to upgrade your weapon.",
+    "ru": "Прицелы, глушители, рукоятки... Мне есть чем улучшить твоё оружие."
+  },
   "accueil": {
-    "inconnu": "Lunettes, silencieux, poignées... J'ai de quoi améliorer ton arme.",
-    "connu": "Lunettes, silencieux, poignées."
+    "inconnu": {
+      "fr": "Lunettes, silencieux, poignées... J'ai de quoi améliorer ton arme.",
+      "en": "Scopes, suppressors, grips... I've got what you need to upgrade your weapon.",
+      "ru": "Прицелы, глушители, рукоятки... Мне есть чем улучшить твоё оружие."
+    },
+    "connu": {
+      "fr": "Lunettes, silencieux, poignées.",
+      "en": "Scopes, suppressors, grips.",
+      "ru": "Прицелы, глушители, рукоятки."
+    }
   },
   "marchand": {
     "type": "achat",

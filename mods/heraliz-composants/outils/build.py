@@ -78,10 +78,11 @@ def model_json(m, hs, fp=None, tp=None):
 
 
 def main():
-    for sub in ('textures/item', 'models/item', 'lang'):
+    for sub in ('textures/item', 'models/item'):
         p = os.path.join(ASSETS, sub)
         if os.path.isdir(p):
             shutil.rmtree(p)
+    # lang/ : fr_fr et en_us sont réécrits plus bas ; ru_ru.json (traduit à part) est gardé
     if os.path.isdir(DATA):
         shutil.rmtree(DATA)
 

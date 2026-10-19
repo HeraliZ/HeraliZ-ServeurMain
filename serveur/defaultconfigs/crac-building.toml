@@ -84,19 +84,19 @@
 
 	#Twig cost to place each piece.
 	[cost.place]
-		foundation = ["minecraft:stick=16"]
-		triangle_foundation = ["minecraft:stick=8"]
-		floor = ["minecraft:stick=16"]
-		triangle_floor = ["minecraft:stick=8"]
-		roof = ["minecraft:stick=16"]
-		triangle_roof = ["minecraft:stick=8"]
-		wall = ["minecraft:stick=16"]
-		half_wall = ["minecraft:stick=8"]
-		doorway = ["minecraft:stick=12"]
-		double_doorway = ["minecraft:stick=16"]
-		window = ["minecraft:stick=12"]
-		l_stairs = ["minecraft:stick=24"]
-		ramp = ["minecraft:stick=16"]
+		foundation = ["heraliz_composants:brindilles=16"]
+		triangle_foundation = ["heraliz_composants:brindilles=8"]
+		floor = ["heraliz_composants:brindilles=16"]
+		triangle_floor = ["heraliz_composants:brindilles=8"]
+		roof = ["heraliz_composants:brindilles=16"]
+		triangle_roof = ["heraliz_composants:brindilles=8"]
+		wall = ["heraliz_composants:brindilles=16"]
+		half_wall = ["heraliz_composants:brindilles=8"]
+		doorway = ["heraliz_composants:brindilles=12"]
+		double_doorway = ["heraliz_composants:brindilles=16"]
+		window = ["heraliz_composants:brindilles=12"]
+		l_stairs = ["heraliz_composants:brindilles=24"]
+		ramp = ["heraliz_composants:brindilles=16"]
 
 	#Cost to upgrade a full piece to each tier; multiplied per piece below (rounded up).
 	[cost.upgrade]
@@ -135,7 +135,7 @@
 
 	#Items consumed by one repair, per tier.
 	[cost.repair]
-		twig = ["minecraft:stick=2"]
+		twig = ["heraliz_composants:brindilles=2"]
 		wood = ["#minecraft:planks=3"]
 		stone = ["#forge:cobblestone=4"]
 		metal = ["minecraft:iron_ingot=2"]

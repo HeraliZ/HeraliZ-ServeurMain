@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_composants:item/3d/metal_renforce"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_composants:item/icon/metal_renforce"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.karambit__copper_patina.name",
+  "display": "heralisz_skins:karambit__copper_patina_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.karambit__copper_patina.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 310
+}

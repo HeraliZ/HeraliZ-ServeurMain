@@ -54,8 +54,16 @@ public final class DuelsClient {
     private static List<ClassePerso> classes = List.of();
     private static int derniere;
     private static int versionClasses;
+    /**
+     * Choix de classe en cours (Matchs 0.11.3) : tant que le joueur n'a pas choisi et que le temps n'est pas ecoule,
+     * l'ecran de choix est rouvert a chaque tick s'il n'est plus a l'ecran (remplace par l'ecran de chargement d'un
+     * changement de monde, par un autre ecran ou ferme) ; la classe par defaut du serveur ne vaut qu'a la fin du temps.
+     */
     @Nullable
-    private static PaquetsDuels.ChoixS2C choixEnAttente;
+    private static PaquetsDuels.ChoixS2C choixActif;
+    private static long choixDebutMs;
+    private static boolean choixFait;
+    private static int choixCourant;
 
     /** Appele par {@code Duels.construire} sur le client physique. */
     public static void initClient(IEventBus modBus) {
@@ -175,7 +183,7 @@ public final class DuelsClient {
         // debut de manche : les reperes A / B sont bien visibles pendant le choix et les premieres secondes du combat
         DuelHud.choix(p.secondes());
         if (p.secondes() <= 0) {
-            choixEnAttente = null;
+            choixActif = null;
             if (mc.screen instanceof ChoixClasseScreen) mc.setScreen(null);
             return;
         }
@@ -184,20 +192,46 @@ public final class DuelsClient {
             classes = List.copyOf(p.classes());
             versionClasses++;
         }
-        if (killcamActive() || !ouvrirChoix(p)) choixEnAttente = p;
+        choixActif = p;
+        choixDebutMs = net.minecraft.Util.getMillis();
+        choixFait = false;
+        choixCourant = p.choisie();
+        ouvrirChoix();
+    }
+
+    /** Classe choisie par le joueur (envoyee au serveur) : l'ecran n'est plus impose. */
+    static void choixFait(int i) {
+        choixFait = true;
+        choixCourant = i;
+    }
+
+    /** Vrai si le joueur a deja choisi sa classe pour le choix en cours (ou s'il n'y a pas de choix en cours). */
+    static boolean choixFait() {
+        return choixActif == null || choixFait;
     }
 
     /**
-     * Ouvre l'ecran de choix ; faux s'il faut reessayer au tick suivant (monde en chargement : le duel commence souvent
-     * par un changement de dimension, et l'ecran de chargement remplacerait le choix). Un autre ecran du joueur = choix
-     * abandonne (classe par defaut), comme avant. Le paquet de fin du choix (0 s) annule l'attente.
+     * (Re)ouvre l'ecran de choix si le choix est en cours, pas encore fait et pas fini. Attend (tick suivant) pendant un
+     * chargement de monde (le duel commence souvent par un changement de dimension), le chat ouvert, l'ecran de mort ou
+     * une killcam ; tout autre ecran est remplace : le choix est impose.
      */
-    private static boolean ouvrirChoix(PaquetsDuels.ChoixS2C p) {
+    private static void ouvrirChoix() {
+        PaquetsDuels.ChoixS2C p = choixActif;
+        if (p == null) return;
+        if (net.minecraft.Util.getMillis() - choixDebutMs >= p.secondes() * 1000L) {
+            choixActif = null;
+            return;
+        }
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen) return false;
-        if (mc.screen != null && !(mc.screen instanceof EcranDuels) && !(mc.screen instanceof net.minecraft.client.gui.screens.ChatScreen)) return true;
-        mc.setScreen(new ChoixClasseScreen(p));
-        return true;
+        if (choixFait || mc.player == null || mc.level == null || killcamActive()) return;
+        var ecran = mc.screen;
+        if (ecran instanceof ChoixClasseScreen || ecran instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen
+                || ecran instanceof net.minecraft.client.gui.screens.LevelLoadingScreen
+                || ecran instanceof net.minecraft.client.gui.screens.ProgressScreen
+                || ecran instanceof net.minecraft.client.gui.screens.GenericDirtMessageScreen
+                || ecran instanceof net.minecraft.client.gui.screens.ChatScreen
+                || ecran instanceof net.minecraft.client.gui.screens.DeathScreen) return;
+        mc.setScreen(new ChoixClasseScreen(p, choixDebutMs, choixCourant));
     }
 
     public static void rd(@Nullable Vues.RdVue v) {
@@ -237,7 +271,7 @@ public final class DuelsClient {
             }
             case PaquetsDuels.EffetS2C.FIN -> {
                 DuelHud.rd(null);
-                choixEnAttente = null;
+                choixActif = null;
                 if (mc.screen instanceof ChoixClasseScreen) mc.setScreen(null);
             }
             default -> {
@@ -255,14 +289,14 @@ public final class DuelsClient {
         if (e.phase != TickEvent.Phase.END) return;
         DuelHud.tick();
         NotifDefis.tick();
-        if (choixEnAttente != null && !killcamActive() && ouvrirChoix(choixEnAttente)) choixEnAttente = null;
+        ouvrirChoix();
     }
 
     private static void deconnexion(ClientPlayerNetworkEvent.LoggingOut e) {
         catalogue = Catalogue.VIDE;
         classes = List.of();
         NotifDefis.vider(false);
-        choixEnAttente = null;
+        choixActif = null;
         DuelHud.vider();
     }
 

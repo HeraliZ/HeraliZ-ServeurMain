@@ -13,6 +13,7 @@ CATEGORIES = {
     'protection': ('Protection', 'Protection'),
     'divers': ('Divers', 'Misc'),
     'vente': ('À vendre', 'To sell'),
+    'construction': ('Construction', 'Construction'),
 }
 
 DIAG = {'roll': 32, 'yaw': -25, 'pitch': 25}
@@ -306,7 +307,7 @@ def _(m):
     m.box((13.4, 0, 7.4), (16.6, 1.0, 8.6), 'rope', ('y', -22.5, (13.6, 0.5, 8)))
 
 
-@item('clou', 'Clous', 'Nails', ['vente'],
+@item('clou', 'Clous', 'Nails', ['construction'],
       'Une poignée de clous rouillés.', 'A handful of rusty nails.',
       0.4, TOP, 64)
 def _(m):
@@ -993,3 +994,145 @@ def _(m):
         around_y(m, 3.9, k * 45 + 22.5, 9.4, 10.4, 0.4, 1.0, ('ruby', 'sapphire', 'emerald', 'sapphire')[k % 4])
     m.ring('y', 11.6, 12.1, 8, 8, 4.0, 0.6, 'gold_dark')
     m.cyl('y', 11.6, 11.7, 8, 8, 3.4, 'enamel')
+
+
+# ================================================================ CONSTRUCTION (bases de CRac)
+# Vendus par le Bâtisseur (PNJ) : planches, pierres taillées, fragments de métal, métal renforcé.
+# Trouvés sur la carte (plus tard) : clous, sac de ciment, équerres d'acier, bobine de fil à souder.
+
+LETTRES = {
+    'C': ['111', '100', '100', '100', '111'],
+    'I': ['111', '010', '010', '010', '111'],
+    'M': ['101', '111', '101', '101', '101'],
+    'E': ['111', '100', '110', '100', '111'],
+    'N': ['101', '111', '111', '111', '101'],
+    'T': ['111', '010', '010', '010', '010'],
+}
+
+
+def ecrire(m, mot, x0, y0, z, px, mat):
+    """Lettres en relief sur la face avant (z), pixel de px."""
+    x = x0
+    for c in mot:
+        for r, ligne in enumerate(LETTRES[c]):
+            for k, b in enumerate(ligne):
+                if b == '1':
+                    m.box((x + k * px, y0 - (r + 1) * px, z), (x + (k + 1) * px, y0 - r * px, z + 0.06), mat)
+        x += 4 * px
+
+
+@item('planches', 'Planches', 'Planks', ['construction'],
+      'Des planches sciées, prêtes à clouer.', 'Sawn planks, ready to nail.',
+      0.6, TOP, 64)
+def _(m):
+    # trois planches sciées empilées, sanglées
+    for i, (y, dz, mat) in enumerate(((0, 0, 'wood_raw'), (1.6, 0.6, 'wood'), (3.2, -0.4, 'wood_raw'))):
+        for j in range(2):
+            z0 = 3.0 + j * 5.2 + dz
+            m.box((0.6 + i * 0.4, y, z0), (15.4 - i * 0.3, y + 1.5, z0 + 4.8), mat)
+    for x in (3.4, 12.2):
+        m.box((x, -0.1, 2.6), (x + 1.0, 4.9, 13.8), 'string')
+
+
+@item('brindilles', 'Brindilles', 'Twigs', ['construction'],
+      'Du petit bois ramassé. De quoi monter le squelette d\'une base.', 'Gathered kindling. Enough to frame a base.',
+      0.6, TOP, 64)
+def _(m):
+    # brindilles en vrac, croisées, quelques feuilles
+    for i, ang in enumerate((-22.5, 0, 22.5, -45, 45, 22.5)):
+        y = 0.5 + i * 0.75
+        m.box((2.0, y, 7.5), (14.0, y + 0.9, 8.4), 'twig' if i % 2 else 'twig_lt', ('y', ang, (8, y, 8)))
+    m.box((10.5, 2.6, 9.5), (12.0, 2.7, 11.0), 'leaf')
+    m.box((4.0, 4.0, 5.0), (5.4, 4.1, 6.2), 'leaf')
+
+
+@item('pierres_taillees', 'Pierres taillées', 'Cut Stone', ['construction'],
+      'Des blocs de pierre équarris. Lourds.', 'Squared stone blocks. Heavy.',
+      0.6, TOP, 64)
+def _(m):
+    m.box((1.0, 0, 2.0), (7.6, 4.2, 14.0), 'stone_cut')
+    m.box((8.2, 0, 2.6), (15.0, 4.2, 13.4), 'stone_dark')
+    m.box((3.4, 4.2, 4.0), (12.2, 8.0, 12.0), 'stone_cut')
+    for (x, z) in ((5.0, 5.0), (10.4, 10.6)):
+        m.box((x, 8.0, z), (x + 1.2, 8.05, z + 0.4), 'stone_dark')
+
+
+@item('fragments_metal', 'Fragments de métal', 'Metal Fragments', ['construction'],
+      'Des chutes de tôle et de barres découpées.', 'Offcuts of sheet metal and cut bars.',
+      0.6, TOP, 64, 'uncommon')
+def _(m):
+    m.box((1.0, 0, 3.0), (9.0, 0.8, 9.0), 'plate', ('y', 22.5, (5, 0.4, 6)))
+    m.box((6.0, 0, 7.0), (14.6, 0.8, 13.0), 'rusty_steel', ('y', -22.5, (10, 0.4, 10)))
+    m.box((3.0, 0.8, 7.0), (11.0, 1.6, 10.6), 'steel', ('y', 45, (7, 1.2, 8.8)))
+    m.box((8.0, 0.8, 2.4), (14.4, 1.5, 5.6), 'gunmetal_worn')
+    m.box((2.0, 1.6, 4.0), (6.6, 2.3, 8.0), 'steel_dark', ('x', 22.5, (4, 1.9, 6)))
+    m.cyl('x', 4.0, 13.0, 2.0, 11.6, 0.6, 'steel')
+
+
+@item('metal_renforce', 'Métal renforcé', 'Reinforced Metal', ['construction'],
+      "Une plaque d'acier épaisse, cerclée et rivetée.", 'A thick steel plate, banded and riveted.',
+      0.6, TOP, 64, 'rare')
+def _(m):
+    m.box((1.0, 0, 3.5), (15.0, 3.0, 12.5), 'hq_metal')
+    for x in (3.4, 12.0):
+        m.box((x, -0.1, 3.3), (x + 0.8, 3.15, 12.7), 'hq_band')
+    for x in (2.2, 6.2, 9.8, 13.8):
+        for z in (4.6, 11.4):
+            m.cyl('y', 3.0, 3.4, x, z, 0.45, 'steel', sides=4)
+    m.box((5.0, 3.0, 6.6), (11.0, 3.1, 9.4), 'yellow')
+
+
+# ---------------------------------------------------------------- trouvés sur la carte
+
+
+@item('sac_ciment', 'Sac de ciment', 'Cement Bag', ['construction'],
+      'Pour monter la pierre.', 'For laying stone.',
+      0.6, {'roll': 0, 'yaw': -24, 'pitch': 16}, 64)
+def _(m):
+    # sac debout, gris, un peu bombé
+    m.box((2.2, 0, 5.0), (13.8, 11.0, 11.0), 'cem_bag')
+    m.box((1.8, 0.6, 5.4), (14.2, 10.4, 10.6), 'cem_bag')
+    m.box((2.6, 0, 4.6), (13.4, 10.6, 11.4), 'cem_bag')
+    # haut plié et ouvert : poudre grise qui déborde
+    m.box((2.6, 11.0, 5.6), (13.4, 11.8, 10.4), 'cem_bag_dk')
+    m.box((3.6, 11.8, 6.4), (12.4, 12.8, 9.6), 'cem_powder')
+    m.box((5.4, 12.8, 7.0), (10.6, 13.5, 9.0), 'cem_powder')
+    # bandeau rouge et inscription CIMENT
+    m.box((2.6, 7.4, 11.4), (13.4, 9.6, 11.46), 'ink_red')
+    ecrire(m, 'CIMENT', 3.2, 6.8, 11.4, 0.42, 'ink')
+    m.box((2.6, 1.0, 11.4), (13.4, 1.6, 11.46), 'ink_red')
+    # poudre tombée au pied du sac
+    m.box((9.0, 0, 11.4), (13.6, 0.5, 13.4), 'cem_powder')
+    m.box((10.2, 0.5, 11.8), (12.6, 0.8, 12.8), 'cem_powder')
+
+
+@item('equerres_acier', "Équerres d'acier", 'Steel Brackets', ['construction'],
+      'Pour assembler les plaques de métal.', 'For joining metal sheets.',
+      0.6, TOP, 64, 'uncommon')
+def _(m):
+    for (x, z, rot) in ((2.0, 3.0, 0), (6.0, 8.6, -22.5), (9.6, 3.6, 22.5)):
+        o = (x + 2.5, 1, z + 2.5)
+        r = ('y', rot, o) if rot else None
+        m.box((x, 0, z), (x + 5.0, 0.7, z + 5.0), 'steel', r)
+        m.box((x, 0.7, z), (x + 5.0, 5.0, z + 0.7), 'steel', r)
+        m.box((x + 1.6, 0.7, z + 2.6), (x + 3.4, 0.75, z + 3.6), 'chip', r)
+        m.box((x + 1.6, 2.4, z + 0.7), (x + 3.4, 3.4, z + 0.75), 'chip', r)
+
+
+@item('fil_souder', 'Bobine de fil à souder', 'Welding Wire Spool', ['construction'],
+      'Pour souder le métal renforcé.', 'For welding reinforced metal.',
+      0.6, {'roll': 0, 'yaw': -30, 'pitch': 22}, 64, 'rare')
+def _(m):
+    # bobine debout : deux flasques noires, fil cuivré enroulé
+    for z in (4.0, 11.2):
+        m.cyl('z', z, z + 0.8, 8, 8, 6.4, 'polymer')
+        m.ring('z', z - 0.05, z + 0.85, 8, 8, 6.4, 0.5, 'black')
+    for k, r in enumerate((5.4, 5.0, 4.6)):
+        m.cyl('z', 4.8, 11.2, 8, 8, r, 'copper_wire')
+    m.cyl('z', 3.8, 12.2, 8, 8, 1.6, 'steel_dark')
+    m.cyl('z', 3.7, 12.3, 8, 8, 0.8, 'chip')
+    # étiquette sur la flasque avant
+    m.box((5.4, 9.6, 12.0), (10.6, 12.2, 12.06), 'label_yellow')
+    # bout de fil qui dépasse
+    m.box((12.8, 3.6, 7.8), (16.0, 4.0, 8.2), 'copper', ('z', -22.5, (12.8, 3.8, 8)))
+

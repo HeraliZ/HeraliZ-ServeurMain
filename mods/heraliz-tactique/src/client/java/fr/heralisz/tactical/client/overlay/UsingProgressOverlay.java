@@ -4,7 +4,6 @@ import fr.heralisz.tactical.api.HeraliszTacticalAPI;
 import fr.heralisz.tactical.api.item.IConsumable;
 import fr.heralisz.tactical.api.item.ICustomItem;
 import fr.heralisz.tactical.api.item.IThrowable;
-import fr.heralisz.tactical.capability.CombatPropertiesProvider;
 import fr.heralisz.tactical.item.index.ConsumableIndex;
 import fr.heralisz.tactical.item.index.ThrowableIndex;
 import fr.heralisz.tactical.item.throwable.ThrowableData;
@@ -24,8 +23,8 @@ import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
 /**
  * Jauges d'usage autour du réticule (maquette validée « petites jauges ») : un anneau qui se remplit pendant un soin (vert),
- * pendant qu'on dégoupille une grenade (blanc), puis la mèche (rouge, qui se vide jusqu'à l'explosion), et pendant le temps
- * de recharge des coups (blanc, sans texte). Sous l'anneau : le nom de l'objet et le temps qui reste ; « Lancer doux
+ * pendant qu'on dégoupille une grenade (blanc), puis la mèche (rouge, qui se vide jusqu'à l'explosion) ; rien pendant la
+ * recharge des coups. Sous l'anneau : le nom de l'objet et le temps qui reste ; « Lancer doux
  * (accroupi) » quand on est accroupi avec une grenade ; pour un soin qui dure tant qu'on le garde, la touche pour arrêter.
  */
 public class UsingProgressOverlay implements IGuiOverlay {
@@ -83,15 +82,8 @@ public class UsingProgressOverlay implements IGuiOverlay {
          }
          return;
       }
-      // recharge d'un coup : anneau blanc discret, sans texte
-      player.getCapability(CombatPropertiesProvider.CAPABILITY).ifPresent(cap -> {
-         if (cap.getCoolDownTick() > 0) {
-            float max = Math.max(1, cap.getLastMaxTick());
-            float p = 1.0F - Math.min(1.0F, cap.getCoolDownTick() / max);
-            anneau(g, cx, cy, 1.0F, Ui.argb(0xFFFFFF, 36), 0);
-            anneau(g, cx, cy, p, Ui.argb(0xFFFFFF, 170), 0);
-         }
-      });
+      // recharge des coups de mêlée et des couteaux : plus d'anneau (demande du propriétaire, 19/10) ; le délai reste
+      // le même, vérifié par le serveur
    }
 
    /** Anneau autour du réticule, de midi jusqu'à la fraction {@code f} ; {@code lueur} : couleur d'un halo (0 : aucun). */

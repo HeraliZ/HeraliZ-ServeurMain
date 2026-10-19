@@ -6,6 +6,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
@@ -34,6 +35,11 @@ public final class Depart {
                     .sound(SoundType.METAL).noOcclusion().lightLevel(s -> 7).pushReaction(PushReaction.BLOCK)
                     .isValidSpawn((s, l, p, e) -> false).isRedstoneConductor((s, l, p) -> false)
                     .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+    public static final DeferredRegister<BlockEntityType<?>> ENTITES_BLOC =
+            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, HeraliszUtils.MODID);
+    /** Entité de la borne : seulement pour dessiner l'hologramme chez le joueur (rien n'est gardé). */
+    public static final RegistryObject<BlockEntityType<BorneDepartEntite>> BORNE_BE = ENTITES_BLOC.register("borne_depart",
+            () -> BlockEntityType.Builder.of(BorneDepartEntite::new, BORNE.get()).build(null));
     public static final RegistryObject<Item> BORNE_OBJET = HeraliszUtils.ITEMS.register("borne_depart",
             () -> new BlockItem(BORNE.get(), new Item.Properties()));
 
@@ -42,6 +48,7 @@ public final class Depart {
     /** Registres et réglages (fichier heraliz_spawn-server.toml, dans serverconfig/ du monde). */
     public static void register(IEventBus bus) {
         BLOCS.register(bus);
+        ENTITES_BLOC.register(bus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, DepartConfig.SPEC, "heraliz_spawn-server.toml");
     }
 }

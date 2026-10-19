@@ -6,8 +6,8 @@ import javax.annotation.Nullable;
  * Coup puissant (clic droit) de chaque modèle de couteau TaCZ, skins compris : ÉCRIT PAR
  * {@code mods/heraliz-tactique/outils/couteaux_coups.py}, ne pas modifier à la main (relancer le script).
  * <ul>
- *    <li>ct_knife : geste « poignard » écrit ici, 0,85 s, impact à 0,24 s</li>
- *    <li>t_knife : geste « poignard » écrit ici, 0,85 s, impact à 0,24 s</li>
+ *    <li>ct_knife : coup lourd repris de « Lame de Desmoulins » de LR (desmoulins_edge), 2,75 s, impact à 0,28 s, cadence de LR 24 ticks (écart +0)</li>
+ *    <li>t_knife : coup lourd repris de « Miséricorde » de LR (mercy), 1,79 s, impact à 0,31 s, cadence de LR 24 ticks (écart +0)</li>
  *    <li>m9 : coup lourd repris de « Miséricorde » de LR (mercy), 1,79 s, impact à 0,31 s, cadence de LR 24 ticks (écart +0)</li>
  *    <li>butterfly_knife : coup lourd repris de « Lame de Desmoulins » de LR (desmoulins_edge), 2,75 s, impact à 0,28 s, cadence de LR 24 ticks (écart +0)</li>
  *    <li>karambit : coup lourd repris de « Credo » de LR (creed), 2,18 s, impact à 0,23 s, cadence de LR 24 ticks (écart +0)</li>
@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 public final class CoupsLourds {
    /** Modèles d'animation des couteaux (fichiers {@code assets/heraliz_tactique/couteaux/<modèle>.animation.json}). */
    private static final String[] MODELES = {"ct_knife", "t_knife", "m9", "butterfly_knife", "karambit"};
-   private static final int[] DELAIS = {5, 5, 6, 6, 5};
+   private static final int[] DELAIS = {6, 6, 6, 6, 5};
    private static final int[] ECARTS_CADENCE = {0, 0, 0, 0, 0};
    /** Délai d'un couteau inconnu (coup puissant du gunpack), en ticks. */
    public static final int DELAI_DEFAUT = 5;

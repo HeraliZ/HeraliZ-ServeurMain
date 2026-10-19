@@ -24,6 +24,8 @@ final class Vues {
                 if (q != null) quetes.add(quete(j, a, q, def));
             }
             if ((dp == null || !dp.rencontre) && quetes.isEmpty()) continue;
+            // PNJ sans quête (marchands) : pas dans le journal, sauf une ancienne quête encore en cours chez lui
+            if (def.suite.isEmpty() && def.contrats.isEmpty() && quetes.isEmpty()) continue;
             int rep = dp == null ? 0 : dp.rep;
             pnj.add(new Reseau.JPnj(def.id, def.nom, def.role, Defs.niveau(rep), rep, Defs.seuilSuivant(rep), quetes));
         }

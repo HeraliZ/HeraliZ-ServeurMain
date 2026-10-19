@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 @Mod.EventBusSubscriber(modid = HeraliszCamo.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -46,15 +47,18 @@ public final class CamoShaders {
    @SubscribeEvent
    public static void onRegisterShaders(RegisterShadersEvent event) {
       SHADERS.clear();
-      Set<Integer> ids = new TreeSet<>();
-      for (Camo c : Camo.values()) ids.add(c.shaderId);
-      for (KnifeFinish f : KnifeFinish.values()) ids.add(f.shaderId);
-      for (int id : ids) {
+      // programme -> skins qu'il dessine (les skins de couteaux par paliers partagent un seul programme)
+      Map<Integer, Set<Integer>> programmes = new TreeMap<>();
+      for (Camo c : Camo.values()) programmes.computeIfAbsent(c.shaderId, k -> new TreeSet<>()).add(c.shaderId);
+      for (KnifeFinish f : KnifeFinish.values()) programmes.computeIfAbsent(f.programme(), k -> new TreeSet<>()).add(f.shaderId);
+      for (Map.Entry<Integer, Set<Integer>> e : programmes.entrySet()) {
+         int id = e.getKey();
+         Set<Integer> skins = e.getValue();
          try {
             event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(HeraliszCamo.MODID, "camo_" + id), DefaultVertexFormat.NEW_ENTITY),
-               s -> SHADERS.put(id, s));
-         } catch (IOException | RuntimeException e) {
-            LOG.error("Shader camo_{} indisponible, ce skin s'affichera sans effet", id, e);
+               s -> skins.forEach(skin -> SHADERS.put(skin, s)));
+         } catch (IOException | RuntimeException ex) {
+            LOG.error("Shader camo_{} indisponible, ce skin s'affichera sans effet", id, ex);
          }
       }
       FX.clear();
