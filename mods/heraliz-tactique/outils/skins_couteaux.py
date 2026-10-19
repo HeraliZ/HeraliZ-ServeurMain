@@ -298,6 +298,27 @@ for _x in _LOT2:
         _id += 1
     SKINS.append((sid, couteau, fin, nom, pal, style, args, manche, insert))
 
+# skins retirés après l'essai en jeu du propriétaire (19/10) : fichiers effacés par ce script (et du Ptero pour les
+# couteaux TaCZ, par serveur/tacz_retires.txt) ; les numéros des autres skins ne bougent pas
+RETIRES = {
+    "tac_dagger": ["silver_kintsugi", "sandstone", "aurora", "hex_armor", "lava_core", "olive_drab", "mirror"],
+    "sea_gleam": ["tidewash", "marine_camo", "kraken_hex", "driftwood", "bright_water", "abyssal_pearl"],
+    "mercy": ["seafoam_spray", "sage", "pearl_damascus", "pearl", "opal", "jade_marble", "ivory_hammered",
+              "cherry_blossom", "celeste"],
+    "executor": ["rust_coat", "glacier_digital", "dark_hammered", "blood_stripe", "arctic_white"],
+    "dragons_fang": ["olive_satin", "lava_spray", "jungle", "jade_hex", "infernal_fade", "ember_temper", "cobalt", "bengal"],
+    # « lore » : le skin Lore de la Lame de Desmoulins (2.19.0), fait à la main avant ce catalogue
+    "desmoulins_edge": ["royal_damascus", "lore", "ivory", "desert_storm", "crimson_carbon", "bone_worn"],
+    "creed": ["copper_hex", "champagne", "brass", "arctic_digital"],
+    "t_knife": ["sunbaked", "solar_flare", "sand_hammered", "rust_damascus", "ruby_storm", "orange_stripe",
+                "copper_satin", "brick"],
+    "m9": ["hammered", "desert_spray"],
+    "ct_knife": ["steel_hammered", "sapphire_aurora", "concrete"],
+    "butterfly": ["safari_mesh", "midnight_damascus", "kintsugi", "hammered_bronze", "contour", "circuit"],
+}
+TOUS = list(SKINS)
+SKINS = [x for x in SKINS if x[2] not in RETIRES.get(x[1], ())]
+
 
 def glsl_arg(a):
     if isinstance(a, int):
@@ -425,7 +446,7 @@ ARKANIAZ = ROOT / "serveur" / "tacz" / "arkaniaz_pack_4_converted" / "assets" / 
 # couteaux TaCZ (gunpack heralisz_skins) : affichage pris pour modèle
 TACZ = {
     "m9": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "m9__lore_display.json",
-    "karambit": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "karambit__fade_display.json",
+    "karambit": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "karambit__tiger_tooth_display.json",
     "butterfly": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "butterfly__fade_display.json",
     "ct_knife": ARKANIAZ / "ct_knife_display.json",
     "t_knife": ARKANIAZ / "t_knife_display.json",
@@ -523,6 +544,8 @@ def ecrire_objets():
                 ("name", "heralisz_skins.knife.%s.name" % cle), ("display", "heralisz_skins:%s_display" % cle),
                 ("data", "arkaniaz:knife_data"), ("tooltip", "heralisz_skins.tooltip.%s.desc" % cle),
                 ("type", "rpg"), ("item_type", "modern_kinetic"), ("sort", ordre)]))
+            if not TACZ[couteau].exists():
+                sys.exit("[skins_couteaux] affichage modèle introuvable : %s" % TACZ[couteau])
             affichage = lire_json(TACZ[couteau])
             affichage["slot"] = "heralisz_skins:gun/slot/%s" % cle
             ecrire_json(GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / (cle + "_display.json"), affichage)
@@ -554,12 +577,59 @@ def ecrire_objets():
         ecrire_json(MELEE_ASSETS / "lang" / (l + ".json"), langues_melee[l])
 
 
+def retirer():
+    """Efface les fichiers des skins retirés (fiche, affichage, icône, noms) ; les couteaux TaCZ sont aussi notés dans
+    serveur/tacz_retires.txt pour que la mise en ligne les efface du Ptero."""
+    restants = {x[0] for x in SKINS}
+    for sid, *_ in TOUS:
+        if sid not in restants and sid != 120:   # 120 : programme commun des skins par paliers
+            for ext in (".json", ".fsh"):
+                (CORE / ("camo_%d%s" % (sid, ext))).unlink(missing_ok=True)
+    tacz_retires = ROOT / "serveur" / "tacz_retires.txt"
+    deja = tacz_retires.read_text(encoding="utf-8")
+    ajout = []
+    langues_pack = {l: GUNPACK / "assets" / "heralisz_skins" / "lang" / (l + ".json") for l in LANGUES}
+    langues_melee = {l: MELEE_ASSETS / "lang" / (l + ".json") for l in LANGUES}
+    cles_pack, cles_melee = set(), set()
+    for couteau, fins in RETIRES.items():
+        for f in fins:
+            cle = "%s__%s" % (couteau, f)
+            if couteau in TACZ:
+                fichiers = [GUNPACK / "data" / "heralisz_skins" / "index" / "guns" / (cle + ".json"),
+                            GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / (cle + "_display.json"),
+                            GUNPACK / "assets" / "heralisz_skins" / "textures" / "gun" / "slot" / (cle + ".png")]
+                for p in fichiers:
+                    p.unlink(missing_ok=True)
+                    rel = p.relative_to(ROOT / "serveur" / "tacz").as_posix()
+                    if rel not in deja:
+                        ajout.append(rel)
+                cles_pack |= {"heralisz_skins.knife.%s.name" % cle, "heralisz_skins.tooltip.%s.desc" % cle}
+            else:
+                affichage = MELEE_ASSETS / "display" / "melee" / (cle + ".json")
+                if affichage.exists():
+                    icone = lire_json(affichage).get("slot_texture", "")
+                    if icone.startswith("heralisz_melee:"):
+                        (MELEE_ASSETS / "textures" / (icone.split(":", 1)[1] + ".png")).unlink(missing_ok=True)
+                    affichage.unlink()
+                (MELEE_DATA / (cle + ".json")).unlink(missing_ok=True)
+                cles_melee |= {"item.heralisz_melee.%s" % cle, "item.heralisz_melee.%s.desc" % cle}
+    for fichiers, cles in ((langues_pack, cles_pack), (langues_melee, cles_melee)):
+        for chemin in fichiers.values():
+            d = lire_json(chemin)
+            if any(c in d for c in cles):
+                ecrire_json(chemin, OrderedDict((a, b) for a, b in d.items() if a not in cles))
+    if ajout:
+        texte = deja.rstrip("\n") + "\n\n# 19/10 : skins de couteaux retirés après l'essai en jeu (outils de mods/heraliz-tactique/outils/skins_couteaux.py)\n"
+        tacz_retires.write_bytes((texte + "\n".join(ajout) + "\n").encode("utf-8"))
+
+
 def main():
     verifier_catalogue()
     ecrire_gabarit()
     n = ecrire_programmes()
     ecrire_java()
     ecrire_objets()
+    retirer()
     subprocess.run([sys.executable, str(OUTILS / "generer_camos.py")], check=True)
     print("[skins_couteaux] %d skins, %d programmes ajoutés" % (len(SKINS), n))
 

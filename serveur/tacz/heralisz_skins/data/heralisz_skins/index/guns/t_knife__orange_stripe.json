@@ -1,9 +1,0 @@
-{
-  "name": "heralisz_skins.knife.t_knife__orange_stripe.name",
-  "display": "heralisz_skins:t_knife__orange_stripe_display",
-  "data": "arkaniaz:knife_data",
-  "tooltip": "heralisz_skins.tooltip.t_knife__orange_stripe.desc",
-  "type": "rpg",
-  "item_type": "modern_kinetic",
-  "sort": 360
-}

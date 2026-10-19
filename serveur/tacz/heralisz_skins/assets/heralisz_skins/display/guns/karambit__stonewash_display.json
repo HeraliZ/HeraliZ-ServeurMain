@@ -1,3 +1,100 @@
 {
-  "slot": "heralisz_skins:gun/slot/karambit__stonewash"
+  "model": "arkaniaz:gun/karambit_fade_geo",
+  "texture": "arkaniaz:gun/uv/karambit_fade",
+  "hud": "arkaniaz:gun/hud/karambit",
+  "slot": "heralisz_skins:gun/slot/karambit__stonewash",
+  "animation": "arkaniaz:karambit",
+  "player_animator_3rd": "tacz:pistol_default.player_animation",
+  "transform": {
+    "scale": {
+      "thirdperson": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "ground": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "fixed": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    }
+  },
+  "shell": {
+    "initial_velocity": [
+      8.0,
+      5.0,
+      -0.5
+    ],
+    "random_velocity": [
+      2.5,
+      1.5,
+      0.25
+    ],
+    "acceleration": [
+      0.0,
+      -20,
+      0.0
+    ],
+    "angular_velocity": [
+      360,
+      -720,
+      90
+    ],
+    "living_time": 1.0
+  },
+  "muzzle_flash": {
+    "texture": "tacz:flash/common_muzzle_flash",
+    "scale": 0.4
+  },
+  "sounds": {
+    "inspect": "arkaniaz:karambit/karambit_inspect",
+    "inspect_empty": "arkaniaz:karambit/karambit_inspect",
+    "draw": "arkaniaz:knife_deploy",
+    "dry_fire": "",
+    "head_hit": "arkaniaz:knife_hit",
+    "flesh_hit": "arkaniaz:knife_hit",
+    "kill": "arkaniaz:knife_stab",
+    "melee_push": "arkaniaz:knife_slash"
+  },
+  "offhand_show": {
+    "pos": [
+      0,
+      14,
+      3
+    ],
+    "rotate": [
+      0,
+      148,
+      35
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ]
+  },
+  "hotbar_show": {
+    "0": {
+      "pos": [
+        0,
+        14,
+        3
+      ],
+      "rotate": [
+        0,
+        148,
+        35
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
 }

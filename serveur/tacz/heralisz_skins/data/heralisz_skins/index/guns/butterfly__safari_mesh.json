@@ -1,9 +1,0 @@
-{
-  "name": "heralisz_skins.knife.butterfly__safari_mesh.name",
-  "display": "heralisz_skins:butterfly__safari_mesh_display",
-  "data": "arkaniaz:knife_data",
-  "tooltip": "heralisz_skins.tooltip.butterfly__safari_mesh.desc",
-  "type": "rpg",
-  "item_type": "modern_kinetic",
-  "sort": 313
-}

@@ -265,17 +265,34 @@ def propre(nom, garder, renommer):
     places = ranger(faces, U, reserve, lo, m)
     if places is None:
         sys.exit("[skins_melee] %s : les faces ne tiennent pas dans la texture" % nom)
-    for c in {id(c): c for c, *_ in places}.values():
-        c["uv"] = {}
-    for c, f, u, v, w, h in places:
-        c["uv"][f] = {"uv": [round(u, 4), round(v, 4)], "uv_size": [round(w, 4), round(h, 4)]}
-    g["description"]["texture_width"] = g["description"]["texture_height"] = int(U)
-    (GEO / (nom + "_skin_geo.json")).write_text(json.dumps(src, separators=(",", ":")), encoding="utf-8")
     img = Image.open(TEX / (nom + "_uv.png")).convert("RGBA")
     k = img.width / tw
     out = Image.new("RGBA", (int(U * k), int(U * k)), (150, 154, 160, 255))   # acier : toutes les faces rangées
     if garder:
         out.paste(img, (0, 0))
+    alpha = img.split()[3]
+    anciens = {id(c): dict(c["uv"]) for c, *_ in places}
+    for c in {id(c): c for c, *_ in places}.values():
+        c["uv"] = {}
+    for c, f, u, v, w, h in places:
+        # même sens de lecture que l'ancien morceau de texture (tailles négatives = retourné) et même transparence :
+        # le jeu ne dessine pas les points transparents (découpes de la lame, faces invisibles)
+        old = anciens[id(c)][f]
+        ou, ov = old["uv"]
+        su, sv = old["uv_size"]
+        nu, nsu = (u, w) if su >= 0 else (u + w, -w)
+        nv, nsv = (v, h) if sv >= 0 else (v + h, -h)
+        c["uv"][f] = {"uv": [round(nu, 4), round(nv, 4)], "uv_size": [round(nsu, 4), round(nsv, 4)]}
+        x0, x1 = sorted((ou * k, (ou + su) * k))
+        y0, y1 = sorted((ov * k, (ov + sv) * k))
+        boite = (int(x0), int(y0), max(int(x0) + 1, int(round(x1))), max(int(y0) + 1, int(round(y1))))
+        cible = (int(round(u * k)), int(round(v * k)), int(round((u + w) * k)), int(round((v + h) * k)))
+        taille = (max(1, cible[2] - cible[0]), max(1, cible[3] - cible[1]))
+        # trous seulement là où l'ancienne texture était transparente (les bords des morceaux restent pleins)
+        trous = alpha.crop(boite).resize(taille, Image.NEAREST).point(lambda a: 0 if a >= 26 else 255)
+        out.paste(Image.new("RGBA", taille, (0, 0, 0, 0)), cible[:2], trous)
+    g["description"]["texture_width"] = g["description"]["texture_height"] = int(U)
+    (GEO / (nom + "_skin_geo.json")).write_text(json.dumps(src, separators=(",", ":")), encoding="utf-8")
     out.save(TEX / (nom + "_skin_uv.png"))
     print("[skins_melee] %s : %d faces rangées (échelle %.2f, %d texels au moins)" % (nom, len(places), lo, TEXELS_MIN))
 

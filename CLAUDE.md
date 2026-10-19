@@ -1109,7 +1109,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     Water, Nebula, Ultraviolet) gardent leur programme. Armes de LR et marteau dessinés sur une copie propre de leur modèle
     (`*_skin_geo`, `outils/skins_melee.py`, `PROPRES` : une face = un morceau de texture ; le marteau a ses pièces
     « *_illuminated » renommées et garde la texture de sa traînée de coup, `KnifeType.SMITE_HAMMER`). Icônes rendues par
-    `outils/apercu_camos` (vue « icone ») sur les modèles tels que le jeu les dessine. Ni loot ni caisse. Rien testé en jeu ;
+    `outils/apercu_camos` (vue « icone ») sur les modèles tels que le jeu les dessine. Ni loot ni caisse. Rien testé en jeu.
+    Après l'essai du propriétaire (19/10, Tactique 2.24.0) : 64 skins retirés (liste `RETIRES` du script, dont le Lore de
+    la Lame de Desmoulins ; fichiers effacés par le script, ceux du gunpack listés dans `serveur/tacz_retires.txt` pour le
+    Ptero), il en reste 127 ; nouveaux skins du Karambit enfin utilisables (leur affichage était vide : il partait d'un
+    skin Karambit qui n'existe pas, il part maintenant de `karambit__tiger_tooth`) ; morceaux en trop au bout de la lame
+    du Bourreau et sur le Croc du dragon : la copie propre gardait pleines les parties transparentes de la texture
+    d'origine (découpes), `skins_melee.py` y fait maintenant les mêmes trous ;
   - skins de mêlée (18/10, Tactique 2.19.0 à 2.21.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
     et `heralisz_melee:baseball_bat__doppler_sapphire`, fiches copiées des armes de base (mêmes dégâts), dessinées
     EXACTEMENT comme les couteaux de heralisz_skins (même shader `camo_65` Lore / `camo_56` Doppler Saphir, même carte de
@@ -1131,7 +1137,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   couteaux (16/10, Tactique 2.17.0 puis 2.18.0, après les retours du propriétaire) : clic gauche = le coup rapide
     d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, gestes de TaCZ vus
     des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant où LE COUTEAU LUI-MÊME TOURNE avec le geste.
-    Knife CT et T : geste écrit comme le coup lourd de la Dague tactique de LR (impact à 0,24 s, 0,85 s). M9, papillon et
+    Knife CT et T : geste écrit comme le coup lourd de la Dague tactique de LR (impact à 0,24 s, 0,85 s) ; depuis le 19/10
+    (Tactique 2.24.0, demande du propriétaire) le T reprend le coup de la M9 (Miséricorde) et le CT celui du papillon
+    (Lame de Desmoulins), `REPRISES` de `couteaux_coups.py`. M9, papillon et
     karambit (et leurs skins, 2.18.0) : coup lourd « melee_3 » repris tel quel de la Miséricorde (`mercy`, 1,79 s), de la
     Lame de Desmoulins (`desmoulins_edge`, modèle `polaris`, 2,75 s) et du Credo (`creed`, modèle `treasure_kn`, 2,18 s) :
     bras à la même place vus des yeux, lame dans la même orientation (tours compris) et tenue comme celle de LR, même
