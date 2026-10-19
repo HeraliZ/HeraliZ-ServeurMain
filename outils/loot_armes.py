@@ -2,7 +2,7 @@
 
 Réécrit les armes TaCZ (tacz:modern_kinetic_gun) des tables
 mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json à t7.json :
-- ARMES_POUR_100 : nombre d'armes moyen pour 100 conteneurs ouverts, par palier ;
+- ARMES_POUR_100 : nombre d'armes moyen pour 100 conteneurs ouverts (le même partout) ;
 - PARTS : part de chaque rareté dans les armes du palier (rareté de
   serveur/config/heraliz_loot/raretes.json, section « armes ») ; toutes les armes de cette
   rareté y sont mises, à chances égales entre elles. Jamais d'Épique ni de Légendaire en T1-T3 ;
@@ -20,7 +20,7 @@ COFFRES = RACINE / "mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/co
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
 TACZ = RACINE / "serveur/tacz"
 
-ARMES_POUR_100 = {1: 10, 2: 12, 3: 14, 4: 16, 5: 18, 6: 20, 7: 20}
+ARMES_POUR_100 = {t: 10 for t in range(1, 8)}  # le même à chaque palier ; le hasard donne de 1 à 20 environ
 PARTS = {
     1: {"commun": 1.0},
     2: {"commun": 0.6, "peu_commun": 0.4},
