@@ -17,7 +17,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Partie client de HeraliZ Quêtes : rendu des PNJ (skin, nom, bulle), écrans (dialogue, journal /quetes, note, clavier),
+ * Partie client de HeraliZ Quêtes : rendu des PNJ (skin, nom), écrans (dialogue, journal /quetes, note, clavier),
  * quête suivie à droite de l'écran et notifications, radio du Commandant Varga en bas à gauche (tutoriel des bases),
  * lueurs des points de quête, repères des PNJ au spawn (Reperes). Tout ce qui s'affiche vient du serveur.
  */
@@ -40,7 +40,6 @@ public final class ClientQuetes implements Partie {
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             HudQuetes.vider();
             RadioVarga.vider();
-            Bulles.vider();
             Lueurs.vider();
             PnjRendu.vider();
         });
@@ -51,7 +50,6 @@ public final class ClientQuetes implements Partie {
         Reseau.NOTIF.brancher(HudQuetes::notif);
         Reseau.NOTE.brancher(EcranNote::ouvrir);
         Reseau.CLAVIER.brancher(EcranClavier::ouvrir);
-        Reseau.BULLE.brancher(Bulles::recevoir);
         Reseau.LUEURS.brancher(Lueurs::recevoir);
         Reseau.BOUTIQUE.brancher(EcranMarchand::recevoir);
         Reseau.RADIO.brancher(RadioVarga::recevoir);

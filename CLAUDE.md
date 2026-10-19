@@ -1248,7 +1248,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   son nom dessous quand on la vise ou à moins de 20 blocs ; cachée avec F1. Pastille selon l'identifiant du PNJ : varga
   étoile dorée, jacqueline croix rouge, mila sac de hérals vert, doyen couverts orange, jack viseur bleu, autre PNJ bulle
   grise ; écrites par `python mods/heraliz-quetes/outils/reperes.py` (ordre des pastilles = `Reperes.indice`), jamais à
-  la main. Rien testé en jeu ;
+  la main. Plus aucune phrase au-dessus de la tête des PNJ
+  (Quêtes 1.6.8, demande du propriétaire : elle cachait la pastille) : paquet `Bulle` et `client/Bulles` retirés, canal
+  des quêtes version 4 ; les listes `ambiance` des fichiers de PNJ ne servent plus qu'en secours du texte d'accueil du
+  dialogue. Rien testé en jeu ;
 - coffres personnels (18/10, Utils 2.16.0, `coffres/CoffresPersonnels`, serveur seulement) : clic droit sur un coffre-fort
   du mod de meubles = le coffre du joueur, le même partout (comme le coffre de l'Ender) : « Safe Planque 1 »
   (`cfm:safe_planque_1`) = planque de 1 ligne pour tous ; « Safe Sentinel 1 » (`cfm:safe_sentinel_1`) = coffre VIP de

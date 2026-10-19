@@ -38,8 +38,6 @@ final class Donnees {
         public List<String> tableau = new ArrayList<>();
         public long changerApres;
         public int contrats;
-        /** Dernière phrase d'ambiance montrée à ce joueur (ms). */
-        public transient long bulle;
     }
 
     /** Une quête en cours. */

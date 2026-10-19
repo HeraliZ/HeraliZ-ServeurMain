@@ -18,7 +18,8 @@ import java.util.Map;
 /**
  * Rendu d'un PNJ : un corps de joueur (bras larges ou fins), son apparence CaraCrea (skin peint par le créateur de
  * personnage du serveur, bras larges comme les joueurs) sinon son skin ({@code textures/pnj/<skin>.png} de ce jar, sinon
- * Steve / Alex), son nom au-dessus de la tête quand on est près, et sa bulle d'ambiance.
+ * Steve / Alex), et son nom au-dessus de la tête quand on est près (plus aucune phrase au-dessus
+ * de la tête depuis la 1.6.8 : elle cachait le repère du PNJ).
  */
 public final class PnjRendu extends HumanoidMobRenderer<Pnj, PlayerModel<Pnj>> {
     private static final ResourceLocation STEVE = new ResourceLocation("textures/entity/steve.png");
@@ -38,7 +39,6 @@ public final class PnjRendu extends HumanoidMobRenderer<Pnj, PlayerModel<Pnj>> {
     public void render(Pnj e, float lacet, float pt, PoseStack ps, MultiBufferSource buf, int lumiere) {
         model = e.brasFins() && !caraCrea(e) ? fin : large;
         super.render(e, lacet, pt, ps, buf, lumiere);
-        Bulles.dessiner(e, ps, buf, lumiere, entityRenderDispatcher.cameraOrientation(), getFont());
     }
 
     @Override
