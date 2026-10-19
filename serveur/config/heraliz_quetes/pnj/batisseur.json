@@ -49,19 +49,19 @@
       },
       {
         "objet": "heraliz_composants:planches",
-        "prix": 10
+        "prix": 50
       },
       {
         "objet": "heraliz_composants:pierres_taillees",
-        "prix": 20
+        "prix": 100
       },
       {
         "objet": "heraliz_composants:fragments_metal",
-        "prix": 40
+        "prix": 250
       },
       {
         "objet": "heraliz_composants:metal_renforce",
-        "prix": 120
+        "prix": 400
       }
     ]
   }
