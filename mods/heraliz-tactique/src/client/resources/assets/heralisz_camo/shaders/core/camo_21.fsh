@@ -1195,11 +1195,24 @@ vec3 hue(float h) {
     return clamp(abs(fract(h + vec3(0.0, 0.6667, 0.3333)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
 }
 
+// Manche enroulé (cuir en bandes en biais, relief) dans une palette : finitions exclusives et skins par paliers
+vec3 gripWrap(vec3 p, vec3 dark, vec3 light, vec3 accent, float glow, out vec3 em) {
+    float t = CamoTime;
+    float grain = fbm(p * vec3(60.0, 200.0, 200.0), 2);
+    // cuir enroulé : bandes larges en relief (bord ombré, dos éclairé), grain fin, pas de points parasites
+    float band = fract(p.x * 22.0 + p.y * 140.0);
+    float bevel = smoothstep(0.0, 0.18, band) * smoothstep(1.0, 0.72, band);
+    vec3 col = mix(dark, light, 0.25 + 0.55 * bevel * (0.85 + 0.15 * grain));
+    // un filet d'accent fin et régulier dans le creux entre deux bandes
+    float groove = 1.0 - smoothstep(0.0, 0.06, min(band, 1.0 - band));
+    col = mix(col, accent, groove * 0.45);
+    em = accent * groove * 0.4 * glow * (0.8 + 0.2 * sin(t * 2.0 + p.x * 20.0));
+    return metalShade(p, col, 0.5, 0.35);
+}
+
 // Manche des finitions exclusives : grip enroulé (bandes en biais, relief) dans la palette du skin, avec son détail propre
 vec3 uniqueHandle(vec3 p, out vec3 em) {
     em = vec3(0.0);
-    float t = CamoTime;
-    float grain = fbm(p * vec3(60.0, 200.0, 200.0), 2);
     vec3 dark, light, accent;
     float glow = 0.0;
 #if CAMO_ID == 100
@@ -1227,15 +1240,7 @@ vec3 uniqueHandle(vec3 p, out vec3 em) {
 #else
     dark = hexc(0x0d1c30); light = hexc(0x3d6a86); accent = hexc(0x9fe8ff);
 #endif
-    // cuir enroulé : bandes larges en relief (bord ombré, dos éclairé), grain fin, pas de points parasites
-    float band = fract(p.x * 22.0 + p.y * 140.0);
-    float bevel = smoothstep(0.0, 0.18, band) * smoothstep(1.0, 0.72, band);
-    vec3 col = mix(dark, light, 0.25 + 0.55 * bevel * (0.85 + 0.15 * grain));
-    // un filet d'accent fin et régulier dans le creux entre deux bandes
-    float groove = 1.0 - smoothstep(0.0, 0.06, min(band, 1.0 - band));
-    col = mix(col, accent, groove * 0.45);
-    em = accent * groove * 0.4 * glow * (0.8 + 0.2 * sin(t * 2.0 + p.x * 20.0));
-    return metalShade(p, col, 0.5, 0.35);
+    return gripWrap(p, dark, light, accent, glow, em);
 }
 
 vec3 uniqueFinish(vec3 p, out vec3 em) {
@@ -1359,6 +1364,852 @@ vec3 uniqueFinish(vec3 p, out vec3 em) {
     return metalShade(p, base, tint, gloss);
 }
 
+// ================================================================== skins de couteaux par paliers (ids 120 à 199)
+// Chaque skin (outils/skins_couteaux.py) appelle un de ces styles avec sa palette. Tous finissent par metalShade (reflets
+// du studio qui glissent avec l'angle, comme les finitions CS:GO) : du plus sobre (Classique) au plus travaillé (Prestige).
+// p : x le long de la lame (-0.5 garde -> 0.5 pointe), y en travers, z épaisseur ; unités : longueur de l'arme.
+float kAlong(vec3 p) {
+    return clamp(p.x + 0.5, 0.0, 1.0);
+}
+
+// trait net de largeur w (unités du champ v), adouci d'un pixel d'écran : pas de scintillement de loin
+float kLine(float v, float w) {
+    float aa = max(fwidth(v), 1e-5);
+    return 1.0 - smoothstep(w, w + 1.5 * aa, abs(v));
+}
+
+// --- Classique
+// Satiné : acier brossé teinté, stries fines le long de la lame
+vec3 kSatin(vec3 p, vec3 c, float brush, out vec3 em) {
+    em = vec3(0.0);
+    float s = vnoise(vec3(p.x * 16.0, p.y * 900.0, p.z * 900.0));
+    float s2 = vnoise(vec3(p.x * 5.0, p.y * 220.0, p.z * 220.0 + 3.0));
+    return metalShade(p, c * (0.9 + brush * (0.16 * s + 0.08 * s2)), 0.4, 0.75);
+}
+
+// Pierre (stonewash) : acier passé au tonneau, marques claires et petites cuvettes sombres
+vec3 kStonewash(vec3 p, vec3 light, vec3 dark, out vec3 em) {
+    em = vec3(0.0);
+    float f1, f2;
+    vec3 cell, fp;
+    worley(p * vec3(70.0, 200.0, 200.0), f1, f2, cell, fp);
+    float mark = smoothstep(0.02, 0.22, f2 - f1);
+    float m = fbm(p * vec3(12.0, 36.0, 36.0), 3);
+    vec3 base = mix(dark, light, 0.25 + 0.6 * mark + 0.15 * hash(cell)) * (0.92 + 0.16 * m);
+    return metalShade(p, base, 0.2, 0.5);
+}
+
+// Opérations de nuit : noir mat, rayures fines où réapparaît le métal coloré du dessous
+vec3 kNightOps(vec3 p, vec3 c, vec3 accent, out vec3 em) {
+    float m = fbm(p * vec3(30.0, 90.0, 90.0), 3);
+    vec3 q = p * vec3(5.0, 15.0, 15.0);
+    float r = 1.0 - abs(2.0 * fbm(q + vec3(2.0), 4) - 1.0);
+    float scr = smoothstep(0.93, 0.975, r) * smoothstep(0.35, 0.55, fbm(q * 0.7 + vec3(9.0), 2));
+    vec3 base = mix(c * (0.85 + 0.3 * m), accent, scr);
+    em = accent * scr * 0.06;
+    return metalShade(p, base, 0.3, 0.3 + 0.5 * scr);
+}
+
+// Camouflage en taches (ou en pixels) : quatre teintes, peinture satinée
+vec3 kCamo(vec3 p, vec3 c1, vec3 c2, vec3 c3, vec3 c4, float sc, float pixels, out vec3 em) {
+    em = vec3(0.0);
+    vec3 q = p * vec3(sc, sc * 2.6, sc * 2.6);
+    if (pixels > 0.5) {
+        q = floor(q * 7.0) / 7.0;
+    }
+    float a = fbm(q + vec3(1.0), 3);
+    float b = fbm(q * 1.3 + vec3(7.0), 3);
+    float c = fbm(q * 0.8 + vec3(13.0), 3);
+    vec3 col = c1;
+    col = mix(col, c2, smoothstep(0.5, 0.505, a));
+    col = mix(col, c3, smoothstep(0.55, 0.555, b));
+    col = mix(col, c4, smoothstep(0.6, 0.605, c));
+    col *= 0.93 + 0.1 * vnoise(p * 300.0);
+    return metalShade(p, col, 0.15, 0.32);
+}
+
+// Filet (safari) : fond sable nuagé, filet en losanges plus sombre
+vec3 kMesh(vec3 p, vec3 c1, vec3 c2, vec3 net, out vec3 em) {
+    em = vec3(0.0);
+    float m = fbm(p * vec3(9.0, 26.0, 26.0), 4);
+    vec3 col = mix(c1, c2, smoothstep(0.45, 0.62, m));
+    float g1 = fract((p.x + p.y * 1.4) * 30.0) - 0.5;
+    float g2 = fract((p.x - p.y * 1.4) * 30.0) - 0.5;
+    float l = max(kLine(g1, 0.05), kLine(g2, 0.05));
+    col = mix(col, net, l * 0.6);
+    return metalShade(p, col, 0.1, 0.3);
+}
+
+// Brûlé : acier poli noirci par la flamme depuis la garde, liseré bleu-violet au bord de la brûlure
+vec3 kScorched(vec3 p, vec3 metal, vec3 soot, out vec3 em) {
+    em = vec3(0.0);
+    float v = fbm(p * vec3(8.0, 24.0, 24.0), 5) + (1.0 - kAlong(p)) * 0.5;
+    float burn = smoothstep(0.55, 0.75, v);
+    float rim = 1.0 - smoothstep(0.0, 0.08, abs(v - 0.55));
+    vec3 col = mix(metal, soot * (0.8 + 0.4 * fbm(p * 80.0, 2)), burn);
+    col = mix(col, hexc(0x5a5cc8), rim * 0.45);
+    return metalShade(p, col, 0.6, mix(0.8, 0.25, burn));
+}
+
+// Céramique (Cerakote) : couleur unie mate, grain fin
+vec3 kCerakote(vec3 p, vec3 c, out vec3 em) {
+    em = vec3(0.0);
+    float g = vnoise(p * 380.0);
+    float w = fbm(p * vec3(10.0, 30.0, 30.0), 3);
+    return metalShade(p, c * 1.3 * (0.9 + 0.1 * g + 0.08 * w), 0.15, 0.3);
+}
+
+// Rayures de tigre (camouflage du Vietnam) : trois teintes en bandes déchirées
+vec3 kTigerStripe(vec3 p, vec3 bg, vec3 mid, vec3 dark, out vec3 em) {
+    em = vec3(0.0);
+    float w = fbm(p * vec3(6.0, 18.0, 18.0), 3);
+    float s = sin(p.x * 34.0 + w * 7.0 + p.y * 40.0);
+    float s2 = sin(p.x * 21.0 - w * 5.0 + 2.0 - p.y * 25.0);
+    vec3 col = mix(bg, mid, smoothstep(0.25, 0.3, s2));
+    col = mix(col, dark, smoothstep(0.55, 0.6, s + 0.3 * (fbm(p * 40.0, 2) - 0.5)));
+    return metalShade(p, col, 0.1, 0.3);
+}
+
+// Rouille ancienne : acier sombre, croûtes de rouille orangée qui se creusent
+vec3 kRustCoat(vec3 p, vec3 steel, vec3 rustc, out vec3 em) {
+    em = vec3(0.0);
+    float n = fbm(p * vec3(8.0, 24.0, 24.0), 5);
+    float m = smoothstep(0.42, 0.62, n);
+    float pit = fbm(p * 140.0, 3);
+    vec3 r = mix(rustc * 0.55, rustc, pit);
+    vec3 metal = metalShade(p, steel * (0.9 + 0.2 * fbm(p * 60.0, 2)), 0.1, 0.55);
+    vec3 crust = metalShade(p, r, 0.1, 0.12);
+    return mix(metal, crust, m);
+}
+
+// --- Raffiné
+// Damas : acier feuilleté, couches ondulées claires et sombres
+vec3 kDamascus(vec3 p, vec3 c1, vec3 c2, float fq, out vec3 em) {
+    em = vec3(0.0);
+    // couches fines presque parallèles à la lame, ondulées par un champ lent (et quelques remous plus serrés)
+    vec3 q = p * vec3(4.0, 12.0, 12.0);
+    float w = fbm(q, 4) + 0.5 * fbm(q * 2.7 + vec3(4.0), 3);
+    float v = p.y * 6.0 + p.x * 1.2 + 0.35 * w + 0.04 * sin(p.x * 40.0 + w * 6.0);
+    float l = smoothstep(0.3, 0.7, 0.5 + 0.5 * sin(v * fq));
+    return metalShade(p, mix(c2, c1, l), 0.3, 0.85);
+}
+
+// Revenu : couleurs de recuit de l'acier le long de la lame (paille, bronze, pourpre, bleu)
+vec3 kTempered(vec3 p, vec3 c0, vec3 c1, vec3 c2, vec3 c3, out vec3 em) {
+    em = vec3(0.0);
+    float t = kAlong(p) + 0.2 * (fbm(p * vec3(6.0, 18.0, 18.0), 4) - 0.5) + 0.6 * p.y;
+    vec3 col = t < 0.35 ? mix(c0, c1, smoothstep(0.08, 0.35, t)) : t < 0.65 ? mix(c1, c2, smoothstep(0.35, 0.65, t))
+             : mix(c2, c3, smoothstep(0.65, 0.92, t));
+    return metalShade(p, col * 1.1, 0.95, 0.9);
+}
+
+// Bicolore : deux teintes anodisées séparées par une coupe nette en biais et un filet d'accent
+vec3 kTwoTone(vec3 p, vec3 c1, vec3 c2, vec3 accent, out vec3 em) {
+    float d = p.x - 0.02 + p.y * 2.5;
+    vec3 col = mix(c1, c2, smoothstep(-0.002, 0.002, d));
+    float ln = kLine(d + 0.035, 0.006);
+    col = mix(col, accent, ln);
+    em = accent * ln * 0.15;
+    return metalShade(p, col, 0.6, 0.7);
+}
+
+// Rayé : bandes en biais, peinture satinée
+vec3 kStripes(vec3 p, vec3 c1, vec3 c2, float fq, out vec3 em) {
+    em = vec3(0.0);
+    float s = fract((p.x + p.y * 2.2) * fq);
+    float b = smoothstep(0.48, 0.5, s) * smoothstep(0.98, 0.96, s);
+    vec3 col = mix(c1, c2, b) * (0.94 + 0.08 * vnoise(p * 300.0));
+    return metalShade(p, col, 0.4, 0.55);
+}
+
+// Courbes de niveau : dégradé de relief, isolignes fines, une sur cinq plus marquée
+vec3 kTopo(vec3 p, vec3 c1, vec3 c2, vec3 line, out vec3 em) {
+    em = vec3(0.0);
+    float h = fbm(p * vec3(4.0, 12.0, 12.0) + vec3(3.0), 5);
+    float v = h * 10.0;
+    float iso = kLine(fract(v + 0.5) - 0.5, 0.04);
+    float major = kLine(fract(v / 5.0 + 0.5) - 0.5, 0.012);
+    vec3 col = mix(c1, c2, smoothstep(0.25, 0.75, h));
+    col = mix(col, line, max(iso * 0.7, major));
+    return metalShade(p, col, 0.5, 0.6);
+}
+
+// Blindage hexagonal : plaques à facettes de deux teintes, joints d'accent
+vec3 kHex(vec3 p, vec3 c1, vec3 c2, vec3 edge, out vec3 em) {
+    vec2 q = p.xy * 55.0;
+    vec2 S = vec2(1.0, 1.7320508);
+    vec2 a = mod(q, S) - 0.5 * S;
+    vec2 b = mod(q - 0.5 * S, S) - 0.5 * S;
+    vec2 g = dot(a, a) < dot(b, b) ? a : b;
+    vec2 id = q - g;
+    float d = max(dot(abs(g), vec2(0.866, 0.5)), abs(g.y));
+    float rim = smoothstep(0.43, 0.47, d);
+    vec3 col = mix(c1, c2, hash(vec3(floor(id * 4.0), 1.0)) * 0.7);
+    col *= 1.0 - 0.15 * smoothstep(0.3, 0.43, d);
+    col = mix(col, edge, rim);
+    em = edge * rim * 0.12;
+    return metalShade(p, col, 0.45, 0.65);
+}
+
+// Carbone teinté
+vec3 kCarbon(vec3 p, vec3 tint, out vec3 em) {
+    vec3 c = carbon(p, em);
+    return c * tint * 1.4;
+}
+
+// Patine : cuivre poli rongé de vert-de-gris
+vec3 kPatina(vec3 p, vec3 cu, vec3 vg, out vec3 em) {
+    em = vec3(0.0);
+    float n = fbm(p * vec3(9.0, 26.0, 26.0), 5);
+    float m = smoothstep(0.5, 0.64, n);
+    float spots = smoothstep(0.68, 0.74, fbm(p * 60.0 + vec3(3.0), 3));
+    vec3 metal = metalShade(p, cu, 0.9, 0.85);
+    vec3 crust = metalShade(p, vg * (0.85 + 0.3 * fbm(p * 120.0, 2)), 0.1, 0.15);
+    return mix(metal, crust, max(m, spots * 0.7));
+}
+
+// Anodisé en dégradé : deux couleurs « candy » fondues le long de la lame
+vec3 kAnodFade(vec3 p, vec3 c1, vec3 c2, out vec3 em) {
+    em = vec3(0.0);
+    float t = kAlong(p) + 0.06 * (fbm(p * vec3(5.0, 15.0, 15.0), 3) - 0.5);
+    return metalShade(p, mix(c1, c2, smoothstep(0.2, 0.85, t)) * 1.15, 1.0, 0.9);
+}
+
+// Main levée : traits de feutre de trois couleurs sur un fond uni
+vec3 kFreehand(vec3 p, vec3 bg, vec3 c1, vec3 c2, vec3 c3, out vec3 em) {
+    em = vec3(0.0);
+    vec3 q = p * vec3(4.0, 12.0, 12.0);
+    float r1 = 1.0 - abs(2.0 * fbm(q + vec3(1.0), 3) - 1.0);
+    float r2 = 1.0 - abs(2.0 * fbm(q * 1.4 + vec3(9.0), 3) - 1.0);
+    float r3 = 1.0 - abs(2.0 * fbm(q * 0.8 + vec3(17.0), 3) - 1.0);
+    vec3 col = bg * (0.95 + 0.1 * vnoise(p * 200.0));
+    col = mix(col, c1, smoothstep(0.9, 0.93, r1));
+    col = mix(col, c2, smoothstep(0.92, 0.945, r2));
+    col = mix(col, c3, smoothstep(0.9, 0.925, r3));
+    return metalShade(p, col, 0.2, 0.45);
+}
+
+// --- Prestige
+// Fondu à trois couleurs (base, milieu, pointe)
+vec3 kFade(vec3 p, vec3 c0, vec3 c1, vec3 c2, out vec3 em) {
+    em = vec3(0.0);
+    float f = kAlong(p) + 0.08 * (fbm(p * vec3(4.0, 20.0, 20.0), 3) - 0.5);
+    vec3 col = f > 0.62 ? mix(c1, c2, smoothstep(0.62, 0.92, f)) : mix(c0, c1, smoothstep(0.12, 0.62, f));
+    return metalShade(p, col * 1.25, 1.0, 0.88);
+}
+
+// Marbre en fondu : trois teintes en volutes, pointe de la deuxième, fines veines sombres
+vec3 kMarble(vec3 p, vec3 a, vec3 b, vec3 c, vec3 vein, out vec3 em) {
+    em = vec3(0.0);
+    vec3 q = p * vec3(5.0, 14.0, 14.0) + vec3(11.0);
+    vec3 w = vec3(fbm(q, 4), fbm(q + vec3(5.2, 1.3, 2.8), 4), 0.0);
+    float m = fbm(q + 3.0 * w, 5);
+    float band = fract(m * 3.0 + kAlong(p) * 0.6);
+    vec3 col = band < 0.33 ? mix(a, b, smoothstep(0.26, 0.33, band))
+             : band < 0.66 ? mix(b, c, smoothstep(0.58, 0.66, band)) : mix(c, a, smoothstep(0.9, 1.0, band));
+    col = mix(col, b, smoothstep(0.75, 1.0, kAlong(p)) * 0.5);
+    col = mix(col, vein, kLine(fract(m * 9.0) - 0.5, 0.025) * 0.5);
+    return metalShade(p, col * 1.2, 1.0, 0.88);
+}
+
+// Gravure (façon Lore) : métal gravé d'arabesques, creux remplis d'une teinte
+vec3 kEngraved(vec3 p, vec3 metal, vec3 fill, out vec3 em) {
+    em = vec3(0.0);
+    vec2 u = vec2(p.x * 16.0, p.y * 48.0);
+    float warp = fbm(p * vec3(6.0, 20.0, 20.0) + vec3(5.0), 3) * 2.0;
+    float l1 = abs(sin(u.x + sin(u.y * 0.35 + warp) * 2.2));
+    float l2 = abs(sin(u.x * 0.5 - u.y * 0.3 + cos(u.x * 0.7) * 1.8 + warp));
+    float engr = max(1.0 - smoothstep(0.1, 0.22, l1), 0.8 * (1.0 - smoothstep(0.08, 0.18, l2)));
+    vec3 col = mix(metal, fill, engr * 0.9);
+    col = mix(col, vec3(1.0), (1.0 - engr) * 0.08 * fbm(p * 80.0, 2));
+    return metalShade(p, col * 1.15, 0.8, 0.95);
+}
+
+// Kintsugi : céramique noire fêlée, fêlures réparées à l'or qui luit doucement
+vec3 kKintsugi(vec3 p, vec3 cer, vec3 gold, out vec3 em) {
+    float f1, f2;
+    vec3 c, fp;
+    vec3 q = p * vec3(8.0, 24.0, 24.0);
+    worley(q + 0.4 * vec3(fbm(q * 2.0, 2), fbm(q * 2.0 + vec3(5.0), 2), 0.0), f1, f2, c, fp);
+    float crack = kLine(f2 - f1, 0.025);
+    vec3 ceramic = metalShade(p, cer * (0.85 + 0.25 * hash(c)), 0.2, 0.55);
+    vec3 g = metalShade(p, gold * 1.2, 1.0, 1.0);
+    em = gold * crack * (0.12 + 0.05 * sin(CamoTime * 1.5 + f1 * 20.0));
+    return mix(ceramic, g, crack);
+}
+
+// Prisme : vernis holographique, l'arc-en-ciel glisse avec l'angle, fin réseau de diffraction
+vec3 kPrism(vec3 p, vec3 base, out vec3 em) {
+    vec3 n = bladeNormal(p);
+    float h = p.x * 1.2 + p.y * 4.0 + n.x * 0.7 + n.y * 0.5 + 0.1 * fbm(p * 20.0, 3);
+    vec3 irid = spectrum(fract(h));
+    float grat = 0.5 + 0.5 * sin((p.x * 0.6 + p.y) * 700.0);
+    vec3 col = mix(base, irid * 1.1, 0.32 + 0.12 * grat);
+    em = irid * 0.05;
+    return metalShade(p, col, 1.0, 0.95);
+}
+
+// Opale : blanc laiteux, éclats de couleur (jeu de lumière) qui changent avec l'angle
+vec3 kOpal(vec3 p, out vec3 em) {
+    float f1, f2;
+    vec3 c, fp;
+    vec3 q = p * vec3(13.0, 40.0, 40.0);
+    worley(q + 0.5 * vec3(fbm(q, 3), fbm(q + vec3(4.0), 3), 0.0), f1, f2, c, fp);
+    vec3 n = bladeNormal(p);
+    float h = hash(c) + dot(n.xy, vec2(0.8, 0.5)) * 0.8 + CamoTime * 0.02;
+    float flash = pow(0.5 + 0.5 * sin(h * TAU * 1.5 + hash(c + vec3(3.0)) * 6.0), 1.6) * smoothstep(0.0, 0.25, f2 - f1) * (0.4 + 0.6 * fbm(q * 0.5, 2));
+    vec3 milk = mix(hexc(0xe8eef4), hexc(0xb8d0e8), fbm(p * vec3(6.0, 18.0, 18.0), 3));
+    vec3 fire = mix(spectrum(fract(h)), vec3(1.0), 0.25) * 1.15;
+    em = fire * flash * 0.08;
+    return metalShade(p, mix(milk * 1.15, fire, flash * 0.8), 0.6, 0.9);
+}
+
+// Toile : fond en deux teintes nuagées, toile d'araignée nette
+vec3 kWeb(vec3 p, vec3 c1, vec3 c2, vec3 web, out vec3 em) {
+    em = vec3(0.0);
+    vec2 c = vec2(p.x - 0.05, p.y * 3.0);
+    float r = length(c), a = atan(c.y, c.x);
+    float da = (fract(a / 6.2832 * 9.0) - 0.5) * 6.2832 / 9.0;
+    float spokes = kLine(r * sin(da), 0.004);
+    float rp = r * cos(da) * (1.0 + 0.08 * (1.0 - cos(da * 9.0)));
+    float ring = kLine((fract(rp * 8.0) - 0.5) / 8.0, 0.004);
+    vec3 col = mix(mix(c1, c2, fbm(p * vec3(8.0, 25.0, 25.0), 3)), web, max(spokes, ring) * 0.95);
+    return metalShade(p, col, 0.6, 0.5);
+}
+
+// Trempe (case hardened) : patine en quatre teintes
+vec3 kCaseHard(vec3 p, vec3 c1, vec3 c2, vec3 c3, vec3 c4, out vec3 em) {
+    em = vec3(0.0);
+    vec3 q = p * vec3(4.0, 12.0, 12.0) + vec3(19.0);
+    vec3 w = vec3(fbm(q, 4), fbm(q + vec3(3.1, 7.7, 1.3), 4), 0.0);
+    float m = fbm(q + 2.5 * w, 5);
+    vec3 col = mix(c1, c2, smoothstep(0.3, 0.7, m));
+    col = mix(col, c3, smoothstep(0.62, 0.72, m) * 0.8);
+    col = mix(col, c4, smoothstep(0.74, 0.8, fbm(q * 1.7 + w, 4)));
+    return metalShade(p, col * 1.15, 0.9, 0.85);
+}
+
+// <skins_couteaux> : écrit par outils/skins_couteaux.py (catalogue des skins), ne pas modifier à la main
+#if CAMO_ID == 120   // m9 | Night Ops (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kNightOps(p, hexc(0x383a41), hexc(0xe02a36), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 121   // m9 | Forest DDPAT (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCamo(p, hexc(0x6a7450), hexc(0x3e4830), hexc(0x9a9a72), hexc(0x22281a), 7.0, 1.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 122   // m9 | Satin (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kSatin(p, hexc(0xb9bec6), 1.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 123   // m9 | Damascus Steel (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kDamascus(p, hexc(0xd4d8de), hexc(0x3a3e46), 90.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 124   // m9 | Blue Steel (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kTempered(p, hexc(0xc8a865), hexc(0x9a5a3a), hexc(0x5a3aa0), hexc(0x2a5ad8), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 125   // m9 | Ocean Fade (Prestige)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kFade(p, hexc(0x2c2ab8), hexc(0x1aa0d8), hexc(0x4ef0d0), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 126   // karambit | Urban Masked (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCamo(p, hexc(0x8a8e94), hexc(0x4a4e55), hexc(0xc8ccd2), hexc(0x24272b), 6.0, 0.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 127   // karambit | Stonewash (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kStonewash(p, hexc(0xb8bcc2), hexc(0x5a5e64), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 128   // karambit | Coyote (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCerakote(p, hexc(0x9a7a52), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 129   // karambit | Night Stripe (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kStripes(p, hexc(0x1a1b1f), hexc(0x4a4e58), 9.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 130   // karambit | Copper Patina (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kPatina(p, hexc(0xc8743a), hexc(0x3aa088), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 131   // karambit | Amber Fade (Prestige)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kFade(p, hexc(0x8a1a10), hexc(0xe85a18), hexc(0xffd040), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 132   // butterfly | Safari Mesh (Classique)
+#define SKIN_INLAY 0x6a5a3a
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kMesh(p, hexc(0xb8a47a), hexc(0x8a8a5a), hexc(0x3a3a2a), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 133   // butterfly | Scorched (Classique)
+#define SKIN_INLAY 0x2a2420
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kScorched(p, hexc(0xc0c4ca), hexc(0x2a2420), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 134   // butterfly | Gunmetal (Classique)
+#define SKIN_INLAY 0x2a2e34
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kSatin(p, hexc(0x6a707a), 1.2, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 135   // butterfly | Contour (Raffiné)
+#define SKIN_INLAY 0x1e3a2a
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kTopo(p, hexc(0x1e3a2a), hexc(0x6a8a4a), hexc(0xd8e0a8), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 136   // butterfly | Blue Carbon (Raffiné)
+#define SKIN_INLAY 0x1a2a4a
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCarbon(p, vec3(0.75, 0.9, 1.25), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 137   // butterfly | Kintsugi (Prestige)
+#define SKIN_INLAY 0x6a5020
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kKintsugi(p, hexc(0x26272b), hexc(0xf0bc50), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 138   // tac_dagger | Olive Drab (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCerakote(p, hexc(0x5a6038), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1c1e12), hexc(0x4a5030), hexc(0x8a9058), 0.0, em);
+}
+#elif CAMO_ID == 139   // tac_dagger | Tiger Stripe (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kTigerStripe(p, hexc(0x8a8a5a), hexc(0x4a5a30), hexc(0x16180e), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x14160e), hexc(0x3a4228), hexc(0x8a8a5a), 0.0, em);
+}
+#elif CAMO_ID == 140   // tac_dagger | Satin Bronze (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kSatin(p, hexc(0xb07a40), 1.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1a120a), hexc(0x5a3e22), hexc(0xc89050), 0.0, em);
+}
+#elif CAMO_ID == 141   // tac_dagger | Hex Armor (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kHex(p, hexc(0x2a2e34), hexc(0x4a5260), hexc(0x30d0c0), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x101214), hexc(0x2a2e34), hexc(0x30d0c0), 0.5, em);
+}
+#elif CAMO_ID == 142   // tac_dagger | Sunset (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kAnodFade(p, hexc(0xe0306a), hexc(0xffa030), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1a0a10), hexc(0x5a1a30), hexc(0xffa030), 0.0, em);
+}
+#elif CAMO_ID == 143   // tac_dagger | Emerald Web (Prestige)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kWeb(p, hexc(0x0a4a24), hexc(0x16903c), hexc(0x020604), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x020604), hexc(0x0a3a1c), hexc(0x16c04c), 0.0, em);
+}
+#elif CAMO_ID == 144   // creed | Arctic Digital (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCamo(p, hexc(0xdfe6ec), hexc(0x9fb4c8), hexc(0x5a7090), hexc(0x2a3448), 8.0, 1.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1a2230), hexc(0x5a7090), hexc(0xdfe6ec), 0.0, em);
+}
+#elif CAMO_ID == 145   // creed | Champagne (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kSatin(p, hexc(0xd8c49a), 0.9, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1e1810), hexc(0x6a5a3a), hexc(0xd8c49a), 0.0, em);
+}
+#elif CAMO_ID == 146   // creed | Blackout (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kNightOps(p, hexc(0x34353a), hexc(0xe8b850), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0a0a0c), hexc(0x1e1e22), hexc(0xd8a840), 0.0, em);
+}
+#elif CAMO_ID == 147   // creed | Freehand (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kFreehand(p, hexc(0xe8e4dc), hexc(0x1a1a1a), hexc(0xe02a2a), hexc(0x2a6ae0), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x141414), hexc(0x3a3a3a), hexc(0xe02a2a), 0.0, em);
+}
+#elif CAMO_ID == 148   // creed | Twin Tone (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kTwoTone(p, hexc(0xe8e8e4), hexc(0x16171a), hexc(0xe02030), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e0e10), hexc(0x2a2a2e), hexc(0xe02030), 0.0, em);
+}
+#elif CAMO_ID == 149   // creed | Prism (Prestige)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kPrism(p, hexc(0xc0c4cc), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x101014), hexc(0x3a3a48), hexc(0x9ad8ff), 0.4, em);
+}
+#elif CAMO_ID == 150   // desmoulins_edge | Desert Storm (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCamo(p, hexc(0xc8b088), hexc(0xa08058), hexc(0x7a6040), hexc(0xe0d0a8), 6.0, 0.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 151   // desmoulins_edge | Ivory (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCerakote(p, hexc(0xe6dcc6), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 152   // desmoulins_edge | Ash (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kScorched(p, hexc(0xa8aab0), hexc(0x3a3a3e), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 153   // desmoulins_edge | Rose Gold (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kAnodFade(p, hexc(0xd88a8a), hexc(0xf2c8a0), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 154   // desmoulins_edge | Crimson Carbon (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCarbon(p, vec3(1.35, 0.55, 0.55), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 155   // desmoulins_edge | Silver Lore (Prestige)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kEngraved(p, hexc(0xd0d6de), hexc(0x1a3a8a), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 178   // desmoulins_edge | Garnet (Ultime)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return gemDoppler(p, hexc(0x14000a), hexc(0x5a0628), hexc(0xa0103a), hexc(0xff90b0), 0.12, vec3(19.3, 4.1, 33.7), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    return rubberGrip(p);
+}
+#elif CAMO_ID == 156   // dragons_fang | Jungle (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCamo(p, hexc(0x3a5a2a), hexc(0x1e3a18), hexc(0x6a7a3a), hexc(0x0e1a0c), 5.0, 0.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e1a0c), hexc(0x2a4a20), hexc(0x6a7a3a), 0.0, em);
+}
+#elif CAMO_ID == 157   // dragons_fang | Cobalt (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kSatin(p, hexc(0x5a78b8), 1.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e1628), hexc(0x2a3e6a), hexc(0x8aa8e8), 0.0, em);
+}
+#elif CAMO_ID == 158   // dragons_fang | Charcoal (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCerakote(p, hexc(0x2e3034), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e0e10), hexc(0x2a2c30), hexc(0x6a6e74), 0.0, em);
+}
+#elif CAMO_ID == 159   // dragons_fang | Forged Damascus (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kDamascus(p, hexc(0xe0d0b8), hexc(0x2e221a), 120.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x140e0a), hexc(0x4a3628), hexc(0xd8c8b0), 0.0, em);
+}
+#elif CAMO_ID == 160   // dragons_fang | Ember Temper (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kTempered(p, hexc(0xe0c070), hexc(0xd07030), hexc(0xa02818), hexc(0x3a0e2a), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1a0808), hexc(0x5a1a10), hexc(0xe0a050), 0.0, em);
+}
+#elif CAMO_ID == 161   // executor | Rust Coat (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kRustCoat(p, hexc(0x5a5e64), hexc(0xb05a20), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x140e0a), hexc(0x4a2a14), hexc(0xb05a20), 0.0, em);
+}
+#elif CAMO_ID == 162   // executor | Arctic White (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCerakote(p, hexc(0xe4e8ec), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1a1c20), hexc(0x8a8e94), hexc(0xe4e8ec), 0.0, em);
+}
+#elif CAMO_ID == 163   // executor | Urban Digital (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCamo(p, hexc(0x6a6e74), hexc(0x3a3d42), hexc(0xa8acb2), hexc(0x1c1e22), 7.0, 1.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x141518), hexc(0x3a3d42), hexc(0xa8acb2), 0.0, em);
+}
+#elif CAMO_ID == 164   // executor | Blood Stripe (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kStripes(p, hexc(0x121214), hexc(0x9a1018), 7.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0c0c0e), hexc(0x2a0a0e), hexc(0xc01822), 0.0, em);
+}
+#elif CAMO_ID == 165   // executor | Hazard (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kTwoTone(p, hexc(0xf0c020), hexc(0x141416), hexc(0xffffff), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e0e10), hexc(0x2a2a2c), hexc(0xf0c020), 0.0, em);
+}
+#elif CAMO_ID == 166   // executor | Toxic Fade (Prestige)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kFade(p, hexc(0x1a6a20), hexc(0x7ad020), hexc(0xf0f040), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0a1a0a), hexc(0x1a4a1a), hexc(0x9af030), 0.5, em);
+}
+#elif CAMO_ID == 179   // executor | Amethyst (Ultime)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return gemDoppler(p, hexc(0x12021e), hexc(0x5a1490), hexc(0xa040e8), hexc(0xe8b0ff), 0.12, vec3(27.9, 15.2, 8.6), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0a0410), hexc(0x2a0e44), hexc(0xb060ff), 0.5, em);
+}
+#elif CAMO_ID == 167   // mercy | Pearl (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kSatin(p, hexc(0xe4e6ea), 0.7, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x2a2c30), hexc(0x9a9ea6), hexc(0xf4f6f8), 0.0, em);
+}
+#elif CAMO_ID == 168   // mercy | Sage (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCerakote(p, hexc(0x8a9a7a), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1a1e16), hexc(0x4a5640), hexc(0xb8c8a8), 0.0, em);
+}
+#elif CAMO_ID == 169   // mercy | Snow Camo (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCamo(p, hexc(0xf0f2f4), hexc(0xb8bec6), hexc(0x7a828c), hexc(0xd8dce2), 6.0, 0.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x3a4048), hexc(0xb8bec6), hexc(0xf0f2f4), 0.0, em);
+}
+#elif CAMO_ID == 170   // mercy | Azure Temper (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kTempered(p, hexc(0xd8d0b0), hexc(0x9ac0d8), hexc(0x3a7ad8), hexc(0x1a2a8a), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e1428), hexc(0x2a4a8a), hexc(0x9ac0d8), 0.0, em);
+}
+#elif CAMO_ID == 171   // mercy | Celeste (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kTwoTone(p, hexc(0xeef2f4), hexc(0x2aa8a8), hexc(0xd9a640), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e2a2a), hexc(0x2a8a8a), hexc(0xd9a640), 0.0, em);
+}
+#elif CAMO_ID == 172   // mercy | Jade Marble (Prestige)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kMarble(p, hexc(0x0e7a4a), hexc(0xe8c860), hexc(0x9ae0c0), hexc(0x041a10), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x041a10), hexc(0x0e5a36), hexc(0xe8c860), 0.0, em);
+}
+#elif CAMO_ID == 180   // mercy | Opal (Ultime)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kOpal(p, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x3a4048), hexc(0xd8e0e8), hexc(0xf0c070), 0.3, em);
+}
+#elif CAMO_ID == 173   // sea_gleam | Navy (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCerakote(p, hexc(0x1e2e4a), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0a1020), hexc(0x1e2e4a), hexc(0x6a8ab8), 0.0, em);
+}
+#elif CAMO_ID == 174   // sea_gleam | Marine Camo (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCamo(p, hexc(0x2a4a6a), hexc(0x1a2e48), hexc(0x4a7a9a), hexc(0x0e1828), 6.0, 0.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e1828), hexc(0x2a4a6a), hexc(0x8ab8d8), 0.0, em);
+}
+#elif CAMO_ID == 175   // sea_gleam | Tidewash (Classique)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kStonewash(p, hexc(0x9ab4c8), hexc(0x2e4a5e), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x0e1a24), hexc(0x2e4a5e), hexc(0x9ab4c8), 0.0, em);
+}
+#elif CAMO_ID == 176   // sea_gleam | Tide Stripe (Raffiné)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kStripes(p, hexc(0x0e2a3a), hexc(0x1a8a9a), 8.0, em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x081a24), hexc(0x0e2a3a), hexc(0x1a8a9a), 0.0, em);
+}
+#elif CAMO_ID == 177   // sea_gleam | Gold Hardened (Prestige)
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) {
+    return kCaseHard(p, hexc(0xc89a30), hexc(0xf0d070), hexc(0x8a4a20), hexc(0x3a6ab8), em);
+}
+vec3 skinGrip(vec3 p, out vec3 em) {
+    return gripWrap(p, hexc(0x1a1006), hexc(0x5a3a12), hexc(0xf0d070), 0.0, em);
+}
+#else
+#define SKIN_INLAY 0x1a1b1e
+vec3 skinCouteau(vec3 p, out vec3 em) { em = vec3(0.0); return vec3(0.5); }
+vec3 skinGrip(vec3 p, out vec3 em) { em = vec3(0.0); return rubberGrip(p); }
+#endif
+// </skins_couteaux>
+
 // Manche orné (Lame de Desmoulins…) : manche noir ; les motifs colorés de la texture d'origine (étoile, pierres, filets
 // bleus) prennent la finition de la lame (motif), le reste (plaques argentées comprises) reste noir
 vec3 ornateHandle(vec3 p, vec3 motif) {
@@ -1375,7 +2226,9 @@ vec3 knifeFinish(vec3 p, out vec3 em) {
         PART = 1.0;
     }
     if (PART > 0.62 && PART <= 0.9) {                                                // manche caoutchouc (Karambit, M9)
-#if CAMO_ID >= 100
+#if CAMO_ID >= 120 && CAMO_ID < 200
+        return skinGrip(p, em);                                                     // skins par paliers : manche du catalogue
+#elif CAMO_ID >= 100
         return uniqueHandle(p, em);                                                 // finitions exclusives : manche assorti
 #else
         return rubberGrip(p);
@@ -1388,7 +2241,9 @@ vec3 knifeFinish(vec3 p, out vec3 em) {
     if (PART > 0.36 && PART <= 0.46) {                                               // métal noir poli : pivots, loquet, anneau du Karambit
         return metalShade(p, mix(hexc(0x0d0e11), hexc(0x1a1c21), fbm(p * 40.0, 2)), 0.0, 0.55);
     }
-#if CAMO_ID == 100
+#if CAMO_ID >= 120 && CAMO_ID < 200
+    vec3 inlay = hexc(SKIN_INLAY);
+#elif CAMO_ID == 100
     vec3 inlay = hexc(0x1a1b1d);
 #elif CAMO_ID == 59
     vec3 inlay = hexc(0x6a34c0);
@@ -1420,7 +2275,9 @@ vec3 knifeFinish(vec3 p, out vec3 em) {
     }
     float metal = 1.0;                                                              // garde du M9, anneau du Karambit : même finition que la lame
     vec3 col;
-#if CAMO_ID >= 100
+#if CAMO_ID >= 120 && CAMO_ID < 200
+    col = skinCouteau(p, em);
+#elif CAMO_ID >= 100
     col = uniqueFinish(p, em);
 #elif CAMO_ID >= 59 && CAMO_ID <= 66
     col = csFinish(p, em);
@@ -1438,6 +2295,7 @@ vec3 knifeFinish(vec3 p, out vec3 em) {
     col = gemDoppler(p, hexc(0x002a0e), hexc(0x009a3c), hexc(0x12e064), hexc(0xb0ffc8), 0.12, vec3(13.7, 2.1, 5.3), em);
 #endif
     if (orne) {
+        em = vec3(0.0);                                                             // la lueur des gemmes reste sur la lame
         return ornateHandle(p, col);
     }
     return col * metal;
