@@ -18,7 +18,8 @@ public enum KnifeType {
    M9("m9", 0F, 0F, Map.of("daozhu", Part.GRIP, "daobing", Part.METAL, "daowei", Part.METAL)),
    // couteaux CS par défaut (pack ArkaniaZ) : manche = grip assorti à la finition
    CT_KNIFE("ct_knife", Map.of("daoba", Part.GRIP, "daobing", Part.GRIP), 0F, 0),
-   T_KNIFE("t_knife", Map.of("bone4", Part.GRIP, "bone", Part.GRIP), 0F, 0),
+   // couteau T : le manche est bone6 (corps) et bone4 (garnitures) ; bone (garde) prend la finition de la lame
+   T_KNIFE("t_knife", Map.of("bone4", Part.GRIP, "bone6", Part.GRIP), 0F, 0),
    // lames de mêlée HeralisZ (moteur HeralisZ Tactical) : manche = grip assorti à la finition ; modèles d'un seul bloc -> coupe
    DAGGER("dagger", Map.of(), 0.55F, -1),
    TAC_DAGGER("tac_dagger", Map.of(), 0.4F, -1),

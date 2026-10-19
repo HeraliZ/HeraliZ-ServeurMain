@@ -1,0 +1,47 @@
+{
+  "name": "item.heralisz_melee.executor__neon_circuit",
+  "tooltip": "item.heralisz_melee.executor__neon_circuit.desc",
+  "type": "heralisz_tactical:normal",
+  "base_item": "heralisz_tactical:melee",
+  "data": {
+    "attributes": {
+      "generic.attack_damage": 7,
+      "minecraft:generic.movement_speed": {
+        "amount": 0.03,
+        "operation": "percent"
+      }
+    },
+    "draw_time": 20,
+    "put_away_time": 0,
+    "max_durability": 1400,
+    "enchantment_value": 12,
+    "attack": {
+      "attack_left": {
+        "factor": 1,
+        "knockback": 0.08,
+        "cooldown": 24,
+        "delay": 2,
+        "hitbox": {
+          "type": "cone",
+          "max_range": 4,
+          "max_angle": 75,
+          "exclude_self": true
+        },
+        "durability_damage": 1
+      },
+      "attack_right": {
+        "factor": 1.5,
+        "knockback": 0.12,
+        "cooldown": 24,
+        "delay": 6,
+        "hitbox": {
+          "type": "cone",
+          "max_range": 4,
+          "max_angle": 65,
+          "exclude_self": true
+        },
+        "durability_damage": 1
+      }
+    }
+  }
+}

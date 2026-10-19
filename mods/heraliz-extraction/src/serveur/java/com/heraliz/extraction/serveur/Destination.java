@@ -16,8 +16,9 @@ public final class Destination {
 
     /** Téléporte le joueur au point d'extraction configuré (vraie téléportation : suivie par l'anticheat). */
     public static void teleport(ServerPlayer player) {
-        // d'abord le monde du spawn de HeraliZ (Utils, par réflexion : facultatif), s'il est en place
-        if (ExtractionConfig.USE_HERALIZ_SPAWN.get() && versSpawnHeraliz(player)) {
+        // d'abord le point /spawn posé par le staff (/spawn definir de CRac, par réflexion : facultatif), puis le point de
+        // réveil du monde du spawn de HeraliZ (Utils, par réflexion : facultatif), s'il est en place
+        if (ExtractionConfig.USE_HERALIZ_SPAWN.get() && (versSpawnDefini(player) || versSpawnHeraliz(player))) {
             return;
         }
         MinecraftServer server = player.server;
@@ -47,6 +48,33 @@ public final class Destination {
         player.stopRiding();
         player.teleportTo(target, x, y, z, player.getYRot(), player.getXRot());
         player.resetFallDistance();
+    }
+
+    private static java.lang.reflect.Method spawnCrac;
+    private static boolean spawnCracCherche;
+
+    /**
+     * CRac : fr.heraliz.crac.api.SpawnCracApi.allerAuSpawnDefini(ServerPlayer) (point posé par /spawn definir, vraie
+     * téléportation). Faux si CRac est absent, trop ancien, ou si aucun point n'est défini.
+     */
+    private static boolean versSpawnDefini(ServerPlayer player) {
+        if (!spawnCracCherche) {
+            spawnCracCherche = true;
+            try {
+                spawnCrac = Class.forName("fr.heraliz.crac.api.SpawnCracApi").getMethod("allerAuSpawnDefini", ServerPlayer.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                spawnCrac = null;
+            }
+        }
+        if (spawnCrac == null) {
+            return false;
+        }
+        try {
+            return Boolean.TRUE.equals(spawnCrac.invoke(null, player));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[extraction] retour au point /spawn de CRac impossible : {}", e.toString());
+            return false;
+        }
     }
 
     private static java.lang.reflect.Method spawnApi;

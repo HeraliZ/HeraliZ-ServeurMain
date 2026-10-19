@@ -134,7 +134,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | Projet | Jar | modIds dedans | Rôle |
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
-| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins de mêlée Desmoulins Lore et batte Doppler Saphir (2.21.0, modèles écrits par `outils/skins_melee.py`) Moteur repris de LR Tactical (licence GPL gardée) |
+| heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins de mêlée Desmoulins Lore et batte Doppler Saphir (2.21.0, modèles écrits par `outils/skins_melee.py`) ; 190 skins de couteaux par paliers (2.23.0, catalogue `outils/skins_couteaux.py`, section 10) Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : carte coupée à la bordure du monde, vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
@@ -801,8 +801,10 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   jamais retouchée à la main (`copier <monde> --zone ...` recopie une zone d'un monde, en lecture seule). Dépôt UNE fois
   dans `dimensions/heralisz/spawn/` du monde en service : workflow « Serveur HeraliZ », case `deposer_spawn` (refus si le
   dossier existe), puis redémarrer. Arrivée : première connexion et mort sans lit → point de réveil (cinématique).
-  Extraction : retour au même point (`useHeralizSpawn` de `heraliz_extraction-common.toml`, par
-  `fr.heralisz.utils.api.SpawnApi`, à ne jamais renommer). **Borne de départ** (`heralisz_utils:borne_depart`, Utils 2.16.3 : « table tactique holographique », maquette
+  Extraction : retour au point posé par le staff avec `/spawn definir` de CRac (19/10, Extraction 1.5.2, CRac
+  1.12.1-beta, `fr.heraliz.crac.api.SpawnCracApi.allerAuSpawnDefini`, par réflexion, à ne jamais renommer), sinon au point
+  de réveil (`useHeralizSpawn` de `heraliz_extraction-common.toml`, par `fr.heralisz.utils.api.SpawnApi`, à ne jamais
+  renommer). **Borne de départ** (`heralisz_utils:borne_depart`, Utils 2.16.3 : « table tactique holographique », maquette
   validée le 19/10 ; table écrite par `mods/heralisz-utils/outils/borne_depart.py` (`--rendus`), hologramme animé dessiné
   chez le joueur par `spawn/BorneHologramme` (globe de la carte qui tourne, épingle rouge qui saute d'un point à l'autre),
   entité de bloc `BorneDepartEntite` : une borne posée avant la 2.16.3 se repose (`/depart borne`) pour avoir
@@ -1093,6 +1095,40 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `heraliz_tactique:armes`) ; Atelier d'arme, onglet Accessoires : 11 caractéristiques en bas (4 colonnes), recalculées
     à chaque pose ou retrait, et chaque carte d'accessoire chiffre ce qu'il change sur l'arme (`atelier/Stats.effets`,
     `Effets.sur`) ;
+  - skins de couteaux par paliers (19/10, Tactique 2.23.0, tous ajoutés pour que le propriétaire les trie en jeu ; caisses et
+    chances à décider ensuite) : 190 skins sur 14 armes, quatre paliers de beauté, du plus courant au plus rare : Classique
+    (§7), Raffiné (§3), Prestige (§5), Ultime (§e) ; nom « ★ Arme | Finition » de la couleur du palier, palier dans
+    l'infobulle. M9, Karambit, Butterfly : 12 de plus chacun (en plus des Doppler, Fade…) ; armes de LR (Dague TAC, Credo,
+    Desmoulins, Croc du dragon, Bourreau, Miséricorde, Éclat marin) : 14 chacune ; batte, Marteau du châtiment, couteaux CT
+    et T : 14 chacun. Tout est **écrit** par `python mods/heraliz-tactique/outils/skins_couteaux.py` (tableaux `SKINS` et
+    `_LOT2` : arme, finition, nom, palier, style, couleurs, manche), jamais à la main : bloc <skins_couteaux> du gabarit des
+    camos et de `KnifeFinish`, fiches et affichages (couteaux TaCZ dans le gunpack `serveur/tacz/heralisz_skins`, qui a
+    maintenant aussi son russe ; armes de LR dans `heralisz_melee`), noms en trois langues. Styles (`kSatin`, `kCamo`,
+    `kDamascus`, `kFade`, `kSakura`, `kAurora`, gemmes `gemDoppler`…) dans la section « skins de couteaux par paliers » du
+    gabarit. **Un seul programme de shader pour tous ces skins** (`camo_120`, `KnifeFinish.PROGRAMME_PALIERS` : il lit les
+    couleurs du skin dans `CamoId`) : un programme par skin aurait rallongé le chargement du jeu (71 programmes au lieu de
+    129 avant). Les finitions exclusives déjà écrites (Lava Core, Frostbite, Dragon Gold, Phoenix, Abyssal Pearl, Bright
+    Water, Nebula, Ultraviolet) gardent leur programme. Armes de LR et marteau dessinés sur une copie propre de leur modèle
+    (`*_skin_geo`, `outils/skins_melee.py`, `PROPRES` : une face = un morceau de texture ; le marteau a ses pièces
+    « *_illuminated » renommées et garde la texture de sa traînée de coup, `KnifeType.SMITE_HAMMER`). Icônes rendues par
+    `outils/apercu_camos` (vue « icone ») sur les modèles tels que le jeu les dessine. Ni loot ni caisse. Rien testé en jeu.
+    Après l'essai du propriétaire (19/10, Tactique 2.24.0) : 64 skins retirés (liste `RETIRES` du script, dont le Lore de
+    la Lame de Desmoulins ; fichiers effacés par le script, ceux du gunpack listés dans `serveur/tacz_retires.txt` pour le
+    Ptero), il en reste 127 ; nouveaux skins du Karambit enfin utilisables (leur affichage était vide : il partait d'un
+    skin Karambit qui n'existe pas, il part maintenant de `karambit__tiger_tooth`) ; morceaux en trop au bout de la lame
+    du Bourreau et sur le Croc du dragon : la copie propre gardait pleines les parties transparentes de la texture
+    d'origine (découpes), `skins_melee.py` y fait maintenant les mêmes trous. Deuxième essai (19/10, Tactique 2.24.1) : Karambit
+    Night Stripe, Gold Hex et Amber Fade retirés (124 skins) ; marteau marron en main : la traînée du coup (plaque de
+    11 px, texture d'origine) comptait dans la longueur de l'arme, le jeu prenait la profondeur pour l'axe long et tout le
+    marteau pour le manche (`PosMap.cut` ne compte plus les pièces à texture d'origine) ; batte en « étages » : refaite à
+    12 côtés, évasement en 24 marches, texture deux fois plus fine (`skins_melee.py`, `COTES`, `ECHELLE`). Objets
+    violets et noirs (« heralisz_melee:creed__champagne »…) : skins retirés que le serveur, pas encore redémarré, envoyait
+    encore. Troisième essai (19/10, Tactique 2.24.2) : plus aucun skin de Marteau du
+    châtiment (copie propre du marteau et `KnifeType.SMITE_HAMMER` retirées ; l'arme de base reste) ; battes Bruiser Hex,
+    Blackwood, Ash Wood, Aluminium, Street Camo et Plasma retirées (104 skins) ; batte : fines lignes noires à chaque
+    tronçon (le dessous de chaque petite marche, dans l'ombre) : l'évasement est maintenant un vrai cône, 12 os tournés
+    autour de l'axe, faces inclinées (`skins_melee.py`, `EVASEMENT`), sans aucune marche ; plus d'anneau de recharge
+    autour du viseur pour la mêlée et les couteaux (délai inchangé, `UsingProgressOverlay`) ;
   - skins de mêlée (18/10, Tactique 2.19.0 à 2.21.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
     et `heralisz_melee:baseball_bat__doppler_sapphire`, fiches copiées des armes de base (mêmes dégâts), dessinées
     EXACTEMENT comme les couteaux de heralisz_skins (même shader `camo_65` Lore / `camo_56` Doppler Saphir, même carte de
@@ -1114,7 +1150,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   couteaux (16/10, Tactique 2.17.0 puis 2.18.0, après les retours du propriétaire) : clic gauche = le coup rapide
     d'avant, gardé tel quel (animation « melee_push » du gunpack par le signal `bayonet_push` de TaCZ, gestes de TaCZ vus
     des autres, touche du serveur à 2 ticks) ; clic droit = coup puissant où LE COUTEAU LUI-MÊME TOURNE avec le geste.
-    Knife CT et T : geste écrit comme le coup lourd de la Dague tactique de LR (impact à 0,24 s, 0,85 s). M9, papillon et
+    Knife CT et T : geste écrit comme le coup lourd de la Dague tactique de LR (impact à 0,24 s, 0,85 s) ; depuis le 19/10
+    (Tactique 2.24.0, demande du propriétaire) le T reprend le coup de la M9 (Miséricorde) et le CT celui du papillon
+    (Lame de Desmoulins), `REPRISES` de `couteaux_coups.py`. M9, papillon et
     karambit (et leurs skins, 2.18.0) : coup lourd « melee_3 » repris tel quel de la Miséricorde (`mercy`, 1,79 s), de la
     Lame de Desmoulins (`desmoulins_edge`, modèle `polaris`, 2,75 s) et du Credo (`creed`, modèle `treasure_kn`, 2,18 s) :
     bras à la même place vus des yeux, lame dans la même orientation (tours compris) et tenue comme celle de LR, même

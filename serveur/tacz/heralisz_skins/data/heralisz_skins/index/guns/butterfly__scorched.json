@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.butterfly__scorched.name",
+  "display": "heralisz_skins:butterfly__scorched_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.butterfly__scorched.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 311
+}

@@ -539,7 +539,10 @@ ARMES_LR = {
     "creed": ("treasure_kn", "treasure_kn", "Credo"),
 }
 # couteau TaCZ -> arme de LR dont il reprend le coup lourd (option --reprendre pour changer ; les autres gardent GESTES)
-REPRISES = {"m9": "mercy", "butterfly_knife": "desmoulins_edge", "karambit": "creed"}
+# 19/10 (essai du propriétaire) : couteau T comme la baïonnette M9 (Miséricorde), couteau CT un autre geste (Lame de
+# Desmoulins) ; leurs anciens gestes écrits (GESTES) ne servent plus
+REPRISES = {"m9": "mercy", "butterfly_knife": "desmoulins_edge", "karambit": "creed", "t_knife": "mercy",
+            "ct_knife": "desmoulins_edge"}
 # réglage de base des couteaux (CoupsCouteau) : la Dague tactique ; cadence du coup puissant, en ticks
 ARME_BASE = "tac_dagger"
 PAS_LR = 1.0 / 120.0  # les armes de LR font tourner la lame jusqu'à 10 tours par seconde

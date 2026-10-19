@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.butterfly__forest_camo.name",
+  "display": "heralisz_skins:butterfly__forest_camo_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.butterfly__forest_camo.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 323
+}

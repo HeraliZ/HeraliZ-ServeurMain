@@ -1,0 +1,7 @@
+-d
+/tmp/claude-0/-home-user-HeraliZ-ServeurMain/341e875b-8fba-5b0c-b98a-81f6d33ab13c/scratchpad/jc
+-proc:none
+-cp
+/dev/null
+src/commun/java/fr/heralisz/camo/knife/KnifeFinish.java
+src/commun/java/fr/heralisz/camo/knife/KnifeType.java

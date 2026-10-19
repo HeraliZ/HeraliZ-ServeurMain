@@ -58,8 +58,6 @@ public final class CouteauxClient {
    private static long pretA;
    /** Même chose en temps réel (ms) : un coup ne repart jamais avant, même si les ticks du jeu s'emballent. */
    private static long pretMs;
-   /** Durée totale de la recharge en cours, en ticks (anneau autour du réticule). */
-   private static int rechargeTotale = 1;
    /** Couteau en main au dernier passage (case de la barre, identifiant TaCZ) : s'il change, le nouveau sort. */
    private static int caseVue = -1;
    @Nullable
@@ -122,7 +120,6 @@ public final class CouteauxClient {
       int cadence = CoupsCouteau.cadence(lourd, CoupsCouteau.modele(id));
       pretA = horloge + cadence;
       pretMs = maintenant + cadence * 50L - 20L;
-      rechargeTotale = Math.max(1, cadence);
       ReseauCouteaux.envoyerAuServeur(new PaquetCoupCouteau(lourd));
       TimelessAPI.getGunDisplay(main).ifPresent(affichage -> {
          AnimationStateMachine<?> etats = affichage.getAnimationStateMachine();
@@ -137,22 +134,6 @@ public final class CouteauxClient {
          }
       });
       return true;
-   }
-
-   /**
-    * Recharge du coup en cours, pour l'anneau autour du réticule (comme les armes de mêlée) : part déjà rechargée, de 0 à
-    * 1 ; -1 s'il n'y a rien à montrer (pas de couteau en main, ou coup prêt).
-    */
-   public static float recharge(float partiel) {
-      Minecraft mc = Minecraft.getInstance();
-      if (mc.player == null || !couteauEnMain(mc.player)) {
-         return -1.0F;
-      }
-      float reste = Math.max(pretA - horloge - partiel, (pretMs - System.currentTimeMillis()) / 50.0F);
-      if (reste <= 0.0F) {
-         return -1.0F;
-      }
-      return 1.0F - Math.min(1.0F, reste / rechargeTotale);
    }
 
    private static void tick(TickEvent.ClientTickEvent e) {

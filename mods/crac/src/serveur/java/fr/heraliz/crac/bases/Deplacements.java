@@ -178,6 +178,22 @@ public final class Deplacements {
         return 1;
     }
 
+    /**
+     * Seulement vers le point /spawn défini par le staff (vraie téléportation) ; rend false sans rien faire s'il n'y en a
+     * pas ou si son monde est absent. Lu par {@code SpawnCracApi} (retour d'une extraction).
+     */
+    public static boolean allerAuPointDefini(ServerPlayer p) {
+        PointSpawn.Point pt = PointSpawn.get(p.server);
+        ServerLevel l = pt == null ? null : PointSpawn.niveau(p.server, pt);
+        if (l == null) {
+            return false;
+        }
+        p.stopRiding();
+        p.teleportTo(l, pt.x(), pt.y(), pt.z(), pt.lacet(), pt.tangage());
+        p.resetFallDistance();
+        return true;
+    }
+
     /** Vers le point /spawn défini par le staff (si son monde existe), sinon vers le point de réveil (SpawnApi). */
     static boolean allerAuPointSpawn(ServerPlayer p) {
         PointSpawn.Point pt = PointSpawn.get(p.server);

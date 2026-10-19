@@ -15,8 +15,8 @@ Le modèle de chaque skin est donc une copie propre, avec les mêmes os (mêmes 
   - polaris_lore_geo : géométrie d'origine, chaque face de la lame (os blade2) reçoit un morceau de texture à elle,
     dans une moitié ajoutée à droite de la texture (polaris_lore_uv.png, deux fois plus large) ; le manche garde ses
     morceaux d'origine (les motifs de la texture servent au manche orné) ;
-  - baseball_bat_skin_geo : batte refaite en tronçons hexagonaux (3 pavés tournés de 60° autour de l'axe, seules leurs
-    faces extérieures sont dessinées), même silhouette que celle de LR (pommeau, manche, évasement en 8 marches,
+  - baseball_bat_skin_geo : batte refaite en tronçons à 12 côtés (6 pavés tournés de 30° autour de l'axe, seules leurs
+    faces extérieures sont dessinées), même silhouette que celle de LR (pommeau, manche, évasement en 24 marches,
     tonneau, bout arrondi), le manche (pommeau compris) dans l'os « manche » (rôle grip de KnifeType), aucune face qui
     en traverse une autre, chaque face avec son morceau de texture.
 """
@@ -107,17 +107,25 @@ def desmoulins():
 # batte : (bas, haut, apothème) des tronçons, en unités du modèle, d'après le modèle de LR ; manche = pommeau + poignée
 POMMEAU = (2.72, 3.72, 0.758)
 POIGNEE = (3.72, 11.74, 0.541)
-EVASEMENT = (11.74, 23.72, 0.541, 0.866, 8)
+EVASEMENT = (11.74, 23.72, 0.541, 0.866, 12)
 TONNEAU = (23.72, 32.9, 0.866)
 BOUT = [(32.9, 33.35, 0.76), (33.35, 33.7, 0.52)]
+# 12 côtés et morceaux de texture 4 fois plus grands que la face (chapeaux 2), texture de 128 unités (32 points de la
+# carte par unité du modèle au lieu de 16). Évasement en vrai cône : chaque côté est une face inclinée (pavé tourné
+# autour de x dans un os tourné autour de l'axe de la batte), sans aucune marche. Avec des tronçons droits, chaque
+# marche avait un petit dessous dans l'ombre : une fine ligne noire tous les tronçons (essais en jeu du 19/10).
+COTES = 12
+ECHELLE = 4.0
+ECHELLE_CHAPEAU = 2.0
+# épaisseur des pavés du cône (seule leur face extérieure est dessinée)
+EPAISSEUR = 0.01
+# sens de l'inclinaison des faces du cône (repère de Blockbench : le haut de chaque face s'écarte de l'axe)
+ANGLE_SIGNE = 1
 
 
 def troncons():
+    """Tronçons droits (prismes) : (os, bas, haut, apothème)."""
     t = [("manche",) + POMMEAU, ("manche",) + POIGNEE]
-    y0, y1, a0, a1, n = EVASEMENT
-    for i in range(n):
-        ya, yb = y0 + (y1 - y0) * i / n, y0 + (y1 - y0) * (i + 1) / n
-        t.append(("weapon", ya, yb, a0 + (a1 - a0) * (i + 0.5) / n))
     t.append(("weapon",) + TONNEAU)
     t += [("weapon",) + b for b in BOUT]
     return t
@@ -127,37 +135,68 @@ def batte():
     src = json.loads((GEO / "baseball_bat_geo.json").read_text(encoding="utf-8"))
     g = src["minecraft:geometry"][0]
     g["description"]["identifier"] = "geometry.baseball_bat_skin"
-    tw = th = 64
+    tw = th = 128
     g["description"]["texture_width"], g["description"]["texture_height"] = tw, th
     rang = Etageres(0, 0, tw, th)
     weapon = next(b for b in g["bones"] if b["name"] == "weapon")
+    tan = math.tan(math.pi / COTES)
     t = troncons()
+    # rayon du voisin du dessous / du dessus (le cône raccorde la poignée au tonneau sans marche)
+    y0, y1, a0, a1, n = EVASEMENT
+    rayons = {}
+    for i, (_, yb, yh, a) in enumerate(t):
+        dessous = [x for x in t if abs(x[2] - yb) < 1e-6] or ([(0, 0, 0, a1)] if abs(yb - y1) < 1e-6 else [])
+        dessus = [x for x in t if abs(x[1] - yh) < 1e-6] or ([(0, 0, 0, a0)] if abs(yh - y0) < 1e-6 else [])
+        rayons[i] = (dessous[0][3] if dessous else None, dessus[0][3] if dessus else None)
     cubes = {"weapon": [], "manche": []}
-    for i, (os_, y0, y1, a) in enumerate(t):
-        s = 2 * a / math.sqrt(3)   # hexagone régulier : côté = 2 x apothème / racine de 3
-        h = y1 - y0
+    for i, (os_, yb, yh, a) in enumerate(t):
+        s = 2 * a * tan   # polygone régulier : côté = 2 x apothème x tan(pi / côtés)
+        h = yh - yb
         # chapeaux : seulement là où ce tronçon dépasse son voisin (sinon caché dedans)
-        bas = i == 0 or t[i - 1][3] < a - 1e-6
-        haut = i == len(t) - 1 or t[i + 1][3] < a - 1e-6
-        for rot in (0, 60, -60):
+        bas = rayons[i][0] is None or rayons[i][0] < a - 1e-6
+        haut = rayons[i][1] is None or rayons[i][1] < a - 1e-6
+        for rot in range(0, 180, 360 // COTES):
+            rot = rot if rot <= 90 else rot - 180
             uv = {}
             for f in ("north", "south"):
-                w, hh = max(s, MIN_UV), max(h, MIN_UV)
+                w, hh = max(s * ECHELLE, MIN_UV), max(h * ECHELLE, MIN_UV)
                 u, v = rang.place(w, hh)
                 uv[f] = {"uv": [u, v], "uv_size": [w, hh]}
             for f, garde in (("down", bas), ("up", haut)):
                 if garde:
-                    w, hh = max(s, MIN_UV), max(2 * a, MIN_UV)
+                    w, hh = max(s * ECHELLE_CHAPEAU, MIN_UV), max(2 * a * ECHELLE_CHAPEAU, MIN_UV)
                     u, v = rang.place(w, hh)
                     uv[f] = {"uv": [u, v], "uv_size": [w, hh]}
-            c = {"origin": [-s / 2, y0, -a], "size": [s, h, 2 * a], "uv": uv}
+            c = {"origin": [-s / 2, yb, -a], "size": [s, h, 2 * a], "uv": uv}
             if rot:
-                c["pivot"] = [0, y0, 0]
+                c["pivot"] = [0, yb, 0]
                 c["rotation"] = [0, rot, 0]
             cubes[os_].append(c)
     weapon["cubes"] = cubes["weapon"]
     i = g["bones"].index(weapon)
     g["bones"].insert(i + 1, {"name": "manche", "parent": "weapon", "pivot": weapon["pivot"], "cubes": cubes["manche"]})
+    # cône de l'évasement : un os par côté, tourné autour de l'axe ; dedans, n pavés inclinés autour de x (pivot au milieu
+    # de leur face), chacun aussi large que le haut de son morceau de cône (pas de fente entre deux côtés)
+    pente = (a1 - a0) / (y1 - y0)
+    angle = math.degrees(math.atan(pente))
+    for k in range(COTES):
+        rot = k * 360 / COTES
+        cubes_k = []
+        for j in range(n):
+            yb, yh = y0 + (y1 - y0) * j / n, y0 + (y1 - y0) * (j + 1) / n
+            ym = (yb + yh) / 2
+            am = a0 + pente * (ym - y0)
+            w = 2 * (a0 + pente * (yh - y0)) * tan
+            longueur = (yh - yb) / math.cos(math.atan(pente))
+            uw, uh = max(w * ECHELLE, MIN_UV), max(longueur * ECHELLE, MIN_UV)
+            u, v = rang.place(uw, uh)
+            cubes_k.append({"origin": [-w / 2, ym - longueur / 2, -am], "size": [w, longueur, EPAISSEUR],
+                            "pivot": [0, ym, -am], "rotation": [ANGLE_SIGNE * angle, 0, 0],
+                            "uv": {"north": {"uv": [u, v], "uv_size": [uw, uh]}}})
+        os_k = {"name": "evasement_%d" % k, "parent": "weapon", "pivot": [0, y0, 0], "cubes": cubes_k}
+        if rot:
+            os_k["rotation"] = [0, rot if rot <= 180 else rot - 360, 0]
+        g["bones"].insert(i + 2 + k, os_k)
     ranger_reperes(g, rang)
     (GEO / "baseball_bat_skin_geo.json").write_text(json.dumps(src, separators=(",", ":")), encoding="utf-8")
     # texture de secours (si le shader ne marche pas) : manche noir, reste acier bleuté
@@ -178,9 +217,124 @@ def batte():
                 w, h = f["uv_size"]
                 d.rectangle([u * px - 1, v * px - 1, (u + w) * px, (v + h) * px], fill=col)
     img.save(TEX / "baseball_bat_skin_uv.png")
-    print("[skins_melee] batte : %d tronçons, %d pavés" % (len(t), len(cubes["weapon"]) + len(cubes["manche"])))
+    print("[skins_melee] batte : %d tronçons droits, cône de %d x %d faces" % (len(t), COTES, EVASEMENT[4]))
+
+
+# armes de LR et marteau : copie propre du modèle (modèle d'origine, texture d'origine, os à garder tels quels, nouveaux noms
+# d'os). Les os gardés (effet de coup du marteau) gardent leurs coordonnées de texture : la texture d'origine est recopiée
+# dans le quart en haut à gauche d'une texture deux fois plus grande.
+PROPRES = [
+    ("silencefd", (), {}),
+    ("treasure_kn", (), {}),
+    ("quenching", (), {}),
+    ("executor", (), {}),
+    ("mercy", (), {}),
+    ("thieve_sea", (), {}),
+]
+# texels de la carte des couteaux (1024 de côté) au moins par côté de face
+TEXELS_MIN = 6.0
+
+
+def faces_a_ranger(g, garder):
+    """(cube, face, largeur, hauteur) de chaque face dessinée hors des os gardés."""
+    out = []
+    for b in g["bones"]:
+        if b["name"] in garder:
+            continue
+        for c in b.get("cubes", []) or []:
+            uv = c.get("uv")
+            for f in FACES:
+                # faces absentes du modèle d'origine (coordonnées par face sans cette face) : jamais dessinées
+                if isinstance(uv, dict) and f not in uv:
+                    continue
+                a, bb = dims(f, c["size"])
+                if a < 1e-4 or bb < 1e-4:
+                    continue
+                out.append((c, f, a, bb))
+    return out
+
+
+def ranger(faces, U, reserve, echelle, m):
+    """Range les faces (taille x echelle, au moins m) en étagères dans un carré de U unités, hors du coin réservé
+    (reserve x reserve en haut à gauche). Rend [(u, v, w, h)] ou None si ça ne tient pas."""
+    pad = m * 0.25
+    x = y = ligne = 0.0
+    res = []
+    for c, f, a, bb in sorted(faces, key=lambda t: -max(t[3] * echelle, m)):
+        w, h = max(a * echelle, m), max(bb * echelle, m)
+        x0 = reserve if y < reserve else 0.0
+        if x < x0:
+            x = x0
+        if x + w + pad > U:
+            y += ligne
+            x, ligne = (reserve if y < reserve else 0.0), 0.0
+        if y + h + pad > U:
+            return None
+        res.append((c, f, x, y, w, h))
+        x += w + pad
+        ligne = max(ligne, h + pad)
+    return res
+
+
+def propre(nom, garder, renommer):
+    src = json.loads((GEO / (nom + "_geo.json")).read_text(encoding="utf-8"))
+    g = src["minecraft:geometry"][0]
+    tw, th = g["description"]["texture_width"], g["description"]["texture_height"]
+    g["description"]["identifier"] = "geometry.%s_skin" % nom
+    for b in g["bones"]:
+        for k in ("name", "parent"):
+            if b.get(k) in renommer:
+                b[k] = renommer[b[k]]
+    faces = faces_a_ranger(g, garder)
+    # texture carrée ; avec des os gardés, la texture d'origine occupe le quart en haut à gauche
+    reserve = float(max(tw, th)) if garder else 0.0
+    U = 2.0 * reserve if garder else float(max(tw, th))
+    m = TEXELS_MIN * U / 1024.0
+    # plus grande échelle qui tient (les faces gardent leurs proportions)
+    lo, hi = 0.0, 64.0
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if ranger(faces, U, reserve, mid, m) is None:
+            hi = mid
+        else:
+            lo = mid
+    places = ranger(faces, U, reserve, lo, m)
+    if places is None:
+        sys.exit("[skins_melee] %s : les faces ne tiennent pas dans la texture" % nom)
+    img = Image.open(TEX / (nom + "_uv.png")).convert("RGBA")
+    k = img.width / tw
+    out = Image.new("RGBA", (int(U * k), int(U * k)), (150, 154, 160, 255))   # acier : toutes les faces rangées
+    if garder:
+        out.paste(img, (0, 0))
+    alpha = img.split()[3]
+    anciens = {id(c): dict(c["uv"]) for c, *_ in places}
+    for c in {id(c): c for c, *_ in places}.values():
+        c["uv"] = {}
+    for c, f, u, v, w, h in places:
+        # même sens de lecture que l'ancien morceau de texture (tailles négatives = retourné) et même transparence :
+        # le jeu ne dessine pas les points transparents (découpes de la lame, faces invisibles)
+        old = anciens[id(c)][f]
+        ou, ov = old["uv"]
+        su, sv = old["uv_size"]
+        nu, nsu = (u, w) if su >= 0 else (u + w, -w)
+        nv, nsv = (v, h) if sv >= 0 else (v + h, -h)
+        c["uv"][f] = {"uv": [round(nu, 4), round(nv, 4)], "uv_size": [round(nsu, 4), round(nsv, 4)]}
+        x0, x1 = sorted((ou * k, (ou + su) * k))
+        y0, y1 = sorted((ov * k, (ov + sv) * k))
+        boite = (int(x0), int(y0), max(int(x0) + 1, int(round(x1))), max(int(y0) + 1, int(round(y1))))
+        cible = (int(round(u * k)), int(round(v * k)), int(round((u + w) * k)), int(round((v + h) * k)))
+        taille = (max(1, cible[2] - cible[0]), max(1, cible[3] - cible[1]))
+        # trous seulement là où l'ancienne texture était transparente (les bords des morceaux restent pleins)
+        trous = alpha.crop(boite).resize(taille, Image.NEAREST).point(lambda a: 0 if a >= 26 else 255)
+        out.paste(Image.new("RGBA", taille, (0, 0, 0, 0)), cible[:2], trous)
+    g["description"]["texture_width"] = g["description"]["texture_height"] = int(U)
+    (GEO / (nom + "_skin_geo.json")).write_text(json.dumps(src, separators=(",", ":")), encoding="utf-8")
+    out.save(TEX / (nom + "_skin_uv.png"))
+    print("[skins_melee] %s : %d faces rangées (échelle %.2f, %d texels au moins)" % (nom, len(places), lo, TEXELS_MIN))
 
 
 if __name__ == "__main__":
     desmoulins()
     batte()
+    for nom, garder, renommer in PROPRES:
+        propre(nom, set(garder), renommer)
