@@ -1,28 +1,39 @@
-"""Armes à feu dans les conteneurs de HeraliZ Loot (T1 à T6).
+"""Armes à feu dans les conteneurs de HeraliZ Loot (T1 à T7).
 
-Réécrit seulement le « poids » des armes TaCZ (tacz:modern_kinetic_gun) dans
-mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json à t6.json :
+Réécrit les armes TaCZ (tacz:modern_kinetic_gun) des tables
+mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json à t7.json :
 - ARMES_POUR_100 : nombre d'armes moyen pour 100 conteneurs ouverts, par palier ;
-- dans un palier, une arme sort FACTEUR fois moins qu'une arme de la rareté juste en dessous
-  (rareté de serveur/config/heraliz_loot/raretes.json, section « armes »).
-Les autres objets gardent leur poids ; les entrées d'un mod absent (heralisz_armor) sont
-ignorées au chargement par le mod, donc aussi ici. À relancer après un changement des tables
-ou des raretés des armes. `--simuler` : ouvre 100 conteneurs par palier et compte les armes.
+- PARTS : part de chaque rareté dans les armes du palier (rareté de
+  serveur/config/heraliz_loot/raretes.json, section « armes ») ; toutes les armes de cette
+  rareté y sont mises, à chances égales entre elles. Jamais d'Épique ni de Légendaire en T1-T3 ;
+- Unique (couteaux) jamais dans le loot.
+Les autres objets ne changent pas ; les entrées d'un mod absent (heralisz_armor) sont ignorées au
+chargement par le mod, donc aussi ici. À relancer après un changement des raretés ou des gunpacks.
+`--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte les armes.
 """
-import json, random, re, sys
+import glob, json, random, re, sys
 from collections import Counter
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
 COFFRES = RACINE / "mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres"
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
+TACZ = RACINE / "serveur/tacz"
 
-ARMES_POUR_100 = {1: 10, 2: 12, 3: 14, 4: 16, 5: 18, 6: 20}
-FACTEUR = 2
-PRECISION = 20  # plus petit poids d'arme voulu : sinon tous les autres poids sont multipliés par 10
+ARMES_POUR_100 = {1: 10, 2: 12, 3: 14, 4: 16, 5: 18, 6: 20, 7: 20}
+PARTS = {
+    1: {"commun": 1.0},
+    2: {"commun": 0.6, "peu_commun": 0.4},
+    3: {"commun": 0.2, "peu_commun": 0.5, "rare": 0.3},
+    4: {"peu_commun": 0.25, "rare": 0.55, "epique": 0.2},
+    5: {"rare": 0.35, "epique": 0.5, "legendaire": 0.15},
+    6: {"rare": 0.1, "epique": 0.6, "legendaire": 0.3},
+    7: {"epique": 0.5, "legendaire": 0.5},
+}
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
 IGNORES = ("heralisz_armor:",)
 ARME = "tacz:modern_kinetic_gun"
+PRECISION = 20  # plus petit poids d'arme voulu : sinon les autres poids sont multipliés par 10
 
 
 def gun_id(e):
@@ -31,68 +42,88 @@ def gun_id(e):
 
 
 def raretes():
-    d = json.load(open(RARETES, encoding="utf-8"))["armes"]
-    return {k: (v if isinstance(v, str) else v.get("rarete")) for k, v in d.items()}
+    return json.load(open(RARETES, encoding="utf-8"))["armes"]
 
 
-def charger(t):
-    f = COFFRES / f"t{t}.json"
-    return f, f.read_text(encoding="utf-8")
+def armes_du_jeu():
+    """id -> nbt de l'arme prête à tirer (mode de tir, chargeur plein), d'après les gunpacks."""
+    donnees = {}
+    for f in glob.glob(str(TACZ / "*/data/*/data/guns/*.json")):
+        ns = f.split("/data/")[1].split("/")[0]
+        try:
+            donnees[ns + ":" + Path(f).stem] = json.load(open(f, encoding="utf-8-sig"))
+        except Exception:
+            pass
+    armes = {}
+    for f in glob.glob(str(TACZ / "*/data/*/index/guns/*.json")):
+        ns = f.split("/data/")[1].split("/")[0]
+        gid = ns + ":" + Path(f).stem
+        try:
+            d = donnees.get(json.load(open(f, encoding="utf-8-sig")).get("data", ""), {})
+        except Exception:
+            continue
+        mode = (d.get("fire_mode") or ["semi"])[0].upper()
+        armes[gid] = f'{{GunId:"{gid}",GunFireMode:"{mode}",GunCurrentAmmoCount:{d.get("ammo_amount", 1)},HasBulletInBarrel:1b}}'
+    return armes
 
 
-def calculer(t, data, rar, echelle=1):
-    objs = data["objets"]
-    armes = [e for e in objs if e["item"] == ARME]
-    autres = [e for e in objs if e["item"] != ARME and not e["item"].startswith(IGNORES)]
-    cases = sum(data["emplacements"]) / 2
-    part = ARMES_POUR_100[t] / 100 / cases           # part des tirages qui sont des armes
-    total_autres = sum(e["poids"] for e in autres) * echelle
-    total_armes = total_autres * part / (1 - part)
-    rang = {id(e): ORDRE.index(rar.get(gun_id(e), "rare")) for e in armes}
-    bas = min(rang.values())
-    rel = {k: FACTEUR ** -(r - bas) for k, r in rang.items()}
-    somme = sum(rel.values())
-    poids = {k: round(total_armes * v / somme) for k, v in rel.items()}
-    return armes, poids
+def ecrire_table(f, data):
+    lignes = ["{"]
+    for k, v in data.items():
+        if k != "objets":
+            lignes.append(f' {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)},')
+    lignes.append(' "objets": [')
+    lignes.append(",\n".join("  " + json.dumps(e, ensure_ascii=False) for e in data["objets"]))
+    lignes.append(" ]")
+    lignes.append("}")
+    f.write_text("\n".join(lignes) + "\n", encoding="utf-8")
 
 
 def ecrire():
-    rar = raretes()
-    for t in ARMES_POUR_100:
-        f, texte = charger(t)
-        data = json.loads(texte)
+    rar, jeu = raretes(), armes_du_jeu()
+    par_rarete = {}
+    for gid, r in sorted(rar.items()):
+        if gid in jeu:
+            par_rarete.setdefault(r, []).append(gid)
+    for t, parts in PARTS.items():
+        f = COFFRES / f"t{t}.json"
+        data = json.loads(f.read_text(encoding="utf-8"))
+        autres = [e for e in data["objets"] if e["item"] != ARME]
+        actifs = sum(e["poids"] for e in autres if not e["item"].startswith(IGNORES))
+        cases = sum(data["emplacements"]) / 2
+        part = ARMES_POUR_100[t] / 100 / cases
         echelle = 1
-        armes, poids = calculer(t, data, rar)
-        while min(poids.values()) < PRECISION:
+        while True:
+            total = actifs * echelle * part / (1 - part)
+            poids = {g: total * p / len(par_rarete[r]) for r, p in parts.items() for g in par_rarete.get(r, [])}
+            if min(poids.values()) >= PRECISION:
+                break
             echelle *= 10
-            armes, poids = calculer(t, data, rar, echelle)
-        nouv, i = [], 0
-        lignes = texte.split("\n")
-        objs = iter(data["objets"])
-        for l in lignes:
-            if l.strip().startswith('{"item"'):
-                e = next(objs)
-                p = poids[id(e)] if e["item"] == ARME else e["poids"] * echelle
-                l = re.sub(r'"poids": \d+', f'"poids": {p}', l, count=1)
-            nouv.append(l)
-        f.write_text("\n".join(nouv), encoding="utf-8")
-        print(f"T{t} : {len(armes)} armes, {ARMES_POUR_100[t]} pour 100 conteneurs")
+        for e in autres:
+            e["poids"] *= echelle
+        armes = [{"item": ARME, "nombre": [1, 1], "poids": round(poids[g]), "nbt": jeu[g], "rarete": rar[g],
+                  "_cat": "armes"} for g in poids]
+        if t != 7:  # la rareté inscrite ne sert qu'aux coffres T7 (animations) : HeraliZ Loot la lit sinon dans raretes.json
+            for a in armes:
+                del a["rarete"]
+        data["objets"] = autres + armes
+        ecrire_table(f, data)
+        print(f"T{t} : {len(armes)} armes ({', '.join(parts)}), {ARMES_POUR_100[t]} pour 100 conteneurs")
 
 
-def simuler(n=100, graine=1):
+def simuler(essais=1000):
     rar = raretes()
-    random.seed(graine)
-    for t in range(1, 7):
-        data = json.loads(charger(t)[1])
+    for t in PARTS:
+        data = json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8"))
         objs = [e for e in data["objets"] if not e["item"].startswith(IGNORES)]
         w = [e["poids"] for e in objs]
         c = Counter()
-        for _ in range(n):
+        for _ in range(essais * 100):
             for _ in range(random.randint(*data["emplacements"])):
                 e = random.choices(objs, w)[0]
                 if e["item"] == ARME:
                     c[rar.get(gun_id(e), "?")] += 1
-        print(f"T{t} : {sum(c.values())} armes", {r: c[r] for r in ORDRE if c[r]})
+        print(f"T{t} : {sum(c.values()) / essais:.1f} armes", {r: round(c[r] / essais, 1) for r in ORDRE if c[r]})
 
 
 if __name__ == "__main__":

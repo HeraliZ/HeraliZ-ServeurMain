@@ -195,8 +195,11 @@
   {"item": "geckolib:item_sledge_hammer", "nombre": [1, 1], "poids": 21, "_cat": "melee_basique"},
   {"item": "tacz:ammo", "nombre": [3, 10], "poids": 90, "nbt": "{AmmoId:\"tacz:9mm\"}", "_cat": "munitions_pistolet"},
   {"item": "tacz:ammo", "nombre": [3, 8], "poids": 60, "nbt": "{AmmoId:\"tacz:45acp\"}", "_cat": "munitions_pistolet"},
-  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 119, "nbt": "{GunId:\"arkaniaz:p250\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:13,HasBulletInBarrel:1b}", "_cat": "pistolets_civils"},
-  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 119, "nbt": "{GunId:\"tacz:m1911\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:7,HasBulletInBarrel:1b}", "_cat": "pistolets_civils"},
-  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 119, "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:17,HasBulletInBarrel:1b}", "_cat": "pistolets_civils"}
+  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 59, "nbt": "{GunId:\"arkaniaz:p250\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:13,HasBulletInBarrel:1b}", "_cat": "armes"},
+  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 59, "nbt": "{GunId:\"arkaniaz:usp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:12,HasBulletInBarrel:1b}", "_cat": "armes"},
+  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 59, "nbt": "{GunId:\"maxstuff:m17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:17,HasBulletInBarrel:1b}", "_cat": "armes"},
+  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 59, "nbt": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:16,HasBulletInBarrel:1b}", "_cat": "armes"},
+  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 59, "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:17,HasBulletInBarrel:1b}", "_cat": "armes"},
+  {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "poids": 59, "nbt": "{GunId:\"tacz:m1911\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:7,HasBulletInBarrel:1b}", "_cat": "armes"}
  ]
 }
