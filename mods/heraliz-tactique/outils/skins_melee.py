@@ -15,8 +15,8 @@ Le modèle de chaque skin est donc une copie propre, avec les mêmes os (mêmes 
   - polaris_lore_geo : géométrie d'origine, chaque face de la lame (os blade2) reçoit un morceau de texture à elle,
     dans une moitié ajoutée à droite de la texture (polaris_lore_uv.png, deux fois plus large) ; le manche garde ses
     morceaux d'origine (les motifs de la texture servent au manche orné) ;
-  - baseball_bat_skin_geo : batte refaite en tronçons hexagonaux (3 pavés tournés de 60° autour de l'axe, seules leurs
-    faces extérieures sont dessinées), même silhouette que celle de LR (pommeau, manche, évasement en 8 marches,
+  - baseball_bat_skin_geo : batte refaite en tronçons à 12 côtés (6 pavés tournés de 30° autour de l'axe, seules leurs
+    faces extérieures sont dessinées), même silhouette que celle de LR (pommeau, manche, évasement en 24 marches,
     tonneau, bout arrondi), le manche (pommeau compris) dans l'os « manche » (rôle grip de KnifeType), aucune face qui
     en traverse une autre, chaque face avec son morceau de texture.
 """
@@ -107,9 +107,15 @@ def desmoulins():
 # batte : (bas, haut, apothème) des tronçons, en unités du modèle, d'après le modèle de LR ; manche = pommeau + poignée
 POMMEAU = (2.72, 3.72, 0.758)
 POIGNEE = (3.72, 11.74, 0.541)
-EVASEMENT = (11.74, 23.72, 0.541, 0.866, 8)
+EVASEMENT = (11.74, 23.72, 0.541, 0.866, 24)
 TONNEAU = (23.72, 32.9, 0.866)
 BOUT = [(32.9, 33.35, 0.76), (33.35, 33.7, 0.52)]
+# 12 côtés (6 pavés tournés de 30°) et morceaux de texture 4 fois plus grands que la face (chapeaux 2), texture de 128
+# unités (32 points de la carte par unité du modèle au lieu de 16) : avec 6 côtés,
+# 8 marches et la taille réelle, la batte faisait des « étages » et la finition des carrés (essai en jeu du 19/10)
+COTES = 12
+ECHELLE = 4.0
+ECHELLE_CHAPEAU = 2.0
 
 
 def troncons():
@@ -127,27 +133,28 @@ def batte():
     src = json.loads((GEO / "baseball_bat_geo.json").read_text(encoding="utf-8"))
     g = src["minecraft:geometry"][0]
     g["description"]["identifier"] = "geometry.baseball_bat_skin"
-    tw = th = 64
+    tw = th = 128
     g["description"]["texture_width"], g["description"]["texture_height"] = tw, th
     rang = Etageres(0, 0, tw, th)
     weapon = next(b for b in g["bones"] if b["name"] == "weapon")
     t = troncons()
     cubes = {"weapon": [], "manche": []}
     for i, (os_, y0, y1, a) in enumerate(t):
-        s = 2 * a / math.sqrt(3)   # hexagone régulier : côté = 2 x apothème / racine de 3
+        s = 2 * a * math.tan(math.pi / COTES)   # polygone régulier : côté = 2 x apothème x tan(pi / côtés)
         h = y1 - y0
         # chapeaux : seulement là où ce tronçon dépasse son voisin (sinon caché dedans)
         bas = i == 0 or t[i - 1][3] < a - 1e-6
         haut = i == len(t) - 1 or t[i + 1][3] < a - 1e-6
-        for rot in (0, 60, -60):
+        for rot in range(0, 180, 360 // COTES):
+            rot = rot if rot <= 90 else rot - 180
             uv = {}
             for f in ("north", "south"):
-                w, hh = max(s, MIN_UV), max(h, MIN_UV)
+                w, hh = max(s * ECHELLE, MIN_UV), max(h * ECHELLE, MIN_UV)
                 u, v = rang.place(w, hh)
                 uv[f] = {"uv": [u, v], "uv_size": [w, hh]}
             for f, garde in (("down", bas), ("up", haut)):
                 if garde:
-                    w, hh = max(s, MIN_UV), max(2 * a, MIN_UV)
+                    w, hh = max(s * ECHELLE_CHAPEAU, MIN_UV), max(2 * a * ECHELLE_CHAPEAU, MIN_UV)
                     u, v = rang.place(w, hh)
                     uv[f] = {"uv": [u, v], "uv_size": [w, hh]}
             c = {"origin": [-s / 2, y0, -a], "size": [s, h, 2 * a], "uv": uv}

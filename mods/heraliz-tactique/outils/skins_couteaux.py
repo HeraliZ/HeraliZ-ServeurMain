@@ -315,6 +315,7 @@ RETIRES = {
     "m9": ["hammered", "desert_spray"],
     "ct_knife": ["steel_hammered", "sapphire_aurora", "concrete"],
     "butterfly": ["safari_mesh", "midnight_damascus", "kintsugi", "hammered_bronze", "contour", "circuit"],
+    "karambit": ["night_stripe", "gold_hex", "amber_fade"],
 }
 TOUS = list(SKINS)
 SKINS = [x for x in SKINS if x[2] not in RETIRES.get(x[1], ())]

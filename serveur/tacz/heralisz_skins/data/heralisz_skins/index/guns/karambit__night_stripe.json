@@ -1,9 +1,0 @@
-{
-  "name": "heralisz_skins.knife.karambit__night_stripe.name",
-  "display": "heralisz_skins:karambit__night_stripe_display",
-  "data": "arkaniaz:knife_data",
-  "tooltip": "heralisz_skins.tooltip.karambit__night_stripe.desc",
-  "type": "rpg",
-  "item_type": "modern_kinetic",
-  "sort": 310
-}
