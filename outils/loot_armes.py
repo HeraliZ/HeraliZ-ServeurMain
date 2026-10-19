@@ -63,6 +63,7 @@ COMPOSANT = "heraliz_composants:"
 RETIRES = ("heralisz_armor:",)
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
+COMPOSANTS_EXCLUS = {"plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
 IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 
 
@@ -138,7 +139,7 @@ def familles():
             ajouter("armures", r, {"item": i, "nombre": [1, 1], "_cat": "armures"})
     for i, r, pile in re.findall(r'new Def\("([a-z_0-9]+)", "[^"]*", HeralizRarity\.([A-Z]+), (\d+)\)',
                                  COMPOSANTS_DEFS.read_text(encoding="utf-8")):
-        if r in RARETE_COMPOSANT:
+        if r in RARETE_COMPOSANT and i not in COMPOSANTS_EXCLUS:
             n = 3 if r == "COMMON" and int(pile) >= 16 else 1
             ajouter("composants", RARETE_COMPOSANT[r], {"item": COMPOSANT + i, "nombre": [1, n], "_cat": "composants"})
     return out
