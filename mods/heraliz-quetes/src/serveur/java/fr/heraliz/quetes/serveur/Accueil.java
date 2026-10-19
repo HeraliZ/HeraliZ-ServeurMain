@@ -53,6 +53,19 @@ final class Accueil {
     }
 
     private static final Map<UUID, Suite> FIN = new HashMap<>();
+    /** Le marchand des matériaux de construction, présenté par Varga après le tutoriel. */
+    static final String BATISSEUR = "batisseur";
+    /** Donnée persistante du joueur : le Bâtisseur lui a été présenté (une seule fois). */
+    private static final String PRESENTE = "heraliz_batisseur_presente";
+    /** Durée du tour de caméra autour du Bâtisseur (ticks), rayon (blocs), secondes de chaque mot de Varga, fiche après. */
+    private static final int PRES_TICKS = 280, PRES_FICHE = 15;
+    private static final float PRES_RAYON = 4.5F;
+    private static final int[] PRES_MOTS = {0, 5, 10};
+    /** Secondes depuis le début de la présentation (et Bâtisseur trouvé ou non). */
+    private record Pres(int secondes, boolean vu) {
+    }
+
+    private static final Map<UUID, Pres> PRES = new HashMap<>();
     /** Apparence de l'entité Varga vue en dernier (si son fichier n'en a pas : posée par /pnj apparence varga moi). */
     private static CompoundTag apparenceVue;
 
@@ -63,6 +76,7 @@ final class Accueil {
         DERNIER.remove(u);
         FIN.remove(u);
         SUR_ETAPE.remove(u);
+        PRES.remove(u);
     }
 
     /** Le joueur doit d'abord faire le tutoriel des bases : Varga ne propose que « Faire ma base ». Jamais en créatif. */
@@ -96,10 +110,12 @@ final class Accueil {
                     FIN.put(p.getUUID(), new Suite(fin.rang() + 1, FIN_ECART));
                 } else {
                     FIN.remove(p.getUUID());
+                    Moteur.suiviBientot(p);   // « Retourne au spawn » (présentation du Bâtisseur)
                     Moteur.notif(p, Texte.cle("heraliz_quetes.tuto.notif_fin"), 0x5FD08A);
                 }
             }
         }
+        presentation(p, tuto);
         if (tuto < 0) {
             DERNIER.remove(p.getUUID());
             return;
@@ -139,6 +155,58 @@ final class Accueil {
         }
     }
 
+    /** Données du joueur gardées à la mort (sous-étiquette PlayerPersisted de Forge). */
+    private static CompoundTag persiste(ServerPlayer p) {
+        CompoundTag d = p.getPersistentData();
+        if (!d.contains("PlayerPersisted")) {
+            d.put("PlayerPersisted", new CompoundTag());
+        }
+        return d.getCompound("PlayerPersisted");
+    }
+
+    /** Au spawn, dans le monde du spawn. */
+    private static boolean auSpawn(ServerPlayer p) {
+        return "heralisz:spawn".equals(p.level().dimension().location().toString());
+    }
+
+    /** Le Bâtisseur pas encore présenté à ce joueur, tutoriel des bases fini. */
+    private static boolean presenterBientot(ServerPlayer p, int tuto) {
+        return tuto == 3 && !p.isCreative() && !p.isSpectator() && !persiste(p).getBoolean(PRESENTE);
+    }
+
+    /**
+     * Présentation du Bâtisseur (Quêtes 1.8.0, demande du propriétaire du 19/10) : à la première arrivée au spawn après
+     * le tutoriel des bases (mots de la fin de Varga finis), la caméra tourne autour du Bâtisseur pendant que Varga
+     * explique à la radio ce qu'il vend, ce qui se trouve sur la carte et /base info ; puis la fiche technique des bases
+     * (CRac) s'ouvre. Une seule fois par joueur. Sans Bâtisseur posé au spawn : la radio seule, sans caméra.
+     */
+    private static void presentation(ServerPlayer p, int tuto) {
+        Pres pr = PRES.get(p.getUUID());
+        if (pr == null) {
+            if (!presenterBientot(p, tuto) || FIN.containsKey(p.getUUID()) || !auSpawn(p)) return;
+            persiste(p).putBoolean(PRESENTE, true);
+            Pnj b = pnj(p, BATISSEUR, 160);
+            if (b != null) {
+                Reseau.envoyer(p, new Reseau.Presentation(b.getX(), b.getY(), b.getZ(), PRES_RAYON, PRES_TICKS));
+            }
+            pr = new Pres(0, b != null);
+            Moteur.suiviBientot(p);
+        } else {
+            pr = new Pres(pr.secondes() + 1, pr.vu());
+        }
+        for (int i = 0; i < PRES_MOTS.length; i++) {
+            if (pr.secondes() == PRES_MOTS[i]) {
+                radio(p, 0, "heraliz_quetes.tuto.batisseur." + (i + 1) + (i == 0 && !pr.vu() ? "_sans" : ""));
+            }
+        }
+        if (pr.secondes() >= PRES_FICHE) {
+            PRES.remove(p.getUUID());
+            Ponts.tutoFiche(p);
+        } else {
+            PRES.put(p.getUUID(), pr);
+        }
+    }
+
     /** Message radio de Varga : la consigne de l'étape (1 à 9), ou un mot de la fin (0). */
     private static void radio(ServerPlayer p, int etape, String cle, Texte... args) {
         Defs.Pnj def = Catalogue.pnj(PNJ);
@@ -164,6 +232,9 @@ final class Accueil {
         if (tuto == 1) {
             return new Reseau.Suivi(entete, titre, List.of(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.kit"), 0, 0, -1, false, 1)));
         }
+        if (presenterBientot(p, tuto) && !auSpawn(p) && !FIN.containsKey(p.getUUID())) {
+            return new Reseau.Suivi(entete, titre, List.of(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.spawn"), 0, 0, -1, false, 1)));
+        }
         if (tuto != 2) return null;
         int[] pr = Ponts.tutoProgression(p);
         if (pr[0] < 1) {
@@ -183,6 +254,20 @@ final class Accueil {
         if (!intro(p, Ponts.tutoEtat(p))) return;
         Pnj v = varga(p);
         if (v != null && v.distanceToSqr(p) < 48 * 48) l.add(v.blockPosition().above(2));
+    }
+
+    /** Le PNJ {@code id} le plus proche dans le monde du joueur (chargé), à moins de {@code portee} blocs, ou null. */
+    private static Pnj pnj(ServerPlayer p, String id, double portee) {
+        Pnj best = null;
+        double bd = portee * portee;
+        for (Pnj e : p.serverLevel().getEntities(HeralizQuetes.PNJ.get(), x -> id.equals(x.pnjId()))) {
+            double d = e.distanceToSqr(p);
+            if (d < bd) {
+                bd = d;
+                best = e;
+            }
+        }
+        return best;
     }
 
     /** Le Commandant Varga le plus proche dans le monde du joueur (chargé), ou null. */

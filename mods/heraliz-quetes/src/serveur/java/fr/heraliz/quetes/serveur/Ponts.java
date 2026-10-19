@@ -361,7 +361,7 @@ final class Ponts {
     }
 
     // ------------------------------------------------------------------ tutoriel des bases (CRac)
-    private static Method tutoEtat, tutoProgression, tutoLancer, tutoEtapes, tutoJours, tutoSas;
+    private static Method tutoEtat, tutoProgression, tutoLancer, tutoEtapes, tutoJours, tutoSas, tutoFiche;
     private static boolean tutoAbsent;
 
     private static boolean tuto() {
@@ -377,6 +377,11 @@ final class Ponts {
                 tutoJours = c.getMethod("joursProtection");
             } catch (NoSuchMethodException ancien) {
                 tutoEtapes = tutoJours = null;   // CRac 1.7 : 6 étapes, 4 jours
+            }
+            try {
+                tutoFiche = c.getMethod("ficheBase", ServerPlayer.class);
+            } catch (NoSuchMethodException ancien) {
+                tutoFiche = null;   // avant CRac 1.13 : pas de fiche technique des bases
             }
             try {
                 tutoSas = c.getMethod("sas", ServerPlayer.class);
@@ -416,6 +421,17 @@ final class Ponts {
         if (!tuto() || tutoSas == null) return false;
         try {
             return (boolean) tutoSas.invoke(null, p);
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** Ouvre la fiche technique des bases de CRac (/base info) chez le joueur ; false si impossible. */
+    static boolean tutoFiche(ServerPlayer p) {
+        if (!tuto() || tutoFiche == null) return false;
+        try {
+            tutoFiche.invoke(null, p);
+            return true;
         } catch (Throwable t) {
             return false;
         }

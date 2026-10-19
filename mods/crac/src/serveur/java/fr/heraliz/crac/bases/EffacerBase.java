@@ -44,8 +44,8 @@ final class EffacerBase {
     }
 
     static void commandes(CommandDispatcher<CommandSourceStack> d) {
-        d.register(Commands.literal("base").requires(s -> s.hasPermission(4))
-            .then(Commands.literal("effacer").then(Commands.argument("joueur", GameProfileArgument.gameProfile())
+        d.register(Commands.literal("base")
+            .then(Commands.literal("effacer").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", GameProfileArgument.gameProfile())
                 .executes(c -> {
                     int n = 0;
                     for (GameProfile g : GameProfileArgument.getGameProfiles(c, "joueur")) {

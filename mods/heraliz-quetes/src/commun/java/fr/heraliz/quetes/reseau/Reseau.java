@@ -31,7 +31,7 @@ public final class Reseau {
     private Reseau() {
     }
 
-    private static final String VERSION = "4";
+    private static final String VERSION = "5";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -130,6 +130,14 @@ public final class Reseau {
     public record Radio(Texte nom, CompoundTag apparence, String skin, boolean brasFins, int etape, int total, Texte texte) {
     }
 
+    /**
+     * Présentation d'un PNJ (Quêtes 1.8.0 : le Bâtisseur, à la première arrivée au spawn après le tutoriel des bases) :
+     * la caméra du joueur fait lentement le tour du point donné (rayon en blocs), pendant {@code ticks} ; seule la radio
+     * reste à l'écran. Espace maintenu pour passer.
+     */
+    public record Presentation(double x, double y, double z, float rayon, int ticks) {
+    }
+
     /** Message reçu par le serveur, avec le joueur qui l'envoie. */
     public record Recu<T>(ServerPlayer joueur, T message) {
     }
@@ -144,6 +152,7 @@ public final class Reseau {
     public static final Crochet<Notif> NOTIF = new Crochet<>();
     public static final Crochet<Boutique> BOUTIQUE = new Crochet<>();
     public static final Crochet<Radio> RADIO = new Crochet<>();
+    public static final Crochet<Presentation> PRESENTATION = new Crochet<>();
 
     public static final Crochet<Recu<Choix>> CHOIX = new Crochet<>();
     public static final Crochet<Recu<DemandeJournal>> DEMANDE_JOURNAL = new Crochet<>();
@@ -220,6 +229,14 @@ public final class Reseau {
             return new Radio(nom, app == null ? new CompoundTag() : app, b.readUtf(MAX_CLE), b.readBoolean(), b.readVarInt(), b.readVarInt(),
                     Texte.lire(b));
         }, RADIO);
+        versJoueur(Presentation.class, (m, b) -> {
+            b.writeDouble(m.x());
+            b.writeDouble(m.y());
+            b.writeDouble(m.z());
+            b.writeFloat(m.rayon());
+            b.writeVarInt(m.ticks());
+        }, b -> new Presentation(b.readDouble(), b.readDouble(), b.readDouble(), Math.max(2F, Math.min(20F, b.readFloat())),
+                Math.max(20, Math.min(600, b.readVarInt()))), PRESENTATION);
     }
 
     private static <T> void versJoueur(Class<T> c, BiConsumer<T, FriendlyByteBuf> ecrire, Function<FriendlyByteBuf, T> lire, Crochet<T> crochet) {

@@ -1292,6 +1292,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (`StructureService.viseBattant`, `PieceSolids.battants`). **Une seule armoire posée par joueur** (`crac.claim.une_par_joueur`, `AccesBase.armoireDe`) ; il
   peut avoir l'accès à d'autres. **Zone de l'armoire** visible plan de construction en main (`client/ZoneArmoire`) : bande
   translucide au bord du carré protégé, verte pour la sienne, rouge pour les autres. Canal CRac version 21. Rien testé en jeu.
+  **Fiche technique des bases** (CRac 1.13.0-beta, Quêtes 1.8.0, 19/10, maquette validée) : `/base info` pour tous
+  (`bases/FicheBase`, paquet `S2CFicheBase`, canal CRac version 22, écran `client/ui/EcranFicheBase`) : onglets Poser,
+  Améliorer, Réparer, Entretien, Raids ; chiffres lus à chaque fois dans `crac-building.toml` / `crac-server.toml`, prix
+  en hérals lus dans les marchands « achat » de `config/heraliz_quetes/pnj/*.json`. **Présentation du Bâtisseur** :
+  à la fin du tutoriel Varga dit de passer au spawn (suivi « Retourne au spawn ») ; à la première arrivée dans
+  `heralisz:spawn`, la caméra fait un demi-tour autour du PNJ `batisseur` (14 s, Espace pour passer, `client/Presentation`,
+  paquet `Presentation`, canal des quêtes version 5) pendant 3 messages radio de Varga (ce qu'il vend, objets de la carte,
+  /base info), puis la fiche s'ouvre (`TutorielApi.ficheBase`, par réflexion). Une fois par joueur (`PlayerPersisted.
+  heraliz_batisseur_presente`) ; sans Bâtisseur posé : radio seule. Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des
