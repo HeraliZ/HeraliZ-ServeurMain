@@ -47,6 +47,13 @@
     "heraliz_composants:oeuf_orne",
     "heraliz_composants:crane_cristal",
     "heraliz_composants:sceptre",
-    "heraliz_composants:calice"
+    "heraliz_composants:calice",
+    "heraliz_composants:planches",
+    "heraliz_composants:pierres_taillees",
+    "heraliz_composants:fragments_metal",
+    "heraliz_composants:metal_renforce",
+    "heraliz_composants:sac_ciment",
+    "heraliz_composants:equerres_acier",
+    "heraliz_composants:fil_souder"
   ]
 }

@@ -27,7 +27,7 @@ public final class ComponentDefs {
             new Def("scotch", "divers", HeralizRarity.COMMON, 32),
             new Def("caoutchouc", "vente", HeralizRarity.COMMON, 32),
             new Def("corde", "vente", HeralizRarity.COMMON, 32),
-            new Def("clou", "vente", HeralizRarity.COMMON, 64),
+            new Def("clou", "construction", HeralizRarity.COMMON, 64),
             new Def("plastique", "vente", HeralizRarity.COMMON, 64),
             new Def("planche", "vente", HeralizRarity.COMMON, 32),
             new Def("collier_casse", "vente", HeralizRarity.COMMON, 16),
@@ -56,7 +56,14 @@ public final class ComponentDefs {
             new Def("oeuf_orne", "vente", HeralizRarity.LEGENDARY, 1),
             new Def("crane_cristal", "vente", HeralizRarity.MYTHIC, 1),
             new Def("sceptre", "vente", HeralizRarity.MYTHIC, 1),
-            new Def("calice", "vente", HeralizRarity.MYTHIC, 1)
+            new Def("calice", "vente", HeralizRarity.MYTHIC, 1),
+            new Def("planches", "construction", HeralizRarity.COMMON, 64),
+            new Def("pierres_taillees", "construction", HeralizRarity.COMMON, 64),
+            new Def("fragments_metal", "construction", HeralizRarity.UNCOMMON, 64),
+            new Def("metal_renforce", "construction", HeralizRarity.RARE, 64),
+            new Def("sac_ciment", "construction", HeralizRarity.COMMON, 64),
+            new Def("equerres_acier", "construction", HeralizRarity.UNCOMMON, 64),
+            new Def("fil_souder", "construction", HeralizRarity.RARE, 64)
     );
 
     private ComponentDefs() {}

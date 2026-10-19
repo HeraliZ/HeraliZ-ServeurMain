@@ -1,0 +1,64 @@
+{
+  "id": "batisseur",
+  "nom": {
+    "fr": "Le Bâtisseur",
+    "en": "The Builder",
+    "ru": "Строитель"
+  },
+  "skin": "batisseur",
+  "role": {
+    "fr": "Matériaux de construction",
+    "en": "Building materials",
+    "ru": "Стройматериалы"
+  },
+  "ambiance": [
+    {
+      "fr": "Planches, pierre, métal. Tout ce qu'il faut pour tenir.",
+      "en": "Planks, stone, metal. Everything you need to hold out.",
+      "ru": "Доски, камень, металл. Всё, чтобы выстоять."
+    },
+    {
+      "fr": "Une base, ça se mérite.",
+      "en": "A base has to be earned.",
+      "ru": "Базу нужно заслужить."
+    }
+  ],
+  "presentation": {
+    "fr": "Tu montes une base ? J'ai des planches, de la pierre taillée et du métal. Ça se paie en hérals.",
+    "en": "Building a base? I've got planks, cut stone and metal. Paid in herals.",
+    "ru": "Строишь базу? У меня есть доски, тёсаный камень и металл. Плата в гералах."
+  },
+  "accueil": {
+    "inconnu": {
+      "fr": "Tu montes une base ? J'ai des planches, de la pierre taillée et du métal. Ça se paie en hérals.",
+      "en": "Building a base? I've got planks, cut stone and metal. Paid in herals.",
+      "ru": "Строишь базу? У меня есть доски, тёсаный камень и металл. Плата в гералах."
+    },
+    "connu": {
+      "fr": "De retour ? Qu'est-ce qu'il te faut pour ta base ?",
+      "en": "Back again? What do you need for your base?",
+      "ru": "Снова ты? Что нужно для базы?"
+    }
+  },
+  "marchand": {
+    "type": "achat",
+    "articles": [
+      {
+        "objet": "heraliz_composants:planches",
+        "prix": 10
+      },
+      {
+        "objet": "heraliz_composants:pierres_taillees",
+        "prix": 20
+      },
+      {
+        "objet": "heraliz_composants:fragments_metal",
+        "prix": 40
+      },
+      {
+        "objet": "heraliz_composants:metal_renforce",
+        "prix": 120
+      }
+    ]
+  }
+}

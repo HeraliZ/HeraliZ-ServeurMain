@@ -7,6 +7,7 @@
   "tooltip.heraliz_composants.cat.protection": "Protection",
   "tooltip.heraliz_composants.cat.divers": "Divers",
   "tooltip.heraliz_composants.cat.vente": "À vendre",
+  "tooltip.heraliz_composants.cat.construction": "Construction",
   "tooltip.heraliz_composants.used_for": "Utilisé pour : %s",
   "tooltip.heraliz_composants.sell": "Sans utilité · se revend",
   "item.heraliz_composants.canon": "Canon",
@@ -102,5 +103,19 @@
   "item.heraliz_composants.sceptre": "Sceptre royal",
   "item.heraliz_composants.sceptre.desc": "Or massif et saphir géant. Le pouvoir, du temps où ça voulait dire quelque chose.",
   "item.heraliz_composants.calice": "Calice sacré",
-  "item.heraliz_composants.calice.desc": "Une relique d'or et de pierres, sortie d'une cathédrale en ruine."
+  "item.heraliz_composants.calice.desc": "Une relique d'or et de pierres, sortie d'une cathédrale en ruine.",
+  "item.heraliz_composants.planches": "Planches",
+  "item.heraliz_composants.planches.desc": "Des planches sciées, prêtes à clouer.",
+  "item.heraliz_composants.pierres_taillees": "Pierres taillées",
+  "item.heraliz_composants.pierres_taillees.desc": "Des blocs de pierre équarris. Lourds.",
+  "item.heraliz_composants.fragments_metal": "Fragments de métal",
+  "item.heraliz_composants.fragments_metal.desc": "Des chutes de tôle et de barres découpées.",
+  "item.heraliz_composants.metal_renforce": "Métal renforcé",
+  "item.heraliz_composants.metal_renforce.desc": "Une plaque d'acier épaisse, cerclée et rivetée.",
+  "item.heraliz_composants.sac_ciment": "Sac de ciment",
+  "item.heraliz_composants.sac_ciment.desc": "Pour monter la pierre.",
+  "item.heraliz_composants.equerres_acier": "Équerres d'acier",
+  "item.heraliz_composants.equerres_acier.desc": "Pour assembler les plaques de métal.",
+  "item.heraliz_composants.fil_souder": "Bobine de fil à souder",
+  "item.heraliz_composants.fil_souder.desc": "Pour souder le métal renforcé."
 }

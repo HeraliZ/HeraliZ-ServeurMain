@@ -29,7 +29,7 @@ final class Reperes {
     }
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(HeralizQuetes.MODID, "textures/gui/reperes.png");
-    private static final int NOMBRE = 6;
+    private static final int NOMBRE = 7;
     private static final ResourceLocation SPAWN = new ResourceLocation("heralisz", "spawn");
     private static final int PLEINE_LUMIERE = 0xF000F0;
 
@@ -41,6 +41,7 @@ final class Reperes {
             case "mila" -> 3;
             case "doyen" -> 4;
             case "jack" -> 5;
+            case "batisseur" -> 6;
             default -> 0;
         };
     }

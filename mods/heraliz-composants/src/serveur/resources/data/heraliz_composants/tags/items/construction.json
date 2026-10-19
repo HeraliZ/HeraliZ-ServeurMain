@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_composants:clou",
+    "heraliz_composants:planches",
+    "heraliz_composants:pierres_taillees",
+    "heraliz_composants:fragments_metal",
+    "heraliz_composants:metal_renforce",
+    "heraliz_composants:sac_ciment",
+    "heraliz_composants:equerres_acier",
+    "heraliz_composants:fil_souder"
+  ]
+}

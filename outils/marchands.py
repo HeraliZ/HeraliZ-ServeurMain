@@ -8,6 +8,7 @@ Le reste du fichier du PNJ (nom, apparence, phrases) n'est pas touché. Prix en 
 - nourriture : quelques aliments du mod de nourriture (geckolib222), toujours en bon état (FoodState 0), prix selon ce
   qu'ils nourrissent ;
 - accessoires TaCZ : ceux de rareté Commun à Rare (section « accessoires »), sans les munitions spéciales ;
+- matériaux de construction (Bâtisseur) : tableau MATERIAUX ;
 - rachat : objets de valeur (tag heraliz_composants:vente), puis tous les composants (heraliz_composants:tous).
 """
 import json
@@ -27,6 +28,12 @@ NOURRITURE = [  # (objet, points de faim, prix)
     ("geckolib:food_deez", 4, 40),
 ]
 PRIX_ACCESSOIRES = {"commun": 60, "peu_commun": 150, "rare": 350}
+MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), prix à l'unité
+    ("heraliz_composants:planches", 10),
+    ("heraliz_composants:pierres_taillees", 20),
+    ("heraliz_composants:fragments_metal", 40),
+    ("heraliz_composants:metal_renforce", 120),
+]
 RACHAT_VALEUR = {"commun": 20, "peu_commun": 50, "rare": 120, "epique": 300, "legendaire": 700, "mythique": 1500}
 RACHAT_COMPOSANTS = {k: v // 2 for k, v in RACHAT_VALEUR.items()}
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
@@ -54,6 +61,7 @@ MARCHANDS = {
     "jacqueline": {"type": "achat", "articles": soins()},
     "doyen": {"type": "achat", "articles": nourriture()},
     "jack": {"type": "achat", "articles": accessoires()},
+    "batisseur": {"type": "achat", "articles": [{"objet": o, "prix": p} for o, p in MATERIAUX]},
 }
 
 if __name__ == "__main__":

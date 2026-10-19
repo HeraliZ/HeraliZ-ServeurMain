@@ -18,7 +18,8 @@ TAILLE, GRAND = 64, 256
 
 # (picto, couleur) : l'ordre est celui des indices de client/Reperes.java
 PICTOS = [("pnj", (150, 160, 172)), ("varga", (226, 168, 38)), ("soins", (214, 58, 52)), ("rachat", (52, 168, 96)),
-          ("nourriture", (232, 128, 40)), ("accessoires", (58, 132, 222))]
+          ("nourriture", (232, 128, 40)), ("accessoires", (58, 132, 222)),
+          ("construction", (176, 122, 64))]
 
 
 def pastille(nom, couleur):
@@ -66,6 +67,10 @@ def pastille(nom, couleur):
         for a, b, e, f in ((-15, 0, -5, 0), (5, 0, 15, 0), (0, -15, 0, -5), (0, 5, 0, 15)):
             d.line([(x + a * s, y + b * s), (x + e * s, y + f * s)], fill=B, width=int(2.8 * s))
         d.ellipse([x - 1.8 * s, y - 1.8 * s, x + 1.8 * s, y + 1.8 * s], fill=B)
+    elif nom == "construction":                                                     # marteau
+        d.polygon([(x - 2 * s, y - 4 * s), (x + 2 * s, y - 4 * s), (x + 2 * s, y + 13 * s), (x - 2 * s, y + 13 * s)], fill=B)
+        d.rounded_rectangle([x - 11 * s, y - 12 * s, x + 9 * s, y - 4 * s], int(1.5 * s), fill=B)
+        d.polygon([(x + 9 * s, y - 12 * s), (x + 13 * s, y - 9 * s), (x + 9 * s, y - 7 * s)], fill=B)
     else:                                                                           # PNJ : bulle de dialogue
         d.rounded_rectangle([x - 12 * s, y - 10 * s, x + 12 * s, y + 6 * s], int(5 * s), fill=B)
         d.polygon([(x - 6 * s, y + 5 * s), (x + 1 * s, y + 5 * s), (x - 7 * s, y + 12 * s)], fill=B)

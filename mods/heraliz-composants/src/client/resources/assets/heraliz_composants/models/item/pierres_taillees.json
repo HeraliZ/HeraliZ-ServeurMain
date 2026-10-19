@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_composants:item/3d/pierres_taillees"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_composants:item/icon/pierres_taillees"
+    }
+  }
+}
