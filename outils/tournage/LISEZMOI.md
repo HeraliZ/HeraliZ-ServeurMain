@@ -40,7 +40,14 @@ python3 outils/tournage/montage.py outils/tournage/scenes/montage_execution.json
   caméra libre. Plusieurs prises de la même scène = plusieurs angles.
 - **Montage** (`montage.py`) : plans (source, début, durée, vitesse, zoom, secousse, flash, à-coups), gros
   sous-titres mot par mot (`*mot*` en jaune, `!mot!` en rouge), écran de fin (logo, « Discord en description »).
-  Pas de son : la musique se met dans TikTok.
+  Option `etalonnage` (look film : couleurs froides, grain, vignette), plans `noir` et `fondu`, sous-titres
+  `"style": "sous"` (voix intérieure), `son` : piste son à coller sous l'image.
+- **Son** (`sonorisation.py`) : mixe les sons du jeu (dossier `assets` de Minecraft, sons de Réanimation, tirs des
+  gunpacks), les voix et des sons fabriqués (nappe de tension, souffle, acouphène) aux instants du montage. Voix
+  françaises : `pip install piper-tts`, voix `fr_FR-tom-medium` et `fr_FR-gilles-low` (rhasspy/piper-voices).
+- Exemple complet : `scenes/coin/` (le chasseur caché au coin d'un immeuble, exécution « Arrache Âme ») ;
+  `film_coin.py` écrit le montage et le son ; `carte_blocs.py` montre les blocs d'une zone de la carte (placement au
+  bloc près).
 
 À savoir : l'exécution de Réanimation demande le viseur sur le joueur à terre (des herbes ou feuillages entre les deux
-la bloquent) ; un acteur mort est remis en jeu au début de chaque prise.
+la bloquent, et une arme TaCZ en main aussi : main vide pour exécuter ; suivre le corps du regard) ; un acteur mort est remis en jeu au début de chaque prise.

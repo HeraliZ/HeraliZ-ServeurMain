@@ -1,0 +1,410 @@
+{
+"nom": "film_b",
+"duree": 480,
+"avant": [
+"reanimation revive Dimitri_Z",
+"kill @e[type=heralisz_utils:corpse]",
+"kill @e[type=item]",
+"gamemode survival Raven_47",
+"gamemode survival Dimitri_Z",
+"time set 1000",
+"weather rain",
+"clear Raven_47",
+"clear Dimitri_Z",
+"effect clear Raven_47",
+"effect clear Dimitri_Z",
+"give Raven_47 tacz:modern_kinetic_gun{GunId:\"tacz:ak47\",GunCurrentAmmoCount:30,GunFireMode:\"AUTO\",HasBulletInBarrel:1b,HeraliszCamo:\"dark_matter\"}",
+"give Raven_47 tacz:ammo{AmmoId:\"tacz:762x39\"} 60",
+"give Dimitri_Z tacz:modern_kinetic_gun{GunId:\"tacz:m4a1\",GunCurrentAmmoCount:30,GunFireMode:\"AUTO\",HasBulletInBarrel:1b,HeraliszCamo:\"atomic\"}",
+"give Dimitri_Z tacz:ammo{AmmoId:\"tacz:556x45\"} 90",
+"give Dimitri_Z minecraft:bread 4",
+"item replace entity Raven_47 armor.head with heraliz_armory:ours_head",
+"item replace entity Raven_47 armor.chest with heraliz_armory:ours_chest",
+"item replace entity Raven_47 armor.legs with heraliz_armory:ours_legs",
+"item replace entity Raven_47 armor.feet with heraliz_armory:ours_feet",
+"curios replace mask 0 Raven_47 with heraliz_armory:ours_face",
+"curios replace belt 0 Raven_47 with heraliz_armory:ours_vest",
+"curios replace hands 0 Raven_47 with heraliz_armory:ours_hands",
+"curios replace knees 0 Raven_47 with heraliz_armory:ours_knees",
+"item replace entity Dimitri_Z armor.head with heraliz_armory:fennec_head",
+"item replace entity Dimitri_Z armor.chest with heraliz_armory:fennec_chest",
+"item replace entity Dimitri_Z armor.legs with heraliz_armory:fennec_legs",
+"item replace entity Dimitri_Z armor.feet with heraliz_armory:fennec_feet",
+"curios replace mask 0 Dimitri_Z with heraliz_armory:fennec_face",
+"curios replace belt 0 Dimitri_Z with heraliz_armory:fennec_vest",
+"curios replace hands 0 Dimitri_Z with heraliz_armory:fennec_hands",
+"effect give Raven_47 minecraft:resistance 200 4 true",
+"effect give Dimitri_Z minecraft:resistance 200 3 true",
+"effect give Raven_47 minecraft:saturation 200 1 true",
+"effect give Dimitri_Z minecraft:saturation 200 1 true",
+"tp Raven_47 -426.7 66 1092.3 -90 5",
+"tp Dimitri_Z -452.5 66 1095.5 -90 0"
+],
+"filmer": [
+"Raven_47",
+"Dimitri_Z"
+],
+"Raven_47": [
+{
+"t": 0,
+"slot": 0,
+"hud": false,
+"ips": 260
+},
+{
+"t": 0,
+"camera": {
+"viser": "Raven_47",
+"hauteur": 1.2,
+"cles": [
+{
+"t": 0,
+"pos": [
+-425.3,
+69.6,
+1094.6
+],
+"yaw": 0,
+"pitch": 0
+},
+{
+"t": 148,
+"pos": [
+-425.5,
+69.3,
+1094.2
+],
+"yaw": 0,
+"pitch": 0
+}
+]
+}
+},
+{
+"t": 148,
+"camera": {
+"viser": "Raven_47",
+"hauteur": 1.4,
+"cles": [
+{
+"t": 0,
+"pos": [
+-432.5,
+66.65,
+1094.4
+],
+"yaw": 0,
+"pitch": 0
+},
+{
+"t": 52,
+"pos": [
+-432.0,
+66.7,
+1094.3
+],
+"yaw": 0,
+"pitch": 0
+}
+]
+}
+},
+{
+"t": 200,
+"camera": {
+"viser": "Dimitri_Z",
+"hauteur": 0.4,
+"cles": [
+{
+"t": 0,
+"pos": [
+-439.5,
+70.6,
+1098.6
+],
+"yaw": 0,
+"pitch": 0
+},
+{
+"t": 280,
+"pos": [
+-437.0,
+69.6,
+1099.0
+],
+"yaw": 0,
+"pitch": 0
+}
+]
+}
+},
+{
+"t": 1,
+"cmd": "reanimation execution select arrache_ame"
+},
+{
+"t": 8,
+"regard": {
+"yaw": -75,
+"pitch": 8,
+"duree": 14
+}
+},
+{
+"t": 22,
+"regard": {
+"yaw": -95,
+"pitch": 2,
+"duree": 10
+}
+},
+{
+"t": 30,
+"regard": {
+"yaw": 88,
+"pitch": 3,
+"duree": 10
+}
+},
+{
+"t": 40,
+"touche": "key.left",
+"etat": "bas"
+},
+{
+"t": 49,
+"touche": "key.left",
+"etat": "haut"
+},
+{
+"t": 50,
+"regard": {
+"yaw": 84,
+"pitch": 2,
+"duree": 30
+}
+},
+{
+"t": 80,
+"touche": "key.right",
+"etat": "bas"
+},
+{
+"t": 89,
+"touche": "key.right",
+"etat": "haut"
+},
+{
+"t": 82,
+"regard": {
+"yaw": -90,
+"pitch": 12,
+"duree": 8
+}
+},
+{
+"t": 96,
+"regard": {
+"yaw": -60,
+"pitch": 20,
+"duree": 6
+}
+},
+{
+"t": 104,
+"regard": {
+"yaw": -105,
+"pitch": -4,
+"duree": 5
+}
+},
+{
+"t": 111,
+"regard": {
+"yaw": -80,
+"pitch": 25,
+"duree": 7
+}
+},
+{
+"t": 120,
+"regard": {
+"yaw": 30,
+"pitch": 5,
+"duree": 6
+}
+},
+{
+"t": 128,
+"regard": {
+"yaw": -70,
+"pitch": 15,
+"duree": 6
+}
+},
+{
+"t": 136,
+"regard": {
+"yaw": -95,
+"pitch": 30,
+"duree": 8
+}
+},
+{
+"t": 150,
+"regard": {
+"yaw": 0,
+"pitch": 0,
+"duree": 3
+}
+},
+{
+"t": 152,
+"touche": "key.forward",
+"etat": "bas"
+},
+{
+"t": 166,
+"touche": "key.forward",
+"etat": "haut"
+},
+{
+"t": 165,
+"regard": {
+"vers": "Dimitri_Z",
+"hauteur": 1.3,
+"duree": 4
+}
+},
+{
+"t": 166,
+"touche": "key.tacz.aim.desc",
+"etat": "bas"
+},
+{
+"t": 169,
+"suivre": {
+"cible": "Dimitri_Z",
+"duree": 16,
+"hauteur": 1.2,
+"reactivite": 0.5
+}
+},
+{
+"t": 172,
+"touche": "key.tacz.shoot.desc",
+"etat": "bas"
+},
+{
+"t": 182,
+"touche": "key.tacz.shoot.desc",
+"etat": "haut"
+},
+{
+"t": 183,
+"cmd": "reanimation down Dimitri_Z"
+},
+{
+"t": 196,
+"touche": "key.tacz.aim.desc",
+"etat": "haut"
+},
+{
+"t": 204,
+"marcher": {
+"vers": "Dimitri_Z",
+"arret": 1.8,
+"courir": false
+}
+},
+{
+"t": 276,
+"touche": "key.reanimation.execute",
+"etat": "bas"
+},
+{
+"t": 292,
+"touche": "key.reanimation.execute",
+"etat": "haut"
+},
+{
+"t": 256,
+"slot": 2
+},
+{
+"t": 285,
+"debug": "key.reanimation.execute"
+},
+{
+"t": 262,
+"suivre": {
+"cible": "Dimitri_Z",
+"duree": 60,
+"hauteur": 0.15,
+"reactivite": 0.5
+}
+}
+],
+"Dimitri_Z": [
+{
+"t": 0,
+"slot": 0,
+"hud": false,
+"ips": 260
+},
+{
+"t": 1,
+"touche": "key.sneak",
+"etat": "bas"
+},
+{
+"t": 2,
+"touche": "key.forward",
+"etat": "bas"
+},
+{
+"t": 168,
+"touche": "key.forward",
+"etat": "haut"
+},
+{
+"t": 168,
+"touche": "key.sneak",
+"etat": "haut"
+},
+{
+"t": 168,
+"regard": {
+"vers": "Raven_47",
+"hauteur": 1.5,
+"duree": 5
+}
+},
+{
+"t": 174,
+"touche": "key.tacz.aim.desc",
+"etat": "bas"
+},
+{
+"t": 183,
+"touche": "key.tacz.aim.desc",
+"etat": "haut"
+},
+{
+"t": 186,
+"regard": {
+"yaw": -90,
+"pitch": 80,
+"duree": 6
+}
+},
+{
+"t": 256,
+"regard": {
+"vers": "Raven_47",
+"hauteur": 1.75,
+"duree": 36
+}
+}
+]
+}

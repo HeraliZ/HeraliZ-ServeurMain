@@ -126,6 +126,44 @@ def dessiner_texte(img, texte, t, place):
     return np.asarray(base.convert("RGB"))
 
 
+VIGNETTE = {}
+
+
+def etalonner(img, e, alea):
+    """Look « film » : couleurs froides et désaturées, contraste, vignette, grain."""
+    f = img.astype(np.float32) / 255.0
+    gris = f.mean(axis=2, keepdims=True)
+    f = gris + (f - gris) * e.get("saturation", 0.75)
+    f = (f - 0.5) * e.get("contraste", 1.12) + 0.5 + e.get("luminosite", 0.0)
+    froid = e.get("froid", 0.05)
+    f[..., 0] -= froid * 0.6
+    f[..., 2] += froid
+    if "v" not in VIGNETTE:
+        yy, xx = np.mgrid[0:H, 0:L]
+        d = np.sqrt(((xx - L / 2) / (L / 2)) ** 2 + ((yy - H / 2) / (H / 2)) ** 2) / 1.41
+        VIGNETTE["v"] = (1 - e.get("vignette", 0.4) * np.clip(d, 0, 1) ** 2)[..., None].astype(np.float32)
+    f *= VIGNETTE["v"]
+    g = e.get("grain", 0)
+    if g:
+        f += np.random.default_rng(alea.randint(0, 1 << 30)).normal(0, g / 255.0, (H // 2, L // 2, 1)).repeat(2, 0).repeat(2, 1)
+    return (np.clip(f, 0, 1) * 255).astype(np.uint8)
+
+
+def sous_titre(img, texte, t, reste):
+    """Sous-titre discret de film (voix intérieure) : blanc, ombre douce, fondu."""
+    a = min(1.0, t / 0.2, reste / 0.2)
+    f = police(60)
+    calque = Image.new("RGBA", (L, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(calque)
+    w = d.textlength(texte, font=f)
+    x, y = (L - w) / 2, 1480
+    d.text((x + 3, y + 3), texte, font=f, fill=(0, 0, 0, int(170 * a)))
+    d.text((x, y), texte, font=f, fill=(240, 240, 240, int(255 * a)), stroke_width=2, stroke_fill=(0, 0, 0, int(200 * a)))
+    base = Image.fromarray(img).convert("RGBA")
+    base.alpha_composite(calque)
+    return np.asarray(base.convert("RGB"))
+
+
 def ecran_fin(fond, lignes, n, fps):
     """Dernière image floutée et assombrie, logo qui arrive, deux lignes de texte."""
     flou = Image.fromarray(fond).filter(ImageFilter.GaussianBlur(18))
@@ -166,8 +204,12 @@ def main():
     alea = random.Random(7)
     t_global = 0.0
     derniere = None
+    eta = m.get("etalonnage")
     for p in m["plans"]:
-        images = lire_plan(base / p["source"], p.get("debut", 0), p["duree"], p.get("vitesse", 1.0), fps)
+        if p.get("noir"):
+            images = [np.zeros((H, L, 3), np.uint8)] * round(p["duree"] * fps)
+        else:
+            images = lire_plan(base / p["source"], p.get("debut", 0), p["duree"], p.get("vitesse", 1.0), fps)
         z0, z1 = p.get("zoom", [1.0, 1.0])
         cx, cy = p.get("centre", [0.5, 0.5])
         coups = p.get("coup", [])
@@ -184,12 +226,21 @@ def main():
             dx = alea.uniform(-amp, amp) if amp else 0
             dy = alea.uniform(-amp, amp) if amp else 0
             img = cadrer(img, zoom, cx, cy, dx, dy)
+            if eta and not p.get("noir"):
+                img = etalonner(img, eta, alea)
+            fi, fo = p.get("fondu", [0, 0])
+            k = min(1.0, t / fi if fi else 1.0, (len(images) / fps - t) / fo if fo else 1.0)
+            if k < 1:
+                img = (img.astype(np.float32) * max(k, 0)).astype(np.uint8)
             if p.get("flash") and i < 4:
                 img = (img.astype(np.float32) * (i / 4) + 255 * (1 - i / 4)).astype(np.uint8)
             for tx in m.get("textes", []):
                 tg = t_global + t
                 if tx["debut"] <= tg < tx["fin"]:
-                    img = dessiner_texte(img, tx["texte"], tg - tx["debut"], tx.get("place", "haut"))
+                    if tx.get("style") == "sous":
+                        img = sous_titre(img, tx["texte"], tg - tx["debut"], tx["fin"] - tg)
+                    else:
+                        img = dessiner_texte(img, tx["texte"], tg - tx["debut"], tx.get("place", "haut"))
             enc.stdin.write(np.ascontiguousarray(img).tobytes())
             derniere = img
         t_global += len(images) / fps
@@ -199,6 +250,12 @@ def main():
             enc.stdin.write(img.tobytes())
     enc.stdin.close()
     enc.wait()
+    if m.get("son"):
+        tmp = sortie.with_suffix(".muet.mp4")
+        sortie.rename(tmp)
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(tmp), "-i", str(base / m["son"]), "-c:v", "copy", "-c:a", "aac",
+                        "-b:a", "256k", "-shortest", "-movflags", "+faststart", str(sortie)], check=True)
+        tmp.unlink()
     print("vidéo : %s (%.1f s)" % (sortie, t_global + (f["duree"] if f else 0)))
 
 
