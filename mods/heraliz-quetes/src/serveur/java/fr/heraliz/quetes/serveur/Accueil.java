@@ -69,6 +69,8 @@ final class Accueil {
     private static final Map<UUID, Pres> PRES = new HashMap<>();
     /** Secondes depuis le dernier rappel « tape /spawn » (tutoriel fini, Bâtisseur pas encore présenté). */
     private static final Map<UUID, Integer> RAPPEL = new HashMap<>();
+    /** Secondes passées au spawn avant la présentation (le temps que le Bâtisseur se charge). */
+    private static final Map<UUID, Integer> ARRIVEE = new HashMap<>();
     private static final int RAPPEL_ECART = 15;
     /** Apparence de l'entité Varga vue en dernier (si son fichier n'en a pas : posée par /pnj apparence varga moi). */
     private static CompoundTag apparenceVue;
@@ -82,6 +84,7 @@ final class Accueil {
         SUR_ETAPE.remove(u);
         PRES.remove(u);
         RAPPEL.remove(u);
+        ARRIVEE.remove(u);
     }
 
     /** Le joueur doit d'abord faire le tutoriel des bases : Varga ne propose que « Faire ma base ». Jamais en créatif. */
@@ -212,9 +215,17 @@ final class Accueil {
         }
         Pres pr = PRES.get(p.getUUID());
         if (pr == null) {
-            if (!presenterBientot(p, tuto) || FIN.containsKey(p.getUUID()) || !auSpawn(p)) return;
-            persiste(p).putBoolean(PRESENTE, true);
+            if (!presenterBientot(p, tuto) || FIN.containsKey(p.getUUID()) || !auSpawn(p)) {
+                ARRIVEE.remove(p.getUUID());
+                return;
+            }
+            // juste après /spawn, le Bâtisseur n'est souvent pas encore chargé : on l'attend jusqu'à 8 s (20/10 : sinon
+            // Varga parlait sans la caméra)
             Pnj b = pnj(p, BATISSEUR, 160);
+            int attente = ARRIVEE.merge(p.getUUID(), 1, Integer::sum);
+            if (attente < 2 || b == null && attente < 8) return;
+            ARRIVEE.remove(p.getUUID());
+            persiste(p).putBoolean(PRESENTE, true);
             if (b != null) {
                 Reseau.envoyer(p, new Reseau.Presentation(b.getX(), b.getY(), b.getZ(), PRES_RAYON, PRES_TICKS));
             }

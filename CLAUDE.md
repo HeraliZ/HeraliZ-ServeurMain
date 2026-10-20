@@ -1385,6 +1385,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   en métal » y passe, retiré des mots de la fin du tutoriel) ; caisse en métal et armoire adossées solides : la case du
   mur ajoute à sa collision la part de l'objet voisin (`StructureBlock.getCollisionShape`, `Adosse.morceaux`) : on ne
   les traverse plus, on monte dessus. Rien testé en jeu.
+  Puis (20/10, CRac 1.14.2-beta, Quêtes 1.8.6) : présentation lancée 2 s après l'arrivée au spawn et seulement une fois le
+  Bâtisseur chargé (attente jusqu'à 8 s, sinon radio seule) ; « Te voici au spawn » au-dessus de la barre d'objets, plus
+  dans le chat (il cachait la radio) ; plan et marteau de construction vendus par le Bâtisseur (50 hérals chacun,
+  `MATERIAUX` de `outils/marchands.py`). Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des

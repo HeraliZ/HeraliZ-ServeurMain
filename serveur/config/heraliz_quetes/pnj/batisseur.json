@@ -62,6 +62,14 @@
       {
         "objet": "heraliz_composants:metal_renforce",
         "prix": 400
+      },
+      {
+        "objet": "crac:building_plan",
+        "prix": 50
+      },
+      {
+        "objet": "crac:building_hammer",
+        "prix": 50
       }
     ]
   }
