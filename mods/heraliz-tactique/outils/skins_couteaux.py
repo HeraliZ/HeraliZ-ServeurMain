@@ -510,7 +510,7 @@ for _n, _cles in {
         assert _c not in ETOILES, "deux rangs pour " + _c
         ETOILES[_c] = _n
 # couleur du nom selon le rang
-COULEURS_ETOILES = {1: "§7", 2: "§3", 3: "§5", 4: "§e"}
+COULEURS_ETOILES = {1: "§7", 2: "§3", 3: "§5", 4: "§c"}
 
 LANGUES = ("fr_fr", "en_us", "ru_ru")
 PALIERS_LANGUES = {

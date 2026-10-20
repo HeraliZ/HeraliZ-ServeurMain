@@ -1173,7 +1173,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     autour du viseur pour la mêlée et les couteaux (délai inchangé, `UsingProgressOverlay`). Tactique 2.25.0 (19/10) :
     **rang de 1 à 4 étoiles** choisi par le propriétaire pour chaque skin (tableau `ETOILES` du script ; non cité = 4) :
     description « ★★☆☆ » (étoiles allumées en or, les autres grisées) puis « Exclusivité HeraliZ », nom « Arme | Finition »
-    sans étoile devant, de la couleur du rang (1 gris, 2 bleu, 3 violet, 4 or) ; vaut aussi pour les skins d'avant le
+    sans étoile devant, de la couleur du rang (1 gris, 2 bleu, 3 violet, 4 rouge depuis la 2.26.2, avant or) ; vaut aussi pour les skins d'avant le
     catalogue (Doppler, Lore, Fade…, `rhabiller()`) ; les paliers Classique… ne servent plus qu'au catalogue. Butterfly
     Gunmetal retiré (103 skins). Toutes les armes de mêlée de LR Unique (`heralisz_tactical:melee` dans la section
     `objets` de `raretes.json`, les couteaux TaCZ l'étaient déjà). Infobulles : plus de lignes de coups (gauche / droite,
