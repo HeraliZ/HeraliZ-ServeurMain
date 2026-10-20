@@ -51,6 +51,8 @@ PARTS = {
 LOURDES = 0.35
 # parts propres à une famille dans un palier (sinon PARTS)
 PARTS_FAMILLE = {("plans", 7): {"rare": 35, "epique": 45, "legendaire": 20}}
+# jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
+OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
 PARACHUTE = 0.25  # part du poids d'origine du parachute
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
 AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.25), ("nourriture", 0.6), ("boissons", 0.6),
@@ -177,6 +179,8 @@ def mult_autre(e, t):
         return MUNITIONS[t]
     if "parachute" in e["item"]:
         return PARACHUTE
+    if e["item"] in OUTILS_VEHICULE:
+        return OUTILS_VEHICULE[e["item"]]
     return next((m for mot, m in AUTRES if mot in cat), 1.0)
 
 
