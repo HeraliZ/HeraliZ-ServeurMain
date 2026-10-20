@@ -73,5 +73,5 @@
   "heraliz_interface.pack.herbe": "HeraliZ : herbe",
   "gui.heraliz_interface.pause.carte.extraction": "Extraction %s",
   "heraliz_interface.touche_interdite.titre": "Touche réservée",
-  "heraliz_interface.touche_interdite.texte": "² et la touche sous Entrée ne peuvent servir à aucune action."
+  "heraliz_interface.touche_interdite.texte": "² et Maj droite ne peuvent servir à aucune action."
 }

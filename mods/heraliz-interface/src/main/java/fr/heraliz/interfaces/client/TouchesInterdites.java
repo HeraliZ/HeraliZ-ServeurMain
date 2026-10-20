@@ -7,8 +7,8 @@ import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Touches qu'aucune action ne peut prendre : ² (à gauche de 1) et la touche sous Entrée (* et µ sur un clavier
- * AZERTY, \ sur un QWERTY), celles des menus de clients de triche. Les laisser libres chez tout le monde permet
+ * Touches qu'aucune action ne peut prendre : ² (à gauche de 1) et Maj droite,
+ * celles des menus de clients de triche. Les laisser libres chez tout le monde permet
  * à Spartan de prendre un appui sur l'une d'elles pour un indice de triche. Une touche refusée (options.txt, écran
  * des commandes, autre mod) devient « aucune touche » ; mixin {@code KeyMappingInterditMixin}.
  */
@@ -21,7 +21,7 @@ public final class TouchesInterdites {
     public static boolean interdite(InputConstants.Key k) {
         if (k == null || k.getType() != InputConstants.Type.KEYSYM) return false;
         int v = k.getValue();
-        return v == GLFW.GLFW_KEY_GRAVE_ACCENT || v == GLFW.GLFW_KEY_BACKSLASH;
+        return v == GLFW.GLFW_KEY_GRAVE_ACCENT || v == GLFW.GLFW_KEY_RIGHT_SHIFT;
     }
 
     /** La touche à garder : aucune si elle est interdite (petit message si le joueur est dans un écran). */

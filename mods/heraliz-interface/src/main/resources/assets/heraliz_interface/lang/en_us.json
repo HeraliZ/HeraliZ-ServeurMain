@@ -73,5 +73,5 @@
   "heraliz_interface.pack.herbe": "HeraliZ: grass",
   "gui.heraliz_interface.pause.carte.extraction": "Extraction %s",
   "heraliz_interface.touche_interdite.titre": "Reserved key",
-  "heraliz_interface.touche_interdite.texte": "² and the key below Enter cannot be bound to any action."
+  "heraliz_interface.touche_interdite.texte": "² and Right Shift cannot be bound to any action."
 }
