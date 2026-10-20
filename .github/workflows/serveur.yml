@@ -265,13 +265,23 @@ jobs:
                   return f"- {nom} : Discord injoignable ({type(e).__name__})"
               ligne = f"- {nom} : valide (webhook « {info.get('name', '?')} »)"
               if tester:
-                  corps = json.dumps({"username": "Spartan", "allowed_mentions": {"parse": []},
-                                      "content": "Test de la mise en ligne HeraliZ : ce salon reçoit bien les alertes de l'anticheat Spartan."}).encode()
-                  envoi = urllib.request.Request(url + "?wait=true", data=corps, method="POST",
-                                                 headers={"Content-Type": "application/json", "User-Agent": "HeraliZ-mise-en-ligne"})
-                  try:
+                  corps = {"username": "Spartan", "allowed_mentions": {"parse": []},
+                           "content": "Test de la mise en ligne HeraliZ : ce salon reçoit bien les alertes de l'anticheat Spartan."}
+                  def poster(donnees):
+                      envoi = urllib.request.Request(url + "?wait=true", data=json.dumps(donnees).encode(), method="POST",
+                                                     headers={"Content-Type": "application/json", "User-Agent": "HeraliZ-mise-en-ligne"})
                       with urllib.request.urlopen(envoi, timeout=20):
+                          pass
+                  try:
+                      try:
+                          poster(corps)
                           ligne += " ; message de test envoyé"
+                      except urllib.error.HTTPError as e:
+                          if e.code != 400:
+                              raise
+                          # Salon Forum : Discord exige le titre de la publication (Spartan 2.6.0, un fil par joueur).
+                          poster(dict(corps, thread_name="Test de la mise en ligne"))
+                          ligne += " ; salon Forum : message de test envoyé dans la publication « Test de la mise en ligne »"
                   except Exception as e:
                       ligne += f" ; message de test **refusé** ({getattr(e, 'code', type(e).__name__)})"
               return ligne
