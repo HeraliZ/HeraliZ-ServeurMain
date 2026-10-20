@@ -294,6 +294,17 @@ public class CheckManager {
         }
     }
 
+    /**
+     * Signal du jeu du joueur alerté à CHAQUE fois, sans le délai entre deux alertes (touches des menus de triche :
+     * chaque appui compte pour le staff). Jamais d'expulsion.
+     */
+    public static void flagEachTime(String checkName, ServerPlayer player, String details) {
+        long now = System.currentTimeMillis();
+        VlState state = bump(player.getUUID(), checkName, now);
+        state.lastAlert = now;
+        AlertManager.dispatch(player, checkName, state.vl, details, null);
+    }
+
     /** VL courant d'un joueur pour chaque détection (pour la commande /spartan). */
     public static Map<String, Integer> getViolations(UUID uuid) {
         Map<String, Integer> out = new java.util.TreeMap<>();

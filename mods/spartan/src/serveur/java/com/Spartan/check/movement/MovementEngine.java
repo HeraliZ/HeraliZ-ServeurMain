@@ -659,7 +659,8 @@ public final class MovementEngine {
         boolean ceiling = m.groundFrom() && MovementEnv.headBlocked(p, m.boxFrom(), 0.06);
         MotionTracker.Inputs in = new MotionTracker.Inputs(exact, MovementEnv.frictionUnder(p, m.from()),
                 s.speed.value(), s.stableUse && !s.useChanged, impulseH, pushH, impulseUp, pushUp, crowd, bouncy,
-                ceiling, MovementEnv.roughNear(p, m.boxFrom()) || MovementEnv.roughNear(p, m.boxTo()));
+                ceiling, MovementEnv.roughNear(p, m.boxFrom()) || MovementEnv.roughNear(p, m.boxTo()),
+                MovementEnv.supportNear(p, m.boxFrom()) || MovementEnv.supportNear(p, m.boxTo()));
         return s.motion.step(m, in);
     }
 

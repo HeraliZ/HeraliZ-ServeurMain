@@ -414,8 +414,15 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   aucune action ne peut être mise (Interface 1.7.6, `TouchesInterdites`). Un appui en jeu (aucun écran ouvert, chat
   compris) sur l'une d'elles alors qu'aucune touche des options n'y est attachée : le jar joueur le signale
   (`client/TouchesSuspectes`, `ClientReportPacket` type `touche`), le serveur alerte le staff (« TricheMenu », une
-  alerte par touche et par connexion, `PacketGuard.allowReport`). Indice seulement : un appui par erreur est possible,
-  un tricheur peut changer la touche de son menu. Rien testé en jeu.
+  alerte à CHAQUE appui depuis la 2.5.1, demande du propriétaire : `CheckManager.flagEachTime`, sans le délai entre
+  deux alertes ; au plus 2 par seconde contre un jeu modifié qui inonderait le salon). Indice seulement : un appui par
+  erreur est possible, un tricheur peut changer la touche de son menu. Essayé en jeu par le propriétaire (20/10) : ça
+  marche.
+- **Sol près des blocs** (Spartan 2.5.1, 20/10) : alertes Vertical « monte de 0.42 bloc en plein air (maximum -0.08) »,
+  Speed et Fly ensemble chez le propriétaire en marchant : le serveur ne cherchait le sol qu'à 0,2 bloc sous la hitbox
+  exacte et croyait le joueur en l'air. Maintenant, avec un appui à moins de 0,6 bloc sous les pieds (0,3 sur le côté,
+  `MovementEnv.supportNear`), le « je suis au sol » du joueur est cru (sans la marge de vitesse du terrain accidenté).
+  Planer ou voler loin du sol reste vu. Rien testé en jeu.
 - **Jars imbriqués** : `outils/construire.py` suit `META-INF/jarjar/metadata.json` pour trouver les jars que Forge
   charge depuis un autre jar (EntityCulling apporte TRansition et TRender dans `META-INF/jars/`) ; leurs configs Mixin
   sont dans `officiel.json`. Avant le 11/10, elles étaient signalées à tort (« config Mixin inconnue »).

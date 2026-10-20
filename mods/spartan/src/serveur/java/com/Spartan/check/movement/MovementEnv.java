@@ -153,6 +153,18 @@ public final class MovementEnv {
         return !level.getEntities(p, zone, e -> e.canBeCollidedWith() && !e.isPassengerOfSameVehicle(p)).isEmpty();
     }
 
+    /**
+     * Un appui (bloc ou entité solide) à moins de 0,6 bloc sous les pieds, 0,3 bloc sur le côté compris. Le serveur ne
+     * cherche le sol qu'à 0,2 bloc sous la hitbox exacte : au bord d'un bloc, après un pas que le serveur place quelques
+     * centièmes plus loin, ou avec une position du joueur en léger retard, il croyait le joueur en l'air alors qu'il
+     * marchait (alertes Vertical « monte de 0.42 en plein air », Speed et Fly en même temps). Ne sert qu'à croire le
+     * « je suis au sol » du joueur : planer ou voler loin du sol reste vu.
+     */
+    public static boolean supportNear(ServerPlayer p, AABB box) {
+        return !p.level().noCollision(p, new AABB(box.minX - 0.3, box.minY - 0.6, box.minZ - 0.3, box.maxX + 0.3,
+                box.minY + 0.05, box.maxZ + 0.3));
+    }
+
     public static boolean loaded(ServerPlayer p, Vec3 pos) {
         return p.level().hasChunkAt(BlockPos.containing(pos));
     }

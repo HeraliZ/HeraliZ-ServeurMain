@@ -124,6 +124,10 @@ final class ReceptionServeur {
         }
         String type = c.type();
         String detail = c.detail();
+        if (type.equals("touche")) {
+            toucheSuspecte(player, detail);
+            return;
+        }
         if (!PacketGuard.allowReport(player.getUUID(), type + ":" + detail)) {
             return;
         }
@@ -162,13 +166,32 @@ final class ReceptionServeur {
                     }
                 }
             }
-            case "touche" -> CheckManager.flag("TricheMenu", player, "touche « " + safeDetail
-                    + " » pressée en jeu alors qu'aucune action n'y est attachée : touche d'ouverture des menus de"
-                    + " clients de triche (indice, une alerte par touche et par connexion)");
             default -> {
                 // type inconnu : ignoré
             }
         }
+    }
+
+    /** Dernier appui signalé par joueur : un client modifié ne peut pas inonder le salon d'alertes. */
+    private static final java.util.Map<java.util.UUID, Long> DERNIERE_TOUCHE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long TOUCHE_ECART_MS = 500;
+
+    /** Touche d'ouverture des menus de triche (² ou Maj droite) : une alerte à chaque appui (au plus 2 par seconde). */
+    private static void toucheSuspecte(ServerPlayer player, String detail) {
+        if (!SpartanConfig.CHECK_CLIENT_INTEGRITY.get()) {
+            return;
+        }
+        String nom = detail.equals("²") ? "²" : detail.equals("Maj droite") ? "Maj droite" : null;
+        if (nom == null) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        Long avant = DERNIERE_TOUCHE.put(player.getUUID(), now);
+        if (avant != null && now - avant < TOUCHE_ECART_MS) {
+            return;
+        }
+        CheckManager.flagEachTime("TricheMenu", player, "touche « " + nom + " » pressée en jeu alors qu'aucune action"
+                + " n'y est attachée : touche d'ouverture des menus de clients de triche (indice)");
     }
 
     /** Liste des mods du client, comparée à la liste noire (une seule fois par connexion). */

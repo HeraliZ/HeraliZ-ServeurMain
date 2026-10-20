@@ -35,10 +35,12 @@ final class MotionTracker {
      * @param ceiling         plafond collé à la tête au départ : un saut peut n'y laisser aucune trace verticale
      * @param rough           terrain accidenté autour des pieds (dalles, pots, meubles et décors 3D, entités
      *                        solides) : le sol affirmé par le client y est cru, voir MovementEnv.roughNear
+     * @param support         appui à moins de 0,6 bloc (MovementEnv.supportNear) : le sol affirmé y est cru aussi,
+     *                        sans la marge de vitesse du terrain accidenté
      */
     record Inputs(boolean groundFromExact, double friction, double speed, boolean slowed, double impulseH,
                   double pushH, double impulseUp, double pushUp, double crowd, boolean bouncy, boolean ceiling,
-                  boolean rough) {
+                  boolean rough, boolean support) {
     }
 
     /** Résultat d'un déplacement (une position ; plusieurs ticks seulement si le client n'a rien envoyé entre-temps). */
@@ -113,8 +115,9 @@ final class MotionTracker {
         // Terrain accidenté : le sol affirmé par le client est cru (au départ comme à l'arrivée). Un tricheur
         // qui en abuse doit coller la géométrie ; en plein air, rien ne change.
         boolean rough = in.rough();
-        boolean groundFrom = s.groundFrom() || (rough && lastClaimedGround);
-        boolean groundTo = s.groundTo() || (rough && s.claimedGround());
+        boolean trust = rough || in.support();
+        boolean groundFrom = s.groundFrom() || (trust && lastClaimedGround);
+        boolean groundTo = s.groundTo() || (trust && s.claimedGround());
         boolean step = ticks == 1 && groundTo && s.claimedGround();
         // Sur terrain accidenté, un saut en sprint qui finit sur une dalle ou un objet 3D (marche prise
         // pendant le saut) ressemble à une marche : l'impulsion du saut reste permise.
@@ -161,7 +164,7 @@ final class MotionTracker {
         wasStill = s.still() && groundTo;
         lastClaimedGround = s.claimedGround();
         return new Result(false, ticks, allowedH, Math.max(0, h1 - allowedH), allowedDy, Math.max(0, dy - allowedDy),
-                in.slowed(), allowedSlow, excessSlow, usedImpulse, rough);
+                in.slowed(), allowedSlow, excessSlow, usedImpulse, trust);
     }
 
     double horizontalVelocity() {
