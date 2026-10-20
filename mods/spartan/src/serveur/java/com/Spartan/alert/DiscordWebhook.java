@@ -50,65 +50,90 @@ public class DiscordWebhook {
     }
 
     private static void post(String url, JsonObject payload) {
-        if (!allow()) {
-            return;
-        }
-        HttpRequest req = HttpRequest.newBuilder(URI.create(url))
-                .timeout(Duration.ofSeconds(10))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
-                .build();
-        CLIENT.sendAsync(req, BodyHandlers.ofString())
-                .thenAccept(resp -> {
-                    if (resp.statusCode() >= 300) {
-                        Spartan.LOGGER.warn("[Spartan] Discord a refusé l'alerte (HTTP {}).", resp.statusCode());
-                    }
-                })
-                .exceptionally(ex -> {
-                    Spartan.LOGGER.warn("[Spartan] Échec de l'envoi Discord : {}", ex.getMessage());
-                    return null;
-                });
+        post(url, payload, null, null);
     }
 
-    /** Envoi avec un fichier joint (multipart/form-data, format des webhooks Discord). */
-    private static void postWithFile(String url, JsonObject payload, String fileName, byte[] file) {
+    /** Envoi simple (cle null) ou dans le fil Discord de {@code cle} (voir FilsDiscord). */
+    private static void post(String url, JsonObject payload, String cle, String nomFil) {
         if (!allow()) {
             return;
         }
-        String boundary = "spartan" + Long.toHexString(System.nanoTime()) + Long.toHexString(Double.doubleToLongBits(Math.random()));
-        String safeName = fileName.replaceAll("[^A-Za-z0-9._-]", "_");
-        ByteArrayOutputStream body = new ByteArrayOutputStream(file.length + 4096);
-        Charset utf8 = StandardCharsets.UTF_8;
-        body.writeBytes(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"payload_json\"\r\n"
-                + "Content-Type: application/json\r\n\r\n").getBytes(utf8));
-        body.writeBytes(payload.toString().getBytes(utf8));
-        body.writeBytes(("\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"files[0]\"; filename=\""
-                + safeName + "\"\r\nContent-Type: application/json\r\n\r\n").getBytes(utf8));
-        body.writeBytes(file);
-        body.writeBytes(("\r\n--" + boundary + "--\r\n").getBytes(utf8));
-        HttpRequest req = HttpRequest.newBuilder(URI.create(url))
-                .timeout(Duration.ofSeconds(20))
-                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()))
+        if (cle == null) {
+            requete(url, "", payload.toString(), "application/json", Duration.ofSeconds(10))
+                    .thenAccept(DiscordWebhook::refus)
+                    .exceptionally(DiscordWebhook::echec);
+            return;
+        }
+        FilsDiscord.envoyer(cle, nomFil, (params, nom) -> requete(url, params, avecFil(payload, nom).toString(),
+                "application/json", Duration.ofSeconds(10)));
+    }
+
+    private static JsonObject avecFil(JsonObject payload, String nomFil) {
+        if (nomFil == null) {
+            return payload;
+        }
+        JsonObject copie = payload.deepCopy();
+        copie.addProperty("thread_name", nomFil);
+        return copie;
+    }
+
+    private static java.util.concurrent.CompletableFuture<HttpResponse<String>> requete(String url, String params,
+            String corps, String type, Duration delai) {
+        return requete(url, params, HttpRequest.BodyPublishers.ofString(corps), type, delai);
+    }
+
+    private static java.util.concurrent.CompletableFuture<HttpResponse<String>> requete(String url, String params,
+            HttpRequest.BodyPublisher corps, String type, Duration delai) {
+        String cible = url + (params.isEmpty() ? "" : (url.contains("?") ? "&" + params.substring(1) : params));
+        HttpRequest req = HttpRequest.newBuilder(URI.create(cible))
+                .timeout(delai)
+                .header("Content-Type", type)
+                .POST(corps)
                 .build();
-        CLIENT.sendAsync(req, BodyHandlers.ofString())
-                .thenAccept(resp -> {
-                    if (resp.statusCode() >= 300) {
-                        Spartan.LOGGER.warn("[Spartan] Discord a refusé le rapport (HTTP {}).", resp.statusCode());
-                    }
-                })
-                .exceptionally(ex -> {
-                    Spartan.LOGGER.warn("[Spartan] Échec de l'envoi Discord : {}", ex.getMessage());
-                    return null;
-                });
+        return CLIENT.sendAsync(req, BodyHandlers.ofString());
+    }
+
+    private static void refus(HttpResponse<String> resp) {
+        if (resp.statusCode() >= 300) {
+            Spartan.LOGGER.warn("[Spartan] Discord a refusé l'envoi (HTTP {}).", resp.statusCode());
+        }
+    }
+
+    private static Void echec(Throwable ex) {
+        Spartan.LOGGER.warn("[Spartan] Échec de l'envoi Discord : {}", ex.getMessage());
+        return null;
+    }
+
+    /** Envoi avec un fichier joint (multipart/form-data, format des webhooks Discord), dans le fil de {@code cle}. */
+    private static void postWithFile(String url, JsonObject payload, String fileName, byte[] file, String cle,
+                                     String nomFil) {
+        if (!allow()) {
+            return;
+        }
+        FilsDiscord.envoyer(cle, nomFil, (params, nom) -> {
+            String boundary = "spartan" + Long.toHexString(System.nanoTime())
+                    + Long.toHexString(Double.doubleToLongBits(Math.random()));
+            String safeName = fileName.replaceAll("[^A-Za-z0-9._-]", "_");
+            ByteArrayOutputStream body = new ByteArrayOutputStream(file.length + 4096);
+            Charset utf8 = StandardCharsets.UTF_8;
+            body.writeBytes(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"payload_json\"\r\n"
+                    + "Content-Type: application/json\r\n\r\n").getBytes(utf8));
+            body.writeBytes(avecFil(payload, nom).toString().getBytes(utf8));
+            body.writeBytes(("\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"files[0]\"; filename=\""
+                    + safeName + "\"\r\nContent-Type: application/json\r\n\r\n").getBytes(utf8));
+            body.writeBytes(file);
+            body.writeBytes(("\r\n--" + boundary + "--\r\n").getBytes(utf8));
+            return requete(url, params, HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()),
+                    "multipart/form-data; boundary=" + boundary, Duration.ofSeconds(20));
+        });
     }
 
     /**
      * Rapport de contrôle d'intégrité : embed + fichier JSON joint (la preuve complète).
      * @param fields paires {nom, valeur} déjà neutralisées par l'appelant si elles viennent du client
      */
-    public static void sendReport(String title, int color, String description, List<String[]> fields,
-                                  String fileName, byte[] file) {
+    public static void sendReport(String cleJoueur, String nomJoueur, String title, int color, String description,
+                                  List<String[]> fields, String fileName, byte[] file) {
         if (!SpartanConfig.DISCORD_ENABLED.get()) {
             return;
         }
@@ -136,9 +161,9 @@ public class DiscordWebhook {
             payload.add("embeds", embeds);
             denyMentions(payload);
             if (file != null && fileName != null) {
-                postWithFile(url, payload, fileName, file);
+                postWithFile(url, payload, fileName, file, cleJoueur, nomJoueur);
             } else {
-                post(url, payload);
+                post(url, payload, cleJoueur, nomJoueur);
             }
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
@@ -148,7 +173,7 @@ public class DiscordWebhook {
     private DiscordWebhook() {
     }
 
-    public static void send(String playerName, String check, int vl, String details, String evidenceFile) {
+    public static void send(String cleJoueur, String playerName, String check, int vl, String details, String evidenceFile) {
         if (!SpartanConfig.DISCORD_ENABLED.get()) {
             return;
         }
@@ -182,7 +207,7 @@ public class DiscordWebhook {
             JsonObject payload = new JsonObject();
             payload.add("embeds", embeds);
             denyMentions(payload);
-            post(url, payload);
+            post(url, payload, cleJoueur, playerName);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
         }
@@ -211,7 +236,7 @@ public class DiscordWebhook {
             JsonObject payload = new JsonObject();
             payload.add("embeds", embeds);
             denyMentions(payload);
-            post(url, payload);
+            post(url, payload, FilsDiscord.INFOS, FilsDiscord.NOM_INFOS);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
         }

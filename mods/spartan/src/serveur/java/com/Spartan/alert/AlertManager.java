@@ -55,7 +55,7 @@ public class AlertManager {
         }
 
         // Discord
-        DiscordWebhook.send(playerName, check, vl, details, evidenceFile);
+        DiscordWebhook.send(player.getUUID().toString(), playerName, check, vl, details, evidenceFile);
     }
 
     public static final int COLOR_BAN = 0x8E44AD;

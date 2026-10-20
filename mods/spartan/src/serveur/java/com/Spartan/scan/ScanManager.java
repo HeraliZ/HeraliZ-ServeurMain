@@ -382,7 +382,7 @@ public final class ScanManager {
             fields.add(new String[] {"Jeu", Text.discord(r.java + " · " + r.os) + " · contrôle en " + r.durationMs + " ms"});
         }
         fields.add(new String[] {"Preuve", "Rapport complet joint · sur le serveur : config/spartan/evidence/" + Text.discord(file)});
-        DiscordWebhook.sendReport(title, v == Severity.STRONG ? COLOR_STRONG : COLOR_SUSPECT,
+        DiscordWebhook.sendReport(p.getUUID().toString(), Text.oneLine(s.name), title, v == Severity.STRONG ? COLOR_STRONG : COLOR_SUSPECT,
                 "Aucune action automatique : surveillez-le en spectateur, puis `/sban` si c'est confirmé." + referenceHint(),
                 fields, file, json.getBytes(StandardCharsets.UTF_8));
 

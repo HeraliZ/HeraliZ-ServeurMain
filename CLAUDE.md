@@ -423,6 +423,13 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   exacte et croyait le joueur en l'air. Maintenant, avec un appui à moins de 0,6 bloc sous les pieds (0,3 sur le côté,
   `MovementEnv.supportNear`), le « je suis au sol » du joueur est cru (sans la marge de vitesse du terrain accidenté).
   Planer ou voler loin du sol reste vu. Rien testé en jeu.
+- **Un fil Discord par joueur** (Spartan 2.6.0, 20/10, demande du propriétaire) : le webhook des alertes
+  (`SPARTAN_DISCORD_ALERTES`) doit viser un salon **Forum** privé (mêmes droits que l'ancien salon des alertes). La
+  première alerte ou le premier rapport d'un joueur crée une publication à son pseudo, toutes les suivantes y vont ;
+  bans, débans et autres infos sans joueur vont dans la publication « Informations du staff » (`alert/FilsDiscord`,
+  numéros gardés dans `config/spartan/discord_fils.json`, par UUID). Publication supprimée : recréée à l'alerte
+  suivante. Webhook d'un salon normal : envois simples comme avant. Les sanctions publiques ne changent pas. Rien testé
+  sur Discord.
 - **Jars imbriqués** : `outils/construire.py` suit `META-INF/jarjar/metadata.json` pour trouver les jars que Forge
   charge depuis un autre jar (EntityCulling apporte TRansition et TRender dans `META-INF/jars/`) ; leurs configs Mixin
   sont dans `officiel.json`. Avant le 11/10, elles étaient signalées à tort (« config Mixin inconnue »).
