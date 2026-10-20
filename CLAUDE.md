@@ -1682,7 +1682,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `PARTS` : tout peut sortir partout, le haut de gamme très rare en bas ; Unique en T7 seulement ; munitions, soins et
   nourriture plus rares, ils ont leurs conteneurs ; `--simuler`). T7 = coffres d'événement, un peu de tout ; les
   largages (airstrike) ont leurs propres tables. 20/10 (Loot 0.9.3) : armes 6 en T1 et 9 en T2 pour 100, sacs et
-  parachutes deux fois plus rares, plans d'armes environ deux fois moins (4 en T1 à 15 en T7), un seul sac à dos par conteneur (`TablesCoffres.tirerUnSac`). Jamais dans le loot : `ARMES_EXCLUES` de `loot_armes.py` (RPG-7 LuvDuck). Anciens `heralisz_armor:*` retirés des tables.
+  parachutes deux fois plus rares, plans d'armes environ deux fois moins (4 en T1, 7 en T7, ceux du T7 Rare à Légendaire : `PARTS_FAMILLE`), un seul sac à dos par conteneur (`TablesCoffres.tirerUnSac`). Jamais dans le loot : `ARMES_EXCLUES` de `loot_armes.py` (RPG-7 LuvDuck). Anciens `heralisz_armor:*` retirés des tables.
 - **Territoires des clans** (`serveur/config/heralisz_clans/zones.json`) : replacés le 18/10 sur les 13 villes de la
   nouvelle carte (Valmont, Tcherno, Marbois, Belcourt, Port-Margot, Mirage, Clairval, Gaz, Aérodrome, Silo, Prison,
   Arctique, Radio), centre et rayon d'après les conteneurs de loot de chaque ville (pack de données `heraliz_carte`,
