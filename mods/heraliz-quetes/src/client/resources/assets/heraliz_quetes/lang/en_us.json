@@ -226,6 +226,7 @@
   "heraliz_quetes.tuto.radio.fin_sans_sas": "Nice work. Look at it, your base. For %s days, nobody can raid it.",
   "heraliz_quetes.tuto.radio.fin3": "I'll let you manage on your own. From your base, /spawn takes you to spawn; from spawn, /home brings you back here. Head to spawn now: I'll introduce you to someone. After that, come see me for missions.",
   "heraliz_quetes.tuto.spawn": "Go back to spawn (/spawn): Varga wants to introduce you to someone",
+  "heraliz_quetes.tuto.rappel_spawn": "Type /spawn: I'm waiting for you at spawn, there's someone else I want you to meet.",
   "heraliz_quetes.tuto.batisseur.1": "That's the Builder. He sells everything for your base: twigs to place your pieces, and planks, cut stone, metal fragments and reinforced metal to upgrade them.",
   "heraliz_quetes.tuto.batisseur.1_sans": "At spawn, go see the Builder. He sells everything for your base: twigs to place your pieces, and planks, cut stone, metal fragments and reinforced metal to upgrade them.",
   "heraliz_quetes.tuto.batisseur.2": "But every upgrade also needs what he doesn't sell: nails for wood, cement for stone, brackets for metal, welding wire for armored. Those you'll find by searching the map.",

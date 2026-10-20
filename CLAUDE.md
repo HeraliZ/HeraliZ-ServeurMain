@@ -1355,6 +1355,14 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   pendant la mise en ligne, avait été « réparé » par Forge avec les anciennes valeurs par défaut) ; fiche plus grande
   (620 × 344, textes ×1,3) ; caméra arrêtée avant tout mur ou plafond (grotte) ; 16 s par message de Varga, tour
   complet en 46 s, puis la fiche. Rien testé en jeu.
+  Deuxième essai (20/10, CRac 1.14.0-beta, Quêtes 1.8.3) : fiche un peu moins grande (580 × 322) et textes nets : polices
+  grasses tracées à la bonne taille (`font/ui_fiche*.json`) au lieu d'une police agrandie (granuleuse) ; armoire du
+  tutoriel tournée vers la porte (`Coin.faceClaim`) ; « Dégradation en cours » plus petit, sous les comptes des cases ;
+  kit avec 10 planches de plus (`Tutoriel.PLANCHES_EN_PLUS`) ; **sas** : ouvrir une porte referme les autres portes du
+  même triangle (sauf quelqu'un dedans), plus aucune porte « ouverte mais bloquée » (`STATE_SAS` sans effet,
+  `StructureService.majSas`) ; après le tutoriel, Varga redit « tape /spawn » toutes les 15 s tant que le joueur n'est
+  pas au spawn, et « au spawn » = monde du spawn OU à 64 blocs du Bâtisseur (le point /spawn du staff peut être ailleurs :
+  la présentation ne partait jamais). Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des

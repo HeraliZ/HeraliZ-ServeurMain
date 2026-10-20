@@ -67,6 +67,9 @@ final class Accueil {
     }
 
     private static final Map<UUID, Pres> PRES = new HashMap<>();
+    /** Secondes depuis le dernier rappel « tape /spawn » (tutoriel fini, Bâtisseur pas encore présenté). */
+    private static final Map<UUID, Integer> RAPPEL = new HashMap<>();
+    private static final int RAPPEL_ECART = 15;
     /** Apparence de l'entité Varga vue en dernier (si son fichier n'en a pas : posée par /pnj apparence varga moi). */
     private static CompoundTag apparenceVue;
 
@@ -78,6 +81,7 @@ final class Accueil {
         FIN.remove(u);
         SUR_ETAPE.remove(u);
         PRES.remove(u);
+        RAPPEL.remove(u);
     }
 
     /** Le joueur doit d'abord faire le tutoriel des bases : Varga ne propose que « Faire ma base ». Jamais en créatif. */
@@ -117,6 +121,7 @@ final class Accueil {
             }
         }
         presentation(p, tuto);
+        rappelSpawn(p, tuto);
         if (tuto < 0) {
             DERNIER.remove(p.getUUID());
             return;
@@ -165,9 +170,26 @@ final class Accueil {
         return d.getCompound("PlayerPersisted");
     }
 
-    /** Au spawn, dans le monde du spawn. */
+    /**
+     * Au spawn : dans le monde du spawn, ou près du Bâtisseur (20/10 : le /spawn de CRac mène au point posé par le staff,
+     * qui peut être hors du monde du spawn ; la présentation ne partait alors jamais).
+     */
     private static boolean auSpawn(ServerPlayer p) {
-        return "heralisz:spawn".equals(p.level().dimension().location().toString());
+        return "heralisz:spawn".equals(p.level().dimension().location().toString()) || pnj(p, BATISSEUR, 64) != null;
+    }
+
+    /** Tant que le joueur n'est pas revenu au spawn après le tutoriel : Varga lui redit « tape /spawn » toutes les 15 s. */
+    private static void rappelSpawn(ServerPlayer p, int tuto) {
+        if (!presenterBientot(p, tuto) || FIN.containsKey(p.getUUID()) || PRES.containsKey(p.getUUID()) || auSpawn(p)) {
+            RAPPEL.remove(p.getUUID());
+            return;
+        }
+        int s = RAPPEL.merge(p.getUUID(), 1, Integer::sum);
+        if (s >= RAPPEL_ECART) {
+            radio(p, 0, "heraliz_quetes.tuto.rappel_spawn");
+            Moteur.suiviBientot(p);
+            RAPPEL.put(p.getUUID(), 0);
+        }
     }
 
     /** Le Bâtisseur pas encore présenté à ce joueur, tutoriel des bases fini. */

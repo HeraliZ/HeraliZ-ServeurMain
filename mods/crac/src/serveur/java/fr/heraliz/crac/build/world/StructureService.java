@@ -877,24 +877,26 @@ public final class StructureService {
     }
 
     /**
-     * Airlock (HeraliZ, CRac 1.10.1): the doors on the edges of a same triangle foundation or floor. Each door always
-     * opens and closes; while two of them are open, each open one collides like a closed leaf (it still looks open,
-     * {@link Piece#STATE_SAS}): nobody walks straight through, and nobody is ever locked in (closing one door frees the
-     * other). A door with someone standing in its opening is left passable.
+     * Airlock (HeraliZ, CRac 1.14.0, 20/10): the doors on the edges of a same triangle foundation or floor. Opening one
+     * closes the others of the airlock, as a real airlock does (unless someone stands in that opening): what you see is
+     * what collides. Before, two open doors both collided as closed while looking open (Piece.STATE_SAS): players saw
+     * open doors they could not pass, or passed doors they thought closed. The old bit is cleared here.
      */
     private static void majSas(ServerLevel level, Piece door) {
         Building b = buildingOf(level, door);
         List<Piece> portes = b == null ? List.of(door) : portesDuSas(store(level).piecesOf(b), door);
-        int ouvertes = 0;
         for (Piece d : portes) {
-            if (d.isOpen()) {
-                ouvertes++;
+            boolean change = false;
+            if (d.isSasBloque()) {
+                d.setSasBloque(false);
+                change = true;
             }
-        }
-        for (Piece d : portes) {
-            boolean bloque = d.isOpen() && ouvertes >= 2 && !closingBlocked(level, d);
-            if (bloque != d.isSasBloque()) {
-                d.setSasBloque(bloque);
+            if (d != door && door.isOpen() && d.isOpen() && !closingBlocked(level, d)) {
+                d.setOpen(false);
+                playDoor(level, d, false);
+                change = true;
+            }
+            if (change) {
                 refresh(level, d);
             }
         }
