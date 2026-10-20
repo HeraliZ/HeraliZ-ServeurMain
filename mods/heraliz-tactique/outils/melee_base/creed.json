@@ -1,41 +1,41 @@
 {
-  "name": "item.heralisz_melee.executor",
+  "name": "item.heralisz_melee.creed",
   "type": "heralisz_tactical:normal",
   "base_item": "heralisz_tactical:melee",
   "data": {
     "attributes": {
-      "generic.attack_damage": 7,
+      "generic.attack_damage": 8,
       "minecraft:generic.movement_speed": {
-        "amount": 0.03,
+        "amount": 0.05,
         "operation": "percent"
       }
     },
     "draw_time": 20,
     "put_away_time": 0,
-    "max_durability": 1400,
-    "enchantment_value": 12,
+    "max_durability": 2031,
+    "enchantment_value": 14,
     "attack": {
       "attack_left": {
         "factor": 1,
-        "knockback": 0.08,
+        "knockback": 0.10,
         "cooldown": 24,
-        "delay": 2,
+        "delay": 0,
         "hitbox": {
           "type": "cone",
-          "max_range": 4,
-          "max_angle": 75,
+          "max_range": 4.0,
+          "max_angle": 65,
           "exclude_self": true
         },
         "durability_damage": 1
       },
       "attack_right": {
         "factor": 1.5,
-        "knockback": 0.12,
+        "knockback": 0.18,
         "cooldown": 24,
-        "delay": 6,
+        "delay": 2,
         "hitbox": {
           "type": "cone",
-          "max_range": 4,
+          "max_range": 4.0,
           "max_angle": 65,
           "exclude_self": true
         },

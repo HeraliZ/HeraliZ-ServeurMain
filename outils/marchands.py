@@ -30,10 +30,10 @@ NOURRITURE = [  # (objet, points de faim, prix)
 PRIX_ACCESSOIRES = {"commun": 60, "peu_commun": 150, "rare": 350}
 MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), prix à l'unité
     ("heraliz_composants:brindilles", 2),
-    ("heraliz_composants:planches", 10),
-    ("heraliz_composants:pierres_taillees", 20),
-    ("heraliz_composants:fragments_metal", 40),
-    ("heraliz_composants:metal_renforce", 120),
+    ("heraliz_composants:planches", 50),
+    ("heraliz_composants:pierres_taillees", 100),
+    ("heraliz_composants:fragments_metal", 250),
+    ("heraliz_composants:metal_renforce", 400),
 ]
 RACHAT_VALEUR = {"commun": 20, "peu_commun": 50, "rare": 120, "epique": 300, "legendaire": 700, "mythique": 1500}
 RACHAT_COMPOSANTS = {k: v // 2 for k, v in RACHAT_VALEUR.items()}

@@ -14,6 +14,8 @@ import com.Spartan.check.movement.model.VerticalEnvelope;
  * Thread serveur.
  */
 final class MotionTracker {
+    /** Marge horizontale par tick sur un terrain accidenté (arêtes, marches en l'air, glissades). */
+    private static final double ROUGH_EXTRA = 0.06;
     /** Marge de rebond au-delà de la dernière vitesse de chute (blocs/tick). */
     private static final double BOUNCE_MARGIN = 0.1;
 
@@ -26,20 +28,23 @@ final class MotionTracker {
      * @param slowed          le joueur utilise un objet de façon certaine (ralentissement attendu)
      * @param impulseH        vitesse horizontale imposée par le serveur (remplace), 0 si aucune
      * @param pushH           vitesse horizontale ajoutée par le serveur (explosion), 0 si aucune
-     * @param impulseUp       vitesse verticale imposée (remplace), 0 si aucune
+     * @param impulseUp       vitesse verticale imposée (remplace, même à 0 : plongeon en l'air), NaN si aucune
      * @param pushUp          vitesse verticale ajoutée (explosion), 0 si aucune
      * @param crowd           marge pour la poussée des entités collées au joueur
      * @param bouncy          bloc rebondissant sous les pieds au départ (slime, lit)
      * @param ceiling         plafond collé à la tête au départ : un saut peut n'y laisser aucune trace verticale
+     * @param rough           terrain accidenté autour des pieds (dalles, pots, meubles et décors 3D, entités
+     *                        solides) : le sol affirmé par le client y est cru, voir MovementEnv.roughNear
      */
     record Inputs(boolean groundFromExact, double friction, double speed, boolean slowed, double impulseH,
-                  double pushH, double impulseUp, double pushUp, double crowd, boolean bouncy, boolean ceiling) {
+                  double pushH, double impulseUp, double pushUp, double crowd, boolean bouncy, boolean ceiling,
+                  boolean rough) {
     }
 
     /** Résultat d'un déplacement (une position ; plusieurs ticks seulement si le client n'a rien envoyé entre-temps). */
     record Result(boolean exempt, int ticks, double allowedH, double excessH, double allowedDy, double excessDy,
-                  boolean slowed, double allowedSlow, double excessSlow, boolean usedImpulse) {
-        static final Result EXEMPT = new Result(true, 1, 0, 0, 0, 0, false, 0, 0, false);
+                  boolean slowed, double allowedSlow, double excessSlow, boolean usedImpulse, boolean rough) {
+        static final Result EXEMPT = new Result(true, 1, 0, 0, 0, 0, false, 0, 0, false, false);
     }
 
     private final HorizontalEnvelope h = new HorizontalEnvelope();
@@ -50,6 +55,8 @@ final class MotionTracker {
     private double lastAirDy;
     /** Dernière position : immobile au sol (le client n'envoie alors plus rien jusqu'à son premier mouvement). */
     private boolean wasStill;
+    /** Le client se disait au sol à la position précédente. */
+    private boolean lastClaimedGround;
 
     /** Repart de zéro (connexion, téléportation lointaine, renvoi). */
     void reset() {
@@ -57,6 +64,7 @@ final class MotionTracker {
         slowTracking = false;
         lastAirDy = 0;
         wasStill = false;
+        lastClaimedGround = false;
     }
 
     /**
@@ -71,6 +79,7 @@ final class MotionTracker {
         slowTracking = false;
         lastAirDy = 0;
         wasStill = false;
+        lastClaimedGround = s.claimedGround();
         return Result.EXEMPT;
     }
 
@@ -101,20 +110,36 @@ final class MotionTracker {
         // Saut possible (impulsion du sprint) : le joueur monte depuis le sol. Une montée d'un
         // seul tick que le client termine AU SOL est une marche (escalier, dalle), pas un saut :
         // vanilla ne pose pas le joueur pendant le tick où il saute.
-        boolean step = ticks == 1 && s.groundTo() && s.claimedGround();
-        boolean jump = s.groundFrom() && ((dy > 0.01 && !step) || (in.ceiling() && dy > -1e-6));
-        HorizontalEnvelope.Tick ht = new HorizontalEnvelope.Tick(in.groundFromExact(), false, in.friction(),
-                in.speed(), jump, false, in.impulseH(), in.pushH(), in.crowd());
-        VerticalEnvelope.Tick vt = new VerticalEnvelope.Tick(s.groundFrom(), s.groundTo(), s.gravity(),
+        // Terrain accidenté : le sol affirmé par le client est cru (au départ comme à l'arrivée). Un tricheur
+        // qui en abuse doit coller la géométrie ; en plein air, rien ne change.
+        boolean rough = in.rough();
+        boolean groundFrom = s.groundFrom() || (rough && lastClaimedGround);
+        boolean groundTo = s.groundTo() || (rough && s.claimedGround());
+        boolean step = ticks == 1 && groundTo && s.claimedGround();
+        // Sur terrain accidenté, un saut en sprint qui finit sur une dalle ou un objet 3D (marche prise
+        // pendant le saut) ressemble à une marche : l'impulsion du saut reste permise.
+        boolean jump = groundFrom && ((dy > 0.01 && (!step || rough)) || (in.ceiling() && dy > -1e-6));
+        double extra = in.crowd() + (rough ? ROUGH_EXTRA : 0);
+        HorizontalEnvelope.Tick ht = new HorizontalEnvelope.Tick(in.groundFromExact(), rough, in.friction(),
+                in.speed(), jump, false, in.impulseH(), in.pushH(), extra);
+        VerticalEnvelope.Tick vt = new VerticalEnvelope.Tick(groundFrom, groundTo, s.gravity(),
                 s.jumpVelocity(), s.stepHeight(), in.impulseUp(), in.pushUp(), bounce);
         // Ce déplacement a-t-il eu besoin de la vitesse imposée ? (elle ne sert qu'une fois)
+        // Seulement si le déplacement a pris au moins la moitié de ce qu'elle ajoute : un pas à peine
+        // au-dessus du normal (sprint, poussée) la « consommait » avant que le client l'applique vraiment
+        // (fausses alertes Speed après le plongeon du mod tactique, un recul, une explosion).
         boolean usedImpulse = false;
-        if (ticks == 1 && (in.impulseH() > 0 || in.pushH() > 0 || in.impulseUp() > 0 || in.pushUp() > 0)) {
-            HorizontalEnvelope.Tick plainH = new HorizontalEnvelope.Tick(in.groundFromExact(), false, in.friction(),
-                    in.speed(), jump, false, 0, 0, in.crowd());
-            VerticalEnvelope.Tick plainV = new VerticalEnvelope.Tick(s.groundFrom(), s.groundTo(), s.gravity(),
-                    s.jumpVelocity(), s.stepHeight(), 0, 0, bounce);
-            usedImpulse = h1 > h.allowed(plainH) + 1e-9 || dy > v.allowed(plainV) + 1e-9;
+        if (ticks == 1 && (in.impulseH() > 0 || in.pushH() > 0 || !Double.isNaN(in.impulseUp()) || in.pushUp() > 0)) {
+            HorizontalEnvelope.Tick plainH = new HorizontalEnvelope.Tick(in.groundFromExact(), rough, in.friction(),
+                    in.speed(), jump, false, 0, 0, extra);
+            VerticalEnvelope.Tick plainV = new VerticalEnvelope.Tick(groundFrom, groundTo, s.gravity(),
+                    s.jumpVelocity(), s.stepHeight(), Double.NaN, 0, bounce);
+            double plainHAllowed = h.allowed(plainH);
+            double plainVAllowed = v.allowed(plainV);
+            double addH = h.allowed(ht) - plainHAllowed;
+            double addV = v.allowed(vt) - plainVAllowed;
+            usedImpulse = (addH > 1e-6 && h1 > plainHAllowed + addH * 0.5)
+                    || (addV > 1e-6 && dy > plainVAllowed + addV * 0.5);
         }
         double allowedH = h.advance(ht, ticks, h1);
         double allowedSlow = 0;
@@ -126,16 +151,17 @@ final class MotionTracker {
             excessSlow = Math.max(0, h1 - allowedSlow);
         }
         double allowedDy = v.advance(vt, ticks, dy);
-        if (!s.groundTo()) {
+        if (!groundTo) {
             lastAirDy = dy / ticks;
-        } else if (!s.groundFrom()) {
+        } else if (!groundFrom) {
             // Atterrissage : on garde la dernière vitesse de chute complète pour un éventuel rebond.
         } else {
             lastAirDy = 0;
         }
-        wasStill = s.still() && s.groundTo();
+        wasStill = s.still() && groundTo;
+        lastClaimedGround = s.claimedGround();
         return new Result(false, ticks, allowedH, Math.max(0, h1 - allowedH), allowedDy, Math.max(0, dy - allowedDy),
-                in.slowed(), allowedSlow, excessSlow, usedImpulse);
+                in.slowed(), allowedSlow, excessSlow, usedImpulse, rough);
     }
 
     double horizontalVelocity() {

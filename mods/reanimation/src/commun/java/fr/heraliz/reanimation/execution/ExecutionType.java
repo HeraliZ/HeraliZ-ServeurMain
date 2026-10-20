@@ -7,10 +7,10 @@ import net.minecraft.network.chat.Component;
 public enum ExecutionType {
    COUP_DE_GRACE("coup_de_grace", 0.32F, 0.7F, false, null, null, "jugement"),
    KARAMBIT("karambit", 1.0F, 0.45F, true, id -> id.contains("karambit"), "heralisz_skins:karambit__doppler_ruby", "griffe", "tigre", "danse"),
-   SEA_GLEAM("sea_gleam", 0.85F, -0.05F, true, id -> id.contains("sea_gleam"), "melee:heralisz_melee:sea_gleam", "couperet", "decapitation"),
+   SEA_GLEAM("sea_gleam", 0.85F, -0.05F, true, id -> id.contains("sea_gleam"), "melee:heralisz_melee:sea_gleam__tide_stripe", "couperet", "decapitation"),
    BUTTERFLY("butterfly", 0.85F, 0.5F, true, id -> id.contains("butterfly"), "heralisz_skins:butterfly__fade", "papillon", "balisong"),
    M9("m9", 0.85F, 0.15F, true, id -> id.equals("m9") || id.startsWith("m9_"), "heralisz_skins:m9__lore", "bayonet", "baionnette", "coeur", "lancer"),
-   HOME_RUN("home_run", 1.7F, 0.1F, true, id -> id.contains("baseball_bat"), "melee:heralisz_melee:baseball_bat", "baseball", "batte"),
+   HOME_RUN("home_run", 1.7F, 0.1F, true, id -> id.contains("baseball_bat"), "melee:heralisz_melee:baseball_bat__walnut", "baseball", "batte"),
    FRAPPE_ORBITALE("frappe_orbitale", 1.2F, 3.5F, 0.0F, 0.0F, 0, "orbitale", "laser"),
    CHUTE_METEORE("chute_meteore", 0.75F, 0.5F, 0.0F, 180.0F, 11, "meteore", "meteor"),
    COMBO_AERIEN("combo_aerien", 0.75F, 0.9F, 0.0F, 180.0F, 11, "combo", "aerien"),

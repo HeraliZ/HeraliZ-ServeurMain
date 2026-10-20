@@ -182,10 +182,21 @@ def ecrire_table(f, data):
     f.write_text("\n".join(lignes) + "\n", encoding="utf-8")
 
 
+MELEE = RACINE / "mods/heraliz-tactique/src/serveur/resources/data/heralisz_melee/index/melee"
+
+
+def melee_absente(e):
+    """Arme de mêlée du mod tactique qui n'existe plus (fiche retirée)."""
+    if e["item"] != "heralisz_tactical:melee":
+        return False
+    m = re.search(r'MeleeWeaponId:"heralisz_melee:([^"]+)"', e.get("nbt", ""))
+    return not m or not (MELEE / (m.group(1) + ".json")).exists()
+
+
 def autres_de(data):
     out = []
     for e in data["objets"]:
-        if de_famille(e) or e["item"].startswith(RETIRES):
+        if de_famille(e) or e["item"].startswith(RETIRES) or melee_absente(e):
             continue
         e = dict(e)
         e.setdefault("_base", e["poids"])

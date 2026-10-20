@@ -23,7 +23,7 @@
     },
     "reserve": 48
   },
-  "melee": "heralisz_melee:tac_dagger",
+  "melee": "heralisz_melee:tac_dagger__ember_shard",
   "soins": [
     {
       "id": "heralisz_heal:ai2",

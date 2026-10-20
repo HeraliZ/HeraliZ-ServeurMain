@@ -93,6 +93,9 @@ public final class Touches {
             aucune("key.heraliz_emote.reverse_sound"),
             // CaraCrea « Changer de mode » (chuchoter, parler, crier ; aucune touche) : X, libéré par « Charger la barre ».
             vers("key.caracrea.voice.mode", GLFW.GLFW_KEY_X),
+            // Emotecraft « Roue des emotes » (² posé par HeraliZ Emote) : ² et la touche sous Entrée (*) sont celles des
+            // menus de clients de triche, laissées libres pour l'alerte de Spartan. Y, libre.
+            vers("key.emotecraft.fastchoose", GLFW.GLFW_KEY_Y),
 
             // ---------- touches cachées (sans touche, aucune utilité pour nos joueurs) ----------
             // TCTcore (H, base de MAtmos) : H = Inspecter de TaCZ ; elle n'ouvre que le menu de son auteur (liens vers
@@ -213,6 +216,13 @@ public final class Touches {
             }
             deja.put(l.nom(), pose);
             repereChange = true;
+        }
+        // touche posée d'office par un mod sur ² ou sous Entrée (son constructeur ne passe pas par setKey) : retirée
+        for (KeyMapping k : mc.options.keyMappings) {
+            if (k != null && TouchesInterdites.interdite(k.getKey())) {
+                k.setKeyModifierAndCode(KeyModifier.NONE, InputConstants.UNKNOWN);
+                deplacees++;
+            }
         }
         if (deplacees > 0) {
             KeyMapping.resetMapping();

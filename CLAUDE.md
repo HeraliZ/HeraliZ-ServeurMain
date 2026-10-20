@@ -143,7 +143,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) ; zones des salles à carte (`salles_carte/<nom>`), remplies seulement quand Bunker les recharge ; palier « T1 » à « T7 » en petit badge coloré à côté du nom dans l'écran de fouille et conteneurs de Minecraft scellés en survie (0.8.0) |
 | heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), garde-corps en métal sur 1 à 4 côtés d'un même bloc (`garde_corps`, 1.10.0), mobilier de prison (1.11.0 : `toilettes_sales`, `lavabo_sale`, `lit_prison` à chaînes et `lit_superpose`, ces deux-là sur 2 blocs, `bloc/MeubleDouble` ; modèles et textures par `outils/prison.py`, `--rendus` pour les aperçus), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Seulement les blocs posés sur la carte (1.9.0 : 48 blocs jamais posés retirés, d'après le workflow « Inventaire de la carte » ; gardés aussi `tole_toit_bleue` et `tole_toit_rouille`, dont les escaliers et dalles sont posés). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
 | heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons ; une seule protection par pièce et six raretés (0.15.0, section 10 « équilibrage ») |
-| heraliz-composants | heraliz_composants | heraliz_composants | 55 composants de craft (1.2.0, 19/10 : « Brindilles » (tas en vrac, validé), 2 hérals chez le Bâtisseur, payent la pose des pièces de CRac à la place des bâtons, mêmes quantités, et la réparation en brindilles (`crac-building.toml`) ; 1.1.0 : catégorie « construction », maquettes validées : planches, pierres taillées, fragments de métal, métal renforcé vendus par le Bâtisseur ; clous, sac de ciment, équerres d'acier, bobine de fil à souder à trouver sur la carte (loot à faire) ; coûts d'amélioration de CRac pas encore changés ; `build.py` garde `ru_ru.json`, traduit à part ; textures des anciens matériaux gardées telles quelles : elles changent d'une machine à l'autre) (armes, soins, viseurs, munitions, protection, divers) et objets de récupération à revendre, modèles 3D et icônes ; rareté = couleur du nom ; tags `heraliz_composants:<catégorie>` et `tous`. Aucune recette ni loot (refonte à venir). Modèles, icônes, traductions, tags et `ComponentDefs.java` refaits par `python mods/heraliz-composants/outils/build.py mods/heraliz-composants` (catalogue : `outils/composants.py`) |
+| heraliz-composants | heraliz_composants | heraliz_composants | 55 composants de craft (1.2.0, 19/10 : « Brindilles » (tas en vrac, validé), 2 hérals chez le Bâtisseur, payent la pose des pièces de CRac à la place des bâtons, mêmes quantités, et la réparation en brindilles (`crac-building.toml`) ; 1.1.0 : catégorie « construction », maquettes validées : planches, pierres taillées, fragments de métal, métal renforcé vendus par le Bâtisseur ; clous, sac de ciment, équerres d'acier, bobine de fil à souder à trouver sur la carte (loot à faire) ; coûts d'amélioration de CRac (19/10, `crac-building.toml`) : toute pièce, quelle que soit sa forme, = 5 du matériau du palier + 5 de son objet de la carte : bois 5 planches + 5 clous, pierre 5 pierres taillées + 5 sacs de ciment, métal 5 fragments + 5 équerres, blindé 5 métal renforcé + 5 bobines de fil à souder ; réparation (20/10, CRac 1.13.2-beta) : 1 planche, 1 pierre taillée, 1 fragment de métal ou 1 métal renforcé (2 brindilles en brindilles) ; entretien de l'armoire : 1 de ce même matériau par pièce pour 24 h ; agrandir le claim : 10 puis 25 métal renforcé (au lieu de blocs de diamant) ; valeurs aussi par défaut dans le code de CRac ; `build.py` garde `ru_ru.json`, traduit à part ; textures des anciens matériaux gardées telles quelles : elles changent d'une machine à l'autre) (armes, soins, viseurs, munitions, protection, divers) et objets de récupération à revendre, modèles 3D et icônes ; rareté = couleur du nom ; tags `heraliz_composants:<catégorie>` et `tous`. Aucune recette ni loot (refonte à venir). Modèles, icônes, traductions, tags et `ComponentDefs.java` refaits par `python mods/heraliz-composants/outils/build.py mods/heraliz-composants` (catalogue : `outils/composants.py`) |
 | heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
 | heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) |
 | heralisz-bunker | heralisz_bunker | heralisz_bunker | portes animées (reprises de HBM Modernized, GPL), cartes d'accès, barricades ; salles à carte (`/salle`, baguette du staff) : porte tenue ouverte tant que quelqu'un est dedans, loot de la salle (avec HeraliZ Loot) |
@@ -396,6 +396,26 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   nourriture…), un client 1.17+ renvoie sa dernière position exacte en plus du paquet du tick. Compté comme un vrai pas,
   il déclenchait Speed, Vertical, Fly et Timer à tort (alertes « maximum 0.07 », « 0.65 bloc de trop »). Il ne sert
   plus qu'à la rotation, au plus un toutes les 100 ms.
+- **Fausses alertes de mouvement réduites** (Spartan 2.4.1, 19/10) : (1) plongeon du mod tactique et autres élans donnés
+  par le serveur (recul, explosion) : un élan n'est plus « consommé » par un pas à peine plus rapide que la normale
+  avant que le jeu du joueur l'applique (alertes Speed « 0,77 bloc de plus » après une roulade) ; (2) terrain accidenté
+  (`MovementEnv.roughNear` : dalle, pot de fleurs, escalier, meuble ou décor 3D, entité solide comme barricade,
+  véhicule, bombe, à 0,35 bloc sur le côté et 0,7 sous les pieds) : le sol affirmé par le joueur y est cru, saut en
+  sprint permis même quand il finit sur une marche, +0,06 bloc par tick de marge (alertes Speed + Vertical + Fly
+  « descend moins vite que la gravité » en heurtant un modèle 3D) ; en plein air, rien ne change ; (3) BadPackets
+  « aucune position pendant 2,4 s » (blink) : signalé seulement si la position qui arrive ensuite est à plus de 1,5 bloc
+  de la dernière (un joueur immobile, ou dont la caméra est prise par une cinématique, n'envoie plus sa position).
+  Rien testé en jeu. Spartan 2.4.2 (20/10) : plongeon EN L'AIR (après un saut ou en tombant d'un toit) : le serveur remet la vitesse
+  verticale à 0 (`setDeltaMovement(…, 0, …)`), Spartan ignorait une vitesse imposée de 0 et attendait la chute déjà
+  lancée (alertes Fly « descend moins vite que la gravité : dernier pas -0.447, maximum -0.582 ») ; une vitesse
+  imposée remplace maintenant toujours la vitesse verticale, même par 0 (`impulseUp` = NaN si aucune ; test
+  `EnvelopeTest.diveInMidAirResetsFallSpeed`). Rien testé en jeu.
+- **Touches des menus de triche** (Spartan 2.5.0, 20/10, demande du propriétaire) : ² et Maj droite, sur lesquelles
+  aucune action ne peut être mise (Interface 1.7.6, `TouchesInterdites`). Un appui en jeu (aucun écran ouvert, chat
+  compris) sur l'une d'elles alors qu'aucune touche des options n'y est attachée : le jar joueur le signale
+  (`client/TouchesSuspectes`, `ClientReportPacket` type `touche`), le serveur alerte le staff (« TricheMenu », une
+  alerte par touche et par connexion, `PacketGuard.allowReport`). Indice seulement : un appui par erreur est possible,
+  un tricheur peut changer la touche de son menu. Rien testé en jeu.
 - **Jars imbriqués** : `outils/construire.py` suit `META-INF/jarjar/metadata.json` pour trouver les jars que Forge
   charge depuis un autre jar (EntityCulling apporte TRansition et TRender dans `META-INF/jars/`) ; leurs configs Mixin
   sont dans `officiel.json`. Avant le 11/10, elles étaient signalées à tort (« config Mixin inconnue »).
@@ -495,6 +515,10 @@ Règles :
      (les bans et preuves de Spartan, dans `config/spartan/`, ne sont jamais touchés) ;
    - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde (nom lu dans le `server.properties` du Ptero) :
      **les configs du dépôt font foi**, un réglage changé à la main sur le serveur est écrasé au prochain envoi ;
+     depuis le 20/10, toujours écrasés (`mput`, plus `mirror` : le serveur réécrit ces fichiers, et un fichier plus
+     récent sur le Ptero n'était plus remplacé : le monde gardait les anciens coûts de CRac) ; la case « redemarrer »
+     arrête le serveur, recopie ces réglages serveur éteint, puis le redémarre. Workflow « Diagnostic CRac »
+     (`.github/workflows/diag_crac.yml`, lecture seule) : réglages de CRac lus dans le monde, jars, journal ;
    - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
      racine du serveur se mettent à jour à la main) ;
 5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ». Le
@@ -865,7 +889,7 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   DayZ par la borne de départ ; tous les messages dans le chat. Tutoriel des bases (joueur en survie, sans
   base, jamais fait ; rien en créatif ou en spectateur), lancé par le bouton « Faire ma base » du Commandant Varga
   (CRac 1.7.0 ; sans HeraliZ Quêtes, tout seul après la cinématique comme avant) : titres, kit calculé sur les coûts réels de
-  `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, 172 bâtons, 212 planches de chêne), envoi sur un point plat ; protégé (contour vert, aucun dégât, ni blessant) jusqu'à la
+  `crac-building.toml` (1 plan, 1 marteau, 1 Claim Block, brindilles, planches et clous), envoi sur un point plat ; protégé (contour vert, aucun dégât, ni blessant) jusqu'à la
   fin du tutoriel, OBLIGATOIRE (section 10 « arrivée ») ; puis base protégée 4 jours (ni raid
   ni usure, texte flottant ; tombe au-delà de 2 membres). Carrières : `/carriere creer <nom> <rayon> <type>` (pierre,
   minerais, fer, bois, sable, argile, terre ; listes `#crac:carriere/<type>`), `liste|retirer|tp|regenerer` ; casse
@@ -988,7 +1012,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - salles à carte (15/10, Bunker 0.12.0, Loot 0.7.0) : le staff délimite une salle au bloc près, avec la baguette (`/salle baguette` : clic gauche = coin 1, clic droit = coin 2, contour visible chez lui) ou avec `/salle coin1|coin2 [x y z]`, puis `/salle creer <nom> [verte|bleue|rouge]`. Les portes à carte à 3 blocs sont liées et la couleur est prise d'elles ; `/salle lier|delier <nom>` en regardant la porte ou son lecteur ; aussi `liste`, `voir`, `redefinir`, `recharger`, `retirer`. Données gardées avec le monde (`heralisz_bunker_salles.dat`). Après la carte, 10 s pour entrer (en plus du temps d'ouverture). Personne dedans : la porte se referme. Tant qu'un joueur vivant est dans la salle ou dans l'encadrement, elle reste ouverte, puis se referme 2 s après la sortie du dernier. Un déconnecté ne compte pas ; un joueur qui se reconnecte dedans fait rouvrir la porte. Loot (conteneurs de HeraliZ Loot dans la boîte, zone `salles_carte/<nom>`) : jamais tant que quelqu'un est dedans ; il réapparaît en entier 30 min (verte), 2 h (bleue), 4 h (rouge) après la sortie du dernier, en temps de jeu. Réglages : section `[salles]` de `heralisz_bunker-common.toml`. Coffres T7 non concernés. Rien testé en jeu ;
 - Réanimation : les zombies peuvent achever un joueur à terre ; les exécutions respectent le PvP ; touches : exécuter
   I, menu =, abandon Retour arrière ;
-- Emote : roue ², menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
+- Emote : roue Y (déplacée de ² par heraliz_interface 1.7.4) ; depuis la 1.7.5, aucune action ne peut prendre ² ni Maj droite (1.7.6 ; en 1.7.5 c'était la touche sous Entrée) : touches des menus de triche, laissées libres pour une alerte de Spartan (`client/TouchesInterdites`, mixin `KeyMappingInterditMixin` sur `setKey` et `setKeyModifierAndCode`, message « Touche réservée » ; toute touche déjà posée dessus est retirée au lancement), menu 0 ; aucune emote à terre, en combat, en duel ou en ClashWar ;
 - vitres (11/10, 12/10, 13/10) : une balle casse la vitre ou le bloc de verre touché, reposé au même endroit au bout de 5 min (même après un redémarrage ; les vitres fines voisines perdent leur raccord vers le trou et le retrouvent à la repousse : deux vitres côte à côte cassées repoussent reliées ; section `[vitres]` de `heralisz_tactical-server.toml`, mod tactique). Cassent aussi les blocs de `blocs_en_plus` : la fenêtre de meubles `cfm:vb_4` (posée sur la carte ; avant, les balles la traversaient) devient `cfm:vb_5` (la même, vitre brisée) puis redevient intacte. Jamais dans le monde du spawn (`heralisz:spawn`), en match, en zombies, dans les bunkers ni dans les claims CRac ; plus de cercle de 64 blocs autour du point d'apparition de la carte (`rayon_spawn = 0` depuis le 13/10 : ce point est au milieu d'une ville, -435 1118 sur la v3, dont le verre ne cassait jamais). Un bloc posé ou cassé à la main à la place d'une vitre en attente : la main l'emporte, elle ne repousse pas. Staff : `/vitres pourquoi [x y z]` (bloc visé ou donné : casse-t-il, sinon pourquoi — réglage, eau, bloc protégé, dimension, rayon du spawn, claim CRac et son bloc de claim —, vitre en attente, ce que ferait une balle tirée d'ici). `DestroyGlass` de TaCZ reste à false (TaCZ casse sans regarder les protections ni les blocs voisins) ;
 - délai des coups de mêlée (18/10, Tactique 2.21.2, choix du propriétaire) : **1,2 s pour tout**, clic gauche comme clic
   droit, toutes les armes de mêlée de LR (`cooldown` 24 dans `serveur/resources/data/heralisz_melee/index/melee/*.json`,
@@ -1128,7 +1152,25 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     Blackwood, Ash Wood, Aluminium, Street Camo et Plasma retirées (104 skins) ; batte : fines lignes noires à chaque
     tronçon (le dessous de chaque petite marche, dans l'ombre) : l'évasement est maintenant un vrai cône, 12 os tournés
     autour de l'axe, faces inclinées (`skins_melee.py`, `EVASEMENT`), sans aucune marche ; plus d'anneau de recharge
-    autour du viseur pour la mêlée et les couteaux (délai inchangé, `UsingProgressOverlay`) ;
+    autour du viseur pour la mêlée et les couteaux (délai inchangé, `UsingProgressOverlay`). Tactique 2.25.0 (19/10) :
+    **rang de 1 à 4 étoiles** choisi par le propriétaire pour chaque skin (tableau `ETOILES` du script ; non cité = 4) :
+    description « ★★☆☆ » (étoiles allumées en or, les autres grisées) puis « Exclusivité HeraliZ », nom « Arme | Finition »
+    sans étoile devant, de la couleur du rang (1 gris, 2 bleu, 3 violet, 4 or) ; vaut aussi pour les skins d'avant le
+    catalogue (Doppler, Lore, Fade…, `rhabiller()`) ; les paliers Classique… ne servent plus qu'au catalogue. Butterfly
+    Gunmetal retiré (103 skins). Toutes les armes de mêlée de LR Unique (`heralisz_tactical:melee` dans la section
+    `objets` de `raretes.json`, les couteaux TaCZ l'étaient déjà). Infobulles : plus de lignes de coups (gauche / droite,
+    dégâts, recharge) pour la mêlée de LR (`ClientMeleeTooltip`) ; plus de munitions, niveau, type ni dégâts pour les
+    couteaux TaCZ (`ClientGunTooltipMixin`). Tactique 2.26.0 (19/10, choix du propriétaire) : **plus aucune arme de
+    mêlée ni aucun couteau sans skin** dans le jeu : fiches de base des armes de LR sorties du jeu et gardées comme
+    modèles des fiches des skins (`outils/melee_base/`, lues par `skins_couteaux.py`), leurs recettes et le Marteau du
+    châtiment retirés ; couteaux CT et T de base retirés du gunpack `arkaniaz_pack_4_converted` (index seulement, listés
+    dans `serveur/tacz_retires.txt` ; affichages et modèles gardés pour leurs skins) ; plus d'armes de mêlée dans le
+    loot T1 à T6 (Loot 0.9.2) ; couteau des kits ClashWar et des Zombies : Dague TAC Ember Shard (Matchs 0.11.4) ;
+    armes d'exécution par défaut de Réanimation : Éclat marin Tide Stripe et batte Walnut (Réanimation 1.16.2).
+    Tactique 2.26.1 : même vitesse pour toute la mêlée, +5 % en main (fiches des armes de LR et de leurs skins,
+    `outils/melee_base/` ; fiche commune des couteaux TaCZ `arkaniaz:knife_data`, base 0,1 -> 0,05), et infobulle de la
+    mêlée sans les lignes de Minecraft « Dans la main principale : … » (`MeleeItem.getDefaultTooltipHideFlags`) : nom,
+    étoiles, « Exclusivité HeraliZ » et rareté seulement ;
   - skins de mêlée (18/10, Tactique 2.19.0 à 2.21.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
     et `heralisz_melee:baseball_bat__doppler_sapphire`, fiches copiées des armes de base (mêmes dégâts), dessinées
     EXACTEMENT comme les couteaux de heralisz_skins (même shader `camo_65` Lore / `camo_56` Doppler Saphir, même carte de
@@ -1292,6 +1334,20 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (`StructureService.viseBattant`, `PieceSolids.battants`). **Une seule armoire posée par joueur** (`crac.claim.une_par_joueur`, `AccesBase.armoireDe`) ; il
   peut avoir l'accès à d'autres. **Zone de l'armoire** visible plan de construction en main (`client/ZoneArmoire`) : bande
   translucide au bord du carré protégé, verte pour la sienne, rouge pour les autres. Canal CRac version 21. Rien testé en jeu.
+  **Fiche technique des bases** (CRac 1.13.0-beta, Quêtes 1.8.0, 19/10, maquette validée) : `/base info` pour tous
+  (`bases/FicheBase`, paquet `S2CFicheBase`, canal CRac version 22, écran `client/ui/EcranFicheBase`) : onglets Poser,
+  Améliorer, Réparer, Entretien, Raids ; chiffres lus à chaque fois dans `crac-building.toml` / `crac-server.toml`, prix
+  en hérals lus dans les marchands « achat » de `config/heraliz_quetes/pnj/*.json`. **Présentation du Bâtisseur** :
+  à la fin du tutoriel Varga dit de passer au spawn (suivi « Retourne au spawn ») ; à la première arrivée dans
+  `heralisz:spawn`, la caméra fait un demi-tour autour du PNJ `batisseur` (14 s, Espace pour passer, `client/Presentation`,
+  paquet `Presentation`, canal des quêtes version 5) pendant 3 messages radio de Varga (ce qu'il vend, objets de la carte,
+  /base info), puis la fiche s'ouvre (`TutorielApi.ficheBase`, par réflexion). Une fois par joueur (`PlayerPersisted.
+  heraliz_batisseur_presente`, effacé par `/tuto rejouer`) ; sans Bâtisseur posé : radio seule. Après le premier essai
+  (19/10, CRac 1.13.1-beta, Quêtes 1.8.1) : coûts du mod par défaut = ceux de `crac-building.toml` (brindilles, 5 + 5 ;
+  le serveur affichait encore bâtons, planches de chêne, pierre et tôles : le fichier du monde, relu à moitié envoyé
+  pendant la mise en ligne, avait été « réparé » par Forge avec les anciennes valeurs par défaut) ; fiche plus grande
+  (620 × 344, textes ×1,3) ; caméra arrêtée avant tout mur ou plafond (grotte) ; 16 s par message de Varga, tour
+  complet en 46 s, puis la fiche. Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des
@@ -1602,7 +1658,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   de la carte à poser en jeu (`/carte`) ; rien testé en jeu (écran, touche, pings depuis la carte, paquets des
   territoires). Les territoires suivent encore l'ancienne carte (`zones.json`, point au-dessus).
 - **Journal des quêtes** (heraliz-quetes 1.6.6, 19/10) : la touche J ne montre que les PNJ qui donnent des quêtes (aujourd'hui le Commandant Varga ; plus les marchands). Une quête finie dit seulement « Retourner voir … ». Étapes « au corps à corps » (`arme: melee`) : les couteaux TaCZ comptent (reconnus par leur fiche `arkaniaz:knife_data`, `Couteaux.estCouteau` du mod tactique par réflexion ; avant, les M9 skinnés passaient pour des armes à feu). Rien testé en jeu.
-- **Marchands** (heraliz-quetes 1.4.0, 18/10, rien testé en jeu ; maquettes montrées) : Mila rachète objets de valeur et composants, Jacqueline vend les soins, le Doyen la nourriture, Jack les accessoires Commun à Rare, le Bâtisseur (`batisseur`, Quêtes 1.7.0, 19/10, pastille marteau) les matériaux de construction (brindilles 2, planches 10, pierres taillées 20, fragments de métal 40, métal renforcé 120 hérals ; tableau `MATERIAUX`) (`Marchands`, écran `EcranMarchand`, canal version 2) ; listes et prix **écrits** par `python outils/marchands.py`.
+- **Marchands** (heraliz-quetes 1.4.0, 18/10, rien testé en jeu ; maquettes montrées) : Mila rachète objets de valeur et composants, Jacqueline vend les soins, le Doyen la nourriture, Jack les accessoires Commun à Rare, le Bâtisseur (`batisseur`, Quêtes 1.7.0, 19/10, pastille marteau) les matériaux de construction (brindilles 2, planches 50, pierres taillées 100, fragments de métal 250, métal renforcé 400 hérals ; tableau `MATERIAUX`) (`Marchands`, écran `EcranMarchand`, canal version 2) ; listes et prix **écrits** par `python outils/marchands.py`.
 - **Quêtes** (heraliz-quetes 1.3.0, 18/10, rien testé en jeu) : un seul PNJ, le Commandant Varga (`varga.json`, 39
   quêtes principales en 5 chapitres, scénario dans `docs/QUETES_SCENARIO.md`) ; tous les textes des PNJ et des quêtes en
   français, anglais et russe (`{"fr", "en", "ru"}`, 1.6.9 du 19/10 ; tout nouveau texte s'écrit dans les trois langues ;

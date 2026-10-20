@@ -34,7 +34,6 @@ public enum KnifeFinish {
    COYOTE("coyote", 128, true),
    COPPER_PATINA("copper_patina", 130, true),
    SCORCHED("scorched", 133, true),
-   GUNMETAL("gunmetal", 134, true),
    BLUE_CARBON("blue_carbon", 136, true),
    TIGER_STRIPE("tiger_stripe", 139, true),
    SATIN_BRONZE("satin_bronze", 140, true),

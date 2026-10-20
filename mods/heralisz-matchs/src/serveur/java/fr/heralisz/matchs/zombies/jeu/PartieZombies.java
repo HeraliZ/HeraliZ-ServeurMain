@@ -122,7 +122,7 @@ public final class PartieZombies extends Partie {
 
     static final String PISTOLET = "tacz:m1911";
     /** Contenus heralisz_tactical (porteur generique « melee » / « throwable » + id en NBT, voir ModItems du mod tactique). */
-    static final String COUTEAU = "heralisz_melee:tac_dagger";
+    static final String COUTEAU = "heralisz_melee:tac_dagger__ember_shard";   // plus d'armes de mêlée sans skin (19/10)
     static final String GRENADE = "heralisz_grenade:m67";
     static final int SLOT_COUTEAU = 2, SLOT_GRENADES = 3, SLOT_TACTIQUE = 4, SLOT_PISTOLET_SECOURS = 8;
     /** Case de la 3e arme (atout Coup de mule / Mule Kick). */

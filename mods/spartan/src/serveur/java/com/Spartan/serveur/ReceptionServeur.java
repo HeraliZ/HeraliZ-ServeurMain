@@ -162,6 +162,9 @@ final class ReceptionServeur {
                     }
                 }
             }
+            case "touche" -> CheckManager.flag("TricheMenu", player, "touche « " + safeDetail
+                    + " » pressée en jeu alors qu'aucune action n'y est attachée : touche d'ouverture des menus de"
+                    + " clients de triche (indice, une alerte par touche et par connexion)");
             default -> {
                 // type inconnu : ignoré
             }

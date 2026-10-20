@@ -30,15 +30,15 @@
 	#Range: 1 ~ 256
 	yRadiusL3 = 22
 	#Item paid to upgrade a claim from tier 1 to 2.
-	upgradeItemL1L2 = "minecraft:diamond_block"
+	upgradeItemL1L2 = "heraliz_composants:metal_renforce"
 	#Item paid to upgrade a claim from tier 2 to 3.
-	upgradeItemL2L3 = "minecraft:diamond_block"
+	upgradeItemL2L3 = "heraliz_composants:metal_renforce"
 	#How many upgradeItemL1L2 the tier 1 to 2 upgrade takes.
 	#Range: 0 ~ 100000
-	upgradeCostL1L2 = 32
+	upgradeCostL1L2 = 10
 	#How many upgradeItemL2L3 the tier 2 to 3 upgrade takes.
 	#Range: 0 ~ 100000
-	upgradeCostL2L3 = 64
+	upgradeCostL2L3 = 25
 	#Extra blocks of clearance forced between two groups' claims,
 	#on top of the gap needed for their footprints not to touch.
 	#Guarantees no block can ever fall inside two claims at once.
@@ -59,22 +59,22 @@
 	#Range: 0.1 ~ 8760.0
 	hours = 24.0
 	#Upkeep item paid for Twig and Wood pieces.
-	itemWood = "minecraft:oak_planks"
+	itemWood = "heraliz_composants:planches"
 	#Upkeep item paid for Stone pieces.
-	itemStone = "minecraft:cobblestone"
+	itemStone = "heraliz_composants:pierres_taillees"
 	#Upkeep item paid for Sheet Metal pieces.
-	itemMetal = "minecraft:iron_ingot"
+	itemMetal = "heraliz_composants:fragments_metal"
 	#Upkeep item paid for Armored pieces.
-	itemArmored = "minecraft:netherite_scrap"
+	itemArmored = "heraliz_composants:metal_renforce"
 	#Items of itemWood per Twig or Wood piece for a full supply.
 	#Range: 0 ~ 100000
-	perPieceWood = 4
+	perPieceWood = 1
 	#Items of itemStone per Stone piece for a full supply.
 	#Range: 0 ~ 100000
-	perPieceStone = 4
+	perPieceStone = 1
 	#Items of itemMetal per Sheet Metal piece for a full supply.
 	#Range: 0 ~ 100000
-	perPieceMetal = 2
+	perPieceMetal = 1
 	#Items of itemArmored per Armored piece for a full supply.
 	#Range: 0 ~ 100000
 	perPieceArmored = 1

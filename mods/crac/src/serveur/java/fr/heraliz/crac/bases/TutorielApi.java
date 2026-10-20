@@ -59,4 +59,9 @@ public final class TutorielApi {
         Tutoriel.lancer(p);
         return true;
     }
+
+    /** Ouvre la fiche technique des bases ({@code /base info}) chez ce joueur (Quêtes : après la présentation du Bâtisseur). */
+    public static void ficheBase(ServerPlayer p) {
+        FicheBase.envoyer(p);
+    }
 }

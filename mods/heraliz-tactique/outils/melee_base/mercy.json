@@ -1,23 +1,23 @@
 {
-  "name": "item.heralisz_melee.tac_dagger",
+  "name": "item.heralisz_melee.mercy",
   "type": "heralisz_tactical:normal",
   "base_item": "heralisz_tactical:melee",
   "data": {
     "attributes": {
-      "generic.attack_damage": 5.5,
+      "generic.attack_damage": 7,
       "minecraft:generic.movement_speed": {
-        "amount": 0.03,
+        "amount": 0.05,
         "operation": "percent"
       }
     },
     "draw_time": 20,
     "put_away_time": 0,
-    "max_durability": 384,
-    "enchantment_value": 10,
+    "max_durability": 1400,
+    "enchantment_value": 14,
     "attack": {
       "attack_left": {
         "factor": 1,
-        "knockback": 0.05,
+        "knockback": 0.10,
         "cooldown": 24,
         "delay": 2,
         "hitbox": {
@@ -30,13 +30,13 @@
       },
       "attack_right": {
         "factor": 1.5,
-        "knockback": 0.08,
+        "knockback": 0.15,
         "cooldown": 24,
-        "delay": 2,
+        "delay": 3,
         "hitbox": {
           "type": "cone",
-          "max_range": 4.0,
-          "max_angle": 75,
+          "max_range": 4,
+          "max_angle": 45,
           "exclude_self": true
         },
         "durability_damage": 1

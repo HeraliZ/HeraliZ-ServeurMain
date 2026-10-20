@@ -39,7 +39,12 @@ public final class MovementEngine {
     private static final long WITHHELD_GAP_NANOS = 2_000_000_000L;
     /** Une position qui suit l'activité de près = rafale normale après un lag. */
     private static final long WITHHELD_BURST_NANOS = 200_000_000L;
-    private static final long WITHHELD_CONFIRM_NANOS = 300_000_000L;
+    /**
+     * Positions retenues : signalé seulement si la position qui finit par arriver est à plus de ceci de la
+     * dernière (un blink déplace le joueur). Un joueur immobile (AFK, menu, caméra d'une cinématique ou d'un
+     * tour de base : le jeu n'envoie alors plus sa position) ne bouge pas : jamais signalé.
+     */
+    private static final double WITHHELD_MIN_DISTANCE = 1.5;
     /** Téléportation non confirmée depuis 5 s alors que le client envoie des mouvements. */
     private static final long UNACKED_NANOS = 5_000_000_000L;
     private static final int UNACKED_MOVES = 20;
@@ -380,7 +385,9 @@ public final class MovementEngine {
             return;
         }
         if (s.withheldSince != 0) {
-            if (e.nanos() - s.withheldSince > WITHHELD_BURST_NANOS) {
+            if (e.nanos() - s.withheldSince > WITHHELD_BURST_NANOS && s.ref != null && !s.reseedNext
+                    && s.ownSetbackAt == 0 && !s.pending
+                    && s.ref.distanceTo(new Vec3(e.x(), e.y(), e.z())) > WITHHELD_MIN_DISTANCE) {
                 s.withheldReport = Math.max(s.withheldReport, (e.nanos() - expectedSince(s)) / 1e9);
             }
             s.withheldSince = 0;
@@ -470,10 +477,6 @@ public final class MovementEngine {
     private static void endOfTick(ServerPlayer p, State s, long now) {
         double withheld = s.withheldReport;
         s.withheldReport = 0;
-        if (s.withheldSince != 0 && now - s.withheldSince > WITHHELD_CONFIRM_NANOS) {
-            withheld = Math.max(withheld, (now - expectedSince(s)) / 1e9);
-            s.withheldSince = 0;
-        }
         double unacked = 0;
         if (s.pending && !s.unackedReported && now - s.pendingSince > UNACKED_NANOS
                 && s.movesSincePending >= UNACKED_MOVES) {
@@ -635,7 +638,7 @@ public final class MovementEngine {
         }
         double impulseH = 0;
         double pushH = 0;
-        double impulseUp = 0;
+        double impulseUp = Double.NaN; // une vitesse imposée REMPLACE la vitesse verticale, même par 0 (plongeon en l'air)
         double pushUp = 0;
         for (Impulse i : s.impulses) {
             if (!i.active(s.tx, m.nanos())) {
@@ -647,7 +650,7 @@ public final class MovementEngine {
                 pushUp += Math.max(0, i.vy);
             } else {
                 impulseH = Math.max(impulseH, h);
-                impulseUp = Math.max(impulseUp, i.vy);
+                impulseUp = Double.isNaN(impulseUp) ? i.vy : Math.max(impulseUp, i.vy);
             }
         }
         boolean exact = MovementEnv.onSurface(p, m.boxFrom());
@@ -656,7 +659,7 @@ public final class MovementEngine {
         boolean ceiling = m.groundFrom() && MovementEnv.headBlocked(p, m.boxFrom(), 0.06);
         MotionTracker.Inputs in = new MotionTracker.Inputs(exact, MovementEnv.frictionUnder(p, m.from()),
                 s.speed.value(), s.stableUse && !s.useChanged, impulseH, pushH, impulseUp, pushUp, crowd, bouncy,
-                ceiling);
+                ceiling, MovementEnv.roughNear(p, m.boxFrom()) || MovementEnv.roughNear(p, m.boxTo()));
         return s.motion.step(m, in);
     }
 

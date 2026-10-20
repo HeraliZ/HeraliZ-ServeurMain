@@ -37,9 +37,14 @@ public final class ClientQuetes implements Partie {
         MinecraftForge.EVENT_BUS.addListener(ClientQuetes::tick);
         MinecraftForge.EVENT_BUS.addListener(Reperes::rendu);
         MinecraftForge.EVENT_BUS.addListener(RadioVarga::cacherChat);
+        MinecraftForge.EVENT_BUS.addListener(Presentation::tick);
+        MinecraftForge.EVENT_BUS.addListener(Presentation::regard);
+        MinecraftForge.EVENT_BUS.addListener(Presentation::main);
+        MinecraftForge.EVENT_BUS.addListener(Presentation::interface_);
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             HudQuetes.vider();
             RadioVarga.vider();
+            Presentation.vider();
             Lueurs.vider();
             PnjRendu.vider();
         });
@@ -53,6 +58,7 @@ public final class ClientQuetes implements Partie {
         Reseau.LUEURS.brancher(Lueurs::recevoir);
         Reseau.BOUTIQUE.brancher(EcranMarchand::recevoir);
         Reseau.RADIO.brancher(RadioVarga::recevoir);
+        Reseau.PRESENTATION.brancher(Presentation::lancer);
     }
 
     private static void tick(TickEvent.ClientTickEvent e) {

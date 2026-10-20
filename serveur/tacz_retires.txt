@@ -156,3 +156,12 @@ heralisz_skins/assets/heralisz_skins/textures/gun/slot/karambit__gold_hex.png
 heralisz_skins/data/heralisz_skins/index/guns/karambit__amber_fade.json
 heralisz_skins/assets/heralisz_skins/display/guns/karambit__amber_fade_display.json
 heralisz_skins/assets/heralisz_skins/textures/gun/slot/karambit__amber_fade.png
+
+# 19/10 : skins de couteaux retirés après l'essai en jeu (outils de mods/heraliz-tactique/outils/skins_couteaux.py)
+heralisz_skins/data/heralisz_skins/index/guns/butterfly__gunmetal.json
+heralisz_skins/assets/heralisz_skins/display/guns/butterfly__gunmetal_display.json
+heralisz_skins/assets/heralisz_skins/textures/gun/slot/butterfly__gunmetal.png
+
+# 19/10 : couteaux CT et T sans skin retirés (seuls les skins restent)
+arkaniaz_pack_4_converted/data/arkaniaz/index/guns/ct_knife.json
+arkaniaz_pack_4_converted/data/arkaniaz/index/guns/t_knife.json

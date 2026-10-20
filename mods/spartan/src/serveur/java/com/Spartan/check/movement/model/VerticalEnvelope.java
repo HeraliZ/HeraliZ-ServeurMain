@@ -24,7 +24,7 @@ public final class VerticalEnvelope {
      * @param gravity      gravité du joueur (attribut forge:entity_gravity)
      * @param jumpVelocity vitesse d'un saut (Saut amélioré compris)
      * @param stepHeight   hauteur de marche du joueur
-     * @param impulseUp    vitesse verticale imposée par le serveur (recul : remplace ; 0 = aucune)
+     * @param impulseUp    vitesse verticale imposée par le serveur (recul, élan d'un mod : remplace la vitesse, même vers le bas ou à 0 ; NaN = aucune)
      * @param pushUp       vitesse verticale ajoutée par le serveur (explosion ; 0 = aucune)
      * @param bounce       rebond possible (bloc de slime, lit) : vitesse de rebond maximale (0 = aucun)
      */
@@ -50,7 +50,7 @@ public final class VerticalEnvelope {
         if (base > -0.003) {
             base = Math.max(base, 0); // vanilla annule les vitesses de moins de 0,003 (LivingEntity.aiStep)
         }
-        if (t.impulseUp() != 0) {
+        if (!Double.isNaN(t.impulseUp())) {
             base = Math.max(base, t.impulseUp());
         }
         base += Math.max(0, t.pushUp());

@@ -71,5 +71,7 @@
   "gui.heraliz_interface.titre.ping": "%s мс",
   "heraliz_interface.pack.textures": "HeraliZ: текстуры",
   "heraliz_interface.pack.herbe": "HeraliZ: трава",
-  "gui.heraliz_interface.pause.carte.extraction": "Эвакуация %s"
+  "gui.heraliz_interface.pause.carte.extraction": "Эвакуация %s",
+  "heraliz_interface.touche_interdite.titre": "Зарезервированная клавиша",
+  "heraliz_interface.touche_interdite.texte": "² и правый Shift нельзя назначить ни на одно действие."
 }

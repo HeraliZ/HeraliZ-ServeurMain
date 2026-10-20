@@ -35,6 +35,7 @@ public final class MondeBasesServeur {
         Protections.commandes(e.getDispatcher());
         Tutoriel.commandes(e.getDispatcher());
         EffacerBase.commandes(e.getDispatcher());
+        FicheBase.commandes(e.getDispatcher());
     }
 
     @SubscribeEvent

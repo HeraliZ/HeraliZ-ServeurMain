@@ -84,7 +84,7 @@ public final class BuildConfig {
 
         b.comment("Costs. Format \"modid:item=count\" or \"#tag=count\". An empty list [] makes the action free.",
             "An entry naming an unknown item or an empty tag blocks the action (logged at server start), it is never skipped.").push("cost");
-        b.comment("Twig cost to place each piece.").push("place");
+        b.comment("Twig cost to place each piece (HeraliZ: brindilles of heraliz_composants, 19/10).").push("place");
         for (PieceKind k : PieceKind.values()) {
             int sticks = switch (k) {
                 case TRI_FOUNDATION, TRI_FLOOR, TRI_ROOF, HALF_WALL -> 8;
@@ -92,32 +92,27 @@ public final class BuildConfig {
                 case STAIRS_L -> 24;
                 default -> 16;
             };
-            PLACE_COST.put(k, b.defineList(k.id, List.of("minecraft:stick=" + sticks), BuildConfig::isCostEntry));
+            PLACE_COST.put(k, b.defineList(k.id, List.of("heraliz_composants:brindilles=" + sticks), BuildConfig::isCostEntry));
         }
         b.pop();
         b.comment("Cost to upgrade a full piece to each tier; multiplied per piece below (rounded up).").push("upgrade");
-        UPGRADE_COST.put(Tier.WOOD, b.defineList("wood", List.of("#minecraft:planks=16"), BuildConfig::isCostEntry));
-        UPGRADE_COST.put(Tier.STONE, b.defineList("stone", List.of("#forge:cobblestone=24"), BuildConfig::isCostEntry));
-        UPGRADE_COST.put(Tier.METAL, b.defineList("metal", List.of("crac:sheet_metal_panel=4"), BuildConfig::isCostEntry));
-        UPGRADE_COST.put(Tier.ARMORED, b.defineList("armored", List.of("crac:armored_metal_panel=4"), BuildConfig::isCostEntry));
+        UPGRADE_COST.put(Tier.WOOD, b.defineList("wood", List.of("heraliz_composants:planches=5", "heraliz_composants:clou=5"), BuildConfig::isCostEntry));
+        UPGRADE_COST.put(Tier.STONE, b.defineList("stone", List.of("heraliz_composants:pierres_taillees=5", "heraliz_composants:sac_ciment=5"), BuildConfig::isCostEntry));
+        UPGRADE_COST.put(Tier.METAL, b.defineList("metal", List.of("heraliz_composants:fragments_metal=5", "heraliz_composants:equerres_acier=5"), BuildConfig::isCostEntry));
+        UPGRADE_COST.put(Tier.ARMORED, b.defineList("armored", List.of("heraliz_composants:metal_renforce=5", "heraliz_composants:fil_souder=5"), BuildConfig::isCostEntry));
         b.push("multiplier");
         for (PieceKind k : PieceKind.values()) {
-            double m = switch (k) {
-                case TRI_FOUNDATION, TRI_FLOOR, TRI_ROOF, HALF_WALL -> 0.5;
-                case DOORWAY, WINDOW, DOUBLE_DOORWAY -> 0.75;
-                case STAIRS_L -> 1.5;
-                default -> 1.0;
-            };
-            COST_MULT.put(k, b.defineInRange(k.id, m, 0.0, 20.0));
+            // 19/10 (choix du propriétaire) : toutes les pièces au même prix d'amélioration
+            COST_MULT.put(k, b.defineInRange(k.id, 1.0, 0.0, 20.0));
         }
         b.pop();
         b.pop();
         b.comment("Items consumed by one repair, per tier.").push("repair");
-        REPAIR_COST.put(Tier.TWIG, b.defineList("twig", List.of("minecraft:stick=2"), BuildConfig::isCostEntry));
-        REPAIR_COST.put(Tier.WOOD, b.defineList("wood", List.of("#minecraft:planks=3"), BuildConfig::isCostEntry));
-        REPAIR_COST.put(Tier.STONE, b.defineList("stone", List.of("#forge:cobblestone=4"), BuildConfig::isCostEntry));
-        REPAIR_COST.put(Tier.METAL, b.defineList("metal", List.of("minecraft:iron_ingot=2"), BuildConfig::isCostEntry));
-        REPAIR_COST.put(Tier.ARMORED, b.defineList("armored", List.of("minecraft:netherite_scrap=1"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.TWIG, b.defineList("twig", List.of("heraliz_composants:brindilles=2"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.WOOD, b.defineList("wood", List.of("heraliz_composants:planches=1"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.STONE, b.defineList("stone", List.of("heraliz_composants:pierres_taillees=1"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.METAL, b.defineList("metal", List.of("heraliz_composants:fragments_metal=1"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.ARMORED, b.defineList("armored", List.of("heraliz_composants:metal_renforce=1"), BuildConfig::isCostEntry));
         b.pop();
         b.pop();
 

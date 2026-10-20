@@ -100,46 +100,46 @@
 
 	#Cost to upgrade a full piece to each tier; multiplied per piece below (rounded up).
 	[cost.upgrade]
-		wood = ["#minecraft:planks=16"]
-		stone = ["#forge:cobblestone=24"]
-		metal = ["crac:sheet_metal_panel=4"]
-		armored = ["crac:armored_metal_panel=4"]
+		wood = ["heraliz_composants:planches=5", "heraliz_composants:clou=5"]
+		stone = ["heraliz_composants:pierres_taillees=5", "heraliz_composants:sac_ciment=5"]
+		metal = ["heraliz_composants:fragments_metal=5", "heraliz_composants:equerres_acier=5"]
+		armored = ["heraliz_composants:metal_renforce=5", "heraliz_composants:fil_souder=5"]
 
 		[cost.upgrade.multiplier]
 			#Range: 0.0 ~ 20.0
 			foundation = 1.0
 			#Range: 0.0 ~ 20.0
-			triangle_foundation = 0.5
+			triangle_foundation = 1.0
 			#Range: 0.0 ~ 20.0
 			floor = 1.0
 			#Range: 0.0 ~ 20.0
-			triangle_floor = 0.5
+			triangle_floor = 1.0
 			#Range: 0.0 ~ 20.0
 			roof = 1.0
 			#Range: 0.0 ~ 20.0
-			triangle_roof = 0.5
+			triangle_roof = 1.0
 			#Range: 0.0 ~ 20.0
 			wall = 1.0
 			#Range: 0.0 ~ 20.0
-			half_wall = 0.5
+			half_wall = 1.0
 			#Range: 0.0 ~ 20.0
-			doorway = 0.75
+			doorway = 1.0
 			#Range: 0.0 ~ 20.0
-			double_doorway = 0.75
+			double_doorway = 1.0
 			#Range: 0.0 ~ 20.0
-			window = 0.75
+			window = 1.0
 			#Range: 0.0 ~ 20.0
-			l_stairs = 1.5
+			l_stairs = 1.0
 			#Range: 0.0 ~ 20.0
 			ramp = 1.0
 
 	#Items consumed by one repair, per tier.
 	[cost.repair]
 		twig = ["heraliz_composants:brindilles=2"]
-		wood = ["#minecraft:planks=3"]
-		stone = ["#forge:cobblestone=4"]
-		metal = ["minecraft:iron_ingot=2"]
-		armored = ["minecraft:netherite_scrap=1"]
+		wood = ["heraliz_composants:planches=1"]
+		stone = ["heraliz_composants:pierres_taillees=1"]
+		metal = ["heraliz_composants:fragments_metal=1"]
+		armored = ["heraliz_composants:metal_renforce=1"]
 
 [repair]
 	#Percent of max health restored by one repair.

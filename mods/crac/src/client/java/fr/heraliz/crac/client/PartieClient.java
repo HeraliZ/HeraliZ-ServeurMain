@@ -108,6 +108,9 @@ public final class PartieClient implements Partie {
         } else if (paquet instanceof fr.heraliz.crac.network.S2CAccesBase p) {
             // armoire à outils (1.10.0) : onglets Accès et Base
             fr.heraliz.crac.client.ui.EcranAccesBase.recevoir(p);
+        } else if (paquet instanceof fr.heraliz.crac.network.S2CFicheBase p) {
+            // fiche technique des bases, /base info (1.13.0)
+            net.minecraft.client.Minecraft.getInstance().setScreen(new fr.heraliz.crac.client.ui.EcranFicheBase(p));
         }
     }
 }

@@ -46,13 +46,13 @@ public class Config {
     public static final IntValue claimYRadiusL2 = BUILDER.comment("Claim vertical half-height for tier 2.").defineInRange("yRadiusL2", 19, 1, 256);
     public static final IntValue claimYRadiusL3 = BUILDER.comment("Claim vertical half-height for tier 3.").defineInRange("yRadiusL3", 22, 1, 256);
     public static final ConfigValue<String> claimUpgradeItemL1L2 = BUILDER.comment("Item paid to upgrade a claim from tier 1 to 2.")
-        .define("upgradeItemL1L2", "minecraft:diamond_block");
+        .define("upgradeItemL1L2", "heraliz_composants:metal_renforce");
     public static final ConfigValue<String> claimUpgradeItemL2L3 = BUILDER.comment("Item paid to upgrade a claim from tier 2 to 3.")
-        .define("upgradeItemL2L3", "minecraft:diamond_block");
+        .define("upgradeItemL2L3", "heraliz_composants:metal_renforce");
     public static final IntValue claimUpgradeCostL1L2 = BUILDER.comment("How many upgradeItemL1L2 the tier 1 to 2 upgrade takes.")
-        .defineInRange("upgradeCostL1L2", 32, 0, 100000);
+        .defineInRange("upgradeCostL1L2", 10, 0, 100000);
     public static final IntValue claimUpgradeCostL2L3 = BUILDER.comment("How many upgradeItemL2L3 the tier 2 to 3 upgrade takes.")
-        .defineInRange("upgradeCostL2L3", 64, 0, 100000);
+        .defineInRange("upgradeCostL2L3", 25, 0, 100000);
     public static final IntValue claimSpacingMargin = BUILDER.comment(
             "Extra blocks of clearance forced between two groups' claims,",
             "on top of the gap needed for their footprints not to touch.",
@@ -77,19 +77,19 @@ public class Config {
         )
         .defineInRange("hours", 24.0, 0.1, 8760.0);
     public static final ConfigValue<String> upkeepItemWood = BUILDER.comment("Upkeep item paid for Twig and Wood pieces.")
-        .define("itemWood", "minecraft:oak_planks");
+        .define("itemWood", "heraliz_composants:planches");
     public static final ConfigValue<String> upkeepItemStone = BUILDER.comment("Upkeep item paid for Stone pieces.")
-        .define("itemStone", "minecraft:cobblestone");
+        .define("itemStone", "heraliz_composants:pierres_taillees");
     public static final ConfigValue<String> upkeepItemMetal = BUILDER.comment("Upkeep item paid for Sheet Metal pieces.")
-        .define("itemMetal", "minecraft:iron_ingot");
+        .define("itemMetal", "heraliz_composants:fragments_metal");
     public static final ConfigValue<String> upkeepItemArmored = BUILDER.comment("Upkeep item paid for Armored pieces.")
-        .define("itemArmored", "minecraft:netherite_scrap");
+        .define("itemArmored", "heraliz_composants:metal_renforce");
     public static final IntValue upkeepPerPieceWood = BUILDER.comment("Items of itemWood per Twig or Wood piece for a full supply.")
-        .defineInRange("perPieceWood", 4, 0, 100000);
+        .defineInRange("perPieceWood", 1, 0, 100000);
     public static final IntValue upkeepPerPieceStone = BUILDER.comment("Items of itemStone per Stone piece for a full supply.")
-        .defineInRange("perPieceStone", 4, 0, 100000);
+        .defineInRange("perPieceStone", 1, 0, 100000);
     public static final IntValue upkeepPerPieceMetal = BUILDER.comment("Items of itemMetal per Sheet Metal piece for a full supply.")
-        .defineInRange("perPieceMetal", 2, 0, 100000);
+        .defineInRange("perPieceMetal", 1, 0, 100000);
     public static final IntValue upkeepPerPieceArmored = BUILDER.comment("Items of itemArmored per Armored piece for a full supply.")
         .defineInRange("perPieceArmored", 1, 0, 100000);
     public static final IntValue upkeepSlotCapacity = BUILDER.comment("Max items stockpiled per upkeep slot. Withdrawals are limited to one stack at a time.")
