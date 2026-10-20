@@ -181,6 +181,8 @@
   "heraliz_quetes.cmd.donnee": "Задание «%s» выдано игроку %s.",
   "heraliz_quetes.cmd.pas_en_cours": "Нет активного задания «%s» (см. /quete joueur).",
   "heraliz_quetes.cmd.finie": "Задание завершено для %s.",
+  "heraliz_quetes.cmd.wipe": "%s полностью сброшен: при следующем входе он пройдёт всё заново.",
+  "heraliz_quetes.cmd.wipe_kick": "Твой персонаж сброшен. Перезайди, чтобы начать заново.",
   "heraliz_quetes.cmd.reset": "Прогресс заданий игрока %s сброшен.",
   "heraliz_quetes.tuto.varga_nom": "Командир Варга",
   "heraliz_quetes.tuto.varga": "Здесь без укрытия для вещей ты и недели не протянешь. Я могу помочь построить базу или дать первое задание. С чего начнёшь?",

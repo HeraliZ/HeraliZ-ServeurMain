@@ -1399,6 +1399,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Puis (20/10, Quêtes 1.8.8) : le PNJ à aller voir (guide, puis Varga) a son repère mis en avant à toute distance dans
   le spawn (plus grand, qui pulse, nom et distance en mètres ; `Lueurs.cible`) ; pendant la visite, repères visibles même
   de tout près ; caméra de la visite 3 fois plus lente (un tiers de tour par PNJ, `Presentation.TOUR`). Rien testé en jeu.
+  **`/wipe <joueur> confirmer`** (20/10, Quêtes 1.8.9, op permission 4, joueur connecté) : remise à zéro complète
+  (`base effacer`, `tuto rejouer`, `caracrea reset`, `curios clear` passés au serveur ; quêtes, inventaire, coffre de
+  l'Ender, marques de la cinématique, du guide et du Bâtisseur), puis expulsion : à la reconnexion, créateur de personnage,
+  cinématique, guide. Hérals, clan, grades et compte AuthMe gardés. Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des

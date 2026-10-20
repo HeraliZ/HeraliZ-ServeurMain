@@ -181,6 +181,8 @@
   "heraliz_quetes.cmd.donnee": "Quest \"%s\" given to %s.",
   "heraliz_quetes.cmd.pas_en_cours": "No quest in progress \"%s\" (see /quete joueur).",
   "heraliz_quetes.cmd.finie": "Quest completed for %s.",
+  "heraliz_quetes.cmd.wipe": "%s has been reset: they will go through the whole arrival again when they reconnect.",
+  "heraliz_quetes.cmd.wipe_kick": "Your character has been reset. Reconnect to start over.",
   "heraliz_quetes.cmd.reset": "Quest progress of %s reset.",
   "heraliz_quetes.tuto.varga_nom": "Commander Varga",
   "heraliz_quetes.tuto.varga": "Out here, without a shelter for your gear, you won't last a week. I can help you build your base, or give you your first mission. Where do you start?",
