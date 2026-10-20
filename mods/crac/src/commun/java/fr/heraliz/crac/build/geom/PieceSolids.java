@@ -182,8 +182,7 @@ public final class PieceSolids {
                 boolean open = (state & Piece.STATE_OPEN) != 0;
                 boolean insert = (state & Piece.INSERT_MASK) != 0;
                 if (kind.hasDoor()) {
-                    // HeraliZ : airlock with both doors open, the leaf collides as if closed (Piece.STATE_SAS)
-                    open &= (state & Piece.STATE_SAS) == 0;
+                    // HeraliZ : Piece.STATE_SAS no longer changes anything (20/10, CRac 1.14.0): an open door is open
                     insert = false;
                 }
                 wall(out, kind, key.rot(), !open, open, insert);

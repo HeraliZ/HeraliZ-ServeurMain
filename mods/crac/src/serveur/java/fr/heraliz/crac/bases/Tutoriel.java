@@ -681,14 +681,14 @@ public final class Tutoriel {
     }
 
     /**
-     * Armoire (Claim Block) posée pendant le tutoriel à sa place : tournée vers la pièce et poussée dans l'angle, comme
+     * Armoire (Claim Block) posée pendant le tutoriel à sa place : tournée vers la porte et poussée dans l'angle, comme
      * le montre la case verte (ClaimBlockHandler.claim, 1.11.0).
      */
     public static void armoirePosee(ServerPlayer p, ServerLevel level, net.minecraft.core.BlockPos pos) {
         Cabane.Coin coin = enCours(p) ? coin(p, level) : null;
         if (coin != null && coin.claim().equals(pos)) {
             plusTard(p, () -> {
-                Cabane.orienter(level, pos, coin.face(), coin.adosse());
+                Cabane.orienter(level, pos, coin.faceClaim(), coin.adosse());
                 majGuide(p);
             });
         }
@@ -855,6 +855,8 @@ public final class Tutoriel {
     // ---------------------------------------------------------------------------------------------- kit
 
     /** Le kit : plan, marteau, Claim Block, caisse en métal, matières de la cabane (coûts réels) avec la marge. */
+    static final int PLANCHES_EN_PLUS = 10;
+
     static List<ItemStack> contenuKit() {
         Map<Item, Integer> m = new LinkedHashMap<>();
         m.put(ModItems.BUILDING_PLAN.get(), 1);
@@ -884,6 +886,11 @@ public final class Tutoriel {
             if (bois != Items.AIR && n > 0) {
                 matieres.merge(bois, n, Integer::sum);
             }
+        }
+        // 10 planches en plus (20/10, demande du propriétaire : de quoi réparer et entretenir un peu plus)
+        Item planche = Config.SPEC.isLoaded() ? Config.upkeepItem(UpkeepResource.WOOD) : Items.AIR;
+        if (planche != Items.AIR) {
+            matieres.merge(planche, PLANCHES_EN_PLUS, Integer::sum);
         }
         matieres.forEach((item, n) -> m.merge(item, n, Integer::sum));
         List<ItemStack> out = new ArrayList<>();

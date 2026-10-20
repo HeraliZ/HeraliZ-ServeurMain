@@ -19,9 +19,12 @@ import static fr.heraliz.crac.client.kit.Dessin.*;
  * Réparer, Entretien et Raids. Rien n'est calculé ici : les chiffres viennent du serveur ({@link S2CFicheBase}).
  */
 public class EcranFicheBase extends EcranGroupe {
-    private static final float W = 620, H = 344, ROW = 38;
-    /** Taille des textes de la fiche (1 = taille des autres écrans de clan : jugée trop petite ici). */
-    private static final float E = 1.3F;
+    private static final float W = 580, H = 322, ROW = 35;
+    /** Textes de la fiche 15 % plus grands que les autres écrans de clan, dans des polices tracées à cette taille
+     * ({@code ui_fiche*}, grasses) : agrandir une police par une échelle les rendait granuleuses (20/10). */
+    private static final float E = 1.15F;
+    private static final ResourceLocation FICHE = new ResourceLocation("crac", "ui_fiche"), FICHE_MINI = new ResourceLocation("crac", "ui_fiche_mini"),
+        FICHE_GROS = new ResourceLocation("crac", "ui_fiche_gros");
     private static final String[] ONGLETS = {"poser", "ameliorer", "reparer", "entretien", "raids"};
 
     private final S2CFicheBase fiche;
@@ -127,9 +130,10 @@ public class EcranFicheBase extends EcranGroupe {
 
     /** Texte agrandi ({@link #E}), centré verticalement sur {@code cy}, coupé à {@code maxW} unités. */
     private float ecrire(GuiGraphics g, String s, ResourceLocation f, float x, float cy, float maxW, int argb) {
-        String c = Ui.ellipsis(this.font, s, f, Math.round(maxW / E));
-        texte(g, this.font, lit(c, f), x, cy - 4.9F * E, E, argb);
-        return largeur(this.font, c, f) * E;
+        ResourceLocation p = f == MINI ? FICHE_MINI : f == GRAS_9 ? FICHE_GROS : FICHE;
+        String c = Ui.ellipsis(this.font, s, p, Math.round(maxW));
+        texte(g, this.font, lit(c, p), x, cy - 4.9F * E, argb);
+        return largeur(this.font, c, p);
     }
 
     private void aide(GuiGraphics g, String s, float y) {
@@ -147,7 +151,7 @@ public class EcranFicheBase extends EcranGroupe {
 
     private void entetes(GuiGraphics g, float y, float[] cols, String... noms) {
         for (int i = 0; i < noms.length; i++) {
-            caps(g, this.font, noms[i], MINI_GRAS, cols[i], y - 4.21F * 1.15F, 1.15F, 0.6F, a(ATTENUE, 255));
+            caps(g, this.font, noms[i], FICHE_MINI, cols[i], y - 4.21F * E, 0.6F, a(ATTENUE, 255));
         }
     }
 
@@ -183,7 +187,7 @@ public class EcranFicheBase extends EcranGroupe {
         this.aide(g, t("crac.fiche.poser.aide"), this.y0 + 66);
         List<S2CFicheBase.Pose> l = this.fiche.poses();
         int parColonne = (l.size() + 1) / 2;
-        float colW = (this.gw() - 12) / 2, h = 26;
+        float colW = (this.gw() - 12) / 2, h = 24;
         for (int i = 0; i < l.size(); i++) {
             S2CFicheBase.Pose p = l.get(i);
             float x = this.gx() + (i / parColonne) * (colW + 12);

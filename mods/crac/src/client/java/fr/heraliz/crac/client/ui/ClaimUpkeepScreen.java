@@ -139,7 +139,13 @@ public class ClaimUpkeepScreen extends AbstractContainerScreen<ClaimUpkeepMenu> 
             col = barColor(minutes);
         }
 
-        g.drawCenteredString(this.font, text, this.imageWidth / 2, 50, col);
+        // plus petit et sous les comptes des cases (20/10 : « DÉGRADATION EN COURS » les recouvrait)
+        float k = Math.min(0.8F, (this.imageWidth - 12) / (float) Math.max(1, this.font.width(text)));
+        g.pose().pushPose();
+        g.pose().translate(this.imageWidth / 2F, 56, 0);
+        g.pose().scale(k, k, 1.0F);
+        g.drawString(this.font, text, -this.font.width(text) / 2, 0, col, true);
+        g.pose().popPose();
     }
 
     /** Bouton « Accès » en haut à droite (x, y, w, h dans l'écran). */

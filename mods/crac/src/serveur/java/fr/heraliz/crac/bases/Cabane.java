@@ -299,7 +299,7 @@ final class Cabane {
      * fondation et la caisse dans celle d'à côté (vers la porte), toutes deux poussées vers le mur ({@code Adosse}).
      * {@code vueClaim}, {@code vueCaisse} : où elles se voient (les cases vertes du guide).
      */
-    record Coin(BlockPos claim, BlockPos caisse, Direction face, int adosse, BlockPos vueClaim, BlockPos vueCaisse) {
+    record Coin(BlockPos claim, BlockPos caisse, Direction face, Direction faceClaim, int adosse, BlockPos vueClaim, BlockPos vueCaisse) {
     }
 
     static Coin coin(Piece f, Piece s) {
@@ -307,7 +307,8 @@ final class Cabane {
         BlockPos claim = surFondation(s);
         BlockPos caisse = claim.relative(d.getOpposite());
         int v = fr.heraliz.crac.block.Adosse.code(droite.getStepX() + d.getStepX(), droite.getStepZ() + d.getStepZ());
-        return new Coin(claim, caisse, droite.getOpposite(), v, claim.relative(d).relative(droite), claim.relative(droite));
+        // armoire face à la porte (20/10, demande du propriétaire), caisse face à la pièce
+        return new Coin(claim, caisse, droite.getOpposite(), d.getOpposite(), v, claim.relative(d).relative(droite), claim.relative(droite));
     }
 
     /** Les deux premières fondations de la cabane (la porte est sur la première), sinon null. */
