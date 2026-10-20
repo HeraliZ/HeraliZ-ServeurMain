@@ -1375,6 +1375,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (`base effacer`, `tuto rejouer`, `caracrea reset`, `curios clear` passés au serveur ; quêtes, inventaire, coffre de
   l'Ender, marques de la cinématique, du guide et du Bâtisseur), puis expulsion : à la reconnexion, créateur de personnage,
   cinématique, guide. Hérals, clan, grades et compte AuthMe gardés. Rien testé en jeu.
+  Puis (20/10, Quêtes 1.8.10) : visite du guide 7 fois plus lente encore (1/21 de tour par PNJ) et enchaînée sans
+  revenir au joueur entre deux PNJ (le tour de caméra dure 1 s de plus que l'écart). Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des

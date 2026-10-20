@@ -22,8 +22,8 @@ import net.minecraftforge.event.TickEvent;
  * Même principe que le tour de la base à la fin du tutoriel (CRac).
  */
 final class Presentation {
-    /** Part du tour faite pendant la présentation (20/10 : un tiers de tour, 3 fois plus lent qu'avant). */
-    private static final double TOUR = 1.0 / 3;
+    /** Part du tour faite pendant la présentation (20/10 : 1/21 de tour, la caméra bouge à peine). */
+    private static final double TOUR = 1.0 / 21;
     /** Hauteur de la caméra au-dessus des yeux du PNJ (bas : le spawn est une grotte). */
     private static final double HAUT = 0.5;
     /** Écart gardé avec un mur ou le plafond (blocs). */
