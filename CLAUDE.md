@@ -505,6 +505,10 @@ Règles :
      (les bans et preuves de Spartan, dans `config/spartan/`, ne sont jamais touchés) ;
    - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde (nom lu dans le `server.properties` du Ptero) :
      **les configs du dépôt font foi**, un réglage changé à la main sur le serveur est écrasé au prochain envoi ;
+     depuis le 20/10, toujours écrasés (`mput`, plus `mirror` : le serveur réécrit ces fichiers, et un fichier plus
+     récent sur le Ptero n'était plus remplacé : le monde gardait les anciens coûts de CRac) ; la case « redemarrer »
+     arrête le serveur, recopie ces réglages serveur éteint, puis le redémarre. Workflow « Diagnostic CRac »
+     (`.github/workflows/diag_crac.yml`, lecture seule) : réglages de CRac lus dans le monde, jars, journal ;
    - le monde, les données des joueurs, `ops.json` et `server.properties` ne sont jamais touchés (les fichiers de la
      racine du serveur se mettent à jour à la main) ;
 5. **redémarrage seulement sur demande** : bouton « Run workflow » dans l'onglet Actions, case « redemarrer ». Le
