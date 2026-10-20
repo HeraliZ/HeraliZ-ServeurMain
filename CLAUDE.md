@@ -405,7 +405,11 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   « descend moins vite que la gravité » en heurtant un modèle 3D) ; en plein air, rien ne change ; (3) BadPackets
   « aucune position pendant 2,4 s » (blink) : signalé seulement si la position qui arrive ensuite est à plus de 1,5 bloc
   de la dernière (un joueur immobile, ou dont la caméra est prise par une cinématique, n'envoie plus sa position).
-  Rien testé en jeu.
+  Rien testé en jeu. Spartan 2.4.2 (20/10) : plongeon EN L'AIR (après un saut ou en tombant d'un toit) : le serveur remet la vitesse
+  verticale à 0 (`setDeltaMovement(…, 0, …)`), Spartan ignorait une vitesse imposée de 0 et attendait la chute déjà
+  lancée (alertes Fly « descend moins vite que la gravité : dernier pas -0.447, maximum -0.582 ») ; une vitesse
+  imposée remplace maintenant toujours la vitesse verticale, même par 0 (`impulseUp` = NaN si aucune ; test
+  `EnvelopeTest.diveInMidAirResetsFallSpeed`). Rien testé en jeu.
 - **Jars imbriqués** : `outils/construire.py` suit `META-INF/jarjar/metadata.json` pour trouver les jars que Forge
   charge depuis un autre jar (EntityCulling apporte TRansition et TRender dans `META-INF/jars/`) ; leurs configs Mixin
   sont dans `officiel.json`. Avant le 11/10, elles étaient signalées à tort (« config Mixin inconnue »).

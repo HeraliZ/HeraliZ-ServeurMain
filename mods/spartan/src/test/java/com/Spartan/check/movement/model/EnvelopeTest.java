@@ -51,7 +51,7 @@ class EnvelopeTest {
                 slow.reset(h.velocity());
             }
             VerticalEnvelope.Tick vt = new VerticalEnvelope.Tick(s.groundStart(), s.groundEnd(), 0.08, jumpVelocity,
-                    0.6, additive ? 0 : impulseUp, additive ? impulseUp : 0, bounce);
+                    0.6, !additive && (impulseH != 0 || impulseUp != 0) ? impulseUp : Double.NaN, additive ? impulseUp : 0, bounce);
             double allowedV = v.advance(vt, ticks, s.dy());
             maxExcessV = Math.max(maxExcessV, s.dy() - allowedV);
             sumExcessV += Math.max(0, s.dy() - allowedV);
@@ -177,6 +177,31 @@ class EnvelopeTest {
         }
         assertTrue(j.maxExcessH < EPS, "horizontal " + j.maxExcessH);
         assertTrue(j.maxExcessV < EPS, "vertical " + j.maxExcessV);
+    }
+
+    @Test
+    void diveInMidAirResetsFallSpeed() {
+        // Plongeon du mod tactique en pleine chute : le serveur remplace la vitesse, verticale à 0.
+        VanillaWalker w = new VanillaWalker();
+        Judge j = new Judge();
+        for (int i = 0; i < 20; i++) {
+            j.feed(w.tick(1, 0, true, false, false), false);
+        }
+        w.y += 7; // bord d'un toit de 7 blocs
+        w.onGround = false;
+        w.vy = 0;
+        for (int i = 0; i < 60; i++) {
+            if (i == 8) {
+                w.vx = 0.9;
+                w.vz = 0;
+                w.vy = 0;
+                j.impulseH = 0.9;
+                j.impulseUp = 0;
+            }
+            j.feed(w.tick(1, 0, true, false, false), false);
+        }
+        assertTrue(j.maxExcessH < EPS, "horizontal " + j.maxExcessH);
+        assertTrue(j.sumExcessV < EPS, "vertical " + j.sumExcessV);
     }
 
     @Test

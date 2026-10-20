@@ -638,7 +638,7 @@ public final class MovementEngine {
         }
         double impulseH = 0;
         double pushH = 0;
-        double impulseUp = 0;
+        double impulseUp = Double.NaN; // une vitesse imposée REMPLACE la vitesse verticale, même par 0 (plongeon en l'air)
         double pushUp = 0;
         for (Impulse i : s.impulses) {
             if (!i.active(s.tx, m.nanos())) {
@@ -650,7 +650,7 @@ public final class MovementEngine {
                 pushUp += Math.max(0, i.vy);
             } else {
                 impulseH = Math.max(impulseH, h);
-                impulseUp = Math.max(impulseUp, i.vy);
+                impulseUp = Double.isNaN(impulseUp) ? i.vy : Math.max(impulseUp, i.vy);
             }
         }
         boolean exact = MovementEnv.onSurface(p, m.boxFrom());
