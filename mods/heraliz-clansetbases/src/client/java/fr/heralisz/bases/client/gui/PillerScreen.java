@@ -128,7 +128,7 @@ public class PillerScreen extends Screen {
 
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
-        if (BasesKeys.OUVRIR.matches(key, scan) && System.currentTimeMillis() - ouvertLe > 300) {
+        if (false && System.currentTimeMillis() - ouvertLe > 300) {
             onClose();
             return true;
         }

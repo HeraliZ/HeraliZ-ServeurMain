@@ -121,7 +121,7 @@ public final class BasesClient {
 
         @SubscribeEvent
         public static void touches(RegisterKeyMappingsEvent e) {
-            e.register(BasesKeys.OUVRIR);
+            // 20/10 : plus de touche N pour l'ancien écran des bunkers (bases CRac à la place, choix du propriétaire)
         }
 
         @SubscribeEvent
@@ -140,9 +140,7 @@ public final class BasesClient {
         public static void tick(TickEvent.ClientTickEvent e) {
             if (e.phase != TickEvent.Phase.END) return;
             Minecraft mc = Minecraft.getInstance();
-            while (BasesKeys.OUVRIR.consumeClick()) {
-                if (mc.player != null && mc.screen == null) ouvrir();
-            }
+            // touche N retirée le 20/10 (ancien système des bunkers)
         }
 
         @SubscribeEvent
