@@ -16,8 +16,8 @@
     },
     "tacz:aa12": {
       "famille": "pompe",
-      "rarete": "epique",
-      "degats": 2.5,
+      "rarete": "legendaire",
+      "degats": 2.59,
       "tete": 1.25
     },
     "tacz:aiawp": {
@@ -628,8 +628,8 @@
     },
     "maxstuff:saiga12": {
       "famille": "pompe",
-      "rarete": "epique",
-      "degats": 2.5,
+      "rarete": "legendaire",
+      "degats": 2.59,
       "tete": 1.25
     },
     "maxstuff:scar_hamr": {
