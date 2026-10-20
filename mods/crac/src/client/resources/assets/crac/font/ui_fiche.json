@@ -11,7 +11,7 @@
       "type": "ttf",
       "file": "crac:dmsans_bold.ttf",
       "size": 8.6,
-      "oversample": 6.0,
+      "oversample": 3.0,
       "shift": [
         0.0,
         1.0
@@ -20,7 +20,7 @@
     {
       "type": "ttf",
       "size": 8.6,
-      "oversample": 6.0,
+      "oversample": 3.0,
       "shift": [
         0.0,
         1.0

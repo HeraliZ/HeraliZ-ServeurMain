@@ -165,9 +165,16 @@ public class StructureBlock extends BaseEntityBlock {
         return o != null ? o.state().getDestroyProgress(player, level, o.pos()) : super.getDestroyProgress(state, player, level, pos);
     }
 
+    /**
+     * Collision : la pièce, plus la partie d'un objet adossé voisin (caisse en métal, armoire) qui dépasse dans cette case
+     * (20/10 : on traversait les caisses, leur forme poussée contre le mur sortait de leur propre case et Minecraft ne
+     * la cherchait pas là ; on peut maintenant monter dessus).
+     */
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return shapeAt(level, pos);
+        VoxelShape piece = shapeAt(level, pos);
+        VoxelShape objets = fr.heraliz.crac.block.Adosse.morceaux(level, pos);
+        return objets.isEmpty() ? piece : Shapes.or(piece, objets);
     }
 
     @Override

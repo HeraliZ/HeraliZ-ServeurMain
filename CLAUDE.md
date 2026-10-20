@@ -1374,6 +1374,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   le tutoriel « à faire » ; `/tuto lancer` et `/tuto rejouer` redonnent le kit dans la même seconde, la marque restait :
   ni rappel ni présentation. Elle est maintenant effacée dès que le tutoriel est à faire ou en cours ; présentation aussi
   en créatif (staff qui teste). Rien testé en jeu.
+  Troisième essai (20/10, CRac 1.14.1-beta, Quêtes 1.8.5) : fiche `/base info` à 92 % de la fenêtre quelle que soit sa
+  taille (`EcranCanevas.echelleEcran`, échelle non entière ; avant, une petite fenêtre gardait l'échelle 1 : tout
+  minuscule), en-tête, onglets et pied dans les polices de la fiche (oversample 3) ; bouton « Infos sur les bases » chez
+  Varga (ouvre la fiche) ; présentation du Bâtisseur raccourcie (2 messages, 25 s ; le conseil « améliore en pierre puis
+  en métal » y passe, retiré des mots de la fin du tutoriel) ; caisse en métal et armoire adossées solides : la case du
+  mur ajoute à sa collision la part de l'objet voisin (`StructureBlock.getCollisionShape`, `Adosse.morceaux`) : on ne
+  les traverse plus, on monte dessus. Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des
