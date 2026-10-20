@@ -430,6 +430,10 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   numéros gardés dans `config/spartan/discord_fils.json`, par UUID). Publication supprimée : recréée à l'alerte
   suivante. Webhook d'un salon normal : envois simples comme avant. Les sanctions publiques ne changent pas. Rien testé
   sur Discord.
+- **Mods ajoutés après le client de référence** (Spartan 2.6.1, 20/10) : un mod du jeu absent du client de référence
+  appris (`/spartan reference learn`) était signalé « module de code inconnu chargé » (orange) à chaque connexion
+  (heraliz_grades, heraliz_quetes chez le propriétaire). Il ne l'est plus si son jar est un jar officiel
+  (`officiel.json`, empreinte contrôlée à part) ; un composant de lancement inconnu reste rouge.
 - **Jars imbriqués** : `outils/construire.py` suit `META-INF/jarjar/metadata.json` pour trouver les jars que Forge
   charge depuis un autre jar (EntityCulling apporte TRansition et TRender dans `META-INF/jars/`) ; leurs configs Mixin
   sont dans `officiel.json`. Avant le 11/10, elles étaient signalées à tort (« config Mixin inconnue »).

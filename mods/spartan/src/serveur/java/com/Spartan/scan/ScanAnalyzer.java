@@ -126,7 +126,7 @@ public final class ScanAnalyzer {
         }
         providers(r, ref, hasRef, official != null, s, out);
         files(r, ref, hasRef, official, out);
-        modules(r, ref, hasRef, out);
+        modules(r, ref, hasRef, official, out);
         mixins(r, ref, hasRef, official, out);
         code(r, ref, hasRef, out);
         if (baseline != null) {
@@ -270,13 +270,20 @@ public final class ScanAnalyzer {
         }
     }
 
-    private static void modules(ScanReport r, ReferenceProfile ref, boolean hasRef, List<Finding> out) {
+    private static void modules(ScanReport r, ReferenceProfile ref, boolean hasRef, OfficialProfile off,
+                                List<Finding> out) {
         if (!hasRef) {
             return;
         }
         for (String m : r.modules) {
             String key = ReferenceProfile.moduleKey(m);
             if (ref.modules.contains(key)) {
+                continue;
+            }
+            // Mod du jeu dont le jar est un jar officiel (son empreinte est contrôlée par files()) : un mod ajouté
+            // ou renommé après l'apprentissage du client de référence n'est pas « inconnu ».
+            int at = m.indexOf('@');
+            if (off != null && key.startsWith("GAME/") && at >= 0 && off.knowsName(m.substring(at + 1))) {
                 continue;
             }
             String layer = key.contains("/") ? key.substring(0, key.indexOf('/')) : "?";
