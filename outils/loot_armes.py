@@ -33,7 +33,7 @@ COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/c
 # nombre moyen pour 100 conteneurs ouverts
 POUR_100 = {
     "armes":       {1: 6, 2: 9, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},
-    "plans":       {1: 4, 2: 6, 3: 8, 4: 8, 5: 8, 6: 8, 7: 15},  # plan de fabrication = rareté de son arme
+    "plans":       {1: 4, 2: 6, 3: 8, 4: 8, 5: 8, 6: 8, 7: 7},  # plan de fabrication = rareté de son arme
     "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
     "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
     "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 45},
@@ -49,6 +49,8 @@ PARTS = {
     7: {"peu_commun": 20, "rare": 56.67, "epique": 18, "legendaire": 4, "unique": 1.33},  # Unique (armes seulement) : 1 coffre sur 250
 }
 LOURDES = 0.35
+# parts propres à une famille dans un palier (sinon PARTS)
+PARTS_FAMILLE = {("plans", 7): {"rare": 35, "epique": 45, "legendaire": 20}}
 PARACHUTE = 0.25  # part du poids d'origine du parachute
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
 AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.25), ("nourriture", 0.6), ("boissons", 0.6),
@@ -228,6 +230,7 @@ def ecrire():
         actifs = sum(base)
         rel = []
         for f, par_r in fams.items():
+            parts = PARTS_FAMILLE.get((f, t), PARTS[t])
             somme_parts = sum(parts.get(r, 0) for r in par_r)
             for r, liste in par_r.items():
                 if r not in parts:
