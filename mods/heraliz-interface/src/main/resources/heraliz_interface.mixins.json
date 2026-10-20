@@ -6,6 +6,7 @@
   "refmap": "heraliz_interface.refmap.json",
   "client": [
     "KeyBindsListMixin",
+    "KeyMappingInterditMixin",
     "OptionsMixin"
   ],
   "injectors": {

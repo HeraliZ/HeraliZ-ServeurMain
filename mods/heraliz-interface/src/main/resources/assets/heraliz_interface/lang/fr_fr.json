@@ -71,5 +71,7 @@
   "gui.heraliz_interface.titre.ping": "%s ms",
   "heraliz_interface.pack.textures": "HeraliZ : textures",
   "heraliz_interface.pack.herbe": "HeraliZ : herbe",
-  "gui.heraliz_interface.pause.carte.extraction": "Extraction %s"
+  "gui.heraliz_interface.pause.carte.extraction": "Extraction %s",
+  "heraliz_interface.touche_interdite.titre": "Touche réservée",
+  "heraliz_interface.touche_interdite.texte": "² et la touche sous Entrée ne peuvent servir à aucune action."
 }

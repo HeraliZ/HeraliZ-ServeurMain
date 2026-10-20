@@ -71,5 +71,7 @@
   "gui.heraliz_interface.titre.ping": "%s ms",
   "heraliz_interface.pack.textures": "HeraliZ: textures",
   "heraliz_interface.pack.herbe": "HeraliZ: grass",
-  "gui.heraliz_interface.pause.carte.extraction": "Extraction %s"
+  "gui.heraliz_interface.pause.carte.extraction": "Extraction %s",
+  "heraliz_interface.touche_interdite.titre": "Reserved key",
+  "heraliz_interface.touche_interdite.texte": "² and the key below Enter cannot be bound to any action."
 }
