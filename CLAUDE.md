@@ -396,6 +396,16 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   nourriture…), un client 1.17+ renvoie sa dernière position exacte en plus du paquet du tick. Compté comme un vrai pas,
   il déclenchait Speed, Vertical, Fly et Timer à tort (alertes « maximum 0.07 », « 0.65 bloc de trop »). Il ne sert
   plus qu'à la rotation, au plus un toutes les 100 ms.
+- **Fausses alertes de mouvement réduites** (Spartan 2.4.1, 19/10) : (1) plongeon du mod tactique et autres élans donnés
+  par le serveur (recul, explosion) : un élan n'est plus « consommé » par un pas à peine plus rapide que la normale
+  avant que le jeu du joueur l'applique (alertes Speed « 0,77 bloc de plus » après une roulade) ; (2) terrain accidenté
+  (`MovementEnv.roughNear` : dalle, pot de fleurs, escalier, meuble ou décor 3D, entité solide comme barricade,
+  véhicule, bombe, à 0,35 bloc sur le côté et 0,7 sous les pieds) : le sol affirmé par le joueur y est cru, saut en
+  sprint permis même quand il finit sur une marche, +0,06 bloc par tick de marge (alertes Speed + Vertical + Fly
+  « descend moins vite que la gravité » en heurtant un modèle 3D) ; en plein air, rien ne change ; (3) BadPackets
+  « aucune position pendant 2,4 s » (blink) : signalé seulement si la position qui arrive ensuite est à plus de 1,5 bloc
+  de la dernière (un joueur immobile, ou dont la caméra est prise par une cinématique, n'envoie plus sa position).
+  Rien testé en jeu.
 - **Jars imbriqués** : `outils/construire.py` suit `META-INF/jarjar/metadata.json` pour trouver les jars que Forge
   charge depuis un autre jar (EntityCulling apporte TRansition et TRender dans `META-INF/jars/`) ; leurs configs Mixin
   sont dans `officiel.json`. Avant le 11/10, elles étaient signalées à tort (« config Mixin inconnue »).
@@ -1142,7 +1152,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     châtiment retirés ; couteaux CT et T de base retirés du gunpack `arkaniaz_pack_4_converted` (index seulement, listés
     dans `serveur/tacz_retires.txt` ; affichages et modèles gardés pour leurs skins) ; plus d'armes de mêlée dans le
     loot T1 à T6 (Loot 0.9.2) ; couteau des kits ClashWar et des Zombies : Dague TAC Ember Shard (Matchs 0.11.4) ;
-    armes d'exécution par défaut de Réanimation : Éclat marin Tide Stripe et batte Walnut (Réanimation 1.16.2) ;
+    armes d'exécution par défaut de Réanimation : Éclat marin Tide Stripe et batte Walnut (Réanimation 1.16.2).
+    Tactique 2.26.1 : même vitesse pour toute la mêlée, +5 % en main (fiches des armes de LR et de leurs skins,
+    `outils/melee_base/` ; fiche commune des couteaux TaCZ `arkaniaz:knife_data`, base 0,1 -> 0,05), et infobulle de la
+    mêlée sans les lignes de Minecraft « Dans la main principale : … » (`MeleeItem.getDefaultTooltipHideFlags`) : nom,
+    étoiles, « Exclusivité HeraliZ » et rareté seulement ;
   - skins de mêlée (18/10, Tactique 2.19.0 à 2.21.0 après les retours du propriétaire) : `heralisz_melee:desmoulins_edge__lore`
     et `heralisz_melee:baseball_bat__doppler_sapphire`, fiches copiées des armes de base (mêmes dégâts), dessinées
     EXACTEMENT comme les couteaux de heralisz_skins (même shader `camo_65` Lore / `camo_56` Doppler Saphir, même carte de
