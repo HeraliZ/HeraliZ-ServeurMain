@@ -83,7 +83,7 @@ RARETE_ARME = {
     "tacz:db_short": "peu_commun", "tacz:db_long": "peu_commun", "arkaniaz:686": "peu_commun",
     "heraliz_fuse:olympia": "peu_commun",
     "tacz:m870": "rare", "maxstuff:m870t": "rare", "heraliz_fuse:stakeout": "epique", "maxstuff:db_short_tactical": "rare",
-    "maxstuff:saiga12": "epique", "tacz:aa12": "epique",
+    "maxstuff:saiga12": "legendaire", "tacz:aa12": "legendaire",
     "maxstuff:db_50": "legendaire",
     # fusils d'assaut et de combat (dès Rare)
     "tacz:ak47": "rare", "arkaniaz:aks74u": "rare", "maxstuff:aks74u": "rare", "tacz:m16a1": "rare",
