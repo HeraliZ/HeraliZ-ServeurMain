@@ -33,7 +33,7 @@ COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/c
 # nombre moyen pour 100 conteneurs ouverts
 POUR_100 = {
     "armes":       {1: 6, 2: 9, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},
-    "plans":       {1: 15, 2: 15, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},  # plan de fabrication = rareté de son arme
+    "plans":       {1: 4, 2: 6, 3: 8, 4: 8, 5: 8, 6: 8, 7: 15},  # plan de fabrication = rareté de son arme
     "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
     "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
     "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 45},
