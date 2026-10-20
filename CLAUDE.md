@@ -1389,6 +1389,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Bâtisseur chargé (attente jusqu'à 8 s, sinon radio seule) ; « Te voici au spawn » au-dessus de la barre d'objets, plus
   dans le chat (il cachait la radio) ; plan et marteau de construction vendus par le Bâtisseur (50 hérals chacun,
   `MATERIAUX` de `outils/marchands.py`). Rien testé en jeu.
+  **Guide du spawn** (20/10, Quêtes 1.8.7) : nouveau PNJ `guide` (`pnj/guide.json`, à poser en jeu : `/pnj creer guide`) ;
+  après la cinématique, le suivi dit « Va voir le Guide » ; son bouton « Fais-moi visiter » (toujours rejouable) fait le
+  tour des PNJ (Mila, Bâtisseur, Jacqueline, Doyen, Jack, Varga : caméra 12 s autour de chacun, phrase du guide à la
+  radio avec son portrait ; PNJ absent : phrase seule), marque `heraliz_guide_visite`, puis « Va voir Varga ». Varga,
+  base pas faite : « Commencer ma première mission » ou « Faire ma base » (le tutoriel reste proposé après la mission).
+  Plus de présentation du Bâtisseur ni de rappel /spawn après le tutoriel (code gardé, plus appelé). Plus de nom de
+  Minecraft au-dessus des PNJ (`PnjRendu.shouldShowName`) : seuls le repère et son nom. Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des
