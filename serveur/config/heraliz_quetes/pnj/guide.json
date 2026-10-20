@@ -1,0 +1,61 @@
+{
+  "id": "guide",
+  "nom": {
+    "fr": "Le Guide",
+    "en": "The Guide",
+    "ru": "Проводник"
+  },
+  "skin": "jack",
+  "apparence": {
+    "skin_tone": "beige",
+    "eye_shape": "hooded",
+    "eye_color": "grey",
+    "brow_style": "thick",
+    "nose_style": "pointed",
+    "mouth_style": "thin",
+    "hair_style": "buzz",
+    "hair_color": "dark_brown",
+    "facial_hair": "short_beard",
+    "shirt_style": "jacket",
+    "shirt_color": "olive",
+    "shirt_color2": "khaki",
+    "pants_style": "trousers",
+    "pants_color": "khaki",
+    "shoes_style": "boots",
+    "shoes_color": "brown",
+    "marks": [
+      "scar_brow"
+    ],
+    "wear": "dirty",
+    "eye_size": 1
+  },
+  "role": {
+    "fr": "Accueil du camp",
+    "en": "Camp welcome",
+    "ru": "Встреча новичков"
+  },
+  "ambiance": [
+    {
+      "fr": "Bienvenue au camp.",
+      "en": "Welcome to the camp.",
+      "ru": "Добро пожаловать в лагерь."
+    }
+  ],
+  "presentation": {
+    "fr": "Je montre le camp aux nouveaux arrivants.",
+    "en": "I show newcomers around the camp.",
+    "ru": "Я показываю лагерь новичкам."
+  },
+  "accueil": {
+    "inconnu": {
+      "fr": "Un nouveau ? Viens, je vais te faire visiter.",
+      "en": "New here? Come, I'll show you around.",
+      "ru": "Новенький? Пойдём, я всё покажу."
+    },
+    "connu": {
+      "fr": "Besoin que je te remontre le camp ?",
+      "en": "Need me to show you the camp again?",
+      "ru": "Показать тебе лагерь ещё раз?"
+    }
+  }
+}
