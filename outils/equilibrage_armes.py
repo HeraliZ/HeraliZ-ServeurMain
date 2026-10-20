@@ -75,14 +75,14 @@ RARETE_ARME = {
     # mitraillettes (dès Peu commun)
     "tacz:uzi": "peu_commun", "arkaniaz:sr_2m": "peu_commun", "arkaniaz:pp19": "peu_commun",
     "heraliz_fuse:mp5k": "peu_commun", "maxstuff:hk_mp5k": "peu_commun", "heraliz_fuse:mp5_classic": "peu_commun",
-    "tacz:ump45": "rare", "arkaniaz:ump9": "rare", "maxstuff:ump9": "rare", "arkaniaz:evo3": "rare",
+    "tacz:ump45": "rare", "arkaniaz:ump9": "rare", "arkaniaz:evo3": "rare",
     "heraliz_fuse:mp7r": "rare", "heraliz_fuse:ro635v3": "rare", "maxstuff:hk_mp5sd": "rare",
     "tacz:p90": "epique", "maxstuff:ar57": "epique", "tacz:vector45": "epique", "maxstuff:vector9": "epique",
     "arkaniaz_custom:vector_firmax": "legendaire", "arkaniaz_custom:vectorhy": "legendaire",
     # fusils à pompe (dès Peu commun)
     "tacz:db_short": "peu_commun", "tacz:db_long": "peu_commun", "arkaniaz:686": "peu_commun",
     "heraliz_fuse:olympia": "peu_commun",
-    "tacz:m870": "rare", "maxstuff:m870t": "rare", "heraliz_fuse:stakeout": "rare", "maxstuff:db_short_tactical": "rare",
+    "tacz:m870": "rare", "maxstuff:m870t": "rare", "heraliz_fuse:stakeout": "epique", "maxstuff:db_short_tactical": "rare",
     "maxstuff:saiga12": "epique", "tacz:aa12": "epique",
     "maxstuff:db_50": "legendaire",
     # fusils d'assaut et de combat (dès Rare)

@@ -76,6 +76,16 @@ arkaniaz_pack_0_converted/assets/tacz/textures/attachment/uv/scope_standard_8x_s
 arkaniaz_pack_0_converted/data/tacz/data/attachments/scope_standard_8x_data.json
 arkaniaz_pack_0_converted/data/tacz/index/attachments/scope_standard_8x.json
 arkaniaz_pack_0_converted/data/tacz/recipes/attachments/scope_standard_8x.json
+arkaniaz_pack_5_converted/assets/maxstuff/display/guns/ump9_display.json
+arkaniaz_pack_5_converted/assets/maxstuff/geo_models/gun/ump9_geo.json
+arkaniaz_pack_5_converted/assets/maxstuff/textures/gun/hud/ump9.png
+arkaniaz_pack_5_converted/assets/maxstuff/textures/gun/slot/ump9.png
+arkaniaz_pack_5_converted/assets/maxstuff/textures/gun/uv/ump9.png
+arkaniaz_pack_5_converted/data/maxstuff/data/guns/ump9_data.json
+arkaniaz_pack_5_converted/data/maxstuff/index/guns/ump9.json
+arkaniaz_pack_5_converted/data/maxstuff/recipes/gun/ump9.json
+arkaniaz_pack_5_converted/data/maxstuff/tacz_tags/attachments/allow_attachments/ump9.json
+heraliz_accessoires/data/maxstuff/tacz_tags/attachments/allow_attachments/ump9.json
 
 # 19/10 : skins de couteaux retirés après l'essai en jeu (outils de mods/heraliz-tactique/outils/skins_couteaux.py)
 heralisz_skins/data/heralisz_skins/index/guns/t_knife__sunbaked.json
