@@ -44,6 +44,10 @@ final class Commandes {
             SharedSuggestionProvider.suggest(Moteur.points().tous().stream().map(Points.Point::groupe).distinct(), b);
 
     static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
+        // 20/10 : remise à zéro complète d'un joueur (op seulement), « confirmer » pour éviter un accident
+        d.register(Commands.literal("wipe").requires(src -> src.hasPermission(4))
+                .then(Commands.argument("joueur", EntityArgument.player())
+                        .then(Commands.literal("confirmer").executes(c -> wipe(c, EntityArgument.getPlayer(c, "joueur"))))));
         d.register(Commands.literal("quetes").executes(c -> {
             Moteur.envoyerJournal(c.getSource().getPlayerOrException(), true);
             return 1;
@@ -314,6 +318,41 @@ final class Commandes {
         if (q == null) return erreur(c, "heraliz_quetes.cmd.pas_en_cours", "Pas de quête en cours « %s » (voir /quete joueur).", cle);
         Moteur.terminer(p, a, q);
         dire(c, "heraliz_quetes.cmd.finie", "Quête finie pour %s.", p.getGameProfile().getName());
+        return 1;
+    }
+
+    /** Données du joueur gardées à la mort et qui disent « déjà fait » (cinématique, guide, Bâtisseur). */
+    private static final String[] MARQUES = {"heraliz_cinematique_vue", "heraliz_cinematique_finie", "heraliz_guide_visite",
+            "heraliz_batisseur_presente"};
+
+    /**
+     * Remise à zéro complète : base CRac, tutoriel, personnage CaraCrea, quêtes, inventaire, coffre de l'Ender, Curios,
+     * marques de la cinématique et du guide ; puis le joueur est expulsé : à sa reconnexion il refait toute l'arrivée
+     * (créateur de personnage, cinématique, guide). Hérals, clan, grades et compte AuthMe ne changent pas. Chaque mod
+     * absent est simplement sauté (commandes passées au serveur).
+     */
+    private static int wipe(CommandContext<CommandSourceStack> c, ServerPlayer p) {
+        String nom = p.getGameProfile().getName();
+        var srv = p.server;
+        CommandSourceStack console = srv.createCommandSourceStack().withSuppressedOutput();
+        for (String cmd : new String[]{"base effacer " + nom, "tuto rejouer " + nom, "caracrea reset " + nom, "curios clear " + nom}) {
+            try {
+                srv.getCommands().performPrefixedCommand(console, cmd);
+            } catch (Exception ignore) {
+                // mod absent ou commande refusée : on continue
+            }
+        }
+        reset(c, p);
+        p.getInventory().clearContent();
+        p.getEnderChestInventory().clearContent();
+        p.containerMenu.setCarried(ItemStack.EMPTY);
+        CompoundTag pers = p.getPersistentData().getCompound(net.minecraft.world.entity.player.Player.PERSISTED_NBT_TAG);
+        for (String m : MARQUES) pers.remove(m);
+        Accueil.oublier(p.getUUID());
+        com.mojang.logging.LogUtils.getLogger().info("[Quêtes] /wipe de {} par {}", nom, c.getSource().getTextName());
+        dire(c, "heraliz_quetes.cmd.wipe", "%s a été remis à zéro : il refera toute l'arrivée à sa reconnexion.", nom);
+        p.connection.disconnect(Component.translatableWithFallback("heraliz_quetes.cmd.wipe_kick",
+                "Ton personnage a été remis à zéro. Reconnecte-toi pour recommencer."));
         return 1;
     }
 

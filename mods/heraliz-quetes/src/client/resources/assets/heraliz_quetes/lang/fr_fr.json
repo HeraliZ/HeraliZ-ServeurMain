@@ -181,6 +181,8 @@
   "heraliz_quetes.cmd.donnee": "Quête « %s » donnée à %s.",
   "heraliz_quetes.cmd.pas_en_cours": "Pas de quête en cours « %s » (voir /quete joueur).",
   "heraliz_quetes.cmd.finie": "Quête finie pour %s.",
+  "heraliz_quetes.cmd.wipe": "%s a été remis à zéro : il refera toute l'arrivée à sa reconnexion.",
+  "heraliz_quetes.cmd.wipe_kick": "Ton personnage a été remis à zéro. Reconnecte-toi pour recommencer.",
   "heraliz_quetes.cmd.reset": "Progression des quêtes de %s remise à zéro.",
   "heraliz_quetes.tuto.varga_nom": "Commandant Varga",
   "heraliz_quetes.tuto.varga": "Ici, sans abri pour tes affaires, tu ne tiens pas une semaine. Je peux t'aider à construire ta base, ou te confier ta première mission. Par quoi tu commences ?",

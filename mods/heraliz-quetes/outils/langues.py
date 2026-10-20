@@ -255,6 +255,12 @@ TEXTES = {
     "heraliz_quetes.cmd.pas_en_cours": ("Pas de quête en cours « %s » (voir /quete joueur).", "No quest in progress \"%s\" (see /quete joueur).",
                                         "Нет активного задания «%s» (см. /quete joueur)."),
     "heraliz_quetes.cmd.finie": ("Quête finie pour %s.", "Quest completed for %s.", "Задание завершено для %s."),
+    "heraliz_quetes.cmd.wipe": ("%s a été remis à zéro : il refera toute l'arrivée à sa reconnexion.",
+                                "%s has been reset: they will go through the whole arrival again when they reconnect.",
+                                "%s полностью сброшен: при следующем входе он пройдёт всё заново."),
+    "heraliz_quetes.cmd.wipe_kick": ("Ton personnage a été remis à zéro. Reconnecte-toi pour recommencer.",
+                                     "Your character has been reset. Reconnect to start over.",
+                                     "Твой персонаж сброшен. Перезайди, чтобы начать заново."),
     "heraliz_quetes.cmd.reset": ("Progression des quêtes de %s remise à zéro.", "Quest progress of %s reset.", "Прогресс заданий игрока %s сброшен."),
 
     # arrivée et tutoriel des bases avec le Commandant Varga (serveur : Accueil ; client : RadioVarga)
