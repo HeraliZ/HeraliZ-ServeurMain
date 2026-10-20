@@ -169,7 +169,8 @@ public final class Deplacements {
         }
         attendre(p, "spawn", () -> {
             if (allerAuPointSpawn(p)) {
-                apres(p, T.t("crac.spawn.arrive", "Te voici au spawn.").withStyle(ChatFormatting.GREEN));
+                // au-dessus de la barre d'objets, pas dans le chat : il passait par-dessus la radio de Varga (20/10)
+                p.displayClientMessage(T.t("crac.spawn.arrive", "Te voici au spawn.").withStyle(ChatFormatting.GREEN), true);
             } else {
                 T.chat(p, T.t("crac.spawn.indisponible", "Le spawn n'est pas disponible pour l'instant : préviens le staff."),
                     ChatFormatting.RED);
