@@ -109,10 +109,10 @@ public final class BuildConfig {
         b.pop();
         b.comment("Items consumed by one repair, per tier.").push("repair");
         REPAIR_COST.put(Tier.TWIG, b.defineList("twig", List.of("heraliz_composants:brindilles=2"), BuildConfig::isCostEntry));
-        REPAIR_COST.put(Tier.WOOD, b.defineList("wood", List.of("#minecraft:planks=3"), BuildConfig::isCostEntry));
-        REPAIR_COST.put(Tier.STONE, b.defineList("stone", List.of("#forge:cobblestone=4"), BuildConfig::isCostEntry));
-        REPAIR_COST.put(Tier.METAL, b.defineList("metal", List.of("minecraft:iron_ingot=2"), BuildConfig::isCostEntry));
-        REPAIR_COST.put(Tier.ARMORED, b.defineList("armored", List.of("minecraft:netherite_scrap=1"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.WOOD, b.defineList("wood", List.of("heraliz_composants:planches=1"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.STONE, b.defineList("stone", List.of("heraliz_composants:pierres_taillees=1"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.METAL, b.defineList("metal", List.of("heraliz_composants:fragments_metal=1"), BuildConfig::isCostEntry));
+        REPAIR_COST.put(Tier.ARMORED, b.defineList("armored", List.of("heraliz_composants:metal_renforce=1"), BuildConfig::isCostEntry));
         b.pop();
         b.pop();
 

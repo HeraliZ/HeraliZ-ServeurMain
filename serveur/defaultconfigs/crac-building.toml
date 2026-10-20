@@ -136,10 +136,10 @@
 	#Items consumed by one repair, per tier.
 	[cost.repair]
 		twig = ["heraliz_composants:brindilles=2"]
-		wood = ["#minecraft:planks=3"]
-		stone = ["#forge:cobblestone=4"]
-		metal = ["minecraft:iron_ingot=2"]
-		armored = ["minecraft:netherite_scrap=1"]
+		wood = ["heraliz_composants:planches=1"]
+		stone = ["heraliz_composants:pierres_taillees=1"]
+		metal = ["heraliz_composants:fragments_metal=1"]
+		armored = ["heraliz_composants:metal_renforce=1"]
 
 [repair]
 	#Percent of max health restored by one repair.

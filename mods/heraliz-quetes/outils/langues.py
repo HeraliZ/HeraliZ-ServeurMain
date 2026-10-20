@@ -324,12 +324,12 @@ TEXTES = {
     "heraliz_quetes.tuto.radio.7": ("Solide. Maintenant le Claim Block, ton armoire à outils : prends-le dans ta barre et vise le cadre vert, dans l'angle du fond de la cabane. Il se colle tout seul contre les murs. Ce terrain devient le tien.",
                                    'Solid. Now the Claim Block, your tool cabinet: take it from your hotbar and aim at the green frame, in the back corner of the cabin. It sets itself against the walls. This ground becomes yours.',
                                    'Крепко. Теперь Claim Block, твой шкаф с инструментами: возьми его с панели и наведись на зелёную рамку в дальнем углу хижины. Он сам встанет к стенам. Эта земля станет твоей.'),
-    "heraliz_quetes.tuto.radio.8": ("Une base s'use si personne ne l'entretient. Clic droit sur le Claim Block et mets-y des planches de "
-                                    "chêne : le compteur à droite te dit combien.",
-                                    "A base decays if nobody maintains it. Right click the Claim Block and put oak planks in it: the "
+    "heraliz_quetes.tuto.radio.8": ("Une base s'use si personne ne l'entretient. Clic droit sur le Claim Block et mets-y des planches "
+                                    "du Bâtisseur : le compteur à droite te dit combien.",
+                                    "A base decays if nobody maintains it. Right click the Claim Block and put planks from the Builder in it: the "
                                     "counter on the right tells you how many.",
                                     "База разрушается, если за ней не следить. Нажми правой кнопкой на Claim Block и положи туда "
-                                    "дубовые доски: счётчик справа покажет, сколько нужно."),
+                                    "доски от Строителя: счётчик справа покажет, сколько нужно."),
     "heraliz_quetes.tuto.radio.9": ("Maintenant, prends la caisse en métal et vise le cadre vert, contre le mur juste à côté du Claim Block. Range tes affaires dedans, et ferme bien la porte derrière toi : une porte ouverte, c'est une invitation.",
                                    'Now take the metal crate and aim at the green frame, against the wall right next to the Claim Block. Store your gear in it, and always close the door behind you: an open door is an invitation.',
                                    'Теперь возьми металлический ящик и наведись на зелёную рамку у стены, рядом с Claim Block. Сложи туда вещи и всегда закрывай за собой дверь: открытая дверь — это приглашение.'),
@@ -354,9 +354,9 @@ TEXTES = {
     "heraliz_quetes.tuto.aide.7": ("Le Claim Block est dans ta barre (il clignote). Prends-le, entre dans la cabane et vise le bas du cadre vert, dans l'angle du fond : clic droit pour le poser.",
                                   'The Claim Block is in your hotbar (it blinks). Take it, go inside the cabin and aim at the bottom of the green frame, in the back corner: right click to place it.',
                                   'Claim Block на твоей панели (он мигает). Возьми его, зайди в хижину и наведись на низ зелёной рамки в дальнем углу: правый клик, чтобы поставить.'),
-    "heraliz_quetes.tuto.aide.8": ("Vise le Claim Block et fais un clic droit : un petit écran s'ouvre. Fais glisser des planches de chêne de ton inventaire dans la case des planches, en haut.",
-                               'Aim at the Claim Block and right click: a small screen opens. Drag oak planks from your inventory into the planks slot at the top.',
-                               'Наведись на Claim Block и нажми правый клик: откроется окно. Перетащи дубовые доски из инвентаря в ячейку досок сверху.'),
+    "heraliz_quetes.tuto.aide.8": ("Vise le Claim Block et fais un clic droit : un petit écran s'ouvre. Fais glisser des planches de ton inventaire dans la case des planches, en haut.",
+                               'Aim at the Claim Block and right click: a small screen opens. Drag planks from your inventory into the planks slot at the top.',
+                               'Наведись на Claim Block и нажми правый клик: откроется окно. Перетащи доски из инвентаря в ячейку досок сверху.'),
     "heraliz_quetes.tuto.aide.9": ('La caisse en métal est dans ta barre (elle clignote). Prends-la et vise le bas du cadre vert, contre le mur à côté du Claim Block : clic droit pour la poser.',
                                   'The metal crate is in your hotbar (it blinks). Take it and aim at the bottom of the green frame, against the wall next to the Claim Block: right click to place it.',
                                   'Металлический ящик на твоей панели (он мигает). Возьми его и наведись на низ зелёной рамки у стены рядом с Claim Block: правый клик, чтобы поставить.'),
