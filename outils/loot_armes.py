@@ -66,6 +66,8 @@ ACCESSOIRE = "tacz:attachment"
 ARMURE = "heraliz_armory:"
 COMPOSANT = "heraliz_composants:"
 PLAN = "heralisz_utils:plan_"
+# catégories « materiaux_* » (anciens matériaux de HeraliZ Utils et de Minecraft) retirées : les composants
+# de fabrication sont ceux de HeraliZ Composants (famille « composants »)
 RETIRES = ("heralisz_armor:", "simplefarming:")  # retirés des tables (mod retiré ; Simple Farming : choix du propriétaire)
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
@@ -204,7 +206,7 @@ def melee_absente(e):
 def autres_de(data):
     out = []
     for e in data["objets"]:
-        if de_famille(e) or e["item"].startswith(RETIRES) or melee_absente(e):
+        if de_famille(e) or e["item"].startswith(RETIRES) or melee_absente(e) or e.get("_cat", "").startswith("materiaux"):
             continue
         e = dict(e)
         e.setdefault("_base", e["poids"])

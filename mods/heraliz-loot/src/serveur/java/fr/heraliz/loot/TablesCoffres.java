@@ -154,21 +154,32 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
     }
 
     /**
-     * Comme {@link #tirer(Table, RandomSource, int)}, mais un seul sac à dos par conteneur : si {@code sac[0]} est vrai,
-     * un sac tiré est retiré (jusqu'à 20 fois) ; {@code sac[0]} devient vrai quand un sac sort.
+     * Comme {@link #tirer(Table, RandomSource, int)}, mais sans doublon dans un même conteneur : un seul sac à dos, et
+     * jamais deux fois le même soin ou la même grenade. Un objet déjà sorti ({@code deja}) est retiré (jusqu'à 20 fois),
+     * sinon la case reste vide.
      */
-    static ItemStack tirerUnSac(Table t, RandomSource r, int bonus, boolean[] sac) {
+    static ItemStack tirerUnique(Table t, RandomSource r, int bonus, java.util.Set<String> deja) {
         ItemStack st = tirer(t, r, bonus);
-        for (int i = 0; sac[0] && estSac(st) && i < 20; i++) st = tirer(t, r, bonus);
-        if (sac[0] && estSac(st)) return ItemStack.EMPTY;
-        if (estSac(st)) sac[0] = true;
+        for (int i = 0; deja.contains(cleUnique(st)) && i < 20; i++) st = tirer(t, r, bonus);
+        String k = cleUnique(st);
+        if (deja.contains(k)) return ItemStack.EMPTY;
+        if (k != null) deja.add(k);
         return st;
     }
 
-    static boolean estSac(ItemStack st) {
-        if (st.isEmpty()) return false;
+    /** Clé d'un objet limité à un par conteneur (null : pas de limite). */
+    @Nullable
+    static String cleUnique(ItemStack st) {
+        if (st.isEmpty()) return null;
         net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem());
-        return id != null && id.getNamespace().equals("backpacked");
+        if (id == null) return null;
+        if (id.getNamespace().equals("backpacked")) return "sac";
+        if (id.getNamespace().equals("heralisz_tactical") && (id.getPath().equals("consumable") || id.getPath().equals("throwable"))) {
+            net.minecraft.nbt.CompoundTag tag = st.getTag();
+            String sorte = tag == null ? "" : tag.getString("ConsumableId") + tag.getString("ThrowableId");
+            return id.getPath() + ":" + sorte;
+        }
+        return null;
     }
 
     @Nullable
