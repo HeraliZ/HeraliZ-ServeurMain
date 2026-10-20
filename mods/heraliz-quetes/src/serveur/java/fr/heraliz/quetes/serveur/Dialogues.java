@@ -99,13 +99,31 @@ final class Dialogues {
     private static void accueil(ServerPlayer p, Pnj ent, Defs.Pnj def, Texte entete) {
         if (Moteur.nettoyer(p)) Moteur.envoyerSuivi(p);
         // nouveau joueur : le Commandant Varga ne propose que le tutoriel des bases (Accueil), pas encore ses missions
-        if (def.id.equals(Accueil.PNJ) && Accueil.tutoAFaire(p)) {
-            page(p, ent, def, Texte.cle("heraliz_quetes.tuto.varga"), List.of(
-                    new Rep(Texte.cle("heraliz_quetes.tuto.faire_base"), 1, () -> {
+        // le guide (20/10) : la visite du spawn, proposée tant qu'elle n'est pas faite, et toujours possible à revoir
+        if (def.id.equals(Accueil.GUIDE)) {
+            boolean neuf = Accueil.visiteAFaire(p);
+            page(p, ent, def, Texte.cle(neuf ? "heraliz_quetes.guide.accueil" : "heraliz_quetes.guide.accueil_connu"), List.of(
+                    new Rep(Texte.cle(neuf ? "heraliz_quetes.guide.visiter" : "heraliz_quetes.guide.revisiter"), 1, () -> {
                         fermer(p);
-                        Accueil.lancer(p);
+                        Accueil.visite(p);
                     }),
                     new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p))));
+            return;
+        }
+        // nouveau joueur, base pas faite : Varga propose sa première mission OU le tutoriel des bases (20/10)
+        if (def.id.equals(Accueil.PNJ) && Accueil.tutoAFaire(p) && Donnees.de(p.getUUID()).actives.isEmpty()) {
+            List<Rep> choix = new ArrayList<>();
+            Donnees.DJoueur j0 = Donnees.de(p.getUUID());
+            Defs.Quete premiere = prochaine(j0, j0.pnj(def.id), def);
+            if (premiere != null) {
+                choix.add(new Rep(Texte.cle("heraliz_quetes.tuto.premiere_mission"), 1, () -> proposer(p, ent, def, premiere)));
+            }
+            choix.add(new Rep(Texte.cle("heraliz_quetes.tuto.faire_base"), 1, () -> {
+                fermer(p);
+                Accueil.lancer(p);
+            }));
+            choix.add(new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p)));
+            page(p, ent, def, Texte.cle("heraliz_quetes.tuto.varga"), choix);
             return;
         }
         Donnees.DJoueur j = Donnees.de(p.getUUID());
@@ -185,8 +203,14 @@ final class Dialogues {
                 Marchands.envoyer(p, ent, def, true);
             }));
         }
-        // 6. Varga : la fiche technique des bases (/base info), pour qui a oublié la commande (20/10)
-        if (def.id.equals(Accueil.PNJ)) {
+        // 6. Varga : la fiche technique des bases (/base info), pour qui a oublié la commande (20/10) ; base pas
+        // encore faite (première mission prise avant) : le tutoriel reste proposé
+        if (def.id.equals(Accueil.PNJ) && Accueil.tutoAFaire(p)) {
+            reps.add(new Rep(Texte.cle("heraliz_quetes.tuto.faire_base"), 1, () -> {
+                fermer(p);
+                Accueil.lancer(p);
+            }));
+        } else if (def.id.equals(Accueil.PNJ)) {
             reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.infos_base"), 0, () -> {
                 fermer(p);
                 Ponts.tutoFiche(p);

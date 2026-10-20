@@ -69,6 +69,6 @@ public final class PnjRendu extends HumanoidMobRenderer<Pnj, PlayerModel<Pnj>> {
 
     @Override
     protected boolean shouldShowName(Pnj e) {
-        return entityRenderDispatcher.distanceToSqr(e) < 16 * 16;
+        return false;   // 20/10 : plus de nom de Minecraft au-dessus ; seul le repère (client/Reperes) et son nom
     }
 }

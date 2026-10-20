@@ -75,6 +75,21 @@ final class Accueil {
     /** Apparence de l'entité Varga vue en dernier (si son fichier n'en a pas : posée par /pnj apparence varga moi). */
     private static CompoundTag apparenceVue;
 
+    /** Le guide du spawn (20/10) : après la cinématique, il fait visiter le spawn et présente chaque PNJ. */
+    static final String GUIDE = "guide";
+    /** Donnée persistante du joueur : la visite du guide est faite (ou passée). */
+    private static final String VISITE_FAITE = "heraliz_guide_visite";
+    /** Les PNJ présentés, dans l'ordre de la visite ; Varga en dernier (on finit chez lui). */
+    private static final String[] VISITE = {"mila", BATISSEUR, "jacqueline", "doyen", "jack", PNJ};
+    /** Secondes par PNJ (le temps que la phrase s'écrive et se lise) et durée du tour de caméra (ticks). */
+    private static final int VISITE_ECART = 12, VISITE_TICKS = 230;
+    private static final float VISITE_RAYON = 4F;
+    /** Visite en cours : rang du PNJ présenté et secondes depuis. */
+    private record Visite(int rang, int secondes) {
+    }
+
+    private static final Map<UUID, Visite> VISITES = new HashMap<>();
+
     private Accueil() {
     }
 
@@ -85,6 +100,42 @@ final class Accueil {
         PRES.remove(u);
         RAPPEL.remove(u);
         ARRIVEE.remove(u);
+        VISITES.remove(u);
+    }
+
+    /** La visite du guide reste à faire (seulement si le guide existe dans les fichiers des PNJ). */
+    static boolean visiteAFaire(ServerPlayer p) {
+        return Catalogue.pnj(GUIDE) != null && !persiste(p).getBoolean(VISITE_FAITE);
+    }
+
+    /** Bouton « Fais-moi visiter » du guide : la caméra passe d'un PNJ à l'autre pendant que le guide les présente. */
+    static void visite(ServerPlayer p) {
+        VISITES.put(p.getUUID(), new Visite(-1, VISITE_ECART - 1));
+        Moteur.suiviBientot(p);
+    }
+
+    /** Chaque seconde : PNJ suivant de la visite. */
+    private static void visiteSeconde(ServerPlayer p) {
+        Visite v = VISITES.get(p.getUUID());
+        if (v == null) return;
+        if (v.secondes() + 1 < VISITE_ECART) {
+            VISITES.put(p.getUUID(), new Visite(v.rang(), v.secondes() + 1));
+            return;
+        }
+        int rang = v.rang() + 1;
+        if (rang >= VISITE.length) {
+            VISITES.remove(p.getUUID());
+            persiste(p).putBoolean(VISITE_FAITE, true);
+            radio(p, GUIDE, 0, "heraliz_quetes.guide.fin");
+            Moteur.suiviBientot(p);
+            return;
+        }
+        Pnj e = pnj(p, VISITE[rang], 200);
+        if (e != null) {
+            Reseau.envoyer(p, new Reseau.Presentation(e.getX(), e.getY(), e.getZ(), VISITE_RAYON, VISITE_TICKS));
+        }
+        radio(p, GUIDE, 0, "heraliz_quetes.guide." + VISITE[rang]);
+        VISITES.put(p.getUUID(), new Visite(rang, 0));
     }
 
     /** Le joueur doit d'abord faire le tutoriel des bases : Varga ne propose que « Faire ma base ». Jamais en créatif. */
@@ -92,9 +143,18 @@ final class Accueil {
         return !p.isCreative() && !p.isSpectator() && Ponts.tutoEtat(p) == 0;
     }
 
-    /** « Va voir le Commandant Varga » : tutoriel à faire, cinématique finie, en survie. */
+    /**
+     * « Va voir le guide », puis « Va voir le Commandant Varga » : tutoriel à faire, cinématique finie, en survie, pas
+     * encore de mission en cours (la première mission de Varga peut passer avant la base, choix du propriétaire du 20/10).
+     */
     private static boolean intro(ServerPlayer p, int tuto) {
-        return tuto == 0 && !p.isCreative() && !p.isSpectator() && Ponts.cinematiqueFinie(p);
+        return tuto == 0 && !p.isCreative() && !p.isSpectator() && Ponts.cinematiqueFinie(p)
+                && Donnees.de(p.getUUID()).actives.isEmpty();
+    }
+
+    /** Le PNJ vers qui envoyer le nouveau joueur : le guide tant que la visite n'est pas faite, ensuite Varga. */
+    private static String cible(ServerPlayer p) {
+        return visiteAFaire(p) ? GUIDE : PNJ;
     }
 
     /** Bouton « Faire ma base » du dialogue de Varga. */
@@ -118,13 +178,14 @@ final class Accueil {
                     FIN.put(p.getUUID(), new Suite(fin.rang() + 1, FIN_ECART));
                 } else {
                     FIN.remove(p.getUUID());
-                    Moteur.suiviBientot(p);   // « Retourne au spawn » (présentation du Bâtisseur)
+                    Moteur.suiviBientot(p);
                     Moteur.notif(p, Texte.cle("heraliz_quetes.tuto.notif_fin"), 0x5FD08A);
                 }
             }
         }
-        presentation(p, tuto);
-        rappelSpawn(p, tuto);
+        // 20/10 : plus de présentation du Bâtisseur ni de rappel /spawn après le tutoriel (le guide présente tout le
+        // monde avant) ; le code reste
+        visiteSeconde(p);
         if (tuto < 0) {
             DERNIER.remove(p.getUUID());
             return;
@@ -249,9 +310,15 @@ final class Accueil {
 
     /** Message radio de Varga : la consigne de l'étape (1 à 9), ou un mot de la fin (0). */
     private static void radio(ServerPlayer p, int etape, String cle, Texte... args) {
-        Defs.Pnj def = Catalogue.pnj(PNJ);
+        radio(p, PNJ, etape, cle, args);
+    }
+
+    /** Message radio du PNJ {@code id} (son nom et son apparence en portrait). */
+    private static void radio(ServerPlayer p, String id, int etape, String cle, Texte... args) {
+        Defs.Pnj def = Catalogue.pnj(id);
         Texte nom = def != null && !def.nom.vide() ? def.nom : Texte.cle("heraliz_quetes.tuto.varga_nom");
-        CompoundTag app = def != null && def.apparence != null ? def.apparence : apparenceVue != null ? apparenceVue : new CompoundTag();
+        CompoundTag app = def != null && def.apparence != null ? def.apparence
+                : PNJ.equals(id) && apparenceVue != null ? apparenceVue : new CompoundTag();
         Reseau.envoyer(p, new Reseau.Radio(nom, app, def == null ? "" : def.skin, def != null && def.brasFins, etape,
                 Ponts.tutoEtapes(), Texte.cle(cle, args)));
     }
@@ -260,20 +327,20 @@ final class Accueil {
     static Reseau.Suivi suivi(ServerPlayer p) {
         int tuto = Ponts.tutoEtat(p);
         if (intro(p, tuto)) {
-            Defs.Pnj def = Catalogue.pnj(PNJ);
+            String id = cible(p);
+            Defs.Pnj def = Catalogue.pnj(id);
             Texte nom = def != null && !def.nom.vide() ? def.nom : Texte.cle("heraliz_quetes.tuto.varga_nom");
-            Pnj v = varga(p);
+            Pnj v = id.equals(PNJ) ? varga(p) : pnj(p, id, 4096);
             int d = v == null ? -1 : (int) Math.sqrt(v.distanceToSqr(p));
+            String ligne = VISITES.containsKey(p.getUUID()) ? "heraliz_quetes.guide.suivi_visite"
+                    : id.equals(GUIDE) ? "heraliz_quetes.guide.intro" : "heraliz_quetes.tuto.intro";
             return new Reseau.Suivi(nom, Texte.cle("heraliz_quetes.tuto.intro_titre"),
-                    List.of(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.intro"), 0, 0, d, false, 1)));
+                    List.of(new Reseau.SLigne(Texte.cle(ligne), 0, 0, d, false, 1)));
         }
         Texte entete = Texte.cle("heraliz_quetes.tuto.suivi_pnj");
         Texte titre = Texte.cle("heraliz_quetes.tuto.titre");
         if (tuto == 1) {
             return new Reseau.Suivi(entete, titre, List.of(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.kit"), 0, 0, -1, false, 1)));
-        }
-        if (presenterBientot(p, tuto) && !auSpawn(p) && !FIN.containsKey(p.getUUID())) {
-            return new Reseau.Suivi(entete, titre, List.of(new Reseau.SLigne(Texte.cle("heraliz_quetes.tuto.spawn"), 0, 0, -1, false, 1)));
         }
         if (tuto != 2) return null;
         int[] pr = Ponts.tutoProgression(p);
@@ -291,8 +358,9 @@ final class Accueil {
 
     /** Lueurs sur Varga quand on doit aller le voir et qu'il est près. */
     static void lueurs(ServerPlayer p, List<BlockPos> l) {
-        if (!intro(p, Ponts.tutoEtat(p))) return;
-        Pnj v = varga(p);
+        if (!intro(p, Ponts.tutoEtat(p)) || VISITES.containsKey(p.getUUID())) return;
+        String id = cible(p);
+        Pnj v = id.equals(PNJ) ? varga(p) : pnj(p, id, 48);
         if (v != null && v.distanceToSqr(p) < 48 * 48) l.add(v.blockPosition().above(2));
     }
 
