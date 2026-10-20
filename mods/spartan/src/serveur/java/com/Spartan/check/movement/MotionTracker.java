@@ -28,7 +28,7 @@ final class MotionTracker {
      * @param slowed          le joueur utilise un objet de façon certaine (ralentissement attendu)
      * @param impulseH        vitesse horizontale imposée par le serveur (remplace), 0 si aucune
      * @param pushH           vitesse horizontale ajoutée par le serveur (explosion), 0 si aucune
-     * @param impulseUp       vitesse verticale imposée (remplace), 0 si aucune
+     * @param impulseUp       vitesse verticale imposée (remplace, même à 0 : plongeon en l'air), NaN si aucune
      * @param pushUp          vitesse verticale ajoutée (explosion), 0 si aucune
      * @param crowd           marge pour la poussée des entités collées au joueur
      * @param bouncy          bloc rebondissant sous les pieds au départ (slime, lit)
@@ -129,11 +129,11 @@ final class MotionTracker {
         // au-dessus du normal (sprint, poussée) la « consommait » avant que le client l'applique vraiment
         // (fausses alertes Speed après le plongeon du mod tactique, un recul, une explosion).
         boolean usedImpulse = false;
-        if (ticks == 1 && (in.impulseH() > 0 || in.pushH() > 0 || in.impulseUp() > 0 || in.pushUp() > 0)) {
+        if (ticks == 1 && (in.impulseH() > 0 || in.pushH() > 0 || !Double.isNaN(in.impulseUp()) || in.pushUp() > 0)) {
             HorizontalEnvelope.Tick plainH = new HorizontalEnvelope.Tick(in.groundFromExact(), rough, in.friction(),
                     in.speed(), jump, false, 0, 0, extra);
             VerticalEnvelope.Tick plainV = new VerticalEnvelope.Tick(groundFrom, groundTo, s.gravity(),
-                    s.jumpVelocity(), s.stepHeight(), 0, 0, bounce);
+                    s.jumpVelocity(), s.stepHeight(), Double.NaN, 0, bounce);
             double plainHAllowed = h.allowed(plainH);
             double plainVAllowed = v.allowed(plainV);
             double addH = h.allowed(ht) - plainHAllowed;
