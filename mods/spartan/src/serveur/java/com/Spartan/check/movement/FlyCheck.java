@@ -54,7 +54,9 @@ public class FlyCheck extends MovementCheck {
             return;
         }
         State st = states.computeIfAbsent(p.getUUID(), k -> new State());
-        if (s.groundTo() || s.special() || s.fluid() || s.climbable() || s.slowing() || s.platform() || s.piston()
+        MotionTracker.Result rm = s.motion();
+        boolean roughGround = rm != null && rm.rough() && s.claimedGround();
+        if (s.groundTo() || roughGround || s.special() || s.fluid() || s.climbable() || s.slowing() || s.platform() || s.piston()
                 || s.slowFalling() || s.hoverGear() || s.gravity() <= 0.005) {
             st.reset();
             return;

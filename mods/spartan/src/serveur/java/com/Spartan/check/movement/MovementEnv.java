@@ -114,6 +114,45 @@ public final class MovementEnv {
         return p.level().getBlockState(below).getFriction(p.level(), below, p);
     }
 
+    /**
+     * Terrain « accidenté » autour des pieds : bloc dont la forme de collision n'est pas un cube plein
+     * (dalle, pot de fleurs, escalier, barrière, meuble ou décor 3D de mod…) ou entité solide (barricade,
+     * véhicule, bombe des duels…), à moins de 0,35 bloc sur le côté et 0,7 sous les pieds. Le jeu du joueur
+     * y monte des marches en plein air, glisse sur les arêtes et se pose sur des formes que le serveur
+     * place parfois quelques centièmes plus loin : la physique « au bloc près » y donne de fausses alertes.
+     */
+    public static boolean roughNear(ServerPlayer p, AABB box) {
+        AABB zone = new AABB(box.minX - 0.35, box.minY - 0.7, box.minZ - 0.35, box.maxX + 0.35, box.minY + 0.6,
+                box.maxZ + 0.35);
+        Level level = p.level();
+        int x0 = net.minecraft.util.Mth.floor(zone.minX);
+        int y0 = net.minecraft.util.Mth.floor(zone.minY);
+        int z0 = net.minecraft.util.Mth.floor(zone.minZ);
+        int x1 = net.minecraft.util.Mth.floor(zone.maxX);
+        int y1 = net.minecraft.util.Mth.floor(zone.maxY);
+        int z1 = net.minecraft.util.Mth.floor(zone.maxZ);
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = x0; x <= x1; x++) {
+            for (int y = y0; y <= y1; y++) {
+                for (int z = z0; z <= z1; z++) {
+                    pos.set(x, y, z);
+                    if (!level.hasChunkAt(pos)) {
+                        return true; // inconnu : prudence
+                    }
+                    BlockState st = level.getBlockState(pos);
+                    if (st.isAir()) {
+                        continue;
+                    }
+                    var shape = st.getCollisionShape(level, pos, net.minecraft.world.phys.shapes.CollisionContext.of(p));
+                    if (!shape.isEmpty() && !net.minecraft.world.level.block.Block.isShapeFullBlock(shape)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return !level.getEntities(p, zone, e -> e.canBeCollidedWith() && !e.isPassengerOfSameVehicle(p)).isEmpty();
+    }
+
     public static boolean loaded(ServerPlayer p, Vec3 pos) {
         return p.level().hasChunkAt(BlockPos.containing(pos));
     }
