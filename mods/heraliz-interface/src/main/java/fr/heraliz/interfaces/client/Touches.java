@@ -217,6 +217,13 @@ public final class Touches {
             deja.put(l.nom(), pose);
             repereChange = true;
         }
+        // touche posée d'office par un mod sur ² ou sous Entrée (son constructeur ne passe pas par setKey) : retirée
+        for (KeyMapping k : mc.options.keyMappings) {
+            if (k != null && TouchesInterdites.interdite(k.getKey())) {
+                k.setKeyModifierAndCode(KeyModifier.NONE, InputConstants.UNKNOWN);
+                deplacees++;
+            }
+        }
         if (deplacees > 0) {
             KeyMapping.resetMapping();
             mc.options.save();
