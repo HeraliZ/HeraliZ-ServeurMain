@@ -23,12 +23,17 @@ public abstract class EcranCanevas extends Screen {
     @Override
     protected final void init() {
         Window w = this.minecraft.getWindow();
-        int s = Echelle.voulue();
+        float s = this.echelleEcran(w);
         this.k = (float) (s / w.getGuiScale());
         this.px = 1.0F / s;
         this.cw = Math.round(w.getWidth() / (float) s);
         this.ch = Math.round(w.getHeight() / (float) s);
         this.initCanevas();
+    }
+
+    /** Pixels d'écran par unité du canevas : l'échelle entière des écrans de clan ; un écran peut en prendre une autre. */
+    protected float echelleEcran(Window w) {
+        return Echelle.voulue();
     }
 
     /** init() sur le canevas : {@link #cw}, {@link #ch} et {@link #px} sont prêts. */

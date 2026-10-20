@@ -19,7 +19,7 @@ import static fr.heraliz.crac.client.kit.Dessin.*;
  * Réparer, Entretien et Raids. Rien n'est calculé ici : les chiffres viennent du serveur ({@link S2CFicheBase}).
  */
 public class EcranFicheBase extends EcranGroupe {
-    private static final float W = 580, H = 322, ROW = 35;
+    private static final float W = 600, H = 336, ROW = 35;
     /** Textes de la fiche 15 % plus grands que les autres écrans de clan, dans des polices tracées à cette taille
      * ({@code ui_fiche*}, grasses) : agrandir une police par une échelle les rendait granuleuses (20/10). */
     private static final float E = 1.15F;
@@ -33,6 +33,15 @@ public class EcranFicheBase extends EcranGroupe {
     public EcranFicheBase(S2CFicheBase fiche) {
         super(Component.translatable("crac.fiche.titre"));
         this.fiche = fiche;
+    }
+
+    /**
+     * La fiche remplit 92 % de la fenêtre, quelle qu'elle soit (20/10 : sur une petite fenêtre, l'échelle entière tombait
+     * à 1 et tout était minuscule). Ses polices sont tracées pour 3 pixels par unité ({@code ui_fiche*}, oversample 3).
+     */
+    @Override
+    protected float echelleEcran(com.mojang.blaze3d.platform.Window w) {
+        return Math.max(1, Math.min(w.getWidth() * 0.92F / W, w.getHeight() * 0.92F / H));
     }
 
     @Override
@@ -99,8 +108,8 @@ public class EcranFicheBase extends EcranGroupe {
         float[][] r = new float[ONGLETS.length][];
         float x = this.gx();
         for (int i = 0; i < ONGLETS.length; i++) {
-            float w = this.largeurPetitBouton(t("crac.fiche.onglet." + ONGLETS[i]), false) + 10;
-            r[i] = new float[]{x, this.y0 + 38, w, 14};
+            float w = largeurCaps(this.font, t("crac.fiche.onglet." + ONGLETS[i]), FICHE_MINI, 0.7F) + 22;
+            r[i] = new float[]{x, this.y0 + 38, w, 16};
             x += w + 4;
         }
         return r;
@@ -112,11 +121,15 @@ public class EcranFicheBase extends EcranGroupe {
     protected void rendu(GuiGraphics g, float mx, float my, float pt) {
         this.fond(g);
         this.panneau(g, VERT);
-        this.entete(g, -1, t("crac.fiche.titre"), BLANC, t("crac.fiche.sous"));
+        this.enteteFiche(g);
         float[][] o = this.onglets();
         for (int i = 0; i < ONGLETS.length; i++) {
-            this.petitBouton(g, o[i][0], o[i][1], o[i][2], o[i][3], t("crac.fiche.onglet." + ONGLETS[i]), i == this.onglet ? VERT : -1,
-                dans(mx, my, o[i][0], o[i][1], o[i][2], o[i][3]), false);
+            boolean survol = dans(mx, my, o[i][0], o[i][1], o[i][2], o[i][3]);
+            this.petitBouton(g, o[i][0], o[i][1], o[i][2], o[i][3], "", i == this.onglet ? VERT : -1, survol, false);
+            String nom = t("crac.fiche.onglet." + ONGLETS[i]);
+            int c = a(i == this.onglet ? VERT_PALE : survol ? BLANC : BOUTON, 255);
+            caps(g, this.font, nom, FICHE_MINI, o[i][0] + (o[i][2] - largeurCaps(this.font, nom, FICHE_MINI, 0.7F)) / 2,
+                o[i][1] + o[i][3] / 2 - 4.3F, 0.7F, c);
         }
         rect(g, this.gx(), this.y0 + 58, this.gx() + this.gw(), this.y0 + 58 + this.px, a(BLANC, 20));
         switch (this.onglet) {
@@ -126,6 +139,16 @@ public class EcranFicheBase extends EcranGroupe {
             case 3 -> this.entretien(g);
             default -> this.raids(g);
         }
+    }
+
+    /** En-tête de la fiche dans ses propres polices (plus grandes et nettes) : titre, sous-titre, « Échap fermer ». */
+    private void enteteFiche(GuiGraphics g) {
+        float x = this.gx();
+        String fermer = Component.translatable("crac.gui.esc_close").getString();
+        float fw = largeurCaps(this.font, fermer, FICHE_MINI, 0.7F);
+        caps(g, this.font, fermer, FICHE_MINI, this.x0 + W - 13.33F - fw, this.y0 + 12, 0.7F, a(GRIS, 255));
+        caps(g, this.font, t("crac.fiche.titre"), FICHE_GROS, x, this.y0 + 9, 1.1F, a(BLANC, 255));
+        this.ecrire(g, t("crac.fiche.sous"), MINI, x, this.y0 + 28, W - 40, a(GRIS, 255));
     }
 
     /** Texte agrandi ({@link #E}), centré verticalement sur {@code cy}, coupé à {@code maxW} unités. */
@@ -143,9 +166,9 @@ public class EcranFicheBase extends EcranGroupe {
     private void pied(GuiGraphics g, String l1, String l2) {
         float x = this.gx(), w = this.gw();
         rect(g, x, this.y0 + H - 32, x + w, this.y0 + H - 32 + this.px, a(BLANC, 20));
-        this.ecrire(g, l1, MINI, x, this.y0 + H - 22, w, a(ATTENUE, 255));
+        this.ecrire(g, l1, MINI, x, this.y0 + H - 22, w, a(GRIS, 255));
         if (!l2.isEmpty()) {
-            this.ecrire(g, l2, MINI, x, this.y0 + H - 10, w, a(ATTENUE, 255));
+            this.ecrire(g, l2, MINI, x, this.y0 + H - 10, w, a(GRIS, 255));
         }
     }
 

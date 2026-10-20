@@ -58,10 +58,10 @@ final class Accueil {
     /** Donnée persistante du joueur : le Bâtisseur lui a été présenté (une seule fois). */
     private static final String PRESENTE = "heraliz_batisseur_presente";
     /** Durée du tour de caméra autour du Bâtisseur (ticks), rayon (blocs), secondes de chaque mot de Varga, fiche après. */
-    private static final int PRES_TICKS = 920, PRES_FICHE = 46;
+    private static final int PRES_TICKS = 500, PRES_FICHE = 25;
     private static final float PRES_RAYON = 4.5F;
-    /** 16 s par message : le temps qu'il s'écrive lettre par lettre (≈ 7 s) et qu'on le lise (retour du propriétaire). */
-    private static final int[] PRES_MOTS = {0, 16, 32};
+    /** 12 s par message : le temps qu'il s'écrive lettre par lettre (≈ 7 s) et qu'on le lise (retour du propriétaire). */
+    private static final int[] PRES_MOTS = {0, 12};   // 20/10 : deux messages, 25 s en tout (46 s jugées trop longues)
     /** Secondes depuis le début de la présentation (et Bâtisseur trouvé ou non). */
     private record Pres(int secondes, boolean vu) {
     }

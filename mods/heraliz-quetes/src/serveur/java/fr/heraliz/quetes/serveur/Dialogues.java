@@ -185,6 +185,13 @@ final class Dialogues {
                 Marchands.envoyer(p, ent, def, true);
             }));
         }
+        // 6. Varga : la fiche technique des bases (/base info), pour qui a oublié la commande (20/10)
+        if (def.id.equals(Accueil.PNJ)) {
+            reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.infos_base"), 0, () -> {
+                fermer(p);
+                Ponts.tutoFiche(p);
+            }));
+        }
         reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p)));
 
         if ((texte == null || texte.vide()) && prochaine != null && !def.besoin.isEmpty()) {
