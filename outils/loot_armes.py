@@ -32,7 +32,7 @@ COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/c
 
 # nombre moyen pour 100 conteneurs ouverts
 POUR_100 = {
-    "armes":       {1: 15, 2: 15, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},
+    "armes":       {1: 6, 2: 9, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},
     "plans":       {1: 15, 2: 15, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},  # plan de fabrication = rareté de son arme
     "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
     "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
@@ -49,8 +49,9 @@ PARTS = {
     7: {"peu_commun": 20, "rare": 56.67, "epique": 18, "legendaire": 4, "unique": 1.33},  # Unique (armes seulement) : 1 coffre sur 250
 }
 LOURDES = 0.35
+PARACHUTE = 0.25  # part du poids d'origine du parachute
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
-AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.5), ("nourriture", 0.6), ("boissons", 0.6),
+AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.25), ("nourriture", 0.6), ("boissons", 0.6),
           ("rations", 0.6), ("plats", 0.6), ("produits_ferme", 0.6)]
 # munitions : part de leur poids d'origine par palier (balles pour 100 conteneurs : environ 40 en T1 à 450 en T7)
 MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
@@ -167,6 +168,8 @@ def mult_autre(e, t):
     cat = e.get("_cat", "")
     if "munitions" in cat:
         return MUNITIONS[t]
+    if "parachute" in e["item"]:
+        return PARACHUTE
     return next((m for mot, m in AUTRES if mot in cat), 1.0)
 
 

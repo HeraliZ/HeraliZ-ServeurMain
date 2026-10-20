@@ -153,6 +153,24 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
         return objet(e, r, bonus);
     }
 
+    /**
+     * Comme {@link #tirer(Table, RandomSource, int)}, mais un seul sac à dos par conteneur : si {@code sac[0]} est vrai,
+     * un sac tiré est retiré (jusqu'à 20 fois) ; {@code sac[0]} devient vrai quand un sac sort.
+     */
+    static ItemStack tirerUnSac(Table t, RandomSource r, int bonus, boolean[] sac) {
+        ItemStack st = tirer(t, r, bonus);
+        for (int i = 0; sac[0] && estSac(st) && i < 20; i++) st = tirer(t, r, bonus);
+        if (sac[0] && estSac(st)) return ItemStack.EMPTY;
+        if (estSac(st)) sac[0] = true;
+        return st;
+    }
+
+    static boolean estSac(ItemStack st) {
+        if (st.isEmpty()) return false;
+        net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem());
+        return id != null && id.getNamespace().equals("backpacked");
+    }
+
     @Nullable
     private static Entree entree(Table t, RandomSource r) {
         int total = t.objets().stream().mapToInt(Entree::poids).sum();
