@@ -34,3 +34,6 @@ jobs:
           echo "=== crac-server (entretien)"; [ -f monde_srv.toml ] && grep -n -E "item(Wood|Stone|Metal|Armored)|perPiece|upgradeItem" monde_srv.toml
           echo "=== journal"; lf "get /logs/latest.log -o latest.log" || true
           [ -f latest.log ] && grep -i -E "crac|crac-building|correct|config" latest.log | head -60
+          echo "=== point /spawn de CRac"; lf "get /crac/spawn.json -o spawn.json" && cat spawn.json || echo "aucun"
+          echo "=== journal : quetes, tutoriel, spawn"
+          [ -f latest.log ] && grep -i -E "quetes|pnj|batisseur|tuto|spawn|exception|error" latest.log | grep -v -i "spark" | tail -80

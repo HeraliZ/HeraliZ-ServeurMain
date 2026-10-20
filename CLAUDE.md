@@ -1363,6 +1363,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `StructureService.majSas`) ; après le tutoriel, Varga redit « tape /spawn » toutes les 15 s tant que le joueur n'est
   pas au spawn, et « au spawn » = monde du spawn OU à 64 blocs du Bâtisseur (le point /spawn du staff peut être ailleurs :
   la présentation ne partait jamais). Rien testé en jeu.
+  Puis (20/10, Quêtes 1.8.4) : vraie cause, la marque « Bâtisseur déjà présenté » n'était effacée que si le serveur voyait
+  le tutoriel « à faire » ; `/tuto lancer` et `/tuto rejouer` redonnent le kit dans la même seconde, la marque restait :
+  ni rappel ni présentation. Elle est maintenant effacée dès que le tutoriel est à faire ou en cours ; présentation aussi
+  en créatif (staff qui teste). Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des

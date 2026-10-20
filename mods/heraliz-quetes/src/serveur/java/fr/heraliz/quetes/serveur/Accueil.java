@@ -194,7 +194,7 @@ final class Accueil {
 
     /** Le Bâtisseur pas encore présenté à ce joueur, tutoriel des bases fini. */
     private static boolean presenterBientot(ServerPlayer p, int tuto) {
-        return tuto == 3 && !p.isCreative() && !p.isSpectator() && !persiste(p).getBoolean(PRESENTE);
+        return tuto == 3 && !p.isSpectator() && !persiste(p).getBoolean(PRESENTE);   // aussi en créatif : le staff qui teste (/tuto lancer)
     }
 
     /**
@@ -204,8 +204,11 @@ final class Accueil {
      * (CRac) s'ouvre. Une seule fois par joueur. Sans Bâtisseur posé au spawn : la radio seule, sans caméra.
      */
     private static void presentation(ServerPlayer p, int tuto) {
-        if (tuto == 0 && persiste(p).getBoolean(PRESENTE)) {
-            persiste(p).remove(PRESENTE);   // tutoriel remis à zéro (/tuto rejouer) : la présentation sera revue
+        if (tuto >= 0 && tuto <= 2 && persiste(p).getBoolean(PRESENTE)) {
+            // tutoriel à faire ou en cours (/tuto rejouer, /tuto lancer) : la présentation sera revue à la fin. Avant
+            // (20/10) seul l'état « à faire » l'effaçait, mais /tuto lancer et /tuto rejouer redonnent le kit dans la
+            // même seconde : l'état 0 n'était jamais vu, et ni le rappel /spawn ni la présentation ne repartaient
+            persiste(p).remove(PRESENTE);
         }
         Pres pr = PRES.get(p.getUUID());
         if (pr == null) {
