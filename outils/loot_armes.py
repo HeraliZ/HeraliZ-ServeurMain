@@ -53,7 +53,7 @@ LOURDES = 0.35
 PARTS_FAMILLE = {("plans", 7): {"rare": 35, "epique": 45, "legendaire": 20}}
 # jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
 OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
-PARACHUTE = 0.25  # part du poids d'origine du parachute
+PARACHUTE = 0.19  # part du poids d'origine du parachute
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
 AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.25), ("nourriture", 0.6), ("boissons", 0.6),
           ("rations", 0.6), ("plats", 0.6), ("produits_ferme", 0.6)]
