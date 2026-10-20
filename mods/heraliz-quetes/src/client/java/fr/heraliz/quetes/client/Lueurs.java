@@ -22,6 +22,14 @@ final class Lueurs {
         staff = l.staff();
     }
 
+    /** Une lueur de quête au-dessus de ce PNJ (à 3 blocs près) : c'est lui qu'il faut aller voir. */
+    static boolean cible(BlockPos pied) {
+        for (BlockPos p : quete) {
+            if (Math.abs(p.getX() - pied.getX()) <= 1 && Math.abs(p.getZ() - pied.getZ()) <= 1 && Math.abs(p.getY() - pied.getY()) <= 3) return true;
+        }
+        return false;
+    }
+
     static void vider() {
         quete = List.of();
         staff = List.of();
