@@ -58,16 +58,22 @@ final class Reperes {
         MultiBufferSource.BufferSource tampon = mc.renderBuffers().bufferSource();
         Font police = mc.font;
         boolean dessine = false;
+        boolean pres = Presentation.actif();
         for (Entity ent : mc.level.entitiesForRendering()) {
             if (!(ent instanceof Pnj pnj) || ent.isInvisible()) continue;
             Vec3 p = ent.getPosition(partiel).add(0, ent.getBbHeight() + 0.95, 0);
             Vec3 vers = p.subtract(oeil);
             double d = vers.length();
-            if (d < 3.5 || d > 160) continue;
+            // le PNJ vers qui le joueur doit aller (lueur envoyée par le serveur au-dessus de lui) : toujours bien visible
+            boolean cible = Lueurs.cible(ent.blockPosition());
+            if (d > 160 || d < (pres ? 1.2 : cible ? 2 : 3.5)) continue;
             float alpha = (float) (0.62 * Mth.clamp((d - 3.5) / 3.5, 0, 1) * (d > 60 ? Math.max(0.55, 1 - (d - 60) / 200) : 1));
+            if (pres) alpha = 0.9f;                                   // 20/10 : pendant la visite, la caméra est tout près
+            if (cible) alpha = (float) (0.8 + 0.2 * Math.sin(mc.player.tickCount * 0.25));
             if (alpha <= 0.02f) continue;
             boolean vise = vers.scale(1 / d).dot(regard) > 0.994;     // ~6° autour du viseur
-            float taille = (float) Mth.clamp(d * 0.034, 0.32, 2.6);   // presque constante à l'écran
+            float taille = (float) Mth.clamp(d * 0.034, pres ? 0.22 : 0.32, 2.6);   // presque constante à l'écran
+            if (cible) taille *= 1.45f;
             pose.pushPose();
             pose.translate(vers.x, vers.y, vers.z);
             pose.mulPose(cam.rotation());
@@ -85,8 +91,8 @@ final class Reperes {
             vc.vertex(m, 8, 8, 0).color(255, 255, 255, a).uv(u1, 1).uv2(PLEINE_LUMIERE).endVertex();
             vc.vertex(m, -8, 8, 0).color(255, 255, 255, a).uv(u0, 1).uv2(PLEINE_LUMIERE).endVertex();
             vc.vertex(m, -8, -8, 0).color(255, 255, 255, a).uv(u0, 0).uv2(PLEINE_LUMIERE).endVertex();
-            if (vise || d < 20) {
-                Component nom = pnj.getName();
+            if (vise || d < 20 || pres || cible) {
+                Component nom = cible && d >= 6 ? pnj.getName().copy().append(" · " + (int) d + " m") : pnj.getName();
                 float l = police.width(nom) * 0.5f;
                 pose.scale(0.55f, 0.55f, 0.55f);
                 int coul = (Math.min(255, Math.round(alpha * 1.4f * 255)) << 24) | 0xF2F4F6;

@@ -360,8 +360,9 @@ final class Accueil {
     static void lueurs(ServerPlayer p, List<BlockPos> l) {
         if (!intro(p, Ponts.tutoEtat(p)) || VISITES.containsKey(p.getUUID())) return;
         String id = cible(p);
-        Pnj v = id.equals(PNJ) ? varga(p) : pnj(p, id, 48);
-        if (v != null && v.distanceToSqr(p) < 48 * 48) l.add(v.blockPosition().above(2));
+        Pnj v = id.equals(PNJ) ? varga(p) : pnj(p, id, 4096);
+        // 20/10 : à toute distance (le repère du PNJ au spawn se met en avant, avec la distance)
+        if (v != null) l.add(v.blockPosition().above(2));
     }
 
     /** Le PNJ {@code id} le plus proche dans le monde du joueur (chargé), à moins de {@code portee} blocs, ou null. */
