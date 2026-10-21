@@ -1,8 +1,6 @@
 {
   "replace": false,
   "values": [
-    "heraliz_composants:caoutchouc",
-    "heraliz_composants:corde",
     "heraliz_composants:plastique",
     "heraliz_composants:planche",
     "heraliz_composants:collier_casse",

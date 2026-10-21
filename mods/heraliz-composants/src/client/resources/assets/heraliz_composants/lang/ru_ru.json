@@ -41,7 +41,7 @@
   "item.heraliz_composants.scotch": "Скотч",
   "item.heraliz_composants.scotch.desc": "Чинит всё. Почти.",
   "item.heraliz_composants.caoutchouc": "Резина",
-  "item.heraliz_composants.caoutchouc.desc": "Старая велосипедная шина. Можно продать.",
+  "item.heraliz_composants.caoutchouc.desc": "Старая велосипедная шина, годится для защитного снаряжения.",
   "item.heraliz_composants.corde": "Верёвка",
   "item.heraliz_composants.corde.desc": "Несколько метров потрёпанной верёвки.",
   "item.heraliz_composants.clou": "Гвозди",
@@ -119,5 +119,6 @@
   "item.heraliz_composants.fil_souder": "Катушка сварочной проволоки",
   "item.heraliz_composants.fil_souder.desc": "Для сварки усиленного металла.",
   "item.heraliz_composants.brindilles": "Хворост",
-  "item.heraliz_composants.brindilles.desc": "Собранный хворост. Хватит, чтобы поставить каркас базы."
+  "item.heraliz_composants.brindilles.desc": "Собранный хворост. Хватит, чтобы поставить каркас базы.",
+  "tooltip.heraliz_composants.cat.barricades": "Баррикады"
 }

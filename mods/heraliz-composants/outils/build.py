@@ -162,7 +162,31 @@ def main():
                 + ',\n'.join(java_rows) + '\n    );\n\n'
                 '    private ComponentDefs() {}\n}\n')
 
+    ecrire_raretes()
     make_sheet(previews)
+
+
+# rareté des composants pour HeraliZ Loot (fond de la case, ligne de rareté, couleur du nom) : section « objets » de
+# serveur/config/heraliz_loot/raretes.json, clés heraliz_composants:* (le reste du fichier est gardé)
+RARETES_JSON = os.path.join(ROOT, '..', '..', 'serveur', 'config', 'heraliz_loot', 'raretes.json')
+RARETE_LOOT = {'common': 'commun', 'uncommon': 'peu_commun', 'rare': 'rare', 'epic': 'epique', 'legendary': 'legendaire',
+               'mythic': 'unique'}
+
+
+def ecrire_raretes():
+    from collections import OrderedDict
+    if not os.path.exists(RARETES_JSON):
+        print('raretes.json absent : raretés des composants non écrites')
+        return
+    with open(RARETES_JSON, encoding='utf-8') as f:
+        data = json.load(f, object_pairs_hook=OrderedDict)
+    obj = OrderedDict((k, v) for k, v in data.get('objets', {}).items() if not k.startswith(MODID + ':'))
+    for it in ITEMS:
+        obj[f'{MODID}:{it["id"]}'] = RARETE_LOOT[it['rarity']]
+    data['objets'] = obj
+    with open(RARETES_JSON, 'w', encoding='utf-8', newline='\n') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write('\n')
 
 
 def make_sheet(previews):

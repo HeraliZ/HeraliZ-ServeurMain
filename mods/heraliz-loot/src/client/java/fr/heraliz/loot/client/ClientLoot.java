@@ -89,6 +89,8 @@ public final class ClientLoot {
          */
         private static void nomEnCouleur(ItemTooltipEvent e, Rarete r) {
             if (e.getToolTip().isEmpty()) return;
+            // seulement une rareté choisie pour cet objet (inscrite, ou de sa sorte), pas la rareté par défaut
+            if (Rarete.de(e.getItemStack()) == null && RaretesObjets.propre(e.getItemStack()) == null) return;
             Component nom = e.getToolTip().get(0);
             if (nom.getString().indexOf('\u00A7') >= 0) return;
             int couleur = r == Rarete.COMMUN ? 0xFFFFFF : r.couleur;
