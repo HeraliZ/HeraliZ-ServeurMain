@@ -79,8 +79,11 @@ public final class TrainClient {
         HeraliszUtils.LOG.info("Train : {} (décalage {} s)", a ? "en service" : "absent", d / 20);
     }
 
+    /** Le train ne roule que sur la carte (overworld, seul monde où le serveur le fait avancer) : ni voie ni rame ni sons
+     *  dans le monde du spawn, celui des bases (CRac) ou les arènes, où la voie se dessinait aux mêmes coordonnées. */
     public static boolean actif() {
-        return actif && Horaire.get() != null && Minecraft.getInstance().level != null;
+        Minecraft mc = Minecraft.getInstance();
+        return actif && Horaire.get() != null && mc.level != null && mc.level.dimension() == net.minecraft.world.level.Level.OVERWORLD;
     }
 
     /** Secondes de l'horaire pour l'image en cours. */
