@@ -1086,6 +1086,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - skins de mêlée (21/10, Tactique 2.29.1) : liseré du Credo et du Bourreau, vraie cause : les points à cheval sur le bord d'une face restaient pleins, le jeu les lit au bord d'une face découpée ; `skins_melee.py` les rend transparents comme l'ancienne texture. Doubles dagues du Push 1,35 fois plus grandes, autour de la poignée (`AGRANDIR`). **Un couteau ne se modifie pas** (choix du propriétaire) : l'Atelier ne s'ouvre pas couteau en main (« Un couteau ne peut pas être modifié. »), le serveur refuse camo, sticker et StatTrak sur tout couteau. Rien testé en jeu ;
 - retours du 21/10 au soir (Tactique 2.29.2, assemblée avec la hitbox de main en 2.30.1) : jambes qui « marchaient » sur place arme de mêlée en main (marche lue sur le vrai déplacement x - xo, plus sur la vitesse qui restait coincée chez les autres joueurs, `IdleAnimationHandler`) ; Stiletto Moonlit retiré ; Push Autotronic refait (`kAutotronic` : lame rouge anodisée, bande noire en carbone sur l'arête bordée de crans et d'un filet d'acier, rivets, col noir à entailles rouges, tranchants d'acier ; demi-largeur de la lame mesurée sur le Push) ; Case Hardened du Skeleton à part (`case_hardened_cs`, `kCaseHardCS` : bleu, or et acier à parts presque égales ; le programme 64 « Blue Gem » reste celui des autres couteaux) ; Volt (`kElectric`) : arcs qui glissent en continu (plus de sauts 6 fois par seconde) et 6 octaves de bruit au lieu de 10. Rien testé en jeu ;
 - Skeleton et Push (21/10, Tactique 2.30.2) : cube texturé devant le Skeleton en main retiré (cube du repère de caméra « idle_view » du modèle d'origine, peint par le skin : `skins_melee.py` vide maintenant les cubes des os view, camera et positioning) ; Push vu de l'extérieur : une dague dans chaque main (`DualWieldLayer` reconnaît aussi `push_l` / `push_r` ; avant, les deux dagues étaient dessinées dans la main droite), dague gauche retournée et recentrée sur sa poignée (`placerGauche`, calcul sans essai en jeu). Rien testé en jeu ;
+- Push Autotronic retiré (21/10, Tactique 2.30.3, demande du propriétaire ; style `kAutotronic` gardé dans le gabarit, plus appelé). Rien testé en jeu ;
 - hitbox des joueurs « en morceaux » (21/10, Tactique 2.30.0, choix du propriétaire) : contre les balles de TaCZ, un joueur n'est plus la boîte droite de Minecraft mais 6 cubes posés comme son modèle (tête, torse, bras, jambes, échelle 0,9375 ; demi-pixel de plus autour de la tête, quart autour du reste), qui suivent le corps : rotation du corps, accroupi, allongé / à terre / nage, assis en véhicule, arme TaCZ tenue à deux mains devant ; tir à la tête = cube de la tête (`hitbox/HitboxCorps`, commun ; mixin `TaczHitboxCorpsMixin` sur `EntityUtil.getHitResult` de TaCZ, place corrigée du ping par TaCZ gardée). F3+B montre ces cubes (tête rouge, corps jaune, `client/hitbox/HitboxCorpsRendu`) à la place de la boîte blanche (plus dessinée sur les joueurs depuis la 2.30.1, `BoiteBlancheJoueurMixin` ; elle reste celle des murs et des déplacements). Gestes animés (pas, animations des gunpacks) inconnus du serveur. Mêlée et couteaux inchangés. Rien testé en jeu ;
 - délai des coups de mêlée (18/10, Tactique 2.21.2, choix du propriétaire) : **1,2 s pour tout**, clic gauche comme clic
   droit, toutes les armes de mêlée de LR (`cooldown` 24 dans `serveur/resources/data/heralisz_melee/index/melee/*.json`,
@@ -1782,6 +1783,16 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 ---
 
 ## 11. Points ouverts et bugs connus
+
+- **Bases des clans sur la carte principale** (demandé le 21/10, PAS ENCORE CODÉ) : une base par clan (sans clan, pas de
+  base), plus de monde des bases à part : spawn + carte (loot et bases). Zones où l'on ne construit pas calculées par
+  `python outils/zones_construction.py` (`--sortie DOSSIER` : `carte_zones_construction.png`, `zones_construction.json`,
+  `rapport.md` ; lit le pack de données de la carte `datapacks/heraliz_carte` (conteneurs de loot par lieu), les zones à
+  effets `data/heraliz_zones.json` et la voie du train `reseau_v2.json`) : grandes zones lieu + 90 blocs, villages et petits
+  lieux + 40, maisons isolées + 20, gaz / radiation / froid bord + 25, tout le nord enneigé (rectangle jusqu'au bas de la
+  zone « froid »), 20 blocs de chaque côté des rails, plateforme pétrolière rayon 150 (marges réduites le 21/10 à la
+  demande du propriétaire : 33 % de la terre constructible sur la copie v3). Calculé sur la copie v3 du dépôt : à refaire
+  sur le monde en service avant de brancher CRac.
 
 - **Loot** (19/10, rien testé en jeu) : armes, accessoires, pièces de l'Armurerie et composants des tables T1 à T7
   **écrits** par `python outils/loot_armes.py` (nombre pour 100 conteneurs `POUR_100`, part des raretés par palier

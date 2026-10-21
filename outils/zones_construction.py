@@ -11,13 +11,15 @@ Règles (demande du propriétaire du 21/10, façon Rust) :
   - maisons isolées (campagne, routes) : les conteneurs sont regroupés en maisons (à moins de MAISON blocs les uns des
     autres), cercle de la maison plus MARGE_MAISON ;
   - zones à effets (gaz, radiation, froid de HeraliZ Décors) : leur contour, bord compris, plus MARGE_EFFET ;
-  - tout le haut de la carte (la neige) : un rectangle du bord nord jusqu'au bas de la zone « froid », plus MARGE_EFFET.
+  - tout le haut de la carte (la neige) : un rectangle du bord nord jusqu'au bas de la zone « froid », plus MARGE_EFFET ;
+  - la voie du train : RAIL blocs de chaque côté des rails ; la plateforme pétrolière : RAYON_PETROLE blocs au moins.
 
 Options :
   --pack <dossier>     zones de loot du pack de données de la carte (…/data/heraliz_loot/zones) ; défaut : la copie v3
                        de monde/HeraliZ
   --effets <json>      data/heraliz_zones.json du monde (zones à effets) ; défaut : celui de la copie v3
   --fond <dossier>     fond de la carte du monde (carte.json et tuiles) ; défaut : celui du mod HeraliZ Utils
+  --reseau <json>      voie du train (défaut : train/reseau_v2.json de HeraliZ Utils)
   --sortie <dossier>   où écrire carte_zones_construction.png, zones_construction.json et rapport.md
                        (défaut : livraison/zones_construction)
 
@@ -41,15 +43,21 @@ EFFETS_V3 = DEPOT / "monde/HeraliZ/data/heraliz_zones.json"
 GRANDES = {"valmont", "tcherno", "marbois", "belcourt", "port", "mirage", "clairval", "gaz", "aerodrome", "silo",
            "prison", "arctique", "radio"}
 MAISONS = {"campagne", "routes"}
-MARGE_GRANDE = 150
-MARGE_PETIT = 60
-MARGE_VILLAGE = 60
-MARGE_MAISON = 30
+# marges réduites le 21/10 (« laisser plus de zone dispo pour build ») : 150 / 60 / 60 / 30 / 40 avant
+MARGE_GRANDE = 90
+MARGE_PETIT = 40
+MARGE_VILLAGE = 40
+MARGE_MAISON = 20
 MAISON = 16
-MARGE_EFFET = 40
+MARGE_EFFET = 25
+# plateforme pétrolière (lieu « petrole », au sud) : la plateforme dépasse de loin ses quelques conteneurs
+RAYON_PETROLE = 150
+# voie du train (réseau de la nouvelle carte, HeraliZ Utils) : bande interdite de part et d'autre des rails
+RAIL = 20
+RESEAU = DEPOT / "mods/heralisz-utils/src/commun/resources/assets/heralisz_utils/train/reseau_v2.json"
 
 COULEUR = {"grande": (230, 60, 60), "petit": (240, 140, 40), "village": (240, 200, 60), "maison": (200, 120, 230),
-           "effet": (90, 200, 230), "neige": (210, 230, 255)}
+           "effet": (90, 200, 230), "neige": (210, 230, 255), "rail": (235, 235, 235)}
 
 
 def lire_lieux(pack):
@@ -99,6 +107,8 @@ def calculer(lieux, effets):
             genre = "grande" if nom in GRANDES else "village" if nom.startswith("v_") else "petit"
             marge = {"grande": MARGE_GRANDE, "village": MARGE_VILLAGE, "petit": MARGE_PETIT}[genre]
             x, z, r = cercle(pts, marge)
+            if nom == "petrole":
+                r = max(r, RAYON_PETROLE)
             cercles.append({"nom": nom, "genre": genre, "x": x, "z": z, "rayon": r})
     polys = []
     nord = None
@@ -111,7 +121,32 @@ def calculer(lieux, effets):
     return cercles, polys, nord
 
 
-def masque(x0, z0, w, h, pas, cercles, polys, nord):
+def legende(img, lignes):
+    """Légende en haut à droite (sur la neige, déjà interdite) : en bas, elle cachait la plateforme pétrolière."""
+    dr = ImageDraw.Draw(img, "RGBA")
+    f = ec.police(13, fine=True)
+    h = 10 + 18 * len(lignes)
+    w = 10 + max(dr.textbbox((0, 0), t, font=f)[2] for t, _ in lignes) + 26
+    x0, y0 = img.width - w - 12, 30
+    dr.rounded_rectangle([x0, y0, x0 + w, y0 + h], 8, fill=(10, 12, 16, 210), outline=(255, 255, 255, 70))
+    for i, (t, c) in enumerate(lignes):
+        y = y0 + 8 + 18 * i
+        if c:
+            dr.ellipse([x0 + 8, y + 3, x0 + 18, y + 13], fill=c + (255,), outline=(0, 0, 0, 255))
+        dr.text((x0 + 26, y), t, font=f, fill=(235, 235, 235))
+
+
+def lire_rails(chemin):
+    """Voie du train : suite de points (x, z), un par bloc ; « x » dans genre = trou dans la voie (pas de rails)."""
+    if not Path(chemin).is_file():
+        return []
+    d = json.loads(Path(chemin).read_text(encoding="utf-8"))
+    p = d["points"]
+    pts = [(p[i], p[i + 2]) for i in range(0, len(p), 3)]
+    return pts[::4] + pts[-1:]
+
+
+def masque(x0, z0, w, h, pas, cercles, polys, nord, rails=()):
     """Grille de cases (pas blocs) : vrai là où l'on ne construit pas."""
     xs = x0 + pas * (np.arange(w) + 0.5)
     zs = z0 + pas * (np.arange(h) + 0.5)
@@ -131,11 +166,17 @@ def masque(x0, z0, w, h, pas, cercles, polys, nord):
         m |= np.array(img) > 0
     if nord is not None:
         m |= Z <= nord
+    if rails:
+        img = Image.new("L", (w, h), 0)
+        dr = ImageDraw.Draw(img)
+        pts = [((x - x0) / pas, (z - z0) / pas) for x, z in rails]
+        dr.line(pts + pts[:1], fill=255, width=max(1, int(2 * RAIL / pas)), joint="curve")
+        m |= np.array(img) > 0
     return m
 
 
 def main(argv):
-    o = {"pack": str(PACK_V3), "effets": str(EFFETS_V3), "fond": str(ec.FOND_MOD),
+    o = {"pack": str(PACK_V3), "effets": str(EFFETS_V3), "fond": str(ec.FOND_MOD), "reseau": str(RESEAU),
          "sortie": str(DEPOT / "livraison/zones_construction")}
     i = 0
     while i < len(argv):
@@ -149,13 +190,14 @@ def main(argv):
     lieux = lire_lieux(o["pack"])
     effets = json.loads(Path(o["effets"]).read_text(encoding="utf-8")) if Path(o["effets"]).is_file() else {"zones": []}
     cercles, polys, nord = calculer(lieux, effets)
+    rails = lire_rails(o["reseau"])
 
     fond = ec.Fond(o["fond"])
     b = fond.info.get("bordure", [-1500, -1500, 1500, 1500]) if fond.ok else [-1500, -1500, 1500, 1500]
     x0, z0, x1, z1 = b
     pas = 4
     w, h = (x1 - x0) // pas, (z1 - z0) // pas
-    m = masque(x0, z0, w, h, pas, cercles, polys, nord)
+    m = masque(x0, z0, w, h, pas, cercles, polys, nord, rails)
     part = 100.0 * m.mean()
     terre = None
     if fond.ok:
@@ -187,6 +229,8 @@ def main(argv):
         dr.rectangle([X0, Y0, X1, Y1], outline=COULEUR["neige"] + (255,), width=3)
     for p in polys:
         dr.polygon([v.p(x, z) for x, z in p["points"]], outline=COULEUR["effet"] + (255,), width=2)
+    if rails:
+        dr.line([v.p(x, z) for x, z in rails + rails[:1]], fill=COULEUR["rail"] + (200,), width=1)
     for c in sorted(cercles, key=lambda c: -c["rayon"]):
         X, Y = v.p(c["x"], c["z"])
         r = c["rayon"] / v.k
@@ -196,19 +240,22 @@ def main(argv):
     for c in cercles:
         if c["genre"] in ("grande", "petit", "village"):
             X, Y = v.p(c["x"], c["z"])
-            ec.texte(dr, (X, Y), c["nom"].replace("v_", "village "), f, (255, 255, 255), True)
+            nom = "plateforme pétrolière" if c["nom"] == "petrole" else c["nom"].replace("v_", "village ")
+            ec.texte(dr, (X, Y), nom, f, (255, 255, 255), True)
     tete = ("Terre interdite : %.0f %% (constructible : %.2f km²)" % (part_terre, libre_km2)) if terre is not None \
         else "Interdit de construire : %.0f %% de la carte" % part
-    ec.legende(img, [(tete, None),
+    legende(img, [(tete, None),
                      ("Grandes zones : lieu + %d blocs" % MARGE_GRANDE, COULEUR["grande"]),
                      ("Petits lieux : lieu + %d blocs" % MARGE_PETIT, COULEUR["petit"]),
                      ("Villages : village + %d blocs" % MARGE_VILLAGE, COULEUR["village"]),
                      ("Maisons isolées : maison + %d blocs" % MARGE_MAISON, COULEUR["maison"]),
                      ("Gaz, radiation, froid : zone + bord + %d" % MARGE_EFFET, COULEUR["effet"]),
-                     ("Neige : tout le nord jusqu'à z = %s" % (nord if nord is not None else "-"), COULEUR["neige"])])
+                     ("Neige : tout le nord jusqu'à z = %s" % (nord if nord is not None else "-"), COULEUR["neige"]),
+                     ("Rails du train : %d blocs de chaque côté" % RAIL, COULEUR["rail"]),
+                     ("Plateforme pétrolière : rayon %d" % RAYON_PETROLE, COULEUR["petit"])])
     ec.enregistrer(img, sortie / "carte_zones_construction.png")
 
-    donnees = {"version": 1, "nord_z": nord, "cercles": cercles,
+    donnees = {"version": 1, "nord_z": nord, "rail": RAIL, "rails": [[round(x), round(z)] for x, z in rails], "cercles": cercles,
                "polygones": [{"nom": p["nom"], "genre": p["genre"], "points": p["points"], "marge": p["marge"]} for p in polys]}
     (sortie / "zones_construction.json").write_text(json.dumps(donnees, ensure_ascii=False, indent=1), encoding="utf-8")
     compte = {g: sum(1 for c in cercles if c["genre"] == g) for g in COULEUR}
@@ -221,7 +268,8 @@ def main(argv):
          "| Villages | %d | %d blocs |" % (compte["village"], MARGE_VILLAGE),
          "| Maisons isolées | %d | %d blocs |" % (compte["maison"], MARGE_MAISON),
          "| Zones à effets | %d | bord + %d blocs |" % (len(polys), MARGE_EFFET),
-         "| Neige (nord) | 1 | jusqu'à z = %s |" % nord, ""]
+         "| Neige (nord) | 1 | jusqu'à z = %s |" % nord,
+         "| Rails du train | %d points | %d blocs de chaque côté |" % (len(rails), RAIL), ""]
     for c in sorted(cercles, key=lambda c: (c["genre"], c["nom"])):
         if c["genre"] != "maison":
             r.append("- %s (%s) : centre %d %d, rayon %d" % (c["nom"], c["genre"], c["x"], c["z"], c["rayon"]))
