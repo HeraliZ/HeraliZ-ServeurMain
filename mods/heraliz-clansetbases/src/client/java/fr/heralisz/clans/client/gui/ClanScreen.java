@@ -19,6 +19,7 @@ import fr.heralisz.clans.client.gui.tabs.ClassementTab;
 import fr.heralisz.clans.client.gui.tabs.MembresTab;
 import fr.heralisz.clans.client.gui.tabs.ParametresTab;
 import fr.heralisz.clans.client.gui.tabs.PermissionsTab;
+import fr.heralisz.clans.client.gui.tabs.NiveauTab;
 import fr.heralisz.clans.client.gui.tabs.QuetesTab;
 import fr.heralisz.clans.client.gui.tabs.Tab;
 import fr.heralisz.clans.model.ClanSnapshot;
