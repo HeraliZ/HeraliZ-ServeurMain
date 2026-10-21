@@ -56,6 +56,18 @@ public final class ZoneArmoire {
         pose.translate(-cam.x, -cam.y, -cam.z);
         Matrix4f m = pose.last().pose();
         Level lvl = mc.level;
+        // deux passes : Minecraft ne remplit qu'un tampon partagé à la fois (voiles puis lignes, jamais mêlés : plantage)
+        VertexConsumer q = buffers.getBuffer(RenderType.debugQuads());
+        dessiner(q, null, pose, m, lvl);
+        buffers.endBatch(RenderType.debugQuads());
+        VertexConsumer l = buffers.getBuffer(RenderType.lines());
+        dessiner(null, l, pose, m, lvl);
+        buffers.endBatch(RenderType.lines());
+        pose.popPose();
+    }
+
+    /** Toutes les zones proches : voiles si q, liseré et poteaux si l. */
+    private static void dessiner(VertexConsumer q, VertexConsumer l, PoseStack pose, Matrix4f m, Level lvl) {
         for (S2CNearbyClaims.ClaimEntry c : ClientClaimCache.get()) {
             BlockPos a = c.center();
             int ymin = a.getY() - c.yRadius(), ymax = a.getY() + c.yRadius() + 1;
@@ -63,13 +75,14 @@ public final class ZoneArmoire {
             int z0 = a.getZ() - c.radius(), z1 = a.getZ() + c.radius() + 1;
             int rgb = c.ownedByMe() ? VERT : ROUGE;
             float r = (rgb >> 16 & 255) / 255F, g = (rgb >> 8 & 255) / 255F, b = (rgb & 255) / 255F;
-            VertexConsumer q = buffers.getBuffer(RenderType.debugQuads());
-            VertexConsumer l = buffers.getBuffer(RenderType.lines());
             // les quatre côtés, parcourus dans le même sens ; dx/dz : pas le long du côté
             cote(q, l, pose, m, lvl, x0, z0, 1, 0, x1 - x0, ymin, ymax, r, g, b);
             cote(q, l, pose, m, lvl, x1, z0, 0, 1, z1 - z0, ymin, ymax, r, g, b);
             cote(q, l, pose, m, lvl, x1, z1, -1, 0, x1 - x0, ymin, ymax, r, g, b);
             cote(q, l, pose, m, lvl, x0, z1, 0, -1, z1 - z0, ymin, ymax, r, g, b);
+            if (l == null) {
+                continue;
+            }
             for (int[] coin : new int[][]{{x0, z0}, {x1, z0}, {x1, z1}, {x0, z1}}) {
                 double y = sol(lvl, coin[0] - 1, coin[1] - 1, coin[0], coin[1], ymin, ymax);
                 if (!Double.isNaN(y)) {
@@ -77,9 +90,6 @@ public final class ZoneArmoire {
                 }
             }
         }
-        pose.popPose();
-        buffers.endBatch(RenderType.debugQuads());
-        buffers.endBatch(RenderType.lines());
     }
 
     /**
@@ -96,8 +106,12 @@ public final class ZoneArmoire {
             double y = sol(lvl, x - 1, z - 1, x, z, ymin, ymax);
             if (i > 0 && !Double.isNaN(y) && !Double.isNaN(yPrec)) {
                 double a0 = yPrec + DECOLLE, a1 = y + DECOLLE;
-                mur(q, m, xPrec, zPrec, x, z, a0, Math.min(a0 + VOILE, ymax), a1, Math.min(a1 + VOILE, ymax), r, g, b);
-                ligne(l, pose, xPrec, a0, zPrec, x, a1, z, r, g, b);
+                if (q != null) {
+                    mur(q, m, xPrec, zPrec, x, z, a0, Math.min(a0 + VOILE, ymax), a1, Math.min(a1 + VOILE, ymax), r, g, b);
+                }
+                if (l != null) {
+                    ligne(l, pose, xPrec, a0, zPrec, x, a1, z, r, g, b);
+                }
             }
             yPrec = y;
             xPrec = x;
