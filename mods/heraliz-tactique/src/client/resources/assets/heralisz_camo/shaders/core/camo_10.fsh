@@ -1689,6 +1689,25 @@ vec3 kCaseHard(vec3 p, vec3 c1, vec3 c2, vec3 c3, vec3 c4, out vec3 em) {
     return metalShade(p, col * 1.15, 0.9, 0.85);
 }
 
+// Case Hardened façon CS (21/10, Skeleton : « faire mieux » que le Blue Gem tout bleu) : acier gris brossé, taches de
+// trempe bleues frangées de violet, plaques or et laiton, grandes taches douces ; bleu, or et acier à parts presque égales
+vec3 kCaseHardCS(vec3 p, vec3 bleu, vec3 or_, vec3 acier, out vec3 em) {
+    em = vec3(0.0);
+    vec3 q = p * vec3(5.0, 15.0, 15.0) + vec3(11.0);
+    vec3 w = vec3(fbm(q * 0.6, 3), fbm(q * 0.6 + vec3(4.3, 1.7, 8.1), 3), 0.0);
+    float mb = fbm(q + 2.2 * w, 4);
+    float mo = fbm(q * 1.15 + 2.0 * w.yxz + vec3(5.5), 4);
+    vec3 col = acier * (0.88 + 0.12 * vnoise(vec3(p.x * 8.0, p.y * 420.0, 3.0)));
+    float b = smoothstep(0.47, 0.55, mb);
+    float frange = smoothstep(0.42, 0.47, mb) - smoothstep(0.47, 0.5, mb);
+    col = mix(col, mix(bleu * 0.65, bleu * 1.25, vnoise(q * 2.0)), b);
+    col = mix(col, hexc(0x6a3ab0), frange * 0.55);
+    float o = smoothstep(0.49, 0.57, mo) * (1.0 - 0.85 * b);
+    col = mix(col, mix(or_ * 0.7, or_ * 1.2, vnoise(q * 2.5 + vec3(2.0))), o);
+    col = mix(col, hexc(0x8a5a2a), (smoothstep(0.44, 0.49, mo) - smoothstep(0.49, 0.57, mo)) * 0.35 * (1.0 - b));
+    return metalShade(p, col * 1.1, 0.75, 0.85);
+}
+
 // --- deuxième série (styles en plus)
 // Martelé : acier forgé à la main, petites cupules qui accrochent la lumière
 vec3 kHammered(vec3 p, vec3 c, out vec3 em) {
@@ -1843,15 +1862,18 @@ vec3 kAurora(vec3 p, vec3 night, vec3 c1, vec3 c2, out vec3 em) {
     return metalShade(p, col, 0.8, 0.8);
 }
 
-// Foudre : métal sombre, arcs électriques qui se déplacent
+// Foudre : métal sombre, arcs électriques qui glissent en continu (21/10 : plus de sauts 6 fois par seconde, jugés
+// saccadés ; 6 octaves de bruit au lieu de 10, déformation lente qui fait vivre les arcs sans à-coup)
 vec3 kElectric(vec3 p, vec3 dark, vec3 arc, out vec3 em) {
     float t = CamoTime;
-    vec3 q = p * vec3(5.0, 15.0, 15.0) + vec3(0.0, 0.0, floor(t * 6.0) * 0.37);
-    float r = 1.0 - abs(2.0 * fbm(q + vec3(fbm(q * 2.0, 3)), 5) - 1.0);
+    vec3 q = p * vec3(5.0, 15.0, 15.0) + vec3(t * 0.35, 0.0, t * 0.55);
+    float w = fbm(q * 2.0 + vec3(0.0, t * 0.25, 0.0), 2);
+    float r = 1.0 - abs(2.0 * fbm(q + vec3(w), 4) - 1.0);
     float bolt = smoothstep(0.93, 0.99, r);
     float glow = smoothstep(0.8, 0.99, r);
-    vec3 col = mix(dark * (0.9 + 0.2 * fbm(p * 40.0, 2)), mix(arc, vec3(1.0), 0.5), bolt);
-    em = arc * (bolt * 0.9 + glow * 0.25);
+    float pouls = 0.88 + 0.12 * sin(t * 5.0 + p.x * 6.0);
+    vec3 col = mix(dark * (0.9 + 0.2 * vnoise(p * 40.0)), mix(arc, vec3(1.0), 0.5), bolt);
+    em = arc * (bolt * 0.9 + glow * 0.25) * pouls;
     return metalShade(p, col, 0.5, 0.7);
 }
 
@@ -1869,34 +1891,46 @@ vec3 kMolten(vec3 p, vec3 c, vec3 hot, out vec3 em) {
 }
 
 
-// Autotronic (CS2) : lame d'acier brossé, grande plaque rouge anodisée translucide (l'acier transparaît), bord d'acier
-// poli côté tranchant, maille d'acier noire dans la gorge, filets noirs autour de la plaque
+// Autotronic (CS2, refait le 21/10 : « ne ressemble pas à un Autotronic ») : lame rouge anodisée brillante, bande noire en
+// carbone le long de l'arête, bordée de découpes mécaniques en escalier et d'un filet d'acier, rivets d'acier, col noir à
+// la base barré d'entailles rouges, tranchants d'acier poli. Largeur de la lame mesurée sur le Push (demi-largeur 0,237 à
+// la base, 0,025 à la pointe) : tout est placé en part de la demi-largeur (v = 0 sur l'arête, 1 au tranchant)
 vec3 kAutotronic(vec3 p, vec3 rouge, vec3 noir, out vec3 em) {
     em = vec3(0.0);
-    float brosse = 0.9 + 0.1 * fbm(vec3(p.x * 8.0, p.y * 420.0, 1.0), 2);
-    vec3 acier = hexc(0xc2c7cf) * brosse;
-    float larg = mix(0.15, 0.035, smoothstep(-0.45, 0.4, p.x));          // la plaque s'affine vers la pointe
-    float bout = 0.30 - abs(p.y) * 1.2;                                     // fin de la plaque en chevron
-    float dPlaque = max(abs(p.y) - larg, p.x - bout);
-    float plaque = 1.0 - smoothstep(-0.002, 0.002, dPlaque);
-    vec3 anod = mix(acier * rouge * 1.6, rouge, 0.55) * (0.92 + 0.08 * vnoise(p * 900.0));
-    vec3 col = mix(acier, anod, plaque);
-    float filet = 1.0 - smoothstep(0.0, 0.004, abs(dPlaque + 0.004));
-    col = mix(col, noir, filet * 0.9);
-    // maille de la gorge : losanges noirs, fils d'acier
-    float gorge = (1.0 - smoothstep(0.022, 0.026, abs(p.y))) * smoothstep(-0.42, -0.40, p.x) * smoothstep(0.14, 0.12, p.x);
-    vec2 g = vec2(p.x * 110.0 + p.y * 110.0, p.x * 110.0 - p.y * 110.0);
-    vec2 cf = abs(fract(g) - 0.5);
-    float fil = 1.0 - smoothstep(0.06, 0.12, min(cf.x, cf.y));
-    vec3 maille = mix(noir * 0.6, acier * 0.75, fil);
-    col = mix(col, maille, gorge);
-    // manche (au-delà de la garde) : noir satiné, maille fine
-    float manche = 1.0 - smoothstep(-0.53, -0.51, p.x);
-    vec2 gm = abs(fract(vec2(p.x * 160.0 + p.y * 160.0, p.x * 160.0 - p.y * 160.0)) - 0.5);
-    vec3 noirM = mix(noir, noir * 2.6, 1.0 - smoothstep(0.05, 0.1, min(gm.x, gm.y)));
-    col = mix(col, noirM, manche);
-    plaque *= 1.0 - manche;
-    return metalShade(p, col, mix(0.35, 0.9, plaque), mix(0.8, 0.95, plaque) * (1.0 - 0.5 * manche));
+    float t = clamp(p.x + 0.5, 0.0, 1.0);
+    float hw = max(0.237 - 0.215 * pow(t, 2.2), 0.02);
+    float v = clamp(abs(p.y) / hw, 0.0, 1.0);
+    // rouge anodisé : brossage fin le long de la lame, profondeur qui varie doucement
+    float brosse = 0.9 + 0.1 * vnoise(vec3(p.x * 6.0, p.y * 380.0, 2.0));
+    vec3 anod = rouge * brosse * (0.85 + 0.25 * smoothstep(0.35, 0.85, v));
+    // bande noire de l'arête : bord en escalier (crans tous les 0,12 le long de la lame), plus étroite vers la pointe
+    float cran = floor((p.x + 0.5) / 0.12);
+    float marche = 0.22 + 0.08 * mod(cran, 2.0) - 0.06 * step(0.5, fract((p.x + 0.5) / 0.12)) * mod(cran + 1.0, 2.0);
+    float lim = marche * (1.0 - smoothstep(0.30, 0.50, p.x) * 0.55);
+    float dBande = v - lim;
+    float bande = 1.0 - smoothstep(-0.008, 0.008, dBande);
+    vec3 em2;
+    vec3 carb = carbon(p, em2) * noir * 4.0;
+    // filet d'acier entre le noir et le rouge
+    float filet = 1.0 - smoothstep(0.012, 0.03, abs(dBande - 0.035));
+    // col noir à la base, entailles rouges en biais
+    float col_ = 1.0 - smoothstep(-0.43, -0.415, p.x);
+    float entaille = col_ * kLine(fract((p.x * 2.0 + p.y * 3.0) * 6.0) - 0.5, 0.06) * step(v, 0.8);
+    // rivets d'acier dans la bande, un par cran
+    vec2 rq = vec2(fract((p.x + 0.5) / 0.12) - 0.5, abs(p.y) / hw * 0.6 - 0.09);
+    float rivet = (1.0 - smoothstep(0.08, 0.12, length(rq * vec2(1.0, 2.2)))) * step(p.x, 0.25) * step(-0.36, p.x);
+    // tranchant d'acier poli (biseau)
+    float tranchant = smoothstep(0.84, 0.9, v);
+    vec3 acier = hexc(0xd4d9e0) * (0.92 + 0.08 * vnoise(vec3(p.x * 9.0, p.y * 500.0, 4.0)));
+    vec3 base = anod;
+    float noirAmt = max(bande, col_);
+    base = mix(base, carb, noirAmt);
+    base = mix(base, rouge * 1.1, entaille);
+    base = mix(base, acier * 0.95, max(filet * (1.0 - col_), rivet * bande));
+    base = mix(base, acier, tranchant);
+    float teinte = mix(0.95, 0.15, max(noirAmt, max(tranchant, filet)));
+    float brillance = mix(0.92, 0.55, noirAmt * (1.0 - tranchant));
+    return metalShade(p, base, teinte, brillance);
 }
 
 // <skins_couteaux> : écrit par outils/skins_couteaux.py (catalogue des skins), ne pas modifier à la main
@@ -1917,7 +1951,7 @@ void skinParams() {
         K_C[1] = hexc(0xe02a36);
         break;
     case 121:   // m9 | Forest DDPAT (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0x6a7450);
         K_C[1] = hexc(0x3e4830);
         K_C[2] = hexc(0x9a9a72);
@@ -1950,7 +1984,7 @@ void skinParams() {
         K_C[2] = hexc(0x4ef0d0);
         break;
     case 126:   // karambit | Urban Masked (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0x8a8e94);
         K_C[1] = hexc(0x4a4e55);
         K_C[2] = hexc(0xc8ccd2);
@@ -1979,7 +2013,7 @@ void skinParams() {
         K_INLAY = hexc(0x2a2420);
         break;
     case 136:   // butterfly | Blue Carbon (Raffiné)
-        K_STYLE = 6;
+        K_STYLE = 5;
         K_C[0] = vec3(0.75, 0.9, 1.25);
         K_INLAY = hexc(0x1a2a4a);
         break;
@@ -2072,7 +2106,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x140e0a); K_GL = hexc(0x4a3628); K_GA = hexc(0xd8c8b0); K_GG = 0.0;
         break;
     case 163:   // executor | Urban Digital (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0x6a6e74);
         K_C[1] = hexc(0x3a3d42);
         K_C[2] = hexc(0xa8acb2);
@@ -2106,7 +2140,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x0a0410); K_GL = hexc(0x2a0e44); K_GA = hexc(0xb060ff); K_GG = 0.5;
         break;
     case 169:   // mercy | Snow Camo (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0xf0f2f4);
         K_C[1] = hexc(0xb8bec6);
         K_C[2] = hexc(0x7a828c);
@@ -2136,7 +2170,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x081a24); K_GL = hexc(0x0e2a3a); K_GA = hexc(0x1a8a9a); K_GG = 0.0;
         break;
     case 177:   // sea_gleam | Gold Hardened (Prestige)
-        K_STYLE = 7;
+        K_STYLE = 6;
         K_C[0] = hexc(0xc89a30);
         K_C[1] = hexc(0xf0d070);
         K_C[2] = hexc(0x8a4a20);
@@ -2144,7 +2178,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x1a1006); K_GL = hexc(0x5a3a12); K_GA = hexc(0xf0d070); K_GG = 0.0;
         break;
     case 300:   // m9 | Battle Worn (Classique)
-        K_STYLE = 4;
+        K_STYLE = 3;
         K_C[0] = hexc(0x4a5a3a);
         K_C[1] = hexc(0xb8bcc2);
         break;
@@ -2167,7 +2201,7 @@ void skinParams() {
         K_C[2] = hexc(0x3a2418);
         break;
     case 306:   // karambit | Arid Digital (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0xc8b490);
         K_C[1] = hexc(0x9a7a52);
         K_C[2] = hexc(0x6a5a3a);
@@ -2181,7 +2215,7 @@ void skinParams() {
         K_F.x = 1.0;
         break;
     case 308:   // karambit | Ember Worn (Classique)
-        K_STYLE = 4;
+        K_STYLE = 3;
         K_C[0] = hexc(0xa83a1a);
         K_C[1] = hexc(0xb0b4ba);
         break;
@@ -2195,7 +2229,7 @@ void skinParams() {
         K_STYLE = 34;
         break;
     case 312:   // butterfly | Forest Camo (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0x4a5a3a);
         K_C[1] = hexc(0x2a3a22);
         K_C[2] = hexc(0x6a7a4a);
@@ -2218,7 +2252,7 @@ void skinParams() {
         K_INLAY = hexc(0x0e4a36);
         break;
     case 318:   // tac_dagger | Urban Worn (Classique)
-        K_STYLE = 4;
+        K_STYLE = 3;
         K_C[0] = hexc(0x3a3e44);
         K_C[1] = hexc(0xb8bcc2);
         K_GRIP = 1; K_GD = hexc(0x0a0b0c); K_GL = hexc(0x1f2225); K_GA = hexc(0xb8bcc2); K_GG = 0.0;
@@ -2243,7 +2277,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x18191b); K_GL = hexc(0x4b4f53); K_GA = hexc(0x8a9098); K_GG = 0.0;
         break;
     case 326:   // creed | Midnight Camo (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0x2a3048);
         K_C[1] = hexc(0x1a1e30);
         K_C[2] = hexc(0x3a4460);
@@ -2278,7 +2312,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x010107); K_GL = hexc(0x050316); K_GA = hexc(0x7a6af0); K_GG = 0.0;
         break;
     case 332:   // desmoulins_edge | Night Digital (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0x5a5a64);
         K_C[1] = hexc(0x3a3a44);
         K_C[2] = hexc(0x7a7a86);
@@ -2325,7 +2359,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x070300); K_GL = hexc(0x170b00); K_GA = hexc(0xf0b020); K_GG = 0.0;
         break;
     case 346:   // executor | Charcoal Worn (Classique)
-        K_STYLE = 4;
+        K_STYLE = 3;
         K_C[0] = hexc(0x26282c);
         K_C[1] = hexc(0x9aa0a8);
         K_GRIP = 1; K_GD = hexc(0x060707); K_GL = hexc(0x141618); K_GA = hexc(0x9aa0a8); K_GG = 0.0;
@@ -2362,7 +2396,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x000000); K_GL = hexc(0x010101); K_GA = hexc(0xc0c8d8); K_GG = 0.0;
         break;
     case 355:   // mercy | Steel Worn (Classique)
-        K_STYLE = 4;
+        K_STYLE = 3;
         K_C[0] = hexc(0x5a6a7a);
         K_C[1] = hexc(0xd0d4da);
         K_GRIP = 1; K_GD = hexc(0x101315); K_GL = hexc(0x313a43); K_GA = hexc(0xd0d4da); K_GG = 0.0;
@@ -2385,7 +2419,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x070103); K_GL = hexc(0x17030b); K_GA = hexc(0xf08ab8); K_GG = 0.0;
         break;
     case 360:   // sea_gleam | Coral Worn (Classique)
-        K_STYLE = 4;
+        K_STYLE = 3;
         K_C[0] = hexc(0xd86a50);
         K_C[1] = hexc(0xb8c0c8);
         K_GRIP = 1; K_GD = hexc(0x26130e); K_GL = hexc(0x763a2c); K_GA = hexc(0xd86a50); K_GG = 0.0;
@@ -2473,7 +2507,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x242426); K_GL = hexc(0x6e7074); K_GA = hexc(0x80c0ff); K_GG = 0.0;
         break;
     case 394:   // ct_knife | Ranger Digital (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0x5a6a4a);
         K_C[1] = hexc(0x3a4a30);
         K_C[2] = hexc(0x8a9a6a);
@@ -2489,7 +2523,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x0d131e); K_GL = hexc(0x283a5c); K_GA = hexc(0x4a6aa8); K_GG = 0.0;
         break;
     case 397:   // ct_knife | Navy Worn (Classique)
-        K_STYLE = 4;
+        K_STYLE = 3;
         K_C[0] = hexc(0x1e2a44);
         K_C[1] = hexc(0xb0b6be);
         K_GRIP = 1; K_GD = hexc(0x05070c); K_GL = hexc(0x101725); K_GA = hexc(0xb0b6be); K_GG = 0.0;
@@ -2542,7 +2576,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x262729); K_GL = hexc(0x767a7f); K_GA = hexc(0x80c0ff); K_GG = 0.0;
         break;
     case 407:   // t_knife | Desert Digital (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0xc8a878);
         K_C[1] = hexc(0x9a7a4a);
         K_C[2] = hexc(0x7a5a34);
@@ -2552,7 +2586,7 @@ void skinParams() {
         K_GRIP = 1; K_GD = hexc(0x241e15); K_GL = hexc(0x6e5c42); K_GA = hexc(0xc8a878); K_GG = 0.0;
         break;
     case 409:   // t_knife | Red Worn (Classique)
-        K_STYLE = 4;
+        K_STYLE = 3;
         K_C[0] = hexc(0x8a1a14);
         K_C[1] = hexc(0xb8bcc2);
         K_GRIP = 1; K_GD = hexc(0x180403); K_GL = hexc(0x4b0e0b); K_GA = hexc(0x8a1a14); K_GG = 0.0;
@@ -2593,7 +2627,7 @@ void skinParams() {
         K_C[3] = hexc(0x2a2c4a);
         break;
     case 422:   // cs2_skeleton | Boreal Forest (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0x6a7a52);
         K_C[1] = hexc(0x3a4a2e);
         K_C[2] = hexc(0x9a9a72);
@@ -2617,7 +2651,7 @@ void skinParams() {
         K_C[1] = hexc(0x40c8ff);
         break;
     case 426:   // cs2_push | Autotronic (Prestige)
-        K_STYLE = 3;
+        K_STYLE = 2;
         K_C[0] = hexc(0xd0141e);
         K_C[1] = hexc(0x101012);
         break;
@@ -2629,7 +2663,7 @@ void skinParams() {
         K_C[3] = hexc(0x1a2a6a);
         break;
     case 428:   // cs2_push | Arctic Camo (Classique)
-        K_STYLE = 5;
+        K_STYLE = 4;
         K_C[0] = hexc(0xeef2f6);
         K_C[1] = hexc(0xaab4c0);
         K_C[2] = hexc(0x6a7684);
@@ -2671,11 +2705,11 @@ void skinParams() {
         K_C[0] = hexc(0x8a3ae0);
         K_C[1] = hexc(0x20d0c8);
         break;
-    case 435:   // cs2_stiletto | Moonlit (Prestige)
-        K_STYLE = 2;
-        K_C[0] = hexc(0x080a18);
-        K_C[1] = hexc(0x5a7ae8);
-        K_C[2] = hexc(0xc8d8ff);
+    case 436:   // cs2_skeleton | Case Hardened (Ultime)
+        K_STYLE = 7;
+        K_C[0] = hexc(0x2a5ad8);
+        K_C[1] = hexc(0xd8a840);
+        K_C[2] = hexc(0xa8b0b8);
         break;
     }
 }
@@ -2683,12 +2717,12 @@ vec3 skinCouteau(vec3 p, out vec3 em) {
     em = vec3(0.0);
     if (K_STYLE == 0) return gemDoppler(p, K_C[0], K_C[1], K_C[2], K_C[3], K_F.x, K_C[4], em);
     if (K_STYLE == 1) return kAnodFade(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 2) return kAurora(p, K_C[0], K_C[1], K_C[2], em);
-    if (K_STYLE == 3) return kAutotronic(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 4) return kBattleWorn(p, K_C[0], K_C[1], em);
-    if (K_STYLE == 5) return kCamo(p, K_C[0], K_C[1], K_C[2], K_C[3], K_F.x, K_F.y, em);
-    if (K_STYLE == 6) return kCarbon(p, K_C[0], em);
-    if (K_STYLE == 7) return kCaseHard(p, K_C[0], K_C[1], K_C[2], K_C[3], em);
+    if (K_STYLE == 2) return kAutotronic(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 3) return kBattleWorn(p, K_C[0], K_C[1], em);
+    if (K_STYLE == 4) return kCamo(p, K_C[0], K_C[1], K_C[2], K_C[3], K_F.x, K_F.y, em);
+    if (K_STYLE == 5) return kCarbon(p, K_C[0], em);
+    if (K_STYLE == 6) return kCaseHard(p, K_C[0], K_C[1], K_C[2], K_C[3], em);
+    if (K_STYLE == 7) return kCaseHardCS(p, K_C[0], K_C[1], K_C[2], em);
     if (K_STYLE == 8) return kCerakote(p, K_C[0], em);
     if (K_STYLE == 9) return kCircuit(p, K_C[0], K_C[1], K_C[2], em);
     if (K_STYLE == 10) return kDamascus(p, K_C[0], K_C[1], K_F.x, em);

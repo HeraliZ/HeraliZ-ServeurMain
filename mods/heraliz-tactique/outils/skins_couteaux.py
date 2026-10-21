@@ -286,6 +286,9 @@ _LOT2 = [
     ("cs2_stiletto", "rosso", "Rosso", "raffine", "kTwoTone", [0xc0141e, 0x121214, 0xe8e4dc], None),
     ("cs2_stiletto", "mirage", "Mirage", "raffine", "kAnodFade", [0x8a3ae0, 0x20d0c8], None),
     ("cs2_stiletto", "moonlit", "Moonlit", "prestige", "kAurora", [0x080a18, 0x5a7ae8, 0xc8d8ff], None),
+    # 21/10 : Case Hardened du Skeleton refait (le programme 64, « Blue Gem » tout bleu, reste celui des autres couteaux ;
+    # identifiant à part : « case_hardened » est déjà la finition du programme 64 dans KnifeFinish)
+    ("cs2_skeleton", "case_hardened_cs", "Case Hardened", "ultime", "kCaseHardCS", [0x2a5ad8, 0xd8a840, 0xa8b0b8], None),
 ]
 # finitions exclusives déjà écrites dans le gabarit, reprises par la deuxième série (programme à elles)
 _EXCLUSIVES = {"nebula": 103, "ultraviolet": 101}
@@ -336,6 +339,10 @@ RETIRES = {
     "smite_hammer": ["forged_iron", "blacksmith", "granite", "antique_bronze", "highland_camo", "slate", "thunder_stripe",
                      "verdigris", "rune_hex", "aurum_temper", "storm_marble", "runic_gold", "thunderstrike", "nebula"],
     "baseball_bat": ["bruiser_hex", "blackwood", "ash_wood", "aluminium", "street_camo", "plasma"],
+    # 21/10 : retours des joueurs sur les couteaux du pack CS2
+    "cs2_stiletto": ["moonlit"],
+    # l'objet Case Hardened du Skeleton (programme 64) remplacé par case_hardened_cs (dessin à lui, même nom affiché)
+    "cs2_skeleton": ["case_hardened"],
 }
 # vrais skins CS2 sur les couteaux du pack CS2 (21/10) : finitions déjà dans le jeu (KnifeFinish hors du catalogue,
 # programmes 55 à 66) ; seuls les objets (fiche, affichage, noms) sont écrits, ni programme ni finition en plus
@@ -343,7 +350,7 @@ FINITIONS_CS = {"gamma_emerald": 58, "doppler_ruby": 55, "doppler_sapphire": 56,
                 "marble_fade": 60, "tiger_tooth": 61, "crimson_web": 62, "slaughter": 63, "case_hardened": 64, "lore": 65}
 OBJETS_CS = [
     ("cs2_skeleton", "fade", "Fade"), ("cs2_skeleton", "crimson_web", "Crimson Web"),
-    ("cs2_skeleton", "case_hardened", "Case Hardened"), ("cs2_skeleton", "doppler_ruby", "Doppler Ruby"),
+    ("cs2_skeleton", "doppler_ruby", "Doppler Ruby"),
     ("cs2_push", "marble_fade", "Marble Fade"), ("cs2_push", "tiger_tooth", "Tiger Tooth"),
     ("cs2_push", "doppler_sapphire", "Doppler Sapphire"), ("cs2_push", "crimson_web", "Crimson Web"),
     ("cs2_stiletto", "lore", "Gold Arabesque"), ("cs2_stiletto", "gamma_emerald", "Gamma Doppler"),

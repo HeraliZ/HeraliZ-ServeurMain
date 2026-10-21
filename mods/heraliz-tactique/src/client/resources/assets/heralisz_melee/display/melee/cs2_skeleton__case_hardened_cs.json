@@ -1,9 +1,9 @@
 {
-  "model": "heralisz_melee:melee/cs2_stiletto_skin_geo",
-  "animation": "heralisz_melee:melee/cs2_stiletto",
-  "state_machine": "heralisz_melee:default_melee_state_machine",
-  "texture": "heralisz_melee:melee/cs2_stiletto_skin_uv",
-  "slot_texture": "heralisz_melee:melee/slot/cs2_stiletto__moonlit",
+  "model": "heralisz_melee:melee/cs2_skeleton_skin_geo",
+  "animation": "heralisz_melee:melee/cs2_skeleton",
+  "state_machine": "heralisz_melee:cs2_skeleton_state_machine",
+  "texture": "heralisz_melee:melee/cs2_skeleton_skin_uv",
+  "slot_texture": "heralisz_melee:melee/slot/cs2_skeleton__case_hardened_cs",
   "sounds": {
     "attack_left_hit": "heralisz_melee:entity.player.flash.hit",
     "attack_right_hit": "heralisz_melee:entity.player.flash.hit",

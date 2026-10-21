@@ -1,6 +1,6 @@
 {
-  "name": "item.heralisz_melee.cs2_skeleton__case_hardened",
-  "tooltip": "item.heralisz_melee.cs2_skeleton__case_hardened.desc",
+  "name": "item.heralisz_melee.cs2_skeleton__case_hardened_cs",
+  "tooltip": "item.heralisz_melee.cs2_skeleton__case_hardened_cs.desc",
   "type": "heralisz_tactical:normal",
   "base_item": "heralisz_tactical:melee",
   "data": {

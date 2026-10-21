@@ -140,7 +140,7 @@ public enum KnifeFinish {
    VENDETTA("vendetta", 432, true),
    ROSSO("rosso", 433, true),
    MIRAGE("mirage", 434, true),
-   MOONLIT("moonlit", 435, true),
+   CASE_HARDENED_CS("case_hardened_cs", 436, true),
    // </skins_couteaux>
    ;
 

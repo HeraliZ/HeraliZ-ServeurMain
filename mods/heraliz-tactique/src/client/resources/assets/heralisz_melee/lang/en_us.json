@@ -171,14 +171,10 @@
   "item.heralisz_melee.cs2_stiletto__rosso.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
   "item.heralisz_melee.cs2_stiletto__mirage": "§cStiletto Knife §7| §c§lMirage",
   "item.heralisz_melee.cs2_stiletto__mirage.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
-  "item.heralisz_melee.cs2_stiletto__moonlit": "§cStiletto Knife §7| §c§lMoonlit",
-  "item.heralisz_melee.cs2_stiletto__moonlit.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
   "item.heralisz_melee.cs2_skeleton__fade": "§cSkeleton Knife §7| §c§lFade",
   "item.heralisz_melee.cs2_skeleton__fade.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
   "item.heralisz_melee.cs2_skeleton__crimson_web": "§cSkeleton Knife §7| §c§lCrimson Web",
   "item.heralisz_melee.cs2_skeleton__crimson_web.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
-  "item.heralisz_melee.cs2_skeleton__case_hardened": "§cSkeleton Knife §7| §c§lCase Hardened",
-  "item.heralisz_melee.cs2_skeleton__case_hardened.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
   "item.heralisz_melee.cs2_skeleton__doppler_ruby": "§cSkeleton Knife §7| §c§lDoppler Ruby",
   "item.heralisz_melee.cs2_skeleton__doppler_ruby.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
   "item.heralisz_melee.cs2_push__marble_fade": "§cPush Dagger §7| §c§lMarble Fade",
@@ -196,5 +192,7 @@
   "item.heralisz_melee.cs2_stiletto__doppler_black_pearl": "§cStiletto Knife §7| §c§lDoppler Black Pearl",
   "item.heralisz_melee.cs2_stiletto__doppler_black_pearl.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
   "item.heralisz_melee.cs2_stiletto__slaughter": "§cStiletto Knife §7| §c§lSlaughter",
-  "item.heralisz_melee.cs2_stiletto__slaughter.desc": "§6★★★★§8\n§8HeraliZ Exclusive"
+  "item.heralisz_melee.cs2_stiletto__slaughter.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
+  "item.heralisz_melee.cs2_skeleton__case_hardened_cs": "§cSkeleton Knife §7| §c§lCase Hardened",
+  "item.heralisz_melee.cs2_skeleton__case_hardened_cs.desc": "§6★★★★§8\n§8HeraliZ Exclusive"
 }
