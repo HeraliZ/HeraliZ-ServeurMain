@@ -31,7 +31,7 @@ public final class Reseau {
     private Reseau() {
     }
 
-    private static final String VERSION = "5";
+    private static final String VERSION = "6";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -138,6 +138,22 @@ public final class Reseau {
     public record Presentation(double x, double y, double z, float rayon, int ticks) {
     }
 
+    /** Éditeur des marchands (staff op) : un article vendu, ou une règle de rachat et ses 6 prix (Commun ... Mythique). */
+    public record EArticle(ItemStack objet, long prix, int rarete) {
+    }
+
+    public record ERegle(String tag, long[] prix) {
+    }
+
+    /** Ouvre (ou met à jour) l'éditeur d'un marchand (serveur -> joueur). */
+    public record Edition(String pnj, Texte nom, boolean rachat, boolean modifie, List<EArticle> articles, List<ERegle> regles) {
+    }
+
+    /** Un changement demandé dans l'éditeur (joueur -> serveur) ; le serveur revérifie les droits. */
+    public record Modif(String pnj, int type, int index, int rarete, long prix) {
+        public static final int PRIX = 0, RETIRER = 1, AJOUTER_MAIN = 2, PRIX_RACHAT = 3, REINITIALISER = 4, MONTER = 5;
+    }
+
     /** Message reçu par le serveur, avec le joueur qui l'envoie. */
     public record Recu<T>(ServerPlayer joueur, T message) {
     }
@@ -153,6 +169,7 @@ public final class Reseau {
     public static final Crochet<Boutique> BOUTIQUE = new Crochet<>();
     public static final Crochet<Radio> RADIO = new Crochet<>();
     public static final Crochet<Presentation> PRESENTATION = new Crochet<>();
+    public static final Crochet<Edition> EDITION = new Crochet<>();
 
     public static final Crochet<Recu<Choix>> CHOIX = new Crochet<>();
     public static final Crochet<Recu<DemandeJournal>> DEMANDE_JOURNAL = new Crochet<>();
@@ -160,6 +177,7 @@ public final class Reseau {
     public static final Crochet<Recu<Code>> CODE = new Crochet<>();
     public static final Crochet<Recu<Achat>> ACHAT = new Crochet<>();
     public static final Crochet<Recu<Vente>> VENTE = new Crochet<>();
+    public static final Crochet<Recu<Modif>> MODIF = new Crochet<>();
 
     private static int prochain;
 
@@ -237,6 +255,14 @@ public final class Reseau {
             b.writeVarInt(m.ticks());
         }, b -> new Presentation(b.readDouble(), b.readDouble(), b.readDouble(), Math.max(2F, Math.min(20F, b.readFloat())),
                 Math.max(20, Math.min(1200, b.readVarInt()))), PRESENTATION);
+        versJoueur(Edition.class, Reseau::ecrireEdition, Reseau::lireEdition, EDITION);
+        versServeur(Modif.class, (m, b) -> {
+            b.writeUtf(m.pnj(), MAX_CLE);
+            b.writeVarInt(m.type());
+            b.writeVarInt(m.index());
+            b.writeVarInt(m.rarete());
+            b.writeVarLong(m.prix());
+        }, b -> new Modif(b.readUtf(MAX_CLE), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarLong()), MODIF);
     }
 
     private static <T> void versJoueur(Class<T> c, BiConsumer<T, FriendlyByteBuf> ecrire, Function<FriendlyByteBuf, T> lire, Crochet<T> crochet) {
@@ -448,5 +474,47 @@ public final class Reseau {
         List<BlockPos> l = new ArrayList<>(n);
         for (int i = 0; i < n; i++) l.add(b.readBlockPos());
         return l;
+    }
+
+    private static final int MAX_ARTICLES = 512;
+
+    private static void ecrireEdition(Edition m, FriendlyByteBuf b) {
+        b.writeUtf(m.pnj(), MAX_CLE);
+        m.nom().ecrire(b);
+        b.writeBoolean(m.rachat());
+        b.writeBoolean(m.modifie());
+        int n = Math.min(m.articles().size(), MAX_ARTICLES);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            EArticle a = m.articles().get(i);
+            b.writeItem(a.objet());
+            b.writeVarLong(a.prix());
+            b.writeVarInt(a.rarete() + 1);
+        }
+        n = Math.min(m.regles().size(), 16);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            ERegle r = m.regles().get(i);
+            b.writeUtf(r.tag(), MAX_CLE);
+            for (int k = 0; k < 6; k++) b.writeVarLong(r.prix()[k]);
+        }
+    }
+
+    private static Edition lireEdition(FriendlyByteBuf b) {
+        String pnj = b.readUtf(MAX_CLE);
+        Texte nom = Texte.lire(b);
+        boolean rachat = b.readBoolean(), modifie = b.readBoolean();
+        int n = Math.min(b.readVarInt(), MAX_ARTICLES);
+        List<EArticle> l = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) l.add(new EArticle(b.readItem(), b.readVarLong(), b.readVarInt() - 1));
+        n = Math.min(b.readVarInt(), 16);
+        List<ERegle> r = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            String tag = b.readUtf(MAX_CLE);
+            long[] prix = new long[6];
+            for (int k = 0; k < 6; k++) prix[k] = b.readVarLong();
+            r.add(new ERegle(tag, prix));
+        }
+        return new Edition(pnj, nom, rachat, modifie, l, r);
     }
 }

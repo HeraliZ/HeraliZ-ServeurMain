@@ -7,24 +7,22 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.logging.LogUtils;
 import fr.heraliz.quetes.HeralizQuetes;
+import fr.heraliz.quetes.Texte;
+import fr.heraliz.quetes.reseau.Reseau;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
@@ -34,12 +32,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Ventes et prix des marchands modifiés EN JEU par le staff (Registre du marchand, commande {@code /marchand}). Gardés à
+ * Ventes et prix des marchands modifiés EN JEU par un op (Registre du marchand : écran d'édition, op permission 4 et
+ * connecté sur AuthMe ; tout est revérifié ici). Gardés à
  * la racine du serveur ({@code heraliz_quetes/marchands_jeu.json}), hors de {@code config/} : la mise en ligne ne les
  * écrase jamais. Pour un PNJ présent dans ce fichier, sa clé « marchand » ENTIÈRE (articles ou règles de rachat) vient
  * d'ici et non plus de son fichier {@code pnj/<id>.json} ; {@code /marchand reinitialiser <pnj>} revient au fichier.
@@ -48,8 +49,6 @@ final class EditionMarchands {
     private static final Logger LOG = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     static final List<String> RARETES = List.of("commun", "peu_commun", "rare", "epique", "legendaire", "mythique");
-    private static final List<String> NOMS_RARETES = List.of("Commun", "Peu commun", "Rare", "Épique", "Légendaire", "Mythique");
-    private static final int PAR_PAGE = 10;
     private static Path fichier;
     /** Marchands modifiés en jeu, par identifiant de PNJ (même format que la clé « marchand » des fichiers). */
     private static final Map<String, JsonObject> MODIFS = new LinkedHashMap<>();
@@ -133,206 +132,164 @@ final class EditionMarchands {
         return o;
     }
 
-    // ------------------------------------------------------------------ affichage dans le chat
-    private static MutableComponent t(String cle, String fr, Object... args) {
-        return Component.translatableWithFallback(cle, fr, args);
+    // ------------------------------------------------------------------ droits
+    private static Method authentifie;
+    private static boolean authCherche;
+
+    /** Op (permission 4) et, sur le serveur cracké, connecté sur AuthMe (HeraliZ Grades, par réflexion ; injoignable = refusé). */
+    static boolean peut(ServerPlayer p) {
+        if (!p.hasPermissions(4)) return false;
+        if (!p.server.isDedicatedServer() || p.server.usesAuthentication()) return true;
+        if (!authCherche) {
+            authCherche = true;
+            try {
+                authentifie = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("authentifie", ServerPlayer.class);
+            } catch (Throwable t) {
+                LOG.error("[heraliz_quetes] HeraliZ Grades (AuthMe) injoignable : éditeur des marchands refusé ({})", t.toString());
+            }
+        }
+        if (authentifie == null) return false;
+        try {
+            return Boolean.TRUE.equals(authentifie.invoke(null, p));
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
-    private static MutableComponent bouton(MutableComponent texte, String commande, boolean executer, MutableComponent aide, ChatFormatting couleur) {
-        return Component.literal("[").append(texte).append("]").withStyle(Style.EMPTY.withColor(couleur)
-                .withClickEvent(new ClickEvent(executer ? ClickEvent.Action.RUN_COMMAND : ClickEvent.Action.SUGGEST_COMMAND, commande))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, aide)));
+    private static void refuser(ServerPlayer p) {
+        p.sendSystemMessage(Component.translatableWithFallback("heraliz_quetes.marchand.refuse",
+                "Réservé aux op connectés.").withStyle(ChatFormatting.RED));
     }
 
-    /** La fiche du marchand dans le chat du staff : chaque prix cliquable, page par page. */
-    static void montrer(ServerPlayer p, String id, int page) {
+    // ------------------------------------------------------------------ écran d'édition
+    /** Ouvre (ou met à jour) l'éditeur du marchand chez cet op. */
+    static void ouvrir(ServerPlayer p, String id) {
+        if (!peut(p)) {
+            refuser(p);
+            return;
+        }
         Defs.Pnj def = Catalogue.pnj(id);
         if (def == null || def.marchand == null) {
-            p.sendSystemMessage(t("heraliz_quetes.marchand.pas_marchand", "« %s » n'est pas un marchand.", id).withStyle(ChatFormatting.RED));
+            p.sendSystemMessage(Component.translatableWithFallback("heraliz_quetes.marchand.pas_marchand", "« %s » n'est pas un marchand.", id)
+                    .withStyle(ChatFormatting.RED));
             return;
         }
         Defs.Marchand m = def.marchand;
-        String nom = def.nom.vide() ? id : def.nom.toString();
-        p.sendSystemMessage(Component.literal("━━ ").withStyle(ChatFormatting.GOLD)
-                .append(t(m.rachat ? "heraliz_quetes.marchand.titre_rachat" : "heraliz_quetes.marchand.titre_achat",
-                        m.rachat ? "%s · rachat (modifié en jeu : %s)" : "%s · vente (modifié en jeu : %s)", nom,
-                        t(MODIFS.containsKey(id) ? "heraliz_quetes.marchand.oui" : "heraliz_quetes.marchand.non",
-                                MODIFS.containsKey(id) ? "oui" : "non")).withStyle(ChatFormatting.GOLD)));
-        if (m.rachat) {
-            for (int i = 0; i < m.regles.size(); i++) {
-                Defs.Regle r = m.regles.get(i);
-                p.sendSystemMessage(Component.literal((i + 1) + ". " + r.tag()).withStyle(ChatFormatting.YELLOW));
-                MutableComponent ligne = Component.literal("   ");
-                for (String rar : RARETES) {
-                    long v = r.prix().getOrDefault(rar, 0L);
-                    ligne.append(bouton(t("heraliz_quetes.marchand.rarete." + rar, NOMS_RARETES.get(RARETES.indexOf(rar))).append(" " + v),
-                            "/marchand rachat " + id + " " + (i + 1) + " " + rar + " ", false,
-                            t("heraliz_quetes.marchand.aide_prix", "Cliquer pour changer ce prix (0 = ne le rachète pas)"), ChatFormatting.AQUA)).append(" ");
-                }
-                p.sendSystemMessage(ligne);
-            }
-        } else {
-            int pages = Math.max(1, (m.articles.size() + PAR_PAGE - 1) / PAR_PAGE);
-            page = Math.max(0, Math.min(page, pages - 1));
-            for (int i = page * PAR_PAGE; i < Math.min(m.articles.size(), (page + 1) * PAR_PAGE); i++) {
-                Defs.ArticleDef a = m.articles.get(i);
-                ItemStack s = Marchands.objet(a, 1);
-                MutableComponent nomObjet = (s.isEmpty() ? Component.literal(a.objet()).withStyle(ChatFormatting.RED) : s.getHoverName().copy())
-                        .withStyle(st -> st.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                Component.literal(a.objet() + (a.nbt().isEmpty() ? "" : " " + a.nbt())))));
-                p.sendSystemMessage(Component.literal((i + 1) + ". ").withStyle(ChatFormatting.GRAY).append(nomObjet)
-                        .append(Component.literal(" · " + Ponts.nombre(a.prix()) + " ").withStyle(ChatFormatting.YELLOW))
-                        .append(bouton(t("heraliz_quetes.marchand.prix", "Prix"), "/marchand prix " + id + " " + (i + 1) + " ", false,
-                                t("heraliz_quetes.marchand.aide_prix_achat", "Cliquer pour changer le prix (en hérals)"), ChatFormatting.AQUA))
-                        .append(" ")
-                        .append(bouton(t("heraliz_quetes.marchand.retirer", "Retirer"), "/marchand retirer " + id + " " + (i + 1), false,
-                                t("heraliz_quetes.marchand.aide_retirer", "Cliquer puis Entrée pour ne plus le vendre"), ChatFormatting.RED)));
-            }
-            MutableComponent bas = Component.literal("");
-            if (page > 0) bas.append(bouton(Component.literal("◀"), "/marchand voir " + id + " " + page, true,
-                    t("heraliz_quetes.marchand.precedente", "Page précédente"), ChatFormatting.WHITE)).append(" ");
-            bas.append(Component.literal((page + 1) + "/" + pages + " ").withStyle(ChatFormatting.GRAY));
-            if (page < pages - 1) bas.append(bouton(Component.literal("▶"), "/marchand voir " + id + " " + (page + 2), true,
-                    t("heraliz_quetes.marchand.suivante", "Page suivante"), ChatFormatting.WHITE)).append(" ");
-            bas.append(bouton(t("heraliz_quetes.marchand.ajouter", "Ajouter l'objet en main"), "/marchand ajouter " + id + " ", false,
-                    t("heraliz_quetes.marchand.aide_ajouter", "Prendre l'objet à vendre en main, cliquer, taper le prix"), ChatFormatting.GREEN));
-            p.sendSystemMessage(bas);
+        List<Reseau.EArticle> articles = new ArrayList<>();
+        for (Defs.ArticleDef a : m.articles) {
+            ItemStack s = Marchands.objet(a, 1);
+            if (s.isEmpty()) s = new ItemStack(Items.BARRIER).setHoverName(Component.literal(a.objet()));
+            articles.add(new Reseau.EArticle(s, a.prix(), Ponts.rarete(s)));
         }
-        if (MODIFS.containsKey(id)) p.sendSystemMessage(bouton(t("heraliz_quetes.marchand.reinitialiser", "Revenir au fichier du serveur"),
-                "/marchand reinitialiser " + id, false,
-                t("heraliz_quetes.marchand.aide_reinitialiser", "Efface les changements faits en jeu pour ce marchand"), ChatFormatting.GRAY));
+        List<Reseau.ERegle> regles = new ArrayList<>();
+        for (Defs.Regle r : m.regles) {
+            long[] prix = new long[6];
+            for (int k = 0; k < 6; k++) {
+                Long v = r.prix().get(RARETES.get(k));
+                if (v == null && k == 5) v = r.prix().get("unique");
+                prix[k] = v == null ? 0 : v;
+            }
+            regles.add(new Reseau.ERegle(r.tag(), prix));
+        }
+        Reseau.envoyer(p, new Reseau.Edition(id, def.nom.vide() ? Texte.fr(id) : def.nom, m.rachat, MODIFS.containsKey(id), articles, regles));
+    }
+
+    /** Un changement demandé depuis l'écran : droits revérifiés, appliqué, enregistré, puis l'écran est mis à jour. */
+    static void modif(ServerPlayer p, Reseau.Modif r) {
+        if (!peut(p)) {
+            refuser(p);
+            return;
+        }
+        Defs.Pnj def = Catalogue.pnj(r.pnj());
+        if (def == null || def.marchand == null) return;
+        Defs.Marchand m = def.marchand;
+        List<Defs.ArticleDef> l = m.articles;
+        String quoi = null;
+        switch (r.type()) {
+            case Reseau.Modif.PRIX -> {
+                if (m.rachat || r.index() < 0 || r.index() >= l.size() || r.prix() < 1) break;
+                Defs.ArticleDef a = l.get(r.index());
+                l.set(r.index(), new Defs.ArticleDef(a.objet(), a.nbt(), r.prix()));
+                quoi = a.objet() + " : " + a.prix() + " -> " + r.prix();
+            }
+            case Reseau.Modif.RETIRER -> {
+                if (m.rachat || r.index() < 0 || r.index() >= l.size()) break;
+                quoi = "- " + l.remove(r.index()).objet();
+            }
+            case Reseau.Modif.MONTER -> {
+                if (m.rachat || r.index() < 1 || r.index() >= l.size()) break;
+                l.add(r.index() - 1, l.remove(r.index()));
+                quoi = "^ " + l.get(r.index() - 1).objet();
+            }
+            case Reseau.Modif.AJOUTER_MAIN -> {
+                ItemStack main = p.getMainHandItem();
+                if (m.rachat || r.prix() < 1 || main.isEmpty() || main.is(HeralizQuetes.REGISTRE.get())) {
+                    Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.main_vide"), 0xFF6B6B);
+                    break;
+                }
+                String objet = String.valueOf(ForgeRegistries.ITEMS.getKey(main.getItem()));
+                // données de l'objet gardées (soin, accessoire TaCZ...), sauf l'usure et la marque anti-copie
+                String nbt = "";
+                if (main.hasTag()) {
+                    CompoundTag tag = main.getTag().copy();
+                    tag.remove("spartan_uid");
+                    tag.remove("Damage");
+                    if (!tag.isEmpty()) nbt = tag.toString();
+                }
+                l.add(new Defs.ArticleDef(objet, nbt, r.prix()));
+                quoi = "+ " + objet + " " + r.prix();
+            }
+            case Reseau.Modif.PRIX_RACHAT -> {
+                if (!m.rachat || r.index() < 0 || r.index() >= m.regles.size() || r.rarete() < 0 || r.rarete() >= 6 || r.prix() < 0) break;
+                Defs.Regle g = m.regles.get(r.index());
+                Map<String, Long> prix = new LinkedHashMap<>(g.prix());
+                prix.remove("unique");
+                prix.put(RARETES.get(r.rarete()), r.prix());
+                m.regles.set(r.index(), new Defs.Regle(g.tag(), prix));
+                quoi = g.tag() + " " + RARETES.get(r.rarete()) + " -> " + r.prix();
+            }
+            case Reseau.Modif.REINITIALISER -> {
+                if (MODIFS.remove(def.id) == null) break;
+                sauver();
+                Catalogue.charger();
+                LOG.info("[heraliz_quetes] marchand {} remis à son fichier par {}", def.id, p.getGameProfile().getName());
+                ouvrir(p, def.id);
+                return;
+            }
+            default -> {
+            }
+        }
+        if (quoi != null) {
+            enregistrer(def);
+            LOG.info("[heraliz_quetes] marchand {} modifié par {} : {}", def.id, p.getGameProfile().getName(), quoi);
+        }
+        ouvrir(p, def.id);
     }
 
     // ------------------------------------------------------------------ commandes
     private static final SuggestionProvider<CommandSourceStack> MARCHANDS = (c, b) ->
             SharedSuggestionProvider.suggest(Catalogue.tous().stream().filter(p -> p.marchand != null).map(p -> p.id), b);
-    private static final SuggestionProvider<CommandSourceStack> RAR = (c, b) -> SharedSuggestionProvider.suggest(RARETES, b);
 
     static void commandes(CommandDispatcher<CommandSourceStack> d) {
-        d.register(Commands.literal("marchand").requires(s -> s.hasPermission(2))
+        d.register(Commands.literal("marchand").requires(s -> s.hasPermission(4))
                 .then(Commands.literal("registre").executes(EditionMarchands::registre))
-                .then(Commands.literal("voir").then(Commands.argument("pnj", StringArgumentType.word()).suggests(MARCHANDS)
-                        .executes(c -> voir(c, 1))
-                        .then(Commands.argument("page", IntegerArgumentType.integer(1)).executes(c -> voir(c, IntegerArgumentType.getInteger(c, "page"))))))
-                .then(Commands.literal("prix").then(Commands.argument("pnj", StringArgumentType.word()).suggests(MARCHANDS)
-                        .then(Commands.argument("numero", IntegerArgumentType.integer(1))
-                                .then(Commands.argument("prix", LongArgumentType.longArg(1)).executes(EditionMarchands::prix)))))
-                .then(Commands.literal("retirer").then(Commands.argument("pnj", StringArgumentType.word()).suggests(MARCHANDS)
-                        .then(Commands.argument("numero", IntegerArgumentType.integer(1)).executes(EditionMarchands::retirer))))
-                .then(Commands.literal("ajouter").then(Commands.argument("pnj", StringArgumentType.word()).suggests(MARCHANDS)
-                        .then(Commands.argument("prix", LongArgumentType.longArg(1)).executes(EditionMarchands::ajouter))))
-                .then(Commands.literal("rachat").then(Commands.argument("pnj", StringArgumentType.word()).suggests(MARCHANDS)
-                        .then(Commands.argument("regle", IntegerArgumentType.integer(1))
-                                .then(Commands.argument("rarete", StringArgumentType.word()).suggests(RAR)
-                                        .then(Commands.argument("prix", LongArgumentType.longArg(0)).executes(EditionMarchands::rachat))))))
-                .then(Commands.literal("reinitialiser").then(Commands.argument("pnj", StringArgumentType.word()).suggests(MARCHANDS)
-                        .executes(EditionMarchands::reinitialiser))));
-    }
-
-    private static int erreur(CommandContext<CommandSourceStack> c, String cle, String fr, Object... args) {
-        c.getSource().sendFailure(t(cle, fr, args));
-        return 0;
-    }
-
-    private static Defs.Pnj marchand(CommandContext<CommandSourceStack> c) {
-        Defs.Pnj def = Catalogue.pnj(StringArgumentType.getString(c, "pnj"));
-        if (def == null || def.marchand == null) {
-            erreur(c, "heraliz_quetes.marchand.pas_marchand", "« %s » n'est pas un marchand.", StringArgumentType.getString(c, "pnj"));
-            return null;
-        }
-        return def;
-    }
-
-    /** Après un changement : on l'enregistre, on le note dans le journal et on remontre la fiche. */
-    private static int fait(CommandContext<CommandSourceStack> c, Defs.Pnj def, int numero, String quoi) {
-        enregistrer(def);
-        LOG.info("[heraliz_quetes] marchand {} modifié par {} : {}", def.id, c.getSource().getTextValue(), quoi);
-        c.getSource().sendSuccess(() -> t("heraliz_quetes.marchand.fait", "Enregistré : %s", quoi).withStyle(ChatFormatting.GREEN), false);
-        if (c.getSource().getEntity() instanceof ServerPlayer p) montrer(p, def.id, Math.max(0, numero - 1) / PAR_PAGE);
-        return 1;
+                .then(Commands.literal("editer").then(Commands.argument("pnj", StringArgumentType.word()).suggests(MARCHANDS)
+                        .executes(c -> {
+                            ouvrir(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "pnj"));
+                            return 1;
+                        }))));
     }
 
     private static int registre(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         ServerPlayer p = c.getSource().getPlayerOrException();
+        if (!peut(p)) {
+            refuser(p);
+            return 0;
+        }
         ItemStack s = new ItemStack(HeralizQuetes.REGISTRE.get());
         if (!p.getInventory().add(s)) p.drop(s, false);
-        c.getSource().sendSuccess(() -> t("heraliz_quetes.marchand.registre_donne",
-                "Registre du marchand : clic droit sur un marchand pour voir et changer ses ventes et ses prix."), false);
-        return 1;
-    }
-
-    private static int voir(CommandContext<CommandSourceStack> c, int page) throws CommandSyntaxException {
-        ServerPlayer p = c.getSource().getPlayerOrException();
-        montrer(p, StringArgumentType.getString(c, "pnj"), page - 1);
-        return 1;
-    }
-
-    private static int prix(CommandContext<CommandSourceStack> c) {
-        Defs.Pnj def = marchand(c);
-        if (def == null) return 0;
-        int n = IntegerArgumentType.getInteger(c, "numero");
-        long prix = LongArgumentType.getLong(c, "prix");
-        if (def.marchand.rachat || n > def.marchand.articles.size())
-            return erreur(c, "heraliz_quetes.marchand.numero", "Pas d'article n°%s chez ce marchand.", n);
-        Defs.ArticleDef a = def.marchand.articles.get(n - 1);
-        def.marchand.articles.set(n - 1, new Defs.ArticleDef(a.objet(), a.nbt(), prix));
-        return fait(c, def, n, a.objet() + " : " + a.prix() + " -> " + prix);
-    }
-
-    private static int retirer(CommandContext<CommandSourceStack> c) {
-        Defs.Pnj def = marchand(c);
-        if (def == null) return 0;
-        int n = IntegerArgumentType.getInteger(c, "numero");
-        if (def.marchand.rachat || n > def.marchand.articles.size())
-            return erreur(c, "heraliz_quetes.marchand.numero", "Pas d'article n°%s chez ce marchand.", n);
-        Defs.ArticleDef a = def.marchand.articles.remove(n - 1);
-        return fait(c, def, n, "- " + a.objet());
-    }
-
-    private static int ajouter(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
-        ServerPlayer p = c.getSource().getPlayerOrException();
-        Defs.Pnj def = marchand(c);
-        if (def == null) return 0;
-        if (def.marchand.rachat) return erreur(c, "heraliz_quetes.marchand.pas_vendeur", "Ce marchand rachète : il ne vend rien.");
-        ItemStack main = p.getMainHandItem();
-        if (main.isEmpty() || main.is(HeralizQuetes.REGISTRE.get()))
-            return erreur(c, "heraliz_quetes.marchand.main_vide", "Prends en main l'objet à vendre.");
-        String objet = String.valueOf(ForgeRegistries.ITEMS.getKey(main.getItem()));
-        // données de l'objet gardées (soin, accessoire TaCZ...), sauf les marques d'usure, d'anti-copie et de nom
-        String nbt = "";
-        if (main.hasTag()) {
-            var tag = main.getTag().copy();
-            tag.remove("spartan_uid");
-            tag.remove("Damage");
-            if (!tag.isEmpty()) nbt = tag.toString();
-        }
-        def.marchand.articles.add(new Defs.ArticleDef(objet, nbt, LongArgumentType.getLong(c, "prix")));
-        return fait(c, def, def.marchand.articles.size(), "+ " + objet + " " + LongArgumentType.getLong(c, "prix"));
-    }
-
-    private static int rachat(CommandContext<CommandSourceStack> c) {
-        Defs.Pnj def = marchand(c);
-        if (def == null) return 0;
-        int n = IntegerArgumentType.getInteger(c, "regle");
-        String rar = StringArgumentType.getString(c, "rarete");
-        if (!def.marchand.rachat || n > def.marchand.regles.size())
-            return erreur(c, "heraliz_quetes.marchand.regle", "Pas de règle de rachat n°%s chez ce marchand.", n);
-        if (!RARETES.contains(rar)) return erreur(c, "heraliz_quetes.marchand.rarete_inconnue", "Rareté inconnue : %s", rar);
-        Defs.Regle r = def.marchand.regles.get(n - 1);
-        long prix = LongArgumentType.getLong(c, "prix");
-        Map<String, Long> m = new LinkedHashMap<>(r.prix());
-        m.put(rar, prix);
-        def.marchand.regles.set(n - 1, new Defs.Regle(r.tag(), m));
-        return fait(c, def, 1, r.tag() + " " + rar + " -> " + prix);
-    }
-
-    private static int reinitialiser(CommandContext<CommandSourceStack> c) {
-        String id = StringArgumentType.getString(c, "pnj");
-        if (MODIFS.remove(id) == null) return erreur(c, "heraliz_quetes.marchand.rien", "Aucun changement fait en jeu pour « %s ».", id);
-        sauver();
-        Catalogue.charger();
-        c.getSource().sendSuccess(() -> t("heraliz_quetes.marchand.reinitialise", "« %s » suit de nouveau son fichier.", id), false);
-        if (c.getSource().getEntity() instanceof ServerPlayer p) montrer(p, id, 0);
+        c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.marchand.registre_donne",
+                "Registre du marchand : clic droit sur un marchand pour ouvrir son éditeur."), false);
         return 1;
     }
 }
