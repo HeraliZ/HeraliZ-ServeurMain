@@ -403,5 +403,6 @@
   "gui.heralisz_camo.atelier.court.weight": "вес",
   "gui.heralisz_camo.atelier.court.ammo_speed": "скор. пули",
   "msg.heralisz_camo.skin_a_vie": "Вечный скин: нажми ПКМ по предмету, чтобы добавить его в коллекцию, затем примени его из коллекции.",
-  "item.heralisz_camo.camo.a_vie": "Вечный скин: ПКМ, чтобы добавить в коллекцию (не тратится, если он уже есть). Сохраняется после смерти."
+  "item.heralisz_camo.camo.a_vie": "Вечный скин: ПКМ, чтобы добавить в коллекцию (не тратится, если он уже есть). Сохраняется после смерти.",
+  "msg.heralisz_camo.couteau_fixe": "Нож нельзя изменить."
 }

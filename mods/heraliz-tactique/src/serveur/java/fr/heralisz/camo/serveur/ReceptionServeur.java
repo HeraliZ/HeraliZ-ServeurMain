@@ -40,8 +40,8 @@ public final class ReceptionServeur {
          return;
       }
       ItemStack gun = player.getMainHandItem();
-      if (IGun.getIGunOrNull(gun) == null || KnifeSkins.of(gun) != null) {
-         return; // pas une arme, ou couteau à skin unique
+      if (IGun.getIGunOrNull(gun) == null || KnifeSkins.of(gun) != null || fr.heraliz.tactique.onglets.Couteaux.estCouteau(gun)) {
+         return; // pas une arme, ou un couteau (jamais modifié, 21/10)
       }
       if (CamoData.get(gun) != null && CamoData.owner(gun) == null) {
          return; // déjà un camo définitif (un camo à vie, lui, peut être remplacé)
@@ -79,6 +79,8 @@ public final class ReceptionServeur {
       if (player == null) return;
       ItemStack gun = player.getMainHandItem();
       if (IGun.getIGunOrNull(gun) == null) return;
+      // un couteau ne se modifie pas (21/10, choix du propriétaire) : ni sticker, ni StatTrak
+      if (KnifeSkins.of(gun) != null || fr.heraliz.tactique.onglets.Couteaux.estCouteau(gun)) return;
       DecorData.Placement at = p.at() != null ? p.at().sanitized() : null;
       ItemStack item = p.slot() >= 0 && p.slot() < player.getInventory().getContainerSize() ? player.getInventory().getItem(p.slot()) : ItemStack.EMPTY;
       List<DecorData.Sticker> stickers = DecorData.stickers(gun);

@@ -403,5 +403,6 @@
   "gui.heralisz_camo.atelier.court.weight": "weight",
   "gui.heralisz_camo.atelier.court.ammo_speed": "bullet speed",
   "msg.heralisz_camo.skin_a_vie": "Lifetime skin: right-click the item to add it to your collection, then apply it from the collection.",
-  "item.heralisz_camo.camo.a_vie": "Lifetime skin: right-click to add it to your collection (not used up if you already own it). Kept on death."
+  "item.heralisz_camo.camo.a_vie": "Lifetime skin: right-click to add it to your collection (not used up if you already own it). Kept on death.",
+  "msg.heralisz_camo.couteau_fixe": "A knife cannot be modified."
 }
