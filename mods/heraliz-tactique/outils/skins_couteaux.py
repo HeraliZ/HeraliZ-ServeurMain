@@ -341,6 +341,7 @@ RETIRES = {
     "baseball_bat": ["bruiser_hex", "blackwood", "ash_wood", "aluminium", "street_camo", "plasma"],
     # 21/10 : retours des joueurs sur les couteaux du pack CS2
     "cs2_stiletto": ["moonlit"],
+    "cs2_push": ["autotronic_cs2"],
     # l'objet Case Hardened du Skeleton (programme 64) remplacé par case_hardened_cs (dessin à lui, même nom affiché)
     "cs2_skeleton": ["case_hardened"],
 }

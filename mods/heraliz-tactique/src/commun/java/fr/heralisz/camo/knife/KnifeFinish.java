@@ -131,7 +131,6 @@ public enum KnifeFinish {
    BLACK_LAMINATE("black_laminate", 423, true),
    OSSUARY("ossuary", 424, true),
    VOLT("volt", 425, true),
-   AUTOTRONIC_CS2("autotronic_cs2", 426, true),
    BLUED_STEEL("blued_steel", 427, true),
    ARCTIC_CAMO("arctic_camo", 428, true),
    DAMASCUS("damascus", 429, true),
