@@ -143,11 +143,13 @@ public final class Homes {
                     ChatFormatting.RED);
                 return 0;
             }
-            if (!surSaConstruction(p)) {
-                T.chat(p, T.t("crac.home.sethome_sol", "Mets-toi debout sur une fondation ou un plancher de ta base pour poser ton home."),
-                    ChatFormatting.RED);
-                return 0;
-            }
+        }
+        // 20/10 : debout sur un sol de sa base, staff compris dans le monde des bases (avant, un op posait son home
+        // n'importe où et croyait la règle cassée) ; ailleurs, le staff reste libre
+        if ((!staff || MondeBases.estBases(p.level())) && !(p.onGround() && surSaConstruction(p))) {
+            T.chat(p, T.t("crac.home.sethome_sol", "Mets-toi debout sur une fondation ou un plancher de ta base pour poser ton home."),
+                ChatFormatting.RED);
+            return 0;
         }
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());

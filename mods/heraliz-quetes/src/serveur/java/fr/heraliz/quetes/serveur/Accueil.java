@@ -82,7 +82,8 @@ final class Accueil {
     /** Les PNJ présentés, dans l'ordre de la visite ; Varga en dernier (on finit chez lui). */
     private static final String[] VISITE = {"mila", BATISSEUR, "jacqueline", "doyen", "jack", PNJ};
     /** Secondes par PNJ (le temps que la phrase s'écrive et se lise) et durée du tour de caméra (ticks). */
-    private static final int VISITE_ECART = 12, VISITE_TICKS = 230;
+    // 20/10 : le tour dure 1 s de plus que l'écart : le PNJ suivant arrive caméra encore partie, sans retour au joueur
+    private static final int VISITE_ECART = 12, VISITE_TICKS = VISITE_ECART * 20 + 20;
     private static final float VISITE_RAYON = 4F;
     /** Visite en cours : rang du PNJ présenté et secondes depuis. */
     private record Visite(int rang, int secondes) {
