@@ -264,6 +264,12 @@ public final class PieceBakery {
                 // stairs and ramps standing here have full collision faces but not a full render
                 side = NO_SIDE;
             }
+            if (side != NO_SIDE && (kind == PieceKind.FLOOR || kind == PieceKind.TRI_FLOOR || kind.isRoof())) {
+                // HeraliZ (21/10, CRac 1.14.4): the edge (y -3..0) of a floor or roof resting on a full wall lies on a
+                // block border whose face flags come from the wall's collision (up to 48) on both sides, but the wall
+                // is drawn up to 47 only: the edge was culled and a 1 px slit showed the inside of the base
+                side = NO_SIDE;
+            }
             Direction dir = side == NO_SIDE ? Direction.getNearest((float) f.nx, (float) f.ny, (float) f.nz) : DIRS[side];
             TextureAtlasSprite sprite = this.sprite(tier, f.mat);
             int idx = layer * SIDES + side;
