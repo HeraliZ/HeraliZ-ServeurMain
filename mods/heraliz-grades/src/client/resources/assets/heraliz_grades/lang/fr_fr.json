@@ -129,10 +129,12 @@
   "heraliz_grades.tpa.aucune": "Aucune demande de téléportation en attente.",
   "heraliz_grades.tpa.parti": "Ce joueur n'est plus connecté.",
   "heraliz_grades.tpa.impossible": "%s ne peut pas venir pour le moment.",
-  "heraliz_grades.tpa.acceptee_cible": "Tu as accepté : %s arrive dans 3 s.",
-  "heraliz_grades.tpa.acceptee": "%s a accepté : téléportation dans 3 s, ne bouge pas.",
+  "heraliz_grades.tpa.acceptee_cible": "Tu as accepté : %s arrive dans 15 s.",
+  "heraliz_grades.tpa.acceptee": "%s a accepté : téléportation dans 15 s, ne bouge pas.",
   "heraliz_grades.tpa.refusee": "%s a refusé ta demande.",
   "heraliz_grades.tpa.refusee_cible": "Demande refusée.",
   "heraliz_grades.tpa.arrive": "Téléporté vers %s.",
-  "heraliz_grades.tpa.annule": "Téléportation annulée : tu as bougé."
+  "heraliz_grades.tpa.annule": "Téléportation annulée : tu as bougé.",
+  "heraliz_grades.tpa.ville": "Impossible dans une ville : sors de son rayon.",
+  "heraliz_grades.tpa.cible_ville": "%s est dans une ville."
 }

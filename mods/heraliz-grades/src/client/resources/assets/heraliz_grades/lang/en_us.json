@@ -129,10 +129,12 @@
   "heraliz_grades.tpa.aucune": "No pending teleport request.",
   "heraliz_grades.tpa.parti": "This player is no longer online.",
   "heraliz_grades.tpa.impossible": "%s can't come right now.",
-  "heraliz_grades.tpa.acceptee_cible": "You accepted: %s arrives in 3 s.",
-  "heraliz_grades.tpa.acceptee": "%s accepted: teleporting in 3 s, don't move.",
+  "heraliz_grades.tpa.acceptee_cible": "You accepted: %s arrives in 15 s.",
+  "heraliz_grades.tpa.acceptee": "%s accepted: teleporting in 15 s, don't move.",
   "heraliz_grades.tpa.refusee": "%s denied your request.",
   "heraliz_grades.tpa.refusee_cible": "Request denied.",
   "heraliz_grades.tpa.arrive": "Teleported to %s.",
-  "heraliz_grades.tpa.annule": "Teleport cancelled: you moved."
+  "heraliz_grades.tpa.annule": "Teleport cancelled: you moved.",
+  "heraliz_grades.tpa.ville": "Not possible inside a town: leave its radius.",
+  "heraliz_grades.tpa.cible_ville": "%s is inside a town."
 }
