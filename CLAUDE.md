@@ -1027,6 +1027,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   zombies de Minecraft et de Mutants & Zombies (Crawler, Blister, une seule Brute en vague 3, clé `max`) ; jamais de
   Spitter, ni dans les vagues ni dans la nature (`spitterZombiesSpawnNaturally = false`) : son crachat est une boule de
   slime (choix du propriétaire, 21/10 ; zombies faits maison refusés).
+  Difficulté par drapeau (21/10, Clans 3.3.0) : clé `difficulte` de zones.json (1 à 3, 2 par défaut),
+  `/territoire difficulte <id> <1-3>` ou `/territoire drapeau <id> <1-3>` ; chaque niveau a ses 3 vagues
+  (`difficultes` de assaut.json) : 1 facile (moins de zombies, pas de Brute), 2 normal (une Brute au plus en vague 3),
+  3 dur (plus de zombies, plus forts, et toujours 3 Brutes à la dernière vague : liste `fixes`).
 - attaques des zombies de Mutants & Zombies (21/10, Utils 2.17.0, `zombies/`, jar du mod intact) : plus de coup « au
   contact » : le serveur (`AttaquesZombiesServeur`) annule leur coup et lance un geste (évènement d'entité 121), ne
   touche qu'à l'impact si la cible est encore à portée et en vue (on peut esquiver en reculant) : Crawler morsure

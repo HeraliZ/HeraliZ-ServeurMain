@@ -629,5 +629,7 @@
   "gui.hud.capture_par": "Захват [%s] %s %%",
   "gui.hud.sans_drapeau": "Нет флага: захват невозможен",
   "gui.hud.au_drapeau": "У флага: вы участвуете",
-  "gui.hud.drapeau_distance": "Флаг в %s м"
+  "gui.hud.drapeau_distance": "Флаг в %s м",
+  "zone.cmd.difficulte": "Зона «%s» (%s): сложность %s (1 лёгкая, 2 обычная, 3 сложная: 3 Громилы в последней волне).",
+  "zone.cmd.info_difficulte": "Сложность штурма: %s (1 лёгкая, 2 обычная, 3 сложная)"
 }

@@ -51,6 +51,8 @@ public final class Zone {
      * herals, lui, est le meme pour toutes les zones).
      */
     public int valeur = VALEUR_MIN;
+    /** Difficulte de l'assaut des morts pendant une capture (cle « difficulte » de zones.json, 1 a 3 ; 2 par defaut). */
+    public int difficulte = 2;
     /** Hauteur de la surface au centre, calee par le moteur quand la zone n'a pas de drapeau (null = inconnue). */
     @Nullable
     private Integer hauteurSurface;
@@ -173,6 +175,7 @@ public final class Zone {
         if (demiHauteurFixe != null) o.addProperty("demiHauteur", demiHauteurFixe);
         if (centreFixe) o.addProperty("centreFixe", true);
         o.addProperty("valeur", valeur);
+        o.addProperty("difficulte", difficulte);
         return o;
     }
 
@@ -197,6 +200,7 @@ public final class Zone {
         }
         zo.centreFixe = Json.bool(o, "centreFixe", false);
         zo.valeur = Math.max(VALEUR_MIN, Math.min(VALEUR_MAX, Json.integer(o, "valeur", VALEUR_MIN)));
+        zo.difficulte = Math.max(1, Math.min(3, Json.integer(o, "difficulte", 2)));
         return zo;
     }
 }

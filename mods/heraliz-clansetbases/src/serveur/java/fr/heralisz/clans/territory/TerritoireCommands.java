@@ -40,7 +40,7 @@ import java.util.List;
  * drapeau &lt;id&gt; (sur le bloc vise, sinon a mes pieds ; le centre de la zone suit le drapeau), deplacer &lt;id&gt; [rayon]
  * (centre = ma position, etat garde : reposer une zone de l'ancienne carte), liste (signale les zones hors de la bordure
  * du monde), info [id],
- * reset &lt;id&gt;, capturer &lt;id&gt; &lt;tag&gt;, ravitailler &lt;id&gt; (largage immediat), valeur &lt;id&gt; &lt;1-7&gt; (niveau de loot de la
+ * difficulte &lt;id&gt; &lt;1-3&gt; (assaut des morts ; aussi en 2e argument de drapeau), reset &lt;id&gt;, capturer &lt;id&gt; &lt;tag&gt;, ravitailler &lt;id&gt; (largage immediat), valeur &lt;id&gt; &lt;1-7&gt; (niveau de loot de la
  * ville : XP et points de territoire du clan qui la tient), recharger (zones.json + table de butin).
  * <p>Reponses : chaque commande repond, et directement au joueur ({@link #ok}) : un {@code sendSuccess} ne s'affiche
  * pas quand la regle {@code sendCommandFeedback} est a false (cas du monde de test de l'utilisateur : creer et drapeau
@@ -79,7 +79,13 @@ public final class TerritoireCommands {
                         .then(Commands.argument("rayon", IntegerArgumentType.integer(5, 2000))
                                 .then(Commands.argument("nom", StringArgumentType.greedyString()).executes(TerritoireCommands::creer)))))
                 .then(lit("supprimer").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(TerritoireCommands::supprimer)))
-                .then(lit("drapeau").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(TerritoireCommands::drapeau)))
+                .then(lit("drapeau").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(TerritoireCommands::drapeau)
+                        .then(Commands.argument("difficulte", IntegerArgumentType.integer(1, 3)).executes(c -> {
+                            int r = drapeau(c);
+                            return r > 0 ? difficulte(c) : r;
+                        }))))
+                .then(lit("difficulte").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES)
+                        .then(Commands.argument("difficulte", IntegerArgumentType.integer(1, 3)).executes(TerritoireCommands::difficulte))))
                 .then(lit("deplacer").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(c -> deplacer(c, false))
                         .then(Commands.argument("rayon", IntegerArgumentType.integer(5, 2000)).executes(c -> deplacer(c, true)))))
                 .then(lit("liste").executes(TerritoireCommands::liste))
@@ -367,6 +373,19 @@ public final class TerritoireCommands {
         return 1;
     }
 
+    // ------------------------------------------------------------------ difficulte
+    /** Difficulte de l'assaut des morts pendant une capture (1 facile, 2 normal, 3 dur : 3 Brutes a la derniere vague). */
+    private static int difficulte(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        Territoires t = moteur(ctx);
+        Zone z = t == null ? null : zone(ctx);
+        if (z == null) return 0;
+        z.difficulte = IntegerArgumentType.getInteger(ctx, "difficulte");
+        t.sauvegarderZones();
+        ok(src, tr("zone.cmd.difficulte", z.nom, z.id, z.difficulte));
+        return 1;
+    }
+
     // ------------------------------------------------------------------ liste et info
     private static int liste(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack src = ctx.getSource();
@@ -445,6 +464,7 @@ public final class TerritoireCommands {
         }
         ligne(src, tr("zone.cmd.info_etat", proprioTexte(e), etatTexte(t, z, e, now), Math.round(e.progression * 100)));
         ligne(src, tr("zone.cmd.info_valeur", z.valeur));
+        ligne(src, tr("zone.cmd.info_difficulte", z.difficulte));
         if (e.proprio != null) {
             Ravitaillement r = Territoires.ravitaillement();
             Component signal = r != null && r.enCours(z.id) ? tr("zone.cmd.info_signal.en_cours")

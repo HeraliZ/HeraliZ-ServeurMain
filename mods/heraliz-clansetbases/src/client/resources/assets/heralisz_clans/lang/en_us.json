@@ -629,5 +629,7 @@
   "gui.hud.capture_par": "Capture [%s] %s %%",
   "gui.hud.sans_drapeau": "No flag: no capture",
   "gui.hud.au_drapeau": "At the flag: you count",
-  "gui.hud.drapeau_distance": "Flag %s m away"
+  "gui.hud.drapeau_distance": "Flag %s m away",
+  "zone.cmd.difficulte": "Zone \"%s\" (%s): difficulty %s (1 easy, 2 normal, 3 hard: 3 Brutes in the last wave).",
+  "zone.cmd.info_difficulte": "Assault difficulty: %s (1 easy, 2 normal, 3 hard)"
 }

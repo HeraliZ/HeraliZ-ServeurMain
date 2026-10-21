@@ -629,5 +629,7 @@
   "gui.hud.capture_par": "Capture [%s] %s %%",
   "gui.hud.sans_drapeau": "Pas de drapeau : aucune capture",
   "gui.hud.au_drapeau": "Au drapeau : vous comptez",
-  "gui.hud.drapeau_distance": "Drapeau à %s m"
+  "gui.hud.drapeau_distance": "Drapeau à %s m",
+  "zone.cmd.difficulte": "Zone « %s » (%s) : difficulté %s (1 facile, 2 normal, 3 dur : 3 Brutes à la dernière vague).",
+  "zone.cmd.info_difficulte": "Difficulté de l'assaut : %s (1 facile, 2 normal, 3 dur)"
 }
