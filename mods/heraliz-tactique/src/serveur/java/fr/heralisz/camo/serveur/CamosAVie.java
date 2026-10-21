@@ -113,7 +113,7 @@ public final class CamosAVie {
       if (refuse(p)) return;
       ItemStack gun = p.getMainHandItem();
       IGun iGun = IGun.getIGunOrNull(gun);
-      if (iGun == null || KnifeSkins.of(gun) != null || camo.isPackAPunch()) return;
+      if (iGun == null || KnifeSkins.of(gun) != null || fr.heraliz.tactique.onglets.Couteaux.estCouteau(gun) || camo.isPackAPunch()) return;
       UUID u = p.getUUID();
       CollectionCamos.Joueur j = CollectionCamos.trouver(u);
       if (j == null || !j.camos.contains(camo)) return; // pas dans sa collection (client en retard ou trafiqué)

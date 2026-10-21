@@ -9,6 +9,15 @@ import net.minecraft.world.item.Item.Properties;
 
 @RegistryContainer
 public class ArkaniaZModItems {
+   // HeraliZ : identifiants des extensions de sac retirées, gardés comme objets vides (ni onglet, ni loot) : la liste
+   // curios:back de geckolib222 les cite encore, et une liste qui cite un objet absent est refusée en entier par
+   // Minecraft (plus aucun sac dans la case du dos, donc plus aucun sac ouvrable)
+   public static final RegistryEntry<Item> BACKPACK_EXPAND2 = RegistryEntry.item(
+      new ResourceLocation("backpacked", "backpack_expand2"), () -> new Item(new Properties().stacksTo(1))
+   );
+   public static final RegistryEntry<Item> BACKPACK_EXPAND1 = RegistryEntry.item(
+      new ResourceLocation("backpacked", "backpack_expand1"), () -> new Item(new Properties().stacksTo(1))
+   );
    public static final RegistryEntry<Item> BACKPACK = RegistryEntry.item(
       new ResourceLocation("backpacked", "backpack"), () -> Services.BACKPACK.createBackpackItem(new Properties().stacksTo(1), 2, 3)
    );

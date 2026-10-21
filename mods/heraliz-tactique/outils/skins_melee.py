@@ -346,6 +346,36 @@ def ranger(faces, U, reserve, echelle, m):
     return res
 
 
+# agrandissement de pièces d'un modèle (21/10, demande du propriétaire : doubles dagues du Push trop petites) : chaque
+# os listé et toute sa descendance grandissent autour du milieu de la poignée en T (là où le poing la tient ; moyenne des
+# centres des cubes de l'os hors de la lame, relevée sur cs2_push_geo.json)
+AGRANDIR = {"cs2_push": {"push_r": (1.35, (1.37, 7.59, 1.74)), "push_l": (1.35, (1.37, 10.09, -5.74))}}
+
+
+def agrandir(g, os_echelles):
+    enfants = {}
+    for b in g["bones"]:
+        enfants.setdefault(b.get("parent"), []).append(b)
+    par_nom = {b["name"]: b for b in g["bones"]}
+
+    def autour(p, P, e):
+        return [round(P[i] + e * (p[i] - P[i]), 5) for i in range(3)]
+
+    for nom_os, (e, P) in os_echelles.items():
+        pile = [par_nom[nom_os]]
+        while pile:
+            b = pile.pop()
+            b["pivot"] = autour(b["pivot"], P, e)
+            for c in b.get("cubes", []):
+                c["origin"] = autour(c["origin"], P, e)
+                c["size"] = [round(v * e, 5) for v in c["size"]]
+                if "pivot" in c:
+                    c["pivot"] = autour(c["pivot"], P, e)
+                if "inflate" in c:
+                    c["inflate"] = round(c["inflate"] * e, 5)
+            pile.extend(enfants.get(b["name"], []))
+
+
 def propre(nom, garder, renommer):
     src = json.loads((GEO / (nom + "_geo.json")).read_text(encoding="utf-8"))
     g = src["minecraft:geometry"][0]
@@ -358,6 +388,8 @@ def propre(nom, garder, renommer):
     if nom in DECOUPES:
         img0 = Image.open(TEX / (nom + "_uv.png")).convert("RGBA")
         decouper(g, DECOUPES[nom], img0, img0.width / tw)
+    if nom in AGRANDIR:
+        agrandir(g, AGRANDIR[nom])
     faces = faces_a_ranger(g, garder)
     # texture carrée ; avec des os gardés, la texture d'origine occupe le quart en haut à gauche
     reserve = float(max(tw, th)) if garder else 0.0
@@ -384,6 +416,9 @@ def propre(nom, garder, renommer):
     anciens = {id(c): dict(c["uv"]) for c, *_ in places}
     for c in {id(c): c for c, *_ in places}.values():
         c["uv"] = {}
+    # points dont le centre est dans une face (jamais rendus transparents à cause d'une face voisine)
+    pleins = set()
+    trous = set()
     for c, f, u, v, w, h in places:
         # même sens de lecture que l'ancien morceau de texture (tailles négatives = retourné) et même transparence :
         # le jeu ne dessine pas les points transparents (découpes de la lame, faces invisibles)
@@ -395,20 +430,25 @@ def propre(nom, garder, renommer):
         c["uv"][f] = {"uv": [round(nu, 4), round(nv, 4)], "uv_size": [round(nsu, 4), round(nsv, 4)]}
         x0, x1 = sorted((ou * k, (ou + su) * k))
         y0, y1 = sorted((ov * k, (ov + sv) * k))
-        # trous seulement là où l'ancienne texture était transparente (les bords des morceaux restent pleins) ; chaque
-        # point de la nouvelle face lit l'ancien point au même endroit relatif de la face, calcul exact (avant : morceau
-        # arrondi puis agrandi, décalé jusqu'à un point : liseré autour des découpes, Credo et Bourreau)
+        # chaque point de la nouvelle face, bord compris (point à cheval sur le bord : lu au bord de la face), lit l'ancien
+        # point au même endroit relatif de la face ; transparent là où l'ancienne texture l'était. Avant (2.28.2), les
+        # points du bord restaient pleins : le jeu les lit au bord d'une face découpée, d'où un liseré carré autour des
+        # lames du Credo et du Bourreau
         nx0, nx1, ny0, ny1 = u * k, (u + w) * k, v * k, (v + h) * k
         for py in range(int(math.floor(ny0)), int(math.ceil(ny1))):
-            if not (ny0 < py + 0.5 < ny1):
-                continue
-            oy = min(img.height - 1, max(0, int(math.floor(y0 + (py + 0.5 - ny0) / (ny1 - ny0) * (y1 - y0)))))
+            ty = min(max((py + 0.5 - ny0) / (ny1 - ny0), 0.0), 0.999999)
+            oy = min(img.height - 1, max(0, int(math.floor(y0 + ty * (y1 - y0)))))
+            dedans_y = ny0 < py + 0.5 < ny1
             for px_ in range(int(math.floor(nx0)), int(math.ceil(nx1))):
-                if not (nx0 < px_ + 0.5 < nx1):
-                    continue
-                ox = min(img.width - 1, max(0, int(math.floor(x0 + (px_ + 0.5 - nx0) / (nx1 - nx0) * (x1 - x0)))))
+                tx = min(max((px_ + 0.5 - nx0) / (nx1 - nx0), 0.0), 0.999999)
+                ox = min(img.width - 1, max(0, int(math.floor(x0 + tx * (x1 - x0)))))
+                dedans = dedans_y and nx0 < px_ + 0.5 < nx1
                 if apx[ox, oy] < 26:
-                    opx[px_, py] = (0, 0, 0, 0)
+                    trous.add((px_, py))
+                elif dedans:
+                    pleins.add((px_, py))
+    for p in trous - pleins:
+        opx[p] = (0, 0, 0, 0)
     g["description"]["texture_width"] = g["description"]["texture_height"] = int(U)
     (GEO / (nom + "_skin_geo.json")).write_text(json.dumps(src, separators=(",", ":")), encoding="utf-8")
     out.save(TEX / (nom + "_skin_uv.png"))

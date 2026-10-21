@@ -66,6 +66,14 @@ public final class CamoClient {
    public static void onOpening(ScreenEvent.Opening event) {
       Screen s = event.getNewScreen();
       if (s == null) return;
+      if (s instanceof GunRefitScreen && Minecraft.getInstance().player != null
+         && fr.heraliz.tactique.onglets.Couteaux.estCouteau(Minecraft.getInstance().player.getMainHandItem())) {
+         // un couteau ne se modifie pas (21/10, choix du propriétaire) : ni accessoire, ni camo, ni sticker, ni StatTrak
+         event.setCanceled(true);
+         Minecraft.getInstance().player.displayClientMessage(Component.translatable("msg.heralisz_camo.couteau_fixe")
+            .withStyle(ChatFormatting.GRAY), true);
+         return;
+      }
       if (s.getClass() == GunRefitScreen.class && !AtelierArme.enPanne()) {
          event.setNewScreen(new AtelierArme());
       } else if (s.getClass() == GunSmithTableScreen.class && !TableArmurier.enPanne() && Minecraft.getInstance().player != null) {

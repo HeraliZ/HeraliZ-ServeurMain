@@ -187,5 +187,7 @@
   "item.backpacked.backpack_hiking_pink": "Pink Hiking Backpack",
   "item.backpacked.backpack_hiking_yellow": "Yellow Hiking Backpack",
   "item.backpacked.backpack_hiking_white": "White Hiking Backpack",
-  "item.backpacked.backpack_hiking_snow": "Snow Hiking Backpack"
+  "item.backpacked.backpack_hiking_snow": "Snow Hiking Backpack",
+  "item.backpacked.backpack_expand1": "Removed item",
+  "item.backpacked.backpack_expand2": "Removed item"
 }

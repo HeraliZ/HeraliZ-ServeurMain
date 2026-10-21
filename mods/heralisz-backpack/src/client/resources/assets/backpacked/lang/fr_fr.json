@@ -187,5 +187,7 @@
   "item.backpacked.backpack_hiking_pink": "Sac de Randonnée Rose",
   "item.backpacked.backpack_hiking_yellow": "Sac de Randonnée Jaune",
   "item.backpacked.backpack_hiking_white": "Sac de Randonnée Blanc",
-  "item.backpacked.backpack_hiking_snow": "Sac de Randonnée Neige"
+  "item.backpacked.backpack_hiking_snow": "Sac de Randonnée Neige",
+  "item.backpacked.backpack_expand1": "Objet retiré",
+  "item.backpacked.backpack_expand2": "Objet retiré"
 }
