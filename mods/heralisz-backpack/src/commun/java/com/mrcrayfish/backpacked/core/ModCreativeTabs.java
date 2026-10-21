@@ -26,6 +26,7 @@ public class ModCreativeTabs {
                Registration.get(Registries.ITEM)
                   .stream()
                   .filter(entry -> entry.getId().getNamespace().equals("backpacked"))
+                  .filter(entry -> !entry.getId().getPath().startsWith("backpack_expand")) // HeraliZ : objets vides
                   .forEach(entry -> output.accept((ItemLike)entry.get()));
                // HeraliZ : plus de livres d'enchantement des sacs dans l'onglet
             }
