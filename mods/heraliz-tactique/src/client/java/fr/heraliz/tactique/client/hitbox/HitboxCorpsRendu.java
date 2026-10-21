@@ -13,7 +13,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 /**
- * F3+B : en plus de la boîte blanche de Minecraft (murs, déplacements), la hitbox « en morceaux » des joueurs, celle que
+ * F3+B : à la place de la boîte blanche de Minecraft (BoiteBlancheJoueurMixin), la hitbox « en morceaux » des joueurs, celle que
  * le serveur utilise pour les balles de TaCZ (HitboxCorps) : tête en rouge, reste du corps en jaune. Soi-même compris
  * en 3e personne.
  */

@@ -13,7 +13,8 @@
     "PlayerModelTorseAvantMixin",
     "PlayerModelHanchesMixin",
     "LivingEntityReleverMixin",
-    "HumanoidModelTeteRelevee"
+    "HumanoidModelTeteRelevee",
+    "BoiteBlancheJoueurMixin"
   ],
   "injectors": {
     "defaultRequire": 1
