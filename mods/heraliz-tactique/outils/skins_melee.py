@@ -306,7 +306,8 @@ def propre(nom, garder, renommer):
     out = Image.new("RGBA", (int(U * k), int(U * k)), (150, 154, 160, 255))   # acier : toutes les faces rangées
     if garder:
         out.paste(img, (0, 0))
-    alpha = img.split()[3]
+    apx = img.split()[3].load()
+    opx = out.load()
     anciens = {id(c): dict(c["uv"]) for c, *_ in places}
     for c in {id(c): c for c, *_ in places}.values():
         c["uv"] = {}
@@ -321,12 +322,20 @@ def propre(nom, garder, renommer):
         c["uv"][f] = {"uv": [round(nu, 4), round(nv, 4)], "uv_size": [round(nsu, 4), round(nsv, 4)]}
         x0, x1 = sorted((ou * k, (ou + su) * k))
         y0, y1 = sorted((ov * k, (ov + sv) * k))
-        boite = (int(x0), int(y0), max(int(x0) + 1, int(round(x1))), max(int(y0) + 1, int(round(y1))))
-        cible = (int(round(u * k)), int(round(v * k)), int(round((u + w) * k)), int(round((v + h) * k)))
-        taille = (max(1, cible[2] - cible[0]), max(1, cible[3] - cible[1]))
-        # trous seulement là où l'ancienne texture était transparente (les bords des morceaux restent pleins)
-        trous = alpha.crop(boite).resize(taille, Image.NEAREST).point(lambda a: 0 if a >= 26 else 255)
-        out.paste(Image.new("RGBA", taille, (0, 0, 0, 0)), cible[:2], trous)
+        # trous seulement là où l'ancienne texture était transparente (les bords des morceaux restent pleins) ; chaque
+        # point de la nouvelle face lit l'ancien point au même endroit relatif de la face, calcul exact (avant : morceau
+        # arrondi puis agrandi, décalé jusqu'à un point : liseré autour des découpes, Credo et Bourreau)
+        nx0, nx1, ny0, ny1 = u * k, (u + w) * k, v * k, (v + h) * k
+        for py in range(int(math.floor(ny0)), int(math.ceil(ny1))):
+            if not (ny0 < py + 0.5 < ny1):
+                continue
+            oy = min(img.height - 1, max(0, int(math.floor(y0 + (py + 0.5 - ny0) / (ny1 - ny0) * (y1 - y0)))))
+            for px_ in range(int(math.floor(nx0)), int(math.ceil(nx1))):
+                if not (nx0 < px_ + 0.5 < nx1):
+                    continue
+                ox = min(img.width - 1, max(0, int(math.floor(x0 + (px_ + 0.5 - nx0) / (nx1 - nx0) * (x1 - x0)))))
+                if apx[ox, oy] < 26:
+                    opx[px_, py] = (0, 0, 0, 0)
     g["description"]["texture_width"] = g["description"]["texture_height"] = int(U)
     (GEO / (nom + "_skin_geo.json")).write_text(json.dumps(src, separators=(",", ":")), encoding="utf-8")
     out.save(TEX / (nom + "_skin_uv.png"))
