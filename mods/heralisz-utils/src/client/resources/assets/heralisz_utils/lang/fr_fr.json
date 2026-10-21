@@ -582,5 +582,6 @@
   "heralisz_utils.inspecter.en_ligne": "En ligne",
   "heralisz_utils.inspecter.page": "Page %s",
   "heralisz_utils.borne.titre": "TÉLÉPORTATION ALÉATOIRE",
-  "heralisz_utils.borne.aide": "Clic droit · départ au hasard sur la carte"
+  "heralisz_utils.borne.aide": "Clic droit · départ au hasard sur la carte",
+  "entity.heralisz_utils.zombie_survie": "Zombie"
 }

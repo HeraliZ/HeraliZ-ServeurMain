@@ -1039,7 +1039,17 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   122), morsure s'il percute sa cible en vol, un bond toutes les 3 à 5 s. Gestes joués chez le joueur
   (`GestesZombies`, mixin `GesteZombieRenduMixin` après le setupAnim de leur modèle, config
   `heralisz_utils_zombies.mixins.json` facultative) ; durées communes dans `AttaquesZombies`. Compilé contre une copie
-  du jar dans `libs/`. Rien testé en jeu ; Petit panneau de
+  du jar dans `libs/`. Rien testé en jeu ;
+- zombies de la survie (21/10, Utils 2.18.0, maquettes validées, `zombies/ZombiesSurvie`, `ZombieSurvie`) : le zombie de
+  Minecraft (même IA, mêmes règles) avec un corps de joueur et une mâchoire 3D qui s'ouvre (dents du bas), entité
+  `heralisz_utils:zombie_survie`, tenue dans le NBT `HeralizTenue` ; skins dans `textures/entity/zombies/`, peints par
+  script (maquettes). Sur la carte, tout zombie de Minecraft qui apparaît est remplacé (`serveur/zombies/SpawnZombiesServeur`) :
+  ville = 5 tenues au hasard ; Arctique (et zones « froid » de Décors) : arctiques seulement ; Prison : prisonniers seulement ;
+  Aérodrome et Base Sentinelle (ex-« Silo », id `silo` gardé) : militaires seulement ; dans ces trois-là les zombies de
+  Mutants & Zombies sont remplacés aussi ; Gaz, Radio et zones « gaz » / « radiation » de Décors : 75 % de hazmat.
+  Villes lues dans `config/heralisz_clans/zones.json` (centre et rayon), réglages `heraliz_zombies-server.toml`. Les
+  zombies des assauts de drapeau et des commandes ne changent pas. Rien testé en jeu ;
+- Petit panneau de
   verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
   drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un
   drapeau (`/territoire drapeau`) déplace le centre de la zone sur lui. Rien testé en jeu ;
