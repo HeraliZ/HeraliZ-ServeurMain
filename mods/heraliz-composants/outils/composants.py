@@ -1137,3 +1137,57 @@ def _(m):
     # bout de fil qui dépasse
     m.box((12.8, 3.6, 7.8), (16.0, 4.0, 8.2), 'copper', ('z', -22.5, (12.8, 3.8, 8)))
 
+
+
+# ================================================================ NIVEAUX DES COMPOSANTS DE FABRICATION
+# 21/10 (choix du propriétaire, rendus validés) : chaque composant de fabrication existe en 4 niveaux ; l'objet d'origine
+# est le niveau I (Peu commun), puis II Rare « anodisé », III Épique « militaire », IV Légendaire « doré ». Même modèle,
+# autres matériaux. Pour le craft à venir : niveau I -> armes Commun, II -> Peu commun, III -> Rare, IV -> Épique
+# (Légendaire et Unique jamais fabriquées).
+NIVEAUX = (('II', 'rare'), ('III', 'epic'), ('IV', 'legendary'))
+MATERIAUX_NIVEAUX = {
+    'canon': ({'steel': 'plate_clean', 'steel_dark': 'blue_metal', 'gunmetal': 'blue_metal'},
+              {'steel': 'gunmetal', 'steel_dark': 'black', 'gunmetal': 'olive'},
+              {'steel': 'gold', 'steel_dark': 'gold_dark', 'gunmetal': 'black'}),
+    'ressort': ({'steel': 'blue_metal'}, {'steel': 'black'}, {'steel': 'gold'}),
+    'kit_pieces': ({'olive': 'blue', 'zinc': 'aluminum', 'steel': 'plate_clean'},
+                   {'olive': 'black', 'steel': 'gunmetal', 'zinc': 'olive'},
+                   {'olive': 'black', 'steel': 'gold', 'zinc': 'gold_dark', 'brass': 'gold'}),
+    'tissu': ({'red': 'blue'}, {'cloth': 'cloth_khaki', 'red': 'olive'}, {'cloth': 'cloth_silk', 'red': 'gold'}),
+    'alcool': ({'red': 'blue'}, {'white': 'olive', 'red': 'white'}, {'white': 'black', 'red': 'gold'}),
+    'batterie': ({'cell_blue': 'cell_cyan', 'aluminum': 'plate_clean'}, {'cell_blue': 'label_green', 'aluminum': 'gunmetal'},
+                 {'cell_blue': 'label_black', 'aluminum': 'gold'}),
+    'circuit_imprime': ({'pcb': 'pcb_blue'}, {'pcb': 'pcb_black', 'steel': 'gunmetal'},
+                        {'pcb': 'pcb_black', 'steel': 'gold', 'aluminum': 'gold', 'brass': 'gold'}),
+    'ferraille': ({'rusty_steel': 'steel', 'rust': 'blue_metal', 'zinc': 'aluminum'},
+                  {'rusty_steel': 'gunmetal', 'rust': 'black', 'steel_dark': 'olive', 'zinc': 'olive'},
+                  {'rusty_steel': 'gold', 'rust': 'gold_dark', 'steel_dark': 'gold', 'zinc': 'gold'}),
+    'bocal_poudre': ({'steel_dark': 'blue_metal', 'steel': 'plate_clean', 'white': 'blue'},
+                     {'steel_dark': 'black', 'steel': 'gunmetal', 'white': 'olive'},
+                     {'steel_dark': 'gold_dark', 'steel': 'gold', 'white': 'gold'}),
+    'caoutchouc': ({'steel_dark': 'blue_metal'}, {'tire': 'tire_olive', 'steel_dark': 'black'},
+                   {'steel_dark': 'gold', 'brass': 'gold'}),
+    'scotch': ({'tape': 'tape_blue'}, {'tape': 'olive_tape'}, {'tape': 'gold', 'cardboard': 'black'}),
+}
+
+
+def _niveau(fn, carte):
+    def construire(m):
+        fn(m)
+        for b in m.boxes:
+            b['m'] = carte.get(b['m'], b['m'])
+    return construire
+
+
+def _ajouter_niveaux():
+    par_id = {it['id']: it for it in ITEMS}
+    for iid, cartes in MATERIAUX_NIVEAUX.items():
+        base = par_id[iid]
+        pos = ITEMS.index(base) + 1
+        for (chiffre, rarete), carte in zip(NIVEAUX, cartes):
+            ITEMS.insert(pos, dict(base, id=f'{iid}_{chiffre.lower()}', fr=f"{base['fr']} {chiffre}", en=f"{base['en']} {chiffre}",
+                                   rarity=rarete, build=_niveau(base['build'], carte)))
+            pos += 1
+
+
+_ajouter_niveaux()
