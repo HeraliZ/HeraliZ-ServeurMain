@@ -37,7 +37,7 @@ MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), 
     ("crac:building_plan", 50),     # plan et marteau de CRac, au cas où (20/10)
     ("crac:building_hammer", 50),
 ]
-RACHAT_VALEUR = {"commun": 5, "peu_commun": 20, "rare": 80, "epique": 300, "legendaire": 700, "mythique": 1500}
+RACHAT_VALEUR = {"commun": 2, "peu_commun": 8, "rare": 20, "epique": 50, "legendaire": 200, "mythique": 500}
 RACHAT_COMPOSANTS = RACHAT_VALEUR  # mêmes prix que les objets de valeur
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
 

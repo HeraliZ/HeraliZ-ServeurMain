@@ -70,23 +70,23 @@
       {
         "tag": "heraliz_composants:vente",
         "prix": {
-          "commun": 5,
-          "peu_commun": 20,
-          "rare": 80,
-          "epique": 300,
-          "legendaire": 700,
-          "mythique": 1500
+          "commun": 2,
+          "peu_commun": 8,
+          "rare": 20,
+          "epique": 50,
+          "legendaire": 200,
+          "mythique": 500
         }
       },
       {
         "tag": "heraliz_composants:tous",
         "prix": {
-          "commun": 5,
-          "peu_commun": 20,
-          "rare": 80,
-          "epique": 300,
-          "legendaire": 700,
-          "mythique": 1500
+          "commun": 2,
+          "peu_commun": 8,
+          "rare": 20,
+          "epique": 50,
+          "legendaire": 200,
+          "mythique": 500
         }
       }
     ]
