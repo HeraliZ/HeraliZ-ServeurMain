@@ -385,6 +385,19 @@ def propre(nom, garder, renommer):
         for k in ("name", "parent"):
             if b.get(k) in renommer:
                 b[k] = renommer[b[k]]
+    # repères de caméra et de pose (view, camera, positioning et leurs enfants) : jamais dessinés ; le cube d'« idle_view »
+    # du Skeleton prenait sinon une place de texture et le skin s'y peignait (cube flottant devant le couteau, 21/10)
+    parents = {b["name"]: b.get("parent") for b in g["bones"]}
+
+    def repere(n):
+        while n is not None:
+            if n in ("view", "camera", "positioning"):
+                return True
+            n = parents.get(n)
+        return False
+    for b in g["bones"]:
+        if repere(b["name"]) and b.get("cubes"):
+            b["cubes"] = []
     if nom in DECOUPES:
         img0 = Image.open(TEX / (nom + "_uv.png")).convert("RGBA")
         decouper(g, DECOUPES[nom], img0, img0.width / tw)

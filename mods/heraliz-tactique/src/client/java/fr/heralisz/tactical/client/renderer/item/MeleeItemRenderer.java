@@ -146,6 +146,9 @@ public class MeleeItemRenderer extends AnimateGeoItemRenderer<CustomBedrockModel
                   boolean dual = DualWieldLayer.isDual(model);
                   if (dual) {
                      DualWieldLayer.showOnly(model, DualWieldLayer.renderingLeft, false);
+                     if (DualWieldLayer.renderingLeft) {
+                        DualWieldLayer.placerGauche(poseStack, model);
+                     }
                   }
                   model.render(poseStack, ctx, fr.heralisz.tactical.api.client.MeleeRenderHooks.apply(stack, model, this.getTextureLocation(stack),
                      RenderType.entityCutout(this.getTextureLocation(stack))), light, overlay);
