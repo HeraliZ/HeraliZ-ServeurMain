@@ -1,7 +1,0 @@
-{
- "parent": "heralisz_utils:custom/propan",
- "textures": {
-  "0": "heralisz_utils:item/propan",
-  "particle": "heralisz_utils:item/3345"
- }
-}

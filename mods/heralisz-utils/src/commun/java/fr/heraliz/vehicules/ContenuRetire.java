@@ -42,12 +42,17 @@ public final class ContenuRetire {
         return OBJETS.contains(id.toString());
     }
 
+    /**
+     * Onglets de Limitless Vehicle vidés en entier (21/10, choix du propriétaire : chaque objet une seule fois) : les
+     * véhicules gardés, le jerrican, le chalumeau et le parachute ne sont plus que dans le groupe Véhicules de l'onglet
+     * HeraliZ · Utils ; un onglet vide n'est pas affiché par Minecraft.
+     */
     static void onBuildContents(BuildCreativeModeTabContentsEvent event) {
         ResourceLocation tab = event.getTabKey().location();
         if (!tab.getNamespace().equals("ywzj_vehicle")) return;
         List<ItemStack> retires = new ArrayList<>();
         for (Map.Entry<ItemStack, CreativeModeTab.TabVisibility> e : event.getEntries()) {
-            if (estRetire(e.getKey())) retires.add(e.getKey());
+            retires.add(e.getKey());
         }
         retires.forEach(s -> event.getEntries().remove(s));
     }

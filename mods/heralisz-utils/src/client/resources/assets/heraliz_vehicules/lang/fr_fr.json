@@ -1,5 +1,4 @@
 {
-  "itemGroup.heraliz_vehicules": "HeraliZ Véhicules",
   "heraliz_vehicules.refus.dimension": "Les véhicules sont interdits ici (matchs, mode Zombies, bunkers).",
   "heraliz_vehicules.refus.combat": "Impossible de sortir un véhicule pendant un combat.",
   "heraliz_vehicules.refus.retire": "Ce véhicule n'existe pas sur HeraliZ.",

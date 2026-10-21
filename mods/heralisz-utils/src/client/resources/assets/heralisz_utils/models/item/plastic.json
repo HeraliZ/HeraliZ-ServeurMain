@@ -1,7 +1,0 @@
-{
- "parent": "heralisz_utils:custom/plasticc",
- "textures": {
-  "1": "heralisz_utils:item/plasric",
-  "particle": "heralisz_utils:item/3345"
- }
-}

@@ -1,7 +1,0 @@
-{
- "parent": "heralisz_utils:custom/wood_plate",
- "textures": {
-  "0": "heralisz_utils:item/wood_plate",
-  "particle": "heralisz_utils:item/3345"
- }
-}

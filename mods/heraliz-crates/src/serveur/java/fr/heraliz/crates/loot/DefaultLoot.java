@@ -155,22 +155,22 @@ final class DefaultLoot {
                 int rest = TOTAL - total(l);
                 for (int i = 0; i < STICKERS.length; i++) l.get(first + i).weight += rest / STICKERS.length + (i < rest % STICKERS.length ? 1 : 0);
             }
-            // caisse Chantier : de quoi batir sa base. Materiaux en lots (heralisz_utils, props cfm), clotures et barbeles, puis
+            // caisse Chantier : de quoi batir sa base. Materiaux en lots (HeraliZ Composants, props cfm), clotures et barbeles, puis
             // les portes, cartes et lecteurs de heralisz_bunker du plus courant au plus rare (porte de silo : 0,2 %)
             case BUILD -> {
-                l.add(e("heralisz_utils:wood_plate", 8, 70, COMMON));
+                l.add(e("heraliz_composants:planches", 8, 70, COMMON));
                 l.add(e("cfm:arkaniaz_red_brick", 16, 60, COMMON));
                 l.add(e("cfm:arkaniaz_hollow_brick", 16, 60, COMMON));
                 l.add(e("cfm:beton", 16, 55, COMMON));
-                l.add(e("heralisz_utils:iron_plate", 4, 55, COMMON));
-                l.add(e("heralisz_utils:glass", 4, 45, COMMON));
+                l.add(e("heraliz_composants:fragments_metal", 4, 55, COMMON));
+                l.add(e("heraliz_composants:clou", 4, 45, COMMON));
                 l.add(e("cfm:arkaniaz_iron_rod", 8, 40, COMMON));
                 l.add(e("cfm:gofro_metal", 8, 40, COMMON));
                 l.add(e("cfm:wooden_pallet_1", 2, 30, COMMON));
                 l.add(e("cfm:arkaniaz_steel_pipe", 4, 30, COMMON));
-                l.add(e("heralisz_utils:steel_plate", 4, 35, UNCOMMON));
-                l.add(e("heralisz_utils:aluminum", 4, 25, UNCOMMON));
-                l.add(e("heralisz_utils:copper_coil", 2, 20, UNCOMMON));
+                l.add(e("heraliz_composants:pierres_taillees", 4, 35, UNCOMMON));
+                l.add(e("heraliz_composants:sac_ciment", 4, 25, UNCOMMON));
+                l.add(e("heraliz_composants:equerres_acier", 2, 20, UNCOMMON));
                 l.add(e("cfm:green_beton", 8, 25, UNCOMMON));
                 l.add(e("cfm:dark_metal_2", 8, 25, UNCOMMON));
                 l.add(e("cfm:zombie_chainlinkfence", 6, 25, UNCOMMON));
@@ -178,8 +178,8 @@ final class DefaultLoot {
                 l.add(e("cfm:city_security_fence", 4, 20, UNCOMMON));
                 l.add(e("heralisz_bunker:wooden_barricade", 2, 25, UNCOMMON));
                 l.add(e("cfm:arkaniaz_spotlight", 1, 15, UNCOMMON));
-                l.add(e("heralisz_utils:titanium_plate", 2, 18, RARE));
-                l.add(e("heralisz_utils:carbon", 2, 15, RARE));
+                l.add(e("heraliz_composants:metal_renforce", 2, 18, RARE));
+                l.add(e("heraliz_composants:fil_souder", 2, 15, RARE));
                 l.add(e("heralisz_bunker:metal_door", 1, 18, RARE));
                 l.add(e("heralisz_bunker:door_bunker", 1, 15, RARE));
                 l.add(e("heralisz_bunker:keycard_green", 1, 15, RARE));

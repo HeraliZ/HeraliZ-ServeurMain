@@ -1,7 +1,0 @@
-{
- "parent": "heralisz_utils:custom/iron",
- "textures": {
-  "0": "heralisz_utils:item/irron1",
-  "particle": "heralisz_utils:item/3345"
- }
-}
