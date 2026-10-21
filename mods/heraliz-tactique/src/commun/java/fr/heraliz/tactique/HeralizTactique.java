@@ -76,6 +76,8 @@ public class HeralizTactique {
       ReseauCouteaux.init();
       // dégâts des armes contre les joueurs (armes.DegatsJoueurs) : envoyés aux joueurs pour les chiffres affichés
       fr.heraliz.tactique.armes.ReseauArmes.init();
+      // objets à vie (couteaux, skins à vie) : question « Jeter cet objet ? » et sa réponse
+      fr.heraliz.tactique.avie.ObjetsAVie.init();
       Parties.serveur(MODID, "fr.heraliz.tactique.serveur.ServeurTactique", bus);
       Parties.client(MODID, "fr.heraliz.tactique.client.ClientTactique", bus);
    }

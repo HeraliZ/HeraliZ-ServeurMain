@@ -32,5 +32,10 @@
   "heraliz_tactique.vitres.protege": "Block in the blocs_proteges list: it never breaks.",
   "heraliz_tactique.vitres.dimension": "Protected dimension (%s, dimensions_protegees): nothing breaks there.",
   "heraliz_tactique.vitres.spawn": "%s blocks from the world spawn point (%s): within the rayon_spawn of %s blocks, nothing breaks.",
-  "heraliz_tactique.vitres.claim": "Inside a CRac claim (claim block at %s): nothing breaks there (proteger_claims_crac)."
+  "heraliz_tactique.vitres.claim": "Inside a CRac claim (claim block at %s): nothing breaks there (proteger_claims_crac).",
+  "heraliz_tactique.a_vie.titre": "Drop this item?",
+  "heraliz_tactique.a_vie.texte": "Lifetime item: on the ground, anyone can take it.",
+  "heraliz_tactique.a_vie.non": "No, keep it",
+  "heraliz_tactique.a_vie.oui": "Yes, drop it",
+  "heraliz_tactique.a_vie.touche": "Lifetime item: it can't be dropped with the drop key."
 }

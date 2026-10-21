@@ -67,6 +67,11 @@ public class CamoItem extends Item {
       if (this.camo.gun != null) {
          tooltip.add(Component.translatable("item.heralisz_camo.camo.gun." + this.camo.id).withStyle(ChatFormatting.GOLD));
       }
+      if (fr.heraliz.tactique.avie.ObjetsAVie.estSkinAVie(this.camo)) {
+         // skin à vie (21/10) : seulement par la collection, jamais posé depuis l'objet
+         tooltip.add(Component.translatable("item.heralisz_camo.camo.a_vie").withStyle(ChatFormatting.GOLD));
+         return;
+      }
       if (!this.camo.isPackAPunch()) {
          tooltip.add(Component.translatable("item.heralisz_camo.camo.collect").withStyle(ChatFormatting.YELLOW));
       }

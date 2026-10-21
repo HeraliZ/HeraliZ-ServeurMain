@@ -131,7 +131,8 @@ public final class RefitSkinTab {
       Inventory inv = player.getInventory();
       int shown = 0;
       for (int i = 0; i < inv.getContainerSize() && shown < MAX_INVENTAIRE; i++) {
-         if (inv.getItem(i).getItem() instanceof CamoItem ci && ci.camo().fits(gunId)) {
+         if (inv.getItem(i).getItem() instanceof CamoItem ci && ci.camo().fits(gunId)
+            && !fr.heraliz.tactique.avie.ObjetsAVie.estSkinAVie(ci.camo())) {
             add.accept(new CamoSlot(gridX + shown % COLONNES * CASE, y + shown / COLONNES * CASE, i, inv, screen));
             shown++;
          }

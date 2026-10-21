@@ -401,5 +401,7 @@
   "gui.heralisz_camo.atelier.court.yaw": "recul horiz.",
   "gui.heralisz_camo.atelier.court.ads": "visée",
   "gui.heralisz_camo.atelier.court.weight": "poids",
-  "gui.heralisz_camo.atelier.court.ammo_speed": "vit. balles"
+  "gui.heralisz_camo.atelier.court.ammo_speed": "vit. balles",
+  "msg.heralisz_camo.skin_a_vie": "Skin à vie : clic droit sur l'objet pour l'ajouter à ta collection, puis pose-le depuis la collection.",
+  "item.heralisz_camo.camo.a_vie": "Skin à vie : clic droit pour l'ajouter à ta collection (pas consommé si tu l'as déjà). Gardé à la mort."
 }

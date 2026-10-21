@@ -27,6 +27,44 @@ import net.minecraft.world.item.ItemStack;
  * sont qu'un affichage (le serveur decide de tout).
  */
 public class SearchMenu extends AbstractContainerMenu {
+   /**
+    * Objets à vie de HeraliZ Tactique (couteaux, skins à vie : {@code fr.heraliz.tactique.avie.ObjetsAVie.estAVie}, lu par
+    * réflexion) : ils restent à leur propriétaire, on ne les prend pas en le fouillant (21/10). Sans Tactique : rien.
+    */
+   private static volatile java.lang.reflect.Method aVie;
+   private static volatile boolean aVieCherche;
+
+   static boolean estAVie(ItemStack stack) {
+      if (stack.isEmpty()) return false;
+      if (!aVieCherche) {
+         try {
+            aVie = Class.forName("fr.heraliz.tactique.avie.ObjetsAVie").getMethod("estAVie", ItemStack.class);
+         } catch (ReflectiveOperationException | LinkageError ex) {
+            aVie = null;
+         }
+         aVieCherche = true;
+      }
+      java.lang.reflect.Method m = aVie;
+      if (m == null) return false;
+      try {
+         return Boolean.TRUE.equals(m.invoke(null, stack));
+      } catch (ReflectiveOperationException | RuntimeException ex) {
+         return false;
+      }
+   }
+
+   /** Case de l'inventaire de la victime : un objet à vie ne se prend pas. */
+   private static final class SlotVictime extends Slot {
+      SlotVictime(Container c, int index, int x, int y) {
+         super(c, index, x, y);
+      }
+
+      @Override
+      public boolean mayPickup(Player joueur) {
+         return !estAVie(this.getItem()) && super.mayPickup(joueur);
+      }
+   }
+
    public static final int TARGET_SIZE = 41;
    public static final int FIRST_BACKPACK = 5;
    public static final int WIDTH = 176;
@@ -88,19 +126,23 @@ public class SearchMenu extends AbstractContainerMenu {
             public int getMaxStackSize() {
                return 1;
             }
+
+            public boolean mayPickup(Player joueur) {
+               return !estAVie(this.getItem()) && super.mayPickup(joueur);
+            }
          }).setBackground(InventoryMenu.BLOCK_ATLAS, ARMOR_ICONS[i]));
       }
 
-      this.addSlot(new Slot(target, 40, 98, 20).setBackground(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD));
+      this.addSlot(new SlotVictime(target, 40, 98, 20).setBackground(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD));
 
       for (int row = 0; row < 3; row++) {
          for (int col = 0; col < 9; col++) {
-            this.addSlot(new Slot(target, 9 + row * 9 + col, 8 + col * 18, 50 + row * 18));
+            this.addSlot(new SlotVictime(target, 9 + row * 9 + col, 8 + col * 18, 50 + row * 18));
          }
       }
 
       for (int col = 0; col < 9; col++) {
-         this.addSlot(new Slot(target, col, 8 + col * 18, 108));
+         this.addSlot(new SlotVictime(target, col, 8 + col * 18, 108));
       }
 
       for (int row = 0; row < 3; row++) {
@@ -152,6 +194,10 @@ public class SearchMenu extends AbstractContainerMenu {
    public ItemStack quickMoveStack(Player player, int index) {
       Slot slot = (Slot)this.slots.get(index);
       if (!slot.hasItem()) {
+         return ItemStack.EMPTY;
+      }
+
+      if (!slot.mayPickup(player)) {
          return ItemStack.EMPTY;
       }
 
