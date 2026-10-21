@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "fr.heralisz.utils.zombies.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heralisz_utils.refmap.json",
+  "client": [
+    "GesteZombieRenduMixin",
+    "ZombieEvenementMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

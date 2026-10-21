@@ -366,5 +366,6 @@
   "heralisz_utils.inspecter.en_ligne": "Online",
   "heralisz_utils.inspecter.page": "Page %s",
   "heralisz_utils.borne.titre": "RANDOM TELEPORT",
-  "heralisz_utils.borne.aide": "Right-click · random drop on the map"
+  "heralisz_utils.borne.aide": "Right-click · random drop on the map",
+  "entity.heralisz_utils.zombie_survie": "Zombie"
 }

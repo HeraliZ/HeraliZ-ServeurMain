@@ -114,6 +114,7 @@ public final class HeraliszUtils {
         MapBlocks.BLOCKS.register(bus);
         ITEMS.register(bus);
         TABS.register(bus);
+        fr.heralisz.utils.zombies.ZombiesSurvie.init(bus);         // zombies de la survie (tenues selon l endroit)
         fr.heralisz.utils.cine.CineReseau.init(bus);                 // cinématique d'arrivée (première connexion, /cinematique)
         fr.heralisz.utils.train.Train.init(bus);                     // réseau ferré : horaire, annonce aux joueurs, /train
         bus.addListener(HeraliszUtils::hideOldItems);

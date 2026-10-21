@@ -1030,7 +1030,37 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `config/heralisz_clans/assaut.json` du dépôt, relu par `/territoire recharger`), retirées 20 s après la fin ;
   zombies de Minecraft et de Mutants & Zombies (Crawler, Blister, une seule Brute en vague 3, clé `max`) ; jamais de
   Spitter, ni dans les vagues ni dans la nature (`spitterZombiesSpawnNaturally = false`) : son crachat est une boule de
-  slime (choix du propriétaire, 21/10 ; zombies faits maison refusés). Petit panneau de
+  slime (choix du propriétaire, 21/10 ; zombies faits maison refusés).
+  Difficulté par drapeau (21/10, Clans 3.3.0) : clé `difficulte` de zones.json (1 à 3, 2 par défaut),
+  `/territoire difficulte <id> <1-3>` ou `/territoire drapeau <id> <1-3>` ; chaque niveau a ses 3 vagues
+  (`difficultes` de assaut.json) : 1 facile (moins de zombies, pas de Brute), 2 normal (une Brute au plus en vague 3),
+  3 dur (plus de zombies, plus forts, et toujours 3 Brutes à la dernière vague : liste `fixes`).
+- attaques des zombies de Mutants & Zombies (21/10, Utils 2.17.0, `zombies/`, jar du mod intact) : plus de coup « au
+  contact » : le serveur (`AttaquesZombiesServeur`) annule leur coup et lance un geste (évènement d'entité 121), ne
+  touche qu'à l'impact si la cible est encore à portée et en vue (on peut esquiver en reculant) : Crawler morsure
+  5 ticks, Blister revers du bras droit 8 ticks, Brute deux bras levés puis abattus 14 ticks (elle s'arrête, rugit,
+  poussière au sol). Crawler : petit saut de Minecraft retiré, vrai bond à 3,5–8 blocs (accroupi 6 ticks, évènement
+  122), morsure s'il percute sa cible en vol, un bond toutes les 3 à 5 s. Gestes joués chez le joueur
+  (`GestesZombies`, mixin `GesteZombieRenduMixin` après le setupAnim de leur modèle, config
+  `heralisz_utils_zombies.mixins.json` facultative) ; durées communes dans `AttaquesZombies`. Compilé contre une copie
+  du jar dans `libs/`. Rien testé en jeu ;
+- niveaux de clan (21/10, Clans 3.4.0, maquette validée) : onglet NIVEAU du menu K (`tabs/NiveauTab` : prochain niveau,
+  gagner de l'XP, paliers). Avantages en plus des membres et territoires (`model/Avantages`, lu des deux côtés) : 2 fonds
+  de bannière radial et partagé ; 4 délai de ravitaillement −15 % (10 : −30 %, 18 : −45 %) ; 5 bonus de loot +2 % dans
+  ses zones (14 : +4 %) ; 6 revenu des zones +10 % (10 : +20 %, 16 : +30 %) ; 8 tag du clan en couleur (gris avant) ;
+  12 formes rares (dragon, kraken, lion, couronne, œil, soleil ; une bannière qui les a déjà les garde) ; 20 tag doré.
+  Aucun avantage en combat. Rien testé en jeu ;
+- zombies de la survie (21/10, Utils 2.18.0, maquettes validées, `zombies/ZombiesSurvie`, `ZombieSurvie`) : le zombie de
+  Minecraft (même IA, mêmes règles) avec un corps de joueur et une mâchoire 3D qui s'ouvre (dents du bas), entité
+  `heralisz_utils:zombie_survie`, tenue dans le NBT `HeralizTenue` ; skins dans `textures/entity/zombies/`, peints par
+  script (maquettes). Sur la carte, tout zombie de Minecraft qui apparaît est remplacé (`serveur/zombies/SpawnZombiesServeur`) :
+  ville = 5 tenues au hasard ; Arctique (et zones « froid » de Décors) : arctiques seulement ; Prison : prisonniers seulement ;
+  Aérodrome et Base Sentinelle (ex-« Silo », id `silo` gardé) : militaires seulement ; dans ces trois-là les zombies de
+  Mutants & Zombies sont remplacés aussi ; Gaz, Radio et zones « gaz » / « radiation » de Décors : 75 % de hazmat.
+  Villes lues dans `config/heralisz_clans/zones.json` (centre et rayon), réglages `heraliz_zombies-server.toml`. Les
+  vagues des drapeaux (assaut.json : `heralisz_utils:zombie_survie` au lieu de `minecraft:zombie`, Utils 2.18.1) et /summon
+  sans tenue prennent la tenue de l'endroit à leur arrivée (`HeralizTenueChoisie`). Rien testé en jeu ;
+- Petit panneau de
   verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
   drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un
   drapeau (`/territoire drapeau`) déplace le centre de la zone sur lui. Rien testé en jeu ;
@@ -1495,7 +1525,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   monde, réécrite à chaque clic (inventaire, coffre de l'Ender, Curios et sac seulement ; le reste gardé) ; vues fermées
   dès qu'il se connecte (ou, en ligne, se déconnecte) ; une seule copie partagée par tout le staff. Objets toujours
   déplacés, jamais copiés. Écrans de coffre de Minecraft. Rien testé en jeu ;
-- train (21/10, Utils 2.18.0) : voie, rame et sons seulement sur la carte (overworld, `TrainClient.actif`) : la voie se
+- train (21/10, Utils 2.19.0) : voie, rame et sons seulement sur la carte (overworld, `TrainClient.actif`) : la voie se
   dessinait aussi dans le monde des bases (et du spawn) aux mêmes coordonnées. Rien testé en jeu ;
 - train (18/10, Utils 2.16.0) : les balles passent par les portes intérieures (sas entre deux voitures, cloisons) dès
   qu'elles sont ouvertes à l'écran (`Voyageurs.ouverteServeur` : quelqu'un à moins de 4 blocs, refermée ~0,8 s après ;
@@ -1598,7 +1628,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   en dessous son propre inventaire ; on fouille de là où l'on est, rien ne déplace le joueur (serveur : 5 blocs des
   yeux au corps pour ouvrir, 6 pour garder ouvert) ; boîte du cadavre dans le sens du corps (1 × 1,9 bloc, carré de
   1,6 en diagonale, 0,45 de haut), sans collision. Fouiller un joueur À TERRE (Réanimation 1.14.0) ne téléporte plus
-  à côté de lui non plus (la réanimation, elle, garde sa place à genoux). Tenue visible sur le corps (21/10, Utils 2.18.0) :
+  à côté de lui non plus (la réanimation, elle, garde sa place à genoux). Tenue visible sur le corps (21/10, Utils 2.19.0) :
   armure et objets Curios encore sur le corps (gilet, masque, gants, ghillie, sac…) dessinés comme sur un joueur vivant
   (`corps/client/TenueCorps` : joueur factice du client, jamais dans le monde, qui porte la tenue et reçoit les couches
   d'équipement du rendu des joueurs : armure, Armurerie, Curios, Backpacked ; donnée synchronisée `CorpsEntity.DATA_TENUE`,
