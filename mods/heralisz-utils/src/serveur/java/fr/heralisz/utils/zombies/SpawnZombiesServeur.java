@@ -106,18 +106,28 @@ public final class SpawnZombiesServeur {
         if (z == null) return;
         e.setSpawnCancelled(true);
         var rnd = sl.getRandom();
-        Tenue t;
-        if (g == null) t = Tenue.de(rnd.nextInt(Tenue.VILLES));
-        else t = switch (g) {
+        z.tenue(tenue(g, rnd));
+        z.moveTo(e.getX(), e.getY(), e.getZ(), m.getYRot(), 0f);
+        z.finalizeSpawn(acc, acc.getCurrentDifficultyAt(BlockPos.containing(e.getX(), e.getY(), e.getZ())), e.getSpawnType(), null, null);
+        acc.addFreshEntityWithPassengers(z);
+    }
+
+    private static Tenue tenue(Genre g, net.minecraft.util.RandomSource rnd) {
+        if (g == null) return Tenue.de(rnd.nextInt(Tenue.VILLES));
+        return switch (g) {
             case ARCTIQUE -> Tenue.ARCTIQUE;
             case PRISON -> Tenue.PRISONNIER;
             case MILITAIRE -> Tenue.MILITAIRE;
             case CONTAMINE -> rnd.nextDouble() < ZombiesConfig.PART_HAZMAT.get() ? Tenue.HAZMAT : Tenue.de(rnd.nextInt(Tenue.VILLES));
         };
-        z.tenue(t);
-        z.moveTo(e.getX(), e.getY(), e.getZ(), m.getYRot(), 0f);
-        z.finalizeSpawn(acc, acc.getCurrentDifficultyAt(BlockPos.containing(e.getX(), e.getY(), e.getZ())), e.getSpawnType(), null, null);
-        acc.addFreshEntityWithPassengers(z);
+    }
+
+    /** Zombie HeraliZ pose sans tenue (vagues des drapeaux, /summon) : tenue de l'endroit ou il arrive. */
+    @SubscribeEvent
+    public static void arrivee(net.minecraftforge.event.entity.EntityJoinLevelEvent e) {
+        if (e.getLevel().isClientSide() || !(e.getEntity() instanceof ZombieSurvie z) || z.tenueChoisie) return;
+        Genre g = e.getLevel().dimension() == Level.OVERWORLD ? genre(z.getX(), z.getZ()) : null;
+        z.tenue(tenue(g, z.getRandom()));
     }
 
     private static boolean dans(List<? extends String> liste, ResourceLocation id) {

@@ -1054,7 +1054,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Aérodrome et Base Sentinelle (ex-« Silo », id `silo` gardé) : militaires seulement ; dans ces trois-là les zombies de
   Mutants & Zombies sont remplacés aussi ; Gaz, Radio et zones « gaz » / « radiation » de Décors : 75 % de hazmat.
   Villes lues dans `config/heralisz_clans/zones.json` (centre et rayon), réglages `heraliz_zombies-server.toml`. Les
-  zombies des assauts de drapeau et des commandes ne changent pas. Rien testé en jeu ;
+  vagues des drapeaux (assaut.json : `heralisz_utils:zombie_survie` au lieu de `minecraft:zombie`, Utils 2.18.1) et /summon
+  sans tenue prennent la tenue de l'endroit à leur arrivée (`HeralizTenueChoisie`). Rien testé en jeu ;
 - Petit panneau de
   verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
   drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un
