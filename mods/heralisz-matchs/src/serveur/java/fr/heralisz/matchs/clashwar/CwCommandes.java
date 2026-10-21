@@ -54,6 +54,22 @@ public final class CwCommandes {
                     Tournois.quitter(c.getSource().getPlayerOrException());
                     return 1;
                 }))
+                .then(Commands.literal("regarder")
+                        .executes(c -> {
+                            Tournois.regarder(c.getSource().getPlayerOrException(), -1, -1);
+                            return 1;
+                        })
+                        .then(Commands.argument("tour", IntegerArgumentType.integer(0, 7))
+                                .then(Commands.argument("match", IntegerArgumentType.integer(0, 31)).executes(c -> {
+                                    Tournois.regarder(c.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(c, "tour"),
+                                            IntegerArgumentType.getInteger(c, "match"));
+                                    return 1;
+                                }))))
+                .then(Commands.literal("salle").executes(c -> {
+                    Tournois.revenirEnSalle(c.getSource().getPlayerOrException());
+                    return 1;
+                }))
+                .then(Commands.literal("classement").executes(CwCommandes::classement))
                 .then(Commands.literal("lancer").requires(s -> s.hasPermission(2))
                         .executes(c -> lancer(c, null, CwConfig.get().inscriptionMinutes))
                         .then(Commands.argument("format", StringArgumentType.word())
@@ -99,13 +115,13 @@ public final class CwCommandes {
                         }))
                         .then(Commands.literal("mur").executes(CwCommandes::murBanc))
                         .then(Commands.literal("factices").then(Commands.argument("equipes", IntegerArgumentType.integer(1, 31))
-                                .executes(CwCommandes::factices)))
-                        .then(Commands.literal("eliminer").executes(CwCommandes::eliminer))));
+                                .executes(CwCommandes::factices)))));
     }
 
     /**
      * Banc (client de dev seulement) : ajoute {@code n} equipes factices a l'edition dont les inscriptions sont ouvertes ;
-     * elles entrent au tableau a la cloture et leurs mannequins jouent face aux vrais joueurs.
+     * elles entrent au tableau a la cloture ; sans vrai joueur, elles perdent leurs matchs par forfait (recherche et
+     * destruction : seuls de vrais joueurs jouent).
      */
     private static int factices(CommandContext<CommandSourceStack> c) {
         if (net.minecraftforge.fml.loading.FMLEnvironment.production) return erreur(c, "clashwar.cmd.rien");
@@ -123,14 +139,29 @@ public final class CwCommandes {
         return n;
     }
 
-    /** Banc (client de dev seulement) : le joueur abat un mannequin adverse dans son match en cours. */
-    private static int eliminer(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
-        if (net.minecraftforge.fml.loading.FMLEnvironment.production) return erreur(c, "clashwar.cmd.rien");
-        ServerPlayer p = c.getSource().getPlayerOrException();
-        if (!(fr.heralisz.matchs.moteur.api.MatchApi.partieDe(p) instanceof MatchCw m) || !m.eliminerMannequin(p)) {
-            return erreur(c, "clashwar.cmd.rien");
+    /** Classement ClashWar des clans : les 10 meilleurs, et le rang du clan du joueur s'il est plus bas. */
+    private static int classement(CommandContext<CommandSourceStack> c) {
+        java.util.List<CwClassement.Ligne> l = CwClassement.meilleurs(10);
+        if (l.isEmpty()) {
+            Annonces.retour(c.getSource(), Component.translatable("clashwar.classement.vide"));
+            return 0;
         }
-        return 1;
+        Annonces.retour(c.getSource(), Component.translatable("clashwar.classement.titre").withStyle(net.minecraft.ChatFormatting.BOLD));
+        for (int i = 0; i < l.size(); i++) Annonces.retour(c.getSource(), ligne(i + 1, l.get(i)));
+        if (c.getSource().getEntity() instanceof ServerPlayer p) {
+            fr.heralisz.clans.api.ClansApi.clanDe(p.getUUID()).ifPresent(clan -> {
+                java.util.Map.Entry<Integer, CwClassement.Ligne> r = CwClassement.rangDe(clan);
+                if (r != null && r.getKey() > l.size()) Annonces.retour(c.getSource(), ligne(r.getKey(), r.getValue()));
+            });
+        }
+        return l.size();
+    }
+
+    private static Component ligne(int rang, CwClassement.Ligne x) {
+        Component tag = Component.literal("[" + x.tag + "]").withStyle(s -> s.withColor(x.couleur).withBold(true));
+        return Component.translatable("clashwar.classement.ligne", String.valueOf(rang), tag, String.valueOf(x.titres),
+                String.valueOf(x.matchsGagnes), String.valueOf(x.matchs), String.valueOf(x.eliminations), String.valueOf(x.morts),
+                String.format(java.util.Locale.ROOT, "%.2f", x.kd()));
     }
 
     private static int lancer(CommandContext<CommandSourceStack> c, Format format, int minutes) {

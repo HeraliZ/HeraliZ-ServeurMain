@@ -172,9 +172,16 @@ public record VueTableau(int edition, String format, Etat etat, long finInscript
         return index < 0 || index >= l.size() ? null : l.get(index);
     }
 
+    /** Match pour la 3e place (index 1 du dernier tour), ou null. */
+    @Nullable
+    public Rencontre troisieme() {
+        return tours.isEmpty() ? null : rencontre(tours.size() - 1, 1);
+    }
+
     /** Cle du nom du tour (comme {@code Tableau.cleTour}) d'apres le nombre de rencontres. */
     public String cleTour(int tour) {
         if (tour < 0 || tour >= tours.size()) return "tour";
+        if (tour == tours.size() - 1) return "finale";
         return switch (tours.get(tour).size()) {
             case 1 -> "finale";
             case 2 -> "demi";

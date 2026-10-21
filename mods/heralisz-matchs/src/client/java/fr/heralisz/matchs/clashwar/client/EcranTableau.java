@@ -16,7 +16,8 @@ import java.util.Locale;
 
 /**
  * Ecran {@code /clashwar tableau} : le tableau du tournoi en grand (meme texture que le mur de la salle d'attente,
- * {@link TextureTableau}), mis a jour en direct ; survol d'une equipe = infobulle (clan, joueurs). Echelle forcee
+ * {@link TextureTableau}), mis a jour en direct ; survol d'une equipe = infobulle (clan, joueurs) ; clic sur un match en
+ * direct = le regarder ({@code /clashwar regarder <tour> <match>}, revalide par le serveur). Echelle forcee
  * (canevas 640 x 360), fond en degrade, panneau verre, croix ; Echap ferme.
  */
 public class EcranTableau extends Screen {
@@ -76,16 +77,41 @@ public class EcranTableau extends Screen {
         }
         super.render(g, mx, my, pt);
         // survol : equipe sous la souris (coordonnees du canevas du tableau)
-        if (mx >= bx && my >= by && mx < bx + bw && my < by + bh) {
-            float cx = (mx - bx) * PeintreTableau.L / (float) bw, cy = (my - by) * PeintreTableau.H / (float) bh;
-            for (PeintreTableau.Zone z : PeintreTableau.zones()) {
-                if (cx >= z.x() && cy >= z.y() && cx < z.x() + z.w() && cy < z.y() + z.h() && z.equipe() < infos.size()) {
-                    VueTableau.Equipe e = CwClient.vue().equipes().get(Math.min(z.equipe(), CwClient.vue().equipes().size() - 1));
-                    Ui.tooltip(g, font, infos.get(z.equipe()), mx, my, e.couleur());
-                    break;
-                }
+        PeintreTableau.Zone z = zone(mx, my);
+        if (z != null) {
+            VueTableau.Equipe e = CwClient.vue().equipes().get(Math.min(z.equipe(), CwClient.vue().equipes().size() - 1));
+            List<Component> l = infos.get(z.equipe());
+            if (z.direct()) {
+                l = new ArrayList<>(l);
+                l.add(Ui.lit(PeintreTableau.tr("clashwar.ecran.regarder"), Ui.SMALL).withStyle(s -> s.withColor(Ui.DANGER)));
+            }
+            Ui.tooltip(g, font, l, mx, my, e.couleur());
+        }
+    }
+
+    /** Ligne d'equipe sous la souris, ou null. */
+    @javax.annotation.Nullable
+    private PeintreTableau.Zone zone(double mx, double my) {
+        if (mx < bx || my < by || mx >= bx + bw || my >= by + bh) return null;
+        float cx = (float) (mx - bx) * PeintreTableau.L / bw, cy = (float) (my - by) * PeintreTableau.H / bh;
+        for (PeintreTableau.Zone z : PeintreTableau.zones()) {
+            if (cx >= z.x() && cy >= z.y() && cx < z.x() + z.w() && cy < z.y() + z.h() && z.equipe() < infos.size()) return z;
+        }
+        return null;
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int bouton) {
+        if (bouton == 0) {
+            PeintreTableau.Zone z = zone(mx, my);
+            if (z != null && z.direct() && minecraft != null && minecraft.player != null) {
+                SonsUi.clic(0.6f);
+                minecraft.player.connection.sendCommand("clashwar regarder " + z.tour() + " " + z.index());
+                onClose();
+                return true;
             }
         }
+        return super.mouseClicked(mx, my, bouton);
     }
 
     @Override

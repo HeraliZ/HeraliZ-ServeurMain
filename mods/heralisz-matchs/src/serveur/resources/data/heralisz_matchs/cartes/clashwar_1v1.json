@@ -83,6 +83,46 @@
     33.5,
     180.0
    ]
+  ],
+  "bombe_a": [
+   [
+    26.5,
+    3.0,
+    21.5,
+    152.1
+   ]
+  ],
+  "site_a": [
+   [
+    26.5,
+    3.0,
+    21.5,
+    152.1
+   ]
+  ],
+  "bombe_b": [
+   [
+    9.5,
+    3.0,
+    23.5,
+    -157.2
+   ]
+  ],
+  "site_b": [
+   [
+    9.5,
+    3.0,
+    23.5,
+    -157.2
+   ]
+  ],
+  "charge": [
+   [
+    17.5,
+    3.0,
+    4.5,
+    0.0
+   ]
   ]
  },
  "format": "1v1",
@@ -116,5 +156,10 @@
   "rayon_min": 4.0
  },
  "symetrie": "centrale (rotation 180° autour de x = 18, z = 18)",
- "blocs": 6100
+ "blocs": 6100,
+ "recherche_destruction": {
+  "attaquants": "a",
+  "defenseurs": "b",
+  "note": "ClashWar en recherche et destruction (Matchs 0.12.0) : bombes A et B du cote de spawn_b, placees par le calcul sur une dalle libre de 3 x 3 au moins, accessibles a pied des deux spawns, module tourne vers spawn_a. Provisoire, en attendant les nouvelles cartes."
+ }
 }

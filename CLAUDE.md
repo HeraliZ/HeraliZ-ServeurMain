@@ -1104,6 +1104,19 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   surbrillance) à la place de tout autre écran (attente seulement pendant un chargement, le chat, l'écran de mort ou une
   killcam) ; Échap ne ferme plus avant le choix, Entrée valide la classe en surbrillance ; classe par défaut du serveur
   seulement à la fin du temps. Rien testé en jeu ;
+- ClashWar (21/10, Matchs 0.12.0, liste du propriétaire) : chaque match du tableau est en **recherche et destruction au
+  meilleur des 5** (premier à 3 manches, `manches_gagnantes` de `serveur/heralisz_matchs/clashwar.json`), sur le moteur des
+  duels (`MatchCw` hérite de `DuelPartie`, points de réglage protégés : `manchesGagnantes`, `changerDeCote`, `renvoyer`…) :
+  côtés échangés aux manches 3 et 5, les 5 classes par défaut des duels pour tout le monde, retour en salle à la fin ;
+  bombes A et B posées par le calcul sur les 4 arènes actuelles (dalle libre, accessibles à pied, provisoire). **Match pour
+  la 3e place** (perdants des demis, joué avec la finale, `Tableau.troisieme`), podium 1er à 4e dans le chat et
+  récompenses (`troisieme` 1 000 hérals). **Regarder un match** depuis la salle : clic sur un match en direct dans
+  `/clashwar tableau` ou `/clashwar regarder [tour match]`, flèches pour changer de joueur, `/clashwar salle` pour revenir
+  (ramené tout seul quand son match l'appelle). Équipe éliminée sans match restant : message cliquable « quitter » ou
+  « regarder ». **Classement des clans** (`CwClassement`, `heralisz_matchs/clashwar_classement.json`, hors du monde) :
+  titres, 2e et 3e places, matchs gagnés, éliminations, morts, K/D ; `/clashwar classement`. À faire après maquettes
+  validées : annonces plus petites, cérémonie du podium, panneau du classement au spawn, 5-6 grandes cartes. Rien testé
+  en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage

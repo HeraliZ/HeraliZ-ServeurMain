@@ -59,6 +59,7 @@ public final class Tournois {
         creneauAnnonce = creneauOuvert = 0;
         CwConfig.charger(s);
         CwEtat.charger(s);
+        CwClassement.charger(s);
     }
 
     static void arret() {
@@ -250,6 +251,24 @@ public final class Tournois {
             return;
         }
         t.quitter(p);
+    }
+
+    static void regarder(ServerPlayer p, int tour, int index) {
+        Tournoi t = courant;
+        if (t == null || !t.actif() || t.simulation) {
+            Annonces.chat(p, Component.translatable("clashwar.chat.pas_participant"));
+            return;
+        }
+        t.regarder(p, tour, index);
+    }
+
+    static void revenirEnSalle(ServerPlayer p) {
+        Tournoi t = courant;
+        if (t == null || !t.actif() || t.simulation) {
+            Annonces.chat(p, Component.translatable("clashwar.chat.pas_spectateur"));
+            return;
+        }
+        t.revenirEnSalle(p);
     }
 
     // ================================================================== aides

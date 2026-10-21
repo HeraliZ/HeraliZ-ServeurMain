@@ -94,13 +94,13 @@ public final class DuelsClient {
 
     /**
      * Vrai pendant un duel : vue R&D recue, ou bandeau du moteur d'un duel (titre {@code duel.hud.*}, match a mort
-     * compris). Sans allocation (lu a chaque image par le HUD du moteur).
+     * compris) ou d'un match de recherche et destruction du ClashWar ({@code clashwar.hud.rd}). Sans allocation (lu a chaque image par le HUD du moteur).
      */
     static boolean enDuel() {
         if (DuelHud.vue() != null) return true;
         var b = fr.heralisz.matchs.moteur.client.MoteurClient.bandeau();
         return b != null && b.titre().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
-                && t.getKey().startsWith("duel.hud.");
+                && (t.getKey().startsWith("duel.hud.") || t.getKey().equals("clashwar.hud.rd"));
     }
 
     /** Rendu de l'ordinateur ferme en main (une instance : Forge appelle initializeClient une fois par objet). */

@@ -19,8 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Recompenses et statistiques de fin d'edition (MATCHS_SPEC §2.6) : jetons verses a la banque du clan (vainqueur,
- * finaliste, demi-finalistes ; montants en configuration), une cle de caisse d'event par joueur de l'equipe gagnante
+ * Recompenses et statistiques de fin d'edition (MATCHS_SPEC §2.6) : jetons verses a la banque du clan (1er, 2e, 3e et
+ * 4e, d'apres le match pour la 3e place ; montants en configuration), une cle de caisse d'event par joueur de l'equipe gagnante
  * (donnee apres le retour du Coffre, ou a la prochaine connexion), stats « ClashWar joues / gagnes » de chaque clan
  * participant ({@link ClansApi#ajouterClashWar}, une fois par clan) et lignes du journal de clan.
  */
@@ -36,15 +36,16 @@ public final class Recompenses {
         String edition = "#" + t.edition;
         if (ClansApi.disponible()) {
             // banque des clans
+            // podium : 1er, 2e, 3e (match pour la 3e place), 4e
+            int[] podium = tab.podium();
             crediter(champion, cfg.recompenseVainqueur, "clashwar_victoire");
-            int finaliste = tab.finale().perdant();
-            if (finaliste >= 0) crediter(tab.equipe(finaliste), cfg.recompenseFinaliste, "clashwar_finale");
-            if (tab.nbTours() >= 2) {
-                for (Tableau.Rencontre r : tab.tour(tab.nbTours() - 2)) {
-                    int p = r.perdant();
-                    if (p >= 0) crediter(tab.equipe(p), cfg.recompenseDemi, "clashwar_demi");
-                }
+            if (podium[1] >= 0) crediter(tab.equipe(podium[1]), cfg.recompenseFinaliste, "clashwar_finale");
+            if (podium[2] >= 0) crediter(tab.equipe(podium[2]), cfg.recompenseTroisieme, "clashwar_troisieme");
+            if (podium[3] >= 0) crediter(tab.equipe(podium[3]), cfg.recompenseDemi, "clashwar_demi");
+            for (int i = 0; i < podium.length; i++) {
+                if (podium[i] >= 0) CwClassement.place(tab.equipe(podium[i]), i + 1);
             }
+            CwClassement.sauver(t.serveur());
             // stats et journal : une fois par clan participant
             Set<UUID> clans = new LinkedHashSet<>();
             for (Tableau.EquipeT e : tab.equipes()) clans.add(e.clan);
@@ -78,7 +79,8 @@ public final class Recompenses {
         for (List<Tableau.Rencontre> tour : tab.tours()) {
             for (Tableau.Rencontre r : tour) {
                 if ((r.a >= 0 && tab.equipe(r.a).clan.equals(clan)) || (r.b >= 0 && tab.equipe(r.b).clan.equals(clan))) {
-                    meilleur = Math.max(meilleur, r.tour);
+                    // le match pour la 3e place se joue entre demi-finalistes
+                    meilleur = Math.max(meilleur, r == tab.troisieme() ? r.tour - 1 : r.tour);
                 }
             }
         }
