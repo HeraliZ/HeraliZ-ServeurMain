@@ -59,7 +59,11 @@ public final class Assauts {
     /** Zombies d'assaut vivants, toutes zones (un zombie tague hors de cette liste est retire a son chargement). */
     private static final Set<UUID> SUIVIS = new HashSet<>();
 
-    private record Entite(String id, int poids) {
+    /** max : au plus N de ce type par vague (0 = sans limite). */
+    private record Entite(String id, int poids, int max) {
+        Entite(String id, int poids) {
+            this(id, poids, 0);
+        }
     }
 
     private record Vague(int nombre, double parJoueur, double parValeur, double pv, double degats, List<Entite> entites) {
@@ -91,10 +95,10 @@ public final class Assauts {
     private static List<Vague> defautVagues() {
         List<Vague> l = new ArrayList<>();
         l.add(new Vague(4, 1, 0.3, 1.0, 1.0, List.of(new Entite("minecraft:zombie", 8), new Entite("minecraft:husk", 2))));
-        l.add(new Vague(6, 1.5, 0.4, 1.25, 1.15, List.of(new Entite("minecraft:zombie", 6), new Entite("mutantszombies:crawler", 3),
-                new Entite("mutantszombies:spitter", 2))));
-        l.add(new Vague(8, 2, 0.5, 1.5, 1.3, List.of(new Entite("minecraft:zombie", 5), new Entite("mutantszombies:blister_zombie", 3),
-                new Entite("mutantszombies:spitter", 2), new Entite("mutantszombies:zombie_brute", 1))));
+        // pas de Spitter (mutantszombies:spitter) : son crachat est une boule de slime (choix du proprietaire)
+        l.add(new Vague(6, 1.5, 0.4, 1.25, 1.15, List.of(new Entite("minecraft:zombie", 6), new Entite("mutantszombies:crawler", 4))));
+        l.add(new Vague(8, 2, 0.5, 1.5, 1.3, List.of(new Entite("minecraft:zombie", 5), new Entite("mutantszombies:crawler", 2),
+                new Entite("mutantszombies:blister_zombie", 3), new Entite("mutantszombies:zombie_brute", 2, 1))));
         return l;
     }
 
@@ -123,6 +127,7 @@ public final class Assauts {
                 JsonObject x = new JsonObject();
                 x.addProperty("id", e.id);
                 x.addProperty("poids", e.poids);
+                if (e.max > 0) x.addProperty("max", e.max);
                 en.add(x);
             }
             w.add("entites", en);
@@ -156,7 +161,8 @@ public final class Assauts {
                     if (!x.isJsonObject()) continue;
                     String id = Json.str(x.getAsJsonObject(), "id", "");
                     int poids = Json.integer(x.getAsJsonObject(), "poids", 1);
-                    if (!id.isEmpty() && poids > 0) en.add(new Entite(id, poids));
+                    int max = Math.max(0, Json.integer(x.getAsJsonObject(), "max", 0));
+                    if (!id.isEmpty() && poids > 0) en.add(new Entite(id, poids, max));
                 }
                 if (en.isEmpty()) continue;
                 lues.add(new Vague(Math.max(0, Json.integer(w, "nombre", 4)), Math.max(0, Json.dbl(w, "par_joueur", 1)),
@@ -274,9 +280,10 @@ public final class Assauts {
         int n = (int) Math.round(v.nombre + v.parJoueur * (capteurs.size() - 1) + v.parValeur * zone.valeur);
         n = Math.min(n, maxVivants - a.zombies.size());
         int poses = 0;
+        Map<String, Integer> deja = new HashMap<>();
         for (int i = 0; i < n; i++) {
             ServerPlayer cible = capteurs.get(alea.nextInt(capteurs.size()));
-            if (poser(level, v, cible, a)) poses++;
+            if (poser(level, v, cible, a, deja)) poses++;
         }
         HeraliszClans.LOG.info("[clans] assaut sur {} : vague {}/{}, {} zombie(s)", zone.id, a.vagues, vagues.size(), poses);
         Component msg = Component.translatableWithFallback("heralisz_clans.assaut.vague", "§c☠ Vague %s/%s : les morts arrivent sur %s !",
@@ -288,8 +295,9 @@ public final class Assauts {
         }
     }
 
-    private boolean poser(ServerLevel level, Vague v, ServerPlayer cible, Assaut a) {
-        EntityType<?> type = tirer(v);
+    private boolean poser(ServerLevel level, Vague v, ServerPlayer cible, Assaut a, Map<String, Integer> deja) {
+        Entite choisie = tirer(v, deja);
+        EntityType<?> type = choisie == null ? null : EntityType.byString(choisie.id).orElse(null);
         if (type == null) return false;
         for (int essai = 0; essai < 10; essai++) {
             double ang = alea.nextDouble() * Math.PI * 2;
@@ -316,6 +324,7 @@ public final class Assauts {
                 return false;
             }
             a.zombies.add(m.getUUID());
+            deja.merge(choisie.id, 1, Integer::sum);
             level.sendParticles(ParticleTypes.LARGE_SMOKE, x + 0.5, y + 0.5, z + 0.5, 12, 0.4, 0.6, 0.4, 0.02);
             return true;
         }
@@ -338,14 +347,14 @@ public final class Assauts {
     }
 
     @Nullable
-    private EntityType<?> tirer(Vague v) {
+    private Entite tirer(Vague v, Map<String, Integer> deja) {
         int total = 0;
-        List<EntityType<?>> types = new ArrayList<>();
+        List<Entite> types = new ArrayList<>();
         List<Integer> poids = new ArrayList<>();
         for (Entite e : v.entites) {
-            EntityType<?> t = EntityType.byString(e.id).orElse(null);
-            if (t == null) continue;
-            types.add(t);
+            if (EntityType.byString(e.id).isEmpty()) continue;
+            if (e.max > 0 && deja.getOrDefault(e.id, 0) >= e.max) continue;
+            types.add(e);
             poids.add(e.poids);
             total += e.poids;
         }
