@@ -40,6 +40,24 @@ public class ExplosiveChargeEntity extends StickyExplosiveEntity {
         return Config.explosiveChargeFuseSeconds.get();
     }
 
+    /** Like Rust's satchel: a fuse drawn between chargeFuseSeconds and chargeFuseMaxSeconds, and a chance to go out. */
+    @Override
+    protected int drawFuseTicks() {
+        double min = Config.explosiveChargeFuseSeconds.get();
+        double max = Math.max(min, Config.explosiveChargeFuseMaxSeconds.get());
+        return Fuse.ticks(min + this.random.nextDouble() * (max - min));
+    }
+
+    @Override
+    protected boolean drawDud() {
+        return this.random.nextDouble() < Config.explosiveChargeDudChance.get();
+    }
+
+    @Override
+    protected void playDudSound() {
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.NEUTRAL, 0.6F, 1.2F);
+    }
+
     @Override
     protected String blinkAnimation() {
         return "explosive_charge.model.blinking";

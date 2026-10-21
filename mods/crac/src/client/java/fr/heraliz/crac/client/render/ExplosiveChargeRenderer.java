@@ -29,7 +29,7 @@ public class ExplosiveChargeRenderer extends GeoEntityRenderer<ExplosiveChargeEn
     @Override
     public void render(ExplosiveChargeEntity entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource,
                        int packedLight) {
-        this.lit = entity.isStuck();
+        this.lit = entity.isStuck() && !entity.isDud();
         this.left = ExplosiveChargeFuse.left(entity.fuseElapsedSeconds(partialTick), C4Display.fuseSeconds(entity, C4Display.chargeFuseSeconds()));
         this.shadowRadius = this.lit ? 0.0F : 0.18F;
         super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
