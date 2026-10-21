@@ -20,18 +20,5 @@ public class ItemEntityMixin {
       if (stack.getItem() == ArkaniaZModItems.BACKPACK.get() && EnchantmentHelper.getItemEnchantmentLevel((Enchantment)ModEnchantments.IMBUED_HIDE.get(), stack) > 0) {
          cir.setReturnValue(true);
       }
-
-      if (stack.getItem() == ArkaniaZModItems.BACKPACK_EXPAND1.get() && EnchantmentHelper.getItemEnchantmentLevel((Enchantment)ModEnchantments.IMBUED_HIDE.get(), stack) > 0) {
-         cir.setReturnValue(true);
-      }
-
-      if (stack.getItem() == ArkaniaZModItems.BACKPACK_MOUNTAIN_BLACK.get()
-         && EnchantmentHelper.getItemEnchantmentLevel((Enchantment)ModEnchantments.IMBUED_HIDE.get(), stack) > 0) {
-         cir.setReturnValue(true);
-      }
-
-      if (stack.getItem() == ArkaniaZModItems.BACKPACK_EXPAND2.get() && EnchantmentHelper.getItemEnchantmentLevel((Enchantment)ModEnchantments.IMBUED_HIDE.get(), stack) > 0) {
-         cir.setReturnValue(true);
-      }
    }
 }

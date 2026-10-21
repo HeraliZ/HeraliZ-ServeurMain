@@ -13,4 +13,21 @@ public class LootedEnchantment extends Enchantment {
    public boolean isTreasureOnly() {
       return true;
    }
+
+   // HeraliZ : enchantements des sacs retirés du jeu (ni livre, ni marchand, ni table, ni butin)
+   public boolean isDiscoverable() {
+      return false;
+   }
+
+   public boolean isTradeable() {
+      return false;
+   }
+
+   public boolean isAllowedOnBooks() {
+      return false;
+   }
+
+   public boolean canApplyAtEnchantingTable(net.minecraft.world.item.ItemStack stack) {
+      return false;
+   }
 }
