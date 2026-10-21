@@ -161,8 +161,8 @@ public final class Assauts {
                     if (!x.isJsonObject()) continue;
                     String id = Json.str(x.getAsJsonObject(), "id", "");
                     int poids = Json.integer(x.getAsJsonObject(), "poids", 1);
-                    int max = Math.max(0, Json.integer(x.getAsJsonObject(), "max", 0));
-                    if (!id.isEmpty() && poids > 0) en.add(new Entite(id, poids, max));
+                    int maxType = Math.max(0, Json.integer(x.getAsJsonObject(), "max", 0));
+                    if (!id.isEmpty() && poids > 0) en.add(new Entite(id, poids, maxType));
                 }
                 if (en.isEmpty()) continue;
                 lues.add(new Vague(Math.max(0, Json.integer(w, "nombre", 4)), Math.max(0, Json.dbl(w, "par_joueur", 1)),
