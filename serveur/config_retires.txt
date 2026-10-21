@@ -8,3 +8,4 @@
 heraliz_quetes/pnj/ferraille.json
 heraliz_quetes/pnj/nadia.json
 heraliz_quetes/pnj/lucky.json
+heralisz_bases-common.toml
