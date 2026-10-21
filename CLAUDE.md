@@ -135,7 +135,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 |---|---|---|---|
 | heraliz-boss | heraliz_boss | heraliz_boss, heralisz_mammoth, heralisz_mere, heralisz_n07, heralisz_plague, heralisz_sylvorn | les 5 boss : Ymirak (mammouth), Mère des Ruines, Sujet N-07 (+ décors du Secteur 7, boss final de The Giant), Porteur de Peste, Sylvorn. Un onglet créatif avec un panneau par boss |
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins de mêlée Desmoulins Lore et batte Doppler Saphir (2.21.0, modèles écrits par `outils/skins_melee.py`) ; 190 skins de couteaux par paliers (2.23.0, catalogue `outils/skins_couteaux.py`, section 10) Moteur repris de LR Tactical (licence GPL gardée) |
-| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals, clans, bunkers et pillage (création de nouveaux bunkers coupée depuis la 2.5.0, réglage `[bases] creation` : bases CRac du monde des bases à la place ; bunkers existants et API inchangés) (tags et blocs de blindage retirés en 2.3.0 ; système des bases à repenser) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) |
+| heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals et clans (3.0.0, 21/10 : ancien système des bunkers de clan retiré en entier : dimension `heralisz_bases:bunkers`, pillage, blindage, commandes `/base` des bunkers, écrans, touche N ; modId `heralisz_bases` gardé, vide ; les bases sont celles de CRac) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : carte coupée à la bordure du monde, vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, plans, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
 | heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) |
 | heraliz-casino | heralizcasino | heralizcasino | casino payé en hérals ; zone du casino (entrée payante) et zone VIP (grades boutique, section 10), chacune avec ses entrées et ses videurs |
@@ -309,7 +309,6 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 |---|---|---|
 | `fr.heralisz.economie.api.EconomieApi` | clansetbases (commun) | soldes en hérals, paiements (aussi lu par réflexion par quetes : récompenses, étapes « payer ») |
 | `fr.heralisz.clans.api.ClansApi`, `ClanInfo`, événements `ClanDissousEvent` / `MembreQuitteEvent` | clansetbases (commun) | clan d'un joueur, membres, droits |
-| `fr.heralisz.bases.api.BasesApi`, `PillageHooks` | clansetbases (serveur) | bunkers, pillage |
 | `fr.heralisz.matchs.moteur.api.MatchApi` | matchs (commun) | `partieDe(ServerPlayer)`, `partie(id)`, en match ou pas |
 | `fr.heralisz.matchs.moteur.api.Partie`, `Equipe`, `CombatTag` (`restantMs(UUID)`), `Coffre`, `Arenes`, `Kit` | matchs (commun) | parties, équipes, tag de combat, coffre de match, arènes |
 | `fr.heralisz.matchs.zombies.jeu.api.ZombiesApi` | matchs (commun) | `TAG_PARTIE`, `partieDe(Entity)`, `planches(...)`, `interagir(...)`, Pack-a-Punch, sons |
@@ -1381,6 +1380,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   compris dans le monde des bases (avant, un op passait la règle et posait son home n'importe où). Rien testé en jeu.
   Clans 2.6.1 (20/10) : plus de touche N pour l'ancien écran des bunkers (`BasesClient`, touche plus enregistrée). Rien
   testé en jeu.
+  Clans 3.0.0 (21/10) : **ancien système des bunkers supprimé** (tout `fr.heralisz.bases`, données et textures
+  `heralisz_bases`, `heralisz_bases-common.toml` listé dans `serveur/config_retires.txt`) ; seul le `@Mod` vide reste.
+  Les commandes `/base info`, `/base effacer`, `/sethome`, `/home`… sont celles de CRac, intactes. Le dossier de la
+  dimension des bunkers reste dans le monde du Ptero (plus chargé). Permissions de clan `BASE_*` gardées. Rien testé en jeu.
   **C4 et charge explosive tenues à deux mains** (CRac 1.12.0-beta, 19/10) : en première personne, les deux mains du joueur
   tiennent l'objet devant lui, au milieu, minuteur de la C4 visible (`client/render/TenueExplosifs`) ; vu des autres, bras
   tendus devant le ventre, objet entre les mains (pose `CRAC_EXPLOSIF`, transformation `thirdperson_righthand` des

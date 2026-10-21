@@ -89,7 +89,7 @@ modId="heralisz_bases"
 version="${mod_version}"
 displayName="HeraliZ Clans et bases · Bases"
 authors="${mod_authors}"
-description='''Bases de clan du serveur HeraliZ : un bunker souterrain par clan dans une dimension dédiée, salles à débloquer avec la banque du clan, permissions de base, pillages de 18 h à 23 h, portes et meubles protégés à casser au C4.'''
+description='''Ancien système des bunkers de clan, retiré (les bases sont celles de CRac). Module vide gardé pour son identifiant.'''
 [[dependencies.heralisz_bases]]
     modId="heraliz_clansetbases"
     mandatory=true
