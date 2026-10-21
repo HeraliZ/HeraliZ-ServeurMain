@@ -1788,10 +1788,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   base), plus de monde des bases à part : spawn + carte (loot et bases). Zones où l'on ne construit pas calculées par
   `python outils/zones_construction.py` (`--sortie DOSSIER` : `carte_zones_construction.png`, `zones_construction.json`,
   `rapport.md` ; lit le pack de données de la carte `datapacks/heraliz_carte` (conteneurs de loot par lieu), les zones à
-  effets `data/heraliz_zones.json` et la voie du train `reseau_v2.json`) : grandes zones lieu + 90 blocs, villages et petits
-  lieux + 40, maisons isolées + 20, gaz / radiation / froid bord + 25, tout le nord enneigé (rectangle jusqu'au bas de la
-  zone « froid »), 20 blocs de chaque côté des rails, plateforme pétrolière rayon 150 (marges réduites le 21/10 à la
-  demande du propriétaire : 33 % de la terre constructible sur la copie v3). Calculé sur la copie v3 du dépôt : à refaire
+  effets `data/heraliz_zones.json` et la voie du train `reseau_v2.json`) : formes qui suivent les bâtiments (pas de cercles,
+  demande du propriétaire) : interdit à moins de 80 blocs d'un conteneur de loot d'une grande zone, 40 pour les villages
+  et petits lieux, 25 pour les maisons isolées ; gaz / radiation / froid bord + 25, tout le nord enneigé (rectangle
+  jusqu'au bas de la zone « froid »), 20 blocs de chaque côté des rails, plateforme pétrolière rayon 150 ; une île ou un
+  champ sans loot reste constructible. 42 % de la terre constructible sur la copie v3. Masque pour le mod :
+  `zones_construction_masque.png` (1 point = 4 blocs depuis le coin nord-ouest de la bordure, blanc = interdit). Calculé sur la copie v3 du dépôt : à refaire
   sur le monde en service avant de brancher CRac.
 
 - **Loot** (19/10, rien testé en jeu) : armes, accessoires, pièces de l'Armurerie et composants des tables T1 à T7

@@ -43,11 +43,13 @@ EFFETS_V3 = DEPOT / "monde/HeraliZ/data/heraliz_zones.json"
 GRANDES = {"valmont", "tcherno", "marbois", "belcourt", "port", "mirage", "clairval", "gaz", "aerodrome", "silo",
            "prison", "arctique", "radio"}
 MAISONS = {"campagne", "routes"}
-# marges réduites le 21/10 (« laisser plus de zone dispo pour build ») : 150 / 60 / 60 / 30 / 40 avant
-MARGE_GRANDE = 90
+# marges réduites le 21/10 (« laisser plus de zone dispo pour build ») : 150 / 60 / 60 / 30 / 40 avant ; depuis la
+# version 3 (21/10), formes qui suivent les bâtiments : est interdit tout point à moins de la marge du conteneur de loot le
+# plus proche du lieu (plus de grands cercles : une île ou un champ sans loot au bord d'une ville reste constructible)
+MARGE_GRANDE = 80
 MARGE_PETIT = 40
 MARGE_VILLAGE = 40
-MARGE_MAISON = 20
+MARGE_MAISON = 25
 MAISON = 16
 MARGE_EFFET = 25
 # plateforme pétrolière (lieu « petrole », au sud) : la plateforme dépasse de loin ses quelques conteneurs
@@ -96,20 +98,33 @@ def maisons(pts):
     return groupes
 
 
+def reduire(pts, pas=4):
+    """Conteneurs d'un lieu, un seul par case de pas blocs (assez fin pour la forme, bien plus léger)."""
+    vus = {}
+    for x, z in pts:
+        vus.setdefault((x // pas, z // pas), [x // pas * pas + pas // 2, z // pas * pas + pas // 2])
+    return sorted(vus.values())
+
+
 def calculer(lieux, effets):
     cercles = []
     for nom, pts in lieux.items():
         if nom in MAISONS:
             for k, g in enumerate(maisons(pts)):
                 x, z, r = cercle(g, MARGE_MAISON)
-                cercles.append({"nom": "%s_%d" % (nom, k), "genre": "maison", "x": x, "z": z, "rayon": r})
+                cercles.append({"nom": "%s_%d" % (nom, k), "genre": "maison", "x": x, "z": z, "rayon": r,
+                                "marge": MARGE_MAISON, "points": reduire(g)})
         else:
             genre = "grande" if nom in GRANDES else "village" if nom.startswith("v_") else "petit"
             marge = {"grande": MARGE_GRANDE, "village": MARGE_VILLAGE, "petit": MARGE_PETIT}[genre]
             x, z, r = cercle(pts, marge)
             if nom == "petrole":
-                r = max(r, RAYON_PETROLE)
-            cercles.append({"nom": nom, "genre": genre, "x": x, "z": z, "rayon": r})
+                # la plateforme dépasse de loin ses quelques conteneurs : un vrai cercle
+                cercles.append({"nom": nom, "genre": genre, "x": x, "z": z, "rayon": max(r, RAYON_PETROLE),
+                                "marge": RAYON_PETROLE, "points": [[x, z]]})
+            else:
+                cercles.append({"nom": nom, "genre": genre, "x": x, "z": z, "rayon": r, "marge": marge,
+                                "points": reduire(pts)})
     polys = []
     nord = None
     for e in effets.get("zones", []):
@@ -146,14 +161,26 @@ def lire_rails(chemin):
     return pts[::4] + pts[-1:]
 
 
+def couche_lieux(x0, z0, w, h, pas, cercles, genres=None):
+    """Interdit à moins de la marge d'un conteneur de chaque lieu (disques autour de chaque conteneur réunis)."""
+    img = Image.new("L", (w, h), 0)
+    dr = ImageDraw.Draw(img)
+    for c in cercles:
+        if genres is not None and c["genre"] not in genres:
+            continue
+        r = c["marge"] / pas
+        for x, z in c["points"]:
+            X, Y = (x - x0) / pas, (z - z0) / pas
+            dr.ellipse([X - r, Y - r, X + r, Y + r], fill=255)
+    return np.array(img) > 0
+
+
 def masque(x0, z0, w, h, pas, cercles, polys, nord, rails=()):
     """Grille de cases (pas blocs) : vrai là où l'on ne construit pas."""
     xs = x0 + pas * (np.arange(w) + 0.5)
     zs = z0 + pas * (np.arange(h) + 0.5)
     X, Z = np.meshgrid(xs, zs)
-    m = np.zeros(X.shape, bool)
-    for c in cercles:
-        m |= (X - c["x"]) ** 2 + (Z - c["z"]) ** 2 <= c["rayon"] ** 2
+    m = couche_lieux(x0, z0, w, h, pas, cercles)
     for p in polys:
         img = Image.new("L", (w, h), 0)
         pts = [((x - x0) / pas, (z - z0) / pas) for x, z in p["points"]]
@@ -231,10 +258,16 @@ def main(argv):
         dr.polygon([v.p(x, z) for x, z in p["points"]], outline=COULEUR["effet"] + (255,), width=2)
     if rails:
         dr.line([v.p(x, z) for x, z in rails + rails[:1]], fill=COULEUR["rail"] + (200,), width=1)
-    for c in sorted(cercles, key=lambda c: -c["rayon"]):
-        X, Y = v.p(c["x"], c["z"])
-        r = c["rayon"] / v.k
-        dr.ellipse([X - r, Y - r, X + r, Y + r], outline=COULEUR[c["genre"]] + (255,), width=2 if c["genre"] != "maison" else 1)
+    # contour de chaque genre de lieu (bord de sa couche), de sa couleur
+    for genre in ("maison", "village", "petit", "grande"):
+        c_ = couche_lieux(x0, z0, w, h, pas, cercles, {genre})
+        e = c_.copy()
+        e[1:, :] &= c_[:-1, :]
+        e[:-1, :] &= c_[1:, :]
+        e[:, 1:] &= c_[:, :-1]
+        e[:, :-1] &= c_[:, 1:]
+        bord = Image.fromarray(((c_ & ~e) * 255).astype(np.uint8)).resize((v.w, v.h), Image.NEAREST)
+        img.paste(Image.new("RGBA", (v.w, v.h), COULEUR[genre] + (255,)), (0, 0), bord)
     ec.grille(img, v, x0, z0)
     f = ec.police(15)
     for c in cercles:
@@ -245,17 +278,20 @@ def main(argv):
     tete = ("Terre interdite : %.0f %% (constructible : %.2f km²)" % (part_terre, libre_km2)) if terre is not None \
         else "Interdit de construire : %.0f %% de la carte" % part
     legende(img, [(tete, None),
-                     ("Grandes zones : lieu + %d blocs" % MARGE_GRANDE, COULEUR["grande"]),
-                     ("Petits lieux : lieu + %d blocs" % MARGE_PETIT, COULEUR["petit"]),
-                     ("Villages : village + %d blocs" % MARGE_VILLAGE, COULEUR["village"]),
-                     ("Maisons isolées : maison + %d blocs" % MARGE_MAISON, COULEUR["maison"]),
+                     ("Grandes zones : %d blocs autour du loot" % MARGE_GRANDE, COULEUR["grande"]),
+                     ("Petits lieux : %d blocs autour du loot" % MARGE_PETIT, COULEUR["petit"]),
+                     ("Villages : %d blocs autour du loot" % MARGE_VILLAGE, COULEUR["village"]),
+                     ("Maisons isolées : %d blocs autour du loot" % MARGE_MAISON, COULEUR["maison"]),
                      ("Gaz, radiation, froid : zone + bord + %d" % MARGE_EFFET, COULEUR["effet"]),
                      ("Neige : tout le nord jusqu'à z = %s" % (nord if nord is not None else "-"), COULEUR["neige"]),
                      ("Rails du train : %d blocs de chaque côté" % RAIL, COULEUR["rail"]),
                      ("Plateforme pétrolière : rayon %d" % RAYON_PETROLE, COULEUR["petit"])])
     ec.enregistrer(img, sortie / "carte_zones_construction.png")
 
-    donnees = {"version": 1, "nord_z": nord, "rail": RAIL, "rails": [[round(x), round(z)] for x, z in rails], "cercles": cercles,
+    # masque pour le mod (1 point = pas blocs, blanc = interdit), depuis le coin nord-ouest de la bordure
+    Image.fromarray((m * 255).astype(np.uint8)).save(sortie / "zones_construction_masque.png", optimize=True)
+    cercles_json = [{k: c[k] for k in ("nom", "genre", "x", "z", "rayon", "marge")} for c in cercles]
+    donnees = {"version": 2, "masque": "zones_construction_masque.png", "x0": x0, "z0": z0, "pas": pas, "nord_z": nord, "rail": RAIL, "rails": [[round(x), round(z)] for x, z in rails], "lieux": cercles_json,
                "polygones": [{"nom": p["nom"], "genre": p["genre"], "points": p["points"], "marge": p["marge"]} for p in polys]}
     (sortie / "zones_construction.json").write_text(json.dumps(donnees, ensure_ascii=False, indent=1), encoding="utf-8")
     compte = {g: sum(1 for c in cercles if c["genre"] == g) for g in COULEUR}
@@ -272,7 +308,8 @@ def main(argv):
          "| Rails du train | %d points | %d blocs de chaque côté |" % (len(rails), RAIL), ""]
     for c in sorted(cercles, key=lambda c: (c["genre"], c["nom"])):
         if c["genre"] != "maison":
-            r.append("- %s (%s) : centre %d %d, rayon %d" % (c["nom"], c["genre"], c["x"], c["z"], c["rayon"]))
+            r.append("- %s (%s) : centre %d %d, étendue %d, marge %d autour de chaque conteneur"
+                     % (c["nom"], c["genre"], c["x"], c["z"], c["rayon"] - c["marge"], c["marge"]))
     (sortie / "rapport.md").write_text("\n".join(r) + "\n", encoding="utf-8")
     print("[zones_construction] %d cercles, %d zones à effets, nord z <= %s ; interdit %.1f %% de la carte%s"
           % (len(cercles), len(polys), nord, part, "" if terre is None else ", %.1f %% de la terre" % part_terre))
