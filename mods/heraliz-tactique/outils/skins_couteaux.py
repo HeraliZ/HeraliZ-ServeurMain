@@ -270,6 +270,22 @@ _LOT2 = [
     ("t_knife", "desert_sakura", "Desert Sakura", "prestige", "kSakura", [0x2a1a10, 0xf0b080, 0x0e0806], AUTO),
     ("t_knife", "solar_flare", "Solar Flare", "ultime", "kAurora", [0x140404, 0xff6020, 0xffd040], AUTO),
     ("t_knife", "ruby_storm", "Ruby Storm", "ultime", "kElectric", [0x140608, 0xff3040], AUTO),
+    # --- couteaux du pack CS2 (21/10, rendus validés par le propriétaire ; skin sur la lame, manches propres par KnifeType)
+    ("cs2_skeleton", "stained", "Stained", "raffine", "kTempered", [0xa89880, 0x7a5a8a, 0x4a3a80, 0x2a2c4a], None),
+    ("cs2_skeleton", "boreal_forest", "Boreal Forest", "classique", "kCamo", [0x6a7a52, 0x3a4a2e, 0x9a9a72, 0x22281a, 6.0, 0.0], None),
+    ("cs2_skeleton", "black_laminate", "Black Laminate", "raffine", "kWood", [0x5a3a30, 0x120c0c], None),
+    ("cs2_skeleton", "ossuary", "Ossuary", "prestige", "kEngraved", [0xe4dcc8, 0x1a1412], None),
+    ("cs2_skeleton", "volt", "Volt", "prestige", "kElectric", [0x0c0e14, 0x40c8ff], None),
+    ("cs2_push", "autotronic_cs2", "Autotronic", "prestige", "kAutotronic", [0xd0141e, 0x101012], None),
+    ("cs2_push", "blued_steel", "Blued Steel", "raffine", "kTempered", [0xb0a070, 0x6a5aa0, 0x2a4ad0, 0x1a2a6a], None),
+    ("cs2_push", "arctic_camo", "Arctic Camo", "classique", "kCamo", [0xeef2f6, 0xaab4c0, 0x6a7684, 0xd0d8e0, 7.0, 1.0], None),
+    ("cs2_push", "damascus", "Damascus Steel", "raffine", "kDamascus", [0xd8dce2, 0x2e3238, 110.0], None),
+    ("cs2_push", "rust_veil", "Rust Veil", "classique", "kRustCoat", [0x6a6e74, 0xa8501c], None),
+    ("cs2_stiletto", "nero_marble", "Nero Marble", "prestige", "kMarble", [0x0e0e10, 0x2a2a2e, 0xe8e4dc, 0xd8b050], None),
+    ("cs2_stiletto", "vendetta", "Vendetta", "prestige", "kKintsugi", [0x1a181a, 0xe01c2c], None),
+    ("cs2_stiletto", "rosso", "Rosso", "raffine", "kTwoTone", [0xc0141e, 0x121214, 0xe8e4dc], None),
+    ("cs2_stiletto", "mirage", "Mirage", "raffine", "kAnodFade", [0x8a3ae0, 0x20d0c8], None),
+    ("cs2_stiletto", "moonlit", "Moonlit", "prestige", "kAurora", [0x080a18, 0x5a7ae8, 0xc8d8ff], None),
 ]
 # finitions exclusives déjà écrites dans le gabarit, reprises par la deuxième série (programme à elles)
 _EXCLUSIVES = {"nebula": 103, "ultraviolet": 101}
@@ -321,6 +337,20 @@ RETIRES = {
                      "verdigris", "rune_hex", "aurum_temper", "storm_marble", "runic_gold", "thunderstrike", "nebula"],
     "baseball_bat": ["bruiser_hex", "blackwood", "ash_wood", "aluminium", "street_camo", "plasma"],
 }
+# vrais skins CS2 sur les couteaux du pack CS2 (21/10) : finitions déjà dans le jeu (KnifeFinish hors du catalogue,
+# programmes 55 à 66) ; seuls les objets (fiche, affichage, noms) sont écrits, ni programme ni finition en plus
+FINITIONS_CS = {"gamma_emerald": 58, "doppler_ruby": 55, "doppler_sapphire": 56, "doppler_black_pearl": 57, "fade": 59,
+                "marble_fade": 60, "tiger_tooth": 61, "crimson_web": 62, "slaughter": 63, "case_hardened": 64, "lore": 65}
+OBJETS_CS = [
+    ("cs2_skeleton", "fade", "Fade"), ("cs2_skeleton", "crimson_web", "Crimson Web"),
+    ("cs2_skeleton", "case_hardened", "Case Hardened"), ("cs2_skeleton", "doppler_ruby", "Doppler Ruby"),
+    ("cs2_push", "marble_fade", "Marble Fade"), ("cs2_push", "tiger_tooth", "Tiger Tooth"),
+    ("cs2_push", "doppler_sapphire", "Doppler Sapphire"), ("cs2_push", "crimson_web", "Crimson Web"),
+    ("cs2_stiletto", "lore", "Gold Arabesque"), ("cs2_stiletto", "gamma_emerald", "Gamma Doppler"),
+    ("cs2_stiletto", "doppler_black_pearl", "Doppler Black Pearl"), ("cs2_stiletto", "slaughter", "Slaughter"),
+]
+OBJETS_CS = [(FINITIONS_CS[f], c, f, n, "ultime", None, [], None, None) for c, f, n in OBJETS_CS]
+
 TOUS = list(SKINS)
 SKINS = [x for x in SKINS if x[2] not in RETIRES.get(x[1], ())]
 
@@ -476,6 +506,10 @@ MELEE = {
     "sea_gleam": "thieve_sea_skin",
     "baseball_bat": ("baseball_bat_skin_geo", "baseball_bat_skin_uv"),
     "smite_hammer": "thunder_hammer_skin",
+    # couteaux du pack CS2 (21/10) : copies propres découpées par outils/skins_melee.py (rôles des pièces : KnifeType)
+    "cs2_skeleton": "cs2_skeleton_skin",
+    "cs2_push": "cs2_push_skin",
+    "cs2_stiletto": "cs2_stiletto_skin",
 }
 # Rang de chaque skin (19/10, liste du propriétaire) : 1 à 4 étoiles allumées sur 4 dans la description ; tout skin qui
 # n'est pas cité ici en a 4. Vaut aussi pour les skins d'avant le catalogue (Doppler, Lore, Fade…).
@@ -581,7 +615,7 @@ def textes(couteau, nom, pal, arme):
 
 
 def nom_fin(couteau, nom):
-    for _, c, f, n, *_ in SKINS:
+    for _, c, f, n, *_ in SKINS + OBJETS_CS:
         if c == couteau and n == nom:
             return f
     return ""
@@ -620,7 +654,7 @@ def ecrire_objets():
         langues_pack["ru_ru"] = OrderedDict(langues_pack["en_us"])          # le gunpack n'avait pas de russe
     langues_melee = {l: lire_json(MELEE_ASSETS / "lang" / (l + ".json")) for l in LANGUES}
     ordre = 300
-    for sid, couteau, f, nom, pal, style, *_ in SKINS:
+    for sid, couteau, f, nom, pal, style, *_ in SKINS + OBJETS_CS:
         cle = "%s__%s" % (couteau, f)
         if couteau in TACZ:
             ordre += 1

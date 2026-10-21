@@ -4,7 +4,8 @@ Couteaux du pack « CS2 Knifes Pack » (gunpack cs2_wt de LR Tactical, 21/10, ch
 WT Stiletto) : recopiés dans heralisz_melee sous les noms cs2_skeleton, cs2_push, cs2_stiletto (modèle, texture, icône,
 animations, sons, machine d'états du Skeleton), fiche réglée comme nos armes de mêlée (1,2 s entre deux coups, clic gauche
 comme clic droit ; portée ramenée à 3 blocs par le serveur ; +5 % de vitesse en main), affichage en 3e personne et sons de
-coup de la Dague TAC. Usage : python couteaux_cs2.py <dossier dézippé du pack> (relance sans danger).
+coup de la Dague TAC. Pas d'arme sans skin dans le jeu : les fiches vont dans outils/melee_base/, les skins (27, rendus
+validés le 21/10) sont écrits par skins_couteaux.py. Usage : python couteaux_cs2.py <dossier dézippé du pack> (relance sans danger).
 """
 import json
 import re
@@ -16,7 +17,8 @@ from pathlib import Path
 OUTILS = Path(__file__).resolve().parent
 MOD = OUTILS.parent
 ASSETS = MOD / "src" / "client" / "resources" / "assets" / "heralisz_melee"
-DATA = MOD / "src" / "serveur" / "resources" / "data" / "heralisz_melee" / "index" / "melee"
+# fiches de base : modèles des fiches des skins (outils/skins_couteaux.py), hors du jeu comme toute la mêlée sans skin (19/10)
+DATA = OUTILS / "melee_base"
 COUTEAUX = {
     # id : (nom fr, en, ru)
     "skeleton": ("Couteau Skeleton", "Skeleton Knife", "Нож Skeleton"),

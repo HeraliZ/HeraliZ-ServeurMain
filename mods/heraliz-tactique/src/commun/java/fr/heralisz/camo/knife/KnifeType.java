@@ -33,7 +33,16 @@ public enum KnifeType {
    MERCY("mercy", Map.of("body", Part.GRIP), 0F, 0),
    SEA_GLEAM("sea_gleam", Map.of("h2", Part.GRIP, "h4", Part.GRIP, "h5", Part.GRIP), 0F, 0),
    // batte : le skin utilise baseball_bat_skin_geo (outils/skins_melee.py), batte refaite propre, manche dans l'os « manche »
-   BASEBALL_BAT("baseball_bat", Map.of("manche", Part.GRIP), 0F, 0);
+   BASEBALL_BAT("baseball_bat", Map.of("manche", Part.GRIP), 0F, 0),
+   // couteaux du pack CS2 (21/10, rendus validés) ; skins sur les copies propres écrites par outils/skins_melee.py, qui
+   // découpe les pièces en os à elles. Skeleton : corde tressée teintée par la lame, anneau et boucle du pommeau dans la
+   // finition ; Push : poignée et garde noir mat, morceaux du dos de la lame dans le skin ; Stiletto : plaquettes et cadre
+   // d'origine (bois et métal), embouts et garde violets dans la finition
+   CS2_SKELETON("cs2_skeleton", Map.of("corde", Part.CORDE, "pommeau", Part.METAL, "octagon", Part.METAL, "octagon2", Part.METAL,
+      "octagon3", Part.METAL, "octagon4", Part.METAL, "octagon5", Part.METAL), 0F, 0),
+   CS2_PUSH("cs2_push", Map.of("push_r", Part.NOIR_MAT, "push_l", Part.NOIR_MAT, "bone3", Part.BLADE, "bone2", Part.BLADE,
+      "dos_r", Part.BLADE, "dos_l", Part.BLADE), 0F, 0),
+   CS2_STILETTO("cs2_stiletto", Map.of("a", Part.ORIGINAL, "a2", Part.ORIGINAL, "embouts", Part.METAL), 0F, 0);
 
    public final String id;
    private final Map<String, Part> parts;
@@ -88,6 +97,10 @@ public enum KnifeType {
       BLADE(1.0F), GRIP(0.75F),
       /** manche orné : fond noir, motifs de la texture d'origine repris dans la finition (camo_gabarit : ornateHandle). */
       ORNATE(0.68F), METAL(0.5F), PIN(0.42F), INLAY(0.31F), HANDLE(0.25F),
+      /** corde tressée (paracorde) teintée par la couleur de la lame (Skeleton, camo_gabarit : cordeWrap). */
+      CORDE(0.82F),
+      /** manche noir mat uniforme (Push, camo_gabarit : acierManche). */
+      NOIR_MAT(0.56F),
       /** texture d'origine (jamais camouflée : sous le seuil du shader), mais repère le côté du manche. */
       ORIGINAL(0.1F);
 

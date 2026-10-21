@@ -230,7 +230,77 @@ PROPRES = [
     ("executor", (), {}),
     ("mercy", (), {}),
     ("thieve_sea", (), {}),
+    # couteaux du pack CS2 (21/10, rendus validés) : pièces découpées en os à elles (voir DECOUPES), rôles dans KnifeType
+    ("cs2_skeleton", (), {}),
+    ("cs2_push", (), {}),
+    # Stiletto : plaquettes et cadre gardent la texture d'origine (bois et métal), seuls les embouts violets prennent le skin
+    ("cs2_stiletto", ("a", "a2"), {}),
 ]
+
+
+def _skeleton(nom_os, c, img, k):
+    """Skeleton : la lame, la corde enroulée et la boucle du pommeau sont dans le même os (bone2) ; coupe le long de
+    l'axe (z, pointe vers -z) : lame jusqu'à l'anneau, corde, puis boucle du pommeau."""
+    if nom_os != "bone2":
+        return None
+    z = c["origin"][2] + c["size"][2] / 2
+    return None if z < 0.62 else ("corde" if z < 6.1 else "pommeau")
+
+
+# Push : petits morceaux du manche posés le long du dos de la lame, côté pointe (même rang dans push_r et push_l) ; ils
+# prennent le skin comme la lame (sinon 3-4 points gris en haut de la lame)
+DOS_PUSH = {73, 74, 75, 77, 78}
+
+
+def _push(nom_os, c, img, k, _rangs={}):
+    if nom_os not in ("push_r", "push_l"):
+        return None
+    return ("dos_r" if nom_os == "push_r" else "dos_l") if c.get("_rang") in DOS_PUSH else None
+
+
+def _stiletto(nom_os, c, img, k):
+    """Stiletto : embouts et garde violets (couleur moyenne des faces du cube, d'après la texture d'origine)."""
+    if nom_os not in ("a", "a2") or not isinstance(c.get("uv"), dict):
+        return None
+    r = gg = b = n = 0
+    for f in c["uv"].values():
+        u, v = f["uv"]
+        su, sv = f["uv_size"]
+        x0, x1 = sorted((u * k, (u + su) * k))
+        y0, y1 = sorted((v * k, (v + sv) * k))
+        box = (int(x0), int(y0), max(int(x0) + 1, int(math.ceil(x1))), max(int(y0) + 1, int(math.ceil(y1))))
+        for px in img.crop(box).convert("RGBA").getdata():
+            if px[3] < 26:
+                continue
+            r, gg, b, n = r + px[0], gg + px[1], b + px[2], n + 1
+    if not n:
+        return None
+    r, gg, b = r / n, gg / n, b / n
+    return "embouts" if b > r + 40 and b > gg + 40 else None
+
+
+DECOUPES = {"cs2_skeleton": _skeleton, "cs2_push": _push, "cs2_stiletto": _stiletto}
+
+
+def decouper(g, regle, img, k):
+    """Range des cubes dans de nouveaux os enfants (même pivot, sans rotation : la géométrie et les animations ne bougent
+    pas), pour donner à ces pièces un rôle à elles dans KnifeType."""
+    nouveaux = {}
+    for b in list(g["bones"]):
+        garde = []
+        for i, c in enumerate(b.get("cubes", []) or []):
+            c["_rang"] = i
+            cible = regle(b["name"], c, img, k)
+            c.pop("_rang")
+            if cible is None:
+                garde.append(c)
+                continue
+            if cible not in nouveaux:
+                nouveaux[cible] = {"name": cible, "parent": b["name"], "pivot": b.get("pivot", [0, 0, 0]), "cubes": []}
+                g["bones"].insert(g["bones"].index(b) + 1, nouveaux[cible])
+            nouveaux[cible]["cubes"].append(c)
+        if b.get("cubes") is not None:
+            b["cubes"] = garde
 # texels de la carte des couteaux (1024 de côté) au moins par côté de face
 TEXELS_MIN = 6.0
 
@@ -285,6 +355,9 @@ def propre(nom, garder, renommer):
         for k in ("name", "parent"):
             if b.get(k) in renommer:
                 b[k] = renommer[b[k]]
+    if nom in DECOUPES:
+        img0 = Image.open(TEX / (nom + "_uv.png")).convert("RGBA")
+        decouper(g, DECOUPES[nom], img0, img0.width / tw)
     faces = faces_a_ranger(g, garder)
     # texture carrée ; avec des os gardés, la texture d'origine occupe le quart en haut à gauche
     reserve = float(max(tw, th)) if garder else 0.0
