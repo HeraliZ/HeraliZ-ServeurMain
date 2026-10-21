@@ -1117,9 +1117,16 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `/clashwar tableau` ou `/clashwar regarder [tour match]`, flèches pour changer de joueur, `/clashwar salle` pour revenir
   (ramené tout seul quand son match l'appelle). Équipe éliminée sans match restant : message cliquable « quitter » ou
   « regarder ». **Classement des clans** (`CwClassement`, `heralisz_matchs/clashwar_classement.json`, hors du monde) :
-  titres, 2e et 3e places, matchs gagnés, éliminations, morts, K/D ; `/clashwar classement`. À faire après maquettes
-  validées : annonces plus petites, cérémonie du podium, panneau du classement au spawn, 5-6 grandes cartes. Rien testé
-  en jeu ;
+  titres, 2e et 3e places, matchs gagnés, éliminations, morts, K/D ; `/clashwar classement`. Interfaces (Matchs 0.13.0,
+  maquettes validées, consigne : « texte ultra bien centré dans son conteneur ») : tout nouveau texte d'interface passe
+  par `client/kit/TexteCentre` (largeur exacte en flottant, `cy` = milieu des capitales, 4,43 px de police sous le point
+  de dessin pour `ui`, `ui_bold`, `ui_small`) ; bandeau des matchs du ClashWar (`HudMatchCw`, paquet `MatchHudS2C` :
+  tags, pastilles des manches, temps, « MANCHE n · BO5 », rôle les 9 premières secondes ; masque celui du moteur,
+  `HudMoteur.masquerBandeau`) ; annonces compactes sur une ligne (duels compris) ; panneau de fin de match
+  (`FinMatchS2C`) ; cérémonie du podium (`PodiumSalle` : marches sur l'estrade de la salle, clé `podium` de la carte de
+  la salle, blocs remis à la fin ; `HudPodium`, fin du ClashWar 20 s) ; panneau du classement des clans à poser au spawn
+  par le staff : `/clashwar mur <largeur> classement` (même mur-écran que le tableau, `TableauBlocEntite.contenu`). Reste
+  : les 5-6 grandes cartes (maquette validée, à construire). Rien testé en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage
