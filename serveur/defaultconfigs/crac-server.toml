@@ -13,13 +13,13 @@
 	allowBreakInClaim = false
 	#Claim horizontal radius (XZ) for a tier 1 Claim Block.
 	#Range: 1 ~ 512
-	radiusL1 = 15
+	radiusL1 = 20
 	#Claim horizontal radius (XZ) for a tier 2 Claim Block.
 	#Range: 1 ~ 512
-	radiusL2 = 18
+	radiusL2 = 23
 	#Claim horizontal radius (XZ) for a tier 3 Claim Block.
 	#Range: 1 ~ 512
-	radiusL3 = 21
+	radiusL3 = 26
 	#Claim vertical half-height for tier 1.
 	#Range: 1 ~ 256
 	yRadiusL1 = 16
