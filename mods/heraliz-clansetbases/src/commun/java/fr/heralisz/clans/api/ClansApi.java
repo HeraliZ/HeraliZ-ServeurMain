@@ -73,6 +73,8 @@ public final class ClansApi {
         boolean ajouterClashWar(UUID clanId, boolean gagne);
 
         boolean journal(UUID clanId, String cle, String... args);
+
+        List<net.minecraft.world.item.ItemStack> deposerCoffre(UUID clanId, List<net.minecraft.world.item.ItemStack> objets);
     }
 
     /** Branche par la partie serveur ({@code ClansApiServeur.installer()}) ; null dans le jar -client. */
@@ -226,5 +228,15 @@ public final class ClansApi {
     public static boolean journal(UUID clanId, String cle, String... args) {
         Moteur m = moteur;
         return m == null ? false : m.journal(clanId, cle, args);
+    }
+
+    /**
+     * Range des objets dans le coffre du clan (3.5.0 : une ligne de 9 cases ; armes, armures, explosifs et sacs refusés).
+     * Renvoie ce qui n'a pas été rangé (plus de place, objet refusé, clan inconnu, hors serveur), à la charge de
+     * l'appelant. Lue par réflexion par CRac (matériel de la première base du clan).
+     */
+    public static List<net.minecraft.world.item.ItemStack> deposerCoffre(UUID clanId, List<net.minecraft.world.item.ItemStack> objets) {
+        Moteur m = moteur;
+        return m == null ? List.copyOf(objets) : m.deposerCoffre(clanId, objets);
     }
 }

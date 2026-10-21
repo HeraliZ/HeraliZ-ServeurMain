@@ -15,8 +15,8 @@
   "perm.exclure": "Kick members",
   "perm.promouvoir": "Promote",
   "perm.retrograder": "Demote",
-  "perm.banque_deposer": "Deposit to bank",
-  "perm.banque_retirer": "Withdraw from bank",
+  "perm.banque_deposer": "Deposit (bank and chest)",
+  "perm.banque_retirer": "Withdraw (bank and chest)",
   "perm.banque_journal": "View transactions",
   "perm.modifier_nom": "Edit name",
   "perm.modifier_tag": "Edit tag",
@@ -680,5 +680,11 @@
   "gui.niveau.court.18": "Supply drop −45%%",
   "gui.niveau.court.20": "Golden tag: legendary clan",
   "msg.banniere_niveau_degrade": "This banner background unlocks at clan level 2.",
-  "msg.banniere_niveau_forme": "This rare shape unlocks at clan level 12."
+  "msg.banniere_niveau_forme": "This rare shape unlocks at clan level 12.",
+  "gui.banque.coffre": "Clan chest",
+  "gui.banque.coffre_aide": "No weapons, armour or explosives",
+  "gui.coffre.titre": "Clan chest [%s]",
+  "msg.coffre.sans_clan": "You are not in a clan.",
+  "msg.coffre.refus": "You are not allowed to open the clan chest.",
+  "msg.coffre.rendu": "The contents of the clan chest [%s] are in your inventory."
 }

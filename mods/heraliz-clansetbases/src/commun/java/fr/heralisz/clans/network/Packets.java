@@ -413,7 +413,9 @@ public final class Packets {
      */
     public record SimpleC2S(Genre genre, String arg) {
         public enum Genre {
-            OUVRIR, QUITTER, DISSOUDRE, CLASSEMENT, CHAT_BASCULE, FERMER;
+            OUVRIR, QUITTER, DISSOUDRE, CLASSEMENT, CHAT_BASCULE, FERMER,
+            /** Ouvrir le coffre du clan (3.5.0, ajouté en dernier). */
+            COFFRE;
 
             static Genre parOrdinal(int i) {
                 Genre[] v = values();

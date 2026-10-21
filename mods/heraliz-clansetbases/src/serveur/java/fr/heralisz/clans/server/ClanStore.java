@@ -98,6 +98,7 @@ public final class ClanStore {
     public static void onServerStopped(ServerStoppedEvent e) {
         if (instance == null) return;
         instance.sauvegarder(false);
+        CoffreClan.fermer();
         instance = null;
     }
 
@@ -303,6 +304,7 @@ public final class ClanStore {
         } catch (IOException ex) {
             HeraliszClans.LOG.error("[clans] sauvegarde impossible dans {}", dossier, ex);
         }
+        CoffreClan.sauvegarder();
     }
 
     /** Sauvegarde immediate (apres toute operation d'argent). */

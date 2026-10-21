@@ -15,8 +15,8 @@
   "perm.exclure": "Exclure des membres",
   "perm.promouvoir": "Promouvoir",
   "perm.retrograder": "Rétrograder",
-  "perm.banque_deposer": "Déposer à la banque",
-  "perm.banque_retirer": "Retirer de la banque",
+  "perm.banque_deposer": "Déposer (banque et coffre)",
+  "perm.banque_retirer": "Retirer (banque et coffre)",
   "perm.banque_journal": "Voir les mouvements",
   "perm.modifier_nom": "Modifier le nom",
   "perm.modifier_tag": "Modifier le tag",
@@ -680,5 +680,11 @@
   "gui.niveau.court.18": "Ravitaillement −45 %%",
   "gui.niveau.court.20": "Tag doré : clan légendaire",
   "msg.banniere_niveau_degrade": "Ce fond de bannière se débloque au niveau 2 du clan.",
-  "msg.banniere_niveau_forme": "Cette forme rare se débloque au niveau 12 du clan."
+  "msg.banniere_niveau_forme": "Cette forme rare se débloque au niveau 12 du clan.",
+  "gui.banque.coffre": "Coffre du clan",
+  "gui.banque.coffre_aide": "Ni armes, ni armures, ni explosifs",
+  "gui.coffre.titre": "Coffre du clan [%s]",
+  "msg.coffre.sans_clan": "Tu n'as pas de clan.",
+  "msg.coffre.refus": "Tu n'as pas le droit d'ouvrir le coffre du clan.",
+  "msg.coffre.rendu": "Le contenu du coffre du clan [%s] est dans ton inventaire."
 }
