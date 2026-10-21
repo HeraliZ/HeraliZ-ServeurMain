@@ -18,14 +18,26 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.fml.loading.FMLPaths;
+
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 /**
  * Téléportation vers un autre joueur (Grades 1.4.0, demande du propriétaire du 21/10) : {@code /tpa <joueur>} envoie une
  * demande ; le joueur visé l'accepte ({@code /tpaccept}, ou le bouton cliquable du chat) ou la refuse ({@code /tpdeny}) ;
- * sans réponse en 60 s, elle tombe. Une fois acceptée : 3 s sans bouger ni être touché, puis vraie téléportation chez lui
+ * sans réponse en 60 s, elle tombe. Une fois acceptée : 15 s sans bouger ni être touché, puis vraie téléportation chez lui
  * (même monde que lui).
  * <p>Recharge entre deux téléportations réussies : 5 min sans grade, 15 s de moins par grade de la boutique (Rescapé
  * 4 min 45, Traqueur 4 min 30, Roi de la Zone 4 min 15) ; le staff (op connecté sur AuthMe) n'en a pas et ne patiente
@@ -34,7 +46,7 @@ import java.util.UUID;
  */
 final class TpaServeur {
     private static final long RECHARGE_MS = 300_000L, PAR_GRADE_MS = 15_000L, EXPIRATION_MS = 60_000L;
-    private static final int DELAI_TICKS = 60;
+    private static final int DELAI_TICKS = 300;
     private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
 
     /** Demande en cours : qui veut venir (clé : le joueur visé, une demande à la fois par demandeur). */
@@ -92,7 +104,52 @@ final class TpaServeur {
     private static Component empechement(ServerPlayer p) {
         if (enMatch(p)) return Component.translatableWithFallback("heraliz_grades.tpa.match", "Impossible pendant un match.");
         if (enCombat(p)) return Component.translatableWithFallback("heraliz_grades.tpa.combat", "Impossible en combat.");
+        if (!staff(p) && dansVille(p)) return Component.translatableWithFallback("heraliz_grades.tpa.ville", "Impossible dans une ville : sors de son rayon.");
         return null;
+    }
+
+    /** Raison qui empêche d'arriver chez ce joueur, ou null. */
+    private static Component empechementCible(ServerPlayer cible) {
+        if (enMatch(cible)) return Component.translatableWithFallback("heraliz_grades.tpa.cible_match", "%s est en match.", cible.getDisplayName());
+        if (dansVille(cible)) return Component.translatableWithFallback("heraliz_grades.tpa.cible_ville", "%s est dans une ville.", cible.getDisplayName());
+        return null;
+    }
+
+    // ------------------------------------------------------------------ villes (cercles de config/heralisz_clans/zones.json)
+    private record Ville(double x, double z, double r2) {
+    }
+
+    private static List<Ville> villes = List.of();
+    private static long dateVilles = -1;
+
+    /** Vrai si le joueur est sur la carte (overworld) dans le rayon d'une ville ; fichier relu quand il change. */
+    private static boolean dansVille(ServerPlayer p) {
+        if (p.level().dimension() != Level.OVERWORLD) return false;
+        Path f = FMLPaths.CONFIGDIR.get().resolve("heralisz_clans").resolve("zones.json");
+        try {
+            long d = Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : 0;
+            if (d != dateVilles) {
+                dateVilles = d;
+                List<Ville> l = new ArrayList<>();
+                if (d != 0) {
+                    try (Reader in = Files.newBufferedReader(f, StandardCharsets.UTF_8)) {
+                        for (JsonElement el : JsonParser.parseReader(in).getAsJsonArray()) {
+                            JsonObject v = el.getAsJsonObject();
+                            double r = v.get("rayon").getAsDouble();
+                            l.add(new Ville(v.get("x").getAsDouble(), v.get("z").getAsDouble(), r * r));
+                        }
+                    }
+                }
+                villes = l;
+            }
+        } catch (Exception e) {
+            villes = List.of();
+        }
+        for (Ville v : villes) {
+            double dx = p.getX() - v.x(), dz = p.getZ() - v.z();
+            if (dx * dx + dz * dz <= v.r2()) return true;
+        }
+        return false;
     }
 
     private static int refus(ServerPlayer p, Component c) {
@@ -105,7 +162,8 @@ final class TpaServeur {
         if (cible == p) return refus(p, Component.translatableWithFallback("heraliz_grades.tpa.soi", "Tu ne peux pas te téléporter vers toi-même."));
         Component non = empechement(p);
         if (non != null) return refus(p, non);
-        if (enMatch(cible)) return refus(p, Component.translatableWithFallback("heraliz_grades.tpa.cible_match", "%s est en match.", cible.getDisplayName()));
+        Component nonCible = empechementCible(cible);
+        if (nonCible != null && !staff(p)) return refus(p, nonCible);
         long reste = RECHARGES.getOrDefault(p.getUUID(), 0L) - System.currentTimeMillis();
         if (reste > 0 && !staff(p)) {
             return refus(p, Component.translatableWithFallback("heraliz_grades.tpa.recharge", "Prochaine téléportation dans %s.", duree(reste)));
@@ -153,19 +211,20 @@ final class TpaServeur {
         ServerPlayer p = cible.server.getPlayerList().getPlayer(d.demandeur());
         if (p == null) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.parti", "Ce joueur n'est plus connecté."));
         if (enMatch(cible)) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.match", "Impossible pendant un match."));
+        if (!staff(p) && dansVille(cible)) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.ville", "Impossible dans une ville : sors de son rayon."));
         Component non = empechement(p);
         if (non != null) {
             refus(p, non);
             return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.impossible", "%s ne peut pas venir pour le moment.", p.getDisplayName()));
         }
-        cible.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.acceptee_cible", "Tu as accepté : %s arrive dans 3 s.",
+        cible.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.acceptee_cible", "Tu as accepté : %s arrive dans 15 s.",
                 p.getDisplayName()).withStyle(ChatFormatting.GOLD));
         if (staff(p)) {
             teleporter(p, cible);
             return 1;
         }
         ATTENTES.put(p.getUUID(), new Attente(cible.getUUID(), p.position(), p.getHealth(), ticks + DELAI_TICKS));
-        p.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.acceptee", "%s a accepté : téléportation dans 3 s, ne bouge pas.",
+        p.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.acceptee", "%s a accepté : téléportation dans 15 s, ne bouge pas.",
                 cible.getDisplayName()).withStyle(ChatFormatting.GOLD));
         return 1;
     }
@@ -209,7 +268,7 @@ final class TpaServeur {
             }
             if (ticks < a.fin()) return false;
             Component non = empechement(p);
-            if (non == null && enMatch(cible)) non = Component.translatableWithFallback("heraliz_grades.tpa.cible_match", "%s est en match.", cible.getDisplayName());
+            if (non == null) non = empechementCible(cible);
             if (non != null) refus(p, non);
             else teleporter(p, cible);
             return true;

@@ -129,10 +129,12 @@
   "heraliz_grades.tpa.aucune": "Нет ожидающих запросов на телепортацию.",
   "heraliz_grades.tpa.parti": "Этот игрок больше не в сети.",
   "heraliz_grades.tpa.impossible": "%s сейчас не может прийти.",
-  "heraliz_grades.tpa.acceptee_cible": "Ты принял: %s прибудет через 3 с.",
-  "heraliz_grades.tpa.acceptee": "%s принял: телепортация через 3 с, не двигайся.",
+  "heraliz_grades.tpa.acceptee_cible": "Ты принял: %s прибудет через 15 с.",
+  "heraliz_grades.tpa.acceptee": "%s принял: телепортация через 15 с, не двигайся.",
   "heraliz_grades.tpa.refusee": "%s отклонил твой запрос.",
   "heraliz_grades.tpa.refusee_cible": "Запрос отклонён.",
   "heraliz_grades.tpa.arrive": "Телепортирован к %s.",
-  "heraliz_grades.tpa.annule": "Телепортация отменена: ты сдвинулся."
+  "heraliz_grades.tpa.annule": "Телепортация отменена: ты сдвинулся.",
+  "heraliz_grades.tpa.ville": "Невозможно в городе: выйди из его радиуса.",
+  "heraliz_grades.tpa.cible_ville": "%s находится в городе."
 }
