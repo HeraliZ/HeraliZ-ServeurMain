@@ -92,7 +92,7 @@ SKINS = [
     (152, "desmoulins_edge", "ash", "Ash", "classique", "kScorched", [0xa8aab0, 0x3a3a3e], None, None),
     (153, "desmoulins_edge", "rose_gold", "Rose Gold", "raffine", "kAnodFade", [0xd88a8a, 0xf2c8a0], None, None),
     (154, "desmoulins_edge", "crimson_carbon", "Crimson Carbon", "raffine", "kCarbon", [(1.35, 0.55, 0.55)], None, None),
-    (155, "desmoulins_edge", "silver_lore", "Silver Lore", "prestige", "kEngraved", [0xd0d6de, 0x1a3a8a], None, None),
+    (155, "desmoulins_edge", "silver_lore", "Silver Arabesque", "prestige", "kEngraved", [0xd0d6de, 0x1a3a8a], None, None),
     (178, "desmoulins_edge", "garnet", "Garnet", "ultime", "gemDoppler", [0x14000a, 0x5a0628, 0xa0103a, 0xff90b0, 0.12, (19.3, 4.1, 33.7)], None, None),
     # --- Croc du dragon (Dragon's Fang)
     (156, "dragons_fang", "jungle", "Jungle", "classique", "kCamo", [0x3a5a2a, 0x1e3a18, 0x6a7a3a, 0x0e1a0c, 5.0, 0.0], wrap(0x0e1a0c, 0x2a4a20, 0x6a7a3a), None),

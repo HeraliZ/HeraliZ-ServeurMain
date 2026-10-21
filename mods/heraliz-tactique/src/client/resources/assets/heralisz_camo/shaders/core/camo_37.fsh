@@ -2014,7 +2014,7 @@ void skinParams() {
         K_C[0] = hexc(0xd88a8a);
         K_C[1] = hexc(0xf2c8a0);
         break;
-    case 155:   // desmoulins_edge | Silver Lore (Prestige)
+    case 155:   // desmoulins_edge | Silver Arabesque (Prestige)
         K_STYLE = 9;
         K_C[0] = hexc(0xd0d6de);
         K_C[1] = hexc(0x1a3a8a);
