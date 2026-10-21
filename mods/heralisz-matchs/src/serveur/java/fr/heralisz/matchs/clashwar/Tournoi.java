@@ -101,6 +101,9 @@ public final class Tournoi {
     final List<Tableau.EquipeT> facticesBanc = new ArrayList<>();
     final Set<UUID> mannequins = new LinkedHashSet<>();
     private int tour = -1;
+    /** Podium pose dans la salle pendant la ceremonie de fin, ou null. */
+    @Nullable
+    private PodiumSalle podium;
     final Random rnd = new Random();
     private final Map<UUID, Long> cadence = new HashMap<>();
 
@@ -162,6 +165,7 @@ public final class Tournoi {
             }
             case FIN -> {
                 if (simulation) return;
+                if (podium != null && ticksEtat % 40 == 0 && ticksEtat < cfg.finSecondes * 20 - 80) podium.lancerFeux();
                 if (ticksEtat >= cfg.finSecondes * 20) {
                     rendreTout();
                     etat = Etat.TERMINE;
@@ -656,8 +660,46 @@ public final class Tournoi {
         Recompenses.distribuer(this);
         CwEtat.champion = new CwEtat.Champion(ch.tag, ch.nomClan, ch.numero, ch.couleur, ch.banniere, edition, format.nom, System.currentTimeMillis());
         CwEtat.sauver(serveur);
+        Tournois.diffuserClassement(serveur);
+        ceremonie(podium);
         bandeauSalle();
         HeraliszMatchs.LOG.info("[clashwar] edition {} : vainqueur {} ({})", edition, ch.libelle(), noms);
+    }
+
+    /**
+     * Ceremonie du podium (maquette 3) : marches posees dans la salle, trois premieres equipes dessus, titre et cartes
+     * des trois premiers chez chaque joueur de la salle pendant toute la fin.
+     */
+    private void ceremonie(int[] places) {
+        if (tableau == null) return;
+        this.podium = PodiumSalle.poser(instanceSalle, tableau, places, this);
+        CwConfig cfg = CwConfig.get();
+        long[] montants = {cfg.recompenseVainqueur, cfg.recompenseFinaliste, cfg.recompenseTroisieme};
+        List<CwPaquets.Marche> marches = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            if (places[i] < 0) continue;
+            Tableau.EquipeT e = tableau.equipe(places[i]);
+            StringBuilder noms = new StringBuilder();
+            for (UUID u : e.joueurs) {
+                if (noms.length() > 0) noms.append(" · ");
+                noms.append(e.nom(u));
+            }
+            boolean cle = i == 0 && cfg.clesParJoueur > 0 && !cfg.cleEvent.isBlank();
+            Component recompense = Component.translatable(cle ? "clashwar.podium.recompense_cle" : "clashwar.podium.recompense", heralsTexte(montants[i]));
+            marches.add(new CwPaquets.Marche(i + 1, e.libelle(), e.nomClan, e.couleur, noms.toString(), recompense));
+        }
+        MatchsNet.versJoueurs(joueursSalle(), new CwPaquets.PodiumS2C(edition, format.nom, marches, cfg.finSecondes));
+    }
+
+    /** « 5 000 » : milliers separes par une espace fine insecable. */
+    static String heralsTexte(long v) {
+        String t = Long.toString(Math.abs(v));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < t.length(); i++) {
+            if (i > 0 && (t.length() - i) % 3 == 0) sb.append('\u202F');
+            sb.append(t.charAt(i));
+        }
+        return (v < 0 ? "-" : "") + sb;
     }
 
     /** Annule l'edition (raison = suffixe de {@code clashwar.annule.*}) et rend tout le monde. */
@@ -674,6 +716,10 @@ public final class Tournoi {
 
     /** Rend le Coffre a chaque participant (les deconnectes le recuperent a leur retour) et ferme la salle. */
     private void rendreTout() {
+        if (podium != null) {
+            podium.retirer();
+            podium = null;
+        }
         for (UUID u : new ArrayList<>(participants)) {
             ServerPlayer p = serveur.getPlayerList().getPlayer(u);
             if (p != null) rendreJoueur(p);
@@ -689,6 +735,7 @@ public final class Tournoi {
 
     /** Rend son Coffre a un joueur (position d'origine) et le detache ; donne ses cles de caisse en attente. */
     void rendreJoueur(ServerPlayer p) {
+        MatchsNet.versJoueur(p, CwPaquets.MatchHudS2C.AUCUN);
         Equipement.retirer(p);
         p.setCamera(p);
         Hud.effacer(p);

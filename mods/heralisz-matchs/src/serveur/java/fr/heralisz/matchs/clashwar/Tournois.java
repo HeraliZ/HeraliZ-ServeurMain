@@ -197,9 +197,27 @@ public final class Tournois {
         MatchsNet.versTous(new CwPaquets.TableauS2C(v));
     }
 
+    /** Classement des clans (10 premiers) tel que le montre le panneau du spawn. */
+    static CwPaquets.ClassementS2C classement() {
+        List<CwPaquets.LigneClassement> l = new java.util.ArrayList<>();
+        for (CwClassement.Ligne x : CwClassement.meilleurs(10)) {
+            l.add(new CwPaquets.LigneClassement(x.tag, x.nom, x.couleur, x.titres, x.matchsGagnes, x.matchs, x.eliminations, x.morts));
+        }
+        CwConfig cfg = CwConfig.get();
+        long prochaine = prochainCreneau(ZonedDateTime.now(cfg.zone())).toInstant().toEpochMilli();
+        CwEtat.Champion c = CwEtat.champion;
+        return new CwPaquets.ClassementS2C(l, prochaine, c == null ? "" : c.tag(), c == null ? 0 : c.edition());
+    }
+
+    /** Classement a tous les joueurs (apres chaque match et chaque edition). */
+    static void diffuserClassement(MinecraftServer s) {
+        MatchsNet.versTous(classement());
+    }
+
     // ================================================================== joueurs
     static void connexion(ServerPlayer p) {
         MatchsNet.versJoueur(p, new CwPaquets.TableauS2C(vue()));
+        MatchsNet.versJoueur(p, classement());
     }
 
     private static void clesEnAttente(MinecraftServer s) {

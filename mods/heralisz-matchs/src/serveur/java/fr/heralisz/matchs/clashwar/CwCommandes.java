@@ -26,7 +26,8 @@ import java.util.Arrays;
  * Commandes du ClashWar. Joueurs : {@code /clashwar} (inscription pendant les inscriptions, sinon le tableau),
  * {@code /clashwar tableau}, {@code /clashwar retirer} (se retirer de l'inscription), {@code /clashwar quitter} (quitter
  * l'evenement et recuperer son Coffre, hors match). Operateurs (niveau 2) : {@code lancer [format] [minutes]},
- * {@code cloturer}, {@code annuler}, {@code recharger}, {@code mur <largeur>} (pose un mur-tableau sur la paroi visee),
+ * {@code cloturer}, {@code annuler}, {@code recharger}, {@code mur <largeur> [classement]} (pose un mur-tableau, ou le
+ * panneau du classement des clans, sur la paroi visee),
  * {@code banc ...} (simulation du banc d'essai). Les retours passent par {@link Annonces#retour} (visibles meme quand le
  * monde a {@code sendCommandFeedback=false}, comme le serveur HeraliZ) ; les erreurs par {@code sendFailure}.
  */
@@ -98,7 +99,10 @@ public final class CwCommandes {
                     return 1;
                 }))
                 .then(Commands.literal("mur").requires(s -> s.hasPermission(2))
-                        .then(Commands.argument("largeur", IntegerArgumentType.integer(2, MurTableau.LARGEUR_MAX)).executes(CwCommandes::mur)))
+                        .then(Commands.argument("largeur", IntegerArgumentType.integer(2, MurTableau.LARGEUR_MAX))
+                                .executes(c -> mur(c, fr.heralisz.matchs.clashwar.bloc.TableauBlocEntite.CONTENU_TABLEAU))
+                                .then(Commands.literal("classement")
+                                        .executes(c -> mur(c, fr.heralisz.matchs.clashwar.bloc.TableauBlocEntite.CONTENU_CLASSEMENT)))))
                 .then(Commands.literal("banc").requires(s -> s.hasPermission(2))
                         .then(Commands.literal("simuler").then(Commands.argument("equipes", IntegerArgumentType.integer(2, 32))
                                 .executes(c -> simuler(c, Format.TROIS_TROIS))
@@ -208,8 +212,11 @@ public final class CwCommandes {
         }
     }
 
-    /** Pose un mur sur la paroi visee (centre sur le point vise, hauteur = largeur / 2). */
-    private static int mur(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
+    /**
+     * Pose un mur sur la paroi visee (centre sur le point vise, hauteur = largeur / 2) : tableau du tournoi, ou
+     * classement des clans ({@code /clashwar mur <largeur> classement}, panneau du spawn).
+     */
+    private static int mur(CommandContext<CommandSourceStack> c, int contenu) throws CommandSyntaxException {
         ServerPlayer p = c.getSource().getPlayerOrException();
         int l = IntegerArgumentType.getInteger(c, "largeur"), h = Math.max(1, l / 2);
         HitResult hit = p.pick(32, 1f, false);
@@ -218,7 +225,8 @@ public final class CwCommandes {
         }
         Direction face = bh.getDirection();
         BlockPos base = bh.getBlockPos().relative(face).relative(face.getClockWise(), l / 2);
-        if (!MurTableau.poser(p.level(), base, face, l, h)) return erreur(c, "clashwar.cmd.mur_place");
+        if (!MurTableau.poser(p.level(), base, face, l, h, contenu)) return erreur(c, "clashwar.cmd.mur_place");
+        if (contenu == fr.heralisz.matchs.clashwar.bloc.TableauBlocEntite.CONTENU_CLASSEMENT) MatchsNet.versJoueur(p, Tournois.classement());
         Annonces.retour(c.getSource(), Component.translatable("clashwar.cmd.mur", l, h));
         return 1;
     }

@@ -584,10 +584,7 @@ public class DuelPartie extends Partie {
     }
 
     private void tickFin() {
-        if (ticksPhase() == 50 && !annulee) {
-            Vues.Tableau t = tableau();
-            MatchsNet.versJoueurs(enLigneCopie(), new PaquetsDuels.ScoresS2C(t));
-        }
+        if (ticksPhase() == 50 && !annulee) envoyerScores(enLigneCopie());
         if (ticksPhase() >= DuelsConfig.FIN_TICKS) {
             rendreTous();
             apresRendu();
@@ -800,7 +797,7 @@ public class DuelPartie extends Partie {
         // bombes des sites remises en veille (posees au premier passage), ordinateur de la manche precedente retire
         entretenirBombes();
         majOrdinateur();
-        for (ServerPlayer p : enLigneCopie()) {
+        for (ServerPlayer p : annoncerManche() ? enLigneCopie() : List.<ServerPlayer>of()) {
             Fiche f = fiches.get(p.getUUID());
             boolean att = f != null && f.equipe == attaquants;
             Annonces.grande(p, new Annonces.Annonce(Component.translatable("duel.annonce.manche", manche),
@@ -1466,6 +1463,7 @@ public class DuelPartie extends Partie {
         List<ServerPlayer> l = enLigneCopie();
         observateurs(l);
         Hud.envoyer(l, Hud.bandeau(this, titre, secondes, score));
+        apresHud(l, secondes);
     }
 
     // ------------------------------------------------------------------ fin
@@ -1506,6 +1504,7 @@ public class DuelPartie extends Partie {
             p.setHealth(p.getMaxHealth());
             MatchsNet.versJoueur(p, new PaquetsDuels.RdS2C(null));
             boolean gagne = gagnante != null && f != null && f.equipe == gagnante;
+            if (!annoncerFin()) continue;
             Component titre = Component.translatable(gagnante == null ? "duel.annonce.egalite" : gagne ? "duel.annonce.victoire" : "duel.annonce.defaite");
             Component sous = Component.literal(a.score() + "  —  " + b.score());
             Annonces.grande(p, new Annonces.Annonce(titre, sous, gagnante == null ? Ui.BLANC : gagne ? Ui.OR : Ui.DANGER,
@@ -1672,6 +1671,45 @@ public class DuelPartie extends Partie {
 
     /** Ajoute a la liste les joueurs qui regardent sans jouer (ils recoivent aussi le bandeau). Defaut : aucun. */
     protected void observateurs(List<ServerPlayer> sortie) {
+    }
+
+    /** Renvoie tout de suite le bandeau a tous (un spectateur vient d'arriver). */
+    protected void rafraichirHud() {
+        envoyerHud(true);
+    }
+
+    /** Apres chaque envoi du bandeau (memes joueurs, temps restant en secondes, -1 = aucun). Defaut : rien. */
+    protected void apresHud(List<ServerPlayer> joueurs, int secondes) {
+    }
+
+    /** Tableau des scores de fin (2,5 s apres la fin). Defaut : ecran des scores des duels. */
+    protected void envoyerScores(List<ServerPlayer> joueurs) {
+        MatchsNet.versJoueurs(joueurs, new PaquetsDuels.ScoresS2C(tableau()));
+    }
+
+    /** Grande annonce « manche n · attaque / defense » au debut de chaque manche. */
+    protected boolean annoncerManche() {
+        return true;
+    }
+
+    /** Annonce « victoire / defaite » a la fin. */
+    protected boolean annoncerFin() {
+        return true;
+    }
+
+    /** Vrai si ce joueur est dans l'equipe qui attaque cette manche. */
+    protected boolean attaquant(UUID joueur) {
+        return attaquants.contient(joueur);
+    }
+
+    /** Vrai si la bombe est amorcee (la minuterie de la bombe remplace le temps de la manche). */
+    protected boolean bombePosee() {
+        return etatCharge == Vues.CHARGE_POSEE;
+    }
+
+    /** Gagnant de chaque manche jouee, dans l'ordre ("a" ou "b"). */
+    protected List<String> manchesJouees() {
+        return manches;
     }
 
     /** Vrai si la partie a ete annulee (personne ne gagne). */

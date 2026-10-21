@@ -21,6 +21,9 @@ public final class CwClient {
 
     private static VueTableau vue = VueTableau.VIDE;
     private static int version;
+    /** Classement des clans (panneau du spawn) et sa version. */
+    private static CwPaquets.ClassementS2C classement = new CwPaquets.ClassementS2C(java.util.List.of(), 0, "", 0);
+    private static int versionClassement;
     /** Heure locale de reception de la vue (pour les comptes a rebours). */
     private static long recueMs;
 
@@ -31,6 +34,20 @@ public final class CwClient {
     /** Incremente a chaque changement de la vue. */
     public static int version() {
         return version;
+    }
+
+    public static CwPaquets.ClassementS2C classement() {
+        return classement;
+    }
+
+    /** Incremente a chaque nouveau classement. */
+    public static int versionClassement() {
+        return versionClassement;
+    }
+
+    public static void classement(CwPaquets.ClassementS2C p) {
+        classement = p;
+        versionClassement++;
     }
 
     public static long recueMs() {
@@ -91,6 +108,9 @@ public final class CwClient {
     static void vider() {
         vue = VueTableau.VIDE;
         version++;
+        versionClassement++;
         CwHud.vider();
+        HudMatchCw.vider();
+        HudPodium.vider();
     }
 }

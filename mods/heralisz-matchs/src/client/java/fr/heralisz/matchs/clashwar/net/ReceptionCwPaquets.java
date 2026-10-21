@@ -44,5 +44,21 @@ public final class ReceptionCwPaquets {
             fr.heralisz.matchs.clashwar.client.CwClient.ouvrir(p.ecran());
             return;
         }
+        if (o instanceof CwPaquets.MatchHudS2C p) {
+            fr.heralisz.matchs.clashwar.client.HudMatchCw.recevoir(p);
+            return;
+        }
+        if (o instanceof CwPaquets.FinMatchS2C p) {
+            fr.heralisz.matchs.clashwar.client.HudMatchCw.fin(p);
+            return;
+        }
+        if (o instanceof CwPaquets.PodiumS2C p) {
+            fr.heralisz.matchs.clashwar.client.HudPodium.recevoir(p);
+            return;
+        }
+        if (o instanceof CwPaquets.ClassementS2C p) {
+            fr.heralisz.matchs.clashwar.client.CwClient.classement(p);
+            return;
+        }
     }
 }

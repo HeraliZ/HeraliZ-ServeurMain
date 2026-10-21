@@ -1,6 +1,7 @@
 package fr.heralisz.matchs.clashwar;
 
 import fr.heralisz.matchs.HeraliszMatchs;
+import fr.heralisz.matchs.clashwar.net.CwPaquets;
 import fr.heralisz.matchs.duels.DuelPartie;
 import fr.heralisz.matchs.duels.armes.Armurerie;
 import fr.heralisz.matchs.duels.armes.Catalogue;
@@ -14,6 +15,7 @@ import fr.heralisz.matchs.moteur.api.Equipe;
 import fr.heralisz.matchs.moteur.api.Instance;
 import fr.heralisz.matchs.moteur.api.MatchApi;
 import fr.heralisz.matchs.moteur.api.Spectateur;
+import fr.heralisz.matchs.reseau.MatchsNet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -219,6 +221,36 @@ public final class MatchCw extends DuelPartie {
         return false;
     }
 
+    /** Le bandeau du ClashWar (pastilles des manches, role) remplace les annonces de manche et de fin des duels. */
+    @Override
+    protected boolean annoncerManche() {
+        return false;
+    }
+
+    @Override
+    protected boolean annoncerFin() {
+        return false;
+    }
+
+    /** Le panneau de fin de match du ClashWar est envoye des la fin ({@link #surFin}) : pas d'ecran des scores des duels. */
+    @Override
+    protected void envoyerScores(List<ServerPlayer> joueurs) {
+    }
+
+    /** Bandeau du ClashWar a chaque envoi du bandeau du moteur (le joueur le dessine a la place de celui du moteur). */
+    @Override
+    protected void apresHud(List<ServerPlayer> joueurs, int secondes) {
+        if (phase() == Phase.FIN || phase() == Phase.TERMINEE) return;
+        int sec = bombePosee() ? -1 : secondes;
+        String tour = nomTour.getString();
+        for (ServerPlayer p : joueurs) {
+            Equipe e = equipeDe(p.getUUID());
+            int role = e == null ? CwPaquets.ROLE_AUCUN : attaquant(p.getUUID()) ? CwPaquets.ROLE_ATTAQUE : CwPaquets.ROLE_DEFENSE;
+            MatchsNet.versJoueur(p, new CwPaquets.MatchHudS2C(true, tour, ta.libelle(), ea.couleur(), ea.score(), tb.libelle(), eb.couleur(),
+                    eb.score(), manchesGagnantes(), Math.max(1, manche()), role, sec, false));
+        }
+    }
+
     @Override
     protected void observateurs(List<ServerPlayer> sortie) {
         for (UUID u : spectateurs) {
@@ -231,6 +263,7 @@ public final class MatchCw extends DuelPartie {
     /** Fin du match pour ce joueur : retour en salle d'attente (ou rendu, si l'edition n'a plus de salle). */
     @Override
     protected void renvoyer(ServerPlayer p) {
+        MatchsNet.versJoueur(p, CwPaquets.MatchHudS2C.AUCUN);
         if (tournoi.actif() && tournoi.salle != null && tournoi.participant(p.getUUID())) tournoi.placerEnSalle(p);
         else tournoi.rendreJoueur(p);
     }
@@ -283,7 +316,54 @@ public final class MatchCw extends DuelPartie {
         CwClassement.match(ta, ka, ma, gagnante == ea);
         CwClassement.match(tb, kb, mb, gagnante == eb);
         CwClassement.sauver(serveur());
+        Tournois.diffuserClassement(serveur());
+        envoyerFin(gagnante);
         HeraliszMatchs.LOG.info("[clashwar] {} : {} gagne {}-{} (elims {} / {})", id(), gagnante != null ? gagnante.nom() : "?", ea.score(), eb.score(), ka, kb);
+    }
+
+    /** Panneau de fin de match (maquette 2) a chaque joueur et spectateur : issue, score, manches, joueurs, suite. */
+    private void envoyerFin(@Nullable Equipe gagnante) {
+        List<Integer> manches = new ArrayList<>();
+        for (String m : manchesJouees()) manches.add("b".equals(m) ? 1 : 0);
+        List<CwPaquets.JoueurFin> joueurs = new ArrayList<>();
+        for (Vues.JoueurScore j : tableau().joueurs()) {
+            if (!j.bot()) joueurs.add(new CwPaquets.JoueurFin(j.nom(), "b".equals(j.equipe()) ? 1 : 0, j.eliminations(), j.morts()));
+        }
+        // meilleurs d'abord dans chaque equipe
+        joueurs.sort((x, y) -> x.equipe() != y.equipe() ? Integer.compare(x.equipe(), y.equipe()) : Integer.compare(y.eliminations(), x.eliminations()));
+        int secondes = fr.heralisz.matchs.duels.DuelsConfig.FIN_TICKS / 20;
+        List<ServerPlayer> l = new ArrayList<>();
+        for (UUID u : MatchApi.joueursDe(this)) {
+            ServerPlayer p = joueur(u);
+            if (p != null) l.add(p);
+        }
+        for (ServerPlayer p : l) {
+            Equipe e = equipeDe(p.getUUID());
+            int issue = e == null || gagnante == null ? CwPaquets.FIN_NEUTRE : e == gagnante ? CwPaquets.FIN_VICTOIRE : CwPaquets.FIN_DEFAITE;
+            MatchsNet.versJoueur(p, CwPaquets.MatchHudS2C.AUCUN);
+            MatchsNet.versJoueur(p, new CwPaquets.FinMatchS2C(nomTour.getString(), issue, ta.libelle(), ea.couleur(), ea.score(), tb.libelle(),
+                    eb.couleur(), eb.score(), manchesGagnantes(), manches, joueurs, suite(e, gagnante), secondes));
+            p.playNotifySound(issue == CwPaquets.FIN_DEFAITE ? CwSons.DEFAITE.get() : CwSons.VICTOIRE.get(), net.minecraft.sounds.SoundSource.MASTER, 1f, 1f);
+        }
+    }
+
+    /** Ligne de suite du panneau de fin : prochain match, match pour la 3e place, elimination, fin du tournoi. */
+    private Component suite(@Nullable Equipe e, @Nullable Equipe gagnante) {
+        Tableau tab = tournoi.tableau;
+        if (tab == null || gagnante == null) return Component.translatable("clashwar.fin.suite.salle");
+        int dernier = tab.nbTours() - 1;
+        if (rencontre.tour == dernier) return Component.translatable("clashwar.fin.suite.podium");
+        if (e == null) return Component.translatable("clashwar.fin.suite.qualifie", gagnante.nom());
+        if (e != gagnante) {
+            boolean demi = rencontre.tour == dernier - 1 && tab.troisieme() != null;
+            return Component.translatable(demi ? "clashwar.fin.suite.troisieme" : "clashwar.fin.suite.elimine");
+        }
+        Tableau.Rencontre suivante = tab.tour(rencontre.tour + 1).get(rencontre.index / 2);
+        int moi = e == ea ? rencontre.a : rencontre.b;
+        int adverse = rencontre.index % 2 == 0 ? suivante.b : suivante.a;
+        Component nom = Component.translatable("clashwar.tour." + tab.cleRencontre(suivante));
+        if (adverse < 0 || adverse == moi) return Component.translatable("clashwar.fin.suite.prochain_inconnu", nom);
+        return Component.translatable("clashwar.fin.suite.prochain", nom, tab.equipe(adverse).libelle());
     }
 
     /** Tout le monde est revenu en salle : resultat au tableau. */
@@ -336,12 +416,14 @@ public final class MatchCw extends DuelPartie {
         if (!regardable() || equipeDe(p.getUUID()) != null) return false;
         MatchApi.rejoindre(p, this);
         Spectateur.suivre(p, this);
+        rafraichirHud();
         return true;
     }
 
     /** Fin du visionnage : retour en salle d'attente. */
     void arreterRegarder(ServerPlayer p) {
         if (equipeDe(p.getUUID()) != null) return;
+        MatchsNet.versJoueur(p, CwPaquets.MatchHudS2C.AUCUN);
         Spectateur.arreter(p, false);
         spectateurs.remove(p.getUUID());
         tournoi.placerEnSalle(p);

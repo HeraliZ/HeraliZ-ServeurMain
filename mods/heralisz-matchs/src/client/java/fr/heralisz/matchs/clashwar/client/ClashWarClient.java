@@ -39,6 +39,10 @@ public final class ClashWarClient {
         modBus.addListener(ClashWarClient::rendus);
         MinecraftForge.EVENT_BUS.addListener(ClashWarClient::debutImage);
         MinecraftForge.EVENT_BUS.addListener(CwHud::rendreGui);
+        MinecraftForge.EVENT_BUS.addListener(HudMatchCw::rendre);
+        MinecraftForge.EVENT_BUS.addListener(HudPodium::rendre);
+        // pendant un match du ClashWar, son propre bandeau (pastilles des manches, role) remplace celui du moteur
+        fr.heralisz.matchs.moteur.client.HudMoteur.masquerBandeau = HudMatchCw::actif;
         MinecraftForge.EVENT_BUS.addListener(CwHud::rendreMonde);
         MinecraftForge.EVENT_BUS.addListener(ClashWarClient::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(ClashWarClient::masquerHud);

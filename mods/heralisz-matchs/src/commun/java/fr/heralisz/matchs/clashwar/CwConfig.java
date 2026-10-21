@@ -47,7 +47,7 @@ public final class CwConfig {
     public int annonceMinutes = 15, inscriptionMinutes = 10;
     /** Durees du deroule (secondes). */
     public int choixSecondes = 10, preparationSecondes = 10, combatSecondes = 240, mortSubiteSecondes = 60,
-            limiteSecondes = 90, pauseToursSecondes = 20, retourSecondes = 6, finSecondes = 12, attenteArene = 90;
+            limiteSecondes = 90, pauseToursSecondes = 20, retourSecondes = 6, finSecondes = 20, attenteArene = 90;
     /** Manches gagnantes d'un match de recherche et destruction (3 = au meilleur des 5). */
     public int manchesGagnantes = 3;
     /** Degats par seconde hors de la zone pendant la mort subite (ancien mode, plus utilise depuis la 0.12.0). */
