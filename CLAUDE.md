@@ -109,8 +109,8 @@ monde/HeraliZ/            ancienne copie de la carte (v3 du 11/10) ; sera rempla
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
-Le dépôt contient le serveur COMPLET : les 21 mods des autres auteurs + nos 25 mods (sources, fabriqués en 23 jars
-`-serveur` pour le Ptero) = les 44 jars du dossier `mods/` du serveur, et les 47 jars des joueurs.
+Le dépôt contient le serveur COMPLET : les 20 mods des autres auteurs + nos 25 mods (sources, fabriqués en 23 jars
+`-serveur` pour le Ptero) = les 43 jars du dossier `mods/` du serveur, et les 46 jars des joueurs.
 
 Jamais dans Git (voir `.gitignore`) :
 - `build/`, `run/`, `dist/`, `livraison/` (refaits à chaque fabrication) ;
@@ -168,12 +168,11 @@ Jamais notre nom dessus, jamais de retouche sans demande. Les sources ne sont pa
 
 TaCZ (Serene Wave Studio) et TaCZ Addon (Mafuyu404) ; cfm « PATCH » (Furniture Mod de MrCrayfish, avec nos props
 dedans) ; Framework (MrCrayfish) ; geckolib222 (GeckoLib de l'équipe Gecko, avec du contenu ArkaniaZ dedans : c'est
-le SEUL GeckoLib du serveur) ; ywzj_vehicle « fuse » (YWZJ, moteur des véhicules) ; Simple Farming « heralisz1 »
-(enemeez) ; Mutants & Zombies (Pete MC Mods) ; Zombie Awareness et CoroUtil (Corosus) ; MAtmos et TCTcore (The_TCT) ;
+le SEUL GeckoLib du serveur) ; ywzj_vehicle « fuse » (YWZJ, moteur des véhicules) ; Mutants & Zombies (Pete MC Mods) ; Zombie Awareness et CoroUtil (Corosus) ; MAtmos et TCTcore (The_TCT) ;
 Passable Foliage et Kiwi (Snownee) ; Curios (TheIllusiveC4) ; Cloth Config (shedaniel) ; Player Animation Lib (KosmX) ;
 ModernFix, FerriteCore, MemoryLeakFix, PacketFixer (optimisation) ; EntityCulling (joueurs seulement).
 
-Les versions modifiées (cfm PATCH, geckolib222, ywzj fuse, simplefarming heralisz1) ont été retouchées directement
+Les versions modifiées (cfm PATCH, geckolib222, ywzj fuse) ont été retouchées directement
 dans les jars : il n'existe pas de sources.
 
 ---
@@ -1723,7 +1722,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
   Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,
   Architectury, Magazine & Casing, Thirst Was Taken, PlayerRevive, heralisz_armor (remplacé par l'Armurerie),
-  Heraliz Drugs, Chunky, immersivemessages.
+  Heraliz Drugs, Chunky, immersivemessages, Simple Farming (21/10, ne servait à rien ; ses plantes posées disparaissent
+  au chargement).
 
 ---
 
