@@ -72,6 +72,8 @@ final class Commandes {
                         .then(Commands.literal("aucune").executes(c -> apparenceAucune(c, StringArgumentType.getString(c, "id"))))))
                 .then(Commands.literal("liste").executes(Commandes::listePnj)));
 
+        EditionMarchands.commandes(d);
+
         d.register(Commands.literal("quete").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("baguette").then(Commands.argument("groupe", StringArgumentType.word()).suggests(GROUPES)
                         .executes(c -> baguette(c, StringArgumentType.getString(c, "groupe")))))

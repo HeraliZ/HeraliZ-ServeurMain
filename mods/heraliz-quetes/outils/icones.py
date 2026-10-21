@@ -153,8 +153,18 @@ def baguette():
     return im
 
 
+def registre_marchand():
+    im = img(); d = ImageDraw.Draw(im)
+    rect(d, 2, 2, 12, 14, "cuir"); rect(d, 2, 2, 3, 14, "cuir2"); rect(d, 12, 3, 13, 14, "papier2")
+    rect(d, 5, 4, 10, 4, "or2"); rect(d, 5, 6, 10, 6, "or2")
+    rect(d, 9, 9, 13, 13, "or"); rect(d, 10, 8, 12, 8, "or"); rect(d, 10, 14, 12, 14, "or2"); rect(d, 14, 10, 14, 12, "or2")
+    px(d, [(10, 10), (11, 9)], "or3"); px(d, [(11, 11), (11, 12)], "or2")
+    return im
+
+
 ICONES = {"document": document, "carnet": carnet, "lettre": lettre, "photo": photo, "cle": cle, "cle_usb": cle_usb,
-          "colis": colis, "echantillon": echantillon, "plaque": plaque, "piece": piece, "baguette": baguette}
+          "colis": colis, "echantillon": echantillon, "plaque": plaque, "piece": piece, "baguette": baguette,
+          "registre_marchand": registre_marchand}
 
 
 def main():

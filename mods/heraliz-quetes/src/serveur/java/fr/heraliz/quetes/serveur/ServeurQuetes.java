@@ -66,6 +66,7 @@ public final class ServeurQuetes implements Partie {
     private static void demarrage(ServerStartedEvent e) {
         Moteur.demarrer(e.getServer());
         Donnees.demarrer(e.getServer().getServerDirectory().toPath());
+        EditionMarchands.demarrer(e.getServer().getServerDirectory().toPath());
         Catalogue.charger();
         Ponts.relireArmes();
         LUEURS.clear();

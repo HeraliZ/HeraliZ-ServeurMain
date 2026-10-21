@@ -3,6 +3,7 @@ package fr.heraliz.quetes;
 import fr.heraliz.quetes.entite.Pnj;
 import fr.heraliz.quetes.objet.Baguette;
 import fr.heraliz.quetes.objet.ObjetQuete;
+import fr.heraliz.quetes.objet.RegistreMarchand;
 import fr.heraliz.quetes.pont.Parties;
 import fr.heraliz.quetes.pont.UsineEntite;
 import fr.heraliz.quetes.reseau.Reseau;
@@ -56,12 +57,15 @@ public class HeralizQuetes {
     }
 
     public static final RegistryObject<Item> BAGUETTE = OBJETS.register("baguette", () -> new Baguette(new Item.Properties().stacksTo(1)));
+    /** Registre du marchand (staff) : modifier en jeu ce que vendent les PNJ et leurs prix. */
+    public static final RegistryObject<Item> REGISTRE = OBJETS.register("registre_marchand", () -> new RegistreMarchand(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<CreativeModeTab> ONGLET = ONGLETS.register("onglet", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.heraliz_quetes"))
             .icon(() -> new ItemStack(OBJETS_QUETE.get("carnet").get()))
             .displayItems((p, out) -> {
                 out.accept(BAGUETTE.get());
+                out.accept(REGISTRE.get());
                 for (RegistryObject<Item> o : OBJETS_QUETE.values()) out.accept(o.get());
             })
             .build());

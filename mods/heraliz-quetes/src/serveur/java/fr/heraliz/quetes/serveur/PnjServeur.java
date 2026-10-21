@@ -1,5 +1,6 @@
 package fr.heraliz.quetes.serveur;
 
+import fr.heraliz.quetes.HeralizQuetes;
 import fr.heraliz.quetes.entite.Pnj;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -26,7 +27,9 @@ public class PnjServeur extends Pnj {
 
     @Override
     protected InteractionResult mobInteract(Player joueur, InteractionHand main) {
-        if (main == InteractionHand.MAIN_HAND && joueur instanceof ServerPlayer sp) Dialogues.parler(sp, this);
+        if (main != InteractionHand.MAIN_HAND || !(joueur instanceof ServerPlayer sp)) return InteractionResult.SUCCESS;
+        if (sp.getMainHandItem().is(HeralizQuetes.REGISTRE.get()) && sp.hasPermissions(2)) EditionMarchands.montrer(sp, pnjId(), 0);
+        else Dialogues.parler(sp, this);
         return InteractionResult.SUCCESS;
     }
 
