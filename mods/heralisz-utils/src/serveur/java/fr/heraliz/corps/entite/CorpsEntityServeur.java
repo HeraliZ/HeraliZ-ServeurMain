@@ -70,6 +70,7 @@ public class CorpsEntityServeur extends CorpsEntity {
         contenu.surChangement(this::contenuChange);
         this.entityData.set(DATA_EXPIRE, maintenant + CorpsConfig.DISPARITION_MIN.get() * 60L * 20L);
         this.entityData.set(DATA_VIDE, contenu.isEmpty());
+        majTenue();
     }
 
     /** Corps d'un joueur hors ligne (conversion d'un corps de l'ancien mod) : ni apparence ni skin, clan actuel. */
@@ -87,6 +88,7 @@ public class CorpsEntityServeur extends CorpsEntity {
         contenu.surChangement(this::contenuChange);
         this.entityData.set(DATA_EXPIRE, maintenant + CorpsConfig.DISPARITION_MIN.get() * 60L * 20L);
         this.entityData.set(DATA_VIDE, contenu.isEmpty());
+        majTenue();
     }
 
     /** Apparence CaraCrea lue directement dans les donnees du joueur (PlayerPersisted.caracrea), sans dependance au mod. */
@@ -141,6 +143,7 @@ public class CorpsEntityServeur extends CorpsEntity {
             entityData.set(DATA_VIDE, true);
             HeralizCorps.LOG.info("[corps] corps n{} de {} vide : disparition dans {} s", numero, nom, CorpsConfig.DISPARITION_VIDE_S.get());
         }
+        majTenue();
         if (level() instanceof ServerLevel sl) {
             Registre r = Registre.de(sl.getServer());
             r.objets(getUUID(), contenu.nbObjets());
@@ -294,6 +297,46 @@ public class CorpsEntityServeur extends CorpsEntity {
         contenu = CorpsContenu.charger(t.getCompound("Contenu"));
         contenu.surChangement(this::contenuChange);
         entityData.set(DATA_VIDE, contenu.isEmpty());
+        majTenue();
+    }
+
+    /**
+     * Tenue vue par les joueurs (CorpsEntity.DATA_TENUE) : armure et objets Curios encore sur le corps. Copies allegees :
+     * le contenu d'un sac ou d'un conteneur ne quitte jamais le serveur (seul l'aspect compte pour le rendu).
+     */
+    private void majTenue() {
+        CompoundTag t = new CompoundTag();
+        if (contenu != null) {
+            net.minecraft.nbt.ListTag armure = new net.minecraft.nbt.ListTag();
+            for (int i = 0; i < 4; i++) {
+                armure.add(allege(contenu.getItem(CorpsContenu.ARMURE + i)).save(new CompoundTag()));
+            }
+            t.put("A", armure);
+            net.minecraft.nbt.ListTag curios = new net.minecraft.nbt.ListTag();
+            ajouterCurios(curios, fr.heraliz.corps.compat.CuriosCompat.SAC, contenu.getItem(CorpsContenu.SAC));
+            for (int k = 0; k < contenu.nbCurios(); k++) {
+                ajouterCurios(curios, contenu.idCurios(k), contenu.getItem(CorpsContenu.CURIOS + k));
+            }
+            if (!curios.isEmpty()) t.put("C", curios);
+        }
+        if (!t.equals(entityData.get(DATA_TENUE))) entityData.set(DATA_TENUE, t);
+    }
+
+    private static void ajouterCurios(net.minecraft.nbt.ListTag l, String id, net.minecraft.world.item.ItemStack s) {
+        if (s.isEmpty() || id == null || id.isEmpty()) return;
+        CompoundTag o = allege(s).save(new CompoundTag());
+        o.putString("Id", id);
+        l.add(o);
+    }
+
+    private static net.minecraft.world.item.ItemStack allege(net.minecraft.world.item.ItemStack s) {
+        if (s.isEmpty()) return net.minecraft.world.item.ItemStack.EMPTY;
+        net.minecraft.world.item.ItemStack c = s.copyWithCount(1);
+        CompoundTag tag = c.getTag();
+        if (tag != null) {
+            for (String cle : new String[] {"Items", "Inventory", "BlockEntityTag", "spartan_uid"}) tag.remove(cle);
+        }
+        return c;
     }
 
     @Override

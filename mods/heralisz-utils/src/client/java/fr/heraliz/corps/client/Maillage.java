@@ -49,7 +49,7 @@ final class Maillage {
     }
 
     /** Pose d'un mort : bras ecartes, jambes un peu ouvertes, tete tournee sur le cote. */
-    private static void poser(PlayerModel<LivingEntity> m) {
+    static void poser(PlayerModel<?> m) {
         m.young = false;
         m.crouching = false;
         m.riding = false;

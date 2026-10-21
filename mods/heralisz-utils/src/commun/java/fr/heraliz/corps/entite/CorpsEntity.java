@@ -40,6 +40,12 @@ import java.util.UUID;
 public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
     static final EntityDataAccessor<Long> DATA_EXPIRE = SynchedEntityData.defineId(CorpsEntity.class, EntityDataSerializers.LONG);
     static final EntityDataAccessor<Boolean> DATA_VIDE = SynchedEntityData.defineId(CorpsEntity.class, EntityDataSerializers.BOOLEAN);
+    /**
+     * Tenue visible sur le corps (21/10) : armure ({@code A}, 4 cases, pieds -> tete) et objets Curios portes ({@code C} :
+     * {@code Id} de l'emplacement + objet), sac compris. Copies allegees (sans le contenu du sac), refaites par le serveur
+     * a chaque prise dans la fouille : une piece retiree du corps disparait aussi de son rendu.
+     */
+    static final EntityDataAccessor<CompoundTag> DATA_TENUE = SynchedEntityData.defineId(CorpsEntity.class, EntityDataSerializers.COMPOUND_TAG);
 
     /** Corps presents dans le monde du client (rendu, plafonds) ; vide cote serveur. Fil du client seulement. */
     public static final List<CorpsEntity> CLIENT = new ArrayList<>();
@@ -65,6 +71,9 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
     public boolean clanAmi;
     /** Peau resolue par le client (voir client.Peaux) ; Object pour ne rien charger de client ici. */
     public Object peauCache;
+    /** Tenue resolue par le client (voir client.TenueCorps) et version de la tenue recue (changee a chaque mise a jour). */
+    public Object tenueCache;
+    public int tenueVersion;
 
     public CorpsEntity(EntityType<? extends CorpsEntity> type, Level level) {
         super(type, level);
@@ -108,6 +117,16 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
 
     public boolean vide() {
         return entityData.get(DATA_VIDE);
+    }
+
+    public CompoundTag tenue() {
+        return entityData.get(DATA_TENUE);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> cle) {
+        super.onSyncedDataUpdated(cle);
+        if (DATA_TENUE.equals(cle)) tenueVersion++;
     }
 
     public long protegeJusqua() {
@@ -291,6 +310,7 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
                 }
             }
             peauCache = null;
+            tenueCache = null;
         }
     }
 
@@ -299,6 +319,7 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
     protected void defineSynchedData() {
         entityData.define(DATA_EXPIRE, 0L);
         entityData.define(DATA_VIDE, false);
+        entityData.define(DATA_TENUE, new CompoundTag());
     }
 
     /** Sauvegarde : CorpsEntityServeur (le monde du client ne charge ni ne sauve jamais un corps). */

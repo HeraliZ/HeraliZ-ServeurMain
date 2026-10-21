@@ -47,6 +47,7 @@ public final class ClientCorps {
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             CorpsEntity.CLIENT.clear();
             Peaux.vider();
+            TenueCorps.vider();
         });
     }
 
