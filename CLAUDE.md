@@ -1125,8 +1125,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `HudMoteur.masquerBandeau`) ; annonces compactes sur une ligne (duels compris) ; panneau de fin de match
   (`FinMatchS2C`) ; cérémonie du podium (`PodiumSalle` : marches sur l'estrade de la salle, clé `podium` de la carte de
   la salle, blocs remis à la fin ; `HudPodium`, fin du ClashWar 20 s) ; panneau du classement des clans à poser au spawn
-  par le staff : `/clashwar mur <largeur> classement` (même mur-écran que le tableau, `TableauBlocEntite.contenu`). Reste
-  : les 5-6 grandes cartes (maquette validée, à construire). Rien testé en jeu ;
+  par le staff : `/clashwar mur <largeur> classement` (même mur-écran que le tableau, `TableauBlocEntite.contenu`). Cartes
+  (Matchs 0.14.0) : V1 de 6 grandes cartes de recherche et destruction (112 × 112, type `clashwar_rd`, pour tous les
+  formats, passent avant celles du format) : Gare de triage, Usine, Port, Base militaire, Village de montagne,
+  Centre-ville en ruine ; attaque au nord, défense au sud, sites A et B ; **écrites** par
+  `python mods/heralisz-matchs/outils/cartes_clashwar/generer.py` (`--apercu DOSSIER` : vues de dessus ; vérifie qu'on
+  va à pied d'un spawn aux deux bombes et à l'autre spawn). Provisoires : le propriétaire les reprend en jeu et les
+  rendra en `.schem` avec leurs noms (convertisseur à faire). Rien testé en jeu ;
 - équilibrage (14/10, choix du propriétaire après « meilleure armure + arme banale = 2 balles dans la tête ») :
   - armures (Armurerie 0.15.0) : plus d'icônes balles / explosion / couteau / morsure / radiation sous l'inventaire ni
     dans les infobulles ; **une seule protection**, la même contre tout ; tir à la tête : seuls casque et visage

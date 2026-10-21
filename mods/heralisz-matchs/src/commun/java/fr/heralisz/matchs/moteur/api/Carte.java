@@ -45,6 +45,8 @@ public record Carte(String id, String nomFr, String nomEn, String type, Resource
     public static final String TYPE_LOBBY_CLASHWAR = "lobby_clashwar";
     public static final String TYPE_CLASHWAR_1V1 = "clashwar_1v1", TYPE_CLASHWAR_2V2 = "clashwar_2v2",
             TYPE_CLASHWAR_3V3 = "clashwar_3v3", TYPE_CLASHWAR_4V4 = "clashwar_4v4";
+    /** Grandes cartes de recherche et destruction du ClashWar, pour tous les formats (passent avant celles du format). */
+    public static final String TYPE_CLASHWAR_RD = "clashwar_rd";
     public static final String TYPE_DUEL = "duel";
     public static final String TYPE_ZOMBIES = "zombies";
 

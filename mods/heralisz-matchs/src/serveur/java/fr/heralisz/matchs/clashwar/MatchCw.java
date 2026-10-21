@@ -67,7 +67,8 @@ public final class MatchCw extends DuelPartie {
     }
 
     static MatchCw creer(Tournoi tournoi, Tableau.Rencontre rencontre, Tableau.EquipeT ta, Tableau.EquipeT tb, Component nomTour) {
-        List<Carte> cartes = Arenes.cartesDeType(tournoi.format.typeCarte);
+        List<Carte> cartes = Arenes.cartesDeType(Carte.TYPE_CLASHWAR_RD);
+        if (cartes.isEmpty()) cartes = Arenes.cartesDeType(tournoi.format.typeCarte);
         Carte c = cartes.isEmpty() ? null : cartes.get(tournoi.rnd.nextInt(cartes.size()));
         if (c == null) HeraliszMatchs.LOG.warn("[clashwar] aucune carte de type {}", tournoi.format.typeCarte);
         Equipe a = new Equipe("a", ta.libelle(), ta.couleur);
