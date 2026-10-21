@@ -54,6 +54,9 @@ public final class HitboxCorps {
          if (nageVisible) m.translate(0.0F, -1.0F, 0.3F);
       }
       m.scale(-1.0F, -1.0F, 1.0F).scale(ECHELLE).translate(0.0F, -1.501F, 0.0F);
+      if (nageVisible && nage > 0.5F && !p.isInWater() && !aTerre(p)) {
+         return allonge(m);
+      }
 
       // tête (comme HumanoidModel.setupAnim)
       float teteX = (float) Math.toRadians(tangage);
@@ -91,6 +94,41 @@ public final class HitboxCorps {
       liste.add(new Morceau("jambe_droite", false, part(m, -1.9F, jambeY, jambeZ, jambeX, jambeDY), cube(-2, 0, -2, 4, 12, 4, 0.25F)));
       liste.add(new Morceau("jambe_gauche", false, part(m, 1.9F, jambeY, jambeZ, jambeX, jambeGY), cube(-2, 0, -2, 4, 12, 4, 0.25F)));
       return liste;
+   }
+
+   /**
+    * Allongé (« ramper » de TaCZ, avec ou sans arme) : le corps couché de Minecraft, puis la pose « lie » de TaCZ
+    * ({@code tacz:rifle_default.player_animation}, image de repos) telle que Player Animator la pose sur le modèle :
+    * position = pivot de Minecraft + (x, -y, z) du fichier, rotations X, Y, Z du fichier, corps entier avancé de 2 px.
+    * Jambes repliées au sol, tête relevée, bras tendus devant.
+    */
+   private static List<Morceau> allonge(Matrix4f m) {
+      Matrix4f corps = new Matrix4f(m).translate(0.0F, 0.0F, -2.0F / 16.0F);
+      List<Morceau> liste = new ArrayList<>(6);
+      liste.add(new Morceau("tete", true, lie(corps, 0, 0, 0, -77.5F, 0, 0), cube(-4, -8, -4, 8, 8, 8, 0.5F)));
+      liste.add(new Morceau("torse", false, lie(corps, 0, 0, 0, -7.8F, 15.86F, -2.14F), cube(-4, 0, -2, 8, 12, 4, 0.25F)));
+      liste.add(new Morceau("bras_droit", false, lie(corps, -5 + 2.0325F, 2 - 0.6F, -0.9F, 179.9F, 0, 0), cube(-3, -2, -2, 4, 12, 4, 0.25F)));
+      liste.add(new Morceau("bras_gauche", false, lie(corps, 5 - 2.9675F, 2 - 7.6F, -1.9F, 167.48F, -3.32F, -41.12F), cube(-1, -2, -2, 4, 12, 4, 0.25F)));
+      liste.add(new Morceau("jambe_droite", false, lie(corps, -1.9F - 1.9F, 12, -0.9F, -19.75F, 65.04F, -43.49F), cube(-2, 0, -2, 4, 12, 4, 0.25F)));
+      liste.add(new Morceau("jambe_gauche", false, lie(corps, 1.9F + 0.6F, 12, -0.8F, -11, -4, 0), cube(-2, 0, -2, 4, 12, 4, 0.25F)));
+      return liste;
+   }
+
+   /** Morceau posé par Player Animator : pivot (pixels), rotations en degrés appliquées Z, Y puis X. */
+   private static Matrix4f lie(Matrix4f base, float x, float y, float z, float rx, float ry, float rz) {
+      return new Matrix4f(base).translate(x / 16.0F, y / 16.0F, z / 16.0F)
+         .rotateZ((float) Math.toRadians(rz)).rotateY((float) Math.toRadians(ry)).rotateX((float) Math.toRadians(rx))
+         .scale(1.0F / 16.0F);
+   }
+
+   /** À terre (Réanimation, par réflexion) : pose couchée de Minecraft, pas celle de TaCZ. */
+   private static boolean aTerre(Player p) {
+      try {
+         Class<?> c = Class.forName("fr.heraliz.reanimation.core.Downed");
+         return (Boolean) c.getMethod("isDowned", net.minecraft.world.entity.Entity.class).invoke(null, p);
+      } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+         return false;
+      }
    }
 
    /** Premier morceau traversé par le segment {@code de} → {@code a} : fraction du trajet (0 à 1) et morceau, ou null. */
