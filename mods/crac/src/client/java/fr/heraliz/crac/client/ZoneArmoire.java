@@ -25,8 +25,9 @@ import org.joml.Matrix4f;
  * <p>CRac 1.15.0 (21/10) : la bordure est posée sur le terrain et ne suit plus la hauteur du joueur (elle montait et
  * descendait avec lui) : un liseré net au ras du sol, et au-dessus un voile de 2,5 blocs qui s'efface vers le haut ; chaque
  * point du bord prend la hauteur du sol des deux colonnes qui le touchent (la plus haute), en pente douce d'un bloc à
- * l'autre ; petits poteaux aux quatre coins. Hauteur lue dans la carte des hauteurs du monde du joueur (sans les feuilles),
- * bornée à la hauteur de la zone ; rien là où le terrain n'est pas chargé.
+ * l'autre ; petits poteaux aux quatre coins. Hauteur lue dans la carte des hauteurs MOTION_BLOCKING du monde du joueur
+ * (avec WORLD_SURFACE, la seule que le serveur lui envoie : MOTION_BLOCKING_NO_LEAVES y reste vide et la zone tombait sous
+ * terre, CRac 1.15.3), bornée à la hauteur de la zone ; rien là où le terrain n'est pas chargé.
  */
 @Mod.EventBusSubscriber(modid = "crac", value = Dist.CLIENT)
 public final class ZoneArmoire {
@@ -127,7 +128,7 @@ public final class ZoneArmoire {
                 if (!lvl.hasChunk(x >> 4, z >> 4)) {
                     continue;
                 }
-                best = Math.max(best, lvl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z));
+                best = Math.max(best, lvl.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z));
             }
         }
         if (best == Integer.MIN_VALUE) {
