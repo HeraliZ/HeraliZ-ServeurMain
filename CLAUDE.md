@@ -1026,7 +1026,16 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `config/heralisz_clans/assaut.json` du dépôt, relu par `/territoire recharger`), retirées 20 s après la fin ;
   zombies de Minecraft et de Mutants & Zombies (Crawler, Blister, une seule Brute en vague 3, clé `max`) ; jamais de
   Spitter, ni dans les vagues ni dans la nature (`spitterZombiesSpawnNaturally = false`) : son crachat est une boule de
-  slime (choix du propriétaire, 21/10 ; zombies faits maison refusés). Petit panneau de
+  slime (choix du propriétaire, 21/10 ; zombies faits maison refusés).
+- attaques des zombies de Mutants & Zombies (21/10, Utils 2.17.0, `zombies/`, jar du mod intact) : plus de coup « au
+  contact » : le serveur (`AttaquesZombiesServeur`) annule leur coup et lance un geste (évènement d'entité 121), ne
+  touche qu'à l'impact si la cible est encore à portée et en vue (on peut esquiver en reculant) : Crawler morsure
+  5 ticks, Blister revers du bras droit 8 ticks, Brute deux bras levés puis abattus 14 ticks (elle s'arrête, rugit,
+  poussière au sol). Crawler : petit saut de Minecraft retiré, vrai bond à 3,5–8 blocs (accroupi 6 ticks, évènement
+  122), morsure s'il percute sa cible en vol, un bond toutes les 3 à 5 s. Gestes joués chez le joueur
+  (`GestesZombies`, mixin `GesteZombieRenduMixin` après le setupAnim de leur modèle, config
+  `heralisz_utils_zombies.mixins.json` facultative) ; durées communes dans `AttaquesZombies`. Compilé contre une copie
+  du jar dans `libs/`. Rien testé en jeu ; Petit panneau de
   verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
   drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un
   drapeau (`/territoire drapeau`) déplace le centre de la zone sur lui. Rien testé en jeu ;
