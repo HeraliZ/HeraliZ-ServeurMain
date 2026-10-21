@@ -624,5 +624,10 @@
   "heralisz_clans.duree.minutes": "%s мин",
   "heralisz_clans.duree.secondes": "%s с",
   "heralisz_clans.assaut.vague": "§c☠ Волна %s/%s: мертвецы идут на %s!",
-  "heralisz_clans.assaut.fin": "§7Мертвецы расходятся…"
+  "heralisz_clans.assaut.fin": "§7Мертвецы расходятся…",
+  "gui.hud.tenue_par": "Под контролем [%s]",
+  "gui.hud.capture_par": "Захват [%s] %s %%",
+  "gui.hud.sans_drapeau": "Нет флага: захват невозможен",
+  "gui.hud.au_drapeau": "У флага: вы участвуете",
+  "gui.hud.drapeau_distance": "Флаг в %s м"
 }

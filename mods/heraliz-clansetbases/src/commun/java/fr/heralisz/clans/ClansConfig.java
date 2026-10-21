@@ -19,6 +19,8 @@ public final class ClansConfig {
     public static final ForgeConfigSpec.LongValue REVENU_HEURE;
     public static final ForgeConfigSpec.IntValue XP_HEURE_VALEUR;
     public static final ForgeConfigSpec.IntValue DUREE_CAPTURE_S;
+    public static final ForgeConfigSpec.IntValue RAYON_CAPTURE;
+    public static final ForgeConfigSpec.IntValue HAUTEUR_CAPTURE;
     public static final ForgeConfigSpec.IntValue DUREE_CAPTURE_NEUTRE_S;
     public static final ForgeConfigSpec.IntValue PROTECTION_MIN;
     public static final ForgeConfigSpec.IntValue RAVITAILLEMENT_MIN;
@@ -56,8 +58,12 @@ public final class ClansConfig {
         XP_HEURE_VALEUR = b.comment("XP du clan par heure tenue et par point de valeur de la zone (valeur = niveau de loot de la ville,",
                         "1 a 7, cle « valeur » de zones.json : l'aerodrome T6 rapporte 6 fois plus qu'un village T1)")
                 .defineInRange("xp_heure_valeur", 10, 0, 100000);
-        DUREE_CAPTURE_S = b.comment("Secondes pour capturer une zone tenue par un autre clan (un seul capteur)").defineInRange("duree_capture_s", 90, 5, 3600);
-        DUREE_CAPTURE_NEUTRE_S = b.comment("Secondes pour capturer une zone libre").defineInRange("duree_capture_neutre_s", 60, 5, 3600);
+        RAYON_CAPTURE = b.comment("Rayon (blocs) autour du drapeau ou l'on capture et conteste la zone ; une zone sans drapeau ne se capture pas")
+                .defineInRange("rayon_capture", 10, 2, 64);
+        HAUTEUR_CAPTURE = b.comment("Ecart de hauteur maximal (blocs) avec le drapeau pour compter dans le cercle de capture")
+                .defineInRange("hauteur_capture", 6, 1, 64);
+        DUREE_CAPTURE_S = b.comment("Secondes pour capturer une zone tenue par un autre clan (un seul capteur)").defineInRange("duree_capture_s", 180, 5, 3600);
+        DUREE_CAPTURE_NEUTRE_S = b.comment("Secondes pour capturer une zone libre").defineInRange("duree_capture_neutre_s", 120, 5, 3600);
         PROTECTION_MIN = b.comment("Minutes de protection apres une capture").defineInRange("protection_min", 10, 0, 24 * 60);
         RAVITAILLEMENT_MIN = b.comment("Minutes entre deux signaux de ravitaillement sur une meme zone").defineInRange("ravitaillement_min", 90, 1, 24 * 60);
         CAISSE_VERROUILLEE_CLAN = b.comment("true : seule l'equipe qui a lance le signal ouvre la caisse larguee").define("caisse_verrouillee_clan", false);

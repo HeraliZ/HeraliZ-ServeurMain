@@ -32,9 +32,8 @@ import java.util.Locale;
  * <ul>
  * <li>toasts en haut a droite (verre, liseré d'accent, titre en capitales espacees, texte, sous-texte) : pile de 3,
  * 6 s pour une invitation (avec sa banniere), 4 s sinon, fondu d'entree 250 ms et de sortie 500 ms ;</li>
- * <li>barre de capture en haut au centre : nom de la zone en capitales espacees + barre 120 x 3 et l'etat colore
- * (CAPTURE 42 % accent, CONTESTE rouge, DEFENSE 63 % ambre, ZONE DE [TAG] couleur du proprietaire, VOTRE ZONE
- * attenue, PROTEGEE 8 MIN, LIMITE DE TERRITOIRES).</li>
+ * <li>petit panneau de zone en haut a gauche : ville, proprietaire, distance du drapeau, etat de capture et barre
+ * (CAPTURE accent, CONTESTE rouge, DEFENSE ambre, PROTEGEE, LIMITE).</li>
  * </ul>
  * Aucun tick : tout est calcule au rendu a partir de l'horloge ; rien n'est alloue par image hors la liste des toasts.
  */
@@ -180,20 +179,39 @@ public final class ClanHud {
         if (t.sous != null) g.drawString(font, t.sous, tx, y + (t.ligne2 != null ? 35 : 25), Ui.argb(Ui.MUTED, al), false);
     }
 
-    // ------------------------------------------------------------------ barre de capture
+    // ------------------------------------------------------------------ panneau de zone (haut a gauche)
+    /**
+     * Petit panneau de verre en haut a gauche, tant que le joueur est dans une zone : nom de la ville, a qui elle est
+     * (libre, votre zone, tenue par [TAG]), ou est le drapeau (« Drapeau a 45 m », « Au drapeau », « Pas de drapeau »)
+     * et, pendant une capture, une defense, une contestation ou la protection, l'etat et une barre fine.
+     */
     private static void barreZone(GuiGraphics g, Font font, int w) {
         Packets.TerritoireHudS2C z = ClientClans.hudZone();
         if (z == null) return;
-        int cx = w / 2, bw = 120, y = 6;
         EtatZone e = z.etat();
-        boolean mienne = ClientClans.snapshot() != null && ClientClans.snapshot().tag().equalsIgnoreCase(z.proprioTag());
-        int couleur;
-        String etat;
-        float ratio;
+        boolean mienne = ClientClans.snapshot() != null && !z.proprioTag().isEmpty() && ClientClans.snapshot().tag().equalsIgnoreCase(z.proprioTag());
+        // a qui est la zone
+        int couleurProprio;
+        String proprio;
+        if (z.proprioTag().isEmpty()) {
+            couleurProprio = Ui.MUTED;
+            proprio = Component.translatable("gui.hud.zone_libre").getString();
+        } else if (mienne) {
+            couleurProprio = Ui.OK;
+            proprio = Component.translatable("gui.hud.votre_zone").getString();
+        } else {
+            couleurProprio = Ui.mix(z.couleur(), 0xFFFFFF, 0.25f);
+            proprio = Component.translatable("gui.hud.tenue_par", z.proprioTag()).getString();
+        }
+        // etat du moment (rien quand la zone est calme)
+        String etat = null;
+        int couleur = Ui.MUTED;
+        float ratio = 0;
         switch (e) {
             case CAPTURE -> {
                 couleur = ClientClans.snapshot() != null && ClientClans.snapshot().tag().equalsIgnoreCase(z.capteurTag()) ? ClientClans.accent() : Ui.AMBRE;
-                etat = Component.translatable("gui.hud.capture", Math.round(z.progression() * 100)).getString();
+                etat = z.capteurTag().isEmpty() ? Component.translatable("gui.hud.capture", Math.round(z.progression() * 100)).getString()
+                        : Component.translatable("gui.hud.capture_par", z.capteurTag(), Math.round(z.progression() * 100)).getString();
                 ratio = z.progression();
             }
             case CONTESTE -> {
@@ -206,11 +224,6 @@ public final class ClanHud {
                 etat = Component.translatable("gui.hud.defense", Math.round(z.progression() * 100)).getString();
                 ratio = z.progression();
             }
-            case TENUE -> {
-                couleur = Ui.MUTED;
-                etat = Component.translatable("gui.hud.votre_zone").getString();
-                ratio = 1;
-            }
             case PROTEGEE -> {
                 couleur = z.proprioTag().isEmpty() ? Ui.ACCENT_NEUTRE : z.couleur();
                 etat = Component.translatable("gui.hud.protegee", Math.max(1, (z.protegeeMs() + 59_999) / 60_000)).getString();
@@ -219,33 +232,38 @@ public final class ClanHud {
             case LIMITE -> {
                 couleur = Ui.DANGER;
                 etat = Component.translatable("gui.hud.limite").getString();
-                ratio = 0;
             }
             default -> {
-                if (z.proprioTag().isEmpty()) {
-                    couleur = Ui.MUTED;
-                    etat = Component.translatable("gui.hud.zone_libre").getString();
-                    ratio = 0;
-                } else if (mienne) {
-                    couleur = Ui.MUTED;
-                    etat = Component.translatable("gui.hud.votre_zone").getString();
-                    ratio = 1;
-                } else {
-                    couleur = z.couleur();
-                    etat = Component.translatable("gui.hud.zone_de", z.proprioTag()).getString();
-                    ratio = 1;
-                }
             }
         }
-        // bande de lisibilite derriere
-        Ui.band(g, cx - 90, y - 3, cx + 90, y + 30, 0x000000, 90, 40);
-        Ui.spacedCentered(g, font, z.zone(), Ui.BOLD, cx, y, Ui.argb(Ui.TEXT, 255), 1.6f);
-        Ui.bar(g, cx - bw / 2, y + 13, bw, 3, ratio, couleur);
-        if (e == EtatZone.CONTESTE) {
-            // pulsation discrete sur la barre contestee
-            float p = (float) (0.5 + 0.5 * Math.sin(Util.getMillis() / 180.0));
-            g.fill(cx - bw / 2, y + 13, cx + bw / 2, y + 16, Ui.argb(Ui.DANGER, Math.round(60 * p)));
+        String drapeau;
+        int couleurDrapeau;
+        if (z.drapeau() == -2) {
+            drapeau = Component.translatable("gui.hud.sans_drapeau").getString();
+            couleurDrapeau = Ui.FAINT;
+        } else if (z.drapeau() == -1) {
+            drapeau = Component.translatable("gui.hud.au_drapeau").getString();
+            couleurDrapeau = Ui.OK;
+        } else {
+            drapeau = Component.translatable("gui.hud.drapeau_distance", z.drapeau()).getString();
+            couleurDrapeau = Ui.MUTED;
         }
-        Ui.spacedCentered(g, font, etat, Ui.SMALL, cx, y + 20, Ui.argb(couleur == Ui.MUTED ? Ui.MUTED : Ui.mix(couleur, 0xFFFFFF, 0.25f), 255), 0.8f);
+        int x = 6, y = 6, pw = 118;
+        int ph = etat == null ? 34 : 50;
+        Ui.glass(g, x, y, pw, ph);
+        g.fill(x + 2, y + 3, x + 4, y + ph - 3, Ui.argb(z.proprioTag().isEmpty() ? Ui.ACCENT_NEUTRE : z.couleur(), 220));
+        int tx = x + 8;
+        Ui.spaced(g, font, z.zone(), Ui.BOLD, tx, y + 5, Ui.argb(Ui.TEXT, 255), 0.8f);
+        g.drawString(font, Ui.lit(proprio, Ui.SMALL), tx, y + 15, Ui.argb(couleurProprio, 255), false);
+        g.drawString(font, Ui.lit(drapeau, Ui.SMALL), tx, y + 24, Ui.argb(couleurDrapeau, 255), false);
+        if (etat != null) {
+            int c2 = Ui.mix(couleur, 0xFFFFFF, 0.2f);
+            g.drawString(font, Ui.lit(etat, Ui.SMALL), tx, y + 34, Ui.argb(c2, 255), false);
+            Ui.bar(g, tx, y + 43, pw - 16, 2, ratio, couleur);
+            if (e == EtatZone.CONTESTE) {
+                float pulse = (float) (0.5 + 0.5 * Math.sin(Util.getMillis() / 180.0));
+                g.fill(tx, y + 43, tx + pw - 16, y + 45, Ui.argb(Ui.DANGER, Math.round(60 * pulse)));
+            }
+        }
     }
 }

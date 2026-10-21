@@ -624,5 +624,10 @@
   "heralisz_clans.duree.minutes": "%s min",
   "heralisz_clans.duree.secondes": "%s s",
   "heralisz_clans.assaut.vague": "§c☠ Wave %s/%s: the dead are coming to %s!",
-  "heralisz_clans.assaut.fin": "§7The dead scatter…"
+  "heralisz_clans.assaut.fin": "§7The dead scatter…",
+  "gui.hud.tenue_par": "Held by [%s]",
+  "gui.hud.capture_par": "Capture [%s] %s %%",
+  "gui.hud.sans_drapeau": "No flag: no capture",
+  "gui.hud.au_drapeau": "At the flag: you count",
+  "gui.hud.drapeau_distance": "Flag %s m away"
 }

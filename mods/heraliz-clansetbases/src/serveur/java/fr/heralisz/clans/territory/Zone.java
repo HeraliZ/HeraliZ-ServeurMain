@@ -97,6 +97,20 @@ public final class Zone {
         return Math.sqrt(distance2(px, pz));
     }
 
+    /** Distance horizontale au centre du bloc drapeau (infinie sans drapeau). */
+    public double distanceDrapeau(double px, double pz) {
+        if (drapeau == null) return Double.MAX_VALUE;
+        double dx = px - (drapeau.getX() + 0.5), dz = pz - (drapeau.getZ() + 0.5);
+        return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    /** Le point est dans le cercle de capture du drapeau (ClansConfig.RAYON_CAPTURE, ecart de hauteur HAUTEUR_CAPTURE). */
+    public boolean auDrapeau(double px, double py, double pz) {
+        if (drapeau == null) return false;
+        return Math.abs(py - drapeau.getY()) <= fr.heralisz.clans.ClansConfig.HAUTEUR_CAPTURE.get()
+                && distanceDrapeau(px, pz) <= fr.heralisz.clans.ClansConfig.RAYON_CAPTURE.get();
+    }
+
     /**
      * Demi-hauteur du cylindre : celle de zones.json si elle est reglee, sinon max(40, rayon / 4) (une ville de
      * rayon 400 a du relief : 100 blocs ; une petite zone garde 40). Empeche de compter un joueur cache loin sous

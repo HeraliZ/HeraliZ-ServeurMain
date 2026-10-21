@@ -191,8 +191,12 @@ public final class Packets {
      * Barre de capture du HUD pour le joueur present dans une zone. zone vide = le joueur est sorti (barre cachee).
      * progression 0..1 ; couleur = couleur du proprietaire (ou accent neutre) ; capteurTag = clan en train de capturer.
      */
+    /**
+     * @param drapeau -2 : zone sans drapeau (pas de capture) ; -1 : le joueur est dans le cercle de capture du drapeau ;
+     *                sinon distance au drapeau en blocs (arrondie a 5)
+     */
     public record TerritoireHudS2C(String zone, String proprioTag, int couleur, float progression, EtatZone etat, String capteurTag,
-                                   long protegeeMs) {
+                                   long protegeeMs, int drapeau) {
         void write(FriendlyByteBuf b) {
             Texte.utf(b, zone, 48);
             Texte.utf(b, proprioTag, 8);
@@ -201,11 +205,12 @@ public final class Packets {
             b.writeVarInt(etat.ordinal());
             Texte.utf(b, capteurTag, 8);
             b.writeVarLong(protegeeMs);
+            b.writeInt(drapeau);
         }
 
         static TerritoireHudS2C read(FriendlyByteBuf b) {
             return new TerritoireHudS2C(b.readUtf(48), b.readUtf(8), b.readInt(), b.readFloat(), EtatZone.parOrdinal(b.readVarInt()),
-                    b.readUtf(8), b.readVarLong());
+                    b.readUtf(8), b.readVarLong(), b.readInt());
         }
 
         void handle(Supplier<NetworkEvent.Context> ctx) {

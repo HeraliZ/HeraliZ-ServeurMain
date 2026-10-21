@@ -1018,6 +1018,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   rapporte au clan 10 XP par heure et par point de valeur (l'aérodrome T6 fait monter le clan plus vite dans le
   classement que Tcherno T3-T4) ; captures et temps tenu par ville sont gardés pour les statistiques du clan.
   Récompense à la capture : à décider plus tard (« pas abusé ») ;
+- capture des zones (21/10, Clans 3.1.0 et 3.2.0, demande du propriétaire) : la zone reste la ville entière (bonus de
+  loot, revenu, panneau), mais on ne capture et on ne conteste qu'**à 10 blocs au plus du drapeau** (`rayon_capture`,
+  6 blocs de hauteur `hauteur_capture`, `heralisz_clans-common.toml`) ; zone sans drapeau : aucune capture. 120 s pour
+  une zone libre, 180 s pour une zone tenue, ×1,5 au plus à plusieurs. Pendant la capture, 3 vagues de zombies
+  (`territory/Assauts`, à 0, 33 et 66 % de la barre, de plus en plus dures, autour des capteurs ; réglages
+  `config/heralisz_clans/assaut.json`, relu par `/territoire recharger`), retirées 20 s après la fin. Petit panneau de
+  verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
+  drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un
+  drapeau (`/territoire drapeau`) déplace le centre de la zone sur lui. Rien testé en jeu ;
 - caisses (heraliz_crates) : Vulkhar, Chevalier sans visage, Kraken et Pendentifs supprimées (Glacivore aussi), et
   plus aucun pendentif (charm) d'arme dans Tactique ; la caisse Gemme montre une gemme qui change de couleur (plus de
   couteau dans le cristal) ; hitbox = vraie forme de chaque modèle en cubes de 2 px (`python outils/formes_caisses.py`

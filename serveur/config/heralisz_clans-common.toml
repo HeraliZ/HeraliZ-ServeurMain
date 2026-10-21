@@ -23,12 +23,18 @@
 	#1 a 7, cle « valeur » de zones.json : l'aerodrome T6 rapporte 6 fois plus qu'un village T1)
 	#Range: 0 ~ 100000
 	xp_heure_valeur = 10
+	#Rayon (blocs) autour du drapeau ou l'on capture et conteste la zone ; une zone sans drapeau ne se capture pas
+	#Range: 2 ~ 64
+	rayon_capture = 10
+	#Ecart de hauteur maximal (blocs) avec le drapeau pour compter dans le cercle de capture
+	#Range: 1 ~ 64
+	hauteur_capture = 6
 	#Secondes pour capturer une zone tenue par un autre clan (un seul capteur)
 	#Range: 5 ~ 3600
-	duree_capture_s = 90
+	duree_capture_s = 180
 	#Secondes pour capturer une zone libre
 	#Range: 5 ~ 3600
-	duree_capture_neutre_s = 60
+	duree_capture_neutre_s = 120
 	#Minutes de protection apres une capture
 	#Range: 0 ~ 1440
 	protection_min = 10

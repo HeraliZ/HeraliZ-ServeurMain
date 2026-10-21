@@ -471,6 +471,6 @@ public final class ClientClans {
         }
         boolean mienne = e == EtatZone.TENUE || e == EtatZone.DEFENSE;
         setHudZone(new Packets.TerritoireHudS2C("Kamenka", e == EtatZone.NEUTRE ? "" : mienne ? "NOVA" : "RVN",
-                mienne ? accent() : 0x8A2BE2, progression, e, e == EtatZone.CAPTURE ? "NOVA" : "", e == EtatZone.PROTEGEE ? 8L * 60_000L : 0));
+                mienne ? accent() : 0x8A2BE2, progression, e, e == EtatZone.CAPTURE ? "NOVA" : "", e == EtatZone.PROTEGEE ? 8L * 60_000L : 0, -1));
     }
 }

@@ -55,14 +55,15 @@ import java.util.UUID;
  * changements importants sont postes sur le bus Forge ({@link TerritoireEvents}).
  *
  * <p>Machine d'etat d'une zone (toutes les 10 ticks ; O = proprietaire, C = clans presents hors O, eligibles =
- * survie/aventure, vivants, dans un clan, perm CAPTURER) :
+ * survie/aventure, vivants, dans un clan, perm CAPTURER, et a moins de rayon_capture du drapeau : une zone sans drapeau
+ * ne se capture pas) :
  * <ul>
  * <li>aucun C : la progression decroit de 1 %/s vers 0 ; etat NEUTRE (libre) ou TENUE ; un membre de O voit DEFENSE
  * (1 - progression) tant qu'elle n'est pas revenue a 0 ;</li>
  * <li>un seul C mais des membres de O presents, ou >= 2 C : CONTESTE, rien ne bouge ;</li>
  * <li>un seul C, zone protegee (10 min apres une capture) : PROTEGEE, rien ne bouge ;</li>
  * <li>un seul C qui a atteint la limite de territoires de son niveau : LIMITE, rien ne bouge ;</li>
- * <li>un seul C : CAPTURE, progression += 0,5 s / duree (60 s si libre, 90 s sinon) x min(2, 1 + 0,25 (n - 1)) ;
+ * <li>un seul C : CAPTURE, progression += 0,5 s / duree (120 s si libre, 180 s sinon) x min(1,5, 1 + 0,125 (n - 1)) ;
  * a 100 % : capture (proprietaire = C, protection, prochain ravitaillement dans 1 h 30, evenements Perdu + Capture).</li>
  * </ul>
  */
@@ -391,7 +392,7 @@ public final class Territoires {
     /** Le joueur n'est dans aucune zone : barre cachee, bonus retire. */
     private void sortie(ServerPlayer p) {
         if (dernierHud.remove(p.getUUID()) != null) {
-            ClansNet.toPlayer(p, new Packets.TerritoireHudS2C("", "", 0, 0, EtatZone.NEUTRE, "", 0));
+            ClansNet.toPlayer(p, new Packets.TerritoireHudS2C("", "", 0, 0, EtatZone.NEUTRE, "", 0, -2));
         }
         lootBonus.absent(p);
     }
@@ -427,7 +428,8 @@ public final class Territoires {
             boolean membreO = c != null && O != null && c.id.equals(O.id);
             if (membreO) lootBonus.present(p, now);
             else lootBonus.absent(p);
-            if (c == null || !eligible(p) || !c.peut(p.getUUID(), Perm.CAPTURER)) continue;
+            // seuls les joueurs au pied du drapeau capturent ou contestent (le reste de la zone : bonus de loot, HUD)
+            if (c == null || !eligible(p) || !c.peut(p.getUUID(), Perm.CAPTURER) || !zone.auDrapeau(p.getX(), p.getY(), p.getZ())) continue;
             if (membreO) {
                 nO++;
             } else if (C == null) {
@@ -463,7 +465,7 @@ public final class Territoires {
                 e.progression = 0;
                 progAvant = 0;
             }
-            float bonus = Math.min(2f, 1f + 0.25f * (nC - 1));
+            float bonus = Math.min(1.5f, 1f + 0.125f * (nC - 1));
             int duree = O == null ? ClansConfig.DUREE_CAPTURE_NEUTRE_S.get() : ClansConfig.DUREE_CAPTURE_S.get();
             if (progAvant <= 0) son(level, zone, Sons.CAPTURE_DEBUT.get(), 1.5f);
             e.progression = Math.min(1f, e.progression + (PERIODE_TICKS / 20f) / Math.max(1, duree) * bonus);
@@ -504,8 +506,10 @@ public final class Territoires {
             } else if (etat == EtatZone.LIMITE && (mien == null || C == null || !mien.id.equals(C.id))) {
                 ev = O == null ? EtatZone.NEUTRE : EtatZone.TENUE;
             }
+            int drapeau = zone.drapeau == null ? -2 : zone.auDrapeau(p.getX(), p.getY(), p.getZ()) ? -1
+                    : (int) (Math.round(zone.distanceDrapeau(p.getX(), p.getZ()) / 5.0) * 5);
             Packets.TerritoireHudS2C hud = new Packets.TerritoireHudS2C(zone.nom, O == null ? "" : O.tag,
-                    O == null ? COULEUR_NEUTRE : O.banniere.accent(), prog, ev, capteurTag, protegeeMs);
+                    O == null ? COULEUR_NEUTRE : O.banniere.accent(), prog, ev, capteurTag, protegeeMs, drapeau);
             if (!hud.equals(dernierHud.get(p.getUUID()))) {
                 dernierHud.put(p.getUUID(), hud);
                 ClansNet.toPlayer(p, hud);
