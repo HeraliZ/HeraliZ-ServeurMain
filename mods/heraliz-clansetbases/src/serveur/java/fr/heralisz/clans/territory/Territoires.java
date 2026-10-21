@@ -85,6 +85,7 @@ public final class Territoires {
     private final Map<String, List<ServerPlayer>> presents = new HashMap<>();
     private final LootBonus lootBonus;
     private final Ravitaillement ravitaillement;
+    private final Assauts assauts = new Assauts();
     /** zones.json illisible au dernier chargement : aucune ecriture tant qu'un rechargement n'a pas reussi. */
     private boolean zonesIllisibles;
     private int ticks;
@@ -103,6 +104,7 @@ public final class Territoires {
         this.lootBonus = new LootBonus(server);
         this.ravitaillement = new Ravitaillement(server);
         TableButin.recharger();
+        Assauts.charger();
         for (Zone z : zones.values()) z.calerHauteur(monde());
         HeraliszClans.LOG.info("[clans] territoires prets : {} zone(s), {} etat(s) sauvegardes", zones.size(), data.tous().size());
     }
@@ -124,6 +126,7 @@ public final class Territoires {
      * pas encore larguee retrouve son delai a 0 (la SavedData est ecrite juste apres cet evenement).
      */
     private void arreter() {
+        assauts.arreter(monde());
         for (String zoneId : ravitaillement.zonesDelaiARendre()) {
             EtatTerritoire e = data.tous().get(zoneId);
             if (e == null || e.prochainRavitaillement == 0) continue;
@@ -314,6 +317,7 @@ public final class Territoires {
     private void tick() {
         ticks++;
         ravitaillement.tick();
+        assauts.tick(monde(), System.currentTimeMillis());
         if (ticks % PERIODE_TICKS != 0) return;
         ClanStore store = ClanStore.get();
         if (store == null) return;
@@ -467,11 +471,15 @@ public final class Territoires {
             etat = EtatZone.CAPTURE;
             if (e.progression >= 1f) {
                 capturer(level, zone, e, C, O, capteurs, now);
+                assauts.prise(zone.id, level, joueurs, now);
                 O = C;
                 etat = EtatZone.PROTEGEE;
             }
         }
         if (dirty) data.setDirty();
+        List<ServerPlayer> joueursCapteurs = new ArrayList<>();
+        if (capteurs != null) for (ServerPlayer p : joueurs) if (capteurs.contains(p.getUUID())) joueursCapteurs.add(p);
+        assauts.cycle(level, zone, e.capteur, e.progression, C, etat == EtatZone.CAPTURE, joueursCapteurs, joueurs, now);
         etatsAffiches.put(zone.id, etat);
         rafraichirDrapeau(level, zone, O, etat);
         // barre de capture des joueurs presents (4 Hz max : ce cycle fait 2 Hz ; envoi seulement si changement).
@@ -828,6 +836,7 @@ public final class Territoires {
     public int recharger() {
         List<Zone> lues = Zones.charger(fichierZones);
         TableButin.recharger();
+        Assauts.charger();
         if (lues == null) {
             zonesIllisibles = true;
             return -1;

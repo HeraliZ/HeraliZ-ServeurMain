@@ -622,5 +622,7 @@
   "heralisz_clans.duree.jours": "%sd %sh",
   "heralisz_clans.duree.heures": "%sh %smin",
   "heralisz_clans.duree.minutes": "%s min",
-  "heralisz_clans.duree.secondes": "%s s"
+  "heralisz_clans.duree.secondes": "%s s",
+  "heralisz_clans.assaut.vague": "§c☠ Wave %s/%s: the dead are coming to %s!",
+  "heralisz_clans.assaut.fin": "§7The dead scatter…"
 }

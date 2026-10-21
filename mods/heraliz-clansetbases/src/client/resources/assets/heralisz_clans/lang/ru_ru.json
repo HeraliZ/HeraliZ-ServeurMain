@@ -622,5 +622,7 @@
   "heralisz_clans.duree.jours": "%s д %s ч",
   "heralisz_clans.duree.heures": "%s ч %s мин",
   "heralisz_clans.duree.minutes": "%s мин",
-  "heralisz_clans.duree.secondes": "%s с"
+  "heralisz_clans.duree.secondes": "%s с",
+  "heralisz_clans.assaut.vague": "§c☠ Волна %s/%s: мертвецы идут на %s!",
+  "heralisz_clans.assaut.fin": "§7Мертвецы расходятся…"
 }

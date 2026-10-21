@@ -622,5 +622,7 @@
   "heralisz_clans.duree.jours": "%s j %s h",
   "heralisz_clans.duree.heures": "%s h %s",
   "heralisz_clans.duree.minutes": "%s min",
-  "heralisz_clans.duree.secondes": "%s s"
+  "heralisz_clans.duree.secondes": "%s s",
+  "heralisz_clans.assaut.vague": "§c☠ Vague %s/%s : les morts arrivent sur %s !",
+  "heralisz_clans.assaut.fin": "§7Les morts se dispersent…"
 }
