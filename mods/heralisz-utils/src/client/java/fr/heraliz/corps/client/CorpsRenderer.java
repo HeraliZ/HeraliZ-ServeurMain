@@ -21,7 +21,7 @@ import org.joml.Vector4f;
 
 /**
  * Rendu d'un corps : le modele du joueur allonge (maillage cuit, voir {@link Maillage}), avec sa peau. Pas d'ombre, pas
- * de nom, pas d'armure dessinee. Distance de rendu et plafonds (par chunk, au total) : {@link ClientCorps}. Aucune
+ * de nom ; tenue (armure, Curios, sac) dessinee par-dessus par {@link TenueCorps}. Distance de rendu et plafonds (par chunk, au total) : {@link ClientCorps}. Aucune
  * allocation par image : matrices et vecteurs reutilises, pose sauvee et rendue a la main (pas de push/pop).
  * <p>Membres du clan du mort : petit losange a la couleur du clan au-dessus du corps (moins de 32 blocs), dessine avec
  * les autres losanges en un seul lot apres les entites ({@link Marqueurs}).
@@ -73,6 +73,7 @@ public final class CorpsRenderer extends EntityRenderer<CorpsEntity> {
         if (MESURER) mesureSommetsNs += System.nanoTime() - t1;
         mp.set(poseSauvee);
         mn.set(normaleSauvee);
+        TenueCorps.rendre(e, lacet, pt, ps, buffers, lumiere);
         if (e.clanAmi && CorpsConfig.marqueurClan && entityRenderDispatcher.distanceToSqr(e) < MARQUEUR_DISTANCE_CARRE) {
             Marqueurs.ajouter(Mth.lerp(pt, e.xo, e.getX()), Mth.lerp(pt, e.yo, e.getY()), Mth.lerp(pt, e.zo, e.getZ()));
         }

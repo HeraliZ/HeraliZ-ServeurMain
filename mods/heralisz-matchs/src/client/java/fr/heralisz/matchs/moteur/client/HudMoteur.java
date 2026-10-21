@@ -70,6 +70,11 @@ public final class HudMoteur {
      * bandeau du spectateur reduit. Les autres modes (ClashWar, zombies) gardent les grandes annonces.
      */
     public static java.util.function.BooleanSupplier compact = () -> false;
+    /**
+     * Vrai quand le mode de jeu dessine son propre bandeau (ClashWar : pastilles des manches, role ; 21/10) : celui du
+     * moteur n'est alors pas dessine.
+     */
+    public static java.util.function.BooleanSupplier masquerBandeau = () -> false;
     /** Echelle du bandeau en HUD compact. */
     public static final float ECHELLE_COMPACTE = 0.72f;
     /** Bas du bandeau en HUD compact (y, echelle du joueur) : le HUD du mode (etat de la bombe) se place dessous. */
@@ -160,7 +165,9 @@ public final class HudMoteur {
         long now = Util.getMillis();
         Font font = mc.font;
         boolean petit = compact.getAsBoolean();
-        if (petit) {
+        // le mode de jeu peut dessiner son propre bandeau (ClashWar)
+        boolean bandeau = !masquerBandeau.getAsBoolean();
+        if (bandeau && petit) {
             // bandeau reduit autour du haut de l'ecran (memes formes, plus petites)
             g.pose().pushPose();
             g.pose().translate(w / 2f, 1, 0);
@@ -168,7 +175,7 @@ public final class HudMoteur {
             g.pose().translate(-w / 2f, 0, 0);
             dessinerBandeau(g, font, w);
             g.pose().popPose();
-        } else {
+        } else if (bandeau) {
             dessinerBandeau(g, font, w);
         }
         int yFil = hautFil.applyAsInt(h);
@@ -307,6 +314,8 @@ public final class HudMoteur {
             debutAnnonce = now;
             TITRE_ANNONCE.texte(a.titre().getString());
             sousTitre = Ui.in(a.sousTitre(), Ui.FONT);
+            TITRE_PETIT.texte(a.titre().getString());
+            SOUS_PETIT.texte(a.sousTitre().getString());
             SoundEvent s = son(a.son());
             if (s != null) jouer(s, 1f);
         }
@@ -392,10 +401,15 @@ public final class HudMoteur {
         }
     }
 
+    /** Annonce en HUD compact : titre (capitales espacees) et sous-titre sur une seule ligne. */
+    private static final fr.heralisz.matchs.client.kit.TexteCentre TITRE_PETIT = new fr.heralisz.matchs.client.kit.TexteCentre(Ui.BOLD, 1.0f);
+    private static final fr.heralisz.matchs.client.kit.TexteCentre SOUS_PETIT = new fr.heralisz.matchs.client.kit.TexteCentre(Ui.FONT);
+
     /**
-     * Annonce en HUD compact : petit panneau de verre en haut au centre, sous le bandeau et la ligne d'etat du mode
-     * ({@link #Y_ANNONCE_COMPACTE}) : titre en capitales espacees (taille du texte normal), sous-titre plus petit, filet
-     * d'accent en bas ; fondus doux, aucune bande sur toute la largeur, opacite moderee (le combat reste lisible).
+     * Annonce en HUD compact (maquette 1 du ClashWar validee le 21/10) : une pastille de verre d'une seule ligne en haut au
+     * centre, sous le bandeau et la ligne d'etat du mode ({@link #Y_ANNONCE_COMPACTE}) : titre en capitales espacees de
+     * la couleur de l'annonce, sous-titre plus discret a sa suite, contour fin de l'accent. Texte centre au dixieme de
+     * pixel dans la pastille ({@code TexteCentre}) ; fondus doux, jamais au milieu de l'ecran.
      */
     private static void dessinerAnnoncePetite(GuiGraphics g, Font font, int w, long now) {
         Annonces.Annonce a = avancerAnnonce(now);
@@ -404,37 +418,27 @@ public final class HudMoteur {
         float alpha = Math.min(1f, age / 4f);
         float reste = a.dureeTicks() - age;
         if (reste < 10) alpha = Math.min(alpha, reste / 10f);
-        alpha *= 0.9f;
         if (alpha < 0.03f) return;
         int accent = a.couleur();
         int couleurTitre = switch (a.style()) {
             case VICTOIRE -> Ui.mix(Ui.OR, 0xFFFFFF, 0.25f);
-            case DEFAITE -> 0xC9CBD1;
+            case DEFAITE -> Ui.mix(Ui.DANGER, 0xFFFFFF, 0.2f);
             case FINALE -> Ui.mix(accent, 0xFFFFFF, 0.35f);
             case MANCHE -> Ui.mix(0xC8322D, 0xFFFFFF, 0.15f);
-            default -> 0xF4F5F8;
+            default -> Ui.mix(accent, 0xFFFFFF, 0.3f);
         };
-        boolean aSous = !a.sousTitre().getString().isEmpty();
-        float kt = 0.9f, ks = 0.8f;
-        float lt = TITRE_ANNONCE.largeur() * kt, ls = aSous ? font.width(sousTitre) * ks : 0;
-        int pw = (int) Math.min(w - 40, Math.max(lt, ls) + 22), ph = aSous ? 23 : 14;
-        int cx = w / 2, y = Y_ANNONCE_COMPACTE;
+        float k = 0.65f, ecart = 6f;
+        boolean aSous = !SOUS_PETIT.source().isEmpty();
+        float lt = TITRE_PETIT.largeur(k), ls = aSous ? SOUS_PETIT.largeur(k) : 0;
+        float contenu = lt + (aSous ? ecart + ls : 0);
+        int ph = 15, pw = (int) Math.min(w - 40, Math.ceil(contenu) + 20);
+        int x = Math.round(w / 2f - pw / 2f), y = Y_ANNONCE_COMPACTE;
         int a255 = Math.max(4, (int) (255 * alpha));
-        Ui.glass(g, cx - pw / 2, y, pw, ph, (int) (150 * alpha));
-        Ui.hairline(g, cx - pw / 2 + 4, cx + pw / 2 - 4, y + ph - 1, accent, (int) (200 * alpha), true, true);
-        g.pose().pushPose();
-        g.pose().translate(cx, y + 3, 0);
-        g.pose().scale(kt, kt, 1);
-        TITRE_ANNONCE.centre(g, 0, 0, Ui.argb(couleurTitre, a255));
-        g.pose().popPose();
-        if (aSous) {
-            int cs = a.style() == Annonces.Style.DEFAITE ? 0x9AA0AA : Ui.mix(accent, 0xFFFFFF, 0.4f);
-            g.pose().pushPose();
-            g.pose().translate(cx, y + 13, 0);
-            g.pose().scale(ks, ks, 1);
-            g.drawString(font, sousTitre, -font.width(sousTitre) / 2, 0, Ui.argb(cs, a255), false);
-            g.pose().popPose();
-        }
+        Ui.soft(g, x, y, pw, ph, Ui.argb(Ui.VERRE, (int) (160 * alpha)));
+        Ui.softOutline(g, x + 1, y + 1, pw - 2, ph - 2, Ui.argb(accent, (int) (110 * alpha)));
+        float cy = y + ph / 2f, tx = w / 2f - contenu / 2f;
+        TITRE_PETIT.gauche(g, tx, cy, k, Ui.argb(couleurTitre, a255));
+        if (aSous) SOUS_PETIT.gauche(g, tx + lt + ecart, cy, k, Ui.argb(0xB7BDC8, a255));
     }
 
     // ---------------------------------------------------------------- compte a rebours

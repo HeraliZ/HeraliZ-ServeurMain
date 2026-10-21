@@ -17,5 +17,6 @@ public final class ServeurTactique implements Partie {
       SonLointainServeur.brancher();
       CouteauxServeur.brancher();
       DegatsArmes.brancher();
+      ObjetsAVieServeur.brancher();
    }
 }

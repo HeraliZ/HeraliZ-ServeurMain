@@ -202,6 +202,32 @@ public class DuelPartie extends Partie {
         this.defenseurs = b;
     }
 
+    /**
+     * Partie de recherche et destruction d'un autre mode (ClashWar) : equipes deja construites (noms et couleurs du
+     * mode), memes classes imposees a tous ({@code classes}, affichees « Classes de {@code nomClasses} »), joueurs
+     * inscrits ensuite par {@link #inscrire}. Jamais d'entrainement ni de cible. Les points de reglage du mode sont les
+     * methodes protegees ({@link #manchesGagnantes}, {@link #changerDeCote}, {@link #titreHud}, {@link #statistiques},
+     * {@link #renvoyer}, {@link #detacherParti}, {@link #apresRendu}, {@link #observateurs}).
+     */
+    protected DuelPartie(String id, String mode, MinecraftServer serveur, String format, String carteId, List<ClassePerso> classes,
+                         String nomClasses, Equipe a, Equipe b) {
+        super(id, mode, serveur);
+        this.rd = true;
+        this.modeId = Vues.MODE_RD;
+        this.format = format;
+        this.carteId = carteId;
+        this.entrainement = false;
+        this.hote = null;
+        this.nomHote = nomClasses;
+        this.classesHote = List.copyOf(classes);
+        this.a = a;
+        this.b = b;
+        ajouterEquipe(a);
+        ajouterEquipe(b);
+        this.attaquants = a;
+        this.defenseurs = b;
+    }
+
     private static String nomCamp(List<ServerPlayer> camp, String defaut) {
         if (camp.isEmpty()) return defaut;
         StringBuilder sb = new StringBuilder();
@@ -212,7 +238,7 @@ public class DuelPartie extends Partie {
         return sb.toString();
     }
 
-    private void inscrire(ServerPlayer p, Equipe e) {
+    protected void inscrire(ServerPlayer p, Equipe e) {
         e.ajouter(p.getUUID());
         Fiche f = new Fiche(p.getUUID(), p.getGameProfile().getName(), e, false);
         // classes de l'hote : tout le monde part de sa classe 1 (le dernier choix memorise ne vaut que pour ses propres
@@ -240,7 +266,7 @@ public class DuelPartie extends Partie {
 
     /** Objectif : manches gagnantes (R&D) ou eliminations (match a mort). */
     public int objectif() {
-        if (rd) return DuelsConfig.RD_MANCHES_GAGNANTES;
+        if (rd) return manchesGagnantes();
         return Vues.FORMAT_2V2.equals(format) ? DuelsConfig.MAM_OBJECTIF_2V2 : DuelsConfig.MAM_OBJECTIF_1V1;
     }
 
@@ -558,12 +584,10 @@ public class DuelPartie extends Partie {
     }
 
     private void tickFin() {
-        if (ticksPhase() == 50 && !annulee) {
-            Vues.Tableau t = tableau();
-            MatchsNet.versJoueurs(enLigneCopie(), new PaquetsDuels.ScoresS2C(t));
-        }
+        if (ticksPhase() == 50 && !annulee) envoyerScores(enLigneCopie());
         if (ticksPhase() >= DuelsConfig.FIN_TICKS) {
             rendreTous();
+            apresRendu();
             fermer();
         }
     }
@@ -736,7 +760,7 @@ public class DuelPartie extends Partie {
     // ------------------------------------------------------------------ recherche et destruction
     private void nouvelleManche() {
         manche++;
-        if (manche == DuelsConfig.RD_CHANGEMENT_COTE + 1) {
+        if (changerDeCote(manche)) {
             Equipe t = attaquants;
             attaquants = defenseurs;
             defenseurs = t;
@@ -773,7 +797,7 @@ public class DuelPartie extends Partie {
         // bombes des sites remises en veille (posees au premier passage), ordinateur de la manche precedente retire
         entretenirBombes();
         majOrdinateur();
-        for (ServerPlayer p : enLigneCopie()) {
+        for (ServerPlayer p : annoncerManche() ? enLigneCopie() : List.<ServerPlayer>of()) {
             Fiche f = fiches.get(p.getUUID());
             boolean att = f != null && f.equipe == attaquants;
             Annonces.grande(p, new Annonces.Annonce(Component.translatable("duel.annonce.manche", manche),
@@ -1067,7 +1091,7 @@ public class DuelPartie extends Partie {
                     Component.translatable(raison), gagne ? gagnante.couleur() : Ui.DANGER, gagne ? Registres.SON_VICTOIRE : Registres.SON_DEFAITE, 70,
                     gagne ? Annonces.Style.VICTOIRE : Annonces.Style.DEFAITE));
         }
-        finApresIntermanche = gagnante.score() >= DuelsConfig.RD_MANCHES_GAGNANTES;
+        finApresIntermanche = gagnante.score() >= manchesGagnantes();
         killcamFinManche = false;
         phase(Phase.PREPARATION);
         synchroniserRd(true);
@@ -1434,9 +1458,12 @@ public class DuelPartie extends Partie {
         // le temps est decompte par le client : on ne renvoie qu'aux changements (et toutes les 15 s pour recaler)
         if (!force && sig == dernierHud && ticks() % 300 != 0) return;
         dernierHud = sig;
-        Component titre = rd ? Component.translatable("duel.hud.rd", manche) : Component.translatable("duel.hud.mam", objectif());
+        Component titre = titreHud();
         Component score = Component.literal(a.score() + "  —  " + b.score());
-        Hud.envoyer(enLigneCopie(), Hud.bandeau(this, titre, secondes, score));
+        List<ServerPlayer> l = enLigneCopie();
+        observateurs(l);
+        Hud.envoyer(l, Hud.bandeau(this, titre, secondes, score));
+        apresHud(l, secondes);
     }
 
     // ------------------------------------------------------------------ fin
@@ -1451,7 +1478,7 @@ public class DuelPartie extends Partie {
         nettoyerArene();
         if (annulee) return;
         // statistiques globales (jamais les stats de clan)
-        if (!entrainement) {
+        if (statistiques()) {
             for (Fiche f : fiches.values()) {
                 if (f.bot) continue;
                 DuelsStore.Stats s = DuelsStore.stats(f.id);
@@ -1477,6 +1504,7 @@ public class DuelPartie extends Partie {
             p.setHealth(p.getMaxHealth());
             MatchsNet.versJoueur(p, new PaquetsDuels.RdS2C(null));
             boolean gagne = gagnante != null && f != null && f.equipe == gagnante;
+            if (!annoncerFin()) continue;
             Component titre = Component.translatable(gagnante == null ? "duel.annonce.egalite" : gagne ? "duel.annonce.victoire" : "duel.annonce.defaite");
             Component sous = Component.literal(a.score() + "  —  " + b.score());
             Annonces.grande(p, new Annonces.Annonce(titre, sous, gagnante == null ? Ui.BLANC : gagne ? Ui.OR : Ui.DANGER,
@@ -1523,6 +1551,11 @@ public class DuelPartie extends Partie {
         Hud.effacer(p);
         MatchsNet.versJoueur(p, new PaquetsDuels.RdS2C(null));
         MatchsNet.versJoueur(p, new PaquetsDuels.EffetS2C(PaquetsDuels.EffetS2C.FIN, 0, 0, 0));
+        renvoyer(p);
+    }
+
+    /** Fin du duel pour ce joueur (deja nettoye) : Coffre rendu et detache du moteur. ClashWar : retour en salle. */
+    protected void renvoyer(ServerPlayer p) {
         boolean ok = Coffre.rendre(p);
         if (!ok) {
             // depot introuvable ou illisible (garde par le moteur pour enquete) : jamais coince en spectateur
@@ -1578,7 +1611,7 @@ public class DuelPartie extends Partie {
         if (rendreMaintenant) rendre(joueur);
         else {
             Spectateurs.arreter(joueur, false);
-            MatchApi.quitter(joueur.getUUID());
+            detacherParti(joueur);
         }
         for (ServerPlayer p : enLigneCopie()) Annonces.chat(p, Component.translatable("duel.chat.parti", f.nom));
         // equipe vide = forfait
@@ -1599,6 +1632,89 @@ public class DuelPartie extends Partie {
     @Override
     public boolean surReconnexion(ServerPlayer joueur) {
         return false;
+    }
+
+    // ------------------------------------------------------------------ points de reglage (ClashWar)
+    /** Manches gagnantes en recherche et destruction. */
+    protected int manchesGagnantes() {
+        return DuelsConfig.RD_MANCHES_GAGNANTES;
+    }
+
+    /** Vrai si les cotes s'echangent au debut de cette manche (1 = premiere). */
+    protected boolean changerDeCote(int manche) {
+        return manche == DuelsConfig.RD_CHANGEMENT_COTE + 1;
+    }
+
+    /** Titre du bandeau du moteur. */
+    protected Component titreHud() {
+        return rd ? Component.translatable("duel.hud.rd", manche) : Component.translatable("duel.hud.mam", objectif());
+    }
+
+    /** Numero de la manche en cours (1 = premiere, 0 avant). */
+    protected int manche() {
+        return manche;
+    }
+
+    /** Statistiques de duel comptees a la fin. */
+    protected boolean statistiques() {
+        return !entrainement;
+    }
+
+    /** Joueur deconnecte pendant la partie (deja elimine et sorti du mode spectateur) : detache du moteur. */
+    protected void detacherParti(ServerPlayer joueur) {
+        MatchApi.quitter(joueur.getUUID());
+    }
+
+    /** Apres le retour de tout le monde, juste avant {@link #fermer()} (fin normale seulement). */
+    protected void apresRendu() {
+    }
+
+    /** Ajoute a la liste les joueurs qui regardent sans jouer (ils recoivent aussi le bandeau). Defaut : aucun. */
+    protected void observateurs(List<ServerPlayer> sortie) {
+    }
+
+    /** Renvoie tout de suite le bandeau a tous (un spectateur vient d'arriver). */
+    protected void rafraichirHud() {
+        envoyerHud(true);
+    }
+
+    /** Apres chaque envoi du bandeau (memes joueurs, temps restant en secondes, -1 = aucun). Defaut : rien. */
+    protected void apresHud(List<ServerPlayer> joueurs, int secondes) {
+    }
+
+    /** Tableau des scores de fin (2,5 s apres la fin). Defaut : ecran des scores des duels. */
+    protected void envoyerScores(List<ServerPlayer> joueurs) {
+        MatchsNet.versJoueurs(joueurs, new PaquetsDuels.ScoresS2C(tableau()));
+    }
+
+    /** Grande annonce « manche n · attaque / defense » au debut de chaque manche. */
+    protected boolean annoncerManche() {
+        return true;
+    }
+
+    /** Annonce « victoire / defaite » a la fin. */
+    protected boolean annoncerFin() {
+        return true;
+    }
+
+    /** Vrai si ce joueur est dans l'equipe qui attaque cette manche. */
+    protected boolean attaquant(UUID joueur) {
+        return attaquants.contient(joueur);
+    }
+
+    /** Vrai si la bombe est amorcee (la minuterie de la bombe remplace le temps de la manche). */
+    protected boolean bombePosee() {
+        return etatCharge == Vues.CHARGE_POSEE;
+    }
+
+    /** Gagnant de chaque manche jouee, dans l'ordre ("a" ou "b"). */
+    protected List<String> manchesJouees() {
+        return manches;
+    }
+
+    /** Vrai si la partie a ete annulee (personne ne gagne). */
+    protected boolean annulee() {
+        return annulee;
     }
 
     // ------------------------------------------------------------------ aides

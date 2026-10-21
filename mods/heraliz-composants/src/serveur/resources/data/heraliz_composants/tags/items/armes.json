@@ -2,7 +2,16 @@
   "replace": false,
   "values": [
     "heraliz_composants:canon",
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iv",
     "heraliz_composants:ressort",
-    "heraliz_composants:kit_pieces"
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iv"
   ]
 }

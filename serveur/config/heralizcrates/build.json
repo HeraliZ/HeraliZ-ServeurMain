@@ -2,7 +2,7 @@
   "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add build <poids> <rarete>. Puis /heraliz reload.",
   "rewards": [
     {
-      "item": "heralisz_utils:wood_plate",
+      "item": "heraliz_composants:planches",
       "count": 8,
       "weight": 139,
       "rarity": "common"
@@ -26,13 +26,13 @@
       "rarity": "common"
     },
     {
-      "item": "heralisz_utils:iron_plate",
+      "item": "heraliz_composants:fragments_metal",
       "count": 4,
       "weight": 55,
       "rarity": "common"
     },
     {
-      "item": "heralisz_utils:glass",
+      "item": "heraliz_composants:clou",
       "count": 4,
       "weight": 45,
       "rarity": "common"
@@ -62,19 +62,19 @@
       "rarity": "common"
     },
     {
-      "item": "heralisz_utils:steel_plate",
+      "item": "heraliz_composants:pierres_taillees",
       "count": 4,
       "weight": 35,
       "rarity": "uncommon"
     },
     {
-      "item": "heralisz_utils:aluminum",
+      "item": "heraliz_composants:sac_ciment",
       "count": 4,
       "weight": 25,
       "rarity": "uncommon"
     },
     {
-      "item": "heralisz_utils:copper_coil",
+      "item": "heraliz_composants:equerres_acier",
       "count": 2,
       "weight": 20,
       "rarity": "uncommon"
@@ -128,13 +128,13 @@
       "rarity": "uncommon"
     },
     {
-      "item": "heralisz_utils:titanium_plate",
+      "item": "heraliz_composants:metal_renforce",
       "count": 2,
       "weight": 18,
       "rarity": "rare"
     },
     {
-      "item": "heralisz_utils:carbon",
+      "item": "heraliz_composants:fil_souder",
       "count": 2,
       "weight": 15,
       "rarity": "rare"

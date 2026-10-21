@@ -1,9 +1,21 @@
 {
   "replace": false,
   "values": [
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu_ii",
+    "heraliz_composants:tissu_iii",
+    "heraliz_composants:tissu_iv",
     "heraliz_composants:plaque_recyclee",
     "heraliz_composants:plaque_soudee",
     "heraliz_composants:plaque_metal",
-    "heraliz_composants:plaque_renforcee"
+    "heraliz_composants:plaque_renforcee",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iv"
   ]
 }

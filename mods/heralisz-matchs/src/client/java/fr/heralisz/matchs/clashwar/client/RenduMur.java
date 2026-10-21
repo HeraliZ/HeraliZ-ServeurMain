@@ -14,8 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 /**
- * Rendu du mur « tableau du tournoi » : un seul quadrilatere plein eclairage sur la face avant du mur, texture
- * {@link TextureTableau} (rapport 2:1, centree dans le mur si ses proportions different, bordure sombre autour). Aucune
+ * Rendu du mur « tableau du tournoi » ou du panneau du classement : un seul quadrilatere plein eclairage sur la face
+ * avant du mur, texture {@link TextureTableau} (tableau ou classement selon le mur, rapport 2:1, centree dans le mur si ses proportions different, bordure sombre autour). Aucune
  * allocation par image : la matrice et le tampon viennent du moteur de rendu.
  */
 public class RenduMur implements BlockEntityRenderer<TableauBlocEntite> {
@@ -26,8 +26,10 @@ public class RenduMur implements BlockEntityRenderer<TableauBlocEntite> {
 
     @Override
     public void render(TableauBlocEntite be, float partial, PoseStack pose, MultiBufferSource tampons, int lumiere, int recouvrement) {
-        ResourceLocation tex = TextureTableau.demander();
-        if (!TextureTableau.prete()) return;
+        // tableau du tournoi ou classement des clans (panneau du spawn), selon le mur
+        TextureTableau.Surface surface = be.contenu() == TableauBlocEntite.CONTENU_CLASSEMENT ? TextureTableau.CLASSEMENT : TextureTableau.TABLEAU;
+        ResourceLocation tex = surface.demander();
+        if (!surface.prete()) return;
         Direction face = be.face();
         int l = be.largeur(), h = be.hauteur();
         float aw = l, ah = h;

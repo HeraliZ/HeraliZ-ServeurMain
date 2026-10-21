@@ -37,8 +37,11 @@ public final class PeintreTableau {
     public static final int L = 1024, H = 512;
     private static final int MARGE = 28, HAUT_CORPS = 92, BAS_CORPS = H - 26;
 
-    /** Ligne d'equipe dessinee (pour les survols de l'ecran) : rectangle en unites du canevas et index d'equipe. */
-    public record Zone(int x, int y, int w, int h, int equipe) {
+    /**
+     * Ligne d'equipe dessinee (survols et clics de l'ecran) : rectangle en unites du canevas, index d'equipe, rencontre
+     * (tour, index) et vrai si elle se joue en direct (clic = la regarder).
+     */
+    public record Zone(int x, int y, int w, int h, int equipe, int tour, int index, boolean direct) {
     }
 
     private static final List<Zone> ZONES = new ArrayList<>();
@@ -200,7 +203,7 @@ public final class PeintreTableau {
         }
         int corpsH = BAS_CORPS - HAUT_CORPS;
         if (nbTours == 1) {
-            boiteFinale(g, font, v, tours.get(0).get(0), L / 2 - 110, HAUT_CORPS + corpsH / 2 - 30, 220, px, monEquipe);
+            boiteFinale(g, font, v, tours.get(0).get(0), 0, L / 2 - 110, HAUT_CORPS + corpsH / 2 - 30, 220, px, monEquipe);
             return;
         }
         int colonnes = 2 * (nbTours - 1) + 1, ecart = colonnes > 7 ? 14 : 22;
@@ -243,12 +246,23 @@ public final class PeintreTableau {
                     }
                     int gagnantCouleur = r.gagnant >= 0 && r.gagnant < v.equipes().size() ? v.equipes().get(r.gagnant).couleur() : -1;
                     liaison(g, cote == 0 ? x + colL : x, cy, suivX, suivY, gagnantCouleur);
-                    boite(g, font, v, r, x, y, colL, ligneH, px, monEquipe);
+                    boite(g, font, v, r, t, index, x, y, colL, ligneH, px, monEquipe);
                 }
             }
         }
-        boiteFinale(g, font, v, tours.get(nbTours - 1).get(0), finaleX, HAUT_CORPS + corpsH / 2 - 26, finaleL, px, monEquipe);
+        boiteFinale(g, font, v, tours.get(nbTours - 1).get(0), nbTours - 1, finaleX, HAUT_CORPS + corpsH / 2 - 26, finaleL, px, monEquipe);
+        // match pour la 3e place, sous la finale
+        VueTableau.Rencontre tr = v.troisieme();
+        if (tr != null && tr.statut != 3) {
+            int w3 = Math.max(120, finaleL - 40), x3 = finaleX + (finaleL - w3) / 2, y3 = HAUT_CORPS + corpsH / 2 + 72, h3 = 14;
+            Ui.spacedCentered(g, font, tr("clashwar.tour.troisieme").toUpperCase(Locale.ROOT), Ui.SMALL, x3 + w3 / 2f, y3 - 11,
+                    Ui.argb(BRONZE, 255), 1.4f);
+            boite(g, font, v, tr, nbTours - 1, 1, x3, y3, w3, h3, px, monEquipe);
+        }
     }
+
+    /** Couleur de la 3e place. */
+    private static final int BRONZE = 0xD08A4E;
 
     /** Liaison en equerre entre deux rencontres ; chemin du vainqueur a sa couleur. */
     private static void liaison(GuiGraphics g, int x0, int y0, int x1, int y1, int couleurVainqueur) {
@@ -260,13 +274,14 @@ public final class PeintreTableau {
     }
 
     /** Boite d'une rencontre : deux lignes (equipe A en haut, B en bas). */
-    private static void boite(GuiGraphics g, Font font, VueTableau v, VueTableau.Rencontre r, int x, int y, int w, int ligneH, float px, int moi) {
+    private static void boite(GuiGraphics g, Font font, VueTableau v, VueTableau.Rencontre r, int tour, int index, int x, int y, int w, int ligneH,
+                              float px, int moi) {
         boolean direct = r.enCours();
         Ui.soft(g, x, y, w, ligneH * 2, Ui.argb(0x0D0F14, 215));
         Ui.softOutline(g, x + 1, y + 1, w - 2, ligneH * 2 - 2, direct ? Ui.argb(Ui.DANGER, 200) : Ui.argb(0xFFFFFF, 30));
         g.fill(x + 4, y + ligneH, x + w - 4, y + ligneH + 1, Ui.argb(0xFFFFFF, 18));
-        ligne(g, font, v, r, r.a, r.vivantsA, r.totalA, x, y, w, ligneH, px, moi, r.statut == 3);
-        ligne(g, font, v, r, r.b, r.vivantsB, r.totalB, x, y + ligneH, w, ligneH, px, moi, r.statut == 3);
+        ligne(g, font, v, r, tour, index, r.a, r.vivantsA, r.totalA, x, y, w, ligneH, px, moi, r.statut == 3);
+        ligne(g, font, v, r, tour, index, r.b, r.vivantsB, r.totalB, x, y + ligneH, w, ligneH, px, moi, r.statut == 3);
         if (direct) {
             String t = tr("clashwar.mur.direct").toUpperCase(Locale.ROOT);
             float tw = Ui.spacedWidth(font, t, Ui.SMALL, 0.8f);
@@ -276,8 +291,8 @@ public final class PeintreTableau {
         }
     }
 
-    private static void ligne(GuiGraphics g, Font font, VueTableau v, VueTableau.Rencontre r, int equipe, int vivants, int total, int x, int y,
-                              int w, int h, float px, int moi, boolean exemption) {
+    private static void ligne(GuiGraphics g, Font font, VueTableau v, VueTableau.Rencontre r, int tour, int index, int equipe, int vivants,
+                              int total, int x, int y, int w, int h, float px, int moi, boolean exemption) {
         boolean connue = equipe >= 0 && equipe < v.equipes().size();
         if (!connue) {
             String t = exemption ? tr("clashwar.mur.exempt") : "—";
@@ -286,7 +301,7 @@ public final class PeintreTableau {
         }
         VueTableau.Equipe e = v.equipes().get(equipe);
         boolean gagne = r.gagnant == equipe, perdu = r.finie() && r.gagnant >= 0 && !gagne;
-        ZONES.add(new Zone(x, y, w, h, equipe));
+        ZONES.add(new Zone(x, y, w, h, equipe, tour, index, r.enCours()));
         if (gagne) {
             g.fill(x + 1, y + 1, x + w - 1, y + h - 1, Ui.argb(e.couleur(), 34));
             g.fill(x + 1, y + 2, x + 3, y + h - 2, Ui.argb(e.couleur(), 230));
@@ -306,12 +321,12 @@ public final class PeintreTableau {
             int lw = Math.round(font.width(Ui.lit(libelle, Ui.BOLD)) * k), base = Math.round(ty + 9 * k);
             g.fill(tx, base, tx + lw, base + 1, Ui.argb(e.couleur(), 220));
         }
-        // a droite : vivants en direct, F (forfait), coche du vainqueur
+        // a droite : manches gagnees en direct (recherche et destruction, premier a « total »), F (forfait), coche du vainqueur
         String droite = "";
         int dc = Ui.MUTED;
         if (r.enCours() && total > 0) {
-            droite = vivants + "/" + total;
-            dc = vivants > 0 ? Ui.TEXT : Ui.DANGER;
+            droite = String.valueOf(vivants);
+            dc = vivants >= total - 1 ? Ui.OR : Ui.TEXT;
         } else if (gagne && r.statut == 2) {
             if (r.forfait) {
                 droite = "F";
@@ -325,11 +340,12 @@ public final class PeintreTableau {
     }
 
     /** Finale au centre : boite plus grande, couronne du champion au-dessus quand elle est jouee. */
-    private static void boiteFinale(GuiGraphics g, Font font, VueTableau v, VueTableau.Rencontre r, int x, int y, int w, float px, int moi) {
+    private static void boiteFinale(GuiGraphics g, Font font, VueTableau v, VueTableau.Rencontre r, int tour, int x, int y, int w, float px,
+                                    int moi) {
         int ligneH = 26;
         Ui.spacedCentered(g, font, tr("clashwar.tour.finale").toUpperCase(Locale.ROOT), Ui.BOLD, x + w / 2f, y - 16, Ui.argb(Ui.OR, 255), 2f);
         Ui.soft(g, x - 3, y - 3, w + 6, ligneH * 2 + 6, Ui.argb(Ui.OR, 26));
-        boite(g, font, v, r, x, y, w, ligneH, px, moi);
+        boite(g, font, v, r, tour, 0, x, y, w, ligneH, px, moi);
         Ui.softOutline(g, x - 2, y - 2, w + 4, ligneH * 2 + 4, Ui.argb(Ui.OR, r.enCours() ? 60 : 140));
         if (r.finie() && r.gagnant >= 0 && r.gagnant < v.equipes().size()) {
             VueTableau.Equipe c = v.equipes().get(r.gagnant);

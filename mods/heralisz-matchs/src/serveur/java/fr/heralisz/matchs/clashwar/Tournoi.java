@@ -101,6 +101,9 @@ public final class Tournoi {
     final List<Tableau.EquipeT> facticesBanc = new ArrayList<>();
     final Set<UUID> mannequins = new LinkedHashSet<>();
     private int tour = -1;
+    /** Podium pose dans la salle pendant la ceremonie de fin, ou null. */
+    @Nullable
+    private PodiumSalle podium;
     final Random rnd = new Random();
     private final Map<UUID, Long> cadence = new HashMap<>();
 
@@ -162,6 +165,7 @@ public final class Tournoi {
             }
             case FIN -> {
                 if (simulation) return;
+                if (podium != null && ticksEtat % 40 == 0 && ticksEtat < cfg.finSecondes * 20 - 80) podium.lancerFeux();
                 if (ticksEtat >= cfg.finSecondes * 20) {
                     rendreTout();
                     etat = Etat.TERMINE;
@@ -536,7 +540,8 @@ public final class Tournoi {
         for (Tableau.Rencontre r : tableau.tour(t)) {
             if (!r.jouable()) continue;
             if (simulation) continue;
-            MatchCw m = new MatchCw(this, r, tableau.equipe(r.a), tableau.equipe(r.b), nomTour);
+            MatchCw m = MatchCw.creer(this, r, tableau.equipe(r.a), tableau.equipe(r.b),
+                    Component.translatable("clashwar.tour." + tableau.cleRencontre(r)));
             matchs.add(m);
             MatchApi.enregistrer(m);
             r.statut = Tableau.Statut.EN_COURS;
@@ -558,9 +563,50 @@ public final class Tournoi {
         int perdant = r.perdant();
         if (perdant >= 0 && !simulation) {
             Annonces.chat(serveur, Component.translatable(forfait ? "clashwar.chat.forfait" : "clashwar.chat.resultat", libelle(gagnant),
-                    libelle(perdant), Component.translatable("clashwar.tour." + tableau.cleTour(r.tour))));
+                    libelle(perdant), Component.translatable("clashwar.tour." + tableau.cleRencontre(r))));
+            if (!tableau.termine()) proposerDepart(perdant);
+        }
+        // demi-finale : l'equipe envoyee au match pour la 3e place est prevenue
+        Tableau.Rencontre tr = tableau.troisieme();
+        if (perdant >= 0 && !simulation && tr != null && (tr.a == perdant || tr.b == perdant) && !tr.finie()) {
+            for (ServerPlayer p : joueursEquipe(perdant)) {
+                Annonces.chat(p, Component.translatable("clashwar.chat.vers_troisieme").withStyle(ChatFormatting.GOLD));
+            }
         }
         apresRencontre();
+    }
+
+    /** Joueurs connectes de l'equipe encore participants (nouvelle liste). */
+    private List<ServerPlayer> joueursEquipe(int index) {
+        List<ServerPlayer> l = new ArrayList<>();
+        if (tableau == null || index < 0) return l;
+        for (UUID u : tableau.equipe(index).joueurs) {
+            ServerPlayer p = serveur.getPlayerList().getPlayer(u);
+            if (p != null && participants.contains(u)) l.add(p);
+        }
+        return l;
+    }
+
+    /** Vrai si l'equipe a encore une rencontre a jouer (match pour la 3e place compris). */
+    private boolean aEncoreUnMatch(int index) {
+        if (tableau == null || index < 0) return false;
+        for (List<Tableau.Rencontre> tour : tableau.tours()) {
+            for (Tableau.Rencontre r : tour) if (!r.finie() && (r.a == index || r.b == index)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Equipe eliminee sans match restant : ses joueurs peuvent quitter l'evenement (Coffre rendu, retour en jeu) d'un
+     * clic, ou rester regarder les autres matchs ({@code /clashwar tableau}, clic sur un match en direct).
+     */
+    private void proposerDepart(int index) {
+        if (aEncoreUnMatch(index)) return;
+        for (ServerPlayer p : joueursEquipe(index)) {
+            Annonces.chat(p, Component.translatable("clashwar.chat.elimine_choix", commande("/clashwar quitter"), commande("/clashwar tableau")));
+            MatchsNet.versJoueur(p, new CwPaquets.ToastS2C(Component.translatable("clashwar.toast.elimine"),
+                    Component.translatable("clashwar.toast.elimine.texte"), 0xFF6B6B, CwSons.id(CwSons.DEFAITE)));
+        }
     }
 
     /** Banc d'essai : rencontre tranchee sans match. */
@@ -604,11 +650,56 @@ public final class Tournoi {
         Annonces.chat(serveur, Component.translatable("clashwar.chat.vainqueur",
                 Component.literal(ch.libelle()).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(ch.couleur)).withBold(true)),
                 fort("#" + edition), fort(format.nom), Component.literal(noms.toString())));
+        // podium dans le chat : 1er, 2e, 3e (et 4e)
+        int[] podium = tableau.podium();
+        Annonces.chat(serveur, Component.translatable("clashwar.chat.podium.titre", fort("#" + edition)));
+        for (int i = 0; i < podium.length; i++) {
+            if (podium[i] < 0) continue;
+            Annonces.chat(serveur, Component.translatable("clashwar.chat.podium." + (i + 1), libelle(podium[i])));
+        }
         Recompenses.distribuer(this);
         CwEtat.champion = new CwEtat.Champion(ch.tag, ch.nomClan, ch.numero, ch.couleur, ch.banniere, edition, format.nom, System.currentTimeMillis());
         CwEtat.sauver(serveur);
+        Tournois.diffuserClassement(serveur);
+        ceremonie(podium);
         bandeauSalle();
         HeraliszMatchs.LOG.info("[clashwar] edition {} : vainqueur {} ({})", edition, ch.libelle(), noms);
+    }
+
+    /**
+     * Ceremonie du podium (maquette 3) : marches posees dans la salle, trois premieres equipes dessus, titre et cartes
+     * des trois premiers chez chaque joueur de la salle pendant toute la fin.
+     */
+    private void ceremonie(int[] places) {
+        if (tableau == null) return;
+        this.podium = PodiumSalle.poser(instanceSalle, tableau, places, this);
+        CwConfig cfg = CwConfig.get();
+        long[] montants = {cfg.recompenseVainqueur, cfg.recompenseFinaliste, cfg.recompenseTroisieme};
+        List<CwPaquets.Marche> marches = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            if (places[i] < 0) continue;
+            Tableau.EquipeT e = tableau.equipe(places[i]);
+            StringBuilder noms = new StringBuilder();
+            for (UUID u : e.joueurs) {
+                if (noms.length() > 0) noms.append(" · ");
+                noms.append(e.nom(u));
+            }
+            boolean cle = i == 0 && cfg.clesParJoueur > 0 && !cfg.cleEvent.isBlank();
+            Component recompense = Component.translatable(cle ? "clashwar.podium.recompense_cle" : "clashwar.podium.recompense", heralsTexte(montants[i]));
+            marches.add(new CwPaquets.Marche(i + 1, e.libelle(), e.nomClan, e.couleur, noms.toString(), recompense));
+        }
+        MatchsNet.versJoueurs(joueursSalle(), new CwPaquets.PodiumS2C(edition, format.nom, marches, cfg.finSecondes));
+    }
+
+    /** « 5 000 » : milliers separes par une espace fine insecable. */
+    static String heralsTexte(long v) {
+        String t = Long.toString(Math.abs(v));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < t.length(); i++) {
+            if (i > 0 && (t.length() - i) % 3 == 0) sb.append('\u202F');
+            sb.append(t.charAt(i));
+        }
+        return (v < 0 ? "-" : "") + sb;
     }
 
     /** Annule l'edition (raison = suffixe de {@code clashwar.annule.*}) et rend tout le monde. */
@@ -625,6 +716,10 @@ public final class Tournoi {
 
     /** Rend le Coffre a chaque participant (les deconnectes le recuperent a leur retour) et ferme la salle. */
     private void rendreTout() {
+        if (podium != null) {
+            podium.retirer();
+            podium = null;
+        }
         for (UUID u : new ArrayList<>(participants)) {
             ServerPlayer p = serveur.getPlayerList().getPlayer(u);
             if (p != null) rendreJoueur(p);
@@ -640,6 +735,7 @@ public final class Tournoi {
 
     /** Rend son Coffre a un joueur (position d'origine) et le detache ; donne ses cles de caisse en attente. */
     void rendreJoueur(ServerPlayer p) {
+        MatchsNet.versJoueur(p, CwPaquets.MatchHudS2C.AUCUN);
         Equipement.retirer(p);
         p.setCamera(p);
         Hud.effacer(p);
@@ -661,6 +757,8 @@ public final class Tournoi {
             Annonces.chat(p, Component.translatable("clashwar.chat.pas_participant"));
             return;
         }
+        // il regardait un match : d'abord ramene en salle
+        if (MatchApi.partieDe(p) instanceof MatchCw m && m.equipeDe(u) == null) m.arreterRegarder(p);
         if (salle == null || MatchApi.partieDe(p) != salle) {
             Annonces.chat(p, Component.translatable("clashwar.chat.quitter_en_match").withStyle(ChatFormatting.RED));
             return;
@@ -671,6 +769,47 @@ public final class Tournoi {
         rendreJoueur(p);
         Annonces.chat(p, Component.translatable("clashwar.chat.quitte"));
         Tournois.marquerVue();
+    }
+
+    // ================================================================== spectateurs de la salle
+    /**
+     * {@code /clashwar regarder [tour index]} : un participant libre (en salle, ou deja en train de regarder un autre
+     * match) regarde une rencontre en direct, par les yeux des joueurs ; sans rencontre donnee, le premier match en direct.
+     */
+    void regarder(ServerPlayer p, int tour, int index) {
+        UUID u = p.getUUID();
+        if (!participants.contains(u) || salle == null) {
+            Annonces.chat(p, Component.translatable("clashwar.chat.pas_participant"));
+            return;
+        }
+        MatchCw courantVu = MatchApi.partieDe(p) instanceof MatchCw m && m.equipeDe(u) == null ? m : null;
+        if (courantVu == null && MatchApi.partieDe(p) != salle) {
+            Annonces.chat(p, Component.translatable("clashwar.chat.regarder_en_match").withStyle(ChatFormatting.RED));
+            return;
+        }
+        MatchCw cible = null;
+        for (MatchCw m : matchs) {
+            if (!m.regardable()) continue;
+            if (tour < 0 || (m.rencontre().tour == tour && m.rencontre().index == index)) {
+                cible = m;
+                break;
+            }
+        }
+        if (cible == null) {
+            Annonces.chat(p, Component.translatable("clashwar.chat.regarder_aucun").withStyle(ChatFormatting.GRAY));
+            return;
+        }
+        if (cible == courantVu) return;
+        if (courantVu != null) courantVu.arreterRegarder(p);
+        if (cible.regarder(p)) {
+            Annonces.chat(p, Component.translatable("clashwar.chat.regarder", cible.contre(), commande("/clashwar salle")));
+        }
+    }
+
+    /** {@code /clashwar salle} : le joueur qui regardait un match revient en salle d'attente. */
+    void revenirEnSalle(ServerPlayer p) {
+        if (MatchApi.partieDe(p) instanceof MatchCw m && m.equipeDe(p.getUUID()) == null) m.arreterRegarder(p);
+        else Annonces.chat(p, Component.translatable("clashwar.chat.pas_spectateur").withStyle(ChatFormatting.GRAY));
     }
 
     // ================================================================== affichage

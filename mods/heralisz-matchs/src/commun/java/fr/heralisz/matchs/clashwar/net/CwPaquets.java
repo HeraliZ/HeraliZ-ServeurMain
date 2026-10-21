@@ -33,6 +33,10 @@ public final class CwPaquets {
         r.s2c(ToastS2C.class, ToastS2C::write, ToastS2C::read, ToastS2C::handle);
         r.s2c(ZoneS2C.class, ZoneS2C::write, ZoneS2C::read, ZoneS2C::handle);
         r.s2c(OuvrirS2C.class, OuvrirS2C::write, OuvrirS2C::read, OuvrirS2C::handle);
+        r.s2c(MatchHudS2C.class, MatchHudS2C::write, MatchHudS2C::read, MatchHudS2C::handle);
+        r.s2c(FinMatchS2C.class, FinMatchS2C::write, FinMatchS2C::read, FinMatchS2C::handle);
+        r.s2c(PodiumS2C.class, PodiumS2C::write, PodiumS2C::read, PodiumS2C::handle);
+        r.s2c(ClassementS2C.class, ClassementS2C::write, ClassementS2C::read, ClassementS2C::handle);
         r.c2s(InscriptionC2S.class, InscriptionC2S::write, InscriptionC2S::read, InscriptionC2S::handle);
         r.c2s(RetraitC2S.class, RetraitC2S::write, RetraitC2S::read, RetraitC2S::handle);
     }
@@ -211,6 +215,203 @@ public final class CwPaquets {
         }
 
         public static void handle(OuvrirS2C p, Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(p);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Roles du joueur dans un match (bandeau, pastille du role). */
+    public static final int ROLE_AUCUN = 0, ROLE_ATTAQUE = 1, ROLE_DEFENSE = 2;
+
+    /**
+     * Bandeau d'un match de recherche et destruction du ClashWar (maquette 1 validee le 21/10) : tags, couleurs et
+     * manches gagnees des deux equipes, manches a gagner, manche en cours, role de ce joueur, temps restant (decompte
+     * chez le joueur ; -1 = aucun, bombe amorcee : le HUD de la bombe montre sa minuterie). Inactif = masquer.
+     */
+    public record MatchHudS2C(boolean actif, String tour, String tagA, int couleurA, int scoreA, String tagB, int couleurB, int scoreB,
+                              int gagnantes, int manche, int role, int secondes, boolean nouvelleManche) {
+        public static final MatchHudS2C AUCUN = new MatchHudS2C(false, "", "", 0, 0, "", 0, 0, 0, 0, ROLE_AUCUN, -1, false);
+
+        public void write(FriendlyByteBuf buf) {
+            buf.writeBoolean(actif);
+            if (!actif) return;
+            buf.writeUtf(tour, 48);
+            buf.writeUtf(tagA, 24);
+            buf.writeInt(couleurA);
+            buf.writeByte(scoreA);
+            buf.writeUtf(tagB, 24);
+            buf.writeInt(couleurB);
+            buf.writeByte(scoreB);
+            buf.writeByte(gagnantes);
+            buf.writeByte(manche);
+            buf.writeByte(role);
+            buf.writeVarInt(secondes + 1);
+            buf.writeBoolean(nouvelleManche);
+        }
+
+        public static MatchHudS2C read(FriendlyByteBuf buf) {
+            if (!buf.readBoolean()) return AUCUN;
+            return new MatchHudS2C(true, buf.readUtf(48), buf.readUtf(24), buf.readInt(), buf.readByte(), buf.readUtf(24), buf.readInt(),
+                    buf.readByte(), buf.readByte(), buf.readByte(), buf.readByte(), buf.readVarInt() - 1, buf.readBoolean());
+        }
+
+        public static void handle(MatchHudS2C p, Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(p);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Ligne d'un joueur du panneau de fin de match : equipe 0 (A) ou 1 (B), eliminations, morts. */
+    public record JoueurFin(String nom, int equipe, int eliminations, int morts) {
+        void write(FriendlyByteBuf buf) {
+            buf.writeUtf(nom, 24);
+            buf.writeByte(equipe);
+            buf.writeVarInt(eliminations);
+            buf.writeVarInt(morts);
+        }
+
+        static JoueurFin read(FriendlyByteBuf buf) {
+            return new JoueurFin(buf.readUtf(24), buf.readByte(), buf.readVarInt(), buf.readVarInt());
+        }
+    }
+
+    /** Issue du match pour ce joueur : victoire, defaite, ou spectateur (neutre). */
+    public static final int FIN_NEUTRE = 0, FIN_VICTOIRE = 1, FIN_DEFAITE = 2;
+
+    /**
+     * Panneau de fin de match (maquette 2 validee) : tour, issue pour ce joueur, equipes et score, gagnant de chaque
+     * manche (0 = A, 1 = B, dans l'ordre), joueurs (8 au plus), ligne de suite (prochain match...) et secondes avant le
+     * retour en salle.
+     */
+    public record FinMatchS2C(String tour, int issue, String tagA, int couleurA, int scoreA, String tagB, int couleurB, int scoreB,
+                              int gagnantes, List<Integer> manches, List<JoueurFin> joueurs, Component suite, int secondes) {
+        public void write(FriendlyByteBuf buf) {
+            buf.writeUtf(tour, 48);
+            buf.writeByte(issue);
+            buf.writeUtf(tagA, 24);
+            buf.writeInt(couleurA);
+            buf.writeByte(scoreA);
+            buf.writeUtf(tagB, 24);
+            buf.writeInt(couleurB);
+            buf.writeByte(scoreB);
+            buf.writeByte(gagnantes);
+            int n = Math.min(9, manches.size());
+            buf.writeByte(n);
+            for (int i = 0; i < n; i++) buf.writeByte(manches.get(i));
+            int m = Math.min(8, joueurs.size());
+            buf.writeByte(m);
+            for (int i = 0; i < m; i++) joueurs.get(i).write(buf);
+            buf.writeComponent(suite);
+            buf.writeVarInt(secondes);
+        }
+
+        public static FinMatchS2C read(FriendlyByteBuf buf) {
+            String tour = buf.readUtf(48);
+            int issue = buf.readByte();
+            String tagA = buf.readUtf(24);
+            int ca = buf.readInt(), sa = buf.readByte();
+            String tagB = buf.readUtf(24);
+            int cb = buf.readInt(), sb = buf.readByte(), gagnantes = buf.readByte();
+            int n = Math.min(9, buf.readByte());
+            List<Integer> manches = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) manches.add((int) buf.readByte());
+            int m = Math.min(8, buf.readByte());
+            List<JoueurFin> j = new ArrayList<>(m);
+            for (int i = 0; i < m; i++) j.add(JoueurFin.read(buf));
+            return new FinMatchS2C(tour, issue, tagA, ca, sa, tagB, cb, sb, gagnantes, manches, j, buf.readComponent(), buf.readVarInt());
+        }
+
+        public static void handle(FinMatchS2C p, Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(p);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Une marche du podium : place (1 a 3), tag, nom du clan, couleur, joueurs (« A · B »), recompense (texte). */
+    public record Marche(int place, String tag, String nomClan, int couleur, String joueurs, Component recompense) {
+        void write(FriendlyByteBuf buf) {
+            buf.writeByte(place);
+            buf.writeUtf(tag, 24);
+            buf.writeUtf(nomClan, 48);
+            buf.writeInt(couleur);
+            buf.writeUtf(joueurs, 128);
+            buf.writeComponent(recompense);
+        }
+
+        static Marche read(FriendlyByteBuf buf) {
+            return new Marche(buf.readByte(), buf.readUtf(24), buf.readUtf(48), buf.readInt(), buf.readUtf(128), buf.readComponent());
+        }
+    }
+
+    /** Ceremonie du podium (maquette 3 validee) : titre et cartes des trois premiers, pendant {@code secondes}. */
+    public record PodiumS2C(int edition, String format, List<Marche> marches, int secondes) {
+        public void write(FriendlyByteBuf buf) {
+            buf.writeVarInt(edition);
+            buf.writeUtf(format, 8);
+            int n = Math.min(3, marches.size());
+            buf.writeByte(n);
+            for (int i = 0; i < n; i++) marches.get(i).write(buf);
+            buf.writeVarInt(secondes);
+        }
+
+        public static PodiumS2C read(FriendlyByteBuf buf) {
+            int edition = buf.readVarInt();
+            String format = buf.readUtf(8);
+            int n = Math.min(3, buf.readByte());
+            List<Marche> l = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) l.add(Marche.read(buf));
+            return new PodiumS2C(edition, format, l, buf.readVarInt());
+        }
+
+        public static void handle(PodiumS2C p, Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(p);
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Ligne du classement des clans (panneau du spawn). */
+    public record LigneClassement(String tag, String nomClan, int couleur, int titres, int matchsGagnes, int matchs, int eliminations,
+                                  int morts) {
+        void write(FriendlyByteBuf buf) {
+            buf.writeUtf(tag, 24);
+            buf.writeUtf(nomClan, 48);
+            buf.writeInt(couleur);
+            buf.writeVarInt(titres);
+            buf.writeVarInt(matchsGagnes);
+            buf.writeVarInt(matchs);
+            buf.writeVarInt(eliminations);
+            buf.writeVarInt(morts);
+        }
+
+        static LigneClassement read(FriendlyByteBuf buf) {
+            return new LigneClassement(buf.readUtf(24), buf.readUtf(48), buf.readInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
+                    buf.readVarInt(), buf.readVarInt());
+        }
+
+        public double kd() {
+            return morts == 0 ? eliminations : eliminations / (double) morts;
+        }
+    }
+
+    /** Classement ClashWar des clans (10 premiers) pour le panneau du spawn (maquette 4 validee), a tous les joueurs. */
+    public record ClassementS2C(List<LigneClassement> lignes, long prochaineMs, String dernierChampion, int derniereEdition) {
+        public void write(FriendlyByteBuf buf) {
+            int n = Math.min(10, lignes.size());
+            buf.writeByte(n);
+            for (int i = 0; i < n; i++) lignes.get(i).write(buf);
+            buf.writeLong(prochaineMs);
+            buf.writeUtf(dernierChampion, 24);
+            buf.writeVarInt(derniereEdition);
+        }
+
+        public static ClassementS2C read(FriendlyByteBuf buf) {
+            int n = Math.min(10, buf.readByte());
+            List<LigneClassement> l = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) l.add(LigneClassement.read(buf));
+            return new ClassementS2C(l, buf.readLong(), buf.readUtf(24), buf.readVarInt());
+        }
+
+        public static void handle(ClassementS2C p, Supplier<NetworkEvent.Context> ctx) {
             RECEPTION_CLIENT.accept(p);
             ctx.get().setPacketHandled(true);
         }

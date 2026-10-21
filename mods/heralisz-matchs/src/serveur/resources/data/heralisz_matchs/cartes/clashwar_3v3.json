@@ -107,6 +107,46 @@
     64.5,
     180.0
    ]
+  ],
+  "bombe_a": [
+   [
+    60.5,
+    10.0,
+    42.5,
+    140.4
+   ]
+  ],
+  "site_a": [
+   [
+    60.5,
+    10.0,
+    42.5,
+    140.4
+   ]
+  ],
+  "bombe_b": [
+   [
+    13.5,
+    7.0,
+    42.5,
+    -152.8
+   ]
+  ],
+  "site_b": [
+   [
+    13.5,
+    7.0,
+    42.5,
+    -152.8
+   ]
+  ],
+  "charge": [
+   [
+    31.5,
+    7.0,
+    7.5,
+    0.0
+   ]
   ]
  },
  "format": "3v3",
@@ -141,5 +181,10 @@
  },
  "symetrie": "centrale (rotation 180° autour de x = 34, z = 34)",
  "blocs": 11508,
- "generateur": "tools/matchs/cartes/clashwar_3v3_4v4.py"
+ "generateur": "tools/matchs/cartes/clashwar_3v3_4v4.py",
+ "recherche_destruction": {
+  "attaquants": "a",
+  "defenseurs": "b",
+  "note": "ClashWar en recherche et destruction (Matchs 0.12.0) : bombes A et B du cote de spawn_b, placees par le calcul sur une dalle libre de 3 x 3 au moins, accessibles a pied des deux spawns, module tourne vers spawn_a. Provisoire, en attendant les nouvelles cartes."
+ }
 }

@@ -33,7 +33,7 @@ COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/c
 # nombre moyen pour 100 conteneurs ouverts
 POUR_100 = {
     "armes":       {1: 6, 2: 9, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},
-    "plans":       {1: 4, 2: 6, 3: 8, 4: 8, 5: 8, 6: 8, 7: 7},  # plan de fabrication = rareté de son arme
+    # plans de fabrication retirés du jeu le 21/10 (système de craft à refaire) : plus de famille « plans »
     "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
     "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
     "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 45},
@@ -50,7 +50,7 @@ PARTS = {
 }
 LOURDES = 0.35
 # parts propres à une famille dans un palier (sinon PARTS)
-PARTS_FAMILLE = {("plans", 7): {"rare": 35, "epique": 45, "legendaire": 20}}
+PARTS_FAMILLE = {}
 # jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
 OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
 PARACHUTE = 0.19  # part du poids d'origine du parachute
@@ -145,7 +145,7 @@ def familles():
         if gid in jeu:
             ajouter("armes", r, {"item": ARME, "nombre": [1, 1], "nbt": jeu[gid], "_cat": "armes"},
                     LOURDES if lourde(gid, fam_armes) else 1)
-    for f in sorted(glob.glob(str(TACZ / "*/data/*/recipes/gun/*.json"))):
+    for f in (sorted(glob.glob(str(TACZ / "*/data/*/recipes/gun/*.json"))) if "plans" in POUR_100 else []):
         d = lire_json(f) or {}
         gid = (d.get("result") or {}).get("id")
         plans = [m["item"]["item"] for m in d.get("materials", []) if str(m.get("item", {}).get("item", "")).startswith(PLAN)]
@@ -288,7 +288,7 @@ def simuler(essais=1000):
     ra = json.load(open(RARETES, encoding="utf-8"))
     fams = familles()
     ra["comp"] = {e["item"]: r for r, l in fams["composants"].items() for e, _ in l}
-    ra["plans"] = {e["item"]: r for r, l in fams["plans"].items() for e, _ in l}
+    ra["plans"] = {e["item"]: r for r, l in fams.get("plans", {}).items() for e, _ in l}
     for t in PARTS:
         data = json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8"))
         objs = [e for e in data["objets"] if not e["item"].startswith(IGNORES)]

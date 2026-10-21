@@ -73,10 +73,28 @@ public final class ClientLoot {
         public static void infobulleLoot(ItemTooltipEvent e) {
             // rareté inscrite sur l'objet (coffres T7) ou celle de sa sorte ; Commun n'est pas rappelé
             Rarete r = RaretesObjets.de(e.getItemStack());
-            if (r != null && (r != Rarete.COMMUN || Rarete.de(e.getItemStack()) != null)) {
-                e.getToolTip().add(Math.min(1, e.getToolTip().size()), Component.literal("★ ").append(r.texte())
+            if (r == null) return;
+            nomEnCouleur(e, r);
+            if (r != Rarete.COMMUN || Rarete.de(e.getItemStack()) != null) {
+                // 21/10 (choix du propriétaire) : plus d'étoile devant la rareté
+                e.getToolTip().add(Math.min(1, e.getToolTip().size()), r.texte()
                         .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.couleur))));
             }
+        }
+
+        /**
+         * Nom de l'objet dans la couleur de sa rareté (21/10, choix du propriétaire : un viseur Légendaire s'affichait en
+         * violet, couleur « épique » de Minecraft). Commun : blanc. Gardent leurs couleurs les noms qui en ont dans leur
+         * texte (codes §, skins de couteaux colorés par leur rang).
+         */
+        private static void nomEnCouleur(ItemTooltipEvent e, Rarete r) {
+            if (e.getToolTip().isEmpty()) return;
+            // seulement une rareté choisie pour cet objet (inscrite, ou de sa sorte), pas la rareté par défaut
+            if (Rarete.de(e.getItemStack()) == null && RaretesObjets.propre(e.getItemStack()) == null) return;
+            Component nom = e.getToolTip().get(0);
+            if (nom.getString().indexOf('\u00A7') >= 0) return;
+            int couleur = r == Rarete.COMMUN ? 0xFFFFFF : r.couleur;
+            e.getToolTip().set(0, nom.copy().withStyle(st -> st.withColor(TextColor.fromRgb(couleur))));
         }
 
         /**

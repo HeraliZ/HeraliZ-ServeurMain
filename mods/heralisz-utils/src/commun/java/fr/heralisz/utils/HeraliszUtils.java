@@ -26,8 +26,8 @@ import fr.heralisz.utils.onglet.OngletGroupe;
 import fr.heralisz.utils.pont.Parties;
 
 /**
- * HeralisZ Utils (porteur du jar fusionné HeraliZ Utils 2.0.0 : pont client/serveur, onglet commun) : plans de fabrication d'armes, composants de craft et document de loot bonus, repris de l'ancien
- * onglet « UTILS » d'ArkaniaZ (jar geckolib222). Catalogue : heralisz_utils_catalog.json (tools/gen_utils.py).
+ * HeralisZ Utils (porteur du jar fusionné HeraliZ Utils 2.0.0 : pont client/serveur, onglet commun) : document « Bonus de
+ * loot » (catalogue heralisz_utils_catalog.json ; plans et composants d'ArkaniaZ retirés le 21/10).
  * Retire aussi du jeu les anciens objets ArkaniaZ abandonnés (voir HIDDEN) et renomme « ArkaniaZ » en « HeralisZ »
  * dans les textes des autres mods (traductions de ce mod, chargé après eux).
  */
@@ -63,20 +63,10 @@ public final class HeraliszUtils {
             ALL.add(ITEMS.register(id, () -> "document".equals(kind) ? DOCUMENT_USINE.apply(rarity) : new UtilItem(kind, rarity)));
         }
         // onglet commun du jar fusionné « HeraliZ · Utils » (même identifiant heralisz_utils:utils et même titre qu'avant) :
-        // un groupe par contenu, filtré par le panneau de gauche côté client (client.onglet.PanneauOnglet).
-        ONGLET.ajouter("plans", "onglet.heralisz_utils.plans",
-                () -> new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MODID, "plan_m4a1"))),
-                output -> ALL.forEach(ro -> output.accept(ro.get())));
-        ONGLET.ajouter("carte", "onglet.heralisz_utils.carte", () -> new ItemStack(MapBlocks.SABLE_DESERT.get()),
-                output -> MapBlocks.ITEMS.forEach(ro -> output.accept(ro.get())));
-        ONGLET.ajouter("gares", "onglet.heralisz_utils.gares",
-                () -> new ItemStack(fr.heralisz.utils.train.Train.TABLEAU.get()),
-                output -> {
-                    output.accept(fr.heralisz.utils.train.Train.TABLEAU.get());
-                    output.accept(fr.heralisz.utils.ascenseur.Ascenseur.MACHINE.get());
-                    output.accept(fr.heralisz.utils.ascenseur.Ascenseur.PALIER.get());
-                    output.accept(fr.heralisz.utils.spawn.Depart.BORNE_OBJET.get());
-                });
+        // un groupe par contenu, filtré par le panneau de gauche côté client (client.onglet.PanneauOnglet). Depuis le 21/10
+        // (choix du propriétaire) seulement les objets utiles, chacun une seule fois : véhicules, kits de réparation, sols
+        // de la carte, borne de départ et Bonus de loot ; plans et anciens matériaux retirés (craft à refaire), panneau de
+        // gare et ascenseur seulement dans l'onglet des décors de la map.
         // groupes des autres mods du jar, déclarés ICI pour un ordre fixe (FML construit les mods en parallèle : des
         // ajouts faits dans leurs @Mod changeraient d'ordre d'un lancement à l'autre) ; leur contenu est lu par lambdas
         ONGLET.ajouter("vehicules", "onglet.heralisz_utils.vehicules",
@@ -87,8 +77,15 @@ public final class HeraliszUtils {
         ONGLET.ajouter("usure", "onglet.heralisz_utils.usure",
                 () -> new ItemStack(fr.heraliz.usure.Contenu.KIT_STANDARD.get()),
                 output -> fr.heraliz.usure.Contenu.KITS.forEach(k -> output.accept(k.get())));
+        ONGLET.ajouter("carte", "onglet.heralisz_utils.carte", () -> new ItemStack(MapBlocks.SABLE_DESERT.get()),
+                output -> MapBlocks.ITEMS.forEach(ro -> output.accept(ro.get())));
+        ONGLET.ajouter("divers", "onglet.heralisz_utils.divers", () -> new ItemStack(fr.heralisz.utils.spawn.Depart.BORNE_OBJET.get()),
+                output -> {
+                    output.accept(fr.heralisz.utils.spawn.Depart.BORNE_OBJET.get());
+                    ALL.forEach(ro -> output.accept(ro.get()));
+                });
         TAB = TABS.register("utils", () -> ONGLET.construire(Component.translatable("itemGroup.heralisz_utils"),
-                () -> new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MODID, "plan_m4a1")))));
+                () -> new ItemStack(fr.heraliz.usure.Contenu.KIT_STANDARD.get())));
         // onglet des décors de la map, gardé À PART tel quel : c'est la palette de construction de la carte
         TABS.register("decors", () -> CreativeModeTab.builder()
                 .title(Component.translatable("itemGroup.heralisz_utils.decors"))

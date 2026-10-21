@@ -47,8 +47,10 @@ public final class CwConfig {
     public int annonceMinutes = 15, inscriptionMinutes = 10;
     /** Durees du deroule (secondes). */
     public int choixSecondes = 10, preparationSecondes = 10, combatSecondes = 240, mortSubiteSecondes = 60,
-            limiteSecondes = 90, pauseToursSecondes = 20, retourSecondes = 6, finSecondes = 12, attenteArene = 90;
-    /** Degats par seconde hors de la zone pendant la mort subite. */
+            limiteSecondes = 90, pauseToursSecondes = 20, retourSecondes = 6, finSecondes = 20, attenteArene = 90;
+    /** Manches gagnantes d'un match de recherche et destruction (3 = au meilleur des 5). */
+    public int manchesGagnantes = 3;
+    /** Degats par seconde hors de la zone pendant la mort subite (ancien mode, plus utilise depuis la 0.12.0). */
     public float degatsZone = 2f;
     /** Limites par equipe : classe de kit -> nombre maximum. */
     public Map<String, Integer> limites = new LinkedHashMap<>(Map.of("sniper", 1, "pompe", 1));
@@ -56,7 +58,7 @@ public final class CwConfig {
     public List<String> kits = List.of("clashwar_assaut", "clashwar_smg", "clashwar_pompe", "clashwar_sniper", "clashwar_tactique");
     public String kitDefaut = "clashwar_assaut";
     /** Jetons verses a la banque du clan. */
-    public long recompenseVainqueur = 5000, recompenseFinaliste = 2000, recompenseDemi = 750;
+    public long recompenseVainqueur = 5000, recompenseFinaliste = 2000, recompenseTroisieme = 1000, recompenseDemi = 750;
     /** Cle de caisse d'event donnee a chaque joueur de l'equipe gagnante (id d'objet, vide = aucune). */
     public String cleEvent = "heralizcrates:event_key";
     public int clesParJoueur = 1;
@@ -154,6 +156,7 @@ public final class CwConfig {
         retourSecondes = Math.max(2, entier(o, "retour_secondes", retourSecondes));
         finSecondes = Math.max(3, entier(o, "fin_secondes", finSecondes));
         attenteArene = Math.max(10, entier(o, "attente_arene_secondes", attenteArene));
+        manchesGagnantes = Math.max(1, Math.min(5, entier(o, "manches_gagnantes", manchesGagnantes)));
         if (o.has("degats_zone")) degatsZone = Math.max(0.5f, o.get("degats_zone").getAsFloat());
         if (o.has("limites") && o.get("limites").isJsonObject()) {
             limites = new LinkedHashMap<>();
@@ -171,6 +174,7 @@ public final class CwConfig {
             JsonObject r = o.getAsJsonObject("recompenses");
             recompenseVainqueur = Math.max(0, r.has("vainqueur") ? r.get("vainqueur").getAsLong() : recompenseVainqueur);
             recompenseFinaliste = Math.max(0, r.has("finaliste") ? r.get("finaliste").getAsLong() : recompenseFinaliste);
+            recompenseTroisieme = Math.max(0, r.has("troisieme") ? r.get("troisieme").getAsLong() : recompenseTroisieme);
             recompenseDemi = Math.max(0, r.has("demi_finaliste") ? r.get("demi_finaliste").getAsLong() : recompenseDemi);
             cleEvent = chaine(r, "cle_event", cleEvent);
             clesParJoueur = Math.max(0, r.has("cles_par_joueur") ? r.get("cles_par_joueur").getAsInt() : clesParJoueur);
@@ -204,6 +208,7 @@ public final class CwConfig {
         o.addProperty("retour_secondes", retourSecondes);
         o.addProperty("fin_secondes", finSecondes);
         o.addProperty("attente_arene_secondes", attenteArene);
+        o.addProperty("manches_gagnantes", manchesGagnantes);
         o.addProperty("degats_zone", degatsZone);
         JsonObject l = new JsonObject();
         limites.forEach(l::addProperty);
@@ -215,6 +220,7 @@ public final class CwConfig {
         JsonObject rec = new JsonObject();
         rec.addProperty("vainqueur", recompenseVainqueur);
         rec.addProperty("finaliste", recompenseFinaliste);
+        rec.addProperty("troisieme", recompenseTroisieme);
         rec.addProperty("demi_finaliste", recompenseDemi);
         rec.addProperty("cle_event", cleEvent);
         rec.addProperty("cles_par_joueur", clesParJoueur);

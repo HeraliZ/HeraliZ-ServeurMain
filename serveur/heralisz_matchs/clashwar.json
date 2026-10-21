@@ -24,8 +24,9 @@
   "limite_secondes": 90,
   "pause_tours_secondes": 20,
   "retour_secondes": 6,
-  "fin_secondes": 12,
+  "fin_secondes": 20,
   "attente_arene_secondes": 90,
+  "manches_gagnantes": 3,
   "degats_zone": 2.0,
   "limites": {
     "sniper": 1,
@@ -42,6 +43,7 @@
   "recompenses": {
     "vainqueur": 5000,
     "finaliste": 2000,
+    "troisieme": 1000,
     "demi_finaliste": 750,
     "cle_event": "heralizcrates:event_key",
     "cles_par_joueur": 1

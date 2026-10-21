@@ -32,5 +32,10 @@
   "heraliz_tactique.vitres.protege": "Bloc de la liste blocs_proteges : il ne casse jamais.",
   "heraliz_tactique.vitres.dimension": "Dimension protégée (%s, dimensions_protegees) : rien n'y casse.",
   "heraliz_tactique.vitres.spawn": "À %s blocs du point d'apparition du monde (%s) : dans le rayon_spawn de %s blocs, rien ne casse.",
-  "heraliz_tactique.vitres.claim": "Dans un claim de CRac (bloc de claim en %s) : rien n'y casse (proteger_claims_crac)."
+  "heraliz_tactique.vitres.claim": "Dans un claim de CRac (bloc de claim en %s) : rien n'y casse (proteger_claims_crac).",
+  "heraliz_tactique.a_vie.titre": "Jeter cet objet ?",
+  "heraliz_tactique.a_vie.texte": "Objet à vie : au sol, n'importe qui peut le prendre.",
+  "heraliz_tactique.a_vie.non": "Non, le garder",
+  "heraliz_tactique.a_vie.oui": "Oui, jeter",
+  "heraliz_tactique.a_vie.touche": "Objet à vie : il ne se jette pas avec la touche de jet."
 }

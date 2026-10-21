@@ -15,7 +15,9 @@ import java.util.UUID;
 /**
  * Tableau a elimination directe du ClashWar (MATCHS_SPEC §2.3) : tetes de serie au hasard, exemptions (« byes ») pour
  * completer a la puissance de 2, deux equipes d'un meme clan separees au premier tour si possible. Les exemptions sont
- * reparties regulierement sur tout le tableau (jamais deux exemptions face a face). Logique pure, sans Minecraft :
+ * reparties regulierement sur tout le tableau (jamais deux exemptions face a face). Match pour la 3e place (21/10) : les
+ * deux perdants des demi-finales, rencontre d'index 1 du dernier tour, jouee en meme temps que la finale (index 0) ;
+ * un seul perdant de demi (l'autre demi etait une exemption) = 3e sans jouer. Logique pure, sans Minecraft :
  * le {@link Tournoi} l'alimente et la diffuse.
  */
 public final class Tableau {
@@ -125,8 +127,10 @@ public final class Tableau {
         int nbTours = Integer.numberOfTrailingZeros(p);
         for (int tour = 0; tour < nbTours; tour++) {
             int nb = p >> (tour + 1);
-            List<Rencontre> l = new ArrayList<>(nb);
+            List<Rencontre> l = new ArrayList<>(nb + 1);
             for (int i = 0; i < nb; i++) l.add(new Rencontre(tour, i));
+            // dernier tour : finale (0) et match pour la 3e place (1), s'il y a des demi-finales
+            if (tour == nbTours - 1 && nbTours >= 2) l.add(new Rencontre(tour, 1));
             t.tours.add(l);
         }
         int paires = p / 2, exempts = p - n;
@@ -203,6 +207,39 @@ public final class Tableau {
             if (r.index % 2 == 0) suivante.a = gagnant;
             else suivante.b = gagnant;
         }
+        // demi-finale : le perdant va au match pour la 3e place
+        Rencontre tr = troisieme();
+        if (tr != null && r.tour == tours.size() - 2) {
+            if (perdant >= 0) {
+                if (r.index % 2 == 0) tr.a = perdant;
+                else tr.b = perdant;
+            }
+            boolean demisFinies = true;
+            for (Rencontre d : tours.get(r.tour)) if (!d.finie()) demisFinies = false;
+            // une seule equipe pour la 3e place (l'autre demi etait une exemption) : 3e sans jouer
+            if (demisFinies && tr.statut == Statut.ATTENTE && (tr.a < 0) != (tr.b < 0)) {
+                tr.statut = Statut.EXEMPT;
+                tr.gagnant = tr.a >= 0 ? tr.a : tr.b;
+            } else if (demisFinies && tr.statut == Statut.ATTENTE && tr.a < 0) {
+                tr.statut = Statut.EXEMPT;
+            }
+        }
+    }
+
+    /** Match pour la 3e place (index 1 du dernier tour), ou null (deux equipes seulement). */
+    @Nullable
+    public Rencontre troisieme() {
+        List<Rencontre> l = tours.get(tours.size() - 1);
+        return l.size() > 1 ? l.get(1) : null;
+    }
+
+    /**
+     * Equipes classees : 1er (vainqueur de la finale), 2e (finaliste), 3e (vainqueur du match pour la 3e place), 4e
+     * (perdant de ce match) ; -1 quand la place n'est pas (encore) connue.
+     */
+    public int[] podium() {
+        Rencontre f = finale(), t = troisieme();
+        return new int[]{f.gagnant, f.perdant(), t == null ? -1 : t.gagnant, t == null ? -1 : t.perdant()};
     }
 
     /** Premier tour qui a encore une rencontre non finie ({@link #nbTours()} si tout est fini). */
@@ -214,7 +251,8 @@ public final class Tableau {
     }
 
     public boolean termine() {
-        return finale().finie();
+        Rencontre t = troisieme();
+        return finale().finie() && (t == null || t.finie());
     }
 
     /** Index de l'equipe championne, ou -1. */
@@ -251,6 +289,11 @@ public final class Tableau {
         return places;
     }
 
+    /** Cle du nom d'une rencontre : « troisieme » pour le match de la 3e place, sinon celle de son tour. */
+    public String cleRencontre(Rencontre r) {
+        return r.tour == tours.size() - 1 && r.index == 1 ? "troisieme" : cleTour(r.tour);
+    }
+
     /** Rencontre ou figure l'equipe dans ce tour, ou null. */
     @Nullable
     public Rencontre rencontreDe(int tour, int equipe) {
@@ -264,6 +307,7 @@ public final class Tableau {
      * de {@code clashwar.tour.*}).
      */
     public String cleTour(int tour) {
+        if (tour == tours.size() - 1) return "finale";
         int nb = places >> (tour + 1);
         return switch (nb) {
             case 1 -> "finale";

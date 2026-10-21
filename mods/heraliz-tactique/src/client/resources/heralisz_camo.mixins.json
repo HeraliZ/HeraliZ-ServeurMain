@@ -19,7 +19,8 @@
     "GunItemIconeMixin",
     "GunSmithTableScreenAccessor",
     "IconeOngletMixin",
-    "ClientGunTooltipMixin"
+    "ClientGunTooltipMixin",
+    "ClientAttachmentTooltipMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -2,6 +2,12 @@
   "replace": false,
   "values": [
     "heraliz_composants:tissu",
-    "heraliz_composants:alcool"
+    "heraliz_composants:tissu_ii",
+    "heraliz_composants:tissu_iii",
+    "heraliz_composants:tissu_iv",
+    "heraliz_composants:alcool",
+    "heraliz_composants:alcool_ii",
+    "heraliz_composants:alcool_iii",
+    "heraliz_composants:alcool_iv"
   ]
 }

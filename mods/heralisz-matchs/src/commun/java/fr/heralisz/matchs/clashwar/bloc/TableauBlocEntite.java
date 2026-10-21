@@ -14,12 +14,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 /**
- * Bloc-entite du mur « tableau du tournoi » : ne garde que la taille du mur (largeur x hauteur en blocs), synchronisee
- * avec les clients. Le contenu affiche est l'etat global du ClashWar recu par le client ({@code TableauS2C}) : tous les
- * murs du serveur montrent le meme tableau, mis a jour en direct.
+ * Bloc-entite du mur « tableau du tournoi » : ne garde que la taille du mur (largeur x hauteur en blocs) et ce qu'il
+ * montre ({@link #CONTENU_TABLEAU} ou {@link #CONTENU_CLASSEMENT}, 21/10), synchronises avec les clients. Le contenu
+ * affiche est l'etat global du ClashWar recu par le client ({@code TableauS2C}, {@code ClassementS2C}) : tous les murs du
+ * serveur montrent le meme tableau ou le meme classement, mis a jour en direct.
  */
 public class TableauBlocEntite extends BlockEntity {
+    /** Contenu du mur : tableau du tournoi, ou classement des clans (panneau du spawn). */
+    public static final int CONTENU_TABLEAU = 0, CONTENU_CLASSEMENT = 1;
     private int largeur = MurTableau.LARGEUR_DEFAUT, hauteur = MurTableau.HAUTEUR_DEFAUT;
+    private int contenu = CONTENU_TABLEAU;
     /** Boite de rendu (recalculee quand la taille change). */
     private AABB boite;
 
@@ -44,6 +48,17 @@ public class TableauBlocEntite extends BlockEntity {
         if (level != null && !level.isClientSide) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
     }
 
+    public int contenu() {
+        return contenu;
+    }
+
+    /** Fixe le contenu et le diffuse aux clients. */
+    public void contenu(int c) {
+        contenu = c == CONTENU_CLASSEMENT ? CONTENU_CLASSEMENT : CONTENU_TABLEAU;
+        setChanged();
+        if (level != null && !level.isClientSide) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+    }
+
     /** Direction vers laquelle l'ecran regarde. */
     public Direction face() {
         BlockState s = getBlockState();
@@ -55,6 +70,7 @@ public class TableauBlocEntite extends BlockEntity {
         super.load(tag);
         if (tag.contains("largeur")) largeur = Math.max(1, Math.min(MurTableau.LARGEUR_MAX, tag.getInt("largeur")));
         if (tag.contains("hauteur")) hauteur = Math.max(1, Math.min(MurTableau.HAUTEUR_MAX, tag.getInt("hauteur")));
+        contenu = tag.getInt("contenu") == CONTENU_CLASSEMENT ? CONTENU_CLASSEMENT : CONTENU_TABLEAU;
         boite = null;
     }
 
@@ -63,6 +79,7 @@ public class TableauBlocEntite extends BlockEntity {
         super.saveAdditional(tag);
         tag.putInt("largeur", largeur);
         tag.putInt("hauteur", hauteur);
+        tag.putInt("contenu", contenu);
     }
 
     @Override

@@ -52,6 +52,11 @@ public final class MurTableau {
      * taille est hors limites.
      */
     public static boolean poser(Level level, BlockPos base, Direction face, int largeur, int hauteur) {
+        return poser(level, base, face, largeur, hauteur, TableauBlocEntite.CONTENU_TABLEAU);
+    }
+
+    /** Pose un mur complet qui montre ce contenu ({@code TableauBlocEntite.CONTENU_*}). */
+    public static boolean poser(Level level, BlockPos base, Direction face, int largeur, int hauteur, int contenu) {
         if (largeur < 2 || hauteur < 1 || largeur > LARGEUR_MAX || hauteur > HAUTEUR_MAX) return false;
         if (face.getAxis() == Direction.Axis.Y) return false;
         if (!libre(level, base, face, largeur, hauteur)) return false;
@@ -69,7 +74,10 @@ public final class MurTableau {
         } finally {
             enRetrait = false;
         }
-        if (level.getBlockEntity(base) instanceof TableauBlocEntite be) be.taille(largeur, hauteur);
+        if (level.getBlockEntity(base) instanceof TableauBlocEntite be) {
+            be.taille(largeur, hauteur);
+            be.contenu(contenu);
+        }
         return true;
     }
 

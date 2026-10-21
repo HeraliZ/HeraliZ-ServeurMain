@@ -265,7 +265,7 @@ public final class PieceBakery {
                 side = NO_SIDE;
             }
             if (side != NO_SIDE && (kind == PieceKind.FLOOR || kind == PieceKind.TRI_FLOOR || kind.isRoof())) {
-                // HeraliZ (21/10, CRac 1.14.4): the edge (y -3..0) of a floor or roof resting on a full wall lies on a
+                // HeraliZ (21/10, CRac 1.15.1): the edge (y -3..0) of a floor or roof resting on a full wall lies on a
                 // block border whose face flags come from the wall's collision (up to 48) on both sides, but the wall
                 // is drawn up to 47 only: the edge was culled and a 1 px slit showed the inside of the base
                 side = NO_SIDE;

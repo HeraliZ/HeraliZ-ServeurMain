@@ -19,12 +19,12 @@
     {"item": "heralisz_tactical:consumable", "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}", "min": 1, "max": 1, "poids": 20},
     {"item": "heralisz_tactical:consumable", "nbt": "{ConsumableId:\"heralisz_heal:cms\"}", "min": 1, "max": 1, "poids": 14},
 
-    {"item": "heralisz_utils:iron_plate", "min": 2, "max": 4, "poids": 40},
-    {"item": "heralisz_utils:steel_plate", "min": 2, "max": 4, "poids": 30},
-    {"item": "heralisz_utils:aluminum", "min": 2, "max": 4, "poids": 25},
-    {"item": "heralisz_utils:copper_coil", "min": 1, "max": 2, "poids": 20},
-    {"item": "heralisz_utils:titanium_plate", "min": 1, "max": 2, "poids": 12},
-    {"item": "heralisz_utils:carbon", "min": 1, "max": 2, "poids": 10},
+    {"item": "heraliz_composants:fragments_metal", "min": 2, "max": 4, "poids": 40},
+    {"item": "heraliz_composants:pierres_taillees", "min": 2, "max": 4, "poids": 30},
+    {"item": "heraliz_composants:sac_ciment", "min": 2, "max": 4, "poids": 25},
+    {"item": "heraliz_composants:equerres_acier", "min": 1, "max": 2, "poids": 20},
+    {"item": "heraliz_composants:metal_renforce", "min": 1, "max": 2, "poids": 12},
+    {"item": "heraliz_composants:fil_souder", "min": 1, "max": 2, "poids": 10},
 
     {"item": "heralisz_tactical:throwable", "nbt": "{ThrowableId:\"heralisz_grenade:smoke_grenade\"}", "min": 1, "max": 2, "poids": 30},
     {"item": "heralisz_tactical:throwable", "nbt": "{ThrowableId:\"heralisz_grenade:m67\"}", "min": 1, "max": 2, "poids": 30},

@@ -14,6 +14,7 @@ CATEGORIES = {
     'divers': ('Divers', 'Misc'),
     'vente': ('À vendre', 'To sell'),
     'construction': ('Construction', 'Construction'),
+    'barricades': ('Barricades', 'Barricades'),
 }
 
 DIAG = {'roll': 32, 'yaw': -25, 'pitch': 25}
@@ -73,7 +74,7 @@ def _(m):
 
 @item('ressort', 'Ressort', 'Spring', ['armes'],
       'Ressort en acier, encore bien raide.', 'Steel spring, still nice and stiff.',
-      0.5, {'roll': 18, 'yaw': -30, 'pitch': 22}, 32)
+      0.5, {'roll': 18, 'yaw': -30, 'pitch': 22}, 32, 'uncommon')
 def _(m):
     m.helix(2, 14, 8, 8, 3.4, 1.1, 5.5, 'steel', n=16)
 
@@ -106,9 +107,9 @@ def _(m):
 
 # ================================================================ SOINS
 
-@item('tissu', 'Tissu', 'Cloth', ['soins'],
+@item('tissu', 'Tissu', 'Cloth', ['soins', 'protection'],
       'Tissu propre, de quoi faire un bandage.', 'Clean cloth, enough for a bandage.',
-      0.55, TOP, 32)
+      0.55, TOP, 32, 'uncommon')
 def _(m):
     m.box((1.6, 0, 3.0), (14.4, 1.2, 13.0), 'cloth')
     m.box((2.2, 1.2, 3.4), (14.0, 2.4, 12.6), 'cloth', ('y', -22.5, (8, 1.8, 8)))
@@ -119,7 +120,7 @@ def _(m):
 
 @item('alcool', 'Alcool', 'Rubbing Alcohol', ['soins'],
       'Alcool à 70 %. Désinfecte, et ça pique.', '70% alcohol. Disinfects, and it stings.',
-      0.5, {'roll': 0, 'yaw': -24, 'pitch': 16}, 16)
+      0.5, {'roll': 0, 'yaw': -24, 'pitch': 16}, 16, 'uncommon')
 def _(m):
     # flacon plat transparent : liquide en bas, vide en haut
     m.box((3.6, 0, 5.8), (12.4, 7.4, 10.2), 'alcohol')
@@ -138,7 +139,7 @@ def _(m):
 
 @item('batterie', 'Batterie', 'Battery', ['viseurs'],
       'Alimente lunettes, lasers et viseurs point rouge.', 'Powers scopes, lasers and red dots.',
-      0.45, FRONT, 16)
+      0.45, FRONT, 16, 'uncommon')
 def _(m):
     for z in (6.4, 9.6):
         m.cyl('y', 1, 11, 8, z, 1.55, 'cell_blue')
@@ -170,7 +171,7 @@ def _(m):
 
 @item('ferraille', 'Ferraille', 'Scrap Metal', ['viseurs', 'munitions'],
       'Un peu de tout, beaucoup de rouille.', 'A bit of everything, lots of rust.',
-      0.7, TOP, 64)
+      0.7, TOP, 64, 'uncommon')
 def _(m):
     m.box((1, 3, 3), (12, 4, 13), 'rusty_steel', ('z', -22.5, (6.5, 3.5, 8)))
     m.box((3, 5.4, 4.8), (15, 7.6, 7.2), 'rust', ('y', 22.5, (9, 6.5, 6)))
@@ -184,7 +185,7 @@ def _(m):
 
 @item('bocal_poudre', 'Bocal de poudre', 'Gunpowder Jar', ['munitions'],
       'Un bocal rempli de poudre noire.', 'A jar full of black powder.',
-      0.45, {'roll': 0, 'yaw': -28, 'pitch': 22}, 32)
+      0.45, {'roll': 0, 'yaw': -28, 'pitch': 22}, 32, 'uncommon')
 def _(m):
     # bocal en verre : poudre noire en bas, verre vide en haut, couvercle metal
     m.cyl('y', 0, 0.6, 8, 8, 3.6, 'jar_glass')
@@ -228,7 +229,7 @@ def plate_shape(m, mat, z1, z2, x1=3.0, x2=13.0, h=13.0):
 @item('plaque_recyclee', 'Plaque recyclée', 'Recycled Plate', ['protection'],
       'Des bouts de tôle rouillée tenus au scotch. Mieux que rien.',
       'Rusty sheet scraps held with tape. Better than nothing.',
-      0.7, PLATE_VIEW, 8, 'common')
+      0.7, PLATE_VIEW, 8, 'uncommon')
 def _(m):
     m.box((2.4, 0.2, 7.5), (9.2, 8.0, 8.3), 'rust')
     m.box((7.2, 1.0, 7.9), (13.6, 10.6, 8.7), 'rusty_steel', ('z', -22.5, (10.4, 5.8, 8.3)))
@@ -242,7 +243,7 @@ def _(m):
 @item('plaque_soudee', 'Plaque soudée', 'Welded Plate', ['protection'],
       "Des chutes d'acier soudées ensemble. Ça commence à tenir.",
       'Steel offcuts welded together. Starting to hold up.',
-      0.7, PLATE_VIEW, 8, 'uncommon')
+      0.7, PLATE_VIEW, 8, 'rare')
 def _(m):
     plate_shape(m, 'plate', 7.4, 8.6)
     m.box((3.0, 5.0, 8.6), (13.0, 5.6, 8.9), 'weld')
@@ -254,7 +255,7 @@ def _(m):
 
 @item('plaque_metal', 'Plaque en métal', 'Metal Plate', ['protection'],
       "Une vraie plaque d'acier, découpée proprement.", 'A real steel plate, cleanly cut.',
-      0.7, PLATE_VIEW, 8, 'rare')
+      0.7, PLATE_VIEW, 8, 'epic')
 def _(m):
     plate_shape(m, 'plate_clean', 7.4, 8.6)
     plate_shape(m, 'plate_clean', 8.6, 8.75, 3.6, 12.4, 12.4)
@@ -266,7 +267,7 @@ def _(m):
 @item('plaque_renforcee', 'Plaque renforcée', 'Reinforced Plate', ['protection'],
       'Plaque épaisse à revêtement balistique. Le haut de gamme.',
       'Thick plate with ballistic coating. Top of the line.',
-      0.7, PLATE_VIEW, 8, 'epic')
+      0.7, PLATE_VIEW, 8, 'legendary')
 def _(m):
     plate_shape(m, 'gunmetal', 7.0, 9.0)
     plate_shape(m, 'cordura', 9.0, 9.4, 3.5, 12.5, 12.5)
@@ -278,27 +279,27 @@ def _(m):
 
 # ================================================================ DIVERS
 
-@item('scotch', 'Scotch', 'Duct Tape', ['divers'],
+@item('scotch', 'Scotch', 'Duct Tape', ['protection'],
       'Répare tout. Presque.', 'Fixes everything. Almost.',
-      0.5, {'roll': 0, 'yaw': -32, 'pitch': 20}, 32)
+      0.5, {'roll': 0, 'yaw': -32, 'pitch': 20}, 32, 'uncommon')
 def _(m):
     m.ring('z', 5.6, 10.4, 8, 8.6, 5.4, 2.4, 'tape')
     m.ring('z', 5.8, 10.2, 8, 8.6, 3.0, 0.6, 'cardboard')
     m.box((8, 2.9, 5.6), (13.4, 3.4, 10.4), 'tape', ('z', -22.5, (8, 3.2, 8)))
 
 
-# ================================================================ A VENDRE (inutiles)
+# ================================================================ PROTECTION, BARRICADES
 
-@item('caoutchouc', 'Caoutchouc', 'Rubber', ['vente'],
-      'Un vieux pneu de vélo. Ça se revend.', 'An old bike tyre. Worth a few coins.',
-      0.6, {'roll': 0, 'yaw': -30, 'pitch': 26}, 32)
+@item('caoutchouc', 'Caoutchouc', 'Rubber', ['protection'],
+      'Un vieux pneu de vélo, bon pour les protections.', 'An old bike tyre, good for protective gear.',
+      0.6, {'roll': 0, 'yaw': -30, 'pitch': 26}, 32, 'uncommon')
 def _(m):
     m.ring('z', 6.4, 9.6, 8, 8, 7.0, 2.2, 'tire')
     m.ring('z', 6.9, 9.1, 8, 8, 4.9, 0.5, 'steel_dark')
     m.cyl('y', 0.4, 2.2, 8, 8, 0.4, 'brass')
 
 
-@item('corde', 'Corde', 'Rope', ['vente'],
+@item('corde', 'Corde', 'Rope', ['barricades'],
       'Quelques mètres de corde effilochée.', 'A few metres of frayed rope.',
       0.55, TOP, 32)
 def _(m):
@@ -307,7 +308,7 @@ def _(m):
     m.box((13.4, 0, 7.4), (16.6, 1.0, 8.6), 'rope', ('y', -22.5, (13.6, 0.5, 8)))
 
 
-@item('clou', 'Clous', 'Nails', ['construction'],
+@item('clou', 'Clous', 'Nails', ['construction', 'barricades'],
       'Une poignée de clous rouillés.', 'A handful of rusty nails.',
       0.4, TOP, 64)
 def _(m):
@@ -1023,7 +1024,7 @@ def ecrire(m, mot, x0, y0, z, px, mat):
 
 @item('planches', 'Planches', 'Planks', ['construction'],
       'Des planches sciées, prêtes à clouer.', 'Sawn planks, ready to nail.',
-      0.6, TOP, 64)
+      0.6, TOP, 64, 'uncommon')
 def _(m):
     # trois planches sciées empilées, sanglées
     for i, (y, dz, mat) in enumerate(((0, 0, 'wood_raw'), (1.6, 0.6, 'wood'), (3.2, -0.4, 'wood_raw'))):
@@ -1036,7 +1037,7 @@ def _(m):
 
 @item('brindilles', 'Brindilles', 'Twigs', ['construction'],
       'Du petit bois ramassé. De quoi monter le squelette d\'une base.', 'Gathered kindling. Enough to frame a base.',
-      0.6, TOP, 64)
+      0.6, TOP, 64, 'uncommon')
 def _(m):
     # brindilles en vrac, croisées, quelques feuilles
     for i, ang in enumerate((-22.5, 0, 22.5, -45, 45, 22.5)):
@@ -1048,7 +1049,7 @@ def _(m):
 
 @item('pierres_taillees', 'Pierres taillées', 'Cut Stone', ['construction'],
       'Des blocs de pierre équarris. Lourds.', 'Squared stone blocks. Heavy.',
-      0.6, TOP, 64)
+      0.6, TOP, 64, 'rare')
 def _(m):
     m.box((1.0, 0, 2.0), (7.6, 4.2, 14.0), 'stone_cut')
     m.box((8.2, 0, 2.6), (15.0, 4.2, 13.4), 'stone_dark')
@@ -1059,7 +1060,7 @@ def _(m):
 
 @item('fragments_metal', 'Fragments de métal', 'Metal Fragments', ['construction'],
       'Des chutes de tôle et de barres découpées.', 'Offcuts of sheet metal and cut bars.',
-      0.6, TOP, 64, 'uncommon')
+      0.6, TOP, 64, 'epic')
 def _(m):
     m.box((1.0, 0, 3.0), (9.0, 0.8, 9.0), 'plate', ('y', 22.5, (5, 0.4, 6)))
     m.box((6.0, 0, 7.0), (14.6, 0.8, 13.0), 'rusty_steel', ('y', -22.5, (10, 0.4, 10)))
@@ -1071,7 +1072,7 @@ def _(m):
 
 @item('metal_renforce', 'Métal renforcé', 'Reinforced Metal', ['construction'],
       "Une plaque d'acier épaisse, cerclée et rivetée.", 'A thick steel plate, banded and riveted.',
-      0.6, TOP, 64, 'rare')
+      0.6, TOP, 64, 'legendary')
 def _(m):
     m.box((1.0, 0, 3.5), (15.0, 3.0, 12.5), 'hq_metal')
     for x in (3.4, 12.0):
@@ -1087,7 +1088,7 @@ def _(m):
 
 @item('sac_ciment', 'Sac de ciment', 'Cement Bag', ['construction'],
       'Pour monter la pierre.', 'For laying stone.',
-      0.6, {'roll': 0, 'yaw': -24, 'pitch': 16}, 64)
+      0.6, {'roll': 0, 'yaw': -24, 'pitch': 16}, 64, 'rare')
 def _(m):
     # sac debout, gris, un peu bombé
     m.box((2.2, 0, 5.0), (13.8, 11.0, 11.0), 'cem_bag')
@@ -1108,7 +1109,7 @@ def _(m):
 
 @item('equerres_acier', "Équerres d'acier", 'Steel Brackets', ['construction'],
       'Pour assembler les plaques de métal.', 'For joining metal sheets.',
-      0.6, TOP, 64, 'uncommon')
+      0.6, TOP, 64, 'epic')
 def _(m):
     for (x, z, rot) in ((2.0, 3.0, 0), (6.0, 8.6, -22.5), (9.6, 3.6, 22.5)):
         o = (x + 2.5, 1, z + 2.5)
@@ -1121,7 +1122,7 @@ def _(m):
 
 @item('fil_souder', 'Bobine de fil à souder', 'Welding Wire Spool', ['construction'],
       'Pour souder le métal renforcé.', 'For welding reinforced metal.',
-      0.6, {'roll': 0, 'yaw': -30, 'pitch': 22}, 64, 'rare')
+      0.6, {'roll': 0, 'yaw': -30, 'pitch': 22}, 64, 'legendary')
 def _(m):
     # bobine debout : deux flasques noires, fil cuivré enroulé
     for z in (4.0, 11.2):
@@ -1136,3 +1137,57 @@ def _(m):
     # bout de fil qui dépasse
     m.box((12.8, 3.6, 7.8), (16.0, 4.0, 8.2), 'copper', ('z', -22.5, (12.8, 3.8, 8)))
 
+
+
+# ================================================================ NIVEAUX DES COMPOSANTS DE FABRICATION
+# 21/10 (choix du propriétaire, rendus validés) : chaque composant de fabrication existe en 4 niveaux ; l'objet d'origine
+# est le niveau I (Peu commun), puis II Rare « anodisé », III Épique « militaire », IV Légendaire « doré ». Même modèle,
+# autres matériaux. Pour le craft à venir : niveau I -> armes Commun, II -> Peu commun, III -> Rare, IV -> Épique
+# (Légendaire et Unique jamais fabriquées).
+NIVEAUX = (('II', 'rare'), ('III', 'epic'), ('IV', 'legendary'))
+MATERIAUX_NIVEAUX = {
+    'canon': ({'steel': 'plate_clean', 'steel_dark': 'blue_metal', 'gunmetal': 'blue_metal'},
+              {'steel': 'gunmetal', 'steel_dark': 'black', 'gunmetal': 'olive'},
+              {'steel': 'gold', 'steel_dark': 'gold_dark', 'gunmetal': 'black'}),
+    'ressort': ({'steel': 'blue_metal'}, {'steel': 'black'}, {'steel': 'gold'}),
+    'kit_pieces': ({'olive': 'blue', 'zinc': 'aluminum', 'steel': 'plate_clean'},
+                   {'olive': 'black', 'steel': 'gunmetal', 'zinc': 'olive'},
+                   {'olive': 'black', 'steel': 'gold', 'zinc': 'gold_dark', 'brass': 'gold'}),
+    'tissu': ({'red': 'blue'}, {'cloth': 'cloth_khaki', 'red': 'olive'}, {'cloth': 'cloth_silk', 'red': 'gold'}),
+    'alcool': ({'red': 'blue'}, {'white': 'olive', 'red': 'white'}, {'white': 'black', 'red': 'gold'}),
+    'batterie': ({'cell_blue': 'cell_cyan', 'aluminum': 'plate_clean'}, {'cell_blue': 'label_green', 'aluminum': 'gunmetal'},
+                 {'cell_blue': 'label_black', 'aluminum': 'gold'}),
+    'circuit_imprime': ({'pcb': 'pcb_blue'}, {'pcb': 'pcb_black', 'steel': 'gunmetal'},
+                        {'pcb': 'pcb_black', 'steel': 'gold', 'aluminum': 'gold', 'brass': 'gold'}),
+    'ferraille': ({'rusty_steel': 'steel', 'rust': 'blue_metal', 'zinc': 'aluminum'},
+                  {'rusty_steel': 'gunmetal', 'rust': 'black', 'steel_dark': 'olive', 'zinc': 'olive'},
+                  {'rusty_steel': 'gold', 'rust': 'gold_dark', 'steel_dark': 'gold', 'zinc': 'gold'}),
+    'bocal_poudre': ({'steel_dark': 'blue_metal', 'steel': 'plate_clean', 'white': 'blue'},
+                     {'steel_dark': 'black', 'steel': 'gunmetal', 'white': 'olive'},
+                     {'steel_dark': 'gold_dark', 'steel': 'gold', 'white': 'gold'}),
+    'caoutchouc': ({'steel_dark': 'blue_metal'}, {'tire': 'tire_olive', 'steel_dark': 'black'},
+                   {'steel_dark': 'gold', 'brass': 'gold'}),
+    'scotch': ({'tape': 'tape_blue'}, {'tape': 'olive_tape'}, {'tape': 'gold', 'cardboard': 'black'}),
+}
+
+
+def _niveau(fn, carte):
+    def construire(m):
+        fn(m)
+        for b in m.boxes:
+            b['m'] = carte.get(b['m'], b['m'])
+    return construire
+
+
+def _ajouter_niveaux():
+    par_id = {it['id']: it for it in ITEMS}
+    for iid, cartes in MATERIAUX_NIVEAUX.items():
+        base = par_id[iid]
+        pos = ITEMS.index(base) + 1
+        for (chiffre, rarete), carte in zip(NIVEAUX, cartes):
+            ITEMS.insert(pos, dict(base, id=f'{iid}_{chiffre.lower()}', fr=f"{base['fr']} {chiffre}", en=f"{base['en']} {chiffre}",
+                                   rarity=rarete, build=_niveau(base['build'], carte)))
+            pos += 1
+
+
+_ajouter_niveaux()

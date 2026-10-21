@@ -126,6 +126,21 @@ public enum KnifeFinish {
    RED_SPLATTER("red_splatter", 415, true),
    INFERNO_CIRCUIT("inferno_circuit", 417, true),
    DESERT_SAKURA("desert_sakura", 418, true),
+   STAINED("stained", 421, true),
+   BOREAL_FOREST("boreal_forest", 422, true),
+   BLACK_LAMINATE("black_laminate", 423, true),
+   OSSUARY("ossuary", 424, true),
+   VOLT("volt", 425, true),
+   AUTOTRONIC_CS2("autotronic_cs2", 426, true),
+   BLUED_STEEL("blued_steel", 427, true),
+   ARCTIC_CAMO("arctic_camo", 428, true),
+   DAMASCUS("damascus", 429, true),
+   RUST_VEIL("rust_veil", 430, true),
+   NERO_MARBLE("nero_marble", 431, true),
+   VENDETTA("vendetta", 432, true),
+   ROSSO("rosso", 433, true),
+   MIRAGE("mirage", 434, true),
+   MOONLIT("moonlit", 435, true),
    // </skins_couteaux>
    ;
 

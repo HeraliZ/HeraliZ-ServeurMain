@@ -50,6 +50,13 @@ public final class ReceptionServeur {
       if (!(camoStack.getItem() instanceof CamoItem item)) {
          return;
       }
+      if (fr.heraliz.tactique.avie.ObjetsAVie.estSkinAVie(item.camo())) {
+         // skin à vie (21/10) : clic droit sur l'objet pour l'ajouter à sa collection, puis posé depuis la collection
+         player.displayClientMessage(Component.translatableWithFallback("msg.heralisz_camo.skin_a_vie",
+            "Skin à vie : clic droit sur l'objet pour l'ajouter à ta collection, puis pose-le depuis la collection.")
+            .withStyle(ChatFormatting.GOLD), true);
+         return;
+      }
       if (!item.camo().fits(IGun.getIGunOrNull(gun).getGunId(gun))) {
          player.displayClientMessage(Component.translatable("msg.heralisz_camo.wrong_gun",
             Component.translatable("item.heralisz_camo.camo.gun." + item.camo().id)).withStyle(ChatFormatting.RED), true);

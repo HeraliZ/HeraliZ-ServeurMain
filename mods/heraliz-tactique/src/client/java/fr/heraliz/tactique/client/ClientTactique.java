@@ -13,7 +13,7 @@ import net.minecraftforge.fml.ModList;
 /**
  * Partie client du mod porteur : le panneau de filtres de l'onglet créatif commun ; s'allonger (touche, délai, message) ;
  * allongé sans arme à plat comme avec une arme (Player Animator) ; tirs silencieux lointains ; coups des couteaux TaCZ
- * (touches, animation, bruit).
+ * (touches, animation, bruit) ; « Jeter cet objet ? » des objets à vie (EcranJeter).
  */
 public final class ClientTactique implements Partie {
    @Override
@@ -25,5 +25,6 @@ public final class ClientTactique implements Partie {
       }
       SonLointainClient.brancher();
       CouteauxClient.brancher();
+      fr.heraliz.tactique.client.avie.EcranJeter.brancher();
    }
 }

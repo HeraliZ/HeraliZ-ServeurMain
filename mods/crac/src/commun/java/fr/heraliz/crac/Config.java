@@ -37,11 +37,11 @@ public class Config {
         )
         .define("allowBreakInClaim", false);
     public static final IntValue claimRadiusL1 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 1 Claim Block.")
-        .defineInRange("radiusL1", 15, 1, 512);
+        .defineInRange("radiusL1", 20, 1, 512);
     public static final IntValue claimRadiusL2 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 2 Claim Block.")
-        .defineInRange("radiusL2", 18, 1, 512);
+        .defineInRange("radiusL2", 23, 1, 512);
     public static final IntValue claimRadiusL3 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 3 Claim Block.")
-        .defineInRange("radiusL3", 21, 1, 512);
+        .defineInRange("radiusL3", 26, 1, 512);
     public static final IntValue claimYRadiusL1 = BUILDER.comment("Claim vertical half-height for tier 1.").defineInRange("yRadiusL1", 16, 1, 256);
     public static final IntValue claimYRadiusL2 = BUILDER.comment("Claim vertical half-height for tier 2.").defineInRange("yRadiusL2", 19, 1, 256);
     public static final IntValue claimYRadiusL3 = BUILDER.comment("Claim vertical half-height for tier 3.").defineInRange("yRadiusL3", 22, 1, 256);

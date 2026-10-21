@@ -92,7 +92,9 @@ final class OngletCamo implements AtelierArme.Partie {
       this.vie = v;
       List<Integer> o = new ArrayList<>();
       for (int i = 0; i < inv.getContainerSize(); i++) {
-         if (inv.getItem(i).getItem() instanceof CamoItem ci && ci.camo().fits(gunId)) o.add(i);
+         // skins à vie (Séraphin, Chaînes de l'Enfer) : seulement depuis la collection, jamais posés depuis l'objet
+         if (inv.getItem(i).getItem() instanceof CamoItem ci && ci.camo().fits(gunId)
+            && !fr.heraliz.tactique.avie.ObjetsAVie.estSkinAVie(ci.camo())) o.add(i);
       }
       this.objets = o;
       // l'aperçu choisi existe-t-il encore ?

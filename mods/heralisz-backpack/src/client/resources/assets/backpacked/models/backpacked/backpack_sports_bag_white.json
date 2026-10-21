@@ -1,0 +1,13 @@
+{
+ "credit": "HeralisZ : sac de Fuse / Tactical Gear Rework (tools/fuse_backpacks.py)",
+ "loader": "forge:obj",
+ "model": "backpacked:models/obj/tgr_sports_bag.obj",
+ "flip_v": false,
+ "automatic_culling": false,
+ "emissive_ambient": false,
+ "shade_quads": true,
+ "textures": {
+  "texture": "backpacked:backpack/tgr_sports_bag_white",
+  "particle": "backpacked:backpack/tgr_sports_bag_white"
+ }
+}

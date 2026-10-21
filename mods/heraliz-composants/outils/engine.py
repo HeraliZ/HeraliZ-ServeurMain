@@ -226,6 +226,16 @@ MATERIALS = {
     'armor_olive': ('#55603f', 10, 'scuffed', 0.3, '#8a8f86'),
     'armor_edge':  ('#5d6168', 9, 'brushed', 0.7, None),
     'stencil':     ('#d9d4b8', 3, 'flat', 0.0, None),
+    # niveaux II à IV des composants de fabrication (21/10, rendus validés) : à la fin, les graines des autres ne bougent pas
+    'pcb_blue':    ('#24508f', 8, 'pcb', 0.25, None),
+    'pcb_black':   ('#1d1f22', 8, 'pcb', 0.3, None),
+    'olive_tape':  ('#5a6443', 10, 'weave', 0.2, None),
+    'cloth_khaki': ('#b9a77c', 6, 'weave', 0.0, None),
+    'cloth_silk':  ('#efe6cf', 4, 'weave', 0.3, None),
+    'blue_metal':  ('#3f6aa6', 9, 'brushed', 0.85, None),
+    'cell_cyan':   ('#3b8fd8', 5, 'label', 0.35, '#d9d9d2'),
+    'tire_olive':  ('#3b412c', 9, 'knurl', 0.05, None),
+    'tape_blue':   ('#3c62a0', 10, 'weave', 0.35, None),
 }
 
 

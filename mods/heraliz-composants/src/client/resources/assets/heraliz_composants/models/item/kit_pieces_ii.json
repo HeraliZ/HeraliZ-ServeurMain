@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_composants:item/3d/kit_pieces_ii"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_composants:item/icon/kit_pieces_ii"
+    }
+  }
+}

@@ -2,7 +2,16 @@
   "replace": false,
   "values": [
     "heraliz_composants:batterie",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iv",
     "heraliz_composants:circuit_imprime",
-    "heraliz_composants:ferraille"
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iv"
   ]
 }
