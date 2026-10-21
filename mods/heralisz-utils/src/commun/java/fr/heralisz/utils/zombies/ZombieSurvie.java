@@ -58,6 +58,12 @@ public class ZombieSurvie extends Zombie {
     public void setBaby(boolean bebe) {
     }
 
+    /** Ne brule jamais au soleil (le feu, les molotovs et la lave brulent toujours). */
+    @Override
+    protected boolean isSunSensitive() {
+        return false;
+    }
+
     @Override
     protected boolean convertsInWater() {
         return false;

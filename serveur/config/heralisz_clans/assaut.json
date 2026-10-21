@@ -27,7 +27,7 @@
               "poids": 8
             },
             {
-              "id": "minecraft:husk",
+              "id": "heralisz_utils:zombie_survie",
               "poids": 2
             }
           ]
@@ -88,7 +88,7 @@
               "poids": 8
             },
             {
-              "id": "minecraft:husk",
+              "id": "heralisz_utils:zombie_survie",
               "poids": 2
             }
           ]
@@ -154,7 +154,7 @@
               "poids": 6
             },
             {
-              "id": "minecraft:husk",
+              "id": "heralisz_utils:zombie_survie",
               "poids": 2
             },
             {

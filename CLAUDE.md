@@ -1059,7 +1059,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Mutants & Zombies sont remplacés aussi ; Gaz, Radio et zones « gaz » / « radiation » de Décors : 75 % de hazmat.
   Villes lues dans `config/heralisz_clans/zones.json` (centre et rayon), réglages `heraliz_zombies-server.toml`. Les
   vagues des drapeaux (assaut.json : `heralisz_utils:zombie_survie` au lieu de `minecraft:zombie`, Utils 2.18.1) et /summon
-  sans tenue prennent la tenue de l'endroit à leur arrivée (`HeralizTenueChoisie`). Rien testé en jeu ;
+  sans tenue prennent la tenue de l'endroit à leur arrivée (`HeralizTenueChoisie`). Utils 2.18.2 : jamais de zombie de
+  Minecraft sur la carte (zombie, du désert, villageois, noyé : retirés à leur arrivée, liste `interdits`), zombies
+  HeraliZ insensibles au soleil (le feu brûle toujours), ajoutés à Zombie Awareness (`enhancedMobs`). Rien testé en jeu ;
 - Petit panneau de
   verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
   drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un

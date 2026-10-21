@@ -125,7 +125,16 @@ public final class SpawnZombiesServeur {
     /** Zombie HeraliZ pose sans tenue (vagues des drapeaux, /summon) : tenue de l'endroit ou il arrive. */
     @SubscribeEvent
     public static void arrivee(net.minecraftforge.event.entity.EntityJoinLevelEvent e) {
-        if (e.getLevel().isClientSide() || !(e.getEntity() instanceof ZombieSurvie z) || z.tenueChoisie) return;
+        if (e.getLevel().isClientSide()) return;
+        // sur la carte : jamais de zombie de Minecraft (zombie, desert, villageois, noye), d'ou qu'il vienne
+        if (ZombiesConfig.ACTIF.get() && e.getLevel().dimension() == Level.OVERWORLD && !(e.getEntity() instanceof ZombieSurvie)) {
+            ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(e.getEntity().getType());
+            if (id != null && dans(ZombiesConfig.INTERDITS.get(), id)) {
+                e.setCanceled(true);
+                return;
+            }
+        }
+        if (!(e.getEntity() instanceof ZombieSurvie z) || z.tenueChoisie) return;
         Genre g = e.getLevel().dimension() == Level.OVERWORLD ? genre(z.getX(), z.getZ()) : null;
         z.tenue(tenue(g, z.getRandom()));
     }

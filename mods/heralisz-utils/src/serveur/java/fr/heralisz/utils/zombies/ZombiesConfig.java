@@ -11,7 +11,7 @@ public final class ZombiesConfig {
 
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.BooleanValue ACTIF;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ARCTIQUE, PRISON, MILITAIRE, CONTAMINEES, REMPLACES, MUTANTS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ARCTIQUE, PRISON, MILITAIRE, CONTAMINEES, REMPLACES, MUTANTS, INTERDITS;
     public static final ForgeConfigSpec.DoubleValue PART_HAZMAT;
 
     static {
@@ -21,6 +21,10 @@ public final class ZombiesConfig {
                 "false : zombies de Minecraft comme avant.").define("actif", true);
         REMPLACES = b.comment("Zombies de Minecraft remplaces partout sur la carte.")
                 .defineListAllowEmpty("remplaces", List.of("minecraft:zombie", "minecraft:husk", "minecraft:zombie_villager"), o -> o instanceof String);
+        INTERDITS = b.comment("Jamais sur la carte, d'ou qu'ils viennent (apparition, commande, oeuf, deja dans le monde) :",
+                        "retires des leur arrivee. Les zombies remplaces par les zombies HeraliZ ne passent pas par la.")
+                .defineListAllowEmpty("interdits", List.of("minecraft:zombie", "minecraft:husk", "minecraft:zombie_villager",
+                        "minecraft:drowned"), o -> o instanceof String);
         MUTANTS = b.comment("Remplaces en plus dans l'arctique, la prison et les zones militaires (\"que des zombies arctiques\").",
                         "Un nom qui finit par :* vaut pour tout le mod.")
                 .defineListAllowEmpty("remplaces_zones_fermees", List.of("mutantszombies:*"), o -> o instanceof String);
