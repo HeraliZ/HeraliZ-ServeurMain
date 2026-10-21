@@ -49,6 +49,7 @@ public final class ServeurGrades implements Partie {
         ZonesVip.brancher();
         // warps : menu /warp, seulement depuis le spawn
         WarpsServeur.brancher();
+        TpaServeur.brancher();
     }
 
     private static void demarrage(ServerAboutToStartEvent e) {

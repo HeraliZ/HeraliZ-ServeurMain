@@ -147,7 +147,7 @@ public final class Tutoriel {
     static final int FINIE = Cabane.FINIE;
     /** Commandes refusées pendant le tutoriel (elles feraient quitter le monde des bases ou mourir). */
     private static final Set<String> COMMANDES_BLOQUEES = Set.of("spawn", "home", "zone", "rtp", "suicide", "duel", "clashwar",
-        "zombies", "casino", "depart", "extractions");
+        "zombies", "casino", "depart", "extractions", "tpa", "tpaccept", "tpdeny", "warp");
     /** Dernier avertissement (heure en ms) par joueur, pour ne pas inonder sa barre d'action. */
     private static final Map<UUID, Long> AVERTI = new HashMap<>();
     /** Joueurs à qui Varga vient de poser le sas (pour ce qu'il leur dit à la radio, HeraliZ Quêtes). */
