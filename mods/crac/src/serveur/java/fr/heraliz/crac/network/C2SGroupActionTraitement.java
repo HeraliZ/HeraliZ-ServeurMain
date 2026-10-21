@@ -46,6 +46,13 @@ public final class C2SGroupActionTraitement {
         if (g == null) {
             return;
         }
+        // une base par clan (1.16.0) : le groupe d'un clan suit le clan, rien ne se change ici
+        if (fr.heraliz.crac.heraliz.BasesClans.estGroupeClan(server, g.id())
+            && msg.type() != C2SGroupAction.Type.REQUEST_ONLINE && msg.type() != C2SGroupAction.Type.REFRESH) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatableWithFallback("crac.group.clans_seulement",
+                "Les bases sont celles des clans : crée ou rejoins un clan (touche K) ; les membres et leurs droits se règlent dans le clan.").withStyle(net.minecraft.ChatFormatting.RED), false);
+            return;
+        }
         switch (msg.type()) {
             case REQUEST_ONLINE -> GroupSync.sendOnline(player);
             case REFRESH -> GroupSync.sendManage(player, g);

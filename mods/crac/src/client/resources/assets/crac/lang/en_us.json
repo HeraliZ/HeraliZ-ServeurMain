@@ -370,7 +370,7 @@
   "biome.crac.bases_savane": "Savanna",
   "biome.crac.bases_taiga": "Taiga",
   "crac.bases.absent": "The bases world does not exist on this server (crac:bases).",
-  "crac.bases.construire_ailleurs": "You can only build in the bases world (/zone base from the spawn).",
+  "crac.bases.construire_ailleurs": "You can only build on the map, not at the spawn.",
   "crac.bases.seau": "No water in the bases world.",
   "crac.carriere.aucune": "No quarry in the bases world.",
   "crac.carriere.claim_trop_pres": "Too close to quarry %s: your base's zone must not touch it.",
@@ -546,5 +546,13 @@
   "crac.fiche.pv": "%s HP",
   "crac.fiche.herals": "%s herals",
   "crac.fiche.rien": "—",
-  "crac.fiche.gratuit": "free"
+  "crac.fiche.gratuit": "free",
+  "crac.claim.sans_clan": "You need a clan to place a base: create or join a clan (K key).",
+  "crac.claim.gerer_clan": "Only the clan leader and members allowed to manage the base can place its cabinet.",
+  "crac.zone.interdite": "You can't build here: too close to a town, a loot spot or the rails, or inside a hazardous or snowy area.",
+  "crac.group.clans_seulement": "Bases belong to clans: create or join a clan (K key); members and their rights are set in the clan.",
+  "crac.acces.clan": "Only clan members can access the base: set their rights in the clan (K key).",
+  "crac.tuto.essai": "[Tutorial] Practice cabin in the tutorial world: it disappears at the end, your clan's real base goes on the map.",
+  "crac.tuto.termine": "[Tutorial] Done! The practice cabin is gone. Place your clan's base on the map, away from towns and loot.",
+  "crac.tuto.clan": "[Tutorial] Your clan is created! Commander Varga will show you how to build a base."
 }

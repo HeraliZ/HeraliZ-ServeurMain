@@ -49,7 +49,8 @@ import org.jetbrains.annotations.Nullable;
 final class Cabane {
     static final int PLAN = 1, FONDATION_1 = 2, FONDATION_2 = 3, MURS = 4, TOIT = 5, BOIS = 6, CLAIM = 7, ENTRETIEN = 8, COFFRE = 9,
         HOME = 10;
-    static final int ETAPES = 10;
+    // 1.16.0 : 9 étapes, plus de home (la cabane d'essai disparaît à la fin du tutoriel)
+    static final int ETAPES = 9;
     static final int FINIE = ETAPES + 1;
 
     /**
@@ -66,7 +67,7 @@ final class Cabane {
     }
 
     static Etat etat(ServerPlayer p, BasesDonnees.Joueur j, @Nullable Building b) {
-        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        ServerLevel bases = p.server.getLevel(MondeBases.TUTO);
         if (bases == null) {
             return Etat.HORS;
         }
@@ -159,10 +160,6 @@ final class Cabane {
             return new Etat(COFFRE, 0, 1, List.of(), List.of(coin.vueCaisse()), ModItems.METAL_CRATE.get(), -1, false);
         }
 
-        // son home, posé par lui-même (/sethome) sur un sol de la cabane
-        if (!homeDans(bases, p, j)) {
-            return new Etat(HOME, 0, 1, List.of(), List.of(), null, -1, false);
-        }
         return new Etat(FINIE, 1, 1, List.of(), List.of(), null, -1, false);
     }
 
@@ -278,7 +275,7 @@ final class Cabane {
     /** Le joueur a un home dans sa base (posé avec /sethome). */
     private static boolean homeDans(ServerLevel level, ServerPlayer p, BasesDonnees.Joueur j) {
         for (BasesDonnees.Home h : j.homes.values()) {
-            if (MondeBases.ID.equals(h.monde()) && Deplacements.baseEn(level, BlockPos.containing(h.x(), h.y(), h.z()), p.getUUID())) {
+            if (MondeBases.ANCIEN.equals(h.monde()) && Deplacements.baseEn(level, BlockPos.containing(h.x(), h.y(), h.z()), p.getUUID())) {
                 return true;
             }
         }

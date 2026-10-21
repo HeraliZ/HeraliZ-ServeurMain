@@ -12,7 +12,7 @@ public final class TutorielApi {
 
     /** -1 : pas de tutoriel ici (réglage coupé, monde des bases absent) ; 0 : à faire ; 1 : kit reçu ; 2 : en cours ; 3 : fini. */
     public static int etat(ServerPlayer p) {
-        if (!BasesReglages.b(BasesReglages.TUTO_ACTIF, true) || p.server.getLevel(MondeBases.BASES) == null) {
+        if (!BasesReglages.b(BasesReglages.TUTO_ACTIF, true) || p.server.getLevel(MondeBases.TUTO) == null) {
             return -1;
         }
         BasesDonnees.Joueur j = BasesDonnees.get(p.server).siConnu(p.getUUID());
@@ -28,15 +28,15 @@ public final class TutorielApi {
     }
 
     /**
-     * Étape de la cabane en cours : {étape (1 à 10, 11 = tout est fait), fait, total} ; {0, 0, 0} hors du monde des bases
+     * Étape de la cabane en cours : {étape (1 à 9, 10 = tout est fait), fait, total} ; {0, 0, 0} hors du monde du tutoriel
      * ou avant l'arrivée. 1 : prendre le plan ; 2 : la 1re fondation ; 3 : la 2e ; 4 : les murs et la porte ; 5 : le toit ;
-     * 6 : tout en bois ; 7 : le Claim Block ; 8 : l'entretien ; 9 : la caisse en métal ; 10 : son home (/sethome).
+     * 6 : tout en bois ; 7 : le Claim Block ; 8 : l'entretien ; 9 : la caisse en métal (plus de home depuis 1.16.0).
      */
     public static int[] progression(ServerPlayer p) {
         return Tutoriel.progression(p);
     }
 
-    /** Nombre d'étapes de la cabane (10). */
+    /** Nombre d'étapes de la cabane (9 depuis 1.16.0). */
     public static int etapes() {
         return Tutoriel.ETAPES;
     }
@@ -51,13 +51,27 @@ public final class TutorielApi {
         return Tutoriel.SAS.contains(p.getUUID());
     }
 
-    /** Lance le tutoriel (titres, kit, envoi dans le monde des bases) d'un joueur qui ne l'a pas fait ; false sinon. */
+    /** Lance le tutoriel (titres, kit, envoi dans le monde du tutoriel) d'un joueur qui ne l'a pas fait ; false sinon. */
     public static boolean lancer(ServerPlayer p) {
         if (etat(p) != 0) {
             return false;
         }
         Tutoriel.lancer(p);
         return true;
+    }
+
+    /**
+     * Un clan vient d'être créé (CRac 1.16.0, appelé par les bases des clans) : son chef fait le tutoriel des bases dans le
+     * monde à part s'il ne l'a jamais fait ; sa cabane d'essai disparaît à la fin.
+     */
+    public static void clanCree(ServerPlayer chef) {
+        BasesDonnees.Joueur j = BasesDonnees.get(chef.server).siConnu(chef.getUUID());
+        if (j != null && j.etape != BasesDonnees.Etape.AUCUNE || etat(chef) != 0 || Tutoriel.enCours(chef)) {
+            return;
+        }
+        T.chat(chef, T.t("crac.tuto.clan", "[Tuto] Ton clan est créé ! Le Commandant Varga va te montrer comment bâtir une base."),
+            net.minecraft.ChatFormatting.GOLD);
+        Tutoriel.lancer(chef);
     }
 
     /** Ouvre la fiche technique des bases ({@code /base info}) chez ce joueur (Quêtes : après la présentation du Bâtisseur). */

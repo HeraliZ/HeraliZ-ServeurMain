@@ -41,12 +41,11 @@ public final class MondeBasesServeur {
     @SubscribeEvent
     public static void demarre(ServerStartedEvent e) {
         ServerLevel l = e.getServer().getLevel(MondeBases.BASES);
-        if (l == null) {
-            Crac.LOGGER.warn("[CRac] monde des bases (crac:bases) absent : /home, /zone base, tutoriel et carrières ne marcheront pas");
-            return;
+        Crac.LOGGER.info("[CRac] bases des clans sur {}", l == null ? "?" : l.dimension().location());
+        ServerLevel ancien = e.getServer().getLevel(MondeBases.ANCIEN_CLE);
+        if (ancien != null) {
+            bordure(ancien);
         }
-        Crac.LOGGER.info("[CRac] monde des bases prêt ({})", l.dimension().location());
-        bordure(l);
     }
 
     @SubscribeEvent
@@ -63,7 +62,9 @@ public final class MondeBasesServeur {
         etape(s, "tutoriel", () -> Tutoriel.seconde(s));
         etape(s, "protections", () -> Protections.seconde(s));
         etape(s, "carrières", () -> CarrieresServeur.seconde(s));
-        ServerLevel l = s.getLevel(MondeBases.BASES);
+        etape(s, "bases des clans", () -> fr.heraliz.crac.heraliz.BasesClans.seconde(s));
+        // bordure propre seulement pour l'ancien monde des bases (la carte principale garde la sienne)
+        ServerLevel l = s.getLevel(MondeBases.ANCIEN_CLE);
         if (l != null) {
             bordure(l);
         }
@@ -98,7 +99,7 @@ public final class MondeBasesServeur {
     }
 
     private static void entree(ServerPlayer p) {
-        if (MondeBases.estBases(p.level())) {
+        if (MondeBases.estAncien(p.level())) {
             bordure(p.serverLevel());
             p.connection.send(new ClientboundInitializeBorderPacket(p.serverLevel().getWorldBorder()));
         }

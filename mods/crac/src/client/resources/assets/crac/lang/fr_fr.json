@@ -370,7 +370,7 @@
   "biome.crac.bases_savane": "Savane",
   "biome.crac.bases_taiga": "Taïga",
   "crac.bases.absent": "Le monde des bases n'existe pas sur ce serveur (crac:bases).",
-  "crac.bases.construire_ailleurs": "On ne construit que dans le monde des bases (/zone base depuis le spawn).",
+  "crac.bases.construire_ailleurs": "On ne construit que sur la carte, pas au spawn.",
   "crac.bases.seau": "Pas d'eau dans le monde des bases.",
   "crac.carriere.aucune": "Aucune carrière dans le monde des bases.",
   "crac.carriere.claim_trop_pres": "Trop près de la carrière %s : la zone de ta base ne doit pas la toucher.",
@@ -546,5 +546,13 @@
   "crac.fiche.pv": "%s PV",
   "crac.fiche.herals": "%s hérals",
   "crac.fiche.rien": "—",
-  "crac.fiche.gratuit": "gratuit"
+  "crac.fiche.gratuit": "gratuit",
+  "crac.claim.sans_clan": "Il faut un clan pour poser une base : crée ou rejoins un clan (touche K).",
+  "crac.claim.gerer_clan": "Seuls le chef du clan et les membres qui peuvent gérer la base posent son armoire.",
+  "crac.zone.interdite": "On ne construit pas ici : trop près d'une ville, d'un lieu à loot, des rails, ou dans une zone dangereuse ou enneigée.",
+  "crac.group.clans_seulement": "Les bases sont celles des clans : crée ou rejoins un clan (touche K) ; les membres et leurs droits se règlent dans le clan.",
+  "crac.acces.clan": "Seuls les membres du clan ont accès à la base : règle leurs droits dans le clan (touche K).",
+  "crac.tuto.essai": "[Tuto] Cabane d'essai dans le monde du tutoriel : elle disparaît à la fin, la vraie base de ton clan se pose sur la carte.",
+  "crac.tuto.termine": "[Tuto] Fini ! La cabane d'essai a disparu. Pose la base de ton clan sur la carte, loin des villes et du loot.",
+  "crac.tuto.clan": "[Tuto] Ton clan est créé ! Le Commandant Varga va te montrer comment bâtir une base."
 }

@@ -222,7 +222,11 @@ public final class StructureService {
         if (c != null) {
             return c.groupId();
         }
-        return b == null ? null : b.ownerGroup;
+        // HeraliZ (1.16.0) : le groupe qui l'a tenue a disparu (clan dissous) : la base est à tout le monde
+        if (b == null || b.ownerGroup == null || GroupData.get(level.getServer()).getById(b.ownerGroup) == null) {
+            return null;
+        }
+        return b.ownerGroup;
     }
 
     /** Building privilege over an existing piece: claim members, or anyone when the building has no claim. */
@@ -348,6 +352,19 @@ public final class StructureService {
         }
         if (deny != null) {
             return Outcome.fail(deny);
+        }
+        // HeraliZ (1.16.0) : zones où l'on ne construit pas sur la carte (villes, loot, rails, neige…)
+        Component zone = fr.heraliz.crac.heraliz.ZonesConstruction.refus(level, BlockPos.containing(key.centreWorld()), player);
+        if (zone == null) {
+            for (BlockPos q : plan.blocks()) {
+                zone = fr.heraliz.crac.heraliz.ZonesConstruction.refus(level, q, player);
+                if (zone != null) {
+                    break;
+                }
+            }
+        }
+        if (zone != null) {
+            return Outcome.fail(zone);
         }
         // HeraliZ : pendant le tutoriel des bases, seulement les pièces de l'étape, contre la cabane
         Component tuto = fr.heraliz.crac.bases.Tutoriel.refusPiece(player, key, plan.buildingId());

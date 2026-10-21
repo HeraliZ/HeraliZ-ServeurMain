@@ -87,7 +87,11 @@ public final class AccesBaseTraitement {
             case OUVRIR -> p.closeContainer();
             case CHERCHER -> recherche = propre(m.texte());
             case DONNER -> {
-                if (gerer && m.cible() != null) {
+                if (fr.heraliz.crac.heraliz.BasesClans.actif()) {
+                    // une base par clan (1.16.0) : personne hors du clan ; les droits se règlent dans le clan (touche K)
+                    T.barre(p, T.t("crac.acces.clan", "Seuls les membres du clan ont accès à la base : règle leurs droits dans le clan (touche K)."),
+                        ChatFormatting.YELLOW);
+                } else if (gerer && m.cible() != null) {
                     donner(p, g, acces, m.cible());
                 }
                 recherche = propre(m.texte());

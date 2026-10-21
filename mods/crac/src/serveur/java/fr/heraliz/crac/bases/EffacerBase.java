@@ -58,11 +58,33 @@ final class EffacerBase {
     private static int effacer(CommandSourceStack src, GameProfile profil) {
         MinecraftServer server = src.getServer();
         UUID joueur = profil.getId();
+        int[] r = effacerDans(server, joueur, null);
+        int pieces = r[0];
+        boolean claim = r[1] > 0;
+        String nom = profil.getName();
+        Crac.LOGGER.info("[CRac] base de {} effacée par {} ({} pièces, claim : {})", nom, src.getTextName(), pieces, claim);
+        if (pieces == 0 && !claim) {
+            src.sendSuccess(() -> T.t("crac.base.effacer.rien", "%s n'a aucune base.", nom).withStyle(ChatFormatting.YELLOW), false);
+            return 0;
+        }
+        String n = String.valueOf(pieces);
+        src.sendSuccess(() -> T.t("crac.base.effacer.fait", "Base de %s effacée (%s pièces).", nom, n).withStyle(ChatFormatting.GREEN), true);
+        return 1;
+    }
+
+    /**
+     * Efface la base du joueur (claim de son groupe et ses bâtiments sans claim) dans tous les mondes, ou dans le seul
+     * monde {@code seul} (fin du tutoriel : la cabane d'essai, jamais la vraie base du clan sur la carte). {pièces, claims}.
+     */
+    static int[] effacerDans(MinecraftServer server, UUID joueur, @org.jetbrains.annotations.Nullable ServerLevel seul) {
         int pieces = 0;
-        boolean claim = false;
+        int claims = 0;
         Group g = GroupData.get(server).getByMember(joueur);
         if (g != null) {
             for (ServerLevel level : server.getAllLevels()) {
+                if (seul != null && level != seul) {
+                    continue;
+                }
                 Claim c = ClaimData.get(level).getByGroup(g.id());
                 if (c == null) {
                     continue;
@@ -84,11 +106,14 @@ final class EffacerBase {
                 AccesBase.get(server).effacer(g.id());   // accès donnés dans l'armoire
                 C2SRequestNearbyClaimsTraitement.pushAll(level);
                 ramasser(level, min, max);
-                claim = true;
+                claims++;
             }
         }
         // ses bâtiments sans claim (cabane du tutoriel pas finie, essais)
         for (ServerLevel level : server.getAllLevels()) {
+            if (seul != null && level != seul) {
+                continue;
+            }
             StructureStore store = StructureStore.get(level);
             Set<Long> batiments = new LinkedHashSet<>();
             for (Piece p : store.index.allPieces()) {
@@ -125,15 +150,7 @@ final class EffacerBase {
         j.arete = -1;
         d.nettoyerHomes(server);   // les homes qui étaient dans la base effacée
         Protections.majTextes(server);
-        String nom = profil.getName();
-        Crac.LOGGER.info("[CRac] base de {} effacée par {} ({} pièces, claim : {})", nom, src.getTextName(), pieces, claim);
-        if (pieces == 0 && !claim) {
-            src.sendSuccess(() -> T.t("crac.base.effacer.rien", "%s n'a aucune base.", nom).withStyle(ChatFormatting.YELLOW), false);
-            return 0;
-        }
-        String n = String.valueOf(pieces);
-        src.sendSuccess(() -> T.t("crac.base.effacer.fait", "Base de %s effacée (%s pièces).", nom, n).withStyle(ChatFormatting.GREEN), true);
-        return 1;
+        return new int[]{pieces, claims};
     }
 
     private static int retirer(ServerLevel level, Collection<Piece> pieces) {

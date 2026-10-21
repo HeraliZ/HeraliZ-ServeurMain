@@ -78,10 +78,27 @@ public final class ClaimBlockHandler {
         if (tuto != null) {
             return tuto.copy().withStyle(ChatFormatting.YELLOW);
         }
-        Group g = GroupData.get(level.getServer()).getByMember(player.getUUID());
-        if (g == null) {
-            // HeraliZ Clans: the clan chief (or a BASE_GERER rank) claims without making a CRac group first
-            g = ClanAccess.groupForClanManager(level.getServer(), player.getUUID());
+        Group g;
+        if (fr.heraliz.crac.heraliz.BasesClans.actif()) {
+            // une base par clan (1.16.0) : le groupe du clan ; sans clan, pas de base (sauf la cabane du tutoriel)
+            g = fr.heraliz.crac.heraliz.BasesClans.groupe(level.getServer(), player.getUUID());
+            if (g == null && fr.heraliz.crac.bases.MondeBases.estTuto(level)) {
+                g = GroupData.get(level.getServer()).getByMember(player.getUUID());
+            }
+            if (g == null && !player.getAbilities().instabuild) {
+                return Component.translatableWithFallback("crac.claim.sans_clan",
+                    "Il faut un clan pour poser une base : crée ou rejoins un clan (touche K).").withStyle(ChatFormatting.RED);
+            }
+        } else {
+            g = GroupData.get(level.getServer()).getByMember(player.getUUID());
+            if (g == null) {
+                g = ClanAccess.groupForClanManager(level.getServer(), player.getUUID());
+            }
+        }
+        // zones où l'on ne construit pas (villes, loot, rails, neige…), carte principale
+        Component zone = fr.heraliz.crac.heraliz.ZonesConstruction.refus(level, pos, player);
+        if (zone != null) {
+            return zone;
         }
         int tier = StructureService.claimTierFor(level, pos);
         String problem = placementProblem(level, player, g, pos, tier);
@@ -127,14 +144,15 @@ public final class ClaimBlockHandler {
         if (g == null) {
             return "crac.claim.no_group";
         }
-        if (!g.isOwner(player.getUUID())) {
-            return "crac.claim.owner_only";
+        boolean clan = fr.heraliz.crac.heraliz.BasesClans.estGroupeClan(level.getServer(), g.id());
+        if (clan ? !fr.heraliz.crac.heraliz.BasesClans.peutGerer(player.getUUID()) && !player.getAbilities().instabuild
+            : !g.isOwner(player.getUUID())) {
+            return clan ? "crac.claim.gerer_clan" : "crac.claim.owner_only";
         }
-        // une seule armoire posée par joueur (1.11.0) ; l'armoire qu'on restaure est la sienne
-        fr.heraliz.crac.bases.AccesBase.Armoire a = player.getAbilities().instabuild ? null
-            : fr.heraliz.crac.bases.AccesBase.get(level.getServer()).armoireDe(level.getServer(), player.getUUID());
-        if (a != null && a.pos() != pos.asLong()) {
-            return "crac.claim.une_par_joueur";
+        // une base par clan (1.16.0) : un groupe ne tient qu'un claim (one_per_group plus bas), plus de limite par joueur
+        // le tutoriel (monde à part) : sa cabane d'essai ne compte pas pour la base du clan
+        if (fr.heraliz.crac.bases.MondeBases.estTuto(level)) {
+            return ClaimManager.tooCloseTo(level, pos, g.id()) != null ? "crac.build.too_close" : null;
         }
         if (RaidBlockManager.isRaidBlocked(level, g.id())) {
             return "crac.claim.raid_new";

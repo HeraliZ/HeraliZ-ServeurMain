@@ -27,7 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Le monde des bases est vide de vie et d'eau (demande du propriétaire, CRac 1.6.0) :
+ * L'ANCIEN monde des bases ({@code crac:bases}) est vide de vie et d'eau (demande du propriétaire, CRac 1.6.0) ; depuis
+ * CRac 1.16.0, les bases sont sur la carte principale, où rien de tout cela ne s'applique (zombies et seaux comme ailleurs) :
  * <ul>
  *   <li>aucune créature : toute entité {@link Mob} (animaux, monstres, villageois, marchands ambulants, golems, PNJ et
  *   zombies des mods qui les font apparaître autour des joueurs) est refusée à l'entrée dans le monde (apparition, œuf,
@@ -64,7 +65,7 @@ public final class NatureBases {
     /** Aucune créature n'entre dans le monde des bases. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void arrivee(EntityJoinLevelEvent e) {
-        if (!e.getLevel().isClientSide() && MondeBases.estBases(e.getLevel()) && creatureInterdite(e.getEntity())) {
+        if (!e.getLevel().isClientSide() && MondeBases.estAncien(e.getLevel()) && creatureInterdite(e.getEntity())) {
             e.setCanceled(true);
         }
     }
@@ -72,7 +73,7 @@ public final class NatureBases {
     /** Apparitions naturelles, cages, œufs, renforts, patrouilles : refusées avant même de préparer la créature. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void apparition(MobSpawnEvent.FinalizeSpawn e) {
-        if (MondeBases.estBases(e.getLevel().getLevel()) && creatureInterdite(e.getEntity())) {
+        if (MondeBases.estAncien(e.getLevel().getLevel()) && creatureInterdite(e.getEntity())) {
             e.setSpawnCancelled(true);
         }
     }
@@ -82,7 +83,7 @@ public final class NatureBases {
         if (e.phase != TickEvent.Phase.END || e.getServer() == null || ++ticks % 20 != 0) {
             return;
         }
-        ServerLevel l = e.getServer().getLevel(MondeBases.BASES);
+        ServerLevel l = e.getServer().getLevel(MondeBases.ANCIEN_CLE);
         if (l != null) {
             try {
                 retirer(l);
@@ -115,7 +116,7 @@ public final class NatureBases {
     /** Seau plein vidé (eau, lave, poisson) dans le monde des bases : refusé, même dans une base. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void seau(FillBucketEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer sp) || !MondeBases.estBases(e.getLevel())
+        if (!(e.getEntity() instanceof ServerPlayer sp) || !MondeBases.estAncien(e.getLevel())
             || BasesReglages.b(BasesReglages.SEAUX, false) || sp.isCreative() || sp.isSpectator()) {
             return;
         }

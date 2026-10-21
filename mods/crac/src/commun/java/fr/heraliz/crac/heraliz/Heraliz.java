@@ -147,15 +147,16 @@ public final class Heraliz {
 
     /**
      * Monde des bases (1.5.0, {@code [bases] construction_ici_seulement} de crac-bases.toml) : en survie, les pièces et le
-     * Claim Block ne se posent que dans le monde des bases. Null quand c'est permis (créatif, réglage coupé, GameTests).
+     * Claim Block ne se posent que dans le monde des bases (la carte principale depuis 1.16.0, pas le monde du spawn). Null quand c'est permis (créatif, réglage coupé, GameTests).
      */
     @Nullable
     public static Component horsMondeBases(@Nullable net.minecraft.world.entity.player.Player player) {
         if (gameTestOriginalRules || player == null || player.getAbilities().instabuild
-            || !BasesReglages.b(BasesReglages.CONSTRUCTION_ICI_SEULEMENT, false) || MondeBases.estBases(player.level())) {
+            || !BasesReglages.b(BasesReglages.CONSTRUCTION_ICI_SEULEMENT, false) || MondeBases.estBases(player.level())
+            || MondeBases.estTuto(player.level())) {
             return null;
         }
         return Component.translatableWithFallback("crac.bases.construire_ailleurs",
-            "On ne construit que dans le monde des bases (/zone base depuis le spawn).");
+            "On ne construit que sur la carte, pas au spawn.");
     }
 }

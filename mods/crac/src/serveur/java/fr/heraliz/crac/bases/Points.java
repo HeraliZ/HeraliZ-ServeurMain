@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 /** Points d'arrivée dans le monde des bases : près de sa base, ou au hasard sur un sol plat loin des autres bases. */
 final class Points {
-    private static final int ESSAIS = 24;
+    private static final int ESSAIS = 48;
 
     private Points() {
     }
@@ -75,7 +75,8 @@ final class Points {
         for (int i = 0; i < ESSAIS; i++) {
             int x = (int) Math.floor(b.getCenterX() + (rnd.nextDouble() * 2 - 1) * rayon);
             int z = (int) Math.floor(b.getCenterZ() + (rnd.nextDouble() * 2 - 1) * rayon);
-            if (presDUneBase(level, x, z, ecart)) {
+            // carte principale (1.16.0) : jamais dans une zone où l'on ne construit pas (villes, loot, rails, neige…)
+            if (presDUneBase(level, x, z, ecart) || MondeBases.estBases(level) && fr.heraliz.crac.heraliz.ZonesConstruction.interdit(x, z)) {
                 continue;
             }
             level.getChunk(x >> 4, z >> 4);

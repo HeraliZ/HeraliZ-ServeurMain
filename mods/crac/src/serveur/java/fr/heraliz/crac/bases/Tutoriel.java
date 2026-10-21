@@ -152,6 +152,63 @@ public final class Tutoriel {
     private static final Map<UUID, Long> AVERTI = new HashMap<>();
     /** Joueurs à qui Varga vient de poser le sas (pour ce qu'il leur dit à la radio, HeraliZ Quêtes). */
     static final Set<UUID> SAS = new HashSet<>();
+    /** Fin du tutoriel en attente (après le tour de caméra) : joueur -> heure de jeu de l'effacement. */
+    private static final Map<UUID, Long> FINS = new HashMap<>();
+    /** Kit donné au début du tutoriel (repris à la fin : la cabane n'était qu'un essai). */
+    private static final Map<UUID, List<ItemStack>> KITS = new HashMap<>();
+    /** Tour de caméra (15 s) et mots de Varga, puis effacement. */
+    private static final long FIN_DELAI = 20L * 20L;
+
+    /**
+     * Fin du tutoriel (1.16.0) : la cabane d'essai et son armoire disparaissent du monde du tutoriel (jamais la vraie base
+     * du clan, sur la carte), ce qui reste du kit est repris, et le joueur revient au spawn.
+     */
+    static void terminer(ServerPlayer p) {
+        ServerLevel tuto = p.server.getLevel(MondeBases.TUTO);
+        if (tuto != null) {
+            EffacerBase.effacerDans(p.server, p.getUUID(), tuto);
+        }
+        reprendreKit(p);
+        if (MondeBases.estTuto(p.level())) {
+            if (!Deplacements.allerAuSpawn(p)) {
+                ServerLevel o = p.server.overworld();
+                net.minecraft.core.BlockPos s = o.getSharedSpawnPos();
+                p.teleportTo(o, s.getX() + 0.5, s.getY(), s.getZ() + 0.5, p.getYRot(), 0f);
+            }
+        }
+        T.chat(p, T.t("crac.tuto.termine", "[Tuto] Fini ! La cabane d'essai a disparu. Pose la base de ton clan sur la carte, loin des villes et du loot."),
+            ChatFormatting.GREEN);
+        Crac.LOGGER.info("[CRac] tutoriel : cabane d'essai de {} effacée", p.getGameProfile().getName());
+    }
+
+    private static void terminerHorsLigne(MinecraftServer server, UUID u) {
+        ServerLevel tuto = server.getLevel(MondeBases.TUTO);
+        if (tuto != null) {
+            EffacerBase.effacerDans(server, u, tuto);
+        }
+        KITS.remove(u);
+    }
+
+    /** Reprend dans l'inventaire ce qui reste du kit du tutoriel (au plus ce qui a été donné). */
+    private static void reprendreKit(ServerPlayer p) {
+        List<ItemStack> kit = KITS.remove(p.getUUID());
+        if (kit == null) {
+            return;
+        }
+        for (Map.Entry<Item, Integer> e : totaux(kit).entrySet()) {
+            int reste = e.getValue();
+            for (int i = 0; i < p.getInventory().getContainerSize() && reste > 0; i++) {
+                ItemStack s = p.getInventory().getItem(i);
+                if (s.is(e.getKey())) {
+                    int n = Math.min(reste, s.getCount());
+                    s.shrink(n);
+                    reste -= n;
+                }
+            }
+        }
+        p.getInventory().setChanged();
+        p.inventoryMenu.broadcastChanges();
+    }
     /** Dernier guide envoyé à chaque joueur (S2CTuto), pour ne renvoyer que ce qui change. */
     private static final Map<UUID, S2CTuto> GUIDES = new HashMap<>();
 
@@ -166,7 +223,7 @@ public final class Tutoriel {
 
     /** Toutes les secondes (MondeBasesServeur). */
     static void seconde(MinecraftServer server) {
-        if (!actif() || server.getLevel(MondeBases.BASES) == null) {
+        if (!actif() || server.getLevel(MondeBases.TUTO) == null) {
             return;
         }
         BasesDonnees d = BasesDonnees.get(server);
@@ -229,7 +286,7 @@ public final class Tutoriel {
     /** Ce que le jeu du joueur montre du tutoriel (fantômes, objet surligné...), renvoyé seulement quand ça change. */
     private static void majGuide(ServerPlayer p) {
         S2CTuto m = S2CTuto.AUCUN;
-        if (enCours(p) && MondeBases.estBases(p.level())) {
+        if (enCours(p) && MondeBases.estTuto(p.level())) {
             Cabane.Etat e = cabane(p);
             if (e.etape() >= 1 && e.etape() <= ETAPES) {
                 String objet = e.objet() == null ? "" : String.valueOf(ForgeRegistries.ITEMS.getKey(e.objet()));
@@ -256,7 +313,7 @@ public final class Tutoriel {
 
     /** Fin du tutoriel : la caméra du joueur fait le tour de sa cabane (S2CTutoFin), Varga parle à la radio. */
     private static void cinemaFin(ServerPlayer p, BasesDonnees.Joueur j) {
-        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        ServerLevel bases = p.server.getLevel(MondeBases.TUTO);
         Building b = bases == null ? null : batiment(bases, p, j);
         if (b == null) {
             return;
@@ -291,16 +348,13 @@ public final class Tutoriel {
             ramener(p, j);
             return;
         }
-        if (!MondeBases.estBases(p.level())) {
+        if (!MondeBases.estTuto(p.level())) {
             return;
         }
         if (progression(p)[0] >= FINIE) {
-            ServerLevel bases = p.server.getLevel(MondeBases.BASES);
-            Building b = bases == null ? null : batiment(bases, p, j);
-            if (b != null && Cabane.sas(bases, p, b)) {
-                SAS.add(p.getUUID());
-            }
+            // 1.16.0 : plus de sas (la cabane d'essai disparaît) ; tour de caméra, puis cabane effacée et retour au spawn
             cinemaFin(p, j);
+            FINS.put(p.getUUID(), p.server.overworld().getGameTime() + FIN_DELAI);
             j.etape = BasesDonnees.Etape.FINI;
             j.batiment = -1L;
             d.marquer();
@@ -315,7 +369,7 @@ public final class Tutoriel {
 
     /** Renvoie le joueur à sa cabane (sur sa première fondation), sinon à un point au hasard du monde des bases. */
     private static void ramener(ServerPlayer p, BasesDonnees.Joueur j) {
-        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        ServerLevel bases = p.server.getLevel(MondeBases.TUTO);
         if (bases == null) {
             return;
         }
@@ -371,6 +425,19 @@ public final class Tutoriel {
 
     /** Chaque tick (MondeBasesServeur) : déroulé des séquences. */
     static void tick(MinecraftServer server) {
+        if (!FINS.isEmpty()) {
+            long now = server.overworld().getGameTime();
+            for (UUID u : List.copyOf(FINS.keySet())) {
+                ServerPlayer p = server.getPlayerList().getPlayer(u);
+                if (p == null) {
+                    FINS.remove(u);
+                    terminerHorsLigne(server, u);
+                } else if (now >= FINS.get(u)) {
+                    FINS.remove(u);
+                    terminer(p);
+                }
+            }
+        }
         if (SEQUENCES.isEmpty()) {
             return;
         }
@@ -476,10 +543,9 @@ public final class Tutoriel {
             j.phaseTicks = 0;
             d.marquer();
             T.chat(p, T.t("crac.tuto.kit", "[Tuto] Kit reçu : %s.", liste), ChatFormatting.YELLOW);
-            if (g != null) {
-                T.chat(p, T.t("crac.tuto.groupe", "[Tuto] Ta base appartient à ton groupe « %s » (/group pour y inviter tes amis).",
-                    g.name()), ChatFormatting.YELLOW);
-            }
+            T.chat(p, T.t("crac.tuto.essai", "[Tuto] Cabane d'essai dans le monde du tutoriel : elle disparaît à la fin, la vraie base de ton clan se pose sur la carte."),
+                ChatFormatting.YELLOW);
+            KITS.put(p.getUUID(), kit);
             Crac.LOGGER.info("[CRac] tutoriel : kit de base donné à {}", p.getGameProfile().getName());
         }
     }
@@ -490,7 +556,7 @@ public final class Tutoriel {
     }
 
     private static void envoyer(ServerPlayer p, boolean force) {
-        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        ServerLevel bases = p.server.getLevel(MondeBases.TUTO);
         if (bases == null) {
             FORCES.remove(p.getUUID());
             return;
@@ -577,7 +643,7 @@ public final class Tutoriel {
     /** Où en est la cabane du tutoriel, avec ce qu'il faut poser et montrer ({@link Cabane}) ; HORS hors de l'étape PHASE. */
     static Cabane.Etat cabane(ServerPlayer p) {
         BasesDonnees.Joueur j = BasesDonnees.get(p.server).siConnu(p.getUUID());
-        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        ServerLevel bases = p.server.getLevel(MondeBases.TUTO);
         if (j == null || j.etape != BasesDonnees.Etape.PHASE || bases == null) {
             return Cabane.Etat.HORS;
         }
@@ -612,7 +678,7 @@ public final class Tutoriel {
         if (j.etape != BasesDonnees.Etape.PHASE) {
             return refus(p, T.t("crac.tuto.refus.pas_encore", "Pas encore : attends les consignes de Varga."));
         }
-        ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+        ServerLevel bases = p.server.getLevel(MondeBases.TUTO);
         Building b = bases == null ? null : batiment(bases, p, j);
         Cabane.Etat e = cabane(p);
         boolean nouveau = buildingId == PlacementRules.NEW_BUILDING;
@@ -790,7 +856,7 @@ public final class Tutoriel {
         // la caisse est déjà dans le monde quand l'événement part : la cabane se lit alors finie
         if (e.getPlacedBlock().getBlock() instanceof MetalCrateBlock && progression(p)[0] >= Cabane.COFFRE) {
             // seulement contre le Claim Block (la case verte) : jamais au milieu du passage, devant la porte
-            ServerLevel bases = p.server.getLevel(MondeBases.BASES);
+            ServerLevel bases = p.server.getLevel(MondeBases.TUTO);
             Building b = bases == null ? null : batiment(bases, p, BasesDonnees.get(p.server).joueur(p.getUUID()));
             Claim c = b == null ? null : StructureService.claimOf(bases, b);
             if (c == null || Math.abs(e.getPos().getX() - c.anchor().getX()) + Math.abs(e.getPos().getZ() - c.anchor().getZ()) <= 2
@@ -941,7 +1007,11 @@ public final class Tutoriel {
     /** Le groupe CRac du joueur ; s'il n'en a pas, celui de son clan (chef) ou un groupe à son nom, créé ici. */
     private static Group groupe(ServerPlayer p) {
         GroupData data = GroupData.get(p.server);
-        Group g = data.getByMember(p.getUUID());
+        // une base par clan (1.16.0) : le groupe de son clan
+        Group g = fr.heraliz.crac.heraliz.BasesClans.groupe(p.server, p.getUUID());
+        if (g == null) {
+            g = data.getByMember(p.getUUID());
+        }
         if (g == null) {
             g = ClanAccess.groupForClanManager(p.server, p.getUUID());
         }
@@ -1004,7 +1074,7 @@ public final class Tutoriel {
     }
 
     private static int lancer(CommandSourceStack src, ServerPlayer p) {
-        if (src.getServer().getLevel(MondeBases.BASES) == null) {
+        if (src.getServer().getLevel(MondeBases.TUTO) == null) {
             Reply.fail(src, T.t("crac.bases.absent", "Le monde des bases n'existe pas sur ce serveur (crac:bases)."));
             return 0;
         }
@@ -1034,7 +1104,7 @@ public final class Tutoriel {
                 return;
             }
             CommandSourceStack src = b.getSource();
-            if (!src.hasPermission(2) || src.getServer().getLevel(MondeBases.BASES) == null) {
+            if (!src.hasPermission(2) || src.getServer().getLevel(MondeBases.TUTO) == null) {
                 return;
             }
             List<ServerPlayer> cibles = new ArrayList<>();

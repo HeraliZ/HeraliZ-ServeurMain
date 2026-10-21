@@ -64,7 +64,8 @@ public final class AccesBase extends SafeSavedData {
     /** Le joueur a-t-il reçu l'accès à la base de ce groupe ? (fil du serveur) */
     public static boolean a(UUID groupe, UUID joueur) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null || groupe == null || joueur == null) {
+        // une base par clan (CRac 1.16.0) : plus aucun accès donné hors du clan
+        if (server == null || groupe == null || joueur == null || fr.heraliz.crac.heraliz.BasesClans.actif()) {
             return false;
         }
         Map<UUID, String> m = get(server).acces.get(groupe);

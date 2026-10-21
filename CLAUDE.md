@@ -151,7 +151,7 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | airstrike | airstrike | airstrike | jumelles et frappes aériennes |
 | caracrea | caracrea | caracrea | créateur de personnage + chat vocal de proximité (UDP) |
 | heraliz-emote | heraliz_emote | heraliz_emote | emotes (Emotecraft et Player Animator de KosmX embarqués, licences dans le jar) |
-| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils « casier militaire » de 2 blocs de haut avec ses accès donnés par le propriétaire, 1.10.0, raids) ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel des bases lancé par le Commandant Varga (1.8.0 : obligatoire, 9 étapes guidées à la radio par HeraliZ Quêtes et par des pièces vertes qui clignotent, tour de caméra à la fin, `TutorielApi`, section 10 « arrivée ») : kit de cabane 2 × 1 et caisse en métal, contour vert « nouveau joueur », `/tuto lancer|rejouer|finir`), base protégée 4 jours, carrières (`/carriere`) |
+| crac | crac | crac | construction façon Rust (fondations, murs, Claim Block/armoire à outils « casier militaire » de 2 blocs de haut, raids) ; **depuis 1.16.0 (21/10) : une base par clan, sur la carte principale, zones interdites, tutoriel dans un monde à part (section 11)** ; **monde des bases** `crac:bases` (1.5.0, terrain refait en 1.6.0, section 9) : homes (1.6.0 : `/sethome`, `/home`, `/delhome`, `/homes` ; 1 home + 1 par grade de la boutique), `/zone base` (alias `/rtp` : du spawn vers un point au hasard du monde des bases, toutes les 5 min), `/spawn` (de sa base vers le point posé par `/spawn definir`, sinon le point de réveil), tutoriel des bases lancé par le Commandant Varga (1.8.0 : obligatoire, 9 étapes guidées à la radio par HeraliZ Quêtes et par des pièces vertes qui clignotent, tour de caméra à la fin, `TutorielApi`, section 10 « arrivée ») : kit de cabane 2 × 1 et caisse en métal, contour vert « nouveau joueur », `/tuto lancer|rejouer|finir`), base protégée 4 jours, carrières (`/carriere`) |
 | heraliz-interface | heraliz_interface | heraliz_interface | **joueurs seulement** : écran titre HeraliZ (Jouer = connexion au serveur, ni solo ni liste de serveurs), menu Échap, choix de langue (drapeaux FR / EN / RU), 1re personne forcée en survie, contours des blocs cachés en survie, pack de textures du serveur imposé, touches par défaut du serveur (sans doublon, touches inutiles cachées) |
 | heraliz-extraction | heraliz_extraction | heraliz_extraction | extraction : terminal (PC + fumigène, zone de 5 min, 1:30 à tenir à ciel ouvert, retour au spawn), zones fixes de la carte ouvertes à tour de rôle (par vagues depuis la 1.5.0 : 4 à la fois pendant 1 h, puis toutes changent ; tirées au hasard à 800 blocs au moins les unes des autres et une par quart de la carte, règles relâchées si impossible et notées dans le journal ; 30 s à tenir ; zone ajoutée en jeu par `/extraction create <nom>` à l'endroit du staff, ou `/execute positioned X Y Z run extraction create <nom>` ; `/extractions` pour les joueurs) |
 | dayzhotbar | dayzhotbar | dayzhotbar | **joueurs seulement** : barre d'objets façon DayZ ; case surlignée en vert par un autre mod (`HotbarOverlay.surligner`, tutoriel des bases, 1.5.0) |
@@ -1784,17 +1784,29 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 
 ## 11. Points ouverts et bugs connus
 
-- **Bases des clans sur la carte principale** (demandé le 21/10, PAS ENCORE CODÉ) : une base par clan (sans clan, pas de
-  base), plus de monde des bases à part : spawn + carte (loot et bases). Zones où l'on ne construit pas calculées par
-  `python outils/zones_construction.py` (`--sortie DOSSIER` : `carte_zones_construction.png`, `zones_construction.json`,
-  `rapport.md` ; lit le pack de données de la carte `datapacks/heraliz_carte` (conteneurs de loot par lieu), les zones à
-  effets `data/heraliz_zones.json` et la voie du train `reseau_v2.json`) : formes qui suivent les bâtiments (pas de cercles,
-  demande du propriétaire) : interdit à moins de 80 blocs d'un conteneur de loot d'une grande zone, 40 pour les villages
-  et petits lieux, 25 pour les maisons isolées ; gaz / radiation / froid bord + 25, tout le nord enneigé (rectangle
-  jusqu'au bas de la zone « froid »), 20 blocs de chaque côté des rails, plateforme pétrolière rayon 150 ; une île ou un
-  champ sans loot reste constructible. 42 % de la terre constructible sur la copie v3. Masque pour le mod :
-  `zones_construction_masque.png` (1 point = 4 blocs depuis le coin nord-ouest de la bordure, blanc = interdit). Calculé sur la copie v3 du dépôt : à refaire
-  sur le monde en service avant de brancher CRac.
+- **Bases des clans sur la carte principale** (21/10, CRac 1.16.0-beta, Quêtes 1.8.11, demande du propriétaire ; rien
+  testé en jeu) : **une base par clan, sans clan pas de base** (`heraliz/BasesClans` : chaque clan a son groupe CRac,
+  reflet du clan, mêmes membres, chef propriétaire, mis à jour toutes les 5 s ; un groupe = un claim). L'armoire ne se
+  pose que par le chef ou un membre qui a le droit BASE_GERER ; dans la base, seuls les membres du clan, selon leurs
+  droits de clan (BASE_ENTRER, BASE_CONSTRUIRE, BASE_CASSER, BASE_PORTES, BASE_COFFRES ; chef toujours) ; plus aucun
+  accès donné hors du clan (onglet Accès de l'armoire, `AccesBase.a` toujours faux), plus de `/group` ni d'invitations.
+  Quitter le clan = plus d'accès. **Clan dissous** : son armoire est retirée, le claim libéré, la base est à tout le monde
+  (portes, coffres, pillage) et on peut y poser sa propre armoire (`controllingGroup` : groupe disparu = libre).
+  **Bases sur la carte principale** (`MondeBases.BASES` = overworld) : construction en survie seulement là (et dans le
+  monde du tutoriel), pas au spawn ; `/zone base` (`/rtp`), `/home`, `/sethome`, `/spawn` sur la carte. **Zones où
+  l'on ne construit pas** (`heraliz/ZonesConstruction`, armoire et pièces refusées, créatif libre) : masque
+  `serveur/config/crac/zones_construction.json` + `zones_construction_masque.png` (blanc = interdit, 1 point = 4 blocs),
+  **écrits** par `python outils/zones_construction.py --sortie serveur/config/crac` (carte validée par le propriétaire
+  le 21/10, aperçu dans `monde/zones_construction/`) : formes qui suivent les bâtiments (80 blocs autour du loot des
+  grandes zones, 40 villages et petits lieux, 25 maisons isolées), gaz / radiation / froid bord + 25, tout le nord
+  enneigé, 20 blocs de chaque côté des rails, plateforme pétrolière rayon 150 ; 42 % de la terre constructible (calculé
+  sur la copie v3 : à refaire sur le monde en service quand la carte bouge). **Tutoriel des bases** : lancé à la
+  création d'un clan pour son chef (s'il ne l'a jamais fait), dans un monde à part (l'ancien monde des bases
+  `crac:bases`, `MondeBases.TUTO` ; ses règles sans créatures ni seaux n'y valent que là) ; 9 étapes (plus de
+  `/sethome`) ; à la fin, tour de caméra, puis la cabane d'essai et son armoire sont effacées (`EffacerBase.effacerDans`,
+  ce monde seulement), le reste du kit est repris et le joueur revient au spawn. Le bouton « Faire ma base » de Varga
+  reste (essai). L'ancien contenu du monde des bases est abandonné : le remettre à neuf par le workflow (case
+  `reinitialiser_bases`).
 
 - **Loot** (19/10, rien testé en jeu) : armes, accessoires, pièces de l'Armurerie et composants des tables T1 à T7
   **écrits** par `python outils/loot_armes.py` (nombre pour 100 conteneurs `POUR_100`, part des raretés par palier

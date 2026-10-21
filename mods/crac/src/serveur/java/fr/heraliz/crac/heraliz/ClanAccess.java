@@ -60,6 +60,11 @@ public final class ClanAccess {
         if (group == null || player == null) {
             return false;
         }
+        // une base par clan (CRac 1.16.0) : seuls les membres du clan, selon leurs droits de clan ; personne d'autre
+        net.minecraft.server.MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server != null && BasesClans.estGroupeClan(server, group.id())) {
+            return BasesClans.permis(server, group, player, action);
+        }
         return group.isMember(player) || fr.heraliz.crac.bases.AccesBase.a(group.id(), player) || viaClan(group, player, action);
     }
 

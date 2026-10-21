@@ -35,6 +35,12 @@ public class GroupCommand {
 
     private static int create(CommandSourceStack src) throws CommandSyntaxException {
         ServerPlayer player = src.getPlayerOrException();
+        // une base par clan (1.16.0) : plus de groupes faits à la main
+        if (fr.heraliz.crac.heraliz.BasesClans.actif()) {
+            Reply.fail(src, Component.translatableWithFallback("crac.group.clans_seulement",
+                "Les bases sont celles des clans : crée ou rejoins un clan (touche K) ; les membres et leurs droits se règlent dans le clan."));
+            return 0;
+        }
         GroupData data = GroupData.get(player.getServer());
         if (data.getByMember(player.getUUID()) != null) {
             Reply.fail(src, Component.translatable("crac.group.already_cmd"));

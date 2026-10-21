@@ -24,7 +24,11 @@ public final class C2SCreateGroupTraitement {
     public static void traiter(C2SCreateGroup msg, Supplier<Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
-            if (player != null && player.getServer() != null && PacketThrottle.allow(player, PacketThrottle.Kind.GROUP_CREATE, COOLDOWN_MS)) {
+            if (player != null && fr.heraliz.crac.heraliz.BasesClans.actif()) {
+                // une base par clan (1.16.0) : plus de groupes faits à la main
+                player.displayClientMessage(net.minecraft.network.chat.Component.translatableWithFallback("crac.group.clans_seulement",
+                "Les bases sont celles des clans : crée ou rejoins un clan (touche K) ; les membres et leurs droits se règlent dans le clan.").withStyle(net.minecraft.ChatFormatting.RED), false);
+            } else if (player != null && player.getServer() != null && PacketThrottle.allow(player, PacketThrottle.Kind.GROUP_CREATE, COOLDOWN_MS)) {
                 int maxLength = Config.groupNameMaxLength.get();
                 String name = GroupNames.cleanName(msg.name(), maxLength);
                 String tag = GroupNames.cleanTag(msg.tag());

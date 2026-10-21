@@ -196,7 +196,7 @@ public final class Protections {
                 continue;
             }
             // tutoriel obligatoire : la protection dure jusqu'à sa fin (Tutoriel), sans limite de temps
-            if (j.etape == BasesDonnees.Etape.PHASE && MondeBases.estBases(p.level())) {
+            if (j.etape == BasesDonnees.Etape.PHASE && MondeBases.estTuto(p.level())) {
                 nouveaux.add(p.getUUID());
             }
             if (j.protectionDue && basePosee(p)) {
