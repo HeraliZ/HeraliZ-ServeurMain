@@ -476,14 +476,14 @@ public final class Reseau {
         return l;
     }
 
-    private static final int MAX_ARTICLES = 512;
+    private static final int MAX_EDITION = 512;
 
     private static void ecrireEdition(Edition m, FriendlyByteBuf b) {
         b.writeUtf(m.pnj(), MAX_CLE);
         m.nom().ecrire(b);
         b.writeBoolean(m.rachat());
         b.writeBoolean(m.modifie());
-        int n = Math.min(m.articles().size(), MAX_ARTICLES);
+        int n = Math.min(m.articles().size(), MAX_EDITION);
         b.writeVarInt(n);
         for (int i = 0; i < n; i++) {
             EArticle a = m.articles().get(i);
@@ -504,7 +504,7 @@ public final class Reseau {
         String pnj = b.readUtf(MAX_CLE);
         Texte nom = Texte.lire(b);
         boolean rachat = b.readBoolean(), modifie = b.readBoolean();
-        int n = Math.min(b.readVarInt(), MAX_ARTICLES);
+        int n = Math.min(b.readVarInt(), MAX_EDITION);
         List<EArticle> l = new ArrayList<>(n);
         for (int i = 0; i < n; i++) l.add(new EArticle(b.readItem(), b.readVarLong(), b.readVarInt() - 1));
         n = Math.min(b.readVarInt(), 16);
