@@ -1,0 +1,75 @@
+{
+  "_aide": "Vagues de zombies pendant une capture de zone. seuils = barre de capture (0 a 1) ou chaque vague part ; nombre de zombies = nombre + par_joueur x (capteurs - 1) + par_valeur x valeur de la zone ; pv et degats = multiplicateurs ; max = au plus N de ce type par vague. Pas de Spitter : son crachat est une boule de slime.",
+  "actif": true,
+  "seuils": [
+    0,
+    0.33,
+    0.66
+  ],
+  "distance_min": 14,
+  "distance_max": 24,
+  "max_vivants": 40,
+  "disparition_s": 20,
+  "vagues": [
+    {
+      "nombre": 4,
+      "par_joueur": 1,
+      "par_valeur": 0.3,
+      "pv": 1.0,
+      "degats": 1.0,
+      "entites": [
+        {
+          "id": "minecraft:zombie",
+          "poids": 8
+        },
+        {
+          "id": "minecraft:husk",
+          "poids": 2
+        }
+      ]
+    },
+    {
+      "nombre": 6,
+      "par_joueur": 1.5,
+      "par_valeur": 0.4,
+      "pv": 1.25,
+      "degats": 1.15,
+      "entites": [
+        {
+          "id": "minecraft:zombie",
+          "poids": 6
+        },
+        {
+          "id": "mutantszombies:crawler",
+          "poids": 4
+        }
+      ]
+    },
+    {
+      "nombre": 8,
+      "par_joueur": 2,
+      "par_valeur": 0.5,
+      "pv": 1.5,
+      "degats": 1.3,
+      "entites": [
+        {
+          "id": "minecraft:zombie",
+          "poids": 5
+        },
+        {
+          "id": "mutantszombies:crawler",
+          "poids": 2
+        },
+        {
+          "id": "mutantszombies:blister_zombie",
+          "poids": 3
+        },
+        {
+          "id": "mutantszombies:zombie_brute",
+          "poids": 2,
+          "max": 1
+        }
+      ]
+    }
+  ]
+}

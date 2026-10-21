@@ -1023,7 +1023,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   6 blocs de hauteur `hauteur_capture`, `heralisz_clans-common.toml`) ; zone sans drapeau : aucune capture. 120 s pour
   une zone libre, 180 s pour une zone tenue, ×1,5 au plus à plusieurs. Pendant la capture, 3 vagues de zombies
   (`territory/Assauts`, à 0, 33 et 66 % de la barre, de plus en plus dures, autour des capteurs ; réglages
-  `config/heralisz_clans/assaut.json`, relu par `/territoire recharger`), retirées 20 s après la fin. Petit panneau de
+  `config/heralisz_clans/assaut.json` du dépôt, relu par `/territoire recharger`), retirées 20 s après la fin ;
+  zombies de Minecraft et de Mutants & Zombies (Crawler, Blister, une seule Brute en vague 3, clé `max`) ; jamais de
+  Spitter, ni dans les vagues ni dans la nature (`spitterZombiesSpawnNaturally = false`) : son crachat est une boule de
+  slime (choix du propriétaire, 21/10 ; zombies faits maison refusés). Petit panneau de
   verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
   drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un
   drapeau (`/territoire drapeau`) déplace le centre de la zone sur lui. Rien testé en jeu ;
