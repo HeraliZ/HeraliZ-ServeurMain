@@ -84,14 +84,18 @@ public class IdleAnimationHandler {
       }
    }
 
+   // HeraliZ (21/10) : marche lue sur le vrai déplacement du dernier tick (x - xo), plus sur getDeltaMovement : chez le
+   // joueur, la vitesse des autres joueurs n'est remise à jour que par les paquets de recul et restait coincée (jambes qui
+   // marchent sur place, couteau en main)
    private static String getPlayerMovementState(AbstractClientPlayer player) {
+      double dx = player.getX() - player.xo, dy = player.getY() - player.yo, dz = player.getZ() - player.zo;
       if (!player.onGround()) {
-         return player.getDeltaMovement().y > 0.0 ? "jump" : "fall";
+         return dy > 0.0 ? "jump" : "fall";
       } else {
-         double speed = player.getDeltaMovement().horizontalDistanceSqr();
+         double speed = dx * dx + dz * dz;
          if (player.isCrouching()) {
-            return speed > 0.001 ? "sneak_walk" : "sneak";
-         } else if (player.isSprinting()) {
+            return speed > 0.0004 ? "sneak_walk" : "sneak";
+         } else if (player.isSprinting() && speed > 0.001) {
             return "sprint";
          } else if (speed > 0.001) {
             return speed > 0.05 ? "run" : "walk";
