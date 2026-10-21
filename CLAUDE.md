@@ -1546,7 +1546,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   s'éteindre au lieu d'exploser (`chargeDudChance`) : elle reste collée, éteinte, et un joueur la récupère par clic droit
   (rendue dans son inventaire ; `StickyExplosiveEntity.isDud`, `drawFuseTicks`, `drawDud`). Nouveaux modèles de la C4
   (militaire) et de la charge (artisanale) **écrits** par `python mods/crac/outils/explosifs.py` (`--apercu DOSSIER`,
-  `--installer`, puis `tenue_explosifs.py --installer`), rendus montrés, pas encore installés. Rien testé en jeu ;
+  `--installer`, puis `tenue_explosifs.py --installer`), installés le 21/10 après les rendus. Rien testé en jeu ;
 - C4 [WIP] (`heralisz_grenade:c4`) retiré de tout le jeu le 16/10 (Tactique 2.17.0 : fiche, modèles, textes ; coffres T6
   avec le détonateur, caisses, ravitaillement, recette de heralisz_bases, établis Zombies). La charge de C4 de CRac
   (`crac:c4`) reste et abîme seule les constructions ; `c4ThrowableIds` de `crac-server.toml` et la source
