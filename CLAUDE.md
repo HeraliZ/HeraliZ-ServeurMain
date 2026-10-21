@@ -998,7 +998,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (inventaire, coffres, sacs, barre d'objets DayZ), infobulle « ★ Rare » (rien pour Commun). Réglage :
   `serveur/config/heraliz_loot/raretes.json` (sections `objets`, `armes`, `accessoires`, `munitions`, `soins` ; remplie
   le 14/10 pour l'Armurerie, les armes, accessoires, munitions et soins, voir « équilibrage ») ; le staff, objet en main :
-  `/rarete <niveau|aucune|effacer|voir|defaut|recharger>` (choix en jeu dans `raretes_jeu.json`, jamais écrasé) ;
+  `/rarete <niveau|aucune|effacer|voir|defaut|recharger>` (choix en jeu dans `raretes_jeu.json`, jamais écrasé) ; infobulles (21/10, Loot 0.9.8, Tactique 2.26.3) : nom de l'objet dans la couleur de sa rareté (Commun blanc ; noms à codes § gardés, skins de couteaux), rareté sans étoile devant ; armes TaCZ sans description (sauf couteaux) ni « Niveau 0 (MAX) » (`ClientGunTooltipMixin`) ; accessoires sans nom du gunpack ni « Appuyez sur [shift] pour voir les armes d'appui » (`ClientAttachmentTooltipMixin`). Rien testé en jeu ;
 - extractions de la carte (16/10, Extraction 1.5.0) : 35 à 40 points possibles ; rotation par vagues (`waves` de
   `serveur/config/heraliz_extraction-common.toml`, fichier du dépôt qui fait foi) : 4 zones ouvertes ensemble pendant
   1 h, puis toutes changent, sans reprendre celles de la vague précédente si possible ; tirage au hasard
