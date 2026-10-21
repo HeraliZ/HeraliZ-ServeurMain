@@ -31,12 +31,12 @@ final class LootBonus {
     }
 
     /** Le joueur est dans une zone de son clan : pose (ou renouvelle) le bonus. */
-    void present(ServerPlayer p, long now) {
+    void present(ServerPlayer p, long now, int enPlus) {
         Long last = derniers.get(p.getUUID());
         if (last != null && now - last < RENOUVELLEMENT_MS) return;
         derniers.put(p.getUUID(), now);
         CompoundTag source = new CompoundTag();
-        source.putInt("Pct", ClansConfig.LOOT_BONUS.get());
+        source.putInt("Pct", ClansConfig.LOOT_BONUS.get() + enPlus);
         source.putLong("Fin", now + VALIDITE_MS);
         CompoundTag donnees = p.getPersistentData();
         CompoundTag persiste = donnees.getCompound(PERSISTE);

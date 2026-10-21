@@ -507,7 +507,7 @@ public final class ClanEvents {
         long heures = c.minutesZonesAPayer / 60;
         if (heures > 0) {
             c.minutesZonesAPayer -= heures * 60;
-            long montant = heures * ClansConfig.REVENU_HEURE.get();
+            long montant = heures * ClansConfig.REVENU_HEURE.get() * (100 + fr.heralisz.clans.model.Avantages.revenuPct(c.niveau)) / 100;
             if (montant > 0) ClansApi.crediterBanque(c.id, montant, "territoires");
         }
         long heuresValeur = c.minutesValeurAConvertir / 60;

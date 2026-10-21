@@ -52,7 +52,7 @@ import java.util.Map;
 public class ClanScreen extends Screen implements Hote {
     /** Onglets de l'ecran (ordre de la barre). */
     public enum Onglet {
-        APERCU, MEMBRES, BANQUE, QUETES, CLASSEMENT, PERMISSIONS, PARAMETRES;
+        APERCU, MEMBRES, BANQUE, QUETES, NIVEAU, CLASSEMENT, PERMISSIONS, PARAMETRES;
 
         public String libelle() {
             return "gui.onglet." + name().toLowerCase(Locale.ROOT);
@@ -182,6 +182,7 @@ public class ClanScreen extends Screen implements Hote {
                 case MEMBRES -> new MembresTab();
                 case BANQUE -> new BanqueTab();
                 case QUETES -> new QuetesTab();
+                case NIVEAU -> new NiveauTab();
                 case CLASSEMENT -> new ClassementTab();
                 case PERMISSIONS -> new PermissionsTab();
                 case PARAMETRES -> new ParametresTab();

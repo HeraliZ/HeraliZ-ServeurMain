@@ -1040,6 +1040,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (`GestesZombies`, mixin `GesteZombieRenduMixin` après le setupAnim de leur modèle, config
   `heralisz_utils_zombies.mixins.json` facultative) ; durées communes dans `AttaquesZombies`. Compilé contre une copie
   du jar dans `libs/`. Rien testé en jeu ;
+- niveaux de clan (21/10, Clans 3.4.0, maquette validée) : onglet NIVEAU du menu K (`tabs/NiveauTab` : prochain niveau,
+  gagner de l'XP, paliers). Avantages en plus des membres et territoires (`model/Avantages`, lu des deux côtés) : 2 fonds
+  de bannière radial et partagé ; 4 délai de ravitaillement −15 % (10 : −30 %, 18 : −45 %) ; 5 bonus de loot +2 % dans
+  ses zones (14 : +4 %) ; 6 revenu des zones +10 % (10 : +20 %, 16 : +30 %) ; 8 tag du clan en couleur (gris avant) ;
+  12 formes rares (dragon, kraken, lion, couronne, œil, soleil ; une bannière qui les a déjà les garde) ; 20 tag doré.
+  Aucun avantage en combat. Rien testé en jeu ;
 - zombies de la survie (21/10, Utils 2.18.0, maquettes validées, `zombies/ZombiesSurvie`, `ZombieSurvie`) : le zombie de
   Minecraft (même IA, mêmes règles) avec un corps de joueur et une mâchoire 3D qui s'ouvre (dents du bas), entité
   `heralisz_utils:zombie_survie`, tenue dans le NBT `HeralizTenue` ; skins dans `textures/entity/zombies/`, peints par

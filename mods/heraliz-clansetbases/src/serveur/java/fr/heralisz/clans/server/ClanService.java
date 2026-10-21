@@ -214,7 +214,10 @@ public final class ClanService {
 
     /** « [TAG] » dans la couleur du clan, suivi d'un espace. */
     public static MutableComponent prefixe(Clan c) {
-        return Component.literal("[" + c.tag + "] ").withStyle(s -> s.withColor(c.banniere.accent()));
+        // tag gris avant le niveau 8, couleur du clan ensuite, or au niveau 20 (avantages des niveaux)
+        int couleur = c.niveau >= fr.heralisz.clans.model.Avantages.NIVEAU_LEGENDAIRE ? 0xFFC23A
+                : c.niveau >= fr.heralisz.clans.model.Avantages.NIVEAU_TAG ? c.banniere.accent() : 0xAAAAAA;
+        return Component.literal("[" + c.tag + "] ").withStyle(s -> s.withColor(couleur));
     }
 
     private static void changement(Clan c) {
@@ -859,6 +862,21 @@ public final class ClanService {
         long now = now();
         if (!cooldownOk(p, c.dernierChgtBanniere, ClansConfig.COOLDOWN_MODIF_H.get() * 3_600_000L, now)) return false;
         Banniere nouvelle = b.valider();
+        if (!fr.heralisz.clans.model.Avantages.degradeLibre(c.niveau, nouvelle.degrade) && nouvelle.degrade != c.banniere.degrade) {
+            erreur(p, "msg.banniere_niveau_degrade");
+            return false;
+        }
+        if (c.niveau < fr.heralisz.clans.model.Avantages.NIVEAU_FORMES) {
+            for (fr.heralisz.clans.model.Calque k : nouvelle.calques) {
+                if (!fr.heralisz.clans.model.Avantages.formeRare(k.forme())) continue;
+                boolean deja = false;
+                for (fr.heralisz.clans.model.Calque a : c.banniere.calques) if (a.forme() == k.forme()) deja = true;
+                if (!deja) {
+                    erreur(p, "msg.banniere_niveau_forme");
+                    return false;
+                }
+            }
+        }
         if (nouvelle.equals(c.banniere)) {
             erreur(p, "msg.aucun_changement");
             return false;
