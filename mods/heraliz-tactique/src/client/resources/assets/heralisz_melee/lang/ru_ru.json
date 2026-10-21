@@ -136,5 +136,11 @@
   "item.heralisz_melee.baseball_bat__red_crackle": "§7Бейсбольная бита §7| §7§lRed Crackle",
   "item.heralisz_melee.baseball_bat__red_crackle.desc": "§6★§8★★★\n§8Эксклюзив HeraliZ",
   "item.heralisz_melee.baseball_bat__molten_steel": "§cБейсбольная бита §7| §c§lMolten Steel",
-  "item.heralisz_melee.baseball_bat__molten_steel.desc": "§6★★★★§8\n§8Эксклюзив HeraliZ"
+  "item.heralisz_melee.baseball_bat__molten_steel.desc": "§6★★★★§8\n§8Эксклюзив HeraliZ",
+  "item.heralisz_melee.cs2_skeleton": "Нож Skeleton",
+  "item.heralisz_melee.cs2_skeleton.desc": "§8Эксклюзив HeraliZ",
+  "item.heralisz_melee.cs2_push": "Тычковый нож Push",
+  "item.heralisz_melee.cs2_push.desc": "§8Эксклюзив HeraliZ",
+  "item.heralisz_melee.cs2_stiletto": "Стилет",
+  "item.heralisz_melee.cs2_stiletto.desc": "§8Эксклюзив HeraliZ"
 }

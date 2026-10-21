@@ -136,5 +136,11 @@
   "item.heralisz_melee.baseball_bat__red_crackle": "§7Batte de baseball §7| §7§lRed Crackle",
   "item.heralisz_melee.baseball_bat__red_crackle.desc": "§6★§8★★★\n§8Exclusivité HeraliZ",
   "item.heralisz_melee.baseball_bat__molten_steel": "§cBatte de baseball §7| §c§lMolten Steel",
-  "item.heralisz_melee.baseball_bat__molten_steel.desc": "§6★★★★§8\n§8Exclusivité HeraliZ"
+  "item.heralisz_melee.baseball_bat__molten_steel.desc": "§6★★★★§8\n§8Exclusivité HeraliZ",
+  "item.heralisz_melee.cs2_skeleton": "Couteau Skeleton",
+  "item.heralisz_melee.cs2_skeleton.desc": "§8Exclusivité HeraliZ",
+  "item.heralisz_melee.cs2_push": "Couteau Push",
+  "item.heralisz_melee.cs2_push.desc": "§8Exclusivité HeraliZ",
+  "item.heralisz_melee.cs2_stiletto": "Stiletto",
+  "item.heralisz_melee.cs2_stiletto.desc": "§8Exclusivité HeraliZ"
 }
