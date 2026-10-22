@@ -155,7 +155,7 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
 
     /**
      * Comme {@link #tirer(Table, RandomSource, int)}, mais sans doublon dans un même conteneur (choix du propriétaire,
-     * 22/10) : jamais deux fois le même objet, sauf les munitions ; un seul sac à dos. Un objet déjà sorti ({@code deja}) est retiré (jusqu'à 20 fois),
+     * 22/10) : jamais deux fois le même objet, sauf les munitions ; un seul sac à dos, une seule grenade. Un objet déjà sorti ({@code deja}) est retiré (jusqu'à 20 fois),
      * sinon la case reste vide.
      */
     static ItemStack tirerUnique(Table t, RandomSource r, int bonus, java.util.Set<String> deja) {
@@ -183,6 +183,7 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
         net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem());
         if (id == null) return null;
         if (id.getNamespace().equals("backpacked")) return "sac";
+        if (id.toString().equals("heralisz_tactical:throwable")) return "grenade"; // une seule grenade, toutes sortes
         // même objet = même identifiant et même NBT (arme, accessoire, soin...), sans la rareté, l'état de la
         // nourriture ni le nom affiché, qui ne changent pas l'objet
         net.minecraft.nbt.CompoundTag tag = st.getTag() == null ? null : st.getTag().copy();

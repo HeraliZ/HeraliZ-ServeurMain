@@ -78,6 +78,10 @@ AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("nourriture", 0.6), ("boissons", 
 MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
 # objets par conteneur (22/10 : moins de cases depuis que nourriture, soins et munitions ont quitté les coffres T1 à T7 ;
 # environ autant d'objets « restants » qu'avant)
+# « autres » objets (grenades, armes de mêlée d'ArkaniaZ, jerrican, chalumeau, parachute) pour 100 conteneurs ; le reste
+# des cases est vide (choix du propriétaire, 22/10 : peu de grenades, une seule par coffre)
+AUTRES_POUR_100 = {1: 4, 2: 6, 3: 10, 4: 10, 5: 12, 6: 14, 7: 16}
+VIDE = {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide"}
 EMPLACEMENTS = {1: [1, 2], 2: [1, 3], 3: [1, 3], 4: [2, 3], 5: [2, 3], 6: [2, 3], 7: [2, 3]}
 PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
 
@@ -255,13 +259,18 @@ HORS_COFFRES = ("nourriture", "boissons", "rations", "plats", "produits_ferme", 
 
 
 def hors_coffres(e):
-    return any(m in e.get("_cat", "") for m in HORS_COFFRES)
+    cat = e.get("_cat", "")
+    # petits objets inutiles (piles, radios, savon...) et outils d'ArkaniaZ (lampe, allumettes, canne à pêche) :
+    # retirés (22/10) ; seuls restent les objets de valeur et composants de HeraliZ Composants
+    if "petits_objets" in cat or ("outils" in cat and e["item"].startswith("geckolib:")):
+        return True
+    return any(m in cat for m in HORS_COFFRES)
 
 
 def autres_de(data):
     out = []
     for e in data["objets"]:
-        if de_famille(e) or e["item"].startswith(RETIRES + ("backpacked:",)) or hors_coffres(e) or melee_absente(e) or e.get("_cat", "").startswith("materiaux"):
+        if e.get("_cat") == "vide" or de_famille(e) or e["item"].startswith(RETIRES + ("backpacked:",)) or hors_coffres(e) or melee_absente(e) or e.get("_cat", "").startswith("materiaux"):
             continue
         e = dict(e)
         e.setdefault("_base", e["poids"])
@@ -286,6 +295,7 @@ def ecrire():
         cases = sum(data["emplacements"]) / 2
         p = {f: POUR_100[f][t] / 100 / cases for f in fams}
         base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
+        p["vide"] = max(0.0, 1 - sum(p.values()) - AUTRES_POUR_100[t] / 100 / cases)
         actifs = sum(base)
         rel = []
         for f, par_r in fams.items():
@@ -313,6 +323,7 @@ def ecrire():
             e["poids"] = round(b * echelle)
             if e["poids"] > 0:
                 objets.append(e)
+        objets.append(dict(VIDE, poids=round(reste * p["vide"])))
         for (e, f, v, r), w in zip(rel, poids):
             n = dict(e)
             n["poids"] = round(w)
