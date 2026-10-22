@@ -579,7 +579,7 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
 
 /* ---- maquette v4 (22/10) : accueil, launcher, Points Boutique, pages légales ---- */
 .hz { padding-bottom: 60px; }
-.hz-hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 28px; align-items: center; padding: 56px 0 34px; }
+.hz-hero { display: grid; grid-template-columns: 1fr; gap: 28px; align-items: center; padding: 56px 0 34px; }
 .hz-hero h1 { font: 700 clamp(38px, 6vw, 62px)/1 'Oswald', sans-serif; text-transform: uppercase; margin: 12px 0 0; }
 .hz-hero h1 em { font-style: normal; color: var(--sang2); }
 .hz-hero p { color: var(--muted); font-size: 17px; max-width: 470px; margin: 14px 0 0; }

@@ -8,11 +8,6 @@
 @php
     $discord = theme_config('discord') ?: 'https://discord.gg/heraliz';
     $saison = theme_config('saison') ?: 'Saison 1';
-    // état du serveur gardé 1 minute (même clé que le bandeau d'état, heraliz/etat.blade.php)
-    $etatServeur = $server ? cache()->remember('heraliz.etat-serveur.'.$server->id, 60, function () use ($server) {
-        $enLigne = $server->isOnline();
-        return ['en_ligne' => $enLigne, 'joueurs' => $enLigne ? $server->getOnlinePlayers() : 0, 'max' => $enLigne ? $server->getMaxPlayers() : 0];
-    }) : null;
     $rapports = $posts->take(3);
     $pageLauncher = \Azuriom\Models\Page::enabled()->where('slug', 'launcher')->exists() ? route('pages.show', 'launcher') : '#';
 @endphp
@@ -24,23 +19,12 @@
         <section class="hz-hero">
             <div>
                 <span class="etiquette">{{ $saison }} · bêta</span>
-                <h1>Survis. Pille. <em>Extrais-toi.</em></h1>
+                <h1>Survis. Raid. <em>Défends.</em></h1>
                 <p>Serveur Minecraft de survie façon DayZ : loot par paliers, bases à la Rust, clans, extractions.</p>
                 <div class="hz-cta">
                     <a class="btn rouge" href="{{ $pageLauncher }}">Télécharger le launcher</a>
                     <a class="btn os" href="{{ $discord }}" target="_blank" rel="noopener noreferrer">@include('heraliz.icone', ['nom' => 'discord'])Discord</a>
                 </div>
-            </div>
-            <div class="hz-etat">
-                <div class="l">
-                    @if($etatServeur !== null && $etatServeur['en_ligne'])
-                        <b><span class="point"></span>Serveur en ligne</b><span>{{ $etatServeur['joueurs'] }} / {{ $etatServeur['max'] }} joueurs</span>
-                    @else
-                        <b><span class="point eteint"></span>Serveur hors ligne</b><span>{{ $saison }}</span>
-                    @endif
-                </div>
-                <div class="hz-adr"><span>play.heraliz.fr</span><button type="button" class="btn os petit" data-copier="play.heraliz.fr">Copier</button></div>
-                <div class="l"><span>Version</span><b>Launcher HeraliZ uniquement</b></div>
             </div>
         </section>
 
@@ -55,14 +39,14 @@
         @endif
 
         @if(! $rapports->isEmpty())
-            <h2 class="hz-sec">Actualités <a href="{{ route('posts.index') }}">Toutes</a></h2>
+            <h2 class="hz-sec">Actualités</h2>
             <div class="hz-trois">
                 @foreach($rapports as $post)
-                    <a class="hz-carte lien" href="{{ route('posts.show', $post) }}">
+                    <div class="hz-carte">
                         <small>{{ optional($post->published_at)->translatedFormat('d M') }}</small>
                         <h3>{{ $post->title }}</h3>
                         <p>{{ $post->description ?: Str::limit(strip_tags($post->content), 110) }}</p>
-                    </a>
+                    </div>
                 @endforeach
             </div>
         @endif
