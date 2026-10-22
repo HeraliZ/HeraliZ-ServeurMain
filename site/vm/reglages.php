@@ -64,6 +64,11 @@ if (setting('heraliz.reglages') !== null) {
     reglagesDeDepart($contenu);
 }
 
+// récompense des votes : une seule fois (repère « heraliz.votes »), ensuite l'administration fait foi
+if (setting('heraliz.votes') === null) {
+    recompenseVote();
+}
+
 // boutique de la saison 1 et pages légales : une seule fois (repère « heraliz.boutique »), chaque élément seulement s'il
 // manque ; ensuite l'administration fait foi
 if (setting('heraliz.boutique') === null) {
@@ -293,4 +298,29 @@ function boutiqueDeDepart(): void
 
     Setting::updateSettings('heraliz.boutique', now()->toDateString());
     dire('Boutique et pages légales : faites');
+}
+
+/** Chaque vote : 1 clé de la caisse « vote » et 10 hérals en jeu (joués par AzLink, joueur connecté). */
+function recompenseVote(): void
+{
+    if (! plugins()->isEnabled('vote')) {
+        dire('Votes : extension absente, récompense non créée');
+        return;
+    }
+    $Recompense = \Azuriom\Plugin\Vote\Models\Reward::class;
+    if ($Recompense::exists()) {
+        dire('Votes : une récompense existe déjà, rien n’est ajouté');
+    } else {
+        $serveur = Server::find(setting('servers.default')) ?? Server::first();
+        $commandes = ['heraliz givekey {player} vote 1', 'eco donner {player} 10'];
+        $r = $Recompense::create(colonnes('vote_rewards', [
+            'name' => '1 clé vote + 10 hérals', 'chances' => 100, 'money' => 0,
+            'commands' => $commandes, 'need_online' => true, 'is_enabled' => true,
+        ]));
+        if ($serveur !== null && method_exists($r, 'servers')) {
+            $r->servers()->sync([$serveur->id]);
+        }
+        dire('Votes : récompense « 1 clé vote + 10 hérals » créée (sites de vote à ajouter dans l’administration → Votes → Sites)');
+    }
+    Setting::updateSettings('heraliz.votes', now()->toDateString());
 }
