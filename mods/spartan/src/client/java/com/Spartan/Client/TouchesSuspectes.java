@@ -7,6 +7,11 @@ import com.Spartan.Utils.ClavierWindows;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractSignEditScreen;
+import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;
@@ -16,7 +21,7 @@ import org.lwjgl.glfw.GLFW;
 
 /**
  * Touches des menus de clients de triche : ² et Maj droite. Aucune action du jeu ne peut les prendre (HeraliZ
- * Interface, TouchesInterdites) : un appui en jeu, hors de tout écran, sur l'une d'elles alors qu'aucune touche des
+ * Interface, TouchesInterdites) : un appui en jeu (hors d'un écran où l'on écrit) sur l'une d'elles alors qu'aucune touche des
  * options n'y est attachée est signalé au serveur, qui décide (ReceptionServeur, type « touche »).
  *
  * Sous Windows, l'appui est aussi lu à chaque tick auprès du système (GetAsyncKeyState) : un menu de triche qui
@@ -86,10 +91,25 @@ public final class TouchesSuspectes {
         return (ClavierWindows.INSTANCE.GetAsyncKeyState(vk) & 0x8001) != 0;
     }
 
+    /**
+     * Seuls les écrans où l'on tape du texte (chat, panneau, livre, champ de saisie actif) font ignorer l'appui. Tout
+     * autre écran compte : le menu d'un client de triche est souvent un écran du jeu, ouvert par la touche elle-même
+     * (avant la 2.7.4, l'appui était ignoré et la capture ne partait qu'à la fermeture du menu).
+     */
+    private static boolean saisieDeTexte(Screen ecran) {
+        if (ecran == null) {
+            return false;
+        }
+        if (ecran instanceof ChatScreen || ecran instanceof AbstractSignEditScreen || ecran instanceof BookEditScreen) {
+            return true;
+        }
+        return ecran.getFocused() instanceof EditBox;
+    }
+
     private static void signaler(int code) {
         String nom = code == GLFW.GLFW_KEY_GRAVE_ACCENT ? "²" : "Maj droite";
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || mc.getConnection() == null || mc.screen != null) {
+        if (mc.player == null || mc.level == null || mc.getConnection() == null || saisieDeTexte(mc.screen)) {
             return;
         }
         InputConstants.Key touche = InputConstants.Type.KEYSYM.getOrCreate(code);
