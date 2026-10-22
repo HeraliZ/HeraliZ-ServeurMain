@@ -23,12 +23,15 @@ public final class EcranJeter extends Screen {
    @Nullable
    private final Screen avant;
    private final ItemStack objet;
+   /** Vrai : « Mettre cet objet dans le sac ? » au lieu de « Jeter cet objet ? ». */
+   private final boolean sac;
    private boolean repondu;
 
-   private EcranJeter(@Nullable Screen avant, ItemStack objet) {
-      super(Component.translatable("heraliz_tactique.a_vie.titre"));
+   private EcranJeter(@Nullable Screen avant, ItemStack objet, boolean sac) {
+      super(Component.translatable(sac ? "heraliz_tactique.a_vie.sac_titre" : "heraliz_tactique.a_vie.titre"));
       this.avant = avant;
       this.objet = objet;
+      this.sac = sac;
    }
 
    public static void brancher() {
@@ -40,7 +43,7 @@ public final class EcranJeter extends Screen {
       if (mc.player == null) return;
       Screen avant = mc.screen instanceof EcranJeter e ? e.avant : mc.screen;
       if (mc.screen instanceof EcranJeter ancien) ancien.repondu = true; // remplacé : l'ancien objet a déjà été rendu par le serveur
-      mc.setScreen(new EcranJeter(avant, q.objet()));
+      mc.setScreen(new EcranJeter(avant, q.objet(), q.sac()));
       SonsUi.ouvrir(0.6f);
    }
 
@@ -77,16 +80,16 @@ public final class EcranJeter extends Screen {
       int x = x0(), y = y0();
       Ui.glass(g, x, y, W, H, 235);
       float cx = this.width / 2f;
-      Ui.spacedCentered(g, this.font, Component.translatable("heraliz_tactique.a_vie.titre").getString(), Ui.SMALL, cx, y + 11, Ui.argb(Ui.MUTED, 255), 0.8f);
+      Ui.spacedCentered(g, this.font, this.title.getString(), Ui.SMALL, cx, y + 11, Ui.argb(Ui.MUTED, 255), 0.8f);
       // objet et son nom, centrés ensemble
       Component nom = Ui.in(this.objet.getHoverName(), Ui.BOLD);
       int wn = Math.min(this.font.width(nom), W - 48);
       int bloc = 16 + 6 + wn, bx = Math.round(cx - bloc / 2f);
       g.renderItem(this.objet, bx, y + 26);
       g.drawString(this.font, Ui.lit(Ui.ellipsis(this.font, nom.getString(), Ui.BOLD, W - 48), Ui.BOLD), bx + 22, y + 30, Ui.argb(Ui.TEXT, 255), false);
-      Ui.centered(g, this.font, Ui.tr(Ui.FONT, "heraliz_tactique.a_vie.texte"), cx, y + 50, Ui.argb(Ui.MUTED, 255));
+      Ui.centered(g, this.font, Ui.tr(Ui.FONT, this.sac ? "heraliz_tactique.a_vie.sac_texte" : "heraliz_tactique.a_vie.texte"), cx, y + 50, Ui.argb(Ui.MUTED, 255));
       bouton(g, nonX(), btnY(), Ui.tr(Ui.BOLD, "heraliz_tactique.a_vie.non"), Ui.OK, sur(mx, my, nonX(), btnY()));
-      bouton(g, ouiX(), btnY(), Ui.tr(Ui.BOLD, "heraliz_tactique.a_vie.oui"), Ui.DANGER, sur(mx, my, ouiX(), btnY()));
+      bouton(g, ouiX(), btnY(), Ui.tr(Ui.BOLD, this.sac ? "heraliz_tactique.a_vie.sac_oui" : "heraliz_tactique.a_vie.oui"), Ui.DANGER, sur(mx, my, ouiX(), btnY()));
       g.pose().popPose();
    }
 

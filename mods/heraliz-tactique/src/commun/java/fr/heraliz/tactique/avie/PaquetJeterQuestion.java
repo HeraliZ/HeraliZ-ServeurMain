@@ -5,14 +5,18 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 
-/** Serveur -> joueur : « Jeter cet objet ? » (l'objet est mis de côté par le serveur en attendant la réponse). */
-public record PaquetJeterQuestion(ItemStack objet) {
+/**
+ * Serveur -> joueur : « Jeter cet objet ? », ou « Mettre cet objet dans le sac ? » si {@code sac} (l'objet est mis de
+ * côté par le serveur en attendant la réponse).
+ */
+public record PaquetJeterQuestion(ItemStack objet, boolean sac) {
    public static void encode(PaquetJeterQuestion p, FriendlyByteBuf buf) {
       buf.writeItem(p.objet);
+      buf.writeBoolean(p.sac);
    }
 
    public static PaquetJeterQuestion decode(FriendlyByteBuf buf) {
-      return new PaquetJeterQuestion(buf.readItem());
+      return new PaquetJeterQuestion(buf.readItem(), buf.readBoolean());
    }
 
    public static void handle(PaquetJeterQuestion p, Supplier<NetworkEvent.Context> contexte) {

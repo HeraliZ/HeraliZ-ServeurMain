@@ -15,10 +15,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -36,7 +39,10 @@ import net.minecraftforge.eventbus.api.EventPriority;
  *     <li>jet depuis un inventaire ouvert : l'objet est mis de côté et le joueur reçoit « Jeter cet objet ? ». Oui : il
  *     tombe. Non (ou écran fermé) : il revient dans l'inventaire ; inventaire plein entre-temps : l'objet de la case 9 de
  *     la barre est jeté à sa place (la dernière case de la barre qui ne tient pas un objet à vie). Mis de côté et
- *     déconnexion, mort ou arrêt du serveur : rendu (ou gardé pour la réapparition).</li>
+ *     déconnexion, mort ou arrêt du serveur : rendu (ou gardé pour la réapparition) ;</li>
+ *     <li>posé dans un sac à dos (écran du sac de HeraliZ Backpack, clic ou Maj + clic) : mis de côté de même, avec
+ *     « Mettre dans le sac ? ». Oui : il va dans le sac, marqué {@code HeralizSacOk} (marque retirée dès qu'il revient
+ *     dans l'inventaire : la question revient la fois suivante) ; perdu avec le sac ensuite, tant pis. Non : rendu.</li>
  * </ul>
  * Créatif et spectateur : rien ne change (staff). Objets toujours déplacés, jamais copiés.
  */
@@ -47,8 +53,13 @@ public final class ObjetsAVieServeur {
    private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
    private static final String CLE = "HeralizObjetsAVie";
    private static final String DRAPEAU_EN_MATCH = "heralisz:en_match";
-   /** Objet mis de côté en attendant la réponse du joueur. */
-   private static final Map<UUID, ItemStack> EN_ATTENTE = new HashMap<>();
+   /** Objet mis de côté en attendant la réponse du joueur ; {@code menu} non nul : question du sac (case {@code cas}). */
+   private record Attente(ItemStack objet, @javax.annotation.Nullable AbstractContainerMenu menu, int cas) {
+   }
+
+   private static final Map<UUID, Attente> EN_ATTENTE = new HashMap<>();
+   private static final String MENU_SAC = "com.mrcrayfish.backpacked.inventory.container.BackpackContainerMenu";
+   private static final String MARQUE_SAC = "HeralizSacOk";
    /** Jet confirmé en cours (le serveur jette lui-même : l'évènement de jet ne doit pas le reprendre). */
    private static boolean jetConfirme;
 
@@ -58,6 +69,7 @@ public final class ObjetsAVieServeur {
       MinecraftForge.EVENT_BUS.addListener(ObjetsAVieServeur::reapparition);
       MinecraftForge.EVENT_BUS.addListener(ObjetsAVieServeur::connexion);
       MinecraftForge.EVENT_BUS.addListener(ObjetsAVieServeur::deconnexion);
+      MinecraftForge.EVENT_BUS.addListener(ObjetsAVieServeur::tick);
       MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> {
          for (ServerPlayer p : e.getServer().getPlayerList().getPlayers()) rendreAttente(p);
          EN_ATTENTE.clear();
@@ -87,14 +99,67 @@ public final class ObjetsAVieServeur {
          return;
       }
       rendreAttente(p);
-      EN_ATTENTE.put(p.getUUID(), garde);
-      ObjetsAVie.envoyer(p, new PaquetJeterQuestion(garde));
+      EN_ATTENTE.put(p.getUUID(), new Attente(garde, null, -1));
+      ObjetsAVie.envoyer(p, new PaquetJeterQuestion(garde, false));
+   }
+
+   // ------------------------------------------------------------------ sac à dos
+   private static void tick(TickEvent.PlayerTickEvent e) {
+      if (e.phase != TickEvent.Phase.END || !concerne(e.player)) return;
+      ServerPlayer p = (ServerPlayer) e.player;
+      Inventory inv = p.getInventory();
+      for (int i = 0; i < inv.getContainerSize(); i++) {
+         ItemStack s = inv.getItem(i);
+         if (!s.isEmpty() && s.hasTag() && s.getTag().contains(MARQUE_SAC)) s.removeTagKey(MARQUE_SAC);
+      }
+      AbstractContainerMenu menu = p.containerMenu;
+      if (menu == p.inventoryMenu || EN_ATTENTE.containsKey(p.getUUID()) || !MENU_SAC.equals(menu.getClass().getName())) return;
+      for (Slot slot : menu.slots) {
+         if (slot.container == inv) continue;
+         ItemStack s = slot.getItem();
+         if (!ObjetsAVie.estAVie(s) || (s.hasTag() && s.getTag().contains(MARQUE_SAC))) continue;
+         ItemStack garde = s.copy();
+         slot.set(ItemStack.EMPTY);
+         EN_ATTENTE.put(p.getUUID(), new Attente(garde, menu, slot.index));
+         menu.broadcastChanges();
+         ObjetsAVie.envoyer(p, new PaquetJeterQuestion(garde, true));
+         return;
+      }
+   }
+
+   /** « Oui, le ranger » : dans sa case du sac si elle est libre, sinon une autre case libre du sac, sinon rendu. */
+   private static void rangerDansSac(ServerPlayer p, Attente a) {
+      ItemStack objet = a.objet();
+      objet.getOrCreateTag().putBoolean(MARQUE_SAC, true);
+      AbstractContainerMenu menu = p.containerMenu;
+      if (menu == a.menu()) {
+         Slot voulu = a.cas() >= 0 && a.cas() < menu.slots.size() ? menu.slots.get(a.cas()) : null;
+         if (voulu != null && !voulu.hasItem() && voulu.mayPlace(objet)) {
+            voulu.set(objet);
+            menu.broadcastChanges();
+            return;
+         }
+         for (Slot slot : menu.slots) {
+            if (slot.container != p.getInventory() && !slot.hasItem() && slot.mayPlace(objet)) {
+               slot.set(objet);
+               menu.broadcastChanges();
+               return;
+            }
+         }
+      }
+      objet.removeTagKey(MARQUE_SAC);
+      rendre(p, objet, true);
    }
 
    private static void reponse(PaquetJeterReponse.Recue r) {
       ServerPlayer p = r.joueur();
-      ItemStack objet = EN_ATTENTE.remove(p.getUUID());
-      if (objet == null || objet.isEmpty()) return;
+      Attente a = EN_ATTENTE.remove(p.getUUID());
+      if (a == null || a.objet().isEmpty()) return;
+      ItemStack objet = a.objet();
+      if (a.menu() != null && r.jeter() && p.isAlive()) {
+         rangerDansSac(p, a);
+         return;
+      }
       if (!r.jeter() || !p.isAlive()) {
          rendre(p, objet, true);
          return;
@@ -110,8 +175,8 @@ public final class ObjetsAVieServeur {
    }
 
    private static void rendreAttente(ServerPlayer p) {
-      ItemStack objet = EN_ATTENTE.remove(p.getUUID());
-      if (objet != null && !objet.isEmpty()) rendre(p, objet, true);
+      Attente a = EN_ATTENTE.remove(p.getUUID());
+      if (a != null && !a.objet().isEmpty()) rendre(p, a.objet(), true);
    }
 
    /**
@@ -169,8 +234,8 @@ public final class ObjetsAVieServeur {
       for (int i = 0; i < grille.getContainerSize(); i++) {
          if (ObjetsAVie.estAVie(grille.getItem(i))) garde.add(grille.removeItemNoUpdate(i).save(new CompoundTag()));
       }
-      ItemStack attente = EN_ATTENTE.remove(p.getUUID());
-      if (attente != null && !attente.isEmpty()) garde.add(attente.save(new CompoundTag()));
+      Attente attente = EN_ATTENTE.remove(p.getUUID());
+      if (attente != null && !attente.objet().isEmpty()) garde.add(attente.objet().save(new CompoundTag()));
       if (garde.isEmpty()) return;
       CompoundTag persiste = persiste(p);
       ListTag deja = persiste.getList(CLE, Tag.TAG_COMPOUND);
@@ -192,11 +257,11 @@ public final class ObjetsAVieServeur {
          if (p.isAlive()) {
             rendreAttente(p);
          } else {
-            ItemStack attente = EN_ATTENTE.remove(p.getUUID());
-            if (attente != null && !attente.isEmpty()) {
+            Attente attente = EN_ATTENTE.remove(p.getUUID());
+            if (attente != null && !attente.objet().isEmpty()) {
                CompoundTag persiste = persiste(p);
                ListTag deja = persiste.getList(CLE, Tag.TAG_COMPOUND);
-               deja.add(attente.save(new CompoundTag()));
+               deja.add(attente.objet().save(new CompoundTag()));
                persiste.put(CLE, deja);
             }
          }
