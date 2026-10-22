@@ -55,7 +55,7 @@ PARTS_FAMILLE = {}
 OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
 PARACHUTE = 0.19  # part du poids d'origine du parachute
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
-AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.06), ("nourriture", 0.6), ("boissons", 0.6),
+AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.03), ("nourriture", 0.6), ("boissons", 0.6),
           ("rations", 0.6), ("plats", 0.6), ("produits_ferme", 0.6)]
 # munitions : part de leur poids d'origine par palier (balles pour 100 conteneurs : environ 40 en T1 à 450 en T7)
 MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
