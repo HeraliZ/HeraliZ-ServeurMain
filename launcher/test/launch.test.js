@@ -85,6 +85,12 @@ test('the launcher offers no way to open the game folder', () => {
     assert.equal(/folder|openPath|showItemInFolder/i.test(preload + main), false)
 })
 
+test('accord des captures redemandé à chaque ouverture du launcher', () => {
+    Config.setAccordCapture(true)
+    const service = new LauncherService(config, () => {})
+    assert.equal(service.getState().accordCapture, false)
+})
+
 test('sans accord des captures d’écran, aucune partie ; l’accord est gardé', async () => {
     const service = new LauncherService(config, () => {})
     Config.setAccordCapture(false)
@@ -97,6 +103,7 @@ test('sans accord des captures d’écran, aucune partie ; l’accord est gardé
 
 test('unconfigured launch performs no downloads and releases the busy lock', async () => {
     const service = new LauncherService(config, () => {})
+    service.accordCapture(true) // accord redemandé à chaque ouverture
     service.saveProfile({ username: 'Survivant', acceptedRules: true })
     await assert.rejects(service.launch(), /préparation/)
     assert.equal(service.busy, false)
@@ -106,6 +113,7 @@ test('unconfigured launch performs no downloads and releases the busy lock', asy
 
 test('concurrent launches and settings edits are rejected during preparation', async () => {
     const service = new LauncherService(config, () => {})
+    service.accordCapture(true)
     let unblock
     service.loadDistribution = () => new Promise((_resolve, reject) => { unblock = reject })
     const launch = service.launch()
@@ -187,6 +195,7 @@ test('launch succeeds through the preparation pipeline and unlocks on game exit'
     const build = ProcessBuilder.prototype.build
     ProcessBuilder.prototype.build = () => child
     const service = new LauncherService(config, () => {})
+    service.accordCapture(true)
     service.loadDistribution = async () => ({ getServerById: () => ({ rawServer: { id: config.serverId } }) })
     service.ensureJava = async () => {}
     service.repair = async () => ({ version: {}, loader: {} })
@@ -209,7 +218,7 @@ test('launch succeeds through the preparation pipeline and unlocks on game exit'
 test('launcher rouvert pendant une partie : pas de second Minecraft ; dans le doute, le joueur n’est pas bloqué', async () => {
     const partie = path.join(directory, 'partie-en-cours.json')
     const noter = (pid, depuis = Date.now()) => fs.writeFileSync(partie, JSON.stringify({ pid, depuis }))
-    const service = nom => new LauncherService(config, () => {}, { nomProcessus: async () => nom })
+    const service = nom => { const s = new LauncherService(config, () => {}, { nomProcessus: async () => nom }); s.accordCapture(true); return s }
     assert.equal(await service('javaw.exe').partieDejaOuverte(), false, 'rien de noté')
     noter(4242)
     const ouvert = service('javaw.exe')
