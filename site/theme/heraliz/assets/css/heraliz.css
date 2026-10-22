@@ -576,3 +576,71 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
   html { scroll-behavior: auto; }
   .rapport .photo img, .btn { transition: none; }
 }
+
+/* ---- maquette v4 (22/10) : accueil, launcher, Points Boutique, pages légales ---- */
+.hz { padding-bottom: 60px; }
+.hz-hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 28px; align-items: center; padding: 56px 0 34px; }
+.hz-hero h1 { font: 700 clamp(38px, 6vw, 62px)/1 'Oswald', sans-serif; text-transform: uppercase; margin: 12px 0 0; }
+.hz-hero h1 em { font-style: normal; color: var(--sang2); }
+.hz-hero p { color: var(--muted); font-size: 17px; max-width: 470px; margin: 14px 0 0; }
+.hz-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+.hz-etat { background: var(--panneau); border: 1px solid var(--trait); border-radius: 8px; padding: 20px; display: grid; gap: 14px; }
+.hz-etat .l { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.hz-etat .l span { color: var(--muted); }
+.hz-etat .point { margin-right: 6px; }
+.hz-adr { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: rgba(255,255,255,.04); padding: 10px 12px; border-radius: 4px; font: 600 18px 'Oswald', sans-serif; letter-spacing: .05em; }
+.btn.petit { min-height: 34px; --bs-btn-padding-x: 14px; --bs-btn-font-size: 12px; }
+.hz-trois { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.hz-carte { background: var(--panneau); border: 1px solid var(--trait); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.hz-carte h3 { font-size: 19px; margin: 0; }
+.hz-carte p { color: var(--muted); margin: 0; font-size: 14px; }
+.hz-carte small { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+.hz-carte.lien { transition: border-color .15s, transform .15s; }
+.hz-carte.lien:hover { border-color: var(--trait2); transform: translateY(-2px); }
+.hz-sec { font-size: 22px; margin: 38px 0 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.hz-sec a { font: 600 13px 'DM Sans', sans-serif; color: var(--muted); }
+.hz-note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+.hz-lots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.hz-lot { background: var(--panneau); border: 1px solid var(--trait); border-radius: 8px; padding: 16px 14px 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; position: relative; transition: border-color .15s, transform .15s, background .15s; }
+.hz-lot:hover { border-color: var(--laiton); transform: translateY(-3px); background: #1a190f; }
+.hz-lot img { width: 100%; max-width: 150px; aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 10px 14px rgba(0,0,0,.6)); transition: transform .2s; }
+.hz-lot:hover img { transform: scale(1.06); }
+.hz-lot .n { font: 700 24px 'Oswald', sans-serif; color: #FFC23A; font-variant-numeric: tabular-nums; }
+.hz-lot .n small { font-size: 13px; color: var(--muted); margin-left: 3px; }
+.hz-lot .bonus { font-size: 12px; font-weight: 700; color: var(--vert); min-height: 18px; }
+.hz-lot .e { font: 600 17px 'Oswald', sans-serif; }
+.hz-lot .ruban { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #FFC23A; color: #1a1300; font: 700 10.5px 'DM Sans', sans-serif; letter-spacing: .12em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; white-space: nowrap; }
+.hz-os { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.hz-osc { background: var(--panneau); border: 1px solid var(--trait); border-radius: 10px; padding: 28px 18px; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: border-color .15s, transform .15s; }
+.hz-osc svg { width: 56px; height: 56px; margin-bottom: 6px; color: var(--c); }
+.hz-osc b { font: 600 24px 'Oswald', sans-serif; }
+.hz-osc span { color: var(--muted); font-size: 13px; }
+.hz-osc em { font-style: normal; margin-top: 10px; font: 600 14px 'Oswald', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
+a.hz-osc:hover { border-color: var(--c); transform: translateY(-3px); }
+.hz-osc.off { opacity: .6; }
+.hz-osc.win { --c: #4aa3ff; } .hz-osc.mac { --c: #d8d4c8; } .hz-osc.lin { --c: var(--vert); }
+.hz-ss { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin-top: 16px; }
+.hz-ss figure { margin: 0; }
+.hz-ss .img { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--trait2); }
+.hz-ss .img img { display: block; width: 100%; }
+.hz-ss .fl { position: absolute; width: 34px; height: 34px; border-radius: 50%; background: var(--sang2); color: #fff; font: 700 18px 'Oswald', sans-serif; display: grid; place-items: center; box-shadow: 0 0 0 4px rgba(226,59,45,.35); animation: hz-pulse 1.6s infinite; }
+.hz-ss figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
+.hz-ss figcaption b { color: var(--os); }
+.hz-ss .fleche svg { width: 34px; height: 34px; color: var(--sang2); }
+@keyframes hz-pulse { 50% { box-shadow: 0 0 0 10px rgba(226,59,45,0); } }
+.hz-liens { padding-left: 18px; color: var(--muted); }
+.hz-leg { display: grid; grid-template-columns: 220px 1fr; gap: 28px; }
+.hz-leg nav { position: sticky; top: 90px; align-self: start; display: grid; gap: 2px; }
+.hz-leg nav a { padding: 8px 10px; border-radius: 4px; color: var(--muted); font-weight: 700; }
+.hz-leg nav a.on, .hz-leg nav a:hover { background: rgba(255,255,255,.05); color: var(--os); }
+.hz-leg article { max-width: 75ch; min-width: 0; }
+.podium .tete { display: none; }
+@media (max-width: 900px) { .hz-lots { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 720px) {
+  .hz-hero, .hz-trois, .hz-os, .hz-leg { grid-template-columns: 1fr; }
+  .hz-hero { padding-top: 30px; }
+  .hz-lots { grid-template-columns: repeat(2, 1fr); }
+  .hz-ss { grid-template-columns: 1fr; } .hz-ss .fleche { transform: rotate(90deg); justify-self: center; }
+  .hz-leg nav { position: static; display: flex; overflow-x: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .hz-ss .fl { animation: none; } .hz-lot, .hz-lot img, .hz-osc, .hz-carte.lien { transition: none; } }

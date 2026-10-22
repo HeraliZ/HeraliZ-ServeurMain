@@ -130,7 +130,6 @@
                     <div class="{{ ['argent', 'or', 'bronze'][$i] }} @if($place === null || $place->user === null) libre @endif">
                         <div class="rang">{{ $rang }}</div>
                         @if($place !== null && $place->user !== null)
-                            <img class="tete" src="{{ $place->user->getAvatar(64) }}" alt="" width="40" height="40">
                             <div class="n">{{ $place->user->name }}</div>
                             <div class="nb">{{ $place->votes }} {{ $place->votes > 1 ? 'votes' : 'vote' }}</div>
                         @else
@@ -146,7 +145,6 @@
                     @continue($position <= 3 || $vote->user === null)
                     <div class="ligne-rang @if($user !== null && $vote->user->is($user)) moi @endif">
                         <span class="p">{{ $position }}</span>
-                        <img class="tete" src="{{ $vote->user->getAvatar(32) }}" alt="" width="26" height="26">
                         <span class="nom">{{ $vote->user->name }}</span>
                         <span class="nb">{{ $vote->votes }}</span>
                     </div>

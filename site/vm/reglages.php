@@ -80,6 +80,12 @@ if (setting('heraliz.boutique') === null) {
     boutiqueDeDepart();
 }
 
+// site v4 (maquette validée le 22/10) : page Launcher, règlement en 10 règles, menu, sites de vote ; une seule fois
+// (repère « heraliz.site_v4 »), ensuite l'administration fait foi
+if (setting('heraliz.site_v4') === null) {
+    siteV4();
+}
+
 // pages légales : créées si elles manquent, remplacées tant qu'elles n'ont pas été modifiées dans l'administration
 majPagesLegales();
 
@@ -289,6 +295,50 @@ function boutiquePB(): void
         $Article::where('is_enabled', false)->where('name', 'like', '% PB')->update(['is_enabled' => true]);
     }
     dire('Points Boutique : '.(PB_EN_VENTE ? 'en vente' : 'lots prêts mais pas encore en vente (en attente de /boutique en jeu)'));
+}
+
+function siteV4(): void
+{
+    $reglement = '<p><strong>Échelle des sanctions :</strong> avertissement, mute, ban temporaire, ban définitif. Triche et doubles comptes : ban définitif direct. Aucun remboursement en cas de sanction.</p><h2>1. Comptes</h2><p>Un compte = une personne. Prêt, partage, vente ou achat de compte interdits. Double compte pour contourner une sanction : ban de tous les comptes.</p><p><em>Sanction : Ban définitif</em></p><h2>2. Triche</h2><p>Client modifié, x-ray, aimbot, macros, autoclick, logiciels tiers, duplication, exploitation de bug : interdit. Un bug se signale au staff sur Discord, il ne s’exploite pas.</p><p><em>Sanction : Ban compte + IP + PC</em></p><h2>3. Respect</h2><p>Pas d’insultes graves, de harcèlement, de propos racistes, sexistes, homophobes ou à caractère sexuel, ni de menaces hors jeu (doxx, DDoS).</p><p><em>Sanction : Mute puis ban</em></p><h2>4. Chat et vocal</h2><p>Pas de spam, de flood, de majuscules en boucle ni de publicité pour d’autres serveurs. En vocal : pas de musique ni de bruits pour gêner.</p><p><em>Sanction : Mute</em></p><h2>5. PvP et raids</h2><p>Le PvP, le pillage et les raids font partie du jeu. Interdit : tuer en boucle un joueur qui réapparaît, bloquer le spawn, piéger les zones de départ.</p><p><em>Sanction : Avertissement puis ban temporaire</em></p><h2>6. Bases et constructions</h2><p>Pas de constructions offensantes, de bases qui bloquent une route, une extraction ou un lieu de loot, ni de lag volontaire (machines, entités en masse).</p><p><em>Sanction : Base effacée</em></p><h2>7. Clans et alliances</h2><p>Un clan peut s’allier, trahir et piller : c’est le jeu. Une arnaque prouvée hors des règles du /trade est sanctionnée.</p><p><em>Sanction : Selon le cas</em></p><h2>8. Échanges et argent réel</h2><p>Échanges uniquement par /trade au spawn. Vendre ou acheter objets, PB, hérals ou comptes contre de l’argent réel : interdit.</p><p><em>Sanction : Ban et retrait</em></p><h2>9. Staff</h2><p>Les décisions du staff s’appliquent. Une contestation se fait calmement par ticket sur Discord, pas dans le chat. Se faire passer pour le staff : ban.</p><p><em>Sanction : —</em></p><h2>10. Anticheat</h2><p>Le jeu se lance uniquement depuis le launcher HeraliZ, qui contrôle les fichiers du jeu et peut prendre des captures du jeu avec ton accord. Le contourner = triche.</p><p><em>Sanction : Ban compte + IP + PC</em></p><p>Dernière mise à jour : 22 octobre 2026. Une question ? Discord, salon #support.</p>';
+    $page = Page::where('slug', 'reglement')->first();
+    if ($page === null) {
+        Page::create(['title' => 'Règlement', 'slug' => 'reglement', 'description' => 'En jouant sur HeraliZ, tu acceptes ces règles.', 'content' => $reglement, 'is_enabled' => true]);
+    } else {
+        $page->update(['description' => 'En jouant sur HeraliZ, tu acceptes ces règles.', 'content' => $reglement]);
+    }
+    dire('Règlement : 10 règles (site v4)');
+
+    if (! Page::where('slug', 'launcher')->exists()) {
+        Page::create(['title' => 'Launcher', 'slug' => 'launcher', 'description' => 'Télécharger le launcher HeraliZ.', 'content' => '<p>Télécharger le launcher HeraliZ.</p>', 'is_enabled' => true]);
+        dire('Page créée : Launcher');
+    }
+    if (! NavbarElement::where('type', 'page')->where('value', 'launcher')->exists()) {
+        NavbarElement::where('position', '>=', 2)->increment('position');
+        NavbarElement::create(['name' => 'Launcher', 'type' => 'page', 'value' => 'launcher', 'position' => 2]);
+        dire('Menu : Launcher ajouté après Accueil');
+    }
+    NavbarElement::where('type', 'plugin')->where('value', 'shop.home')->update(['name' => 'Points Boutique']);
+
+    // votes : Serveur-Minecraft.com retiré (sa vérification ne marche pas), Top-Serveurs ajouté avec la même récompense
+    if (plugins()->isEnabled('vote')) {
+        $Site = \Azuriom\Plugin\Vote\Models\Site::class;
+        foreach ($Site::all() as $site) {
+            if (str_contains((string) $site->url, 'serveur-minecraft.com')) {
+                $site->update(['is_enabled' => false]);
+                dire('Votes : '.$site->name.' désactivé');
+            }
+        }
+        if (! $Site::where('url', 'like', '%top-serveurs.net%')->exists()) {
+            $nouveau = $Site::create(colonnes('vote_sites', ['name' => 'Top-Serveurs', 'url' => 'https://top-serveurs.net/minecraft/vote/heraliz', 'vote_delay' => 120, 'has_verification' => false, 'is_enabled' => true]));
+            $Recompense = \Azuriom\Plugin\Vote\Models\Reward::class;
+            if (method_exists($nouveau, 'rewards')) {
+                $nouveau->rewards()->sync($Recompense::pluck('id')->all());
+            }
+            dire('Votes : Top-Serveurs ajouté (toutes les 2 h ; vérification à régler dans l’administration → Votes → Sites)');
+        }
+    }
+
+    Setting::updateSettings('heraliz.site_v4', now()->toDateString());
 }
 
 function recompenseVote(): void
