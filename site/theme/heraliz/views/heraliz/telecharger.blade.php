@@ -8,6 +8,11 @@
         ['linux', 'Linux', $base.'HeraliZ-Launcher.AppImage'],
     ];
 @endphp
-@foreach($systemes as [$icone, $nom, $lien])
-    <a class="btn rouge grand" href="{{ $lien }}">@include('heraliz.icone', ['nom' => $icone]){{ $nom }}<small>Télécharger</small></a>
-@endforeach
+@if(setting('heraliz.telechargement', 'ouvert') === 'ferme')
+    {{-- téléchargement fermé par theme.sh (TELECHARGEMENT=ferme) : aucun lien vers l'installateur --}}
+    <span class="btn rouge grand disabled" aria-disabled="true">Bientôt disponible<small>Le launcher arrive à l'ouverture du serveur</small></span>
+@else
+    @foreach($systemes as [$icone, $nom, $lien])
+        <a class="btn rouge grand" href="{{ $lien }}">@include('heraliz.icone', ['nom' => $icone]){{ $nom }}<small>Télécharger</small></a>
+    @endforeach
+@endif

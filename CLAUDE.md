@@ -707,6 +707,7 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   vie, lots de clés cosmétiques (`heraliz givekey {player} spectacle n`, caisse `CAISSE_COSMETIQUE`) ; offres de crédits
   (1 crédit = 1 €) ; pages `cgv`, `mentions-legales`, `confidentialite`, `sur-mesure` (`site/vm/pages_legales.php`,
   passages entre crochets à compléter dans l'administration, jamais dans le dépôt). Rien testé.
+- **Téléchargement du launcher fermé** (22/10, demande du propriétaire) : `TELECHARGEMENT=ferme` en tête de `site/vm/theme.sh` : `/telecharger/` répond 403 (`/etc/nginx/heraliz-telecharger.conf`) et les boutons du site disent « Bientôt disponible » (réglage `heraliz.telechargement`). Les launchers déjà installés ne se mettent plus à jour seuls tant que c'est fermé. Rouvrir : `TELECHARGEMENT=ouvert`, puis « Site HeraliZ » choix « theme ».
 - Le thème : accueil, connexion, inscription, boutique (catégories, articles en cartes de grade), votes, pages et
   actualités refaits d'après les maquettes ; les autres pages (profil, panier, paiement...) gardent celles d'Azuriom,
   habillées par `assets/css/heraliz.css`. Grades en couleur sans icône. La mention « Propulsé par Azuriom » du pied de

@@ -13,6 +13,9 @@ DOSSIER=/var/www/azuriom
 # qui demande le pack au site : les plus anciens se mettent à jour seuls au démarrage, avant de télécharger le pack.
 PACK_RESERVE=oui
 PACK_LAUNCHER_MIN=1.7.0
+# Téléchargement du launcher (heraliz.fr/telecharger/) : « ferme » le refuse à tous (403) et cache les boutons du site
+# (« Bientôt disponible ») ; « ouvert » le rend. Fermé, les launchers déjà installés ne se mettent plus à jour seuls.
+TELECHARGEMENT=ferme
 TRAVAIL=$(mktemp -d /tmp/heraliz_site.XXXXXX)
 trap 'rm -rf "$TRAVAIL" "$ARCHIVE"' EXIT
 
@@ -152,8 +155,27 @@ for ext in shop vote; do
   en_site php artisan plugin:enable "$ext"
 done
 
+echo "== Téléchargement du launcher"
+TELE_NGINX=/etc/nginx/heraliz-telecharger.conf
+SITE_NGINX_T=/etc/nginx/sites-available/heraliz
+cp "$SITE_NGINX_T" /tmp/heraliz-nginx-t.avant
+if [ "$TELECHARGEMENT" = ferme ]; then echo 'return 403;' > "$TELE_NGINX"; else : > "$TELE_NGINX"; fi
+if ! grep -q "include /etc/nginx/heraliz-telecharger.conf" "$SITE_NGINX_T"; then
+  sed -i -E 's#^([[:space:]]*)alias /var/www/telecharger/;#&\n\1include /etc/nginx/heraliz-telecharger.conf;#' "$SITE_NGINX_T"
+fi
+if nginx -t > /dev/null 2>&1; then
+  systemctl reload nginx
+  echo "Téléchargement du launcher : $TELECHARGEMENT"
+else
+  cp /tmp/heraliz-nginx-t.avant "$SITE_NGINX_T"; : > "$TELE_NGINX"
+  nginx -t > /dev/null 2>&1 && systemctl reload nginx
+  echo "::warning::Téléchargement du launcher : nginx a refusé le réglage, laissé ouvert."
+  TELECHARGEMENT=ouvert
+fi
+rm -f /tmp/heraliz-nginx-t.avant
+
 echo "== Réglages"
-en_site php "$TRAVAIL/vm/reglages.php" "$DOSSIER" "$TRAVAIL/contenu"
+en_site env HERALIZ_TELECHARGEMENT="$TELECHARGEMENT" php "$TRAVAIL/vm/reglages.php" "$DOSSIER" "$TRAVAIL/contenu"
 en_site php artisan view:clear > /dev/null
 en_site php artisan cache:clear > /dev/null
 

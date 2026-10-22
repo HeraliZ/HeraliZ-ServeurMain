@@ -31,7 +31,7 @@
                 @include('heraliz.telecharger')
                 <a class="btn discord grand" href="{{ $discord }}" target="_blank" rel="noopener noreferrer">@include('heraliz.icone', ['nom' => 'discord', 'style' => 'width:22px;height:22px'])Rejoindre le Discord</a>
             </div>
-            <p class="note-os">Linux : fichier AppImage, ou <a href="https://heraliz.fr/telecharger/HeraliZ-Launcher.deb">paquet .deb</a>. Mac : au premier lancement, clic droit sur l'application puis « Ouvrir ».</p>
+            @if(setting('heraliz.telechargement', 'ouvert') !== 'ferme')<p class="note-os">Linux : fichier AppImage, ou <a href="https://heraliz.fr/telecharger/HeraliZ-Launcher.deb">paquet .deb</a>. Mac : au premier lancement, clic droit sur l'application puis « Ouvrir ».</p>@endif
         </div>
     </section>
 

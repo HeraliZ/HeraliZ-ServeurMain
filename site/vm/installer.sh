@@ -103,6 +103,7 @@ RACINE="$DOSSIER"
 echo "Racine du site : $RACINE"
 # pack et installateur du launcher : déposés par rsync avec l'utilisateur SSH (root ou celui qui a lancé sudo)
 install -d -m 755 -o "${SUDO_USER:-root}" /var/www/launcher /var/www/telecharger
+[ -f /etc/nginx/heraliz-telecharger.conf ] || : > /etc/nginx/heraliz-telecharger.conf
 chown -R "${SUDO_USER:-root}" /var/www/launcher /var/www/telecharger
 
 echo "== nginx"
@@ -194,6 +195,7 @@ server {
     # Installateur du launcher (HeraliZ-Launcher-Setup.exe), déposé par le workflow « Launcher HeraliZ »
     location ^~ /telecharger/ {
         alias /var/www/telecharger/;
+        include /etc/nginx/heraliz-telecharger.conf;
         autoindex off;
         add_header Cache-Control "no-cache";
     }

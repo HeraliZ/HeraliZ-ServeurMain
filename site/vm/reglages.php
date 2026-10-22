@@ -64,6 +64,11 @@ if (setting('heraliz.reglages') !== null) {
     reglagesDeDepart($contenu);
 }
 
+// téléchargement du launcher ouvert ou fermé (TELECHARGEMENT de theme.sh), lu par le thème
+if (in_array(getenv('HERALIZ_TELECHARGEMENT'), ['ouvert', 'ferme'], true)) {
+    Setting::updateSettings('heraliz.telechargement', getenv('HERALIZ_TELECHARGEMENT'));
+}
+
 // récompense des votes : une seule fois (repère « heraliz.votes »), ensuite l'administration fait foi
 if (setting('heraliz.votes') === null) {
     recompenseVote();
