@@ -1,15 +1,20 @@
 package fr.heraliz.emote.client;
 
 import fr.heraliz.emote.pont.Partie;
+import fr.heraliz.emote.reseau.ReseauEmotes;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
  * Partie client de HeraliZ Emote (docs/METHODE_CLIENT_SERVEUR.md §4) : emotes, objets 3D, musiques, menu et roue,
- * copie de l'emote d'un joueur. Le serveur n'a que la règle des emotes (mixin commun) et Emotecraft embarqué.
+ * copie de l'emote d'un joueur, vue à la 3e personne pendant une emote, emotes verrouillées grisées dans le menu.
  */
 public final class PartieClient implements Partie {
     @Override
     public void init(IEventBus busMod) {
         HeralizEmoteClient.init(busMod);
+        ReseauEmotes.DEBLOCAGES_CLIENT.brancher(DeblocagesClient::recevoir);
+        MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> DeblocagesClient.oublier());
     }
 }

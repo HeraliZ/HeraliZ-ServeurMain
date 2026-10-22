@@ -171,5 +171,9 @@
   "subtitles.heralizcrates.theme.gem_chime": "Вспышка света",
   "subtitles.heralizcrates.theme.gem_shatter": "Кристалл разлетается",
   "subtitles.heralizcrates.theme.gem_charge": "Кристалл заряжается",
-  "heralizcrates.commande.poids": "(вес %s, %s)"
+  "heralizcrates.commande.poids": "(вес %s, %s)",
+  "block.heralizcrates.spectacle_crate": "Ящик эмоций",
+  "item.heralizcrates.spectacle_key": "Ключ эмоций",
+  "message.heralizcrates.all_emotes": "У тебя уже есть все эмоции из этого ящика.",
+  "gui.heralizcrates.case.error.all_emotes": "У тебя уже есть все эмоции из этого ящика."
 }

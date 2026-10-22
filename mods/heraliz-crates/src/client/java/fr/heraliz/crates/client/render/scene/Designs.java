@@ -13,6 +13,7 @@ import fr.heraliz.crates.client.render.scene.crates.Booster;
 import fr.heraliz.crates.client.render.scene.crates.Chantier;
 import fr.heraliz.crates.client.render.scene.crates.Trauma;
 import fr.heraliz.crates.client.render.scene.crates.Largage;
+import fr.heraliz.crates.client.render.scene.crates.Spectacle;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,6 +51,7 @@ public final class Designs {
             case "build" -> new Chantier();
             case "trauma" -> new Trauma();
             case "largage" -> new Largage();
+            case "spectacle" -> new Spectacle();
             default -> throw new IllegalArgumentException("caisse inconnue : " + id);
         };
     }

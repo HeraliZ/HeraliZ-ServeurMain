@@ -187,6 +187,7 @@ public final class ModRegistry {
             case BUILD -> MapColor.COLOR_YELLOW;
             case STICKER -> MapColor.COLOR_LIGHT_BLUE;
             case CAMO -> MapColor.COLOR_MAGENTA;
+            case SPECTACLE -> MapColor.COLOR_PINK;
         };
     }
 

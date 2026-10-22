@@ -1,6 +1,8 @@
 package fr.heraliz.emote.client.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
+import fr.heraliz.emote.client.DeblocagesClient;
 import fr.heraliz.emote.client.HeralizConfig;
 import fr.heraliz.emote.client.HeralizKeys;
 import fr.heraliz.emote.client.catalog.EmoteCatalog;
@@ -32,6 +34,8 @@ import java.util.UUID;
  * the one under the mouse. Opened with H by default.
  * <p>HeraliZ interface style (copy of the clans kit): forced scale on a 640 x 360 canvas, glass panel, DM Sans, spaced
  * capitals, clan accent. Left: categories; middle: emote tiles; right: preview stage, details, Play / Stop.
+ * <p>Emotes not unlocked yet (emote crate) are greyed with a padlock: clicking one still shows it on the stage, and the
+ * Play button then reads "To unlock in the emote crate" instead.
  */
 public class EmoteBrowserScreen extends Screen {
     private static final int TILE_W = 52;
@@ -46,6 +50,9 @@ public class EmoteBrowserScreen extends Screen {
 
     private record Entry(KeyframeAnimation anim, Component name, Component description, Component author, String category,
                          boolean ours, boolean props, String search) {
+        boolean locked() {
+            return !DeblocagesClient.debloquee(anim.getUuid());
+        }
     }
 
     private record Tab(String key, String label, long count, int x0, int x1, int y) {
@@ -73,6 +80,8 @@ public class EmoteBrowserScreen extends Screen {
     private Component status;
     private int statusTicks;
     private boolean opened;
+    private HzButton playButton, stopButton;
+    private int playW;
 
     /** Panel, columns (categories / grid / preview) and footer. */
     private int px, py, pw, ph;
@@ -128,9 +137,10 @@ public class EmoteBrowserScreen extends Screen {
         addRenderableWidget(search);
 
         int bw = (sx1 - sx0 - 6) / 2;
-        addRenderableWidget(new HzButton(sx0, sy1 - 20, bw, 20, Component.translatable("heraliz_emote.menu.play_btn"), Ui.accent(),
+        playW = bw;
+        playButton = addRenderableWidget(new HzButton(sx0, sy1 - 20, bw, 20, Component.translatable("heraliz_emote.menu.play_btn"), Ui.accent(),
                 () -> play(selected)).look(HzButton.Look.PRIMARY));
-        addRenderableWidget(new HzButton(sx0 + bw + 6, sy1 - 20, sx1 - sx0 - bw - 6, 20, Component.translatable("heraliz_emote.menu.stop_btn"),
+        stopButton = addRenderableWidget(new HzButton(sx0 + bw + 6, sy1 - 20, sx1 - sx0 - bw - 6, 20, Component.translatable("heraliz_emote.menu.stop_btn"),
                 Ui.accent(), () -> {
             ClientEmoteAPI.playEmote(null);
             onClose();
@@ -245,6 +255,12 @@ public class EmoteBrowserScreen extends Screen {
             preview.show(target == null ? null : target.anim, 0);
         }
         preview.tick();
+        // locked emote: one wide inactive button "to unlock in the emote crate" in place of Play / Stop
+        boolean locked = selected != null && selected.locked();
+        playButton.active = !locked;
+        stopButton.visible = !locked;
+        playButton.setMessage(Component.translatable(locked ? "heraliz_emote.menu.locked_btn" : "heraliz_emote.menu.play_btn"));
+        playButton.setBounds(sx0, sy1 - 20, locked ? sx1 - sx0 : playW, 20);
         if (statusTicks > 0 && --statusTicks == 0) status = null;
     }
 
@@ -328,7 +344,9 @@ public class EmoteBrowserScreen extends Screen {
 
         super.render(g, mouseX, mouseY, partialTick);
         if (hovered != null) {
-            Ui.tooltip(g, font, List.of(Ui.in(hovered.name, Ui.BOLD)), mouseX, mouseY, accent);
+            Ui.tooltip(g, font, hovered.locked()
+                    ? List.of(Ui.in(hovered.name, Ui.BOLD), Ui.tr(Ui.SMALL, "heraliz_emote.menu.locked_tip"))
+                    : List.of(Ui.in(hovered.name, Ui.BOLD)), mouseX, mouseY, accent);
         } else if (overSound) {
             Ui.tooltip(g, font, List.of(Ui.tr(Ui.BOLD, "heraliz_emote.config.other_players"),
                     Ui.tr(Ui.FONT, on ? "heraliz_emote.menu.on" : "heraliz_emote.menu.off")), mouseX, mouseY, accent);
@@ -360,6 +378,9 @@ public class EmoteBrowserScreen extends Screen {
         }
         int ix = x + (TILE_W - 32) / 2;
         int iy = y + 6;
+        boolean locked = e.locked();
+        // locked: icon dimmed and greyed (selected or hovered: a little brighter, it is the one shown on the stage)
+        if (locked) RenderSystem.setShaderColor(0.42f, 0.44f, 0.48f, isSelected || isHovered ? 0.85f : 0.6f);
         EmoteIcons.Icon icon = EmoteIcons.get(e.anim);
         if (icon != null) {
             g.blit(icon.texture(), ix, iy, 32, 32, 0, 0, icon.width(), icon.height(), icon.width(), icon.height());
@@ -368,7 +389,11 @@ public class EmoteBrowserScreen extends Screen {
             String letter = e.name.getString().isEmpty() ? "?" : e.name.getString().substring(0, 1).toUpperCase(Locale.ROOT);
             Ui.gros(g, font, Ui.lit(letter, Ui.BOLD), ix + 16 - font.width(Ui.lit(letter, Ui.BOLD)) * 0.75f, iy + 10, 1.5f, 0xFFFFFFFF);
         }
-        if (e.props) {
+        if (locked) {
+            RenderSystem.setShaderColor(1, 1, 1, 1);
+            cadenas(g, ix + 32 - 7, iy + 32 - 9, Ui.argb(0xD8DCE4, 235));
+        }
+        if (e.props && !locked) {
             // small gold diamond: this emote comes with props
             int dx = x + TILE_W - 9, dy = y + 5;
             for (int r = 0; r < 5; r++) {
@@ -377,8 +402,21 @@ public class EmoteBrowserScreen extends Screen {
             }
         }
         String name = Ui.ellipsis(font, e.name.getString(), Ui.SMALL, TILE_W - 6);
-        Ui.centered(g, font, Ui.lit(name, Ui.SMALL), x + TILE_W / 2f, y + 42,
-                isSelected ? Ui.argb(0xFFFFFF, 255) : isHovered ? Ui.argb(Ui.TEXT, 255) : Ui.argb(Ui.MUTED, 255));
+        Ui.centered(g, font, Ui.lit(name, Ui.SMALL), x + TILE_W / 2f, y + 42, locked
+                ? (isSelected || isHovered ? Ui.argb(Ui.MUTED, 255) : Ui.argb(Ui.FAINT, 255))
+                : isSelected ? Ui.argb(0xFFFFFF, 255) : isHovered ? Ui.argb(Ui.TEXT, 255) : Ui.argb(Ui.MUTED, 255));
+    }
+
+    /** Small padlock drawn pixel by pixel (7 x 9), on a dark disc so it reads on any icon. */
+    private static void cadenas(GuiGraphics g, int x, int y, int argb) {
+        Ui.soft(g, x - 2, y - 1, 11, 12, Ui.argb(0x0D0F14, 200));
+        // shackle
+        g.fill(x + 1, y, x + 6, y + 1, argb);
+        g.fill(x + 1, y + 1, x + 2, y + 4, argb);
+        g.fill(x + 5, y + 1, x + 6, y + 4, argb);
+        // body and keyhole
+        g.fill(x, y + 4, x + 7, y + 9, argb);
+        g.fill(x + 3, y + 5, x + 4, y + 8, Ui.argb(0x0D0F14, 255));
     }
 
     private void renderPreviewPanel(GuiGraphics g, float partialTick, int accent) {
@@ -444,7 +482,7 @@ public class EmoteBrowserScreen extends Screen {
     private void play(@Nullable Entry e) {
         if (e == null || minecraft == null) return;
         lastSelected = e.anim.getUuid();
-        Component refused = fr.heraliz.emote.client.ClientRules.refusal();
+        Component refused = fr.heraliz.emote.client.ClientRules.refusal(e.anim.getUuid());
         if (refused != null) {
             status = refused;
             statusTicks = 80;

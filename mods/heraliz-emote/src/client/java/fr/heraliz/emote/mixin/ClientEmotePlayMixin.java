@@ -12,13 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Every emote the local player starts (Emotecraft's wheel and menu, the Heraliz menu, borrowing, keys bound to an
  * emote, {@code /emotes-client play}) goes through {@code clientStartLocalEmote}: refused while downed, in a duel or a
- * ClashWar game, or combat-tagged ({@link ClientRules}).
+ * ClashWar game, combat-tagged, or not unlocked ({@link ClientRules}).
  */
 @Mixin(value = ClientEmotePlay.class, remap = false)
 public abstract class ClientEmotePlayMixin {
     @Inject(method = "clientStartLocalEmote(Ldev/kosmx/playerAnim/core/data/KeyframeAnimation;)Z", at = @At("HEAD"), cancellable = true, remap = false)
     private static void heraliz$rules(KeyframeAnimation emote, CallbackInfoReturnable<Boolean> cir) {
-        Component why = ClientRules.refusal();
+        Component why = ClientRules.refusal(emote == null ? null : emote.getUuid());
         if (why != null) {
             ClientRules.tell(why);
             cir.setReturnValue(false);

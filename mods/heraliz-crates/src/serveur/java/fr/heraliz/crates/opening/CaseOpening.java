@@ -144,9 +144,10 @@ public final class CaseOpening {
             reply(player, "message.heralizcrates.empty");
             return;
         }
-        LootEntry win = loot.roll(RANDOM);
+        LootEntry win = loot.roll(RANDOM, fr.heraliz.crates.loot.EmotesCaisse.permis(player, type));
         if (win == null) {
-            reply(player, "message.heralizcrates.empty");
+            // caisse des emotes : il a deja toutes celles qu'elle peut donner (la cle n'est pas consommee)
+            reply(player, type == CrateType.SPECTACLE ? "gui.heralizcrates.case.error.all_emotes" : "message.heralizcrates.empty");
             return;
         }
         if (!free(player) && !consumeKey(player, type)) {

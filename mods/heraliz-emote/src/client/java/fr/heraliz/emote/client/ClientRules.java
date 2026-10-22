@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 /**
  * {@link EmoteRules} on the client, with what the client knows (works even when the server does not have this mod):
@@ -16,7 +17,8 @@ import java.lang.reflect.Method;
  *     <li>downed: Reanimation syncs the downed state to the clients ({@code Downed.isDowned});</li>
  *     <li>in a match: HeraliZ Matchs tells the client ({@code moteur.client.MoteurClient.enMatch()}); zombies games
  *     (their HUD is on, {@code zombies.jeu.api.HudZombies.actif()}) are allowed;</li>
- *     <li>combat-tagged: the "EN COMBAT 12 s" countdown of HeraliZ Matchs ({@code MoteurClient.combatRestantMs()}).</li>
+ *     <li>combat-tagged: the "EN COMBAT 12 s" countdown of HeraliZ Matchs ({@code MoteurClient.combatRestantMs()});</li>
+ *     <li>not unlocked (emote crate): {@link DeblocagesClient}, sent by the server.</li>
  * </ul>
  * Every local emote start goes through {@code mixin.ClientEmotePlayMixin}; {@link #tick()} stops an emote that is
  * already playing when one of these becomes true (shot while dancing, pulled into a duel...).
@@ -39,6 +41,14 @@ public final class ClientRules {
         if (call(enMatch) instanceof Boolean en && en && !(call(zombiesHud) instanceof Boolean z && z)) return EmoteRules.match();
         if (call(combatMs) instanceof Long left && left > 0) return EmoteRules.combat(left);
         return null;
+    }
+
+    /** Same, for this emote: also refused while it is not unlocked. */
+    @Nullable
+    public static Component refusal(@Nullable UUID emote) {
+        Component why = refusal();
+        if (why == null && emote != null && !DeblocagesClient.debloquee(emote)) return EmoteRules.verrouillee();
+        return why;
     }
 
     /** Shows the refusal above the hotbar (in the chat while downed: Reanimation hides the action bar then). */
