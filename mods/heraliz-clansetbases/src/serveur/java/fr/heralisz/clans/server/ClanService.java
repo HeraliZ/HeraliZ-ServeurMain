@@ -1190,6 +1190,50 @@ public final class ClanService {
     }
 
     /** Fixe le niveau (1..20) et remet l'XP du niveau a 0. */
+    /**
+     * Retire un joueur de son clan, quel que soit son grade (/wipe de HeraliZ Quêtes, appelé par réflexion : ne pas
+     * renommer). Chef avec d'autres membres : la direction passe d'abord au membre suivant (grade puis ancienneté) ;
+     * chef seul : le clan est dissous (sa banque lui revient, comme une dissolution). Aucun délai pour rejoindre un
+     * clan. Renvoie faux s'il n'avait pas de clan.
+     */
+    public static boolean adminRetirer(UUID joueur, String nom) {
+        ClanStore s = store();
+        if (s == null) return false;
+        Clan c = s.clanDe(joueur);
+        if (c == null) return false;
+        if (c.estChef(joueur) || !c.estMembre(joueur)) {
+            UUID suivant = null;
+            for (UUID u : ordreRemboursement(c)) {
+                if (!u.equals(joueur) && c.estMembre(u)) {
+                    suivant = u;
+                    break;
+                }
+            }
+            if (suivant == null) {
+                dissoudre(c, "wipe");
+                return true;
+            }
+            Membre m = c.membre(suivant);
+            m.grade = Grade.CHEF;
+            m.permsJoueur.clear();
+            c.chef = suivant;
+            c.ajouterEvenement(new Evenement(now(), Evenement.Genre.TRANSFERT, m.dernierNom));
+            diffuserChat(c, "msg.transfere", m.dernierNom);
+        }
+        retirerMembre(s, c, joueur, false);
+        c.ajouterEvenement(new Evenement(now(), Evenement.Genre.DEPART, nom));
+        changement(c);
+        diffuserChat(c, "msg.quitte", nom);
+        MinecraftServer server = Sync.serveur();
+        ServerPlayer p = server == null ? null : server.getPlayerList().getPlayer(joueur);
+        if (p != null) Sync.envoyerSnapshot(p);
+        Sync.diffuserTags(c, null, p);
+        MinecraftForge.EVENT_BUS.post(new MembreQuitteEvent(c.id, joueur, false));
+        s.sauvegarderMaintenant();
+        HeraliszClans.LOG.info("[clans] {} retire de [{}] par un wipe", nom, c.tag);
+        return true;
+    }
+
     public static void adminNiveau(Clan c, int niveau) {
         c.niveau = Math.max(1, Math.min(Niveaux.MAX, niveau));
         c.xp = 0;
