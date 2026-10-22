@@ -123,7 +123,7 @@ else {
             const pageSite = chemin => site && new URL(chemin, site).href
             const links = {
                 discord: config.discordUrl, inscription: pageSite('/user/register'), motdepasse: pageSite('/user/password/reset'),
-                compte: pageSite('/profile'), conditions: service.etatSite?.conditions || null,
+                compte: pageSite('/profile'), boutique: pageSite('/shop'), votes: pageSite('/vote'), conditions: service.etatSite?.conditions || null,
                 telecharger: FICHIER_LAUNCHER[process.platform] ? pageSite(`/telecharger/${FICHIER_LAUNCHER[process.platform]}`) : null
             }
             if (!Object.hasOwn(links, name) || !links[name]) throw new Error('Ce lien n’est pas encore configuré.')

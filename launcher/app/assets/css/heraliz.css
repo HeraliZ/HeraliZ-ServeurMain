@@ -426,3 +426,17 @@ label.bloc-reglage { cursor: pointer; }
     .nav { padding: 0 20px; }
     .nav .onglet { padding: 0 10px; letter-spacing: .12em; }
 }
+
+/* onglet Boutique : les lots de Points Boutique (mêmes icônes que le site) */
+.lots-pb { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 18px 0 16px; width: min(760px, 100%); }
+.lot-pb { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px; border-radius: 8px; background: rgba(255,255,255,0.03); box-shadow: inset 0 0 0 1px rgba(232,195,106,0.18); transition: transform .2s var(--ease), box-shadow .2s; }
+.lot-pb:hover { transform: translateY(-3px); box-shadow: inset 0 0 0 1px rgba(232,195,106,0.5); }
+.lot-pb img { width: 86px; height: 86px; object-fit: contain; filter: drop-shadow(0 8px 10px rgba(0,0,0,.6)); }
+.lot-pb b { font-size: 18px; color: var(--or); } .lot-pb b small { font-size: 11px; opacity: .7; }
+.lot-pb .bonus { font-size: 11px; color: #7FB069; min-height: 15px; font-weight: 700; }
+.lot-pb .e { font-size: 14px; font-weight: 700; }
+.boutons-pb { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn-or, .btn-sec { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 20px; border: 0; border-radius: 4px; font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; transition: filter .15s; }
+.btn-or { background: linear-gradient(180deg, #F2D48A, #C9A24A); color: #1a1300; } .btn-or:hover { filter: brightness(1.1); }
+.btn-sec { background: rgba(255,255,255,0.06); color: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); } .btn-sec:hover { background: rgba(255,255,255,0.1); }
+.btn-or .i { width: 18px; height: 18px; }
