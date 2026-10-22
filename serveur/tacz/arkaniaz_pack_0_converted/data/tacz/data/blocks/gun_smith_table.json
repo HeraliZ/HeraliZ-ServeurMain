@@ -87,6 +87,13 @@
       "icon": {
         "item": "crac:c4"
       }
+    },
+    {
+      "id": "heraliz_crafts:composants",
+      "name": "heraliz_crafts.onglet.composants",
+      "icon": {
+        "item": "heraliz_composants:canon_ii"
+      }
     }
   ]
 }

@@ -1,0 +1,18 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:canon"
+      },
+      "count": 10
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "heraliz_composants:canon_ii"
+    },
+    "group": "heraliz_crafts:composants"
+  }
+}

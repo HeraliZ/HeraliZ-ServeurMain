@@ -3,21 +3,21 @@
   "materials": [
     {
       "item": {
-        "item": "heraliz_composants:ferraille_iii"
+        "item": "heraliz_composants:ferraille"
       },
-      "count": 1
+      "count": 2
     },
     {
       "item": {
-        "item": "heraliz_composants:caoutchouc_iii"
+        "item": "heraliz_composants:caoutchouc"
       },
-      "count": 1
+      "count": 2
     },
     {
       "item": {
-        "item": "heraliz_composants:scotch_iii"
+        "item": "heraliz_composants:scotch"
       },
-      "count": 1
+      "count": 2
     }
   ],
   "result": {

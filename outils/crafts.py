@@ -42,6 +42,7 @@ ONGLETS = [
     ("accessoires", ("Accessoires", "Attachments", "Обвесы"),
      {"item": "tacz:attachment", "nbt": {"AttachmentId": "tacz:muzzle_compensator_trident"}}),
     ("explosifs", ("Explosifs", "Explosives", "Взрывчатка"), {"item": "crac:c4"}),
+    ("composants", ("Composants", "Components", "Компоненты"), {"item": C + "canon_ii"}),
 ]
 
 # armes : type TaCZ -> onglet et composants (canon, ressort, kit de pièces, ferraille), au niveau de la rareté
@@ -61,7 +62,9 @@ MUNITION = {"bocal_poudre": 1, "ferraille": 2}
 SOIN_COMMUN = {"tissu": 1}
 SOIN = {"tissu": 1, "alcool": 1}
 
-# accessoires : type TaCZ -> onglet et composants, au niveau de la rareté
+# accessoires et viseurs (22/10, choix du propriétaire : « ce n'est qu'un viseur ») : toujours des composants de
+# niveau I ; la quantité monte avec la rareté (Commun x1, Peu commun x1, Rare x2, Épique x3)
+QUANTITE_ACCESSOIRE = {"commun": 1, "peu_commun": 1, "rare": 2, "epique": 3}
 ACCESSOIRES = {
     "scope": ("viseurs", {"circuit_imprime": 1, "batterie": 1}),
     "muzzle": ("accessoires", {"ferraille": 2, "scotch": 1}),
@@ -71,11 +74,18 @@ ACCESSOIRES = {
     "laser": ("accessoires", {"ferraille": 1, "caoutchouc": 1, "scotch": 1, "batterie": 1}),
 }
 
-# explosifs de CRac (seuls à abîmer les bases) : composants sans niveau (bocal, corde) ou de niveau donné
+# explosifs de CRac (seuls à abîmer les bases), composants de niveau I : prix à peu près dans le rapport des dégâts
+# (charge ~130, C4 ~300 : environ 2,3 fois)
 EXPLOSIFS = [
     ("explosive_charge", "crac:explosive_charge", {"bocal_poudre": 2, "scotch": 1, "corde": 1}),
-    ("c4", "crac:c4", {"bocal_poudre": 4, "circuit_imprime_ii": 1, "scotch_ii": 2}),
+    ("c4", "crac:c4", {"bocal_poudre": 5, "scotch": 2, "corde": 1, "circuit_imprime": 1}),
 ]
+
+# composants à niveaux : PAR_NIVEAU d'un niveau donnent 1 du niveau suivant, et 1 se défait en PAR_NIVEAU du niveau
+# d'en dessous (22/10, choix du propriétaire : tous les crafts possibles, pas facilement)
+A_NIVEAUX = ["canon", "ressort", "kit_pieces", "tissu", "alcool", "batterie", "circuit_imprime", "ferraille",
+             "caoutchouc", "scotch"]
+PAR_NIVEAU = 10
 SANS_NIVEAU = {"bocal_poudre", "corde", "clou"}
 
 
@@ -139,11 +149,23 @@ def main():
         if r not in NIVEAU or i is None or i.get("type") not in ACCESSOIRES:
             continue
         onglet, compo = ACCESSOIRES[i["type"]]
+        q = QUANTITE_ACCESSOIRE[r]
         recettes[f"accessoires/{aid.replace(':', '_')}"] = recette(
-            materiaux(compo, r), {"type": "attachment", "id": aid, "group": f"{NS}:{onglet}"})
+            materiaux({c: n * q for c, n in compo.items()}, "commun"),
+            {"type": "attachment", "id": aid, "group": f"{NS}:{onglet}"})
     for nom, item, compo in EXPLOSIFS:
         recettes[f"explosifs/{nom}"] = recette(materiaux(compo, "commun"),
                                                {"type": "custom", "item": {"item": item}, "group": f"{NS}:explosifs"})
+
+    niveaux = ["", "_ii", "_iii", "_iv"]
+    for c in A_NIVEAUX:
+        for bas, haut in zip(niveaux, niveaux[1:]):
+            recettes[f"composants/{c}{haut}"] = recette(
+                [{"item": {"item": C + c + bas}, "count": PAR_NIVEAU}],
+                {"type": "custom", "item": {"item": C + c + haut}, "group": f"{NS}:composants"})
+            recettes[f"composants/{c}{haut}_defait"] = recette(
+                [{"item": {"item": C + c + haut}, "count": 1}],
+                {"type": "custom", "item": {"item": C + c + bas, "count": PAR_NIVEAU}, "group": f"{NS}:composants"})
 
     # gunpack refait en entier
     if PACK.exists():

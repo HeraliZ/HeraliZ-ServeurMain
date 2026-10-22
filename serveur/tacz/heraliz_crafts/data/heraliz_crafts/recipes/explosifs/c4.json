@@ -5,19 +5,25 @@
       "item": {
         "item": "heraliz_composants:bocal_poudre"
       },
-      "count": 4
+      "count": 5
     },
     {
       "item": {
-        "item": "heraliz_composants:circuit_imprime_ii"
+        "item": "heraliz_composants:scotch"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:corde"
       },
       "count": 1
     },
     {
       "item": {
-        "item": "heraliz_composants:scotch_ii"
+        "item": "heraliz_composants:circuit_imprime"
       },
-      "count": 2
+      "count": 1
     }
   ],
   "result": {
