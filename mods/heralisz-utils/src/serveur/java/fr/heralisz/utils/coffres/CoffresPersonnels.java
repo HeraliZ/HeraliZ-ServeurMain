@@ -50,8 +50,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class CoffresPersonnels {
     public static final ResourceLocation BLOC_PLANQUE = new ResourceLocation("cfm", "safe_planque_1");
     public static final ResourceLocation BLOC_VIP = new ResourceLocation("cfm", "safe_sentinel_1");
-    /** Cases de chaque coffre (1 ligne). */
+    /** Cases d'une ligne. */
     public static final int CASES = 9;
+    /** Cases gardées par coffre : 6 lignes au plus (taille montrée selon le grade, HeraliZ Grades 2.0.0). */
+    public static final int CASES_MAX = 54;
     private static final String FICHIER = "heraliz_coffres_perso";
 
     public enum Sorte {
@@ -86,14 +88,15 @@ public final class CoffresPersonnels {
         if (e.getHand() != InteractionHand.MAIN_HAND || p.isSpectator()) {
             return;
         }
-        if (sorte == Sorte.VIP && rangBoutique(p.getUUID()) <= 0) {
-            p.displayClientMessage(Component.translatableWithFallback("heralisz_utils.coffre.vip_refus",
-                    "Coffre réservé aux grades Rescapé, Traqueur et Roi de la Zone."), true);
+        int lignes = lignes(p.getUUID(), sorte);
+        if (lignes <= 0) {
+            p.displayClientMessage(Component.translatableWithFallback("heralisz_utils.coffre.vip_refus2",
+                    "Coffre réservé à certains grades."), true);
             return;
         }
         Coffre c = coffre(p.server, p.getUUID(), sorte);
         BlockPos pos = e.getPos().immutable();
-        p.openMenu(new SimpleMenuProvider((cid, inv, joueur) -> new MenuCoffre(cid, inv, c, l, pos, bloc), titre(sorte)));
+        p.openMenu(new SimpleMenuProvider((cid, inv, joueur) -> new MenuCoffre(cid, inv, c, l, pos, bloc, lignes), titre(sorte)));
     }
 
     public static Component titre(Sorte sorte) {
@@ -136,6 +139,36 @@ public final class CoffresPersonnels {
     }
 
     // ------------------------------------------------------------------ grade (HeraliZ Grades, par réflexion)
+    private static Method perm;
+    private static boolean permCherche;
+
+    /**
+     * Lignes montrées de ce coffre (1 à 6 ; 0 = fermé) : permissions « planque_lignes » et « coffre_vip_lignes » des grades
+     * (HeraliZ Grades 2.0.0, réglées dans l'éditeur des grades). Avec une version plus ancienne : planque 1 ligne, coffre VIP
+     * 1 ligne pour les grades de la boutique. Un joueur qui perd des lignes garde ses objets (cachés, pas perdus).
+     */
+    private static int lignes(UUID joueur, Sorte sorte) {
+        if (!permCherche) {
+            permCherche = true;
+            try {
+                perm = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("perm", UUID.class, String.class);
+            } catch (Throwable t) {
+                perm = null;
+            }
+        }
+        if (perm != null) {
+            try {
+                int v = (int) perm.invoke(null, joueur, sorte == Sorte.PLANQUE ? "planque_lignes" : "coffre_vip_lignes");
+                if (v >= 0) {
+                    return Math.min(6, sorte == Sorte.PLANQUE ? Math.max(1, v) : v);
+                }
+            } catch (Throwable t) {
+                // règle d'avant ci-dessous
+            }
+        }
+        return sorte == Sorte.PLANQUE ? 1 : rangBoutique(joueur) > 0 ? 1 : 0;
+    }
+
     private static Method rang;
     private static boolean rangCherche;
 
@@ -160,12 +193,12 @@ public final class CoffresPersonnels {
 
     // ------------------------------------------------------------------ contenu
 
-    /** Un coffre personnel : 9 cases, sans sac à dos ; chaque changement est enregistré avec le monde. */
+    /** Un coffre personnel : 54 cases gardées (6 lignes), sans sac à dos ; chaque changement est enregistré avec le monde. */
     public static final class Coffre extends SimpleContainer {
         private final Donnees donnees;
 
         Coffre(Donnees donnees) {
-            super(CASES);
+            super(CASES_MAX);
             this.donnees = donnees;
         }
 
@@ -261,9 +294,12 @@ public final class CoffresPersonnels {
         private final BlockPos pos;
         private final Block bloc;
 
-        MenuCoffre(int id, Inventory inv, Coffre c, ServerLevel level, BlockPos pos, Block bloc) {
-            super(MenuType.GENERIC_9x1, id, inv, c, 1);
-            casesSelonConteneur(this, c, CASES);
+        private static final MenuType<?>[] TYPES = {MenuType.GENERIC_9x1, MenuType.GENERIC_9x2, MenuType.GENERIC_9x3, MenuType.GENERIC_9x4,
+                MenuType.GENERIC_9x5, MenuType.GENERIC_9x6};
+
+        MenuCoffre(int id, Inventory inv, Coffre c, ServerLevel level, BlockPos pos, Block bloc, int lignes) {
+            super(TYPES[Math.max(1, Math.min(6, lignes)) - 1], id, inv, c, Math.max(1, Math.min(6, lignes)));
+            casesSelonConteneur(this, c, CASES * Math.max(1, Math.min(6, lignes)));
             this.level = level;
             this.pos = pos;
             this.bloc = bloc;

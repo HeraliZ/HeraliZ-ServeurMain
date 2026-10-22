@@ -367,5 +367,9 @@
   "heralisz_utils.inspecter.page": "Страница %s",
   "heralisz_utils.borne.titre": "СЛУЧАЙНАЯ ТЕЛЕПОРТАЦИЯ",
   "heralisz_utils.borne.aide": "ПКМ · высадка в случайное место на карте",
-  "entity.heralisz_utils.zombie_survie": "Зомби"
+  "entity.heralisz_utils.zombie_survie": "Зомби",
+  "heralisz_utils.inspecter.l_planque6": "Тайник: первые 54 ячейки (6 рядов)",
+  "heralisz_utils.inspecter.l_vip6": "VIP-сундук: следующие 54 ячейки (6 рядов)",
+  "heralisz_utils.inspecter.l_ender27": "Сундук Края: последние 27 ячеек",
+  "heralisz_utils.coffre.vip_refus2": "Сундук только для некоторых рангов."
 }

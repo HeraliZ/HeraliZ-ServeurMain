@@ -367,5 +367,9 @@
   "heralisz_utils.inspecter.page": "Page %s",
   "heralisz_utils.borne.titre": "RANDOM TELEPORT",
   "heralisz_utils.borne.aide": "Right-click · random drop on the map",
-  "entity.heralisz_utils.zombie_survie": "Zombie"
+  "entity.heralisz_utils.zombie_survie": "Zombie",
+  "heralisz_utils.inspecter.l_planque6": "Stash: the first 54 slots (6 rows)",
+  "heralisz_utils.inspecter.l_vip6": "VIP chest: the next 54 slots (6 rows)",
+  "heralisz_utils.inspecter.l_ender27": "Ender chest: the last 27 slots",
+  "heralisz_utils.coffre.vip_refus2": "Chest reserved for some ranks."
 }

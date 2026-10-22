@@ -191,19 +191,20 @@ public final class Inspecter {
         Container planque = CoffresPersonnels.coffre(c.srv, c.uuid, CoffresPersonnels.Sorte.PLANQUE);
         Container vip = CoffresPersonnels.coffre(c.srv, c.uuid, CoffresPersonnels.Sorte.VIP);
         Container ender = c.joueur.getEnderChestInventory();
-        for (int i = 0; i < CoffresPersonnels.CASES; i++) {
+        // coffres de 6 lignes au plus (taille réglée par grade : HeraliZ Grades 2.0.0) : tout est montré, cases cachées comprises
+        for (int i = 0; i < planque.getContainerSize(); i++) {
             contenu.add(Vue.de(planque, i));
         }
-        for (int i = 0; i < CoffresPersonnels.CASES; i++) {
+        for (int i = 0; i < vip.getContainerSize(); i++) {
             contenu.add(Vue.de(vip, i));
         }
         for (int i = 0; i < ender.getContainerSize(); i++) {
             contenu.add(Vue.de(ender, i));
         }
         Vue.Case[] reperes = {
-                Vue.decor(nomme(new ItemStack(Items.CHEST), Component.translatableWithFallback("heralisz_utils.inspecter.l_planque", "1re ligne : planque"))),
-                Vue.decor(nomme(new ItemStack(Items.GOLD_BLOCK), Component.translatableWithFallback("heralisz_utils.inspecter.l_vip", "2e ligne : coffre VIP"))),
-                Vue.decor(nomme(new ItemStack(Items.ENDER_CHEST), Component.translatableWithFallback("heralisz_utils.inspecter.l_ender", "Lignes 3 à 5 : coffre de l'Ender")))};
+                Vue.decor(nomme(new ItemStack(Items.CHEST), Component.translatableWithFallback("heralisz_utils.inspecter.l_planque6", "Planque : les 54 premières cases (6 lignes)"))),
+                Vue.decor(nomme(new ItemStack(Items.GOLD_BLOCK), Component.translatableWithFallback("heralisz_utils.inspecter.l_vip6", "Coffre VIP : les 54 cases suivantes (6 lignes)"))),
+                Vue.decor(nomme(new ItemStack(Items.ENDER_CHEST), Component.translatableWithFallback("heralisz_utils.inspecter.l_ender27", "Coffre de l'Ender : les 27 dernières cases")))};
         pages(staff, c, contenu, Component.translatableWithFallback("heralisz_utils.inspecter.t_coffres", "Coffres de %s", c.nom), reperes, null);
     }
 

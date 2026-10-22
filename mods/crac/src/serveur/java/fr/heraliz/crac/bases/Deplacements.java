@@ -108,7 +108,8 @@ public final class Deplacements {
             return 0;
         }
         BasesDonnees.Joueur j = BasesDonnees.get(p.server).joueur(p.getUUID());
-        long delai = BasesReglages.i(BasesReglages.ZONE_DELAI_S, 300) * 1000L;
+        int permDelai = Homes.permGrade(p.getUUID(), "rtp_recharge");
+        long delai = (permDelai >= 0 ? permDelai : BasesReglages.i(BasesReglages.ZONE_DELAI_S, 300)) * 1000L;
         long reste = j.dernierZone + delai - System.currentTimeMillis();
         if (!staff && reste > 0) {
             T.chat(p, T.t("crac.zone.attendre", "Prochain /zone base dans %s.", T.duree(reste + 999)), ChatFormatting.RED);

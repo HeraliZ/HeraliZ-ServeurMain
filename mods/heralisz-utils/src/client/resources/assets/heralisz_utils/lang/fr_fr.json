@@ -367,5 +367,9 @@
   "heralisz_utils.inspecter.page": "Page %s",
   "heralisz_utils.borne.titre": "TÉLÉPORTATION ALÉATOIRE",
   "heralisz_utils.borne.aide": "Clic droit · départ au hasard sur la carte",
-  "entity.heralisz_utils.zombie_survie": "Zombie"
+  "entity.heralisz_utils.zombie_survie": "Zombie",
+  "heralisz_utils.inspecter.l_planque6": "Planque : les 54 premières cases (6 lignes)",
+  "heralisz_utils.inspecter.l_vip6": "Coffre VIP : les 54 cases suivantes (6 lignes)",
+  "heralisz_utils.inspecter.l_ender27": "Coffre de l'Ender : les 27 dernières cases",
+  "heralisz_utils.coffre.vip_refus2": "Coffre réservé à certains grades."
 }
