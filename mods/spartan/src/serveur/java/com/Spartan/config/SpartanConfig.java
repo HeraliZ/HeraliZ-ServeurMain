@@ -89,6 +89,7 @@ public class SpartanConfig {
 
     // --- launcher officiel ---
     public static final ForgeConfigSpec.BooleanValue LAUNCHER_TOKEN_REQUIRED;
+    public static final ForgeConfigSpec.BooleanValue CAPTURE_REQUIRED;
     public static final ForgeConfigSpec.ConfigValue<String> LAUNCHER_SECRET;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ALLOWED_MODS_HASHES;
 
@@ -375,6 +376,10 @@ public class SpartanConfig {
                 "jeton de plus de 6 h), même en détection silencieuse : c'est une règle d'accès. Activer une fois le",
                 "launcher distribué à tous les joueurs. Des mods différents du modpack restent une simple alerte.")
                 .define("tokenRequired", false);
+        CAPTURE_REQUIRED = b.comment(
+                "true : connexion REFUSÉE si le joueur n'a pas accepté les captures d'écran dans le launcher",
+                "(fenêtre « Autorisation de l'anticheat », launcher 1.9.0 ou plus récent).")
+                .define("captureRequired", true);
         ALLOWED_MODS_HASHES = b.comment(
                 "Empreintes de dossier mods autorisées (vide = non vérifié). L'empreinte de chaque joueur",
                 "est écrite dans la console à sa connexion : ajoutez ici celle(s) de votre modpack officiel.")
