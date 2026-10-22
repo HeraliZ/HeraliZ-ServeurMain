@@ -59,7 +59,7 @@ FAMILLE_ARME = {
     "tacz:deagle": "pistolet_50", "maxstuff:deagle_12g": "pistolet_pompe", "maxstuff:deagle_50bmg": "pistolet_50bmg",
     "maxstuff:db_50": "pompe_balle", "tacz:minigun": "minigun",
     "maxstuff:ar10": "fusil_308_rapide", "maxstuff:ar10b": "fusil_308_rapide", "maxstuff:mk11": "fusil_308_rapide",
-    "maxstuff:dragonuv_svd": "precision_semi", "arkaniaz:ssg_08": "precision_762",
+    "maxstuff:dragonuv_svd": "precision_semi", "arkaniaz:ssg_08": "precision_308",
 }
 
 # Rareté de chaque arme (lance-grenades : Légendaire ; armes absentes : plancher de leur type)
