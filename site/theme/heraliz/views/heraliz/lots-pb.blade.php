@@ -14,7 +14,7 @@
             @if($ruban)<span class="ruban">{{ $ruban }}</span>@endif
             <img src="{{ theme_asset('img/pb/'.$icones[min($i, 4)].'.webp') }}" alt="" width="512" height="512" loading="lazy">
             <span class="n">{{ number_format($lot['pb'], 0, ',', ' ') }}<small>PB</small></span>
-            <span class="bonus">@if($offerts > 0)+{{ number_format($offerts, 0, ',', ' ') }} offerts@endif</span>
+            <span class="bonus">@if($offerts > 0)+{{ number_format($offerts, 0, ',', ' ') }} offerts @endif</span>
             <span class="e">{{ $lot['prix'] }}</span>
         </a>
     @endforeach
