@@ -1086,7 +1086,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   d'une emote, puis `python mods/heraliz-crates/outils/butin_spectacle.py`). Staff (permission 2) : `/emote debloquer
   <joueurs> <emote|hasard|tout>`, `/emote retirer <joueurs> <emote|tout>`, `/emote voir <joueur>`. API pour les autres
   mods : `fr.heraliz.emote.serveur.EmotesApi` (par réflexion, à ne jamais renommer). Créatif et spectateur : tout permis.
-  Pendant une emote, vue à la 3e personne (F5 marche, `client/CameraEmote.actif()` lu par réflexion par Interface),
+  Pendant une emote, vue à la 3e personne (option « Play Emotes in 3rd Person » d'Emotecraft mise d'office, plus un
+  secours à chaque tick, Emote 2.8.1 ; F5 marche, `client/CameraEmote.actif()` lu par réflexion par Interface),
   retour à la 1re personne à la fin ; **aucune arme en main pendant l'emote et 10 s après** (serveur, `serveur/SansArme` :
   armes TaCZ et couteaux, mêlée, grenades, Wonder, épées, haches, arcs, tridents, tag `heraliz_emote:armes` avec la C4 de
   CRac ; l'arme est remplacée par une case sans arme, sinon rangée dans l'inventaire, jamais copiée) ;
@@ -1094,8 +1095,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   ronde et piste de danse lumineuse, loge de cabaret au rideau rouge (enseigne « EMOTES », étoile néon, ampoules),
   portique avec deux lyres et une boule à facettes ; ouverture : rideau qui s'ouvre, lyres qui balaient, confettis,
   danseur holographique. Textures **écrites** par `python mods/heraliz-crates/outils/textures_spectacle.py`, butin
-  (`serveur/config/heralizcrates/spectacle.json`) par `butin_spectacle.py` : une récompense par emote (étiquette affichée
-  dans la roue, commande `emote debloquer`), le tirage saute les emotes déjà débloquées (`loot/EmotesCaisse`) ; un joueur
+  (`serveur/config/heralizcrates/spectacle.json`) par `butin_spectacle.py` : une récompense par emote (icône de l'emote
+  `heraliz_emote:icone` affichée dans la roue, CustomModelData = rang + 1, commande `emote debloquer`), le tirage saute les emotes déjà débloquées (`loot/EmotesCaisse`) ; un joueur
   qui les a toutes ne peut plus ouvrir de clé (clé gardée). Aperçu hors du jeu de toute caisse :
   `python outils/apercu_caisse.py <caisse> <dossier>` (vrai modèle et textures, moteur logiciel, JOML comme
   `formes_caisses.py`). Rien testé en jeu ;

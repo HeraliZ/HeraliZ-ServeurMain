@@ -1,8 +1,9 @@
 {
-  "_aide": "Caisse des emotes : fichier écrit par mods/heraliz-crates/outils/butin_spectacle.py (ne pas modifier à la main). Chaque récompense débloque une emote (commande), l'étiquette n'est qu'affichée dans la roue. Le tirage saute les emotes déjà débloquées ; un joueur qui les a toutes ne peut plus ouvrir de clé.",
+  "_aide": "Caisse des emotes : fichier écrit par mods/heraliz-crates/outils/butin_spectacle.py (ne pas modifier à la main). Chaque récompense débloque une emote (commande), l'icône n'est qu'affichée dans la roue. Le tirage saute les emotes déjà débloquées ; un joueur qui les a toutes ne peut plus ouvrir de clé.",
   "rewards": [
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:1}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -13,7 +14,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:2}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -24,7 +26,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:3}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -35,7 +38,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:4}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -46,7 +50,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:5}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -57,7 +62,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:6}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -68,7 +74,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:7}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -79,7 +86,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:8}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -90,7 +98,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:9}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -101,7 +110,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:10}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -112,7 +122,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:11}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -123,7 +134,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:12}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -134,7 +146,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:13}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -145,7 +158,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:14}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -156,7 +170,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:15}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -167,7 +182,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:16}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -178,7 +194,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:17}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -189,7 +206,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:18}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -200,7 +218,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:19}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -211,7 +230,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:20}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -222,7 +242,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:21}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -233,7 +254,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:22}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -244,7 +266,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:23}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -255,7 +278,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:24}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -266,7 +290,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:25}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -277,7 +302,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:26}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -288,7 +314,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:27}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -299,7 +326,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:28}",
       "count": 1,
       "weight": 30,
       "rarity": "rare",
@@ -310,7 +338,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:29}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -321,7 +350,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:30}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -332,7 +362,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:31}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -343,7 +374,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:32}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -354,7 +386,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:33}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -365,7 +398,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:34}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -376,7 +410,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:35}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -387,7 +422,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:36}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -398,7 +434,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:37}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -409,7 +446,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:38}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -420,7 +458,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:39}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -431,7 +470,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:40}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -442,7 +482,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:41}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -453,7 +494,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:42}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -464,7 +506,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:43}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -475,7 +518,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:44}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -486,7 +530,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:45}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",
@@ -497,7 +542,8 @@
       ]
     },
     {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:46}",
       "count": 1,
       "weight": 20,
       "rarity": "epic",

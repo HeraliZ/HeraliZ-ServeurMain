@@ -18,6 +18,7 @@ public class HeralizEmote {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public HeralizEmote() {
+        ObjetsEmote.enregistrer(FMLJavaModLoadingContext.get().getModEventBus());
         ReseauEmotes.enregistrer();
         // parties coupées (docs/METHODE_CLIENT_SERVEUR.md) : serveur = déblocages, armes bloquées après une emote,
         // commande /emote ; client = tout l'affichage ; la règle serveur reste un mixin commun
