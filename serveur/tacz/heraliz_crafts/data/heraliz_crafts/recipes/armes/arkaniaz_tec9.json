@@ -1,0 +1,34 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:canon_ii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ressort_ii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:kit_pieces_ii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille_ii"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "arkaniaz:tec9",
+    "group": "heraliz_crafts:pistolets"
+  }
+}

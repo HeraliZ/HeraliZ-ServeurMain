@@ -226,6 +226,11 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
   `serveur/config/heraliz_loot/raretes.json` sont **écrits** par `python outils/equilibrage_armes.py` (tableaux
   `FAMILLES`, `RARETE_ARME`, `BONUS_RARETE` en tête du script) ; à relancer après l'ajout d'un gunpack. Les gunpacks ne
   sont jamais modifiés pour ça.
+- recettes de la Table d'armurier (craft, 22/10, choix du propriétaire) : gunpack `serveur/tacz/heraliz_crafts`, onglets
+  et filtre de la table (`arkaniaz_pack_0_converted/data/tacz/...`) **écrits** par `python outils/crafts.py` (tableaux
+  en tête : composants par famille ; niveau I/II/III/IV du composant = objet Commun / Peu commun / Rare / Épique ; rien
+  de Légendaire ; ni précision, mitrailleuses, lance-grenades, RPG ; une seule poudre, le bocal) ; à relancer après un
+  changement de raretés. Rien testé en jeu.
 - les camos des armes (tactique) : les 62 shaders `camo_<id>.fsh` sont **générés** depuis
   `mods/heraliz-tactique/outils/camo_gabarit.fsh` par `python mods/heraliz-tactique/outils/generer_camos.py` ; on modifie
   le gabarit, jamais les fichiers générés.

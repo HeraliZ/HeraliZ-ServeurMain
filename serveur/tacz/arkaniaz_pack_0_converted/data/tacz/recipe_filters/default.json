@@ -1,8 +1,6 @@
 {
   "whitelist": [
-    "^.*$"
+    "^heraliz_crafts:.*$"
   ],
-  "blacklist": [
-    "tacz:test"
-  ]
+  "blacklist": []
 }

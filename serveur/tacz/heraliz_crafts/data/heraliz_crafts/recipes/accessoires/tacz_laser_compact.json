@@ -1,0 +1,34 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille_iv"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:caoutchouc_iv"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:scotch_iv"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:batterie_iv"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "tacz:laser_compact",
+    "group": "heraliz_crafts:accessoires"
+  }
+}

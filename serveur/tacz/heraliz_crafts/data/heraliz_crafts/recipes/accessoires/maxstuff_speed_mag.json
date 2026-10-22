@@ -1,0 +1,22 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille_ii"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:scotch_ii"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "maxstuff:speed_mag",
+    "group": "heraliz_crafts:accessoires"
+  }
+}

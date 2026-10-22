@@ -1,0 +1,34 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:canon"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ressort"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:kit_pieces"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "arkaniaz:usp",
+    "group": "heraliz_crafts:pistolets"
+  }
+}

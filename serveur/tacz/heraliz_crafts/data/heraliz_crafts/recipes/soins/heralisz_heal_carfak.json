@@ -1,0 +1,25 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:tissu_iii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:alcool_iii"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "heralisz_tactical:consumable",
+      "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}"
+    },
+    "group": "heraliz_crafts:soins"
+  }
+}

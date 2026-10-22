@@ -1,0 +1,22 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille_iv"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:scotch_iv"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "tacz:ammo_mod_fmj",
+    "group": "heraliz_crafts:accessoires"
+  }
+}

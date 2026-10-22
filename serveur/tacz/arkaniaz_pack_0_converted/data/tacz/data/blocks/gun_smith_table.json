@@ -2,18 +2,18 @@
   "filter": "tacz:default",
   "tabs": [
     {
-      "id": "tacz:ammo",
-      "name": "tacz.type.ammo.name",
+      "id": "heraliz_crafts:munitions",
+      "name": "heraliz_crafts.onglet.munitions",
       "icon": {
         "item": "tacz:ammo",
         "nbt": {
-          "AmmoId": "tacz:762x39"
+          "AmmoId": "tacz:9mm"
         }
       }
     },
     {
-      "id": "tacz:pistol",
-      "name": "tacz.type.pistol.name",
+      "id": "heraliz_crafts:pistolets",
+      "name": "heraliz_crafts.onglet.pistolets",
       "icon": {
         "item": "tacz:modern_kinetic_gun",
         "nbt": {
@@ -22,18 +22,18 @@
       }
     },
     {
-      "id": "tacz:smg",
-      "name": "tacz.type.smg.name",
+      "id": "heraliz_crafts:mitraillettes",
+      "name": "heraliz_crafts.onglet.mitraillettes",
       "icon": {
         "item": "tacz:modern_kinetic_gun",
         "nbt": {
-          "GunId": "tacz:ump45"
+          "GunId": "tacz:uzi"
         }
       }
     },
     {
-      "id": "tacz:rifle",
-      "name": "tacz.type.rifle.name",
+      "id": "heraliz_crafts:fusils",
+      "name": "heraliz_crafts.onglet.fusils",
       "icon": {
         "item": "tacz:modern_kinetic_gun",
         "nbt": {
@@ -42,48 +42,28 @@
       }
     },
     {
-      "id": "tacz:shotgun",
-      "name": "tacz.type.shotgun.name",
+      "id": "heraliz_crafts:pompes",
+      "name": "heraliz_crafts.onglet.pompes",
       "icon": {
         "item": "tacz:modern_kinetic_gun",
         "nbt": {
-          "GunId": "tacz:db_short"
+          "GunId": "tacz:m870"
         }
       }
     },
     {
-      "id": "tacz:sniper",
-      "name": "tacz.type.sniper.name",
+      "id": "heraliz_crafts:soins",
+      "name": "heraliz_crafts.onglet.soins",
       "icon": {
-        "item": "tacz:modern_kinetic_gun",
+        "item": "heralisz_tactical:consumable",
         "nbt": {
-          "GunId": "tacz:m95"
+          "ConsumableId": "heralisz_heal:ai2"
         }
       }
     },
     {
-      "id": "tacz:mg",
-      "name": "tacz.type.mg.name",
-      "icon": {
-        "item": "tacz:modern_kinetic_gun",
-        "nbt": {
-          "GunId": "tacz:m249"
-        }
-      }
-    },
-    {
-      "id": "tacz:rpg",
-      "name": "tacz.type.rpg.name",
-      "icon": {
-        "item": "tacz:modern_kinetic_gun",
-        "nbt": {
-          "GunId": "tacz:rpg7"
-        }
-      }
-    },
-    {
-      "id": "tacz:scope",
-      "name": "tacz.type.scope.name",
+      "id": "heraliz_crafts:viseurs",
+      "name": "heraliz_crafts.onglet.viseurs",
       "icon": {
         "item": "tacz:attachment",
         "nbt": {
@@ -92,8 +72,8 @@
       }
     },
     {
-      "id": "tacz:muzzle",
-      "name": "tacz.type.muzzle.name",
+      "id": "heraliz_crafts:accessoires",
+      "name": "heraliz_crafts.onglet.accessoires",
       "icon": {
         "item": "tacz:attachment",
         "nbt": {
@@ -102,80 +82,10 @@
       }
     },
     {
-      "id": "tacz:stock",
-      "name": "tacz.type.stock.name",
+      "id": "heraliz_crafts:explosifs",
+      "name": "heraliz_crafts.onglet.explosifs",
       "icon": {
-        "item": "tacz:attachment",
-        "nbt": {
-          "AttachmentId": "tacz:stock_militech_b5"
-        }
-      }
-    },
-    {
-      "id": "tacz:grip",
-      "name": "tacz.type.grip.name",
-      "icon": {
-        "item": "tacz:attachment",
-        "nbt": {
-          "AttachmentId": "tacz:grip_magpul_afg_2"
-        }
-      }
-    },
-    {
-      "id": "tacz:extended_mag",
-      "name": "tacz.type.extended_mag.name",
-      "icon": {
-        "item": "tacz:attachment",
-        "nbt": {
-          "AttachmentId": "tacz:extended_mag_3"
-        }
-      }
-    },
-    {
-      "id": "tacz:laser",
-      "name": "tacz.type.laser.name",
-      "icon": {
-        "item": "tacz:attachment",
-        "nbt": {
-          "AttachmentId": "tacz:laser_compact"
-        }
-      }
-    },
-    {
-      "id": "heralisz_tactical:consumable",
-      "name": "heralisz_tactical.type.consumable.name",
-      "icon": {
-        "item": "heralisz_tactical:consumable",
-        "nbt": {
-          "ConsumableId": "heralisz_tactical:blood_pack"
-        }
-      }
-    },
-    {
-      "id": "heralisz_tactical:throwable",
-      "name": "heralisz_tactical.type.throwable.name",
-      "icon": {
-        "item": "heralisz_tactical:throwable",
-        "nbt": {
-          "ThrowableId": "heralisz_tactical:flash_grenade"
-        }
-      }
-    },
-    {
-      "id": "heralisz_tactical:melee",
-      "name": "heralisz_tactical.type.melee.name",
-      "icon": {
-        "item": "heralisz_tactical:melee",
-        "nbt": {
-          "MeleeWeaponId": "heralisz_tactical:karambit"
-        }
-      }
-    },
-    {
-      "id": "tacz:misc",
-      "name": "tacz.type.misc.name",
-      "icon": {
-        "item": "tacz:gun_smith_table"
+        "item": "crac:c4"
       }
     }
   ]

@@ -1,0 +1,22 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille_iii"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:scotch_iii"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "tacz:sniper_extended_mag_2",
+    "group": "heraliz_crafts:accessoires"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:tissu"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "heralisz_tactical:consumable",
+      "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}"
+    },
+    "group": "heraliz_crafts:soins"
+  }
+}
