@@ -285,6 +285,7 @@ test('pas de partie sans compte, et une session expirée libère le launcher', a
     const service = new LauncherService(config, () => {}, { compteSite: compte })
     await assert.rejects(service.launch(), /Connecte-toi/)
     await service.connexion({ email: 'a@b.fr', password: 'bon', acceptedRules: true })
+    service.accordCapture(true)
     compte.verification = 'refuse'
     await assert.rejects(service.launch(), /session a expiré/)
     assert.equal(service.busy, false)
