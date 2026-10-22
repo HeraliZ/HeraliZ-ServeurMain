@@ -23,6 +23,8 @@ import java.util.UUID;
  * <ul>
  *    <li>{@code grade donner <joueur> <grade>} et {@code grade retirer <joueur> <grade>} : CONSOLE DU SERVEUR SEULEMENT
  *    (aucun joueur, même op, même Fondateur ; ni bloc de commande, ni fonction, ni RCON) ;</li>
+ *    <li>{@code grade acheter <joueur> <grade> <jours|vie>} : CONSOLE SEULEMENT, achat de la boutique du site (AzLink) ;
+ *    grade boutique pour un temps, jamais renouvelé tout seul ;</li>
  *    <li>{@code grade voir <joueur>} : Helper et plus (connecté sur AuthMe), ou console ;</li>
  *    <li>{@code grade liste} : Modérateur et plus (connecté sur AuthMe), ou console.</li>
  * </ul>
@@ -62,6 +64,11 @@ final class CommandesGrades {
                         .then(Commands.argument("joueur", StringArgumentType.word()).suggests(JOUEURS)
                                 .then(Commands.argument("grade", StringArgumentType.word()).suggests(GRADES)
                                         .executes(c -> changer(c, false)))))
+                .then(Commands.literal("acheter").requires(CommandesGrades::console)
+                        .then(Commands.argument("joueur", StringArgumentType.word()).suggests(JOUEURS)
+                                .then(Commands.argument("grade", StringArgumentType.word()).suggests(GRADES)
+                                        .then(Commands.argument("duree", StringArgumentType.word())
+                                                .executes(CommandesGrades::acheter)))))
                 .then(Commands.literal("voir")
                         .then(Commands.argument("joueur", StringArgumentType.word()).suggests(JOUEURS)
                                 .executes(CommandesGrades::voir)))
@@ -83,6 +90,48 @@ final class CommandesGrades {
             if (e.getValue().nom().equalsIgnoreCase(nom)) return Map.entry(e.getKey(), e.getValue().nom());
         }
         return null;
+    }
+
+    private static int acheter(CommandContext<CommandSourceStack> c) {
+        CommandSourceStack s = c.getSource();
+        if (!console(s)) return 0;
+        RegistreGrades r = ServeurGrades.registre;
+        String nom = StringArgumentType.getString(c, "joueur"), id = StringArgumentType.getString(c, "grade"), d = StringArgumentType.getString(c, "duree");
+        Grade g = Grade.parId(id);
+        int jours;
+        try {
+            jours = "vie".equalsIgnoreCase(d) ? 0 : Integer.parseInt(d);
+        } catch (NumberFormatException ex) {
+            jours = -1;
+        }
+        if (g == null || g.type != Grade.Type.BOUTIQUE || jours < 0 || jours > 3650) {
+            s.sendFailure(msg("achat_invalide", "Usage : grade acheter <joueur> <grade boutique> <jours|vie>."));
+            return 0;
+        }
+        Map.Entry<UUID, String> cible = trouver(s.getServer(), nom);
+        if (r == null || cible == null) {
+            s.sendFailure(msg("joueur_inconnu", "Joueur introuvable : %s (il doit être connecté, ou déjà avoir un grade).", nom));
+            return 0;
+        }
+        String pseudo = cible.getValue(), duree = jours == 0 ? "à vie" : jours + " j";
+        RegistreGrades.Achat a = r.acheter(cible.getKey(), pseudo, g, jours);
+        if (a == RegistreGrades.Achat.ILLISIBLE || a == RegistreGrades.Achat.ERREUR) {
+            s.sendFailure(msg("erreur", "Impossible d'enregistrer le changement (voir la console du serveur)."));
+            LienDiscord.evenement("⚠️ Boutique : achat de **" + g.nomFr + "** (" + duree + ") par **" + pseudo + "** NON enregistré, à régler à la main.");
+            return 0;
+        }
+        LienDiscord.evenement("🛒 Boutique : **" + pseudo + "** a acheté **" + g.nomFr + "** (" + duree + ") : " + a + ".");
+        s.sendSuccess(() -> Component.literal("Achat " + g.id + " (" + duree + ") pour " + pseudo + " : " + a), true);
+        ServerPlayer p = s.getServer().getPlayerList().getPlayer(cible.getKey());
+        if (p != null) {
+            ServeurGrades.rafraichir(p);
+            p.sendSystemMessage(switch (a) {
+                case EN_RESERVE -> msg("achat_reserve", "Merci ! Ton grade %s démarrera quand ton grade actuel se terminera.", g.nom());
+                case VIE_DEJA -> msg("achat_vie", "Tu as déjà un grade boutique à vie : contacte le staff sur Discord.");
+                default -> msg("achat_recu", "Merci pour ton soutien ! Tu as le grade %s (%s).", g.nom(), duree);
+            });
+        }
+        return 1;
     }
 
     private static int changer(CommandContext<CommandSourceStack> c, boolean donner) {

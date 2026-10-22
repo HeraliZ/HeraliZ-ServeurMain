@@ -22,6 +22,7 @@ use Azuriom\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\File;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -35,6 +36,11 @@ chdir($dossier);
 require $dossier.'/vendor/autoload.php';
 $app = require $dossier.'/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
+
+/** Caisse dont les clés sont vendues sur la boutique (« clés cosmétiques »), identifiant de HeraliZ Caisses. */
+const CAISSE_COSMETIQUE = 'spectacle';
+
+require __DIR__.'/pages_legales.php';
 
 function dire(string $message): void
 {
@@ -56,6 +62,12 @@ if (setting('heraliz.reglages') !== null) {
     dire('Réglages de départ : déjà faits le '.setting('heraliz.reglages').' (rien n’est changé, l’administration fait foi)');
 } else {
     reglagesDeDepart($contenu);
+}
+
+// boutique de la saison 1 et pages légales : une seule fois (repère « heraliz.boutique »), chaque élément seulement s'il
+// manque ; ensuite l'administration fait foi
+if (setting('heraliz.boutique') === null) {
+    boutiqueDeDepart();
 }
 
 // état du site, lu par le propriétaire dans le résumé de l'envoi
@@ -186,4 +198,99 @@ function reglagesDeDepart(string $contenu): void
 
     Setting::updateSettings('heraliz.reglages', now()->toDateString());
     dire('Réglages de départ : faits');
+}
+
+
+/** Garde seulement les colonnes qui existent (les versions de la Boutique d'Azuriom n'ont pas toutes les mêmes). */
+function colonnes(string $table, array $valeurs): array
+{
+    return array_filter($valeurs, fn ($cle) => Schema::hasColumn($table, $cle), ARRAY_FILTER_USE_KEY);
+}
+
+function boutiqueDeDepart(): void
+{
+    // serveur de jeu relié par AzLink (commandes des achats jouées par la console du serveur)
+    $serveur = Server::find(setting('servers.default')) ?? Server::first();
+    if ($serveur !== null && $serveur->type !== 'mc-azlink') {
+        $serveur->type = 'mc-azlink';
+        if (blank($serveur->token)) {
+            $serveur->token = Str::random(32);
+        }
+        $serveur->save();
+        dire('Serveur de jeu relié par AzLink : taper dans la console du Ptero la commande « azlink setup » donnée par l’administration → Serveurs');
+    }
+
+    foreach (pagesLegales() as $slug => [$titre, $resume, $texte]) {
+        if (! Page::where('slug', $slug)->exists()) {
+            Page::create(['title' => $titre, 'slug' => $slug, 'description' => $resume, 'content' => $texte, 'is_enabled' => true]);
+            dire('Page créée : '.$titre.' (à relire et compléter : les passages entre crochets)');
+        }
+    }
+
+    if (! plugins()->isEnabled('shop')) {
+        dire('Boutique : extension absente, articles non créés');
+        return;
+    }
+    $Categorie = \Azuriom\Plugin\Shop\Models\Category::class;
+    $Article = \Azuriom\Plugin\Shop\Models\Package::class;
+    if ($Article::exists()) {
+        dire('Boutique : des articles existent déjà, rien n’est ajouté');
+    } else {
+        $sid = $serveur?->id;
+        $cmd = fn (string $c) => [['command' => $c, 'trigger' => 'purchase', 'require_online' => true, 'server' => $sid]];
+        $contenu = '<h3>Ce que contient ce grade</h3><ul><li>[À compléter dans l’administration → Boutique → Articles]</li></ul>';
+        $temps = '<p><strong>Sans renouvellement automatique</strong> : à la fin de la durée, le grade est retiré. Aucun prélèvement : pour le garder, il faut le racheter. Monter d’un grade se paie au prix plein du nouveau grade.</p>'
+            .'<p>Contenu numérique livré immédiatement en jeu : <strong>aucun remboursement</strong> (voir les Conditions de vente). Être connecté au serveur au moment de la livraison.</p>';
+        $categories = [
+            ['Grades', 'grades', '<p>Soutiens HeraliZ et profite d’avantages pratiques et visuels, jamais d’avantage en combat. Emote, skin ou finisher rien qu’à toi ou à ton clan : voir la page « Créations sur mesure ».</p>', [
+                ['Rescapé · 1 mois', 9.90, 'rescape', 30], ['Rescapé · 3 mois', 24.00, 'rescape', 90],
+                ['Traqueur · 1 mois', 14.90, 'traqueur', 30], ['Traqueur · 3 mois', 35.90, 'traqueur', 90],
+                ['Roi de la Zone · 1 mois', 19.90, 'roi_de_la_zone', 30], ['Roi de la Zone · 3 mois', 47.90, 'roi_de_la_zone', 90],
+            ]],
+            ['Soutien Bêta', 'beta', '<p>Pour ceux qui soutiennent HeraliZ dès la bêta et l’aident à s’améliorer.</p>', [
+                ['Grade BETA · à vie', 89.90, 'roi_de_la_zone', 0],
+            ]],
+            ['Clés cosmétiques', 'cles', '<p>Clés de caisses cosmétiques, à ouvrir en jeu. Plus le lot est grand, moins la clé coûte cher.</p>', [
+                ['1 clé', 0.55, 1], ['10 clés', 5.20, 10], ['20 clés', 9.90, 20], ['50 clés', 23.90, 50], ['100 clés', 44.90, 100],
+            ]],
+        ];
+        foreach ($categories as $ic => [$nom, $slug, $desc, $articles]) {
+            $c = $Categorie::create(colonnes('shop_categories', ['name' => $nom, 'slug' => $slug, 'description' => $desc, 'position' => $ic + 1, 'is_enabled' => true]));
+            foreach ($articles as $ia => $a) {
+                if ($slug === 'cles') {
+                    [$titre, $prix, $n] = $a;
+                    $desc2 = '<p>'.$n.' clé(s) de caisse cosmétique, livrée(s) dans ton inventaire en jeu.</p>';
+                    $commande = 'heraliz givekey {player} '.CAISSE_COSMETIQUE.' '.$n;
+                    $jours = null;
+                    $court = $n.' clé(s) cosmétique(s), livrée(s) en jeu.';
+                } else {
+                    [$titre, $prix, $grade, $jours] = $a;
+                    $desc2 = $jours === 0
+                        ? '<p>Les mêmes avantages que Roi de la Zone, <strong>à vie</strong>, plus une emote et un skin d’arme personnalisés à vie : fais ta demande au staff sur Discord avec un exemple (image ou vidéo) du rendu voulu, dans les limites de ce qui est possible sur Minecraft et de ce que nos développeurs peuvent faire.</p>'.$contenu
+                            .'<p>Contenu numérique livré immédiatement en jeu : <strong>aucun remboursement</strong> (voir les Conditions de vente).</p>'
+                        : $contenu.$temps;
+                    $court = $jours === 0 ? 'Avantages Roi de la Zone à vie, emote et skin d’arme personnalisés.' : 'Grade pour '.$jours.' jours, sans renouvellement automatique.';
+                    $commande = 'grade acheter {player} '.$grade.' '.($jours === 0 ? 'vie' : $jours);
+                }
+                $Article::create(colonnes('shop_packages', [
+                    'category_id' => $c->id, 'name' => $titre, 'short_description' => $court,
+                    'description' => $desc2, 'price' => $prix, 'position' => $ia + 1, 'commands' => $cmd($commande),
+                    'need_online' => true, 'user_limit' => $jours === 0 ? 1 : null, 'is_enabled' => true,
+                ]));
+            }
+            dire('Boutique : catégorie « '.$nom.' » ('.count($articles).' articles)');
+        }
+    }
+
+    // crédits du site achetés en euros : 1 crédit = 1 € (moyens de paiement à cocher dans Boutique → Offres)
+    $Offre = \Azuriom\Plugin\Shop\Models\Offer::class;
+    if (class_exists($Offre) && ! $Offre::exists()) {
+        foreach ([5, 10, 20, 50, 100] as $e) {
+            $Offre::create(colonnes('shop_offers', ['name' => $e.' crédits', 'price' => $e, 'money' => $e, 'is_enabled' => true]));
+        }
+        dire('Boutique : offres de crédits 5, 10, 20, 50, 100 € (1 crédit = 1 €)');
+    }
+
+    Setting::updateSettings('heraliz.boutique', now()->toDateString());
+    dire('Boutique et pages légales : faites');
 }

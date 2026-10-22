@@ -234,5 +234,10 @@
   "message.heraliz_grades.voir2": "%1$s: персонал %2$s, магазин %3$s, особые %4$s",
   "heraliz_grades.tpa.acceptee_s": "%1$s принял: телепортация через %2$s с, не двигайся.",
   "heraliz_grades.tpa.acceptee_cible_s": "Ты принял: %1$s прибудет через %2$s с.",
-  "item.heraliz_grades.registre_grades": "Реестр рангов"
+  "item.heraliz_grades.registre_grades": "Реестр рангов",
+  "message.heraliz_grades.achat_invalide": "Использование: grade acheter <игрок> <ранг магазина> <дни|vie>.",
+  "message.heraliz_grades.achat_reserve": "Спасибо! Твой ранг %s начнётся, когда закончится текущий.",
+  "message.heraliz_grades.achat_vie": "У тебя уже есть пожизненный ранг магазина: свяжись с персоналом в Discord.",
+  "message.heraliz_grades.achat_recu": "Спасибо за поддержку! У тебя ранг %s (%s).",
+  "message.heraliz_grades.achat_fin": "Твой ранг магазина закончился. Он не продлевается сам: его можно купить снова на сайте."
 }

@@ -298,6 +298,33 @@ jobs:
 
       # Adresse du SFTP nettoyée (« sftp:// » ou port collés par erreur) et testée AVANT tout envoi : un Ptero
       # injoignable fait échouer la mise en ligne en quelques secondes, avec un message clair (au lieu d'attendre 2 h).
+      # AzLink (Azuriom) : relie la boutique du site au serveur (commandes des achats jouées par la console). Jar officiel
+      # pris dans la dernière version publiée par Azuriom sur GitHub (jamais dans le dépôt) ; sa clé se règle une fois en
+      # jeu par la console (« azlink setup … », donnée par l'administration du site) et reste dans plugins/AzLink/.
+      - name: AzLink (boutique du site)
+        if: env.PTERO_SFTP_HOST != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'EOF'
+          import hashlib, json, os, re, urllib.request
+          def get(url, accept="application/vnd.github+json"):
+              req = urllib.request.Request(url, headers={"Accept": accept, "Authorization": "Bearer " + os.environ["GH_TOKEN"], "User-Agent": "HeraliZ"})
+              with urllib.request.urlopen(req, timeout=60) as r:
+                  return r.read()
+          try:
+              rel = json.loads(get("https://api.github.com/repos/Azuriom/AzLink/releases/latest"))
+              asset = next(a for a in rel["assets"] if re.fullmatch(r"AzLink-[\d.]+\.jar", a["name"]))
+              data = get(asset["browser_download_url"], "application/octet-stream")
+              open("livraison/plugins/" + asset["name"], "wb").write(data)
+              ligne = "- AzLink %s (sha256 %s)" % (rel["tag_name"], hashlib.sha256(data).hexdigest()[:16])
+          except Exception as e:
+              ligne = "- AzLink : **non téléchargé** (%s) ; la version déjà sur le Ptero est gardée" % type(e).__name__
+              print("::warning::" + ligne)
+          print(ligne)
+          open(os.environ["GITHUB_STEP_SUMMARY"], "a").write("### Boutique\n" + ligne + "\n")
+          EOF
+
       - name: Accès au Ptero
         if: env.PTERO_SFTP_HOST != ''
         run: |
@@ -327,6 +354,12 @@ jobs:
           import pathlib
           garder = {p.name for p in pathlib.Path("livraison/plugins").glob("*.jar")}
           distants = [l.strip().rstrip("/").split("/")[-1] for l in open("plugins_ptero.txt", encoding="utf-8", errors="replace")]
+          # AzLink non téléchargé cette fois : celui déjà sur le Ptero est gardé (la boutique continue de livrer)
+          if not any(n.startswith("AzLink-") for n in garder):
+              garder |= {n for n in distants if n.startswith("AzLink-") and n.endswith(".jar")}
+          # pas deux versions d'AzLink à la fois
+          if any(n.startswith("AzLink-") for n in garder):
+              garder = {n for n in garder if not n.startswith("AzLink-")} | {max(n for n in garder if n.startswith("AzLink-"))}
           retirer = sorted(n for n in distants if n.lower().endswith(".jar") and n not in garder)
           with open("retirer.lftp", "w", encoding="utf-8") as f:
               for n in retirer:
