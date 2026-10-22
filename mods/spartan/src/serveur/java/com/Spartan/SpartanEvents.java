@@ -120,6 +120,7 @@ public class SpartanEvents {
         ChallengeManager.warmUp();
         ScanManager.load();
         Noise.checkTacz();
+        com.Spartan.alert.CapturesDiscord.demarrer();
     }
 
     @SubscribeEvent

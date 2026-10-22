@@ -107,6 +107,11 @@ public class DiscordWebhook {
     /** Envoi avec un fichier joint (multipart/form-data, format des webhooks Discord), dans le fil de {@code cle}. */
     private static void postWithFile(String url, JsonObject payload, String fileName, byte[] file, String cle,
                                      String nomFil) {
+        postWithFile(url, payload, fileName, file, cle, nomFil, null);
+    }
+
+    private static void postWithFile(String url, JsonObject payload, String fileName, byte[] file, String cle,
+                                     String nomFil, java.util.function.Consumer<HttpResponse<String>> rappel) {
         if (!allow()) {
             return;
         }
@@ -126,7 +131,7 @@ public class DiscordWebhook {
             body.writeBytes(("\r\n--" + boundary + "--\r\n").getBytes(utf8));
             return requete(url, params, HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()),
                     "multipart/form-data; boundary=" + boundary, Duration.ofSeconds(20));
-        });
+        }, rappel);
     }
 
     /**
@@ -191,14 +196,15 @@ public class DiscordWebhook {
             image.addProperty("url", "attachment://" + safeName);
             embed.add("image", image);
             JsonObject footer = new JsonObject();
-            footer.addProperty("text", "Spartan AntiCheat — capture autorisée par le joueur dans le launcher");
+            footer.addProperty("text", "Spartan AntiCheat — capture autorisée par le joueur dans le launcher · effacée dans 3 jours");
             embed.add("footer", footer);
             JsonArray embeds = new JsonArray();
             embeds.add(embed);
             JsonObject payload = new JsonObject();
             payload.add("embeds", embeds);
             denyMentions(payload);
-            postWithFile(url, payload, safeName, jpg, cleJoueur, nomJoueur);
+            // effacée du salon au bout de 3 jours (CapturesDiscord)
+            postWithFile(url, payload, safeName, jpg, cleJoueur, nomJoueur, CapturesDiscord::noter);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
         }
