@@ -15,6 +15,8 @@ public abstract class EcranCanevas extends Screen {
     protected float k = 1;
     protected int cw = 640, ch = 360;
     protected float px = 1 / 3F;
+    /** Vrai pendant le dessin d'un écran dont les textes sont lissés (lu par {@code TexteLisseMixin}). */
+    public static boolean lisse;
 
     protected EcranCanevas(Component titre) {
         super(titre);
@@ -36,6 +38,11 @@ public abstract class EcranCanevas extends Screen {
         return Echelle.voulue();
     }
 
+    /** Lettres lissées : pour un écran agrandi d'un facteur non entier, où les polices lues au point près s'abîment. */
+    protected boolean textesLisses() {
+        return false;
+    }
+
     /** init() sur le canevas : {@link #cw}, {@link #ch} et {@link #px} sont prêts. */
     protected void initCanevas() {
     }
@@ -44,7 +51,16 @@ public abstract class EcranCanevas extends Screen {
     public final void render(GuiGraphics g, int mouseX, int mouseY, float pt) {
         g.pose().pushPose();
         g.pose().scale(this.k, this.k, 1.0F);
-        this.rendu(g, mouseX / this.k, mouseY / this.k, pt);
+        boolean l = this.textesLisses();
+        lisse = l;
+        try {
+            this.rendu(g, mouseX / this.k, mouseY / this.k, pt);
+            if (l) {
+                g.flush();
+            }
+        } finally {
+            lisse = false;
+        }
         g.pose().popPose();
     }
 
