@@ -167,6 +167,9 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
         return st;
     }
 
+    /** Balles au plus par case, bonus de loot compris (choix du propriétaire, 22/10). */
+    static final int MAX_BALLES = 15;
+
     /** Munitions TaCZ (balles et boîtes) : seuls objets qui peuvent sortir en quantité et plusieurs fois. */
     static boolean munition(Item item) {
         net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item);
@@ -218,6 +221,7 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
             n = (int) x;
             if (r.nextDouble() < x - n) n++;
         }
+        if (munition(e.item())) n = Math.min(n, MAX_BALLES);
         ItemStack st = new ItemStack(e.item(), n);
         if (e.nbt() != null) {
             try {
