@@ -96,7 +96,8 @@ const DEFAULT_CONFIG = {
     selectedAccount: null,
     authenticationDatabase: {},
     modConfigurations: [],
-    javaConfig: {}
+    javaConfig: {},
+    accordCapture: null
 }
 
 let config = null
@@ -794,4 +795,19 @@ exports.getAllowPrerelease = function(def = false){
  */
 exports.setAllowPrerelease = function(allowPrerelease){
     config.settings.launcher.allowPrerelease = allowPrerelease
+}
+
+// Accord pour les captures d'écran de Spartan (fenêtre avant de jouer, landing.js)
+
+/** Version du texte de l'accord : la monter quand le texte change, l'accord est alors redemandé. */
+exports.ACCORD_CAPTURE_VERSION = 1
+
+/** @returns {boolean} true si le joueur a accepté la version actuelle du texte. */
+exports.getAccordCapture = function(){
+    const a = config && config.accordCapture
+    return a != null && a.accepte === true && a.version === exports.ACCORD_CAPTURE_VERSION
+}
+
+exports.setAccordCapture = function(accepte){
+    config.accordCapture = { accepte: accepte === true, version: exports.ACCORD_CAPTURE_VERSION, date: new Date().toISOString() }
 }

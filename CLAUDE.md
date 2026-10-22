@@ -421,6 +421,16 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   deux alertes ; au plus 2 par seconde contre un jeu modifié qui inonderait le salon). Indice seulement : un appui par
   erreur est possible, un tricheur peut changer la touche de son menu. Essayé en jeu par le propriétaire (20/10) : ça
   marche.
+- **Captures d'écran** (Spartan 2.7.0, launcher 1.9.0, 22/10, demande du propriétaire) : avant de jouer, le launcher
+  demande l'accord du joueur (fenêtre « Autorisation de l'anticheat », `demanderAccordCapture` de `landing.js`, gardé
+  dans sa config, `ACCORD_CAPTURE_VERSION` de `configmanager.js` à monter si le texte change : redemandé) ; refus = pas
+  de partie. Accord passé au jeu par `SPARTAN_CAPTURE_CONSENT=1` (posé seulement par le launcher, jamais hérité),
+  signalé au serveur à la connexion (`ClientReportPacket` « capture »). Sans accord : aucune capture, ni demandée ni
+  prise (`client/CaptureEcran`). Une capture (fenêtre du jeu seulement, JPEG 1280 px au plus, rien sur le disque du
+  joueur) est prise à chaque appui sur ² ou Maj droite (TricheMenu) et par `/spartan capture <joueur>` ; au plus une
+  toutes les 10 s par joueur (`capture/CaptureManager`). Rangée dans `screenshots/<pseudo>/` à la racine du serveur,
+  annoncée au staff en jeu et envoyée avec l'image dans le fil du joueur sur Discord. Canal Spartan version 8 : jars
+  joueurs et serveur de la même fabrication. Rien testé en jeu.
 - **Sol près des blocs** (Spartan 2.5.1, 20/10) : alertes Vertical « monte de 0.42 bloc en plein air (maximum -0.08) »,
   Speed et Fly ensemble chez le propriétaire en marchant : le serveur ne cherchait le sol qu'à 0,2 bloc sous la hitbox
   exacte et croyait le joueur en l'air. Maintenant, avec un appui à moins de 0,6 bloc sous les pieds (0,3 sur le côté,

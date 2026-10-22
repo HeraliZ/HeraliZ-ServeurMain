@@ -1,6 +1,7 @@
 package com.Spartan.serveur;
 
 import com.Spartan.Networks.BuildPacket;
+import com.Spartan.Networks.CaptureChunkPacket;
 import com.Spartan.Networks.ChallengeResponsePacket;
 import com.Spartan.Networks.ClientReportPacket;
 import com.Spartan.Networks.LaunchTokenPacket;
@@ -12,6 +13,7 @@ import com.Spartan.Networks.TestPacket;
 import com.Spartan.Spartan;
 import com.Spartan.alert.AlertManager;
 import com.Spartan.ban.BanManager;
+import com.Spartan.capture.CaptureManager;
 import com.Spartan.ban.PlayerRegistry;
 import com.Spartan.check.CheckManager;
 import com.Spartan.config.SpartanConfig;
@@ -64,6 +66,8 @@ final class ReceptionServeur {
             packs(player, rp);
         } else if (p instanceof ScanChunkPacket s) {
             ScanManager.onChunk(player, s.scanId(), s.index(), s.total(), s.data());
+        } else if (p instanceof CaptureChunkPacket c) {
+            CaptureManager.onChunk(player, c.captureId(), c.index(), c.total(), c.data());
         }
     }
 
@@ -119,11 +123,15 @@ final class ReceptionServeur {
      * shaderpack). C'est le serveur qui décide. Best-effort : un client modifié peut ne rien signaler.
      */
     private static void signalement(ServerPlayer player, ClientReportPacket c) {
+        String type = c.type();
+        String detail = c.detail();
+        if (type.equals("capture")) {
+            CaptureManager.accord(player, detail.equals("oui"));
+            return;
+        }
         if (!SpartanConfig.CHECK_CLIENT_INTEGRITY.get()) {
             return;
         }
-        String type = c.type();
-        String detail = c.detail();
         if (type.equals("touche")) {
             toucheSuspecte(player, detail);
             return;
@@ -192,6 +200,8 @@ final class ReceptionServeur {
         }
         CheckManager.flagEachTime("TricheMenu", player, "touche « " + nom + " » pressée en jeu alors qu'aucune action"
                 + " n'y est attachée : touche d'ouverture des menus de clients de triche (indice)");
+        // Capture de l'écran au moment de l'appui (seulement si le joueur l'a autorisée dans le launcher).
+        CaptureManager.demander(player, "touche « " + nom + " » pressée");
     }
 
     /** Liste des mods du client, comparée à la liste noire (une seule fois par connexion). */

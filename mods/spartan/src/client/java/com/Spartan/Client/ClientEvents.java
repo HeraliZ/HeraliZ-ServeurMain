@@ -66,6 +66,8 @@ public class ClientEvents {
             ModMessages.sendToServer(new TestPacket(ComponentInfo.getSystemUUID()));
             ModMessages.sendToServer(new TestPacket(ComponentInfo.getHWID()));
             reportJavaAgents();
+            // Accord pour les captures d'écran, donné (ou non) dans le launcher.
+            ModMessages.sendToServer(new ClientReportPacket("capture", CaptureEcran.autorisee() ? "oui" : "non"));
             String shader = ShaderProbe.activeShaderpack();
             if (shader != null) {
                 ModMessages.sendToServer(new ClientReportPacket("shader", shader));

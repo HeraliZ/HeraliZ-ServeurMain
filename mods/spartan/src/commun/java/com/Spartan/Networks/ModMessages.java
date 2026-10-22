@@ -15,9 +15,10 @@ public class ModMessages {
     // Historique : "2" = paquets screenshot retirés ; "3" = ClientReportPacket ;
     // "4" = build + défi d'intégrité (+ jeton launcher) ; "5" = contrôle d'intégrité (scan) ;
     // "6" = le défi couvre toutes les classes (plus de 16 indices) ;
-    // "7" = HeraliZ 2.0 : jar coupé client / serveur, défi lié au code réellement chargé, contrôle natif.
+    // "7" = HeraliZ 2.0 : jar coupé client / serveur, défi lié au code réellement chargé, contrôle natif ;
+    // "8" = captures d'écran (avec l'accord du joueur donné dans le launcher).
     // Client et serveur doivent partager la même version, sinon la connexion est refusée.
-    private static final String PROTOCOL_VERSION = "7";
+    private static final String PROTOCOL_VERSION = "8";
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Spartan.MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -58,6 +59,17 @@ public class ModMessages {
         // Contrôle d'intégrité : demande (serveur -> client) et rapport en morceaux (client -> serveur).
         INSTANCE.registerMessage(id++, ScanRequestPacket.class, ScanRequestPacket::encode, ScanRequestPacket::decode, ScanRequestPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         INSTANCE.registerMessage(id++, ScanChunkPacket.class, ScanChunkPacket::encode, ScanChunkPacket::decode, ScanChunkPacket::handle, toServer);
+        // Capture d'écran : demande (serveur -> client) et image en morceaux (client -> serveur).
+        INSTANCE.registerMessage(id++, CaptureRequestPacket.class, CaptureRequestPacket::encode, CaptureRequestPacket::decode, CaptureRequestPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        INSTANCE.registerMessage(id++, CaptureChunkPacket.class, CaptureChunkPacket::encode, CaptureChunkPacket::decode, CaptureChunkPacket::handle, toServer);
+    }
+
+    public static void sendToPlayer(CaptureRequestPacket packet, ServerPlayer player) {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), packet);
+    }
+
+    public static void sendToServer(CaptureChunkPacket packet) {
+        INSTANCE.sendToServer(packet);
     }
 
     public static void sendToPlayer(ChallengePacket packet, ServerPlayer player) {

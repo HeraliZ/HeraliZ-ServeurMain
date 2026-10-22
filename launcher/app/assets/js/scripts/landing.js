@@ -98,9 +98,49 @@ function setLaunchEnabled(val){
     document.getElementById('launch_button').disabled = !val
 }
 
+/**
+ * Accord pour les captures d'écran de l'anticheat, demandé avant de jouer. Sans accord, pas de partie : le joueur peut
+ * refuser et quitter. Gardé dans la config du launcher (redemandé si le texte change, ACCORD_CAPTURE_VERSION).
+ *
+ * @returns {Promise<boolean>} true si le joueur a accepté.
+ */
+function demanderAccordCapture(){
+    if(ConfigManager.getAccordCapture()){
+        return Promise.resolve(true)
+    }
+    return new Promise(resolve => {
+        setOverlayContent(
+            'Autorisation de l\'anticheat',
+            'Nous savons qu\'un anticheat infaillible n\'existe pas sur Minecraft. Pour être sûrs à 100 % avant '
+                + 'de sanctionner quelqu\'un, nous vous demandons l\'autorisation de pouvoir, à tout moment pendant '
+                + 'que vous jouez sur HeraliZ, prendre une capture d\'écran de votre jeu (seulement la fenêtre de '
+                + 'Minecraft, jamais le reste de votre ordinateur). Elle est envoyée au serveur et vue uniquement '
+                + 'par le staff.<br><br>Si vous refusez, vous ne pourrez pas jouer sur le serveur : libre à vous de '
+                + 'quitter. Vous pourrez changer d\'avis au prochain clic sur Jouer.',
+            'J\'autorise et je joue',
+            'Je refuse'
+        )
+        setOverlayHandler(() => {
+            ConfigManager.setAccordCapture(true)
+            ConfigManager.save()
+            toggleOverlay(false)
+            resolve(true)
+        })
+        setDismissHandler(() => {
+            toggleOverlay(false)
+            resolve(false)
+        })
+        toggleOverlay(true, true)
+    })
+}
+
 // Bind launch button
 document.getElementById('launch_button').addEventListener('click', async e => {
     loggerLanding.info('Launching game..')
+    if(!(await demanderAccordCapture())){
+        loggerLanding.info('Captures d\'écran refusées : partie non lancée.')
+        return
+    }
     try {
         const server = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
         const jExe = ConfigManager.getJavaExecutable(ConfigManager.getSelectedServer())

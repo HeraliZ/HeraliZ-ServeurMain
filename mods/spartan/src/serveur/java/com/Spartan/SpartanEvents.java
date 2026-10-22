@@ -244,6 +244,7 @@ public class SpartanEvents {
             ChallengeManager.clear(player.getUUID());
             LauncherGate.clear(player.getUUID());
             ScanManager.clear(player.getUUID());
+            com.Spartan.capture.CaptureManager.clear(player.getUUID());
             VisibilityEngine.forget(player);
             HeralizCompat.oublier(player.getUUID());
         }
