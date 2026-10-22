@@ -37,6 +37,8 @@ POUR_100 = {
     "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
     "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
     "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 45},
+    # sacs à dos (choix du propriétaire, 22/10 : 0,1 % des coffres en T1, 0,5 % en T2 ; un seul sac par coffre)
+    "sacs":        {1: 0.1, 2: 0.5, 3: 1, 4: 2, 5: 3, 6: 4, 7: 3},
 }
 # part de chaque rareté (en %) ; une arme Bleue est déjà une belle trouvaille
 PARTS = {
@@ -51,6 +53,28 @@ PARTS = {
 LOURDES = 0.35
 # parts propres à une famille dans un palier (sinon PARTS)
 PARTS_FAMILLE = {}
+# sacs à dos : rareté selon leur nombre de cases (choix du propriétaire, 22/10), écrite aussi dans la section
+# « objets » de raretes.json (couleur du nom). Préfixe de l'identifiant -> rareté ; le plus long préfixe l'emporte.
+RARETE_SACS = {
+    "backpack_school": "commun",                                  # 1x2
+    "backpack": "peu_commun", "backpack_tactical": "peu_commun",  # 2x3, 3x2
+    "backpack_sniper_case": "rare", "backpack_sports_bag": "rare",  # 4x2, 3x3
+    "backpack_mountain_military_camo": "epique", "backpack_hiking": "epique",  # 5x3
+    "backpack_military_sport_bag": "legendaire",                  # 5x4
+}
+SACS_HORS_LOOT = ("backpack", "backpack_expand1", "backpack_expand2", "backpack_sniper_case_enderman",
+                  "backpack_military_sport_bag_cow", "backpack_military_sport_bag_pig")  # jamais dans les coffres
+PARTS_SACS = {
+    1: {"commun": 90, "peu_commun": 10},
+    2: {"commun": 70, "peu_commun": 25, "rare": 5},
+    3: {"commun": 45, "peu_commun": 35, "rare": 17, "epique": 3},
+    4: {"commun": 25, "peu_commun": 35, "rare": 30, "epique": 9, "legendaire": 1},
+    5: {"commun": 10, "peu_commun": 30, "rare": 40, "epique": 17, "legendaire": 3},
+    6: {"commun": 5, "peu_commun": 20, "rare": 45, "epique": 25, "legendaire": 5},
+    7: {"peu_commun": 15, "rare": 40, "epique": 35, "legendaire": 10},
+}
+PARTS_FAMILLE.update({("sacs", t): v for t, v in PARTS_SACS.items()})
+SACS_JAVA = RACINE / "mods/heralisz-backpack/src/commun/java/com/mrcrayfish/backpacked/core/ArkaniaZModItems.java"
 # jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
 OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
 PARACHUTE = 0.19  # part du poids d'origine du parachute
@@ -58,8 +82,6 @@ PARACHUTE = 0.19  # part du poids d'origine du parachute
 AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("nourriture", 0.6), ("boissons", 0.6),
           ("rations", 0.6), ("plats", 0.6), ("produits_ferme", 0.6)]
 # munitions : part de leur poids d'origine par palier (balles pour 100 conteneurs : environ 40 en T1 à 450 en T7)
-# sacs à dos par palier (choix du propriétaire, 22/10 : 0,1 % des coffres en T1, 0,5 % en T2)
-SACS = {1: 0.0066, 2: 0.015, 3: 0.0143, 4: 0.0143, 5: 0.013, 6: 0.0174, 7: 0.028}
 MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
 EMPLACEMENTS = {7: [2, 5]}  # objets par conteneur (sinon ceux de la table)
 PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
@@ -86,6 +108,26 @@ IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 def gun_id(e):
     m = re.search(r'GunId:"([^"]+)"', e.get("nbt", ""))
     return m.group(1) if m else None
+
+
+def sacs():
+    """identifiant -> rareté de chaque sac à dos du mod."""
+    out = {}
+    for i in sorted(set(re.findall(r'"backpacked", "([a-z0-9_]+)"', SACS_JAVA.read_text(encoding="utf-8")))):
+        k = max((k for k in RARETE_SACS if i == k or i.startswith(k + "_")), key=len, default=None)
+        if k and not i.startswith("backpack_expand"):  # objets vides gardés pour Curios
+            out[i] = RARETE_SACS[k]
+    return out
+
+
+def ecrire_raretes_sacs():
+    data = json.load(open(RARETES, encoding="utf-8"))
+    obj = {k: v for k, v in data["objets"].items() if not k.startswith("backpacked:")}
+    obj.update({"backpacked:" + i: r for i, r in sacs().items()})
+    data["objets"] = obj
+    with open(RARETES, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
 
 
 def raretes():
@@ -162,6 +204,9 @@ def familles():
     for i, r in sorted(tout["objets"].items()):
         if i.startswith(ARMURE) and not i.startswith(ARMURE + "kit_") and not i.endswith("_suit") and r != "unique":
             ajouter("armures", r, {"item": i, "nombre": [1, 1], "_cat": "armures"})
+    for i, r in sacs().items():
+        if i not in SACS_HORS_LOOT:
+            ajouter("sacs", r, {"item": "backpacked:" + i, "nombre": [1, 1], "_cat": "sacs"})
     for i, r, pile in re.findall(r'new Def\("([a-z_0-9]+)", "[^"]*", HeralizRarity\.([A-Z]+), (\d+)\)',
                                  COMPOSANTS_DEFS.read_text(encoding="utf-8")):
         if r in RARETE_COMPOSANT and i not in COMPOSANTS_EXCLUS:
@@ -179,8 +224,6 @@ def mult_autre(e, t):
     cat = e.get("_cat", "")
     if "munitions" in cat:
         return MUNITIONS[t]
-    if "sacs" in cat:
-        return SACS[t]
     if "parachute" in e["item"]:
         return PARACHUTE
     if e["item"] in OUTILS_VEHICULE:
@@ -214,7 +257,7 @@ def melee_absente(e):
 def autres_de(data):
     out = []
     for e in data["objets"]:
-        if de_famille(e) or e["item"].startswith(RETIRES) or melee_absente(e) or e.get("_cat", "").startswith("materiaux"):
+        if de_famille(e) or e["item"].startswith(RETIRES + ("backpacked:",)) or melee_absente(e) or e.get("_cat", "").startswith("materiaux"):
             continue
         e = dict(e)
         e.setdefault("_base", e["poids"])
@@ -223,6 +266,7 @@ def autres_de(data):
 
 
 def ecrire():
+    ecrire_raretes_sacs()
     fams = familles()
     tables = {t: json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8")) for t in PARTS}
     autres = {t: autres_de(tables[t]) for t in PARTS}
@@ -272,7 +316,7 @@ def ecrire():
             objets.append(n)
         data["objets"] = objets
         ecrire_table(COFFRES / f"t{t}.json", data)
-        print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in parts)} {f}" for f in fams))
+        print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in PARTS_FAMILLE.get((f, t), PARTS[t]))} {f}" for f in fams))
 
 
 def classer(e, ra):
@@ -283,6 +327,8 @@ def classer(e, ra):
         return "accessoires", ra["accessoires"].get(m.group(1) if m else "", "?")
     if e.get("_cat") == "plans":
         return "plans", e.get("rarete") or ra["plans"].get(e["item"], "?")
+    if e.get("_cat") == "sacs":
+        return "sacs", ra["objets"].get(e["item"], "?")
     if e.get("_cat") in ("armures", "composants"):
         return e["_cat"], e.get("rarete") or ra["objets"].get(e["item"]) or ra["comp"].get(e["item"], "?")
     return None, None
