@@ -45,6 +45,8 @@
                         @if(isset($pagesInfo[$slug]))<li><a href="{{ route('pages.show', $slug) }}">{{ $nom }}</a></li>@endif
                     @endforeach
                     <li><a href="{{ $discord }}" target="_blank" rel="noopener noreferrer">Contact (Discord)</a></li>
+                    {{-- lien demandé par serveurs-minecraft.org pour figurer dans son classement --}}
+                    <li><a href="http://www.serveurs-minecraft.org/">Serveur Minecraft</a></li>
                 </ul>
             </div>
         </div>
