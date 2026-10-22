@@ -11,7 +11,7 @@
  * de 10 % détruite.
  */
 
-const VERSION_PAGES = '2026-10-23';
+const VERSION_PAGES = '2026-10-23b';
 const REPERE_PAGES = '<!-- heraliz-pages:';
 
 function pagesLegales(): array
@@ -49,11 +49,11 @@ function pagesLegales(): array
         .'<h2>10. Contestation de paiement et fraude</h2><p>Toute contestation de paiement abusive (« chargeback ») ou tout paiement frauduleux entraîne le retrait des PB et contenus concernés (y compris ceux déjà échangés ou dépensés) et le bannissement définitif des comptes liés, sans préjudice de poursuites.</p>'
         .'<h2>11. Mineurs</h2><p>Un mineur doit avoir l’autorisation de son représentant légal avant tout achat ; l’achat est réputé fait avec cet accord.</p>'
         .'<h2>12. Créations sur mesure</h2><p>Emotes, skins et finishers personnalisés (joueur ou clan) sont faits sur devis après échange sur Discord, dans les limites techniques de Minecraft. Le rendu peut différer de l’exemple. Une fois le travail commencé, aucun remboursement. Les créations restent la propriété d’HeraliZ, qui en concède l’usage sur le Serveur.</p>'
-        .'<h2>13. Responsabilité, modifications, litiges</h2><p>La responsabilité d’HeraliZ est limitée au montant payé pour la commande concernée. Les CGV applicables sont celles en vigueur au jour de l’achat. Droit français ; solution amiable recherchée d’abord ; médiateur de la consommation gratuit : désigné dès l’immatriculation de la société et indiqué ici ; en attendant, la plateforme européenne de règlement des litiges en ligne reste ouverte.</p>';
+        .'<h2>13. Responsabilité, modifications, litiges</h2><p>La responsabilité d’HeraliZ est limitée au montant payé pour la commande concernée. Les CGV applicables sont celles en vigueur au jour de l’achat. Droit français ; solution amiable recherchée d’abord.</p>';
 
     $mentions = $maj
         .'<h2>Éditeur</h2><p>HeraliZ, société en cours de création (personne morale en formation, forme juridique et capital précisés à l’immatriculation)<br>Siège : '.$adresse.'<br>SIREN / RCS : en cours d’immatriculation<br>Contact : '.$mail.' · Discord : discord.gg/heraliz<br>Directeur de la publication : le représentant légal de la société HeraliZ.</p>'
-        .'<h2>Hébergement</h2><p>Site : serveur privé virtuel loué par HeraliZ ; coordonnées complètes de l’hébergeur communiquées sur simple demande à '.$mail.'.<br>Serveur de jeu : serveur dédié loué par HeraliZ ; coordonnées de l’hébergeur sur simple demande.</p>'
+        .'<h2>Hébergement</h2><p>Le site et le serveur de jeu sont hébergés par HeraliZ elle-même, sur ses propres serveurs (siège : '.$adresse.' ; contact : '.$mail.').</p>'
         .'<h2>Propriété intellectuelle</h2><p>Textes, images, logos, modèles et créations d’HeraliZ sont protégés ; toute reproduction sans autorisation est interdite. Les contenus des autres auteurs restent les leurs. HeraliZ n’est ni affilié à, ni approuvé par Mojang Studios ou Microsoft. Site propulsé par Azuriom.</p>';
 
     $confidentialite = $maj
