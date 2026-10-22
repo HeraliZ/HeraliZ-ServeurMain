@@ -1,0 +1,110 @@
+# Performances du serveur : mesure la charge du Ptero pendant quelques minutes, sans rien changer.
+# Par la console du panel : « list » (joueurs connectés), « spark tps » (durée de chaque tick : 50 ms = limite avant
+# lag) et « spark health » (processeur, mémoire), une fois par minute. Par l'API du panel : processeur, mémoire et
+# limites du serveur. Par SFTP, en LECTURE SEULE : logs/latest.log (réponses de la console, « Can't keep up »).
+# Aucun profil n'est envoyé sur internet (pas de « spark profiler »). Le compte rendu est dans le résumé du workflow.
+# Part d'une branche de travail quand ce fichier change, ou par « Run workflow ».
+name: Performances du serveur
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Durée de la mesure, en minutes (1 relevé par minute)"
+        default: "5"
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/performances.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performances
+  cancel-in-progress: false
+
+jobs:
+  mesure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+      MINUTES: ${{ inputs.minutes || '5' }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - name: Accès au Ptero
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+          echo "API=${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID" >> "$GITHUB_ENV"
+
+      - name: Limites du serveur (panel)
+        run: |
+          curl -sS "$API" -H "Authorization: Bearer $PTERO_API_KEY" -H "Accept: Application/vnd.pterodactyl.v1+json" \
+            | python3 -c 'import sys,json; a=json.load(sys.stdin)["attributes"]; print("Limites :", json.dumps(a.get("limits")), "| node :", "(masqué)")' \
+            | tee limites.txt
+
+      - name: Relevés pendant la mesure
+        run: |
+          N=$(printf '%s' "$MINUTES" | tr -cd '0-9'); N=${N:-5}; [ "$N" -gt 20 ] && N=20
+          cmd() { curl -sS -o /dev/null -w '%{http_code}' -X POST "$API/command" \
+            -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \
+            -H "Accept: Application/vnd.pterodactyl.v1+json" -d "{\"command\":\"$1\"}"; }
+          : > ressources.jsonl
+          for i in $(seq 1 "$N"); do
+            echo "Relevé $i/$N : list $(cmd list), spark tps $(cmd 'spark tps'), spark health $(cmd 'spark health --memory')"
+            curl -sS "$API/resources" -H "Authorization: Bearer $PTERO_API_KEY" \
+              -H "Accept: Application/vnd.pterodactyl.v1+json" >> ressources.jsonl; echo >> ressources.jsonl
+            sleep 60
+          done
+
+      - name: Journal du serveur (lecture seule)
+        run: |
+          lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+            -e "set sftp:auto-confirm yes; set net:max-retries 2; set net:timeout 30; get /logs/latest.log -o latest.log; get /server.properties -o server.properties; cls -1 /mods/ > mods.txt; bye" || true
+
+      - name: Compte rendu
+        run: |
+          python3 - <<'EOF' | tee -a "$GITHUB_STEP_SUMMARY"
+          import json, re
+          print("## Performances du serveur\n")
+          print(open("limites.txt").read().strip(), "\n")
+          print("### Ressources (panel, une ligne par minute)\n")
+          print("| état | processeur % | mémoire Go | depuis (h) |\n|---|---|---|---|")
+          for l in open("ressources.jsonl"):
+              l = l.strip()
+              if not l: continue
+              try: a = json.loads(l)["attributes"]; r = a["resources"]
+              except Exception: continue
+              print(f"| {a.get('current_state')} | {r.get('cpu_absolute')} | {r.get('memory_bytes',0)/1e9:.1f} | {r.get('uptime',0)/3.6e6:.1f} |")
+          try:
+              props = {k: v for k, v in (x.strip().split("=", 1) for x in open("server.properties", errors="replace") if "=" in x and not x.startswith("#"))}
+              print("\nview-distance", props.get("view-distance"), "| simulation-distance", props.get("simulation-distance"), "| max-players", props.get("max-players"))
+          except Exception: pass
+          try: print("Jars dans mods/ :", sum(1 for x in open("mods.txt") if x.strip().endswith(".jar")))
+          except Exception: pass
+          try: log = open("latest.log", encoding="utf-8", errors="replace").read().splitlines()
+          except Exception: log = []
+          log = [re.sub(r"\x1b\[[0-9;]*m|§.", "", l) for l in log]
+          print("\nLignes du journal :", len(log), "| « Can't keep up » :", sum("Can't keep up" in l for l in log))
+          for l in [l for l in log if "Can't keep up" in l][-5:]: print("    ", l)
+          print("\n### Réponses de la console (fin du journal)\n```")
+          debut = max(0, len(log) - 2500)
+          for l in log[debut:]:
+              if re.search(r"players online|TPS|[Tt]ick|CPU|[Mm]emory|heap|GC|Disk|\d+(\.\d+)?/\d+(\.\d+)?/\d+", l) and "Can't keep up" not in l:
+                  print(l[:220])
+          print("```")
+          EOF
