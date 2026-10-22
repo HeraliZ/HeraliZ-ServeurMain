@@ -214,12 +214,12 @@ def peindre(mat, p, n, fu, fv, w, h, prm):
         # chiffres éteints « 88 » à peine visibles
         for x0 in prm.get("fantomes", ()):
             m = masque_sept_segments(8)
-            v = echantillon(m, (p[..., 0] - x0[0]) / (x0[1] - x0[0]), (p[..., 2] - x0[2]) / (x0[3] - x0[2]))
+            v = echantillon(m, (x0[1] - p[..., 0]) / (x0[1] - x0[0]), (x0[3] - p[..., 2]) / (x0[3] - x0[2]))
             r = melange(r, col(48, 14, 12), v * 0.8)
     elif mat == "chiffre":
         m = masque_sept_segments(prm["chiffre"])
         x0, x1, z0, z1 = prm["cadre"]
-        v = echantillon(m, (p[..., 0] - x0) / (x1 - x0), (p[..., 2] - z0) / (z1 - z0))
+        v = echantillon(m, (x1 - p[..., 0]) / (x1 - x0), (z1 - p[..., 2]) / (z1 - z0))  # lu depuis le joueur qui la tient
         r = melange(col(150, 20, 14), col(255, 70, 50), v)
         a = (v > 0.5).astype(float)
         g = col(255, 60, 40)[None, None, :] * (v[..., None] > 0.5)
@@ -424,7 +424,7 @@ def modele_c4():
     for k in range(11):
         os_.append(Os(f"tens_{k}", "display"))
         os_.append(Os(f"ones_{k}", "display"))
-        for nom, (x0, x1, z0, z1) in (("tens", fant[0]), ("ones", fant[1])):
+        for nom, (x0, x1, z0, z1) in (("tens", fant[1]), ("ones", fant[0])):
             B(f"{nom}_{k}", (x0, 4.245, z0), (x1, 4.245, z1), "chiffre", faces=("up",),
               prm={"chiffre": k, "cadre": (x0, x1, z0, z1)})
     # détonateurs et fils
