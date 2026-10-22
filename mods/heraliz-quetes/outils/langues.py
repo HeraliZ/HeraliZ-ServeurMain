@@ -293,9 +293,9 @@ TEXTES = {
 
     # arrivée et tutoriel des bases avec le Commandant Varga (serveur : Accueil ; client : RadioVarga)
     "heraliz_quetes.tuto.varga_nom": ("Commandant Varga", "Commander Varga", "Командир Варга"),
-    "heraliz_quetes.tuto.varga": ("Ici, sans abri pour tes affaires, tu ne tiens pas une semaine. Je peux t'aider à construire ta base, ou te confier ta première mission. Par quoi tu commences ?",
-                                  "Out here, without a shelter for your gear, you won't last a week. I can help you build your base, or give you your first mission. Where do you start?",
-                                  "Здесь без укрытия для вещей ты и недели не протянешь. Я могу помочь построить базу или дать первое задание. С чего начнёшь?"),
+    "heraliz_quetes.tuto.varga": ("Ici, sans abri pour tes affaires, tu ne tiens pas une semaine. Monte ton clan pour bâtir une base. En attendant, je peux te confier ta première mission.",
+                                  "Out here, without a shelter for your gear, you won't last a week. Start a clan to build a base. Meanwhile, I can give you your first mission.",
+                                  "Здесь без укрытия для вещей ты и недели не протянешь. Создай клан, чтобы построить базу. А пока могу дать тебе первое задание."),
     "heraliz_quetes.tuto.faire_base": ("Faire ma base", "Build my base", "Построить базу"),
     "heraliz_quetes.tuto.premiere_mission": ("Commencer ma première mission", "Start my first mission", "Начать первое задание"),
     # le guide du spawn (serveur : Accueil, Dialogues)
@@ -332,9 +332,9 @@ TEXTES = {
                                  "That's the tour. Go talk to Commander Varga: he's waiting for you.",
                                  "Вот и вся экскурсия. Поговори с командиром Варгой: он тебя ждёт."),
     "heraliz_quetes.tuto.intro_titre": ("Bienvenue sur HeraliZ", "Welcome to HeraliZ", "Добро пожаловать на HeraliZ"),
-    "heraliz_quetes.tuto.intro": ("Va voir le Commandant Varga pour commencer le tutoriel", "Go see Commander Varga to start the tutorial",
-                                  "Поговори с командиром Варгой, чтобы начать обучение"),
-    "heraliz_quetes.tuto.suivi_pnj": ("Cdt. Varga · Tutoriel", "Cdr. Varga · Tutorial", "Ком. Варга · Обучение"),
+    "heraliz_quetes.tuto.intro": ("Va voir le Commandant Varga", "Go see Commander Varga",
+                                  "Поговори с командиром Варгой"),
+    "heraliz_quetes.tuto.suivi_pnj": ("Cdt. Varga", "Cdr. Varga", "Ком. Варга"),
     "heraliz_quetes.tuto.titre": ("Ta première base", "Your first base", "Твоя первая база"),
     "heraliz_quetes.tuto.kit": ("Écoute Varga : départ pour le monde des bases", "Listen to Varga: off to the bases world",
                                 "Слушай Варгу: отправка в мир баз"),

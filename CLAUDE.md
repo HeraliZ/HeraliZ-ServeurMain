@@ -1836,8 +1836,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   création d'un clan pour son chef (s'il ne l'a jamais fait), dans un monde à part (l'ancien monde des bases
   `crac:bases`, `MondeBases.TUTO` ; ses règles sans créatures ni seaux n'y valent que là) ; 9 étapes (plus de
   `/sethome`) ; à la fin, tour de caméra, puis la cabane d'essai et son armoire sont effacées (`EffacerBase.effacerDans`,
-  ce monde seulement), le reste du kit est repris et le joueur revient au spawn. Le bouton « Faire ma base » de Varga
-  reste (essai). **Matériel de la première base** (CRac 1.17.0, Clans 3.5.0) : une fois par clan, plan, marteau, armoire et brindilles pour une base 2 × 1 et un triangle en nid d'abeille (2 fondations + 1 triangle, 7 murs, l'encadrement de porte, 2 planchers + 1 triangle ; coûts réels + marge, `Tutoriel.kitPremiereBase`) rangés dans le coffre du clan (`BasesClans.kits`, gardé dans `crac_bases_clans`), 30 s après la création et seulement une fois le tutoriel du chef fini ; les clans déjà là le reçoivent aussi. L'ancien contenu du monde des bases est abandonné : le remettre à neuf par le workflow (case
+  ce monde seulement), le reste du kit est repris et le joueur revient au spawn. Plus de bouton « Faire ma base » chez
+  Varga (Quêtes 1.9.4, 22/10) : à la place « Infos sur les bases » (fiche `/base info`). **Matériel de la première base** (CRac 1.17.0, Clans 3.5.0) : une fois par clan, plan, marteau, armoire et brindilles pour une base 2 × 1 et un triangle en nid d'abeille (2 fondations + 1 triangle, 7 murs, l'encadrement de porte, 2 planchers + 1 triangle ; coûts réels + marge, `Tutoriel.kitPremiereBase`) rangés dans le coffre du clan (`BasesClans.kits`, gardé dans `crac_bases_clans`), 30 s après la création et seulement une fois le tutoriel du chef fini ; les clans déjà là le reçoivent aussi. L'ancien contenu du monde des bases est abandonné : le remettre à neuf par le workflow (case
   `reinitialiser_bases`).
 
 - **Loot** (19/10, rien testé en jeu) : armes, accessoires, pièces de l'Armurerie et composants des tables T1 à T7

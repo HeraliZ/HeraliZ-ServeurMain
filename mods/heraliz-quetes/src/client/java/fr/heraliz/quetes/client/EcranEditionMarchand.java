@@ -36,6 +36,8 @@ public final class EcranEditionMarchand extends Screen {
     private EditBox prixAjout;
     /** Écran à refaire au prochain tick (jamais au milieu d'un clic : la liste des boutons serait changée en cours de lecture). */
     private boolean aRefaire;
+    /** Aller à la dernière page au prochain rafraîchissement (après un ajout). */
+    private boolean allerFin;
 
     private EcranEditionMarchand(Reseau.Edition e) {
         super(Component.translatable("gui.heraliz_quetes.edition"));
@@ -116,6 +118,10 @@ public final class EcranEditionMarchand extends Screen {
                         Component.literal(TexteClient.tr("gui.heraliz_quetes.edition.enregistrer")), Ui.OR, enregistrer).look(HzButton.Look.PRIMARY));
             }
         } else {
+            if (allerFin) {
+                allerFin = false;
+                page = pages() - 1;
+            }
             page = Math.max(0, Math.min(page, pages() - 1));
             int n0 = page * lignesParPage();
             for (int i = n0; i < Math.min(e.articles().size(), n0 + lignesParPage()); i++) {
@@ -151,7 +157,7 @@ public final class EcranEditionMarchand extends Screen {
             Runnable ajouter = () -> {
                 long v = lire(prixAjout, 0);
                 if (v >= 1) {
-                    page = Integer.MAX_VALUE; // aller voir le nouvel article, à la fin
+                    allerFin = true; // aller voir le nouvel article, à la fin (appliqué à la reconstruction)
                     envoyer(Reseau.Modif.AJOUTER_MAIN, 0, 0, v);
                 }
             };
@@ -223,7 +229,7 @@ public final class EcranEditionMarchand extends Screen {
 
     private List<Component> vente(GuiGraphics g, Font f, int mx, int my) {
         List<Component> bulle = null;
-        int n0 = page * lignesParPage();
+        int n0 = Math.max(0, Math.min(page, pages() - 1)) * lignesParPage();
         if (e.articles().isEmpty()) {
             Ui.spaced(g, f, TexteClient.tr("gui.heraliz_quetes.edition.vide"), Ui.SMALL, px + 18, py + 56, Ui.argb(Ui.MUTED, 255), 0.4f);
         }

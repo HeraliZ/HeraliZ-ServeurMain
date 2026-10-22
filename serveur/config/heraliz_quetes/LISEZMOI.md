@@ -35,7 +35,7 @@ Se placer à l'endroit voulu, regarder dans la direction où le PNJ doit regarde
 
 **Le Commandant Varga accueille les nouveaux joueurs** (son `id` doit rester `varga`) : après la cinématique, le
 suivi à droite leur dit d'aller le voir ; tant qu'ils n'ont pas fait le tutoriel des bases, il ne leur propose que
-« Faire ma base » (pas de mission), puis il les guide à la radio pendant le tutoriel. Ses missions s'ouvrent ensuite.
+sa première mission et « Infos sur les bases » (fiche /base info). Le tutoriel des bases vient à la création d'un clan (CRac).
 Ses textes d'accueil et de radio sont dans les langues du mod (`outils/langues.py`, clés `heraliz_quetes.tuto.*`), pas
 dans `varga.json`. Le poser au spawn avant d'ouvrir le serveur : sans lui, les nouveaux ne peuvent pas commencer.
 
