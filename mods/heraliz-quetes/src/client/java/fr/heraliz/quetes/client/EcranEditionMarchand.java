@@ -34,6 +34,8 @@ public final class EcranEditionMarchand extends Screen {
     /** Action « Entrée » de chaque champ de prix. */
     private final Map<EditBox, Runnable> valider = new LinkedHashMap<>();
     private EditBox prixAjout;
+    /** Écran à refaire au prochain tick (jamais au milieu d'un clic : la liste des boutons serait changée en cours de lecture). */
+    private boolean aRefaire;
 
     private EcranEditionMarchand(Reseau.Edition e) {
         super(Component.translatable("gui.heraliz_quetes.edition"));
@@ -44,7 +46,7 @@ public final class EcranEditionMarchand extends Screen {
         Minecraft mc = Minecraft.getInstance();
         if (mc.screen instanceof EcranEditionMarchand ecran && ecran.e.pnj().equals(m.pnj())) {
             ecran.e = m;
-            ecran.rebuildWidgets();
+            ecran.aRefaire = true;
             return;
         }
         SonsUi.ouvrir(0.5F);
@@ -137,11 +139,11 @@ public final class EcranEditionMarchand extends Screen {
             // pages
             addRenderableWidget(new HzButton(px + 18, bas, 20, 18, Component.literal("◀"), Ui.ACCENT_NEUTRE, () -> {
                 page--;
-                rebuildWidgets();
+                aRefaire = true;
             })).active = page > 0;
             addRenderableWidget(new HzButton(px + 78, bas, 20, 18, Component.literal("▶"), Ui.ACCENT_NEUTRE, () -> {
                 page++;
-                rebuildWidgets();
+                aRefaire = true;
             })).active = page < pages() - 1;
             // ajouter l'objet en main
             int ax = px + 118;
@@ -165,13 +167,22 @@ public final class EcranEditionMarchand extends Screen {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        if (aRefaire) {
+            aRefaire = false;
+            rebuildWidgets();
+        }
+    }
+
+    @Override
     public boolean keyPressed(int key, int scan, int mods) {
         if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
-            for (Map.Entry<EditBox, Runnable> en : valider.entrySet()) {
-                if (en.getKey().isFocused()) {
-                    en.getValue().run();
-                    return true;
-                }
+            Runnable action = null;
+            for (Map.Entry<EditBox, Runnable> en : valider.entrySet()) if (en.getKey().isFocused()) action = en.getValue();
+            if (action != null) {
+                action.run();
+                return true;
             }
         }
         return super.keyPressed(key, scan, mods);
@@ -225,7 +236,15 @@ public final class EcranEditionMarchand extends Screen {
             g.renderItem(a.objet(), px + 40, y + 4);
             String nom = Ui.ellipsis(f, a.objet().getHoverName().getString(), Ui.BOLD, pw - 300);
             g.drawString(f, Ui.lit(nom, Ui.BOLD), px + 64, y + 4, Ui.argb(Ui.TEXT, 255), false);
-            if (a.rarete() >= 0) g.drawString(f, Ui.lit(TexteClient.tr("gui.heraliz_quetes.rarete." + a.rarete()), Ui.SMALL), px + 64, y + 14, Ui.argb(col, 255), false);
+            String sous = a.rarete() >= 0 ? TexteClient.tr("gui.heraliz_quetes.rarete." + a.rarete()) : "";
+            int faim = faim(a.objet());
+            if (faim > 0) {
+                // cuisses de la barre de faim (1 cuisse = 2 points) et prix par cuisse, pour comparer les nourritures
+                String cuisses = faim % 2 == 0 ? String.valueOf(faim / 2) : String.format(java.util.Locale.ROOT, "%.1f", faim / 2.0);
+                String parCuisse = String.format(java.util.Locale.ROOT, "%.1f", a.prix() * 2.0 / faim);
+                sous = (sous.isEmpty() ? "" : sous + " · ") + TexteClient.tr("gui.heraliz_quetes.edition.faim", cuisses, parCuisse);
+            }
+            if (!sous.isEmpty()) g.drawString(f, Ui.lit(sous, Ui.SMALL), px + 64, y + 14, Ui.argb(faim > 0 ? Ui.OK : col, 255), false);
             Ui.right(g, f, Ui.lit(TexteClient.tr("gui.heraliz_quetes.marchand.herals"), Ui.SMALL), px + pw - 18 - 170, y + 8, Ui.argb(Ui.MUTED, 255));
             if (mx >= px + 38 && mx < px + 58 && my >= y + 2 && my < y + 22) bulle = new ArrayList<>(getTooltipFromItem(Minecraft.getInstance(), a.objet()));
         }
@@ -240,6 +259,16 @@ public final class EcranEditionMarchand extends Screen {
         String txt = Ui.ellipsis(f, main.isEmpty() ? TexteClient.tr("gui.heraliz_quetes.edition.main_vide") : main.getHoverName().getString(), Ui.FONT, 118);
         g.drawString(f, Ui.lit(txt, Ui.FONT), ax + 25, bas + 5, Ui.argb(main.isEmpty() ? Ui.MUTED : Ui.TEXT, 255), false);
         return bulle;
+    }
+
+    /** Points de faim que rend l'objet (0 : pas une nourriture). */
+    private static int faim(ItemStack s) {
+        try {
+            var p = s.getItem().getFoodProperties(s, Minecraft.getInstance().player);
+            return p == null ? 0 : p.getNutrition();
+        } catch (Throwable t) {
+            return 0;
+        }
     }
 
     private List<Component> rachat(GuiGraphics g, Font f) {

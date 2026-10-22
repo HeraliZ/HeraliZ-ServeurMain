@@ -34,6 +34,7 @@
   "gui.heraliz_quetes.edition.reinitialiser": "Revenir au fichier",
   "gui.heraliz_quetes.edition.vide": "Rien en vente : prends un objet en main et ajoute-le.",
   "gui.heraliz_quetes.edition.main_vide": "Prends l'objet à ajouter en main",
+  "gui.heraliz_quetes.edition.faim": "Rend %s cuisses · %s hérals la cuisse",
   "gui.heraliz_quetes.edition.regle": "Règle %s · %s",
   "gui.heraliz_quetes.edition.aide_rachat": "Prix à l'unité en hérals · 0 = ne rachète pas cette rareté · Entrée ou Enregistrer",
   "heraliz_quetes.marchand.main_vide": "Prends en main l'objet à vendre.",

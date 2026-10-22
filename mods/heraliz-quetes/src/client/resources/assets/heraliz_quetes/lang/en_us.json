@@ -34,6 +34,7 @@
   "gui.heraliz_quetes.edition.reinitialiser": "Back to file",
   "gui.heraliz_quetes.edition.vide": "Nothing for sale: hold an item and add it.",
   "gui.heraliz_quetes.edition.main_vide": "Hold the item to add",
+  "gui.heraliz_quetes.edition.faim": "Restores %s drumsticks · %s herals each",
   "gui.heraliz_quetes.edition.regle": "Rule %s · %s",
   "gui.heraliz_quetes.edition.aide_rachat": "Unit price in herals · 0 = does not buy this rarity · Enter or Save",
   "heraliz_quetes.marchand.main_vide": "Hold the item to sell.",

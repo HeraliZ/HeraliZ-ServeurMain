@@ -52,6 +52,8 @@ TEXTES = {
     "gui.heraliz_quetes.edition.vide": ("Rien en vente : prends un objet en main et ajoute-le.", "Nothing for sale: hold an item and add it.",
                                         "Ничего не продаётся: возьмите предмет в руку и добавьте."),
     "gui.heraliz_quetes.edition.main_vide": ("Prends l'objet à ajouter en main", "Hold the item to add", "Возьмите предмет в руку"),
+    "gui.heraliz_quetes.edition.faim": ("Rend %s cuisses · %s hérals la cuisse", "Restores %s drumsticks · %s herals each",
+                                        "Восстанавливает %s ед. сытости · %s гералов за ед."),
     "gui.heraliz_quetes.edition.regle": ("Règle %s · %s", "Rule %s · %s", "Правило %s · %s"),
     "gui.heraliz_quetes.edition.aide_rachat": ("Prix à l'unité en hérals · 0 = ne rachète pas cette rareté · Entrée ou Enregistrer",
                                                "Unit price in herals · 0 = does not buy this rarity · Enter or Save",
