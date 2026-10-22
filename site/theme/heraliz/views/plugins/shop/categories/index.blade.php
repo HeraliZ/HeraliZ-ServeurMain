@@ -1,24 +1,20 @@
 @extends('layouts.app')
 
-@section('title', trans('shop::messages.title'))
+@section('title', 'Points Boutique')
 
-{{-- une seule catégorie (Points Boutique) : ses lots directement ; sinon un lien par catégorie --}}
+{{-- PB = monnaie du compte du site : les recharges sont les offres d'Azuriom (choix du moyen de paiement ensuite) --}}
 @section('content')
     @include('heraliz.boutique-entete')
 
     @php
-        $lots = $categories->count() === 1 ? \Azuriom\Plugin\Shop\Models\Package::where('is_enabled', true)->where('category_id', $categories->first()->id)->orderBy('position')->get() : null;
+        $offres = use_site_money() ? \Azuriom\Plugin\Shop\Models\Offer::where('is_enabled', true)->orderBy('price')->get() : collect();
+        $lots = $offres->map(fn ($o) => ['pb' => (int) $o->money, 'euros' => (float) $o->price, 'prix' => rtrim(rtrim(number_format((float) $o->price, 2, ',', ' '), '0'), ',').' €', 'lien' => route('shop.offers.select')])->all();
     @endphp
 
-    @if($categories->isEmpty() || ($lots !== null && $lots->isEmpty()))
-        <div class="hz-carte"><h3>La boutique ouvre bientôt</h3><p>Les Points Boutique arrivent avec /boutique en jeu. Rejoins le Discord pour être prévenu de l’ouverture.</p></div>
-    @elseif($lots !== null)
-        @include('heraliz.lots-pb', ['packages' => $lots])
+    @if(empty($lots))
+        <div class="hz-carte"><h3>La boutique ouvre bientôt</h3><p>Rejoins le Discord pour être prévenu de l’ouverture.</p></div>
     @else
-        <div class="hz-trois">
-            @foreach($categories as $c)
-                <a class="hz-carte lien" href="{{ route('shop.categories.show', $c) }}"><h3>{{ $c->name }}</h3></a>
-            @endforeach
-        </div>
+        @guest<p class="hz-note mb-3">Connecte-toi d’abord : les PB vont sur ton compte.</p>@endguest
+        @include('heraliz.lots-pb')
     @endif
 @endsection

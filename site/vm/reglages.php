@@ -97,6 +97,7 @@ const PB_EN_VENTE = false;
 const LOTS_PB = [[5, 500], [10, 1000], [20, 2150], [50, 5550], [100, 11500]];
 if (plugins()->isEnabled('shop')) {
     boutiquePB();
+    pbMonnaieDuSite();
 }
 
 // état du site, lu par le propriétaire dans le résumé de l'envoi
@@ -294,7 +295,6 @@ function boutiquePB(): void
     if (PB_EN_VENTE) {
         $Article::where('is_enabled', false)->where('name', 'like', '% PB')->update(['is_enabled' => true]);
     }
-    dire('Points Boutique : '.(PB_EN_VENTE ? 'en vente' : 'lots prêts mais pas encore en vente (en attente de /boutique en jeu)'));
 }
 
 function siteV4(): void
@@ -339,6 +339,49 @@ function siteV4(): void
     }
 
     Setting::updateSettings('heraliz.site_v4', now()->toDateString());
+}
+
+// PB = monnaie du compte du site (22/10, demande du propriétaire) : un seul porte-monnaie pour le site, le launcher et le
+// jeu (/boutique et /trade le liront par l'extension HeraliZ). Une seule fois (repère « heraliz.pb_monnaie ») : monnaie
+// « PB », boutique payée en monnaie du site, anciens lots (articles) retirés, offres de recharge créées. À chaque envoi :
+// chaque offre est proposée par chaque moyen de paiement actif (ajoutés plus tard dans l'administration).
+function pbMonnaieDuSite(): void
+{
+    $Offre = \Azuriom\Plugin\Shop\Models\Offer::class;
+    if (! class_exists($Offre)) {
+        return;
+    }
+    if (setting('heraliz.pb_monnaie') === null) {
+        Setting::updateSettings(['money' => 'PB|PB', 'shop.use_site_money' => true]);
+        $Article = \Azuriom\Plugin\Shop\Models\Package::class;
+        $Categorie = \Azuriom\Plugin\Shop\Models\Category::class;
+        foreach ($Article::where('name', 'like', '% PB')->get() as $a) {
+            $a->delete();
+        }
+        foreach ($Categorie::where('slug', 'points-boutique')->get() as $c) {
+            if ($c->packages()->count() === 0) {
+                $c->delete();
+            }
+        }
+        foreach ($Offre::all() as $o) {
+            $o->delete();
+        }
+        foreach (LOTS_PB as [$euros, $pb]) {
+            $Offre::create(colonnes('shop_offers', ['name' => number_format($pb, 0, ',', ' ').' PB', 'price' => $euros, 'money' => $pb, 'is_enabled' => true]));
+        }
+        Setting::updateSettings('heraliz.pb_monnaie', now()->toDateString());
+        dire('Points Boutique : monnaie du compte du site (offres de recharge 5 à 100 €)');
+    }
+    $Moyen = \Azuriom\Plugin\Shop\Models\Gateway::class;
+    $ids = $Offre::pluck('id')->all();
+    $moyens = 0;
+    foreach ($Moyen::all() as $g) {
+        if (method_exists($g, 'offers')) {
+            $g->offers()->syncWithoutDetaching($ids);
+            $moyens += $g->is_enabled ? 1 : 0;
+        }
+    }
+    dire('Points Boutique : '.count($ids).' recharge(s), '.($moyens ? $moyens.' moyen(s) de paiement actif(s)' : 'AUCUN moyen de paiement actif (administration → Boutique → Paiements)'));
 }
 
 function recompenseVote(): void

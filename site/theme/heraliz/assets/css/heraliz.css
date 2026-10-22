@@ -644,3 +644,8 @@ a.hz-osc:hover { border-color: var(--c); transform: translateY(-3px); }
   .hz-leg nav { position: static; display: flex; overflow-x: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .hz-ss .fl { animation: none; } .hz-lot, .hz-lot img, .hz-osc, .hz-carte.lien { transition: none; } }
+.hz-bandeau-pb { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.hz-solde { background: rgba(255,194,58,.08); border: 1px solid rgba(255,194,58,.35); border-radius: 8px; padding: 10px 16px; display: grid; }
+.hz-solde span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+.hz-solde b { font: 700 24px 'Oswald', sans-serif; color: #FFC23A; font-variant-numeric: tabular-nums; }
+.hz-solde small { font-size: 13px; color: var(--muted); }
