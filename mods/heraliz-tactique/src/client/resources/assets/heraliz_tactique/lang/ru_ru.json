@@ -37,5 +37,8 @@
   "heraliz_tactique.a_vie.texte": "Вечный предмет: на земле его может взять любой.",
   "heraliz_tactique.a_vie.non": "Нет, оставить",
   "heraliz_tactique.a_vie.oui": "Да, выбросить",
+  "heraliz_tactique.a_vie.sac_titre": "Положить в рюкзак?",
+  "heraliz_tactique.a_vie.sac_texte": "Вечный предмет: в рюкзаке он теряется вместе с рюкзаком.",
+  "heraliz_tactique.a_vie.sac_oui": "Да, положить",
   "heraliz_tactique.a_vie.touche": "Вечный предмет: его нельзя выбросить клавишей."
 }

@@ -23,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nullable;
@@ -629,6 +630,21 @@ public final class ClanService {
         return true;
     }
 
+    /** Contenu du coffre d'un clan dissous : au chef s'il est en ligne (le reste à ses pieds), sinon perdu (journal). */
+    private static void rendreCoffre(Clan c, List<ItemStack> coffre, @Nullable MinecraftServer server) {
+        if (coffre.isEmpty()) return;
+        ServerPlayer chef = server == null ? null : server.getPlayerList().getPlayer(c.chef);
+        if (chef == null) {
+            HeraliszClans.LOG.warn("[clans] dissolution de [{}] : chef hors ligne, coffre du clan perdu : {}", c.tag, coffre);
+            return;
+        }
+        for (ItemStack st : coffre) {
+            if (!chef.getInventory().add(st) && !st.isEmpty()) chef.drop(st, false);
+        }
+        chef.sendSystemMessage(Component.translatableWithFallback("msg.coffre.rendu",
+                "Le contenu du coffre du clan [%s] est dans ton inventaire.", c.tag));
+    }
+
     /** Membres dans l'ordre de remboursement : le chef, puis par grade decroissant et par anciennete. */
     private static List<UUID> ordreRemboursement(Clan c) {
         List<Membre> l = new ArrayList<>(c.membres.values());
@@ -679,6 +695,7 @@ public final class ClanService {
             c.banque = 0;
         }
         c.invitations.clear();
+        List<ItemStack> coffre = CoffreClan.vider(c.id);
         s.supprimer(c);                 // d'abord : les evenements Perdu ne trouvent plus le clan
         REFUS.remove(c.id);
         s.sauvegarderMaintenant();      // le cote debite (la banque n'existe plus)...
@@ -692,6 +709,7 @@ public final class ClanService {
                     ServerHandlers.cleEtArgs("msg.dissous", c.tag), "", null));
             ClansNet.toPlayer(m, new Packets.ClanSnapshotS2C(null));
         }
+        rendreCoffre(c, coffre, server);
         if (server != null) {
             for (Map.Entry<UUID, Long> e : verses.entrySet()) {
                 ServerPlayer b = server.getPlayerList().getPlayer(e.getKey());
@@ -1190,6 +1208,50 @@ public final class ClanService {
     }
 
     /** Fixe le niveau (1..20) et remet l'XP du niveau a 0. */
+    /**
+     * Retire un joueur de son clan, quel que soit son grade (/wipe de HeraliZ Quêtes, appelé par réflexion : ne pas
+     * renommer). Chef avec d'autres membres : la direction passe d'abord au membre suivant (grade puis ancienneté) ;
+     * chef seul : le clan est dissous (sa banque lui revient, comme une dissolution). Aucun délai pour rejoindre un
+     * clan. Renvoie faux s'il n'avait pas de clan.
+     */
+    public static boolean adminRetirer(UUID joueur, String nom) {
+        ClanStore s = store();
+        if (s == null) return false;
+        Clan c = s.clanDe(joueur);
+        if (c == null) return false;
+        if (c.estChef(joueur) || !c.estMembre(joueur)) {
+            UUID suivant = null;
+            for (UUID u : ordreRemboursement(c)) {
+                if (!u.equals(joueur) && c.estMembre(u)) {
+                    suivant = u;
+                    break;
+                }
+            }
+            if (suivant == null) {
+                dissoudre(c, "wipe");
+                return true;
+            }
+            Membre m = c.membre(suivant);
+            m.grade = Grade.CHEF;
+            m.permsJoueur.clear();
+            c.chef = suivant;
+            c.ajouterEvenement(new Evenement(now(), Evenement.Genre.TRANSFERT, m.dernierNom));
+            diffuserChat(c, "msg.transfere", m.dernierNom);
+        }
+        retirerMembre(s, c, joueur, false);
+        c.ajouterEvenement(new Evenement(now(), Evenement.Genre.DEPART, nom));
+        changement(c);
+        diffuserChat(c, "msg.quitte", nom);
+        MinecraftServer server = Sync.serveur();
+        ServerPlayer p = server == null ? null : server.getPlayerList().getPlayer(joueur);
+        if (p != null) Sync.envoyerSnapshot(p);
+        Sync.diffuserTags(c, null, p);
+        MinecraftForge.EVENT_BUS.post(new MembreQuitteEvent(c.id, joueur, false));
+        s.sauvegarderMaintenant();
+        HeraliszClans.LOG.info("[clans] {} retire de [{}] par un wipe", nom, c.tag);
+        return true;
+    }
+
     public static void adminNiveau(Clan c, int niveau) {
         c.niveau = Math.max(1, Math.min(Niveaux.MAX, niveau));
         c.xp = 0;

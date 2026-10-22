@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Table de butin d'un coffre (tirage pondere).
@@ -38,6 +39,23 @@ public final class CrateLoot {
         int r = rnd.nextInt(total);
         for (LootEntry e : entries) {
             if (!e.isValid()) continue;
+            r -= e.weight;
+            if (r < 0) return e;
+        }
+        return null;
+    }
+
+    /** Tirage pondere parmi les entrees acceptees par le filtre (caisse des emotes : emotes pas encore debloquees). */
+    @Nullable
+    public LootEntry roll(RandomSource rnd, Predicate<LootEntry> permis) {
+        int total = 0;
+        for (LootEntry e : entries) {
+            if (e.isValid() && permis.test(e)) total += e.weight;
+        }
+        if (total <= 0) return null;
+        int r = rnd.nextInt(total);
+        for (LootEntry e : entries) {
+            if (!e.isValid() || !permis.test(e)) continue;
             r -= e.weight;
             if (r < 0) return e;
         }

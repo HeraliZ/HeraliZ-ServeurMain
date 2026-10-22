@@ -1,0 +1,557 @@
+{
+  "_aide": "Caisse des emotes : fichier écrit par mods/heraliz-crates/outils/butin_spectacle.py (ne pas modifier à la main). Chaque récompense débloque une emote (commande), l'icône n'est qu'affichée dans la roue. Le tirage saute les emotes déjà débloquées ; un joueur qui les a toutes ne peut plus ouvrir de clé.",
+  "rewards": [
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:1}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bFloss",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} floss"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:2}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bGriddy",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} griddy"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:3}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bMoonwalk",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} moonwalk"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:4}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bTake the L",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} take_the_l"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:5}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bDab",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} dab"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:6}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bMacarena",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} macarena"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:7}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bYMCA",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} ymca"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:8}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bDisco Fever",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} disco"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:9}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bHeadspin",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} headspin"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:10}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bLa chenille",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} worm"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:11}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dCaddie",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} shopping_cart"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:12}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bBallerine",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} ballerina"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:13}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dGuitariste",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} guitar"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:14}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dDJ",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} dj"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:15}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dVioloniste",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} violin"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:16}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dMaracas",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} maracas"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:17}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dChef d'orchestre",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} conductor"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:18}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dCorne de chèvre",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} horn"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:19}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dConfettis",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} confetti"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:20}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dBoxe",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} boxing"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:21}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dMagicien",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} magician"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:22}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dJonglage",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} juggling"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:23}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bRévérence",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} bow"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:24}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dBisou",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} kiss"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:25}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bBof...",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} shrug"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:26}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bFacepalm",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} facepalm"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:27}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dRéflexion",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} thinking"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:28}",
+      "count": 1,
+      "weight": 30,
+      "rarity": "rare",
+      "name": "&bChut !",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} shh"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:29}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dEn colère",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} angry"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:30}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dTerrifié",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} scared"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:31}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dUne rose pour toi",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} rose"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:32}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dPleurer",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} crying"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:33}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dApplaudir",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} clap"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:34}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dCâlin",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} hug"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:35}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dHaltérophilie",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} weightlifting"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:36}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dJongles",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} football"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:37}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dBasket",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} basketball"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:38}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dCorde à sauter",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} jump_rope"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:39}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dHula hoop",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} hula_hoop"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:40}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dSalto arrière",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} backflip"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:41}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dPianiste",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} piano"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:42}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dChef cuisinier",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} chef"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:43}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dUn cadeau !",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} gift"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:44}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dJoyeux anniversaire",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} birthday"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:45}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dPom-pom girl",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} cheerleader"
+      ]
+    },
+    {
+      "item": "heraliz_emote:icone",
+      "nbt": "{CustomModelData:46}",
+      "count": 1,
+      "weight": 20,
+      "rarity": "epic",
+      "name": "&dJe t'aime",
+      "give_item": false,
+      "commands": [
+        "emote debloquer {player} love_sign"
+      ]
+    }
+  ]
+}

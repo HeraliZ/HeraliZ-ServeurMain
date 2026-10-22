@@ -342,6 +342,10 @@
 	#téléportation jamais confirmée, inondation de paquets, pings ignorés 30 s alors que le
 	#client bouge (latence simulée), réponses à des pings jamais envoyés.
 	badPackets = true
+	#Speed : marge par tick (blocs) ajoutée au maximum physique avant de compter un dépassement
+	#(0,06 : un pas de 0,35 passe là où le maximum est 0,29).
+	#Range: 0.0 ~ 0.5
+	speedMarginPerTick = 0.06
 	#La vitesse maximale est recalculée à chaque tick avec la physique de vanilla : vitesse du
 	#joueur (effets, objets et armures de mods compris), sprint, sauts, glace, plafond bas, reculs et
 	#explosions avec leur valeur exacte, poussée des mobs. On ne peut pas accumuler d'élan en trichant

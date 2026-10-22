@@ -62,6 +62,7 @@ final class Catalogue {
                 erreurs.add(f.getFileName() + " : " + ex.getMessage());
             }
         }
+        EditionMarchands.appliquer(m, erreurs);
         pnj = Map.copyOf(m);
         Marchands.oublierCache();
         LOG.info("[heraliz_quetes] {} PNJ chargés ({} quêtes de suite, {} modèles de contrats){}", m.size(),

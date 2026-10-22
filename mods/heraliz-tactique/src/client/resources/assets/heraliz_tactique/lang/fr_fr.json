@@ -37,5 +37,8 @@
   "heraliz_tactique.a_vie.texte": "Objet à vie : au sol, n'importe qui peut le prendre.",
   "heraliz_tactique.a_vie.non": "Non, le garder",
   "heraliz_tactique.a_vie.oui": "Oui, jeter",
+  "heraliz_tactique.a_vie.sac_titre": "Mettre dans le sac ?",
+  "heraliz_tactique.a_vie.sac_texte": "Objet à vie : dans un sac, il est perdu avec le sac.",
+  "heraliz_tactique.a_vie.sac_oui": "Oui, le ranger",
   "heraliz_tactique.a_vie.touche": "Objet à vie : il ne se jette pas avec la touche de jet."
 }

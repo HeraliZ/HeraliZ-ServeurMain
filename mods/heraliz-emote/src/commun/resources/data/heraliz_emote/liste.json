@@ -1,0 +1,326 @@
+{
+ "emotes": [
+  {
+   "id": "floss",
+   "uuid": "ca7be62b-b20d-50a5-bacd-f27bc43400d4",
+   "nom": "Floss",
+   "accessoires": false,
+   "modele": 1
+  },
+  {
+   "id": "griddy",
+   "uuid": "6e78adda-3a96-5d5a-9bcb-a3b92cde6d3a",
+   "nom": "Griddy",
+   "accessoires": false,
+   "modele": 2
+  },
+  {
+   "id": "moonwalk",
+   "uuid": "c6fb2664-a276-511a-bfd8-8bcd9f77ee00",
+   "nom": "Moonwalk",
+   "accessoires": false,
+   "modele": 3
+  },
+  {
+   "id": "take_the_l",
+   "uuid": "d187e2f2-4272-5f13-be56-faf951a158bd",
+   "nom": "Take the L",
+   "accessoires": false,
+   "modele": 4
+  },
+  {
+   "id": "dab",
+   "uuid": "a66c87d7-9799-5165-8881-02b026a0c5ba",
+   "nom": "Dab",
+   "accessoires": false,
+   "modele": 5
+  },
+  {
+   "id": "macarena",
+   "uuid": "ba81df90-5771-54e1-a648-35255cd0249a",
+   "nom": "Macarena",
+   "accessoires": false,
+   "modele": 6
+  },
+  {
+   "id": "ymca",
+   "uuid": "76827ed4-b615-5288-8b22-0b44a5c21c8f",
+   "nom": "YMCA",
+   "accessoires": false,
+   "modele": 7
+  },
+  {
+   "id": "disco",
+   "uuid": "478041b0-1f8c-5fc9-85b9-6eb1b05c34a8",
+   "nom": "Disco Fever",
+   "accessoires": false,
+   "modele": 8
+  },
+  {
+   "id": "headspin",
+   "uuid": "228e6f12-a918-5f77-be9f-defdeed1ddd0",
+   "nom": "Headspin",
+   "accessoires": false,
+   "modele": 9
+  },
+  {
+   "id": "worm",
+   "uuid": "9ac662ea-d053-5e40-9797-d942d219c2e7",
+   "nom": "La chenille",
+   "accessoires": false,
+   "modele": 10
+  },
+  {
+   "id": "shopping_cart",
+   "uuid": "11cb85db-2f1f-5e52-86f2-2204e6e86895",
+   "nom": "Caddie",
+   "accessoires": true,
+   "modele": 11
+  },
+  {
+   "id": "ballerina",
+   "uuid": "e2fe8cca-88cf-5364-aec5-f6cc06e9b045",
+   "nom": "Ballerine",
+   "accessoires": false,
+   "modele": 12
+  },
+  {
+   "id": "guitar",
+   "uuid": "222faf66-bf5c-5ba4-8cf3-6a3e65dc2b67",
+   "nom": "Guitariste",
+   "accessoires": true,
+   "modele": 13
+  },
+  {
+   "id": "dj",
+   "uuid": "deb2fc82-8112-52d5-a2e1-71507fac8408",
+   "nom": "DJ",
+   "accessoires": true,
+   "modele": 14
+  },
+  {
+   "id": "violin",
+   "uuid": "c72745fb-26f5-5bdc-ad11-13a90a6f488f",
+   "nom": "Violoniste",
+   "accessoires": true,
+   "modele": 15
+  },
+  {
+   "id": "maracas",
+   "uuid": "c346efa7-6090-574e-85a7-1bd46e02f8c5",
+   "nom": "Maracas",
+   "accessoires": true,
+   "modele": 16
+  },
+  {
+   "id": "conductor",
+   "uuid": "16bf45da-9b18-5b76-a87d-f3ed61dd16ab",
+   "nom": "Chef d'orchestre",
+   "accessoires": true,
+   "modele": 17
+  },
+  {
+   "id": "horn",
+   "uuid": "f2571cba-0660-53fe-94b0-cb67fb23dcda",
+   "nom": "Corne de chèvre",
+   "accessoires": true,
+   "modele": 18
+  },
+  {
+   "id": "confetti",
+   "uuid": "6da73a36-2edc-59d8-a7b0-a9e3eca5d34a",
+   "nom": "Confettis",
+   "accessoires": true,
+   "modele": 19
+  },
+  {
+   "id": "boxing",
+   "uuid": "48ddf85b-be27-5e13-909c-2c3c5bc82d26",
+   "nom": "Boxe",
+   "accessoires": true,
+   "modele": 20
+  },
+  {
+   "id": "magician",
+   "uuid": "314a697e-1b66-58c5-88c8-4cca7bc76427",
+   "nom": "Magicien",
+   "accessoires": true,
+   "modele": 21
+  },
+  {
+   "id": "juggling",
+   "uuid": "f9938874-446a-5a23-aae7-392993a66ac0",
+   "nom": "Jonglage",
+   "accessoires": true,
+   "modele": 22
+  },
+  {
+   "id": "bow",
+   "uuid": "fc60552e-0805-5cd7-b5ed-d0cb8d7da4b6",
+   "nom": "Révérence",
+   "accessoires": false,
+   "modele": 23
+  },
+  {
+   "id": "kiss",
+   "uuid": "3f1edd2a-8360-5dca-8230-e22403882ee9",
+   "nom": "Bisou",
+   "accessoires": true,
+   "modele": 24
+  },
+  {
+   "id": "shrug",
+   "uuid": "82740a81-5df8-5e7d-befa-fd0bfea3668c",
+   "nom": "Bof...",
+   "accessoires": false,
+   "modele": 25
+  },
+  {
+   "id": "facepalm",
+   "uuid": "1ae7397e-1758-5bd1-b80c-2eec9696b2f5",
+   "nom": "Facepalm",
+   "accessoires": false,
+   "modele": 26
+  },
+  {
+   "id": "thinking",
+   "uuid": "db1c937e-8881-58d8-a467-aeff988020a4",
+   "nom": "Réflexion",
+   "accessoires": true,
+   "modele": 27
+  },
+  {
+   "id": "shh",
+   "uuid": "955666cd-eab3-5990-8772-ace809737a87",
+   "nom": "Chut !",
+   "accessoires": false,
+   "modele": 28
+  },
+  {
+   "id": "angry",
+   "uuid": "22abf9fb-718b-5934-b891-d3631b8abee9",
+   "nom": "En colère",
+   "accessoires": true,
+   "modele": 29
+  },
+  {
+   "id": "scared",
+   "uuid": "2faf33f1-432d-52fc-a7a8-844d0b9bf119",
+   "nom": "Terrifié",
+   "accessoires": true,
+   "modele": 30
+  },
+  {
+   "id": "rose",
+   "uuid": "fedd3afb-39ff-54b4-ba0e-b58315a0ce74",
+   "nom": "Une rose pour toi",
+   "accessoires": true,
+   "modele": 31
+  },
+  {
+   "id": "crying",
+   "uuid": "af4b3eaa-0f1b-5acb-8312-034502769fe8",
+   "nom": "Pleurer",
+   "accessoires": true,
+   "modele": 32
+  },
+  {
+   "id": "clap",
+   "uuid": "abe92492-21f7-504b-9945-0735434ce395",
+   "nom": "Applaudir",
+   "accessoires": true,
+   "modele": 33
+  },
+  {
+   "id": "hug",
+   "uuid": "e64ffc49-366a-5eef-9876-6bb4187cb400",
+   "nom": "Câlin",
+   "accessoires": true,
+   "modele": 34
+  },
+  {
+   "id": "weightlifting",
+   "uuid": "16e6df58-7d7b-5967-993e-e255f1c9c72a",
+   "nom": "Haltérophilie",
+   "accessoires": true,
+   "modele": 35
+  },
+  {
+   "id": "football",
+   "uuid": "62562b71-fb5e-5466-ba7f-6b7138ce152c",
+   "nom": "Jongles",
+   "accessoires": true,
+   "modele": 36
+  },
+  {
+   "id": "basketball",
+   "uuid": "b25dae45-a5ab-5e9a-9e13-10830c0a7718",
+   "nom": "Basket",
+   "accessoires": true,
+   "modele": 37
+  },
+  {
+   "id": "jump_rope",
+   "uuid": "050fc557-a0ba-5a6b-beb6-e042254d08f3",
+   "nom": "Corde à sauter",
+   "accessoires": true,
+   "modele": 38
+  },
+  {
+   "id": "hula_hoop",
+   "uuid": "ea2970df-5d1d-556a-bd45-ba42359ed4d9",
+   "nom": "Hula hoop",
+   "accessoires": true,
+   "modele": 39
+  },
+  {
+   "id": "backflip",
+   "uuid": "737b28b5-f6da-5950-a349-f2cf74507e55",
+   "nom": "Salto arrière",
+   "accessoires": true,
+   "modele": 40
+  },
+  {
+   "id": "piano",
+   "uuid": "47d06e64-633a-59a7-b7fc-8fed3c1a5a8f",
+   "nom": "Pianiste",
+   "accessoires": true,
+   "modele": 41
+  },
+  {
+   "id": "chef",
+   "uuid": "27665eac-dd56-54a1-a254-d1cb813169a5",
+   "nom": "Chef cuisinier",
+   "accessoires": true,
+   "modele": 42
+  },
+  {
+   "id": "gift",
+   "uuid": "05194852-2337-5261-b3c5-117e84ca5010",
+   "nom": "Un cadeau !",
+   "accessoires": true,
+   "modele": 43
+  },
+  {
+   "id": "birthday",
+   "uuid": "1a2063b6-b4bd-58a0-99ef-e0626938c762",
+   "nom": "Joyeux anniversaire",
+   "accessoires": true,
+   "modele": 44
+  },
+  {
+   "id": "cheerleader",
+   "uuid": "52084bb0-7578-51d1-8f16-efde10d8e86d",
+   "nom": "Pom-pom girl",
+   "accessoires": true,
+   "modele": 45
+  },
+  {
+   "id": "love_sign",
+   "uuid": "3f567c10-6a95-5222-aa57-786a6fcf6366",
+   "nom": "Je t'aime",
+   "accessoires": true,
+   "modele": 46
+  }
+ ]
+}

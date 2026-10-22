@@ -42,11 +42,13 @@ public final class HeralizEmoteClient {
             EmoteSounds.tick();
             EmoteMotion.tick();
             ClientRules.tick();
+            CameraEmote.tick();
             Minecraft mc = Minecraft.getInstance();
             while (HeralizKeys.OPEN_MENU.consumeClick()) {
                 if (mc.screen == null && mc.player != null) mc.setScreen(new EmoteBrowserScreen());
             }
         });
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, TickEvent.RenderTickEvent.class, CameraEmote::image);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderNameTagEvent.class, EmotePreview::onNameTag);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlaySoundEvent.class, EmoteAudio::onPlaySound);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ScreenEvent.Init.Post.class, EmoteAudio::onScreenInit);

@@ -23,7 +23,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
  * heraliz_tactique:a_vie, même version exigée des deux côtés.
  */
 public final class ObjetsAVie {
-   private static final String VERSION = "1";
+   private static final String VERSION = "2";
    public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(
       new ResourceLocation(HeralizTactique.MODID, "a_vie"), () -> VERSION, VERSION::equals, VERSION::equals);
 

@@ -102,9 +102,11 @@ public class CrateBlockEntityServeur extends CrateBlockEntity {
             return;
         }
         CrateLoot loot = LootManager.get(type);
-        LootEntry win = loot.roll(level.random);
+        LootEntry win = loot.roll(level.random, fr.heraliz.crates.loot.EmotesCaisse.permis(player, type));
         if (win == null) {
-            player.displayClientMessage(Component.translatable("message.heralizcrates.empty").withStyle(ChatFormatting.RED), false);
+            // caisse des emotes : il a deja toutes celles qu'elle peut donner (la cle n'est pas consommee)
+            player.displayClientMessage(Component.translatable(type == fr.heraliz.crates.crate.CrateType.SPECTACLE && !loot.isEmpty()
+                    ? "message.heralizcrates.all_emotes" : "message.heralizcrates.empty").withStyle(ChatFormatting.RED), false);
             return;
         }
         RandomSource rnd = level.random;

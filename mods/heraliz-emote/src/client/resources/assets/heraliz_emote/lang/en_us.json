@@ -62,5 +62,19 @@
   "heraliz_emote.menu.off": "Off: you only hear your own",
   "heraliz_emote.config.section": "Settings",
   "heraliz_emote.config.unit_blocks": "blocks",
-  "heraliz_emote.config.unit_seconds": "s"
+  "heraliz_emote.config.unit_seconds": "s",
+  "heraliz_emote.refused.locked": "Emote to unlock in the emote crate",
+  "heraliz_emote.no_weapon": "No weapons after an emote (%s s left)",
+  "heraliz_emote.menu.locked_btn": "Unlock in the emote crate",
+  "heraliz_emote.menu.locked_tip": "To unlock in the emote crate",
+  "heraliz_emote.cmd.tout": "%s: %s emote(s) unlocked",
+  "heraliz_emote.cmd.complet": "%s already has every emote",
+  "heraliz_emote.cmd.debloquee": "%s: emote \"%s\" unlocked",
+  "heraliz_emote.cmd.deja": "%s already has the emote \"%s\"",
+  "heraliz_emote.cmd.tout_retire": "%s: %s emote(s) removed",
+  "heraliz_emote.cmd.retiree": "%s: emote \"%s\" removed",
+  "heraliz_emote.cmd.pas": "%s does not have the emote \"%s\"",
+  "heraliz_emote.cmd.voir": "%s: %s / %s emotes: %s",
+  "heraliz_emote.cmd.inconnue": "Unknown emote: %s",
+  "item.heraliz_emote.icone": "Emote"
 }

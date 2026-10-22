@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.crac.client.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "crac.refmap.json",
+  "client": [
+    "TexteLisseMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

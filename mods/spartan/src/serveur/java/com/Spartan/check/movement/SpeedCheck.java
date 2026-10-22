@@ -43,7 +43,10 @@ public class SpeedCheck extends MovementCheck {
             w.clear();
             return;
         }
-        double over = w.add(m.excessH(), s.ticks(), SpartanConfig.SPEED_TOLERANCE.get());
+        // Marge par tick : un pas un peu au-dessus du maximum (saut depuis un bord, 0,31 pour 0,29)
+        // n'est plus compté ; un speed hack la dépasse largement.
+        double marge = SpartanConfig.SPEED_MARGIN_PER_TICK.get() * Math.max(1, s.ticks());
+        double over = w.add(m.excessH() - marge, s.ticks(), SpartanConfig.SPEED_TOLERANCE.get());
         if (over > 0) {
             flag(p, String.format("%.2f bloc(s) de plus que le maximum physique en ~1 s (dernier pas : %.2f bloc, "
                     + "maximum %.2f%s)", over, s.horizontal(), m.allowedH(),

@@ -21,7 +21,7 @@ import java.util.List;
 public final class BanqueTab extends Tab {
     private static final int LIGNE = 13, GAUCHE = 200;
     private HzField montant;
-    private HzButton deposer, retirer;
+    private HzButton deposer, retirer, coffre;
 
     @Override
     protected void construire() {
@@ -37,6 +37,13 @@ public final class BanqueTab extends Tab {
         retirer = new HzButton(x + 64, y + 72, 60, 14, Component.translatable("banque.retirer"), accent, () -> envoyerMontant(false)).look(HzButton.Look.LINK);
         ecran.ajouter(deposer);
         ecran.ajouter(retirer);
+        // coffre du clan (3.5.0) : une ligne de cases, ouverte par le serveur (écran de coffre de Minecraft)
+        coffre = new HzButton(x, y + 124, 124, 16, Component.translatable("gui.banque.coffre"), accent, () -> {
+            Ui.son(Sons.BANQUE, 0.5f);
+            envoyer(new Packets.SimpleC2S(Packets.SimpleC2S.Genre.COFFRE));
+        });
+        coffre.active = s.jePeux(Perm.BANQUE_DEPOSER) || s.jePeux(Perm.BANQUE_RETIRER);
+        ecran.ajouter(coffre);
         majBoutons();
         if (s.jePeux(Perm.BANQUE_JOURNAL)) {
             Liste liste = new Liste(x + GAUCHE + 24, y + 14, w - GAUCHE - 24, h - 14);
@@ -87,6 +94,7 @@ public final class BanqueTab extends Tab {
         if (!s.jePeux(Perm.BANQUE_RETIRER)) {
             g.drawString(font, Ui.tr(Ui.SMALL, "gui.banque.retrait_reserve"), x, y + 106, Ui.argb(Ui.FAINT, 255), false);
         }
+        g.drawString(font, Ui.tr(Ui.SMALL, "gui.banque.coffre_aide"), x, y + 144, Ui.argb(Ui.FAINT, 255), false);
         // separateur vertical doux
         g.fill(x + GAUCHE + 8, y, x + GAUCHE + 9, y + h, Ui.argb(0xFFFFFF, 14));
         // journal

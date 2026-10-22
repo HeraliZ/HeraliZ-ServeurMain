@@ -58,6 +58,7 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.BooleanValue CHECK_BADPACKETS;
     public static final ForgeConfigSpec.BooleanValue CHECK_SPEED;
     public static final ForgeConfigSpec.DoubleValue SPEED_TOLERANCE;
+    public static final ForgeConfigSpec.DoubleValue SPEED_MARGIN_PER_TICK;
     public static final ForgeConfigSpec.BooleanValue CHECK_REACH;
     public static final ForgeConfigSpec.DoubleValue REACH_DISTANCE;
     public static final ForgeConfigSpec.BooleanValue CHECK_KILLAURA;
@@ -267,6 +268,10 @@ public class SpartanConfig {
 
         CHECK_SPEED = b.comment("Détection de vitesse horizontale anormale (côté serveur).")
                 .define("speed", true);
+        SPEED_MARGIN_PER_TICK = b.comment(
+                "Speed : marge par tick (blocs) ajoutée au maximum physique avant de compter un dépassement",
+                "(0,06 : un pas de 0,35 passe là où le maximum est 0,29).")
+                .defineInRange("speedMarginPerTick", 0.06, 0.0, 0.5);
         SPEED_TOLERANCE = b.comment(
                 "La vitesse maximale est recalculée à chaque tick avec la physique de vanilla : vitesse du",
                 "joueur (effets, objets et armures de mods compris), sprint, sauts, glace, plafond bas, reculs et",

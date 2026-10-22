@@ -62,5 +62,19 @@
   "heraliz_emote.menu.off": "Выкл.: ты слышишь только свои",
   "heraliz_emote.config.section": "Настройки",
   "heraliz_emote.config.unit_blocks": "блоков",
-  "heraliz_emote.config.unit_seconds": "с"
+  "heraliz_emote.config.unit_seconds": "с",
+  "heraliz_emote.refused.locked": "Эмоцию нужно открыть в ящике эмоций",
+  "heraliz_emote.no_weapon": "Нельзя брать оружие после эмоции (ещё %s с)",
+  "heraliz_emote.menu.locked_btn": "Открыть в ящике эмоций",
+  "heraliz_emote.menu.locked_tip": "Нужно открыть в ящике эмоций",
+  "heraliz_emote.cmd.tout": "%s: открыто эмоций: %s",
+  "heraliz_emote.cmd.complet": "У %s уже есть все эмоции",
+  "heraliz_emote.cmd.debloquee": "%s: эмоция «%s» открыта",
+  "heraliz_emote.cmd.deja": "У %s уже есть эмоция «%s»",
+  "heraliz_emote.cmd.tout_retire": "%s: убрано эмоций: %s",
+  "heraliz_emote.cmd.retiree": "%s: эмоция «%s» убрана",
+  "heraliz_emote.cmd.pas": "У %s нет эмоции «%s»",
+  "heraliz_emote.cmd.voir": "%s: %s / %s эмоций: %s",
+  "heraliz_emote.cmd.inconnue": "Неизвестная эмоция: %s",
+  "item.heraliz_emote.icone": "Эмоция"
 }

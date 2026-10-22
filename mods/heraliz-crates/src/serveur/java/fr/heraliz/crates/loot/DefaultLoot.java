@@ -223,6 +223,18 @@ final class DefaultLoot {
                 l.add(e("minecraft:totem_of_undying", 1, 3, LEGENDARY));
                 l.get(0).weight += TOTAL - total(l);
             }
+            // caisse des emotes : une recompense par emote de HeraliZ Emote (debloquee par commande, rien dans l'inventaire) ;
+            // celles qui ont des accessoires (objets 3D, particules) sont un peu plus rares. Fichier du serveur :
+            // outils/butin_spectacle.py. Le tirage saute celles que le joueur a deja (EmotesCaisse).
+            case SPECTACLE -> {
+                int rang = 0;
+                for (String[] em : EmotesCaisse.toutes()) {
+                    boolean acc = em.length > 2 && "1".equals(em[2]);
+                    // icone de l'emote (heraliz_emote:icone, CustomModelData = rang + 1, comme liste.json)
+                    l.add(e("heraliz_emote:icone", 1, acc ? 20 : 30, acc ? EPIC : RARE).nbt("{CustomModelData:" + (++rang) + "}")
+                            .name((acc ? "&d" : "&b") + em[1]).command(EmotesCaisse.COMMANDE + em[0]).noItem());
+                }
+            }
             // caisse Largage : ravitaillement militaire. Munitions TaCZ et grenades (courant), armes de poing, puis
             // PM, fusils a pompe, fusils d'assaut, precision et armes lourdes (minigun et RPG-7 : 0,1 %)
             case LARGAGE -> {

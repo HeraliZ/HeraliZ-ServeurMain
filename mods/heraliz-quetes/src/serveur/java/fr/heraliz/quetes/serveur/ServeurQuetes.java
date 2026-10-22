@@ -48,6 +48,7 @@ public final class ServeurQuetes implements Partie {
         Reseau.ACTION.brancher(r -> action(r.joueur(), r.message()));
         Reseau.ACHAT.brancher(r -> Marchands.achat(r.joueur(), r.message()));
         Reseau.VENTE.brancher(r -> Marchands.vente(r.joueur(), r.message()));
+        Reseau.MODIF.brancher(r -> EditionMarchands.modif(r.joueur(), r.message()));
         Reseau.CODE.brancher(r -> Moteur.code(r.joueur(), r.message().point(), r.message().code()));
 
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::demarrage);
@@ -66,6 +67,7 @@ public final class ServeurQuetes implements Partie {
     private static void demarrage(ServerStartedEvent e) {
         Moteur.demarrer(e.getServer());
         Donnees.demarrer(e.getServer().getServerDirectory().toPath());
+        EditionMarchands.demarrer(e.getServer().getServerDirectory().toPath());
         Catalogue.charger();
         Ponts.relireArmes();
         LUEURS.clear();

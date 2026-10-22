@@ -29,7 +29,7 @@ public abstract class ServerEmotePlayMixin {
     @Inject(method = "streamEmote", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private void heraliz$rules(NetData data, Object player, boolean isForced, boolean isFromPlayer, CallbackInfo ci) {
         if (isForced || !(player instanceof ServerPlayer sp) || data == null || data.emoteData == null) return;
-        Component why = EmoteRules.refusal(sp);
+        Component why = EmoteRules.refusal(sp, data.emoteData.getUuid());
         if (why == null) return;
         ci.cancel();
         try {

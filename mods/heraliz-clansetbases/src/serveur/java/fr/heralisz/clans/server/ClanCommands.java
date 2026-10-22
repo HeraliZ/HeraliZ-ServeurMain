@@ -172,6 +172,7 @@ public final class ClanCommands {
                                 .executes(ctx -> joueur(ctx, (p, c) -> ClanService.banque(p, true, LongArgumentType.getLong(c, "montant"))))))
                         .then(lit("retirer").then(Commands.argument("montant", LongArgumentType.longArg(1))
                                 .executes(ctx -> joueur(ctx, (p, c) -> ClanService.banque(p, false, LongArgumentType.getLong(c, "montant")))))))
+                .then(lit("coffre").executes(ctx -> joueur(ctx, (p, c) -> CoffreClan.ouvrir(p))))
                 .then(lit("info").executes(ctx -> info(ctx, null))
                         .then(mot("tag", SUGG_TAGS).executes(ctx -> info(ctx, StringArgumentType.getString(ctx, "tag")))))
                 .then(lit("top").executes(ClanCommands::top))
