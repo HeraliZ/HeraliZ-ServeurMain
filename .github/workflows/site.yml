@@ -44,6 +44,8 @@ jobs:
       SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
       SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
       SITE_BDD_MDP: ${{ secrets.SITE_BDD_MDP }}
+      SITE_ADRESSE_LEGALE: ${{ secrets.SITE_ADRESSE_LEGALE }}
+      SITE_MAIL_CONTACT: ${{ secrets.SITE_MAIL_CONTACT }}
       ACTION: ${{ inputs.action || 'theme' }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -415,6 +417,16 @@ jobs:
           cp -r site/theme envoi/theme
           cp -r site/extension envoi/extension
           cp site/vm/reglages.php site/vm/pages_legales.php envoi/vm/
+          # adresse du siège et e-mail de contact des pages légales : secrets, jamais dans le dépôt
+          python3 - <<'EOF'
+          import os, pathlib
+          p = pathlib.Path("envoi/vm/pages_legales.php"); s = p.read_text(encoding="utf-8")
+          for marque, secret, defaut in (("__ADRESSE_LEGALE__", "SITE_ADRESSE_LEGALE", "communiquée sur simple demande"),
+                                         ("__MAIL_CONTACT__", "SITE_MAIL_CONTACT", "le Discord officiel (ticket)")):
+              v = os.environ.get(secret, "").strip() or defaut
+              s = s.replace(marque, v.replace("\\", "").replace("'", "’").replace("<", "").replace(">", ""))
+          p.write_text(s, encoding="utf-8")
+          EOF
           cp launcher/app/assets/images/nouveautes/*.jpg envoi/contenu/actus/
           tar -czf theme.tgz -C envoi .
           echo "Archive du thème : $(du -h theme.tgz | cut -f1), $(find envoi -type f | wc -l) fichiers"

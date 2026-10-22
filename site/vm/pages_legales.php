@@ -11,14 +11,16 @@
  * de 10 % détruite.
  */
 
-const VERSION_PAGES = '2026-10-22';
+const VERSION_PAGES = '2026-10-23';
 const REPERE_PAGES = '<!-- heraliz-pages:';
 
 function pagesLegales(): array
 {
-    $maj = REPERE_PAGES.VERSION_PAGES.' --><p><em>Dernière mise à jour : 22 octobre 2026.</em></p>';
-    $editeur = '[nom ou raison sociale de l’éditeur]';
-    $mail = '[adresse e-mail de contact]';
+    $maj = REPERE_PAGES.VERSION_PAGES.' --><p><em>Dernière mise à jour : 23 octobre 2026.</em></p>';
+    $editeur = 'la société HeraliZ (personne morale en cours de création)';
+    // adresse postale et e-mail : secrets GitHub SITE_ADRESSE_LEGALE et SITE_MAIL_CONTACT, posés à l'envoi (jamais dans le dépôt)
+    $adresse = '__ADRESSE_LEGALE__';
+    $mail = '__MAIL_CONTACT__';
 
     $cgu = $maj
         .'<h2>1. Objet</h2><p>Les présentes conditions générales d’utilisation (CGU) encadrent l’accès au site heraliz.fr (« le Site »), au launcher HeraliZ (« le Launcher ») et au serveur Minecraft HeraliZ (« le Serveur »), ensemble « les Services ». Créer un compte, lancer le Launcher ou se connecter au Serveur vaut acceptation pleine et entière des CGU, des Conditions de vente et du Règlement du Serveur.</p>'
@@ -47,11 +49,11 @@ function pagesLegales(): array
         .'<h2>10. Contestation de paiement et fraude</h2><p>Toute contestation de paiement abusive (« chargeback ») ou tout paiement frauduleux entraîne le retrait des PB et contenus concernés (y compris ceux déjà échangés ou dépensés) et le bannissement définitif des comptes liés, sans préjudice de poursuites.</p>'
         .'<h2>11. Mineurs</h2><p>Un mineur doit avoir l’autorisation de son représentant légal avant tout achat ; l’achat est réputé fait avec cet accord.</p>'
         .'<h2>12. Créations sur mesure</h2><p>Emotes, skins et finishers personnalisés (joueur ou clan) sont faits sur devis après échange sur Discord, dans les limites techniques de Minecraft. Le rendu peut différer de l’exemple. Une fois le travail commencé, aucun remboursement. Les créations restent la propriété d’HeraliZ, qui en concède l’usage sur le Serveur.</p>'
-        .'<h2>13. Responsabilité, modifications, litiges</h2><p>La responsabilité d’HeraliZ est limitée au montant payé pour la commande concernée. Les CGV applicables sont celles en vigueur au jour de l’achat. Droit français ; solution amiable recherchée d’abord ; médiateur de la consommation gratuit : [nom et site du médiateur].</p>';
+        .'<h2>13. Responsabilité, modifications, litiges</h2><p>La responsabilité d’HeraliZ est limitée au montant payé pour la commande concernée. Les CGV applicables sont celles en vigueur au jour de l’achat. Droit français ; solution amiable recherchée d’abord ; médiateur de la consommation gratuit : désigné dès l’immatriculation de la société et indiqué ici ; en attendant, la plateforme européenne de règlement des litiges en ligne reste ouverte.</p>';
 
     $mentions = $maj
-        .'<h2>Éditeur</h2><p>[Nom et prénom, ou raison sociale et forme juridique]<br>[Adresse postale]<br>[SIREN / RCS le cas échéant]<br>Contact : '.$mail.' · Discord : discord.gg/heraliz<br>Directeur de la publication : [nom].</p>'
-        .'<h2>Hébergement</h2><p>Site : [nom de l’hébergeur, adresse, téléphone].<br>Serveur de jeu : [nom de l’hébergeur, adresse, téléphone].</p>'
+        .'<h2>Éditeur</h2><p>HeraliZ, société en cours de création (personne morale en formation, forme juridique et capital précisés à l’immatriculation)<br>Siège : '.$adresse.'<br>SIREN / RCS : en cours d’immatriculation<br>Contact : '.$mail.' · Discord : discord.gg/heraliz<br>Directeur de la publication : le représentant légal de la société HeraliZ.</p>'
+        .'<h2>Hébergement</h2><p>Site : serveur privé virtuel loué par HeraliZ ; coordonnées complètes de l’hébergeur communiquées sur simple demande à '.$mail.'.<br>Serveur de jeu : serveur dédié loué par HeraliZ ; coordonnées de l’hébergeur sur simple demande.</p>'
         .'<h2>Propriété intellectuelle</h2><p>Textes, images, logos, modèles et créations d’HeraliZ sont protégés ; toute reproduction sans autorisation est interdite. Les contenus des autres auteurs restent les leurs. HeraliZ n’est ni affilié à, ni approuvé par Mojang Studios ou Microsoft. Site propulsé par Azuriom.</p>';
 
     $confidentialite = $maj
@@ -107,7 +109,7 @@ function majPagesLegales(): void
         }
         $c = (string) $page->content;
         $vierge = str_contains($c, REPERE_PAGES)
-            ? ! str_contains($c, REPERE_PAGES.VERSION_PAGES) && str_contains($c, '[adresse e-mail de contact]')
+            ? ! str_contains($c, REPERE_PAGES.VERSION_PAGES) && (str_contains($c, '[adresse e-mail de contact]') || str_contains($c, 'personne morale en cours de création'))
             : str_contains($c, '[date de mise en ligne]');
         if ($vierge) {
             $page->update(['title' => $titre, 'description' => $resume, 'content' => $texte]);
