@@ -861,12 +861,24 @@ public final class RotationLoot extends SavedData {
             return;
         }
         if (a.contenu == null) {
+            // salle à carte : la première ouverture depuis sa recharge rapporte les points de la salle (saison des clans)
+            String salle = null;
+            if (a.zone.startsWith(PREFIXE_SALLE)) {
+                boolean premiere = true;
+                for (Actif x : e.actifs.values()) {
+                    if (x != a && x.contenu != null && a.zone.equals(x.zone)) { premiere = false; break; }
+                }
+                Salle s = e.salles.get(a.zone.substring(PREFIXE_SALLE.length()));
+                if (premiere && s != null) salle = SaisonLoot.salle(s.nom());
+            }
             // contenu tiré à la première ouverture : avec le bonus de loot de celui qui ouvre
             int bonus = BonusLoot.pourcent(p);
             a.contenu = e.remplir(k, cb.nom, l.random, bonus);
             e.tires.add(k);
             e.setDirty();
             BonusLoot.annoncer(p, bonus);
+            SaisonLoot.conteneur(p, ConteneurBlock.palier(cb.nom));
+            if (salle != null) SaisonLoot.pve(p, salle);
         }
         Inventaire inv = a.contenu;
         boolean premier = !e.regarde(inv, p);

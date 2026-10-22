@@ -62,6 +62,7 @@ public final class ServeurQuetes implements Partie {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, ServeurQuetes::clicBloc);
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::tickJoueur);
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::tickServeur);
+        MinecraftForge.EVENT_BUS.addListener(SaisonQuetes::ramassage);
     }
 
     private static void demarrage(ServerStartedEvent e) {
@@ -96,6 +97,7 @@ public final class ServeurQuetes implements Partie {
         Moteur.oublier(e.getEntity().getUUID());
         Marchands.oublier(e.getEntity().getUUID());
         Accueil.oublier(e.getEntity().getUUID());
+        SaisonQuetes.oublier(e.getEntity().getUUID());
         Donnees.liberer(e.getEntity().getUUID());
     }
 
@@ -138,6 +140,7 @@ public final class ServeurQuetes implements Partie {
         if (e.phase != TickEvent.Phase.END || Moteur.serveur == null || !(e.player instanceof ServerPlayer p)) return;
         int t = p.tickCount;
         if (t % 10 == 0) Moteur.tick(p);
+        if (t % 10 == 3) SaisonQuetes.fabrication(p);
         if (t % 20 == 5) {
             Donnees.DJoueur j = Donnees.de(p.getUUID());
             if (!j.suivie.isEmpty()) Moteur.suiviBientot(p);

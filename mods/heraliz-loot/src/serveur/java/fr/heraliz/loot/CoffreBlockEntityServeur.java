@@ -143,6 +143,7 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
             int bonus = BonusLoot.pourcent(p);
             generer(bonus);
             BonusLoot.annoncer(p, bonus);
+            SaisonLoot.conteneur(p, 7);   // coffre d'événement T7 : une fois, au premier qui l'ouvre
         }
         long now = level.getGameTime();
         switch (etat) {

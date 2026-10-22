@@ -209,6 +209,8 @@ final class Moteur {
             dp.contrats++;
             j.contratsFinis++;
         } else {
+            // quête principale (suite d'un PNJ) : jamais refaite, points de saison du clan
+            if (!j.finies.contains(a.cle)) SaisonQuetes.pve(p, "quete_principale", 1);
             j.finies.add(a.cle);
             Defs.Pnj def = Catalogue.pnj(a.pnj);
             if (def != null) {

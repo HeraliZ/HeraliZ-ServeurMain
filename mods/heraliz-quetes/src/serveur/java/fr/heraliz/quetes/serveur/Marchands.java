@@ -109,20 +109,24 @@ final class Marchands {
     static void vente(ServerPlayer p, Reseau.Vente v) {
         Defs.Pnj def = verifier(p, v.entite());
         if (def == null || !def.marchand.rachat) return;
-        long total = 0;
+        long total = 0, horsBoutique = 0;
         int nombre = 0;
+        java.util.Set<String> vendus = SaisonQuetes.vendus();
         for (int c : new LinkedHashSet<>(v.cases())) {
             if (c < 0 || c >= Reseau.CASES) continue;
             ItemStack s = p.getInventory().items.get(c);
             long u = prixRachat(def.marchand, s);
             if (u <= 0) continue;
             total += u * s.getCount();
+            if (!SaisonQuetes.vendu(vendus, s)) horsBoutique += u * s.getCount();
             nombre += s.getCount();
             p.getInventory().items.set(c, ItemStack.EMPTY);
         }
         if (nombre == 0) return;
         if (!Ponts.deposer(p.getUUID(), total, "vente:" + def.id)) {
             LOG.error("[heraliz_quetes] vente de {} : {} hérals NON versés (économie absente)", p.getGameProfile().getName(), total);
+        } else {
+            SaisonQuetes.vente(p, horsBoutique);
         }
         p.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
         Moteur.notif(p, Texte.cle("heraliz_quetes.notif.vendu", Texte.brut(nombre), Texte.brut(Ponts.nombre(total))), 0xE8C36A);

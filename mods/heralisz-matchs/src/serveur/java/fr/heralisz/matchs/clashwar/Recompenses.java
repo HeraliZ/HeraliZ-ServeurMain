@@ -55,6 +55,7 @@ public final class Recompenses {
                 if (gagne) ClansApi.journal(c, "clashwar.journal.victoire", champion.libelle(), edition, t.format.nom);
                 else ClansApi.journal(c, "clashwar.journal.elimine." + meilleurTour(tab, c), edition, t.format.nom);
             }
+            saison(tab, podium, clans);
         } else {
             HeraliszMatchs.LOG.warn("[clashwar] mod clans indisponible : ni banque ni stats");
         }
@@ -64,6 +65,33 @@ public final class Recompenses {
                 if (!t.mannequins.contains(u)) CwEtat.CLES.merge(u, cfg.clesParJoueur, Integer::sum);
             }
             CwEtat.sauver(t.serveur());
+        }
+    }
+
+    /** Clans differents au moins pour que l'edition compte dans la saison (pas de tournoi entre deux clans complices). */
+    static final int SAISON_CLANS_MIN = 4;
+
+    /**
+     * Saison des clans (HeraliZ Clans 3.6.0, {@code SaisonApi.event}, par reflexion : la copie de Clans de libs/ ne l'a pas) :
+     * podium dans l'ordre, participation pour les autres clans ; bareme (et x2 du ClashWar) chez Clans.
+     */
+    private static void saison(Tableau tab, int[] podium, Set<UUID> clans) {
+        if (clans.size() < SAISON_CLANS_MIN) {
+            HeraliszMatchs.LOG.info("[clashwar] {} clan(s) seulement : pas de points de saison (au moins {})", clans.size(), SAISON_CLANS_MIN);
+            return;
+        }
+        java.util.List<UUID> ordre = new java.util.ArrayList<>();
+        for (int i : podium) {
+            if (i >= 0) ordre.add(tab.equipe(i).clan);
+        }
+        try {
+            Class.forName("fr.heralisz.clans.saison.SaisonApi")
+                    .getMethod("event", String.class, java.util.List.class, java.util.Collection.class)
+                    .invoke(null, "clashwar", ordre, clans);
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            // HeraliZ Clans sans saison : rien
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            HeraliszMatchs.LOG.warn("[clashwar] points de saison non donnes : {}", e.toString());
         }
     }
 
