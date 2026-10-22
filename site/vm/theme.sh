@@ -15,7 +15,7 @@ PACK_RESERVE=oui
 PACK_LAUNCHER_MIN=1.7.0
 # Téléchargement du launcher (heraliz.fr/telecharger/) : « ferme » le refuse à tous (403) et cache les boutons du site
 # (« Bientôt disponible ») ; « ouvert » le rend. Fermé, les launchers déjà installés ne se mettent plus à jour seuls.
-TELECHARGEMENT=ferme
+TELECHARGEMENT=ouvert
 TRAVAIL=$(mktemp -d /tmp/heraliz_site.XXXXXX)
 trap 'rm -rf "$TRAVAIL" "$ARCHIVE"' EXIT
 
