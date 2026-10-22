@@ -22,7 +22,7 @@
   "item.heraliz_quetes.registre.aide2": "Operators only",
   "heraliz_quetes.marchand.pas_marchand": "\"%s\" is not a merchant.",
   "heraliz_quetes.marchand.registre_donne": "Merchant ledger: right-click a merchant to open their editor.",
-  "heraliz_quetes.marchand.refuse": "Logged-in operators only.",
+  "heraliz_quetes.marchand.refuse": "Operators only.",
   "gui.heraliz_quetes.edition": "Merchant editor",
   "gui.heraliz_quetes.edition.vente": "Editor · what they sell",
   "gui.heraliz_quetes.edition.rachat": "Editor · what they buy",

@@ -39,7 +39,7 @@ TEXTES = {
     "heraliz_quetes.marchand.registre_donne": ("Registre du marchand : clic droit sur un marchand pour ouvrir son éditeur.",
                                                "Merchant ledger: right-click a merchant to open their editor.",
                                                "Книга торговца: ПКМ по торговцу, чтобы открыть редактор."),
-    "heraliz_quetes.marchand.refuse": ("Réservé aux op connectés.", "Logged-in operators only.", "Только для вошедших операторов."),
+    "heraliz_quetes.marchand.refuse": ("Réservé aux op.", "Operators only.", "Только для операторов."),
     "gui.heraliz_quetes.edition": ("Éditeur du marchand", "Merchant editor", "Редактор торговца"),
     "gui.heraliz_quetes.edition.vente": ("Éditeur · ce qu'il vend", "Editor · what they sell", "Редактор · что продаёт"),
     "gui.heraliz_quetes.edition.rachat": ("Éditeur · ce qu'il rachète", "Editor · what they buy", "Редактор · что скупает"),

@@ -22,7 +22,7 @@
   "item.heraliz_quetes.registre.aide2": "Только для операторов",
   "heraliz_quetes.marchand.pas_marchand": "«%s» — не торговец.",
   "heraliz_quetes.marchand.registre_donne": "Книга торговца: ПКМ по торговцу, чтобы открыть редактор.",
-  "heraliz_quetes.marchand.refuse": "Только для вошедших операторов.",
+  "heraliz_quetes.marchand.refuse": "Только для операторов.",
   "gui.heraliz_quetes.edition": "Редактор торговца",
   "gui.heraliz_quetes.edition.vente": "Редактор · что продаёт",
   "gui.heraliz_quetes.edition.rachat": "Редактор · что скупает",
