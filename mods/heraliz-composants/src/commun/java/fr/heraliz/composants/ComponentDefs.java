@@ -46,7 +46,7 @@ public final class ComponentDefs {
             new Def("bocal_poudre_ii", "munitions", HeralizRarity.RARE, 32),
             new Def("bocal_poudre_iii", "munitions", HeralizRarity.EPIC, 32),
             new Def("bocal_poudre_iv", "munitions", HeralizRarity.LEGENDARY, 32),
-            new Def("tonnelet_poudre", "munitions", HeralizRarity.COMMON, 16),
+            new Def("tonnelet_poudre", "munitions", HeralizRarity.UNCOMMON, 16),
             new Def("plaque_recyclee", "protection", HeralizRarity.UNCOMMON, 8),
             new Def("plaque_soudee", "protection", HeralizRarity.RARE, 8),
             new Def("plaque_metal", "protection", HeralizRarity.EPIC, 8),

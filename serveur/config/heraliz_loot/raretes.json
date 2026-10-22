@@ -268,7 +268,7 @@
     "heraliz_composants:bocal_poudre_ii": "rare",
     "heraliz_composants:bocal_poudre_iii": "epique",
     "heraliz_composants:bocal_poudre_iv": "legendaire",
-    "heraliz_composants:tonnelet_poudre": "commun",
+    "heraliz_composants:tonnelet_poudre": "peu_commun",
     "heraliz_composants:plaque_recyclee": "peu_commun",
     "heraliz_composants:plaque_soudee": "rare",
     "heraliz_composants:plaque_metal": "epique",
