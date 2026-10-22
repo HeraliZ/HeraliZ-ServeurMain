@@ -250,6 +250,10 @@ public final class PlacableHpManager {
         if (amount > 0 && fr.heraliz.crac.bases.Protections.baseProtegee(level, pos)) {
             return;
         }
+        // saison des clans : hors Purge, un explosif ne fait rien aux objets posés d'une base
+        if (amount > 0 && triggerRaid && fr.heraliz.crac.heraliz.Purge.raidInterdit(level, pos)) {
+            return;
+        }
         if (amount > 0) {
             BlockState state = level.getBlockState(pos);
             if (isTracked(state)) {

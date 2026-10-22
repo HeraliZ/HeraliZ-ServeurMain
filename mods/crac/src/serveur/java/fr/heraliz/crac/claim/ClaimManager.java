@@ -121,7 +121,7 @@ public final class ClaimManager {
     }
 
     public static Claim tooCloseTo(ServerLevel level, BlockPos anchor, UUID group) {
-        int maxRadius = Math.max(Config.claimRadiusL1.get(), Math.max(Config.claimRadiusL2.get(), Config.claimRadiusL3.get()));
+        int maxRadius = Math.max(Math.max(Config.claimRadiusL1.get(), Config.claimRadiusL4.get()), Math.max(Config.claimRadiusL2.get(), Config.claimRadiusL3.get()));
         int minDist = maxRadius * 2 + 1 + Config.claimSpacingMargin.get();
         for (Claim c : ClaimData.get(level).all()) {
             if (!c.groupId().equals(group)) {

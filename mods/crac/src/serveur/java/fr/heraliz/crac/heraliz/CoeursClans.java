@@ -63,6 +63,19 @@ public final class CoeursClans extends SafeSavedData {
         return l == null ? null : g;
     }
 
+    /** Le cœur du groupe n'est plus posé (repris par {@code /coeur deplacer}, clan dissous). */
+    static void oublier(MinecraftServer server, UUID groupe) {
+        CoeursClans d = get(server);
+        if (d.coeurs.remove(groupe) != null) {
+            d.setDirty();
+        }
+    }
+
+    /** Copie : groupe -> place de son cœur (places pas vérifiées). */
+    static Map<UUID, GlobalPos> tous(MinecraftServer server) {
+        return Map.copyOf(get(server).coeurs);
+    }
+
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void poser(BlockEvent.EntityPlaceEvent e) {
         if (e.isCanceled() || !(e.getPlacedBlock().getBlock() instanceof CoeurClanBlock) || !(e.getLevel() instanceof ServerLevel level)) {
@@ -77,6 +90,10 @@ public final class CoeursClans extends SafeSavedData {
             }
             if (g == null) {
                 refuser(e, p, "crac.coeur.sans_clan", "Il faut un clan pour poser un cœur de clan.");
+                return;
+            }
+            if (!BasesClans.peutGerer(p.getUUID())) {
+                refuser(e, p, "crac.coeur.pas_droit_poser", "Seuls le chef et les membres qui gèrent la base posent le cœur.");
                 return;
             }
             if (claim == null || !claim.groupId().equals(g.id())) {
@@ -103,6 +120,7 @@ public final class CoeursClans extends SafeSavedData {
             CoeursClans d = get(level.getServer());
             d.coeurs.put(groupe, GlobalPos.of(level.dimension(), e.getPos().immutable()));
             d.setDirty();
+            CoeurDeplacement.repose(level.getServer(), groupe);
         }
         if (level.getBlockEntity(e.getPos()) instanceof CoeurClanBlockEntity be) {
             be.setGroupe(groupe);

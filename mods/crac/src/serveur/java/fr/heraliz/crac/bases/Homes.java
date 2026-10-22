@@ -254,7 +254,8 @@ public final class Homes {
                 return 0;
             }
         }
-        long delai = BasesReglages.i(BasesReglages.HOME_DELAI_S, 180) * 1000L;
+        // saison des clans : délai de la branche « tp » de l'arbre du clan (10, 8, 6, 4 min)
+        long delai = fr.heraliz.crac.heraliz.ArbreBases.delaiHomeMs(p.getUUID(), BasesReglages.i(BasesReglages.HOME_DELAI_S, 180) * 1000L);
         long reste = j.dernierHome + delai - System.currentTimeMillis();
         if (!staff && reste > 0) {
             T.chat(p, T.t("crac.home.attendre", "Prochain /home dans %s.", T.duree(reste + 999)), ChatFormatting.RED);

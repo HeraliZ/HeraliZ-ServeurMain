@@ -71,7 +71,7 @@ public final class ClaimBlockLogique {
                 } else {
                     ItemStack held = sp.getItemInHand(hand);
                     boolean owner = g != null && g.isOwner(sp.getUUID());
-                    if (owner && claim.tier() < 3 && tryUpgrade(sl, sp, pos, state, claim, held)) {
+                    if (owner && claim.tier() < 3 && !fr.heraliz.crac.heraliz.ArbreBases.agrandissementParArbre() && tryUpgrade(sl, sp, pos, state, claim, held)) {
                         return InteractionResult.CONSUME;
                     } else {
                         // HeraliZ : pendant le tutoriel des bases, l'entretien attend la cabane en bois (planches comptées)

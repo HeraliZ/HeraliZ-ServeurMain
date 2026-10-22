@@ -60,6 +60,10 @@ public final class RaidBlocks {
         if (fr.heraliz.crac.bases.Protections.baseProtegee(level, pos)) {
             return false;
         }
+        // saison des clans : hors Purge, les explosifs ne cassent aucun bloc d'une base
+        if (fr.heraliz.crac.heraliz.Purge.raidInterdit(level, pos)) {
+            return false;
+        }
         if (state.is(TERRAIN) && !PlacedTerrainData.get(level).contains(pos)) {
             return false;
         }

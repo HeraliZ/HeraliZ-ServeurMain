@@ -42,9 +42,13 @@ public class Config {
         .defineInRange("radiusL2", 23, 1, 512);
     public static final IntValue claimRadiusL3 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 3 Claim Block.")
         .defineInRange("radiusL3", 26, 1, 512);
+    /** HeraliZ (saison des clans) : palier 3 de la branche « base » de l'arbre du clan. */
+    public static final IntValue claimRadiusL4 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 4 claim (HeraliZ clan tree, last level).")
+        .defineInRange("radiusL4", 29, 1, 512);
     public static final IntValue claimYRadiusL1 = BUILDER.comment("Claim vertical half-height for tier 1.").defineInRange("yRadiusL1", 16, 1, 256);
     public static final IntValue claimYRadiusL2 = BUILDER.comment("Claim vertical half-height for tier 2.").defineInRange("yRadiusL2", 19, 1, 256);
     public static final IntValue claimYRadiusL3 = BUILDER.comment("Claim vertical half-height for tier 3.").defineInRange("yRadiusL3", 22, 1, 256);
+    public static final IntValue claimYRadiusL4 = BUILDER.comment("Claim vertical half-height for tier 4.").defineInRange("yRadiusL4", 25, 1, 256);
     public static final ConfigValue<String> claimUpgradeItemL1L2 = BUILDER.comment("Item paid to upgrade a claim from tier 1 to 2.")
         .define("upgradeItemL1L2", "heraliz_composants:metal_renforce");
     public static final ConfigValue<String> claimUpgradeItemL2L3 = BUILDER.comment("Item paid to upgrade a claim from tier 2 to 3.")
@@ -160,18 +164,20 @@ public class Config {
     public static final ConfigValue<List<? extends String>> protectedDimensions;
 
     public static int claimRadius(int tier) {
-        return switch (Math.max(1, Math.min(3, tier))) {
+        return switch (Math.max(1, Math.min(4, tier))) {
             case 1 -> claimRadiusL1.get();
             case 2 -> claimRadiusL2.get();
-            default -> claimRadiusL3.get();
+            case 3 -> claimRadiusL3.get();
+            default -> claimRadiusL4.get();
         };
     }
 
     public static int claimYRadius(int tier) {
-        return switch (Math.max(1, Math.min(3, tier))) {
+        return switch (Math.max(1, Math.min(4, tier))) {
             case 1 -> claimYRadiusL1.get();
             case 2 -> claimYRadiusL2.get();
-            default -> claimYRadiusL3.get();
+            case 3 -> claimYRadiusL3.get();
+            default -> claimYRadiusL4.get();
         };
     }
 

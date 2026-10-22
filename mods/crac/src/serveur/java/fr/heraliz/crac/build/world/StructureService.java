@@ -706,12 +706,22 @@ public final class StructureService {
         damage(level, p, amount, raid, Cause.DESTROYED);
     }
 
+    /** Saison des clans : la base de la pièce n'est pas raidable en ce moment (hors Purge, ou base trop récente). */
+    private static boolean purgeProtege(ServerLevel level, Piece p) {
+        Claim c = claimOf(level, buildingOf(level, p));
+        return c != null && fr.heraliz.crac.heraliz.Purge.raidInterdit(level.getServer(), c.groupId());
+    }
+
     public static void damage(ServerLevel level, Piece p, int amount, boolean raid, Cause cause) {
         if (amount <= 0 || store(level).index.piece(p.id) == null) {
             return;
         }
         // base d'un nouveau joueur encore protégée (monde des bases, 1.5.0) : ni raid ni usure
         if (fr.heraliz.crac.bases.Protections.pieceProtegee(level, p, cause)) {
+            return;
+        }
+        // saison des clans : hors Purge (ou base trop récente), une attaque ne fait rien aux pièces d'une base
+        if (raid && fr.heraliz.crac.heraliz.Purge.systeme() && purgeProtege(level, p)) {
             return;
         }
         int stage = p.crackStage();

@@ -20,6 +20,9 @@
 	#Claim horizontal radius (XZ) for a tier 3 Claim Block.
 	#Range: 1 ~ 512
 	radiusL3 = 26
+	#Claim horizontal radius (XZ) for a tier 4 claim (HeraliZ clan tree, last level).
+	#Range: 1 ~ 512
+	radiusL4 = 29
 	#Claim vertical half-height for tier 1.
 	#Range: 1 ~ 256
 	yRadiusL1 = 16
@@ -29,6 +32,9 @@
 	#Claim vertical half-height for tier 3.
 	#Range: 1 ~ 256
 	yRadiusL3 = 22
+	#Claim vertical half-height for tier 4.
+	#Range: 1 ~ 256
+	yRadiusL4 = 25
 	#Item paid to upgrade a claim from tier 1 to 2.
 	upgradeItemL1L2 = "heraliz_composants:metal_renforce"
 	#Item paid to upgrade a claim from tier 2 to 3.

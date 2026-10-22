@@ -1,0 +1,28 @@
+{
+  "_aide": "La Purge (saison des clans) : les bases ne se raident que pendant ces créneaux (heure de Paris). Fin avant le début = passe minuit. actif false = raids à tout moment, comme avant. Relu par /purge recharger.",
+  "actif": true,
+  "fuseau": "Europe/Paris",
+  "creneaux": [
+    {
+      "jour": "vendredi",
+      "debut": "18:00",
+      "fin": "21:00"
+    },
+    {
+      "jour": "samedi",
+      "debut": "15:00",
+      "fin": "22:00"
+    },
+    {
+      "jour": "dimanche",
+      "debut": "15:00",
+      "fin": "22:00"
+    }
+  ],
+  "protection_nouvelle_base_heures": 48,
+  "prise_secondes": 90,
+  "prise_distance": 3.0,
+  "deplacement_prix": 50000,
+  "deplacement_minutes": 10,
+  "deplacement_interdit_avant_minutes": 60
+}

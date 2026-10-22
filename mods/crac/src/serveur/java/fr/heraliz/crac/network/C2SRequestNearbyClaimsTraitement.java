@@ -44,8 +44,8 @@ public final class C2SRequestNearbyClaimsTraitement {
     public static int[] viewSettings() {
         return new int[]{
             Config.claimViewRadius.get(),
-            Config.claimRadiusL1.get(), Config.claimRadiusL2.get(), Config.claimRadiusL3.get(),
-            Config.claimYRadiusL1.get(), Config.claimYRadiusL2.get(), Config.claimYRadiusL3.get()
+            Config.claimRadiusL1.get(), Config.claimRadiusL2.get(), Config.claimRadiusL3.get(), Config.claimRadiusL4.get(),
+            Config.claimYRadiusL1.get(), Config.claimYRadiusL2.get(), Config.claimYRadiusL3.get(), Config.claimYRadiusL4.get()
         };
     }    /**
      * The player's own claims within the view radius, and other groups' claims only when their zone is close enough to

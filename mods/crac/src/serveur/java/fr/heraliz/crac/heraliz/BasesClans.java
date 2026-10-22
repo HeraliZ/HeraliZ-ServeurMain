@@ -64,6 +64,17 @@ public final class BasesClans extends SafeSavedData {
         return groupe != null && get(server).groupes.containsValue(groupe);
     }
 
+    /** Le groupe CRac de la base du clan (null si le clan n'a jamais posé d'armoire). */
+    @Nullable
+    public static UUID groupeDuClan(MinecraftServer server, UUID clan) {
+        return get(server).groupes.get(clan);
+    }
+
+    /** Clan -> son groupe (copie). */
+    static Map<UUID, UUID> groupesDesClans(MinecraftServer server) {
+        return Map.copyOf(get(server).groupes);
+    }
+
     @Nullable
     public static UUID clanDuGroupe(MinecraftServer server, @Nullable UUID groupe) {
         if (groupe == null) {
@@ -144,6 +155,14 @@ public final class BasesClans extends SafeSavedData {
         } catch (LinkageError | RuntimeException e) {
             Crac.LOGGER.error("[CRac] bases des clans : mise à jour en erreur", e);
         }
+        // saison des clans : armoires vues (Purge), taille des bases (arbre du clan), points des cœurs
+        try {
+            Purge.noterArmoires(server);
+            ArbreBases.appliquer(server, get(server));
+            CoeurDeplacement.majScores(server);
+        } catch (LinkageError | RuntimeException e) {
+            Crac.LOGGER.error("[CRac] saison des clans : mise à jour en erreur", e);
+        }
     }
 
     /**
@@ -155,6 +174,15 @@ public final class BasesClans extends SafeSavedData {
         d.setDirty();
         if (gid == null) {
             return;
+        }
+        // son cœur de clan disparaît avec lui (et ses points : le clan n'existe plus)
+        net.minecraft.core.GlobalPos coeur = CoeursClans.coeur(server, gid);
+        if (coeur != null) {
+            ServerLevel cl = server.getLevel(coeur.dimension());
+            if (cl != null && cl.getBlockState(coeur.pos()).getBlock() instanceof fr.heraliz.crac.block.CoeurClanBlock) {
+                cl.removeBlock(coeur.pos(), false);
+            }
+            CoeursClans.oublier(server, gid);
         }
         for (ServerLevel level : server.getAllLevels()) {
             Claim c = ClaimData.get(level).getByGroup(gid);

@@ -53,7 +53,7 @@ public final class Claim {
     }
 
     public static int clampTier(int t) {
-        return Math.max(1, Math.min(3, t));
+        return Math.max(1, Math.min(4, t));   // 4 : dernier palier « base » de l'arbre du clan (HeraliZ)
     }
 
     /**
