@@ -44,6 +44,7 @@ public final class CameraEmote {
         if (joue) {
             if (!enEmote) {
                 enEmote = true;
+                HeralizEmote.LOGGER.info("[emote] début d'emote (vue : {})", vue);
                 forcee = false;
                 choixJoueur = false;
             } else if (derniere != null && vue != derniere) {
@@ -52,6 +53,7 @@ public final class CameraEmote {
             if (!choixJoueur && vue == CameraType.FIRST_PERSON) {
                 mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
                 vue = CameraType.THIRD_PERSON_BACK;
+                if (!forcee) HeralizEmote.LOGGER.info("[emote] emote en cours : vue passée à la 3e personne");
                 forcee = true;
             }
             derniere = vue;
