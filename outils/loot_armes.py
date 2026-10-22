@@ -64,15 +64,8 @@ RARETE_SACS = {
 }
 SACS_HORS_LOOT = ("backpack", "backpack_expand1", "backpack_expand2", "backpack_sniper_case_enderman",
                   "backpack_military_sport_bag_cow", "backpack_military_sport_bag_pig")  # jamais dans les coffres
-PARTS_SACS = {
-    1: {"commun": 90, "peu_commun": 10},
-    2: {"commun": 70, "peu_commun": 25, "rare": 5},
-    3: {"commun": 45, "peu_commun": 35, "rare": 17, "epique": 3},
-    4: {"commun": 25, "peu_commun": 35, "rare": 30, "epique": 9, "legendaire": 1},
-    5: {"commun": 10, "peu_commun": 30, "rare": 40, "epique": 17, "legendaire": 3},
-    6: {"commun": 5, "peu_commun": 20, "rare": 45, "epique": 25, "legendaire": 5},
-    7: {"peu_commun": 15, "rare": 40, "epique": 35, "legendaire": 10},
-}
+# mêmes parts dans tous les paliers (choix du propriétaire, 22/10) : seul le nombre de sacs monte avec le palier
+PARTS_SACS = {t: {"commun": 50, "peu_commun": 25, "rare": 15, "epique": 8, "legendaire": 2} for t in range(1, 8)}
 PARTS_FAMILLE.update({("sacs", t): v for t, v in PARTS_SACS.items()})
 SACS_JAVA = RACINE / "mods/heralisz-backpack/src/commun/java/com/mrcrayfish/backpacked/core/ArkaniaZModItems.java"
 # jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
