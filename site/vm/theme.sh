@@ -203,6 +203,11 @@ for chemin in /shop /vote /reglement /news /user/login /user/register; do
   code=$(curl -s -o /dev/null -m 30 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 "https://heraliz.fr$chemin" || true)
   pages="$pages $chemin ${code:-000} ;"
   [ "$code" = 200 ] || echo "::warning::Page https://heraliz.fr$chemin : réponse ${code:-aucune}"
+  if [ "$code" = 500 ]; then
+    # cause de l'erreur, sans données des joueurs : la dernière ligne d'erreur du journal du site, coupée à 400 caractères
+    derniere=$(grep -h '\.ERROR:' "$DOSSIER"/storage/logs/laravel*.log 2>/dev/null | tail -n 1 | cut -c1-400 || true)
+    [ -n "$derniere" ] && echo "Erreur du site : $derniere"
+  fi
 done
 echo "Pages (200 = s'ouvre) :${pages% ;}"
 # API des comptes du launcher (extension HeraliZ) : ce que le launcher lit avant d'afficher son formulaire
