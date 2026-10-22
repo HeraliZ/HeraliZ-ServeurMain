@@ -153,6 +153,7 @@ public final class Sync {
                 DERNIER_ENVOI.put(c.id, now);
             }
             ClansNet.toPlayer(p, new Packets.ClanSnapshotS2C(pour(base, c, p)));
+            envoyerArbre(c, p);
         }
     }
 
@@ -165,6 +166,7 @@ public final class Sync {
         Clan c = store.clanDe(p.getUUID());
         long now = System.currentTimeMillis();
         ClansNet.toPlayer(p, new Packets.ClanSnapshotS2C(c == null ? null : pour(base(c, server, now), c, p)));
+        if (c != null) envoyerArbre(c, p);
         envoyerInvitations(p);
     }
 
@@ -175,6 +177,20 @@ public final class Sync {
         if (store == null || server == null) return;
         Clan c = store.clanDe(p.getUUID());
         ClansNet.toPlayer(p, new Packets.ClanSnapshotS2C(c == null ? null : pour(base(c, server, System.currentTimeMillis()), c, p)));
+        if (c != null) envoyerArbre(c, p);
+    }
+
+    /** Arbre d'ameliorations et points de saison du clan (onglet Niveau). */
+    static void envoyerArbre(Clan c, ServerPlayer p) {
+        fr.heralisz.clans.model.Arbre.Branche[] br = fr.heralisz.clans.model.Arbre.Branche.values();
+        int[] paliers = new int[br.length];
+        for (int i = 0; i < br.length; i++) paliers[i] = c.palier(br[i]);
+        double[] sc = fr.heralisz.clans.saison.Saison.scores(c.id);
+        ClansNet.toPlayer(p, new Packets.ArbreSaisonS2C(paliers, c.pointsLibres(), c.estChef(p.getUUID()),
+                fr.heralisz.clans.saison.Saison.active(), fr.heralisz.clans.saison.Saison.fin(),
+                fr.heralisz.clans.saison.SaisonApi.aUnCoeur(c.id), fr.heralisz.clans.saison.Saison.entiers(sc[0]),
+                fr.heralisz.clans.saison.Saison.entiers(sc[1]), fr.heralisz.clans.saison.Saison.entiers(sc[2]),
+                fr.heralisz.clans.saison.Saison.rangs(c.id)));
     }
 
     /** Les invitations en attente du joueur (expirees purgees). */
@@ -193,7 +209,7 @@ public final class Sync {
             if (c.purgerInvitations(now)) store.marquerDirty();
             Invitation i = c.invitationDe(joueur);
             if (i == null) continue;
-            l.add(new InvitationVue(c.id, c.tag, c.nom, c.banniere, c.membres.size(), Niveaux.membresMax(c.niveau), i.auteurNom(),
+            l.add(new InvitationVue(c.id, c.tag, c.nom, c.banniere, c.membres.size(), c.membresMax(), i.auteurNom(),
                     Math.max(0, i.expireLe() - now)));
             if (l.size() >= 32) break;
         }
@@ -291,7 +307,7 @@ public final class Sync {
             reglages = miens == null ? Map.of() : Map.of(u, miens);
         }
         return new ClanSnapshot(c.id, c.tag, c.nom, c.description, c.banniere, c.chef, c.creeLe, c.banque, c.niveau, c.xp,
-                Niveaux.xpPour(c.niveau), Niveaux.membresMax(c.niveau), Niveaux.territoiresMax(c.niveau), b.membres, b.perms,
+                Niveaux.xpPour(c.niveau), c.membresMax(), c.territoiresMax(), b.membres, b.perms,
                 u, g, monSolde, b.symbole, b.cdNom, b.cdTag, b.cdDesc, b.cdBan, journalBanque, c.quetesJour, c.quetesSemaine,
                 b.resetJour, b.resetSemaine, terr, c.journal, b.now, reglages);
     }

@@ -1,0 +1,101 @@
+{
+  "_aide": "Bareme de la saison des clans (docs/SAISON_CLANS.md). pve : points par unite (vente_1000 = pour 1 000 herals vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; relu par /saison recharger.",
+  "pve": {
+    "zombie": 0.01,
+    "zombie_mutant": 0.02,
+    "brute": 0.5,
+    "boss": 150.0,
+    "salle_verte": 5.0,
+    "salle_bleue": 15.0,
+    "salle_rouge": 40.0,
+    "conteneur_t1": 0.05,
+    "conteneur_t2": 0.1,
+    "conteneur_t3": 0.2,
+    "conteneur_t4": 0.4,
+    "conteneur_t5": 0.8,
+    "conteneur_t6": 1.5,
+    "conteneur_t7": 5,
+    "vente_1000": 1.0,
+    "craft_commun": 1.0,
+    "craft_peu_commun": 2.0,
+    "craft_rare": 4.0,
+    "craft_epique": 8.0,
+    "craft_legendaire": 8.0,
+    "craft_unique": 8.0,
+    "quete_principale": 10.0,
+    "quete_clan": 5.0,
+    "oil_rig": 60.0
+  },
+  "plafonnees": [
+    "brute",
+    "conteneur_t1",
+    "conteneur_t2",
+    "conteneur_t3",
+    "conteneur_t4",
+    "conteneur_t5",
+    "conteneur_t6",
+    "craft_commun",
+    "craft_epique",
+    "craft_legendaire",
+    "craft_peu_commun",
+    "craft_rare",
+    "craft_unique",
+    "vente_1000",
+    "zombie",
+    "zombie_mutant"
+  ],
+  "plafond_jour_joueur": 50.0,
+  "entites": {
+    "heralisz_utils:zombie_survie": "zombie",
+    "minecraft:zombie": "zombie",
+    "mutantszombies:blister_zombie": "zombie_mutant",
+    "mutantszombies:crawler": "zombie_mutant",
+    "mutantszombies:zombie_brute": "brute"
+  },
+  "boss": [
+    "heralisz_mammoth:mammoth",
+    "heralisz_mere:ruin_mother",
+    "heralisz_n07:sujet_n07",
+    "heralisz_plague:plague_bearer",
+    "heralisz_sylvorn:sylvorn"
+  ],
+  "pvp": {
+    "kill": 1.0,
+    "mort": 1.0,
+    "fenetre_h": 6.0,
+    "coefficients": [
+      1.0,
+      0.5,
+      0.0
+    ],
+    "rarete_min": 1,
+    "exclus": [
+      "geckolib:item_sledge_hammer"
+    ]
+  },
+  "events": {
+    "places": [
+      100.0,
+      60.0,
+      40.0,
+      20.0
+    ],
+    "participation": 5.0,
+    "multiplicateurs": {
+      "clashwar": 2.0
+    }
+  },
+  "raid": {
+    "perdu_pct": 15.0,
+    "gagne_pct": 10.0
+  },
+  "verrou_jours": 7,
+  "don_xp": [
+    0,
+    0,
+    0,
+    0,
+    60,
+    200
+  ]
+}

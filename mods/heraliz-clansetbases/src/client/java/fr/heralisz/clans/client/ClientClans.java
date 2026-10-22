@@ -39,6 +39,16 @@ public final class ClientClans {
 
     @Nullable
     private static ClanSnapshot snapshot;
+    /** Arbre d'ameliorations et saison du clan (envoye avec chaque snapshot), null avant le premier. */
+    private static fr.heralisz.clans.network.Packets.ArbreSaisonS2C arbre;
+
+    public static fr.heralisz.clans.network.Packets.ArbreSaisonS2C arbre() {
+        return arbre;
+    }
+
+    public static void setArbre(fr.heralisz.clans.network.Packets.ArbreSaisonS2C a) {
+        arbre = a;
+    }
     private static List<InvitationVue> invitations = List.of();
     private static Map<UUID, TagVue> tags = Map.of();
     private static List<ClanLigne> classement = List.of();

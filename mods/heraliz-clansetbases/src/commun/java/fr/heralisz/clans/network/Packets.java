@@ -442,6 +442,52 @@ public final class Packets {
         }
     }
 
+    /** Acheter le palier suivant d'une branche de l'arbre du clan (chef ; verifie par le serveur). */
+    public record AmeliorerC2S(String branche) {
+        void write(FriendlyByteBuf b) {
+            Texte.utf(b, branche, 24);
+        }
+
+        static AmeliorerC2S read(FriendlyByteBuf b) {
+            return new AmeliorerC2S(b.readUtf(24));
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = sender(ctx);
+            if (p != null) RECEPTION_SERVEUR.accept(new Recu(p, this));
+        }
+    }
+
+    /**
+     * Arbre du clan et saison (envoye avec chaque snapshot) : paliers par branche (ordre de {@code Arbre.Branche}),
+     * points libres, chef ou non ; saison en cours, fin (ms), coeur pose, points PVE / PVP / events, places {pve, pvp,
+     * events, general} (0 = pas classe).
+     */
+    public record ArbreSaisonS2C(int[] paliers, int pointsLibres, boolean chef, boolean saison, long fin, boolean coeur,
+                                 long pve, long pvp, long events, int[] rangs) {
+        void write(FriendlyByteBuf b) {
+            b.writeVarIntArray(paliers);
+            b.writeVarInt(pointsLibres);
+            b.writeBoolean(chef);
+            b.writeBoolean(saison);
+            b.writeLong(fin);
+            b.writeBoolean(coeur);
+            b.writeVarLong(pve);
+            b.writeVarLong(pvp);
+            b.writeVarLong(events);
+            b.writeVarIntArray(rangs);
+        }
+
+        static ArbreSaisonS2C read(FriendlyByteBuf b) {
+            return new ArbreSaisonS2C(b.readVarIntArray(16), b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readLong(), b.readBoolean(),
+                    b.readVarLong(), b.readVarLong(), b.readVarLong(), b.readVarIntArray(8));
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(this);
+        }
+    }
+
     /** Lancer le signal de ravitaillement depuis le panneau du drapeau. */
     public record RavitaillementC2S(String zoneId) {
         void write(FriendlyByteBuf b) {

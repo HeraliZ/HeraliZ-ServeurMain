@@ -190,7 +190,7 @@ public final class Territoires {
                         O == null ? "" : O.tag, O == null ? "" : O.nom, O == null ? COULEUR_NEUTRE : O.banniere.accent(), O == null ? null : O.banniere,
                         etat, C == null ? "" : C.tag, C == null ? "" : C.nom, C == null ? 0 : C.banniere.accent(), C == null ? null : C.banniere,
                         C == null ? 0f : e.progression, O == null ? 0 : Math.max(0, now - e.captureLe), protegee, z.valeur,
-                        ClansConfig.LOOT_BONUS.get() + (O == null ? 0 : fr.heralisz.clans.model.Avantages.lootPct(O.niveau)), membre, membre ? Math.max(0, e.prochainRavitaillement - now) : -1, peut));
+                        ClansConfig.LOOT_BONUS.get() + (O == null ? 0 : fr.heralisz.clans.model.Arbre.lootPct(O.palier(fr.heralisz.clans.model.Arbre.Branche.LOOT))), membre, membre ? Math.max(0, e.prochainRavitaillement - now) : -1, peut));
             }
         }
         List<fr.heralisz.clans.api.CarteApi.Allie> allies = new ArrayList<>();
@@ -426,7 +426,7 @@ public final class Territoires {
         for (ServerPlayer p : joueurs) {
             Clan c = store.clanDe(p.getUUID());
             boolean membreO = c != null && O != null && c.id.equals(O.id);
-            if (membreO) lootBonus.present(p, now, fr.heralisz.clans.model.Avantages.lootPct(O.niveau));
+            if (membreO) lootBonus.present(p, now, fr.heralisz.clans.model.Arbre.lootPct(O.palier(fr.heralisz.clans.model.Arbre.Branche.LOOT)));
             else lootBonus.absent(p);
             // seuls les joueurs au pied du drapeau capturent ou contestent (le reste de la zone : bonus de loot, HUD)
             if (c == null || !eligible(p) || !c.peut(p.getUUID(), Perm.CAPTURER) || !zone.auDrapeau(p.getX(), p.getY(), p.getZ())) continue;
@@ -457,7 +457,7 @@ public final class Territoires {
             etat = EtatZone.CONTESTE;
         } else if (e.protegeeJusque > now) {
             etat = EtatZone.PROTEGEE;
-        } else if (compterTenus(C.id) >= Niveaux.territoiresMax(C.niveau)) {
+        } else if (compterTenus(C.id) >= C.territoiresMax()) {
             etat = EtatZone.LIMITE;
         } else {
             if (!C.id.equals(e.capteur)) {
@@ -521,7 +521,7 @@ public final class Territoires {
         UUID ancien = O == null ? null : O.id;
         e.proprio = C.id;
         e.captureLe = now;
-        e.prochainRavitaillement = now + ClansConfig.RAVITAILLEMENT_MIN.get() * 60_000L * (100 - fr.heralisz.clans.model.Avantages.ravitaillementPct(C.niveau)) / 100;
+        e.prochainRavitaillement = now + ClansConfig.RAVITAILLEMENT_MIN.get() * 60_000L * (100 - fr.heralisz.clans.model.Arbre.ravitaillementPct(C.palier(fr.heralisz.clans.model.Arbre.Branche.RAVITAILLEMENT))) / 100;
         e.protegeeJusque = now + ClansConfig.PROTECTION_MIN.get() * 60_000L;
         e.progression = 0;
         e.capteur = null;
@@ -624,7 +624,7 @@ public final class Territoires {
         long ravDans = O == null ? 0 : Math.max(0, e.prochainRavitaillement - now);
         EtatZone etat = etatsAffiches.getOrDefault(zone.id, O == null ? EtatZone.NEUTRE : EtatZone.TENUE);
         return new ZoneVue(zone.id, zone.nom, O == null ? "" : O.tag, O == null ? "" : O.nom, O == null ? null : O.banniere,
-                O == null ? 0 : Math.max(0, now - e.captureLe), ClansConfig.LOOT_BONUS.get() + (O == null ? 0 : fr.heralisz.clans.model.Avantages.lootPct(O.niveau)), membre, peutLancer, ravDans, etat);
+                O == null ? 0 : Math.max(0, now - e.captureLe), ClansConfig.LOOT_BONUS.get() + (O == null ? 0 : fr.heralisz.clans.model.Arbre.lootPct(O.palier(fr.heralisz.clans.model.Arbre.Branche.LOOT))), membre, peutLancer, ravDans, etat);
     }
 
     /** Portee (au carre) entre le joueur et le drapeau pour lancer le signal : la portee du clic droit sur le socle. */
@@ -681,7 +681,7 @@ public final class Territoires {
             ServerHandlers.erreur(p, "zone.erreur.trop_loin", zone.nom);
             return;
         }
-        e.prochainRavitaillement = now + ClansConfig.RAVITAILLEMENT_MIN.get() * 60_000L * (100 - fr.heralisz.clans.model.Avantages.ravitaillementPct(mien.niveau)) / 100;
+        e.prochainRavitaillement = now + ClansConfig.RAVITAILLEMENT_MIN.get() * 60_000L * (100 - fr.heralisz.clans.model.Arbre.ravitaillementPct(mien.palier(fr.heralisz.clans.model.Arbre.Branche.RAVITAILLEMENT))) / 100;
         data.setDirty();
         ravitaillement.lancer(monde(), zone, mien.tag, Ravitaillement.DELAI_AVION_TICKS, true);
         ServerHandlers.info(p, "ravitaillement.lance", zone.nom, Ravitaillement.DELAI_AVION_TICKS / 20);

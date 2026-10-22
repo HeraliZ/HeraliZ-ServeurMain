@@ -252,6 +252,11 @@ public final class ClanService {
             erreur(p, "msg.delai_rejoindre", duree(reste));
             return false;
         }
+        net.minecraft.network.chat.Component verrou = fr.heralisz.clans.saison.Saison.refusRejoindre();
+        if (verrou != null) {
+            p.sendSystemMessage(verrou.copy().withStyle(net.minecraft.ChatFormatting.RED));
+            return false;
+        }
         String err = Clan.validerTag(tag);
         if (err == null) err = Clan.validerNom(nom);
         if (err == null) err = Clan.validerDescription(description);
@@ -360,7 +365,7 @@ public final class ClanService {
             erreur(p, "msg.deja_dans_clan", nomCible);
             return false;
         }
-        int max = Niveaux.membresMax(c.niveau);
+        int max = c.membresMax();
         if (c.membres.size() >= max) {
             erreur(p, "msg.clan_plein", max, c.niveau);
             return false;
@@ -368,6 +373,11 @@ public final class ClanService {
         long reste = delaiRejoindre(s, cible.getUUID());
         if (reste > 0) {
             erreur(p, "msg.delai_rejoindre_autre", nomCible, duree(reste));
+            return false;
+        }
+        net.minecraft.network.chat.Component verrou = fr.heralisz.clans.saison.Saison.refusRejoindre();
+        if (verrou != null) {
+            p.sendSystemMessage(verrou.copy().withStyle(net.minecraft.ChatFormatting.RED));
             return false;
         }
         long now = now();
@@ -439,7 +449,12 @@ public final class ClanService {
             erreur(p, "msg.delai_rejoindre", duree(reste));
             return false;
         }
-        int max = Niveaux.membresMax(c.niveau);
+        net.minecraft.network.chat.Component verrou = fr.heralisz.clans.saison.Saison.refusRejoindre();
+        if (verrou != null) {
+            p.sendSystemMessage(verrou.copy().withStyle(net.minecraft.ChatFormatting.RED));
+            return false;
+        }
+        int max = c.membresMax();
         if (c.membres.size() >= max) {
             erreur(p, "msg.clan_plein", max, c.niveau);
             return false;
@@ -1157,6 +1172,44 @@ public final class ClanService {
         if (s != null) s.marquerDirty();
         if (monte) Sync.marquer(c);
         else Sync.marquerLent(c);
+    }
+
+    // ------------------------------------------------------------------ arbre d'ameliorations
+    /**
+     * Achete le palier suivant d'une branche de l'arbre (chef seulement) : n points de competence et n x 5 000 herals
+     * pris dans la banque du clan ; jamais rembourse. Renvoie vrai si le palier est achete.
+     */
+    public static boolean ameliorer(ServerPlayer p, fr.heralisz.clans.model.Arbre.Branche b) {
+        ClanStore s = store();
+        Clan c = monClan(p);
+        if (c == null || s == null || b == null) return false;
+        if (!exigerChef(p, c)) return false;
+        int palier = c.palier(b) + 1;
+        if (palier > b.max) {
+            erreur(p, "msg.arbre.max", Component.translatable("arbre." + b.id()));
+            return false;
+        }
+        int points = fr.heralisz.clans.model.Arbre.coutPoints(palier);
+        if (c.pointsLibres() < points) {
+            erreur(p, "msg.arbre.points", points, c.pointsLibres());
+            return false;
+        }
+        long prix = fr.heralisz.clans.model.Arbre.coutHerals(palier);
+        Economie eco = Economie.active();
+        if (c.banque < prix) {
+            erreur(p, "msg.arbre.banque", eco.format(prix), eco.format(c.banque));
+            return false;
+        }
+        c.banque -= prix;
+        c.ajouterMouvement(new Mouvement(now(), p.getUUID(), p.getGameProfile().getName(), -prix, "arbre:" + b.id() + ":" + palier));
+        c.arbre.put(b, palier);
+        c.ajouterEvenement(new Evenement(now(), Evenement.Genre.PERSO, "evenement.arbre", b.id(), String.valueOf(palier)));
+        changement(c);
+        s.sauvegarderMaintenant();
+        diffuserChat(c, "msg.arbre.achete", Component.translatable("arbre." + b.id()), palier, b.max);
+        HeraliszClans.LOG.info("[clans] [{}] arbre : {} palier {} ({} points, {} herals) par {}", c.tag, b.id(), palier, points, prix,
+                p.getGameProfile().getName());
+        return true;
     }
 
     // ------------------------------------------------------------------ classement

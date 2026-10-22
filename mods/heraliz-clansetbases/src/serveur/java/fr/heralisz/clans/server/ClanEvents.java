@@ -240,6 +240,7 @@ public final class ClanEvents {
         Entity src = tueur(e);
         // match (HeraliZ Matchs) : ni la mort ni le kill ne comptent
         if (ClansApi.enMatch(victime) || ClansApi.enMatch(src)) return;
+        saison(e, victime, src);
         if (victime instanceof ServerPlayer mort) {
             Clan c = store.clanDe(mort.getUUID());
             Membre m = c == null ? null : c.membre(mort.getUUID());
@@ -271,6 +272,82 @@ public final class ClanEvents {
         }
         store.marquerDirty();
         Sync.marquerLent(c);
+    }
+
+    // ------------------------------------------------------------------ saison des clans
+    /** Monde du spawn et monde du tutoriel des bases : jamais de points de saison. */
+    private static final Set<String> MONDES_SANS_POINTS = Set.of("heralisz:spawn", "crac:bases");
+    /** Etiquette posee sur un boss invoque par le staff (/summon, oeuf) : pas de points. */
+    public static final String SANS_POINTS = "heraliz_saison_sans_points";
+    /** Degats des joueurs sur chaque boss vivant (boss -> joueur -> degats) : points du boss partages a sa mort. */
+    private static final Map<UUID, Map<UUID, Double>> DEGATS_BOSS = new HashMap<>();
+
+    private static void saison(LivingDeathEvent e, LivingEntity victime, @javax.annotation.Nullable Entity src) {
+        if (!fr.heralisz.clans.saison.Saison.active()) return;
+        String monde = victime.level().dimension().location().toString();
+        if (MONDES_SANS_POINTS.contains(monde) || monde.startsWith("heralisz_matchs:")) {
+            DEGATS_BOSS.remove(victime.getUUID());
+            return;
+        }
+        String type = idType(victime);
+        var bareme = fr.heralisz.clans.saison.Saison.bareme();
+        if (type != null && bareme.boss.contains(type)) {
+            Map<UUID, Double> parts = DEGATS_BOSS.remove(victime.getUUID());
+            if (parts == null || victime.getTags().contains(SANS_POINTS)) return;
+            double total = 0;
+            for (double v : parts.values()) total += v;
+            if (total <= 0) return;
+            ClanStore store = ClanStore.get();
+            if (store == null) return;
+            // part de chaque clan = ses degats / tous les degats des joueurs
+            Map<UUID, Double> parClan = new HashMap<>();
+            for (Map.Entry<UUID, Double> x : parts.entrySet()) {
+                Clan c = store.clanDe(x.getKey());
+                if (c != null) parClan.merge(c.id, x.getValue() / total, Double::sum);
+            }
+            for (Map.Entry<UUID, Double> x : parClan.entrySet()) {
+                fr.heralisz.clans.saison.Saison.ajouterPve(store.get(x.getKey()), null, "boss " + type, "boss", x.getValue());
+            }
+            return;
+        }
+        if (!(src instanceof ServerPlayer tueur) || tueur == victime) return;
+        if (victime instanceof ServerPlayer mort) {
+            Long reapparu = REAPPARU.get(mort.getUUID());
+            if (reapparu != null && System.currentTimeMillis() - reapparu < ClansConfig.BOOST_REAPPARITION_S.get() * 1000L) return;
+            fr.heralisz.clans.saison.Saison.kill(tueur, mort);
+            return;
+        }
+        if (type == null || victime.getTags().contains(fr.heralisz.clans.territory.Assauts.TAG)) return;
+        String source = bareme.entites.get(type);
+        if (source != null) fr.heralisz.clans.saison.Saison.pve(tueur, source, 1);
+    }
+
+    @javax.annotation.Nullable
+    private static String idType(Entity e) {
+        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
+        return id == null ? null : id.toString();
+    }
+
+    /** Degats d'un joueur sur un boss (avant armure : la part compte, pas le total). */
+    @SubscribeEvent
+    public static void onBossTouche(net.minecraftforge.event.entity.living.LivingHurtEvent e) {
+        if (!(e.getSource().getEntity() instanceof ServerPlayer p) || e.getAmount() <= 0) return;
+        if (!fr.heralisz.clans.saison.Saison.active()) return;
+        String type = idType(e.getEntity());
+        if (type == null || !fr.heralisz.clans.saison.Saison.bareme().boss.contains(type)) return;
+        if (DEGATS_BOSS.size() > 64 && !DEGATS_BOSS.containsKey(e.getEntity().getUUID())) DEGATS_BOSS.clear();
+        double reel = Math.min(e.getAmount(), e.getEntity().getHealth());
+        DEGATS_BOSS.computeIfAbsent(e.getEntity().getUUID(), k -> new HashMap<>()).merge(p.getUUID(), reel, Double::sum);
+    }
+
+    /** Un boss invoque par le staff (/summon, oeuf) ne rapporte aucun point ; ceux des salles de boss, si. */
+    @SubscribeEvent
+    public static void onApparition(net.minecraftforge.event.entity.living.MobSpawnEvent.FinalizeSpawn e) {
+        var t = e.getSpawnType();
+        if (t != net.minecraft.world.entity.MobSpawnType.COMMAND && t != net.minecraft.world.entity.MobSpawnType.SPAWN_EGG
+                && t != net.minecraft.world.entity.MobSpawnType.DISPENSER) return;
+        String type = idType(e.getEntity());
+        if (type != null && fr.heralisz.clans.saison.Saison.bareme().boss.contains(type)) e.getEntity().addTag(SANS_POINTS);
     }
 
     private static boolean estBoss(LivingEntity v) {
@@ -507,7 +584,7 @@ public final class ClanEvents {
         long heures = c.minutesZonesAPayer / 60;
         if (heures > 0) {
             c.minutesZonesAPayer -= heures * 60;
-            long montant = heures * ClansConfig.REVENU_HEURE.get() * (100 + fr.heralisz.clans.model.Avantages.revenuPct(c.niveau)) / 100;
+            long montant = heures * ClansConfig.REVENU_HEURE.get() * (100 + fr.heralisz.clans.model.Arbre.revenuPct(c.palier(fr.heralisz.clans.model.Arbre.Branche.REVENU))) / 100;
             if (montant > 0) ClansApi.crediterBanque(c.id, montant, "territoires");
         }
         long heuresValeur = c.minutesValeurAConvertir / 60;

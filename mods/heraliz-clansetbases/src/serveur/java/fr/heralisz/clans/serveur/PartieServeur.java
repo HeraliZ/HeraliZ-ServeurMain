@@ -26,6 +26,9 @@ public final class PartieServeur implements Partie {
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.server.ClanCommands.class);
         // regles de jeu : stats, chat de clan, liste Tab, synchronisation groupee, quetes, evenements des territoires
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.server.ClanEvents.class);
+        // saison des clans : points, classements, commandes /saison et /clan ameliorer|don
+        MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.saison.Saison.class);
+        MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.saison.SaisonCommandes.class);
 
         ClansRegistry.CAISSE_USINE.serveur(CaisseRavitaillementBlockServeur::new);
         ClansRegistry.CAISSE_PARACHUTE_USINE.serveur(CaisseParachuteEntityServeur::new);
@@ -54,6 +57,10 @@ public final class PartieServeur implements Partie {
             else if (m instanceof Packets.RavitaillementC2S x) ServerHandlers.ravitaillement(p, x);
             else if (m instanceof Packets.PermsJoueurC2S x) ServerHandlers.permsJoueur(p, x);
             else if (m instanceof Packets.CarteDemandeC2S) Territoires.carte(p);
+            else if (m instanceof Packets.AmeliorerC2S x) {
+                fr.heralisz.clans.model.Arbre.Branche b = fr.heralisz.clans.model.Arbre.Branche.parId(x.branche());
+                if (b != null) fr.heralisz.clans.server.ClanService.ameliorer(p, b);
+            }
         });
     }
 }

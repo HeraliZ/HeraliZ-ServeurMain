@@ -296,9 +296,9 @@ public final class ClanCommands {
         int enLigne = ClanService.membresEnLigne(c).size();
         long now = System.currentTimeMillis();
         Reponses.ok(src, ClanService.prefixe(c).append(Component.translatable("msg.info.titre", c.nom, c.niveau, c.xp, Niveaux.xpPour(c.niveau))));
-        Reponses.ligne(src, Component.translatable("msg.info.membres", ClanService.nomDe(c.chef), c.membres.size(), Niveaux.membresMax(c.niveau), enLigne));
+        Reponses.ligne(src, Component.translatable("msg.info.membres", ClanService.nomDe(c.chef), c.membres.size(), c.membresMax(), enLigne));
         Reponses.ligne(src, Component.translatable("msg.info.stats", t.kills, String.format(Locale.FRANCE, "%.2f", t.kd()),
-                Territoires.compterTenus(c.id), Niveaux.territoiresMax(c.niveau), ClanService.duree(now - c.creeLe)));
+                Territoires.compterTenus(c.id), c.territoiresMax(), ClanService.duree(now - c.creeLe)));
         if (!c.description.isEmpty()) {
             Reponses.ligne(src, Component.literal(c.description.replace('\n', ' ')).withStyle(st -> st.withColor(Reponses.ATTENUE)));
         }

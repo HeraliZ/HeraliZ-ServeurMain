@@ -21,7 +21,7 @@ public final class ClansNet {
     private ClansNet() {
     }
 
-    private static final String VERSION = "2";
+    private static final String VERSION = "3";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -60,6 +60,9 @@ public final class ClansNet {
         // carte du monde (2.4.0) : demande quand la carte est ouverte, reponse avec les territoires (CarteApi)
         msg(Packets.CarteDemandeC2S.class, c2s, Packets.CarteDemandeC2S::write, Packets.CarteDemandeC2S::read, Packets.CarteDemandeC2S::handle);
         msg(Packets.CarteS2C.class, s2c, Packets.CarteS2C::write, Packets.CarteS2C::read, Packets.CarteS2C::handle);
+        // saison des clans (3.6.0) : arbre d'ameliorations et points de saison
+        msg(Packets.AmeliorerC2S.class, c2s, Packets.AmeliorerC2S::write, Packets.AmeliorerC2S::read, Packets.AmeliorerC2S::handle);
+        msg(Packets.ArbreSaisonS2C.class, s2c, Packets.ArbreSaisonS2C::write, Packets.ArbreSaisonS2C::read, Packets.ArbreSaisonS2C::handle);
     }
 
     public static void toPlayer(ServerPlayer player, Object msg) {

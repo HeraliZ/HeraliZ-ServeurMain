@@ -60,6 +60,8 @@ public final class Clan {
     public long pointsTerritoire;
     /** Par zone (identifiant) : captures et minutes tenues par le clan. */
     public final Map<String, StatZone> statsZones = new LinkedHashMap<>();
+    /** Arbre d'ameliorations (saison des clans) : palier achete par branche ({@link Arbre}). */
+    public final EnumMap<Arbre.Branche, Integer> arbre = new EnumMap<>(Arbre.Branche.class);
 
     /** Captures et minutes tenues d'une zone par le clan. */
     public static final class StatZone {
@@ -197,6 +199,24 @@ public final class Clan {
         return t;
     }
 
+    // ------------------------------------------------------------------ arbre d'ameliorations
+    public int palier(Arbre.Branche b) {
+        return Arbre.palier(arbre, b);
+    }
+
+    public int membresMax() {
+        return Arbre.membresMax(palier(Arbre.Branche.MEMBRES));
+    }
+
+    public int territoiresMax() {
+        return Arbre.territoiresMax(palier(Arbre.Branche.TERRITOIRES));
+    }
+
+    /** Points de competence pas encore depenses. */
+    public int pointsLibres() {
+        return Math.max(0, Arbre.pointsGagnes(niveau) - Arbre.pointsDepenses(arbre));
+    }
+
     /** XP totale (somme des paliers franchis + xp dans le niveau courant), pour le classement. */
     public long xpTotale() {
         return Niveaux.xpCumulee(niveau) + xp;
@@ -283,6 +303,9 @@ public final class Clan {
             sz.add(e.getKey(), z);
         }
         o.add("statsZones", sz);
+        JsonObject ar = new JsonObject();
+        for (Map.Entry<Arbre.Branche, Integer> e : arbre.entrySet()) ar.addProperty(e.getKey().id(), e.getValue());
+        o.add("arbre", ar);
         return o;
     }
 
@@ -360,6 +383,11 @@ public final class Clan {
             s.captures = Math.max(0, Json.integer(e.getValue().getAsJsonObject(), "captures", 0));
             s.minutes = Math.max(0, Json.lng(e.getValue().getAsJsonObject(), "minutes", 0));
             c.statsZones.put(e.getKey(), s);
+        }
+        JsonObject ar = Json.obj(o, "arbre");
+        for (Map.Entry<String, JsonElement> e : ar.entrySet()) {
+            Arbre.Branche b = Arbre.Branche.parId(e.getKey());
+            if (b != null && e.getValue().isJsonPrimitive()) c.arbre.put(b, Math.max(0, Math.min(b.max, e.getValue().getAsInt())));
         }
         // le chef est toujours membre avec le grade CHEF (et n'a pas de reglages individuels : il a tout)
         Membre chefM = c.membres.get(chef);

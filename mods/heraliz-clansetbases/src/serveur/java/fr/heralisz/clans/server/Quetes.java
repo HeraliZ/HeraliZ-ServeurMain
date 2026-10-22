@@ -351,6 +351,7 @@ public final class Quetes {
         }
         c.ajouterEvenement(new Evenement(now, Evenement.Genre.QUETE, q.titreFr));
         ClanService.ajouterXp(c, q.xp, null);
+        fr.heralisz.clans.saison.Saison.ajouterPve(c, null, "quete " + q.id, "quete_clan", 1);
         String argent = Economie.active().format(q.argent);
         ClanService.diffuserChat(c, Component.translatable("msg.quete_finie", q.titreFr, q.xp, argent));
         ClanService.diffuser(c, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.QUETE_FINIE, List.of(q.titreFr), "quete_finie", null));

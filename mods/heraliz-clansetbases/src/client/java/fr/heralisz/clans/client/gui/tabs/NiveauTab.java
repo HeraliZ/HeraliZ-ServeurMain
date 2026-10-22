@@ -1,25 +1,63 @@
 package fr.heralisz.clans.client.gui.tabs;
 
 import fr.heralisz.clans.ClansConfig;
-import fr.heralisz.clans.client.gui.kit.Icons;
+import fr.heralisz.clans.client.ClientClans;
+import fr.heralisz.clans.client.gui.kit.HzButton;
 import fr.heralisz.clans.client.gui.kit.Ui;
+import fr.heralisz.clans.model.Arbre;
 import fr.heralisz.clans.model.Avantages;
 import fr.heralisz.clans.model.Niveaux;
+import fr.heralisz.clans.network.Packets;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Niveau du clan (maquette validee du 21/10) : a gauche « Prochain niveau » (XP qui manque, ce qu'il debloque) et
- * « Gagner de l'XP » ; a droite les paliers (membres, zones, avantage), atteints coches, niveau actuel surligne.
- * Avantages : {@link Avantages} (memes chiffres que le serveur).
+ * Niveau du clan (maquette validee du 21/10, arbre de la saison des clans du 22/10) : a gauche « Prochain niveau » et
+ * « Gagner de l'XP » ; a droite l'arbre d'ameliorations (une ligne par branche : palier, effet actuel et suivant, cout en
+ * points et en herals, bouton Ameliorer pour le chef) et, en bas, les points et places de la saison. Chiffres :
+ * {@link Arbre} (les memes que le serveur, qui verifie tout).
  */
 public final class NiveauTab extends Tab {
-    private static final int GAUCHE = 170, LIGNE = 14;
+    private static final int GAUCHE = 170, LIGNE = 14, RANG = 24;
+    private final List<HzButton> boutons = new ArrayList<>();
 
     @Override
     protected void construire() {
+        boutons.clear();
+        int tx = x + GAUCHE + 8, tw = w - GAUCHE - 8;
+        Arbre.Branche[] br = Arbre.Branche.values();
+        for (int i = 0; i < br.length; i++) {
+            Arbre.Branche b = br[i];
+            HzButton bt = new HzButton(tx + tw - 74, y + 30 + i * RANG, 64, 14, Component.translatable("gui.arbre.ameliorer"), accent,
+                    () -> envoyer(new Packets.AmeliorerC2S(b.id()))).look(HzButton.Look.LINK);
+            ecran.ajouter(bt);
+            boutons.add(bt);
+        }
+        majBoutons();
+    }
+
+    @Override
+    public void tick() {
+        majBoutons();
+    }
+
+    private void majBoutons() {
+        Packets.ArbreSaisonS2C a = ClientClans.arbre();
+        Arbre.Branche[] br = Arbre.Branche.values();
+        for (int i = 0; i < boutons.size(); i++) {
+            int p = palier(a, i);
+            int suivant = p + 1;
+            boutons.get(i).active = a != null && a.chef() && suivant <= br[i].max && a.pointsLibres() >= Arbre.coutPoints(suivant)
+                    && s.banque() >= Arbre.coutHerals(suivant);
+            boutons.get(i).visible = suivant <= br[i].max;
+        }
+    }
+
+    private static int palier(Packets.ArbreSaisonS2C a, int i) {
+        return a == null || i >= a.paliers().length ? 0 : a.paliers()[i];
     }
 
     @Override
@@ -50,6 +88,7 @@ public final class NiveauTab extends Tab {
                 {"gui.niveau.xp.tenir", Ui.nombre(ClansConfig.XP_HEURE_VALEUR.get())},
                 {"gui.niveau.xp.ravitaillement", Ui.nombre(ClansConfig.XP_RAVITAILLEMENT.get())},
                 {"gui.niveau.xp.quetes", null},
+                {"gui.niveau.xp.don", null},
                 {"gui.niveau.xp.boss", Ui.nombre(ClansConfig.XP_BOSS.get())},
                 {"gui.niveau.xp.joueur", Ui.nombre(ClansConfig.XP_KILL_JOUEUR.get())},
                 {"gui.niveau.xp.zombie", Ui.nombre(ClansConfig.XP_KILL_ZOMBIE.get())}};
@@ -61,36 +100,53 @@ public final class NiveauTab extends Tab {
             Ui.right(g, font, Ui.lit(v, Ui.BOLD), x + GAUCHE - 10, ly, Ui.argb(Ui.OR, 255));
             ly += LIGNE;
         }
-        // paliers
+        arbre(g);
+    }
+
+    /** Carte de droite : l'arbre, puis la saison. */
+    private void arbre(GuiGraphics g) {
+        Packets.ArbreSaisonS2C a = ClientClans.arbre();
         int tx = x + GAUCHE + 8, tw = w - GAUCHE - 8;
         carte(g, tx, y, tw, h);
-        Ui.spaced(g, font, tr("gui.niveau.paliers"), Ui.SMALL, tx + 10, y + 9, Ui.argb(Ui.MUTED, 255), 1.0f);
-        int cN = tx + 12, cM = tx + 40, cZ = tx + 80, cA = tx + 112;
-        int hy = y + 22;
-        Ui.spaced(g, font, tr("gui.niveau.col.niveau"), Ui.SMALL, cN, hy, Ui.argb(Ui.FAINT, 255), 0.6f);
-        Ui.spaced(g, font, tr("gui.niveau.col.membres"), Ui.SMALL, cM, hy, Ui.argb(Ui.FAINT, 255), 0.6f);
-        Ui.spaced(g, font, tr("gui.niveau.col.zones"), Ui.SMALL, cZ, hy, Ui.argb(Ui.FAINT, 255), 0.6f);
-        Ui.spaced(g, font, tr("gui.niveau.col.avantage"), Ui.SMALL, cA, hy, Ui.argb(Ui.FAINT, 255), 0.6f);
-        int ry = hy + 12;
-        int actuel = 1;
-        for (int p : Avantages.PALIERS) if (p <= n) actuel = p;
-        for (int p : Avantages.PALIERS) {
-            if (ry > y + h - 22) break;
-            boolean cur = p == actuel, fait = p < actuel;
-            int c = cur ? Ui.OR : fait ? Ui.TEXT : Ui.FAINT;
-            if (cur) {
-                Ui.soft(g, tx + 5, ry - 3, tw - 10, LIGNE - 1, Ui.argb(Ui.OR, 34));
-                Ui.softOutline(g, tx + 5, ry - 3, tw - 10, LIGNE - 1, Ui.argb(Ui.OR, 110));
+        Ui.spaced(g, font, tr("gui.arbre.titre"), Ui.SMALL, tx + 10, y + 9, Ui.argb(Ui.MUTED, 255), 1.0f);
+        int libres = a == null ? 0 : a.pointsLibres();
+        Ui.spacedRight(g, font, tr("gui.arbre.points", libres), Ui.SMALL, tx + tw - 10, y + 9, Ui.argb(libres > 0 ? Ui.OR : Ui.FAINT, 255), 0.6f);
+        Arbre.Branche[] br = Arbre.Branche.values();
+        for (int i = 0; i < br.length; i++) {
+            Arbre.Branche b = br[i];
+            int p = palier(a, i), ry = y + 26 + i * RANG;
+            if (i % 2 == 0) Ui.soft(g, tx + 5, ry - 2, tw - 10, RANG - 2, Ui.argb(0xFFFFFF, 6));
+            g.drawString(font, Ui.tr(Ui.BOLD, "arbre." + b.id()), tx + 10, ry, Ui.argb(Ui.TEXT, 255), false);
+            // pastilles du palier
+            for (int k = 0; k < b.max; k++) Ui.point(g, tx + 12 + k * 6, ry + 14, k < p ? Ui.OR : Ui.FAINT, 255);
+            String effet = tr("arbre.effet." + b.id(), Arbre.effet(b, p));
+            if (p < b.max) effet += "  →  " + tr("arbre.effet." + b.id(), Arbre.effet(b, p + 1));
+            g.drawString(font, Ui.lit(Ui.ellipsis(font, effet, Ui.SMALL, tw - 180), Ui.SMALL), tx + 60, ry + 1, Ui.argb(Ui.MUTED, 255), false);
+            if (p < b.max) {
+                String cout = tr("gui.arbre.cout", Arbre.coutPoints(p + 1), Ui.nombre(Arbre.coutHerals(p + 1)));
+                g.drawString(font, Ui.lit(cout, Ui.SMALL), tx + 60, ry + 11, Ui.argb(Ui.FAINT, 255), false);
+            } else {
+                g.drawString(font, Ui.tr(Ui.SMALL, "gui.arbre.max"), tx + 60, ry + 11, Ui.argb(Ui.OK, 255), false);
             }
-            g.drawString(font, Ui.lit(String.valueOf(p), Ui.BOLD), cN, ry, Ui.argb(c, 255), false);
-            g.drawString(font, Ui.lit(String.valueOf(Niveaux.membresMax(p)), Ui.FONT), cM, ry, Ui.argb(c, 255), false);
-            g.drawString(font, Ui.lit(String.valueOf(Niveaux.territoiresMax(p)), Ui.FONT), cZ, ry, Ui.argb(c, 255), false);
-            String a = Ui.ellipsis(font, tr("gui.niveau.avantage." + p), Ui.FONT, tw - (cA - tx) - 26);
-            g.drawString(font, Ui.lit(a, Ui.FONT), cA, ry, Ui.argb(cur ? Ui.TEXT : c, 255), false);
-            if (fait || cur) Icons.draw(g, Icons.COCHE, tx + tw - 18, ry - 1, 9, Ui.OK, 255);
-            ry += LIGNE;
         }
-        g.drawString(font, Ui.tr(Ui.SMALL, "gui.niveau.pied"), tx + 10, y + h - 12, Ui.argb(Ui.FAINT, 255), false);
+        // saison
+        int sy = y + 30 + br.length * RANG;
+        Ui.hairline(g, tx + 8, tx + tw - 8, sy - 4, 0xFFFFFF, 30, true, true);
+        if (a == null || !a.saison()) {
+            g.drawString(font, Ui.tr(Ui.SMALL, "gui.saison.aucune"), tx + 10, sy + 2, Ui.argb(Ui.FAINT, 255), false);
+        } else if (!a.coeur()) {
+            g.drawString(font, Ui.lit(Ui.ellipsis(font, tr("gui.saison.sans_coeur"), Ui.SMALL, tw - 20), Ui.SMALL), tx + 10, sy + 2,
+                    Ui.argb(Ui.AMBRE, 255), false);
+        } else {
+            int[] r = a.rangs();
+            String l1 = tr("gui.saison.points", Ui.nombre(a.pve()), place(r, 0), Ui.nombre(a.pvp()), place(r, 1), Ui.nombre(a.events()), place(r, 2));
+            g.drawString(font, Ui.lit(Ui.ellipsis(font, l1, Ui.SMALL, tw - 20), Ui.SMALL), tx + 10, sy + 2, Ui.argb(Ui.TEXT, 230), false);
+            g.drawString(font, Ui.tr(Ui.BOLD, "gui.saison.general", place(r, 3)), tx + 10, sy + 13, Ui.argb(Ui.OR, 255), false);
+        }
+    }
+
+    private static String place(int[] r, int i) {
+        return i < r.length && r[i] > 0 ? "#" + r[i] : "-";
     }
 
     private void carte(GuiGraphics g, int cx, int cy, int cw, int ch) {
@@ -98,16 +154,11 @@ public final class NiveauTab extends Tab {
         Ui.softOutline(g, cx + 1, cy + 1, cw - 2, ch - 2, Ui.argb(0xFFFFFF, 16));
     }
 
-    /** Ce que le niveau n apporte par rapport au precedent. */
+    /** Ce que le niveau n apporte : un point de competence, et la deco a certains paliers. */
     private List<String> gains(int n) {
         List<String> l = new ArrayList<>();
-        int m = Niveaux.membresMax(n) - Niveaux.membresMax(n - 1);
-        if (m > 0) l.add(tr("gui.niveau.gain.membre", Niveaux.membresMax(n)));
-        if (Niveaux.territoiresMax(n) > Niveaux.territoiresMax(n - 1)) l.add(tr("gui.niveau.gain.territoire", Niveaux.territoiresMax(n)));
-        for (int p : Avantages.PALIERS) {
-            if (p == n && p != 3 && p != 1) l.add(tr("gui.niveau.court." + p));
-        }
-        if (l.isEmpty()) l.add(tr("gui.niveau.gain.rien"));
+        l.add(tr("gui.niveau.gain.point"));
+        for (int p : Avantages.PALIERS) if (p == n) l.add(tr("gui.niveau.court." + p));
         return l;
     }
 }
