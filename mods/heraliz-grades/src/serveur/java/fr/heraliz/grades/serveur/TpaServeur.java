@@ -45,8 +45,7 @@ import java.util.UUID;
  * bases de CRac refuse ces commandes. Recharges gardées en mémoire (un redémarrage les remet à zéro). Fil serveur seulement.
  */
 final class TpaServeur {
-    private static final long RECHARGE_MS = 300_000L, PAR_GRADE_MS = 15_000L, EXPIRATION_MS = 60_000L;
-    private static final int DELAI_TICKS = 300;
+    private static final long EXPIRATION_MS = 60_000L;
     private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
 
     /** Demande en cours : qui veut venir (clé : le joueur visé, une demande à la fois par demandeur). */
@@ -90,9 +89,14 @@ final class TpaServeur {
         return p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis();
     }
 
-    /** Recharge du joueur selon son grade de la boutique (0 à 3). */
+    /** Recharge du joueur : permission « Recharge du /tpa » de ses grades (2.0.0, éditeur des grades). */
     static long recharge(UUID joueur) {
-        return Math.max(0L, RECHARGE_MS - PAR_GRADE_MS * Math.max(0, GradesApi.rangBoutique(joueur)));
+        return PermsServeur.valeur(joueur, fr.heraliz.grades.PermsGrades.TPA_RECHARGE) * 1000L;
+    }
+
+    /** Attente avant la téléportation (ticks) : permission « Délai avant /tpa ». */
+    private static int delaiTicks(UUID joueur) {
+        return PermsServeur.valeur(joueur, fr.heraliz.grades.PermsGrades.TPA_DELAI) * 20;
     }
 
     private static String duree(long ms) {
@@ -217,15 +221,16 @@ final class TpaServeur {
             refus(p, non);
             return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.impossible", "%s ne peut pas venir pour le moment.", p.getDisplayName()));
         }
-        cible.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.acceptee_cible", "Tu as accepté : %s arrive dans 15 s.",
-                p.getDisplayName()).withStyle(ChatFormatting.GOLD));
-        if (staff(p)) {
+        int delai = delaiTicks(p.getUUID());
+        cible.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.acceptee_cible_s", "Tu as accepté : %1$s arrive dans %2$s s.",
+                p.getDisplayName(), String.valueOf(staff(p) ? 0 : delai / 20)).withStyle(ChatFormatting.GOLD));
+        if (staff(p) || delai <= 0) {
             teleporter(p, cible);
             return 1;
         }
-        ATTENTES.put(p.getUUID(), new Attente(cible.getUUID(), p.position(), p.getHealth(), ticks + DELAI_TICKS));
-        p.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.acceptee", "%s a accepté : téléportation dans 15 s, ne bouge pas.",
-                cible.getDisplayName()).withStyle(ChatFormatting.GOLD));
+        ATTENTES.put(p.getUUID(), new Attente(cible.getUUID(), p.position(), p.getHealth(), ticks + delai));
+        p.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.acceptee_s", "%1$s a accepté : téléportation dans %2$s s, ne bouge pas.",
+                cible.getDisplayName(), String.valueOf(delai / 20)).withStyle(ChatFormatting.GOLD));
         return 1;
     }
 

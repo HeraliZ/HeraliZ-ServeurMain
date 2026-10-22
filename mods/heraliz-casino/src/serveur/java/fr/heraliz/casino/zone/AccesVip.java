@@ -20,7 +20,27 @@ final class AccesVip {
     private static Method rangBoutique;
     private static boolean cherche;
 
+    private static Method perm;
+    private static boolean permCherche;
+
     static boolean autorise(ServerPlayer p) {
+        // HeraliZ Grades 2.0.0 : permission « Zones VIP » réglée par grade dans l'éditeur des grades
+        if (!permCherche) {
+            permCherche = true;
+            try {
+                perm = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("perm", java.util.UUID.class, String.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                perm = null;
+            }
+        }
+        if (perm != null) {
+            try {
+                int v = (Integer) perm.invoke(null, p.getUUID(), "zones_vip");
+                if (v >= 0) return v >= 1;
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                // règle d'avant ci-dessous
+            }
+        }
         Method m = methode();
         if (m == null) return false;
         try {

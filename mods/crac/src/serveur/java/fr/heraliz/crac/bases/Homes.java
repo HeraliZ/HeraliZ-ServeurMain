@@ -92,6 +92,11 @@ public final class Homes {
         if (Deplacements.staff(p)) {
             return Integer.MAX_VALUE;
         }
+        // HeraliZ Grades 2.0.0 : nombre réglé par grade dans l'éditeur des grades
+        int perm = permGrade(p.getUUID(), "homes");
+        if (perm >= 0) {
+            return Math.max(1, perm);
+        }
         int base = BasesReglages.i(BasesReglages.HOMES_BASE, 1);
         int parGrade = BasesReglages.i(BasesReglages.HOMES_PAR_GRADE, 1);
         return base + parGrade * rang(p.getUUID());
@@ -100,6 +105,34 @@ public final class Homes {
     private static String texteLimite(ServerPlayer p) {
         int l = limite(p);
         return l == Integer.MAX_VALUE ? "∞" : String.valueOf(l);
+    }
+
+    @Nullable
+    private static Method permGrade;
+    private static boolean permCherche;
+
+    /**
+     * Permission de grade (HeraliZ Grades 2.0.0, {@code GradesApi.perm}, réglée dans l'éditeur des grades) ; -1 sans le
+     * mod ou avec une version plus ancienne (règles d'avant : rang de la boutique, réglages de crac-bases.toml).
+     */
+    static int permGrade(UUID joueur, String cle) {
+        if (!permCherche) {
+            permCherche = true;
+            try {
+                permGrade = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("perm", UUID.class, String.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                permGrade = null;
+            }
+        }
+        if (permGrade == null) {
+            return -1;
+        }
+        try {
+            Object r = permGrade.invoke(null, joueur, cle);
+            return r instanceof Integer i ? i : -1;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return -1;
+        }
     }
 
     /** Rang du grade de la boutique (0 à 3) lu dans HeraliZ Grades ; 0 sans le mod. */
@@ -254,8 +287,13 @@ public final class Homes {
                 return 0;
             }
         }
-        // saison des clans : délai de la branche « tp » de l'arbre du clan (10, 8, 6, 4 min)
+        // délai entre deux /home : celui de l'arbre du clan (10, 8, 6, 4 min, saison des clans), sinon le réglage ; une
+        // permission de grade « home_recharge » plus courte passe devant
+        int permDelai = permGrade(p.getUUID(), "home_recharge");
         long delai = fr.heraliz.crac.heraliz.ArbreBases.delaiHomeMs(p.getUUID(), BasesReglages.i(BasesReglages.HOME_DELAI_S, 180) * 1000L);
+        if (permDelai >= 0) {
+            delai = Math.min(delai, permDelai * 1000L);
+        }
         long reste = j.dernierHome + delai - System.currentTimeMillis();
         if (!staff && reste > 0) {
             T.chat(p, T.t("crac.home.attendre", "Prochain /home dans %s.", T.duree(reste + 999)), ChatFormatting.RED);

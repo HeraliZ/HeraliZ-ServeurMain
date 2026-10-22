@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Canal réseau de HeraliZ Grades (protocole 3) : menu /kit, menu /warp et tab (grades et clans des joueurs connectés). Le serveur envoie l'état des kits (contenu, recharge) ; le
+ * Canal réseau de HeraliZ Grades (protocole 4) : menu /kit, menu /warp, tab (grades et clans des joueurs connectés),
+ * définitions des grades (2.0.0) et éditeur des grades des op. Le serveur envoie l'état des kits (contenu, recharge) ; le
  * joueur ne peut que DEMANDER un kit par son identifiant : grade, recharge, place et contenu sont décidés et vérifiés par
  * le serveur. Un joueur avec un jar plus ancien (sans ce canal) est refusé à la connexion : il doit prendre le nouveau jar.
  */
@@ -23,7 +24,7 @@ public final class ReseauGrades {
     private ReseauGrades() {
     }
 
-    private static final String VERSION = "3";
+    private static final String VERSION = "4";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -45,7 +46,7 @@ public final class ReseauGrades {
      * Un kit tel qu'affiché : identifiant (= grade), contenu, recharge ; debloque = ce joueur peut le prendre (kit de son
      * grade, ou kit Soutien s'il porte le tag) ; resteMs = temps avant de pouvoir le reprendre.
      */
-    public record VueKit(String id, List<ItemStack> objets, long rechargeMs, boolean debloque, long resteMs) {
+    public record VueKit(String id, String grade, String nom, List<ItemStack> objets, long rechargeMs, boolean debloque, long resteMs) {
     }
 
     /**
@@ -82,6 +83,35 @@ public final class ReseauGrades {
     public record AllerWarp(String id) {
     }
 
+    /** Définitions de tous les grades (serveur -> joueur), envoyées à la connexion et à chaque changement. */
+    public record Definitions(List<fr.heraliz.grades.Grade.Def> grades) {
+    }
+
+    /** Un kit dans l'éditeur : grade, identifiant, nom, recharge (heures), contenu. */
+    public record KitEdite(String grade, String id, String nom, int rechargeH, List<ItemStack> objets) {
+    }
+
+    /** Un joueur qui a un grade (onglet Joueurs de l'éditeur). */
+    public record Membre(String grade, String nom, boolean enLigne) {
+    }
+
+    /** État de l'éditeur (serveur -> op) : ouvrir = ouvrir l'écran (sinon mise à jour), message = réponse à une action. */
+    public record EtatEditeur(boolean ouvrir, List<KitEdite> kits, List<Membre> membres, String message) {
+    }
+
+    /** Action de l'éditeur (op -> serveur) : tout est revérifié par le serveur (op, /login, bornes). */
+    public record ActionEditeur(Genre genre, String grade, fr.heraliz.grades.Grade.Def def, KitEdite kit) {
+        public enum Genre { ENREGISTRER_GRADE, CREER_GRADE, SUPPRIMER_GRADE, ENREGISTRER_KIT, SUPPRIMER_KIT }
+    }
+
+    /** Action reçue par le serveur, avec l'op qui l'envoie. */
+    public record ActionRecue(ServerPlayer joueur, ActionEditeur action) {
+    }
+
+    public static final Crochet<Definitions> RECEPTION_DEFINITIONS = new Crochet<>();
+    public static final Crochet<EtatEditeur> RECEPTION_EDITEUR = new Crochet<>();
+    public static final Crochet<ActionRecue> RECEPTION_ACTION = new Crochet<>();
+
     /** Demande reçue, avec le joueur qui l'envoie (côté serveur). */
     public record Demande(ServerPlayer joueur, String id) {
     }
@@ -96,8 +126,8 @@ public final class ReseauGrades {
                 })
                 .add();
         CANAL.messageBuilder(Recuperer.class, 1, NetworkDirection.PLAY_TO_SERVER)
-                .encoder((m, b) -> b.writeUtf(m.id(), MAX_ID))
-                .decoder(b -> new Recuperer(b.readUtf(MAX_ID)))
+                .encoder((m, b) -> b.writeUtf(m.id(), MAX_ID * 2))
+                .decoder(b -> new Recuperer(b.readUtf(MAX_ID * 2)))
                 .consumerMainThread((m, ctx) -> {
                     ServerPlayer p = ctx.get().getSender();
                     if (p != null) RECEPTION_SERVEUR.accept(new Demande(p, m.id()));
@@ -144,6 +174,96 @@ public final class ReseauGrades {
                     ctx.get().setPacketHandled(true);
                 })
                 .add();
+        CANAL.messageBuilder(Definitions.class, 5, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((m, b) -> fr.heraliz.grades.Grade.ecrireTous(b))
+                .decoder(b -> new Definitions(fr.heraliz.grades.Grade.lireTous(b)))
+                .consumerMainThread((m, ctx) -> {
+                    RECEPTION_DEFINITIONS.accept(m);
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+        CANAL.messageBuilder(EtatEditeur.class, 6, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ReseauGrades::ecrireEditeur)
+                .decoder(ReseauGrades::lireEditeur)
+                .consumerMainThread((m, ctx) -> {
+                    RECEPTION_EDITEUR.accept(m);
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+        CANAL.messageBuilder(ActionEditeur.class, 7, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ReseauGrades::ecrireAction)
+                .decoder(ReseauGrades::lireAction)
+                .consumerMainThread((m, ctx) -> {
+                    ServerPlayer p = ctx.get().getSender();
+                    if (p != null) RECEPTION_ACTION.accept(new ActionRecue(p, m));
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+    }
+
+    private static final int MAX_KITS_EDITEUR = 128, MAX_MEMBRES = 1000, MAX_NOM_KIT = 32;
+
+    private static void ecrireKit(FriendlyByteBuf b, KitEdite k) {
+        b.writeUtf(k.grade(), MAX_ID);
+        b.writeUtf(k.id(), MAX_ID);
+        b.writeUtf(k.nom(), MAX_NOM_KIT);
+        b.writeVarInt(k.rechargeH());
+        int n = Math.min(k.objets().size(), MAX_OBJETS);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) b.writeItem(k.objets().get(i));
+    }
+
+    private static KitEdite lireKit(FriendlyByteBuf b) {
+        String grade = b.readUtf(MAX_ID), id = b.readUtf(MAX_ID), nom = b.readUtf(MAX_NOM_KIT);
+        int h = b.readVarInt();
+        int n = Math.min(b.readVarInt(), MAX_OBJETS);
+        List<ItemStack> objets = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) objets.add(b.readItem());
+        return new KitEdite(grade, id, nom, h, objets);
+    }
+
+    private static void ecrireEditeur(EtatEditeur m, FriendlyByteBuf b) {
+        b.writeBoolean(m.ouvrir());
+        int nk = Math.min(m.kits().size(), MAX_KITS_EDITEUR);
+        b.writeVarInt(nk);
+        for (int i = 0; i < nk; i++) ecrireKit(b, m.kits().get(i));
+        int nm = Math.min(m.membres().size(), MAX_MEMBRES);
+        b.writeVarInt(nm);
+        for (int i = 0; i < nm; i++) {
+            Membre mb = m.membres().get(i);
+            b.writeUtf(mb.grade(), MAX_ID);
+            b.writeUtf(mb.nom(), MAX_ID);
+            b.writeBoolean(mb.enLigne());
+        }
+        b.writeUtf(m.message(), MAX_TEXTE);
+    }
+
+    private static EtatEditeur lireEditeur(FriendlyByteBuf b) {
+        boolean ouvrir = b.readBoolean();
+        int nk = Math.min(b.readVarInt(), MAX_KITS_EDITEUR);
+        List<KitEdite> kits = new ArrayList<>(nk);
+        for (int i = 0; i < nk; i++) kits.add(lireKit(b));
+        int nm = Math.min(b.readVarInt(), MAX_MEMBRES);
+        List<Membre> membres = new ArrayList<>(nm);
+        for (int i = 0; i < nm; i++) membres.add(new Membre(b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readBoolean()));
+        return new EtatEditeur(ouvrir, kits, membres, b.readUtf(MAX_TEXTE));
+    }
+
+    private static void ecrireAction(ActionEditeur m, FriendlyByteBuf b) {
+        b.writeEnum(m.genre());
+        b.writeUtf(m.grade(), MAX_ID);
+        b.writeBoolean(m.def() != null);
+        if (m.def() != null) fr.heraliz.grades.Grade.ecrireDef(b, m.def());
+        b.writeBoolean(m.kit() != null);
+        if (m.kit() != null) ecrireKit(b, m.kit());
+    }
+
+    private static ActionEditeur lireAction(FriendlyByteBuf b) {
+        ActionEditeur.Genre genre = b.readEnum(ActionEditeur.Genre.class);
+        String grade = b.readUtf(MAX_ID);
+        fr.heraliz.grades.Grade.Def def = b.readBoolean() ? fr.heraliz.grades.Grade.lireDef(b) : null;
+        KitEdite kit = b.readBoolean() ? lireKit(b) : null;
+        return new ActionEditeur(genre, grade, def, kit);
     }
 
     private static void ecrireWarps(EtatWarps m, FriendlyByteBuf b) {
@@ -177,7 +297,9 @@ public final class ReseauGrades {
         b.writeVarInt(Math.min(m.kits().size(), MAX_KITS));
         for (int i = 0; i < Math.min(m.kits().size(), MAX_KITS); i++) {
             VueKit k = m.kits().get(i);
-            b.writeUtf(k.id(), MAX_ID);
+            b.writeUtf(k.id(), MAX_ID * 2);
+            b.writeUtf(k.grade(), MAX_ID);
+            b.writeUtf(k.nom(), MAX_ID);
             int n = Math.min(k.objets().size(), MAX_OBJETS);
             b.writeVarInt(n);
             for (int j = 0; j < n; j++) b.writeItem(k.objets().get(j));
@@ -185,7 +307,7 @@ public final class ReseauGrades {
             b.writeBoolean(k.debloque());
             b.writeVarLong(Math.max(0, k.resteMs()));
         }
-        b.writeUtf(m.kitJoueur(), MAX_ID);
+        b.writeUtf(m.kitJoueur(), MAX_ID * 2);
     }
 
     private static EtatKits lire(FriendlyByteBuf b) {
@@ -193,12 +315,12 @@ public final class ReseauGrades {
         int nk = Math.min(b.readVarInt(), MAX_KITS);
         List<VueKit> kits = new ArrayList<>(nk);
         for (int i = 0; i < nk; i++) {
-            String id = b.readUtf(MAX_ID);
+            String id = b.readUtf(MAX_ID * 2), grade = b.readUtf(MAX_ID), nom = b.readUtf(MAX_ID);
             int n = Math.min(b.readVarInt(), MAX_OBJETS);
             List<ItemStack> objets = new ArrayList<>(n);
             for (int j = 0; j < n; j++) objets.add(b.readItem());
-            kits.add(new VueKit(id, objets, b.readVarLong(), b.readBoolean(), b.readVarLong()));
+            kits.add(new VueKit(id, grade, nom, objets, b.readVarLong(), b.readBoolean(), b.readVarLong()));
         }
-        return new EtatKits(ouvrir, kits, b.readUtf(MAX_ID));
+        return new EtatKits(ouvrir, kits, b.readUtf(MAX_ID * 2));
     }
 }

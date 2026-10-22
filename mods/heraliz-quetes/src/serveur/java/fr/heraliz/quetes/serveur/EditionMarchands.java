@@ -204,7 +204,8 @@ final class EditionMarchands {
                 quoi = "^ " + l.get(r.index() - 1).objet();
             }
             case Reseau.Modif.AJOUTER_MAIN -> {
-                ItemStack main = p.getMainHandItem();
+                // objet de la case de la barre d'objets choisie dans l'écran (0 à 8)
+                ItemStack main = r.rarete() >= 0 && r.rarete() < 9 ? p.getInventory().getItem(r.rarete()) : ItemStack.EMPTY;
                 if (m.rachat || r.prix() < 1 || main.isEmpty() || main.is(HeralizQuetes.REGISTRE.get())) {
                     Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.main_vide"), 0xFF6B6B);
                     break;

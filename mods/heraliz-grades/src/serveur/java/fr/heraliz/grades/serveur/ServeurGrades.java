@@ -39,6 +39,7 @@ public final class ServeurGrades implements Partie {
         MinecraftForge.EVENT_BUS.addListener(CommandesGrades::enregistrer);
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> KitsServeur.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> LienDiscord.enregistrer(e.getDispatcher()));
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> EditeurServeur.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::nomAffiche);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ServeurGrades::nomTab);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::connexion);
@@ -50,10 +51,14 @@ public final class ServeurGrades implements Partie {
         // warps : menu /warp, seulement depuis le spawn
         WarpsServeur.brancher();
         TpaServeur.brancher();
+        // éditeur des grades des op (Registre des grades, /grades editeur)
+        EditeurServeur.brancher();
     }
 
     private static void demarrage(ServerAboutToStartEvent e) {
         java.nio.file.Path dossier = e.getServer().getServerDirectory().toPath().resolve("heraliz_grades");
+        // les définitions d'abord : les grades créés en jeu doivent exister avant de lire qui les a
+        DefinitionsGrades.charger(dossier);
         registre = new RegistreGrades(dossier);
         KitsServeur.demarrer(dossier);
         LienDiscord.demarrer(e.getServer());
@@ -89,6 +94,7 @@ public final class ServeurGrades implements Partie {
         if (registre == null || !(e.getEntity() instanceof ServerPlayer p)) return;
         PontBukkit.brancherChat();
         registre.noterNom(p.getUUID(), p.getGameProfile().getName());
+        EditeurServeur.envoyerDefinitions(p);
         rafraichir(p);
         TabServeur.maj(p.server, true);
     }
@@ -113,7 +119,7 @@ public final class ServeurGrades implements Partie {
             Boolean avant = AUTH.put(p.getUUID(), auth);
             if (avant != null && avant == auth) continue;
             PontBukkit.nomAffiche(p, nomBukkit(p));
-            if (registre.fiche(p.getUUID()) != null && registre.fiche(p.getUUID()).staff() != null) srv.getCommands().sendCommands(p);
+            if (registre.fiche(p.getUUID()) != null && registre.fiche(p.getUUID()).staff() != null || p.hasPermissions(4)) srv.getCommands().sendCommands(p);
         }
     }
 
