@@ -386,10 +386,10 @@ class LauncherService {
 
     async launch() {
         if (this.busy) throw new Error('Une préparation ou une partie est déjà en cours.')
-        if (!Config.getAccordCapture()) throw new Error('Accepte les captures d’écran de l’anticheat pour jouer (redémarre le launcher).')
         const saved = Config.getSelectedAccount()
         if (this.compteSite && !saved?.compte) throw new Error('Connecte-toi avec ton compte HeraliZ.')
         if (!saved || saved.rulesAccepted !== true) throw new Error('Choisis ton pseudo et accepte le règlement.')
+        if (!Config.getAccordCapture()) throw new Error('Accepte les captures d’écran de l’anticheat pour jouer (redémarre le launcher).')
         this.busy = true
         try {
             if (await this.partieDejaOuverte()) throw new Error('Minecraft est déjà ouvert. Ferme le jeu avant de relancer une partie.')
