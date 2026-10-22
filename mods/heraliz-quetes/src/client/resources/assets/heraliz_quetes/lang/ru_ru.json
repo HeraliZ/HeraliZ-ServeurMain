@@ -34,6 +34,7 @@
   "gui.heraliz_quetes.edition.reinitialiser": "Вернуть файл",
   "gui.heraliz_quetes.edition.vide": "Ничего не продаётся: возьмите предмет в руку и добавьте.",
   "gui.heraliz_quetes.edition.main_vide": "Возьмите предмет в руку",
+  "gui.heraliz_quetes.edition.faim": "Восстанавливает %s ед. сытости · %s гералов за ед.",
   "gui.heraliz_quetes.edition.regle": "Правило %s · %s",
   "gui.heraliz_quetes.edition.aide_rachat": "Цена за штуку в гералах · 0 = не скупает эту редкость · Enter или Сохранить",
   "heraliz_quetes.marchand.main_vide": "Возьмите в руку предмет для продажи.",
