@@ -46,8 +46,8 @@
     },
     "tacz:cz75": {
       "famille": "pistolet_9",
-      "rarete": "commun",
-      "degats": 4.14,
+      "rarete": "peu_commun",
+      "degats": 4.32,
       "tete": 1.6
     },
     "tacz:db_long": {
@@ -356,12 +356,6 @@
       "degats": 8.0,
       "tete": 1.6
     },
-    "arkaniaz:r8": {
-      "famille": "pistolet_50",
-      "rarete": "rare",
-      "degats": 8.0,
-      "tete": 1.6
-    },
     "arkaniaz:sr_2m": {
       "famille": "smg_9",
       "rarete": "peu_commun",
@@ -478,8 +472,8 @@
     },
     "maxstuff:db_50": {
       "famille": "pompe_balle",
-      "rarete": "legendaire",
-      "degats": 21.6,
+      "rarete": "peu_commun",
+      "degats": 19.2,
       "tete": 1.5
     },
     "maxstuff:db_short_tactical": {

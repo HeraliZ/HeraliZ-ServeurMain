@@ -330,18 +330,6 @@
    "dps_brut": 13.1,
    "dps": 52.4
   },
-  "arkaniaz:r8": {
-   "mult": 3.664,
-   "palier": "rare",
-   "origine": "boite",
-   "famille": "pistol",
-   "plombs": 1,
-   "rpm": 150.0,
-   "degats_tir_brut": 9.3,
-   "degats_tir": 34.1,
-   "dps_brut": 23.2,
-   "dps": 85.0
-  },
   "arkaniaz:sr_2m": {
    "mult": 1.487,
    "palier": "commun",

@@ -1,9 +1,0 @@
-{
-    "name": "arkaniaz.gun.r8.name",
-    "display": "arkaniaz:r8_display",
-    "data": "arkaniaz:r8_data",
-    "type": "pistol",
-    "tooltip": "Revolver à haute puissance.",
-    "item_type": "modern_kinetic",
-    "sort": 10
-}
