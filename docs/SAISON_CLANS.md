@@ -252,7 +252,12 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
 
 ## 11. Modèles à faire (rendus d'abord)
 
-- **Cœur de clan** : bloc « ultra clean », l'objet principal des clans.
+- **Cœur de clan** : bloc « ultra clean », l'objet principal des clans. Style **futuriste** (choix du 22/10 ; refusés :
+  noir et or, radio, étendard, coffre de récup). Proposition en cours : cristal d'énergie qui flotte entre trois bras,
+  socle rond à filets lumineux, **points du clan sur le socle**, **hologramme au-dessus qui fait défiler les rangs**
+  (PVE, PVP, events, général). Doit rester très léger en jeu (modèle simple, hologramme et rotation dessinés à part).
+  Rendus : `python mods/crac/outils/coeur_tc_rendus.py --apercu DOSSIER`.
+- **Armoire** : style « survie » **validé** le 22/10 (mêmes rendus).
 - **Armoire (TC) refaite** : l'actuelle est jugée très moche. Style apocalypse zombie, avec un **petit écran rouillé qui
   bugue** où s'affichent ce que la base demande (entretien) et le temps restant avant qu'elle disparaisse.
 
