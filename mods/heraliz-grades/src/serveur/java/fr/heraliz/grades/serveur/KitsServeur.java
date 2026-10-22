@@ -36,15 +36,15 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Kits : un par grade de la boutique, plus celui de Survivant (tout le monde). Contenu dans
- * {@code config/heraliz_grades/kits.json} (dans le dépôt : serveur/config/heraliz_grades/kits.json), relu tout seul quand
- * il change.
+ * Kits (2.0.0) : chaque grade a ses kits (0 à 8), réglés dans l'éditeur en jeu et gardés dans
+ * {@code heraliz_grades/definitions.json} ({@link DefinitionsGrades}).
  * <p>
  * Règles (pas de pay2win, pas de give) :
  * <ul>
- *    <li>chaque joueur ne peut prendre QU'UN kit de grade par recharge : celui de son grade boutique, sinon Survivant ;</li>
- *    <li>en plus, le kit Soutien (recharge à part) pour ceux qui portent le tag HeraliZ sur Discord (compte lié, vu par
- *    HeraliBot) ;</li>
+ *    <li>kits de Survivant et de la boutique : seulement ceux de son grade de la boutique s'il en a, sinon ceux de
+ *    Survivant ; une seule recharge par kit quel que soit le grade (changer de grade n'en donne pas un de plus) ;</li>
+ *    <li>en plus, les kits de ses grades du staff et spéciaux (Streamer…) et les kits Soutien s'il porte le tag HeraliZ
+ *    sur Discord (compte lié, vu par HeraliBot), chacun avec sa recharge ;</li>
  *    <li>le joueur ne fait qu'envoyer un identifiant : grade, recharge, connexion AuthMe, place dans l'inventaire et
  *    contenu sont vérifiés ici ;</li>
  *    <li>la recharge est écrite AVANT de donner les objets (si l'écriture échoue, rien n'est donné) ;</li>
@@ -55,31 +55,19 @@ final class KitsServeur {
     private static final Logger LOG = LogUtils.getLogger();
     private static final long ANTI_SPAM_MS = 1000;
 
-    record Kit(Grade grade, long rechargeMs, List<ItemStack> objets) {
-    }
-
-    private static Map<Grade, Kit> kits = Collections.emptyMap();
-    private static long dateFichier = Long.MIN_VALUE;
     static Recharges recharges;
     private static final Map<UUID, Long> DERNIERE_DEMANDE = new HashMap<>();
 
     private KitsServeur() {
     }
 
-    private static Path fichier() {
-        return FMLPaths.CONFIGDIR.get().resolve("heraliz_grades").resolve("kits.json");
-    }
-
     static void demarrer(Path dossier) {
         recharges = new Recharges(dossier);
-        dateFichier = Long.MIN_VALUE;
         DERNIERE_DEMANDE.clear();
-        relireSiChange();
     }
 
     static void arreter() {
         recharges = null;
-        kits = Collections.emptyMap();
         DERNIERE_DEMANDE.clear();
     }
 
@@ -87,87 +75,62 @@ final class KitsServeur {
         DERNIERE_DEMANDE.remove(uuid);
     }
 
-    // ------------------------------------------------------------------ lecture de kits.json
-    /** Relit kits.json s'il a changé. Un fichier faux garde les kits d'avant (et le dit dans la console). */
+    /** Plus rien à relire : les kits sont dans les définitions des grades (gardé pour la boucle du serveur). */
     static void relireSiChange() {
-        Path f = fichier();
-        long date;
-        try {
-            date = Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : -1;
-        } catch (Exception ex) {
-            return;
-        }
-        if (date == dateFichier) return;
-        dateFichier = date;
-        if (date < 0) {
-            kits = Collections.emptyMap();
-            LOG.warn("[grades] {} absent : aucun kit", f);
-            return;
-        }
-        try {
-            kits = lire(JsonParser.parseString(Files.readString(f, StandardCharsets.UTF_8)).getAsJsonObject());
-            LOG.info("[grades] {} kit(s) chargé(s) depuis {}", kits.size(), f);
-        } catch (Exception ex) {
-            LOG.error("[grades] {} faux ({}) : les kits d'avant sont gardés ({} kit(s))", f, ex.getMessage(), kits.size());
-        }
-    }
-
-    private static Map<Grade, Kit> lire(JsonObject racine) throws Exception {
-        Map<Grade, Kit> out = new EnumMap<>(Grade.class);
-        for (JsonElement e : racine.getAsJsonArray("kits")) {
-            JsonObject o = e.getAsJsonObject();
-            Grade g = Grade.parId(o.get("grade").getAsString());
-            if (g == null || g.type == Grade.Type.STAFF) throw new IllegalArgumentException("grade de kit invalide : " + o.get("grade"));
-            if (out.containsKey(g)) throw new IllegalArgumentException("deux kits pour " + g.id);
-            double heures = o.get("recharge_heures").getAsDouble();
-            if (!(heures >= 1 && heures <= 24 * 30)) throw new IllegalArgumentException(g.id + " : recharge_heures entre 1 et 720");
-            List<ItemStack> objets = new ArrayList<>();
-            for (JsonElement x : o.getAsJsonArray("objets")) {
-                JsonObject ob = x.getAsJsonObject();
-                ResourceLocation id = new ResourceLocation(ob.get("item").getAsString());
-                if (!ForgeRegistries.ITEMS.containsKey(id)) throw new IllegalArgumentException(g.id + " : objet inconnu " + id);
-                Item item = ForgeRegistries.ITEMS.getValue(id);
-                int nombre = ob.has("nombre") ? ob.get("nombre").getAsInt() : 1;
-                if (nombre < 1 || nombre > 64) throw new IllegalArgumentException(g.id + " : nombre entre 1 et 64 pour " + id);
-                CompoundTag nbt = ob.has("nbt") ? TagParser.parseTag(ob.get("nbt").getAsString()) : null;
-                ItemStack modele = new ItemStack(item);
-                if (nbt != null) modele.setTag(nbt);
-                int max = Math.max(1, modele.getMaxStackSize());
-                for (int reste = nombre; reste > 0; reste -= max) {
-                    ItemStack s = modele.copy();
-                    s.setCount(Math.min(reste, max));
-                    objets.add(s);
-                }
-            }
-            if (objets.isEmpty() || objets.size() > 27) throw new IllegalArgumentException(g.id + " : entre 1 et 27 piles d'objets");
-            out.put(g, new Kit(g, Math.round(heures * 3_600_000L), List.copyOf(objets)));
-        }
-        return out;
     }
 
     // ------------------------------------------------------------------ règles
-    /** Le seul kit que ce joueur peut prendre : celui de son grade boutique s'il existe, sinon Survivant. */
-    private static Kit kitDe(UUID uuid) {
+    /** Groupe de recharge d'un grade : « base » pour Survivant et la boutique, « soutien », sinon son identifiant. */
+    private static String groupe(Grade g) {
+        return g.type == Grade.Type.BASE || g.type == Grade.Type.BOUTIQUE ? "base" : g.type == Grade.Type.SOUTIEN ? "soutien" : g.id;
+    }
+
+    private static String idVue(DefinitionsGrades.KitDef k) {
+        return k.grade() + "/" + k.id();
+    }
+
+    /** Le grade dont ce joueur prend les kits de base : sa boutique si elle a des kits, sinon Survivant. */
+    private static Grade gradeDeBase(UUID uuid) {
         RegistreGrades r = ServeurGrades.registre;
         RegistreGrades.Fiche f = r == null ? null : r.fiche(uuid);
-        if (f != null && f.boutique() != null && kits.containsKey(f.boutique())) return kits.get(f.boutique());
-        return kits.get(Grade.SURVIVANT);
+        if (f != null && f.boutique() != null && !DefinitionsGrades.kitsDe(f.boutique()).isEmpty()) return f.boutique();
+        return Grade.SURVIVANT;
     }
 
-    /** Ordre d'affichage du menu. */
-    private static final Grade[] ORDRE = {Grade.SURVIVANT, Grade.RESCAPE, Grade.TRAQUEUR, Grade.ROI_DE_LA_ZONE, Grade.SOUTIEN};
-
-    /** Vrai si ce joueur peut prendre ce kit : celui de son grade, ou le kit Soutien s'il porte le tag. */
-    private static boolean debloque(UUID uuid, Kit k) {
+    /** Vrai si ce joueur peut prendre ce kit. */
+    private static boolean debloque(UUID uuid, DefinitionsGrades.KitDef k) {
         if (k == null) return false;
-        if (k.grade() == Grade.SOUTIEN) return LienDiscord.estSoutien(uuid);
-        return k == kitDe(uuid);
+        Grade g = Grade.parId(k.grade());
+        if (g == null) return false;
+        return switch (g.type) {
+            case SOUTIEN -> LienDiscord.estSoutien(uuid);
+            case BASE, BOUTIQUE -> g == gradeDeBase(uuid);
+            default -> {
+                RegistreGrades r = ServeurGrades.registre;
+                RegistreGrades.Fiche f = r == null ? null : r.fiche(uuid);
+                yield f != null && f.a(g);
+            }
+        };
     }
 
-    private static long reste(UUID uuid, Kit k, long maintenant) {
+    /** Affiché dans le menu : Survivant, la boutique et Soutien pour tous ; staff et spéciaux seulement pour qui les a. */
+    private static boolean visible(UUID uuid, Grade g, DefinitionsGrades.KitDef k) {
+        return g.type == Grade.Type.BASE || g.type == Grade.Type.BOUTIQUE || g.type == Grade.Type.SOUTIEN || debloque(uuid, k);
+    }
+
+    private static String cle(UUID uuid, DefinitionsGrades.KitDef k) {
+        Grade g = Grade.parId(k.grade());
+        return Recharges.cle(uuid, g == null ? k.grade() : groupe(g), k.id());
+    }
+
+    private static long rechargeMs(DefinitionsGrades.KitDef k) {
+        return k.rechargeH() * 3_600_000L;
+    }
+
+    private static long reste(UUID uuid, DefinitionsGrades.KitDef k, long maintenant) {
         if (k == null || recharges == null) return 0;
-        long d = recharges.dernier(Recharges.cle(uuid, k.grade() == Grade.SOUTIEN));
-        return d <= 0 ? 0 : Math.max(0, d + k.rechargeMs() - maintenant);
+        long d = recharges.dernier(cle(uuid, k));
+        return d <= 0 ? 0 : Math.max(0, d + rechargeMs(k) - maintenant);
     }
 
     private static MutableComponent msg(String cle, String fr, Object... args) {
@@ -178,18 +141,21 @@ final class KitsServeur {
     static void envoyerEtat(ServerPlayer p, boolean ouvrir) {
         List<ReseauGrades.VueKit> vues = new ArrayList<>();
         long maintenant = System.currentTimeMillis();
-        for (Grade g : ORDRE) {
-            Kit k = kits.get(g);
-            if (k == null) continue;
-            boolean ok = debloque(p.getUUID(), k);
-            vues.add(new ReseauGrades.VueKit(g.id, k.objets(), k.rechargeMs(), ok, ok ? reste(p.getUUID(), k, maintenant) : 0));
+        String sien = "";
+        List<Grade> grades = new ArrayList<>(Grade.values());
+        java.util.Collections.reverse(grades);
+        for (Grade g : grades) {
+            for (DefinitionsGrades.KitDef k : DefinitionsGrades.kitsDe(g)) {
+                if (k.objets().isEmpty() || !visible(p.getUUID(), g, k)) continue;
+                boolean ok = debloque(p.getUUID(), k);
+                if (ok && sien.isEmpty() && g == gradeDeBase(p.getUUID())) sien = idVue(k);
+                vues.add(new ReseauGrades.VueKit(idVue(k), g.id, k.nom(), k.objets(), rechargeMs(k), ok, ok ? reste(p.getUUID(), k, maintenant) : 0));
+            }
         }
-        Kit sien = kitDe(p.getUUID());
-        ReseauGrades.EtatKits etat = new ReseauGrades.EtatKits(ouvrir, vues, sien == null ? "" : sien.grade().id);
-        ReseauGrades.CANAL.send(PacketDistributor.PLAYER.with(() -> p), etat);
+        ReseauGrades.CANAL.send(PacketDistributor.PLAYER.with(() -> p), new ReseauGrades.EtatKits(ouvrir, vues, sien));
     }
 
-    /** Demande d'un kit venue du menu. */
+    /** Demande d'un kit venue du menu (identifiant « grade/kit »). */
     static void demande(ReseauGrades.Demande d) {
         ServerPlayer p = d.joueur();
         long maintenant = System.currentTimeMillis();
@@ -204,9 +170,9 @@ final class KitsServeur {
             p.sendSystemMessage(msg("indisponible", "Les kits sont indisponibles pour le moment."));
             return;
         }
-        Grade voulu = Grade.parId(d.id());
-        Kit k = voulu == null ? null : kits.get(voulu);
-        if (!debloque(p.getUUID(), k)) {
+        String[] morceaux = d.id().split("/", 2);
+        DefinitionsGrades.KitDef k = morceaux.length == 2 ? DefinitionsGrades.kit(morceaux[0], morceaux[1]) : null;
+        if (k == null || k.objets().isEmpty() || !debloque(p.getUUID(), k)) {
             p.sendSystemMessage(msg("pas_le_tien", "Ce kit n'est pas débloqué pour toi."));
             envoyerEtat(p, false);
             return;
@@ -227,7 +193,7 @@ final class KitsServeur {
             return;
         }
         // la recharge d'abord : si elle ne peut pas être écrite, rien n'est donné
-        if (!recharges.noter(Recharges.cle(p.getUUID(), k.grade() == Grade.SOUTIEN), maintenant)) {
+        if (!recharges.noter(cle(p.getUUID(), k), maintenant)) {
             p.sendSystemMessage(msg("indisponible", "Les kits sont indisponibles pour le moment."));
             return;
         }
@@ -236,8 +202,8 @@ final class KitsServeur {
             if (!p.getInventory().add(s) && !s.isEmpty()) p.drop(s, false);
         }
         p.containerMenu.broadcastChanges();
-        ServeurGrades.registre.journaliser("kit | " + p.getGameProfile().getName() + " (" + p.getUUID() + ") | " + k.grade().id);
-        p.sendSystemMessage(msg("recu", "Kit %s récupéré.", k.grade().nom()));
+        ServeurGrades.registre.journaliser("kit | " + p.getGameProfile().getName() + " (" + p.getUUID() + ") | " + idVue(k));
+        p.sendSystemMessage(msg("recu", "Kit %s récupéré.", k.nom()));
         envoyerEtat(p, false);
     }
 

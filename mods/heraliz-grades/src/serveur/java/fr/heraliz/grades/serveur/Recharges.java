@@ -17,8 +17,8 @@ import java.util.UUID;
 
 /**
  * Dernier kit pris par chaque joueur (heure en ms) : {@code heraliz_grades/recharges.json} à la racine du serveur.
- * Clé = UUID du joueur pour le kit de son grade (une seule recharge quel que soit ce grade : changer de grade ne permet pas
- * d'en prendre deux), UUID + « :soutien » pour le kit Soutien (recharge à part). Même règle que
+ * Clé : voir {@link #cle} (une seule recharge par kit de Survivant ou de la boutique quel que soit le grade : changer de
+ * grade ne permet pas d'en prendre deux). Même règle que
  * le registre des grades : un fichier illisible n'est jamais écrasé et plus aucun kit ne se prend tant qu'il l'est.
  */
 final class Recharges {
@@ -41,15 +41,22 @@ final class Recharges {
         }
     }
 
-    /** Clé du fichier vérifiée (UUID, éventuellement suivi de « :soutien ») ; exception sinon. */
+    /** Clé du fichier vérifiée (UUID, éventuellement suivi de « :… ») ; exception sinon. */
     private static String cleValide(String cle) {
-        String base = cle.endsWith(":soutien") ? cle.substring(0, cle.length() - 8) : cle;
-        UUID.fromString(base);
+        int i = cle.indexOf(':');
+        UUID.fromString(i < 0 ? cle : cle.substring(0, i));
         return cle;
     }
 
-    static String cle(UUID uuid, boolean soutien) {
-        return soutien ? uuid + ":soutien" : uuid.toString();
+    /**
+     * Clé d'un kit (2.0.0) : groupe « base » (kits de Survivant et de la boutique, une seule recharge quel que soit le
+     * grade), « soutien », ou l'identifiant d'un grade du staff ou spécial. Le kit « kit » des groupes base et soutien garde
+     * la clé d'avant la 2.0.0 (UUID, UUID:soutien) : les recharges en cours sont gardées.
+     */
+    static String cle(UUID uuid, String groupe, String kit) {
+        if ("kit".equals(kit) && "base".equals(groupe)) return uuid.toString();
+        if ("kit".equals(kit) && "soutien".equals(groupe)) return uuid + ":soutien";
+        return uuid + ":" + groupe + ":" + kit;
     }
 
     boolean illisible() {
@@ -76,17 +83,20 @@ final class Recharges {
         }
     }
 
-    /** Remet les recharges du joueur (grade et Soutien) à zéro ; faux s'il n'en avait pas ou si l'écriture échoue. */
+    /** Remet toutes les recharges de kits du joueur à zéro ; faux s'il n'en avait pas ou si l'écriture échoue. */
     boolean effacer(UUID uuid) {
-        String a = cle(uuid, false), b = cle(uuid, true);
-        if (illisible || !(derniers.containsKey(a) || derniers.containsKey(b))) return false;
-        Long avantA = derniers.remove(a), avantB = derniers.remove(b);
+        String u = uuid.toString();
+        Map<String, Long> avant = new HashMap<>();
+        derniers.forEach((c, t) -> {
+            if (c.equals(u) || c.startsWith(u + ":")) avant.put(c, t);
+        });
+        if (illisible || avant.isEmpty()) return false;
+        avant.keySet().forEach(derniers::remove);
         try {
             sauver();
             return true;
         } catch (IOException ex) {
-            if (avantA != null) derniers.put(a, avantA);
-            if (avantB != null) derniers.put(b, avantB);
+            derniers.putAll(avant);
             LOG.error("[grades] écriture de {} impossible : {}", fichier, ex.toString());
             return false;
         }

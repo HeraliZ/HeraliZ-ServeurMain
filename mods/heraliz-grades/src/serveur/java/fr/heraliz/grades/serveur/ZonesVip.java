@@ -116,7 +116,7 @@ final class ZonesVip {
     // ------------------------------------------------------------------ règle
     /** Ce joueur peut-il entrer dans une zone VIP ? */
     static boolean permis(ServerPlayer p) {
-        return p.isCreative() || p.isSpectator() || GradesApi.rangBoutique(p.getUUID()) >= 1;
+        return p.isCreative() || p.isSpectator() || PermsServeur.valeur(p.getUUID(), fr.heraliz.grades.PermsGrades.ZONES_VIP) >= 1;
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {

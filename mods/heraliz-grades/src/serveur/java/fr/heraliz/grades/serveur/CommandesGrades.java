@@ -30,7 +30,7 @@ import java.util.UUID;
 final class CommandesGrades {
     private static final SuggestionProvider<CommandSourceStack> JOUEURS = (c, b) -> SharedSuggestionProvider.suggest(c.getSource().getServer().getPlayerNames(), b);
     private static final SuggestionProvider<CommandSourceStack> GRADES = (c, b) -> SharedSuggestionProvider.suggest(
-            Arrays.stream(Grade.values()).filter(Grade::attribuable).map(g -> g.id), b);
+            Grade.values().stream().filter(Grade::attribuable).map(g -> g.id), b);
 
     private CommandesGrades() {
     }
@@ -93,7 +93,8 @@ final class CommandesGrades {
         String nom = StringArgumentType.getString(c, "joueur"), id = StringArgumentType.getString(c, "grade");
         Grade g = Grade.parId(id);
         if (g == null) {
-            s.sendFailure(msg("grade_inconnu", "Grade inconnu : %s. Grades possibles : fondateur, moderateur, helper, rescape, traqueur, roi_de_la_zone.", id));
+            s.sendFailure(msg("grade_inconnu_liste", "Grade inconnu : %1$s. Grades possibles : %2$s.", id,
+                    String.join(", ", Grade.values().stream().filter(Grade::attribuable).map(x -> x.id).toList())));
             return 0;
         }
         if (g.type == Grade.Type.SOUTIEN) {
@@ -130,6 +131,18 @@ final class CommandesGrades {
         return 0;
     }
 
+    private static Component speciaux(RegistreGrades.Fiche f) {
+        if (f == null || f.speciaux().isEmpty()) return msg("aucun", "aucun");
+        MutableComponent c = Component.empty();
+        boolean premier = true;
+        for (Grade g : f.speciaux()) {
+            if (!premier) c.append(", ");
+            c.append(g.nom());
+            premier = false;
+        }
+        return c;
+    }
+
     private static Component ouAucun(Grade g) {
         return g != null ? g.nom() : msg("aucun", "aucun");
     }
@@ -141,7 +154,8 @@ final class CommandesGrades {
         Map.Entry<UUID, String> cible = trouver(s.getServer(), nom);
         RegistreGrades.Fiche f = r == null || cible == null ? null : r.fiche(cible.getKey());
         String pseudo = cible != null ? cible.getValue() : nom;
-        s.sendSuccess(() -> msg("voir", "%1$s : staff %2$s, boutique %3$s", pseudo, ouAucun(f == null ? null : f.staff()), ouAucun(f == null ? null : f.boutique())), false);
+        s.sendSuccess(() -> msg("voir2", "%1$s : staff %2$s, boutique %3$s, spéciaux %4$s", pseudo, ouAucun(f == null ? null : f.staff()),
+                ouAucun(f == null ? null : f.boutique()), speciaux(f)), false);
         return 1;
     }
 
@@ -156,7 +170,7 @@ final class CommandesGrades {
         s.sendSuccess(() -> msg("liste", "Joueurs gradés (%s) :", String.valueOf(tous.size())), false);
         for (Map.Entry<UUID, RegistreGrades.Fiche> e : tous) {
             RegistreGrades.Fiche f = e.getValue();
-            s.sendSuccess(() -> msg("voir", "%1$s : staff %2$s, boutique %3$s", f.nom(), ouAucun(f.staff()), ouAucun(f.boutique())), false);
+            s.sendSuccess(() -> msg("voir2", "%1$s : staff %2$s, boutique %3$s, spéciaux %4$s", f.nom(), ouAucun(f.staff()), ouAucun(f.boutique()), speciaux(f)), false);
         }
         return 1;
     }

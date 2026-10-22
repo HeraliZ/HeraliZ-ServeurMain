@@ -47,12 +47,12 @@ public final class TabHeraliz {
 
     private record Joueur(PlayerInfo info, String nom, Grade grade, String clan, int couleurClan) {
         boolean staff() {
-            return grade.type == Grade.Type.STAFF;
+            return grade.colonneStaff;
         }
 
         /** Tri : staff du plus haut au plus bas, puis boutique, puis Survivant ; puis le pseudo. */
         int poids() {
-            return grade.type == Grade.Type.STAFF ? 100 + grade.rang : grade.type == Grade.Type.BOUTIQUE ? 10 + grade.rang : 0;
+            return grade.ordre;
         }
     }
 

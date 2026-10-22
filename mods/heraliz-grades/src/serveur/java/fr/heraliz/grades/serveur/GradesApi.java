@@ -24,6 +24,19 @@ public final class GradesApi {
         return f == null || f.boutique() == null ? 0 : f.boutique().rang;
     }
 
+    /**
+     * Valeur d'une permission de grade pour ce joueur (2.0.0, réglée dans l'éditeur des grades) : le meilleur réglage de
+     * ses grades, sinon celui de Survivant. Clés : {@code tpa_recharge}, {@code tpa_delai}, {@code home_recharge},
+     * {@code rtp_recharge} (secondes), {@code homes} (nombre), {@code planque_lignes}, {@code coffre_vip_lignes} (lignes de
+     * 9 cases, 0 = pas d'accès), {@code zones_vip} (0 ou 1). -1 pour une clé inconnue ou hors d'un serveur démarré.
+     * Lue par réflexion par CRac (homes, recharges) et HeraliZ Utils (coffres personnels).
+     */
+    public static int perm(UUID joueur, String cle) {
+        fr.heraliz.grades.PermsGrades.Perm p = fr.heraliz.grades.PermsGrades.parCle(cle);
+        if (p == null || joueur == null || ServeurGrades.registre == null) return -1;
+        return PermsServeur.valeur(joueur, p);
+    }
+
     /** Identifiant du grade affiché du joueur (« traqueur », « helper »... ; « survivant » par défaut). */
     public static String gradeAffiche(UUID joueur) {
         RegistreGrades r = ServeurGrades.registre;

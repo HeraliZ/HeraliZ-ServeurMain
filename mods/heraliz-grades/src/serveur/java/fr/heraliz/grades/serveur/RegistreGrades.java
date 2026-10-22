@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,25 +37,54 @@ final class RegistreGrades {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /** Grades enregistrés d'un joueur (staff et boutique peuvent être null) ; nom = dernier pseudo connu. */
-    record Fiche(String nom, Grade staff, Grade boutique) {
-        boolean vide() {
-            return staff == null && boutique == null;
+    /**
+     * Grades enregistrés d'un joueur : au plus un du staff, au plus un de la boutique, et des grades spéciaux (Streamer…) ;
+     * nom = dernier pseudo connu.
+     */
+    record Fiche(String nom, Grade staff, Grade boutique, Set<Grade> speciaux) {
+        Fiche(String nom, Grade staff, Grade boutique) {
+            this(nom, staff, boutique, Set.of());
         }
 
+        boolean vide() {
+            return staff == null && boutique == null && speciaux.isEmpty();
+        }
+
+        /** Tous ses grades enregistrés (sans Survivant). */
+        List<Grade> grades() {
+            List<Grade> l = new ArrayList<>();
+            if (staff != null) l.add(staff);
+            if (boutique != null) l.add(boutique);
+            l.addAll(speciaux);
+            return l;
+        }
+
+        /** Grade affiché devant le pseudo : celui qui a le plus haut rang d'affichage parmi ceux qui s'affichent. */
         Grade affiche() {
-            return staff != null ? staff : boutique != null ? boutique : Grade.SURVIVANT;
+            Grade best = null;
+            for (Grade g : grades()) if (g.prefixe && (best == null || g.ordre > best.ordre)) best = g;
+            return best != null ? best : Grade.SURVIVANT;
         }
 
         boolean a(Grade g) {
-            return g == Grade.SURVIVANT || staff == g || boutique == g;
+            return g == Grade.SURVIVANT || staff == g || boutique == g || speciaux.contains(g);
         }
 
         Fiche avec(Grade g, boolean present) {
             Grade s = staff, b = boutique;
+            Set<Grade> sp = new LinkedHashSet<>(speciaux);
             if (g.type == Grade.Type.STAFF) s = present ? g : (staff == g ? null : staff);
             else if (g.type == Grade.Type.BOUTIQUE) b = present ? g : (boutique == g ? null : boutique);
-            return new Fiche(nom, s, b);
+            else if (present) sp.add(g);
+            else sp.remove(g);
+            return new Fiche(nom, s, b, Set.copyOf(sp));
+        }
+
+        /** La même fiche sans ce grade (grade supprimé de l'éditeur, ou qui a changé de famille). */
+        Fiche sans(Grade g) {
+            Set<Grade> sp = new LinkedHashSet<>(speciaux);
+            sp.remove(g);
+            return new Fiche(nom, staff == g ? null : staff, boutique == g ? null : boutique, Set.copyOf(sp));
         }
     }
 
@@ -89,7 +120,15 @@ final class RegistreGrades {
                 JsonObject o = e.getValue().getAsJsonObject();
                 Grade staff = lireGrade(o, "staff", Grade.Type.STAFF), boutique = lireGrade(o, "boutique", Grade.Type.BOUTIQUE);
                 String nom = o.has("nom") ? o.get("nom").getAsString() : "?";
-                Fiche f = new Fiche(nom, staff, boutique);
+                Set<Grade> speciaux = new LinkedHashSet<>();
+                if (o.has("speciaux")) {
+                    for (JsonElement x : o.getAsJsonArray("speciaux")) {
+                        Grade g = Grade.parId(x.getAsString());
+                        if (g != null && g.type == Grade.Type.SPECIAL) speciaux.add(g);
+                        else LOG.warn("[grades] {} : grade spécial « {} » inconnu, ignoré", nom, x.getAsString());
+                    }
+                }
+                Fiche f = new Fiche(nom, staff, boutique, Set.copyOf(speciaux));
                 if (!f.vide()) fiches.put(uuid, f);
             }
             LOG.info("[grades] {} joueur(s) gradé(s) chargé(s) depuis {}", fiches.size(), fichier);
@@ -100,10 +139,14 @@ final class RegistreGrades {
         }
     }
 
+    /** Grade d'une case staff / boutique ; un grade supprimé ou d'une autre famille est ignoré (pas une erreur de fichier). */
     private static Grade lireGrade(JsonObject o, String cle, Grade.Type type) {
         if (!o.has(cle) || o.get(cle).isJsonNull()) return null;
         Grade g = Grade.parId(o.get(cle).getAsString());
-        if (g == null || g.type != type) throw new IllegalStateException("grade « " + o.get(cle).getAsString() + " » invalide pour " + cle);
+        if (g == null || g.type != type) {
+            LOG.warn("[grades] grade « {} » inconnu ou d'une autre famille pour {}, ignoré", o.get(cle).getAsString(), cle);
+            return null;
+        }
         return g;
     }
 
@@ -114,6 +157,11 @@ final class RegistreGrades {
             o.addProperty("nom", f.nom());
             if (f.staff() != null) o.addProperty("staff", f.staff().id);
             if (f.boutique() != null) o.addProperty("boutique", f.boutique().id);
+            if (!f.speciaux().isEmpty()) {
+                com.google.gson.JsonArray sp = new com.google.gson.JsonArray();
+                f.speciaux().forEach(g -> sp.add(g.id));
+                o.add("speciaux", sp);
+            }
             joueurs.add(uuid.toString(), o);
         });
         JsonObject racine = new JsonObject();
@@ -157,14 +205,46 @@ final class RegistreGrades {
     }
 
     private static int poids(Fiche f) {
-        return (f.staff() != null ? 10 + f.staff().rang : 0) * 10 + (f.boutique() != null ? f.boutique().rang : 0);
+        return f.affiche().ordre;
+    }
+
+    /** Joueurs qui ont ce grade (uuid -> dernier pseudo connu). */
+    List<Map.Entry<UUID, String>> membres(Grade g) {
+        List<Map.Entry<UUID, String>> l = new ArrayList<>();
+        for (Map.Entry<UUID, Fiche> e : tous()) if (e.getValue().a(g)) l.add(Map.entry(e.getKey(), e.getValue().nom()));
+        return l;
+    }
+
+    /** Retire ce grade à tout le monde (grade supprimé ou changé de famille dans l'éditeur) ; faux si l'écriture échoue. */
+    boolean retirerPartout(Grade g, String auteur) {
+        if (illisible) return false;
+        Map<UUID, Fiche> avant = new HashMap<>(fiches);
+        boolean change = false;
+        for (Map.Entry<UUID, Fiche> e : new ArrayList<>(fiches.entrySet())) {
+            if (!e.getValue().grades().contains(g)) continue;
+            Fiche f = e.getValue().sans(g);
+            if (f.vide()) fiches.remove(e.getKey());
+            else fiches.put(e.getKey(), f);
+            journaliser(auteur + " | retirer (grade supprimé ou changé de famille) | " + e.getValue().nom() + " (" + e.getKey() + ") | " + g.id);
+            change = true;
+        }
+        if (!change) return true;
+        try {
+            sauver();
+            return true;
+        } catch (IOException ex) {
+            fiches.clear();
+            fiches.putAll(avant);
+            LOG.error("[grades] écriture de {} impossible : {}", fichier, ex.toString());
+            return false;
+        }
     }
 
     /** Tient à jour le dernier pseudo connu (pas de journal, pas d'écriture si rien ne change). */
     void noterNom(UUID uuid, String nom) {
         Fiche f = fiches.get(uuid);
         if (illisible || f == null || f.nom().equals(nom)) return;
-        fiches.put(uuid, new Fiche(nom, f.staff(), f.boutique()));
+        fiches.put(uuid, new Fiche(nom, f.staff(), f.boutique(), f.speciaux()));
         try {
             sauver();
         } catch (IOException ex) {
@@ -178,7 +258,7 @@ final class RegistreGrades {
         if (illisible) return Resultat.ILLISIBLE;
         if (!g.attribuable()) return Resultat.ERREUR;
         Fiche avant = fiches.get(uuid);
-        Fiche base = avant != null ? new Fiche(nom, avant.staff(), avant.boutique()) : new Fiche(nom, null, null);
+        Fiche base = avant != null ? new Fiche(nom, avant.staff(), avant.boutique(), avant.speciaux()) : new Fiche(nom, null, null);
         if (donner && base.a(g)) return Resultat.DEJA;
         if (!donner && !base.a(g)) return Resultat.ABSENT;
         Fiche apres = base.avec(g, donner);
@@ -192,7 +272,7 @@ final class RegistreGrades {
             LOG.error("[grades] écriture de {} impossible, changement annulé : {}", fichier, ex.toString());
             return Resultat.ERREUR;
         }
-        Grade ancien = avant == null ? null : g.type == Grade.Type.STAFF ? avant.staff() : avant.boutique();
+        Grade ancien = avant == null ? null : g.type == Grade.Type.STAFF ? avant.staff() : g.type == Grade.Type.BOUTIQUE ? avant.boutique() : null;
         String remplace = donner && ancien != null ? " (remplace " + ancien.id + ")" : "";
         journaliser(auteur + " | " + (donner ? "donner" : "retirer") + " | " + nom + " (" + uuid + ") | " + g.id + remplace);
         return Resultat.OK;
