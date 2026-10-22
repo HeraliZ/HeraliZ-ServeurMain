@@ -1,7 +1,7 @@
-# Saisons des clans — règles (brouillon à valider)
+# Saisons des clans — règles
 
-Document de conception : **rien n'est codé**. Il rassemble les décisions du propriétaire (22/10) et les propositions
-encore à valider (marquées **[à valider]**). Tous les chiffres sont des réglages du serveur, à ajuster pendant la bêta
+Décisions du propriétaire (22/10) et propositions encore à valider (marquées **[à valider]** : codées avec la valeur
+proposée, à changer si besoin). **Codé le 22/10, rien testé en jeu** : voir §13 (ce qui marche, où, et ce qui reste). Tous les chiffres sont des réglages du serveur, à ajuster pendant la bêta
 sans refabriquer les mods.
 
 ---
@@ -226,10 +226,10 @@ rendre à chaque nouvelle saison, même avec une nouvelle carte.
 | Se faire tuer par un 2e compte | rien pour même PC / même IP ; victime armée ou en armure (hors kit) |
 | Tuer le même joueur en boucle | ×1, ×0,5, puis 0 |
 | Deux clans complices qui se raident pour se passer des points | 15 % perdus, 10 % gagnés ; une prise par Purge |
-| Acheter chez un PNJ, revendre chez un autre | objets achetés marqués, aucun point à la revente |
-| Fabriquer, défaire, refabriquer | points du craft une seule fois ou selon les matériaux |
+| Acheter chez un PNJ, revendre chez un autre | aucun point pour un objet qu'un marchand vend |
+| Fabriquer, défaire, refabriquer ; poser une arme au sol et la ramasser table ouverte | arme ramassée exclue ; plafond par jour |
 | Farmer les zombies des vagues de capture ou du mode Zombies | ne comptent pas |
-| Boss invoqué | seulement les boss de la carte ou des events |
+| Boss invoqué | /summon, œuf : aucun point ; points partagés selon les dégâts |
 | AFK, macros, petites actions répétées | plafond par joueur et par jour |
 | Rejoindre le 1er clan juste avant la fin | clans figés les 7 derniers jours |
 | Dissoudre et refaire un clan | nouveau cœur à payer, points perdus |
@@ -269,3 +269,44 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
 2. Points de l'oil rig.
 3. Protection des nouvelles bases : 48 h avant une Purge, ou autre chose ?
 4. Les montants exacts du barème (à régler pendant la bêta).
+
+---
+
+## 13. Ce qui est codé (22/10) — rien testé en jeu
+
+**HeraliZ Clans 3.6.0** (`mods/heraliz-clansetbases`, `fr.heralisz.clans.saison`) :
+- barème : `serveur/config/heralisz_clans/saison.json` (fichier du dépôt qui fait foi, relu par `/saison recharger`) ;
+  état hors du monde : `heralisz_clans/saison_etat.json`, journal de chaque point `heralisz_clans/saison_journal.log`,
+  archives `heralisz_clans/saisons/saison_N.json` (classement et membres de chaque clan) ;
+- `/saison`, `/saison classement [general|pve|pvp|events]` ; staff (permission 4) : `/saison commencer <jours>`,
+  `/saison terminer confirmer`, `/saison points <tag> <pve|pvp|events> <±n> <motif>`, `/saison journal <tag>` ;
+- PVP (kill/mort hors match, hors spawn et monde du tutoriel ; même IP ; victime sans arme ni armure d'au moins Peu
+  commun, objets du kit exclus ; même victime ×1, ×0,5, 0 sur 6 h ; jamais sous 0) ; zombies (sauf vagues de capture) ;
+  boss (pas ceux invoqués, partagés selon les dégâts) ; quêtes de clan ; plafond 50 points par joueur et par jour pour
+  les petites actions ; verrou des 7 derniers jours (ni création ni entrée dans un clan) ;
+- arbre d'améliorations (onglet NIVEAU du menu K, `/clan ameliorer <branche>`) et niveaux jusqu'à 45
+  (`serveur/config/heralisz_clans/niveaux.json`) ; `/clan don` (objet de récupération Légendaire ou Unique en main → XP) ;
+- `fr.heralisz.clans.saison.SaisonApi` : API par réflexion pour les autres mods (ne jamais la renommer).
+
+**CRac 1.19.0-beta** :
+- **Purge** : `serveur/config/crac/purge.json` (créneaux, heure de Paris), `/purge`, staff `/purge forcer <min>`,
+  `/purge arreter`, `/purge recharger` ; hors Purge, explosifs sans effet sur les bases des clans ; base dont l'armoire a
+  été vue moins de 48 h avant le début d'une Purge : pas raidable pendant celle-ci (casser et reposer son armoire ne
+  remet pas ce compteur à zéro) ;
+- **prise du cœur** (clic droit, 90 s, 3 blocs, au moins un membre du clan attaquant vivant et pas à terre, barre
+  visible des deux clans, pas à travers un mur) ; **`/coeur deplacer`** (chef ou droit de gérer la base, à côté du
+  cœur, 50 000 hérals de la banque, 10 min pour le reposer, sinon tous les points perdus ; l'objet ne se jette pas) ;
+  cœur posé seulement par le chef ou un membre qui gère la base ; points et rangs affichés sur le cœur (toutes les 5 s) ;
+  clan dissous : cœur retiré ;
+- arbre : rayon de la base 20/23/26/29 (claim de niveau 4, `radiusL4`), plus d'agrandissement au métal renforcé ;
+  délai du `/home` 10/8/6/4 min ;
+- `fr.heraliz.crac.api.CoeurApi.clanAUnCoeur(UUID)` (lu par Clans ; cœur dans la zone de son armoire).
+
+**Autres mods** (serveur seulement) : Loot 0.9.12 (conteneurs T1 à T7 et salles à carte : une fois par remplissage, au
+premier qui ouvre), Quêtes 1.9.5 (quête principale, ventes d'objets qu'aucun marchand ne vend, armes fabriquées),
+Matchs 0.14.1 (ClashWar : podium et participation, ×2, au moins 4 clans différents).
+
+**Reste à faire** : le wipe global de saison (double panneau) et la liste des objets à vie hors du monde (§8) ; le
+contrôle du même PC par Spartan pour les kills ; prix et craft du cœur (aujourd'hui donné par le staff) ; oil rig et
+autres events ; couper le « Bonus de loot » de la boutique pendant la saison (§10) ; staff hors des clans classés ;
+afficher le classement sur un mur du spawn.
