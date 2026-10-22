@@ -53,6 +53,18 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 public final class ServerEventsServeur {
    private ServerEventsServeur() {
    }
+   /** Un joueur à terre ne saigne pas (effet « bleeding » de geckolib222 refusé tant qu'il est à terre). */
+   @SubscribeEvent
+   public static void onEffet(net.minecraftforge.event.entity.living.MobEffectEvent.Applicable event) {
+      LivingEntity l = event.getEntity();
+      if (l.level().isClientSide || !DownedManagerServeur.isDowned(l)) {
+         return;
+      }
+      if (DownedManagerServeur.SAIGNEMENT.equals(net.minecraftforge.registries.ForgeRegistries.MOB_EFFECTS.getKey(event.getEffectInstance().getEffect()))) {
+         event.setResult(Event.Result.DENY);
+      }
+   }
+
    @SubscribeEvent(priority = EventPriority.HIGH)
    public static void onDeath(LivingDeathEvent event) {
       LivingEntity e = event.getEntity();

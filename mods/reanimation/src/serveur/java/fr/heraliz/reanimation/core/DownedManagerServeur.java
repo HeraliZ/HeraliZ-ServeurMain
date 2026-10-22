@@ -227,8 +227,19 @@ public final class DownedManagerServeur {
          }
       }
 
+      retirerSaignement(e);
       sync(e, 1);
       return s;
+   }
+
+   /** Effet « bleeding » de geckolib222 : jamais sur un joueur à terre (demande du propriétaire du 23/10). */
+   public static final net.minecraft.resources.ResourceLocation SAIGNEMENT = new net.minecraft.resources.ResourceLocation("geckolib", "bleeding");
+
+   public static void retirerSaignement(LivingEntity e) {
+      net.minecraft.world.effect.MobEffect m = net.minecraftforge.registries.ForgeRegistries.MOB_EFFECTS.getValue(SAIGNEMENT);
+      if (m != null && e.hasEffect(m)) {
+         e.removeEffect(m);
+      }
    }
 
    public static void tick() {
@@ -668,11 +679,8 @@ public final class DownedManagerServeur {
       }
 
       e.invulnerableTime = 20;
-      if (e.level() instanceof ServerLevel level) {
-         level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, e.getX(), e.getY() + 0.5, e.getZ(), 70, 0.35, 0.45, 0.35, 0.45);
-         level.sendParticles(ParticleTypes.HEART, e.getX(), e.getY() + 1.2, e.getZ(), 6, 0.4, 0.3, 0.4, 0.1);
-         level.playSound((Player)null, e.getX(), e.getY(), e.getZ(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.55F, 1.35F);
-      }
+      // 23/10 (demande du propriétaire) : plus de particules de totem ni de cœurs, plus de son de totem en se relevant
+      // (effets de Minecraft, pas la DA du serveur)
 
       if (a != null) {
          tell(e, Component.translatable("message.reanimation.revived_by", new Object[]{a.getDisplayName()}));
