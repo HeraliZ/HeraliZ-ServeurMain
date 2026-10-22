@@ -21,6 +21,7 @@ public class HeralizGrades {
       IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
       ObjetRegistre.OBJETS.register(bus);
       ReseauGrades.enregistrer();
+      fr.heraliz.grades.reseau.ReseauBoutique.enregistrer();
       Parties.serveur(MODID, "fr.heraliz.grades.serveur.ServeurGrades", bus);
       Parties.client(MODID, "fr.heraliz.grades.client.ClientGrades", bus);
    }

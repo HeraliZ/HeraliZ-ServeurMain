@@ -131,7 +131,8 @@ final class CommandesGrades {
                 default -> msg("achat_recu", "Merci pour ton soutien ! Tu as le grade %s (%s).", g.nom(), duree);
             });
         }
-        return 1;
+        // déjà à vie : rien de gagné (la boutique en jeu rembourse quand la commande rend 0)
+        return a == RegistreGrades.Achat.VIE_DEJA ? 0 : 1;
     }
 
     private static int changer(CommandContext<CommandSourceStack> c, boolean donner) {

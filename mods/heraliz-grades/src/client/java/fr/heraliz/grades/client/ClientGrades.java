@@ -16,6 +16,9 @@ public final class ClientGrades implements Partie {
       fr.heraliz.grades.Grade.LANGUE = () -> net.minecraft.client.Minecraft.getInstance().getLanguageManager().getSelected();
       ReseauGrades.RECEPTION_DEFINITIONS.brancher(d -> fr.heraliz.grades.Grade.appliquer(d.grades(), true));
       ReseauGrades.RECEPTION_EDITEUR.brancher(EcranEditeurGrades::recevoir);
+      // Points Boutique : /boutique et /trade
+      fr.heraliz.grades.reseau.ReseauBoutique.RECEPTION_BOUTIQUE.brancher(EcranBoutique::recevoir);
+      fr.heraliz.grades.reseau.ReseauBoutique.RECEPTION_ECHANGE.brancher(EcranEchange::recevoir);
       MinecraftForge.EVENT_BUS.addListener(TabHeraliz::avantOverlay);
    }
 }

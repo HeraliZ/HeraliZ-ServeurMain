@@ -53,6 +53,15 @@ public final class ServeurGrades implements Partie {
         TpaServeur.brancher();
         // éditeur des grades des op (Registre des grades, /grades editeur)
         EditeurServeur.brancher();
+        // Points Boutique (solde du compte du site) : /boutique, /trade, /pb
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> CommandesPb.enregistrer(e.getDispatcher()));
+        BoutiqueServeur.brancher();
+        EchangeServeur.brancher();
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
+            if (e.phase != TickEvent.Phase.END) return;
+            BoutiqueServeur.tick();
+            EchangeServeur.tick();
+        });
     }
 
     private static void demarrage(ServerAboutToStartEvent e) {
@@ -62,6 +71,9 @@ public final class ServeurGrades implements Partie {
         registre = new RegistreGrades(dossier);
         KitsServeur.demarrer(dossier);
         LienDiscord.demarrer(e.getServer());
+        Pb.demarrer(e.getServer());
+        BoutiqueServeur.demarrer(e.getServer(), dossier);
+        EchangeServeur.demarrer(e.getServer(), dossier);
         AUTH.clear();
     }
 
@@ -70,6 +82,9 @@ public final class ServeurGrades implements Partie {
         KitsServeur.arreter();
         TabServeur.oublier();
         LienDiscord.arreter();
+        EchangeServeur.arreter();
+        BoutiqueServeur.arreter();
+        Pb.arreter();
         AUTH.clear();
     }
 
@@ -104,6 +119,7 @@ public final class ServeurGrades implements Partie {
         CLANS.remove(e.getEntity().getUUID());
         KitsServeur.oublier(e.getEntity().getUUID());
         LienDiscord.oublier(e.getEntity().getUUID());
+        EchangeServeur.deconnexion(e.getEntity().getUUID());
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
