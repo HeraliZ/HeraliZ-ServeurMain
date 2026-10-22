@@ -33,7 +33,8 @@ public final class CrateClientTicker {
 
     public static void tick(Level level, BlockPos pos, BlockState state, CrateBlockEntity be) {
         // au repos, une caisse ne fait strictement rien (ni particules, ni sons, ni calcul)
-        if (!be.isActive() || !(state.getBlock() instanceof CrateBlock)) return;
+        // animations dans le monde coupees (CrateRenderer.ANIMATIONS_MONDE) : ni particules, ni sons, ni secousse
+        if (!CrateRenderer.ANIMATIONS_MONDE || !be.isActive() || !(state.getBlock() instanceof CrateBlock)) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         double d2 = mc.player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);

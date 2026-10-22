@@ -53,22 +53,16 @@ public class CrateBlockEntityServeur extends CrateBlockEntity {
         super(pos, state);
     }
 
-    /** Clic droit (corps d'origine de CrateBlock.use, côté serveur). */
+    /**
+     * Clic droit (accroupi ou non, avec ou sans clé) : toujours l'interface d'ouverture façon CS:GO
+     * (CaseOpening.openScreen). Plus aucune animation dans le monde (choix du propriétaire, 22/10 : trop de lag) :
+     * avec une clé, la roue tourne dans l'écran ; le serveur vérifie et consomme la clé, tire le lot et le donne
+     * (CaseOpening.handleOpen). L'ancienne séquence dans le monde (tryOpen, denyOpen, CrateAnim) n'est plus appelée ;
+     * son code reste, ainsi que la fin d'une ouverture déjà en cours dans une sauvegarde (tickServeur).
+     */
     @Override
     public void clicDroit(ServerPlayer sp, boolean accroupi) {
-        // accroupi : interface d'ouverture (roue facon CS:GO, contenu et chances), sans animation dans le monde
-        if (accroupi) {
-            CaseOpening.openScreen(sp, type, worldPosition);
-            return;
-        }
-        ItemStack key = findKey(sp, type);
-        if (key.isEmpty()) {
-            boolean otherKey = sp.getMainHandItem().getItem() instanceof CrateKeyItem
-                    || sp.getOffhandItem().getItem() instanceof CrateKeyItem;
-            denyOpen(sp, otherKey);
-            return;
-        }
-        tryOpen(sp, key);
+        CaseOpening.openScreen(sp, type, worldPosition);
     }
 
     private static ItemStack findKey(Player player, CrateType type) {

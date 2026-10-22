@@ -49,8 +49,15 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
     public static final double IDLE_LOD_DISTANCE = 12.0;
     /** Objets de la roue dessines jusqu'a cette distance (blocs). */
     public static final double RING_ITEMS_DISTANCE = 20.0;
-    /** Nom flottant : visible jusqu'a cette distance (blocs), estompe sur les 4 derniers. */
-    public static final double HOLOGRAM_DISTANCE = 14.0;
+    /** Nom flottant : visible jusqu'a cette distance (blocs), estompe sur les HOLOGRAM_FADE derniers. */
+    public static final double HOLOGRAM_DISTANCE = 8.0;
+    public static final double HOLOGRAM_FADE = 2.0;
+    /**
+     * Animations des caisses dans le monde (sequence d'ouverture, tremblement, pieces animees au repos) : coupees
+     * (choix du proprietaire, 22/10 : trop de lag). On ouvre une caisse dans l'interface facon CS:GO ; la caisse reste
+     * figee, couvercle ferme. Le code des scenes est garde, jamais appele tant que ce reglage est faux.
+     */
+    public static final boolean ANIMATIONS_MONDE = false;
     /** Periode de l'horloge des animations (ticks) : garde une bonne precision en virgule flottante. */
     public static final long CLOCK_PERIOD = 240_000L;
 
@@ -75,7 +82,7 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
         float sh = level.getGameTime() - be.shakeTick + partial;
         boolean shaking = sh >= 0 && sh < 10;
 
-        if (!be.isActive() && !shaking) {
+        if (!ANIMATIONS_MONDE || (!be.isActive() && !shaking)) {
             // au repos : caisse figee, cuite une fois (en arriere-plan) et gardee par la carte graphique. Rien n'est
             // recalcule : trois appels de dessin par caisse, plus les quelques pieces animees au repos (Coeur de la Gemme).
             Design d = dist > IDLE_LOD_DISTANCE ? Designs.getLod(type.id) : Designs.get(type.id);
@@ -83,7 +90,7 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
             // version detaillee encore en cuisson : la version allegee en attendant
             if (baked == null && d.detail >= 1f) baked = StaticCrate.getAsync(Designs.getLod(type.id), yRot);
             SceneRenderer.Frame idle = null;
-            if (baked != null && d.animatedAtRest() && d.isBuilt()) {
+            if (ANIMATIONS_MONDE && baked != null && d.animatedAtRest() && d.isBuilt()) {
                 // pieces animees : l'opaque avant la caisse (derriere son verre), les lueurs apres (cachees par ses pieces)
                 list.clear();
                 d.idle(idleState(level, partial), list);
@@ -402,7 +409,7 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
      */
     private void hologramText(CrateType type, float fade, PoseStack pose, MultiBufferSource buf, double dist) {
         if (!ClientConfig.HOLOGRAM_TEXT.get() || dist > HOLOGRAM_DISTANCE) return;
-        float near = 1f - Ease.smooth((float) ((dist - (HOLOGRAM_DISTANCE - 4)) / 4));
+        float near = 1f - Ease.smooth((float) ((dist - (HOLOGRAM_DISTANCE - HOLOGRAM_FADE)) / HOLOGRAM_FADE));
         float alpha = fade * near;
         if (alpha < 0.05f) return;
         Font font = Minecraft.getInstance().font;
