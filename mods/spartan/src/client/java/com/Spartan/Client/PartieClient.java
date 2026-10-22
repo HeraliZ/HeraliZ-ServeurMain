@@ -1,5 +1,6 @@
 package com.Spartan.Client;
 
+import com.Spartan.Networks.CaptureRequestPacket;
 import com.Spartan.Networks.ChallengePacket;
 import com.Spartan.Networks.ChallengeResponsePacket;
 import com.Spartan.Networks.ModMessages;
@@ -30,6 +31,8 @@ public final class PartieClient implements Partie {
                     Fingerprint.answer(c.nonce(), c.variant(), c.indices())));
         } else if (paquet instanceof ScanRequestPacket s) {
             ClientScanService.onRequest(s);
+        } else if (paquet instanceof CaptureRequestPacket c) {
+            CaptureEcran.prendre(c.captureId());
         }
     }
 }

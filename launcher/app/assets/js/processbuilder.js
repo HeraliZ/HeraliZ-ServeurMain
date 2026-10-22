@@ -124,9 +124,13 @@ class ProcessBuilder {
         return child
     }
 
-    /** Environnement du jeu (spartan.js) : jeton signé par le site, aucune variable d'injection, rien de l'AppImage. */
+    /**
+     * Environnement du jeu (spartan.js) : jeton signé par le site, accord pour les captures d'écran, aucune variable
+     * d'injection, rien de l'AppImage.
+     */
     environnement(base = process.env) {
-        return Spartan.environnementJeu(this.jetonSpartan, ProcessBuilder.sansAppImage(base))
+        return Spartan.environnementJeu(this.jetonSpartan, ProcessBuilder.sansAppImage(base),
+            ConfigManager.getAccordCapture())
     }
 
     /** Fichier de la console du jeu (descripteur ouvert), ou null s'il ne peut pas être créé : console ignorée. */

@@ -120,7 +120,8 @@ public class DiscordWebhook {
                     + "Content-Type: application/json\r\n\r\n").getBytes(utf8));
             body.writeBytes(avecFil(payload, nom).toString().getBytes(utf8));
             body.writeBytes(("\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"files[0]\"; filename=\""
-                    + safeName + "\"\r\nContent-Type: application/json\r\n\r\n").getBytes(utf8));
+                    + safeName + "\"\r\nContent-Type: " + (safeName.endsWith(".jpg") ? "image/jpeg" : "application/json")
+                    + "\r\n\r\n").getBytes(utf8));
             body.writeBytes(file);
             body.writeBytes(("\r\n--" + boundary + "--\r\n").getBytes(utf8));
             return requete(url, params, HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()),
@@ -165,6 +166,39 @@ public class DiscordWebhook {
             } else {
                 post(url, payload, cleJoueur, nomJoueur);
             }
+        } catch (Exception e) {
+            Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
+        }
+    }
+
+    /** Capture d'écran d'un joueur : embed avec l'image jointe, dans le fil du joueur (salon privé du staff). */
+    public static void sendCapture(String cleJoueur, String nomJoueur, String raison, String fileName, byte[] jpg) {
+        if (!SpartanConfig.DISCORD_ENABLED.get()) {
+            return;
+        }
+        String url = SpartanConfig.secret(SpartanConfig.DISCORD_WEBHOOK);
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        try {
+            String safeName = fileName.replaceAll("[^A-Za-z0-9._-]", "_");
+            JsonObject embed = new JsonObject();
+            embed.addProperty("title", Text.discord("Capture d'écran — " + nomJoueur));
+            embed.addProperty("description", Text.discord(raison));
+            embed.addProperty("color", 0x3498DB);
+            embed.addProperty("timestamp", Instant.now().toString());
+            JsonObject image = new JsonObject();
+            image.addProperty("url", "attachment://" + safeName);
+            embed.add("image", image);
+            JsonObject footer = new JsonObject();
+            footer.addProperty("text", "Spartan AntiCheat — capture autorisée par le joueur dans le launcher");
+            embed.add("footer", footer);
+            JsonArray embeds = new JsonArray();
+            embeds.add(embed);
+            JsonObject payload = new JsonObject();
+            payload.add("embeds", embeds);
+            denyMentions(payload);
+            postWithFile(url, payload, safeName, jpg, cleJoueur, nomJoueur);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
         }

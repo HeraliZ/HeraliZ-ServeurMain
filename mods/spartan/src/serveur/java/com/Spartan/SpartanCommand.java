@@ -28,6 +28,7 @@ import net.minecraft.server.level.ServerPlayer;
  *   /spartan status <joueur> intégrité (build, défis, jeton du launcher) et suivi du mouvement
  *   /spartan setback <joueur> renvoie le joueur à sa dernière position sûre au sol
  *   /spartan scan <joueur>   contrôle d'intégrité immédiat (invisible pour le joueur)
+ *   /spartan capture <joueur> capture de l'écran du joueur (s'il l'a autorisée dans le launcher)
  *   /spartan report <joueur> indices du dernier contrôle d'intégrité
  *   /spartan suspects        joueurs en ligne dont le dernier contrôle est suspect
  *   /spartan reference learn|add <joueur> | info | clear   client de référence (op 3)
@@ -88,6 +89,22 @@ public class SpartanCommand {
                                     ScanManager.request(t, src::sendSystemMessage, false, false);
                                     src.sendSuccess(() -> Component.literal("Contrôle d'intégrité envoyé à " + t.getName().getString()
                                             + " (invisible pour lui) : résultat dans quelques secondes.").withStyle(ChatFormatting.AQUA), false);
+                                    return 1;
+                                })))
+                // Capture d'écran : seulement si le joueur l'a autorisée dans le launcher.
+                .then(Commands.literal("capture")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    ServerPlayer t = EntityArgument.getPlayer(ctx, "player");
+                                    CommandSourceStack src = ctx.getSource();
+                                    String refus = com.Spartan.capture.CaptureManager.demander(t,
+                                            "demandée par " + src.getTextName());
+                                    if (refus != null) {
+                                        src.sendFailure(Component.literal("Capture impossible : " + refus + "."));
+                                        return 0;
+                                    }
+                                    src.sendSuccess(() -> Component.literal("Capture demandée à " + t.getName().getString()
+                                            + " : elle arrive dans screenshots/ et sur Discord.").withStyle(ChatFormatting.AQUA), false);
                                     return 1;
                                 })))
                 .then(Commands.literal("report")

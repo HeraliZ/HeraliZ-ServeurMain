@@ -42,12 +42,14 @@ const DANGEREUSES = [
 
 const ARG_JETON = '-Dspartan.launchToken='
 const VAR_JETON = 'SPARTAN_LAUNCH_TOKEN'
+// accord du joueur pour les captures d'écran (fenêtre avant de jouer, accordCapture.js) : posé seulement par le launcher
+const VAR_CAPTURE = 'SPARTAN_CAPTURE_CONSENT'
 // jeton v1 rendu par le site : base64url(contenu) "." base64url(HMAC-SHA256), rien d'autre
 const JETON = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
 // variables d'environnement lues par Java au démarrage (une option -javaagent y suffit), bibliothèques natives imposées
 // à tout programme lancé (Linux, Mac), et tout jeton hérité
 const VARIABLES_DANGEREUSES = ['JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', 'LD_PRELOAD', 'LD_AUDIT',
-    'DYLD_INSERT_LIBRARIES', VAR_JETON]
+    'DYLD_INSERT_LIBRARIES', VAR_JETON, VAR_CAPTURE]
 
 /** Options Java ajoutées à chaque lancement (copie). */
 function protections() {
@@ -114,12 +116,13 @@ function empreinteMods(dossierMods) {
  * venu d'ailleurs), plus le jeton rendu par le site pour ce lancement s'il est bien formé. Les noms sont comparés sans
  * tenir compte des majuscules (Windows). base n'est jamais modifié.
  */
-function environnementJeu(jeton, base = process.env) {
+function environnementJeu(jeton, base = process.env, accordCapture = false) {
     const env = {}
     for (const [nom, valeur] of Object.entries(base || {})) {
         if (!VARIABLES_DANGEREUSES.includes(nom.toUpperCase())) env[nom] = valeur
     }
     if (typeof jeton === 'string' && JETON.test(jeton)) env[VAR_JETON] = jeton
+    if (accordCapture === true) env[VAR_CAPTURE] = '1'
     return env
 }
 

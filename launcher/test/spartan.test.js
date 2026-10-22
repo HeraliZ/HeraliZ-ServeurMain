@@ -74,3 +74,9 @@ test('sans jeton du site, pas de variable ; le journal ne montre jamais le jeton
     assert.strictEqual(environnementJeu(undefined, {}).SPARTAN_LAUNCH_TOKEN, undefined)
     assert.deepStrictEqual(masquerJeton(['-Xmx4G', '-Dspartan.launchToken=secret.secret']), ['-Xmx4G', '-Dspartan.launchToken=**********'])
 })
+
+test('accord des captures : posé seulement par le launcher', () => {
+    assert.strictEqual(environnementJeu(undefined, {}, true).SPARTAN_CAPTURE_CONSENT, '1')
+    assert.strictEqual(environnementJeu(undefined, {}, false).SPARTAN_CAPTURE_CONSENT, undefined)
+    assert.strictEqual(environnementJeu(undefined, { SPARTAN_CAPTURE_CONSENT: '1' }).SPARTAN_CAPTURE_CONSENT, undefined)
+})
