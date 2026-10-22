@@ -10,8 +10,10 @@ d'abord). Il reprend le moteur de explosifs.py (cubes, matières peintes au calc
 Coordonnées en pixels de modèle (16 = 1 bloc), face avant au nord (z petit).
   - armoire « de survie » : 1 bloc de large, 2 de haut, tôles rouillées de récupération, palette, chaîne et cadenas,
     batterie de voiture, et un petit écran rouillé qui bugue (entretien demandé et temps avant disparition) ;
-  - cœur A « Noyau » : noyau lumineux dans une cage d'acier sur un socle à huit pans ;
-  - cœur B « Coffre » : coffre blindé à volant, fente lumineuse et compteur de points.
+  - cœur C « Radio du clan » : radio militaire de campagne sur sacs de sable, compteur à volets, antenne ;
+  - cœur D « Étendard » : mât et bannière du clan plantés dans des parpaings, compteur sur le socle ;
+  - cœur E « Coffre de récup » : vieux coffre-fort renforcé, chaînes, tag du clan, compteur à volets.
+  (Propositions A « Noyau » et B « Coffre » noir et or du 22/10 refusées : trop propres, hors du style.)
 Les textes des écrans sont des exemples : en jeu, ils seront écrits en direct.
 """
 import argparse
@@ -262,83 +264,212 @@ def modele_tc():
     return os_, cubes
 
 
-# =============================================================================================== cœur A : noyau
-def modele_coeur_noyau(couleur=(255, 70, 34)):
-    os_ = [Os("coeur")]
-    cubes = []
-    B = lambda *a, **k: cubes.append(Cube(*a, **k))
-    cx = cz = 8.0
-    prisme(B, "coeur", cx, cz, 0.0, 1.6, 7.6, "acier_noir")
-    prisme(B, "coeur", cx, cz, 1.6, 2.2, 7.0, "or")
-    prisme(B, "coeur", cx, cz, 2.2, 3.4, 6.2, "acier_mat")
-    prisme(B, "coeur", cx, cz, 3.4, 13.0, 3.0, "noyau", prm={"cx": cx, "cz": cz, "couleur": couleur})
-    # cage : 8 barreaux et deux anneaux
-    for k in range(8):
-        a = math.radians(22.5 + k * 45)
-        bx, bz = cx + 4.6 * math.cos(a), cz + 4.6 * math.sin(a)
-        B("coeur", (bx - 0.45, 3.4, bz - 0.45), (bx + 0.45, 13.0, bz + 0.45), "acier_noir")
-    for y0 in (6.6, 9.6):
-        for k in range(8):
-            a = math.radians(k * 45)
-            mx, mz = cx + 4.6 * math.cos(a), cz + 4.6 * math.sin(a)
-            B("coeur", (mx - 1.95, y0, mz - 0.25), (mx + 1.95, y0 + 0.5, mz + 0.25), "or",
-              rot=(0, -k * 45 + 90, 0), pivot=(mx, y0, mz))
-    # chapeau et emblème
-    prisme(B, "coeur", cx, cz, 13.0, 14.0, 6.2, "acier_mat")
-    prisme(B, "coeur", cx, cz, 14.0, 14.5, 5.0, "or")
-    prisme(B, "coeur", cx, cz, 14.5, 15.4, 2.2, "acier_noir")
-    B("coeur", (cx - 0.5, 15.4, cz - 0.5), (cx + 0.5, 16.0, cz + 0.5), "noyau",
-      prm={"cx": cx, "cz": cz, "couleur": couleur})
-    # compteur de points sur l'avant du socle
-    img = image_compteur("12 450", (1.0, 0.36, 0.2))
-    B("coeur", (4.4, 0.25, 0.25), (11.6, 1.45, 0.9), "acier_mat")
-    B("coeur", (4.7, 0.4, 0.2), (11.3, 1.3, 0.25), "ecran_img", faces=("north",),
-      prm={"img": img, "cadre": (4.7, 11.3, 0.4, 1.3)})
-    return os_, cubes
+# =============================================================================================== images des cœurs
+def image_compteur_meca(texte="012450", larg=360, haut=90):
+    """Compteur mécanique à volets (fond noir, chiffres noirs sur volets crème, trait de pliure)."""
+    police = ImageFont.truetype(str(MONO if MONO.exists() else ex.POLICE), 64)
+    im = Image.new("RGB", (larg, haut), (14, 14, 14))
+    d = ImageDraw.Draw(im)
+    n = len(texte)
+    w = (larg - 8 * (n + 1)) / n
+    for k, ch in enumerate(texte):
+        x0 = 8 + k * (w + 8)
+        d.rounded_rectangle((x0, 8, x0 + w, haut - 8), 5, fill=(214, 204, 176))
+        tw = d.textlength(ch, font=police)
+        d.text((x0 + (w - tw) / 2, 6), ch, font=police, fill=(24, 22, 20))
+        d.line((x0, haut / 2, x0 + w, haut / 2), fill=(70, 64, 54), width=3)
+    a = np.asarray(im, float) / 255
+    sale = fbm(np.dstack([*np.meshgrid(np.arange(larg) / 20, np.arange(haut) / 20), np.zeros((haut, larg))]), 1, 3, 70)
+    a = a * (0.82 + 0.25 * sale[..., None])
+    return np.clip(a, 0, 1), np.zeros_like(a)
 
 
-# =============================================================================================== cœur B : coffre blindé
-def modele_coeur_coffre(couleur=(255, 70, 34)):
-    os_ = [Os("coeur")]
-    cubes = []
-    B = lambda *a, **k: cubes.append(Cube(*a, **k))
-    B("coeur", (1.0, 0.0, 1.0), (15.0, 1.2, 15.0), "acier_mat")
-    B("coeur", (1.5, 1.2, 1.5), (14.5, 14.2, 14.5), "acier_noir")
-    B("coeur", (1.0, 14.2, 1.0), (15.0, 15.4, 15.0), "acier_mat")
-    # arêtes en or
-    for x0 in (1.2, 14.0):
-        B("coeur", (x0, 1.2, 1.2), (x0 + 0.8, 14.2, 2.0), "or")
-    B("coeur", (1.2, 13.4, 1.2), (14.8, 14.2, 2.0), "or")
-    B("coeur", (1.2, 1.2, 1.2), (14.8, 2.0, 2.0), "or")
-    # porte : volant et moyeu
-    cx, cy = 8.0, 6.6
-    prisme_face(B, cx, cy, 1.05, 1.5, 4.0, "acier_mat")
-    prisme_face(B, cx, cy, 0.65, 1.05, 1.3, "or")
-    for k in range(3):
-        B("coeur", (cx - 3.4, cy - 0.3, 0.75), (cx + 3.4, cy + 0.3, 1.15), "or", rot=(0, 0, k * 60),
-          pivot=(cx, cy, 0.95))
-    # fente lumineuse et compteur au-dessus
-    B("coeur", (3.0, 11.0, 1.2), (13.0, 12.6, 1.5), "joint_noir")
-    B("coeur", (3.4, 11.3, 1.15), (12.6, 12.3, 1.2), "noyau", faces=("north",),
-      prm={"cx": 8, "cz": 0, "couleur": couleur})
-    img = image_compteur("12 450", (1.0, 0.36, 0.2))
-    B("coeur", (4.0, 12.8, 1.1), (12.0, 13.4, 1.5), "joint_noir")
-    B("coeur", (4.4, 12.85, 1.05), (11.6, 13.35, 1.1), "ecran_img", faces=("north",),
-      prm={"img": img, "cadre": (4.4, 11.6, 12.85, 13.35)})
-    # gonds et pieds
-    for y0 in (3.0, 10.0):
-        B("coeur", (13.6, y0, 0.8), (14.6, y0 + 2.0, 1.5), "acier_mat")
-    for x0 in (1.0, 13.6):
-        for z0 in (1.0, 13.6):
-            B("coeur", (x0, 0.0, z0), (x0 + 1.4, 1.4, z0 + 1.4), "or")
-    return os_, cubes
+def image_drapeau(larg=320, haut=420):
+    """Exemple de drapeau de clan (en jeu : la vraie bannière du clan) : tissu usé, tag du clan."""
+    im = Image.new("RGB", (larg, haut), (118, 22, 20))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, larg, 26), fill=(30, 28, 26))
+    d.rectangle((0, haut - 26, larg, haut), fill=(30, 28, 26))
+    cx, cy = larg / 2, haut * 0.44
+    d.ellipse((cx - 90, cy - 90, cx + 90, cy + 90), outline=(228, 220, 200), width=14)
+    d.polygon([(cx, cy - 70), (cx + 22, cy - 10), (cx + 70, cy), (cx + 22, cy + 12), (cx, cy + 70), (cx - 22, cy + 12),
+               (cx - 70, cy), (cx - 22, cy - 10)], fill=(228, 220, 200))
+    police = ImageFont.truetype(str(ex.POLICE), 64)
+    t = "[HZ]"
+    d.text((cx - d.textlength(t, font=police) / 2, haut * 0.72), t, font=police, fill=(228, 220, 200))
+    a = np.asarray(im, float) / 255
+    yy, xx = np.mgrid[0:haut, 0:larg]
+    p = np.dstack([xx / 30, yy / 30, np.zeros_like(xx, float)])
+    a = a * (0.75 + 0.35 * fbm(p, 1, 4, 71))[..., None]               # tissu sale
+    a = a * (0.9 + 0.1 * (np.sin(xx * 0.9) * np.sin(yy * 0.9)))[..., None]  # trame
+    dechire = (larg - xx) < 14 + 30 * fbm(p * 3, 1, 3, 72)              # bord libre effiloché
+    alpha = (~dechire).astype(float)
+    return np.clip(a, 0, 1), alpha
 
 
-def prisme_face(B, cx, cy, z0, z1, ray, mat):
-    """Disque à 8 pans posé sur la face avant (axe z)."""
+def peindre_coeurs(mat, p, n, fu, fv, w, h, prm):
+    sh = p.shape[:2]
+    a = np.ones(sh)
+    g = np.zeros(sh + (3,))
+    e = ex.bords(fu, fv, w, h)
+    usure = np.exp(-e / 0.15)
+    gr = prm.get("graine", 0)
+    if mat == "olive":                                               # peinture militaire, propre mais vécue
+        r = melange(col(72, 80, 56), col(86, 94, 66), fbm(p, 0.6, 3, 80 + gr))
+        r = melange(r, col(124, 128, 104), usure * 0.55)              # arêtes frottées
+        r = melange(r, col(110, 64, 32), np.clip((fbm(p, 1.4, 4, 81 + gr) - 0.66) * 5, 0, 1) * (usure + 0.3))
+        r = r * (0.95 + 0.08 * bruit(p, 10, 82 + gr))[..., None]
+    elif mat == "pochoir":                                          # inscriptions blanches au pochoir sur olive
+        return peindre_coeurs("olive", p, n, fu, fv, w, h, prm)
+    elif mat == "parpaing":
+        trous = (np.abs(np.sin(p[..., 0] * 2.1)) * np.abs(np.sin(p[..., 1] * 2.1 + p[..., 2] * 2.1)))
+        r = melange(col(104, 104, 98), col(138, 136, 128), fbm(p, 1.0, 3, 83 + gr))
+        r = r * (0.88 + 0.12 * bruit(p, 14, 84 + gr))[..., None] * (1 - 0.15 * (trous > 0.92))[..., None]
+        r = melange(r, col(70, 70, 66), usure * 0.4)
+    elif mat == "tissu_img":
+        img, al = prm["img"]
+        x0, x1, y0, y1 = prm["cadre"]
+        aa = np.clip((x1 - p[..., 0]) / (x1 - x0), 0, 1) if prm.get("nord") else np.clip((p[..., 0] - x0) / (x1 - x0), 0, 1)
+        bb = (y1 - p[..., 1]) / (y1 - y0)
+        r = np.stack([ex.echantillon(img[..., k], aa, bb) for k in range(3)], -1)
+        a = (ex.echantillon(al, aa, bb) > 0.5).astype(float)
+        r = r * (0.85 + 0.15 * np.sin(fu * 18) ** 2)[..., None] if prm.get("plis") else r
+    elif mat == "papier_cadran":
+        r = melange(col(210, 200, 170), col(180, 170, 140), fbm(p, 1.5, 2, 85))
+        rr = np.hypot(fu - 0.5, fv - 0.5)
+        graduations = (np.abs(np.sin(np.arctan2(fv - 0.5, fu - 0.5) * 12)) > 0.9) & (rr > 0.32) & (rr < 0.45)
+        r = np.where(graduations[..., None], col(30, 28, 24), r)
+    elif mat == "lampe_rouge":
+        c = np.exp(-((fu - 0.5) ** 2 + (fv - 0.4) ** 2) / 0.15)
+        r = melange(col(170, 20, 16), col(255, 140, 120), c)
+        g = r
+    else:
+        return peindre(mat, p, n, fu, fv, w, h, prm)
+    return np.clip(r, 0, 1), a, np.clip(g, 0, 1)
+
+
+def cadran(B, os_, x0, y0, x1, y1, z):
+    """Cadran rond (8 pans) avec aiguille, posé sur une face nord."""
+    cx, cy, ray = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2
     demi = ray * math.tan(math.radians(22.5))
     for k in range(4):
-        B("coeur", (cx - ray, cy - demi, z0), (cx + ray, cy + demi, z1), mat, rot=(0, 0, k * 45), pivot=(cx, cy, z0))
+        B(os_, (cx - ray, cy - demi, z - 0.2), (cx + ray, cy + demi, z), "chaine", rot=(0, 0, k * 45), pivot=(cx, cy, z))
+    B(os_, (cx - ray * 0.8, cy - demi * 0.8, z - 0.25), (cx + ray * 0.8, cy + demi * 0.8, z - 0.2), "papier_cadran",
+      rot=(0, 0, 0), pivot=(cx, cy, z))
+    B(os_, (cx - 0.08, cy - 0.08, z - 0.3), (cx + ray * 0.7, cy + 0.08, z - 0.25), "borne_rouge", rot=(0, 0, 35),
+      pivot=(cx, cy, z))
+
+
+# =============================================================================================== cœur C : balise radio
+def modele_coeur_radio():
+    """Grosse radio militaire de campagne posée sur des sacs de sable : compteur à volets, cadrans, antenne qui
+    clignote. Le clan « émet » ses points."""
+    os_ = [Os("coeur")]
+    cubes = []
+    B = lambda *a, **k: cubes.append(Cube(*a, **k))
+    # sacs de sable (deux rangs)
+    for k, (x0, z0) in enumerate(((0.3, 1.0), (5.6, 0.6), (10.9, 1.1), (0.6, 8.2), (5.9, 8.6), (11.0, 8.0))):
+        B("coeur", (x0, 0.0, z0), (x0 + 5.0, 2.6, z0 + 6.6), "jute", prm={"graine": k})
+    # caisse de la radio
+    B("coeur", (1.5, 2.6, 3.0), (14.5, 12.6, 13.5), "olive")
+    B("coeur", (1.2, 12.6, 2.7), (14.8, 13.4, 13.8), "olive", prm={"graine": 2})
+    for x0 in (1.0, 14.2):                                           # cornières
+        B("coeur", (x0, 2.6, 2.8), (x0 + 0.8, 13.4, 3.6), "acier_brut")
+    # façade : compteur à volets, deux cadrans, boutons, voyant, plaque
+    img = image_compteur_meca()
+    B("coeur", (2.6, 8.4, 2.4), (13.4, 11.6, 3.0), "plastique")
+    B("coeur", (3.0, 8.8, 2.35), (13.0, 11.2, 2.4), "ecran_img", faces=("north",),
+      prm={"img": img, "cadre": (3.0, 13.0, 8.8, 11.2)})
+    cadran(B, "coeur", 2.8, 3.6, 6.6, 7.4, 3.0)
+    cadran(B, "coeur", 9.4, 3.6, 13.2, 7.4, 3.0)
+    for x0 in (7.2, 8.3):
+        B("coeur", (x0, 6.2, 2.4), (x0 + 0.8, 7.0, 3.0), "plastique")
+    B("coeur", (7.4, 4.0, 2.5), (8.8, 5.4, 3.0), "lampe_rouge")
+    plaque = masque_texte(["RÉSERVE DU CLAN"], 72)
+    B("coeur", (4.0, 12.0, 2.95), (12.0, 12.5, 3.0), "olive", faces=("north",),
+      decals=(Decal(plaque, (12.0, 12.5, 2.95), (-8.0, 0, 0), (0, -0.5, 0), col(220, 216, 200), 0.9,
+                    normale=(0, 0, -1)),))
+    # poignées sur le dessus, antenne fouet avec lampe
+    for x0 in (3.5, 11.0):
+        B("coeur", (x0, 13.4, 7.6), (x0 + 1.5, 14.2, 8.4), "acier_brut")
+    B("coeur", (4.0, 14.0, 7.6), (12.5, 14.4, 8.4), "acier_brut")
+    B("coeur", (12.4, 13.4, 11.4), (13.6, 14.2, 12.6), "acier_brut")
+    B("coeur", (12.85, 14.2, 11.85), (13.15, 30.5, 12.15), "cable")
+    B("coeur", (12.5, 30.5, 11.5), (13.5, 31.5, 12.5), "lampe_rouge")
+    # câble qui pend vers une batterie au sol
+    B("coeur", (14.5, 2.6, 9.0), (16.0, 7.6, 13.0), "plastique")
+    B("coeur", (14.8, 7.6, 9.4), (15.4, 8.1, 10.0), "borne_rouge")
+    return os_, cubes
+
+
+# =============================================================================================== cœur D : étendard
+def modele_coeur_etendard():
+    """Étendard du clan planté dans un socle de parpaings et d'acier : la vraie bannière du clan flotte au-dessus,
+    compteur à volets sur le socle. Se voit de loin (2 blocs de haut)."""
+    os_ = [Os("coeur")]
+    cubes = []
+    B = lambda *a, **k: cubes.append(Cube(*a, **k))
+    for k, (x0, z0) in enumerate(((0.5, 0.5), (8.0, 0.5), (0.5, 8.0), (8.0, 8.0))):
+        B("coeur", (x0, 0.0, z0), (x0 + 7.5, 4.0, z0 + 7.5), "parpaing", prm={"graine": k})
+    B("coeur", (1.5, 4.0, 1.5), (14.5, 5.2, 14.5), "plaque_soudee", prm={"graine": 3})
+    B("coeur", (5.0, 5.2, 5.0), (11.0, 7.0, 11.0), "acier_brut")
+    # jambes de force, du bord du socle vers le mât
+    B("coeur", (7.6, 5.2, 3.0), (8.4, 11.0, 3.8), "acier_brut", rot=(38, 0, 0), pivot=(8.0, 5.2, 3.4))
+    B("coeur", (7.6, 5.2, 12.2), (8.4, 11.0, 13.0), "acier_brut", rot=(-38, 0, 0), pivot=(8.0, 5.2, 12.6))
+    B("coeur", (3.0, 5.2, 7.6), (3.8, 11.0, 8.4), "acier_brut", rot=(0, 0, -38), pivot=(3.4, 5.2, 8.0))
+    B("coeur", (12.2, 5.2, 7.6), (13.0, 11.0, 8.4), "acier_brut", rot=(0, 0, 38), pivot=(12.6, 5.2, 8.0))
+    B("coeur", (7.4, 7.0, 7.4), (8.6, 31.6, 8.6), "acier_brut")       # mât
+    B("coeur", (7.2, 31.2, 7.2), (8.8, 32.0, 8.8), "laiton")
+    # drapeau (3 bandes légèrement tournées : il flotte)
+    img = image_drapeau()
+    x = 8.6
+    for k, (lg, ang) in enumerate(((2.6, 6), (2.6, -8), (2.6, 10))):
+        B("coeur", (x, 14.0, 7.9), (x + lg, 31.0, 8.1), "tissu_img", faces=("north", "south"),
+          rot=(0, ang, 0), pivot=(x, 14.0, 8.0),
+          prm={"img": img, "cadre": (8.6, 8.6 + 7.8, 14.0, 31.0), "plis": True, "nord": True})
+        x += lg * math.cos(math.radians(ang))
+    # compteur et plaque sur le socle
+    imgc = image_compteur_meca()
+    B("coeur", (2.0, 0.6, 0.0), (14.0, 3.4, 0.5), "plastique")
+    B("coeur", (2.4, 0.9, -0.05), (13.6, 3.1, 0.0), "ecran_img", faces=("north",),
+      prm={"img": imgc, "cadre": (2.4, 13.6, 0.9, 3.1)})
+    return os_, cubes
+
+
+# =============================================================================================== cœur E : coffre de récup
+def modele_coeur_coffre_recup():
+    """Vieux coffre-fort de banque récupéré et renforcé : plaques soudées, chaînes, tag du clan à la bombe, compteur
+    à volets vissé dessus, lampe rouge."""
+    os_ = [Os("coeur")]
+    cubes = []
+    B = lambda *a, **k: cubes.append(Cube(*a, **k))
+    B("coeur", (0.5, 0.0, 0.5), (15.5, 1.5, 15.5), "bois")
+    B("coeur", (1.2, 1.5, 1.6), (14.8, 15.0, 14.8), "tole_peinte", prm={"graine": 11})
+    B("coeur", (1.6, 2.4, 1.1), (14.4, 13.6, 1.6), "acier_brut", prm={"graine": 4})   # porte
+    B("coeur", (2.4, 3.2, 0.9), (13.6, 12.8, 1.1), "tole_peinte", prm={"graine": 12})
+    # volant (moyeu + 4 rayons)
+    for k in range(4):
+        B("coeur", (5.0, 7.7, 0.4), (11.0, 8.3, 0.9), "chaine", rot=(0, 0, k * 45), pivot=(8.0, 8.0, 0.65))
+    B("coeur", (7.0, 7.0, 0.3), (9.0, 9.0, 0.9), "laiton")
+    # plaques soudées et sangles de chaîne
+    B("coeur", (1.0, 4.0, 3.0), (1.2, 12.0, 13.0), "plaque_soudee", prm={"graine": 6})
+    B("coeur", (14.8, 3.0, 2.5), (15.0, 9.0, 9.0), "plaque_soudee", prm={"graine": 7})
+    for y0 in (4.2, 11.0):
+        B("coeur", (0.9, y0, 0.8), (15.1, y0 + 0.7, 15.1), "chaine")
+    B("coeur", (11.0, 10.4, 0.2), (12.6, 12.4, 0.8), "laiton")         # cadenas
+    # tag du clan à la bombe sur le flanc
+    tag = np.asarray(Image.fromarray((masque_texte(["[HZ]"], 120) * 255).astype(np.uint8))
+                     .filter(ImageFilter.GaussianBlur(4)), float) / 255
+    B("coeur", (1.1, 2.0, 2.0), (1.2, 14.0, 14.0), "tole_peinte", faces=("west",), prm={"graine": 13},
+      decals=(Decal(tag, (1.1, 11.5, 3.0), (0, 0, 10.0), (0, -6.0, 0), col(230, 40, 30), 0.9, normale=(-1, 0, 0)),))
+    # compteur à volets et lampe sur le dessus de la porte
+    img = image_compteur_meca()
+    B("coeur", (3.0, 13.8, 0.6), (13.0, 16.0, 1.6), "plastique")
+    B("coeur", (3.3, 14.1, 0.55), (12.7, 15.7, 0.6), "ecran_img", faces=("north",),
+      prm={"img": img, "cadre": (3.3, 12.7, 14.1, 15.7)})
+    B("coeur", (13.4, 15.0, 13.0), (14.6, 16.0, 14.2), "lampe_rouge")
+    return os_, cubes
+
 
 
 # =============================================================================================== rendus
@@ -361,9 +492,13 @@ def main():
     dos = args.apercu
     dos.mkdir(parents=True, exist_ok=True)
     a = faire("armoire_survie", modele_tc, dos)
-    b = faire("coeur_A_noyau", modele_coeur_noyau, dos)
-    c = faire("coeur_B_coffre", modele_coeur_coffre, dos)
-    ex.planche([a, b, c], ["Armoire (TC) de survie", "Cœur A : Noyau", "Cœur B : Coffre"], dos / "comparaison.png")
+    ex.peindre = peindre_coeurs
+    c = faire("coeur_C_radio", modele_coeur_radio, dos)
+    d = faire("coeur_D_etendard", modele_coeur_etendard, dos)
+    e = faire("coeur_E_coffre_recup", modele_coeur_coffre_recup, dos)
+    ex.planche([c, d, e], ["Cœur C : Radio du clan", "Cœur D : Étendard", "Cœur E : Coffre de récup"],
+               dos / "coeurs.png")
+    ex.planche([a], ["Armoire (TC) de survie"], dos / "armoire.png")
     img, _ = image_ecran_tc()
     Image.fromarray((img * 255).astype(np.uint8)).resize((720, 432), Image.NEAREST).save(dos / "ecran_armoire.png")
     print("rendus dans", dos)
