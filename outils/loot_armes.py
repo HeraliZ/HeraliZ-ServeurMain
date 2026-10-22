@@ -55,9 +55,11 @@ PARTS_FAMILLE = {}
 OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
 PARACHUTE = 0.19  # part du poids d'origine du parachute
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
-AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.03), ("nourriture", 0.6), ("boissons", 0.6),
+AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("nourriture", 0.6), ("boissons", 0.6),
           ("rations", 0.6), ("plats", 0.6), ("produits_ferme", 0.6)]
 # munitions : part de leur poids d'origine par palier (balles pour 100 conteneurs : environ 40 en T1 à 450 en T7)
+# sacs à dos par palier (choix du propriétaire, 22/10 : 0,1 % des coffres en T1, 0,5 % en T2)
+SACS = {1: 0.0066, 2: 0.015, 3: 0.0143, 4: 0.0143, 5: 0.013, 6: 0.0174, 7: 0.028}
 MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
 EMPLACEMENTS = {7: [2, 5]}  # objets par conteneur (sinon ceux de la table)
 PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
@@ -177,6 +179,8 @@ def mult_autre(e, t):
     cat = e.get("_cat", "")
     if "munitions" in cat:
         return MUNITIONS[t]
+    if "sacs" in cat:
+        return SACS[t]
     if "parachute" in e["item"]:
         return PARACHUTE
     if e["item"] in OUTILS_VEHICULE:
