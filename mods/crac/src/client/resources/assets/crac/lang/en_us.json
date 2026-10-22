@@ -553,6 +553,7 @@
   "crac.group.clans_seulement": "Bases belong to clans: create or join a clan (K key); members and their rights are set in the clan.",
   "crac.acces.clan": "Only clan members can access the base: set their rights in the clan (K key).",
   "crac.tuto.essai": "[Tutorial] Practice cabin in the tutorial world: it disappears at the end, your clan's real base goes on the map.",
-  "crac.tuto.termine": "[Tutorial] Done! The practice cabin is gone. Place your clan's base on the map, away from towns and loot.",
-  "crac.tuto.clan": "[Tutorial] Your clan is created! Commander Varga will show you how to build a base."
+  "crac.tuto.termine": "[Tutorial] Done! The practice cabin is gone. The materials for your first base are waiting in the clan chest (/clan coffre): build it on the map, away from towns and loot.",
+  "crac.tuto.clan": "[Tutorial] Your clan is created! Commander Varga will show you how to build a base.",
+  "crac.clan.kit_coffre": "The materials for the clan's first base (plan, hammer, cupboard, twigs) are in the clan chest: /clan coffre or the Bank tab."
 }

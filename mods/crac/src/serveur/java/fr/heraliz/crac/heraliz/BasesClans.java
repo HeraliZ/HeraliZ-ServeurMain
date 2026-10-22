@@ -14,9 +14,11 @@ import fr.heraliz.crac.data.SafeSavedData;
 import fr.heraliz.crac.group.Group;
 import fr.heraliz.crac.group.GroupData;
 import fr.heraliz.crac.network.C2SRequestNearbyClaimsTraitement;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,6 +42,10 @@ public final class BasesClans extends SafeSavedData {
     private final Map<UUID, UUID> groupes = new HashMap<>();
     /** Clans déjà vus (création d'un clan : tutoriel des bases pour son chef). */
     private final Set<UUID> vus = new HashSet<>();
+    /** Clans qui ont reçu le matériel de leur première base dans leur coffre (CRac 1.17.0). */
+    private final Set<UUID> kits = new HashSet<>();
+    /** Clans en attente de ce matériel : heure (ms) où on les a vus sans lui (30 s pour que le tutoriel démarre). */
+    private final Map<UUID, Long> attenteKit = new HashMap<>();
     private boolean premierPassage = true;
     private static int ticks;
 
@@ -184,6 +190,12 @@ public final class BasesClans extends SafeSavedData {
                 d.vus.add(v.getCompound(i).getUUID("Clan"));
             }
         }
+        ListTag k = tag.getList("Kits", 10);
+        for (int i = 0; i < k.size(); i++) {
+            if (k.getCompound(i).hasUUID("Clan")) {
+                d.kits.add(k.getCompound(i).getUUID("Clan"));
+            }
+        }
         d.premierPassage = d.vus.isEmpty();
         return d;
     }
@@ -206,6 +218,13 @@ public final class BasesClans extends SafeSavedData {
             v.add(t);
         }
         tag.put("Vus", v);
+        ListTag k = new ListTag();
+        for (UUID c : this.kits) {
+            CompoundTag t = new CompoundTag();
+            t.putUUID("Clan", c);
+            k.add(t);
+        }
+        tag.put("Kits", k);
         return tag;
     }
 
@@ -346,8 +365,57 @@ public final class BasesClans extends SafeSavedData {
                     liberer(server, d, clan);
                 }
             }
-            if (d.vus.retainAll(existants)) {
+            if (d.vus.retainAll(existants) | d.kits.retainAll(existants)) {
                 d.setDirty();
+            }
+            d.attenteKit.keySet().retainAll(existants);
+            kits(server, d);
+        }
+
+        /**
+         * Matériel de la première base (plan, marteau, armoire, brindilles) rangé une fois dans le coffre de chaque clan
+         * (HeraliZ Clans 3.5.0, {@code ClansApi.deposerCoffre}, par réflexion : la copie de Clans de libs/ ne l'a pas) :
+         * 30 s après sa création, et seulement quand le chef a fini le tutoriel des bases (sinon à la fin de celui-ci).
+         */
+        static void kits(MinecraftServer server, BasesClans d) {
+            java.lang.reflect.Method deposer;
+            try {
+                deposer = fr.heralisz.clans.api.ClansApi.class.getMethod("deposerCoffre", UUID.class, java.util.List.class);
+            } catch (NoSuchMethodException e) {
+                return;   // HeraliZ Clans sans coffre : rien à faire
+            }
+            long now = System.currentTimeMillis();
+            for (fr.heralisz.clans.api.ClanInfo info : fr.heralisz.clans.api.ClansApi.tous()) {
+                if (d.kits.contains(info.id())) {
+                    continue;
+                }
+                long vu = d.attenteKit.computeIfAbsent(info.id(), c -> now);
+                if (now - vu < 30_000L || info.chef() != null && fr.heraliz.crac.bases.Tutoriel.occupe(server, info.chef())) {
+                    continue;
+                }
+                java.util.List<net.minecraft.world.item.ItemStack> kit = fr.heraliz.crac.bases.Tutoriel.kitPremiereBase();
+                Object reste;
+                try {
+                    reste = deposer.invoke(null, info.id(), kit);
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    Crac.LOGGER.error("[CRac] coffre du clan [{}] : matériel de la première base non rangé", info.tag(), e);
+                    continue;
+                }
+                d.kits.add(info.id());
+                d.attenteKit.remove(info.id());
+                d.setDirty();
+                if (reste instanceof java.util.List<?> l && !l.isEmpty()) {
+                    Crac.LOGGER.warn("[CRac] coffre du clan [{}] plein : {} non rangé(s)", info.tag(), l);
+                }
+                Crac.LOGGER.info("[CRac] matériel de la première base rangé dans le coffre du clan [{}]", info.tag());
+                for (UUID m : info.membres().keySet()) {
+                    ServerPlayer p = server.getPlayerList().getPlayer(m);
+                    if (p != null) {
+                        p.sendSystemMessage(Component.translatableWithFallback("crac.clan.kit_coffre",
+                            "Le matériel de la première base du clan (plan, marteau, armoire, brindilles) est dans le coffre du clan : /clan coffre ou onglet Banque.")
+                            .withStyle(ChatFormatting.GOLD));
+                    }
+                }
             }
         }
     }

@@ -179,6 +179,9 @@ public final class ServerHandlers {
             case DISSOUDRE -> ClanService.dissoudre(p);
             case CLASSEMENT -> ClansNet.toPlayer(p, new Packets.ClassementS2C(ClanService.classement(20)));
             case CHAT_BASCULE -> ClanService.chatBascule(p);
+            case COFFRE -> CoffreClan.ouvrir(p);
+            default -> {
+            }
         }
     }
 

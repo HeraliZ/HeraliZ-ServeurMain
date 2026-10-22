@@ -176,7 +176,7 @@ public final class Tutoriel {
                 p.teleportTo(o, s.getX() + 0.5, s.getY(), s.getZ() + 0.5, p.getYRot(), 0f);
             }
         }
-        T.chat(p, T.t("crac.tuto.termine", "[Tuto] Fini ! La cabane d'essai a disparu. Pose la base de ton clan sur la carte, loin des villes et du loot."),
+        T.chat(p, T.t("crac.tuto.termine", "[Tuto] Fini ! La cabane d'essai a disparu. Le matériel de ta première base t'attend dans le coffre du clan (/clan coffre) : pose-la sur la carte, loin des villes et du loot."),
             ChatFormatting.GREEN);
         Crac.LOGGER.info("[CRac] tutoriel : cabane d'essai de {} effacée", p.getGameProfile().getName());
     }
@@ -967,6 +967,57 @@ public final class Tutoriel {
             }
         });
         return out;
+    }
+
+    /**
+     * Première base du clan (CRac 1.17.0, demande du propriétaire), rangée dans le coffre du clan : de quoi bâtir en
+     * brindilles une base 2 × 1 et un triangle en nid d'abeille devant la porte, pas plus : 2 fondations carrées et
+     * 1 triangle, 7 murs (5 autour de la pièce, 2 autour du triangle) et l'encadrement de porte, 2 planchers carrés et
+     * 1 triangle en toit. Plan, marteau, armoire (sans elle, une seule fondation se pose) et les brindilles (coûts réels
+     * de {@code crac-building.toml}, avec la marge {@code [tuto] marge_pourcent}). Ni planches ni caisse.
+     */
+    private static final Map<PieceKind, Integer> PREMIERE_BASE = new LinkedHashMap<>();
+
+    static {
+        PREMIERE_BASE.put(PieceKind.FOUNDATION, 2);
+        PREMIERE_BASE.put(PieceKind.TRI_FOUNDATION, 1);
+        PREMIERE_BASE.put(PieceKind.WALL, 7);
+        PREMIERE_BASE.put(PieceKind.DOORWAY, 1);
+        PREMIERE_BASE.put(PieceKind.FLOOR, 2);
+        PREMIERE_BASE.put(PieceKind.TRI_FLOOR, 1);
+    }
+
+    public static List<ItemStack> kitPremiereBase() {
+        Map<Item, Integer> m = new LinkedHashMap<>();
+        m.put(ModItems.BUILDING_PLAN.get(), 1);
+        m.put(ModItems.BUILDING_HAMMER.get(), 1);
+        m.put(ModItems.CLAIM_BLOCK.get(), 1);
+        Map<Item, Integer> matieres = new LinkedHashMap<>();
+        for (Map.Entry<PieceKind, Integer> e : PREMIERE_BASE.entrySet()) {
+            for (int i = 0; i < e.getValue(); i++) {
+                ajouter(matieres, Costs.place(e.getKey()));
+            }
+        }
+        double marge = 1.0 + BasesReglages.i(BasesReglages.MARGE_POURCENT, 10) / 100.0;
+        matieres.replaceAll((item, n) -> (int) Math.ceil(n * marge - 1e-9));
+        matieres.forEach((item, n) -> m.merge(item, n, Integer::sum));
+        List<ItemStack> out = new ArrayList<>();
+        m.forEach((item, n) -> {
+            int max = Math.max(1, new ItemStack(item).getMaxStackSize());
+            for (int reste = n; reste > 0; reste -= max) {
+                out.add(new ItemStack(item, Math.min(max, reste)));
+            }
+        });
+        return out;
+    }
+
+    /** Le joueur fait le tutoriel (kit reçu, cabane en cours ou effacement en attente), connecté ou non. */
+    public static boolean occupe(MinecraftServer server, UUID u) {
+        if (FINS.containsKey(u)) {
+            return true;
+        }
+        BasesDonnees.Joueur j = BasesDonnees.get(server).siConnu(u);
+        return j != null && (j.etape == BasesDonnees.Etape.KIT || j.etape == BasesDonnees.Etape.PHASE);
     }
 
     private static void ajouter(Map<Item, Integer> m, List<BuildCost> couts) {

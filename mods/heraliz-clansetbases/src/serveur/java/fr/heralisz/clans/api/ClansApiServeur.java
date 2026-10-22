@@ -232,6 +232,11 @@ public final class ClansApiServeur implements ClansApi.Moteur {
      * {@code args} = chaines inserees (%s), 6 au plus, 96 caracteres chacune. Faux si le clan n'existe pas.
      */
     @Override
+    public List<net.minecraft.world.item.ItemStack> deposerCoffre(UUID clanId, List<net.minecraft.world.item.ItemStack> objets) {
+        return fr.heralisz.clans.server.CoffreClan.deposer(clanId, objets);
+    }
+
+    @Override
     public boolean journal(UUID clanId, String cle, String... args) {
         ClanStore s = store();
         Clan c = clan(clanId);

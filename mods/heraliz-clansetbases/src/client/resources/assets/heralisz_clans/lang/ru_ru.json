@@ -15,8 +15,8 @@
   "perm.exclure": "Исключать участников",
   "perm.promouvoir": "Повышать",
   "perm.retrograder": "Понижать",
-  "perm.banque_deposer": "Вносить в банк",
-  "perm.banque_retirer": "Снимать из банка",
+  "perm.banque_deposer": "Вносить (банк и сундук)",
+  "perm.banque_retirer": "Снимать (банк и сундук)",
   "perm.banque_journal": "Смотреть операции",
   "perm.modifier_nom": "Менять название",
   "perm.modifier_tag": "Менять тег",
@@ -680,5 +680,11 @@
   "gui.niveau.court.18": "Снабжение −45 %%",
   "gui.niveau.court.20": "Золотой тег: легендарный клан",
   "msg.banniere_niveau_degrade": "Этот фон знамени открывается на 2-м уровне клана.",
-  "msg.banniere_niveau_forme": "Эта редкая форма открывается на 12-м уровне клана."
+  "msg.banniere_niveau_forme": "Эта редкая форма открывается на 12-м уровне клана.",
+  "gui.banque.coffre": "Сундук клана",
+  "gui.banque.coffre_aide": "Без оружия, брони и взрывчатки",
+  "gui.coffre.titre": "Сундук клана [%s]",
+  "msg.coffre.sans_clan": "Ты не состоишь в клане.",
+  "msg.coffre.refus": "У тебя нет права открывать сундук клана.",
+  "msg.coffre.rendu": "Содержимое сундука клана [%s] теперь в твоём инвентаре."
 }
