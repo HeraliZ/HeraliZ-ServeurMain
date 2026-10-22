@@ -110,19 +110,43 @@ public final class InterfaceClient {
     /**
      * Vue a la 1re personne en survie (facon DayZ) : la touche F5 ne marche qu'en creatif et en spectateur (staff) ; en
      * survie, elle ramene seulement a la 1re personne si la vue avait change. Les cinematiques des autres mods (execution,
-     * badge, scenes) changent la camera elles-memes et la remettent apres : elles ne sont pas concernees.
+     * badge, scenes) changent la camera elles-memes et la remettent apres : elles ne sont pas concernees. Pendant une emote
+     * (HeraliZ Emote, {@code fr.heraliz.emote.client.CameraEmote.actif()} par reflexion), F5 marche : le joueur se voit
+     * danser ; l'emote le remet a la 1re personne a la fin (et le serveur lui interdit les armes 10 s).
      */
     @SubscribeEvent
     public static void vue(TickEvent.ClientTickEvent e) {
         if (e.phase != TickEvent.Phase.START) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.player.isCreative() || mc.player.isSpectator()) return;
+        if (enEmote()) return;
         boolean appui = false;
         while (mc.options.keyTogglePerspective.consumeClick()) {
             appui = true;
         }
         if (appui && mc.options.getCameraType() != CameraType.FIRST_PERSON) {
             mc.options.setCameraType(CameraType.FIRST_PERSON);
+        }
+    }
+
+    private static boolean emoteCherchee;
+    private static java.lang.reflect.Method emoteActive;
+
+    /** Vrai si le joueur joue une emote de HeraliZ Emote (faux sans ce mod). */
+    private static boolean enEmote() {
+        if (!emoteCherchee) {
+            emoteCherchee = true;
+            try {
+                emoteActive = Class.forName("fr.heraliz.emote.client.CameraEmote").getMethod("actif");
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                emoteActive = null;
+            }
+        }
+        if (emoteActive == null) return false;
+        try {
+            return Boolean.TRUE.equals(emoteActive.invoke(null));
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            return false;
         }
     }
 

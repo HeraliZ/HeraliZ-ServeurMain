@@ -42,6 +42,7 @@ public final class HeralizEmoteClient {
             EmoteSounds.tick();
             EmoteMotion.tick();
             ClientRules.tick();
+            CameraEmote.tick();
             Minecraft mc = Minecraft.getInstance();
             while (HeralizKeys.OPEN_MENU.consumeClick()) {
                 if (mc.screen == null && mc.player != null) mc.setScreen(new EmoteBrowserScreen());

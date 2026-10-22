@@ -62,5 +62,18 @@
   "heraliz_emote.menu.off": "Coupé : tu n'entends que les tiennes",
   "heraliz_emote.config.section": "Réglages",
   "heraliz_emote.config.unit_blocks": "blocs",
-  "heraliz_emote.config.unit_seconds": "s"
+  "heraliz_emote.config.unit_seconds": "s",
+  "heraliz_emote.refused.locked": "Emote à débloquer dans la caisse des emotes",
+  "heraliz_emote.no_weapon": "Pas d'arme après une emote (encore %s s)",
+  "heraliz_emote.menu.locked_btn": "À débloquer dans la caisse des emotes",
+  "heraliz_emote.menu.locked_tip": "À débloquer dans la caisse des emotes",
+  "heraliz_emote.cmd.tout": "%s : %s emote(s) débloquée(s)",
+  "heraliz_emote.cmd.complet": "%s a déjà toutes les emotes",
+  "heraliz_emote.cmd.debloquee": "%s : emote « %s » débloquée",
+  "heraliz_emote.cmd.deja": "%s a déjà l'emote « %s »",
+  "heraliz_emote.cmd.tout_retire": "%s : %s emote(s) retirée(s)",
+  "heraliz_emote.cmd.retiree": "%s : emote « %s » retirée",
+  "heraliz_emote.cmd.pas": "%s n'a pas l'emote « %s »",
+  "heraliz_emote.cmd.voir": "%s : %s / %s emotes : %s",
+  "heraliz_emote.cmd.inconnue": "Emote inconnue : %s"
 }
