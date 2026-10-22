@@ -41,8 +41,10 @@ import java.util.stream.Stream;
 
 /**
  * {@code /wipe serveur} (op niveau 4 ou console, demande du propriétaire du 22/10) : remise à zéro complète du serveur,
- * comme un wipe de Rust. Deux temps : {@code /wipe serveur} montre ce qui va disparaître et un code ; {@code /wipe serveur
- * confirmer <code>} (dans la minute) lance tout :
+ * comme un wipe de Rust. Triple vérification, toujours par la même personne : {@code /wipe serveur} montre ce qui va
+ * disparaître et un code ; {@code /wipe serveur confirmer <code>} (dans la minute) donne un dernier avertissement et un
+ * second code ; {@code /wipe serveur valider <code>} (dans les 30 s) annonce à tous un compte à rebours de 10 s, que
+ * {@code /wipe serveur annuler} arrête ; puis tout part :
  * <ul>
  * <li>toutes les bases de CRac, contenu compris, et leurs données (homes, tutoriels, cœurs, groupes) ;</li>
  * <li>tous les clans dissous (banque et coffre perdus), hérals de tous les comptes à 0, saison et classement du
@@ -63,23 +65,40 @@ final class WipeServeur {
 
     private static final Logger LOG = LogUtils.getLogger();
     private static final ResourceLocation CADAVRE = new ResourceLocation("heraliz_corps", "corpse");
-    /** Code de confirmation en attente et sa fin (ms). */
+    /** Triple vérification : étape atteinte (0 rien, 1 code donné, 2 dernier code donné), code attendu, sa fin, qui l'a demandé. */
+    private static int etape;
     private static String code;
     private static long codeFin;
+    private static String auteur = "";
+    /** Compte à rebours lancé par la 3e étape : tick du lancement (-1 : aucun) et la source à qui répondre. */
+    private static int lancementTick = -1;
+    private static CommandSourceStack lanceur;
     /** Joueurs connectés à remettre à zéro, et le tick où le faire (laisse les autres mods finir leur connexion). */
     private static final Map<UUID, Integer> FILE = new HashMap<>();
     private static int ticks;
+    private static final int COMPTE_A_REBOURS = 10;
 
     static LiteralArgumentBuilder<CommandSourceStack> commande() {
         return Commands.literal("serveur")
                 .executes(c -> annoncer(c.getSource()))
                 .then(Commands.literal("confirmer").then(Commands.argument("code", StringArgumentType.word())
-                        .executes(c -> confirmer(c.getSource(), StringArgumentType.getString(c, "code")))));
+                        .executes(c -> confirmer(c.getSource(), StringArgumentType.getString(c, "code")))))
+                .then(Commands.literal("valider").then(Commands.argument("code", StringArgumentType.word())
+                        .executes(c -> valider(c.getSource(), StringArgumentType.getString(c, "code")))))
+                .then(Commands.literal("annuler").executes(c -> annuler(c.getSource())));
     }
 
+    private static String nouveauCode() {
+        return String.valueOf(ThreadLocalRandom.current().nextInt(1000, 10000));
+    }
+
+    /** 1re étape : ce qui va disparaître, et un premier code. */
     private static int annoncer(CommandSourceStack src) {
-        code = String.valueOf(ThreadLocalRandom.current().nextInt(1000, 10000));
+        if (lancementTick >= 0) return dejaLance(src);
+        etape = 1;
+        code = nouveauCode();
         codeFin = System.currentTimeMillis() + 60_000L;
+        auteur = src.getTextName();
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.avertir",
                 "REMISE À ZÉRO DU SERVEUR : toutes les bases, tous les clans, les hérals, la saison, le classement du ClashWar, "
                         + "et pour chaque joueur inventaire, coffres, quêtes, personnage et tutoriel. Gardés : objets à vie, camos, "
@@ -90,13 +109,76 @@ final class WipeServeur {
         return 1;
     }
 
+    /** 2e étape : premier code juste, par la même personne ; dernier avertissement et un second code. */
     private static int confirmer(CommandSourceStack src, String saisi) {
-        if (code == null || System.currentTimeMillis() > codeFin || !code.equals(saisi)) {
-            src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.mauvais_code",
-                    "Code faux ou périmé : tape d'abord /wipe serveur."));
-            return 0;
-        }
+        if (lancementTick >= 0) return dejaLance(src);
+        if (!codeBon(src, 1, saisi)) return mauvaisCode(src);
+        etape = 2;
+        code = nouveauCode();
+        codeFin = System.currentTimeMillis() + 30_000L;
+        String c = code;
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.derniere",
+                "DERNIÈRE VÉRIFICATION : tout le serveur sera remis à zéro. Pour lancer : /wipe serveur valider %s (valable 30 secondes).",
+                c).withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), false);
+        return 1;
+    }
+
+    /** 3e étape : second code juste ; compte à rebours de 10 s annoncé à tous, {@code /wipe serveur annuler} l'arrête. */
+    private static int valider(CommandSourceStack src, String saisi) {
+        if (lancementTick >= 0) return dejaLance(src);
+        if (!codeBon(src, 2, saisi)) return mauvaisCode(src);
+        etape = 0;
         code = null;
+        lancementTick = ticks + COMPTE_A_REBOURS * 20;
+        lanceur = src;
+        LOG.warn("[Quêtes] remise à zéro du serveur validée par {} : lancement dans {} s", src.getTextName(), COMPTE_A_REBOURS);
+        String n = String.valueOf(COMPTE_A_REBOURS);
+        for (ServerPlayer p : src.getServer().getPlayerList().getPlayers()) {
+            p.sendSystemMessage(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.rebours",
+                    "Remise à zéro du serveur dans %s secondes.", n).withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
+        }
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.annulable",
+                "Lancement dans %s secondes. Pour l'arrêter : /wipe serveur annuler", n).withStyle(ChatFormatting.GOLD), false);
+        return 1;
+    }
+
+    private static int annuler(CommandSourceStack src) {
+        boolean enCours = lancementTick >= 0 || etape != 0;
+        etape = 0;
+        code = null;
+        lancementTick = -1;
+        lanceur = null;
+        if (enCours) {
+            LOG.warn("[Quêtes] remise à zéro du serveur annulée par {}", src.getTextName());
+            for (ServerPlayer p : src.getServer().getPlayerList().getPlayers()) {
+                p.sendSystemMessage(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.annulee",
+                        "Remise à zéro du serveur annulée.").withStyle(ChatFormatting.GREEN));
+            }
+        }
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.annulee",
+                "Remise à zéro du serveur annulée."), false);
+        return 1;
+    }
+
+    private static boolean codeBon(CommandSourceStack src, int attendue, String saisi) {
+        return etape == attendue && code != null && System.currentTimeMillis() <= codeFin && code.equals(saisi)
+                && auteur.equals(src.getTextName());
+    }
+
+    private static int mauvaisCode(CommandSourceStack src) {
+        src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.mauvais_code",
+                "Code faux ou périmé : tape d'abord /wipe serveur."));
+        return 0;
+    }
+
+    private static int dejaLance(CommandSourceStack src) {
+        src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.deja",
+                "Une remise à zéro est déjà lancée : /wipe serveur annuler pour l'arrêter."));
+        return 0;
+    }
+
+    /** La remise à zéro elle-même, à la fin du compte à rebours. */
+    private static void lancer(CommandSourceStack src) {
         MinecraftServer srv = src.getServer();
         LOG.warn("[Quêtes] REMISE À ZÉRO DU SERVEUR lancée par {}", src.getTextName());
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
@@ -127,7 +209,6 @@ final class WipeServeur {
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.fait",
                 "Serveur remis à zéro : %s joueurs le seront à leur connexion. Lance une nouvelle saison avec /saison commencer <jours>.",
                 n).withStyle(ChatFormatting.GREEN), true);
-        return 1;
     }
 
     /** À la connexion : joueur pas encore remis à zéro depuis le dernier {@code /wipe serveur}. */
@@ -137,6 +218,18 @@ final class WipeServeur {
 
     static void tick(MinecraftServer srv) {
         ticks++;
+        if (lancementTick >= 0 && ticks >= lancementTick) {
+            CommandSourceStack src = lanceur;
+            lancementTick = -1;
+            lanceur = null;
+            if (src != null) {
+                try {
+                    lancer(src);
+                } catch (RuntimeException ex) {
+                    LOG.error("[Quêtes] remise à zéro du serveur en erreur", ex);
+                }
+            }
+        }
         if (FILE.isEmpty()) return;
         for (UUID u : List.copyOf(FILE.keySet())) {
             if (FILE.get(u) > ticks) continue;
