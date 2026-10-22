@@ -172,6 +172,22 @@ jobs:
           else
             echo "::warning::Clé des jetons de lancement introuvable sur le site (lancer « Site HeraliZ » avec « theme ») : Spartan ne pourra vérifier aucun jeton."
           fi
+          # clé des Points Boutique (/boutique et /trade en jeu, PbController de l'extension du site)
+          PB=/var/www/azuriom/storage/app/heraliz/pb.cle
+          if [ "$SITE_SSH_UTILISATEUR" = root ]; then
+            cle=$(sshpass -e "${SSH[@]}" "$VM" "cat $PB 2> /dev/null" < /dev/null || true)
+          else
+            cle=$(printf '%s\n' "$SITE_SSH_MDP" | sshpass -e "${SSH[@]}" "$VM" "sudo -S -p '' cat $PB 2> /dev/null" || true)
+          fi
+          cle=$(printf '%s' "$cle" | tr -d '\r\n')
+          if [ "${#cle}" -ge 40 ]; then
+            echo "::add-mask::$cle"
+            (umask 077 && printf '%s' "$cle" > "$RUNNER_TEMP/pb.cle")
+            echo "Clé des Points Boutique : lue sur le site"
+          else
+            echo "::warning::Clé des Points Boutique introuvable sur le site (lancer « Site HeraliZ » avec « theme ») : /boutique et /trade sans PB."
+          fi
+          unset cle
 
       # secrets écrits dans les fichiers envoyés, jamais dans le dépôt : webhooks Discord et clé des jetons de Spartan ;
       # base de données de LiteBans (sans ses secrets : base locale H2, sans historique des sanctions) ; adresse et clé du
@@ -231,6 +247,12 @@ jobs:
                   print("Lien Discord : adresse et clé de HeraliBot lues sur le Ptero")
               except Exception as e:
                   print("::warning::Lien Discord (heraliz-grades) : réglages de HeraliBot illisibles sur le Ptero (%s) : lien désactivé" % type(e).__name__)
+          # Points Boutique : adresse du site et clé de PbController (jamais dans le dépôt)
+          fichier_pb = pathlib.Path(os.environ.get("RUNNER_TEMP", "/tmp"), "pb.cle")
+          if fichier_pb.exists():
+              import json as _json
+              d = pathlib.Path("serveur/config/heraliz_grades"); d.mkdir(parents=True, exist_ok=True)
+              (d / "boutique_site.json").write_text(_json.dumps({"url": "https://heraliz.fr", "cle": fichier_pb.read_text(encoding="utf-8").strip()}), encoding="utf-8")
           p = pathlib.Path("serveur/config/heraliz_grades/lien.json")
           if p.exists():
               s = p.read_text(encoding="utf-8")

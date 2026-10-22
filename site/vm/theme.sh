@@ -60,12 +60,20 @@ if [ ! -s "$PACK_CLE" ]; then
   chown www-data:www-data "$PACK_CLE"
   echo "Clé du pack du launcher : créée"
 fi
+# clé des Points Boutique du serveur de jeu (/boutique, /trade : PbController), créée une seule fois ; la mise en ligne
+# du serveur vient la lire ici (serveur.yml) et l'écrit dans config/heraliz_grades/boutique_site.json
+PB_CLE="$DOSSIER/storage/app/heraliz/pb.cle"
+if [ ! -s "$PB_CLE" ]; then
+  (umask 077 && head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' > "$PB_CLE")
+  chown www-data:www-data "$PB_CLE"
+  echo "Clé des Points Boutique : créée"
+fi
 # storage (journaux, sessions, clés) lisible par le site seulement, remis à chaque envoi (« installer » relancé ouvre le
 # dossier du site en lecture à tous les comptes de la VM)
 chown -R www-data:www-data "$DOSSIER/storage"
 chmod -R o-rwx "$DOSSIER/storage"
 chmod 700 "$(dirname "$CLE")"
-chmod 600 "$CLE" "$PACK_CLE"
+chmod 600 "$CLE" "$PACK_CLE" "$PB_CLE"
 
 echo "== Pack du launcher"
 # Les fichiers du pack (https://heraliz.fr/launcher/) ne s'ouvrent qu'avec un lien signé par le site pour un compte

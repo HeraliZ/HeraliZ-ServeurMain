@@ -53,6 +53,9 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         // Pack de jeu signé pour le compte connecté (PackController) : 30 par minute et par adresse IP (un par partie)
         RateLimiter::for('heraliz-pack', fn (Request $request) => Limit::perMinute(30)->by(Adresse::de($request)));
 
+        // Points Boutique du serveur de jeu (PbController, requêtes signées) : 600 par minute
+        RateLimiter::for('heraliz-pb', fn (Request $request) => Limit::perMinute(600)->by(Adresse::de($request)));
+
         // Connexion aux comptes, par le launcher (API d'Azuriom) comme par le site : 10 erreurs par adresse IP, puis
         // 10 minutes d'attente ; 10 codes de double authentification faux par compte, puis 15 minutes (LimiteConnexion)
         $this->router->pushMiddlewareToGroup('api', LimiteConnexion::class);
