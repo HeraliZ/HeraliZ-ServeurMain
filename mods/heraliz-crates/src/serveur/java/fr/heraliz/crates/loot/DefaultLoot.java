@@ -227,10 +227,12 @@ final class DefaultLoot {
             // celles qui ont des accessoires (objets 3D, particules) sont un peu plus rares. Fichier du serveur :
             // outils/butin_spectacle.py. Le tirage saute celles que le joueur a deja (EmotesCaisse).
             case SPECTACLE -> {
+                int rang = 0;
                 for (String[] em : EmotesCaisse.toutes()) {
                     boolean acc = em.length > 2 && "1".equals(em[2]);
-                    l.add(e("minecraft:name_tag", 1, acc ? 20 : 30, acc ? EPIC : RARE).name((acc ? "&d" : "&b") + em[1])
-                            .command(EmotesCaisse.COMMANDE + em[0]).noItem());
+                    // icone de l'emote (heraliz_emote:icone, CustomModelData = rang + 1, comme liste.json)
+                    l.add(e("heraliz_emote:icone", 1, acc ? 20 : 30, acc ? EPIC : RARE).nbt("{CustomModelData:" + (++rang) + "}")
+                            .name((acc ? "&d" : "&b") + em[1]).command(EmotesCaisse.COMMANDE + em[0]).noItem());
                 }
             }
             // caisse Largage : ravitaillement militaire. Munitions TaCZ et grenades (courant), armes de poing, puis

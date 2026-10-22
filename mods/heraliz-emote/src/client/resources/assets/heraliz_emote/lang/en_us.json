@@ -75,5 +75,6 @@
   "heraliz_emote.cmd.retiree": "%s: emote \"%s\" removed",
   "heraliz_emote.cmd.pas": "%s does not have the emote \"%s\"",
   "heraliz_emote.cmd.voir": "%s: %s / %s emotes: %s",
-  "heraliz_emote.cmd.inconnue": "Unknown emote: %s"
+  "heraliz_emote.cmd.inconnue": "Unknown emote: %s",
+  "item.heraliz_emote.icone": "Emote"
 }

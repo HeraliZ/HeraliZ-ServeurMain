@@ -75,5 +75,6 @@
   "heraliz_emote.cmd.retiree": "%s: эмоция «%s» убрана",
   "heraliz_emote.cmd.pas": "У %s нет эмоции «%s»",
   "heraliz_emote.cmd.voir": "%s: %s / %s эмоций: %s",
-  "heraliz_emote.cmd.inconnue": "Неизвестная эмоция: %s"
+  "heraliz_emote.cmd.inconnue": "Неизвестная эмоция: %s",
+  "item.heraliz_emote.icone": "Эмоция"
 }

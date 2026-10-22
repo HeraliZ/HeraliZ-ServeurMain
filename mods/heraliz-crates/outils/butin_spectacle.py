@@ -3,8 +3,8 @@
     python mods/heraliz-crates/outils/butin_spectacle.py
 
 Lit la liste des emotes (mods/heraliz-emote/src/commun/resources/data/heraliz_emote/liste.json, écrite par
-mods/heraliz-emote/outils/liste_emotes.py). Chaque récompense est une étiquette au nom de l'emote (affichée dans la roue,
-pas donnée) et la commande `emote debloquer {player} <id>`. Emote avec accessoires : Épique, poids 20 ; sans : Rare,
+mods/heraliz-emote/outils/liste_emotes.py). Chaque récompense est l'icône de l'emote (heraliz_emote:icone, affichée dans la
+roue, pas donnée) et la commande `emote debloquer {player} <id>`. Emote avec accessoires : Épique, poids 20 ; sans : Rare,
 poids 30. Le tirage saute les emotes déjà débloquées par le joueur ; s'il les a toutes, la clé est refusée. À relancer
 après l'ajout ou le retrait d'une emote.
 """
@@ -15,7 +15,7 @@ DEPOT = Path(__file__).resolve().parents[3]
 LISTE = DEPOT / "mods/heraliz-emote/src/commun/resources/data/heraliz_emote/liste.json"
 SORTIE = DEPOT / "serveur/config/heralizcrates/spectacle.json"
 AIDE = ("Caisse des emotes : fichier écrit par mods/heraliz-crates/outils/butin_spectacle.py (ne pas modifier à la main). "
-        "Chaque récompense débloque une emote (commande), l'étiquette n'est qu'affichée dans la roue. Le tirage saute les "
+        "Chaque récompense débloque une emote (commande), l'icône n'est qu'affichée dans la roue. Le tirage saute les "
         "emotes déjà débloquées ; un joueur qui les a toutes ne peut plus ouvrir de clé.")
 
 
@@ -25,7 +25,8 @@ def main():
     for e in emotes:
         acc = e.get("accessoires", False)
         recompenses.append({
-            "item": "minecraft:name_tag",
+            "item": "heraliz_emote:icone",
+            "nbt": "{CustomModelData:%d}" % e["modele"],
             "count": 1,
             "weight": 20 if acc else 30,
             "rarity": "epic" if acc else "rare",

@@ -1,0 +1,284 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "minecraft:item/name_tag"
+ },
+ "overrides": [
+  {
+   "predicate": {
+    "custom_model_data": 1
+   },
+   "model": "heraliz_emote:item/icone/floss"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 2
+   },
+   "model": "heraliz_emote:item/icone/griddy"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 3
+   },
+   "model": "heraliz_emote:item/icone/moonwalk"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 4
+   },
+   "model": "heraliz_emote:item/icone/take_the_l"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 5
+   },
+   "model": "heraliz_emote:item/icone/dab"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 6
+   },
+   "model": "heraliz_emote:item/icone/macarena"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 7
+   },
+   "model": "heraliz_emote:item/icone/ymca"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 8
+   },
+   "model": "heraliz_emote:item/icone/disco"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 9
+   },
+   "model": "heraliz_emote:item/icone/headspin"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 10
+   },
+   "model": "heraliz_emote:item/icone/worm"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 11
+   },
+   "model": "heraliz_emote:item/icone/shopping_cart"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 12
+   },
+   "model": "heraliz_emote:item/icone/ballerina"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 13
+   },
+   "model": "heraliz_emote:item/icone/guitar"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 14
+   },
+   "model": "heraliz_emote:item/icone/dj"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 15
+   },
+   "model": "heraliz_emote:item/icone/violin"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 16
+   },
+   "model": "heraliz_emote:item/icone/maracas"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 17
+   },
+   "model": "heraliz_emote:item/icone/conductor"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 18
+   },
+   "model": "heraliz_emote:item/icone/horn"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 19
+   },
+   "model": "heraliz_emote:item/icone/confetti"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 20
+   },
+   "model": "heraliz_emote:item/icone/boxing"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 21
+   },
+   "model": "heraliz_emote:item/icone/magician"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 22
+   },
+   "model": "heraliz_emote:item/icone/juggling"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 23
+   },
+   "model": "heraliz_emote:item/icone/bow"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 24
+   },
+   "model": "heraliz_emote:item/icone/kiss"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 25
+   },
+   "model": "heraliz_emote:item/icone/shrug"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 26
+   },
+   "model": "heraliz_emote:item/icone/facepalm"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 27
+   },
+   "model": "heraliz_emote:item/icone/thinking"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 28
+   },
+   "model": "heraliz_emote:item/icone/shh"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 29
+   },
+   "model": "heraliz_emote:item/icone/angry"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 30
+   },
+   "model": "heraliz_emote:item/icone/scared"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 31
+   },
+   "model": "heraliz_emote:item/icone/rose"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 32
+   },
+   "model": "heraliz_emote:item/icone/crying"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 33
+   },
+   "model": "heraliz_emote:item/icone/clap"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 34
+   },
+   "model": "heraliz_emote:item/icone/hug"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 35
+   },
+   "model": "heraliz_emote:item/icone/weightlifting"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 36
+   },
+   "model": "heraliz_emote:item/icone/football"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 37
+   },
+   "model": "heraliz_emote:item/icone/basketball"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 38
+   },
+   "model": "heraliz_emote:item/icone/jump_rope"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 39
+   },
+   "model": "heraliz_emote:item/icone/hula_hoop"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 40
+   },
+   "model": "heraliz_emote:item/icone/backflip"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 41
+   },
+   "model": "heraliz_emote:item/icone/piano"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 42
+   },
+   "model": "heraliz_emote:item/icone/chef"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 43
+   },
+   "model": "heraliz_emote:item/icone/gift"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 44
+   },
+   "model": "heraliz_emote:item/icone/birthday"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 45
+   },
+   "model": "heraliz_emote:item/icone/cheerleader"
+  },
+  {
+   "predicate": {
+    "custom_model_data": 46
+   },
+   "model": "heraliz_emote:item/icone/love_sign"
+  }
+ ]
+}
