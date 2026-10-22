@@ -22,7 +22,7 @@ Prix de la bêta :
 | 3e | 30 € de PB |
 
 Membres récompensés : ceux du clan à la clôture de la saison (les clans sont figés les 7 derniers jours, §7).
-Saisons suivantes : prix en argent réel.
+**V1 : seulement des PB, pas d'argent réel** (décision du 22/10). Argent réel : saisons suivantes.
 
 **Deux choses différentes, à ne pas confondre :**
 - les **points de saison** : le classement, le cash prize ; gardés dans le cœur ; volables pendant la Purge ;
@@ -36,14 +36,15 @@ Beaucoup d'actions donnent les deux.
 - **Objet à part de l'armoire** (l'armoire de CRac reste le claim de la base). Un clan sans cœur posé **ne gagne aucun
   point de saison** et n'apparaît pas au classement : un clan qui ne veut pas jouer le classement ne pose pas de cœur,
   et n'intéresse pas les raideurs.
-- **Cher**, pour qu'il faille d'abord farmer avant de pouvoir marquer des points. Prix **[à valider]** : composants rares
-  (par exemple 10 métal renforcé, 5 circuits imprimés Épique, 2 batteries Épique) + 25 000 hérals.
+- **Cher**, pour qu'il faille d'abord farmer avant de pouvoir marquer des points. Décision : on fait d'abord le **bloc**
+  (modèle très propre, c'est l'objet principal des clans : rendus à valider), le prix et le craft viendront ensuite.
 - **Un seul par clan**, posé seulement dans la zone de la base du clan (claim de son armoire), par le chef ou un membre
   qui a le droit de gérer la base.
 - **Hors Purge** : indestructible, personne ne peut y toucher.
-- **Déplacer le cœur** : possible hors Purge, contre **50 000 hérals** (décision). Proposition **[à valider]** : le chef
-  le reprend en objet, 10 minutes pour le reposer ; aucun point gagné tant qu'il n'est pas posé ; interdit pendant la
-  Purge et dans l'heure qui la précède.
+- **Déplacer le cœur** : possible hors Purge, contre **50 000 hérals** (décision). Le chef le reprend en objet et a
+  **10 minutes pour le reposer ; sinon le clan perd 100 % de ses points** (décision). Aucun point gagné tant qu'il n'est
+  pas posé. Interdit pendant la Purge et dans l'heure qui la précède **[à valider]**. L'objet ne se jette pas, ne se
+  range nulle part et revient au chef s'il meurt **[à valider]**.
 - Clan dissous : le cœur disparaît avec tous ses points.
 
 ### Voler les points pendant la Purge
@@ -65,7 +66,8 @@ Beaucoup d'actions donnent les deux.
   et le cœur est intouchable. (Aujourd'hui, une base se raide à tout moment, sauf ses 4 premiers jours.)
 - Horaires réglables, exemple du propriétaire : vendredi 18 h – 21 h, samedi 15 h – 22 h, dimanche 15 h – 22 h.
 - Annonces 1 h et 10 min avant, au début et à la fin ; petit indicateur « PURGE » à l'écran pendant qu'elle dure.
-- À la fin de la Purge : les explosifs ne font plus rien ; une prise de cœur déjà commencée peut finir **[à valider]**.
+- À la fin de la Purge : les explosifs ne font plus rien ; **une prise de cœur déjà commencée va jusqu'au bout**
+  (décision), tant que les attaquants la tiennent.
 - Protection des nouvelles bases **[à valider]** : une base dont l'armoire a été posée moins de 48 h avant le début d'une
   Purge n'est pas raidable pendant cette Purge (remplace la protection de 4 jours).
 
@@ -99,8 +101,8 @@ Boss, salles à carte et quêtes ne sont pas plafonnés.
 
 | Action | Points |
 |---|---|
-| Kill | +10 |
-| Mort tuée par un joueur | −10 |
+| Kill | +1 |
+| Mort tuée par un joueur | −1 |
 
 - Le total PVP d'un clan ne descend **jamais sous 0** (1 kill et 100 morts = 0) (décision).
 - **Même victime** : 2e kill ×0,5, 3e kill et suivants 0 (décision) ; remise à zéro au bout de 6 h **[à valider]**.
@@ -124,11 +126,12 @@ Même grille de points pour tous les events, pour qu'un nouvel event ne déséqu
 | 4e | 20 |
 | Participation (avoir vraiment joué) | 5 |
 
-Chaque event mesure quelque chose pour donner les places : KOTH = temps passé dans la zone ; oil rig = qui sort le
-butin, puis kills sur place **[à valider]** ; ClashWar = les 4 places de son tableau (points ×2, c'est le gros event
+Chaque event mesure quelque chose pour donner les places : KOTH = temps passé dans la zone ; ClashWar = les 4 places de son tableau (points ×2, c'est le gros event
 **[à valider]**). Idées d'events : KOTH, oil rig, largage disputé, boss du monde, attaque du train.
 
-À trancher : le propriétaire a cité l'oil rig en PVE et en events. Proposition : en events seulement.
+**Oil rig** (décision, façon Rust) : une plateforme avec une **salle à carte rouge** et un **coffre T7**, gardée par des
+bots qui arrivent par vagues. Points PVE pour le clan qui ouvre le T7 **[montant à valider]**. Les bots sont un
+nouveau système à faire (PNJ armés).
 
 ---
 
@@ -205,7 +208,7 @@ lieu d'être vendu.
 | inventaires, coffres de l'Ender, coffres personnels | collection de camos à vie |
 | bases, cœurs, homes | **objets à vie** (couteaux, skins à vie) : rendus à la 1re connexion |
 | quêtes, territoires | emotes perso et autres récompenses permanentes |
-| | apparence du personnage **[à valider]** |
+| apparence du personnage (refait au créateur) | |
 
 Le `/wipe <joueur>` actuel ne vise qu'un joueur connecté et ne touche ni aux hérals, ni au clan, ni aux coffres
 personnels : il reste pour les cas isolés.
@@ -247,11 +250,15 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
 
 ---
 
-## 11. Questions encore ouvertes
+## 11. Modèles à faire (rendus d'abord)
 
-1. Prix exact du cœur.
-2. Oil rig : PVE, events, ou les deux ?
-3. Une prise de cœur commencée peut-elle finir après la fin de la Purge ?
-4. Protection des nouvelles bases : 48 h avant une Purge, ou autre chose ?
-5. L'apparence du personnage est-elle gardée au wipe de saison ?
-6. Les montants exacts du barème (à régler pendant la bêta).
+- **Cœur de clan** : bloc « ultra clean », l'objet principal des clans.
+- **Armoire (TC) refaite** : l'actuelle est jugée très moche. Style apocalypse zombie, avec un **petit écran rouillé qui
+  bugue** où s'affichent ce que la base demande (entretien) et le temps restant avant qu'elle disparaisse.
+
+## 12. Questions encore ouvertes
+
+1. Prix et craft du cœur (après le modèle).
+2. Points de l'oil rig.
+3. Protection des nouvelles bases : 48 h avant une Purge, ou autre chose ?
+4. Les montants exacts du barème (à régler pendant la bêta).
