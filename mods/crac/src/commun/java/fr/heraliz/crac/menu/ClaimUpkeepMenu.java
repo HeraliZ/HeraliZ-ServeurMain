@@ -161,6 +161,9 @@ public class ClaimUpkeepMenu extends AbstractContainerMenu {
     public void removed(Player player) {
         super.removed(player);
         this.container.stopOpen(player);
+        if (this.be != null && !player.level().isClientSide()) {
+            this.be.majEcran();   // le stock a pu changer : l'écran de l'armoire suit tout de suite
+        }
     }
 
     private final class UpkeepSlot extends Slot {

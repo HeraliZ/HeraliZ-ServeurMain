@@ -289,6 +289,7 @@ public final class ClaimMaintenanceManager {
                     b = StructureService.buildingOfClaim(level, anchor);
                 }
                 unpaid = ClaimUpkeep.consumeAndCheck(level, claim, be, b) && decayOn;
+                be.majEcran();   // écran de l'armoire : entretien demandé et temps restant
                 warnUpkeep(server, claim.groupId(), unpaid);
             }
             decaying.put(claim.groupId(), decayOn && (unpaid || isInactive(server, claim.groupId())));

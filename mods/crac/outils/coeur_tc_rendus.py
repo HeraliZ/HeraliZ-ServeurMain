@@ -31,8 +31,9 @@ MONO = Path("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf")
 
 
 # =============================================================================================== images d'écran
-def image_ecran_tc(larg=360, haut=216):
-    """Écran ambre de l'armoire : entretien demandé et temps avant disparition, avec ses défauts (rouille, bugs)."""
+def image_ecran_tc(larg=360, haut=216, texte=True):
+    """Écran ambre de l'armoire : entretien demandé et temps avant disparition, avec ses défauts (rouille, bugs).
+    Sans texte : le fond seul (en jeu, le texte est écrit en direct par-dessus)."""
     police = ImageFont.truetype(str(MONO if MONO.exists() else ex.POLICE), 40)
     petite = ImageFont.truetype(str(MONO if MONO.exists() else ex.POLICE), 26)
     im = Image.new("L", (larg, haut), 0)
@@ -42,7 +43,7 @@ def image_ecran_tc(larg=360, haut=216):
     d.text((14, 84), " 4 CLOUS", font=police, fill=255)
     d.line((14, 136, larg - 14, 136), fill=120, width=3)
     d.text((14, 146), "DEPOP 23:41", font=police, fill=255)
-    a = np.asarray(im, float) / 255
+    a = np.asarray(im, float) / 255 * (1.0 if texte else 0.0)
     rng = np.random.default_rng(5)
     # bandes décalées (le signal saute)
     for y0, h, dx in ((112, 6, 7), (168, 6, -10), (28, 3, 5)):
@@ -194,11 +195,13 @@ ex.peindre = peindre
 
 
 def prisme(B, os_, cx, cz, y0, y1, ray, mat, pans=8, prm=None, faces=ex.FACES):
-    """Prisme vertical à 8 (ou 6) pans autour de (cx, cz) : pavés tournés autour de l'axe y."""
+    """Prisme vertical à 8 (ou 6) pans autour de (cx, cz) : pavés tournés autour de l'axe y. os_ None : B ne prend pas
+    d'os (il le choisit lui-même)."""
     pas = 180 / (pans // 2)
     demi = ray * math.tan(math.radians(180 / pans))
     for k in range(pans // 2):
-        B(os_, (cx - ray, y0, cz - demi), (cx + ray, y1, cz + demi), mat, rot=(0, k * pas, 0), pivot=(cx, y0, cz),
+        a = () if os_ is None else (os_,)
+        B(*a, (cx - ray, y0, cz - demi), (cx + ray, y1, cz + demi), mat, rot=(0, k * pas, 0), pivot=(cx, y0, cz),
           prm=prm, faces=faces)
 
 
@@ -335,7 +338,8 @@ def anneau(B, os_, cx, cy, cz, ray, ep, haut_, mat, segments=24):
     for k in range(segments):
         t = 2 * math.pi * k / segments
         mx, mz = cx + ray * math.cos(t), cz + ray * math.sin(t)
-        B(os_, (mx - ep / 2, cy, mz - long_ / 2), (mx + ep / 2, cy + haut_, mz + long_ / 2), mat,
+        a = () if os_ is None else (os_,)
+        B(*a, (mx - ep / 2, cy, mz - long_ / 2), (mx + ep / 2, cy + haut_, mz + long_ / 2), mat,
           rot=(0, -math.degrees(t), 0), pivot=(mx, cy, mz))
 
 
@@ -377,52 +381,66 @@ def verifier_rotation(cubes, cx=8.0, cz=8.0):
     return pire
 
 
-def modele_coeur_futur(holo=("PVE", "RANG 3")):
-    """Cœur de clan : cristal d'énergie qui flotte (un cube posé sur sa pointe) entre trois bras, au-dessus d'un socle
-    rond à filets lumineux ; points du clan sur l'avant du socle ; hologramme au-dessus qui fait défiler les rangs
-    (PVE, PVP, EVENTS, GÉNÉRAL). En jeu : modèle fixe + cristal et hologramme dessinés à part (rotation lente)."""
-    os_ = [Os("coeur")]
+# points du clan (plaque sur l'avant du socle) : en jeu, le texte y est écrit en direct
+PLAQUE = {"x0": 3.6, "x1": 12.4, "y0": 1.7, "y1": 3.05, "z": 0.9}
+# hologramme : centre et taille (px), en jeu tourné vers le joueur
+HOLO = {"y": 21.8, "largeur": 12.0, "hauteur": 5.7}
+CRISTAL = {"y": 10.0, "demi": 2.6}
+
+
+def modele_coeur_futur(holo=("PVE", "RANG 3"), jeu=False):
+    """Cœur de clan (validé le 22/10) : cristal d'énergie qui flotte (un cube posé sur sa pointe) entre trois bras,
+    au-dessus d'un socle rond à filets lumineux ; points du clan sur l'avant du socle ; hologramme au-dessus qui fait
+    défiler les rangs (PVE, PVP, EVENTS, GÉNÉRAL). Trois parties (os) : « socle » (modèle fixe du bloc), « lueur »
+    (filets lumineux, dessinés en pleine lumière) et « cristal » (tourne). jeu=True : sans les textes (plaque vide,
+    pas d'hologramme), écrits en direct par le jeu."""
+    os_ = [Os("socle"), Os("lueur"), Os("cristal")]
     cubes = []
     B = lambda *a, **k: cubes.append(Cube(*a, **k))
+
+    def L(*a, **k):
+        cubes.append(Cube("lueur", *a, **k))
     cx = cz = 8.0
     # socle rond à 16 pans, en gradins, filets lumineux
-    prisme(B, "coeur", cx, cz, 0.0, 1.2, 7.8, "graphite", pans=16)
-    prisme(B, "coeur", cx, cz, 1.2, 1.45, 7.2, "lisere", pans=16)
-    prisme(B, "coeur", cx, cz, 1.45, 2.6, 7.0, "graphite_clair", pans=16)
-    prisme(B, "coeur", cx, cz, 2.6, 3.4, 5.6, "graphite", pans=16)
-    prisme(B, "coeur", cx, cz, 3.4, 3.55, 4.6, "lisere", pans=16)
-    prisme(B, "coeur", cx, cz, 3.55, 4.0, 4.3, "graphite_clair", pans=16)
+    prisme(B, "socle", cx, cz, 0.0, 1.2, 7.8, "graphite", pans=16)
+    prisme(L, None, cx, cz, 1.2, 1.45, 7.2, "lisere", pans=16)
+    prisme(B, "socle", cx, cz, 1.45, 3.2, 7.0, "graphite_clair", pans=16)
+    prisme(B, "socle", cx, cz, 3.2, 3.6, 5.6, "graphite", pans=16)
+    prisme(L, None, cx, cz, 3.6, 3.75, 4.6, "lisere", pans=16)
+    prisme(B, "socle", cx, cz, 3.75, 4.2, 4.3, "graphite_clair", pans=16)
     # trois bras fins qui montent et se penchent vers le cristal, émetteur au bout
     for k in range(3):
         t = math.radians(90 + k * 120)
         bx, bz = cx + 5.6 * math.cos(t), cz + 5.6 * math.sin(t)
         ang = -math.degrees(t)
-        B("coeur", (bx - 0.6, 2.6, bz - 0.9), (bx + 0.6, 10.5, bz + 0.9), "graphite", rot=(0, ang, 0),
-          pivot=(bx, 2.6, bz))
-        B("coeur", (bx - 0.62, 4.0, bz - 0.15), (bx + 0.62, 9.5, bz + 0.15), "lisere", rot=(0, ang, 0),
-          pivot=(bx, 2.6, bz))
+        B("socle", (bx - 0.6, 3.2, bz - 0.9), (bx + 0.6, 10.5, bz + 0.9), "graphite", rot=(0, ang, 0),
+          pivot=(bx, 3.2, bz))
+        L((bx - 0.62, 4.2, bz - 0.15), (bx + 0.62, 9.5, bz + 0.15), "lisere", rot=(0, ang, 0), pivot=(bx, 3.2, bz))
         hx, hz = cx + 5.4 * math.cos(t), cz + 5.4 * math.sin(t)   # hors du volume balayé par le cristal
-        B("coeur", (hx - 0.5, 10.5, hz - 0.8), (hx + 0.5, 12.6, hz + 0.8), "graphite_clair", rot=(0, ang, 0),
+        B("socle", (hx - 0.5, 10.5, hz - 0.8), (hx + 0.5, 12.6, hz + 0.8), "graphite_clair", rot=(0, ang, 0),
           pivot=(hx, 10.5, hz))
-        B("coeur", (hx - 0.3, 12.6, hz - 0.3), (hx + 0.3, 13.0, hz + 0.3), "lisere")
+        L((hx - 0.3, 12.6, hz - 0.3), (hx + 0.3, 13.0, hz + 0.3), "lisere")
     # cristal d'énergie : cube posé sur sa pointe, qui flotte
-    c = 2.6
-    B("coeur", (cx - c, 10.0 - c, cz - c), (cx + c, 10.0 + c, cz + c), "energie", rot=(45, 0, 35.26),
-      pivot=(cx, 10.0, cz))
-    anneau(B, "coeur", cx, cz=cz, cy=9.9, ray=5.0, ep=0.25, haut_=0.25, mat="lisere")
-    # points du clan sur l'avant du socle
-    img = image_points()
-    B("coeur", (4.0, 1.6, 0.85), (12.0, 2.5, 1.05), "holo", faces=("north",),
-      prm={"img": (img[0], np.ones(img[0].shape[:2])), "cadre": (4.0, 12.0, 1.6, 2.5)})
-    # hologramme au-dessus (en jeu : tourné vers le joueur, les rangs défilent)
-    himg = image_holo(*holo)
-    B("coeur", (2.0, 19.0, 7.95), (14.0, 24.7, 8.05), "holo", faces=("north",),
-      prm={"img": himg, "cadre": (2.0, 14.0, 19.0, 24.7)})
+    c, cy = CRISTAL["demi"], CRISTAL["y"]
+    B("cristal", (cx - c, cy - c, cz - c), (cx + c, cy + c, cz + c), "energie", rot=(45, 0, 35.26), pivot=(cx, cy, cz))
+    anneau(L, None, cx, cz=cz, cy=9.9, ray=5.0, ep=0.25, haut_=0.25, mat="lisere")
+    # plaque des points du clan sur l'avant du socle
+    p = PLAQUE
+    B("socle", (p["x0"] - 0.3, p["y0"] - 0.2, p["z"]), (p["x1"] + 0.3, p["y1"] + 0.2, 1.05), "plastique")
+    if not jeu:
+        img = image_points()
+        B("socle", (p["x0"], p["y0"], p["z"] - 0.05), (p["x1"], p["y1"], p["z"]), "holo", faces=("north",),
+          prm={"img": (img[0], np.ones(img[0].shape[:2])), "cadre": (p["x0"], p["x1"], p["y0"], p["y1"])})
+        # hologramme au-dessus (en jeu : tourné vers le joueur, les rangs défilent)
+        h = HOLO
+        himg = image_holo(*holo)
+        x0, x1 = cx - h["largeur"] / 2, cx + h["largeur"] / 2
+        y0, y1 = h["y"] - h["hauteur"] / 2, h["y"] + h["hauteur"] / 2
+        B("socle", (x0, y0, 7.95), (x1, y1, 8.05), "holo", faces=("north",), prm={"img": himg, "cadre": (x0, x1, y0, y1)})
     for k in range(4):                                             # faisceau de projection, en pointillés
         y = 15.2 + k * 0.95
-        B("coeur", (7.9, y, 7.9), (8.1, y + 0.5, 8.1), "lisere")
+        L((7.9, y, 7.9), (8.1, y + 0.5, 8.1), "lisere")
     return os_, cubes
-
 
 
 # =============================================================================================== rendus

@@ -2,6 +2,7 @@ package fr.heraliz.crac.registry;
 
 import fr.heraliz.crac.block.ClaimBlock;
 import fr.heraliz.crac.block.ClaimBlockHaut;
+import fr.heraliz.crac.block.CoeurClanBlock;
 import fr.heraliz.crac.block.MetalCrateBlock;
 import fr.heraliz.crac.build.world.StructureBlock;
 import net.minecraft.world.level.block.Block;
@@ -23,6 +24,12 @@ public final class ModBlocks {
     public static final RegistryObject<ClaimBlockHaut> CLAIM_BLOCK_HAUT = BLOCKS.register(
         "claim_block_haut", () -> new ClaimBlockHaut(Properties.of().mapColor(MapColor.COLOR_GREEN).strength(-1.0F, 1200.0F).noOcclusion()
             .noLootTable().sound(SoundType.METAL))
+    );
+
+    /** Cœur de clan (saison des clans, 22/10) : incassable en survie, résiste à tout. */
+    public static final RegistryObject<CoeurClanBlock> COEUR_CLAN = BLOCKS.register(
+        "coeur_clan", () -> new CoeurClanBlock(Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(-1.0F, 3600000.0F).noOcclusion()
+            .noLootTable().lightLevel(s -> 7).sound(SoundType.NETHERITE_BLOCK))
     );
 
     private ModBlocks() {

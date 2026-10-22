@@ -1,6 +1,7 @@
 package fr.heraliz.crac.registry;
 
 import fr.heraliz.crac.block.entity.ClaimBlockEntity;
+import fr.heraliz.crac.block.entity.CoeurClanBlockEntity;
 import fr.heraliz.crac.block.entity.MetalCrateBlockEntity;
 import fr.heraliz.crac.build.world.StructureBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -19,6 +20,10 @@ public final class ModBlockEntities {
     );
     public static final RegistryObject<BlockEntityType<ClaimBlockEntity>> CLAIM_BLOCK = BLOCK_ENTITIES.register(
         "claim_block", () -> Builder.of(ClaimBlockEntity::new, ModBlocks.CLAIM_BLOCK.get()).build(null)
+    );
+
+    public static final RegistryObject<BlockEntityType<CoeurClanBlockEntity>> COEUR_CLAN = BLOCK_ENTITIES.register(
+        "coeur_clan", () -> Builder.of(CoeurClanBlockEntity::new, ModBlocks.COEUR_CLAN.get()).build(null)
     );
 
     private ModBlockEntities() {

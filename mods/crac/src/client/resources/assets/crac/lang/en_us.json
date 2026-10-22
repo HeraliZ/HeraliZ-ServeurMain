@@ -554,5 +554,21 @@
   "crac.acces.clan": "Only clan members can access the base: set their rights in the clan (K key).",
   "crac.tuto.essai": "[Tutorial] Practice cabin in the tutorial world: it disappears at the end, your clan's real base goes on the map.",
   "crac.tuto.termine": "[Tutorial] Done! The practice cabin is gone. Place your clan's base on the map, away from towns and loot.",
-  "crac.tuto.clan": "[Tutorial] Your clan is created! Commander Varga will show you how to build a base."
+  "crac.tuto.clan": "[Tutorial] Your clan is created! Commander Varga will show you how to build a base.",
+  "crac.ecran.titre": "NEEDS / %s H",
+  "crac.ecran.aucun": "NOTHING NEEDED",
+  "crac.ecran.depop": "DECAY %s",
+  "crac.ecran.depop_aucun": "DECAY —",
+  "crac.ecran.depop_imminent": "DECAY NOW",
+  "block.crac.coeur_clan": "Clan Core",
+  "crac.coeur.points": "%s PTS",
+  "crac.coeur.holo.pve": "PVE RANKING",
+  "crac.coeur.holo.pvp": "PVP RANKING",
+  "crac.coeur.holo.events": "EVENTS",
+  "crac.coeur.holo.general": "OVERALL",
+  "crac.coeur.holo.rang": "RANK %s",
+  "crac.coeur.holo.non_classe": "UNRANKED",
+  "crac.coeur.sans_clan": "You need a clan to place a clan core.",
+  "crac.coeur.hors_base": "The clan core goes in your clan's base, near your tool cupboard.",
+  "crac.coeur.deja": "Your clan already has a core placed (%s %s %s)."
 }

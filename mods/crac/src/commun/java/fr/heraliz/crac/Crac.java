@@ -63,6 +63,7 @@ public class Crac {
             event.accept(ModItems.EXPLOSIVE_CHARGE);
             event.accept(ModItems.METAL_CRATE);
             event.accept(ModItems.CLAIM_BLOCK);
+            event.accept(ModItems.COEUR_CLAN);
             event.accept(ModItems.GLASS_WINDOW);
             event.accept(ModItems.METAL_WINDOW);
             event.accept(ModItems.NAIL);

@@ -3,8 +3,11 @@ package fr.heraliz.crac.client;
 import fr.heraliz.crac.block.entity.ClaimBlockEntity;
 import fr.heraliz.crac.client.admin.AdminKeyHandler;
 import fr.heraliz.crac.client.render.C4Renderer;
+import fr.heraliz.crac.client.render.CoeurClanRendu;
+import fr.heraliz.crac.client.render.EcranArmoireRendu;
 import fr.heraliz.crac.client.render.ExplosiveChargeRenderer;
 import fr.heraliz.crac.client.ui.ClaimUpkeepScreen;
+import fr.heraliz.crac.registry.ModBlockEntities;
 import fr.heraliz.crac.registry.ModBlocks;
 import fr.heraliz.crac.registry.ModEntities;
 import fr.heraliz.crac.registry.ModMenus;
@@ -14,6 +17,7 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
@@ -37,6 +41,7 @@ public class ClientInit {
         MinecraftForge.EVENT_BUS.register(AdminKeyHandler.class);
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.METAL_CRATE.get(), RenderType.cutoutMipped());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.CLAIM_BLOCK.get(), RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(ModBlocks.COEUR_CLAN.get(), RenderType.cutout());
         MenuScreens.register(ModMenus.CLAIM_UPKEEP.get(), ClaimUpkeepScreen::new);
     }
 
@@ -69,5 +74,14 @@ public class ClientInit {
     public static void onRegisterRenderers(RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.C4.get(), C4Renderer::new);
         event.registerEntityRenderer(ModEntities.EXPLOSIVE_CHARGE.get(), ExplosiveChargeRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CLAIM_BLOCK.get(), EcranArmoireRendu::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.COEUR_CLAN.get(), CoeurClanRendu::new);
+    }
+
+    /** Parties du cœur de clan dessinées à part (filets lumineux, cristal qui tourne). */
+    @SubscribeEvent
+    public static void onRegisterModels(ModelEvent.RegisterAdditional event) {
+        event.register(CoeurClanRendu.LUEUR);
+        event.register(CoeurClanRendu.CRISTAL);
     }
 }

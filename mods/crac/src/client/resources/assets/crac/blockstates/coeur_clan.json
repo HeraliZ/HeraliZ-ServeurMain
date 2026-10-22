@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "crac:block/coeur_clan"
+    },
+    "facing=east": {
+      "model": "crac:block/coeur_clan",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "crac:block/coeur_clan",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "crac:block/coeur_clan",
+      "y": 270
+    }
+  }
+}

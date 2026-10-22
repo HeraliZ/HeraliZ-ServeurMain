@@ -32,6 +32,10 @@ public final class ModItems {
         "claim_block", () -> new ClaimBlockItem(ModBlocks.CLAIM_BLOCK.get(), new Properties().stacksTo(16))
     );
 
+    public static final RegistryObject<BlockItem> COEUR_CLAN = ITEMS.register(
+        "coeur_clan", () -> new BlockItem(ModBlocks.COEUR_CLAN.get(), new Properties().stacksTo(1).fireResistant())
+    );
+
     private ModItems() {
     }
 }

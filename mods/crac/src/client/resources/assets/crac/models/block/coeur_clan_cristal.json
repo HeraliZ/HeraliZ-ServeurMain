@@ -1,0 +1,11 @@
+{
+  "credit": "HeraliZ, mods/crac/outils/coeur_modele.py",
+  "loader": "forge:obj",
+  "model": "crac:models/block/coeur_clan_cristal.obj",
+  "flip_v": false,
+  "automatic_culling": false,
+  "textures": {
+    "coeur": "crac:block/coeur_clan",
+    "particle": "crac:block/coeur_clan"
+  }
+}

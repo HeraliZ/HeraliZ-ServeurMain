@@ -61,6 +61,10 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
     @Nullable
     private UUID ownerGroup;
     private LazyOptional<IItemHandler> input = LazyOptional.of(() -> new UpkeepInput(this));
+    /** Écran de l'armoire (saison des clans, 22/10) : dernier état envoyé aux joueurs (serveur) ou reçu (joueur). */
+    private CompoundTag ecran = new CompoundTag();
+    /** Heure de jeu (joueur) à laquelle l'écran a été reçu : le temps restant y est décompté seconde par seconde. */
+    private long ecranRecuA;
 
     public ClaimBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CLAIM_BLOCK.get(), pos, state);
@@ -240,6 +244,51 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
             }
         }
         return mins == Double.POSITIVE_INFINITY ? -1 : (int) Math.floor(mins);
+    }
+
+    // ------------------------------------------------------------------ écran (montré à tous)
+
+    /**
+     * Ce que l'écran de l'armoire montre à tous ceux qui passent : entretien demandé par période (objet et nombre par
+     * ressource) et minutes avant que la base ne se dégrade. Renvoyé aux joueurs seulement quand ça change (au plus
+     * une fois par passage d'entretien, une fois par minute, et à la fermeture du menu).
+     */
+    public void majEcran() {
+        if (this.level == null || this.level.isClientSide()) {
+            return;
+        }
+        CompoundTag t = new CompoundTag();
+        ListTag objets = new ListTag();
+        int[] besoin = new int[SLOTS];
+        for (int i = 0; i < SLOTS; i++) {
+            besoin[i] = this.needed[i];
+            ResourceLocation id = this.needed[i] > 0 ? ForgeRegistries.ITEMS.getKey(resourceForSlot(i).item()) : null;
+            objets.add(StringTag.valueOf(id == null ? "" : id.toString()));
+        }
+        t.putIntArray("Besoin", besoin);
+        t.put("Objets", objets);
+        t.putInt("Min", this.upkeepMinutes());
+        t.putDouble("Heures", Config.upkeepHours.get());
+        if (!t.equals(this.ecran)) {
+            this.ecran = t;
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 2);
+        }
+    }
+
+    /** Données de l'écran reçues (joueur). */
+    public CompoundTag ecran() {
+        return this.ecran;
+    }
+
+    /** Heure de jeu (joueur) de la dernière réception de l'écran. */
+    public long ecranRecuA() {
+        return this.ecranRecuA;
+    }
+
+    /** L'écran est dans la case du haut : la boîte de rendu couvre les deux cases (et le décalage contre un mur). */
+    @Override
+    public net.minecraft.world.phys.AABB getRenderBoundingBox() {
+        return new net.minecraft.world.phys.AABB(this.worldPosition).expandTowards(0, 1, 0).inflate(1.0);
     }
 
     // ------------------------------------------------------------------ owner and colour
@@ -430,12 +479,16 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
-    /** Only render data goes to clients (every player tracking the chunk), never the stock or the owner. */
+    /**
+     * Only render data goes to clients (every player tracking the chunk), never the stock or the owner: the colour and
+     * what the screen shows (upkeep asked and time left, {@link #majEcran()}).
+     */
     @NotNull
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag t = new CompoundTag();
         t.putInt("Color", this.color);
+        t.put("Ecran", this.ecran.copy());
         return t;
     }
 
@@ -449,6 +502,10 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
     public void handleUpdateTag(CompoundTag tag) {
         if (tag.contains("Color")) {
             this.color = tag.getInt("Color");
+        }
+        if (tag.contains("Ecran", Tag.TAG_COMPOUND)) {
+            this.ecran = tag.getCompound("Ecran");
+            this.ecranRecuA = this.level != null ? this.level.getGameTime() : 0L;
         }
     }
 
