@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 /**
@@ -75,10 +76,15 @@ final class FilsDiscord {
      * créer (null : pas de création) et rend la réponse de Discord.
      */
     static void envoyer(String cle, String nom, Envoi envoi) {
+        envoyer(cle, nom, envoi, null);
+    }
+
+    /** Pareil, et {@code rappel} reçoit la réponse de Discord au message posté (envoyé avec wait=true). */
+    static void envoyer(String cle, String nom, Envoi envoi, Consumer<HttpResponse<String>> rappel) {
         synchronized (CHAINES) {
             CompletableFuture<Void> avant = CHAINES.getOrDefault(cle, CompletableFuture.completedFuture(null));
             CompletableFuture<Void> suite = avant.handle((v, e) -> null)
-                    .thenCompose(v -> une(cle, nom, envoi))
+                    .thenCompose(v -> une(cle, nom, envoi, rappel))
                     .exceptionally(ex -> {
                         Spartan.LOGGER.warn("[Spartan] Échec de l'envoi Discord : {}", ex.getMessage());
                         return null;
@@ -87,25 +93,33 @@ final class FilsDiscord {
         }
     }
 
-    private static CompletableFuture<Void> une(String cle, String nom, Envoi envoi) {
+    private static CompletableFuture<Void> une(String cle, String nom, Envoi envoi, Consumer<HttpResponse<String>> rappel) {
+        String attendre = rappel == null ? "" : "wait=true";
         if (pasUnForum) {
-            return envoi.apply("", null).thenAccept(r -> refus(r));
+            return envoi.apply(attendre.isEmpty() ? "" : "?" + attendre, null).thenAccept(r -> fin(r, rappel));
         }
         String id = fil(cle);
         if (id != null) {
-            return envoi.apply("?thread_id=" + id, null).thenCompose(r -> {
+            return envoi.apply("?thread_id=" + id + (attendre.isEmpty() ? "" : "&" + attendre), null).thenCompose(r -> {
                 if (filDisparu(r)) {
                     garder(cle, null);
-                    return creer(cle, nom, envoi);
+                    return creer(cle, nom, envoi, rappel);
                 }
-                refus(r);
+                fin(r, rappel);
                 return CompletableFuture.completedFuture(null);
             });
         }
-        return creer(cle, nom, envoi);
+        return creer(cle, nom, envoi, rappel);
     }
 
-    private static CompletableFuture<Void> creer(String cle, String nom, Envoi envoi) {
+    private static void fin(HttpResponse<String> r, Consumer<HttpResponse<String>> rappel) {
+        refus(r);
+        if (rappel != null) {
+            rappel.accept(r);
+        }
+    }
+
+    private static CompletableFuture<Void> creer(String cle, String nom, Envoi envoi, Consumer<HttpResponse<String>> rappel) {
         String titre = nom == null || nom.isBlank() ? cle : nom;
         if (titre.length() > 100) {
             titre = titre.substring(0, 100);
@@ -117,6 +131,9 @@ final class FilsDiscord {
                 } catch (Exception e) {
                     Spartan.LOGGER.warn("[Spartan] Réponse Discord sans numéro de fil : {}", e.getMessage());
                 }
+                if (rappel != null) {
+                    rappel.accept(r);
+                }
                 return CompletableFuture.completedFuture(null);
             }
             if (r.statusCode() == 400 && !r.body().contains("220001")) {
@@ -124,7 +141,7 @@ final class FilsDiscord {
                 pasUnForum = true;
                 Spartan.LOGGER.warn("[Spartan] Le webhook des alertes ne vise pas un salon Forum : pas de fil par "
                         + "joueur ({}).", r.body());
-                return envoi.apply("", null).thenAccept(FilsDiscord::refus);
+                return envoi.apply(rappel == null ? "" : "?wait=true", null).thenAccept(x -> fin(x, rappel));
             }
             refus(r);
             return CompletableFuture.completedFuture(null);
