@@ -97,7 +97,7 @@ RETIRES = ("heralisz_armor:", "simplefarming:")  # retirés des tables (mod reti
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
 ARMES_EXCLUES = {"cis:at_rpg_7_lvd"}  # jamais dans le loot (choix du propriétaire)
-COMPOSANTS_EXCLUS = {"plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
+COMPOSANTS_EXCLUS = {"tonnelet_poudre", "plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
 COMPOSANTS_PLUS = {"clou": 3.0, "sac_ciment": 3.0, "equerres_acier": 3.0}  # chance multipliée dans leur rareté
 # composants ajoutés en plus dans un palier, hors raretés du palier (nombre pour 100 conteneurs)
 EN_PLUS = {7: {"clou": 2, "sac_ciment": 2}}
