@@ -107,6 +107,12 @@ class LauncherService {
         this.jeton = null
         this.progress = { busy: false, phase: 'idle', message: 'Prêt pour ta prochaine expédition.', percent: null, detail: null }
         Config.load()
+        // Accord des captures d'écran redemandé à chaque ouverture du launcher (demande du propriétaire) : celui de la
+        // dernière fois ne compte plus.
+        if (Config.getAccordCapture()) {
+            Config.setAccordCapture(false)
+            Config.save()
+        }
         // Les anciennes versions écrivaient le mot de passe en clair dans le dossier du jeu, pour un module jamais
         // installé sur le serveur : on l'efface. Le mot de passe se choisit en jeu (/register, puis /login).
         fs.removeSync(path.join(Config.getInstanceDirectory(), config.serverId, '.sl_password'))
@@ -375,8 +381,8 @@ class LauncherService {
         return { version: await processors[0].getVersionJson(), loader: await processors[1].loadModLoaderVersionJson(server) }
     }
 
-    // Accord pour les captures d'écran de l'anticheat, demandé à l'ouverture du launcher (renderer.js). Refus : rien
-    // n'est gardé, le launcher se ferme.
+    // Accord pour les captures d'écran de l'anticheat, demandé à chaque ouverture du launcher (renderer.js), avec une
+    // seconde confirmation. Refus : rien n'est gardé, le launcher se ferme.
     accordCapture(oui) {
         if (oui !== true) return this.getState()
         Config.setAccordCapture(true)
