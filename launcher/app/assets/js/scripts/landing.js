@@ -153,7 +153,7 @@ function demanderAccordCapture(){
 }
 
 // Dès l'ouverture du launcher (une fois la config chargée).
-;(function accordAuDemarrage(){
+(function accordAuDemarrage(){
     if(typeof ConfigManager !== 'undefined' && ConfigManager.isLoaded()){
         demanderAccordCapture()
     } else {
