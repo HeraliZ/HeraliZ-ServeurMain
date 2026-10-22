@@ -1,4 +1,4 @@
-"""Écrit src/commun/resources/data/heraliz_emote/liste.json : les emotes HeraliZ (id, uuid, nom) lues par le serveur
+"""Écrit src/commun/resources/data/heraliz_emote/liste.json : les emotes HeraliZ (id, uuid, nom, avec accessoires ou non) lues par le serveur
 (déblocages, caisse des emotes). Source : le catalogue et les fichiers des emotes du jar joueur. Jamais à la main :
 relancer après l'ajout ou le retrait d'une emote.
 
@@ -20,7 +20,8 @@ def main():
         nom = e["id"]
         if fichier.exists():
             nom = json.loads(fichier.read_text(encoding="utf-8")).get("name", nom)
-        liste.append({"id": e["id"], "uuid": e["uuid"], "nom": nom})
+        accessoires = bool(e.get("props") or e.get("particles"))
+        liste.append({"id": e["id"], "uuid": e["uuid"], "nom": nom, "accessoires": accessoires})
     SORTIE.write_text(json.dumps({"emotes": liste}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"{len(liste)} emotes -> {SORTIE.relative_to(RACINE)}")
 

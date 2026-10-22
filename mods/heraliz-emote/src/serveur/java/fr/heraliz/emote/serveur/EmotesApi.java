@@ -26,6 +26,19 @@ public final class EmotesApi {
         return e != null && Deblocages.debloquer(joueur, e.uuid());
     }
 
+    /** Vrai s'il a déjà débloqué cette emote (id de la liste), quel que soit son mode de jeu. */
+    public static boolean a(ServerPlayer joueur, String id) {
+        ListeEmotes.Emote e = ListeEmotes.parId(id);
+        return e != null && Deblocages.de(joueur.getUUID()).contains(e.uuid());
+    }
+
+    /** Toutes les emotes à débloquer : {id, nom, "1" si elle a des accessoires sinon "0"}, dans l'ordre du catalogue. */
+    public static java.util.List<String[]> liste() {
+        java.util.List<String[]> l = new java.util.ArrayList<>();
+        for (ListeEmotes.Emote e : ListeEmotes.toutes()) l.add(new String[]{e.id(), e.nom(), e.accessoires() ? "1" : "0"});
+        return l;
+    }
+
     /** Nom affiché d'une emote (id de la liste), ou l'id s'il est inconnu. */
     public static String nom(String id) {
         ListeEmotes.Emote e = ListeEmotes.parId(id);

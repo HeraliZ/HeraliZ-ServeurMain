@@ -20,7 +20,8 @@ import java.util.UUID;
  * ces emotes peuvent être débloquées (caisse des emotes, staff) ; toute autre emote reste verrouillée en survie.
  */
 public final class ListeEmotes {
-    public record Emote(String id, UUID uuid, String nom) {
+    /** accessoires : l'emote a des objets 3D ou des particules (plus rare dans la caisse des emotes). */
+    public record Emote(String id, UUID uuid, String nom, boolean accessoires) {
     }
 
     private static final Map<UUID, Emote> PAR_UUID = new LinkedHashMap<>();
@@ -63,7 +64,8 @@ public final class ListeEmotes {
             JsonObject racine = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
             for (JsonElement el : racine.getAsJsonArray("emotes")) {
                 JsonObject o = el.getAsJsonObject();
-                Emote e = new Emote(o.get("id").getAsString(), UUID.fromString(o.get("uuid").getAsString()), o.get("nom").getAsString());
+                Emote e = new Emote(o.get("id").getAsString(), UUID.fromString(o.get("uuid").getAsString()), o.get("nom").getAsString(),
+                        o.has("accessoires") && o.get("accessoires").getAsBoolean());
                 PAR_UUID.put(e.uuid(), e);
                 PAR_ID.put(e.id(), e);
             }

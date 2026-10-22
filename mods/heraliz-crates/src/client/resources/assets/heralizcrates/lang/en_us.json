@@ -171,5 +171,9 @@
   "subtitles.heralizcrates.theme.gem_chime": "Gleam",
   "subtitles.heralizcrates.theme.gem_shatter": "Crystal shatters",
   "subtitles.heralizcrates.theme.gem_charge": "Crystal charging",
-  "heralizcrates.commande.poids": "(weight %s, %s)"
+  "heralizcrates.commande.poids": "(weight %s, %s)",
+  "block.heralizcrates.spectacle_crate": "Emote Crate",
+  "item.heralizcrates.spectacle_key": "Emote Key",
+  "message.heralizcrates.all_emotes": "You already have every emote from this crate.",
+  "gui.heralizcrates.case.error.all_emotes": "You already have every emote from this crate."
 }
