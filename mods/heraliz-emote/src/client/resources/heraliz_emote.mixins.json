@@ -8,8 +8,7 @@
     "EmoteHolderMixin",
     "UniversalEmoteSerializerMixin",
     "ClientEmotePlayMixin",
-    "EmotecraftKeysMixin",
-    "VueGeckolibMixin"
+    "EmotecraftKeysMixin"
   ],
   "injectors": {
     "defaultRequire": 1

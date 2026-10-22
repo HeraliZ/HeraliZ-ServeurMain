@@ -1088,8 +1088,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   mods : `fr.heraliz.emote.serveur.EmotesApi` (par réflexion, à ne jamais renommer). Créatif et spectateur : tout permis.
   Pendant une emote, vue à la 3e personne (option « Play Emotes in 3rd Person » d'Emotecraft mise d'office, plus un
   secours à chaque tick, Emote 2.8.1 ; vraie cause trouvée en 2.8.3 : geckolib222 remet la 1re personne à chaque tick hors du
-  créatif, `PlayerShaderHandler.onClientTick` et `BleedingEventHandler.onPlayerTick`, sauté pendant une emote par le mixin
-  client `VueGeckolibMixin`, jar intact ; F5 marche, `client/CameraEmote.actif()` lu par réflexion par Interface),
+  créatif, `PlayerShaderHandler.onClientTick` et `BleedingEventHandler.onPlayerTick`, vue remise à la 3e personne au début de chaque
+  image pendant l'emote (`CameraEmote.image`, après les ticks), jar intact ; toujours de dos pendant l'emote ; F5 marche, `client/CameraEmote.actif()` lu par réflexion par Interface),
   retour à la 1re personne à la fin ; **aucune arme en main pendant l'emote et 10 s après** (serveur, `serveur/SansArme` :
   armes TaCZ et couteaux, mêlée, grenades, Wonder, épées, haches, arcs, tridents, tag `heraliz_emote:armes` avec la C4 de
   CRac ; l'arme est remplacée par une case sans arme, sinon rangée dans l'inventaire, jamais copiée) ;
