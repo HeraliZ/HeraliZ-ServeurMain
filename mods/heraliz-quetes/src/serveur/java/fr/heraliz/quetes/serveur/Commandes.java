@@ -47,6 +47,7 @@ final class Commandes {
     static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
         // 20/10 : remise à zéro complète d'un joueur (op seulement), « confirmer » pour éviter un accident
         d.register(Commands.literal("wipe").requires(src -> src.hasPermission(4))
+                .then(WipeServeur.commande())
                 .then(Commands.argument("joueur", EntityArgument.player())
                         .then(Commands.literal("confirmer").executes(c -> wipe(c, EntityArgument.getPlayer(c, "joueur"))))));
         d.register(Commands.literal("quetes").executes(c -> {
@@ -338,6 +339,20 @@ final class Commandes {
      */
     private static int wipe(CommandContext<CommandSourceStack> c, ServerPlayer p) {
         String nom = p.getGameProfile().getName();
+        com.mojang.logging.LogUtils.getLogger().info("[Quêtes] /wipe de {} par {}", nom, c.getSource().getTextName());
+        dire(c, "heraliz_quetes.cmd.wipe", "%s a été remis à zéro : il refera toute l'arrivée à sa reconnexion.", nom);
+        remettreAZero(p, List.of(), Component.translatableWithFallback("heraliz_quetes.cmd.wipe_kick",
+                "Ton personnage a été remis à zéro. Reconnecte-toi pour recommencer."));
+        return 1;
+    }
+
+    /**
+     * Le cœur de {@code /wipe <joueur>}, repris par {@code /wipe serveur} ({@link WipeServeur}) à la connexion de chaque
+     * joueur : tout est remis à zéro, ses objets à vie (et {@code enPlus}, ceux trouvés dans sa base ou le coffre de son
+     * clan) lui sont rendus, puis il est expulsé avec {@code message}.
+     */
+    static void remettreAZero(ServerPlayer p, List<ItemStack> enPlus, Component message) {
+        String nom = p.getGameProfile().getName();
         var srv = p.server;
         List<ItemStack> aVie = new ArrayList<>();
         garderAVie(aVie, p.getInventory());
@@ -345,6 +360,7 @@ final class Commandes {
         ItemStack souris = p.containerMenu.getCarried();
         if (estAVie(souris)) aVie.add(souris.copy());
         viderCoffresPerso(srv, p.getUUID(), aVie);
+        for (ItemStack s : enPlus) if (!s.isEmpty()) aVie.add(s.copy());
         appel("fr.heralisz.clans.server.ClanService", "adminRetirer", new Class<?>[]{UUID.class, String.class}, p.getUUID(), nom);
         appel("fr.heralisz.economie.api.EconomieApi", "definir", new Class<?>[]{UUID.class, long.class, String.class},
                 p.getUUID(), 0L, "wipe");
@@ -356,7 +372,7 @@ final class Commandes {
                 // mod absent ou commande refusée : on continue
             }
         }
-        reset(c, p);
+        resetQuetes(p);
         p.getInventory().clearContent();
         p.getEnderChestInventory().clearContent();
         p.containerMenu.setCarried(ItemStack.EMPTY);
@@ -364,17 +380,13 @@ final class Commandes {
         CompoundTag pers = p.getPersistentData().getCompound(net.minecraft.world.entity.player.Player.PERSISTED_NBT_TAG);
         for (String m : MARQUES) pers.remove(m);
         Accueil.oublier(p.getUUID());
-        com.mojang.logging.LogUtils.getLogger().info("[Quêtes] /wipe de {} par {}", nom, c.getSource().getTextName());
-        dire(c, "heraliz_quetes.cmd.wipe", "%s a été remis à zéro : il refera toute l'arrivée à sa reconnexion.", nom);
-        p.connection.disconnect(Component.translatableWithFallback("heraliz_quetes.cmd.wipe_kick",
-                "Ton personnage a été remis à zéro. Reconnecte-toi pour recommencer."));
-        return 1;
+        p.connection.disconnect(message);
     }
 
     private static java.lang.reflect.Method estAVie;
 
     /** Objet à vie (couteau, skin à vie) d'après HeraliZ Tactique, par réflexion ; sans le mod : rien n'est gardé. */
-    private static boolean estAVie(ItemStack s) {
+    static boolean estAVie(ItemStack s) {
         if (s == null || s.isEmpty()) return false;
         try {
             if (estAVie == null) estAVie = Class.forName("fr.heraliz.tactique.avie.ObjetsAVie").getMethod("estAVie", ItemStack.class);
@@ -416,6 +428,12 @@ final class Commandes {
     }
 
     private static int reset(CommandContext<CommandSourceStack> c, ServerPlayer p) {
+        resetQuetes(p);
+        dire(c, "heraliz_quetes.cmd.reset", "Progression des quêtes de %s remise à zéro.", p.getGameProfile().getName());
+        return 1;
+    }
+
+    private static void resetQuetes(ServerPlayer p) {
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         for (String cle : new ArrayList<>(j.actives.keySet())) Moteur.retirerObjets(p, cle);
         j.actives.clear();
@@ -426,7 +444,5 @@ final class Commandes {
         j.contratsFinis = 0;
         Donnees.sale(p.getUUID());
         Moteur.envoyerSuivi(p);
-        dire(c, "heraliz_quetes.cmd.reset", "Progression des quêtes de %s remise à zéro.", p.getGameProfile().getName());
-        return 1;
     }
 }

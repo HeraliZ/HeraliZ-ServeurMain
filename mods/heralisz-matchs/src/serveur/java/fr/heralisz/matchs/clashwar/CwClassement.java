@@ -87,6 +87,15 @@ public final class CwClassement {
         return null;
     }
 
+    /**
+     * Remise à zéro du serveur ({@code /wipe serveur} de HeraliZ Quêtes, appelé par réflexion : ne pas renommer) :
+     * classement des clans effacé.
+     */
+    public static void toutEffacer(MinecraftServer s) {
+        LIGNES.clear();
+        sauver(s);
+    }
+
     static void charger(MinecraftServer s) {
         LIGNES.clear();
         Path f = fichier(s);

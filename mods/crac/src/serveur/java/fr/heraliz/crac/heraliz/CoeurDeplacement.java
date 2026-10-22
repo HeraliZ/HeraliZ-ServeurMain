@@ -60,6 +60,14 @@ public final class CoeurDeplacement extends SafeSavedData {
         }
     }
 
+    /** Remise à zéro du serveur : plus aucun délai en cours. */
+    static void toutOublier(MinecraftServer server) {
+        CoeurDeplacement d = get(server);
+        d.clans.clear();
+        d.limites.clear();
+        d.setDirty();
+    }
+
     /** Chaque seconde : délais dépassés. */
     static void seconde(MinecraftServer server) {
         CoeurDeplacement d = get(server);

@@ -153,7 +153,7 @@ final class EffacerBase {
         return new int[]{pieces, claims};
     }
 
-    private static int retirer(ServerLevel level, Collection<Piece> pieces) {
+    static int retirer(ServerLevel level, Collection<Piece> pieces) {
         StructureStore store = StructureStore.get(level);
         int n = 0;
         for (Piece p : new ArrayList<>(pieces)) {
@@ -182,7 +182,7 @@ final class EffacerBase {
     }
 
     /** Ce qui serait quand même tombé (objets posés sur une pièce retirée) est retiré aussi. */
-    private static void ramasser(ServerLevel level, BlockPos min, BlockPos max) {
+    static void ramasser(ServerLevel level, BlockPos min, BlockPos max) {
         AABB zone = new AABB(min, max.offset(1, 1, 1)).inflate(2);
         for (ItemEntity it : level.getEntitiesOfClass(ItemEntity.class, zone)) {
             it.discard();
