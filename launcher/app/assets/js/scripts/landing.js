@@ -99,40 +99,67 @@ function setLaunchEnabled(val){
 }
 
 /**
- * Accord pour les captures d'écran de l'anticheat, demandé avant de jouer. Sans accord, pas de partie : le joueur peut
- * refuser et quitter. Gardé dans la config du launcher (redemandé si le texte change, ACCORD_CAPTURE_VERSION).
+ * Accord pour les captures d'écran de l'anticheat : fenêtre au milieu de l'écran, dès l'ouverture du launcher et avant
+ * toute partie, par-dessus tout le reste. « J'autorise » : gardé dans la config du launcher (redemandé si le texte change,
+ * ACCORD_CAPTURE_VERSION) ; « Je refuse » : le launcher se ferme. Sans accord, pas de partie.
  *
  * @returns {Promise<boolean>} true si le joueur a accepté.
  */
+let accordCaptureEnCours = null
 function demanderAccordCapture(){
     if(ConfigManager.getAccordCapture()){
         return Promise.resolve(true)
     }
-    return new Promise(resolve => {
-        setOverlayContent(
-            'Autorisation de l\'anticheat',
-            'Nous savons qu\'un anticheat infaillible n\'existe pas sur Minecraft. Pour être sûrs à 100 % avant '
-                + 'de sanctionner quelqu\'un, nous vous demandons l\'autorisation de pouvoir, à tout moment pendant '
-                + 'que vous jouez sur HeraliZ, prendre une capture d\'écran de votre jeu (seulement la fenêtre de '
-                + 'Minecraft, jamais le reste de votre ordinateur). Elle est envoyée au serveur et vue uniquement '
-                + 'par le staff.<br><br>Si vous refusez, vous ne pourrez pas jouer sur le serveur : libre à vous de '
-                + 'quitter. Vous pourrez changer d\'avis au prochain clic sur Jouer.',
-            'J\'autorise et je joue',
-            'Je refuse'
-        )
-        setOverlayHandler(() => {
+    if(accordCaptureEnCours){
+        return accordCaptureEnCours
+    }
+    accordCaptureEnCours = new Promise(resolve => {
+        const fond = document.createElement('div')
+        fond.id = 'accordCapture'
+        fond.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;'
+            + 'justify-content:center;background:rgba(5,8,12,0.88);backdrop-filter:blur(6px);'
+        fond.innerHTML = '<div style="max-width:560px;margin:16px;padding:28px 32px;border-radius:14px;'
+            + 'background:rgba(20,26,34,0.96);border:1px solid rgba(255,255,255,0.14);color:#e8edf2;'
+            + 'font-family:\'Avenir Book\',sans-serif;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.6)">'
+            + '<div style="font-family:\'Avenir Medium\',sans-serif;font-size:22px;margin-bottom:16px">'
+            + 'Autorisation de l\'anticheat</div>'
+            + '<div style="font-size:14px;line-height:1.6;text-align:left">'
+            + 'Nous savons qu\'un anticheat infaillible n\'existe pas sur Minecraft. Pour être sûrs à 100 % avant de '
+            + 'sanctionner quelqu\'un, nous vous demandons l\'autorisation de pouvoir, à tout moment pendant que vous '
+            + 'jouez sur HeraliZ, prendre une capture d\'écran de votre jeu (seulement la fenêtre de Minecraft, jamais '
+            + 'le reste de votre ordinateur). Elle est envoyée au serveur et vue uniquement par le staff.<br><br>'
+            + 'Sans cette autorisation, vous ne pouvez pas jouer sur HeraliZ : « Je refuse » ferme le launcher.</div>'
+            + '<div style="display:flex;gap:12px;justify-content:center;margin-top:24px">'
+            + '<button id="accordCaptureOui" style="padding:10px 22px;border:0;border-radius:8px;cursor:pointer;'
+            + 'background:#2e9e5b;color:#fff;font-size:14px">J\'autorise et je joue</button>'
+            + '<button id="accordCaptureNon" style="padding:10px 22px;border:1px solid rgba(255,255,255,0.3);'
+            + 'border-radius:8px;cursor:pointer;background:transparent;color:#e8edf2;font-size:14px">Je refuse</button>'
+            + '</div></div>'
+        document.body.appendChild(fond)
+        document.getElementById('accordCaptureOui').onclick = () => {
             ConfigManager.setAccordCapture(true)
             ConfigManager.save()
-            toggleOverlay(false)
+            fond.remove()
+            accordCaptureEnCours = null
             resolve(true)
-        })
-        setDismissHandler(() => {
-            toggleOverlay(false)
+        }
+        document.getElementById('accordCaptureNon').onclick = () => {
+            loggerLanding.info('Captures d\'écran refusées : fermeture du launcher.')
+            window.close()
             resolve(false)
-        })
-        toggleOverlay(true, true)
+        }
     })
+    return accordCaptureEnCours
 }
+
+// Dès l'ouverture du launcher (une fois la config chargée).
+;(function accordAuDemarrage(){
+    if(typeof ConfigManager !== 'undefined' && ConfigManager.isLoaded()){
+        demanderAccordCapture()
+    } else {
+        setTimeout(accordAuDemarrage, 200)
+    }
+})()
 
 // Bind launch button
 document.getElementById('launch_button').addEventListener('click', async e => {

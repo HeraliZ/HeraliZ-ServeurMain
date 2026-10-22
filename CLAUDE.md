@@ -434,7 +434,8 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   toutes les 10 s par joueur (`capture/CaptureManager`). Rangée dans `screenshots/<pseudo>/` à la racine du serveur,
   annoncée au staff en jeu et envoyée avec l'image dans le fil du joueur sur Discord. Canal Spartan version 8 : jars
   joueurs et serveur de la même fabrication. Spartan 2.7.1 : `captureRequired = true` (`spartan-common.toml`) :
-  connexion refusée sans accord (vieux launcher, autre lanceur). Rien testé en jeu.
+  connexion refusée sans accord (vieux launcher, autre lanceur). Launcher 1.9.1 : la fenêtre s'ouvre au milieu de
+  l'écran dès l'ouverture du launcher, par-dessus tout ; « Je refuse » ferme le launcher. Rien testé en jeu.
 - **Sol près des blocs** (Spartan 2.5.1, 20/10) : alertes Vertical « monte de 0.42 bloc en plein air (maximum -0.08) »,
   Speed et Fly ensemble chez le propriétaire en marchant : le serveur ne cherchait le sol qu'à 0,2 bloc sous la hitbox
   exacte et croyait le joueur en l'air. Maintenant, avec un appui à moins de 0,6 bloc sous les pieds (0,3 sur le côté,
