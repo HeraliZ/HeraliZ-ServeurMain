@@ -62,7 +62,7 @@ RARETE_SACS = {
     "backpack_mountain_military_camo": "epique", "backpack_hiking": "epique",  # 5x3
     "backpack_military_sport_bag": "legendaire",                  # 5x4
 }
-SACS_HORS_LOOT = ("backpack", "backpack_expand1", "backpack_expand2", "backpack_sniper_case_enderman",
+SACS_HORS_LOOT = ("backpack", "backpack_school", "backpack_expand1", "backpack_expand2", "backpack_sniper_case_enderman",
                   "backpack_military_sport_bag_cow", "backpack_military_sport_bag_pig")  # jamais dans les coffres
 # mêmes parts dans tous les paliers (choix du propriétaire, 22/10) : seul le nombre de sacs monte avec le palier
 PARTS_SACS = {t: {"commun": 50, "peu_commun": 25, "rare": 15, "epique": 8, "legendaire": 2} for t in range(1, 8)}

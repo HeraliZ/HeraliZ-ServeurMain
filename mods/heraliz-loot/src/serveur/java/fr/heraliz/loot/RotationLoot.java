@@ -906,7 +906,8 @@ public final class RotationLoot extends SavedData {
             cases[j] = t;
         }
         java.util.Set<String> deja = new java.util.HashSet<>();
-        for (int i = 0; i < n; i++) inv.objets.set(cases[i], TablesCoffres.tirerUnique(c.table(), r, bonus, deja));
+        for (int i = 0; i < n; i++) inv.objets.set(cases[i], i == 0 ? TablesCoffres.tirerPlein(c.table(), r, bonus, deja)
+                : TablesCoffres.tirerUnique(c.table(), r, bonus, deja));
         return inv;
     }
 

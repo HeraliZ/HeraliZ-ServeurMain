@@ -87,7 +87,7 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
         int n = t.min() + r.nextInt(Math.max(1, t.max() - t.min() + 1));
         java.util.Set<String> deja = new java.util.HashSet<>();
         for (int k = 0; k < Math.min(n, TAILLE); k++) {
-            ItemStack st = TablesCoffres.tirerUnique(t, r, bonus, deja);
+            ItemStack st = k == 0 ? TablesCoffres.tirerPlein(t, r, bonus, deja) : TablesCoffres.tirerUnique(t, r, bonus, deja);
             int i = cases.get(k);
             objets.set(i, st);
             Rarete ra = Rarete.de(st);
