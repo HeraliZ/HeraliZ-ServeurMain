@@ -37,5 +37,8 @@
   "heraliz_tactique.a_vie.texte": "Lifetime item: on the ground, anyone can take it.",
   "heraliz_tactique.a_vie.non": "No, keep it",
   "heraliz_tactique.a_vie.oui": "Yes, drop it",
+  "heraliz_tactique.a_vie.sac_titre": "Put it in the backpack?",
+  "heraliz_tactique.a_vie.sac_texte": "Lifetime item: in a backpack, it is lost with the backpack.",
+  "heraliz_tactique.a_vie.sac_oui": "Yes, store it",
   "heraliz_tactique.a_vie.touche": "Lifetime item: it can't be dropped with the drop key."
 }

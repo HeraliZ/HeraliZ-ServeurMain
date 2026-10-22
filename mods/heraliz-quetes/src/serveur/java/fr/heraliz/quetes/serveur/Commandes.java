@@ -26,6 +26,7 @@ import net.minecraft.core.registries.Registries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.Locale;
 
 /**
@@ -327,13 +328,24 @@ final class Commandes {
 
     /**
      * Remise à zéro complète : base CRac, tutoriel, personnage CaraCrea, quêtes, inventaire, coffre de l'Ender, Curios,
-     * marques de la cinématique et du guide ; puis le joueur est expulsé : à sa reconnexion il refait toute l'arrivée
-     * (créateur de personnage, cinématique, guide). Hérals, clan, grades et compte AuthMe ne changent pas. Chaque mod
-     * absent est simplement sauté (commandes passées au serveur).
+     * coffres personnels (planque, VIP), clan (retiré ; chef : direction passée au membre suivant, ou clan dissous s'il
+     * était seul), hérals remis à 0, marques de la cinématique et du guide ; puis le joueur est expulsé : à sa
+     * reconnexion il refait toute l'arrivée (créateur de personnage, cinématique, guide). Gardés : objets à vie
+     * (couteaux, skins à vie, rendus dans l'inventaire), collection de camos à vie, grades et compte AuthMe. Chaque mod
+     * absent est simplement sauté (commandes passées au serveur, appels par réflexion).
      */
     private static int wipe(CommandContext<CommandSourceStack> c, ServerPlayer p) {
         String nom = p.getGameProfile().getName();
         var srv = p.server;
+        List<ItemStack> aVie = new ArrayList<>();
+        garderAVie(aVie, p.getInventory());
+        garderAVie(aVie, p.getEnderChestInventory());
+        ItemStack souris = p.containerMenu.getCarried();
+        if (estAVie(souris)) aVie.add(souris.copy());
+        viderCoffresPerso(srv, p.getUUID(), aVie);
+        appel("fr.heralisz.clans.server.ClanService", "adminRetirer", new Class<?>[]{UUID.class, String.class}, p.getUUID(), nom);
+        appel("fr.heralisz.economie.api.EconomieApi", "definir", new Class<?>[]{UUID.class, long.class, String.class},
+                p.getUUID(), 0L, "wipe");
         CommandSourceStack console = srv.createCommandSourceStack().withSuppressedOutput();
         for (String cmd : new String[]{"base effacer " + nom, "tuto rejouer " + nom, "caracrea reset " + nom, "curios clear " + nom}) {
             try {
@@ -346,6 +358,7 @@ final class Commandes {
         p.getInventory().clearContent();
         p.getEnderChestInventory().clearContent();
         p.containerMenu.setCarried(ItemStack.EMPTY);
+        for (ItemStack s : aVie) if (!p.getInventory().add(s)) p.getEnderChestInventory().addItem(s);
         CompoundTag pers = p.getPersistentData().getCompound(net.minecraft.world.entity.player.Player.PERSISTED_NBT_TAG);
         for (String m : MARQUES) pers.remove(m);
         Accueil.oublier(p.getUUID());
@@ -354,6 +367,50 @@ final class Commandes {
         p.connection.disconnect(Component.translatableWithFallback("heraliz_quetes.cmd.wipe_kick",
                 "Ton personnage a été remis à zéro. Reconnecte-toi pour recommencer."));
         return 1;
+    }
+
+    private static java.lang.reflect.Method estAVie;
+
+    /** Objet à vie (couteau, skin à vie) d'après HeraliZ Tactique, par réflexion ; sans le mod : rien n'est gardé. */
+    private static boolean estAVie(ItemStack s) {
+        if (s == null || s.isEmpty()) return false;
+        try {
+            if (estAVie == null) estAVie = Class.forName("fr.heraliz.tactique.avie.ObjetsAVie").getMethod("estAVie", ItemStack.class);
+            return (Boolean) estAVie.invoke(null, s);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            return false;
+        }
+    }
+
+    private static void garderAVie(List<ItemStack> garde, net.minecraft.world.Container inv) {
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (estAVie(s)) garde.add(s.copy());
+        }
+    }
+
+    /** Vide la planque et le coffre VIP (HeraliZ Utils) ; leurs objets à vie vont dans {@code garde}. */
+    private static void viderCoffresPerso(net.minecraft.server.MinecraftServer srv, UUID joueur, List<ItemStack> garde) {
+        try {
+            Class<?> cp = Class.forName("fr.heralisz.utils.coffres.CoffresPersonnels");
+            Class<?> sorte = Class.forName("fr.heralisz.utils.coffres.CoffresPersonnels$Sorte");
+            var m = cp.getMethod("coffre", net.minecraft.server.MinecraftServer.class, UUID.class, sorte);
+            for (Object so : sorte.getEnumConstants()) {
+                net.minecraft.world.Container coffre = (net.minecraft.world.Container) m.invoke(null, srv, joueur, so);
+                garderAVie(garde, coffre);
+                coffre.clearContent();
+            }
+        } catch (ReflectiveOperationException | LinkageError | ClassCastException e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[Quêtes] /wipe : coffres personnels non vidés ({})", e.toString());
+        }
+    }
+
+    private static void appel(String classe, String methode, Class<?>[] types, Object... args) {
+        try {
+            Class.forName(classe).getMethod(methode, types).invoke(null, args);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[Quêtes] /wipe : {}.{} impossible ({})", classe, methode, e.toString());
+        }
     }
 
     private static int reset(CommandContext<CommandSourceStack> c, ServerPlayer p) {
