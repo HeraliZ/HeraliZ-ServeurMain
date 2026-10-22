@@ -234,5 +234,10 @@
   "message.heraliz_grades.voir2": "%1$s: staff %2$s, shop %3$s, special %4$s",
   "heraliz_grades.tpa.acceptee_s": "%1$s accepted: teleport in %2$s s, don't move.",
   "heraliz_grades.tpa.acceptee_cible_s": "You accepted: %1$s arrives in %2$s s.",
-  "item.heraliz_grades.registre_grades": "Rank registry"
+  "item.heraliz_grades.registre_grades": "Rank registry",
+  "message.heraliz_grades.achat_invalide": "Usage: grade acheter <player> <shop rank> <days|vie>.",
+  "message.heraliz_grades.achat_reserve": "Thank you! Your %s rank will start when your current rank ends.",
+  "message.heraliz_grades.achat_vie": "You already have a lifetime shop rank: contact the staff on Discord.",
+  "message.heraliz_grades.achat_recu": "Thanks for your support! You now have the %s rank (%s).",
+  "message.heraliz_grades.achat_fin": "Your shop rank has ended. It does not renew automatically: you can buy it again on the website."
 }

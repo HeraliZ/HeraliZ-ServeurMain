@@ -18,6 +18,7 @@ on:
       - "site/extension/**"
       - "site/vm/theme.sh"
       - "site/vm/reglages.php"
+      - "site/vm/pages_legales.php"
   workflow_dispatch:
     inputs:
       action:
@@ -413,7 +414,7 @@ jobs:
           mkdir -p envoi/vm envoi/contenu/actus
           cp -r site/theme envoi/theme
           cp -r site/extension envoi/extension
-          cp site/vm/reglages.php envoi/vm/
+          cp site/vm/reglages.php site/vm/pages_legales.php envoi/vm/
           cp launcher/app/assets/images/nouveautes/*.jpg envoi/contenu/actus/
           tar -czf theme.tgz -C envoi .
           echo "Archive du thème : $(du -h theme.tgz | cut -f1), $(find envoi -type f | wc -l) fichiers"

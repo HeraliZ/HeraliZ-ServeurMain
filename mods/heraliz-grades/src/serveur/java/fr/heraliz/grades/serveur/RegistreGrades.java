@@ -41,13 +41,27 @@ final class RegistreGrades {
      * Grades enregistrés d'un joueur : au plus un du staff, au plus un de la boutique, et des grades spéciaux (Streamer…) ;
      * nom = dernier pseudo connu.
      */
-    record Fiche(String nom, Grade staff, Grade boutique, Set<Grade> speciaux) {
+    record Fiche(String nom, Grade staff, Grade boutique, Set<Grade> speciaux, long finBoutique, Map<Grade, Long> reserve) {
+        Fiche(String nom, Grade staff, Grade boutique, Set<Grade> speciaux) {
+            this(nom, staff, boutique, speciaux, 0L, Map.of());
+        }
+
         Fiche(String nom, Grade staff, Grade boutique) {
             this(nom, staff, boutique, Set.of());
         }
 
+        /** Même fiche, autre pseudo (durée et réserve gardées). */
+        Fiche renomme(String n) {
+            return new Fiche(n, staff, boutique, speciaux, finBoutique, reserve);
+        }
+
+        /** Même fiche, autre grade boutique (null = aucun), fin (0 = à vie) et réserve. */
+        Fiche boutique(Grade b, long fin, Map<Grade, Long> res) {
+            return new Fiche(nom, staff, b, speciaux, b == null ? 0L : fin, Map.copyOf(res));
+        }
+
         boolean vide() {
-            return staff == null && boutique == null && speciaux.isEmpty();
+            return staff == null && boutique == null && speciaux.isEmpty() && reserve.isEmpty();
         }
 
         /** Tous ses grades enregistrés (sans Survivant). */
@@ -77,14 +91,18 @@ final class RegistreGrades {
             else if (g.type == Grade.Type.BOUTIQUE) b = present ? g : (boutique == g ? null : boutique);
             else if (present) sp.add(g);
             else sp.remove(g);
-            return new Fiche(nom, s, b, Set.copyOf(sp));
+            // grade boutique donné ou retiré à la main par la console : à vie, réserve d'achats gardée
+            long fin = g.type == Grade.Type.BOUTIQUE ? 0L : finBoutique;
+            return new Fiche(nom, s, b, Set.copyOf(sp), b == null ? 0L : fin, reserve);
         }
 
         /** La même fiche sans ce grade (grade supprimé de l'éditeur, ou qui a changé de famille). */
         Fiche sans(Grade g) {
             Set<Grade> sp = new LinkedHashSet<>(speciaux);
             sp.remove(g);
-            return new Fiche(nom, staff == g ? null : staff, boutique == g ? null : boutique, Set.copyOf(sp));
+            Map<Grade, Long> res = new HashMap<>(reserve);
+            res.remove(g);
+            return new Fiche(nom, staff == g ? null : staff, boutique == g ? null : boutique, Set.copyOf(sp), boutique == g ? 0L : finBoutique, Map.copyOf(res));
         }
     }
 
@@ -128,7 +146,15 @@ final class RegistreGrades {
                         else LOG.warn("[grades] {} : grade spécial « {} » inconnu, ignoré", nom, x.getAsString());
                     }
                 }
-                Fiche f = new Fiche(nom, staff, boutique, Set.copyOf(speciaux));
+                long fin = o.has("fin_boutique") ? o.get("fin_boutique").getAsLong() : 0L;
+                Map<Grade, Long> reserve = new HashMap<>();
+                if (o.has("reserve")) {
+                    for (Map.Entry<String, JsonElement> r : o.getAsJsonObject("reserve").entrySet()) {
+                        Grade g = Grade.parId(r.getKey());
+                        if (g != null && g.type == Grade.Type.BOUTIQUE) reserve.put(g, r.getValue().getAsLong());
+                    }
+                }
+                Fiche f = new Fiche(nom, staff, boutique, Set.copyOf(speciaux), boutique == null ? 0L : fin, Map.copyOf(reserve));
                 if (!f.vide()) fiches.put(uuid, f);
             }
             LOG.info("[grades] {} joueur(s) gradé(s) chargé(s) depuis {}", fiches.size(), fichier);
@@ -157,6 +183,12 @@ final class RegistreGrades {
             o.addProperty("nom", f.nom());
             if (f.staff() != null) o.addProperty("staff", f.staff().id);
             if (f.boutique() != null) o.addProperty("boutique", f.boutique().id);
+            if (f.boutique() != null && f.finBoutique() > 0) o.addProperty("fin_boutique", f.finBoutique());
+            if (!f.reserve().isEmpty()) {
+                JsonObject r = new JsonObject();
+                f.reserve().forEach((g, ms) -> r.addProperty(g.id, ms));
+                o.add("reserve", r);
+            }
             if (!f.speciaux().isEmpty()) {
                 com.google.gson.JsonArray sp = new com.google.gson.JsonArray();
                 f.speciaux().forEach(g -> sp.add(g.id));
@@ -244,7 +276,7 @@ final class RegistreGrades {
     void noterNom(UUID uuid, String nom) {
         Fiche f = fiches.get(uuid);
         if (illisible || f == null || f.nom().equals(nom)) return;
-        fiches.put(uuid, new Fiche(nom, f.staff(), f.boutique(), f.speciaux()));
+        fiches.put(uuid, f.renomme(nom));
         try {
             sauver();
         } catch (IOException ex) {
@@ -258,7 +290,7 @@ final class RegistreGrades {
         if (illisible) return Resultat.ILLISIBLE;
         if (!g.attribuable()) return Resultat.ERREUR;
         Fiche avant = fiches.get(uuid);
-        Fiche base = avant != null ? new Fiche(nom, avant.staff(), avant.boutique(), avant.speciaux()) : new Fiche(nom, null, null);
+        Fiche base = avant != null ? avant.renomme(nom) : new Fiche(nom, null, null);
         if (donner && base.a(g)) return Resultat.DEJA;
         if (!donner && !base.a(g)) return Resultat.ABSENT;
         Fiche apres = base.avec(g, donner);
@@ -276,6 +308,86 @@ final class RegistreGrades {
         String remplace = donner && ancien != null ? " (remplace " + ancien.id + ")" : "";
         journaliser(auteur + " | " + (donner ? "donner" : "retirer") + " | " + nom + " (" + uuid + ") | " + g.id + remplace);
         return Resultat.OK;
+    }
+
+    // ------------------------------------------------------------------ achats de la boutique (console : AzLink)
+    enum Achat { NOUVEAU, PROLONGE, MONTE, EN_RESERVE, VIE_DEJA, ILLISIBLE, ERREUR }
+
+    /**
+     * Achat d'un grade boutique pour {@code jours} jours (0 = à vie). Même grade : durée ajoutée (rien si déjà à vie).
+     * Grade plus haut : il remplace l'ancien (prix plein, le temps restant de l'ancien est gardé en réserve et repart à la fin
+     * du nouveau). Grade plus bas qu'un grade en cours : mis en réserve, il démarre quand le grade en cours se termine.
+     */
+    Achat acheter(UUID uuid, String nom, Grade g, int jours) {
+        if (illisible) return Achat.ILLISIBLE;
+        if (g.type != Grade.Type.BOUTIQUE) return Achat.ERREUR;
+        long now = System.currentTimeMillis(), duree = jours * 86_400_000L;
+        Fiche avant = fiches.get(uuid);
+        Fiche base = avant != null ? avant.renomme(nom) : new Fiche(nom, null, null);
+        Map<Grade, Long> res = new HashMap<>(base.reserve());
+        Grade cur = base.boutique();
+        Fiche apres;
+        Achat r;
+        if (cur == g) {
+            if (base.finBoutique() == 0) return Achat.VIE_DEJA;
+            apres = base.boutique(g, jours == 0 ? 0L : Math.max(now, base.finBoutique()) + duree, res);
+            r = Achat.PROLONGE;
+        } else if (cur == null || g.rang > cur.rang) {
+            if (cur != null && base.finBoutique() > 0) res.merge(cur, Math.max(0, base.finBoutique() - now), Long::sum);
+            Long dejaReserve = res.remove(g);
+            long fin = jours == 0 ? 0L : now + duree + (dejaReserve == null ? 0 : dejaReserve);
+            apres = base.boutique(g, fin, res);
+            r = cur == null ? Achat.NOUVEAU : Achat.MONTE;
+        } else {
+            if (base.finBoutique() == 0 && jours > 0) return Achat.VIE_DEJA;
+            res.merge(g, jours == 0 ? Long.MAX_VALUE / 4 : duree, (a, b) -> Math.min(Long.MAX_VALUE / 4, a + b));
+            apres = base.boutique(cur, base.finBoutique(), res);
+            r = Achat.EN_RESERVE;
+        }
+        fiches.put(uuid, apres);
+        try {
+            sauver();
+        } catch (IOException ex) {
+            if (avant == null) fiches.remove(uuid);
+            else fiches.put(uuid, avant);
+            LOG.error("[grades] écriture de {} impossible, achat annulé : {}", fichier, ex.toString());
+            return Achat.ERREUR;
+        }
+        journaliser("boutique | acheter " + (jours == 0 ? "à vie" : jours + " j") + " | " + nom + " (" + uuid + ") | " + g.id + " | " + r);
+        return r;
+    }
+
+    /** Fait expirer les grades boutique arrivés à leur fin ; rend les joueurs touchés (le grade suivant de la réserve démarre). */
+    List<UUID> expirer() {
+        List<UUID> touches = new ArrayList<>();
+        if (illisible) return touches;
+        long now = System.currentTimeMillis();
+        Map<UUID, Fiche> avant = new HashMap<>(fiches);
+        for (Map.Entry<UUID, Fiche> e : new ArrayList<>(fiches.entrySet())) {
+            Fiche f = e.getValue();
+            if (f.boutique() == null || f.finBoutique() == 0 || f.finBoutique() > now) continue;
+            Map<Grade, Long> res = new HashMap<>(f.reserve());
+            Grade suivant = res.keySet().stream().max((a, b) -> Integer.compare(a.rang, b.rang)).orElse(null);
+            Fiche n;
+            if (suivant != null) {
+                long reste = res.remove(suivant);
+                n = f.boutique(suivant, reste >= Long.MAX_VALUE / 4 ? 0L : now + reste, res);
+            } else n = f.boutique(null, 0L, res);
+            if (n.vide()) fiches.remove(e.getKey());
+            else fiches.put(e.getKey(), n);
+            journaliser("boutique | fin | " + f.nom() + " (" + e.getKey() + ") | " + f.boutique().id + (suivant != null ? " -> " + suivant.id : ""));
+            touches.add(e.getKey());
+        }
+        if (touches.isEmpty()) return touches;
+        try {
+            sauver();
+        } catch (IOException ex) {
+            fiches.clear();
+            fiches.putAll(avant);
+            LOG.error("[grades] écriture de {} impossible : {}", fichier, ex.toString());
+            touches.clear();
+        }
+        return touches;
     }
 
     void journaliser(String ligne) {

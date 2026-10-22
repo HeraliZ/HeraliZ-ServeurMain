@@ -234,5 +234,10 @@
   "message.heraliz_grades.voir2": "%1$s : staff %2$s, boutique %3$s, spéciaux %4$s",
   "heraliz_grades.tpa.acceptee_s": "%1$s a accepté : téléportation dans %2$s s, ne bouge pas.",
   "heraliz_grades.tpa.acceptee_cible_s": "Tu as accepté : %1$s arrive dans %2$s s.",
-  "item.heraliz_grades.registre_grades": "Registre des grades"
+  "item.heraliz_grades.registre_grades": "Registre des grades",
+  "message.heraliz_grades.achat_invalide": "Usage : grade acheter <joueur> <grade boutique> <jours|vie>.",
+  "message.heraliz_grades.achat_reserve": "Merci ! Ton grade %s démarrera quand ton grade actuel se terminera.",
+  "message.heraliz_grades.achat_vie": "Tu as déjà un grade boutique à vie : contacte le staff sur Discord.",
+  "message.heraliz_grades.achat_recu": "Merci pour ton soutien ! Tu as le grade %s (%s).",
+  "message.heraliz_grades.achat_fin": "Ton grade de la boutique est terminé. Il ne se renouvelle pas tout seul : tu peux le racheter sur le site."
 }

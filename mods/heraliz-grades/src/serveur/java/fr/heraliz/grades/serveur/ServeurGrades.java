@@ -112,6 +112,15 @@ public final class ServeurGrades implements Partie {
         if (ticks % 120 == 0) LienDiscord.suivre();
         TabServeur.maj(e.getServer(), false);
         MinecraftServer srv = e.getServer();
+        if (ticks % 1200 == 0) {
+            for (java.util.UUID u : registre.expirer()) {
+                ServerPlayer p = srv.getPlayerList().getPlayer(u);
+                if (p == null) continue;
+                rafraichir(p);
+                p.sendSystemMessage(net.minecraft.network.chat.Component.translatableWithFallback("message.heraliz_grades.achat_fin",
+                        "Ton grade de la boutique est terminé. Il ne se renouvelle pas tout seul : tu peux le racheter sur le site."));
+            }
+        }
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
             String clan = TagClan.texte(TagClan.prefixe(p));
             if (!clan.equals(CLANS.get(p.getUUID()))) rafraichir(p);
