@@ -80,6 +80,19 @@ if (setting('heraliz.boutique') === null) {
     boutiqueDeDepart();
 }
 
+// pages légales : créées si elles manquent, remplacées tant qu'elles n'ont pas été modifiées dans l'administration
+majPagesLegales();
+
+// boutique en Points Boutique (22/10) : le site ne vend plus que des PB (100 PB = 1 €, payés en euros), tout le reste
+// s'achète en jeu (/boutique). Une seule fois (repère « heraliz.boutique_pb ») : anciens articles, catégories et offres
+// de crédits retirés (aucun achat fait), lots de PB créés ; mis en vente seulement quand PB_EN_VENTE est vrai (la
+// commande « pb donner » doit exister sur le serveur), à chaque envoi tant que l'administration ne les a pas touchés.
+const PB_EN_VENTE = false;
+const LOTS_PB = [[5, 500], [10, 1000], [20, 2150], [50, 5550], [100, 11500]];
+if (plugins()->isEnabled('shop')) {
+    boutiquePB();
+}
+
 // état du site, lu par le propriétaire dans le résumé de l'envoi
 $jeu = (string) config('azuriom.game');
 dire('Jeu choisi à l’installation : '.$jeu.match ($jeu) {
@@ -230,82 +243,54 @@ function boutiqueDeDepart(): void
         dire('Serveur de jeu relié par AzLink : taper dans la console du Ptero la commande « azlink setup » donnée par l’administration → Serveurs');
     }
 
-    foreach (pagesLegales() as $slug => [$titre, $resume, $texte]) {
-        if (! Page::where('slug', $slug)->exists()) {
-            Page::create(['title' => $titre, 'slug' => $slug, 'description' => $resume, 'content' => $texte, 'is_enabled' => true]);
-            dire('Page créée : '.$titre.' (à relire et compléter : les passages entre crochets)');
-        }
-    }
-
-    if (! plugins()->isEnabled('shop')) {
-        dire('Boutique : extension absente, articles non créés');
-        return;
-    }
-    $Categorie = \Azuriom\Plugin\Shop\Models\Category::class;
-    $Article = \Azuriom\Plugin\Shop\Models\Package::class;
-    if ($Article::exists()) {
-        dire('Boutique : des articles existent déjà, rien n’est ajouté');
-    } else {
-        $sid = $serveur?->id;
-        $cmd = fn (string $c) => [['command' => $c, 'trigger' => 'purchase', 'require_online' => true, 'server' => $sid]];
-        $contenu = '<h3>Ce que contient ce grade</h3><ul><li>[À compléter dans l’administration → Boutique → Articles]</li></ul>';
-        $temps = '<p><strong>Sans renouvellement automatique</strong> : à la fin de la durée, le grade est retiré. Aucun prélèvement : pour le garder, il faut le racheter. Monter d’un grade se paie au prix plein du nouveau grade.</p>'
-            .'<p>Contenu numérique livré immédiatement en jeu : <strong>aucun remboursement</strong> (voir les Conditions de vente). Être connecté au serveur au moment de la livraison.</p>';
-        $categories = [
-            ['Grades', 'grades', '<p>Soutiens HeraliZ et profite d’avantages pratiques et visuels, jamais d’avantage en combat. Emote, skin ou finisher rien qu’à toi ou à ton clan : voir la page « Créations sur mesure ».</p>', [
-                ['Rescapé · 1 mois', 9.90, 'rescape', 30], ['Rescapé · 3 mois', 24.00, 'rescape', 90],
-                ['Traqueur · 1 mois', 14.90, 'traqueur', 30], ['Traqueur · 3 mois', 35.90, 'traqueur', 90],
-                ['Roi de la Zone · 1 mois', 19.90, 'roi_de_la_zone', 30], ['Roi de la Zone · 3 mois', 47.90, 'roi_de_la_zone', 90],
-            ]],
-            ['Soutien Bêta', 'beta', '<p>Pour ceux qui soutiennent HeraliZ dès la bêta et l’aident à s’améliorer.</p>', [
-                ['Grade BETA · à vie', 89.90, 'roi_de_la_zone', 0],
-            ]],
-            ['Clés cosmétiques', 'cles', '<p>Clés de caisses cosmétiques, à ouvrir en jeu. Plus le lot est grand, moins la clé coûte cher.</p>', [
-                ['1 clé', 0.55, 1], ['10 clés', 5.20, 10], ['20 clés', 9.90, 20], ['50 clés', 23.90, 50], ['100 clés', 44.90, 100],
-            ]],
-        ];
-        foreach ($categories as $ic => [$nom, $slug, $desc, $articles]) {
-            $c = $Categorie::create(colonnes('shop_categories', ['name' => $nom, 'slug' => $slug, 'description' => $desc, 'position' => $ic + 1, 'is_enabled' => true]));
-            foreach ($articles as $ia => $a) {
-                if ($slug === 'cles') {
-                    [$titre, $prix, $n] = $a;
-                    $desc2 = '<p>'.$n.' clé(s) de caisse cosmétique, livrée(s) dans ton inventaire en jeu.</p>';
-                    $commande = 'heraliz givekey {player} '.CAISSE_COSMETIQUE.' '.$n;
-                    $jours = null;
-                    $court = $n.' clé(s) cosmétique(s), livrée(s) en jeu.';
-                } else {
-                    [$titre, $prix, $grade, $jours] = $a;
-                    $desc2 = $jours === 0
-                        ? '<p>Les mêmes avantages que Roi de la Zone, <strong>à vie</strong>, plus une emote et un skin d’arme personnalisés à vie : fais ta demande au staff sur Discord avec un exemple (image ou vidéo) du rendu voulu, dans les limites de ce qui est possible sur Minecraft et de ce que nos développeurs peuvent faire.</p>'.$contenu
-                            .'<p>Contenu numérique livré immédiatement en jeu : <strong>aucun remboursement</strong> (voir les Conditions de vente).</p>'
-                        : $contenu.$temps;
-                    $court = $jours === 0 ? 'Avantages Roi de la Zone à vie, emote et skin d’arme personnalisés.' : 'Grade pour '.$jours.' jours, sans renouvellement automatique.';
-                    $commande = 'grade acheter {player} '.$grade.' '.($jours === 0 ? 'vie' : $jours);
-                }
-                $Article::create(colonnes('shop_packages', [
-                    'category_id' => $c->id, 'name' => $titre, 'short_description' => $court,
-                    'description' => $desc2, 'price' => $prix, 'position' => $ia + 1, 'commands' => $cmd($commande),
-                    'need_online' => true, 'user_limit' => $jours === 0 ? 1 : null, 'is_enabled' => true,
-                ]));
-            }
-            dire('Boutique : catégorie « '.$nom.' » ('.count($articles).' articles)');
-        }
-    }
-
-    // crédits du site achetés en euros : 1 crédit = 1 € (moyens de paiement à cocher dans Boutique → Offres)
-    $Offre = \Azuriom\Plugin\Shop\Models\Offer::class;
-    if (class_exists($Offre) && ! $Offre::exists()) {
-        foreach ([5, 10, 20, 50, 100] as $e) {
-            $Offre::create(colonnes('shop_offers', ['name' => $e.' crédits', 'price' => $e, 'money' => $e, 'is_enabled' => true]));
-        }
-        dire('Boutique : offres de crédits 5, 10, 20, 50, 100 € (1 crédit = 1 €)');
-    }
-
     Setting::updateSettings('heraliz.boutique', now()->toDateString());
     dire('Boutique et pages légales : faites');
 }
 
 /** Chaque vote : 1 clé de la caisse « vote » et 10 hérals en jeu (joués par AzLink, joueur connecté). */
+function boutiquePB(): void
+{
+    $Categorie = \Azuriom\Plugin\Shop\Models\Category::class;
+    $Article = \Azuriom\Plugin\Shop\Models\Package::class;
+    if (setting('heraliz.boutique_pb') === null) {
+        foreach ($Article::all() as $a) {
+            $a->delete();
+        }
+        foreach ($Categorie::all() as $c) {
+            $c->delete();
+        }
+        $Offre = \Azuriom\Plugin\Shop\Models\Offer::class;
+        if (class_exists($Offre)) {
+            foreach ($Offre::all() as $o) {
+                $o->delete();
+            }
+        }
+        // payé directement en euros : plus de crédits du site
+        Setting::updateSettings('shop.use_site_money', false);
+        $serveur = Server::find(setting('servers.default')) ?? Server::first();
+        $c = $Categorie::create(colonnes('shop_categories', ['name' => 'Points Boutique', 'slug' => 'points-boutique',
+            'description' => '<p>Les <strong>Points Boutique (PB)</strong> se dépensent en jeu : tape <strong>/boutique</strong> pour acheter grades, clés et cosmétiques. Ils s’échangent aussi entre joueurs au spawn (/trade, taxe de 10 %). Aucun avantage en combat, aucun abonnement.</p>',
+            'position' => 1, 'is_enabled' => true]));
+        foreach (LOTS_PB as $i => [$euros, $pb]) {
+            $bonus = $pb - $euros * 100;
+            $Article::create(colonnes('shop_packages', [
+                'category_id' => $c->id, 'name' => number_format($pb, 0, ',', ' ').' PB',
+                'short_description' => $bonus > 0 ? '+'.number_format($bonus, 0, ',', ' ').' PB offerts' : 'Livrés en jeu tout de suite.',
+                'description' => '<p>'.number_format($pb, 0, ',', ' ').' Points Boutique crédités en jeu sur ton compte (sois connecté au serveur). À dépenser dans <strong>/boutique</strong>.</p><p>Contenu numérique livré immédiatement : <strong>aucun remboursement</strong> (voir les Conditions de vente).</p>',
+                'price' => $euros, 'position' => $i + 1,
+                'commands' => [['command' => 'pb donner {player} '.$pb.' achat', 'trigger' => 'purchase', 'require_online' => true, 'server' => $serveur?->id]],
+                'need_online' => true, 'is_enabled' => PB_EN_VENTE,
+            ]));
+        }
+        Setting::updateSettings('heraliz.boutique_pb', now()->toDateString());
+        dire('Boutique : passée aux Points Boutique ('.count(LOTS_PB).' lots, payés en euros ; anciens articles et crédits retirés)');
+    }
+    if (PB_EN_VENTE) {
+        $Article::where('is_enabled', false)->where('name', 'like', '% PB')->update(['is_enabled' => true]);
+    }
+    dire('Points Boutique : '.(PB_EN_VENTE ? 'en vente' : 'lots prêts mais pas encore en vente (en attente de /boutique en jeu)'));
+}
+
 function recompenseVote(): void
 {
     if (! plugins()->isEnabled('vote')) {

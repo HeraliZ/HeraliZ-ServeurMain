@@ -1,7 +1,7 @@
 {{-- Pied de page des maquettes ; « Propulsé par Azuriom » est exigé par la licence d'Azuriom (ne pas le retirer) --}}
 @php
     $discord = theme_config('discord') ?: 'https://discord.gg/heraliz';
-    $pagesInfo = \Azuriom\Models\Page::enabled()->whereIn('slug', ['reglement', 'cgv', 'confidentialite', 'mentions-legales'])->pluck('title', 'slug');
+    $pagesInfo = \Azuriom\Models\Page::enabled()->whereIn('slug', ['reglement', 'cgu', 'cgv', 'confidentialite', 'cookies', 'mentions-legales'])->pluck('title', 'slug');
 @endphp
 <footer class="pied">
     <div class="wrap">
@@ -41,7 +41,7 @@
             <div>
                 <h4>Informations</h4>
                 <ul>
-                    @foreach(['cgv' => 'Conditions de vente', 'confidentialite' => 'Confidentialité', 'mentions-legales' => 'Mentions légales'] as $slug => $nom)
+                    @foreach(['cgu' => 'Conditions d’utilisation', 'cgv' => 'Conditions de vente', 'confidentialite' => 'Confidentialité', 'cookies' => 'Cookies', 'mentions-legales' => 'Mentions légales'] as $slug => $nom)
                         @if(isset($pagesInfo[$slug]))<li><a href="{{ route('pages.show', $slug) }}">{{ $nom }}</a></li>@endif
                     @endforeach
                     <li><a href="{{ $discord }}" target="_blank" rel="noopener noreferrer">Contact (Discord)</a></li>
