@@ -600,20 +600,31 @@ async function majLauncher() {
     } finally { arreter() }
 }
 
-// Accord pour les captures d'écran de l'anticheat : demandé dès l'ouverture, avant tout le reste. Échap ne ferme pas la
-// fenêtre ; « Je refuse » ferme le launcher. true quand le joueur a accepté.
+// Accord pour les captures d'écran de l'anticheat : demandé à chaque ouverture, avant tout le reste, puis confirmé une
+// seconde fois (« Vous êtes sûr ? »). Échap ne ferme pas les fenêtres ; « Je refuse » ferme le launcher, « Retour »
+// revient à la première question. true quand le joueur a accepté deux fois.
 function demanderAccord() {
     if (!api || state?.accordCapture) return Promise.resolve(true)
     return new Promise(resolve => {
         const fenetre = $('accord-dialog')
+        const confirmation = $('accord-confirm-dialog')
         fenetre.addEventListener('cancel', event => event.preventDefault())
-        $('accord-oui').addEventListener('click', async () => {
-            $('accord-oui').disabled = true
+        confirmation.addEventListener('cancel', event => event.preventDefault())
+        $('accord-oui').addEventListener('click', () => {
+            fenetre.close()
+            confirmation.showModal()
+        })
+        $('accord-retour').addEventListener('click', () => {
+            confirmation.close()
+            fenetre.showModal()
+        })
+        $('accord-confirmer').addEventListener('click', async () => {
+            $('accord-confirmer').disabled = true
             try {
                 applyState(await call(api.accordCapture(true)))
-                fenetre.close()
+                confirmation.close()
                 resolve(true)
-            } catch (error) { toast(error.message); $('accord-oui').disabled = false }
+            } catch (error) { toast(error.message); $('accord-confirmer').disabled = false }
         })
         $('accord-non').addEventListener('click', () => { api.windowAction('close'); resolve(false) })
         fenetre.showModal()

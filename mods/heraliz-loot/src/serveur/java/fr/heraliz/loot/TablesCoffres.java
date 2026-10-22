@@ -170,6 +170,16 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
     /** Balles au plus par case, bonus de loot compris (choix du propriétaire, 22/10). */
     static final int MAX_BALLES = 15;
 
+    /**
+     * Comme {@link #tirerUnique}, mais jamais une case vide (« minecraft:air » des tables) : sert à la première case
+     * d'un conteneur, pour qu'un conteneur rempli ne soit jamais vide (22/10).
+     */
+    static ItemStack tirerPlein(Table t, RandomSource r, int bonus, java.util.Set<String> deja) {
+        ItemStack st = ItemStack.EMPTY;
+        for (int i = 0; st.isEmpty() && i < 20; i++) st = tirerUnique(t, r, bonus, deja);
+        return st;
+    }
+
     /** Munitions TaCZ (balles et boîtes) : seuls objets qui peuvent sortir en quantité et plusieurs fois. */
     static boolean munition(Item item) {
         net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item);
