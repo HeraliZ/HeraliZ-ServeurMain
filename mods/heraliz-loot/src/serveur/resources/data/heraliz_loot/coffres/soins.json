@@ -1,7 +1,7 @@
 {
  "_note": "Conteneurs de soins de niveau 1 (soins1_...) et secours. Écrit par outils/loot_armes.py (PARTS_SOINS ; ne pas modifier à la main).",
  "emplacements": [1, 3],
- "niveaux": {"1": [1, 2], "2": [1, 3], "3": [2, 4], "4": [2, 5], "5": [3, 6], "6": [4, 7]},
+ "niveaux": {"1": [1, 2], "2": [1, 3], "3": [1, 3], "4": [2, 3], "5": [2, 3], "6": [2, 3]},
  "objets": [
   {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 147389, "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}", "_cat": "soins_famille", "_base": 1905},
   {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 266713, "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}", "_cat": "soins_famille", "_base": 1524},

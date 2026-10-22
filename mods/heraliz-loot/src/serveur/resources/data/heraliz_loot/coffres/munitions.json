@@ -1,7 +1,7 @@
 {
  "_note": "Famille munitions (munitions1_... à munitions6_...) : PhatLoots civil_ammo + military_ammo ramenées aux 11 calibres consolidés. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
  "emplacements": [1, 3],
- "niveaux": {"1": [1, 2], "2": [1, 3], "3": [2, 4], "4": [2, 5], "5": [3, 6], "6": [4, 7]},
+ "niveaux": {"1": [1, 2], "2": [1, 3], "3": [1, 3], "4": [2, 3], "5": [2, 3], "6": [2, 3]},
  "objets": [
   {"item": "tacz:ammo", "nombre": [5, 13], "poids": 2213, "nbt": "{AmmoId:\"tacz:9mm\"}", "_cat": "munitions_famille"},
   {"item": "tacz:ammo", "nombre": [5, 15], "poids": 1610, "nbt": "{AmmoId:\"tacz:556x45\"}", "_cat": "munitions_famille"},
