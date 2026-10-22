@@ -154,8 +154,8 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
     }
 
     /**
-     * Comme {@link #tirer(Table, RandomSource, int)}, mais sans doublon dans un même conteneur : un seul sac à dos, et
-     * jamais deux fois le même soin, la même grenade ou le même objet de véhicule (jerrican, chalumeau, parachute). Un objet déjà sorti ({@code deja}) est retiré (jusqu'à 20 fois),
+     * Comme {@link #tirer(Table, RandomSource, int)}, mais sans doublon dans un même conteneur (choix du propriétaire,
+     * 22/10) : jamais deux fois le même objet, sauf les munitions ; un seul sac à dos. Un objet déjà sorti ({@code deja}) est retiré (jusqu'à 20 fois),
      * sinon la case reste vide.
      */
     static ItemStack tirerUnique(Table t, RandomSource r, int bonus, java.util.Set<String> deja) {
@@ -167,20 +167,31 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
         return st;
     }
 
-    /** Clé d'un objet limité à un par conteneur (null : pas de limite). */
+    /** Balles au plus par case, bonus de loot compris (choix du propriétaire, 22/10). */
+    static final int MAX_BALLES = 15;
+
+    /** Munitions TaCZ (balles et boîtes) : seuls objets qui peuvent sortir en quantité et plusieurs fois. */
+    static boolean munition(Item item) {
+        net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item);
+        return id != null && id.getNamespace().equals("tacz") && (id.getPath().equals("ammo") || id.getPath().equals("ammo_box"));
+    }
+
+    /** Clé d'un objet limité à un par conteneur (null : pas de limite, munitions). */
     @Nullable
     static String cleUnique(ItemStack st) {
-        if (st.isEmpty()) return null;
+        if (st.isEmpty() || munition(st.getItem())) return null;
         net.minecraft.resources.ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem());
         if (id == null) return null;
         if (id.getNamespace().equals("backpacked")) return "sac";
-        if (id.getNamespace().equals("ywzj_vehicle")) return id.toString(); // jerrican, chalumeau, parachute
-        if (id.getNamespace().equals("heralisz_tactical") && (id.getPath().equals("consumable") || id.getPath().equals("throwable"))) {
-            net.minecraft.nbt.CompoundTag tag = st.getTag();
-            String sorte = tag == null ? "" : tag.getString("ConsumableId") + tag.getString("ThrowableId");
-            return id.getPath() + ":" + sorte;
+        // même objet = même identifiant et même NBT (arme, accessoire, soin...), sans la rareté, l'état de la
+        // nourriture ni le nom affiché, qui ne changent pas l'objet
+        net.minecraft.nbt.CompoundTag tag = st.getTag() == null ? null : st.getTag().copy();
+        if (tag != null) {
+            tag.remove(Rarete.CLE);
+            tag.remove("FoodState");
+            tag.remove("display");
         }
-        return null;
+        return id + (tag == null || tag.isEmpty() ? "" : tag.toString());
     }
 
     @Nullable
@@ -203,11 +214,14 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
 
     private static ItemStack objet(Entree e, RandomSource r, int bonus) {
         int n = e.min() + r.nextInt(e.max() - e.min() + 1);
-        if (bonus > 0) {
+        // un seul exemplaire de tout objet, sauf les munitions (choix du propriétaire, 22/10)
+        if (!munition(e.item())) n = 1;
+        else if (bonus > 0) {
             double x = n * (1.0 + bonus / 100.0);
             n = (int) x;
             if (r.nextDouble() < x - n) n++;
         }
+        if (munition(e.item())) n = Math.min(n, MAX_BALLES);
         ItemStack st = new ItemStack(e.item(), n);
         if (e.nbt() != null) {
             try {

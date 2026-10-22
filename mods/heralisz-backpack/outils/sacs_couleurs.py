@@ -48,20 +48,20 @@ COULEURS = {
 MODELES = {
     "sports_bag": {
         "id": "backpack_sports_bag_{c}", "source": "backpack_sports_bag", "texture": "tgr_sports_bag",
-        "taille": (4, 4), "neutre": False,
+        "taille": (3, 3), "neutre": False,
         "fr": "Sac de Sport en Bandoulière {C}", "en": "{C} Shoulder Sports Bag", "ru": "{Cf} спортивная сумка через плечо",
         # le sac d'origine (backpack_sports_bag) est le noir
         "existants": {"black": "backpack_sports_bag"},
     },
     "tactical": {
         "id": "backpack_tactical_{c}", "source": "backpack_tactical_green", "texture": "tgr_tactical",
-        "taille": (5, 4), "neutre": True,
+        "taille": (3, 2), "neutre": True,
         "fr": "Sac à dos Tactique {C}", "en": "{C} Tactical Backpack", "ru": "{Cm} тактический рюкзак",
         "existants": {"black": "backpack_tactical_black", "green": "backpack_tactical_green"},
     },
     "hiking": {
         "id": "backpack_hiking_{c}", "source": "backpack_hiking_green", "texture": "tgr_hiking",
-        "taille": (5, 5), "neutre": True,
+        "taille": (5, 3), "neutre": True,
         "fr": "Sac de Randonnée {C}", "en": "{C} Hiking Backpack", "ru": "{Cm} походный рюкзак",
         "existants": {"black": "backpack_hiking_black", "green": "backpack_hiking_green"},
     },

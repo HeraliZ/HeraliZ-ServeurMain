@@ -165,3 +165,11 @@ heralisz_skins/assets/heralisz_skins/textures/gun/slot/butterfly__gunmetal.png
 # 19/10 : couteaux CT et T sans skin retirés (seuls les skins restent)
 arkaniaz_pack_4_converted/data/arkaniaz/index/guns/ct_knife.json
 arkaniaz_pack_4_converted/data/arkaniaz/index/guns/t_knife.json
+
+# 22/10 : revolver M327 TRR8 retiré (trop proche du Colt SGS Beta), choix du propriétaire
+arkaniaz_pack_1_converted/data/arkaniaz/index/guns/r8.json
+arkaniaz_pack_0_converted/data/tacz/recipes/gun/r8.json
+
+# heraliz_accessoires : listes d'accessoires retirées par outils/accessoires.py
+heraliz_accessoires/data/arkaniaz/tacz_tags/attachments/allow_attachments/r8.json
+heraliz_accessoires/data/arkaniaz/tacz_tags/attachments/allow_attachments/r8.json

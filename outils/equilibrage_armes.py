@@ -59,17 +59,17 @@ FAMILLE_ARME = {
     "tacz:deagle": "pistolet_50", "maxstuff:deagle_12g": "pistolet_pompe", "maxstuff:deagle_50bmg": "pistolet_50bmg",
     "maxstuff:db_50": "pompe_balle", "tacz:minigun": "minigun",
     "maxstuff:ar10": "fusil_308_rapide", "maxstuff:ar10b": "fusil_308_rapide", "maxstuff:mk11": "fusil_308_rapide",
-    "maxstuff:dragonuv_svd": "precision_semi", "arkaniaz:ssg_08": "precision_762",
+    "maxstuff:dragonuv_svd": "precision_semi", "arkaniaz:ssg_08": "precision_308",
 }
 
 # Rareté de chaque arme (lance-grenades : Légendaire ; armes absentes : plancher de leur type)
 RARETE_ARME = {
     # pistolets (dès Commun)
-    "tacz:cz75": "commun", "tacz:glock_17": "commun", "arkaniaz:p250": "commun", "arkaniaz:usp": "commun",
-    "maxstuff:m17": "commun", "tacz:m1911": "commun",
+    "tacz:glock_17": "commun", "arkaniaz:p250": "commun", "arkaniaz:usp": "commun",
+    "maxstuff:m17": "commun", "tacz:m1911": "commun", "tacz:cz75": "peu_commun",
     "tacz:p320": "peu_commun", "arkaniaz:tec9": "peu_commun", "maxstuff:glock_bulpup": "peu_commun",
     "tacz:b93r": "rare", "arkaniaz:g18c": "rare", "maxstuff:glock_18c": "rare", "maxstuff:mk23": "rare",
-    "arkaniaz:python": "rare", "arkaniaz:r8": "rare", "maxstuff:glock_54": "rare",
+    "arkaniaz:python": "rare", "maxstuff:glock_54": "rare",
     "tacz:deagle": "epique", "maxstuff:thunderbird_short": "epique", "maxstuff:deagle_12g": "epique",
     "maxstuff:deagle_50bmg": "legendaire",
     # mitraillettes (dès Peu commun)
@@ -84,7 +84,7 @@ RARETE_ARME = {
     "heraliz_fuse:olympia": "peu_commun",
     "tacz:m870": "rare", "maxstuff:m870t": "rare", "heraliz_fuse:stakeout": "epique", "maxstuff:db_short_tactical": "rare",
     "maxstuff:saiga12": "legendaire", "tacz:aa12": "legendaire",
-    "maxstuff:db_50": "legendaire",
+    "maxstuff:db_50": "peu_commun",
     # fusils d'assaut et de combat (dès Rare)
     "tacz:ak47": "rare", "arkaniaz:aks74u": "rare", "maxstuff:aks74u": "rare", "tacz:m16a1": "rare",
     "arkaniaz:9a91": "rare", "arkaniaz:an94": "rare", "tacz:type_81": "rare", "maxstuff:ak74": "rare",

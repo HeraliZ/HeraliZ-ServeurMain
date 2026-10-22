@@ -46,8 +46,8 @@
     },
     "tacz:cz75": {
       "famille": "pistolet_9",
-      "rarete": "commun",
-      "degats": 4.14,
+      "rarete": "peu_commun",
+      "degats": 4.32,
       "tete": 1.6
     },
     "tacz:db_long": {
@@ -87,9 +87,9 @@
       "tete": 1.7
     },
     "tacz:hk_g3": {
-      "famille": "fusil_308",
+      "famille": "fusil_762",
       "rarete": "epique",
-      "degats": 7.8,
+      "degats": 6.24,
       "tete": 1.7
     },
     "tacz:m16a1": {
@@ -135,9 +135,9 @@
       "tete": 1.5
     },
     "tacz:mk14": {
-      "famille": "fusil_308",
+      "famille": "fusil_762",
       "rarete": "legendaire",
-      "degats": 8.1,
+      "degats": 6.48,
       "tete": 1.7
     },
     "tacz:p320": {
@@ -159,9 +159,9 @@
       "tete": 1.6
     },
     "tacz:scar_h": {
-      "famille": "fusil_308",
+      "famille": "fusil_762",
       "rarete": "epique",
-      "degats": 7.8,
+      "degats": 6.24,
       "tete": 1.7
     },
     "tacz:scar_l": {
@@ -327,9 +327,9 @@
       "tete": 1.7
     },
     "arkaniaz:negev": {
-      "famille": "mitrailleuse_762",
+      "famille": "mitrailleuse_556",
       "rarete": "epique",
-      "degats": 6.66,
+      "degats": 5.62,
       "tete": 1.6
     },
     "arkaniaz:p250": {
@@ -356,12 +356,6 @@
       "degats": 8.0,
       "tete": 1.6
     },
-    "arkaniaz:r8": {
-      "famille": "pistolet_50",
-      "rarete": "rare",
-      "degats": 8.0,
-      "tete": 1.6
-    },
     "arkaniaz:sr_2m": {
       "famille": "smg_9",
       "rarete": "peu_commun",
@@ -369,9 +363,9 @@
       "tete": 1.5
     },
     "arkaniaz:ssg_08": {
-      "famille": "precision_762",
+      "famille": "precision_308",
       "rarete": "epique",
-      "degats": 14.56,
+      "degats": 16.64,
       "tete": 2.0
     },
     "arkaniaz:tec9": {
@@ -478,8 +472,8 @@
     },
     "maxstuff:db_50": {
       "famille": "pompe_balle",
-      "rarete": "legendaire",
-      "degats": 21.6,
+      "rarete": "peu_commun",
+      "degats": 19.2,
       "tete": 1.5
     },
     "maxstuff:db_short_tactical": {
@@ -531,9 +525,9 @@
       "tete": 1.6
     },
     "maxstuff:hk417": {
-      "famille": "fusil_308",
+      "famille": "fusil_762",
       "rarete": "epique",
-      "degats": 7.8,
+      "degats": 6.24,
       "tete": 1.7
     },
     "maxstuff:hk_g33": {

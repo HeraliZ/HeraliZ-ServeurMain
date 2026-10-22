@@ -37,6 +37,8 @@ POUR_100 = {
     "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
     "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
     "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 45},
+    # sacs à dos (choix du propriétaire, 22/10 : 0,1 % des coffres en T1, 0,5 % en T2 ; un seul sac par coffre)
+    "sacs":        {1: 0.1, 2: 0.5, 3: 1, 4: 2, 5: 3, 6: 4, 7: 3},
 }
 # part de chaque rareté (en %) ; une arme Bleue est déjà une belle trouvaille
 PARTS = {
@@ -51,15 +53,32 @@ PARTS = {
 LOURDES = 0.35
 # parts propres à une famille dans un palier (sinon PARTS)
 PARTS_FAMILLE = {}
+# sacs à dos : rareté selon leur nombre de cases (choix du propriétaire, 22/10), écrite aussi dans la section
+# « objets » de raretes.json (couleur du nom). Préfixe de l'identifiant -> rareté ; le plus long préfixe l'emporte.
+RARETE_SACS = {
+    "backpack_school": "commun",                                  # 1x2
+    "backpack": "peu_commun", "backpack_tactical": "peu_commun",  # 2x3, 3x2
+    "backpack_sniper_case": "rare", "backpack_sports_bag": "rare",  # 4x2, 3x3
+    "backpack_mountain_military_camo": "epique", "backpack_hiking": "epique",  # 5x3
+    "backpack_military_sport_bag": "legendaire",                  # 5x4
+}
+SACS_HORS_LOOT = ("backpack", "backpack_expand1", "backpack_expand2", "backpack_sniper_case_enderman",
+                  "backpack_military_sport_bag_cow", "backpack_military_sport_bag_pig")  # jamais dans les coffres
+# mêmes parts dans tous les paliers (choix du propriétaire, 22/10) : seul le nombre de sacs monte avec le palier
+PARTS_SACS = {t: {"commun": 50, "peu_commun": 25, "rare": 15, "epique": 8, "legendaire": 2} for t in range(1, 8)}
+PARTS_FAMILLE.update({("sacs", t): v for t, v in PARTS_SACS.items()})
+SACS_JAVA = RACINE / "mods/heralisz-backpack/src/commun/java/com/mrcrayfish/backpacked/core/ArkaniaZModItems.java"
 # jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
 OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
 PARACHUTE = 0.19  # part du poids d'origine du parachute
 # poids des autres objets (part de leur poids d'origine) selon un mot de leur catégorie
-AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("sacs", 0.25), ("nourriture", 0.6), ("boissons", 0.6),
+AUTRES = [("soins", 0.3), ("explosifs", 0.5), ("nourriture", 0.6), ("boissons", 0.6),
           ("rations", 0.6), ("plats", 0.6), ("produits_ferme", 0.6)]
 # munitions : part de leur poids d'origine par palier (balles pour 100 conteneurs : environ 40 en T1 à 450 en T7)
 MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
-EMPLACEMENTS = {7: [2, 5]}  # objets par conteneur (sinon ceux de la table)
+# objets par conteneur (22/10 : moins de cases depuis que nourriture, soins et munitions ont quitté les coffres T1 à T7 ;
+# environ autant d'objets « restants » qu'avant)
+EMPLACEMENTS = {1: [1, 2], 2: [1, 3], 3: [1, 3], 4: [2, 3], 5: [2, 3], 6: [2, 3], 7: [2, 3]}
 PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
 
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
@@ -84,6 +103,26 @@ IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 def gun_id(e):
     m = re.search(r'GunId:"([^"]+)"', e.get("nbt", ""))
     return m.group(1) if m else None
+
+
+def sacs():
+    """identifiant -> rareté de chaque sac à dos du mod."""
+    out = {}
+    for i in sorted(set(re.findall(r'"backpacked", "([a-z0-9_]+)"', SACS_JAVA.read_text(encoding="utf-8")))):
+        k = max((k for k in RARETE_SACS if i == k or i.startswith(k + "_")), key=len, default=None)
+        if k and not i.startswith("backpack_expand"):  # objets vides gardés pour Curios
+            out[i] = RARETE_SACS[k]
+    return out
+
+
+def ecrire_raretes_sacs():
+    data = json.load(open(RARETES, encoding="utf-8"))
+    obj = {k: v for k, v in data["objets"].items() if not k.startswith("backpacked:")}
+    obj.update({"backpacked:" + i: r for i, r in sacs().items()})
+    data["objets"] = obj
+    with open(RARETES, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
 
 
 def raretes():
@@ -160,10 +199,13 @@ def familles():
     for i, r in sorted(tout["objets"].items()):
         if i.startswith(ARMURE) and not i.startswith(ARMURE + "kit_") and not i.endswith("_suit") and r != "unique":
             ajouter("armures", r, {"item": i, "nombre": [1, 1], "_cat": "armures"})
+    for i, r in sacs().items():
+        if i not in SACS_HORS_LOOT:
+            ajouter("sacs", r, {"item": "backpacked:" + i, "nombre": [1, 1], "_cat": "sacs"})
     for i, r, pile in re.findall(r'new Def\("([a-z_0-9]+)", "[^"]*", HeralizRarity\.([A-Z]+), (\d+)\)',
                                  COMPOSANTS_DEFS.read_text(encoding="utf-8")):
         if r in RARETE_COMPOSANT and i not in COMPOSANTS_EXCLUS:
-            n = 3 if r == "COMMON" and int(pile) >= 16 else 1
+            n = 1  # un seul exemplaire par case (seules les munitions sortent en quantité)
             ajouter("composants", RARETE_COMPOSANT[r], {"item": COMPOSANT + i, "nombre": [1, n], "_cat": "composants"},
                     COMPOSANTS_PLUS.get(i, 1.0))
     return out
@@ -207,10 +249,19 @@ def melee_absente(e):
     return not m or not (MELEE / (m.group(1) + ".json")).exists()
 
 
+# nourriture, soins et munitions : seulement dans leurs propres conteneurs (nourriture.json, soins.json,
+# munitions.json), jamais dans les coffres T1 à T7 (choix du propriétaire, 22/10)
+HORS_COFFRES = ("nourriture", "boissons", "rations", "plats", "produits_ferme", "soins", "munitions")
+
+
+def hors_coffres(e):
+    return any(m in e.get("_cat", "") for m in HORS_COFFRES)
+
+
 def autres_de(data):
     out = []
     for e in data["objets"]:
-        if de_famille(e) or e["item"].startswith(RETIRES) or melee_absente(e) or e.get("_cat", "").startswith("materiaux"):
+        if de_famille(e) or e["item"].startswith(RETIRES + ("backpacked:",)) or hors_coffres(e) or melee_absente(e) or e.get("_cat", "").startswith("materiaux"):
             continue
         e = dict(e)
         e.setdefault("_base", e["poids"])
@@ -219,6 +270,8 @@ def autres_de(data):
 
 
 def ecrire():
+    ecrire_raretes_sacs()
+    ecrire_soins()
     fams = familles()
     tables = {t: json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8")) for t in PARTS}
     autres = {t: autres_de(tables[t]) for t in PARTS}
@@ -268,7 +321,52 @@ def ecrire():
             objets.append(n)
         data["objets"] = objets
         ecrire_table(COFFRES / f"t{t}.json", data)
-        print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in parts)} {f}" for f in fams))
+        print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in PARTS_FAMILLE.get((f, t), PARTS[t]))} {f}" for f in fams))
+
+
+# conteneurs de soins (soins1_... à soins6_...) : une table par niveau, soins.json = niveau 1 (secours).
+# Rareté du soin tirée d'abord, puis le soin dans sa rareté (poids d'origine « _base »). Le gris reste toujours le
+# plus fréquent ; le bleu et le violet montent un peu avec le niveau (choix du propriétaire, 22/10).
+SOINS = RACINE / "serveur/config/heraliz_loot/raretes.json"
+PARTS_SOINS = {
+    1: {"commun": 50, "peu_commun": 28, "rare": 16, "epique": 6},
+    2: {"commun": 46, "peu_commun": 28, "rare": 18, "epique": 8},
+    3: {"commun": 42, "peu_commun": 28, "rare": 20, "epique": 10},
+    4: {"commun": 38, "peu_commun": 28, "rare": 21, "epique": 13},
+    5: {"commun": 34, "peu_commun": 28, "rare": 22, "epique": 16},
+    6: {"commun": 31, "peu_commun": 27, "rare": 23, "epique": 19},
+}
+
+
+def ecrire_soins():
+    ra = json.load(open(RARETES, encoding="utf-8"))["soins"]
+    data = json.loads((COFFRES / "soins.json").read_text(encoding="utf-8"))
+    base = []
+    for e in data["objets"]:
+        m = re.search(r'ConsumableId:"([^"]+)"', e.get("nbt", ""))
+        if e["item"].startswith(RETIRES) or not m or ra.get(m.group(1)) not in PARTS_SOINS[1]:
+            continue
+        e = dict(e)
+        e.setdefault("_base", e["poids"])
+        e["nombre"] = [1, 1]
+        base.append((e, ra[m.group(1)]))
+    for niv, parts in PARTS_SOINS.items():
+        somme = {r: sum(e["_base"] for e, x in base if x == r) for r in parts}
+        objets = []
+        for e, r in base:
+            n = dict(e)
+            n["poids"] = max(1, round(1000000 * parts[r] / 100 * e["_base"] / somme[r]))
+            objets.append(n)
+        d = dict(data)
+        d["_note"] = (f"Conteneurs de soins de niveau {niv} (soins{niv}_...). Écrit par outils/loot_armes.py "
+                      "(PARTS_SOINS ; ne pas modifier à la main).")
+        d["emplacements"] = data["niveaux"][str(niv)]
+        d.pop("niveaux", None)
+        d["objets"] = objets
+        ecrire_table(COFFRES / f"soins{niv}.json", d)
+        if niv == 1:
+            ecrire_table(COFFRES / "soins.json", dict(data, objets=objets, _note=d["_note"].replace(
+                "niveau 1 (soins1_...)", "niveau 1 (soins1_...) et secours")))
 
 
 def classer(e, ra):
@@ -279,6 +377,8 @@ def classer(e, ra):
         return "accessoires", ra["accessoires"].get(m.group(1) if m else "", "?")
     if e.get("_cat") == "plans":
         return "plans", e.get("rarete") or ra["plans"].get(e["item"], "?")
+    if e.get("_cat") == "sacs":
+        return "sacs", ra["objets"].get(e["item"], "?")
     if e.get("_cat") in ("armures", "composants"):
         return e["_cat"], e.get("rarete") or ra["objets"].get(e["item"]) or ra["comp"].get(e["item"], "?")
     return None, None
