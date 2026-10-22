@@ -28,7 +28,14 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import java.nio.IntBuffer;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL21;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * Capture de l'écran du jeu demandée par le serveur (CaptureRequestPacket). Prise SEULEMENT si le joueur l'a autorisée
@@ -39,8 +46,12 @@ import org.lwjgl.glfw.GLFW;
  * temps de s'afficher. Sous Windows, c'est la zone de l'écran couverte par la fenêtre du jeu qui est copiée (comme une
  * capture d'écran du système) : un menu de triche dessiné dans une fenêtre posée par-dessus le jeu y apparaît. Image
  * du jeu lui-même (sans ce qui est par-dessus) si la copie de l'écran est impossible ou noire (plein écran exclusif),
- * si la fenêtre est réduite, et sur Mac et Linux. Le plein écran (F11) est un plein écran sans bordure (PleinEcran) :
- * la copie de l'écran y marche.
+ * si la fenêtre est réduite, et sur Mac et Linux.
+ *
+ * En plein écran (F11, inchangé depuis la 2.7.4), la copie de l'écran est noire : c'est la dernière image affichée par
+ * la carte graphique qui est lue (tampon avant de la fenêtre, imageAffichee), avec tout ce qui a été dessiné dans la
+ * fenêtre du jeu après Minecraft (menu de triche dessiné dans le jeu compris). Elle est aussi lue avant l'image de
+ * Minecraft quand la copie de l'écran échoue en fenêtre.
  */
 @Mod.EventBusSubscriber(modid = Spartan.MOD_ID, value = Dist.CLIENT)
 public final class CaptureEcran {
@@ -86,10 +97,20 @@ public final class CaptureEcran {
             return;
         }
         BufferedImage img = null;
-        try {
-            img = ecranWindows(mc.getWindow());
-        } catch (Throwable t) {
-            Spartan.LOGGER.debug("[Spartan] copie de l'écran impossible : {}", t.toString());
+        boolean pleinEcran = mc.getWindow().isFullscreen();
+        if (!pleinEcran) {
+            try {
+                img = ecranWindows(mc.getWindow());
+            } catch (Throwable t) {
+                Spartan.LOGGER.debug("[Spartan] copie de l'écran impossible : {}", t.toString());
+            }
+        }
+        if (img == null) {
+            try {
+                img = imageAffichee(mc.getWindow());
+            } catch (Throwable t) {
+                Spartan.LOGGER.debug("[Spartan] lecture de l'image affichée impossible : {}", t.toString());
+            }
         }
         if (img == null) {
             try {
@@ -133,6 +154,61 @@ public final class CaptureEcran {
                 }
             }
             return img;
+        }
+    }
+
+    /**
+     * La dernière image envoyée à l'écran (tampon avant de la fenêtre, framebuffer 0) : tout ce qui a été dessiné dans
+     * la fenêtre du jeu, après Minecraft compris. Marche en plein écran. null si illisible ou noire.
+     */
+    private static BufferedImage imageAffichee(Window fenetre) {
+        int w = fenetre.getWidth();
+        int h = fenetre.getHeight();
+        if (w <= 0 || h <= 0 || (long) w * h > 8_000L * 8_000L) {
+            return null;
+        }
+        int lectureAvant = GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
+        int alignAvant = GL11.glGetInteger(GL11.GL_PACK_ALIGNMENT);
+        int ligneAvant = GL11.glGetInteger(GL12.GL_PACK_ROW_LENGTH);
+        int lignesSautAvant = GL11.glGetInteger(GL11.GL_PACK_SKIP_ROWS);
+        int pixelsSautAvant = GL11.glGetInteger(GL11.GL_PACK_SKIP_PIXELS);
+        int tamponAvant = GL11.glGetInteger(GL11.GL_READ_BUFFER);
+        IntBuffer points = MemoryUtil.memAllocInt(w * h);
+        try {
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, 0);
+            GL15.glBindBuffer(GL21.GL_PIXEL_PACK_BUFFER, 0);
+            GL11.glReadBuffer(GL11.GL_FRONT);
+            GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 4);
+            GL11.glPixelStorei(GL12.GL_PACK_ROW_LENGTH, 0);
+            GL11.glPixelStorei(GL11.GL_PACK_SKIP_ROWS, 0);
+            GL11.glPixelStorei(GL11.GL_PACK_SKIP_PIXELS, 0);
+            GL11.glReadPixels(0, 0, w, h, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, points);
+            if (GL11.glGetError() != GL11.GL_NO_ERROR) {
+                return null;
+            }
+            int[] rgb = new int[w * h];
+            long somme = 0;
+            for (int y = 0; y < h; y++) {
+                points.get((h - 1 - y) * w, rgb, y * w, w); // OpenGL lit de bas en haut
+            }
+            for (int i = 0; i < rgb.length; i += 97) {
+                int c = rgb[i];
+                somme += (c >> 16 & 0xFF) + (c >> 8 & 0xFF) + (c & 0xFF);
+            }
+            if (somme == 0) {
+                return null;
+            }
+            BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            img.setRGB(0, 0, w, h, rgb, 0, w);
+            return img;
+        } finally {
+            MemoryUtil.memFree(points);
+            GL11.glReadBuffer(tamponAvant);
+            GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, alignAvant);
+            GL11.glPixelStorei(GL12.GL_PACK_ROW_LENGTH, ligneAvant);
+            GL11.glPixelStorei(GL11.GL_PACK_SKIP_ROWS, lignesSautAvant);
+            GL11.glPixelStorei(GL11.GL_PACK_SKIP_PIXELS, pixelsSautAvant);
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, lectureAvant);
         }
     }
 
