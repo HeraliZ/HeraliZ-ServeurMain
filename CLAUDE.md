@@ -708,6 +708,13 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   vie, lots de clés cosmétiques (`heraliz givekey {player} spectacle n`, caisse `CAISSE_COSMETIQUE`) ; offres de crédits
   (1 crédit = 1 €) ; pages `cgv`, `mentions-legales`, `confidentialite`, `sur-mesure` (`site/vm/pages_legales.php`,
   passages entre crochets à compléter dans l'administration, jamais dans le dépôt). Rien testé.
+- **Site v4 et Points Boutique** (22/10, maquette validée) : accueil sans image de fond, page `launcher` (vue
+  `heraliz/launcher`, aide « Windows a protégé votre ordinateur » en images), votes (Top-Serveurs ; Serveur-Minecraft.com
+  désactivé), règlement en 10 règles, pages légales avec menu (`site/vm/pages_legales.php` : cgu, cgv, confidentialité et
+  anticheat, cookies). **PB = monnaie du compte du site** (`money` = PB, repère `heraliz.pb_monnaie`) : recharges 5 / 10 /
+  20 / 50 / 100 € = 500 / 1 000 / 2 150 / 5 550 / 11 500 PB (offres d'Azuriom, rattachées à chaque moyen de paiement à
+  chaque envoi), icônes `assets/img/pb/` ; le même solde servira en jeu (`/boutique`, `/trade` à 10 % de taxe, par
+  l'extension HeraliZ : à faire). Launcher 1.9.3 : onglet Boutique (lots, liens boutique et votes). Rien testé.
 - **Téléchargement du launcher fermé** (22/10, demande du propriétaire) : `TELECHARGEMENT=ferme` en tête de `site/vm/theme.sh` : `/telecharger/` répond 403 (`/etc/nginx/heraliz-telecharger.conf`) et les boutons du site disent « Bientôt disponible » (réglage `heraliz.telechargement`). Les launchers déjà installés ne se mettent plus à jour seuls tant que c'est fermé. Rouvrir : `TELECHARGEMENT=ouvert`, puis « Site HeraliZ » choix « theme ». Rouvert le 22/10 (demande du propriétaire) pour que les launchers passent en 1.9.1 (accord des captures d'écran).
 - Le thème : accueil, connexion, inscription, boutique (catégories, articles en cartes de grade), votes, pages et
   actualités refaits d'après les maquettes ; les autres pages (profil, panier, paiement...) gardent celles d'Azuriom,
