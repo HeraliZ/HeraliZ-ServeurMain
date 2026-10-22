@@ -57,6 +57,7 @@ public final class ClientQuetes implements Partie {
         Reseau.CLAVIER.brancher(EcranClavier::ouvrir);
         Reseau.LUEURS.brancher(Lueurs::recevoir);
         Reseau.BOUTIQUE.brancher(EcranMarchand::recevoir);
+        Reseau.EDITION.brancher(EcranEditionMarchand::recevoir);
         Reseau.RADIO.brancher(RadioVarga::recevoir);
         Reseau.PRESENTATION.brancher(Presentation::lancer);
     }
