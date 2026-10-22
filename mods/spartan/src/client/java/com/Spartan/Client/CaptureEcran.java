@@ -39,7 +39,8 @@ import org.lwjgl.glfw.GLFW;
  * temps de s'afficher. Sous Windows, c'est la zone de l'écran couverte par la fenêtre du jeu qui est copiée (comme une
  * capture d'écran du système) : un menu de triche dessiné dans une fenêtre posée par-dessus le jeu y apparaît. Image
  * du jeu lui-même (sans ce qui est par-dessus) si la copie de l'écran est impossible ou noire (plein écran exclusif),
- * si la fenêtre est réduite ou n'a pas le focus, et sur Mac et Linux.
+ * si la fenêtre est réduite, et sur Mac et Linux. Le plein écran (F11) est un plein écran sans bordure (PleinEcran) :
+ * la copie de l'écran y marche.
  */
 @Mod.EventBusSubscriber(modid = Spartan.MOD_ID, value = Dist.CLIENT)
 public final class CaptureEcran {
@@ -144,7 +145,8 @@ public final class CaptureEcran {
             return null;
         }
         long glfw = fenetre.getWindow();
-        if (GLFW.glfwGetWindowAttrib(glfw, GLFW.GLFW_FOCUSED) == 0 || GLFW.glfwGetWindowAttrib(glfw, GLFW.GLFW_ICONIFIED) != 0) {
+        // sans le focus aussi : une fenêtre de triche posée sur le jeu peut l'avoir pris
+        if (GLFW.glfwGetWindowAttrib(glfw, GLFW.GLFW_ICONIFIED) != 0 || GLFW.glfwGetWindowAttrib(glfw, GLFW.GLFW_VISIBLE) == 0) {
             return null;
         }
         int[] px = new int[1];
