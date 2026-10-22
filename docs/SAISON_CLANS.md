@@ -256,6 +256,8 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
   noir et or, radio, étendard, coffre de récup). Proposition en cours : cristal d'énergie qui flotte entre trois bras,
   socle rond à filets lumineux, **points du clan sur le socle**, **hologramme au-dessus qui fait défiler les rangs**
   (PVE, PVP, events, général). Doit rester très léger en jeu (modèle simple, hologramme et rotation dessinés à part).
+  **Validé le 22/10.** Le cristal tourne sans jamais traverser le socle, les bras ou l'anneau : le script mesure le
+  volume qu'il balaie en tournant et refuse tout modèle où une pièce y entre (marge 0,5 px, `verifier_rotation`).
   Rendus : `python mods/crac/outils/coeur_tc_rendus.py --apercu DOSSIER`.
 - **Armoire** : style « survie » **validé** le 22/10 (mêmes rendus).
 - **Armoire (TC) refaite** : l'actuelle est jugée très moche. Style apocalypse zombie, avec un **petit écran rouillé qui

@@ -339,6 +339,44 @@ def anneau(B, os_, cx, cy, cz, ray, ep, haut_, mat, segments=24):
           rot=(0, -math.degrees(t), 0), pivot=(mx, cy, mz))
 
 
+MARGE_CRISTAL = 0.5   # px de modèle laissés libres autour du cristal quand il tourne
+
+
+def points_cube(k, n=25):
+    g = np.linspace(0, 1, n)
+    fu, fv = np.meshgrid(g, g)
+    q = np.concatenate([k.point(f, fu, fv).reshape(-1, 3) for f in k.faces])
+    if k.rot:
+        pv = np.array(k.pivot, float)
+        q = (q - pv) @ ex.rot_matrice(k.rot).T + pv
+    return q
+
+
+def verifier_rotation(cubes, cx=8.0, cz=8.0):
+    """Le cristal tourne autour de l'axe vertical : aucune autre pièce ne doit entrer dans le volume qu'il balaie
+    (rayon le plus grand du cristal à chaque hauteur), à MARGE_CRISTAL près. Renvoie la plus petite marge (px)."""
+    cristal = [k for k in cubes if k.mat == "energie"]
+    p = np.concatenate([points_cube(k) for k in cristal])
+    ray = np.hypot(p[:, 0] - cx, p[:, 2] - cz)
+    tranches = np.round(p[:, 1] / 0.1).astype(int)
+    enveloppe = {}
+    for t, r_ in zip(tranches, ray):
+        enveloppe[t] = max(enveloppe.get(t, 0.0), r_)
+    pire, nom = float("inf"), None
+    for k in cubes:
+        if k in cristal or k.mat == "holo":
+            continue
+        q = points_cube(k)
+        rq = np.hypot(q[:, 0] - cx, q[:, 2] - cz)
+        for t0, r0 in zip(np.round(q[:, 1] / 0.1).astype(int), rq):
+            env = max(enveloppe.get(t0 + d, 0.0) for d in range(-5, 6))
+            if env and r0 - env < pire:
+                pire, nom = r0 - env, k.mat
+    if pire < MARGE_CRISTAL:
+        raise SystemExit(f"[coeur] le cristal touche « {nom} » en tournant (marge {pire:.2f} px < {MARGE_CRISTAL})")
+    return pire
+
+
 def modele_coeur_futur(holo=("PVE", "RANG 3")):
     """Cœur de clan : cristal d'énergie qui flotte (un cube posé sur sa pointe) entre trois bras, au-dessus d'un socle
     rond à filets lumineux ; points du clan sur l'avant du socle ; hologramme au-dessus qui fait défiler les rangs
@@ -363,7 +401,7 @@ def modele_coeur_futur(holo=("PVE", "RANG 3")):
           pivot=(bx, 2.6, bz))
         B("coeur", (bx - 0.62, 4.0, bz - 0.15), (bx + 0.62, 9.5, bz + 0.15), "lisere", rot=(0, ang, 0),
           pivot=(bx, 2.6, bz))
-        hx, hz = cx + 4.3 * math.cos(t), cz + 4.3 * math.sin(t)
+        hx, hz = cx + 5.4 * math.cos(t), cz + 5.4 * math.sin(t)   # hors du volume balayé par le cristal
         B("coeur", (hx - 0.5, 10.5, hz - 0.8), (hx + 0.5, 12.6, hz + 0.8), "graphite_clair", rot=(0, ang, 0),
           pivot=(hx, 10.5, hz))
         B("coeur", (hx - 0.3, 12.6, hz - 0.3), (hx + 0.3, 13.0, hz + 0.3), "lisere")
@@ -380,8 +418,8 @@ def modele_coeur_futur(holo=("PVE", "RANG 3")):
     himg = image_holo(*holo)
     B("coeur", (2.0, 19.0, 7.95), (14.0, 24.7, 8.05), "holo", faces=("north",),
       prm={"img": himg, "cadre": (2.0, 14.0, 19.0, 24.7)})
-    for k in range(5):                                             # faisceau de projection, en pointillés
-        y = 14.2 + k * 0.95
+    for k in range(4):                                             # faisceau de projection, en pointillés
+        y = 15.2 + k * 0.95
         B("coeur", (7.9, y, 7.9), (8.1, y + 0.5, 8.1), "lisere")
     return os_, cubes
 
@@ -410,6 +448,8 @@ def main():
     if not args.coeur_seul:
         faire("armoire_survie", modele_tc, dos)
     ex.peindre = peindre_futur
+    marge = verifier_rotation(modele_coeur_futur()[1])
+    print(f"[coeur] le cristal tourne sans rien toucher (marge la plus petite : {marge:.2f} px)")
     faire("coeur_vues", modele_coeur_futur, dos)
     etats = []
     for titre, ligne in (("CLASSEMENT PVE", "RANG 3"), ("CLASSEMENT PVP", "RANG 7"), ("EVENTS", "RANG 1"),
