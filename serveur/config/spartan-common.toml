@@ -377,6 +377,9 @@
 	#jeton de plus de 6 h), même en détection silencieuse : c'est une règle d'accès. Activer une fois le
 	#launcher distribué à tous les joueurs. Des mods différents du modpack restent une simple alerte.
 	tokenRequired = true
+	#true : connexion REFUSÉE si le joueur n'a pas accepté les captures d'écran dans le launcher
+	#(fenêtre « Autorisation de l'anticheat », launcher 1.9.0 ou plus récent).
+	captureRequired = true
 	#Secret partagé avec le launcher (ou son serveur d'authentification) pour signer les jetons.
 	#Vide = vérification désactivée. Au moins 32 caractères aléatoires. NE JAMAIS LE PUBLIER.
 	launcherSecret = "__SPARTAN_LAUNCHER_SECRET__"

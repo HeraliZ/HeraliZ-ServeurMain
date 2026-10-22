@@ -48,6 +48,12 @@ public final class CaptureManager {
     /** Accord signalé par le jeu du joueur (une fois par connexion). */
     public static void accord(ServerPlayer p, boolean oui) {
         ACCORD.putIfAbsent(p.getUUID(), oui);
+        if (!autorise(p) && com.Spartan.config.SpartanConfig.CAPTURE_REQUIRED.get()) {
+            // Pas d'accord = pas de partie (vieux launcher, refus, autre lanceur).
+            p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.capture",
+                    "Connexion refusée : acceptez les captures d'écran de l'anticheat dans le launcher HeraliZ.\n"
+                            + "(Mettez le launcher à jour, puis cliquez sur « J'autorise et je joue ».)"));
+        }
     }
 
     public static boolean autorise(ServerPlayer p) {
