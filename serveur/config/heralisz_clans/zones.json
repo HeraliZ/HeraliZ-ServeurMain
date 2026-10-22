@@ -115,17 +115,5 @@
     "rayon": 170,
     "valeur": 5,
     "drapeau": null
-  },
-  {
-    "id": "test",
-    "nom": "Zone de test",
-    "x": 0,
-    "z": 0,
-    "rayon": 30,
-    "drapeau": [
-      0,
-      88,
-      1
-    ]
   }
 ]
