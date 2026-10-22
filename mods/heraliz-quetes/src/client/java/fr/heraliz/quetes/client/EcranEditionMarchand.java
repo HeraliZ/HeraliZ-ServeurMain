@@ -38,6 +38,9 @@ public final class EcranEditionMarchand extends Screen {
     private boolean aRefaire;
     /** Aller à la dernière page au prochain rafraîchissement (après un ajout). */
     private boolean allerFin;
+    /** Case de la barre d'objets choisie pour « Ajouter » (-1 : la première qui a un objet). */
+    private int caseChoisie = -1;
+    private static final int CASE = 18;
 
     private EcranEditionMarchand(Reseau.Edition e) {
         super(Component.translatable("gui.heraliz_quetes.edition"));
@@ -151,18 +154,19 @@ public final class EcranEditionMarchand extends Screen {
                 page++;
                 aRefaire = true;
             })).active = page < pages() - 1;
-            // ajouter l'objet en main
+            // ajouter un objet de la barre d'objets (cliquer sa case)
             int ax = px + 118;
-            prixAjout = champ(ax + 150, bas + 1, 60, 50);
+            prixAjout = champ(ax + 9 * CASE + 6, bas + 1, 60, 50);
             Runnable ajouter = () -> {
                 long v = lire(prixAjout, 0);
-                if (v >= 1) {
+                int c = caseAjout();
+                if (v >= 1 && c >= 0) {
                     allerFin = true; // aller voir le nouvel article, à la fin (appliqué à la reconstruction)
-                    envoyer(Reseau.Modif.AJOUTER_MAIN, 0, 0, v);
+                    envoyer(Reseau.Modif.AJOUTER_MAIN, 0, c, v);
                 }
             };
             valider.put(prixAjout, ajouter);
-            addRenderableWidget(new HzButton(ax + 214, bas, 70, 18,
+            addRenderableWidget(new HzButton(ax + 9 * CASE + 70, bas, 70, 18,
                     Component.literal(TexteClient.tr("gui.heraliz_quetes.edition.ajouter")), Ui.OK, ajouter).look(HzButton.Look.PRIMARY));
         }
         if (e.modifie()) {
@@ -257,14 +261,52 @@ public final class EcranEditionMarchand extends Screen {
         int bas = py + ph - 30;
         Ui.hairline(g, px + 18, px + pw - 18, bas - 8, 0xFFFFFF, 30, false, true);
         Ui.centered(g, f, Ui.lit((page + 1) + "/" + pages(), Ui.BOLD), px + 58, bas + 5, Ui.argb(Ui.TEXT, 255));
-        // objet en main, prêt à être ajouté
-        ItemStack main = Minecraft.getInstance().player == null ? ItemStack.EMPTY : Minecraft.getInstance().player.getMainHandItem();
-        int ax = px + 118;
-        g.fill(ax, bas - 1, ax + 20, bas + 19, Ui.argb(0xFFFFFF, 14));
-        if (!main.isEmpty()) g.renderItem(main, ax + 2, bas + 1);
-        String txt = Ui.ellipsis(f, main.isEmpty() ? TexteClient.tr("gui.heraliz_quetes.edition.main_vide") : main.getHoverName().getString(), Ui.FONT, 118);
-        g.drawString(f, Ui.lit(txt, Ui.FONT), ax + 25, bas + 5, Ui.argb(main.isEmpty() ? Ui.MUTED : Ui.TEXT, 255), false);
+        // barre d'objets du joueur : cliquer la case de l'objet à ajouter
+        int ax = px + 118, choisie = caseAjout();
+        g.drawString(f, Ui.lit(TexteClient.tr("gui.heraliz_quetes.edition.main_vide"), Ui.SMALL), ax, bas - 19, Ui.argb(Ui.FAINT, 255), false);
+        for (int k = 0; k < 9; k++) {
+            int x = ax + k * CASE;
+            ItemStack s = caseBarre(k);
+            g.fill(x, bas, x + CASE - 1, bas + CASE - 1, Ui.argb(k == choisie ? Ui.OR : 0xFFFFFF, k == choisie ? 70 : 14));
+            if (k == choisie) Ui.softOutline(g, x, bas, CASE - 1, CASE - 1, Ui.argb(Ui.OR, 220));
+            if (!s.isEmpty()) {
+                g.renderItem(s, x + 1, bas + 1);
+                g.renderItemDecorations(f, s, x + 1, bas + 1);
+                if (mx >= x && mx < x + CASE && my >= bas && my < bas + CASE) bulle = new ArrayList<>(getTooltipFromItem(Minecraft.getInstance(), s));
+            }
+        }
         return bulle;
+    }
+
+    /** Objet de la case k (0 à 8) de la barre d'objets, sans le registre lui-même. */
+    private static ItemStack caseBarre(int k) {
+        var p = Minecraft.getInstance().player;
+        if (p == null) return ItemStack.EMPTY;
+        ItemStack s = p.getInventory().getItem(k);
+        return s.is(fr.heraliz.quetes.HeralizQuetes.REGISTRE.get()) ? ItemStack.EMPTY : s;
+    }
+
+    /** Case qui sera ajoutée : celle cliquée, sinon la première qui a un objet (-1 : aucune). */
+    private int caseAjout() {
+        if (caseChoisie >= 0 && !caseBarre(caseChoisie).isEmpty()) return caseChoisie;
+        for (int k = 0; k < 9; k++) if (!caseBarre(k).isEmpty()) return k;
+        return -1;
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int bouton) {
+        if (!e.rachat()) {
+            int ax = px + 118, bas = py + ph - 30;
+            if (my >= bas && my < bas + CASE && mx >= ax && mx < ax + 9 * CASE) {
+                int k = (int) ((mx - ax) / CASE);
+                if (!caseBarre(k).isEmpty()) {
+                    caseChoisie = k;
+                    SonsUi.clic(0.5F);
+                }
+                return true;
+            }
+        }
+        return super.mouseClicked(mx, my, bouton);
     }
 
     /** Points de faim que rend l'objet (0 : pas une nourriture). */
