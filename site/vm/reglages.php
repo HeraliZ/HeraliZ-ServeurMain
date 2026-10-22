@@ -88,6 +88,15 @@ if (setting('heraliz.site_v4') === null) {
 
 // pages légales : créées si elles manquent, remplacées tant qu'elles n'ont pas été modifiées dans l'administration
 majPagesLegales();
+// Serveurs-Minecraft.org : un vote toutes les 24 h (1 440 min), remis à chaque envoi
+if (plugins()->isEnabled('vote')) {
+    foreach (\Azuriom\Plugin\Vote\Models\Site::where('url', 'like', '%serveurs-minecraft.org%')->get() as $site) {
+        if ((int) $site->vote_delay !== 1440) {
+            $site->update(['vote_delay' => 1440]);
+            dire('Votes : '.$site->name.' toutes les 24 h');
+        }
+    }
+}
 
 // boutique en Points Boutique (22/10) : le site ne vend plus que des PB (100 PB = 1 €, payés en euros), tout le reste
 // s'achète en jeu (/boutique). Une seule fois (repère « heraliz.boutique_pb ») : anciens articles, catégories et offres
