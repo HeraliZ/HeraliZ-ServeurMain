@@ -1486,7 +1486,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   **`/wipe <joueur> confirmer`** (20/10, Quêtes 1.8.9, op permission 4, joueur connecté) : remise à zéro complète
   (`base effacer`, `tuto rejouer`, `caracrea reset`, `curios clear` passés au serveur ; quêtes, inventaire, coffre de
   l'Ender, marques de la cinématique, du guide et du Bâtisseur), puis expulsion : à la reconnexion, créateur de personnage,
-  cinématique, guide. Hérals, clan, grades et compte AuthMe gardés. Rien testé en jeu.
+  cinématique, guide. Depuis Quêtes 1.8.12 et Clans 3.4.2 (22/10) : aussi planque et coffre VIP vidés, hérals à 0, retiré de son clan (chef : direction au membre suivant, clan dissous s'il était seul ; `ClanService.adminRetirer`, par réflexion). Gardés : objets à vie (couteaux, skins à vie, rendus dans l'inventaire), collection de camos à vie, grades, compte AuthMe. Rien testé en jeu.
   Puis (20/10, Quêtes 1.8.10) : visite du guide 7 fois plus lente encore (1/21 de tour par PNJ) et enchaînée sans
   revenir au joueur entre deux PNJ (le tour de caméra dure 1 s de plus que l'écart). Rien testé en jeu.
   CRac 1.14.3-beta (20/10) : `/sethome` exige d'être debout (au sol) sur une fondation ou un plancher de sa base, staff
