@@ -138,7 +138,9 @@
 	chargeDamage = 130
 	#Explosive Charge fuse time in seconds.
 	#Range: 0.5 ~ 300.0
-	chargeFuseSeconds = 3.0
+	chargeFuseSeconds = 4.0
+	chargeFuseMaxSeconds = 10.0
+	chargeDudChance = 0.15
 	#Radius (blocks) around the block an Explosive Charge is stuck to in which it breaks ordinary blocks inside claims
 	#(see explosions.raidBreaksBlocks). 0 = only that block.
 	#Range: 0.0 ~ 4.0

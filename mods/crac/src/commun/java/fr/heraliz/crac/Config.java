@@ -127,6 +127,8 @@ public class Config {
     public static final DoubleValue c4BlockRadius;
     public static final IntValue explosiveChargeDamage;
     public static final DoubleValue explosiveChargeFuseSeconds;
+    public static final DoubleValue explosiveChargeFuseMaxSeconds;
+    public static final DoubleValue explosiveChargeDudChance;
     public static final DoubleValue explosiveChargeBlockRadius;
     public static final IntValue genericExplosionDamage;
     public static final IntValue genericExplosionRadius;
@@ -233,7 +235,15 @@ public class Config {
                 "that the blast can see (once per piece, never through the panel it is stuck to)."
             )
             .defineInRange("chargeDamage", 130, 1, 100000);
-        explosiveChargeFuseSeconds = BUILDER.comment("Explosive Charge fuse time in seconds.").defineInRange("chargeFuseSeconds", 3.0, 0.5, 300.0);
+        explosiveChargeFuseSeconds = BUILDER.comment("Explosive Charge shortest fuse time in seconds (each charge draws its fuse between",
+                "chargeFuseSeconds and chargeFuseMaxSeconds).").defineInRange("chargeFuseSeconds", 4.0, 0.5, 300.0);
+        explosiveChargeFuseMaxSeconds = BUILDER.comment("Explosive Charge longest fuse time in seconds.")
+            .defineInRange("chargeFuseMaxSeconds", 10.0, 0.5, 300.0);
+        explosiveChargeDudChance = BUILDER.comment(
+                "Chance (0 to 1) that an Explosive Charge goes out instead of exploding, like Rust's satchel: the dud stays",
+                "where it is stuck and a player gets it back with a right click."
+            )
+            .defineInRange("chargeDudChance", 0.15, 0.0, 1.0);
         explosiveChargeBlockRadius = BUILDER.comment(
                 "Radius (blocks) around the block an Explosive Charge is stuck to in which it breaks ordinary blocks inside claims",
                 "(see explosions.raidBreaksBlocks). 0 = only that block."

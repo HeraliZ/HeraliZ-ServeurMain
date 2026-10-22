@@ -11,6 +11,12 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
@@ -39,6 +45,8 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
     private static final EntityDataAccessor<Integer> DATA_FUSE = SynchedEntityData.defineId(StickyExplosiveEntity.class, EntityDataSerializers.INT);
     /** Game time the fuse started at, moved forward after a reload so that the countdown stays right. */
     private static final EntityDataAccessor<Long> DATA_ARMED_AT = SynchedEntityData.defineId(StickyExplosiveEntity.class, EntityDataSerializers.LONG);
+    /** Went out instead of exploding (explosive charge): stays put until a player takes it back. */
+    private static final EntityDataAccessor<Boolean> DATA_DUD = SynchedEntityData.defineId(StickyExplosiveEntity.class, EntityDataSerializers.BOOLEAN);
     private static final String TAG_STUCK = "Stuck";
 
     private boolean stuck;
@@ -51,6 +59,7 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
     private Direction stuckFace;
     private int fuseTicks;
     private int fuseLength;
+    private boolean dud;
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     protected StickyExplosiveEntity(EntityType<? extends StickyExplosiveEntity> type, Level level) {
@@ -63,6 +72,20 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
 
     /** Configured fuse in seconds, read when the explosive sticks. */
     protected abstract double configuredFuseSeconds();
+
+    /** Fuse length in ticks drawn when the explosive sticks (default: the configured fuse). */
+    protected int drawFuseTicks() {
+        return Fuse.ticks(this.configuredFuseSeconds());
+    }
+
+    /** Whether this explosive goes out when its fuse runs out instead of exploding (drawn then, server side). */
+    protected boolean drawDud() {
+        return false;
+    }
+
+    /** Sound when the fuse goes out. */
+    protected void playDudSound() {
+    }
 
     /** Damage when the fuse runs out: {@code pos} is the block it is stuck to, {@code face} null when stuck to an entity. */
     protected abstract void explode(ServerLevel level, BlockPos pos, Vec3 hit, @Nullable Direction face);
@@ -97,6 +120,11 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
         return this.targetHit;
     }
 
+    /** Whether the fuse went out: nothing burns any more and a player can take the explosive back. */
+    public boolean isDud() {
+        return this.level().isClientSide ? this.entityData.get(DATA_DUD) : this.dud;
+    }
+
     /** Ticks the fuse has burnt (server side). */
     public int getFuseTicks() {
         return this.fuseTicks;
@@ -109,7 +137,7 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
 
     /** Seconds the fuse has been burning, or -1 when the explosive is not stuck. */
     public double fuseElapsedSeconds(float partialTick) {
-        if (!this.isStuck()) {
+        if (!this.isStuck() || this.isDud()) {
             return -1.0;
         }
         return Fuse.elapsedSeconds(this.level().getGameTime(), this.entityData.get(DATA_ARMED_AT), partialTick, this.getFuseLength());
@@ -122,6 +150,7 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
         this.entityData.define(DATA_FACE, (byte) -1);
         this.entityData.define(DATA_FUSE, 0);
         this.entityData.define(DATA_ARMED_AT, 0L);
+        this.entityData.define(DATA_DUD, false);
     }
 
     private void syncStuck() {
@@ -129,6 +158,7 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
         this.entityData.set(DATA_FACE, this.stuckFace == null ? (byte) -1 : (byte) this.stuckFace.get3DDataValue());
         this.entityData.set(DATA_FUSE, this.fuseLength);
         this.entityData.set(DATA_ARMED_AT, this.level().getGameTime() - this.fuseTicks);
+        this.entityData.set(DATA_DUD, this.dud);
     }
 
     // ------------------------------------------------------------------ life cycle
@@ -138,7 +168,17 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
         if (this.isStuck()) {
             this.setDeltaMovement(Vec3.ZERO);
             this.setNoGravity(true);
+            if (this.isDud()) {
+                super.tick();
+                return;
+            }
             if (this.level() instanceof ServerLevel sl && ++this.fuseTicks >= this.fuseLength) {
+                if (this.drawDud()) {
+                    this.dud = true;
+                    this.syncStuck();
+                    this.playDudSound();
+                    return;
+                }
                 BlockPos pos = this.targetPos != null ? this.targetPos : this.blockPosition();
                 Vec3 hit = this.targetHit != null ? this.targetHit : this.position();
                 this.explode(sl, pos, hit, this.stuckFace);
@@ -180,7 +220,7 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
         this.setDeltaMovement(Vec3.ZERO);
         this.setNoGravity(true);
         this.fuseTicks = 0;
-        this.fuseLength = Fuse.ticks(this.configuredFuseSeconds());
+        this.fuseLength = Math.max(Fuse.MIN_TICKS, this.drawFuseTicks());
         this.syncStuck();
         this.playArmSound();
     }
@@ -194,6 +234,7 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
         CompoundTag t = new CompoundTag();
         t.putInt("Fuse", this.fuseTicks);
         t.putInt("FuseLength", this.fuseLength);
+        t.putBoolean("Dud", this.dud);
         if (this.targetPos != null) {
             t.putLong("Target", this.targetPos.asLong());
         }
@@ -220,6 +261,7 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
         this.stuck = true;
         this.fuseLength = Math.max(Fuse.MIN_TICKS, t.getInt("FuseLength"));
         this.fuseTicks = Math.max(0, Math.min(this.fuseLength - 1, t.getInt("Fuse")));
+        this.dud = t.getBoolean("Dud");
         this.targetPos = t.contains("Target", Tag.TAG_LONG) ? BlockPos.of(t.getLong("Target")) : this.blockPosition();
         this.targetHit = t.contains("HitX", Tag.TAG_DOUBLE) ? new Vec3(t.getDouble("HitX"), t.getDouble("HitY"), t.getDouble("HitZ")) : null;
         byte face = t.getByte("Face");
@@ -229,12 +271,35 @@ public abstract class StickyExplosiveEntity extends ThrowableItemProjectile impl
         this.syncStuck();
     }
 
+    // ------------------------------------------------------------------ taking a dud back
+
+    @Override
+    public boolean isPickable() {
+        return this.isDud();
+    }
+
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        if (!this.isDud() || !this.isAlive()) {
+            return InteractionResult.PASS;
+        }
+        if (!this.level().isClientSide) {
+            ItemStack stack = new ItemStack(this.getDefaultItem());
+            if (!player.getInventory().add(stack)) {
+                player.drop(stack, false);
+            }
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.4F, 1.0F);
+            this.discard();
+        }
+        return InteractionResult.sidedSuccess(this.level().isClientSide);
+    }
+
     // ------------------------------------------------------------------ rendering
 
     @Override
     public void registerControllers(ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "controller", 0, state -> {
-            if (this.isStuck()) {
+            if (this.isStuck() && !this.isDud()) {
                 state.setAnimation(RawAnimation.begin().thenLoop(this.blinkAnimation()));
                 return PlayState.CONTINUE;
             }
