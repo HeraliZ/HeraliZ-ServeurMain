@@ -84,6 +84,37 @@ public final class CapturesDiscord {
         }
     }
 
+    /** Copies du serveur (screenshots/ à la racine) de plus de 3 jours : supprimées, dossiers vides compris. */
+    private static void effacerFichiers() {
+        java.nio.file.Path racine = net.minecraftforge.fml.loading.FMLPaths.GAMEDIR.get().resolve("screenshots");
+        if (!java.nio.file.Files.isDirectory(racine)) {
+            return;
+        }
+        long limite = System.currentTimeMillis() - DUREE_MS;
+        try (java.util.stream.Stream<java.nio.file.Path> s = java.nio.file.Files.walk(racine)) {
+            for (java.nio.file.Path f : s.sorted(java.util.Comparator.reverseOrder()).toList()) {
+                try {
+                    if (f.equals(racine)) {
+                        continue;
+                    }
+                    if (java.nio.file.Files.isDirectory(f)) {
+                        try (java.util.stream.Stream<java.nio.file.Path> d = java.nio.file.Files.list(f)) {
+                            if (d.findAny().isEmpty()) {
+                                java.nio.file.Files.delete(f);
+                            }
+                        }
+                    } else if (java.nio.file.Files.getLastModifiedTime(f).toMillis() < limite) {
+                        java.nio.file.Files.delete(f);
+                    }
+                } catch (Exception ignore) {
+                    // réessayé dans une heure
+                }
+            }
+        } catch (Exception ignore) {
+            // réessayé dans une heure
+        }
+    }
+
     /** Au démarrage du serveur : un passage tout de suite, puis toutes les heures. */
     public static synchronized void demarrer() {
         if (minuteur != null) {
@@ -98,6 +129,7 @@ public final class CapturesDiscord {
     }
 
     private static void nettoyer() {
+        effacerFichiers();
         try {
             String url = SpartanConfig.secret(SpartanConfig.DISCORD_WEBHOOK);
             if (url == null || url.isBlank()) {

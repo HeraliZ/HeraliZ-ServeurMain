@@ -11,7 +11,7 @@
  * de 10 % détruite.
  */
 
-const VERSION_PAGES = '2026-10-23c';
+const VERSION_PAGES = '2026-10-23d';
 const REPERE_PAGES = '<!-- heraliz-pages:';
 
 function pagesLegales(): array
@@ -69,7 +69,7 @@ function pagesLegales(): array
         .'<li>les empreintes (sommes de contrôle) des fichiers du jeu et des mods chargés, la liste des modules de code et des bibliothèques chargés par le jeu, et des contrôles d’intégrité réguliers ;</li>'
         .'<li>un identifiant de l’ordinateur calculé à partir de caractéristiques du matériel puis <strong>chiffré</strong> (il sert à appliquer un bannissement d’ordinateur, jamais à identifier la personne) ;</li>'
         .'<li>les touches réservées aux menus de triche quand elles sont pressées en jeu (pas le reste du clavier) ;</li>'
-        .'<li>des <strong>captures d’écran de la fenêtre du jeu seulement</strong>, si et seulement si le joueur l’a accepté dans le Launcher (refus = pas de partie) : lors des contrôles de l’anticheat ou à la demande du staff ; rien n’est enregistré sur l’ordinateur du joueur.</li></ul>'
+        .'<li>des <strong>captures d’écran de la fenêtre du jeu seulement</strong>, si et seulement si le joueur l’a accepté dans le Launcher (refus = pas de partie) : lors des contrôles de l’anticheat ou à la demande du staff ; rien n’est enregistré sur l’ordinateur du joueur. Les captures sont conservées 3 jours, puis supprimées définitivement ; seuls les fondateurs et les administrateurs du serveur y ont accès. Le joueur peut à tout moment demander à un fondateur l’accès aux captures disponibles le concernant.</li></ul>'
         .'<p>Aucun autre fichier personnel, aucun mot de passe, aucun historique de navigation n’est lu. Les alertes et preuves sont visibles du seul staff (salon privé Discord).</p>'
         .'<h2>4. Finalités et bases légales</h2><p>Gestion du compte et des achats (exécution du contrat) ; sécurité, anticheat, modération et lutte contre les doubles comptes (intérêt légitime) ; captures d’écran (consentement, retirable en ne jouant plus) ; comptabilité (obligation légale).</p>'
         .'<h2>5. Durées de conservation</h2><p>Compte : jusqu’à sa suppression, puis 1 an. Journaux de connexion : 1 an. Sanctions, données et captures de l’anticheat : jusqu’à 3 ans (5 ans pour un bannissement définitif). Achats et factures : 10 ans.</p>'
