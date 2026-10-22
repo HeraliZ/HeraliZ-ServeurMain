@@ -86,6 +86,7 @@ quand un choix leur revient.
 CLAUDE.md                 ce fichier
 docs/METHODE_CLIENT_SERVEUR.md   la méthode détaillée de séparation client / serveur (à lire avant de découper du code)
 docs/QUETES_SCENARIO.md          les quêtes principales du Commandant Varga (v3, codée : mods/heraliz-quetes)
+docs/SAISON_CLANS.md             les règles des saisons des clans (cœur, Purge, classements, arbre ; brouillon, rien codé)
 mods/<projet>/            les sources de NOS mods (un projet Gradle par jar)
 mods/_gabarit/            modèle de projet coupé, pour créer un nouveau mod (outils/fusion_nouveau.py)
 serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
