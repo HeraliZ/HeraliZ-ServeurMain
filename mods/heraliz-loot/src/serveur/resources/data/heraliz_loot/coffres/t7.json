@@ -619,7 +619,7 @@
   {"item": "backpacked:backpack_tactical_snow", "nombre": [1, 1], "_cat": "sacs", "poids": 270, "rarete": "peu_commun"},
   {"item": "backpacked:backpack_tactical_white", "nombre": [1, 1], "_cat": "sacs", "poids": 270, "rarete": "peu_commun"},
   {"item": "backpacked:backpack_tactical_yellow", "nombre": [1, 1], "_cat": "sacs", "poids": 270, "rarete": "peu_commun"},
-  {"item": "heraliz_composants:clou", "nombre": [1, 3], "_cat": "composants", "poids": 6474, "rarete": "commun"},
+  {"item": "heraliz_composants:clou", "nombre": [1, 1], "_cat": "composants", "poids": 6474, "rarete": "commun"},
   {"item": "heraliz_composants:sac_ciment", "nombre": [1, 1], "_cat": "composants", "poids": 6474, "rarete": "rare"}
  ]
 }

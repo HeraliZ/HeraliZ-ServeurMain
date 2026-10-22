@@ -203,7 +203,7 @@ def familles():
     for i, r, pile in re.findall(r'new Def\("([a-z_0-9]+)", "[^"]*", HeralizRarity\.([A-Z]+), (\d+)\)',
                                  COMPOSANTS_DEFS.read_text(encoding="utf-8")):
         if r in RARETE_COMPOSANT and i not in COMPOSANTS_EXCLUS:
-            n = 3 if r == "COMMON" and int(pile) >= 16 else 1
+            n = 1  # un seul exemplaire par case (seules les munitions sortent en quantité)
             ajouter("composants", RARETE_COMPOSANT[r], {"item": COMPOSANT + i, "nombre": [1, n], "_cat": "composants"},
                     COMPOSANTS_PLUS.get(i, 1.0))
     return out
