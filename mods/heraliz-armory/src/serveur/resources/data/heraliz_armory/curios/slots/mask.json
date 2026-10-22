@@ -6,5 +6,6 @@
   "validators": [
     "curios:tag",
     "heraliz_armory:piece"
-  ]
+  ],
+  "render_toggle": false
 }
