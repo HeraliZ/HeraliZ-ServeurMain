@@ -118,9 +118,10 @@ final class Dialogues {
             if (premiere != null) {
                 choix.add(new Rep(Texte.cle("heraliz_quetes.tuto.premiere_mission"), 1, () -> proposer(p, ent, def, premiere)));
             }
-            choix.add(new Rep(Texte.cle("heraliz_quetes.tuto.faire_base"), 1, () -> {
+            // 22/10 : plus de tutoriel des bases chez Varga (il vient à la création d'un clan) : la fiche /base info
+            choix.add(new Rep(Texte.cle("heraliz_quetes.dialogue.infos_base"), 0, () -> {
                 fermer(p);
-                Accueil.lancer(p);
+                Ponts.tutoFiche(p);
             }));
             choix.add(new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p)));
             page(p, ent, def, Texte.cle("heraliz_quetes.tuto.varga"), choix);
@@ -203,14 +204,9 @@ final class Dialogues {
                 Marchands.envoyer(p, ent, def, true);
             }));
         }
-        // 6. Varga : la fiche technique des bases (/base info), pour qui a oublié la commande (20/10) ; base pas
-        // encore faite (première mission prise avant) : le tutoriel reste proposé
-        if (def.id.equals(Accueil.PNJ) && Accueil.tutoAFaire(p)) {
-            reps.add(new Rep(Texte.cle("heraliz_quetes.tuto.faire_base"), 1, () -> {
-                fermer(p);
-                Accueil.lancer(p);
-            }));
-        } else if (def.id.equals(Accueil.PNJ)) {
+        // 6. Varga : la fiche technique des bases (/base info), pour qui a oublié la commande (20/10) ; plus de
+        // tutoriel des bases ici (22/10 : il vient à la création d'un clan)
+        if (def.id.equals(Accueil.PNJ)) {
             reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.infos_base"), 0, () -> {
                 fermer(p);
                 Ponts.tutoFiche(p);
