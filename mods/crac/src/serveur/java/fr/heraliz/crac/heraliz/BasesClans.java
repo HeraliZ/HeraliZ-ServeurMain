@@ -166,6 +166,26 @@ public final class BasesClans extends SafeSavedData {
     }
 
     /**
+     * Remise à zéro du serveur ({@code /wipe serveur}, avant la dissolution des clans) : cœurs retirés, groupes des clans,
+     * kits de première base, délais de déplacement et premières armoires vues par la Purge oubliés. Les bases elles-mêmes
+     * sont effacées par {@code bases/WipeBases}. Renvoie le nombre de cœurs retirés.
+     */
+    public static int toutOublier(MinecraftServer server) {
+        int coeurs = CoeursClans.toutRetirer(server);
+        BasesClans d = get(server);
+        d.groupes.clear();
+        d.vus.clear();
+        d.kits.clear();
+        d.attenteKit.clear();
+        d.setDirty();
+        CoeurDeplacement.toutOublier(server);
+        Purge.Donnees p = Purge.Donnees.get(server);
+        p.vues.clear();
+        p.setDirty();
+        return coeurs;
+    }
+
+    /**
      * Clan dissous : son armoire est retirée (sans rien faire tomber) et son claim libéré ; les pièces restent, à tout le
      * monde ; son groupe disparaît.
      */

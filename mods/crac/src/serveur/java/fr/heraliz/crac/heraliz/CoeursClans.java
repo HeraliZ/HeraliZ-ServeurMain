@@ -71,6 +71,22 @@ public final class CoeursClans extends SafeSavedData {
         }
     }
 
+    /** Remise à zéro du serveur ({@code /wipe serveur}) : chaque cœur posé retiré (sans rien faire tomber), liste vidée. */
+    static int toutRetirer(MinecraftServer server) {
+        CoeursClans d = get(server);
+        int n = 0;
+        for (GlobalPos g : d.coeurs.values()) {
+            ServerLevel l = server.getLevel(g.dimension());
+            if (l != null && l.getBlockState(g.pos()).getBlock() instanceof CoeurClanBlock) {
+                l.removeBlock(g.pos(), false);
+                n++;
+            }
+        }
+        d.coeurs.clear();
+        d.setDirty();
+        return n;
+    }
+
     /** Copie : groupe -> place de son cœur (places pas vérifiées). */
     static Map<UUID, GlobalPos> tous(MinecraftServer server) {
         return Map.copyOf(get(server).coeurs);

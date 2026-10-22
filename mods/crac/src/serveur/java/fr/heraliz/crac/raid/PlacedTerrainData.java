@@ -38,6 +38,11 @@ public final class PlacedTerrainData extends SafeSavedData {
         return removed;
     }
 
+    /** Copie des positions (remise à zéro du serveur). */
+    public long[] snapshot() {
+        return this.positions.toLongArray();
+    }
+
     public int size() {
         return this.positions.size();
     }

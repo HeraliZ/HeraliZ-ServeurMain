@@ -88,6 +88,7 @@ public final class ServeurQuetes implements Partie {
         j.nom = p.getGameProfile().getName();
         Moteur.nettoyer(p);
         Moteur.envoyerSuivi(p);
+        WipeServeur.connexion(p);
     }
 
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
@@ -152,6 +153,7 @@ public final class ServeurQuetes implements Partie {
     private static void tickServeur(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || Moteur.serveur == null) return;
         Moteur.envoyerSuivisEnAttente();
+        WipeServeur.tick(e.getServer());
         if (++ticks % 600 == 0) Donnees.toutEcrire();
     }
 

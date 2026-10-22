@@ -1305,6 +1305,48 @@ public final class ClanService {
         return true;
     }
 
+    /**
+     * Remise à zéro du serveur ({@code /wipe serveur} de HeraliZ Quêtes, appelé par réflexion : ne pas renommer ni changer
+     * la signature). Tous les clans sont dissous, banque perdue (pas remboursée) et coffre vidé ; délais pour rejoindre un
+     * clan effacés ; hérals de tous les comptes remis à 0 ; saison archivée puis effacée. Les objets à vie trouvés dans
+     * les coffres des clans ({@code garder}) sont rendus à leur chef. Renvoie ces objets, par joueur.
+     */
+    public static Map<UUID, List<ItemStack>> wipeServeur(java.util.function.Predicate<ItemStack> garder) {
+        Map<UUID, List<ItemStack>> rendus = new HashMap<>();
+        ClanStore s = store();
+        int clans = 0;
+        if (s != null) {
+            for (Clan c : new ArrayList<>(s.tous())) {
+                for (ItemStack st : CoffreClan.vider(c.id)) {
+                    if (!st.isEmpty() && garder.test(st)) rendus.computeIfAbsent(c.chef, k -> new ArrayList<>()).add(st);
+                }
+                c.banque = 0;
+                dissoudre(c, "wipe");
+                clans++;
+            }
+            REFUS.clear();
+            for (LienJoueur l : new ArrayList<>(s.liens())) {
+                l.clan = null;
+                l.quitteLe = 0;
+                l.soldeInterne = 0;
+                l.chatClan = false;
+            }
+            s.marquerDirtyJoueurs();
+            s.sauvegarderMaintenant();
+        }
+        int comptes = 0;
+        fr.heralisz.economie.server.ComptesStore cs = fr.heralisz.economie.server.ComptesStore.get();
+        if (cs != null) {
+            for (var compte : new ArrayList<>(cs.tous())) {
+                if (compte.solde() != 0 && EconomieApi.definir(compte.uuid(), 0L, "wipe")) comptes++;
+            }
+            EconomieApi.sauvegarderMaintenant();
+        }
+        fr.heralisz.clans.saison.Saison.remiseAZero();
+        HeraliszClans.LOG.info("[clans] remise a zero du serveur : {} clans dissous, {} comptes remis a 0, saison effacee", clans, comptes);
+        return rendus;
+    }
+
     public static void adminNiveau(Clan c, int niveau) {
         c.niveau = Math.max(1, Math.min(Niveaux.MAX, niveau));
         c.xp = 0;

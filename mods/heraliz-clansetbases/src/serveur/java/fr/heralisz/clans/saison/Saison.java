@@ -409,6 +409,20 @@ public final class Saison {
         HeraliszClans.LOG.info("[saison] saison {} terminee ({}), archive dans saisons/saison_{}.json", d.numero, motif, d.numero);
     }
 
+    /**
+     * Remise à zéro du serveur ({@code /wipe serveur}) : la saison en cours est archivée (comme une fin normale), puis
+     * points, journal des paires et plafonds sont effacés ; aucune saison active ensuite ({@code /saison commencer}).
+     */
+    public static void remiseAZero() {
+        if (d.active) terminer("remise a zero du serveur");
+        int numero = d.numero;
+        d = new SaisonDonnees();
+        d.numero = numero;
+        changer();
+        sauvegarder();
+        journal("--- remise a zero du serveur : points effaces");
+    }
+
     // ------------------------------------------------------------------ journal
     private static void noter(Clan c, String qui, String categorie, String quoi, double pts) {
         fr.heralisz.clans.server.Sync.marquerLent(c);

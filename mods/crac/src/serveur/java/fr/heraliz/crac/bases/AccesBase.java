@@ -101,6 +101,13 @@ public final class AccesBase extends SafeSavedData {
         return true;
     }
 
+    /** Remise à zéro du serveur : plus aucun accès donné ni armoire notée. */
+    void toutEffacer() {
+        this.acces.clear();
+        this.armoires.clear();
+        this.setDirty();
+    }
+
     /** Toute la liste d'une base (base effacée). */
     public void effacer(UUID groupe) {
         if (this.acces.remove(groupe) != null) {

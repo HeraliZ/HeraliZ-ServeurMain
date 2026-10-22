@@ -136,6 +136,13 @@ public final class BasesDonnees extends SafeSavedData {
         this.marquer();
     }
 
+    /** Remise à zéro du serveur : tutoriels, homes, recharges et protections de tous les joueurs oubliés. */
+    void toutEffacer() {
+        this.joueurs.clear();
+        this.protections.clear();
+        this.setDirty();
+    }
+
     public Joueur joueur(UUID id) {
         return this.joueurs.computeIfAbsent(id, k -> new Joueur());
     }

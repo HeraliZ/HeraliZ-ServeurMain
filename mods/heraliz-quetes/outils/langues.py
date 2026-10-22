@@ -289,6 +289,47 @@ TEXTES = {
     "heraliz_quetes.cmd.wipe_kick": ("Ton personnage a été remis à zéro. Reconnecte-toi pour recommencer.",
                                      "Your character has been reset. Reconnect to start over.",
                                      "Твой персонаж сброшен. Перезайди, чтобы начать заново."),
+    "heraliz_quetes.wipe.serveur.avertir": (
+        "REMISE À ZÉRO DU SERVEUR : toutes les bases, tous les clans, les hérals, la saison, le classement du ClashWar, "
+        "et pour chaque joueur inventaire, coffres, quêtes, personnage et tutoriel. Gardés : objets à vie, camos, emotes, "
+        "grades, permissions, comptes. Impossible à annuler.",
+        "SERVER RESET: every base, every clan, the herals, the season, the ClashWar ranking, and for each player inventory, "
+        "chests, quests, character and tutorial. Kept: lifetime items, camos, emotes, ranks, permissions, accounts. "
+        "Cannot be undone.",
+        "ПОЛНЫЙ СБРОС СЕРВЕРА: все базы, все кланы, гералы, сезон, рейтинг ClashWar, а у каждого игрока инвентарь, "
+        "сундуки, задания, персонаж и обучение. Сохраняются: пожизненные предметы, камуфляжи, эмоции, ранги, права, "
+        "аккаунты. Отменить нельзя."),
+    "heraliz_quetes.wipe.serveur.code": ("Pour lancer : /wipe serveur confirmer %s (valable 1 minute).",
+                                         "To start: /wipe serveur confirmer %s (valid for 1 minute).",
+                                         "Для запуска: /wipe serveur confirmer %s (действует 1 минуту)."),
+    "heraliz_quetes.wipe.serveur.derniere": (
+        "DERNIÈRE VÉRIFICATION : tout le serveur sera remis à zéro. Pour lancer : /wipe serveur valider %s (valable 30 secondes).",
+        "FINAL CHECK: the whole server will be reset. To start: /wipe serveur valider %s (valid for 30 seconds).",
+        "ПОСЛЕДНЯЯ ПРОВЕРКА: весь сервер будет сброшен. Для запуска: /wipe serveur valider %s (действует 30 секунд)."),
+    "heraliz_quetes.wipe.serveur.rebours": ("Remise à zéro du serveur dans %s secondes.",
+                                            "Server reset in %s seconds.",
+                                            "Сброс сервера через %s секунд."),
+    "heraliz_quetes.wipe.serveur.annulable": ("Lancement dans %s secondes. Pour l'arrêter : /wipe serveur annuler",
+                                              "Starting in %s seconds. To stop it: /wipe serveur annuler",
+                                              "Запуск через %s секунд. Чтобы остановить: /wipe serveur annuler"),
+    "heraliz_quetes.wipe.serveur.annulee": ("Remise à zéro du serveur annulée.", "Server reset cancelled.", "Сброс сервера отменён."),
+    "heraliz_quetes.wipe.serveur.deja": ("Une remise à zéro est déjà lancée : /wipe serveur annuler pour l'arrêter.",
+                                         "A reset is already under way: /wipe serveur annuler to stop it.",
+                                         "Сброс уже запущен: /wipe serveur annuler, чтобы остановить."),
+    "heraliz_quetes.wipe.serveur.mauvais_code": ("Code faux ou périmé : tape d'abord /wipe serveur.",
+                                                 "Wrong or expired code: type /wipe serveur first.",
+                                                 "Неверный или устаревший код: сначала введи /wipe serveur."),
+    "heraliz_quetes.wipe.serveur.annonce": (
+        "Remise à zéro du serveur : nouvelle saison ! Tu vas être déconnecté, reconnecte-toi pour recommencer.",
+        "Server reset: new season! You will be disconnected, reconnect to start over.",
+        "Сброс сервера: новый сезон! Тебя отключит, перезайди, чтобы начать заново."),
+    "heraliz_quetes.wipe.serveur.fait": (
+        "Serveur remis à zéro : %s joueurs le seront à leur connexion. Lance une nouvelle saison avec /saison commencer <jours>.",
+        "Server reset: %s players will be reset when they connect. Start a new season with /saison commencer <days>.",
+        "Сервер сброшен: %s игроков будут сброшены при входе. Начни новый сезон: /saison commencer <дни>."),
+    "heraliz_quetes.wipe.serveur.kick": ("Le serveur a été remis à zéro : nouvelle saison ! Reconnecte-toi pour recommencer.",
+                                         "The server has been reset: new season! Reconnect to start over.",
+                                         "Сервер сброшен: новый сезон! Перезайди, чтобы начать заново."),
     "heraliz_quetes.cmd.reset": ("Progression des quêtes de %s remise à zéro.", "Quest progress of %s reset.", "Прогресс заданий игрока %s сброшен."),
 
     # arrivée et tutoriel des bases avec le Commandant Varga (serveur : Accueil ; client : RadioVarga)
