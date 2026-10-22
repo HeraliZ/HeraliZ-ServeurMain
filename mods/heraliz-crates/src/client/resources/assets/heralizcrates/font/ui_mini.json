@@ -4,7 +4,7 @@
       "type": "ttf",
       "file": "heralizcrates:dmsans_medium.ttf",
       "size": 6.5,
-      "oversample": 4.0,
+      "oversample": 8.0,
       "shift": [
         0.0,
         1.0
@@ -13,7 +13,7 @@
     {
       "type": "ttf",
       "size": 6.5,
-      "oversample": 4.0,
+      "oversample": 8.0,
       "shift": [
         0.0,
         1.0
