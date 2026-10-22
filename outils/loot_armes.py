@@ -271,6 +271,7 @@ def autres_de(data):
 
 def ecrire():
     ecrire_raretes_sacs()
+    ecrire_soins()
     fams = familles()
     tables = {t: json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8")) for t in PARTS}
     autres = {t: autres_de(tables[t]) for t in PARTS}
@@ -321,6 +322,51 @@ def ecrire():
         data["objets"] = objets
         ecrire_table(COFFRES / f"t{t}.json", data)
         print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in PARTS_FAMILLE.get((f, t), PARTS[t]))} {f}" for f in fams))
+
+
+# conteneurs de soins (soins1_... à soins6_...) : une table par niveau, soins.json = niveau 1 (secours).
+# Rareté du soin tirée d'abord, puis le soin dans sa rareté (poids d'origine « _base »). Le gris reste toujours le
+# plus fréquent ; le bleu et le violet montent un peu avec le niveau (choix du propriétaire, 22/10).
+SOINS = RACINE / "serveur/config/heraliz_loot/raretes.json"
+PARTS_SOINS = {
+    1: {"commun": 50, "peu_commun": 28, "rare": 16, "epique": 6},
+    2: {"commun": 46, "peu_commun": 28, "rare": 18, "epique": 8},
+    3: {"commun": 42, "peu_commun": 28, "rare": 20, "epique": 10},
+    4: {"commun": 38, "peu_commun": 28, "rare": 21, "epique": 13},
+    5: {"commun": 34, "peu_commun": 28, "rare": 22, "epique": 16},
+    6: {"commun": 31, "peu_commun": 27, "rare": 23, "epique": 19},
+}
+
+
+def ecrire_soins():
+    ra = json.load(open(RARETES, encoding="utf-8"))["soins"]
+    data = json.loads((COFFRES / "soins.json").read_text(encoding="utf-8"))
+    base = []
+    for e in data["objets"]:
+        m = re.search(r'ConsumableId:"([^"]+)"', e.get("nbt", ""))
+        if e["item"].startswith(RETIRES) or not m or ra.get(m.group(1)) not in PARTS_SOINS[1]:
+            continue
+        e = dict(e)
+        e.setdefault("_base", e["poids"])
+        e["nombre"] = [1, 1]
+        base.append((e, ra[m.group(1)]))
+    for niv, parts in PARTS_SOINS.items():
+        somme = {r: sum(e["_base"] for e, x in base if x == r) for r in parts}
+        objets = []
+        for e, r in base:
+            n = dict(e)
+            n["poids"] = max(1, round(1000000 * parts[r] / 100 * e["_base"] / somme[r]))
+            objets.append(n)
+        d = dict(data)
+        d["_note"] = (f"Conteneurs de soins de niveau {niv} (soins{niv}_...). Écrit par outils/loot_armes.py "
+                      "(PARTS_SOINS ; ne pas modifier à la main).")
+        d["emplacements"] = data["niveaux"][str(niv)]
+        d.pop("niveaux", None)
+        d["objets"] = objets
+        ecrire_table(COFFRES / f"soins{niv}.json", d)
+        if niv == 1:
+            ecrire_table(COFFRES / "soins.json", dict(data, objets=objets, _note=d["_note"].replace(
+                "niveau 1 (soins1_...)", "niveau 1 (soins1_...) et secours")))
 
 
 def classer(e, ra):
