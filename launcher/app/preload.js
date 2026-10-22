@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('heraliz', Object.freeze({
     copierCodes: codes => ipcRenderer.invoke('heraliz:copier-codes', codes),
     logout: () => ipcRenderer.invoke('heraliz:logout'),
     saveSettings: settings => ipcRenderer.invoke('heraliz:settings', settings),
+    accordCapture: oui => ipcRenderer.invoke('heraliz:accord-capture', oui === true),
     launch: () => ipcRenderer.invoke('heraliz:launch'),
     serverStatus: () => ipcRenderer.invoke('heraliz:status'),
     openLink: name => ipcRenderer.invoke('heraliz:link', name),

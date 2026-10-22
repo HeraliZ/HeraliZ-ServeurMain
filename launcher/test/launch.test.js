@@ -85,6 +85,16 @@ test('the launcher offers no way to open the game folder', () => {
     assert.equal(/folder|openPath|showItemInFolder/i.test(preload + main), false)
 })
 
+test('sans accord des captures d’écran, aucune partie ; l’accord est gardé', async () => {
+    const service = new LauncherService(config, () => {})
+    Config.setAccordCapture(false)
+    assert.equal(service.getState().accordCapture, false)
+    await assert.rejects(service.launch(), /captures d’écran/)
+    assert.equal(service.busy, false)
+    assert.equal(service.accordCapture(false).accordCapture, false)
+    assert.equal(service.accordCapture(true).accordCapture, true)
+})
+
 test('unconfigured launch performs no downloads and releases the busy lock', async () => {
     const service = new LauncherService(config, () => {})
     service.saveProfile({ username: 'Survivant', acceptedRules: true })

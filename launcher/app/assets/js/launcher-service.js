@@ -148,7 +148,9 @@ class LauncherService {
             comptesSite: Boolean(this.compteSite),
             settings: { ramGB: Math.min(maxRAM, Math.max(2, ramGB)), maxRAM, totalRAM, fullscreen: Config.getFullscreen() },
             configured: Boolean(this.config.serverAddress && this.config.distributionUrl),
-            discordConfigured: Boolean(this.config.discordUrl), progress: this.progress
+            discordConfigured: Boolean(this.config.discordUrl), progress: this.progress,
+            // accord pour les captures d'écran de l'anticheat (Spartan) : sans lui, pas de partie
+            accordCapture: Config.getAccordCapture()
         }
     }
 
@@ -373,8 +375,18 @@ class LauncherService {
         return { version: await processors[0].getVersionJson(), loader: await processors[1].loadModLoaderVersionJson(server) }
     }
 
+    // Accord pour les captures d'écran de l'anticheat, demandé à l'ouverture du launcher (renderer.js). Refus : rien
+    // n'est gardé, le launcher se ferme.
+    accordCapture(oui) {
+        if (oui !== true) return this.getState()
+        Config.setAccordCapture(true)
+        Config.save()
+        return this.getState()
+    }
+
     async launch() {
         if (this.busy) throw new Error('Une préparation ou une partie est déjà en cours.')
+        if (!Config.getAccordCapture()) throw new Error('Accepte les captures d’écran de l’anticheat pour jouer (redémarre le launcher).')
         const saved = Config.getSelectedAccount()
         if (this.compteSite && !saved?.compte) throw new Error('Connecte-toi avec ton compte HeraliZ.')
         if (!saved || saved.rulesAccepted !== true) throw new Error('Choisis ton pseudo et accepte le règlement.')

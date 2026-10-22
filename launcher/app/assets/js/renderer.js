@@ -600,6 +600,26 @@ async function majLauncher() {
     } finally { arreter() }
 }
 
+// Accord pour les captures d'écran de l'anticheat : demandé dès l'ouverture, avant tout le reste. Échap ne ferme pas la
+// fenêtre ; « Je refuse » ferme le launcher. true quand le joueur a accepté.
+function demanderAccord() {
+    if (!api || state?.accordCapture) return Promise.resolve(true)
+    return new Promise(resolve => {
+        const fenetre = $('accord-dialog')
+        fenetre.addEventListener('cancel', event => event.preventDefault())
+        $('accord-oui').addEventListener('click', async () => {
+            $('accord-oui').disabled = true
+            try {
+                applyState(await call(api.accordCapture(true)))
+                fenetre.close()
+                resolve(true)
+            } catch (error) { toast(error.message); $('accord-oui').disabled = false }
+        })
+        $('accord-non').addEventListener('click', () => { api.windowAction('close'); resolve(false) })
+        fenetre.showModal()
+    })
+}
+
 async function init() {
     dessinerTete(document.querySelector('.profil .tete'))
     afficherActus()
@@ -634,6 +654,7 @@ async function init() {
     await wait(400)
     restoreProfileForm()
     showScreen(profileReady() ? 'principal' : 'identite')
+    if (!(await demanderAccord())) return
     if (nouvelleVersion) proposerNouvelleVersion(nouvelleVersion)
 }
 

@@ -425,7 +425,7 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   erreur est possible, un tricheur peut changer la touche de son menu. Essayé en jeu par le propriétaire (20/10) : ça
   marche.
 - **Captures d'écran** (Spartan 2.7.0, launcher 1.9.0, 22/10, demande du propriétaire) : avant de jouer, le launcher
-  demande l'accord du joueur (fenêtre « Autorisation de l'anticheat », `demanderAccordCapture` de `landing.js`, gardé
+  demande l'accord du joueur (fenêtre « Autorisation de l’anticheat », `demanderAccord` de `renderer.js`, `#accord-dialog` de `index.html` ; jamais `landing.js`, ancienne interface plus chargée ; gardé
   dans sa config, `ACCORD_CAPTURE_VERSION` de `configmanager.js` à monter si le texte change : redemandé) ; refus = pas
   de partie. Accord passé au jeu par `SPARTAN_CAPTURE_CONSENT=1` (posé seulement par le launcher, jamais hérité),
   signalé au serveur à la connexion (`ClientReportPacket` « capture »). Sans accord : aucune capture, ni demandée ni
@@ -434,7 +434,7 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
   toutes les 10 s par joueur (`capture/CaptureManager`). Rangée dans `screenshots/<pseudo>/` à la racine du serveur,
   annoncée au staff en jeu et envoyée avec l'image dans le fil du joueur sur Discord. Canal Spartan version 8 : jars
   joueurs et serveur de la même fabrication. Spartan 2.7.1 : `captureRequired = true` (`spartan-common.toml`) :
-  connexion refusée sans accord (vieux launcher, autre lanceur). Launcher 1.9.1 : la fenêtre s'ouvre au milieu de
+  connexion refusée sans accord (vieux launcher, autre lanceur). Launcher 1.9.2 (vraie interface ; la 1.9.1 l’avait mise dans l’ancienne, jamais affichée) : la fenêtre s’ouvre au milieu de
   l'écran dès l'ouverture du launcher, par-dessus tout ; « Je refuse » ferme le launcher. Rien testé en jeu.
 - **Sol près des blocs** (Spartan 2.5.1, 20/10) : alertes Vertical « monte de 0.42 bloc en plein air (maximum -0.08) »,
   Speed et Fly ensemble chez le propriétaire en marchant : le serveur ne cherchait le sol qu'à 0,2 bloc sous la hitbox

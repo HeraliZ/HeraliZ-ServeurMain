@@ -113,6 +113,7 @@ else {
         handle('logout', () => service.logout())
         handle('settings', value => service.saveSettings(value))
         handle('status', () => service.getServerStatus())
+        handle('accord-capture', oui => service.accordCapture(oui))
         handle('launch', () => service.launch())
         handle('link', async name => {
             // Aucun lien vers les fichiers du serveur ou du jeu (choix du propriétaire : ne pas faciliter le vol des jars).
