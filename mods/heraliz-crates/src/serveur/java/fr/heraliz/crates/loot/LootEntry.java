@@ -79,7 +79,11 @@ public final class LootEntry {
     private Item resolveItem() {
         ResourceLocation rl = ResourceLocation.tryParse(item);
         if (rl == null) return null;
-        return ForgeRegistries.ITEMS.getValue(rl);
+        Item it = ForgeRegistries.ITEMS.getValue(rl);
+        // icone de la caisse des emotes absente (HeraliZ Emote plus ancien ou absent) : etiquette a la place, la
+        // recompense (une commande) reste valable au lieu de vider toute la caisse
+        if ((it == null || it == Items.AIR) && "heraliz_emote".equals(rl.getNamespace())) return Items.NAME_TAG;
+        return it;
     }
 
     /** Cree la pile d'objets reelle (count peut depasser la taille max, elle sera decoupee au don). */
