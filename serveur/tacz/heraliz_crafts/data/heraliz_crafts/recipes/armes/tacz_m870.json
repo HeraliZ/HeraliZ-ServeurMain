@@ -1,0 +1,34 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:canon_iii"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ressort_iii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:kit_pieces_iii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille_iii"
+      },
+      "count": 3
+    }
+  ],
+  "result": {
+    "type": "gun",
+    "id": "tacz:m870",
+    "group": "heraliz_crafts:pompes"
+  }
+}

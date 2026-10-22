@@ -1,0 +1,22 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:circuit_imprime_iii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:batterie_iii"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "tacz:scope_retro_2x",
+    "group": "heraliz_crafts:viseurs"
+  }
+}

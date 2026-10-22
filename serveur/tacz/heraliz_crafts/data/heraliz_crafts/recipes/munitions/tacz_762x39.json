@@ -1,0 +1,23 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:bocal_poudre"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "ammo",
+    "id": "tacz:762x39",
+    "count": 15,
+    "group": "heraliz_crafts:munitions"
+  }
+}

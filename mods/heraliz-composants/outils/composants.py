@@ -201,7 +201,7 @@ def _(m):
 
 @item('tonnelet_poudre', 'Tonnelet de poudre', 'Gunpowder Keg', ['munitions'],
       'Un tonnelet plein de poudre noire. Loin du feu.', 'A keg full of black powder. Keep away from fire.',
-      0.5, {'roll': 0, 'yaw': -28, 'pitch': 22}, 16)
+      0.5, {'roll': 0, 'yaw': -28, 'pitch': 22}, 16, 'uncommon')
 def _(m):
     # tonnelet en bois cercle de metal
     m.cyl('y', 0, 1.6, 8, 8, 4.3, 'wood')

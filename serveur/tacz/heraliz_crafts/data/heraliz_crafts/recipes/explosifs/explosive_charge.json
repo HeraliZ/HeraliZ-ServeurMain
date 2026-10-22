@@ -1,0 +1,30 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:bocal_poudre"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:scotch"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:corde"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "crac:explosive_charge"
+    },
+    "group": "heraliz_crafts:explosifs"
+  }
+}

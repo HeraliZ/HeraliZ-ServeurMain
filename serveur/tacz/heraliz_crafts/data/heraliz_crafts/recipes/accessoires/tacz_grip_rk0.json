@@ -1,0 +1,28 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille_ii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:caoutchouc_ii"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:scotch_ii"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "attachment",
+    "id": "tacz:grip_rk0",
+    "group": "heraliz_crafts:accessoires"
+  }
+}
