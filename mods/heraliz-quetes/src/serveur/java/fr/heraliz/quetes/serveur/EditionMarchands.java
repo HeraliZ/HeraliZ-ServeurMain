@@ -133,32 +133,14 @@ final class EditionMarchands {
     }
 
     // ------------------------------------------------------------------ droits
-    private static Method authentifie;
-    private static boolean authCherche;
-
-    /** Op (permission 4) et, sur le serveur cracké, connecté sur AuthMe (HeraliZ Grades, par réflexion ; injoignable = refusé). */
+    /** Op (permission 4). AuthMe bloque déjà toute commande et tout clic avant le /login. */
     static boolean peut(ServerPlayer p) {
-        if (!p.hasPermissions(4)) return false;
-        if (!p.server.isDedicatedServer() || p.server.usesAuthentication()) return true;
-        if (!authCherche) {
-            authCherche = true;
-            try {
-                authentifie = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("authentifie", ServerPlayer.class);
-            } catch (Throwable t) {
-                LOG.error("[heraliz_quetes] HeraliZ Grades (AuthMe) injoignable : éditeur des marchands refusé ({})", t.toString());
-            }
-        }
-        if (authentifie == null) return false;
-        try {
-            return Boolean.TRUE.equals(authentifie.invoke(null, p));
-        } catch (Throwable t) {
-            return false;
-        }
+        return p.hasPermissions(4);
     }
 
     private static void refuser(ServerPlayer p) {
         p.sendSystemMessage(Component.translatableWithFallback("heraliz_quetes.marchand.refuse",
-                "Réservé aux op connectés.").withStyle(ChatFormatting.RED));
+                "Réservé aux op.").withStyle(ChatFormatting.RED));
     }
 
     // ------------------------------------------------------------------ écran d'édition
@@ -222,7 +204,8 @@ final class EditionMarchands {
                 quoi = "^ " + l.get(r.index() - 1).objet();
             }
             case Reseau.Modif.AJOUTER_MAIN -> {
-                ItemStack main = p.getMainHandItem();
+                // objet de la case de la barre d'objets choisie dans l'écran (0 à 8)
+                ItemStack main = r.rarete() >= 0 && r.rarete() < 9 ? p.getInventory().getItem(r.rarete()) : ItemStack.EMPTY;
                 if (m.rachat || r.prix() < 1 || main.isEmpty() || main.is(HeralizQuetes.REGISTRE.get())) {
                     Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.main_vide"), 0xFF6B6B);
                     break;

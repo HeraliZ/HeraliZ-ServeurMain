@@ -44,6 +44,12 @@ public class EcranFicheBase extends EcranGroupe {
         return Math.max(1, Math.min(w.getWidth() * 0.92F / W, w.getHeight() * 0.92F / H));
     }
 
+    /** Échelle non entière : lettres lissées, sinon leurs bords sont « mangés » (22/10). */
+    @Override
+    protected boolean textesLisses() {
+        return true;
+    }
+
     @Override
     protected void initCanevas() {
         this.placer(W, H);
