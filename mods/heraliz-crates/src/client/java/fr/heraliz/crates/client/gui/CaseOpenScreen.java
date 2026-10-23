@@ -45,7 +45,7 @@ public class CaseOpenScreen extends Screen {
 
     /**
      * Polices (DM Sans, tracées à leur vraie taille, jamais agrandies : nettes comme dans /perso ; Caisses 2.20.0, l'écran
-     * était trop petit et illisible) : titre gras 16, nom de l'objet gras 14, sous-titre 10, rareté gras 10, texte courant
+     * était trop petit et illisible) : titre gras 18, nom de l'objet gras 14, sous-titre 10, rareté gras 10, texte courant
      * 9 (légende, aide, erreurs), petites capitales grasses 9 (section, boutons de la carte du gain), quantités grasses 8.
      * Tailles et mise en page reprises par l'aperçu outils/apercu_ecran_caisse.py (il lit les constantes de ce fichier).
      */
@@ -59,13 +59,18 @@ public class CaseOpenScreen extends Screen {
     private static final int OR_HAUT = 0xF0CF7B, OR_BAS = 0xD9AC4C, OR_TEXTE = 0x1A1408;
 
     /** Panneau (proposition B) : 584 x 328 au canevas d'au moins 600 x 340 (Echelle), marges intérieures PAD. */
-    private static final int PANNEAU_W = 584, PANNEAU_H = 328, PAD = 30;
+    private static final int PANNEAU_W = 584, PANNEAU_H = 334, PAD = 30;
     /** Hauts des lignes (depuis le haut du panneau) : titre, sous-titre, roue, nom, rareté, barre des chances, légende,
-     *  section « Contenu possible », grille, bouton ; l'aide est AIDE_ECART sous le bouton. */
-    private static final int TITRE_Y = 12, SOUS_Y = 33, ROUE_Y = 56, NOM_Y = 154, RARETE_Y = 174, CHANCES_Y = 193,
-            LEGENDE_Y = 201, SECTION_Y = 229, GRILLE_Y = 243, BOUTON_Y = 284, AIDE_ECART = 5;
+     *  section « Contenu possible », grille, bouton, rangée des touches en bas (comme la boutique : ESPACE Ouvrir…). */
+    private static final int TITRE_Y = 12, SOUS_Y = 34, ROUE_Y = 57, NOM_Y = 155, RARETE_Y = 175, CHANCES_Y = 194,
+            LEGENDE_Y = 202, SECTION_Y = 230, GRILLE_Y = 244, BOUTON_Y = 285, TOUCHES_Y = 315;
+    /** Rangée des touches : hauteur d'une touche, marge du texte dans la touche, écart touche-action, écart entre deux. */
+    private static final int TOUCHE_H = 15, TOUCHE_PAD = 5, TOUCHE_ECART = 5, TOUCHES_ESPACE = 14, TOUCHE_TEXTE_Y = 5;
     /** Espacement des capitales : titre, rareté, section, bouton, boutons du gain. */
-    private static final float ESP_TITRE = 1.8f, ESP_RARETE = 1.4f, ESP_SECTION = 1.4f, ESP_BOUTON = 1.4f, ESP_GAIN = 1.0f;
+    private static final float ESP_TITRE = 2.2f, ESP_TOUCHE = 0.3f, ESP_RARETE = 1.4f, ESP_SECTION = 1.4f, ESP_BOUTON = 1.4f,
+            ESP_GAIN = 1.0f;
+    /** Halo de rareté derrière la roue : demi-largeur (part du panneau), demi-hauteur (part de la roue). */
+    private static final float HALO_L = 0.42f, HALO_H = 0.95f;
     /** Roue : écart entre les centres des cartes (STEP), largeur logique d'une carte (CW, sert au point d'arrêt), carte du
      *  milieu (CARTE_MAX px), les autres rapetissent avec la distance ; marge de la roue dans le panneau. */
     private static final int STEP = 76, CW = 68, CARTE_MAX = 84, ROUE_H = 92, ROUE_MARGE = 20;
@@ -79,6 +84,8 @@ public class CaseOpenScreen extends Screen {
             GAIN_TITRE_Y = 16, GAIN_CARTE_Y = 36, GAIN_NOM_Y = 166;
     /** Couleur de la légende, du sous-titre et de l'aide : plus claire que MUTED, lisible sur le verre. */
     private static final int CLAIR = 0xB4BAC4;
+    /** Opacité du halo de rareté derrière la roue. */
+    private static final int HALO_ALPHA = 34;
     /** Durée de la roue en ms : celle du serveur (CrateAnim.REEL_TICKS), l'objet est donné à la fin. */
     private static final long DUREE_ROUE = CrateAnim.REEL_TICKS * 50L;
     /** Après l'arrêt : temps avant la carte du gain, puis son apparition (ms). */
@@ -430,6 +437,9 @@ public class CaseOpenScreen extends Screen {
 
         Lot lot = new Lot(g);
         lot.verre(px, py, pw, ph, 200);
+        // halo très doux de la couleur de l'objet sous le repère derrière la roue (comme les cartes de la boutique)
+        Packets.Card sous = at(indexSousRepere());
+        if (sous != null) lot.lueur(px + pw / 2f, roueCy(), pw * HALO_L, ROUE_H * HALO_H, Ui.argb(couleur(sous.rarity()), HALO_ALPHA));
         lot.fin();
         renderEntete(g);
         renderRoue(g, now);
@@ -755,20 +765,55 @@ public class CaseOpenScreen extends Screen {
         String texte = Component.translatable(cle).getString().toUpperCase(Locale.ROOT);
         Ui.spacedCentered(g, font, texte, Ui.BOLD, boutonX + boutonW / 2f, boutonY + 7, Ui.argb(dore ? OR_TEXTE : Ui.MUTED, 255), ESP_BOUTON);
 
-        // aide (ou erreur du serveur)
-        float ay = boutonY + BOUTON_H + AIDE_ECART;
-        if (error != null && ticks - errorAt < 80) {
-            String e = Ui.ellipsis(font, error.getString(), TEXTE, pw - 2 * pad);
-            Ui.centered(g, font, Ui.lit(e, TEXTE), boutonX + boutonW / 2f, ay, Ui.argb(Ui.DANGER, 240));
-            return;
+        renderTouches(g);
+    }
+
+    /**
+     * Rangée du bas, comme la boutique : touches en pastilles (ESPACE Ouvrir, MOLETTE Contenu, ÉCHAP Fermer) à gauche ;
+     * à droite, l'erreur du serveur ou d'où viennent les clés.
+     */
+    private void renderTouches(GuiGraphics g) {
+        List<String[]> touches = new ArrayList<>();
+        if (state == State.SPIN) touches.add(new String[]{"gui.heralizcrates.case.touche.espace", "gui.heralizcrates.case.skip"});
+        else if (peutOuvrir()) touches.add(new String[]{"gui.heralizcrates.case.touche.espace", "gui.heralizcrates.case.open"});
+        if (maxScroll() > 0) touches.add(new String[]{"gui.heralizcrates.case.touche.molette", "gui.heralizcrates.case.action.contenu"});
+        touches.add(new String[]{"gui.heralizcrates.case.touche.echap", "gui.heralizcrates.case.close"});
+        int y = py + TOUCHES_Y;
+        float x = px + pad;
+        for (String[] t : touches) {
+            String touche = Component.translatable(t[0]).getString().toUpperCase(Locale.ROOT);
+            String action = Component.translatable(t[1]).getString();
+            int tw = Math.round(Ui.spacedWidth(font, touche, TEXTE_GRAS, ESP_TOUCHE)) + 2 * TOUCHE_PAD;
+            Lot lot = new Lot(g);
+            lot.rond(Math.round(x), y, tw, TOUCHE_H, Ui.argb(0xFFFFFF, 14));
+            lot.rondContour(Math.round(x), y, tw, TOUCHE_H, Ui.argb(0xFFFFFF, 70));
+            lot.fin();
+            Ui.spaced(g, font, touche, TEXTE_GRAS, Math.round(x) + TOUCHE_PAD, y + TOUCHE_TEXTE_Y, Ui.argb(Ui.TEXT, 255), ESP_TOUCHE);
+            float ax = Math.round(x) + tw + TOUCHE_ECART;
+            g.pose().pushPose();
+            Ui.placer(g, ax, y + TOUCHE_TEXTE_Y);
+            g.drawString(font, Ui.lit(action, TEXTE), 0, 0, Ui.argb(CLAIR, 255), false);
+            g.pose().popPose();
+            x = ax + font.width(Ui.lit(action, TEXTE)) + TOUCHES_ESPACE;
         }
-        String aide;
-        if (contents.isEmpty()) aide = "gui.heralizcrates.case.empty";
-        else if (state == State.SPIN) aide = "gui.heralizcrates.case.help.skip";
-        else if (!free && keys < 1) aide = "gui.heralizcrates.case.help.keys";
-        else aide = "gui.heralizcrates.case.help.open";
-        String a = Ui.ellipsis(font, Component.translatable(aide).getString(), TEXTE, pw - 2 * pad);
-        Ui.centered(g, font, Ui.lit(a, TEXTE), boutonX + boutonW / 2f, ay, Ui.argb(CLAIR, 255));
+        // à droite : erreur du serveur, ou d'où viennent les clés
+        String note = null;
+        int couleur = Ui.MUTED;
+        if (error != null && ticks - errorAt < 80) {
+            note = error.getString();
+            couleur = Ui.DANGER;
+        } else if (contents.isEmpty()) {
+            note = Component.translatable("gui.heralizcrates.case.empty").getString();
+        } else if (!free && keys < 1 && state != State.SPIN) {
+            note = Component.translatable("gui.heralizcrates.case.help.keys").getString();
+        }
+        if (note != null) {
+            int place = Math.round(px + pw - pad - 2 - x);
+            if (place > 20) {
+                note = Ui.ellipsis(font, note, TEXTE, place);
+                Ui.right(g, font, Ui.lit(note, TEXTE), px + pw - pad - 2, y + TOUCHE_TEXTE_Y, Ui.argb(couleur, 255));
+            }
+        }
     }
 
     /** Fin de la roue : panneau principal assombri, carte « Tu as obtenu » au centre. */

@@ -188,5 +188,9 @@
   "gui.heralizcrates.case.again_key": "Again (1 key)",
   "gui.heralizcrates.case.subtitle": "%s keys · %s items",
   "gui.heralizcrates.case.subtitle_one": "1 key · %s items",
-  "gui.heralizcrates.case.subtitle_free": "Unlimited keys · %s items"
+  "gui.heralizcrates.case.subtitle_free": "Unlimited keys · %s items",
+  "gui.heralizcrates.case.touche.espace": "Space",
+  "gui.heralizcrates.case.touche.echap": "Esc",
+  "gui.heralizcrates.case.touche.molette": "Wheel",
+  "gui.heralizcrates.case.action.contenu": "All contents"
 }

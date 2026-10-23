@@ -297,7 +297,7 @@ def nom_objet(n, code):
 
 
 def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre="Caisse de survie", cles="free",
-                   long_nom=False, erreur=False):
+                   long_nom=False, erreur=False, plein=False):
     """etat : 'repos' (roue, bouton Ouvrir), 'roue' (la roue tourne), 'cle' (pas de clé), 'gain' (carte du gain)."""
     L = langue(code)
     fr = code.startswith("fr")
@@ -341,6 +341,10 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
     else:
         sous = L["gui.heralizcrates.case.subtitle"] % (str(cles), n)
     e.centre("sous-titre", POL["SOUS"], sous, cx, py + C["SOUS_Y"], clair, bande_entete)
+
+    # halo de la rareté de l'objet sous le repère, derrière la roue
+    e.lueur(px + pw / 2, roueY + C["ROUE_H"] / 2, pw * C["HALO_L"], C["ROUE_H"] * C["HALO_H"],
+            C["RARETES"][OBJETS[sous_repere % len(OBJETS)][1]], C["HALO_ALPHA"])
 
     # roue
     step, cw, cmax, roueH = C["STEP"], C["CW"], C["CARTE_MAX"], C["ROUE_H"]
@@ -457,15 +461,41 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
     bt = L[cle].upper()
     e.espace_centre("bouton", POL["BOLD"], bt, boutonX + boutonW / 2, boutonY + 7, C["OR_TEXTE"] if dore else MUTED,
                     C["ESP_BOUTON"], (boutonX + boutonH / 2 - 2, boutonY + 3, boutonX + boutonW - boutonH / 2 + 2, boutonY + boutonH - 3))
-    ay = boutonY + boutonH + C["AIDE_ECART"]
-    bande_aide = (interieur[0], boutonY + boutonH + 1, interieur[2], py + ph - 2)
+    # rangée des touches (renderTouches) : pastilles à gauche, note à droite
+    touches = []
+    if etat == "roue":
+        touches.append(("touche.espace", "skip"))
+    elif etat != "cle":
+        touches.append(("touche.espace", "open"))
+    if plein:
+        touches.append(("touche.molette", "action.contenu"))
+    touches.append(("touche.echap", "close"))
+    ty, th, tpad, tec, tesp, tty = py + C["TOUCHES_Y"], C["TOUCHE_H"], C["TOUCHE_PAD"], C["TOUCHE_ECART"], C["TOUCHES_ESPACE"], C["TOUCHE_TEXTE_Y"]
+    bande_touches = (interieur[0], boutonY + boutonH + 1, interieur[2], py + ph - 2)
+    x = px + pad
+    for tk, ak in touches:
+        touche = L["gui.heralizcrates.case." + tk].upper()
+        action = L["gui.heralizcrates.case." + ak]
+        tw = round(POL["TEXTE_GRAS"].largeur_espacee(touche, C["ESP_TOUCHE"])) + 2 * tpad
+        xr = round(x)
+        e.rond(xr, ty, tw, th, 0xFFFFFF, 14, contour=(0xFFFFFF, 70))
+        e.espace(f"touche {touche}", POL["TEXTE_GRAS"], touche, xr + tpad, ty + tty, TEXTE, C["ESP_TOUCHE"],
+                 (xr + 1, ty + 1, xr + tw - 1, ty + th - 1))
+        ax = xr + tw + tec
+        e.texte(f"action {action}", POL["TEXTE"], action, ax, ty + tty, clair, bande_touches)
+        x = ax + POL["TEXTE"].largeur(action) + tesp
+    note, coul = None, MUTED
     if erreur:
-        s = ellipsis(POL["TEXTE"], L["gui.heralizcrates.case.error.all_emotes"], pw - 2 * pad)
-        e.centre("erreur", POL["TEXTE"], s, boutonX + boutonW / 2, ay, 0xFF6B6B, bande_aide)
-    else:
-        aide = {"roue": "help.skip", "cle": "help.keys"}.get(etat, "help.open")
-        s = ellipsis(POL["TEXTE"], L["gui.heralizcrates.case." + aide], pw - 2 * pad)
-        e.centre("aide", POL["TEXTE"], s, boutonX + boutonW / 2, ay, clair, bande_aide)
+        note, coul = L["gui.heralizcrates.case.error.all_emotes"], 0xFF6B6B
+    elif etat == "cle":
+        note = L["gui.heralizcrates.case.help.keys"]
+    if note is not None:
+        place = round(px + pw - pad - 2 - x)
+        if place > 20:
+            note = ellipsis(POL["TEXTE"], note, place)
+            e.droite("note", POL["TEXTE"], note, px + pw - pad - 2, ty + tty, coul, bande_touches)
+        else:
+            e.textes.append(("note : pas de place", (0, 0, 1, 1), (0, 0, 0, 0)))
 
     if etat == "gain":
         gain(e, L, code, cles)
@@ -557,10 +587,12 @@ def controler():
                         for repere in (0, 1, 6, 10):
                             for long_nom in (False, True):
                                 e = dessiner_ecran(fw, fh, code, etat, dessiner=False, sous_repere=repere, cles=cles,
-                                                   long_nom=long_nom, titre="Caisse des emotes et des vœux de la saison")
+                                                   long_nom=long_nom, titre="Caisse des emotes et des vœux de la saison",
+                                                   plein=long_nom)
                                 fautes += debordements(e, f"{modele} {fw}x{fh} {code} {etat} clés={cles} repère={repere}")
-                e = dessiner_ecran(fw, fh, code, "repos", dessiner=False, erreur=True)
-                fautes += debordements(e, f"{modele} {fw}x{fh} {code} erreur")
+                for et in ("repos", "cle"):
+                    e = dessiner_ecran(fw, fh, code, et, dessiner=False, erreur=True, plein=True)
+                    fautes += debordements(e, f"{modele} {fw}x{fh} {code} {et} erreur")
     MODELE = "source"
     return sorted(set(fautes))
 
@@ -572,9 +604,9 @@ def main():
     args.sortie.mkdir(parents=True, exist_ok=True)
     rendus = [((1920, 1080), "fr_fr", "repos", 12, "1920x1080_roue.png"), ((1920, 1080), "fr_fr", "gain", 12, "1920x1080_gain.png"),
               ((1280, 720), "fr_fr", "repos", "free", "1280x720_roue.png"), ((1280, 720), "fr_fr", "gain", "free", "1280x720_gain.png"),
-              ((1280, 720), "ru_ru", "cle", 0, "1280x720_roue_ru.png")]
+              ((1280, 720), "ru_ru", "cle", 0, "1280x720_roue_ru.png"), ((1920, 1080), "fr_fr", "cle", 0, "1920x1080_sans_cle.png")]
     for (fw, fh), code, etat, cles, nom in rendus:
-        e = dessiner_ecran(fw, fh, code, etat, sous_repere=0, cles=cles)
+        e = dessiner_ecran(fw, fh, code, etat, sous_repere=0, cles=cles, plein=True)
         e.img.convert("RGB").save(args.sortie / nom, optimize=True)
         print(f"{args.sortie / nom} (échelle {e.s}, canevas {e.w} x {e.h})")
     fautes = controler()

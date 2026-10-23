@@ -188,5 +188,9 @@
   "gui.heralizcrates.case.again_key": "Encore (1 clé)",
   "gui.heralizcrates.case.subtitle": "%s clés · %s objets",
   "gui.heralizcrates.case.subtitle_one": "1 clé · %s objets",
-  "gui.heralizcrates.case.subtitle_free": "Clés illimitées · %s objets"
+  "gui.heralizcrates.case.subtitle_free": "Clés illimitées · %s objets",
+  "gui.heralizcrates.case.touche.espace": "Espace",
+  "gui.heralizcrates.case.touche.echap": "Échap",
+  "gui.heralizcrates.case.touche.molette": "Molette",
+  "gui.heralizcrates.case.action.contenu": "Tout le contenu"
 }

@@ -188,5 +188,9 @@
   "gui.heralizcrates.case.again_key": "Ещё (1 ключ)",
   "gui.heralizcrates.case.subtitle": "Ключи: %s · предметов: %s",
   "gui.heralizcrates.case.subtitle_one": "Ключи: 1 · предметов: %s",
-  "gui.heralizcrates.case.subtitle_free": "Ключи без ограничений · предметов: %s"
+  "gui.heralizcrates.case.subtitle_free": "Ключи без ограничений · предметов: %s",
+  "gui.heralizcrates.case.touche.espace": "Пробел",
+  "gui.heralizcrates.case.touche.echap": "Esc",
+  "gui.heralizcrates.case.touche.molette": "Колесо",
+  "gui.heralizcrates.case.action.contenu": "Всё содержимое"
 }
