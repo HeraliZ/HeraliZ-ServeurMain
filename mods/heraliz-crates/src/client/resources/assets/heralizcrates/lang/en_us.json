@@ -185,5 +185,8 @@
   "gui.heralizcrates.case.help.keys": "Keys: shop, events, quests",
   "gui.heralizcrates.case.help.open": "Space to open · Esc to close",
   "gui.heralizcrates.case.won": "You got",
-  "gui.heralizcrates.case.again_key": "Again (1 key)"
+  "gui.heralizcrates.case.again_key": "Again (1 key)",
+  "gui.heralizcrates.case.subtitle": "%s keys · %s items",
+  "gui.heralizcrates.case.subtitle_one": "1 key · %s items",
+  "gui.heralizcrates.case.subtitle_free": "Unlimited keys · %s items"
 }

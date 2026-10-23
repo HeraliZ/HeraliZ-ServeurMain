@@ -185,5 +185,8 @@
   "gui.heralizcrates.case.help.keys": "Les clés : boutique, événements, quêtes",
   "gui.heralizcrates.case.help.open": "Espace pour ouvrir · Échap pour fermer",
   "gui.heralizcrates.case.won": "Tu as obtenu",
-  "gui.heralizcrates.case.again_key": "Encore (1 clé)"
+  "gui.heralizcrates.case.again_key": "Encore (1 clé)",
+  "gui.heralizcrates.case.subtitle": "%s clés · %s objets",
+  "gui.heralizcrates.case.subtitle_one": "1 clé · %s objets",
+  "gui.heralizcrates.case.subtitle_free": "Clés illimitées · %s objets"
 }

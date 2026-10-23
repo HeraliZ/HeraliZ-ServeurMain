@@ -30,10 +30,12 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Ecran d'une caisse (maquette « caisses » validée, style des écrans de clan) : ouvert par un clic droit sur n'importe
- * quelle caisse, avec ou sans clé. Grand panneau de verre : en-tête (tuile de la caisse, nom, sous-titre, clés), la roue
- * (bande de cartes, repère doré au milieu, bords fondus), en bas le contenu possible (grille de cartes) et, à droite, les
- * chances par rareté puis le bouton (« Il te faut une clé » éteint, ou « Ouvrir · 1 clé » doré). La roue tourne dans
+ * Ecran d'une caisse (proposition B « carte centrale » validée le 23/10, maquettes/caisses_proposition_B.png, style des
+ * écrans de clan) : ouvert par un clic droit sur n'importe quelle caisse, avec ou sans clé. Panneau de verre centré
+ * (380 x 246) : nom de la caisse en capitales espacées, « N clés · N objets » ; la roue, dont la carte du milieu est la
+ * plus grande et les autres rapetissent et s'effacent vers les bords (repère doré au-dessus) ; le nom et la rareté de
+ * l'objet sous le repère ; les chances en une barre colorée et sa légende ; le contenu possible en mini-grille d'icônes ;
+ * le bouton doré arrondi (« Il te faut une clé » éteint, ou « Ouvrir · 1 clé »). La roue tourne dans
  * l'écran et ralentit en douceur (temps réel, rien par à-coups) ; à l'arrêt, une carte « Tu as obtenu » (Encore / Fermer).
  * Espace ou un clic pendant la roue la passe. Tout est décidé par le serveur (CaseOpening) : l'écran ne fait qu'afficher.
  */
@@ -44,10 +46,13 @@ public class CaseOpenScreen extends Screen {
     private static final int[] RARETES = {0xB0B6C0, 0x5FD08A, 0x4C8DFF, 0xA86BFF, 0xE8C36A, 0xFF5A5A};
     private static final int OR_HAUT = 0xF0CF7B, OR_BAS = 0xD9AC4C, OR_TEXTE = 0x1A1408;
 
-    /** Cartes de la roue (largeur, hauteur, écart) et de la grille du contenu. */
-    private static final int CW = 72, CH = 72, GAP = 6, STEP = CW + GAP;
-    private static final int GRILLE_COLS = 6, GRILLE_H = 52, GRILLE_GAP = 5;
-    private static final int ROUE_H = 92, BOUTON_H = 22, LIGNE_CHANCE = 13;
+    /** Panneau (proposition B) : 380 x 246 au canevas 640 x 360. */
+    private static final int PANNEAU_W = 380, PANNEAU_H = 246;
+    /** Roue : écart entre les centres des cartes (STEP), largeur logique d'une carte (CW, sert au point d'arrêt), carte du
+     *  milieu (CARTE_MAX px), les autres rapetissent avec la distance. */
+    private static final int STEP = 52, CW = 46, CARTE_MAX = 58, ROUE_H = 66;
+    private static final int GRILLE_COLS = 10, GRILLE_H = 29, GRILLE_GAP = 4;
+    private static final int BOUTON_W = 150, BOUTON_H = 18;
     /** Durée de la roue en ms : celle du serveur (CrateAnim.REEL_TICKS), l'objet est donné à la fin. */
     private static final long DUREE_ROUE = CrateAnim.REEL_TICKS * 50L;
     /** Après l'arrêt : temps avant la carte du gain, puis son apparition (ms). */
@@ -62,7 +67,6 @@ public class CaseOpenScreen extends Screen {
     private final boolean free;
     private final List<Packets.Card> contents;
     private final RandomSource random = RandomSource.create();
-    private final ItemStack icone;
     /** Chance totale par rareté (rang de LootRarity), pour la colonne « Chances ». */
     private final double[] chances = new double[RARETES.length];
 
@@ -100,7 +104,6 @@ public class CaseOpenScreen extends Screen {
         this.session = session;
         this.free = free;
         this.contents = contents;
-        this.icone = new ItemStack(ModRegistry.key(type));
         for (Packets.Card c : contents) chances[rang(c.rarity())] += Math.max(0, c.chance());
         buildIdleStrip();
     }
@@ -139,25 +142,26 @@ public class CaseOpenScreen extends Screen {
     @Override
     protected void init() {
         Echelle.forcer(this);
-        px = Math.round(width * 0.05f);
-        pw = width - 2 * px;
-        py = Math.round(height * 0.07f);
-        ph = height - 2 * py;
-        pad = 14;
-        roueX = px + pad;
-        roueW = pw - 2 * pad;
-        roueY = py + 12 + 26 + 12;
-        basY = roueY + ROUE_H + 10;
-        colW = 142;
-        colX = px + pw - pad - colW;
-        grilleX = px + pad;
-        grilleW = colX - 14 - grilleX;
-        grilleY = basY + 12;
-        grilleH = py + ph - pad - grilleY;
-        celluleW = (grilleW - (GRILLE_COLS - 1) * GRILLE_GAP) / GRILLE_COLS;
-        boutonX = colX;
-        boutonW = colW;
-        boutonY = py + ph - pad - 11 - BOUTON_H;
+        pw = PANNEAU_W;
+        ph = PANNEAU_H;
+        px = (width - pw) / 2;
+        py = (height - ph) / 2;
+        pad = 24;
+        roueX = px + 18;
+        roueW = pw - 36;
+        roueY = py + 44;
+        // contenu possible : 10 colonnes centrées, une rangée visible (molette)
+        celluleW = 29;
+        grilleW = GRILLE_COLS * celluleW + (GRILLE_COLS - 1) * GRILLE_GAP;
+        grilleX = px + (pw - grilleW) / 2;
+        basY = py + 168;
+        grilleY = basY + 9;
+        grilleH = GRILLE_H;
+        colX = px + pad;
+        colW = pw - 2 * pad;
+        boutonW = BOUTON_W;
+        boutonX = px + (pw - boutonW) / 2;
+        boutonY = py + 212;
         // carte du gain, au centre de l'écran
         gainW = 214;
         gainH = 200;
@@ -360,7 +364,7 @@ public class CaseOpenScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
         if (dans(mx, my, grilleX, grilleY, grilleW + 6, grilleH)) {
-            grilleScroll = Mth.clamp(grilleScroll - (int) Math.signum(delta) * (GRILLE_H + GRILLE_GAP) / 2, 0, maxScroll());
+            grilleScroll = Mth.clamp(grilleScroll - (int) Math.signum(delta) * (GRILLE_H + GRILLE_GAP), 0, maxScroll());
             return true;
         }
         return super.mouseScrolled(mx, my, delta);
@@ -403,8 +407,9 @@ public class CaseOpenScreen extends Screen {
         lot.fin();
         renderEntete(g);
         renderRoue(g, now);
-        Packets.Card survolee = renderGrille(g, mouseX, mouseY);
+        renderObjet(g, now);
         renderChances(g);
+        Packets.Card survolee = renderGrille(g, mouseX, mouseY);
         renderBouton(g, mouseX, mouseY);
 
         if (gainVisible(now)) {
@@ -426,112 +431,138 @@ public class CaseOpenScreen extends Screen {
         play(ModRegistry.SND_ROLL_TICK.get(), 0.9f + Math.min(0.35f, vitesse / 160f) + random.nextFloat() * 0.06f, 0.4f);
     }
 
+    /** En-tête centré : nom de la caisse en capitales espacées, dessous « N clés · N objets ». */
     private void renderEntete(GuiGraphics g) {
-        int x = px + pad, y = py + 12;
-        int glow = type.glow & 0xFFFFFF, acc = type.accent & 0xFFFFFF;
-        // tuile de la caisse : dégradé de ses couleurs, halo doux, la clé dessus
-        Lot lot = new Lot(g);
-        lot.lueur(x + 13, y + 13, 24, 24, Ui.argb(glow, 70));
-        int a = Ui.mix(glow, 0x0D0F14, 0.25f), b = Ui.mix(acc, 0x0D0F14, 0.35f);
-        lot.rondDegrade(x, y, 26, 26, Ui.argb(a, 255), Ui.argb(Ui.mix(a, b, 0.5f), 255), Ui.argb(b, 255), Ui.argb(Ui.mix(a, b, 0.5f), 255));
-        lot.rondContour(x, y, 26, 26, Ui.argb(0xFFFFFF, 40));
-        lot.fin();
-        CardArt.item(g, icone, x + 13, y + 13, 18);
-
-        int tx = x + 26 + 9;
+        float cx = px + pw / 2f;
         String titre = type.crateName().getString().toUpperCase(Locale.ROOT);
+        float tw = Ui.spacedWidth(font, titre, Ui.BOLD, 1.2f) * 1.25f;
         g.pose().pushPose();
-        g.pose().translate(tx, y + 2, 0);
-        g.pose().scale(1.15f, 1.15f, 1);
-        Ui.spaced(g, font, titre, Ui.BOLD, 0, 0, Ui.argb(Ui.TEXT, 255), 0.8f);
+        g.pose().translate(cx - tw / 2f, py + 13, 0);
+        g.pose().scale(1.25f, 1.25f, 1);
+        Ui.spaced(g, font, titre, Ui.BOLD, 0, 0, Ui.argb(Ui.TEXT, 255), 1.2f);
         g.pose().popPose();
-        String etat = state == State.SPIN || state == State.WAIT ? "gui.heralizcrates.case.state.spin"
-                : state == State.DONE ? "gui.heralizcrates.case.state.done" : "gui.heralizcrates.case.state.preview";
-        String sous = Component.translatable(categoryKey()).getString() + " · " + Component.translatable(etat).getString();
-        Ui.spaced(g, font, sous, CardArt.MINI, tx, y + 17, Ui.argb(Ui.MUTED, 255), 0.9f);
-
-        // pastille des clés, à droite
-        Component lib = free ? Ui.tr(Ui.SMALL, "gui.heralizcrates.case.keys_free")
-                : Ui.tr(Ui.SMALL, "gui.heralizcrates.case.keys_label").append(Ui.lit(" " + keys, Ui.BOLD).withStyle(st -> st.withColor(Ui.OR)));
-        int lw = font.width(lib), pillW = lw + 18, pillH = 15;
-        int pillX = px + pw - pad - pillW, pillY = y + 5;
-        lot = new Lot(g);
-        lot.rond(pillX, pillY, pillW, pillH, Ui.argb(0xFFFFFF, 15));
-        lot.rondContour(pillX, pillY, pillW, pillH, Ui.argb(0xFFFFFF, 20));
-        lot.fin();
-        g.drawString(font, lib, pillX + 9, pillY + 3, Ui.argb(Ui.TEXT, 255), false);
+        String n = Integer.toString(contents.size());
+        String sous = free ? Component.translatable("gui.heralizcrates.case.subtitle_free", n).getString()
+                : keys == 1 ? Component.translatable("gui.heralizcrates.case.subtitle_one", n).getString()
+                : Component.translatable("gui.heralizcrates.case.subtitle", Integer.toString(keys), n).getString();
+        Ui.centered(g, font, Ui.lit(sous, Ui.SMALL), cx, py + 29, Ui.argb(Ui.MUTED, 255));
     }
 
-    /** Sorte de la caisse (« Caisse de boss », « Caisse de vote »…). */
-    private String categoryKey() {
-        return switch (type) {
-            case SUJET_N07, SYLVORN, MERE_DES_RUINES, PORTEUR_DE_PESTE -> "gui.heralizcrates.case.kind.boss";
-            case VOTE -> "gui.heralizcrates.case.kind.vote";
-            case QUETE -> "gui.heralizcrates.case.kind.quest";
-            case EVENT -> "gui.heralizcrates.case.kind.event";
-            default -> "gui.heralizcrates.case.kind.items";
-        };
+    /** Centre vertical des cartes de la roue. */
+    private float roueCy() {
+        return roueY + ROUE_H / 2f;
     }
 
-    private int cartesY() {
-        return roueY + (ROUE_H - CH) / 2;
+    /** Taille d'une carte de la roue selon sa distance au repère (px) : la plus grande au milieu. */
+    private static float tailleCarte(float d) {
+        return CARTE_MAX / (1f + 0.24f * Math.abs(d) / STEP);
+    }
+
+    /** Index de la carte sous le repère (celle dont le centre est le plus proche). */
+    private int indexSousRepere() {
+        return Math.round((view - CW / 2f) / STEP);
     }
 
     /** Carte de la roue sous la souris (roue à l'arrêt). */
     @Nullable
     private Packets.Card carteRoueSous(int mx, int my) {
-        int y0 = cartesY();
-        if (my < y0 || my >= y0 + CH || mx < roueX || mx >= roueX + roueW) return null;
-        float s = mx - (roueX + roueW / 2f) + view;
-        int i = Mth.floor(s / STEP);
-        return s - i * STEP < CW ? at(i) : null;
+        if (mx < roueX || mx >= roueX + roueW || my < roueY || my >= roueY + ROUE_H) return null;
+        float centre = roueX + roueW / 2f;
+        int i = Math.round((mx - centre + view - CW / 2f) / STEP);
+        float d = i * STEP + CW / 2f - view;
+        float t = tailleCarte(d) / 2f;
+        float cx = centre + d, cy = roueCy();
+        return Math.abs(mx - cx) <= t && Math.abs(my - cy) <= t ? at(i) : null;
     }
 
     private void renderRoue(GuiGraphics g, long now) {
         int x0 = roueX, x1 = roueX + roueW, y0 = roueY, y1 = roueY + ROUE_H;
         float centre = roueX + roueW / 2f;
-        Lot lot = new Lot(g);
-        lot.rond(x0, y0, roueW, ROUE_H, Ui.argb(0x000000, 90));
-        lot.rondContour(x0, y0, roueW, ROUE_H, Ui.argb(0xFFFFFF, 15));
-        lot.fin();
 
         boolean fini = state == State.DONE && winIndex >= 0 && winIndex < strip.size() && !idleWrap;
         float pose = fini ? Mth.clamp((now - doneAtMs) / 350f, 0f, 1f) : 0f;
         pose = 1 - (1 - pose) * (1 - pose);
 
-        g.enableScissor(x0 + 1, y0 + 1, x1 - 1, y1 - 1);
-        // les cartes glissent au sous-pixel : base entière + décalage fractionnaire dans la pose (aucun à-coup à la fin)
-        float base = centre - view;
-        int baseI = Mth.floor(base);
-        g.pose().pushPose();
-        g.pose().translate(base - baseI, 0, 0);
-        int y = cartesY();
+        g.enableScissor(x0, y0 - 6, x1, y1 + 6);
         int first = Mth.floor((view - roueW / 2f) / STEP) - 1, last = Mth.floor((view + roueW / 2f) / STEP) + 1;
-        for (int i = first; i <= last; i++) {
+        // des bords vers le milieu : la carte centrale passe par-dessus ses voisines
+        List<Integer> ordre = new ArrayList<>();
+        for (int i = first; i <= last; i++) ordre.add(i);
+        ordre.sort((a, b) -> Float.compare(Math.abs(b * STEP + CW / 2f - view), Math.abs(a * STEP + CW / 2f - view)));
+        int z = 0;
+        for (int i : ordre) {
             Packets.Card c = at(i);
             if (c == null) continue;
-            int x = baseI + i * STEP;
+            float d = i * STEP + CW / 2f - view;
+            float taille = tailleCarte(d);
+            float fondu = Mth.clamp(1f - (Math.abs(d) - STEP * 1.2f) / (roueW / 2f - STEP * 1.2f), 0.25f, 1f);
+            float milieu = Mth.clamp(1f - Math.abs(d) / STEP, 0f, 1f);
             boolean gagnante = fini && i == winIndex;
-            carte(g, c, x, y, CW, CH, 26, gagnante ? pose : 0f, fini && !gagnante ? pose : 0f);
+            g.pose().pushPose();
+            g.pose().translate(0, 0, z += 2);
+            carteRoue(g, c, centre + d, roueCy(), taille, fondu, fini ? (gagnante ? 1f : 0f) : milieu, fini && !gagnante ? pose : 0f);
+            g.pose().popPose();
         }
-        g.pose().popPose();
+        g.disableScissor();
 
-        // bords fondus et repère doré, au-dessus des objets
+        // repère doré au-dessus de la roue
         g.pose().pushPose();
         g.pose().translate(0, 0, 300);
-        lot = new Lot(g);
-        int fondu = Math.round(roueW * 0.18f);
-        lot.horiz(x0, y0, x0 + fondu, y1, Ui.argb(Ui.VERRE, 235), Ui.argb(Ui.VERRE, 0));
-        lot.horiz(x1 - fondu, y0, x1, y1, Ui.argb(Ui.VERRE, 0), Ui.argb(Ui.VERRE, 235));
-        float cx = Math.round(centre) - 1;
-        lot.horiz(cx - 7, y0, cx, y1, Ui.argb(Ui.OR, 0), Ui.argb(Ui.OR, 70));
-        lot.horiz(cx + 2, y0, cx + 9, y1, Ui.argb(Ui.OR, 70), Ui.argb(Ui.OR, 0));
-        lot.rect(cx, y0, cx + 2, y1, Ui.argb(Ui.OR, 255));
-        lot.tri(cx + 1 - 6, y0, cx + 1, y0 + 6, cx + 1 + 6, y0, Ui.argb(Ui.OR, 255));
-        lot.tri(cx + 1, y1 - 6, cx + 1 - 6, y1, cx + 1 + 6, y1, Ui.argb(Ui.OR, 255));
+        Lot lot = new Lot(g);
+        float cx = Math.round(centre);
+        lot.tri(cx - 5, y0 - 8, cx, y0 - 2, cx + 5, y0 - 8, Ui.argb(Ui.OR, 255));
         lot.fin();
         g.pose().popPose();
-        g.disableScissor();
+    }
+
+    /**
+     * Carte de la roue (proposition B) centrée en (cx, cy), de taille px : verre clair, lueur de la rareté derrière l'objet,
+     * trait de couleur en bas. fondu (0..1) : effacement vers les bords ; avant (0..1) : mise en avant (carte du milieu,
+     * contour de la couleur de la rareté) ; eteinte (0..1) : les autres après l'arrêt.
+     */
+    private void carteRoue(GuiGraphics g, Packets.Card c, float cx, float cy, float px, float fondu, float avant, float eteinte) {
+        int col = couleur(c.rarity());
+        int w = Math.round(px), x = Math.round(cx - px / 2f), y = Math.round(cy - px / 2f);
+        Lot lot = new Lot(g);
+        if (avant > 0) {
+            lot.lueur(x + w / 2f, y + w / 2f, w * 0.75f, w * 0.75f, Ui.argb(col, (int) (70 * avant)));
+            lot.rondContour(x - 1, y - 1, w + 2, w + 2, Ui.argb(col, (int) (200 * avant)));
+        }
+        lot.rondVert(x, y, w, w, Ui.argb(0x1C2028, 255), Ui.argb(0x15181F, 255));
+        lot.rondContour(x, y, w, w, Ui.argb(0xFFFFFF, 18));
+        lot.lueur(x + w / 2f, y + w * 0.47f, w * 0.34f, w * 0.3f, Ui.argb(col, (int) (60 + 70 * avant)));
+        float trait = w * 0.34f;
+        lot.rect(x + w / 2f - trait, y + w - 4, x + w / 2f + trait, y + w - 3, Ui.argb(col, 255));
+        lot.fin();
+        CardArt.item(g, c.stack(), x + w / 2f, y + w * 0.47f, w * 0.42f);
+        float voile = Math.max(1f - fondu, 0.6f * eteinte);
+        if (voile > 0) {
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 250);
+            Lot v = new Lot(g);
+            v.rond(x, y, w, w, Ui.argb(Ui.VERRE, (int) (215 * voile)));
+            v.fin();
+            g.pose().popPose();
+        }
+        if (c.count() > 1) {
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 260);
+            Ui.right(g, font, Ui.lit("×" + c.count(), CardArt.MINI_GRAS), x + w - 3, y + 2, Ui.argb(0xFFFFFF, (int) (210 * fondu)));
+            g.pose().popPose();
+        }
+    }
+
+    /** Nom de l'objet sous le repère, puis sa rareté en capitales colorées. */
+    private void renderObjet(GuiGraphics g, long now) {
+        Packets.Card c = at(indexSousRepere());
+        if (c == null) return;
+        float cx = px + pw / 2f;
+        String nom = c.stack().getHoverName().getString() + (c.count() > 1 ? "  ×" + c.count() : "");
+        nom = Ui.ellipsis(font, nom, Ui.BOLD, (int) ((pw - 40) / 1.1f));
+        float nw = font.width(Ui.lit(nom, Ui.BOLD)) * 1.1f;
+        Ui.gros(g, font, Ui.lit(nom, Ui.BOLD), Math.round(cx - nw / 2f), py + 117, 1.1f, Ui.argb(Ui.TEXT, 255));
+        String rn = CardArt.rarity(c.rarity()).displayName().getString().toUpperCase(Locale.ROOT);
+        Ui.spacedCentered(g, font, rn, CardArt.MINI_GRAS, cx, py + 130, Ui.argb(couleur(c.rarity()), 255), 1.4f);
     }
 
     /**
@@ -571,57 +602,101 @@ public class CaseOpenScreen extends Screen {
         g.pose().popPose();
     }
 
-    /** Grille du contenu possible (6 colonnes, molette) ; rend la carte survolée. */
+    /** Mini-grille du contenu possible (10 colonnes, une rangée visible, molette) ; rend la carte survolée. */
     @Nullable
     private Packets.Card renderGrille(GuiGraphics g, int mx, int my) {
         Ui.spaced(g, font, Component.translatable("gui.heralizcrates.case.possible").getString(), CardArt.MINI_GRAS, grilleX, basY, Ui.argb(Ui.MUTED, 255), 1.4f);
         if (contents.isEmpty()) {
-            Ui.spaced(g, font, Component.translatable("gui.heralizcrates.case.empty").getString(), CardArt.MINI, grilleX, grilleY + 4, Ui.argb(Ui.FAINT, 255), 0.6f);
+            Ui.centered(g, font, Ui.lit(Component.translatable("gui.heralizcrates.case.empty").getString(), CardArt.MINI), px + pw / 2f, grilleY + 10, Ui.argb(Ui.FAINT, 255));
             return null;
         }
         Packets.Card survolee = null;
-        g.enableScissor(grilleX - 2, grilleY - 1, grilleX + grilleW + 2, grilleY + grilleH);
+        g.enableScissor(grilleX - 1, grilleY - 1, grilleX + grilleW + 1, grilleY + grilleH + 1);
         for (int i = 0; i < contents.size(); i++) {
             int col = i % GRILLE_COLS, rangee = i / GRILLE_COLS;
             int x = grilleX + col * (celluleW + GRILLE_GAP), y = grilleY + rangee * (GRILLE_H + GRILLE_GAP) - grilleScroll;
             if (y + GRILLE_H < grilleY || y > grilleY + grilleH) continue;
             Packets.Card c = contents.get(i);
-            carte(g, c, x, y, celluleW, GRILLE_H, 18, 0f, 0f);
-            if (my >= grilleY && my < grilleY + grilleH && dans(mx, my, x, y, celluleW, GRILLE_H)) survolee = c;
+            boolean survol = my >= grilleY && my < grilleY + grilleH && dans(mx, my, x, y, celluleW, GRILLE_H);
+            int couleur = couleur(c.rarity());
+            Lot lot = new Lot(g);
+            lot.rond(x, y, celluleW, GRILLE_H, Ui.argb(0xFFFFFF, survol ? 22 : 10));
+            lot.rect(x + 5, y + GRILLE_H - 2, x + celluleW - 5, y + GRILLE_H - 1, Ui.argb(couleur, 255));
+            lot.fin();
+            CardArt.item(g, c.stack(), x + celluleW / 2f, y + GRILLE_H / 2f - 1, 16);
+            if (survol) survolee = c;
         }
         g.disableScissor();
         int max = maxScroll();
         if (max > 0) {
-            // barre de défilement fine à droite de la grille
-            int total = grilleH + max, barH = Math.max(14, grilleH * grilleH / total);
-            int barY = grilleY + (grilleH - barH) * grilleScroll / max;
+            // flèches discrètes : d'autres rangées à la molette
             Lot lot = new Lot(g);
-            lot.rect(grilleX + grilleW + 4, grilleY, grilleX + grilleW + 5, grilleY + grilleH, Ui.argb(0xFFFFFF, 14));
-            lot.rect(grilleX + grilleW + 3, barY, grilleX + grilleW + 6, barY + barH, Ui.argb(0xFFFFFF, 70));
+            int fx = grilleX + grilleW + 5, fy = grilleY + grilleH / 2;
+            if (grilleScroll > 0) lot.tri(fx, fy - 3, fx + 3, fy - 7, fx + 6, fy - 3, Ui.argb(0xFFFFFF, 90));
+            if (grilleScroll < max) lot.tri(fx + 6, fy + 3, fx + 3, fy + 7, fx, fy + 3, Ui.argb(0xFFFFFF, 90));
             lot.fin();
         }
         return survolee;
     }
 
-    /** Colonne « Chances » : une ligne par rareté présente dans la caisse. */
+    /** Chances : une barre fine, une part de couleur par rareté, et sa légende centrée dessous. */
     private void renderChances(GuiGraphics g) {
-        Ui.spaced(g, font, Component.translatable("gui.heralizcrates.case.chances").getString(), CardArt.MINI_GRAS, colX, basY, Ui.argb(Ui.MUTED, 255), 1.4f);
-        int y = grilleY;
+        double total = 0;
+        for (double v : chances) total += v;
+        if (total <= 0) return;
+        int x0 = colX, x1 = colX + colW, y = py + 144;
         Lot lot = new Lot(g);
-        List<Integer> lignes = new ArrayList<>();
+        float x = x0;
+        int dernier = -1;
+        for (int r = 0; r < RARETES.length; r++) if (chances[r] > 0) dernier = r;
         for (int r = 0; r < RARETES.length; r++) {
             if (chances[r] <= 0) continue;
-            int ly = y + lignes.size() * LIGNE_CHANCE;
-            if (ly + LIGNE_CHANCE > boutonY - 6) break;
-            lignes.add(r);
-            lot.rond(colX, ly + 3, 5, 5, Ui.argb(RARETES[r], 255));
-            lot.rect(colX, ly + LIGNE_CHANCE - 1, colX + colW, ly + LIGNE_CHANCE, Ui.argb(0xFFFFFF, 13));
+            float w = (float) (chances[r] / total * (x1 - x0));
+            float fin = r == dernier ? x1 : x + w;
+            lot.rect(x, y, Math.max(x + 1, fin - (r == dernier ? 0 : 0.6f)), y + 2, Ui.argb(RARETES[r], 255));
+            x = fin;
         }
         lot.fin();
-        for (int k = 0; k < lignes.size(); k++) {
-            int r = lignes.get(k), ly = y + k * LIGNE_CHANCE;
-            g.drawString(font, Ui.lit(CardArt.rarity(r).displayName().getString(), Ui.SMALL), colX + 10, ly + 1, Ui.argb(Ui.TEXT, 255), false);
-            Ui.right(g, font, Ui.lit(Ui.pct(chances[r]), Ui.SMALL), colX + colW, ly + 1, Ui.argb(Ui.TEXT, 255));
+        // légende : « ● Commun 52,0 % » ; deux lignes si elle ne tient pas sur une
+        List<String> textes = new ArrayList<>();
+        List<Integer> rangs = new ArrayList<>();
+        for (int r = 0; r < RARETES.length; r++) {
+            if (chances[r] <= 0) continue;
+            textes.add(CardArt.rarity(r).displayName().getString() + " " + Ui.pct(chances[r]));
+            rangs.add(r);
+        }
+        List<List<Integer>> lignes = new ArrayList<>();
+        List<Integer> ligne = new ArrayList<>();
+        float lw = 0;
+        for (int k = 0; k < textes.size(); k++) {
+            float w = 7 + font.width(Ui.lit(textes.get(k), CardArt.MINI)) + 8;
+            if (!ligne.isEmpty() && lw + w > colW) {
+                lignes.add(ligne);
+                ligne = new ArrayList<>();
+                lw = 0;
+            }
+            ligne.add(k);
+            lw += w;
+        }
+        if (!ligne.isEmpty()) lignes.add(ligne);
+        float ly = y + 6;
+        for (List<Integer> l : lignes) {
+            float largeur = -8;
+            for (int k : l) largeur += 7 + font.width(Ui.lit(textes.get(k), CardArt.MINI)) + 8;
+            float lx = Math.round(px + pw / 2f - largeur / 2f);
+            Lot points = new Lot(g);
+            float tx = lx;
+            for (int k : l) {
+                points.rond(Math.round(tx), Math.round(ly + 1), 4, 4, Ui.argb(RARETES[rangs.get(k)], 255));
+                tx += 7 + font.width(Ui.lit(textes.get(k), CardArt.MINI)) + 8;
+            }
+            points.fin();
+            tx = lx;
+            for (int k : l) {
+                g.drawString(font, Ui.lit(textes.get(k), CardArt.MINI), Math.round(tx + 7), Math.round(ly), Ui.argb(Ui.MUTED, 255), false);
+                tx += 7 + font.width(Ui.lit(textes.get(k), CardArt.MINI)) + 8;
+            }
+            ly += 9;
         }
     }
 
@@ -641,19 +716,18 @@ public class CaseOpenScreen extends Screen {
             float m = survol ? 0.15f : state == State.WAIT ? -0.3f : 0f;
             int haut = m >= 0 ? Ui.mix(OR_HAUT, 0xFFFFFF, m) : Ui.mix(OR_HAUT, 0x0D0F14, -m);
             int bas = m >= 0 ? Ui.mix(OR_BAS, 0xFFFFFF, m) : Ui.mix(OR_BAS, 0x0D0F14, -m);
-            lot.rondVert(boutonX, boutonY, boutonW, BOUTON_H, Ui.argb(haut, 255), Ui.argb(bas, 255));
+            lot.pilule(boutonX, boutonY, boutonW, BOUTON_H, Ui.argb(haut, 255), Ui.argb(bas, 255));
         } else {
-            lot.rond(boutonX, boutonY, boutonW, BOUTON_H, Ui.argb(0xFFFFFF, 15));
-            lot.rondContour(boutonX, boutonY, boutonW, BOUTON_H, Ui.argb(0xFFFFFF, 20));
+            lot.pilule(boutonX, boutonY, boutonW, BOUTON_H, Ui.argb(0xFFFFFF, 18), Ui.argb(0xFFFFFF, 12));
         }
         lot.fin();
         String texte = Component.translatable(cle).getString().toUpperCase(Locale.ROOT);
-        Ui.spacedCentered(g, font, texte, Ui.BOLD, boutonX + boutonW / 2f, boutonY + 6, Ui.argb(dore ? OR_TEXTE : Ui.FAINT, 255), 1.2f);
+        Ui.spacedCentered(g, font, texte, Ui.BOLD, boutonX + boutonW / 2f, boutonY + 5, Ui.argb(dore ? OR_TEXTE : Ui.FAINT, 255), 1.2f);
 
         // aide (ou erreur du serveur)
-        float ay = boutonY + BOUTON_H + 4;
+        float ay = boutonY + BOUTON_H + 5;
         if (error != null && ticks - errorAt < 80) {
-            String e = Ui.ellipsis(font, error.getString(), CardArt.MINI, boutonW + 20);
+            String e = Ui.ellipsis(font, error.getString(), CardArt.MINI, pw - 40);
             Ui.centered(g, font, Ui.lit(e, CardArt.MINI), boutonX + boutonW / 2f, ay, Ui.argb(Ui.DANGER, 240));
             return;
         }
@@ -781,6 +855,34 @@ public class CaseOpenScreen extends Screen {
             vert(x, y + 2, x + w, y + h - 2, lerp(haut, bas, 2f / h), lerp(haut, bas, (h - 2f) / h));
             rect(x + 1, y + h - 2, x + w - 1, y + h - 1, lerp(haut, bas, (h - 2f) / h));
             rect(x + 2, y + h - 1, x + w - 2, y + h, bas);
+        }
+
+        /** Bouton en pilule (bouts en demi-cercles), dégradé vertical. */
+        void pilule(int x, int y, int w, int h, int haut, int bas) {
+            float r = h / 2f;
+            vert(x + r, y, x + w - r, y + h, haut, bas);
+            int n = 12;
+            for (int cote = 0; cote < 2; cote++) {
+                float cx = cote == 0 ? x + r : x + w - r, cy = y + r;
+                float sens = cote == 0 ? -1 : 1;
+                for (int i = 0; i < n; i++) {
+                    double a0 = Math.PI * i / n, a1 = Math.PI * (i + 1) / n;
+                    float ax = cx + sens * r * (float) Math.sin(a0), ay = cy - r * (float) Math.cos(a0);
+                    float bx = cx + sens * r * (float) Math.sin(a1), by = cy - r * (float) Math.cos(a1);
+                    int ca = lerp(haut, bas, (ay - y) / h), cb = lerp(haut, bas, (by - y) / h), cc = lerp(haut, bas, 0.5f);
+                    if (cote == 0) {
+                        v(cx, cy, cc);
+                        v(bx, by, cb);
+                        v(ax, ay, ca);
+                        v(ax, ay, ca);
+                    } else {
+                        v(cx, cy, cc);
+                        v(ax, ay, ca);
+                        v(bx, by, cb);
+                        v(bx, by, cb);
+                    }
+                }
+            }
         }
 
         /** Rectangle arrondi en dégradé à quatre coins (tuile de la caisse). */

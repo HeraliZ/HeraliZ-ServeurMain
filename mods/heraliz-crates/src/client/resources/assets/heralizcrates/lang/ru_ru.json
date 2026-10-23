@@ -185,5 +185,8 @@
   "gui.heralizcrates.case.help.keys": "Ключи: магазин, события, задания",
   "gui.heralizcrates.case.help.open": "Пробел — открыть · Esc — закрыть",
   "gui.heralizcrates.case.won": "Ты получил",
-  "gui.heralizcrates.case.again_key": "Ещё (1 ключ)"
+  "gui.heralizcrates.case.again_key": "Ещё (1 ключ)",
+  "gui.heralizcrates.case.subtitle": "Ключи: %s · предметов: %s",
+  "gui.heralizcrates.case.subtitle_one": "Ключи: 1 · предметов: %s",
+  "gui.heralizcrates.case.subtitle_free": "Ключи без ограничений · предметов: %s"
 }
