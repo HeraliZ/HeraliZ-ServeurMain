@@ -31,7 +31,8 @@ final class TabServeur {
             MutableComponent clan = TagClan.prefixe(p);
             String tag = TagClan.tag(clan);
             int couleur = clan == null || clan.getStyle().getColor() == null ? 0xFFFFFF : clan.getStyle().getColor().getValue();
-            out.add(new ReseauGrades.LigneTab(p.getUUID(), g.id, tag.length() > 16 ? tag.substring(0, 16) : tag, couleur));
+            String surnom = SurnomsServeur.surnomAffiche(p);
+            out.add(new ReseauGrades.LigneTab(p.getUUID(), g.id, tag.length() > 16 ? tag.substring(0, 16) : tag, couleur, surnom == null ? "" : surnom));
         }
         return out;
     }

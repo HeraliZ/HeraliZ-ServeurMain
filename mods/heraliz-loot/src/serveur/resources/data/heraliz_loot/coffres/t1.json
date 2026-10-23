@@ -6,7 +6,7 @@
   {"item": "geckolib:item_lead_pipe", "nombre": [1, 1], "poids": 12600000, "_cat": "melee_basique", "_base": 126},
   {"item": "geckolib:item_machete", "nombre": [1, 1], "poids": 4200000, "_cat": "melee_basique", "_base": 42},
   {"item": "geckolib:item_sledge_hammer", "nombre": [1, 1], "poids": 2100000, "_cat": "melee_basique", "_base": 21},
-  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 550462500},
+  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 487462500},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 409500},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:64,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 409500},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 409500},
@@ -615,6 +615,7 @@
   {"item": "backpacked:backpack_tactical_red", "nombre": [1, 1], "_cat": "sacs", "poids": 43750},
   {"item": "backpacked:backpack_tactical_snow", "nombre": [1, 1], "_cat": "sacs", "poids": 43750},
   {"item": "backpacked:backpack_tactical_white", "nombre": [1, 1], "_cat": "sacs", "poids": 43750},
-  {"item": "backpacked:backpack_tactical_yellow", "nombre": [1, 1], "_cat": "sacs", "poids": 43750}
+  {"item": "backpacked:backpack_tactical_yellow", "nombre": [1, 1], "_cat": "sacs", "poids": 43750},
+  {"item": "heralizcasino:jeton_1", "nombre": [1, 5], "_cat": "capsules", "poids": 63000000}
  ]
 }

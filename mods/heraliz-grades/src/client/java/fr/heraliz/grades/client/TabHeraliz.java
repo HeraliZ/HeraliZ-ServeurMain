@@ -88,7 +88,9 @@ public final class TabHeraliz {
             ReseauGrades.LigneTab l = INFOS.get(uuid);
             Grade gr = l == null ? null : Grade.parId(l.grade());
             if (gr == null || gr.type == Grade.Type.SOUTIEN) gr = Grade.SURVIVANT;
-            tous.add(new Joueur(info, info.getProfile().getName(), gr, l == null ? "" : l.clan(), l == null ? 0xFFFFFF : l.couleurClan()));
+            // surnom (/nick) précédé de « ~ » : on sait que ce n'est pas le vrai pseudo (/nick qui <surnom> le donne)
+            String nom = l != null && !l.surnom().isEmpty() ? "~" + l.surnom() : info.getProfile().getName();
+            tous.add(new Joueur(info, nom, gr, l == null ? "" : l.clan(), l == null ? 0xFFFFFF : l.couleurClan()));
         }
         tous.sort(Comparator.comparingInt(Joueur::poids).reversed().thenComparing(j -> j.nom().toLowerCase(Locale.ROOT)));
         List<Joueur> staff = tous.stream().filter(Joueur::staff).toList();

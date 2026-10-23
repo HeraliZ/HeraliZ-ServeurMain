@@ -2007,7 +2007,8 @@ public final class Cinematique {
 
     @SubscribeEvent
     public static void nom(RenderNameTagEvent e) {
-        if (actif && e.getEntity() == moi) {
+        // aucun nom de joueur pendant la cinématique (ni le sien, ni celui des autres arrivants)
+        if (actif && (e.getEntity() == moi || e.getEntity() instanceof net.minecraft.world.entity.player.Player)) {
             e.setResult(Event.Result.DENY);
         }
     }
@@ -2055,7 +2056,9 @@ public final class Cinematique {
 
     @SubscribeEvent
     public static void cacherJoueur(RenderPlayerEvent.Pre e) {
-        if (actif && e.getEntity() == Minecraft.getInstance().player) {
+        // seul dans sa cinématique : tous les vrais joueurs sont cachés (soi et les autres arrivants), seuls les
+        // acteurs de la scène (entités du client, numéros négatifs) restent
+        if (actif && e.getEntity().getId() >= 0) {
             e.setCanceled(true);
         }
     }

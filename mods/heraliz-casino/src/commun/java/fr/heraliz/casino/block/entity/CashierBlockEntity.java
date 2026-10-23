@@ -15,9 +15,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nullable;
 
 /**
- * Caisse du casino : achat de jetons de casino contre des jetons du serveur (mod HeraliZ Economie, facultatif) ou
- * des objets, revente des jetons de casino (jetons du serveur, objets ou commande d'economie).
- * Les taux sont dans config/heralizcasino/casino.json (section "caisse").
+ * Caisse du casino : echange des capsules (jetons de casino, trouvees sur la carte) contre des objets. Le change avec
+ * les herals est ferme par le code (EconomieServeur.CHANGE_HERALS, choix du proprietaire du 22/10).
+ * Les prix sont dans config/heralizcasino/casino.json (section "caisse").
  */
 public class CashierBlockEntity extends MachineBlockEntity {
     public static final int ACTION_BUY = 0, ACTION_SELL = 1, ACTION_CASH_CMD = 2;
@@ -39,6 +39,38 @@ public class CashierBlockEntity extends MachineBlockEntity {
         if (id == null) return null;
         Item it = ForgeRegistries.ITEMS.getValue(id);
         return it == null || it == Items.AIR ? null : it;
+    }
+
+    /**
+     * Objet d'un echange tel que la caisse le donne : l'objet et son NBT (cle "nbt" de l'echange, ex. un soin
+     * {ConsumableId:"heralisz_heal:ibuprofen"} ou des munitions {AmmoId:"tacz:9mm"}), ou null si l'objet ou le NBT est
+     * invalide.
+     */
+    @Nullable
+    public static ItemStack stack(CasinoConfig.Exchange e) {
+        Item it = item(e);
+        if (it == null) return null;
+        ItemStack s = new ItemStack(it);
+        if (e.nbt != null && !e.nbt.isBlank()) {
+            try {
+                s.setTag(net.minecraft.nbt.TagParser.parseTag(e.nbt));
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+        return s;
+    }
+
+    /** Nombre d'objets identiques a "ref" (meme objet, meme NBT ; sans NBT : objets "simples") dans l'inventaire. */
+    public static int countStack(net.minecraft.world.entity.player.Player p, ItemStack ref) {
+        if (!ref.hasTag()) return countItems(p, ref.getItem());
+        int n = 0;
+        Inventory inv = p.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (ItemStack.isSameItemSameTags(s, ref)) n += s.getCount();
+        }
+        return n;
     }
 
     /** Nombre d'objets "simples" (sans NBT) de ce type dans l'inventaire. */

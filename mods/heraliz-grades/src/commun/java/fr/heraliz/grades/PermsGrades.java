@@ -35,8 +35,20 @@ public final class PermsGrades {
    public static final Perm PLANQUE = new Perm("planque_lignes", Sorte.LIGNES, 1, 6, 1, 1, false, "coffres");
    public static final Perm COFFRE_VIP = new Perm("coffre_vip_lignes", Sorte.LIGNES, 0, 6, 1, 0, false, "coffres");
    public static final Perm ZONES_VIP = new Perm("zones_vip", Sorte.OUI_NON, 0, 1, 1, 0, false, "coffres");
+   /** Réduction en pourcentage du délai entre deux /home (CRac, sur le délai de l'arbre du clan) : 22/10, grades boutique. */
+   public static final Perm TP_REDUCTION = new Perm("tp_reduction", Sorte.NOMBRE, 0, 90, 5, 0, false, "deplacements");
+   /**
+    * Cases du coffre VIP (« Safe Sentinel », HeraliZ Utils), 0 à 54 : remplace « coffre_vip_lignes » (22/10, choix du
+    * propriétaire : Rescapé 3, Traqueur 6, Roi de la Zone 9 cases). 0 = pas d'accès.
+    */
+   public static final Perm COFFRE_VIP_CASES = new Perm("coffre_vip_cases", Sorte.NOMBRE, 0, 54, 1, 0, false, "coffres");
+   /** Droit au surnom (/nick) : 22/10, Traqueur et Roi de la Zone. */
+   public static final Perm NICK = new Perm("nick", Sorte.OUI_NON, 0, 1, 1, 0, false, "coffres");
+   /** Droit au chat en couleur (/chatcouleur) : 22/10, Roi de la Zone. */
+   public static final Perm CHAT_COULEUR = new Perm("chat_couleur", Sorte.OUI_NON, 0, 1, 1, 0, false, "coffres");
 
-   public static final List<Perm> TOUTES = List.of(TPA_RECHARGE, TPA_DELAI, HOMES, HOME_RECHARGE, RTP_RECHARGE, PLANQUE, COFFRE_VIP, ZONES_VIP);
+   public static final List<Perm> TOUTES = List.of(TPA_RECHARGE, TPA_DELAI, HOMES, HOME_RECHARGE, RTP_RECHARGE, PLANQUE, COFFRE_VIP, ZONES_VIP,
+           TP_REDUCTION, COFFRE_VIP_CASES, NICK, CHAT_COULEUR);
 
    private PermsGrades() {
    }
@@ -49,16 +61,30 @@ public final class PermsGrades {
    /** Réglages d'origine des grades internes (ceux d'avant la 2.0.0) ; le fichier des grades les remplace ensuite. */
    static void defauts() {
       for (Perm p : TOUTES) Grade.SURVIVANT.perms.put(p.cle(), p.defaut());
-      regler(Grade.RESCAPE, 285, 2, 1);
-      regler(Grade.TRAQUEUR, 270, 3, 1);
-      regler(Grade.ROI_DE_LA_ZONE, 255, 4, 1);
-      regler(Grade.STREAMER, 285, 2, 1);
+      // 22/10 : /tpa -10, -20, -30 % (5 min pour Survivant), /home réduit d'autant, coffre VIP en cases, surnom, chat en couleur
+      regler(Grade.RESCAPE, 270, 2, 1, 10, 3, 0, 0);
+      regler(Grade.TRAQUEUR, 240, 3, 1, 20, 6, 1, 0);
+      regler(Grade.ROI_DE_LA_ZONE, 210, 4, 1, 30, 9, 1, 1);
+      regler(Grade.STREAMER, 285, 2, 1, 0, 0, 0, 0);
    }
 
-   private static void regler(Grade g, int tpa, int homes, int vip) {
+   private static void regler(Grade g, int tpa, int homes, int vip, int reduction, int casesVip, int nick, int chatCouleur) {
       g.perms.put(TPA_RECHARGE.cle(), tpa);
       g.perms.put(HOMES.cle(), homes);
       g.perms.put(COFFRE_VIP.cle(), vip);
       g.perms.put(ZONES_VIP.cle(), 1);
+      g.perms.put(TP_REDUCTION.cle(), reduction);
+      g.perms.put(COFFRE_VIP_CASES.cle(), casesVip);
+      g.perms.put(NICK.cle(), nick);
+      g.perms.put(CHAT_COULEUR.cle(), chatCouleur);
+   }
+
+   /** Réglages du 22/10 d'un grade boutique d'origine (migration du fichier des grades, version 2) ; null pour les autres. */
+   public static java.util.Map<String, Integer> reglagesBoutique(Grade g) {
+      if (g == Grade.RESCAPE) return java.util.Map.of(TPA_RECHARGE.cle(), 270, TP_REDUCTION.cle(), 10, COFFRE_VIP_CASES.cle(), 3);
+      if (g == Grade.TRAQUEUR) return java.util.Map.of(TPA_RECHARGE.cle(), 240, TP_REDUCTION.cle(), 20, COFFRE_VIP_CASES.cle(), 6, NICK.cle(), 1);
+      if (g == Grade.ROI_DE_LA_ZONE) return java.util.Map.of(TPA_RECHARGE.cle(), 210, TP_REDUCTION.cle(), 30, COFFRE_VIP_CASES.cle(), 9, NICK.cle(), 1,
+              CHAT_COULEUR.cle(), 1);
+      return null;
    }
 }

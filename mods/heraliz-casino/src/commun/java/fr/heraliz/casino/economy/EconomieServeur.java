@@ -62,9 +62,16 @@ public final class EconomieServeur {
         HeralizCasino.LOGGER.error("[HeralizCasino] HeraliZ Economie incompatible : change en jetons du serveur desactive", t);
     }
 
-    /** Change en jetons du serveur ouvert : mod present et section caisse.economie active. */
+    /**
+     * Choix du proprietaire (22/10) : plus aucun echange herals <-> capsules du casino (ni achat, ni revente, ni entree
+     * payee avec le compte), ca casserait l'economie. Les capsules se trouvent sur la carte (loot) et s'echangent contre
+     * des objets a la caisse. Verrou du CODE : aucun reglage de casino.json ne peut rouvrir le change.
+     */
+    public static final boolean CHANGE_HERALS = false;
+
+    /** Change en jetons du serveur ouvert : verrou du code leve, mod present et section caisse.economie active. */
     public static boolean ouvert() {
-        return present() && CasinoConfig.get().caisse.economie.actif;
+        return CHANGE_HERALS && present() && CasinoConfig.get().caisse.economie.actif;
     }
 
     /** Comptes utilisables maintenant (serveur demarre, fil serveur). */
@@ -92,7 +99,8 @@ public final class EconomieServeur {
 
     /** Retire le montant du compte ; faux (et rien ne change) si le solde ne suffit pas ou sans economie. */
     public static boolean retirer(UUID joueur, long montant, String motif) {
-        if (montant <= 0 || !disponible()) return false;
+        // verrou : le casino ne touche jamais au compte en herals (voir CHANGE_HERALS)
+        if (!ouvert() || montant <= 0 || !disponible()) return false;
         try {
             return pont.retirer(joueur, montant, motif);
         } catch (LinkageError e) {
@@ -114,7 +122,8 @@ public final class EconomieServeur {
 
     /** Verse le montant sur le compte ; faux sans economie (appeler {@link #peutRecevoir} avant). */
     public static boolean deposer(UUID joueur, long montant, String motif) {
-        if (montant <= 0 || !disponible()) return false;
+        // verrou : le casino ne verse jamais de herals (voir CHANGE_HERALS)
+        if (!ouvert() || montant <= 0 || !disponible()) return false;
         try {
             pont.deposer(joueur, montant, motif);
             return true;

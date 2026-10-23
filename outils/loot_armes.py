@@ -102,6 +102,21 @@ COMPOSANTS_PLUS = {"clou": 3.0, "sac_ciment": 3.0, "equerres_acier": 3.0, "bocal
 # composants ajoutés en plus dans un palier, hors raretés du palier (nombre pour 100 conteneurs)
 EN_PLUS = {7: {"clou": 2, "sac_ciment": 2}}
 IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
+# capsules du casino (HeraliZ Casino, objets heralizcasino:jeton_*), choix du propriétaire (22/10) : plus aucun héral
+# dans le casino, les capsules se trouvent sur la carte et s'échangent contre des objets à la caisse. Nombre de piles
+# pour 100 conteneurs, puis, par palier, (objet, quantité [min, max], part des piles) ; plus de valeur en haut.
+CAPSULE = "heralizcasino:"
+CAPSULES_POUR_100 = {1: 8, 2: 10, 3: 12, 4: 14, 5: 16, 6: 18, 7: 25}
+CAPSULES = {
+    1: [("jeton_1", [1, 5], 1.0)],
+    2: [("jeton_1", [2, 8], 1.0)],
+    3: [("jeton_1", [3, 10], 0.7), ("jeton_10", [1, 2], 0.3)],
+    4: [("jeton_1", [3, 10], 0.55), ("jeton_10", [1, 3], 0.45)],
+    5: [("jeton_1", [5, 10], 0.4), ("jeton_10", [1, 3], 0.6)],
+    6: [("jeton_10", [1, 5], 0.85), ("jeton_100", [1, 1], 0.15)],
+    7: [("jeton_10", [3, 6], 0.6), ("jeton_100", [1, 2], 0.4)],
+}
+VALEUR_CAPSULE = {"jeton_1": 1, "jeton_10": 10, "jeton_100": 100}
 
 
 def gun_id(e):
@@ -216,7 +231,7 @@ def familles():
 
 
 def de_famille(e):
-    return e.get("_cat") in POUR_100 or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT, PLAN))
+    return e.get("_cat") in POUR_100 or e.get("_cat") == "capsules" or e["item"].startswith(CAPSULE) or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT, PLAN))
 
 
 def mult_autre(e, t):
@@ -295,6 +310,7 @@ def ecrire():
         cases = sum(data["emplacements"]) / 2
         p = {f: POUR_100[f][t] / 100 / cases for f in fams}
         base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
+        p["capsules"] = CAPSULES_POUR_100[t] / 100 / cases
         p["vide"] = max(0.0, 1 - sum(p.values()) - AUTRES_POUR_100[t] / 100 / cases)
         actifs = sum(base)
         rel = []
@@ -307,6 +323,8 @@ def ecrire():
                 s = sum(x for _, x in liste)
                 for e, x in liste:
                     rel.append((e, f, parts[r] / somme_parts * x / s, r))
+        for i, quantite, part in CAPSULES[t]:
+            rel.append(({"item": CAPSULE + i, "nombre": quantite, "_cat": "capsules"}, "capsules", part, None))
         for i, n in EN_PLUS.get(t, {}).items():
             e, r = next((e, r) for r, l in fams["composants"].items() for e, _ in l if e["item"] == COMPOSANT + i)
             p["plus_" + i] = n / 100 / cases
@@ -327,7 +345,7 @@ def ecrire():
         for (e, f, v, r), w in zip(rel, poids):
             n = dict(e)
             n["poids"] = round(w)
-            if t == 7:  # la rareté inscrite ne sert qu'aux coffres T7 (animations) : sinon lue dans raretes.json
+            if t == 7 and r:  # la rareté inscrite ne sert qu'aux coffres T7 (animations) : sinon lue dans raretes.json
                 n["rarete"] = r
             objets.append(n)
         data["objets"] = objets
@@ -405,7 +423,7 @@ def simuler(essais=1000):
         objs = [e for e in data["objets"] if not e["item"].startswith(IGNORES)]
         w = [e["poids"] for e in objs]
         c = {f: Counter() for f in POUR_100}
-        balles = 0
+        balles = capsules = 0
         for _ in range(essais * 100):
             for _ in range(random.randint(*data["emplacements"])):
                 e = random.choices(objs, w)[0]
@@ -414,9 +432,11 @@ def simuler(essais=1000):
                     c[f][r] += 1
                 elif e["item"] == "tacz:ammo":
                     balles += random.randint(*e["nombre"])
+                elif e["item"].startswith(CAPSULE):
+                    capsules += random.randint(*e["nombre"]) * VALEUR_CAPSULE.get(e["item"][len(CAPSULE):], 0)
         print(f"T{t} :", " | ".join(f"{sum(c[f].values()) / essais:.1f} {f} "
                                      + str({r: round(c[f][r] / essais, 2) for r in ORDRE if c[f][r]}) for f in c),
-              f"| {balles / essais:.0f} balles")
+              f"| {balles / essais:.0f} balles | {capsules / essais:.0f} capsules (valeur)")
 
 
 if __name__ == "__main__":

@@ -58,7 +58,7 @@ public final class CasinoConfig {
         /** Version du fichier (mise a jour des anciens reglages par defaut) ; 0 = fichier d'avant la 1.4.1. */
         public int version;
 
-        public static final int VERSION = 5;
+        public static final int VERSION = 6;
 
         private static DuelRules rps() {
             DuelRules r = new DuelRules();
@@ -87,6 +87,20 @@ public final class CasinoConfig {
                     fresh.maxBet = souffleLoup.maxBet;
                 }
                 souffleLoup = fresh;
+            }
+            if (version < 6 && caisse != null) {
+                // 2.5.0 (choix du proprietaire, 22/10) : plus aucun change herals <-> capsules, entree libre, et les
+                // capsules trouvees sur la carte s'echangent contre des objets (catalogue de depart si l'ancienne liste
+                // d'usine emeraude / or / diamant n'avait pas ete changee)
+                if (caisse.economie != null) {
+                    caisse.economie.actif = false;
+                    caisse.economie.achat = false;
+                    caisse.economie.vente = false;
+                    caisse.economie.entree = false;
+                }
+                if (caisse.entree != null) caisse.entree.prix = 0;
+                caisse.echangesObjets = true;
+                if (caisse.echanges == null || anciensEchanges(caisse.echanges)) caisse.echanges = defaultExchanges();
             }
             version = VERSION;
         }
@@ -160,12 +174,15 @@ public final class CasinoConfig {
         public long jackpotFullBet = 100;
     }
 
-    /** Caisse : echange jetons du serveur <-> jetons de casino, et objets <-> jetons de casino. */
+    /**
+     * Caisse : les capsules (jetons de casino, trouvees sur la carte) s'echangent contre des objets. Le change avec les
+     * herals est ferme par le code (EconomieServeur.CHANGE_HERALS), quels que soient les reglages "economie".
+     */
     public static class Cashier {
-        /** Change avec les jetons du serveur (mod HeraliZ Economie ; ignore s'il est absent). */
+        /** Change avec les herals : FERME par le code (EconomieServeur.CHANGE_HERALS), garde pour l'ancien fichier. */
         public JetonsServeur economie = new JetonsServeur();
-        /** false : les echanges d'objets (emeraude, or, diamant...) sont fermes, la liste "echanges" reste dans le fichier. */
-        public boolean echangesObjets = false;
+        /** false : les echanges d'objets sont fermes, la liste "echanges" reste dans le fichier. */
+        public boolean echangesObjets = true;
         public List<Exchange> echanges = defaultExchanges();
         /** Encaissements par commande (ex. economie d'un plugin) : jetons -> commande console. Vide = desactive. */
         public List<CommandExchange> encaissements = new ArrayList<>();
@@ -180,16 +197,16 @@ public final class CasinoConfig {
      */
     public static class JetonsServeur {
         public String aide = AIDE;
-        /** Change ouvert (le mod economie doit aussi etre installe). */
-        public boolean actif = true;
+        /** Change ouvert (le mod economie doit aussi etre installe) ; sans effet tant que EconomieServeur.CHANGE_HERALS est faux. */
+        public boolean actif = false;
         /** Taux : jetons du serveur... */
         public long jetonsServeur = 1;
         /** ...pour ce nombre de jetons de casino. */
         public long jetonsCasino = 1;
         /** Le joueur peut acheter des jetons de casino avec son compte. */
-        public boolean achat = true;
+        public boolean achat = false;
         /** Le joueur peut revendre ses jetons de casino contre des jetons sur son compte. */
-        public boolean vente = true;
+        public boolean vente = false;
         /** L'entree du casino peut se payer avec le compte (au meme taux), si le joueur n'a pas assez de jetons de casino. */
         public boolean entree = false;
         /**
@@ -198,7 +215,8 @@ public final class CasinoConfig {
          */
         public double commissionRevente = 0.05;
 
-        static final String AIDE = "Change avec les herals, la monnaie du serveur (HeraliZ Economie) : jetons_serveur herals du compte = "
+        static final String AIDE = "FERME par le code (choix du proprietaire : plus aucun echange herals <-> capsules). "
+                + "Change avec les herals, la monnaie du serveur (HeraliZ Economie) : jetons_serveur herals du compte = "
                 + "jetons_casino jetons du casino, dans les deux sens. achat / vente / entree : autoriser l'achat, la revente, le paiement de l'entree. "
                 + "commission_revente : part gardee par le casino a la revente (0.05 = 5 %).";
 
@@ -218,8 +236,8 @@ public final class CasinoConfig {
 
     /** Entree payante de la zone du casino et expulsion des joueurs fauches. */
     public static class Entree {
-        /** Prix d'entree (jetons, ou objets de la caisse pour la meme valeur) ; 0 = entree libre. */
-        public long prix = 100;
+        /** Prix d'entree (capsules, ou objets de la caisse pour la meme valeur) ; 0 = entree libre (par defaut). */
+        public long prix = 0;
         /**
          * Delai (minutes) pour entrer apres avoir paye. Le ticket ne vaut que pour une entree : qui ressort de la salle
          * repaie. 0 = juste le temps de passer la porte.
@@ -246,18 +264,28 @@ public final class CasinoConfig {
     public static class Exchange {
         /** Objet echange (identifiant Minecraft). */
         public String item = "minecraft:emerald";
-        /** Jetons pour UN objet. */
+        /**
+         * NBT de l'objet donne par la caisse (vide : aucun), ex. {ConsumableId:"heralisz_heal:ibuprofen"} pour un soin.
+         * Un echange avec NBT ne sert qu'a la revente des capsules (jamais d'achat de capsules avec cet objet).
+         */
+        public String nbt = "";
+        /** Capsules (jetons de casino) pour UN objet. */
         public long jetons = 10;
-        /** Le joueur peut acheter des jetons avec cet objet. */
-        public boolean achat = true;
-        /** Le joueur peut revendre des jetons contre cet objet. */
+        /** Le joueur peut acheter des capsules avec cet objet (ferme partout : les capsules se trouvent sur la carte). */
+        public boolean achat = false;
+        /** Le joueur peut echanger des capsules contre cet objet. */
         public boolean vente = true;
 
         public Exchange() {
         }
 
         Exchange(String item, long jetons, boolean achat, boolean vente) {
+            this(item, "", jetons, achat, vente);
+        }
+
+        Exchange(String item, String nbt, long jetons, boolean achat, boolean vente) {
             this.item = item;
+            this.nbt = nbt;
             this.jetons = jetons;
             this.achat = achat;
             this.vente = vente;
@@ -292,12 +320,32 @@ public final class CasinoConfig {
         return m;
     }
 
+    /**
+     * Catalogue de depart (PROVISOIRE, 22/10) : capsules -> objets seulement, rien qui donne un avantage en combat ni
+     * qui casse l'economie (materiaux de base, nourriture, soins Commun / Peu commun, munitions de 9 mm, Bonus de loot
+     * et cle de la caisse des emotes, cheres). A regler dans casino.json (ou la Tablette du Directeur).
+     */
     private static List<Exchange> defaultExchanges() {
         List<Exchange> l = new ArrayList<>();
-        l.add(new Exchange("minecraft:emerald", 10, true, true));
-        l.add(new Exchange("minecraft:gold_ingot", 5, true, true));
-        l.add(new Exchange("minecraft:diamond", 50, true, true));
+        l.add(new Exchange("heraliz_composants:brindilles", 4, false, true));
+        l.add(new Exchange("heraliz_composants:planches", 20, false, true));
+        l.add(new Exchange("heraliz_composants:clou", 25, false, true));
+        l.add(new Exchange("geckolib:food_mre", 15, false, true));
+        l.add(new Exchange("heralisz_tactical:consumable", "{ConsumableId:\"heralisz_heal:ibuprofen\"}", 30, false, true));
+        l.add(new Exchange("heralisz_tactical:consumable", "{ConsumableId:\"heralisz_heal:attelle_bandage\"}", 60, false, true));
+        l.add(new Exchange("tacz:ammo", "{AmmoId:\"tacz:9mm\"}", 3, false, true));
+        l.add(new Exchange("heralisz_utils:document_lootbonus", 2500, false, true));
+        l.add(new Exchange("heralizcrates:spectacle_key", 5000, false, true));
         return l;
+    }
+
+    /** Ancienne liste d'usine (emeraude, or, diamant), remplacee par le catalogue des capsules a la mise a jour. */
+    static boolean anciensEchanges(List<Exchange> l) {
+        if (l.size() != 3) return false;
+        for (Exchange e : l) {
+            if (e == null || !java.util.Set.of("minecraft:emerald", "minecraft:gold_ingot", "minecraft:diamond").contains(e.item)) return false;
+        }
+        return true;
     }
 
     // =================================================================== acces

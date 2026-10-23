@@ -315,7 +315,7 @@ public final class ZoneManager {
         Offer best = null;
         for (CasinoConfig.Exchange e : CasinoConfig.get().caisse.echanges) {
             if (!CasinoConfig.get().caisse.echangesObjets) break;
-            if (!e.achat || e.jetons <= 0) continue;
+            if (!e.achat || e.jetons <= 0 || (e.nbt != null && !e.nbt.isBlank())) continue;
             Item it = CashierBlockEntity.item(e);
             if (it == null) continue;
             long need = (price + e.jetons - 1) / e.jetons;
@@ -399,10 +399,13 @@ public final class ZoneManager {
         return !engaged(level, zone, p.getUUID());
     }
 
-    /** L'entree peut se payer avec les jetons du compte (mod HeraliZ Economie present, change et option ouverts). */
+    /**
+     * L'entree peut se payer avec les herals du compte : jamais depuis le 22/10 (verrou du code
+     * EconomieServeur.CHANGE_HERALS, choix du proprietaire), quels que soient les reglages.
+     */
     private static boolean serverEntry() {
         CasinoConfig.JetonsServeur e = CasinoConfig.get().caisse.economie;
-        return e.entree && EconomieServeur.ouvert() && EconomieServeur.disponible();
+        return EconomieServeur.CHANGE_HERALS && e.entree && EconomieServeur.ouvert() && EconomieServeur.disponible();
     }
 
     /**
@@ -417,7 +420,7 @@ public final class ZoneManager {
         }
         if (!CasinoConfig.get().caisse.echangesObjets) return false;
         for (CasinoConfig.Exchange e : CasinoConfig.get().caisse.echanges) {
-            if (!e.achat || e.jetons <= 0) continue;
+            if (!e.achat || e.jetons <= 0 || (e.nbt != null && !e.nbt.isBlank())) continue;
             Item it = CashierBlockEntity.item(e);
             if (it != null && CashierBlockEntity.countItems(p, it) > 0) return true;
         }

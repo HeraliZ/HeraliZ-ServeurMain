@@ -29,9 +29,19 @@ public class DrapeauBlockEntity extends BlockEntity {
     @Nullable
     public Banniere banniere;
     public EtatZone etat = EtatZone.NEUTRE;
+    /**
+     * Cercle de capture (ClansConfig.RAYON_CAPTURE / HAUTEUR_CAPTURE, config COMMON non envoyee aux joueurs) : recopie
+     * par le serveur dans le NBT synchronise pour que le rendu dessine la zone de capture ; 10 / 6 par defaut.
+     */
+    public int rayonCapture = RAYON_DEFAUT, hauteurCapture = HAUTEUR_DEFAUT;
+    public static final int RAYON_DEFAUT = 10, HAUTEUR_DEFAUT = 6;
     /** Cache du rendu client (etiquette) : cle et objet, geres par DrapeauRenderer. */
     public transient String clientCle;
     public transient Object clientCache;
+    /** Cache du rendu client (mur de la zone de capture) : hauteur du sol par segment, gere par DrapeauRenderer. */
+    public transient float[] clientSol;
+    public transient long clientSolTick = Long.MIN_VALUE;
+    public transient int clientSolCle;
 
     /** Chargement cote serveur (Territoires.rafraichirDrapeau) : branche par la partie serveur, neutre sans elle. */
     public static final Crochet<DrapeauBlockEntity> CHARGEMENT_SERVEUR = new Crochet<>();
@@ -46,13 +56,30 @@ public class DrapeauBlockEntity extends BlockEntity {
         zoneNom = zoneNom == null ? "" : zoneNom;
         proprioTag = proprioTag == null ? "" : proprioTag;
         etat = etat == null ? EtatZone.NEUTRE : etat;
-        if (this.zoneId.equals(zoneId) && this.zoneNom.equals(zoneNom) && this.proprioTag.equals(proprioTag)
+        boolean cercle = lireCercle();
+        if (!cercle && this.zoneId.equals(zoneId) && this.zoneNom.equals(zoneNom) && this.proprioTag.equals(proprioTag)
                 && Objects.equals(this.banniere, banniere) && this.etat == etat) return false;
         this.zoneId = zoneId;
         this.zoneNom = zoneNom;
         this.proprioTag = proprioTag;
         this.banniere = banniere;
         this.etat = etat;
+        return true;
+    }
+
+    /** Cote serveur : relit le cercle de capture dans la config ; vrai s'il a change. */
+    private boolean lireCercle() {
+        if (level == null || level.isClientSide) return false;
+        int r, h;
+        try {
+            r = fr.heralisz.clans.ClansConfig.RAYON_CAPTURE.get();
+            h = fr.heralisz.clans.ClansConfig.HAUTEUR_CAPTURE.get();
+        } catch (RuntimeException e) {
+            return false; // config pas encore chargee : on garde les valeurs actuelles
+        }
+        if (r == rayonCapture && h == hauteurCapture) return false;
+        rayonCapture = r;
+        hauteurCapture = h;
         return true;
     }
 
@@ -76,6 +103,8 @@ public class DrapeauBlockEntity extends BlockEntity {
         tag.putString("zoneNom", zoneNom);
         tag.putString("proprio", proprioTag);
         tag.putInt("etat", etat.ordinal());
+        tag.putInt("rayonCapture", rayonCapture);
+        tag.putInt("hauteurCapture", hauteurCapture);
         // banniere v2 en JSON compact (calques, formes par cle) ; voir load() pour l'ancien format
         if (banniere != null) tag.putString("banniere", banniere.toJson().toString());
     }
@@ -87,6 +116,8 @@ public class DrapeauBlockEntity extends BlockEntity {
         zoneNom = tag.getString("zoneNom");
         proprioTag = tag.getString("proprio");
         etat = EtatZone.parOrdinal(tag.getInt("etat"));
+        rayonCapture = tag.contains("rayonCapture") ? Math.max(1, Math.min(64, tag.getInt("rayonCapture"))) : RAYON_DEFAUT;
+        hauteurCapture = tag.contains("hauteurCapture") ? Math.max(1, Math.min(64, tag.getInt("hauteurCapture"))) : HAUTEUR_DEFAUT;
         banniere = null;
         if (tag.contains("banniere")) {
             // migration : un ancien drapeau (v1 : embleme + couleurEmbleme, sans calques) devient une banniere v2 a un
@@ -100,6 +131,7 @@ public class DrapeauBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag() {
+        lireCercle(); // serveur : toujours les valeurs de la config dans ce qui part aux joueurs
         return saveWithoutMetadata();
     }
 
@@ -109,11 +141,17 @@ public class DrapeauBlockEntity extends BlockEntity {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    /** Boite de rendu : le mat fait 5 blocs, le tissu depasse de 2 blocs, l'etiquette est a 5,7. */
+    /**
+     * Boite de rendu : le mat fait 5 blocs, le tissu depasse de 2 blocs, l'etiquette est a 5,7 ; le mur de la zone de
+     * capture va jusqu'a rayonCapture (+1) autour et hauteurCapture (+2, hauteur du mur) au-dessus et en dessous.
+     */
     @Override
     public AABB getRenderBoundingBox() {
         BlockPos p = getBlockPos();
-        return new AABB(p.getX() - 2.5, p.getY(), p.getZ() - 2.5, p.getX() + 3.5, p.getY() + 7, p.getZ() + 3.5);
+        double r = Math.max(3, rayonCapture + 1);
+        int h = hauteurCapture;
+        return new AABB(p.getX() + 0.5 - r, p.getY() - h, p.getZ() + 0.5 - r,
+                p.getX() + 0.5 + r, p.getY() + Math.max(7, h + 2), p.getZ() + 0.5 + r);
     }
 
     /** A appeler cote serveur apres un changement d'etat : sauvegarde + envoi aux clients. */

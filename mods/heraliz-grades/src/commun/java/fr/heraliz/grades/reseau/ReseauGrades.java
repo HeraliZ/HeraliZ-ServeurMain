@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Canal réseau de HeraliZ Grades (protocole 4) : menu /kit, menu /warp, tab (grades et clans des joueurs connectés),
+ * Canal réseau de HeraliZ Grades (protocole 5 depuis le 22/10 : surnom dans le tab) : menu /kit, menu /warp, tab (grades et clans des joueurs connectés),
  * définitions des grades (2.0.0) et éditeur des grades des op. Le serveur envoie l'état des kits (contenu, recharge) ; le
  * joueur ne peut que DEMANDER un kit par son identifiant : grade, recharge, place et contenu sont décidés et vérifiés par
  * le serveur. Un joueur avec un jar plus ancien (sans ce canal) est refusé à la connexion : il doit prendre le nouveau jar.
@@ -24,7 +24,7 @@ public final class ReseauGrades {
     private ReseauGrades() {
     }
 
-    private static final String VERSION = "4";
+    private static final String VERSION = "5";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -56,8 +56,11 @@ public final class ReseauGrades {
     public record EtatKits(boolean ouvrir, List<VueKit> kits, String kitJoueur) {
     }
 
-    /** Une ligne du tab : grade affiché (id) et tag de clan (vide sans clan) avec sa couleur. */
-    public record LigneTab(UUID uuid, String grade, String clan, int couleurClan) {
+    /**
+     * Une ligne du tab : grade affiché (id), tag de clan (vide sans clan) avec sa couleur, et surnom (/nick, vide sans
+     * surnom ou si le joueur n'y a plus droit).
+     */
+    public record LigneTab(UUID uuid, String grade, String clan, int couleurClan, String surnom) {
     }
 
     /** Grades et clans des joueurs connectés (serveur -> tous), renvoyés quand quelque chose change. */
@@ -144,12 +147,13 @@ public final class ReseauGrades {
                         b.writeUtf(l.grade(), MAX_ID);
                         b.writeUtf(l.clan(), MAX_ID);
                         b.writeInt(l.couleurClan());
+                        b.writeUtf(l.surnom(), MAX_ID);
                     }
                 })
                 .decoder(b -> {
                     int n = Math.min(b.readVarInt(), MAX_LIGNES);
                     List<LigneTab> lignes = new ArrayList<>(n);
-                    for (int i = 0; i < n; i++) lignes.add(new LigneTab(b.readUUID(), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readInt()));
+                    for (int i = 0; i < n; i++) lignes.add(new LigneTab(b.readUUID(), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readInt(), b.readUtf(MAX_ID)));
                     return new InfosTab(lignes);
                 })
                 .consumerMainThread((m, ctx) -> {

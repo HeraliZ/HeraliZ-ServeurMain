@@ -7,7 +7,9 @@
   "client": [
     "KeyBindsListMixin",
     "KeyMappingInterditMixin",
-    "OptionsMixin"
+    "OptionsMixin",
+    "PlanchesPolicesMixin",
+    "TexteNetMixin"
   ],
   "injectors": {
     "defaultRequire": 1

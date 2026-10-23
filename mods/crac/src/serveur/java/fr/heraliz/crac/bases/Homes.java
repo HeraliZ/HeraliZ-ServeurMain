@@ -287,12 +287,14 @@ public final class Homes {
                 return 0;
             }
         }
-        // délai entre deux /home : celui de l'arbre du clan (10, 8, 6, 4 min, saison des clans), sinon le réglage ; une
-        // permission de grade « home_recharge » plus courte passe devant
-        int permDelai = permGrade(p.getUUID(), "home_recharge");
+        // délai entre deux /home : celui de l'arbre du clan (10, 8, 6, 4 min, saison des clans), sinon le réglage ; les
+        // grades de la boutique le réduisent d'un pourcentage (permission « tp_reduction » de HeraliZ Grades : Rescapé
+        // -10 %, Traqueur -20 %, Roi de la Zone -30 %). La permission « home_recharge » n'est plus lue ici : sa valeur de
+        // base (3 min) passait toujours devant l'arbre du clan.
         long delai = fr.heraliz.crac.heraliz.ArbreBases.delaiHomeMs(p.getUUID(), BasesReglages.i(BasesReglages.HOME_DELAI_S, 180) * 1000L);
-        if (permDelai >= 0) {
-            delai = Math.min(delai, permDelai * 1000L);
+        int reduction = permGrade(p.getUUID(), "tp_reduction");
+        if (reduction > 0) {
+            delai = delai * (100 - Math.min(90, reduction)) / 100;
         }
         long reste = j.dernierHome + delai - System.currentTimeMillis();
         if (!staff && reste > 0) {

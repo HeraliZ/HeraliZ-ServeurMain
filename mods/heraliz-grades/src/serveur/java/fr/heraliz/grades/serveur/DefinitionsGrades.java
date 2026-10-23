@@ -43,6 +43,13 @@ final class DefinitionsGrades {
     private static final Logger LOG = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     static final int MAX_KITS_PAR_GRADE = 8, MAX_OBJETS = 27, RECHARGE_MAX_H = 24 * 30;
+    /**
+     * Version du fichier : 2 depuis le 22/10 (grades boutique : coffre VIP en cases, réduction des téléportations, recharge
+     * du /tpa, surnom, chat en couleur, kits tous les 2 jours). Un fichier plus ancien est mis à jour une fois au chargement.
+     */
+    static final int VERSION = 2;
+    /** Recharge des kits des grades boutique d'origine depuis la version 2 : tous les 2 jours. */
+    static final int RECHARGE_KITS_BOUTIQUE_H = 48;
 
     /** Un kit : grade, identifiant (unique dans le grade), nom affiché, recharge en heures, contenu (27 piles au plus). */
     record KitDef(String grade, String id, String nom, int rechargeH, List<ItemStack> objets) {
@@ -113,10 +120,38 @@ final class DefinitionsGrades {
             Grade.appliquer(defs, true);
             KITS.addAll(kits);
             LOG.info("[grades] {} grade(s) et {} kit(s) chargés depuis {}", defs.size(), kits.size(), fichier);
+            int version = racine.has("version") ? racine.get("version").getAsInt() : 1;
+            if (version < 2) migrerVersion2();
         } catch (Exception ex) {
             illisible = true;
             LOG.error("[grades] {} ILLISIBLE ({}) : grades d'origine en service, l'éditeur n'enregistre rien tant qu'il n'est pas réparé. Le fichier n'est pas touché.",
                     fichier, ex.toString());
+        }
+    }
+
+    /**
+     * Version 2 (22/10, demande du propriétaire), une seule fois : grades boutique d'origine (Rescapé, Traqueur, Roi de la
+     * Zone) réglés comme les nouveaux réglages par défaut ({@link PermsGrades#reglagesBoutique}) et tous leurs kits tous les
+     * 2 jours ; le reste (autres permissions, contenu des kits, Survivant, grades créés en jeu) ne change pas. Le fichier est
+     * réécrit en version 2 (s'il ne peut pas l'être, la migration se refait au prochain démarrage : elle ne fait que poser
+     * des valeurs).
+     */
+    private static void migrerVersion2() {
+        for (Grade g : new Grade[]{Grade.RESCAPE, Grade.TRAQUEUR, Grade.ROI_DE_LA_ZONE}) {
+            Map<String, Integer> r = PermsGrades.reglagesBoutique(g);
+            if (r != null) g.perms.putAll(r);
+        }
+        for (int i = 0; i < KITS.size(); i++) {
+            KitDef k = KITS.get(i);
+            if (k.grade().equals(Grade.RESCAPE.id) || k.grade().equals(Grade.TRAQUEUR.id) || k.grade().equals(Grade.ROI_DE_LA_ZONE.id)) {
+                KITS.set(i, new KitDef(k.grade(), k.id(), k.nom(), RECHARGE_KITS_BOUTIQUE_H, k.objets()));
+            }
+        }
+        try {
+            sauver();
+            LOG.info("[grades] {} mis à jour en version 2 (grades boutique : coffre VIP, téléportations, surnom, chat en couleur, kits tous les 2 jours)", fichier);
+        } catch (IOException ex) {
+            LOG.error("[grades] {} : mise à jour en version 2 impossible à écrire ({}), refaite au prochain démarrage", fichier, ex.toString());
         }
     }
 
@@ -207,7 +242,7 @@ final class DefinitionsGrades {
         JsonObject racine = new JsonObject();
         racine.addProperty("_note", "Grades HeraliZ : écrit par l'éditeur en jeu (Registre des grades, /grades editeur). Familles : staff, boutique, special, base, soutien. "
                 + "Permissions : " + String.join(", ", PermsGrades.TOUTES.stream().map(PermsGrades.Perm::cle).toList()) + ".");
-        racine.addProperty("version", 1);
+        racine.addProperty("version", VERSION);
         racine.add("grades", grades);
         Files.createDirectories(fichier.getParent());
         Path tmp = fichier.resolveSibling("definitions.json.tmp");

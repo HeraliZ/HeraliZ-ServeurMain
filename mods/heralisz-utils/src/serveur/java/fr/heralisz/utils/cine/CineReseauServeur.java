@@ -81,7 +81,41 @@ public final class CineReseauServeur {
     public static void allerAuReveil(ServerPlayer sp) {
         CineDecorServeur dec = CineDecorServeur.get(sp.server);
         CineDecor.Etat d = dec.etat();
-        sp.teleportTo(dec.niveau(sp.server), d.reveil().x, d.reveil().y, d.reveil().z, d.cap(), 0f);
+        net.minecraft.server.level.ServerLevel l = dec.niveau(sp.server);
+        net.minecraft.world.phys.Vec3 p = placeLibre(l, sp, d.reveil());
+        sp.teleportTo(l, p.x, p.y, p.z, d.cap(), 0f);
+    }
+
+    /**
+     * Plusieurs arrivants en même temps ne se posent pas les uns dans les autres : si quelqu'un est déjà au point de
+     * réveil, on prend la première place libre (sol dessous, personne) sur des cercles de 1,5 à 4 blocs autour ; sinon
+     * le point de réveil lui-même.
+     */
+    private static net.minecraft.world.phys.Vec3 placeLibre(net.minecraft.server.level.ServerLevel l, ServerPlayer sp,
+                                                            net.minecraft.world.phys.Vec3 r) {
+        if (!occupee(l, sp, r)) {
+            return r;
+        }
+        for (double rayon = 1.5; rayon <= 4.0; rayon += 1.25) {
+            int n = (int) Math.ceil(rayon * 4);
+            for (int i = 0; i < n; i++) {
+                double a = Math.PI * 2 * i / n;
+                net.minecraft.world.phys.Vec3 p = r.add(Math.cos(a) * rayon, 0, Math.sin(a) * rayon);
+                if (!occupee(l, sp, p) && CineDecorServeur.libre(l, p)) {
+                    return p;
+                }
+            }
+        }
+        return r;
+    }
+
+    private static boolean occupee(net.minecraft.server.level.ServerLevel l, ServerPlayer sp, net.minecraft.world.phys.Vec3 p) {
+        for (ServerPlayer o : l.players()) {
+            if (o != sp && o.position().distanceToSqr(p) < 0.9 * 0.9) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Mort sans lit ni ancre : on se réveille au spawn (dans son monde à part), sans la cinématique. */
