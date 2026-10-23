@@ -36,19 +36,21 @@ POUR_100 = {
     # plans de fabrication retirés du jeu le 21/10 (système de craft à refaire) : plus de famille « plans »
     "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
     "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
-    "composants":  {1: 40, 2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 45},
+    # composants un peu plus souvent que le reste (choix du propriétaire, 23/10)
+    "composants":  {1: 50, 2: 50, 3: 50, 4: 50, 5: 50, 6: 50, 7: 55},
     # sacs à dos (choix du propriétaire, 22/10 : 0,1 % des coffres en T1, 0,5 % en T2 ; un seul sac par coffre)
     "sacs":        {1: 0.1, 2: 0.5, 3: 1, 4: 2, 5: 3, 6: 4, 7: 3},
 }
 # part de chaque rareté (en %) ; une arme Bleue est déjà une belle trouvaille
+# 23/10 (choix du propriétaire) : beaucoup moins de vert et de bleu, plus de gris : une arme bleue est déjà très bien
 PARTS = {
-    1: {"commun": 85, "peu_commun": 13, "rare": 1.94, "epique": 0.05, "legendaire": 0.01},
-    2: {"commun": 65, "peu_commun": 30, "rare": 4.8, "epique": 0.17, "legendaire": 0.03},
-    3: {"commun": 42, "peu_commun": 45, "rare": 12.5, "epique": 0.45, "legendaire": 0.05},
-    4: {"commun": 20, "peu_commun": 52, "rare": 26.8, "epique": 1.1, "legendaire": 0.1},
-    5: {"commun": 8, "peu_commun": 42, "rare": 46, "epique": 3.6, "legendaire": 0.4},
-    6: {"commun": 3, "peu_commun": 30, "rare": 57, "epique": 9, "legendaire": 1},
-    7: {"peu_commun": 20, "rare": 56.67, "epique": 18, "legendaire": 4, "unique": 1.33},  # Unique (armes seulement) : 1 coffre sur 250
+    1: {"commun": 92, "peu_commun": 7, "rare": 0.95, "epique": 0.04, "legendaire": 0.01},
+    2: {"commun": 84, "peu_commun": 13.5, "rare": 2.3, "epique": 0.17, "legendaire": 0.03},
+    3: {"commun": 72, "peu_commun": 23, "rare": 4.6, "epique": 0.35, "legendaire": 0.05},
+    4: {"commun": 58, "peu_commun": 32, "rare": 9, "epique": 0.9, "legendaire": 0.1},
+    5: {"commun": 46, "peu_commun": 37, "rare": 15, "epique": 1.75, "legendaire": 0.25},
+    6: {"commun": 36, "peu_commun": 40, "rare": 20, "epique": 3.4, "legendaire": 0.6},
+    7: {"commun": 12, "peu_commun": 33, "rare": 38, "epique": 12, "legendaire": 3.67, "unique": 1.33},  # Unique (couteaux) : 1 coffre sur 250
 }
 LOURDES = 0.35
 # parts propres à une famille dans un palier (sinon PARTS)
@@ -65,7 +67,7 @@ RARETE_SACS = {
 SACS_HORS_LOOT = ("backpack", "backpack_school", "backpack_expand1", "backpack_expand2", "backpack_sniper_case_enderman",
                   "backpack_military_sport_bag_cow", "backpack_military_sport_bag_pig")  # jamais dans les coffres
 # mêmes parts dans tous les paliers (choix du propriétaire, 22/10) : seul le nombre de sacs monte avec le palier
-PARTS_SACS = {t: {"commun": 50, "peu_commun": 25, "rare": 15, "epique": 8, "legendaire": 2} for t in range(1, 8)}
+PARTS_SACS = {t: {"commun": 62, "peu_commun": 24, "rare": 10, "epique": 3.5, "legendaire": 0.5} for t in range(1, 8)}  # 23/10
 PARTS_FAMILLE.update({("sacs", t): v for t, v in PARTS_SACS.items()})
 SACS_JAVA = RACINE / "mods/heralisz-backpack/src/commun/java/com/mrcrayfish/backpacked/core/ArkaniaZModItems.java"
 # jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
@@ -97,6 +99,21 @@ RETIRES = ("heralisz_armor:", "simplefarming:")  # retirés des tables (mod reti
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
 ARMES_EXCLUES = {"cis:at_rpg_7_lvd"}  # jamais dans le loot (choix du propriétaire)
+# couteaux (skins heralisz_skins) : seulement ceux de 1, 2 ou 3 étoiles dans le loot, jamais les 4 étoiles (choix du
+# propriétaire, 23/10) ; rangs lus dans ETOILES de mods/heraliz-tactique/outils/skins_couteaux.py (non cité = 4)
+SKINS_COUTEAUX = RACINE / "mods/heraliz-tactique/outils/skins_couteaux.py"
+
+
+def etoiles_couteaux():
+    src = SKINS_COUTEAUX.read_text(encoding="utf-8")
+    bloc = src[src.index("ETOILES = {}"):src.index("# couleur du nom selon le rang")]
+    env = {}
+    exec(bloc, env)
+    return env["ETOILES"]
+
+
+def couteau_4_etoiles(gid, etoiles):
+    return gid.startswith("heralisz_skins:") and etoiles.get(gid.split(":", 1)[1], 4) >= 4
 COMPOSANTS_EXCLUS = {"tonnelet_poudre", "bocal_poudre_ii", "bocal_poudre_iii", "bocal_poudre_iv", "plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
 COMPOSANTS_PLUS = {"clou": 3.0, "sac_ciment": 3.0, "equerres_acier": 3.0, "bocal_poudre": 7.0, "ferraille": 9.0}  # chance multipliée dans leur rareté
 # composants ajoutés en plus dans un palier, hors raretés du palier (nombre pour 100 conteneurs)
@@ -119,6 +136,20 @@ CAPSULES = {
     7: [("jeton_1", [3, 8], 0.3), ("jeton_5", [1, 3], 0.4), ("jeton_10", [1, 2], 0.3)],
 }
 VALEUR_CAPSULE = {"jeton_1": 1, "jeton_5": 5, "jeton_10": 10}
+# soins et nourriture de nouveau dans les conteneurs T1 à T7 (choix du propriétaire, 23/10), en plus de leurs propres
+# conteneurs : nombre pour 100 conteneurs. Soins : ceux de la table soins<niveau> (niveau = palier, 6 au plus), mêmes
+# parts de rareté ; nourriture : celle de nourriture.json, toujours Commun.
+SOINS_POUR_100 = {1: 6, 2: 7, 3: 8, 4: 8, 5: 9, 6: 10, 7: 10}
+NOURRITURE_POUR_100 = {1: 12, 2: 12, 3: 10, 4: 10, 5: 8, 6: 8, 7: 6}
+# raretés imposées dans la section « objets » de raretes.json (choix du propriétaire, 23/10). Les grenades sont toutes
+# le même objet (heralisz_tactical:throwable) : M67, RGN, flash, fumigène, molotov = Rare.
+RARETES_IMPOSEES = {
+    "heralisz_tactical:throwable": "rare",
+    "ywzj_vehicle:fuel_tank": "peu_commun", "ywzj_vehicle:repair_tool": "rare", "ywzj_vehicle:parachute_pack": "epique",
+    "heralizcasino:jeton_1": "commun", "heralizcasino:jeton_5": "peu_commun", "heralizcasino:jeton_10": "rare",
+}
+# armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
+COMMUN_PREFIXES = ("geckolib:item_",)
 
 
 def gun_id(e):
@@ -195,6 +226,7 @@ def familles():
     tout = json.load(open(RARETES, encoding="utf-8"))
     fam_armes = {g: v["famille"] for g, v in json.load(open(ARMES_JSON, encoding="utf-8"))["armes"].items()}
     jeu = armes_du_jeu()
+    etoiles = etoiles_couteaux()
     out = {k: {} for k in POUR_100}
 
     def ajouter(f, r, entree, rel=1.0):
@@ -202,7 +234,7 @@ def familles():
             out[f].setdefault(r, []).append((entree, rel))
 
     for gid, r in sorted(tout["armes"].items()):
-        if gid in jeu:
+        if gid in jeu and not couteau_4_etoiles(gid, etoiles):
             ajouter("armes", r, {"item": ARME, "nombre": [1, 1], "nbt": jeu[gid], "_cat": "armes"},
                     LOURDES if lourde(gid, fam_armes) else 1)
     for f in (sorted(glob.glob(str(TACZ / "*/data/*/recipes/gun/*.json"))) if "plans" in POUR_100 else []):
@@ -295,6 +327,33 @@ def autres_de(data):
     return out
 
 
+def tables_survie(t):
+    """(soins, nourriture) : entrées et poids relatifs (somme 1) pour le palier t."""
+    soins = json.loads((COFFRES / f"soins{min(t, 6)}.json").read_text(encoding="utf-8"))["objets"]
+    nourr = json.loads((COFFRES / "nourriture.json").read_text(encoding="utf-8"))["objets"]
+    out = []
+    for liste in (soins, nourr):
+        liste = [e for e in liste if e.get("poids", 0) > 0 and not e["item"].startswith(RETIRES)]
+        s = sum(e["poids"] for e in liste)
+        out.append([(dict({k: v for k, v in e.items() if k not in ("poids", "_base")}, nombre=[1, 1]), e["poids"] / s) for e in liste])
+    return out
+
+
+def ecrire_raretes_imposees():
+    data = json.load(open(RARETES, encoding="utf-8"))
+    obj = data["objets"]
+    obj.update(RARETES_IMPOSEES)
+    for t in PARTS:
+        for e in json.loads((COFFRES / f"t{t}.json").read_text(encoding="utf-8"))["objets"]:
+            if e["item"].startswith(COMMUN_PREFIXES) and e["item"] not in RARETES_IMPOSEES:
+                obj[e["item"]] = "commun"
+    for e in json.loads((COFFRES / "nourriture.json").read_text(encoding="utf-8"))["objets"]:
+        obj[e["item"]] = "commun"
+    with open(RARETES, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
 def ecrire():
     ecrire_raretes_sacs()
     ecrire_soins()
@@ -313,6 +372,8 @@ def ecrire():
         p = {f: POUR_100[f][t] / 100 / cases for f in fams}
         base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
         p["capsules"] = CAPSULES_POUR_100[t] / 100 / cases
+        p["soins"] = SOINS_POUR_100[t] / 100 / cases
+        p["nourriture"] = NOURRITURE_POUR_100[t] / 100 / cases
         p["vide"] = max(0.0, 1 - sum(p.values()) - AUTRES_POUR_100[t] / 100 / cases)
         actifs = sum(base)
         rel = []
@@ -327,6 +388,9 @@ def ecrire():
                     rel.append((e, f, parts[r] / somme_parts * x / s, r))
         for i, quantite, part in CAPSULES[t]:
             rel.append(({"item": CAPSULE + i, "nombre": quantite, "_cat": "capsules"}, "capsules", part, None))
+        for f, liste in zip(("soins", "nourriture"), tables_survie(t)):
+            for e, v in liste:
+                rel.append((dict(e, _cat=f), f, v, None))
         for i, n in EN_PLUS.get(t, {}).items():
             e, r = next((e, r) for r, l in fams["composants"].items() for e, _ in l if e["item"] == COMPOSANT + i)
             p["plus_" + i] = n / 100 / cases
@@ -353,19 +417,20 @@ def ecrire():
         data["objets"] = objets
         ecrire_table(COFFRES / f"t{t}.json", data)
         print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in PARTS_FAMILLE.get((f, t), PARTS[t]))} {f}" for f in fams))
+    ecrire_raretes_imposees()
 
 
 # conteneurs de soins (soins1_... à soins6_...) : une table par niveau, soins.json = niveau 1 (secours).
 # Rareté du soin tirée d'abord, puis le soin dans sa rareté (poids d'origine « _base »). Le gris reste toujours le
 # plus fréquent ; le bleu et le violet montent un peu avec le niveau (choix du propriétaire, 22/10).
 SOINS = RACINE / "serveur/config/heraliz_loot/raretes.json"
-PARTS_SOINS = {
-    1: {"commun": 50, "peu_commun": 28, "rare": 16, "epique": 6},
-    2: {"commun": 46, "peu_commun": 28, "rare": 18, "epique": 8},
-    3: {"commun": 42, "peu_commun": 28, "rare": 20, "epique": 10},
-    4: {"commun": 38, "peu_commun": 28, "rare": 21, "epique": 13},
-    5: {"commun": 34, "peu_commun": 28, "rare": 22, "epique": 16},
-    6: {"commun": 31, "peu_commun": 27, "rare": 23, "epique": 19},
+PARTS_SOINS = {  # 23/10 : moins de vert et de bleu (choix du propriétaire)
+    1: {"commun": 68, "peu_commun": 22, "rare": 8, "epique": 2},
+    2: {"commun": 63, "peu_commun": 24, "rare": 10, "epique": 3},
+    3: {"commun": 58, "peu_commun": 26, "rare": 12, "epique": 4},
+    4: {"commun": 53, "peu_commun": 27, "rare": 14, "epique": 6},
+    5: {"commun": 48, "peu_commun": 28, "rare": 16, "epique": 8},
+    6: {"commun": 44, "peu_commun": 29, "rare": 18, "epique": 9},
 }
 
 

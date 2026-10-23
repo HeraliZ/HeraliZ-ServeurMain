@@ -2,15 +2,15 @@
  "_note": "Conteneurs de soins de niveau 3 (soins3_...). Écrit par outils/loot_armes.py (PARTS_SOINS ; ne pas modifier à la main).",
  "emplacements": [1, 3],
  "objets": [
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 147389, "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}", "_cat": "soins_famille", "_base": 1905},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 224039, "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}", "_cat": "soins_famille", "_base": 1524},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 88433, "nbt": "{ConsumableId:\"heralisz_heal:amoxycillin\"}", "_cat": "soins_famille", "_base": 1143},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 111085, "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}", "_cat": "soins_famille", "_base": 952},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 88915, "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}", "_cat": "soins_famille", "_base": 762},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 112020, "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}", "_cat": "soins_famille", "_base": 762},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 82346, "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}", "_cat": "soins_famille", "_base": 667},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 44178, "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}", "_cat": "soins_famille", "_base": 571},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 83941, "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}", "_cat": "soins_famille", "_base": 571},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 17654, "nbt": "{ConsumableId:\"heralisz_heal:cms\"}", "_cat": "soins_famille", "_base": 143}
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 136861, "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}", "_cat": "soins_famille", "_base": 1905},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 309387, "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}", "_cat": "soins_famille", "_base": 1524},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 82117, "nbt": "{ConsumableId:\"heralisz_heal:amoxycillin\"}", "_cat": "soins_famille", "_base": 1143},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 66651, "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}", "_cat": "soins_famille", "_base": 952},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 53349, "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}", "_cat": "soins_famille", "_base": 762},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 154694, "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}", "_cat": "soins_famille", "_base": 762},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 32938, "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}", "_cat": "soins_famille", "_base": 667},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 41022, "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}", "_cat": "soins_famille", "_base": 571},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 115919, "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}", "_cat": "soins_famille", "_base": 571},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 7062, "nbt": "{ConsumableId:\"heralisz_heal:cms\"}", "_cat": "soins_famille", "_base": 143}
  ]
 }

@@ -3,14 +3,14 @@
  "emplacements": [2, 3],
  "objets": [
   {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 147389, "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}", "_cat": "soins_famille", "_base": 1905},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 181365, "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}", "_cat": "soins_famille", "_base": 1524},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 256045, "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}", "_cat": "soins_famille", "_base": 1524},
   {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 88433, "nbt": "{ConsumableId:\"heralisz_heal:amoxycillin\"}", "_cat": "soins_famille", "_base": 1143},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 122194, "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}", "_cat": "soins_famille", "_base": 952},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 97806, "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}", "_cat": "soins_famille", "_base": 762},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 90683, "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}", "_cat": "soins_famille", "_base": 762},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 131753, "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}", "_cat": "soins_famille", "_base": 667},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 88868, "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}", "_cat": "soins_famille", "_base": 952},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 71132, "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}", "_cat": "soins_famille", "_base": 762},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 128022, "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}", "_cat": "soins_famille", "_base": 762},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 65877, "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}", "_cat": "soins_famille", "_base": 667},
   {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 44178, "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}", "_cat": "soins_famille", "_base": 571},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 67952, "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}", "_cat": "soins_famille", "_base": 571},
-  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 28247, "nbt": "{ConsumableId:\"heralisz_heal:cms\"}", "_cat": "soins_famille", "_base": 143}
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 95933, "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}", "_cat": "soins_famille", "_base": 571},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 14123, "nbt": "{ConsumableId:\"heralisz_heal:cms\"}", "_cat": "soins_famille", "_base": 143}
  ]
 }
