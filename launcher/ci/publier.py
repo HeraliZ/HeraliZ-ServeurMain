@@ -57,8 +57,8 @@ def curl(*arguments):
         return None
 
 
-def verifier_en_ligne(fichiers, fichier_version, version):
-    """Relit depuis internet ce qui vient d'être déposé : tailles des fichiers, version annoncée."""
+def verifier_en_ligne(fichiers, fichier_version, version, signe):
+    """Relit depuis internet ce qui vient d'être déposé : tailles des fichiers, version annoncée, signature."""
     for fichier in fichiers:
         entetes = curl("-I", ADRESSE + fichier["nom"]) or ""
         tailles = re.findall(r"(?im)^content-length:\s*(\d+)\s*$", entetes)
@@ -67,6 +67,8 @@ def verifier_en_ligne(fichiers, fichier_version, version):
     annonce = curl(ADRESSE + fichier_version) or ""
     if f"version: {version}" not in annonce.splitlines():
         erreur(f"{ADRESSE}{fichier_version} n'annonce pas la version {version} : les launchers installés ne la verront pas.")
+    if signe and not (curl(ADRESSE + fichier_version + ".sig") or "").strip():
+        erreur(f"{ADRESSE}{fichier_version}.sig introuvable en ligne : les launchers à clé publique refuseront la mise à jour.")
     plateforme, mises_a_jour = PLATEFORMES[fichier_version]
     resume = os.environ.get("GITHUB_STEP_SUMMARY")
     if resume:
@@ -75,6 +77,11 @@ def verifier_en_ligne(fichiers, fichier_version, version):
             for fichier in fichiers:
                 f.write(f"- {ADRESSE}{fichier['nom']} ({fichier['taille'] // 1048576} Mo)\n")
             f.write(f"- {mises_a_jour}\n")
+            if signe:
+                f.write(f"- ✅ mise à jour **signée** ({fichier_version}.sig) : les launchers à clé publique l'acceptent\n")
+            else:
+                f.write("- ⚠️ mise à jour **NON signée** (secret `LAUNCHER_SIGN_KEY` absent) : un launcher avec clé "
+                        "publique réglée REFUSERA cette mise à jour. Voir launcher/docs/HERALIZ-SIGNATURE.md\n")
 
 
 def main(arguments):
@@ -104,6 +111,20 @@ def main(arguments):
     with open(fichier_version, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(lignes) + "\n")
 
+    # Signature Ed25519 du fichier de version (il contient l'empreinte SHA-512 de l'installeur : le signer protège
+    # donc aussi l'installeur). Sans le secret LAUNCHER_SIGN_KEY, aucune signature n'est produite : les launchers sans
+    # clé publique réglée se mettent à jour comme avant ; ceux qui ont une clé REFUSERONT la mise à jour (prévenir).
+    signe = False
+    if os.environ.get("LAUNCHER_SIGN_KEY"):
+        try:
+            subprocess.run(["node", os.path.join("ci", "signer.mjs"), "--signer", fichier_version],
+                           check=True, capture_output=True, text=True)
+            signe = os.path.isfile(fichier_version + ".sig")
+        except (OSError, subprocess.CalledProcessError) as e:
+            erreur(f"Signature du fichier de version impossible : {type(e).__name__}")
+        if not signe:
+            erreur("LAUNCHER_SIGN_KEY réglé mais aucune signature produite (clé invalide ?).")
+
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
@@ -126,12 +147,15 @@ def main(arguments):
 
     for fichier in fichiers:
         deposer(fichier["local"], fichier["nom"])
+    # La signature part AVANT le fichier de version : jamais un latest.yml en ligne sans sa signature à côté.
+    if signe:
+        deposer(fichier_version + ".sig", fichier_version + ".sig")
     deposer(fichier_version, fichier_version)
     sftp.close()
     client.close()
     noms = ", ".join(f["nom"] for f in fichiers)
     print(f"Launcher {version} déposé dans {DOSSIER} ({noms} et {fichier_version})")
-    verifier_en_ligne(fichiers, fichier_version, version)
+    verifier_en_ligne(fichiers, fichier_version, version, signe)
 
 
 if __name__ == "__main__":

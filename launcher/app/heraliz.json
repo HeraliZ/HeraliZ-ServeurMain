@@ -4,5 +4,6 @@
     "serverAddress": "play.heraliz.fr",
     "siteUrl": "https://heraliz.fr",
     "distributionUrl": "https://heraliz.fr/launcher/distribution.json",
-    "discordUrl": "https://discord.gg/heraliz"
+    "discordUrl": "https://discord.gg/heraliz",
+    "distributionPublicKey": ""
 }

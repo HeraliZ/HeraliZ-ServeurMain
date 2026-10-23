@@ -87,6 +87,7 @@ jobs:
           SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+          LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
           PYTHONUTF8: "1"
         run: |
           shopt -s nullglob
@@ -150,6 +151,7 @@ jobs:
           SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+          LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
           PYTHONUTF8: "1"
         run: |
           python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
@@ -221,6 +223,7 @@ jobs:
           SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+          LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
           PYTHONUTF8: "1"
         run: |
           python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0

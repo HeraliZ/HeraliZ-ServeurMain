@@ -10,6 +10,34 @@
 // Le site injoignable ou lent ne bloque jamais le démarrage. Le pack de jeu (mods, gunpacks) a sa propre mise à jour,
 // à chaque partie (launcher-service.js).
 
+const https = require('https')
+const { chargerClePublique, verifier } = require('./signature')
+
+// Fichier de version lu par electron-updater selon le système (servi sur https://heraliz.fr/telecharger/).
+const CHANNEL = { win32: 'latest.yml', darwin: 'latest-mac.yml', linux: 'latest-linux.yml' }
+
+// Télécharge un petit fichier en HTTPS (le fichier de version ou sa signature). HTTPS seul, 10 s, 5 Mo au plus.
+function recupererHttps(url) {
+    return new Promise((resolve, reject) => {
+        let u
+        try { u = new URL(url) } catch { return reject(new Error('url invalide')) }
+        if (u.protocol !== 'https:') return reject(new Error('https requis'))
+        const req = https.get(url, { timeout: 10000 }, reponse => {
+            if (reponse.statusCode !== 200) { reponse.resume(); return reject(new Error('http ' + reponse.statusCode)) }
+            const morceaux = []
+            let taille = 0
+            reponse.on('data', c => {
+                taille += c.length
+                if (taille > 5 * 1024 * 1024) { reponse.destroy(); reject(new Error('trop volumineux')) }
+                else morceaux.push(c)
+            })
+            reponse.on('end', () => resolve(Buffer.concat(morceaux)))
+        })
+        req.on('timeout', () => req.destroy(new Error('délai dépassé')))
+        req.on('error', reject)
+    })
+}
+
 const DELAI_VERIFICATION_MS = 10000
 // une même version n'est installée automatiquement que 2 fois par jour : si l'installation échoue (fichier bloqué,
 // antivirus), le launcher ne redémarre pas en boucle et demande de le retélécharger
@@ -27,7 +55,8 @@ class MiseAJour {
     // automatique (sinon le joueur est seulement prévenu) ; envoyer : état vers l'interface ; occupe : une préparation
     // ou une partie est en cours (jamais de redémarrage dans ce cas) ; memoire : { lire(), ecrire(valeur) }, les essais
     // d'installation gardés d'un démarrage à l'autre.
-    constructor({ updater, actif, auto = true, envoyer, occupe, memoire, delaiMs = DELAI_VERIFICATION_MS, delaiInstallationMs = 1200 }) {
+    constructor({ updater, actif, auto = true, envoyer, occupe, memoire, delaiMs = DELAI_VERIFICATION_MS, delaiInstallationMs = 1200,
+                  clePublique = null, majBaseUrl = null, plateforme = process.platform, recuperer = recupererHttps }) {
         this.updater = updater
         this.memoire = memoire
         this.actif = Boolean(actif && updater)
@@ -38,6 +67,12 @@ class MiseAJour {
         this.delaiInstallationMs = delaiInstallationMs
         this.verification = null
         this.dernierPourcent = -1
+        // signature des mises à jour : clé publique embarquée (app/heraliz.json). Vide = pas de vérification
+        // (comportement d'avant). Dès qu'une clé est réglée, le fichier de version DOIT être signé (signature.js).
+        this.clePublique = chargerClePublique(clePublique)
+        this.majBaseUrl = typeof majBaseUrl === 'string' && majBaseUrl ? majBaseUrl.replace(/\/+$/, '') + '/' : null
+        this.channel = CHANNEL[plateforme] || null
+        this.recuperer = recuperer
         if (!this.actif) return
         this.updater.autoDownload = false
         this.updater.autoInstallOnAppQuit = this.auto
@@ -61,8 +96,32 @@ class MiseAJour {
         return this.verification
     }
 
+    // Vérifie la signature Ed25519 du fichier de version AVANT qu'electron-updater ne télécharge ou n'installe.
+    // Rend { verifie: false } si aucune clé n'est réglée (on n'empêche rien, comme avant) ; sinon { verifie: true,
+    // ok } : ok seulement si le fichier de version a bien été signé par la clé du propriétaire. Le fichier de version
+    // contient l'empreinte SHA-512 de l'installeur (contrôlée par electron-updater) : signer ce fichier protège donc
+    // aussi l'installeur. Toute erreur (réseau, signature absente) => ok:false : on ne met pas à jour ce coup-ci.
+    async verifierSignature() {
+        if (!this.clePublique) return { verifie: false }
+        if (!this.majBaseUrl || !this.channel) return { verifie: true, ok: false }
+        try {
+            const [contenu, signature] = await Promise.all([
+                this.recuperer(this.majBaseUrl + this.channel),
+                this.recuperer(this.majBaseUrl + this.channel + '.sig')
+            ])
+            return { verifie: true, ok: verifier(contenu, signature.toString('utf8'), this.clePublique) }
+        } catch {
+            return { verifie: true, ok: false }
+        }
+    }
+
     async chercher() {
         if (!this.actif) return { disponible: false }
+        const sig = await this.verifierSignature()
+        if (sig.verifie && !sig.ok) {
+            console.error('[HeraliZ/mise-a-jour] signature de la mise à jour invalide ou absente : mise à jour refusée')
+            return { disponible: false, signatureInvalide: true }
+        }
         let resultat = null
         try {
             resultat = await avecDelai(this.updater.checkForUpdates(), this.delaiMs)

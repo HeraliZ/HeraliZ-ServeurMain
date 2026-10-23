@@ -98,7 +98,11 @@ else {
             memoire: {
                 lire: () => JSON.parse(fs.readFileSync(fichierMaj, 'utf8')),
                 ecrire: valeur => fs.writeFileSync(fichierMaj, JSON.stringify(valeur))
-            }
+            },
+            // signature de la mise à jour : clé publique embarquée + adresse des fichiers de version
+            // (https://<site>/telecharger/). Sans clé réglée, aucune vérification (comportement d'avant).
+            clePublique: config.distributionPublicKey || null,
+            majBaseUrl: config.siteUrl ? config.siteUrl.replace(/\/+$/, '') + '/telecharger/' : null
         })
         handle('maj-launcher', () => miseAJour.verifier())
         handle('state', () => service.getState())

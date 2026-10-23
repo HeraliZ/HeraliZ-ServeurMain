@@ -116,3 +116,52 @@ test('Mac et .deb : pas d’installation automatique, le joueur est prévenu de 
     assert.deepEqual(await new MiseAJour({ updater: fauxUpdater(), actif: true, auto: false, envoyer: () => {}, occupe: () => false }).verifier(), { disponible: false })
     assert.deepEqual(await new MiseAJour({ updater: fauxUpdater({ version: '<b>2</b>' }), actif: true, auto: false, envoyer: () => {}, occupe: () => false }).verifier(), { disponible: false })
 })
+
+// --- Signature des mises à jour (Ed25519) : une clé publique réglée => le fichier de version doit être signé. ---
+const crypto = require('node:crypto')
+
+function clesEtSignature(contenu) {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519')
+    const pub = publicKey.export({ type: 'spki', format: 'der' }).toString('base64')
+    const sig = crypto.sign(null, Buffer.from(contenu), privateKey).toString('base64')
+    return { pub, sig }
+}
+
+test('signature : sans clé réglée, rien ne change (comportement d’avant)', async () => {
+    const u = fauxUpdater({ version: '1.7.0' })
+    const maj = new MiseAJour({ updater: u, actif: true, envoyer: () => {}, occupe: () => false, delaiInstallationMs: 0,
+        recuperer: async () => { throw new Error('ne doit pas être appelé') } })
+    assert.deepEqual(await maj.verifier(), { disponible: true, version: '1.7.0' })
+})
+
+test('signature : fichier de version bien signé => mise à jour acceptée', async () => {
+    const yml = 'version: 1.7.0\nsha512: ABC\n'
+    const { pub, sig } = clesEtSignature(yml)
+    const u = fauxUpdater({ version: '1.7.0' })
+    const recuperer = async url => Buffer.from(url.endsWith('.sig') ? sig : yml)
+    const maj = new MiseAJour({ updater: u, actif: true, envoyer: () => {}, occupe: () => false, delaiInstallationMs: 0,
+        clePublique: pub, majBaseUrl: 'https://heraliz.fr/telecharger/', plateforme: 'win32', recuperer })
+    assert.deepEqual(await maj.verifier(), { disponible: true, version: '1.7.0' })
+    assert.equal(u.verifications, 1)
+})
+
+test('signature : fichier falsifié => mise à jour REFUSÉE, electron-updater jamais appelé', async () => {
+    const { pub, sig } = clesEtSignature('version: 1.7.0\nsha512: ABC\n')
+    const u = fauxUpdater({ version: '9.9.9' })
+    // le pirate sert un autre latest.yml (nouvelle version) avec l'ancienne signature
+    const recuperer = async url => Buffer.from(url.endsWith('.sig') ? sig : 'version: 9.9.9\nsha512: PIRATE\n')
+    const maj = new MiseAJour({ updater: u, actif: true, envoyer: () => {}, occupe: () => false,
+        clePublique: pub, majBaseUrl: 'https://heraliz.fr/telecharger/', plateforme: 'win32', recuperer })
+    assert.deepEqual(await maj.verifier(), { disponible: false, signatureInvalide: true })
+    assert.equal(u.verifications, 0, 'electron-updater ne doit pas être sollicité')
+})
+
+test('signature : signature introuvable (réseau) => mise à jour refusée', async () => {
+    const { pub } = clesEtSignature('x')
+    const u = fauxUpdater({ version: '1.7.0' })
+    const recuperer = async () => { throw new Error('404') }
+    const maj = new MiseAJour({ updater: u, actif: true, envoyer: () => {}, occupe: () => false,
+        clePublique: pub, majBaseUrl: 'https://heraliz.fr/telecharger/', plateforme: 'win32', recuperer })
+    assert.deepEqual(await maj.verifier(), { disponible: false, signatureInvalide: true })
+    assert.equal(u.verifications, 0)
+})

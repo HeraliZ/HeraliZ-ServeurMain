@@ -1978,9 +1978,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Audit de sécurité « façon pirate » du 11/10** (site, launcher, dépôt, séparation client / serveur) : corrigé et
   mis en ligne (adresse IP falsifiable, limites de connexion du site, codes de secours, liens des e-mails, CORS, HSTS,
   droits de la clé, launcher 1.6.1). Reste :
-  - mises à jour du launcher et `distribution.json` non signés : qui prend la VM du site peut livrer du code à tous
-    les joueurs. Prévu : signature Ed25519, clé privée en secret GitHub (fabriquée chez le propriétaire), clé publique
-    dans le launcher ;
+  - **mises à jour du launcher : signature Ed25519 EN PLACE (23/10, à activer par le propriétaire)** : le launcher
+    vérifie `latest*.yml` + `.sig` avec une clé publique embarquée (`distributionPublicKey` de `app/heraliz.json`) avant
+    toute mise à jour (`app/assets/js/signature.js`, `mise-a-jour.js`, testé) ; la publication signe avec le secret
+    GitHub `LAUNCHER_SIGN_KEY` (`ci/signer.mjs`, branché dans `ci/publier.py` et `launcher.yml`). Clé vide = comportement
+    d'avant (rien n'est bloqué). Activation en 3 étapes : `launcher/docs/HERALIZ-SIGNATURE.md`. **`distribution.json`
+    (le pack) PAS encore signé** : le site réécrit les liens par compte, il faudra signer les empreintes des fichiers
+    du pack (pas les liens) — étape suivante ;
   - SSH de la VM en root par mot de passe (≈ 7 600 essais de robots par jour, bloqués par fail2ban) : passer à une clé ;
   - Spartan : le jar joueur écarte d'office les crochets de rendu des modules dont le nom contient steam, discord,
     radeon… (`InjectionCollector`) et toutes les bibliothèques de `java.home` (`NativeCollector`) : tout remonter et

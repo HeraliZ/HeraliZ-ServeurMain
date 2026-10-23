@@ -30,7 +30,7 @@ files:
   - 'app/assets/images/heraliz-*.{png,jpg,ico}'
   - 'app/assets/images/nouveautes/*.jpg'
   - 'app/assets/images/minecraft.icns'
-  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,renderer,spartan,topo,nouveautes,compte-site,mise-a-jour,effacement}.js'
+  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,signature,renderer,spartan,topo,nouveautes,compte-site,mise-a-jour,effacement}.js'
 
 extraResources:
   - 'libraries'
