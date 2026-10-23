@@ -219,10 +219,10 @@ public final class EcranArmurier extends Screen {
       String nouvelle = tr("nouvelle");
       addRenderableWidget(new HzButton(px + pw - 14 - font.width(nouvelle) - 14, py + 12, font.width(nouvelle) + 14, 16,
          Component.literal(nouvelle), Ui.OK, () -> {
-            Brouillon n = new Brouillon();
-            n.onglet = ongletCourant();
-            n.resultat = objetChoisi();
-            b = n;
+            Brouillon nv = new Brouillon();
+            nv.onglet = ongletCourant();
+            nv.resultat = objetChoisi();
+            b = nv;
             debutLignes = 0;
             aRefaire = true;
          }));
