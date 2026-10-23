@@ -29,6 +29,9 @@ import net.minecraftforge.fml.loading.FMLPaths;
 public final class CaptureManager {
     private static final long ECART_MS = 10_000;
     private static final long DELAI_MS = 30_000;
+    /** Au plus 30 captures par heure et par joueur (place sur le serveur, envois sur Discord). */
+    private static final int MAX_PAR_HEURE = 30;
+    private static final long HEURE_MS = 3_600_000L;
     private static final SecureRandom ALEA = new SecureRandom();
     private static final DateTimeFormatter HORODATE = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
@@ -40,6 +43,8 @@ public final class CaptureManager {
         long demandee;
         String raison;
         ScanTransfer.Assembly assemblage;
+        long debutHeure;
+        int nbHeure;
     }
 
     private CaptureManager() {
@@ -54,6 +59,11 @@ public final class CaptureManager {
                     "Connexion refusée : acceptez les captures d'écran de l'anticheat dans le launcher HeraliZ.\n"
                             + "(Mettez le launcher à jour, puis cliquez sur « J'autorise et je joue ».)"));
         }
+    }
+
+    /** Le jeu du joueur a dit s'il accepte les captures (oui ou non) depuis sa connexion. */
+    public static boolean accordRecu(UUID id) {
+        return ACCORD.containsKey(id);
     }
 
     public static boolean autorise(ServerPlayer p) {
@@ -73,6 +83,14 @@ public final class CaptureManager {
         if (now - e.demandee < ECART_MS) {
             return "une capture a déjà été prise il y a moins de 10 s";
         }
+        if (now - e.debutHeure > HEURE_MS) {
+            e.debutHeure = now;
+            e.nbHeure = 0;
+        }
+        if (e.nbHeure >= MAX_PAR_HEURE) {
+            return "déjà " + MAX_PAR_HEURE + " captures de ce joueur dans l'heure";
+        }
+        e.nbHeure++;
         int id;
         do {
             id = ALEA.nextInt();
@@ -83,6 +101,22 @@ public final class CaptureManager {
         e.assemblage = null;
         ModMessages.sendToPlayer(new CaptureRequestPacket(id), p);
         return null;
+    }
+
+    /**
+     * Chaque tick : une capture demandée qui n'est pas arrivée dans les 30 s est signalée (un jeu honnête la prend
+     * toujours, même réduit ; un jeu modifié qui dit « oui » puis ne répond jamais est vu).
+     */
+    public static void tick(ServerPlayer p) {
+        Etat e = ETATS.get(p.getUUID());
+        if (e == null || e.id == 0 || System.currentTimeMillis() - e.demandee <= DELAI_MS) {
+            return;
+        }
+        String raison = e.raison;
+        e.id = 0;
+        e.assemblage = null;
+        com.Spartan.check.CheckManager.flag("Capture", p, "capture d'écran demandée (" + raison
+                + ") jamais reçue en 30 s alors que le joueur les a autorisées (jeu modifié ?)");
     }
 
     public static void onChunk(ServerPlayer p, int id, int index, int total, byte[] data) {

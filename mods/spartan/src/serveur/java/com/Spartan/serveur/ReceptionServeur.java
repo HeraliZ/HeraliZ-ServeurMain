@@ -34,7 +34,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Traitement, sur le thread du serveur, des paquets envoyés par le client (branché sur
  * {@link ModMessages#RECEPTION_SERVEUR} par {@link PartieServeur}). Le code commun ne fait que décoder.
  */
-final class ReceptionServeur {
+public final class ReceptionServeur {
     private static final Pattern SERIAL = Pattern.compile("^[A-Za-z0-9-]{4,128}$");
 
     private ReceptionServeur() {
@@ -180,11 +180,31 @@ final class ReceptionServeur {
         }
     }
 
-    /** Dernier appui signalé par joueur : un client modifié ne peut pas inonder le salon d'alertes. */
-    private static final java.util.Map<java.util.UUID, Long> DERNIERE_TOUCHE = new java.util.concurrent.ConcurrentHashMap<>();
+    /**
+     * Appuis signalés par joueur. Une alerte à chaque appui (choix du staff), au plus 2 par seconde ; au-delà de
+     * {@link #TOUCHE_MAX_FENETRE} alertes en 10 min, les appuis sont comptés et résumés en une alerte par minute : un
+     * jeu modifié qui enverrait des appuis sans fin ne peut ni noyer le salon du staff ni prendre la place des
+     * alertes des autres joueurs.
+     */
+    private static final java.util.Map<java.util.UUID, Touches> TOUCHES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final long TOUCHE_ECART_MS = 500;
+    private static final long TOUCHE_FENETRE_MS = 10 * 60_000L;
+    private static final int TOUCHE_MAX_FENETRE = 10;
+    private static final long TOUCHE_RESUME_MS = 60_000L;
 
-    /** Touche d'ouverture des menus de triche (² ou Maj droite) : une alerte à chaque appui (au plus 2 par seconde). */
+    private static final class Touches {
+        long dernier;
+        long debutFenetre;
+        int alertes;
+        int caches;
+        long dernierResume;
+    }
+
+    public static void oublierTouches(java.util.UUID id) {
+        TOUCHES.remove(id);
+    }
+
+    /** Touche d'ouverture des menus de triche (² ou Maj droite). */
     private static void toucheSuspecte(ServerPlayer player, String detail) {
         if (!SpartanConfig.CHECK_CLIENT_INTEGRITY.get()) {
             return;
@@ -194,10 +214,26 @@ final class ReceptionServeur {
             return;
         }
         long now = System.currentTimeMillis();
-        Long avant = DERNIERE_TOUCHE.put(player.getUUID(), now);
-        if (avant != null && now - avant < TOUCHE_ECART_MS) {
+        Touches t = TOUCHES.computeIfAbsent(player.getUUID(), u -> new Touches());
+        if (now - t.dernier < TOUCHE_ECART_MS) {
             return;
         }
+        t.dernier = now;
+        if (now - t.debutFenetre > TOUCHE_FENETRE_MS) {
+            t.debutFenetre = now;
+            t.alertes = 0;
+        }
+        if (t.alertes >= TOUCHE_MAX_FENETRE) {
+            t.caches++;
+            if (now - t.dernierResume >= TOUCHE_RESUME_MS) {
+                t.dernierResume = now;
+                CheckManager.flagEachTime("TricheMenu", player, t.caches + " appui(s) de plus sur ² ou Maj droite"
+                        + " (alertes regroupées : plus de " + TOUCHE_MAX_FENETRE + " en 10 min)");
+                t.caches = 0;
+            }
+            return;
+        }
+        t.alertes++;
         CheckManager.flagEachTime("TricheMenu", player, "touche « " + nom + " » pressée en jeu alors qu'aucune action"
                 + " n'y est attachée : touche d'ouverture des menus de clients de triche (indice)");
         // Capture de l'écran au moment de l'appui (seulement si le joueur l'a autorisée dans le launcher).

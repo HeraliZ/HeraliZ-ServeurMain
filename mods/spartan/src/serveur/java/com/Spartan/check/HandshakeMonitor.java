@@ -1,5 +1,6 @@
 package com.Spartan.check;
 
+import com.Spartan.capture.CaptureManager;
 import com.Spartan.config.SpartanConfig;
 import com.Spartan.integrity.LauncherGate;
 import com.Spartan.util.PacketGuard;
@@ -37,9 +38,11 @@ public final class HandshakeMonitor {
         }
         boolean buildNeeded = SpartanConfig.CHECK_CHALLENGE.get() || SpartanConfig.CHECK_BUILD.get();
         boolean launchNeeded = !SpartanConfig.secret(SpartanConfig.LAUNCHER_SECRET).isEmpty();
+        boolean captureNeeded = SpartanConfig.CAPTURE_REQUIRED.get();
         if (PacketGuard.hasSeen(uuid, "mods")
                 && (!buildNeeded || PacketGuard.hasSeen(uuid, "build"))
-                && (!launchNeeded || PacketGuard.hasSeen(uuid, "launch"))) {
+                && (!launchNeeded || PacketGuard.hasSeen(uuid, "launch"))
+                && (!captureNeeded || CaptureManager.accordRecu(uuid))) {
             PENDING.remove(uuid);
             return;
         }
@@ -51,6 +54,13 @@ public final class HandshakeMonitor {
                     "aucune info client reçue après " + timeout + " s (mod client modifié ou absent ?)");
             if (launchNeeded && !PacketGuard.hasSeen(uuid, "launch") && SpartanConfig.LAUNCHER_TOKEN_REQUIRED.get()) {
                 LauncherGate.refuser(p); // aucun jeton reçu : règle d'accès, même en détection silencieuse
+                return;
+            }
+            if (captureNeeded && !CaptureManager.accordRecu(uuid)) {
+                // Aucune réponse sur les captures : traité comme un refus (règle d'accès, comme le jeton).
+                p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.capture",
+                        "Connexion refusée : acceptez les captures d'écran de l'anticheat dans le launcher HeraliZ.\n"
+                                + "(Mettez le launcher à jour, puis cliquez sur « J'autorise et je joue ».)"));
                 return;
             }
             if (SpartanConfig.mayKickForClientSignal()) {

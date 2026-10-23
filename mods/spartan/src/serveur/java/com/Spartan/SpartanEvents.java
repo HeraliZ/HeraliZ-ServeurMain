@@ -65,6 +65,7 @@ public class SpartanEvents {
             return;
         }
         HandshakeMonitor.tick(player);
+        com.Spartan.capture.CaptureManager.tick(player);
         ChallengeManager.tick(player);
         ScanManager.tick(player);
     }
@@ -246,6 +247,7 @@ public class SpartanEvents {
             LauncherGate.clear(player.getUUID());
             ScanManager.clear(player.getUUID());
             com.Spartan.capture.CaptureManager.clear(player.getUUID());
+            com.Spartan.serveur.ReceptionServeur.oublierTouches(player.getUUID());
             VisibilityEngine.forget(player);
             HeralizCompat.oublier(player.getUUID());
         }
