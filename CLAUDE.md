@@ -64,7 +64,10 @@ quand un choix leur revient.
   échange avec les hérals (Casino 2.4.0, 23/10).
 - Dimensions à part : `heralisz_matchs:arenes` (ClashWar, duels) et `heralisz_matchs:zombies`.
 - Style de toutes les interfaces : celui des **écrans de clan** (panneaux de verre, police DM Sans, échelle 640×360,
-  jamais de fond uni). Kit à copier : `python outils/copier_kit_ui.py mods/<projet>`. Exceptions : l'inventaire, la
+  jamais de fond uni). Kit à copier : `python outils/copier_kit_ui.py mods/<projet>`. **Texte de toute interface (règle du
+  propriétaire, 23/10) : net et lisible comme dans le créateur de personnage (`/perso`)** : polices TTF du mod tracées à
+  leur vraie taille (jamais de texte agrandi par `pose().scale`, faire une police de la taille voulue), posées sur un
+  point entier de l'écran (`Ui.placer` du kit des Caisses 2.18.0), lissées par heraliz_interface (`PolicesNettes`). Exceptions : l'inventaire, la
   fouille du loot (coffres T1 à T7, caisses de ravitaillement, caisse de CRac, cadavres) et l'inventaire des sacs à
   dos gardent leur style de base façon DayZ (choix du propriétaire : le style « clan » y fait trop moderne ; au plus une petite
   amélioration dans le même style), et les écrans à thème (machines du casino). Toutes les autres interfaces des mods
@@ -2081,6 +2084,16 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   bottes de pluie de y 5,5 à 10,7, 0,15 px plus large que la jambe ; créateur plus lisible, flèches dessinées et
   centrées) ; Caisses 2.17.0 (proposition B, `maquettes/caisses_proposition_B.png`, `CaseOpenScreen` : carte centrale,
   barre des chances, contenu en mini-grille). Kit de départ : batte `geckolib:item_bat` (« Batte de baseball »).
+  Puis (23/10, nuit, rien testé en jeu) : **bouger avec un écran ouvert** (Interface 1.9.1, `MarcheEcran`) : la 1.9.0 ne
+  marchait pas (Forge rattache les touches de déplacement au contexte « aucun écran ouvert ») ; l'état réel du clavier
+  remplit maintenant l'entrée de déplacement (`MovementInputUpdateEvent`) : avancer, reculer, côtés, courir, sauter,
+  tête figée ; s'allonger / se relever par la touche « Ramper » (Tactique, `AllongeClient.toucheEcranOuvert`, lit
+  `MarcheEcran.actif()` par réflexion) ; fouille d'un conteneur de loot ou d'un coffre T7 fermée à plus de 6 blocs
+  (Loot 0.9.19 ; cadavres et joueurs à terre l'étaient déjà). **Décharger une arme** (Tactique 2.33.0, canal
+  `heraliz_tactique:decharger`) : touche « Décharger l'arme » (N) en jeu (arme en main), dans un inventaire (arme de son
+  inventaire sous la souris) ou dans l'Atelier (bouton « Décharger ») : chargeur et chambre rendus à l'inventaire par
+  `dropAllAmmo` de TaCZ, chargeur gardé vide ; refusé pour une arme de match, en rechargement, à carburant ou sans vraies
+  munitions. Caisses 2.18.0 : textes nets (titre et nom à leur taille, polices `ui_titre` / `ui_nom`, `Ui.placer`).
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
