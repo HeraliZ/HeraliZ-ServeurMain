@@ -1959,6 +1959,17 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     jamais. Un brouillage mal réglé casse le serveur. À faire par petits lots sur un PC, en gardant (`-keep`) toutes
     les API, Mixins, entités et le `@Mod`, puis `verifier.py` + essai en jeu avant d'envoyer. Gain réel modéré sur
     Forge.
+  - **Outil en place (23/10, jamais essayé en jeu)** : `python outils/brouiller.py <mod> [--verifier|--annuler]`
+    brouille les jars DÉJÀ fabriqués d'un mod avec ProGuard (réglages et guide dans `outils/brouillage/`,
+    `LISEZMOI.md`). Réglage PRUDENT par défaut (`commun.pro`) : aucune classe renommée (toutes gardées par leur nom),
+    seuls les membres privés de notre code renommés, numéros de ligne / noms de variables effacés ; code des autres
+    auteurs (`fr.heralisz.tactical`, `com.hbm`, `com.mrcrayfish`, `dev.kosmx`/`io.github.kosmx`, `org.concentus`)
+    gardé en entier ; Minecraft et Forge (noms SRG) donnés en `-libraryjars` (jamais renommés) → `verif_reobf` reste
+    vert. NON branché dans la fabrication ni les workflows (exprès) : on brouille mod par mod, à la main, et on ESSAIE
+    EN JEU avant la mise en ligne (`--annuler` remet les jars d'avant, sauvés dans `build/libs/.avant_brouillage/`).
+    Mod d'essai : **airstrike** (`airstrike.pro`). Pour brouiller plus fort un mod (renommer aussi ses classes
+    internes), lui ajouter des règles dans `outils/brouillage/<mod>.pro` une fois l'essai en jeu concluant. Besoin sur
+    le PC : lanceur CurseForge Forge 1.20.1 (Minecraft en noms SRG), comme `verif_reobf`.
   - **Pack réservé aux comptes** : fait (launcher 1.7.0, extension `/api/heraliz/pack`, verrou nginx de `theme.sh`,
     section 8 bis) : sans compte du site, ni la liste du pack ni ses fichiers ne se téléchargent. Un compte se crée
     librement : c'est un frein (rien d'anonyme, rien d'automatique), pas un coffre. Ensuite, le plus fort : modèles et

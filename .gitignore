@@ -46,3 +46,6 @@ Thumbs.db
 *.pem
 *.key
 serveur/config/heraliz_grades/boutique_site.json
+
+# ProGuard téléchargé par outils/brouiller.py (hors Git)
+outils/brouillage/.proguard/
