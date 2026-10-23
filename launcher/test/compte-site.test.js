@@ -342,3 +342,67 @@ test('avec les comptes du site, le pack de jeu vient du site pour le compte conn
     compte.pack = async () => ({ servers: [{ id: 'autre', address: 'play.heraliz.fr', minecraftVersion: '1.20.1', modules: [] }] })
     await assert.rejects(service.loadDistribution(), /ne correspond pas/)
 })
+
+test('accès au jeu selon le Discord du compte : statut, liens contrôlés, ancien site, refus du pack et du jeton', async () => {
+    const site = fauxSite({
+        'heraliz/compte/etat': d => d.access_token === 'perime' ? { status: 401, body: { status: 'error', reason: 'invalid_token' } }
+            : d.access_token === 'banni' ? { status: 403, body: { status: 'error', reason: 'user_banned' } }
+                : d.access_token === 'panne' ? { status: 502, body: null }
+                    : d.access_token === 'bizarre' ? { status: 200, body: { statut: 'autre' } }
+                        : d.access_token === 'piege' ? { status: 200, body: { statut: 'a_lier', discord: null, lien: 'https://ailleurs.example/lier', invitation: 'https://discord.example/x' } }
+                            : { status: 200, body: { statut: 'en_attente', discord: { pseudo: 'Survivant\u0007#42' }, lien: 'https://heraliz.fr/heraliz/discord/lier?jeton=abc', invitation: 'https://discord.gg/heraliz', validation_manuelle: true } }
+    })
+    const compte = new CompteSite('https://heraliz.fr', site.requete)
+    assert.deepEqual(await compte.etatDiscord('bon'), {
+        statut: 'en_attente', pseudo: 'Survivant#42', validationManuelle: true,
+        lien: 'https://heraliz.fr/heraliz/discord/lier?jeton=abc', invitation: 'https://discord.gg/heraliz'
+    })
+    assert.deepEqual(site.appels[0], { url: 'https://heraliz.fr/api/heraliz/compte/etat', methode: 'POST', donnees: { access_token: 'bon' } })
+    const piege = await compte.etatDiscord('piege')
+    assert.equal(piege.lien, null)
+    assert.equal(piege.invitation, null)
+    assert.equal((await compte.etatDiscord('banni')).statut, 'banni')
+    assert.equal(await compte.etatDiscord('bizarre'), null)
+    await assert.rejects(compte.etatDiscord('perime'), e => e.sessionExpiree === true)
+    await assert.rejects(compte.etatDiscord('panne'), /ne répond pas/)
+    // site d'avant cette règle : rien n'est exigé
+    assert.equal((await new CompteSite('https://heraliz.fr', fauxSite({ 'heraliz/compte/etat': { status: 404, body: null } }).requete).etatDiscord('bon')).statut, 'ok')
+    // pack et jeton de lancement refusés à cause du Discord
+    const refus = fauxSite({
+        'heraliz/pack': { status: 403, body: { erreur: 'discord', statut: 'a_lier' } },
+        'heraliz/jeton-jeu': { status: 403, body: { erreur: 'discord', statut: 'pas_membre' } }
+    })
+    const bloque = new CompteSite('https://heraliz.fr', refus.requete)
+    await assert.rejects(bloque.pack('bon'), e => e.discord === 'a_lier' && /Lie ton compte Discord/.test(e.message))
+    await assert.rejects(bloque.jetonJeu('bon', 'a'.repeat(64)), e => e.discord === 'pas_membre')
+})
+
+test('pas de partie tant que le Discord du compte n’est pas en règle ; la déconnexion oublie l’état', async () => {
+    const compte = fauxCompte()
+    let statut = 'a_lier'
+    compte.etatDiscord = async () => {
+        if (statut === 'perime') throw Object.assign(new Error('expirée'), { sessionExpiree: true })
+        if (statut === 'panne') throw new Error('Le site HeraliZ ne répond pas.')
+        return { statut, pseudo: 'Survivant#42', validationManuelle: true, lien: 'https://heraliz.fr/heraliz/discord/lier?jeton=abc', invitation: 'https://discord.gg/heraliz' }
+    }
+    const service = new LauncherService(config, () => {}, { compteSite: compte })
+    await service.connexion({ email: 'a@b.fr', password: 'bon', acceptedRules: true })
+    service.accordCapture(true)
+    compte.verification = 'ok'
+    const etat = await service.etatDiscord()
+    assert.deepEqual(etat.discord, { statut: 'a_lier', pseudo: 'Survivant#42', validationManuelle: true })
+    assert.equal(JSON.stringify(etat).includes('jeton=abc'), false, 'les liens restent dans le launcher')
+    assert.equal(service.lienDiscord('lier'), 'https://heraliz.fr/heraliz/discord/lier?jeton=abc')
+    assert.equal(service.lienDiscord('invitation'), 'https://discord.gg/heraliz')
+    assert.equal(service.lienDiscord('autre'), null)
+    await assert.rejects(service.launch(), e => e.discord === 'a_lier')
+    assert.equal(service.busy, false)
+    statut = 'panne'
+    const horsLigne = await service.etatDiscord()
+    assert.equal(horsLigne.horsLigne, true)
+    assert.equal(horsLigne.discord.statut, 'a_lier')
+    statut = 'perime'
+    assert.equal((await service.etatDiscord()).sessionExpiree, true)
+    assert.equal(service.getState().profile, null)
+    assert.equal(service.getState().discord, null)
+})

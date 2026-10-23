@@ -14,7 +14,7 @@ const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution, sansChemins } = require('./security')
-const { CompteSite } = require('./compte-site')
+const { CompteSite, erreurDiscord } = require('./compte-site')
 const Spartan = require('./spartan')
 
 // Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur ; Mac : trousseau ;
@@ -156,7 +156,9 @@ class LauncherService {
             configured: Boolean(this.config.serverAddress && this.config.distributionUrl),
             discordConfigured: Boolean(this.config.discordUrl), progress: this.progress,
             // accord pour les captures d'écran de l'anticheat (Spartan) : sans lui, pas de partie
-            accordCapture: Config.getAccordCapture()
+            accordCapture: Config.getAccordCapture(),
+            // accès au jeu selon le Discord du compte (null : pas encore demandé, ou site muet) ; les liens restent ici
+            discord: this.discord ? { statut: this.discord.statut, pseudo: this.discord.pseudo || null, validationManuelle: this.discord.validationManuelle === true } : null
         }
     }
 
@@ -239,6 +241,7 @@ class LauncherService {
     oublierCompte() {
         for (const key of Object.keys(Config.getAuthAccounts())) Config.removeAuthAccount(key)
         this.jeton = null
+        this.discord = null
         Config.save()
     }
 
@@ -259,6 +262,34 @@ class LauncherService {
         this.jeton = jeton
         if (compte.username !== saved.displayName) this.enregistrerCompte({ ...compte, jeton }, saved.rulesAccepted === true)
         return this.getState()
+    }
+
+    // Accès au jeu selon le Discord du compte (après la connexion, au démarrage, avant chaque partie et tant que le
+    // panneau Discord est ouvert). Site injoignable : on garde ce qu'on savait (horsLigne) ; jeton refusé : déconnexion.
+    async etatDiscord() {
+        const saved = Config.getSelectedAccount()
+        if (!this.compteSite || !saved?.compte || typeof this.compteSite.etatDiscord !== 'function') return this.getState()
+        const jeton = this.jeton || dechiffrer(saved.compte.jeton)
+        if (!jeton) {
+            this.oublierCompte()
+            return { ...this.getState(), sessionExpiree: true }
+        }
+        try {
+            const etat = await this.compteSite.etatDiscord(jeton)
+            if (etat) this.discord = etat
+        } catch (error) {
+            if (error?.sessionExpiree) {
+                this.oublierCompte()
+                return { ...this.getState(), sessionExpiree: true }
+            }
+            return { ...this.getState(), horsLigne: true }
+        }
+        return this.getState()
+    }
+
+    // Lien ouvert dans le navigateur depuis le panneau Discord : « lier » (page du site) ou « invitation » (Discord).
+    lienDiscord(nom) {
+        return nom === 'lier' ? this.discord?.lien || null : nom === 'invitation' ? this.discord?.invitation || null : null
     }
 
     logout() {
@@ -403,6 +434,10 @@ class LauncherService {
                 this.emit('prepare', 'Vérification de ton compte HeraliZ…')
                 const etat = await this.verifierCompte()
                 if (etat.sessionExpiree) throw new Error('Ta session a expiré : reconnecte-toi avec ton compte HeraliZ.')
+                // compte Discord lié, membre du Discord, pas banni, accepté par le staff : sinon, pas de partie
+                const discord = await this.etatDiscord()
+                if (discord.sessionExpiree) throw new Error('Ta session a expiré : reconnecte-toi avec ton compte HeraliZ.')
+                if (discord.discord && discord.discord.statut !== 'ok') throw erreurDiscord(discord.discord.statut)
             }
             const profile = createOfflineProfile(Config.getSelectedAccount().displayName)
             this.emit('prepare', 'Chargement du pack HeraliZ…')
@@ -438,6 +473,8 @@ class LauncherService {
             return { started: true }
         } catch (error) {
             this.busy = false
+            // pack ou jeton refusé par le site à cause du Discord : l'état suit, le panneau s'ouvre chez le joueur
+            if (typeof error?.discord === 'string') this.discord = { ...(this.discord || {}), statut: error.discord }
             this.emit('error', sansChemins(error.message) || 'La préparation a échoué. Réessaie.')
             throw error
         }

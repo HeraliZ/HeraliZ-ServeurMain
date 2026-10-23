@@ -31,6 +31,29 @@ const SECRET_A2F = /^[A-Z2-7]{16,128}$/
 const JETON_JEU = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
 // taille maximale du pack de jeu (distribution.json), comme avant qu'il ne vienne du compte
 const TAILLE_PACK = 32 * 1024 * 1024
+// Accès au jeu selon le Discord du compte (/api/heraliz/compte/etat ; pack et jeton de lancement refusés en 403
+// { erreur: 'discord', statut } tant que ce n'est pas « ok ») : compte Discord lié, membre du Discord HeraliZ, pas banni
+// et, pendant la bêta, accepté par le staff.
+const MESSAGES_DISCORD = {
+    a_lier: 'Lie ton compte Discord pour jouer.',
+    pas_membre: 'Rejoins le Discord HeraliZ pour jouer.',
+    en_attente: 'Ton compte est en attente de validation par le staff.',
+    refuse: 'Ton compte a été refusé.',
+    banni: 'Ce compte est banni.'
+}
+const STATUTS_DISCORD = new Set(['ok', ...Object.keys(MESSAGES_DISCORD)])
+const HOTES_DISCORD = ['discord.gg', 'discord.com']
+
+// Erreur « accès au jeu refusé à cause du Discord du compte » : .discord = le statut, pour ouvrir le bon panneau.
+function erreurDiscord(statut) {
+    if (!Object.hasOwn(MESSAGES_DISCORD, statut)) return new Error('Ton compte n’a pas accès au jeu pour le moment.')
+    return Object.assign(new Error(MESSAGES_DISCORD[statut]), { discord: statut })
+}
+
+// Réponse 403 { erreur: 'discord', statut } du pack ou du jeton de lancement.
+function refusDiscord(reponse) {
+    return reponse.status === 403 && reponse.body?.erreur === 'discord' ? erreurDiscord(reponse.body.statut) : null
+}
 
 // Requête JSON en HTTPS vers le site ; rend { status, body } sans lever d'erreur pour les réponses 4xx / 5xx.
 // « limite » (octets) : grosse réponse à un POST (le pack de jeu), lue par morceaux et refusée au-delà.
@@ -226,6 +249,8 @@ class CompteSite {
         if (reponse.status === 200 && typeof reponse.body?.jeton === 'string' && JETON_JEU.test(reponse.body.jeton)) return reponse.body.jeton
         if (reponse.status === 401) throw new Error(SESSION_EXPIREE)
         if (reponse.status === 403 && reponse.body?.reason === 'user_banned') throw new Error(BANNI)
+        const discord = refusDiscord(reponse)
+        if (discord) throw discord
         // extension absente (404), clé pas encore créée (503), site en panne : sans jeton, le serveur décide
         return null
     }
@@ -235,11 +260,39 @@ class CompteSite {
     async pack(jeton) {
         const reponse = await this.appeler('heraliz/pack', { access_token: jeton }, 'POST', { limite: TAILLE_PACK })
         if (reponse.status === 200 && reponse.body && typeof reponse.body === 'object' && !Array.isArray(reponse.body)) return reponse.body
+        const discord = refusDiscord(reponse)
+        if (discord) throw discord
         if (reponse.status === 503) throw new Error('Le pack de jeu HeraliZ n’est pas encore en ligne. Réessaie plus tard.')
         if (reponse.status === 404) throw new Error('Le site HeraliZ ne donne pas encore le pack de jeu au launcher. Réessaie plus tard.')
         if (reponse.status === 200) throw new Error('Réponse du site HeraliZ illisible.')
         throw erreur(reponse)
     }
+
+    // Accès au jeu selon le Discord du compte : { statut, pseudo, validationManuelle, lien, invitation }. Site d'avant
+    // cette règle (404) : « ok ». null si la réponse est illisible (le site décidera au pack). Erreur avec
+    // .sessionExpiree si le site ne reconnaît plus le jeton ; erreur si le site ne répond pas.
+    async etatDiscord(jeton) {
+        const reponse = await this.appeler('heraliz/compte/etat', { access_token: jeton })
+        if (reponse.status === 404) return { statut: 'ok', pseudo: null, validationManuelle: false, lien: null, invitation: null }
+        if (reponse.status === 401) throw Object.assign(new Error(SESSION_EXPIREE), { sessionExpiree: true })
+        if (reponse.status === 403 && reponse.body?.reason === 'user_banned') return { statut: 'banni', pseudo: null, validationManuelle: false, lien: null, invitation: null }
+        if (reponse.status >= 500) throw new Error(SITE_INJOIGNABLE)
+        const body = reponse.status === 200 && reponse.body && typeof reponse.body === 'object' ? reponse.body : null
+        if (!body || !STATUTS_DISCORD.has(body.statut)) return null
+        const pseudo = typeof body.discord?.pseudo === 'string' ? body.discord.pseudo.replace(/[\x00-\x1f]/g, '').slice(0, 64) || null : null
+        // lien pour lier le Discord : seulement sur le site lui-même ; invitation : seulement sur Discord
+        let lien = null
+        let invitation = null
+        try {
+            const url = typeof body.lien === 'string' ? httpsUrl(body.lien) : null
+            if (url && url.host === new URL(this.base).host) lien = url.href
+        } catch { /* adresse refusée */ }
+        try {
+            const url = typeof body.invitation === 'string' ? httpsUrl(body.invitation) : null
+            if (url && HOTES_DISCORD.includes(url.hostname)) invitation = url.href
+        } catch { /* adresse refusée */ }
+        return { statut: body.statut, pseudo, validationManuelle: body.validation_manuelle === true, lien, invitation }
+    }
 }
 
-module.exports = { CompteSite, verifierInscription, requeteParDefaut }
+module.exports = { CompteSite, verifierInscription, requeteParDefaut, erreurDiscord, HOTES_DISCORD }

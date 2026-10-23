@@ -30,6 +30,8 @@ function handle(name, action) {
             if (error.champs && typeof error.champs === 'object') {
                 reponse.champs = Object.fromEntries(Object.entries(error.champs).filter(([, v]) => typeof v === 'string').slice(0, 8))
             }
+            // accès refusé à cause du Discord du compte : le statut, pour ouvrir le bon panneau
+            if (typeof error.discord === 'string' && /^[a-z_]{1,20}$/.test(error.discord)) reponse.discord = error.discord
             return reponse
         }
     })
@@ -101,6 +103,7 @@ else {
         handle('profile', value => service.saveProfile(value))
         handle('connexion', value => service.connexion(value))
         handle('compte', () => service.verifierCompte())
+        handle('etat-discord', () => service.etatDiscord())
         handle('etat-comptes', () => service.etatComptes())
         handle('inscription', value => service.inscription(value))
         handle('a2f-preparer', () => service.a2fPreparer())
@@ -124,12 +127,15 @@ else {
             const links = {
                 discord: config.discordUrl, inscription: pageSite('/user/register'), motdepasse: pageSite('/user/password/reset'),
                 compte: pageSite('/profile'), boutique: pageSite('/shop'), votes: pageSite('/vote'), conditions: service.etatSite?.conditions || null,
-                telecharger: FICHIER_LAUNCHER[process.platform] ? pageSite(`/telecharger/${FICHIER_LAUNCHER[process.platform]}`) : null
+                telecharger: FICHIER_LAUNCHER[process.platform] ? pageSite(`/telecharger/${FICHIER_LAUNCHER[process.platform]}`) : null,
+                // panneau Discord : adresses données par le site pour ce compte (jamais par la page du launcher)
+                'discord-lier': service.lienDiscord('lier'), 'discord-invitation': service.lienDiscord('invitation')
             }
             if (!Object.hasOwn(links, name) || !links[name]) throw new Error('Ce lien n’est pas encore configuré.')
             const url = httpsUrl(links[name])
-            if (name === 'discord' && !['discord.gg', 'discord.com'].includes(url.hostname)) throw new Error('Lien Discord invalide.')
-            if (name !== 'discord' && url.host !== site.host) throw new Error('Lien du site invalide.')
+            const versDiscord = name === 'discord' || name === 'discord-invitation'
+            if (versDiscord && !['discord.gg', 'discord.com'].includes(url.hostname)) throw new Error('Lien Discord invalide.')
+            if (!versDiscord && url.host !== site.host) throw new Error('Lien du site invalide.')
             await shell.openExternal(url.href)
         })
         handle('window', action => {
