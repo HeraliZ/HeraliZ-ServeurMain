@@ -98,7 +98,10 @@ public final class DepartServeur {
     /** Un départ en cours. */
     private static final class EnCours {
         final ResourceKey<Level> monde;
-        final Vec3 depart;
+        /** Point de référence : déplacé avec le joueur quand c'est un autre joueur qui le pousse (2.22.0). */
+        Vec3 depart;
+        /** Position au tick d'avant. */
+        Vec3 avant;
         final int debut, fin;
         int essais;
         Arrivee trouvee;
@@ -106,6 +109,7 @@ public final class DepartServeur {
         EnCours(ResourceKey<Level> monde, Vec3 depart, int debut, int fin, int essais) {
             this.monde = monde;
             this.depart = depart;
+            this.avant = depart;
             this.debut = debut;
             this.fin = fin;
             this.essais = essais;
@@ -225,6 +229,12 @@ public final class DepartServeur {
                 it.remove();
                 continue;
             }
+            // poussé par un autre joueur collé à lui : ce déplacement-là ne compte pas (2.22.0, demande du propriétaire)
+            Vec3 ici0 = sp.position();
+            if (pousse(sp)) {
+                d.depart = d.depart.add(ici0.x - d.avant.x, 0, ici0.z - d.avant.z);
+            }
+            d.avant = ici0;
             double dx = sp.getX() - d.depart.x, dz = sp.getZ() - d.depart.z;
             if (sp.isDeadOrDying() || sp.level().dimension() != d.monde || dx * dx + dz * dz > bouger * bouger
                     || Math.abs(sp.getY() - d.depart.y) > bouger + 1) {
@@ -891,5 +901,15 @@ public final class DepartServeur {
                 .then(Commands.literal("essai").executes(c -> essaiCommande(c.getSource(), false))
                         .then(Commands.literal("tp").executes(c -> essaiCommande(c.getSource(), true))))
                 .then(Commands.literal("joueur").then(Commands.argument("cibles", EntityArgument.players()).executes(DepartServeur::envoyer))));
+    }
+
+    /** Un autre joueur (pas spectateur) est-il collé à lui (moins de 1,2 bloc) : il peut le pousser. */
+    private static boolean pousse(ServerPlayer sp) {
+        for (ServerPlayer o : sp.serverLevel().players()) {
+            if (o != sp && !o.isSpectator() && o.distanceToSqr(sp) < 1.44) {
+                return true;
+            }
+        }
+        return false;
     }
 }

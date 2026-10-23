@@ -154,13 +154,12 @@ public final class EcranCarte extends Screen {
             derniereImage = Util.getMillis();
             Sources.demanderClans();
             derniereDemande = derniereImage;
-            SonsUi.ouvrir(0.5f);
+            // aucun son à l'ouverture ni à la fermeture (2.22.0, demande du propriétaire)
         }
     }
 
     @Override
     public void onClose() {
-        SonsUi.fermer(0.5f);
         super.onClose();
     }
 

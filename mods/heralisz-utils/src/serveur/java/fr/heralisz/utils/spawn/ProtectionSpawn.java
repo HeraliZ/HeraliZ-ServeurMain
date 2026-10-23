@@ -56,6 +56,7 @@ public final class ProtectionSpawn {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ProtectionSpawn::arrivee);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ProtectionSpawn::explosion);
         MinecraftForge.EVENT_BUS.addListener(ProtectionSpawn::tick);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, ProtectionSpawn::ouvrants);
     }
 
     /** La protection est-elle active (réglage) ? */
@@ -224,5 +225,27 @@ public final class ProtectionSpawn {
         sp.setDeltaMovement(0, 0, 0);
         sp.hurtMarked = true;
         HeraliszUtils.LOG.info("[spawn] {} tombé sous le monde du spawn : ramené au point de réveil", sp.getGameProfile().getName());
+    }
+
+    // ---------------------------------------------------------------------------------------------- ouvrants (2.22.0)
+    /**
+     * Au spawn, en survie et en aventure, trappes, portes, portillons, leviers et boutons ne s'utilisent plus (choix du
+     * propriétaire) ; staff (permission 2), créatif et spectateur libres. Le reste (PNJ, borne, coffres, casino) n'est
+     * pas touché : seul le clic droit sur ces blocs est refusé.
+     */
+    private static void ouvrants(net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock e) {
+        if (!(e.getEntity() instanceof ServerPlayer sp) || !SpawnApi.estAuSpawn(sp.level())) {
+            return;
+        }
+        if (!sp.gameMode.isSurvival() || sp.hasPermissions(2)) {
+            return;
+        }
+        net.minecraft.world.level.block.Block b = sp.level().getBlockState(e.getPos()).getBlock();
+        if (b instanceof net.minecraft.world.level.block.TrapDoorBlock || b instanceof net.minecraft.world.level.block.DoorBlock
+                || b instanceof net.minecraft.world.level.block.FenceGateBlock || b instanceof net.minecraft.world.level.block.LeverBlock
+                || b instanceof net.minecraft.world.level.block.ButtonBlock) {
+            e.setUseBlock(Event.Result.DENY);
+            e.setCanceled(true);
+        }
     }
 }
