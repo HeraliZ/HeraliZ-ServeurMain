@@ -310,6 +310,7 @@
   "caracrea.voice.denoise": "Réduction du bruit de fond",
   "caracrea.voice.device.default": "Par défaut",
   "caracrea.voice.group.wrong_password": "Mauvais mot de passe pour ce groupe",
+  "caracrea.voice.group.too_many": "Trop d'essais : attends une minute avant de réessayer",
   "caracrea.voice.group.type.normal": "Normal",
   "caracrea.voice.group.type.open": "Ouvert",
   "caracrea.voice.group.type.isolated": "Isolé",

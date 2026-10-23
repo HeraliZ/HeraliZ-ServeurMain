@@ -310,6 +310,7 @@
   "caracrea.voice.denoise": "Шумоподавление",
   "caracrea.voice.device.default": "По умолчанию",
   "caracrea.voice.group.wrong_password": "Неверный пароль группы",
+  "caracrea.voice.group.too_many": "Слишком много попыток: подождите минуту",
   "caracrea.voice.group.type.normal": "Обычная",
   "caracrea.voice.group.type.open": "Открытая",
   "caracrea.voice.group.type.isolated": "Изолированная",

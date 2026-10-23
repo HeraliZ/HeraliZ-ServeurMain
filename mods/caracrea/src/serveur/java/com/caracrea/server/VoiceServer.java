@@ -565,6 +565,10 @@ public final class VoiceServer {
         }
     }
 
+    /** Mauvais mots de passe de groupe par joueur : {nombre, début de la minute en cours (ou de l'attente)}. */
+    private static final Map<UUID, long[]> ESSAIS_MDP = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int ESSAIS_MAX = 5;
+
     public static void groupAction(ServerPlayer player, GroupAction action) {
         if (!active) {
             return;
@@ -590,9 +594,30 @@ public final class VoiceServer {
                 if (group == null || !CaraCreaConfig.SERVER.allowGroups.get()) {
                     return;
                 }
-                if (!group.password.isEmpty() && !group.password.equals(action.password())) {
-                    player.displayClientMessage(Component.translatable("caracrea.voice.group.wrong_password"), true);
-                    return;
+                if (!group.password.isEmpty()) {
+                    // essais de mot de passe limités (5 erreurs par minute, puis 1 min d'attente) : sans ça, un jeu
+                    // modifié devinait le mot de passe d'un groupe en en essayant des milliers par seconde
+                    long now = System.currentTimeMillis();
+                    long[] essais = ESSAIS_MDP.computeIfAbsent(uuid, u -> new long[2]);
+                    if (now - essais[1] > 60_000L) {
+                        essais[0] = 0;
+                        essais[1] = now;
+                    }
+                    if (essais[0] >= ESSAIS_MAX) {
+                        player.displayClientMessage(Component.translatableWithFallback("caracrea.voice.group.too_many",
+                                "Trop d'essais : attends une minute avant de réessayer"), true);
+                        return;
+                    }
+                    if (!java.security.MessageDigest.isEqual(group.password.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                            String.valueOf(action.password()).getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
+                        if (++essais[0] >= ESSAIS_MAX) {
+                            essais[1] = now;
+                            CaraCrea.LOGGER.warn("[voix] {} : {} mauvais mots de passe de suite pour le groupe {}", player.getGameProfile().getName(), ESSAIS_MAX, group.name);
+                        }
+                        player.displayClientMessage(Component.translatable("caracrea.voice.group.wrong_password"), true);
+                        return;
+                    }
+                    ESSAIS_MDP.remove(uuid);
                 }
                 leave(uuid);
                 group.members.add(uuid);
