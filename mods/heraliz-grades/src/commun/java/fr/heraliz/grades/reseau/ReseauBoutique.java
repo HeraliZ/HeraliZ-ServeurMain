@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Canal de la boutique en jeu (/boutique) et des échanges entre joueurs (/trade), protocole 1. Le joueur ne fait que
+ * Canal de la boutique en jeu (/boutique) et des échanges entre joueurs (/trade), protocole 2. Le joueur ne fait que
  * DEMANDER (acheter un article par son identifiant, proposer une case de son inventaire, des PB, se dire prêt) : prix,
  * soldes, objets et échanges sont décidés par le serveur, et les PB par le site.
  */
@@ -22,7 +22,8 @@ public final class ReseauBoutique {
     private ReseauBoutique() {
     }
 
-    private static final String VERSION = "1";
+    /** 2 (Grades 2.6.0) : groupe et quantité de chaque article (nouvel écran). */
+    private static final String VERSION = "2";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "boutique"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -30,8 +31,12 @@ public final class ReseauBoutique {
     /** Cases d'objets proposées par chaque joueur dans un échange. */
     public static final int CASES_ECHANGE = MAX_CASES;
 
-    /** Un article : identifiant, catégorie, nom, description, prix en PB, couleur, icône, mis en avant. */
-    public record Offre(String id, String categorie, String nom, String description, long prix, int couleur, ItemStack icone, boolean avant) {
+    /**
+     * Un article : identifiant, catégorie, groupe (grade ou caisse de la clé), quantité (mois ou clés, 0 = à vie), nom,
+     * description, prix en PB, couleur, icône, mis en avant.
+     */
+    public record Offre(String id, String categorie, String groupe, int quantite, String nom, String description, long prix, int couleur, ItemStack icone,
+                        boolean avant) {
     }
 
     /**
@@ -112,6 +117,8 @@ public final class ReseauBoutique {
             Offre o = m.offres().get(i);
             b.writeUtf(o.id(), MAX_ID);
             b.writeUtf(o.categorie(), MAX_ID);
+            b.writeUtf(o.groupe(), MAX_ID);
+            b.writeVarInt(o.quantite());
             b.writeUtf(o.nom(), MAX_TEXTE);
             b.writeUtf(o.description(), MAX_TEXTE);
             b.writeVarLong(o.prix());
@@ -129,7 +136,7 @@ public final class ReseauBoutique {
         int n = Math.min(b.readVarInt(), MAX_OFFRES);
         List<Offre> l = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            l.add(new Offre(b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readUtf(MAX_TEXTE), b.readUtf(MAX_TEXTE), b.readVarLong(), b.readInt(), b.readItem(), b.readBoolean()));
+            l.add(new Offre(b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readVarInt(), b.readUtf(MAX_TEXTE), b.readUtf(MAX_TEXTE), b.readVarLong(), b.readInt(), b.readItem(), b.readBoolean()));
         }
         return new EtatBoutique(ouvrir, solde, l, b.readUtf(MAX_TEXTE), b.readBoolean());
     }

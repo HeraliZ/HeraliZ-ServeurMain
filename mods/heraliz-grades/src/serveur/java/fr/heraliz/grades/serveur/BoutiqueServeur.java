@@ -45,8 +45,12 @@ final class BoutiqueServeur {
     private static final Logger LOG = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    record Article(String id, String categorie, Map<String, String> nom, Map<String, String> description, long prix, int couleur,
-                   String icone, boolean avant, List<String> commandes) {
+    /**
+     * groupe = grade (rescape, traqueur, roi_de_la_zone, beta) ou caisse de la clé (gemme, camo, spectacle), lu par l'écran ;
+     * quantite = mois du grade ou nombre de clés (0 = à vie) ; apresAchat = suffixe du message envoyé après l'achat (ou null).
+     */
+    record Article(String id, String categorie, String groupe, int quantite, Map<String, String> nom, Map<String, String> description, long prix,
+                   int couleur, String icone, boolean avant, List<String> commandes, String apresAchat) {
     }
 
     /** Achat en cours : etat « debit » (débit demandé) ou « rembourser » (débité, livraison ratée). */
@@ -125,9 +129,12 @@ final class BoutiqueServeur {
                 long prix = a.get("prix").getAsLong();
                 String id = a.get("id").getAsString();
                 if (prix <= 0 || cmds.isEmpty() || !id.matches("[a-z0-9_]{1,32}")) continue;
-                l.add(new Article(id, a.has("categorie") ? a.get("categorie").getAsString() : "divers", textes(a.get("nom")), textes(a.get("description")),
+                String apres = a.has("apres_achat") ? a.get("apres_achat").getAsString() : null;
+                if (apres != null && !apres.matches("[a-z0-9_]{1,32}")) apres = null;
+                l.add(new Article(id, a.has("categorie") ? a.get("categorie").getAsString() : "divers", a.has("groupe") ? a.get("groupe").getAsString() : "",
+                        a.has("quantite") ? a.get("quantite").getAsInt() : 1, textes(a.get("nom")), textes(a.get("description")),
                         prix, Integer.parseInt(couleur, 16), a.has("icone") ? a.get("icone").getAsString() : "minecraft:paper",
-                        a.has("avant") && a.get("avant").getAsBoolean(), cmds));
+                        a.has("avant") && a.get("avant").getAsBoolean(), cmds, apres));
             }
             ARTICLES.clear();
             ARTICLES.addAll(l);
@@ -184,7 +191,8 @@ final class BoutiqueServeur {
     static void envoyer(ServerPlayer p, boolean ouvrir, long solde, String message, boolean ok) {
         List<ReseauBoutique.Offre> l = new ArrayList<>();
         for (Article a : ARTICLES) {
-            l.add(new ReseauBoutique.Offre(a.id(), a.categorie(), texte(a.nom(), p), texte(a.description(), p), a.prix(), a.couleur(), icone(a.icone()), a.avant()));
+            l.add(new ReseauBoutique.Offre(a.id(), a.categorie(), a.groupe(), a.quantite(), texte(a.nom(), p), texte(a.description(), p), a.prix(), a.couleur(),
+                    icone(a.icone()), a.avant()));
         }
         ReseauBoutique.CANAL.send(PacketDistributor.PLAYER.with(() -> p), new ReseauBoutique.EtatBoutique(ouvrir, solde, l, message, ok));
     }
@@ -241,7 +249,13 @@ final class BoutiqueServeur {
                 sauver();
                 OCCUPES.remove(u);
                 journal("achat " + c.joueur + " " + a.id() + " " + a.prix() + " PB (" + c.ref + ")");
-                if (j != null) envoyer(j, false, solde, "achete", true);
+                if (j != null) {
+                    envoyer(j, false, solde, a.apresAchat() == null ? "achete" : "achete_" + a.apresAchat(), true);
+                    if (a.apresAchat() != null) {
+                        j.sendSystemMessage(Component.translatableWithFallback("message.heraliz_grades.boutique." + a.apresAchat(),
+                                "Achat réussi : regarde les consignes sur Discord (discord.gg/heraliz).").withStyle(net.minecraft.ChatFormatting.GOLD));
+                    }
+                }
                 LienDiscord.evenement("Boutique : " + c.joueur + " a acheté " + a.id() + " (" + a.prix() + " PB)");
             } else {
                 c.etat = "rembourser";
