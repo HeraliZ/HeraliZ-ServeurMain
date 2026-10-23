@@ -320,6 +320,8 @@
   "message.heraliz_grades.trade.aucun": "Tu n'es dans aucun échange.",
   "message.heraliz_grades.trade.reussi": "Échange réussi !",
   "message.heraliz_grades.trade.livre": "Les objets d'un échange t'ont été remis.",
+  "message.heraliz_grades.trade.place": "Des objets d'un échange t'attendent : libère des cases dans ton inventaire.",
+  "message.heraliz_grades.trade.attente": "Des objets d'un échange t'attendent : ils te seront remis au spawn.",
   "message.heraliz_grades.pb.solde": "Tu as %s PB.",
   "message.heraliz_grades.pb.recu": "Tu as reçu %s PB.",
   "message.heraliz_grades.pb.injoignable": "Le site ne répond pas, réessaie dans un instant.",

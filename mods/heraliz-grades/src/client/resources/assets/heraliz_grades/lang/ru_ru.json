@@ -320,6 +320,8 @@
   "message.heraliz_grades.trade.aucun": "Ты не в обмене.",
   "message.heraliz_grades.trade.reussi": "Обмен завершён!",
   "message.heraliz_grades.trade.livre": "Предметы из обмена выданы вам.",
+  "message.heraliz_grades.trade.place": "Вас ждут предметы из обмена: освободите место в инвентаре.",
+  "message.heraliz_grades.trade.attente": "Вас ждут предметы из обмена: вы получите их на спавне.",
   "message.heraliz_grades.pb.solde": "У тебя %s PB.",
   "message.heraliz_grades.pb.recu": "Ты получил %s PB.",
   "message.heraliz_grades.pb.injoignable": "Сайт не отвечает, попробуй позже.",

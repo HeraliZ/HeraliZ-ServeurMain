@@ -320,6 +320,8 @@
   "message.heraliz_grades.trade.aucun": "You are not in a trade.",
   "message.heraliz_grades.trade.reussi": "Trade complete!",
   "message.heraliz_grades.trade.livre": "The items from a trade have been given to you.",
+  "message.heraliz_grades.trade.place": "Items from a trade are waiting for you: free up some inventory slots.",
+  "message.heraliz_grades.trade.attente": "Items from a trade are waiting for you: you will get them at spawn.",
   "message.heraliz_grades.pb.solde": "You have %s PB.",
   "message.heraliz_grades.pb.recu": "You received %s PB.",
   "message.heraliz_grades.pb.injoignable": "The site is not responding, try again shortly.",

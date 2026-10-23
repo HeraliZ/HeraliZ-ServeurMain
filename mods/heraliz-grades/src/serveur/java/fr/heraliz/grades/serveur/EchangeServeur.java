@@ -90,12 +90,15 @@ final class EchangeServeur {
     private static final class Envoi {
         String ref, de, vers;
         long montant, recu;
-        // « prepare » (dépôt noté, site pas encore appelé), « envoye », « verifier » (site muet) ;
+        // « prepare » (dépôt noté, site pas encore appelé), « envoye », « verifier » (site muet), « passe » / « refuse »
+        // (décision connue, livraisons pas encore écrites) ;
         // « annuler » : anciens envois sans dépôt (avant Grades 2.3.1), PB à rendre
         String etat;
         // joueurs A et B de l'échange et leurs objets en dépôt (SNBT) ; null : ancien envoi sans dépôt
         String ua, ub;
         List<String> objetsA, objetsB;
+        // heure de l'appel au site (ms) : un « pas fait » n'est cru qu'après 2 min (une requête en retard ne passe plus)
+        long envoyeA;
     }
 
     /** Objets à remettre à un joueur déconnecté, à sa prochaine connexion. */
@@ -361,6 +364,11 @@ final class EchangeServeur {
             DEMANDES.values().removeIf(Map::isEmpty);
         }
         if (ticks % 600 == 0) reprendre();
+        if (ticks % 100 == 0 && !LIVRAISONS.isEmpty()) {
+            java.util.Set<String> attendent = new java.util.HashSet<>();
+            for (Livraison l : LIVRAISONS) attendent.add(l.uuid);
+            for (ServerPlayer p : serveur.getPlayerList().getPlayers()) if (attendent.contains(p.getUUID().toString())) distribuer(p);
+        }
         for (Session s : new java.util.HashSet<>(SESSIONS.values())) {
             // phase 2 : objets en dépôt, seule la réponse du site compte
             if (SESSIONS.get(s.a.uuid) != s || s.phase >= 2) continue;
@@ -430,12 +438,14 @@ final class EchangeServeur {
         // les sauvegardes des joueurs sans les objets, puis le dépôt devient la seule trace (pas de copie après un plantage)
         serveur.getPlayerList().saveAll();
         v.etat = "envoye";
+        v.envoyeA = System.currentTimeMillis();
         sauver();
         s.phase = 2;
         envoyer(s);
         Pb.transfert(v.ref, v.de, v.vers, v.montant, r -> {
-            if (r == null) {
-                // on ne sait pas si les PB sont partis : le dépôt attend, revérifié toutes les 30 s (reprendre)
+            if (r == null || r.code() != 200) {
+                // site muet ou en erreur (500, 503…) : on ne sait pas si les PB sont partis ; le dépôt attend, revérifié
+                // toutes les 30 s (reprendre) ; seul un refus clair du site (200 et ok faux) rend les objets
                 v.etat = "verifier";
                 sauver();
                 fermer(s, 4, "injoignable");
@@ -452,22 +462,48 @@ final class EchangeServeur {
         });
     }
 
-    /** Fin d'un échange en dépôt : objets croisés (PB passés) ou rendus à chacun (PB pas passés). */
+    /**
+     * Fin d'un échange en dépôt : objets croisés (PB passés) ou rendus à chacun (PB pas passés). Le dépôt devient, en une
+     * seule écriture sur le disque, des livraisons aux deux joueurs (jamais les deux à la fois : ni copie ni perte après un
+     * plantage) ; les livraisons sont ensuite remises au spawn, quand le joueur y est vivant (distribuer).
+     */
     private static void conclure(Envoi v, boolean passes) {
         if (!ENVOIS.containsKey(v.ref)) return;
         UUID a = UUID.fromString(v.ua), b = UUID.fromString(v.ub);
         List<String> pourA = passes ? v.objetsB : v.objetsA, pourB = passes ? v.objetsA : v.objetsB;
         String motif = passes ? "trade " + v.ref : "trade annulé " + v.ref;
-        livrer(a, pourA, motif);
-        livrer(b, pourB, motif);
+        Livraison la = livraison(a, pourA, motif), lb = livraison(b, pourB, motif);
+        String etatAvant = v.etat;
         ENVOIS.remove(v.ref);
-        sauver();
+        if (la != null) LIVRAISONS.add(la);
+        if (lb != null) LIVRAISONS.add(lb);
+        if (!sauver()) {
+            // rien n'a changé sur le disque : on garde le dépôt et la décision, repris par reprendre()
+            if (la != null) LIVRAISONS.remove(la);
+            if (lb != null) LIVRAISONS.remove(lb);
+            v.etat = passes ? "passe" : "refuse";
+            ENVOIS.put(v.ref, v);
+            LOG.error("[grades] trade {} : fichier des échanges impossible à écrire, conclusion reprise plus tard (avant : {})", v.ref, etatAvant);
+            return;
+        }
         BoutiqueServeur.journal((passes ? "trade " : "trade annulé, objets rendus ") + v.ref + " : " + v.objetsA + " <-> " + v.objetsB
                 + (passes ? " ; " + v.de + " -> " + v.vers + " " + v.montant + " PB (reçu " + v.recu + ")" : ""));
-        if (passes) {
-            ServerPlayer pa = joueur(a), pb = joueur(b);
-            for (ServerPlayer p : new ServerPlayer[]{pa, pb}) if (p != null) p.sendSystemMessage(msg("reussi", "Échange réussi !").withStyle(ChatFormatting.GREEN));
+        for (UUID u : new UUID[]{a, b}) {
+            ServerPlayer p = joueur(u);
+            if (p == null) continue;
+            if (passes) p.sendSystemMessage(msg("reussi", "Échange réussi !").withStyle(ChatFormatting.GREEN));
+            distribuer(p);
         }
+    }
+
+    @javax.annotation.Nullable
+    private static Livraison livraison(UUID u, List<String> objets, String motif) {
+        if (objets == null || objets.isEmpty()) return null;
+        Livraison l = new Livraison();
+        l.uuid = u.toString();
+        l.motif = motif;
+        l.objets = new ArrayList<>(objets);
+        return l;
     }
 
     /** Ferme l'écran des deux joueurs (s'ils sont là) après un échange en dépôt. */
@@ -479,42 +515,65 @@ final class EchangeServeur {
         envoyer(s);
     }
 
-    /** Remet des objets en dépôt à un joueur : tout de suite s'il est là, sinon à sa prochaine connexion. */
-    private static void livrer(UUID u, List<String> objets, String motif) {
-        if (objets == null || objets.isEmpty()) return;
-        ServerPlayer p = joueur(u);
-        if (p != null) {
-            donner(p, depuisTexte(objets));
-            serveur.getPlayerList().saveAll();
+    /**
+     * Remet au joueur ses objets en attente, seulement vivant, au spawn (jamais en match : la fin d'un match remet
+     * l'inventaire d'avant), et seulement dans des cases vides (rien jeté par terre) ; le reste attend qu'il fasse de la
+     * place (revérifié toutes les 5 s). Le disque est mis à jour AVANT de donner : jamais deux fois.
+     */
+    private static void distribuer(ServerPlayer p) {
+        if (serveur == null || LIVRAISONS.isEmpty() || !p.isAlive() || p.isSpectator() || !WarpsServeur.auSpawn(p)) return;
+        String u = p.getUUID().toString();
+        int libres = 0;
+        for (ItemStack st : p.getInventory().items) if (st.isEmpty()) libres++;
+        List<Livraison> avant = new ArrayList<>();
+        List<String> aDonner = new ArrayList<>();
+        boolean reste = false;
+        for (Livraison l : LIVRAISONS) {
+            if (!u.equals(l.uuid)) continue;
+            Livraison copie = new Livraison();
+            copie.uuid = l.uuid;
+            copie.motif = l.motif;
+            copie.objets = new ArrayList<>(l.objets);
+            avant.add(copie);
+            while (!l.objets.isEmpty() && aDonner.size() < libres) aDonner.add(l.objets.remove(0));
+            if (!l.objets.isEmpty()) reste = true;
+        }
+        if (avant.isEmpty()) return;
+        if (aDonner.isEmpty()) {
+            p.displayClientMessage(msg("place", "Des objets d'un échange t'attendent : libère des cases dans ton inventaire."), true);
             return;
         }
-        Livraison l = new Livraison();
-        l.uuid = u.toString();
-        l.motif = motif;
-        l.objets = new ArrayList<>(objets);
-        LIVRAISONS.add(l);
-        sauver();
+        LIVRAISONS.removeIf(l -> l.objets.isEmpty());
+        if (!sauver()) {
+            // disque non mis à jour : rien n'est donné, tout reste en attente
+            LIVRAISONS.removeIf(l -> u.equals(l.uuid));
+            LIVRAISONS.addAll(avant);
+            return;
+        }
+        for (ItemStack st : depuisTexte(aDonner)) {
+            if (!p.getInventory().add(st) && !st.isEmpty()) {
+                // ne devrait pas arriver (cases vides comptées) : remis en attente plutôt que jeté
+                LIVRAISONS.add(livraison(p.getUUID(), versTexte(List.of(st)), "reste"));
+                sauver();
+                reste = true;
+            }
+        }
+        p.inventoryMenu.broadcastChanges();
+        serveur.getPlayerList().saveAll();
+        BoutiqueServeur.journal("trade : objets remis à " + p.getGameProfile().getName() + " : " + aDonner);
+        p.sendSystemMessage(msg("livre", "Les objets d'un échange t'ont été remis.").withStyle(ChatFormatting.GREEN));
+        if (reste) p.sendSystemMessage(msg("place", "Des objets d'un échange t'attendent : libère des cases dans ton inventaire.").withStyle(ChatFormatting.YELLOW));
     }
 
-    /** À la connexion : objets d'un échange conclu pendant son absence. */
+    /** À la connexion : objets d'un échange conclu pendant son absence (remis au spawn). */
     static void connexion(ServerPlayer p) {
         if (serveur == null || LIVRAISONS.isEmpty()) return;
         String u = p.getUUID().toString();
-        List<Livraison> siennes = new ArrayList<>();
-        for (Livraison l : LIVRAISONS) if (u.equals(l.uuid)) siennes.add(l);
-        if (siennes.isEmpty()) return;
-        LIVRAISONS.removeAll(siennes);
-        // noté sur le disque AVANT de donner : jamais deux fois
-        if (!sauver()) {
-            LIVRAISONS.addAll(siennes);
-            return;
-        }
-        for (Livraison l : siennes) {
-            donner(p, depuisTexte(l.objets));
-            BoutiqueServeur.journal("trade : objets remis à " + p.getGameProfile().getName() + " à la connexion (" + l.motif + ") : " + l.objets);
-        }
-        serveur.getPlayerList().saveAll();
-        p.sendSystemMessage(msg("livre", "Les objets d'un échange t'ont été remis.").withStyle(ChatFormatting.GREEN));
+        boolean attend = false;
+        for (Livraison l : LIVRAISONS) if (u.equals(l.uuid)) attend = true;
+        if (!attend) return;
+        if (WarpsServeur.auSpawn(p)) distribuer(p);
+        else p.sendSystemMessage(msg("attente", "Des objets d'un échange t'attendent : ils te seront remis au spawn.").withStyle(ChatFormatting.YELLOW));
     }
 
     private static List<String> versTexte(List<ItemStack> l) {
@@ -628,7 +687,9 @@ final class EchangeServeur {
     private static void reprendre() {
         for (Envoi v : new ArrayList<>(ENVOIS.values())) {
             if (EN_REPRISE.contains(v.ref)) continue;
-            if ("annuler".equals(v.etat)) {
+            if ("passe".equals(v.etat) || "refuse".equals(v.etat)) {
+                conclure(v, "passe".equals(v.etat));
+            } else if ("annuler".equals(v.etat)) {
                 annulerEnvoi(v);
             } else if ("verifier".equals(v.etat)) {
                 EN_REPRISE.add(v.ref);
@@ -636,6 +697,8 @@ final class EchangeServeur {
                     EN_REPRISE.remove(v.ref);
                     if (r == null || r.code() != 200) return;
                     boolean fait = r.corps().has("fait") && r.corps().get("fait").getAsBoolean();
+                    // « pas fait » trop tôt : la requête du transfert pourrait encore arriver au site ; on attend
+                    if (!fait && v.ua != null && System.currentTimeMillis() - v.envoyeA < 120_000L) return;
                     if (v.ua != null) {
                         // échange en dépôt : PB passés = objets croisés, sinon rendus
                         conclure(v, fait);
