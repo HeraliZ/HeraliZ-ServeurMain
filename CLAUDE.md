@@ -718,7 +718,7 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   passages entre crochets à compléter dans l'administration, jamais dans le dépôt). Rien testé.
 - **Site v4 et Points Boutique** (22/10, maquette validée) : accueil sans image de fond, page `launcher` (vue
   `heraliz/launcher`, aide « Windows a protégé votre ordinateur » en images), votes (Top-Serveurs ; Serveur-Minecraft.com
-  désactivé), règlement en 10 règles, pages légales avec menu (`site/vm/pages_legales.php` : cgu, cgv, confidentialité et
+  désactivé ; 2 PB par vote depuis le 23/10, une seule fois par `pbParVote` de `reglages.php`, repère `heraliz.vote_pb`), règlement en 10 règles, pages légales avec menu (`site/vm/pages_legales.php` : cgu, cgv, confidentialité et
   anticheat, cookies). **PB = monnaie du compte du site** (`money` = PB, repère `heraliz.pb_monnaie`) : recharges 5 / 10 /
   20 / 50 / 100 € = 500 / 1 000 / 2 150 / 5 550 / 11 500 PB (offres d'Azuriom, rattachées à chaque moyen de paiement à
   chaque envoi), icônes `assets/img/pb/` ; le même solde servira en jeu (`/boutique`, `/trade` à 10 % de taxe, par

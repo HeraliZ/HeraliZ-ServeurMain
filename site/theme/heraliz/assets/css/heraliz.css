@@ -600,6 +600,51 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
 .hz-sec { font-size: 22px; margin: 38px 0 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .hz-sec a { font: 600 13px 'DM Sans', sans-serif; color: var(--muted); }
 .hz-note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+/* Ce que les PB débloquent (lots-pb) */
+.hz-dispo { margin: 40px 0 0; }
+.hz-dispo .tete { text-align: center; margin: 0 0 18px; }
+.hz-dispo .tete:not(:first-child) { margin-top: 44px; }
+.hz-dispo .sur { display: block; font: 700 11px 'DM Sans', sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.hz-dispo .tete h2 { font: 600 30px/1.1 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .03em; margin: 6px 0 0; }
+.hz-dispo .grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.hz-dispo .grade { position: relative; isolation: isolate; height: 300px; display: flex; flex-direction: column; align-items: center; background: radial-gradient(40% 30% at 50% 70%, color-mix(in srgb, var(--g) 20%, transparent), transparent); }
+.hz-dispo .grade::after { content: ''; position: absolute; left: 50%; bottom: 14px; width: 55%; height: 22px; transform: translateX(-50%); border-radius: 50%; background: color-mix(in srgb, var(--g) 45%, transparent); filter: blur(14px); z-index: -1; }
+.hz-dispo .grade .haut { padding: 22px 16px 0; text-align: center; }
+.hz-dispo .grade h3 { font: 700 30px/1 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .04em; margin: 6px 0 10px; color: var(--g); text-shadow: 0 0 24px color-mix(in srgb, var(--g) 45%, transparent); }
+.hz-dispo .grade .rang { display: inline-flex; gap: 4px; }
+.hz-dispo .grade .rang i { width: 18px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.12); }
+.hz-dispo .grade .rang i.on { background: var(--g); box-shadow: 0 0 8px var(--g); }
+.hz-dispo .grade img { margin-top: auto; height: 150px; width: auto; max-width: 80%; object-fit: contain; object-position: bottom; margin-bottom: 18px; filter: drop-shadow(0 0 12px color-mix(in srgb, var(--g) 45%, transparent)); transition: transform .25s; }
+.hz-dispo .grade:hover img { transform: scale(1.05); }
+.hz-dispo .grade.beta { flex-direction: row; justify-content: center; gap: 28px; height: 190px; width: min(100%, 560px); margin: 16px auto 0; background: radial-gradient(22% 38% at 30% 62%, color-mix(in srgb, var(--g) 20%, transparent), transparent); }
+.hz-dispo .grade.beta::after { left: 30%; }
+.hz-dispo .grade.beta img { height: 150px; margin: auto 0 16px; }
+.hz-dispo .grade.beta .haut { padding: 0; text-align: left; align-self: center; }
+.hz-dispo .grade.beta h3 { font-size: 40px; margin-bottom: 6px; }
+.hz-dispo .grade.beta p { margin: 0; color: var(--muted); font-size: 14px; }
+.hz-dispo .pastille { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 99px; font: 700 10.5px 'DM Sans', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #fff; background: color-mix(in srgb, var(--g) 30%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--g) 70%, transparent); }
+.hz-dispo .avantages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.hz-dispo .avantage { position: relative; overflow: hidden; border-radius: 14px; background: #0e0f0c; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); transition: transform .25s, box-shadow .25s; }
+.hz-dispo .avantage:hover { transform: translateY(-4px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 40px -18px color-mix(in srgb, var(--g) 70%, transparent); }
+.hz-dispo .avantage .image { aspect-ratio: 16 / 10; overflow: hidden; }
+.hz-dispo .avantage .image img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+.hz-dispo .avantage:hover .image img { transform: scale(1.06); }
+.hz-dispo .avantage .corps { padding: 14px 18px 18px; border-top: 2px solid var(--g); }
+.hz-dispo .avantage h3 { font: 700 22px/1 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 6px; color: var(--g); }
+.hz-dispo .avantage p { margin: 0; color: var(--muted); font-size: 14px; }
+.hz-dispo .bandeaux { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.hz-dispo .bandeau { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 14px; background: #0e0f0c; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); color: var(--os); text-decoration: none; }
+.hz-dispo .bandeau b { display: block; font: 700 15px 'DM Sans', sans-serif; }
+.hz-dispo .bandeau small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.hz-dispo .bandeau .ico { flex: none; width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; }
+.hz-dispo .bandeau .ico svg { width: 22px; height: 22px; }
+.hz-dispo .bandeau.discord .ico { background: var(--discord); color: #fff; }
+.hz-dispo .bandeau.cles .ico { background: rgba(255,194,58,.14); color: #FFC23A; box-shadow: inset 0 0 0 1px rgba(255,194,58,.4); }
+.hz-dispo .bandeau .fleche { margin-left: auto; font-size: 20px; color: var(--muted); transition: transform .2s, color .2s; }
+.hz-dispo .bandeau.discord { transition: box-shadow .2s; }
+.hz-dispo .bandeau.discord:hover { box-shadow: inset 0 0 0 1px rgba(88,101,242,.6); color: #fff; }
+.hz-dispo .bandeau.discord:hover .fleche { transform: translateX(4px); color: #fff; }
+@media (max-width: 800px) { .hz-dispo .grades, .hz-dispo .avantages, .hz-dispo .bandeaux { grid-template-columns: 1fr; } .hz-dispo .grade { height: 290px; } .hz-dispo .grade.beta { gap: 16px; } .hz-dispo .grade.beta img { height: 120px; } }
 .hz-lots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .hz-lot { background: var(--panneau); border: 1px solid var(--trait); border-radius: 8px; padding: 16px 14px 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; position: relative; transition: border-color .15s, transform .15s, background .15s; }
 .hz-lot:hover { border-color: var(--laiton); transform: translateY(-3px); background: #1a190f; }

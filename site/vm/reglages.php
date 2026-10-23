@@ -81,6 +81,12 @@ if (setting('heraliz.votes') === null) {
     recompenseVote();
 }
 
+// 2 PB par vote (23/10, demande du propriétaire) : une seule fois (repère « heraliz.vote_pb »), chaque récompense de vote
+// qui donne moins de 2 PB passe à 2 PB (crédités sur le compte du site) ; ensuite l'administration fait foi
+if (setting('heraliz.vote_pb') === null) {
+    pbParVote();
+}
+
 // boutique de la saison 1 et pages légales : une seule fois (repère « heraliz.boutique »), chaque élément seulement s'il
 // manque ; ensuite l'administration fait foi
 if (setting('heraliz.boutique') === null) {
@@ -413,13 +419,31 @@ function recompenseVote(): void
         $serveur = Server::find(setting('servers.default')) ?? Server::first();
         $commandes = ['heraliz givekey {player} vote 1', 'eco donner {player} 10'];
         $r = $Recompense::create(colonnes('vote_rewards', [
-            'name' => '1 clé vote + 10 hérals', 'chances' => 100, 'money' => 0,
+            'name' => '1 clé vote + 10 hérals + 2 PB', 'chances' => 100, 'money' => 2,
             'commands' => $commandes, 'need_online' => true, 'is_enabled' => true,
         ]));
         if ($serveur !== null && method_exists($r, 'servers')) {
             $r->servers()->sync([$serveur->id]);
         }
-        dire('Votes : récompense « 1 clé vote + 10 hérals » créée (sites de vote à ajouter dans l’administration → Votes → Sites)');
+        dire('Votes : récompense « 1 clé vote + 10 hérals + 2 PB » créée (sites de vote à ajouter dans l’administration → Votes → Sites)');
     }
     Setting::updateSettings('heraliz.votes', now()->toDateString());
+}
+
+function pbParVote(): void
+{
+    if (! plugins()->isEnabled('vote')) {
+        return;
+    }
+    $Recompense = \Azuriom\Plugin\Vote\Models\Reward::class;
+    $n = 0;
+    foreach ($Recompense::all() as $r) {
+        if ((float) $r->money < 2) {
+            $nom = str_contains((string) $r->name, 'PB') ? $r->name : $r->name.' + 2 PB';
+            $r->update(['money' => 2, 'name' => $nom]);
+            $n++;
+        }
+    }
+    dire('Votes : '.$n.' récompense(s) passée(s) à 2 PB par vote');
+    Setting::updateSettings('heraliz.vote_pb', now()->toDateString());
 }

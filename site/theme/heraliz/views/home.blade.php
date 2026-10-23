@@ -31,7 +31,7 @@
         <div class="hz-trois">
             <div class="hz-carte"><small>Étape 1</small><h3>Crée ton compte</h3><p>Dans le launcher, ou ici. Le même compte sert partout.</p></div>
             <div class="hz-carte"><small>Étape 2</small><h3>Lance le jeu</h3><p>Le launcher télécharge tout seul les mods à jour. Rien à installer à la main.</p></div>
-            <div class="hz-carte"><small>Étape 3</small><h3>Vote chaque jour</h3><p>Une clé de vote et 10 hérals par vote, reçus en jeu.</p></div>
+            <div class="hz-carte"><small>Étape 3</small><h3>Vote chaque jour</h3><p>2 PB, une clé de vote et 10 hérals par vote.</p></div>
         </div>
 
         @if($message)
