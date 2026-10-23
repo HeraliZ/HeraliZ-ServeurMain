@@ -85,7 +85,7 @@
     ],
     "encaissements": [],
     "entree": {
-      "prix": 0,
+      "prix": 25,
       "validite_minutes": 60,
       "expulser_fauches": true,
       "expulser_spectateurs": false,
@@ -838,5 +838,5 @@
     "tableau_parieurs": 7,
     "la_niche": 10
   },
-  "version": 6
+  "version": 7
 }

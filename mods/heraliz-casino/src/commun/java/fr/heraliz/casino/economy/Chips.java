@@ -15,10 +15,21 @@ public final class Chips {
     private Chips() {
     }
 
-    /** Valeurs des jetons, du plus petit au plus grand. */
-    public static final int[] VALUES = {1, 10, 100, 1000, 10000};
-    /** Couleur du nom de chaque valeur (textes, particules) : fer, cuivre, argent, or, lingot d'or. */
-    public static final int[] COLORS = {0xB4BCC4, 0xE0904E, 0xE4E8EC, 0xFFCC40, 0xFFE070};
+    /** Valeurs des capsules en usage, de la plus petite a la plus grande (2.5.0, choix du proprietaire : 1, 5 et 10). */
+    public static final int[] VALUES = {1, 5, 10};
+    /** Couleur du nom de chaque valeur (textes, particules) : fer, vert, rouge. */
+    public static final int[] COLORS = {0xB4BCC4, 0x5FBF5A, 0xE0503C};
+    /**
+     * Anciennes capsules (avant 2.5.0) : toujours enregistrees pour ne pas effacer celles des joueurs, mais plus
+     * jamais donnees (loot, gains, menu creatif) ; converties en capsules 1 / 5 / 10 de meme total
+     * ({@code ChipsServeur.convertirAnciennes}).
+     */
+    public static final int[] ANCIENNES = {100, 1000, 10000};
+
+    public static boolean ancienne(int value) {
+        for (int v : ANCIENNES) if (v == value) return true;
+        return false;
+    }
 
     public static int indexOf(int value) {
         for (int i = 0; i < VALUES.length; i++) if (VALUES[i] == value) return i;

@@ -74,7 +74,7 @@ public final class WinOverlay implements IGuiOverlay {
                 // derriere le bandeau (un objet est dessine 150 unites en avant)
                 g.pose().translate(x, y, -160);
                 g.pose().scale(0.8f * (bar ? 1 : spin), 0.8f, 1);
-                g.renderItem(new net.minecraft.world.item.ItemStack(fr.heraliz.casino.registry.ModRegistry.chip(bar ? 4 : 3)), -8, -8);
+                g.renderItem(new net.minecraft.world.item.ItemStack(fr.heraliz.casino.registry.ModRegistry.chip(bar ? 2 : 1)), -8, -8);
                 g.pose().popPose();
             }
         }

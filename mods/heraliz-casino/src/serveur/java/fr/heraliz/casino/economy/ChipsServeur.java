@@ -24,6 +24,7 @@ public final class ChipsServeur {
         // une mise négative n'est jamais « payée » (tous les appels vérifient déjà le montant : ceinture et bretelles)
         if (amount < 0) return false;
         if (amount == 0) return true;
+        convertirAnciennes(p);
         Inventory inv = p.getInventory();
         long[] have = new long[Chips.VALUES.length];
         long total = 0;
@@ -77,6 +78,28 @@ public final class ChipsServeur {
         inv.setChanged();
         if (change > 0) give(p, change);
         return true;
+    }
+
+    /**
+     * Remplace les anciennes capsules (100, 1 000, 10 000 ; avant 2.5.0) de l'inventaire par des capsules 1 / 5 / 10 de
+     * meme total : rien n'est perdu, rien n'est cree. Appele a la connexion et avant chaque paiement.
+     */
+    public static void convertirAnciennes(ServerPlayer p) {
+        Inventory inv = p.getInventory();
+        long total = 0;
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.getItem() instanceof ChipItem c && Chips.ancienne(c.value)) {
+                total += (long) c.value * s.getCount();
+                inv.setItem(i, ItemStack.EMPTY);
+            }
+        }
+        if (total > 0) {
+            inv.setChanged();
+            give(p, total);
+            fr.heraliz.casino.HeralizCasino.LOGGER.info("[HeralizCasino] {} : anciennes capsules converties ({} en capsules 1 / 5 / 10)",
+                    p.getGameProfile().getName(), total);
+        }
     }
 
     /** Donne des jetons (au sol si l'inventaire est plein). */

@@ -43,6 +43,7 @@
   "info.heralizcasino.course": "Choose your bet, then your horse: colored button, board row or directly its lane.\nThe odds give the win: x3.5 = your bet × 3.5 if your horse wins.\nThe race starts at the end of the countdown; the camera follows the race.",
   "item.heralizcasino.jeton": "Cap (%s)",
   "item.heralizcasino.jeton_1": "Cap (1)",
+  "item.heralizcasino.jeton_5": "Cap (5)",
   "item.heralizcasino.jeton_10": "Cap (10)",
   "item.heralizcasino.jeton_100": "Cap (100)",
   "item.heralizcasino.jeton_1000": "Cap (1,000)",

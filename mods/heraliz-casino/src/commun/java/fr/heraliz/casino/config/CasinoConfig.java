@@ -58,7 +58,7 @@ public final class CasinoConfig {
         /** Version du fichier (mise a jour des anciens reglages par defaut) ; 0 = fichier d'avant la 1.4.1. */
         public int version;
 
-        public static final int VERSION = 6;
+        public static final int VERSION = 7;
 
         private static DuelRules rps() {
             DuelRules r = new DuelRules();
@@ -101,6 +101,10 @@ public final class CasinoConfig {
                 if (caisse.entree != null) caisse.entree.prix = 0;
                 caisse.echangesObjets = true;
                 if (caisse.echanges == null || anciensEchanges(caisse.echanges)) caisse.echanges = defaultExchanges();
+            }
+            if (version < 7 && caisse != null && caisse.entree != null) {
+                // 2.5.0 (choix du proprietaire, 23/10) : entree de nouveau payante, 25 capsules (jamais en herals)
+                caisse.entree.prix = 25;
             }
             version = VERSION;
         }
@@ -236,8 +240,11 @@ public final class CasinoConfig {
 
     /** Entree payante de la zone du casino et expulsion des joueurs fauches. */
     public static class Entree {
-        /** Prix d'entree (capsules, ou objets de la caisse pour la meme valeur) ; 0 = entree libre (par defaut). */
-        public long prix = 0;
+        /**
+         * Prix d'entree (capsules, ou objets de la caisse pour la meme valeur) ; 0 = entree libre. 25 capsules depuis
+         * la 2.5.0 (choix du proprietaire).
+         */
+        public long prix = 25;
         /**
          * Delai (minutes) pour entrer apres avoir paye. Le ticket ne vaut que pour une entree : qui ressort de la salle
          * repaie. 0 = juste le temps de passer la porte.

@@ -1,6 +1,6 @@
 """Icônes des capsules du casino (objets heralizcasino:jeton_*) : capsules de bouteille en métal, vues de trois quarts.
 
-Écrit les 5 textures 64 x 64 de textures/item/ (jeton_1 ... jeton_10000), dessinées 8 fois plus grandes puis réduites
+Écrit les 6 textures 64 x 64 de textures/item/ (jeton_1, jeton_5, jeton_10 en usage ; 100 à 10000 : anciennes capsules), dessinées 8 fois plus grandes puis réduites
 (bords lisses). Une couleur et une marque par valeur. Jamais retouchées à la main : on modifie ce script.
 
     python mods/heraliz-casino/outils/capsules.py               écrit les textures
@@ -22,6 +22,7 @@ N = TAILLE * S
 # valeur : (couleur du dessus, couleur de la marque, marque)
 CAPSULES = {
     "jeton_1": ((168, 172, 178), (110, 114, 120), "anneau"),
+    "jeton_5": ((52, 140, 72), (236, 240, 220), "double"),
     "jeton_10": ((196, 46, 40), (245, 232, 210), "etoile"),
     "jeton_100": ((38, 92, 176), (240, 240, 240), "double"),
     "jeton_1000": ((214, 168, 62), (120, 70, 20), "etoile"),

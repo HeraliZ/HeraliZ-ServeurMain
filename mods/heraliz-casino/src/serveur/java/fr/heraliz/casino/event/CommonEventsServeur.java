@@ -45,6 +45,7 @@ public final class CommonEventsServeur {
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.getServer() == null) return;
         sendConfig(player);
+        ChipsServeur.convertirAnciennes(player);
         CasinoNet.sendTo(player, new JackpotPacket(Jackpot.get(player.getServer()).value()));
         long pending = PendingPayouts.get(player.getServer()).take(player.getUUID());
         if (pending > 0) {

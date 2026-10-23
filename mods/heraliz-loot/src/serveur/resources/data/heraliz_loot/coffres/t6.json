@@ -9,7 +9,7 @@
   {"item": "ywzj_vehicle:parachute_pack", "nombre": [1, 1], "poids": 9500, "_cat": "outils_militaires", "_base": 50000},
   {"item": "ywzj_vehicle:fuel_tank", "nombre": [1, 1], "poids": 18750, "_cat": "outils_militaires", "_base": 25000},
   {"item": "ywzj_vehicle:repair_tool", "nombre": [1, 1], "poids": 18750, "_cat": "outils_militaires", "_base": 25000},
-  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 1416857},
+  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 1609500},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 3729},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:64,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 3729},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 3729},
@@ -619,7 +619,8 @@
   {"item": "backpacked:backpack_tactical_snow", "nombre": [1, 1], "_cat": "sacs", "poids": 2762},
   {"item": "backpacked:backpack_tactical_white", "nombre": [1, 1], "_cat": "sacs", "poids": 2762},
   {"item": "backpacked:backpack_tactical_yellow", "nombre": [1, 1], "_cat": "sacs", "poids": 2762},
-  {"item": "heralizcasino:jeton_10", "nombre": [1, 5], "_cat": "capsules", "poids": 190157},
-  {"item": "heralizcasino:jeton_100", "nombre": [1, 1], "_cat": "capsules", "poids": 33557}
+  {"item": "heralizcasino:jeton_1", "nombre": [3, 6], "_cat": "capsules", "poids": 12429},
+  {"item": "heralizcasino:jeton_5", "nombre": [1, 3], "_cat": "capsules", "poids": 12429},
+  {"item": "heralizcasino:jeton_10", "nombre": [1, 2], "_cat": "capsules", "poids": 6214}
  ]
 }

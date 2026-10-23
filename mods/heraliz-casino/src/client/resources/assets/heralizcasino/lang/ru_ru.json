@@ -43,6 +43,7 @@
   "info.heralizcasino.course": "Выбери ставку, затем лошадь: цветная кнопка, строка табло или сразу её дорожка.\nКоэффициент даёт выигрыш: x3.5 = ставка × 3,5, если твоя лошадь победит.\nСтарт даётся в конце обратного отсчёта; камера следит за забегом.",
   "item.heralizcasino.jeton": "Крышка (%s)",
   "item.heralizcasino.jeton_1": "Крышка (1)",
+  "item.heralizcasino.jeton_5": "Крышка (5)",
   "item.heralizcasino.jeton_10": "Крышка (10)",
   "item.heralizcasino.jeton_100": "Крышка (100)",
   "item.heralizcasino.jeton_1000": "Крышка (1 000)",

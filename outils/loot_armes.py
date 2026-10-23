@@ -105,18 +105,20 @@ IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 # capsules du casino (HeraliZ Casino, objets heralizcasino:jeton_*), choix du propriétaire (22/10) : plus aucun héral
 # dans le casino, les capsules se trouvent sur la carte et s'échangent contre des objets à la caisse. Nombre de piles
 # pour 100 conteneurs, puis, par palier, (objet, quantité [min, max], part des piles) ; plus de valeur en haut.
+# 23/10 (choix du propriétaire) : seulement les capsules 1, 5 et 10, et assez dures à trouver : 1 conteneur sur 40 en
+# moyenne en contient (2,5 pour 100, tous paliers), la 1 courante, la 10 rare.
 CAPSULE = "heralizcasino:"
-CAPSULES_POUR_100 = {1: 8, 2: 10, 3: 12, 4: 14, 5: 16, 6: 18, 7: 25}
+CAPSULES_POUR_100 = {t: 2.5 for t in range(1, 8)}
 CAPSULES = {
-    1: [("jeton_1", [1, 5], 1.0)],
-    2: [("jeton_1", [2, 8], 1.0)],
-    3: [("jeton_1", [3, 10], 0.7), ("jeton_10", [1, 2], 0.3)],
-    4: [("jeton_1", [3, 10], 0.55), ("jeton_10", [1, 3], 0.45)],
-    5: [("jeton_1", [5, 10], 0.4), ("jeton_10", [1, 3], 0.6)],
-    6: [("jeton_10", [1, 5], 0.85), ("jeton_100", [1, 1], 0.15)],
-    7: [("jeton_10", [3, 6], 0.6), ("jeton_100", [1, 2], 0.4)],
+    1: [("jeton_1", [1, 3], 1.0)],
+    2: [("jeton_1", [1, 4], 0.85), ("jeton_5", [1, 1], 0.15)],
+    3: [("jeton_1", [1, 4], 0.7), ("jeton_5", [1, 2], 0.25), ("jeton_10", [1, 1], 0.05)],
+    4: [("jeton_1", [2, 5], 0.6), ("jeton_5", [1, 2], 0.3), ("jeton_10", [1, 1], 0.1)],
+    5: [("jeton_1", [2, 5], 0.5), ("jeton_5", [1, 2], 0.35), ("jeton_10", [1, 1], 0.15)],
+    6: [("jeton_1", [3, 6], 0.4), ("jeton_5", [1, 3], 0.4), ("jeton_10", [1, 2], 0.2)],
+    7: [("jeton_1", [3, 8], 0.3), ("jeton_5", [1, 3], 0.4), ("jeton_10", [1, 2], 0.3)],
 }
-VALEUR_CAPSULE = {"jeton_1": 1, "jeton_10": 10, "jeton_100": 100}
+VALEUR_CAPSULE = {"jeton_1": 1, "jeton_5": 5, "jeton_10": 10}
 
 
 def gun_id(e):

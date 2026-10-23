@@ -113,12 +113,17 @@ public final class ModRegistry {
 
     // ------------------------------------------------------------------ jetons
     public static final List<RegistryObject<ChipItem>> CHIPS = new ArrayList<>();
+    /** Anciennes capsules (100, 1 000, 10 000) : gardees enregistrees, hors du menu creatif, converties a l'usage. */
+    public static final List<RegistryObject<ChipItem>> ANCIENNES_CAPSULES = new ArrayList<>();
 
     static {
         for (int i = 0; i < Chips.VALUES.length; i++) {
             final int v = Chips.VALUES[i];
-            Rarity r = v >= 10000 ? Rarity.EPIC : v >= 1000 ? Rarity.RARE : v >= 100 ? Rarity.UNCOMMON : Rarity.COMMON;
+            Rarity r = v >= 10 ? Rarity.RARE : v >= 5 ? Rarity.UNCOMMON : Rarity.COMMON;
             CHIPS.add(ITEMS.register("jeton_" + v, () -> new ChipItem(v, new Item.Properties().stacksTo(64).rarity(r))));
+        }
+        for (final int v : Chips.ANCIENNES) {
+            ANCIENNES_CAPSULES.add(ITEMS.register("jeton_" + v, () -> new ChipItem(v, new Item.Properties().stacksTo(64))));
         }
     }
 

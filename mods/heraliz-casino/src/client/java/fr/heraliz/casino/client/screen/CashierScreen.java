@@ -62,7 +62,7 @@ public class CashierScreen extends MachineScreen<CashierBlockEntity> {
         for (int i = 0; i < c.encaissements.size() && lines.size() < MAX_ROWS; i++) {
             CasinoConfig.CommandExchange e = c.encaissements.get(i);
             if (e.jetons <= 0 || e.commande == null || e.commande.isBlank()) continue;
-            lines.add(new Line(i, true, false, new ItemStack(ModRegistry.chip(3)), Component.literal(e.nom), e.jetons, e.montant, false, true));
+            lines.add(new Line(i, true, false, new ItemStack(ModRegistry.chip(2)), Component.literal(e.nom), e.jetons, e.montant, false, true));
         }
         for (Line l : lines) anyBuy |= l.buy;
     }

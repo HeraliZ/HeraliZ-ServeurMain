@@ -43,6 +43,7 @@
   "info.heralizcasino.course": "Choisis ta mise puis ton cheval : bouton coloré, ligne du tableau ou directement son couloir.\nLa cote donne le gain : x3.5 = ta mise × 3,5 si ton cheval gagne.\nLe départ est donné à la fin du compte à rebours ; la caméra suit la course.",
   "item.heralizcasino.jeton": "Capsule (%s)",
   "item.heralizcasino.jeton_1": "Capsule (1)",
+  "item.heralizcasino.jeton_5": "Capsule (5)",
   "item.heralizcasino.jeton_10": "Capsule (10)",
   "item.heralizcasino.jeton_100": "Capsule (100)",
   "item.heralizcasino.jeton_1000": "Capsule (1 000)",
