@@ -124,6 +124,8 @@ public final class ServeurGrades implements Partie {
         EditeurServeur.envoyerDefinitions(p);
         rafraichir(p);
         TabServeur.maj(p.server, true);
+        // objets d'un échange conclu pendant son absence
+        EchangeServeur.connexion(p);
     }
 
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {

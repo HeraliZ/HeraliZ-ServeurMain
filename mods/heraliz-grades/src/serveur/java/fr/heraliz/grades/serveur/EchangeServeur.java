@@ -39,10 +39,13 @@ import java.util.UUID;
  * suivie d'une sauvegarde de tous les joueurs (sinon une déconnexion puis un plantage pourrait laisser l'objet des deux
  * côtés). Déconnexion, mort, téléportation hors du spawn, plantage avant la fin : rien n'a bougé.
  * <p>
- * PB : un seul des deux en donne (des PB contre des PB n'a pas de sens). Le site les fait passer (taxe de 10 % brûlée)
- * AVANT les objets ; l'envoi est noté sur le disque avant l'appel ({@code heraliz_grades/echanges_en_cours.json}). Si
- * les objets ne peuvent plus passer ensuite, ou si le serveur s'arrête entre les deux, le transfert est annulé : PB
- * rendus à celui qui les a donnés, repris à celui qui les a reçus.
+ * PB : un seul des deux en donne (des PB contre des PB n'a pas de sens). Avant l'appel au site, les objets proposés des
+ * deux côtés sont mis en dépôt par le serveur (retirés des inventaires, notés sur le disque dans
+ * {@code heraliz_grades/echanges_en_cours.json}, joueurs sauvegardés) : plus rien ne peut changer pendant que le site
+ * fait passer les PB (taxe de 10 % brûlée). PB passés : chacun reçoit les objets de l'autre ; PB refusés : chacun
+ * récupère les siens ; site muet : le dépôt attend la réponse (revérifiée toutes les 30 s, aussi après un redémarrage).
+ * On ne reprend donc jamais de PB à celui qui les a reçus (il aurait pu les dépenser entre-temps). Un joueur
+ * déconnecté reçoit ses objets à sa prochaine connexion.
  */
 final class EchangeServeur {
     private static final Logger LOG = LogUtils.getLogger();
@@ -67,7 +70,6 @@ final class EchangeServeur {
     private static final class Session {
         final Cote a, b;
         int phase, reste;
-        boolean invalide;
         String message = "";
 
         Session(Cote a, Cote b) {
@@ -84,11 +86,27 @@ final class EchangeServeur {
         }
     }
 
-    /** Transfert de PB envoyé au site, pas encore conclu. */
+    /** Transfert de PB envoyé au site, pas encore conclu, avec les objets mis en dépôt des deux côtés. */
     private static final class Envoi {
         String ref, de, vers;
         long montant, recu;
-        String etat; // « envoye », puis « annuler » si les PB doivent revenir
+        // « prepare » (dépôt noté, site pas encore appelé), « envoye », « verifier » (site muet) ;
+        // « annuler » : anciens envois sans dépôt (avant Grades 2.3.1), PB à rendre
+        String etat;
+        // joueurs A et B de l'échange et leurs objets en dépôt (SNBT) ; null : ancien envoi sans dépôt
+        String ua, ub;
+        List<String> objetsA, objetsB;
+    }
+
+    /** Objets à remettre à un joueur déconnecté, à sa prochaine connexion. */
+    private static final class Livraison {
+        String uuid, motif;
+        List<String> objets = new ArrayList<>();
+    }
+
+    private static final class Fichier {
+        List<Envoi> envois = new ArrayList<>();
+        List<Livraison> livraisons = new ArrayList<>();
     }
 
     private record Demande(UUID de, long expire) {
@@ -98,6 +116,7 @@ final class EchangeServeur {
     /** Demandes reçues : cible -> (demandeur -> demande). */
     private static final Map<UUID, Map<UUID, Demande>> DEMANDES = new HashMap<>();
     private static final Map<String, Envoi> ENVOIS = new LinkedHashMap<>();
+    private static final List<Livraison> LIVRAISONS = new ArrayList<>();
     private static final java.util.Set<String> EN_REPRISE = new java.util.HashSet<>();
     private static MinecraftServer serveur;
     private static Path fichier;
@@ -115,18 +134,31 @@ final class EchangeServeur {
         SESSIONS.clear();
         DEMANDES.clear();
         ENVOIS.clear();
+        LIVRAISONS.clear();
         EN_REPRISE.clear();
         fichier = dossier.resolve("echanges_en_cours.json");
         try {
             if (Files.exists(fichier)) {
-                for (JsonElement e : JsonParser.parseString(Files.readString(fichier, StandardCharsets.UTF_8)).getAsJsonArray()) {
-                    Envoi v = GSON.fromJson(e, Envoi.class);
-                    // serveur arrêté pendant un échange : les objets n'ont pas bougé, les PB doivent revenir s'ils sont partis
-                    if (v != null && v.ref != null) {
-                        if ("envoye".equals(v.etat)) v.etat = "verifier";
-                        ENVOIS.put(v.ref, v);
+                JsonElement racine = JsonParser.parseString(Files.readString(fichier, StandardCharsets.UTF_8));
+                // ancien format (avant Grades 2.3.1) : la liste des envois seule
+                Fichier f = racine.isJsonArray() ? new Fichier() : GSON.fromJson(racine, Fichier.class);
+                if (racine.isJsonArray()) for (JsonElement e : racine.getAsJsonArray()) f.envois.add(GSON.fromJson(e, Envoi.class));
+                for (Envoi v : f.envois) {
+                    if (v == null || v.ref == null) continue;
+                    if ("prepare".equals(v.etat)) {
+                        // arrêt entre la note du dépôt et la sauvegarde des joueurs : le site n'a jamais été appelé et
+                        // on ne sait pas si les objets étaient encore dans les sauvegardes : rien n'est rendu (pas de
+                        // copie possible), contenu gardé dans le journal pour le staff
+                        BoutiqueServeur.journal("trade " + v.ref + " interrompu avant l'envoi : dépôt NON rendu, à vérifier à la main : "
+                                + v.ua + " " + v.objetsA + " ; " + v.ub + " " + v.objetsB);
+                        LOG.error("[grades] trade {} interrompu avant l'envoi au site : objets à vérifier à la main (journal.log)", v.ref);
+                        continue;
                     }
+                    // serveur arrêté pendant un échange : le site dira si les PB sont passés
+                    if ("envoye".equals(v.etat)) v.etat = "verifier";
+                    ENVOIS.put(v.ref, v);
                 }
+                if (f.livraisons != null) for (Livraison l : f.livraisons) if (l != null && l.uuid != null && l.objets != null) LIVRAISONS.add(l);
             }
         } catch (Exception ex) {
             LOG.error("[grades] {} illisible ({}) : échanges en cours NON repris", fichier, ex.toString());
@@ -136,6 +168,7 @@ final class EchangeServeur {
             }
         }
         if (!ENVOIS.isEmpty()) LOG.warn("[grades] trade : {} transfert(s) de PB à vérifier", ENVOIS.size());
+        if (!LIVRAISONS.isEmpty()) LOG.warn("[grades] trade : {} livraison(s) d'objets en attente", LIVRAISONS.size());
     }
 
     static void arreter() {
@@ -329,17 +362,15 @@ final class EchangeServeur {
         }
         if (ticks % 600 == 0) reprendre();
         for (Session s : new java.util.HashSet<>(SESSIONS.values())) {
-            if (SESSIONS.get(s.a.uuid) != s) continue;
+            // phase 2 : objets en dépôt, seule la réponse du site compte
+            if (SESSIONS.get(s.a.uuid) != s || s.phase >= 2) continue;
             ServerPlayer pa = joueur(s.a.uuid), pb = joueur(s.b.uuid);
             if (pa == null || pb == null || refus(pa) != null || refus(pb) != null) {
-                if (s.phase == 2) s.invalide = true;
-                else annuler(s, "annule", null);
+                annuler(s, "annule", null);
                 continue;
             }
-            boolean change = verifier(s.a, pa) | verifier(s.b, pb);
-            if (change) {
-                if (s.phase == 2) s.invalide = true;
-                else change(s);
+            if (verifier(s.a, pa) | verifier(s.b, pb)) {
+                change(s);
                 continue;
             }
             if (s.phase == 1) {
@@ -364,57 +395,145 @@ final class EchangeServeur {
 
     // ------------------------------------------------------------------ exécution
     private static void executer(Session s, ServerPlayer pa, ServerPlayer pb) {
-        s.phase = 2;
-        envoyer(s);
         Cote donneur = s.a.pb > 0 ? s.a : s.b.pb > 0 ? s.b : null;
         if (donneur == null) {
+            s.phase = 2;
+            envoyer(s);
             finir(s, null);
             return;
         }
+        if (!Pb.actif()) {
+            annuler(s, "refuse_site", null);
+            return;
+        }
         Cote receveur = donneur == s.a ? s.b : s.a;
+        // dépôt : les objets quittent les inventaires AVANT l'appel au site, plus rien ne peut changer ensuite
+        List<ItemStack> depotA = retirer(s.a, pa), depotB = retirer(s.b, pb);
         Envoi v = new Envoi();
         v.ref = Pb.ref("trade");
         v.de = donneur.nom;
         v.vers = receveur.nom;
         v.montant = donneur.pb;
-        v.etat = "envoye";
+        v.ua = s.a.uuid.toString();
+        v.ub = s.b.uuid.toString();
+        v.objetsA = versTexte(depotA);
+        v.objetsB = versTexte(depotB);
+        v.etat = "prepare";
         ENVOIS.put(v.ref, v);
         if (!sauver()) {
             ENVOIS.remove(v.ref);
+            donner(pa, depotA);
+            donner(pb, depotB);
             annuler(s, "erreur", null);
             return;
         }
+        // les sauvegardes des joueurs sans les objets, puis le dépôt devient la seule trace (pas de copie après un plantage)
+        serveur.getPlayerList().saveAll();
+        v.etat = "envoye";
+        sauver();
+        s.phase = 2;
+        envoyer(s);
         Pb.transfert(v.ref, v.de, v.vers, v.montant, r -> {
             if (r == null) {
-                // on ne sait pas si les PB sont partis : vérifié plus tard, rendus s'ils sont partis
+                // on ne sait pas si les PB sont partis : le dépôt attend, revérifié toutes les 30 s (reprendre)
                 v.etat = "verifier";
                 sauver();
-                annuler(s, "injoignable", null);
+                fermer(s, 4, "injoignable");
                 return;
             }
             if (!r.ok()) {
-                ENVOIS.remove(v.ref);
-                sauver();
-                annuler(s, "solde_insuffisant".equals(r.raison())
-                        ? "solde:" + v.de
-                        : "refuse_site", null);
+                conclure(v, false);
+                fermer(s, 4, "solde_insuffisant".equals(r.raison()) ? "solde:" + v.de : "refuse_site");
                 return;
             }
             v.recu = r.nombre("recu");
-            ServerPlayer a2 = joueur(s.a.uuid), b2 = joueur(s.b.uuid);
-            boolean ok = !s.invalide && SESSIONS.get(s.a.uuid) == s && a2 != null && b2 != null && refus(a2) == null && refus(b2) == null
-                    && !verifier(s.a, a2) && !verifier(s.b, b2);
-            if (ok) {
-                finir(s, v);
-                ENVOIS.remove(v.ref);
-                sauver();
-            } else {
-                v.etat = "annuler";
-                sauver();
-                annulerEnvoi(v);
-                annuler(s, "rendu", null);
-            }
+            conclure(v, true);
+            fermer(s, 3, "fini");
         });
+    }
+
+    /** Fin d'un échange en dépôt : objets croisés (PB passés) ou rendus à chacun (PB pas passés). */
+    private static void conclure(Envoi v, boolean passes) {
+        if (!ENVOIS.containsKey(v.ref)) return;
+        UUID a = UUID.fromString(v.ua), b = UUID.fromString(v.ub);
+        List<String> pourA = passes ? v.objetsB : v.objetsA, pourB = passes ? v.objetsA : v.objetsB;
+        String motif = passes ? "trade " + v.ref : "trade annulé " + v.ref;
+        livrer(a, pourA, motif);
+        livrer(b, pourB, motif);
+        ENVOIS.remove(v.ref);
+        sauver();
+        BoutiqueServeur.journal((passes ? "trade " : "trade annulé, objets rendus ") + v.ref + " : " + v.objetsA + " <-> " + v.objetsB
+                + (passes ? " ; " + v.de + " -> " + v.vers + " " + v.montant + " PB (reçu " + v.recu + ")" : ""));
+        if (passes) {
+            ServerPlayer pa = joueur(a), pb = joueur(b);
+            for (ServerPlayer p : new ServerPlayer[]{pa, pb}) if (p != null) p.sendSystemMessage(msg("reussi", "Échange réussi !").withStyle(ChatFormatting.GREEN));
+        }
+    }
+
+    /** Ferme l'écran des deux joueurs (s'ils sont là) après un échange en dépôt. */
+    private static void fermer(Session s, int phase, String message) {
+        if (SESSIONS.get(s.a.uuid) == s) SESSIONS.remove(s.a.uuid);
+        if (SESSIONS.get(s.b.uuid) == s) SESSIONS.remove(s.b.uuid);
+        s.phase = phase;
+        s.message = message;
+        envoyer(s);
+    }
+
+    /** Remet des objets en dépôt à un joueur : tout de suite s'il est là, sinon à sa prochaine connexion. */
+    private static void livrer(UUID u, List<String> objets, String motif) {
+        if (objets == null || objets.isEmpty()) return;
+        ServerPlayer p = joueur(u);
+        if (p != null) {
+            donner(p, depuisTexte(objets));
+            serveur.getPlayerList().saveAll();
+            return;
+        }
+        Livraison l = new Livraison();
+        l.uuid = u.toString();
+        l.motif = motif;
+        l.objets = new ArrayList<>(objets);
+        LIVRAISONS.add(l);
+        sauver();
+    }
+
+    /** À la connexion : objets d'un échange conclu pendant son absence. */
+    static void connexion(ServerPlayer p) {
+        if (serveur == null || LIVRAISONS.isEmpty()) return;
+        String u = p.getUUID().toString();
+        List<Livraison> siennes = new ArrayList<>();
+        for (Livraison l : LIVRAISONS) if (u.equals(l.uuid)) siennes.add(l);
+        if (siennes.isEmpty()) return;
+        LIVRAISONS.removeAll(siennes);
+        // noté sur le disque AVANT de donner : jamais deux fois
+        if (!sauver()) {
+            LIVRAISONS.addAll(siennes);
+            return;
+        }
+        for (Livraison l : siennes) {
+            donner(p, depuisTexte(l.objets));
+            BoutiqueServeur.journal("trade : objets remis à " + p.getGameProfile().getName() + " à la connexion (" + l.motif + ") : " + l.objets);
+        }
+        serveur.getPlayerList().saveAll();
+        p.sendSystemMessage(msg("livre", "Les objets d'un échange t'ont été remis.").withStyle(ChatFormatting.GREEN));
+    }
+
+    private static List<String> versTexte(List<ItemStack> l) {
+        List<String> r = new ArrayList<>();
+        for (ItemStack st : l) if (!st.isEmpty()) r.add(st.save(new net.minecraft.nbt.CompoundTag()).toString());
+        return r;
+    }
+
+    private static List<ItemStack> depuisTexte(List<String> l) {
+        List<ItemStack> r = new ArrayList<>();
+        for (String t : l) {
+            try {
+                r.add(ItemStack.of(net.minecraft.nbt.TagParser.parseTag(t)));
+            } catch (Exception ex) {
+                LOG.error("[grades] trade : objet illisible, NON remis : {} ({})", t, ex.toString());
+                BoutiqueServeur.journal("trade : objet illisible NON remis : " + t);
+            }
+        }
+        return r;
     }
 
     /** Fait passer les objets dans les deux sens, en une fois, puis sauvegarde les joueurs. */
@@ -473,14 +592,26 @@ final class EchangeServeur {
     }
 
     // ------------------------------------------------------------------ PB à rendre
-    /** Rend les PB d'un transfert qui ne doit pas compter (références fixes : jamais rendus deux fois). */
+    /**
+     * Ancien envoi sans dépôt (fichier d'avant Grades 2.3.1) : PB rendus à celui qui les a donnés SEULEMENT s'ils ont pu
+     * être repris à celui qui les a reçus (sinon il aurait pu les dépenser et les PB seraient créés deux fois). Références
+     * fixes : jamais rendus deux fois.
+     */
     private static void annulerEnvoi(Envoi v) {
         if (!EN_REPRISE.add(v.ref)) return;
         long reprendre = v.recu > 0 ? v.recu : v.montant - v.montant / 10;
         Pb.debiter(v.ref + "-rb", v.vers, reprendre, "trade annulé", r1 -> {
-            if (r1 != null && !r1.ok()) LOG.error("[grades] trade {} : {} PB impossibles à reprendre à {} ({}) : à régler à la main", v.ref, reprendre, v.vers, r1.raison());
             if (r1 == null) {
                 EN_REPRISE.remove(v.ref);
+                return;
+            }
+            if (!r1.ok()) {
+                EN_REPRISE.remove(v.ref);
+                ENVOIS.remove(v.ref);
+                sauver();
+                LOG.error("[grades] trade {} : {} PB impossibles à reprendre à {} ({}) : rien rendu à {}, à régler à la main", v.ref, reprendre, v.vers, r1.raison(), v.de);
+                BoutiqueServeur.journal("trade annulé " + v.ref + " : " + reprendre + " PB NON repris à " + v.vers + ", rien rendu à " + v.de + " (à régler à la main)");
+                LienDiscord.evenement("⚠️ Trade annulé " + v.ref + " : " + reprendre + " PB n'ont pas pu être repris à " + v.vers + ", rien n'a été rendu à " + v.de + " (à régler à la main).");
                 return;
             }
             Pb.crediter(v.ref + "-ra", v.de, v.montant, "trade annulé", r2 -> {
@@ -488,8 +619,7 @@ final class EchangeServeur {
                 if (r2 != null && r2.ok()) {
                     ENVOIS.remove(v.ref);
                     sauver();
-                    BoutiqueServeur.journal("trade annulé " + v.ref + " : " + v.montant + " PB rendus à " + v.de + (r1.ok() ? ", " + reprendre + " repris à " + v.vers : ", RIEN repris à " + v.vers));
-                    if (!r1.ok()) LienDiscord.evenement("⚠️ Trade annulé " + v.ref + " : " + reprendre + " PB n'ont pas pu être repris à " + v.vers + " (à régler à la main).");
+                    BoutiqueServeur.journal("trade annulé " + v.ref + " : " + v.montant + " PB rendus à " + v.de + ", " + reprendre + " repris à " + v.vers);
                 }
             });
         });
@@ -505,7 +635,11 @@ final class EchangeServeur {
                 Pb.statut(v.ref, r -> {
                     EN_REPRISE.remove(v.ref);
                     if (r == null || r.code() != 200) return;
-                    if (r.corps().has("fait") && r.corps().get("fait").getAsBoolean()) {
+                    boolean fait = r.corps().has("fait") && r.corps().get("fait").getAsBoolean();
+                    if (v.ua != null) {
+                        // échange en dépôt : PB passés = objets croisés, sinon rendus
+                        conclure(v, fait);
+                    } else if (fait) {
                         v.etat = "annuler";
                         sauver();
                         annulerEnvoi(v);
@@ -522,7 +656,10 @@ final class EchangeServeur {
         try {
             Files.createDirectories(fichier.getParent());
             Path tmp = fichier.resolveSibling("echanges_en_cours.json.tmp");
-            Files.writeString(tmp, GSON.toJson(new ArrayList<>(ENVOIS.values())), StandardCharsets.UTF_8);
+            Fichier f = new Fichier();
+            f.envois = new ArrayList<>(ENVOIS.values());
+            f.livraisons = new ArrayList<>(LIVRAISONS);
+            Files.writeString(tmp, GSON.toJson(f), StandardCharsets.UTF_8);
             Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             return true;
         } catch (Exception ex) {
@@ -552,8 +689,7 @@ final class EchangeServeur {
     static void deconnexion(UUID u) {
         DEMANDES.remove(u);
         Session s = SESSIONS.get(u);
-        if (s == null) return;
-        if (s.phase == 2) s.invalide = true;
-        else annuler(s, "annule", null);
+        if (s == null || s.phase >= 2) return; // en dépôt : conclu par la réponse du site, objets remis à la connexion
+        annuler(s, "annule", null);
     }
 }
