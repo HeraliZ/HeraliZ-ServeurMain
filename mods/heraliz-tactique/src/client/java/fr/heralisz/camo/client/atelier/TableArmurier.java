@@ -80,8 +80,7 @@ public final class TableArmurier extends GunSmithTableScreen {
    private static boolean stocksCherches;
 
    /** Polices à leur vraie taille (DM Sans) : gras 16 (titre, chiffres des tuiles), gras 14 (nom de l'objet), 8 (petites légendes). */
-   static final ResourceLocation GROS = new ResourceLocation("heralisz_camo", "ui_gros"), NOM = new ResourceLocation("heralisz_camo", "ui_nom"),
-      MINI = new ResourceLocation("heralisz_camo", "ui_mini");
+   static final ResourceLocation GROS = Ui.GROS, NOM = Ui.NOM, MINI = Ui.MINI;
 
    // ------------------------------------------------------------------ constantes de mise en page (= outils/apercu_table_armurier.py)
    static final int PANNEAU_L = 600, PANNEAU_H = 326, MARGE = 12;
@@ -92,7 +91,11 @@ public final class TableArmurier extends GunSmithTableScreen {
    static final int RECHERCHE_Y = 15, RECHERCHE_H = 16, RECHERCHE_MIN = 150, LIGNE2_Y = 36, LIGNE2_H = 12;
    /** Case à cocher : côté, écart case-texte, écart entre filtres, écart recherche-filtres, écart avant « Fermer ». */
    static final int CASE = 9, CASE_TEXTE = 6, FILTRE_ECART = 12, APRES_RECHERCHE = 12, AVANT_FERMER = 14;
-   static final int DETAIL_PAD = 8, TUILE_H = 36, TUILE_ECART = 4, TUILE_PAD = 6, BOUTON_H = 19;
+   static final int DETAIL_PAD = 8, TUILE_H = 36, TUILE_ECART = 4, TUILE_PAD = 6, TUILE_INTER = 6, BOUTON_H = 19;
+   /** Milieux des capitales : petit titre, grand titre (= milieu du champ de recherche), touche « Échap » (haut). */
+   static final int TITRE_PETIT_CY = 11, TITRE_CY = 23, FERMER_Y = 18;
+   /** Cartes : milieu des capitales du nom et de l'état, sous le haut de la carte. */
+   static final int CARTE_NOM_CY = 44, CARTE_ETAT_CY = 55;
    static final float ESP_TITRE_PETIT = 1.4f, ESP_TITRE = 1.0f, ESP_NOM = 0.9f, ESP_CHIP = 0.6f, ESP_SECTION = 1.0f, ESP_BOUTON = 1.2f;
 
    /** État d'une recette pour une carte : matériaux qui manquent (0 : fabricable). */
@@ -186,8 +189,9 @@ public final class TableArmurier extends GunSmithTableScreen {
       return new Ajuste(Dessins.couperEspace(this.font, s, police, 0f, max), police, 0f);
    }
 
-   private void dessiner(GuiGraphics g, Ajuste a, float x, float y, int argb) {
-      Ui.spaced(g, this.font, a.texte(), a.police(), x, y, argb, a.espace());
+   /** Texte ajusté : bord gauche en x, milieu des capitales sur cy. */
+   private void dessiner(GuiGraphics g, Ajuste a, float x, float cy, int argb) {
+      Ui.spacedMilieu(g, this.font, a.texte(), a.police(), x, cy, argb, a.espace());
    }
 
    // ------------------------------------------------------------------ ordre des recettes
@@ -283,13 +287,15 @@ public final class TableArmurier extends GunSmithTableScreen {
    }
 
    /** Case à cocher d'un filtre : rend la zone (texte coupé si la place manque, texte entier en infobulle). */
-   private Zone filtre(int x, int y, int h, int decalTexte, String texte, int maxTexte, java.util.function.BooleanSupplier coche, Runnable action) {
+   private Zone filtre(int x, int y, int h, String texte, int maxTexte, java.util.function.BooleanSupplier coche, Runnable action) {
       String vu = Ui.ellipsis(this.font, texte, Ui.FONT, maxTexte);
       boolean coupe = !vu.equals(texte);
       int w = CASE + CASE_TEXTE + this.largeur(vu, Ui.FONT);
       return new Zone(x, y, w, h, (g, z, mx, my, pt) -> {
-         Ui.pastille(g, z.getX(), z.getY() + decalTexte + 2, CASE, Ui.accent(), coche.getAsBoolean(), z.survol());
-         g.drawString(this.font, Ui.lit(vu, Ui.FONT), z.getX() + CASE + CASE_TEXTE, z.getY() + decalTexte, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255), false);
+         // case et texte centrés sur le milieu de la zone (milieu des capitales)
+         int by = Math.round(z.getY() + z.getHeight() / 2f - CASE / 2f);
+         Ui.pastille(g, z.getX(), by, CASE, Ui.accent(), coche.getAsBoolean(), z.survol());
+         Ui.gauche(g, this.font, Ui.lit(vu, Ui.FONT), Ui.FONT, z.getX() + CASE + CASE_TEXTE, by + CASE / 2f, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255));
          if (coupe && z.survol()) this.infobulle = List.of(Ui.lit(texte, Ui.FONT));
       }, action, null);
    }
@@ -379,8 +385,8 @@ public final class TableArmurier extends GunSmithTableScreen {
          this.entete = ENTETE_1;
          rechercheW = Math.min(uneLigne, this.cw);
          int fx0 = sx + rechercheW + APRES_RECHERCHE;
-         this.ajouter(this.filtre(fx0, this.py + RECHERCHE_Y, RECHERCHE_H, 4, enMain, Integer.MAX_VALUE, enMainCoche, enMainAction));
-         this.ajouter(this.filtre(fx0 + ew + FILTRE_ECART, this.py + RECHERCHE_Y, RECHERCHE_H, 4, dispo, Integer.MAX_VALUE, () -> dispoSeulement, dispoAction));
+         this.ajouter(this.filtre(fx0, this.py + RECHERCHE_Y, RECHERCHE_H, enMain, Integer.MAX_VALUE, enMainCoche, enMainAction));
+         this.ajouter(this.filtre(fx0 + ew + FILTRE_ECART, this.py + RECHERCHE_Y, RECHERCHE_H, dispo, Integer.MAX_VALUE, () -> dispoSeulement, dispoAction));
       } else {
          // recherche sur la 1re ligne (alignée sur la grille), filtres dessous
          this.entete = ENTETE_2;
@@ -392,17 +398,17 @@ public final class TableArmurier extends GunSmithTableScreen {
             maxTexte1 = chacun;
             maxTexte2 = chacun;
          }
-         Zone z1 = this.filtre(sx, this.py + LIGNE2_Y, LIGNE2_H, 1, enMain, maxTexte1, enMainCoche, enMainAction);
+         Zone z1 = this.filtre(sx, this.py + LIGNE2_Y, LIGNE2_H, enMain, maxTexte1, enMainCoche, enMainAction);
          this.ajouter(z1);
-         this.ajouter(this.filtre(sx + z1.getWidth() + FILTRE_ECART, this.py + LIGNE2_Y, LIGNE2_H, 1, dispo, maxTexte2, () -> dispoSeulement, dispoAction));
+         this.ajouter(this.filtre(sx + z1.getWidth() + FILTRE_ECART, this.py + LIGNE2_Y, LIGNE2_H, dispo, maxTexte2, () -> dispoSeulement, dispoAction));
       }
       this.recherche.setX(sx);
       this.recherche.setY(this.py + RECHERCHE_Y);
       this.recherche.setWidth(rechercheW);
       this.ajouter(this.recherche);
-      this.ajouter(new Zone(fx, this.py + 17, fw, 12, (g, z, mx, my, pt) -> {
+      this.ajouter(new Zone(fx, this.py + FERMER_Y, fw, 11, (g, z, mx, my, pt) -> {
          int kw = Dessins.touche(g, this.font, echap, z.getX(), z.getY(), z.survol());
-         g.drawString(this.font, Ui.lit(fermer, Ui.FONT), z.getX() + kw + 5, z.getY() + 1, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255), false);
+         Ui.gauche(g, this.font, Ui.lit(fermer, Ui.FONT), Ui.FONT, z.getX() + kw + 5, z.getY() + 5.5f, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255));
       }, this::onClose, null));
 
       // catégories, à gauche
@@ -687,8 +693,8 @@ public final class TableArmurier extends GunSmithTableScreen {
    private void dessinerCadre(GuiGraphics g) {
       GunSmithTableScreenAccessor t = this.tacz();
       Ui.glass(g, this.px, this.py, this.pw, this.ph);
-      Ui.spaced(g, this.font, tr("titre_petit"), Ui.SMALL, this.px + MARGE, this.py + 10, Ui.argb(Ui.MUTED, 255), ESP_TITRE_PETIT);
-      Ui.spaced(g, this.font, tr("titre"), GROS, this.px + MARGE, this.py + 18, Ui.argb(Ui.TEXT, 255), ESP_TITRE);
+      Ui.spacedMilieu(g, this.font, tr("titre_petit"), Ui.SMALL, this.px + MARGE, this.py + TITRE_PETIT_CY, Ui.argb(Ui.MUTED, 255), ESP_TITRE_PETIT);
+      Ui.spacedMilieu(g, this.font, tr("titre"), GROS, this.px + MARGE, this.py + TITRE_CY, Ui.argb(Ui.TEXT, 255), ESP_TITRE);
       Ui.hairline(g, this.px + 8, this.px + this.pw - 8, this.py + this.entete, 0xFFFFFF, 34, true, true);
       // titre de la grille et nombre d'objets
       ResourceLocation type = t.heralisz$type();
@@ -704,9 +710,9 @@ public final class TableArmurier extends GunSmithTableScreen {
       Ui.section(g, this.font, Dessins.couperEspace(this.font, titre, Ui.SMALL, ESP_SECTION, this.cw - nbW - 24), this.cx, sy, this.cw - nbW - 8);
       Ui.spacedRight(g, this.font, nb, Ui.SMALL, this.cx + this.cw, sy, Ui.argb(Ui.FAINT, 255), 0.8f);
       if (t.heralisz$onglets().isEmpty()) {
-         Ui.centered(g, this.font, Ui.lit(Ui.ellipsis(this.font, tr("aucune"), Ui.FONT, this.cw - 8), Ui.FONT), this.cx + this.cw / 2f, this.cy + 30, Ui.argb(Ui.MUTED, 255));
+         Ui.centre(g, this.font, Ui.lit(Ui.ellipsis(this.font, tr("aucune"), Ui.FONT, this.cw - 8), Ui.FONT), Ui.FONT, this.cx + this.cw / 2f, this.cy + 30, Ui.argb(Ui.MUTED, 255));
       } else if (this.affichees.isEmpty()) {
-         Ui.centered(g, this.font, Ui.lit(Ui.ellipsis(this.font, tr("aucun_resultat"), Ui.FONT, this.cw - 8), Ui.FONT), this.cx + this.cw / 2f, this.cy + 30, Ui.argb(Ui.MUTED, 255));
+         Ui.centre(g, this.font, Ui.lit(Ui.ellipsis(this.font, tr("aucun_resultat"), Ui.FONT, this.cw - 8), Ui.FONT), Ui.FONT, this.cx + this.cw / 2f, this.cy + 30, Ui.argb(Ui.MUTED, 255));
       }
       int rangs = (this.affichees.size() + COLONNES - 1) / COLONNES;
       if (rangs > this.rangsVisibles) {
@@ -743,8 +749,9 @@ public final class TableArmurier extends GunSmithTableScreen {
       int nw = this.largeur(nombre, Ui.SMALL);
       String complet = brut(cfg.getName().getString());
       String nom = Ui.ellipsis(this.font, complet, Ui.FONT, w - 19 - 5 - nw - 4);
-      g.drawString(this.font, Ui.lit(nom, Ui.FONT), x + 19, y + (h - 8) / 2 - 1, Ui.argb(actif ? Ui.TEXT : Ui.mix(Ui.MUTED, Ui.TEXT, 0.4f), 255), false);
-      Ui.right(g, this.font, Ui.lit(nombre, Ui.SMALL), x + w - 5, y + (h - 8) / 2f, Ui.argb(Ui.FAINT, 255));
+      float cyl = y + h / 2f;
+      Ui.gauche(g, this.font, Ui.lit(nom, Ui.FONT), Ui.FONT, x + 19, cyl, Ui.argb(actif ? Ui.TEXT : Ui.mix(Ui.MUTED, Ui.TEXT, 0.4f), 255));
+      Ui.droite(g, this.font, Ui.lit(nombre, Ui.SMALL), Ui.SMALL, x + w - 5, cyl, Ui.argb(Ui.FAINT, 255));
       if (z.survol() && !nom.equals(complet)) this.infobulle = List.of(Ui.lit(complet, Ui.FONT));
    }
 
@@ -790,19 +797,20 @@ public final class TableArmurier extends GunSmithTableScreen {
       if (sortie.getCount() > 1) {
          g.pose().pushPose();
          g.pose().translate(0, 0, 300);
-         g.drawString(this.font, Ui.lit("×" + sortie.getCount(), Ui.SMALL), x + 4, y + 3, Ui.argb(Ui.MUTED, 255), false);
+         Ui.gauche(g, this.font, Ui.lit("×" + sortie.getCount(), Ui.SMALL), Ui.SMALL, x + 4, y + 7, Ui.argb(Ui.MUTED, 255));
          g.pose().popPose();
       }
       String complet = brut(sortie.getHoverName().getString());
       String nom = Ui.ellipsis(this.font, complet, Ui.FONT, w - 8);
-      g.drawString(this.font, Ui.lit(nom, Ui.FONT), x + 4, y + h - 24, Ui.argb(Ui.TEXT, 255), false);
+      Ui.gauche(g, this.font, Ui.lit(nom, Ui.FONT), Ui.FONT, x + 4, y + CARTE_NOM_CY, Ui.argb(Ui.TEXT, 255));
       Etat e = this.etats.get(id);
       boolean ok = e != null && e.manquants() == 0;
       String st = ok ? tr("fabricable") : tr("manque", e == null ? "?" : String.valueOf(e.manquants()));
       int c = ok ? Ui.OK : Ui.FAINT;
-      Ui.point(g, x + 4, y + h - 11, c, 255);
+      int pt = y + CARTE_ETAT_CY - 3;
+      Ui.point(g, x + 4, pt, c, 255);
       Ajuste a = this.ajuster(st, Ui.SMALL, ESP_CHIP, w - 11 - 4, true);
-      this.dessiner(g, a, x + 11, y + h - 13 + (a.police().equals(MINI) ? 1 : 0), Ui.argb(ok ? Ui.OK : Ui.MUTED, 255));
+      this.dessiner(g, a, x + 11, pt + 2.5f, Ui.argb(ok ? Ui.OK : Ui.MUTED, 255));
       if (z.survol()) this.infobulle = List.of(Ui.lit(complet, Ui.BOLD));
    }
 
@@ -813,11 +821,14 @@ public final class TableArmurier extends GunSmithTableScreen {
       if (r == null || p == null) {
          int lw = this.dw - 2 * DETAIL_PAD;
          Component c = Ui.lit(tr("choisir"), Ui.FONT);
-         int hh = Dessins.hauteur(this.font, c, lw, 11);
-         int yy = this.dy + (this.dh - hh) / 2;
-         for (net.minecraft.util.FormattedCharSequence l : this.font.split(c, lw)) {
-            g.drawString(this.font, l, Math.round(this.dx + (this.dw - this.font.width(l)) / 2f), yy, Ui.argb(Ui.MUTED, 255), false);
-            yy += 11;
+         List<net.minecraft.util.FormattedCharSequence> lignes = this.font.split(c, lw);
+         float cyl = this.dy + this.dh / 2f - (lignes.size() - 1) * 11 / 2f;
+         for (net.minecraft.util.FormattedCharSequence l : lignes) {
+            g.pose().pushPose();
+            Ui.placer(g, this.dx + (this.dw - this.font.getSplitter().stringWidth(l)) / 2f, cyl - Ui.milieu(Ui.FONT));
+            g.drawString(this.font, l, 0, 0, Ui.argb(Ui.MUTED, 255), false);
+            g.pose().popPose();
+            cyl += 11;
          }
          return;
       }
@@ -829,7 +840,7 @@ public final class TableArmurier extends GunSmithTableScreen {
       int y = this.dy + modeleH + 8;
       String complet = brut(sortie.getHoverName().getString());
       String nom = Dessins.couperEspace(this.font, complet, NOM, ESP_NOM, w);
-      Ui.spaced(g, this.font, nom, NOM, x, y, Ui.argb(Ui.TEXT, 255), ESP_NOM);
+      Ui.spacedMilieu(g, this.font, nom, NOM, x, y + 5, Ui.argb(Ui.TEXT, 255), ESP_NOM);
       if (!nom.equals(complet) && mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + 14) this.infobulle = List.of(Ui.lit(complet, Ui.BOLD));
       y += 16;
       // pastilles : catégorie, calibre (chacune coupée pour tenir sur la ligne)
@@ -878,14 +889,14 @@ public final class TableArmurier extends GunSmithTableScreen {
                .append(Ui.lit(" / " + Ui.nombre(besoin), Ui.FONT).withStyle(st -> st.withColor(Ui.MUTED)));
          int dw2 = this.font.width(droite);
          String n = Ui.ellipsis(this.font, s.isEmpty() ? "?" : brut(s.getHoverName().getString()), Ui.FONT, w - 14 - dw2 - 6);
-         int ty = y + (ligne - 9) / 2;
-         g.drawString(this.font, Ui.lit(n, Ui.FONT), x + 14, ty, Ui.argb(Ui.TEXT, 230), false);
-         g.drawString(this.font, droite, x + w - dw2, ty, Ui.argb(Ui.TEXT, 255), false);
+         float cyl = y + ligne / 2f;
+         Ui.gauche(g, this.font, Ui.lit(n, Ui.FONT), Ui.FONT, x + 14, cyl, Ui.argb(Ui.TEXT, 230));
+         Ui.droite(g, this.font, droite, Ui.FONT, x + w, cyl, Ui.argb(Ui.TEXT, 255));
          y += ligne;
       }
       if (montrees < in.size()) {
          String plus = tr("autres", in.size() - montrees);
-         g.drawString(this.font, Ui.lit(Ui.ellipsis(this.font, plus, Ui.FONT, w - 14), Ui.FONT), x + 14, y + (ligne - 9) / 2, Ui.argb(Ui.MUTED, 255), false);
+         Ui.gauche(g, this.font, Ui.lit(Ui.ellipsis(this.font, plus, Ui.FONT, w - 14), Ui.FONT), Ui.FONT, x + 14, y + ligne / 2f, Ui.argb(Ui.MUTED, 255));
       }
    }
 
@@ -896,9 +907,12 @@ public final class TableArmurier extends GunSmithTableScreen {
       int max = w - 2 * TUILE_PAD;
       ResourceLocation pv = this.largeur(valeur, GROS) <= max ? GROS : Ui.BOLD;
       String v = Ui.ellipsis(this.font, valeur, pv, max);
-      g.drawString(this.font, Ui.lit(v, pv), x + TUILE_PAD, y + (pv == GROS ? 6 : 9), Ui.argb(Ui.TEXT, 255), false);
       Ajuste a = this.ajuster(legende, Ui.SMALL, 0.8f, max, true);
-      this.dessiner(g, a, x + TUILE_PAD, y + h - 13 + (a.police().equals(MINI) ? 1 : 0), Ui.argb(Ui.MUTED, 255));
+      // chiffre et légende : bloc centré en hauteur dans la tuile (des capitales du chiffre à celles de la légende)
+      float hv = Ui.capitales(pv), hl = Ui.capitales(a.police());
+      float haut = (h - (hv + TUILE_INTER + hl)) / 2f;
+      Ui.gauche(g, this.font, Ui.lit(v, pv), pv, x + TUILE_PAD, y + haut + hv / 2f, Ui.argb(Ui.TEXT, 255));
+      this.dessiner(g, a, x + TUILE_PAD, y + h - haut - hl / 2f, Ui.argb(Ui.MUTED, 255));
    }
 
    private int dessinerCaracteristiques(GuiGraphics g, ItemStack sortie, int x, int y, int w) {
@@ -933,7 +947,7 @@ public final class TableArmurier extends GunSmithTableScreen {
          return cy2 + 20;
       }
       if (sortie.getCount() > 1 || sortie.getItem() instanceof IAmmo) {
-         g.drawString(this.font, Ui.lit(Ui.ellipsis(this.font, tr("par_fabrication", sortie.getCount()), Ui.FONT, w), Ui.FONT), x, y, Ui.argb(Ui.MUTED, 255), false);
+         Ui.gauche(g, this.font, Ui.lit(Ui.ellipsis(this.font, tr("par_fabrication", sortie.getCount()), Ui.FONT, w), Ui.FONT), Ui.FONT, x, y + 4, Ui.argb(Ui.MUTED, 255));
          return y + 16;
       }
       return y + 4;

@@ -71,7 +71,7 @@ public class HzButton extends AbstractButton {
             case LINK -> {
                 int base = danger ? Ui.DANGER : Ui.MUTED;
                 int c = !active ? Ui.argb(Ui.FAINT, 255) : hover ? Ui.argb(danger ? Ui.DANGER : Ui.TEXT, 255) : Ui.argb(base, 255);
-                Ui.spaced(g, font, label, Ui.SMALL, x, y + (h - 6) / 2f, c, 0.8f);
+                Ui.spacedMilieu(g, font, label, Ui.SMALL, x, y + h / 2f, c, 0.8f);
                 float tw = Ui.spacedWidth(font, label.toUpperCase(java.util.Locale.ROOT), Ui.SMALL, 0.8f);
                 if (hover) g.fill(x, y + h - 1, x + (int) tw, y + h, Ui.argb(accent, 160));
             }
@@ -79,7 +79,7 @@ public class HzButton extends AbstractButton {
                 Ui.soft(g, x, y, w, h, Ui.argb(accent, hover ? 44 : 26));
                 Ui.softOutline(g, x + 1, y + 1, w - 2, h - 2, Ui.argb(accent, hover ? 150 : 70));
                 int c = Ui.argb(Ui.mix(accent, 0xFFFFFF, 0.25f), 255);
-                Ui.spacedCentered(g, font, label, Ui.SMALL, x + w / 2f, y + (h - 6) / 2f, c, 0.6f);
+                Ui.spacedCentre(g, font, label, Ui.SMALL, x + w / 2f, y + h / 2f, c, 0.6f);
             }
             default -> {
                 int fill, edge, text;
@@ -98,7 +98,7 @@ public class HzButton extends AbstractButton {
                 }
                 Ui.soft(g, x, y, w, h, fill);
                 Ui.softOutline(g, x + 1, y + 1, w - 2, h - 2, edge);
-                Ui.spacedCentered(g, font, label, Ui.BOLD, x + w / 2f, y + (h - 8) / 2f, text, 1.2f);
+                Ui.spacedCentre(g, font, label, Ui.BOLD, x + w / 2f, y + h / 2f, text, 1.2f);
             }
         }
     }
