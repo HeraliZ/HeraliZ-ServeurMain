@@ -607,17 +607,22 @@ public class AdminScreen extends Screen {
             }
             case CAISSE -> {
                 CasinoConfig.Cashier c = work.caisse;
-                // change avec les jetons du serveur (mod HeraliZ Economie) : X jetons du compte = Y jetons de casino
+                // change avec les jetons du serveur (mod HeraliZ Economie) : X jetons du compte = Y jetons de casino ; ferme
+                // par le code depuis le 22/10 (EconomieServeur.CHANGE_HERALS) : ses reglages ne sont plus proposes
                 CasinoConfig.JetonsServeur eco = c.economie;
-                knobs.add(new Knob(k("eco_active"), () -> eco.actif ? 1 : 0, v -> eco.actif = v > 0.5, 1, 0, 1, BOOL,
-                        () -> fr.heraliz.casino.economy.EconomieServeur.present() ? Component.empty() : Component.translatable("screen.heralizcasino.admin.eco_absent")));
-                knobs.add(new Knob(k("eco_server"), () -> eco.jetonsServeur, v -> eco.jetonsServeur = (long) v, 1, 1, 1_000_000, NUM));
-                knobs.add(new Knob(k("eco_casino"), () -> eco.jetonsCasino, v -> eco.jetonsCasino = (long) v, 1, 1, 1_000_000, CHIPS));
-                knobs.add(new Knob(k("eco_fee"), () -> eco.commissionRevente, v -> eco.commissionRevente = v, 0.01, 0, 0.5, PCT));
+                if (fr.heraliz.casino.economy.EconomieServeur.CHANGE_HERALS) {
+                    knobs.add(new Knob(k("eco_active"), () -> eco.actif ? 1 : 0, v -> eco.actif = v > 0.5, 1, 0, 1, BOOL,
+                            () -> fr.heraliz.casino.economy.EconomieServeur.present() ? Component.empty() : Component.translatable("screen.heralizcasino.admin.eco_absent")));
+                    knobs.add(new Knob(k("eco_server"), () -> eco.jetonsServeur, v -> eco.jetonsServeur = (long) v, 1, 1, 1_000_000, NUM));
+                    knobs.add(new Knob(k("eco_casino"), () -> eco.jetonsCasino, v -> eco.jetonsCasino = (long) v, 1, 1, 1_000_000, CHIPS));
+                    knobs.add(new Knob(k("eco_fee"), () -> eco.commissionRevente, v -> eco.commissionRevente = v, 0.01, 0, 0.5, PCT));
+                }
                 knobs.add(new Knob(k("items"), () -> c.echangesObjets ? 1 : 0, v -> c.echangesObjets = v > 0.5, 1, 0, 1, BOOL));
-                for (int i = 0; i < Math.min(8, c.echanges.size()); i++) {
+                for (int i = 0; i < Math.min(10, c.echanges.size()); i++) {
                     CasinoConfig.Exchange e = c.echanges.get(i);
-                    Component name = itemName(e.item);
+                    // nom avec le NBT (deux soins differents ne s'appellent pas tous deux « Consommable »)
+                    ItemStack st = fr.heraliz.casino.block.entity.CashierBlockEntity.stack(e);
+                    Component name = st != null ? st.getHoverName() : itemName(e.item);
                     knobs.add(new Knob(Component.translatable("screen.heralizcasino.admin.k.rate", name), () -> e.jetons, v -> e.jetons = (long) v, 1, 1, 1_000_000, CHIPS));
                 }
             }

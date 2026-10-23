@@ -57,10 +57,12 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
             List<CasinoConfig.Exchange> list = c.echanges;
             if (index < 0 || index >= list.size()) return;
             CasinoConfig.Exchange e = list.get(index);
-            Item item = item(e);
-            if (item == null || e.jetons <= 0) return;
+            ItemStack ref = stack(e);
+            if (ref == null || e.jetons <= 0) return;
+            Item item = ref.getItem();
             if (action == ACTION_BUY) {
-                if (!e.achat) return;
+                // achat de capsules avec un objet : seulement les objets sans NBT (jamais un soin ou des munitions)
+                if (!e.achat || ref.hasTag()) return;
                 int have = countItems(p, item);
                 int n = (int) Math.min(count, have);
                 if (n <= 0) {
@@ -82,11 +84,11 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                 }
                 long left = count;
                 while (left > 0) {
-                    int k = (int) Math.min(left, item.getMaxStackSize());
-                    ItemHandlerHelper.giveItemToPlayer(p, new ItemStack(item, k));
+                    int k = (int) Math.min(left, ref.getMaxStackSize());
+                    ItemHandlerHelper.giveItemToPlayer(p, ref.copyWithCount(k));
                     left -= k;
                 }
-                msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, new ItemStack(item).getHoverName())
+                msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, ref.getHoverName())
                         .withStyle(ChatFormatting.GREEN));
                 tx(1, chips);
             }
@@ -123,7 +125,8 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
      */
     private void serverExchange(ServerPlayer p, boolean buy, long units) {
         CasinoConfig.JetonsServeur e = CasinoConfig.get().caisse.economie;
-        if (!EconomieServeur.ouvert() || !EconomieServeur.disponible()) {
+        // verrou du code (choix du proprietaire, 22/10) : plus aucun change herals <-> capsules, quoi que dise casino.json
+        if (!EconomieServeur.CHANGE_HERALS || !EconomieServeur.ouvert() || !EconomieServeur.disponible()) {
             msg(p, Component.translatable("message.heralizcasino.cashier.server_off").withStyle(ChatFormatting.RED));
             return;
         }

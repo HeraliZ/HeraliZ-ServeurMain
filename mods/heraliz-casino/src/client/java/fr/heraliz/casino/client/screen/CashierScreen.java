@@ -19,12 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Caisse : une ligne par echange avec ses boutons d'achat et de revente de jetons de casino. En premier, si le mod
- * HeraliZ Economie est la, le change avec les jetons du serveur (solde du compte affiche avec son glyphe), puis les
- * objets et les encaissements par commande.
+ * Caisse : une ligne par echange avec ses boutons d'echange des capsules (jetons de casino, trouvees sur la carte)
+ * contre des objets, puis les encaissements par commande. Le change avec les herals est ferme par le code
+ * (EconomieServeur.CHANGE_HERALS) : sa ligne n'apparait plus, le pied de l'ecran rappelle ou trouver les capsules.
  */
 public class CashierScreen extends MachineScreen<CashierBlockEntity> {
-    private static final int ROW = 22, MAX_ROWS = 7, BW = 30;
+    private static final int ROW = 22, MAX_ROWS = 10, BW = 30;
     /** Ligne des jetons du serveur : jetons de casino vises par les boutons d'achat et de revente (0 = tout revendre). */
     private static final long[] SERVER_BUY = {10, 100, 1000}, SERVER_SELL = {10, 100, 0};
 
@@ -38,6 +38,10 @@ public class CashierScreen extends MachineScreen<CashierBlockEntity> {
     private final List<Line> lines = new ArrayList<>();
     private final List<UiButton> serverButtons = new ArrayList<>();
     private int lx, ly, lw, lh;
+    /** Lignes affichees : autant que la hauteur de l'ecran le permet (au plus MAX_ROWS). */
+    private int shown;
+    /** Au moins une ligne propose l'achat de capsules (sinon la colonne ACHETER n'est pas affichee). */
+    private boolean anyBuy;
 
     public CashierScreen(CashierBlockEntity be) {
         super(be);
@@ -48,16 +52,19 @@ public class CashierScreen extends MachineScreen<CashierBlockEntity> {
         }
         for (int i = 0; c.echangesObjets && i < c.echanges.size() && lines.size() < MAX_ROWS; i++) {
             CasinoConfig.Exchange e = c.echanges.get(i);
-            Item item = CashierBlockEntity.item(e);
-            if (item == null || e.jetons <= 0 || (!e.achat && !e.vente)) continue;
-            ItemStack s = new ItemStack(item);
-            lines.add(new Line(i, false, false, s, s.getHoverName(), e.jetons, 1, e.achat, e.vente));
+            ItemStack s = CashierBlockEntity.stack(e);
+            if (s == null || e.jetons <= 0 || (!e.achat && !e.vente)) continue;
+            // achat de capsules : jamais avec un objet a NBT (le serveur le refuse aussi)
+            boolean buy = e.achat && !s.hasTag();
+            if (!buy && !e.vente) continue;
+            lines.add(new Line(i, false, false, s, s.getHoverName(), e.jetons, 1, buy, e.vente));
         }
         for (int i = 0; i < c.encaissements.size() && lines.size() < MAX_ROWS; i++) {
             CasinoConfig.CommandExchange e = c.encaissements.get(i);
             if (e.jetons <= 0 || e.commande == null || e.commande.isBlank()) continue;
             lines.add(new Line(i, true, false, new ItemStack(ModRegistry.chip(3)), Component.literal(e.nom), e.jetons, e.montant, false, true));
         }
+        for (Line l : lines) anyBuy |= l.buy;
     }
 
     @Override
@@ -67,7 +74,7 @@ public class CashierScreen extends MachineScreen<CashierBlockEntity> {
 
     private int have(Line l) {
         if (l.command || l.server || minecraft == null || minecraft.player == null) return 0;
-        return CashierBlockEntity.countItems(minecraft.player, l.icon.getItem());
+        return CashierBlockEntity.countStack(minecraft.player, l.icon);
     }
 
     /** Solde de jetons du serveur (envoye par le mod economie). */
@@ -85,12 +92,14 @@ public class CashierScreen extends MachineScreen<CashierBlockEntity> {
     protected void extraWidgets() {
         serverButtons.clear();
         lw = Math.min(width - 20, 380);
-        lh = 26 + Math.max(1, lines.size()) * ROW;
+        // pas plus de lignes que la place au-dessus du bandeau du bas (petites fenetres, grande echelle d'interface)
+        shown = Math.max(1, Math.min(lines.size(), (dockY - 34 - 26 - 8) / ROW));
+        lh = 26 + shown * ROW;
         lx = (width - lw) / 2;
         ly = dockY - 34 - lh;
         int sellX = lx + lw - 8 - 3 * BW - 4;
         int buyX = sellX - 10 - 3 * BW - 4;
-        for (int r = 0; r < lines.size(); r++) {
+        for (int r = 0; r < Math.min(shown, lines.size()); r++) {
             Line l = lines.get(r);
             int y = ly + 24 + r * ROW + 2;
             if (l.server) {
@@ -170,10 +179,10 @@ public class CashierScreen extends MachineScreen<CashierBlockEntity> {
         int sellX = lx + lw - 8 - 3 * BW - 4;
         int buyX = sellX - 10 - 3 * BW - 4;
         UiKit.text(g, Component.translatable("screen.heralizcasino.cashier.title"), lx + 10, ly + 8, GOLD, 0.8f, -1, true);
-        UiKit.text(g, Component.translatable("screen.heralizcasino.cashier.buy"), buyX + (3 * BW + 4) / 2f, ly + 8, GREEN, 0.8f, 0, true);
+        if (anyBuy) UiKit.text(g, Component.translatable("screen.heralizcasino.cashier.buy"), buyX + (3 * BW + 4) / 2f, ly + 8, GREEN, 0.8f, 0, true);
         UiKit.text(g, Component.translatable("screen.heralizcasino.cashier.sell"), sellX + (3 * BW + 4) / 2f, ly + 8, RED, 0.8f, 0, true);
         if (lines.isEmpty()) UiKit.text(g, Component.translatable("screen.heralizcasino.cashier.empty"), lx + lw / 2f, ly + 30, GREY, 1f, 0, true);
-        for (int r = 0; r < lines.size(); r++) {
+        for (int r = 0; r < Math.min(shown, lines.size()); r++) {
             Line l = lines.get(r);
             int y = ly + 24 + r * ROW;
             if (r > 0) g.fill(lx + 8, y - 1, lx + lw - 8, y, 0x30C89A48);

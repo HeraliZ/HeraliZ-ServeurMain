@@ -8,39 +8,84 @@
   },
   "caisse": {
     "economie": {
-      "aide": "Change avec les herals, la monnaie du serveur (HeraliZ Economie) : jetons_serveur herals du compte = jetons_casino jetons du casino, dans les deux sens. achat / vente / entree : autoriser l'achat, la revente, le paiement de l'entree. commission_revente : part gardee par le casino a la revente (0.05 = 5 %).",
-      "actif": true,
+      "aide": "FERME par le code (choix du proprietaire : plus aucun echange herals <-> capsules). Change avec les herals, la monnaie du serveur (HeraliZ Economie) : jetons_serveur herals du compte = jetons_casino jetons du casino, dans les deux sens. achat / vente / entree : autoriser l'achat, la revente, le paiement de l'entree. commission_revente : part gardee par le casino a la revente (0.05 = 5 %).",
+      "actif": false,
       "jetons_serveur": 1,
       "jetons_casino": 1,
-      "achat": true,
-      "vente": true,
+      "achat": false,
+      "vente": false,
       "entree": false,
       "commission_revente": 0.05
     },
-    "echanges_objets": false,
+    "echanges_objets": true,
     "echanges": [
       {
-        "item": "minecraft:emerald",
-        "jetons": 10,
-        "achat": true,
+        "item": "heraliz_composants:brindilles",
+        "nbt": "",
+        "jetons": 4,
+        "achat": false,
         "vente": true
       },
       {
-        "item": "minecraft:gold_ingot",
-        "jetons": 5,
-        "achat": true,
+        "item": "heraliz_composants:planches",
+        "nbt": "",
+        "jetons": 20,
+        "achat": false,
         "vente": true
       },
       {
-        "item": "minecraft:diamond",
-        "jetons": 50,
-        "achat": true,
+        "item": "heraliz_composants:clou",
+        "nbt": "",
+        "jetons": 25,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "geckolib:food_mre",
+        "nbt": "",
+        "jetons": 15,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}",
+        "jetons": 30,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}",
+        "jetons": 60,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:9mm\"}",
+        "jetons": 3,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_utils:document_lootbonus",
+        "nbt": "",
+        "jetons": 2500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralizcrates:spectacle_key",
+        "nbt": "",
+        "jetons": 5000,
+        "achat": false,
         "vente": true
       }
     ],
     "encaissements": [],
     "entree": {
-      "prix": 100,
+      "prix": 0,
       "validite_minutes": 60,
       "expulser_fauches": true,
       "expulser_spectateurs": false,
@@ -793,5 +838,5 @@
     "tableau_parieurs": 7,
     "la_niche": 10
   },
-  "version": 5
+  "version": 6
 }

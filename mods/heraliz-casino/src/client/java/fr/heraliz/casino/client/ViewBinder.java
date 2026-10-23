@@ -277,9 +277,9 @@ public final class ViewBinder {
         }
         for (CasinoConfig.Exchange e : CasinoConfig.get().caisse.echanges) {
             if (!c.echangesObjets) break;
-            Item item = CashierBlockEntity.item(e);
-            if (item == null) continue;
-            lines.add("1 " + new ItemStack(item).getHoverName().getString() + " = " + e.jetons);
+            ItemStack st = CashierBlockEntity.stack(e);
+            if (st == null) continue;
+            lines.add("1 " + st.getHoverName().getString() + " = " + e.jetons);
         }
         for (CasinoConfig.CommandExchange e : CasinoConfig.get().caisse.encaissements) {
             lines.add(I18n.get("heralizcasino.caisse.commande", String.valueOf(e.jetons), String.valueOf(e.montant), e.nom));
