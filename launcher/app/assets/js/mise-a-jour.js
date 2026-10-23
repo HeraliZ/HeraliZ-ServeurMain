@@ -11,6 +11,7 @@
 // à chaque partie (launcher-service.js).
 
 const https = require('https')
+const yaml = require('js-yaml')
 const { chargerClePublique, verifier } = require('./signature')
 
 // Fichier de version lu par electron-updater selon le système (servi sur https://heraliz.fr/telecharger/).
@@ -48,6 +49,19 @@ function avecDelai(promesse, ms) {
     let minuterie
     const delai = new Promise(resolve => { minuterie = setTimeout(() => resolve(null), ms) })
     return Promise.race([promesse, delai]).finally(() => clearTimeout(minuterie))
+}
+
+// Ce qu'electron-updater utilise pour télécharger et contrôler l'installeur : version, fichiers (lien, SHA-512,
+// taille), ancien champ path / sha512. Tout doit être identique au fichier de version signé.
+function resumeVersion(info) {
+    if (!info || typeof info !== 'object') return null
+    const fichiers = Array.isArray(info.files) ? info.files.map(f => [String(f?.url), String(f?.sha512), Number(f?.size)]) : []
+    return JSON.stringify([String(info.version), String(info.path ?? ''), String(info.sha512 ?? ''), fichiers])
+}
+
+function memeVersion(signe, lu) {
+    const a = resumeVersion(signe)
+    return a !== null && a === resumeVersion(lu)
 }
 
 class MiseAJour {
@@ -109,7 +123,8 @@ class MiseAJour {
                 this.recuperer(this.majBaseUrl + this.channel),
                 this.recuperer(this.majBaseUrl + this.channel + '.sig')
             ])
-            return { verifie: true, ok: verifier(contenu, signature.toString('utf8'), this.clePublique) }
+            if (!verifier(contenu, signature.toString('utf8'), this.clePublique)) return { verifie: true, ok: false }
+            return { verifie: true, ok: true, info: yaml.load(contenu.toString('utf8'), { schema: yaml.JSON_SCHEMA }) }
         } catch {
             return { verifie: true, ok: false }
         }
@@ -127,6 +142,12 @@ class MiseAJour {
             resultat = await avecDelai(this.updater.checkForUpdates(), this.delaiMs)
         } catch {
             return { disponible: false }
+        }
+        // electron-updater relit lui-même le fichier de version : ce qu'il va télécharger doit être EXACTEMENT ce qui a
+        // été signé (sinon un fichier changé entre les deux lectures passerait sans signature).
+        if (sig.verifie && !memeVersion(sig.info, resultat?.updateInfo)) {
+            console.error('[HeraliZ/mise-a-jour] le fichier de version a changé depuis la vérification : mise à jour refusée')
+            return { disponible: false, signatureInvalide: true }
         }
         const version = resultat?.updateInfo?.version
         if (!resultat?.isUpdateAvailable || typeof version !== 'string' || !/^\d{1,4}\.\d{1,4}\.\d{1,6}$/.test(version)) return { disponible: false }
@@ -164,4 +185,4 @@ class MiseAJour {
     }
 }
 
-module.exports = { MiseAJour }
+module.exports = { MiseAJour, memeVersion }

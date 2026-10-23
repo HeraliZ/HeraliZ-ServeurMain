@@ -4,14 +4,14 @@ const { EventEmitter } = require('node:events')
 const { MiseAJour } = require('../app/assets/js/mise-a-jour')
 
 // Faux autoUpdater d'electron-updater : ce que le test prépare (version en ligne, téléchargement réussi ou non).
-function fauxUpdater({ version = null, echec = false, jamais = false } = {}) {
+function fauxUpdater({ version = null, echec = false, jamais = false, info = null } = {}) {
     const u = new EventEmitter()
     u.verifications = 0
     u.installations = []
     u.checkForUpdates = async () => {
         u.verifications++
         if (jamais) return new Promise(() => {})
-        return version ? { isUpdateAvailable: true, updateInfo: { version } } : { isUpdateAvailable: false, updateInfo: { version: '1.6.0' } }
+        return version ? { isUpdateAvailable: true, updateInfo: info || { version } } : { isUpdateAvailable: false, updateInfo: { version: '1.6.0' } }
     }
     u.downloadUpdate = async () => {
         u.emit('download-progress', { percent: 10.2 })
@@ -137,12 +137,23 @@ test('signature : sans clé réglée, rien ne change (comportement d’avant)', 
 test('signature : fichier de version bien signé => mise à jour acceptée', async () => {
     const yml = 'version: 1.7.0\nsha512: ABC\n'
     const { pub, sig } = clesEtSignature(yml)
-    const u = fauxUpdater({ version: '1.7.0' })
+    const u = fauxUpdater({ version: '1.7.0', info: { version: '1.7.0', sha512: 'ABC' } })
     const recuperer = async url => Buffer.from(url.endsWith('.sig') ? sig : yml)
     const maj = new MiseAJour({ updater: u, actif: true, envoyer: () => {}, occupe: () => false, delaiInstallationMs: 0,
         clePublique: pub, majBaseUrl: 'https://heraliz.fr/telecharger/', plateforme: 'win32', recuperer })
     assert.deepEqual(await maj.verifier(), { disponible: true, version: '1.7.0' })
     assert.equal(u.verifications, 1)
+})
+
+test('signature : fichier changé entre la vérification et la lecture d’electron-updater => REFUSÉE', async () => {
+    const yml = 'version: 1.7.0\nfiles:\n  - url: HeraliZ-Launcher-Setup.exe\n    sha512: ABC\n    size: 10\n'
+    const { pub, sig } = clesEtSignature(yml)
+    const u = fauxUpdater({ version: '1.7.0', info: { version: '1.7.0', files: [{ url: 'pirate.exe', sha512: 'XYZ', size: 10 }] } })
+    const recuperer = async url => Buffer.from(url.endsWith('.sig') ? sig : yml)
+    const maj = new MiseAJour({ updater: u, actif: true, envoyer: () => {}, occupe: () => false, delaiInstallationMs: 0,
+        clePublique: pub, majBaseUrl: 'https://heraliz.fr/telecharger/', plateforme: 'win32', recuperer })
+    assert.deepEqual(await maj.verifier(), { disponible: false, signatureInvalide: true })
+    assert.equal(u.installations.length, 0)
 })
 
 test('signature : fichier falsifié => mise à jour REFUSÉE, electron-updater jamais appelé', async () => {
