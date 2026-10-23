@@ -41,6 +41,15 @@ public final class LootManager {
         return FMLPaths.CONFIGDIR.get().resolve("heralizcrates");
     }
 
+    /**
+     * Butin changé EN JEU (éditeur de butin, /heraliz loot ...) : gardé à la racine du serveur, hors de config/, que la
+     * mise en ligne réécrit à chaque envoi (avant le 23/10, un changement fait en jeu était perdu au prochain envoi). Un
+     * fichier ici passe devant celui de config/ ; /heraliz loot fichier &lt;caisse&gt; l'efface (retour au fichier du dépôt).
+     */
+    public static Path dirJeu() {
+        return FMLPaths.GAMEDIR.get().resolve("heraliz_crates").resolve("butin_jeu");
+    }
+
     public static synchronized CrateLoot get(CrateType type) {
         if (!loaded) reload();
         CrateLoot l = TABLES.get(type);
@@ -63,12 +72,14 @@ public final class LootManager {
         errors += loadGeneral();
         TABLES.clear();
         for (CrateType type : CrateType.values()) {
-            Path file = dir().resolve(type.id + ".json");
+            Path jeu = dirJeu().resolve(type.id + ".json");
+            boolean enJeu = Files.isRegularFile(jeu);
+            Path file = enJeu ? jeu : dir().resolve(type.id + ".json");
             CrateLoot loot = new CrateLoot(type);
             if (!Files.exists(file)) {
                 loot.entries.addAll(DefaultLoot.of(type));
                 TABLES.put(type, loot);
-                save(type);
+                ecrire(type, false);
                 continue;
             }
             int fileErrors = 0;
@@ -111,14 +122,14 @@ public final class LootManager {
                 loot.entries.clear();
                 loot.entries.addAll(DefaultLoot.of(type));
                 TABLES.put(type, loot);
-                save(type);
+                ecrire(type, enJeu);
                 continue;
             }
             errors += fileErrors;
             TABLES.put(type, loot);
             if (converted > 0) {
                 HeralizCrates.LOGGER.info("[HeralizCrates] {} : {} entree(s) d'une ancienne version convertie(s) ou retiree(s)", file.getFileName(), converted);
-                save(type);
+                ecrire(type, enJeu);
             }
         }
         return errors;
@@ -214,7 +225,24 @@ public final class LootManager {
         write(dir().resolve("general.json"), o);
     }
 
+    /** Changement fait en jeu : écrit dans {@link #dirJeu()} (gardé à vie, jamais écrasé par la mise en ligne). */
     public static synchronized void save(CrateType type) {
+        ecrire(type, true);
+    }
+
+    /** Efface le butin changé en jeu de cette caisse et relit tout (retour au fichier de config/). */
+    public static synchronized boolean revenirAuFichier(CrateType type) {
+        try {
+            boolean ok = Files.deleteIfExists(dirJeu().resolve(type.id + ".json"));
+            reload();
+            return ok;
+        } catch (IOException e) {
+            HeralizCrates.LOGGER.error("[HeralizCrates] Impossible d'effacer le butin en jeu de {}", type.id, e);
+            return false;
+        }
+    }
+
+    private static void ecrire(CrateType type, boolean enJeu) {
         CrateLoot loot = TABLES.get(type);
         if (loot == null) return;
         JsonObject root = new JsonObject();
@@ -225,7 +253,7 @@ public final class LootManager {
         JsonArray arr = new JsonArray();
         for (LootEntry e : loot.entries) arr.add(e.toJson());
         root.add("rewards", arr);
-        write(dir().resolve(type.id + ".json"), root);
+        write((enJeu ? dirJeu() : dir()).resolve(type.id + ".json"), root);
     }
 
     private static void write(Path file, JsonObject o) {

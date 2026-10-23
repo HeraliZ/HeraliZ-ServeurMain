@@ -122,7 +122,20 @@ public final class HeralizCommand {
                         .then(Commands.literal("remove")
                                 .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
                                         .then(Commands.argument("index", IntegerArgumentType.integer(1))
-                                                .executes(HeralizCommand::lootRemove))))));
+                                                .executes(HeralizCommand::lootRemove))))
+                        // butin changé en jeu effacé : la caisse reprend le fichier de config/ (celui du dépôt)
+                        .then(Commands.literal("fichier")
+                                .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
+                                        .executes(c -> {
+                                            CrateType type = crate(c);
+                                            boolean ok = LootManager.revenirAuFichier(type);
+                                            c.getSource().sendSuccess(() -> ok
+                                                    ? Component.translatableWithFallback("heralizcrates.commande.fichier",
+                                                    "%s : butin changé en jeu effacé, retour au fichier du serveur.", type.crateName())
+                                                    : Component.translatableWithFallback("heralizcrates.commande.fichier_rien",
+                                                    "%s : aucun butin changé en jeu.", type.crateName()), true);
+                                            return ok ? 1 : 0;
+                                        })))));
     }
 
     private static CrateType crate(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {

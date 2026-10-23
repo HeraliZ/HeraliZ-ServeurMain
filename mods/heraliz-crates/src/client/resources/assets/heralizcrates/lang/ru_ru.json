@@ -188,5 +188,7 @@
   "gui.heralizcrates.case.again_key": "Ещё (1 ключ)",
   "gui.heralizcrates.case.subtitle": "Ключи: %s · предметов: %s",
   "gui.heralizcrates.case.subtitle_one": "Ключи: 1 · предметов: %s",
-  "gui.heralizcrates.case.subtitle_free": "Ключи без ограничений · предметов: %s"
+  "gui.heralizcrates.case.subtitle_free": "Ключи без ограничений · предметов: %s",
+  "heralizcrates.commande.fichier": "%s: добыча, изменённая в игре, удалена, возврат к файлу сервера.",
+  "heralizcrates.commande.fichier_rien": "%s: нет добычи, изменённой в игре."
 }
