@@ -2070,7 +2070,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   recettes de la Table d'armurier modifiées en jeu, gardées dans `heraliz_tactique/recettes_jeu.json` à la racine du
   serveur, appliquées par-dessus celles de TaCZ et renvoyées aux joueurs ; une recette changée ne suit plus
   `outils/crafts.py` jusqu'à « Revenir au fichier ») ; Loot 0.9.16 : clic droit sur un conteneur, un cadavre ou une
-  caisse de largage = l'ouvrir même avec une arme ou un objet en main (`FouilleObjetEnMain`) ; Casino 2.5.0 : entrée
+  caisse de largage = l'ouvrir même avec une arme ou un objet en main (`FouilleObjetEnMain`) ; Loot 0.9.18 : marchait seulement pour les op (le clic droit ordinaire avec un objet en main était refusé côté serveur, sans doute par un plugin) : la demande passe maintenant par le canal de Loot (`ReseauLoot.Fouiller`, protocole 2), le serveur revérifie tout et ouvre comme une main vide (`FouilleServeur` : portée 6, point visé, événements de Forge des autres mods) ; Casino 2.5.0 : entrée
   25 capsules, seulement les capsules 1 / 5 / 10 (anciennes converties à même total), une capsule pour 40 conteneurs
   (`CAPSULES_POUR_100` = 2,5) ; Utils 2.22.0 : carte sans son, trappes / portes / leviers bloqués au spawn, borne de
   départ non annulée par une poussée, noms des objets GeckoLib en 3 langues (`assets/geckolib/lang`), cinématique ÷3

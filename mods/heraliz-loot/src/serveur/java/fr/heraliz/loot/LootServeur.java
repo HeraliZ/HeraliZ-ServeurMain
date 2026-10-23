@@ -21,6 +21,7 @@ public final class LootServeur {
 
     public static void brancher(IEventBus bus) {
         HeralizLoot.COFFRE_USINE.serveur(CoffreBlockEntityServeur::new);
+        FouilleServeur.brancher();
         ConteneurBlock.ROTATION = new ConteneurBlock.Rotation() {
             @Override
             public void ouvrir(ServerLevel sl, BlockPos pos, BlockState st, ConteneurBlock bloc, ServerPlayer sp) {

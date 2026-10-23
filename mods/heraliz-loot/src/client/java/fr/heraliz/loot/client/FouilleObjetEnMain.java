@@ -3,12 +3,12 @@ package fr.heraliz.loot.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import fr.heraliz.loot.HeralizLoot;
 import fr.heraliz.loot.OuvertureAccroupi;
+import fr.heraliz.loot.ReseauLoot;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -28,10 +28,12 @@ import org.lwjgl.glfw.GLFW;
  * chose qu'on fouille (conteneur de loot T1 à T7 et salles à carte, coffre, caisse, meuble de rangement : voir
  * {@link OuvertureAccroupi#conteneur} ; cadavre ; caisse de largage), le clic droit OUVRE au lieu de viser ou de frapper :
  * l'appui est pris avant tout le monde ({@code MouseButton.Pre} annulé : ni visée de TaCZ, ni coup de mêlée) et
- * l'interaction est envoyée comme le fait Minecraft (même paquet, même portée, mêmes règles du serveur, qui décide
- * toujours : claims, joueur à terre, tutoriel...). Le tir reste au clic gauche. Touche « Utiliser » mise sur le clavier :
- * le refus de TaCZ est levé (secours, sur {@code InteractionKeyMappingTriggered}).
- * <p>Accroupi, la règle de {@link OuvertureAccroupi} s'applique comme avant (grenades : lancer doux, blocs : poser).</p>
+ * la demande part au serveur par le canal de HeraliZ Loot ({@link ReseauLoot.Fouiller}, 0.9.18), qui ouvre comme une main
+ * vide et décide toujours (portée, claims, joueur à terre, tutoriel...). Avant, le clic droit ordinaire avec l'objet en
+ * main partait au serveur, et un plugin du serveur le refusait aux joueurs (seuls les op pouvaient fouiller). Le tir
+ * reste au clic gauche. Touche « Utiliser » mise sur le clavier : même demande (sur {@code InteractionKeyMappingTriggered}).
+ * <p>Accroupi avec un objet qui se pose ou se lance (blocs, grenades : {@link OuvertureAccroupi}), le clic droit garde son
+ * sens de Minecraft.</p>
  */
 @Mod.EventBusSubscriber(modid = HeralizLoot.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class FouilleObjetEnMain {
@@ -54,12 +56,11 @@ public final class FouilleObjetEnMain {
     /** Touche « Utiliser » au clavier : TaCZ a annulé le clic, on le rend quand on vise une chose à fouiller. */
     @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public static void touche(InputEvent.InteractionKeyMappingTriggered e) {
-        if (!e.isUseItem() || !e.isCanceled()) return;
+        if (!e.isUseItem()) return;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.player.getMainHandItem().isEmpty()) return;
-        if (cible(mc) != null) {
-            e.setCanceled(false);
-            e.setSwingHand(true);
+        if (ouvrir(mc)) {
+            e.setCanceled(true);
+            e.setSwingHand(false);
         }
     }
 
@@ -68,23 +69,20 @@ public final class FouilleObjetEnMain {
         LocalPlayer p = mc.player;
         if (p == null || mc.gameMode == null || mc.screen != null || mc.getOverlay() != null) return false;
         if (p.isSpectator() || p.getMainHandItem().isEmpty()) return false;
+        // accroupi avec un objet qui se pose ou se lance : règle de Minecraft
+        if (p.isSecondaryUseActive() && (OuvertureAccroupi.sePoseAccroupi(p.getMainHandItem())
+                || OuvertureAccroupi.sePoseAccroupi(p.getOffhandItem()))) return false;
         HitResult h = cible(mc);
         if (h == null) return false;
-        for (InteractionHand main : InteractionHand.values()) {
-            InteractionResult r;
-            if (h instanceof BlockHitResult b) {
-                r = mc.gameMode.useItemOn(p, main, b);
-            } else {
-                EntityHitResult eh = (EntityHitResult) h;
-                r = mc.gameMode.interactAt(p, eh.getEntity(), eh, main);
-                if (!r.consumesAction()) r = mc.gameMode.interact(p, eh.getEntity(), main);
-            }
-            if (r.consumesAction()) {
-                if (r.shouldSwing()) p.swing(main);
-                return true;
-            }
+        if (h instanceof BlockHitResult b) {
+            ReseauLoot.CANAL.sendToServer(new ReseauLoot.Fouiller(b, -1));
+        } else {
+            ReseauLoot.CANAL.sendToServer(new ReseauLoot.Fouiller(
+                    BlockHitResult.miss(h.getLocation(), net.minecraft.core.Direction.UP, p.blockPosition()),
+                    ((EntityHitResult) h).getEntity().getId()));
         }
-        // rien ne s'est ouvert (refus du jeu) : le clic est quand même pris, pour ne pas viser ni frapper la caisse
+        p.swing(InteractionHand.MAIN_HAND);
+        // le clic est pris : ni visée de TaCZ, ni coup de mêlée sur la caisse
         return true;
     }
 

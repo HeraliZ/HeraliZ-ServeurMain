@@ -111,6 +111,11 @@ public final class OuvertureAccroupi {
         return be instanceof Container || be instanceof MenuProvider;
     }
 
+    /** Objet qu'on pose ou qu'on lance accroupi (lu par la fouille avec un objet en main, 0.9.18). */
+    public static boolean sePoseAccroupi(ItemStack s) {
+        return sePose(s);
+    }
+
     /** Bloc qu'on fouille, lu par la fouille avec un objet en main (client/FouilleObjetEnMain, 0.9.16). */
     public static boolean fouillable(Level l, BlockPos pos) {
         return conteneur(l, pos, l.getBlockState(pos));
