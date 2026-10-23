@@ -111,6 +111,11 @@ public final class OuvertureAccroupi {
         return be instanceof Container || be instanceof MenuProvider;
     }
 
+    /** Bloc qu'on fouille, lu par la fouille avec un objet en main (client/FouilleObjetEnMain, 0.9.16). */
+    public static boolean fouillable(Level l, BlockPos pos) {
+        return conteneur(l, pos, l.getBlockState(pos));
+    }
+
     @Nullable
     private static Class<?> lancer() {
         if (!lancerCherche) {
