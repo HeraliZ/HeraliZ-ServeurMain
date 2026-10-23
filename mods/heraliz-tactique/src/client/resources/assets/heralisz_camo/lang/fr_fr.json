@@ -406,5 +406,6 @@
   "item.heralisz_camo.camo.a_vie": "Skin à vie : clic droit pour l'ajouter à ta collection (pas consommé si tu l'as déjà). Gardé à la mort.",
   "msg.heralisz_camo.couteau_fixe": "Un couteau ne peut pas être modifié.",
   "gui.heralisz_camo.atelier.decharger": "Décharger",
-  "gui.heralisz_camo.atelier.decharger_aide": "Retirer les balles de l'arme : elles reviennent dans ton inventaire, le chargeur reste vide."
+  "gui.heralisz_camo.atelier.decharger_aide": "Retirer les balles de l'arme : elles reviennent dans ton inventaire, le chargeur reste vide.",
+  "gui.heralisz_camo.table.dispo": "Avec mes composants"
 }

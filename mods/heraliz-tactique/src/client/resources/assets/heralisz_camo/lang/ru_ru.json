@@ -406,5 +406,6 @@
   "item.heralisz_camo.camo.a_vie": "Вечный скин: ПКМ, чтобы добавить в коллекцию (не тратится, если он уже есть). Сохраняется после смерти.",
   "msg.heralisz_camo.couteau_fixe": "Нож нельзя изменить.",
   "gui.heralisz_camo.atelier.decharger": "Разрядить",
-  "gui.heralisz_camo.atelier.decharger_aide": "Извлечь патроны из оружия: они вернутся в инвентарь, магазин останется пустым."
+  "gui.heralisz_camo.atelier.decharger_aide": "Извлечь патроны из оружия: они вернутся в инвентарь, магазин останется пустым.",
+  "gui.heralisz_camo.table.dispo": "С моими компонентами"
 }

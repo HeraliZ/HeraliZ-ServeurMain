@@ -191,6 +191,13 @@ public final class TableArmurier extends GunSmithTableScreen {
             }
          }
       }
+      // « avec les composants disponibles » : seulement ce qu'on peut fabriquer tout de suite
+      if (dispoSeulement && !creatif) {
+         liste.removeIf(id -> {
+            Etat e = this.etats.get(id);
+            return e == null || e.manquants() > 0;
+         });
+      }
       this.affichees = liste;
 
       // cadre
@@ -203,7 +210,7 @@ public final class TableArmurier extends GunSmithTableScreen {
       // en-tête : recherche, « arme en main », fermer
       this.recherche.setX(this.px + 124);
       this.recherche.setY(this.py + 15);
-      this.recherche.setWidth(Math.max(90, Math.min(176, this.pw - 124 - 300)));
+      this.recherche.setWidth(Math.max(90, Math.min(176, this.pw - 124 - 440)));
       this.ajouter(this.recherche);
       GunPackList filtres = t.heralisz$filtres();
       String enMain = tr("en_main");
@@ -216,6 +223,16 @@ public final class TableArmurier extends GunSmithTableScreen {
       }, () -> {
          if (filtres == null) return;
          filtres.setByHandSelected(!filtres.isByHandSelected());
+         this.defil = 0;
+         this.rebuildWidgets();
+      }, null));
+      String dispo = tr("dispo");
+      int dw2 = 9 + 6 + this.font.width(Ui.lit(dispo, Ui.FONT)) + 4;
+      this.ajouter(new Zone(ex + ew + 8, this.py + 15, dw2, 16, (g, z, mx, my, pt) -> {
+         Ui.pastille(g, z.getX(), z.getY() + 4, 9, Ui.accent(), dispoSeulement, z.survol());
+         g.drawString(this.font, Ui.lit(dispo, Ui.FONT), z.getX() + 15, z.getY() + 4, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255), false);
+      }, () -> {
+         dispoSeulement = !dispoSeulement;
          this.defil = 0;
          this.rebuildWidgets();
       }, null));
@@ -560,14 +577,40 @@ public final class TableArmurier extends GunSmithTableScreen {
       Ui.right(g, this.font, Ui.lit(String.valueOf(n), Ui.SMALL), x + w - 5, y + (h - 6) / 2f, Ui.argb(Ui.FAINT, 255));
    }
 
+   /** Filtre « avec les composants disponibles » (gardé tant que le jeu tourne). */
+   private static boolean dispoSeulement;
+   private static java.lang.reflect.Method couleurRarete;
+   private static boolean couleurCherchee;
+
+   /** Couleur RVB de la rareté (HeraliZ Loot, par réflexion), -1 : aucune. */
+   private static int couleurRarete(ItemStack st) {
+      if (!couleurCherchee) {
+         couleurCherchee = true;
+         try {
+            couleurRarete = Class.forName("fr.heraliz.loot.client.RaretesClient").getMethod("couleur", ItemStack.class);
+         } catch (ReflectiveOperationException | LinkageError ex) {
+            couleurRarete = null;
+         }
+      }
+      if (couleurRarete == null) return -1;
+      try {
+         return ((Number) couleurRarete.invoke(null, st)).intValue();
+      } catch (ReflectiveOperationException | RuntimeException ex) {
+         return -1;
+      }
+   }
+
    private void dessinerCarte(GuiGraphics g, Zone z, ResourceLocation id, GunSmithTableRecipe r) {
       int x = z.getX(), y = z.getY(), w = z.getWidth(), h = z.getHeight();
       GunSmithTableRecipe choisie = this.tacz().heralisz$recette();
       boolean sel = choisie != null && choisie.getId().equals(id);
       int accent = Ui.accent();
       Ui.soft(g, x, y, w, h, Ui.argb(0xFFFFFF, z.survol() ? 14 : 7));
-      Ui.softOutline(g, x + 1, y + 1, w - 2, h - 2, sel ? Ui.argb(accent, 230) : Ui.argb(0xFFFFFF, z.survol() ? 50 : 18));
       ItemStack sortie = r.getOutput();
+      // rareté de l'objet : dégradé très léger de sa couleur, du haut de la carte vers le bas
+      int rarete = couleurRarete(sortie);
+      if (rarete >= 0) g.fillGradient(x + 1, y + 1, x + w - 1, y + h - 1, Ui.argb(rarete, 46), Ui.argb(rarete, 0));
+      Ui.softOutline(g, x + 1, y + 1, w - 2, h - 2, sel ? Ui.argb(accent, 230) : Ui.argb(0xFFFFFF, z.survol() ? 50 : 18));
       g.pose().pushPose();
       g.pose().translate(x + w / 2f - 16, y + 4, 0);
       g.pose().scale(2.0f, 2.0f, 1);
