@@ -131,7 +131,9 @@ public final class Executions {
       }
 
       double range = (Double)ReanimationConfig.EXECUTION_RANGE.get();
-      if (actor.level() == victim.level() && !(actor.distanceToSqr(victim) > range * range)) {
+      // HeraliZ : vue dégagée exigée (avant : un joueur à terre s'achevait à travers un mur)
+      if (actor.level() == victim.level() && !(actor.distanceToSqr(victim) > range * range)
+         && fr.heraliz.reanimation.core.VueDegagee.voit(actor, victim)) {
          if (!canHurt(actor, victim)) {
             refuse(actor, victim);
             return false;
@@ -524,7 +526,8 @@ public final class Executions {
       AABB box = actor.getBoundingBox().move(target.subtract(actor.position()));
       boolean room = Math.abs(spot.y - actor.getY()) < 0.6
          && actor.level().noCollision(actor, box)
-         && !actor.level().noCollision(actor, box.move(0.0, -0.2, 0.0));
+         && !actor.level().noCollision(actor, box.move(0.0, -0.2, 0.0))
+         && fr.heraliz.reanimation.core.VueDegagee.chemin(actor, target);
       if (!room) {
          target = actor.position();
       }

@@ -542,6 +542,11 @@ public final class DownedManagerServeur {
             return false;
          }
 
+         // HeraliZ : plus de fouille à travers un mur (revérifié tous les 5 ticks)
+         if (s.ticks % 5 == 0 && !VueDegagee.voit(a, s.entity)) {
+            return false;
+         }
+
          if (!(a instanceof ServerPlayer p)) {
             if (s.ticks % 30 == 0) {
                s.entity
@@ -806,7 +811,9 @@ public final class DownedManagerServeur {
          for (Vec3 spot : kneelSpots(actor, body)) {
             Vec3 target = new Vec3(spot.x, body.getY(), spot.z);
             AABB box = actor.getBoundingBox().move(target.subtract(actor.position()));
-            if (actor.level().noCollision(actor, box) && !actor.level().noCollision(actor, box.move(0.0, -0.2, 0.0))) {
+            // HeraliZ : jamais de l'autre côté d'un mur (VueDegagee.chemin)
+            if (actor.level().noCollision(actor, box) && !actor.level().noCollision(actor, box.move(0.0, -0.2, 0.0))
+               && VueDegagee.chemin(actor, target)) {
                Vec3 d = body.position().subtract(target);
                float yaw = (float)Math.toDegrees(Math.atan2(-d.x, d.z));
                if (actor instanceof ServerPlayer p) {
@@ -826,7 +833,7 @@ public final class DownedManagerServeur {
 
    private static boolean inRange(LivingEntity actor, LivingEntity target) {
       double range = (Double)ReanimationConfig.INTERACT_RANGE.get();
-      return actor.level() == target.level() && actor.distanceToSqr(target) <= range * range;
+      return actor.level() == target.level() && actor.distanceToSqr(target) <= range * range && VueDegagee.voit(actor, target);
    }
 
    public static void tell(LivingEntity e, Component message) {

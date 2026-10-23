@@ -165,6 +165,11 @@ public class SearchMenu extends AbstractContainerMenu {
                return curios.accepte().test(index, stack);
             }
 
+            // un objet à vie reste à son propriétaire, aussi dans ses emplacements Curios
+            public boolean mayPickup(Player joueur) {
+               return !estAVie(this.getItem()) && super.mayPickup(joueur);
+            }
+
             public int getMaxStackSize() {
                return 1;
             }
