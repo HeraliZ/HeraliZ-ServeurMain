@@ -133,7 +133,7 @@ public final class InterfaceClient {
     private static java.lang.reflect.Method emoteActive;
 
     /** Vrai si le joueur joue une emote de HeraliZ Emote (faux sans ce mod). */
-    private static boolean enEmote() {
+    static boolean enEmote() {
         if (!emoteCherchee) {
             emoteCherchee = true;
             try {

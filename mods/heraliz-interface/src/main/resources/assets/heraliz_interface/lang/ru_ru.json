@@ -73,5 +73,7 @@
   "heraliz_interface.pack.herbe": "HeraliZ: трава",
   "gui.heraliz_interface.pause.carte.extraction": "Эвакуация %s",
   "heraliz_interface.touche_interdite.titre": "Зарезервированная клавиша",
-  "heraliz_interface.touche_interdite.texte": "² и правый Shift нельзя назначить ни на одно действие."
+  "heraliz_interface.touche_interdite.texte": "² и правый Shift нельзя назначить ни на одно действие.",
+  "key.heraliz_interface.regard_libre": "Свободный обзор (удерживать)",
+  "key.categories.heraliz_interface": "HeraliZ"
 }

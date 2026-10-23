@@ -9,7 +9,9 @@
     "KeyMappingInterditMixin",
     "OptionsMixin",
     "PlanchesPolicesMixin",
-    "TexteNetMixin"
+    "RegardLibreMixin",
+    "TexteNetMixin",
+    "ToastsMixin"
   ],
   "injectors": {
     "defaultRequire": 1
