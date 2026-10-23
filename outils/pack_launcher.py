@@ -16,6 +16,7 @@ launcher lui-même (launcher/app/assets/js/security.js). Résumé (nombre de mod
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -165,6 +166,21 @@ def main():
     )
     subprocess.run(["node", "-e", controle, str(RACINE_DEPOT / "launcher" / "app" / "assets" / "js" / "security.js"),
                     str(distro_p), str(RACINE_DEPOT / "launcher" / "app" / "heraliz.json")], check=True)
+
+    # Signature Ed25519 du pack (liste des mods et empreintes, launcher/docs/HERALIZ-SIGNATURE.md) : distribution.sig à
+    # côté de distribution.json. Un launcher qui porte une clé publique REFUSE un pack non signé : dans ce cas, pas de
+    # mise en ligne sans le secret LAUNCHER_SIGN_KEY (sinon plus personne ne pourrait jouer).
+    cle_publique = str(config.get("distributionPublicKey") or "").strip()
+    if os.environ.get("LAUNCHER_SIGN_KEY", "").strip():
+        subprocess.run(["node", str(RACINE_DEPOT / "launcher" / "ci" / "signer.mjs"), "--pack",
+                        str(envoi / "distribution.json")] + ([cle_publique] if cle_publique else []), check=True)
+        if not (envoi / "distribution.sig").is_file():
+            sys.exit("[pack] signature du pack absente après signer.mjs --pack.")
+    elif cle_publique:
+        sys.exit("[pack] le launcher attend un pack signé (distributionPublicKey de launcher/app/heraliz.json) mais le "
+                 "secret LAUNCHER_SIGN_KEY n'est pas réglé : pack NON envoyé (il serait refusé par tous les launchers).")
+    else:
+        print("[pack] pack non signé (ni clé publique dans le launcher, ni secret LAUNCHER_SIGN_KEY)")
     types = {}
     for m in modules(s for srv in distro["servers"] for s in srv["modules"]):
         types[m["type"]] = types.get(m["type"], 0) + 1

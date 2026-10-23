@@ -40,4 +40,43 @@ function verifier(contenu, signatureBase64, clePublique) {
     }
 }
 
-module.exports = { chargerClePublique, verifier }
+// Texte signé pour le pack de jeu (distribution Helios). Le site réécrit les LIENS des fichiers à chaque téléchargement
+// (liens signés par compte) : on signe donc ce qui décide du CONTENU installé chez le joueur, pas les liens. Pour chaque
+// serveur : identifiant, adresse, version ; pour chaque module (récursivement) : type, identifiant, chemin, taille et
+// empreinte MD5 (contrôlée par le launcher sur chaque fichier téléchargé). Un mod ajouté, retiré ou remplacé change
+// ce texte. Lignes triées (l'ordre ne compte pas), chaque ligne en JSON (aucune ambiguïté de séparateur). La même
+// fonction sert à signer (ci/signer.mjs --pack) et à vérifier (launcher-service.js) : jamais deux versions.
+function textePack(raw) {
+    const lignes = []
+    const serveurs = Array.isArray(raw?.servers) ? raw.servers : []
+    for (const s of serveurs) {
+        lignes.push(JSON.stringify(['S', s?.id ?? null, s?.address ?? null, s?.minecraftVersion ?? null]))
+        const parcourir = (modules, profondeur) => {
+            if (!Array.isArray(modules) || profondeur > 20) return
+            for (const m of modules) {
+                const a = m?.artifact ?? {}
+                lignes.push(JSON.stringify(['M', m?.type ?? null, m?.id ?? null, a.path ?? null, a.size ?? null,
+                    typeof a.MD5 === 'string' ? a.MD5.toLowerCase() : null]))
+                parcourir(m?.subModules, profondeur + 1)
+            }
+        }
+        parcourir(s?.modules, 0)
+    }
+    lignes.sort()
+    return 'heraliz-pack-v1\n' + lignes.join('\n') + '\n'
+}
+
+// Pack de jeu signé par HeraliZ (launcher/docs/HERALIZ-SIGNATURE.md), appelé par launcher-service.js : avec une clé
+// publique réglée (distributionPublicKey de heraliz.json), un pack dont la liste des mods ou leurs empreintes ne
+// correspondent pas à la signature est refusé AVANT tout téléchargement : un site piraté ne peut pas glisser un faux
+// mod chez les joueurs. Sans clé réglée : comme avant. Le champ de la signature est retiré du pack avant la suite.
+function verifierPack(brut, signature, config) {
+    if (brut && typeof brut === 'object' && !Array.isArray(brut)) delete brut.heralizSignature
+    const cle = chargerClePublique(config?.distributionPublicKey)
+    if (!cle) return
+    if (!verifier(Buffer.from(textePack(brut), 'utf8'), typeof signature === 'string' ? signature : '', cle)) {
+        throw new Error('Le pack de jeu reçu n’est pas signé par HeraliZ : téléchargement refusé. Préviens le staff sur le Discord.')
+    }
+}
+
+module.exports = { chargerClePublique, verifier, textePack, verifierPack }

@@ -1982,9 +1982,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     vérifie `latest*.yml` + `.sig` avec une clé publique embarquée (`distributionPublicKey` de `app/heraliz.json`) avant
     toute mise à jour (`app/assets/js/signature.js`, `mise-a-jour.js`, testé) ; la publication signe avec le secret
     GitHub `LAUNCHER_SIGN_KEY` (`ci/signer.mjs`, branché dans `ci/publier.py` et `launcher.yml`). Clé vide = comportement
-    d'avant (rien n'est bloqué). Activation en 3 étapes : `launcher/docs/HERALIZ-SIGNATURE.md`. **`distribution.json`
-    (le pack) PAS encore signé** : le site réécrit les liens par compte, il faudra signer les empreintes des fichiers
-    du pack (pas les liens) — étape suivante ;
+    d'avant (rien n'est bloqué). Clé publique réglée et secret `LAUNCHER_SIGN_KEY` posé le 23/10. **Pack signé aussi**
+    (23/10, même clé) : `outils/pack_launcher.py` signe la liste des mods et leurs empreintes (`ci/signer.mjs --pack`,
+    `distribution.sig` à côté de `distribution.json`, envoyés ensemble par `serveur.yml`), `PackController` la joint au
+    pack (`heralizSignature`), le launcher la vérifie avant tout téléchargement (`verifierPack` de `signature.js` ; les
+    liens, réécrits par compte, ne sont pas signés). Pack non signé refusé à la mise en ligne si le launcher porte une
+    clé. **Ordre : mise en ligne (pack signé + site) AVANT de publier le launcher** (`launcher/docs/HERALIZ-SIGNATURE.md`).
+    Testé (`launcher/test/signature.test.js`) ; rien sur Windows ni en vrai ;
   - SSH de la VM en root par mot de passe (≈ 7 600 essais de robots par jour, bloqués par fail2ban) : passer à une clé ;
   - Spartan : le jar joueur écarte d'office les crochets de rendu des modules dont le nom contient steam, discord,
     radeon… (`InjectionCollector`) et toutes les bibliothèques de `java.home` (`NativeCollector`) : tout remonter et

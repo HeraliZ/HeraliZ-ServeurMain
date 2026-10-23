@@ -23,6 +23,9 @@ class PackController extends Controller
     /** Dossier du pack sur la VM (site/vm/installer.sh), rempli par la mise en ligne du serveur (serveur.yml). */
     private const DISTRIBUTION = '/var/www/launcher/distribution.json';
 
+    /** Signature du pack, déposée à côté par la mise en ligne (ci/signer.mjs --pack), 64 octets en base64. */
+    private const SIGNATURE = '/var/www/launcher/distribution.sig';
+
     /** Début du chemin des fichiers du pack dans les adresses (location /launcher/ de nginx). */
     private const PREFIXE = '/launcher/';
 
@@ -51,6 +54,14 @@ class PackController extends Controller
                 'reason' => 'pack_absent',
                 'message' => 'The game pack is not available',
             ], 503);
+        }
+
+        // Signature Ed25519 du pack (faite par la mise en ligne avec une clé qui n'est JAMAIS sur cette VM, déposée à côté :
+        // distribution.sig). Elle porte sur la liste des mods et leurs empreintes, pas sur les liens réécrits ci-dessous :
+        // le launcher la vérifie et refuse un pack modifié (launcher/docs/HERALIZ-SIGNATURE.md).
+        $signature = trim((string) @file_get_contents(self::SIGNATURE));
+        if (preg_match('#^[A-Za-z0-9+/]{86}==$#', $signature) === 1) {
+            $distribution->heralizSignature = $signature;
         }
 
         $cle = self::cle();

@@ -74,8 +74,25 @@ installés qui portaient l'ancienne clé passeront à la nouvelle par la même b
 clé publique doit être signée avec l'**ancienne** clé — donc garde l'ancien secret le temps de cette mise à jour, puis
 remplace-le).
 
-## À venir (pas encore fait)
+## Le pack de jeu est signé aussi (même clé)
 
-Le **pack de jeu** (mods, gunpacks : `distribution.json`) n'est pas encore signé de cette façon, parce que le site
-réécrit les liens des fichiers à chaque téléchargement (liens signés par compte). Il faudra signer les **empreintes des
-fichiers** du pack (pas les liens). C'est l'étape suivante.
+Le **pack de jeu** (mods, gunpacks : `distribution.json`) est signé avec la même clé : à chaque mise en ligne,
+`outils/pack_launcher.py` signe la **liste des mods et leurs empreintes** (`ci/signer.mjs --pack`, fichier
+`distribution.sig` déposé à côté). Le site réécrit les liens des fichiers pour chaque compte : on ne signe donc pas les
+liens, seulement ce qui décide du contenu installé (type, identifiant, chemin, taille, MD5 de chaque fichier, adresse du
+serveur). Le site joint la signature au pack (`heralizSignature`, `PackController`) et le launcher la vérifie avant tout
+téléchargement (`verifierPack` de `signature.js`) : un mod ajouté, retiré ou remplacé sur le site = pack refusé.
+
+La mise en ligne **refuse d'envoyer un pack non signé** si le launcher porte une clé publique (sinon plus personne ne
+pourrait jouer). Le résumé de la mise en ligne dit « pack **signé** » ✅.
+
+## Ordre de mise en service (important)
+
+1. Le secret `LAUNCHER_SIGN_KEY` est réglé (fait le 23/10).
+2. Le travail passe sur `main` : la mise en ligne du serveur fabrique un pack **signé**, et le site reçoit le
+   nouveau `PackController` qui joint la signature (workflow « Site HeraliZ », lancé tout seul).
+3. Vérifier dans le résumé de la mise en ligne : « pack **signé** ✅ ».
+4. **Seulement ensuite**, publier le launcher (case « publier ») : c'est lui qui exige les signatures.
+
+Si on publie le launcher avant les étapes 2 et 3, il refusera le pack actuel (non signé) et personne ne pourra jouer
+jusqu'à la mise en ligne suivante.

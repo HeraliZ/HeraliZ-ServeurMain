@@ -16,6 +16,8 @@
 
 import crypto from 'node:crypto'
 import fs from 'node:fs'
+import path from 'node:path'
+import { createRequire } from 'node:module'
 
 function generer() {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519')
@@ -48,10 +50,32 @@ function signer(fichiers) {
     }
 }
 
+// --pack <distribution.json> [<clé publique attendue>] : signe le texte du pack (textePack de signature.js, le même que
+// celui que le launcher recalcule) et écrit distribution.sig à côté. Si une clé publique est donnée, la signature est
+// revérifiée avec elle (une clé privée qui ne va pas avec la clé du launcher est refusée tout de suite).
+function signerPack(fichier, clePubliqueAttendue) {
+    const cle = clePrivee()
+    if (!cle) {
+        process.stdout.write('LAUNCHER_SIGN_KEY non réglé : pack non signé.\n')
+        return
+    }
+    const require = createRequire(import.meta.url)
+    const { textePack, chargerClePublique, verifier } = require('../app/assets/js/signature.js')
+    const texte = Buffer.from(textePack(JSON.parse(fs.readFileSync(fichier, 'utf8'))), 'utf8')
+    const signature = crypto.sign(null, texte, cle).toString('base64')
+    if (clePubliqueAttendue && !verifier(texte, signature, chargerClePublique(clePubliqueAttendue))) {
+        throw new Error('LAUNCHER_SIGN_KEY ne correspond pas à la clé publique du launcher (distributionPublicKey).')
+    }
+    const sortie = path.join(path.dirname(fichier), 'distribution.sig')
+    fs.writeFileSync(sortie, signature + '\n')
+    process.stdout.write('pack signé : ' + sortie + '\n')
+}
+
 const args = process.argv.slice(2)
 if (args[0] === '--generer') generer()
 else if (args[0] === '--signer' && args.length >= 2) signer(args.slice(1))
+else if (args[0] === '--pack' && args.length >= 2) signerPack(args[1], args[2])
 else {
-    process.stderr.write('usage : node launcher/ci/signer.mjs --generer | --signer <fichier> [...]\n')
+    process.stderr.write('usage : node launcher/ci/signer.mjs --generer | --signer <fichier> [...] | --pack <distribution.json> [<clé publique>]\n')
     process.exit(2)
 }

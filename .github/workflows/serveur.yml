@@ -866,6 +866,8 @@ jobs:
         timeout-minutes: 45
         env:
           NEBULA: 7ffc978727b95e03ae9d125688cf5cf132b78419
+          # signature du pack (launcher/docs/HERALIZ-SIGNATURE.md) : clé privée, jamais sur la VM du site
+          LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
           SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
           SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
@@ -892,11 +894,14 @@ jobs:
             echo "::error::La VM du site n'est pas prête pour le pack (rsync ou dossier $DOSSIER) : lancer le workflow « Site HeraliZ » avec « installer », puis relancer cette mise en ligne."
             exit 1
           fi
-          # 1. fichiers nouveaux ou changés, mis en place tous ensemble à la fin ; 2. distribution.json ; 3. retrait des
-          # anciens fichiers : un joueur qui lance le launcher pendant l'envoi ne tombe jamais sur un fichier manquant
+          # 1. fichiers nouveaux ou changés, mis en place tous ensemble à la fin ; 2. distribution.json et sa signature
+          # (distribution.sig), ensemble ; 3. retrait des anciens fichiers : un joueur qui lance le launcher pendant
+          # l'envoi ne tombe jamais sur un fichier manquant
           RS=(rsync -r --perms --checksum --chmod=D755 --chmod=F644 -e "sshpass -e ${SSH[*]}")
-          "${RS[@]}" --delay-updates --exclude=/distribution.json pack/envoi/ "$VM:$DOSSIER/"
-          "${RS[@]}" pack/envoi/distribution.json "$VM:$DOSSIER/"
+          "${RS[@]}" --delay-updates --exclude=/distribution.json --exclude=/distribution.sig pack/envoi/ "$VM:$DOSSIER/"
+          DISTRO=(pack/envoi/distribution.json)
+          [ -f pack/envoi/distribution.sig ] && DISTRO+=(pack/envoi/distribution.sig)
+          "${RS[@]}" --delay-updates "${DISTRO[@]}" "$VM:$DOSSIER/"
           "${RS[@]}" --delete pack/envoi/ "$VM:$DOSSIER/"
 
           # clé du pack (site/vm/theme.sh) : le pack réservé aux comptes ne s'ouvre qu'avec un lien signé par le site ;
@@ -954,6 +959,18 @@ jobs:
               echec(f"{r['distribution']} illisible ({e}) : lancer le workflow « Site HeraliZ » avec « installer » (accès /launcher/ du site).")
           if servie != envoi:
               echec(f"{r['distribution']} ne donne pas le pack envoyé.")
+          # signature du pack : celle envoyée doit être en ligne à côté (le site la joint au pack de chaque compte)
+          sig_locale = pathlib.Path("pack/envoi/distribution.sig")
+          signe = sig_locale.is_file()
+          if signe:
+              url_sig = base + "distribution.sig"
+              try:
+                  with ouvrir(signer(url_sig)) as rep:
+                      sig_servie = rep.read().decode().strip()
+              except Exception as e:
+                  echec(f"{url_sig} illisible ({e}) : les launchers refuseraient le pack.")
+              if sig_servie != sig_locale.read_text(encoding="utf-8").strip():
+                  echec(f"{url_sig} ne donne pas la signature envoyée : les launchers refuseraient le pack.")
           mods = [m for s in envoi["servers"] for m in s["modules"]]
           fichiers = [m for m in mods if m["type"] == "File"]
           choix = [m for m in mods if m["type"] in ("ForgeHosted", "ForgeMod")][:2] + fichiers[:1] + fichiers[len(fichiers) // 2:][:1] + fichiers[-1:]
@@ -973,6 +990,8 @@ jobs:
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
               f.write("### Pack du launcher\n"
                       f"- {r['mods']} mods joueurs, {r['fichiers']} fichiers, {r['octets'] / 1048576:.0f} Mo (version {r['version']})\n"
-                      f"- en ligne : {r['distribution']}, {acces}\n")
+                      f"- en ligne : {r['distribution']}, {acces}\n"
+                      + ("- ✅ pack **signé** (distribution.sig) : un mod ajouté ou remplacé sur le site serait refusé par le launcher\n" if signe
+                         else "- ⚠️ pack **NON signé** (secret `LAUNCHER_SIGN_KEY` absent)\n"))
           EOF
           rm -f "$RUNNER_TEMP/pack.cle"

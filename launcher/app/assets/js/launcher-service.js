@@ -14,6 +14,7 @@ const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution, sansChemins } = require('./security')
+const { chargerClePublique, verifierPack } = require('./signature')
 const { CompteSite, erreurDiscord } = require('./compte-site')
 const Spartan = require('./spartan')
 const { effacerDonneesJeu } = require('./effacement')
@@ -446,7 +447,9 @@ class LauncherService {
         // Comptes du site : le pack vient du site, pour le compte connecté, avec des liens signés pour quelques heures
         // (sans compte, le site refuse les fichiers du pack).
         if (this.compteSite) {
-            const raw = validateDistribution(await this.compteSite.pack(this.jetonActuel()), this.config)
+            const brut = await this.compteSite.pack(this.jetonActuel())
+            verifierPack(brut, brut?.heralizSignature, this.config)
+            const raw = validateDistribution(brut, this.config)
             return new HeliosDistribution(raw, Config.getCommonDirectory(), Config.getInstanceDirectory())
         }
         const url = httpsUrl(this.config.distributionUrl)
@@ -462,7 +465,16 @@ class LauncherService {
             if (size > 32 * 1024 * 1024) { response.destroy(); throw new Error('La distribution est trop volumineuse.') }
             chunks.push(chunk)
         }
-        const raw = validateDistribution(JSON.parse(Buffer.concat(chunks).toString('utf8')), this.config)
+        const brut = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+        // sans compte du site (essais) : la signature est le fichier distribution.sig à côté de la distribution
+        let signature = null
+        if (chargerClePublique(this.config.distributionPublicKey)) {
+            try {
+                signature = (await got(url.href.replace(/distribution\.json$/, 'distribution.sig'), { timeout: { request: 15000 }, retry: { limit: 1 } }).text()).trim()
+            } catch { /* absente : refusée ci-dessous */ }
+        }
+        verifierPack(brut, signature, this.config)
+        const raw = validateDistribution(brut, this.config)
         return new HeliosDistribution(raw, Config.getCommonDirectory(), Config.getInstanceDirectory())
     }
 
