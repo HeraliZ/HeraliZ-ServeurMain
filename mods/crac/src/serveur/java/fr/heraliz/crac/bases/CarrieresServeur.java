@@ -225,7 +225,7 @@ public final class CarrieresServeur {
     private static ServerLevel monde(CommandSourceStack src) {
         ServerLevel l = src.getServer().getLevel(MondeBases.BASES);
         if (l == null) {
-            ko(src, T.t("crac.bases.absent", "Le monde des bases n'existe pas sur ce serveur (crac:bases)."));
+            ko(src, T.t("crac.bases.absent", "La carte n'est pas chargée sur ce serveur : préviens le staff."));
         }
         return l;
     }
@@ -237,7 +237,7 @@ public final class CarrieresServeur {
             return 0;
         }
         if (!MondeBases.estBases(src.getLevel())) {
-            ko(src, T.t("crac.carriere.hors_monde", "Une carrière se pose dans le monde des bases, à l'endroit où tu te tiens."));
+            ko(src, T.t("crac.carriere.hors_monde", "Une carrière se pose sur la carte, à l'endroit où tu te tiens."));
             return 0;
         }
         int max = BasesReglages.i(BasesReglages.RAYON_MAX, 64);
@@ -269,7 +269,7 @@ public final class CarrieresServeur {
         }
         CarrieresDonnees d = CarrieresDonnees.get(l);
         if (d.zones().isEmpty()) {
-            ok(src, T.t("crac.carriere.aucune", "Aucune carrière dans le monde des bases."));
+            ok(src, T.t("crac.carriere.aucune", "Aucune carrière sur la carte."));
             return 0;
         }
         for (Carrieres.Zone z : d.zones()) {

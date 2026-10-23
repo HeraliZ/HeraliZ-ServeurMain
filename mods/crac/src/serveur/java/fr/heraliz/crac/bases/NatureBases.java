@@ -125,7 +125,7 @@ public final class NatureBases {
             return;
         }
         e.setCanceled(true);
-        T.barre(sp, T.t("crac.bases.seau", "Pas d'eau dans le monde des bases."), ChatFormatting.RED);
+        T.barre(sp, T.t("crac.bases.seau", "Pas d'eau dans le monde du tutoriel."), ChatFormatting.RED);
         // le jeu du joueur a pu poser le liquide de lui-même : on lui renvoie les vrais blocs et son inventaire
         HitResult h = e.getTarget();
         if (h instanceof BlockHitResult bh && h.getType() == HitResult.Type.BLOCK) {

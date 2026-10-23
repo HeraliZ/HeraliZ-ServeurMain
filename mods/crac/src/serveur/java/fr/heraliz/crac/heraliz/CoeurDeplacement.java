@@ -101,6 +101,9 @@ public final class CoeurDeplacement extends SafeSavedData {
     }
 
     private static int deplacer(ServerPlayer p) {
+        if (fr.heraliz.crac.bases.Deplacements.refuse(p)) {
+            return 0;
+        }
         MinecraftServer server = p.server;
         UUID clan = PriseCoeur.clanDe(p.getUUID());
         Group g = clan == null ? null : BasesClans.groupe(server, p.getUUID());

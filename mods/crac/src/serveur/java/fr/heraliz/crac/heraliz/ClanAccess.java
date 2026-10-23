@@ -63,6 +63,13 @@ public final class ClanAccess {
         // une base par clan (CRac 1.16.0) : seuls les membres du clan, selon leurs droits de clan ; personne d'autre
         net.minecraft.server.MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server != null && BasesClans.estGroupeClan(server, group.id())) {
+            // tutoriel (1.21.0) : sa cabane d'essai, quels que soient ses droits de clan (il ne quitte pas le monde du
+            // tutoriel avant la fin)
+            net.minecraft.server.level.ServerPlayer sp = server.getPlayerList().getPlayer(player);
+            if (sp != null && group.isMember(player) && fr.heraliz.crac.bases.MondeBases.estTuto(sp.level())
+                && fr.heraliz.crac.bases.Tutoriel.occupe(server, player)) {
+                return true;
+            }
             return BasesClans.permis(server, group, player, action);
         }
         return group.isMember(player) || fr.heraliz.crac.bases.AccesBase.a(group.id(), player) || viaClan(group, player, action);

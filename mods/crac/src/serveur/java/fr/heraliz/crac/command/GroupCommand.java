@@ -24,6 +24,10 @@ import net.minecraftforge.network.PacketDistributor;
 public class GroupCommand {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
+        // une base par clan (1.21.0) : plus de /group du tout quand HeraliZ Clans est là (les groupes suivent les clans)
+        if (fr.heraliz.crac.heraliz.BasesClans.actif()) {
+            return;
+        }
         register(event.getDispatcher());
     }
 

@@ -28,4 +28,13 @@ public final class WipeApi {
         WipeBases.tout(server, garder, rendus);
         return rendus;
     }
+
+    /**
+     * {@code /wipe <joueur>} (HeraliZ Quêtes, par réflexion ; CRac 1.21.0) : efface seulement la cabane d'essai du joueur
+     * dans le monde du tutoriel (armoire et sa case du haut comprises), jamais la base de son clan sur la carte. Renvoie le
+     * nombre de pièces retirées.
+     */
+    public static int cabaneEssai(MinecraftServer server, UUID joueur) {
+        return fr.heraliz.crac.bases.Tutoriel.effacerCabaneEssai(server, joueur);
+    }
 }

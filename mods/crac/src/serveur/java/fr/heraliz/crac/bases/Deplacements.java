@@ -81,6 +81,35 @@ public final class Deplacements {
         return p.hasPermissions(2);
     }
 
+    /**
+     * Refus commun des commandes de CRac (23/10, demande du propriétaire : aucune commande en combat) : tag de combat de
+     * HeraliZ Matchs, joueur à terre (Réanimation), joueur en match. Le staff (permission 2) n'est jamais arrêté. Rend
+     * vrai (et prévient le joueur) quand la commande est refusée.
+     */
+    public static boolean refuse(ServerPlayer p) {
+        if (staff(p)) {
+            return false;
+        }
+        int combat = Heraliz.combatSecondsLeft(p);
+        if (combat > 0) {
+            T.chat(p, T.t("crac.cmd.combat", "Tu es en combat : commande impossible encore %s s.", String.valueOf(combat)),
+                ChatFormatting.RED);
+            return true;
+        }
+        if (fr.heraliz.crac.heraliz.SaisonPont.aTerre(p)) {
+            T.chat(p, T.t("crac.cmd.a_terre", "Impossible à terre."), ChatFormatting.RED);
+            return true;
+        }
+        if (p.getPersistentData().getBoolean(EN_MATCH)) {
+            T.chat(p, T.t("crac.cmd.match", "Impossible pendant un match."), ChatFormatting.RED);
+            return true;
+        }
+        return false;
+    }
+
+    /** Drapeau de HeraliZ Matchs posé pendant un match ({@code MatchApi.DRAPEAU_EN_MATCH}). */
+    static final String EN_MATCH = "heralisz:en_match";
+
     /** Le joueur est-il « au spawn » : monde du spawn, ou près du point /spawn défini par le staff ? */
     static boolean auSpawn(ServerPlayer p) {
         if (MondeBases.estSpawn(p.level())) {
@@ -97,6 +126,9 @@ public final class Deplacements {
     // ---------------------------------------------------------------------------------------------- /zone base
 
     static int zoneBase(ServerPlayer p) {
+        if (refuse(p)) {
+            return 0;
+        }
         boolean staff = staff(p);
         if (!staff && !auSpawn(p)) {
             T.chat(p, T.t("crac.zone.depuis_spawn", "/zone base ne marche que depuis le spawn. Depuis ta base, /spawn y ramène."),
@@ -104,7 +136,7 @@ public final class Deplacements {
             return 0;
         }
         if (p.server.getLevel(MondeBases.BASES) == null) {
-            T.chat(p, T.t("crac.bases.absent", "Le monde des bases n'existe pas sur ce serveur (crac:bases)."), ChatFormatting.RED);
+            T.chat(p, T.t("crac.bases.absent", "La carte n'est pas chargée sur ce serveur : préviens le staff."), ChatFormatting.RED);
             return 0;
         }
         BasesDonnees.Joueur j = BasesDonnees.get(p.server).joueur(p.getUUID());
@@ -126,7 +158,7 @@ public final class Deplacements {
         }
         Vec3 dest = Points.auHasard(bases, p);
         if (dest == null) {
-            T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée dans le monde des bases : réessaie dans un instant."),
+            T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée : réessaie dans un instant."),
                 ChatFormatting.RED);
             return;
         }
@@ -136,7 +168,7 @@ public final class Deplacements {
         BasesDonnees d = BasesDonnees.get(p.server);
         d.joueur(p.getUUID()).dernierZone = System.currentTimeMillis();
         d.marquer();
-        apres(p, T.t("crac.zone.arrive", "Te voici dans la zone de construction (monde des bases, en PvP) : trouve un coin pour ta base.")
+        apres(p, T.t("crac.zone.arrive", "Te voici sur la carte, en PvP : trouve un coin où ton clan peut bâtir sa base.")
             .withStyle(ChatFormatting.GREEN));
         apres(p, T.t("crac.zone.astuce", "Dans ta base, /sethome enregistre un home : du spawn, /home t'y ramène.")
             .withStyle(ChatFormatting.GRAY));
@@ -156,7 +188,16 @@ public final class Deplacements {
     // ---------------------------------------------------------------------------------------------- /spawn
 
     static int spawn(ServerPlayer p) {
+        if (refuse(p)) {
+            return 0;
+        }
         if (!staff(p)) {
+            // 23/10 (choix du propriétaire) : sur la carte, on ne la quitte que par une extraction ; les bases y sont
+            if (MondeBases.estBases(p.level()) && !p.isCreative() && !p.isSpectator()) {
+                T.chat(p, T.t("crac.spawn.carte", "Sur la carte, on ne revient au spawn que par une extraction (/extractions)."),
+                    ChatFormatting.RED);
+                return 0;
+            }
             if (!MondeBases.estBases(p.level()) || !dansSaBase(p)) {
                 T.chat(p, T.t("crac.spawn.depuis_base", "/spawn ne marche que depuis ta base (dans la zone de ton Claim Block)."),
                     ChatFormatting.RED);

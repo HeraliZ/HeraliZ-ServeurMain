@@ -169,6 +169,13 @@ public final class Tutoriel {
      * du clan, sur la carte), ce qui reste du kit est repris, et le joueur revient au spawn.
      */
     static void terminer(ServerPlayer p) {
+        FINS.remove(p.getUUID());
+        BasesDonnees dd = BasesDonnees.get(p.server);
+        BasesDonnees.Joueur jj = dd.joueur(p.getUUID());
+        if (jj.finEnAttente) {
+            jj.finEnAttente = false;
+            dd.marquer();
+        }
         ServerLevel tuto = p.server.getLevel(MondeBases.TUTO);
         if (tuto != null) {
             EffacerBase.effacerDans(p.server, p.getUUID(), tuto);
@@ -186,7 +193,18 @@ public final class Tutoriel {
         Crac.LOGGER.info("[CRac] tutoriel : cabane d'essai de {} effacée", p.getGameProfile().getName());
     }
 
+    /**
+     * La seule cabane d'essai du joueur (monde du tutoriel), jamais la base de son clan (1.21.0, {@code WipeApi.cabaneEssai}
+     * pour {@code /wipe <joueur>}) ; nombre de pièces retirées.
+     */
+    public static int effacerCabaneEssai(MinecraftServer server, UUID u) {
+        ServerLevel tuto = server.getLevel(MondeBases.TUTO);
+        FINS.remove(u);
+        return tuto == null ? 0 : EffacerBase.effacerDans(server, u, tuto)[0];
+    }
+
     private static void terminerHorsLigne(MinecraftServer server, UUID u) {
+        // la marque reste : à sa connexion, il est ramené au spawn et le kit est repris (connexion)
         ServerLevel tuto = server.getLevel(MondeBases.TUTO);
         if (tuto != null) {
             EffacerBase.effacerDans(server, u, tuto);
@@ -219,7 +237,18 @@ public final class Tutoriel {
     /** Connexion : kit d'un tutoriel fini pendant son absence repris. */
     @SubscribeEvent
     public static void connexion(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
-        if (e.getEntity() instanceof ServerPlayer p && !occupe(p.server, p.getUUID())) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) {
+            return;
+        }
+        // 1.21.0 : fin en attente perdue (déconnexion ou redémarrage pendant le tour de caméra), ou joueur « fini » encore
+        // dans le monde du tutoriel : cabane d'essai effacée, kit repris, retour au spawn (avant, il restait coincé)
+        BasesDonnees.Joueur j = BasesDonnees.get(p.server).siConnu(p.getUUID());
+        if (j != null && !FINS.containsKey(p.getUUID()) && (j.finEnAttente
+            || j.etape == BasesDonnees.Etape.FINI && MondeBases.estTuto(p.level()) && !p.isCreative() && !p.isSpectator())) {
+            plusTard(p, () -> terminer(p));
+            return;
+        }
+        if (!occupe(p.server, p.getUUID())) {
             reprendreKit(p);
         }
     }
@@ -279,6 +308,18 @@ public final class Tutoriel {
             BasesDonnees.Joueur j = d.joueur(id);
             switch (j.etape) {
                 case AUCUNE -> {
+                    // tutoriel dû à la création de son clan (1.21.0) : seulement au spawn, hors combat, debout, hors match
+                    if (j.tutoClan) {
+                        if (TutorielApi.peutPartir(p)) {
+                            j.tutoClan = false;
+                            d.marquer();
+                            ATTENTES.remove(id);
+                            if (!aUneBase(p)) {
+                                lancer(p);
+                            }
+                        }
+                        continue;
+                    }
                     if (aUneBase(p)) {
                         j.etape = BasesDonnees.Etape.FINI;
                         d.marquer();
@@ -305,6 +346,13 @@ public final class Tutoriel {
                 case PHASE -> {
                     ATTENTES.remove(id);
                     suivre(p, d, j);
+                }
+                case FINI -> {
+                    ATTENTES.remove(id);
+                    // fini mais encore dans le monde du tutoriel sans effacement prévu (1.21.0) : ramené au spawn
+                    if (MondeBases.estTuto(p.level()) && !FINS.containsKey(id)) {
+                        terminer(p);
+                    }
                 }
                 default -> ATTENTES.remove(id);
             }
@@ -383,6 +431,7 @@ public final class Tutoriel {
             // 1.16.0 : plus de sas (la cabane d'essai disparaît) ; tour de caméra, puis cabane effacée et retour au spawn
             cinemaFin(p, j);
             FINS.put(p.getUUID(), p.server.overworld().getGameTime() + FIN_DELAI);
+            j.finEnAttente = true;
             j.etape = BasesDonnees.Etape.FINI;
             j.batiment = -1L;
             d.marquer();
@@ -524,7 +573,7 @@ public final class Tutoriel {
 
     static boolean aUneBase(ServerPlayer p) {
         Group g = GroupData.get(p.server).getByMember(p.getUUID());
-        return g != null && ClaimManager.getByGroupAnywhere(p.server, g.id()) != null;
+        return g != null && ClaimManager.getRealBase(p.server, g.id()) != null;
     }
 
     private static boolean cinematiqueVue(ServerPlayer p) {
@@ -590,9 +639,18 @@ public final class Tutoriel {
             FORCES.remove(p.getUUID());
             return;
         }
+        // 1.21.0 : jamais en combat, à terre ni en match (le tutoriel servait à fuir un combat) ; nouvel essai à la seconde
+        if (!TutorielApi.libre(p)) {
+            if (force) {
+                SEQUENCES.put(p.getUUID(), T_ENVOI - 20);
+                FORCES.add(p.getUUID());
+            }
+            avertir(p, T.t("crac.tuto.attente_combat", "[Tuto] Départ pour le tutoriel dès que tu n'es plus en combat."));
+            return;
+        }
         Vec3 dest = Points.auHasard(bases, p);
         if (dest == null) {
-            T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée dans le monde des bases : réessaie dans un instant."),
+            T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée : réessaie dans un instant."),
                 ChatFormatting.RED);
             int n = ESSAIS.merge(p.getUUID(), 1, Integer::sum);
             if (force && n < ESSAIS_MAX) {
@@ -621,7 +679,7 @@ public final class Tutoriel {
             return;   // Varga donne les consignes à la radio, une par une (HeraliZ Quêtes)
         }
         // dans le chat une demi-seconde après l'arrivée (écran de chargement du monde passé)
-        Deplacements.apres(p, T.t("crac.tuto.etape1", "[Tuto] 1. Trouve un coin plat qui te plaît. Le monde des bases est en PvP : seul ton contour vert te protège, jusqu'à la fin du tutoriel.")
+        Deplacements.apres(p, T.t("crac.tuto.etape1", "[Tuto] 1. Trouve un coin plat qui te plaît. Seul ton contour vert te protège, jusqu'à la fin du tutoriel.")
             .withStyle(ChatFormatting.YELLOW));
         Deplacements.apres(p, T.t("crac.tuto.etape2", "[Tuto] 2. Plan de construction en main, clic droit : pose %s fondations côte à côte.",
             String.valueOf(CABANE.get(PieceKind.FOUNDATION))).withStyle(ChatFormatting.YELLOW));
@@ -1087,6 +1145,12 @@ public final class Tutoriel {
         }
     }
 
+    /** Groupe de la cabane d'essai (ClaimBlockHandler) : celui de son clan, sinon un groupe à son nom (1.21.0). */
+    @Nullable
+    public static Group groupeEssai(ServerPlayer p) {
+        return groupe(p);
+    }
+
     /** Le groupe CRac du joueur ; s'il n'en a pas, celui de son clan (chef) ou un groupe à son nom, créé ici. */
     private static Group groupe(ServerPlayer p) {
         GroupData data = GroupData.get(p.server);
@@ -1150,6 +1214,8 @@ public final class Tutoriel {
         d.marquer();
         oublier(p.getUUID());
         effacerGuide(p);
+        // comme une vraie fin (1.21.0) : cabane d'essai effacée, kit repris, retour au spawn s'il est dans le tutoriel
+        terminer(p);
         Reply.ok(src, T.t("crac.tuto.fini_staff", "Tutoriel de %s terminé : il est libre.", p.getGameProfile().getName())
             .withStyle(ChatFormatting.GREEN));
         Crac.LOGGER.info("[CRac] tutoriel de {} terminé par le staff ({})", p.getGameProfile().getName(), src.getTextName());
@@ -1158,15 +1224,15 @@ public final class Tutoriel {
 
     private static int lancer(CommandSourceStack src, ServerPlayer p) {
         if (src.getServer().getLevel(MondeBases.TUTO) == null) {
-            Reply.fail(src, T.t("crac.bases.absent", "Le monde des bases n'existe pas sur ce serveur (crac:bases)."));
+            Reply.fail(src, T.t("crac.tuto.monde_absent", "Le monde du tutoriel n'existe pas sur ce serveur (crac:bases)."));
             return 0;
         }
         boolean base = aUneBase(p);
         lancer(p);
         Reply.ok(src, (base
-            ? T.t("crac.tuto.lance_base", "Tutoriel lancé pour %s : titres, kit, puis envoi dans le monde des bases. Il a déjà une base : pas de nouvelle protection de base.",
+            ? T.t("crac.tuto.lance_base", "Tutoriel lancé pour %s : kit, puis envoi dans le monde du tutoriel. Il a déjà une base : pas de nouvelle protection de base.",
                 p.getGameProfile().getName())
-            : T.t("crac.tuto.lance", "Tutoriel lancé pour %s : titres, kit, puis envoi dans le monde des bases.", p.getGameProfile().getName()))
+            : T.t("crac.tuto.lance", "Tutoriel lancé pour %s : kit, puis envoi dans le monde du tutoriel.", p.getGameProfile().getName()))
             .withStyle(ChatFormatting.GREEN));
         return 1;
     }

@@ -84,6 +84,10 @@ public final class ClaimBlockHandler {
             g = fr.heraliz.crac.heraliz.BasesClans.groupe(level.getServer(), player.getUUID());
             if (g == null && fr.heraliz.crac.bases.MondeBases.estTuto(level)) {
                 g = GroupData.get(level.getServer()).getByMember(player.getUUID());
+                // clan dissous ou quitté pendant le tutoriel (1.21.0) : un groupe à son nom pour sa cabane d'essai
+                if (g == null && fr.heraliz.crac.bases.Tutoriel.enCours(player)) {
+                    g = fr.heraliz.crac.bases.Tutoriel.groupeEssai(player);
+                }
             }
             if (g == null && !player.getAbilities().instabuild) {
                 return Component.translatableWithFallback("crac.claim.sans_clan",
@@ -145,8 +149,11 @@ public final class ClaimBlockHandler {
             return "crac.claim.no_group";
         }
         boolean clan = fr.heraliz.crac.heraliz.BasesClans.estGroupeClan(level.getServer(), g.id());
-        if (clan ? !fr.heraliz.crac.heraliz.BasesClans.peutGerer(player.getUUID()) && !player.getAbilities().instabuild
-            : !g.isOwner(player.getUUID())) {
+        // cabane d'essai du tutoriel (1.21.0) : ni droit de clan ni propriétaire demandés (membre sans BASE_GERER,
+        // chef qui a perdu la direction en route) ; elle disparaît à la fin
+        boolean essai = fr.heraliz.crac.bases.MondeBases.estTuto(level) && fr.heraliz.crac.bases.Tutoriel.enCours(player);
+        if (!essai && (clan ? !fr.heraliz.crac.heraliz.BasesClans.peutGerer(player.getUUID()) && !player.getAbilities().instabuild
+            : !g.isOwner(player.getUUID()))) {
             return clan ? "crac.claim.gerer_clan" : "crac.claim.owner_only";
         }
         // une base par clan (1.16.0) : un groupe ne tient qu'un claim (one_per_group plus bas), plus de limite par joueur
@@ -160,7 +167,7 @@ public final class ClaimBlockHandler {
         if (RaidBlockManager.isZoneRaidBlocked(level, pos)) {
             return "crac.claim.raid_zone";
         }
-        if (ClaimManager.getByGroupAnywhere(level.getServer(), g.id()) != null) {
+        if (ClaimManager.getRealBase(level.getServer(), g.id()) != null) {
             return "crac.claim.one_per_group";
         }
         if (ClaimManager.tooCloseTo(level, pos, g.id()) != null) {

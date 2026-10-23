@@ -251,7 +251,7 @@ public final class Protections {
             T.titre(p, T.t("crac.protection.titre", "Base protégée %s jours", nb).withStyle(ChatFormatting.GREEN),
                 T.t("crac.protection.sous_titre", "Personne ne peut la raider d'ici là."), 80);
         }
-        T.chat(p, T.t("crac.protection.accordee", "Ta base est protégée %s jours : personne ne peut la raider. Le monde des bases reste en PvP.",
+        T.chat(p, T.t("crac.protection.accordee", "Ta base est protégée %s jours : personne ne peut la raider. La carte reste en PvP.",
             nb), ChatFormatting.GREEN);
         Crac.LOGGER.info("[CRac] base du groupe {} ({}) protégée {} jours", g.name(), p.getGameProfile().getName(), nb);
         majTextes(p.server);

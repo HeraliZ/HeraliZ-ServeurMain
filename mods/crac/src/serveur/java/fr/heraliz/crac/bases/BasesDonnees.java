@@ -77,6 +77,10 @@ public final class BasesDonnees extends SafeSavedData {
         public long batiment = -1L;
         /** Côté de la première fondation où va la deuxième (0 à 3), -1 : n'importe lequel. */
         public int arete = -1;
+        /** Tutoriel des bases dû à la création de son clan, lancé à son prochain passage au spawn hors combat (1.21.0). */
+        public boolean tutoClan;
+        /** Fin du tutoriel en attente (tour de caméra), gardée au redémarrage : effacement de la cabane à la connexion. */
+        public boolean finEnAttente;
         /** Homes du joueur, par nom (ordre de création). */
         public final Map<String, Home> homes = new LinkedHashMap<>();
 
@@ -90,6 +94,8 @@ public final class BasesDonnees extends SafeSavedData {
             t.putBoolean("HomeAuto", this.homeAuto);
             t.putLong("Batiment", this.batiment);
             t.putInt("Arete", this.arete);
+            t.putBoolean("TutoClan", this.tutoClan);
+            t.putBoolean("FinAttente", this.finEnAttente);
             ListTag hs = new ListTag();
             this.homes.forEach((nom, h) -> hs.add(h.save(nom)));
             t.put("Homes", hs);
@@ -106,6 +112,8 @@ public final class BasesDonnees extends SafeSavedData {
             j.homeAuto = t.getBoolean("HomeAuto");
             j.batiment = t.contains("Batiment") ? t.getLong("Batiment") : -1L;
             j.arete = t.contains("Arete") ? t.getInt("Arete") : -1;
+            j.tutoClan = t.getBoolean("TutoClan");
+            j.finEnAttente = t.getBoolean("FinAttente");
             ListTag hs = t.getList("Homes", Tag.TAG_COMPOUND);
             for (int i = 0; i < hs.size(); i++) {
                 CompoundTag h = hs.getCompound(i);

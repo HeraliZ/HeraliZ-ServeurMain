@@ -65,13 +65,34 @@ public final class TutorielApi {
      * monde à part s'il ne l'a jamais fait ; sa cabane d'essai disparaît à la fin.
      */
     public static void clanCree(ServerPlayer chef) {
-        BasesDonnees.Joueur j = BasesDonnees.get(chef.server).siConnu(chef.getUUID());
+        BasesDonnees d = BasesDonnees.get(chef.server);
+        BasesDonnees.Joueur j = d.siConnu(chef.getUUID());
         if (j != null && j.etape != BasesDonnees.Etape.AUCUNE || etat(chef) != 0 || Tutoriel.enCours(chef)) {
+            return;
+        }
+        // 1.21.0 : seulement au spawn, hors combat, debout et hors match (créer un clan téléportait n'importe où, même en
+        // plein combat ou en duel) ; sinon il part à son prochain passage au spawn (Tutoriel.seconde)
+        if (!peutPartir(chef)) {
+            d.joueur(chef.getUUID()).tutoClan = true;
+            d.marquer();
+            T.chat(chef, T.t("crac.tuto.clan_plus_tard", "[Tuto] Ton clan est créé ! Retourne au spawn : le Commandant Varga t'y montrera comment bâtir une base."),
+                net.minecraft.ChatFormatting.GOLD);
             return;
         }
         T.chat(chef, T.t("crac.tuto.clan", "[Tuto] Ton clan est créé ! Le Commandant Varga va te montrer comment bâtir une base."),
             net.minecraft.ChatFormatting.GOLD);
         Tutoriel.lancer(chef);
+    }
+
+    /** Ni en combat, ni à terre, ni en match, en vie : le tutoriel peut l'emmener. */
+    static boolean libre(ServerPlayer p) {
+        return p.isAlive() && fr.heraliz.crac.heraliz.Heraliz.combatSecondsLeft(p) <= 0
+            && !fr.heraliz.crac.heraliz.SaisonPont.aTerre(p) && !p.getPersistentData().getBoolean(Deplacements.EN_MATCH);
+    }
+
+    /** Au spawn et {@link #libre} : le tutoriel dû à la création du clan peut partir. */
+    static boolean peutPartir(ServerPlayer p) {
+        return Deplacements.auSpawn(p) && libre(p);
     }
 
     /** Ouvre la fiche technique des bases ({@code /base info}) chez ce joueur (Quêtes : après la présentation du Bâtisseur). */

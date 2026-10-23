@@ -46,7 +46,11 @@ final class FicheBase {
 
     static void commandes(CommandDispatcher<CommandSourceStack> d) {
         d.register(Commands.literal("base").then(Commands.literal("info").executes(c -> {
-            envoyer(c.getSource().getPlayerOrException());
+            ServerPlayer p = c.getSource().getPlayerOrException();
+            if (Deplacements.refuse(p)) {
+                return 0;
+            }
+            envoyer(p);
             return 1;
         })));
     }

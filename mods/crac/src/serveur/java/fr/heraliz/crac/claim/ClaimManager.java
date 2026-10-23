@@ -93,6 +93,27 @@ public final class ClaimManager {
         return null;
     }
 
+    /**
+     * The group's real base: its claim in any world but the tutorial one (the tutorial hut, erased at the end, never
+     * stops a clan from placing its base on the map; CRac 1.21.0), or null.
+     */
+    @Nullable
+    public static Claim getRealBase(MinecraftServer server, UUID groupId) {
+        if (server == null) {
+            return null;
+        }
+        for (ServerLevel l : server.getAllLevels()) {
+            if (fr.heraliz.crac.bases.MondeBases.estTuto(l)) {
+                continue;
+            }
+            Claim c = ClaimData.get(l).getByGroup(groupId);
+            if (c != null) {
+                return c;
+            }
+        }
+        return null;
+    }
+
     /** The level holding the group's claim, or null. */
     @Nullable
     public static ServerLevel levelOfGroupClaim(MinecraftServer server, UUID groupId) {

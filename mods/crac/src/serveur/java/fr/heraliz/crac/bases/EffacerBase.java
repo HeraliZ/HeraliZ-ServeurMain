@@ -58,6 +58,15 @@ final class EffacerBase {
     private static int effacer(CommandSourceStack src, GameProfile profil) {
         MinecraftServer server = src.getServer();
         UUID joueur = profil.getId();
+        // une base par clan (1.21.0) : sur un simple membre, ce serait la base de TOUT son clan ; seulement sur le chef
+        Group g = GroupData.get(server).getByMember(joueur);
+        if (g != null && fr.heraliz.crac.heraliz.BasesClans.estGroupeClan(server, g.id()) && !g.isOwner(joueur)) {
+            String tag = g.tag();
+            String nom = profil.getName();
+            src.sendFailure(T.t("crac.base.effacer.membre",
+                "%s n'est pas le chef de son clan : c'est la base du clan [%s]. Pour l'effacer, vise son chef.", nom, tag));
+            return 0;
+        }
         int[] r = effacerDans(server, joueur, null);
         int pieces = r[0];
         boolean claim = r[1] > 0;
@@ -80,34 +89,57 @@ final class EffacerBase {
         int pieces = 0;
         int claims = 0;
         Group g = GroupData.get(server).getByMember(joueur);
-        if (g != null) {
-            for (ServerLevel level : server.getAllLevels()) {
-                if (seul != null && level != seul) {
-                    continue;
-                }
-                Claim c = ClaimData.get(level).getByGroup(g.id());
-                if (c == null) {
-                    continue;
-                }
-                BlockPos a = c.anchor();
-                BlockPos min = new BlockPos(a.getX() - c.radius(), Math.max(level.getMinBuildHeight(), a.getY() - c.yRadius()), a.getZ() - c.radius());
-                BlockPos max = new BlockPos(a.getX() + c.radius(), Math.min(level.getMaxBuildHeight() - 1, a.getY() + c.yRadius()), a.getZ() + c.radius());
-                Set<Piece> tout = new LinkedHashSet<>(AdminManager.piecesIn(level, min, max));
-                Building b = StructureService.buildingOfClaim(level, a);
-                if (b != null) {
-                    tout.addAll(StructureStore.get(level).piecesOf(b));
-                }
-                vider(level, min, max);
-                pieces += retirer(level, tout);
-                AdminManager.removePlacables(level, min, max);
-                // le Claim Block sans le faire tomber, puis le claim
-                level.removeBlock(a, false);
-                ClaimManager.releaseClaim(level, g.id());
-                AccesBase.get(server).effacer(g.id());   // accès donnés dans l'armoire
-                C2SRequestNearbyClaimsTraitement.pushAll(level);
-                ramasser(level, min, max);
-                claims++;
+        // les claims à effacer : celui de son groupe ; dans le monde du tutoriel, l'armoire posée sur SA cabane, même sous
+        // un groupe qui n'est plus le sien (clan dissous ou quitté pendant le tutoriel, 1.21.0)
+        List<Claim> aEffacer = new ArrayList<>();
+        List<ServerLevel> mondes = new ArrayList<>();
+        for (ServerLevel level : server.getAllLevels()) {
+            if (seul != null && level != seul) {
+                continue;
             }
+            // monde du tutoriel : seulement les armoires posées sur SES pièces (deux membres d'un clan peuvent y être)
+            Claim cg = g == null || seul != null ? null : ClaimData.get(level).getByGroup(g.id());
+            if (cg != null) {
+                aEffacer.add(cg);
+                mondes.add(level);
+            }
+            if (seul != null) {
+                for (Claim c : new ArrayList<>(ClaimData.get(level).all())) {
+                    if (c == cg) {
+                        continue;
+                    }
+                    Building b = StructureService.buildingOfClaim(level, c.anchor());
+                    if (b != null && StructureStore.get(level).piecesOf(b).stream().anyMatch(x -> joueur.equals(x.owner))) {
+                        aEffacer.add(c);
+                        mondes.add(level);
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < aEffacer.size(); i++) {
+            Claim c = aEffacer.get(i);
+            ServerLevel level = mondes.get(i);
+            BlockPos a = c.anchor();
+            BlockPos min = new BlockPos(a.getX() - c.radius(), Math.max(level.getMinBuildHeight(), a.getY() - c.yRadius()), a.getZ() - c.radius());
+            BlockPos max = new BlockPos(a.getX() + c.radius(), Math.min(level.getMaxBuildHeight() - 1, a.getY() + c.yRadius()), a.getZ() + c.radius());
+            Set<Piece> tout = new LinkedHashSet<>(AdminManager.piecesIn(level, min, max));
+            Building b = StructureService.buildingOfClaim(level, a);
+            if (b != null) {
+                tout.addAll(StructureStore.get(level).piecesOf(b));
+            }
+            vider(level, min, max);
+            pieces += retirer(level, tout);
+            AdminManager.removePlacables(level, min, max);
+            // l'armoire sans la faire tomber (et sa case du haut, 1.21.0), puis le claim
+            if (level.getBlockState(a.above()).getBlock() instanceof fr.heraliz.crac.block.ClaimBlockHaut) {
+                level.removeBlock(a.above(), false);
+            }
+            level.removeBlock(a, false);
+            ClaimManager.releaseClaim(level, c.groupId());
+            AccesBase.get(server).effacer(c.groupId());   // accès donnés dans l'armoire
+            C2SRequestNearbyClaimsTraitement.pushAll(level);
+            ramasser(level, min, max);
+            claims++;
         }
         // ses bâtiments sans claim (cabane du tutoriel pas finie, essais)
         for (ServerLevel level : server.getAllLevels()) {

@@ -46,6 +46,10 @@ public final class BasesClans extends SafeSavedData {
     private final Set<UUID> kits = new HashSet<>();
     /** Clans en attente de ce matériel : heure (ms) où on les a vus sans lui (30 s pour que le tutoriel démarre). */
     private final Map<UUID, Long> attenteKit = new HashMap<>();
+    /** Ce qui n'est pas entré dans le coffre du clan (plein) : redéposé plus tard, jamais perdu (1.21.0). */
+    private final Map<UUID, java.util.List<net.minecraft.world.item.ItemStack>> resteKit = new HashMap<>();
+    /** Clans dont le chef a déjà été prévenu que le coffre est plein (depuis le démarrage). */
+    private static final Set<UUID> PREVENUS = new HashSet<>();
     private boolean premierPassage = true;
     private static int ticks;
 
@@ -177,6 +181,7 @@ public final class BasesClans extends SafeSavedData {
         d.vus.clear();
         d.kits.clear();
         d.attenteKit.clear();
+        d.resteKit.clear();
         d.setDirty();
         CoeurDeplacement.toutOublier(server);
         Purge.Donnees p = Purge.Donnees.get(server);
@@ -204,9 +209,18 @@ public final class BasesClans extends SafeSavedData {
             }
             CoeursClans.oublier(server, gid);
         }
+        java.util.List<Claim> essais = new java.util.ArrayList<>();
+        ServerLevel tuto = server.getLevel(fr.heraliz.crac.bases.MondeBases.TUTO);
         for (ServerLevel level : server.getAllLevels()) {
             Claim c = ClaimData.get(level).getByGroup(gid);
             if (c == null) {
+                continue;
+            }
+            if (level == tuto) {
+                // cabane d'essai du tutoriel (1.21.0) : gardée, passée plus bas au groupe à son nom (sinon le chef reste
+                // coincé à l'étape de l'armoire, son armoire disparue)
+                ClaimManager.removeByAnchor(level, c.anchor());
+                essais.add(c);
                 continue;
             }
             BlockPos a = c.anchor();
@@ -220,6 +234,28 @@ public final class BasesClans extends SafeSavedData {
         Group g = data.getById(gid);
         if (g != null) {
             data.disband(g);
+        }
+        for (Claim c : essais) {
+            BlockPos a = c.anchor();
+            fr.heraliz.crac.build.model.Building b = fr.heraliz.crac.build.world.StructureService.buildingOfClaim(tuto, a);
+            ServerPlayer poseur = null;
+            if (b != null) {
+                for (fr.heraliz.crac.build.model.Piece x : fr.heraliz.crac.build.world.StructureStore.get(tuto).piecesOf(b)) {
+                    ServerPlayer sp = server.getPlayerList().getPlayer(x.owner);
+                    if (sp != null && fr.heraliz.crac.bases.Tutoriel.occupe(server, x.owner)) {
+                        poseur = sp;
+                        break;
+                    }
+                }
+            }
+            Group essai = poseur == null ? null : fr.heraliz.crac.bases.Tutoriel.groupeEssai(poseur);
+            if (essai != null) {
+                ClaimManager.addClaim(tuto, a, essai.id(), c.tier());
+            } else {
+                tuto.removeBlock(a.above(), false);
+                tuto.removeBlock(a, false);
+            }
+            C2SRequestNearbyClaimsTraitement.pushAll(tuto);
         }
     }
 
@@ -242,6 +278,24 @@ public final class BasesClans extends SafeSavedData {
         for (int i = 0; i < k.size(); i++) {
             if (k.getCompound(i).hasUUID("Clan")) {
                 d.kits.add(k.getCompound(i).getUUID("Clan"));
+            }
+        }
+        ListTag r = tag.getList("ResteKit", 10);
+        for (int i = 0; i < r.size(); i++) {
+            CompoundTag t = r.getCompound(i);
+            if (!t.hasUUID("Clan")) {
+                continue;
+            }
+            java.util.List<net.minecraft.world.item.ItemStack> l = new java.util.ArrayList<>();
+            ListTag os = t.getList("Objets", 10);
+            for (int k2 = 0; k2 < os.size(); k2++) {
+                net.minecraft.world.item.ItemStack st = net.minecraft.world.item.ItemStack.of(os.getCompound(k2));
+                if (!st.isEmpty()) {
+                    l.add(st);
+                }
+            }
+            if (!l.isEmpty()) {
+                d.resteKit.put(t.getUUID("Clan"), l);
             }
         }
         d.premierPassage = d.vus.isEmpty();
@@ -273,6 +327,18 @@ public final class BasesClans extends SafeSavedData {
             k.add(t);
         }
         tag.put("Kits", k);
+        ListTag r = new ListTag();
+        for (Map.Entry<UUID, java.util.List<net.minecraft.world.item.ItemStack>> e : this.resteKit.entrySet()) {
+            CompoundTag t = new CompoundTag();
+            t.putUUID("Clan", e.getKey());
+            ListTag os = new ListTag();
+            for (net.minecraft.world.item.ItemStack st : e.getValue()) {
+                os.add(st.save(new CompoundTag()));
+            }
+            t.put("Objets", os);
+            r.add(t);
+        }
+        tag.put("ResteKit", r);
         return tag;
     }
 
@@ -413,7 +479,7 @@ public final class BasesClans extends SafeSavedData {
                     liberer(server, d, clan);
                 }
             }
-            if (d.vus.retainAll(existants) | d.kits.retainAll(existants)) {
+            if (d.vus.retainAll(existants) | d.kits.retainAll(existants) | d.resteKit.keySet().retainAll(existants)) {
                 d.setDirty();
             }
             d.attenteKit.keySet().retainAll(existants);
@@ -425,6 +491,14 @@ public final class BasesClans extends SafeSavedData {
          * (HeraliZ Clans 3.5.0, {@code ClansApi.deposerCoffre}, par réflexion : la copie de Clans de libs/ ne l'a pas) :
          * 30 s après sa création, et seulement quand le chef a fini le tutoriel des bases (sinon à la fin de celui-ci).
          */
+        private static java.util.List<net.minecraft.world.item.ItemStack> copie(java.util.List<net.minecraft.world.item.ItemStack> l) {
+            java.util.List<net.minecraft.world.item.ItemStack> c = new java.util.ArrayList<>();
+            for (net.minecraft.world.item.ItemStack s : l) {
+                c.add(s.copy());
+            }
+            return c;
+        }
+
         static void kits(MinecraftServer server, BasesClans d) {
             java.lang.reflect.Method deposer;
             try {
@@ -434,17 +508,24 @@ public final class BasesClans extends SafeSavedData {
             }
             long now = System.currentTimeMillis();
             for (fr.heralisz.clans.api.ClanInfo info : fr.heralisz.clans.api.ClansApi.tous()) {
-                if (d.kits.contains(info.id())) {
-                    continue;
+                boolean premier = !d.kits.contains(info.id());
+                java.util.List<net.minecraft.world.item.ItemStack> kit;
+                if (!premier) {
+                    // déjà rangé : seulement ce qui attendait une place (coffre plein)
+                    kit = d.resteKit.get(info.id());
+                    if (kit == null || kit.isEmpty()) {
+                        continue;
+                    }
+                } else {
+                    long vu = d.attenteKit.computeIfAbsent(info.id(), c -> now);
+                    if (now - vu < 30_000L || info.chef() != null && fr.heraliz.crac.bases.Tutoriel.occupe(server, info.chef())) {
+                        continue;
+                    }
+                    kit = fr.heraliz.crac.bases.Tutoriel.kitPremiereBase();
                 }
-                long vu = d.attenteKit.computeIfAbsent(info.id(), c -> now);
-                if (now - vu < 30_000L || info.chef() != null && fr.heraliz.crac.bases.Tutoriel.occupe(server, info.chef())) {
-                    continue;
-                }
-                java.util.List<net.minecraft.world.item.ItemStack> kit = fr.heraliz.crac.bases.Tutoriel.kitPremiereBase();
                 Object reste;
                 try {
-                    reste = deposer.invoke(null, info.id(), kit);
+                    reste = deposer.invoke(null, info.id(), copie(kit));
                 } catch (ReflectiveOperationException | RuntimeException e) {
                     Crac.LOGGER.error("[CRac] coffre du clan [{}] : matériel de la première base non rangé", info.tag(), e);
                     continue;
@@ -452,8 +533,31 @@ public final class BasesClans extends SafeSavedData {
                 d.kits.add(info.id());
                 d.attenteKit.remove(info.id());
                 d.setDirty();
-                if (reste instanceof java.util.List<?> l && !l.isEmpty()) {
-                    Crac.LOGGER.warn("[CRac] coffre du clan [{}] plein : {} non rangé(s)", info.tag(), l);
+                java.util.List<net.minecraft.world.item.ItemStack> restant = new java.util.ArrayList<>();
+                if (reste instanceof java.util.List<?> l) {
+                    for (Object o : l) {
+                        if (o instanceof net.minecraft.world.item.ItemStack st && !st.isEmpty()) {
+                            restant.add(st.copy());
+                        }
+                    }
+                }
+                if (!restant.isEmpty()) {
+                    // coffre plein (1.21.0) : rien n'est perdu, le reste est redéposé dès qu'il y a de la place
+                    d.resteKit.put(info.id(), restant);
+                    if (PREVENUS.add(info.id())) {
+                        Crac.LOGGER.warn("[CRac] coffre du clan [{}] plein : {} objet(s) du matériel de la première base en attente", info.tag(), restant.size());
+                        ServerPlayer chef = info.chef() == null ? null : server.getPlayerList().getPlayer(info.chef());
+                        if (chef != null) {
+                            chef.sendSystemMessage(Component.translatableWithFallback("crac.clan.kit_plein",
+                                "Le coffre du clan est plein : une partie du matériel de la première base attend une place. Libère des cases (/clan coffre) : il y sera rangé tout seul.")
+                                .withStyle(ChatFormatting.YELLOW));
+                        }
+                    }
+                } else if (d.resteKit.remove(info.id()) != null) {
+                    PREVENUS.remove(info.id());
+                }
+                if (!premier) {
+                    continue;
                 }
                 Crac.LOGGER.info("[CRac] matériel de la première base rangé dans le coffre du clan [{}]", info.tag());
                 for (UUID m : info.membres().keySet()) {

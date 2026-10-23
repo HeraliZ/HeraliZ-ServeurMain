@@ -160,6 +160,9 @@ public final class Homes {
     // ---------------------------------------------------------------------------------------------- /sethome
 
     static int sethome(ServerPlayer p, @Nullable String brut) {
+        if (Deplacements.refuse(p)) {
+            return 0;
+        }
         String n = nom(brut);
         if (n == null) {
             T.chat(p, T.t("crac.home.nom_invalide", "Nom de home invalide : lettres, chiffres, _ ou -, 16 au plus."), ChatFormatting.RED);
@@ -168,7 +171,7 @@ public final class Homes {
         boolean staff = Deplacements.staff(p);
         if (!staff) {
             if (!MondeBases.estBases(p.level())) {
-                T.chat(p, T.t("crac.home.sethome_monde", "/sethome ne marche que dans le monde des bases, dans ta base."), ChatFormatting.RED);
+                T.chat(p, T.t("crac.home.sethome_monde", "/sethome ne marche que sur la carte, dans ta base."), ChatFormatting.RED);
                 return 0;
             }
             if (!Deplacements.dansSaBase(p)) {
@@ -224,6 +227,9 @@ public final class Homes {
     // ---------------------------------------------------------------------------------------------- /delhome, /homes
 
     static int delhome(ServerPlayer p, String brut) {
+        if (Deplacements.refuse(p)) {
+            return 0;
+        }
         String n = nom(brut);
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
@@ -238,6 +244,9 @@ public final class Homes {
     }
 
     static int homes(ServerPlayer p) {
+        if (Deplacements.refuse(p)) {
+            return 0;
+        }
         BasesDonnees.Joueur j = BasesDonnees.get(p.server).joueur(p.getUUID());
         migrer(p, j);
         if (j.homes.isEmpty()) {
@@ -260,14 +269,17 @@ public final class Homes {
     // ---------------------------------------------------------------------------------------------- /home
 
     static int home(ServerPlayer p, @Nullable String brut) {
+        if (Deplacements.refuse(p)) {
+            return 0;
+        }
         boolean staff = Deplacements.staff(p);
         if (!staff && !Deplacements.auSpawn(p)) {
-            T.chat(p, T.t("crac.home.depuis_spawn", "/home ne marche que depuis le spawn. Retourne au spawn avec /spawn depuis ta base."),
+            T.chat(p, T.t("crac.home.depuis_spawn", "/home ne marche que depuis le spawn."),
                 ChatFormatting.RED);
             return 0;
         }
         if (p.server.getLevel(MondeBases.BASES) == null) {
-            T.chat(p, T.t("crac.bases.absent", "Le monde des bases n'existe pas sur ce serveur (crac:bases)."), ChatFormatting.RED);
+            T.chat(p, T.t("crac.bases.absent", "La carte n'est pas chargée sur ce serveur : préviens le staff."), ChatFormatting.RED);
             return 0;
         }
         BasesDonnees d = BasesDonnees.get(p.server);
