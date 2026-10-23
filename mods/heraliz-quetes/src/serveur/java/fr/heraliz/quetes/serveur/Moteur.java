@@ -707,8 +707,16 @@ final class Moteur {
         }
     }
 
+    /** Dernier essai de code par joueur (un toutes les 2 s : pas de recherche du code par force brute). */
+    private static final java.util.Map<java.util.UUID, Long> ESSAI_CODE = new java.util.HashMap<>();
+
     /** Code tapé sur un coffre à code. */
     static void code(ServerPlayer p, String point, String code) {
+        long now = System.currentTimeMillis();
+        Long dernier = ESSAI_CODE.get(p.getUUID());
+        if (dernier != null && now - dernier < 2000L) return;
+        ESSAI_CODE.put(p.getUUID(), now);
+        if (ESSAI_CODE.size() > 512) ESSAI_CODE.values().removeIf(t -> now - t > 60_000L);
         Points.Point pt = points().point(point);
         if (pt == null || !pt.monde().equals(p.level().dimension().location().toString())
                 || pt.pos().distToCenterSqr(p.position()) > 8 * 8) return;
