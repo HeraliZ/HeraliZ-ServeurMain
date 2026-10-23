@@ -41,6 +41,7 @@ public final class ClientQuetes implements Partie {
         MinecraftForge.EVENT_BUS.addListener(Presentation::regard);
         MinecraftForge.EVENT_BUS.addListener(Presentation::main);
         MinecraftForge.EVENT_BUS.addListener(Presentation::interface_);
+        MinecraftForge.EVENT_BUS.addListener(Presentation::aide);
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             HudQuetes.vider();
             RadioVarga.vider();

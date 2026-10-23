@@ -174,7 +174,12 @@ final class WarpsServeur {
             ServerPlayer p = srv.getPlayerList().getPlayer(en.getKey());
             Attente a = en.getValue();
             if (p == null || p.isDeadOrDying()) return true;
-            if (p.position().distanceToSqr(a.depart()) > 0.09 || p.getHealth() < a.vie() || !auSpawn(p)) {
+            Vec3 nd = Immobile.suivre(p, a.depart());
+            if (nd != a.depart() && nd != null) {
+                a = new Attente(a.warp(), nd, a.vie(), a.fin());
+                en.setValue(a);
+            }
+            if (nd == null || p.getHealth() < a.vie() || !auSpawn(p)) {
                 refus(p, Component.translatableWithFallback("heraliz_grades.warp.annule", "Téléportation annulée : tu as bougé."));
                 return true;
             }

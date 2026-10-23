@@ -167,6 +167,11 @@ public final class ServeurQuetes implements Partie {
                 if (a.cle().equals(j.suivie)) j.suivie = "";
             }
             case 3 -> Moteur.abandonner(p, a.cle(), false);
+            case 4 -> {
+                // Espace maintenu pendant la visite du Guide (1.10.4) : visite passée, comme finie
+                Accueil.passerVisite(p);
+                return;
+            }
             default -> {
                 return;
             }

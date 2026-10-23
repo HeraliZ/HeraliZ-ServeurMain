@@ -361,5 +361,6 @@
   "heraliz_grades.tpa.carte": "/tpa работает только на карте, к игроку на карте.",
   "heraliz_grades.tpa.cible_carte": "%s не на карте.",
   "message.heraliz_grades.trade.objet_match": "Предмет, выданный на матч, нельзя обменять.",
-  "message.heraliz_grades.pb.attends": "Подожди несколько секунд, прежде чем снова запрашивать баланс."
+  "message.heraliz_grades.pb.attends": "Подожди несколько секунд, прежде чем снова запрашивать баланс.",
+  "heraliz_grades.kit_depart.recu": "Ты получил стартовый набор: одежда, пистолет, патроны, бита и немного еды."
 }

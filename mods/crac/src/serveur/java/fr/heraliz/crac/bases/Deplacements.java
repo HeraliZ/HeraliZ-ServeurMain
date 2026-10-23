@@ -388,8 +388,12 @@ public final class Deplacements {
                 continue;
             }
             if (p.position().distanceToSqr(a.depart()) > 0.36) {
-                T.chat(p, T.t("crac.depart.annule", "Départ annulé : tu as bougé."), ChatFormatting.RED);
-                continue;
+                // poussé par un autre corps ou repoussé par un coup (1.21.1) : le départ suit le joueur
+                if (!pousse(p)) {
+                    T.chat(p, T.t("crac.depart.annule", "Départ annulé : tu as bougé."), ChatFormatting.RED);
+                    continue;
+                }
+                a = new Attente(a.genre(), p.position(), a.ticks(), a.action());
             }
             int t = a.ticks() - 1;
             if (t <= 0) {
@@ -410,6 +414,19 @@ public final class Deplacements {
                 Crac.LOGGER.error("[CRac] départ (/home, /zone base, /spawn) en erreur", ex);
             }
         }
+    }
+
+    /** Un autre corps touche le joueur, ou il vient d'être repoussé : ce déplacement n'est pas le sien. */
+    private static boolean pousse(ServerPlayer p) {
+        if (p.hurtTime > 0) {
+            return true;
+        }
+        for (net.minecraft.world.entity.Entity e : p.level().getEntities(p, p.getBoundingBox().inflate(0.35))) {
+            if (e.isPushable() && !e.isSpectator()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Blessé pendant l'attente : départ annulé. */

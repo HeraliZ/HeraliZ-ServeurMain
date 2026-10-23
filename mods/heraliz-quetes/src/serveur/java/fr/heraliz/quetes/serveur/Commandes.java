@@ -327,7 +327,7 @@ final class Commandes {
 
     /** Données du joueur gardées à la mort et qui disent « déjà fait » (cinématique, guide, Bâtisseur). */
     private static final String[] MARQUES = {"heraliz_cinematique_vue", "heraliz_cinematique_finie", "heraliz_guide_visite",
-            "heraliz_batisseur_presente"};
+            "heraliz_batisseur_presente", "heraliz_kit_depart"};
 
     /**
      * Remise à zéro complète : cabane d'essai du tutoriel (jamais la base du clan), coffre de match, échanges /trade en

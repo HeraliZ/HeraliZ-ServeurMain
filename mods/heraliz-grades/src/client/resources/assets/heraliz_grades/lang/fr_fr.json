@@ -361,5 +361,6 @@
   "heraliz_grades.tpa.carte": "Le /tpa ne marche que sur la carte, vers un joueur sur la carte.",
   "heraliz_grades.tpa.cible_carte": "%s n'est pas sur la carte.",
   "message.heraliz_grades.trade.objet_match": "Un objet prêté par un match ne s'échange pas.",
-  "message.heraliz_grades.pb.attends": "Attends quelques secondes avant de redemander ton solde."
+  "message.heraliz_grades.pb.attends": "Attends quelques secondes avant de redemander ton solde.",
+  "heraliz_grades.kit_depart.recu": "Tu as reçu ton kit de départ : tenue, pistolet, munitions, batte et de quoi manger."
 }

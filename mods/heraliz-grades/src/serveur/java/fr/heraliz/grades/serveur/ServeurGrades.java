@@ -56,6 +56,8 @@ public final class ServeurGrades implements Partie {
         // warps : menu /warp, seulement depuis le spawn
         WarpsServeur.brancher();
         TpaServeur.brancher();
+        // kit de départ des nouveaux joueurs (23/10)
+        KitDepart.brancher();
         // éditeur des grades des op (Registre des grades, /grades editeur)
         EditeurServeur.brancher();
         // Points Boutique (solde du compte du site) : /boutique, /trade, /pb
@@ -75,6 +77,7 @@ public final class ServeurGrades implements Partie {
         DefinitionsGrades.charger(dossier);
         registre = new RegistreGrades(dossier);
         KitsServeur.demarrer(dossier);
+        KitDepart.charger();
         SurnomsServeur.demarrer(dossier);
         LienDiscord.demarrer(e.getServer());
         Pb.demarrer(e.getServer());

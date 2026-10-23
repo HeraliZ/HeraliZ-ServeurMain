@@ -279,7 +279,12 @@ final class TpaServeur {
                 refus(p, Component.translatableWithFallback("heraliz_grades.tpa.parti", "Ce joueur n'est plus connecté."));
                 return true;
             }
-            if (p.position().distanceToSqr(a.depart()) > 0.09 || p.getHealth() < a.vie()) {
+            Vec3 nd = Immobile.suivre(p, a.depart());
+            if (nd != a.depart() && nd != null) {
+                a = new Attente(a.cible(), nd, a.vie(), a.fin());
+                en.setValue(a);
+            }
+            if (nd == null || p.getHealth() < a.vie()) {
                 refus(p, Component.translatableWithFallback("heraliz_grades.tpa.annule", "Téléportation annulée : tu as bougé."));
                 return true;
             }

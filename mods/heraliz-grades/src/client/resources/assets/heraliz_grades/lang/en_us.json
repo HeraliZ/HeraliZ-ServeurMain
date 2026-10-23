@@ -361,5 +361,6 @@
   "heraliz_grades.tpa.carte": "/tpa only works on the map, towards a player on the map.",
   "heraliz_grades.tpa.cible_carte": "%s is not on the map.",
   "message.heraliz_grades.trade.objet_match": "An item lent by a match cannot be traded.",
-  "message.heraliz_grades.pb.attends": "Wait a few seconds before asking for your balance again."
+  "message.heraliz_grades.pb.attends": "Wait a few seconds before asking for your balance again.",
+  "heraliz_grades.kit_depart.recu": "You received your starter kit: outfit, pistol, ammo, bat and some food."
 }

@@ -115,6 +115,14 @@ final class Accueil {
         Moteur.suiviBientot(p);
     }
 
+    /** Visite du Guide passée par le joueur (Espace maintenu) : notée faite, mot de la fin, suivi vers Varga. */
+    static void passerVisite(ServerPlayer p) {
+        if (VISITES.remove(p.getUUID()) == null) return;
+        persiste(p).putBoolean(VISITE_FAITE, true);
+        radio(p, GUIDE, 0, "heraliz_quetes.guide.fin");
+        Moteur.suiviBientot(p);
+    }
+
     /** Chaque seconde : PNJ suivant de la visite. */
     private static void visiteSeconde(ServerPlayer p) {
         Visite v = VISITES.get(p.getUUID());

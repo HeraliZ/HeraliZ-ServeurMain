@@ -1,0 +1,16 @@
+{
+  "_note": "Kit de départ (mod heraliz-grades, KitDepart) : donné UNE seule fois à chaque nouveau joueur, à son arrivée au spawn après la cinématique (marque heraliz_kit_depart, effacée par /wipe). Relu au démarrage du serveur. Objets : item (identifiant), nombre (1 à 64), nbt (facultatif). Inventaire plein : le reste tombe à ses pieds.",
+  "actif": true,
+  "objets": [
+    {"item": "heraliz_armory:citadin_head", "nombre": 1},
+    {"item": "heraliz_armory:citadin_face", "nombre": 1},
+    {"item": "heraliz_armory:citadin_chest", "nombre": 1},
+    {"item": "heraliz_armory:citadin_legs", "nombre": 1},
+    {"item": "heraliz_armory:citadin_feet", "nombre": 1},
+    {"item": "tacz:modern_kinetic_gun", "nombre": 1, "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}"},
+    {"item": "tacz:ammo", "nombre": 32, "nbt": "{AmmoId:\"tacz:9mm\"}"},
+    {"item": "heralisz_tactical:melee", "nombre": 1, "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat__graphite\"}"},
+    {"item": "geckolib:item_canned_baked_beans", "nombre": 2},
+    {"item": "geckolib:item_water_bottle", "nombre": 1}
+  ]
+}

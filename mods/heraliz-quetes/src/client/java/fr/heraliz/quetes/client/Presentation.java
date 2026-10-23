@@ -17,7 +17,8 @@ import net.minecraftforge.event.TickEvent;
 /**
  * Présentation d'un PNJ (Quêtes 1.8.0, demande du propriétaire du 19/10) : la caméra fait lentement le tour du PNJ
  * (le Bâtisseur, à la première arrivée au spawn après le tutoriel des bases), regard toujours sur lui, pendant que
- * le Commandant Varga parle à la radio ; ni bras ni interface, sauf la radio. Espace maintenu 1 s pour passer. La
+ * le Commandant Varga parle à la radio ; ni bras ni interface, sauf la radio. Espace maintenu 1 s pour passer (1.10.4 : toute
+ * la visite du Guide, indication en bas de l'écran ; caméra devant le visage du PNJ, d'après le lacet de son corps). La
  * caméra ne rentre jamais dans un bloc : elle s'arrête avant le premier mur ou plafond (le spawn est une grotte).
  * Même principe que le tour de la base à la fin du tutoriel (CRac).
  */
@@ -35,6 +36,8 @@ final class Presentation {
     private static int ticks, duree, passer;
     /** Distance de la caméra au PNJ à l'image d'avant (rapprochée d'un coup devant un mur, éloignée en douceur). */
     private static double dist;
+    /** Angle (autour du PNJ) de la direction de son regard : la caméra reste devant lui, jamais dans son dos. */
+    private static double face;
 
     private Presentation() {
     }
@@ -51,6 +54,24 @@ final class Presentation {
         camera.setInvisible(true);
         camera.setNoGravity(true);
         dist = -1;
+        face = 0;
+        net.minecraft.world.entity.LivingEntity pnj = null;
+        double mieux = 4;
+        for (net.minecraft.world.entity.Entity en : mc.level.getEntities(mc.player,
+                new net.minecraft.world.phys.AABB(m.x() - 2, m.y() - 1, m.z() - 2, m.x() + 2, m.y() + 3, m.z() + 2))) {
+            if (en instanceof net.minecraft.world.entity.LivingEntity le && !(en instanceof net.minecraft.world.entity.player.Player)) {
+                double d2 = en.distanceToSqr(m.x(), m.y(), m.z());
+                if (d2 < mieux) {
+                    mieux = d2;
+                    pnj = le;
+                }
+            }
+        }
+        if (pnj != null) {
+            // regard du PNJ (lacet du corps, comme Minecraft : x = -sin, z = cos) : la caméra se place devant son visage
+            double r = Math.toRadians(pnj.yBodyRot);
+            face = Math.atan2(Math.cos(r), -Math.sin(r));
+        }
         placer(0, true);
         mc.setCameraEntity(camera);
     }
@@ -72,7 +93,7 @@ final class Presentation {
 
     /** La caméra sur l'arc autour du PNJ, au tick {@code t}, en partant de devant lui. */
     private static void placer(int t, boolean net) {
-        double a = 2 * Math.PI * TOUR * t / duree;
+        double a = face + 2 * Math.PI * TOUR * ((double) t / duree - 0.5);
         Vec3 voulu = new Vec3(centre.x + rayon * Math.cos(a), centre.y + HAUT, centre.z + rayon * Math.sin(a));
         // jamais dans un bloc : la caméra s'arrête avant le premier mur ou plafond entre le PNJ et sa place
         double libre = voulu.distanceTo(centre);
@@ -107,7 +128,11 @@ final class Presentation {
         }
         ticks++;
         passer = mc.options.keyJump.isDown() ? passer + 1 : 0;
-        if (ticks >= duree || passer > 20 || mc.getCameraEntity() != camera) {
+        if (passer > 20) {
+            // Espace maintenu 1 s : toute la visite du Guide est passée (Quêtes 1.10.4), pas seulement ce PNJ
+            Reseau.CANAL.sendToServer(new Reseau.Action(4, ""));
+            finir();
+        } else if (ticks >= duree || mc.getCameraEntity() != camera) {
             finir();
         } else {
             placer(ticks, false);
@@ -122,6 +147,17 @@ final class Presentation {
         e.setYaw((float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90F);
         e.setPitch((float) (-Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * Mth.RAD_TO_DEG));
         e.setRoll(0F);
+    }
+
+    /** « Maintiens Espace pour passer » en bas de l'écran pendant la présentation. */
+    static void aide(net.minecraftforge.client.event.RenderGuiEvent.Post e) {
+        if (camera == null) return;
+        Minecraft mc = Minecraft.getInstance();
+        net.minecraft.network.chat.Component t = net.minecraft.network.chat.Component.translatable("heraliz_quetes.presentation.passer");
+        int l = mc.font.width(t);
+        int x = (e.getGuiGraphics().guiWidth() - l) / 2, y = e.getGuiGraphics().guiHeight() - 28;
+        e.getGuiGraphics().fill(x - 6, y - 4, x + l + 6, y + 12, 0x88000000);
+        e.getGuiGraphics().drawString(mc.font, t, x, y, passer > 0 ? 0xFFFFE08A : 0xFFE6E6E6, false);
     }
 
     static void main(RenderHandEvent e) {

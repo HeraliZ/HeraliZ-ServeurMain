@@ -343,6 +343,7 @@ TEXTES = {
     "heraliz_quetes.tuto.faire_base": ("Faire ma base", "Build my base", "Построить базу"),
     "heraliz_quetes.tuto.premiere_mission": ("Commencer ma première mission", "Start my first mission", "Начать первое задание"),
     # le guide du spawn (serveur : Accueil, Dialogues)
+    "heraliz_quetes.presentation.passer": ("Maintiens Espace pour passer", "Hold Space to skip", "Удерживай Пробел, чтобы пропустить"),
     "heraliz_quetes.guide.intro": ("Va voir le Guide : il te fera visiter le spawn", "Go see the Guide: he'll show you around spawn",
                                    "Подойди к Проводнику: он покажет тебе спавн"),
     "heraliz_quetes.guide.suivi_visite": ("Visite du spawn avec le Guide", "Tour of spawn with the Guide", "Экскурсия по спавну с Проводником"),
