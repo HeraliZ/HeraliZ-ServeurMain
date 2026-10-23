@@ -22,6 +22,7 @@ const SITE_INJOIGNABLE = 'Le site HeraliZ ne répond pas. Vérifie ta connexion 
 const API_FERMEE = 'La connexion des comptes n’est pas encore ouverte sur le site HeraliZ.'
 const INSCRIPTION_FERMEE = 'La création de compte depuis le launcher n’est pas encore ouverte : crée ton compte sur heraliz.fr.'
 const SESSION_EXPIREE = 'Ta session a expiré : reconnecte-toi avec ton compte HeraliZ.'
+const JETON_TROP_DE_DEMANDES = 'Trop de demandes au site HeraliZ depuis ta connexion : attends une minute avant de relancer.'
 const CODE_A2F_REFUSE = 'Code incorrect : vérifie que l’heure de ton téléphone est juste et entre le code affiché maintenant.'
 // champs du site -> champs du formulaire du launcher
 const CHAMPS = { name: 'pseudo', email: 'email', password: 'motDePasse', conditions: 'conditions' }
@@ -40,6 +41,9 @@ const MESSAGES_DISCORD = {
     en_attente: 'Ton compte est en attente de validation par le staff.',
     refuse: 'Ton compte a été refusé.',
     banni: 'Ce compte est banni.',
+    // connexion (adresse IP) bloquée après le ban d'un autre compte vu dessus : PAS un ban de ce compte, rien n'est
+    // effacé de ce PC (seul « banni » retire les fichiers du jeu)
+    ip_bloquee: 'Impossible de jouer depuis cette connexion internet. Ouvre un ticket sur le Discord HeraliZ.',
     indisponible: 'Discord ne répond pas pour le moment, réessaie dans un instant.'
 }
 const STATUTS_DISCORD = new Set(['ok', ...Object.keys(MESSAGES_DISCORD)])
@@ -102,12 +106,20 @@ function erreur({ status, body }) {
     const raison = body && typeof body === 'object' ? body.reason : undefined
     if (raison === 'user_banned') return erreurBanni()
     if (raison && MESSAGES[raison]) return new Error(MESSAGES[raison])
+    // refus de l'extension HeraliZ (connexion bloquée...) : son message, nettoyé ; jamais un ban de ce compte
+    if (raison === 'refused') return new Error(messageDuSite(body) || 'Connexion refusée par le site HeraliZ.')
     // API pas activée dans l'administration du site (400, « Auth API is not enabled ») ou absente (404)
     if (status === 400 || status === 404) return new Error(API_FERMEE)
     if (status === 401) return new Error(SESSION_EXPIREE)
     if (status === 429) return new Error('Trop d’essais : attends un peu avant de réessayer.')
     if (status >= 500) return new Error('Le site HeraliZ a rencontré un problème. Réessaie dans un instant.')
     return new Error('Connexion refusée par le site HeraliZ.')
+}
+
+// Message lisible rendu par le site (texte simple, sans caractères de contrôle, 300 caractères au plus), ou null.
+function messageDuSite(body) {
+    const message = typeof body?.message === 'string' ? body.message.replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, 300) : ''
+    return message || null
 }
 
 // Erreurs de formulaire rendues par le site (422 : { errors: { champ: [message] } }) : la première par champ.
@@ -264,7 +276,8 @@ class CompteSite {
         if (reponse.status === 403 && reponse.body?.reason === 'user_banned') throw erreurBanni()
         const discord = refusDiscord(reponse)
         if (discord) throw discord
-        // extension absente (404), clé pas encore créée (503), site en panne : sans jeton, le serveur décide
+        if (reponse.status === 429) throw Object.assign(new Error(JETON_TROP_DE_DEMANDES), { jetonManquant: true })
+        // extension absente (404), clé pas encore créée (503), site en panne : null, le launcher décide (launcher-service)
         return null
     }
 

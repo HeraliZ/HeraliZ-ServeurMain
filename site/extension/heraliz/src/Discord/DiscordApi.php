@@ -55,9 +55,11 @@ final class DiscordApi
     {
         $r = self::essai(fn () => self::bot()->get(self::BASE.'/guilds/'.Reglages::get('guild_id').'/members/'.$discordId));
 
-        return match ($r?->status()) {
-            200 => true,
-            404 => false,
+        // 404 seulement avec le code « Unknown Member » (10007) : un 404 « Unknown Guild » (10004, mauvais serveur,
+        // bot retiré) ou un 403 (permissions) est un bot mal réglé, jamais « pas membre » pour tout le monde
+        return match (true) {
+            $r?->status() === 200 => true,
+            $r?->status() === 404 && self::code($r) === 10007 => false,
             default => self::panne('membre', $r),
         };
     }
@@ -67,11 +69,30 @@ final class DiscordApi
     {
         $r = self::essai(fn () => self::bot()->get(self::BASE.'/guilds/'.Reglages::get('guild_id').'/bans/'.$discordId));
 
-        return match ($r?->status()) {
-            200 => true,
-            404 => false,
+        // 404 « Unknown Ban » (10026) = pas banni ; 403 (bot sans « Bannir des membres ») ou « Unknown Guild » : panne
+        return match (true) {
+            $r?->status() === 200 => true,
+            $r?->status() === 404 && self::code($r) === 10026 => false,
             default => self::panne('ban', $r),
         };
+    }
+
+    /**
+     * Contrôle de la configuration du bot (étape « theme ») : null si tout va bien, sinon ce qui manque. Lit le serveur
+     * Discord (bot présent ?) et la liste des bans (permission « Bannir des membres »).
+     */
+    public static function controleBot(): ?string
+    {
+        $guilde = self::essai(fn () => self::bot()->get(self::BASE.'/guilds/'.Reglages::get('guild_id')));
+        if ($guilde?->status() !== 200) {
+            return 'serveur Discord illisible (DISCORD_GUILD_ID faux, bot absent du serveur ou jeton faux ; code '.($guilde?->status() ?? 'aucun').')';
+        }
+        $bans = self::essai(fn () => self::bot()->get(self::BASE.'/guilds/'.Reglages::get('guild_id').'/bans', ['limit' => 1]));
+        if ($bans?->status() !== 200) {
+            return 'le bot n’a pas la permission « Bannir des membres » (bans illisibles : un Discord banni ne serait pas vu ; code '.($bans?->status() ?? 'aucun').')';
+        }
+
+        return null;
     }
 
     /** Envoie un message dans un salon par le bot ; rend l'identifiant du message, ou null. */
@@ -110,6 +131,14 @@ final class DiscordApi
 
             return null;
         }
+    }
+
+    /** Code d'erreur JSON de Discord (10007, 10026…), ou 0. */
+    private static function code(Response $r): int
+    {
+        $code = $r->json('code');
+
+        return is_int($code) ? $code : 0;
     }
 
     private static function panne(string $quoi, ?Response $r): null

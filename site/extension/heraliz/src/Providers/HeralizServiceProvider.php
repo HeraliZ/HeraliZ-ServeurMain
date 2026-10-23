@@ -53,11 +53,12 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         // Double authentification : 10 essais par minute et par adresse IP
         RateLimiter::for('heraliz-a2f', fn (Request $request) => Limit::perMinute(10)->by(Adresse::de($request)));
 
-        // Jeton de lancement du jeu (Spartan) : 30 par minute et par adresse IP (un par partie lancée)
-        RateLimiter::for('heraliz-jeton', fn (Request $request) => Limit::perMinute(30)->by(Adresse::de($request)));
+        // Jeton de lancement du jeu (Spartan) : 120 par minute et par adresse IP (un par partie lancée ; plusieurs
+        // joueurs derrière une même box, un même réseau 4G)
+        RateLimiter::for('heraliz-jeton', fn (Request $request) => Limit::perMinute(120)->by(Adresse::de($request)));
 
-        // Pack de jeu signé pour le compte connecté (PackController) : 30 par minute et par adresse IP (un par partie)
-        RateLimiter::for('heraliz-pack', fn (Request $request) => Limit::perMinute(30)->by(Adresse::de($request)));
+        // Pack de jeu signé pour le compte connecté (PackController) : 120 par minute et par adresse IP (un par partie)
+        RateLimiter::for('heraliz-pack', fn (Request $request) => Limit::perMinute(120)->by(Adresse::de($request)));
 
         // Points Boutique du serveur de jeu (PbController, requêtes signées) : 600 par minute
         RateLimiter::for('heraliz-pb', fn (Request $request) => Limit::perMinute(600)->by(Adresse::de($request)));
@@ -76,8 +77,9 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         Event::listen(Login::class, fn (Login $e) => rescue(fn () => Comptes::noterIp((int) $e->user->getAuthIdentifier(), Adresse::de(request())), null, false));
         Event::listen(Registered::class, fn (Registered $e) => rescue(fn () => Comptes::noterIp((int) $e->user->getAuthIdentifier(), Adresse::de(request())), null, false));
 
-        // état du compte pour le launcher (POST /api/heraliz/compte/etat) : 60 par minute et par adresse IP
-        RateLimiter::for('heraliz-compte', fn (Request $request) => Limit::perMinute(60)->by(Adresse::de($request)));
+        // état du compte pour le launcher (POST /api/heraliz/compte/etat, panneau Discord toutes les 15 s) : 240 par
+        // minute et par adresse IP (adresses partagées : box familiale, LAN, 4G)
+        RateLimiter::for('heraliz-compte', fn (Request $request) => Limit::perMinute(240)->by(Adresse::de($request)));
 
         // page du lien Discord (heraliz::discord) et entrée « Mon Discord » du menu du compte
         $this->loadViewsFrom(plugin_path('heraliz/resources/views'), 'heraliz');

@@ -258,7 +258,13 @@ class LauncherService {
     async jetonSpartan() {
         if (!this.compteSite) return null
         const dossierMods = path.join(Config.getInstanceDirectory(), this.config.serverId, 'mods')
-        return this.compteSite.jetonJeu(this.jetonActuel(), Spartan.empreinteMods(dossierMods))
+        const jeton = await this.compteSite.jetonJeu(this.jetonActuel(), Spartan.empreinteMods(dossierMods))
+        // launcher de production (clé de signature réglée) : le serveur refuse toute connexion sans jeton, inutile de
+        // lancer Minecraft pour rien (site saturé, clé pas encore créée, site en panne) ; le joueur réessaie
+        if (!jeton && chargerClePublique(this.config.distributionPublicKey)) {
+            throw new Error('Le site HeraliZ n’a pas pu donner l’autorisation de jouer pour le moment : réessaie dans une minute.')
+        }
+        return jeton
     }
 
     jetonActuel() {
@@ -383,6 +389,12 @@ class LauncherService {
                 dossierInstances: Config.getInstanceDirectory(), serveur: this.config.serverId
             })
             for (const refuse of resultat.refuses) console.warn('[HeraliZ/ban] Hors du dossier du launcher (ou lien), laissé tel quel :', refuse)
+            // une cible refusée (dossier du jeu déplacé hors du launcher, lien) n'est pas effacée : jamais « fait »,
+            // le pack reste bloqué sur ce PC (compte-banni.json) et l'effacement sera retenté
+            if (resultat.refuses.length) {
+                console.warn(`[HeraliZ/ban] ${resultat.refuses.length} dossier(s) du jeu hors du dossier du launcher : fichiers pas retirés.`)
+                return
+            }
             if (resultat.erreurs.length) {
                 console.warn(`[HeraliZ/ban] ${resultat.erreurs.length} fichier(s) du jeu pas encore effacé(s) (verrouillés ?) : nouvel essai plus tard.`, resultat.erreurs.slice(0, 5).map(e => e.code).join(', '))
                 return

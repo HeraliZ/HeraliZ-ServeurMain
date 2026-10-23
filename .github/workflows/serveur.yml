@@ -42,50 +42,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  serveur:
+  # Fabrication des mods dans un job À PART, sans aucun secret : Gradle et ses dépendances (code d'autres auteurs) ne
+  # peuvent ni lire un secret dans leur environnement, ni dans celui d'un processus parent (/proc/<pid>/environ), ni dans
+  # un fichier écrit plus tard (le démon Gradle ne survit pas au job). Les jars passent au job « serveur » par le cache
+  # jars-<commit> (pas d'artefact : leur quota de stockage peut être plein).
+  fabriquer:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 90
     env:
-      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
-      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
-      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
-      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
-      PTERO_URL: ${{ secrets.PTERO_URL }}
-      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
-      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
-      NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
-      SPARTAN_DISCORD_ALERTES: ${{ secrets.SPARTAN_DISCORD_ALERTES }}
-      SPARTAN_DISCORD_SANCTIONS: ${{ secrets.SPARTAN_DISCORD_SANCTIONS }}
-      LITEBANS_DB_USER: ${{ secrets.LITEBANS_DB_USER }}
-      LITEBANS_DB_PASSWORD: ${{ secrets.LITEBANS_DB_PASSWORD }}
-      HERALIBOT_LIEN_URL: ${{ secrets.HERALIBOT_LIEN_URL }}
-      HERALIBOT_LIEN_CLE: ${{ secrets.HERALIBOT_LIEN_CLE }}
-      # accès à la VM du site réglés (pack du launcher) ; les secrets eux-mêmes ne sont donnés qu'à l'étape du pack
-      SITE_PRET: ${{ secrets.SITE_SSH_HOTE != '' && secrets.SITE_SSH_UTILISATEUR != '' && secrets.SITE_SSH_MDP != '' }}
       PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      # chaque fichier reprend la date de son dernier changement dans Git (et non celle du téléchargement) : la mise en
-      # ligne ne renvoie au Ptero que ce qui a vraiment changé
-      - name: Dates des fichiers (celles de Git)
-        run: |
-          python - <<'EOF'
-          import os, subprocess
-          sortie = subprocess.run(["git", "-c", "core.quotepath=false", "log", "--name-only", "--no-renames", "--format=@%ct"],
-                                  capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
-          date, vus = None, set()
-          for l in sortie.splitlines():
-              if l.startswith("@"):
-                  date = int(l[1:])
-              elif l and l not in vus:
-                  vus.add(l)
-                  if os.path.isfile(l):
-                      os.utime(l, (date, date))
-          print(len(vus), "fichiers datés")
-          EOF
+          persist-credentials: false
 
       - uses: actions/setup-java@v4
         with:
@@ -112,16 +81,7 @@ jobs:
           restore-keys: jars-
 
       - name: Fabriquer les mods modifiés
-        # Gradle et ses dépendances (code d'autres auteurs) ne voient aucun secret
         run: python outils/sans_secrets.py python outils/construire.py --si-change
-
-      # liste des noms perso interdits (un par ligne), gardée dans un secret : jamais écrite dans le dépôt
-      - name: Noms interdits
-        if: env.NOMS_INTERDITS != ''
-        run: printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
-
-      - name: Contrôles (GeckoLib, noms perso, langues)
-        run: python outils/verifier.py --sans-split
 
       # copies à télécharger dans l'onglet Actions : un quota d'artefacts plein (« Artifact storage quota has been
       # hit ») ne doit pas bloquer la suite
@@ -143,6 +103,83 @@ jobs:
             livraison/mods client/heraliz_interface-*.jar
             livraison/mods client/dayzhotbar-*.jar
           retention-days: 3
+
+  serveur:
+    needs: fabriquer
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      # pack du launcher à refaire (jobs pack_fabrique et pack_envoi) : Ptero et VM du site réglés
+      pack: ${{ steps.pack.outputs.pack }}
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+      NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
+      SPARTAN_DISCORD_ALERTES: ${{ secrets.SPARTAN_DISCORD_ALERTES }}
+      SPARTAN_DISCORD_SANCTIONS: ${{ secrets.SPARTAN_DISCORD_SANCTIONS }}
+      LITEBANS_DB_USER: ${{ secrets.LITEBANS_DB_USER }}
+      LITEBANS_DB_PASSWORD: ${{ secrets.LITEBANS_DB_PASSWORD }}
+      HERALIBOT_LIEN_URL: ${{ secrets.HERALIBOT_LIEN_URL }}
+      HERALIBOT_LIEN_CLE: ${{ secrets.HERALIBOT_LIEN_CLE }}
+      # accès à la VM du site réglés (pack du launcher) ; les secrets eux-mêmes ne sont donnés qu'à l'étape du pack
+      SITE_PRET: ${{ secrets.SITE_SSH_HOTE != '' && secrets.SITE_SSH_UTILISATEUR != '' && secrets.SITE_SSH_MDP != '' }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # aucun jeton GitHub laissé dans .git/config (ce job ne pousse rien)
+          persist-credentials: false
+
+      # chaque fichier reprend la date de son dernier changement dans Git (et non celle du téléchargement) : la mise en
+      # ligne ne renvoie au Ptero que ce qui a vraiment changé
+      - name: Dates des fichiers (celles de Git)
+        run: |
+          python - <<'EOF'
+          import os, subprocess
+          sortie = subprocess.run(["git", "-c", "core.quotepath=false", "log", "--name-only", "--no-renames", "--format=@%ct"],
+                                  capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
+          date, vus = None, set()
+          for l in sortie.splitlines():
+              if l.startswith("@"):
+                  date = int(l[1:])
+              elif l and l not in vus:
+                  vus.add(l)
+                  if os.path.isfile(l):
+                      os.utime(l, (date, date))
+          print(len(vus), "fichiers datés")
+          EOF
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # jars fabriqués par le job « fabriquer » (sans secrets), rangés dans livraison/ sans rien recompiler ici
+      - uses: actions/cache/restore@v4
+        with:
+          path: mods/*/build/libs
+          key: jars-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Ranger les jars fabriqués
+        run: python outils/construire.py --sans-build
+
+      - name: Pack du launcher à refaire ?
+        id: pack
+        run: echo "pack=${{ env.SITE_PRET == 'true' && env.PTERO_SFTP_HOST != '' }}" >> "$GITHUB_OUTPUT"
+
+      # liste des noms perso interdits (un par ligne), gardée dans un secret : jamais écrite dans le dépôt
+      - name: Noms interdits
+        if: env.NOMS_INTERDITS != ''
+        run: printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
+
+      - name: Contrôles (GeckoLib, noms perso, langues)
+        run: python outils/verifier.py --sans-split
 
       # clé des jetons de lancement du jeu : créée sur la VM du site (site/vm/theme.sh), qui signe les jetons pour le
       # compte connecté au launcher ; lue ici à chaque envoi pour que Spartan les vérifie. Jamais dans le dépôt, ni dans
@@ -318,6 +355,11 @@ jobs:
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
               f.write(texte + "\n")
           EOF
+
+      # les clés lues sur le site ne servent qu'aux deux étapes ci-dessus : effacées tout de suite
+      - name: Effacer les clés lues sur le site
+        if: always()
+        run: rm -f "$RUNNER_TEMP/jeton-jeu.cle" "$RUNNER_TEMP/pb.cle"
 
       # Adresse du SFTP nettoyée (« sftp:// » ou port collés par erreur) et testée AVANT tout envoi : un Ptero
       # injoignable fait échouer la mise en ligne en quelques secondes, avec un message clair (au lieu d'attendre 2 h).
@@ -853,36 +895,101 @@ jobs:
           fi
           api POST power '{"signal":"start"}'
 
-      # Pack du launcher (voir CLAUDE.md, section 8) : les jars joueurs de CETTE fabrication (ceux qui viennent d'aller
-      # sur le Ptero : Spartan compare leurs empreintes) et le dossier tacz, mis en forme par Nebula (le générateur de
-      # Helios, version figée), puis déposés sur la VM du site, là où le launcher les cherche (distributionUrl de
-      # launcher/app/heraliz.json). Dernière étape : un échec ici ne retient ni la mise à jour du Ptero ni son redémarrage.
+  # Pack du launcher (voir CLAUDE.md, section 8) : les jars joueurs de CETTE fabrication (ceux qui viennent d'aller
+  # sur le Ptero : Spartan compare leurs empreintes) et le dossier tacz, mis en forme par Nebula (le générateur de
+  # Helios, version figée), puis déposés sur la VM du site, là où le launcher les cherche (distributionUrl de
+  # launcher/app/heraliz.json). Après la mise à jour du Ptero : un échec ici ne retient ni la mise à jour ni le
+  # redémarrage. Deux jobs : Nebula, ses paquets npm et l'installeur de Forge (code d'autres auteurs) tournent dans un
+  # job SANS AUCUN secret (ni variable, ni fichier, ni jeton GitHub) ; la signature (clé privée) et l'envoi sur la VM se
+  # font dans un autre job, sans npm. Le pack passe de l'un à l'autre par le cache pack-<n° de l'envoi>.
+  pack_fabrique:
+    needs: serveur
+    if: needs.serveur.outputs.pack == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - uses: actions/setup-node@v4
-        if: env.SITE_PRET == 'true' && env.PTERO_SFTP_HOST != ''
         with:
           node-version: "22"
 
-      - name: Pack du launcher (heraliz.fr/launcher)
-        if: env.SITE_PRET == 'true' && env.PTERO_SFTP_HOST != ''
-        timeout-minutes: 45
+      - uses: actions/cache/restore@v4
+        with:
+          path: mods/*/build/libs
+          key: jars-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Pack du launcher (Nebula, sans secrets)
         env:
           NEBULA: 7ffc978727b95e03ae9d125688cf5cf132b78419
-          # signature du pack (launcher/docs/HERALIZ-SIGNATURE.md) : clé privée, jamais sur la VM du site
+        run: |
+          python outils/construire.py --sans-build > construire.log 2>&1 || { tail -n 40 construire.log; exit 1; }
+          git init -q nebula
+          git -C nebula fetch -q --depth 1 https://github.com/dscalzi/Nebula.git "$NEBULA"
+          git -C nebula checkout -q FETCH_HEAD
+          if ! (cd nebula && npm ci --no-audit --no-fund && npm run build) > nebula.log 2>&1; then tail -n 60 nebula.log; exit 1; fi
+          # (Nebula affiche toute la distribution : seules les lignes de l'outil sont gardées, sauf en cas d'échec)
+          # signature faite dans le job suivant (pack_envoi), qui a la clé
+          if ! python outils/pack_launcher.py nebula pack --version "1.0.$GITHUB_RUN_NUMBER" --sans-signature > pack.log 2>&1; then tail -n 80 pack.log; exit 1; fi
+          grep '^\[pack\]' pack.log
+
+      - uses: actions/cache/save@v4
+        with:
+          path: pack
+          key: pack-${{ github.run_id }}-${{ github.run_attempt }}
+
+  pack_envoi:
+    needs: pack_fabrique
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: pack
+          key: pack-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+
+      # signature Ed25519 du pack (launcher/docs/HERALIZ-SIGNATURE.md) : notre script seul (node, sans paquet npm)
+      - name: Signature du pack
+        env:
           LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
+        run: python outils/pack_launcher.py --signer-seulement pack
+
+      - name: Envoi du pack (heraliz.fr/launcher)
+        env:
           SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
           SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
         run: |
-          git init -q nebula
-          git -C nebula fetch -q --depth 1 https://github.com/dscalzi/Nebula.git "$NEBULA"
-          git -C nebula checkout -q FETCH_HEAD
-          # Nebula et ses paquets npm (code d'autres auteurs) ne voient aucun secret (outils/sans_secrets.py)
-          if ! (cd nebula && python ../outils/sans_secrets.py npm ci --no-audit --no-fund && python ../outils/sans_secrets.py npm run build) > nebula.log 2>&1; then tail -n 60 nebula.log; exit 1; fi
-          # (Nebula affiche toute la distribution : seules les lignes de l'outil sont gardées, sauf en cas d'échec)
-          if ! python outils/pack_launcher.py nebula pack --version "1.0.$GITHUB_RUN_NUMBER" > pack.log 2>&1; then tail -n 80 pack.log; exit 1; fi
-          grep '^\[pack\]' pack.log
-
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync > /dev/null
           export SSHPASS="$SITE_SSH_MDP"
           SSH=(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o PubkeyAuthentication=no -p "${SITE_SSH_PORT:-22}")

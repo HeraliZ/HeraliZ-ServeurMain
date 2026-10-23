@@ -12,6 +12,8 @@ use Azuriom\Rules\GameAuth;
 use Azuriom\Rules\Username;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -82,26 +84,37 @@ class InscriptionController extends Controller
         ]);
 
         $cleIp = 'heraliz-inscription:'.Adresse::de($request);
-        if (RateLimiter::tooManyAttempts($cleIp, self::PAR_IP) || RateLimiter::tooManyAttempts('heraliz-inscription', self::EN_TOUT)) {
-            return response()->json([
-                'status' => 'error',
-                'reason' => 'too_many_accounts',
-                'message' => 'Trop de comptes créés depuis cette connexion : réessaie plus tard.',
-            ], 429);
+        // contrôle des plafonds, création et comptage d'un seul tenant (verrou) : des demandes envoyées en même temps
+        // ne passent pas toutes avant que la première ait été comptée
+        $verrou = Cache::lock('heraliz-inscription-verrou', 10);
+        if (! $verrou->block(5)) {
+            return response()->json(['status' => 'error', 'reason' => 'too_many_attempts', 'message' => 'Réessaie dans un instant.'], 429);
         }
+        try {
+            if (RateLimiter::tooManyAttempts($cleIp, self::PAR_IP) || RateLimiter::tooManyAttempts('heraliz-inscription', self::EN_TOUT)) {
+                return response()->json([
+                    'status' => 'error',
+                    'reason' => 'too_many_accounts',
+                    'message' => 'Trop de comptes créés depuis cette connexion : réessaie plus tard.',
+                ], 429);
+            }
 
-        // comme Azuriom\Http\Controllers\Auth\RegisterController::create
-        $user = User::forceCreate([
-            'name' => $donnees['name'],
-            'email' => $donnees['email'],
-            'password' => $donnees['password'],
-            'game_id' => game()->getUserUniqueId($donnees['name']),
-            'last_login_ip' => $request->ip(),
-            'last_login_at' => now(),
-        ]);
+            // comme Azuriom\Http\Controllers\Auth\RegisterController::create : mot de passe haché ici (Hash::make), que
+            // le modèle User le fasse lui-même ou non (un mot de passe déjà haché n'est pas haché deux fois)
+            $user = User::forceCreate([
+                'name' => $donnees['name'],
+                'email' => $donnees['email'],
+                'password' => Hash::make($donnees['password']),
+                'game_id' => game()->getUserUniqueId($donnees['name']),
+                'last_login_ip' => $request->ip(),
+                'last_login_at' => now(),
+            ]);
 
-        RateLimiter::hit($cleIp, 3600);
-        RateLimiter::hit('heraliz-inscription', 3600);
+            RateLimiter::hit($cleIp, 3600);
+            RateLimiter::hit('heraliz-inscription', 3600);
+        } finally {
+            $verrou->release();
+        }
 
         // e-mail de vérification si le site en envoie ; une panne d'envoi ne doit pas faire échouer l'inscription
         rescue(fn () => event(new Registered($user)));

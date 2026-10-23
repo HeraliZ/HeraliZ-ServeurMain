@@ -8,8 +8,9 @@
 #     Windows : HeraliZ-Launcher-Setup.exe + latest.yml
 #     Mac     : HeraliZ-Launcher.dmg et HeraliZ-Launcher-mac.zip + latest-mac.yml
 #     Linux   : HeraliZ-Launcher.AppImage et HeraliZ-Launcher.deb + latest-linux.yml
-#   Envoi direct depuis la machine qui a fabriqué les fichiers (launcher/ci/publier.py, pas d'artefact entre deux
-#   tâches : il en dépendrait). Une plateforme en échec n'empêche pas les autres d'être mises en ligne.
+#   Fabrication (npm, electron-builder) et mise en ligne (launcher/ci/publier.py, avec la clé de signature et le mot de
+#   passe de la VM) dans deux jobs : les fichiers passent par le cache (pas d'artefact : leur quota peut être plein).
+#   Une plateforme en échec n'empêche pas les autres d'être mises en ligne.
 name: Launcher HeraliZ
 
 on:
@@ -40,6 +41,8 @@ jobs:
         working-directory: launcher
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -73,28 +76,13 @@ jobs:
           path: launcher/dist/*.exe
           retention-days: 7
 
-      - uses: actions/setup-python@v5
+      # à publier : l'installateur passe au job « publier_windows » (sans npm, seul à avoir les secrets) par le cache
+      - uses: actions/cache/save@v4
         if: github.event_name == 'workflow_dispatch' && inputs.publier
         with:
-          python-version: "3.12"
-
-      # nom fixe : le lien du site ne change jamais. Puis latest.yml (version, empreinte, taille), lu par les launchers
-      # installés pour se mettre à jour seuls. Mot de passe par variable d'environnement seulement, jamais dans une commande.
-      - name: Mise en ligne sur heraliz.fr/telecharger
-        if: github.event_name == 'workflow_dispatch' && inputs.publier
-        env:
-          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
-          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
-          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
-          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
-          LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
-          PYTHONUTF8: "1"
-        run: |
-          shopt -s nullglob
-          exe=(dist/*.exe)
-          if [ "${#exe[@]}" -ne 1 ]; then echo "::error::Un seul installateur attendu, ${#exe[@]} trouvé(s)."; exit 1; fi
-          python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
-          python ci/publier.py latest.yml "HeraliZ-Launcher-Setup.exe=${exe[0]}"
+          path: launcher/dist/*.exe
+          key: launcher-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          enableCrossOsArchive: true
 
   linux:
     runs-on: ubuntu-latest
@@ -105,6 +93,8 @@ jobs:
         working-directory: launcher
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -139,25 +129,14 @@ jobs:
             launcher/dist/HeraliZ-Launcher.deb
           retention-days: 3
 
-      - uses: actions/setup-python@v5
+      - uses: actions/cache/save@v4
         if: github.event_name == 'workflow_dispatch' && inputs.publier
         with:
-          python-version: "3.12"
-
-      - name: Mise en ligne sur heraliz.fr/telecharger
-        if: github.event_name == 'workflow_dispatch' && inputs.publier
-        env:
-          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
-          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
-          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
-          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
-          LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
-          PYTHONUTF8: "1"
-        run: |
-          python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
-          python ci/publier.py latest-linux.yml \
-            HeraliZ-Launcher.AppImage=dist/HeraliZ-Launcher.AppImage \
-            HeraliZ-Launcher.deb=dist/HeraliZ-Launcher.deb
+          path: |
+            launcher/dist/HeraliZ-Launcher.AppImage
+            launcher/dist/HeraliZ-Launcher.deb
+          key: launcher-linux-${{ github.run_id }}-${{ github.run_attempt }}
+          enableCrossOsArchive: true
 
   mac:
     # seulement à la main (« Run workflow ») : voir en tête
@@ -170,6 +149,8 @@ jobs:
         working-directory: launcher
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -210,14 +191,53 @@ jobs:
           path: launcher/dist/HeraliZ-Launcher.dmg
           retention-days: 3
 
-      - uses: actions/setup-python@v5
+      - uses: actions/cache/save@v4
         if: inputs.publier
+        with:
+          path: |
+            launcher/dist/HeraliZ-Launcher-mac.zip
+            launcher/dist/HeraliZ-Launcher.dmg
+          key: launcher-mac-${{ github.run_id }}-${{ github.run_attempt }}
+          enableCrossOsArchive: true
+
+  # Mise en ligne sur heraliz.fr/telecharger, dans un job à part : ni npm ni electron-builder (code d'autres auteurs)
+  # n'y tournent, ils ne peuvent donc pas lire la clé de signature ni le mot de passe de la VM. Nom fixe : le lien du
+  # site ne change jamais ; puis le fichier de version (version, empreinte, taille, signé), lu par les launchers
+  # installés pour se mettre à jour seuls. Mot de passe par variable d'environnement seulement, jamais dans une commande.
+  publier_windows:
+    needs: windows
+    if: github.event_name == 'workflow_dispatch' && inputs.publier
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      # zip d'abord (fichier principal de latest-mac.yml, comme electron-builder), puis l'image disque à installer
+      - uses: actions/cache/restore@v4
+        with:
+          path: launcher/dist/*.exe
+          key: launcher-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+
+      # paquet installé AVANT l'étape qui a les secrets (version figée)
+      - name: Client SFTP
+        run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+
       - name: Mise en ligne sur heraliz.fr/telecharger
-        if: inputs.publier
         env:
           SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
           SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
@@ -226,7 +246,112 @@ jobs:
           LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
           PYTHONUTF8: "1"
         run: |
-          python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+          shopt -s nullglob
+          exe=(dist/*.exe)
+          if [ "${#exe[@]}" -ne 1 ]; then echo "::error::Un seul installateur attendu, ${#exe[@]} trouvé(s)."; exit 1; fi
+          python ci/publier.py latest.yml "HeraliZ-Launcher-Setup.exe=${exe[0]}"
+
+  # Mise en ligne sur heraliz.fr/telecharger, dans un job à part : ni npm ni electron-builder (code d'autres auteurs)
+  # n'y tournent, ils ne peuvent donc pas lire la clé de signature ni le mot de passe de la VM. Nom fixe : le lien du
+  # site ne change jamais ; puis le fichier de version (version, empreinte, taille, signé), lu par les launchers
+  # installés pour se mettre à jour seuls. Mot de passe par variable d'environnement seulement, jamais dans une commande.
+  publier_linux:
+    needs: linux
+    if: github.event_name == 'workflow_dispatch' && inputs.publier
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            launcher/dist/HeraliZ-Launcher.AppImage
+            launcher/dist/HeraliZ-Launcher.deb
+          key: launcher-linux-${{ github.run_id }}-${{ github.run_attempt }}
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+
+      # paquet installé AVANT l'étape qui a les secrets (version figée)
+      - name: Client SFTP
+        run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+
+      - name: Mise en ligne sur heraliz.fr/telecharger
+        env:
+          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
+          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
+          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
+          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+          LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
+          PYTHONUTF8: "1"
+        run: |
+          python ci/publier.py latest-linux.yml \
+            HeraliZ-Launcher.AppImage=dist/HeraliZ-Launcher.AppImage \
+            HeraliZ-Launcher.deb=dist/HeraliZ-Launcher.deb
+
+  # Mise en ligne sur heraliz.fr/telecharger, dans un job à part : ni npm ni electron-builder (code d'autres auteurs)
+  # n'y tournent, ils ne peuvent donc pas lire la clé de signature ni le mot de passe de la VM. Nom fixe : le lien du
+  # site ne change jamais ; puis le fichier de version (version, empreinte, taille, signé), lu par les launchers
+  # installés pour se mettre à jour seuls. Mot de passe par variable d'environnement seulement, jamais dans une commande.
+  publier_mac:
+    needs: mac
+    if: github.event_name == 'workflow_dispatch' && inputs.publier
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            launcher/dist/HeraliZ-Launcher-mac.zip
+            launcher/dist/HeraliZ-Launcher.dmg
+          key: launcher-mac-${{ github.run_id }}-${{ github.run_attempt }}
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+
+      # paquet installé AVANT l'étape qui a les secrets (version figée)
+      - name: Client SFTP
+        run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+
+      - name: Mise en ligne sur heraliz.fr/telecharger
+        env:
+          SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
+          SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
+          SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
+          SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+          LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
+          PYTHONUTF8: "1"
+        run: |
+          # zip d'abord (fichier principal de latest-mac.yml, comme electron-builder), puis l'image disque à installer
           python ci/publier.py latest-mac.yml \
             HeraliZ-Launcher-mac.zip=dist/HeraliZ-Launcher-mac.zip \
             HeraliZ-Launcher.dmg=dist/HeraliZ-Launcher.dmg

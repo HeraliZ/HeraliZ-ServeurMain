@@ -76,9 +76,12 @@ fi
 # GitHub, jamais dans le dépôt ; sans application, bot ou serveur Discord, fichier retiré : Discord pas exigé
 DISCORD_FICHIER="$DOSSIER/storage/app/heraliz/discord.json"
 if [ -n "${DISCORD_CLIENT_ID:-}" ] && [ -n "${DISCORD_CLIENT_SECRET:-}" ] && [ -n "${DISCORD_BOT_TOKEN:-}" ] && [ -n "${DISCORD_GUILD_ID:-}" ]; then
-  (umask 077 && env DISCORD_CLIENT_ID="${DISCORD_CLIENT_ID}" DISCORD_CLIENT_SECRET="${DISCORD_CLIENT_SECRET}" \
-    DISCORD_BOT_TOKEN="${DISCORD_BOT_TOKEN}" DISCORD_PUBLIC_KEY="${DISCORD_PUBLIC_KEY:-}" DISCORD_GUILD_ID="${DISCORD_GUILD_ID}" \
-    DISCORD_SALON_COMPTES="${DISCORD_SALON_COMPTES:-}" DISCORD_ROLES_STAFF="${DISCORD_ROLES_STAFF:-}" DISCORD_INVITATION="${DISCORD_INVITATION:-}" \
+  # secrets passés à php par l'environnement (export dans ce sous-shell), jamais en arguments d'une commande : `ps`
+  # montre les arguments (et `env VAR=…` en est un) à tous les comptes de la VM
+  (umask 077
+    export DISCORD_CLIENT_ID DISCORD_CLIENT_SECRET DISCORD_BOT_TOKEN DISCORD_GUILD_ID
+    export DISCORD_PUBLIC_KEY="${DISCORD_PUBLIC_KEY:-}" DISCORD_SALON_COMPTES="${DISCORD_SALON_COMPTES:-}" \
+      DISCORD_ROLES_STAFF="${DISCORD_ROLES_STAFF:-}" DISCORD_INVITATION="${DISCORD_INVITATION:-}"
     php -r '$c = [];
       foreach (["client_id", "client_secret", "bot_token", "public_key", "guild_id", "salon_comptes", "roles_staff", "invitation"] as $k) {
         $c[$k] = trim((string) getenv("DISCORD_".strtoupper($k)));

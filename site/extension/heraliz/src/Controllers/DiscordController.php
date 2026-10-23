@@ -95,6 +95,14 @@ class DiscordController extends Controller
             $request->session()->forget('heraliz_discord_confirme');
         }
 
+        // lien du launcher à usage unique : consommé ici, au départ vers Discord (un 2e passage est refusé)
+        if ($request->filled('jeton')) {
+            $luLien = Jeton::lire((string) $request->query('jeton'), 'lien');
+            if ($luLien === null || ! Jeton::utiliser($luLien[1])) {
+                return $this->page(null, 'expire');
+            }
+        }
+
         [, $nonce] = Jeton::lire($etat = Jeton::creer('etat', $user->id, Jeton::ETAT_SECONDES), 'etat');
         $request->session()->put('heraliz_discord_etat', $nonce);
         // le jeton du launcher, pour les boutons « Vérifier » de la page de retour
@@ -106,7 +114,8 @@ class DiscordController extends Controller
     /** Revérifie tout de suite (membre, ban) le Discord déjà lié, puis montre l'état : bouton « J'ai rejoint ». */
     public function verifier(Request $request)
     {
-        $user = $this->compteDuLien($request);
+        // revérifier ne lie rien : un lien déjà parti vers Discord reste bon ici (bouton « J'ai rejoint » du retour)
+        $user = $this->compteDuLien($request, true);
         if ($user === null) {
             return Auth::check() || $request->filled('jeton') ? $this->page(null, 'expire') : redirect()->guest(route('login'));
         }
@@ -213,12 +222,15 @@ class DiscordController extends Controller
         return response()->json(['type' => 4, 'data' => ['content' => $texte, 'flags' => 64]]);
     }
 
-    private function compteDuLien(Request $request): ?User
+    private function compteDuLien(Request $request, bool $dejaUtilisePermis = false): ?User
     {
         if ($request->filled('jeton')) {
             $lu = Jeton::lire((string) $request->query('jeton'), 'lien');
+            if ($lu === null || (! $dejaUtilisePermis && Jeton::utilise($lu[1]))) {
+                return null;
+            }
 
-            return $lu === null ? null : User::find($lu[0]);
+            return User::find($lu[0]);
         }
 
         return $request->user();
@@ -230,7 +242,8 @@ class DiscordController extends Controller
         if ($user === null) {
             return null;
         }
-        if (is_string($jeton) && Jeton::lire($jeton, 'lien') !== null) {
+        $lu = is_string($jeton) ? Jeton::lire($jeton, 'lien') : null;
+        if ($lu !== null && $lu[0] === $user->id && ! Jeton::utilise($lu[1])) {
             return route('heraliz.discord.lier', ['jeton' => $jeton]);
         }
 
@@ -258,6 +271,8 @@ class DiscordController extends Controller
             Comptes::REFUSE => ['Compte refusé', 'Ton compte n’a pas été accepté pour la bêta. Pour en parler, ouvre un ticket sur le Discord.',
                 [['Ouvrir le Discord', $invitation, 'btn-outline-light']]],
             Comptes::BANNI => ['Accès refusé', 'Ce Discord est banni du serveur Discord HeraliZ : ce compte ne peut pas jouer.', []],
+            Comptes::IP_BLOQUEE => ['Connexion bloquée', 'Ta connexion internet est bloquée sur HeraliZ (un compte banni l’a utilisée). Ton compte n’est pas banni : essaie depuis une autre connexion, ou ouvre un ticket sur le Discord.',
+                [['Ouvrir le Discord', $invitation, 'btn-outline-light']]],
             Comptes::INDISPONIBLE => ['Discord injoignable', 'La vérification auprès de Discord a échoué. Réessaie dans une minute.',
                 [['Réessayer', $verifier, 'btn-primary']]],
             'erreur' => ['Discord injoignable', 'La connexion à Discord a échoué. Réessaie dans une minute.',

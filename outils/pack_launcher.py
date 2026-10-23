@@ -52,12 +52,35 @@ def modules(liste):
         yield from modules(m.get("subModules"))
 
 
+def signer_pack(envoi, config):
+    """Signe envoi/distribution.json (distribution.sig) avec le secret LAUNCHER_SIGN_KEY (launcher/ci/signer.mjs, node
+    seul, sans paquet npm). Sans le secret alors que le launcher porte une clé publique : arrêt (pack refusé partout)."""
+    cle_publique = str(config.get("distributionPublicKey") or "").strip()
+    if os.environ.get("LAUNCHER_SIGN_KEY", "").strip():
+        subprocess.run(["node", str(RACINE_DEPOT / "launcher" / "ci" / "signer.mjs"), "--pack",
+                        str(envoi / "distribution.json")] + ([cle_publique] if cle_publique else []), check=True)
+        if not (envoi / "distribution.sig").is_file():
+            sys.exit("[pack] signature du pack absente après signer.mjs --pack.")
+        print("[pack] pack signé (distribution.sig)")
+    elif cle_publique:
+        sys.exit("[pack] le launcher attend un pack signé (distributionPublicKey de launcher/app/heraliz.json) mais le "
+                 "secret LAUNCHER_SIGN_KEY n'est pas réglé : pack NON envoyé (il serait refusé par tous les launchers).")
+    else:
+        print("[pack] pack non signé (ni clé publique dans le launcher, ni secret LAUNCHER_SIGN_KEY)")
+
+
 def main():
+    # pack déjà fait par un autre job (sans secrets) : seulement la signature
+    if len(sys.argv) == 3 and sys.argv[1] == "--signer-seulement":
+        config = json.loads((RACINE_DEPOT / "launcher" / "app" / "heraliz.json").read_text(encoding="utf-8"))
+        signer_pack(Path(sys.argv[2]) / "envoi", config)
+        return
     a = argparse.ArgumentParser()
     a.add_argument("nebula")
     a.add_argument("sortie")
     a.add_argument("--version", default="1.0.0")
     a.add_argument("--essai", action="store_true")
+    a.add_argument("--sans-signature", action="store_true", help="ne pas signer (fait ensuite par --signer-seulement)")
     args = a.parse_args()
     neb, sortie = Path(args.nebula).resolve(), Path(args.sortie).resolve()
     # le pack est déposé là où le launcher va le chercher
@@ -174,17 +197,10 @@ def main():
     # Signature Ed25519 du pack (liste des mods et empreintes, launcher/docs/HERALIZ-SIGNATURE.md) : distribution.sig à
     # côté de distribution.json. Un launcher qui porte une clé publique REFUSE un pack non signé : dans ce cas, pas de
     # mise en ligne sans le secret LAUNCHER_SIGN_KEY (sinon plus personne ne pourrait jouer).
-    cle_publique = str(config.get("distributionPublicKey") or "").strip()
-    if os.environ.get("LAUNCHER_SIGN_KEY", "").strip():
-        subprocess.run(["node", str(RACINE_DEPOT / "launcher" / "ci" / "signer.mjs"), "--pack",
-                        str(envoi / "distribution.json")] + ([cle_publique] if cle_publique else []), check=True)
-        if not (envoi / "distribution.sig").is_file():
-            sys.exit("[pack] signature du pack absente après signer.mjs --pack.")
-    elif cle_publique:
-        sys.exit("[pack] le launcher attend un pack signé (distributionPublicKey de launcher/app/heraliz.json) mais le "
-                 "secret LAUNCHER_SIGN_KEY n'est pas réglé : pack NON envoyé (il serait refusé par tous les launchers).")
+    if args.sans_signature:
+        print("[pack] signature à part (python outils/pack_launcher.py --signer-seulement), dans un job qui a la clé")
     else:
-        print("[pack] pack non signé (ni clé publique dans le launcher, ni secret LAUNCHER_SIGN_KEY)")
+        signer_pack(envoi, config)
     types = {}
     for m in modules(s for srv in distro["servers"] for s in srv["modules"]):
         types[m["type"]] = types.get(m["type"], 0) + 1

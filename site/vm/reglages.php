@@ -76,6 +76,13 @@ if (in_array(getenv('HERALIZ_VALIDATION'), ['manuelle', 'auto'], true)) {
     dire('Validation des comptes (Discord obligatoire) : '.(getenv('HERALIZ_VALIDATION') === 'manuelle' ? 'à la main par le staff' : 'automatique'));
 }
 
+// Discord obligatoire : le bot voit-il le serveur Discord et ses bans ? (sans « Bannir des membres », un Discord banni
+// passerait inaperçu ; mauvais serveur : tout le monde serait « pas membre »)
+if (class_exists(\Azuriom\Plugin\Heraliz\Discord\Reglages::class) && \Azuriom\Plugin\Heraliz\Discord\Reglages::actif()) {
+    $probleme = rescue(fn () => \Azuriom\Plugin\Heraliz\Discord\DiscordApi::controleBot(), 'contrôle impossible', false);
+    dire($probleme === null ? 'Bot Discord : serveur et bans lisibles' : '::warning::Bot Discord : '.$probleme);
+}
+
 // récompense des votes : une seule fois (repère « heraliz.votes »), ensuite l'administration fait foi
 if (setting('heraliz.votes') === null) {
     recompenseVote();

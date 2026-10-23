@@ -595,12 +595,12 @@ const PANNEAUX_DISCORD = {
     a_lier: {
         titre: 'Lie ton compte Discord pour jouer',
         texte: 'Pour jouer sur HeraliZ, ton compte doit être lié à ton compte Discord. « Lier mon Discord » ouvre la page dans ton navigateur ; une fois fait, reviens ici : le launcher le voit tout seul.',
-        ouvrir: 'Lier mon Discord', lien: 'discord-lier', verifier: 'J’ai lié mon compte', toutesLes: 5000
+        ouvrir: 'Lier mon Discord', lien: 'discord-lier', verifier: 'J’ai lié mon compte', toutesLes: 15000
     },
     pas_membre: {
         titre: 'Rejoins notre Discord',
         texte: 'Ton compte Discord est bien lié, mais il n’est pas encore membre du Discord HeraliZ. Rejoins-le, puis reviens ici : le launcher le voit tout seul.',
-        ouvrir: 'Rejoindre le Discord', lien: 'discord-invitation', verifier: 'C’est fait', toutesLes: 5000
+        ouvrir: 'Rejoindre le Discord', lien: 'discord-invitation', verifier: 'C’est fait', toutesLes: 15000
     },
     en_attente: {
         titre: 'Compte en attente de validation par le staff',
@@ -616,6 +616,13 @@ const PANNEAUX_DISCORD = {
             ? 'Les fichiers du jeu HeraliZ ont été retirés de ce PC.'
             : 'Les fichiers du jeu HeraliZ vont être retirés de ce PC (dès que le jeu sera fermé s’il est ouvert).'} Tu peux te déconnecter pour utiliser un autre compte.`,
         toutesLes: 60000
+    },
+    // connexion bloquée après le ban d'un autre compte vu sur la même adresse IP : ce compte n'est pas banni, rien
+    // n'est retiré de ce PC
+    ip_bloquee: {
+        titre: 'Connexion bloquée',
+        texte: 'Ta connexion internet est bloquée sur HeraliZ (un compte banni l’a utilisée). Ton compte, lui, n’est pas banni : essaie depuis une autre connexion, ou ouvre un ticket sur le Discord HeraliZ.',
+        verifier: 'Réessayer', toutesLes: 60000
     },
     indisponible: {
         titre: 'Discord ne répond pas',
@@ -730,6 +737,7 @@ async function majLauncher() {
     try {
         splashStep(20, 'Recherche de mises à jour')
         const maj = await call(api.majLauncher()).catch(() => null)
+        if (maj?.signatureInvalide) toast('La mise à jour du launcher n’a pas pu être vérifiée : elle est refusée par sécurité. Si ce message revient, retélécharge le launcher sur heraliz.fr.')
         if (maj?.bloquee) toast(`La mise à jour ${maj.version} du launcher ne s’installe pas : retélécharge le launcher sur heraliz.fr.`)
         if (maj?.manuelle) nouvelleVersion = maj.version
         if (!maj?.disponible) return false

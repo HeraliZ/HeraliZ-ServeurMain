@@ -464,3 +464,19 @@ test('compte-site : un ban d’Azuriom est signalé par .banni (connexion, véri
     const profilBanni = new CompteSite('https://heraliz.fr', fauxSite({ verify: { status: 200, body: { ...PROFIL, banned: true } } }).requete)
     await assert.rejects(profilBanni.verifier('j'), e => e.banni === true)
 })
+
+test('connexion bloquée (IP) : message du site, jamais un ban ; jeton refusé pour trop de demandes', async () => {
+    const refuse = { status: 403, body: { status: 'error', reason: 'refused', message: 'Impossible de continuer depuis cette connexion.\u0007' } }
+    const compte = new CompteSite('https://heraliz.fr', fauxSite({ authenticate: refuse }).requete)
+    const erreur = await compte.connexion('moi@exemple.fr', 'secret').catch(e => e)
+    assert.match(erreur.message, /^Impossible de continuer depuis cette connexion\.$/)
+    assert.equal(erreur.banni, undefined)
+
+    const ip = { status: 403, body: { erreur: 'discord', statut: 'ip_bloquee' } }
+    const parIp = await new CompteSite('https://heraliz.fr', fauxSite({ 'heraliz/pack': ip }).requete).pack('jeton').catch(e => e)
+    assert.equal(parIp.discord, 'ip_bloquee')
+    assert.equal(parIp.banni, undefined)
+
+    const sature = new CompteSite('https://heraliz.fr', fauxSite({ 'heraliz/jeton-jeu': { status: 429, body: null } }).requete)
+    await assert.rejects(sature.jetonJeu('jeton', 'a'.repeat(64)), /Trop de demandes/)
+})

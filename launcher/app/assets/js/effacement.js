@@ -1,8 +1,9 @@
 // Compte banni : le launcher retire de ce PC les fichiers du jeu HeraliZ qu'il a téléchargés (mods du pack, dossier
-// tacz, packs de ressources, configs des mods, liste des mods, ancienne copie de la distribution) et ne les redonne plus
+// tacz, configs des mods, liste des mods, ancienne copie de la distribution) et ne les redonne plus
 // avant un nouvel accord du site (compte-banni.json, launcher-service.js). Gardés : le launcher, sa config, ses
-// journaux, et dans le dossier du jeu les réglages du joueur (options.txt), ses captures d'écran, ses journaux et ses
-// rapports de plantage. Java, Minecraft et Forge (fichiers publics, communs à tous) restent aussi.
+// journaux, et dans le dossier du jeu les réglages du joueur (options.txt), ses captures d'écran, ses journaux, ses
+// rapports de plantage et les packs de ressources et de shaders qu'il a ajoutés lui-même (le pack HeraliZ n'en livre
+// aucun : le pack de textures du serveur est dans un mod). Java, Minecraft et Forge (fichiers publics, communs à tous) restent aussi.
 //
 // Sécurité : rien n'est jamais effacé hors du dossier du launcher (racine). Chaque cible est contrôlée par son chemin
 // réel (liens résolus) ; une cible qui est elle-même un lien est refusée ; à l'intérieur d'un dossier effacé, un lien
@@ -11,7 +12,8 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 // Dans le dossier du jeu (instances/<serveur>) : ce qui appartient au joueur.
-const GARDER_INSTANCE = new Set(['options.txt', 'optionsof.txt', 'optionsshaders.txt', 'screenshots', 'logs', 'crash-reports'])
+const GARDER_INSTANCE = new Set(['options.txt', 'optionsof.txt', 'optionsshaders.txt', 'screenshots', 'logs', 'crash-reports',
+    'resourcepacks', 'shaderpacks'])
 // Anciennes copies de la distribution Helios, à la racine du launcher (distromanager.js).
 const CACHES_DISTRIBUTION = ['distribution.json', 'distribution_dev.json']
 

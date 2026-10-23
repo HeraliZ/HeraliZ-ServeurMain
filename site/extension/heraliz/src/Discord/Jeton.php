@@ -4,13 +4,14 @@ namespace Azuriom\Plugin\Heraliz\Discord;
 
 /**
  * Jetons signés du lien Discord (HMAC-SHA256 avec une clé tirée de APP_KEY du site : rien de plus à garder) :
- *  - « lien » : adresse donnée au launcher pour UN compte, valable 15 minutes (le launcher l'ouvre dans le navigateur,
- *    où le joueur n'est pas forcément connecté au site) ;
+ *  - « lien » : adresse donnée au launcher pour UN compte, valable 5 minutes et à usage unique (consommée quand le
+ *    navigateur part vers Discord : un lien qui traîne dans un historique ou une capture d'écran ne sert plus) ; le
+ *    launcher l'ouvre dans le navigateur, où le joueur n'est pas forcément connecté au site ;
  *  - « etat » : paramètre state envoyé à Discord, valable 10 minutes, à usage unique et lié au navigateur (session).
  */
 final class Jeton
 {
-    public const LIEN_SECONDES = 900;
+    public const LIEN_SECONDES = 300;
     public const ETAT_SECONDES = 600;
 
     public static function creer(string $type, int $userId, int $duree): string
@@ -41,6 +42,18 @@ final class Jeton
         }
 
         return [(int) $parts[1], $parts[3]];
+    }
+
+    /** Consomme un jeton « lien » (son nonce) : true la première fois seulement. */
+    public static function utiliser(string $nonce): bool
+    {
+        return \Illuminate\Support\Facades\Cache::add('heraliz-discord-lien-utilise:'.$nonce, true, self::LIEN_SECONDES + 60);
+    }
+
+    /** Le jeton « lien » (son nonce) a-t-il déjà servi à partir vers Discord ? */
+    public static function utilise(string $nonce): bool
+    {
+        return \Illuminate\Support\Facades\Cache::has('heraliz-discord-lien-utilise:'.$nonce);
     }
 
     private static function cle(): string

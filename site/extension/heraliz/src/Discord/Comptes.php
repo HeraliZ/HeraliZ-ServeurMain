@@ -30,11 +30,15 @@ final class Comptes
     public const EN_ATTENTE = 'en_attente';
     public const REFUSE = 'refuse';
     public const BANNI = 'banni';
+    /** Adresse IP bloquée (vue sur un compte lié à un Discord banni) : ce compte-ci n'est PAS banni (rien n'est effacé). */
+    public const IP_BLOQUEE = 'ip_bloquee';
     public const INDISPONIBLE = 'indisponible';
 
     private const DELAI_MEMBRE = 300;
     private const DELAI_AUTRE = 20;
     private const DELAI_PANNE = 60;
+    /** Seules les adresses IP vues sur le compte banni dans ces dernières heures sont bloquées (IP partagées, 4G). */
+    private const IPS_RECENTES_HEURES = 48;
 
     /** Ce qui manque au compte pour jouer (OK si rien). L'adresse IP donnée est aussi notée et contrôlée. */
     public static function statut(User $user, ?string $ip = null): string
@@ -46,18 +50,20 @@ final class Comptes
         if (! Reglages::actif()) {
             return self::OK;
         }
-        if ($ip !== null && self::ipBannie($ip)) {
-            return self::BANNI;
-        }
+        // adresse bloquée par le ban d'UN AUTRE compte : statut à part (jamais « banni » : le launcher n'efface rien)
+        $ipBloquee = $ip !== null && self::ipBannie($ip);
 
         $ligne = self::ligne($user->id);
         if ($ligne === null) {
-            return self::A_LIER;
+            return $ipBloquee ? self::IP_BLOQUEE : self::A_LIER;
         }
         $ligne = self::verifier($user, $ligne);
 
         if ($ligne->banni) {
             return self::BANNI;
+        }
+        if ($ipBloquee) {
+            return self::IP_BLOQUEE;
         }
         if ($ligne->verifie_le === null) {
             return self::INDISPONIBLE;
@@ -86,6 +92,7 @@ final class Comptes
             self::EN_ATTENTE => 'Ton compte attend la validation du staff : réessaie un peu plus tard.',
             self::REFUSE => 'Ton compte n’a pas été accepté pour la bêta. Pour en parler, ouvre un ticket sur le Discord.',
             self::BANNI => 'Ce compte ne peut pas jouer sur HeraliZ.',
+            self::IP_BLOQUEE => 'Impossible de jouer depuis cette connexion internet. Ouvre un ticket sur le Discord HeraliZ.',
             self::INDISPONIBLE => 'Vérification de ton Discord impossible pour le moment : réessaie dans une minute.',
             default => 'Tout est bon.',
         };
@@ -165,10 +172,19 @@ final class Comptes
         $membre = DiscordApi::membre($ligne->discord_id);
         // un membre n'est pas banni (Discord retire un banni du serveur) : un seul appel dans le cas courant
         $banni = $membre === true ? false : ($membre === false ? DiscordApi::banni($ligne->discord_id) : null);
-        if ($membre === null || $banni === null) {
+        if ($membre === null) {
             Cache::put('heraliz-discord-panne:'.$user->id, true, self::DELAI_PANNE);
 
             return $ligne;
+        }
+        if ($banni === null) {
+            // pas membre, mais la liste des bans est illisible (bot sans « Bannir des membres », panne) : on note quand
+            // même « pas membre » (le joueur voit « Rejoins le Discord », pas « Discord injoignable ») et on garde le
+            // dernier état connu du ban
+            Cache::put('heraliz-discord-panne:'.$user->id, true, self::DELAI_PANNE);
+            DB::table(Stockage::COMPTES)->where('id', $ligne->id)->update(['membre' => false, 'verifie_le' => now()]);
+
+            return self::ligne($user->id);
         }
 
         $etaitBanni = (bool) $ligne->banni;
@@ -313,13 +329,16 @@ final class Comptes
     }
 
     /**
-     * Discord banni : compte du site bloqué (et déconnecté du launcher), toutes ses adresses IP bloquées, ban PC de
+     * Discord banni : compte du site bloqué, ses adresses IP récentes (48 h) bloquées, ban PC de
      * Spartan demandé au serveur de jeu, le staff prévenu dans le salon privé.
      */
     private static function propagerBan(User $user, object $ligne): void
     {
         $raison = 'Discord banni ('.$ligne->discord_id.'), compte '.$user->name;
-        $ips = DB::table(Stockage::IPS)->where('user_id', $user->id)->pluck('ip');
+        // seulement les adresses vues ces dernières heures : une IP partagée (4G, box, lycée) ancienne ne bloque pas des
+        // joueurs qui n'ont rien à voir
+        $ips = DB::table(Stockage::IPS)->where('user_id', $user->id)
+            ->where('vu_le', '>=', now()->subHours(self::IPS_RECENTES_HEURES))->pluck('ip');
         foreach ($ips as $ip) {
             DB::table(Stockage::IPS_BANNIES)->insertOrIgnore(['ip' => $ip, 'user_id' => $user->id, 'raison' => mb_substr($raison, 0, 190), 'cree_le' => now()]);
         }
@@ -346,7 +365,8 @@ final class Comptes
 
     private static function bannirSurLeSite(User $user, string $raison): void
     {
-        $user->forceFill(['access_token' => null]);
+        // le jeton du launcher est GARDÉ : le launcher voit alors « compte banni » (et retire les fichiers du jeu de ce
+        // PC) au lieu d'une simple session expirée ; Azuriom refuse déjà tout compte banni (connexion, pack, jeton de jeu)
         if (Schema::hasColumn('users', 'is_banned')) {
             $user->forceFill(['is_banned' => true]);
         }
