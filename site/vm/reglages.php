@@ -69,6 +69,13 @@ if (in_array(getenv('HERALIZ_TELECHARGEMENT'), ['ouvert', 'ferme'], true)) {
     Setting::updateSettings('heraliz.telechargement', getenv('HERALIZ_TELECHARGEMENT'));
 }
 
+// Discord obligatoire (bêta) : validation des comptes à la main par le staff ou automatique (VALIDATION de theme.sh),
+// lue par l'extension HeraliZ (Discord\Reglages)
+if (in_array(getenv('HERALIZ_VALIDATION'), ['manuelle', 'auto'], true)) {
+    Setting::updateSettings('heraliz.validation_manuelle', getenv('HERALIZ_VALIDATION') === 'manuelle' ? 'oui' : 'non');
+    dire('Validation des comptes (Discord obligatoire) : '.(getenv('HERALIZ_VALIDATION') === 'manuelle' ? 'à la main par le staff' : 'automatique'));
+}
+
 // récompense des votes : une seule fois (repère « heraliz.votes »), ensuite l'administration fait foi
 if (setting('heraliz.votes') === null) {
     recompenseVote();

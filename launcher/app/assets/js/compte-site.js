@@ -39,7 +39,8 @@ const MESSAGES_DISCORD = {
     pas_membre: 'Rejoins le Discord HeraliZ pour jouer.',
     en_attente: 'Ton compte est en attente de validation par le staff.',
     refuse: 'Ton compte a été refusé.',
-    banni: 'Ce compte est banni.'
+    banni: 'Ce compte est banni.',
+    indisponible: 'Discord ne répond pas pour le moment, réessaie dans un instant.'
 }
 const STATUTS_DISCORD = new Set(['ok', ...Object.keys(MESSAGES_DISCORD)])
 const HOTES_DISCORD = ['discord.gg', 'discord.com']
@@ -52,7 +53,7 @@ function erreurDiscord(statut) {
 
 // Réponse 403 { erreur: 'discord', statut } du pack ou du jeton de lancement.
 function refusDiscord(reponse) {
-    return reponse.status === 403 && reponse.body?.erreur === 'discord' ? erreurDiscord(reponse.body.statut) : null
+    return (reponse.status === 403 || reponse.status === 503) && reponse.body?.erreur === 'discord' ? erreurDiscord(reponse.body.statut) : null
 }
 
 // Requête JSON en HTTPS vers le site ; rend { status, body } sans lever d'erreur pour les réponses 4xx / 5xx.

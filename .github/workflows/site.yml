@@ -46,6 +46,16 @@ jobs:
       SITE_BDD_MDP: ${{ secrets.SITE_BDD_MDP }}
       SITE_ADRESSE_LEGALE: ${{ secrets.SITE_ADRESSE_LEGALE }}
       SITE_MAIL_CONTACT: ${{ secrets.SITE_MAIL_CONTACT }}
+      # Discord obligatoire pour jouer (bêta) : application Discord, bot, serveur, salon privé et rôles du staff ; sans
+      # DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN et DISCORD_GUILD_ID, le Discord n'est pas exigé
+      DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+      DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
+      DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
+      DISCORD_SALON_COMPTES: ${{ secrets.DISCORD_SALON_COMPTES }}
+      DISCORD_ROLES_STAFF: ${{ secrets.DISCORD_ROLES_STAFF }}
+      DISCORD_INVITATION: ${{ secrets.DISCORD_INVITATION }}
       ACTION: ${{ inputs.action || 'theme' }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -446,6 +456,11 @@ jobs:
             fi
             if [ "$ACTION" = theme ]; then
               printf 'ARCHIVE=%q\n' "$ARCHIVE"
+              # secrets du Discord obligatoire (theme.sh les écrit dans storage/app/heraliz/discord.json, lisible par le site seul)
+              for v in DISCORD_CLIENT_ID DISCORD_CLIENT_SECRET DISCORD_BOT_TOKEN DISCORD_PUBLIC_KEY DISCORD_GUILD_ID \
+                       DISCORD_SALON_COMPTES DISCORD_ROLES_STAFF DISCORD_INVITATION; do
+                printf '%s=%q\n' "$v" "${!v}"
+              done
             fi
             cat "site/vm/$ACTION.sh"
             # « installer » se termine par la sécurité de la VM
@@ -474,6 +489,24 @@ jobs:
             echo "- comptes du launcher (extension HeraliZ) : connexion avec le compte du site, création de compte et double authentification depuis le launcher"
             echo "- réglages de départ (menu, Règlement, grades, premières actualités) faits une seule fois : ensuite l'administration du site fait foi"
             echo "- reste à faire dans l'administration : moyens de paiement (Boutique → Paiements), articles et prix, sites de vote"
+            echo
+            echo "### Discord obligatoire pour jouer (bêta)"
+            validation=$(sed -n 's/^VALIDATION=\([a-z]*\).*/\1/p' site/vm/theme.sh | head -n 1)
+            if [ -n "$DISCORD_CLIENT_ID" ] && [ -n "$DISCORD_CLIENT_SECRET" ] && [ -n "$DISCORD_BOT_TOKEN" ] && [ -n "$DISCORD_GUILD_ID" ]; then
+              echo "- **actif** : sans Discord lié, membre du serveur Discord et pas banni, ni pack de jeu ni jeton de lancement"
+              if [ "$validation" = manuelle ] && { [ -z "$DISCORD_PUBLIC_KEY" ] || [ -z "$DISCORD_SALON_COMPTES" ] || [ -z "$DISCORD_ROLES_STAFF" ]; }; then
+                echo "- validation : **à la main demandée, mais DISCORD_PUBLIC_KEY, DISCORD_SALON_COMPTES ou DISCORD_ROLES_STAFF manque** : automatique en attendant"
+              elif [ "$validation" = manuelle ]; then
+                echo "- validation : **à la main** par le staff (boutons Accepter / Refuser du salon privé) ; \`VALIDATION=auto\` en tête de site/vm/theme.sh pour l'arrêter"
+              else
+                echo "- validation : **automatique** (Discord lié et membre suffisent)"
+              fi
+            else
+              echo "- **INACTIF** : secrets DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN ou DISCORD_GUILD_ID absents, n'importe quel compte peut jouer"
+              echo "::warning::Discord obligatoire inactif : secrets DISCORD_* absents."
+            fi
+            echo "- portail des développeurs Discord → OAuth2 → Redirects : \`https://heraliz.fr/heraliz/discord/retour\`"
+            echo "- portail des développeurs Discord → General Information → Interactions Endpoint URL : \`https://heraliz.fr/api/heraliz/discord/interactions\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Résumé

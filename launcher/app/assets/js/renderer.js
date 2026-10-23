@@ -608,7 +608,12 @@ const PANNEAUX_DISCORD = {
         verifier: 'Vérifier', toutesLes: 30000
     },
     refuse: { titre: 'Ton compte a été refusé.', texte: 'Le staff de HeraliZ a refusé ce compte. Tu peux te déconnecter pour utiliser un autre compte.' },
-    banni: { titre: 'Ce compte est banni.', texte: 'Ce compte ne peut plus jouer sur HeraliZ. Tu peux te déconnecter pour utiliser un autre compte.' }
+    banni: { titre: 'Ce compte est banni.', texte: 'Ce compte ne peut plus jouer sur HeraliZ. Tu peux te déconnecter pour utiliser un autre compte.' },
+    indisponible: {
+        titre: 'Discord ne répond pas',
+        texte: 'Le site n’arrive pas à vérifier ton compte Discord pour le moment. Le launcher réessaie tout seul.',
+        verifier: 'Réessayer', toutesLes: 30000
+    }
 }
 
 function discordBloque() {

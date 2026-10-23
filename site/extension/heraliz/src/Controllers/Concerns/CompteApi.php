@@ -3,6 +3,8 @@
 namespace Azuriom\Plugin\Heraliz\Controllers\Concerns;
 
 use Azuriom\Models\User;
+use Azuriom\Plugin\Heraliz\Adresse;
+use Azuriom\Plugin\Heraliz\Discord\Comptes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -32,5 +34,27 @@ trait CompteApi
         }
 
         return $user;
+    }
+
+    /**
+     * Discord obligatoire (bêta) : null si le compte peut avoir le pack et les jetons de jeu, sinon la réponse à rendre
+     * (403, ou 503 si Discord n'a encore jamais pu être interrogé pour ce compte). Note aussi l'adresse IP du compte.
+     * Le launcher lit « statut » (a_lier, pas_membre, en_attente, refuse, banni, indisponible) et appelle
+     * /api/heraliz/compte/etat pour le lien et l'invitation.
+     */
+    protected function discord(User $user, Request $request): ?JsonResponse
+    {
+        $statut = Comptes::statut($user, Adresse::de($request));
+        if ($statut === Comptes::OK) {
+            return null;
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'reason' => 'discord',
+            'erreur' => 'discord',
+            'statut' => $statut,
+            'message' => Comptes::message($statut),
+        ], $statut === Comptes::INDISPONIBLE ? 503 : 403);
     }
 }

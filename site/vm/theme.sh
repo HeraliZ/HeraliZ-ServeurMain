@@ -3,8 +3,8 @@
 # chaque envoi sur main qui touche le thème ou l'extension) : thème HeraliZ (site/theme/heraliz), extension HeraliZ
 # (site/extension/heraliz : création de compte et double authentification depuis le launcher), extensions Boutique et
 # Votes d'Azuriom, puis site/vm/reglages.php (thème actif ; réglages de départ une seule fois : l'administration fait
-# foi). Variable écrite en tête par la mise en ligne : ARCHIVE (thème, extension, reglages.php et images des premières
-# actualités ; effacée à la fin).
+# foi). Variables écrites en tête par la mise en ligne : ARCHIVE (thème, extension, reglages.php et images des premières
+# actualités ; effacée à la fin) et DISCORD_* (secrets GitHub du Discord obligatoire, vides s'ils manquent).
 set -euo pipefail
 : "${ARCHIVE:?}"
 DOSSIER=/var/www/azuriom
@@ -16,6 +16,10 @@ PACK_LAUNCHER_MIN=1.7.0
 # Téléchargement du launcher (heraliz.fr/telecharger/) : « ferme » le refuse à tous (403) et cache les boutons du site
 # (« Bientôt disponible ») ; « ouvert » le rend. Fermé, les launchers déjà installés ne se mettent plus à jour seuls.
 TELECHARGEMENT=ouvert
+# Discord obligatoire pour jouer (bêta) : chaque compte lie son Discord et doit être membre du serveur Discord, pas banni.
+# « manuelle » : en plus, le staff accepte chaque compte (boutons du salon privé) ; « auto » : Discord lié et membre
+# suffisent. Sans les secrets DISCORD_*, rien de tout ça n'est exigé.
+VALIDATION=manuelle
 TRAVAIL=$(mktemp -d /tmp/heraliz_site.XXXXXX)
 trap 'rm -rf "$TRAVAIL" "$ARCHIVE"' EXIT
 
@@ -67,6 +71,30 @@ if [ ! -s "$PB_CLE" ]; then
   (umask 077 && head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' > "$PB_CLE")
   chown www-data:www-data "$PB_CLE"
   echo "Clé des Points Boutique : créée"
+fi
+# Discord obligatoire : réglages lus par l'extension (Discord\Reglages), réécrits à chaque envoi depuis les secrets
+# GitHub, jamais dans le dépôt ; sans application, bot ou serveur Discord, fichier retiré : Discord pas exigé
+DISCORD_FICHIER="$DOSSIER/storage/app/heraliz/discord.json"
+if [ -n "${DISCORD_CLIENT_ID:-}" ] && [ -n "${DISCORD_CLIENT_SECRET:-}" ] && [ -n "${DISCORD_BOT_TOKEN:-}" ] && [ -n "${DISCORD_GUILD_ID:-}" ]; then
+  (umask 077 && env DISCORD_CLIENT_ID="${DISCORD_CLIENT_ID}" DISCORD_CLIENT_SECRET="${DISCORD_CLIENT_SECRET}" \
+    DISCORD_BOT_TOKEN="${DISCORD_BOT_TOKEN}" DISCORD_PUBLIC_KEY="${DISCORD_PUBLIC_KEY:-}" DISCORD_GUILD_ID="${DISCORD_GUILD_ID}" \
+    DISCORD_SALON_COMPTES="${DISCORD_SALON_COMPTES:-}" DISCORD_ROLES_STAFF="${DISCORD_ROLES_STAFF:-}" DISCORD_INVITATION="${DISCORD_INVITATION:-}" \
+    php -r '$c = [];
+      foreach (["client_id", "client_secret", "bot_token", "public_key", "guild_id", "salon_comptes", "roles_staff", "invitation"] as $k) {
+        $c[$k] = trim((string) getenv("DISCORD_".strtoupper($k)));
+      }
+      file_put_contents($argv[1], json_encode($c, JSON_UNESCAPED_SLASHES));' "$DISCORD_FICHIER")
+  chown www-data:www-data "$DISCORD_FICHIER"
+  chmod 600 "$DISCORD_FICHIER"
+  DISCORD_ACTIF=oui
+  echo "Discord obligatoire : actif (validation $VALIDATION)"
+  if [ "$VALIDATION" = manuelle ] && { [ -z "${DISCORD_PUBLIC_KEY:-}" ] || [ -z "${DISCORD_SALON_COMPTES:-}" ] || [ -z "${DISCORD_ROLES_STAFF:-}" ]; }; then
+    echo "::warning::Validation à la main demandée, mais DISCORD_PUBLIC_KEY, DISCORD_SALON_COMPTES ou DISCORD_ROLES_STAFF manque : validation automatique (Discord lié et membre suffisent) tant qu'ils ne sont pas réglés."
+  fi
+else
+  rm -f "$DISCORD_FICHIER"
+  DISCORD_ACTIF=non
+  echo "::warning::Discord obligatoire : INACTIF (secrets DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN ou DISCORD_GUILD_ID absents) : n'importe quel compte peut jouer."
 fi
 # storage (journaux, sessions, clés) lisible par le site seulement, remis à chaque envoi (« installer » relancé ouvre le
 # dossier du site en lecture à tous les comptes de la VM)
@@ -179,11 +207,15 @@ else
   nginx -t > /dev/null 2>&1 && systemctl reload nginx
   echo "::warning::Téléchargement du launcher : nginx a refusé le réglage, laissé ouvert."
   TELECHARGEMENT=ouvert
+# Discord obligatoire pour jouer (bêta) : chaque compte lie son Discord et doit être membre du serveur Discord, pas banni.
+# « manuelle » : en plus, le staff accepte chaque compte (boutons du salon privé) ; « auto » : Discord lié et membre
+# suffisent. Sans les secrets DISCORD_*, rien de tout ça n'est exigé.
+VALIDATION=manuelle
 fi
 rm -f /tmp/heraliz-nginx-t.avant
 
 echo "== Réglages"
-en_site env HERALIZ_TELECHARGEMENT="$TELECHARGEMENT" php "$TRAVAIL/vm/reglages.php" "$DOSSIER" "$TRAVAIL/contenu"
+en_site env HERALIZ_TELECHARGEMENT="$TELECHARGEMENT" HERALIZ_VALIDATION="$VALIDATION" php "$TRAVAIL/vm/reglages.php" "$DOSSIER" "$TRAVAIL/contenu"
 en_site php artisan view:clear > /dev/null
 en_site php artisan cache:clear > /dev/null
 
@@ -230,3 +262,13 @@ case "$etat" in
   *'"connexion":'*) echo "::warning::Comptes du launcher : API de connexion désactivée (administration → Paramètres → Authentification)" ;;
   *) echo "::warning::Comptes du launcher : https://heraliz.fr/api/heraliz/etat ne répond pas (extension HeraliZ)" ;;
 esac
+# Discord obligatoire : l'adresse des boutons du staff répond (Discord l'exige : requête non signée refusée, 401)
+if [ "$DISCORD_ACTIF" = oui ]; then
+  code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' --resolve heraliz.fr:443:127.0.0.1 -X POST -H 'Content-Type: application/json' \
+    -d '{"type":1}' https://heraliz.fr/api/heraliz/discord/interactions || true)
+  if [ "$code" = 401 ]; then
+    echo "Boutons du staff (https://heraliz.fr/api/heraliz/discord/interactions) : en place (requête non signée refusée)"
+  else
+    echo "::warning::Boutons du staff : https://heraliz.fr/api/heraliz/discord/interactions répond ${code:-rien} à une requête non signée (401 attendu)"
+  fi
+fi
