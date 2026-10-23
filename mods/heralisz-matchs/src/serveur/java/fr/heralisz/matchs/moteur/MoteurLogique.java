@@ -132,6 +132,7 @@ public final class MoteurLogique {
             }
             CONNEXIONS.clear();
         }
+        GardeHorsMatch.tick(s);
         TAMPON.clear();
         TAMPON.addAll(MatchApi.parties());
         for (int i = 0; i < TAMPON.size(); i++) {

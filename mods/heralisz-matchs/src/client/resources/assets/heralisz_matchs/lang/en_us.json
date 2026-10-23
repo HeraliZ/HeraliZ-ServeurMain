@@ -1051,5 +1051,6 @@
   "heralisz_matchs.duel.classe.precision": "SNIPER",
   "heralisz_matchs.duel.classe.soutien": "SUPPORT",
   "heralisz_matchs.duel.classe.numero": "CLASS %s",
-  "heralisz_matchs.zombies.dev.aucune_partie": "no zombies game"
+  "heralisz_matchs.zombies.dev.aucune_partie": "no zombies game",
+  "matchs.hors_match.renvoye": "You are no longer in any match: back to spawn."
 }

@@ -61,6 +61,12 @@ public final class Protections {
     public static final Set<String> COMMANDES_BLOQUEES = Set.of("pv", "playervaults", "vault", "trade", "ec", "enderchest", "echest",
             "home", "homes", "sethome", "spawn", "warp", "warps", "back", "tpa", "tpahere", "tpaccept", "rtp", "wild", "kit", "kits",
             "hat", "craft", "workbench", "anvil", "disposal", "trash", "invsee", "suicide");
+    /**
+     * Seules commandes permises en match (23/10, choix du propriétaire) : quitter ou suivre son match, le groupe, les
+     * messages privés et la connexion. Tout le reste est refusé (staff permission 2 compris dans les exceptions).
+     */
+    public static final Set<String> COMMANDES_PERMISES = Set.of("zombies", "duel", "clashwar", "matchs", "groupe", "msg", "tell",
+            "w", "r", "login", "l", "register", "reg");
     private static final Map<UUID, Integer> DERNIERE_SORTIE = new HashMap<>();
 
     public static void enregistrer() {
@@ -150,7 +156,7 @@ public final class Protections {
         String racine = (sp < 0 ? brut : brut.substring(0, sp)).toLowerCase(Locale.ROOT);
         int deux = racine.indexOf(':');
         if (deux >= 0) racine = racine.substring(deux + 1);
-        if (COMMANDES_BLOQUEES.contains(racine)) {
+        if (COMMANDES_BLOQUEES.contains(racine) || !COMMANDES_PERMISES.contains(racine)) {
             e.setCanceled(true);
             Annonces.chat(p, Component.translatable("matchs.commande_bloquee"));
         }

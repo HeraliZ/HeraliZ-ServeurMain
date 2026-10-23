@@ -1051,5 +1051,6 @@
   "heralisz_matchs.duel.classe.precision": "PRÉCISION",
   "heralisz_matchs.duel.classe.soutien": "SOUTIEN",
   "heralisz_matchs.duel.classe.numero": "CLASSE %s",
-  "heralisz_matchs.zombies.dev.aucune_partie": "aucune partie de zombies"
+  "heralisz_matchs.zombies.dev.aucune_partie": "aucune partie de zombies",
+  "matchs.hors_match.renvoye": "Tu n'es plus dans aucune partie : retour au spawn."
 }
