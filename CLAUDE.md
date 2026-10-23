@@ -768,7 +768,12 @@ Les contrôles `verif_split` et `verif_reobf` ont besoin de Minecraft en noms SR
   OpenSSH 10, dont les refus s'écrivent sous le nom `sshd-session`), coupe LLMNR / mDNS et ajoute à nginx, sur un site
   déjà installé, HSTS et le vrai nom du site (`installer.sh` les écrit dans les nouveaux). `theme.sh` remet à chaque
   envoi `storage/` et la clé des jetons en lecture pour le site seulement (600). Le SSH de la VM accepte
-  root avec mot de passe (les workflows s'en servent) : le mot de passe doit rester long et unique. Attention : 6 erreurs
+  root avec mot de passe (les workflows s'en servent) : le mot de passe doit rester long et unique. Choix
+  **mot_de_passe** (23/10) : remplace le mot de passe SSH de l'utilisateur `SITE_SSH_UTILISATEUR` par le secret
+  `SITE_SSH_MDP_NOUVEAU` (24 à 128 caractères, lettres, chiffres, `. _ @ % + = ! # -`, refusé sinon ;
+  `site/vm/mot_de_passe.sh`, chpasswd, jamais en ligne de commande), vérifie que le nouveau ouvre la VM, puis le résumé
+  dit de le recopier dans `SITE_SSH_MDP` et de supprimer `SITE_SSH_MDP_NOUVEAU` (en attendant, pack et launcher ne se
+  publient plus). Choix du propriétaire : mot de passe long et aléatoire plutôt qu'une clé SSH. Attention : 6 erreurs
   depuis chez soi bloquent aussi sa propre adresse 1 h.
 - Après le premier « installer » : ouvrir https://heraliz.fr et terminer l'installeur d'Azuriom (base : hôte `127.0.0.1`,
   port `3306`, base `azuriom`, utilisateur `azuriom`, mot de passe = secret `SITE_BDD_MDP` ; jeu : Minecraft Java ;
