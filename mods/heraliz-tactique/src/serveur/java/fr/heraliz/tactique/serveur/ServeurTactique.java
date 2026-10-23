@@ -7,7 +7,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * Partie serveur du mod porteur : les règles de « s'allonger » (AllongeServeur), les vitres cassées par les balles,
  * qui repoussent (VitresServeur, diagnostic du staff {@code /vitres pourquoi} : CommandeVitres), les tirs silencieux
  * entendus de loin (SonLointainServeur), les coups des couteaux TaCZ (CouteauxServeur) et les dégâts des armes TaCZ
- * contre les joueurs (DegatsArmes, config heraliz_tactique/armes.json).
+ * contre les joueurs (DegatsArmes, config heraliz_tactique/armes.json), le tir automatique par défaut (TirAutoServeur).
  */
 public final class ServeurTactique implements Partie {
    @Override
@@ -18,5 +18,6 @@ public final class ServeurTactique implements Partie {
       CouteauxServeur.brancher();
       DegatsArmes.brancher();
       ObjetsAVieServeur.brancher();
+      TirAutoServeur.brancher();
    }
 }

@@ -78,6 +78,8 @@ public class HeralizTactique {
       fr.heraliz.tactique.armes.ReseauArmes.init();
       // objets à vie (couteaux, skins à vie) : question « Jeter cet objet ? » et sa réponse
       fr.heraliz.tactique.avie.ObjetsAVie.init();
+      // jambe cassée (attelle) : pas de saut
+      fr.heraliz.tactique.jambe.JambeCassee.init();
       Parties.serveur(MODID, "fr.heraliz.tactique.serveur.ServeurTactique", bus);
       Parties.client(MODID, "fr.heraliz.tactique.client.ClientTactique", bus);
    }
