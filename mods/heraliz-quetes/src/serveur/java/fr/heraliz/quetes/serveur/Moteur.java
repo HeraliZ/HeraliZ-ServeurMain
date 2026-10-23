@@ -190,7 +190,15 @@ final class Moteur {
             notif(p, Texte.cle("heraliz_quetes.notif.etape", libelle(q.etapes.get(a.etape - 1))), 0x5FD08A);
             son(p, false);
         }
+        // étape faite au PNJ (donner, payer…) : objets ou hérals déjà pris, progression écrite tout de suite (23/10)
+        if (auPnj) sauver(p);
         envoyerSuivi(p);
+    }
+
+    /** Progression et joueur écrits tout de suite (après un paiement ou des objets pris). */
+    static void sauver(ServerPlayer p) {
+        Donnees.ecrireMaintenant(p.getUUID());
+        Ponts.sauverJoueur(p);
     }
 
     static void terminer(ServerPlayer p, Donnees.DActive a, Defs.Quete q) {
@@ -227,6 +235,8 @@ final class Moteur {
         p.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5F, 1.3F);
         LOG.info("[heraliz_quetes] {} a fini « {} » ({}) : {} hérals{}, réputation {} {}", p.getGameProfile().getName(),
                 q.titre.francais(), a.cle, r.herals, paye ? "" : " (NON versés : économie absente)", a.pnj, dp.rep);
+        // 23/10 : quête payée = progression et joueur écrits tout de suite (sinon rendue et payée deux fois après un plantage)
+        sauver(p);
         envoyerSuivi(p);
     }
 

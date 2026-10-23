@@ -41,6 +41,25 @@ import java.util.UUID;
  */
 final class Ponts {
     private static final Logger LOG = LogUtils.getLogger();
+    private static Method sauverJoueur;
+
+    /**
+     * Sauvegarde tout de suite le joueur ({@code PlayerList.save}, protégée : par réflexion, nom SRG {@code m_6765_}),
+     * après un échange d'objets contre des hérals (vente, quête payée) : un arrêt brutal du serveur ne peut plus rendre
+     * les objets ET garder l'argent (les joueurs ne sont sinon écrits que toutes les 5 min).
+     */
+    static void sauverJoueur(ServerPlayer p) {
+        if (p.getServer() == null) return;
+        try {
+            if (sauverJoueur == null) {
+                sauverJoueur = net.minecraftforge.fml.util.ObfuscationReflectionHelper.findMethod(
+                        net.minecraft.server.players.PlayerList.class, "m_6765_", ServerPlayer.class);
+            }
+            sauverJoueur.invoke(p.getServer().getPlayerList(), p);
+        } catch (Exception e) {
+            LOG.error("[heraliz_quetes] sauvegarde de {} impossible", p.getGameProfile().getName(), e);
+        }
+    }
     static final List<String> RARETES = List.of("commun", "peu_commun", "rare", "epique", "legendaire", "unique");
     /** Raretés de HeraliZ Composants, dans le même ordre (Mythique = le 6e rang, comme Unique). */
     private static final List<String> RARETES_COMPOSANTS = List.of("HERALIZ_COMMON", "HERALIZ_UNCOMMON", "HERALIZ_RARE",

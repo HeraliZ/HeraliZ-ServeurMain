@@ -10,6 +10,11 @@ Le reste du fichier du PNJ (nom, apparence, phrases) n'est pas touché. Prix en 
 - accessoires TaCZ : ceux de rareté Commun à Rare (section « accessoires »), sans les munitions spéciales ;
 - matériaux de construction (Bâtisseur) : tableau MATERIAUX ;
 - rachat : objets de valeur (tag heraliz_composants:vente), puis tous les composants (heraliz_composants:tous).
+
+Contrôle (23/10, brindilles achetées 2 hérals au Bâtisseur et revendues 8 à Mila, sans limite) : un objet vendu par un
+marchand n'est JAMAIS racheté par le serveur (Marchands.prixRachat de HeraliZ Quêtes 1.10.3). Le script liste les objets
+vendus qu'une règle de rachat paierait autant ou plus que leur prix de vente, et refuse d'écrire si cette exclusion
+manque dans le code du serveur.
 """
 import json
 from pathlib import Path
@@ -67,7 +72,47 @@ MARCHANDS = {
     "batisseur": {"type": "achat", "articles": [{"objet": o, "prix": p} for o, p in MATERIAUX]},
 }
 
+TAGS = RACINE / "mods" / "heraliz-composants" / "src" / "serveur" / "resources" / "data" / "heraliz_composants" / "tags" / "items"
+MARCHANDS_JAVA = (RACINE / "mods" / "heraliz-quetes" / "src" / "serveur" / "java" / "fr" / "heraliz" / "quetes" / "serveur"
+                  / "Marchands.java")
+
+
+def tag(nom):
+    """Identifiants d'un tag de heraliz_composants (vide s'il n'est pas de ce mod)."""
+    if not nom.startswith("heraliz_composants:"):
+        return set()
+    f = TAGS / (nom.split(":", 1)[1] + ".json")
+    return set(json.loads(f.read_text(encoding="utf-8")).get("values", [])) if f.exists() else set()
+
+
+def controle():
+    """Objets vendus qu'un racheteur paierait autant ou plus que leur prix : refus si le serveur ne les exclut pas."""
+    ventes = {}
+    for m in MARCHANDS.values():
+        for a in m.get("articles", []):
+            ventes[a["objet"]] = min(a["prix"], ventes.get(a["objet"], a["prix"]))
+    conflits = []
+    for pid, m in MARCHANDS.items():
+        for r in m.get("rachat", []):
+            ids = tag(r["tag"])
+            for o, prix in ventes.items():
+                if o not in ids:
+                    continue
+                rar = RARETES["objets"].get(o, "commun")
+                v = r["prix"].get("mythique" if rar == "unique" else rar, 0)
+                if v >= prix:
+                    conflits.append(f"{o} : vendu {prix}, {pid} le paierait {v}")
+    if not conflits:
+        return
+    exclu = "SaisonQuetes.vendu(vendus, s)" in MARCHANDS_JAVA.read_text(encoding="utf-8")
+    for c in conflits:
+        print(("exclu du rachat par le serveur : " if exclu else "ERREUR rachat >= vente : ") + c)
+    if not exclu:
+        raise SystemExit("Refusé : le serveur rachèterait des objets vendus (Marchands.prixRachat sans exclusion).")
+
+
 if __name__ == "__main__":
+    controle()
     for pid, m in MARCHANDS.items():
         f = PNJ / f"{pid}.json"
         d = json.loads(f.read_text(encoding="utf-8"))

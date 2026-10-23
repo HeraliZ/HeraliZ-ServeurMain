@@ -330,7 +330,8 @@ final class Commandes {
             "heraliz_batisseur_presente"};
 
     /**
-     * Remise à zéro complète : base CRac, tutoriel, personnage CaraCrea, quêtes, inventaire, coffre de l'Ender, Curios,
+     * Remise à zéro complète : cabane d'essai du tutoriel (jamais la base du clan), coffre de match, échanges /trade en
+     * attente, tutoriel, personnage CaraCrea, quêtes, inventaire, coffre de l'Ender, Curios,
      * coffres personnels (planque, VIP), clan (retiré ; chef : direction passée au membre suivant, ou clan dissous s'il
      * était seul), hérals remis à 0, marques de la cinématique et du guide ; puis le joueur est expulsé : à sa
      * reconnexion il refait toute l'arrivée (créateur de personnage, cinématique, guide). Gardés : objets à vie
@@ -347,7 +348,7 @@ final class Commandes {
     }
 
     /**
-     * Le cœur de {@code /wipe <joueur>}, repris par {@code /wipe serveur} ({@link WipeServeur}) à la connexion de chaque
+     * Le cœur de {@code /wipe <joueur>}, repris par {@code /wipe tout} ({@link WipeServeur}) à la connexion de chaque
      * joueur : tout est remis à zéro, ses objets à vie (et {@code enPlus}, ceux trouvés dans sa base ou le coffre de son
      * clan) lui sont rendus, puis il est expulsé avec {@code message}.
      */
@@ -361,11 +362,20 @@ final class Commandes {
         if (estAVie(souris)) aVie.add(souris.copy());
         viderCoffresPerso(srv, p.getUUID(), aVie);
         for (ItemStack s : enPlus) if (!s.isEmpty()) aVie.add(s.copy());
+        // 23/10 : son coffre de match (vrai inventaire d'un joueur en duel, ClashWar, Zombies) et ses échanges /trade en
+        // attente partent aussi (sinon rendus après la remise à zéro) ; seuls leurs objets à vie sont gardés
+        garderAVie(aVie, appelObjets("fr.heralisz.matchs.serveur.WipeMatchs", "vider",
+                new Class<?>[]{net.minecraft.server.MinecraftServer.class, UUID.class}, srv, p.getUUID()));
+        garderAVie(aVie, appelObjets("fr.heraliz.grades.serveur.EchangeServeur", "wipe", new Class<?>[]{UUID.class}, p.getUUID()));
+        // 23/10 : seulement sa cabane d'essai du tutoriel, AVANT de le retirer de son clan ; plus jamais « base effacer »
+        // (le groupe CRac du clan ne suit le clan que toutes les 5 s : c'était la base de tout le clan qui partait)
+        appel("fr.heraliz.crac.api.WipeApi", "cabaneEssai", new Class<?>[]{net.minecraft.server.MinecraftServer.class, UUID.class},
+                srv, p.getUUID());
         appel("fr.heralisz.clans.server.ClanService", "adminRetirer", new Class<?>[]{UUID.class, String.class}, p.getUUID(), nom);
         appel("fr.heralisz.economie.api.EconomieApi", "definir", new Class<?>[]{UUID.class, long.class, String.class},
                 p.getUUID(), 0L, "wipe");
         CommandSourceStack console = srv.createCommandSourceStack().withSuppressedOutput();
-        for (String cmd : new String[]{"base effacer " + nom, "tuto rejouer " + nom, "caracrea reset " + nom, "curios clear " + nom}) {
+        for (String cmd : new String[]{"tuto rejouer " + nom, "caracrea reset " + nom, "curios clear " + nom}) {
             try {
                 srv.getCommands().performPrefixedCommand(console, cmd);
             } catch (Exception ignore) {
@@ -416,6 +426,22 @@ final class Commandes {
             }
         } catch (ReflectiveOperationException | LinkageError | ClassCastException e) {
             com.mojang.logging.LogUtils.getLogger().warn("[Quêtes] /wipe : coffres personnels non vidés ({})", e.toString());
+        }
+    }
+
+    private static void garderAVie(List<ItemStack> garde, List<ItemStack> objets) {
+        for (ItemStack s : objets) if (estAVie(s)) garde.add(s.copy());
+    }
+
+    /** Appel par réflexion qui rend des objets (liste vide si le mod est absent ou si l'appel échoue). */
+    @SuppressWarnings("unchecked")
+    private static List<ItemStack> appelObjets(String classe, String methode, Class<?>[] types, Object... args) {
+        try {
+            Object r = Class.forName(classe).getMethod(methode, types).invoke(null, args);
+            return r instanceof List<?> l ? (List<ItemStack>) l : List.of();
+        } catch (ReflectiveOperationException | LinkageError | ClassCastException e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[Quêtes] /wipe : {}.{} impossible ({})", classe, methode, e.toString());
+            return List.of();
         }
     }
 

@@ -113,6 +113,11 @@ final class Donnees {
         SALES.add(u);
     }
 
+    /** Écrit tout de suite la progression (après une quête payée : jamais payée deux fois après un arrêt brutal). */
+    static void ecrireMaintenant(UUID u) {
+        ecrire(u);
+    }
+
     /** Écrit et oublie (déconnexion). */
     static void liberer(UUID u) {
         ecrire(u);

@@ -57,9 +57,10 @@ final class Marchands {
         List<Reseau.Article> articles = new ArrayList<>();
         int[] prix = new int[Reseau.CASES], rar = new int[Reseau.CASES];
         if (m.rachat) {
+            java.util.Set<String> vendus = SaisonQuetes.vendus();
             for (int i = 0; i < Reseau.CASES; i++) {
                 ItemStack s = p.getInventory().items.get(i);
-                prix[i] = (int) Math.min(Integer.MAX_VALUE, prixRachat(m, s));
+                prix[i] = (int) Math.min(Integer.MAX_VALUE, prixRachat(m, s, vendus));
                 rar[i] = s.isEmpty() ? -1 : Ponts.rarete(s);
             }
         } else {
@@ -115,10 +116,10 @@ final class Marchands {
         for (int c : new LinkedHashSet<>(v.cases())) {
             if (c < 0 || c >= Reseau.CASES) continue;
             ItemStack s = p.getInventory().items.get(c);
-            long u = prixRachat(def.marchand, s);
+            long u = prixRachat(def.marchand, s, vendus);
             if (u <= 0) continue;
             total += u * s.getCount();
-            if (!SaisonQuetes.vendu(vendus, s)) horsBoutique += u * s.getCount();
+            horsBoutique += u * s.getCount();
             nombre += s.getCount();
             p.getInventory().items.set(c, ItemStack.EMPTY);
         }
@@ -128,6 +129,8 @@ final class Marchands {
         } else {
             SaisonQuetes.vente(p, horsBoutique);
         }
+        // 23/10 : objets partis et hérals versés écrits tout de suite (un arrêt brutal ne rend plus les deux)
+        Ponts.sauverJoueur(p);
         p.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
         Moteur.notif(p, Texte.cle("heraliz_quetes.notif.vendu", Texte.brut(nombre), Texte.brut(Ponts.nombre(total))), 0xE8C36A);
         LOG.info("[heraliz_quetes] {} vend {} objets à {} pour {} hérals", p.getGameProfile().getName(), nombre, def.id, total);
@@ -138,7 +141,17 @@ final class Marchands {
         if (p.level().getEntity(entite) instanceof Pnj ent) envoyer(p, ent, def, false);
     }
 
-    /** Prix de rachat à l'unité (0 : il ne le prend pas). La première règle dont le tag correspond fixe le prix. */
+    /**
+     * Prix de rachat à l'unité (0 : il ne le prend pas), pour un objet qu'aucun marchand ne vend : un objet vendu par un
+     * marchand (fichiers ou changements en jeu, {@code vendus}) n'est JAMAIS racheté (23/10 : brindilles achetées 2 hérals
+     * au Bâtisseur, revendues 8 à Mila, sans limite).
+     */
+    static long prixRachat(Defs.Marchand m, ItemStack s, java.util.Set<String> vendus) {
+        if (SaisonQuetes.vendu(vendus, s)) return 0;
+        return prixRachat(m, s);
+    }
+
+    /** Prix de la règle seule, sans regarder les ventes. La première règle dont le tag correspond fixe le prix. */
     static long prixRachat(Defs.Marchand m, ItemStack s) {
         if (s.isEmpty() || s.getItem() instanceof ObjetQuete) return 0;
         for (Defs.Regle r : m.regles) {

@@ -40,11 +40,11 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * {@code /wipe serveur} (op niveau 4 ou console, demande du propriétaire du 22/10) : remise à zéro complète du serveur,
- * comme un wipe de Rust. Triple vérification, toujours par la même personne : {@code /wipe serveur} montre ce qui va
- * disparaître et un code ; {@code /wipe serveur confirmer <code>} (dans la minute) donne un dernier avertissement et un
- * second code ; {@code /wipe serveur valider <code>} (dans les 30 s) annonce à tous un compte à rebours de 10 s, que
- * {@code /wipe serveur annuler} arrête ; puis tout part :
+ * {@code /wipe tout} (op niveau 4 ou console, demande du propriétaire du 22/10) : remise à zéro complète du serveur,
+ * comme un wipe de Rust. Triple vérification, toujours par la même personne : {@code /wipe tout} montre ce qui va
+ * disparaître et un code ; {@code /wipe tout confirmer <code>} (dans la minute) donne un dernier avertissement et un
+ * second code ; {@code /wipe tout valider <code>} (dans les 30 s) annonce à tous un compte à rebours de 10 s, que
+ * {@code /wipe tout annuler} arrête ; puis tout part :
  * <ul>
  * <li>toutes les bases de CRac, contenu compris, et leurs données (homes, tutoriels, cœurs, groupes) ;</li>
  * <li>tous les clans dissous (banque et coffre perdus), hérals de tous les comptes à 0, saison et classement du
@@ -79,7 +79,7 @@ final class WipeServeur {
     private static final int COMPTE_A_REBOURS = 10;
 
     static LiteralArgumentBuilder<CommandSourceStack> commande() {
-        return Commands.literal("serveur")
+        return Commands.literal("tout")
                 .executes(c -> annoncer(c.getSource()))
                 .then(Commands.literal("confirmer").then(Commands.argument("code", StringArgumentType.word())
                         .executes(c -> confirmer(c.getSource(), StringArgumentType.getString(c, "code")))))
@@ -105,7 +105,7 @@ final class WipeServeur {
                         + "emotes, grades, permissions, comptes. Impossible à annuler.").withStyle(ChatFormatting.RED), false);
         String c = code;
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.code",
-                "Pour lancer : /wipe serveur confirmer %s (valable 1 minute).", c).withStyle(ChatFormatting.GOLD), false);
+                "Pour lancer : /wipe tout confirmer %s (valable 1 minute).", c).withStyle(ChatFormatting.GOLD), false);
         return 1;
     }
 
@@ -118,12 +118,12 @@ final class WipeServeur {
         codeFin = System.currentTimeMillis() + 30_000L;
         String c = code;
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.derniere",
-                "DERNIÈRE VÉRIFICATION : tout le serveur sera remis à zéro. Pour lancer : /wipe serveur valider %s (valable 30 secondes).",
+                "DERNIÈRE VÉRIFICATION : tout le serveur sera remis à zéro. Pour lancer : /wipe tout valider %s (valable 30 secondes).",
                 c).withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), false);
         return 1;
     }
 
-    /** 3e étape : second code juste ; compte à rebours de 10 s annoncé à tous, {@code /wipe serveur annuler} l'arrête. */
+    /** 3e étape : second code juste ; compte à rebours de 10 s annoncé à tous, {@code /wipe tout annuler} l'arrête. */
     private static int valider(CommandSourceStack src, String saisi) {
         if (lancementTick >= 0) return dejaLance(src);
         if (!codeBon(src, 2, saisi)) return mauvaisCode(src);
@@ -138,7 +138,7 @@ final class WipeServeur {
                     "Remise à zéro du serveur dans %s secondes.", n).withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
         }
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.annulable",
-                "Lancement dans %s secondes. Pour l'arrêter : /wipe serveur annuler", n).withStyle(ChatFormatting.GOLD), false);
+                "Lancement dans %s secondes. Pour l'arrêter : /wipe tout annuler", n).withStyle(ChatFormatting.GOLD), false);
         return 1;
     }
 
@@ -167,13 +167,13 @@ final class WipeServeur {
 
     private static int mauvaisCode(CommandSourceStack src) {
         src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.mauvais_code",
-                "Code faux ou périmé : tape d'abord /wipe serveur."));
+                "Code faux ou périmé : tape d'abord /wipe tout."));
         return 0;
     }
 
     private static int dejaLance(CommandSourceStack src) {
         src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.deja",
-                "Une remise à zéro est déjà lancée : /wipe serveur annuler pour l'arrêter."));
+                "Une remise à zéro est déjà lancée : /wipe tout annuler pour l'arrêter."));
         return 0;
     }
 
@@ -195,6 +195,7 @@ final class WipeServeur {
         appel("fr.heralisz.matchs.clashwar.CwClassement", "toutEffacer", new Class<?>[]{MinecraftServer.class}, srv);
         int sol = nettoyerSol(srv);
         Etat e = Etat.lire(srv);
+        if (e.illisible) e = new Etat();   // l'ancien fichier est mis de côté, jamais écrasé
         e.numero++;
         e.date = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         e.joueurs.addAll(joueursConnus(srv));
@@ -211,7 +212,7 @@ final class WipeServeur {
                 n).withStyle(ChatFormatting.GREEN), true);
     }
 
-    /** À la connexion : joueur pas encore remis à zéro depuis le dernier {@code /wipe serveur}. */
+    /** À la connexion : joueur pas encore remis à zéro depuis le dernier {@code /wipe tout}. */
     static void connexion(ServerPlayer p) {
         if (Etat.lire(p.server).joueurs.contains(p.getUUID())) FILE.put(p.getUUID(), ticks + 40);
     }
@@ -237,19 +238,22 @@ final class WipeServeur {
             ServerPlayer p = srv.getPlayerList().getPlayer(u);
             if (p == null) continue;   // parti avant : ce sera à sa prochaine connexion
             Etat e = Etat.lire(srv);
+            if (e.illisible) continue;   // wipe.dat mis de côté : rien à rejouer, rien d'écrasé
             List<ItemStack> enPlus = e.objets.getOrDefault(u, List.of());
-            // noté d'abord : un plantage pendant la remise à zéro ne la rejoue pas en boucle
+            try {
+                Commandes.remettreAZero(p, enPlus, Component.translatableWithFallback("heraliz_quetes.wipe.serveur.kick",
+                        "Le serveur a été remis à zéro : nouvelle saison ! Reconnecte-toi pour recommencer."));
+            } catch (RuntimeException ex) {
+                // 23/10 : rien n'est noté, ses objets à vie à rendre restent dans wipe.dat (nouvel essai à sa connexion)
+                LOG.error("[Quêtes] remise à zéro de {} en erreur (objets à vie à rendre : {})", p.getGameProfile().getName(), enPlus, ex);
+                continue;
+            }
+            // noté seulement après une remise à zéro réussie (23/10 : avant, un échec perdait les objets à vie à rendre)
             e.joueurs.remove(u);
             e.objets.remove(u);
             e.ecrire(srv);
             LOG.info("[Quêtes] remise à zéro du serveur : {} remis à zéro ({} objets à vie rendus en plus)",
                     p.getGameProfile().getName(), enPlus.size());
-            try {
-                Commandes.remettreAZero(p, enPlus, Component.translatableWithFallback("heraliz_quetes.wipe.serveur.kick",
-                        "Le serveur a été remis à zéro : nouvelle saison ! Reconnecte-toi pour recommencer."));
-            } catch (RuntimeException ex) {
-                LOG.error("[Quêtes] remise à zéro de {} en erreur (objets à vie à rendre : {})", p.getGameProfile().getName(), enPlus, ex);
-            }
         }
     }
 
@@ -268,7 +272,7 @@ final class WipeServeur {
             return Class.forName(classe).getMethod(methode, types).invoke(null, args);
         } catch (ReflectiveOperationException | LinkageError e) {
             Throwable t = e.getCause() != null ? e.getCause() : e;
-            LOG.error("[Quêtes] /wipe serveur : {}.{} impossible", classe, methode, t);
+            LOG.error("[Quêtes] /wipe tout : {}.{} impossible", classe, methode, t);
             return null;
         }
     }
@@ -311,7 +315,7 @@ final class WipeServeur {
                 }
             });
         } catch (IOException ex) {
-            LOG.error("[Quêtes] /wipe serveur : {} illisible ({})", dossier, ex.toString());
+            LOG.error("[Quêtes] /wipe tout : {} illisible ({})", dossier, ex.toString());
         }
     }
 
@@ -321,6 +325,8 @@ final class WipeServeur {
         String date = "";
         final Set<UUID> joueurs = new LinkedHashSet<>();
         final Map<UUID, List<ItemStack>> objets = new HashMap<>();
+        /** Fichier illisible (mis de côté en {@code wipe.dat.illisible-<date>}) : rien n'est rejoué ni écrit dessus. */
+        boolean illisible;
 
         private static Path fichier(MinecraftServer srv) {
             return srv.getServerDirectory().toPath().resolve("heraliz_quetes").resolve("wipe.dat");
@@ -356,8 +362,19 @@ final class WipeServeur {
                         // clé abîmée
                     }
                 }
-            } catch (IOException ex) {
-                LOG.error("[Quêtes] {} illisible ({})", f, ex.toString());
+            } catch (IOException | RuntimeException ex) {
+                // 23/10 : jamais écrasé (il garde les objets à vie à rendre) : mis de côté pour le staff
+                Path cote = f.resolveSibling("wipe.dat.illisible-"
+                        + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")));
+                LOG.error("[Quêtes] {} illisible ({}) : mis de côté en {}", f, ex.toString(), cote.getFileName());
+                try {
+                    Files.move(f, cote);
+                } catch (IOException ex2) {
+                    LOG.error("[Quêtes] {} : impossible de le mettre de côté ({})", f, ex2.toString());
+                }
+                Etat vide = new Etat();
+                vide.illisible = true;
+                return vide;
             }
             return e;
         }

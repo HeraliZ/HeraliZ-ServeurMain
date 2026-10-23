@@ -221,6 +221,13 @@ final class EditionMarchands {
                 }
                 l.add(new Defs.ArticleDef(objet, nbt, r.prix()));
                 quoi = "+ " + objet + " " + r.prix();
+                // 23/10 : un objet vendu n'est plus jamais racheté (Marchands.prixRachat) : on le dit à l'op
+                for (Defs.Pnj autre : Catalogue.tous()) {
+                    if (autre.marchand != null && autre.marchand.rachat && Marchands.prixRachat(autre.marchand, main) > 0) {
+                        Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.plus_rachete", Texte.cle(main.getDescriptionId())), 0xE8C36A);
+                        break;
+                    }
+                }
             }
             case Reseau.Modif.PRIX_RACHAT -> {
                 if (!m.rachat || r.index() < 0 || r.index() >= m.regles.size() || r.rarete() < 0 || r.rarete() >= 6 || r.prix() < 0) break;
