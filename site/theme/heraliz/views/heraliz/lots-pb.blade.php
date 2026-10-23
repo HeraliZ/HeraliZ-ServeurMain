@@ -23,10 +23,22 @@
 {{-- Ce que les PB permettent d'avoir (demande du propriétaire, 23/10). --}}
 <div class="hz-dispo">
     <h3>Disponible avec tes PB</h3>
+    @php
+        $grades = [
+            ['rescape', 'Rescapé', '#E39B5E', null],
+            ['traqueur', 'Traqueur', '#8FD3FF', null],
+            ['roi_de_la_zone', 'Roi de la Zone', '#FFC23A', null],
+            ['beta', 'BETA', '#7FB069', 'Uniquement pendant la bêta'],
+        ];
+    @endphp
     <div class="grades">
-        <div><span class="g" style="color:#E39B5E">Grade Rescapé</span></div>
-        <div><span class="g" style="color:#8FD3FF">Grade Traqueur</span></div>
-        <div><span class="g" style="color:#FFC23A">Grade Roi de la Zone</span><span class="g beta">Grade BETA <small>uniquement pendant la bêta</small></span></div>
+        @foreach($grades as [$id, $nom, $couleur, $note])
+            <div class="carte-grade" style="--g: {{ $couleur }}">
+                <img src="{{ theme_asset('img/grades/'.$id.'.webp') }}" alt="" loading="lazy">
+                <span class="g">Grade {{ $nom }}</span>
+                @if($note)<small>{{ $note }}</small>@endif
+            </div>
+        @endforeach
     </div>
     <p class="perso"><b>Clés de caisses</b> : skins, emotes et autres cosmétiques à gagner.</p>
     <p class="perso">Emote, finisher ou skin <b>personnalisé à vie</b> : disponible sur demande auprès d’un staff sur Discord.</p>

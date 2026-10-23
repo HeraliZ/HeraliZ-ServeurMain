@@ -602,13 +602,13 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
 .hz-note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
 .hz-dispo { margin: 22px 0 0; padding: 16px 18px; background: var(--panneau); border: 1px solid var(--trait); border-radius: 8px; }
 .hz-dispo h3 { font: 600 15px 'Oswald', sans-serif; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 12px; }
-.hz-dispo .grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.hz-dispo .grades > div { display: flex; flex-direction: column; gap: 6px; }
-.hz-dispo .g { font: 700 17px 'Oswald', sans-serif; }
-.hz-dispo .g.beta { color: var(--vert); }
-.hz-dispo .g small { display: block; font: 500 12px 'DM Sans', sans-serif; color: var(--muted); }
+.hz-dispo .grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.hz-dispo .carte-grade { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 10px 12px; border: 1px solid var(--trait); border-radius: 8px; overflow: hidden; text-align: center; background: radial-gradient(ellipse 60% 55% at 50% 42%, color-mix(in srgb, var(--g) 38%, transparent), transparent 70%), rgba(0,0,0,.25); }
+.hz-dispo .carte-grade img { height: 200px; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--g) 70%, transparent)) drop-shadow(0 10px 12px rgba(0,0,0,.6)); }
+.hz-dispo .g { font: 700 17px 'Oswald', sans-serif; color: var(--g); text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 12px color-mix(in srgb, var(--g) 50%, transparent); }
+.hz-dispo .carte-grade small { font: 500 12px 'DM Sans', sans-serif; color: var(--muted); }
 .hz-dispo .perso { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
-@media (max-width: 600px) { .hz-dispo .grades { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .hz-dispo .grades { grid-template-columns: repeat(2, 1fr); } .hz-dispo .carte-grade img { height: 160px; } }
 .hz-lots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .hz-lot { background: var(--panneau); border: 1px solid var(--trait); border-radius: 8px; padding: 16px 14px 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; position: relative; transition: border-color .15s, transform .15s, background .15s; }
 .hz-lot:hover { border-color: var(--laiton); transform: translateY(-3px); background: #1a190f; }
