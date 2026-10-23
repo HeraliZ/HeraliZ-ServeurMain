@@ -9,7 +9,7 @@
     {"item": "heraliz_armory:citadin_feet", "nombre": 1},
     {"item": "tacz:modern_kinetic_gun", "nombre": 1, "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}"},
     {"item": "tacz:ammo", "nombre": 32, "nbt": "{AmmoId:\"tacz:9mm\"}"},
-    {"item": "heralisz_tactical:melee", "nombre": 1, "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat__graphite\"}"},
+    {"item": "geckolib:item_bat", "nombre": 1},
     {"item": "geckolib:item_canned_baked_beans", "nombre": 2},
     {"item": "geckolib:item_water_bottle", "nombre": 1}
   ]
