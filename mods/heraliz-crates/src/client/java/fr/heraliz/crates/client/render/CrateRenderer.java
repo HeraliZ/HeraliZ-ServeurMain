@@ -474,8 +474,8 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity> {
             Component t = Component.translatable("block.heralizcrates." + type.blockId()).withStyle(st -> st.withFont(FONT_BOLD));
             title = t.getVisualOrderText();
             titleWidth = font.width(title);
-            Component h = Component.translatable("hologram.heralizcrates.hint",
-                    Component.translatable("item.heralizcrates." + type.keyId())).withStyle(st -> st.withFont(FONT));
+            // « Clic droit pour ouvrir » : l'écran de la caisse s'ouvre aussi sans clé (aperçu du contenu)
+            Component h = Component.translatable("hologram.heralizcrates.hint").withStyle(st -> st.withFont(FONT));
             hint = h.getVisualOrderText();
             hintWidth = font.width(hint);
         }

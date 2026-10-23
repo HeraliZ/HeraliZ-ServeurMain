@@ -1,6 +1,13 @@
 {
   "providers": [
     {
+      "type": "space",
+      "advances": {
+        " ": 3.0,
+        " ": 4.0
+      }
+    },
+    {
       "type": "ttf",
       "file": "heralizcrates:dmsans_medium.ttf",
       "size": 9.0,
