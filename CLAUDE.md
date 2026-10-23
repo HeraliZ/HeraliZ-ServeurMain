@@ -2059,6 +2059,26 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     `serveur`, `pack_fabrique`, `pack_envoi` : npm, Nebula et Gradle sans aucun secret, jars et pack passés par le cache) ;
     `launcher.yml` : publication dans des jobs `publier_*` sans npm ; ordre de mise en ligne : site (« theme »), puis
     `main`, puis publier le launcher. Reporté après la bêta : numéro de version dans la signature du pack.
+- **Retours des propriétaires du 23/10 (soir)** (rien testé en jeu) : composants seulement montés de niveau (10 → 1),
+  plus de recette pour les défaire (`outils/crafts.py`) ; Interface 1.9.0 : plus aucune musique de Minecraft
+  (`SansMusique`), plus de notifications de succès ni de recettes (`ToastsMixin`), regard libre façon Rust sur Alt
+  gauche maintenu (`RegardLibre`), marche sans course ni saut avec l'inventaire, la fouille, un cadavre, un joueur à
+  terre ou la carte ouverts (`MarcheEcran`) ; Tactique 2.31.0 / 2.32.0 : inspection sans sons empilés
+  (`SonsInspection`), jambe cassée (`geckolib:broken_bone`) = pas de saut (`JambeCassee`), armes mises une fois en tir
+  AUTO si elles l'ont (`TirAutoServeur`, marque `HeralizTirAuto`), **Registre de l'armurier** (maquette validée,
+  `maquettes/registre_armurier.png`, objet `heraliz_tactique:registre_armurier` et `/armurier registre|editer`, op 4 :
+  recettes de la Table d'armurier modifiées en jeu, gardées dans `heraliz_tactique/recettes_jeu.json` à la racine du
+  serveur, appliquées par-dessus celles de TaCZ et renvoyées aux joueurs ; une recette changée ne suit plus
+  `outils/crafts.py` jusqu'à « Revenir au fichier ») ; Loot 0.9.16 : clic droit sur un conteneur, un cadavre ou une
+  caisse de largage = l'ouvrir même avec une arme ou un objet en main (`FouilleObjetEnMain`) ; Casino 2.5.0 : entrée
+  25 capsules, seulement les capsules 1 / 5 / 10 (anciennes converties à même total), une capsule pour 40 conteneurs
+  (`CAPSULES_POUR_100` = 2,5) ; Utils 2.22.0 : carte sans son, trappes / portes / leviers bloqués au spawn, borne de
+  départ non annulée par une poussée, noms des objets GeckoLib en 3 langues (`assets/geckolib/lang`), cinématique ÷3
+  (respirations ÷9) ; CRac 1.21.1 et Grades 2.4.1 : délais de /rtp, /home, /tpa, /warp non annulés par une poussée
+  (`Immobile`) ; **kit de départ** une fois au spawn après la cinématique (`serveur/KitDepart`,
+  `config/heraliz_grades/kit_depart.json`, marque `heraliz_kit_depart` effacée par /wipe) ; Quêtes 1.10.4 : visite du
+  Guide passée par Espace maintenu 1 s, caméra devant le visage du PNJ. Rendus à valider (non codés) : bottes de pluie
+  de CaraCrea, créateur de personnage plus lisible, écran des caisses (propositions A et B).
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
