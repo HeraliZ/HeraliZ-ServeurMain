@@ -117,7 +117,8 @@ public final class Vfx {
    public static final Crochet<Packet> RECEPTION_CLIENT = new Crochet<>();
 
    public static void register() {
-      CHANNEL.registerMessage(0, Packet.class, Packet::encode, Packet::decode, Packet::handle);
+      CHANNEL.registerMessage(0, Packet.class, Packet::encode, Packet::decode, Packet::handle,
+         java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT));   // serveur -> joueurs seulement
    }
 
    public record Packet(Type type, double x, double y, double z, float dx, float dy, float dz, float a, float b, int duration, int color, int extra) {
