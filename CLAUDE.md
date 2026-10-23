@@ -2008,6 +2008,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     du compte du site) ;
   - les fusions faites sur GitHub portent le compte et l'adresse mail du propriétaire (règle 4) : historique non
     réécrit (règle 3) ; réglage « Keep my email addresses private » conseillé.
+- **Contrôle des failles des mods (23/10)** : tous les paquets reçus par le serveur relus ; corrigé (rien testé en jeu) :
+  `/trade` (Grades 2.3.1, objets en dépôt), mêlée de LR revérifiée par le serveur et objet à vie jamais perdu (Tactique
+  2.30.7), achever / fouiller / réanimer seulement avec vue dégagée (Réanimation 1.16.5), copie officielle des emotes
+  (Emote 2.8.5, animations dans les ressources communes), essais de mot de passe des groupes vocaux limités (CaraCrea
+  1.6.2), armoire sans requête vers Mojang, kit du tutoriel toujours repris, ramassage sans perte (CRac 1.20.2-beta),
+  vitesse dans le train par tick (Utils 2.21.1), Maj + clic du coffre du clan (Clans 3.6.3), essais de code des quêtes
+  (Quêtes 1.10.2), mise négative (Casino 2.4.2), canaux serveur -> joueurs des boss et des cartes (Boss 2.2.2, Bunker
+  0.12.1). Laissé tel quel : contrôle AuthMe des outils du staff (il refusait à tort, le ticket du launcher protège déjà
+  les pseudos) ; copie possible d'objets avec un sac à dos jamais prouvée (à essayer en jeu).
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
