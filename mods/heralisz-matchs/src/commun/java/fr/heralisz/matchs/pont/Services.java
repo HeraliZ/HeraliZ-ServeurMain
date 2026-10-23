@@ -64,7 +64,7 @@ public final class Services {
 
         void combatApresEffacement(ServerPlayer joueur);
 
-        void combatCommandesBloquees(List<? extends String> commandes);
+        void combatCommandes(List<? extends String> combat, List<? extends String> carte);
 
         // ---- Equipement (moteur/kits/Distribution, moteur/compat/Compat)
         boolean equipementDonner(ServerPlayer joueur, Kit kit, String matchId);

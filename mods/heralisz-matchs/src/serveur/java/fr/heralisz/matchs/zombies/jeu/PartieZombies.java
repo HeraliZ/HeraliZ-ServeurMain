@@ -884,6 +884,9 @@ public final class PartieZombies extends Partie {
     public void surDeconnexion(ServerPlayer joueur) {
         JoueurZombies j = joueurs.get(joueur.getUUID());
         if (j == null) return;
+        // l'etiquette « reste allonge » est gardee dans la sauvegarde du joueur : retiree avant (sinon allonge pour toujours)
+        joueur.removeTag(RESTE_ALLONGE);
+        joueur.setForcedPose(null);
         j.connecte = false;
         if (j.etat != HudZombies.MORT) j.etat = HudZombies.MORT;
         equipe.eliminer(j.id);

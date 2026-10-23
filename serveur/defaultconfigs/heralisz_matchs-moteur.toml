@@ -5,12 +5,18 @@
 	tag_secondes = 15
 	#Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur)
 	mort_deconnexion = true
-	#Refuser au joueur tague les commandes de teleportation de la liste commandes_bloquees
+	#Refuser au joueur tague (ou a terre) toute commande absente de commandes_permises_combat
 	refus_commandes = true
-	#Les operateurs (niveau 2) tagues gardent leurs commandes de teleportation
+	#Les operateurs (niveau 2) tagues gardent toutes leurs commandes
 	operateurs_exemptes = false
-	#Commandes refusees au joueur tague (racine en minuscules, sans / ni espace de noms : "spawn" couvre aussi /essentials:spawn)
-	commandes_bloquees = ["spawn", "home", "homes", "warp", "warps", "tpa", "tpahere", "tpask", "tpaccept", "tpyes", "back", "rtp", "wild", "randomtp", "tp", "teleport", "tphere", "tpo", "top", "hub", "lobby", "ehome", "espawn", "ewarp", "etpa", "etpahere", "etpaccept", "eback", "etop", "etp"]
+	#Seules commandes permises au joueur tague ou a terre (racine en minuscules, sans / ni espace de noms : "tpa" couvre aussi /essentials:tpa)
+	commandes_permises_combat = ["login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "pb", "saison", "extractions", "report"]
+
+[carte]
+	#Sur la carte (minecraft:overworld), en survie ou aventure, hors staff (niveau 2) : refuser toute commande absente de commandes_permises
+	actif = true
+	#Seules commandes permises sur la carte (racine en minuscules, sans / ni espace de noms)
+	commandes_permises = ["tpa", "tpaccept", "tpdeny", "login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "pb", "saison", "extractions", "clan", "suicide", "report"]
 
 [matchs]
 	#Masquer la mini-carte de Xaero et refuser l'ouverture de sa carte du monde pendant les matchs

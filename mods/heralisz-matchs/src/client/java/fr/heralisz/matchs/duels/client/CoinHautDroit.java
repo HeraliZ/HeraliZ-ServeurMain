@@ -28,7 +28,6 @@ final class CoinHautDroit {
     }
 
     private static final PileExterne CLANS = new PileExterne("fr.heralisz.clans.client.gui.hud.ClanHud");
-    private static final PileExterne BASES = new PileExterne("fr.heralisz.bases.client.gui.hud.BasesHud");
     private static boolean voixEssayee, voixAbsente;
     @Nullable
     private static Method voixEnregistre;
@@ -39,7 +38,6 @@ final class CoinHautDroit {
         bas = Math.max(bas, HudMoteur.basHautDroit(h, now));
         bas = Math.max(bas, CwHud.basToasts(now));
         bas = Math.max(bas, CLANS.bas(now));
-        bas = Math.max(bas, BASES.bas(now));
         if (voix()) bas = Math.max(bas, 18);
         return bas;
     }

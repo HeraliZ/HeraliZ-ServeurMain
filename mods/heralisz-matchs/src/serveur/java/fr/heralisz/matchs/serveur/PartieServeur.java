@@ -129,8 +129,8 @@ public final class PartieServeur implements fr.heralisz.matchs.pont.Partie {
         }
 
         @Override
-        public void combatCommandesBloquees(List<? extends String> commandes) {
-            CombatService.commandesBloquees(commandes);
+        public void combatCommandes(List<? extends String> combat, List<? extends String> carte) {
+            CombatService.commandesPermises(combat, carte);
         }
 
         @Override

@@ -60,6 +60,8 @@ public final class Coffres {
     }
 
     public static final int VERSION = 1;
+    /** Etiquette de joueur « reste allonge » (lue par Reanimation, posee par les Zombies a terre). */
+    private static final String RESTE_ALLONGE = "heraliz_reste_allonge";
     private static Method sauverJoueur;
 
     // ------------------------------------------------------------------ refus
@@ -244,6 +246,11 @@ public final class Coffres {
 
     /** Retire le joueur de sa partie, du mode spectateur et efface son HUD de match. */
     private static void detacher(ServerPlayer p) {
+        // « reste allonge » des Zombies (a terre au moment d'une deconnexion ou d'un plantage) : jamais garde hors du match
+        if (p.getTags().contains(RESTE_ALLONGE)) {
+            p.removeTag(RESTE_ALLONGE);
+            p.setForcedPose(null);
+        }
         Spectateurs.arreter(p, false);
         MatchApi.quitter(p);
         Hud.effacer(p);

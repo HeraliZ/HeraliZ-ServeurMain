@@ -51,9 +51,10 @@ import java.util.UUID;
  *     Reanimation (« deconnexion a terre = mort ») : une seule mort, un seul corps ;</li>
  *     <li>deconnexion a terre SANS tag : Reanimation tue seul ({@code reanimation:disconnect}) ; message unique a la
  *     reconnexion ({@link #CLE_PUNI_A_TERRE}) ;</li>
- *     <li>commandes de teleportation (config : /spawn, /home, /tpa, /warp...) refusees au joueur tague ET au joueur a terre
- *     (Reanimation : pas de fuite pendant qu'on peut l'achever ou le fouiller), avec une ligne discrete au-dessus de la
- *     barre d'objets ;</li>
+ *     <li>toute commande hors de la liste permise (config : login, msg, quetes...) refusee au joueur tague ET au joueur
+ *     a terre (Reanimation : pas de fuite ni de rangement pendant qu'on peut l'achever ou le fouiller), avec une ligne
+ *     discrete au-dessus de la barre d'objets ; sur la carte (overworld), hors staff, seules les commandes de la liste
+ *     {@code [carte]} passent (/tpa...) ;</li>
  *     <li>execution (Reanimation, {@code reanimation:execution}) : le bourreau est tague, meme si les degats ont ete
  *     court-circuites par une protection (Reanimation force alors la mort) ;</li>
  *     <li>mort reelle = tag efface ; a la connexion : cle perimee retiree, ancien effet {@code geckolib:combat_log}
@@ -81,7 +82,10 @@ public final class CombatService {
     private static final Map<UUID, Long> ENVOI = new HashMap<>();
     /** Joueurs dont l'indicateur doit etre renvoye (envoi limite par la cadence). */
     private static final Set<UUID> A_RENVOYER = new HashSet<>();
+    /** Seules racines permises au joueur tague ou a terre. */
     private static volatile Set<String> commandes = Set.copyOf(MoteurConfig.COMMANDES_COMBAT_DEFAUT);
+    /** Seules racines permises sur la carte (overworld), hors staff. */
+    private static volatile Set<String> commandesCarte = Set.copyOf(MoteurConfig.COMMANDES_CARTE_DEFAUT);
     private static boolean arret;
 
     public static void enregistrer() {
@@ -93,8 +97,13 @@ public final class CombatService {
         MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> arret = true);
     }
 
-    /** Reserve a la config : racines des commandes refusees au joueur tague. */
-    public static void commandesBloquees(List<? extends String> l) {
+    /** Reserve a la config : racines des seules commandes permises en combat et sur la carte. */
+    public static void commandesPermises(List<? extends String> combat, List<? extends String> carte) {
+        commandes = racines(combat);
+        commandesCarte = racines(carte);
+    }
+
+    private static Set<String> racines(List<? extends String> l) {
         Set<String> s = new HashSet<>();
         for (String c : l) {
             if (c == null) continue;
@@ -102,7 +111,7 @@ public final class CombatService {
             if (r.startsWith("/")) r = r.substring(1);
             if (!r.isEmpty()) s.add(r);
         }
-        commandes = Set.copyOf(s);
+        return Set.copyOf(s);
     }
 
     // ------------------------------------------------------------------ indicateur HUD
@@ -261,22 +270,45 @@ public final class CombatService {
     private static void commande(CommandEvent e) {
         var ctx = e.getParseResults().getContext();
         if (!(ctx.getSource().getEntity() instanceof ServerPlayer p)) return;
-        if (!MoteurConfig.vrai(MoteurConfig.REFUS_COMMANDES, true)) return;
-        long reste = CombatTag.restantMs(p);
-        // a terre (Reanimation) : pas de fuite par teleportation pendant qu'on peut l'achever, le fouiller ou le relever
-        boolean aTerre = reste <= 0 && Revive.aTerreReanimation(p);
-        if (reste <= 0 && !aTerre) return;
-        if (MoteurConfig.vrai(MoteurConfig.OPS_EXEMPTES, false) && p.hasPermissions(2)) return;
         String racine = racine(e.getParseResults().getReader().getString());
-        if (racine.isEmpty() || !commandes.contains(racine)) return;
+        if (racine.isEmpty()) return;
+        if (refusCombat(p, racine, e)) return;
+        refusCarte(p, racine, e);
+    }
+
+    /** Combat ou a terre : toute commande hors de la liste permise est refusee. Rend vrai si la commande est refusee. */
+    private static boolean refusCombat(ServerPlayer p, String racine, CommandEvent e) {
+        if (!MoteurConfig.vrai(MoteurConfig.REFUS_COMMANDES, true)) return false;
+        long reste = CombatTag.restantMs(p);
+        // a terre (Reanimation) : pas de fuite ni de rangement pendant qu'on peut l'achever, le fouiller ou le relever
+        boolean aTerre = reste <= 0 && Revive.aTerreReanimation(p);
+        if (reste <= 0 && !aTerre) return false;
+        if (MoteurConfig.vrai(MoteurConfig.OPS_EXEMPTES, false) && p.hasPermissions(2)) return false;
+        if (commandes.contains(racine)) return false;
         e.setCanceled(true);
         if (aTerre) {
             // Reanimation masque la barre d'action d'un joueur a terre (il ne garde que le chat et les titres)
-            p.sendSystemMessage(Component.translatable("matchs.combat.commande_refusee_a_terre").withStyle(s -> s.withColor(0xFF8A8A)));
-            return;
+            p.sendSystemMessage(Component.translatableWithFallback("matchs.combat.commande_refusee_a_terre",
+                    "Impossible à terre.").withStyle(s -> s.withColor(0xFF8A8A)));
+            return true;
         }
-        p.displayClientMessage(Component.translatable("matchs.combat.commande_refusee", (reste + 999) / 1000)
-                .withStyle(s -> s.withColor(0xFF8A8A)), true);
+        p.displayClientMessage(Component.translatableWithFallback("matchs.combat.commande_refusee", "Impossible en combat · %s s",
+                (reste + 999) / 1000).withStyle(s -> s.withColor(0xFF8A8A)), true);
+        return true;
+    }
+
+    /**
+     * Sur la carte (overworld), en survie ou aventure, hors staff (niveau 2) : toute commande hors de la liste permise est
+     * refusee (choix du proprietaire : sur la carte, seul /tpa ; on en sort par l'extraction).
+     */
+    private static void refusCarte(ServerPlayer p, String racine, CommandEvent e) {
+        if (!MoteurConfig.vrai(MoteurConfig.CARTE_ACTIF, true)) return;
+        if (p.level().dimension() != net.minecraft.world.level.Level.OVERWORLD) return;
+        if (p.isCreative() || p.isSpectator() || p.hasPermissions(2)) return;
+        if (commandesCarte.contains(racine)) return;
+        e.setCanceled(true);
+        p.displayClientMessage(Component.translatableWithFallback("matchs.carte.commande_refusee",
+                "Impossible sur la carte : seul /tpa marche ici.").withStyle(s -> s.withColor(0xFF8A8A)), true);
     }
 
     /** Racine d'une commande en minuscules, sans « / » ni espace de noms ({@code essentials:spawn} -> {@code spawn}). */
@@ -291,7 +323,7 @@ public final class CombatService {
 
     /** Vrai si cette racine est refusee au joueur tague (banc d'essai). */
     public static boolean commandeBloquee(String racine) {
-        return commandes.contains(racine);
+        return !commandes.contains(racine);
     }
 
     /** Oubli d'un joueur (deconnexion traitee). */
