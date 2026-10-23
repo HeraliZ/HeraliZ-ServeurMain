@@ -836,7 +836,10 @@ public final class Tutoriel {
         m.forEach((item, n) -> {
             int max = Math.max(1, new ItemStack(item).getMaxStackSize());
             for (int reste = n; reste > 0; reste -= max) {
-                p.getInventory().placeItemBackInInventory(new ItemStack(item, Math.min(max, reste)));
+                // marqué comme le kit : repris aussi à la fin du tutoriel (sinon poser puis démolir gardait le matériel)
+                ItemStack rendu = new ItemStack(item, Math.min(max, reste));
+                rendu.getOrCreateTag().putBoolean(MARQUE_KIT, true);
+                p.getInventory().placeItemBackInInventory(rendu);
             }
         });
     }
