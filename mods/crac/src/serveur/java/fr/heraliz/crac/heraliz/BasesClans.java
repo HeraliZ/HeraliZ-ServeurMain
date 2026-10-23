@@ -286,16 +286,16 @@ public final class BasesClans extends SafeSavedData {
             if (!t.hasUUID("Clan")) {
                 continue;
             }
-            java.util.List<net.minecraft.world.item.ItemStack> l = new java.util.ArrayList<>();
+            java.util.List<net.minecraft.world.item.ItemStack> objets = new java.util.ArrayList<>();
             ListTag os = t.getList("Objets", 10);
             for (int k2 = 0; k2 < os.size(); k2++) {
                 net.minecraft.world.item.ItemStack st = net.minecraft.world.item.ItemStack.of(os.getCompound(k2));
                 if (!st.isEmpty()) {
-                    l.add(st);
+                    objets.add(st);
                 }
             }
-            if (!l.isEmpty()) {
-                d.resteKit.put(t.getUUID("Clan"), l);
+            if (!objets.isEmpty()) {
+                d.resteKit.put(t.getUUID("Clan"), objets);
             }
         }
         d.premierPassage = d.vus.isEmpty();
