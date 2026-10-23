@@ -32,10 +32,11 @@ COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/c
 
 # nombre moyen pour 100 conteneurs ouverts
 POUR_100 = {
-    "armes":       {1: 6, 2: 9, 3: 15, 4: 15, 5: 15, 6: 15, 7: 30},
+    # 23/10 (choix du propriétaire) : armes, accessoires et armures montent petit à petit avec le palier
+    "armes":       {1: 5, 2: 7, 3: 9, 4: 11, 5: 13, 6: 15, 7: 25},
     # plans de fabrication retirés du jeu le 21/10 (système de craft à refaire) : plus de famille « plans »
-    "accessoires": {1: 10, 2: 15, 3: 20, 4: 25, 5: 25, 6: 25, 7: 25},
-    "armures":     {1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 35},
+    "accessoires": {1: 4, 2: 6, 3: 8, 4: 10, 5: 12, 6: 14, 7: 18},
+    "armures":     {1: 11, 2: 13, 3: 15, 4: 17, 5: 19, 6: 21, 7: 27},
     # composants un peu plus souvent que le reste (choix du propriétaire, 23/10)
     "composants":  {1: 50, 2: 50, 3: 50, 4: 50, 5: 50, 6: 50, 7: 55},
     # sacs à dos (choix du propriétaire, 22/10 : 0,1 % des coffres en T1, 0,5 % en T2 ; un seul sac par coffre)
@@ -84,7 +85,10 @@ MUNITIONS = {1: 2.0, 2: 1.07, 3: 0.129, 4: 0.067, 5: 0.053, 6: 0.061, 7: 0.0735}
 # des cases est vide (choix du propriétaire, 22/10 : peu de grenades, une seule par coffre)
 AUTRES_POUR_100 = {1: 4, 2: 6, 3: 10, 4: 10, 5: 12, 6: 14, 7: 16}
 VIDE = {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide"}
-EMPLACEMENTS = {1: [1, 2], 2: [1, 3], 3: [1, 3], 4: [2, 3], 5: [2, 3], 6: [2, 3], 7: [2, 3]}
+# 23/10 : cases choisies pour que les nombres visés (POUR_100…) soient ceux du jeu malgré la 1re case jamais vide :
+# T1 et T2 visent moins d'un objet par conteneur, donc une seule case (1 objet par conteneur) ; ensuite assez peu de
+# cases pour que la part de cases pleines reste haute (la 1re case n'est relancée que 20 fois par le jeu)
+EMPLACEMENTS = {1: [1, 1], 2: [1, 1], 3: [1, 2], 4: [1, 2], 5: [1, 2], 6: [1, 2], 7: [1, 3]}
 PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
 
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
@@ -374,7 +378,21 @@ def ecrire():
         p["capsules"] = CAPSULES_POUR_100[t] / 100 / cases
         p["soins"] = SOINS_POUR_100[t] / 100 / cases
         p["nourriture"] = NOURRITURE_POUR_100[t] / 100 / cases
-        p["vide"] = max(0.0, 1 - sum(p.values()) - AUTRES_POUR_100[t] / 100 / cases)
+        part_autres = AUTRES_POUR_100[t] / 100 / cases
+        # la 1re case d'un conteneur n'est jamais vide (TablesCoffres.tirerPlein) : objets par conteneur = 1 + (cases - 1)
+        # x part des cases pleines. Parts ramenées pour que les nombres pour 100 conteneurs visés soient ceux du jeu
+        # (au moins 1 objet par conteneur : un total visé sous 100 pour 100 conteneurs est relevé d'autant)
+        vise = (sum(p.values()) + part_autres) * cases
+        if cases > 1:
+            plein = min(1.0, max(0.01, (max(vise, 1.0) - 1) / (cases - 1)))  # jamais 0 : les poids gardent leurs proportions
+            k = plein * cases / vise
+            p = {f: v * k for f, v in p.items()}
+            part_autres *= k
+        if sum(p.values()) + part_autres > 0.97:  # garder un peu de cases vides (poids de la case vide jamais nul)
+            k = 0.97 / (sum(p.values()) + part_autres)
+            p = {f: v * k for f, v in p.items()}
+            part_autres *= k
+        p["vide"] = max(0.0, 1 - sum(p.values()) - part_autres)
         actifs = sum(base)
         rel = []
         for f, par_r in fams.items():
