@@ -124,6 +124,13 @@ public class SpartanEvents {
         com.Spartan.alert.CapturesDiscord.demarrer();
     }
 
+    /** Porte des paquets de mods : posée pendant la négociation de connexion, avant le moindre paquet de jeu. */
+    @SuppressWarnings("removal")
+    @SubscribeEvent
+    public static void onNegotiation(net.minecraftforge.event.entity.player.PlayerNegotiationEvent event) {
+        com.Spartan.integrity.PorteJoueurs.poser(event.getConnection());
+    }
+
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || isFake(player)) {
@@ -138,6 +145,7 @@ public class SpartanEvents {
             return;
         }
 
+        com.Spartan.integrity.PorteJoueurs.rattacher(player);
         CheckManager.grantGrace(player.getUUID(), GRACE_MS);
         MovementEngine.onLogin(player);
         HandshakeMonitor.onLogin(player.getUUID());
@@ -159,7 +167,8 @@ public class SpartanEvents {
     @SubscribeEvent
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            CheckManager.grantGrace(player.getUUID(), GRACE_MS);
+            com.Spartan.integrity.PorteJoueurs.rattacher(player);
+        CheckManager.grantGrace(player.getUUID(), GRACE_MS);
             VisibilityEngine.forget(player);
         }
     }
@@ -167,7 +176,8 @@ public class SpartanEvents {
     @SubscribeEvent
     public static void onChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            CheckManager.grantGrace(player.getUUID(), GRACE_MS);
+            com.Spartan.integrity.PorteJoueurs.rattacher(player);
+        CheckManager.grantGrace(player.getUUID(), GRACE_MS);
             VisibilityEngine.forget(player);
         }
     }
@@ -194,7 +204,8 @@ public class SpartanEvents {
         if (event.getEntity() instanceof ServerPlayer player
                 && !(event instanceof EntityTeleportEvent.EnderPearl)
                 && !(event instanceof EntityTeleportEvent.ChorusFruit)) {
-            CheckManager.grantGrace(player.getUUID(), GRACE_MS);
+            com.Spartan.integrity.PorteJoueurs.rattacher(player);
+        CheckManager.grantGrace(player.getUUID(), GRACE_MS);
         }
     }
 
@@ -205,6 +216,7 @@ public class SpartanEvents {
         if (event.phase != TickEvent.Phase.END) {
             return;
         }
+        com.Spartan.integrity.PorteJoueurs.tick(event.getServer());
         // Anti-ESP : lignes de vue entre joueurs, décisions d'envoi appliquées tout de suite.
         VisibilityEngine.tick(event.getServer());
         // Anti-duplication : un relevé de temps en temps (même numéro à deux endroits au même instant).
@@ -245,6 +257,7 @@ public class SpartanEvents {
             Mitigation.clear(player.getUUID());
             ChallengeManager.clear(player.getUUID());
             LauncherGate.clear(player.getUUID());
+            com.Spartan.integrity.PorteJoueurs.oublier(player.getUUID());
             ScanManager.clear(player.getUUID());
             com.Spartan.capture.CaptureManager.clear(player.getUUID());
             com.Spartan.serveur.ReceptionServeur.oublierTouches(player.getUUID());

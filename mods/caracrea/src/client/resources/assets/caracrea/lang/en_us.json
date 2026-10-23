@@ -450,5 +450,7 @@
   "caracrea.voice.duration.days": "%sd %sh",
   "caracrea.voice.duration.hours": "%sh %sm",
   "caracrea.voice.duration.minutes": "%s min",
-  "caracrea.voice.duration.seconds": "%s s"
+  "caracrea.voice.duration.seconds": "%s s",
+  "caracrea.message.spawn_only": "You can only change your look at the spawn.",
+  "caracrea.message.combat": "Not in combat: wait until the fight is over to change your look."
 }

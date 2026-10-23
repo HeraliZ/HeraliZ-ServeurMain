@@ -54,6 +54,9 @@ public final class LauncherGate {
         // Jeton du launcher absent ou invalide : règle d'ACCÈS au serveur. Avec tokenRequired, refus de connexion,
         // même en détection silencieuse (on ne joue que depuis le launcher HeraliZ).
         String tokenProblem = checkToken(p, token, name, hash);
+        if (tokenProblem == null) {
+            PorteJoueurs.jetonAccepte(p.getUUID());
+        }
         if (hashProblem == null && tokenProblem == null) {
             return;
         }

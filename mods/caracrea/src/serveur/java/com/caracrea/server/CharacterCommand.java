@@ -77,6 +77,11 @@ public final class CharacterCommand {
             player.sendSystemMessage(Component.translatable("caracrea.message.busy").withStyle(ChatFormatting.RED));
             return 0;
         }
+        Component refus = EditionLibre.refus(player);
+        if (refus != null) {
+            player.sendSystemMessage(refus.copy().withStyle(ChatFormatting.RED));
+            return 0;
+        }
         CharacterService.openSelf(player);
         return 1;
     }

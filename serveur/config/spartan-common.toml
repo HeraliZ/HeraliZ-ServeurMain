@@ -213,7 +213,7 @@
 	#Délai (secondes) pour recevoir les infos du client. Un client chargé de 100 mods peut
 	#rester figé longtemps juste après la connexion : ne pas descendre trop bas.
 	#Range: 10 ~ 600
-	handshakeTimeoutSeconds = 90
+	handshakeTimeoutSeconds = 15
 	#Intervalle minimum entre deux défis (secondes).
 	#Range: 10 ~ 3600
 	challengeMinSeconds = 60

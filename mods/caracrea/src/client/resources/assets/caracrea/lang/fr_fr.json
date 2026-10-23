@@ -450,5 +450,7 @@
   "caracrea.voice.duration.days": "%s j %s h",
   "caracrea.voice.duration.hours": "%s h %s",
   "caracrea.voice.duration.minutes": "%s min",
-  "caracrea.voice.duration.seconds": "%s s"
+  "caracrea.voice.duration.seconds": "%s s",
+  "caracrea.message.spawn_only": "Tu ne peux changer d'apparence qu'au spawn.",
+  "caracrea.message.combat": "Pas en combat : attends la fin du combat pour changer d'apparence."
 }

@@ -334,7 +334,7 @@ public class SpartanConfig {
         HANDSHAKE_TIMEOUT = b.comment(
                 "Délai (secondes) pour recevoir les infos du client. Un client chargé de 100 mods peut",
                 "rester figé longtemps juste après la connexion : ne pas descendre trop bas.")
-                .defineInRange("handshakeTimeoutSeconds", 90, 10, 600);
+                .defineInRange("handshakeTimeoutSeconds", 15, 10, 600);
         CHECK_CLIENT_INTEGRITY = b.comment(
                 "Le client signale des traces d'injection (agents Java, threads anonymes).",
                 "Best-effort : un client modifié peut ne rien signaler.")

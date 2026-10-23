@@ -450,5 +450,7 @@
   "caracrea.voice.duration.days": "%s д %s ч",
   "caracrea.voice.duration.hours": "%s ч %s мин",
   "caracrea.voice.duration.minutes": "%s мин",
-  "caracrea.voice.duration.seconds": "%s с"
+  "caracrea.voice.duration.seconds": "%s с",
+  "caracrea.message.spawn_only": "Менять внешность можно только на спавне.",
+  "caracrea.message.combat": "Не в бою: дождись конца боя, чтобы сменить внешность."
 }

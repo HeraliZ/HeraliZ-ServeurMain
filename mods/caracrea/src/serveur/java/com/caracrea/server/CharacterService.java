@@ -170,6 +170,11 @@ public final class CharacterService {
             player.displayClientMessage(Component.translatable("caracrea.message.busy"), true);
             return false;
         }
+        Component refus = EditionLibre.refus(player);
+        if (refus != null) {
+            player.displayClientMessage(refus, true);
+            return false;
+        }
         open(player, false, false);
         return true;
     }
@@ -184,6 +189,14 @@ public final class CharacterService {
         if (!pending && !CaraCreaConfig.SERVER.freeEdit.get() && !player.hasPermissions(2)) {
             player.displayClientMessage(Component.translatable("caracrea.message.not_allowed"), true);
             return;
+        }
+        // Changement choisi par le joueur (pas le créateur imposé : arrivée, /wipe, staff) : seulement au spawn, hors combat.
+        if (!Boolean.TRUE.equals(exempt)) {
+            Component refus = EditionLibre.refus(player);
+            if (refus != null) {
+                player.displayClientMessage(refus, true);
+                return;
+            }
         }
         long now = System.currentTimeMillis();
         Long last = LAST_SAVE.get(uuid);

@@ -33,7 +33,7 @@ final class AliasSanctions {
                          LiteralCommandNode<CommandSourceStack> sunban) {
         dispatcher.register(Commands.literal("banpc").requires(src -> src.hasPermission(3)).redirect(sban));
         dispatcher.register(Commands.literal("unbanpc").requires(src -> src.hasPermission(3)).redirect(sunban));
-        dispatcher.register(Commands.literal("untempban")
+        dispatcher.register(Commands.literal("untempban").requires(src -> src.hasPermission(3))
                 .then(Commands.argument("args", StringArgumentType.greedyString())
                         .suggests((ctx, b) -> SharedSuggestionProvider.suggest(ctx.getSource().getServer().getPlayerNames(), b))
                         .executes(ctx -> transmettre(ctx, "litebans:unban"))));
