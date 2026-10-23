@@ -250,6 +250,22 @@ public final class AtelierArme extends GunRefitScreen {
          if (survol) this.infobulle = List.of(trc("mode_aide"));
       }, plusieurs ? this::changerMode : null, null));
 
+      // décharger (balles rendues à l'inventaire, chargeur gardé, vide) : seulement s'il y a des balles
+      boolean charge = iGun.getCurrentAmmoCount(gun) > 0 || iGun.hasBulletInBarrel(gun);
+      if (charge && !iGun.useDummyAmmo(gun) && !iGun.useInventoryAmmo(gun)) {
+         String texteDech = tr("decharger");
+         int dw = Dessins.largeurChip(this.font, texteDech);
+         this.addRenderableWidget(new Zone(cx + mw + 5, 38, dw, 11, (g, z, mx, my, pt) -> {
+            boolean survol = z.survol();
+            int zx = z.getX(), zy = z.getY(), zw = z.getWidth();
+            int c = Ui.accent();
+            Ui.soft(g, zx, zy, zw, 11, Ui.argb(c, survol ? 56 : 34));
+            Ui.softOutline(g, zx + 1, zy + 1, zw - 2, 9, Ui.argb(c, survol ? 170 : 90));
+            Ui.spaced(g, this.font, texteDech, Ui.SMALL, zx + 5, zy + 2.5f, Ui.argb(Ui.mix(c, 0xFFFFFF, survol ? 0.6f : 0.3f), 255), 0.6f);
+            if (survol) this.infobulle = List.of(trc("decharger_aide"));
+         }, this::decharger, null));
+      }
+
       String fermer = tr("fermer");
       String echap = tr("echap");
       int fw = this.font.width(Ui.lit(echap, Ui.SMALL)) + 8 + 5 + this.font.width(Ui.lit(fermer, Ui.FONT));
@@ -260,6 +276,12 @@ public final class AtelierArme extends GunRefitScreen {
 
       this.partie().construire();
       this.signature = this.signatureActuelle();
+   }
+
+   private void decharger() {
+      LocalPlayer p = Minecraft.getInstance().player;
+      if (p == null || p.isSpectator() || !IGun.mainHandHoldGun(p)) return;
+      fr.heraliz.tactique.decharger.Decharger.demander(p.getInventory().selected);
    }
 
    private void changerMode() {
@@ -275,6 +297,7 @@ public final class AtelierArme extends GunRefitScreen {
       if (iGun == null) return "";
       StringBuilder sb = new StringBuilder();
       sb.append(iGun.getGunId(gun)).append('|').append(iGun.getFireMode(gun)).append('|').append(iGun.hasAttachmentLock(gun));
+      sb.append('|').append(iGun.getCurrentAmmoCount(gun) > 0 || iGun.hasBulletInBarrel(gun));
       for (AttachmentType t : AttachmentType.values()) {
          if (t != AttachmentType.NONE) sb.append('|').append(iGun.getAttachmentId(gun, t));
       }

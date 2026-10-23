@@ -78,5 +78,12 @@
   "heraliz_tactique.armurier.invalide": "Неполный рецепт: один результат, хотя бы один компонент, верные количества.",
   "heraliz_tactique.armurier.refusee": "TaCZ отклонил рецепт: %s",
   "heraliz_tactique.armurier.enregistree": "Рецепт сохранён и отправлен всем игрокам.",
-  "heraliz_tactique.armurier.donne": "Журнал оружейника: ПКМ, чтобы изменить рецепты оружейного стола."
+  "heraliz_tactique.armurier.donne": "Журнал оружейника: ПКМ, чтобы изменить рецепты оружейного стола.",
+  "key.categories.heraliz_tactique": "HeraliZ · Тактика",
+  "key.heraliz_tactique.decharger": "Разрядить оружие",
+  "heraliz_tactique.decharger.ok": "Оружие разряжено: получено патронов: %s.",
+  "heraliz_tactique.decharger.vide": "Оружие уже пустое.",
+  "heraliz_tactique.decharger.recharge": "Дождись окончания перезарядки.",
+  "heraliz_tactique.decharger.match": "Нельзя разрядить оружие матча.",
+  "heraliz_tactique.decharger.impossible": "Это оружие нельзя разрядить."
 }

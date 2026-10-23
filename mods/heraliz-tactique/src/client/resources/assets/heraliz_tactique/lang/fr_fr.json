@@ -78,5 +78,12 @@
   "heraliz_tactique.armurier.invalide": "Recette incomplète : un objet donné, au moins un composant, des quantités valides.",
   "heraliz_tactique.armurier.refusee": "Recette refusée par TaCZ : %s",
   "heraliz_tactique.armurier.enregistree": "Recette enregistrée et envoyée à tous les joueurs.",
-  "heraliz_tactique.armurier.donne": "Registre de l'armurier : clic droit pour modifier les recettes de la Table d'armurier."
+  "heraliz_tactique.armurier.donne": "Registre de l'armurier : clic droit pour modifier les recettes de la Table d'armurier.",
+  "key.categories.heraliz_tactique": "HeraliZ · Tactique",
+  "key.heraliz_tactique.decharger": "Décharger l'arme",
+  "heraliz_tactique.decharger.ok": "Arme déchargée : %s balles récupérées.",
+  "heraliz_tactique.decharger.vide": "L'arme est déjà vide.",
+  "heraliz_tactique.decharger.recharge": "Attends la fin du rechargement.",
+  "heraliz_tactique.decharger.match": "Impossible de décharger une arme de match.",
+  "heraliz_tactique.decharger.impossible": "Cette arme ne se décharge pas."
 }

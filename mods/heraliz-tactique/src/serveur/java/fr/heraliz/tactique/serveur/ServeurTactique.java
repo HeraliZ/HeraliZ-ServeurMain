@@ -20,5 +20,6 @@ public final class ServeurTactique implements Partie {
       ObjetsAVieServeur.brancher();
       fr.heraliz.tactique.armurier.ArmurierServeur.brancher();
       TirAutoServeur.brancher();
+      DechargerServeur.brancher();
    }
 }

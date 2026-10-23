@@ -78,5 +78,12 @@
   "heraliz_tactique.armurier.invalide": "Incomplete recipe: one result, at least one component, valid amounts.",
   "heraliz_tactique.armurier.refusee": "Recipe refused by TaCZ: %s",
   "heraliz_tactique.armurier.enregistree": "Recipe saved and sent to every player.",
-  "heraliz_tactique.armurier.donne": "Armorer's Ledger: right click to edit the Gunsmith Table recipes."
+  "heraliz_tactique.armurier.donne": "Armorer's Ledger: right click to edit the Gunsmith Table recipes.",
+  "key.categories.heraliz_tactique": "HeraliZ · Tactical",
+  "key.heraliz_tactique.decharger": "Unload weapon",
+  "heraliz_tactique.decharger.ok": "Weapon unloaded: %s rounds recovered.",
+  "heraliz_tactique.decharger.vide": "The weapon is already empty.",
+  "heraliz_tactique.decharger.recharge": "Wait for the reload to finish.",
+  "heraliz_tactique.decharger.match": "You can't unload a match weapon.",
+  "heraliz_tactique.decharger.impossible": "This weapon can't be unloaded."
 }

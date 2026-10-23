@@ -14,7 +14,7 @@ import net.minecraftforge.fml.ModList;
  * Partie client du mod porteur : le panneau de filtres de l'onglet créatif commun ; s'allonger (touche, délai, message) ;
  * allongé sans arme à plat comme avec une arme (Player Animator) ; tirs silencieux lointains ; coups des couteaux TaCZ
  * (touches, animation, bruit) ; « Jeter cet objet ? » des objets à vie (EcranJeter) ;
- * hitbox « en morceaux » des joueurs avec F3+B (HitboxCorpsRendu).
+ * hitbox « en morceaux » des joueurs avec F3+B (HitboxCorpsRendu) ; touche « Décharger l'arme » (DechargerClient).
  */
 public final class ClientTactique implements Partie {
    @Override
@@ -29,5 +29,6 @@ public final class ClientTactique implements Partie {
       fr.heraliz.tactique.client.avie.EcranJeter.brancher();
       fr.heraliz.tactique.client.hitbox.HitboxCorpsRendu.brancher();
       fr.heraliz.tactique.armurier.EcranArmurier.brancher();
+      fr.heraliz.tactique.client.decharger.DechargerClient.brancher(busMod);
    }
 }
