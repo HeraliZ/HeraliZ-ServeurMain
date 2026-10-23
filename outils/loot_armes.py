@@ -151,6 +151,8 @@ RARETES_IMPOSEES = {
     "heralisz_tactical:throwable": "rare",
     "ywzj_vehicle:fuel_tank": "peu_commun", "ywzj_vehicle:repair_tool": "rare", "ywzj_vehicle:parachute_pack": "epique",
     "heralizcasino:jeton_1": "commun", "heralizcasino:jeton_5": "peu_commun", "heralizcasino:jeton_10": "rare",
+    # explosifs de CRac (23/10) : fabrication seulement, jamais dans le loot
+    "crac:c4": "legendaire", "crac:explosive_charge": "epique",
 }
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
 COMMUN_PREFIXES = ("geckolib:item_",)

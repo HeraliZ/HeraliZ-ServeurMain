@@ -2094,6 +2094,14 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   inventaire sous la souris) ou dans l'Atelier (bouton « Décharger ») : chargeur et chambre rendus à l'inventaire par
   `dropAllAmmo` de TaCZ, chargeur gardé vide ; refusé pour une arme de match, en rechargement, à carburant ou sans vraies
   munitions. Caisses 2.18.0 : textes nets (titre et nom à leur taille, polices `ui_titre` / `ui_nom`, `Ui.placer`).
+  Puis (23/10, nuit, rien testé en jeu) : échelle d'interface du joueur rendue dès qu'aucun écran n'est ouvert
+  (Interface 1.9.2, `EchelleGarde` : cœurs et faim énormes après une partie de zombies) ; Matchs 0.15.1 : en match, seules
+  les commandes `zombies`, `duel`, `clashwar`, `matchs`, `groupe`, `msg`, `tell`, `w`, `r`, `login`, `register`
+  (`Protections.COMMANDES_PERMISES`, staff permission 2 libre) ; tout joueur en survie dans un monde de match sans partie
+  ni rôle de spectateur (ex. `/zombies quitter` pendant un lancement lent) : objets de match retirés, Coffre rendu, renvoyé
+  au spawn (`moteur/GardeHorsMatch`, chaque seconde) ; Tactique 2.34.0 : Table d'armurier, fond de chaque carte teinté
+  très légèrement de la couleur de rareté de l'objet, filtre « Avec mes composants » ; raretés C4 de CRac Légendaire,
+  charge explosive Épique (`RARETES_IMPOSEES`, jamais dans le loot).
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
