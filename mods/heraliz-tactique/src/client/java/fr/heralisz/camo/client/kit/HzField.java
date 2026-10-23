@@ -178,10 +178,14 @@ public class HzField extends AbstractWidget {
         g.fill(x, y + h - 1, x + w, y + h, ligne);
         Font font = Minecraft.getInstance().font;
         int tx = x + 4, ty = y + (h - 8) / 2;
+        // place du texte dans le champ (rien ne déborde : invite coupée avec « … », saisie trop longue montrée par sa fin)
+        int place = w - 8 - (suffix.isEmpty() ? 0 : font.width(Ui.lit(suffix, Ui.SMALL)) + 4);
         if (value.isEmpty() && !placeholder.isEmpty()) {
-            g.drawString(font, Ui.lit(placeholder, Ui.FONT), tx, ty, Ui.argb(Ui.FAINT, 255), false);
+            g.drawString(font, Ui.lit(Ui.ellipsis(font, placeholder, Ui.FONT, place), Ui.FONT), tx, ty, Ui.argb(Ui.FAINT, 255), false);
         }
-        Component text = Ui.lit(value, Ui.FONT);
+        String vu = value;
+        while (vu.length() > 1 && font.width(Ui.lit(vu, Ui.FONT)) > place - 2) vu = vu.substring(vu.offsetByCodePoints(0, 1));
+        Component text = Ui.lit(vu, Ui.FONT);
         if (focus && replace && !value.isEmpty()) {
             g.fill(tx - 1, ty - 1, tx + font.width(text) + 1, ty + 9, Ui.argb(accent, 70));
         }

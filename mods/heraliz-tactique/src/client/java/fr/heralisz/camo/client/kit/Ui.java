@@ -181,7 +181,7 @@ public final class Ui {
         float w = 0;
         for (int i = 0; i < s.length(); i = s.offsetByCodePoints(i, 1)) {
             String ch = new String(Character.toChars(s.codePointAt(i)));
-            w += font.width(lit(ch, f)) + spacing;
+            w += font.getSplitter().stringWidth(lit(ch, f)) + spacing;
         }
         return Math.max(0, w - spacing);
     }
@@ -194,10 +194,10 @@ public final class Ui {
             String ch = new String(Character.toChars(up.codePointAt(i)));
             MutableComponent c = lit(ch, f);
             g.pose().pushPose();
-            g.pose().translate(cx, y, 0);
+            placer(g, cx, y);
             g.drawString(font, c, 0, 0, argb, false);
             g.pose().popPose();
-            cx += font.width(c) + spacing;
+            cx += font.getSplitter().stringWidth(c) + spacing;
         }
     }
 
@@ -212,17 +212,31 @@ public final class Ui {
         spaced(g, font, s, f, xRight - w, y, argb, spacing);
     }
 
-    /** Texte centre sur cx (position arrondie au pixel : les glyphes bitmap comme le jeton restent nets). */
+    /**
+     * Place le texte sur le point d'écran le plus proche (repris du kit des Caisses 2.18.0) : nos lettres sont lissées
+     * (heraliz_interface, PolicesNettes) ; à cheval sur deux points de l'écran elles sont floues, sur un point entier
+     * elles sont nettes comme dans le créateur de personnage. Tient compte de la pose en cours.
+     */
+    public static void placer(GuiGraphics g, float x, float y) {
+        org.joml.Matrix4f m = g.pose().last().pose();
+        double s = Minecraft.getInstance().getWindow().getGuiScale();
+        float ex = m.m00() * x + m.m30(), ey = m.m11() * y + m.m31();
+        float rx = (float) (Math.round(ex * s) / s), ry = (float) (Math.round(ey * s) / s);
+        float kx = m.m00() == 0 ? 1 : m.m00(), ky = m.m11() == 0 ? 1 : m.m11();
+        g.pose().translate(x + (rx - ex) / kx, y + (ry - ey) / ky, 0);
+    }
+
+    /** Texte centre sur cx (position arrondie au point d'ecran : net). */
     public static void centered(GuiGraphics g, Font font, Component c, float cx, float y, int argb) {
         g.pose().pushPose();
-        g.pose().translate(Math.round(cx - font.width(c) / 2f), Math.round(y), 0);
+        placer(g, cx - font.width(c) / 2f, y);
         g.drawString(font, c, 0, 0, argb, false);
         g.pose().popPose();
     }
 
     public static void right(GuiGraphics g, Font font, Component c, float xRight, float y, int argb) {
         g.pose().pushPose();
-        g.pose().translate(Math.round(xRight - font.width(c)), Math.round(y), 0);
+        placer(g, xRight - font.width(c), y);
         g.drawString(font, c, 0, 0, argb, false);
         g.pose().popPose();
     }

@@ -24,9 +24,9 @@ import fr.heralisz.camo.client.kit.SonsUi;
 import fr.heralisz.camo.client.kit.Ui;
 import fr.heralisz.camo.mixin.GunSmithTableScreenAccessor;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ImageButton;
@@ -46,11 +46,15 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Table d'armurier : remplace l'écran de fabrication de TaCZ par un écran au style des écrans de clan (maquette validée) :
@@ -61,6 +65,11 @@ import java.util.Map;
  * recettes (onglets de la table, filtre « arme en main »), compte les matériaux, et son bouton de fabrication (caché) est
  * celui qu'on presse : TaCZ Addon garde ainsi ses fonctions (matériaux des coffres proches, Maj + clic pour fabriquer en
  * série). Le serveur revérifie tout. Si l'écran plante, celui de TaCZ revient jusqu'au redémarrage du jeu.
+ * <p>
+ * Mise en page (Tactique 2.35.0) : chaque élément a sa place MESURÉE avec la police (rien ne déborde de sa case), textes
+ * dans des polices à leur vraie taille (jamais agrandis), posés sur un point entier de l'écran. Les mêmes constantes et
+ * les mêmes calculs sont dans {@code outils/apercu_table_armurier.py}, qui dessine l'écran hors du jeu et liste tout
+ * texte qui sortirait de sa case : changer l'un, c'est changer l'autre.
  */
 public final class TableArmurier extends GunSmithTableScreen {
    private static final Logger LOG = LogUtils.getLogger();
@@ -70,10 +79,27 @@ public final class TableArmurier extends GunSmithTableScreen {
    private static Method stocksAddon;
    private static boolean stocksCherches;
 
-   private static final int CARTE_W = 60, CARTE_H = 62, ECART = 4, COLONNES = 4;
+   /** Polices à leur vraie taille (DM Sans) : gras 16 (titre, chiffres des tuiles), gras 14 (nom de l'objet), 8 (petites légendes). */
+   static final ResourceLocation GROS = new ResourceLocation("heralisz_camo", "ui_gros"), NOM = new ResourceLocation("heralisz_camo", "ui_nom"),
+      MINI = new ResourceLocation("heralisz_camo", "ui_mini");
+
+   // ------------------------------------------------------------------ constantes de mise en page (= outils/apercu_table_armurier.py)
+   static final int PANNEAU_L = 600, PANNEAU_H = 326, MARGE = 12;
+   static final int CAT_X = 8, CAT_W = 104, GRILLE_X = 120;
+   static final int CARTE_W = 60, CARTE_H = 62, ECART = 4, COLONNES = 4;
+   /** Hauteur de l'en-tête sur une ligne / sur deux lignes (filtres sous la recherche). */
+   static final int ENTETE_1 = 38, ENTETE_2 = 52;
+   static final int RECHERCHE_Y = 15, RECHERCHE_H = 16, RECHERCHE_MIN = 150, LIGNE2_Y = 36, LIGNE2_H = 12;
+   /** Case à cocher : côté, écart case-texte, écart entre filtres, écart recherche-filtres, écart avant « Fermer ». */
+   static final int CASE = 9, CASE_TEXTE = 6, FILTRE_ECART = 12, APRES_RECHERCHE = 12, AVANT_FERMER = 14;
+   static final int DETAIL_PAD = 8, TUILE_H = 36, TUILE_ECART = 4, TUILE_PAD = 6, BOUTON_H = 19;
+   static final float ESP_TITRE_PETIT = 1.4f, ESP_TITRE = 1.0f, ESP_NOM = 0.9f, ESP_CHIP = 0.6f, ESP_SECTION = 1.0f, ESP_BOUTON = 1.2f;
 
    /** État d'une recette pour une carte : matériaux qui manquent (0 : fabricable). */
    private record Etat(int manquants) {}
+
+   /** Texte ajusté à une place : police, espacement des capitales, texte (coupé avec « … » en dernier recours). */
+   record Ajuste(String texte, ResourceLocation police, float espace) {}
 
    private final HzField recherche;
    private String texteRecherche = "";
@@ -91,11 +117,11 @@ public final class TableArmurier extends GunSmithTableScreen {
    /** Nos éléments, les seuls dessinés (ceux de TaCZ restent dans l'écran, cachés et inactifs). */
    private final List<AbstractWidget> nos = new ArrayList<>();
    // géométrie
-   private int px, py, pw, ph, gx, gy, gw, cx, cy, cw, rangsVisibles, dx, dy, dw, dh;
+   private int px, py, pw, ph, gx, gy, gw, cx, cy, cw, rangsVisibles, dx, dy, dw, dh, entete;
 
    public TableArmurier(GunSmithTableMenu menu, Inventory inventory, Component title) {
       super(menu, inventory, title);
-      this.recherche = new HzField(0, 0, 10, 16, 40, HzField.TOUT).placeholder(tr("recherche")).remplacerAuFocus(false);
+      this.recherche = new HzField(0, 0, 10, RECHERCHE_H, 40, HzField.TOUT).placeholder(tr("recherche")).remplacerAuFocus(false);
       this.recherche.setResponder(v -> {
          this.texteRecherche = v;
          this.rechercheChangee = true;
@@ -126,6 +152,106 @@ public final class TableArmurier extends GunSmithTableScreen {
       return Component.translatable("gui.heralisz_camo.table." + cle, args).getString();
    }
 
+   /** Texte sans codes de couleur « § » (dessinés lettre par lettre, ils laisseraient leur lettre : « ABALLE DE 9MM »). */
+   static String brut(@Nullable String s) {
+      if (s == null) return "";
+      String b = ChatFormatting.stripFormatting(s);
+      return b == null ? "" : b;
+   }
+
+   // ------------------------------------------------------------------ mesures
+   private float largeurCaps(String s, ResourceLocation f, float esp) {
+      return Ui.spacedWidth(this.font, s.toUpperCase(Locale.ROOT), f, esp);
+   }
+
+   private int largeur(String s, ResourceLocation f) {
+      return this.font.width(Ui.lit(s, f));
+   }
+
+   /**
+    * Capitales espacées qui tiennent dans {@code max} : l'espacement voulu, puis resserré, puis la police plus petite
+    * ({@link #MINI}) si {@code reduire}, et en dernier recours coupé avec « … ».
+    */
+   Ajuste ajuster(String s, ResourceLocation police, float esp, float max, boolean reduire) {
+      float[] espaces = {esp, esp / 2f, 0f};
+      for (float e : espaces) {
+         if (this.largeurCaps(s, police, e) <= max) return new Ajuste(s, police, e);
+      }
+      if (reduire && !police.equals(MINI)) {
+         for (float e : espaces) {
+            if (this.largeurCaps(s, MINI, e) <= max) return new Ajuste(s, MINI, e);
+         }
+         return new Ajuste(Dessins.couperEspace(this.font, s, MINI, 0f, max), MINI, 0f);
+      }
+      return new Ajuste(Dessins.couperEspace(this.font, s, police, 0f, max), police, 0f);
+   }
+
+   private void dessiner(GuiGraphics g, Ajuste a, float x, float y, int argb) {
+      Ui.spaced(g, this.font, a.texte(), a.police(), x, y, argb, a.espace());
+   }
+
+   // ------------------------------------------------------------------ ordre des recettes
+   private static final Pattern PALIER = Pattern.compile("^(.*\\S)\\s+(I{1,3}|IV|V|VI{1,3}|IX|X)$");
+
+   /** Clé de tri : nom sans son palier, valeur du palier en chiffres romains (0 : aucun), nom complet. */
+   private record CleTri(String base, int palier, String nom) {}
+
+   static int romain(String r) {
+      return switch (r) {
+         case "I" -> 1;
+         case "II" -> 2;
+         case "III" -> 3;
+         case "IV" -> 4;
+         case "V" -> 5;
+         case "VI" -> 6;
+         case "VII" -> 7;
+         case "VIII" -> 8;
+         case "IX" -> 9;
+         case "X" -> 10;
+         default -> 0;
+      };
+   }
+
+   private static CleTri cleTri(String nom) {
+      String n = brut(nom).trim();
+      Matcher m = PALIER.matcher(n);
+      if (m.matches()) return new CleTri(m.group(1), romain(m.group(2)), n);
+      return new CleTri(n, 0, n);
+   }
+
+   private static Locale langueJoueur() {
+      String code = Minecraft.getInstance().getLanguageManager().getSelected();
+      return code == null || code.isEmpty() ? Locale.ROOT : Locale.forLanguageTag(code.replace('_', '-'));
+   }
+
+   /**
+    * Ordre alphabétique du nom affiché, dans la langue du joueur, sans tenir compte des majuscules ni des accents ; les
+    * paliers d'un même objet côte à côte et dans l'ordre (« Batterie II », « Batterie III », « Batterie IV », puis
+    * « Caoutchouc II »…) : le nom sans palier d'abord, puis la valeur du palier (pas l'ordre des lettres).
+    */
+   private void trier(List<ResourceLocation> liste) {
+      Locale langue = langueJoueur();
+      Collator base = Collator.getInstance(langue);
+      base.setStrength(Collator.PRIMARY);
+      Collator fin = Collator.getInstance(langue);
+      fin.setStrength(Collator.TERTIARY);
+      Map<ResourceLocation, CleTri> cles = new HashMap<>();
+      for (ResourceLocation id : liste) {
+         GunSmithTableRecipe g = this.recettes.get(id);
+         cles.put(id, cleTri(g == null ? id.toString() : g.getOutput().getHoverName().getString()));
+      }
+      Comparator<ResourceLocation> ordre = (a, b) -> {
+         CleTri ka = cles.get(a), kb = cles.get(b);
+         int c = base.compare(ka.base(), kb.base());
+         if (c != 0) return c;
+         c = Integer.compare(ka.palier(), kb.palier());
+         if (c != 0) return c;
+         c = fin.compare(ka.nom(), kb.nom());
+         return c != 0 ? c : a.toString().compareTo(b.toString());
+      };
+      liste.sort(ordre);
+   }
+
    // ------------------------------------------------------------------ construction
    @Override
    public void init() {
@@ -154,6 +280,18 @@ public final class TableArmurier extends GunSmithTableScreen {
    private <W extends AbstractWidget> W ajouter(W w) {
       this.nos.add(w);
       return this.addRenderableWidget(w);
+   }
+
+   /** Case à cocher d'un filtre : rend la zone (texte coupé si la place manque, texte entier en infobulle). */
+   private Zone filtre(int x, int y, int h, int decalTexte, String texte, int maxTexte, java.util.function.BooleanSupplier coche, Runnable action) {
+      String vu = Ui.ellipsis(this.font, texte, Ui.FONT, maxTexte);
+      boolean coupe = !vu.equals(texte);
+      int w = CASE + CASE_TEXTE + this.largeur(vu, Ui.FONT);
+      return new Zone(x, y, w, h, (g, z, mx, my, pt) -> {
+         Ui.pastille(g, z.getX(), z.getY() + decalTexte + 2, CASE, Ui.accent(), coche.getAsBoolean(), z.survol());
+         g.drawString(this.font, Ui.lit(vu, Ui.FONT), z.getX() + CASE + CASE_TEXTE, z.getY() + decalTexte, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255), false);
+         if (coupe && z.survol()) this.infobulle = List.of(Ui.lit(texte, Ui.FONT));
+      }, action, null);
    }
 
    private void construire() {
@@ -187,10 +325,13 @@ public final class TableArmurier extends GunSmithTableScreen {
          for (List<ResourceLocation> ids : t.heralisz$recettes().values()) {
             for (ResourceLocation id : ids) {
                GunSmithTableRecipe g = this.recettes.get(id);
-               if (g != null && g.getOutput().getHoverName().getString().toLowerCase(Locale.ROOT).contains(q)) liste.add(id);
+               if (g != null && brut(g.getOutput().getHoverName().getString()).toLowerCase(Locale.ROOT).contains(q)) liste.add(id);
             }
          }
       }
+      liste.removeIf(id -> !this.recettes.containsKey(id));
+      // ordre alphabétique, paliers côte à côte (gardé avec les filtres : ils ne font que retirer)
+      this.trier(liste);
       // « avec les composants disponibles » : seulement ce qu'on peut fabriquer tout de suite
       if (dispoSeulement && !creatif) {
          liste.removeIf(id -> {
@@ -201,55 +342,77 @@ public final class TableArmurier extends GunSmithTableScreen {
       this.affichees = liste;
 
       // cadre
-      this.pw = Math.min(600, this.width - 24);
-      this.ph = Math.min(326, this.height - 20);
+      this.pw = Math.min(PANNEAU_L, this.width - 24);
+      this.ph = Math.min(PANNEAU_H, this.height - 20);
       this.px = (this.width - this.pw) / 2;
       this.py = (this.height - this.ph) / 2;
       this.ajouter(new Bloc(this.px, this.py, this.pw, this.ph));
+      this.cx = this.px + GRILLE_X;
+      this.cw = COLONNES * CARTE_W + (COLONNES - 1) * ECART;
 
-      // en-tête : recherche, « arme en main », fermer
-      this.recherche.setX(this.px + 124);
-      this.recherche.setY(this.py + 15);
-      this.recherche.setWidth(Math.max(90, Math.min(176, this.pw - 124 - 440)));
-      this.ajouter(this.recherche);
+      // en-tête : titre à gauche, recherche, deux filtres, « Échap Fermer » à droite ; chaque place est mesurée
+      String fermer = AtelierArme.tr("fermer"), echap = AtelierArme.tr("echap");
+      int fw = this.largeur(echap, Ui.SMALL) + 8 + 5 + this.largeur(fermer, Ui.FONT);
+      int fx = this.px + this.pw - MARGE - fw;
+      int titreW = (int) Math.ceil(Math.max(this.largeurCaps(tr("titre_petit"), Ui.SMALL, ESP_TITRE_PETIT), this.largeurCaps(tr("titre"), GROS, ESP_TITRE)));
+      int sx = Math.max(this.cx, this.px + MARGE + titreW + AVANT_FERMER);
+      String enMain = tr("en_main"), dispo = tr("dispo");
+      int ew = CASE + CASE_TEXTE + this.largeur(enMain, Ui.FONT), dw2 = CASE + CASE_TEXTE + this.largeur(dispo, Ui.FONT);
+      int filtresW = ew + FILTRE_ECART + dw2;
+      int uneLigne = fx - AVANT_FERMER - filtresW - APRES_RECHERCHE - sx;
       GunPackList filtres = t.heralisz$filtres();
-      String enMain = tr("en_main");
-      int ew = 9 + 6 + this.font.width(Ui.lit(enMain, Ui.FONT)) + 4;
-      int ex = this.recherche.getX() + this.recherche.getWidth() + 10;
-      this.ajouter(new Zone(ex, this.py + 15, ew, 16, (g, z, mx, my, pt) -> {
-         boolean coche = filtres != null && filtres.isByHandSelected();
-         Ui.pastille(g, z.getX(), z.getY() + 4, 9, Ui.accent(), coche, z.survol());
-         g.drawString(this.font, Ui.lit(enMain, Ui.FONT), z.getX() + 15, z.getY() + 4, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255), false);
-      }, () -> {
+      java.util.function.BooleanSupplier enMainCoche = () -> filtres != null && filtres.isByHandSelected();
+      Runnable enMainAction = () -> {
          if (filtres == null) return;
          filtres.setByHandSelected(!filtres.isByHandSelected());
          this.defil = 0;
          this.rebuildWidgets();
-      }, null));
-      String dispo = tr("dispo");
-      int dw2 = 9 + 6 + this.font.width(Ui.lit(dispo, Ui.FONT)) + 4;
-      this.ajouter(new Zone(ex + ew + 8, this.py + 15, dw2, 16, (g, z, mx, my, pt) -> {
-         Ui.pastille(g, z.getX(), z.getY() + 4, 9, Ui.accent(), dispoSeulement, z.survol());
-         g.drawString(this.font, Ui.lit(dispo, Ui.FONT), z.getX() + 15, z.getY() + 4, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255), false);
-      }, () -> {
+      };
+      Runnable dispoAction = () -> {
          dispoSeulement = !dispoSeulement;
          this.defil = 0;
          this.rebuildWidgets();
-      }, null));
-      String fermer = AtelierArme.tr("fermer"), echap = AtelierArme.tr("echap");
-      int fw = this.font.width(Ui.lit(echap, Ui.SMALL)) + 8 + 5 + this.font.width(Ui.lit(fermer, Ui.FONT));
-      this.ajouter(new Zone(this.px + this.pw - 12 - fw, this.py + 17, fw, 12, (g, z, mx, my, pt) -> {
+      };
+      int rechercheW;
+      if (uneLigne >= RECHERCHE_MIN) {
+         // tout sur une ligne
+         this.entete = ENTETE_1;
+         rechercheW = Math.min(uneLigne, this.cw);
+         int fx0 = sx + rechercheW + APRES_RECHERCHE;
+         this.ajouter(this.filtre(fx0, this.py + RECHERCHE_Y, RECHERCHE_H, 4, enMain, Integer.MAX_VALUE, enMainCoche, enMainAction));
+         this.ajouter(this.filtre(fx0 + ew + FILTRE_ECART, this.py + RECHERCHE_Y, RECHERCHE_H, 4, dispo, Integer.MAX_VALUE, () -> dispoSeulement, dispoAction));
+      } else {
+         // recherche sur la 1re ligne (alignée sur la grille), filtres dessous
+         this.entete = ENTETE_2;
+         rechercheW = Math.max(60, Math.min(this.cx + this.cw, fx - AVANT_FERMER) - sx);
+         int place = this.px + this.pw - MARGE - sx;
+         int maxTexte1 = Integer.MAX_VALUE, maxTexte2 = Integer.MAX_VALUE;
+         if (filtresW > place) {
+            int chacun = (place - FILTRE_ECART) / 2 - CASE - CASE_TEXTE;
+            maxTexte1 = chacun;
+            maxTexte2 = chacun;
+         }
+         Zone z1 = this.filtre(sx, this.py + LIGNE2_Y, LIGNE2_H, 1, enMain, maxTexte1, enMainCoche, enMainAction);
+         this.ajouter(z1);
+         this.ajouter(this.filtre(sx + z1.getWidth() + FILTRE_ECART, this.py + LIGNE2_Y, LIGNE2_H, 1, dispo, maxTexte2, () -> dispoSeulement, dispoAction));
+      }
+      this.recherche.setX(sx);
+      this.recherche.setY(this.py + RECHERCHE_Y);
+      this.recherche.setWidth(rechercheW);
+      this.ajouter(this.recherche);
+      this.ajouter(new Zone(fx, this.py + 17, fw, 12, (g, z, mx, my, pt) -> {
          int kw = Dessins.touche(g, this.font, echap, z.getX(), z.getY(), z.survol());
          g.drawString(this.font, Ui.lit(fermer, Ui.FONT), z.getX() + kw + 5, z.getY() + 1, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255), false);
       }, this::onClose, null));
 
       // catégories, à gauche
-      this.gx = this.px + 8;
-      this.gy = this.py + 46;
-      this.gw = 104;
+      this.gx = this.px + CAT_X;
+      this.gy = this.py + this.entete + 8;
+      this.gw = CAT_W;
       int y = this.gy;
       int rang = Math.max(12, Math.min(15, (this.py + this.ph - 10 - this.gy) / Math.max(1, t.heralisz$onglets().size())));
       for (Map.Entry<ResourceLocation, TabConfig> e : t.heralisz$onglets().entrySet()) {
+         if (y + rang - 1 > this.py + this.ph - 8) break;
          ResourceLocation id = e.getKey();
          TabConfig cfg = e.getValue();
          int n = t.heralisz$recettes().getOrDefault(id, List.of()).size();
@@ -259,9 +422,7 @@ public final class TableArmurier extends GunSmithTableScreen {
       }
 
       // cartes, au centre
-      this.cx = this.px + 120;
-      this.cy = this.py + 60;
-      this.cw = COLONNES * CARTE_W + (COLONNES - 1) * ECART;
+      this.cy = this.py + this.entete + 22;
       this.rangsVisibles = Math.max(1, (this.py + this.ph - 10 - this.cy + ECART) / (CARTE_H + ECART));
       int rangs = (this.affichees.size() + COLONNES - 1) / COLONNES;
       this.defil = Math.max(0, Math.min(this.defil, rangs - this.rangsVisibles));
@@ -278,20 +439,23 @@ public final class TableArmurier extends GunSmithTableScreen {
 
       // détail, à droite
       this.dx = this.cx + this.cw + 8;
-      this.dy = this.py + 46;
+      this.dy = this.py + this.entete + 8;
       this.dw = this.px + this.pw - 8 - this.dx;
       this.dh = this.py + this.ph - 8 - this.dy;
       if (choisie != null) {
          Etat e = this.etatChoisie(choisie, p);
-         int bw = this.dw - 20;
-         HzButton fabriquer = new HzButton(this.dx + 10, this.dy + this.dh - 28, bw, 19,
-            Component.literal(e.manquants() == 0 ? tr("fabriquer") : this.texteManque(choisie, p)), Ui.accent(), this::fabriquer) {
+         int bw = this.dw - 2 * DETAIL_PAD;
+         String texte = e.manquants() == 0 ? tr("fabriquer") : this.texteManque(choisie, p);
+         String vu = Dessins.couperEspace(this.font, texte, Ui.BOLD, ESP_BOUTON, bw - 12);
+         boolean coupe = !vu.equals(texte);
+         HzButton fabriquer = new HzButton(this.dx + DETAIL_PAD, this.dy + this.dh - 9 - BOUTON_H, bw, BOUTON_H,
+            Component.literal(vu), Ui.accent(), this::fabriquer) {
             @Override
             protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
                super.renderWidget(g, mouseX, mouseY, partialTick);
-               if (this.isHovered() && this.active && addonPresent()) {
-                  TableArmurier.this.infobulle = List.of(Ui.lit(tr("serie"), Ui.FONT));
-               }
+               if (!this.isHovered()) return;
+               if (coupe) TableArmurier.this.infobulle = List.of(Ui.lit(texte, Ui.FONT));
+               else if (this.active && addonPresent()) TableArmurier.this.infobulle = List.of(Ui.lit(tr("serie"), Ui.FONT));
             }
          }.look(HzButton.Look.PRIMARY);
          if (e.manquants() > 0) {
@@ -500,7 +664,7 @@ public final class TableArmurier extends GunSmithTableScreen {
 
    private static String nomIngredient(GunSmithTableIngredient in) {
       ItemStack s = apercu(in);
-      return s.isEmpty() ? "?" : s.getHoverName().getString();
+      return s.isEmpty() ? "?" : brut(s.getHoverName().getString());
    }
 
    // ------------------------------------------------------------------ dessin
@@ -513,7 +677,7 @@ public final class TableArmurier extends GunSmithTableScreen {
          for (AbstractWidget w : this.nos) {
             w.render(g, mouseX, mouseY, partialTick);
          }
-         this.dessinerDetail(g);
+         this.dessinerDetail(g, mouseX, mouseY);
          if (this.infobulle != null) Ui.tooltip(g, this.font, this.infobulle, mouseX, mouseY, Ui.accent());
       } catch (RuntimeException | LinkageError e) {
          this.secours(e);
@@ -523,23 +687,26 @@ public final class TableArmurier extends GunSmithTableScreen {
    private void dessinerCadre(GuiGraphics g) {
       GunSmithTableScreenAccessor t = this.tacz();
       Ui.glass(g, this.px, this.py, this.pw, this.ph);
-      Ui.spaced(g, this.font, tr("titre_petit"), Ui.SMALL, this.px + 12, this.py + 10, Ui.argb(Ui.MUTED, 255), 1.4f);
-      Dessins.titre(g, this.font, tr("titre"), Ui.BOLD, this.px + 12, this.py + 19, 1.45f, Ui.argb(Ui.TEXT, 255), 1.0f);
-      Ui.hairline(g, this.px + 8, this.px + this.pw - 8, this.py + 38, 0xFFFFFF, 34, true, true);
-      // titre de la grille
+      Ui.spaced(g, this.font, tr("titre_petit"), Ui.SMALL, this.px + MARGE, this.py + 10, Ui.argb(Ui.MUTED, 255), ESP_TITRE_PETIT);
+      Ui.spaced(g, this.font, tr("titre"), GROS, this.px + MARGE, this.py + 18, Ui.argb(Ui.TEXT, 255), ESP_TITRE);
+      Ui.hairline(g, this.px + 8, this.px + this.pw - 8, this.py + this.entete, 0xFFFFFF, 34, true, true);
+      // titre de la grille et nombre d'objets
       ResourceLocation type = t.heralisz$type();
       String titre;
       if (!this.texteRecherche.trim().isEmpty()) titre = tr("resultats");
       else {
          TabConfig cfg = type == null ? null : t.heralisz$onglets().get(type);
-         titre = cfg == null ? "" : cfg.getName().getString();
+         titre = cfg == null ? "" : brut(cfg.getName().getString());
       }
-      Ui.section(g, this.font, titre, this.cx, this.py + 48, this.cw - 24);
-      Ui.spacedRight(g, this.font, String.valueOf(this.affichees.size()), Ui.SMALL, this.cx + this.cw, this.py + 48, Ui.argb(Ui.FAINT, 255), 0.8f);
+      String nb = String.valueOf(this.affichees.size());
+      int nbW = (int) Math.ceil(this.largeurCaps(nb, Ui.SMALL, 0.8f));
+      int sy = this.py + this.entete + 10;
+      Ui.section(g, this.font, Dessins.couperEspace(this.font, titre, Ui.SMALL, ESP_SECTION, this.cw - nbW - 24), this.cx, sy, this.cw - nbW - 8);
+      Ui.spacedRight(g, this.font, nb, Ui.SMALL, this.cx + this.cw, sy, Ui.argb(Ui.FAINT, 255), 0.8f);
       if (t.heralisz$onglets().isEmpty()) {
-         Ui.centered(g, this.font, Ui.lit(tr("aucune"), Ui.FONT), this.cx + this.cw / 2f, this.cy + 30, Ui.argb(Ui.MUTED, 255));
+         Ui.centered(g, this.font, Ui.lit(Ui.ellipsis(this.font, tr("aucune"), Ui.FONT, this.cw - 8), Ui.FONT), this.cx + this.cw / 2f, this.cy + 30, Ui.argb(Ui.MUTED, 255));
       } else if (this.affichees.isEmpty()) {
-         Ui.centered(g, this.font, Ui.lit(tr("aucun_resultat"), Ui.FONT), this.cx + this.cw / 2f, this.cy + 30, Ui.argb(Ui.MUTED, 255));
+         Ui.centered(g, this.font, Ui.lit(Ui.ellipsis(this.font, tr("aucun_resultat"), Ui.FONT, this.cw - 8), Ui.FONT), this.cx + this.cw / 2f, this.cy + 30, Ui.argb(Ui.MUTED, 255));
       }
       int rangs = (this.affichees.size() + COLONNES - 1) / COLONNES;
       if (rangs > this.rangsVisibles) {
@@ -572,9 +739,13 @@ public final class TableArmurier extends GunSmithTableScreen {
          g.renderItem(icone, 0, 0);
          g.pose().popPose();
       }
-      String nom = Ui.ellipsis(this.font, cfg.getName().getString(), Ui.FONT, w - 20 - 18);
-      g.drawString(this.font, Ui.lit(nom, Ui.FONT), x + 19, y + (h - 8) / 2, Ui.argb(actif ? Ui.TEXT : Ui.mix(Ui.MUTED, Ui.TEXT, 0.4f), 255), false);
-      Ui.right(g, this.font, Ui.lit(String.valueOf(n), Ui.SMALL), x + w - 5, y + (h - 6) / 2f, Ui.argb(Ui.FAINT, 255));
+      String nombre = String.valueOf(n);
+      int nw = this.largeur(nombre, Ui.SMALL);
+      String complet = brut(cfg.getName().getString());
+      String nom = Ui.ellipsis(this.font, complet, Ui.FONT, w - 19 - 5 - nw - 4);
+      g.drawString(this.font, Ui.lit(nom, Ui.FONT), x + 19, y + (h - 8) / 2 - 1, Ui.argb(actif ? Ui.TEXT : Ui.mix(Ui.MUTED, Ui.TEXT, 0.4f), 255), false);
+      Ui.right(g, this.font, Ui.lit(nombre, Ui.SMALL), x + w - 5, y + (h - 8) / 2f, Ui.argb(Ui.FAINT, 255));
+      if (z.survol() && !nom.equals(complet)) this.infobulle = List.of(Ui.lit(complet, Ui.FONT));
    }
 
    /** Filtre « avec les composants disponibles » (gardé tant que le jeu tourne). */
@@ -619,43 +790,69 @@ public final class TableArmurier extends GunSmithTableScreen {
       if (sortie.getCount() > 1) {
          g.pose().pushPose();
          g.pose().translate(0, 0, 300);
-         g.drawString(this.font, Ui.lit("×" + sortie.getCount(), Ui.SMALL), x + 4, y + 4, Ui.argb(Ui.MUTED, 255), false);
+         g.drawString(this.font, Ui.lit("×" + sortie.getCount(), Ui.SMALL), x + 4, y + 3, Ui.argb(Ui.MUTED, 255), false);
          g.pose().popPose();
       }
-      String nom = Ui.ellipsis(this.font, sortie.getHoverName().getString(), Ui.FONT, w - 8);
-      g.drawString(this.font, Ui.lit(nom, Ui.FONT), x + 4, y + h - 23, Ui.argb(Ui.TEXT, 255), false);
+      String complet = brut(sortie.getHoverName().getString());
+      String nom = Ui.ellipsis(this.font, complet, Ui.FONT, w - 8);
+      g.drawString(this.font, Ui.lit(nom, Ui.FONT), x + 4, y + h - 24, Ui.argb(Ui.TEXT, 255), false);
       Etat e = this.etats.get(id);
       boolean ok = e != null && e.manquants() == 0;
       String st = ok ? tr("fabricable") : tr("manque", e == null ? "?" : String.valueOf(e.manquants()));
       int c = ok ? Ui.OK : Ui.FAINT;
       Ui.point(g, x + 4, y + h - 11, c, 255);
-      Ui.spaced(g, this.font, st, Ui.SMALL, x + 12, y + h - 12, Ui.argb(ok ? Ui.OK : Ui.MUTED, 255), 0.6f);
-      if (z.survol()) this.infobulle = List.of(Ui.lit(sortie.getHoverName().getString(), Ui.BOLD));
+      Ajuste a = this.ajuster(st, Ui.SMALL, ESP_CHIP, w - 11 - 4, true);
+      this.dessiner(g, a, x + 11, y + h - 13 + (a.police().equals(MINI) ? 1 : 0), Ui.argb(ok ? Ui.OK : Ui.MUTED, 255));
+      if (z.survol()) this.infobulle = List.of(Ui.lit(complet, Ui.BOLD));
    }
 
    /** À droite : l'objet choisi en 3D, ses caractéristiques et ses matériaux. */
-   private void dessinerDetail(GuiGraphics g) {
+   private void dessinerDetail(GuiGraphics g, int mouseX, int mouseY) {
       GunSmithTableRecipe r = this.tacz().heralisz$recette();
       LocalPlayer p = Minecraft.getInstance().player;
       if (r == null || p == null) {
-         Ui.centered(g, this.font, Ui.lit(tr("choisir"), Ui.FONT), this.dx + this.dw / 2f, this.dy + this.dh / 2f, Ui.argb(Ui.MUTED, 255));
+         int lw = this.dw - 2 * DETAIL_PAD;
+         Component c = Ui.lit(tr("choisir"), Ui.FONT);
+         int hh = Dessins.hauteur(this.font, c, lw, 11);
+         int yy = this.dy + (this.dh - hh) / 2;
+         for (net.minecraft.util.FormattedCharSequence l : this.font.split(c, lw)) {
+            g.drawString(this.font, l, Math.round(this.dx + (this.dw - this.font.width(l)) / 2f), yy, Ui.argb(Ui.MUTED, 255), false);
+            yy += 11;
+         }
          return;
       }
       ItemStack sortie = r.getOutput();
-      int x = this.dx + 10, w = this.dw - 20;
-      // modèle 3D qui tourne
-      this.modele(g, sortie, this.dx + 4, this.dy + 4, this.dw - 8, 74);
-      int y = this.dy + 82;
-      String nom = Dessins.couperEspace(this.font, sortie.getHoverName().getString(), Ui.BOLD, 0.9f, w / 1.3f);
-      Dessins.titre(g, this.font, nom, Ui.BOLD, x, y, 1.3f, Ui.argb(Ui.TEXT, 255), 0.9f);
-      y += 15;
-      // pastilles : catégorie, calibre
-      int chipX = x;
-      TabConfig cfg = this.tacz().heralisz$onglets().get(r.getResult().getGroup());
-      if (cfg != null) chipX += Ui.chip(g, this.font, cfg.getName().getString(), chipX, y, Ui.MUTED) + 4;
-      String calibre = calibre(sortie);
-      if (!calibre.isEmpty()) Ui.chip(g, this.font, Dessins.couperEspace(this.font, calibre, Ui.SMALL, 0.6f, x + w - chipX - 10), chipX, y, Ui.MUTED);
+      int x = this.dx + DETAIL_PAD, w = this.dw - 2 * DETAIL_PAD;
+      // modèle 3D qui tourne (un peu plus petit si l'en-tête est sur deux lignes)
+      int modeleH = Math.max(56, Math.min(74, this.dh - 190));
+      this.modele(g, sortie, this.dx + 4, this.dy + 4, this.dw - 8, modeleH);
+      int y = this.dy + modeleH + 8;
+      String complet = brut(sortie.getHoverName().getString());
+      String nom = Dessins.couperEspace(this.font, complet, NOM, ESP_NOM, w);
+      Ui.spaced(g, this.font, nom, NOM, x, y, Ui.argb(Ui.TEXT, 255), ESP_NOM);
+      if (!nom.equals(complet) && mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + 14) this.infobulle = List.of(Ui.lit(complet, Ui.BOLD));
       y += 16;
+      // pastilles : catégorie, calibre (chacune coupée pour tenir sur la ligne)
+      TabConfig cfg = this.tacz().heralisz$onglets().get(r.getResult().getGroup());
+      String cat = cfg == null ? "" : brut(cfg.getName().getString());
+      String calibre = brut(calibre(sortie));
+      int catW = cat.isEmpty() ? 0 : Dessins.largeurChip(this.font, cat), calW = calibre.isEmpty() ? 0 : Dessins.largeurChip(this.font, calibre);
+      if (catW > 0 && calW > 0 && catW + 4 + calW > w) {
+         int moitie = (w - 4) / 2;
+         if (catW <= moitie) calW = w - 4 - catW;
+         else if (calW <= moitie) catW = w - 4 - calW;
+         else {
+            catW = moitie;
+            calW = w - 4 - moitie;
+         }
+      } else {
+         catW = Math.min(catW, w);
+         calW = Math.min(calW, w);
+      }
+      int chipX = x;
+      if (catW > 0) chipX += Ui.chip(g, this.font, Dessins.couperEspace(this.font, cat, Ui.SMALL, ESP_CHIP, catW - 9), chipX, y, Ui.MUTED) + 4;
+      if (calW > 0) Ui.chip(g, this.font, Dessins.couperEspace(this.font, calibre, Ui.SMALL, ESP_CHIP, calW - 9), chipX, y, Ui.MUTED);
+      y += 17;
       // caractéristiques (armes), effets (accessoires), quantité (munitions)
       y = this.dessinerCaracteristiques(g, sortie, x, y, w);
       // matériaux
@@ -663,9 +860,11 @@ public final class TableArmurier extends GunSmithTableScreen {
       y += 12;
       List<GunSmithTableIngredient> in = r.getInputs();
       boolean creatif = p.isCreative();
-      int fin = this.dy + this.dh - 34;
+      int fin = this.dy + this.dh - 9 - BOUTON_H - 6;
       int ligne = Math.max(11, Math.min(14, (fin - y) / Math.max(1, in.size())));
-      for (int i = 0; i < in.size() && y + ligne <= fin + 2; i++) {
+      int lignes = Math.max(0, (fin - y) / ligne);
+      int montrees = in.size() <= lignes ? in.size() : Math.max(0, lignes - 1);
+      for (int i = 0; i < montrees; i++) {
          GunSmithTableIngredient m = in.get(i);
          ItemStack s = apercu(m);
          g.pose().pushPose();
@@ -674,15 +873,32 @@ public final class TableArmurier extends GunSmithTableScreen {
          g.renderItem(s, 0, 0);
          g.pose().popPose();
          int a = this.dispo(i), besoin = m.getCount();
-         Component droite = creatif ? Ui.lit("∞ / " + besoin, Ui.FONT)
+         Component droite = creatif ? Ui.lit("∞ / " + Ui.nombre(besoin), Ui.FONT)
             : Ui.lit(Ui.nombre(a), Ui.BOLD).withStyle(st -> st.withColor(a >= besoin ? Ui.OK : Ui.DANGER))
                .append(Ui.lit(" / " + Ui.nombre(besoin), Ui.FONT).withStyle(st -> st.withColor(Ui.MUTED)));
          int dw2 = this.font.width(droite);
-         String n = Ui.ellipsis(this.font, s.isEmpty() ? "?" : s.getHoverName().getString(), Ui.FONT, w - 14 - dw2 - 6);
-         g.drawString(this.font, Ui.lit(n, Ui.FONT), x + 14, y + (ligne - 8) / 2, Ui.argb(Ui.TEXT, 230), false);
-         g.drawString(this.font, droite, x + w - dw2, y + (ligne - 8) / 2, Ui.argb(Ui.TEXT, 255), false);
+         String n = Ui.ellipsis(this.font, s.isEmpty() ? "?" : brut(s.getHoverName().getString()), Ui.FONT, w - 14 - dw2 - 6);
+         int ty = y + (ligne - 9) / 2;
+         g.drawString(this.font, Ui.lit(n, Ui.FONT), x + 14, ty, Ui.argb(Ui.TEXT, 230), false);
+         g.drawString(this.font, droite, x + w - dw2, ty, Ui.argb(Ui.TEXT, 255), false);
          y += ligne;
       }
+      if (montrees < in.size()) {
+         String plus = tr("autres", in.size() - montrees);
+         g.drawString(this.font, Ui.lit(Ui.ellipsis(this.font, plus, Ui.FONT, w - 14), Ui.FONT), x + 14, y + (ligne - 9) / 2, Ui.argb(Ui.MUTED, 255), false);
+      }
+   }
+
+   /** Tuile de statistique : chiffre en gras 16 (police à sa vraie taille), légende en petites capitales qui tient dans la tuile. */
+   private void tuile(GuiGraphics g, int x, int y, int w, int h, String valeur, String legende) {
+      Ui.soft(g, x, y, w, h, Ui.argb(0xFFFFFF, 8));
+      Ui.softOutline(g, x + 1, y + 1, w - 2, h - 2, Ui.argb(0xFFFFFF, 14));
+      int max = w - 2 * TUILE_PAD;
+      ResourceLocation pv = this.largeur(valeur, GROS) <= max ? GROS : Ui.BOLD;
+      String v = Ui.ellipsis(this.font, valeur, pv, max);
+      g.drawString(this.font, Ui.lit(v, pv), x + TUILE_PAD, y + (pv == GROS ? 6 : 9), Ui.argb(Ui.TEXT, 255), false);
+      Ajuste a = this.ajuster(legende, Ui.SMALL, 0.8f, max, true);
+      this.dessiner(g, a, x + TUILE_PAD, y + h - 13 + (a.police().equals(MINI) ? 1 : 0), Ui.argb(Ui.MUTED, 255));
    }
 
    private int dessinerCaracteristiques(GuiGraphics g, ItemStack sortie, int x, int y, int w) {
@@ -695,28 +911,29 @@ public final class TableArmurier extends GunSmithTableScreen {
             else if ("rpm".equals(l.cle())) cadence = l.valeur().replaceAll("[^0-9]", "");
          }
          String chargeur = data == null ? "—" : String.valueOf(data.getAmmoAmount());
-         int tw = (w - 8) / 3;
-         Ui.tile(g, this.font, x, y, tw, 36, degats, tr("stat.degats"));
-         Ui.tile(g, this.font, x + tw + 4, y, tw, 36, cadence, tr("stat.cadence"));
-         Ui.tile(g, this.font, x + 2 * (tw + 4), y, tw, 36, chargeur, tr("stat.chargeur"));
-         return y + 44;
+         int tw = (w - 2 * TUILE_ECART) / 3;
+         this.tuile(g, x, y, tw, TUILE_H, degats, tr("stat.degats"));
+         this.tuile(g, x + tw + TUILE_ECART, y, tw, TUILE_H, cadence, tr("stat.cadence"));
+         this.tuile(g, x + 2 * (tw + TUILE_ECART), y, w - 2 * (tw + TUILE_ECART), TUILE_H, chargeur, tr("stat.chargeur"));
+         return y + TUILE_H + 8;
       }
       if (IAttachment.getIAttachmentOrNull(sortie) != null) {
          int cx2 = x, cy2 = y;
          for (Effets.Effet e : Effets.de(sortie)) {
-            int cw2 = Dessins.largeurChip(this.font, e.texte());
+            String texte = Dessins.couperEspace(this.font, brut(e.texte()), Ui.SMALL, ESP_CHIP, w - 10);
+            int cw2 = Dessins.largeurChip(this.font, texte);
             if (cx2 + cw2 > x + w) {
                cx2 = x;
                cy2 += 14;
                if (cy2 > y + 14) break;
             }
-            Ui.chip(g, this.font, e.texte(), cx2, cy2, e.couleur());
+            Ui.chip(g, this.font, texte, cx2, cy2, e.couleur());
             cx2 += cw2 + 4;
          }
          return cy2 + 20;
       }
       if (sortie.getCount() > 1 || sortie.getItem() instanceof IAmmo) {
-         g.drawString(this.font, Ui.lit(tr("par_fabrication", sortie.getCount()), Ui.FONT), x, y, Ui.argb(Ui.MUTED, 255), false);
+         g.drawString(this.font, Ui.lit(Ui.ellipsis(this.font, tr("par_fabrication", sortie.getCount()), Ui.FONT, w), Ui.FONT), x, y, Ui.argb(Ui.MUTED, 255), false);
          return y + 16;
       }
       return y + 4;

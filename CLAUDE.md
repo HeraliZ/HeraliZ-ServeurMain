@@ -2101,7 +2101,16 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   ni rôle de spectateur (ex. `/zombies quitter` pendant un lancement lent) : objets de match retirés, Coffre rendu, renvoyé
   au spawn (`moteur/GardeHorsMatch`, chaque seconde) ; Tactique 2.34.0 : Table d'armurier, fond de chaque carte teinté
   très légèrement de la couleur de rareté de l'objet, filtre « Avec mes composants » ; raretés C4 de CRac Légendaire,
-  charge explosive Épique (`RARETES_IMPOSEES`, jamais dans le loot).
+  charge explosive Épique (`RARETES_IMPOSEES`, jamais dans le loot). Tactique 2.35.0 (rien testé en jeu) : Table
+  d'armurier remise en page, chaque place mesurée avec la police (en-tête : titre, recherche, filtres sous la recherche
+  s'ils ne tiennent pas sur la ligne, « Échap Fermer » ; invite de recherche coupée dans son champ ; légendes des tuiles,
+  état des cartes, pastilles, matériaux « + N autres », bouton : resserrés, police 8 ou « … », jamais hors de leur case) ;
+  polices à leur vraie taille (`ui_gros` 16, `ui_nom` 14, `ui_mini` 8, plus de `pose().scale` sur le texte), lettres
+  posées sur un point de l'écran (`Ui.placer` dans le kit du mod) ; codes « § » retirés des noms (pastille du calibre
+  « ABALLE DE 9MM ») ; recettes rangées par ordre alphabétique dans la langue du joueur (sans majuscules ni accents),
+  paliers côte à côte (« Batterie II, III, IV », puis « Caoutchouc II »), aussi pour la recherche et les filtres.
+  Aperçu et contrôle hors du jeu : `python mods/heraliz-tactique/outils/apercu_table_armurier.py` (mêmes constantes,
+  lues dans le Java ; liste des débordements, doit être vide ; images dans `maquettes/table_armurier/`).
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
