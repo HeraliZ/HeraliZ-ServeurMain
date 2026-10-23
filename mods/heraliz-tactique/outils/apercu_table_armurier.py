@@ -8,8 +8,9 @@ Refait la mise en page de `camo/client/atelier/TableArmurier.java` avec les MÊM
 Java) et les mêmes polices (TTF du mod, tailles et décalages des fichiers `font/*.json`), comme Minecraft 1.20.1 :
 - avancée d'une lettre = avance TTF × taille / (ascendante − descendante) ; Font.width = somme arrondie au-dessus ;
   capitales espacées : avancées exactes (StringSplitter) ; espace = 3 ;
-- ligne de base d'une lettre TTF = point de dessin + ascendante + décalage du JSON − 3 (TrueTypeGlyphProvider :
-  bearingY = ascendante − haut + shift ; BakedGlyph : up − 3) ; le milieu des capitales qui en découle doit être celui
+- ligne de base d'une lettre TTF = point de dessin + ascendante + 2 × décalage du JSON − 3 (TrueTypeGlyphProvider : le
+  décalage compte dans la boîte stb et dans bearingY = ascendante − haut + shift ; BakedGlyph : up − 3) ; l'approche
+  gauche d'une lettre compte aussi deux fois (bearingX) ; le milieu des capitales qui en découle doit être celui
   de `Ui.milieu` (vérifié ici) ;
 - point de dessin posé sur le point d'écran le plus proche (`Ui.placer`).
 
@@ -113,8 +114,8 @@ class Police:
 
     @staticmethod
     def base(f):
-        """Ligne de base sous le point de dessin (Minecraft : ascendante + décalage − 3)."""
-        return f["asc"] * f["taille"] / f["hh"] + f["decal"][1] - 3
+        """Ligne de base sous le point de dessin (Minecraft : ascendante + 2 × décalage − 3)."""
+        return f["asc"] * f["taille"] / f["hh"] + 2 * f["decal"][1] - 3  # le décalage Y compte deux fois (boîte stb + bearingY)
 
     def capitales(self):
         f = self.ttf[0]
@@ -227,10 +228,13 @@ class Ecran:
         cx = x
         for c in s:
             f = pol.source(c)
-            px = self.placer(cx) if esp is not None else cx
+            # capitales espacées : Ui.spaced recule chaque lettre de son approche gauche, puis la pose au point d'écran
+            px = self.placer(cx - approche(c, pol)) if esp is not None else cx
             if f is not None and c not in pol.espaces:
                 base = y + Police.base(f)
-                pos = ((px * sc - origine[0]) * facteur, (base * sc - origine[1]) * facteur)
+                # Minecraft compte deux fois l'approche gauche (bearingX) ; Pillow une fois : on ajoute l'autre
+                lsb = f["hmtx"][f["cmap"][ord(c)]][1] * f["taille"] / f["hh"]
+                pos = (((px + lsb) * sc - origine[0]) * facteur, (base * sc - origine[1]) * facteur)
                 d.text(pos, c, font=pol.image(f, sc * facteur), fill=rgba if cible is None else 255, anchor="ls")
             cx += pol.avance(c) + (esp if esp is not None else 0.0)
         return cx - x
@@ -335,8 +339,9 @@ def x_caps_centre(e, t, pol, esp, cx):
     if n == 0:
         return cx, esp
     w = caps_largeur(t, pol, esp)
-    gl, dr = encre_px(t, pol)
+    gl, dr = encre_px(t, pol, True)
     av = pol.avance(t[-1])
+    lf, ll = approche(t[0], pol), approche(t[-1], pol)
     meilleur, ecart = (cx - (w + gl - dr) / 2, esp), float("inf")
     for j in RETOUCHES:
         wj = w + (n - 1) * j * 0.01
@@ -344,7 +349,7 @@ def x_caps_centre(e, t, pol, esp, cx):
         x0 = cx - (wj + gl - dr) / 2
         for i in DECALAGES:
             xc = x0 + i / (8 * e.s)
-            milieu = (e.placer(xc) + gl + e.placer(xc + dern) + av - dr) / 2
+            milieu = (e.placer(xc - lf) + lf + gl + e.placer(xc + dern - ll) + ll + av - dr) / 2
             d = abs(milieu - cx)
             if d < ecart - 1e-4:
                 ecart, meilleur = d, (xc, esp + j * 0.01)
@@ -602,19 +607,30 @@ def table_encre():
                 if not hasattr(g, "xMin") or g.numberOfContours == 0:
                     continue
                 av = hmtx[nom][0]
-                table[ch] = [round(g.xMin / f["hh"], 5), round((av - g.xMax) / f["hh"], 5)]
+                lsb = hmtx[nom][1]  # Minecraft ajoute l'approche gauche une 2e fois : encre décalée d'autant
+                table[ch] = [round((g.xMin + lsb) / f["hh"], 5), round((av - g.xMax - lsb) / f["hh"], 5), round(lsb / f["hh"], 5)]
         out[graisse] = dict(sorted(table.items()))
     return out
 
 
-def encre_px(s, pol):
-    """(gauche, droite) de l'encre du texte, en points d'interface (comme Encre.java)."""
+def approche(c, pol):
+    """Encre.approche : approche gauche (une fois) d'une lettre, en points d'interface."""
+    t = TABLE_ENCRE["bold" if pol.nom in ("ui_bold", "ui_gros", "ui_nom") else "medium"]
+    return t.get(c, [0, 0, 0])[2] * pol.ttf[0]["taille"]
+
+
+def encre_px(s, pol, capitales=False):
+    """(gauche, droite) de l'encre du texte, en points d'interface (comme Encre.de / Encre.deCapitales) : texte entier,
+    approche gauche comptée deux fois ; capitales espacées (Ui.spaced retire la 2e fois lettre par lettre)."""
     t = TABLE_ENCRE["bold" if pol.nom in ("ui_bold", "ui_gros", "ui_nom") else "medium"]
     s = s.strip()
     if not s:
         return 0.0, 0.0
     taille = pol.ttf[0]["taille"]
-    return t.get(s[0], [0, 0])[0] * taille, t.get(s[-1], [0, 0])[1] * taille
+    a, b = t.get(s[0], [0, 0, 0]), t.get(s[-1], [0, 0, 0])
+    if capitales:
+        return (a[0] - a[2]) * taille, (b[1] + b[2]) * taille
+    return a[0] * taille, b[1] * taille
 
 
 TABLE_ENCRE = table_encre()

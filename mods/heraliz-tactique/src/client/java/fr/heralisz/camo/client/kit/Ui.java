@@ -194,7 +194,8 @@ public final class Ui {
             String ch = new String(Character.toChars(up.codePointAt(i)));
             MutableComponent c = lit(ch, f);
             g.pose().pushPose();
-            placer(g, cx, y);
+            // Minecraft compte deux fois l'approche gauche d'une lettre TTF : on la retire une fois (espacement régulier)
+            placer(g, cx - Encre.approche(up.codePointAt(i), f), y);
             g.drawString(font, c, 0, 0, argb, false);
             g.pose().popPose();
             cx += font.getSplitter().stringWidth(c) + spacing;
@@ -233,18 +234,19 @@ public final class Ui {
 
     /**
      * Milieu des capitales sous le point de dessin, en points d'interface. Minecraft 1.20.1 pose une lettre TTF à
-     * y + ascendante + décalage du JSON − 3 (TrueTypeGlyphProvider : bearingY = ascendante − haut + shift ; BakedGlyph :
-     * up − 3) ; DM Sans : ascendante 992 et capitales 700 sur 1302 unités de hauteur, décalage 1, d'où
-     * taille × 0,49309 − 2. Vérifié par outils/apercu_table_armurier.py (mêmes polices, même calcul).
+     * y + ascendante + 2 × décalage du JSON − 3 (TrueTypeGlyphProvider : le décalage Y compte deux fois, dans la boîte
+     * du glyphe de stb et dans bearingY = ascendante − haut + shift ; BakedGlyph : up − 3) ; DM Sans : ascendante 992 et
+     * capitales 700 sur 1302 unités de hauteur, décalage 1, d'où taille × 0,49309 − 1. Vérifié par
+     * outils/apercu_table_armurier.py (mêmes polices, même calcul).
      */
     public static float milieu(ResourceLocation f) {
         if (!"heralisz_camo".equals(f.getNamespace())) return 3.5f;
         return switch (f.getPath()) {
-            case "ui", "ui_bold" -> 3.424f;
-            case "ui_small" -> 2.438f;
-            case "ui_gros" -> 5.889f;
-            case "ui_nom" -> 4.903f;
-            case "ui_mini" -> 1.945f;
+            case "ui", "ui_bold" -> 4.424f;
+            case "ui_small" -> 3.438f;
+            case "ui_gros" -> 6.889f;
+            case "ui_nom" -> 5.903f;
+            case "ui_mini" -> 2.945f;
             default -> 3.5f;
         };
     }
@@ -303,9 +305,10 @@ public final class Ui {
         int n = up.codePointCount(0, up.length());
         if (n == 0) return;
         float w = spacedWidth(font, up, f, spacing);
-        float[] e = Encre.de(up, f);
+        float[] e = Encre.deCapitales(up, f);
         float av = font.getSplitter().stringWidth(lit(new String(Character.toChars(up.codePointBefore(up.length()))), f));
         double ech = Minecraft.getInstance().getWindow().getGuiScale();
+        float lf = Encre.approche(up.codePointAt(0), f), ll = Encre.approche(up.codePointBefore(up.length()), f);
         float meilleurX = cx - (w + e[0] - e[1]) / 2f, meilleurEsp = spacing, ecart = Float.MAX_VALUE;
         for (int j : RETOUCHES) {
             float esp = spacing + j * 0.01f;
@@ -313,7 +316,7 @@ public final class Ui {
             float x0 = cx - (wj + e[0] - e[1]) / 2f;
             for (int i : DECALAGES) {
                 float xc = (float) (x0 + i / (8 * ech));
-                float milieu = (point(xc, ech) + e[0] + point(xc + dern, ech) + av - e[1]) / 2f;
+                float milieu = (point(xc - lf, ech) + lf + e[0] + point(xc + dern - ll, ech) + ll + av - e[1]) / 2f;
                 float d = Math.abs(milieu - cx);
                 if (d < ecart - 1e-4f) {
                     ecart = d;

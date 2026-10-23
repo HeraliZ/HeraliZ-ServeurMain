@@ -2112,8 +2112,9 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   Aperçu et contrôle hors du jeu : `python mods/heraliz-tactique/outils/apercu_table_armurier.py` (mêmes constantes,
   lues dans le Java ; liste des débordements, doit être vide ; images dans `maquettes/table_armurier/`). Tactique
   2.35.1 (rien testé en jeu, demande du propriétaire) : textes centrés dans leur case, en hauteur sur le milieu des
-  capitales (`Ui.milieu` : Minecraft pose une lettre TTF à ascendante + décalage du JSON − 3) et en largeur sur l'ENCRE
-  (approches des lettres, `kit/Encre` + `assets/heralisz_camo/ui/encre.json` écrit par le script avec `--encre`) :
+  capitales (`Ui.milieu` : Minecraft pose une lettre TTF à ascendante + 2 × décalage du JSON − 3) et en largeur sur l'ENCRE
+  (approches des lettres, l'approche gauche comptée deux fois par Minecraft et retirée une fois lettre par lettre dans
+  les capitales espacées pour un espacement régulier, `kit/Encre` + `assets/heralisz_camo/ui/encre.json` écrit par le script avec `--encre`) :
   pastilles, boutons, champ de saisie, touche « Échap », filtres, catégories, tuiles, matériaux ; kit commun de l'Atelier
   (onglets Accessoires, Camo, Personnaliser, Registre de l'armurier : ils en profitent). Le script contrôle aussi
   l'encre réelle de chaque texte centré (écart haut / bas et gauche / droite d'au plus 1 point d'écran, échelles 2 et 3).

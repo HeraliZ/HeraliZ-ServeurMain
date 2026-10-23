@@ -46,7 +46,7 @@ public final class Encre {
         if (o == null) return;
         for (Map.Entry<String, JsonElement> e : o.entrySet()) {
             var a = e.getValue().getAsJsonArray();
-            m.put(e.getKey().codePointAt(0), new float[]{a.get(0).getAsFloat(), a.get(1).getAsFloat()});
+            m.put(e.getKey().codePointAt(0), new float[]{a.get(0).getAsFloat(), a.get(1).getAsFloat(), a.size() > 2 ? a.get(2).getAsFloat() : 0f});
         }
     }
 
@@ -68,14 +68,37 @@ public final class Encre {
         return p.equals("ui_bold") || p.equals("ui_gros") || p.equals("ui_nom");
     }
 
-    /** {retrait gauche de la 1re lettre, retrait droit de la dernière}, en points d'interface. */
+    /**
+     * {retrait gauche de la 1re lettre, retrait droit de la dernière}, en points d'interface, pour un texte dessiné d'un
+     * bloc : Minecraft compte deux fois l'approche gauche de chaque lettre (bearingX), la table en tient compte.
+     */
     public static float[] de(String s, ResourceLocation f) {
+        return retraits(s, f, false);
+    }
+
+    /** Idem pour des capitales espacées ({@link Ui#spaced}, qui retire la 2e approche lettre par lettre). */
+    public static float[] deCapitales(String s, ResourceLocation f) {
+        return retraits(s, f, true);
+    }
+
+    /** Approche gauche (une fois) d'une lettre, en points d'interface : Ui.spaced recule la lettre d'autant. */
+    public static float approche(int cp, ResourceLocation f) {
+        float t = taille(f);
+        if (t == 0f) return 0f;
+        charger();
+        float[] a = (grasse(f) ? gras : moyen).get(cp);
+        return a == null ? 0f : a[2] * t;
+    }
+
+    private static float[] retraits(String s, ResourceLocation f, boolean capitales) {
         float t = taille(f);
         String u = s.strip();
         if (t == 0f || u.isEmpty()) return new float[]{0f, 0f};
         charger();
         Map<Integer, float[]> m = grasse(f) ? gras : moyen;
         float[] a = m.get(u.codePointAt(0)), b = m.get(u.codePointBefore(u.length()));
-        return new float[]{a == null ? 0f : a[0] * t, b == null ? 0f : b[1] * t};
+        float g = a == null ? 0f : (capitales ? a[0] - a[2] : a[0]) * t;
+        float d = b == null ? 0f : (capitales ? b[1] + b[2] : b[1]) * t;
+        return new float[]{g, d};
     }
 }
