@@ -31,7 +31,7 @@ public final class MoteurConfig {
      * du proprietaire du 23/10 : sur la carte, seul /tpa ; le coffre du clan est refuse par HeraliZ Clans lui-meme).
      */
     public static final List<String> COMMANDES_CARTE_DEFAUT = List.of("tpa", "tpaccept", "tpdeny", "login", "register", "l", "reg",
-            "msg", "tell", "w", "r", "me", "quetes", "pb", "saison", "extractions", "clan", "suicide", "report");
+            "msg", "tell", "w", "r", "me", "quetes", "pb", "saison", "extractions", "clan", "suicide", "report", "sethome", "delhome", "homes", "base", "purge", "coeur");
 
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.IntValue TAG_COMBAT_S;

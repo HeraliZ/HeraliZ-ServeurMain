@@ -16,7 +16,7 @@
 	#Sur la carte (minecraft:overworld), en survie ou aventure, hors staff (niveau 2) : refuser toute commande absente de commandes_permises
 	actif = true
 	#Seules commandes permises sur la carte (racine en minuscules, sans / ni espace de noms)
-	commandes_permises = ["tpa", "tpaccept", "tpdeny", "login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "pb", "saison", "extractions", "clan", "suicide", "report"]
+	commandes_permises = ["tpa", "tpaccept", "tpdeny", "login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "pb", "saison", "extractions", "clan", "suicide", "report", "sethome", "delhome", "homes", "base", "purge", "coeur"]
 
 [matchs]
 	#Masquer la mini-carte de Xaero et refuser l'ouverture de sa carte du monde pendant les matchs
