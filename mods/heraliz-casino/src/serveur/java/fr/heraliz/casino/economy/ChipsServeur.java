@@ -21,7 +21,9 @@ public final class ChipsServeur {
      * @return false (et rien n'est retire) si le joueur n'a pas assez
      */
     public static boolean take(ServerPlayer p, long amount) {
-        if (amount <= 0) return true;
+        // une mise négative n'est jamais « payée » (tous les appels vérifient déjà le montant : ceinture et bretelles)
+        if (amount < 0) return false;
+        if (amount == 0) return true;
         Inventory inv = p.getInventory();
         long[] have = new long[Chips.VALUES.length];
         long total = 0;
