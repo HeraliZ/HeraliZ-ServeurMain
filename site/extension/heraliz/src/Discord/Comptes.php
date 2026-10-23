@@ -133,6 +133,10 @@ final class Comptes
             if ($ligne->discord_id !== $id) {
                 // autre Discord : nouvelle demande au staff si elle est encore à faire, nouvelle vérification
                 $valeurs += ['message_id' => null, 'verifie_le' => null, 'membre' => false, 'lie_le' => now()];
+                if (Reglages::validationManuelle()) {
+                    // le staff a validé l'ancien Discord, pas celui-ci : nouvelle validation
+                    $valeurs['statut'] = 'en_attente';
+                }
             }
             DB::table(Stockage::COMPTES)->where('id', $ligne->id)->update($valeurs);
         }
@@ -324,9 +328,13 @@ final class Comptes
 
         // ban compte + IP + PC de Spartan (/banpc = /sban <joueur> <durée> [raison]) ; le joueur doit s'être connecté au
         // moins une fois au serveur de jeu, sinon Spartan ne le connaît pas (rien d'autre à bannir)
-        $commande = 'banpc '.$user->name.' def Ban Discord (compte du site lié à un Discord banni)';
-        DB::table(Stockage::COMMANDES)->insert(['user_id' => $user->id, 'commande' => $commande, 'cree_le' => now()]);
-        self::envoyerCommandes();
+        // pseudo de jeu seulement (3 à 16 lettres, chiffres ou _) : un nom changé dans l'administration ne glisse rien
+        // d'autre dans la commande jouée par la console du serveur
+        if (preg_match('/^[A-Za-z0-9_]{3,16}$/', (string) $user->name) === 1) {
+            $commande = 'banpc '.$user->name.' def Ban Discord (compte du site lié à un Discord banni)';
+            DB::table(Stockage::COMMANDES)->insert(['user_id' => $user->id, 'commande' => $commande, 'cree_le' => now()]);
+            self::envoyerCommandes();
+        }
 
         $salon = Reglages::get('salon_comptes');
         if ($salon !== '') {

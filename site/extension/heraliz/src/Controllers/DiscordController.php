@@ -78,6 +78,22 @@ class DiscordController extends Controller
         if ($user->isBanned()) {
             return $this->page($user, Comptes::BANNI);
         }
+        // Lien venu d'ailleurs que du compte connecté (launcher, ou lien envoyé par quelqu'un) : on montre d'abord à
+        // quel compte HeraliZ le Discord sera lié, et on attend un clic de CE navigateur (code gardé dans sa session,
+        // impossible à mettre d'avance dans un lien piégé qui lierait le Discord d'un autre au compte du piégeur).
+        if ($request->filled('jeton') && $request->user()?->id !== $user->id) {
+            $attendu = $request->session()->get('heraliz_discord_confirme');
+            $recu = (string) $request->query('confirme', '');
+            if (! is_string($attendu) || $recu === '' || ! hash_equals($attendu, $recu)) {
+                $code = bin2hex(random_bytes(16));
+                $request->session()->put('heraliz_discord_confirme', $code);
+
+                return $this->page($user, 'confirmer', route('heraliz.discord.lier', [
+                    'jeton' => (string) $request->query('jeton'), 'confirme' => $code,
+                ]));
+            }
+            $request->session()->forget('heraliz_discord_confirme');
+        }
 
         [, $nonce] = Jeton::lire($etat = Jeton::creer('etat', $user->id, Jeton::ETAT_SECONDES), 'etat');
         $request->session()->put('heraliz_discord_etat', $nonce);
@@ -251,6 +267,8 @@ class DiscordController extends Controller
             'annule' => ['Liaison annulée', 'Tu as annulé la connexion à Discord. Sans Discord lié, pas de partie pendant la bêta.',
                 [['Recommencer', $lien, 'btn-primary']]],
             'desactive' => ['Discord', 'Lier son Discord n’est pas demandé pour le moment.', []],
+            'confirmer' => ['Lier ton Discord', 'Ton compte Discord va être lié au compte HeraliZ « '.($user?->name ?? '?').' ». Si ce n’est pas ton compte, ferme cette page.',
+                [['Continuer vers Discord', $lien, 'btn-primary']]],
             default => ['Lien périmé', 'Ce lien n’est plus valable. Rouvre-le depuis le launcher, ou depuis ton compte sur le site.', []],
         };
         if ($ligne !== null && $cas === Comptes::OK) {

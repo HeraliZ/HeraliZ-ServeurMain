@@ -131,8 +131,8 @@ fi
 if [ ! -f "$SITE_NGINX" ]; then
   echo "::warning::Pack du launcher : réglages nginx du site absents (lancer « installer »)."
 else
-  cp "$SITE_NGINX" /tmp/heraliz-nginx.avant
-  if [ -f "$PACK_NGINX" ]; then cp "$PACK_NGINX" /tmp/heraliz-pack.avant; else rm -f /tmp/heraliz-pack.avant; fi
+  cp "$SITE_NGINX" "$TRAVAIL/heraliz-nginx.avant"
+  if [ -f "$PACK_NGINX" ]; then cp "$PACK_NGINX" "$TRAVAIL/heraliz-pack.avant"; else rm -f "$TRAVAIL/heraliz-pack.avant"; fi
   if [ -z "$raison" ]; then
     (umask 077 && cat > "$PACK_NGINX" <<CONF
 # Pack du launcher réservé aux comptes HeraliZ, écrit par site/vm/theme.sh : modifier le dépôt, pas ce fichier.
@@ -155,13 +155,13 @@ CONF
   if nginx -t > /dev/null 2>&1; then
     systemctl reload nginx
   else
-    cp /tmp/heraliz-nginx.avant "$SITE_NGINX"
-    if [ -f /tmp/heraliz-pack.avant ]; then cp /tmp/heraliz-pack.avant "$PACK_NGINX"; else pack_ouvert "réglage refusé par nginx"; fi
+    cp "$TRAVAIL/heraliz-nginx.avant" "$SITE_NGINX"
+    if [ -f "$TRAVAIL/heraliz-pack.avant" ]; then cp "$TRAVAIL/heraliz-pack.avant" "$PACK_NGINX"; else pack_ouvert "réglage refusé par nginx"; fi
     nginx -t > /dev/null 2>&1 && systemctl reload nginx
     raison="nginx a refusé le verrou : réglages remis comme avant"
     echo "::warning::Pack du launcher : $raison."
   fi
-  rm -f /tmp/heraliz-nginx.avant /tmp/heraliz-pack.avant
+  rm -f "$TRAVAIL/heraliz-nginx.avant" "$TRAVAIL/heraliz-pack.avant"
   sleep 2
   # vu comme un visiteur : un fichier inconnu du pack, sans signature (403 = verrouillé, 404 = ouvert), et la
   # distribution avec un lien signé comme le site le fait (200, ou 404 si le pack n'a pas encore été déposé)
@@ -194,7 +194,7 @@ done
 echo "== Téléchargement du launcher"
 TELE_NGINX=/etc/nginx/heraliz-telecharger.conf
 SITE_NGINX_T=/etc/nginx/sites-available/heraliz
-cp "$SITE_NGINX_T" /tmp/heraliz-nginx-t.avant
+cp "$SITE_NGINX_T" "$TRAVAIL/heraliz-nginx-t.avant"
 if [ "$TELECHARGEMENT" = ferme ]; then echo 'return 403;' > "$TELE_NGINX"; else : > "$TELE_NGINX"; fi
 if ! grep -q "include /etc/nginx/heraliz-telecharger.conf" "$SITE_NGINX_T"; then
   sed -i -E 's#^([[:space:]]*)alias /var/www/telecharger/;#&\n\1include /etc/nginx/heraliz-telecharger.conf;#' "$SITE_NGINX_T"
@@ -203,16 +203,12 @@ if nginx -t > /dev/null 2>&1; then
   systemctl reload nginx
   echo "Téléchargement du launcher : $TELECHARGEMENT"
 else
-  cp /tmp/heraliz-nginx-t.avant "$SITE_NGINX_T"; : > "$TELE_NGINX"
+  cp "$TRAVAIL/heraliz-nginx-t.avant" "$SITE_NGINX_T"; : > "$TELE_NGINX"
   nginx -t > /dev/null 2>&1 && systemctl reload nginx
   echo "::warning::Téléchargement du launcher : nginx a refusé le réglage, laissé ouvert."
   TELECHARGEMENT=ouvert
-# Discord obligatoire pour jouer (bêta) : chaque compte lie son Discord et doit être membre du serveur Discord, pas banni.
-# « manuelle » : en plus, le staff accepte chaque compte (boutons du salon privé) ; « auto » : Discord lié et membre
-# suffisent. Sans les secrets DISCORD_*, rien de tout ça n'est exigé.
-VALIDATION=manuelle
 fi
-rm -f /tmp/heraliz-nginx-t.avant
+rm -f "$TRAVAIL/heraliz-nginx-t.avant"
 
 echo "== Réglages"
 en_site env HERALIZ_TELECHARGEMENT="$TELECHARGEMENT" HERALIZ_VALIDATION="$VALIDATION" php "$TRAVAIL/vm/reglages.php" "$DOSSIER" "$TRAVAIL/contenu"
