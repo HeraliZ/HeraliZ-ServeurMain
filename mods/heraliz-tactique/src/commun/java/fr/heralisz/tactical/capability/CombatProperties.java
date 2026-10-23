@@ -33,6 +33,14 @@ public class CombatProperties {
    private int drawingTick = 0;
    private boolean preparingAttack = false;
    private int preparingAttackCnt = 0;
+   // HeraliZ (serveur) : élan du coup en cours. Une demande de coup arrivée avant la fin de l'élan (jeu modifié qui
+   // frappe sans attendre) attend jusqu'à cette fin ; une petite marge couvre les paquets regroupés par le réseau.
+   private static final int MARGE_ELAN = 3;
+   private int preparingTick = 0;
+   private int preparingDelay = 0;
+   private MeleeAction attenteAction;
+   private int attenteCnt;
+   private List<Entity> attenteCibles;
    private final Map<MeleeAction, Integer> actionCounts = new EnumMap<>(MeleeAction.class);
 
    /** Fusion (heraliz_tactique) : son de l'attaque joué localement par le client (code d'origine, lu dans l'affichage de l'arme),
@@ -77,12 +85,20 @@ public class CombatProperties {
          }
 
          if (this.coolDownTick <= 0) {
+            this.attenteCibles = null;
             if (!this.entity.level().isClientSide() && this.preparingAttack) {
                this.forceResetMeleeSync("melee attack request timed out");
             }
 
             this.preparingAttack = false;
          }
+      }
+
+      if (!this.entity.level().isClientSide() && this.attenteCibles != null && this.preparingAttack
+         && this.entity.tickCount - this.preparingTick >= this.preparingDelay - MARGE_ELAN) {
+         List<Entity> cibles = this.attenteCibles;
+         this.attenteCibles = null;
+         this.postAttack(this.attenteAction, this.attenteCnt, cibles);
       }
 
       if (this.entity.level().isClientSide()) {
@@ -115,6 +131,7 @@ public class CombatProperties {
       this.lastMaxTick = newCoolDown;
       this.drawingTick = newCoolDown;
       this.preparingAttack = false;
+      this.attenteCibles = null;
       this.delayedActions.clear();
       this.actionCounts.clear();
       this.preparingAttackCnt = 0;
@@ -128,6 +145,7 @@ public class CombatProperties {
       this.coolDownTick = 0;
       this.lastMaxTick = 0;
       this.preparingAttack = false;
+      this.attenteCibles = null;
       this.actionCounts.clear();
       this.delayedActions.clear();
       this.preparingAttackCnt = 0;
@@ -158,6 +176,9 @@ public class CombatProperties {
          if (!this.entity.level().isClientSide()) {
             this.preparingAttack = true;
             this.preparingAttackCnt = cnt;
+            this.preparingTick = this.entity.tickCount;
+            this.preparingDelay = Math.max(0, weapon.getAttackDelay(this.entity, stack, action, cnt));
+            this.attenteCibles = null;
             this.coolDownTick = Math.max(0, this.coolDownTick - 1);
          } else {
             NetworkHandler.CHANNEL.sendToServer(new CPrepareMeleeAttack(action, origin, direction));
@@ -190,6 +211,11 @@ public class CombatProperties {
       if (this.preparingAttack) {
          if (this.preparingAttackCnt != actionCount) {
             this.forceResetMeleeSync("received a melee attack request with mismatched action count");
+         } else if (!this.entity.level().isClientSide() && this.entity.tickCount - this.preparingTick < this.preparingDelay - MARGE_ELAN) {
+            // HeraliZ : coup demandé avant la fin de l'élan : il part quand l'élan est fini (tick), pas avant
+            this.attenteAction = action;
+            this.attenteCnt = actionCount;
+            this.attenteCibles = new ArrayList<>(entities);
          } else {
             ItemStack stack = this.entity.getMainHandItem();
             if (stack.getItem() instanceof IMeleeWeapon weapon) {

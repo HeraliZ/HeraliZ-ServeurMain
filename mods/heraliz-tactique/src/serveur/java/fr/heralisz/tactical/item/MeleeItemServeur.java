@@ -41,8 +41,15 @@ public class MeleeItemServeur extends MeleeItem {
                   boolean hit = false;
                   boolean crit = false;
                   boolean kill = false;
+                  java.util.Set<Integer> dejaTouches = new java.util.HashSet<>();
 
                   for (Entity livingentity : targets) {
+                     // HeraliZ : les cibles sont choisies par le jeu du joueur ; le serveur les revérifie : une seule fois
+                     // chacune, même monde, devant lui (pas dans son dos) et vue dégagée (pas à travers un mur)
+                     if (!dejaTouches.add(livingentity.getId()) || livingentity.level() != attacker.level() || livingentity.isRemoved()
+                        || !devant(attacker, livingentity, filter.getMaxRange()) || !ITargetFilter.hasLineOfSight(attacker, livingentity)) {
+                        continue;
+                     }
                      boolean flag = !(livingentity instanceof ArmorStand armorStand && armorStand.isMarker());
                      // HeraliZ : même mesure que la zone du coup chez le joueur et que Spartan (des yeux au point le plus
                      // proche de la cible, portée plafonnée par [melee] portee_max, petite marge pour le décalage du réseau) ;
@@ -77,5 +84,12 @@ public class MeleeItemServeur extends MeleeItem {
             }
          }
       });
+   }
+
+   /** Demi-angle permis autour du regard du serveur : le cône du coup plus la marge du regard en retard (réseau). */
+   private static final double DEMI_ANGLE_SERVEUR = 100.0;
+
+   private static boolean devant(Player attacker, Entity cible, double portee) {
+      return fr.heralisz.tactical.util.VectorUtil.isInAngle(attacker.getEyePosition(), attacker.getLookAngle(), cible, DEMI_ANGLE_SERVEUR, portee + 1.0);
    }
 }

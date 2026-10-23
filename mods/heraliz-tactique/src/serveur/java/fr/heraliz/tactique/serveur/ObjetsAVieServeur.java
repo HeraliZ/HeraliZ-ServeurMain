@@ -188,8 +188,22 @@ public final class ObjetsAVieServeur {
       if (inv.getSelected().isEmpty()) {
          inv.setItem(inv.selected, objet);
       } else if (!inv.add(objet) || !objet.isEmpty()) {
-         int k = 8;
-         while (k > 0 && ObjetsAVie.estAVie(inv.getItem(k))) k--;
+         // la dernière case de la barre qui ne tient pas un objet à vie, sinon une case du sac du joueur
+         int k = -1;
+         for (int i = 8; i >= 0 && k < 0; i--) if (!ObjetsAVie.estAVie(inv.getItem(i))) k = i;
+         for (int i = 35; i >= 9 && k < 0; i--) if (!ObjetsAVie.estAVie(inv.getItem(i))) k = i;
+         if (k < 0) {
+            // tout l'inventaire est fait d'objets à vie : posé aux pieds plutôt que perdu
+            jetConfirme = true;
+            try {
+               p.drop(objet, false, true);
+            } finally {
+               jetConfirme = false;
+            }
+            LOG.info("[a vie] inventaire de {} plein d'objets à vie : {} posé à ses pieds", p.getGameProfile().getName(), objet.getHoverName().getString());
+            if (synchro) synchroniser(p);
+            return;
+         }
          ItemStack ancien = inv.getItem(k);
          inv.setItem(k, objet);
          if (!ancien.isEmpty()) {
