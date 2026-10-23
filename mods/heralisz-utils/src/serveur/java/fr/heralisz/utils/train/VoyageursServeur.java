@@ -73,6 +73,10 @@ public final class VoyageursServeur {
         float ox = v.getEntityData().get(Voyageur.LX), oz = v.getEntityData().get(Voyageur.LZ);
         boolean ok = veh == ov ? Math.hypot(x - ox, z - oz) < 1.2 : Math.abs(veh - ov) == 1 && Voyageurs.voiture(veh)
                 && Math.abs(ox) > Voyageurs.VL - 0.6f && Math.abs(x) > Voyageurs.VL - 0.6f;
+        // HeraliZ : vitesse comptée par tick du serveur, pas par paquet (avant, plusieurs paquets dans le même tick
+        // faisaient traverser la rame d'un coup) ; et pas de cloison entre l'ancienne place et la nouvelle (milieu du pas)
+        if (ok && veh == ov && !Voyageurs.libre(Voyageurs.SERVEUR, veh, (x + ox) / 2f, (z + oz) / 2f, pq, true)) ok = false;
+        if (ok && !budget(p, veh == ov ? (float) Math.hypot(x - ox, z - oz) : PAS_MAX)) ok = false;
         boolean place = assis && Voyageurs.sieges(veh) && Float.isFinite(Voyageurs.baie(x)) && Math.abs(Math.abs(z) - Voyageurs.ASSIS_Z) < 0.1f;
         ok &= Voyageurs.voiture(veh) && Horaire.rame(veh) == Horaire.rame(ov)
                 && (place || Voyageurs.libre(Voyageurs.SERVEUR, veh, x, z, pq, true));
@@ -97,6 +101,28 @@ public final class VoyageursServeur {
             Vec3 q = posable(p.level(), p, Voyageurs.versMonde(pl, x, Reseau.PLANCHER + 0.02, pq * (Voyageurs.VW + 0.65)), 0.6, 2.0);
             liberer(v, p, q != null ? q : sortie(v, p));
         }
+    }
+
+    /** Distance permise par tick (un peu plus que la course), réserve de 3 ticks pour les paquets regroupés par le réseau. */
+    private static final float PAS_MAX = 1.2f, RESERVE = 3.6f;
+    /** Par joueur : {réserve en millièmes de bloc, tick du serveur de la dernière mise à jour}. Thread du serveur. */
+    private static final java.util.Map<java.util.UUID, long[]> BUDGETS = new java.util.HashMap<>();
+
+    /** Retire ce pas de la réserve du joueur (remplie de PAS_MAX à chaque tick du serveur) ; faux s'il n'y en a pas assez. */
+    private static boolean budget(ServerPlayer p, float pas) {
+        long tick = p.getServer().getTickCount();
+        long[] b = BUDGETS.computeIfAbsent(p.getUUID(), u -> new long[]{(long) (RESERVE * 1000f), tick});
+        b[0] = Math.min((long) (RESERVE * 1000f), b[0] + (long) (PAS_MAX * 1000f) * Math.max(0L, tick - b[1]));
+        b[1] = tick;
+        long cout = (long) Math.ceil(pas * 1000f);
+        if (!(pas >= 0f) || cout > b[0]) return false;
+        b[0] -= cout;
+        return true;
+    }
+
+    /** Déconnexion ou sortie du train : réserve oubliée. */
+    static void oublierBudget(java.util.UUID u) {
+        BUDGETS.remove(u);
     }
 
     /** TaCZ permet-il de ramper sur ce serveur (réglage EnableCrawl, envoyé aux joueurs) ? Sans TaCZ lisible : oui. */
@@ -426,6 +452,7 @@ public final class VoyageursServeur {
     /** Déconnexion à bord (ou reconnexion d'un joueur resté passager d'une ancienne sauvegarde) : on se réveillera sur
      *  le quai de la gare où le train est (ou de la prochaine). */
     static void deconnexion(ServerPlayer p) {
+        oublierBudget(p.getUUID());
         if (!(p.getVehicle() instanceof Voyageur v) || p.getServer() == null || Horaire.get() == null) return;
         liberer(v, p, quai(v, p));
         HeraliszUtils.LOG.info("{} déconnecté dans le train : posé sur le quai de {}", p.getGameProfile().getName(),
