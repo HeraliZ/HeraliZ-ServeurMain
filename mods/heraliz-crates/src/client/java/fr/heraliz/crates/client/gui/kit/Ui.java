@@ -194,7 +194,7 @@ public final class Ui {
             String ch = new String(Character.toChars(up.codePointAt(i)));
             MutableComponent c = lit(ch, f);
             g.pose().pushPose();
-            g.pose().translate(cx, y, 0);
+            placer(g, cx, y);
             g.drawString(font, c, 0, 0, argb, false);
             g.pose().popPose();
             cx += font.width(c) + spacing;
@@ -212,17 +212,31 @@ public final class Ui {
         spaced(g, font, s, f, xRight - w, y, argb, spacing);
     }
 
+    /**
+     * Place le texte sur le point d'écran le plus proche (Caisses 2.18.0). Nos lettres sont lissées (heraliz_interface,
+     * PolicesNettes) : posées à cheval sur deux points de l'écran, elles sont floues et baveuses ; posées sur un point
+     * entier, elles sont aussi nettes que dans le créateur de personnage (/perso). Tient compte de la pose en cours.
+     */
+    public static void placer(GuiGraphics g, float x, float y) {
+        org.joml.Matrix4f m = g.pose().last().pose();
+        double s = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale();
+        float ex = m.m00() * x + m.m30(), ey = m.m11() * y + m.m31();
+        float rx = (float) (Math.round(ex * s) / s), ry = (float) (Math.round(ey * s) / s);
+        float kx = m.m00() == 0 ? 1 : m.m00(), ky = m.m11() == 0 ? 1 : m.m11();
+        g.pose().translate(x + (rx - ex) / kx, y + (ry - ey) / ky, 0);
+    }
+
     /** Texte centre sur cx (position arrondie au pixel : les glyphes bitmap comme le jeton restent nets). */
     public static void centered(GuiGraphics g, Font font, Component c, float cx, float y, int argb) {
         g.pose().pushPose();
-        g.pose().translate(Math.round(cx - font.width(c) / 2f), Math.round(y), 0);
+        placer(g, cx - font.width(c) / 2f, y);
         g.drawString(font, c, 0, 0, argb, false);
         g.pose().popPose();
     }
 
     public static void right(GuiGraphics g, Font font, Component c, float xRight, float y, int argb) {
         g.pose().pushPose();
-        g.pose().translate(Math.round(xRight - font.width(c)), Math.round(y), 0);
+        placer(g, xRight - font.width(c), y);
         g.drawString(font, c, 0, 0, argb, false);
         g.pose().popPose();
     }
@@ -321,7 +335,7 @@ public final class Ui {
     /** Texte en gras agrandi (gros chiffres). */
     public static void gros(GuiGraphics g, Font font, Component c, float x, float y, float echelle, int argb) {
         g.pose().pushPose();
-        g.pose().translate(x, y, 0);
+        placer(g, x, y);
         g.pose().scale(echelle, echelle, 1);
         g.drawString(font, c, 0, 0, argb, false);
         g.pose().popPose();

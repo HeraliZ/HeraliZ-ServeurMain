@@ -42,6 +42,10 @@ import java.util.Locale;
 public class CaseOpenScreen extends Screen {
     private enum State { IDLE, WAIT, SPIN, DONE }
 
+    /** Titre (DM Sans gras 13) et nom de l'objet (gras 12), tracés à leur taille : nets comme dans /perso. */
+    private static final net.minecraft.resources.ResourceLocation TITRE = fr.heraliz.crates.HeralizCrates.id("ui_titre"),
+            NOM = fr.heraliz.crates.HeralizCrates.id("ui_nom");
+
     /** Couleurs des raretés de la maquette (Commun, Peu commun, Rare, Épique, Légendaire, Unique), par rang de LootRarity. */
     private static final int[] RARETES = {0xB0B6C0, 0x5FD08A, 0x4C8DFF, 0xA86BFF, 0xE8C36A, 0xFF5A5A};
     private static final int OR_HAUT = 0xF0CF7B, OR_BAS = 0xD9AC4C, OR_TEXTE = 0x1A1408;
@@ -435,12 +439,8 @@ public class CaseOpenScreen extends Screen {
     private void renderEntete(GuiGraphics g) {
         float cx = px + pw / 2f;
         String titre = type.crateName().getString().toUpperCase(Locale.ROOT);
-        float tw = Ui.spacedWidth(font, titre, Ui.BOLD, 1.2f) * 1.25f;
-        g.pose().pushPose();
-        g.pose().translate(cx - tw / 2f, py + 13, 0);
-        g.pose().scale(1.25f, 1.25f, 1);
-        Ui.spaced(g, font, titre, Ui.BOLD, 0, 0, Ui.argb(Ui.TEXT, 255), 1.2f);
-        g.pose().popPose();
+        // tracé à sa vraie taille (plus d'agrandissement : des lettres agrandies sont floues)
+        Ui.spacedCentered(g, font, titre, TITRE, cx, py + 13, Ui.argb(Ui.TEXT, 255), 1.5f);
         String n = Integer.toString(contents.size());
         String sous = free ? Component.translatable("gui.heralizcrates.case.subtitle_free", n).getString()
                 : keys == 1 ? Component.translatable("gui.heralizcrates.case.subtitle_one", n).getString()
@@ -558,9 +558,8 @@ public class CaseOpenScreen extends Screen {
         if (c == null) return;
         float cx = px + pw / 2f;
         String nom = c.stack().getHoverName().getString() + (c.count() > 1 ? "  ×" + c.count() : "");
-        nom = Ui.ellipsis(font, nom, Ui.BOLD, (int) ((pw - 40) / 1.1f));
-        float nw = font.width(Ui.lit(nom, Ui.BOLD)) * 1.1f;
-        Ui.gros(g, font, Ui.lit(nom, Ui.BOLD), Math.round(cx - nw / 2f), py + 117, 1.1f, Ui.argb(Ui.TEXT, 255));
+        nom = Ui.ellipsis(font, nom, NOM, pw - 40);
+        Ui.centered(g, font, Ui.lit(nom, NOM), cx, py + 117, Ui.argb(Ui.TEXT, 255));
         String rn = CardArt.rarity(c.rarity()).displayName().getString().toUpperCase(Locale.ROOT);
         Ui.spacedCentered(g, font, rn, CardArt.MINI_GRAS, cx, py + 130, Ui.argb(couleur(c.rarity()), 255), 1.4f);
     }
@@ -693,7 +692,10 @@ public class CaseOpenScreen extends Screen {
             points.fin();
             tx = lx;
             for (int k : l) {
-                g.drawString(font, Ui.lit(textes.get(k), CardArt.MINI), Math.round(tx + 7), Math.round(ly), Ui.argb(Ui.MUTED, 255), false);
+                g.pose().pushPose();
+                Ui.placer(g, tx + 7, ly);
+                g.drawString(font, Ui.lit(textes.get(k), CardArt.MINI), 0, 0, Ui.argb(Ui.MUTED, 255), false);
+                g.pose().popPose();
                 tx += 7 + font.width(Ui.lit(textes.get(k), CardArt.MINI)) + 8;
             }
             ly += 9;
@@ -761,9 +763,8 @@ public class CaseOpenScreen extends Screen {
         int cw = 92;
         carte(g, c, cx - cw / 2, gainY + 30, cw, cw, 40, 1f, 0f);
         String nom = c.stack().getHoverName().getString() + (c.count() > 1 ? "  ×" + c.count() : "");
-        nom = Ui.ellipsis(font, nom, Ui.BOLD, (int) ((gainW - 24) / 1.1f));
-        float nw = font.width(Ui.lit(nom, Ui.BOLD)) * 1.1f;
-        Ui.gros(g, font, Ui.lit(nom, Ui.BOLD), cx - nw / 2f, gainY + 134, 1.1f, Ui.argb(Ui.TEXT, 255));
+        nom = Ui.ellipsis(font, nom, NOM, gainW - 24);
+        Ui.centered(g, font, Ui.lit(nom, NOM), cx, gainY + 134, Ui.argb(Ui.TEXT, 255));
 
         // boutons : « Encore (1 clé) » doré si une clé reste, « Fermer » éteint
         boolean encore = encoreVisible();
