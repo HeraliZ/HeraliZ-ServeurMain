@@ -2016,7 +2016,17 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   vitesse dans le train par tick (Utils 2.21.1), Maj + clic du coffre du clan (Clans 3.6.3), essais de code des quêtes
   (Quêtes 1.10.2), mise négative (Casino 2.4.2), canaux serveur -> joueurs des boss et des cartes (Boss 2.2.2, Bunker
   0.12.1). Laissé tel quel : contrôle AuthMe des outils du staff (il refusait à tort, le ticket du launcher protège déjà
-  les pseudos) ; copie possible d'objets avec un sac à dos jamais prouvée (à essayer en jeu).
+  les pseudos). 2e vérification (23/10, rien testé en jeu) : sacs à dos (heralisz20 : contenu écrit dans le sac à chaque
+  changement, plus de copie en changeant de sac), `/trade` (Grades 2.3.2 : conclusion en une écriture, objets remis
+  seulement au spawn dans des cases vides), CRac 1.20.3 (matériel rendu en démolissant au tutoriel repris avec le kit),
+  Spartan 2.7.7 (TricheMenu : une alerte par appui jusqu'à 10 en 10 min, ensuite un résumé par minute ; 30 captures par
+  heure au plus ; capture demandée jamais reçue = alerte « Capture » ; connexion refusée si le jeu ne dit rien sur les
+  captures, avec `captureRequired`), launcher 1.12.1 (mise à jour refusée si le fichier lu par electron-updater n'est
+  pas celui qui a été signé), mise en ligne (Gradle, Nebula, installeur de Forge lancés sans secrets,
+  `outils/sans_secrets.py`), site (extension 1.1.1 : lien Discord du launcher confirmé dans le navigateur avant Discord,
+  Discord changé = nouvelle validation du staff, pseudo contrôlé avant `banpc`). Reste : empreintes SSH de la VM et du
+  Ptero à fixer dans les workflows (`accept-new` aujourd'hui), verrous Electron d'intégrité de l'archive (à essayer
+  sur Windows avant).
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
