@@ -28,8 +28,10 @@ public final class KeycardNetwork {
       new ResourceLocation(HeraliszBunker.MODID, "keycard"), () -> VERSION, VERSION::equals, VERSION::equals);
 
    public static void init() {
-      CHANNEL.registerMessage(0, SwipePacket.class, SwipePacket::encode, SwipePacket::decode, SwipePacket::handle);
-      CHANNEL.registerMessage(1, ContoursPacket.class, ContoursPacket::encode, ContoursPacket::decode, ContoursPacket::handle);
+      CHANNEL.registerMessage(0, SwipePacket.class, SwipePacket::encode, SwipePacket::decode, SwipePacket::handle,
+         java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT));   // serveur -> joueurs seulement
+      CHANNEL.registerMessage(1, ContoursPacket.class, ContoursPacket::encode, ContoursPacket::decode, ContoursPacket::handle,
+         java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT));   // serveur -> joueurs seulement
    }
 
    /** Rayon dans lequel tous les joueurs voient la cinématique. */
