@@ -28,13 +28,13 @@ NIVEAU = {"commun": "", "peu_commun": "_ii", "rare": "_iii", "epique": "_iv"}  #
 # onglets de la table, dans l'ordre : id, (fr, en, ru), icône
 ONGLETS = [
     ("munitions", ("Munitions", "Ammunition", "Боеприпасы"), {"item": "tacz:ammo", "nbt": {"AmmoId": "tacz:9mm"}}),
-    ("pistolets", ("Armes · Pistolets", "Weapons · Pistols", "Оружие · Пистолеты"),
+    ("pistolets", ("Pistolets", "Pistols", "Пистолеты"),
      {"item": "tacz:modern_kinetic_gun", "nbt": {"GunId": "tacz:glock_17"}}),
-    ("mitraillettes", ("Armes · Mitraillettes", "Weapons · SMGs", "Оружие · Пистолеты-пулемёты"),
+    ("mitraillettes", ("Mitraillettes", "SMGs", "Пистолеты-пулемёты"),
      {"item": "tacz:modern_kinetic_gun", "nbt": {"GunId": "tacz:uzi"}}),
-    ("fusils", ("Armes · Fusils d'assaut", "Weapons · Rifles", "Оружие · Винтовки"),
+    ("fusils", ("Fusils d'assaut", "Rifles", "Винтовки"),
      {"item": "tacz:modern_kinetic_gun", "nbt": {"GunId": "tacz:ak47"}}),
-    ("pompes", ("Armes · Pompes", "Weapons · Shotguns", "Оружие · Дробовики"),
+    ("pompes", ("Pompes", "Shotguns", "Дробовики"),
      {"item": "tacz:modern_kinetic_gun", "nbt": {"GunId": "tacz:m870"}}),
     ("soins", ("Soins", "Medical", "Медицина"),
      {"item": "heralisz_tactical:consumable", "nbt": {"ConsumableId": "heralisz_heal:ai2"}}),
