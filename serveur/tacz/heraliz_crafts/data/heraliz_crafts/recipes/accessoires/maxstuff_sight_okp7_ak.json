@@ -3,13 +3,13 @@
   "materials": [
     {
       "item": {
-        "item": "heraliz_composants:circuit_imprime_ii"
+        "item": "heraliz_composants:circuit_imprime"
       },
       "count": 1
     },
     {
       "item": {
-        "item": "heraliz_composants:batterie_ii"
+        "item": "heraliz_composants:batterie"
       },
       "count": 1
     }

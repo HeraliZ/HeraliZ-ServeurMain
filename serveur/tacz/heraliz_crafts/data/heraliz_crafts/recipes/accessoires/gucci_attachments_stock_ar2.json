@@ -3,15 +3,15 @@
   "materials": [
     {
       "item": {
-        "item": "heraliz_composants:ferraille_iii"
+        "item": "heraliz_composants:ferraille"
       },
-      "count": 2
+      "count": 4
     },
     {
       "item": {
-        "item": "heraliz_composants:scotch_iii"
+        "item": "heraliz_composants:scotch"
       },
-      "count": 1
+      "count": 2
     }
   ],
   "result": {
