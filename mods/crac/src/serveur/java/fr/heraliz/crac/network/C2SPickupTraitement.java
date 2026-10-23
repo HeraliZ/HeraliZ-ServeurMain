@@ -97,13 +97,44 @@ public final class C2SPickupTraitement {
         if (!player.getInventory().add(drop)) {
             player.drop(drop, false);
         }
-    }    /** Why the player may not pick up the placable at {@code pos} (both halves in {@code cells}), or null. */
+    }    /**
+     * HeraliZ : un objet posé qui garde quelque chose ne se ramasse pas (sinon c'est perdu) : vrais conteneurs, mais aussi
+     * pupitre avec un livre, feu de camp qui cuit, et tout bloc d'un mod qui expose des cases d'objets.
+     */
+    private static boolean contientQuelqueChose(@Nullable net.minecraft.world.level.block.entity.BlockEntity be) {
+        if (be == null) {
+            return false;
+        }
+        if (be instanceof Container c) {
+            return !c.isEmpty();
+        }
+        if (be instanceof net.minecraft.world.level.block.entity.LecternBlockEntity l && l.hasBook()) {
+            return true;
+        }
+        if (be instanceof net.minecraft.world.level.block.entity.CampfireBlockEntity f) {
+            for (ItemStack st : f.getItems()) {
+                if (!st.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return be.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER).map(h -> {
+            for (int i = 0; i < h.getSlots(); i++) {
+                if (!h.getStackInSlot(i).isEmpty()) {
+                    return true;
+                }
+            }
+            return false;
+        }).orElse(false);
+    }
+
+    /** Why the player may not pick up the placable at {@code pos} (both halves in {@code cells}), or null. */
     @Nullable
     static String problem(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState target, List<BlockPos> cells) {
         boolean claimed = false;
         GroupData groups = GroupData.get(level.getServer());
         for (BlockPos cell : cells) {
-            if (level.getBlockEntity(cell) instanceof Container c && !c.isEmpty()) {
+            if (contientQuelqueChose(level.getBlockEntity(cell))) {
                 return "crac.placable.items_inside";
             }
             Claim claim = ClaimManager.getAt(level, cell);

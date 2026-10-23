@@ -554,6 +554,7 @@
   "crac.acces.clan": "Seuls les membres du clan ont accès à la base : règle leurs droits dans le clan (touche K).",
   "crac.tuto.essai": "[Tuto] Cabane d'essai dans le monde du tutoriel : elle disparaît à la fin, la vraie base de ton clan se pose sur la carte.",
   "crac.tuto.termine": "[Tuto] Fini ! La cabane d'essai a disparu. Le matériel de ta première base t'attend dans le coffre du clan (/clan coffre) : pose-la sur la carte, loin des villes et du loot.",
+  "crac.tuto.conteneur": "Pas pendant le tutoriel : termine d'abord ta cabane.",
   "crac.tuto.clan": "[Tuto] Ton clan est créé ! Le Commandant Varga va te montrer comment bâtir une base.",
   "crac.clan.kit_coffre": "Le matériel de la première base du clan (plan, marteau, armoire, brindilles) est dans le coffre du clan : /clan coffre ou onglet Banque.",
   "crac.ecran.titre": "BESOIN / %s H",

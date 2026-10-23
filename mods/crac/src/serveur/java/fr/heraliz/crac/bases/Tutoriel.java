@@ -154,8 +154,13 @@ public final class Tutoriel {
     static final Set<UUID> SAS = new HashSet<>();
     /** Fin du tutoriel en attente (après le tour de caméra) : joueur -> heure de jeu de l'effacement. */
     private static final Map<UUID, Long> FINS = new HashMap<>();
-    /** Kit donné au début du tutoriel (repris à la fin : la cabane n'était qu'un essai). */
-    private static final Map<UUID, List<ItemStack>> KITS = new HashMap<>();
+    /**
+     * Marque des objets du kit du tutoriel (repris à la fin : la cabane n'était qu'un essai). Les objets marqués sont
+     * retirés de l'inventaire à la fin, et à la connexion de qui n'a plus de tutoriel en cours (déconnecté pendant le tour
+     * de caméra, serveur redémarré) ; pendant le tutoriel, aucun autre conteneur ne s'ouvre (sac, coffre du clan…) : le
+     * kit ne peut pas être mis de côté.
+     */
+    private static final String MARQUE_KIT = "CracKitTuto";
     /** Tour de caméra (15 s) et mots de Varga, puis effacement. */
     private static final long FIN_DELAI = 20L * 20L;
 
@@ -186,28 +191,51 @@ public final class Tutoriel {
         if (tuto != null) {
             EffacerBase.effacerDans(server, u, tuto);
         }
-        KITS.remove(u);
+        // le kit est repris à sa prochaine connexion (connexion ci-dessous)
     }
 
-    /** Reprend dans l'inventaire ce qui reste du kit du tutoriel (au plus ce qui a été donné). */
+    /** Reprend tout ce qui reste du kit du tutoriel (objets marqués), où qu'il soit dans l'inventaire. */
     private static void reprendreKit(ServerPlayer p) {
-        List<ItemStack> kit = KITS.remove(p.getUUID());
-        if (kit == null) {
-            return;
-        }
-        for (Map.Entry<Item, Integer> e : totaux(kit).entrySet()) {
-            int reste = e.getValue();
-            for (int i = 0; i < p.getInventory().getContainerSize() && reste > 0; i++) {
-                ItemStack s = p.getInventory().getItem(i);
-                if (s.is(e.getKey())) {
-                    int n = Math.min(reste, s.getCount());
-                    s.shrink(n);
-                    reste -= n;
-                }
+        boolean pris = false;
+        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+            ItemStack s = p.getInventory().getItem(i);
+            if (!s.isEmpty() && s.hasTag() && s.getTag().getBoolean(MARQUE_KIT)) {
+                p.getInventory().setItem(i, ItemStack.EMPTY);
+                pris = true;
             }
         }
-        p.getInventory().setChanged();
-        p.inventoryMenu.broadcastChanges();
+        if (!p.containerMenu.getCarried().isEmpty() && p.containerMenu.getCarried().hasTag()
+            && p.containerMenu.getCarried().getTag().getBoolean(MARQUE_KIT)) {
+            p.containerMenu.setCarried(ItemStack.EMPTY);
+            pris = true;
+        }
+        if (pris) {
+            p.getInventory().setChanged();
+            p.inventoryMenu.broadcastChanges();
+            p.containerMenu.broadcastChanges();
+        }
+    }
+
+    /** Connexion : kit d'un tutoriel fini pendant son absence repris. */
+    @SubscribeEvent
+    public static void connexion(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p && !occupe(p.server, p.getUUID())) {
+            reprendreKit(p);
+        }
+    }
+
+    /** Pendant le tutoriel : seuls l'inventaire et les écrans de CRac s'ouvrent (le kit ne se met pas de côté). */
+    @SubscribeEvent
+    public static void ouverture(net.minecraftforge.event.entity.player.PlayerContainerEvent.Open e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || p.isCreative() || p.isSpectator() || !occupe(p.server, p.getUUID())) {
+            return;
+        }
+        String classe = e.getContainer().getClass().getName();
+        if (e.getContainer() == p.inventoryMenu || classe.startsWith("fr.heraliz.crac.") || classe.startsWith("top.theillusivec4.curios.")) {
+            return;
+        }
+        p.closeContainer();
+        T.barre(p, T.t("crac.tuto.conteneur", "Pas pendant le tutoriel : termine d'abord ta cabane."), ChatFormatting.RED);
     }
     /** Dernier guide envoyé à chaque joueur (S2CTuto), pour ne renvoyer que ce qui change. */
     private static final Map<UUID, S2CTuto> GUIDES = new HashMap<>();
@@ -525,7 +553,9 @@ public final class Tutoriel {
             Group g = groupe(p);
             List<ItemStack> kit = contenuKit();
             for (ItemStack s : kit) {
-                donner(p, s.copy());
+                ItemStack marque = s.copy();
+                marque.getOrCreateTag().putBoolean(MARQUE_KIT, true);
+                donner(p, marque);
             }
             // noms des objets traduits chez le joueur (le serveur n'a pas les langues des mods)
             MutableComponent liste = Component.empty();
@@ -545,7 +575,6 @@ public final class Tutoriel {
             T.chat(p, T.t("crac.tuto.kit", "[Tuto] Kit reçu : %s.", liste), ChatFormatting.YELLOW);
             T.chat(p, T.t("crac.tuto.essai", "[Tuto] Cabane d'essai dans le monde du tutoriel : elle disparaît à la fin, la vraie base de ton clan se pose sur la carte."),
                 ChatFormatting.YELLOW);
-            KITS.put(p.getUUID(), kit);
             Crac.LOGGER.info("[CRac] tutoriel : kit de base donné à {}", p.getGameProfile().getName());
         }
     }

@@ -62,6 +62,9 @@ public final class AccesBaseTraitement {
     }
 
     private static void traiter(ServerPlayer p, C2SAccesBase m) {
+        if (m.action() == null) {
+            return;
+        }
         ServerLevel level = p.serverLevel();
         BlockPos pos = m.pos();
         if (!level.isLoaded(pos) || p.distanceToSqr(pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5) > PORTEE * PORTEE) {
@@ -78,6 +81,10 @@ public final class AccesBaseTraitement {
         String recherche = "";
         switch (m.action()) {
             case ENTRETIEN -> {
+                // recalcul de toute la base : au plus une fois par seconde
+                if (!fr.heraliz.crac.network.PacketThrottle.allow(p, fr.heraliz.crac.network.PacketThrottle.Kind.ACCES_ENTRETIEN, 1000L)) {
+                    return;
+                }
                 if (!Tutoriel.entretienTropTot(p) && level.getBlockEntity(pos) instanceof ClaimBlockEntity be) {
                     ClaimUpkeep.recompute(level, claim, be);
                     NetworkHooks.openScreen(p, be, buf -> buf.writeBlockPos(pos));
@@ -163,8 +170,12 @@ public final class AccesBaseTraitement {
                 }
             }
             // un joueur déconnecté : seulement par son pseudo exact
-            if (recherche.length() >= 3 && server.getProfileCache() != null && server.getPlayerList().getPlayerByName(recherche) == null) {
-                Optional<GameProfile> hors = server.getProfileCache().get(recherche);
+            // jamais server.getProfileCache().get(nom) : pour un pseudo inconnu, Minecraft interroge Mojang sur le fil du
+            // serveur (gel) et ajoute un faux profil à usercache.json ; seulement les joueurs déjà venus, au plus 1 fois par
+            // seconde
+            if (recherche.length() >= 3 && server.getPlayerList().getPlayerByName(recherche) == null
+                && fr.heraliz.crac.network.PacketThrottle.allow(p, fr.heraliz.crac.network.PacketThrottle.Kind.ACCES_RECHERCHE, 1000L)) {
+                Optional<GameProfile> hors = ProfilsConnus.parNom(server, recherche);
                 if (hors.isPresent() && hors.get().getId() != null && !g.isMember(hors.get().getId()) && !donnes.containsKey(hors.get().getId())) {
                     trouves.add(new S2CAccesBase.Ligne(hors.get().getId(), hors.get().getName(), S2CAccesBase.TROUVE, false));
                 }

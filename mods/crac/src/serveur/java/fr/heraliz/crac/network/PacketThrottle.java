@@ -17,7 +17,7 @@ import net.minecraftforge.fml.common.Mod;
  */
 @Mod.EventBusSubscriber(modid = "crac", bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class PacketThrottle {
-    public enum Kind { NEARBY_CLAIMS, GROUP, GROUP_CREATE, INVITE_RESPONSE, ADMIN_LOGIN, ADMIN }
+    public enum Kind { NEARBY_CLAIMS, GROUP, GROUP_CREATE, INVITE_RESPONSE, ADMIN_LOGIN, ADMIN, ACCES_ENTRETIEN, ACCES_RECHERCHE }
 
     /** Server-thread only: every handler runs through enqueueWork. */
     private static final Map<UUID, long[]> LAST = new HashMap<>();

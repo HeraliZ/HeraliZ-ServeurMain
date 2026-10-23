@@ -25,7 +25,7 @@ public record C2SAccesBase(BlockPos pos, Action action, String texte, UUID cible
 
     public static C2SAccesBase decode(FriendlyByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
-        Action a = buf.readEnum(Action.class);
+        Action a = PacketLimits.readEnumOrNull(buf, Action.class);
         String t = buf.readUtf(16);
         UUID c = buf.readUUID();
         return new C2SAccesBase(pos, a, t, AUCUN.equals(c) ? null : c);
