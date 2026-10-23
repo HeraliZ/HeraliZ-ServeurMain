@@ -77,8 +77,8 @@ ACCESSOIRES = {
 # explosifs de CRac (seuls à abîmer les bases) : charge en composants de niveau II, C4 de niveau III (23/10, choix du
 # propriétaire), quantités à peu près dans le rapport des dégâts (charge ~130, C4 ~300 : environ 2,3 fois)
 EXPLOSIFS = [
-    ("explosive_charge", "crac:explosive_charge", {"bocal_poudre": 2, "scotch_ii": 1, "corde": 1}),
-    ("c4", "crac:c4", {"bocal_poudre": 5, "scotch_iii": 2, "corde": 2, "circuit_imprime_iii": 1}),
+    ("explosive_charge", "crac:explosive_charge", {"bocal_poudre": 2, "scotch_ii": 2, "corde": 1}),
+    ("c4", "crac:c4", {"bocal_poudre": 5, "scotch_iii": 1, "corde": 2}),
 ]
 
 # composants à niveaux : PAR_NIVEAU d'un niveau donnent 1 du niveau suivant, et 1 se défait en PAR_NIVEAU du niveau
