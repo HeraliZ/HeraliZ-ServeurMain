@@ -352,5 +352,14 @@
   "heraliz_grades.couleur.bleu": "bleu",
   "heraliz_grades.couleur.cyan": "cyan",
   "heraliz_grades.couleur.vert": "vert",
-  "heraliz_grades.couleur.gris": "gris"
+  "heraliz_grades.couleur.gris": "gris",
+  "heraliz_grades.regle.match": "Impossible pendant un match.",
+  "heraliz_grades.regle.combat": "Impossible en combat.",
+  "heraliz_grades.regle.a_terre": "Impossible à terre.",
+  "heraliz_grades.regle.tutoriel": "Impossible pendant le tutoriel des bases.",
+  "heraliz_grades.regle.carte": "Impossible sur la carte : seulement au spawn.",
+  "heraliz_grades.tpa.carte": "Le /tpa ne marche que sur la carte, vers un joueur sur la carte.",
+  "heraliz_grades.tpa.cible_carte": "%s n'est pas sur la carte.",
+  "message.heraliz_grades.trade.objet_match": "Un objet prêté par un match ne s'échange pas.",
+  "message.heraliz_grades.pb.attends": "Attends quelques secondes avant de redemander ton solde."
 }

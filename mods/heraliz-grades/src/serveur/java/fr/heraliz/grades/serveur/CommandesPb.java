@@ -19,6 +19,7 @@ import java.util.function.Consumer;
  * commande, ni RCON), {@code pb donner|retirer|voir <pseudo> [montant]}.
  */
 final class CommandesPb {
+    private static final java.util.Map<java.util.UUID, Long> DERNIER_PB = new java.util.concurrent.ConcurrentHashMap<>();
     private CommandesPb() {
     }
 
@@ -46,6 +47,14 @@ final class CommandesPb {
                 .executes(c -> {
                     ServerPlayer p = joueur(c);
                     if (p == null) return 0;
+                    // au plus une demande au site toutes les 5 s par joueur (le site limite tout le serveur, une seule IP)
+                    long now = System.currentTimeMillis();
+                    Long avant = DERNIER_PB.get(p.getUUID());
+                    if (avant != null && now - avant < 5000) {
+                        p.sendSystemMessage(msg("attends", "Attends quelques secondes avant de redemander ton solde.").copy().withStyle(ChatFormatting.RED));
+                        return 0;
+                    }
+                    DERNIER_PB.put(p.getUUID(), now);
                     String nom = p.getGameProfile().getName();
                     java.util.UUID u = p.getUUID();
                     Pb.solde(nom, r -> {

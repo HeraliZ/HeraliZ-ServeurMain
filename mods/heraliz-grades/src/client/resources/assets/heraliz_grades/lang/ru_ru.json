@@ -352,5 +352,14 @@
   "heraliz_grades.couleur.bleu": "синий",
   "heraliz_grades.couleur.cyan": "голубой",
   "heraliz_grades.couleur.vert": "зелёный",
-  "heraliz_grades.couleur.gris": "серый"
+  "heraliz_grades.couleur.gris": "серый",
+  "heraliz_grades.regle.match": "Невозможно во время матча.",
+  "heraliz_grades.regle.combat": "Невозможно в бою.",
+  "heraliz_grades.regle.a_terre": "Невозможно в нокауте.",
+  "heraliz_grades.regle.tutoriel": "Невозможно во время обучения по базам.",
+  "heraliz_grades.regle.carte": "Невозможно на карте: только на спавне.",
+  "heraliz_grades.tpa.carte": "/tpa работает только на карте, к игроку на карте.",
+  "heraliz_grades.tpa.cible_carte": "%s не на карте.",
+  "message.heraliz_grades.trade.objet_match": "Предмет, выданный на матч, нельзя обменять.",
+  "message.heraliz_grades.pb.attends": "Подожди несколько секунд, прежде чем снова запрашивать баланс."
 }

@@ -168,6 +168,11 @@ final class BoutiqueServeur {
             p.sendSystemMessage(Component.translatableWithFallback("message.heraliz_grades.kit.connexion", "Connecte-toi d'abord avec /login."));
             return 0;
         }
+        Component non = Restrictions.empechement(p);
+        if (non != null) {
+            p.sendSystemMessage(non.copy().withStyle(net.minecraft.ChatFormatting.RED));
+            return 0;
+        }
         UUID u = p.getUUID();
         Pb.solde(p.getGameProfile().getName(), r -> {
             ServerPlayer j = serveur == null ? null : serveur.getPlayerList().getPlayer(u);
@@ -189,6 +194,11 @@ final class BoutiqueServeur {
         Article a = article(id);
         if (a == null || serveur == null) return;
         if (!PontBukkit.authentifie(p)) return;
+        Component non = Restrictions.empechement(p);
+        if (non != null) {
+            p.sendSystemMessage(non.copy().withStyle(net.minecraft.ChatFormatting.RED));
+            return;
+        }
         if (!Pb.actif()) {
             envoyer(p, false, -1, "indisponible", false);
             return;

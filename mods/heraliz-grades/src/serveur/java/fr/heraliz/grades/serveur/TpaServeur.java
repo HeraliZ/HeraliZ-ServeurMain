@@ -41,7 +41,9 @@ import java.util.UUID;
  * (même monde que lui).
  * <p>Recharge entre deux téléportations réussies : 5 min sans grade, 15 s de moins par grade de la boutique (Rescapé
  * 4 min 45, Traqueur 4 min 30, Roi de la Zone 4 min 15) ; le staff (op connecté sur AuthMe) n'en a pas et ne patiente
- * pas. Refusé en match, en combat (celui qui part comme celui qui reçoit) et vers un joueur en match. Le tutoriel des
+ * pas. Refusé en match, en combat (celui qui part comme celui qui reçoit) et vers un joueur en match. Depuis la 2.4.0
+ * (règle du propriétaire du 23/10) : seulement d'un joueur sur la carte (overworld) vers un joueur sur la carte, revérifié
+ * à l'acceptation et au moment de partir ; refusé aussi à terre. Le tutoriel des
  * bases de CRac refuse ces commandes. Recharges gardées en mémoire (un redémarrage les remet à zéro). Fil serveur seulement.
  */
 final class TpaServeur {
@@ -108,6 +110,10 @@ final class TpaServeur {
     private static Component empechement(ServerPlayer p) {
         if (enMatch(p)) return Component.translatableWithFallback("heraliz_grades.tpa.match", "Impossible pendant un match.");
         if (enCombat(p)) return Component.translatableWithFallback("heraliz_grades.tpa.combat", "Impossible en combat.");
+        if (!staff(p) && Restrictions.aTerre(p)) return Component.translatableWithFallback("heraliz_grades.regle.a_terre", "Impossible à terre.");
+        if (!staff(p) && p.level().dimension() != Level.OVERWORLD) {
+            return Component.translatableWithFallback("heraliz_grades.tpa.carte", "Le /tpa ne marche que sur la carte, vers un joueur sur la carte.");
+        }
         if (!staff(p) && dansVille(p)) return Component.translatableWithFallback("heraliz_grades.tpa.ville", "Impossible dans une ville : sors de son rayon.");
         return null;
     }
@@ -115,6 +121,9 @@ final class TpaServeur {
     /** Raison qui empêche d'arriver chez ce joueur, ou null. */
     private static Component empechementCible(ServerPlayer cible) {
         if (enMatch(cible)) return Component.translatableWithFallback("heraliz_grades.tpa.cible_match", "%s est en match.", cible.getDisplayName());
+        if (cible.level().dimension() != Level.OVERWORLD) {
+            return Component.translatableWithFallback("heraliz_grades.tpa.cible_carte", "%s n'est pas sur la carte.", cible.getDisplayName());
+        }
         if (dansVille(cible)) return Component.translatableWithFallback("heraliz_grades.tpa.cible_ville", "%s est dans une ville.", cible.getDisplayName());
         return null;
     }
@@ -216,6 +225,9 @@ final class TpaServeur {
         if (p == null) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.parti", "Ce joueur n'est plus connecté."));
         if (enMatch(cible)) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.match", "Impossible pendant un match."));
         if (!staff(p) && dansVille(cible)) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.ville", "Impossible dans une ville : sors de son rayon."));
+        if (!staff(p) && cible.level().dimension() != Level.OVERWORLD) {
+            return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.carte", "Le /tpa ne marche que sur la carte, vers un joueur sur la carte."));
+        }
         Component non = empechement(p);
         if (non != null) {
             refus(p, non);
@@ -273,7 +285,7 @@ final class TpaServeur {
             }
             if (ticks < a.fin()) return false;
             Component non = empechement(p);
-            if (non == null) non = empechementCible(cible);
+            if (non == null && !staff(p)) non = empechementCible(cible);
             if (non != null) refus(p, non);
             else teleporter(p, cible);
             return true;

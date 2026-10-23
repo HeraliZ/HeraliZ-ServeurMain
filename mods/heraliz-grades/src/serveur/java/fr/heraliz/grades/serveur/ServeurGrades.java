@@ -161,7 +161,7 @@ public final class ServeurGrades implements Partie {
             Boolean avant = AUTH.put(p.getUUID(), auth);
             if (avant != null && avant == auth) continue;
             PontBukkit.nomAffiche(p, nomBukkit(p));
-            if (registre.fiche(p.getUUID()) != null && registre.fiche(p.getUUID()).staff() != null || p.hasPermissions(4)) srv.getCommands().sendCommands(p);
+            if (registre.fiche(p.getUUID()) != null && registre.fiche(p.getUUID()).staff() != null || p.hasPermissions(2)) srv.getCommands().sendCommands(p);
         }
     }
 

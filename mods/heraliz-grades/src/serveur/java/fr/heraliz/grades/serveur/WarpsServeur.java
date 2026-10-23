@@ -141,6 +141,8 @@ final class WarpsServeur {
         if (p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis()) {
             return refus(p, Component.translatableWithFallback("heraliz_grades.warp.combat", "Impossible en combat."));
         }
+        Component non = Restrictions.empechement(p);
+        if (non != null) return refus(p, non);
         if (!permis(p, w)) {
             return refus(p, Component.translatableWithFallback("heraliz_grades.warp.reserve", "Warp réservé au grade %s et plus.", nomGrade(w.rang())));
         }
@@ -177,6 +179,11 @@ final class WarpsServeur {
                 return true;
             }
             if (ticks < a.fin()) return false;
+            Component non = Restrictions.empechement(p);
+            if (non != null) {
+                refus(p, non);
+                return true;
+            }
             Warp w = WARPS.get(a.warp());
             ServerLevel monde = w == null ? null : srv.getLevel(w.monde());
             if (w != null && monde != null && permis(p, w)) teleporter(p, monde, w);

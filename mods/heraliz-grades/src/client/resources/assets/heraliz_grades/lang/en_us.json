@@ -352,5 +352,14 @@
   "heraliz_grades.couleur.bleu": "blue",
   "heraliz_grades.couleur.cyan": "cyan",
   "heraliz_grades.couleur.vert": "green",
-  "heraliz_grades.couleur.gris": "grey"
+  "heraliz_grades.couleur.gris": "grey",
+  "heraliz_grades.regle.match": "Not possible during a match.",
+  "heraliz_grades.regle.combat": "Not possible in combat.",
+  "heraliz_grades.regle.a_terre": "Not possible while downed.",
+  "heraliz_grades.regle.tutoriel": "Not possible during the base tutorial.",
+  "heraliz_grades.regle.carte": "Not possible on the map: only at spawn.",
+  "heraliz_grades.tpa.carte": "/tpa only works on the map, towards a player on the map.",
+  "heraliz_grades.tpa.cible_carte": "%s is not on the map.",
+  "message.heraliz_grades.trade.objet_match": "An item lent by a match cannot be traded.",
+  "message.heraliz_grades.pb.attends": "Wait a few seconds before asking for your balance again."
 }

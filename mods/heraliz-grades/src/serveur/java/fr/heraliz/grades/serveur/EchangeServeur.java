@@ -47,7 +47,7 @@ import java.util.UUID;
  * On ne reprend donc jamais de PB à celui qui les a reçus (il aurait pu les dépenser entre-temps). Un joueur
  * déconnecté reçoit ses objets à sa prochaine connexion.
  */
-final class EchangeServeur {
+public final class EchangeServeur {
     private static final Logger LOG = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final long DEMANDE_MS = 60_000, MAX_PB = 100_000_000L;
@@ -99,6 +99,8 @@ final class EchangeServeur {
         List<String> objetsA, objetsB;
         // heure de l'appel au site (ms) : un « pas fait » n'est cru qu'après 2 min (une requête en retard ne passe plus)
         long envoyeA;
+        // joueurs remis à zéro (/wipe) pendant que ce dépôt attendait le site : ils ne reçoivent que leurs objets à vie
+        List<String> effaces;
     }
 
     /** Objets à remettre à un joueur déconnecté, à sa prochaine connexion. */
@@ -198,7 +200,7 @@ final class EchangeServeur {
         if (!PontBukkit.authentifie(p)) return Component.translatableWithFallback("message.heraliz_grades.kit.connexion", "Connecte-toi d'abord avec /login.");
         if (!WarpsServeur.auSpawn(p)) return msg("spawn", "Les échanges ne se font qu'au spawn.");
         if (!p.isAlive() || p.isSpectator()) return msg("impossible", "Impossible pour le moment.");
-        return null;
+        return Restrictions.empechement(p);
     }
 
     static int demander(ServerPlayer p, ServerPlayer cible) {
@@ -286,6 +288,10 @@ final class EchangeServeur {
                 if (st.hasTag() && st.getTag().contains("HeraliszCamoProprio")) {
                     s.message = "camo";
                     envoyer(s);
+                    return;
+                }
+                if (st.hasTag() && st.getTag().contains("HeraliszMatch")) {
+                    refuse(p, msg("objet_match", "Un objet prêté par un match ne s'échange pas."));
                     return;
                 }
                 moi.cases.add(c);
@@ -472,6 +478,10 @@ final class EchangeServeur {
         UUID a = UUID.fromString(v.ua), b = UUID.fromString(v.ub);
         List<String> pourA = passes ? v.objetsB : v.objetsA, pourB = passes ? v.objetsA : v.objetsB;
         String motif = passes ? "trade " + v.ref : "trade annulé " + v.ref;
+        if (v.effaces != null) {
+            if (v.effaces.contains(v.ua)) pourA = seulementAVie(pourA, v.ref);
+            if (v.effaces.contains(v.ub)) pourB = seulementAVie(pourB, v.ref);
+        }
         Livraison la = livraison(a, pourA, motif), lb = livraison(b, pourB, motif);
         String etatAvant = v.etat;
         ENVOIS.remove(v.ref);
@@ -494,6 +504,66 @@ final class EchangeServeur {
             if (passes) p.sendSystemMessage(msg("reussi", "Échange réussi !").withStyle(ChatFormatting.GREEN));
             distribuer(p);
         }
+    }
+
+    // ------------------------------------------------------------------ remise à zéro (/wipe de HeraliZ Quêtes)
+    /**
+     * Remise à zéro d'un joueur (2.4.0, appelée PAR RÉFLEXION par HeraliZ Quêtes, à ne jamais renommer) : son échange en
+     * cours est annulé, et tous les objets qui l'attendaient (livraisons) sont retirés du fichier et renvoyés (l'appelant
+     * garde les objets à vie et jette le reste). Un dépôt qui attend encore le site est marqué : à sa conclusion, ce joueur
+     * ne recevra que ses objets à vie. Fil serveur.
+     */
+    public static List<ItemStack> wipe(UUID id) {
+        List<ItemStack> r = new ArrayList<>();
+        if (fichier == null) return r;
+        Session s = SESSIONS.get(id);
+        if (s != null && s.phase < 2) annuler(s, "annule", null);
+        DEMANDES.remove(id);
+        DEMANDES.values().forEach(m -> m.remove(id));
+        String u = id.toString();
+        List<Livraison> avant = new ArrayList<>(LIVRAISONS);
+        List<String> pris = new ArrayList<>();
+        LIVRAISONS.removeIf(l -> {
+            if (!u.equals(l.uuid)) return false;
+            pris.addAll(l.objets);
+            return true;
+        });
+        boolean marque = false;
+        for (Envoi v : ENVOIS.values()) {
+            if (u.equals(v.ua) || u.equals(v.ub)) {
+                if (v.effaces == null) v.effaces = new ArrayList<>();
+                if (!v.effaces.contains(u)) v.effaces.add(u);
+                marque = true;
+            }
+        }
+        if (pris.isEmpty() && !marque) return r;
+        if (!sauver()) {
+            LIVRAISONS.clear();
+            LIVRAISONS.addAll(avant);
+            LOG.error("[grades] wipe : fichier des échanges impossible à écrire, objets en attente de {} gardés", u);
+            return r;
+        }
+        r.addAll(depuisTexte(pris));
+        BoutiqueServeur.journal("wipe " + u + " : objets d'échange en attente retirés : " + pris + (marque ? " ; dépôts en cours marqués" : ""));
+        return r;
+    }
+
+    /** Ne garde que les objets à vie (couteaux, skins à vie : mod tactique, par réflexion) d'une liste en SNBT. */
+    private static List<String> seulementAVie(List<String> objets, String ref) {
+        if (objets == null || objets.isEmpty()) return objets;
+        List<String> garde = new ArrayList<>(), jete = new ArrayList<>();
+        for (String t : objets) {
+            boolean aVie = false;
+            try {
+                ItemStack st = ItemStack.of(net.minecraft.nbt.TagParser.parseTag(t));
+                aVie = (Boolean) Class.forName("fr.heraliz.tactique.avie.ObjetsAVie").getMethod("estAVie", ItemStack.class).invoke(null, st);
+            } catch (Throwable ignore) {
+                // mod tactique absent ou objet illisible : pas un objet à vie
+            }
+            (aVie ? garde : jete).add(t);
+        }
+        if (!jete.isEmpty()) BoutiqueServeur.journal("trade " + ref + " : joueur remis à zéro, objets non remis : " + jete);
+        return garde;
     }
 
     @javax.annotation.Nullable

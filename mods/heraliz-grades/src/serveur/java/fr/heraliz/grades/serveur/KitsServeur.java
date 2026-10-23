@@ -42,7 +42,8 @@ import java.util.UUID;
  * Règles (pas de pay2win, pas de give) :
  * <ul>
  *    <li>kits de Survivant et de la boutique : seulement ceux de son grade de la boutique s'il en a, sinon ceux de
- *    Survivant ; une seule recharge par kit quel que soit le grade (changer de grade n'en donne pas un de plus) ;</li>
+ *    Survivant ; une seule recharge pour tous ces kits (2.4.0 : un seul kit par recharge, quel que soit le grade) ;</li>
+ *    <li>refusés en combat, à terre, en match, pendant le tutoriel des bases et sur la carte ({@link Restrictions}) ;</li>
  *    <li>en plus, les kits de ses grades du staff et spéciaux (Streamer…) et les kits Soutien s'il porte le tag HeraliZ
  *    sur Discord (compte lié, vu par HeraliBot), chacun avec sa recharge ;</li>
  *    <li>le joueur ne fait qu'envoyer un identifiant : grade, recharge, connexion AuthMe, place dans l'inventaire et
@@ -127,8 +128,24 @@ final class KitsServeur {
         return k.rechargeH() * 3_600_000L;
     }
 
+    /**
+     * Temps avant de pouvoir reprendre ce kit. Depuis la 2.4.0 (règle du propriétaire : un seul kit par recharge), prendre
+     * un kit d'un groupe consomme la recharge de TOUS les kits de ce groupe (Survivant et boutique ensemble, Soutien à
+     * part, chaque grade du staff ou spécial à part) : le plus long reste du groupe l'emporte.
+     */
     private static long reste(UUID uuid, DefinitionsGrades.KitDef k, long maintenant) {
         if (k == null || recharges == null) return 0;
+        Grade g = Grade.parId(k.grade());
+        String groupe = g == null ? k.grade() : groupe(g);
+        long max = resteUn(uuid, k, maintenant);
+        for (Grade g2 : Grade.values()) {
+            if (!groupe(g2).equals(groupe)) continue;
+            for (DefinitionsGrades.KitDef k2 : DefinitionsGrades.kitsDe(g2)) max = Math.max(max, resteUn(uuid, k2, maintenant));
+        }
+        return max;
+    }
+
+    private static long resteUn(UUID uuid, DefinitionsGrades.KitDef k, long maintenant) {
         long d = recharges.dernier(cle(uuid, k));
         return d <= 0 ? 0 : Math.max(0, d + rechargeMs(k) - maintenant);
     }
@@ -164,6 +181,11 @@ final class KitsServeur {
         if (!p.isAlive() || p.isSpectator()) return;
         if (!PontBukkit.authentifie(p)) {
             p.sendSystemMessage(msg("connexion", "Connecte-toi d'abord avec /login."));
+            return;
+        }
+        Component non = Restrictions.empechement(p);
+        if (non != null) {
+            p.sendSystemMessage(non.copy().withStyle(net.minecraft.ChatFormatting.RED));
             return;
         }
         if (recharges == null || recharges.illisible() || ServeurGrades.registre == null || ServeurGrades.registre.illisible()) {
@@ -214,6 +236,11 @@ final class KitsServeur {
                     if (!(c.getSource().getEntity() instanceof ServerPlayer p)) return 0;
                     if (!PontBukkit.authentifie(p)) {
                         p.sendSystemMessage(msg("connexion", "Connecte-toi d'abord avec /login."));
+                        return 0;
+                    }
+                    Component non = Restrictions.empechement(p);
+                    if (non != null) {
+                        p.sendSystemMessage(non.copy().withStyle(net.minecraft.ChatFormatting.RED));
                         return 0;
                     }
                     java.util.UUID uuid = p.getUUID();
