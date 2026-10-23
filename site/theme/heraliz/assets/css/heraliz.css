@@ -600,6 +600,15 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
 .hz-sec { font-size: 22px; margin: 38px 0 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .hz-sec a { font: 600 13px 'DM Sans', sans-serif; color: var(--muted); }
 .hz-note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+.hz-dispo { margin: 22px 0 0; padding: 16px 18px; background: var(--panneau); border: 1px solid var(--trait); border-radius: 8px; }
+.hz-dispo h3 { font: 600 15px 'Oswald', sans-serif; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 12px; }
+.hz-dispo .grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.hz-dispo .grades > div { display: flex; flex-direction: column; gap: 6px; }
+.hz-dispo .g { font: 700 17px 'Oswald', sans-serif; }
+.hz-dispo .g.beta { color: var(--vert); }
+.hz-dispo .g small { display: block; font: 500 12px 'DM Sans', sans-serif; color: var(--muted); }
+.hz-dispo .perso { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+@media (max-width: 600px) { .hz-dispo .grades { grid-template-columns: 1fr; } }
 .hz-lots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .hz-lot { background: var(--panneau); border: 1px solid var(--trait); border-radius: 8px; padding: 16px 14px 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; position: relative; transition: border-color .15s, transform .15s, background .15s; }
 .hz-lot:hover { border-color: var(--laiton); transform: translateY(-3px); background: #1a190f; }

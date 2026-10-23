@@ -20,3 +20,13 @@
     @endforeach
 </div>
 <p class="hz-note">Paiement sécurisé, aucun abonnement. Les PB vont sur ton compte {{ site_name() }} : le même solde sur le site, dans le launcher et en jeu (<b>/boutique</b>). Échanger ou offrir des PB : <b>/trade</b> au spawn (10 % de taxe).</p>
+{{-- Ce que les PB permettent d'avoir (demande du propriétaire, 23/10). --}}
+<div class="hz-dispo">
+    <h3>Disponible avec tes PB</h3>
+    <div class="grades">
+        <div><span class="g" style="color:#E39B5E">Grade Rescapé</span></div>
+        <div><span class="g" style="color:#8FD3FF">Grade Traqueur</span></div>
+        <div><span class="g" style="color:#FFC23A">Grade Roi de la Zone</span><span class="g beta">Grade BETA <small>uniquement pendant la bêta</small></span></div>
+    </div>
+    <p class="perso">Emote, finisher ou skin <b>personnalisé à vie</b> : disponible sur demande auprès d’un staff sur Discord.</p>
+</div>
