@@ -146,6 +146,19 @@ public final class CoffreClan {
             super.removed(p);
             sale = true;
         }
+
+        /**
+         * Maj + clic depuis l'inventaire : Minecraft complète d'abord les piles déjà dans le coffre sans demander à la
+         * case ; sans ce contrôle, un membre qui n'a que le droit de prendre pouvait quand même déposer.
+         */
+        @Override
+        public ItemStack quickMoveStack(Player p, int index) {
+            if (index >= CASES && index < slots.size()) {
+                ItemStack st = slots.get(index).getItem();
+                if (!st.isEmpty() && (interdit(st) || !peut(p, Perm.BANQUE_DEPOSER))) return ItemStack.EMPTY;
+            }
+            return super.quickMoveStack(p, index);
+        }
     }
 
     /** Case du coffre : objets interdits refusés, dépôt et retrait selon les droits du clan. */
