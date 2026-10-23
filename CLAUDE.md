@@ -2077,8 +2077,10 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   (respirations ÷9) ; CRac 1.21.1 et Grades 2.4.1 : délais de /rtp, /home, /tpa, /warp non annulés par une poussée
   (`Immobile`) ; **kit de départ** une fois au spawn après la cinématique (`serveur/KitDepart`,
   `config/heraliz_grades/kit_depart.json`, marque `heraliz_kit_depart` effacée par /wipe) ; Quêtes 1.10.4 : visite du
-  Guide passée par Espace maintenu 1 s, caméra devant le visage du PNJ. Rendus à valider (non codés) : bottes de pluie
-  de CaraCrea, créateur de personnage plus lisible, écran des caisses (propositions A et B).
+  Guide passée par Espace maintenu 1 s, caméra devant le visage du PNJ. Rendus validés puis codés : CaraCrea 1.6.4 (tige des
+  bottes de pluie de y 5,5 à 10,7, 0,15 px plus large que la jambe ; créateur plus lisible, flèches dessinées et
+  centrées) ; Caisses 2.17.0 (proposition B, `maquettes/caisses_proposition_B.png`, `CaseOpenScreen` : carte centrale,
+  barre des chances, contenu en mini-grille). Kit de départ : batte `geckolib:item_bat` (« Batte de baseball »).
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
