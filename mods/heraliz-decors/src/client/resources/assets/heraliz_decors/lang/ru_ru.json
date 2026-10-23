@@ -92,5 +92,7 @@
  "block.heraliz_decors.lavabo_sale": "Грязная раковина",
  "block.heraliz_decors.toilettes_sales": "Грязный унитаз",
  "block.heraliz_decors.lit_superpose": "Двухъярусная кровать",
- "block.heraliz_decors.lit_prison": "Тюремная койка (цепи)"
+ "block.heraliz_decors.lit_prison": "Тюремная койка (цепи)",
+ "heraliz_decors.zones.usee": "%s изношено: больше не защищает от этой зоны. Нужен ремонт.",
+ "heraliz_decors.zones.usee_rappel": "Ваша защита изношена и больше не защищает. Нужен ремонт."
 }

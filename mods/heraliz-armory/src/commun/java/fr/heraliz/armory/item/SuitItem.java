@@ -75,6 +75,7 @@ public class SuitItem extends SetArmorItem {
         if (def.gas()) tooltip.add(Component.translatable("tooltip.heraliz_armory.gas").withStyle(ChatFormatting.AQUA));
         if (def.radiation() >= 100) tooltip.add(Component.translatable("tooltip.heraliz_armory.radiation_proof").withStyle(ChatFormatting.AQUA));
         if (def.cold()) tooltip.add(Component.translatable("tooltip.heraliz_armory.cold").withStyle(ChatFormatting.AQUA));
+        if (def.gas() || def.radiation() > 0 || def.cold()) GearItem.appendUsure(stack, tooltip);
         if (def.diving()) {
             tooltip.add(Component.translatable("tooltip.heraliz_armory.tank", ArmorConfig.TANK_SECONDS.get()).withStyle(ChatFormatting.AQUA));
             tooltip.add(Component.translatable("tooltip.heraliz_armory.fins", Math.round(ArmorConfig.SWIM_BOOST.get() * 100.0))

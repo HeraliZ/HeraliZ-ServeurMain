@@ -1261,6 +1261,15 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     Rare 32/26 % (rempart, vipère, sibérie, scorpion), Épique 41/34 % (contrat, bélier, fennec, blizzard), Légendaire
     50/42 % (barricade, béton, meute, corbeau, ours), Unique 60/50 % (mastodonte, titan) ; casques de vision nocturne :
     Peu commun, Épique, Légendaire, Légendaire ; ghillies, brassards, objets d'événement : aucune protection ;
+    **usure dans les zones** (23/10, Armurerie 0.16.0, Décors 1.12.0, demande du propriétaire ; rien testé en jeu) :
+    Hazmat et combinaison contre le froid « normales » en Rare (bleu, `COMBINAISONS` du script) ; dans une zone de gaz,
+    de radiation ou de froid de Décors, la pièce qui protège de CETTE zone (masque à gaz, Hazmat, combinaison contre le
+    froid) perd 1 point de durabilité toutes les N s (`[usure]` de `serveur/defaultconfigs/heraliz_decors-server.toml` :
+    gaz 7 s, radiation 5 s, froid 5 s, soit 20 à 50 min selon la pièce) ; barre vide = « usée » (`ZonesServeur.usee`,
+    `Protection.usee` : à 1 point de la casse) : elle ne protège plus de ces zones (filtres de l'Armurerie compris),
+    protège toujours des balles, n'est jamais détruite par cette usure ; durabilité et « Usée » dans l'infobulle. **Aucune
+    réparation possible aujourd'hui** (kits de réparation = armes TaCZ seulement, enclumes hors service) : à décider.
+    Tenue de plongée jamais dans le loot (`ARMURES_EXCLUES` de `outils/loot_armes.py`) ;
   - armes : dégâts contre les joueurs réglés par famille (Tactique 2.14.0, `serveur/DegatsArmes`), joueur à 20 PV :
     fusil d'assaut 5,56 Rare 5,2 par balle (4 balles sans armure, 6 en Rare, 10 en Unique ; tête ×1,7 : 3 sans casque,
     5 avec un casque Unique), pistolet 9 mm 4,5 (tête ×1,6), mitraillette 4,0, fusil 7,62 6,0, 7,62 OTAN 7,5,

@@ -37,5 +37,7 @@ public final class HeralizDecors {
         EntitesBloc.TYPES.register(bus);
         ONGLETS.register(bus);
         fr.heraliz.decors.ambiance.Ambiance.init();                   // brouillard dynamique et zones dangereuses (1.4.0)
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.SERVER,
+                fr.heraliz.decors.ambiance.ConfigZones.SPEC);           // usure des protections dans les zones (1.12.0)
     }
 }

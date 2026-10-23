@@ -83,10 +83,11 @@ POIDS_CORPS = {"chest": 30, "vest": 35, "legs": 16, "knees": 7, "hands": 6, "fee
 POIDS_TETE = {"head": 80, "face": 20}
 
 # Combinaisons : (rareté, protection partout, radiation, gaz)
+# 23/10 (choix du propriétaire) : Hazmat et combinaison contre le froid « normales » en Rare (bleu), plus en Peu commun.
 COMBINAISONS = {
-    "hazmat": ("peu_commun", 12, 100, True),
+    "hazmat": ("rare", 12, 100, True),
     "hazmat_renforce": ("epique", 36, 100, True),
-    "arctique": ("peu_commun", 12, 0, False),
+    "arctique": ("rare", 12, 0, False),
     "arctique_renforcee": ("epique", 36, 0, False),
     "plongee": ("rare", 6, 0, False),
 }
@@ -206,18 +207,29 @@ def ecrire_objets():
 def ecrire_raretes(par_ens, objets):
     with open(RARETES_JSON, encoding="utf-8") as f:
         data = json.load(f, object_pairs_hook=OrderedDict)
-    obj = OrderedDict((k, v) for k, v in data.get("objets", {}).items() if not k.startswith("heraliz_armory:"))
+    ancien = data.get("objets", {})
+    armurerie = OrderedDict()
     for ens, liste in par_ens.items():
         r = ENSEMBLES[ens]
         for p in liste:
-            obj[f"heraliz_armory:{ens}_{p['piece']}"] = r
+            armurerie[f"heraliz_armory:{ens}_{p['piece']}"] = r
         if not ens.startswith("nocturne_"):
-            obj[f"heraliz_armory:kit_{ens}"] = r
+            armurerie[f"heraliz_armory:kit_{ens}"] = r
     for ens, (r, _, _, _) in COMBINAISONS.items():
-        obj[f"heraliz_armory:{ens}_suit"] = r
+        armurerie[f"heraliz_armory:{ens}_suit"] = r
     for id_, r in objets.items():
         if r:
-            obj[f"heraliz_armory:{id_}"] = r
+            armurerie[f"heraliz_armory:{id_}"] = r
+    # ordre du fichier gardé (23/10) : clés de l'Armurerie mises à jour à leur place, nouvelles à la fin, disparues retirées
+    obj = OrderedDict()
+    for k, v in ancien.items():
+        if not k.startswith("heraliz_armory:"):
+            obj[k] = v
+        elif k in armurerie:
+            obj[k] = armurerie[k]
+    for k, v in armurerie.items():
+        if k not in obj:
+            obj[k] = v
     data["objets"] = obj
     with open(RARETES_JSON, "w", encoding="utf-8", newline="\n") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)

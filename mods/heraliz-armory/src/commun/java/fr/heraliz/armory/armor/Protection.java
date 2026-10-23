@@ -68,7 +68,10 @@ public final class Protection {
     /** Somme non plafonnee des % pour un coup (la radiation compte tous les objets en entier). */
     public static float sum(List<Worn> worn, Kind kind, boolean headshot) {
         float total = 0;
-        for (Worn w : worn) total += kind == Kind.RADIATION ? w.def().radiation() : value(w.def(), kind) * share(w.def(), headshot);
+        for (Worn w : worn) {
+            if (kind == Kind.RADIATION) total += usee(w.stack()) ? 0 : w.def().radiation();
+            else total += value(w.def(), kind) * share(w.def(), headshot);
+        }
         return total;
     }
 
@@ -80,6 +83,21 @@ public final class Protection {
             h += p.bullet() * share(p, true);
         }
         return new float[]{Math.min(CAP, b), Math.min(CAP, h)};
+    }
+
+    /**
+     * 0.16.0 (23/10) : objet « use » = a 1 point de la casse (barre vide). Il ne protege plus du gaz, de la radiation ni du
+     * froid (il s'use dans les zones dangereuses de HeraliZ Decors, meme regle : ZonesServeur.usee) ; il protege toujours
+     * des balles. Jamais casse par cette usure : il faut le reparer.
+     */
+    public static boolean usee(ItemStack stack) {
+        return stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - 1;
+    }
+
+    /** Vrai si un objet porte NON USE a ce filtre (gaz, gel) : un objet use ne filtre plus. */
+    public static boolean anyFiltre(List<Worn> worn, java.util.function.Predicate<Guard> bonus) {
+        for (Worn w : worn) if (bonus.test(w.def()) && !usee(w.stack())) return true;
+        return false;
     }
 
     /** Vrai si un objet porte a ce bonus (filtre, gel, camouflage). */

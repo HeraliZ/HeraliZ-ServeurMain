@@ -92,5 +92,7 @@
  "block.heraliz_decors.lavabo_sale": "Lavabo sale",
  "block.heraliz_decors.toilettes_sales": "Toilettes sales",
  "block.heraliz_decors.lit_superpose": "Lit superposé",
- "block.heraliz_decors.lit_prison": "Lit de prison (chaînes)"
+ "block.heraliz_decors.lit_prison": "Lit de prison (chaînes)",
+ "heraliz_decors.zones.usee": "%s est usé(e) : ne protège plus de cette zone. Il faut le (la) réparer.",
+ "heraliz_decors.zones.usee_rappel": "Votre protection est usée : elle ne vous protège plus. Il faut la réparer."
 }

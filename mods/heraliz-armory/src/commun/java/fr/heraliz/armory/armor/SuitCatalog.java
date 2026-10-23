@@ -14,9 +14,9 @@ public final class SuitCatalog {
 
     // valeurs ecrites par outils/equilibrage_armures.py (palier = rang de rarete, une seule protection partout)
     public static final List<PieceDef> SUITS = List.of(
-            new PieceDef("hazmat", "suit", 2, 300, 0, 12, 12, 12, 12.0f, 100, true, false, null),
+            new PieceDef("hazmat", "suit", 3, 300, 0, 12, 12, 12, 12.0f, 100, true, false, null),
             new PieceDef("hazmat_renforce", "suit", 4, 450, 0, 36, 36, 36, 36.0f, 100, true, false, null),
-            new PieceDef("arctique", "suit", 2, 300, 0, 12, 12, 12, 12.0f, 0, false, false, "cold"),
+            new PieceDef("arctique", "suit", 3, 300, 0, 12, 12, 12, 12.0f, 0, false, false, "cold"),
             new PieceDef("arctique_renforcee", "suit", 4, 450, 0, 36, 36, 36, 36.0f, 0, false, false, "cold"),
             new PieceDef("plongee", "suit", 3, 400, -0.06, 6, 6, 6, 6.0f, 0, false, false, "diving")
     );

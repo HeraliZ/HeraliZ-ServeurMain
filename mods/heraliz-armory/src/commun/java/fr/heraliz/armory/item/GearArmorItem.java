@@ -100,6 +100,7 @@ public class GearArmorItem extends ArmorItem implements GeoItem, GearItem {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> lines, TooltipFlag flag) {
         GearItem.appendTooltip(gear, lines);
+        if (gear.gas()) GearItem.appendUsure(stack, lines);
     }
 
     /**
