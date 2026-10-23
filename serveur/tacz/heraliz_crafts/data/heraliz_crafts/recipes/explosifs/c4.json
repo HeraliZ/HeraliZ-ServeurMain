@@ -9,7 +9,7 @@
     },
     {
       "item": {
-        "item": "heraliz_composants:scotch"
+        "item": "heraliz_composants:scotch_iii"
       },
       "count": 2
     },
@@ -17,11 +17,11 @@
       "item": {
         "item": "heraliz_composants:corde"
       },
-      "count": 1
+      "count": 2
     },
     {
       "item": {
-        "item": "heraliz_composants:circuit_imprime"
+        "item": "heraliz_composants:circuit_imprime_iii"
       },
       "count": 1
     }
