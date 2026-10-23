@@ -63,10 +63,19 @@ public final class CoffreClan {
     public static final int CASES = 9;
     private static final TagKey<Item> INTERDIT = TagKey.create(Registries.ITEM, new ResourceLocation("heralisz_clans", "coffre_interdit"));
     /** Mods dont tout objet est refusé (armures, grenades, mêlée, Wonder Weapons, sacs à dos). */
-    private static final Set<String> MODS_INTERDITS = Set.of("heraliz_armory", "heralisz_armor", "heralisz_grenade", "heralisz_melee",
-            "heraliz_wonder", "backpacked");
+    private static final Set<String> MODS_INTERDITS = Set.of("heraliz_armory", "heralisz_armor", "heraliz_wonder", "backpacked");
+    /**
+     * Objets refusés un par un. Grenades et mêlée de Tactique sont enregistrées sous {@code heralisz_tactical} (pas sous
+     * les modIds {@code heralisz_grenade} / {@code heralisz_melee}, qui ne portent aucun objet) : 23/10, elles entraient.
+     */
     private static final Set<String> OBJETS_INTERDITS = Set.of("tacz:modern_kinetic_gun", "crac:c4", "crac:explosive_charge",
-            "minecraft:tnt", "minecraft:tnt_minecart", "minecraft:end_crystal");
+            "heralisz_tactical:throwable", "heralisz_tactical:melee", "heralisz_tactical:flash_shield",
+            "heralisz_tactical:detonator", "minecraft:tnt", "minecraft:tnt_minecart", "minecraft:end_crystal");
+    /** Joueurs dont l'inventaire a changé par le coffre depuis la dernière écriture (sauvegardés avec lui). */
+    private static final Set<UUID> TOUCHES = new java.util.HashSet<>();
+    /** {@code PlayerList.save(ServerPlayer)} (protégée), comme les coffres de match de Matchs. */
+    @Nullable
+    private static java.lang.reflect.Method sauverJoueur;
 
     private static final Map<UUID, SimpleContainer> COFFRES = new HashMap<>();
     @Nullable
@@ -85,6 +94,7 @@ public final class CoffreClan {
                 || it instanceof TridentItem || s.is(INTERDIT)) {
             return true;
         }
+        if (EtatJoueur.pretOuAVie(s)) return true; // objet prêté par un match, couteau ou skin à vie
         if (it instanceof BlockItem b && b.getBlock() instanceof ShulkerBoxBlock) return true;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(it);
         return id != null && (MODS_INTERDITS.contains(id.getNamespace()) || OBJETS_INTERDITS.contains(id.toString()));
@@ -103,12 +113,36 @@ public final class CoffreClan {
             refus(p, "msg.coffre.refus", "Tu n'as pas le droit d'ouvrir le coffre du clan.");
             return;
         }
+        Component empeche = empechement(p);
+        if (empeche != null) {
+            p.sendSystemMessage(empeche.copy().withStyle(ChatFormatting.RED));
+            return;
+        }
         SimpleContainer coffre = coffre(c.id);
         UUID clanId = c.id;
         p.closeContainer();
         p.openMenu(new SimpleMenuProvider((id, inv, joueur) -> new Menu(id, inv, coffre, clanId),
                 Component.translatableWithFallback("gui.coffre.titre", "Coffre du clan [%s]", c.tag)));
         p.level().playSound(null, p.blockPosition(), SoundEvents.BARREL_OPEN, SoundSource.PLAYERS, 0.5f, 1.0f);
+    }
+
+    /**
+     * Pourquoi le coffre est fermé à ce joueur maintenant (23/10, demande du propriétaire), null sinon : en combat, à
+     * terre, en match, ou sur la carte (on n'y range rien par commande : seulement au spawn ou ailleurs hors carte).
+     * Le créatif et le spectateur passent.
+     */
+    @Nullable
+    static Component empechement(ServerPlayer p) {
+        if (p.isCreative() || p.isSpectator()) return null;
+        if (EtatJoueur.enMatch(p))
+            return Component.translatableWithFallback("msg.coffre.match", "Le coffre du clan est fermé pendant un match.");
+        if (EtatJoueur.aTerre(p))
+            return Component.translatableWithFallback("msg.coffre.a_terre", "Impossible d'ouvrir le coffre du clan à terre.");
+        if (EtatJoueur.enCombat(p))
+            return Component.translatableWithFallback("msg.coffre.combat", "Impossible d'ouvrir le coffre du clan en combat.");
+        if (EtatJoueur.surCarte(p))
+            return Component.translatableWithFallback("msg.coffre.carte", "Le coffre du clan ne s'ouvre pas sur la carte : reviens au spawn.");
+        return null;
     }
 
     private static boolean peut(Player p, Perm perm) {
@@ -138,6 +172,7 @@ public final class CoffreClan {
         public boolean stillValid(Player p) {
             ClanStore s = ClanStore.get();
             Clan c = s == null ? null : s.clanDe(p.getUUID());
+            if (p instanceof ServerPlayer sp && empechement(sp) != null) return false;
             return c != null && c.id.equals(clanId) && (peut(p, Perm.BANQUE_DEPOSER) || peut(p, Perm.BANQUE_RETIRER));
         }
 
@@ -145,6 +180,8 @@ public final class CoffreClan {
         public void removed(Player p) {
             super.removed(p);
             sale = true;
+            TOUCHES.add(p.getUUID());
+            sauvegarder(); // joueur puis coffre, tout de suite : un plantage ne laisse jamais l'objet aux deux endroits
         }
 
         /**
@@ -184,6 +221,7 @@ public final class CoffreClan {
         public void setChanged() {
             super.setChanged();
             sale = true;
+            TOUCHES.add(joueur.getUUID());
         }
     }
 
@@ -280,6 +318,7 @@ public final class CoffreClan {
         Path f = fichier();
         if (!sale || f == null || !f.equals(chargeDe)) return;
         ClanStore s = ClanStore.get();
+        sauverJoueurs();
         CompoundTag root = new CompoundTag();
         ListTag l = new ListTag();
         for (Map.Entry<UUID, SimpleContainer> e : COFFRES.entrySet()) {
@@ -310,6 +349,30 @@ public final class CoffreClan {
         } catch (IOException ex) {
             HeraliszClans.LOG.error("[clans] sauvegarde de {} impossible", f, ex);
         }
+    }
+
+    /**
+     * Écrit d'abord la sauvegarde des joueurs qui ont déplacé des objets par le coffre (Minecraft ne les écrit que
+     * toutes les 5 min) : après un plantage, l'objet est soit dans le coffre, soit dans l'inventaire, jamais les deux.
+     */
+    private static void sauverJoueurs() {
+        if (TOUCHES.isEmpty()) return;
+        net.minecraft.server.MinecraftServer srv = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (srv != null) {
+            for (UUID u : TOUCHES) {
+                ServerPlayer p = srv.getPlayerList().getPlayer(u);
+                if (p == null) continue;
+                try {
+                    if (sauverJoueur == null)
+                        sauverJoueur = net.minecraftforge.fml.util.ObfuscationReflectionHelper.findMethod(
+                                net.minecraft.server.players.PlayerList.class, "m_6765_", ServerPlayer.class);
+                    sauverJoueur.invoke(srv.getPlayerList(), p);
+                } catch (Exception ex) {
+                    HeraliszClans.LOG.error("[clans] sauvegarde du joueur {} impossible", p.getGameProfile().getName(), ex);
+                }
+            }
+        }
+        TOUCHES.clear();
     }
 
     /** Fin du serveur : tout écrire, puis oublier (le prochain serveur relit le fichier). */

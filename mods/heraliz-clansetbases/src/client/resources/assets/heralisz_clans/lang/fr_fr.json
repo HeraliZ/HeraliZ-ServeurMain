@@ -714,5 +714,12 @@
   "msg.saison.classement.events": "Classement des events",
   "msg.saison.vide": "Aucun clan classé.",
   "msg.don.refus": "Seuls les objets de récupération Légendaires ou Uniques se donnent au clan (en main).",
-  "msg.don.fait": "%s a donné %s × %s au clan (+%s XP)."
+  "msg.don.fait": "%s a donné %s × %s au clan (+%s XP).",
+  "msg.coffre.match": "Le coffre du clan est fermé pendant un match.",
+  "msg.coffre.a_terre": "Impossible d'ouvrir le coffre du clan à terre.",
+  "msg.coffre.combat": "Impossible d'ouvrir le coffre du clan en combat.",
+  "msg.coffre.carte": "Le coffre du clan ne s'ouvre pas sur la carte : reviens au spawn.",
+  "msg.creer.match": "Impossible de fonder un clan pendant un match.",
+  "msg.creer.a_terre": "Impossible de fonder un clan à terre.",
+  "msg.creer.combat": "Impossible de fonder un clan en combat."
 }

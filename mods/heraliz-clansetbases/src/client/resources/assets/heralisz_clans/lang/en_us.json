@@ -714,5 +714,12 @@
   "msg.saison.classement.events": "Events ranking",
   "msg.saison.vide": "No ranked clan.",
   "msg.don.refus": "Only Legendary or Unique salvage items can be given to the clan (in hand).",
-  "msg.don.fait": "%s gave %s × %s to the clan (+%s XP)."
+  "msg.don.fait": "%s gave %s × %s to the clan (+%s XP).",
+  "msg.coffre.match": "The clan chest is closed during a match.",
+  "msg.coffre.a_terre": "You can't open the clan chest while downed.",
+  "msg.coffre.combat": "You can't open the clan chest in combat.",
+  "msg.coffre.carte": "The clan chest can't be opened on the map: go back to the spawn.",
+  "msg.creer.match": "You can't found a clan during a match.",
+  "msg.creer.a_terre": "You can't found a clan while downed.",
+  "msg.creer.combat": "You can't found a clan in combat."
 }
