@@ -28,5 +28,6 @@
         <div><span class="g" style="color:#8FD3FF">Grade Traqueur</span></div>
         <div><span class="g" style="color:#FFC23A">Grade Roi de la Zone</span><span class="g beta">Grade BETA <small>uniquement pendant la bêta</small></span></div>
     </div>
+    <p class="perso"><b>Clés de caisses</b> : skins, emotes et autres cosmétiques à gagner.</p>
     <p class="perso">Emote, finisher ou skin <b>personnalisé à vie</b> : disponible sur demande auprès d’un staff sur Discord.</p>
 </div>
