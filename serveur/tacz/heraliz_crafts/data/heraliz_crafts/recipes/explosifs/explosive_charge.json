@@ -5,19 +5,25 @@
       "item": {
         "item": "heraliz_composants:bocal_poudre"
       },
-      "count": 2
+      "count": 3
     },
     {
       "item": {
-        "item": "heraliz_composants:scotch"
+        "item": "heraliz_composants:scotch_ii"
       },
-      "count": 1
+      "count": 5
     },
     {
       "item": {
         "item": "heraliz_composants:corde"
       },
       "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:tissu_ii"
+      },
+      "count": 3
     }
   ],
   "result": {

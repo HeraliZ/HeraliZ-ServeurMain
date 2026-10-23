@@ -74,11 +74,11 @@ ACCESSOIRES = {
     "laser": ("accessoires", {"ferraille": 1, "caoutchouc": 1, "scotch": 1, "batterie": 1}),
 }
 
-# explosifs de CRac (seuls à abîmer les bases), composants de niveau I : prix à peu près dans le rapport des dégâts
-# (charge ~130, C4 ~300 : environ 2,3 fois)
+# explosifs de CRac (seuls à abîmer les bases) : charge en composants de niveau II, C4 de niveau III (23/10, choix du
+# propriétaire), quantités à peu près dans le rapport des dégâts (charge ~130, C4 ~300 : environ 2,3 fois)
 EXPLOSIFS = [
-    ("explosive_charge", "crac:explosive_charge", {"bocal_poudre": 2, "scotch": 1, "corde": 1}),
-    ("c4", "crac:c4", {"bocal_poudre": 5, "scotch": 2, "corde": 1, "circuit_imprime": 1}),
+    ("explosive_charge", "crac:explosive_charge", {"bocal_poudre": 3, "scotch_ii": 5, "corde": 1, "tissu_ii": 3}),
+    ("c4", "crac:c4", {"bocal_poudre": 5, "scotch_iii": 1, "corde": 2, "circuit_imprime_ii": 3}),
 ]
 
 # composants à niveaux : PAR_NIVEAU d'un niveau donnent 1 du niveau suivant, et 1 se défait en PAR_NIVEAU du niveau
@@ -158,12 +158,13 @@ def main():
                                                {"type": "custom", "item": {"item": item}, "group": f"{NS}:explosifs"})
 
     niveaux = ["", "_ii", "_iii", "_iv"]
-    for c in A_NIVEAUX:
-        for bas, haut in zip(niveaux, niveaux[1:]):
-            recettes[f"composants/{c}{haut}"] = recette(
+    # noms numérotés : la table range les recettes par nom, donc composant par composant, niveau par niveau
+    for i, c in enumerate(A_NIVEAUX):
+        for j, (bas, haut) in enumerate(zip(niveaux, niveaux[1:])):
+            recettes[f"composants/{i:02d}_{c}_{j}a{haut}"] = recette(
                 [{"item": {"item": C + c + bas}, "count": PAR_NIVEAU}],
                 {"type": "custom", "item": {"item": C + c + haut}, "group": f"{NS}:composants"})
-            recettes[f"composants/{c}{haut}_defait"] = recette(
+            recettes[f"composants/{i:02d}_{c}_{j}b{haut}_defait"] = recette(
                 [{"item": {"item": C + c + haut}, "count": 1}],
                 {"type": "custom", "item": {"item": C + c + bas, "count": PAR_NIVEAU}, "group": f"{NS}:composants"})
 
