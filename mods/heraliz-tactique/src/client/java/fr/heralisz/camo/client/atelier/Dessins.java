@@ -108,7 +108,8 @@ final class Dessins {
       int w = font.width(Ui.lit(texte, Ui.SMALL)) + 8;
       Ui.soft(g, x, y, w, 11, Ui.argb(0xFFFFFF, survol ? 30 : 18));
       Ui.softOutline(g, x + 1, y + 1, w - 2, 9, Ui.argb(0xFFFFFF, survol ? 90 : 50));
-      g.drawString(font, Ui.lit(texte, Ui.SMALL), x + 4, y + 2, Ui.argb(Ui.TEXT, 255), false);
+      // centré dans la touche (largeur exacte, milieu des capitales ; Tactique 2.35.1)
+      Ui.centre(g, font, Ui.lit(texte, Ui.SMALL), Ui.SMALL, x + w / 2f, y + 5.5f, Ui.argb(Ui.TEXT, 255));
       return w;
    }
 

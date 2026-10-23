@@ -226,6 +226,113 @@ public final class Ui {
         g.pose().translate(x + (rx - ex) / kx, y + (ry - ey) / ky, 0);
     }
 
+    // ------------------------------------------------------------------ centrage optique (Tactique 2.35.1)
+    /** Polices du kit à leur vraie taille : gras 16 (titres, chiffres), gras 14 (noms), 8 (petites légendes). */
+    public static final ResourceLocation GROS = new ResourceLocation("heralisz_camo", "ui_gros"), NOM = new ResourceLocation("heralisz_camo", "ui_nom"),
+        MINI = new ResourceLocation("heralisz_camo", "ui_mini");
+
+    /**
+     * Milieu des capitales sous le point de dessin, en points d'interface. Minecraft 1.20.1 pose une lettre TTF à
+     * y + ascendante + décalage du JSON − 3 (TrueTypeGlyphProvider : bearingY = ascendante − haut + shift ; BakedGlyph :
+     * up − 3) ; DM Sans : ascendante 992 et capitales 700 sur 1302 unités de hauteur, décalage 1, d'où
+     * taille × 0,49309 − 2. Vérifié par outils/apercu_table_armurier.py (mêmes polices, même calcul).
+     */
+    public static float milieu(ResourceLocation f) {
+        if (!"heralisz_camo".equals(f.getNamespace())) return 3.5f;
+        return switch (f.getPath()) {
+            case "ui", "ui_bold" -> 3.424f;
+            case "ui_small" -> 2.438f;
+            case "ui_gros" -> 5.889f;
+            case "ui_nom" -> 4.903f;
+            case "ui_mini" -> 1.945f;
+            default -> 3.5f;
+        };
+    }
+
+    /** Hauteur des capitales en points d'interface (DM Sans : taille × 0,53763). */
+    public static float capitales(ResourceLocation f) {
+        if (!"heralisz_camo".equals(f.getNamespace())) return 7f;
+        return switch (f.getPath()) {
+            case "ui", "ui_bold" -> 5.914f;
+            case "ui_small" -> 4.839f;
+            case "ui_gros" -> 8.602f;
+            case "ui_nom" -> 7.527f;
+            case "ui_mini" -> 4.301f;
+            default -> 7f;
+        };
+    }
+
+    /** Largeur exacte (en flottant, sans l'arrondi de Font.width). */
+    public static float largeur(Font font, Component c) {
+        return font.getSplitter().stringWidth(c);
+    }
+
+    /** Texte : bord gauche en x, milieu des capitales sur cy (police f), posé au point d'écran. */
+    public static void gauche(GuiGraphics g, Font font, Component c, ResourceLocation f, float x, float cy, int argb) {
+        g.pose().pushPose();
+        placer(g, x, cy - milieu(f));
+        g.drawString(font, c, 0, 0, argb, false);
+        g.pose().popPose();
+    }
+
+    /** Texte centré sur (cx, cy) : ENCRE centrée (largeur exacte moins les approches des lettres), milieu des capitales. */
+    public static void centre(GuiGraphics g, Font font, Component c, ResourceLocation f, float cx, float cy, int argb) {
+        float[] e = Encre.de(c.getString(), f);
+        gauche(g, font, c, f, cx - (largeur(font, c) + e[0] - e[1]) / 2f, cy, argb);
+    }
+
+    /** Texte : bord droit en xDroite, milieu des capitales sur cy. */
+    public static void droite(GuiGraphics g, Font font, Component c, ResourceLocation f, float xDroite, float cy, int argb) {
+        gauche(g, font, c, f, xDroite - largeur(font, c), cy, argb);
+    }
+
+    /** Capitales espacées : bord gauche en x, milieu des capitales sur cy. */
+    public static void spacedMilieu(GuiGraphics g, Font font, String s, ResourceLocation f, float x, float cy, int argb, float spacing) {
+        spaced(g, font, s, f, x, cy - milieu(f), argb, spacing);
+    }
+
+    /**
+     * Capitales espacées centrées sur (cx, cy) : l'ENCRE est centrée (approches des lettres, {@link Encre}). Chaque lettre
+     * est posée au point d'écran le plus proche : la 1re et la dernière peuvent sauter d'un point ensemble. On choisit
+     * donc, parmi de petits décalages (au huitième de point d'écran) et de petites retouches de l'espacement (un
+     * centième de point d'interface par intervalle, invisible), celui qui centre le mieux l'encre après la pose.
+     * Même calcul dans outils/apercu_table_armurier.py (x_caps_centre).
+     */
+    public static void spacedCentre(GuiGraphics g, Font font, String s, ResourceLocation f, float cx, float cy, int argb, float spacing) {
+        String up = s.toUpperCase(Locale.ROOT);
+        int n = up.codePointCount(0, up.length());
+        if (n == 0) return;
+        float w = spacedWidth(font, up, f, spacing);
+        float[] e = Encre.de(up, f);
+        float av = font.getSplitter().stringWidth(lit(new String(Character.toChars(up.codePointBefore(up.length()))), f));
+        double ech = Minecraft.getInstance().getWindow().getGuiScale();
+        float meilleurX = cx - (w + e[0] - e[1]) / 2f, meilleurEsp = spacing, ecart = Float.MAX_VALUE;
+        for (int j : RETOUCHES) {
+            float esp = spacing + j * 0.01f;
+            float wj = w + (n - 1) * j * 0.01f, dern = wj - av;
+            float x0 = cx - (wj + e[0] - e[1]) / 2f;
+            for (int i : DECALAGES) {
+                float xc = (float) (x0 + i / (8 * ech));
+                float milieu = (point(xc, ech) + e[0] + point(xc + dern, ech) + av - e[1]) / 2f;
+                float d = Math.abs(milieu - cx);
+                if (d < ecart - 1e-4f) {
+                    ecart = d;
+                    meilleurX = xc;
+                    meilleurEsp = esp;
+                }
+            }
+        }
+        spacedMilieu(g, font, s, f, meilleurX, cy, argb, meilleurEsp);
+    }
+
+    /** Ordre d'essai : sans retouche d'abord, puis de plus en plus loin. */
+    private static final int[] RETOUCHES = {0, 1, -1, 2, -2, 3, -3}, DECALAGES = {0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8};
+
+    /** Position posée au point d'écran (pose sans échelle). */
+    private static float point(float v, double ech) {
+        return (float) (Math.round(v * ech) / ech);
+    }
+
     /** Texte centre sur cx (position arrondie au point d'ecran : net). */
     public static void centered(GuiGraphics g, Font font, Component c, float cx, float y, int argb) {
         g.pose().pushPose();
@@ -304,7 +411,8 @@ public final class Ui {
         int w = (int) spacedWidth(font, texte.toUpperCase(Locale.ROOT), SMALL, 0.6f) + 10, h = 11;
         soft(g, x, y, w, h, argb(rgb, 34));
         softOutline(g, x + 1, y + 1, w - 2, h - 2, argb(rgb, 90));
-        spaced(g, font, texte, SMALL, x + 5, y + 2.5f, argb(mix(rgb, 0xFFFFFF, 0.3f), 255), 0.6f);
+        // centré dans la pastille, à la largeur exacte et au milieu des capitales (Tactique 2.35.1)
+        spacedCentre(g, font, texte, SMALL, x + w / 2f, y + h / 2f, argb(mix(rgb, 0xFFFFFF, 0.3f), 255), 0.6f);
         return w;
     }
 
@@ -356,7 +464,7 @@ public final class Ui {
     public static void section(GuiGraphics g, Font font, String titre, int x, int y, int w) {
         spaced(g, font, titre, SMALL, x, y, argb(MUTED, 255), 1.0f);
         int tw = (int) spacedWidth(font, titre.toUpperCase(Locale.ROOT), SMALL, 1.0f);
-        hairline(g, x + tw + 8, x + w, y + 4, 0xFFFFFF, 40, false, true);
+        hairline(g, x + tw + 8, x + w, y + Math.round(milieu(SMALL)), 0xFFFFFF, 40, false, true);
     }
 
     // ------------------------------------------------------------------ filets

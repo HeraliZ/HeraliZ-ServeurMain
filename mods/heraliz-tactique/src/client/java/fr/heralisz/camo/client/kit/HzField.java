@@ -177,25 +177,28 @@ public class HzField extends AbstractWidget {
         int ligne = err ? Ui.argb(Ui.DANGER, 220) : focus ? Ui.argb(accent, 230) : Ui.argb(0xFFFFFF, isHovered ? 70 : 34);
         g.fill(x, y + h - 1, x + w, y + h, ligne);
         Font font = Minecraft.getInstance().font;
-        int tx = x + 4, ty = y + (h - 8) / 2;
+        int tx = x + 4;
+        // texte au milieu du champ (milieu des capitales, Tactique 2.35.1) ; curseur et surlignage autour des capitales
+        float cy = y + h / 2f;
+        int t0 = Math.round(cy - 5), t1 = Math.round(cy + 5);
         // place du texte dans le champ (rien ne déborde : invite coupée avec « … », saisie trop longue montrée par sa fin)
         int place = w - 8 - (suffix.isEmpty() ? 0 : font.width(Ui.lit(suffix, Ui.SMALL)) + 4);
         if (value.isEmpty() && !placeholder.isEmpty()) {
-            g.drawString(font, Ui.lit(Ui.ellipsis(font, placeholder, Ui.FONT, place), Ui.FONT), tx, ty, Ui.argb(Ui.FAINT, 255), false);
+            Ui.gauche(g, font, Ui.lit(Ui.ellipsis(font, placeholder, Ui.FONT, place), Ui.FONT), Ui.FONT, tx, cy, Ui.argb(Ui.FAINT, 255));
         }
         String vu = value;
         while (vu.length() > 1 && font.width(Ui.lit(vu, Ui.FONT)) > place - 2) vu = vu.substring(vu.offsetByCodePoints(0, 1));
         Component text = Ui.lit(vu, Ui.FONT);
         if (focus && replace && !value.isEmpty()) {
-            g.fill(tx - 1, ty - 1, tx + font.width(text) + 1, ty + 9, Ui.argb(accent, 70));
+            g.fill(tx - 1, t0, tx + font.width(text) + 1, t1, Ui.argb(accent, 70));
         }
-        g.drawString(font, text, tx, ty, Ui.argb(active ? Ui.TEXT : Ui.FAINT, 255), false);
+        Ui.gauche(g, font, text, Ui.FONT, tx, cy, Ui.argb(active ? Ui.TEXT : Ui.FAINT, 255));
         if (!suffix.isEmpty()) {
-            g.drawString(font, Ui.lit(suffix, Ui.SMALL), x + w - 3 - font.width(Ui.lit(suffix, Ui.SMALL)), ty + 1, Ui.argb(Ui.MUTED, 255), false);
+            Ui.droite(g, font, Ui.lit(suffix, Ui.SMALL), Ui.SMALL, x + w - 3, cy, Ui.argb(Ui.MUTED, 255));
         }
         if (focus && !replace && (blink / 6) % 2 == 0) {
             int cx = tx + font.width(text) + 1;
-            g.fill(cx, ty, cx + 1, ty + 9, Ui.argb(accent, 230));
+            g.fill(cx, t0, cx + 1, t1, Ui.argb(accent, 230));
         }
         if (err && erreurVisible) g.drawString(font, Ui.lit(erreur, Ui.SMALL), x, y + h + 2, Ui.argb(Ui.DANGER, 255), false);
     }

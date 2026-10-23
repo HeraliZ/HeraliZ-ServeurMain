@@ -2110,7 +2110,13 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   « ABALLE DE 9MM ») ; recettes rangées par ordre alphabétique dans la langue du joueur (sans majuscules ni accents),
   paliers côte à côte (« Batterie II, III, IV », puis « Caoutchouc II »), aussi pour la recherche et les filtres.
   Aperçu et contrôle hors du jeu : `python mods/heraliz-tactique/outils/apercu_table_armurier.py` (mêmes constantes,
-  lues dans le Java ; liste des débordements, doit être vide ; images dans `maquettes/table_armurier/`).
+  lues dans le Java ; liste des débordements, doit être vide ; images dans `maquettes/table_armurier/`). Tactique
+  2.35.1 (rien testé en jeu, demande du propriétaire) : textes centrés dans leur case, en hauteur sur le milieu des
+  capitales (`Ui.milieu` : Minecraft pose une lettre TTF à ascendante + décalage du JSON − 3) et en largeur sur l'ENCRE
+  (approches des lettres, `kit/Encre` + `assets/heralisz_camo/ui/encre.json` écrit par le script avec `--encre`) :
+  pastilles, boutons, champ de saisie, touche « Échap », filtres, catégories, tuiles, matériaux ; kit commun de l'Atelier
+  (onglets Accessoires, Camo, Personnaliser, Registre de l'armurier : ils en profitent). Le script contrôle aussi
+  l'encre réelle de chaque texte centré (écart haut / bas et gauche / droite d'au plus 1 point d'écran, échelles 2 et 3).
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans
