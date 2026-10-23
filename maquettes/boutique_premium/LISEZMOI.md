@@ -1,6 +1,10 @@
-# Boutique premium (`/boutique`) : maquettes à valider
+# Boutique premium (`/boutique`) : maquettes validées
 
-Rendus seulement (règle 9) : aucun code n'est écrit tant que le propriétaire n'a pas validé. Écran de 640 × 360 unités
+**Validées par le propriétaire le 23/10, codées dans HeraliZ Grades 2.6.0** (`client/EcranBoutique`). Décisions : panneau
+de droite gardé, pack ×5 de la clé Camo ajouté (1 190 PB), BETA en `#A970FF`, pas de carte « perso », avantages officiels
+(1 home pour tous, zone VIP du casino, avant-première des cartes Zombies ; BETA = Roi de la Zone à vie + 10 clés des emotes
++ une emote ou un finisher sur mesure). Les images ci-dessous gardent les textes d'avant ces décisions ; les aperçus à
+jour se refont avec `python mods/heraliz-grades/outils/apercu_boutique.py DOSSIER --langue toutes`. Écran de 640 × 360 unités
 d'interface, montré à l'échelle 3 (1920 × 1080). Style du créateur de personnage (`/perso`) : voile sombre sur le monde,
 panneaux de verre, bord d'un pixel, filet clair en haut, rouge du logo pour ce qui est choisi, police DM Sans. Chaque
 texte a été mesuré avec la vraie police : aucun ne dépasse son cadre. Aucune image n'est agrandie (pas de pixels).

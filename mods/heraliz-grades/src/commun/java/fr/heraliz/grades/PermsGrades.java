@@ -62,10 +62,11 @@ public final class PermsGrades {
    static void defauts() {
       for (Perm p : TOUTES) Grade.SURVIVANT.perms.put(p.cle(), p.defaut());
       // 22/10 : /tpa -10, -20, -30 % (5 min pour Survivant), /home réduit d'autant, coffre VIP en cases, surnom, chat en couleur
-      regler(Grade.RESCAPE, 270, 2, 1, 10, 3, 0, 0);
-      regler(Grade.TRAQUEUR, 240, 3, 1, 20, 6, 1, 0);
-      regler(Grade.ROI_DE_LA_ZONE, 210, 4, 1, 30, 9, 1, 1);
-      regler(Grade.STREAMER, 285, 2, 1, 0, 0, 0, 0);
+      // 23/10 (Grades 2.6.0, avantages officiels de la boutique) : 1 home pour tous les grades
+      regler(Grade.RESCAPE, 270, 1, 1, 10, 3, 0, 0);
+      regler(Grade.TRAQUEUR, 240, 1, 1, 20, 6, 1, 0);
+      regler(Grade.ROI_DE_LA_ZONE, 210, 1, 1, 30, 9, 1, 1);
+      regler(Grade.STREAMER, 285, 1, 1, 0, 0, 0, 0);
    }
 
    private static void regler(Grade g, int tpa, int homes, int vip, int reduction, int casesVip, int nick, int chatCouleur) {
