@@ -41,7 +41,7 @@ public class PlayerMixin implements BackpackedInventoryAccess {
       Player player = (Player)(Object)this;
       ItemStack stack = Services.BACKPACK.getBackpackStack(player);
       if (stack.isEmpty()) {
-         this.backpacked$Inventory = null;
+         this.backpacked$Oublier();
          return null;
       }
 
@@ -50,6 +50,7 @@ public class PlayerMixin implements BackpackedInventoryAccess {
          if (this.backpacked$Inventory == null
             || !this.backpacked$Inventory.getBackpackStack().equals(stack)
             || this.backpacked$Inventory.getContainerSize() != backpackItem.getRowCount() * backpackItem.getColumnCount()) {
+            this.backpacked$Oublier();
             this.backpacked$Inventory = new BackpackInventory(backpackItem.getColumnCount(), backpackItem.getRowCount(), player, stack);
          }
 
@@ -58,12 +59,14 @@ public class PlayerMixin implements BackpackedInventoryAccess {
          if (this.backpacked$Inventory == null
             || !this.backpacked$Inventory.getBackpackStack().equals(stack)
             || this.backpacked$Inventory.getContainerSize() != backpackItem1.getRowCount() * backpackItem1.getColumnCount()) {
+            this.backpacked$Oublier();
             this.backpacked$Inventory = new BackpackInventory(backpackItem1.getColumnCount(), backpackItem1.getRowCount(), player, stack);
          }
 
          return this.backpacked$Inventory;
       } else if (item instanceof BackpackItem_expand2 backpackItem2) {
          if (this.backpacked$Inventory == null || !this.backpacked$Inventory.getBackpackStack().equals(stack) || this.backpacked$Inventory.getContainerSize() != 54) {
+            this.backpacked$Oublier();
             this.backpacked$Inventory = new BackpackInventory(backpackItem2.getColumnCount(), backpackItem2.getRowCount(), player, stack);
          }
 
@@ -72,11 +75,20 @@ public class PlayerMixin implements BackpackedInventoryAccess {
          return null;
       } else {
          if (this.backpacked$Inventory == null || !this.backpacked$Inventory.getBackpackStack().equals(stack) || this.backpacked$Inventory.getContainerSize() != 54) {
+            this.backpacked$Oublier();
             this.backpacked$Inventory = new BackpackInventory(backpackItem2.getColumnCount(), backpackItem2.getRowCount(), player, stack);
          }
 
          return this.backpacked$Inventory;
       }
+   }
+
+   // Sac retiré ou changé : l'inventaire est oublié sans être réécrit. Chaque changement est déjà écrit dans
+   // l'objet sac au moment où il arrive (BackpackInventory.setChanged) ; le réécrire ici écraserait ce qu'un autre
+   // joueur a pu faire depuis dans ce même sac (copie).
+   @Unique
+   private void backpacked$Oublier() {
+      this.backpacked$Inventory = null;
    }
 
    @Inject(method = "tick", at = @At("HEAD"))

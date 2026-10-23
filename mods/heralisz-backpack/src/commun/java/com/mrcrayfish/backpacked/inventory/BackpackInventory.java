@@ -14,6 +14,7 @@ public class BackpackInventory extends SimpleContainer {
    private final Player player;
    private final ItemStack stack;
    private boolean save;
+   private boolean chargement;
 
    public BackpackInventory(int cols, int rows, Player player, ItemStack stack) {
       super(rows * cols);
@@ -25,7 +26,17 @@ public class BackpackInventory extends SimpleContainer {
    private void loadBackpackContents(Player player) {
       CompoundTag compound = this.stack.getOrCreateTag();
       if (compound.contains("Items", 9)) {
-         InventoryHelper.loadAllItems(compound.getList("Items", 10), this, player.level(), player.position());
+         this.chargement = true;
+         try {
+            InventoryHelper.loadAllItems(compound.getList("Items", 10), this, player.level(), player.position());
+         } finally {
+            this.chargement = false;
+         }
+         // Les objets en trop sont jetés au sol par le chargement : on réécrit le sac tout de suite pour qu'ils ne
+         // restent pas aussi dans ses données (sinon, rouvert, il les rejetterait encore : copie).
+         if (!player.level().isClientSide()) {
+            this.saveItemsToStack();
+         }
       }
    }
 
@@ -44,7 +55,12 @@ public class BackpackInventory extends SimpleContainer {
 
    public void setChanged() {
       super.setChanged();
-      this.save = true;
+      if (this.chargement) {
+         return;
+      }
+      // Écrit tout de suite dans l'objet sac : si le sac change de main avant le prochain tick (échange de case,
+      // jet, mort), ses données sont déjà à jour et rien ne peut être copié ni perdu.
+      this.saveItemsToStack();
    }
 
    public void tick() {
