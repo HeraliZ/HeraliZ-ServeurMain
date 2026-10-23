@@ -238,7 +238,7 @@ public final class CharacterModelSpec {
                     option(Trait.SHOES_STYLE, "boots", "hiking_boots"));
             box(list, "boot_combat_" + side, bone, boot, Material.SHOE, Group.SHOES, -2.0F, 6.0F, -2.0F, 4.0F, 4.7F, 4.0F,
                     option(Trait.SHOES_STYLE, "combat_boots"));
-            box(list, "boot_rain_" + side, bone, boot, Material.SHOE, Group.SHOES, -2.0F, 4.1F, -2.0F, 4.0F, 6.6F, 4.0F,
+            box(list, "boot_rain_" + side, bone, boot, Material.SHOE, Group.SHOES, -2.15F, 5.5F, -2.15F, 4.3F, 5.2F, 4.3F,
                     option(Trait.SHOES_STYLE, "rain_boots"));
         }
     }

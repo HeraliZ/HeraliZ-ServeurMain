@@ -23,7 +23,8 @@ final class CreatorUi {
 
     /** DM Sans: titles (bold 13), category names (bold 9), body text (7.5) and small text (6.5). */
     static final ResourceLocation TITLE = font("ui_titre"), BOLD_9 = font("ui_small_bold"), TEXT = font("ui_moyen"),
-            TEXT_BOLD = font("ui_moyen_bold"), MINI = font("ui_mini"), MINI_BOLD = font("ui_mini_bold");
+            TEXT_BOLD = font("ui_moyen_bold"), MINI = font("ui_mini"), MINI_BOLD = font("ui_mini_bold"),
+            AIDE = font("ui_aide"), BOUTON_BOLD = font("ui_bouton_bold");
 
     static final int ACCENT = 0xE3201B, WHITE = 0xFFFFFF, LIGHT = 0xECEEF2, OPTION = 0xC3C8D0, BUTTON = 0xC9CDD4, GREY = 0x9AA0AA,
             MUTED = 0x8F95A0, FAINT = 0x5A5F69, KEYS = 0x7E848E, VALUE = 0xF2C9C6, PINK = 0xF08A86, WELCOME = 0xE9B8B4,
@@ -225,6 +226,52 @@ final class CreatorUi {
         border(g, x, y, w, h, px, a(WHITE, 61));
         Ui.spaced(g, font, up, MINI_BOLD, x + (w - tw) / 2, cy - 4.21F, a(WHITE, 255), spacing);
         return w;
+    }
+
+    /** Key of the shortcut row (23/10, rendu validé) : 7,5 px gras, hauteur et largeur mini au choix. */
+    static float keyLarge(GuiGraphics g, Font font, String text, float x, float cy, float h, float spacing, float minW, int fill, float px) {
+        String up = text.toUpperCase(Locale.ROOT);
+        float tw = Ui.spacedWidth(font, up, TEXT_BOLD, spacing);
+        float w = Math.max(minW, tw + 4.67F);
+        float y = cy - h / 2;
+        rect(g, x, y, x + w, y + h, fill);
+        border(g, x, y, w, h, px, a(WHITE, 61));
+        Ui.spaced(g, font, up, TEXT_BOLD, x + (w - tw) / 2, cy - 4.9F, a(WHITE, 255), spacing);
+        return w;
+    }
+
+    /** Arrow key drawn as a small centred triangle (dir : 0 up, 1 down, 2 left, 3 right) instead of a font glyph. */
+    static float keyArrow(GuiGraphics g, float x, float cy, float h, float w, int dir, int fill, float px) {
+        float y = cy - h / 2;
+        rect(g, x, y, x + w, y + h, fill);
+        border(g, x, y, w, h, px, a(WHITE, 61));
+        triangle(g, x + w / 2, cy, h * 0.26F, dir, a(WHITE, 255));
+        return w;
+    }
+
+    /** Filled triangle pointing up / down / left / right, centred on (cx, cy), half-size k, drawn as thin strips. */
+    static void triangle(GuiGraphics g, float cx, float cy, float k, int dir, int argb) {
+        int n = 12;
+        float len = 1.8F * k;
+        for (int i = 0; i < n; i++) {
+            float t0 = (float) i / n, t1 = (float) (i + 1) / n;
+            float half = k * 1.1F * (t0 + t1) / 2;
+            switch (dir) {
+                case 0 -> rect(g, cx - half, cy - k + t0 * len, cx + half, cy - k + t1 * len, argb);
+                case 1 -> rect(g, cx - half, cy + k - t1 * len, cx + half, cy + k - t0 * len, argb);
+                case 2 -> rect(g, cx - k + t0 * len, cy - half, cx - k + t1 * len, cy + half, argb);
+                default -> rect(g, cx + k - t1 * len, cy - half, cx + k - t0 * len, cy + half, argb);
+            }
+        }
+    }
+
+    /** Chevron ‹ or › drawn with two strokes, centred on (cx, cy). */
+    static void chevron(GuiGraphics g, float cx, float cy, float k, boolean left, float t, int argb) {
+        float s = left ? 1 : -1;
+        float tipX = cx - s * k * 0.55F, backX = cx + s * k * 0.45F;
+        stroke(g, backX, cy - k, tipX, cy, t, argb);
+        stroke(g, tipX, cy, backX, cy + k, t, argb);
+        disc(g, tipX, cy, t / 2, argb);
     }
 
     static float keyWidth(Font font, String text, float spacing, float minW) {

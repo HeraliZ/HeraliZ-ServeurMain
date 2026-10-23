@@ -43,10 +43,10 @@ public class CharacterCreatorScreen extends Screen {
     private static final int CAT_W = 133;
     private static final int CAT_H = 24;
     private static final int PANEL_W = 178;
-    private static final float OPT_H = 15;
+    private static final float OPT_H = 18;
     private static final float OPT_GAP = 3;
     /** From the top of a section to its content (title capitals 10 px below the top). */
-    private static final float SECTION = 20;
+    private static final float SECTION = 22;
     private static final float SLIDER_H = 13.33F;
     private static final float BAR_H = 18;
 
@@ -171,7 +171,7 @@ public class CharacterCreatorScreen extends Screen {
         // The Random button keeps one width whatever the category.
         randomW = 110;
         for (Category c : Category.values()) {
-            randomW = Math.max(randomW, 11.33F + capsWidth(font, randomLabel(c), MINI_BOLD, 0.85F) + 12);
+            randomW = Math.max(randomW, 11.33F + capsWidth(font, randomLabel(c), BOUTON_BOLD, 0.85F) + 12);
         }
         randomW = Math.min(randomW, 128);
         setCategory(category, true);
@@ -474,8 +474,8 @@ public class CharacterCreatorScreen extends Screen {
         gradientH(g, panelX + 10, panelY, mid, panelY + 2 * px, a(ACCENT, 0), a(ACCENT, 255));
         gradientH(g, mid, panelY, panelX + panelW - 10, panelY + 2 * px, a(ACCENT, 255), a(ACCENT, 0));
         caps(g, font, category.title().getString(), TITLE, contentX, panelY + 7.8F, 1.6F, a(WHITE, 255));
-        String hint = Ui.ellipsis(font, category.hint().getString(), TEXT, contentW + 4);
-        text(g, font, lit(hint, TEXT), contentX, panelY + 23.6F, a(MUTED, 255));
+        String hint = Ui.ellipsis(font, category.hint().getString(), AIDE, contentW + 4);
+        text(g, font, lit(hint, AIDE), contentX, panelY + 23F, a(MUTED, 255));
         rect(g, contentX, panelY + 39.67F, contentX + contentW + 1, panelY + 39.67F + px, a(WHITE, 23));
 
         boolean inContent = inside(mouseX, mouseY, contentX - 4, contentY, contentW + 8, contentH);
@@ -517,7 +517,7 @@ public class CharacterCreatorScreen extends Screen {
     }
 
     private float allW() {
-        return capsWidth(font, tr("caracrea.screen.random_all"), MINI_BOLD, 0.85F) + 14.67F;
+        return capsWidth(font, tr("caracrea.screen.random_all"), BOUTON_BOLD, 0.85F) + 14.67F;
     }
 
     private float cancelW() {
@@ -553,15 +553,15 @@ public class CharacterCreatorScreen extends Screen {
         float h = hover("rand", inside(mx, my, margin, y, randomW, BAR_H));
         button(g, margin, y, randomW, BAR_H, false, h, px);
         String label = randomLabel(category);
-        float content = 11.33F + capsWidth(font, label, MINI_BOLD, 0.85F);
+        float content = 11.33F + capsWidth(font, label, BOUTON_BOLD, 0.85F);
         float x = margin + (randomW - content) / 2;
         int color = a(mix(BUTTON, WHITE, h), 255);
         die(g, x, cy - 3.67F, color);
-        caps(g, font, label, MINI_BOLD, x + 11.33F, cy - 4.21F, 0.85F, color);
+        caps(g, font, label, BOUTON_BOLD, x + 11.33F, cy - 4.55F, 0.85F, color);
         float ax = allX(), aw = allW();
         h = hover("randAll", inside(mx, my, ax, y, aw, BAR_H));
         button(g, ax, y, aw, BAR_H, false, h, px);
-        caps(g, font, tr("caracrea.screen.random_all"), MINI_BOLD, ax + 7.33F, cy - 4.21F, 0.85F, a(mix(BUTTON, WHITE, h), 255));
+        caps(g, font, tr("caracrea.screen.random_all"), BOUTON_BOLD, ax + 7.33F, cy - 4.55F, 0.85F, a(mix(BUTTON, WHITE, h), 255));
 
         // Turn buttons, with the hint between them, under the character.
         float ty = turnY();
@@ -598,25 +598,25 @@ public class CharacterCreatorScreen extends Screen {
         }
 
         // Keyboard shortcuts.
-        float sy = barY + 27.67F;
+        // 23/10 (rendu validé) : touches de 9 px, textes en 7,5 px, flèches dessinées et centrées.
+        float sy = barY + 28.5F;
         float sx = margin;
         int fill = a(WHITE, 31);
-        sx += key(g, font, "↑", sx, sy, 6.67F, 0, 8, fill, px) + 3.33F;
-        sx += key(g, font, "↓", sx, sy, 6.67F, 0, 8, fill, px) + 3.33F;
-        sx += caps(g, font, tr("caracrea.screen.key.category"), MINI, sx, sy - 4.21F, 0.43F, a(KEYS, 255)) + 9.33F;
-        sx += key(g, font, "←", sx, sy, 6.67F, 0, 8, fill, px) + 3.33F;
-        sx += key(g, font, "→", sx, sy, 6.67F, 0, 8, fill, px) + 3.33F;
-        sx += caps(g, font, tr("caracrea.screen.key.turn"), MINI, sx, sy - 4.21F, 0.43F, a(KEYS, 255)) + 9.33F;
-        sx += key(g, font, tr("caracrea.screen.key.ctrl_r"), sx, sy, 6.67F, 0.4F, 8, fill, px) + 3.33F;
-        caps(g, font, tr("caracrea.screen.key.random"), MINI, sx, sy - 4.21F, 0.43F, a(KEYS, 255));
+        sx += keyArrow(g, sx, sy, 9, 10.5F, 0, fill, px) + 3.33F;
+        sx += keyArrow(g, sx, sy, 9, 10.5F, 1, fill, px) + 3.33F;
+        sx += caps(g, font, tr("caracrea.screen.key.category"), TEXT, sx, sy - 4.9F, 0.43F, a(KEYS, 255)) + 9.33F;
+        sx += keyArrow(g, sx, sy, 9, 10.5F, 2, fill, px) + 3.33F;
+        sx += keyArrow(g, sx, sy, 9, 10.5F, 3, fill, px) + 3.33F;
+        sx += caps(g, font, tr("caracrea.screen.key.turn"), TEXT, sx, sy - 4.9F, 0.43F, a(KEYS, 255)) + 9.33F;
+        sx += keyLarge(g, font, tr("caracrea.screen.key.ctrl_r"), sx, sy, 9, 0.4F, 10.5F, fill, px) + 3.33F;
+        caps(g, font, tr("caracrea.screen.key.random"), TEXT, sx, sy - 4.9F, 0.43F, a(KEYS, 255));
     }
 
     private void turnButton(GuiGraphics g, float cx, float cy, boolean left, int mx, int my) {
         float h = hover(left ? "turnL" : "turnR", inside(mx, my, cx - 9, cy - 9, 18, 18));
         disc(g, cx, cy, 9, a(GLASS, 153 + 40 * h));
         ring(g, cx, cy, 9 - px, 9, a(WHITE, 41 + 50 * h));
-        MutableComponent arrow = lit(left ? "‹" : "›", BOLD_9);
-        text(g, font, arrow, cx - font.width(arrow) / 2F, cy - 5.7F, a(mix(0xD9DDE3, WHITE, h), 255));
+        chevron(g, cx, cy, 2.6F, left, 1.0F, a(mix(0xD9DDE3, WHITE, h), 255));
     }
 
     // -------------------------------------------------------------- summaries
@@ -820,12 +820,12 @@ public class CharacterCreatorScreen extends Screen {
     /** Section title: spaced capitals, a hairline, and the current value on the right in pink. */
     private void section(GuiGraphics g, String label, String value, float x, float y, float alpha) {
         float capTop = y + 10;
-        float lw = caps(g, font, label, MINI, x, capTop - 2.46F, 0.8F, a(MUTED, 255 * alpha));
+        float lw = caps(g, font, label, TEXT, x, capTop - 3.06F, 0.8F, a(MUTED, 255 * alpha));
         float right = x + contentW;
         if (value != null) {
-            String v = Ui.ellipsis(font, value, MINI_BOLD, Math.max(20, Math.round(contentW - lw - 20)));
-            right -= width(font, v, MINI_BOLD);
-            text(g, font, lit(v, MINI_BOLD), right, capTop - 2.46F, a(VALUE, 255 * alpha));
+            String v = Ui.ellipsis(font, value, TEXT_BOLD, Math.max(20, Math.round(contentW - lw - 20)));
+            right -= width(font, v, TEXT_BOLD);
+            text(g, font, lit(v, TEXT_BOLD), right, capTop - 3.06F, a(VALUE, 255 * alpha));
             right -= 4.67F;
         }
         gradientH(g, x + lw + 4.67F, capTop + 1.75F, right, capTop + 1.75F + px, a(WHITE, 41 * alpha), a(WHITE, 0));
@@ -849,12 +849,12 @@ public class CharacterCreatorScreen extends Screen {
     private boolean option(GuiGraphics g, float x, float y, float w, float h, String label, boolean on, float hover, float alpha) {
         optionBack(g, x, y, w, h, on, hover, alpha);
         float room = w - 3;
-        ResourceLocation f = on ? MINI_BOLD : MINI;
+        ResourceLocation f = on ? TEXT_BOLD : TEXT;
         float tick = on ? 4.33F : 0;
         if (on && width(font, label, f) + tick > room) {
             tick = 0;
             if (width(font, label, f) > room) {
-                f = MINI;
+                f = TEXT;
             }
         }
         String s = Ui.ellipsis(font, label, f, Math.max(8, (int) (room - tick)));
@@ -863,13 +863,13 @@ public class CharacterCreatorScreen extends Screen {
         if (tick > 0) {
             check(g, tx - tick, y + h / 2 - 1.33F, 2.67F, 0.5F, color);
         }
-        text(g, font, lit(s, f), tx, y + h / 2 - 4.21F, color);
+        text(g, font, lit(s, f), tx, y + h / 2 - 4.9F, color);
         return !s.equals(label);
     }
 
     /** Track of a slider line: {start, end}, between the label column and the value column. */
     private float[] track(float x, String label, float valueW) {
-        float lw = Math.max(50, width(font, label, MINI) + 4);
+        float lw = Math.max(50, width(font, label, TEXT) + 4);
         return new float[]{x + lw + 6, x + contentW - Math.max(30, valueW) - 6};
     }
 
@@ -877,7 +877,7 @@ public class CharacterCreatorScreen extends Screen {
     private void slider(GuiGraphics g, float x, float y, String label, String value, float valueW, int v, int min, int max,
                         boolean fromMiddle, boolean enabled, float hover, float alpha) {
         float cy = y + SLIDER_H / 2;
-        text(g, font, lit(label, MINI), x, cy - 4.21F, a(enabled ? OPTION : FAINT, 255 * alpha));
+        text(g, font, lit(label, TEXT), x, cy - 4.9F, a(enabled ? OPTION : FAINT, 255 * alpha));
         float[] t = track(x, label, valueW);
         rect(g, t[0], cy - 0.67F, t[1], cy + 0.67F, a(WHITE, 31 * alpha));
         float knob = t[0] + (t[1] - t[0]) * (max > min ? (v - min) / (float) (max - min) : 0);
@@ -899,7 +899,7 @@ public class CharacterCreatorScreen extends Screen {
         } else {
             disc(g, knob, cy, 2.67F, a(FAINT, 255 * alpha));
         }
-        text(g, font, lit(value, MINI_BOLD), x + contentW - width(font, value, MINI_BOLD), cy - 4.21F, a(enabled ? VALUE : FAINT, 255 * alpha));
+        text(g, font, lit(value, TEXT_BOLD), x + contentW - width(font, value, TEXT_BOLD), cy - 4.9F, a(enabled ? VALUE : FAINT, 255 * alpha));
     }
 
     /** Value of a slider from the mouse position. */
@@ -949,7 +949,7 @@ public class CharacterCreatorScreen extends Screen {
                 float cw = (contentW - (c - 1) * OPT_GAP) / c;
                 boolean fits = true;
                 for (int v : values) {
-                    if (width(font, valueName(trait, v).getString(), MINI) + 3 > cw) {
+                    if (width(font, valueName(trait, v).getString(), TEXT) + 3 > cw) {
                         fits = false;
                         break;
                     }
@@ -1003,8 +1003,8 @@ public class CharacterCreatorScreen extends Screen {
 
     /** Colour swatches. */
     private final class SwatchRow extends Row {
-        private static final float SIZE = 11;
-        private static final float STEP = 15;
+        private static final float SIZE = 13;
+        private static final float STEP = 17;
         private final Trait trait;
 
         SwatchRow(Trait trait) {
@@ -1079,7 +1079,7 @@ public class CharacterCreatorScreen extends Screen {
             this.titled = titled;
             float w = 0;
             for (int i = 0; i < Trait.SLIDER_STEPS; i++) {
-                w = Math.max(w, width(font, word(i), MINI_BOLD));
+                w = Math.max(w, width(font, word(i), TEXT_BOLD));
             }
             valueW = w;
         }
@@ -1172,8 +1172,8 @@ public class CharacterCreatorScreen extends Screen {
                     border(g, bx, by, 5.33F, 5.33F, px, a(WHITE, 89 * alpha));
                 }
                 String s = label(bit);
-                String shown = Ui.ellipsis(font, s, on ? MINI_BOLD : MINI, Math.round(cw - 16));
-                text(g, font, lit(shown, on ? MINI_BOLD : MINI), cx + 12.67F, cy + OPT_H / 2 - 4.21F,
+                String shown = Ui.ellipsis(font, s, on ? TEXT_BOLD : TEXT, Math.round(cw - 16));
+                text(g, font, lit(shown, on ? TEXT_BOLD : TEXT), cx + 12.67F, cy + OPT_H / 2 - 4.9F,
                         a(on ? WHITE : mix(OPTION, WHITE, h), 255 * alpha));
                 if (hovered && !shown.equals(s)) {
                     tooltip = s;
@@ -1215,7 +1215,7 @@ public class CharacterCreatorScreen extends Screen {
         ScarRow() {
             for (int i = 0; i < SETTINGS.length; i++) {
                 for (int v = SETTINGS[i][1]; v <= SETTINGS[i][2]; v++) {
-                    valueW[i] = Math.max(valueW[i], width(font, settingValue(i, v), MINI_BOLD));
+                    valueW[i] = Math.max(valueW[i], width(font, settingValue(i, v), TEXT_BOLD));
                 }
             }
         }
@@ -1238,11 +1238,11 @@ public class CharacterCreatorScreen extends Screen {
         }
 
         private float removeW() {
-            return capsWidth(font, tr("caracrea.scar.remove"), MINI_BOLD, 0.6F) + 10.67F;
+            return capsWidth(font, tr("caracrea.scar.remove"), TEXT_BOLD, 0.6F) + 10.67F;
         }
 
         private List<FormattedCharSequence> lines(String key) {
-            return font.split(Ui.tr(MINI, key), Math.round(contentW - removeW() - 6));
+            return font.split(Ui.tr(TEXT, key), Math.round(contentW - removeW() - 6));
         }
 
         private float hintH() {
@@ -1321,12 +1321,12 @@ public class CharacterCreatorScreen extends Screen {
                 boolean placed = current.get(Scar.traits(i)[Scar.ZONE]) != 0;
                 float h = hover("scarTab" + i, !on && inside(mx, my, tx, ty, tw, OPT_H));
                 optionBack(g, tx, ty, tw, OPT_H, on, h, alpha);
-                ResourceLocation f = on ? MINI_BOLD : MINI;
+                ResourceLocation f = on ? TEXT_BOLD : TEXT;
                 String name = tr("caracrea.scar.slot", i + 1);
                 float nw = width(font, name, f);
                 float lx = tx + (tw - nw - 4.33F) / 2 + 4.33F;
                 disc(g, lx - 3, ty + OPT_H / 2, 1.33F, a(placed ? DANGER : WHITE, (placed ? 255 : 56) * alpha));
-                text(g, font, lit(name, f), lx, ty + OPT_H / 2 - 4.21F, a(on ? WHITE : mix(OPTION, WHITE, h), 255 * alpha));
+                text(g, font, lit(name, f), lx, ty + OPT_H / 2 - 4.9F, a(on ? WHITE : mix(OPTION, WHITE, h), 255 * alpha));
             }
             // Silhouettes.
             int u = unit();
@@ -1335,8 +1335,8 @@ public class CharacterCreatorScreen extends Screen {
             int skin = Catalog.swatch(current, Trait.SKIN_TONE).argb();
             for (int view = 0; view < 2; view++) {
                 String caption = tr(view == 0 ? "caracrea.scar.front" : "caracrea.scar.back");
-                float cw = capsWidth(font, caption, MINI, 0.43F);
-                caps(g, font, caption, MINI, origins[view] + 8 * u - cw / 2, top + 32 * u + 5 - 2.46F, 0.43F, a(MUTED, 255 * alpha));
+                float cw = capsWidth(font, caption, TEXT, 0.43F);
+                caps(g, font, caption, TEXT, origins[view] + 8 * u - cw / 2, top + 32 * u + 5 - 3.06F, 0.43F, a(MUTED, 255 * alpha));
                 for (Scar.Part part : Scar.Part.values()) {
                     float[] r = partRect(part, view, origins[view], top, u);
                     boolean hovered = inside(mx, my, r[0], r[1], r[2], r[3]);
@@ -1397,11 +1397,11 @@ public class CharacterCreatorScreen extends Screen {
             float dim = placed ? 1 : 0.45F;
             rect(g, bx, by, bx + bw, by + SLIDER_H, a(WHITE, (13 + 9 * h) * alpha * dim));
             border(g, bx, by, bw, SLIDER_H, px, a(DANGER, (102 + 60 * h) * alpha * dim));
-            caps(g, font, tr("caracrea.scar.remove"), MINI_BOLD, bx + 5.33F, by + SLIDER_H / 2 - 4.21F, 0.6F,
+            caps(g, font, tr("caracrea.scar.remove"), TEXT_BOLD, bx + 5.33F, by + SLIDER_H / 2 - 4.9F, 0.6F,
                     a(placed ? mix(0xFF9A94, WHITE, h) : FAINT, 255 * alpha));
             boolean warning = System.currentTimeMillis() - refusedAt < WARNING_MS;
             List<FormattedCharSequence> hint = lines(warning ? "caracrea.scar.too_close" : "caracrea.scar.hint");
-            float ly = hy + (rowH - hint.size() * LINE) / 2 + LINE / 2 - 4.21F;
+            float ly = hy + (rowH - hint.size() * LINE) / 2 + LINE / 2 - 4.9F;
             int color = a(warning ? DANGER : MUTED, 255 * alpha);
             if (color >>> 24 >= 4) {
                 for (FormattedCharSequence line : hint) {
