@@ -607,10 +607,8 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
 .hz-dispo .sur { display: block; font: 700 11px 'DM Sans', sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
 .hz-dispo .tete h2 { font: 600 30px/1.1 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .03em; margin: 6px 0 0; }
 .hz-dispo .grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.hz-dispo .grade { position: relative; isolation: isolate; overflow: hidden; border-radius: 14px; height: 300px; display: flex; flex-direction: column; align-items: center; background: radial-gradient(70% 45% at 50% 100%, color-mix(in srgb, var(--g) 32%, transparent), transparent 75%), linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 40%), #0e0f0c; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); transition: transform .25s, box-shadow .25s; }
-.hz-dispo .grade::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: linear-gradient(180deg, color-mix(in srgb, var(--g) 70%, transparent), transparent 60%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+.hz-dispo .grade { position: relative; isolation: isolate; height: 300px; display: flex; flex-direction: column; align-items: center; background: radial-gradient(40% 30% at 50% 70%, color-mix(in srgb, var(--g) 20%, transparent), transparent); }
 .hz-dispo .grade::after { content: ''; position: absolute; left: 50%; bottom: 14px; width: 55%; height: 22px; transform: translateX(-50%); border-radius: 50%; background: color-mix(in srgb, var(--g) 45%, transparent); filter: blur(14px); z-index: -1; }
-.hz-dispo .grade:hover { transform: translateY(-4px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 18px 40px -18px color-mix(in srgb, var(--g) 70%, transparent); }
 .hz-dispo .grade .haut { padding: 22px 16px 0; text-align: center; }
 .hz-dispo .grade h3 { font: 700 30px/1 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .04em; margin: 6px 0 10px; color: var(--g); text-shadow: 0 0 24px color-mix(in srgb, var(--g) 45%, transparent); }
 .hz-dispo .grade .rang { display: inline-flex; gap: 4px; }
@@ -618,7 +616,7 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
 .hz-dispo .grade .rang i.on { background: var(--g); box-shadow: 0 0 8px var(--g); }
 .hz-dispo .grade img { margin-top: auto; height: 150px; width: auto; max-width: 80%; object-fit: contain; object-position: bottom; margin-bottom: 18px; filter: drop-shadow(0 0 12px color-mix(in srgb, var(--g) 45%, transparent)); transition: transform .25s; }
 .hz-dispo .grade:hover img { transform: scale(1.05); }
-.hz-dispo .grade.beta { flex-direction: row; justify-content: center; gap: 28px; height: 190px; width: min(100%, 560px); margin: 16px auto 0; background: radial-gradient(60% 90% at 30% 100%, color-mix(in srgb, var(--g) 30%, transparent), transparent 75%), linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 40%), #0e0f0c; }
+.hz-dispo .grade.beta { flex-direction: row; justify-content: center; gap: 28px; height: 190px; width: min(100%, 560px); margin: 16px auto 0; background: radial-gradient(22% 38% at 30% 62%, color-mix(in srgb, var(--g) 20%, transparent), transparent); }
 .hz-dispo .grade.beta::after { left: 30%; }
 .hz-dispo .grade.beta img { height: 150px; margin: auto 0 16px; }
 .hz-dispo .grade.beta .haut { padding: 0; text-align: left; align-self: center; }
