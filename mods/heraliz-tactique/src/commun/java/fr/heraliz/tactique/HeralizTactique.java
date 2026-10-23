@@ -80,6 +80,8 @@ public class HeralizTactique {
       fr.heraliz.tactique.avie.ObjetsAVie.init();
       // jambe cassée (attelle) : pas de saut
       fr.heraliz.tactique.jambe.JambeCassee.init();
+      // Registre de l'armurier (op) : recettes de la Table d'armurier modifiées en jeu
+      fr.heraliz.tactique.armurier.Armurier.init(bus);
       Parties.serveur(MODID, "fr.heraliz.tactique.serveur.ServeurTactique", bus);
       Parties.client(MODID, "fr.heraliz.tactique.client.ClientTactique", bus);
    }

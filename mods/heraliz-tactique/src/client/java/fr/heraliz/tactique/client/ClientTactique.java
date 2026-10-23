@@ -28,5 +28,6 @@ public final class ClientTactique implements Partie {
       CouteauxClient.brancher();
       fr.heraliz.tactique.client.avie.EcranJeter.brancher();
       fr.heraliz.tactique.client.hitbox.HitboxCorpsRendu.brancher();
+      fr.heraliz.tactique.armurier.EcranArmurier.brancher();
    }
 }
