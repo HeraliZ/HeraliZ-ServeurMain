@@ -406,3 +406,61 @@ test('pas de partie tant que le Discord du compte n’est pas en règle ; la dé
     assert.equal(service.getState().profile, null)
     assert.equal(service.getState().discord, null)
 })
+
+test('compte banni : fichiers du jeu retirés de ce PC, plus de pack avant un nouvel « ok » du site', async () => {
+    const Config = require('../app/assets/js/configmanager')
+    const compte = fauxCompte()
+    let statut = 'banni'
+    compte.etatDiscord = async () => statut === 'muet' ? null : ({ statut, pseudo: null, validationManuelle: false, lien: null, invitation: null })
+    const service = new LauncherService(config, () => {}, { compteSite: compte })
+    await service.connexion({ email: 'a@b.fr', password: 'bon', acceptedRules: true })
+    service.accordCapture(true)
+    const instance = path.join(Config.getInstanceDirectory(), config.serverId)
+    const modstore = path.join(Config.getCommonDirectory(), 'modstore')
+    fs.mkdirSync(path.join(instance, 'tacz'), { recursive: true })
+    fs.mkdirSync(path.join(instance, 'screenshots'), { recursive: true })
+    fs.mkdirSync(modstore, { recursive: true })
+    fs.writeFileSync(path.join(modstore, 'mod.jar'), 'jar')
+    fs.writeFileSync(path.join(instance, 'options.txt'), 'lang:fr_fr')
+    const fichierBan = path.join(directory, 'compte-banni.json')
+
+    const etat = await service.etatDiscord()
+    assert.equal(etat.discord.statut, 'banni')
+    assert.equal(etat.fichiersEffaces, true)
+    assert.equal(fs.existsSync(modstore), false)
+    assert.equal(fs.existsSync(path.join(instance, 'tacz')), false)
+    assert.ok(fs.existsSync(path.join(instance, 'options.txt')))
+    assert.ok(fs.existsSync(path.join(instance, 'screenshots')))
+    assert.deepEqual({ ...JSON.parse(fs.readFileSync(fichierBan, 'utf8')), depuis: 0 }, { compte: 7, depuis: 0, effacement: 'fait' })
+    await assert.rejects(service.launch(), e => e.discord === 'banni' && e.banni === true)
+    assert.equal(service.busy, false)
+    // autre compte sur ce PC, site muet : le verrou reste, pas de pack
+    service.logout()
+    await service.connexion({ email: 'c@d.fr', password: 'bon', acceptedRules: true })
+    statut = 'muet'
+    await assert.rejects(service.launch(), /confirmer l’accès/)
+    assert.ok(fs.existsSync(fichierBan))
+    // nouvel « ok » du site : verrou levé
+    statut = 'ok'
+    await service.etatDiscord()
+    assert.equal(fs.existsSync(fichierBan), false)
+    assert.equal(service.getState().fichiersEffaces, false)
+    // ban vu à la vérification du compte (Azuriom) : même effacement, le compte reste connecté pour voir le panneau
+    compte.verifier = async () => { throw Object.assign(new Error('Ce compte est banni du site HeraliZ.'), { banni: true }) }
+    const verifie = await service.verifierCompte()
+    assert.equal(verifie.discord.statut, 'banni')
+    assert.ok(verifie.profile)
+    assert.ok(fs.existsSync(fichierBan))
+    fs.rmSync(fichierBan)
+})
+
+test('compte-site : un ban d’Azuriom est signalé par .banni (connexion, vérification, pack, jeton)', async () => {
+    const banni = { status: 403, body: { status: 'error', reason: 'user_banned' } }
+    const compte = new CompteSite('https://heraliz.fr', fauxSite({ authenticate: banni, verify: banni, 'heraliz/pack': banni, 'heraliz/jeton-jeu': banni }).requete)
+    await assert.rejects(compte.connexion('a@b.fr', 'x'), e => e.banni === true)
+    await assert.rejects(compte.verifier('j'), e => e.banni === true)
+    await assert.rejects(compte.pack('j'), e => e.banni === true)
+    await assert.rejects(compte.jetonJeu('j', 'a'.repeat(64)), e => e.banni === true)
+    const profilBanni = new CompteSite('https://heraliz.fr', fauxSite({ verify: { status: 200, body: { ...PROFIL, banned: true } } }).requete)
+    await assert.rejects(profilBanni.verifier('j'), e => e.banni === true)
+})

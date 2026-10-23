@@ -16,6 +16,7 @@ const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { CompteSite, erreurDiscord } = require('./compte-site')
 const Spartan = require('./spartan')
+const { effacerDonneesJeu } = require('./effacement')
 
 // Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur ; Mac : trousseau ;
 // Linux : GNOME Keyring ou KWallet). Sans vrai chiffrement disponible, il n'est pas gardé : il faudra se reconnecter
@@ -57,6 +58,27 @@ async function nomProcessus(pid) {
     } catch { return null }
 }
 const estJava = nom => /^javaw?(\.exe)?$/i.test(nom || '')
+
+// Compte banni vu sur ce PC (compte-banni.json) : { compte, depuis, effacement: 'a_faire' | 'fait' }. Tant qu'il est là,
+// le pack n'est plus téléchargé, pour aucun compte, avant un nouvel « ok » du site (compte/etat). « a_faire » : fichiers
+// du jeu encore à effacer (jeu ouvert, fichier verrouillé par Windows) : nouvel essai à la vérification suivante, à la
+// fermeture du jeu et au prochain démarrage du launcher.
+function fichierBan() {
+    return path.join(app.getPath('userData'), 'compte-banni.json')
+}
+function lireBan() {
+    try {
+        const lu = JSON.parse(fs.readFileSync(fichierBan(), 'utf8'))
+        return lu && typeof lu === 'object' ? lu : { effacement: 'a_faire' }
+    } catch (erreur) {
+        // fichier abîmé : on le croit (mieux vaut un pack refusé qu'un pack redonné)
+        return erreur?.code === 'ENOENT' ? null : { effacement: 'a_faire' }
+    }
+}
+function ecrireBan(valeur) {
+    try { fs.writeFileSync(fichierBan(), JSON.stringify(valeur)) } catch (erreur) { console.error('[HeraliZ/ban] Mémoire du ban impossible :', erreur?.code) }
+}
+const ATTENTE_JEU_MS = 60 * 1000
 
 // Machine et port réels du jeu : comme Minecraft, un enregistrement DNS « _minecraft._tcp.<domaine> » (SRV) peut
 // renvoyer le domaine vers un autre hôte ou un autre port. Minecraft ne le cherche que pour le port 25565.
@@ -105,6 +127,8 @@ class LauncherService {
         // Comptes HeraliZ du site : obligatoires dès que l'adresse du site est réglée (sinon, pseudo seul, pour les essais).
         this.compteSite = compteSite || (config.siteUrl ? new CompteSite(config.siteUrl) : null)
         this.jeton = null
+        // fichiers du jeu retirés de ce PC après un ban (texte du panneau « Ce compte est banni »)
+        this.fichiersEffaces = lireBan()?.effacement === 'fait'
         this.progress = { busy: false, phase: 'idle', message: 'Prêt pour ta prochaine expédition.', percent: null, detail: null }
         Config.load()
         // Accord des captures d'écran redemandé à chaque ouverture du launcher (demande du propriétaire) : celui de la
@@ -157,6 +181,8 @@ class LauncherService {
             discordConfigured: Boolean(this.config.discordUrl), progress: this.progress,
             // accord pour les captures d'écran de l'anticheat (Spartan) : sans lui, pas de partie
             accordCapture: Config.getAccordCapture(),
+            // compte banni : fichiers du jeu retirés de ce PC (true), ou à retirer dès que le jeu sera fermé (false)
+            fichiersEffaces: this.fichiersEffaces === true,
             // accès au jeu selon le Discord du compte (null : pas encore demandé, ou site muet) ; les liens restent ici
             discord: this.discord ? { statut: this.discord.statut, pseudo: this.discord.pseudo || null, validationManuelle: this.discord.validationManuelle === true } : null
         }
@@ -177,7 +203,16 @@ class LauncherService {
         if (this.busy) throw new Error('Attends la fin de la préparation ou de la partie pour changer de compte.')
         if (!this.compteSite) throw new Error('Les comptes HeraliZ ne sont pas encore ouverts.')
         if (!value || value.acceptedRules !== true) throw new Error('Tu dois accepter le règlement pour continuer.')
-        const resultat = await this.compteSite.connexion(value.email, value.password, value.code)
+        let resultat
+        try {
+            resultat = await this.compteSite.connexion(value.email, value.password, value.code)
+        } catch (error) {
+            if (error?.banni) {
+                await this.signalerBan(null)
+                error.message = `${error.message} ${this.fichiersEffaces ? 'Les fichiers du jeu HeraliZ ont été retirés de ce PC.' : 'Les fichiers du jeu HeraliZ seront retirés de ce PC.'}`
+            }
+            throw error
+        }
         if (resultat.etat === 'a2f') return { ...this.getState(), a2f: true }
         this.enregistrerCompte(resultat.compte, true)
         return this.getState()
@@ -253,7 +288,14 @@ class LauncherService {
         const jeton = this.jeton || dechiffrer(saved.compte.jeton)
         let compte = null
         if (jeton) {
-            try { compte = await this.compteSite.verifier(jeton) } catch { return { ...this.getState(), horsLigne: true } }
+            try { compte = await this.compteSite.verifier(jeton) } catch (error) {
+                if (!error?.banni) return { ...this.getState(), horsLigne: true }
+                // compte banni : il reste connecté pour voir le panneau « Ce compte est banni » (se déconnecter reste possible)
+                this.jeton = jeton
+                this.discord = { ...(this.discord || {}), statut: 'banni' }
+                await this.signalerBan(saved.compte.id)
+                return this.getState()
+            }
         }
         if (!compte) {
             this.oublierCompte()
@@ -277,6 +319,8 @@ class LauncherService {
         try {
             const etat = await this.compteSite.etatDiscord(jeton)
             if (etat) this.discord = etat
+            if (etat?.statut === 'banni') await this.signalerBan(saved.compte.id)
+            else if (etat?.statut === 'ok') await this.leverBan(saved.compte.id)
         } catch (error) {
             if (error?.sessionExpiree) {
                 this.oublierCompte()
@@ -285,6 +329,74 @@ class LauncherService {
             return { ...this.getState(), horsLigne: true }
         }
         return this.getState()
+    }
+
+    // Le site dit que ce compte est banni : on s'en souvient sur ce PC (plus de pack pour personne avant un nouvel « ok »
+    // du site) et on retire les fichiers du jeu, maintenant ou dès que le jeu est fermé.
+    async signalerBan(compteId) {
+        const avant = lireBan()
+        if (avant?.effacement !== 'a_faire') {
+            console.warn('[HeraliZ/ban] Compte banni : les fichiers du jeu HeraliZ vont être retirés de ce PC.')
+        }
+        ecrireBan({ compte: compteId ?? avant?.compte ?? null, depuis: avant?.depuis || Date.now(), effacement: 'a_faire' })
+        this.fichiersEffaces = false
+        await this.effacerJeu()
+    }
+
+    // Nouvel « ok » du site pour un compte : le pack peut de nouveau être téléchargé. Effacement encore en attente
+    // (fichier verrouillé) : on le termine d'abord, ce compte retéléchargera un jeu propre.
+    async leverBan(compteId) {
+        const ban = lireBan()
+        if (!ban) return
+        if (ban.effacement === 'a_faire') await this.effacerJeu()
+        try { fs.removeSync(fichierBan()) } catch { /* nouvel essai au prochain « ok » */ }
+        this.fichiersEffaces = false
+        console.info(`[HeraliZ/ban] Accès au jeu confirmé par le site (compte ${compteId ?? '?'}) : téléchargement du pack de nouveau permis.`)
+    }
+
+    // Retire de ce PC les fichiers du jeu HeraliZ si un ban l'a demandé. Jamais pendant une partie (fichiers ouverts par
+    // le jeu, le serveur refuse déjà la connexion) : à la fermeture du jeu, sinon toutes les minutes tant qu'un jeu lancé
+    // avant ce launcher tourne, et au prochain démarrage.
+    async effacerJeu() {
+        const ban = lireBan()
+        if (ban?.effacement !== 'a_faire' || this.effacementEnCours) return
+        if (this.game) {
+            if (!this.attenteFinJeu) {
+                this.attenteFinJeu = true
+                this.game.once('close', () => { this.attenteFinJeu = false; this.effacerJeu().catch(() => {}) })
+            }
+            return
+        }
+        // préparation en cours (téléchargement) : elle échouera au site ; nouvel essai à la vérification suivante
+        if (this.busy) return
+        this.effacementEnCours = true
+        try {
+            if (await this.partieDejaOuverte()) {
+                clearTimeout(this.attenteJeuExterne)
+                this.attenteJeuExterne = setTimeout(() => { this.effacerJeu().catch(() => {}) }, ATTENTE_JEU_MS)
+                this.attenteJeuExterne.unref?.()
+                return
+            }
+            const resultat = effacerDonneesJeu({
+                racine: app.getPath('userData'), dossierCommun: Config.getCommonDirectory(),
+                dossierInstances: Config.getInstanceDirectory(), serveur: this.config.serverId
+            })
+            for (const refuse of resultat.refuses) console.warn('[HeraliZ/ban] Hors du dossier du launcher (ou lien), laissé tel quel :', refuse)
+            if (resultat.erreurs.length) {
+                console.warn(`[HeraliZ/ban] ${resultat.erreurs.length} fichier(s) du jeu pas encore effacé(s) (verrouillés ?) : nouvel essai plus tard.`, resultat.erreurs.slice(0, 5).map(e => e.code).join(', '))
+                return
+            }
+            ecrireBan({ ...lireBan(), effacement: 'fait' })
+            this.fichiersEffaces = true
+            console.warn(`[HeraliZ/ban] Fichiers du jeu HeraliZ retirés de ce PC (${resultat.effaces.length} élément(s)).`)
+        } finally {
+            this.effacementEnCours = false
+        }
+    }
+
+    // Au démarrage du launcher : effacement laissé en attente la dernière fois (jeu encore ouvert, fichier verrouillé).
+    reprendreEffacement() {
+        if (lireBan()?.effacement === 'a_faire') this.effacerJeu().catch(error => console.error('[HeraliZ/ban]', error?.code || error?.message))
     }
 
     // Lien ouvert dans le navigateur depuis le panneau Discord : « lier » (page du site) ou « invitation » (Discord).
@@ -438,6 +550,8 @@ class LauncherService {
                 const discord = await this.etatDiscord()
                 if (discord.sessionExpiree) throw new Error('Ta session a expiré : reconnecte-toi avec ton compte HeraliZ.')
                 if (discord.discord && discord.discord.statut !== 'ok') throw erreurDiscord(discord.discord.statut)
+                // compte banni vu sur ce PC : pas de pack sans un « ok » tout frais du site (il lève ce verrou)
+                if (lireBan()) throw new Error('Le site HeraliZ doit d’abord confirmer l’accès de ton compte au jeu. Réessaie dans un instant.')
             }
             const profile = createOfflineProfile(Config.getSelectedAccount().displayName)
             this.emit('prepare', 'Chargement du pack HeraliZ…')
@@ -475,6 +589,12 @@ class LauncherService {
             this.busy = false
             // pack ou jeton refusé par le site à cause du Discord : l'état suit, le panneau s'ouvre chez le joueur
             if (typeof error?.discord === 'string') this.discord = { ...(this.discord || {}), statut: error.discord }
+            // compte banni (pack, jeton de lancement ou compte refusés par le site) : fichiers du jeu retirés de ce PC
+            if (error?.banni) {
+                if (this.discord?.statut !== 'banni') this.discord = { ...(this.discord || {}), statut: 'banni' }
+                await this.signalerBan(saved?.compte?.id ?? null).catch(erreur => console.error('[HeraliZ/ban]', erreur?.code || erreur?.message))
+                if (!error.discord) error.discord = 'banni'
+            }
             this.emit('error', sansChemins(error.message) || 'La préparation a échoué. Réessaie.')
             throw error
         }

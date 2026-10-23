@@ -45,10 +45,16 @@ const MESSAGES_DISCORD = {
 const STATUTS_DISCORD = new Set(['ok', ...Object.keys(MESSAGES_DISCORD)])
 const HOTES_DISCORD = ['discord.gg', 'discord.com']
 
-// Erreur « accès au jeu refusé à cause du Discord du compte » : .discord = le statut, pour ouvrir le bon panneau.
+// Erreur « accès au jeu refusé à cause du Discord du compte » : .discord = le statut, pour ouvrir le bon panneau ;
+// .banni en plus pour un compte banni (le launcher retire alors les fichiers du jeu de ce PC, effacement.js).
 function erreurDiscord(statut) {
     if (!Object.hasOwn(MESSAGES_DISCORD, statut)) return new Error('Ton compte n’a pas accès au jeu pour le moment.')
-    return Object.assign(new Error(MESSAGES_DISCORD[statut]), { discord: statut })
+    return Object.assign(new Error(MESSAGES_DISCORD[statut]), { discord: statut }, statut === 'banni' ? { banni: true } : {})
+}
+
+// Compte banni du site (Azuriom : « user_banned », ou banned: true dans le profil) : .banni, comme ci-dessus.
+function erreurBanni() {
+    return Object.assign(new Error(BANNI), { banni: true })
 }
 
 // Réponse 403 { erreur: 'discord', statut } du pack ou du jeton de lancement.
@@ -85,7 +91,7 @@ async function requeteParDefaut(url, donnees, methode = 'POST', { limite } = {})
 // Profil rendu par le site : seuls les champs utiles au launcher, contrôlés.
 function profil(body) {
     if (!body || typeof body !== 'object' || typeof body.username !== 'string') throw new Error('Réponse du site HeraliZ illisible.')
-    if (body.banned === true) throw new Error(BANNI)
+    if (body.banned === true) throw erreurBanni()
     try { validateUsername(body.username) } catch {
         throw new Error('Ton pseudo sur le site doit faire 3 à 16 caractères (lettres, chiffres ou _) pour jouer. Change-le sur heraliz.fr.')
     }
@@ -94,6 +100,7 @@ function profil(body) {
 
 function erreur({ status, body }) {
     const raison = body && typeof body === 'object' ? body.reason : undefined
+    if (raison === 'user_banned') return erreurBanni()
     if (raison && MESSAGES[raison]) return new Error(MESSAGES[raison])
     // API pas activée dans l'administration du site (400, « Auth API is not enabled ») ou absente (404)
     if (status === 400 || status === 404) return new Error(API_FERMEE)
@@ -161,12 +168,17 @@ class CompteSite {
         throw erreur(reponse)
     }
 
-    // Le compte du jeton, ou null si le site ne le reconnaît plus (déconnecté, expiré, banni). Erreur si injoignable.
+    // Le compte du jeton, ou null si le site ne le reconnaît plus (déconnecté, expiré). Erreur si injoignable ; erreur
+    // avec .banni si le compte est banni.
     async verifier(jeton) {
         const reponse = await this.appeler('auth/verify', { access_token: jeton })
         if (reponse.status >= 200 && reponse.status < 300) {
-            try { return profil(reponse.body) } catch { return null }
+            try { return profil(reponse.body) } catch (error) {
+                if (error?.banni) throw error
+                return null
+            }
         }
+        if (reponse.status === 403 && reponse.body?.reason === 'user_banned') throw erreurBanni()
         if (reponse.status >= 500) throw new Error(SITE_INJOIGNABLE)
         return null
     }
@@ -249,7 +261,7 @@ class CompteSite {
         }
         if (reponse.status === 200 && typeof reponse.body?.jeton === 'string' && JETON_JEU.test(reponse.body.jeton)) return reponse.body.jeton
         if (reponse.status === 401) throw new Error(SESSION_EXPIREE)
-        if (reponse.status === 403 && reponse.body?.reason === 'user_banned') throw new Error(BANNI)
+        if (reponse.status === 403 && reponse.body?.reason === 'user_banned') throw erreurBanni()
         const discord = refusDiscord(reponse)
         if (discord) throw discord
         // extension absente (404), clé pas encore créée (503), site en panne : sans jeton, le serveur décide
@@ -296,4 +308,4 @@ class CompteSite {
     }
 }
 
-module.exports = { CompteSite, verifierInscription, requeteParDefaut, erreurDiscord, HOTES_DISCORD }
+module.exports = { CompteSite, verifierInscription, requeteParDefaut, erreurDiscord, erreurBanni, HOTES_DISCORD }
