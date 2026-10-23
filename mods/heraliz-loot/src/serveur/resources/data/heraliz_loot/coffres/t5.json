@@ -1,6 +1,7 @@
 {
  "_note": "T5 légendaire (militaire lourd, ONU, casiers gris). Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
- "emplacements": [1, 2],
+ "emplacements": [3, 9],
+ "cases_poids": {"3": 15, "4": 25, "5": 25, "6": 18, "7": 10, "8": 5, "9": 2},
  "objets": [
   {"item": "heralisz_tactical:throwable", "nombre": [1, 2], "poids": 410000, "nbt": "{ThrowableId:\"heralisz_grenade:m67\"}", "_cat": "explosifs_t5", "_base": 82000},
   {"item": "heralisz_tactical:throwable", "nombre": [1, 2], "poids": 410000, "nbt": "{ThrowableId:\"heralisz_grenade:rgn\"}", "_cat": "explosifs_t5", "_base": 82000},
@@ -10,7 +11,7 @@
   {"item": "ywzj_vehicle:parachute_pack", "nombre": [1, 1], "poids": 142500, "_cat": "outils_militaires", "_base": 75000},
   {"item": "ywzj_vehicle:fuel_tank", "nombre": [1, 1], "poids": 285000, "_cat": "outils_militaires", "_base": 38000},
   {"item": "ywzj_vehicle:repair_tool", "nombre": [1, 1], "poids": 285000, "_cat": "outils_militaires", "_base": 38000},
-  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 17913445},
+  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 23769},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 59257},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:64,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 59257},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 59257},

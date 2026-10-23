@@ -152,10 +152,15 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
             return d;
         }
 
-        /** Part d'actifs : celle réglée en jeu, sinon celle de la zone, sinon celle de la configuration serveur. */
+        /**
+         * Part d'actifs : celle réglée en jeu, sinon celle de la zone (ou de la configuration serveur) multipliée par le
+         * facteur de son niveau.
+         */
         public double proportion() {
             Double p = partForcee;
-            return p != null ? p : actifs != null ? actifs : ConfigLoot.proportion();
+            if (p != null) return p;
+            // plusieurs objets par conteneur (23/10) : moins de conteneurs remplis à la fois, facteur par niveau
+            return (actifs != null ? actifs : ConfigLoot.proportion()) * ConfigLoot.facteur(niveau);
         }
 
         /**

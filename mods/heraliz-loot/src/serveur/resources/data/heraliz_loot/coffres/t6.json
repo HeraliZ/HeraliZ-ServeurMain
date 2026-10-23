@@ -1,6 +1,7 @@
 {
  "_note": "T6 mythique (haute sécurité, labo, banque, casiers rouges, caisses de crash) : PhatLoots crash / airdrop. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
- "emplacements": [1, 2],
+ "emplacements": [4, 12],
+ "cases_poids": {"4": 6, "5": 12, "6": 16, "7": 17, "8": 15, "9": 12, "10": 10, "11": 7, "12": 5},
  "objets": [
   {"item": "heralisz_tactical:throwable", "nombre": [1, 2], "poids": 47500, "nbt": "{ThrowableId:\"heralisz_grenade:m67\"}", "_cat": "explosifs_t6", "_base": 95000},
   {"item": "heralisz_tactical:throwable", "nombre": [1, 2], "poids": 47500, "nbt": "{ThrowableId:\"heralisz_grenade:rgn\"}", "_cat": "explosifs_t6", "_base": 95000},
@@ -9,7 +10,7 @@
   {"item": "ywzj_vehicle:parachute_pack", "nombre": [1, 1], "poids": 9500, "_cat": "outils_militaires", "_base": 50000},
   {"item": "ywzj_vehicle:fuel_tank", "nombre": [1, 1], "poids": 18750, "_cat": "outils_militaires", "_base": 25000},
   {"item": "ywzj_vehicle:repair_tool", "nombre": [1, 1], "poids": 18750, "_cat": "outils_militaires", "_base": 25000},
-  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 514172},
+  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 1723},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 4971},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:64,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 4971},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 4971},

@@ -84,7 +84,7 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
             cases.add(i);
         }
         Collections.shuffle(cases, new java.util.Random(r.nextLong()));
-        int n = t.min() + r.nextInt(Math.max(1, t.max() - t.min() + 1));
+        int n = TablesCoffres.nombre(t, t.min(), t.max(), r);
         java.util.Set<String> deja = new java.util.HashSet<>();
         for (int k = 0; k < Math.min(n, TAILLE); k++) {
             ItemStack st = k == 0 ? TablesCoffres.tirerPlein(t, r, bonus, deja) : TablesCoffres.tirerUnique(t, r, bonus, deja);

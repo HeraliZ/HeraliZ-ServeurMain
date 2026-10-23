@@ -1,12 +1,13 @@
 {
  "_note": "T1 commun (rue, déchets, commerces, logements, cadavres de zombies, voitures civiles, casiers) : civil pauvre. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
- "emplacements": [1, 1],
+ "emplacements": [1, 4],
+ "cases_poids": {"1": 45, "2": 50, "3": 4, "4": 1},
  "objets": [
   {"item": "geckolib:item_bat", "nombre": [1, 1], "poids": 12600000, "_cat": "melee_basique", "_base": 126},
   {"item": "geckolib:item_lead_pipe", "nombre": [1, 1], "poids": 12600000, "_cat": "melee_basique", "_base": 126},
   {"item": "geckolib:item_machete", "nombre": [1, 1], "poids": 4200000, "_cat": "melee_basique", "_base": 42},
   {"item": "geckolib:item_sledge_hammer", "nombre": [1, 1], "poids": 2100000, "_cat": "melee_basique", "_base": 21},
-  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 42525000},
+  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 745721},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 183750},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:64,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 183750},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 183750},

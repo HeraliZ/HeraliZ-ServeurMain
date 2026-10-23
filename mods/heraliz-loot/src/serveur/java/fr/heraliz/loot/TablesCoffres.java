@@ -44,7 +44,8 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
 
     record Entree(Item item, int min, int max, int poids, @Nullable Rarete rarete, String nom, String nbt) {}
 
-    record Table(int min, int max, Map<Integer, int[]> niveaux, List<Entree> objets) {}
+    /** {@code poidsCases} : poids du nombre d'objets (indice = nombre), null : nombre au hasard entre min et max. */
+    record Table(int min, int max, Map<Integer, int[]> niveaux, List<Entree> objets, @Nullable int[] poidsCases) {}
 
     /** Table choisie pour un conteneur (id de la table), avec le nombre de cases à remplir. */
     record Choix(String id, Table table, int min, int max) {}
@@ -91,7 +92,18 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
                             j.has("rarete") ? Rarete.de(j.get("rarete").getAsString()) : null,
                             j.has("nom") ? j.get("nom").getAsString() : null, j.has("nbt") ? j.get("nbt").getAsString() : null));
                 }
-                TABLES.put(id.getPath(), new Table(e.get(0).getAsInt(), e.get(1).getAsInt(), niveaux, l));
+                int[] poids = null;
+                if (o.has("cases_poids")) {
+                    JsonObject cp = o.getAsJsonObject("cases_poids");
+                    int haut = 0;
+                    for (String k : cp.keySet()) haut = Math.max(haut, Integer.parseInt(k.trim()));
+                    poids = new int[haut + 1];
+                    for (Map.Entry<String, JsonElement> c : cp.entrySet()) {
+                        int n = Integer.parseInt(c.getKey().trim());
+                        if (n >= 1) poids[n] = Math.max(0, c.getValue().getAsInt());
+                    }
+                }
+                TABLES.put(id.getPath(), new Table(e.get(0).getAsInt(), e.get(1).getAsInt(), niveaux, l, poids));
             } catch (Exception ex) {
                 HeralizLoot.LOG.error("Table de coffre {} illisible", id, ex);
             }
@@ -131,6 +143,26 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
         if (t == null) return null;
         int[] n = t.niveaux().get(niveau);
         return n != null ? new Choix(id, t, n[0], n[1]) : new Choix(id, t, t.min(), t.max());
+    }
+
+    /**
+     * Nombre d'objets d'un conteneur : tiré avec les poids « cases_poids » de la table s'il y en a (23/10), sinon au
+     * hasard entre min et max.
+     */
+    static int nombre(Table t, int min, int max, RandomSource r) {
+        int[] p = t.poidsCases();
+        if (p != null) {
+            int total = 0;
+            for (int w : p) total += w;
+            if (total > 0) {
+                int x = r.nextInt(total);
+                for (int n = 1; n < p.length; n++) {
+                    x -= p[n];
+                    if (x < 0) return n;
+                }
+            }
+        }
+        return min + r.nextInt(Math.max(1, max - min + 1));
     }
 
     /** Tire un objet de la table (poids) ; si l'entrée a une rareté, elle est inscrite dessus. */

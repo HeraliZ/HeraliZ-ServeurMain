@@ -810,7 +810,7 @@ public final class RotationLoot extends SavedData {
         });
     }
 
-    /** Quelques étoiles (END_ROD) sur le dessus, l'avant et les côtés de l'objet (pas le dos, contre le mur). */
+    /** Quelques étoiles (END_ROD, dorées en T7) sur le dessus, l'avant et les côtés de l'objet (pas le dos, contre le mur). */
     private static void scintiller(ServerLevel l, ServerPlayer p, BlockPos b, BlockState st, ConteneurBlock cb, int nb) {
         Direction face = st.getValue(HorizontalDirectionalBlock.FACING);
         VoxelShape s = cb.encombrement().outline(face, 0, 0, 0);
@@ -818,6 +818,8 @@ public final class RotationLoot extends SavedData {
         double m = 0.08;
         AABB box = new AABB(o.minX - m, o.minY + 0.05, o.minZ - m, o.maxX + m, o.maxY + m, o.maxZ + m);
         RandomSource r = l.random;
+        // T7 : petites étoiles dorées (éclat de cire), les autres paliers : étoiles blanches (23/10, choix du propriétaire)
+        net.minecraft.core.particles.SimpleParticleType etoile = ConteneurBlock.palier(cb.nom) >= 7 ? ParticleTypes.WAX_ON : ParticleTypes.END_ROD;
         for (int i = 0; i < nb; i++) {
             double x = box.minX + r.nextDouble() * (box.maxX - box.minX);
             double y = box.minY + r.nextDouble() * (box.maxY - box.minY);
@@ -833,7 +835,7 @@ public final class RotationLoot extends SavedData {
                 default -> {
                 }
             }
-            l.sendParticles(p, ParticleTypes.END_ROD, false, b.getX() + x, b.getY() + y, b.getZ() + z, 1, 0, 0, 0, 0);
+            l.sendParticles(p, etoile, false, b.getX() + x, b.getY() + y, b.getZ() + z, 1, 0, 0, 0, 0);
         }
     }
 
@@ -896,7 +898,7 @@ public final class RotationLoot extends SavedData {
             if (SANS_TABLE.add(nom)) HeralizLoot.LOG.warn("Aucune table de loot pour {} (data/heraliz_loot/coffres/)", nom);
             return inv;
         }
-        int n = Math.min(TAILLE, c.min() + r.nextInt(Math.max(1, c.max() - c.min() + 1)));
+        int n = Math.min(TAILLE, TablesCoffres.nombre(c.table(), c.min(), c.max(), r));
         int[] cases = new int[TAILLE];
         for (int i = 0; i < TAILLE; i++) cases[i] = i;
         for (int i = TAILLE - 1; i > 0; i--) {

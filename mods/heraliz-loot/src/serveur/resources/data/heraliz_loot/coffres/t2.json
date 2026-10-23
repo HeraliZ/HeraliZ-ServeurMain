@@ -1,6 +1,7 @@
 {
  "_note": "T2 peu commun (maison de campagne, ferme, cave, atelier, jardin) : PhatLoots campagne. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
- "emplacements": [1, 1],
+ "emplacements": [1, 5],
+ "cases_poids": {"1": 30, "2": 45, "3": 20, "4": 4, "5": 1},
  "objets": [
   {"item": "geckolib:item_machete", "nombre": [1, 1], "poids": 1620000, "_cat": "melee_campagne", "_base": 1620},
   {"item": "geckolib:item_sledge_hammer", "nombre": [1, 1], "poids": 1620000, "_cat": "melee_campagne", "_base": 1620},
@@ -9,7 +10,7 @@
   {"item": "geckolib:item_lead_pipe", "nombre": [1, 1], "poids": 1080000, "_cat": "melee_campagne", "_base": 1080},
   {"item": "ywzj_vehicle:fuel_tank", "nombre": [1, 1], "poids": 1147500, "_cat": "outils", "_base": 1530},
   {"item": "ywzj_vehicle:repair_tool", "nombre": [1, 1], "poids": 285000, "_cat": "outils", "_base": 380},
-  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 4241753},
+  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 137287},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 83081},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:64,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 83081},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 83081},

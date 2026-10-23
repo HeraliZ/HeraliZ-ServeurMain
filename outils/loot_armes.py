@@ -89,6 +89,28 @@ VIDE = {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide"}
 # T1 et T2 visent moins d'un objet par conteneur, donc une seule case (1 objet par conteneur) ; ensuite assez peu de
 # cases pour que la part de cases pleines reste haute (la 1re case n'est relancée que 20 fois par le jeu)
 EMPLACEMENTS = {1: [1, 1], 2: [1, 1], 3: [1, 2], 4: [1, 2], 5: [1, 2], 6: [1, 2], 7: [1, 3]}
+# 23/10 (soir, choix du propriétaire) : plusieurs objets par conteneur, « 1 objet 1 coffre c'est relou » ; nombre
+# d'objets tiré avec ces poids (clé « cases_poids » des tables, lue par TablesCoffres) ; T1 45/50/4/1 % pour 1/2/3/4,
+# T6 de 4-5 à 11-12, T7 de 7-8 à 15-16. Moins de conteneurs actifs par ville en échange (facteur par niveau,
+# ConfigLoot « facteurs_actifs », écrit d'après FACTEUR_TOTAL) : un peu moins d'objets par ville qu'avant.
+CASES_POIDS = {
+    1: {1: 45, 2: 50, 3: 4, 4: 1},
+    2: {1: 30, 2: 45, 3: 20, 4: 4, 5: 1},
+    3: {1: 15, 2: 35, 3: 33, 4: 13, 5: 4},
+    4: {2: 20, 3: 35, 4: 28, 5: 12, 6: 4, 7: 1},
+    5: {3: 15, 4: 25, 5: 25, 6: 18, 7: 10, 8: 5, 9: 2},
+    6: {4: 6, 5: 12, 6: 16, 7: 17, 8: 15, 9: 12, 10: 10, 11: 7, 12: 5},
+    7: {7: 5, 8: 9, 9: 12, 10: 14, 11: 14, 12: 13, 13: 11, 14: 9, 15: 7, 16: 6},
+}
+# objets par ville après le changement / avant (un peu moins, « pas grand chose mais quand même »)
+FACTEUR_TOTAL = 0.9
+# objets par conteneur avant le 23/10 au soir (mesurés sur les tables d'alors : 1 case en T1-T2, 1 à 2 en T3-T6, 1 à 3 en T7)
+OBJETS_AVANT = {1: 1.0, 2: 1.0, 3: 1.14, 4: 1.21, 5: 1.29, 6: 1.39, 7: 1.63}
+
+
+def cases_moyennes(t):
+    d = CASES_POIDS[t]
+    return sum(n * w for n, w in d.items()) / sum(d.values())
 PRECISION = 20  # plus petit poids voulu : sinon tous les poids sont multipliés par 10
 
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
@@ -360,6 +382,16 @@ def ecrire_raretes_imposees():
         f.write("\n")
 
 
+def ecrire_facteurs(avant):
+    """Facteur de conteneurs actifs par niveau (défaut de ConfigLoot « facteurs_actifs ») : objets par ville x FACTEUR_TOTAL."""
+    f = Path(__file__).resolve().parents[1] / "mods/heraliz-loot/src/commun/java/fr/heraliz/loot/ConfigLoot.java"
+    s = f.read_text(encoding="utf-8")
+    vals = ", ".join(f"{min(1.0, FACTEUR_TOTAL * avant[t] / cases_moyennes(t)):.3f}" for t in sorted(CASES_POIDS))
+    nouveau = re.sub(r"(// facteurs_actifs \(outils/loot_armes\.py\)\n\s*List\.of\()[^)]*(\))", lambda m: m.group(1) + vals + m.group(2), s)
+    if nouveau != s:
+        f.write_text(nouveau, encoding="utf-8")
+
+
 def ecrire():
     ecrire_raretes_sacs()
     ecrire_soins()
@@ -372,28 +404,20 @@ def ecrire():
                           "Écrit par outils/loot_armes.py (ne pas modifier à la main).")
     for t, parts in PARTS.items():
         data = tables[t]
-        if t in EMPLACEMENTS:
-            data["emplacements"] = EMPLACEMENTS[t]
-        cases = sum(data["emplacements"]) / 2
+        data["emplacements"] = [min(CASES_POIDS[t]), max(CASES_POIDS[t])]
+        data["cases_poids"] = {str(n): w for n, w in sorted(CASES_POIDS[t].items())}
+        cases = 1  # nombres « pour 100 » = parts des objets : chaque case tirée est pleine (presque jamais vide)
         p = {f: POUR_100[f][t] / 100 / cases for f in fams}
         base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
         p["capsules"] = CAPSULES_POUR_100[t] / 100 / cases
         p["soins"] = SOINS_POUR_100[t] / 100 / cases
         p["nourriture"] = NOURRITURE_POUR_100[t] / 100 / cases
         part_autres = AUTRES_POUR_100[t] / 100 / cases
-        # la 1re case d'un conteneur n'est jamais vide (TablesCoffres.tirerPlein) : objets par conteneur = 1 + (cases - 1)
-        # x part des cases pleines. Parts ramenées pour que les nombres pour 100 conteneurs visés soient ceux du jeu
-        # (au moins 1 objet par conteneur : un total visé sous 100 pour 100 conteneurs est relevé d'autant)
-        vise = (sum(p.values()) + part_autres) * cases
-        if cases > 1:
-            plein = min(1.0, max(0.01, (max(vise, 1.0) - 1) / (cases - 1)))  # jamais 0 : les poids gardent leurs proportions
-            k = plein * cases / vise
-            p = {f: v * k for f, v in p.items()}
-            part_autres *= k
-        if sum(p.values()) + part_autres > 0.97:  # garder un peu de cases vides (poids de la case vide jamais nul)
-            k = 0.97 / (sum(p.values()) + part_autres)
-            p = {f: v * k for f, v in p.items()}
-            part_autres *= k
+        # chaque case tirée est pleine : les nombres « pour 100 » ne donnent plus que les parts de chaque famille
+        # (case vide gardée à 0,1 % : poids jamais nul)
+        k = 0.999 / (sum(p.values()) + part_autres)
+        p = {f: v * k for f, v in p.items()}
+        part_autres *= k
         p["vide"] = max(0.0, 1 - sum(p.values()) - part_autres)
         actifs = sum(base)
         rel = []
@@ -438,6 +462,7 @@ def ecrire():
         ecrire_table(COFFRES / f"t{t}.json", data)
         print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in PARTS_FAMILLE.get((f, t), PARTS[t]))} {f}" for f in fams))
     ecrire_raretes_imposees()
+    ecrire_facteurs(OBJETS_AVANT)
 
 
 # conteneurs de soins (soins1_... à soins6_...) : une table par niveau, soins.json = niveau 1 (secours).
@@ -512,7 +537,8 @@ def simuler(essais=1000):
         c = {f: Counter() for f in POUR_100}
         balles = capsules = 0
         for _ in range(essais * 100):
-            for _ in range(random.randint(*data["emplacements"])):
+            cp = {int(k): v for k, v in data["cases_poids"].items()}
+            for _ in range(random.choices(list(cp), list(cp.values()))[0]):
                 e = random.choices(objs, w)[0]
                 f, r = classer(e, ra)
                 if f:

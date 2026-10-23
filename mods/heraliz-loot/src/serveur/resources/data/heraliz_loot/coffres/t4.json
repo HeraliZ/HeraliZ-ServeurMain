@@ -1,6 +1,7 @@
 {
  "_note": "T4 épique (militaire léger, caisses olive, sacs, cadavres de soldats) : PhatLoots military. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
- "emplacements": [1, 2],
+ "emplacements": [2, 7],
+ "cases_poids": {"2": 20, "3": 35, "4": 28, "5": 12, "6": 4, "7": 1},
  "objets": [
   {"item": "heralisz_tactical:throwable", "nombre": [1, 1], "poids": 375000, "nbt": "{ThrowableId:\"heralisz_grenade:flash_grenade\"}", "_cat": "explosifs", "_base": 7500},
   {"item": "heralisz_tactical:throwable", "nombre": [1, 1], "poids": 375000, "nbt": "{ThrowableId:\"heralisz_grenade:m67\"}", "_cat": "explosifs", "_base": 7500},
@@ -8,7 +9,7 @@
   {"item": "heralisz_tactical:throwable", "nombre": [1, 1], "poids": 250000, "nbt": "{ThrowableId:\"heralisz_grenade:rgn\"}", "_cat": "explosifs", "_base": 5000},
   {"item": "heralisz_tactical:throwable", "nombre": [1, 1], "poids": 250000, "nbt": "{ThrowableId:\"heralisz_grenade:smoke_grenade\"}", "_cat": "explosifs", "_base": 5000},
   {"item": "geckolib:item_machete", "nombre": [1, 1], "poids": 600000, "_cat": "melee_militaire", "_base": 6000},
-  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 36414512},
+  {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 25330},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 49280},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:64,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 49280},
   {"item": "tacz:modern_kinetic_gun", "nombre": [1, 1], "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:1b}", "_cat": "armes", "poids": 49280},

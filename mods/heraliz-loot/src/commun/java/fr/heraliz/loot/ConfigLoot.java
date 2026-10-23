@@ -12,6 +12,8 @@ public final class ConfigLoot {
 
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.DoubleValue PROPORTION;
+    /** Facteur de la part d'actifs par niveau de zone (T1 à T7), écrit par outils/loot_armes.py. */
+    public static final ForgeConfigSpec.ConfigValue<List<? extends Double>> FACTEURS;
     public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX;
     public static final ForgeConfigSpec.BooleanValue ETOILES;
     /** Conteneurs de Minecraft scellés (src/serveur : ConteneursVanilla). */
@@ -32,6 +34,13 @@ public final class ConfigLoot {
         b.comment("Rotation du loot HeraliZ : dans chaque zone, une partie des conteneurs seulement contient du loot.").push("rotation");
         PROPORTION = b.comment("Part des conteneurs d'une zone qui sont actifs (0.2 = 1 sur 5), si la zone ne précise pas \"actifs\".")
                 .defineInRange("proportion_actifs", 0.2, 0.0, 1.0);
+        FACTEURS = b.comment("Facteur de la part d'actifs par niveau de zone, T1 à T7 (23/10 : plusieurs objets par conteneur,",
+                        "donc moins de conteneurs remplis à la fois ; une part réglée en jeu avec /heralizloot zone <id> part n'est",
+                        "pas touchée). Valeurs par défaut écrites par outils/loot_armes.py.")
+                .defineList("facteurs_actifs",
+                        // facteurs_actifs (outils/loot_armes.py)
+                        List.of(0.559, 0.448, 0.401, 0.313, 0.229, 0.164, 0.129),
+                        o -> o instanceof Number n && n.doubleValue() >= 0 && n.doubleValue() <= 1);
         DELAI_MIN = b.comment("Délai minimal (secondes) avant qu'un autre conteneur de la zone se remplisse quand un conteneur a été vidé.")
                 .defineInRange("delai_min_secondes", 600, 0, 86400);
         DELAI_MAX = b.comment("Délai maximal (secondes). Le délai est tiré au hasard entre le minimum et le maximum.")
@@ -140,6 +149,15 @@ public final class ConfigLoot {
     }
 
     /** Proportion par défaut (repli sur 0.2 si la configuration n'est pas encore chargée). */
+    /** Facteur de la part d'actifs d'une zone de ce niveau (1 si inconnu). */
+    static double facteur(int niveau) {
+        if (!SPEC.isLoaded() || niveau < 1) return 1.0;
+        List<? extends Double> l = FACTEURS.get();
+        if (niveau > l.size()) return 1.0;
+        Object v = l.get(niveau - 1);
+        return v instanceof Number n ? Math.max(0, Math.min(1, n.doubleValue())) : 1.0;
+    }
+
     static double proportion() {
         return SPEC.isLoaded() ? PROPORTION.get() : 0.2;
     }
