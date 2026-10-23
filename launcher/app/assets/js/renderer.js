@@ -608,7 +608,15 @@ const PANNEAUX_DISCORD = {
         verifier: 'Vérifier', toutesLes: 30000
     },
     refuse: { titre: 'Ton compte a été refusé.', texte: 'Le staff de HeraliZ a refusé ce compte. Tu peux te déconnecter pour utiliser un autre compte.' },
-    banni: { titre: 'Ce compte est banni.', texte: 'Ce compte ne peut plus jouer sur HeraliZ. Tu peux te déconnecter pour utiliser un autre compte.' },
+    // texte selon que les fichiers du jeu sont déjà retirés de ce PC ou attendent la fermeture du jeu (launcher-service.js) ;
+    // revérifié toutes les minutes pour suivre l'effacement
+    banni: {
+        titre: 'Ce compte est banni.',
+        texte: () => `Ce compte ne peut plus jouer sur HeraliZ. ${state?.fichiersEffaces
+            ? 'Les fichiers du jeu HeraliZ ont été retirés de ce PC.'
+            : 'Les fichiers du jeu HeraliZ vont être retirés de ce PC (dès que le jeu sera fermé s’il est ouvert).'} Tu peux te déconnecter pour utiliser un autre compte.`,
+        toutesLes: 60000
+    },
     indisponible: {
         titre: 'Discord ne répond pas',
         texte: 'Le site n’arrive pas à vérifier ton compte Discord pour le moment. Le launcher réessaie tout seul.',
@@ -633,7 +641,7 @@ function ouvrirDiscord(statut) {
     state.discord = { ...(state.discord || {}), statut }
     $('discord-dialog').dataset.statut = statut
     $('discord-title').textContent = panneau.titre
-    $('discord-texte').textContent = panneau.texte
+    $('discord-texte').textContent = typeof panneau.texte === 'function' ? panneau.texte() : panneau.texte
     const pseudo = state.discord?.pseudo
     $('discord-pseudo').textContent = pseudo || ''
     $('discord-compte').hidden = !pseudo || statut === 'a_lier'

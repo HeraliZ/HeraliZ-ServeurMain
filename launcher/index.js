@@ -83,6 +83,8 @@ else {
                 win.setProgressBar(progress.busy && progress.phase !== 'running' ? (progress.percent == null ? 2 : progress.percent / 100) : -1)
             }
         })
+        // compte banni vu sur ce PC : fichiers du jeu encore à retirer la dernière fois (jeu ouvert, fichier verrouillé)
+        service.reprendreEffacement()
         // mise à jour du launcher lui-même : seulement la version installée (pas en développement). Automatique sous
         // Windows et en AppImage ; Mac (application non signée par Apple) et .deb : le joueur est prévenu (mise-a-jour.js)
         const majActive = app.isPackaged && ['win32', 'darwin', 'linux'].includes(process.platform)
