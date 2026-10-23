@@ -1994,7 +1994,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     liens, réécrits par compte, ne sont pas signés). Pack non signé refusé à la mise en ligne si le launcher porte une
     clé. **Ordre : mise en ligne (pack signé + site) AVANT de publier le launcher** (`launcher/docs/HERALIZ-SIGNATURE.md`).
     Testé (`launcher/test/signature.test.js`) ; rien sur Windows ni en vrai ;
-  - SSH de la VM en root par mot de passe (≈ 7 600 essais de robots par jour, bloqués par fail2ban) : passer à une clé ;
+  - SSH de la VM : mot de passe remplacé le 23/10 par un mot de passe long et aléatoire (choix du propriétaire, à la
+    place d'une clé ; workflow « Site HeraliZ », choix `mot_de_passe`), fail2ban toujours en place ;
   - Spartan : le jar joueur écarte d'office les crochets de rendu des modules dont le nom contient steam, discord,
     radeon… (`InjectionCollector`) et toutes les bibliothèques de `java.home` (`NativeCollector`) : tout remonter et
     décider côté serveur ; identifiant de ban PC fait de variables faciles à changer (`ComponentInfo`) ; en mode hors
