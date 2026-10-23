@@ -272,6 +272,8 @@
   "heralisz_utils.pack.terrain": "HeraliZ: terrain",
   "heralisz_utils.suicide.refus": "Not possible in creative or spectator mode.",
   "heralisz_utils.suicide.spawn": "Not possible at spawn: you are safe here.",
+  "heralisz_utils.suicide.combat": "Not possible in combat.",
+  "heralisz_utils.suicide.terre": "Not possible while downed.",
   "block.heralisz_utils.voie_pleine": "Solid track (invisible collision)",
   "heralisz_utils.train.voie.genre.plat": "flat",
   "heralisz_utils.train.voie.genre.remblai": "embankment",

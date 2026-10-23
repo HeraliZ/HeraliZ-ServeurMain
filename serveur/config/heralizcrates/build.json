@@ -98,18 +98,6 @@
       "rarity": "uncommon"
     },
     {
-      "item": "cfm:prison_barbed_fence",
-      "count": 4,
-      "weight": 25,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "cfm:city_security_fence",
-      "count": 4,
-      "weight": 20,
-      "rarity": "uncommon"
-    },
-    {
       "item": "heralisz_bunker:wooden_barricade",
       "count": 2,
       "weight": 25,
@@ -171,12 +159,6 @@
     },
     {
       "item": "cfm:military_tent",
-      "count": 1,
-      "weight": 10,
-      "rarity": "rare"
-    },
-    {
-      "item": "cfm:storage_cabinet_metal_27",
       "count": 1,
       "weight": 10,
       "rarity": "rare"

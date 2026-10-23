@@ -272,6 +272,8 @@
   "heralisz_utils.pack.terrain": "HeraliZ : terrain",
   "heralisz_utils.suicide.refus": "Impossible en créatif ou en spectateur.",
   "heralisz_utils.suicide.spawn": "Impossible au spawn : tu y es à l'abri.",
+  "heralisz_utils.suicide.combat": "Impossible en combat.",
+  "heralisz_utils.suicide.terre": "Impossible à terre.",
   "block.heralisz_utils.voie_pleine": "Voie pleine (collision invisible)",
   "heralisz_utils.train.voie.genre.plat": "plat",
   "heralisz_utils.train.voie.genre.remblai": "remblai",

@@ -26,5 +26,32 @@ public final class PartieServeur implements Partie {
         MinecraftForge.EVENT_BUS.addListener((TickEvent.PlayerTickEvent e) -> {
             if (e.phase == TickEvent.Phase.END && e.player instanceof ServerPlayer p) SansArme.tick(p);
         });
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStartedEvent e) -> verifierBranchement());
+    }
+
+    /**
+     * Le contrôle des emotes par le serveur passe par {@code ServerEmotePlayMixin} (require = 0 : un Emotecraft changé ne
+     * fait pas planter le jeu). S'il ne s'est pas appliqué, plus rien n'est contrôlé : on le crie dans le journal.
+     */
+    private static void verifierBranchement() {
+        boolean ok = false;
+        try {
+            for (java.lang.reflect.Method m : Class.forName("io.github.kosmx.emotes.server.network.AbstractServerEmotePlay")
+                    .getDeclaredMethods()) {
+                if (m.getName().contains("heraliz$rules")) {
+                    ok = true;
+                    break;
+                }
+            }
+        } catch (Throwable ignored) {
+            // classe introuvable : ok reste faux
+        }
+        org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger("HeraliZ Emote");
+        if (ok) {
+            log.info("Controle serveur des emotes branche.");
+        } else {
+            log.error("Controle serveur des emotes NON branche (ServerEmotePlayMixin) : emotes verrouillees, en combat et "
+                    + "animations des joueurs ne sont plus controlees !");
+        }
     }
 }

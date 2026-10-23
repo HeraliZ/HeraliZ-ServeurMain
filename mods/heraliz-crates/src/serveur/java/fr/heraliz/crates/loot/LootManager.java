@@ -132,15 +132,15 @@ public final class LootManager {
 
     /** Objets cfm des anciennes caisses Chantier absents du cfm installe -> remplacant. */
     private static final Map<String, String> RENAMED = Map.of(
-            "cfm:container_military_green", "cfm:container_green",
-            "cfm:container_military_gunrack", "cfm:container_camo2",
             "cfm:military_tent", "cfm:military_tent_1",
             "cfm:metal_fence", "cfm:zombie_chainlinkfence",
             "cfm:metal_renforced", "cfm:dark_metal_2",
             "cfm:concrete_military", "cfm:green_beton");
 
-    /** Objets abandonnes : retires des anciennes configs. */
-    private static final Set<String> RETIRED = Set.of("cfm:jerry_can");
+    /** Objets abandonnes ou absents du cfm installe : retires des anciennes configs. */
+    private static final Set<String> RETIRED = Set.of("cfm:jerry_can",
+            "cfm:container_military_green", "cfm:container_green", "cfm:container_military_gunrack", "cfm:container_camo2",
+            "cfm:prison_barbed_fence", "cfm:city_security_fence", "cfm:storage_cabinet_metal_27");
 
     /**
      * Met a jour une entree d'une ancienne config. Les grenades et soins etaient cites comme objets

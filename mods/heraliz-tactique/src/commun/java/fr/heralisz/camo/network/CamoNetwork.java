@@ -15,8 +15,10 @@ public final class CamoNetwork {
       new ResourceLocation(HeraliszCamo.MODID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
 
    public static void init() {
-      CHANNEL.registerMessage(0, ApplyCamoPacket.class, ApplyCamoPacket::encode, ApplyCamoPacket::decode, ApplyCamoPacket::handle);
-      CHANNEL.registerMessage(1, DecorPacket.class, DecorPacket::encode, DecorPacket::decode, DecorPacket::handle);
+      CHANNEL.registerMessage(0, ApplyCamoPacket.class, ApplyCamoPacket::encode, ApplyCamoPacket::decode, ApplyCamoPacket::handle,
+         Optional.of(NetworkDirection.PLAY_TO_SERVER));
+      CHANNEL.registerMessage(1, DecorPacket.class, DecorPacket::encode, DecorPacket::decode, DecorPacket::handle,
+         Optional.of(NetworkDirection.PLAY_TO_SERVER));
       CHANNEL.registerMessage(2, CollectionSyncPacket.class, CollectionSyncPacket::encode, CollectionSyncPacket::decode,
          CollectionSyncPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
       CHANNEL.registerMessage(3, CollectionCamoPacket.class, CollectionCamoPacket::encode, CollectionCamoPacket::decode,

@@ -166,10 +166,6 @@ public final class Regles {
         switch (gunId) {
             case "tacz:minigun":
                 return 2000;
-            case "tacz:fn_evolys":
-                return 1000;
-            case "tacz:lonetrail", "tacz:rhino357", "tacz:taurus500", "tacz:taurus943":
-                return 800;
             case "tacz:springfield1873":
                 return 600;
             default:

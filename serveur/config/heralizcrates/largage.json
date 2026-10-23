@@ -113,7 +113,7 @@
       "count": 1,
       "weight": 22,
       "rarity": "rare",
-      "nbt": "{GunId:\"tacz:hk_mp5a5\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
+      "nbt": "{GunId:\"maxstuff:hk_mp5sd\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
@@ -204,28 +204,28 @@
       "count": 1,
       "weight": 10,
       "rarity": "epic",
-      "nbt": "{GunId:\"tacz:m700\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
+      "nbt": "{GunId:\"tacz:aiawp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 4,
       "rarity": "legendary",
-      "nbt": "{GunId:\"tacz:ai_awp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
+      "nbt": "{GunId:\"arkaniaz:m200\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 3,
       "rarity": "legendary",
-      "nbt": "{GunId:\"tacz:m107\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
+      "nbt": "{GunId:\"arkaniaz:m82a3\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 2,
       "rarity": "legendary",
-      "nbt": "{GunId:\"tacz:barrett_m95\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
+      "nbt": "{GunId:\"tacz:m95\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
       "item": "tacz:modern_kinetic_gun",

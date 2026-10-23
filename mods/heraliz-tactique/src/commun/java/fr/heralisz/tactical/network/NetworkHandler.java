@@ -1,5 +1,6 @@
 package fr.heralisz.tactical.network;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import fr.heralisz.tactical.network.message.CCancelToggleConsumableUse;
 import fr.heralisz.tactical.network.message.CMeleeAttackRequest;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.PacketDistributor.TargetPoint;
@@ -32,45 +34,39 @@ public class NetworkHandler {
    );
    private static final AtomicInteger ID_COUNT = new AtomicInteger(1);
 
+   /** Sens imposé à chaque paquet : Forge refuse un paquet reçu dans le mauvais sens AVANT de le lire. */
    public static void init() {
-      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SPackSyncMessage.class, SPackSyncMessage::encode, SPackSyncMessage::decode, SPackSyncMessage::handle);
+      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SPackSyncMessage.class, SPackSyncMessage::encode, SPackSyncMessage::decode, SPackSyncMessage::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
       CHANNEL.registerMessage(
          ID_COUNT.getAndIncrement(),
          SCustomCoolDownMessage.class,
          SCustomCoolDownMessage::encode,
          SCustomCoolDownMessage::decode,
-         SCustomCoolDownMessage::handle
-      );
-      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SCustomSound.class, SCustomSound::encode, SCustomSound::decode, SCustomSound::handle);
+         SCustomCoolDownMessage::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SCustomSound.class, SCustomSound::encode, SCustomSound::decode, SCustomSound::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
       CHANNEL.registerMessage(
-         ID_COUNT.getAndIncrement(), CMeleeAttackRequest.class, CMeleeAttackRequest::encode, CMeleeAttackRequest::decode, CMeleeAttackRequest::handle
-      );
+         ID_COUNT.getAndIncrement(), CMeleeAttackRequest.class, CMeleeAttackRequest::encode, CMeleeAttackRequest::decode, CMeleeAttackRequest::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
       CHANNEL.registerMessage(
-         ID_COUNT.getAndIncrement(), CPrepareMeleeAttack.class, CPrepareMeleeAttack::encode, CPrepareMeleeAttack::decode, CPrepareMeleeAttack::handle
-      );
-      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SShieldShake.class, SShieldShake::encode, SShieldShake::decode, SShieldShake::handle);
-      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SShieldDisable.class, SShieldDisable::encode, SShieldDisable::decode, SShieldDisable::handle);
+         ID_COUNT.getAndIncrement(), CPrepareMeleeAttack.class, CPrepareMeleeAttack::encode, CPrepareMeleeAttack::decode, CPrepareMeleeAttack::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SShieldShake.class, SShieldShake::encode, SShieldShake::decode, SShieldShake::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SShieldDisable.class, SShieldDisable::encode, SShieldDisable::decode, SShieldDisable::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
       CHANNEL.registerMessage(
-         ID_COUNT.getAndIncrement(), SShakeScreenMessage.class, SShakeScreenMessage::encode, SShakeScreenMessage::decode, SShakeScreenMessage::handle
-      );
-      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SSplashParticle.class, SSplashParticle::encode, SSplashParticle::decode, SSplashParticle::handle);
+         ID_COUNT.getAndIncrement(), SShakeScreenMessage.class, SShakeScreenMessage::encode, SShakeScreenMessage::decode, SShakeScreenMessage::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+      CHANNEL.registerMessage(ID_COUNT.getAndIncrement(), SSplashParticle.class, SSplashParticle::encode, SSplashParticle::decode, SSplashParticle::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
       CHANNEL.registerMessage(
-         ID_COUNT.getAndIncrement(), SMeleeAnimationSync.class, SMeleeAnimationSync::encode, SMeleeAnimationSync::decode, SMeleeAnimationSync::handle
-      );
+         ID_COUNT.getAndIncrement(), SMeleeAnimationSync.class, SMeleeAnimationSync::encode, SMeleeAnimationSync::decode, SMeleeAnimationSync::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
       CHANNEL.registerMessage(
          ID_COUNT.getAndIncrement(),
          SResetMeleeSyncMessage.class,
          SResetMeleeSyncMessage::encode,
          SResetMeleeSyncMessage::decode,
-         SResetMeleeSyncMessage::handle
-      );
+         SResetMeleeSyncMessage::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
       CHANNEL.registerMessage(
          ID_COUNT.getAndIncrement(),
          CCancelToggleConsumableUse.class,
          CCancelToggleConsumableUse::encode,
          CCancelToggleConsumableUse::new,
-         CCancelToggleConsumableUse::handle
-      );
+         CCancelToggleConsumableUse::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
    }
 
    public static void sendToServer(Object message) {

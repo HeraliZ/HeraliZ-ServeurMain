@@ -174,8 +174,6 @@ final class DefaultLoot {
                 l.add(e("cfm:green_beton", 8, 25, UNCOMMON));
                 l.add(e("cfm:dark_metal_2", 8, 25, UNCOMMON));
                 l.add(e("cfm:zombie_chainlinkfence", 6, 25, UNCOMMON));
-                l.add(e("cfm:prison_barbed_fence", 4, 25, UNCOMMON));
-                l.add(e("cfm:city_security_fence", 4, 20, UNCOMMON));
                 l.add(e("heralisz_bunker:wooden_barricade", 2, 25, UNCOMMON));
                 l.add(e("cfm:arkaniaz_spotlight", 1, 15, UNCOMMON));
                 l.add(e("heraliz_composants:metal_renforce", 2, 18, RARE));
@@ -184,16 +182,13 @@ final class DefaultLoot {
                 l.add(e("heralisz_bunker:door_bunker", 1, 15, RARE));
                 l.add(e("heralisz_bunker:keycard_green", 1, 15, RARE));
                 l.add(e("heralisz_bunker:card_reader_green", 1, 12, RARE));
-                l.add(e("cfm:container_green", 1, 10, RARE));
                 l.add(e("cfm:military_tent_1", 1, 10, RARE));
-                l.add(e("cfm:storage_cabinet_metal_27", 1, 10, RARE));
                 l.add(e("heralisz_bunker:fire_door", 1, 9, EPIC));
                 l.add(e("heralisz_bunker:sliding_blast_door", 1, 7, EPIC));
                 l.add(e("heralisz_bunker:secure_access_door", 1, 7, EPIC));
                 l.add(e("heralisz_bunker:round_airlock_door", 1, 6, EPIC));
                 l.add(e("heralisz_bunker:keycard_blue", 1, 7, EPIC));
                 l.add(e("heralisz_bunker:card_reader_blue", 1, 6, EPIC));
-                l.add(e("cfm:container_camo2", 1, 5, EPIC));
                 l.add(e("heralisz_bunker:vault_door", 1, 4, LEGENDARY));
                 l.add(e("heralisz_bunker:large_vehicle_door", 1, 4, LEGENDARY));
                 l.add(e("heralisz_bunker:silo_hatch", 1, 3, LEGENDARY));
