@@ -20,26 +20,46 @@
     @endforeach
 </div>
 <p class="hz-note">Paiement sécurisé, aucun abonnement. Les PB vont sur ton compte {{ site_name() }} : le même solde sur le site, dans le launcher et en jeu (<b>/boutique</b>). Échanger ou offrir des PB : <b>/trade</b> au spawn (10 % de taxe).</p>
-{{-- Ce que les PB permettent d'avoir (demande du propriétaire, 23/10). --}}
+{{-- Ce que les PB permettent d'avoir (demande du propriétaire, 23/10) : les 3 grades sur une ligne, BETA dessous au
+     milieu, puis les contenus personnalisés. Personnages et images faits par le propriétaire (assets/img/grades,
+     assets/img/avantages). --}}
+@php
+    $grades = [
+        ['rescape', 'Rescapé', '#E39B5E'],
+        ['traqueur', 'Traqueur', '#8FD3FF'],
+        ['roi_de_la_zone', 'Roi de la Zone', '#FFC23A'],
+    ];
+    $avantages = [
+        ['skin', 'Camo', '#B57BFF', '50% 45%'],
+        ['finisher', 'Finisher', '#FF5A4E', '50% 45%'],
+        ['emote', 'Emote', '#7FA8FF', '50% 22%'],
+    ];
+@endphp
 <div class="hz-dispo">
     <h3>Disponible avec tes PB</h3>
-    @php
-        $grades = [
-            ['rescape', 'Rescapé', '#E39B5E', null],
-            ['traqueur', 'Traqueur', '#8FD3FF', null],
-            ['roi_de_la_zone', 'Roi de la Zone', '#FFC23A', null],
-            ['beta', 'BETA', '#7FB069', 'Uniquement pendant la bêta'],
-        ];
-    @endphp
     <div class="grades">
-        @foreach($grades as [$id, $nom, $couleur, $note])
+        @foreach($grades as [$id, $nom, $couleur])
             <div class="carte-grade" style="--g: {{ $couleur }}">
                 <img src="{{ theme_asset('img/grades/'.$id.'.webp') }}" alt="" loading="lazy">
-                <span class="g">Grade {{ $nom }}</span>
-                @if($note)<small>{{ $note }}</small>@endif
+                <span class="g">{{ $nom }}</span>
             </div>
         @endforeach
     </div>
+    <div class="grades beta">
+        <div class="carte-grade" style="--g: #A970FF">
+            <img src="{{ theme_asset('img/grades/beta.webp') }}" alt="" loading="lazy">
+            <span class="g">BETA<small>Uniquement pendant la bêta</small></span>
+        </div>
+    </div>
+    <h3 class="sous">Personnalisé à vie</h3>
+    <div class="avantages">
+        @foreach($avantages as [$id, $nom, $couleur, $cadrage])
+            <div class="carte-avantage" style="--g: {{ $couleur }}">
+                <img src="{{ theme_asset('img/avantages/'.$id.'.webp') }}" alt="" loading="lazy" style="object-position: {{ $cadrage }}">
+                <span class="g">{{ $nom }}</span>
+            </div>
+        @endforeach
+    </div>
+    <p class="perso">Camo, finisher ou emote <b>personnalisé à vie</b> : disponible sur demande auprès d’un staff sur Discord.</p>
     <p class="perso"><b>Clés de caisses</b> : skins, emotes et autres cosmétiques à gagner.</p>
-    <p class="perso">Emote, finisher ou skin <b>personnalisé à vie</b> : disponible sur demande auprès d’un staff sur Discord.</p>
 </div>
