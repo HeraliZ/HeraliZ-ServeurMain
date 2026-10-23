@@ -12,6 +12,8 @@ from PIL import Image
 
 RACINE = Path(__file__).resolve().parent.parent
 EMOTES = RACINE / "src/client/resources/assets/heraliz_emote/emotes"
+# animations (.json) et musiques (.nbs) : dans les ressources communes, le serveur s'en sert (EmotesOfficielles)
+ANIMATIONS = RACINE / "src/commun/resources/assets/heraliz_emote/emotes"
 SORTIE = RACINE / "src/commun/resources/data/heraliz_emote/liste.json"
 ASSETS = RACINE / "src/client/resources/assets/heraliz_emote"
 
@@ -20,7 +22,7 @@ def main():
     catalogue = json.loads((EMOTES / "catalog.json").read_text(encoding="utf-8"))
     liste = []
     for e in catalogue["emotes"]:
-        fichier = EMOTES / (e["id"] + ".json")
+        fichier = ANIMATIONS / (e["id"] + ".json")
         nom = e["id"]
         if fichier.exists():
             nom = json.loads(fichier.read_text(encoding="utf-8")).get("name", nom)

@@ -1,6 +1,8 @@
 package fr.heraliz.emote.mixin.commun;
 
+import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import fr.heraliz.emote.EmoteRules;
+import fr.heraliz.emote.EmotesOfficielles;
 import fr.heraliz.emote.HeralizEmote;
 import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.common.network.objects.NetData;
@@ -19,7 +21,8 @@ import java.util.UUID;
  * Server side, when this jar (which holds Emotecraft) is also on the server: an emote a player starts (or that
  * {@code /emotes play} starts without forcing it) is not passed on to the other players while {@link EmoteRules} refuses
  * it; the player's own animation is stopped and they get the reason as a direct message ({@code sendSystemMessage}, shown
- * even with {@code sendCommandFeedback=false}). Emotes forced by an admin are left alone.
+ * even with {@code sendCommandFeedback=false}). Emotes forced by an admin are left alone. In survival, the animation
+ * passed on is always the server's official copy ({@link EmotesOfficielles}), never the one the player's game sent.
  */
 @Mixin(value = AbstractServerEmotePlay.class, remap = false)
 public abstract class ServerEmotePlayMixin {
@@ -30,6 +33,15 @@ public abstract class ServerEmotePlayMixin {
     private void heraliz$rules(NetData data, Object player, boolean isForced, boolean isFromPlayer, CallbackInfo ci) {
         if (isForced || !(player instanceof ServerPlayer sp) || data == null || data.emoteData == null) return;
         Component why = EmoteRules.refusal(sp, data.emoteData.getUuid());
+        if (why == null && !sp.isCreative() && !sp.isSpectator()) {
+            // l'animation transmise aux autres est toujours la copie officielle du serveur, jamais celle du joueur
+            KeyframeAnimation officielle = EmotesOfficielles.de(data.emoteData.getUuid());
+            if (officielle != null) {
+                data.emoteData = officielle;
+                return;
+            }
+            why = EmoteRules.verrouillee();
+        }
         if (why == null) return;
         ci.cancel();
         try {
