@@ -407,5 +407,6 @@
   "msg.heralisz_camo.couteau_fixe": "Un couteau ne peut pas être modifié.",
   "gui.heralisz_camo.atelier.decharger": "Décharger",
   "gui.heralisz_camo.atelier.decharger_aide": "Retirer les balles de l'arme : elles reviennent dans ton inventaire, le chargeur reste vide.",
-  "gui.heralisz_camo.table.dispo": "Avec mes composants"
+  "gui.heralisz_camo.table.dispo": "Avec mes composants",
+  "gui.heralisz_camo.table.autres": "+ %s autres matériaux"
 }

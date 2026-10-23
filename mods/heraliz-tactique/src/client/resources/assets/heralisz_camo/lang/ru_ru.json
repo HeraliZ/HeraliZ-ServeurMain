@@ -368,8 +368,8 @@
   "gui.heralisz_camo.table.aucune": "Здесь нечего изготовить.",
   "gui.heralisz_camo.table.aucun_resultat": "Ничего не найдено.",
   "gui.heralisz_camo.table.choisir": "Выбери предмет для изготовления.",
-  "gui.heralisz_camo.table.fabricable": "Можно изготовить",
-  "gui.heralisz_camo.table.manque": "Не хватает: %s",
+  "gui.heralisz_camo.table.fabricable": "Доступно",
+  "gui.heralisz_camo.table.manque": "Нехватка: %s",
   "gui.heralisz_camo.table.materiaux": "Материалы",
   "gui.heralisz_camo.table.fabriquer": "Изготовить",
   "gui.heralisz_camo.table.manque_un": "Не хватает: %s × %s",
@@ -407,5 +407,6 @@
   "msg.heralisz_camo.couteau_fixe": "Нож нельзя изменить.",
   "gui.heralisz_camo.atelier.decharger": "Разрядить",
   "gui.heralisz_camo.atelier.decharger_aide": "Извлечь патроны из оружия: они вернутся в инвентарь, магазин останется пустым.",
-  "gui.heralisz_camo.table.dispo": "С моими компонентами"
+  "gui.heralisz_camo.table.dispo": "С моими компонентами",
+  "gui.heralisz_camo.table.autres": "+ ещё материалов: %s"
 }

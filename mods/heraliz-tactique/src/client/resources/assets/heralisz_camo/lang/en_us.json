@@ -407,5 +407,6 @@
   "msg.heralisz_camo.couteau_fixe": "A knife cannot be modified.",
   "gui.heralisz_camo.atelier.decharger": "Unload",
   "gui.heralisz_camo.atelier.decharger_aide": "Take the rounds out of the gun: they go back to your inventory, the magazine stays empty.",
-  "gui.heralisz_camo.table.dispo": "With my components"
+  "gui.heralisz_camo.table.dispo": "With my components",
+  "gui.heralisz_camo.table.autres": "+ %s more materials"
 }
