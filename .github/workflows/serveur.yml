@@ -112,7 +112,8 @@ jobs:
           restore-keys: jars-
 
       - name: Fabriquer les mods modifiés
-        run: python outils/construire.py --si-change
+        # Gradle et ses dépendances (code d'autres auteurs) ne voient aucun secret
+        run: python outils/sans_secrets.py python outils/construire.py --si-change
 
       # liste des noms perso interdits (un par ligne), gardée dans un secret : jamais écrite dans le dépôt
       - name: Noms interdits
@@ -876,7 +877,8 @@ jobs:
           git init -q nebula
           git -C nebula fetch -q --depth 1 https://github.com/dscalzi/Nebula.git "$NEBULA"
           git -C nebula checkout -q FETCH_HEAD
-          if ! (cd nebula && npm ci --no-audit --no-fund && npm run build) > nebula.log 2>&1; then tail -n 60 nebula.log; exit 1; fi
+          # Nebula et ses paquets npm (code d'autres auteurs) ne voient aucun secret (outils/sans_secrets.py)
+          if ! (cd nebula && python ../outils/sans_secrets.py npm ci --no-audit --no-fund && python ../outils/sans_secrets.py npm run build) > nebula.log 2>&1; then tail -n 60 nebula.log; exit 1; fi
           # (Nebula affiche toute la distribution : seules les lignes de l'outil sont gardées, sauf en cas d'échec)
           if ! python outils/pack_launcher.py nebula pack --version "1.0.$GITHUB_RUN_NUMBER" > pack.log 2>&1; then tail -n 80 pack.log; exit 1; fi
           grep '^\[pack\]' pack.log

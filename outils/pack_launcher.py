@@ -24,6 +24,9 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sans_secrets import env_propre  # noqa: E402
+
 RACINE_DEPOT = Path(__file__).resolve().parent.parent
 FORGE = "47.4.0"            # version de Forge de nos mods (gradle.properties)
 SERVEUR = "heraliz"         # Nebula : dossier servers/heraliz-1.20.1, identifiant heraliz-1.20.1
@@ -32,7 +35,7 @@ MINECRAFT = "1.20.1"
 
 def nebula(dossier, *args):
     print("[pack] nebula", " ".join(args), flush=True)
-    subprocess.run(["node", "dist/index.js", *args], cwd=dossier, check=True)
+    subprocess.run(["node", "dist/index.js", *args], cwd=dossier, check=True, env=env_propre())
 
 
 def md5(fichier):
@@ -127,7 +130,8 @@ def main():
     cache.mkdir(parents=True, exist_ok=True)
     (cache / "launcher_profiles.json").write_text('{"profiles": {}}', encoding="utf-8")
     print("[pack] installeur de Forge (sans fenêtre)", flush=True)
-    subprocess.run([java, "-Djava.awt.headless=true", "-jar", str(installeur), "--installClient", str(cache)], check=True)
+    subprocess.run([java, "-Djava.awt.headless=true", "-jar", str(installeur), "--installClient", str(cache)], check=True,
+                   env=env_propre())
 
     nebula(neb, "generate", "distro")
     distro_p = racine / "distribution.json"
