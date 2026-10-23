@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('heraliz', Object.freeze({
     saveProfile: (username, acceptedRules) => ipcRenderer.invoke('heraliz:profile', { username, acceptedRules }),
     connexion: (email, password, code, acceptedRules) => ipcRenderer.invoke('heraliz:connexion', { email, password, code, acceptedRules }),
     verifierCompte: () => ipcRenderer.invoke('heraliz:compte'),
+    etatDiscord: () => ipcRenderer.invoke('heraliz:etat-discord'),
     etatComptes: () => ipcRenderer.invoke('heraliz:etat-comptes'),
     inscription: (pseudo, email, password, confirmation, acceptedRules) => ipcRenderer.invoke('heraliz:inscription', { pseudo, email, password, confirmation, acceptedRules }),
     a2fPreparer: () => ipcRenderer.invoke('heraliz:a2f-preparer'),

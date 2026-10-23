@@ -24,6 +24,9 @@ let motDePasseA2F = null
 let apresA2F = null
 // nouvelle version du launcher à télécharger à la main (Mac, Linux en .deb), montrée une fois l'accueil affiché
 let nouvelleVersion = null
+// panneau Discord : nouvelle vérification programmée, vérification en cours
+let discordTimeout = null
+let discordEnCours = false
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -36,7 +39,7 @@ function el(tag, classe, texte) {
 
 async function call(promise) {
     const result = await promise
-    if (!result.ok) throw Object.assign(new Error(result.error), result.champs ? { champs: result.champs } : {})
+    if (!result.ok) throw Object.assign(new Error(result.error), result.champs ? { champs: result.champs } : {}, result.discord ? { discord: result.discord } : {})
     return result.data
 }
 
@@ -166,7 +169,7 @@ async function ouvrirA2F({ motDePasse = null, depuisMenu = false } = {}) {
 
 // Après une connexion ou une création de compte : proposer la double authentification, puis aller au menu.
 async function apresConnexion(motDePasse, nouveauCompte) {
-    const versMenu = () => { showTab('accueil'); showScreen('principal') }
+    const versMenu = entrerMenu
     try {
         apresA2F = versMenu
         if (await ouvrirA2F({ motDePasse })) return
@@ -176,6 +179,13 @@ async function apresConnexion(motDePasse, nouveauCompte) {
     }
     apresA2F = null
     versMenu()
+}
+
+// Menu principal après une connexion : l'accès au jeu (Discord du compte) est contrôlé aussitôt.
+function entrerMenu() {
+    showTab('accueil')
+    showScreen('principal')
+    controlerDiscord()
 }
 
 function showTab(name) {
@@ -290,7 +300,7 @@ function updatePlay() {
     const p = state?.progress
     const enJeu = p?.phase === 'running'
     const occupe = launchPending || Boolean(p?.busy)
-    $('play').disabled = !state || occupe
+    $('play').disabled = !state || occupe || discordBloque()
     $('play').classList.toggle('en-jeu', enJeu)
     $('play').classList.toggle('occupe', occupe && !enJeu)
     $('play').querySelector('.spin').hidden = !occupe || enJeu
@@ -506,7 +516,7 @@ $('profile-form').addEventListener('submit', async event => {
         const codeDemande = !$('code-champ').hidden
         applyState(next)
         restoreProfileForm()
-        if (codeDemande) { showTab('accueil'); showScreen('principal') }
+        if (codeDemande) entrerMenu()
         else await apresConnexion(motDePasse, false)
     } catch (error) { feedback('profile-feedback', error.message, true) }
     finally { $('save-profile').disabled = Boolean(state?.progress.busy) }
@@ -558,6 +568,7 @@ $('play').addEventListener('click', async () => {
         showScreen('identite')
         return
     }
+    if (discordBloque()) { ouvrirDiscord(state.discord.statut); return }
     if (launchPending || state.progress.busy) return
     launchPending = true
     renderProgress({ busy: false, phase: 'prepare', message: 'Chargement du pack HeraliZ…', percent: null })
@@ -565,6 +576,8 @@ $('play').addEventListener('click', async () => {
     catch (error) {
         launchPending = false
         renderProgress({ busy: false, phase: 'error', message: error.message, percent: null })
+        // pack ou jeton refusé à cause du Discord du compte : le panneau s'ouvre (il revérifie tout seul)
+        if (error.discord) { ouvrirDiscord(error.discord); controlerDiscord() }
         // Session expirée : le compte a été oublié, retour à la connexion.
         if (state.comptesSite) {
             const next = await call(api.getState()).catch(() => null)
@@ -572,6 +585,129 @@ $('play').addEventListener('click', async () => {
         }
     }
     finally { launchPending = false; updatePlay() }
+})
+
+/* ---------- accès au jeu : Discord du compte ---------- */
+
+// Compte Discord lié, membre du Discord HeraliZ, pas banni et (bêta) accepté par le staff : sinon, panneau bloquant.
+// Le site garde la décision (pack et jeton de lancement refusés) ; le launcher ne fait qu'expliquer et revérifier.
+const PANNEAUX_DISCORD = {
+    a_lier: {
+        titre: 'Lie ton compte Discord pour jouer',
+        texte: 'Pour jouer sur HeraliZ, ton compte doit être lié à ton compte Discord. « Lier mon Discord » ouvre la page dans ton navigateur ; une fois fait, reviens ici : le launcher le voit tout seul.',
+        ouvrir: 'Lier mon Discord', lien: 'discord-lier', verifier: 'J’ai lié mon compte', toutesLes: 5000
+    },
+    pas_membre: {
+        titre: 'Rejoins notre Discord',
+        texte: 'Ton compte Discord est bien lié, mais il n’est pas encore membre du Discord HeraliZ. Rejoins-le, puis reviens ici : le launcher le voit tout seul.',
+        ouvrir: 'Rejoindre le Discord', lien: 'discord-invitation', verifier: 'C’est fait', toutesLes: 5000
+    },
+    en_attente: {
+        titre: 'Compte en attente de validation par le staff',
+        texte: 'Pendant la bêta, chaque compte est accepté à la main par le staff de HeraliZ. Laisse le launcher ouvert : tu pourras jouer dès que ton compte sera accepté.',
+        verifier: 'Vérifier', toutesLes: 30000
+    },
+    refuse: { titre: 'Ton compte a été refusé.', texte: 'Le staff de HeraliZ a refusé ce compte. Tu peux te déconnecter pour utiliser un autre compte.' },
+    banni: { titre: 'Ce compte est banni.', texte: 'Ce compte ne peut plus jouer sur HeraliZ. Tu peux te déconnecter pour utiliser un autre compte.' },
+    indisponible: {
+        titre: 'Discord ne répond pas',
+        texte: 'Le site n’arrive pas à vérifier ton compte Discord pour le moment. Le launcher réessaie tout seul.',
+        verifier: 'Réessayer', toutesLes: 30000
+    }
+}
+
+function discordBloque() {
+    return Boolean(state?.profile && state.discord && state.discord.statut !== 'ok')
+}
+
+function arreterDiscord() {
+    clearTimeout(discordTimeout)
+    discordTimeout = null
+}
+
+// Panneau du statut donné (contenu, boutons) ; il ne se ferme qu'une fois le compte accepté, ou par la déconnexion.
+function ouvrirDiscord(statut) {
+    const panneau = PANNEAUX_DISCORD[statut]
+    if (!panneau || !state?.profile) return
+    // statut connu par un refus du site (pack, jeton) avant la prochaine vérification : JOUER reste éteint
+    state.discord = { ...(state.discord || {}), statut }
+    $('discord-dialog').dataset.statut = statut
+    $('discord-title').textContent = panneau.titre
+    $('discord-texte').textContent = panneau.texte
+    const pseudo = state.discord?.pseudo
+    $('discord-pseudo').textContent = pseudo || ''
+    $('discord-compte').hidden = !pseudo || statut === 'a_lier'
+    $('discord-ouvrir').hidden = !panneau.ouvrir
+    $('discord-ouvrir').textContent = panneau.ouvrir || ''
+    $('discord-verifier').hidden = !panneau.verifier
+    $('discord-verifier').textContent = panneau.verifier || ''
+    if (!$('discord-dialog').open) {
+        feedback('discord-feedback', '')
+        $('discord-dialog').showModal()
+    }
+    arreterDiscord()
+    if (panneau.toutesLes) discordTimeout = setTimeout(() => controlerDiscord(), panneau.toutesLes)
+    updatePlay()
+}
+
+function fermerDiscord() {
+    arreterDiscord()
+    if ($('discord-dialog').open) $('discord-dialog').close()
+    updatePlay()
+}
+
+// Demande au site l'accès au jeu du compte connecté, puis ouvre, met à jour ou ferme le panneau. manuel : clic du joueur.
+async function controlerDiscord(manuel = false) {
+    if (!api || !state?.comptesSite || !profileReady() || discordEnCours) return
+    discordEnCours = true
+    arreterDiscord()
+    if (manuel) feedback('discord-feedback', 'Vérification…')
+    const etaitBloque = $('discord-dialog').open
+    try {
+        const next = await call(api.etatDiscord())
+        applyState(next)
+        if (next.sessionExpiree || !next.profile) {
+            fermerDiscord()
+            restoreProfileForm()
+            showScreen('identite')
+            toast('Ta session a expiré : reconnecte-toi avec ton compte HeraliZ.')
+            return
+        }
+        if (next.horsLigne && manuel) feedback('discord-feedback', 'Le site HeraliZ ne répond pas. Réessaie dans un instant.', true)
+        else if (manuel) feedback('discord-feedback', next.discord?.statut === $('discord-dialog').dataset.statut ? 'Pas encore : réessaie dans un instant.' : '')
+        if (discordBloque()) ouvrirDiscord(state.discord.statut)
+        else if (etaitBloque) {
+            fermerDiscord()
+            toast('Ton compte a accès au jeu : bonne survie !')
+        }
+    } catch (error) {
+        if (manuel) feedback('discord-feedback', error.message, true)
+    } finally {
+        discordEnCours = false
+        // panneau encore ouvert sans vérification programmée (erreur) : on réessaie au même rythme
+        const panneau = PANNEAUX_DISCORD[$('discord-dialog').dataset.statut]
+        if ($('discord-dialog').open && !discordTimeout && panneau?.toutesLes) discordTimeout = setTimeout(() => controlerDiscord(), panneau.toutesLes)
+    }
+}
+
+// Échap ne ferme pas le panneau ; fermé autrement (déconnexion, compte accepté), plus aucune vérification
+$('discord-dialog').addEventListener('cancel', event => event.preventDefault())
+$('discord-dialog').addEventListener('close', arreterDiscord)
+$('discord-ouvrir').addEventListener('click', () => {
+    const lien = PANNEAUX_DISCORD[$('discord-dialog').dataset.statut]?.lien
+    if (lien) call(api.openLink(lien)).catch(error => feedback('discord-feedback', error.message, true))
+})
+$('discord-verifier').addEventListener('click', () => controlerDiscord(true))
+$('discord-quitter').addEventListener('click', () => call(api.windowAction('close')).catch(error => toast(error.message)))
+$('discord-deconnexion').addEventListener('click', async () => {
+    $('discord-deconnexion').disabled = true
+    try {
+        applyState(await call(api.logout()))
+        fermerDiscord()
+        restoreProfileForm()
+        showScreen('identite')
+    } catch (error) { feedback('discord-feedback', error.message, true) }
+    finally { $('discord-deconnexion').disabled = false }
 })
 
 // Mise à jour du launcher au démarrage (version installée) : true si elle s'installe, le launcher redémarre alors seul.
@@ -667,6 +803,8 @@ async function init() {
     showScreen(profileReady() ? 'principal' : 'identite')
     if (!(await demanderAccord())) return
     if (nouvelleVersion) proposerNouvelleVersion(nouvelleVersion)
+    // accès au jeu selon le Discord du compte, une fois le compte revérifié et l'accord donné
+    controlerDiscord()
 }
 
 // Mac et Linux (.deb) : le launcher ne se remplace pas seul, le joueur télécharge la nouvelle version (même lien que

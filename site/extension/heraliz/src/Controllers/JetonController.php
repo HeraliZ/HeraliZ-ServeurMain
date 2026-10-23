@@ -29,6 +29,10 @@ class JetonController extends Controller
         if ($user instanceof JsonResponse) {
             return $user;
         }
+        // Discord lié, membre, pas banni et accepté par le staff (Discord\Comptes)
+        if (($refus = $this->discord($user, $request)) !== null) {
+            return $refus;
+        }
 
         $cle = self::cle();
         if ($cle === null) {

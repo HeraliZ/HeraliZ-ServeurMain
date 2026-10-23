@@ -35,6 +35,10 @@ class PackController extends Controller
         if ($user instanceof JsonResponse) {
             return $user;
         }
+        // Discord lié, membre, pas banni et accepté par le staff (Discord\Comptes)
+        if (($refus = $this->discord($user, $request)) !== null) {
+            return $refus;
+        }
 
         try {
             $distribution = json_decode((string) @file_get_contents(self::DISTRIBUTION), false, 512, JSON_THROW_ON_ERROR);

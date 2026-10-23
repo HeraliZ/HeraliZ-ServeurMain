@@ -328,6 +328,21 @@
         <div class="actions-dialog"><button class="btn2" id="accord-retour">Retour</button><button class="btn1" id="accord-confirmer">Oui, j’accepte</button></div>
     </dialog>
 
+    <!-- Accès au jeu selon le Discord du compte : ne se ferme pas tant que le compte n'a pas accès (renderer.js, ouvrirDiscord) -->
+    <dialog id="discord-dialog" class="petite" aria-labelledby="discord-title">
+        <div class="eyebrow caps">Discord HeraliZ</div>
+        <h2 id="discord-title" class="caps"></h2>
+        <p id="discord-texte" class="desc"></p>
+        <p id="discord-compte" class="desc" hidden>Compte Discord : <b id="discord-pseudo"></b></p>
+        <p id="discord-feedback" class="feedback" role="status"></p>
+        <div class="actions-dialog">
+            <button class="btn2" id="discord-quitter">Quitter</button>
+            <button class="btn2" id="discord-deconnexion">Se déconnecter</button>
+            <button class="btn2" id="discord-verifier"></button>
+            <button class="btn1" id="discord-ouvrir"></button>
+        </div>
+    </dialog>
+
     <dialog id="logout-dialog" class="petite" aria-labelledby="logout-title">
         <h2 id="logout-title" class="caps">Se déconnecter ?</h2>
         <p class="desc">Le compte <b id="logout-user"></b> sera déconnecté de ce PC. Ton compte sur le site et en jeu ne change pas.</p>

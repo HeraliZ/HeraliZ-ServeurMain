@@ -7,6 +7,7 @@ use Azuriom\Http\Resources\AuthenticatedUser;
 use Azuriom\Models\ActionLog;
 use Azuriom\Models\User;
 use Azuriom\Plugin\Heraliz\Adresse;
+use Azuriom\Plugin\Heraliz\Discord\Reglages;
 use Azuriom\Rules\GameAuth;
 use Azuriom\Rules\Username;
 use Illuminate\Auth\Events\Registered;
@@ -43,6 +44,9 @@ class InscriptionController extends Controller
             'jeton' => JetonController::cle() !== null,
             // pack de jeu donné aux comptes connectés, avec des liens signés (PackController)
             'pack' => PackController::cle() !== null,
+            // Discord obligatoire pour jouer (bêta) : le launcher appelle /api/heraliz/compte/etat après la connexion
+            'discord' => Reglages::actif(),
+            'validation_manuelle' => Reglages::actif() && Reglages::validationManuelle(),
             // les conditions du site : leur adresse, ou la page d'inscription du site qui les affiche (si elle est ouverte)
             'conditions' => $conditions === null ? null : (preg_match('/^https?:\/\//i', $conditions)
                 ? $conditions : (Route::has('register') ? route('register') : null)),

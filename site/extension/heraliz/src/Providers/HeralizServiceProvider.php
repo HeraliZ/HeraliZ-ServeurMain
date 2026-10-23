@@ -4,9 +4,15 @@ namespace Azuriom\Plugin\Heraliz\Providers;
 
 use Azuriom\Extensions\Plugin\BasePluginServiceProvider;
 use Azuriom\Plugin\Heraliz\Adresse;
+use Azuriom\Plugin\Heraliz\Discord\Comptes;
+use Azuriom\Plugin\Heraliz\Middleware\IpsBannies;
 use Azuriom\Plugin\Heraliz\Middleware\LimiteConnexion;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 
@@ -60,5 +66,47 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         // 10 minutes d'attente ; 10 codes de double authentification faux par compte, puis 15 minutes (LimiteConnexion)
         $this->router->pushMiddlewareToGroup('api', LimiteConnexion::class);
         $this->router->pushMiddlewareToGroup('web', LimiteConnexion::class);
+
+        // Discord obligatoire (bêta, Discord\Comptes) : adresses bloquées refusées à l'inscription et à la connexion,
+        // adresses des connexions du launcher notées pour chaque compte
+        $this->router->pushMiddlewareToGroup('api', IpsBannies::class);
+        $this->router->pushMiddlewareToGroup('web', IpsBannies::class);
+
+        // adresses des connexions et inscriptions du site (et des inscriptions du launcher, qui envoient Registered)
+        Event::listen(Login::class, fn (Login $e) => rescue(fn () => Comptes::noterIp((int) $e->user->getAuthIdentifier(), Adresse::de(request())), null, false));
+        Event::listen(Registered::class, fn (Registered $e) => rescue(fn () => Comptes::noterIp((int) $e->user->getAuthIdentifier(), Adresse::de(request())), null, false));
+
+        // état du compte pour le launcher (POST /api/heraliz/compte/etat) : 60 par minute et par adresse IP
+        RateLimiter::for('heraliz-compte', fn (Request $request) => Limit::perMinute(60)->by(Adresse::de($request)));
+
+        // page du lien Discord (heraliz::discord) et entrée « Mon Discord » du menu du compte
+        $this->loadViewsFrom(plugin_path('heraliz/resources/views'), 'heraliz');
+        if (method_exists($this, 'registerUserNavigation')) {
+            $this->registerUserNavigation();
+        }
+
+        // toutes les 5 minutes (tâches planifiées d'Azuriom, /etc/cron.d/azuriom) : bans Discord, demandes au staff,
+        // commandes du serveur de jeu (Discord\Comptes::balayer)
+        $this->app->booted(function () {
+            $this->app->make(Schedule::class)
+                ->call(fn () => Comptes::balayer())
+                ->everyFiveMinutes()
+                ->name('heraliz-discord')
+                ->withoutOverlapping(10);
+        });
+    }
+
+    /**
+     * Entrée du menu du compte sur le site (lue par le thème : plugins()->getUserNavItems()).
+     */
+    protected function userNavigation(): array
+    {
+        return [
+            'heraliz-discord' => [
+                'route' => 'heraliz.discord.index',
+                'name' => 'Mon Discord',
+                'icon' => 'bi bi-discord',
+            ],
+        ];
     }
 }
