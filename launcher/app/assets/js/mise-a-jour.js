@@ -56,7 +56,7 @@ class MiseAJour {
     // ou une partie est en cours (jamais de redémarrage dans ce cas) ; memoire : { lire(), ecrire(valeur) }, les essais
     // d'installation gardés d'un démarrage à l'autre.
     constructor({ updater, actif, auto = true, envoyer, occupe, memoire, delaiMs = DELAI_VERIFICATION_MS, delaiInstallationMs = 1200,
-                  clePublique = null, majBaseUrl = null, plateforme = process.platform, recuperer = recupererHttps }) {
+        clePublique = null, majBaseUrl = null, plateforme = process.platform, recuperer = recupererHttps }) {
         this.updater = updater
         this.memoire = memoire
         this.actif = Boolean(actif && updater)
