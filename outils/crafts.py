@@ -81,7 +81,8 @@ EXPLOSIFS = [
     ("c4", "crac:c4", {"bocal_poudre": 5, "scotch_iii": 1, "corde": 2, "circuit_imprime_ii": 3}),
 ]
 
-# composants à niveaux : PAR_NIVEAU d'un niveau donnent 1 du niveau suivant, et 1 se défait en PAR_NIVEAU du niveau
+# composants à niveaux : PAR_NIVEAU d'un niveau donnent 1 du niveau suivant, sans retour possible (23/10, choix du
+# propriétaire) ; avant, 1 se défaisait en PAR_NIVEAU du niveau
 # d'en dessous (22/10, choix du propriétaire : tous les crafts possibles, pas facilement)
 A_NIVEAUX = ["canon", "ressort", "kit_pieces", "tissu", "alcool", "batterie", "circuit_imprime", "ferraille",
              "caoutchouc", "scotch"]
@@ -164,9 +165,6 @@ def main():
             recettes[f"composants/{i:02d}_{c}_{j}a{haut}"] = recette(
                 [{"item": {"item": C + c + bas}, "count": PAR_NIVEAU}],
                 {"type": "custom", "item": {"item": C + c + haut}, "group": f"{NS}:composants"})
-            recettes[f"composants/{i:02d}_{c}_{j}b{haut}_defait"] = recette(
-                [{"item": {"item": C + c + haut}, "count": 1}],
-                {"type": "custom", "item": {"item": C + c + bas, "count": PAR_NIVEAU}, "group": f"{NS}:composants"})
 
     # gunpack refait en entier
     if PACK.exists():
