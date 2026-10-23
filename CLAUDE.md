@@ -2102,6 +2102,11 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   clés) ; aperçu et contrôle « rien ne
   déborde » (3 langues, 9 tailles de fenêtre) par `python mods/heraliz-crates/outils/apercu_ecran_caisse.py` (lit les
   constantes de `CaseOpenScreen`, images dans `maquettes/caisses_lisibles/`). Rien testé en jeu.
+  Caisses 2.20.1 : textes centrés dans leurs boîtes sur le milieu des capitales (touches, boutons, quantités ×12 en
+  pastille, pastilles de la légende), d'après le placement réel des polices TTF de Minecraft 1.20.1 (lu dans
+  `TrueTypeGlyphProvider` / `BakedGlyph` : ligne de base = y + ascent + 2 × décalage − 3, le décalage vertical du
+  fichier de police compte deux fois ; Onest pour le cyrillique) ; l'aperçu contrôle aussi ce centrage au point d'écran
+  près. Rien testé en jeu.
   Puis (23/10, nuit, rien testé en jeu) : échelle d'interface du joueur rendue dès qu'aucun écran n'est ouvert
   (Interface 1.9.2, `EchelleGarde` : cœurs et faim énormes après une partie de zombies) ; Matchs 0.15.1 : en match, seules
   les commandes `zombies`, `duel`, `clashwar`, `matchs`, `groupe`, `msg`, `tell`, `w`, `r`, `login`, `register`

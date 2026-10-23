@@ -65,7 +65,7 @@ public class CaseOpenScreen extends Screen {
     private static final int TITRE_Y = 12, SOUS_Y = 34, ROUE_Y = 57, NOM_Y = 155, RARETE_Y = 175, CHANCES_Y = 194,
             LEGENDE_Y = 202, SECTION_Y = 230, GRILLE_Y = 244, BOUTON_Y = 285, TOUCHES_Y = 315;
     /** Rangée des touches : hauteur d'une touche, marge du texte dans la touche, écart touche-action, écart entre deux. */
-    private static final int TOUCHE_H = 15, TOUCHE_PAD = 5, TOUCHE_ECART = 5, TOUCHES_ESPACE = 14, TOUCHE_TEXTE_Y = 5;
+    private static final int TOUCHE_H = 15, TOUCHE_PAD = 5, TOUCHE_ECART = 5, TOUCHES_ESPACE = 14;
     /** Espacement des capitales : titre, rareté, section, bouton, boutons du gain. */
     private static final float ESP_TITRE = 2.2f, ESP_TOUCHE = 0.3f, ESP_RARETE = 1.4f, ESP_SECTION = 1.4f, ESP_BOUTON = 1.4f,
             ESP_GAIN = 1.0f;
@@ -76,12 +76,27 @@ public class CaseOpenScreen extends Screen {
     private static final int STEP = 76, CW = 68, CARTE_MAX = 84, ROUE_H = 92, ROUE_MARGE = 20;
     /** Légende des chances : pastille (côté, haut sous la ligne), écart pastille-texte, écart entre deux entrées,
      *  hauteur d'une ligne. */
-    private static final int LEGENDE_POINT = 5, LEGENDE_POINT_Y = 1, LEGENDE_ECART = 4, LEGENDE_ESPACE = 14, LEGENDE_LIGNE = 12;
+    private static final int LEGENDE_POINT = 5, LEGENDE_ECART = 4, LEGENDE_ESPACE = 14, LEGENDE_LIGNE = 12;
     private static final int GRILLE_COLS = 12, CELLULE_W = 39, GRILLE_H = 36, GRILLE_GAP = 5, GRILLE_ITEM = 22;
     private static final int BOUTON_W = 236, BOUTON_H = 24;
     /** Carte du gain : panneau, carte de l'objet, objet, boutons (hauteur), hauts du titre, de la carte et du nom. */
     private static final int GAIN_W = 268, GAIN_H = 236, GAIN_CARTE = 120, GAIN_ITEM = 56, GAIN_BOUTON_H = 24,
             GAIN_TITRE_Y = 16, GAIN_CARTE_Y = 36, GAIN_NOM_Y = 166;
+    /**
+     * Placement vertical des lettres, tel que Minecraft 1.20.1 le fait (TrueTypeGlyphProvider, SheetGlyphInfo, BakedGlyph) :
+     * haut de la lettre = y + ascent - haut du glyphe + 2 x décalage - 3, l'ascent valant ascent / (ascent - descent) x
+     * taille (stbtt_ScaleForPixelHeight), et le décalage vertical du fichier de police comptant deux fois (boîte du glyphe
+     * et bearingY). Pour DM Sans (ascent 992, descent -310, capitales 700) et notre décalage de 1 : ligne de base à
+     * 0,762 x taille - 1 sous le point de dessin, milieu des capitales à 0,493 x taille - 1. Sert à centrer un texte dans
+     * sa boîte sur le milieu de ses capitales (touches, boutons, quantités, pastilles de la légende).
+     */
+    private static final float DM_ASCENT = 992f, DM_CAPS = 700f, DM_HAUTEUR = 1302f, DECALAGE_Y = 1f;
+    /** Même chose pour la police de secours cyrillique (Onest : ascent 970, descent -305, capitales 707). */
+    private static final float ON_ASCENT = 970f, ON_CAPS = 707f, ON_HAUTEUR = 1275f;
+    /** Tailles des polices centrées (fichiers de police) : bouton (ui_bold), texte (ui_small, ui_small_bold), quantités. */
+    private static final float T_BOUTON = 11f, T_TEXTE = 9f, T_COMPTE = 8f;
+    /** Pastille des quantités (×12) : hauteur, marge du texte, retrait du coin de la carte. */
+    private static final int COMPTE_H = 11, COMPTE_PAD = 3, COMPTE_RETRAIT = 3;
     /** Couleur de la légende, du sous-titre et de l'aide : plus claire que MUTED, lisible sur le verre. */
     private static final int CLAIR = 0xB4BAC4;
     /** Opacité du halo de rareté derrière la roue. */
@@ -467,6 +482,44 @@ public class CaseOpenScreen extends Screen {
         play(ModRegistry.SND_ROLL_TICK.get(), 0.9f + Math.min(0.35f, vitesse / 160f) + random.nextFloat() * 0.06f, 0.4f);
     }
 
+    /** Milieu des capitales sous le point de dessin (voir DM_ASCENT). */
+    private static float milieuCaps(float taille) {
+        return milieuCaps(taille, "");
+    }
+
+    /** Milieu des capitales d'un texte : celles de sa première lettre (DM Sans, ou Onest pour le cyrillique). */
+    private static float milieuCaps(float taille, String texte) {
+        boolean cyr = false;
+        for (int i = 0; i < texte.length(); i++) {
+            char c = texte.charAt(i);
+            if (Character.isLetter(c)) {
+                cyr = Character.UnicodeBlock.of(c) == Character.UnicodeBlock.CYRILLIC;
+                break;
+            }
+        }
+        float asc = cyr ? ON_ASCENT : DM_ASCENT, caps = cyr ? ON_CAPS : DM_CAPS, h = cyr ? ON_HAUTEUR : DM_HAUTEUR;
+        return (asc - caps / 2f) * taille / h + 2f * DECALAGE_Y - 3f;
+    }
+
+    /** Point de dessin qui centre les capitales d'un texte de cette taille dans la boîte (haut, hauteur). */
+    private static float yCentre(float haut, float hauteur, float taille, String texte) {
+        return haut + hauteur / 2f - milieuCaps(taille, texte);
+    }
+
+    /** Quantité « ×12 » dans une pastille sombre, coin haut droit en (xDroite, haut), texte centré dans la pastille. */
+    private void compte(GuiGraphics g, int n, float xDroite, float haut, float alpha) {
+        String t = "×" + n;
+        int tw = font.width(Ui.lit(t, COMPTE));
+        float w = tw + 2 * COMPTE_PAD;
+        Lot lot = new Lot(g);
+        lot.rond(xDroite - w, haut, w, COMPTE_H, Ui.argb(0x07080A, (int) (170 * alpha)));
+        lot.fin();
+        g.pose().pushPose();
+        Ui.placer(g, xDroite - COMPTE_PAD - tw, yCentre(haut, COMPTE_H, T_COMPTE, t));
+        g.drawString(font, Ui.lit(t, COMPTE), 0, 0, Ui.argb(0xFFFFFF, (int) (235 * alpha)), false);
+        g.pose().popPose();
+    }
+
     /** En-tête centré : nom de la caisse en capitales espacées, dessous « N clés · N objets ». */
     private void renderEntete(GuiGraphics g) {
         float cx = px + pw / 2f;
@@ -580,7 +633,7 @@ public class CaseOpenScreen extends Screen {
         if (c.count() > 1) {
             g.pose().pushPose();
             g.pose().translate(0, 0, 260);
-            Ui.right(g, font, Ui.lit("×" + c.count(), COMPTE), x + w - 5, y + 3, Ui.argb(0xFFFFFF, (int) (225 * fondu)));
+            compte(g, c.count(), x + w - COMPTE_RETRAIT, y + COMPTE_RETRAIT, fondu);
             g.pose().popPose();
         }
     }
@@ -620,7 +673,7 @@ public class CaseOpenScreen extends Screen {
         g.pose().translate(0, 0, 250);
         String rn = CardArt.rarity(c.rarity()).displayName().getString().toUpperCase(Locale.ROOT);
         Ui.spacedCentered(g, font, rn, TEXTE_GRAS, x + w / 2f, y + h - 20, Ui.argb(col, 255), ESP_GAIN);
-        if (c.count() > 1) Ui.right(g, font, Ui.lit("×" + c.count(), COMPTE), x + w - 6, y + 4, Ui.argb(0xFFFFFF, 225));
+        if (c.count() > 1) compte(g, c.count(), x + w - COMPTE_RETRAIT - 1, y + COMPTE_RETRAIT + 1, 1f);
         if (eteinte > 0) {
             Lot voile = new Lot(g);
             voile.rond(x, y, w, h, Ui.argb(0x07080A, (int) (150 * eteinte)));
@@ -654,7 +707,7 @@ public class CaseOpenScreen extends Screen {
             if (c.count() > 1) {
                 g.pose().pushPose();
                 g.pose().translate(0, 0, 250);
-                Ui.right(g, font, Ui.lit("×" + c.count(), COMPTE), x + celluleW - 3, y + 2, Ui.argb(0xFFFFFF, 215));
+                compte(g, c.count(), x + celluleW - 2, y + 2, 1f);
                 g.pose().popPose();
             }
             if (survol) survolee = c;
@@ -725,7 +778,8 @@ public class CaseOpenScreen extends Screen {
             Lot points = new Lot(g);
             float tx = lx;
             for (int k : l) {
-                points.rond(Math.round(tx), Math.round(ly + LEGENDE_POINT_Y), LEGENDE_POINT, LEGENDE_POINT, Ui.argb(RARETES[rangs.get(k)], 255));
+                // pastille centrée sur le milieu des capitales du texte
+                points.rond(Math.round(tx), ly + milieuCaps(T_TEXTE, textes.get(k)) - LEGENDE_POINT / 2f, LEGENDE_POINT, LEGENDE_POINT, Ui.argb(RARETES[rangs.get(k)], 255));
                 tx += largeurLegende(textes.get(k)) + LEGENDE_ESPACE;
             }
             points.fin();
@@ -763,7 +817,7 @@ public class CaseOpenScreen extends Screen {
         }
         lot.fin();
         String texte = Component.translatable(cle).getString().toUpperCase(Locale.ROOT);
-        Ui.spacedCentered(g, font, texte, Ui.BOLD, boutonX + boutonW / 2f, boutonY + 7, Ui.argb(dore ? OR_TEXTE : Ui.MUTED, 255), ESP_BOUTON);
+        Ui.spacedCentered(g, font, texte, Ui.BOLD, boutonX + boutonW / 2f, yCentre(boutonY, BOUTON_H, T_BOUTON, texte), Ui.argb(dore ? OR_TEXTE : Ui.MUTED, 255), ESP_BOUTON);
 
         renderTouches(g);
     }
@@ -784,14 +838,15 @@ public class CaseOpenScreen extends Screen {
             String touche = Component.translatable(t[0]).getString().toUpperCase(Locale.ROOT);
             String action = Component.translatable(t[1]).getString();
             int tw = Math.round(Ui.spacedWidth(font, touche, TEXTE_GRAS, ESP_TOUCHE)) + 2 * TOUCHE_PAD;
+            float ty = yCentre(y, TOUCHE_H, T_TEXTE, touche), tya = yCentre(y, TOUCHE_H, T_TEXTE, action);
             Lot lot = new Lot(g);
             lot.rond(Math.round(x), y, tw, TOUCHE_H, Ui.argb(0xFFFFFF, 14));
             lot.rondContour(Math.round(x), y, tw, TOUCHE_H, Ui.argb(0xFFFFFF, 70));
             lot.fin();
-            Ui.spaced(g, font, touche, TEXTE_GRAS, Math.round(x) + TOUCHE_PAD, y + TOUCHE_TEXTE_Y, Ui.argb(Ui.TEXT, 255), ESP_TOUCHE);
+            Ui.spaced(g, font, touche, TEXTE_GRAS, Math.round(x) + TOUCHE_PAD, ty, Ui.argb(Ui.TEXT, 255), ESP_TOUCHE);
             float ax = Math.round(x) + tw + TOUCHE_ECART;
             g.pose().pushPose();
-            Ui.placer(g, ax, y + TOUCHE_TEXTE_Y);
+            Ui.placer(g, ax, tya);
             g.drawString(font, Ui.lit(action, TEXTE), 0, 0, Ui.argb(CLAIR, 255), false);
             g.pose().popPose();
             x = ax + font.width(Ui.lit(action, TEXTE)) + TOUCHES_ESPACE;
@@ -811,7 +866,7 @@ public class CaseOpenScreen extends Screen {
             int place = Math.round(px + pw - pad - 2 - x);
             if (place > 20) {
                 note = Ui.ellipsis(font, note, TEXTE, place);
-                Ui.right(g, font, Ui.lit(note, TEXTE), px + pw - pad - 2, y + TOUCHE_TEXTE_Y, Ui.argb(couleur, 255));
+                Ui.right(g, font, Ui.lit(note, TEXTE), px + pw - pad - 2, yCentre(y, TOUCHE_H, T_TEXTE, note), Ui.argb(couleur, 255));
             }
         }
     }
@@ -855,10 +910,10 @@ public class CaseOpenScreen extends Screen {
         lot.fin();
         if (encore) {
             String t = Component.translatable(free ? "gui.heralizcrates.case.again" : "gui.heralizcrates.case.again_key").getString().toUpperCase(Locale.ROOT);
-            Ui.spacedCentered(g, font, t, TEXTE_GRAS, encoreX + gainBoutonW / 2f, gainBoutonY + 7, Ui.argb(OR_TEXTE, 255), ESP_GAIN);
+            Ui.spacedCentered(g, font, t, TEXTE_GRAS, encoreX + gainBoutonW / 2f, yCentre(gainBoutonY, GAIN_BOUTON_H, T_TEXTE, t), Ui.argb(OR_TEXTE, 255), ESP_GAIN);
         }
         String f = Component.translatable("gui.heralizcrates.case.close").getString().toUpperCase(Locale.ROOT);
-        Ui.spacedCentered(g, font, f, TEXTE_GRAS, fx + fw / 2f, gainBoutonY + 7, Ui.argb(sf ? Ui.TEXT : Ui.MUTED, 255), ESP_GAIN);
+        Ui.spacedCentered(g, font, f, TEXTE_GRAS, fx + fw / 2f, yCentre(gainBoutonY, GAIN_BOUTON_H, T_TEXTE, f), Ui.argb(sf ? Ui.TEXT : Ui.MUTED, 255), ESP_GAIN);
         g.pose().popPose();
     }
 
@@ -918,12 +973,12 @@ public class CaseOpenScreen extends Screen {
         }
 
         /** Rectangle aux coins arrondis (rayon 2 px). */
-        void rond(int x, int y, int w, int h, int c) {
+        void rond(float x, float y, float w, float h, int c) {
             rondVert(x, y, w, h, c, c);
         }
 
         /** Rectangle arrondi en dégradé vertical. */
-        void rondVert(int x, int y, int w, int h, int haut, int bas) {
+        void rondVert(float x, float y, float w, float h, int haut, int bas) {
             if (w < 4 || h < 4) return;
             rect(x + 2, y, x + w - 2, y + 1, lerp(haut, bas, 0f));
             rect(x + 1, y + 1, x + w - 1, y + 2, lerp(haut, bas, 1f / h));

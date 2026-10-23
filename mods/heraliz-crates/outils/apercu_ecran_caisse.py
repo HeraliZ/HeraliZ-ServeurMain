@@ -1,20 +1,24 @@
-"""Aperçu de l'écran d'ouverture des caisses (CaseOpenScreen, Caisses 2.20.0) et contrôle « rien ne déborde ».
+"""Aperçu de l'écran d'ouverture des caisses (CaseOpenScreen, Caisses 2.20.1) et contrôle « rien ne déborde ».
 
     python mods/heraliz-crates/outils/apercu_ecran_caisse.py [--sortie DOSSIER]
 
 Refait l'écran comme le jeu le dessine, sans Minecraft :
 - les constantes de mise en page sont LUES dans CaseOpenScreen.java (une seule source : changer le Java suffit) ;
 - les polices sont les vraies (fichiers TTF du mod, tailles et décalages lus dans assets/heralizcrates/font/*.json),
-  avec le secours cyrillique, et mesurées comme Minecraft 1.20.1 (TrueTypeGlyphProvider : échelle
-  stbtt_ScaleForPixelHeight(taille), avance sans crénage, Font.width arrondi au-dessus, ligne de base à
-  y + décalage + ascent - 3 ; capitales espacées lettre par lettre comme Ui.spaced) ;
+  avec le secours cyrillique, et placées comme Minecraft 1.20.1 (code lu dans TrueTypeGlyphProvider, SheetGlyphInfo,
+  BakedGlyph) : échelle stbtt_ScaleForPixelHeight(taille) = taille / (ascent - descent) ; avance sans crénage ;
+  Font.width arrondi au-dessus ; haut du glyphe = y + ascent - haut du glyphe + 2 x décalage - 3 (le décalage vertical
+  du fichier de police compte deux fois : dans la boîte du glyphe de stb et dans bearingY), soit la ligne de base à
+  y + ascent + 2 x décalage - 3 ; à gauche, l'approche du glyphe compte aussi deux fois (bearingX) ; capitales espacées
+  lettre par lettre, chacune posée sur un point d'écran comme Ui.spaced ;
 - l'échelle d'interface est celle que choisit Echelle.voulue() (la plus grande qui garde un canevas de 600 x 340).
 Les objets sont des carrés de couleur à leur place et à leur taille.
 
 Contrôle : chaque texte (encre réelle des lettres) doit rester dans sa boîte (panneau, carte, bouton, colonne, bande) et
-ne toucher aucun autre texte, pour les trois langues et plusieurs tailles de fenêtre. Le contrôle est fait trois fois :
-avec la ligne de base ci-dessus, avec celle mesurée par heralisz-matchs (TexteCentre : 4,52 + 0,26 x taille) et avec
-celle de la police de Minecraft (7 + décalage), pour tenir compte d'un écart de placement vertical. La liste des débordements doit être vide (sinon code de sortie 1).
+ne toucher aucun autre texte, pour les trois langues et plusieurs tailles de fenêtre. Les textes centrés dans une
+boîte (touches, boutons, quantités) : écart en haut et écart en bas des capitales égaux à un point d'écran près (aux
+échelles 2 et 3), accents et jambages dans la boîte ; pastilles de la légende sur le milieu des capitales à un point
+près. La liste des défauts doit être vide (sinon code de sortie 1).
 
 Images : maquettes/caisses_lisibles/ (1920 x 1080 et 1280 x 720, écran de la roue et carte du gain, en français ; la
 roue en russe en 1280 x 720).
@@ -74,6 +78,7 @@ class Fonte:
         self.echelle = taille / (h.ascent - h.descent)  # stbtt_ScaleForPixelHeight
         self.upm = tt["head"].unitsPerEm
         self.ascent = h.ascent * self.echelle
+        self.caps = tt["OS/2"].sCapHeight * self.echelle
         self.taille = taille
         self.decalage = decalage
         self.pil = {}
@@ -83,6 +88,10 @@ class Fonte:
 
     def avance(self, ch):
         return self.hmtx[self.cmap[ord(ch)]][0] * self.echelle
+
+    def approche(self, ch):
+        """Approche gauche (lsb) en unités : Minecraft l'ajoute une 2e fois (bearingX)."""
+        return self.hmtx[self.cmap[ord(ch)]][1] * self.echelle
 
     def image(self, s):
         if s not in self.pil:
@@ -127,20 +136,32 @@ class Police:
 
 
 POL = {k: Police(v) for k, v in POLICE_DE.items()}
-
-# Ligne de base sous le point de dessin : "source" = y + décalage + ascent - 3 (TrueTypeGlyphProvider) ; "mesure" =
-# 4,52 + 0,26 x taille (TexteCentre de heralisz-matchs) ; "bitmap" = 7 + décalage (comme la police de Minecraft). Le
-# contrôle passe par les trois : la mise en page doit tenir quel que soit le vrai placement vertical.
-MODELES = ("source", "mesure", "bitmap")
-MODELE = "source"
-
+# les tailles et métriques recopiées dans le Java (centrage) doivent être celles des polices
+assert C["T_BOUTON"] == POL["BOLD"].taille and C["T_TEXTE"] == POL["TEXTE"].taille == POL["TEXTE_GRAS"].taille
+assert C["T_COMPTE"] == POL["COMPTE"].taille
+_dm = POL["TEXTE"].fontes[0]
+assert (C["DM_ASCENT"], C["DM_CAPS"]) == (round(_dm.ascent / _dm.echelle), round(_dm.caps / _dm.echelle))
+assert C["DM_HAUTEUR"] == round(_dm.taille / _dm.echelle) and all(p.decalage == C["DECALAGE_Y"] for q in POL.values() for p in q.fontes)
 
 def ligne_de_base(f):
-    if MODELE == "source":
-        return f.decalage + f.ascent - 3.0
-    if MODELE == "bitmap":
-        return 7.0 + f.decalage
-    return 4.52 + 0.26 * f.taille
+    """Ligne de base sous le point de dessin (TrueTypeGlyphProvider.Glyph.bearingY, BakedGlyph.render : up - 3)."""
+    return f.ascent + 2 * f.decalage - 3.0
+
+
+def milieu_caps_java(taille, texte=""):
+    """CaseOpenScreen.milieuCaps : même formule, constantes lues dans le Java (Onest si la 1re lettre est cyrillique)."""
+    cyr = False
+    for ch in texte:
+        if ch.isalpha():
+            cyr = 0x400 <= ord(ch) <= 0x4FF
+            break
+    p = "ON_" if cyr else "DM_"
+    return (C[p + "ASCENT"] - C[p + "CAPS"] / 2) * taille / C[p + "HAUTEUR"] + 2 * C["DECALAGE_Y"] - 3
+
+
+def y_centre(haut, hauteur, taille, texte=""):
+    """CaseOpenScreen.yCentre."""
+    return haut + hauteur / 2 - milieu_caps_java(taille, texte)
 
 
 # ----------------------------------------------------------------------------------------------- textes
@@ -189,6 +210,8 @@ class Ecran:
         self.dessiner = dessiner
         self.img = Image.new("RGBA", (fen_w, fen_h), (0, 0, 0, 255)) if dessiner else None
         self.textes = []  # (étiquette, boîte d'encre, boîte permise)
+        self.centres = []  # (étiquette, haut des capitales, ligne de base, haut de la boîte, bas de la boîte)
+        self.pastilles = []  # (étiquette, milieu de la pastille, milieu des capitales du texte)
 
     # formes (unités d'interface)
     def rect(self, x0, y0, x1, y1, rgb, a=255):
@@ -232,43 +255,61 @@ class Ecran:
         self.rect(cx - taille / 2, cy - taille / 2, cx + taille / 2, cy + taille / 2, rgb, 150)
 
     # textes
-    def texte(self, etiquette, pol, s, x, y, rgb, permis, a=255, espacement=None):
-        """Texte à (x, y) = haut de la ligne, comme drawString (après Ui.placer : point d'écran le plus proche)."""
-        x = round(x * self.s) / self.s
+    def texte(self, etiquette, pol, s, x, y, rgb, permis, a=255, espacement=None, boite=None):
+        """Texte à (x, y) = point de dessin, comme drawString (après Ui.placer : point d'écran le plus proche ; en capitales
+        espacées, chaque lettre est posée ainsi). boite = (haut, bas) : texte à centrer dans cette boîte (contrôlé)."""
         y = round(y * self.s) / self.s
         encre = None
         cx = x
+        caps = None
         for ch in s:
             f = pol.fonte(ch)
             av = pol.avance(ch)
+            px_ = round(cx * self.s) / self.s if espacement is not None or cx == x else cx
             if f is not None and ch not in pol.espaces:
                 base = y + ligne_de_base(f)
+                if caps is None:
+                    caps = (base - f.caps, base)
+                gx = px_ + f.approche(ch)
                 pil = f.image(self.s)
                 bb = pil.getbbox(ch, anchor="ls")
                 if bb[2] > bb[0]:
-                    b = (cx + bb[0] / self.s, base + bb[1] / self.s, cx + bb[2] / self.s, base + bb[3] / self.s)
+                    b = (gx + bb[0] / self.s, base + bb[1] / self.s, gx + bb[2] / self.s, base + bb[3] / self.s)
                     encre = b if encre is None else (min(encre[0], b[0]), min(encre[1], b[1]), max(encre[2], b[2]), max(encre[3], b[3]))
                 if self.dessiner:
-                    ImageDraw.Draw(self.img).text((cx * self.s, base * self.s), ch, font=pil, anchor="ls", fill=argb_rgba(rgb, a))
+                    ImageDraw.Draw(self.img).text((gx * self.s, base * self.s), ch, font=pil, anchor="ls", fill=argb_rgba(rgb, a))
             if espacement is None:
-                cx += av
+                cx = px_ + av
             else:
-                cx += pol.largeur(ch) + espacement
+                cx = px_ + pol.largeur(ch) + espacement
         if encre is not None:
             self.textes.append((etiquette, encre, permis))
+        if boite is not None and caps is not None:
+            self.centres.append((etiquette, caps[0], caps[1], boite[0], boite[1]))
+        return caps
 
-    def centre(self, etiquette, pol, s, cx, y, rgb, permis, a=255):
-        self.texte(etiquette, pol, s, cx - pol.largeur(s) / 2, y, rgb, permis, a)
+    def centre(self, etiquette, pol, s, cx, y, rgb, permis, a=255, boite=None):
+        return self.texte(etiquette, pol, s, cx - pol.largeur(s) / 2, y, rgb, permis, a, boite=boite)
 
-    def droite(self, etiquette, pol, s, xd, y, rgb, permis, a=255):
-        self.texte(etiquette, pol, s, xd - pol.largeur(s), y, rgb, permis, a)
+    def droite(self, etiquette, pol, s, xd, y, rgb, permis, a=255, boite=None):
+        return self.texte(etiquette, pol, s, xd - pol.largeur(s), y, rgb, permis, a, boite=boite)
 
-    def espace_centre(self, etiquette, pol, s, cx, y, rgb, esp, permis, a=255):
+    def espace_centre(self, etiquette, pol, s, cx, y, rgb, esp, permis, a=255, boite=None):
         s = s.upper()
-        self.texte(etiquette, pol, s, cx - pol.largeur_espacee(s, esp) / 2, y, rgb, permis, a, espacement=esp)
+        return self.texte(etiquette, pol, s, cx - pol.largeur_espacee(s, esp) / 2, y, rgb, permis, a, espacement=esp, boite=boite)
 
-    def espace(self, etiquette, pol, s, x, y, rgb, esp, permis, a=255):
-        self.texte(etiquette, pol, s.upper(), x, y, rgb, permis, a, espacement=esp)
+    def espace(self, etiquette, pol, s, x, y, rgb, esp, permis, a=255, boite=None):
+        return self.texte(etiquette, pol, s.upper(), x, y, rgb, permis, a, espacement=esp, boite=boite)
+
+    def compte(self, etiquette, n, xd, haut, alpha=1.0):
+        """CaseOpenScreen.compte : « ×12 » centré dans une pastille sombre (coin haut droit en xd, haut)."""
+        t = f"×{n}"
+        tw = POL["COMPTE"].largeur(t)
+        w = tw + 2 * C["COMPTE_PAD"]
+        h = C["COMPTE_H"]
+        self.rond(xd - w, haut, w, h, 0x07080A, 170 * alpha)
+        self.texte(etiquette, POL["COMPTE"], t, xd - C["COMPTE_PAD"] - tw, y_centre(haut, h, C["T_COMPTE"], t), 0xFFFFFF,
+                   (xd - w, haut, xd, haut + h), 235 * alpha, boite=(haut, haut + h))
 
 
 def echelle_voulue(fw, fh):
@@ -375,8 +416,7 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
         if 1 - fondu > 0:
             e.rond(x, y, w, w, 0x0D0F14, 215 * (1 - fondu))
         if cnt > 1:
-            e.droite(f"compte roue {i}", POL["COMPTE"], f"×{cnt}", x + w - 5, y + 3, 0xFFFFFF,
-                     (max(x, roueX), y, min(x + w, roueX + roueW), y + w), 225 * fondu)
+            e.compte(f"compte roue {i}", cnt, x + w - C["COMPTE_RETRAIT"], y + C["COMPTE_RETRAIT"], fondu)
     e.tri([(round(centre) - 6, roueY - 10), (round(centre), roueY - 3), (round(centre) + 6, roueY - 10)], OR)
 
     # objet sous le repère
@@ -424,8 +464,12 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
         tx = round(px + pw / 2 - largeur / 2)
         for k in l:
             s, rr = textes[k]
-            e.rond(round(tx), round(ly + C["LEGENDE_POINT_Y"]), pt, pt, RAR[rr], 255, rayon=2)
-            e.texte(f"légende {s}", POL["TEXTE"], s, tx + pt + ec, ly, clair, bande_legende)
+            haut_point = ly + milieu_caps_java(C["T_TEXTE"], s) - pt / 2
+            e.rond(round(tx), haut_point, pt, pt, RAR[rr], 255, rayon=2)
+            caps = e.texte(f"légende {s}", POL["TEXTE"], s, tx + pt + ec, ly, clair, bande_legende)
+            # Minecraft pose la pastille au point d'écran près (rasterisation)
+            m_point = (round(haut_point * e.s) + pt * e.s / 2) / e.s
+            e.pastilles.append((f"pastille {s}", m_point, (caps[0] + caps[1]) / 2))
             tx += lw_(s) + esp_l
         ly += ligne_h
     if len(lignes) > 2:
@@ -441,8 +485,7 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
         e.rect(x + 6, grilleY + gh - 3, x + celluleW - 6, grilleY + gh - 1, RAR[rr])
         e.objet(x + celluleW / 2, grilleY + gh / 2 - 1, C["GRILLE_ITEM"], RAR[rr])
         if cnt > 1:
-            e.droite(f"compte grille {i}", POL["COMPTE"], f"×{cnt}", x + celluleW - 3, grilleY + 2, 0xFFFFFF,
-                     (x, grilleY, x + celluleW, grilleY + gh), 215)
+            e.compte(f"compte grille {i}", cnt, x + celluleW - 2, grilleY + 2)
 
     # bouton et aide
     if etat == "roue":
@@ -459,8 +502,10 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
     else:
         e.rond(boutonX, boutonY, boutonW, boutonH, 0xFFFFFF, 18, rayon=boutonH / 2)
     bt = L[cle].upper()
-    e.espace_centre("bouton", POL["BOLD"], bt, boutonX + boutonW / 2, boutonY + 7, C["OR_TEXTE"] if dore else MUTED,
-                    C["ESP_BOUTON"], (boutonX + boutonH / 2 - 2, boutonY + 3, boutonX + boutonW - boutonH / 2 + 2, boutonY + boutonH - 3))
+    e.espace_centre("bouton", POL["BOLD"], bt, boutonX + boutonW / 2, y_centre(boutonY, boutonH, C["T_BOUTON"], bt),
+                    C["OR_TEXTE"] if dore else MUTED, C["ESP_BOUTON"],
+                    (boutonX + boutonH / 2 - 2, boutonY + 3, boutonX + boutonW - boutonH / 2 + 2, boutonY + boutonH - 3),
+                    boite=(boutonY, boutonY + boutonH))
     # rangée des touches (renderTouches) : pastilles à gauche, note à droite
     touches = []
     if etat == "roue":
@@ -470,19 +515,20 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
     if plein:
         touches.append(("touche.molette", "action.contenu"))
     touches.append(("touche.echap", "close"))
-    ty, th, tpad, tec, tesp, tty = py + C["TOUCHES_Y"], C["TOUCHE_H"], C["TOUCHE_PAD"], C["TOUCHE_ECART"], C["TOUCHES_ESPACE"], C["TOUCHE_TEXTE_Y"]
+    ty, th, tpad, tec, tesp = py + C["TOUCHES_Y"], C["TOUCHE_H"], C["TOUCHE_PAD"], C["TOUCHE_ECART"], C["TOUCHES_ESPACE"]
     bande_touches = (interieur[0], boutonY + boutonH + 1, interieur[2], py + ph - 2)
     x = px + pad
     for tk, ak in touches:
         touche = L["gui.heralizcrates.case." + tk].upper()
         action = L["gui.heralizcrates.case." + ak]
         tw = round(POL["TEXTE_GRAS"].largeur_espacee(touche, C["ESP_TOUCHE"])) + 2 * tpad
+        tyt, tya = y_centre(ty, th, C["T_TEXTE"], touche), y_centre(ty, th, C["T_TEXTE"], action)
         xr = round(x)
         e.rond(xr, ty, tw, th, 0xFFFFFF, 14, contour=(0xFFFFFF, 70))
-        e.espace(f"touche {touche}", POL["TEXTE_GRAS"], touche, xr + tpad, ty + tty, TEXTE, C["ESP_TOUCHE"],
-                 (xr + 1, ty + 1, xr + tw - 1, ty + th - 1))
+        e.espace(f"touche {touche}", POL["TEXTE_GRAS"], touche, xr + tpad, tyt, TEXTE, C["ESP_TOUCHE"],
+                 (xr + 1, ty + 1, xr + tw - 1, ty + th - 1), boite=(ty, ty + th))
         ax = xr + tw + tec
-        e.texte(f"action {action}", POL["TEXTE"], action, ax, ty + tty, clair, bande_touches)
+        e.texte(f"action {action}", POL["TEXTE"], action, ax, tya, clair, bande_touches, boite=(ty, ty + th))
         x = ax + POL["TEXTE"].largeur(action) + tesp
     note, coul = None, MUTED
     if erreur:
@@ -493,7 +539,7 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
         place = round(px + pw - pad - 2 - x)
         if place > 20:
             note = ellipsis(POL["TEXTE"], note, place)
-            e.droite("note", POL["TEXTE"], note, px + pw - pad - 2, ty + tty, coul, bande_touches)
+            e.droite("note", POL["TEXTE"], note, px + pw - pad - 2, y_centre(ty, th, C["T_TEXTE"], note), coul, bande_touches)
         else:
             e.textes.append(("note : pas de place", (0, 0, 1, 1), (0, 0, 0, 0)))
 
@@ -542,9 +588,11 @@ def gain(e, L, code, cles):
     e.rond(ex, by, bw, bh, 0xE6C063, 255)
     e.rond(fx, by, bw, bh, 0xFFFFFF, 15, contour=(0xFFFFFF, 20))
     t = L["gui.heralizcrates.case.again" if cles == "free" else "gui.heralizcrates.case.again_key"].upper()
-    e.espace_centre("gain encore", POL["TEXTE_GRAS"], t, ex + bw / 2, by + 7, C["OR_TEXTE"], C["ESP_GAIN"], (ex + 3, by + 3, ex + bw - 3, by + bh - 3))
+    e.espace_centre("gain encore", POL["TEXTE_GRAS"], t, ex + bw / 2, y_centre(by, bh, C["T_TEXTE"], t), C["OR_TEXTE"], C["ESP_GAIN"],
+                    (ex + 3, by + 3, ex + bw - 3, by + bh - 3), boite=(by, by + bh))
     f = L["gui.heralizcrates.case.close"].upper()
-    e.espace_centre("gain fermer", POL["TEXTE_GRAS"], f, fx + bw / 2, by + 7, MUTED, C["ESP_GAIN"], (fx + 3, by + 3, fx + bw - 3, by + bh - 3))
+    e.espace_centre("gain fermer", POL["TEXTE_GRAS"], f, fx + bw / 2, y_centre(by, bh, C["T_TEXTE"], f), MUTED, C["ESP_GAIN"],
+                    (fx + 3, by + 3, fx + bw - 3, by + bh - 3), boite=(by, by + bh))
     for et, b, permis in list(e.textes):
         if et.startswith("gain") and not (b[0] >= gx and b[2] <= gx + gw and b[1] >= gy and b[3] <= gy + gh_):
             e.textes.append((et + " hors de la carte du gain", b, (0, 0, 0, 0)))
@@ -568,6 +616,14 @@ def debordements(e, contexte):
             A, B = a[1], b[1]
             if A[0] < B[2] and B[0] < A[2] and A[1] < B[3] and B[1] < A[3]:
                 fautes.append(f"{contexte} : « {a[0]} » touche « {b[0]} »")
+    px1 = 1.0 / e.s + 1e-6
+    for et, ct, cb, bt, bb in e.centres:
+        haut, bas = ct - bt, bb - cb
+        if abs(haut - bas) > px1:
+            fautes.append(f"{contexte} : « {et} » pas centré (écart haut {haut:.2f}, bas {bas:.2f} unités, échelle {e.s})")
+    for et, mp, mc in e.pastilles:
+        if abs(mp - mc) > px1:
+            fautes.append(f"{contexte} : « {et} » pastille à {mp - mc:+.2f} du milieu des capitales (échelle {e.s})")
     return fautes
 
 
@@ -576,10 +632,9 @@ ETATS = ["repos", "roue", "cle", "gain"]
 
 
 def controler():
-    global MODELE
     fautes = []
-    for modele in MODELES:
-        MODELE = modele
+    modele = "jeu"
+    if True:
         for fw, fh in FENETRES:
             for code in ("fr_fr", "en_us", "ru_ru"):
                 for etat in ETATS:
@@ -593,7 +648,6 @@ def controler():
                 for et in ("repos", "cle"):
                     e = dessiner_ecran(fw, fh, code, et, dessiner=False, erreur=True, plein=True)
                     fautes += debordements(e, f"{modele} {fw}x{fh} {code} {et} erreur")
-    MODELE = "source"
     return sorted(set(fautes))
 
 
