@@ -73,7 +73,7 @@ public class CoffreMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player p) {
-        return coffre == null || (!coffre.isRemoved() && p.distanceToSqr(pos.getCenter()) < 64);
+        return coffre == null || (!coffre.isRemoved() && p.distanceToSqr(pos.getCenter()) <= 36); // 6 blocs, comme les conteneurs
     }
 
     @Override

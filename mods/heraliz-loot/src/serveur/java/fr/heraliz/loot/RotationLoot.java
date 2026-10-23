@@ -1037,7 +1037,7 @@ public final class RotationLoot extends SavedData {
         public boolean stillValid(Player p) {
             Actif a = etat.actifs.get(pos);
             if (a == null || a.contenu != this || etat.niveau == null || p.level() != etat.niveau) return false;
-            return p.distanceToSqr(BlockPos.getX(pos) + 0.5, BlockPos.getY(pos) + 0.5, BlockPos.getZ(pos) + 0.5) <= 100;
+            return p.distanceToSqr(BlockPos.getX(pos) + 0.5, BlockPos.getY(pos) + 0.5, BlockPos.getZ(pos) + 0.5) <= 36; // 6 blocs : on peut bouger fouille ouverte (Interface), la fouille se ferme au-delà
         }
 
         @Override

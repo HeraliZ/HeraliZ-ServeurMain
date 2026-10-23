@@ -8,6 +8,8 @@ import com.tacz.guns.client.input.CrawlKey;
 import com.tacz.guns.config.client.KeyConfig;
 import com.tacz.guns.config.sync.SyncConfig;
 import com.tacz.guns.util.InputExtraCheck;
+import com.mojang.blaze3d.platform.InputConstants;
+import java.lang.reflect.Method;
 import fr.heraliz.tactique.allonge.Allonge;
 import fr.heraliz.tactique.allonge.CompatReanimation;
 import fr.heraliz.tactique.allonge.PaquetDemandePlongeon;
@@ -24,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -103,6 +106,7 @@ public final class AllongeClient {
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ClientPlayerNetworkEvent.Clone.class, e -> finPlongeon());
       MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, false, GunShootEvent.class, AllongeClient::avantTir);
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, InputEvent.Key.class, AllongeClient::toucheSansArme);
+      MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.ClientTickEvent.class, AllongeClient::toucheEcranOuvert);
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LivingEvent.LivingJumpEvent.class, AllongeClient::saut);
       ReseauAllonge.REFUS_CLIENT.brancher(AllongeClient::refusServeur);
       ReseauAllonge.REPONSE_PLONGEON_CLIENT.brancher(AllongeClient::reponsePlongeon);
@@ -160,6 +164,65 @@ public final class AllongeClient {
       }
       IClientPlayerGunOperator operateur = IClientPlayerGunOperator.fromLocalPlayer(joueur);
       operateur.crawl(!operateur.isCrawl());
+   }
+
+   private static boolean rampeAvant;
+   private static Method marcheEcran;
+   private static boolean marcheEcranCherche;
+
+   /**
+    * Touche « Ramper » avec un écran ouvert où l'on peut bouger (inventaire, fouille, carte : MarcheEcran de HeraliZ
+    * Interface, par réflexion). Ni TaCZ ni nous ne la recevons alors (l'écran garde les touches) : on lit l'état réel de
+    * la touche à chaque tick, un appui = s'allonger ou se relever, avec ou sans arme, mêmes règles qu'en jeu.
+    */
+   private static void toucheEcranOuvert(TickEvent.ClientTickEvent e) {
+      if (e.phase != TickEvent.Phase.START) {
+         return;
+      }
+      Minecraft mc = Minecraft.getInstance();
+      boolean enfoncee = mc.screen != null && marcheEcranActive() && enfoncee(mc, CrawlKey.CRAWL_KEY.getKey());
+      boolean appui = enfoncee && !rampeAvant;
+      rampeAvant = enfoncee;
+      LocalPlayer joueur = mc.player;
+      if (!appui || joueur == null || joueur.isSpectator() || joueur.isPassenger()) {
+         return;
+      }
+      if (!Boolean.TRUE.equals(SyncConfig.ENABLE_CRAWL.get())) {
+         return;
+      }
+      IClientPlayerGunOperator operateur = IClientPlayerGunOperator.fromLocalPlayer(joueur);
+      operateur.crawl(!operateur.isCrawl());
+   }
+
+   private static boolean marcheEcranActive() {
+      if (!marcheEcranCherche) {
+         marcheEcranCherche = true;
+         try {
+            marcheEcran = Class.forName("fr.heraliz.interfaces.client.MarcheEcran").getMethod("actif");
+         } catch (ReflectiveOperationException | LinkageError ex) {
+            marcheEcran = null;
+         }
+      }
+      if (marcheEcran == null) {
+         return false;
+      }
+      try {
+         return Boolean.TRUE.equals(marcheEcran.invoke(null));
+      } catch (ReflectiveOperationException | RuntimeException ex) {
+         marcheEcran = null;
+         return false;
+      }
+   }
+
+   private static boolean enfoncee(Minecraft mc, InputConstants.Key t) {
+      long fenetre = mc.getWindow().getWindow();
+      if (t.getType() == InputConstants.Type.KEYSYM) {
+         return t.getValue() != InputConstants.UNKNOWN.getValue() && InputConstants.isKeyDown(fenetre, t.getValue());
+      }
+      if (t.getType() == InputConstants.Type.MOUSE) {
+         return GLFW.glfwGetMouseButton(fenetre, t.getValue()) == GLFW.GLFW_PRESS;
+      }
+      return false;
    }
 
    /** Saut du joueur local (le plongeon est possible juste après). */
