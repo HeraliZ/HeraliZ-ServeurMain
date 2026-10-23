@@ -18,6 +18,12 @@
         "item": "heraliz_composants:corde"
       },
       "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:circuit_imprime_ii"
+      },
+      "count": 3
     }
   ],
   "result": {
