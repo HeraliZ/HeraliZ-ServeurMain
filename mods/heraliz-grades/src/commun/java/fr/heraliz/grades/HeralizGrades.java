@@ -22,6 +22,10 @@ public class HeralizGrades {
       ObjetRegistre.OBJETS.register(bus);
       ReseauGrades.enregistrer();
       fr.heraliz.grades.reseau.ReseauBoutique.enregistrer();
+      // bons réglés par les op (2.5.0) : objet, effet « Bonus de loot », canal de l'éditeur
+      fr.heraliz.grades.bon.ObjetBon.OBJETS.register(bus);
+      fr.heraliz.grades.bon.ObjetBon.EFFETS.register(bus);
+      fr.heraliz.grades.bon.ReseauBon.enregistrer();
       Parties.serveur(MODID, "fr.heraliz.grades.serveur.ServeurGrades", bus);
       Parties.client(MODID, "fr.heraliz.grades.client.ClientGrades", bus);
    }

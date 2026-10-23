@@ -194,7 +194,7 @@ public final class Ui {
             String ch = new String(Character.toChars(up.codePointAt(i)));
             MutableComponent c = lit(ch, f);
             g.pose().pushPose();
-            g.pose().translate(cx, y, 0);
+            placer(g, cx, y);
             g.drawString(font, c, 0, 0, argb, false);
             g.pose().popPose();
             cx += font.width(c) + spacing;
@@ -210,6 +210,19 @@ public final class Ui {
     public static void spacedRight(GuiGraphics g, Font font, String s, ResourceLocation f, float xRight, float y, int argb, float spacing) {
         float w = spacedWidth(font, s.toUpperCase(Locale.ROOT), f, spacing);
         spaced(g, font, s, f, xRight - w, y, argb, spacing);
+    }
+
+    /**
+     * Pose le point de dessin (x, y) sur un point entier de l'ecran (pixels reels, pas ceux de l'interface) : le texte
+     * reste net (regle du proprietaire du 23/10, comme le kit des Caisses 2.18.0). A appeler entre pushPose et popPose.
+     */
+    public static void placer(GuiGraphics g, float x, float y) {
+        org.joml.Matrix4f m = g.pose().last().pose();
+        double s = Minecraft.getInstance().getWindow().getGuiScale();
+        float ex = m.m00() * x + m.m30(), ey = m.m11() * y + m.m31();
+        float rx = (float) (Math.round(ex * s) / s), ry = (float) (Math.round(ey * s) / s);
+        float kx = m.m00() == 0 ? 1 : m.m00(), ky = m.m11() == 0 ? 1 : m.m11();
+        g.pose().translate(x + (rx - ex) / kx, y + (ry - ey) / ky, 0);
     }
 
     /** Texte centre sur cx (position arrondie au pixel : les glyphes bitmap comme le jeton restent nets). */

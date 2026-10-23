@@ -64,10 +64,14 @@ public final class ServeurGrades implements Partie {
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> CommandesPb.enregistrer(e.getDispatcher()));
         BoutiqueServeur.brancher();
         EchangeServeur.brancher();
+        // bons réglés par les op (/bon editeur) : hérals, PB, grade, bonus de loot, commande au clic droit
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> BonServeur.enregistrer(e.getDispatcher()));
+        BonServeur.brancher();
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
             if (e.phase != TickEvent.Phase.END) return;
             BoutiqueServeur.tick();
             EchangeServeur.tick();
+            BonServeur.tick();
         });
     }
 
@@ -83,6 +87,7 @@ public final class ServeurGrades implements Partie {
         Pb.demarrer(e.getServer());
         BoutiqueServeur.demarrer(e.getServer(), dossier);
         EchangeServeur.demarrer(e.getServer(), dossier);
+        BonServeur.demarrer(e.getServer(), dossier);
         AUTH.clear();
     }
 
@@ -94,6 +99,7 @@ public final class ServeurGrades implements Partie {
         LienDiscord.arreter();
         EchangeServeur.arreter();
         BoutiqueServeur.arreter();
+        BonServeur.arreter();
         Pb.arreter();
         AUTH.clear();
     }
@@ -129,6 +135,8 @@ public final class ServeurGrades implements Partie {
         TabServeur.maj(p.server, true);
         // objets d'un échange conclu pendant son absence
         EchangeServeur.connexion(p);
+        // effet « Bonus de loot » et bons restés en cours
+        BonServeur.connexion(p);
     }
 
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {

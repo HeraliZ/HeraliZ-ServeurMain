@@ -20,5 +20,8 @@ public final class ClientGrades implements Partie {
       fr.heraliz.grades.reseau.ReseauBoutique.RECEPTION_BOUTIQUE.brancher(EcranBoutique::recevoir);
       fr.heraliz.grades.reseau.ReseauBoutique.RECEPTION_ECHANGE.brancher(EcranEchange::recevoir);
       MinecraftForge.EVENT_BUS.addListener(TabHeraliz::avantOverlay);
+      // bons (2.5.0) : éditeur des op, effet « Bonus de loot » de l'inventaire (avant l'enregistrement de l'effet)
+      fr.heraliz.grades.bon.EffetBonusLoot.AFFICHAGE = new AffichageBonusLoot();
+      fr.heraliz.grades.bon.ReseauBon.RECEPTION_EDITEUR.brancher(EcranBon::recevoir);
    }
 }
