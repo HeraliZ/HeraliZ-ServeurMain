@@ -28,7 +28,9 @@ public final class GradesApi {
      * Valeur d'une permission de grade pour ce joueur (2.0.0, réglée dans l'éditeur des grades) : le meilleur réglage de
      * ses grades, sinon celui de Survivant. Clés : {@code tpa_recharge}, {@code tpa_delai}, {@code home_recharge},
      * {@code rtp_recharge} (secondes), {@code homes} (nombre), {@code planque_lignes}, {@code coffre_vip_lignes} (lignes de
-     * 9 cases, 0 = pas d'accès), {@code zones_vip} (0 ou 1). -1 pour une clé inconnue ou hors d'un serveur démarré.
+     * 9 cases, 0 = pas d'accès), {@code zones_vip} (0 ou 1) ; depuis le 22/10 : {@code tp_reduction} (pourcentage retiré
+     * au délai du /home), {@code coffre_vip_cases} (cases du coffre VIP, 0 à 54, remplace {@code coffre_vip_lignes}),
+     * {@code nick} et {@code chat_couleur} (0 ou 1). -1 pour une clé inconnue ou hors d'un serveur démarré.
      * Lue par réflexion par CRac (homes, recharges) et HeraliZ Utils (coffres personnels).
      */
     public static int perm(UUID joueur, String cle) {

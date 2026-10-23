@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Partie serveur : registre des grades, commandes /grade, /kit, /lier et /delier, préfixe du grade devant le pseudo (liste Tab, chat).
+ * Partie serveur : registre des grades, commandes /grade, /kit, /lier, /delier, /nick et /chatcouleur, préfixe du grade devant le pseudo (liste Tab, chat).
  * <p>
  * Nom affiché : « [CLAN] [Traqueur] Pseudo » (tag de clan lu dans heraliz-clansetbases, puis grade), mis par NameFormat (chat,
  * liste Tab : on remplace le nom de liste posé par les clans, qui doublerait le tag) et dans le nom affiché Bukkit.
@@ -28,7 +28,10 @@ public final class ServeurGrades implements Partie {
     static RegistreGrades registre;
     /** Dernier état AuthMe vu par joueur : quand il change, on renvoie l'arbre des commandes (/grade apparaît après /login). */
     private static final Map<UUID, Boolean> AUTH = new HashMap<>();
-    /** Dernier tag de clan vu par joueur : quand il change (clan rejoint, quitté, renommé), on refait le nom affiché. */
+    /**
+     * Dernier tag de clan (et surnom) vu par joueur : quand il change (clan rejoint, quitté, renommé ; surnom perdu ou
+     * retrouvé avec le grade), on refait le nom affiché.
+     */
     private static final Map<UUID, String> CLANS = new HashMap<>();
     private static int ticks;
 
@@ -40,6 +43,8 @@ public final class ServeurGrades implements Partie {
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> KitsServeur.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> LienDiscord.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> EditeurServeur.enregistrer(e.getDispatcher()));
+        // /nick et /chatcouleur (grades de la boutique, 22/10)
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> SurnomsServeur.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::nomAffiche);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ServeurGrades::nomTab);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::connexion);
@@ -70,6 +75,7 @@ public final class ServeurGrades implements Partie {
         DefinitionsGrades.charger(dossier);
         registre = new RegistreGrades(dossier);
         KitsServeur.demarrer(dossier);
+        SurnomsServeur.demarrer(dossier);
         LienDiscord.demarrer(e.getServer());
         Pb.demarrer(e.getServer());
         BoutiqueServeur.demarrer(e.getServer(), dossier);
@@ -80,6 +86,7 @@ public final class ServeurGrades implements Partie {
     private static void arret(ServerStoppedEvent e) {
         registre = null;
         KitsServeur.arreter();
+        SurnomsServeur.arreter();
         TabServeur.oublier();
         LienDiscord.arreter();
         EchangeServeur.arreter();
@@ -91,11 +98,16 @@ public final class ServeurGrades implements Partie {
     private static void nomAffiche(PlayerEvent.NameFormat e) {
         if (registre == null || !(e.getEntity() instanceof ServerPlayer p)) return;
         net.minecraft.network.chat.MutableComponent clan = TagClan.prefixe(p);
-        CLANS.put(p.getUUID(), TagClan.texte(clan));
+        // surnom (/nick) : « ~Surnom », vrai pseudo au survol ; gardé avec le tag pour refaire le nom s'il change
+        String surnom = SurnomsServeur.surnomAffiche(p);
+        CLANS.put(p.getUUID(), TagClan.texte(clan) + "|" + surnom);
         // morceaux côte à côte (pas imbriqués) : le pseudo garde sa couleur au lieu d'hériter de celle du grade ou du clan
         net.minecraft.network.chat.MutableComponent nom = net.minecraft.network.chat.Component.empty();
         if (clan != null) nom.append(TagClan.joli(clan));
-        nom.append(registre.affiche(p.getUUID()).prefixe()).append(e.getDisplayname());
+        net.minecraft.network.chat.Component pseudo = surnom == null ? e.getDisplayname()
+                : net.minecraft.network.chat.Component.literal("~" + surnom).withStyle(st -> st.withHoverEvent(new net.minecraft.network.chat.HoverEvent(
+                        net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, net.minecraft.network.chat.Component.literal(p.getGameProfile().getName()))));
+        nom.append(registre.affiche(p.getUUID()).prefixe()).append(pseudo);
         e.setDisplayname(nom);
     }
 
@@ -118,6 +130,7 @@ public final class ServeurGrades implements Partie {
         AUTH.remove(e.getEntity().getUUID());
         CLANS.remove(e.getEntity().getUUID());
         KitsServeur.oublier(e.getEntity().getUUID());
+        SurnomsServeur.oublier(e.getEntity().getUUID());
         LienDiscord.oublier(e.getEntity().getUUID());
         EchangeServeur.deconnexion(e.getEntity().getUUID());
     }
@@ -138,7 +151,9 @@ public final class ServeurGrades implements Partie {
             }
         }
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
-            String clan = TagClan.texte(TagClan.prefixe(p));
+            // couleur du chat (/chatcouleur) : suit la permission du grade (perdue = blanc)
+            SurnomsServeur.majChat(p);
+            String clan = TagClan.texte(TagClan.prefixe(p)) + "|" + SurnomsServeur.surnomAffiche(p);
             if (!clan.equals(CLANS.get(p.getUUID()))) rafraichir(p);
             boolean auth = PontBukkit.authentifie(p);
             Boolean avant = AUTH.put(p.getUUID(), auth);
@@ -157,6 +172,7 @@ public final class ServeurGrades implements Partie {
 
     private static String nomBukkit(ServerPlayer p) {
         Grade g = registre == null ? Grade.SURVIVANT : registre.affiche(p.getUUID());
-        return TagClan.bukkit(TagClan.prefixe(p)) + g.prefixeBukkit() + "§f" + p.getGameProfile().getName();
+        String surnom = SurnomsServeur.surnomAffiche(p);
+        return TagClan.bukkit(TagClan.prefixe(p)) + g.prefixeBukkit() + "§f" + (surnom == null ? p.getGameProfile().getName() : "~" + surnom);
     }
 }

@@ -97,6 +97,18 @@ final class PontBukkit {
     /** Format du chat : « [ZK] FONDATEUR Naro » message » (le nom affiché porte déjà clan et grade). */
     private static final String FORMAT_CHAT = "%1$s §8» §f%2$s";
     private static boolean chatBranche;
+    /**
+     * Code couleur du message de chaque joueur qui a le chat en couleur (/chatcouleur, Roi de la Zone, 22/10) : rempli sur
+     * le fil serveur ({@link SurnomsServeur#majChat}), lu par l'écouteur du chat, qui tourne sur un autre fil (événement
+     * asynchrone de Bukkit) : jamais de lecture des grades depuis ce fil-là.
+     */
+    static final java.util.Map<UUID, String> CODE_CHAT = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Format du chat d'un joueur : message en couleur s'il en a choisi une (et y a droit), sinon blanc. */
+    private static String formatChat(UUID joueur) {
+        String code = joueur == null ? null : CODE_CHAT.get(joueur);
+        return code == null ? FORMAT_CHAT : "%1$s §8» " + code + "%2$s";
+    }
 
     /**
      * Chat des serveurs hybrides : Mohist fabrique lui-même « <nom> message » (événement Bukkit AsyncPlayerChatEvent). On
@@ -125,10 +137,19 @@ final class PontBukkit {
             }
             if (proprio == null) throw new IllegalStateException("aucun plugin chargé pour porter l'écouteur");
             Method setFormat = evenement.getMethod("setFormat", String.class);
+            Method getPlayerChat = evenement.getMethod("getPlayer");
+            Method getUniqueId = Class.forName("org.bukkit.entity.Entity", false, cl).getMethod("getUniqueId");
             Object e = Proxy.newProxyInstance(cl, new Class<?>[]{ecouteur}, (px, m, a) -> objet(px, m, a));
             Object x = Proxy.newProxyInstance(cl, new Class<?>[]{executeur}, (px, m, a) -> {
                 if (m.getName().equals("execute") && a != null && a.length == 2 && evenement.isInstance(a[1])) {
-                    setFormat.invoke(a[1], FORMAT_CHAT);
+                    UUID u = null;
+                    try {
+                        Object bp = getPlayerChat.invoke(a[1]);
+                        if (bp != null && getUniqueId.invoke(bp) instanceof UUID id) u = id;
+                    } catch (Throwable ex) {
+                        u = null;
+                    }
+                    setFormat.invoke(a[1], formatChat(u));
                     return null;
                 }
                 return objet(px, m, a);

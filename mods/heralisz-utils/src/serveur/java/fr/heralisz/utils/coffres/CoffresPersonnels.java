@@ -26,6 +26,7 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.phys.Vec3;
@@ -39,8 +40,9 @@ import net.minecraftforge.registries.ForgeRegistries;
  * du joueur, le même quel que soit le bloc (comme le coffre de l'Ender) :
  * <ul>
  *    <li>« Safe Planque 1 » ({@code cfm:safe_planque_1}) : la planque, 1 ligne (9 cases), pour tout le monde ;</li>
- *    <li>« Safe Sentinel 1 » ({@code cfm:safe_sentinel_1}) : le coffre VIP, 1 ligne de plus, seulement pour les grades de
- *    la boutique Rescapé, Traqueur et Roi de la Zone (HeraliZ Grades, par réflexion ; sans Grades : fermé). Un joueur qui
+ *    <li>« Safe Sentinel 1 » ({@code cfm:safe_sentinel_1}) : le coffre VIP, seulement pour les grades de la boutique
+ *    (HeraliZ Grades, par réflexion ; sans Grades : fermé) ; depuis le 22/10 en cases : Rescapé 3, Traqueur 6, Roi de la
+ *    Zone 9 (permission « coffre_vip_cases », réglable dans l'éditeur des grades). Un joueur qui
  *    perd son grade garde ses objets, mais ne peut plus l'ouvrir tant qu'il n'a pas repris un grade.</li>
  * </ul>
  * Aucun sac à dos dedans (ni posé à la main, ni par Maj + clic). Objets toujours déplacés, jamais copiés. Gardés avec le
@@ -88,15 +90,15 @@ public final class CoffresPersonnels {
         if (e.getHand() != InteractionHand.MAIN_HAND || p.isSpectator()) {
             return;
         }
-        int lignes = lignes(p.getUUID(), sorte);
-        if (lignes <= 0) {
+        int cases = cases(p.getUUID(), sorte);
+        if (cases <= 0) {
             p.displayClientMessage(Component.translatableWithFallback("heralisz_utils.coffre.vip_refus2",
                     "Coffre réservé à certains grades."), true);
             return;
         }
         Coffre c = coffre(p.server, p.getUUID(), sorte);
         BlockPos pos = e.getPos().immutable();
-        p.openMenu(new SimpleMenuProvider((cid, inv, joueur) -> new MenuCoffre(cid, inv, c, l, pos, bloc, lignes), titre(sorte)));
+        p.openMenu(new SimpleMenuProvider((cid, inv, joueur) -> new MenuCoffre(cid, inv, c, l, pos, bloc, cases), titre(sorte)));
     }
 
     public static Component titre(Sorte sorte) {
@@ -134,6 +136,41 @@ public final class CoffresPersonnels {
         }
     }
 
+    /** Étiquette des cases verrouillées (jamais sur un vrai objet : elles ne s'empilent avec rien). */
+    private static final String TAG_VERROU = "heraliz_case_verrouillee";
+
+    /**
+     * Cases {@code de} à {@code a - 1} du menu verrouillées (coffre VIP en cases, 22/10) : une vitre grise qu'on ne prend pas
+     * et où l'on ne pose rien, posée dans un petit conteneur à part : les objets du coffre à ces places restent gardés,
+     * cachés, pas perdus.
+     */
+    static void verrouillerCases(AbstractContainerMenu menu, int de, int a) {
+        if (a <= de) {
+            return;
+        }
+        SimpleContainer vitres = new SimpleContainer(a - de);
+        for (int i = de; i < a && i < menu.slots.size(); i++) {
+            Slot ancienne = menu.slots.get(i);
+            ItemStack vitre = new ItemStack(Items.GRAY_STAINED_GLASS_PANE);
+            vitre.setHoverName(Component.translatableWithFallback("heralisz_utils.coffre.case_verrouillee", "Case verrouillée"));
+            vitre.getOrCreateTag().putBoolean(TAG_VERROU, true);
+            vitres.setItem(i - de, vitre);
+            Slot nouvelle = new Slot(vitres, i - de, ancienne.x, ancienne.y) {
+                @Override
+                public boolean mayPlace(ItemStack stack) {
+                    return false;
+                }
+
+                @Override
+                public boolean mayPickup(Player joueur) {
+                    return false;
+                }
+            };
+            nouvelle.index = ancienne.index;
+            menu.slots.set(i, nouvelle);
+        }
+    }
+
     private static Donnees donnees(MinecraftServer srv) {
         return srv.overworld().getDataStorage().computeIfAbsent(Donnees::charger, Donnees::new, FICHIER);
     }
@@ -143,11 +180,22 @@ public final class CoffresPersonnels {
     private static boolean permCherche;
 
     /**
-     * Lignes montrées de ce coffre (1 à 6 ; 0 = fermé) : permissions « planque_lignes » et « coffre_vip_lignes » des grades
-     * (HeraliZ Grades 2.0.0, réglées dans l'éditeur des grades). Avec une version plus ancienne : planque 1 ligne, coffre VIP
-     * 1 ligne pour les grades de la boutique. Un joueur qui perd des lignes garde ses objets (cachés, pas perdus).
+     * Cases utilisables de ce coffre (0 = fermé, 54 au plus). Coffre VIP : permission « coffre_vip_cases » des grades
+     * (HeraliZ Grades, 22/10 : Rescapé 3, Traqueur 6, Roi de la Zone 9) ; avec un Grades qui ne la connaît pas (-1), les
+     * lignes d'avant ({@link #lignes}). Planque : ses lignes. Un joueur qui perd des cases garde ses objets (cachés).
      */
-    private static int lignes(UUID joueur, Sorte sorte) {
+    private static int cases(UUID joueur, Sorte sorte) {
+        if (sorte == Sorte.VIP) {
+            int v = permGrade(joueur, "coffre_vip_cases");
+            if (v >= 0) {
+                return Math.min(CASES_MAX, v);
+            }
+        }
+        return CASES * lignes(joueur, sorte);
+    }
+
+    /** Permission de grade lue dans HeraliZ Grades (par réflexion) ; -1 si inconnue ou sans le mod. */
+    private static int permGrade(UUID joueur, String cle) {
         if (!permCherche) {
             permCherche = true;
             try {
@@ -156,15 +204,25 @@ public final class CoffresPersonnels {
                 perm = null;
             }
         }
-        if (perm != null) {
-            try {
-                int v = (int) perm.invoke(null, joueur, sorte == Sorte.PLANQUE ? "planque_lignes" : "coffre_vip_lignes");
-                if (v >= 0) {
-                    return Math.min(6, sorte == Sorte.PLANQUE ? Math.max(1, v) : v);
-                }
-            } catch (Throwable t) {
-                // règle d'avant ci-dessous
-            }
+        if (perm == null) {
+            return -1;
+        }
+        try {
+            return (int) perm.invoke(null, joueur, cle);
+        } catch (Throwable t) {
+            return -1;
+        }
+    }
+
+    /**
+     * Lignes montrées de ce coffre (1 à 6 ; 0 = fermé) : permissions « planque_lignes » et « coffre_vip_lignes » des grades
+     * (HeraliZ Grades 2.0.0, réglées dans l'éditeur des grades). Avec une version plus ancienne : planque 1 ligne, coffre VIP
+     * 1 ligne pour les grades de la boutique. Un joueur qui perd des lignes garde ses objets (cachés, pas perdus).
+     */
+    private static int lignes(UUID joueur, Sorte sorte) {
+        int v = permGrade(joueur, sorte == Sorte.PLANQUE ? "planque_lignes" : "coffre_vip_lignes");
+        if (v >= 0) {
+            return Math.min(6, sorte == Sorte.PLANQUE ? Math.max(1, v) : v);
         }
         return sorte == Sorte.PLANQUE ? 1 : rangBoutique(joueur) > 0 ? 1 : 0;
     }
@@ -288,7 +346,10 @@ public final class CoffresPersonnels {
         }
     }
 
-    /** Coffre ouvert par un joueur : fermé s'il s'éloigne (8 blocs) ou si le coffre-fort disparaît. */
+    /**
+     * Coffre ouvert par un joueur : fermé s'il s'éloigne (8 blocs) ou si le coffre-fort disparaît. Autant de lignes qu'il
+     * faut pour ses cases ; les cases en trop de la dernière ligne sont verrouillées.
+     */
     private static final class MenuCoffre extends ChestMenu {
         private final ServerLevel level;
         private final BlockPos pos;
@@ -297,12 +358,19 @@ public final class CoffresPersonnels {
         private static final MenuType<?>[] TYPES = {MenuType.GENERIC_9x1, MenuType.GENERIC_9x2, MenuType.GENERIC_9x3, MenuType.GENERIC_9x4,
                 MenuType.GENERIC_9x5, MenuType.GENERIC_9x6};
 
-        MenuCoffre(int id, Inventory inv, Coffre c, ServerLevel level, BlockPos pos, Block bloc, int lignes) {
-            super(TYPES[Math.max(1, Math.min(6, lignes)) - 1], id, inv, c, Math.max(1, Math.min(6, lignes)));
-            casesSelonConteneur(this, c, CASES * Math.max(1, Math.min(6, lignes)));
+        MenuCoffre(int id, Inventory inv, Coffre c, ServerLevel level, BlockPos pos, Block bloc, int cases) {
+            super(TYPES[lignesPour(cases) - 1], id, inv, c, lignesPour(cases));
+            int n = Math.max(1, Math.min(CASES_MAX, cases));
+            casesSelonConteneur(this, c, n);
+            verrouillerCases(this, n, CASES * lignesPour(cases));
             this.level = level;
             this.pos = pos;
             this.bloc = bloc;
+        }
+
+        /** Lignes du menu pour ce nombre de cases (1 à 6). */
+        private static int lignesPour(int cases) {
+            return Math.max(1, Math.min(6, (cases + CASES - 1) / CASES));
         }
 
         @Override
