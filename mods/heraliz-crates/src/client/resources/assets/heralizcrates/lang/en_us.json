@@ -190,5 +190,9 @@
   "gui.heralizcrates.case.subtitle_one": "1 key · %s items",
   "gui.heralizcrates.case.subtitle_free": "Unlimited keys · %s items",
   "heralizcrates.commande.fichier": "%s: loot changed in game removed, back to the server file.",
-  "heralizcrates.commande.fichier_rien": "%s: no loot changed in game."
+  "heralizcrates.commande.fichier_rien": "%s: no loot changed in game.",
+  "gui.heralizcrates.case.touche.espace": "Space",
+  "gui.heralizcrates.case.touche.echap": "Esc",
+  "gui.heralizcrates.case.touche.molette": "Wheel",
+  "gui.heralizcrates.case.action.contenu": "All contents"
 }

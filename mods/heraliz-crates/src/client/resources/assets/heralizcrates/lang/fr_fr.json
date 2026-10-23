@@ -190,5 +190,9 @@
   "gui.heralizcrates.case.subtitle_one": "1 clé · %s objets",
   "gui.heralizcrates.case.subtitle_free": "Clés illimitées · %s objets",
   "heralizcrates.commande.fichier": "%s : butin changé en jeu effacé, retour au fichier du serveur.",
-  "heralizcrates.commande.fichier_rien": "%s : aucun butin changé en jeu."
+  "heralizcrates.commande.fichier_rien": "%s : aucun butin changé en jeu.",
+  "gui.heralizcrates.case.touche.espace": "Espace",
+  "gui.heralizcrates.case.touche.echap": "Échap",
+  "gui.heralizcrates.case.touche.molette": "Molette",
+  "gui.heralizcrates.case.action.contenu": "Tout le contenu"
 }

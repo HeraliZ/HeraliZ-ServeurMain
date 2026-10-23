@@ -10,7 +10,7 @@
     {
       "type": "ttf",
       "file": "heralizcrates:dmsans_bold.ttf",
-      "size": 13.0,
+      "size": 18.0,
       "oversample": 8.0,
       "shift": [
         0.0,
@@ -19,7 +19,7 @@
     },
     {
       "type": "ttf",
-      "size": 13.0,
+      "size": 18.0,
       "oversample": 8.0,
       "shift": [
         0.0,
