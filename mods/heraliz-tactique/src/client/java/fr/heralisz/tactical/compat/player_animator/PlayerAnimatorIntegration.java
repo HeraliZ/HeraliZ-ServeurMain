@@ -103,7 +103,9 @@ public class PlayerAnimatorIntegration {
 
    public static void stopAnimation(AbstractClientPlayer player, PlayerAnimatorIntegration.AnimationLayer layer, int fadeOutTicks) {
       ModifierLayer<IAnimation> modifierLayer = getLayer(player, layer);
-      if (modifierLayer != null) {
+      // HeraliZ (opti) : appelé à CHAQUE image pour chaque joueur visible sans arme de mêlée ; couche déjà vide = rien à
+      // arrêter (Player Animator ne ferait que remettre null), plus de fondu créé pour rien
+      if (modifierLayer != null && modifierLayer.getAnimation() != null) {
          modifierLayer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeOutTicks, Ease.INOUTSINE), null);
       }
    }

@@ -169,13 +169,19 @@ public enum KnifeFinish {
       return this.palier ? PROGRAMME_PALIERS : this.shaderId;
    }
 
-   @Nullable
-   public static KnifeFinish byId(String id) {
-      for (KnifeFinish f : values()) {
-         if (f.id.equals(id)) {
-            return f;
+   /** Finitions par identifiant (lu à chaque image pour chaque couteau dessiné : plus de copie de values() à chaque appel). */
+   private static final class ParId {
+      static final java.util.Map<String, KnifeFinish> MAP = new java.util.HashMap<>();
+
+      static {
+         for (KnifeFinish f : values()) {
+            MAP.putIfAbsent(f.id, f);
          }
       }
-      return null;
+   }
+
+   @Nullable
+   public static KnifeFinish byId(String id) {
+      return id == null ? null : ParId.MAP.get(id);
    }
 }

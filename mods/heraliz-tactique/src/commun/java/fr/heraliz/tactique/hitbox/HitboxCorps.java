@@ -121,14 +121,13 @@ public final class HitboxCorps {
          .scale(1.0F / 16.0F);
    }
 
-   /** À terre (Réanimation, par réflexion) : pose couchée de Minecraft, pas celle de TaCZ. */
+   /**
+    * À terre (Réanimation, par réflexion) : pose couchée de Minecraft, pas celle de TaCZ. HeraliZ (opti) : par le lien
+    * mis en cache de CompatReanimation (avant : Class.forName et getMethod à chaque balle près d'un joueur allongé, et à
+    * chaque image avec F3+B).
+    */
    private static boolean aTerre(Player p) {
-      try {
-         Class<?> c = Class.forName("fr.heraliz.reanimation.core.Downed");
-         return (Boolean) c.getMethod("isDowned", net.minecraft.world.entity.Entity.class).invoke(null, p);
-      } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
-         return false;
-      }
+      return fr.heraliz.tactique.allonge.CompatReanimation.aTerre(p);
    }
 
    /** Premier morceau traversé par le segment {@code de} → {@code a} : fraction du trajet (0 à 1) et morceau, ou null. */

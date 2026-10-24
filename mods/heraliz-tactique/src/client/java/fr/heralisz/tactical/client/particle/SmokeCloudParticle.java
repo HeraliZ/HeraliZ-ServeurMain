@@ -36,7 +36,19 @@ public class SmokeCloudParticle extends TextureSheetParticle {
       this.setSpriteFromAge(spriteSet);
    }
 
+   /** HeraliZ (opti) : lumière du nuage, relue une fois par tick au lieu de chaque image (-1 : à relire). */
+   private int lumiere = -1;
+
    public int getLightColor(float partialTick) {
+      // nuage immobile (ni vitesse ni physique) : sa lumière ne change pas d'une image à l'autre ; un fumigène en fait
+      // vivre ~320 à la fois, chacun relisait jusqu'à 7 cases de lumière à chaque image
+      if (this.lumiere < 0) {
+         this.lumiere = this.lireLumiere();
+      }
+      return this.lumiere;
+   }
+
+   private int lireLumiere() {
       BlockPos pos = BlockPos.containing(this.x, this.y, this.z);
       if (!this.level.hasChunkAt(pos)) {
          return 0;
@@ -62,6 +74,7 @@ public class SmokeCloudParticle extends TextureSheetParticle {
 
    public void tick() {
       super.tick();
+      this.lumiere = -1;
       this.setSpriteFromAge(this.spriteSet);
    }
 

@@ -74,7 +74,10 @@ public class CombatProperties {
          } else if (!customItem.isSame(this.lastItem, this.entity.getMainHandItem())) {
             this.reset(customItem, this.lastItem);
          }
-      } else if (!ItemStack.matches(this.lastItem, this.entity.getMainHandItem())) {
+      } else if (this.lastItem.getItem() instanceof ICustomItem) {
+         // HeraliZ (opti) : l'objet précédent n'est lu que s'il est un objet de mêlée / soin / lancer (temps de rangement,
+         // isSame) ; tant qu'on tient autre chose (arme TaCZ...), plus de comparaison complète des NBT à chaque tick ni de
+         // copie de l'arme à chaque tir : seule la sortie d'un objet ICustomItem est notée, comme avant
          this.lastItem = this.entity.getMainHandItem().copy();
       }
 

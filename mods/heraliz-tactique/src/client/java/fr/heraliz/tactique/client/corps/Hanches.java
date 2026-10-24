@@ -60,17 +60,21 @@ public final class Hanches {
       placer(gauche, HANCHE_X, gx, gy, gz, torse);
    }
 
+   /** HeraliZ (opti) : vecteurs et rotation de travail réutilisés (appelé pour chaque joueur visible, à chaque image, fil du rendu). */
+   private static final Vector3f APRES = new Vector3f(), AVANT = new Vector3f();
+   private static final Quaternionf ROT = new Quaternionf();
+
    private static void placer(ModelPart jambe, float hancheX, float px, float py, float pz, ModelPart torse) {
-      Vector3f apres = hanche(hancheX, torse.x, torse.y, torse.z, torse.xRot, torse.yRot, torse.zRot);
-      Vector3f avant = hanche(hancheX, x, y, z, rx, ry, rz);
+      Vector3f apres = hanche(APRES, hancheX, torse.x, torse.y, torse.z, torse.xRot, torse.yRot, torse.zRot);
+      Vector3f avant = hanche(AVANT, hancheX, x, y, z, rx, ry, rz);
       jambe.x = px + apres.x - avant.x;
       jambe.y = py + apres.y - avant.y;
       jambe.z = pz + apres.z - avant.z;
    }
 
-   /** Position de la hanche, comme ModelPart.translateAndRotate place le torse (rotation Z, Y puis X). */
-   private static Vector3f hanche(float hancheX, float px, float py, float pz, float xRot, float yRot, float zRot) {
-      return new Vector3f(hancheX, HANCHE_Y, 0.0F).rotate(new Quaternionf().rotationZYX(zRot, yRot, xRot)).add(px, py, pz);
+   /** Position de la hanche, comme ModelPart.translateAndRotate place le torse (rotation Z, Y puis X), écrite dans {@code out}. */
+   private static Vector3f hanche(Vector3f out, float hancheX, float px, float py, float pz, float xRot, float yRot, float zRot) {
+      return out.set(hancheX, HANCHE_Y, 0.0F).rotate(ROT.rotationZYX(zRot, yRot, xRot)).add(px, py, pz);
    }
 
    private static boolean debout(Player joueur) {

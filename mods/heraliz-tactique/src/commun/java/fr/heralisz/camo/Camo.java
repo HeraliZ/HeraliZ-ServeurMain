@@ -112,12 +112,25 @@ public enum Camo {
       return "camo.heralisz_camo." + this.id;
    }
 
+   /**
+    * Camos par identifiant (lu à chaque image pour chaque arme dessinée et chaque icône d'arme : plus de copie du tableau
+    * values() ni de parcours de toute la liste à chaque appel).
+    */
+   private static final class ParId {
+      static final java.util.Map<String, Camo> MAP = new java.util.HashMap<>();
+
+      static {
+         for (Camo c : values()) {
+            MAP.putIfAbsent(c.id, c);
+         }
+      }
+   }
+
    @Nullable
    public static Camo byId(String id) {
-      for (Camo c : values()) {
-         if (c.id.equals(id)) {
-            return c;
-         }
+      Camo c = ParId.MAP.get(id);
+      if (c != null) {
+         return c;
       }
       // camos retirés : les armes et les sacs qui portent encore l'ancien id gardent le camo qui le remplace
       if (DARK_MATTER_ORIGIN_ID.equals(id)) {

@@ -196,10 +196,13 @@ public final class Ui {
             g.pose().pushPose();
             // Minecraft compte deux fois l'approche gauche d'une lettre TTF : on la retire une fois (espacement régulier)
             placer(g, cx - Encre.approche(up.codePointAt(i), f), y);
-            g.drawString(font, c, 0, 0, argb, false);
+            // HeraliZ (opti) : lettres envoyées au tampon, dessinées en une fois après la boucle (g.drawString vidait le
+            // tampon à chaque lettre : un appel de dessin par lettre, à chaque image)
+            font.drawInBatch(c, 0, 0, argb, false, g.pose().last().pose(), g.bufferSource(), Font.DisplayMode.NORMAL, 0, 15728880);
             g.pose().popPose();
             cx += font.getSplitter().stringWidth(c) + spacing;
         }
+        g.flush();
     }
 
     public static void spacedCentered(GuiGraphics g, Font font, String s, ResourceLocation f, float cx, float y, int argb, float spacing) {
@@ -476,6 +479,9 @@ public final class Ui {
         int w = x1 - x0;
         if (w <= 0) return;
         int steps = Math.max(1, w / 2);
+        // HeraliZ (opti) : tous les morceaux du trait en un seul dessin (g.fill vidait le tampon à chaque morceau : w / 2 dessins)
+        org.joml.Matrix4f m = g.pose().last().pose();
+        com.mojang.blaze3d.vertex.VertexConsumer vc = g.bufferSource().getBuffer(net.minecraft.client.renderer.RenderType.gui());
         for (int i = 0; i < steps; i++) {
             float t = (i + 0.5f) / steps;
             float a = 1;
@@ -484,8 +490,18 @@ public final class Ui {
             else if (fadeRight) a = 1 - t;
             a = a * a * (3 - 2 * a);
             int xa = x0 + i * w / steps, xb = x0 + (i + 1) * w / steps;
-            g.fill(xa, y, xb, y + 1, argb(rgb, (int) (alpha * a)));
+            if (xb > xa) trait(vc, m, xa, xb, y, argb(rgb, (int) (alpha * a)));
         }
+        g.flush();
+    }
+
+    /** Un trait d'un point de haut, comme GuiGraphics.fill (mêmes sommets, même ordre) mais sans vider le tampon. */
+    private static void trait(com.mojang.blaze3d.vertex.VertexConsumer vc, org.joml.Matrix4f m, int xa, int xb, int y, int c) {
+        float a = (c >>> 24) / 255f, r = (c >> 16 & 0xFF) / 255f, v = (c >> 8 & 0xFF) / 255f, b = (c & 0xFF) / 255f;
+        vc.vertex(m, xb, y + 1, 0).color(r, v, b, a).endVertex();
+        vc.vertex(m, xb, y, 0).color(r, v, b, a).endVertex();
+        vc.vertex(m, xa, y, 0).color(r, v, b, a).endVertex();
+        vc.vertex(m, xa, y + 1, 0).color(r, v, b, a).endVertex();
     }
 
     /** Bande horizontale qui s'efface vers ses deux bouts sur fade pixels. */

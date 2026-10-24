@@ -80,14 +80,20 @@ public enum KnifeType {
       return this.parts.get(bone);
    }
 
-   @Nullable
-   public static KnifeType byId(String id) {
-      for (KnifeType k : values()) {
-         if (k.id.equals(id)) {
-            return k;
+   /** Types par identifiant (lu à chaque image pour chaque couteau dessiné : plus de copie de values() à chaque appel). */
+   private static final class ParId {
+      static final java.util.Map<String, KnifeType> MAP = new java.util.HashMap<>();
+
+      static {
+         for (KnifeType k : values()) {
+            MAP.putIfAbsent(k.id, k);
          }
       }
-      return null;
+   }
+
+   @Nullable
+   public static KnifeType byId(String id) {
+      return id == null ? null : ParId.MAP.get(id);
    }
 
    /** Valeur écrite dans le canal A de la carte de positions (même codage que les parties d'arme). */

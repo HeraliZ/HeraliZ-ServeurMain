@@ -52,12 +52,15 @@ public final class MeleeCamo {
       if (id == null || !NAMESPACE.equals(id.getNamespace())) {
          return null;
       }
-      String[] parts = id.getPath().split("__", 2);
-      if (parts.length != 2) {
+      // HeraliZ (opti) : indexOf au lieu de split("__") (séparateur de 2 lettres : une expression régulière compilée à
+      // chaque appel, c'est-à-dire à chaque image pour chaque arme skinnée dessinée) ; même découpage
+      String chemin = id.getPath();
+      int sep = chemin.indexOf("__");
+      if (sep < 0) {
          return null;
       }
-      KnifeType knife = KnifeType.byId(parts[0]);
-      KnifeFinish finish = KnifeFinish.byId(parts[1]);
+      KnifeType knife = KnifeType.byId(chemin.substring(0, sep));
+      KnifeFinish finish = KnifeFinish.byId(chemin.substring(sep + 2));
       return knife == null || finish == null ? null : new Skin(knife, finish);
    }
 }
