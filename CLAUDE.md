@@ -2185,6 +2185,33 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - **Textures des pièces de CRac façon Rust** (24/10, en attente de validation des rendus) : **écrites** par
   `python mods/crac/outils/textures_rust.py` (`--apercu DOSSIER`, `--installer`, `--paliers`), 5 paliers, 64 points par
   bloc, matériau éclairé par le calcul (relief, reflets, ombres des creux) ; pas encore installées.
+- **Avant la soirée à 50 joueurs (24/10)** (rien testé en jeu ; tout compilé par le contrôle de branche, sur `main`) :
+  TaCZ côté joueur (Tactique 2.36.2) : cubes des armes dessinés sans objet créé par sommet et sans les faces vides
+  (`BedrockCubePerFaceRenduMixin`, `BedrockCubeBoxRenduMixin`, @Overwrite de `compile` ; les relevés de sommets des camos et
+  des icônes les reçoivent toujours), affichage d'une arme gardé un tick (`TimelessApiAffichageMixin`, `AffichagesArmes`),
+  camos : rien lu pour une arme sans skin. Réglages par défaut une fois par PC (Interface 1.9.5, `ReglagesDefaut` v2) :
+  graphismes Fabuleux -> Détaillés, mélange des biomes 1, trous de balle de TaCZ 8 s. Serveur : distance de vue imposée
+  par HeraliZ Utils (`serveur/DistanceVue`, `serveur/defaultconfigs/heraliz_distances-server.toml`, 12 tronçons, 0 = celle
+  du server.properties), plafond de 1500 monstres naturels sur la carte (`zombies/PlafondZombies`, `plafond_carte` /
+  `plafond_local` de `heraliz_zombies-server.toml`), /trade ne sauvegarde que ses deux joueurs, journal de la saison écrit
+  une fois par seconde. Corps allongé propre (Tactique 2.36.3, `client/allonge/CorpsAllonge`, couche Player Animator
+  priorité 50 : torse et jambes droits, avec ou sans arme ; hitbox allongée à la même pose). Plus de cinématique de
+  caméra au passage d'une carte d'accès (Bunker 0.12.3). Jambe cassée : saut réglé chez le joueur seulement.
+  Sécurité (deux relectures) : bots sans butin ni XP ni quête, pseudos `HzBot###` réservés, étiquette `heraliz_bot`
+  retirée à tout vrai joueur ; main gauche rangée sans perte ; fouille avec un objet en main limitée à nos conteneurs
+  (`OuvertureAccroupi.fouillable` : heraliz_loot, airstrike, crac, heralisz_clans ; le reste garde le clic ordinaire, vu
+  par WorldGuard). **Spartan 2.8.2 : porte des joueurs** : sans jeton accepté, ni chat ni commande (8 au plus retenus,
+  relâchés à l'arrivée du jeton : `PorteJoueurs`) ; avant le /login, les paquets Spartan ne sont pas crus (rapports,
+  mods, matériel mis en attente dans `ReceptionServeur.ATTENTE`, traités après la vérification ; contrôles,
+  défis et captures seulement après) : un jeu lancé sous le pseudo d'un autre ne peut plus lui faire porter d'alerte.
+  **Gardien coupé** (`[gardien] enabled = false`) tant que le launcher 1.14.1 n'est pas publié : le remettre à true
+  juste après la publication. Launcher 1.14.1 (pas encore publié) : options Java du joueur en liste blanche
+  (`PERMISES` de `spartan.js`), titres de fenêtre du Gardien en mots entiers, jamais ceux des navigateurs.
+  **Test de charge** : workflow « Test de charge » (`.github/workflows/charge.yml`, « Run workflow ») : bots dans le
+  monde du tutoriel `crac:bases` (jamais la carte), spark, résumé (TPS, profil, erreurs), bots retirés à la fin.
+  Premier essai (24/10, 50 bots, environ 200 tirs par seconde, bien plus que 50 joueurs) : 30 à 47 ms par tick, 58,6 ms
+  (17,1 TPS) la 5e minute ; mémoire 6,5 / 32 Go ; AuthMe lève des erreurs quand 50 bots s'inscrivent dans la même seconde
+  (sans effet). À décider : Embeddium (gros gain de FPS, refusé avant), Canary (serveur), conteneurs de loot allégés.
 - **Bots de charge** (24/10, Utils 2.24.0, Spartan 2.7.9, Matchs 0.15.2, Clans 3.6.5, Quêtes 1.10.5, demande du propriétaire ;
   jamais essayés en jeu ni compilés ici : contrôle de branche) : `/bots` (op 4 ou console, `fr.heralisz.utils.bots`,
   serveur seulement) : de vrais `ServerPlayer` (`BotJoueur`, canal réseau factice qui jette tout, comme les bots du banc
