@@ -1290,7 +1290,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   - armes : dégâts contre les joueurs réglés par famille (Tactique 2.14.0, `serveur/DegatsArmes`), joueur à 20 PV :
     fusil d'assaut 5,56 Rare 5,2 par balle (4 balles sans armure, 6 en Rare, 10 en Unique ; tête ×1,7 : 3 sans casque,
     5 avec un casque Unique), pistolet 9 mm 4,5 (tête ×1,6), mitraillette 4,0, fusil 7,62 6,0, 7,62 OTAN 7,5,
-    mitrailleuse 5,4 / 6,4, précision 16 à 24 (tête ×2), pompe 24 par décharge ; ±4 % par rareté (Commun ×0,92 …
+    mitrailleuse 5,4 / 6,4, précision 16 à 24 (tête ×2), pompe 24 par décharge (24/10, Tactique 2.37.0, choix du propriétaire : « le shotgun ne fait aucun dégât, 1 cœur par plomb ; pas de gros one tap mais utilisable » : décharge 36, environ 4 par plomb, à pompe à balle unique 15, pistolet à plombs 28, et plafond par tir `plafond` de `armes.json` (`PLAFOND_TIR` du script : 17, 15 pour le pistolet) : tous les plombs d'un même tir sur un même joueur, tête comprise, avant l'armure, `DegatsArmes.plafonner` ; jamais tué d'un coup sans armure, 4 plombs suffisent pour le plafond ; rien testé en jeu) ; ±4 % par rareté (Commun ×0,92 …
     Légendaire ×1,08) ; lance-grenades, couteaux, Wonder Weapons et dégâts contre les créatures : inchangés ;
   - raretés des armes : pistolet dès Commun, mitraillette et pompe dès Peu commun, fusil d'assaut dès Rare, précision
     Rare (anciens à verrou) à Légendaire (.338 et .50), mitrailleuses Épique (minigun Légendaire), lance-grenades

@@ -52,9 +52,14 @@ FAMILLES = {
     "precision_338": (20.0, 2.0), "precision_50": (22.0, 2.0),
     # 24/10 (choix du propriétaire) : SSG 08 comme les autres snipers (20,8 en Épique), Dragunov 10 en Épique,
     # .50 (M82A3, M95, M82A2) un peu moins forts : 23,76 en Légendaire au lieu de 25,92
-    # fusils à pompe : dégâts d'une décharge entière (répartis sur les plombs)
-    "pompe": (24.0, 1.25), "pompe_balle": (20.0, 1.5), "pistolet_pompe": (20.0, 1.25), "pistolet_50bmg": (14.0, 1.6),
+    # fusils à pompe : dégâts d'une décharge entière (répartis sur les plombs). 24/10 (choix du propriétaire : « le
+    # shotgun ne fait aucun dégât, 1 cœur par plomb ; pas de gros one tap mais utilisable ») : décharge 36 (4 par plomb
+    # pour 9 plombs : 4 plombs qui touchent suffisent pour le plafond), plafonnée par tir (PLAFOND_TIR)
+    "pompe": (36.0, 1.25), "pompe_balle": (15.0, 1.5), "pistolet_pompe": (28.0, 1.25), "pistolet_50bmg": (14.0, 1.6),
 }
+# Dégâts au plus d'UN tir sur un même joueur (tous plombs, tête comprise, avant l'armure ; DegatsArmes du mod
+# tactique) : jamais tué d'un coup sans armure (20 PV), deux tirs bien placés suffisent
+PLAFOND_TIR = {"pompe": 17.0, "pompe_balle": 17.0, "pistolet_pompe": 15.0}
 
 # Famille imposée (sinon : type de l'arme + munition)
 FAMILLE_ARME = {
@@ -191,6 +196,8 @@ def regler():
         if fam.startswith("pompe") or fam == "pistolet_pompe":
             degats /= max(1, a["plombs"])
         reglage[gid] = OrderedDict([("famille", fam), ("rarete", r), ("degats", round(degats, 2)), ("tete", tete)])
+        if fam in PLAFOND_TIR:
+            reglage[gid]["plafond"] = PLAFOND_TIR[fam]
     return liste, reglage, raretes
 
 
@@ -304,7 +311,7 @@ def ecrire(reglage, raretes_armes, raretes_acc):
     doc = OrderedDict()
     doc["_aide"] = ("Dégâts des armes TaCZ contre les JOUEURS (mod Tactique, serveur). « degats » : une balle (un plomb pour "
                     "un fusil à pompe) à courte distance ; la baisse avec la distance et les accessoires gardent leur effet. "
-                    "« tete » : multiplicateur d'un tir à la tête. Arme absente : dégâts de TaCZ. Fichier ÉCRIT par "
+                    "« tete » : multiplicateur d'un tir à la tête. « plafond » (fusils à pompe) : dégâts au plus d'un tir, tous plombs. Arme absente : dégâts de TaCZ. Fichier ÉCRIT par "
                     "outils/equilibrage_armes.py : changer le script et le relancer. Relu à chaque démarrage du serveur.")
     doc["actif"] = True
     doc["armes"] = reglage
