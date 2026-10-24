@@ -25,7 +25,7 @@ import net.minecraftforge.client.gui.overlay.ForgeGui;
  * reparations en rouge au bout du tour ; a droite le pourcentage en gras et, dessous, l'etat en petites capitales
  * espacees. Police DM Sans aux tailles de la maquette (polices {@code hud_pct} et {@code hud_etat}), formes dessinees
  * en maillages adoucis ({@link FormesHud}) : net a toute echelle d'interface.
- * <p>Place, pour ne rien recouvrir : bord droit a 8 px (comme l'indicateur « en combat » des matchs), bas de la pastille
+ * <p>Place, pour ne rien recouvrir : bord droit a 8 px (comme l'indicateur « en combat », combat.client.CombatClient), bas de la pastille
  * a h-6, donc SOUS le HUD de TaCZ (munitions, mode de tir, icone de l'arme : de h-44 a h-25) et loin de l'indicateur
  * « en combat » (au-dessus de TaCZ, de h-69 a h-50) ; largeur bornee pour ne jamais toucher la barre d'objets DayZ
  * (centree en bas, case de seconde main et jauge comprises : jusqu'a w/2+{@value #BARRE}) : si la place manque (ecran

@@ -29,8 +29,6 @@ public final class PingConfig {
     public static final ForgeConfigSpec.IntValue MAX_PAR_JOUEUR;
     /** Les spectateurs (mode spectateur, elimines en match) recoivent les pings de leur cercle. */
     public static final ForgeConfigSpec.BooleanValue SPECTATEURS_VOIENT;
-    /** Hors match, un joueur sans clan pingue son groupe (/groupe de HeraliZ Matchs) s'il en a un. */
-    public static final ForgeConfigSpec.BooleanValue GROUPE_HORS_MATCH;
     /** Pings poses depuis la carte du monde (heraliz_carte) : sans portee ni ligne de vue, dans le monde du joueur. */
     public static final ForgeConfigSpec.BooleanValue CARTE;
 
@@ -46,8 +44,6 @@ public final class PingConfig {
         MAX_PAR_JOUEUR = b.comment("Pings actifs au plus par joueur (le plus ancien s'efface)").defineInRange("max_par_joueur", 3, 1, 10);
         SPECTATEURS_VOIENT = b.comment("Les spectateurs (mode spectateur, elimines en match) voient les pings de leur equipe ou clan")
                 .define("spectateurs_voient", false);
-        GROUPE_HORS_MATCH = b.comment("Hors match, un joueur sans clan envoie ses pings a son groupe (/groupe) s'il en a un")
-                .define("groupe_hors_match", true);
         CARTE = b.comment("Marquer un point depuis la carte du monde (clic droit), sans portee ni ligne de vue, dans le monde du joueur")
                 .define("carte", true);
         b.pop();

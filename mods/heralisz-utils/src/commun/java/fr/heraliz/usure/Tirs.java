@@ -28,10 +28,7 @@ public final class Tirs {
     public static boolean exemptee(Player p, ItemStack arme, Regles r) {
         if (!r.actif) return true;
         if ((p.isCreative() || p.isSpectator()) && !r.usureCreatif) return true;
-        if (r.sansUsureEnMatch) {
-            if (Usure.pretee(arme)) return true;
-            if (p instanceof ServerPlayer && p.getPersistentData().getBoolean(HeralizUsure.DRAPEAU_EN_MATCH)) return true;
-        }
+        if (r.sansUsureEnMatch && Usure.pretee(arme)) return true;
         return r.dimensionSansUsure(p.level().dimension().location());
     }
 

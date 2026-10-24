@@ -8,12 +8,12 @@ import java.lang.reflect.Method;
 
 /**
  * Règles communes du propriétaire (Grades 2.4.0, 23/10) pour les commandes qui téléportent, donnent ou rangent des
- * objets (/warp, /kit, /trade, /boutique) : refusées en combat, à terre (Réanimation), en match, pendant le tutoriel
+ * objets (/warp, /kit, /trade, /boutique) : refusées en combat, à terre (Réanimation), pendant le tutoriel
  * des bases (CRac) et, pour un joueur en survie ou en aventure, sur la carte (overworld). Les autres mods sont lus par
  * leurs étiquettes ou par réflexion : un mod absent ne bloque rien. Fil serveur seulement.
  */
 final class Restrictions {
-    private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
+    private static final String CLE_COMBAT = "heralisz:combat_jusqua";
     private static Method downed, etatTuto;
     private static boolean downedCherche, tutoCherche;
 
@@ -22,10 +22,6 @@ final class Restrictions {
 
     static boolean enCombat(ServerPlayer p) {
         return p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis();
-    }
-
-    static boolean enMatch(ServerPlayer p) {
-        return p.getPersistentData().getBoolean(DRAPEAU_MATCH) || p.level().dimension().location().getNamespace().equals("heralisz_matchs");
     }
 
     static boolean surCarte(ServerPlayer p) {
@@ -73,7 +69,6 @@ final class Restrictions {
      * Créatif et spectateur ne sont jamais concernés par la règle « pas sur la carte ».
      */
     static Component empechement(ServerPlayer p) {
-        if (enMatch(p)) return Component.translatableWithFallback("heraliz_grades.regle.match", "Impossible pendant un match.");
         if (enCombat(p)) return Component.translatableWithFallback("heraliz_grades.regle.combat", "Impossible en combat.");
         if (aTerre(p)) return Component.translatableWithFallback("heraliz_grades.regle.a_terre", "Impossible à terre.");
         if (enTutoriel(p)) return Component.translatableWithFallback("heraliz_grades.regle.tutoriel", "Impossible pendant le tutoriel des bases.");

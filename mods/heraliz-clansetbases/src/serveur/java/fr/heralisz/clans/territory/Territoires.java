@@ -172,7 +172,7 @@ public final class Territoires {
         derniereCarte.put(p.getUUID(), now);
         ClanStore store = ClanStore.get();
         Clan mien = store == null ? null : store.clanDe(p.getUUID());
-        boolean ici = p.level() == monde() && !fr.heralisz.clans.api.ClansApi.enMatch(p);
+        boolean ici = p.level() == monde();
         List<fr.heralisz.clans.api.CarteApi.Zone> vues = new ArrayList<>();
         if (ici && store != null) {
             for (Zone z : zones.values()) {
@@ -201,7 +201,7 @@ public final class Territoires {
                 ServerPlayer d = server.getPlayerList().getPlayer(m);
                 if (d == null) continue;
                 enLigne++;
-                if (!ici || d == p || d.level() != p.level() || !d.isAlive() || d.isSpectator() || fr.heralisz.clans.api.ClansApi.enMatch(d)) continue;
+                if (!ici || d == p || d.level() != p.level() || !d.isAlive() || d.isSpectator()) continue;
                 allies.add(new fr.heralisz.clans.api.CarteApi.Allie(d.getGameProfile().getName(), d.getX(), d.getZ()));
             }
             monClan = new fr.heralisz.clans.api.CarteApi.MonClan(mien.tag, mien.nom, mien.banniere.accent(), mien.banniere, enLigne,

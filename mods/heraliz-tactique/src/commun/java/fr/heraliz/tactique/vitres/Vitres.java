@@ -48,9 +48,8 @@ public final class Vitres {
     * cette ville ne cassait jamais.
     */
    public static final int DEFAUT_RAYON_SPAWN = 0;
-   /** Réglage par défaut : dimensions où le verre ne casse jamais (spawn, arènes des matchs, zombies, bunkers des clans). */
-   public static final List<String> DEFAUT_DIMENSIONS = List.of("heralisz:spawn", "heralisz_matchs:arenes", "heralisz_matchs:zombies",
-      "heralisz_bases:bunkers");
+   /** Réglage par défaut : dimensions où le verre ne casse jamais (spawn, anciens bunkers des clans). */
+   public static final List<String> DEFAUT_DIMENSIONS = List.of("heralisz:spawn", "heralisz_bases:bunkers");
    /**
     * Réglage par défaut : autres blocs qui cassent comme une vitre, « bloc » (il disparaît) ou « bloc > version cassée ».
     * {@code cfm:vb_4} : fenêtre à croisée grise des meubles (posée sur la carte), {@code cfm:vb_5} : la même, vitre brisée.

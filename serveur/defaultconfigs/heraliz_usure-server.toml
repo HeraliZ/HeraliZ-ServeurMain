@@ -6,15 +6,12 @@
     actif = true
     # Les armes s'usent aussi en mode creatif.
     usure_creatif = false
-    # Aucune usure pendant un match (duels, ClashWar, zombies : armes pretees).
+    # Aucune usure sur une arme pretee par un match (matchs retires du serveur le 24/10).
     sans_usure_en_match = true
     # Petit affichage de l'etat de l'arme en main, en bas a droite (chaque joueur peut aussi le couper).
     hud_autorise = true
     # Dimensions ou les armes ne s'usent pas.
-    dimensions_sans_usure = [
-        "heralisz_matchs:arenes",
-        "heralisz_matchs:zombies"
-]
+    dimensions_sans_usure = []
     # Munitions des armes de corps a corps (couteaux faits en armes TaCZ) : categorie melee.
     munitions_corps_a_corps = [
         "arkaniaz:melee_weapon"
@@ -124,7 +121,6 @@
 [armes]
     surcharges = [
         "heralisz_skins:*__* = exclue",
-        "heraliz_wonder:* = exclue",
         "tacz:mk14 = categorie:dmr",
         "tacz:spr15hb = categorie:dmr",
         "maxstuff:hk417 = categorie:dmr"

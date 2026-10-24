@@ -84,10 +84,10 @@ public final class TutorielApi {
         Tutoriel.lancer(chef);
     }
 
-    /** Ni en combat, ni à terre, ni en match, en vie : le tutoriel peut l'emmener. */
+    /** Ni en combat, ni à terre, en vie : le tutoriel peut l'emmener. */
     static boolean libre(ServerPlayer p) {
         return p.isAlive() && fr.heraliz.crac.heraliz.Heraliz.combatSecondsLeft(p) <= 0
-            && !fr.heraliz.crac.heraliz.SaisonPont.aTerre(p) && !p.getPersistentData().getBoolean(Deplacements.EN_MATCH);
+            && !fr.heraliz.crac.heraliz.SaisonPont.aTerre(p);
     }
 
     /** Au spawn et {@link #libre} : le tutoriel dû à la création du clan peut partir. */

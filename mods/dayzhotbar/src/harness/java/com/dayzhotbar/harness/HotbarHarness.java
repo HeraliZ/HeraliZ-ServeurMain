@@ -35,8 +35,7 @@ import java.util.List;
  * voir {@code python tools/lancer.py client src/dayzhotbar <scenario>}) : ouvre un monde plat « hotbar_harness »
  * (commandes permises), joue les etapes, puis quitte.
  * <p>Etapes : {"t": ticks depuis l'etape precedente, "cmd": "...", "slot": 0..8, "shot": "nom", "view": "fp|back|front",
- * "hud": bool, "guiScale": n, "zbHud": "partie|aucun" (HUD du mode zombies des matchs, par reflexion), "combat": secondes
- * (indicateur EN COMBAT), "spectator": bool (spectateur de match), "log": true,
+ * "hud": bool, "guiScale": n, "log": true,
  * "quit": true}. Captures dans run/screenshots/hotbar_&lt;nom&gt;.png.
  */
 @Mod("dayzhotbar_harness")
@@ -129,18 +128,6 @@ public final class HotbarHarness {
         if (s.has("slot")) {
             mc.player.getInventory().selected = s.get("slot").getAsInt();
         }
-        if (s.has("zbHud")) {
-            zombies(mc, s.get("zbHud").getAsString());
-        }
-        if (s.has("combat")) {
-            // indicateur « EN COMBAT » du moteur des matchs (en bas a droite, au-dessus des munitions TaCZ)
-            call("fr.heralisz.matchs.moteur.client.MoteurClient", "combat", new Class<?>[]{int.class}, s.get("combat").getAsInt());
-        }
-        if (s.has("spectator")) {
-            // spectateur d'un match : le moteur cache la barre vanilla, la notre doit suivre
-            call("fr.heralisz.matchs.moteur.client.MoteurClient", "spectateur", new Class<?>[]{boolean.class, String.class, int.class, int.class},
-                    s.get("spectator").getAsBoolean(), "Joueur", 0x6FA8FF, 3);
-        }
         if (s.has("guiScale")) {
             mc.options.guiScale().set(s.get("guiScale").getAsInt());
             mc.resizeDisplay();
@@ -172,18 +159,6 @@ public final class HotbarHarness {
             m.invoke(null, args);
         } catch (ReflectiveOperationException | LinkageError ex) {
             LOG.warn("[hotbar] {}.{} indisponible : {}", cls, method, ex.toString());
-        }
-    }
-
-    /** HUD du mode zombies (heralisz_matchs) pilote cote client, comme l'etape "zbHud" du banc des matchs. */
-    private static void zombies(Minecraft mc, String what) {
-        try {
-            Class<?> c = Class.forName("fr.heralisz.matchs.zombies.client.ZombiesClient");
-            Method hud = c.getDeclaredMethod("hud", Minecraft.class, JsonElement.class, JsonObject.class);
-            hud.setAccessible(true);
-            hud.invoke(null, mc, new JsonPrimitive(what), new JsonObject());
-        } catch (ReflectiveOperationException | LinkageError ex) {
-            LOG.warn("[hotbar] HUD zombies indisponible : {}", ex.toString());
         }
     }
 }

@@ -106,10 +106,8 @@ public final class VoiceHud {
             return;
         }
         boolean adminMuted = VoiceClient.adminMuted(mc.player.getUUID());
-        int groupBottom = renderGroup(g, mc);
-        // The zombies mode of the HeraliZ matches draws its round tally in the bottom left corner: our microphone
-        // then goes to the top left, under the group list.
-        renderSelf(g, mc.font, zombiesHud() ? groupBottom + 24 : height, adminMuted);
+        renderGroup(g, mc);
+        renderSelf(g, mc.font, height, adminMuted);
         if (VoiceRecorder.recording()) {
             boolean blink = (System.currentTimeMillis() / 500) % 2 == 0;
             g.fill(width - 46, 6, width - 6, 18, 0x90101418);
@@ -171,25 +169,6 @@ public final class VoiceHud {
             for (int i = 0; i < 14; i++) {
                 g.fill(x - 1 + i, y + i, x + 1 + i, y + i + 2, 0xFFE0605A);
             }
-        }
-    }
-
-    private static java.lang.reflect.Method zombiesActive;
-    private static boolean zombiesAbsent;
-
-    /** HeraliZ matches, zombies mode: {@code fr.heralisz.matchs.zombies.jeu.api.HudZombies.actif()}, read by reflection. */
-    private static boolean zombiesHud() {
-        if (zombiesAbsent) {
-            return false;
-        }
-        try {
-            if (zombiesActive == null) {
-                zombiesActive = Class.forName("fr.heralisz.matchs.zombies.jeu.api.HudZombies").getMethod("actif");
-            }
-            return (boolean) zombiesActive.invoke(null);
-        } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
-            zombiesAbsent = true;
-            return false;
         }
     }
 

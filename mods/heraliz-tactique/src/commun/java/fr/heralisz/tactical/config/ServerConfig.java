@@ -120,7 +120,7 @@ public class ServerConfig {
             "(data/heraliz_vitres.dat, une liste par dimension).")
          .defineInRange("delai_repousse_minutes", Vitres.DEFAUT_DELAI_MINUTES, 1, 10080);
       VITRES_DIMENSIONS = builder.comment(
-            "Dimensions où le verre ne casse jamais (spawn, arènes des matchs, zombies, bunkers des clans) : les balles le",
+            "Dimensions où le verre ne casse jamais (spawn, anciens bunkers des clans) : les balles le",
             "traversent ou s'y arrêtent comme avant.")
          .defineList("dimensions_protegees", Vitres.DEFAUT_DIMENSIONS, o -> o instanceof String);
       VITRES_RAYON_SPAWN = builder.comment(

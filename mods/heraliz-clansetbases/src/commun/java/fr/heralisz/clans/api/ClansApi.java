@@ -19,8 +19,8 @@ import java.util.UUID;
  * rendre la main). Les montants sont en jetons (HeraliZ Économie). Evenements postes sur {@code MinecraftForge.EVENT_BUS} :
  * {@link fr.heralisz.clans.api.events.ClanDissousEvent}, {@link fr.heralisz.clans.api.events.MembreQuitteEvent}.
  *
- * <p>Drapeau « en match » : {@link #EN_MATCH} dans {@code persistentData} d'un joueur (pose et retire par HeraliZ
- * Matchs) ; les stats et quetes de clan l'ignorent tant qu'il est present.
+ * <p>Drapeau « en match » : {@link #EN_MATCH} (HeraliZ Matchs, retiré du serveur le 24/10 : plus personne ne le pose,
+ * HeraliZ Utils le retire à la connexion ; gardé pour ne pas casser l'API).
  */
 public final class ClansApi {
     private ClansApi() {

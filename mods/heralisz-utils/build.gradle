@@ -76,10 +76,9 @@ dependencies {
     // heraliz_corps : Curios, CaraCrea (peaux), clans — facultatifs en jeu
     compileOnly fg.deobf("blank:curios-forge:5.14.1-hzutils")
     compileOnly fg.deobf("blank:caracrea:1.1.0-hzutils")
-    // heraliz_ping / heraliz_corps : clans, économie, matchs (API) — facultatifs en jeu
+    // heraliz_ping / heraliz_corps : clans, économie (API) — facultatifs en jeu
     compileOnly fg.deobf("blank:heralisz_clans:0.1.3-hzutils")
     compileOnly fg.deobf("blank:heralisz_economie:0.1.1-hzutils")
-    compileOnly fg.deobf("blank:heralisz_matchs:0.2.3-hzutils")
     clientAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

@@ -47,7 +47,7 @@ import java.util.UUID;
  *     rien n'est copie, rien n'est perdu. Si le corps ne peut pas etre cree (erreur, monde qui refuse l'entite), les objets
  *     tombent normalement au sol.</li>
  * </ol>
- * Pas de corps : joueur en match (drapeau {@code heralisz:en_match}), dimension exclue (arenes et zombies des matchs),
+ * Pas de corps : dimension exclue (réglage {@code dimensions_exclues}),
  * spectateur, faux joueur, mod desactive. Sous Mohist, l'ordre est le meme : {@code die} poste {@code LivingDeathEvent},
  * puis {@code dropAllDeathLoot} poste {@code LivingDropsEvent}.
  */
@@ -55,8 +55,6 @@ public final class CaptureMort {
     private CaptureMort() {
     }
 
-    /** Drapeau de HeraliZ Matchs dans {@code persistentData} d'un joueur en match. */
-    public static final String DRAPEAU_EN_MATCH = "heralisz:en_match";
 
     /** Photos en attente de la chute des objets (meme tick ; videes en fin de tick si rien n'est tombe). */
     private static final Map<UUID, Instantane> INSTANTANES = new HashMap<>();
@@ -74,7 +72,6 @@ public final class CaptureMort {
     public static boolean eligible(ServerPlayer p) {
         if (p instanceof FakePlayer || p.isSpectator() || p.getTags().contains("heraliz_bot")) return false;
         if (!CorpsConfig.ACTIF.get()) return false;
-        if (p.getPersistentData().contains(DRAPEAU_EN_MATCH)) return false;
         return !CorpsConfig.dimensionExclue(p.level().dimension().location().toString());
     }
 

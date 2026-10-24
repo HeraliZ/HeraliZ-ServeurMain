@@ -83,7 +83,7 @@ public final class Deplacements {
 
     /**
      * Refus commun des commandes de CRac (23/10, demande du propriétaire : aucune commande en combat) : tag de combat de
-     * HeraliZ Matchs, joueur à terre (Réanimation), joueur en match. Le staff (permission 2) n'est jamais arrêté. Rend
+     * HeraliZ Utils, joueur à terre (Réanimation). Le staff (permission 2) n'est jamais arrêté. Rend
      * vrai (et prévient le joueur) quand la commande est refusée.
      */
     public static boolean refuse(ServerPlayer p) {
@@ -100,15 +100,8 @@ public final class Deplacements {
             T.chat(p, T.t("crac.cmd.a_terre", "Impossible à terre."), ChatFormatting.RED);
             return true;
         }
-        if (p.getPersistentData().getBoolean(EN_MATCH)) {
-            T.chat(p, T.t("crac.cmd.match", "Impossible pendant un match."), ChatFormatting.RED);
-            return true;
-        }
         return false;
     }
-
-    /** Drapeau de HeraliZ Matchs posé pendant un match ({@code MatchApi.DRAPEAU_EN_MATCH}). */
-    static final String EN_MATCH = "heralisz:en_match";
 
     /** Le joueur est-il « au spawn » : monde du spawn, ou près du point /spawn défini par le staff ? */
     static boolean auSpawn(ServerPlayer p) {

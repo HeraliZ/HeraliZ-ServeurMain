@@ -605,7 +605,6 @@
   "crac.coeur.deplace": "%s a repris le cœur du clan : il a %s minutes pour le reposer dans la base, sinon le clan perd TOUS ses points de saison.",
   "crac.cmd.combat": "Tu es en combat : commande impossible encore %s s.",
   "crac.cmd.a_terre": "Impossible à terre.",
-  "crac.cmd.match": "Impossible pendant un match.",
   "crac.spawn.carte": "Sur la carte, on ne revient au spawn que par une extraction (/extractions).",
   "crac.tuto.clan_plus_tard": "[Tuto] Ton clan est créé ! Retourne au spawn : le Commandant Varga t'y montrera comment bâtir une base.",
   "crac.tuto.attente_combat": "[Tuto] Départ pour le tutoriel dès que tu n'es plus en combat.",

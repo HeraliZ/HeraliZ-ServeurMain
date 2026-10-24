@@ -27,8 +27,7 @@ import java.util.UUID;
  * places autour du joueur du banc :
  * <ul>
  *     <li>Allie : membre du clan [PING] du joueur ; Etranger : sans clan ; Spectre : membre du clan en mode spectateur ;</li>
- *     <li>G1, G2 : un groupe (/groupe) sans clan ; G3 : seul ;</li>
- *     <li>A1, A2 : equipe A d'une partie, B1 : equipe B, Mort : equipe A eliminee (spectateur de la partie).</li>
+ *     <li>G1, G2, G3, A1, A2, B1, Mort : sans clan (les groupes et les parties de HeraliZ Matchs ont ete retires le 24/10).</li>
  * </ul>
  * Chaque verification ecrit « [ping-banc] OK » ou « [ping-banc] ECHEC » dans run/logs/latest.log, et un bilan a la fin.
  */
@@ -37,7 +36,6 @@ final class BancServeur {
     }
 
     private static final Map<String, FauxJoueur> FAUX = new LinkedHashMap<>();
-    private static BancLiens.PartieTest partie;
     private static int ok, echecs;
     private static final List<String> ECHECS = new ArrayList<>();
 
@@ -66,7 +64,7 @@ final class BancServeur {
                 case "zero" -> zero();
                 case "verif_clan" -> verifClan();
                 case "verif_groupe" -> verifGroupe(dev);
-                case "verif_match" -> verifMatch(s, dev);
+                case "verif_match" -> log("verification des matchs retiree (matchs retires du serveur le 24/10)");
                 case "verif_cadence" -> verifCadence(dev);
                 case "verif_cadence_suite" -> verifCadenceSuite(dev);
                 case "verif_vue" -> verifVue();
@@ -103,7 +101,6 @@ final class BancServeur {
         BancLiens.ajouterAuClan(dev, faux("Allie").joueur);
         BancLiens.ajouterAuClan(dev, faux("Spectre").joueur);
         faux("Spectre").joueur.setGameMode(GameType.SPECTATOR);
-        BancLiens.groupe(List.of(faux("G1").joueur.getUUID(), faux("G2").joueur.getUUID()));
         zero();
         log("faux joueurs : {}", FAUX.keySet());
     }
@@ -136,67 +133,18 @@ final class BancServeur {
         return new Paquets.PingC2S(type, -1, b.asLong(), x, y, z);
     }
 
-    /** Joueur sans clan dans un groupe : son groupe recoit, pas les autres. */
+    /** Joueur sans clan : lui seul recoit son ping. */
     private static void verifGroupe(ServerPlayer dev) {
-        zero();
-        FauxJoueur g1 = faux("G1");
-        PingService.remplirSeau(g1.joueur.getUUID());
-        long avant = PingService.relayes;
-        PingService.recevoir(g1.joueur, solDevant(g1.joueur, PingType.ALLER.id(), 4));
-        verifier(PingService.relayes == avant + 1, "ping de G1 (sans clan, en groupe) accepte");
-        verifier(Cercles.derniere() == Regles.Origine.GROUPE, "cercle retenu pour G1 : {}", Cercles.derniere());
-        Map<String, Integer> r = recus();
-        log("reception apres le ping de G1 : {}", r);
-        verifier(r.get("G2") == 1, "membre du groupe (G2) recoit : {}", r.get("G2"));
-        verifier(r.get("G1") == 1, "l'auteur (G1) recoit son propre ping : {}", r.get("G1"));
-        verifier(r.get("G3") == 0 && r.get("Allie") == 0 && r.get("Etranger") == 0, "hors groupe : G3 {}, Allie {}, Etranger {}", r.get("G3"),
-                r.get("Allie"), r.get("Etranger"));
-        // G3 : ni clan ni groupe -> lui seul
         zero();
         FauxJoueur g3 = faux("G3");
         PingService.remplirSeau(g3.joueur.getUUID());
-        PingService.recevoir(g3.joueur, solDevant(g3.joueur, PingType.LOOT.id(), 4));
-        r = recus();
-        int total = r.values().stream().mapToInt(Integer::intValue).sum();
-        verifier(Cercles.derniere() == Regles.Origine.SEUL && r.get("G3") == 1 && total == 1, "sans clan ni groupe : seul l'auteur recoit ({})",
-                total);
-    }
-
-    /** En match : l'equipe seule (pas le clan, pas l'autre equipe, pas les spectateurs). */
-    private static void verifMatch(MinecraftServer s, ServerPlayer dev) {
-        FauxJoueur a1 = faux("A1"), a2 = faux("A2"), b1 = faux("B1"), mort = faux("Mort");
-        // A1 est aussi membre du clan du joueur du banc : en match, c'est l'equipe qui compte
-        BancLiens.ajouterAuClan(dev, a1.joueur);
-        partie = BancLiens.ouvrirPartie(s, a1.joueur, a2.joueur, b1.joueur, mort.joueur);
-        zero();
-        PingService.remplirSeau(a1.joueur.getUUID());
         long avant = PingService.relayes;
-        PingService.recevoir(a1.joueur, solDevant(a1.joueur, PingType.ENNEMI.id(), 4));
-        verifier(PingService.relayes == avant + 1, "ping de A1 en match accepte");
-        verifier(Cercles.derniere() == Regles.Origine.EQUIPE, "cercle retenu en match : {}", Cercles.derniere());
+        PingService.recevoir(g3.joueur, solDevant(g3.joueur, PingType.LOOT.id(), 4));
+        verifier(PingService.relayes == avant + 1, "ping de G3 (sans clan) accepte");
         Map<String, Integer> r = recus();
-        log("reception apres le ping de A1 (match) : {}", r);
-        verifier(r.get("A2") == 1, "coequipier (A2) recoit : {}", r.get("A2"));
-        verifier(r.get("B1") == 0, "equipe adverse (B1) ne recoit rien : {}", r.get("B1"));
-        verifier(r.get("Mort") == 0, "coequipier spectateur (Mort) ne recoit rien : {}", r.get("Mort"));
-        verifier(r.get("Allie") == 0, "membre du clan hors match (Allie) ne recoit rien : {}", r.get("Allie"));
-        // un spectateur de la partie ne pingue pas
-        zero();
-        long refus = PingService.refusSpectateur;
-        PingService.remplirSeau(mort.joueur.getUUID());
-        PingService.recevoir(mort.joueur, solDevant(mort.joueur, PingType.AIDE.id(), 4));
-        verifier(PingService.refusSpectateur == refus + 1, "spectateur de la partie : ping refuse");
-        // reglage : les spectateurs voient
-        PingConfig.SPECTATEURS_VOIENT.set(true);
-        zero();
-        PingService.remplirSeau(a1.joueur.getUUID());
-        PingService.recevoir(a1.joueur, solDevant(a1.joueur, PingType.DANGER.id(), 5));
-        r = recus();
-        verifier(r.get("Mort") == 1, "avec spectateurs_voient = oui, le spectateur de l'equipe recoit : {}", r.get("Mort"));
-        PingConfig.SPECTATEURS_VOIENT.set(false);
-        BancLiens.fermerPartie(partie, List.of(a1.joueur, a2.joueur, b1.joueur, mort.joueur));
-        partie = null;
-        BancLiens.retirerDuClan(dev, a1.joueur);
+        int total = r.values().stream().mapToInt(Integer::intValue).sum();
+        verifier(Cercles.derniere() == Regles.Origine.SEUL && r.get("G3") == 1 && total == 1, "sans clan : seul l'auteur recoit ({})",
+                total);
     }
 
     /** Anti-spam : rafale de 10 pings d'un coup, seuls « rafale » passent ; un de plus apres la recharge. */
@@ -307,11 +255,7 @@ final class BancServeur {
     }
 
     private static void nettoyer(MinecraftServer s) {
-        if (partie != null) partie.fermer();
-        for (FauxJoueur f : FAUX.values()) {
-            BancLiens.finGroupe(f.joueur.getUUID());
-            f.retirer(s);
-        }
+        for (FauxJoueur f : FAUX.values()) f.retirer(s);
         FAUX.clear();
     }
 

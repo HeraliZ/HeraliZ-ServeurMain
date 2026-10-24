@@ -49,8 +49,7 @@ import java.util.UUID;
  * « emote_harness » (commandes permises), scenario, puis sortie. Etapes : {"t", "cmd", "shot", "press"/"release" (touche
  * physique : "0", "grave", "h", "b"), "screenkey": "escape", "play": "floss" (emote Heraliz par son id) ou "" (arreter),
  * "status": true (emote en cours ?), "keys": true, "view": "fp|back|front", "chat": true|false, "quit": true}.
- * Cote serveur : {@code /emotetest combat <s>} et {@code /emotetest match 0|1} posent les cles de HeraliZ Matchs
- * ({@code heralisz:combat_jusqua}, {@code heralisz:en_match}). Captures : run/screenshots/emote_&lt;nom&gt;.png.
+ * Cote serveur : {@code /emotetest combat <s>} pose la cle du tag de combat ({@code heralisz:combat_jusqua}). Captures : run/screenshots/emote_&lt;nom&gt;.png.
  */
 @Mod.EventBusSubscriber(modid = HeralizEmote.MODID, value = Dist.CLIENT)
 public final class EmoteHarness {
@@ -256,14 +255,6 @@ public final class EmoteHarness {
                         if (sec == 0) p.getPersistentData().remove(EmoteRules.COMBAT_JUSQUA);
                         else p.getPersistentData().putLong(EmoteRules.COMBAT_JUSQUA, System.currentTimeMillis() + sec * 1000L);
                         log("cle {} = +{} s", EmoteRules.COMBAT_JUSQUA, sec);
-                        return 1;
-                    })))
-                    .then(Commands.literal("match").then(Commands.argument("v", IntegerArgumentType.integer(0, 1)).executes(c -> {
-                        ServerPlayer p = c.getSource().getPlayerOrException();
-                        boolean on = IntegerArgumentType.getInteger(c, "v") == 1;
-                        if (on) p.getPersistentData().putBoolean(EmoteRules.EN_MATCH, true);
-                        else p.getPersistentData().remove(EmoteRules.EN_MATCH);
-                        log("drapeau {} = {}", EmoteRules.EN_MATCH, on);
                         return 1;
                     }))));
         }

@@ -38,10 +38,10 @@ public final class PolicesNettes {
      * {@code python outils/polices_nettes.py}, qui signale tout espace de noms de police absent d'ici.
      */
     private static final Set<String> NOS_ESPACES = Set.of(
-            "airstrike", "caracrea", "crac", "heralisz_camo", "heralisz_clans", "heralisz_economie", "heralisz_matchs",
+            "airstrike", "caracrea", "crac", "heralisz_camo", "heralisz_clans", "heralisz_economie",
             "heralisz_utils", "heraliz_armory", "heraliz_boss", "heraliz_clansetbases", "heraliz_corps", "heraliz_emote",
             "heraliz_extraction", "heraliz_gabarit", "heraliz_grades", "heraliz_interface", "heraliz_ping",
-            "heraliz_quetes", "heraliz_tactique", "heraliz_usure", "heraliz_wonder", "heralizcasino", "heralizcrates",
+            "heraliz_quetes", "heraliz_tactique", "heraliz_usure", "heralizcasino", "heralizcrates",
             "reanimation");
 
     /** Planche de lettres retenue, par nom (« espace:police/n ») : un rechargement des ressources les réenregistre. */

@@ -30,7 +30,6 @@
   "msg.heralisz_camo.cooldown": "%s: доступен через %s мин (гибель с оружием)",
   "msg.heralisz_camo.applied_life": "Постоянный камуфляж %s нанесён",
   "msg.heralisz_camo.removed": "Постоянный камуфляж %s снят (он остаётся в коллекции)",
-  "msg.heralisz_camo.not_in_match": "Не во время матча",
   "msg.heralisz_camo.lost": "Ты погиб с оружием: постоянный камуфляж снят с него (%s). Он остаётся в коллекции, нанести снова можно через %s мин.",
   "msg.heralisz_camo.moved": "%s: нанесён на другое твоё оружие и снят с этого",
   "msg.heralisz_camo.not_yours": "Постоянный камуфляж другого игрока: он снят с оружия",

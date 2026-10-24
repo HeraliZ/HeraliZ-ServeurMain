@@ -1,6 +1,5 @@
 package fr.heralisz.clans.server;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -12,15 +11,14 @@ import java.util.UUID;
 
 /**
  * État d'un joueur lu dans les autres mods, par réflexion (chaque mod absent = « non ») : en combat (Utils,
- * {@code CombatTag}), à terre (Réanimation), en match (Matchs), sur la carte (overworld), objet prêté par un match ou
- * objet à vie (Tactique). Sert au coffre du clan et à la création d'un clan (23/10, demande du propriétaire).
+ * {@code CombatTag}), à terre (Réanimation), sur la carte (overworld), objet prêté par un ancien match (étiquette NBT ;
+ * HeraliZ Matchs retiré le 24/10) ou objet à vie (Tactique). Sert au coffre du clan et à la création d'un clan (23/10, demande du propriétaire).
  */
 final class EtatJoueur {
-    /** Clé NBT des objets prêtés en match ({@code MatchApi.NBT_PRET}). */
+    /** Clé NBT des objets prêtés par un match (HeraliZ Matchs, retiré le 24/10 : par sûreté, toujours refusés). */
     static final String NBT_PRET = "HeraliszMatch";
 
     private static final Method COMBAT = methode("fr.heralisz.utils.combat.CombatTag", "restantMs", UUID.class);
-    private static final Method MATCH = methode("fr.heralisz.matchs.moteur.api.MatchApi", "enMatch", UUID.class);
     private static final Method A_TERRE = methode("fr.heraliz.reanimation.core.Downed", "isDowned", Entity.class);
     private static final Method A_VIE = methode("fr.heraliz.tactique.avie.ObjetsAVie", "estAVie", ItemStack.class);
 
@@ -52,13 +50,6 @@ final class EtatJoueur {
 
     static boolean aTerre(ServerPlayer p) {
         return Boolean.TRUE.equals(appel(A_TERRE, p));
-    }
-
-    static boolean enMatch(ServerPlayer p) {
-        if (Boolean.TRUE.equals(appel(MATCH, p.getUUID()))) return true;
-        if (p.getPersistentData().getBoolean("heralisz:en_match")) return true;
-        ResourceLocation monde = p.level().dimension().location();
-        return "heralisz_matchs".equals(monde.getNamespace());
     }
 
     static boolean surCarte(ServerPlayer p) {

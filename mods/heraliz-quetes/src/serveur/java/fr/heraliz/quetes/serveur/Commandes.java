@@ -369,10 +369,8 @@ final class Commandes {
         if (estAVie(souris)) aVie.add(souris.copy());
         viderCoffresPerso(srv, p.getUUID(), aVie);
         for (ItemStack s : enPlus) if (!s.isEmpty()) aVie.add(s.copy());
-        // 23/10 : son coffre de match (vrai inventaire d'un joueur en duel, ClashWar, Zombies) et ses échanges /trade en
-        // attente partent aussi (sinon rendus après la remise à zéro) ; seuls leurs objets à vie sont gardés
-        garderAVie(aVie, appelObjets("fr.heralisz.matchs.serveur.WipeMatchs", "vider",
-                new Class<?>[]{net.minecraft.server.MinecraftServer.class, UUID.class}, srv, p.getUUID()));
+        // 23/10 : ses échanges /trade en attente partent aussi (sinon rendus après la remise à zéro) ; seuls leurs objets à
+        // vie sont gardés (le coffre de match de HeraliZ Matchs n'existe plus : matchs retirés le 24/10)
         garderAVie(aVie, appelObjets("fr.heraliz.grades.serveur.EchangeServeur", "wipe", new Class<?>[]{UUID.class}, p.getUUID()));
         // 23/10 : seulement sa cabane d'essai du tutoriel, AVANT de le retirer de son clan ; plus jamais « base effacer »
         // (le groupe CRac du clan ne suit le clan que toutes les 5 s : c'était la base de tout le clan qui partait)

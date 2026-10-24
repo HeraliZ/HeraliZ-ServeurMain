@@ -15,14 +15,14 @@ import org.jetbrains.annotations.Nullable;
 /**
  * HeraliZ server rules CRac follows (section {@code [heraliz]} of crac-server.toml):
  * <ul>
- *   <li>dimensions where CRac is off: the match maps of HeraliZ Matchs and the clan bunkers of HeraliZ Bases (no piece,
+ *   <li>dimensions where CRac is off: the old clan bunkers of HeraliZ Bases (no piece,
  *   Claim Block or sleeping bag is placed there, and CRac leaves their explosions alone);</li>
- *   <li>the server's combat tag: {@code persistentData} long {@value #COMBAT_KEY} (epoch ms, set by HeraliZ Matchs), read
+ *   <li>the server's combat tag: {@code persistentData} long {@value #COMBAT_KEY} (epoch ms, set by HeraliZ Utils), read
  *   without depending on that mod. A tagged player does not build.</li>
  * </ul>
  */
 public final class Heraliz {
-    /** Combat tag of HeraliZ Matchs: end of the tag in epoch ms, absent or 0 = free. */
+    /** Combat tag of HeraliZ Utils: end of the tag in epoch ms, absent or 0 = free. */
     public static final String COMBAT_KEY = "heralisz:combat_jusqua";
 
     private static List<? extends String> cachedList;

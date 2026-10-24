@@ -21,7 +21,7 @@ import org.slf4j.Logger;
  *     <li>les commandes d'administration {@code /corps liste|tp|vider|supprimer} : {@code commande.CommandeCorps}, partie
  *     serveur.</li>
  * </ul>
- * Liens souples (jamais obligatoires) : Curios, CaraCrea, HeraliZ Clans, Reanimation, HeraliZ Matchs.
+ * Liens souples (jamais obligatoires) : Curios, CaraCrea, HeraliZ Clans, Reanimation.
  */
 @Mod(HeralizCorps.MODID)
 public final class HeralizCorps {

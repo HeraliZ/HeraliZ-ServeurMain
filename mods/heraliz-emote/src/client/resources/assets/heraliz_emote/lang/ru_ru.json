@@ -50,7 +50,6 @@
   "heraliz_emote.menu.others_sound": "Звук других",
   "heraliz_emote.sound.others": "Эмоции других",
   "heraliz_emote.refused.downed": "Нельзя использовать эмоции в нокауте",
-  "heraliz_emote.refused.match": "Нельзя использовать эмоции во время матча",
   "heraliz_emote.refused.combat": "Нельзя использовать эмоции в бою (ещё %s с)",
   "heraliz_emote.menu.subtitle": "Эмоций: %s · с предметами: %s",
   "heraliz_emote.menu.categories": "Категории",

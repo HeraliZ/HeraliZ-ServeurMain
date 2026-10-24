@@ -30,7 +30,6 @@
   "msg.heralisz_camo.cooldown": "%s: available in %s min (died with the gun)",
   "msg.heralisz_camo.applied_life": "Lifetime camo %s applied",
   "msg.heralisz_camo.removed": "Lifetime camo %s removed (still in your collection)",
-  "msg.heralisz_camo.not_in_match": "Not during a match",
   "msg.heralisz_camo.lost": "Died with your gun: the lifetime camo leaves it (%s). Still in your collection, usable again in %s min.",
   "msg.heralisz_camo.moved": "%s: applied to another of your guns, removed from this one",
   "msg.heralisz_camo.not_yours": "Another player's lifetime camo: it left the gun",

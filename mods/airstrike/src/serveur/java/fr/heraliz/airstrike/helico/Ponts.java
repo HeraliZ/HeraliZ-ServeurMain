@@ -16,8 +16,7 @@ import java.util.UUID;
 
 /**
  * Liens avec nos autres mods, par réflexion (aucune dépendance : un mod absent = la règle ne s'applique pas) :
- * <ul><li>HeraliZ Matchs : {@code MatchApi.enMatch(ServerPlayer)} (jamais de tir sur un joueur en match) ;</li>
- * <li>Réanimation : {@code Downed.isDowned(Entity)} (on n'achève pas un joueur à terre) ;</li>
+ * <ul><li>Réanimation : {@code Downed.isDowned(Entity)} (on n'achève pas un joueur à terre) ;</li>
  * <li>HeraliZ Grades : {@code GradesApi.cache(UUID)} (staff caché par /vanish) ;</li>
  * <li>HeraliZ Loot : {@code PointsT7.apparaitre(...)} (coffre T7 au crash) et {@code LootApi.tirer(...)} (contenu des
  * caisses T6).</li></ul>
@@ -26,7 +25,7 @@ import java.util.UUID;
 final class Ponts {
     private static boolean cherche;
     @Nullable
-    private static Method enMatch, aTerre, cache, coffreT7, loot;
+    private static Method aTerre, cache, coffreT7, loot;
 
     private Ponts() {
     }
@@ -34,7 +33,6 @@ final class Ponts {
     private static void chercher() {
         if (cherche) return;
         cherche = true;
-        enMatch = methode("fr.heralisz.matchs.moteur.api.MatchApi", "enMatch", ServerPlayer.class);
         aTerre = methode("fr.heraliz.reanimation.core.Downed", "isDowned", Entity.class);
         cache = methode("fr.heraliz.grades.serveur.GradesApi", "cache", UUID.class);
         coffreT7 = methode("fr.heraliz.loot.PointsT7", "apparaitre", ServerLevel.class, BlockPos.class, Direction.class,
@@ -62,11 +60,6 @@ final class Ponts {
         } catch (ReflectiveOperationException | RuntimeException e) {
             return false;
         }
-    }
-
-    static boolean enMatch(ServerPlayer p) {
-        chercher();
-        return vrai(enMatch, p);
     }
 
     static boolean aTerre(Entity e) {
@@ -101,13 +94,12 @@ final class Ponts {
     }
 
     /**
-     * Joueur que l'hélicoptère peut prendre pour cible : vivant, en survie ou aventure, dans le même monde, ni en match,
-     * ni à terre, ni caché par le staff ; les bots de charge (/bots, étiquette heraliz_bot) seulement si le réglage le
+     * Joueur que l'hélicoptère peut prendre pour cible : vivant, en survie ou aventure, dans le même monde, ni à terre, ni caché par le staff ; les bots de charge (/bots, étiquette heraliz_bot) seulement si le réglage le
      * permet. Le spawn, le monde des bases et le tutoriel sont d'autres mondes : l'hélicoptère n'y est jamais.
      */
     static boolean cible(ServerPlayer p, Entity helico) {
         if (!p.isAlive() || p.isSpectator() || p.isCreative() || p.level() != helico.level()) return false;
         if (!AirstrikeConfig.HELICO_TIRER_BOTS.get() && p.getTags().contains("heraliz_bot")) return false;
-        return !enMatch(p) && !aTerre(p) && !cache(p);
+        return !aTerre(p) && !cache(p);
     }
 }

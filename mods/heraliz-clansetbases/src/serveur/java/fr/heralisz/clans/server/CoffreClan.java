@@ -63,7 +63,7 @@ public final class CoffreClan {
     public static final int CASES = 9;
     private static final TagKey<Item> INTERDIT = TagKey.create(Registries.ITEM, new ResourceLocation("heralisz_clans", "coffre_interdit"));
     /** Mods dont tout objet est refusé (armures, grenades, mêlée, Wonder Weapons, sacs à dos). */
-    private static final Set<String> MODS_INTERDITS = Set.of("heraliz_armory", "heralisz_armor", "heraliz_wonder", "backpacked");
+    private static final Set<String> MODS_INTERDITS = Set.of("heraliz_armory", "heralisz_armor", "backpacked");
     /**
      * Objets refusés un par un. Grenades et mêlée de Tactique sont enregistrées sous {@code heralisz_tactical} (pas sous
      * les modIds {@code heralisz_grenade} / {@code heralisz_melee}, qui ne portent aucun objet) : 23/10, elles entraient.
@@ -128,14 +128,12 @@ public final class CoffreClan {
 
     /**
      * Pourquoi le coffre est fermé à ce joueur maintenant (23/10, demande du propriétaire), null sinon : en combat, à
-     * terre, en match, ou sur la carte (on n'y range rien par commande : seulement au spawn ou ailleurs hors carte).
+     * terre, ou sur la carte (on n'y range rien par commande : seulement au spawn ou ailleurs hors carte).
      * Le créatif et le spectateur passent.
      */
     @Nullable
     static Component empechement(ServerPlayer p) {
         if (p.isCreative() || p.isSpectator()) return null;
-        if (EtatJoueur.enMatch(p))
-            return Component.translatableWithFallback("msg.coffre.match", "Le coffre du clan est fermé pendant un match.");
         if (EtatJoueur.aTerre(p))
             return Component.translatableWithFallback("msg.coffre.a_terre", "Impossible d'ouvrir le coffre du clan à terre.");
         if (EtatJoueur.enCombat(p))

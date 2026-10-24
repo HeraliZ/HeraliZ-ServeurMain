@@ -33,8 +33,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
  * <ul>
  *     <li>mort : ils ne tombent pas (ni au sol ni sur le corps de HeraliZ Utils, qui range les objets tombés plus tard,
  *     en LOWEST) ; gardés dans les données persistantes du joueur ({@code PlayerPersisted.HeralizObjetsAVie}, copiées
- *     par Forge à la réapparition, donc aussi après un redémarrage) et rendus à la réapparition ou à la connexion. Pas
- *     en match (drapeau {@code heralisz:en_match} de HeraliZ Matchs : les kits des matchs sont gérés par le match) ;</li>
+ *     par Forge à la réapparition, donc aussi après un redémarrage) et rendus à la réapparition ou à la connexion ;</li>
  *     <li>touche de jet (aucun menu ouvert) : rien n'est jeté, l'objet reste dans la main (petit message) ;</li>
  *     <li>jet depuis un inventaire ouvert : l'objet est mis de côté et le joueur reçoit « Jeter cet objet ? ». Oui : il
  *     tombe. Non (ou écran fermé) : il revient dans l'inventaire ; inventaire plein entre-temps : l'objet de la case 9 de
@@ -52,7 +51,6 @@ public final class ObjetsAVieServeur {
 
    private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
    private static final String CLE = "HeralizObjetsAVie";
-   private static final String DRAPEAU_EN_MATCH = "heralisz:en_match";
    /** Objet mis de côté en attendant la réponse du joueur ; {@code menu} non nul : question du sac (case {@code cas}). */
    private record Attente(ItemStack objet, @javax.annotation.Nullable AbstractContainerMenu menu, int cas) {
    }
@@ -229,7 +227,6 @@ public final class ObjetsAVieServeur {
    // ------------------------------------------------------------------ mort
    private static void chute(LivingDropsEvent e) {
       if (!(e.getEntity() instanceof ServerPlayer p) || p instanceof FakePlayer) return;
-      if (p.getPersistentData().contains(DRAPEAU_EN_MATCH)) return;
       ListTag garde = new ListTag();
       for (Iterator<ItemEntity> it = e.getDrops().iterator(); it.hasNext(); ) {
          ItemEntity ie = it.next();

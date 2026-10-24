@@ -28,11 +28,10 @@ public final class VehiculesConfig {
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.push("regles");
-        DIMENSIONS_INTERDITES = b.comment("Dimensions sans aucun vehicule (matchs ClashWar/Duels, mode Zombies, bunkers des bases) :",
+        DIMENSIONS_INTERDITES = b.comment("Dimensions sans aucun vehicule (anciens bunkers des bases) :",
                         "on ne peut pas y poser de vehicule et un vehicule qui y arrive est retire (rendu en objet).")
-                .defineListAllowEmpty("dimensions_interdites",
-                        List.of("heralisz_matchs:arenes", "heralisz_matchs:zombies", "heralisz_bases:bunkers"), o -> o instanceof String);
-        REFUS_EN_COMBAT = b.comment("Refuser de sortir (poser) un vehicule pendant le tag de combat (cle heralisz:combat_jusqua de HeraliZ Matchs).")
+                .defineListAllowEmpty("dimensions_interdites", List.of("heralisz_bases:bunkers"), o -> o instanceof String);
+        REFUS_EN_COMBAT = b.comment("Refuser de sortir (poser) un vehicule pendant le tag de combat (cle heralisz:combat_jusqua, tag de combat de HeraliZ Utils).")
                 .define("refus_en_combat", true);
         PROTEGER_BLOCS = b.comment("Les explosions de vehicules ne cassent aucun bloc (bases, bunkers) : force canDestroyBlock et",
                         "explosionDropBlock a false dans la config de Limitless Vehicle.")

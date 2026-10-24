@@ -25,8 +25,8 @@ import java.util.function.Supplier;
  *   <li>client ({@code client.ClientUsure}) : infobulle, petit indicateur de l'arme en main en bas a droite de l'ecran
  *   (alerte « ruinee ») ; rien sur l'icone de l'arme.</li>
  * </ul>
- * Aucune usure en match (drapeau {@code heralisz:en_match} de HeraliZ Matchs, armes pretees {@code HeraliszMatch}),
- * dans les dimensions des matchs et des zombies ; couteaux et armes des zombies exclus. Camos et Pack-a-Punch intacts.
+ * Aucune usure sur une arme pretee ({@code HeraliszMatch}, matchs retires le 24/10) ni dans les dimensions du reglage
+ * {@code dimensions_sans_usure} ; couteaux exclus. Camos intacts.
  * <p>Jar fusionne HeraliZ Utils (docs/METHODE_CLIENT_SERVEUR.md) : ici le commun (objets, reseau, etat des armes,
  * regles lues des deux cotes) ; la logique serveur ({@code TirsServeur}, {@code ReparationServeur}, {@code ReglesServeur},
  * {@code UsureConfig}, {@code Commandes}, conversion Gun Durability de {@code HeralizUsureServeur}) est branchee par
@@ -36,8 +36,6 @@ import java.util.function.Supplier;
 public final class HeralizUsure {
     public static final String MODID = "heraliz_usure";
     public static final Logger LOG = LogUtils.getLogger();
-    /** Drapeau booleen du persistentData pose par HeraliZ Matchs pendant un match (aucune dependance de compilation). */
-    public static final String DRAPEAU_EN_MATCH = "heralisz:en_match";
 
     /**
      * Regles vues par le client (remplacees par celles du client a son initialisation). A l'origine {@code ReglesServeur::get}

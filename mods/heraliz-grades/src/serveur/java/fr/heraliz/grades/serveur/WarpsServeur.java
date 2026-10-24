@@ -72,7 +72,7 @@ final class WarpsServeur {
     private static final int DELAI_TICKS = 60, MAX_WARPS = 32;
     private static final long ANTI_SPAM_MS = 1000;
     private static final Set<String> RESERVES = Set.of("set", "del", "liste", "nom", "description", "icone");
-    private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
+    private static final String CLE_COMBAT = "heralisz:combat_jusqua";
 
     record Warp(String id, String nom, String description, ResourceKey<Level> monde, Vec3 pos, float yRot, float xRot, int rang, String icone) {
         Warp avec(String nom, String description, int rang, String icone) {
@@ -137,7 +137,6 @@ final class WarpsServeur {
             return 1;
         }
         if (!auSpawn(p)) return refus(p, Component.translatableWithFallback("heraliz_grades.warp.pas_spawn", "Les warps ne s'utilisent qu'au spawn."));
-        if (p.getPersistentData().getBoolean(DRAPEAU_MATCH)) return refus(p, Component.translatableWithFallback("heraliz_grades.warp.match", "Impossible pendant un match."));
         if (p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis()) {
             return refus(p, Component.translatableWithFallback("heraliz_grades.warp.combat", "Impossible en combat."));
         }

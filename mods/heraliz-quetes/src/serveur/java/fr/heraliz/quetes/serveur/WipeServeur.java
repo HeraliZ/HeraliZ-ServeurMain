@@ -47,8 +47,7 @@ import java.util.stream.Stream;
  * {@code /wipe tout annuler} arrête ; puis tout part :
  * <ul>
  * <li>toutes les bases de CRac, contenu compris, et leurs données (homes, tutoriels, cœurs, groupes) ;</li>
- * <li>tous les clans dissous (banque et coffre perdus), hérals de tous les comptes à 0, saison et classement du
- * ClashWar effacés ;</li>
+ * <li>tous les clans dissous (banque et coffre perdus), hérals de tous les comptes à 0, saison effacée ;</li>
  * <li>objets au sol et cadavres des zones chargées ;</li>
  * <li>chaque joueur (en ligne : tout de suite ; sinon à sa prochaine connexion) : inventaire, coffre de l'Ender, Curios,
  * planque et coffre VIP, quêtes, personnage, cinématique, guide et tutoriel, comme {@code /wipe <joueur>}, puis
@@ -100,7 +99,7 @@ final class WipeServeur {
         codeFin = System.currentTimeMillis() + 60_000L;
         auteur = src.getTextName();
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.avertir",
-                "REMISE À ZÉRO DU SERVEUR : toutes les bases, tous les clans, les hérals, la saison, le classement du ClashWar, "
+                "REMISE À ZÉRO DU SERVEUR : toutes les bases, tous les clans, les hérals, la saison, "
                         + "et pour chaque joueur inventaire, coffres, quêtes, personnage et tutoriel. Gardés : objets à vie, camos, "
                         + "emotes, grades, permissions, comptes. Impossible à annuler.").withStyle(ChatFormatting.RED), false);
         String c = code;
@@ -192,7 +191,6 @@ final class WipeServeur {
         fusionner(rendus, appel("fr.heraliz.crac.api.WipeApi", "toutEffacer",
                 new Class<?>[]{MinecraftServer.class, Predicate.class}, srv, aVie));
         fusionner(rendus, appel("fr.heralisz.clans.server.ClanService", "wipeServeur", new Class<?>[]{Predicate.class}, aVie));
-        appel("fr.heralisz.matchs.clashwar.CwClassement", "toutEffacer", new Class<?>[]{MinecraftServer.class}, srv);
         int sol = nettoyerSol(srv);
         Etat e = Etat.lire(srv);
         if (e.illisible) e = new Etat();   // l'ancien fichier est mis de côté, jamais écrasé

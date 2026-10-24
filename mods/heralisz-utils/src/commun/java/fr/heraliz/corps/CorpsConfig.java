@@ -37,7 +37,7 @@ public final class CorpsConfig {
     public static final ForgeConfigSpec.BooleanValue MARQUEUR_CLAN;
 
     /** Dimensions sans corps (copie du reglage, lue a chaque mort). */
-    private static volatile Set<String> exclues = Set.of("heralisz_matchs:arenes", "heralisz_matchs:zombies");
+    private static volatile Set<String> exclues = Set.of();
 
     /** Copies client lues au rendu. */
     public static volatile double distanceRenduCarre = 48 * 48;
@@ -61,9 +61,8 @@ public final class CorpsConfig {
                 .defineInRange("max_par_monde", 400, 1, 100000);
         DISTANCE_FOUILLE = b.comment("Distance maximale (blocs) pour fouiller un corps, des yeux du joueur jusqu'au corps (on fouille de la ou l'on est,",
                 "sans etre deplace) ; la fouille ouverte se ferme un bloc plus loin").defineInRange("distance_fouille", 5.0, 2.0, 16.0);
-        DIMENSIONS_EXCLUES = b.comment("Dimensions ou aucun corps n'apparait (les matchs gerent leurs morts eux-memes)")
-                .defineListAllowEmpty("dimensions_exclues", List.of("heralisz_matchs:arenes", "heralisz_matchs:zombies"),
-                        o -> o instanceof String);
+        DIMENSIONS_EXCLUES = b.comment("Dimensions ou aucun corps n'apparait")
+                .defineListAllowEmpty("dimensions_exclues", List.of(), o -> o instanceof String);
         b.pop();
         SERVEUR_SPEC = b.build();
 

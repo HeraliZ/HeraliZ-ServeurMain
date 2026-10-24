@@ -29,13 +29,13 @@ import java.util.List;
 /**
  * Les véhicules et les systèmes du serveur.
  * <ul>
- *   <li><b>Matchs et bunkers</b> ({@link VehiculesConfig#DIMENSIONS_INTERDITES}) : impossible d'y poser un véhicule ; un
+ *   <li><b>Dimensions interdites</b> ({@link VehiculesConfig#DIMENSIONS_INTERDITES}) : impossible d'y poser un véhicule ; un
  *   véhicule qui y arriverait (commande, vieux monde) est retiré et rendu en objet à sa place, avec le contenu de son
  *   coffre ; aucun véhicule ne peut y changer de dimension.</li>
- *   <li><b>Tag de combat</b> (clé {@code heralisz:combat_jusqua} de HeraliZ Matchs, epoch ms) : pas de véhicule sorti de la
+ *   <li><b>Tag de combat</b> (clé {@code heralisz:combat_jusqua}, tag de combat de HeraliZ Utils, epoch ms) : pas de véhicule sorti de la
  *   poche en plein combat. Les dégâts d'un véhicule conduit comptent déjà comme venant du conducteur (source de Limitless
  *   Vehicle : entité causale = conducteur), donc ils taguent normalement.</li>
- *   <li><b>Téléportations</b> : nos téléportations (bases, Coffre des matchs, train) font descendre le joueur par
+ *   <li><b>Téléportations</b> : nos téléportations (bases, train) font descendre le joueur par
  *   {@code stopRiding}, que Limitless Vehicle accepte (il ne bloque que la touche « s'accroupir ») ; le moteur fait aussi
  *   descendre à chaque {@code EntityTeleportEvent} et la téléportation vanilla vers une autre dimension descend d'elle-même.
  *   Filet en plus ici : descente avant tout changement de dimension d'un passager.</li>
@@ -47,7 +47,7 @@ public final class Regles {
     private Regles() {
     }
 
-    /** Clé du tag de combat (contrat de HeraliZ Matchs, sans en dépendre). */
+    /** Clé du tag de combat ({@code fr.heralisz.utils.combat.CombatTag#CLE_JUSQUA}). */
     public static final String CLE_COMBAT = "heralisz:combat_jusqua";
 
     static void enregistrer(IEventBus bus) {

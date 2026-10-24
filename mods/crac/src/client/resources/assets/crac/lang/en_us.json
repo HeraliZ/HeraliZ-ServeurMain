@@ -605,7 +605,6 @@
   "crac.coeur.deplace": "%s picked up the clan heart: %s minutes to place it back in the base, or the clan loses ALL its season points.",
   "crac.cmd.combat": "You are in combat: command unavailable for %s s.",
   "crac.cmd.a_terre": "Not while downed.",
-  "crac.cmd.match": "Not during a match.",
   "crac.spawn.carte": "On the map, the only way back to the spawn is an extraction (/extractions).",
   "crac.tuto.clan_plus_tard": "[Tutorial] Your clan is created! Go back to the spawn: Commander Varga will show you how to build a base there.",
   "crac.tuto.attente_combat": "[Tutorial] You will leave for the tutorial as soon as you are out of combat.",

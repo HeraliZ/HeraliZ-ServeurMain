@@ -166,12 +166,8 @@ public final class CamosAVie {
       p.displayClientMessage(Component.translatable("msg.heralisz_camo.removed", nom(actuel)).withStyle(ChatFormatting.GRAY), true);
    }
 
-   /** Pas en match (armes prêtées) ni à terre (retirer le camo avant de mourir éviterait le délai). */
+   /** Pas à terre (retirer le camo avant de mourir éviterait le délai). */
    private static boolean refuse(ServerPlayer p) {
-      if (p.getPersistentData().contains(KillCounter.EN_MATCH)) {
-         p.displayClientMessage(Component.translatable("msg.heralisz_camo.not_in_match").withStyle(ChatFormatting.RED), true);
-         return true;
-      }
       return Compat.aTerre(p);
    }
 
@@ -193,11 +189,10 @@ public final class CamosAVie {
    /**
     * Mort définitive d'un joueur (LivingDropsEvent, HIGH : après les objets de Curios, avant les corps et les sacs) : ses
     * camos à vie quittent les armes qui tombent (y compris dans un sac porté) et ne peuvent pas être remis avant
-    * {@link #RECHARGE_MS}. La mise à terre (Réanimation) annule la mort : rien ne se passe. Pas en match (armes prêtées).
+    * {@link #RECHARGE_MS}. La mise à terre (Réanimation) annule la mort : rien ne se passe.
     */
    static void chute(LivingDropsEvent e) {
       if (!(e.getEntity() instanceof ServerPlayer p) || p instanceof FakePlayer) return;
-      if (p.getPersistentData().contains(KillCounter.EN_MATCH)) return;
       CollectionCamos.Joueur j = CollectionCamos.trouver(p.getUUID());
       Set<Camo> perdus = EnumSet.noneOf(Camo.class);
       for (ItemEntity ie : e.getDrops()) {

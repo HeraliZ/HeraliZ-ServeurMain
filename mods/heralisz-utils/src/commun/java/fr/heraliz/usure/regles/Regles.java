@@ -30,11 +30,11 @@ public final class Regles {
     public boolean actif = true;
     /** Usure aussi en mode creatif (non par defaut : les admins testent librement). */
     public boolean usureCreatif = false;
-    /** Aucune usure pendant un match (drapeau {@code heralisz:en_match}) ni sur une arme pretee. */
+    /** Aucune usure sur une arme pretee par un match (NBT {@code HeraliszMatch} ; matchs retires du serveur le 24/10). */
     public boolean sansUsureEnMatch = true;
     /** Le petit indicateur de l'arme en main (en bas a droite) est permis (chaque joueur peut aussi le couper chez lui). */
     public boolean hudAutorise = true;
-    public List<String> dimensionsSansUsure = new ArrayList<>(List.of("heralisz_matchs:arenes", "heralisz_matchs:zombies"));
+    public List<String> dimensionsSansUsure = new ArrayList<>();
     /** Munitions des armes « corps a corps » (couteaux faits en armes TaCZ) : ces armes vont dans la categorie Corps a corps. */
     public List<String> munitionsMelee = new ArrayList<>(List.of("arkaniaz:melee_weapon"));
 
@@ -83,7 +83,6 @@ public final class Regles {
 
     public static final List<String> SURCHARGES_DEFAUT = List.of(
             "heralisz_skins:*__* = exclue",
-            "heraliz_wonder:* = exclue",
             "tacz:mk14 = categorie:dmr",
             "tacz:spr15hb = categorie:dmr",
             "maxstuff:hk417 = categorie:dmr");

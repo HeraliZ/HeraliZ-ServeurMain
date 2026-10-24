@@ -36,7 +36,6 @@ public final class PingCommandes {
                 .then(entier("max", PingConfig.MAX_PAR_JOUEUR, 1, 10))
                 .then(booleen("vue", PingConfig.VERIFIER_VUE))
                 .then(booleen("spectateurs", PingConfig.SPECTATEURS_VOIENT))
-                .then(booleen("groupe", PingConfig.GROUPE_HORS_MATCH))
                 .then(booleen("carte", PingConfig.CARTE))
                 .then(booleen("actif", PingConfig.ACTIF));
         d.register(Commands.literal("ping").executes(PingCommandes::aide).then(admin));
@@ -84,14 +83,14 @@ public final class PingCommandes {
         repondre(s, titre("heraliz_ping.cmd.admin.titre"));
         repondre(s, Component.translatable("heraliz_ping.cmd.admin.regles", oui(PingConfig.ACTIF.get()), PingConfig.DUREE_S.get(),
                 PingConfig.PORTEE.get(), oui(PingConfig.VERIFIER_VUE.get()), PingConfig.RAFALE.get(), PingConfig.RECHARGE_MS.get(),
-                PingConfig.MAX_PAR_JOUEUR.get(), oui(PingConfig.SPECTATEURS_VOIENT.get()), oui(PingConfig.GROUPE_HORS_MATCH.get()))
+                PingConfig.MAX_PAR_JOUEUR.get(), oui(PingConfig.SPECTATEURS_VOIENT.get()))
                 .withStyle(ChatFormatting.GRAY));
         double moyenneUs = PingService.relayes == 0 ? 0 : PingService.nanosAcceptes / 1000.0 / PingService.relayes;
         repondre(s, Component.translatable("heraliz_ping.cmd.admin.stats", PingService.recus, PingService.relayes, PingService.paquets,
                 PingService.actifs(), String.format(Locale.ROOT, "%.1f", moyenneUs)).withStyle(ChatFormatting.GRAY));
         repondre(s, Component.translatable("heraliz_ping.cmd.admin.refus", PingService.refusCadence, PingService.refusPortee,
                 PingService.refusVue, PingService.refusCible, PingService.refusSpectateur).withStyle(ChatFormatting.GRAY));
-        repondre(s, Component.translatable("heraliz_ping.cmd.admin.liens", oui(Compat.clans()), oui(Compat.matchs())).withStyle(ChatFormatting.GRAY));
+        repondre(s, Component.translatable("heraliz_ping.cmd.admin.liens", oui(Compat.clans())).withStyle(ChatFormatting.GRAY));
         repondre(s, Component.translatable("heraliz_ping.cmd.admin.usage").withStyle(ChatFormatting.DARK_GRAY));
         return 1;
     }

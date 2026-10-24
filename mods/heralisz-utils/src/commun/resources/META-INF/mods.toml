@@ -71,15 +71,9 @@ description='''Pings du serveur HeraliZ (remplace Ping Wheel) : appui bref pour 
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-# liens doux : les pings vont au clan (heralisz_clans) et, en match, a l'equipe ou au groupe (heralisz_matchs)
+# lien doux : les pings vont au clan (heralisz_clans)
 [[dependencies.heraliz_ping]]
     modId="heralisz_clans"
-    mandatory=false
-    versionRange="[0.1.0,)"
-    ordering="AFTER"
-    side="BOTH"
-[[dependencies.heraliz_ping]]
-    modId="heralisz_matchs"
     mandatory=false
     versionRange="[0.1.0,)"
     ordering="AFTER"
@@ -90,7 +84,7 @@ modId="heraliz_corps"
 version="${mod_version}"
 displayName="HeraliZ Utils · Corps"
 authors="${mod_authors}"
-description='''Corps des joueurs morts (remplace le mod corpse) : tout l'inventaire reste sur un corps allonge au sol, avec le skin du joueur (CaraCrea), fouille au style des clans, minuteur de disparition, lien avec Reanimation (executions), les matchs et les clans.'''
+description='''Corps des joueurs morts (remplace le mod corpse) : tout l'inventaire reste sur un corps allonge au sol, avec le skin du joueur (CaraCrea), fouille au style des clans, minuteur de disparition, lien avec Reanimation (executions) et les clans.'''
 [[dependencies.heraliz_corps]]
     modId="heralisz_utils"
     mandatory=true
@@ -132,12 +126,6 @@ description='''Corps des joueurs morts (remplace le mod corpse) : tout l'inventa
     modId="reanimation"
     mandatory=false
     versionRange="[1.8.0,)"
-    ordering="AFTER"
-    side="BOTH"
-[[dependencies.heraliz_corps]]
-    modId="heralisz_matchs"
-    mandatory=false
-    versionRange="[0.1.0,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_corps]]

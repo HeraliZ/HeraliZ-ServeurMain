@@ -41,14 +41,14 @@ import java.util.UUID;
  * (même monde que lui).
  * <p>Recharge entre deux téléportations réussies : 5 min sans grade, 15 s de moins par grade de la boutique (Rescapé
  * 4 min 45, Traqueur 4 min 30, Roi de la Zone 4 min 15) ; le staff (op connecté sur AuthMe) n'en a pas et ne patiente
- * pas. Refusé en match, en combat (celui qui part comme celui qui reçoit) et vers un joueur en match. Depuis la 2.4.0
+ * pas. Refusé en combat (celui qui part comme celui qui reçoit). Depuis la 2.4.0
  * (règle du propriétaire du 23/10) : seulement d'un joueur sur la carte (overworld) vers un joueur sur la carte, revérifié
  * à l'acceptation et au moment de partir ; refusé aussi à terre. Le tutoriel des
  * bases de CRac refuse ces commandes. Recharges gardées en mémoire (un redémarrage les remet à zéro). Fil serveur seulement.
  */
 final class TpaServeur {
     private static final long EXPIRATION_MS = 60_000L;
-    private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
+    private static final String CLE_COMBAT = "heralisz:combat_jusqua";
 
     /** Demande en cours : qui veut venir (clé : le joueur visé, une demande à la fois par demandeur). */
     private record Demande(UUID demandeur, UUID cible, long fin) {
@@ -83,10 +83,6 @@ final class TpaServeur {
         return p.hasPermissions(2) && PontBukkit.authentifie(p);
     }
 
-    private static boolean enMatch(ServerPlayer p) {
-        return p.getPersistentData().getBoolean(DRAPEAU_MATCH) || p.level().dimension().location().getNamespace().equals("heralisz_matchs");
-    }
-
     private static boolean enCombat(ServerPlayer p) {
         return p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis();
     }
@@ -108,7 +104,6 @@ final class TpaServeur {
 
     /** Raison qui empêche ce joueur de partir maintenant, ou null. */
     private static Component empechement(ServerPlayer p) {
-        if (enMatch(p)) return Component.translatableWithFallback("heraliz_grades.tpa.match", "Impossible pendant un match.");
         if (enCombat(p)) return Component.translatableWithFallback("heraliz_grades.tpa.combat", "Impossible en combat.");
         if (!staff(p) && Restrictions.aTerre(p)) return Component.translatableWithFallback("heraliz_grades.regle.a_terre", "Impossible à terre.");
         if (!staff(p) && p.level().dimension() != Level.OVERWORLD) {
@@ -120,7 +115,6 @@ final class TpaServeur {
 
     /** Raison qui empêche d'arriver chez ce joueur, ou null. */
     private static Component empechementCible(ServerPlayer cible) {
-        if (enMatch(cible)) return Component.translatableWithFallback("heraliz_grades.tpa.cible_match", "%s est en match.", cible.getDisplayName());
         if (cible.level().dimension() != Level.OVERWORLD) {
             return Component.translatableWithFallback("heraliz_grades.tpa.cible_carte", "%s n'est pas sur la carte.", cible.getDisplayName());
         }
@@ -225,7 +219,6 @@ final class TpaServeur {
         if (d == null) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.aucune", "Aucune demande de téléportation en attente."));
         ServerPlayer p = cible.server.getPlayerList().getPlayer(d.demandeur());
         if (p == null) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.parti", "Ce joueur n'est plus connecté."));
-        if (enMatch(cible)) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.match", "Impossible pendant un match."));
         if (!staff(p) && dansVille(cible)) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.ville", "Impossible dans une ville : sors de son rayon."));
         if (!staff(p) && cible.level().dimension() != Level.OVERWORLD) {
             return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.carte", "Le /tpa ne marche que sur la carte, vers un joueur sur la carte."));

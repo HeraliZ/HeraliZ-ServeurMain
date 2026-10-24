@@ -50,7 +50,6 @@
   "heraliz_emote.menu.others_sound": "Son des autres",
   "heraliz_emote.sound.others": "Emotes des autres",
   "heraliz_emote.refused.downed": "Pas d'emote quand on est à terre",
-  "heraliz_emote.refused.match": "Pas d'emote pendant un match",
   "heraliz_emote.refused.combat": "Pas d'emote en combat (encore %s s)",
   "heraliz_emote.menu.subtitle": "%s emotes · %s avec objets",
   "heraliz_emote.menu.categories": "Catégories",

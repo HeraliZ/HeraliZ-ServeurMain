@@ -54,8 +54,6 @@ import java.util.UUID;
  * <li>tick : synchronisation groupee, horaires des quetes, purge des invitations ;</li>
  * <li>territoires : XP, stats, quetes, journal et annonces pour Capture / Perdu / Ravitaillement / TenueMinute.</li>
  * </ul>
- * Un joueur en match (drapeau {@link ClansApi#EN_MATCH} dans persistentData, pose par HeraliZ Matchs) est ignore par
- * les stats et les quetes : morts, kills (tueur ou victime en match), degats, loot, temps de jeu, distance.
  * Tout est sur le fil serveur. Rien n'est alloue par tick hors des changements reels.
  */
 public final class ClanEvents {
@@ -238,8 +236,6 @@ public final class ClanEvents {
         LivingEntity victime = e.getEntity();
         if (victime.level().isClientSide()) return;
         Entity src = tueur(e);
-        // match (HeraliZ Matchs) : ni la mort ni le kill ne comptent
-        if (ClansApi.enMatch(victime) || ClansApi.enMatch(src)) return;
         saison(e, victime, src);
         if (victime instanceof ServerPlayer mort) {
             Clan c = store.clanDe(mort.getUUID());
@@ -286,7 +282,7 @@ public final class ClanEvents {
     private static void saison(LivingDeathEvent e, LivingEntity victime, @javax.annotation.Nullable Entity src) {
         if (!fr.heralisz.clans.saison.Saison.active()) return;
         String monde = victime.level().dimension().location().toString();
-        if (MONDES_SANS_POINTS.contains(monde) || monde.startsWith("heralisz_matchs:")) {
+        if (MONDES_SANS_POINTS.contains(monde)) {
             DEGATS_BOSS.remove(victime.getUUID());
             return;
         }
@@ -363,7 +359,6 @@ public final class ClanEvents {
         if (!(src instanceof ServerPlayer attaquant)) return;
         LivingEntity victime = e.getEntity();
         if (victime == attaquant || e.getAmount() <= 0) return;
-        if (ClansApi.enMatch(attaquant) || ClansApi.enMatch(victime)) return;
         ClanStore store = ClanStore.get();
         if (store == null) return;
         Clan c = store.clanDe(attaquant.getUUID());
@@ -382,7 +377,7 @@ public final class ClanEvents {
     @SubscribeEvent
     public static void onRightClick(PlayerInteractEvent.RightClickBlock e) {
         if (e.getLevel().isClientSide() || e.getHand() != InteractionHand.MAIN_HAND) return;
-        if (!(e.getEntity() instanceof ServerPlayer p) || ClansApi.enMatch(p)) return;
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
         ClanStore store = ClanStore.get();
         if (store == null) return;
         BlockState etat = e.getLevel().getBlockState(e.getPos());
@@ -424,7 +419,6 @@ public final class ClanEvents {
     private static void seconde(ClanStore store, MinecraftServer server) {
         if (ticks % 1200 == 0) store.noterVus(server, System.currentTimeMillis());
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-            if (ClansApi.enMatch(p)) continue; // en match : ni temps de jeu ni distance (le saut au retour est ignore)
             Clan c = store.clanDe(p.getUUID());
             Membre m = c == null ? null : c.membre(p.getUUID());
             if (m == null) continue;

@@ -112,7 +112,7 @@ final class Ponts {
         return l;
     }
 
-    /** Une arme : arme TaCZ (couteaux compris), melee et grenades HeraliZ, Wonder, epee, hache, arc, trident. */
+    /** Une arme : arme TaCZ (couteaux compris), melee et grenades HeraliZ, epee, hache, arc, trident. */
     static boolean arme(ItemStack s) {
         if (s.getItem() instanceof SwordItem || s.getItem() instanceof AxeItem || s.getItem() instanceof ProjectileWeaponItem
                 || s.getItem() instanceof TridentItem) return true;
@@ -120,7 +120,7 @@ final class Ponts {
         if (id == null) return false;
         String ns = id.getNamespace(), path = id.getPath();
         if (ns.equals("tacz")) return path.contains("gun");
-        return ns.equals("heralisz_melee") || ns.equals("heralisz_grenade") || ns.equals("heraliz_wonder");
+        return ns.equals("heralisz_melee") || ns.equals("heralisz_grenade");
     }
 
     /** Une protection : armure de Minecraft ou piece de l'Armurerie HeraliZ. */

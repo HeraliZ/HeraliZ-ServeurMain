@@ -9,8 +9,8 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 /**
  * /suicide : le joueur meurt tout de suite (coincé, perdu…). Mort normale : son équipement reste sur son cadavre comme
  * pour toute autre mort ; pas de passage « à terre » (dégâts « kill », comme /kill). Refusé en créatif et en spectateur.
- * Les arènes des matchs bloquent déjà la commande (liste de heralisz_matchs). Refusé dans le monde du spawn protégé
- * (ProtectionSpawn), sauf pour le staff. Refusé en combat (tag de combat de Matchs, clé {@code heralisz:combat_jusqua}
+ * Refusé dans le monde du spawn protégé
+ * (ProtectionSpawn), sauf pour le staff. Refusé en combat (tag de combat de Utils, clé {@code heralisz:combat_jusqua}
  * des données du joueur) et à terre (Réanimation, par réflexion) : pas de mort instantanée pour échapper à la fouille.
  */
 public final class Suicide {

@@ -30,7 +30,6 @@
   "msg.heralisz_camo.cooldown": "%s : disponible dans %s min (mort avec l'arme)",
   "msg.heralisz_camo.applied_life": "Camo à vie %s appliqué",
   "msg.heralisz_camo.removed": "Camo à vie %s retiré (il reste dans ta collection)",
-  "msg.heralisz_camo.not_in_match": "Pas pendant un match",
   "msg.heralisz_camo.lost": "Mort avec ton arme : le camo à vie la quitte (%s). Toujours dans ta collection, à remettre dans %s min.",
   "msg.heralisz_camo.moved": "%s : posé sur une autre de tes armes, retiré de celle-ci",
   "msg.heralisz_camo.not_yours": "Camo à vie d'un autre joueur : il a quitté l'arme",

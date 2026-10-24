@@ -49,18 +49,15 @@ final class Marchands {
         OUVERTS.clear();
     }
 
-    private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
+    private static final String CLE_COMBAT = "heralisz:combat_jusqua";
 
     /**
      * Ce qui empêche ce joueur de commercer maintenant (achat, vente, échange), ou null (Quêtes 1.11.0, mêmes règles que
-     * /boutique et /trade de HeraliZ Grades) : en match, en combat, à terre, pendant le tutoriel des bases, et sur la carte
+     * /boutique et /trade de HeraliZ Grades) : en combat, à terre, pendant le tutoriel des bases, et sur la carte
      * (overworld) en survie : les marchands ne servent qu'au spawn. Créatif (staff qui essaie) : jamais bloqué.
      */
     static Texte empechement(ServerPlayer p) {
         if (p.isCreative()) return null;
-        if (p.getPersistentData().getBoolean(DRAPEAU_MATCH) || p.level().dimension().location().getNamespace().equals("heralisz_matchs")) {
-            return Texte.cle("heraliz_quetes.marchand.regle.match");
-        }
         if (p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis()) return Texte.cle("heraliz_quetes.marchand.regle.combat");
         if (Ponts.aTerre(p)) return Texte.cle("heraliz_quetes.marchand.regle.a_terre");
         if (p.level().dimension().location().toString().equals("crac:bases")) return Texte.cle("heraliz_quetes.marchand.regle.tutoriel");

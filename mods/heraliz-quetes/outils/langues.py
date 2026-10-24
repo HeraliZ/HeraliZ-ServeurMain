@@ -56,7 +56,6 @@ TEXTES = {
                                              "No herals here: we trade. See what I take and what I give.",
                                              "Здесь без гералов: меняемся. Смотри, что я беру и что отдаю."),
     "heraliz_quetes.dialogue.echanger": ("Faire un échange", "Make a trade", "Обменяться"),
-    "heraliz_quetes.marchand.regle.match": ("Impossible pendant un match.", "Not possible during a match.", "Нельзя во время матча."),
     "heraliz_quetes.marchand.regle.combat": ("Impossible en combat.", "Not possible in combat.", "Нельзя в бою."),
     "heraliz_quetes.marchand.regle.a_terre": ("Impossible à terre.", "Not possible while downed.", "Нельзя в нокауте."),
     "heraliz_quetes.marchand.regle.tutoriel": ("Impossible pendant le tutoriel des bases.", "Not possible during the base tutorial.",
@@ -407,13 +406,13 @@ TEXTES = {
                                      "Your character has been reset. Reconnect to start over.",
                                      "Твой персонаж сброшен. Перезайди, чтобы начать заново."),
     "heraliz_quetes.wipe.serveur.avertir": (
-        "REMISE À ZÉRO DU SERVEUR : toutes les bases, tous les clans, les hérals, la saison, le classement du ClashWar, "
+        "REMISE À ZÉRO DU SERVEUR : toutes les bases, tous les clans, les hérals, la saison, "
         "et pour chaque joueur inventaire, coffres, quêtes, personnage et tutoriel. Gardés : objets à vie, camos, emotes, "
         "grades, permissions, comptes. Impossible à annuler.",
-        "SERVER RESET: every base, every clan, the herals, the season, the ClashWar ranking, and for each player inventory, "
+        "SERVER RESET: every base, every clan, the herals, the season, and for each player inventory, "
         "chests, quests, character and tutorial. Kept: lifetime items, camos, emotes, ranks, permissions, accounts. "
         "Cannot be undone.",
-        "ПОЛНЫЙ СБРОС СЕРВЕРА: все базы, все кланы, гералы, сезон, рейтинг ClashWar, а у каждого игрока инвентарь, "
+        "ПОЛНЫЙ СБРОС СЕРВЕРА: все базы, все кланы, гералы, сезон, а у каждого игрока инвентарь, "
         "сундуки, задания, персонаж и обучение. Сохраняются: пожизненные предметы, камуфляжи, эмоции, ранги, права, "
         "аккаунты. Отменить нельзя."),
     "heraliz_quetes.wipe.serveur.code": ("Pour lancer : /wipe tout confirmer %s (valable 1 minute).",

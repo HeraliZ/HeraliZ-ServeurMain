@@ -247,12 +247,8 @@ public final class ClanService {
             erreur(p, "msg.deja_clan");
             return false;
         }
-        // 23/10 : fonder un clan lance le tutoriel des bases du chef (CRac) ; jamais en plein combat, à terre ou en match
+        // 23/10 : fonder un clan lance le tutoriel des bases du chef (CRac) ; jamais en plein combat ni à terre
         if (!p.isCreative() && !p.isSpectator()) {
-            if (EtatJoueur.enMatch(p)) {
-                erreur(p, "msg.creer.match");
-                return false;
-            }
             if (EtatJoueur.aTerre(p)) {
                 erreur(p, "msg.creer.a_terre");
                 return false;

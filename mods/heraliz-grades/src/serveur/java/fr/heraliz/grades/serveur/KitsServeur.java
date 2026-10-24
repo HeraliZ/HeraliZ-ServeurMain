@@ -43,7 +43,7 @@ import java.util.UUID;
  * <ul>
  *    <li>kits de Survivant et de la boutique : seulement ceux de son grade de la boutique s'il en a, sinon ceux de
  *    Survivant ; une seule recharge pour tous ces kits (2.4.0 : un seul kit par recharge, quel que soit le grade) ;</li>
- *    <li>refusés en combat, à terre, en match, pendant le tutoriel des bases et sur la carte ({@link Restrictions}) ;</li>
+ *    <li>refusés en combat, à terre, pendant le tutoriel des bases et sur la carte ({@link Restrictions}) ;</li>
  *    <li>en plus, les kits de ses grades du staff et spéciaux (Streamer…) et les kits Soutien s'il porte le tag HeraliZ
  *    sur Discord (compte lié, vu par HeraliBot), chacun avec sa recharge ;</li>
  *    <li>le joueur ne fait qu'envoyer un identifiant : grade, recharge, connexion AuthMe, place dans l'inventaire et
