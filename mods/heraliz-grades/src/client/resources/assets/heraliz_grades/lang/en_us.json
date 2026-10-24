@@ -120,6 +120,8 @@
   "heraliz_grades.tpa.match": "Not possible during a match.",
   "heraliz_grades.tpa.combat": "Not possible in combat.",
   "heraliz_grades.tpa.soi": "You can't teleport to yourself.",
+  "heraliz_grades.r.personne": "Nobody to reply to: first write with /msg <player> <message>.",
+  "heraliz_grades.r.parti": "The player you are replying to is no longer online.",
   "heraliz_grades.tpa.cible_match": "%s is in a match.",
   "heraliz_grades.tpa.recharge": "Next teleport in %s.",
   "heraliz_grades.tpa.bouton_oui": "[Accept]",

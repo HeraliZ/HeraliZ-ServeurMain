@@ -120,6 +120,8 @@
   "heraliz_grades.tpa.match": "Impossible pendant un match.",
   "heraliz_grades.tpa.combat": "Impossible en combat.",
   "heraliz_grades.tpa.soi": "Tu ne peux pas te téléporter vers toi-même.",
+  "heraliz_grades.r.personne": "Personne à qui répondre : écris d'abord avec /msg <joueur> <message>.",
+  "heraliz_grades.r.parti": "Le joueur à qui tu réponds n'est plus connecté.",
   "heraliz_grades.tpa.cible_match": "%s est en match.",
   "heraliz_grades.tpa.recharge": "Prochaine téléportation dans %s.",
   "heraliz_grades.tpa.bouton_oui": "[Accepter]",

@@ -77,7 +77,7 @@ public final class EcranPanel extends Screen {
         ranger("moderation", "kick", "ban", "ban-ip", "banip", "ipban", "pardon", "pardon-ip", "unban", "untempban", "unbanplayer", "tempban",
                 "tempipban", "mute", "tempmute", "ipmute", "unmute", "warn", "unwarn", "history", "staffhistory", "checkban", "checkmute",
                 "banlist", "dupeip", "alts", "lastuuid", "litebans", "kill", "gamemode", "effect", "inspecter", "vanish", "nametag", "sban",
-                "sunban", "banpc", "unbanpc", "sbaninfo", "spartan", "whitelist", "op", "deop", "msg", "tell", "w", "say", "tellraw", "title",
+                "sunban", "banpc", "unbanpc", "sbaninfo", "spartan", "whitelist", "op", "deop", "msg", "tell", "w", "r", "say", "tellraw", "title",
                 "wipe", "suicide", "authme", "kaurivpn", "damage", "attribute");
         ranger("grades", "grade", "grades", "abonnement", "boutique", "pb", "trade", "nick", "chatcouleur", "zonevip", "lier", "delier", "panel");
         ranger("clans", "clan", "territoire", "saison", "eco", "coeur", "purge");

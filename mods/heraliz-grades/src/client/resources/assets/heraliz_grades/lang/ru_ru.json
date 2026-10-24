@@ -120,6 +120,8 @@
   "heraliz_grades.tpa.match": "Невозможно во время матча.",
   "heraliz_grades.tpa.combat": "Невозможно в бою.",
   "heraliz_grades.tpa.soi": "Нельзя телепортироваться к самому себе.",
+  "heraliz_grades.r.personne": "Некому ответить: сначала напишите через /msg <игрок> <сообщение>.",
+  "heraliz_grades.r.parti": "Игрок, которому вы отвечаете, больше не в сети.",
   "heraliz_grades.tpa.cible_match": "%s в матче.",
   "heraliz_grades.tpa.recharge": "Следующая телепортация через %s.",
   "heraliz_grades.tpa.bouton_oui": "[Принять]",

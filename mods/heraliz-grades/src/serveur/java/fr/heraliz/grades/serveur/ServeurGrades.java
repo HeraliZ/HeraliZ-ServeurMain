@@ -57,6 +57,8 @@ public final class ServeurGrades implements Partie {
         // warps : menu /warp, seulement depuis le spawn
         WarpsServeur.brancher();
         TpaServeur.brancher();
+        // /r : répondre au dernier message privé (25/10)
+        MessagesPrives.brancher();
         // kit de départ des nouveaux joueurs (23/10)
         KitDepart.brancher();
         // éditeur des grades des op (Registre des grades, /grades editeur)
