@@ -102,7 +102,7 @@ serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
   tacz/                   gunpacks TaCZ
   heralisz_matchs/, mohist-config/, server.properties, bukkit.yml, spigot.yml, commands.yml, eula.txt, server-icon.png
   mohist.sha256           empreinte du jar Mohist (le jar lui-même est dans la Release « base-serveur »)
-client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (EntityCulling)
+client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (EntityCulling, Embeddium)
 launcher/                 le launcher des joueurs (Electron, Node.js) : `npm install` puis `npm start` dans ce dossier ;
                           doc dans launcher/README.md et launcher/docs/
 outils/                   fabrication et contrôles (Python 3.11+)
@@ -116,7 +116,7 @@ monde/HeraliZ/            ancienne copie de la carte (v3 du 11/10) ; sera rempla
 ```
 
 Le dépôt contient le serveur COMPLET : les 20 mods des autres auteurs + nos 25 mods (sources, fabriqués en 23 jars
-`-serveur` pour le Ptero) = les 43 jars du dossier `mods/` du serveur, et les 46 jars des joueurs.
+`-serveur` pour le Ptero) = les 43 jars du dossier `mods/` du serveur, et les 47 jars des joueurs.
 
 Jamais dans Git (voir `.gitignore`) :
 - `build/`, `run/`, `dist/`, `livraison/` (refaits à chaque fabrication) ;
@@ -181,7 +181,9 @@ TaCZ (Serene Wave Studio) et TaCZ Addon (Mafuyu404) ; cfm « PATCH » (Furniture
 dedans) ; Framework (MrCrayfish) ; geckolib222 (GeckoLib de l'équipe Gecko, avec du contenu ArkaniaZ dedans : c'est
 le SEUL GeckoLib du serveur) ; ywzj_vehicle « fuse » (YWZJ, moteur des véhicules) ; Mutants & Zombies (Pete MC Mods) ; Zombie Awareness et CoroUtil (Corosus) ; MAtmos et TCTcore (The_TCT) ;
 Passable Foliage et Kiwi (Snownee) ; Curios (TheIllusiveC4) ; Cloth Config (shedaniel) ; Player Animation Lib (KosmX) ;
-ModernFix, FerriteCore, MemoryLeakFix, PacketFixer (optimisation) ; EntityCulling (joueurs seulement).
+ModernFix, FerriteCore, MemoryLeakFix, PacketFixer (optimisation) ; EntityCulling et Embeddium (embeddedt, LGPL 3 ; moteur de rendu des blocs plus rapide, demandé par le
+propriétaire le 24/10 ; ajouté par le workflow « Mod d'un autre auteur », `.github/workflows/mods_tiers.yml` : Modrinth,
+empreinte SHA-512 contrôlée, branche de travail seulement) (joueurs seulement).
 
 Les versions modifiées (cfm PATCH, geckolib222, ywzj fuse) ont été retouchées directement
 dans les jars : il n'existe pas de sources.
@@ -1879,7 +1881,8 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - onglet « HeraliZ · Utils » (21/10, Utils 2.17.0, choix du propriétaire : seulement l'utile, chaque objet une seule fois) : groupes Véhicules (4 véhicules, jerrican, chalumeau, parachute), Usure des armes (3 kits de réparation), Sols de la carte (sables, terre craquelée), Divers (borne de départ, Bonus de loot). **Plans de fabrication et anciens matériaux d'ArkaniaZ retirés** (212 objets : catalogue `heralisz_utils_catalog.json` réduit au Bonus de loot ; système de plans à refaire avec le craft) : plus dans le loot (`loot_armes.py` sans famille « plans », Loot 0.9.11) ; caisse Chantier et ravitaillement des clans : matériaux de HeraliZ Composants à la place (planches, fragments de métal, clous, pierres taillées, ciment, équerres, métal renforcé, fil à souder ; Caisses 2.13.3, Clans 3.2.2) ; les recettes TaCZ qui demandaient un plan ne se chargent plus (craft à refaire). Panneau de gare et ascenseur : seulement dans l'onglet des décors de la map (les décors posés sur la carte restent tous). Onglets de Limitless Vehicle vidés, donc cachés (`ContenuRetire.onBuildContents`) : seau d'essence plus proposé. Rien testé en jeu ;
 - au premier lancement : plus de tutoriel de Minecraft, et une fois par installation synchronisation verticale coupée,
   images par seconde illimitées, nuages et ombres des entités coupés (heraliz_interface, `ReglagesDefaut`) ;
-- refusés par le propriétaire : ImmediatelyFast, Embeddium (aucun risque sur les interfaces) ; pas de barre de soif ;
+- refusés par le propriétaire : ImmediatelyFast (aucun risque sur les interfaces) ; Embeddium, refusé avant, ajouté le 24/10
+  à sa demande (rien testé en jeu : à vérifier sur les écrans, /perso, la carte M, la boutique) ; pas de barre de soif ;
 - retirés, à ne pas réinstaller : Epic Hunt, zombiemod, Dynmap, Xaero, TaCZ NPC, SDM, FTB Library, CreativeCore,
   Necronomicon, Invocore, Resourceful Lib, SmartBrainLib, dyairdrop, CS Grenades, Kotlin for Forge, EndlessAmmo,
   Architectury, Magazine & Casing, Thirst Was Taken, PlayerRevive, heralisz_armor (remplacé par l'Armurerie),
@@ -2211,7 +2214,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   monde du tutoriel `crac:bases` (jamais la carte), spark, résumé (TPS, profil, erreurs), bots retirés à la fin.
   Premier essai (24/10, 50 bots, environ 200 tirs par seconde, bien plus que 50 joueurs) : 30 à 47 ms par tick, 58,6 ms
   (17,1 TPS) la 5e minute ; mémoire 6,5 / 32 Go ; AuthMe lève des erreurs quand 50 bots s'inscrivent dans la même seconde
-  (sans effet). À décider : Embeddium (gros gain de FPS, refusé avant), Canary (serveur), conteneurs de loot allégés.
+  (sans effet). Embeddium ajouté le 24/10 (joueurs). À décider : Canary (serveur), conteneurs de loot allégés.
 - **Bots de charge** (24/10, Utils 2.24.0, Spartan 2.7.9, Matchs 0.15.2, Clans 3.6.5, Quêtes 1.10.5, demande du propriétaire ;
   jamais essayés en jeu ni compilés ici : contrôle de branche) : `/bots` (op 4 ou console, `fr.heralisz.utils.bots`,
   serveur seulement) : de vrais `ServerPlayer` (`BotJoueur`, canal réseau factice qui jette tout, comme les bots du banc
