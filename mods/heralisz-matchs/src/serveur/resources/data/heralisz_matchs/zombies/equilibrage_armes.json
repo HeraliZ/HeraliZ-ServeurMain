@@ -99,19 +99,6 @@
    "dps_brut": 107.7,
    "dps": 110.5
   },
-  "arkaniaz:ct_knife": {
-   "mult": 1.0,
-   "palier": "rare",
-   "origine": "autre",
-   "famille": "rpg",
-   "plombs": 1,
-   "rpm": 666.0,
-   "degats_tir_brut": 13.0,
-   "degats_tir": 13.0,
-   "dps_brut": 86.7,
-   "dps": 86.7,
-   "note": "explosif (degats d'explosion)"
-  },
   "arkaniaz:evo3": {
    "mult": 0.963,
    "palier": "rare",
@@ -353,19 +340,6 @@
    "degats_tir": 50.1,
    "dps_brut": 42.8,
    "dps": 143.0
-  },
-  "arkaniaz:t_knife": {
-   "mult": 1.0,
-   "palier": "rare",
-   "origine": "autre",
-   "famille": "rpg",
-   "plombs": 1,
-   "rpm": 666.0,
-   "degats_tir_brut": 13.0,
-   "degats_tir": 13.0,
-   "dps_brut": 86.7,
-   "dps": 86.7,
-   "note": "explosif (degats d'explosion)"
   },
   "arkaniaz:tec9": {
    "mult": 0.768,

@@ -629,7 +629,7 @@ public final class Tutoriel {
     }
 
     private static void titre3(ServerPlayer p) {
-        T.titre(p, T.t("crac.tuto.titre3", "Monde des bases").withStyle(ChatFormatting.GOLD),
+        T.titre(p, T.t("crac.tuto.titre3", "Monde du tutoriel").withStyle(ChatFormatting.GOLD),
             T.t("crac.tuto.sous3", "Tu es protégé (contour vert) tant que ta base n'est pas posée."), 80);
     }
 

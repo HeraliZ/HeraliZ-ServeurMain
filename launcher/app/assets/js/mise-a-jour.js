@@ -114,7 +114,8 @@ class MiseAJour {
     // Rend { verifie: false } si aucune clé n'est réglée (on n'empêche rien, comme avant) ; sinon { verifie: true,
     // ok } : ok seulement si le fichier de version a bien été signé par la clé du propriétaire. Le fichier de version
     // contient l'empreinte SHA-512 de l'installeur (contrôlée par electron-updater) : signer ce fichier protège donc
-    // aussi l'installeur. Toute erreur (réseau, signature absente) => ok:false : on ne met pas à jour ce coup-ci.
+    // aussi l'installeur. Toute erreur (réseau, signature absente) => ok:false : on ne met pas à jour ce coup-ci ;
+    // reseau:true quand le site n'a pas répondu du tout (le joueur n'a alors pas de message de sécurité).
     async verifierSignature() {
         if (!this.clePublique) return { verifie: false }
         if (!this.majBaseUrl || !this.channel) return { verifie: true, ok: false }
@@ -125,14 +126,18 @@ class MiseAJour {
             ])
             if (!verifier(contenu, signature.toString('utf8'), this.clePublique)) return { verifie: true, ok: false }
             return { verifie: true, ok: true, info: yaml.load(contenu.toString('utf8'), { schema: yaml.JSON_SCHEMA }) }
-        } catch {
-            return { verifie: true, ok: false }
+        } catch (erreur) {
+            // le site a répondu autre chose que le fichier (signature absente : 404…) = refus par sécurité ; pas de
+            // réseau (hors ligne, délai dépassé) = simplement pas de mise à jour ce coup-ci, sans message de sécurité
+            const reponduParLeSite = /^http \d+$/.test(String(erreur?.message || ''))
+            return { verifie: true, ok: false, reseau: !reponduParLeSite }
         }
     }
 
     async chercher() {
         if (!this.actif) return { disponible: false }
         const sig = await this.verifierSignature()
+        if (sig.verifie && !sig.ok && sig.reseau) return { disponible: false }
         if (sig.verifie && !sig.ok) {
             console.error('[HeraliZ/mise-a-jour] signature de la mise à jour invalide ou absente : mise à jour refusée')
             return { disponible: false, signatureInvalide: true }

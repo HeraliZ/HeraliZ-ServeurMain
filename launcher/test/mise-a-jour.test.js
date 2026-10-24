@@ -167,10 +167,20 @@ test('signature : fichier falsifié => mise à jour REFUSÉE, electron-updater j
     assert.equal(u.verifications, 0, 'electron-updater ne doit pas être sollicité')
 })
 
-test('signature : signature introuvable (réseau) => mise à jour refusée', async () => {
+test('signature : pas de réseau => pas de mise à jour, sans message de sécurité', async () => {
     const { pub } = clesEtSignature('x')
     const u = fauxUpdater({ version: '1.7.0' })
-    const recuperer = async () => { throw new Error('404') }
+    const recuperer = async () => { throw new Error('délai dépassé') }
+    const maj = new MiseAJour({ updater: u, actif: true, envoyer: () => {}, occupe: () => false,
+        clePublique: pub, majBaseUrl: 'https://heraliz.fr/telecharger/', plateforme: 'win32', recuperer })
+    assert.deepEqual(await maj.verifier(), { disponible: false })
+    assert.equal(u.verifications, 0)
+})
+
+test('signature : signature introuvable sur le site (404) => mise à jour refusée', async () => {
+    const { pub } = clesEtSignature('x')
+    const u = fauxUpdater({ version: '1.7.0' })
+    const recuperer = async () => { throw new Error('http 404') }
     const maj = new MiseAJour({ updater: u, actif: true, envoyer: () => {}, occupe: () => false,
         clePublique: pub, majBaseUrl: 'https://heraliz.fr/telecharger/', plateforme: 'win32', recuperer })
     assert.deepEqual(await maj.verifier(), { disponible: false, signatureInvalide: true })

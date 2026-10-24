@@ -450,7 +450,7 @@
   "crac.tuto.sous3": "You are protected (green outline) until your base is placed.",
   "crac.tuto.titre1": "Welcome, survivor",
   "crac.tuto.titre2": "Your first base",
-  "crac.tuto.titre3": "Bases world",
+  "crac.tuto.titre3": "Tutorial world",
   "crac.home.arrive_nom": "Welcome home (home \"%s\").",
   "crac.home.aucun": "You have no home. Use /sethome in your base, or /zone base to go to the building zone.",
   "crac.home.auto": "Home \"%s\" created in your base: from the spawn, /home takes you back (/sethome to move it).",

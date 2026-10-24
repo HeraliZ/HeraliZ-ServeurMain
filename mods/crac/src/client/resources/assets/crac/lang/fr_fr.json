@@ -450,7 +450,7 @@
   "crac.tuto.sous3": "Tu es protégé (contour vert) tant que ta base n'est pas posée.",
   "crac.tuto.titre1": "Bienvenue, survivant",
   "crac.tuto.titre2": "Ta première base",
-  "crac.tuto.titre3": "Monde des bases",
+  "crac.tuto.titre3": "Monde du tutoriel",
   "crac.home.arrive_nom": "Bienvenue chez toi (home « %s »).",
   "crac.home.aucun": "Tu n'as pas de home. Fais /sethome dans ta base, ou /zone base pour aller dans la zone de construction.",
   "crac.home.auto": "Home « %s » créé dans ta base : du spawn, /home t'y ramène (/sethome pour le déplacer).",
