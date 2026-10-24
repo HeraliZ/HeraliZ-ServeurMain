@@ -33,30 +33,38 @@ public abstract class BedrockGunModelMixin {
       int shaderId, parts;
       KnifeType knife = null;
       Camo camo = CamoClient.camoFor(gun);
-      // apparition (sortie de l'arme, 1re personne) : lue par le rendu camo (front de matérialisation) et par les effets
-      net.minecraft.client.Minecraft mcl = net.minecraft.client.Minecraft.getInstance();
-      fr.heralisz.camo.client.CamoFx.pendingLocal = mcl.player != null && gun == mcl.player.getMainHandItem();
       fr.heralisz.camo.decor.client.DecorRender.beginGun(this, gun, ctx, light);
-      fr.heralisz.camo.client.CamoFx.pendingHeat = fr.heralisz.camo.client.ShotTracker.heat(gun);
-      fr.heralisz.camo.client.CamoFx.pendingAges = fr.heralisz.camo.client.ShotTracker.ages(gun);
-      fr.heralisz.camo.client.CamoFx.pendingSeq = fr.heralisz.camo.client.ShotTracker.seq(gun);
-      fr.heralisz.camo.client.CamoFx.pendingKills = fr.heralisz.camo.CamoData.kills(gun);
-      fr.heralisz.camo.client.CamoFx.pendingReveal = camo != null && ctx.firstPerson() && fr.heralisz.camo.client.SkinReveal.activeFor(gun)
-         ? fr.heralisz.camo.client.SkinReveal.front(gun) : -1;
+      KnifeSkins.Skin skin = camo == null ? KnifeSkins.of(gun) : null;
+      if (camo == null && skin == null) {
+         // arme sans skin (la plupart) : rien d'autre à lire pour elle, à chaque image et pour chaque joueur visible
+         fr.heralisz.camo.client.CamoFx.pendingLocal = false;
+         fr.heralisz.camo.client.CamoFx.pendingHeat = 0;
+         fr.heralisz.camo.client.CamoFx.pendingAges = null;
+         fr.heralisz.camo.client.CamoFx.pendingSeq = 0;
+         fr.heralisz.camo.client.CamoFx.pendingKills = 0;
+         fr.heralisz.camo.client.CamoFx.pendingReveal = -1;
+         return original;
+      }
       if (camo != null) {
          shaderId = camo.shaderId;
          parts = camo.parts;
       } else {
-         KnifeSkins.Skin skin = KnifeSkins.of(gun);
-         if (skin == null) {
-            return original;
-         }
          shaderId = skin.finish().shaderId;
          // bits 0-3 : lame, manche caoutchouc, métal et manche métal sombre ; bits 4+ : type de couteau (réglages propres
          // à chaque modèle dans le shader : 1 Butterfly, 2 Karambit, 3 M9)
          parts = 15 | ((skin.knife().ordinal() + 1) << 4);
          knife = skin.knife();
       }
+      // apparition (sortie de l'arme, 1re personne) : lue par le rendu camo (front de matérialisation) et par les effets
+      net.minecraft.client.Minecraft mcl = net.minecraft.client.Minecraft.getInstance();
+      fr.heralisz.camo.client.CamoFx.pendingLocal = mcl.player != null && gun == mcl.player.getMainHandItem();
+      fr.heralisz.camo.client.CamoFx.pendingHeat = fr.heralisz.camo.client.ShotTracker.heat(gun);
+      // derniers tirs : seulement pour les skins à effet 3D (seuls lecteurs) ; un tableau neuf à chaque rendu sinon
+      fr.heralisz.camo.client.CamoFx.pendingAges = fr.heralisz.camo.fx.FxEffects.has(shaderId) ? fr.heralisz.camo.client.ShotTracker.ages(gun) : null;
+      fr.heralisz.camo.client.CamoFx.pendingSeq = fr.heralisz.camo.client.ShotTracker.seq(gun);
+      fr.heralisz.camo.client.CamoFx.pendingKills = fr.heralisz.camo.CamoData.kills(gun);
+      fr.heralisz.camo.client.CamoFx.pendingReveal = camo != null && ctx.firstPerson() && fr.heralisz.camo.client.SkinReveal.activeFor(gun)
+         ? fr.heralisz.camo.client.SkinReveal.front(gun) : -1;
       if (CamoShaders.get(shaderId) == null) {
          return original;
       }

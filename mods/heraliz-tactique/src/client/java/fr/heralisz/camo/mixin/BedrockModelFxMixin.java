@@ -23,7 +23,7 @@ public abstract class BedrockModelFxMixin {
    @Inject(method = RENDER, at = @At("HEAD"))
    private void heralisz$fxContext(PoseStack pose, ItemDisplayContext ctx, RenderType type, int light, int overlay, float r, float g, float b, float a,
                                    CallbackInfo ci) {
-      CamoFx.context(ctx, light);
+      CamoFx.context(ctx, light, pose.last().pose());
    }
 
    @Redirect(method = RENDER, at = @At(value = "INVOKE", remap = true,

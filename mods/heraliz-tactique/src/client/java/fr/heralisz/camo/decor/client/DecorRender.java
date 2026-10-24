@@ -180,7 +180,9 @@ public final class DecorRender {
       if (!active || model != gunModel) return;
       active = false;
       STACK.clear();
-      if (ctx.firstPerson()) lastFp = new Snapshot(new HashMap<>(BONES), new ArrayList<>(PIECES),
+      // image gardée seulement écran ouvert (seul DecorPick la lit, depuis l'écran de l'arme, et seulement fraîche) : en jeu,
+      // plus de copie des os et des pièces à chaque image
+      if (ctx.firstPerson() && (RefitDecorTab.open || Minecraft.getInstance().screen != null)) lastFp = new Snapshot(new HashMap<>(BONES), new ArrayList<>(PIECES),
          new Matrix4f(com.mojang.blaze3d.systems.RenderSystem.getProjectionMatrix()), System.currentTimeMillis(), gunLength());
       try {
          draw();

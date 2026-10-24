@@ -57,8 +57,19 @@ public final class CamoFx {
    private static final Surfaces SURF = new Surfaces();
    private static float[] view = new float[0], uvs = new float[0], recNs = new float[0];
    private static final Logger LOG = LogUtils.getLogger();
-   private static final Capture SKIP = new Capture(null, null, 0);
+   private static final Capture SKIP = new Capture(null, null, 0, new float[0]);
    private static final Deque<Capture> STACK = new ArrayDeque<>();
+   /**
+    * Tableaux de copie des sommets réutilisés d'une arme à l'autre : avant, chaque arme à effet dessinée (la sienne et celles
+    * des joueurs autour) en créait un neuf de 128 Ko et plus à chaque image (ramasse-miettes chargé, saccades).
+    */
+   private static final ArrayDeque<float[]> TABLEAUX = new ArrayDeque<>();
+   /** Au-delà (2 Mo), un tableau agrandi par un très gros modèle n'est pas gardé. */
+   private static final int TABLEAU_MAX = 8 * 65536;
+   /** Distance² à la caméra du modèle en cours (repère de rendu = caméra à l'origine), posée par context. */
+   private static float pendingDist2;
+   /** Marge (blocs) sur MAX_DIST pour le tri avant copie : le point d'origine du modèle n'est pas son premier sommet. */
+   private static final float MARGE_TRI = 4;
    private static final FxMesh MESH = new FxMesh();
    private static ItemDisplayContext pendingCtx = ItemDisplayContext.NONE;
    private static int pendingLight = 0xF000F0;
@@ -98,10 +109,11 @@ public final class CamoFx {
       worldFxNanos = 0;
    }
 
-   /** Tête du rendu d'un modèle : contexte d'affichage et lumière (avant begin). */
-   public static void context(ItemDisplayContext ctx, int light) {
+   /** Tête du rendu d'un modèle : contexte d'affichage, lumière et distance à la caméra (avant begin). */
+   public static void context(ItemDisplayContext ctx, int light, org.joml.Matrix4f pose) {
       pendingCtx = ctx;
       pendingLight = light;
+      pendingDist2 = pose.m30() * pose.m30() + pose.m31() * pose.m31() + pose.m32() * pose.m32();
    }
 
    /** Début du rendu d'un modèle : si c'est une arme avec un camo à effet, on copie ses sommets au passage. */
@@ -111,11 +123,11 @@ public final class CamoFx {
       }
       CamoRenderType.Info info = CamoRenderType.info(type);
       PosMap map = info == null || !FxEffects.has(info.shaderId()) || CamoShaders.fx(info.shaderId()) == null ? null : PosMap.byGlId(info.posMap());
-      if (map == null) {
+      if (map == null || horsBudget()) {
          STACK.push(SKIP);
          return buffer;
       }
-      Capture c = new Capture(buffer, map, info.shaderId());
+      Capture c = new Capture(buffer, map, info.shaderId(), tableau());
       c.ctx = pendingCtx;
       c.light = pendingLight;
       c.reveal = pendingReveal;
@@ -126,6 +138,32 @@ public final class CamoFx {
       c.seq = pendingSeq;
       STACK.push(c);
       return c;
+   }
+
+   /**
+    * Arme « dans le monde » (autre joueur, arme au sol) que draw refuserait de toute façon : trop loin, ou budget de l'image
+    * déjà pris. On ne copie pas ses sommets (avant : copie complète de chaque arme à effet visible, même à 100 blocs).
+    */
+   private static boolean horsBudget() {
+      boolean fp = pendingCtx == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || pendingCtx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
+      if (fp || pendingCtx == ItemDisplayContext.GUI) {
+         return false;
+      }
+      float loin = MAX_DIST + MARGE_TRI;
+      return pendingDist2 > loin * loin || worldFxThisFrame >= MAX_WORLD_FX || worldFxNanos >= WORLD_FX_NANOS;
+   }
+
+   private static float[] tableau() {
+      float[] t = TABLEAUX.poll();
+      return t != null ? t : new float[8 * 4096];
+   }
+
+   private static void rendre(Capture c) {
+      float[] t = c.data;
+      c.data = null;
+      if (t != null && t.length > 0 && t.length <= TABLEAU_MAX && TABLEAUX.size() < 4) {
+         TABLEAUX.push(t);
+      }
    }
 
    /** L'arme est finie (le reste du rendu TaCZ — accessoires, bras — n'est plus copié). */
@@ -139,16 +177,20 @@ public final class CamoFx {
    /** Fin du rendu du modèle : construction et dessin de l'effet. */
    public static void end() {
       Capture c = STACK.poll();
-      if (c == null || c == SKIP || c.count < 32) {
+      if (c == null || c == SKIP) {
          return;
       }
       try {
-         draw(c);
+         if (c.count >= 32) {
+            draw(c);
+         }
       } catch (RuntimeException e) {
          if (!warned) {
             warned = true;
             LOG.warn("Effet 3D du camo {} impossible", c.shaderId, e);
          }
+      } finally {
+         rendre(c);
       }
    }
 
@@ -537,20 +579,21 @@ public final class CamoFx {
       int kills;
       float[] ages;
       int seq;
-      float[] data = new float[8 * 4096];
+      float[] data;
       int count;
       boolean frozen;
 
-      Capture(@Nullable VertexConsumer inner, @Nullable PosMap map, int shaderId) {
+      Capture(@Nullable VertexConsumer inner, @Nullable PosMap map, int shaderId, float[] data) {
          this.inner = inner;
          this.map = map;
          this.shaderId = shaderId;
+         this.data = data;
       }
 
       @Override
       public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz) {
          this.inner.vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz);
-         if (this.frozen || this.count >= 8 * 131072) {
+         if (this.frozen || this.data == null || this.count >= 8 * 131072) {
             return;
          }
          if (this.count + 8 > this.data.length) {
