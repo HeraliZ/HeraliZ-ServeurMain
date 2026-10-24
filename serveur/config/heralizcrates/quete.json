@@ -2,51 +2,150 @@
   "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add quete <poids> <rarete>. Puis /heraliz reload.",
   "rewards": [
     {
-      "item": "minecraft:experience_bottle",
-      "count": 12,
-      "weight": 20,
-      "rarity": "common"
-    },
-    {
-      "item": "minecraft:cooked_beef",
-      "count": 16,
-      "weight": 18,
-      "rarity": "common"
-    },
-    {
-      "item": "minecraft:compass",
+      "item": "minecraft:gold_nugget",
       "count": 1,
-      "weight": 10,
-      "rarity": "uncommon"
+      "weight": 120,
+      "rarity": "common",
+      "name": "&e+250 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 250 Caisse de quêtes"
+      ]
     },
     {
-      "item": "minecraft:emerald",
-      "count": 12,
-      "weight": 15,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "minecraft:name_tag",
-      "count": 2,
-      "weight": 10,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "minecraft:diamond",
+      "item": "heralisz_tactical:consumable",
       "count": 3,
-      "weight": 12,
+      "weight": 60,
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 2,
+      "weight": 50,
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}"
+    },
+    {
+      "item": "geckolib:food_mre",
+      "count": 2,
+      "weight": 50,
+      "rarity": "common"
+    },
+    {
+      "item": "heralizcasino:jeton_1",
+      "count": 5,
+      "weight": 60,
+      "rarity": "common"
+    },
+    {
+      "item": "minecraft:gold_nugget",
+      "count": 1,
+      "weight": 90,
+      "rarity": "uncommon",
+      "name": "&e+600 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 600 Caisse de quêtes"
+      ]
+    },
+    {
+      "item": "heraliz_composants:bocal_poudre",
+      "count": 4,
+      "weight": 50,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:kit_pieces",
+      "count": 2,
+      "weight": 40,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 2,
+      "weight": 40,
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 2,
+      "weight": 40,
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}"
+    },
+    {
+      "item": "heralizcasino:jeton_5",
+      "count": 2,
+      "weight": 40,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "minecraft:gold_nugget",
+      "count": 1,
+      "weight": 50,
+      "rarity": "rare",
+      "name": "&e+1 200 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 1200 Caisse de quêtes"
+      ]
+    },
+    {
+      "item": "heraliz_usure:kit_fortune",
+      "count": 1,
+      "weight": 35,
       "rarity": "rare"
     },
     {
-      "item": "minecraft:golden_apple",
-      "count": 2,
+      "item": "heralisz_utils:document_lootbonus",
+      "count": 1,
+      "weight": 20,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 25,
+      "rarity": "rare",
+      "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 20,
+      "rarity": "rare",
+      "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_green_1",
+      "count": 1,
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_green_2",
+      "count": 1,
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_green_3",
+      "count": 1,
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_green_4",
+      "count": 1,
       "weight": 10,
       "rarity": "rare"
     },
     {
       "item": "minecraft:paper",
       "count": 1,
-      "weight": 5,
+      "weight": 30,
       "rarity": "rare",
       "name": "&6+1 Clé de Quêtes",
       "give_item": false,
@@ -55,23 +154,105 @@
       ]
     },
     {
-      "item": "minecraft:enchanted_book",
+      "item": "minecraft:gold_nugget",
       "count": 1,
-      "weight": 4,
+      "weight": 30,
       "rarity": "epic",
-      "nbt": "{StoredEnchantments:[{id:\"minecraft:mending\",lvl:1s}]}"
+      "name": "&e+2 500 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 2500 Caisse de quêtes"
+      ]
     },
     {
-      "item": "minecraft:totem_of_undying",
+      "item": "heraliz_usure:kit_standard",
       "count": 1,
-      "weight": 3,
+      "weight": 20,
       "rarity": "epic"
     },
     {
-      "item": "minecraft:netherite_ingot",
+      "item": "heralisz_tactical:consumable",
       "count": 1,
-      "weight": 1,
+      "weight": 15,
+      "rarity": "epic",
+      "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}"
+    },
+    {
+      "item": "heralizcasino:jeton_10",
+      "count": 2,
+      "weight": 21,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_blue_1",
+      "count": 1,
+      "weight": 6,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_blue_2",
+      "count": 1,
+      "weight": 6,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_blue_3",
+      "count": 1,
+      "weight": 6,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_blue_4",
+      "count": 1,
+      "weight": 6,
+      "rarity": "epic"
+    },
+    {
+      "item": "minecraft:gold_nugget",
+      "count": 1,
+      "weight": 9,
+      "rarity": "legendary",
+      "name": "&e+5 000 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 5000 Caisse de quêtes"
+      ]
+    },
+    {
+      "item": "heraliz_usure:kit_armurier",
+      "count": 1,
+      "weight": 8,
       "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_red_1",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_red_2",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_red_3",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_red_4",
+      "count": 1,
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralizcrates:spectacle_key",
+      "count": 1,
+      "weight": 5,
+      "rarity": "mythic"
     }
   ]
 }
