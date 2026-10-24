@@ -20,6 +20,10 @@ public final class ZombiesConfig {
             PEUPLEMENT_RAYON, PEUPLEMENT_DIST_MIN, PEUPLEMENT_DIST_MAX, PEUPLEMENT_DIST_JOUEUR, PEUPLEMENT_RETRAIT, PEUPLEMENT_MAX;
     public static final ForgeConfigSpec.DoubleValue PEUPLEMENT_PAR_VALEUR, PEUPLEMENT_NUIT, PEUPLEMENT_BONUS_JOUEUR, PEUPLEMENT_BONUS_MAX,
             PEUPLEMENT_HORS_VUE, PEUPLEMENT_TICK_MAX;
+    // intelligence des zombies HeraliZ (voir ZombieSurvieServeur, NavigationZombie)
+    public static final ForgeConfigSpec.BooleanValue IA_ACTIVE, IA_AWARENESS, PLAFOND_AVANT;
+    public static final ForgeConfigSpec.IntValue IA_DISTANCE, IA_CHEMIN_PRES, IA_ATTENTE_MOYEN, IA_ATTENTE_LOIN, IA_ATTENTE_BLOQUE;
+    public static final ForgeConfigSpec.DoubleValue IA_SUIVI_MAX;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -52,6 +56,9 @@ public final class ZombiesConfig {
         PLAFOND_LOCAL = b.comment("Monstres au plus dans un carre de 5 x 5 troncons (80 blocs) autour du point d'apparition ;",
                         "au-dela, pas d'apparition naturelle ici (plusieurs joueurs au meme endroit n'empilent plus les hordes). 0 : pas de plafond.")
                 .defineInRange("plafond_local", 0, 0, 10000);
+        PLAFOND_AVANT = b.comment("Plafonds ci-dessus verifies AVANT que Minecraft cree le monstre (regles d'apparition) : au plafond, les",
+                        "essais d'apparition naturelle ne coutent presque plus rien (avant : monstre cree, puis refuse). false : comme avant.")
+                .define("plafond_avant_creation", true);
         b.pop();
         b.comment("Peuplement de la carte (24/10) : des zombies HeraliZ apparaissent autour de chaque joueur en survie ou en aventure",
                 "sur la carte (ni spectateur, ni creatif, ni a bord d'un vehicule ou du train), de jour comme de nuit, hors de sa vue",
@@ -88,6 +95,30 @@ public final class ZombiesConfig {
         PEUPLEMENT_REGLE = b.comment("true : rien tant que la regle doMobSpawning du monde est a false. false : peuplement quand meme",
                 "(la carte de construction l'avait a false).").define("suivre_doMobSpawning", false);
         PEUPLEMENT_BOTS = b.comment("true : les bots de charge (/bots) attirent aussi des zombies.").define("bots", false);
+        b.pop();
+        b.comment("Intelligence des zombies HeraliZ (24/10, performances du serveur ; ne change rien de pres) :",
+                "- plus d'objectifs inutiles sur la carte (villageois, golems, tortues et oeufs de tortue, « traverser le village » la nuit,",
+                "  qui cherchait des lits et des postes de travail et calculait un chemin toutes les 2 ticks par zombie inoccupe) ;",
+                "- chemin vers la cible recalcule moins souvent quand elle est loin (de pres : comme Minecraft) ;",
+                "- loin de tout joueur et sans cible : ni promenade ni Zombie Awareness (rien ne les voit) ;",
+                "- portee de suivi bornee (le bonus de difficulte de Minecraft pouvait la porter a 87 blocs).").push("ia");
+        IA_ACTIVE = b.comment("false : zombies HeraliZ comme le zombie de Minecraft (objectifs, chemins, portee de suivi).")
+                .define("actif", true);
+        IA_DISTANCE = b.comment("Au-dela de tant de blocs de tout joueur (et sans cible), le zombie ne se promene plus et Zombie Awareness",
+                "le laisse de cote ; il se reveille des qu'un joueur approche ou qu'on le touche.").defineInRange("distance_reduite", 48, 16, 512);
+        IA_CHEMIN_PRES = b.comment("Sous tant de blocs de sa cible, le chemin est recalcule comme dans Minecraft (toutes les 4 a 10 ticks).")
+                .defineInRange("chemin_pres", 12, 0, 128);
+        IA_ATTENTE_MOYEN = b.comment("De chemin_pres a 24 blocs : ticks au moins entre deux calculs de chemin vers la meme cible.")
+                .defineInRange("attente_moyen", 15, 0, 200);
+        IA_ATTENTE_LOIN = b.comment("Au-dela de 24 blocs : ticks au moins entre deux calculs de chemin vers la meme cible.")
+                .defineInRange("attente_loin", 30, 0, 400);
+        IA_ATTENTE_BLOQUE = b.comment("Cible hors d'atteinte (sur un toit, derriere un mur...) et toujours au meme endroit : ticks au moins",
+                "entre deux calculs (chaque calcul rate parcourait les 560 cases permises).").defineInRange("attente_bloque", 10, 0, 200);
+        IA_SUIVI_MAX = b.comment("Portee de suivi (blocs) au plus : distance a laquelle un zombie repere et poursuit un joueur.",
+                "Minecraft : 35, jusqu'a 87 avec le bonus de difficulte. 0 : pas de limite.").defineInRange("suivi_max", 40.0, 0.0, 128.0);
+        IA_AWARENESS = b.comment("Zombie Awareness : recherche des sons et odeurs faite seulement quand son tirage la demande (10 % des fois)",
+                "et parmi ses seules entites de sens, au lieu de lister toutes les entites a 64 blocs a chaque fois. Meme resultat.")
+                .define("awareness_rapide", true);
         b.pop();
         SPEC = b.build();
     }

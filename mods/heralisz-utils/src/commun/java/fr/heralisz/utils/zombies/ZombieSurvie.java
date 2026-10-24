@@ -8,7 +8,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.Level;
 
-/** Zombie de Minecraft avec une tenue (voir {@link ZombiesSurvie}). Rien d'autre ne change. */
+/**
+ * Zombie de Minecraft avec une tenue (voir {@link ZombiesSurvie}). Version neutre (affichage) : le serveur crée
+ * ZombieSurvieServeur (objectifs et chemins allégés) par {@link ZombiesSurvie#USINE} ; toujours créer par le type,
+ * jamais par {@code new ZombieSurvie(...)}.
+ */
 public class ZombieSurvie extends Zombie {
     public static final EntityDataAccessor<Integer> VARIANTE = SynchedEntityData.defineId(ZombieSurvie.class, EntityDataSerializers.INT);
 

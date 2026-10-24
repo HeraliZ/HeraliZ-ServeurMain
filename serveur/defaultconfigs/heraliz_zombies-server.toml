@@ -22,3 +22,18 @@
 	tick_max_ms = 60.0
 	suivre_doMobSpawning = false
 	bots = false
+
+#24/10 (performances) : intelligence des zombies HeraliZ, rien ne change de près (voir ZombieSurvieServeur)
+[ia]
+	actif = true
+	#au-delà, sans cible : ni promenade ni Zombie Awareness (réveil dès qu'un joueur approche ou qu'on le touche)
+	distance_reduite = 48
+	#sous tant de blocs de sa cible, chemin recalculé comme dans Minecraft
+	chemin_pres = 12
+	#ticks au moins entre deux calculs de chemin vers la même cible : de 12 à 24 blocs, au-delà, cible hors d'atteinte restée sur place
+	attente_moyen = 15
+	attente_loin = 30
+	attente_bloque = 10
+	#portée de suivi au plus (Minecraft : 35, jusqu'à 87 avec le bonus de difficulté)
+	suivi_max = 40.0
+	awareness_rapide = true

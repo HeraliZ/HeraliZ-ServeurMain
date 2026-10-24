@@ -3,7 +3,9 @@
 [general]
 	#Max awareness range for zombies
 	#Range: > -2147483648
-	maxPFRangeSense = 64
+	#HeraliZ 24/10 (performances) : 48 au lieu de 64 (boîte de recherche 2,4 fois plus petite) ; forces des sons et odeurs
+	#montées de 60 à 80 en même temps : un son ou une odeur porte toujours à 38 blocs (force / 100 x maxPFRangeSense)
+	maxPFRangeSense = 48
 	#Prevent non zombies from being attracted to light
 	awareness_Light_OnlyZombies = true
 	#Custom targetting sight range on top of vanilla sight based targetting
@@ -15,10 +17,10 @@
 	seeThroughWalls = false
 	#Effects how far monsters will sense scents from
 	#Range: > -2147483648
-	scentStrength = 60
+	scentStrength = 80
 	#Effects how far monsters will sense sound sources from
 	#Range: > -2147483648
-	soundStrength = 60
+	soundStrength = 80
 	#max rate of spawning sound sources in milliseconds
 	#Range: > -2147483648
 	frequentSoundThreshold = 1000

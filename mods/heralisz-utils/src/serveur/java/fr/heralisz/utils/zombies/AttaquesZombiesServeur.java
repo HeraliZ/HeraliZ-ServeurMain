@@ -169,9 +169,10 @@ public final class AttaquesZombiesServeur {
             return;
         }
         if (c == null || !c.isAlive() || s.debutFrappe >= 0 || m.tickCount < s.prochainBond || !m.onGround() || m.isInWater()) return;
-        double d = m.distanceTo(c);
-        if (d < BOND_MIN || d > BOND_MAX || Math.abs(c.getY() - m.getY()) > 3 || !m.hasLineOfSight(c)) return;
+        // tirage d'abord (même chance) : le rayon de vue (hasLineOfSight, lancé dans les blocs) n'est plus fait à chaque tick
         if (m.getRandom().nextInt(8) != 0) return;
+        double d = m.distanceTo(c);
+        if (d < BOND_MIN || d > BOND_MAX || Math.abs(c.getY() - m.getY()) > 3 || !m.getSensing().hasLineOfSight(c)) return;
         s.debutBond = m.tickCount;
         m.level().broadcastEntityEvent(m, AttaquesZombies.EVT_BOND);
     }
