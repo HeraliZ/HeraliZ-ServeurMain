@@ -108,7 +108,7 @@ public final class RadioVarga {
         // hauteur d'après la phrase entière (l'encadré ne grandit pas pendant qu'elle s'écrit)
         int tx0 = 8 + 5 + PORTRAIT + 7;
         int largeurTexte = (int) ((8 + LARGEUR - 8 - tx0) / TXT);
-        int nLignes = f.split(Ui.lit(texte, Ui.FONT), largeurTexte).size();
+        int nLignes = lignes(f, texte, largeurTexte, true).size();
         int hauteur = Math.max(HAUTEUR, 16 + (int) Math.ceil(nLignes * 8.5F) + 11);
         int x = 8, y = hv - 6 - 22 - 8 - hauteur;
         Ui.glass(g, x, y, LARGEUR, hauteur, (int) (205 * alpha));
@@ -140,7 +140,7 @@ public final class RadioVarga {
         }
 
         // la consigne, lettre par lettre
-        List<FormattedCharSequence> lignes = f.split(Ui.lit(montre, Ui.FONT), largeurTexte);
+        List<FormattedCharSequence> lignes = lignes(f, montre, largeurTexte, false);
         float ly = y + 16;
         float finX = tx;
         for (FormattedCharSequence l : lignes) {
@@ -167,6 +167,31 @@ public final class RadioVarga {
         String etape = r.etape() == 0 ? TexteClient.tr("heraliz_quetes.tuto.radio_fini")
                 : TexteClient.tr("heraliz_quetes.tuto.radio_etape", r.etape(), total);
         texte(g, f, Ui.lit(etape, Ui.SMALL), bx + total * 9 + 2, by - 2, Ui.argb(Ui.MUTED, a));
+    }
+
+    /**
+     * Lignes coupées à la largeur, gardées tant que le texte ne change pas (la phrase entière : jusqu'à la consigne
+     * suivante ; la partie écrite : jusqu'à la lettre suivante). Avant, les deux étaient recoupées à chaque image.
+     */
+    private static String coupeEntier, coupeMontre;
+    private static List<FormattedCharSequence> lignesEntier, lignesMontre;
+    private static int largeurEntier = -1, largeurMontre = -1;
+
+    private static List<FormattedCharSequence> lignes(Font f, String t, int largeur, boolean entier) {
+        if (entier) {
+            if (largeur != largeurEntier || !t.equals(coupeEntier)) {
+                lignesEntier = f.split(Ui.lit(t, Ui.FONT), largeur);
+                coupeEntier = t;
+                largeurEntier = largeur;
+            }
+            return lignesEntier;
+        }
+        if (largeur != largeurMontre || !t.equals(coupeMontre)) {
+            lignesMontre = f.split(Ui.lit(t, Ui.FONT), largeur);
+            coupeMontre = t;
+            largeurMontre = largeur;
+        }
+        return lignesMontre;
     }
 
     /** Texte réduit à la taille de la maquette ; rend sa largeur dans le repère 640 × 360. */

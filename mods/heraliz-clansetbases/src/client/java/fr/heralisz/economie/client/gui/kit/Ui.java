@@ -77,10 +77,13 @@ public final class Ui {
             MutableComponent c = lit(ch, f);
             g.pose().pushPose();
             g.pose().translate(cx, y, 0);
-            g.drawString(font, c, 0, 0, argb, false);
+            // lettres envoyées au tampon, dessinées en une fois après la boucle (g.drawString vidait le tampon a
+            // chaque lettre : un appel de dessin par lettre, a chaque image pour les HUD)
+            font.drawInBatch(c, 0, 0, argb, false, g.pose().last().pose(), g.bufferSource(), Font.DisplayMode.NORMAL, 0, 15728880);
             g.pose().popPose();
             cx += font.width(c) + spacing;
         }
+        g.flush();
     }
 
     /** Capitales espacees alignees a droite (x = bord droit). */
@@ -138,12 +141,25 @@ public final class Ui {
         int w = x1 - x0;
         if (w <= 0) return;
         int steps = Math.max(1, w / 2);
+        // tous les morceaux du trait en un seul dessin (g.fill vidait le tampon a chaque morceau : w / 2 dessins)
+        org.joml.Matrix4f m = g.pose().last().pose();
+        com.mojang.blaze3d.vertex.VertexConsumer vc = g.bufferSource().getBuffer(net.minecraft.client.renderer.RenderType.gui());
         for (int i = 0; i < steps; i++) {
             float t = (i + 0.5f) / steps;
             float a = 1 - Math.abs(t * 2 - 1);
             a = a * a * (3 - 2 * a);
             int xa = x0 + i * w / steps, xb = x0 + (i + 1) * w / steps;
-            g.fill(xa, y, xb, y + 1, argb(rgb, (int) (alpha * a)));
+            if (xb > xa) trait(vc, m, xa, xb, y, argb(rgb, (int) (alpha * a)));
         }
+        g.flush();
+    }
+
+    /** Un trait d'un point de haut, comme GuiGraphics.fill (memes sommets, meme ordre) mais sans vider le tampon. */
+    private static void trait(com.mojang.blaze3d.vertex.VertexConsumer vc, org.joml.Matrix4f m, int xa, int xb, int y, int c) {
+        float a = (c >>> 24) / 255f, r = (c >> 16 & 0xFF) / 255f, v = (c >> 8 & 0xFF) / 255f, b = (c & 0xFF) / 255f;
+        vc.vertex(m, xb, y + 1, 0).color(r, v, b, a).endVertex();
+        vc.vertex(m, xb, y, 0).color(r, v, b, a).endVertex();
+        vc.vertex(m, xa, y, 0).color(r, v, b, a).endVertex();
+        vc.vertex(m, xa, y + 1, 0).color(r, v, b, a).endVertex();
     }
 }

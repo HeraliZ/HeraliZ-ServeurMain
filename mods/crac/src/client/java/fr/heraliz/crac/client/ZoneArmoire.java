@@ -36,6 +36,15 @@ public final class ZoneArmoire {
     private static final double VOILE = 2.5, POTEAU = 3.0, DECOLLE = 0.03;
     /** Opacité du voile au sol et en haut. */
     private static final float BAS = 0.26F, HAUT = 0.0F;
+    /**
+     * Sol brut de chaque point de la grille (la plus haute des 4 colonnes qui le touchent, {@link Integer#MIN_VALUE} hors
+     * du terrain chargé), gardé {@link #SOLS_TICKS} ticks : avant, les cartes des hauteurs étaient relues pour chaque point
+     * du bord, deux fois par image (voiles puis lignes), plan en main.
+     */
+    private static final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap SOLS = new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+    private static final int SOLS_TICKS = 10;
+    private static long solsTick = Long.MIN_VALUE;
+    private static java.lang.ref.WeakReference<Level> solsMonde = new java.lang.ref.WeakReference<>(null);
 
     private ZoneArmoire() {
     }
@@ -57,6 +66,12 @@ public final class ZoneArmoire {
         pose.translate(-cam.x, -cam.y, -cam.z);
         Matrix4f m = pose.last().pose();
         Level lvl = mc.level;
+        long t = lvl.getGameTime();
+        if (solsMonde.get() != lvl || t - solsTick >= SOLS_TICKS || t < solsTick) {
+            SOLS.clear();
+            solsTick = t;
+            solsMonde = new java.lang.ref.WeakReference<>(lvl);
+        }
         // deux passes : Minecraft ne remplit qu'un tampon partagé à la fois (voiles puis lignes, jamais mêlés : plantage)
         VertexConsumer q = buffers.getBuffer(RenderType.debugQuads());
         dessiner(q, null, pose, m, lvl);
@@ -85,7 +100,7 @@ public final class ZoneArmoire {
                 continue;
             }
             for (int[] coin : new int[][]{{x0, z0}, {x1, z0}, {x1, z1}, {x0, z1}}) {
-                double y = sol(lvl, coin[0] - 1, coin[1] - 1, coin[0], coin[1], ymin, ymax);
+                double y = sol(lvl, coin[0], coin[1], ymin, ymax);
                 if (!Double.isNaN(y)) {
                     ligne(l, pose, coin[0], y, coin[1], coin[0], Math.min(y + POTEAU, ymax), coin[1], r, g, b);
                 }
@@ -104,7 +119,7 @@ public final class ZoneArmoire {
         for (int i = 0; i <= n; i++) {
             int x = sx + dx * i, z = sz + dz * i;
             // les 4 colonnes autour du point de la grille (dedans et dehors)
-            double y = sol(lvl, x - 1, z - 1, x, z, ymin, ymax);
+            double y = sol(lvl, x, z, ymin, ymax);
             if (i > 0 && !Double.isNaN(y) && !Double.isNaN(yPrec)) {
                 double a0 = yPrec + DECOLLE, a1 = y + DECOLLE;
                 if (q != null) {
@@ -120,16 +135,26 @@ public final class ZoneArmoire {
         }
     }
 
-    /** Sol le plus haut des colonnes [xa..xb] x [za..zb], borné à la zone ; NaN si le terrain n'est pas chargé. */
-    private static double sol(Level lvl, int xa, int za, int xb, int zb, int ymin, int ymax) {
-        int best = Integer.MIN_VALUE;
-        for (int x = xa; x <= xb; x++) {
-            for (int z = za; z <= zb; z++) {
-                if (!lvl.hasChunk(x >> 4, z >> 4)) {
-                    continue;
+    /**
+     * Sol le plus haut des 4 colonnes [x-1..x] x [z-1..z] qui touchent le point (x, z) de la grille, borné à la zone ; NaN
+     * si le terrain n'est pas chargé.
+     */
+    private static double sol(Level lvl, int xb, int zb, int ymin, int ymax) {
+        long cle = (long) xb << 32 | (zb & 0xFFFFFFFFL);
+        int best;
+        if (SOLS.containsKey(cle)) {
+            best = SOLS.get(cle);
+        } else {
+            best = Integer.MIN_VALUE;
+            for (int x = xb - 1; x <= xb; x++) {
+                for (int z = zb - 1; z <= zb; z++) {
+                    if (!lvl.hasChunk(x >> 4, z >> 4)) {
+                        continue;
+                    }
+                    best = Math.max(best, lvl.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z));
                 }
-                best = Math.max(best, lvl.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z));
             }
+            SOLS.put(cle, best);
         }
         if (best == Integer.MIN_VALUE) {
             return Double.NaN;

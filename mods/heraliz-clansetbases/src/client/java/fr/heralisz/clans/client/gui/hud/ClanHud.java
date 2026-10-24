@@ -127,7 +127,9 @@ public final class ClanHud {
         GuiGraphics g = e.getGuiGraphics();
         int w = e.getWindow().getGuiScaledWidth();
         Font font = mc.font;
-        barreZone(g, font, w);
+        // panneau de zone : rien que des aplats et du texte, envoyés en un seul lot (sinon un dessin par aplat, par texte
+        // et par lettre des capitales espacées, à chaque image tant qu'on est dans une ville)
+        if (ClientClans.hudZone() != null) g.drawManaged(() -> barreZone(g, font, w));
         toasts(g, font, w);
     }
 

@@ -22,6 +22,7 @@ import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -72,8 +73,10 @@ public final class ClientEvents {
     /**
      * 3e personne : au lieu de l'accroupi vanilla (dos penché), le joueur est à genoux, le dos droit.
      * Les jambes sont posées par le TYPING ArmPose, ici on descend juste tout le corps.
+     * <p>En dernier (LOWEST) : un rendu annulé par un autre mod (cinématique d'Utils, scènes de Réanimation) n'a pas de
+     * Post ; passé avant l'annulation, le pushPose restait sans popPose (pile de poses décalée pour tout le reste).
      */
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
         if (TerminalClientExtensions.isTyping(event.getEntity())) {
             event.getRenderer().getModel().crouching = false;

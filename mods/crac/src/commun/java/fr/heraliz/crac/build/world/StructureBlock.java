@@ -143,9 +143,10 @@ public class StructureBlock extends BaseEntityBlock {
     /** Visée : la pièce, plus ce qu'un objet adossé voisin (armoire, caisse) a dans cette case (Adosse, 1.11.0). */
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        VoxelShape objets = fr.heraliz.crac.block.Adosse.morceaux(level, pos);
-        VoxelShape piece = level.getBlockEntity(pos) instanceof StructureBlockEntity be ? be.shapeVisee() : Shapes.empty();
-        return objets.isEmpty() ? piece : Shapes.or(piece, objets);
+        if (level.getBlockEntity(pos) instanceof StructureBlockEntity be) {
+            return be.avecObjets(level, true);   // gardée un tick (StructureBlockEntity#avecObjets)
+        }
+        return fr.heraliz.crac.block.Adosse.morceaux(level, pos);
     }
 
     /** Visée sur un objet adossé : la case du mur n'est jamais retirée (le serveur casse l'objet, AdosseCasse). */
@@ -172,9 +173,10 @@ public class StructureBlock extends BaseEntityBlock {
      */
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        VoxelShape piece = shapeAt(level, pos);
-        VoxelShape objets = fr.heraliz.crac.block.Adosse.morceaux(level, pos);
-        return objets.isEmpty() ? piece : Shapes.or(piece, objets);
+        if (level.getBlockEntity(pos) instanceof StructureBlockEntity be) {
+            return be.avecObjets(level, false);   // gardée un tick (StructureBlockEntity#avecObjets)
+        }
+        return fr.heraliz.crac.block.Adosse.morceaux(level, pos);
     }
 
     @Override

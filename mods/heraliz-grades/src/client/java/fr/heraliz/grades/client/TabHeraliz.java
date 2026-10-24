@@ -62,7 +62,11 @@ public final class TabHeraliz {
         Minecraft mc = Minecraft.getInstance();
         ClientPacketListener co = mc.getConnection();
         if (mc.player == null || co == null || !mc.options.keyPlayerList.isDown()) return;
-        dessiner(e.getGuiGraphics(), mc, co, e.getWindow().getGuiScaledWidth());
+        GuiGraphics g = e.getGuiGraphics();
+        int largeur = e.getWindow().getGuiScaledWidth();
+        // rien que des aplats et du texte : envoyés en un seul lot (avant, un dessin par aplat, par texte, par lettre des
+        // grades et par morceau des traits fins : des milliers de dessins par image avec beaucoup de joueurs)
+        g.drawManaged(() -> dessiner(g, mc, co, largeur));
     }
 
     private static Component voix(UUID uuid) {

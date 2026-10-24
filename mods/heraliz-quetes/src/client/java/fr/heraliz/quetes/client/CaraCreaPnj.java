@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,6 +24,13 @@ final class CaraCreaPnj {
     private static final Logger LOG = LogUtils.getLogger();
     /** Apparences déjà confiées à CaraCrea (quelques PNJ au plus : jamais libérées avant de quitter le serveur). */
     private static final Map<CompoundTag, UUID> CLES = new HashMap<>();
+    /**
+     * Clé par objet même (l'étiquette des données synchronisées du PNJ, de la radio) : appelé plusieurs fois par image et
+     * par PNJ, sans recalculer à chaque fois l'empreinte de toute l'étiquette NBT (HashMap.get). Vidé au-delà de
+     * {@link #VUES_MAX} (les étiquettes remplacées par une mise à jour n'y restent pas).
+     */
+    private static final Map<CompoundTag, UUID> VUES = new IdentityHashMap<>();
+    private static final int VUES_MAX = 64;
     private static boolean casse;
 
     private CaraCreaPnj() {
@@ -32,7 +40,8 @@ final class CaraCreaPnj {
     static ResourceLocation texture(CompoundTag apparence) {
         if (casse) return null;
         try {
-            UUID cle = CLES.get(apparence);
+            UUID cle = VUES.get(apparence);
+            if (cle == null) cle = CLES.get(apparence);
             if (cle == null) {
                 Appearance a = AppearanceCodec.fromNbt(apparence);
                 if (a == null) return null;
@@ -40,6 +49,8 @@ final class CaraCreaPnj {
                 ClientAppearances.setPreview(cle, a);
                 CLES.put(apparence.copy(), cle);
             }
+            if (VUES.size() >= VUES_MAX) VUES.clear();
+            VUES.put(apparence, cle);
             return CompositeSkins.skinFor(cle);
         } catch (LinkageError | RuntimeException e) {
             casse = true;
@@ -58,5 +69,6 @@ final class CaraCreaPnj {
             }
         }
         CLES.clear();
+        VUES.clear();
     }
 }

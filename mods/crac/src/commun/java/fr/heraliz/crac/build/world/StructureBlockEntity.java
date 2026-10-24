@@ -36,6 +36,18 @@ public class StructureBlockEntity extends BlockEntity {
     private VoxelShape shape;
     @Nullable
     private VoxelShape occlusion;
+    /**
+     * Forme de la case avec les morceaux des objets adossés voisins ({@link fr.heraliz.crac.block.Adosse#morceaux}), pour
+     * un tick de jeu et une forme de pièce donnés (collision, visée). Avant, chaque demande de collision ou de visée sur
+     * la case (déplacement de chaque entité proche, recherche de chemin des créatures, balles, à chaque tick) relisait ses
+     * 26 cases voisines et refaisait l'union des formes. Gardée un tick au plus : un objet posé ou retiré compte au tick
+     * suivant.
+     */
+    private record AvecObjets(long tick, VoxelShape piece, VoxelShape forme) {
+    }
+
+    @Nullable
+    private volatile AvecObjets collisionObjets, viseeObjets;
 
     public StructureBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STRUCTURE.get(), pos, state);
@@ -77,6 +89,35 @@ public class StructureBlockEntity extends BlockEntity {
             this.shape = s;
         }
         return s;
+    }
+
+    /**
+     * La forme de la pièce ({@link #shape()}, ou {@link #shapeVisee()} si {@code visee}) avec ce que les objets adossés
+     * voisins ont dans cette case, comme {@code piece ∪ Adosse.morceaux(level, pos)}, gardée le temps d'un tick de jeu.
+     */
+    public VoxelShape avecObjets(net.minecraft.world.level.BlockGetter level, boolean visee) {
+        VoxelShape piece = visee ? this.shapeVisee() : this.shape();
+        net.minecraft.world.level.Level l = this.level;
+        if (l == null) {
+            return joindre(piece, fr.heraliz.crac.block.Adosse.morceaux(level, this.worldPosition));
+        }
+        long t = l.getGameTime();
+        AvecObjets c = visee ? this.viseeObjets : this.collisionObjets;
+        if (c != null && c.tick() == t && c.piece() == piece) {
+            return c.forme();
+        }
+        VoxelShape forme = joindre(piece, fr.heraliz.crac.block.Adosse.morceaux(level, this.worldPosition));
+        c = new AvecObjets(t, piece, forme);
+        if (visee) {
+            this.viseeObjets = c;
+        } else {
+            this.collisionObjets = c;
+        }
+        return forme;
+    }
+
+    private static VoxelShape joindre(VoxelShape piece, VoxelShape objets) {
+        return objets.isEmpty() ? piece : Shapes.or(piece, objets);
     }
 
     /** Forme de visée : {@link #shape()}, sauf les portes de sas bloquées, visées ouvertes (Piece.STATE_SAS). */

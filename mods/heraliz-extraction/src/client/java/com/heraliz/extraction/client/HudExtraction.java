@@ -135,10 +135,12 @@ public final class HudExtraction {
             MutableComponent c = lit(new String(Character.toChars(up.codePointAt(i))), f);
             g.pose().pushPose();
             g.pose().translate(cx, y, 0);
-            g.drawString(font, c, 0, 0, argb, false);
+            // au tampon, dessinées en une fois après la boucle (g.drawString le vidait à chaque lettre)
+            font.drawInBatch(c, 0, 0, argb, false, g.pose().last().pose(), g.bufferSource(), Font.DisplayMode.NORMAL, 0, 15728880);
             g.pose().popPose();
             cx += font.width(c) + espace;
         }
+        g.flush();
     }
 
     /** Panneau de verre : fond sombre translucide, contour fin, liseré haut, coins adoucis. */

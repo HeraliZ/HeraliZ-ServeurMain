@@ -29,8 +29,31 @@ public final class HudQuetes {
     private static final float ECHELLE_NOTIFS = 0.8F;
     private static Reseau.Suivi suivi = new Reseau.Suivi(fr.heraliz.quetes.Texte.VIDE, fr.heraliz.quetes.Texte.VIDE, List.of());
 
-    private record Notif(String texte, int couleur, long debut) {
+    /** Une notification ; ses lignes coupées à la largeur sont calculées à sa première image, pas à chaque image. */
+    private static final class Notif {
+        final String texte;
+        final int couleur;
+        final long debut;
+        List<FormattedCharSequence> lignes;
+        int largeur;
+
+        Notif(String texte, int couleur, long debut) {
+            this.texte = texte;
+            this.couleur = couleur;
+            this.debut = debut;
+        }
     }
+
+    /**
+     * Mise en page de la quête suivie (lignes coupées, textes de droite, hauteur) : refaite seulement quand le serveur
+     * envoie un nouveau suivi ou que la langue change. Avant, tout était recoupé (Font.split) à chaque image tant qu'une
+     * quête était suivie.
+     */
+    private record Page(Reseau.Suivi suivi, String langue, String pnj, List<FormattedCharSequence> titre,
+                        List<List<FormattedCharSequence>> lignes, List<String> droites, int hauteur) {
+    }
+
+    private static Page page;
 
     private static final List<Notif> NOTIFS = new ArrayList<>();
     private static final long NOTIF_MS = 4500;
@@ -49,6 +72,7 @@ public final class HudQuetes {
 
     static void vider() {
         suivi = new Reseau.Suivi(fr.heraliz.quetes.Texte.VIDE, fr.heraliz.quetes.Texte.VIDE, List.of());
+        page = null;
         NOTIFS.clear();
     }
 
@@ -56,26 +80,31 @@ public final class HudQuetes {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null) return;
         if (mc.screen != null && !(mc.screen instanceof ChatScreen)) return;
+        if (NOTIFS.isEmpty() && suivi.titre().vide()) return;
         Font f = mc.font;
-        g.pose().pushPose();
-        g.pose().scale(ECHELLE_NOTIFS, ECHELLE_NOTIFS, 1);
-        notifs(g, f, (int) (w / ECHELLE_NOTIFS));
-        g.pose().popPose();
-        if (suivi.titre().vide()) return;
-        g.pose().pushPose();
-        g.pose().scale(ECHELLE, ECHELLE, 1);
-        dessinerSuivi(g, f, (int) (w / ECHELLE), (int) (h / ECHELLE));
-        g.pose().popPose();
+        // rien que des aplats et du texte : envoyés en un seul lot (sinon un dessin par aplat et par texte, à chaque image)
+        g.drawManaged(() -> {
+            g.pose().pushPose();
+            g.pose().scale(ECHELLE_NOTIFS, ECHELLE_NOTIFS, 1);
+            notifs(g, f, (int) (w / ECHELLE_NOTIFS));
+            g.pose().popPose();
+            if (suivi.titre().vide()) return;
+            g.pose().pushPose();
+            g.pose().scale(ECHELLE, ECHELLE, 1);
+            dessinerSuivi(g, f, (int) (w / ECHELLE), (int) (h / ECHELLE));
+            g.pose().popPose();
+        });
     }
 
-    /** La quête suivie, dessinée dans un repère réduit (w, h : taille de l'écran dans ce repère). */
-    private static void dessinerSuivi(GuiGraphics g, Font f, int w, int h) {
-
-        // quête suivie : à droite, au tiers de la hauteur
-        List<FormattedCharSequence> titre = f.split(Ui.lit(TexteClient.str(suivi.titre()), Ui.BOLD), LARGEUR - 16);
+    private static Page page(Font f) {
+        Reseau.Suivi s = suivi;
+        String langue = fr.heraliz.quetes.Langue.code();
+        Page p = page;
+        if (p != null && p.suivi() == s && p.langue().equals(langue)) return p;
+        List<FormattedCharSequence> titre = f.split(Ui.lit(TexteClient.str(s.titre()), Ui.BOLD), LARGEUR - 16);
         List<List<FormattedCharSequence>> lignes = new ArrayList<>();
         List<String> droites = new ArrayList<>();
-        for (Reseau.SLigne l : suivi.lignes()) {
+        for (Reseau.SLigne l : s.lignes()) {
             String droite = "";
             if (l.total() > 1) droite = l.fait() + "/" + l.total();
             if (l.distance() >= 0) droite = (droite.isEmpty() ? "" : droite + " · ") + TexteClient.distance(l.distance(), l.approx());
@@ -84,10 +113,25 @@ public final class HudQuetes {
         }
         int hauteur = 14 + titre.size() * 10 + 4;
         for (int i = 0; i < lignes.size(); i++) hauteur += lignes.get(i).size() * 10 + (droites.get(i).isEmpty() ? 0 : 9) + 3;
+        p = new Page(s, langue, TexteClient.str(s.pnj()), titre, lignes, droites, hauteur);
+        page = p;
+        return p;
+    }
+
+    /** La quête suivie, dessinée dans un repère réduit (w, h : taille de l'écran dans ce repère). */
+    private static void dessinerSuivi(GuiGraphics g, Font f, int w, int h) {
+
+        // quête suivie : à droite, au tiers de la hauteur (mise en page gardée tant que le suivi ne change pas)
+        Page page = page(f);
+        Reseau.Suivi suivi = page.suivi();
+        List<FormattedCharSequence> titre = page.titre();
+        List<List<FormattedCharSequence>> lignes = page.lignes();
+        List<String> droites = page.droites();
+        int hauteur = page.hauteur();
         int x = w - LARGEUR - 6, y = Math.max(40, h / 3 - hauteur / 2);
         Ui.glass(g, x, y, LARGEUR, hauteur, 120);
         g.fill(x + 1, y + 3, x + 3, y + hauteur - 3, Ui.argb(Ui.OR, 200));
-        Ui.spaced(g, f, TexteClient.str(suivi.pnj()), Ui.SMALL, x + 9, y + 6, Ui.argb(Ui.OR, 230), 0.8f);
+        Ui.spaced(g, f, page.pnj(), Ui.SMALL, x + 9, y + 6, Ui.argb(Ui.OR, 230), 0.8f);
         int cy = y + 16;
         for (FormattedCharSequence l : titre) {
             g.drawString(f, l, x + 9, cy, Ui.argb(Ui.TEXT, 255), false);
@@ -114,18 +158,23 @@ public final class HudQuetes {
 
     private static void notifs(GuiGraphics g, Font f, int w) {
         long maintenant = System.currentTimeMillis();
-        NOTIFS.removeIf(n -> maintenant - n.debut() > NOTIF_MS);
+        NOTIFS.removeIf(n -> maintenant - n.debut > NOTIF_MS);
         int y = 8;
         for (int i = NOTIFS.size() - 1; i >= 0; i--) {
             Notif n = NOTIFS.get(i);
-            long age = maintenant - n.debut();
+            long age = maintenant - n.debut;
             float a = age < 200 ? age / 200f : age > NOTIF_MS - 500 ? (NOTIF_MS - age) / 500f : 1f;
-            List<FormattedCharSequence> l = f.split(Ui.lit(n.texte(), Ui.FONT), 190);
-            int lw = 0;
-            for (FormattedCharSequence s : l) lw = Math.max(lw, f.width(s));
+            if (n.lignes == null) {
+                n.lignes = f.split(Ui.lit(n.texte, Ui.FONT), 190);
+                int plus = 0;
+                for (FormattedCharSequence s : n.lignes) plus = Math.max(plus, f.width(s));
+                n.largeur = plus;
+            }
+            List<FormattedCharSequence> l = n.lignes;
+            int lw = n.largeur;
             int bw = lw + 20, bh = l.size() * 10 + 10, x = w - bw - 8 + (int) ((1 - a) * 20);
             Ui.glass(g, x, y, bw, bh, (int) (190 * a));
-            g.fill(x + 1, y + 2, x + 3, y + bh - 2, Ui.argb(n.couleur(), (int) (230 * a)));
+            g.fill(x + 1, y + 2, x + 3, y + bh - 2, Ui.argb(n.couleur, (int) (230 * a)));
             int cy = y + 5;
             for (FormattedCharSequence s : l) {
                 g.drawString(f, s, x + 11, cy, Ui.argb(Ui.TEXT, Math.max(8, (int) (255 * a))), false);
