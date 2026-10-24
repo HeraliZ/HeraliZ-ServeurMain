@@ -332,6 +332,11 @@ public final class ExecutionScenes {
       return null;
    }
 
+   /** Aucune scène d'exécution en cours (lu à chaque image par Poses). */
+   static boolean aucuneScene() {
+      return SCENES.isEmpty();
+   }
+
    static boolean involved(Entity e) {
       return !SCENES.isEmpty() && (asActor(e) != null || asVictim(e) != null);
    }

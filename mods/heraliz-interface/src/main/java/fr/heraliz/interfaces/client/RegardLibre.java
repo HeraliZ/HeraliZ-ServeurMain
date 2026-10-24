@@ -71,7 +71,8 @@ public final class RegardLibre {
     public static void tick(TickEvent.ClientTickEvent e) {
         if (e.phase != TickEvent.Phase.START) return;
         Minecraft mc = Minecraft.getInstance();
-        actif = permis(mc) && tenue(mc);
+        // touche lue d'abord : permis() (véhicule, emote et visée TaCZ par réflexion) n'est calculé que touche tenue
+        actif = tenue(mc) && permis(mc);
     }
 
     private static boolean tenue(Minecraft mc) {

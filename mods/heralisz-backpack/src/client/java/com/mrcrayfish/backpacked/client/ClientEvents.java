@@ -50,16 +50,8 @@ public class ClientEvents {
    }
 
    private static void onClientTickEnd() {
-      Minecraft mc = Minecraft.getInstance();
-      if (mc.level != null && mc.player != null) {
-         for (Player player : mc.level.getEntities(EntityType.PLAYER, mc.player.getBoundingBox().inflate(16.0), playerx -> true)) {
-            if (Services.BACKPACK.isBackpackVisible(player)) {
-               ItemStack stack = Services.BACKPACK.getBackpackStack(player);
-               if (!stack.isEmpty() && !canShowBackpackEffects(stack)) {
-               }
-            }
-         }
-      }
+      // HeraliZ : les effets des sacs (particules) sont retires ; la boucle sur les joueurs a 16 blocs, faite a chaque
+      // tick, ne faisait plus rien (corps vide) : retiree.
    }
 
    public static boolean canShowBackpackEffects(ItemStack stack) {

@@ -12,6 +12,7 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -50,10 +51,20 @@ public final class HatHider {
         if (entity.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof PieceItem p && p.def().isSuit() && hides(p.def())) return true;
         // nos slots Curios n'existent que sur les joueurs et le mannequin : pas de recherche pour les zombies et autres mobs
         if (!(entity instanceof net.minecraft.world.entity.player.Player) && !(entity instanceof fr.heraliz.armory.entity.Mannequin)) return false;
-        return CuriosApi.getCuriosInventory(entity).resolve()
-                .map(inv -> inv.findCurios(st -> st.getItem() instanceof PieceItem p && hides(p.def())).stream()
-                        .anyMatch(r -> r.slotContext().visible()))
-                .orElse(false);
+        // meme test que findCurios(...).anyMatch(visible), sans la liste de resultats creee a chaque image par joueur
+        var inv = CuriosApi.getCuriosInventory(entity).resolve();
+        if (inv.isEmpty()) return false;
+        for (ICurioStacksHandler handler : inv.get().getCurios().values()) {
+            var stacks = handler.getStacks();
+            var renders = handler.getRenders();
+            for (int i = 0; i < stacks.getSlots(); i++) {
+                ItemStack stack = stacks.getStackInSlot(i);
+                if (!stack.isEmpty() && stack.getItem() instanceof PieceItem p && hides(p.def()) && renders.size() > i && renders.get(i)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean hides(PieceDef def) {

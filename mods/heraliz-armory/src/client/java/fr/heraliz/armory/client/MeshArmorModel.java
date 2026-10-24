@@ -34,7 +34,19 @@ public class MeshArmorModel extends HumanoidModel<LivingEntity> {
     public static final String[] PARTS = {"head", "body", "right_arm", "left_arm", "right_leg", "left_leg"};
 
     private final Map<String, float[]> meshes;
+    /**
+     * Surfaces, cle deja lue (partie, groupe, lueur) : avant, chaque image recoupait la cle de chaque surface (indexOf,
+     * substring, "g_" + ..., recherche du groupe) pour chaque piece de chaque joueur visible. Meme ordre que {@link #meshes}.
+     */
+    private final Mesh[] list;
     private final boolean glow;
+    /** Tampons du calcul des sommets (fil du rendu seulement). */
+    private final Vector4f tmpPos = new Vector4f();
+    private final Vector3f tmpNormal = new Vector3f();
+
+    /** Une surface : sommets, partie (index de {@link #PARTS}), groupe mobile (null : la partie elle-meme), lumineuse. */
+    private record Mesh(float[] data, int part, @Nullable ModelPart group, boolean glow) {
+    }
     /** Par partie : {min x, y, z, max x, y, z} de tous les cubes et surfaces, et des seuls cubes de base (null si aucun). */
     private final float[][] bounds, base;
     /** Ajustement par partie : {centre x, y, z (unites du modele), echelle x, y, z} ; actif si fitOn[i]. */
@@ -48,6 +60,25 @@ public class MeshArmorModel extends HumanoidModel<LivingEntity> {
         this.glow = meshes.keySet().stream().anyMatch(k -> k.startsWith("!"));
         this.bounds = bounds;
         this.base = base;
+        java.util.List<Mesh> l = new java.util.ArrayList<>();
+        for (var e : meshes.entrySet()) {
+            String key = e.getKey();
+            boolean lueur = key.startsWith("!");
+            if (lueur) key = key.substring(1);
+            int slash = key.indexOf('/');
+            int index = partIndex(slash < 0 ? key : key.substring(0, slash));
+            if (index < 0) continue;
+            ModelPart group = null;
+            if (slash >= 0) {
+                // meme regle qu'avant : une surface d'un groupe absent n'est jamais dessinee
+                String child = "g_" + key.substring(slash + 1);
+                ModelPart part = partAt(index);
+                if (!part.hasChild(child)) continue;
+                group = part.getChild(child);
+            }
+            l.add(new Mesh(e.getValue(), index, group, lueur));
+        }
+        this.list = l.toArray(new Mesh[0]);
     }
 
     /** Le modele a des surfaces lumineuses (objectifs de jumelles). */
@@ -135,42 +166,42 @@ public class MeshArmorModel extends HumanoidModel<LivingEntity> {
                 pose.popPose();
             }
         }
-        for (var e : meshes.entrySet()) {
-            if (!e.getKey().startsWith("!")) renderMesh(pose, consumer, e.getKey(), e.getValue(), light, overlay, r, g, b, a);
+        for (Mesh m : list) {
+            if (!m.glow()) renderMesh(pose, consumer, m.part(), m.group(), m.data(), light, overlay, r, g, b, a);
         }
     }
 
     /** Surfaces d'une seule partie (bras a la premiere personne), sans groupe mobile ni lueur. */
     public void renderPart(PoseStack pose, VertexConsumer consumer, String partName, int light, int overlay) {
         float[] data = meshes.get(partName);
-        if (data != null) renderMesh(pose, consumer, partName, data, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+        if (data == null) return;
+        int slash = partName.indexOf('/');
+        int index = partIndex(slash < 0 ? partName : partName.substring(0, slash));
+        if (index < 0) return;
+        ModelPart group = null;
+        if (slash >= 0) {
+            String child = "g_" + partName.substring(slash + 1);
+            if (!partAt(index).hasChild(child)) return;
+            group = partAt(index).getChild(child);
+        }
+        renderMesh(pose, consumer, index, group, data, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     /** Surfaces lumineuses en pleine lumiere, intensite k (0..1, estompee avec la distance) : a dessiner dans un tampon
      *  additif (RenderType.eyes). */
     public void renderGlow(PoseStack pose, VertexConsumer consumer, float k) {
-        for (var e : meshes.entrySet()) {
-            if (e.getKey().startsWith("!")) {
-                renderMesh(pose, consumer, e.getKey().substring(1), e.getValue(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, k, k, k, 1.0F);
+        for (Mesh m : list) {
+            if (m.glow()) {
+                renderMesh(pose, consumer, m.part(), m.group(), m.data(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, k, k, k, 1.0F);
             }
         }
     }
 
-    private void renderMesh(PoseStack pose, VertexConsumer consumer, String key, float[] data, int light, int overlay,
-                            float r, float g, float b, float a) {
-        int slash = key.indexOf('/');
-        String name = slash < 0 ? key : key.substring(0, slash);
-        int index = partIndex(name);
-        if (index < 0) return;
+    private void renderMesh(PoseStack pose, VertexConsumer consumer, int index, @Nullable ModelPart group, float[] data, int light,
+                            int overlay, float r, float g, float b, float a) {
         ModelPart part = partAt(index);
         if (!part.visible || part.skipDraw) return;
-        ModelPart group = null;
-        if (slash >= 0) {
-            String child = "g_" + key.substring(slash + 1);
-            if (!part.hasChild(child)) return;
-            group = part.getChild(child);
-            if (!group.visible) return;
-        }
+        if (group != null && !group.visible) return;
         pose.pushPose();
         if (this.young && index == 0) {
             // tete des bebes : meme mise a l'echelle que HumanoidModel (AgeableListModel)
@@ -183,8 +214,8 @@ public class MeshArmorModel extends HumanoidModel<LivingEntity> {
         PoseStack.Pose last = pose.last();
         Matrix4f m = last.pose();
         Matrix3f nm = last.normal();
-        Vector4f p = new Vector4f();
-        Vector3f n = new Vector3f();
+        Vector4f p = tmpPos;
+        Vector3f n = tmpNormal;
         for (int i = 0; i < data.length; i += STRIDE) {
             p.set(data[i] / 16.0F, data[i + 1] / 16.0F, data[i + 2] / 16.0F, 1.0F);
             m.transform(p);

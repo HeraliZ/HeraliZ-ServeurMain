@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 public final class BackpackManager {
    private static BackpackManager instance;
    private static final ResourceLocation FALLBACK_BACKPACK = new ResourceLocation("backpacked", "standard");
+   private static final ResourceLocation MOUNTAIN_GREEN = new ResourceLocation("backpacked", "mountain_green");
    private Map<ResourceLocation, Backpack> loadedBackpacks = new HashMap<>();
    private Map<ResourceLocation, Backpack> clientBackpacks = new HashMap<>();
 
@@ -60,11 +61,11 @@ public final class BackpackManager {
          return backpack;
       }
 
-      System.out.print("ID DU BACKPACK: " + id.toString());
+      // HeraliZ : plus de System.out ici (appele a chaque image pour chaque joueur dont le sac n'a pas de modele a son
+      // nom : la console et le journal du jeu en etaient remplis, et l'ecriture se faisait sur le fil du rendu).
       ResourceLocation fallback = FALLBACK_BACKPACK;
       if (id.contains("green")) {
-         System.out.print("DETECTION DE GREEN BACKPACK");
-         fallback = new ResourceLocation("backpacked", "mountain_green");
+         fallback = MOUNTAIN_GREEN;
       }
 
       return this.clientBackpacks.get(fallback);

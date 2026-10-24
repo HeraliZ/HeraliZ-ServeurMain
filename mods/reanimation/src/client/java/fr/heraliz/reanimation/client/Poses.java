@@ -36,6 +36,12 @@ public final class Poses {
     * torse et tête revenaient au centre, bras et jambes non (personnage « démembré »).
     */
    static boolean apply(HumanoidModel<?> m, LivingEntity e, float limbSwing, float limbAmount, float age) {
+      // Cas de presque tous les joueurs à chaque image : ni scène d'exécution, ni état « à terre » reçu. Aucune pose ne
+      // peut alors s'appliquer (poser rendrait faux et tout serait remis comme avant) : on ne touche à rien, sans la
+      // copie des valeurs ni l'allocation d'avant.
+      if (ExecutionScenes.aucuneScene() && ClientDowned.get(e.getId()) == null) {
+         return false;
+      }
       float[] avant = {m.head.x, m.head.z, m.head.zRot, m.body.x, m.body.z, m.body.zRot, m.rightLeg.x, m.leftLeg.x};
       boolean pose = poser(m, e, limbSwing, limbAmount, age);
       if (!pose) {

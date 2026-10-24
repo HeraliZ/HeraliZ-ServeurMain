@@ -36,7 +36,8 @@ public class ClientHandler {
 
    public static void onAddLayers(AddLayers event) {
       addBackpackLayer(event.getSkin("default"), event.getContext().getItemRenderer());
-      addBackpackLayer(event.getSkin("slim"), event.getContext().getItemRenderer());
+      // HeraliZ : la couche etait ajoutee deux fois au rendu « slim » (sacs dessines deux fois par image sur tous les
+      // personnages aux bras fins, dont les personnages feminins de CaraCrea)
       addBackpackLayer(event.getSkin("slim"), event.getContext().getItemRenderer());
       EntityRenderer<?> renderer = event.getRenderer(EntityType.WANDERING_TRADER);
       if (renderer instanceof WanderingTraderRenderer traderRenderer) {
