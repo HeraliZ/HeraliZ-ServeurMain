@@ -370,5 +370,7 @@
   "container.heraliz_armory.mannequin": "Манекен",
   "container.heraliz_armory.mannequin.curios": "Снаряжение",
   "tooltip.heraliz_armory.mannequin": "Носит всё: броню, руки и снаряжение. Присесть + ПКМ: меню",
-  "tooltip.heraliz_armory.protection_valeur": "Защита: %s %%"
+  "tooltip.heraliz_armory.protection_valeur": "Защита: %s %%",
+  "tooltip.heraliz_armory.durabilite": "Прочность: %s / %s (изнашивается в опасных зонах)",
+  "tooltip.heraliz_armory.usee": "Изношено: больше не защищает от газа, радиации и холода. Нужен ремонт."
 }

@@ -3,6 +3,7 @@ package fr.heraliz.decors.serveur;
 import com.google.gson.JsonParser;
 import fr.heraliz.decors.HeralizDecors;
 import fr.heraliz.decors.ambiance.Ambiance;
+import fr.heraliz.decors.ambiance.ConfigZones;
 import fr.heraliz.decors.ambiance.Zone;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +47,10 @@ import net.minecraftforge.registries.ForgeRegistries;
  * </ul>
  * Les objets qui protègent sont reconnus à leur identifiant (Armurerie), portés en armure, en main gauche ou dans un
  * emplacement Curios (lu par réflexion : rien à installer en plus). Le client reçoit l'exposition pour l'écran.
+ * <p>Usure (1.12.0, demande du propriétaire du 23/10) : dans une zone, la pièce qui protège de CETTE zone perd 1 point de
+ * durabilité toutes les N secondes (heraliz_decors-server.toml, section [usure]) ; à 1 point de la casse (barre vide),
+ * elle est « usée » : elle ne protège plus de la zone (le joueur subit ses effets) tant qu'elle n'est pas réparée.
+ * Elle n'est jamais détruite par cette usure. L'Armurerie lit la même règle (Protection.usee) pour ses filtres.
  * Commandes (op) : /zones info, /zones recharger.
  */
 @Mod.EventBusSubscriber(modid = HeralizDecors.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -54,6 +59,7 @@ public final class ZonesServeur {
 
     private static List<Zone> zones = new ArrayList<>();
     private static final Map<UUID, float[]> EXPO = new HashMap<>();          // gaz, radiation, froid (secondes)
+    private static final Map<UUID, int[]> USURE = new HashMap<>();           // gaz, radiation, froid (secondes portées)
 
     // protections (identifiants, * = n'importe quelle fin)
     private static final String[] P_GAZ = {"heraliz_armory:gas_mask_*", "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit",
@@ -92,6 +98,7 @@ public final class ZonesServeur {
     @SubscribeEvent
     public static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
         EXPO.remove(e.getEntity().getUUID());
+        USURE.remove(e.getEntity().getUUID());
     }
 
     @SubscribeEvent
@@ -112,7 +119,22 @@ public final class ZonesServeur {
                     default -> { }
                 }
             }
-            boolean pg = protege(p, P_GAZ), pr = protege(p, P_RAD), pf = protege(p, P_FROID);
+            boolean[] us = new boolean[3];
+            ItemStack sg = g > 0 ? protection(p, P_GAZ, us, 0) : ItemStack.EMPTY;
+            ItemStack sr = ra > 0 ? protection(p, P_RAD, us, 1) : ItemStack.EMPTY;
+            ItemStack sf = fr > 0 ? protection(p, P_FROID, us, 2) : ItemStack.EMPTY;
+            boolean pg = !sg.isEmpty(), pr = !sr.isEmpty(), pf = !sf.isEmpty();   // hors d'une zone : sans effet
+            if (ConfigZones.USURE.get() && (g > 0 || ra > 0 || fr > 0)) {
+                int[] t = USURE.computeIfAbsent(p.getUUID(), k -> new int[3]);
+                user(p, sg, t, 0, ConfigZones.SECONDES_GAZ.get());
+                user(p, sr, t, 1, ConfigZones.SECONDES_RADIATION.get());
+                user(p, sf, t, 2, ConfigZones.SECONDES_FROID.get());
+            }
+            // pièce usée et rien d'autre pour protéger : rappel toutes les 15 s
+            if ((us[0] && sg.isEmpty() || us[1] && sr.isEmpty() || us[2] && sf.isEmpty()) && srv.getTickCount() % 300 == 0) {
+                p.displayClientMessage(Component.translatableWithFallback("heraliz_decors.zones.usee_rappel",
+                        "Votre protection est usée : elle ne vous protège plus. Il faut la réparer."), true);
+            }
             float[] ex = EXPO.computeIfAbsent(p.getUUID(), k -> new float[3]);
             ex[0] = avancer(ex[0], pg ? 0 : g);
             ex[1] = avancer(ex[1], pr ? 0 : ra);
@@ -162,15 +184,52 @@ public final class ZonesServeur {
     }
 
     // ------------------------------------------------------------------------------------------------ protection
+    private static final EquipmentSlot[] PORTES = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET,
+            EquipmentSlot.OFFHAND};
+
+    /** Vrai si une pièce portée (pas usée) protège de ce genre de zone. */
     static boolean protege(ServerPlayer p, String[] ids) {
-        for (EquipmentSlot s : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET,
-                EquipmentSlot.OFFHAND}) {
-            if (correspond(p.getItemBySlot(s), ids)) return true;
+        return !protection(p, ids, new boolean[3], 0).isEmpty();
+    }
+
+    /**
+     * Pièce portée qui protège de ce genre de zone et n'est pas usée (la vraie pile, modifiable), sinon EMPTY ;
+     * usee[i] passe à vrai si une pièce de ce genre est portée mais usée.
+     */
+    static ItemStack protection(ServerPlayer p, String[] ids, boolean[] usee, int i) {
+        for (EquipmentSlot s : PORTES) {
+            ItemStack st = p.getItemBySlot(s);
+            if (!correspond(st, ids)) continue;
+            if (!usee(st)) return st;
+            usee[i] = true;
         }
         for (ItemStack st : curios(p)) {
-            if (correspond(st, ids)) return true;
+            if (!correspond(st, ids)) continue;
+            if (!usee(st)) return st;
+            usee[i] = true;
         }
-        return false;
+        return ItemStack.EMPTY;
+    }
+
+    /** Usée : à 1 point de la casse (barre vide). Même règle que fr.heraliz.armory.armor.Protection.usee. */
+    public static boolean usee(ItemStack st) {
+        return st.isDamageableItem() && st.getDamageValue() >= st.getMaxDamage() - 1;
+    }
+
+    /** Une seconde de port dans la zone ; toutes les « secondes » secondes, 1 point de durabilité en moins, jamais cassée. */
+    private static void user(ServerPlayer p, ItemStack st, int[] t, int i, int secondes) {
+        if (st.isEmpty() || !st.isDamageableItem()) return;
+        if (++t[i] < secondes) return;
+        t[i] = 0;
+        if (st.getDamageValue() < st.getMaxDamage() - 2) {
+            st.hurtAndBreak(1, p, x -> { });   // il reste au moins 2 points : jamais cassée ici
+        } else {
+            st.setDamageValue(st.getMaxDamage() - 1);   // dernier point posé directement, sans passer par la casse
+        }
+        if (usee(st)) {
+            p.displayClientMessage(Component.translatableWithFallback("heraliz_decors.zones.usee",
+                    "%s est usé(e) : ne protège plus de cette zone. Il faut le (la) réparer.", st.getHoverName()), true);
+        }
     }
 
     private static boolean correspond(ItemStack st, String[] ids) {

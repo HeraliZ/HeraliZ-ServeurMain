@@ -40,6 +40,7 @@ import java.util.List;
  * Bonus (repris de HeralisZ Armor, appliques toutes les 10 ticks aux joueurs) : filtre (masques a gaz, Hazmat) = effets
  * de la config bloques et retires ; radiation totale de 100 % = irradiation bloquee et retiree ; gel (combinaisons
  * contre le froid) = degats de gel annules et givre retire ; camouflage (ghillies) = effet geckolib:antizombie.
+ * 0.16.0 (23/10) : un objet use (barre vide, voir {@link Protection#usee}) ne filtre plus le gaz, ni la radiation, ni le gel.
  */
 @Mod.EventBusSubscriber(modid = HeralizArmory.MOD_ID)
 public final class ProtectionEvents {
@@ -63,7 +64,8 @@ public final class ProtectionEvents {
         double mult = kind == Protection.Kind.EXPLOSION ? ArmorConfig.EXPLOSION_MULTIPLIER.get() : ArmorConfig.PROTECTION_MULTIPLIER.get();
         float total = 0;
         for (Protection.Worn w : worn) {
-            float v = kind == Protection.Kind.RADIATION ? w.def().radiation() : Protection.value(w.def(), kind) * Protection.share(w.def(), headshot);
+            float v = kind == Protection.Kind.RADIATION ? (Protection.usee(w.stack()) ? 0 : w.def().radiation())
+                    : Protection.value(w.def(), kind) * Protection.share(w.def(), headshot);
             if (v <= 0) continue;
             total += v;
             if (w.curio() && w.stack().isDamageableItem() && kind != Protection.Kind.RADIATION) w.stack().hurtAndBreak(1, victim, e -> {});
@@ -115,7 +117,7 @@ public final class ProtectionEvents {
         if (!gas && !rad) return;
         List<Protection.Worn> worn = Protection.worn(event.getEntity());
         if (worn.isEmpty()) return;
-        if (gas && Protection.any(worn, Guard::gas) || rad && radiationProof(worn)) event.setResult(Event.Result.DENY);
+        if (gas && Protection.anyFiltre(worn, Guard::gas) || rad && radiationProof(worn)) event.setResult(Event.Result.DENY);
     }
 
     /** Immunite au gel (combinaisons contre le froid) : les degats de gel n'atteignent pas le porteur. */
@@ -123,7 +125,7 @@ public final class ProtectionEvents {
     public static void onAttack(LivingAttackEvent event) {
         LivingEntity e = event.getEntity();
         if (e.level().isClientSide || !event.getSource().is(DamageTypeTags.IS_FREEZING)) return;
-        if (Protection.any(Protection.worn(e), Guard::cold)) event.setCanceled(true);
+        if (Protection.anyFiltre(Protection.worn(e), Guard::cold)) event.setCanceled(true);
     }
 
     /** Bonus continus des joueurs, toutes les 10 ticks (comme HeralisZ Armor). */
@@ -133,8 +135,8 @@ public final class ProtectionEvents {
         if (event.phase != TickEvent.Phase.END || player.level().isClientSide || player.tickCount % 10 != 0) return;
         List<Protection.Worn> worn = Protection.worn(player);
         if (worn.isEmpty()) return;
-        if (Protection.any(worn, Guard::cold) && player.getTicksFrozen() > 0) player.setTicksFrozen(0);
-        if (Protection.any(worn, Guard::gas)) {
+        if (Protection.anyFiltre(worn, Guard::cold) && player.getTicksFrozen() > 0) player.setTicksFrozen(0);
+        if (Protection.anyFiltre(worn, Guard::gas)) {
             List<MobEffect> remove = new ArrayList<>();
             for (MobEffectInstance inst : player.getActiveEffects()) {
                 var id = ForgeRegistries.MOB_EFFECTS.getKey(inst.getEffect());

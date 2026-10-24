@@ -92,5 +92,7 @@
  "block.heraliz_decors.lavabo_sale": "Dirty sink",
  "block.heraliz_decors.toilettes_sales": "Dirty toilet",
  "block.heraliz_decors.lit_superpose": "Bunk bed",
- "block.heraliz_decors.lit_prison": "Prison bed (chains)"
+ "block.heraliz_decors.lit_prison": "Prison bed (chains)",
+ "heraliz_decors.zones.usee": "%s is worn out: no longer protects from this zone. It needs repair.",
+ "heraliz_decors.zones.usee_rappel": "Your protection is worn out: it no longer protects you. It needs repair."
 }

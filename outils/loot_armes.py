@@ -125,6 +125,7 @@ RETIRES = ("heralisz_armor:", "simplefarming:")  # retirés des tables (mod reti
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
 ARMES_EXCLUES = {"cis:at_rpg_7_lvd"}  # jamais dans le loot (choix du propriétaire)
+ARMURES_EXCLUES = {"heraliz_armory:plongee_suit"}  # jamais dans le loot (23/10 : tenue de plongée pas lootable pour l'instant)
 # couteaux (skins heralisz_skins) : seulement ceux de 1, 2 ou 3 étoiles dans le loot, jamais les 4 étoiles (choix du
 # propriétaire, 23/10) ; rangs lus dans ETOILES de mods/heraliz-tactique/outils/skins_couteaux.py (non cité = 4)
 SKINS_COUTEAUX = RACINE / "mods/heraliz-tactique/outils/skins_couteaux.py"
@@ -278,7 +279,7 @@ def familles():
             ajouter("accessoires", r, {"item": ACCESSOIRE, "nombre": [1, 1], "nbt": f'{{AttachmentId:"{aid}"}}',
                                        "_cat": "accessoires"})
     for i, r in sorted(tout["objets"].items()):
-        if i.startswith(ARMURE) and not i.startswith(ARMURE + "kit_") and not i.endswith("_suit") and r != "unique":
+        if i.startswith(ARMURE) and not i.startswith(ARMURE + "kit_") and not i.endswith("_suit") and r != "unique" and i not in ARMURES_EXCLUES:
             ajouter("armures", r, {"item": i, "nombre": [1, 1], "_cat": "armures"})
     for i, r in sacs().items():
         if i not in SACS_HORS_LOOT:

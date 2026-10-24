@@ -56,6 +56,7 @@ public class GearCurioItem extends Item implements GeoItem, ICurioItem, GearItem
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> lines, TooltipFlag flag) {
         GearItem.appendTooltip(gear, lines);
+        if (gear.gas()) GearItem.appendUsure(stack, lines);
     }
 
     @Override

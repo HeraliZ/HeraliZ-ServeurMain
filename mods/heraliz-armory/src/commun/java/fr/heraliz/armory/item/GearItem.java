@@ -69,6 +69,21 @@ public interface GearItem extends ProtectiveItem {
     }
 
     /** Infobulle : rarete, emplacement, protection (s'il y en a une), zone, bonus. */
+    /**
+     * 0.16.0 (23/10) : durabilite d'un objet qui protege du gaz, de la radiation ou du froid (il s'use dans ces zones),
+     * et « Usee » quand elle est vide (il ne protege plus de ces zones, voir armor.Protection.usee).
+     */
+    static void appendUsure(net.minecraft.world.item.ItemStack stack, List<Component> lines) {
+        if (!stack.isDamageableItem()) return;
+        int max = stack.getMaxDamage() - 1;
+        int reste = Math.max(0, max - stack.getDamageValue());
+        lines.add(Component.translatable("tooltip.heraliz_armory.durabilite", String.valueOf(reste), String.valueOf(max))
+                .withStyle(ChatFormatting.GRAY));
+        if (fr.heraliz.armory.armor.Protection.usee(stack)) {
+            lines.add(Component.translatable("tooltip.heraliz_armory.usee").withStyle(ChatFormatting.RED));
+        }
+    }
+
     static void appendTooltip(GearDef g, List<Component> lines) {
         lines.add(rarityLine(g.rarity()));
         if (g.armor()) {

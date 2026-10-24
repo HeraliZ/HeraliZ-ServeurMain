@@ -370,5 +370,7 @@
   "container.heraliz_armory.mannequin": "Mannequin",
   "container.heraliz_armory.mannequin.curios": "Équipement",
   "tooltip.heraliz_armory.mannequin": "Porte tout : armure, mains et équipement. Accroupi + clic droit : menu",
-  "tooltip.heraliz_armory.protection_valeur": "Protection : %s %%"
+  "tooltip.heraliz_armory.protection_valeur": "Protection : %s %%",
+  "tooltip.heraliz_armory.durabilite": "Durabilité : %s / %s (s'use dans les zones dangereuses)",
+  "tooltip.heraliz_armory.usee": "Usée : ne protège plus du gaz, de la radiation ni du froid. À réparer."
 }

@@ -1,0 +1,16 @@
+#Usure des protections dans les zones dangereuses (gaz, radiation, froid).
+#La pièce qui protège le joueur de la zone où il se trouve perd 1 point de durabilité toutes les N secondes.
+#À 0 (barre vide), elle ne protège plus de cette zone (elle protège toujours des balles) : il faut la réparer.
+#Elle n'est jamais détruite par cette usure.
+[usure]
+	#false : les protections ne s'usent plus dans les zones (comme avant la 1.12.0).
+	actif = true
+	#Zone de gaz : secondes par point (masques à gaz 180 / 260 points : 21 / 30 min ; Hazmat 300 / 450 : 35 / 52 min).
+	#Range: 1 ~ 3600
+	secondes_gaz = 7
+	#Zone de radiation : secondes par point (Hazmat 300 / 450 points : 25 / 37 min).
+	#Range: 1 ~ 3600
+	secondes_radiation = 5
+	#Zone de froid : secondes par point (combinaison contre le froid 300 / 450 points : 25 / 37 min).
+	#Range: 1 ~ 3600
+	secondes_froid = 5

@@ -370,5 +370,7 @@
   "container.heraliz_armory.mannequin": "Mannequin",
   "container.heraliz_armory.mannequin.curios": "Equipment",
   "tooltip.heraliz_armory.mannequin": "Wears everything: armor, hands and equipment. Sneak + right-click: menu",
-  "tooltip.heraliz_armory.protection_valeur": "Protection: %s%%"
+  "tooltip.heraliz_armory.protection_valeur": "Protection: %s%%",
+  "tooltip.heraliz_armory.durabilite": "Durability: %s / %s (wears out in hazard zones)",
+  "tooltip.heraliz_armory.usee": "Worn out: no longer protects from gas, radiation or cold. Needs repair."
 }
