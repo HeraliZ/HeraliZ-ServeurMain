@@ -92,6 +92,7 @@ final class Cerveau {
         // à terre (Réanimation) : ne fait plus rien ; personne ne le relève : achevé au bout de 30 s
         if (aTerre()) {
             bot.setSprinting(false);
+            if (aTerreTicks == 0) bot.getInventory().clearContent();   // rien à prendre en le fouillant à terre
             if (++aTerreTicks > 600) bot.hurt(bot.damageSources().genericKill(), Float.MAX_VALUE);
             return;
         }

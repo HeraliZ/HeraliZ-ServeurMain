@@ -251,7 +251,10 @@ public final class Bots {
     private static final Map<String, Place> RELANCE_PLACE = new LinkedHashMap<>();
 
     private static void mort(LivingDeathEvent e) {
-        if (estBot(e.getEntity())) stats.morts++;
+        if (!estBot(e.getEntity())) return;
+        stats.morts++;
+        // rien à ramasser sur un bot (son kit revient neuf à chaque réapparition : arme, grenades, munitions sans fin)
+        if (e.getEntity() instanceof ServerPlayer b) b.getInventory().clearContent();
     }
 
     private static void arret(ServerStoppingEvent e) {

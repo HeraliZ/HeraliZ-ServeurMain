@@ -255,6 +255,7 @@ public final class ClanEvents {
         Membre m = c == null ? null : c.membre(tueur.getUUID());
         if (m == null) return;
         if (victime instanceof Player joueur) {
+            if (joueur.getTags().contains("heraliz_bot")) return;   // bots de charge (/bots) : ni XP ni quête
             if (!killJoueurValide(c, tueur, joueur, System.currentTimeMillis())) return;
             m.stats.kills++;
             ClanService.ajouterXp(c, ClansConfig.XP_KILL_JOUEUR.get(), tueur.getUUID());

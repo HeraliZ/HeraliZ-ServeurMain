@@ -112,6 +112,7 @@ public final class ServeurQuetes implements Partie {
     private static void mort(LivingDeathEvent e) {
         if (Moteur.serveur == null || e.getEntity().level().isClientSide) return;
         if (e.getEntity() instanceof ServerPlayer p) {
+            if (p.getTags().contains("heraliz_bot")) return;   // bots de charge (/bots) : ni étape « exécuter » ni mort comptée
             // achevé à terre (exécution de Réanimation ou coup de grâce) : l'état « à terre » dure jusqu'à la mort
             if (Ponts.aTerre(p) && e.getSource().getEntity() instanceof ServerPlayer tueur) Moteur.execution(p, tueur);
             Moteur.mortJoueur(p);

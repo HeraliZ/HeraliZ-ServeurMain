@@ -32,13 +32,11 @@ public final class SansMainGauche {
       }
       ItemStack g = p.getOffhandItem();
       if (g.isEmpty() || p.isUsingItem()) return;
-      ItemStack copie = g.copy();
-      if (p.getInventory().add(copie) && copie.isEmpty()) {
-         p.getInventory().offhand.set(0, ItemStack.EMPTY);
-      } else if (copie.getCount() < g.getCount()) {
-         // une partie seulement est rangée : le reste reste en main gauche
-         p.getInventory().offhand.set(0, copie);
-      }
+      // la case est vidée AVANT de ranger : Inventory.add chercherait sinon d'abord de la place dans la main gauche
+      // elle-même (objets empilables fusionnés puis effacés) ; ce qui ne rentre pas y revient
+      p.getInventory().offhand.set(0, ItemStack.EMPTY);
+      p.getInventory().add(g);
+      if (!g.isEmpty()) p.getInventory().offhand.set(0, g);
       p.inventoryMenu.broadcastChanges();
    }
 }

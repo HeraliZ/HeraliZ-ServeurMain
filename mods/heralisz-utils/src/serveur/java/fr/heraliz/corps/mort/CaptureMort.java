@@ -72,7 +72,7 @@ public final class CaptureMort {
 
     /** Vrai si la mort de ce joueur laisse un corps. */
     public static boolean eligible(ServerPlayer p) {
-        if (p instanceof FakePlayer || p.isSpectator()) return false;
+        if (p instanceof FakePlayer || p.isSpectator() || p.getTags().contains("heraliz_bot")) return false;
         if (!CorpsConfig.ACTIF.get()) return false;
         if (p.getPersistentData().contains(DRAPEAU_EN_MATCH)) return false;
         return !CorpsConfig.dimensionExclue(p.level().dimension().location().toString());
