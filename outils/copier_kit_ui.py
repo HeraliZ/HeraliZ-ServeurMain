@@ -1,4 +1,5 @@
-"""Copie le kit d'interface « style clan » (heralisz_matchs/client/kit, lui-même copié de heralisz_clans) dans un autre mod,
+"""Copie le kit d'interface « style clan » (outils/kit_ui : kit de référence repris de HeraliZ Matchs, retiré le 24/10,
+lui-même copié de heralisz_clans) dans un autre mod,
 sans dépendance de compilation : polices DM Sans (assets/<modid>/font), Ui, Echelle, HzButton, HzField, HzScroll, SonsUi.
 
     python outils/copier_kit_ui.py <dossier projet> <paquet java cible> <modid>
@@ -9,7 +10,8 @@ Projet coupé (src/commun, src/client, src/serveur) : le kit va dans src/client 
 - Accent : celui du clan du joueur lu par réflexion (fr.heralisz.clans.client.ClientClans.accent()) si le mod clans est
   présent, sinon l'accent neutre ; un écran peut l'imposer (Ui.forcerAccent).
 - Sons : heralisz_clans:ui_clic / ui_ouvrir / ui_fermer résolus par identifiant ; sans le mod clans, clic vanilla discret.
-- Les fichiers déjà présents sont écrasés (le kit de référence reste celui des matchs).
+- Les fichiers déjà présents sont écrasés (le kit de référence est celui de outils/kit_ui, gardé tel quel : ne pas le modifier
+  sans le vouloir pour tous les mods qui le recopieront).
 """
 import re
 import shutil
@@ -17,8 +19,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC_KIT = ROOT / "mods/heralisz-matchs/src/client/java/fr/heralisz/matchs/client/kit"
-SRC_FONT = ROOT / "mods/heralisz-matchs/src/client/resources/assets/heralisz_matchs/font"
+SRC_KIT = ROOT / "outils/kit_ui/java"
+SRC_FONT = ROOT / "outils/kit_ui/font"
 FICHIERS = ["Ui.java", "Echelle.java", "HzButton.java", "HzField.java", "HzScroll.java", "SonsUi.java"]
 
 ACCENT_REFLEXION = '''    /** Accent impose par un ecran ou un mode, -1 = aucun. */

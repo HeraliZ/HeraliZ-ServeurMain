@@ -12,7 +12,7 @@ Les gunpacks des autres auteurs ne sont PAS modifiés : les dégâts contre les 
   serveur/config/heraliz_tactique/armes.json : pour chaque arme, « degats » = dégâts d'une balle (d'un plomb pour un
   fusil à pompe) à courte distance contre un joueur, « tete » = multiplicateur d'un tir à la tête, « rarete ». La baisse
   avec la distance et les accessoires de l'arme gardent leur effet (même proportion qu'avant). Arme absente du fichier
-  (lance-grenades, couteaux, Wonder Weapons) : dégâts de TaCZ inchangés. Contre les créatures (zombies...) : inchangé.
+  (lance-grenades, couteaux) : dégâts de TaCZ inchangés. Contre les créatures (zombies...) : inchangé.
 Et la section « armes », « accessoires », « munitions » de serveur/config/heraliz_loot/raretes.json (couleur des cases).
 
 Joueur : 20 points de vie. Repères (fusil d'assaut 5,56 Rare, 5,2 par balle) : 4 balles sans armure, 6 en Rare, 10 en
@@ -123,7 +123,7 @@ RARETE_MUNITION = {"tacz:9mm": "commun", "tacz:45acp": "commun", "tacz:12g": "pe
                    "tacz:762x39": "rare", "tacz:50ae": "rare", "tacz:308": "epique", "tacz:338": "epique",
                    "tacz:50bmg": "legendaire", "tacz:40mm": "legendaire", "tacz:rpg_rocket": "legendaire"}
 
-PACKS_A_PART = {"heraliz_wonder"}  # Wonder Weapons (zombies) : rien ici
+PACKS_A_PART = set()  # gunpacks laissés de côté (aucun depuis le retrait des Wonder Weapons, 24/10)
 
 
 def lire_json(p):

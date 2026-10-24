@@ -1,7 +1,7 @@
 # Journaux du serveur : LECTURE SEULE. Montre dans le résumé les erreurs Java du journal du serveur (logs/latest.log et
 # les deux journaux précédents) et la liste des rapports de plantage récents, avec leur cause. Les adresses IP sont
 # masquées. Rien n'est écrit ni supprimé sur le Ptero. Part d'une branche de travail quand ce fichier change, ou par
-# « Run workflow » (filtre facultatif : un mot à chercher, ex. « duel »).
+# « Run workflow » (filtre facultatif : un mot à chercher, ex. « combat »).
 name: Journaux du serveur
 
 on:
@@ -27,7 +27,7 @@ jobs:
       PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
       PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
       PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
-      FILTRE: ${{ inputs.filtre || 'matchs' }}
+      FILTRE: ${{ inputs.filtre || 'combat' }}
     steps:
       - name: Accès au Ptero
         run: |

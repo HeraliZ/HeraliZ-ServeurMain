@@ -37,7 +37,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 RACINE = Path(__file__).resolve().parents[1]
 ASSETS = RACINE / "src" / "client" / "resources" / "assets" / "heralisz_bunker"
 DEPOT = RACINE.parents[1]
-POLICE_CHIFFRE = DEPOT / "mods" / "heralisz-matchs" / "outils" / "bombe" / "polices" / "oswald-700.ttf"
+POLICE_CHIFFRE = RACINE / "outils" / "polices" / "oswald-700.ttf"
 POLICE_TEXTE = DEPOT / "launcher" / "app" / "assets" / "fonts" / "DMSans-Bold.ttf"
 
 W, H = 512, 320          # carte dans sa texture (points), 32 points par pixel de modèle

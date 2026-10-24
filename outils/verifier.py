@@ -58,10 +58,6 @@ def options_split(p, cote):
         o += ["--embarque", str(jj), "--ref", ",".join(refs)]
     if p.name == "spartan" and cote == "serveur":
         o += ["--embarque", "META-INF/spartan/client.bin"]   # copie du jar joueur (défi d'intégrité)
-    if p.name == "heralisz-matchs":
-        boss = construire.jars(chemins.MODS / "heraliz-boss")[cote]
-        curios = sorted(chemins.MODS_TIERS.glob("curios-*.jar"))
-        o += ["--ref", ",".join(str(x) for x in [boss] + curios)]
     return o
 
 

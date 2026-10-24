@@ -71,7 +71,6 @@ PROPRES = {
 
 # Armes laissées telles quelles (espace de noms ou identifiant d'arme).
 ARMES_A_PART = {
-    "heraliz_wonder": "Wonder Weapons du mode zombies",
 }
 
 # Accessoires retirés de certaines armes (« * » : de toutes) : ils y flottent ou les traversent, mesuré par

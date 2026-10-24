@@ -477,7 +477,6 @@ jobs:
             mput -O /$MONDE/serverconfig serveur/defaultconfigs/*;
             mirror -R -P 8 serveur/tacz /tacz;
             source retirer_tacz.lftp;
-            mirror -R -P 8 serveur/heralisz_matchs /heralisz_matchs;
             mirror -R -P 8 serveur/mohist-config /mohist-config;
             bye"
           echo "Mise à jour du Ptero terminée."

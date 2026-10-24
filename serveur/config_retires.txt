@@ -14,3 +14,6 @@ simplefarming.toml
 # 23/10 : réglages morts (pillage des anciens bunkers de clan, mod dyairdrop retiré)
 heralisz_bases-pillage.toml
 dyairdrop.toml
+
+# 24/10 : HeraliZ Matchs (duels, ClashWar, zombies) retiré du serveur (focus DayZ)
+heralisz_matchs-zombies-client.toml
