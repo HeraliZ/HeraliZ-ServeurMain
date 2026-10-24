@@ -1,6 +1,5 @@
 package fr.heralisz.clans.client.gui;
 
-import fr.heralisz.clans.ClansConfig;
 import fr.heralisz.clans.HeraliszClans;
 import fr.heralisz.clans.client.ClientClans;
 import fr.heralisz.clans.client.gui.atelier.Modeles;
@@ -214,11 +213,7 @@ public class ClanCreateScreen extends Screen {
     }
 
     private long cout() {
-        try {
-            return ClansConfig.COUT_CREATION.get();
-        } catch (Exception ex) {
-            return 2500;
-        }
+        return fr.heralisz.clans.client.ClientClans.coutCreation();
     }
 
     /** Solde personnel si on le connait (snapshot, ou mod economie par reflexion), -1 sinon. */

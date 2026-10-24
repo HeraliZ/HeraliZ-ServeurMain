@@ -145,6 +145,26 @@ public final class ClientClans {
         return Math.max(0, cdMs - Math.max(0, maintenantServeur() - s.maintenant()));
     }
 
+    /** Prix de création d'un clan envoyé par le serveur avec le snapshot (-1 : pas encore reçu). */
+    private static long coutCreation = -1L;
+
+    /**
+     * Prix de création d'un clan : celui du serveur s'il l'a envoyé, sinon le fichier de config du joueur (qui peut
+     * garder un ancien prix : Forge ne réécrit pas une valeur déjà écrite), sinon 1 750.
+     */
+    public static long coutCreation() {
+        if (coutCreation >= 0) return coutCreation;
+        try {
+            return fr.heralisz.clans.ClansConfig.COUT_CREATION.get();
+        } catch (Exception ex) {
+            return 1750L;
+        }
+    }
+
+    public static void setCoutCreation(long cout) {
+        if (cout >= 0) coutCreation = cout;
+    }
+
     // ------------------------------------------------------------------ ecriture (ClientHandlers, harness)
     public static void setSnapshot(@Nullable ClanSnapshot s) {
         snapshot = s;

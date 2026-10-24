@@ -41,7 +41,7 @@ public final class ClansConfig {
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.comment("Regles des clans HeraliZ").push("clans");
-        COUT_CREATION = b.comment("Cout de creation d'un clan (hérals, HeraliZ Economie)").defineInRange("cout_creation", 2500L, 0L, Long.MAX_VALUE);
+        COUT_CREATION = b.comment("Cout de creation d'un clan (hérals, HeraliZ Economie)").defineInRange("cout_creation", 1750L, 0L, Long.MAX_VALUE);
         DELAI_REJOINDRE_H = b.comment("Heures a attendre apres avoir quitte (ou ete exclu d') un clan avant d'en rejoindre un autre")
                 .defineInRange("delai_rejoindre_h", 12, 0, 24 * 30);
         COOLDOWN_MODIF_H = b.comment("Heures entre deux modifications d'un meme champ (nom, tag, description, banniere)")

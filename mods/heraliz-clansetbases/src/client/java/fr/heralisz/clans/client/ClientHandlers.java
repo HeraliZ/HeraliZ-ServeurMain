@@ -25,6 +25,7 @@ public final class ClientHandlers {
     /** Snapshot : etat a jour ; si l'ecran de fondation est ouvert et que le clan existe maintenant, on passe a l'ecran du clan. */
     public static void snapshot(Packets.ClanSnapshotS2C m) {
         boolean avait = ClientClans.aUnClan();
+        ClientClans.setCoutCreation(m.coutCreation());
         ClientClans.setSnapshot(m.snapshot());
         Minecraft mc = Minecraft.getInstance();
         if (m.snapshot() != null && !avait && mc.screen instanceof ClanCreateScreen cs && !cs.banniereSeule()) {

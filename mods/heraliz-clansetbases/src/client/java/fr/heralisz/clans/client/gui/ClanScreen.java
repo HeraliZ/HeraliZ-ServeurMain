@@ -327,11 +327,7 @@ public class ClanScreen extends Screen implements Hote {
     }
 
     private static long coutCreation() {
-        try {
-            return fr.heralisz.clans.ClansConfig.COUT_CREATION.get();
-        } catch (Exception ex) {
-            return 2500;
-        }
+        return fr.heralisz.clans.client.ClientClans.coutCreation();
     }
 
     /**
