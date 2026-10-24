@@ -40,7 +40,10 @@ quand un choix leur revient.
     du 15/10) : les conteneurs de loot HeraliZ Loot T1 à T6 déjà posés peuvent être remplacés par d'autres modèles du
     même palier (et, avec `--ajouts` seulement, un modèle sans aucune place posé sur une case libre), jamais par
     fichier : seulement par les lots de commandes conditionnelles du plan des props (section 8, « Props de la carte »),
-    joués par le serveur, après validation du propriétaire, et annulables. Rien d'autre (ni meubles cfm, ni T7).
+    joués par le serveur, après validation du propriétaire, et annulables. Étendue le 24/10 (demande du propriétaire :
+    « on en croise très très peu ») aux conteneurs de familles vivres / soins / munitions de HeraliZ Loot, posés sur
+    des cases libres (option `--familles`, étape « familles »), même méthode (plan hors ligne, `if block … minecraft:air`,
+    essai à blanc, validation, annulation). Rien d'autre (ni meubles cfm, ni T7).
 
 ---
 
@@ -657,9 +660,9 @@ remplacées par celles de nos packs (largages, caisses, Annihilator des Zombies)
 
 **Props de la carte** (consigne du propriétaire du 15/10) : utiliser les modèles de HeraliZ Loot, T1 à T6 seulement
 (T7 = événements, jamais posé par le plan), et que **100 % des modèles T1 à T6** soient sur la carte, en nombre
-équilibré (plus « toujours les mêmes »). C'est tout : ni meubles cfm (ni anciens meubles cfm à reposer, ni
-variantes), ni points T7, ni familles (nourriture, soins, munitions). « Inventaire de la carte », case « props »
-(lecture seule) : `outils/props_carte.py` découpe les pièces et relève les incohérences, puis `outils/props_plan.py`
+équilibré (plus « toujours les mêmes »). Ni meubles cfm (ni anciens meubles cfm à reposer, ni variantes), ni points
+T7 (familles vivres / soins / munitions : étape à part depuis le 24/10, plus bas). « Inventaire de la carte », case
+« props » (lecture seule) : `outils/props_carte.py` découpe les pièces et relève les incohérences, puis `outils/props_plan.py`
 fait le plan, étape **`diversification`** : un conteneur T1 à T6 déjà posé est remplacé par un autre modèle du MÊME
 palier (le loot de la zone ne change pas de niveau), d'abord là où il y a une incohérence (2 cuisinières, 2 frigos,
 prop d'extérieur dans une maison...), puis pour que chaque modèle ait son minimum de places (8 en T1, 6 en T2, 4 en T3
@@ -678,6 +681,27 @@ propriétaire : workflow « Props de la carte » sur cette branche (essai à bla
 panel, étapes, lots, pause ; « annuler » rejoue le journal). Chaque commande est `execute if block <état relevé> … run
 setblock …` (cases en plus d'un gros conteneur : `if block … minecraft:air`) : un prop changé entre-temps par les
 constructeurs n'est pas touché ; HeraliZ Loot retire et repose seul les blocs « partie ». Rien testé en jeu.
+**Familles vivres / soins / munitions** (24/10, demande du propriétaire : « on en croise très très peu ») : sur la copie
+v3, 181 conteneurs de familles pour 27 954 conteneurs T1 à T6 (0,65 pour 100 ; une quarantaine remplis à la fois sur
+toute la carte). Étape **`familles`**, seulement avec l'option `--familles` (« props_options ») : conteneurs de familles
+posés sur des cases libres (mêmes règles que les ajouts : dos au mur dans une pièce qui leur va, ou dehors, jamais
+devant une porte ni dans un passage), nombre par lieu pour 100 conteneurs T1 à T6 du lieu, ceux déjà posés compris
+(`FAMILLES_POUR_100` de `outils/props_plan.py` : vivres 3, soins 3, munitions 2 ; lieux de niveau 4 et plus : 2 / 3,5 /
+5 ; `FAMILLES_POUR_100_LIEU` pour un lieu à part), au **niveau du lieu** (palier le plus haut qui fait au moins 5 % de
+ses conteneurs, `NIVEAU_LIEU` pour le forcer : aérodrome 6) : moitié à ce niveau, le reste un ou deux en dessous,
+ramené au plus haut modèle de la famille (soins 3, vivres 4, munitions 6 : l'aérodrome a surtout des munitions 6, soins
+3, vivres 4). Pièces en plus du catalogue pour cette étape seulement (`FAMILLES_PIECES_EN_PLUS` : soins dans les
+chambres, entrées, bureaux…, munitions dans les garages, caves…). Au plus un par pièce (deux dans une pièce de 40 cases
+et plus), 4 blocs entre deux, jamais dans une salle à carte (boîtes lues dans `heraliz_loot_rotation.dat` et
+`heralisz_bunker_salles.dat`, copiés en lecture seule), toujours à 60 blocs au plus d'une zone de loot de LEUR niveau
+(le chiffre du nom : soins2 = niveau 2) : HeraliZ Loot l'y range tout seul (zones par niveau, pas par famille) et il
+tourne avec elle, à la part d'actifs de la zone. Parts **inchangées** par défaut : le loot T1 à T6 de la zone ne baisse
+pas, les familles s'ajoutent (`--familles-compenser` : même nombre total de conteneurs remplis). Sur la copie v3 : 2 107
+posés (777 soins, 732 vivres, 598 munitions ; 8,2 pour 100 avec ceux d'avant), remplis à la fois en moyenne 35 avant,
+environ 400 après ; rapport par lieu et par famille dans `plan.md`. Pour le jouer : « Inventaire de la carte » sur
+une branche de travail, case « props », « props_options » `--familles`, puis, après validation, « Props de la carte »
+sur cette branche, « etapes » `familles` (ou `diversification,familles`), essai à blanc d'abord. Corrigé en passant : la compensation des ajouts
+oubliait le facteur du niveau (`facteurs_actifs`) dans la part posée par commande. Rien testé en jeu.
 
 **Extractions de la carte** (`.github/workflows/extractions.yml`, « Run workflow » ou envoi sur une branche de travail qui
 touche le workflow ou `outils/extractions_carte.py`) : LECTURE SEULE sur le Ptero (registre
