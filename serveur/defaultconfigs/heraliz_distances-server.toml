@@ -1,0 +1,7 @@
+# Distances du serveur imposées par HeraliZ Utils (le server.properties du Ptero n'est pas mis à jour par la mise en
+# ligne, ce fichier l'est). 0 = la valeur du server.properties.
+[distances]
+	# Distance de vue, en tronçons de 16 blocs (server.properties : 15). 12 = 192 blocs.
+	vue = 12
+	# Distance de simulation, en tronçons (server.properties : 5).
+	simulation = 0

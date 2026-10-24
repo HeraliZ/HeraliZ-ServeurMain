@@ -89,7 +89,7 @@ public final class SpawnZombiesServeur {
     @SubscribeEvent
     public static void apparition(MobSpawnEvent.FinalizeSpawn e) {
         Mob m = e.getEntity();
-        if (m instanceof ZombieSurvie || !ZombiesConfig.ACTIF.get()) return;
+        if (e.isSpawnCancelled() || m instanceof ZombieSurvie || !ZombiesConfig.ACTIF.get()) return;   // refusé avant (PlafondZombies)
         switch (e.getSpawnType()) {
             case NATURAL, CHUNK_GENERATION, REINFORCEMENT, PATROL -> {
             }

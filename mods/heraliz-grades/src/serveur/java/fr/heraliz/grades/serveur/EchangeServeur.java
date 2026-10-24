@@ -186,6 +186,26 @@ public final class EchangeServeur {
         return Component.translatableWithFallback("message.heraliz_grades.trade." + cle, fr, args);
     }
 
+    private static java.lang.reflect.Method sauverJoueur;
+
+    /**
+     * Sauvegarde tout de suite les joueurs de l'échange seulement ({@code PlayerList.save}, protégée : par réflexion SRG
+     * m_6765_, comme les coffres de match). Avant : tous les joueurs connectés (50 fichiers écrits d'un coup à chaque
+     * échange : à-coup du serveur). En cas d'échec : tous, comme avant.
+     */
+    private static void sauverJoueurs(ServerPlayer... joueurs) {
+        try {
+            if (sauverJoueur == null) {
+                sauverJoueur = net.minecraftforge.fml.util.ObfuscationReflectionHelper.findMethod(net.minecraft.server.players.PlayerList.class,
+                        "m_6765_", ServerPlayer.class);
+            }
+            for (ServerPlayer j : joueurs) if (j != null) sauverJoueur.invoke(serveur.getPlayerList(), j);
+        } catch (Exception e) {
+            LOG.warn("[grades] sauvegarde ciblée impossible, sauvegarde de tous les joueurs : {}", e.toString());
+            serveur.getPlayerList().saveAll();
+        }
+    }
+
     private static ServerPlayer joueur(UUID u) {
         return serveur == null ? null : serveur.getPlayerList().getPlayer(u);
     }
@@ -443,7 +463,7 @@ public final class EchangeServeur {
             return;
         }
         // les sauvegardes des joueurs sans les objets, puis le dépôt devient la seule trace (pas de copie après un plantage)
-        serveur.getPlayerList().saveAll();
+        sauverJoueurs(pa, pb);
         v.etat = "envoye";
         v.envoyeA = System.currentTimeMillis();
         sauver();
@@ -630,7 +650,7 @@ public final class EchangeServeur {
             }
         }
         p.inventoryMenu.broadcastChanges();
-        serveur.getPlayerList().saveAll();
+        sauverJoueurs(p);
         BoutiqueServeur.journal("trade : objets remis à " + p.getGameProfile().getName() + " : " + aDonner);
         p.sendSystemMessage(msg("livre", "Les objets d'un échange t'ont été remis.").withStyle(ChatFormatting.GREEN));
         if (reste) p.sendSystemMessage(msg("place", "Des objets d'un échange t'attendent : libère des cases dans ton inventaire.").withStyle(ChatFormatting.YELLOW));
@@ -676,7 +696,7 @@ public final class EchangeServeur {
         List<ItemStack> versB = retirer(s.a, pa), versA = retirer(s.b, pb);
         donner(pa, versA);
         donner(pb, versB);
-        serveur.getPlayerList().saveAll();
+        sauverJoueurs(pa, pb);
         String recu = v == null ? "" : " ; " + v.de + " -> " + v.vers + " " + v.montant + " PB (reçu " + v.recu + ")";
         BoutiqueServeur.journal("trade " + s.a.nom + " <-> " + s.b.nom + " : " + resume(versB) + " <-> " + resume(versA) + recu);
         s.phase = 3;

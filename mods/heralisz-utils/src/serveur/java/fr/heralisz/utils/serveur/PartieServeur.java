@@ -42,5 +42,6 @@ public final class PartieServeur implements Partie {
         fr.heralisz.utils.coffres.CoffresPersonnels.init();      // planque et coffre VIP (coffres-forts du mod de meubles)
         fr.heralisz.utils.inspecter.Inspecter.init();            // /inspecter (op) : inventaire, sac, coffres, base
         fr.heralisz.utils.bots.Bots.init();                      // /bots (op 4) : faux joueurs pour éprouver le serveur
+        DistanceVue.init();                                      // distance de vue du serveur (heraliz_distances-server.toml)
     }
 }

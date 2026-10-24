@@ -13,6 +13,7 @@ public final class ZombiesConfig {
     public static final ForgeConfigSpec.BooleanValue ACTIF;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ARCTIQUE, PRISON, MILITAIRE, CONTAMINEES, REMPLACES, MUTANTS, INTERDITS;
     public static final ForgeConfigSpec.DoubleValue PART_HAZMAT;
+    public static final ForgeConfigSpec.IntValue PLAFOND_CARTE, PLAFOND_LOCAL;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -38,6 +39,13 @@ public final class ZombiesConfig {
                 .defineListAllowEmpty("villes_contaminees", List.of("gaz", "radio"), o -> o instanceof String);
         PART_HAZMAT = b.comment("Part de hazmat dans une zone contaminee (le reste : zombies de ville).")
                 .defineInRange("part_hazmat", 0.75, 0.0, 1.0);
+        PLAFOND_CARTE = b.comment("Monstres au plus sur toute la carte (24/10, pour 50 joueurs : le serveur ralentit au-dela) ;",
+                        "au-dela, plus aucune apparition naturelle de monstre sur la carte. 0 : pas de plafond.",
+                        "Vagues des drapeaux, /summon et oeufs : jamais concernes.")
+                .defineInRange("plafond_carte", 1500, 0, 100000);
+        PLAFOND_LOCAL = b.comment("Monstres au plus dans un carre de 5 x 5 troncons (80 blocs) autour du point d'apparition ;",
+                        "au-dela, pas d'apparition naturelle ici (plusieurs joueurs au meme endroit n'empilent plus les hordes). 0 : pas de plafond.")
+                .defineInRange("plafond_local", 0, 0, 10000);
         b.pop();
         SPEC = b.build();
     }

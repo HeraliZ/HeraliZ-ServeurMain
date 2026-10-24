@@ -91,6 +91,7 @@ public final class Saison {
 
     @SubscribeEvent
     public static void onStop(ServerStoppingEvent e) {
+        ecrireJournal();
         sauvegarder();
     }
 
@@ -113,6 +114,7 @@ public final class Saison {
     public static void onTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || dossier == null) return;
         if (++ticks % 20 != 0) return;
+        ecrireJournal();
         if (d.active && System.currentTimeMillis() >= d.fin) terminer("fin de la date prevue");
         if (ticks % 1200 == 0 && sale) sauvegarder();
     }
@@ -433,12 +435,23 @@ public final class Saison {
                 pts, s[0], s[1], s[2]));
     }
 
+    /** Lignes du journal pas encore ecrites : ecrites en une fois chaque seconde (avant : un fichier ouvert par point gagne). */
+    private static final StringBuilder JOURNAL_ATTENTE = new StringBuilder();
+
     private static void journal(String ligne) {
         if (dossier == null) return;
+        JOURNAL_ATTENTE.append(HEURE.format(Instant.now())).append(" | ").append(ligne).append('\n');
+        if (JOURNAL_ATTENTE.length() > 65536) ecrireJournal();
+    }
+
+    private static void ecrireJournal() {
+        if (JOURNAL_ATTENTE.length() == 0 || dossier == null) return;
+        String bloc = JOURNAL_ATTENTE.toString();
+        JOURNAL_ATTENTE.setLength(0);
         try {
             Files.createDirectories(dossier);
-            Files.writeString(dossier.resolve("saison_journal.log"), HEURE.format(Instant.now()) + " | " + ligne + "\n",
-                    StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.writeString(dossier.resolve("saison_journal.log"), bloc, StandardCharsets.UTF_8, StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND);
         } catch (IOException e) {
             HeraliszClans.LOG.warn("[saison] journal impossible a ecrire : {}", e.toString());
         }
@@ -448,6 +461,7 @@ public final class Saison {
     public static List<String> journalDe(String tag, int n) {
         List<String> l = new ArrayList<>();
         if (dossier == null) return l;
+        ecrireJournal();
         Path f = dossier.resolve("saison_journal.log");
         if (!Files.exists(f)) return l;
         try {
