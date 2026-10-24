@@ -188,6 +188,8 @@ public final class Saison {
      */
     public static void kill(ServerPlayer tueur, ServerPlayer victime) {
         if (!d.active || tueur == victime) return;
+        // bots de charge (/bots de HeraliZ Utils) : jamais de points
+        if (tueur.getTags().contains("heraliz_bot") || victime.getTags().contains("heraliz_bot")) return;
         ClanStore s = ClanStore.get();
         if (s == null) return;
         Clan ct = s.clanDe(tueur.getUUID()), cv = s.clanDe(victime.getUUID());

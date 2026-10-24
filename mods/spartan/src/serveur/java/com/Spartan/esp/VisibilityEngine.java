@@ -266,6 +266,8 @@ public final class VisibilityEngine {
             LongArrayList changes = CHANGES.get(level);
             int n = players.size();
             for (int i = 0; i < n; i++) {
+                // bots de charge (/bots) : pas observateurs (aucun écran), seulement cibles
+                if (players.get(i).getTags().contains("heraliz_bot")) continue;
                 Snap o = SNAPS.get(players.get(i).getId());
                 for (int j = 0; j < n; j++) {
                     Snap t = SNAPS.get(players.get(j).getId());

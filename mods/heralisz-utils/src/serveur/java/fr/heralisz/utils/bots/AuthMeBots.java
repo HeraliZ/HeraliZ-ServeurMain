@@ -19,7 +19,7 @@ final class AuthMeBots {
     }
 
     private static boolean cherche;
-    private static Object api;
+    private static Object api, plugin;
     private static Method getPlayer, estInscrit, forcerConnexion, forcerInscription;
 
     static void connecter(BotJoueur b) {
@@ -30,6 +30,14 @@ final class AuthMeBots {
         try {
             Object bp = getPlayer.invoke(null, b.getUUID());
             if (bp == null) return;
+            // tous les bots viennent de 127.0.0.1 : sans cette permission, AuthMe en refuse au-delà de 5 par adresse
+            for (Method m : bp.getClass().getMethods()) {
+                if (m.getName().equals("addAttachment") && m.getParameterCount() == 3 && m.getParameterTypes()[1] == String.class
+                        && m.getParameterTypes()[2] == boolean.class && m.getParameterTypes()[0].isInstance(plugin)) {
+                    m.invoke(bp, plugin, "authme.allowmultipleaccounts", true);
+                    break;
+                }
+            }
             boolean inscrit = Boolean.TRUE.equals(estInscrit.invoke(api, b.getGameProfile().getName()));
             if (inscrit) {
                 forcerConnexion.invoke(api, bp);
@@ -49,9 +57,10 @@ final class AuthMeBots {
             try {
                 Class<?> bukkit = Class.forName("org.bukkit.Bukkit", false, cl);
                 Object pm = bukkit.getMethod("getPluginManager").invoke(null);
-                Object plugin = pm.getClass().getMethod("getPlugin", String.class).invoke(pm, "AuthMe");
-                if (plugin == null) return;
-                Class<?> c = Class.forName("fr.xephi.authme.api.v3.AuthMeApi", true, plugin.getClass().getClassLoader());
+                Object pl = pm.getClass().getMethod("getPlugin", String.class).invoke(pm, "AuthMe");
+                if (pl == null) return;
+                plugin = pl;
+                Class<?> c = Class.forName("fr.xephi.authme.api.v3.AuthMeApi", true, pl.getClass().getClassLoader());
                 Object instance = c.getMethod("getInstance").invoke(null);
                 if (instance == null) return;
                 getPlayer = bukkit.getMethod("getPlayer", UUID.class);

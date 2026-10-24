@@ -74,7 +74,7 @@ public final class AntiDupe {
         List<String> motifs = SpartanConfig.getAntidupeItems();
         DupeIndex idx = new DupeIndex();
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-            if (p instanceof FakePlayer || p.isCreative() || p.isSpectator() || p.hasDisconnected()) {
+            if (p instanceof FakePlayer || p.getTags().contains("heraliz_bot") || p.isCreative() || p.isSpectator() || p.hasDisconnected()) {
                 continue;
             }
             String nom = p.getName().getString();

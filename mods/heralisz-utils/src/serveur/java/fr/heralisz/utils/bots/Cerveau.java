@@ -47,6 +47,28 @@ final class Cerveau {
     private int lancer, lancerCase = -1, soin, fouille;
     private int prochGrenade, prochFumi, prochSoin, prochFouille, prochFrappe, prochLargage, prochRecharge;
     private boolean dessine;
+    private int aTerreTicks;
+
+    private static boolean reaCherche;
+    @Nullable
+    private static java.lang.reflect.Method estATerre;
+
+    private boolean aTerre() {
+        if (!reaCherche) {
+            reaCherche = true;
+            try {
+                estATerre = Class.forName("fr.heraliz.reanimation.core.Downed").getMethod("isDowned", net.minecraft.world.entity.Entity.class);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                estATerre = null;
+            }
+        }
+        if (estATerre == null) return false;
+        try {
+            return Boolean.TRUE.equals(estATerre.invoke(null, bot));
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            return false;
+        }
+    }
 
     Cerveau(BotJoueur bot) {
         this.bot = bot;
@@ -67,6 +89,13 @@ final class Cerveau {
         bot.zza = 0;
         bot.xxa = 0;
         bot.setJumping(false);
+        // à terre (Réanimation) : ne fait plus rien ; personne ne le relève : achevé au bout de 30 s
+        if (aTerre()) {
+            bot.setSprinting(false);
+            if (++aTerreTicks > 600) bot.hurt(bot.damageSources().genericKill(), Float.MAX_VALUE);
+            return;
+        }
+        aTerreTicks = 0;
 
         if (!dessine) {
             tenir(CASE_ARME);

@@ -214,6 +214,7 @@ final class WipeServeur {
 
     /** À la connexion : joueur pas encore remis à zéro depuis le dernier {@code /wipe tout}. */
     static void connexion(ServerPlayer p) {
+        if (p.getTags().contains("heraliz_bot")) return;   // bots de charge (/bots de HeraliZ Utils)
         if (Etat.lire(p.server).joueurs.contains(p.getUUID())) FILE.put(p.getUUID(), ticks + 40);
     }
 

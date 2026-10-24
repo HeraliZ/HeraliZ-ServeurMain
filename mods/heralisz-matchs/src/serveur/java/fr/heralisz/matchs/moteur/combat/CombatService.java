@@ -168,6 +168,11 @@ public final class CombatService {
      */
     public static boolean surDeconnexion(ServerPlayer p) {
         UUID u = p.getUUID();
+        if (p.getTags().contains("heraliz_bot")) {   // bots de charge (/bots de HeraliZ Utils) : retirés sans mourir
+            CombatTag.effacer(u);
+            p.getPersistentData().remove(CombatTag.CLE_JUSQUA);
+            return false;
+        }
         long reste = CombatTag.restantMs(u);
         ENVOI.remove(u);
         A_RENVOYER.remove(u);

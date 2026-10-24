@@ -2139,6 +2139,28 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   pastilles, boutons, champ de saisie, touche « Échap », filtres, catégories, tuiles, matériaux ; kit commun de l'Atelier
   (onglets Accessoires, Camo, Personnaliser, Registre de l'armurier : ils en profitent). Le script contrôle aussi
   l'encre réelle de chaque texte centré (écart haut / bas et gauche / droite d'au plus 1 point d'écran, échelles 2 et 3).
+- **Bots de charge** (24/10, Utils 2.24.0, Spartan 2.7.9, Matchs 0.15.2, Clans 3.6.5, Quêtes 1.10.5, demande du propriétaire ;
+  jamais essayés en jeu ni compilés ici : contrôle de branche) : `/bots` (op 4 ou console, `fr.heralisz.utils.bots`,
+  serveur seulement) : de vrais `ServerPlayer` (`BotJoueur`, canal réseau factice qui jette tout, comme les bots du banc
+  des duels) nommés `HzBot001` à `HzBot200`, étiquette d'entité `heraliz_bot` (`Bots.TAG`). `lancer <nombre> [rayon]`
+  autour de l'endroit d'où on tape (`/execute positioned X Y Z run bots lancer ...` depuis la console), `retirer [nom]`,
+  `etat` (bots, ms par tick et TPS, mémoire, entités, tirs / lancers / soins / fouilles / frappes / largages / morts depuis
+  la dernière lecture, aussi dans le journal), `action <tir|grenades|fumigenes|soins|frappes|largages|fouille|course|
+  reapparition> <true|false>`, `joueurs <true|false>` (tirer aussi sur les vrais joueurs en survie, non par défaut),
+  `frappes <max>` (frappes et largages en cours sur tout le serveur, 6 par défaut). Réglages en mémoire seulement.
+  Cerveau (`Cerveau`) : erre et court dans son rayon, saute devant un obstacle, cible le plus proche en vue à 48 blocs
+  (autre bot, monstre), tire par l'API de TaCZ avec une erreur de visée, recharge, se décale ; grenade M67 ou flash
+  (8 à 28 blocs), fumigène blessé, soin sous 45 % (objets tenus et lancés comme un clic droit) ; ouvre les conteneurs de
+  HeraliZ Loot proches ; frappe aérienne toutes les 4 à 9 min et largage toutes les 6 à 12 min par bot (HeraliZ
+  Airstrike par réflexion, `StrikeManager.launch`). Kit (`Kit`) : arme Commun à Épique de `raretes.json`, boîte de
+  munitions TaCZ `AllTypeCreative` (rechargement normal, balles sans fin), 3 M67, 2 flashs, 2 fumigènes, 3 soins. AuthMe :
+  inscription forcée à un mot de passe tiré au hasard puis connexion forcée, permission `authme.allowmultipleaccounts`
+  posée sur eux (tous en 127.0.0.1). Mort : cadavre normal, bot recréé 10 s après ; à terre (Réanimation) il ne fait plus
+  rien et meurt au bout de 30 s. Sauvegardes du bot (joueur, stats, progrès) effacées à son départ ; tous retirés à
+  l'arrêt du serveur. Ignorés par : Spartan (`isFake`, anti-duplication, observateurs de l'anti-ESP), la cinématique
+  d'arrivée et le réveil au spawn, la mort à la déconnexion en combat, les points de saison, le `/wipe` à la connexion.
+  Ce n'est pas une charge réseau : les bots n'envoient ni ne reçoivent rien ; restent par bot : une entrée dans le tab,
+  les comptes d'hérals, les quêtes (`heraliz_quetes/joueurs/`), les messages « a rejoint / a quitté ».
 - **Site et comptes HeraliZ (Azuriom)** : VM du site en place (heraliz.fr, section 8 bis), pack du launcher servi par
   le site (section 8), thème HeraliZ avec Boutique et Votes (choix « theme »). Reste au propriétaire, dans
   l'administration du site : moyens de paiement (Boutique → Paiements), articles et prix (les grades sont prêts, sans

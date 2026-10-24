@@ -120,7 +120,8 @@ public final class CineReseauServeur {
 
     /** Mort sans lit ni ancre : on se réveille au spawn (dans son monde à part), sans la cinématique. */
     private static void reapparition(PlayerEvent.PlayerRespawnEvent e) {
-        if (e.isEndConquered() || !(e.getEntity() instanceof ServerPlayer sp) || sp.getRespawnPosition() != null) {
+        if (e.isEndConquered() || !(e.getEntity() instanceof ServerPlayer sp) || sp.getRespawnPosition() != null
+                || sp.getTags().contains(fr.heralisz.utils.bots.Bots.TAG)) {
             return;
         }
         if (decorPresent(sp.server)) {
@@ -138,6 +139,11 @@ public final class CineReseauServeur {
 
     private static void connexion(PlayerEvent.PlayerLoggedInEvent e) {
         if (e.getEntity() instanceof ServerPlayer sp) {
+            if (fr.heralisz.utils.bots.Bots.estBot(sp)) {         // bots de charge : ni cinématique ni monde du spawn
+                donnees(sp).putBoolean(VUE, true);
+                donnees(sp).putBoolean(FINIE, true);
+                return;
+            }
             envoyer(sp.server, sp);
             if (!donnees(sp).getBoolean(VUE)) {
                 if (decorPresent(sp.server)) {

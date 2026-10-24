@@ -335,6 +335,7 @@ public final class Bots {
             PLACES.put(id, place);
             BOTS.put(nom, b);
             s.getPlayerList().placeNewPlayer(c, b);
+            b.addTag(TAG);   // une sauvegarde chargée remplace les étiquettes
             A_PREPARER.put(id, 60);
             return b;
         } catch (ReflectiveOperationException | RuntimeException ex) {
