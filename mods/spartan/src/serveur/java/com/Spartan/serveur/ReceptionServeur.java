@@ -59,9 +59,12 @@ public final class ReceptionServeur {
                     return;
                 }
             }
-            if (p instanceof TestPacket || p instanceof ModsPacket || p instanceof ResourcePackPacket || p instanceof BuildPacket) {
+            // paquets d'arrivée (envoyés une seule fois, avant le /login) : traités après la vérification ; les appuis de
+            // touches d'avant ne comptent pas
+            if (p instanceof TestPacket || p instanceof ModsPacket || p instanceof ResourcePackPacket || p instanceof BuildPacket
+                    || (p instanceof ClientReportPacket c1 && !c1.type().equals("touche"))) {
                 java.util.List<Object> l = ATTENTE.computeIfAbsent(player.getUUID(), u -> new java.util.ArrayList<>());
-                if (l.size() < 8) l.add(p);
+                if (l.size() < 16) l.add(p);
             }
             return;
         }

@@ -163,7 +163,7 @@ public final class PorteJoueurs {
                 UUID u = uuid;
                 if (!jetonExige() || (u != null && JETON_OK.contains(u) && chats.isEmpty())) {
                     ctx.fireChannelRead(msg);
-                } else if (chats.size() < 32) {
+                } else if (chats.size() < 8) {   // relâchés d'un coup : au-delà, l'anti-spam de Minecraft expulserait
                     chats.add(msg);
                     chatsEnAttente = true;
                 }

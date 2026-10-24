@@ -390,8 +390,9 @@
 #envoie ici. Seuls les noms de la liste du launcher trouvés arrivent, jamais la liste des programmes.
 #Toujours des ALERTES au staff (« Gardien », « Gardien muet »), jamais d'expulsion, sauf required.
 [gardien]
-	#Active le Gardien.
-	enabled = true
+	#Active le Gardien. Coupé tant que le launcher 1.14 (Gardien) n'est pas publié chez les joueurs : sinon chaque
+	#joueur au launcher plus ancien donne une alerte. À remettre à true juste après la publication du launcher.
+	enabled = false
 	#true : connexion REFUSÉE si le jeu a été lancé sans le Gardien (launcher plus ancien que 1.14.0,
 	#autre lanceur). Activer une fois le nouveau launcher distribué à tous les joueurs.
 	required = false
