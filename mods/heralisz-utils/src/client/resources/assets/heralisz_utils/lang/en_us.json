@@ -374,5 +374,12 @@
   "heralisz_utils.inspecter.l_vip6": "VIP chest: the next 54 slots (6 rows)",
   "heralisz_utils.inspecter.l_ender27": "Ender chest: the last 27 slots",
   "heralisz_utils.coffre.vip_refus2": "Chest reserved for some ranks.",
-  "heralisz_utils.coffre.case_verrouillee": "Locked slot"
+  "heralisz_utils.coffre.case_verrouillee": "Locked slot",
+  "heralisz_utils.bots.lances": "%s bot(s) started (%s in total, radius %s).",
+  "heralisz_utils.bots.retires": "%s bot(s) removed.",
+  "heralisz_utils.bots.reglage": "Bot setting: %s = %s",
+  "heralisz_utils.bots.action_inconnue": "Unknown action: %s",
+  "heralisz_utils.bots.etat1": "Bots: %s (%s alive), players online: %s, entities: %s",
+  "heralisz_utils.bots.etat2": "Server: %s ms per tick (%s TPS), memory %s / %s MB",
+  "heralisz_utils.bots.etat3": "In %s s: %s shots, %s throws, %s heals, %s searches, %s strikes, %s supply drops, %s deaths"
 }

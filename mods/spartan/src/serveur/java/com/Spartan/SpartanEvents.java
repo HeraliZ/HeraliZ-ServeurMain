@@ -243,7 +243,8 @@ public class SpartanEvents {
      * elles frappent et cassent des blocs à des cadences de machine. Ignorées.
      */
     private static boolean isFake(ServerPlayer player) {
-        return player instanceof FakePlayer;
+        // bots de charge de HeraliZ Utils (/bots) : aucun jeu derrière, rien à contrôler
+        return player instanceof FakePlayer || player.getTags().contains("heraliz_bot");
     }
 
     @SubscribeEvent
