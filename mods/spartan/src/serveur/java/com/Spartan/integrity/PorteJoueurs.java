@@ -68,6 +68,11 @@ public final class PorteJoueurs {
         return SpartanConfig.LAUNCHER_TOKEN_REQUIRED.get() && !SpartanConfig.secret(SpartanConfig.LAUNCHER_SECRET).isBlank();
     }
 
+    /** Joueur vérifié (jeton + /login) : avant, ses paquets Spartan (alertes, captures, rapports) ne sont pas crus. */
+    public static boolean estVerifie(UUID uuid) {
+        return VERIFIES.contains(uuid);
+    }
+
     private static boolean verifie(ServerPlayer p) {
         return (!jetonExige() || JETON_OK.contains(p.getUUID())) && AuthMe.connecte(p);
     }
@@ -79,6 +84,8 @@ public final class PorteJoueurs {
             UUID id = p.getUUID();
             boolean deja = VERIFIES.contains(id);
             if (deja && !tous) continue;
+            Filtre fc = FILTRES.get(id);
+            if (fc != null && fc.chatsEnAttente && (!jetonExige() || JETON_OK.contains(id))) fc.relacherChats();
             boolean ok = verifie(p);
             if (ok && !deja) {
                 VERIFIES.add(id);
@@ -143,8 +150,25 @@ public final class PorteJoueurs {
             this.ctx = ctx;
         }
 
+        /** Chat et commandes (/register, /login compris) retenus tant que le jeton n'est pas accepté (24/10). */
+        private final ArrayDeque<Object> chats = new ArrayDeque<>();
+        volatile boolean chatsEnAttente;
+
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
+            if (msg instanceof net.minecraft.network.protocol.game.ServerboundChatCommandPacket
+                    || msg instanceof net.minecraft.network.protocol.game.ServerboundChatPacket) {
+                // sans jeton, ni chat ni commande : un jeu lancé hors du launcher sous le pseudo d'un autre ne doit pas
+                // pouvoir s'inscrire sur AuthMe à sa place, ni agir pendant les secondes qui précèdent l'expulsion
+                UUID u = uuid;
+                if (!jetonExige() || (u != null && JETON_OK.contains(u) && chats.isEmpty())) {
+                    ctx.fireChannelRead(msg);
+                } else if (chats.size() < 32) {
+                    chats.add(msg);
+                    chatsEnAttente = true;
+                }
+                return;
+            }
             if (!(msg instanceof ServerboundCustomPayloadPacket p)) {
                 ctx.fireChannelRead(msg);
                 return;
@@ -200,6 +224,18 @@ public final class PorteJoueurs {
             octets = 0;
         }
 
+        /** Fil du serveur : jeton accepté, le chat et les commandes retenus repartent dans l'ordre (fil réseau). */
+        void relacherChats() {
+            chatsEnAttente = false;
+            if (canal.isActive()) {
+                canal.eventLoop().execute(() -> {
+                    if (ctx == null) return;
+                    Object m;
+                    while ((m = chats.poll()) != null) ctx.fireChannelRead(m);
+                });
+            }
+        }
+
         /** Appelé par le fil du serveur : le travail se fait sur le fil réseau de la connexion. */
         void relacher() {
             if (canal.isActive()) canal.eventLoop().execute(this::envoyer);
@@ -217,6 +253,7 @@ public final class PorteJoueurs {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             retenus.clear();
+            chats.clear();
             if (uuid != null) FILTRES.remove(uuid, this);
             super.channelInactive(ctx);
         }

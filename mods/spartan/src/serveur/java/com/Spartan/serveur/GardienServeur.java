@@ -97,6 +97,10 @@ public final class GardienServeur {
             return;
         }
         if (!detail.startsWith("ok;")) {
+            // un jeu honnête n'envoie jamais autre chose : sans ça, un texte quelconque évitait aussi « Gardien muet »
+            if (e.invalides.add("format")) {
+                CheckManager.flag("Gardien", player, "rapport du Gardien illisible : jeu modifié ?");
+            }
             return;
         }
         e.muet = false;
@@ -108,9 +112,12 @@ public final class GardienServeur {
         } catch (NumberFormatException ex) {
             jars = 0;
         }
+        // tous les faits nouveaux d'un rapport en UNE alerte (deux alertes du même joueur à moins de 5 s : la 2e était
+        // avalée alors que son fait était déjà noté, donc plus jamais signalé)
+        List<String> faits = new ArrayList<>();
         if ("impossible".equals(lecture) && !e.lectureSignalee) {
             e.lectureSignalee = true;
-            CheckManager.flag("Gardien", player, "le launcher n'arrive pas à lister les programmes du PC (indice faible)");
+            faits.add("le launcher n'arrive pas à lister les programmes du PC (indice faible)");
         }
         List<String> nouveaux = new ArrayList<>();
         List<String> ignores = SpartanConfig.getGardienIgnoredTools();
@@ -123,13 +130,15 @@ public final class GardienServeur {
             }
         }
         if (!nouveaux.isEmpty()) {
-            CheckManager.flag("Gardien", player, "programme de triche ou d'injection ouvert sur le PC : "
-                    + String.join(", ", nouveaux));
+            faits.add("programme de triche ou d'injection ouvert sur le PC : " + String.join(", ", nouveaux));
             capture(player, "programme de triche ouvert (" + String.join(", ", nouveaux) + ")");
         }
         if (jars > e.jars) {
             e.jars = jars;
-            CheckManager.flag("Gardien", player, jars + " jar(s) du jeu changé(s), ajouté(s) ou retiré(s) pendant la partie");
+            faits.add(jars + " jar(s) du jeu changé(s), ajouté(s) ou retiré(s) pendant la partie");
+        }
+        if (!faits.isEmpty()) {
+            CheckManager.flag("Gardien", player, String.join(" ; ", faits));
         }
     }
 
@@ -142,6 +151,10 @@ public final class GardienServeur {
         long silence = SpartanConfig.GARDIEN_SILENCE_SECONDS.get() * 1000L;
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             if (fictif(p)) {
+                continue;
+            }
+            if (!com.Spartan.integrity.PorteJoueurs.estVerifie(p.getUUID())) {
+                ETATS.remove(p.getUUID()); // rapports pas encore crus (ReceptionServeur) : le silence compte après le /login
                 continue;
             }
             Etat e = ETATS.computeIfAbsent(p.getUUID(), u -> new Etat());

@@ -26,6 +26,15 @@ test('les options d’injection du joueur sont retirées, les autres gardées', 
     assert.deepStrictEqual(optionsSures(joueur), ['-XX:+UseG1GC', '-Dfml.earlyprogresswindow=false', '-Xss2M'])
 })
 
+test('liste blanche : ni fichier d\'options, ni module, ni bibliothèque, ni option inconnue', () => {
+    const joueur = ['@C:\\x\\args.txt', '--patch-module', 'java.base=x.jar', '-XX:VMOptionsFile=args.txt',
+        '-Djava.library.path=C:/x', '-Dorg.lwjgl.librarypath=C:/x', '-XX:-BytecodeVerificationRemote', '-Xmx6G',
+        '-XX:+UnlockExperimentalVMOptions', '-XX:+UseG1GC', '-XX:G1NewSizePercent=20', '-XX:MaxGCPauseMillis=50',
+        '-XX:G1HeapRegionSize=32M', '-Dfile.encoding=UTF-8']
+    assert.deepStrictEqual(optionsSures(joueur), ['-Xmx6G', '-XX:+UnlockExperimentalVMOptions', '-XX:+UseG1GC',
+        '-XX:G1NewSizePercent=20', '-XX:MaxGCPauseMillis=50', '-XX:G1HeapRegionSize=32M', '-Dfile.encoding=UTF-8'])
+})
+
 test('des options absentes ou invalides ne cassent pas le lancement', () => {
     assert.deepStrictEqual(optionsSures(undefined), [])
     assert.deepStrictEqual(optionsSures(['-Xmx4G', 42, null]), ['-Xmx4G'])

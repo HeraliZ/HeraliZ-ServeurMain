@@ -39,11 +39,14 @@ public final class HandshakeMonitor {
         boolean buildNeeded = SpartanConfig.CHECK_CHALLENGE.get() || SpartanConfig.CHECK_BUILD.get();
         boolean launchNeeded = !SpartanConfig.secret(SpartanConfig.LAUNCHER_SECRET).isEmpty();
         boolean captureNeeded = SpartanConfig.CAPTURE_REQUIRED.get();
-        if (PacketGuard.hasSeen(uuid, "mods")
-                && (!buildNeeded || PacketGuard.hasSeen(uuid, "build"))
+        // Avant la vérification (jeton + /login), la liste des mods et le numéro de version attendent (ReceptionServeur) :
+        // seuls le jeton et l'accord des captures sont exigés dans le délai. Après, tout est arrivé au tick suivant.
+        boolean verifie = com.Spartan.integrity.PorteJoueurs.estVerifie(uuid);
+        if ((!verifie || PacketGuard.hasSeen(uuid, "mods"))
+                && (!verifie || !buildNeeded || PacketGuard.hasSeen(uuid, "build"))
                 && (!launchNeeded || PacketGuard.hasSeen(uuid, "launch"))
                 && (!captureNeeded || CaptureManager.accordRecu(uuid))) {
-            PENDING.remove(uuid);
+            if (verifie) PENDING.remove(uuid);
             return;
         }
         int timeout = SpartanConfig.HANDSHAKE_TIMEOUT.get();

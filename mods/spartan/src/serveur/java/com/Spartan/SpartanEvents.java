@@ -217,6 +217,7 @@ public class SpartanEvents {
             return;
         }
         com.Spartan.integrity.PorteJoueurs.tick(event.getServer());
+        com.Spartan.serveur.ReceptionServeur.tick(event.getServer());
         // Gardien du launcher : joueurs dont les rapports ont cessé.
         com.Spartan.serveur.GardienServeur.tick(event.getServer());
         // Anti-ESP : lignes de vue entre joueurs, décisions d'envoi appliquées tout de suite.

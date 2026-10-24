@@ -376,6 +376,7 @@
   "heralisz_utils.coffre.vip_refus2": "Сундук только для некоторых рангов.",
   "heralisz_utils.coffre.case_verrouillee": "Закрытая ячейка",
   "heralisz_utils.bots.lances": "Запущено ботов: %s (всего %s, радиус %s).",
+  "heralisz_utils.bots.pseudo_reserve": "Этот ник зарезервирован сервером.",
   "heralisz_utils.bots.retires": "Удалено ботов: %s.",
   "heralisz_utils.bots.reglage": "Настройка ботов: %s = %s",
   "heralisz_utils.bots.action_inconnue": "Неизвестное действие: %s",

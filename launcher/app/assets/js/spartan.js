@@ -41,6 +41,19 @@ const DANGEREUSES = [
     /^-Dspartan\./i
 ]
 
+// options Java permises au joueur (liste blanche, 24/10) : mémoire, ramasse-miettes, réglages de Forge. Tout le reste est
+// retiré : une liste noire laissait passer « @fichier » (Java y lit d'autres options, -javaagent compris), --patch-module,
+// -XX:VMOptionsFile=, -Djava.library.path=...
+const PERMISES = [
+    /^-Xm[snx]\d+[kKmMgG]?$/,
+    /^-Xss\d+[kKmMgG]?$/,
+    /^-XX:[+-][A-Za-z0-9]+$/,
+    /^-XX:(G1[A-Za-z0-9]*|MaxGCPauseMillis|ParallelGCThreads|ConcGCThreads|SurvivorRatio|MaxTenuringThreshold|InitiatingHeapOccupancyPercent|NewRatio|NewSize|MaxNewSize|MetaspaceSize|MaxMetaspaceSize|ReservedCodeCacheSize|SoftRefLRUPolicyMSPerMB|CICompilerCount|TieredStopAtLevel|ShenandoahGCHeuristics|ZCollectionInterval|ZUncommitDelay)=[A-Za-z0-9.%_-]+$/,
+    /^-D(fml|forge|sun\.java2d)\.[A-Za-z0-9._-]+=[A-Za-z0-9._-]*$/,
+    /^-Dfile\.encoding=[A-Za-z0-9_-]+$/,
+    /^-Djava\.net\.preferIPv4Stack=(true|false)$/
+]
+
 const ARG_JETON = '-Dspartan.launchToken='
 const VAR_JETON = 'SPARTAN_LAUNCH_TOKEN'
 // accord du joueur pour les captures d'écran (fenêtre avant de jouer, accordCapture.js) : posé seulement par le launcher
@@ -65,7 +78,8 @@ function optionsSures(options) {
     if (!Array.isArray(options)) {
         return []
     }
-    return options.filter(o => typeof o === 'string' && !DANGEREUSES.some(re => re.test(o.trim())))
+    return options.filter(o => typeof o === 'string' && PERMISES.some(re => re.test(o.trim()))
+        && !DANGEREUSES.some(re => re.test(o.trim())) && !/BytecodeVerification/i.test(o))
 }
 
 // ------------------------------------------------------------------ jeton de lancement

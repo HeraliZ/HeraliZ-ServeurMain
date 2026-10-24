@@ -46,6 +46,29 @@ public final class ReceptionServeur {
             return;
         }
         Object p = r.paquet();
+        // Avant la vérification (jeton + /login), seul ce qui sert à se faire vérifier est traité tout de suite ; le reste
+        // attend la vérification (sinon un jeu lancé sous le pseudo d'un autre pouvait lui faire porter de fausses
+        // alertes, une fausse capture ou le PC d'un banni, 24/10). Rapports et morceaux de capture ou de contrôle non
+        // demandés : jetés.
+        if (!com.Spartan.integrity.PorteJoueurs.estVerifie(player.getUUID())
+                && !(p instanceof LaunchTokenPacket || (p instanceof ClientReportPacket c0 && c0.type().equals("capture")))) {
+            if (p instanceof TestPacket t) {
+                BanManager.BanRecord ban = BanManager.findActiveBySerial(t.message().trim());
+                if (ban != null) {
+                    player.connection.disconnect(BanManager.kickMessage(ban)); // un PC banni ne joue pas, vérifié ou non
+                    return;
+                }
+            }
+            if (p instanceof TestPacket || p instanceof ModsPacket || p instanceof ResourcePackPacket || p instanceof BuildPacket) {
+                java.util.List<Object> l = ATTENTE.computeIfAbsent(player.getUUID(), u -> new java.util.ArrayList<>());
+                if (l.size() < 8) l.add(p);
+            }
+            return;
+        }
+        traiter(player, p);
+    }
+
+    private static void traiter(ServerPlayer player, Object p) {
         if (p instanceof TestPacket t) {
             materiel(player, t);
         } else if (p instanceof BuildPacket b) {
@@ -82,6 +105,24 @@ public final class ReceptionServeur {
      *    secondaire : alerte au staff.</li>
      * </ul>
      */
+    /** Paquets d'arrivée (matériel, mods, packs) reçus avant la vérification : traités une fois le joueur vérifié. */
+    private static final java.util.Map<java.util.UUID, java.util.List<Object>> ATTENTE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** À chaque tick (rien à faire le plus souvent) : paquets en attente des joueurs maintenant vérifiés (fil du serveur). */
+    public static void tick(net.minecraft.server.MinecraftServer srv) {
+        if (ATTENTE.isEmpty()) return;
+        for (var it = ATTENTE.entrySet().iterator(); it.hasNext(); ) {
+            var en = it.next();
+            ServerPlayer p = srv.getPlayerList().getPlayer(en.getKey());
+            if (p == null || p.hasDisconnected()) {
+                it.remove();
+            } else if (com.Spartan.integrity.PorteJoueurs.estVerifie(p.getUUID())) {
+                it.remove();
+                for (Object paquet : en.getValue()) traiter(p, paquet);
+            }
+        }
+    }
+
     private static void materiel(ServerPlayer player, TestPacket t) {
         String serial = t.message().trim();
         String playerName = player.getName().getString();

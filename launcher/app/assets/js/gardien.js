@@ -28,14 +28,19 @@ const { execFile: execFileCb } = require('child_process')
 // décompilation (vol des jars). Un morceau seulement : « cheatengine-x86_64 » passe par « cheatengine ».
 const OUTILS = [
     'cheatengine', 'cheat engine', 'processhacker', 'systeminformer', 'x64dbg', 'x32dbg', 'ollydbg', 'ida64',
-    'reclass', 'extremeinjector', 'extreme injector', 'xenos', 'ghinjector', 'gh injector', 'injector', 'dllinjector',
+    'reclass', 'extremeinjector', 'extreme injector', 'xenos', 'ghinjector', 'gh injector', 'dllinjector',
     'recaf', 'jd-gui', 'bytecode-viewer', 'bytecodeviewer', 'jadx', 'luyten', 'httpdebugger', 'scylla', 'dnspy',
     'kdmapper', 'artmoney', 'squalr'
 ]
 // titres de fenêtre (Windows) : un programme renommé garde souvent son titre
-const TITRES = ['cheat engine', 'process hacker', 'system informer', 'x64dbg', 'x32dbg', 'ollydbg', 'reclass',
-    'extreme injector', 'xenos', 'gh injector', 'recaf', 'bytecode viewer', 'java decompiler', 'jadx', 'luyten',
+// (mots entiers seulement : « Reclassement.xlsx » ou un onglet « tuto Cheat Engine » d'un navigateur ne comptent pas, voir
+// outilsTrouves ; « reclass » et « xenos », trop courants dans un titre, ne sont cherchés que dans le nom de l'exécutable)
+const TITRES = ['cheat engine', 'process hacker', 'system informer', 'x64dbg', 'x32dbg', 'ollydbg',
+    'extreme injector', 'gh injector', 'recaf', 'bytecode viewer', 'java decompiler', 'jadx', 'luyten',
     'squalr', 'artmoney']
+// navigateurs et lecteurs : leur titre est celui de la page ou de la vidéo regardée, jamais un outil ouvert
+const SANS_TITRE = /^(chrome|msedge|firefox|opera|brave|vivaldi|discord|explorer|vlc|spotify|notepad|winword|excel)(\.exe)?$/i
+const TITRES_RE = TITRES.map(t => new RegExp('(^|[^a-z0-9])' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])'))
 
 const VERSION = 1
 const FICHIER = 'gardien.txt'
@@ -59,9 +64,10 @@ function outilsTrouves(noms, titres = []) {
         for (const o of OUTILS) if (nom.includes(o)) trouves.add(o)
     }
     for (const t of titres) {
-        const titre = String(t || '').toLowerCase()
+        const titre = String(t && typeof t === 'object' ? t.titre : t || '').toLowerCase()
+        if (t && typeof t === 'object' && SANS_TITRE.test(String(t.nom || ''))) continue
         if (!titre || titre === 'n/a') continue
-        for (const o of TITRES) if (titre.includes(o)) trouves.add(o)
+        TITRES.forEach((o, i) => { if (TITRES_RE[i].test(titre)) trouves.add(o) })
     }
     return [...trouves].filter(o => NOM_SUR.test(o)).sort()
 }
@@ -86,7 +92,7 @@ async function programmes(plateforme = process.platform) {
                 const c = champsCsv(ligne)
                 if (c.length < 2) continue
                 noms.push(c[0])
-                if (c.length >= 9) titres.push(c[c.length - 1])
+                if (c.length >= 9) titres.push({ nom: c[0], titre: c[c.length - 1] })
             }
             return { noms, titres }
         }

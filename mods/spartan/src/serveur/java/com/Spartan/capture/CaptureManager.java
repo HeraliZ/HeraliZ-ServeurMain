@@ -72,6 +72,9 @@ public final class CaptureManager {
 
     /** @return null si la demande est partie, sinon la raison du refus */
     public static String demander(ServerPlayer p, String raison) {
+        if (!com.Spartan.integrity.PorteJoueurs.estVerifie(p.getUUID())) {
+            return "le joueur n'est pas encore vérifié (jeton du launcher et /login)";
+        }
         if (!autorise(p)) {
             return "le joueur n'a pas autorisé les captures d'écran";
         }

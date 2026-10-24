@@ -194,7 +194,8 @@ public final class ScanManager {
             }
             return;
         }
-        if (now >= s.nextAt) {
+        if (now >= s.nextAt && com.Spartan.integrity.PorteJoueurs.estVerifie(p.getUUID())) {
+            // jamais avant la vérification : la réponse pourrait venir d'un jeu lancé sous le pseudo d'un autre
             send(p, s, s.scans == 0 ? "connexion" : "contrôle aléatoire");
         }
     }

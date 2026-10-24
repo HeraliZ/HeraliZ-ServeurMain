@@ -18,6 +18,10 @@ test('seuls les noms de la liste sont gardés, jamais les autres programmes', ()
     const titres = ['N/A', 'Mes documents', 'Cheat Engine 7.5', 'Recaf 4.0']
     assert.deepStrictEqual(outilsTrouves(noms, titres), ['cheat engine', 'cheatengine', 'recaf', 'x64dbg'])
     assert.deepStrictEqual(outilsTrouves(['chrome.exe', 'steam.exe'], ['YouTube']), [])
+    // mots entiers seulement, et jamais le titre d'un navigateur (page regardée)
+    assert.deepStrictEqual(outilsTrouves(['excel.exe'], ['Reclassement.xlsx - Excel', 'Cheat Engineering 101']), [])
+    assert.deepStrictEqual(outilsTrouves(['chrome.exe'], [{ nom: 'chrome.exe', titre: 'Tuto Cheat Engine - YouTube' }]), [])
+    assert.deepStrictEqual(outilsTrouves(['ce.exe'], [{ nom: 'ce.exe', titre: 'Cheat Engine 7.5' }]), ['cheat engine'])
 })
 
 test('lecture des lignes CSV de tasklist', () => {

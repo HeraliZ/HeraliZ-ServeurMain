@@ -91,6 +91,8 @@ public final class Bots {
         MinecraftForge.EVENT_BUS.addListener(Bots::tick);
         MinecraftForge.EVENT_BUS.addListener(Bots::mort);
         MinecraftForge.EVENT_BUS.addListener(Bots::arret);
+        MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.HIGHEST, Bots::connexion);
+        MinecraftForge.EVENT_BUS.addListener(Bots::etiquettes);
     }
 
     /** Vrai pour un bot de charge (lu aussi par réflexion par d'autres mods, comme l'étiquette). */
@@ -249,6 +251,28 @@ public final class Bots {
     }
 
     private static final Map<String, Place> RELANCE_PLACE = new LinkedHashMap<>();
+
+    /**
+     * Sécurité (24/10) : l'étiquette des bots exempte de l'anticheat et d'autres règles ; seul un vrai bot la garde. Un
+     * vrai joueur qui la porterait (/tag d'un staff, sauvegarde d'un bot restée après un plantage) la perd à la connexion
+     * et chaque seconde. Les pseudos des bots (HzBot001 à HzBot200) sont réservés : un vrai compte à ce nom serait écrasé
+     * par /bots (sauvegarde effacée, compte AuthMe pris).
+     */
+    private static void connexion(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || p instanceof BotJoueur) return;
+        p.removeTag(TAG);
+        if (p.getGameProfile().getName().matches("(?i)HzBot\\d{3}")) {
+            p.connection.disconnect(Component.translatableWithFallback("heralisz_utils.bots.pseudo_reserve",
+                    "Ce pseudo est réservé au serveur."));
+        }
+    }
+
+    private static void etiquettes(TickEvent.ServerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || e.getServer().getTickCount() % 20 != 3) return;
+        for (ServerPlayer p : e.getServer().getPlayerList().getPlayers()) {
+            if (!(p instanceof BotJoueur) && p.getTags().contains(TAG)) p.removeTag(TAG);
+        }
+    }
 
     private static void mort(LivingDeathEvent e) {
         if (!estBot(e.getEntity())) return;
