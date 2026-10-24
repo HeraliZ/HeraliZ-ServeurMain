@@ -399,5 +399,13 @@
   "heralisz_utils.diag.profil.tete": "En tête : %s",
   "heralisz_utils.diag.rapports.aucun": "Aucun rapport écrit depuis le démarrage.",
   "heralisz_utils.diag.rapports.liste": "Derniers rapports (dossier heraliz_diag) : %s",
-  "heralisz_utils.diag.essai": "Essai : le serveur s'arrête %s ms (le chien de garde doit écrire un rapport)."
+  "heralisz_utils.diag.essai": "Essai : le serveur s'arrête %s ms (le chien de garde doit écrire un rapport).",
+  "heralisz_utils.combat.titre": "EN COMBAT",
+  "heralisz_utils.combat.commande_refusee": "Impossible en combat · %s s",
+  "heralisz_utils.combat.commande_refusee_a_terre": "Impossible à terre.",
+  "heralisz_utils.combat.carte_commande_refusee": "Impossible sur la carte : seul /tpa marche ici.",
+  "heralisz_utils.combat.puni": "Vous vous êtes déconnecté en plein combat : votre personnage est mort et son corps est resté sur place.",
+  "heralisz_utils.combat.puni_a_terre": "Vous vous êtes déconnecté à terre : votre personnage est mort et son corps est resté sur place.",
+  "death.attack.heralisz_utils.deconnexion_combat": "%1$s a fui le combat en se déconnectant",
+  "death.attack.heralisz_utils.deconnexion_combat.player": "%1$s a fui le combat face à %2$s en se déconnectant"
 }

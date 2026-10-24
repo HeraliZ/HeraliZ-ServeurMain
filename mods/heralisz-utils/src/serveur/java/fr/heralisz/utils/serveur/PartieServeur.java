@@ -38,6 +38,7 @@ public final class PartieServeur implements Partie {
         fr.heralisz.utils.spawn.DepartServeur.init();               // borne de départ, monde du spawn, /depart
         TrainServeur.init(busMod);
         Suicide.init();
+        fr.heralisz.utils.combat.CombatServeur.init(busMod);      // tag de combat, déconnexion = mort, commandes permises (repris de Matchs)
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.SERVER,
                 fr.heralisz.utils.zombies.ZombiesConfig.SPEC, "heraliz_zombies-server.toml");   // zombies de la survie
         fr.heralisz.utils.coffres.CoffresPersonnels.init();      // planque et coffre VIP (coffres-forts du mod de meubles)

@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 
 /**
- * État d'un joueur lu dans les autres mods, par réflexion (chaque mod absent = « non ») : en combat (Matchs,
+ * État d'un joueur lu dans les autres mods, par réflexion (chaque mod absent = « non ») : en combat (Utils,
  * {@code CombatTag}), à terre (Réanimation), en match (Matchs), sur la carte (overworld), objet prêté par un match ou
  * objet à vie (Tactique). Sert au coffre du clan et à la création d'un clan (23/10, demande du propriétaire).
  */
@@ -19,7 +19,7 @@ final class EtatJoueur {
     /** Clé NBT des objets prêtés en match ({@code MatchApi.NBT_PRET}). */
     static final String NBT_PRET = "HeraliszMatch";
 
-    private static final Method COMBAT = methode("fr.heralisz.matchs.moteur.api.CombatTag", "restantMs", UUID.class);
+    private static final Method COMBAT = methode("fr.heralisz.utils.combat.CombatTag", "restantMs", UUID.class);
     private static final Method MATCH = methode("fr.heralisz.matchs.moteur.api.MatchApi", "enMatch", UUID.class);
     private static final Method A_TERRE = methode("fr.heraliz.reanimation.core.Downed", "isDowned", Entity.class);
     private static final Method A_VIE = methode("fr.heraliz.tactique.avie.ObjetsAVie", "estAVie", ItemStack.class);

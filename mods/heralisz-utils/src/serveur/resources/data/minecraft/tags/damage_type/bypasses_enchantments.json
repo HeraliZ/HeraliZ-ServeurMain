@@ -1,4 +1,4 @@
 {
   "replace": false,
-  "values": ["heralisz_utils:train"]
+  "values": ["heralisz_utils:train", "heralisz_utils:deconnexion_combat"]
 }

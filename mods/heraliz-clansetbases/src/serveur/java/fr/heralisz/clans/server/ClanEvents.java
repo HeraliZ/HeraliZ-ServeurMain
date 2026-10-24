@@ -214,12 +214,12 @@ public final class ClanEvents {
     /**
      * Morts sans auteur qui suivent une mise a terre ou une fuite : le kill revient au joueur credite par le jeu
      * ({@code getKillCredit}). Reanimation (mod de l'utilisateur) : saignement, abandon, deconnexion a terre ; il pose
-     * lui-meme le credit ({@code setLastHurtByPlayer}) sur celui qui a mis a terre juste avant de tuer. HeraliZ Matchs :
+     * lui-meme le credit ({@code setLastHurtByPlayer}) sur celui qui a mis a terre juste avant de tuer. HeraliZ Utils :
      * deconnexion en combat (le message de mort nomme deja ce joueur). L'execution ({@code reanimation:execution}) a un
      * auteur : le bourreau.
      */
     static final Set<String> MORTS_SANS_AUTEUR_CREDITEES = Set.of("reanimation:bleed_out", "reanimation:give_up",
-            "reanimation:disconnect", "heralisz_matchs:deconnexion_combat");
+            "reanimation:disconnect", "heralisz_utils:deconnexion_combat");
 
     /** Tueur a compter : l'auteur de la source, sinon le joueur credite pour les morts de {@link #MORTS_SANS_AUTEUR_CREDITEES}. */
     static Entity tueur(LivingDeathEvent e) {

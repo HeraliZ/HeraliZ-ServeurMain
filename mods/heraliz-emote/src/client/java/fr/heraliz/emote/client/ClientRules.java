@@ -15,13 +15,13 @@ import java.util.UUID;
  * {@link EmoteRules} on the client, with what the client knows (works even when the server does not have this mod):
  * <ul>
  *     <li>downed: Reanimation syncs the downed state to the clients ({@code Downed.isDowned});</li>
- *     <li>in a match: HeraliZ Matchs tells the client ({@code moteur.client.MoteurClient.enMatch()}); zombies games
- *     (their HUD is on, {@code zombies.jeu.api.HudZombies.actif()}) are allowed;</li>
- *     <li>combat-tagged: the "EN COMBAT 12 s" countdown of HeraliZ Matchs ({@code MoteurClient.combatRestantMs()});</li>
+ *     <li>combat-tagged: the "EN COMBAT 12 s" countdown of HeraliZ Utils
+ *     ({@code fr.heralisz.utils.combat.client.CombatClient.combatRestantMs()}, by reflection; HeraliZ Matchs, which had
+ *     it before, was removed from the server on 24/10);</li>
  *     <li>not unlocked (emote crate): {@link DeblocagesClient}, sent by the server.</li>
  * </ul>
  * Every local emote start goes through {@code mixin.ClientEmotePlayMixin}; {@link #tick()} stops an emote that is
- * already playing when one of these becomes true (shot while dancing, pulled into a duel...).
+ * already playing when one of these becomes true (shot while dancing...).
  */
 public final class ClientRules {
     private ClientRules() {
@@ -29,7 +29,7 @@ public final class ClientRules {
 
     private static boolean looked;
     @Nullable
-    private static Method enMatch, combatMs, zombiesHud;
+    private static Method combatMs;
 
     /** Why the local player may not play an emote right now, or null if they may. */
     @Nullable
@@ -38,7 +38,6 @@ public final class ClientRules {
         if (p == null || p.isCreative() || p.isSpectator()) return null;
         if (EmoteRules.isDowned(p)) return EmoteRules.downed();
         look();
-        if (call(enMatch) instanceof Boolean en && en && !(call(zombiesHud) instanceof Boolean z && z)) return EmoteRules.match();
         if (call(combatMs) instanceof Long left && left > 0) return EmoteRules.combat(left);
         return null;
     }
@@ -69,16 +68,9 @@ public final class ClientRules {
         if (looked) return;
         looked = true;
         try {
-            Class<?> c = Class.forName("fr.heralisz.matchs.moteur.client.MoteurClient");
-            enMatch = c.getMethod("enMatch");
-            combatMs = c.getMethod("combatRestantMs");
+            combatMs = Class.forName("fr.heralisz.utils.combat.client.CombatClient").getMethod("combatRestantMs");
         } catch (ReflectiveOperationException | LinkageError e) {
-            enMatch = combatMs = null;
-        }
-        try {
-            zombiesHud = Class.forName("fr.heralisz.matchs.zombies.jeu.api.HudZombies").getMethod("actif");
-        } catch (ReflectiveOperationException | LinkageError e) {
-            zombiesHud = null;
+            combatMs = null;
         }
     }
 

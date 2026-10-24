@@ -18,7 +18,3 @@
 	#Seules commandes permises sur la carte (racine en minuscules, sans / ni espace de noms)
 	commandes_permises = ["tpa", "tpaccept", "tpdeny", "login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "pb", "saison", "extractions", "clan", "suicide", "report", "sethome", "delhome", "homes", "base", "purge", "coeur"]
 
-[matchs]
-	#Masquer la mini-carte de Xaero et refuser l'ouverture de sa carte du monde pendant les matchs
-	masquer_cartes = true
-

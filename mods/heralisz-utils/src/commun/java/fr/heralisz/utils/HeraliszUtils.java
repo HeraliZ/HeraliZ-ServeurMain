@@ -117,6 +117,8 @@ public final class HeraliszUtils {
         fr.heralisz.utils.zombies.ZombiesSurvie.init(bus);         // zombies de la survie (tenues selon l endroit)
         fr.heralisz.utils.cine.CineReseau.init(bus);                 // cinématique d'arrivée (première connexion, /cinematique)
         fr.heralisz.utils.train.Train.init(bus);                     // réseau ferré : horaire, annonce aux joueurs, /train
+        fr.heralisz.utils.combat.CombatReseau.init();                // tag de combat : indicateur « EN COMBAT » (repris de Matchs)
+        fr.heralisz.utils.combat.TirATerre.enregistrer();            // pas de tir ni de coup de crosse TaCZ à terre (Réanimation)
         bus.addListener(HeraliszUtils::hideOldItems);
         bus.addListener(fr.heralisz.utils.meubles.FormesMeubles::installer); // meubles cfm à leur vraie forme (Models 239 à 241)
         // ambiance de la map (ciel, nuits, brouillard, filtre d'image) : réglages côté client

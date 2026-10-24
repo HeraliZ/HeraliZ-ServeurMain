@@ -30,7 +30,7 @@ public final class Causes {
     static final ResourceLocation SAIGNE = new ResourceLocation("reanimation", "bleed_out");
     static final ResourceLocation ABANDON = new ResourceLocation("reanimation", "give_up");
     static final ResourceLocation DECO_A_TERRE = new ResourceLocation("reanimation", "disconnect");
-    static final ResourceLocation DECO_COMBAT = new ResourceLocation("heralisz_matchs", "deconnexion_combat");
+    static final ResourceLocation DECO_COMBAT = new ResourceLocation("heralisz_utils", "deconnexion_combat");
 
     /** Vrai si la mort est une execution de Reanimation (la scene montre encore la victime un moment). */
     public static boolean execution(DamageSource source) {

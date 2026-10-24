@@ -399,5 +399,13 @@
   "heralisz_utils.diag.profil.tete": "Top: %s",
   "heralisz_utils.diag.rapports.aucun": "No report written since startup.",
   "heralisz_utils.diag.rapports.liste": "Latest reports (heraliz_diag folder): %s",
-  "heralisz_utils.diag.essai": "Test: the server stops for %s ms (the watchdog should write a report)."
+  "heralisz_utils.diag.essai": "Test: the server stops for %s ms (the watchdog should write a report).",
+  "heralisz_utils.combat.titre": "IN COMBAT",
+  "heralisz_utils.combat.commande_refusee": "Not possible in combat · %s s",
+  "heralisz_utils.combat.commande_refusee_a_terre": "Not possible while downed.",
+  "heralisz_utils.combat.carte_commande_refusee": "Not possible on the map: only /tpa works here.",
+  "heralisz_utils.combat.puni": "You logged out during a fight: your character died and its body stayed where you were.",
+  "heralisz_utils.combat.puni_a_terre": "You logged out while downed: your character died and its body stayed where you were.",
+  "death.attack.heralisz_utils.deconnexion_combat": "%1$s fled the fight by logging out",
+  "death.attack.heralisz_utils.deconnexion_combat.player": "%1$s fled the fight against %2$s by logging out"
 }

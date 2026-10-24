@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /**
  * Où un joueur peut changer lui-même d'apparence (/perso, /caracrea, touche du créateur) : seulement au spawn
- * ({@code heralisz:spawn}) et jamais en combat (tag de combat de HeraliZ Matchs, lu par réflexion). Demande du propriétaire
+ * ({@code heralisz:spawn}) et jamais en combat (tag de combat de HeraliZ Utils, lu par réflexion). Demande du propriétaire
  * (23/10) : on ne se déguise pas en pleine poursuite sur la carte. Le créateur imposé (première arrivée, /wipe, staff)
  * n'est pas concerné ; le staff (permission 2) non plus. Fil du serveur.
  */
@@ -41,7 +41,7 @@ final class EditionLibre {
         if (!cherche) {
             cherche = true;
             try {
-                restantMs = Class.forName("fr.heralisz.matchs.moteur.api.CombatTag").getMethod("restantMs", UUID.class);
+                restantMs = Class.forName("fr.heralisz.utils.combat.CombatTag").getMethod("restantMs", UUID.class);
             } catch (ReflectiveOperationException | LinkageError e) {
                 restantMs = null;
             }

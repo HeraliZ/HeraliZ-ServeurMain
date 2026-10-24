@@ -399,5 +399,13 @@
   "heralisz_utils.diag.profil.tete": "Больше всего: %s",
   "heralisz_utils.diag.rapports.aucun": "С запуска не записано ни одного отчёта.",
   "heralisz_utils.diag.rapports.liste": "Последние отчёты (папка heraliz_diag): %s",
-  "heralisz_utils.diag.essai": "Проверка: сервер остановится на %s мс (сторож тиков должен записать отчёт)."
+  "heralisz_utils.diag.essai": "Проверка: сервер остановится на %s мс (сторож тиков должен записать отчёт).",
+  "heralisz_utils.combat.titre": "В БОЮ",
+  "heralisz_utils.combat.commande_refusee": "Невозможно в бою · %s с",
+  "heralisz_utils.combat.commande_refusee_a_terre": "Невозможно в нокауте.",
+  "heralisz_utils.combat.carte_commande_refusee": "Невозможно на карте: здесь работает только /tpa.",
+  "heralisz_utils.combat.puni": "Вы вышли из игры посреди боя: ваш персонаж погиб, а тело осталось на месте.",
+  "heralisz_utils.combat.puni_a_terre": "Вы вышли из игры в нокауте: ваш персонаж погиб, а тело осталось на месте.",
+  "death.attack.heralisz_utils.deconnexion_combat": "%1$s сбежал из боя, выйдя из игры",
+  "death.attack.heralisz_utils.deconnexion_combat.player": "%1$s сбежал из боя с %2$s, выйдя из игры"
 }

@@ -26,5 +26,6 @@ public final class PartieClient implements Partie {
         CineReseau.RECEPTION_CLIENT.brancher(m -> Cinematique.demarrer());
         Voyageur.TICK_CLIENT.brancher(VoyageursClient::tick);
         PontBlockEntity.TICK_CLIENT.brancher(PontTick::tick);
+        fr.heralisz.utils.combat.client.CombatClient.init(busMod);   // indicateur « EN COMBAT » (repris de Matchs)
     }
 }
