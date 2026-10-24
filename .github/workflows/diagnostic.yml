@@ -1,0 +1,179 @@
+# Diagnostic du serveur : LECTURE SEULE sur le Ptero. Récupère les derniers rapports du diagnostic de HeraliZ Utils
+# (dossier heraliz_diag/ à la racine du serveur : ticks longs, blocages, profils), les lignes « [diag] » (résumé toutes
+# les 5 min) et « Can't keep up » du journal, rend lisibles les noms de méthodes de Minecraft (outils/diag_noms.py) et
+# met le tout dans le résumé ; rapports complets dans le paquet « diagnostic » (7 jours, si le quota le permet).
+# Option « profil » : lance d'abord `/diag profil <secondes>` par la console du Ptero (API, comme le test de charge),
+# attend la fin, puis récupère ce rapport aussi. Rien n'est écrit, déplacé ni supprimé sur le Ptero (jamais de get -E).
+# Part par « Run workflow », ou d'une branche de travail quand ce fichier change (sans profil).
+name: Diagnostic du serveur
+
+on:
+  workflow_dispatch:
+    inputs:
+      profil:
+        description: "Lancer /diag profil avant de lire les rapports (serveur démarré)"
+        type: boolean
+        default: false
+      secondes:
+        description: "Durée du profil en secondes (5 à 600)"
+        type: number
+        default: 60
+      rapports:
+        description: "Nombre de rapports récents à montrer (1 à 30)"
+        type: number
+        default: 6
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/diagnostic.yml", "outils/diag_noms.py"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diagnostic
+  cancel-in-progress: false
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+      PROFIL: ${{ inputs.profil }}
+      SECONDES: ${{ inputs.secondes }}
+      NB_RAPPORTS: ${{ inputs.rapports }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: outils/diag_noms.py
+          sparse-checkout-cone-mode: false
+
+      - name: Réglages
+        run: |
+          S=$(printf '%s' "$SECONDES" | tr -cd '0-9'); S=${S:-60}; [ "$S" -lt 5 ] && S=5; [ "$S" -gt 600 ] && S=600
+          N=$(printf '%s' "$NB_RAPPORTS" | tr -cd '0-9'); N=${N:-6}; [ "$N" -lt 1 ] && N=1; [ "$N" -gt 30 ] && N=30
+          P=false; [ "$PROFIL" = "true" ] && P=true
+          { echo "DUREE=$S"; echo "NB=$N"; echo "P=$P"; } >> "$GITHUB_ENV"
+          echo "profil $P ($S s), $N rapport(s)"
+
+      - name: Accès au Ptero
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+          echo "API=${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID" >> "$GITHUB_ENV"
+
+      - name: Profil (console du Ptero)
+        if: env.P == 'true'
+        run: |
+          ETAT=$(curl -sS "$API/resources" -H "Authorization: Bearer $PTERO_API_KEY" -H "Accept: Application/vnd.pterodactyl.v1+json" \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["attributes"]["current_state"])' 2>/dev/null || echo inconnu)
+          echo "État du serveur : $ETAT"
+          if [ "$ETAT" != "running" ]; then echo "::warning::Serveur non démarré : pas de profil, rapports existants seulement."; exit 0; fi
+          date -u +%s > debut_profil.txt
+          CODE=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$API/command" \
+            -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \
+            -H "Accept: Application/vnd.pterodactyl.v1+json" -d "{\"command\":\"diag profil $DUREE\"}")
+          echo "> diag profil $DUREE ($CODE)"
+          if [ "$CODE" != "204" ] && [ "$CODE" != "200" ]; then echo "::warning::Commande refusée par le panel ($CODE)."; exit 0; fi
+          # fin du profil, puis le temps que le fil d'écriture du serveur écrive le rapport
+          sleep $((DUREE + 15))
+
+      - name: Lecture des rapports et du journal (lecture seule)
+        run: |
+          R="set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30;"
+          l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye"; }
+          mkdir -p rapports journaux
+          # rapports : les plus récents d'abord (noms « AAAA-MM-JJ_hh-mm-ss_genre.txt »)
+          l "cls -1 /heraliz_diag/" 2>/dev/null | grep '\.txt$' | sed 's#.*/##' | sort -r | head -n "$NB" > liste.txt || true
+          # toujours le dernier profil et le dernier blocage, même plus anciens
+          l "cls -1 /heraliz_diag/" 2>/dev/null | grep '_profil\.txt$' | sed 's#.*/##' | sort -r | head -1 >> liste.txt || true
+          l "cls -1 /heraliz_diag/" 2>/dev/null | grep '_blocage\.txt$' | sed 's#.*/##' | sort -r | head -1 >> liste.txt || true
+          sort -u -r liste.txt -o liste.txt
+          while read -r f; do
+            [ -n "$f" ] || continue
+            l "get /heraliz_diag/$f -o rapports/$f" || echo "::warning::$f illisible"
+          done < liste.txt
+          l "get /logs/latest.log -o journaux/latest.log" || true
+          for f in $(l "cls -1t /logs/" 2>/dev/null | grep '\.log\.gz$' | sed 's#.*/##' | head -2); do
+            l "get /logs/$f -o journaux/$f" || true
+          done
+          ls -la rapports journaux
+
+      - name: Noms lisibles
+        run: |
+          ls rapports/*.txt >/dev/null 2>&1 || { echo "aucun rapport"; exit 0; }
+          python3 outils/diag_noms.py rapports/*.txt --cache "$RUNNER_TEMP/noms" || true
+
+      - name: Résumé
+        run: |
+          python3 - <<'EOF'
+          import gzip, os, re
+          from pathlib import Path
+          ip = re.compile(r"\b\d{1,3}(\.\d{1,3}){3}\b")
+          masque = lambda s: ip.sub("x.x.x.x", s)
+          out = ["## Diagnostic du serveur", ""]
+          if os.environ.get("P") == "true":
+              out.append(f"Profil demandé : `/diag profil {os.environ.get('DUREE')}`.")
+          # journal : lignes [diag], « Can't keep up », blocages
+          lignes = []
+          for f in sorted(Path("journaux").glob("*"), key=lambda p: (p.suffix != ".gz", p.name)):
+              try:
+                  txt = gzip.open(f, "rt", encoding="utf-8", errors="replace").read() if f.suffix == ".gz" else f.read_text(encoding="utf-8", errors="replace")
+              except OSError:
+                  continue
+              for l in txt.splitlines():
+                  if "[diag]" in l or "Can't keep up" in l:
+                      lignes.append(f"{f.name}: " + masque(l)[:500])
+          diag = [l for l in lignes if "[diag]" in l]
+          retard = [l for l in lignes if "Can't keep up" in l]
+          out += ["", f"### Lignes « [diag] » du journal ({len(diag)}, les 80 dernières)", "```"] + diag[-80:] + ["```"]
+          out += ["", f"### « Can't keep up » ({len(retard)}, les 40 dernières)", "```"] + retard[-40:] + ["```"]
+          # rapports, du plus récent au plus ancien
+          rapports = sorted(Path("rapports").glob("*.txt"), reverse=True)
+          out += ["", f"### Rapports ({len(rapports)})", ""]
+          if not rapports:
+              out.append("Aucun rapport dans heraliz_diag/ (serveur pas encore passé en HeraliZ Utils 2.27.0, ou aucun tick long).")
+          taille = sum(len(x) for x in out)
+          for f in rapports:
+              txt = masque(f.read_text(encoding="utf-8", errors="replace")).splitlines()
+              titre = next((l for l in txt if l.startswith("Rapport :")), "")
+              max_l = 450 if "_profil" in f.name else 250
+              bloc = [f"<details{' open' if f == rapports[0] else ''}><summary><b>{f.name}</b> — {titre[10:]}</summary>", "", "```"]
+              bloc += txt[:max_l]
+              if len(txt) > max_l:
+                  bloc.append(f"… ({len(txt) - max_l} lignes de plus dans le paquet « diagnostic »)")
+              bloc += ["```", "</details>", ""]
+              n = sum(len(x) + 1 for x in bloc)
+              if taille + n > 900_000:
+                  out.append(f"- {f.name} : trop long pour le résumé, voir le paquet « diagnostic »")
+                  continue
+              taille += n
+              out += bloc
+          out += ["", "Rien n'a été modifié sur le Ptero."]
+          open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8").write("\n".join(out) + "\n")
+          print("\n".join(out[:200]))
+          EOF
+
+      - name: Rapports complets
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic
+          path: rapports/
+          retention-days: 7
+          if-no-files-found: ignore
