@@ -1,5 +1,7 @@
 package fr.heraliz.decors.bloc;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,6 +31,12 @@ public class Deco extends Block {
     protected final boolean traversable;
     protected final Effet effet;
     protected final boolean invisible;
+    /**
+     * Forme de chaque état, calculée une fois (24/10, optimisation) : getShape / getCollisionShape sont appelés à chaque
+     * déplacement d'entité (zombies, joueurs), chaque recherche de chemin et chaque visée ; plusieurs formes étaient
+     * refaites à chaque appel (Shapes.or + rotation : toilettes, lavabo, lits). Lue seulement après la construction.
+     */
+    private final Map<BlockState, VoxelShape> formes = new IdentityHashMap<>();
 
     public Deco(Properties p, Function<BlockState, VoxelShape> forme, boolean traversable, Effet effet) {
         this(p, forme, traversable, effet, false);
@@ -40,16 +48,24 @@ public class Deco extends Block {
         this.traversable = traversable;
         this.effet = effet;
         this.invisible = invisible;
+        // les propriétés des sous-classes sont déjà là (createBlockStateDefinition est appelé par le constructeur de Block)
+        for (BlockState s : stateDefinition.getPossibleStates()) formes.put(s, forme.apply(s));
+    }
+
+    /** Forme de l'état (calculée d'avance ; secours : calculée à la demande). */
+    protected VoxelShape forme(BlockState s) {
+        VoxelShape v = formes.get(s);
+        return v != null ? v : forme.apply(s);
     }
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-        return forme.apply(s);
+        return forme(s);
     }
 
     @Override
     public VoxelShape getCollisionShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-        return traversable ? Shapes.empty() : forme.apply(s);
+        return traversable ? Shapes.empty() : forme(s);
     }
 
     @Override

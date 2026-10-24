@@ -43,16 +43,44 @@ public final class KeycardDoors {
       return list;
    }
 
-   /** Un lecteur de la bonne couleur, activé, à portée d'une des pièces de la porte ? */
+   /**
+    * Un lecteur de la bonne couleur, activé, à portée d'une des pièces de la porte ?
+    * <p>24/10 (optimisation) : la boîte des pièces agrandie de la portée est lue une seule fois, puis chaque lecteur trouvé
+    * est comparé aux pièces (même résultat qu'avant). Avant : un cube de 5 x 5 x 5 par pièce, rangé dans un ensemble
+    * (plusieurs milliers de lectures pour une grande porte, toutes les 5 s par porte de salle à carte).</p>
+    */
    public static boolean readerGranted(Level level, List<BlockPos> parts, AccessLevel needed) {
-      Set<BlockPos> seen = new LinkedHashSet<>();
-      for (BlockPos part : parts) {
-         for (BlockPos p : BlockPos.betweenClosed(part.offset(-READER_RANGE, -READER_RANGE, -READER_RANGE), part.offset(READER_RANGE, READER_RANGE, READER_RANGE))) {
-            if (!seen.add(p.immutable())) continue;
-            BlockState s = level.getBlockState(p);
-            if (s.getBlock() instanceof CardReaderBlock reader && reader.level == needed && s.getValue(CardReaderBlock.POWERED)) {
-               return true;
+      if (parts.isEmpty()) return false;
+      int x0 = Integer.MAX_VALUE, y0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE;
+      int x1 = Integer.MIN_VALUE, y1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE;
+      for (BlockPos p : parts) {
+         x0 = Math.min(x0, p.getX());
+         y0 = Math.min(y0, p.getY());
+         z0 = Math.min(z0, p.getZ());
+         x1 = Math.max(x1, p.getX());
+         y1 = Math.max(y1, p.getY());
+         z1 = Math.max(z1, p.getZ());
+      }
+      BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
+      for (int x = x0 - READER_RANGE; x <= x1 + READER_RANGE; x++) {
+         for (int y = y0 - READER_RANGE; y <= y1 + READER_RANGE; y++) {
+            for (int z = z0 - READER_RANGE; z <= z1 + READER_RANGE; z++) {
+               BlockState s = level.getBlockState(mp.set(x, y, z));
+               if (s.getBlock() instanceof CardReaderBlock reader && reader.level == needed && s.getValue(CardReaderBlock.POWERED)
+                  && aPortee(parts, x, y, z)) {
+                  return true;
+               }
             }
+         }
+      }
+      return false;
+   }
+
+   /** Ce point est-il à READER_RANGE au plus (sur chaque axe) d'une des pièces ? */
+   private static boolean aPortee(List<BlockPos> parts, int x, int y, int z) {
+      for (BlockPos p : parts) {
+         if (Math.abs(p.getX() - x) <= READER_RANGE && Math.abs(p.getY() - y) <= READER_RANGE && Math.abs(p.getZ() - z) <= READER_RANGE) {
+            return true;
          }
       }
       return false;

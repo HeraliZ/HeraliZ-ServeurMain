@@ -60,6 +60,9 @@ public final class ZonesServeur {
     private static List<Zone> zones = new ArrayList<>();
     private static final Map<UUID, float[]> EXPO = new HashMap<>();          // gaz, radiation, froid (secondes)
     private static final Map<UUID, int[]> USURE = new HashMap<>();           // gaz, radiation, froid (secondes portées)
+    /** Dernière exposition envoyée à chaque joueur : on n'envoie plus rien tant qu'elle ne change pas (24/10). */
+    private static final Map<UUID, Ambiance.Exposition> ENVOYEE = new HashMap<>();
+    private static final Ambiance.Exposition AUCUNE = new Ambiance.Exposition(0f, 0f, 0f, false, false, false);
 
     // protections (identifiants, * = n'importe quelle fin)
     private static final String[] P_GAZ = {"heraliz_armory:gas_mask_*", "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit",
@@ -70,6 +73,7 @@ public final class ZonesServeur {
     @SubscribeEvent
     public static void demarrage(ServerStartedEvent e) {
         EXPO.clear();
+        ENVOYEE.clear();
         charger(e.getServer());
     }
 
@@ -99,6 +103,20 @@ public final class ZonesServeur {
     public static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
         EXPO.remove(e.getEntity().getUUID());
         USURE.remove(e.getEntity().getUUID());
+        ENVOYEE.remove(e.getEntity().getUUID());
+    }
+
+    /** Mort : l'exposition repart de zéro (avant, elle restait et le joueur était empoisonné dès son retour sur la carte). */
+    @SubscribeEvent
+    public static void reapparition(PlayerEvent.PlayerRespawnEvent e) {
+        if (!e.isEndConquered()) EXPO.remove(e.getEntity().getUUID());
+    }
+
+    /** Envoie l'exposition au joueur seulement si elle a changé (avant : un paquet par joueur et par seconde, même à 0). */
+    private static void envoyer(ServerPlayer p, Ambiance.Exposition x) {
+        if (x.equals(ENVOYEE.get(p.getUUID()))) return;
+        ENVOYEE.put(p.getUUID(), x);
+        Ambiance.CANAL.send(PacketDistributor.PLAYER.with(() -> p), x);
     }
 
     @SubscribeEvent
@@ -107,7 +125,12 @@ public final class ZonesServeur {
         MinecraftServer srv = e.getServer();
         if (srv.getTickCount() % 20 != 0) return;
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
-            if (p.isCreative() || p.isSpectator() || p.level() != srv.overworld()) continue;
+            if (p.isCreative() || p.isSpectator() || p.level() != srv.overworld()) {
+                // hors de la carte (spawn, bases, matchs) ou staff : l'exposition est gardée telle quelle, mais l'écran du
+                // joueur redevient clair (avant, le voile vert restait affiché au spawn après une mort dans le gaz)
+                envoyer(p, AUCUNE);
+                continue;
+            }
             float g = 0, ra = 0, fr = 0;
             for (Zone z : zones) {
                 float n = z.niveau(p.getX(), p.getY(), p.getZ());
@@ -142,7 +165,7 @@ public final class ZonesServeur {
             effetsGaz(p, ex[0]);
             effetsRadiation(p, ex[1]);
             effetsFroid(p, ex[2], fr > 0 && !pf);
-            Ambiance.CANAL.send(PacketDistributor.PLAYER.with(() -> p), new Ambiance.Exposition(
+            envoyer(p, new Ambiance.Exposition(
                     Math.min(1f, ex[0] / 60f), Math.min(1f, ex[1] / 60f), Math.min(1f, ex[2] / 60f), pg && g > 0, pr && ra > 0, pf && fr > 0));
         }
     }

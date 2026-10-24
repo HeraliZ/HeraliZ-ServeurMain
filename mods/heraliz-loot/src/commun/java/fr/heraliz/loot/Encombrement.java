@@ -1,5 +1,6 @@
 package fr.heraliz.loot;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -22,7 +23,8 @@ public final class Encombrement {
     public final int[][] cells;
     private final float[][] boxes;
     private final Map<Direction, VoxelShape> outline = new EnumMap<>(Direction.class);
-    private final Map<Direction, Map<Long, VoxelShape>> collision = new EnumMap<>(Direction.class);
+    /** Collision par cellule (clé : {@link #key}) ; table sans boîtes de Long (lue à chaque déplacement d'entité). */
+    private final Map<Direction, Long2ObjectOpenHashMap<VoxelShape>> collision = new EnumMap<>(Direction.class);
 
     public Encombrement(float[]... boxes) {
         this(new float[0][], boxes);
@@ -64,7 +66,7 @@ public final class Encombrement {
             }
             all = all.optimize();
             outline.put(d, all);
-            Map<Long, VoxelShape> per = new java.util.HashMap<>();
+            Long2ObjectOpenHashMap<VoxelShape> per = new Long2ObjectOpenHashMap<>();
             for (int[] c : cells) {
                 int[] w = rotateCell(c[0], c[1], c[2], d);
                 VoxelShape local = all.move(-w[0], -w[1], -w[2]);
@@ -130,12 +132,14 @@ public final class Encombrement {
     /** Forme de selection complete (vue depuis la cellule monde dx,dy,dz relative au bloc principal). */
     public VoxelShape outline(Direction facing, int dx, int dy, int dz) {
         VoxelShape s = outline.get(facing);
-        return s == null ? Shapes.block() : s.move(-dx, -dy, -dz);
+        if (s == null) return Shapes.block();
+        // bloc principal : la forme telle quelle (move crée une nouvelle forme à chaque appel)
+        return (dx | dy | dz) == 0 ? s : s.move(-dx, -dy, -dz);
     }
 
     /** Collision limitee a la cellule monde (dx,dy,dz) relative au bloc principal. */
     public VoxelShape collision(Direction facing, int dx, int dy, int dz) {
-        Map<Long, VoxelShape> m = collision.get(facing);
+        Long2ObjectOpenHashMap<VoxelShape> m = collision.get(facing);
         VoxelShape s = m == null ? null : m.get(key(dx, dy, dz));
         return s == null ? Shapes.empty() : s;
     }

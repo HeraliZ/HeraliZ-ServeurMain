@@ -87,6 +87,11 @@ public final class RaretesObjets {
         }
     }
 
+    /** Les sortes, une fois pour toutes (values() copie le tableau à chaque appel : appelé par case et par image). */
+    private static final Sorte[] SORTES = Sorte.values();
+    /** Boîte de munitions de TaCZ, résolue une fois trouvée (sans TaCZ : cherchée à chaque fois, comme avant). */
+    private static volatile Item boiteTacz;
+
     private static volatile Table table = Table.vide();
     /** Objets (hors TaCZ) déjà résolus : objet -> rareté, refait à chaque nouvelle table. */
     private static volatile Map<Item, Rarete> parObjet = new IdentityHashMap<>();
@@ -112,7 +117,7 @@ public final class RaretesObjets {
         if (st.isEmpty()) return null;
         CompoundTag t = st.getTag();
         if (t != null) {
-            for (Sorte s : Sorte.values()) {
+            for (Sorte s : SORTES) {
                 if (s.etiquette != null && t.contains(s.etiquette, Tag.TAG_STRING)) return new Cle(s, t.getString(s.etiquette));
             }
         }
@@ -128,10 +133,19 @@ public final class RaretesObjets {
      */
     @Nullable
     static String boite(ItemStack st) {
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(st.getItem());
-        if (id == null || !id.getNamespace().equals("tacz") || !id.getPath().equals("ammo_box")) return null;
+        if (st.getItem() != boiteTacz()) return null;
         CompoundTag t = st.getTag();
         return "tacz:ammo_box/" + (t == null ? 0 : t.getInt("Level"));
+    }
+
+    private static final ResourceLocation BOITE_TACZ = new ResourceLocation("tacz", "ammo_box");
+
+    /** L'objet « tacz:ammo_box » (null sans TaCZ). */
+    @Nullable
+    private static Item boiteTacz() {
+        Item it = boiteTacz;
+        if (it == null && ForgeRegistries.ITEMS.containsKey(BOITE_TACZ)) boiteTacz = it = ForgeRegistries.ITEMS.getValue(BOITE_TACZ);
+        return it;
     }
 
     /** Rareté de cet objet : inscrite sur l'objet, sinon celle de sa sorte, sinon celle par défaut (null : aucune). */
@@ -143,7 +157,7 @@ public final class RaretesObjets {
         Table t = table;
         CompoundTag tag = st.getTag();
         if (tag != null) {
-            for (Sorte s : Sorte.values()) {
+            for (Sorte s : SORTES) {
                 if (s.etiquette != null && tag.contains(s.etiquette, Tag.TAG_STRING)) {
                     r = t.parSorte().getOrDefault(s, Map.of()).get(tag.getString(s.etiquette));
                     return r != null ? r : t.defaut();
