@@ -1,9 +1,0 @@
-{
-  "model": "arkaniaz:ammo/9x39",
-  "texture": "arkaniaz:ammo/uv/9x39",
-    "slot": "arkaniaz:ammo/slot/9x39",
-    "shell": {
-      "model": "arkaniaz:shell/9x21_shell",
-      "texture": "arkaniaz:shell/9x21_shell"
-    }
-  }

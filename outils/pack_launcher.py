@@ -123,8 +123,13 @@ def main():
         shutil.copy2(j, requis / j.name)
     print(f"[pack] {len(jars)} mods joueurs", flush=True)
 
-    # gunpacks TaCZ : le dossier tacz du jeu (les joueurs en ont besoin pour les modèles, sons et icônes)
-    shutil.copytree(RACINE_DEPOT / "serveur" / "tacz", serveur / "files" / "tacz")
+    # gunpacks TaCZ : le dossier tacz du jeu (les joueurs en ont besoin pour les modèles, sons et icônes). Sans les
+    # dossiers data/ des gunpacks (stats des armes, recettes, listes d'accessoires : 24/10) : le serveur les envoie
+    # lui-même à la connexion (ServerMessageSyncGunPack de TaCZ), rien à donner aux joueurs.
+    def sans_data(dossier, noms):
+        d = Path(dossier)
+        return ["data"] if d.parent == RACINE_DEPOT / "serveur" / "tacz" and "data" in noms else []
+    shutil.copytree(RACINE_DEPOT / "serveur" / "tacz", serveur / "files" / "tacz", ignore=sans_data)
 
     # fiche du serveur : adresse de jeu (doit être celle du launcher), connexion directe, serveur principal
     fiche_p = serveur / "servermeta.json"
