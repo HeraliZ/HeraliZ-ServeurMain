@@ -2139,6 +2139,18 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   pastilles, boutons, champ de saisie, touche « Échap », filtres, catégories, tuiles, matériaux ; kit commun de l'Atelier
   (onglets Accessoires, Camo, Personnaliser, Registre de l'armurier : ils en profitent). Le script contrôle aussi
   l'encre réelle de chaque texte centré (écart haut / bas et gauche / droite d'au plus 1 point d'écran, échelles 2 et 3).
+- **Liste du Discord du 24/10** (rien testé en jeu) : plus de deuxième main (Tactique 2.36.0, `serveur/SansMainGauche` :
+  F sans effet en survie, objet de la main gauche rangé dans l'inventaire, jamais jeté) ; jambe cassée : saut permis mais
+  sans élan (bond de la course retiré, vitesse divisée par 2, plus de course en l'air, `jambe/JambeCassee`) ; cinématique
+  d'arrivée : plus de 100 places autour du point de réveil (Utils 2.24.0) ; noms des objets GeckoLib (nourriture, plans,
+  tenues, descriptions) en 3 langues, noms anglais corrigés (Utils 2.25.0, `assets/geckolib/lang`). **Mention de propriété
+  dans chaque dossier de nos jars** (`outils/construire.py`, `marquer()` : `LISEZ-MOI-HeraliZ.txt`, interdiction de
+  décompiler et de réutiliser hors du serveur, avis aux IA ; jamais dans les dossiers du code des autres auteurs
+  `DOSSIERS_TIERS`, ni dans Spartan ni le sac à dos). **Pack des joueurs allégé** : 1 171 fichiers de gunpacks jamais
+  utilisés retirés (56 Mo : armes, munitions, accessoires sans fiche, cartes `_n` / `_s` pour shaders, `.mp3`), listés dans
+  `serveur/tacz_retires.txt` ; les dossiers `data/` des gunpacks ne vont plus dans le pack du launcher
+  (`outils/pack_launcher.py`, le serveur les envoie par `ServerMessageSyncGunPack` de TaCZ : à vérifier en jeu que les
+  armes, recettes et accessoires s'affichent).
 - **Bots de charge** (24/10, Utils 2.24.0, Spartan 2.7.9, Matchs 0.15.2, Clans 3.6.5, Quêtes 1.10.5, demande du propriétaire ;
   jamais essayés en jeu ni compilés ici : contrôle de branche) : `/bots` (op 4 ou console, `fr.heralisz.utils.bots`,
   serveur seulement) : de vrais `ServerPlayer` (`BotJoueur`, canal réseau factice qui jette tout, comme les bots du banc
