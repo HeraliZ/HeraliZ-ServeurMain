@@ -34,6 +34,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
  */
 public final class RamperSansArme {
    private static final ResourceLocation COUCHE = new ResourceLocation(HeralizTactique.MODID, "ramper_sans_arme");
+   private static final ResourceLocation CORPS = new ResourceLocation(HeralizTactique.MODID, "corps_allonge");
    private static final ResourceLocation GESTES = new ResourceLocation("tacz", "rifle_default.player_animation");
    /** Au-dessus des couches de TaCZ et de la mêlée de LR (40 à 42) : de toute façon arrêtées sans arme et allongé. */
    private static final int PRIORITE = 45;
@@ -52,6 +53,8 @@ public final class RamperSansArme {
 
    private static void enregistrer() {
       PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(COUCHE, PRIORITE, joueur -> new ModifierLayer<>());
+      // torse et jambes droits par-dessus tout, avec ou sans arme (CorpsAllonge)
+      PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(CORPS, PRIORITE + 5, CorpsAllonge::new);
    }
 
    private static void tick(TickEvent.ClientTickEvent e) {
