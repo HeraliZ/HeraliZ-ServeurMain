@@ -88,15 +88,15 @@ public final class CineReseauServeur {
 
     /**
      * Plusieurs arrivants en même temps ne se posent pas les uns dans les autres : si quelqu'un est déjà au point de
-     * réveil, on prend la première place libre (sol dessous, personne) sur des cercles de 1,5 à 4 blocs autour ; sinon
-     * le point de réveil lui-même.
+     * réveil, on prend la première place libre (sol dessous, personne) sur des cercles de 1,5 à 9 blocs autour (plus de
+     * 100 places, Utils 2.24.0 : arrivées de 20 à 30 joueurs à la fois) ; sinon le point de réveil lui-même.
      */
     private static net.minecraft.world.phys.Vec3 placeLibre(net.minecraft.server.level.ServerLevel l, ServerPlayer sp,
                                                             net.minecraft.world.phys.Vec3 r) {
         if (!occupee(l, sp, r)) {
             return r;
         }
-        for (double rayon = 1.5; rayon <= 4.0; rayon += 1.25) {
+        for (double rayon = 1.5; rayon <= 9.0; rayon += 1.25) {
             int n = (int) Math.ceil(rayon * 4);
             for (int i = 0; i < n; i++) {
                 double a = Math.PI * 2 * i / n;
