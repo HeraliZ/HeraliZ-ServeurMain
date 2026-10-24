@@ -65,7 +65,11 @@ quand un choix leur revient.
   (`heralisz_economie`, `EconomieApi`). Les objets du casino s'appellent « capsules » (identifiants `heralizcasino:jeton_*`
   inchangés) : trouvées dans le loot T1 à T7, misées aux machines, échangées contre des objets à la caisse ; aucun
   échange avec les hérals (Casino 2.4.0, 23/10).
-- Dimensions à part : `heralisz_matchs:arenes` (ClashWar, duels) et `heralisz_matchs:zombies`.
+- **Plus de matchs** (24/10, demande du propriétaire : « se focus UNIQUEMENT sur le DayZ ») : HeraliZ Matchs (duels,
+  ClashWar, mode Zombies, dimensions `heralisz_matchs:arenes` et `heralisz_matchs:zombies`) et HeraliZ Wonder (Wonder
+  Weapons) retirés du serveur. Le tag de combat, le refus des commandes en combat / à terre / sur la carte et la mort à
+  la déconnexion en combat, qui servaient à toute la survie, sont passés dans HeraliZ Utils (`fr.heralisz.utils.combat`,
+  section 3.1). Rien testé en jeu.
 - Style de toutes les interfaces : celui des **écrans de clan** (panneaux de verre, police DM Sans, échelle 640×360,
   jamais de fond uni). Kit à copier : `python outils/copier_kit_ui.py mods/<projet>`. **Texte de toute interface (règle du
   propriétaire, 23/10) : net et lisible comme dans le créateur de personnage (`/perso`)** : polices TTF du mod tracées à
@@ -103,7 +107,7 @@ serveur/                  tout ce qui va sur le Ptero, en plus de nos jars :
   config/                 configs des mods
   defaultconfigs/         configs « serveur » des mods (copiées par Forge dans chaque nouveau monde)
   tacz/                   gunpacks TaCZ
-  heralisz_matchs/, mohist-config/, server.properties, bukkit.yml, spigot.yml, commands.yml, eula.txt, server-icon.png
+  mohist-config/, server.properties, bukkit.yml, spigot.yml, commands.yml, eula.txt, server-icon.png
   mohist.sha256           empreinte du jar Mohist (le jar lui-même est dans la Release « base-serveur »)
 client/mods-tiers/        mods des autres auteurs utiles aux joueurs seulement (EntityCulling, Embeddium)
 launcher/                 le launcher des joueurs (Electron, Node.js) : `npm install` puis `npm start` dans ce dossier ;
@@ -118,8 +122,9 @@ monde/HeraliZ/            ancienne copie de la carte (v3 du 11/10) ; sera rempla
 .github/workflows/        fabrication et mise en ligne automatiques
 ```
 
-Le dépôt contient le serveur COMPLET : les 20 mods des autres auteurs + nos 25 mods (sources, fabriqués en 23 jars
-`-serveur` pour le Ptero) = les 43 jars du dossier `mods/` du serveur, et les 47 jars des joueurs.
+Le dépôt contient le serveur COMPLET : les 20 mods des autres auteurs + nos 23 mods (sources, fabriqués en 21 jars
+`-serveur` pour le Ptero) = les 41 jars du dossier `mods/` du serveur, et les 45 jars des joueurs (24/10 : HeraliZ Matchs
+et HeraliZ Wonder retirés).
 
 Jamais dans Git (voir `.gitignore`) :
 - `build/`, `run/`, `dist/`, `livraison/` (refaits à chaque fabrication) ;
@@ -146,14 +151,12 @@ Chaque mod « coupé » donne **3 jars** : `-serveur` (Ptero), `-client` (joueur
 | heraliz-tactique | heraliz_tactique | heraliz_tactique, heralisz_tactical, heralisz_melee, heralisz_heal, heralisz_grenade, heralisz_camo | mêlée, couteaux TaCZ frappés comme la mêlée (2.13.0), soins, grenades, camos et décorations d'armes (C4 [WIP] retiré le 16/10) ; skins de mêlée Desmoulins Lore et batte Doppler Saphir (2.21.0, modèles écrits par `outils/skins_melee.py`) ; 190 skins de couteaux par paliers (2.23.0, catalogue `outils/skins_couteaux.py`, section 10) Moteur repris de LR Tactical (licence GPL gardée) |
 | heraliz-clansetbases | heraliz_clansetbases | heraliz_clansetbases, heralisz_economie, heralisz_clans, heralisz_bases | hérals et clans ; **saison des clans (3.6.0, 22/10, `fr.heralisz.clans.saison`, `docs/SAISON_CLANS.md` §13)** : points PVE / PVP / events, classements, anti-abus, `/saison`, barème `serveur/config/heralisz_clans/saison.json`, état et journal hors du monde (`heralisz_clans/saison_*`), arbre d'améliorations du clan (onglet NIVEAU, `/clan ameliorer`, `model/Arbre`), niveaux jusqu'à 45, `/clan don` (3.0.0, 21/10 : ancien système des bunkers de clan retiré en entier : dimension `heralisz_bases:bunkers`, pillage, blindage, commandes `/base` des bunkers, écrans, touche N ; modId `heralisz_bases` gardé, vide ; les bases sont celles de CRac) ; territoires et alliés pour la carte du monde (`CarteApi`, 2.4.0) ; `/territoire deplacer` pour reposer une zone (2.6.0) ; **coffre du clan** (3.5.0, `server/CoffreClan`) : une ligne de 9 cases, bouton « Coffre du clan » de l'onglet Banque ou `/clan coffre`, écran de coffre de Minecraft ; déposer = BANQUE_DEPOSER, prendre = BANQUE_RETIRER ; refusés : armes (TaCZ, couteaux compris, mêlée, Wonder, arcs, épées), armures, explosifs (grenades, C4 et charge de CRac, TNT), sacs à dos et boîtes de Shulker, tag `heralisz_clans:coffre_interdit` ; gardé hors du monde (`heralisz_clans/coffres.dat`) ; clan dissous : contenu au chef s'il est en ligne, sinon perdu ; `ClansApi.deposerCoffre` (lu par réflexion par CRac) |
 | heralisz-utils | heralisz_utils | heralisz_utils, heraliz_corps, heraliz_ping, heraliz_usure, heraliz_vehicules, heraliz_carte | **carte du monde** (`heraliz_carte`, touche M : carte coupée à la bordure du monde, vue satellite ou relief refaite par `outils/carte_monde.py`, position du joueur, membres de son clan, territoires des clans, extractions ouvertes, lieux posés par `/carte lieu ...`, pings du clan, clic droit = marquer un point ; section 10), train (deux réseaux, choisi par monde : l'ancienne carte et la nouvelle, `train/reseau_v2.json` ; balles de TaCZ arrêtées par les voitures, vitres qui cassent, voir §10), ascenseur, blocs de la carte, ambiance, décors animés (moulins, éoliennes neuves ou à l'abandon, décanteurs), cadavres, roue de ping, usure des armes, véhicules ; forme de collision de meubles cfm sans toucher au jar (`meubles/FormesMeubles` : `cfm:model_239` escalier, `model_240` garde-corps, `model_241` plancher) |
-| heralisz-matchs | heralisz_matchs | heralisz_matchs | matchs : moteur commun, ClashWar (tournoi de clans), Duels + killcam + bombe de recherche et destruction (GeckoLib), Zombies (carte The Giant) ; 0.15.3 (24/10) : zombie labo et rôdeur coupés en deux (`ZombieLaboServeur`, `RodeurServeur` et `GriffeGoal` dans `src/serveur` : IA, bond, coups reçus pendant une sortie, son du coup), créés par `ZbRegistres.ZOMBIE_LABO_USINE` / `RODEUR_USINE` (branchées par `PartieServeur`), `creer(...)` passe par le type. Rien testé en jeu. |
 | heraliz-casino | heralizcasino | heralizcasino | casino en capsules (2.4.0, 23/10 : trouvées dans le loot, `CAPSULES` de `outils/loot_armes.py` ; plus aucun échange en hérals, verrou `EconomieServeur.CHANGE_HERALS` ; caisse = capsules contre objets, catalogue provisoire dans `casino.json`) ; zone du casino (entrée gratuite) et zone VIP (grades boutique, section 10), chacune avec ses entrées et ses videurs |
 | heraliz-crates | heralizcrates | heralizcrates | caisses animées HD, clés, roue de butin, éditeur de butin (depuis 2.19.0, 23/10 : butin changé en jeu gardé dans `heraliz_crates/butin_jeu/` à la racine du serveur, passe devant `config/heralizcrates/` que la mise en ligne réécrit ; `/heraliz loot fichier <caisse>` revient au fichier du dépôt) ; **caisse des emotes** (2.14.0, `spectacle`, scène de spectacle validée : chaque récompense débloque une emote, section 10) ; **écran des caisses premium** (2.22.0, 24/10, maquette « variante A Vitrine » validée, `client/gui/CaseOpenScreen`, section 11) ; 6e rareté affichée « Unique » (identifiant `mythic` gardé dans les fichiers) |
 | heraliz-loot | heraliz_loot | heraliz_loot | conteneurs de loot par tiers (T1 à T7 ; 68 modèles HD de plus depuis la 0.5.0 : 12 T3, 16 T4, 20 T5, 20 T6), rotation par zones : un conteneur posé ou remplacé à la main rejoint la zone du même palier à moins de 64 blocs, sinon crée la sienne (`/heralizloot proche`, `/heralizloot zone <id> part <pourcent>`) ; zones des salles à carte (`salles_carte/<nom>`), remplies seulement quand Bunker les recharge ; palier « T1 » à « T7 » en petit badge coloré à côté du nom dans l'écran de fouille et conteneurs de Minecraft scellés en survie (0.8.0) ; 0.11.2 (24/10) : réglages `ConfigLoot` passés dans `src/serveur`, enregistrés par la partie serveur (même fichier `heraliz_loot-server.toml`, mêmes clés ; `outils/loot_armes.py` écrit `facteurs_actifs` à son nouveau chemin). Rien testé en jeu. |
 | heraliz-decors | heraliz_decors | heraliz_decors | décors de la nouvelle carte : grillage militaire qui se raccorde dans 8 directions (`grillage`, `grillage_haut`), garde-corps en métal sur 1 à 4 côtés d'un même bloc (`garde_corps`, 1.10.0), mobilier de prison (1.11.0 : `toilettes_sales`, `lavabo_sale`, `lit_prison` à chaînes et `lit_superpose`, ces deux-là sur 2 blocs, `bloc/MeubleDouble` ; modèles et textures par `outils/prison.py`, `--rendus` pour les aperçus), blocs du désert et de l'arctique, taches de sang, lampes et guirlandes, grande cascade, eau animée ; brouillard dynamique (`/brume`) et zones dangereuses gaz / radiation / froid (`/zones`), lus dans le monde (`data/heraliz_brume.json`, `data/heraliz_zones.json`). Seulement les blocs posés sur la carte (1.9.0 : 48 blocs jamais posés retirés, d'après le workflow « Inventaire de la carte » ; gardés aussi `tole_toit_bleue` et `tole_toit_rouille`, dont les escaliers et dalles sont posés). Textures et modèles refaits par `python mods/heraliz-decors/outils/gen_assets.py` |
 | heraliz-armory | heraliz_armory | heraliz_armory | armures, ghillies, brassards, masques à gaz, combinaisons ; une seule protection par pièce et six raretés (0.15.0, section 10 « équilibrage ») |
 | heraliz-composants | heraliz_composants | heraliz_composants | 88 composants de craft (1.3.0, 21/10, choix du propriétaire : raretés écrites aussi dans `raretes.json` de HeraliZ Loot par `build.py` (fond de case, ligne de rareté, nom de la couleur de sa rareté) ; matériaux des bases : planches et brindilles Peu commun, pierres taillées et ciment Rare, fragments de métal et équerres Épique, métal renforcé et fil à souder Légendaire ; plaques recyclée / soudée / métal / renforcée = Peu commun / Rare / Épique / Légendaire ; composants de fabrication (canon, ressort, kit de pièces, tissu, alcool, batterie, circuit imprimé, ferraille, bocal de poudre, caoutchouc, scotch) Peu commun = 1er des 4 niveaux prévus (Peu commun → armes Commun, Rare → Peu commun, Épique → Rare, Légendaire → Épique ; Légendaire et Unique jamais fabriquées) ; 1.4.0 (21/10, rendus validés) : niveaux II Rare « anodisé », III Épique « militaire », IV Légendaire « doré » (`<id>_ii|_iii|_iv`, « Canon II »…), même modèle, autres matériaux (`MATERIAUX_NIVEAUX` en fin de `composants.py`, nouveaux matériaux en fin de `MATERIALS` de `engine.py`) : 88 composants ; corde et clous : un seul niveau, catégorie « barricades » ; caoutchouc et scotch : protection ; 1.2.0, 19/10 : « Brindilles » (tas en vrac, validé), 2 hérals chez le Bâtisseur, payent la pose des pièces de CRac à la place des bâtons, mêmes quantités, et la réparation en brindilles (`crac-building.toml`) ; 1.1.0 : catégorie « construction », maquettes validées : planches, pierres taillées, fragments de métal, métal renforcé vendus par le Bâtisseur ; clous, sac de ciment, équerres d'acier, bobine de fil à souder à trouver sur la carte (loot à faire) ; coûts d'amélioration de CRac (19/10, `crac-building.toml`) : toute pièce, quelle que soit sa forme, = 5 du matériau du palier + 5 de son objet de la carte : bois 5 planches + 5 clous, pierre 5 pierres taillées + 5 sacs de ciment, métal 5 fragments + 5 équerres, blindé 5 métal renforcé + 5 bobines de fil à souder ; réparation (20/10, CRac 1.13.2-beta) : 1 planche, 1 pierre taillée, 1 fragment de métal ou 1 métal renforcé (2 brindilles en brindilles) ; entretien de l'armoire : 1 de ce même matériau par pièce pour 24 h ; agrandir le claim : 10 puis 25 métal renforcé (au lieu de blocs de diamant) ; valeurs aussi par défaut dans le code de CRac ; `build.py` garde `ru_ru.json`, traduit à part ; textures des anciens matériaux gardées telles quelles : elles changent d'une machine à l'autre) (armes, soins, viseurs, munitions, protection, divers) et objets de récupération à revendre, modèles 3D et icônes ; rareté = couleur du nom ; tags `heraliz_composants:<catégorie>` et `tous`. Aucune recette ni loot (refonte à venir). Modèles, icônes, traductions, tags et `ComponentDefs.java` refaits par `python mods/heraliz-composants/outils/build.py mods/heraliz-composants` (catalogue : `outils/composants.py`) |
-| heraliz-wonder | heraliz_wonder | heraliz_wonder | Wonder Weapons façon CoD (zombies) |
 | heralisz-backpack | heralisz_backpack | backpacked | sacs à dos (Backpacked de MrCrayfish, modifié, licence LGPL gardée) ; 21/10 (heralisz17) : retirés les sacs de montagne (couleurs, mouton, zombie), imperméables, Taloon et les extensions de sac, livres d'enchantement des sacs sortis du jeu (onglet, livres, marchands, tables) ; Sac de sport en bandoulière, Sac à dos tactique et Sac de randonnée en 9 couleurs (rouge, bleu, vert, noir, orange, rose, jaune, blanc, neige), **écrites** par `python mods/heralisz-backpack/outils/sacs_couleurs.py` (`--apercu`), jamais à la main ; loot : la part des sacs retirés passe aux sacs restants (Loot 0.9.7). heralisz18 : `backpack_expand1` et `backpack_expand2` gardés comme objets vides (ni onglet ni loot) : la liste `curios:back` de geckolib222 les cite, et une liste qui cite un objet absent est refusée en entier (plus aucun sac dans la case du dos ni ouvrable). Avant de retirer un objet, chercher son identifiant dans les jars des autres auteurs. Rien testé en jeu |
 | heralisz-bunker | heralisz_bunker | heralisz_bunker | portes animées (reprises de HBM Modernized, GPL), cartes d'accès, barricades ; salles à carte (`/salle`, baguette du staff) : porte tenue ouverte tant que quelqu'un est dedans, loot de la salle (avec HeraliZ Loot) ; **fragments des cartes d'accès** (0.13.0, 24/10, demande du propriétaire ; rendus à valider avant la mise en ligne) : 4 fragments numérotés par carte, `heralisz_bunker:keycard_fragment_<green|blue|red>_<1-4>` (« Fragment de carte verte (1/4) », empilables par 16, `keycard/KeycardFragmentItem`), trouvés dans le loot (section 11 « Loot ») ; raretés : carte verte Rare, bleue Épique, rouge Légendaire ; les 4 numéros DIFFÉRENTS d'une carte = la carte : recette sans forme (grille 2 × 2, `data/heralisz_bunker/recipes/keycard_<couleur>_fragments.json`) ou clic droit avec un fragment quand les 4 sont dans l'inventaire (décidé par le serveur, `serveur/fragments/AssemblageFragments` par `keycard/FragmentsPont` : un de chaque retiré puis la carte donnée ; pas de place : refusé, rien retiré ; sinon « Fragments manquants : 2, 4 ») ; un numéro en double ne sert à rien (voulu). Modèles (morceaux déchirés de la vraie carte, liseré de rareté, hexagone avec le numéro devant et derrière, tranche blanche cassée) et textures **écrits** par `python mods/heralisz-bunker/outils/fragments.py --installer` (`--rendus DOSSIER` : planches), jamais à la main. Rien testé en jeu |
 | reanimation | reanimation | reanimation | joueurs à terre, réanimation, fouille (Curios compris), exécutions |
@@ -172,6 +175,16 @@ ni délai ; refusée en match, en combat, vers un joueur en match, et pendant le
 mémoire seulement. Warp réservé possible (`vip` = Rescapé et plus, ou `traqueur`, `roi_de_la_zone`) : refusé aux autres, et une zone VIP autour empêche d'y entrer à pied. Staff : `/warp set <nom> [vip|rescape|traqueur|roi_de_la_zone]` (endroit et regard du staff), `del`, `liste`, `nom <nom> <texte>`, `description <nom> <texte>`, `icone <nom>` (objet en main) ; noms réservés : set, del, liste, nom, description, icone ; 32 au plus ; gardés dans `heraliz_grades/warps.json` (hors du monde). Rien testé en jeu |
 | heraliz-quetes | heraliz_quetes | heraliz_quetes | **PNJ et quêtes** (v1 du 17/10, rien testé en jeu ; depuis la 1.3.0 du 18/10, un seul PNJ : le Commandant Varga, 39 quêtes principales en 5 chapitres, paiement et titre à chaque fin de chapitre, Clés de Quêtes en récompense `"objets"`, étapes `executer` (achever un joueur à terre, par réflexion sur Réanimation), `fabriquer` (arme faite à la Table d'armurier de TaCZ), `frappe` (frappe aérienne, `StrikeManager.countActive` par réflexion), conditions `armure` et rareté des composants ; objets 3D insigne, boîte noire, sacoche **écrits** par `python mods/heraliz-quetes/outils/objets.py --installer`, jamais à la main) : PNJ posés au spawn par le staff (`/pnj creer <id>`), dialogues, suite de quêtes par PNJ, sans limite par jour (contrats retirés le 18/10, choix du propriétaire : listes `contrats` vides, le code reste ; chaque quête dit en une phrase quoi faire ; accueil du PNJ selon qu'il a une quête à donner, `besoin`, ou une en cours, `en_cours` ; dons reconnus par le vrai nom des soins et grenades du mod tactique, `ConsumableId`…), `/quetes` (touche J) avec « Suivre » et suivi à droite de l'écran, points de quête posés à la baguette (`/quete baguette <groupe>`, gardés avec le monde), objets de quête, réputation et titres. Apparence des PNJ faite avec le créateur de CaraCrea (1.1.0 : clé `apparence` de leur fichier, `/pnj apparence <id> moi|fichier|aucune`, skin peint par CaraCrea chez le joueur, par réflexion côté serveur). Quêtes dans `serveur/config/heraliz_quetes/pnj/*.json` (guide : `serveur/config/heraliz_quetes/LISEZMOI.md`), progression hors du monde (`heraliz_quetes/joueurs/`). Scénario : `docs/QUETES_SCENARIO.md`. Arrivée des nouveaux (1.5.0, `serveur/Accueil`, client `RadioVarga`) : « Va voir le Commandant Varga pour commencer le tutoriel », puis seulement « Faire ma base » chez Varga, radio de Varga en bas à gauche pendant le tutoriel des bases (section 10 « arrivée ») |
 | spartan | spartan | spartan | **anticheat** : détections serveur, anti-ESP, défis d'intégrité, contrôle du jeu des joueurs (jars, Mixins, injection), bans compte + IP + PC, alertes Discord. Voir section 6 bis et `mods/spartan/README.md` |
+
+**Retirés le 24/10** (demande du propriétaire : focus DayZ) : heralisz-matchs (duels, ClashWar, Zombies) et
+heraliz-wonder (Wonder Weapons, et leur gunpack `serveur/tacz/heraliz_wonder`). **Tag de combat** (repris de Matchs,
+HeraliZ Utils 2.27.0, `fr.heralisz.utils.combat`) : 15 s en PvP, indicateur « EN COMBAT » en bas à droite, déconnexion
+en combat = mort (`heralisz_utils:deconnexion_combat`), commandes refusées en combat ou à terre sauf
+`commandes_permises_combat`, sur la carte seulement `[carte] commandes_permises`, pas de tir TaCZ à terre ; réglages
+`serveur/defaultconfigs/heraliz_combat-server.toml` (même contenu que l'ancien `heralisz_matchs-moteur.toml`). À la
+connexion, `serveur/RestesMatchs` d'Utils retire le drapeau `heralisz:en_match`, l'étiquette `heraliz_reste_allonge`
+et les objets prêtés par un match (NBT `HeraliszMatch`). Le kit d'interface de référence de `outils/copier_kit_ui.py`
+est dans `outils/kit_ui/`. Rien testé en jeu.
 
 Les modIds ne changent JAMAIS (mondes, configs, gunpacks et autres mods en dépendent). Même règle pour les noms de
 classes et les signatures des API (section 5).
@@ -223,11 +236,6 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
 - HeraliZ Quêtes : ses fichiers de langue sont **écrits** par `python mods/heraliz-quetes/outils/langues.py` (tableau
   `TEXTES`, trois langues) et ses icônes par `python mods/heraliz-quetes/outils/icones.py` ; jamais à la main. Les textes
   des PNJ et des quêtes sont dans `serveur/config/heraliz_quetes/pnj/*.json` (`"texte"` ou `{"fr", "en", "ru"}`).
-- la bombe et l'ordinateur des duels (modèles, textures HD, masques lumineux, sons de clavier et de piratage) sont
-  **générés** par `python mods/heralisz-matchs/outils/bombe/modeles.py` et `sons.py` (`--sortie` pour essayer ailleurs) ;
-  jamais retouchés à la main. Matchs dépend de GeckoLib depuis la 0.7.0 (geckolib222, compileOnly, jamais embarqué).
-- repères des sites A et B des duels (badge) : `textures/gui/duel_repere.png` est **généré** par
-  `python mods/heralisz-matchs/outils/reperes/reperes_sites.py` (`--apercu planche.png` pour une planche d'aperçu).
 - protections des armures (Armurerie) : `ArmorCatalog`, `SuitCatalog`, `GearCatalog` et les raretés des objets de
   l'Armurerie dans `raretes.json` sont **écrits** par `python mods/heraliz-armory/outils/equilibrage_armures.py`
   (tableaux `TENUE`, `ENSEMBLES`, `COMBINAISONS` en tête du script) ; jamais à la main.
@@ -296,8 +304,8 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
 - le camo d'une arme est l'étiquette NBT `HeraliszCamo` ; un camo à vie porte en plus `HeraliszCamoProprio` et
   `HeraliszCamoJeton` (`fr.heralisz.camo.CamoData`). Un mod qui pose lui-même un camo sur une arme qui peut porter un
   camo à vie doit retirer ces deux clés, sinon le serveur la prend pour un camo à vie périmé et lui enlève son camo
-  (pas le cas aujourd'hui : le Pack-a-Punch et Wonder ne touchent qu'aux armes prêtées des matchs, où les camos à vie
-  sont refusés).
+  (pas le cas aujourd'hui : le Pack-a-Punch et Wonder, qui le faisaient sur les armes prêtées des matchs, ont été retirés
+  avec les matchs le 24/10).
 
 **Les briques à connaître** (paquet `pont` de chaque projet, détails dans `docs/METHODE_CLIENT_SERVEUR.md`) :
 - `Parties.serveur(...)` / `Parties.client(...)` à la fin du constructeur `@Mod` : chargent `serveur.PartieServeur` /
@@ -334,12 +342,9 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 |---|---|---|
 | `fr.heralisz.economie.api.EconomieApi` | clansetbases (commun) | soldes en hérals, paiements (aussi lu par réflexion par quetes : récompenses, étapes « payer ») |
 | `fr.heralisz.clans.api.ClansApi`, `ClanInfo`, événements `ClanDissousEvent` / `MembreQuitteEvent` | clansetbases (commun) | clan d'un joueur, membres, droits |
-| `fr.heralisz.matchs.moteur.api.MatchApi` | matchs (commun) | `partieDe(ServerPlayer)`, `partie(id)`, en match ou pas |
-| `fr.heralisz.matchs.moteur.api.Partie`, `Equipe`, `CombatTag` (`restantMs(UUID)`), `Coffre`, `Arenes`, `Kit` | matchs (commun) | parties, équipes, tag de combat, coffre de match, arènes |
-| `fr.heralisz.matchs.zombies.jeu.api.ZombiesApi` | matchs (commun) | `TAG_PARTIE`, `partieDe(Entity)`, `planches(...)`, `interagir(...)`, Pack-a-Punch, sons |
-| `fr.heralisz.matchs.zombies.jeu.api.HudZombies.actif()` | matchs (commun, lu par le client) | HUD zombies affiché |
-| `fr.heralisz.matchs.moteur.client.MoteurClient.enMatch()`, `combatRestantMs()` | matchs (client) | états du joueur côté client |
-| `fr.heralisz.n07.api.N07Api` | boss (serveur) | boss final de The Giant (utilisé par Matchs) |
+| `fr.heralisz.utils.combat.CombatTag` (`restantMs(UUID)`, `estTague(UUID)`, clé `heralisz:combat_jusqua` du `persistentData`) | utils (serveur, lue par réflexion par clansetbases et caracrea ; la clé par grades, quetes, crac, emote, utils) | tag de combat (repris de Matchs le 24/10) |
+| `fr.heralisz.utils.combat.client.CombatClient.combatRestantMs()` | utils (client, lu par réflexion par emote) | temps restant du tag de combat chez le joueur |
+| `fr.heralisz.n07.api.N07Api` | boss (serveur) | boss final de The Giant (n'est plus appelé : Matchs retiré le 24/10) |
 | `fr.heraliz.reanimation.core.Downed.isDowned(Entity)`, `DownedManager` | reanimation (commun) | joueur à terre |
 | `fr.heraliz.reanimation.execution.Executions` | reanimation (serveur) | exécutions |
 | `com.caracrea.api.voice.CaraCreaVoice` | caracrea (serveur) | voix : couper un joueur, portée, routage |
@@ -348,20 +353,19 @@ les appellent, parfois par leur nom (réflexion, `Class.forName("...")`), ce que
 | `fr.heralisz.clans.api.CarteApi` (paquets `CarteDemandeC2S` / `CarteS2C`) | clansetbases (commun, rempli chez le joueur) | pour la carte du monde (lue par réflexion par utils) : `demander()` (au plus 1 par seconde), `zones()` (état public de chaque zone, celui du drapeau), `allies()` (membres de son clan dans le même monde, personne en match), `monClan()`, `version()`, `dessinerBanniere(...)`, `ravitailler(id)` |
 | `fr.heraliz.loot.SallesLoot` (`declarer`, `retirer`, `recharger`, `etat`) | loot (serveur, appelée par réflexion par Bunker) | salles à carte : leurs conteneurs quittent la rotation et ne se remplissent qu'à la recharge |
 | `fr.heraliz.loot.client.RaretesClient.couleur(ItemStack)` | loot (client, lu par réflexion par dayzhotbar) | couleur de rareté d'un objet (0 : aucune) |
-| `fr.heralisz.clans.saison.SaisonApi` (`active`, `pve`, `event`, `raid`, `perdreTout`, `points`, `rangs`, `palier`) | clansetbases (serveur, lue par réflexion par CRac, Loot, Quêtes, Matchs) | saison des clans : points (source du barème + quantité), prise du cœur, paliers de l'arbre du clan |
-| `fr.heraliz.crac.api.WipeApi.toutEffacer(MinecraftServer, Predicate<ItemStack>)`, `fr.heralisz.clans.server.ClanService.wipeServeur(Predicate<ItemStack>)`, `fr.heralisz.matchs.clashwar.CwClassement.toutEffacer(MinecraftServer)` | crac, clansetbases, matchs (serveur, lues par réflexion par quetes) | `/wipe tout` : bases, clans, hérals, saison, classement du ClashWar ; renvoient les objets à vie à rendre, par joueur |
+| `fr.heralisz.clans.saison.SaisonApi` (`active`, `pve`, `event`, `raid`, `perdreTout`, `points`, `rangs`, `palier`) | clansetbases (serveur, lue par réflexion par CRac, Loot, Quêtes) | saison des clans : points (source du barème + quantité), prise du cœur, paliers de l'arbre du clan |
+| `fr.heraliz.crac.api.WipeApi.toutEffacer(MinecraftServer, Predicate<ItemStack>)`, `fr.heralisz.clans.server.ClanService.wipeServeur(Predicate<ItemStack>)` | crac, clansetbases (serveur, lues par réflexion par quetes) | `/wipe tout` : bases, clans, hérals, saison ; renvoient les objets à vie à rendre, par joueur |
 | `fr.heraliz.crac.api.CoeurApi.clanAUnCoeur(UUID)` | crac (serveur, lue par réflexion par clansetbases) | le clan a son cœur posé dans sa base (sinon aucun point de saison) |
 | `fr.heraliz.grades.serveur.GradesApi` (`rangBoutique(UUID)` : 0 à 3, `gradeAffiche(UUID)`, `perm(UUID, String)` depuis la 2.0.0) | grades (serveur, lue par réflexion par le casino, CRac et Utils) | grade d'un joueur ; permissions réglées dans l'éditeur des grades (`tpa_recharge`, `tpa_delai`, `homes`, `home_recharge`, `rtp_recharge`, `planque_lignes`, `coffre_vip_lignes`, `zones_vip`) |
 | `fr.heraliz.loot.RaretesObjets.de(ItemStack)` | loot (commun, lu par réflexion par quetes) | rareté d'un objet demandé par une quête (`rarete_min`) |
 | `fr.heraliz.loot.LootApi.tirer(ServerLevel, String table, ServerPlayer, int max)` (0.12.2), `fr.heraliz.loot.PointsT7.apparaitre(...)` | loot (serveur, lues par réflexion par airstrike, `helico/Ponts`) | contenu d'un conteneur tiré dans une table de Loot (« t6 » : caisses de l'hélicoptère ; bonus de loot, points de saison) ; coffre T7 temporaire posé au crash |
-| étiquette de joueur `heraliz_reste_allonge` (entity tag, `addTag` / `removeTag`) | lue par reanimation (commun, `PlayerPoseMixin`), posée par casino (expulsion) et matchs (à terre des Zombies) | « reste allongé » : TaCZ remet chaque joueur debout à chaque tick (pose forcée effacée) ; tant que l'étiquette est là, seule une pose allongée passe. La poser avant `setForcedPose(SWIMMING)`, la retirer AVANT `setForcedPose(null)`, des deux côtés si le joueur doit se voir allongé (Réanimation 1.16.1, Casino 2.3.3, Matchs 0.11.1) |
+| étiquette de joueur `heraliz_reste_allonge` (entity tag, `addTag` / `removeTag`) | lue par reanimation (commun, `PlayerPoseMixin`), posée par casino (expulsion), retirée à la connexion par utils (`RestesMatchs`) | « reste allongé » : TaCZ remet chaque joueur debout à chaque tick (pose forcée effacée) ; tant que l'étiquette est là, seule une pose allongée passe. La poser avant `setForcedPose(SWIMMING)`, la retirer AVANT `setForcedPose(null)`, des deux côtés si le joueur doit se voir allongé (Réanimation 1.16.1, Casino 2.3.3, Matchs 0.11.1) |
 | données persistantes du joueur `PlayerPersisted.HeralizBonusLoot.<source>` | lues par loot (serveur), écrites par clansetbases (`clan`), utils (`objet`) et grades (`bon_<pct>`, bons des op) | bonus de loot : `{Pct, Fin (heure en ms)}` ou `{Pct, Restant (ticks de jeu)}`, sources additionnées, plafond 25 % (`fr.heraliz.loot.BonusLoot`) |
 
 **Pour qu'un nouveau mod utilise un des nôtres :**
 - dépendance obligatoire : la déclarer dans son `mods.toml` et compiler contre une copie du jar dans son `libs/`
   (`compileOnly fg.deobf("blank:<nom>:<version>-<suffixe du projet>")`, suffixe unique par projet) ;
-- dépendance facultative : appel par réflexion, en tolérant l'absence du mod (exemples : `Busy` de CaraCrea,
-  `Regles` de Wonder) ;
+- dépendance facultative : appel par réflexion, en tolérant l'absence du mod (exemple : `Busy` de CaraCrea) ;
 - appeler une API **du bon côté** : une API rangée dans `src/serveur` n'existe pas dans le jar des joueurs.
 Après un changement d'API : `python outils/verif_dependants.py` (doc dans le fichier) sur les jars des mods qui
 l'appellent.
@@ -513,7 +517,8 @@ Ne jamais laisser deux versions du même mod dans un dossier `mods/`.
 - Réglages : `serveur/config/spartan-common.toml` (fait foi). Webhooks et secret du launcher : JAMAIS dans le dépôt,
   marques `__SPARTAN_…__` remplacées par les secrets GitHub à l'envoi (section 8).
 - Branchements HeraliZ (`mods/spartan/src/serveur/java/com/Spartan/serveur/compat/HeralizCompat.java`, par réflexion,
-  sans dépendance) : alliés de l'anti-ESP = même équipe de match, même partie de zombies, sinon même clan ; voix de
+  sans dépendance) : alliés de l'anti-ESP = même clan (le code des équipes de match et des zombies y reste, sans effet depuis le
+  retrait des matchs le 24/10) ; voix de
   CaraCrea (un joueur caché qui parle est montré à ceux qui l'entendent). Si une de ces API change, ce fichier aussi.
   Utils envoie en plus son propre test d'alliance par message IMC (`ally_predicate`) : deux passagers d'une même rame du
   train (le train n'est pas fait de blocs, la ligne de vue « monde » coupait dans les tunnels et les gares).
@@ -585,7 +590,7 @@ Règles :
    - `mods/` devient la copie exacte de `livraison/mods serveur` : les anciennes versions sont retirées ;
    - plugins : les jars du Ptero qui ne sont pas dans le dépôt sont SUPPRIMÉS un par un (leurs dossiers de données
      restent), ceux du dépôt sont envoyés avec leurs réglages (jamais de base de données) ;
-   - `config/`, `tacz/`, `heralisz_matchs/` et `mohist-config/` sont complétés ou mis à jour, sans rien supprimer (sauf les fichiers listés dans `serveur/config_retires.txt` et `serveur/tacz_retires.txt`, effacés du Ptero) ; `config/spartan/officiel.json` est remplacé
+   - `config/`, `tacz/` et `mohist-config/` sont complétés ou mis à jour, sans rien supprimer (sauf les fichiers listés dans `serveur/config_retires.txt` et `serveur/tacz_retires.txt`, effacés du Ptero) ; `config/spartan/officiel.json` est remplacé
      (les bans et preuves de Spartan, dans `config/spartan/`, ne sont jamais touchés) ;
    - `defaultconfigs/` est copié aussi dans le `serverconfig/` du monde (nom lu dans le `server.properties` du Ptero) :
      **les configs du dépôt font foi**, un réglage changé à la main sur le serveur est écrasé au prochain envoi ;
@@ -1057,16 +1062,9 @@ nos props sans le code de MrCrayfish, pour remplacer cfm).
 **Boss** : gardés Ymirak, Mère des Ruines, Sujet N-07, Porteur de Peste, Sylvorn. Glacivore supprimé partout ;
 Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss rament : les optimiser.
 
-**Zombies (heralisz_matchs, `/zombies`)** :
-- première carte The Giant (refonte de Der Riese, BO3), le plus fidèle possible ; ensuite Kino der Toten ;
-- fin de carte : boss Sujet N-07 dans sa salle sous l'usine C (descente en monte-charge, intro passable, téléporteur
-  de retour après sa mort, pas de récompense pour l'instant) ;
-- HUD façon Black Ops 6 (barre de vie seulement après des dégâts, PV ×5, manche à la craie rouge, grosse annonce aux
-  manches 5, 10, 15, 20 puis toutes les 10) ;
-- dégâts des zombies qui montent avec les manches, plafond à la manche 20 ; zombies qui escaladent ; quête longue
-  (fusibles, âmes…), objets de quête placés au hasard, guidage vers les objectifs, secrets cachés ; atouts mélangés à
-  chaque partie ; camos du Pack-a-Punch réservés aux zombies ;
-- sons d'origine fournis par le propriétaire : lui demander ses fichiers plutôt que d'en synthétiser.
+**Matchs (duels, ClashWar, Zombies) et Wonder Weapons** : retirés du serveur le 24/10 (demande du propriétaire :
+focus DayZ). Les paragraphes de cette section qui parlent des duels, du ClashWar ou des zombies des matchs sont de
+l'historique.
 
 **Autres choix** :
 - CRac : aucun sac de couchage (retour à la base par la commande de téléportation, lits normaux) ; seuls les C4
@@ -2014,8 +2012,6 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `capturer` pas branchée : territoires à refaire). Pas encore branché : casino, duels / ClashWar / Zombies, soins
   utilisés, CRac, train, calque « Quêtes » de la carte du monde ; titres seulement dans /quetes. Écrans faits sans
   maquette validée (« fais, on verra ») ; icônes plates des anciens objets de quête provisoires (`outils/icones.py`).
-- **Wonder Weapons** : elles ont besoin de SimpleBedrockModel, fourni aujourd'hui par TaCZ et ywzj_vehicle (Jar-in-Jar).
-  Si on retire ywzj, vérifier qu'il reste fourni.
 - **Sécurité** : en mode cracké, un pseudo op est à qui l'enregistre en premier sur AuthMe : les admins enregistrent
   leurs comptes dès le premier démarrage. `ops.json` n'est pas dans le dépôt.
 - **Monde** : sur le Ptero, le monde s'appelle **`dayz_map`** (`level-name` du `server.properties` du Ptero, lu par la
