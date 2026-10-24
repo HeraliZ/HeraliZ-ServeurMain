@@ -58,12 +58,12 @@
     },
     "draw_time": 1.03,
     "put_away_time": 0.87,
-    "aim_time": 0.27,
+    "aim_time": 0.45,
     "sprint_time": 0.2,
     "bolt_action_time": 1.43,
-    "weight": 90.7,
+    "weight": 13.5,
     "movement_speed": {
-        "base": 0.0,
+        "base": -0.15,
         "aim": -0.4,
         "reload": -0.2
     },

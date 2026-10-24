@@ -51,14 +51,14 @@
     },
     "draw_time": 1.03,
     "put_away_time": 0.87,
-    "aim_time": 2.67,
+    "aim_time": 0.45,
     "sprint_time": 0.4,
     "weight": 13.5,
     "fire_mode": [
         "semi"
     ],
     "movement_speed": {
-        "base": -1.0,
+        "base": -0.15,
         "aim": -0.4,
         "reload": -0.85
     },

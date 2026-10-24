@@ -125,7 +125,7 @@
     "tacz:m95": {
       "famille": "precision_50",
       "rarete": "legendaire",
-      "degats": 25.92,
+      "degats": 23.76,
       "tete": 2.0
     },
     "tacz:minigun": {
@@ -245,7 +245,7 @@
     "arkaniaz:aw50": {
       "famille": "precision_50",
       "rarete": "legendaire",
-      "degats": 25.92,
+      "degats": 23.76,
       "tete": 2.0
     },
     "arkaniaz:berthier": {
@@ -281,7 +281,7 @@
     "arkaniaz:gm6_lynx": {
       "famille": "precision_50",
       "rarete": "legendaire",
-      "degats": 25.92,
+      "degats": 23.76,
       "tete": 2.0
     },
     "arkaniaz:gras1874": {
@@ -311,7 +311,7 @@
     "arkaniaz:m82a3": {
       "famille": "precision_50",
       "rarete": "legendaire",
-      "degats": 25.92,
+      "degats": 23.76,
       "tete": 2.0
     },
     "arkaniaz:mg3": {
@@ -363,9 +363,9 @@
       "tete": 1.5
     },
     "arkaniaz:ssg_08": {
-      "famille": "precision_308",
+      "famille": "precision_338",
       "rarete": "epique",
-      "degats": 16.64,
+      "degats": 20.8,
       "tete": 2.0
     },
     "arkaniaz:tec9": {
@@ -497,7 +497,7 @@
     "maxstuff:dragonuv_svd": {
       "famille": "precision_semi",
       "rarete": "epique",
-      "degats": 12.48,
+      "degats": 10.0,
       "tete": 2.0
     },
     "maxstuff:g36": {
@@ -563,7 +563,7 @@
     "maxstuff:m82a2": {
       "famille": "precision_50",
       "rarete": "legendaire",
-      "degats": 25.92,
+      "degats": 23.76,
       "tete": 2.0
     },
     "maxstuff:m870t": {

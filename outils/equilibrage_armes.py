@@ -48,8 +48,10 @@ FAMILLES = {
     "smg_9": (4.0, 1.5), "smg_45": (4.6, 1.5),
     "fusil_556": (5.2, 1.7), "fusil_762": (6.0, 1.7), "fusil_308": (7.5, 1.7), "fusil_308_rapide": (6.8, 1.7),
     "mitrailleuse_556": (5.4, 1.6), "mitrailleuse_762": (6.4, 1.6), "minigun": (4.5, 1.5),
-    "precision_308": (16.0, 2.0), "precision_semi": (12.0, 2.0), "precision_762": (14.0, 2.0),
-    "precision_338": (20.0, 2.0), "precision_50": (24.0, 2.0),
+    "precision_308": (16.0, 2.0), "precision_semi": (9.6154, 2.0), "precision_762": (14.0, 2.0),
+    "precision_338": (20.0, 2.0), "precision_50": (22.0, 2.0),
+    # 24/10 (choix du propriétaire) : SSG 08 comme les autres snipers (20,8 en Épique), Dragunov 10 en Épique,
+    # .50 (M82A3, M95, M82A2) un peu moins forts : 23,76 en Légendaire au lieu de 25,92
     # fusils à pompe : dégâts d'une décharge entière (répartis sur les plombs)
     "pompe": (24.0, 1.25), "pompe_balle": (20.0, 1.5), "pistolet_pompe": (20.0, 1.25), "pistolet_50bmg": (14.0, 1.6),
 }
@@ -59,7 +61,7 @@ FAMILLE_ARME = {
     "tacz:deagle": "pistolet_50", "maxstuff:deagle_12g": "pistolet_pompe", "maxstuff:deagle_50bmg": "pistolet_50bmg",
     "maxstuff:db_50": "pompe_balle", "tacz:minigun": "minigun",
     "maxstuff:ar10": "fusil_308_rapide", "maxstuff:ar10b": "fusil_308_rapide", "maxstuff:mk11": "fusil_308_rapide",
-    "maxstuff:dragonuv_svd": "precision_semi", "arkaniaz:ssg_08": "precision_308",
+    "maxstuff:dragonuv_svd": "precision_semi", "arkaniaz:ssg_08": "precision_338",
 }
 
 # Rareté de chaque arme (lance-grenades : Légendaire ; armes absentes : plancher de leur type)
