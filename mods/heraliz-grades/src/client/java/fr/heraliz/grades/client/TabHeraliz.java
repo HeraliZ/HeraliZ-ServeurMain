@@ -90,6 +90,8 @@ public final class TabHeraliz {
             if (gr == null || gr.type == Grade.Type.SOUTIEN) gr = Grade.SURVIVANT;
             // surnom (/nick) précédé de « ~ » : on sait que ce n'est pas le vrai pseudo (/nick qui <surnom> le donne)
             String nom = l != null && !l.surnom().isEmpty() ? "~" + l.surnom() : info.getProfile().getName();
+            // joueur caché par /vanish (seul le staff le reçoit) : marqué pour qu'on sache que les autres ne le voient pas
+            if (l != null && l.cache()) nom = nom + " " + t("cache");
             tous.add(new Joueur(info, nom, gr, l == null ? "" : l.clan(), l == null ? 0xFFFFFF : l.couleurClan()));
         }
         tous.sort(Comparator.comparingInt(Joueur::poids).reversed().thenComparing(j -> j.nom().toLowerCase(Locale.ROOT)));

@@ -206,6 +206,7 @@ public final class EchangeServeur {
     static int demander(ServerPlayer p, ServerPlayer cible) {
         if (serveur == null) return 0;
         if (cible == p) return refuse(p, msg("soi", "Tu ne peux pas échanger avec toi-même."));
+        if (!VanishServeur.visible(p, cible)) return refuse(p, Component.translatable("argument.entity.notfound.player"));
         Component r = refus(p);
         if (r != null) return refuse(p, r);
         if (dansEchange(p.getUUID())) return refuse(p, msg("deja", "Tu es déjà dans un échange."));

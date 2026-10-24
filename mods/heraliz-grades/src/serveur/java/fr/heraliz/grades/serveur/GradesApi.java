@@ -46,6 +46,14 @@ public final class GradesApi {
     }
 
     /**
+     * Vrai si le joueur est caché par /vanish (2.7.0) : à ne pas montrer aux joueurs qui ne sont pas du staff (listes,
+     * comptes de joueurs en ligne). Lisible par réflexion par nos autres mods.
+     */
+    public static boolean cache(UUID joueur) {
+        return VanishServeur.cache(joueur);
+    }
+
+    /**
      * Vrai si le joueur est connecté sur AuthMe (serveur cracké ; toujours vrai sinon). AuthMe injoignable : faux. Sert aux
      * commandes réservées (par exemple /inspecter de HeraliZ Utils) : un pseudo d'op ne vaut rien avant le /login.
      */

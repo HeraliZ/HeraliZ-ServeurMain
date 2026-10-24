@@ -173,6 +173,8 @@ final class TpaServeur {
     // ------------------------------------------------------------------ demande, réponse
     private static int demander(ServerPlayer p, ServerPlayer cible) {
         if (cible == p) return refus(p, Component.translatableWithFallback("heraliz_grades.tpa.soi", "Tu ne peux pas te téléporter vers toi-même."));
+        // joueur caché par /vanish : introuvable pour qui n'est pas du staff
+        if (!VanishServeur.visible(p, cible)) return refus(p, Component.translatable("argument.entity.notfound.player"));
         Component non = empechement(p);
         if (non != null) return refus(p, non);
         Component nonCible = empechementCible(cible);

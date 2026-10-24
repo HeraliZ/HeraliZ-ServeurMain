@@ -313,10 +313,21 @@ final class RegistreGrades {
     // ------------------------------------------------------------------ achats de la boutique (console : AzLink)
     enum Achat { NOUVEAU, PROLONGE, MONTE, EN_RESERVE, VIE_DEJA, ILLISIBLE, ERREUR }
 
+    /** Durée gardée en réserve pour un grade à vie (assez grande pour ne jamais finir, assez petite pour ne pas déborder). */
+    static final long RESERVE_VIE = Long.MAX_VALUE / 4;
+
+    /** Réserve dans l'ordre où elle démarrera : le grade le plus haut d'abord (comme {@link #expirer}). */
+    static List<Map.Entry<Grade, Long>> ordreReserve(Map<Grade, Long> reserve) {
+        List<Map.Entry<Grade, Long>> l = new ArrayList<>(reserve.entrySet());
+        l.sort((a, b) -> Integer.compare(b.getKey().rang, a.getKey().rang));
+        return l;
+    }
+
     /**
      * Achat d'un grade boutique pour {@code jours} jours (0 = à vie). Même grade : durée ajoutée (rien si déjà à vie).
      * Grade plus haut : il remplace l'ancien (prix plein, le temps restant de l'ancien est gardé en réserve et repart à la fin
-     * du nouveau). Grade plus bas qu'un grade en cours : mis en réserve, il démarre quand le grade en cours se termine.
+     * du nouveau ; un ancien grade à vie est gardé en réserve à vie). Grade plus bas qu'un grade en cours : mis en réserve,
+     * il démarre quand le grade en cours se termine.
      */
     Achat acheter(UUID uuid, String nom, Grade g, int jours) {
         if (illisible) return Achat.ILLISIBLE;
@@ -333,14 +344,17 @@ final class RegistreGrades {
             apres = base.boutique(g, jours == 0 ? 0L : Math.max(now, base.finBoutique()) + duree, res);
             r = Achat.PROLONGE;
         } else if (cur == null || g.rang > cur.rang) {
-            if (cur != null && base.finBoutique() > 0) res.merge(cur, Math.max(0, base.finBoutique() - now), Long::sum);
+            // 24/10 : un grade plus bas à vie n'était pas gardé (perdu en montant de grade) ; il repart à vie à la fin du nouveau
+            if (cur != null) res.merge(cur, base.finBoutique() > 0 ? Math.max(0, base.finBoutique() - now) : RESERVE_VIE,
+                    (a, b) -> Math.min(RESERVE_VIE, a + b));
             Long dejaReserve = res.remove(g);
-            long fin = jours == 0 ? 0L : now + duree + (dejaReserve == null ? 0 : dejaReserve);
+            // déjà ce grade à vie en réserve : il devient à vie tout de suite
+            long fin = jours == 0 || (dejaReserve != null && dejaReserve >= RESERVE_VIE) ? 0L : now + duree + (dejaReserve == null ? 0 : dejaReserve);
             apres = base.boutique(g, fin, res);
             r = cur == null ? Achat.NOUVEAU : Achat.MONTE;
         } else {
             if (base.finBoutique() == 0 && jours > 0) return Achat.VIE_DEJA;
-            res.merge(g, jours == 0 ? Long.MAX_VALUE / 4 : duree, (a, b) -> Math.min(Long.MAX_VALUE / 4, a + b));
+            res.merge(g, jours == 0 ? RESERVE_VIE : duree, (a, b) -> Math.min(RESERVE_VIE, a + b));
             apres = base.boutique(cur, base.finBoutique(), res);
             r = Achat.EN_RESERVE;
         }
@@ -365,17 +379,20 @@ final class RegistreGrades {
         Map<UUID, Fiche> avant = new HashMap<>(fiches);
         for (Map.Entry<UUID, Fiche> e : new ArrayList<>(fiches.entrySet())) {
             Fiche f = e.getValue();
-            if (f.boutique() == null || f.finBoutique() == 0 || f.finBoutique() > now) continue;
+            // 24/10 : sans grade en cours (retiré à la main par la console), la réserve démarre aussi (avant, elle restait bloquée)
+            boolean fini = f.boutique() != null && f.finBoutique() > 0 && f.finBoutique() <= now;
+            boolean bloquee = f.boutique() == null && !f.reserve().isEmpty();
+            if (!fini && !bloquee) continue;
             Map<Grade, Long> res = new HashMap<>(f.reserve());
             Grade suivant = res.keySet().stream().max((a, b) -> Integer.compare(a.rang, b.rang)).orElse(null);
             Fiche n;
             if (suivant != null) {
                 long reste = res.remove(suivant);
-                n = f.boutique(suivant, reste >= Long.MAX_VALUE / 4 ? 0L : now + reste, res);
+                n = f.boutique(suivant, reste >= RESERVE_VIE ? 0L : now + reste, res);
             } else n = f.boutique(null, 0L, res);
             if (n.vide()) fiches.remove(e.getKey());
             else fiches.put(e.getKey(), n);
-            journaliser("boutique | fin | " + f.nom() + " (" + e.getKey() + ") | " + f.boutique().id + (suivant != null ? " -> " + suivant.id : ""));
+            journaliser("boutique | fin | " + f.nom() + " (" + e.getKey() + ") | " + (f.boutique() != null ? f.boutique().id : "aucun") + (suivant != null ? " -> " + suivant.id : ""));
             touches.add(e.getKey());
         }
         if (touches.isEmpty()) return touches;

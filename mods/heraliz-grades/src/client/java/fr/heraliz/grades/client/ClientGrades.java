@@ -23,5 +23,7 @@ public final class ClientGrades implements Partie {
       // bons (2.5.0) : éditeur des op, effet « Bonus de loot » de l'inventaire (avant l'enregistrement de l'effet)
       fr.heraliz.grades.bon.EffetBonusLoot.AFFICHAGE = new AffichageBonusLoot();
       fr.heraliz.grades.bon.ReseauBon.RECEPTION_EDITEUR.brancher(EcranBon::recevoir);
+      // panneau admin des op (2.7.0, /panel)
+      ReseauGrades.RECEPTION_PANEL.brancher(m -> EcranPanel.ouvrir());
    }
 }

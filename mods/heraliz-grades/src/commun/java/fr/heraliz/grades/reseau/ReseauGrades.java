@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Canal réseau de HeraliZ Grades (protocole 5 depuis le 22/10 : surnom dans le tab) : menu /kit, menu /warp, tab (grades et clans des joueurs connectés),
+ * Canal réseau de HeraliZ Grades (protocole 6 depuis le 24/10 : joueurs cachés du staff dans le tab, panneau admin ; 5 : surnom dans le tab) : menu /kit, menu /warp, tab (grades et clans des joueurs connectés),
  * définitions des grades (2.0.0) et éditeur des grades des op. Le serveur envoie l'état des kits (contenu, recharge) ; le
  * joueur ne peut que DEMANDER un kit par son identifiant : grade, recharge, place et contenu sont décidés et vérifiés par
  * le serveur. Un joueur avec un jar plus ancien (sans ce canal) est refusé à la connexion : il doit prendre le nouveau jar.
@@ -24,7 +24,7 @@ public final class ReseauGrades {
     private ReseauGrades() {
     }
 
-    private static final String VERSION = "5";
+    private static final String VERSION = "6";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -60,10 +60,20 @@ public final class ReseauGrades {
      * Une ligne du tab : grade affiché (id), tag de clan (vide sans clan) avec sa couleur, et surnom (/nick, vide sans
      * surnom ou si le joueur n'y a plus droit).
      */
-    public record LigneTab(UUID uuid, String grade, String clan, int couleurClan, String surnom) {
+    public record LigneTab(UUID uuid, String grade, String clan, int couleurClan, String surnom, boolean cache) {
     }
 
-    /** Grades et clans des joueurs connectés (serveur -> tous), renvoyés quand quelque chose change. */
+    /** Ouvrir le panneau admin (serveur -> op, après /panel ; droits vérifiés par le serveur). */
+    public record OuvrirPanel() {
+    }
+
+    /** Ouverture du panneau admin reçue par le joueur : branchée par la partie client. */
+    public static final Crochet<OuvrirPanel> RECEPTION_PANEL = new Crochet<>();
+
+    /**
+     * Grades et clans des joueurs connectés (serveur -> chaque joueur), renvoyés quand quelque chose change ; un joueur
+     * caché par /vanish n'est envoyé qu'au staff (marqué {@code cache}).
+     */
     public record InfosTab(List<LigneTab> lignes) {
     }
 
@@ -148,12 +158,13 @@ public final class ReseauGrades {
                         b.writeUtf(l.clan(), MAX_ID);
                         b.writeInt(l.couleurClan());
                         b.writeUtf(l.surnom(), MAX_ID);
+                        b.writeBoolean(l.cache());
                     }
                 })
                 .decoder(b -> {
                     int n = Math.min(b.readVarInt(), MAX_LIGNES);
                     List<LigneTab> lignes = new ArrayList<>(n);
-                    for (int i = 0; i < n; i++) lignes.add(new LigneTab(b.readUUID(), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readInt(), b.readUtf(MAX_ID)));
+                    for (int i = 0; i < n; i++) lignes.add(new LigneTab(b.readUUID(), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readInt(), b.readUtf(MAX_ID), b.readBoolean()));
                     return new InfosTab(lignes);
                 })
                 .consumerMainThread((m, ctx) -> {
@@ -200,6 +211,15 @@ public final class ReseauGrades {
                 .consumerMainThread((m, ctx) -> {
                     ServerPlayer p = ctx.get().getSender();
                     if (p != null) RECEPTION_ACTION.accept(new ActionRecue(p, m));
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+        CANAL.messageBuilder(OuvrirPanel.class, 8, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((m, b) -> {
+                })
+                .decoder(b -> new OuvrirPanel())
+                .consumerMainThread((m, ctx) -> {
+                    RECEPTION_PANEL.accept(m);
                     ctx.get().setPacketHandled(true);
                 })
                 .add();

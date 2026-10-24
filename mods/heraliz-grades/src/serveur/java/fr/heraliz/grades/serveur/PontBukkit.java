@@ -14,7 +14,9 @@ import java.util.UUID;
  * <ul>
  *    <li>AuthMe : un joueur n'a ses droits de grade qu'une fois connecté par mot de passe (en mode cracké, n'importe qui
  *    peut arriver avec le pseudo d'un Fondateur ; tant qu'il n'a pas fait /login, il n'est personne) ;</li>
- *    <li>nom affiché Bukkit (le chat des serveurs hybrides l'utilise) : on y met le préfixe du grade.</li>
+ *    <li>nom affiché Bukkit (le chat des serveurs hybrides l'utilise) : on y met le préfixe du grade ;</li>
+ *    <li>/vanish du staff (2.7.0) : {@code Player.hidePlayer(Plugin, Player)} de Bukkit (liste Tab, entité, suivi), et
+ *    messages d'arrivée et de départ retirés pour un joueur caché.</li>
  * </ul>
  * Règle de sécurité : sur un serveur dédié en mode cracké, si AuthMe ne peut pas être interrogé, le joueur est considéré
  * NON connecté (on refuse plutôt que d'accorder par erreur). En solo ou en mode premium, pas de contrôle.
@@ -127,14 +129,7 @@ final class PontBukkit {
             Class<?> evenement = Class.forName("org.bukkit.event.player.AsyncPlayerChatEvent", false, cl);
             Class<?> plugin = Class.forName("org.bukkit.plugin.Plugin", false, cl);
             Object pm = bukkit.getMethod("getPluginManager").invoke(null);
-            Object proprio = null;
-            for (String nom : new String[]{"spark", "LuckPerms", "AuthMe", "WorldGuard"}) {
-                Object p = pm.getClass().getMethod("getPlugin", String.class).invoke(pm, nom);
-                if (p != null && Boolean.TRUE.equals(p.getClass().getMethod("isEnabled").invoke(p))) {
-                    proprio = p;
-                    break;
-                }
-            }
+            Object proprio = porteur();
             if (proprio == null) throw new IllegalStateException("aucun plugin chargé pour porter l'écouteur");
             Method setFormat = evenement.getMethod("setFormat", String.class);
             Method getPlayerChat = evenement.getMethod("getPlayer");
@@ -161,6 +156,105 @@ final class PontBukkit {
             LOG.info("[grades] format du chat branché (« Pseudo » message »)");
         } catch (Throwable ex) {
             LOG.warn("[grades] format du chat impossible à brancher, chat de Mohist inchangé : {}", ex.toString());
+        }
+    }
+
+    /** Un plugin Bukkit chargé et actif (le mod n'est pas un plugin : écouteurs et joueurs cachés lui sont rattachés), null sinon. */
+    private static Object porteur() throws ReflectiveOperationException {
+        if (bukkit() == null) return null;
+        Object pm = bukkit.getMethod("getPluginManager").invoke(null);
+        for (String nom : new String[]{"spark", "LuckPerms", "AuthMe", "WorldGuard"}) {
+            Object p = pm.getClass().getMethod("getPlugin", String.class).invoke(pm, nom);
+            if (p != null && Boolean.TRUE.equals(p.getClass().getMethod("isEnabled").invoke(p))) return p;
+        }
+        return null;
+    }
+
+    // ------------------------------------------------------------------ /vanish
+    private static Method hidePlayer, showPlayer;
+    private static Object porteurCache;
+    private static boolean alerteCache;
+
+    /**
+     * Cache (ou remontre) {@code cible} à {@code voyant} par Bukkit ({@code hidePlayer} / {@code showPlayer} : retiré de sa
+     * liste Tab et de son suivi d'entités, gardé par Bukkit tant que le voyant reste connecté). Faux si Bukkit est absent
+     * ou si l'appel échoue : l'appelant fait alors lui-même le travail ({@link VanishServeur}).
+     */
+    static boolean cacher(ServerPlayer voyant, ServerPlayer cible, boolean cacher) {
+        if (bukkit() == null) return false;
+        try {
+            if (hidePlayer == null || porteurCache == null) {
+                ClassLoader cl = bukkit.getClassLoader();
+                Class<?> joueur = Class.forName("org.bukkit.entity.Player", false, cl);
+                Class<?> plugin = Class.forName("org.bukkit.plugin.Plugin", false, cl);
+                porteurCache = porteur();
+                if (porteurCache == null) throw new IllegalStateException("aucun plugin chargé pour porter les joueurs cachés");
+                hidePlayer = joueur.getMethod("hidePlayer", plugin, joueur);
+                showPlayer = joueur.getMethod("showPlayer", plugin, joueur);
+            }
+            Object v = joueurBukkit(voyant.getUUID()), c = joueurBukkit(cible.getUUID());
+            if (v == null || c == null) return false;
+            (cacher ? hidePlayer : showPlayer).invoke(v, porteurCache, c);
+            return true;
+        } catch (Throwable ex) {
+            hidePlayer = null;
+            porteurCache = null;
+            if (!alerteCache) {
+                alerteCache = true;
+                LOG.warn("[grades] /vanish par Bukkit impossible, paquets de Minecraft à la place : {}", ex.toString());
+            }
+            return false;
+        }
+    }
+
+    private static boolean connexionsBranchees;
+
+    /**
+     * Messages « X a rejoint / quitté la partie » de Bukkit (Mohist) retirés pour un joueur caché par /vanish : écouteur
+     * de PlayerJoinEvent et PlayerQuitEvent en priorité HIGHEST, rattaché à un plugin déjà chargé. Sans Bukkit, rien.
+     */
+    static void brancherConnexions(java.util.function.Predicate<UUID> cache) {
+        if (connexionsBranchees || bukkit() == null) return;
+        try {
+            Object proprio = porteur();
+            if (proprio == null) return;
+            connexionsBranchees = true;
+            ClassLoader cl = bukkit.getClassLoader();
+            Class<?> ecouteur = Class.forName("org.bukkit.event.Listener", false, cl);
+            Class<?> executeur = Class.forName("org.bukkit.plugin.EventExecutor", false, cl);
+            Class<?> priorite = Class.forName("org.bukkit.event.EventPriority", false, cl);
+            Class<?> plugin = Class.forName("org.bukkit.plugin.Plugin", false, cl);
+            Class<?> arrivee = Class.forName("org.bukkit.event.player.PlayerJoinEvent", false, cl);
+            Class<?> depart = Class.forName("org.bukkit.event.player.PlayerQuitEvent", false, cl);
+            Method joueurArrivee = arrivee.getMethod("getPlayer"), joueurDepart = depart.getMethod("getPlayer");
+            Method msgArrivee = arrivee.getMethod("setJoinMessage", String.class), msgDepart = depart.getMethod("setQuitMessage", String.class);
+            Method getUniqueId = Class.forName("org.bukkit.entity.Entity", false, cl).getMethod("getUniqueId");
+            Object pm = bukkit.getMethod("getPluginManager").invoke(null);
+            Object e = Proxy.newProxyInstance(cl, new Class<?>[]{ecouteur}, (px, m, a) -> objet(px, m, a));
+            Object x = Proxy.newProxyInstance(cl, new Class<?>[]{executeur}, (px, m, a) -> {
+                if (m.getName().equals("execute") && a != null && a.length == 2 && a[1] != null) {
+                    boolean entre = arrivee.isInstance(a[1]);
+                    if (!entre && !depart.isInstance(a[1])) return null;
+                    try {
+                        Object bp = (entre ? joueurArrivee : joueurDepart).invoke(a[1]);
+                        if (bp != null && getUniqueId.invoke(bp) instanceof UUID id && cache.test(id)) {
+                            (entre ? msgArrivee : msgDepart).invoke(a[1], (Object) null);
+                        }
+                    } catch (Throwable ex) {
+                        // message laissé tel quel
+                    }
+                    return null;
+                }
+                return objet(px, m, a);
+            });
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            Object haute = Enum.valueOf((Class) priorite, "HIGHEST");
+            Method enregistrer = pm.getClass().getMethod("registerEvent", Class.class, ecouteur, priorite, executeur, plugin, boolean.class);
+            enregistrer.invoke(pm, arrivee, e, haute, x, proprio, false);
+            enregistrer.invoke(pm, depart, e, haute, x, proprio, false);
+            LOG.info("[grades] messages d'arrivée et de départ des joueurs cachés (/vanish) branchés");
+        } catch (Throwable ex) {
+            LOG.warn("[grades] messages d'arrivée et de départ des joueurs cachés impossibles à couper : {}", ex.toString());
         }
     }
 

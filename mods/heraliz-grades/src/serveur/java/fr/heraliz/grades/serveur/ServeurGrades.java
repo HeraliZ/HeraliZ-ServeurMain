@@ -18,7 +18,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Partie serveur : registre des grades, commandes /grade, /kit, /lier, /delier, /nick et /chatcouleur, préfixe du grade devant le pseudo (liste Tab, chat).
+ * Partie serveur : registre des grades, commandes /grade, /kit, /lier, /delier, /nick, /chatcouleur, /abonnement, /vanish,
+ * /nametag et /panel, préfixe du grade devant le pseudo (liste Tab, chat).
  * <p>
  * Nom affiché : « [CLAN] [Traqueur] Pseudo » (tag de clan lu dans heraliz-clansetbases, puis grade), mis par NameFormat (chat,
  * liste Tab : on remplace le nom de liste posé par les clans, qui doublerait le tag) et dans le nom affiché Bukkit.
@@ -67,6 +68,9 @@ public final class ServeurGrades implements Partie {
         // bons réglés par les op (/bon editeur) : hérals, PB, grade, bonus de loot, commande au clic droit
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> BonServeur.enregistrer(e.getDispatcher()));
         BonServeur.brancher();
+        // modération du staff (2.7.0) : /vanish, /nametag ; /abonnement et /panel (panneau admin des op)
+        VanishServeur.brancher();
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> AbonnementServeur.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
             if (e.phase != TickEvent.Phase.END) return;
             BoutiqueServeur.tick();
@@ -88,6 +92,7 @@ public final class ServeurGrades implements Partie {
         BoutiqueServeur.demarrer(e.getServer(), dossier);
         EchangeServeur.demarrer(e.getServer(), dossier);
         BonServeur.demarrer(e.getServer(), dossier);
+        VanishServeur.demarrer(dossier);
         AUTH.clear();
     }
 
@@ -100,6 +105,7 @@ public final class ServeurGrades implements Partie {
         EchangeServeur.arreter();
         BoutiqueServeur.arreter();
         BonServeur.arreter();
+        VanishServeur.arreter();
         Pb.arreter();
         AUTH.clear();
     }
@@ -131,6 +137,8 @@ public final class ServeurGrades implements Partie {
         PontBukkit.brancherChat();
         registre.noterNom(p.getUUID(), p.getGameProfile().getName());
         EditeurServeur.envoyerDefinitions(p);
+        // joueurs cachés (/vanish) : retirés tout de suite chez celui qui arrive, et lui caché s'il l'est
+        VanishServeur.connexion(p);
         rafraichir(p);
         TabServeur.maj(p.server, true);
         // objets d'un échange conclu pendant son absence
@@ -146,12 +154,14 @@ public final class ServeurGrades implements Partie {
         SurnomsServeur.oublier(e.getEntity().getUUID());
         LienDiscord.oublier(e.getEntity().getUUID());
         EchangeServeur.deconnexion(e.getEntity().getUUID());
+        VanishServeur.deconnexion(e.getEntity().getUUID());
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || registre == null || ++ticks % 40 != 0) return;
         if (ticks % 200 == 0) KitsServeur.relireSiChange();
         if (ticks % 120 == 0) LienDiscord.suivre();
+        VanishServeur.appliquer(e.getServer());
         TabServeur.maj(e.getServer(), false);
         MinecraftServer srv = e.getServer();
         if (ticks % 1200 == 0) {
@@ -174,6 +184,11 @@ public final class ServeurGrades implements Partie {
             PontBukkit.nomAffiche(p, nomBukkit(p));
             if (registre.fiche(p.getUUID()) != null && registre.fiche(p.getUUID()).staff() != null || p.hasPermissions(2)) srv.getCommands().sendCommands(p);
         }
+    }
+
+    /** Note une ligne dans le journal des grades (rien hors d'un serveur démarré). */
+    static void registreJournal(String ligne) {
+        if (registre != null) registre.journaliser(ligne);
     }
 
     /** Remet à jour le préfixe du joueur partout (après un changement de grade ou à la connexion). */
