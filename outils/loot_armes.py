@@ -204,10 +204,12 @@ RARETES_IMPOSEES = {
 # carte est meilleure. Ajoutés aux tables sans changer les poids des autres objets (ajouter_fragments).
 FRAGMENT = "heralisz_bunker:keycard_fragment_"
 RARETE_FRAGMENTS = {"green": "rare", "blue": "epique", "red": "legendaire"}
+# 24/10 (choix du propriétaire, « bien plus rare qu'une arme ou un composant, ça doit vraiment pas être simple ») :
+# environ 5 fois moins qu'au départ ; une arme sort 10 à 25 fois pour 100 conteneurs, un fragment 0,05 à 0,4
 FRAGMENTS_POUR_100 = {
-    "green": {2: 1.5, 3: 2.0, 4: 2.0, 5: 1.5},
-    "blue": {4: 0.8, 5: 1.2, 6: 1.5},
-    "red": {5: 0.3, 6: 0.6, 7: 4.0},
+    "green": {2: 0.3, 3: 0.4, 4: 0.4, 5: 0.3},
+    "blue": {4: 0.12, 5: 0.2, 6: 0.25},
+    "red": {5: 0.04, 6: 0.08, 7: 0.6},
 }
 RARETES_IMPOSEES.update({f"{FRAGMENT}{c}_{n}": r for c, r in RARETE_FRAGMENTS.items() for n in range(1, 5)})
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
