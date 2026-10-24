@@ -1267,7 +1267,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
     froid) perd 1 point de durabilité toutes les N s (`[usure]` de `serveur/defaultconfigs/heraliz_decors-server.toml` :
     gaz 7 s, radiation 5 s, froid 5 s, soit 20 à 50 min selon la pièce) ; barre vide = « usée » (`ZonesServeur.usee`,
     `Protection.usee` : à 1 point de la casse) : elle ne protège plus de ces zones (filtres de l'Armurerie compris),
-    protège toujours des balles, n'est jamais détruite par cette usure ; durabilité et « Usée » dans l'infobulle. réparation : kits de réparation de HeraliZ Utils (24/10, +15 / +35 / +60 %).
+    protège toujours des balles, n'est jamais détruite par cette usure ; durabilité et « Usée » dans l'infobulle. Réparation : kits de réparation de HeraliZ Utils (24/10, +15 / +35 / +60 %).
     Tenue de plongée jamais dans le loot (`ARMURES_EXCLUES` de `outils/loot_armes.py`) ;
   - armes : dégâts contre les joueurs réglés par famille (Tactique 2.14.0, `serveur/DegatsArmes`), joueur à 20 PV :
     fusil d'assaut 5,56 Rare 5,2 par balle (4 balles sans armure, 6 en Rare, 10 en Unique ; tête ×1,7 : 3 sans casque,
