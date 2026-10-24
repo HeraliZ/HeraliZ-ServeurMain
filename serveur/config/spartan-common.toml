@@ -384,3 +384,23 @@
 	#Vide = vérification désactivée. Au moins 32 caractères aléatoires. NE JAMAIS LE PUBLIER.
 	launcherSecret = "__SPARTAN_LAUNCHER_SECRET__"
 
+#Gardien : l'anticheat du launcher HeraliZ (1.14.0 ou plus récent). Pendant la partie, le launcher reste
+#en arrière-plan et regarde depuis l'extérieur du jeu les programmes de triche connus (Cheat Engine,
+#injecteurs, débogueurs, décompilateurs) et les jars du jeu ; le jeu relit ses rapports signés et les
+#envoie ici. Seuls les noms de la liste du launcher trouvés arrivent, jamais la liste des programmes.
+#Toujours des ALERTES au staff (« Gardien », « Gardien muet »), jamais d'expulsion, sauf required.
+[gardien]
+	#Active le Gardien.
+	enabled = true
+	#true : connexion REFUSÉE si le jeu a été lancé sans le Gardien (launcher plus ancien que 1.14.0,
+	#autre lanceur). Activer une fois le nouveau launcher distribué à tous les joueurs.
+	required = false
+	#Sans rapport du Gardien depuis ce temps (launcher fermé de force) : alerte « Gardien muet ».
+	#Range: 30 ~ 3600
+	silenceSeconds = 90
+	#Capture d'écran demandée quand un programme de triche est vu (si le joueur l'a
+	#autorisée).
+	captureOnTool = true
+	#Noms de la liste du launcher à ne plus signaler (fausses alertes), ex. "injector".
+	ignoredTools = []
+

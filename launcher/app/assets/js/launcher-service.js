@@ -12,6 +12,7 @@ const { validateSelectedJvm, ensureJavaDirIsRoot, javaExecFromRoot, discoverBest
 const { getServerStatus } = require('helios-core/mojang')
 const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
+const { Gardien } = require('./gardien')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { chargerClePublique, verifierPack } = require('./signature')
@@ -590,19 +591,34 @@ class LauncherService {
             const { version, loader } = await this.repair(distro, server)
             this.emit('launch', 'Démarrage de Minecraft…')
             const jetonSpartan = await this.jetonSpartan()
-            const jeu = new ProcessBuilder(server, version, loader, profile, app.getVersion(), jetonSpartan).build()
+            const pb = new ProcessBuilder(server, version, loader, profile, app.getVersion(), jetonSpartan)
+            // Gardien (gardien.js) : clé de ce lancement, donnée au jeu par son environnement
+            const cleGardien = Gardien.nouvelleCle()
+            pb.cleGardien = cleGardien
+            const jeu = pb.build()
             this.game = jeu
             jeu.once('spawn', () => {
                 this.noterPartie(jeu.pid)
-                this.emit('running', 'Minecraft est lancé. Bonne survie !', 100, 'Tu peux fermer le launcher : le jeu reste ouvert.')
+                this.arreterGardien()
+                try {
+                    this.gardien = new Gardien({
+                        dossierJeu: pb.gameDir, pid: jeu.pid, cle: cleGardien,
+                        dossiersJars: [path.join(pb.gameDir, 'mods'), path.join(Config.getCommonDirectory(), 'modstore')]
+                    }).demarrer()
+                } catch (erreur) {
+                    console.error('[HeraliZ/gardien]', erreur?.code || erreur?.message)
+                }
+                this.emit('running', 'Minecraft est lancé. Bonne survie !', 100, 'Tu peux fermer la fenêtre : l’anticheat HeraliZ reste actif en arrière-plan tant que le jeu est ouvert.')
             })
             jeu.once('error', error => {
+                this.arreterGardien()
                 this.oublierPartie(jeu.pid)
                 this.game = null
                 this.busy = false
                 this.emit('error', `Impossible de démarrer Minecraft : ${sansChemins(error.message)}`)
             })
             jeu.once('close', code => {
+                this.arreterGardien()
                 this.oublierPartie(jeu.pid)
                 this.game = null
                 this.busy = false
@@ -649,8 +665,20 @@ class LauncherService {
         return ouverte
     }
 
-    // Fermeture du launcher : le jeu, lancé détaché, n'est pas arrêté. Le launcher cesse seulement de le suivre.
+    /** Le Gardien suit-il une partie ? Tant que oui, le launcher reste ouvert en arrière-plan (index.js). */
+    gardienActif() {
+        return Boolean(this.gardien && !this.gardien.arrete)
+    }
+
+    arreterGardien() {
+        this.gardien?.arreter()
+        this.gardien = null
+    }
+
+    // Fermeture du launcher : le jeu, lancé détaché, n'est pas arrêté. Le launcher cesse seulement de le suivre (le
+    // Gardien aussi : le serveur le verra « muet »).
     dispose() {
+        this.arreterGardien()
         this.game?.unref?.()
         this.busy = false
     }

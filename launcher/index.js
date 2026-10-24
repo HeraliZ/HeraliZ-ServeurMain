@@ -74,10 +74,12 @@ function createWindow() {
 
 if (!app.requestSingleInstanceLock()) app.quit()
 else {
-    app.on('second-instance', () => { if (win) { win.restore(); win.focus() } })
+    app.on('second-instance', () => { if (win) { win.restore(); win.focus() } else if (app.isReady()) createWindow() })
     app.whenReady().then(() => {
         const LauncherService = require('./app/assets/js/launcher-service')
         service = new LauncherService(config, progress => {
+            // fenêtre fermée pendant la partie : le launcher restait pour le Gardien ; partie finie, il se ferme
+            if (!win && !service?.gardienActif() && progress.phase !== 'running') { app.quit(); return }
             if (win && !win.isDestroyed()) {
                 win.webContents.send('heraliz:progress', progress)
                 win.setProgressBar(progress.busy && progress.phase !== 'running' ? (progress.percent == null ? 2 : progress.percent / 100) : -1)
@@ -164,5 +166,7 @@ function choisirUpdater() {
     if (process.platform !== 'linux') return majs.autoUpdater
     return appImage ? new majs.AppImageUpdater() : new majs.DebUpdater()
 }
-app.on('window-all-closed', () => app.quit())
+// Pendant une partie, le launcher reste ouvert sans fenêtre : le Gardien (gardien.js) surveille le jeu jusqu'à sa
+// fermeture, puis le launcher se ferme seul (rappel de progression ci-dessus). Relancer le launcher rouvre la fenêtre.
+app.on('window-all-closed', () => { if (!service?.gardienActif()) app.quit() })
 app.on('before-quit', () => service?.dispose())

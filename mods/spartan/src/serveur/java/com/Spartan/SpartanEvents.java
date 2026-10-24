@@ -217,6 +217,8 @@ public class SpartanEvents {
             return;
         }
         com.Spartan.integrity.PorteJoueurs.tick(event.getServer());
+        // Gardien du launcher : joueurs dont les rapports ont cessé.
+        com.Spartan.serveur.GardienServeur.tick(event.getServer());
         // Anti-ESP : lignes de vue entre joueurs, décisions d'envoi appliquées tout de suite.
         VisibilityEngine.tick(event.getServer());
         // Anti-duplication : un relevé de temps en temps (même numéro à deux endroits au même instant).
@@ -262,6 +264,7 @@ public class SpartanEvents {
             ScanManager.clear(player.getUUID());
             com.Spartan.capture.CaptureManager.clear(player.getUUID());
             com.Spartan.serveur.ReceptionServeur.oublierTouches(player.getUUID());
+            com.Spartan.serveur.GardienServeur.oublier(player.getUUID());
             VisibilityEngine.forget(player);
             HeralizCompat.oublier(player.getUUID());
         }

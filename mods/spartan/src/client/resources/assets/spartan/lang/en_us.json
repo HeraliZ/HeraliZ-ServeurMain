@@ -9,5 +9,6 @@
   "spartan.expulsion.non_conforme": "[Spartan] Invalid client.",
   "spartan.expulsion.identifiant": "[Spartan] Missing client identifier.",
   "spartan.expulsion.controle": "[Spartan] Kicked: %s",
-  "spartan.expulsion.capture": "Connection refused: accept the anti-cheat screenshots in the HeraliZ launcher.\n(Update the launcher, then click « I allow it and play ».)"
+  "spartan.expulsion.capture": "Connection refused: accept the anti-cheat screenshots in the HeraliZ launcher.\n(Update the launcher, then click « I allow it and play ».)",
+  "spartan.expulsion.gardien": "Launch the game from the up-to-date HeraliZ launcher (launcher anti-cheat required)."
 }

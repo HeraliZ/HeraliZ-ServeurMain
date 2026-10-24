@@ -11,12 +11,12 @@
  * de 10 % détruite.
  */
 
-const VERSION_PAGES = '2026-10-23f';
+const VERSION_PAGES = '2026-10-24a';
 const REPERE_PAGES = '<!-- heraliz-pages:';
 
 function pagesLegales(): array
 {
-    $maj = REPERE_PAGES.VERSION_PAGES.' --><p><em>Dernière mise à jour : 23 octobre 2026.</em></p>';
+    $maj = REPERE_PAGES.VERSION_PAGES.' --><p><em>Dernière mise à jour : 24 octobre 2026.</em></p>';
     $editeur = 'la société HeraliZ (personne morale en cours de création)';
     // adresse postale et e-mail : secrets GitHub SITE_ADRESSE_LEGALE et SITE_MAIL_CONTACT, posés à l'envoi (jamais dans le dépôt)
     $adresse = '__ADRESSE_LEGALE__';
@@ -28,7 +28,7 @@ function pagesLegales(): array
         .'<h2>3. Compte</h2><p>Un compte du Site est obligatoire pour jouer. Il est strictement personnel : son titulaire est responsable de tout ce qui est fait avec, de la confidentialité de son mot de passe et de ses codes de double authentification. Le partage, le prêt, la vente ou l’achat de comptes sont interdits. Les informations données doivent être exactes. Un mineur doit avoir l’accord de son représentant légal.</p>'
         .'<h2>4. Comportement</h2><p>Sont notamment interdits : la triche sous toute forme (client modifié, macros, logiciels tiers, exploitation de bugs), la duplication d’objets, les doubles comptes pour contourner une sanction, le harcèlement, les propos haineux, discriminatoires ou à caractère sexuel, l’usurpation d’identité (y compris du staff), la publicité pour d’autres serveurs, les escroqueries entre joueurs et les attaques contre les Services. Tout bug doit être signalé au staff, jamais exploité.</p>'
         .'<h2>5. Échanges entre joueurs et argent réel</h2><p>Les échanges d’objets et de Points Boutique (PB) entre joueurs se font uniquement en jeu, par le système d’échange du Serveur (/trade au spawn), aux risques des joueurs. Il est <strong>interdit de vendre ou d’acheter contre de l’argent réel</strong>, en dehors de la boutique officielle, des objets, des PB, des hérals, des comptes ou des services liés au Serveur. Le staff ne rembourse pas un échange regretté ; une escroquerie prouvée est sanctionnée.</p>'
-        .'<h2>6. Anticheat</h2><p>Le Launcher et le jeu intègrent un anticheat (Spartan) indispensable à l’équité. En jouant, l’utilisateur accepte les contrôles décrits dans la page Confidentialité (empreintes des fichiers du jeu, identifiant matériel chiffré, contrôles d’intégrité, captures d’écran du jeu avec son accord). Refuser ces contrôles empêche de jouer. Contourner, désactiver ou étudier l’anticheat pour le tromper est sanctionné comme de la triche.</p>'
+        .'<h2>6. Anticheat</h2><p>Le Launcher et le jeu intègrent un anticheat (Spartan) indispensable à l’équité. En jouant, l’utilisateur accepte les contrôles décrits dans la page Confidentialité (empreintes des fichiers du jeu, identifiant matériel chiffré, contrôles d’intégrité, recherche des programmes de triche connus pendant la partie, captures d’écran du jeu avec son accord). Refuser ces contrôles empêche de jouer. Contourner, désactiver ou étudier l’anticheat pour le tromper est sanctionné comme de la triche.</p>'
         .'<h2>7. Sanctions</h2><p>Le staff peut, selon la gravité et sans préavis : avertir, rendre muet, exclure, bannir temporairement ou définitivement un compte, son adresse IP et son ordinateur, retirer des objets, des hérals ou des PB obtenus de façon irrégulière, et annuler des échanges. Une sanction ne donne lieu à <strong>aucun remboursement ni compensation</strong>, y compris pour les PB et contenus achetés. Une contestation se fait calmement sur le Discord (ticket).</p>'
         .'<h2>8. Contenus du jeu</h2><p>Les objets, hérals, PB, grades, bases et progressions n’ont aucune valeur monétaire et restent la propriété d’HeraliZ, qui en concède un droit d’usage personnel sur le Serveur. HeraliZ peut à tout moment les modifier, équilibrer, réinitialiser (nouvelle saison, nouvelle carte) ou retirer.</p>'
         .'<h2>9. Disponibilité</h2><p>Les Services sont fournis « en l’état », notamment pendant la bêta, sans garantie de disponibilité permanente. Maintenances, pannes, pertes de données et mises à jour ne donnent droit à aucune indemnité.</p>'
@@ -67,6 +67,7 @@ function pagesLegales(): array
         .'<li><strong>Anticheat</strong> (voir point 3).</li></ul>'
         .'<h2>3. Anticheat (Spartan)</h2><p>Pour lutter contre la triche, le jeu et le Launcher relèvent, <strong>uniquement pendant que le jeu HeraliZ tourne</strong> :</p><ul>'
         .'<li>les empreintes (sommes de contrôle) des fichiers du jeu et des mods chargés, la liste des modules de code et des bibliothèques chargés par le jeu, et des contrôles d’intégrité réguliers ;</li>'
+        .'<li>pendant la partie, le Launcher reste ouvert en arrière-plan et vérifie que les fichiers du jeu ne changent pas et qu’aucun programme de triche, d’injection, de débogage ou de décompilation connu (liste fixe : Cheat Engine, injecteurs, débogueurs…) n’est ouvert ; <strong>seul le nom d’un programme de cette liste trouvé</strong> est transmis au serveur, jamais la liste des programmes de l’ordinateur ni le titre de ses fenêtres ;</li>'
         .'<li>un identifiant de l’ordinateur calculé à partir de caractéristiques du matériel puis <strong>chiffré</strong> (il sert à appliquer un bannissement d’ordinateur, jamais à identifier la personne) ;</li>'
                 .'<li>des <strong>captures d’écran de la fenêtre du jeu seulement</strong>, si et seulement si le joueur l’a accepté dans le Launcher (refus = pas de partie) : lors des contrôles de l’anticheat ou à la demande du staff ; rien n’est enregistré sur l’ordinateur du joueur. Les captures sont conservées 3 jours, puis supprimées définitivement ; seuls les fondateurs et les administrateurs du serveur y ont accès. Le joueur peut à tout moment demander à un fondateur l’accès aux captures disponibles le concernant.</li></ul>'
         .'<p>Aucun autre fichier personnel, aucun mot de passe, aucun historique de navigation n’est lu. Les alertes et preuves sont visibles du seul staff (salon privé Discord).</p>'

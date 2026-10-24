@@ -204,11 +204,14 @@ test('launch succeeds through the preparation pipeline and unlocks on game exit'
         assert.deepEqual(await service.launch(), { started: true })
         child.emit('spawn')
         assert.equal(service.progress.phase, 'running')
-        assert.match(service.progress.detail, /fermer le launcher/)
+        assert.match(service.progress.detail, /fermer la fenêtre/)
         assert.equal(service.busy, true)
+        // Gardien en marche tant que le jeu est ouvert : le launcher reste en arrière-plan
+        assert.equal(service.gardienActif(), true)
         // partie notée : un launcher rouvert pendant le jeu ne relance pas un second Minecraft
         assert.equal(JSON.parse(fs.readFileSync(partie, 'utf8')).pid, 4242)
         child.emit('close', 0)
+        assert.equal(service.gardienActif(), false)
         assert.equal(service.busy, false)
         assert.equal(service.progress.phase, 'idle')
         assert.equal(fs.existsSync(partie), false)

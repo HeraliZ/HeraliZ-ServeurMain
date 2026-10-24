@@ -9,5 +9,6 @@
   "spartan.expulsion.non_conforme": "[Spartan] Недопустимый клиент.",
   "spartan.expulsion.identifiant": "[Spartan] Отсутствует идентификатор клиента.",
   "spartan.expulsion.controle": "[Spartan] Кикнут: %s",
-  "spartan.expulsion.capture": "Подключение отклонено: разрешите античиту делать снимки экрана в лаунчере HeraliZ.\n(Обновите лаунчер и нажмите « Разрешаю и играю ».)"
+  "spartan.expulsion.capture": "Подключение отклонено: разрешите античиту делать снимки экрана в лаунчере HeraliZ.\n(Обновите лаунчер и нажмите « Разрешаю и играю ».)",
+  "spartan.expulsion.gardien": "Запустите игру через обновлённый лаунчер HeraliZ (нужен античит лаунчера)."
 }

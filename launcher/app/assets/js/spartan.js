@@ -13,7 +13,8 @@
  *    valable 6 h, lié au pseudo du compte et à l'empreinte du dossier mods (empreinteMods), passé au jeu par la variable
  *    d'environnement SPARTAN_LAUNCH_TOKEN (environnementJeu), jamais sur la ligne de commande, que d'autres programmes
  *    et les antivirus lisent. Le launcher ne contient aucune clé : il ne peut pas fabriquer de jeton lui-même.
- * 3. environnementJeu() retire aussi les variables que Java lit au démarrage (JAVA_TOOL_OPTIONS…) : un programme de
+ * 3. Gardien (gardien.js) : clé de signature de ses rapports, donnée au seul jeu par SPARTAN_GARDIEN_CLE.
+ * 4. environnementJeu() retire aussi les variables que Java lit au démarrage (JAVA_TOOL_OPTIONS…) : un programme de
  *    triche pourrait y glisser un -javaagent sans toucher aux options du launcher. Même chose sur Linux et Mac pour les
  *    variables qui font charger une bibliothèque native dans tout programme lancé (LD_PRELOAD, LD_AUDIT,
  *    DYLD_INSERT_LIBRARIES) : rien n'est injecté dans le jeu par ce biais (une surcouche comme MangoHud non plus).
@@ -44,12 +45,15 @@ const ARG_JETON = '-Dspartan.launchToken='
 const VAR_JETON = 'SPARTAN_LAUNCH_TOKEN'
 // accord du joueur pour les captures d'écran (fenêtre avant de jouer, accordCapture.js) : posé seulement par le launcher
 const VAR_CAPTURE = 'SPARTAN_CAPTURE_CONSENT'
+// clé du Gardien (gardien.js) pour ce lancement : 32 octets en hexadécimal, posée seulement par le launcher
+const VAR_GARDIEN = 'SPARTAN_GARDIEN_CLE'
+const CLE_GARDIEN = /^[0-9a-f]{64}$/
 // jeton v1 rendu par le site : base64url(contenu) "." base64url(HMAC-SHA256), rien d'autre
 const JETON = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
 // variables d'environnement lues par Java au démarrage (une option -javaagent y suffit), bibliothèques natives imposées
 // à tout programme lancé (Linux, Mac), et tout jeton hérité
 const VARIABLES_DANGEREUSES = ['JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', 'LD_PRELOAD', 'LD_AUDIT',
-    'DYLD_INSERT_LIBRARIES', VAR_JETON, VAR_CAPTURE]
+    'DYLD_INSERT_LIBRARIES', VAR_JETON, VAR_CAPTURE, VAR_GARDIEN]
 
 /** Options Java ajoutées à chaque lancement (copie). */
 function protections() {
@@ -116,13 +120,14 @@ function empreinteMods(dossierMods) {
  * venu d'ailleurs), plus le jeton rendu par le site pour ce lancement s'il est bien formé. Les noms sont comparés sans
  * tenir compte des majuscules (Windows). base n'est jamais modifié.
  */
-function environnementJeu(jeton, base = process.env, accordCapture = false) {
+function environnementJeu(jeton, base = process.env, accordCapture = false, cleGardien = null) {
     const env = {}
     for (const [nom, valeur] of Object.entries(base || {})) {
         if (!VARIABLES_DANGEREUSES.includes(nom.toUpperCase())) env[nom] = valeur
     }
     if (typeof jeton === 'string' && JETON.test(jeton)) env[VAR_JETON] = jeton
     if (accordCapture === true) env[VAR_CAPTURE] = '1'
+    if (typeof cleGardien === 'string' && CLE_GARDIEN.test(cleGardien)) env[VAR_GARDIEN] = cleGardien
     return env
 }
 

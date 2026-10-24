@@ -130,7 +130,7 @@ class ProcessBuilder {
      */
     environnement(base = process.env) {
         return Spartan.environnementJeu(this.jetonSpartan, ProcessBuilder.sansAppImage(base),
-            ConfigManager.getAccordCapture())
+            ConfigManager.getAccordCapture(), this.cleGardien)
     }
 
     /** Fichier de la console du jeu (descripteur ouvert), ou null s'il ne peut pas être créé : console ignorée. */

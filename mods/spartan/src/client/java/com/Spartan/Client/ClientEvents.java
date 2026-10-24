@@ -55,6 +55,7 @@ public class ClientEvents {
             return;
         }
 
+        boolean nouvelleConnexion = !wasConnected;
         if (!wasConnected) {
             wasConnected = true;
             launchSent = false;
@@ -86,6 +87,9 @@ public class ClientEvents {
                 ModMessages.sendToServer(new LaunchTokenPacket(launchToken(), modsHash));
             }
         }
+
+        // Rapports du Gardien du launcher (programmes de triche, jars changés pendant la partie).
+        Gardien.tick(nouvelleConnexion);
 
         if (++ticks % SCAN_INTERVAL_TICKS == 0) {
             scanThreads();

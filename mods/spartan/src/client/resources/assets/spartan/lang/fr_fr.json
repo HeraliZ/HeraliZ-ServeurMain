@@ -9,5 +9,6 @@
   "spartan.expulsion.non_conforme": "[Spartan] Client non conforme.",
   "spartan.expulsion.identifiant": "[Spartan] Identifiant client manquant.",
   "spartan.expulsion.controle": "[Spartan] Expulsé : %s",
-  "spartan.expulsion.capture": "Connexion refusée : acceptez les captures d'écran de l'anticheat dans le launcher HeraliZ.\n(Mettez le launcher à jour, puis cliquez sur « J'autorise et je joue ».)"
+  "spartan.expulsion.capture": "Connexion refusée : acceptez les captures d'écran de l'anticheat dans le launcher HeraliZ.\n(Mettez le launcher à jour, puis cliquez sur « J'autorise et je joue ».)",
+  "spartan.expulsion.gardien": "Lancez le jeu depuis le launcher HeraliZ à jour (anticheat du launcher requis)."
 }

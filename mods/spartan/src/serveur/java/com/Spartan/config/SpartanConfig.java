@@ -128,6 +128,13 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SCAN_PROCESS_PATTERNS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SCAN_NATIVE_PATTERNS;
 
+    // --- Gardien du launcher ---
+    public static final ForgeConfigSpec.BooleanValue GARDIEN_ENABLED;
+    public static final ForgeConfigSpec.BooleanValue GARDIEN_REQUIRED;
+    public static final ForgeConfigSpec.IntValue GARDIEN_SILENCE_SECONDS;
+    public static final ForgeConfigSpec.BooleanValue GARDIEN_CAPTURE;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GARDIEN_IGNORED_TOOLS;
+
     // --- anti-ESP / anti-wallhack ---
     public static final ForgeConfigSpec.BooleanValue ESP_ENABLED;
     public static final ForgeConfigSpec.IntValue ESP_THREADS;
@@ -384,6 +391,26 @@ public class SpartanConfig {
                 "Empreintes de dossier mods autorisées (vide = non vérifié). L'empreinte de chaque joueur",
                 "est écrite dans la console à sa connexion : ajoutez ici celle(s) de votre modpack officiel.")
                 .defineList("allowedModsHashes", List.of(), o -> o instanceof String);
+        b.pop();
+
+        b.comment("Gardien : l'anticheat du launcher HeraliZ (1.14.0 ou plus récent). Pendant la partie, le launcher reste",
+                "en arrière-plan et regarde depuis l'extérieur du jeu les programmes de triche connus (Cheat Engine,",
+                "injecteurs, débogueurs, décompilateurs) et les jars du jeu ; le jeu relit ses rapports signés et les",
+                "envoie ici. Seuls les noms de la liste du launcher trouvés arrivent, jamais la liste des programmes.",
+                "Toujours des ALERTES au staff (« Gardien », « Gardien muet »), jamais d'expulsion, sauf required.")
+                .push("gardien");
+        GARDIEN_ENABLED = b.comment("Active le Gardien.").define("enabled", true);
+        GARDIEN_REQUIRED = b.comment(
+                "true : connexion REFUSÉE si le jeu a été lancé sans le Gardien (launcher plus ancien que 1.14.0,",
+                "autre lanceur). Activer une fois le nouveau launcher distribué à tous les joueurs.")
+                .define("required", false);
+        GARDIEN_SILENCE_SECONDS = b.comment(
+                "Sans rapport du Gardien depuis ce temps (launcher fermé de force) : alerte « Gardien muet ».")
+                .defineInRange("silenceSeconds", 90, 30, 3600);
+        GARDIEN_CAPTURE = b.comment("Capture d'écran demandée quand un programme de triche est vu (si le joueur l'a",
+                "autorisée).").define("captureOnTool", true);
+        GARDIEN_IGNORED_TOOLS = b.comment("Noms de la liste du launcher à ne plus signaler (fausses alertes), ex. \"injector\".")
+                .defineList("ignoredTools", List.of(), o -> o instanceof String);
         b.pop();
 
         b.comment("Correction instantanée : le tricheur détecté ne profite pas de sa triche.",
@@ -665,6 +692,10 @@ public class SpartanConfig {
 
     public static List<String> getAllowedModsHashes() {
         return lowerList(ALLOWED_MODS_HASHES.get());
+    }
+
+    public static List<String> getGardienIgnoredTools() {
+        return lowerList(GARDIEN_IGNORED_TOOLS.get());
     }
 
     public static List<String> getAllowedJavaAgents() {

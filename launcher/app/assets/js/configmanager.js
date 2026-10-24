@@ -800,7 +800,7 @@ exports.setAllowPrerelease = function(allowPrerelease){
 // Accord pour les captures d'écran de Spartan (fenêtre à l'ouverture du launcher, renderer.js)
 
 /** Version du texte de l'accord : la monter quand le texte change, l'accord est alors redemandé. */
-exports.ACCORD_CAPTURE_VERSION = 2
+exports.ACCORD_CAPTURE_VERSION = 3
 
 /** @returns {boolean} true si le joueur a accepté la version actuelle du texte. */
 exports.getAccordCapture = function(){

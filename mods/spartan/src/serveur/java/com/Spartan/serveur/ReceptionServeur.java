@@ -129,6 +129,10 @@ public final class ReceptionServeur {
             CaptureManager.accord(player, detail.equals("oui"));
             return;
         }
+        if (type.equals("gardien")) {
+            GardienServeur.recevoir(player, detail);
+            return;
+        }
         if (!SpartanConfig.CHECK_CLIENT_INTEGRITY.get()) {
             return;
         }
