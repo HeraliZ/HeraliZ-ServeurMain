@@ -28,6 +28,7 @@ public final class InterfaceConfig {
     public static final ForgeConfigSpec.IntValue FLOU_FORCE;
     public static final ForgeConfigSpec.BooleanValue TITRE_ACTIF;
     public static final ForgeConfigSpec.ConfigValue<String> SERVEUR_ADRESSE, SERVEUR_NOM;
+    public static final ForgeConfigSpec.DoubleValue MAIN_ECHELLE;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -69,6 +70,11 @@ public final class InterfaceConfig {
         SERVEUR_NOM = b.comment("Nom du serveur (liste des serveurs de Minecraft, ecran de connexion)")
                 .define("nom", "HeraliZ");
         b.pop();
+        b.comment("Main en 1re personne").push("main");
+        MAIN_ECHELLE = b.comment("Taille de la main vide et des objets tenus (sauf les armes) en 1re personne : 1 = taille de Minecraft,"
+                        + " 0,85 = 15 % plus petits")
+                .defineInRange("echelle", 0.85, 0.5, 1.0);
+        b.pop();
         SPEC = b.build();
     }
 
@@ -97,6 +103,14 @@ public final class InterfaceConfig {
     }
 
     public static boolean oui(ForgeConfigSpec.BooleanValue v, boolean defaut) {
+        try {
+            return v.get();
+        } catch (Exception ex) {
+            return defaut;
+        }
+    }
+
+    public static double decimal(ForgeConfigSpec.DoubleValue v, double defaut) {
         try {
             return v.get();
         } catch (Exception ex) {
