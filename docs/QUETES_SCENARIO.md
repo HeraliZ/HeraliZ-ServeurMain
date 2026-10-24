@@ -18,6 +18,10 @@
 - « Fouiller » ne demande pas de revenir par une extraction : les conteneurs comptent même si on meurt ensuite.
 - La quête « Capturer un territoire avec son clan » est écrite mais **désactivée** (sautée) tant que les territoires
   de la nouvelle carte ne sont pas faits.
+- Audit du 24/10 : les quêtes 15, 19 et 33 demandaient des objets introuvables (tonnelets de poudre, plaques : exclus
+  du loot, sans recette ni marchand) et bloquaient la suite : elles demandent maintenant des objets du loot. Les quêtes
+  30 (jumelles de frappe introuvables) et 37 (aucun objet Unique dans le loot) sont **désactivées** en attendant. La 34
+  passe à 40 m (les zombies ne sont envoyés aux joueurs que jusqu'à 60 blocs, `spigot.yml`).
 
 ## 2. Les quêtes
 
@@ -44,7 +48,7 @@
 | 12 | Pièces de radio | Rapporte-moi 5 batteries et 5 circuits imprimés. | 400 hérals |
 | 13 | Meilleure prise | Rapporte-moi 10 objets de valeur Peu communs ou mieux. | 450 hérals 🔑 |
 | 14 | Protection | Montre-moi un gilet ou un casque Peu commun ou mieux. | 450 hérals |
-| 15 | Poudre | Rapporte-moi 5 tonnelets de poudre et 5 bocaux de poudre. | 500 hérals |
+| 15 | Poudre | Rapporte-moi 10 bocaux de poudre. | 500 hérals |
 | 16 | Fin de classe | Reste 30 minutes sur la carte sans mourir, puis paie-moi 3 000 hérals pour passer Caporal. | 600 hérals 🔑 · titre « Soldat » |
 
 ### Chapitre 3 — Caporal
@@ -53,7 +57,7 @@
 |---|---|---|---|
 | 17 | Pas de pitié | Achève un joueur à terre. | 600 hérals |
 | 18 | Zones dangereuses | Fouille 10 conteneurs T3 ou mieux. | 650 hérals |
-| 19 | Ferraille | Rapporte-moi 10 plaques recyclées et 5 plaques soudées. | 700 hérals |
+| 19 | Ferraille | Rapporte-moi 10 ferrailles et 10 clous. | 700 hérals |
 | 20 | Armurier | Fabrique une arme à la table d'armurier. | 750 hérals 🔑 |
 | 21 | Patrouille de nuit | Tue 20 zombies pendant la nuit. | 800 hérals |
 | 22 | Les déserteurs | Lis les carnets de 3 déserteurs, retrouve leur sacoche cachée et rapporte-la-moi. | 900 hérals |
@@ -69,7 +73,7 @@
 | 27 | En silence | Tue 20 zombies avec une arme équipée d'un silencieux. | 1 300 hérals |
 | 28 | Coins gardés | Fouille 10 conteneurs T4 ou mieux. | 1 400 hérals |
 | 29 | La boîte noire | Va dans la zone de gaz, retrouve la boîte noire et rapporte-la-moi. | 1 500 hérals |
-| 30 | Appui aérien | Appelle une frappe aérienne. | 1 500 hérals |
+| 30 | Appui aérien | Appelle une frappe aérienne. *(désactivée : les jumelles de frappe ne s'obtiennent nulle part)* | 1 500 hérals |
 | 31 | Fin de classe | Entre dans une salle à carte bleue, puis paie-moi 7 000 hérals pour passer Officier. | 1 800 hérals 🔑 · titre « Sergent » |
 
 ### Chapitre 5 — Officier
@@ -77,11 +81,11 @@
 | # | Quête | Ce qu'il faut faire | Récompense |
 |---|---|---|---|
 | 32 | Prendre le terrain | Capture un territoire avec ton clan. *(désactivée pour l'instant)* | 2 000 hérals |
-| 33 | Blindage | Rapporte-moi 5 plaques en métal et 3 plaques renforcées. | 2 000 hérals |
-| 34 | Tireur d'élite | Tue 10 zombies à plus de 60 mètres. | 2 200 hérals |
+| 33 | Blindage | Rapporte-moi 5 fragments de métal et 3 métaux renforcés. | 2 000 hérals |
+| 34 | Tireur d'élite | Tue 10 zombies à plus de 40 mètres. | 2 200 hérals |
 | 35 | Pièces de musée | Rapporte-moi 2 objets de valeur Légendaires ou mieux. | 2 400 hérals 🔑 |
 | 36 | Arme d'officier | Montre-moi une arme à feu Légendaire. | 2 500 hérals |
-| 37 | L'introuvable | Rapporte-moi 1 objet Mythique (composant ou objet de valeur). | 2 800 hérals |
+| 37 | L'introuvable | Rapporte-moi 1 objet Unique (composant ou objet de valeur). *(désactivée : aucun objet Unique dans le loot)* | 2 800 hérals |
 | 38 | La salle rouge | Entre dans une salle à carte rouge. | 3 000 hérals |
 | 39 | Dernière mission | Sans mourir : tue 30 zombies, fouille 3 conteneurs T6, puis reviens par une extraction. | 5 000 hérals 🔑 · titre « Officier » |
 
@@ -93,7 +97,7 @@ dans plusieurs villes), `deserteur` (3 et plus), `cachette_deserteurs` (1 à 3),
 
 ## 4. Comment le serveur voit chaque action
 
-- zombies tués (arme à feu, corps à corps, de nuit, silencieux, à plus de 60 m), conteneurs de HeraliZ Loot fouillés
+- zombies tués (arme à feu, corps à corps, de nuit, silencieux, à plus de 40 m), conteneurs de HeraliZ Loot fouillés
   (palier lu dans le nom du bloc), extraction (arrivée au spawn), temps sur la carte sans mourir ;
 - joueur à terre achevé : mort d'un joueur encore « à terre » (Réanimation), tuée par un autre joueur ;
 - arme fabriquée : une arme de plus dans l'inventaire pendant que la Table d'armurier de TaCZ est ouverte ;

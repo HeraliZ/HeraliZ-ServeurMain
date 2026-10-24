@@ -668,9 +668,9 @@
       },
       "difficulte": 2,
       "demande": {
-        "fr": "Rapporte-moi 5 tonnelets de poudre et 5 bocaux de poudre.",
-        "en": "Bring me 5 gunpowder kegs and 5 gunpowder jars.",
-        "ru": "Принеси мне 5 бочонков пороха и 5 банок пороха."
+        "fr": "Rapporte-moi 10 bocaux de poudre.",
+        "en": "Bring me 10 gunpowder jars.",
+        "ru": "Принеси мне 10 банок пороха."
       },
       "fin": {
         "fr": "De quoi refaire des munitions. Parfait.",
@@ -681,21 +681,11 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 5 tonnelets de poudre",
-            "en": "Bring back 5 gunpowder kegs",
-            "ru": "Принести 5 бочонков пороха"
+            "fr": "Rapporter 10 bocaux de poudre",
+            "en": "Bring back 10 gunpowder jars",
+            "ru": "Принести 10 банок пороха"
           },
-          "nombre": 5,
-          "objet": "heraliz_composants:tonnelet_poudre"
-        },
-        {
-          "type": "donner",
-          "libelle": {
-            "fr": "Rapporter 5 bocaux de poudre",
-            "en": "Bring back 5 gunpowder jars",
-            "ru": "Принести 5 банок пороха"
-          },
-          "nombre": 5,
+          "nombre": 10,
           "objet": "heraliz_composants:bocal_poudre"
         }
       ],
@@ -833,9 +823,9 @@
       },
       "difficulte": 3,
       "demande": {
-        "fr": "Rapporte-moi 10 plaques recyclées et 5 plaques soudées.",
-        "en": "Bring me 10 recycled plates and 5 welded plates.",
-        "ru": "Принеси мне 10 самодельных пластин и 5 сварных пластин."
+        "fr": "Rapporte-moi 10 ferrailles et 10 clous.",
+        "en": "Bring me 10 scrap metal and 10 nails.",
+        "ru": "Принеси мне 10 единиц металлолома и 10 гвоздей."
       },
       "fin": {
         "fr": "Assez pour renforcer la barricade.",
@@ -846,22 +836,22 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 10 plaques recyclées",
-            "en": "Bring back 10 recycled plates",
-            "ru": "Принести 10 самодельных пластин"
+            "fr": "Rapporter 10 ferrailles",
+            "en": "Bring back 10 scrap metal",
+            "ru": "Принести 10 единиц металлолома"
           },
           "nombre": 10,
-          "objet": "heraliz_composants:plaque_recyclee"
+          "objet": "heraliz_composants:ferraille"
         },
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 5 plaques soudées",
-            "en": "Bring back 5 welded plates",
-            "ru": "Принести 5 сварных пластин"
+            "fr": "Rapporter 10 clous",
+            "en": "Bring back 10 nails",
+            "ru": "Принести 10 гвоздей"
           },
-          "nombre": 5,
-          "objet": "heraliz_composants:plaque_soudee"
+          "nombre": 10,
+          "objet": "heraliz_composants:clou"
         }
       ],
       "recompense": {
@@ -1331,6 +1321,7 @@
         "ru": "Поддержка с воздуха"
       },
       "difficulte": 4,
+      "desactivee": true,
       "demande": {
         "fr": "Appelle une frappe aérienne.",
         "en": "Call in an airstrike.",
@@ -1454,9 +1445,9 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Rapporte-moi 5 plaques en métal et 3 plaques renforcées.",
-        "en": "Bring me 5 metal plates and 3 reinforced plates.",
-        "ru": "Принеси мне 5 металлических пластин и 3 усиленные пластины."
+        "fr": "Rapporte-moi 5 fragments de métal et 3 métaux renforcés.",
+        "en": "Bring me 5 metal fragments and 3 reinforced metal.",
+        "ru": "Принеси мне 5 металлических обломков и 3 единицы усиленного металла."
       },
       "fin": {
         "fr": "De quoi blinder le poste de commandement.",
@@ -1467,22 +1458,22 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 5 plaques en métal",
-            "en": "Bring back 5 metal plates",
-            "ru": "Принести 5 металлических пластин"
+            "fr": "Rapporter 5 fragments de métal",
+            "en": "Bring back 5 metal fragments",
+            "ru": "Принести 5 металлических обломков"
           },
           "nombre": 5,
-          "objet": "heraliz_composants:plaque_metal"
+          "objet": "heraliz_composants:fragments_metal"
         },
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 3 plaques renforcées",
-            "en": "Bring back 3 reinforced plates",
-            "ru": "Принести 3 усиленные пластины"
+            "fr": "Rapporter 3 métaux renforcés",
+            "en": "Bring back 3 reinforced metal",
+            "ru": "Принести 3 единицы усиленного металла"
           },
           "nombre": 3,
-          "objet": "heraliz_composants:plaque_renforcee"
+          "objet": "heraliz_composants:metal_renforce"
         }
       ],
       "recompense": {
@@ -1499,9 +1490,9 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Tue 10 zombies à plus de 60 mètres.",
-        "en": "Kill 10 zombies from more than 60 metres away.",
-        "ru": "Убей 10 зомби с расстояния больше 60 метров."
+        "fr": "Tue 10 zombies à plus de 40 mètres.",
+        "en": "Kill 10 zombies from more than 40 metres away.",
+        "ru": "Убей 10 зомби с расстояния больше 40 метров."
       },
       "fin": {
         "fr": "Beau tir. Très beau tir.",
@@ -1512,14 +1503,14 @@
         {
           "type": "tuer",
           "libelle": {
-            "fr": "Tuer 10 zombies à plus de 60 m",
-            "en": "Kill 10 zombies from over 60 m",
-            "ru": "Убить 10 зомби с расстояния больше 60 м"
+            "fr": "Tuer 10 zombies à plus de 40 m",
+            "en": "Kill 10 zombies from over 40 m",
+            "ru": "Убить 10 зомби с расстояния больше 40 м"
           },
           "cible": "zombies",
           "nombre": 10,
           "arme": "feu",
-          "distance_min": 60
+          "distance_min": 40
         }
       ],
       "recompense": {
@@ -1610,10 +1601,11 @@
         "ru": "Неуловимое"
       },
       "difficulte": 4,
+      "desactivee": true,
       "demande": {
-        "fr": "Rapporte-moi 1 objet Mythique (composant ou objet de valeur).",
-        "en": "Bring me 1 Mythic item (component or valuable).",
-        "ru": "Принеси мне 1 предмет редкости «Мифический» (компонент или ценность)."
+        "fr": "Rapporte-moi 1 objet Unique (composant ou objet de valeur).",
+        "en": "Bring me 1 Unique item (component or valuable).",
+        "ru": "Принеси мне 1 предмет редкости «Уникальный» (компонент или ценность)."
       },
       "fin": {
         "fr": "Je ne pensais pas que ça existait encore.",
@@ -1624,9 +1616,9 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 1 objet Mythique",
-            "en": "Bring back 1 Mythic item",
-            "ru": "Принести 1 предмет редкости «Мифический»"
+            "fr": "Rapporter 1 objet Unique",
+            "en": "Bring back 1 Unique item",
+            "ru": "Принести 1 предмет редкости «Уникальный»"
           },
           "nombre": 1,
           "tag": "heraliz_composants:tous",

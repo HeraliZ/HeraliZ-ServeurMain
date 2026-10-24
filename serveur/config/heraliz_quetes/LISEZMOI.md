@@ -188,7 +188,7 @@ Un texte peut être en français seulement (`"Bonjour"`) ou dans les trois langu
 | `fouiller` | ouvrir des conteneurs de HeraliZ Loot | `nombre`, `palier_min` (1 à 7), `modele` (morceau du nom), zone (`groupe` + `rayon`) |
 | `executer` | achever un joueur à terre (exécution de Réanimation ou coup de grâce) | `nombre` |
 | `fabriquer` | fabriquer une arme à feu à la Table d'armurier (TaCZ) | `nombre` |
-| `frappe` | appeler une frappe aérienne (jumelles d'Airstrike) | `nombre` |
+| `frappe` | appeler une frappe aérienne (jumelles d'Airstrike ; aujourd'hui introuvables pour les joueurs : quête 30 de Varga `desactivee`) | `nombre` |
 | `capturer` | capturer un territoire avec son clan : PAS ENCORE BRANCHÉ (quête `desactivee`) | |
 
 Réglages communs : `libelle` (texte affiché), `marqueur` (`exact`, `zone` = distance arrondie, `aucun`), `delai`
