@@ -14,6 +14,8 @@ public class ImpactPacket {
     public static final byte CANISTER = 5;
     public static final byte BULLET = 6;
     public static final byte CRATE_LAND = 7;
+    /** Balle de la mitrailleuse de l'hélicoptère : traçante jusqu'ici (power 1 : poussière sur un bloc, 0.5 : créature touchée, 0 : perdue). */
+    public static final byte HELICO_BALLE = 8;
 
     public final byte kind;
     public final double x, y, z;

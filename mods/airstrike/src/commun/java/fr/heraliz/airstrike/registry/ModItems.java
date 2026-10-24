@@ -1,6 +1,8 @@
 package fr.heraliz.airstrike.registry;
 
 import fr.heraliz.airstrike.AirstrikeMod;
+import fr.heraliz.airstrike.helico.PieceHelico;
+import fr.heraliz.airstrike.helico.PieceHelicoItem;
 import fr.heraliz.airstrike.item.CartridgeItem;
 import fr.heraliz.airstrike.item.DesignatorItem;
 import fr.heraliz.airstrike.item.PayloadItem;
@@ -49,6 +51,19 @@ public final class ModItems {
 
     public static final RegistryObject<BlockItem> SUPPLY_CRATE = ITEMS.register("supply_crate",
             () -> new BlockItem(ModBlocks.SUPPLY_CRATE.get(), new Item.Properties()));
+
+    /** Pièces d'hélicoptère récupérées sur l'épave (revendues à Mila). */
+    public static final Map<PieceHelico, RegistryObject<PieceHelicoItem>> PIECES_HELICO = new EnumMap<>(PieceHelico.class);
+
+    static {
+        for (PieceHelico p : PieceHelico.values()) {
+            PIECES_HELICO.put(p, ITEMS.register(p.objet(), () -> new PieceHelicoItem(p, new Item.Properties().stacksTo(16))));
+        }
+    }
+
+    public static PieceHelicoItem piece(PieceHelico p) {
+        return PIECES_HELICO.get(p).get();
+    }
 
     public static PayloadItem payload(StrikeType type) {
         return PAYLOADS.get(type).get();

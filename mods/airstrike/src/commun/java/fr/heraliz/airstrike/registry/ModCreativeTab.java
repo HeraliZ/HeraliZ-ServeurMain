@@ -18,6 +18,9 @@ public final class ModCreativeTab {
             .displayItems((params, out) -> {
                 out.accept(ModItems.DESIGNATOR.get());
                 for (CartridgeTier t : CartridgeTier.values()) out.accept(ModItems.cartridge(t));
+                for (fr.heraliz.airstrike.helico.PieceHelico p : fr.heraliz.airstrike.helico.PieceHelico.values()) {
+                    out.accept(ModItems.piece(p));
+                }
             })
             .build());
 

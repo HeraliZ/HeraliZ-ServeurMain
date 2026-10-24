@@ -22,8 +22,16 @@ public final class PartieClient implements Partie {
             ClientStrikes.add(p.strike);
          } else if (paquet instanceof ImpactPacket p) {
             ImpactFx.play(p);
+         } else if (paquet instanceof fr.heraliz.airstrike.network.HelicoPositionPacket p) {
+            fr.heraliz.airstrike.client.helico.HelicoClient.reception(p);
+         } else if (paquet instanceof fr.heraliz.airstrike.network.FouilleEtatPacket p) {
+            fr.heraliz.airstrike.client.helico.HelicoClient.etatFouille(p);
          }
       });
+      // hélicoptère de patrouille : fumée, flammes, son, éclats (entités chez le joueur)
+      fr.heraliz.airstrike.helico.HelicoEntity.TICK_CLIENT.brancher(fr.heraliz.airstrike.client.helico.HelicoClient::tickHelico);
+      fr.heraliz.airstrike.helico.EpaveHelicoEntity.TICK_CLIENT.brancher(fr.heraliz.airstrike.client.helico.HelicoClient::tickEpave);
+      fr.heraliz.airstrike.helico.CaisseHelicoEntity.TICK_CLIENT.brancher(fr.heraliz.airstrike.client.helico.HelicoClient::tickCaisse);
       DesignatorItem.RENDU_CLIENT.brancher(c -> c.accept(DesignatorItemExtensions.INSTANCE));
       EffectCloudEntity.QUALITE_FX = new EffectCloudEntity.QualiteFx() {
          @Override

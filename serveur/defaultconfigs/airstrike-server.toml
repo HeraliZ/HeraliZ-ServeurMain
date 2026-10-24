@@ -106,3 +106,90 @@ configVersion = 3
 	#Range: 0 ~ 10000
 	despawnMinutes = 20
 
+#Patrol helicopter event (/helico): flies over the map, fires back at whoever shoots it, crashes with its loot.
+[helico]
+	#Helicopter event enabled (automatic launches and /helico lancer).
+	actif = true
+	#Launch automatically on a timer (otherwise only /helico lancer).
+	auto = true
+	#Minutes after the server start before the first automatic helicopter.
+	#Range: 1 ~ 10000
+	premierDelaiMinutes = 60
+	#Minimum minutes between two automatic helicopters (counted from the end of the previous one).
+	#Range: 5 ~ 10000
+	intervalleMinMinutes = 120
+	#Maximum minutes between two automatic helicopters.
+	#Range: 5 ~ 10000
+	intervalleMaxMinutes = 180
+	#Players in survival on the map (overworld) needed for an automatic launch.
+	#Range: 0 ~ 500
+	joueursMin = 5
+	#Minutes of patrol before the helicopter leaves the map if it is not shot down.
+	#Range: 1 ~ 600
+	dureeMinutes = 20
+	#Tell the players on the map when it arrives, is shot down or leaves.
+	annonces = true
+	#Health of the helicopter (TaCZ bullets and explosions; melee does nothing).
+	#Range: 10.0 ~ 100000.0
+	vie = 1500.0
+	#Patrol speed (blocks per tick).
+	#Range: 0.1 ~ 2.0
+	vitesse = 0.55
+	#Patrol height above the ground (blocks).
+	#Range: 12 ~ 120
+	hauteur = 34
+	#Height above its target while it attacks (blocks).
+	#Range: 8 ~ 120
+	hauteurCombat = 24
+	#Damage of each machine gun round (a real projectile: armour protects).
+	#Range: 0.0 ~ 100.0
+	degatsBalle = 3.0
+	#Rounds per burst.
+	#Range: 1 ~ 100
+	ballesParRafale = 10
+	#Ticks between two rounds of a burst.
+	#Range: 1 ~ 20
+	cadenceTicks = 2
+	#Minimum ticks between two bursts.
+	#Range: 5 ~ 600
+	pauseMinTicks = 40
+	#Maximum ticks between two bursts.
+	#Range: 5 ~ 600
+	pauseMaxTicks = 70
+	#Spread of the rounds (degrees).
+	#Range: 0.0 ~ 30.0
+	dispersionDegres = 2.5
+	#Range of the machine gun (blocks).
+	#Range: 16 ~ 256
+	porteeTir = 90
+	#Seconds the helicopter keeps hunting a player who shot it.
+	#Range: 5 ~ 600
+	memoireSecondes = 30
+	#A player aiming at it with a gun for this many seconds becomes a target too (0 = off).
+	#Range: 0 ~ 60
+	viseeSecondes = 4
+	#Also fire at the load test bots (/bots).
+	tirerSurBots = false
+	#Power of the crash explosion (hurts players, never breaks blocks).
+	#Range: 0.0 ~ 10.0
+	puissanceCrash = 4.0
+	#Minimum seconds the wreck burns (crates and parts locked meanwhile).
+	#Range: 0 ~ 3600
+	feuMinSecondes = 60
+	#Maximum seconds the wreck burns.
+	#Range: 0 ~ 3600
+	feuMaxSecondes = 150
+	#Minutes the wreck, its crates and the T7 chest stay once the fire is out.
+	#Range: 1 ~ 600
+	epaveMinutes = 10
+	#Seconds of searching (right click held, standing still) to take a part from the wreck.
+	#Range: 1 ~ 120
+	fouilleSecondes = 8
+	#HeraliZ Loot T7 chest left at the crash (t7_coffre_armes, t7_largage, t7_coffre_fort...).
+	coffreT7 = "t7_coffre_armes"
+	#HeraliZ Loot table of the two helicopter crates.
+	tableT6 = "t6"
+	#Players this close (blocks) see and hear the helicopter, even beyond their view distance.
+	#Range: 64 ~ 2000
+	porteeSuivi = 500
+

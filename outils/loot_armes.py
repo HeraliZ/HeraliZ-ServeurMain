@@ -196,6 +196,11 @@ RARETES_IMPOSEES = {
     "heraliz_usure:kit_fortune": "rare", "heraliz_usure:kit_standard": "epique", "heraliz_usure:kit_armurier": "legendaire",
     # boîtes de munitions de TaCZ (24/10) : fer Rare, or Épique, diamant Légendaire (« Level » 0, 1, 2 ; RaretesObjets.boite)
     "tacz:ammo_box/0": "rare", "tacz:ammo_box/1": "epique", "tacz:ammo_box/2": "legendaire",
+    # pièces de l'épave de l'hélicoptère de patrouille (Airstrike 1.10.0, 24/10) : jamais dans le loot, revendues à Mila
+    # (outils/marchands.py, PIECES_HELICO) ; rareté selon leur prix
+    "airstrike:helico_tole": "commun", "airstrike:helico_cables": "peu_commun", "airstrike:helico_pale": "peu_commun",
+    "airstrike:helico_reservoir": "rare", "airstrike:helico_mitrailleuse": "rare", "airstrike:helico_avionique": "epique",
+    "airstrike:helico_turbine": "legendaire",
 }
 # fragments des cartes d'accès de HeraliZ Bunker (24/10, demande du propriétaire) : 4 fragments numérotés par carte, les
 # 4 DIFFÉRENTS donnent la carte (grille 2 x 2 ou clic droit). Chaque numéro est tiré à part : on peut trouver plusieurs

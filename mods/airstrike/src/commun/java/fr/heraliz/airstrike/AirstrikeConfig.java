@@ -46,6 +46,38 @@ public final class AirstrikeConfig {
     public static final ForgeConfigSpec.IntValue SUPPLY_SMOKE_SECONDS;
     public static final ForgeConfigSpec.IntValue SUPPLY_DESPAWN_MINUTES;
 
+    // ---- hélicoptère de patrouille (événement, 24/10)
+    public static final ForgeConfigSpec.BooleanValue HELICO_ACTIF;
+    public static final ForgeConfigSpec.BooleanValue HELICO_AUTO;
+    public static final ForgeConfigSpec.IntValue HELICO_PREMIER_DELAI;
+    public static final ForgeConfigSpec.IntValue HELICO_INTERVALLE_MIN;
+    public static final ForgeConfigSpec.IntValue HELICO_INTERVALLE_MAX;
+    public static final ForgeConfigSpec.IntValue HELICO_JOUEURS_MIN;
+    public static final ForgeConfigSpec.IntValue HELICO_DUREE;
+    public static final ForgeConfigSpec.BooleanValue HELICO_ANNONCES;
+    public static final ForgeConfigSpec.DoubleValue HELICO_VIE;
+    public static final ForgeConfigSpec.DoubleValue HELICO_VITESSE;
+    public static final ForgeConfigSpec.IntValue HELICO_HAUTEUR;
+    public static final ForgeConfigSpec.IntValue HELICO_HAUTEUR_COMBAT;
+    public static final ForgeConfigSpec.DoubleValue HELICO_DEGATS;
+    public static final ForgeConfigSpec.IntValue HELICO_RAFALE;
+    public static final ForgeConfigSpec.IntValue HELICO_CADENCE;
+    public static final ForgeConfigSpec.IntValue HELICO_PAUSE_MIN;
+    public static final ForgeConfigSpec.IntValue HELICO_PAUSE_MAX;
+    public static final ForgeConfigSpec.DoubleValue HELICO_DISPERSION;
+    public static final ForgeConfigSpec.IntValue HELICO_PORTEE_TIR;
+    public static final ForgeConfigSpec.IntValue HELICO_MEMOIRE;
+    public static final ForgeConfigSpec.IntValue HELICO_VISEE;
+    public static final ForgeConfigSpec.BooleanValue HELICO_TIRER_BOTS;
+    public static final ForgeConfigSpec.DoubleValue HELICO_PUISSANCE_CRASH;
+    public static final ForgeConfigSpec.IntValue HELICO_FEU_MIN;
+    public static final ForgeConfigSpec.IntValue HELICO_FEU_MAX;
+    public static final ForgeConfigSpec.IntValue HELICO_EPAVE_MINUTES;
+    public static final ForgeConfigSpec.IntValue HELICO_FOUILLE;
+    public static final ForgeConfigSpec.ConfigValue<String> HELICO_COFFRE_T7;
+    public static final ForgeConfigSpec.ConfigValue<String> HELICO_TABLE_T6;
+    public static final ForgeConfigSpec.IntValue HELICO_PORTEE_SUIVI;
+
     /** Version of the defaults the file was last upgraded to (see {@link #migrate()}). */
     public static final ForgeConfigSpec.IntValue CONFIG_VERSION;
     private static final int CURRENT_VERSION = 3;
@@ -112,6 +144,53 @@ public final class AirstrikeConfig {
                 .defineInRange("signalSmokeSeconds", 90, 0, 3600);
         SUPPLY_DESPAWN_MINUTES = b.comment("Crates disappear after this many minutes (0 = never).")
                 .defineInRange("despawnMinutes", 20, 0, 10000);
+        b.pop();
+
+        b.comment("Patrol helicopter event (/helico): flies over the map, fires back at whoever shoots it, crashes with its loot.")
+                .push("helico");
+        HELICO_ACTIF = b.comment("Helicopter event enabled (automatic launches and /helico lancer).").define("actif", true);
+        HELICO_AUTO = b.comment("Launch automatically on a timer (otherwise only /helico lancer).").define("auto", true);
+        HELICO_PREMIER_DELAI = b.comment("Minutes after the server start before the first automatic helicopter.")
+                .defineInRange("premierDelaiMinutes", 60, 1, 10000);
+        HELICO_INTERVALLE_MIN = b.comment("Minimum minutes between two automatic helicopters (counted from the end of the previous one).")
+                .defineInRange("intervalleMinMinutes", 120, 5, 10000);
+        HELICO_INTERVALLE_MAX = b.comment("Maximum minutes between two automatic helicopters.")
+                .defineInRange("intervalleMaxMinutes", 180, 5, 10000);
+        HELICO_JOUEURS_MIN = b.comment("Players in survival on the map (overworld) needed for an automatic launch.")
+                .defineInRange("joueursMin", 5, 0, 500);
+        HELICO_DUREE = b.comment("Minutes of patrol before the helicopter leaves the map if it is not shot down.")
+                .defineInRange("dureeMinutes", 20, 1, 600);
+        HELICO_ANNONCES = b.comment("Tell the players on the map when it arrives, is shot down or leaves.").define("annonces", true);
+        HELICO_VIE = b.comment("Health of the helicopter (TaCZ bullets and explosions; melee does nothing).")
+                .defineInRange("vie", 1500.0, 10.0, 100000.0);
+        HELICO_VITESSE = b.comment("Patrol speed (blocks per tick).").defineInRange("vitesse", 0.55, 0.1, 2.0);
+        HELICO_HAUTEUR = b.comment("Patrol height above the ground (blocks).").defineInRange("hauteur", 34, 12, 120);
+        HELICO_HAUTEUR_COMBAT = b.comment("Height above its target while it attacks (blocks).").defineInRange("hauteurCombat", 24, 8, 120);
+        HELICO_DEGATS = b.comment("Damage of each machine gun round (a real projectile: armour protects).")
+                .defineInRange("degatsBalle", 3.0, 0.0, 100.0);
+        HELICO_RAFALE = b.comment("Rounds per burst.").defineInRange("ballesParRafale", 10, 1, 100);
+        HELICO_CADENCE = b.comment("Ticks between two rounds of a burst.").defineInRange("cadenceTicks", 2, 1, 20);
+        HELICO_PAUSE_MIN = b.comment("Minimum ticks between two bursts.").defineInRange("pauseMinTicks", 40, 5, 600);
+        HELICO_PAUSE_MAX = b.comment("Maximum ticks between two bursts.").defineInRange("pauseMaxTicks", 70, 5, 600);
+        HELICO_DISPERSION = b.comment("Spread of the rounds (degrees).").defineInRange("dispersionDegres", 2.5, 0.0, 30.0);
+        HELICO_PORTEE_TIR = b.comment("Range of the machine gun (blocks).").defineInRange("porteeTir", 90, 16, 256);
+        HELICO_MEMOIRE = b.comment("Seconds the helicopter keeps hunting a player who shot it.").defineInRange("memoireSecondes", 30, 5, 600);
+        HELICO_VISEE = b.comment("A player aiming at it with a gun for this many seconds becomes a target too (0 = off).")
+                .defineInRange("viseeSecondes", 4, 0, 60);
+        HELICO_TIRER_BOTS = b.comment("Also fire at the load test bots (/bots).").define("tirerSurBots", false);
+        HELICO_PUISSANCE_CRASH = b.comment("Power of the crash explosion (hurts players, never breaks blocks).")
+                .defineInRange("puissanceCrash", 4.0, 0.0, 10.0);
+        HELICO_FEU_MIN = b.comment("Minimum seconds the wreck burns (crates and parts locked meanwhile).").defineInRange("feuMinSecondes", 60, 0, 3600);
+        HELICO_FEU_MAX = b.comment("Maximum seconds the wreck burns.").defineInRange("feuMaxSecondes", 150, 0, 3600);
+        HELICO_EPAVE_MINUTES = b.comment("Minutes the wreck, its crates and the T7 chest stay once the fire is out.")
+                .defineInRange("epaveMinutes", 10, 1, 600);
+        HELICO_FOUILLE = b.comment("Seconds of searching (right click held, standing still) to take a part from the wreck.")
+                .defineInRange("fouilleSecondes", 8, 1, 120);
+        HELICO_COFFRE_T7 = b.comment("HeraliZ Loot T7 chest left at the crash (t7_coffre_armes, t7_largage, t7_coffre_fort...).")
+                .define("coffreT7", "t7_coffre_armes");
+        HELICO_TABLE_T6 = b.comment("HeraliZ Loot table of the two helicopter crates.").define("tableT6", "t6");
+        HELICO_PORTEE_SUIVI = b.comment("Players this close (blocks) see and hear the helicopter, even beyond their view distance.")
+                .defineInRange("porteeSuivi", 500, 64, 2000);
         b.pop();
 
         CONFIG_VERSION = b.comment("Internal, do not edit: lets new versions of the mod update values left at their old defaults.")

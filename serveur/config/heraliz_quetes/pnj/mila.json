@@ -68,6 +68,83 @@
     "type": "rachat",
     "rachat": [
       {
+        "objet": "airstrike:helico_tole",
+        "prix": {
+          "commun": 35,
+          "peu_commun": 35,
+          "rare": 35,
+          "epique": 35,
+          "legendaire": 35,
+          "mythique": 35
+        }
+      },
+      {
+        "objet": "airstrike:helico_cables",
+        "prix": {
+          "commun": 55,
+          "peu_commun": 55,
+          "rare": 55,
+          "epique": 55,
+          "legendaire": 55,
+          "mythique": 55
+        }
+      },
+      {
+        "objet": "airstrike:helico_pale",
+        "prix": {
+          "commun": 90,
+          "peu_commun": 90,
+          "rare": 90,
+          "epique": 90,
+          "legendaire": 90,
+          "mythique": 90
+        }
+      },
+      {
+        "objet": "airstrike:helico_reservoir",
+        "prix": {
+          "commun": 120,
+          "peu_commun": 120,
+          "rare": 120,
+          "epique": 120,
+          "legendaire": 120,
+          "mythique": 120
+        }
+      },
+      {
+        "objet": "airstrike:helico_mitrailleuse",
+        "prix": {
+          "commun": 170,
+          "peu_commun": 170,
+          "rare": 170,
+          "epique": 170,
+          "legendaire": 170,
+          "mythique": 170
+        }
+      },
+      {
+        "objet": "airstrike:helico_avionique",
+        "prix": {
+          "commun": 210,
+          "peu_commun": 210,
+          "rare": 210,
+          "epique": 210,
+          "legendaire": 210,
+          "mythique": 210
+        }
+      },
+      {
+        "objet": "airstrike:helico_turbine",
+        "prix": {
+          "commun": 250,
+          "peu_commun": 250,
+          "rare": 250,
+          "epique": 250,
+          "legendaire": 250,
+          "mythique": 250
+        }
+      },
+      {
         "tag": "heraliz_composants:vente",
         "prix": {
           "commun": 2,

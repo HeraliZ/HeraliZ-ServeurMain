@@ -9,7 +9,8 @@ Le reste du fichier du PNJ (nom, apparence, phrases) n'est pas touché. Prix en 
   qu'ils nourrissent ;
 - accessoires TaCZ : ceux de rareté Commun à Rare (section « accessoires »), sans les munitions spéciales ;
 - matériaux de construction (Bâtisseur) : tableau MATERIAUX ;
-- rachat : objets de valeur (tag heraliz_composants:vente), puis tous les composants (heraliz_composants:tous).
+- rachat : pièces de l'hélicoptère de patrouille (Airstrike, prix fixe par pièce, tableau PIECES_HELICO), objets de
+  valeur (tag heraliz_composants:vente), puis tous les composants (heraliz_composants:tous).
 
 Contrôle (23/10, brindilles achetées 2 hérals au Bâtisseur et revendues 8 à Mila, sans limite) : un objet vendu par un
 marchand n'est JAMAIS racheté par le serveur (Marchands.prixRachat de HeraliZ Quêtes 1.10.3). Le script liste les objets
@@ -44,6 +45,22 @@ MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), 
 ]
 RACHAT_VALEUR = {"commun": 2, "peu_commun": 8, "rare": 20, "epique": 50, "legendaire": 200, "mythique": 500}
 RACHAT_COMPOSANTS = RACHAT_VALEUR  # mêmes prix que les objets de valeur
+# pièces récupérées sur l'épave de l'hélicoptère de patrouille (Airstrike 1.10.0, 24/10) : prix fixe, quelle que soit la
+# rareté ; mêmes pièces et poids que fr.heraliz.airstrike.helico.PieceHelico (les moins chères sortent le plus souvent)
+PIECES_HELICO = [
+    ("airstrike:helico_tole", 35),
+    ("airstrike:helico_cables", 55),
+    ("airstrike:helico_pale", 90),
+    ("airstrike:helico_reservoir", 120),
+    ("airstrike:helico_mitrailleuse", 170),
+    ("airstrike:helico_avionique", 210),
+    ("airstrike:helico_turbine", 250),
+]
+
+
+def prix_fixe(p):
+    """Prix d'une règle de rachat d'un seul objet (clé « objet ») : le même pour toutes les raretés."""
+    return {r: p for r in ("commun", "peu_commun", "rare", "epique", "legendaire", "mythique")}
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
 
 
@@ -64,7 +81,8 @@ def accessoires():
 
 
 MARCHANDS = {
-    "mila": {"type": "rachat", "rachat": [{"tag": "heraliz_composants:vente", "prix": RACHAT_VALEUR},
+    "mila": {"type": "rachat", "rachat": [{"objet": o, "prix": prix_fixe(p)} for o, p in PIECES_HELICO] + [
+                                          {"tag": "heraliz_composants:vente", "prix": RACHAT_VALEUR},
                                           {"tag": "heraliz_composants:tous", "prix": RACHAT_COMPOSANTS}]},
     "jacqueline": {"type": "achat", "articles": soins()},
     "doyen": {"type": "achat", "articles": nourriture()},
@@ -94,7 +112,7 @@ def controle():
     conflits = []
     for pid, m in MARCHANDS.items():
         for r in m.get("rachat", []):
-            ids = tag(r["tag"])
+            ids = tag(r["tag"]) if "tag" in r else {r["objet"]}
             for o, prix in ventes.items():
                 if o not in ids:
                     continue

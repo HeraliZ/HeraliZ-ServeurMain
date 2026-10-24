@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 
 /** Lazily loaded generated models (reloaded with the resource packs). */
 public final class ModModels {
-    private static GeoModel jet, cargo, ordnance, crate, designator;
+    private static GeoModel jet, cargo, ordnance, crate, designator, helico, epave;
 
     private ModModels() {
     }
@@ -43,8 +43,20 @@ public final class ModModels {
         return crate;
     }
 
+    /** Hélicoptère de patrouille (outils/modele/helico.py). */
+    public static GeoModel helico() {
+        if (helico == null) helico = GeoLoader.load(geo("helico"));
+        return helico;
+    }
+
+    /** Morceaux de son épave et caisse T6 (même placement de texture, peinture brûlée). */
+    public static GeoModel epave() {
+        if (epave == null) epave = GeoLoader.load(geo("helico_epave"));
+        return epave;
+    }
+
     /** Called on resource reload: models are re-read on next use. */
     public static void invalidate() {
-        jet = cargo = ordnance = crate = designator = null;
+        jet = cargo = ordnance = crate = designator = helico = epave = null;
     }
 }

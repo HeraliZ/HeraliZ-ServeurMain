@@ -196,5 +196,32 @@
     "attenuation_distance": 180
    }
   ]
+ },
+ "helico_rotor": {
+  "subtitle": "subtitles.airstrike.helico_rotor",
+  "sounds": [
+   {
+    "name": "airstrike:helico_rotor",
+    "attenuation_distance": 420
+   }
+  ]
+ },
+ "helico_tir": {
+  "subtitle": "subtitles.airstrike.helico_tir",
+  "sounds": [
+   {
+    "name": "airstrike:helico_tir",
+    "attenuation_distance": 240
+   }
+  ]
+ },
+ "helico_chute": {
+  "subtitle": "subtitles.airstrike.helico_chute",
+  "sounds": [
+   {
+    "name": "airstrike:helico_chute",
+    "attenuation_distance": 320
+   }
+  ]
  }
 }

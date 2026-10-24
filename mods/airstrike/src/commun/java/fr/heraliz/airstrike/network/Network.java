@@ -12,13 +12,14 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class Network {
-    private static final String PROTOCOL = "2";
+    // 3 (24/10) : paquets de l'hélicoptère de patrouille ; jars joueurs et serveur de la même fabrication
+    private static final String PROTOCOL = "3";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(AirstrikeMod.MODID, "main"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
-    /** Packets received by the client (StrikePacket, ImpactPacket): plugged in by PartieClient (docs §6). */
+    /** Packets received by the client (StrikePacket, ImpactPacket, HelicoPositionPacket, FouilleEtatPacket): PartieClient. */
     public static final Crochet<Object> RECEPTION_CLIENT = new Crochet<>();
-    /** Packets received by the server (DesignatePacket, LoadCartridgePacket): plugged in by PartieServeur. */
+    /** Packets received by the server (DesignatePacket, LoadCartridgePacket, FouillePacket): plugged in by PartieServeur. */
     public static final Crochet<Recu> RECEPTION_SERVEUR = new Crochet<>();
 
     /** A packet received by the server and its sender (null if none). */
@@ -42,6 +43,15 @@ public final class Network {
         CHANNEL.messageBuilder(LoadCartridgePacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(LoadCartridgePacket::encode).decoder(LoadCartridgePacket::new)
                 .consumerMainThread(LoadCartridgePacket::handle).add();
+        CHANNEL.messageBuilder(HelicoPositionPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(HelicoPositionPacket::encode).decoder(HelicoPositionPacket::new)
+                .consumerMainThread(HelicoPositionPacket::handle).add();
+        CHANNEL.messageBuilder(FouillePacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(FouillePacket::encode).decoder(FouillePacket::new)
+                .consumerMainThread(FouillePacket::handle).add();
+        CHANNEL.messageBuilder(FouilleEtatPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(FouilleEtatPacket::encode).decoder(FouilleEtatPacket::new)
+                .consumerMainThread(FouilleEtatPacket::handle).add();
     }
 
     public static void sendImpact(ServerLevel level, ImpactPacket packet) {

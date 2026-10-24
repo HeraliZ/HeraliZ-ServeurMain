@@ -32,6 +32,10 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> CRATE_REVEAL = variable("crate_reveal");
     public static final RegistryObject<SoundEvent> TINNITUS = variable("tinnitus");
     public static final RegistryObject<SoundEvent> FLARES = far("flares", 200f);
+    /** Hélicoptère de patrouille (sons écrits par outils/sons_helico.py). */
+    public static final RegistryObject<SoundEvent> HELICO_ROTOR = far("helico_rotor", 400f);
+    public static final RegistryObject<SoundEvent> HELICO_TIR = far("helico_tir", 220f);
+    public static final RegistryObject<SoundEvent> HELICO_CHUTE = far("helico_chute", 300f);
 
     private static RegistryObject<SoundEvent> variable(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(AirstrikeMod.MODID, name)));

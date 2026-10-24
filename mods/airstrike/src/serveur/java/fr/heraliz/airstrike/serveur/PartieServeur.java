@@ -3,6 +3,11 @@ package fr.heraliz.airstrike.serveur;
 import fr.heraliz.airstrike.block.SupplyCrateBlockEntityServeur;
 import fr.heraliz.airstrike.entity.EffectCloudEntityServeur;
 import fr.heraliz.airstrike.entity.SupplyCrateEntityServeur;
+import fr.heraliz.airstrike.helico.CaisseHelicoEntityServeur;
+import fr.heraliz.airstrike.helico.EpaveHelicoEntityServeur;
+import fr.heraliz.airstrike.helico.HelicoEntityServeur;
+import fr.heraliz.airstrike.helico.Helicos;
+import fr.heraliz.airstrike.network.FouillePacket;
 import fr.heraliz.airstrike.network.DesignatePacket;
 import fr.heraliz.airstrike.network.LoadCartridgePacket;
 import fr.heraliz.airstrike.network.Network;
@@ -18,7 +23,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 /**
  * Partie serveur d'Airstrike (docs/METHODE_CLIENT_SERVEUR.md §4) : avions et frappes (planification, impacts, bombes,
  * explosions, destruction des blocs, largages, nuages de fumée / gaz / napalm, attraction des zombies), validation des
- * jumelles, commandes.
+ * jumelles, commandes ; hélicoptère de patrouille (helico/Helicos).
  */
 public final class PartieServeur implements Partie {
    @Override
@@ -26,6 +31,11 @@ public final class PartieServeur implements Partie {
       ModEntities.EFFECT_CLOUD_USINE.serveur(EffectCloudEntityServeur::new);
       ModEntities.SUPPLY_CRATE_USINE.serveur(SupplyCrateEntityServeur::new);
       ModBlockEntities.SUPPLY_CRATE_USINE.serveur(SupplyCrateBlockEntityServeur::new);
+      // hélicoptère de patrouille (24/10) : entités, événement, fouille, commandes /helico
+      ModEntities.HELICO_USINE.serveur(HelicoEntityServeur::new);
+      ModEntities.HELICO_EPAVE_USINE.serveur(EpaveHelicoEntityServeur::new);
+      ModEntities.HELICO_CAISSE_USINE.serveur(CaisseHelicoEntityServeur::new);
+      Helicos.brancher();
       Network.RECEPTION_SERVEUR.brancher(PartieServeur::recevoir);
       MinecraftForge.EVENT_BUS.register(ServerEvents.class);
    }
@@ -39,6 +49,8 @@ public final class PartieServeur implements Partie {
          }
       } else if (recu.paquet() instanceof LoadCartridgePacket p) {
          if (player != null) DesignatorLogic.loadCartridge(player, p.type);
+      } else if (recu.paquet() instanceof FouillePacket p) {
+         if (player != null) Helicos.recevoir(player, p);
       }
    }
 }

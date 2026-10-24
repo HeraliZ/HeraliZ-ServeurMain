@@ -32,6 +32,9 @@ public final class ClientSetup {
     public static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.EFFECT_CLOUD.get(), NoopRenderer::new);
         event.registerEntityRenderer(ModEntities.SUPPLY_CRATE.get(), SupplyCrateRenderer::new);
+        event.registerEntityRenderer(ModEntities.HELICO.get(), fr.heraliz.airstrike.client.helico.HelicoRendu::new);
+        event.registerEntityRenderer(ModEntities.HELICO_EPAVE.get(), fr.heraliz.airstrike.client.helico.EpaveRendu::new);
+        event.registerEntityRenderer(ModEntities.HELICO_CAISSE.get(), fr.heraliz.airstrike.client.helico.EpaveRendu::new);
     }
 
     @SubscribeEvent
@@ -51,6 +54,7 @@ public final class ClientSetup {
     public static void onOverlays(RegisterGuiOverlaysEvent event) {
         event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), "binoculars", DesignatorHud::render);
         event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "strike_toast", DesignatorHud::renderToast);
+        event.registerAbove(VanillaGuiOverlay.CROSSHAIR.id(), "helico_fouille", fr.heraliz.airstrike.client.helico.HelicoClient::hud);
     }
 
     @SubscribeEvent

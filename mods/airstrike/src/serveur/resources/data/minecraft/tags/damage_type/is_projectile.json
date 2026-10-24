@@ -1,4 +1,7 @@
 {
   "replace": false,
-  "values": ["airstrike:strafe"]
+  "values": [
+    "airstrike:strafe",
+    "airstrike:helico"
+  ]
 }

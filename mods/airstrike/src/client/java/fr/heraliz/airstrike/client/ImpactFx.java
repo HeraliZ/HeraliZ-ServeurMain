@@ -71,20 +71,7 @@ public final class ImpactFx {
                 }
                 sound(ModSounds.CANISTER_POP.get(), p, 2.0f, 0.7f, soundDelay);
             }
-            case ImpactPacket.BULLET -> {
-                // a strafing run lands ~200 rounds: far away only the dust puff is worth drawing
-                if (dist < 100) {
-                    debris(level, p, FxQuality.count(5, q, 1), 0.45);
-                    spawn(ParticleTypes.CRIT, p.x, p.y + 0.1, p.z, 0, 0.3, 0);
-                }
-                spawn(SmokeParticleOptions.of(0x7A6E5E, 1.0f + R.nextFloat() * 0.8f, 30, 0.04f, 0.8f), p.x, p.y + 0.3, p.z,
-                        R.nextGaussian() * 0.05, 0.08, R.nextGaussian() * 0.05);
-                for (int i = 0, n = dist > 100 ? 0 : FxQuality.count(3, q, 1); i < n; i++) {
-                    spawn(ModParticles.SPARK.get(), p.x, p.y + 0.1, p.z, R.nextGaussian() * 0.3, 0.3 + R.nextFloat() * 0.3, R.nextGaussian() * 0.3);
-                }
-                if (R.nextInt(2) == 0) sound(ModSounds.BULLET_IMPACT.get(), p, 1.5f, 0.8f + R.nextFloat() * 0.4f, 0);
-                if (dist < 40) CameraShake.add(0.05f);
-            }
+            case ImpactPacket.BULLET -> balle(level, p, dist, q, 1.5f);
             case ImpactPacket.CRATE_LAND -> {
                 debris(level, p, FxQuality.count(50, q, 10), 0.35);
                 for (int i = 0, n = FxQuality.count(32, q, 10); i < n; i++) {
@@ -93,6 +80,12 @@ public final class ImpactFx {
                             p.x + Math.cos(a) * 1.8, p.y + 0.2, p.z + Math.sin(a) * 1.8, Math.cos(a) * 0.35, 0.02, Math.sin(a) * 0.35);
                 }
                 if (dist < 50) CameraShake.add(0.22f);
+            }
+            case ImpactPacket.HELICO_BALLE -> {
+                // mitrailleuse de l'hélicoptère : traçante depuis sa bouche, poussière si la balle frappe un bloc
+                fr.heraliz.airstrike.client.helico.HelicoClient.traceur(p);
+                if (pkt.power >= 1f) balle(level, p, dist, q, 0.9f);
+                else if (pkt.power > 0f && dist < 100) spawn(ParticleTypes.CRIT, p.x, p.y, p.z, 0, 0.2, 0);
             }
             default -> {
             }
@@ -162,6 +155,22 @@ public final class ImpactFx {
         float shake = (float) Math.max(0.0, 1.0 - dist / (70.0 * scale + 20.0)) * 0.9f * scale;
         if (shake > 0) CameraShake.add(shake);
         Deafen.hit((float) (1.0 - dist / (10.0 + 14.0 * scale)));
+    }
+
+    /** Impact d'une balle sur le sol : poussière, éclats, étincelles, claquement (mitraillage, hélicoptère). */
+    private static void balle(ClientLevel level, Vec3 p, double dist, float q, float volume) {
+        // a strafing run lands ~200 rounds: far away only the dust puff is worth drawing
+        if (dist < 100) {
+            debris(level, p, FxQuality.count(5, q, 1), 0.45);
+            spawn(ParticleTypes.CRIT, p.x, p.y + 0.1, p.z, 0, 0.3, 0);
+        }
+        spawn(SmokeParticleOptions.of(0x7A6E5E, 1.0f + R.nextFloat() * 0.8f, 30, 0.04f, 0.8f), p.x, p.y + 0.3, p.z,
+                R.nextGaussian() * 0.05, 0.08, R.nextGaussian() * 0.05);
+        for (int i = 0, n = dist > 100 ? 0 : FxQuality.count(3, q, 1); i < n; i++) {
+            spawn(ModParticles.SPARK.get(), p.x, p.y + 0.1, p.z, R.nextGaussian() * 0.3, 0.3 + R.nextFloat() * 0.3, R.nextGaussian() * 0.3);
+        }
+        if (R.nextInt(2) == 0) sound(ModSounds.BULLET_IMPACT.get(), p, volume, 0.8f + R.nextFloat() * 0.4f, 0);
+        if (dist < 40) CameraShake.add(0.05f);
     }
 
     private static void napalm(ClientLevel level, Vec3 p, double dist, int soundDelay, float q) {
