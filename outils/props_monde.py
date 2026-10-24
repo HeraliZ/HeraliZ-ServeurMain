@@ -525,6 +525,17 @@ def donnees_loot(monde):
             out["parts"][c["Zone"][1]] = c["Part"][1]
         for c in d.get("Places", (9, (10, [])))[1][1]:
             out["places"].append(list(position(c["Pos"][1])) + [c["Zone"][1], c["Nom"][1]])
+        # salles à carte (boîtes) connues de HeraliZ Loot : rien n'y est posé par le plan
+        for c in d.get("Salles", (9, (10, [])))[1][1]:
+            if "Min" in c and "Max" in c:
+                out.setdefault("salles", []).append(list(position(c["Min"][1])) + list(position(c["Max"][1])))
+    # salles à carte de HeraliZ Bunker (même boîte, gardée avec le monde)
+    sal = lire_dat(Path(monde) / "data" / "heralisz_bunker_salles.dat")
+    if sal:
+        d = sal.get("data", (10, {}))[1]
+        for c in d.get("Salles", (9, (10, [])))[1][1]:
+            if "Min" in c and "Max" in c:
+                out.setdefault("salles", []).append(list(position(c["Min"][1])) + list(position(c["Max"][1])))
     pts = lire_dat(Path(monde) / "data" / "heraliz_loot_points_t7.dat")
     if pts:
         d = pts.get("data", (10, {}))[1]

@@ -4,7 +4,8 @@ commandes que le SERVEUR joue lui-même (workflow « Props de la carte », conso
 annulable.
 
     python outils/props_carte.py analyser <monde> [--sortie DOSSIER] [--zones DOSSIER] [--processus N]
-    python outils/props_carte.py plan <DOSSIER d'analyse> [--graine N] [--lot N] [--ajouts] [--max-changements N]
+    python outils/props_carte.py plan <DOSSIER d'analyse> [--graine N] [--lot N] [--ajouts] [--familles]
+                                      [--familles-compenser] [--max-changements N]
     python outils/props_carte.py rendus <monde> <DOSSIER d'analyse> [--pieces id,id] [--sortie DOSSIER]
 
 analyser : relève chaque prop (cfm, HeraliZ Utils, HeraliZ Décors) et chaque conteneur de HeraliZ Loot (T1 à T7,
@@ -17,7 +18,7 @@ analyser : relève chaque prop (cfm, HeraliZ Utils, HeraliZ Décors) et chaque c
   --zones : dossier des zones de loot (défaut : <monde>/datapacks/heraliz_carte/data/heraliz_loot/zones).
 
 plan : consigne du propriétaire (15/10) : 100 % des modèles T1 à T6 de HeraliZ Loot posés sur la carte, en nombre
-  équilibré ; T7 réservé aux événements (rien posé), ni meubles cfm, ni familles (nourriture, soins, munitions). À
+  équilibré ; T7 réservé aux événements (rien posé), ni meubles cfm (familles : option --familles, plus bas). À
   partir de l'analyse, le plan remplace des conteneurs T1 à T6 déjà posés par d'autres modèles du MÊME palier (règles
   de outils/props_catalogue.py : même gabarit, même orientation, pièce ou extérieur compatibles, une cuisinière / un
   frigo par pièce, place libre exacte pour un gros conteneur, sans boucher de porte ni de passage). Sortie dans
@@ -27,7 +28,11 @@ plan : consigne du propriétaire (15/10) : 100 % des modèles T1 à T6 de Herali
   un mur posé entre-temps par les constructeurs n'est pas touché. --ajouts : un modèle qui n'a AUCUNE place de
   remplacement cohérente est aussi posé sur une case libre (près d'un conteneur de son palier, dos au mur, jamais
   devant une porte ni dans un passage ; étape « ajouts », signalée à part) ; sans cette option, rien n'est posé dans
-  le vide.
+  le vide. --familles (demande du propriétaire du 24/10) : conteneurs de vivres, de soins et de munitions posés en plus
+  sur des cases libres, un peu partout (nombre pour 100 conteneurs du lieu, au niveau du lieu, l'aérodrome au maximum ;
+  tableaux en tête de outils/props_plan.py), toujours à portée d'une zone de loot de leur niveau, où HeraliZ Loot les
+  range : ils tournent avec elle (étape « familles », signalée à part ; parts d'actifs inchangées, sauf avec
+  --familles-compenser).
 
 rendus : vues de dessus (avant / après) de quelques pièces, en PNG (Pillow).
 """

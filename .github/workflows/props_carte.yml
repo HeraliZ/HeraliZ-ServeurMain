@@ -2,9 +2,11 @@
 # (ou l'annule). Consigne du 15/10 : 100 % des modèles T1 à T6 de HeraliZ Loot posés, en remplaçant des conteneurs déjà
 # posés par d'autres modèles du même palier (étape « diversification ») ; T7 réservé aux événements, rien sur les
 # meubles cfm. Étape « ajouts » à part : seulement si le plan a été fait avec l'option --ajouts (modèles sans aucune
-# place de remplacement, posés sur une case libre). Le plan (props_carte/plan.tar.gz) a été fait par « Inventaire de
-# la carte », case « props », et enregistré sur la branche de travail : on lance ce workflow SUR CETTE BRANCHE (jamais
-# main).
+# place de remplacement, posés sur une case libre). Étape « familles » à part (demande du 24/10) : seulement si le plan
+# a été fait avec --familles (conteneurs de vivres, de soins et de munitions posés sur des cases libres, au niveau du
+# lieu, qui rejoignent la rotation de la zone de loot de leur niveau). Le plan (props_carte/plan.tar.gz) a été fait
+# par « Inventaire de la carte », case « props », et enregistré sur la branche de travail : on lance ce workflow SUR
+# CETTE BRANCHE (jamais main).
 #
 # Aucun fichier du monde n'est lu ni écrit : les commandes du plan sont envoyées à la console du serveur (API du
 # panel), et c'est le serveur qui les joue. Chaque commande ne change un bloc que s'il est ENCORE le prop relevé dans la
@@ -27,7 +29,7 @@ on:
         type: boolean
         default: false
       etapes:
-        description: "Étapes du plan à jouer : « diversification » (remplacements, même palier) ; « ajouts » à part (seulement si le plan a été fait avec --ajouts)"
+        description: "Étapes du plan à jouer : « diversification » (remplacements, même palier) ; « ajouts » et « familles » à part (seulement si le plan a été fait avec --ajouts / --familles) ; plusieurs : « diversification,familles »"
         type: string
         default: "diversification"
       lots:

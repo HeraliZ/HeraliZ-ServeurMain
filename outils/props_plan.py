@@ -2,8 +2,9 @@
 outils/props_carte.py).
 
 Consigne du propriétaire (15/10) : utiliser les modèles de HeraliZ Loot, T1 à T6 seulement (T7 = événements), et que
-100 % des modèles T1 à T6 soient posés sur la carte, en nombre équilibré (plus « toujours les mêmes »). C'est tout :
-ni meubles cfm, ni anciens meubles cfm à reposer, ni points T7, ni familles (nourriture, soins, munitions).
+100 % des modèles T1 à T6 soient posés sur la carte, en nombre équilibré (plus « toujours les mêmes »). Ni meubles cfm,
+ni anciens meubles cfm à reposer, ni points T7. Familles (vivres, soins, munitions) : demande du propriétaire du 24/10
+(« on en croise très très peu »), étape « familles » à part.
 
 Rien n'est écrit dans le monde : le plan produit des lots de commandes que le serveur jouera lui-même (workflow
 « Props de la carte »), chacune conditionnelle (« le bloc est-il encore celui relevé ? ») et annulable.
@@ -15,7 +16,14 @@ Rien n'est écrit dans le monde : le plan produit des lots de commandes que le s
                    trop répétés cèdent des places aux modèles sous leur part) ;
   ajouts           (option --ajouts, signalé à part) seulement pour un modèle qui n'a AUCUNE place de remplacement
                    cohérente : posé sur une case libre près d'un conteneur de son palier ; la part d'actifs de la zone
-                   est baissée d'autant (le loot de la zone ne change pas).
+                   est baissée d'autant (le loot de la zone ne change pas) ;
+  familles         (option --familles, signalé à part) conteneurs de vivres, de soins et de munitions posés sur des
+                   cases libres, un peu partout : nombre visé par lieu pour 100 conteneurs de loot du lieu
+                   (FAMILLES_POUR_100), au niveau du lieu (NIVEAU_LIEU : palier le plus haut de ses zones de loot,
+                   l'aérodrome au maximum), dans une pièce qui leur va (cuisine, salle de bain, salle militaire...)
+                   ou dehors, toujours à portée d'une zone de loot de leur niveau : HeraliZ Loot les y range (64 blocs)
+                   et ils tournent avec elle (part d'actifs de la zone, inchangée par défaut : le loot T1 à T6 de la
+                   zone ne baisse pas ; --familles-compenser garde le même nombre total de conteneurs remplis).
 
 Règles de chaque remplacement : même palier de loot (le loot d'une zone ne change pas de niveau), même gabarit (un
 meuble par un meuble, un objet par un objet, un cadavre par un cadavre, un véhicule par un véhicule), même
@@ -25,11 +33,13 @@ plus d'un gros conteneur (de l'air, un sol dessous, dans la même pièce, ni dev
 bloc, ni devant un autre meuble, sans couper la pièce en deux). Un conteneur qui garde des données (inventaire) n'est
 jamais touché.
 """
+import base64
 import json
 import math
 import random
 import re
 import sys
+import zlib
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -54,8 +64,73 @@ PASSES = 3         # passes d'équilibrage
 LIEU_EXT = {"aerodrome": "base", "silo": "base", "arctique": "base", "radio": "base", "bunker": "base", "prison": "base",
             "petrole": "chantier", "port": "quai rue", "jetee": "quai", "campagne": "ferme route jardin",
             "routes": "route", "gaz": "chantier rue", "faille": "camp route", "halte_aerodrome": "route base"}
-ETAPES = ["diversification", "ajouts"]
+ETAPES = ["diversification", "ajouts", "familles"]
 MOTIFS = ["cohérence", "couverture", "équilibrage"]
+
+# ---------------------------------------------------------------------------------------- étape « familles » (24/10)
+# Demande du propriétaire (24/10) : « les conteneurs Vivres, Soins, Munitions ne sont pas assez placés sur la map […]
+# les placer un peu partout en fonction du niveau de la ville […] on en place pas mal et à la fin y'en a que un certain
+# % qui est lootable et ça tourne ». Nombre visé pour 100 conteneurs de loot (T1 à T6) du lieu, conteneurs de la famille
+# déjà posés compris (avant : 181 pour 28 000 conteneurs sur la copie v3, soit 0,65 pour 100, toutes familles).
+FAMILLES = ("nourriture", "soins", "munitions")
+NOM_FAMILLE = {"nourriture": "vivres", "soins": "soins", "munitions": "munitions"}
+FAMILLES_POUR_100 = {"nourriture": 3.0, "soins": 3.0, "munitions": 2.0}
+# lieux militaires (niveau 4 et plus) : plus de munitions et de soins, moins de vivres
+FAMILLES_POUR_100_MILITAIRE = {"nourriture": 2.0, "soins": 3.5, "munitions": 5.0}
+# un lieu en particulier (sinon : la ligne du dessus selon son niveau), ex. {"prison": {"nourriture": 3, ...}}
+FAMILLES_POUR_100_LIEU = {}
+# niveau d'un lieu : palier le plus haut qui fait au moins SEUIL_NIVEAU_LIEU de ses conteneurs, sauf ceux réglés ici
+NIVEAU_LIEU = {"aerodrome": 6}
+SEUIL_NIVEAU_LIEU = 0.05
+# niveaux posés, pour un lieu de niveau N : N pour moitié, N-1 et N-2 pour le reste (ramenés au niveau le plus haut
+# qui existe dans la famille : soins 3, vivres 4, munitions 6 ; jamais sous 1)
+PARTS_NIVEAUX = (0.5, 0.35, 0.15)
+PORTEE_ZONE = 60   # un conteneur de la famille de niveau N doit avoir une zone de niveau N à moins de 60 blocs
+                   # (HeraliZ Loot le range dans la zone de son niveau la plus proche, à 64 blocs ; sinon il en créerait
+                   # une à lui seul) : le plan ne pose jamais plus loin
+ECART_FAMILLE = 4  # au moins 4 blocs entre deux conteneurs de familles (un peu partout, pas en tas)
+# pièces et extérieurs en plus de ceux du catalogue (outils/props_catalogue.py, FAMILLES), pour cette étape seulement
+# (« un peu partout ») : le catalogue, qui sert aussi au type des pièces et à la diversification, ne change pas.
+# Les cadavres de soignants (soins*_loot_medical_5 à 10) gardent leurs places (hôpital, secours, rue).
+FAMILLES_PIECES_EN_PLUS = {
+    "nourriture": ("grange", "ferme"),
+    "soins": ("chambre entree bureau ecole police militaire onu", ""),
+    "munitions": ("onu garage cave grange entrepot", "camp"),
+}
+
+
+def _reglages_rotation():
+    """proportion_actifs et facteurs_actifs (T1 à T7) de la rotation, lus dans le fichier du dépôt qui fait foi
+    (serveur/defaultconfigs/heraliz_loot-server.toml, recopié dans le monde par la mise en ligne)."""
+    prop, fac = 0.2, []
+    f = pk.DEPOT / "serveur/defaultconfigs/heraliz_loot-server.toml"
+    try:
+        t = f.read_text(encoding="utf-8")
+        m = re.search(r"(?m)^\s*proportion_actifs\s*=\s*([0-9.]+)", t)
+        if m:
+            prop = float(m.group(1))
+        m = re.search(r"(?m)^\s*facteurs_actifs\s*=\s*\[([^\]]*)\]", t)
+        if m:
+            fac = [float(v) for v in m.group(1).replace(" ", "").split(",") if v]
+    except OSError:
+        pass
+    return prop, fac
+
+
+PROPORTION_ACTIFS, FACTEURS_ACTIFS = _reglages_rotation()
+
+
+def facteur_niveau(n):
+    """Facteur de la part d'actifs d'une zone de niveau n (ConfigLoot.facteur : 1 si inconnu)."""
+    return FACTEURS_ACTIFS[n - 1] if 1 <= n <= len(FACTEURS_ACTIFS) else 1.0
+
+
+def famille_de(pr):
+    """(famille, niveau) d'un conteneur de famille de HeraliZ Loot avec du loot, sinon None."""
+    if pr is None or pr.mod != "heraliz_loot" or not pr.loot or pr.be or pr.gab not in GABARITS:
+        return None
+    f, n = cle_palier(pr)
+    return (f, n) if f in FAMILLES and n >= 1 else None
 
 
 def cle_palier(pr):
@@ -82,9 +157,13 @@ class Emplacement:
 
 
 class Planif:
-    def __init__(self, a, graine=1, max_changements=None, ajouts=False, compenser=True):
+    def __init__(self, a, graine=1, max_changements=None, ajouts=False, compenser=True, familles=False,
+                 familles_compenser=False):
         self.a, self.cat = a, a.cat
         self.compenser = compenser
+        self.familles = familles
+        self.familles_compenser = familles_compenser
+        self.familles_proposees = []
         self.garder_groupes = True
         self.rnd = random.Random(graine)
         self.ajouts = ajouts
@@ -698,6 +777,306 @@ class Planif:
         _d, lx, lz, f = options[0]
         return lx, lz, f
 
+    # ------------------------------------------------------------------ familles (vivres, soins, munitions)
+    def _index_zones(self):
+        """Zones de loot connues (fichiers du pack de données + conteneurs posés en jeu) : niveau de chaque zone (celui
+        de la plupart de ses conteneurs, le plus bas en cas d'égalité, comme ZonesLoot.Zone) et grille de leurs
+        conteneurs par niveau de zone."""
+        if hasattr(self, "_zgrille"):
+            return
+        zones = defaultdict(list)
+        for (x, y, z), (zid, _lieu, nom) in self.a.zpos.items():
+            zones[zid].append((x, y, z, _niv(nom)))
+        for x, y, z, zid, nom in self.a.loot.get("places") or []:
+            zones[zid].append((x, y, z, _niv(nom)))
+        self._zniv, self._ztaille = {}, {}
+        self._zgrille = defaultdict(list)
+        for zid, lst in zones.items():
+            c = Counter(n for _x, _y, _z, n in lst if n > 0)
+            m = 0
+            for n in sorted(c):
+                if c[n] > c.get(m, 0):
+                    m = n
+            self._zniv[zid] = m
+            self._ztaille[zid] = len(lst)
+            for x, y, z, _n in lst:
+                self._zgrille[(m, x >> 6, z >> 6)].append((x, y, z, zid))
+
+    def zone_proche(self, x, y, z, n, d=PORTEE_ZONE):
+        """Zone de niveau n dont un conteneur est le plus près de (x, y, z), à moins de d blocs (comme
+        ZonesLoot.rattacher, distance en 3D), ou None."""
+        self._index_zones()
+        mieux, dm = None, d * d
+        for gx in range((x >> 6) - 1, (x >> 6) + 2):
+            for gz in range((z >> 6) - 1, (z >> 6) + 2):
+                for (a, b, c, zid) in self._zgrille.get((n, gx, gz), ()):
+                    dd = (a - x) ** 2 + (b - y) ** 2 + (c - z) ** 2
+                    if dd <= dm:
+                        dm, mieux = dd, zid
+        return mieux
+
+    def part_zone(self, zid):
+        """Part d'actifs d'une zone, comme ZonesLoot.Zone.proportion : réglée en jeu, sinon celle du fichier (ou 0,2)
+        multipliée par le facteur du niveau de la zone (facteurs_actifs)."""
+        self._index_zones()
+        forcee = (self.a.loot.get("parts") or {}).get(zid)
+        if forcee is not None:
+            return forcee
+        info = self.a.zinfos.get(zid) or {}
+        base = info.get("actifs") if info.get("actifs") is not None else PROPORTION_ACTIFS
+        return base * facteur_niveau(self._zniv.get(zid, 0))
+
+    def niveaux_lieux(self):
+        """Conteneurs T1 à T6 de chaque lieu par palier, et niveau de chaque lieu."""
+        par = defaultdict(Counter)
+        for p in self.a.props:
+            pr = self.cat.get(p["id"])
+            if vise(pr) and p.get("lieu"):
+                par[p["lieu"]][cle_palier(pr)[1]] += 1
+        niv = {}
+        for lieu, c in par.items():
+            tot = sum(c.values())
+            n = max([k for k in PALIERS if c[k] >= SEUIL_NIVEAU_LIEU * tot] or [1])
+            niv[lieu] = NIVEAU_LIEU.get(lieu, n)
+        return par, niv
+
+    def _hors_salle(self, x, y, z):
+        for b in self.a.loot.get("salles") or []:
+            if all(min(b[k], b[k + 3]) - 2 <= v <= max(b[k], b[k + 3]) + 2 for k, v in enumerate((x, y, z))):
+                return False
+        return True
+
+    def etape_familles(self):
+        """Conteneurs de vivres, de soins et de munitions posés sur des cases libres, un peu partout : pour chaque
+        lieu, FAMILLES_POUR_100 conteneurs de chaque famille pour 100 conteneurs de loot du lieu (ceux déjà posés
+        comptent), au niveau du lieu (PARTS_NIVEAUX), dans une pièce qui leur va (dos au mur, face à une case libre),
+        dans une petite pièce vide d'une maison (soins) ou dehors dans un extérieur qui leur va ; jamais à plus de
+        PORTEE_ZONE blocs d'une zone de loot de leur niveau (HeraliZ Loot les y range), jamais dans une salle à carte,
+        jamais à moins de ECART_FAMILLE blocs d'un autre conteneur de famille, au plus un par pièce (deux dans une
+        grande pièce). Signalés à part : joués seulement avec l'option --familles."""
+        self._index_zones()
+        self.familles_proposees = []
+        cat = self.cat
+        self.fpools = defaultdict(list)
+        for i, pr in sorted(cat.items()):
+            fn = famille_de(pr)
+            if fn:
+                self.fpools[fn].append(pr)
+        self.fmax = {f: max([n for (g, n) in self.fpools if g == f] or [0]) for f in FAMILLES}
+        par_lieu, niv_lieu = self.niveaux_lieux()
+        self.f_par_lieu, self.f_niv_lieu = par_lieu, niv_lieu
+        # conteneurs de familles déjà posés : par lieu, par pièce, positions (écart)
+        self.f_avant = defaultdict(Counter)       # lieu -> (famille, niveau) -> nombre
+        self.f_compte = Counter()                 # modèle -> nombre (avant + posés)
+        par_piece = Counter()
+        fam_piece = defaultdict(set)
+        grille = defaultdict(list)
+        self.f_actifs_avant = defaultdict(float)  # lieu -> conteneurs de familles remplis en moyenne
+        for p in self.a.props:
+            fn = famille_de(cat.get(p["id"]))
+            if not fn:
+                continue
+            self.f_compte[p["id"]] += 1
+            grille[(p["x"] >> 4, p["z"] >> 4)].append((p["x"], p["y"], p["z"]))
+            if p.get("lieu"):
+                self.f_avant[p["lieu"]][fn] += 1
+                zid = self.zone_proche(p["x"], p["y"], p["z"], fn[1], 64)
+                if zid:
+                    self.f_actifs_avant[p["lieu"]] += self.part_zone(zid)
+            if p["piece"]:
+                par_piece[p["piece"]] += 1
+                fam_piece[p["piece"]].add(fn[0])
+        for ch in self.ajouts_proposes:          # pièces déjà prises par l'étape « ajouts »
+            if ch.get("piece"):
+                par_piece[ch["piece"]] += 1
+        # hôtes : conteneurs T1 à T6 du lieu (dans une pièce de type sûr, ou dehors) et petites pièces vides des maisons
+        hotes = defaultdict(list)
+        for e in self.emps:
+            if not e.lieu:
+                continue
+            if e.env == "int" and e.piece and e.rtype and (self.type_sur(e) or (
+                    e.rsur >= 0.25 and len(self.a.par_piece.get(e.piece, ())) >= 3)):
+                hotes[e.lieu].append(("int", e))
+            elif e.env == "ext" and e.p["ciel"]:
+                hotes[e.lieu].append(("ext", e))
+        maisons = {self.a.pieces[pid].get("batiment") for pid in self.a.par_piece
+                   if self.a.pieces.get(pid, {}).get("type") in ("cuisine", "chambre", "salon")}
+        maisons.discard(None)
+        lieu_bat = defaultdict(Counter)
+        for p in self.a.props:
+            if p.get("batiment") and p.get("lieu"):
+                lieu_bat[p["batiment"]][p["lieu"]] += 1
+        for pid, info in self.a.pieces.items():
+            if info.get("vide") and 4 <= info.get("cases", 0) <= 12 and info.get("batiment") in maisons and info.get("plan"):
+                lieu = (lieu_bat[info["batiment"]].most_common(1) or [(None, 0)])[0][0]
+                if lieu:
+                    hotes[lieu].append(("vide", (pid, info)))
+        self.f_voulu, self.f_manque = {}, {}
+        cache = {}
+
+        en_plus = {f: (set(p.split()), set(e.split())) for f, (p, e) in FAMILLES_PIECES_EN_PLUS.items()}
+
+        def convient(q, env, h):
+            f = cle_palier(q)[0]
+            pp, ee = en_plus.get(f, (set(), set())) if q.gab != "cadavre" else (set(), set())
+            if env == "int":
+                return h.rtype in q.pieces or h.rtype in pp
+            if env == "vide":
+                return q.gab == "objet" and "sdb" in q.pieces
+            return bool((q.ext | ee) & h.ctx)
+
+        def loin_des_autres(x, y, z):
+            for gx in range((x >> 4) - 1, (x >> 4) + 2):
+                for gz in range((z >> 4) - 1, (z >> 4) + 2):
+                    for (a, b, c) in grille.get((gx, gz), ()):
+                        if (a - x) ** 2 + (c - z) ** 2 < ECART_FAMILLE ** 2 and abs(b - y) <= 2:
+                            return False
+            return True
+
+        for lieu in sorted(par_lieu, key=lambda l: -sum(par_lieu[l].values())):
+            tot = sum(par_lieu[lieu].values())
+            niv = niv_lieu[lieu]
+            pour100 = FAMILLES_POUR_100_LIEU.get(lieu) or (FAMILLES_POUR_100_MILITAIRE if niv >= 4 else FAMILLES_POUR_100)
+            besoin = {}                           # (famille, niveau) -> nombre à poser
+            for f in FAMILLES:
+                voulu = int(round(pour100.get(f, 0) * tot / 100.0))
+                deja = sum(n for (g, _l), n in self.f_avant[lieu].items() if g == f)
+                self.f_voulu[(lieu, f)] = voulu
+                manque = max(0, voulu - deja)
+                haut = min(niv, self.fmax[f])
+                parts = Counter()
+                for k, w in enumerate(PARTS_NIVEAUX):
+                    n = max(1, haut - k)
+                    while n > 1 and not self.fpools.get((f, n)):
+                        n -= 1
+                    parts[n] += w
+                # répartition entière (plus forts restes), déjà posés de chaque niveau déduits
+                somme = sum(parts.values())
+                cible = {n: manque * w / somme for n, w in parts.items()}
+                ent = {n: int(v) for n, v in cible.items()}
+                for n in sorted(cible, key=lambda n: -(cible[n] - ent[n]))[:manque - sum(ent.values())]:
+                    ent[n] += 1
+                for n, k in ent.items():
+                    if k > 0:
+                        besoin[(f, n)] = k
+            self.f_manque[lieu] = dict(besoin)
+            if not besoin:
+                continue
+            cands = list(hotes.get(lieu, ()))
+            self.rnd.shuffle(cands)
+            cands.sort(key=lambda t: {"int": 0, "vide": 1, "ext": 2}[t[0]])
+            tour = 0
+            for env, h in cands:
+                if not any(besoin.values()):
+                    break
+                if env == "vide":
+                    pid, info = h
+                    piece, cases, cle_hote = pid, info["cases"], ("vide", pid)
+                    hx, hy, hz = info["plan"]["x"], info["y"], info["plan"]["z"]
+                else:
+                    piece = h.piece if env == "int" else None
+                    cases = self.a.pieces.get(piece, {}).get("cases", 0) if piece else 0
+                    cle_hote = h.p["i"]
+                    hx, hy, hz = h.p["x"], h.p["y"], h.p["z"]
+                if piece and par_piece[piece] >= (2 if cases >= 40 else 1):
+                    continue
+                # familles dans l'ordre de leur manque (la plus en retard d'abord), en tournant
+                tour += 1
+                ordre = sorted({f for (f, _n), k in besoin.items() if k > 0},
+                               key=lambda f: (-sum(k for (g, _n), k in besoin.items() if g == f), (FAMILLES.index(f) + tour) % 3))
+                fait = False
+                for f in ordre:
+                    if piece and f in fam_piece[piece]:
+                        continue
+                    niveaux = sorted((n for (g, n), k in besoin.items() if g == f and k > 0),
+                                     key=lambda n: -besoin[(f, n)])
+                    for n in niveaux:
+                        # zone de ce niveau à portée de l'hôte ? (vérifiée encore à la place exacte)
+                        if not self.zone_proche(hx, hy, hz, n, PORTEE_ZONE + 6):
+                            continue
+                        modeles = [q for q in self.fpools.get((f, n), ()) if convient(q, env, h)]
+                        if not modeles:
+                            continue
+                        modeles.sort(key=lambda q: (self.f_compte[q.id] + 1) / max(0.1, pc.frequence(q.id.split(":")[1]))
+                                     + self.rnd.random() * 0.3)
+                        for q in modeles:
+                            forme = tuple(tuple(sorted(q.cellules_monde(o))) for o in DIRS)
+                            cle = (cle_hote, forme)
+                            if cle not in cache:
+                                cache[cle] = self._spot(q, env, h)
+                            spot = cache[cle]
+                            if spot is None:
+                                continue
+                            x, y, z, o, lx, lz = spot
+                            cells = q.cellules_monde(o)
+                            if any((x + c[0], y + c[1], z + c[2]) in self.occupe or
+                                   (c[1] == 0 and (x + c[0], y, z + c[2]) in self.devant) for c in cells):
+                                cache[cle] = None
+                                continue
+                            zid = self.zone_proche(x, y, z, n)
+                            if zid is None or not self._hors_salle(x, y, z) or not loin_des_autres(x, y, z):
+                                continue
+                            ou = {"vide": "petite pièce vide d'une maison", "int": "pièce %s" % (h.rtype if env == "int" else ""),
+                                  "ext": "dehors"}[env]
+                            self.familles_proposees.append({
+                                "etape": "familles", "motif": "famille",
+                                "raison": "%s niveau %d (%s, lieu de niveau %d) : %s" % (NOM_FAMILLE[f], n, lieu, niv, ou),
+                                "x": x, "y": y, "z": z, "avant": "minecraft:air", "etat_avant": {}, "be": None,
+                                "apres": q.id, "etat_apres": {"facing": o},
+                                "cases_libres": [[x + c[0], y + c[1], z + c[2]] for c in cells if c != (0, 0, 0)],
+                                "cases_avant": [], "piece": piece, "lieu": lieu, "famille": f, "niveau": n,
+                                "zone": zid, "ou": env})
+                            for c in cells:
+                                self.occupe[(x + c[0], y + c[1], z + c[2])] = -2
+                                if env == "int" and 0 <= c[1] + 1 <= 4 and 0 <= lz + c[2] < h.v.shape[1] \
+                                        and 0 <= lx + c[0] < h.v.shape[2]:
+                                    h.v[c[1] + 1][lz + c[2]][lx + c[0]] = (h.v[c[1] + 1][lz + c[2]][lx + c[0]] & 0xF8) | pm.PROP
+                            if q.gab == "meuble":
+                                fx, fz = DIRS[o]
+                                for c in cells:
+                                    if c[1] == 0:
+                                        self.devant.add((x + c[0] + fx, y, z + c[2] + fz))
+                            for k in [k for k in cache if k[0] == cle_hote]:
+                                del cache[k]
+                            grille[(x >> 4, z >> 4)].append((x, y, z))
+                            if piece:
+                                par_piece[piece] += 1
+                                fam_piece[piece].add(f)
+                            self.f_compte[q.id] += 1
+                            besoin[(f, n)] -= 1
+                            fait = True
+                            break
+                        if fait:
+                            break
+                    if fait:
+                        break
+            self.f_manque[lieu] = {k: v for k, v in besoin.items() if v > 0}
+        return len(self.familles_proposees) if self.familles else 0
+
+    def _spot(self, q, env, h):
+        """Place de q chez l'hôte : (x, y, z, orientation, lx, lz) ou None (mêmes règles que l'étape « ajouts »)."""
+        if env == "vide":
+            pid, info = h
+            plan = info["plan"]
+            v = np.frombuffer(zlib.decompress(base64.b64decode(plan["v"])), dtype=np.uint8).reshape(
+                5, plan["p"], plan["l"]).copy()
+            spot = self._place_mur(v, q)
+            if spot is None:
+                return None
+            lx, lz, f = spot
+            return plan["x"] + lx, info["y"], plan["z"] + lz, f, lx, lz
+        if env == "int":
+            spot = self._place_mur(h.v, q, centre=True)
+            if spot is None:
+                return None
+            lx, lz, f = spot
+            return h.p["x"] + lx - R, h.p["y"], h.p["z"] + lz - R, f, lx, lz
+        spot = self._place_libre(h.p, q)
+        if spot is None:
+            return None
+        dx, dz, f = spot
+        return h.p["x"] + dx, h.p["y"], h.p["z"] + dz, f, dx, dz
+
     # ------------------------------------------------------------------ parts d'actifs
     def compensation(self, etape):
         """Commandes qui gardent le même nombre de conteneurs remplis par zone malgré les conteneurs AJOUTÉS (étape
@@ -747,7 +1126,10 @@ class Planif:
                 continue
             avant = self.a.loot.get("parts", {}).get(zid)
             info = self.a.zinfos.get(zid) or {}
-            p0 = avant if avant is not None else (info.get("actifs") if info.get("actifs") is not None else 0.2)
+            # une part réglée en jeu remplace tout (ZonesLoot.Zone.proportion : sans le facteur du niveau) ; celle du
+            # fichier (ou de la configuration) est multipliée par le facteur du niveau de la zone
+            p0 = avant if avant is not None else (info.get("actifs") if info.get("actifs") is not None else
+                                                  PROPORTION_ACTIFS) * facteur_niveau(niv_zone.get(zid, 0))
             n0 = self._n0.get(zid, 0)
             n1 = len(self._zones[zid])
             nouvelle = p0 * n0 / max(1, n1)
@@ -773,11 +1155,21 @@ class Planif:
             print("[plan] ajouts          %d" % n, flush=True)
         else:
             print("[plan] ajouts possibles %d (option --ajouts)" % len(self.ajouts_proposes), flush=True)
+        # toujours calculée (pour le rapport) ; jouée seulement avec --familles
+        self.etape_familles()
+        if self.familles and "familles" in etapes:
+            self.changes += self.familles_proposees
+            self.resume["familles"] = len(self.familles_proposees)
+            print("[plan] familles        %d" % len(self.familles_proposees), flush=True)
+        else:
+            print("[plan] familles possibles %d (option --familles)" % len(self.familles_proposees), flush=True)
         for ch in self.changes:
             ch.pop("i", None)
         self.parts = {}
         if self.compenser:
             self.parts["ajouts"] = self.compensation("ajouts")
+        if self.familles_compenser:
+            self.parts["familles"] = self.compensation("familles")
         return self.changes
 
 
@@ -880,7 +1272,8 @@ def main_plan(dossier, args):
     etapes = [e for e in (opt("--etapes") or ",".join(ETAPES)).split(",") if e in ETAPES]
     mx = opt("--max-changements")
     pl = Planif(a, int(opt("--graine", "1")), int(mx) if mx else None, "--ajouts" in args,
-                compenser="--sans-compensation" not in args)
+                compenser="--sans-compensation" not in args, familles="--familles" in args,
+                familles_compenser="--familles-compenser" in args)
     avant = Counter(pl.compte)
     changes = pl.calculer(etapes)
     sortie = Path(opt("--sortie") or Path(dossier, "plan"))
@@ -902,9 +1295,10 @@ def main_plan(dossier, args):
     json.dump({"consigne": "modèles HeraliZ Loot T1 à T6, tous posés, même palier", "changements": changes,
                "ajouts_proposes": pl.ajouts_proposes, "resume": pl.resume, "motifs": dict(pl.motifs),
                "modeles": modeles, "absents": getattr(pl, "raisons", {}),
+               "familles_proposees": pl.familles_proposees, "familles": resume_familles(pl),
                "lots": [(n, e, len(c)) for n, e, _z, c, _a, _ch in les_lots]},
               open(sortie / "plan.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-    md = rapport_plan(pl, avant, les_lots)
+    md = rapport_plan(pl, avant, les_lots) + rapport_familles(pl)
     (sortie / "plan.md").write_text(md, encoding="utf-8")
     print(md)
 
@@ -921,7 +1315,7 @@ def rapport_plan(pl, avant, les_lots):
     L = ["# Plan des conteneurs de loot : modèles HeraliZ Loot T1 à T6", ""]
     L.append("Consigne : chaque modèle T1 à T6 de HeraliZ Loot posé sur la carte, en remplaçant des conteneurs déjà "
              "posés par d'autres modèles du même palier (même gabarit, même orientation, pièce cohérente). T7 réservé "
-             "aux événements : rien n'est posé. Ni meubles cfm, ni familles (nourriture, soins, munitions).")
+             "aux événements : rien n'est posé. Ni meubles cfm. Familles (vivres, soins, munitions) : étape à part, plus bas.")
     L.append("")
     n_div = pl.resume.get("diversification", 0)
     def pct(n):
@@ -934,7 +1328,8 @@ def rapport_plan(pl, avant, les_lots):
     L.append("")
     L.append("%d changements en %d lots : diversification %d (%s)%s." % (
         sum(pl.resume.values()), len(les_lots), n_div, ", ".join("%s %d" % (m, pl.motifs[m]) for m in MOTIFS),
-        (", ajouts %d" % pl.resume["ajouts"]) if "ajouts" in pl.resume else ""))
+        ((", ajouts %d" % pl.resume["ajouts"]) if "ajouts" in pl.resume else "") +
+        ((", familles %d" % pl.resume["familles"]) if "familles" in pl.resume else "")))
     tot = sum(avant[q.id] for q in mods)
     L.append("Conteneurs T1 à T6 sur la carte : %d (%d changent de modèle, soit %s %%). Gardés tels quels : %d "
              "conteneurs avec des données (inventaire)." % (tot, n_div, ("%.1f" % (100.0 * n_div / max(1, tot))).replace(".", ","),
@@ -994,6 +1389,100 @@ def rapport_plan(pl, avant, les_lots):
     return "\n".join(L) + "\n"
 
 
+def resume_familles(pl):
+    """Par lieu : niveau, conteneurs T1 à T6, et pour chaque famille : avant, visé, posés par le plan, manque ;
+    conteneurs de familles remplis en moyenne avant / après (part d'actifs de leur zone)."""
+    if not hasattr(pl, "f_par_lieu"):
+        return {}
+    poses = defaultdict(Counter)
+    actifs = defaultdict(float)
+    for ch in pl.familles_proposees:
+        poses[ch["lieu"]][(ch["famille"], ch["niveau"])] += 1
+        actifs[ch["lieu"]] += pl.part_zone(ch["zone"])
+    out = {}
+    for lieu, c in pl.f_par_lieu.items():
+        d = {"niveau": pl.f_niv_lieu[lieu], "conteneurs": sum(c.values()),
+             "actifs_avant": round(pl.f_actifs_avant.get(lieu, 0.0), 1),
+             "actifs_apres": round(pl.f_actifs_avant.get(lieu, 0.0) + actifs.get(lieu, 0.0), 1)}
+        for f in FAMILLES:
+            av = {n: k for (g, n), k in pl.f_avant[lieu].items() if g == f}
+            po = {n: k for (g, n), k in poses[lieu].items() if g == f}
+            d[f] = {"avant": sum(av.values()), "vise": pl.f_voulu.get((lieu, f), 0), "poses": sum(po.values()),
+                    "niveaux_avant": av, "niveaux_poses": po,
+                    "manque": sum(k for (g, _n), k in (pl.f_manque.get(lieu) or {}).items() if g == f)}
+        out[lieu] = d
+    return out
+
+
+def rapport_familles(pl):
+    r = resume_familles(pl)
+    if not r:
+        return ""
+    joue = "familles" in pl.resume
+    L = ["## Étape « familles » : vivres, soins, munitions (demande du 24/10)", ""]
+    tot_av = sum(d[f]["avant"] for d in r.values() for f in FAMILLES)
+    tot_po = len(pl.familles_proposees)
+    tot_c = sum(d["conteneurs"] for d in r.values())
+    act_av = sum(d["actifs_avant"] for d in r.values())
+    act_ap = sum(d["actifs_apres"] for d in r.values())
+    L.append("%s. Avant : %d conteneurs de familles pour %d conteneurs T1 à T6 (%s pour 100). %s %d (%s pour 100 avec "
+             "ceux d'avant). Remplis en même temps, en moyenne (part d'actifs de leur zone) : %.0f avant, %.0f après." % (
+                 "Jouée (option --familles)" if joue else "**Proposée seulement** : jouée avec l'option --familles",
+                 tot_av, tot_c, ("%.2f" % (100.0 * tot_av / max(1, tot_c))).replace(".", ","),
+                 "Posés par le plan :" if joue else "À poser :", tot_po,
+                 ("%.1f" % (100.0 * (tot_av + tot_po) / max(1, tot_c))).replace(".", ","), act_av, act_ap))
+    L.append("")
+    L.append("Visé pour 100 conteneurs du lieu : %s ; lieux de niveau 4 et plus : %s%s. Niveau du lieu : palier le plus "
+             "haut qui fait au moins %d %% de ses conteneurs (réglés à la main : %s) ; posés au niveau du lieu pour "
+             "%d %%, un et deux niveaux en dessous pour le reste, ramenés au plus haut niveau de la famille (%s). Parts "
+             "d'actifs des zones %s." % (
+                 ", ".join("%s %s" % (NOM_FAMILLE[f], _nb(FAMILLES_POUR_100[f])) for f in FAMILLES),
+                 ", ".join("%s %s" % (NOM_FAMILLE[f], _nb(FAMILLES_POUR_100_MILITAIRE[f])) for f in FAMILLES),
+                 (" ; lieux réglés à part : " + ", ".join(sorted(FAMILLES_POUR_100_LIEU))) if FAMILLES_POUR_100_LIEU else "",
+                 round(100 * SEUIL_NIVEAU_LIEU), ", ".join("%s %d" % kv for kv in sorted(NIVEAU_LIEU.items())) or "aucun",
+                 round(100 * PARTS_NIVEAUX[0]), ", ".join("%s %d" % (NOM_FAMILLE[f], pl.fmax[f]) for f in FAMILLES),
+                 "baissées pour garder le même nombre total de conteneurs remplis (--familles-compenser)"
+                 if pl.familles_compenser else "inchangées : le loot T1 à T6 de chaque zone ne baisse pas, les "
+                 "conteneurs de familles s'ajoutent et tournent avec leur zone"))
+    L.append("")
+    L += ["| lieu | niveau | conteneurs | vivres avant → après (visé) | soins avant → après (visé) | munitions avant → après (visé) | remplis en moyenne |",
+          "|---|---|---|---|---|---|---|"]
+
+    def case(d, f):
+        x = d[f]
+        niv = Counter(x["niveaux_avant"]) + Counter(x["niveaux_poses"])
+        det = " ".join("N%d×%d" % (n, k) for n, k in sorted(niv.items()))
+        return "%d → %d (%d)%s%s" % (x["avant"], x["avant"] + x["poses"], x["vise"],
+                                      (" " + det) if det else "", (" · manque %d" % x["manque"]) if x["manque"] else "")
+    for lieu in sorted(r, key=lambda l: -r[l]["conteneurs"]):
+        d = r[lieu]
+        L.append("| %s | %d | %d | %s | %s | %s | %s → %s |" % (lieu, d["niveau"], d["conteneurs"], case(d, "nourriture"),
+                                                               case(d, "soins"), case(d, "munitions"),
+                                                               _nb(d["actifs_avant"]), _nb(d["actifs_apres"])))
+    L.append("")
+    ou = Counter(ch["ou"] for ch in pl.familles_proposees)
+    if ou:
+        L.append("Places : %s." % ", ".join("%s %d" % ({"int": "dans une pièce qui leur va", "vide": "petite pièce vide "
+                                                         "d'une maison (soins)", "ext": "dehors"}[k], n)
+                                            for k, n in ou.most_common()))
+    mod = Counter(ch["apres"].split(":")[1] for ch in pl.familles_proposees)
+    if mod:
+        L.append("Modèles posés : " + ", ".join("`%s` ×%d" % kv for kv in sorted(mod.items())) + ".")
+    zones = Counter(ch["zone"] for ch in pl.familles_proposees)
+    if zones:
+        L.append("Chaque conteneur rejoint dans le jeu la zone de loot de son niveau la plus proche (%d zones touchées, "
+                 "aucune zone créée : jamais plus de %d blocs d'une zone de son niveau)." % (len(zones), PORTEE_ZONE))
+    manque = sum(d[f]["manque"] for d in r.values() for f in FAMILLES)
+    if manque:
+        L.append("Manque %d conteneurs (pas assez de places libres cohérentes près d'une zone du bon niveau)." % manque)
+    L.append("")
+    return "\n".join(L) + "\n"
+
+
+def _nb(v):
+    return ("%.1f" % v).rstrip("0").rstrip(".").replace(".", ",")
+
+
 # =================================================================================================== rendus
 COULEURS = {
     "cuisine": (230, 160, 60), "sdb": (90, 190, 220), "chambre": (190, 120, 200), "salon": (220, 110, 110),
@@ -1023,7 +1512,8 @@ def main_rendus(monde, dossier, args):
         choix = opt("--pieces").split(",")
     else:
         # une pièce avec un doublon corrigé (deux cuisinières, deux frigos...), une pièce où arrive un modèle absent
-        # jusque-là, une pièce de maison diversifiée : assez petites pour rester lisibles
+        # jusque-là, une pièce de maison diversifiée, une pièce où l'étape « familles » pose un conteneur (si elle est
+        # jouée) : assez petites pour rester lisibles
         def bon(pid, test, types=None):
             info = a.pieces.get(pid, {})
             return (not info.get("couloir") and 16 <= info.get("cases", 0) <= 160 and len(a.par_piece.get(pid, ())) >= 3
@@ -1032,7 +1522,8 @@ def main_rendus(monde, dossier, args):
         choix = []
         for test, types in ((lambda c: c["raison"].startswith("doublon"), None),
                             (lambda c: c.get("motif") == "couverture" and c["apres"] in absents_avant, None),
-                            (lambda c: c.get("motif") == "équilibrage", ("cuisine", "chambre", "salon"))):
+                            (lambda c: c.get("motif") == "équilibrage", ("cuisine", "chambre", "salon")),
+                            (lambda c: c.get("etape") == "familles", None)):
             cands = sorted((pid for pid in par_piece if pid not in choix and bon(pid, test, types)),
                            key=lambda pid: (-len(par_piece[pid]), pid))
             if cands:

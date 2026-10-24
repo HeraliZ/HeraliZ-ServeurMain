@@ -11,8 +11,10 @@
 # d'extérieur à l'intérieur, modèles absents...), plan de diversification des conteneurs de HeraliZ Loot (consigne du
 # 15/10 : 100 % des modèles T1 à T6 posés, en remplaçant des conteneurs déjà posés par d'autres du même palier ; T7
 # réservé aux événements ; rien sur les meubles cfm) et rendus avant / après, depuis la même copie (plus les zones de
-# loot du pack de données et trois petits fichiers data/, copiés eux aussi en lecture seule). Le plan est enregistré
-# sur la branche de travail (props_carte/) ; on le joue ensuite avec le workflow « Props de la carte ».
+# loot du pack de données et quatre petits fichiers data/, copiés eux aussi en lecture seule). Option « --familles »
+# (demande du 24/10) : conteneurs de vivres, de soins et de munitions posés en plus, un peu partout, au niveau de chaque
+# lieu, dans la rotation de sa zone de loot (étape « familles » à part). Le plan est enregistré sur la branche de
+# travail (props_carte/) ; on le joue ensuite avec le workflow « Props de la carte ».
 name: Inventaire de la carte
 
 on:
@@ -27,7 +29,7 @@ on:
         type: boolean
         default: false
       props_options:
-        description: "Options du plan (ex. « --ajouts » : poser aussi, à part, les modèles sans place de remplacement ; « --max-changements 2000 », « --graine 2 »)"
+        description: "Options du plan (« --familles » : vivres, soins, munitions un peu partout, au niveau du lieu ; « --ajouts » : modèles sans place de remplacement ; « --familles-compenser », « --max-changements 2000 », « --graine 2 »)"
         type: string
         default: ""
   push:
@@ -90,7 +92,8 @@ jobs:
           find copie -name '*.mca' | wc -l
 
       # Pour l'analyse des props : zones de loot du pack de données de la carte, chunks forcés, données de HeraliZ Loot
-      # (parts d'actifs réglées en jeu, points T7). Petits fichiers, COPIÉS en lecture seule ; rien n'est écrit sur le Ptero.
+      # (parts d'actifs réglées en jeu, points T7) et salles à carte de HeraliZ Bunker (le plan n'y pose rien). Petits
+      # fichiers, COPIÉS en lecture seule ; rien n'est écrit sur le Ptero.
       - name: Copie des zones de loot et des données de HeraliZ Loot (lecture seule)
         if: ${{ inputs.props }}
         run: |
@@ -98,7 +101,7 @@ jobs:
           lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
             -e "$LFTP_REGLAGES mirror --parallel=2 --include-glob '*.json' /$MONDE/datapacks/heraliz_carte/data/heraliz_loot/zones copie/$MONDE/datapacks/heraliz_carte/data/heraliz_loot/zones; bye" < /dev/null \
             || echo "::warning::Zones de loot du pack de données introuvables : l'analyse se fera sans les lieux."
-          for F in chunks.dat heraliz_loot_rotation.dat heraliz_loot_points_t7.dat; do
+          for F in chunks.dat heraliz_loot_rotation.dat heraliz_loot_points_t7.dat heralisz_bunker_salles.dat; do
             lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
               -e "$LFTP_REGLAGES set xfer:clobber on; get /$MONDE/data/$F -o copie/$MONDE/data/$F; bye" < /dev/null || echo "(pas de data/$F)"
           done
