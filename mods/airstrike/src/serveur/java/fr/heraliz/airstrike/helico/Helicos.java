@@ -305,7 +305,7 @@ public final class Helicos {
      * chargés. Sinon : sous lui (même dans l'eau, en dernier recours).
      */
     static Vec3 pointDeChute(ServerLevel sl, Entity h) {
-        RandomSource r = h.getRandom();
+        RandomSource r = sl.getRandom();
         double base = r.nextDouble() * Math.PI * 2, d0 = 35 + r.nextDouble() * 45;
         for (int k = 0; k < 24; k++) {
             double a = base + ((k % 2 == 0) ? 1 : -1) * ((k + 1) / 2) * Math.toRadians(15);
