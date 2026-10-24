@@ -8,7 +8,7 @@ servent plus). Jamais à la main : changer les tableaux ci-dessous, puis relance
 Règle (choix du propriétaire, 21/10 et 22/10) : le niveau du composant donne la rareté de l'objet fabriqué :
 niveau I (Peu commun) -> objet Commun, II (Rare) -> Peu commun, III (Épique) -> Rare, IV (Légendaire) -> Épique.
 Rien de Légendaire ni d'Unique ne se fabrique ; ni fusils de précision, ni mitrailleuses, ni lance-grenades, ni RPG.
-La poudre n'a qu'un niveau (bocal de poudre, Peu commun) : toutes les munitions la prennent.
+Munitions : bocal de poudre du niveau de la rareté de la munition (24/10, choix du propriétaire), ferraille de niveau I.
 Raretés lues dans serveur/config/heraliz_loot/raretes.json (écrites par equilibrage_armes.py).
 """
 import glob, json, os, re, shutil
@@ -54,12 +54,14 @@ ARMES = {
 }
 ARMES_EXCLUES = {"cis:at_rpg_7_lvd"}
 
-# munitions : un paquet de PAQUET balles = MUNITION x QUANTITE_MUNITION[rareté de la munition] (bocal et ferraille de
-# niveau I). 24/10 (choix du propriétaire : « trop peu cher, déjà x2 pour les premières munitions grises, puis plus
-# cher pour les balles des armes puissantes ») : 9 mm et .45 x2, 12 g x3, 5,56 / 7,62 / .50 AE x4, .308 / .338 x6
+# munitions : un paquet de PAQUET balles = BOCAUX bocaux de poudre du niveau de la rareté de la munition (I Commun,
+# II Peu commun, III Rare, IV Épique) + FERRAILLE ferraille de niveau I. 24/10 (choix du propriétaire : « trop peu
+# cher, déjà x2 pour les premières munitions grises, puis plus cher pour les balles des armes puissantes » ; « il y a
+# des bocaux de poudre de certains niveaux, faut utiliser ça ») : 9 mm et .45 2 bocaux I + 4 ferraille, 12 g 2 bocaux
+# II + 6, 5,56 / 7,62 / .50 AE 2 bocaux III + 8, .308 / .338 3 bocaux IV + 12
 PAQUET = 15
-MUNITION = {"bocal_poudre": 1, "ferraille": 2}
-QUANTITE_MUNITION = {"commun": 2, "peu_commun": 3, "rare": 4, "epique": 6}
+BOCAUX = {"commun": 2, "peu_commun": 2, "rare": 2, "epique": 3}
+FERRAILLE = {"commun": 4, "peu_commun": 6, "rare": 8, "epique": 12}
 
 # soins : Commun = 1 tissu ; au-dessus, 1 tissu + 1 alcool, au niveau de la rareté
 SOIN_COMMUN = {"tissu": 1}
@@ -90,9 +92,9 @@ EXPLOSIFS = [
 # propriétaire) ; avant, 1 se défaisait en PAR_NIVEAU du niveau
 # d'en dessous (22/10, choix du propriétaire : tous les crafts possibles, pas facilement)
 A_NIVEAUX = ["canon", "ressort", "kit_pieces", "tissu", "alcool", "batterie", "circuit_imprime", "ferraille",
-             "caoutchouc", "scotch"]
+             "caoutchouc", "scotch", "bocal_poudre"]
 PAR_NIVEAU = 10
-SANS_NIVEAU = {"bocal_poudre", "corde", "clou"}
+SANS_NIVEAU = {"corde", "clou"}
 
 
 def lire(p):
@@ -140,9 +142,9 @@ def main():
     for aid, r in sorted(ra["munitions"].items()):
         if r not in NIVEAU:
             continue
-        q = QUANTITE_MUNITION[r]
         recettes[f"munitions/{aid.replace(':', '_')}"] = recette(
-            materiaux({c: n * q for c, n in MUNITION.items()}, "commun"), {"type": "ammo", "id": aid, "count": PAQUET, "group": f"{NS}:munitions"})
+            materiaux({"bocal_poudre" + NIVEAU[r]: BOCAUX[r], "ferraille": FERRAILLE[r]}, "commun"),
+            {"type": "ammo", "id": aid, "count": PAQUET, "group": f"{NS}:munitions"})
     for sid, r in sorted(ra["soins"].items()):
         if r not in NIVEAU:
             continue

@@ -239,8 +239,8 @@ Le compilateur l'impose : `commun` ne voit ni `client` ni `serveur`, et ces deux
 - recettes de la Table d'armurier (craft, 22/10, choix du propriétaire) : gunpack `serveur/tacz/heraliz_crafts`, onglets
   et filtre de la table (`arkaniaz_pack_0_converted/data/tacz/...`) **écrits** par `python outils/crafts.py` (tableaux
   en tête : composants par famille ; niveau I/II/III/IV du composant = objet Commun / Peu commun / Rare / Épique ; rien
-  de Légendaire ; ni précision, mitrailleuses, lance-grenades, RPG ; une seule poudre, le bocal) ; à relancer après un
-  changement de raretés. 24/10 (choix du propriétaire, « trop peu cher ») : munitions (paquet de 15) 1 bocal + 2 ferraille × `QUANTITE_MUNITION` (9 mm et .45 ×2, 12 g ×3, 5,56 / 7,62 / .50 AE ×4, .308 / .338 ×6), accessoires et viseurs × `QUANTITE_ACCESSOIRE` (Commun ×2, Peu commun ×3, Rare ×5, Épique ×8 ; avant ×1, ×1, ×2, ×3) ; une recette changée en jeu au Registre de l'armurier garde sa version. Rien testé en jeu.
+  de Légendaire ; ni précision, mitrailleuses, lance-grenades, RPG) ; à relancer après un
+  changement de raretés. 24/10 (choix du propriétaire, « trop peu cher ») : munitions (paquet de 15) : bocaux de poudre du niveau de la rareté de la munition (`BOCAUX`) + ferraille I (`FERRAILLE`) : 9 mm et .45 2 bocaux I + 4, 12 g 2 bocaux II + 6, 5,56 / 7,62 / .50 AE 2 bocaux III + 8, .308 / .338 3 bocaux IV + 12 (avant 1 bocal + 2 ferraille pour toutes) ; bocaux de poudre montés de niveau à la table comme les autres composants (10 pour 1) ; accessoires et viseurs × `QUANTITE_ACCESSOIRE` (Commun ×2, Peu commun ×3, Rare ×5, Épique ×8 ; avant ×1, ×1, ×2, ×3) ; une recette changée en jeu au Registre de l'armurier garde sa version. Rien testé en jeu.
 - les camos des armes (tactique) : les 62 shaders `camo_<id>.fsh` sont **générés** depuis
   `mods/heraliz-tactique/outils/camo_gabarit.fsh` par `python mods/heraliz-tactique/outils/generer_camos.py` ; on modifie
   le gabarit, jamais les fichiers générés.
