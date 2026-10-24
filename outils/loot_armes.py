@@ -182,7 +182,9 @@ VALEUR_CAPSULE = {"jeton_1": 1, "jeton_5": 5, "jeton_10": 10}
 # soins et nourriture de nouveau dans les conteneurs T1 à T7 (choix du propriétaire, 23/10), en plus de leurs propres
 # conteneurs : nombre pour 100 conteneurs. Soins : ceux de la table soins<niveau> (niveau = palier, 6 au plus), mêmes
 # parts de rareté ; nourriture : celle de nourriture.json, toujours Commun.
-SOINS_POUR_100 = {1: 6, 2: 7, 3: 8, 4: 8, 5: 9, 6: 10, 7: 10}
+# 25/10 (choix du propriétaire après l'ouverture : « pas assez de soins ») : deux fois plus de soins
+# (avant : {1: 6, 2: 7, 3: 8, 4: 8, 5: 9, 6: 10, 7: 10})
+SOINS_POUR_100 = {1: 12, 2: 14, 3: 16, 4: 16, 5: 18, 6: 20, 7: 20}
 NOURRITURE_POUR_100 = {1: 12, 2: 12, 3: 10, 4: 10, 5: 8, 6: 8, 7: 6}
 # raretés imposées dans la section « objets » de raretes.json (choix du propriétaire, 23/10). Les grenades sont toutes
 # le même objet (heralisz_tactical:throwable) : M67, RGN, flash, fumigène, molotov = Rare.
