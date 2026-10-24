@@ -6,7 +6,8 @@ import net.minecraft.network.chat.MutableComponent;
 import java.util.Locale;
 
 /**
- * Rarete d'une recompense : couleur, son de victoire et effets.
+ * Rarete d'une recompense : couleur, son de victoire et effets. MYTHIC (identifiant « mythic », garde dans les fichiers)
+ * s'affiche « Unique » depuis Caisses 2.22.0, comme la 6e rarete de HeraliZ Loot.
  */
 public enum LootRarity {
     COMMON("common", 0xD0D0D0, 0),
@@ -51,7 +52,7 @@ public enum LootRarity {
                 case "peu_commun": case "peu-commun": return UNCOMMON;
                 case "epique": case "épique": return EPIC;
                 case "legendaire": case "légendaire": return LEGENDARY;
-                case "mythique": return MYTHIC;
+                case "mythique": case "unique": return MYTHIC;
                 default: break;
             }
         }

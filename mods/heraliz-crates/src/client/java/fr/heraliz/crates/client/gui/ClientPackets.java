@@ -14,7 +14,7 @@ public final class ClientPackets {
     public static void caseScreen(Packets.CaseScreen msg) {
         CrateType type = CrateType.byId(msg.crate());
         if (type == null) return;
-        Minecraft.getInstance().setScreen(new CaseOpenScreen(type, msg.session(), msg.free(), msg.contents()));
+        Minecraft.getInstance().setScreen(new CaseOpenScreen(type, msg.session(), msg.free(), msg.boutique(), msg.contents()));
     }
 
     public static void caseResult(Packets.CaseResult msg) {

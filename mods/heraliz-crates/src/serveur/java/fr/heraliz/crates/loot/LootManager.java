@@ -217,7 +217,7 @@ public final class LootManager {
 
     private static void saveGeneral() {
         JsonObject o = new JsonObject();
-        o.addProperty("_aide", "consume_key_in_creative: consommer la cle en creatif | broadcast_min_rarity: rarete annoncee a tout le serveur | title_min_rarity: rarete affichee en grand titre | ring_size: nombre d'objets dans la roue (4-12). Raretes: common, uncommon, rare, epic, legendary, mythic");
+        o.addProperty("_aide", "consume_key_in_creative: consommer la cle en creatif | broadcast_min_rarity: rarete annoncee a tout le serveur | title_min_rarity: rarete affichee en grand titre | ring_size: nombre d'objets dans la roue (4-12). Raretes: common, uncommon, rare, epic, legendary, mythic (affichee Unique)");
         o.addProperty("consume_key_in_creative", GeneralConfig.consumeKeyInCreative);
         o.addProperty("broadcast_min_rarity", GeneralConfig.broadcastMinRarity.id);
         o.addProperty("title_min_rarity", GeneralConfig.titleMinRarity.id);
@@ -246,7 +246,7 @@ public final class LootManager {
         CrateLoot loot = TABLES.get(type);
         if (loot == null) return;
         JsonObject root = new JsonObject();
-        root.addProperty("_aide", "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), "
+        root.addProperty("_aide", "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic = Unique), "
                 + "nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), "
                 + "commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). "
                 + "Astuce : tiens un objet en main et fais /heraliz loot add " + type.id + " <poids> <rarete>. Puis /heraliz reload.");

@@ -14,8 +14,8 @@ public final class HzNet {
     private HzNet() {
     }
 
-    /** 2 : interface epuree (une caisse a la fois). */
-    private static final String VERSION = "2";
+    /** 2 : interface epuree (une caisse a la fois) ; 3 (Caisses 2.22.0) : CaseScreen dit si la boutique vend la cle. */
+    private static final String VERSION = "3";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeralizCrates.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 

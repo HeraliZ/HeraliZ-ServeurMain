@@ -63,18 +63,20 @@ public final class Packets {
     // =================================================================== interface d'ouverture
     /**
      * Serveur -> client : ouvre l'interface d'une caisse (contenu et chances). session : numero de l'interface (les
-     * demandes d'une interface deja remplacee sont ignorees) ; free = cles non consommees (creatif).
+     * demandes d'une interface deja remplacee sont ignorees) ; free = cles non consommees (creatif) ; boutique = la
+     * boutique de HeraliZ Grades vend la cle de cette caisse (boutons « Acheter », Caisses 2.22.0).
      */
-    public record CaseScreen(String crate, int session, boolean free, List<Card> contents) {
+    public record CaseScreen(String crate, int session, boolean free, boolean boutique, List<Card> contents) {
         void write(FriendlyByteBuf b) {
             b.writeUtf(crate);
             b.writeVarInt(session);
             b.writeBoolean(free);
+            b.writeBoolean(boutique);
             writeCards(b, contents);
         }
 
         static CaseScreen read(FriendlyByteBuf b) {
-            return new CaseScreen(b.readUtf(64), b.readVarInt(), b.readBoolean(), readCards(b));
+            return new CaseScreen(b.readUtf(64), b.readVarInt(), b.readBoolean(), b.readBoolean(), readCards(b));
         }
 
         void handle(Supplier<NetworkEvent.Context> ctx) {

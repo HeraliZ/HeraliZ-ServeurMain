@@ -1,32 +1,32 @@
-"""Écrans des caisses au niveau de la boutique premium : MAQUETTES (étape 1, rien n'est codé dans le jeu).
+"""Écrans des caisses au niveau de la boutique premium : aperçu hors du jeu et contrôle « rien ne déborde ».
 
-    python mods/heraliz-crates/outils/apercu_caisses_premium.py [DOSSIER] [--copie DOSSIER2] [--caisse camo]
+    python mods/heraliz-crates/outils/apercu_caisses_premium.py [DOSSIER] [--copie DOSSIER2] [--caisse camo] [--controle]
 
-Demande du propriétaire (24/10) : « refaire au même niveau que la boutique les UIs des caisses à loot ». Ce script dessine,
-hors du jeu, les écrans que le joueur voit devant une caisse de HeraliZ Caisses (CaseOpenScreen : roue, contenu, carte du
-gain), dans le langage de la boutique premium (client/EcranBoutique de HeraliZ Grades, aperçu
-mods/heraliz-grades/outils/apercu_boutique.py) : voile sombre sur le monde, panneaux de verre, bord d'un pixel, filet de
-couleur en haut, dégradés de la couleur de la rareté, polices DM Sans (Onest pour le cyrillique) à leur vraie taille,
-rangée des touches en bas, nombre de clés en haut à droite (à la place du solde de PB).
+Demande du propriétaire (24/10) : « refaire au même niveau que la boutique les UIs des caisses à loot ». Maquette
+« variante A Vitrine » VALIDÉE le 24/10 (la variante B « Scène » n'a pas été retenue), codée dans le jeu en Caisses 2.22.0
+(client/gui/CaseOpenScreen, dessin client/gui/kit/Trace, polices cp_*). Ce script dessine, hors du jeu, les écrans que le
+joueur voit devant une caisse de HeraliZ Caisses (roue, contenu, carte du gain), dans le langage de la boutique premium
+(client/EcranBoutique de HeraliZ Grades, aperçu mods/heraliz-grades/outils/apercu_boutique.py) : voile sombre sur le
+monde, panneaux de verre, bord d'un pixel, filet de couleur en haut, dégradés de la couleur de la rareté, polices DM Sans
+(Onest pour le cyrillique) à leur vraie taille, rangée des touches en bas, nombre de clés en haut à droite (à la place du
+solde de PB), « + Acheter » seulement pour les caisses dont la boutique vend la clé (serveur/config/heraliz_grades/
+boutique.json, catégorie « cles ») : en jeu, il ferme l'écran et ouvre /boutique cles (onglet Clés).
 
-Deux variantes de l'écran d'ouverture :
-- A « Vitrine » : la mise en page de la boutique (titre et sous-titre en haut à gauche, clés en haut à droite, onglets
-  Ouvrir / Contenu), roue horizontale sur toute la largeur, sous elle l'objet sous le repère et les chances, à droite le
-  panneau d'ouverture (comme le panneau d'achat des grades). Le contenu complet est un onglet à part (grille de cartes,
-  chance de chaque objet, tri par rareté).
-- B « Scène » : tout sur un écran, sans onglets : à gauche la caisse elle-même (vrai modèle 3D) avec les clés et le bouton,
-  au milieu la roue en colonne verticale, à droite l'objet sous le repère, les chances par rareté et le contenu en
-  mini-grille.
-Une seule carte du gain (après la roue), dessinée par-dessus la variante A.
+Mise en page : titre et sous-titre en haut à gauche, clés en haut à droite, onglets Ouvrir / Contenu ; roue horizontale sur
+toute la largeur, sous elle l'objet sous le repère et les chances, à droite le panneau d'ouverture (comme le panneau
+d'achat des grades). Le contenu complet est un onglet à part (filtres par rareté, grille de cartes, chance de chaque objet).
+La carte du gain (après la roue) est dessinée par-dessus.
 
 Images (maquettes/caisses_premium/, suffixe _1920 = échelle 3, _1280 = échelle 2, _en / _ru = autres langues) :
-1_A_vitrine (fr, en, ru), 2_B_scene (fr, en, ru), 3_A_sans_cle, 4_A_contenu, 5_gain. Exemple : caisse Camos (47 objets,
-vraies chances de serveur/config/heralizcrates/camo.json), 12 clés, Camouflage Orion sous le repère, Skin X · Séraphin
-gagné.
+1_A_vitrine (fr, en, ru), 3_A_sans_cle, 4_A_contenu, 5_gain. Exemple : caisse Camos (47 objets, vraies chances de
+serveur/config/heralizcrates/camo.json), 12 clés, Camouflage Orion sous le repère, Skin X · Séraphin gagné. Contrôlés
+aussi, sans image : la carte du gain sans clé restante (avec et sans « Acheter des clés »), l'écran d'une caisse que la
+boutique ne vend pas, l'onglet Contenu filtré sur chaque rareté.
 
-Mesures : en unités d'interface du canevas 640 x 360 (Echelle.forcer de la caisse), en tête de ce fichier ; le Java de la
-caisse reprendra exactement ces chiffres (comme EcranBoutique et apercu_boutique.py). Polices : (gras, taille de l'em,
-espacement des lettres), mêmes conventions que les polices bq_* de la boutique (taille du .json du jeu = em x 1,302).
+Mesures : en unités d'interface du canevas 640 x 360 (Echelle.forcer de la caisse), en tête de ce fichier ; ce sont
+exactement celles de CaseOpenScreen.java : changer l'un, c'est changer l'autre (comme EcranBoutique et apercu_boutique.py).
+Polices : (gras, taille de l'em, espacement des lettres), mêmes conventions que les polices bq_* de la boutique (polices
+cp_* de la caisse ; taille du .json du jeu = em x 1,302).
 Dessin à 6 points par unité, réduit à l'échelle 3 (1920 x 1080) et 2 (1280 x 720). Images des objets : vraies textures du
 dépôt (camos de HeraliZ Tactique, emotes, skins de couteaux), dessinées au plus proche voisin comme le jeu dessine une
 icône agrandie ; clés et caisse : vrai modèle (KeySmith et Design de la caisse) rendu par le moteur logiciel de
@@ -34,8 +34,8 @@ outils/ApercuCaisse.java (JOML : variable JOML_JAR, sinon téléchargé dans ~/.
 clé et caisse seraient dessinées par le jeu lui-même (rendu de l'objet, comme dans l'inventaire).
 
 Contrôle : chaque texte est mesuré avec la vraie police dans les trois langues (français, anglais, russe) ; un texte qui
-dépasse son cadre arrête le script (code 1). Les textes nouveaux (pas encore dans les fichiers de langue du mod) sont dans
-le tableau TEXTES ci-dessous, en trois langues : ils iront dans fr_fr / en_us / ru_ru au moment du code.
+dépasse son cadre arrête le script (code 1), comme une clé absente d'un fichier de langue. Tous les textes viennent des
+fichiers de langue du mod (fr_fr, en_us, ru_ru) ; TEXTES ci-dessous ne fait que raccourcir leurs clés.
 Numpy, Pillow, fontTools.
 """
 import argparse
@@ -92,15 +92,6 @@ C_FILTRE_W = 150            # colonne des raretés
 C_FILTRE_LIGNE = 27
 C_COLS, C_CARTE_H, C_GAP = 6, 76, 6
 C_ICONE = 30
-# --- B « Scène »
-B_HERO_W = 196              # caisse, clés, bouton
-B_ROUE_W = 150              # roue verticale
-B_CARTE = 100               # carte du milieu (carrée)
-B_STEP = 106
-B_RETRAIT = 0.24
-B_ICONE = 52
-B_GRILLE_COLS, B_CELLULE, B_GRILLE_GAP, B_GRILLE_RANGS = 7, 28, 4, 4
-B_LIGNE_CHANCE = 14
 # --- carte du gain
 G_W, G_H = 260, 248
 G_ICONE = 64
@@ -114,36 +105,15 @@ RARETES = ["common", "uncommon", "rare", "epic", "legendary", "mythic"]
 COUL_RARETE = {"common": 0x9A9A9A, "uncommon": 0x5CBF4A, "rare": 0x3F8CFF, "epic": 0xA64DFF, "legendary": 0xF2B83A,
                "mythic": 0xFF3333}
 
-# ================================================================== textes nouveaux (fr, en, ru) ; les autres viennent des fichiers de langue du mod
-TEXTES = {
-    "sous": ("%s · %s objets à gagner", "%s · %s items to win", "%s · предметов: %s"),
-    "tes_cles": ("Tes clés", "Your keys", "Твои ключи"),
-    "acheter": ("Acheter", "Buy", "Купить"),
-    "onglet.ouvrir": ("Ouvrir", "Open", "Открыть"),
-    "onglet.contenu": ("Contenu", "Contents", "Содержимое"),
-    "sous_repere": ("Sous le repère", "Under the marker", "Под указателем"),
-    "chance": ("Chance %s", "Chance %s", "Шанс %s"),
-    "chances": ("Chances par rareté", "Odds by rarity", "Шансы по редкости"),
-    "ouverture": ("Ouverture", "Opening", "Открытие"),
-    "une_cle": ("1 clé par ouverture", "1 key per opening", "1 ключ за открытие"),
-    "apres": ("Après l'ouverture", "After opening", "После открытия"),
-    "n_cles": ("%s clés", "%s keys", "ключей: %s"),
-    "aucune": ("Tu n'as aucune %s.", "You have no %s.", "У тебя нет: %s."),
-    "acheter_cles": ("Acheter des clés", "Buy keys", "Купить ключи"),
-    "raretes": ("Raretés", "Rarities", "Редкости"),
-    "plus_rare": ("Le plus rare", "The rarest", "Самое редкое"),
-    "tout": ("Tout", "All", "Все"),
-    "n_objets": ("%s objets", "%s items", "предметов: %s"),
-    "ajoute": ("Ajouté à ton inventaire", "Added to your inventory", "Добавлено в инвентарь"),
-    "reste": ("Il te reste %s clés", "%s keys left", "Осталось ключей: %s"),
-    "contenu_n": ("Contenu · %s", "Contents · %s", "Содержимое · %s"),
-    "note.contenu": ("Chances pour une ouverture", "Odds for one opening", "Шансы за одно открытие"),
-    "touche.tab": ("Tab", "Tab", "Tab"),
-    "touche.clic": ("Clic", "Click", "Клик"),
-    "action.defiler": ("Défiler", "Scroll", "Прокрутка"),
-    "action.encore": ("Encore", "Again", "Ещё"),
-    "action.passer": ("Passer", "Skip", "Пропустить"),
-}
+# ================================================================== textes de l'écran (fichiers de langue du mod, clés gui.heralizcrates.case.*)
+TEXTES = {k: "gui.heralizcrates.case." + v for k, v in {
+    "sous": "sous", "sous_1": "sous_1", "tes_cles": "tes_cles", "acheter": "acheter", "onglet.ouvrir": "onglet.ouvrir",
+    "onglet.contenu": "onglet.contenu", "sous_repere": "sous_repere", "chance": "chance", "chances": "chances_rarete",
+    "ouverture": "ouverture", "une_cle": "une_cle", "apres": "apres", "n_cles": "n_cles", "n_cles_1": "n_cles_1",
+    "aucune": "aucune", "acheter_cles": "acheter_cles", "raretes": "raretes", "tout": "tout", "n_objets": "n_objets",
+    "n_objets_1": "n_objets_1", "ajoute": "ajoute", "reste": "reste", "reste_1": "reste_1", "reste_0": "reste_0",
+    "note.contenu": "note.contenu", "touche.tab": "touche.tab", "action.defiler": "action.defiler",
+    "action.encore": "action.encore"}.items()}
 
 
 def rgb(c):
@@ -256,7 +226,6 @@ class Polices:
 
 # polices (gras, taille de l'em, espacement) : mêmes que la boutique (bq_*)
 TITRE = (True, 13, 1.93)
-NOM_GRAND = (True, 13, 1.4)
 NOM = (True, 11, 0)
 BOUTON = (True, 9, 0.85)
 ONGLET = (True, 9, 1.05)
@@ -275,11 +244,14 @@ TXT = {}
 LANGUE = "fr_fr"
 
 
+MANQUANTES = set()
+
+
 def t(cle, *args):
-    if cle in TEXTES:
-        s = TEXTES[cle][["fr_fr", "en_us", "ru_ru"].index(LANGUE)]
-    else:
-        s = TXT.get(cle, cle)
+    cle = TEXTES.get(cle, cle)
+    if cle not in TXT:
+        MANQUANTES.add("%s : %s" % (LANGUE, cle))
+    s = TXT.get(cle, cle)
     if args:
         s = re.sub(r"%(\d+\$)?s", lambda m, it=iter(args): str(next(it)), s)
     return s.replace("%%", "%")
@@ -291,13 +263,27 @@ def nombre(v):
 
 
 def pct(v):
-    """Pourcentage comme Ui.pct : une décimale sous 10 %, virgule en français et en russe."""
-    s = ("%.1f" % v) if v < 10 else ("%.0f" % v)
+    """Pourcentage comme CaseOpenScreen.pct : entier dès 10 %, une décimale dessous (deux sous 0,1 %), virgule et espace
+    sauf en anglais."""
+    if v >= 10:
+        s = "%.0f" % v
+    elif v >= 0.095 or v <= 0:
+        s = "%.1f" % v
+    else:
+        s = "%.2f" % max(0.01, v)
     if s.endswith(".0") and v >= 1:
         s = s[:-2]
-    if not LANGUE.startswith("en"):
-        s = s.replace(".", ",")
-    return s + (" %" if not LANGUE.startswith("en") else "%")
+    if LANGUE.startswith("en"):
+        return s + "%"
+    return s.replace(".", ",") + " %"
+
+
+def n_cles(n):
+    return t("n_cles_1" if n == 1 else "n_cles", nombre(n))
+
+
+def n_objets(n):
+    return t("n_objets_1" if n == 1 else "n_objets", nombre(n))
 
 
 # ================================================================== surface de dessin (comme apercu_boutique.Ecran)
@@ -443,7 +429,16 @@ class Ecran:
         return self.texte(s, xd - w, cy - self.hcap(p) / 2, p, c, a, maxw, quoi)
 
     def lignes(self, s, p, maxw):
-        mots, out, cur = s.split(" "), [], ""
+        """Comme Trace.lignes du jeu : par mots ; un mot trop long seul est coupé."""
+        mots, out, cur = [], [], ""
+        for mot in s.split(" "):
+            while len(mot) > 1 and self.largeur(mot, p) > maxw:
+                k = len(mot) - 1
+                while k > 1 and self.largeur(mot[:k], p) > maxw:
+                    k -= 1
+                mots.append(mot[:k])
+                mot = mot[k:]
+            mots.append(mot)
         for mot in mots:
             essai = (cur + " " + mot).strip()
             if cur and self.largeur(essai, p) > maxw:
@@ -550,12 +545,6 @@ def triangle(e, cx, y, taille, bas, c, a=255):
         e.poly([(cx - taille, y), (cx + taille, y), (cx, y - taille * 1.1)], c, a)
 
 
-def triangle_cote(e, x, cy, taille, droite, c, a=255):
-    """Repère latéral : pointe vers la droite (droite=True) ou vers la gauche, base en x."""
-    s = 1 if droite else -1
-    e.poly([(x, cy - taille), (x, cy + taille), (x + s * taille * 1.1, cy)], c, a)
-
-
 # ================================================================== la caisse d'exemple
 class Objet:
     def __init__(self, r):
@@ -632,18 +621,19 @@ def couleur_caisse(caisse):
 
 
 def caisse_vendue(caisse):
+    """Comme BoutiqueCles du jeu : un article de la catégorie « cles » dont le groupe est la caisse."""
     d = json.loads(BOUTIQUE.read_text(encoding="utf-8"))
-    return any(a.get("groupe") == caisse for a in d["articles"])
+    return any(a.get("categorie") == "cles" and a.get("groupe") == caisse for a in d["articles"])
 
 
 class Exemple:
     """Ce que montrent les maquettes : une caisse, ses objets, les clés du joueur, l'objet sous le repère."""
 
-    def __init__(self, caisse, cles, repere_id, gain_id):
+    def __init__(self, caisse, cles, repere_id, gain_id, vendue=None):
         self.caisse = caisse
         self.objets = charger_caisse(caisse)
         self.couleur = couleur_caisse(caisse)
-        self.vendue = caisse_vendue(caisse)
+        self.vendue = caisse_vendue(caisse) if vendue is None else vendue
         self.cles = cles
         self.repere = next(o for o in self.objets if o.id.endswith(repere_id))
         self.gain = next(o for o in self.objets if o.id.endswith(gain_id))
@@ -656,7 +646,6 @@ class Exemple:
         self.bande[9] = next(o for o in self.objets if o.rarete == "mythic")
         self.bande[5] = next(o for o in self.objets if o.rarete == "epic")
         self.cle_img = recadrer(Image.open(rendre_modele(caisse, True)))
-        self.caisse_img = recadrer(Image.open(rendre_modele(caisse, False)))
 
     def nom_caisse(self):
         return t("block.heralizcrates.%s_crate" % self.caisse)
@@ -711,9 +700,9 @@ def case_cles(e, ex, cles):
 def entete(e, ex, onglet, cles):
     gauche = case_cles(e, ex, cles)
     e.texte(ex.nom_caisse(), M, TITRE_Y, TITRE, LIGHT, maxw=gauche - M - 12, quoi="titre")
-    e.texte(t("sous", t("gui.heralizcrates.case.kind.items"), len(ex.objets)), M, SOUS_Y, TEXTE, MUTED, maxw=gauche - M - 12, quoi="sous-titre")
+    e.texte(t("sous_1" if len(ex.objets) == 1 else "sous", t("gui.heralizcrates.case.kind.items"), nombre(len(ex.objets))), M, SOUS_Y, TEXTE, MUTED, maxw=gauche - M - 12, quoi="sous-titre")
     x = M
-    for i, (o, n) in enumerate([("ouvrir", None), ("contenu", len(ex.objets))]):
+    for i, (o, n) in enumerate([("ouvrir", None), ("contenu", nombre(len(ex.objets)))]):
         lab = t("onglet." + o)
         badge = 0 if n is None else e.largeur(str(n), MINI_NUM) + 8
         w = e.largeur(lab.upper(), ONGLET) + 21.33 + 12 + (badge + 5 if badge else 0)
@@ -807,7 +796,8 @@ def sous_repere(e, ex, x, y, w):
 
 
 # ================================================================== A « Vitrine » : onglet Ouvrir
-def ecran_a(sortie, ex, cles=None, gain=False):
+def ecran_a(ex, cles=None, gain=False):
+    """Onglet Ouvrir ; gain : carte du gain par-dessus (cles = clés restantes après l'ouverture, comme en jeu)."""
     cles = ex.cles if cles is None else cles
     e = Ecran(FOND)
     entete(e, ex, 0, cles)
@@ -862,7 +852,7 @@ def ecran_a(sortie, ex, cles=None, gain=False):
     bty = BAS - 10 - bh
     if cles > 0:
         e.m(t("apres"), cx, yy, PETIT, MUTED, maxw=cw - 50)
-        e.d(t("n_cles", nombre(cles - 1)), cx + cw, yy, PETIT_GRAS, mix(ex.couleur, WHITE, 0.35))
+        e.d(n_cles(cles - 1), cx + cw, yy, PETIT_GRAS, mix(ex.couleur, WHITE, 0.35))
         bouton(e, cx, bty, cw, bh)
         e.c(t("gui.heralizcrates.case.open_key"), cx + cw / 2, bty + bh / 2, BOUTON, WHITE, maxw=cw - 8, quoi="bouton ouvrir")
         if yy + 6 > bty - 4:
@@ -887,7 +877,8 @@ def ecran_a(sortie, ex, cles=None, gain=False):
 
 
 # ================================================================== A « Vitrine » : onglet Contenu
-def ecran_a_contenu(ex):
+def ecran_a_contenu(ex, filtre=None):
+    """Onglet Contenu ; filtre = rareté choisie à gauche (None : tout)."""
     e = Ecran(FOND)
     entete(e, ex, 1, ex.cles)
     fx, fw = M, C_FILTRE_W
@@ -896,7 +887,7 @@ def ecran_a_contenu(ex):
     lignes = [(None, len(ex.objets), 100.0)] + ex.chances()
     y = HAUT + 22
     for k, (r, n, p) in enumerate(lignes):
-        s = k == 0
+        s = r == filtre
         h = C_FILTRE_LIGNE - 3
         if s:
             e.grad(fx + 6, y, fx + fw - 6, y + h, ACCENT, 60, ACCENT, 14)
@@ -910,14 +901,14 @@ def ecran_a_contenu(ex):
         pw = e.d(pct(p), fx + fw - 12, y + h / 2, PETIT_GRAS, mix(col, WHITE, 0.25) if r else OPTION)
         e.m(t("tout") if r is None else nom_rarete(r), lx, y + h / 2 - 3.8, TEXTE_GRAS if s else TEXTE, WHITE if s else LIGHT,
             maxw=fx + fw - 12 - pw - 4 - lx, quoi="filtre")
-        e.m(t("n_objets", n), lx, y + h / 2 + 4.6, PETIT, MUTED, maxw=fx + fw - 12 - pw - 4 - lx, quoi="nombre d'objets")
+        e.m(n_objets(n), lx, y + h / 2 + 4.6, PETIT, MUTED, maxw=fx + fw - 12 - pw - 4 - lx, quoi="nombre d'objets")
         y += C_FILTRE_LIGNE
     if y > BAS - 4:
         e.defauts.append("[%s] colonne des raretés trop remplie" % LANGUE)
     gx = fx + fw + A_ECART
     gw = GW - M - gx - 8
     cw = (gw - (C_COLS - 1) * C_GAP) / C_COLS
-    objets = ex.tries()
+    objets = [o for o in ex.tries() if filtre is None or o.rarete == filtre]
     rangs = int((BAS - HAUT + C_GAP) // (C_CARTE_H + C_GAP))
     for i, o in enumerate(objets[:C_COLS * rangs]):
         x = gx + (i % C_COLS) * (cw + C_GAP)
@@ -938,135 +929,23 @@ def ecran_a_contenu(ex):
             e.c(l, x + cw / 2, y + 46 + k * 8.5 + (4.25 if len(ls) == 1 else 0), PETIT, LIGHT, maxw=cw - 8, quoi="nom (contenu)")
         e.c(pct(o.chance), x + cw / 2, y + 66, PETIT_GRAS, mix(col, WHITE, 0.25), maxw=cw - 8)
         e.rect(x + cw * 0.2, y + C_CARTE_H - 4, x + cw * 0.8, y + C_CARTE_H - 4 + 4 / 3, col, 255)
-    # barre de défilement
-    sx = GW - M - 3
-    e.rect(sx, HAUT, sx + 2, BAS, WHITE, 18)
-    part = (C_COLS * rangs) / len(objets)
-    e.rect(sx, HAUT, sx + 2, HAUT + (BAS - HAUT) * min(1, part), WHITE, 110)
-    pied(e, [("gui.heralizcrates.case.touche.molette", "action.defiler"), ("touche.tab", "onglet.ouvrir"),
-             ("gui.heralizcrates.case.touche.echap", "gui.heralizcrates.case.close")], t("note.contenu"))
-    return e
-
-
-# ================================================================== B « Scène »
-def ecran_b(ex):
-    e = Ecran(FOND)
-    col = ex.couleur
-    top = CLES_Y
-    # --- la caisse
-    hx, hw, hh = M, B_HERO_W, BAS - top
-    e.rect(hx, top, hx + hw, BAS, GLASS, 195)
-    e.grad(hx, top, hx + hw, top + 190, col, 58, col, 0, vertical=True)
-    e.border(hx, top, hw, hh, WHITE, 26)
-    filet_haut(e, hx, top, hw, col)
-    e.texte(t("gui.heralizcrates.case.kind.items"), hx + 10, top + 11, MINI, mix(col, WHITE, 0.45), 230, maxw=hw - 20, quoi="genre")
-    ccx, ccy = hx + hw / 2, top + 82
-    e.glow(ccx, ccy, 86, 66, col, 85)
-    e.disc(ccx, ccy + 4, 60, col, 55, anneau=0.5)
-    e.disc(ccx, ccy + 4, 46, col, 32, anneau=0.5)
-    e.glow(ccx, top + 134, 56, 6, 0, 160)
-    e.ajuster(ex.caisse_img, hx + 22, top + 24, hw - 44, 112)
-    nom = ex.nom_caisse().upper()
-    p = NOM_GRAND if e.largeur(nom, NOM_GRAND) <= hw - 16 else (True, 11, 1.1)
-    e.c(nom, ccx, top + 150, p, WHITE, maxw=hw - 16, quoi="nom de la caisse")
-    e.c(t("n_objets", len(ex.objets)), ccx, top + 163, PETIT, OPTION, maxw=hw - 16)
-    separateur(e, hx + 12, hx + hw - 12, top + 174)
-    # clés
-    ky = top + 182
-    e.rect(hx + 10, ky, hx + hw - 10, ky + 36, col, 22)
-    e.border(hx + 10, ky, hw - 20, 36, col, 110)
-    cle(e, ex, hx + 14, ky + 3, 30, 30)
-    e.texte(t("tes_cles"), hx + 50, ky + 8, MINI, mix(col, WHITE, 0.45), maxw=hw - 60 - (52 if ex.vendue else 0), quoi="tes clés (B)")
-    e.texte(nombre(ex.cles), hx + 50, ky + 18, CHIFFRE_GRAND, WHITE)
-    if ex.vendue:
-        bw = 48
-        bx = hx + hw - 14 - bw
-        e.rect(bx, ky + 11, bx + bw, ky + 25, col, 40)
-        e.border(bx, ky + 11, bw, 14, col, 160)
-        e.c("+ " + t("acheter"), bx + bw / 2, ky + 18, MICRO, WHITE, maxw=bw - 6, quoi="acheter (B)")
-    # l'objet le plus rare de la caisse (le gros lot)
-    rare = ex.tries()[0]
-    ry = ky + 44
-    e.texte(t("plus_rare"), hx + 12, ry, MINI, MUTED, maxw=hw - 24, quoi="le plus rare")
-    ry += 9
-    rc = rare.couleur()
-    e.rect(hx + 10, ry, hx + hw - 10, ry + 24, rc, 22)
-    e.border(hx + 10, ry, hw - 20, 24, rc, 110)
-    e.image(rare.icone(), hx + 14, ry + 3, 18, 18, lisse=False)
-    ppw = e.d(pct(rare.chance), hx + hw - 16, ry + 12, PETIT_GRAS, mix(rc, WHITE, 0.25))
-    e.m(rare.nom(), hx + 38, ry + 12, TEXTE_GRAS, WHITE, maxw=hw - 20 - 28 - ppw - 12, quoi="nom du plus rare")
-    bh = 24
-    bty = BAS - 10 - bh
-    if ry + 24 + 6 > bty - 14:
-        e.defauts.append("[%s] colonne de la caisse trop remplie" % LANGUE)
-    e.c(t("apres") + " · " + t("n_cles", nombre(ex.cles - 1)), ccx, bty - 9, PETIT, MUTED, maxw=hw - 20, quoi="après (B)")
-    bouton(e, hx + 10, bty, hw - 20, bh)
-    e.c(t("gui.heralizcrates.case.open_key"), ccx, bty + bh / 2, BOUTON, WHITE, maxw=hw - 28, quoi="bouton ouvrir (B)")
-    # --- roue verticale
-    rx = hx + hw + A_ECART
-    rw = B_ROUE_W
-    verre(e, rx, top, rw, hh, 175)
-    rcx, rcy = rx + rw / 2, top + hh / 2
-    cartes = []
-    for i, o in enumerate(ex.bande):
-        d = (i - 7) * B_STEP
-        s = 1 / (1 + B_RETRAIT * abs(d) / B_STEP)
-        if abs(d) - B_CARTE * s / 2 > hh / 2 - 2:
-            continue
-        cartes.append((abs(d), o, d, s))
-    for _ad, o, d, s in sorted(cartes, key=lambda c: -c[0]):
-        fondu = min(1, max(0, (abs(d) - B_STEP * 0.8) / (hh / 2 - B_STEP * 0.8)))
-        carte_objet(e, o, rcx, rcy + d, B_CARTE * s, B_CARTE * s, B_ICONE * s, 1.0 if d == 0 else 0.0, fondu * 0.75)
-    e.grad(rx + 1, top + 1 / 3, rx + rw - 1, top + 60, GLASS, 235, GLASS, 0, vertical=True)
-    e.grad(rx + 1, BAS - 60, rx + rw - 1, BAS - 1 / 3, GLASS, 0, GLASS, 235, vertical=True)
-    triangle_cote(e, rx + 1.5, rcy, 5, True, GOLD)
-    triangle_cote(e, rx + rw - 1.5, rcy, 5, False, GOLD)
-    # --- objet, chances, contenu
-    px = rx + rw + A_ECART
-    pw = GW - M - px
-    verre(e, px, top, pw, hh)
-    filet_haut(e, px, top, pw, ex.repere.couleur())
-    e.grad(px, top, px + pw, top + 60, ex.repere.couleur(), 34, ex.repere.couleur(), 0, vertical=True)
-    cx, cw = px + 12, pw - 24
-    sous_repere(e, ex, cx, top + 11, cw)
-    separateur(e, cx, cx + cw, top + 51)
-    e.texte(t("chances"), cx, top + 59, MINI, MUTED, maxw=cw, quoi="chances (B)")
-    ch = ex.chances()
-    pmax = max(p for _r, _n, p in ch)
-    y = top + 74
-    for r, n, p in ch:
-        c = COUL_RARETE[r]
-        e.disc(cx + 2.4, y, 2.4, c, 255)
-        pw_ = e.d(pct(p), cx + cw, y, PETIT_GRAS, mix(c, WHITE, 0.25))
-        bx0, bx1 = cx + cw * 0.52, cx + cw - 34
-        e.m(nom_rarete(r), cx + 8, y, TEXTE, LIGHT, maxw=bx0 - cx - 8 - 4, quoi="rareté (B)")
-        e.rect(bx0, y - 1.5, bx1, y + 1.5, WHITE, 16)
-        e.rect(bx0, y - 1.5, bx0 + max(1.5, (bx1 - bx0) * (p / pmax) ** 0.5), y + 1.5, c, 255)
-        if pw_ > 30:
-            e.defauts.append("[%s] pourcentage trop large (B)" % LANGUE)
-        y += B_LIGNE_CHANCE
-    gy0 = y + 2
-    separateur(e, cx, cx + cw, gy0)
-    e.texte(t("contenu_n", len(ex.objets)), cx, gy0 + 8, MINI, MUTED, maxw=cw, quoi="contenu (B)")
-    gw = B_GRILLE_COLS * B_CELLULE + (B_GRILLE_COLS - 1) * B_GRILLE_GAP
-    if gw > cw:
-        e.defauts.append("grille B trop large (%.1f > %.1f)" % (gw, cw))
-    gx, gy = cx + (cw - gw) / 2, gy0 + 20
-    for i, o in enumerate(ex.tries()[:B_GRILLE_COLS * B_GRILLE_RANGS]):
-        x = gx + (i % B_GRILLE_COLS) * (B_CELLULE + B_GRILLE_GAP)
-        yy = gy + (i // B_GRILLE_COLS) * (B_CELLULE + B_GRILLE_GAP)
-        c = o.couleur()
-        e.rect(x, yy, x + B_CELLULE, yy + B_CELLULE, CARTE, 235)
-        e.grad(x, yy, x + B_CELLULE, yy + B_CELLULE, c, 40, c, 0, vertical=True)
-        e.border(x, yy, B_CELLULE, B_CELLULE, WHITE, 24)
-        e.image(o.icone(), x + 5, yy + 4, B_CELLULE - 10, B_CELLULE - 10, lisse=False)
-        e.rect(x + 6, yy + B_CELLULE - 3, x + B_CELLULE - 6, yy + B_CELLULE - 3 + 4 / 3, c, 255)
-    bas_grille = gy + B_GRILLE_RANGS * (B_CELLULE + B_GRILLE_GAP) - B_GRILLE_GAP
-    if bas_grille > BAS - 6:
-        e.defauts.append("grille B trop basse (%.1f)" % bas_grille)
-    triangle(e, cx + cw / 2, bas_grille + 6.5, 3, True, WHITE, 110)
-    pied(e, [("gui.heralizcrates.case.touche.espace", "gui.heralizcrates.case.open"), ("gui.heralizcrates.case.touche.molette", "gui.heralizcrates.case.action.contenu"),
-             ("gui.heralizcrates.case.touche.echap", "gui.heralizcrates.case.close")], t("gui.heralizcrates.case.help.keys"))
+    # les cartes cachées plus bas (molette) : leurs textes sont contrôlés aussi
+    for o in objets[C_COLS * rangs:]:
+        ls = e.lignes(o.nom(), PETIT, cw - 8)
+        if len(ls) > 2:
+            ls = [ls[0], e.coupe(" ".join(ls[1:]), PETIT, cw - 8)]
+        for l in ls + [pct(o.chance)]:
+            if e.largeur(l, PETIT) > cw - 8 + 0.05:
+                e.defauts.append("[%s] nom (contenu, plus bas) : « %s »" % (LANGUE, l))
+    # barre de défilement (comme CaseOpenScreen.contenu : seulement s'il y a plus que ce qu'on voit)
+    total = ((len(objets) + C_COLS - 1) // C_COLS) * (C_CARTE_H + C_GAP) - C_GAP
+    touches = [("touche.tab", "onglet.ouvrir"), ("gui.heralizcrates.case.touche.echap", "gui.heralizcrates.case.close")]
+    if total > BAS - HAUT:
+        sx = GW - M - 3
+        e.rect(sx, HAUT, sx + 2, BAS, WHITE, 18)
+        e.rect(sx, HAUT, sx + 2, HAUT + (BAS - HAUT) * (BAS - HAUT) / total, WHITE, 110)
+        touches.insert(0, ("gui.heralizcrates.case.touche.molette", "action.defiler"))
+    pied(e, touches, t("note.contenu"))
     return e
 
 
@@ -1100,17 +979,47 @@ def carte_gain(e, ex, cles):
     ny = y + 157 + len(ls) * 13 + 2
     e.c(t("ajoute") + " · " + t("chance", pct(o.chance)), GW / 2, ny, PETIT, OPTION, maxw=G_W - 24, quoi="ajouté")
     separateur(e, x + 14, x + G_W - 14, y + 186)
-    e.c(t("reste", nombre(cles - 1)), GW / 2, y + 196, PETIT, MUTED, maxw=G_W - 24, quoi="il te reste")
+    reste = t("reste_0") if cles <= 0 else t("reste_1" if cles == 1 else "reste", nombre(cles))
+    e.c(reste, GW / 2, y + 196, PETIT, MUTED, maxw=G_W - 24, quoi="il te reste")
     bh = BOUTON_H
     bw = (G_W - 24 - 8) / 2
     by = y + G_H - 12 - bh
     if ny + 6 > y + 186 or y + 202 > by - 6:
         e.defauts.append("[%s] carte du gain trop remplie" % LANGUE)
-    bouton(e, x + 12, by, bw, bh)
-    e.c(t("gui.heralizcrates.case.open_key"), x + 12 + bw / 2, by + bh / 2, BOUTON, WHITE, maxw=bw - 8, quoi="encore")
-    bouton(e, x + 12 + bw + 8, by, bw, bh, actif=False)
-    e.c(t("gui.heralizcrates.case.close"), x + 12 + bw + 8 + bw / 2, by + bh / 2, BOUTON, OPTION, maxw=bw - 8, quoi="fermer")
-    pied(e, [("gui.heralizcrates.case.touche.espace", "action.encore"), ("gui.heralizcrates.case.touche.echap", "gui.heralizcrates.case.close")], None)
+    # comme CaseOpenScreen.carteGain : « Ouvrir · 1 clé » s'il reste une clé, sinon « + Acheter des clés » si la boutique
+    # vend la clé, sinon un seul « Fermer » sur toute la largeur
+    if cles > 0 or ex.vendue:
+        if cles > 0:
+            bouton(e, x + 12, by, bw, bh)
+            e.c(t("gui.heralizcrates.case.open_key"), x + 12 + bw / 2, by + bh / 2, BOUTON, WHITE, maxw=bw - 8, quoi="encore")
+        else:
+            bouton(e, x + 12, by, bw, bh, c=GOLD)
+            e.c(t("acheter_cles"), x + 12 + bw / 2, by + bh / 2, BOUTON, mix(GOLD, WHITE, 0.3), maxw=bw - 8, quoi="acheter (gain)")
+        bouton(e, x + 12 + bw + 8, by, bw, bh, actif=False)
+        e.c(t("gui.heralizcrates.case.close"), x + 12 + bw + 8 + bw / 2, by + bh / 2, BOUTON, OPTION, maxw=bw - 8, quoi="fermer")
+    else:
+        bouton(e, x + 12, by, G_W - 24, bh, actif=False)
+        e.c(t("gui.heralizcrates.case.close"), GW / 2, by + bh / 2, BOUTON, OPTION, maxw=G_W - 32, quoi="fermer (seul)")
+    touches = [("gui.heralizcrates.case.touche.echap", "gui.heralizcrates.case.close")]
+    if cles > 0:
+        touches.insert(0, ("gui.heralizcrates.case.touche.espace", "action.encore"))
+    pied(e, touches, None)
+
+
+def controle_noms(e):
+    """Noms de toutes les caisses et de leurs clés (CrateType.java) aux places où l'écran les écrit : titre (à côté de la
+    case des clés, la plus large), nom de la clé et « Tu n'as aucune … » du panneau d'ouverture (×N à deux chiffres)."""
+    ids = re.findall(r'^\s+[A-Z0-9_]+\("([a-z0-9_]+)",', CRATE_JAVA.read_text(encoding="utf-8"), re.M)
+    gauche = GW - M - CLES_W
+    cw = GW - M - (M + A_INFO_W + A_ECART) - 20
+    place = cw - 30 - e.largeur("×99", CHIFFRE) - 12
+    for c in ids:
+        titre = t("block.heralizcrates.%s_crate" % c).upper()
+        cle = t("item.heralizcrates.%s_key" % c)
+        for s, p, w, quoi in [(titre, TITRE, gauche - M - 12, "titre"), (cle, TEXTE_GRAS, place, "nom de la clé"),
+                              (t("aucune", cle), PETIT_GRAS, place, "aucune clé")]:
+            if e.largeur(s, p) > w + 0.05:
+                e.defauts.append("[%s] %s (%s) : « %s » %.1f > %.1f" % (LANGUE, quoi, c, s, e.largeur(s, p), w))
 
 
 FOND = None
@@ -1144,16 +1053,28 @@ def main():
             return out
 
         fr = lang == "fr_fr"
-        for chemins, e in [(ch("1_A_vitrine"), ecran_a(None, ex)),
-                           (ch("2_B_scene"), ecran_b(ex))]:
-            e.sauver(chemins)
-            ecrites += [c for c, _ in chemins]
-        autres = [("3_A_sans_cle", ecran_a(None, ex, cles=0)), ("4_A_contenu", ecran_a_contenu(ex)),
-                  ("5_gain", ecran_a(None, ex, gain=True))]
+        chemins = ch("1_A_vitrine")
+        ecran_a(ex).sauver(chemins)
+        ecrites += [c for c, _ in chemins]
+        autres = [("3_A_sans_cle", ecran_a(ex, cles=0)), ("4_A_contenu", ecran_a_contenu(ex)),
+                  ("5_gain", ecran_a(ex, cles=ex.cles - 1, gain=True))]
         for nom, e in autres:
             chemins = ch(nom) if fr else []
             e.sauver(chemins)
             ecrites += [c for c, _ in chemins]
+        # contrôlés sans image : gain sans clé restante (avec et sans boutique), caisse non vendue, filtres du contenu
+        non_vendue = Exemple(a.caisse, 12, "camo_orion", "skinx_seraphin", vendue=False)
+        controles = [ecran_a(ex, cles=0, gain=True), ecran_a(non_vendue, cles=0, gain=True), ecran_a(non_vendue),
+                     ecran_a(non_vendue, cles=0), ecran_a(ex, cles=1, gain=True)]
+        controles += [ecran_a_contenu(ex, r) for r, _n, _p in ex.chances()]
+        e = Ecran(FOND)
+        controle_noms(e)
+        controles.append(e)
+        for e in controles:
+            e.sauver([])
+    if MANQUANTES:
+        print("\n".join(sorted(MANQUANTES)))
+        sys.exit("%d clé(s) absente(s) des fichiers de langue" % len(MANQUANTES))
     if a.copie and ecrites:
         Path(a.copie).mkdir(parents=True, exist_ok=True)
         for c in ecrites:

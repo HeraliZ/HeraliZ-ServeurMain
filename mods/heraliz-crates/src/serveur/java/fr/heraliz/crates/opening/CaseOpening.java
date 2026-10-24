@@ -89,7 +89,7 @@ public final class CaseOpening {
         entries.sort(Comparator.<LootEntry>comparingInt(e -> -e.rarity.ordinal()).thenComparingInt(e -> e.weight));
         List<Packets.Card> contents = new ArrayList<>();
         for (LootEntry e : entries) contents.add(card(loot, e));
-        HzNet.toPlayer(player, new Packets.CaseScreen(type.id, session.id, free(player), contents));
+        HzNet.toPlayer(player, new Packets.CaseScreen(type.id, session.id, free(player), BoutiqueCles.vendue(type), contents));
     }
 
     /** Interface fermee : les objets de l'animation en cours sont donnes tout de suite. */
