@@ -36,7 +36,7 @@
   "heraliz_usure.kit.effet": "Restores +%s %% condition (up to %s %%)",
   "heraliz_usure.kit.utilisations": "Uses: %s / %s",
   "heraliz_usure.kit.pas_ruinee": "Cannot repair a ruined weapon",
-  "heraliz_usure.kit.mode_emploi": "In the inventory: pick up the kit, right-click the weapon",
+  "heraliz_usure.kit.mode_emploi": "In the inventory: pick up the kit, right-click the weapon or armor",
   "heraliz_usure.reparation.ok": "%s repaired: %s → %s (max %s)",
   "heraliz_usure.reparation.ne_s_use_pas": "This weapon doesn't wear.",
   "heraliz_usure.reparation.plafond": "This kit can't improve this weapon any further.",
@@ -105,7 +105,7 @@
   "heraliz_usure.ecran.aucun_accessoire": "No attachment setting.",
   "heraliz_usure.ecran.aide.categories": "Wear / shot: % of condition lost per bullet (≈ shots: from 100 % to 0 %). Rain, water, suppressor: extra wear when firing in rain, in water or with a suppressor. No jams, no damage or accuracy loss: only a ruined weapon (0 %) won't fire.",
   "heraliz_usure.ecran.aide.etats": "Thresholds split the weapon's condition (display, bar colour). Wear changes nothing when firing, except at 0 %: the weapon is ruined and won't fire until repaired. Right column: how many shots an assault rifle spends in each condition.",
-  "heraliz_usure.ecran.aide.reparation": "In the inventory, pick up the kit then right-click the weapon. The kit restores part of the condition up to its cap. Each repair lowers the maximum condition a little: a heavily repaired weapon never becomes pristine again. Kits are neither in crates nor craftable for now.",
+  "heraliz_usure.ecran.aide.reparation": "In the inventory, pick up the kit then right-click the weapon or armor. On a weapon, the kit restores part of the condition up to its cap, and each repair lowers the maximum condition a little: a heavily repaired weapon never becomes pristine again. On armor (masks and suits included), it restores the same share of durability, up to 100 %%. Kits are found in loot.",
   "heraliz_usure.ecran.aide.armes": "A row replaces the category values for one weapon (tacz:ak47) or a group (heralisz_skins:*__*). Empty box = category value (grey). Excluded: the weapon never wears (knives, zombies-mode weapons).",
   "heraliz_usure.ecran.aide.accessoires": "Extra wear (%) when this TaCZ attachment is mounted on the weapon (on top of the category suppressor value).",
   "heraliz_usure.ecran.aide.general": "Weapons never wear during matches (duels, ClashWar, zombies: loaned weapons). Changes reach every player as soon as they are saved.",
@@ -127,5 +127,8 @@
   "heraliz_usure.reglages.hud.aide": "The ruined alert is always shown.",
   "heraliz_usure.reglages.hud.toujours": "Always",
   "heraliz_usure.reglages.hud.si_usee": "If worn",
-  "heraliz_usure.reglages.hud.jamais": "Never"
+  "heraliz_usure.reglages.hud.jamais": "Never",
+  "heraliz_usure.kit.armures": "Also repairs armor: +%s %%",
+  "heraliz_usure.reparation.armure_ok": "%s repaired: %s → %s",
+  "heraliz_usure.reparation.armure_neuve": "This piece is already in perfect condition."
 }

@@ -27,7 +27,7 @@ public class KitReparationServeur extends KitReparation {
     public boolean overrideStackedOnOther(ItemStack kit, Slot slot, ClickAction action, Player player) {
         if (action != ClickAction.SECONDARY) return false;
         ItemStack cible = slot.getItem();
-        if (Usure.gunId(cible) == null || !slot.allowModification(player)) return false;
+        if (!reparable(cible) || !slot.allowModification(player)) return false;
         if (player instanceof ServerPlayer sp) {
             ReparationServeur.appliquer(sp, kit, cible, niveau);
             slot.setChanged();
@@ -38,7 +38,7 @@ public class KitReparationServeur extends KitReparation {
     @Override
     public boolean overrideOtherStackedOnMe(ItemStack kit, ItemStack autre, Slot slot, ClickAction action, Player player, SlotAccess porte) {
         // arme tenue au curseur, clic droit sur le kit : meme reparation (l'arme est l'objet porte)
-        if (action != ClickAction.SECONDARY || Usure.gunId(autre) == null || !slot.allowModification(player)) return false;
+        if (action != ClickAction.SECONDARY || !reparable(autre) || !slot.allowModification(player)) return false;
         if (player instanceof ServerPlayer sp) {
             ReparationServeur.appliquer(sp, kit, autre, niveau);
             slot.setChanged();

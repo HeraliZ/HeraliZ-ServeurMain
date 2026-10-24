@@ -162,6 +162,19 @@ CAPSULES = {
     6: [("jeton_1", [3, 6], 0.4), ("jeton_5", [1, 3], 0.4), ("jeton_10", [1, 2], 0.2)],
     7: [("jeton_1", [3, 8], 0.3), ("jeton_5", [1, 3], 0.4), ("jeton_10", [1, 2], 0.3)],
 }
+# kits de réparation de HeraliZ Utils (24/10, choix du propriétaire) : ils réparent les armes ET les armures (+15 / +35 /
+# +60 %). Nombre pour 100 conteneurs, puis part de chaque kit par palier (fortune, kit, armurier) ; plus de valeur en haut.
+KIT = "heraliz_usure:"
+KITS_POUR_100 = {1: 2, 2: 2.5, 3: 3, 4: 3.5, 5: 4, 6: 4.5, 7: 5}
+KITS = {
+    1: [("kit_fortune", 0.85), ("kit_standard", 0.14), ("kit_armurier", 0.01)],
+    2: [("kit_fortune", 0.80), ("kit_standard", 0.17), ("kit_armurier", 0.03)],
+    3: [("kit_fortune", 0.70), ("kit_standard", 0.24), ("kit_armurier", 0.06)],
+    4: [("kit_fortune", 0.60), ("kit_standard", 0.30), ("kit_armurier", 0.10)],
+    5: [("kit_fortune", 0.50), ("kit_standard", 0.35), ("kit_armurier", 0.15)],
+    6: [("kit_fortune", 0.40), ("kit_standard", 0.38), ("kit_armurier", 0.22)],
+    7: [("kit_fortune", 0.30), ("kit_standard", 0.40), ("kit_armurier", 0.30)],
+}
 VALEUR_CAPSULE = {"jeton_1": 1, "jeton_5": 5, "jeton_10": 10}
 # soins et nourriture de nouveau dans les conteneurs T1 à T7 (choix du propriétaire, 23/10), en plus de leurs propres
 # conteneurs : nombre pour 100 conteneurs. Soins : ceux de la table soins<niveau> (niveau = palier, 6 au plus), mêmes
@@ -176,6 +189,10 @@ RARETES_IMPOSEES = {
     "heralizcasino:jeton_1": "commun", "heralizcasino:jeton_5": "peu_commun", "heralizcasino:jeton_10": "rare",
     # explosifs de CRac (23/10) : fabrication seulement, jamais dans le loot
     "crac:c4": "legendaire", "crac:explosive_charge": "epique",
+    # kits de réparation (24/10) : fortune Rare, kit Épique, armurier Légendaire
+    "heraliz_usure:kit_fortune": "rare", "heraliz_usure:kit_standard": "epique", "heraliz_usure:kit_armurier": "legendaire",
+    # boîtes de munitions de TaCZ (24/10) : fer Rare, or Épique, diamant Légendaire (« Level » 0, 1, 2 ; RaretesObjets.boite)
+    "tacz:ammo_box/0": "rare", "tacz:ammo_box/1": "epique", "tacz:ammo_box/2": "legendaire",
 }
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
 COMMUN_PREFIXES = ("geckolib:item_",)
@@ -294,7 +311,7 @@ def familles():
 
 
 def de_famille(e):
-    return e.get("_cat") in POUR_100 or e.get("_cat") == "capsules" or e["item"].startswith(CAPSULE) or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT, PLAN))
+    return e.get("_cat") in POUR_100 or e.get("_cat") == "capsules" or e["item"].startswith((CAPSULE, KIT)) or e.get("_cat") == "kits" or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT, PLAN))
 
 
 def mult_autre(e, t):
@@ -411,6 +428,7 @@ def ecrire():
         p = {f: POUR_100[f][t] / 100 / cases for f in fams}
         base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
         p["capsules"] = CAPSULES_POUR_100[t] / 100 / cases
+        p["kits"] = KITS_POUR_100[t] / 100 / cases
         p["soins"] = SOINS_POUR_100[t] / 100 / cases
         p["nourriture"] = NOURRITURE_POUR_100[t] / 100 / cases
         part_autres = AUTRES_POUR_100[t] / 100 / cases
@@ -433,6 +451,8 @@ def ecrire():
                     rel.append((e, f, parts[r] / somme_parts * x / s, r))
         for i, quantite, part in CAPSULES[t]:
             rel.append(({"item": CAPSULE + i, "nombre": quantite, "_cat": "capsules"}, "capsules", part, None))
+        for i, part in KITS[t]:
+            rel.append(({"item": KIT + i, "nombre": [1, 1], "_cat": "kits"}, "kits", part, None))
         for f, liste in zip(("soins", "nourriture"), tables_survie(t)):
             for e, v in liste:
                 rel.append((dict(e, _cat=f), f, v, None))

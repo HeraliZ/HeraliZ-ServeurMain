@@ -116,8 +116,22 @@ public final class RaretesObjets {
                 if (s.etiquette != null && t.contains(s.etiquette, Tag.TAG_STRING)) return new Cle(s, t.getString(s.etiquette));
             }
         }
+        String b = boite(st);
+        if (b != null) return new Cle(Sorte.OBJET, b);
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(st.getItem());
         return id == null ? null : new Cle(Sorte.OBJET, id.toString());
+    }
+
+    /**
+     * Boîte de munitions de TaCZ : fer, or et diamant sont le même objet (étiquette « Level » 0, 1, 2) ; leur rareté est
+     * rangée sous « tacz:ammo_box/0 », « /1 », « /2 » de la section objets (24/10). Null : pas une boîte.
+     */
+    @Nullable
+    static String boite(ItemStack st) {
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(st.getItem());
+        if (id == null || !id.getNamespace().equals("tacz") || !id.getPath().equals("ammo_box")) return null;
+        CompoundTag t = st.getTag();
+        return "tacz:ammo_box/" + (t == null ? 0 : t.getInt("Level"));
     }
 
     /** Rareté de cet objet : inscrite sur l'objet, sinon celle de sa sorte, sinon celle par défaut (null : aucune). */
@@ -136,7 +150,9 @@ public final class RaretesObjets {
                 }
             }
         }
-        r = parObjet.get(st.getItem());
+        String b = boite(st);
+        r = b != null ? t.parSorte().getOrDefault(Sorte.OBJET, Map.of()).get(b) : null;
+        if (r == null) r = parObjet.get(st.getItem());
         return r != null ? r : t.defaut();
     }
 

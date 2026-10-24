@@ -36,7 +36,7 @@
   "heraliz_usure.kit.effet": "Rend +%s %% d'état (jusqu'à %s %%)",
   "heraliz_usure.kit.utilisations": "Utilisations : %s / %s",
   "heraliz_usure.kit.pas_ruinee": "Ne répare pas une arme ruinée",
-  "heraliz_usure.kit.mode_emploi": "Dans l'inventaire : prendre le kit, clic droit sur l'arme",
+  "heraliz_usure.kit.mode_emploi": "Dans l'inventaire : prendre le kit, clic droit sur l'arme ou l'armure",
   "heraliz_usure.reparation.ok": "%s réparée : %s → %s (max %s)",
   "heraliz_usure.reparation.ne_s_use_pas": "Cette arme ne s'use pas.",
   "heraliz_usure.reparation.plafond": "Ce kit ne peut pas améliorer cette arme davantage.",
@@ -105,7 +105,7 @@
   "heraliz_usure.ecran.aucun_accessoire": "Aucun accessoire réglé.",
   "heraliz_usure.ecran.aide.categories": "Usure / tir : % d'état perdu à chaque balle (≈ tirs : de 100 % à 0 %). Pluie, eau, silencieux : usure en plus quand on tire sous la pluie, dans l'eau ou avec un silencieux. Pas d'enrayage, ni dégâts ni précision en moins : seule une arme ruinée (0 %) ne tire plus.",
   "heraliz_usure.ecran.aide.etats": "Les seuils découpent l'état de l'arme (affichage, couleur de la barre). L'usure ne change rien au tir, sauf à 0 % : l'arme est ruinée et ne tire plus avant d'être réparée. Colonne de droite : combien de tirs un fusil d'assaut passe dans chaque état.",
-  "heraliz_usure.ecran.aide.reparation": "Dans l'inventaire, prendre le kit puis clic droit sur l'arme. Le kit rend une part de l'état sans dépasser son plafond. À chaque réparation, l'état maximal baisse un peu : une arme très réparée finit par ne plus redevenir neuve. Les kits ne sont ni dans les caisses ni en craft pour l'instant.",
+  "heraliz_usure.ecran.aide.reparation": "Dans l'inventaire, prendre le kit puis clic droit sur l'arme ou l'armure. Sur une arme, le kit rend une part de l'état sans dépasser son plafond, et à chaque réparation l'état maximal baisse un peu : une arme très réparée finit par ne plus redevenir neuve. Sur une armure (masques et combinaisons compris), il rend la même part de sa durabilité, jusqu'à 100 %%. Les kits se trouvent dans le loot.",
   "heraliz_usure.ecran.aide.armes": "Une ligne remplace les valeurs de la catégorie pour une arme (tacz:ak47) ou un groupe (heralisz_skins:*__*). Case vide = valeur de la catégorie (en gris). Exclue : l'arme ne s'use jamais (couteaux, armes du mode zombies).",
   "heraliz_usure.ecran.aide.accessoires": "Usure en plus (%) quand cet accessoire TaCZ est monté sur l'arme (en plus du silencieux de la catégorie).",
   "heraliz_usure.ecran.aide.general": "Les armes ne s'usent jamais en match (duels, ClashWar, zombies : armes prêtées). Les changements partent à tous les joueurs dès l'enregistrement.",
@@ -127,5 +127,8 @@
   "heraliz_usure.reglages.hud.aide": "L'alerte « ruinée » reste toujours.",
   "heraliz_usure.reglages.hud.toujours": "Toujours",
   "heraliz_usure.reglages.hud.si_usee": "Si usée",
-  "heraliz_usure.reglages.hud.jamais": "Jamais"
+  "heraliz_usure.reglages.hud.jamais": "Jamais",
+  "heraliz_usure.kit.armures": "Répare aussi les armures : +%s %%",
+  "heraliz_usure.reparation.armure_ok": "%s réparée : %s → %s",
+  "heraliz_usure.reparation.armure_neuve": "Cette pièce est déjà en parfait état."
 }
