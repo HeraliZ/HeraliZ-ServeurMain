@@ -12,8 +12,8 @@ import net.minecraftforge.fml.config.ModConfig;
 /**
  * Distance de vue du serveur imposée par HeraliZ (heraliz_distances-server.toml, 24/10, pour 50 joueurs) : le
  * server.properties du Ptero n'est jamais mis à jour par la mise en ligne, ce réglage l'est (defaultconfigs). Moins de
- * tronçons gardés et envoyés par joueur (15 : 961 tronçons, 12 : 625) : moins de mémoire, de réseau et de travail pour
- * le serveur, et plus d'images par seconde chez les joueurs (leur jeu ne dessine pas plus loin que le serveur). 0 = celle
+ * tronçons gardés et envoyés par joueur (15 : 961 tronçons, 12 : 625, 8 depuis le 25/10 : 289) : moins de mémoire, de
+ * réseau et de travail pour le serveur, et plus d'images par seconde chez les joueurs (leur jeu ne dessine pas plus loin que le serveur). 0 = celle
  * du server.properties, comme avant. Appliquée au démarrage du serveur.
  */
 final class DistanceVue {
@@ -27,7 +27,7 @@ final class DistanceVue {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.push("distances");
         VUE = b.comment("Distance de vue du serveur, en tronçons (16 blocs). 0 : celle du server.properties.")
-                .defineInRange("vue", 12, 0, 32);
+                .defineInRange("vue", 8, 0, 32);
         SIMULATION = b.comment("Distance de simulation (créatures, blocs qui vivent), en tronçons. 0 : celle du server.properties.")
                 .defineInRange("simulation", 0, 0, 32);
         b.pop();

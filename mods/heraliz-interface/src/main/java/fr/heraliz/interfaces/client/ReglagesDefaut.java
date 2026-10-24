@@ -18,13 +18,16 @@ import net.minecraftforge.fml.loading.FMLPaths;
  *     <li>une seule fois par installation (repère config/heraliz_interface-reglages.txt, numéro {@link #VERSION}) :
  *     réglages qui libèrent des images par seconde sans rien enlever au jeu (synchronisation verticale coupée, images
  *     par seconde illimitées, nuages et ombres des entités coupés ; version 2 : graphismes « Détaillés » au lieu de
- *     « Fabuleux », mélange des biomes à 1, trous de balle de TaCZ gardés 8 s au lieu de 20). Le joueur peut les
- *     remettre : on n'y revient pas.</li>
+ *     « Fabuleux », mélange des biomes à 1, trous de balle de TaCZ gardés 8 s au lieu de 20 ; version 3, 25/10 :
+ *     distance d'affichage à 8 tronçons au plus, celle du serveur ; un choix plus bas du joueur est gardé). Le joueur
+ *     peut les remettre : on n'y revient pas.</li>
  * </ul>
  */
 final class ReglagesDefaut {
     /** À monter pour reposer de nouveaux réglages une fois chez tout le monde. */
-    static final int VERSION = 2;
+    static final int VERSION = 3;
+    /** Distance d'affichage posée par la version 3 (tronçons) : celle du serveur (heraliz_distances-server.toml). */
+    private static final int DISTANCE = 8;
 
     private ReglagesDefaut() {
     }
@@ -53,6 +56,9 @@ final class ReglagesDefaut {
                 o.biomeBlendRadius().set(1);
             }
             trousDeBalle(160);
+        }
+        if (avant < 3 && o.renderDistance().get() > DISTANCE) {
+            o.renderDistance().set(DISTANCE);
         }
         o.save();
         try {
