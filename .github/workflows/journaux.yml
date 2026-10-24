@@ -51,7 +51,10 @@ jobs:
           l "lcd j; get /logs/latest.log" || true
           # journaux tournés : noms datés (AAAA-MM-JJ-n.log.gz), les plus récents par le nom (l'heure des fichiers trompe)
           for f in $(l "cls -1 /logs/" 2>/dev/null | grep '\.log\.gz$' | sort -V -r | head -4); do l "lcd j; get $f" || true; done
-          for f in $(l "cls -1 /crash-reports/" 2>/dev/null | sort -r | head -4); do l "lcd c; get $f" || true; done
+          # rapports de plantage : l'horloge du Ptero peut être décalée, les noms ne suffisent pas : les 4 plus récents
+          # par le nom ET ceux du jour du dernier journal tourné
+          JOUR=$(ls j 2>/dev/null | grep -o '^[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}' | sort -r | head -1)
+          for f in $( { l "cls -1 /crash-reports/" 2>/dev/null | sort -r | head -4; [ -n "$JOUR" ] && l "cls -1 /crash-reports/" 2>/dev/null | grep -F "crash-$JOUR"; } | sort -u); do l "lcd c; get $f" || true; done
           masque() { sed -E 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g'; }
           {
             echo "## Rapports de plantage récents"
@@ -70,6 +73,11 @@ jobs:
               echo '```'
               echo "### Serveur en retard (Can't keep up)"; echo '```'
               printf '%s\n' "$txt" | grep -F "Can't keep up" | masque | tail -60
+              echo '```'
+              # ce qui s'est passé juste avant un gros retard (5 s et plus)
+              echo "### Avant les gros retards"; echo '```'
+              printf '%s\n' "$txt" | grep -E -B40 "Can't keep up.*Running ([5-9][0-9]{3}|[0-9]{5,})ms" \
+                | grep -v -E 'password|login|register' | masque | tail -200
               echo '```'
               if [ -n "$FILTRE" ]; then
                 echo "### Lignes avec « $FILTRE »"; echo '```'
