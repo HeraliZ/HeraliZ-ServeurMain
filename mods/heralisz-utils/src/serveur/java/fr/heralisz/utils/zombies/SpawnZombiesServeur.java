@@ -71,7 +71,12 @@ public final class SpawnZombiesServeur {
         }
     }
 
+    /** Toutes les villes de zones.json avec leur valeur (niveau de loot), pour le peuplement ({@link Peuplement}). */
+    private record Ville(double x, double z, double r, int valeur) {
+    }
+
     private static volatile List<Cercle> villes = List.of();
+    private static volatile List<Ville> toutesVilles = List.of();
     private static volatile List<Poly> zones = List.of();
     private static long dateVilles = -1, dateZones = -1;
 
@@ -113,6 +118,21 @@ public final class SpawnZombiesServeur {
         z.moveTo(e.getX(), e.getY(), e.getZ(), m.getYRot(), 0f);
         z.finalizeSpawn(acc, acc.getCurrentDifficultyAt(BlockPos.containing(e.getX(), e.getY(), e.getZ())), e.getSpawnType(), null, null);
         acc.addFreshEntityWithPassengers(z);
+    }
+
+    /** Tenue d'un zombie qui apparait ici (peuplement). */
+    static Tenue tenueIci(double x, double z, net.minecraft.util.RandomSource rnd) {
+        return tenue(genre(x, z), rnd);
+    }
+
+    /** Valeur (niveau de loot, 1 a 7 ; 1 si absente) de la ville la plus haute qui contient ce point, 0 hors des villes. */
+    static int valeurVille(double x, double z) {
+        int v = 0;
+        for (Ville c : toutesVilles) {
+            double dx = x - c.x, dz = z - c.z;
+            if (dx * dx + dz * dz <= c.r * c.r) v = Math.max(v, c.valeur);
+        }
+        return v;
     }
 
     private static Tenue tenue(Genre g, net.minecraft.util.RandomSource rnd) {
@@ -183,6 +203,7 @@ public final class SpawnZombiesServeur {
             if (d != dateVilles) {
                 dateVilles = d;
                 List<Cercle> l = new ArrayList<>();
+                List<Ville> tv = new ArrayList<>();
                 if (d != 0) {
                     Set<String> ar = Set.copyOf(ZombiesConfig.ARCTIQUE.get()), pr = Set.copyOf(ZombiesConfig.PRISON.get()),
                             mi = Set.copyOf(ZombiesConfig.MILITAIRE.get()), co = Set.copyOf(ZombiesConfig.CONTAMINEES.get());
@@ -190,6 +211,9 @@ public final class SpawnZombiesServeur {
                         for (JsonElement el : JsonParser.parseReader(in).getAsJsonArray()) {
                             JsonObject v = el.getAsJsonObject();
                             String id = v.has("id") ? v.get("id").getAsString() : "";
+                            double r = v.has("rayon") ? v.get("rayon").getAsDouble() : 0;
+                            if (r > 0) tv.add(new Ville(v.get("x").getAsDouble(), v.get("z").getAsDouble(), r,
+                                    v.has("valeur") && !v.get("valeur").isJsonNull() ? Math.max(1, v.get("valeur").getAsInt()) : 1));
                             Genre g = ar.contains(id) ? Genre.ARCTIQUE : pr.contains(id) ? Genre.PRISON : mi.contains(id) ? Genre.MILITAIRE
                                     : co.contains(id) ? Genre.CONTAMINE : null;
                             if (g != null) l.add(new Cercle(v.get("x").getAsDouble(), v.get("z").getAsDouble(),
@@ -198,6 +222,7 @@ public final class SpawnZombiesServeur {
                     }
                 }
                 villes = List.copyOf(l);
+                toutesVilles = List.copyOf(tv);
                 HeraliszUtils.LOG.info("Zombies de la survie : {} villes a tenue", l.size());
             }
         } catch (Exception ex) {

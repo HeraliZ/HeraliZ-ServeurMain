@@ -14,6 +14,12 @@ public final class ZombiesConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ARCTIQUE, PRISON, MILITAIRE, CONTAMINEES, REMPLACES, MUTANTS, INTERDITS;
     public static final ForgeConfigSpec.DoubleValue PART_HAZMAT;
     public static final ForgeConfigSpec.IntValue PLAFOND_CARTE, PLAFOND_LOCAL;
+    // peuplement (voir Peuplement)
+    public static final ForgeConfigSpec.BooleanValue PEUPLEMENT, PEUPLEMENT_REGLE, PEUPLEMENT_BOTS;
+    public static final ForgeConfigSpec.IntValue PEUPLEMENT_INTERVALLE, PEUPLEMENT_NATURE, PEUPLEMENT_VILLE, PEUPLEMENT_MAX_JOUEUR,
+            PEUPLEMENT_RAYON, PEUPLEMENT_DIST_MIN, PEUPLEMENT_DIST_MAX, PEUPLEMENT_DIST_JOUEUR, PEUPLEMENT_RETRAIT, PEUPLEMENT_MAX;
+    public static final ForgeConfigSpec.DoubleValue PEUPLEMENT_PAR_VALEUR, PEUPLEMENT_NUIT, PEUPLEMENT_BONUS_JOUEUR, PEUPLEMENT_BONUS_MAX,
+            PEUPLEMENT_HORS_VUE, PEUPLEMENT_TICK_MAX;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -46,6 +52,42 @@ public final class ZombiesConfig {
         PLAFOND_LOCAL = b.comment("Monstres au plus dans un carre de 5 x 5 troncons (80 blocs) autour du point d'apparition ;",
                         "au-dela, pas d'apparition naturelle ici (plusieurs joueurs au meme endroit n'empilent plus les hordes). 0 : pas de plafond.")
                 .defineInRange("plafond_local", 0, 0, 10000);
+        b.pop();
+        b.comment("Peuplement de la carte (24/10) : des zombies HeraliZ apparaissent autour de chaque joueur en survie ou en aventure",
+                "sur la carte (ni spectateur, ni creatif, ni a bord d'un vehicule ou du train), de jour comme de nuit, hors de sa vue",
+                "de preference, et disparaissent (sans butin) loin de tout joueur. Cible = zombies HeraliZ a moins de rayon_compte blocs",
+                "du joueur, partagee entre joueurs proches. Le plafond_carte ci-dessus est toujours respecte.").push("peuplement");
+        PEUPLEMENT = b.comment("false : plus de peuplement (les zombies deja poses partent quand plus personne n'est pres d'eux).")
+                .define("actif", true);
+        PEUPLEMENT_INTERVALLE = b.comment("Secondes entre deux passages ; a chaque passage, au plus un zombie par joueur.")
+                .defineInRange("intervalle_secondes", 2, 1, 60);
+        PEUPLEMENT_NATURE = b.comment("Zombies vises autour d'un joueur hors des villes.").defineInRange("cible_nature", 6, 0, 100);
+        PEUPLEMENT_VILLE = b.comment("Zombies vises autour d'un joueur dans une ville (cercles de config/heralisz_clans/zones.json),",
+                "plus cible_par_valeur par point de valeur de la ville (niveau de loot, 1 a 7).").defineInRange("cible_ville", 10, 0, 100);
+        PEUPLEMENT_PAR_VALEUR = b.comment("En plus par point de valeur de la ville (valeur 2 : 10 + 3 = 13 ; valeur 5 : 10 + 7,5 = 17).")
+                .defineInRange("cible_par_valeur", 1.5, 0.0, 20.0);
+        PEUPLEMENT_NUIT = b.comment("Multiplicateur de la cible la nuit.").defineInRange("nuit", 1.25, 0.0, 5.0);
+        PEUPLEMENT_BONUS_JOUEUR = b.comment("Cible partagee : un groupe n'attire pas un zombie de plus par joueur. Chaque autre joueur",
+                "a moins de rayon_compte blocs ajoute seulement cette part a la cible (0,1 = +10 %)...").defineInRange("bonus_par_joueur", 0.10, 0.0, 1.0);
+        PEUPLEMENT_BONUS_MAX = b.comment("... jusqu'a cette part au plus (0,4 = +40 %).").defineInRange("bonus_groupe_max", 0.40, 0.0, 5.0);
+        PEUPLEMENT_MAX_JOUEUR = b.comment("Cible au plus, ville, nuit et groupe compris.").defineInRange("cible_max", 24, 0, 200);
+        PEUPLEMENT_RAYON = b.comment("Rayon (blocs) dans lequel les zombies HeraliZ sont comptes autour d'un joueur.")
+                .defineInRange("rayon_compte", 64, 16, 160);
+        PEUPLEMENT_DIST_MIN = b.comment("Distance d'apparition au joueur, au moins (blocs)...").defineInRange("distance_min", 24, 8, 128);
+        PEUPLEMENT_DIST_MAX = b.comment("... et au plus (rester sous la distance de simulation : 5 tronçons = 80 blocs).")
+                .defineInRange("distance_max", 56, 8, 128);
+        PEUPLEMENT_DIST_JOUEUR = b.comment("Jamais a moins de tant de blocs d'un joueur, quel qu'il soit.")
+                .defineInRange("distance_joueur_min", 20, 0, 128);
+        PEUPLEMENT_HORS_VUE = b.comment("Part des essais faits hors du champ de vision du joueur (derriere et sur les cotes).")
+                .defineInRange("part_hors_vue", 0.8, 0.0, 1.0);
+        PEUPLEMENT_RETRAIT = b.comment("Un zombie du peuplement a plus de tant de blocs de tout joueur disparait (sans butin).")
+                .defineInRange("distance_retrait", 96, 32, 512);
+        PEUPLEMENT_MAX = b.comment("Zombies du peuplement au plus sur toute la carte.").defineInRange("max_total", 1000, 0, 100000);
+        PEUPLEMENT_TICK_MAX = b.comment("Aucune nouvelle apparition tant que le serveur met plus de tant de millisecondes par tick",
+                "(moyenne ; 50 = 20 TPS tout juste). 0 : jamais coupe.").defineInRange("tick_max_ms", 45.0, 0.0, 1000.0);
+        PEUPLEMENT_REGLE = b.comment("true : rien tant que la regle doMobSpawning du monde est a false. false : peuplement quand meme",
+                "(la carte de construction l'avait a false).").define("suivre_doMobSpawning", false);
+        PEUPLEMENT_BOTS = b.comment("true : les bots de charge (/bots) attirent aussi des zombies.").define("bots", false);
         b.pop();
         SPEC = b.build();
     }

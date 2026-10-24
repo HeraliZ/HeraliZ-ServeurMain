@@ -1128,7 +1128,31 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   vagues des drapeaux (assaut.json : `heralisz_utils:zombie_survie` au lieu de `minecraft:zombie`, Utils 2.18.1) et /summon
   sans tenue prennent la tenue de l'endroit à leur arrivée (`HeralizTenueChoisie`). Utils 2.18.2 : jamais de zombie de
   Minecraft sur la carte (zombie, du désert, villageois, noyé : retirés à leur arrivée, liste `interdits`), zombies
-  HeraliZ insensibles au soleil (le feu brûle toujours), ajoutés à Zombie Awareness (`enhancedMobs`). Rien testé en jeu ;
+  HeraliZ insensibles au soleil (le feu brûle toujours), ajoutés à Zombie Awareness (`enhancedMobs`). Rien testé en jeu.
+  **Peuplement de la carte** (24/10, Utils 2.26.0, demande du propriétaire : « un DayZ, un minimum conséquent mais pas
+  trop pour pas que ça devienne full PvE » ; `zombies/Peuplement`, serveur seulement ; rien testé en jeu) : Minecraft
+  n'en faisait presque pas apparaître (seulement dans le noir complet, donc rien de jour dehors ni près d'une lampe ; à
+  une hauteur tirée au hasard, presque toujours dans la pierre ; un essai tous les 3 ticks, `bukkit.yml` ; rien du tout
+  avec la règle `doMobSpawning` à false, comme sur la copie v3 de la carte : à vérifier sur `dayz_map` par
+  `/gamerule doMobSpawning`). Toutes les 2 s, pour chaque joueur en survie ou en aventure sur la carte (ni spectateur, ni
+  créatif, ni en véhicule ou dans le train, ni bot de charge) : zombies HeraliZ comptés à 64 blocs (relevé d'une seconde
+  de `PlafondZombies`, aucun balayage en plus) ; sous la cible, UN zombie posé à 24-56 blocs, derrière ou sur les côtés
+  de préférence (80 %), à 20 blocs au moins de tout joueur, sur un sol à ciel ouvert ou à un étage d'un bâtiment (pas
+  sur les toits, pas dans les caves profondes ni les bunkers), jamais dans l'eau, ni dans un claim de CRac, ni dans une
+  zone VIP (lue dans `heraliz_grades/zones_vip.json`, +8 blocs), ni près de la bordure, seulement dans un tronçon qui
+  tourne, de jour comme de nuit ; tenue de l'endroit. Cible : 6 dans la nature, en ville (cercles de zones.json) 10 + 1,5
+  par point de valeur (valeur 2 : 13 ; 4 : 16 ; 5 : 17), ×1,25 la nuit, partagée entre joueurs proches (+10 % par autre
+  joueur à 64 blocs, +40 % au plus), 24 au plus. Ces zombies (étiquette `heraliz_peuple`) rôdent (errance de Minecraft et
+  de Zombie Awareness) et ne disparaissent plus à 32 blocs comme ceux de Minecraft : retirés sans butin quand plus aucun
+  joueur n'est à 96 blocs (repris au rechargement de leur tronçon). Garde-fous : `plafond_carte` (1500 monstres), 1000
+  zombies du peuplement au plus, rien de neuf au-dessus de 45 ms par tick. Réglages : section `[peuplement]` de
+  `heraliz_zombies-server.toml` (`actif`, `intervalle_secondes`, `cible_nature`, `cible_ville`, `cible_par_valeur`,
+  `nuit`, `bonus_par_joueur`, `bonus_groupe_max`, `cible_max`, `rayon_compte`, `distance_min`, `distance_max`,
+  `distance_joueur_min`, `part_hors_vue`, `distance_retrait`, `max_total`, `tick_max_ms`, `suivre_doMobSpawning` (false :
+  peuplement même avec la règle à false), `bots`) ; ce fichier n'est pas dans `serveur/defaultconfigs/` : Forge ajoute la
+  section avec ces valeurs dans le `serverconfig/` du monde au démarrage, à régler là (ou ajouter le fichier aux
+  `defaultconfigs/` pour que le dépôt fasse foi). Les monstres à plus de 24 blocs d'un joueur ne bougent presque pas
+  (`entity-activation-range.monsters` de `spigot.yml`) : ils rôdent surtout quand on approche ;
 - Petit panneau de
   verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
   drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un

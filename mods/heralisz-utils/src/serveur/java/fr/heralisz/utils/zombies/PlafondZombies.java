@@ -3,6 +3,7 @@ package fr.heralisz.utils.zombies;
 import fr.heralisz.utils.HeraliszUtils;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
@@ -29,22 +30,27 @@ public final class PlafondZombies {
 
     private static int total;
     private static Long2IntOpenHashMap parTroncon = new Long2IntOpenHashMap();
+    /** Zombies HeraliZ par tronçon (même relevé), lus par le peuplement ({@link Peuplement}). */
+    private static Long2IntOpenHashMap zombiesParTroncon = new Long2IntOpenHashMap();
     private static boolean signale;
 
     @SubscribeEvent
     public static void tick(TickEvent.LevelTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.level instanceof ServerLevel sl) || sl.dimension() != Level.OVERWORLD
                 || sl.getGameTime() % 20 != 7) return;
-        if (ZombiesConfig.PLAFOND_CARTE.get() <= 0 && ZombiesConfig.PLAFOND_LOCAL.get() <= 0) return;
+        if (ZombiesConfig.PLAFOND_CARTE.get() <= 0 && ZombiesConfig.PLAFOND_LOCAL.get() <= 0 && !ZombiesConfig.PEUPLEMENT.get()) return;
         int n = 0;
-        Long2IntOpenHashMap carte = new Long2IntOpenHashMap();
+        Long2IntOpenHashMap carte = new Long2IntOpenHashMap(), zombies = new Long2IntOpenHashMap();
         for (Entity en : sl.getAllEntities()) {
             if (en.getType().getCategory() != MobCategory.MONSTER || !en.isAlive()) continue;
             n++;
-            carte.addTo(ChunkPos.asLong(en.getBlockX() >> 4, en.getBlockZ() >> 4), 1);
+            long k = ChunkPos.asLong(en.getBlockX() >> 4, en.getBlockZ() >> 4);
+            carte.addTo(k, 1);
+            if (en instanceof ZombieSurvie) zombies.addTo(k, 1);
         }
         total = n;
         parTroncon = carte;
+        zombiesParTroncon = zombies;
         int plafond = ZombiesConfig.PLAFOND_CARTE.get();
         if (plafond > 0 && n >= plafond && !signale) {
             signale = true;
@@ -53,6 +59,33 @@ public final class PlafondZombies {
         } else if (plafond > 0 && n < plafond * 9 / 10) {
             signale = false;
         }
+    }
+
+    /** Monstres de la carte au dernier relevé (plus les apparitions comptées depuis). */
+    static int total() {
+        return total;
+    }
+
+    /** Zombies HeraliZ autour de (x, z), à rayon blocs environ (tronçons dont le centre est à moins de rayon + 11). */
+    static int zombiesAutour(double x, double z, double rayon) {
+        Long2IntOpenHashMap carte = zombiesParTroncon;
+        int cx = Mth.floor(x) >> 4, cz = Mth.floor(z) >> 4, r = (int) Math.ceil(rayon / 16.0), c = 0;
+        double lim = (rayon + 11.4) * (rayon + 11.4);
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                double ox = ((cx + dx) << 4) + 8 - x, oz = ((cz + dz) << 4) + 8 - z;
+                if (ox * ox + oz * oz <= lim) c += carte.get(ChunkPos.asLong(cx + dx, cz + dz));
+            }
+        }
+        return c;
+    }
+
+    /** Un zombie HeraliZ vient d'apparaître ici (peuplement) : compté tout de suite, sans attendre le relevé suivant. */
+    static void compter(double x, double z) {
+        total++;
+        long k = ChunkPos.asLong(Mth.floor(x) >> 4, Mth.floor(z) >> 4);
+        parTroncon.addTo(k, 1);
+        zombiesParTroncon.addTo(k, 1);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
