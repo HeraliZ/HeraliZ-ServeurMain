@@ -102,8 +102,10 @@ CASES_POIDS = {
     6: {4: 6, 5: 12, 6: 16, 7: 17, 8: 15, 9: 12, 10: 10, 11: 7, 12: 5},
     7: {7: 5, 8: 9, 9: 12, 10: 14, 11: 14, 12: 13, 13: 11, 14: 9, 15: 7, 16: 6},
 }
-# objets par ville après le changement / avant (un peu moins, « pas grand chose mais quand même »)
-FACTEUR_TOTAL = 0.9
+# objets par ville après le changement / avant, par palier. 23/10 : 0,9 partout (« pas grand chose mais quand même ») ;
+# 24/10 (choix du propriétaire, « à l'aérodrome trop de conteneurs vides en T4-T5 ») : ×1,3 en T1-T2, ×1,5 en T3, ×2
+# en T4, ×2,2 en T5-T6 ; T7 (événements) inchangé
+FACTEUR_TOTAL = {1: 1.3, 2: 1.3, 3: 1.5, 4: 2.0, 5: 2.2, 6: 2.2, 7: 0.9}
 # objets par conteneur avant le 23/10 au soir (mesurés sur les tables d'alors : 1 case en T1-T2, 1 à 2 en T3-T6, 1 à 3 en T7)
 OBJETS_AVANT = {1: 1.0, 2: 1.0, 3: 1.14, 4: 1.21, 5: 1.29, 6: 1.39, 7: 1.63}
 
@@ -401,11 +403,21 @@ def ecrire_raretes_imposees():
 
 
 def ecrire_facteurs(avant):
-    """Facteur de conteneurs actifs par niveau (défaut de ConfigLoot « facteurs_actifs ») : objets par ville x FACTEUR_TOTAL."""
-    f = Path(__file__).resolve().parents[1] / "mods/heraliz-loot/src/serveur/java/fr/heraliz/loot/ConfigLoot.java"
+    """Facteur de conteneurs actifs par niveau (« facteurs_actifs ») : objets par ville x FACTEUR_TOTAL du palier. Écrit
+    comme défaut de ConfigLoot ET dans serveur/defaultconfigs/heraliz_loot-server.toml (le fichier du monde garde sinon
+    l'ancienne valeur : Forge n'y remet pas un nouveau défaut)."""
+    racine = Path(__file__).resolve().parents[1]
+    vals = ", ".join(f"{min(1.0, FACTEUR_TOTAL[t] * avant[t] / cases_moyennes(t)):.3f}" for t in sorted(CASES_POIDS))
+    f = racine / "mods/heraliz-loot/src/serveur/java/fr/heraliz/loot/ConfigLoot.java"
     s = f.read_text(encoding="utf-8")
-    vals = ", ".join(f"{min(1.0, FACTEUR_TOTAL * avant[t] / cases_moyennes(t)):.3f}" for t in sorted(CASES_POIDS))
     nouveau = re.sub(r"(// facteurs_actifs \(outils/loot_armes\.py\)\n\s*List\.of\()[^)]*(\))", lambda m: m.group(1) + vals + m.group(2), s)
+    if nouveau != s:
+        f.write_text(nouveau, encoding="utf-8")
+    f = racine / "serveur/defaultconfigs/heraliz_loot-server.toml"
+    s = f.read_text(encoding="utf-8")
+    nouveau = re.sub(r"(?m)^(\s*facteurs_actifs = \[)[^\]]*(\])", lambda m: m.group(1) + vals + m.group(2), s)
+    if nouveau == s and "facteurs_actifs" not in s:
+        raise SystemExit(f"{f} : ligne facteurs_actifs introuvable")
     if nouveau != s:
         f.write_text(nouveau, encoding="utf-8")
 

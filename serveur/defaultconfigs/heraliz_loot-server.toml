@@ -1,0 +1,15 @@
+# Rotation du loot HeraliZ (24/10, choix du propriétaire) : ce fichier du dépôt fait foi, la mise en ligne le recopie
+# dans le monde. Les autres réglages de HeraliZ Loot gardent leur valeur par défaut (remis par Forge). facteurs_actifs
+# est écrit par outils/loot_armes.py (FACTEUR_TOTAL), jamais à la main.
+
+[rotation]
+	#Part des conteneurs d'une zone qui sont actifs (0.2 = 1 sur 5), si la zone ne précise pas "actifs".
+	proportion_actifs = 0.2
+	#Facteur de la part d'actifs par niveau de zone, T1 à T7.
+	facteurs_actifs = [0.807, 0.647, 0.668, 0.695, 0.561, 0.400, 0.129]
+	#Délai minimal (secondes) avant qu'un autre conteneur de la zone se remplisse quand un conteneur a été vidé.
+	delai_min_secondes = 240
+	#Délai maximal (secondes). Le délai est tiré au hasard entre le minimum et le maximum.
+	delai_max_secondes = 360
+	#Conteneur fouillé puis laissé avec des objets : vidé au bout de ce délai (secondes) sans personne dedans, un autre se remplit ensuite. 0 : jamais.
+	restes_secondes = 300

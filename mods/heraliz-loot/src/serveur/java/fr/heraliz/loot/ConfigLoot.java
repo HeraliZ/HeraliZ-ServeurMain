@@ -14,7 +14,7 @@ public final class ConfigLoot {
     public static final ForgeConfigSpec.DoubleValue PROPORTION;
     /** Facteur de la part d'actifs par niveau de zone (T1 à T7), écrit par outils/loot_armes.py. */
     public static final ForgeConfigSpec.ConfigValue<List<? extends Double>> FACTEURS;
-    public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX;
+    public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RESTES, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX;
     public static final ForgeConfigSpec.BooleanValue ETOILES;
     /** Conteneurs de Minecraft scellés (src/serveur : ConteneursVanilla). */
     public static final ForgeConfigSpec.BooleanValue VANILLA_ACTIF, VANILLA_AUTO, VANILLA_ENTITES, VANILLA_CLAIMS;
@@ -39,12 +39,16 @@ public final class ConfigLoot {
                         "pas touchée). Valeurs par défaut écrites par outils/loot_armes.py.")
                 .defineList("facteurs_actifs",
                         // facteurs_actifs (outils/loot_armes.py)
-                        List.of(0.559, 0.448, 0.401, 0.313, 0.229, 0.164, 0.129),
+                        List.of(0.807, 0.647, 0.668, 0.695, 0.561, 0.400, 0.129),
                         o -> o instanceof Number n && n.doubleValue() >= 0 && n.doubleValue() <= 1);
         DELAI_MIN = b.comment("Délai minimal (secondes) avant qu'un autre conteneur de la zone se remplisse quand un conteneur a été vidé.")
-                .defineInRange("delai_min_secondes", 600, 0, 86400);
+                .defineInRange("delai_min_secondes", 240, 0, 86400);
         DELAI_MAX = b.comment("Délai maximal (secondes). Le délai est tiré au hasard entre le minimum et le maximum.")
-                .defineInRange("delai_max_secondes", 1200, 0, 86400);
+                .defineInRange("delai_max_secondes", 360, 0, 86400);
+        RESTES = b.comment("Conteneur fouillé puis laissé avec des objets (le joueur n'a pris que ce qui l'intéressait) : au bout",
+                        "de ce délai (secondes) sans que personne n'y regarde, il est vidé comme un conteneur vide et un autre",
+                        "conteneur de la zone se remplit après le délai ci-dessus. 0 : jamais (il garde ses restes).")
+                .defineInRange("restes_secondes", 300, 0, 86400);
         b.pop();
         b.comment("Étoiles blanches qui scintillent autour des conteneurs actifs.").push("etoiles");
         ETOILES = b.comment("Montrer les étoiles autour des conteneurs actifs.").define("actives", true);
@@ -164,9 +168,14 @@ public final class ConfigLoot {
 
     /** Délai de réapparition tiré entre min et max, en ticks. */
     static long delaiTicks(net.minecraft.util.RandomSource r) {
-        int min = SPEC.isLoaded() ? DELAI_MIN.get() : 600, max = SPEC.isLoaded() ? DELAI_MAX.get() : 1200;
+        int min = SPEC.isLoaded() ? DELAI_MIN.get() : 240, max = SPEC.isLoaded() ? DELAI_MAX.get() : 360;
         if (max < min) max = min;
         return 20L * (min + (max > min ? r.nextInt(max - min + 1) : 0));
+    }
+
+    /** Délai avant de recycler un conteneur entamé, en ticks (0 : jamais). */
+    static long restesTicks() {
+        return 20L * (SPEC.isLoaded() ? RESTES.get() : 300);
     }
 
     static boolean etoiles() {

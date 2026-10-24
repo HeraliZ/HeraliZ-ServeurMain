@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -136,6 +137,13 @@ public final class RotationLoot extends SavedData {
     final Map<String, Salle> salles = new java.util.TreeMap<>();
     /** Actifs dont le contenu est tiré. */
     private final LongOpenHashSet tires = new LongOpenHashSet();
+    /** Actifs entamés (fouillés, laissés avec des objets) -> heure (ticks) depuis laquelle personne n'y regarde ; en
+     *  mémoire seulement (après un redémarrage, le délai repart du premier passage). */
+    private final Long2LongOpenHashMap entames = new Long2LongOpenHashMap();
+
+    {
+        entames.defaultReturnValue(-1L);
+    }
     /** Index spatial des actifs (étoiles) : secteur -> positions. */
     private final Long2ObjectOpenHashMap<LongArrayList> parSecteur = new Long2ObjectOpenHashMap<>();
     private int versionVue = -1;
@@ -282,6 +290,7 @@ public final class RotationLoot extends SavedData {
         Actif a = actifs.remove(k);
         if (a == null) return null;
         tires.remove(k);
+        entames.remove(k);
         long s = secteur(k);
         LongArrayList l = parSecteur.get(s);
         if (l != null) {
@@ -765,10 +774,30 @@ public final class RotationLoot extends SavedData {
             for (ServerPlayer p : l.players()) {
                 if (p.containerMenu instanceof ChestMenu cm) vus.add(cm.getContainer());
             }
-            LongArrayList vides = new LongArrayList();
+            // 24/10 (choix du propriétaire) : un conteneur fouillé puis laissé avec des objets est recyclé au bout de
+            // restes_secondes sans personne dedans (vidé, un autre se remplit après le délai) : plus de conteneurs
+            // « morts » qui gardent leurs restes et la place d'un conteneur plein
+            long restes = ConfigLoot.restesTicks(), now = l.getGameTime();
+            LongArrayList vides = new LongArrayList(), recycles = new LongArrayList();
             for (long k : e.tires) {
                 Actif a = e.actifs.get(k);
-                if (a != null && a.contenu != null && !vus.contains(a.contenu) && a.contenu.isEmpty()) vides.add(k);
+                if (a == null || a.contenu == null) continue;
+                if (vus.contains(a.contenu)) {
+                    e.entames.remove(k);                                // fouille en cours : le délai repartira à la fermeture
+                } else if (a.contenu.isEmpty()) {
+                    vides.add(k);
+                } else if (restes > 0 && !estSalle(a.zone)) {          // une salle à carte garde tout jusqu'à sa recharge
+                    long depuis = e.entames.get(k);
+                    if (depuis < 0) e.entames.put(k, now);
+                    else if (now - depuis >= restes) recycles.add(k);
+                }
+            }
+            for (long k : recycles) {
+                Actif a = e.actifs.get(k);
+                if (a == null || a.contenu == null) continue;
+                HeralizLoot.LOG.debug("Rotation : {} en {} (zone {}) recyclé avec ses restes", a.nom, BlockPos.of(k).toShortString(), a.zone);
+                a.contenu.clearContent();
+                e.vider(k);
             }
             for (long k : vides) e.vider(k);
         }
