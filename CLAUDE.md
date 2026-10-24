@@ -2185,9 +2185,12 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   modèles, ~945 par conteneur, `t2_vaisselier` 3 290 : les alléger demande des rendus), réglages graphiques par défaut
   (`ReglagesDefaut` : mélange des biomes, particules réduites), texte des panneaux de gare à 96 blocs, zone du vent
   (`Vent`) encore aux coordonnées de l'ancienne carte.
-- **Textures des pièces de CRac façon Rust** (24/10, en attente de validation des rendus) : **écrites** par
-  `python mods/crac/outils/textures_rust.py` (`--apercu DOSSIER`, `--installer`, `--paliers`), 5 paliers, 64 points par
-  bloc, matériau éclairé par le calcul (relief, reflets, ombres des creux) ; pas encore installées.
+- **Textures des pièces de CRac façon Rust** (24/10, v3 validée par le propriétaire, installée en CRac 1.22.0-beta ; rien
+  testé en jeu) : **écrites** par `python mods/crac/outils/textures_rust.py` (`--apercu DOSSIER`, `--installer`,
+  `--paliers`), jamais à la main ; 5 paliers, 64 points par bloc, matériau éclairé par le calcul (relief, ombres portées,
+  reflets) : brindilles = branches brutes liées à la corde, bois = planches de récupération clouées, pierre = moellons
+  bombés, tôle = plaques rivetées qui se chevauchent avec rouille, blindé = plaques épaisses soudées à la peinture
+  écaillée. Le modèle 3D des murs en brindilles garde sa forme de botte (seule la texture change).
 - **Avant la soirée à 50 joueurs (24/10)** (rien testé en jeu ; tout compilé par le contrôle de branche, sur `main`) :
   TaCZ côté joueur (Tactique 2.36.2) : cubes des armes dessinés sans objet créé par sommet et sans les faces vides
   (`BedrockCubePerFaceRenduMixin`, `BedrockCubeBoxRenduMixin`, @Overwrite de `compile` ; les relevés de sommets des camos et
