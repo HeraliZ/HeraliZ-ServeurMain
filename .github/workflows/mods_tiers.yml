@@ -1,0 +1,94 @@
+# Ajout ou mise à jour d'un mod d'un autre auteur, téléchargé depuis Modrinth (jamais depuis un site inconnu) :
+# dernière version publiée (« release ») pour Forge 1.20.1, empreinte SHA-512 contrôlée, jar posé dans
+# client/mods-tiers/ (joueurs seulement) ou serveur/mods-tiers/ (joueurs et serveur), ancienne version retirée, puis
+# enregistré sur la branche où tourne le workflow (jamais `main` : on y passe ensuite après le contrôle de branche).
+# Lancé par « Run workflow » ou par un envoi sur une branche de travail qui touche ce fichier (valeurs par défaut).
+name: Mod d'un autre auteur
+
+on:
+  workflow_dispatch:
+    inputs:
+      projet:
+        description: "Identifiant du projet sur Modrinth (ex. embeddium)"
+        type: string
+        default: "embeddium"
+      dossier:
+        description: "client = joueurs seulement, serveur = joueurs et serveur"
+        type: choice
+        options: [client, serveur]
+        default: client
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/mods_tiers.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mods-tiers-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  ajouter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROJET: ${{ inputs.projet || 'embeddium' }}
+      DOSSIER: ${{ inputs.dossier || 'client' }}
+    steps:
+      - name: Jamais sur main
+        if: github.ref_name == 'main'
+        run: |
+          echo "::error::Lancer ce workflow sur une branche de travail, jamais sur main."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Téléchargement depuis Modrinth
+        run: |
+          python3 - <<'EOF'
+          import hashlib, json, os, re, sys, urllib.parse, urllib.request
+          projet = re.sub(r"[^a-z0-9_-]", "", os.environ["PROJET"].lower())
+          dossier = {"client": "client/mods-tiers", "serveur": "serveur/mods-tiers"}[os.environ["DOSSIER"]]
+          ua = {"User-Agent": "HeraliZ/serveur (github actions)"}
+          q = urllib.parse.urlencode({"game_versions": '["1.20.1"]', "loaders": '["forge"]'})
+          req = urllib.request.Request(f"https://api.modrinth.com/v2/project/{projet}/version?{q}", headers=ua)
+          versions = json.load(urllib.request.urlopen(req, timeout=60))
+          versions = [v for v in versions if v.get("version_type") == "release"]
+          if not versions:
+              sys.exit(f"Aucune version « release » de {projet} pour Forge 1.20.1.")
+          v = max(versions, key=lambda v: v["date_published"])
+          f = next((f for f in v["files"] if f.get("primary")), v["files"][0])
+          nom = os.path.basename(f["filename"])
+          if not re.fullmatch(r"[A-Za-z0-9._+-]+\.jar", nom):
+              sys.exit(f"Nom de fichier refusé : {nom!r}")
+          if not f["url"].startswith("https://cdn.modrinth.com/"):
+              sys.exit(f"Adresse de téléchargement refusée : {f['url']}")
+          data = urllib.request.urlopen(urllib.request.Request(f["url"], headers=ua), timeout=120).read()
+          if hashlib.sha512(data).hexdigest() != f["hashes"]["sha512"]:
+              sys.exit("Empreinte SHA-512 différente de celle annoncée par Modrinth : fichier refusé.")
+          prefixe = re.split(r"[-_+]\d", nom, maxsplit=1)[0].lower()
+          for ancien in os.listdir(dossier):
+              if ancien.endswith(".jar") and ancien != nom and ancien.lower().startswith(prefixe):
+                  os.remove(os.path.join(dossier, ancien))
+                  print("Retiré :", ancien)
+          open(os.path.join(dossier, nom), "wb").write(data)
+          print(f"Ajouté : {dossier}/{nom} ({v['version_number']}, {len(data)} octets, sha512 {f['hashes']['sha512'][:16]}…)")
+          with open(os.environ["GITHUB_ENV"], "a") as e:
+              e.write(f"NOM={nom}\nVERSION={v['version_number']}\nCIBLE={dossier}\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as s:
+              s.write(f"## {projet}\n\n`{dossier}/{nom}` (version {v['version_number']}), empreinte contrôlée.\n")
+          EOF
+
+      - name: Enregistrement sur la branche
+        run: |
+          git config user.name "HeraliZ"
+          git config user.email "heraliz@users.noreply.github.com"
+          git add -A "$CIBLE"
+          if git diff --cached --quiet; then echo "Déjà à jour : rien à enregistrer."; exit 0; fi
+          git commit -q -m "Mods des autres auteurs : $PROJET $VERSION ($CIBLE). Joueurs : nouveau mod au prochain lancement du launcher"
+          for i in 1 2 3 4; do
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((2 ** i)); git pull -q --rebase origin "${GITHUB_REF_NAME}"
+          done
+          exit 1
