@@ -100,6 +100,8 @@ public final class EcranBoutique extends Screen {
     private EcranBoutique(ReseauBoutique.EtatBoutique e) {
         super(Component.translatable("gui.heraliz_grades.boutique.titre"));
         etat = e;
+        // /boutique cles (bouton « Acheter » de l'écran des caisses) : ouverte sur l'onglet demandé (render le vérifie)
+        if (!e.onglet().isEmpty()) onglet = e.onglet();
     }
 
     public static void recevoir(ReseauBoutique.EtatBoutique e) {
@@ -114,7 +116,11 @@ public final class EcranBoutique extends Screen {
 
     private void recevoirEtat(ReseauBoutique.EtatBoutique e) {
         long ancien = etat.solde();
-        etat = new ReseauBoutique.EtatBoutique(false, e.solde() >= 0 ? e.solde() : ancien, e.offres(), e.message(), e.ok());
+        etat = new ReseauBoutique.EtatBoutique(false, e.solde() >= 0 ? e.solde() : ancien, e.offres(), e.message(), e.ok(), "");
+        if (!e.onglet().isEmpty() && !e.onglet().equals(onglet)) {
+            onglet = e.onglet();
+            succesBeta = false;
+        }
         attente = false;
         arme = null;
         if (!e.message().isEmpty()) {

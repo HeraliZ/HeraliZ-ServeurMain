@@ -22,8 +22,8 @@ public final class ReseauBoutique {
     private ReseauBoutique() {
     }
 
-    /** 2 (Grades 2.6.0) : groupe et quantité de chaque article (nouvel écran). */
-    private static final String VERSION = "2";
+    /** 2 (Grades 2.6.0) : groupe et quantité de chaque article (nouvel écran) ; 3 (Grades 2.8.0) : onglet à ouvrir. */
+    private static final String VERSION = "3";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "boutique"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -41,9 +41,10 @@ public final class ReseauBoutique {
 
     /**
      * État de la boutique (serveur -> joueur) : ouvrir = ouvrir l'écran ; solde = PB du compte (-1 : inconnu, site
-     * injoignable) ; message = réponse au dernier achat (vide sinon), ok = achat réussi.
+     * injoignable) ; message = réponse au dernier achat (vide sinon), ok = achat réussi ; onglet = onglet à montrer
+     * (« cles » pour /boutique cles, demandé par l'écran des caisses ; vide : celui de l'écran ou Grades).
      */
-    public record EtatBoutique(boolean ouvrir, long solde, List<Offre> offres, String message, boolean ok) {
+    public record EtatBoutique(boolean ouvrir, long solde, List<Offre> offres, String message, boolean ok, String onglet) {
     }
 
     /** Achat d'un article (joueur -> serveur). */
@@ -128,6 +129,7 @@ public final class ReseauBoutique {
         }
         b.writeUtf(m.message(), MAX_TEXTE);
         b.writeBoolean(m.ok());
+        b.writeUtf(m.onglet(), MAX_ID);
     }
 
     private static EtatBoutique lireBoutique(FriendlyByteBuf b) {
@@ -138,7 +140,7 @@ public final class ReseauBoutique {
         for (int i = 0; i < n; i++) {
             l.add(new Offre(b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readVarInt(), b.readUtf(MAX_TEXTE), b.readUtf(MAX_TEXTE), b.readVarLong(), b.readInt(), b.readItem(), b.readBoolean()));
         }
-        return new EtatBoutique(ouvrir, solde, l, b.readUtf(MAX_TEXTE), b.readBoolean());
+        return new EtatBoutique(ouvrir, solde, l, b.readUtf(MAX_TEXTE), b.readBoolean(), b.readUtf(MAX_ID));
     }
 
     private static void objets(FriendlyByteBuf b, List<ItemStack> l) {

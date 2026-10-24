@@ -32,7 +32,9 @@ final class CommandesPb {
     }
 
     static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
-        d.register(Commands.literal("boutique").executes(c -> c.getSource().getEntity() instanceof ServerPlayer p ? BoutiqueServeur.ouvrir(p) : 0));
+        d.register(Commands.literal("boutique").executes(c -> c.getSource().getEntity() instanceof ServerPlayer p ? BoutiqueServeur.ouvrir(p) : 0)
+                // /boutique cles : ouverte sur l'onglet Clés (bouton « Acheter » de l'écran des caisses, Grades 2.8.0)
+                .then(Commands.literal("cles").executes(c -> c.getSource().getEntity() instanceof ServerPlayer p ? BoutiqueServeur.ouvrir(p, "cles") : 0)));
 
         d.register(Commands.literal("trade")
                 .then(Commands.literal("accepter").then(Commands.argument("joueur", EntityArgument.player())

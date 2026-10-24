@@ -171,6 +171,14 @@ final class BoutiqueServeur {
     // ------------------------------------------------------------------ écran
     /** /boutique : demande le solde au site, puis ouvre l'écran (solde inconnu = -1 si le site ne répond pas). */
     static int ouvrir(ServerPlayer p) {
+        return ouvrir(p, "");
+    }
+
+    /**
+     * /boutique cles (Grades 2.8.0) : la même chose, l'écran ouvert sur l'onglet donné (« cles » : demandé par le bouton
+     * « Acheter » de l'écran des caisses de HeraliZ Caisses). Mêmes refus que /boutique.
+     */
+    static int ouvrir(ServerPlayer p, String onglet) {
         if (!PontBukkit.authentifie(p)) {
             p.sendSystemMessage(Component.translatableWithFallback("message.heraliz_grades.kit.connexion", "Connecte-toi d'abord avec /login."));
             return 0;
@@ -183,18 +191,22 @@ final class BoutiqueServeur {
         UUID u = p.getUUID();
         Pb.solde(p.getGameProfile().getName(), r -> {
             ServerPlayer j = serveur == null ? null : serveur.getPlayerList().getPlayer(u);
-            if (j != null) envoyer(j, true, r != null && r.code() == 200 ? r.nombre("solde") : -1, "", false);
+            if (j != null) envoyer(j, true, r != null && r.code() == 200 ? r.nombre("solde") : -1, "", false, onglet);
         });
         return 1;
     }
 
     static void envoyer(ServerPlayer p, boolean ouvrir, long solde, String message, boolean ok) {
+        envoyer(p, ouvrir, solde, message, ok, "");
+    }
+
+    static void envoyer(ServerPlayer p, boolean ouvrir, long solde, String message, boolean ok, String onglet) {
         List<ReseauBoutique.Offre> l = new ArrayList<>();
         for (Article a : ARTICLES) {
             l.add(new ReseauBoutique.Offre(a.id(), a.categorie(), a.groupe(), a.quantite(), texte(a.nom(), p), texte(a.description(), p), a.prix(), a.couleur(),
                     icone(a.icone()), a.avant()));
         }
-        ReseauBoutique.CANAL.send(PacketDistributor.PLAYER.with(() -> p), new ReseauBoutique.EtatBoutique(ouvrir, solde, l, message, ok));
+        ReseauBoutique.CANAL.send(PacketDistributor.PLAYER.with(() -> p), new ReseauBoutique.EtatBoutique(ouvrir, solde, l, message, ok, onglet));
     }
 
     // ------------------------------------------------------------------ achat
