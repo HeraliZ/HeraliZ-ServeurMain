@@ -2167,6 +2167,24 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
   `serveur/tacz_retires.txt` ; les dossiers `data/` des gunpacks ne vont plus dans le pack du launcher
   (`outils/pack_launcher.py`, le serveur les envoie par `ServerMessageSyncGunPack` de TaCZ : à vérifier en jeu que les
   armes, recettes et accessoires s'affichent).
+- **Passe d'optimisation du 24/10** (FPS sur la carte et TPS, demande du propriétaire ; rien compilé ici ni testé en jeu,
+  vérifié par le contrôle de branche) : registre et types d'entités mis en cache (zombies, interdits, raretés, finitions
+  de skins), plus de recherche d'entités ni de réflexion à chaque image (barres des boss, hitbox), boss non dessinés hors
+  du champ de vision, petits décors animés cachés avec leur tronçon, formes des décors et des cases de CRac gardées,
+  HUD, tab et kits d'interface dessinés en un seul lot, sac à dos dessiné deux fois sur les bras fins (corrigé),
+  `System.out` à chaque image retiré (Backpacked). Versions : Utils 2.25.1, Boss 2.2.4, Casino 2.5.1, Sac à dos
+  heralisz21, Armurerie 0.16.1, Réanimation 1.16.6, Interface 1.9.4, Loot 0.11.3, Décors 1.12.1, Bunker 0.12.2,
+  Tactique 2.36.1, CRac 1.21.3-beta, Clans 3.6.6, Extraction 1.5.4, Quêtes 1.10.7, Grades 2.7.1. **Mipmaps** : une
+  texture de bloc ou d'objet dont un côté n'est pas un multiple de 16 coupe les mipmaps de TOUT l'atlas (scintillement au
+  loin, carte graphique plus chargée) ; `python outils/mipmaps.py` les liste, `--corriger` retaille les nôtres et pose
+  des copies retaillées de celles des autres auteurs dans le pack imposé (jars intacts) ; à relancer après l'ajout de
+  textures de blocs. Reste, au choix du propriétaire : modèles des conteneurs de loot très lourds (231 587 faces pour 246
+  modèles, ~945 par conteneur, `t2_vaisselier` 3 290 : les alléger demande des rendus), réglages graphiques par défaut
+  (`ReglagesDefaut` : mélange des biomes, particules réduites), texte des panneaux de gare à 96 blocs, zone du vent
+  (`Vent`) encore aux coordonnées de l'ancienne carte.
+- **Textures des pièces de CRac façon Rust** (24/10, en attente de validation des rendus) : **écrites** par
+  `python mods/crac/outils/textures_rust.py` (`--apercu DOSSIER`, `--installer`, `--paliers`), 5 paliers, 64 points par
+  bloc, matériau éclairé par le calcul (relief, reflets, ombres des creux) ; pas encore installées.
 - **Bots de charge** (24/10, Utils 2.24.0, Spartan 2.7.9, Matchs 0.15.2, Clans 3.6.5, Quêtes 1.10.5, demande du propriétaire ;
   jamais essayés en jeu ni compilés ici : contrôle de branche) : `/bots` (op 4 ou console, `fr.heralisz.utils.bots`,
   serveur seulement) : de vrais `ServerPlayer` (`BotJoueur`, canal réseau factice qui jette tout, comme les bots du banc
