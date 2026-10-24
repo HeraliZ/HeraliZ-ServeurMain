@@ -98,11 +98,14 @@ public class MammothRenderer extends GeoEntityRenderer<Mammoth> {
       ps.popPose();
    }
 
+   /** Points sondés sous le corps et les pattes (créés une fois, plus à chaque image). */
+   private static final double[][] SOL = {{0, 0}, {1.5, 1.5}, {-1.5, 1.5}, {1.5, -1.5}, {-1.5, -1.5}};
+
    private static float groundGap(Mammoth e, float partial) {
       if (!e.onGround()) return 0;
       net.minecraft.world.phys.Vec3 p = e.getPosition(partial);
       float worst = 0, n = 0, sum = 0;
-      for (double[] o : new double[][] {{0, 0}, {1.5, 1.5}, {-1.5, 1.5}, {1.5, -1.5}, {-1.5, -1.5}}) {
+      for (double[] o : SOL) {
          net.minecraft.core.BlockPos b = net.minecraft.core.BlockPos.containing(p.x + o[0], p.y + 0.4, p.z + o[1]);
          for (int i = 0; i < 4; i++) {
             net.minecraft.core.BlockPos q = b.below(i);
@@ -127,7 +130,10 @@ public class MammothRenderer extends GeoEntityRenderer<Mammoth> {
 
    @Override
    public boolean shouldRender(Mammoth e, Frustum f, double x, double y, double z) {
-      return !e.shattered() && e.distanceToSqr(x, y, z) < 180 * 180;
+      if (e.shattered() || e.distanceToSqr(x, y, z) >= 180 * 180) return false;
+      // hors champ : rien à dessiner (modèle GeckoLib redessiné deux à trois fois par image) ; boîte élargie pour la tête, les
+      // défenses et les pièces des phases ; à la mort (il s'enfonce, son crâne reste), toujours dessiné comme avant
+      return e.isDeadOrDying() || f.isVisible(e.getBoundingBoxForCulling().inflate(7, 5, 7));
    }
 
    /** Lueur : le cœur bat (deux coups rapprochés), plus fort à chaque phase ; presque éteinte quand il dort dans sa glace. */

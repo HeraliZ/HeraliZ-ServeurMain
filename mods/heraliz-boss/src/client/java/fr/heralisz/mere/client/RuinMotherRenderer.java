@@ -89,7 +89,10 @@ public class RuinMotherRenderer extends GeoEntityRenderer<RuinMother> {
    @Override
    public boolean shouldRender(RuinMother e, Frustum f, double x, double y, double z) {
       if (e.dormant()) return false;                                             // elle dort dans le cocon
-      return e.distanceToSqr(x, y, z) < 160 * 160;
+      if (e.distanceToSqr(x, y, z) >= 160 * 160) return false;
+      // hors champ : rien à dessiner ; boîte large (pattes, accrochée à un fût, cocon) ; à la mort (enroulée autour du
+      // pilier), toujours dessinée comme avant
+      return e.isDeadOrDying() || f.isVisible(e.getBoundingBoxForCulling().inflate(8, 8, 8));
    }
 
    @Override

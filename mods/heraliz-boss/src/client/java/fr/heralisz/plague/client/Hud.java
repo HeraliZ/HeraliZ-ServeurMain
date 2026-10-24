@@ -2,6 +2,7 @@ package fr.heralisz.plague.client;
 
 import fr.heralisz.plague.entity.PlagueBearer;
 import fr.heraliz.boss.client.HudBoss;
+import fr.heraliz.boss.client.ParTick;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -19,7 +20,14 @@ public final class Hud {
 
    private Hud() {}
 
+   /** Boss le plus proche, cherché au plus une fois par tick (barre, musique, ambiance, effets). */
+   private static final ParTick<PlagueBearer> BOSS = new ParTick<>(Hud::chercher);
+
    static PlagueBearer findBoss(Minecraft mc) {
+      return BOSS.get(mc);
+   }
+
+   private static PlagueBearer chercher(Minecraft mc) {
       if (mc.level == null || mc.player == null) return null;
       List<PlagueBearer> list = mc.level.getEntitiesOfClass(PlagueBearer.class, mc.player.getBoundingBox().inflate(90), e -> !e.dormant() && !(e.isDeadOrDying() && e.deathTime > PlagueBearer.DEATH_TICKS));
       PlagueBearer best = null;
@@ -38,6 +46,7 @@ public final class Hud {
       Minecraft mc = Minecraft.getInstance();
       PlagueBearer boss = findBoss(mc);
       boolean visible = boss != null && !Cinematic.active() && !(boss.isDeadOrDying() && boss.deathTime > 120);
+      if (BARRE.auRepos(boss, visible)) return;
       int phase = boss != null ? boss.phase() : 1;
       BARRE.dessiner(g, partial, w, boss, visible, phase, Component.translatable("hud.heralisz_plague.name").getString(),
          Component.translatable("hud.heralisz_plague.epithet").getString(), boss != null ? boss.accentColor() : 0xD8A850,

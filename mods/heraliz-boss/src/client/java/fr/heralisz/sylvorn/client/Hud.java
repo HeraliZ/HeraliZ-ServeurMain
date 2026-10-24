@@ -2,6 +2,7 @@ package fr.heralisz.sylvorn.client;
 
 import fr.heralisz.sylvorn.entity.Sylvorn;
 import fr.heraliz.boss.client.HudBoss;
+import fr.heraliz.boss.client.ParTick;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -19,7 +20,14 @@ public final class Hud {
 
    private Hud() {}
 
+   /** Boss le plus proche, cherché au plus une fois par tick (barre, musique, ambiance, effets). */
+   private static final ParTick<Sylvorn> BOSS = new ParTick<>(Hud::chercher);
+
    static Sylvorn findBoss(Minecraft mc) {
+      return BOSS.get(mc);
+   }
+
+   private static Sylvorn chercher(Minecraft mc) {
       if (mc.level == null || mc.player == null) return null;
       List<Sylvorn> list = mc.level.getEntitiesOfClass(Sylvorn.class, mc.player.getBoundingBox().inflate(90), e -> !e.dormant() && !(e.isDeadOrDying() && e.deathTime > Sylvorn.DEATH_TICKS));
       Sylvorn best = null;
@@ -38,6 +46,7 @@ public final class Hud {
       Minecraft mc = Minecraft.getInstance();
       Sylvorn boss = findBoss(mc);
       boolean visible = boss != null && !Cinematic.active() && !(boss.isDeadOrDying() && boss.deathTime > 60);
+      if (BARRE.auRepos(boss, visible)) return;
       int phase = boss != null ? boss.phase() : 1;
       BARRE.dessiner(g, partial, w, boss, visible, phase, Component.translatable("hud.heralisz_sylvorn.name").getString(),
          Component.translatable("hud.heralisz_sylvorn.epithet").getString(), boss != null ? boss.accentColor() : 0xD8A850,

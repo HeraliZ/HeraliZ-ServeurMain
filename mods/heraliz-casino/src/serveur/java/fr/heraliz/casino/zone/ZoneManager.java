@@ -110,6 +110,8 @@ public final class ZoneManager {
         if (event.phase != TickEvent.Phase.END) return;
         MinecraftServer server = event.getServer();
         EJECTIONS.removeIf(e -> !e.tick());
+        // seuil de la zone VIP posee dans le casino : calcule une fois par tick (avant : pour chaque joueur, a chaque tick)
+        AABB seuil = vipDansCasino(server) ? seuilVip(server) : null;
         for (CasinoZone.Kind kind : CasinoZone.Kind.values()) {
             CasinoZone zone = CasinoZone.get(server, kind);
             if (!zone.exists()) continue;
@@ -117,7 +119,7 @@ public final class ZoneManager {
             if (level == null) continue;
             long now = level.getGameTime();
             List<ServerPlayer> players = new ArrayList<>(level.players());
-            for (ServerPlayer p : players) tickPlayer(zone, level, p, now);
+            for (ServerPlayer p : players) tickPlayer(zone, level, p, now, seuil);
         }
         long now = server.overworld().getGameTime();
         if (now % 200 == 0) SAFE_UNTIL.values().removeIf(until -> until < now);
@@ -131,14 +133,14 @@ public final class ZoneManager {
         return VISITS.computeIfAbsent(kind, k -> new HashMap<>()).computeIfAbsent(p.getUUID(), k -> new Visit());
     }
 
-    private static void tickPlayer(CasinoZone zone, ServerLevel level, ServerPlayer p, long now) {
+    private static void tickPlayer(CasinoZone zone, ServerLevel level, ServerPlayer p, long now, @Nullable AABB seuilVip) {
         if (!p.isAlive()) return;
         Visit v = visit(p, zone.kind());
         boolean inside = zone.contains(p.getX(), p.getY(), p.getZ());
         if (ejecting(p.getUUID())) return;
         // zone VIP dans le casino : dans la zone VIP et sur son seuil, seuls les videurs VIP s'occupent du joueur (jamais
         // d'entree payante a la porte VIP), et pour le casino il n'est pas sorti, meme si la zone VIP depasse de la salle
-        if (!zone.vip() && vipDansCasino(level.getServer()) && seuilVip(level.getServer()).contains(p.position())) return;
+        if (!zone.vip() && seuilVip != null && seuilVip.contains(p.position())) return;
         if (exempt(p)) {
             v.admitted = inside;
             if (!inside) v.lastOutside = p.position();

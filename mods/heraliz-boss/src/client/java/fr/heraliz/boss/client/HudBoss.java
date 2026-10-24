@@ -41,6 +41,18 @@ public final class HudBoss {
       private long dernierCoup = -100, flashPhase = -100, derniereImage;
 
       /**
+       * Vrai si la barre n'a rien à dessiner (aucun boss suivi, fondu de sortie fini) : l'appelant n'a alors ni textes à
+       * traduire ni barre à appeler (cinq barres testées à chaque image, partout sur la carte). La prochaine apparition
+       * repart d'une image sans saut ({@code derniereImage} remis à zéro, comme au premier affichage).
+       */
+      public boolean auRepos(@Nullable LivingEntity boss, boolean visible) {
+         if (boss != null || visible || apparition > 0) return false;
+         suivi = -1;
+         derniereImage = 0;
+         return true;
+      }
+
+      /**
        * Dessine la barre, ou la fait disparaître en fondu.
        *
        * @param boss      boss suivi (null : aucun)

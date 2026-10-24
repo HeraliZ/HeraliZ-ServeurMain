@@ -116,10 +116,16 @@ public final class VfxManager {
       }
    }
 
+   /** Boss qui s'éveillent dans leur glace (yeux à travers la prison), relevés une fois par tick. */
+   private static java.util.List<fr.heralisz.mammoth.entity.Mammoth> waking = java.util.List.of();
+   private static long wakingTick = Long.MIN_VALUE;
+
    @SubscribeEvent
    public static void onUnload(LevelEvent.Unload e) {
       ACTIVE.clear();
       DEBRIS.clear();
+      waking = java.util.List.of();
+      wakingTick = Long.MIN_VALUE;
    }
 
    private static long lastNanos;
@@ -129,8 +135,13 @@ public final class VfxManager {
       if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
       Minecraft mc = Minecraft.getInstance();
       if (mc.level == null) return;
-      java.util.List<fr.heralisz.mammoth.entity.Mammoth> waking = mc.player == null ? java.util.List.of()
-         : mc.level.getEntitiesOfClass(fr.heralisz.mammoth.entity.Mammoth.class, mc.player.getBoundingBox().inflate(120), fr.heralisz.mammoth.entity.Mammoth::eyesInIce);
+      // recherche des boss qui s'éveillent : une fois par tick (avant : à chaque image, dans une boîte de 240 blocs)
+      long gt = mc.level.getGameTime();
+      if (gt != wakingTick) {
+         wakingTick = gt;
+         waking = mc.player == null ? java.util.List.of()
+            : mc.level.getEntitiesOfClass(fr.heralisz.mammoth.entity.Mammoth.class, mc.player.getBoundingBox().inflate(120), fr.heralisz.mammoth.entity.Mammoth::eyesInIce);
+      }
       if (ACTIVE.isEmpty() && DEBRIS.isEmpty() && waking.isEmpty()) return;
       long now = System.nanoTime();
       float dt = lastNanos == 0 ? 0.016F : Mth.clamp((now - lastNanos) / 1e9F, 0.001F, 0.05F);
@@ -156,7 +167,7 @@ public final class VfxManager {
          if (fx.p.type() == Vfx.Type.BOULDER) boulder(mc, fx, age, k, ps, buf);
          else draw(mc, fx, age, k, m, buf, cam);
       }
-      for (fr.heralisz.mammoth.entity.Mammoth w : waking) wakingEyes(w, partial, m, buf, cam);
+      for (fr.heralisz.mammoth.entity.Mammoth w : waking) if (!w.isRemoved()) wakingEyes(w, partial, m, buf, cam);
       buf.endBatch();
       renderDebris(mc, ps, buf, dt);
       buf.endBatch();

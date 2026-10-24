@@ -128,17 +128,21 @@ public class SylvornRenderer extends GeoEntityRenderer<Sylvorn> {
 
    @Override
    public boolean shouldRender(Sylvorn e, Frustum f, double x, double y, double z) {
-      return e.distanceToSqr(x, y, z) < 160 * 160;
+      if (e.distanceToSqr(x, y, z) >= 160 * 160) return false;
+      // hors champ : rien à dessiner ; boîte large (bras, tronc tenu en main) ; à la mort (branches tirées de la voûte),
+      // toujours dessiné comme avant
+      return e.isDeadOrDying() || f.isVisible(e.getBoundingBoxForCulling().inflate(9, 6, 9));
    }
 
    @Override
    public void renderCubesOfBone(PoseStack ps, GeoBone bone, VertexConsumer buf, int light, int overlay, float r, float g, float b, float a) {
-      if (Branches.SYLVORN_BONES.contains(bone.getName()) || CAPTURE.contains(bone.getName())) {
+      // repères des os : lus seulement par les branches de la mort ; relevés une fois par image (pas aux passes de lueur)
+      if (captureOs && (Branches.SYLVORN_BONES.contains(bone.getName()) || CAPTURE.contains(bone.getName()))) {
          pivots.put(bone.getName(), new Vector3f(bone.getPivotX() / 16F, bone.getPivotY() / 16F, bone.getPivotZ() / 16F));
          bonePose.put(bone.getName(), new Matrix4f(ps.last().pose()));
          boneNormal.put(bone.getName(), new Matrix3f(ps.last().normal()));
       }
-      if (bone.getName().equals("hand_r")) {
+      if (!passeLueur && bone.getName().equals("hand_r")) {
          handPose = new Matrix4f(ps.last().pose());
          handNormal = new Matrix3f(ps.last().normal());
          hx = bone.getPivotX() / 16F;
@@ -262,14 +266,41 @@ public class SylvornRenderer extends GeoEntityRenderer<Sylvorn> {
    @Override
    public void actuallyRender(PoseStack ps, Sylvorn e, BakedGeoModel model, RenderType rt, MultiBufferSource buf, VertexConsumer vc, boolean reRender,
                               float partial, int light, int overlay, float r, float g, float b, float a) {
-      handPose = null;
-      if (!reRender) {
-         bonePose.clear();
-         boneNormal.clear();
-         pivots.clear();
+      if (reRender) {
+         // redessin demandé par une couche : rien à relever (la main et les os viennent de la passe principale)
+         boolean avant = passeLueur;
+         passeLueur = true;
+         try {
+            super.actuallyRender(ps, e, model, rt, buf, vc, reRender, partial, light, overlay, r, g, b, a);
+         } finally {
+            passeLueur = avant;
+         }
+         return;
       }
-      super.actuallyRender(ps, e, model, rt, buf, vc, reRender, partial, light, overlay, r, g, b, a);
-      if (reRender) return;
+      handPose = null;
+      bonePose.clear();
+      boneNormal.clear();
+      pivots.clear();
+      captureOs = e.isDeadOrDying();
+      try {
+         super.actuallyRender(ps, e, model, rt, buf, vc, reRender, partial, light, overlay, r, g, b, a);
+      } finally {
+         captureOs = false;
+      }
+      passeLueur = true;
+      try {
+         passesLueur(ps, e, model, buf, partial, light, overlay);
+      } finally {
+         passeLueur = false;
+      }
+   }
+
+   /** Vrai pendant la passe principale d'un boss qui meurt : on relève les repères des os pour les branches. */
+   private boolean captureOs;
+   /** Vrai pendant les passes de lueur, de dessèchement et les redessins : la main n'est pas relevée de nouveau. */
+   private boolean passeLueur;
+
+   private void passesLueur(PoseStack ps, Sylvorn e, BakedGeoModel model, MultiBufferSource buf, float partial, int light, int overlay) {
       Matrix4f hp = handPose;
       Matrix3f hn = handNormal;
       // modèle en cubes (remake) : la couche lumineuse repasse sur les mêmes cubes (orbites, cœur, sève, yeux en phase 3)

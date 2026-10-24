@@ -160,7 +160,9 @@ public class PlagueBearerRenderer extends GeoEntityRenderer<PlagueBearer> {
 
    @Override
    public boolean shouldRender(PlagueBearer e, Frustum f, double x, double y, double z) {
-      return e.distanceToSqr(x, y, z) < 160 * 160;
+      if (e.distanceToSqr(x, y, z) >= 160 * 160) return false;
+      // hors champ : rien à dessiner (modèle redessiné pour les lueurs et la moisissure) ; à la mort, toujours dessiné
+      return e.isDeadOrDying() || f.isVisible(e.getBoundingBoxForCulling().inflate(6, 4, 6));
    }
 
    @Override

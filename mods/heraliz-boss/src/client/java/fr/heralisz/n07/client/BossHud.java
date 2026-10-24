@@ -2,6 +2,7 @@ package fr.heralisz.n07.client;
 
 import fr.heralisz.n07.api.BossInfo;
 import fr.heraliz.boss.client.HudBoss;
+import fr.heraliz.boss.client.ParTick;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,7 +24,14 @@ public final class BossHud {
 
    private BossHud() {}
 
+   /** Boss le plus proche, cherché au plus une fois par tick (la barre est dessinée à chaque image). */
+   private static final ParTick<LivingEntity> BOSS = new ParTick<>(BossHud::chercher);
+
    private static LivingEntity findBoss(Minecraft mc) {
+      return BOSS.get(mc);
+   }
+
+   private static LivingEntity chercher(Minecraft mc) {
       if (mc.level == null || mc.player == null) return null;
       List<LivingEntity> list = mc.level.getEntitiesOfClass(LivingEntity.class, mc.player.getBoundingBox().inflate(72), e -> e instanceof BossInfo bi && !bi.dormant());
       LivingEntity best = null;
@@ -44,6 +52,7 @@ public final class BossHud {
       LivingEntity boss = findBoss(mc);
       BossInfo info = boss instanceof BossInfo bi ? bi : null;
       boolean visible = boss != null && !Cinematic.active() && !ScenePlayer.active() && !(boss.isDeadOrDying() && boss.deathTime > 70);
+      if (BARRE.auRepos(boss, visible)) return;
       int phase = info != null ? info.phase() : 1;
       if (info != null) lastName = tr(info.hudName());
       BARRE.dessiner(g, partial, w, boss, visible, phase, lastName, Component.translatable("hud.heralisz_n07.epithet").getString(),

@@ -530,10 +530,7 @@ public class MammothServeur extends Mammoth {
 
    private BlockPos findPrison(ServerLevel level) {
       BlockPos c = this.blockPosition();
-      for (BlockPos p : BlockPos.betweenClosed(c.offset(-16, -3, -16), c.offset(16, 4, 16))) {
-         if (level.getBlockState(p).is(ModBlocks.ICE_PRISON.get())) return p.immutable();
-      }
-      return null;
+      return fr.heralisz.mammoth.dungeon.BlocsProches.premier(level, c.offset(-16, -3, -16), c.offset(16, 4, 16), ModBlocks.ICE_PRISON.get());
    }
 
    private void setPrisonStage(ServerLevel level, int stage) {
@@ -1557,18 +1554,8 @@ public class MammothServeur extends Mammoth {
 
    /** La Gueule des Ancêtres la plus proche, pendue au-dessus de lui (null : aucune, l'âme monte alors vers la voûte). */
    private BlockPos findMaw(ServerLevel level) {
-      BlockPos c = this.blockPosition(), best = null;
-      double bd = Double.MAX_VALUE;
-      for (BlockPos p : BlockPos.betweenClosed(c.offset(-40, 2, -40), c.offset(40, 34, 40))) {
-         if (level.getBlockState(p).is(ModBlocks.SOUL_MAW.get())) {
-            double d = p.distSqr(c);
-            if (d < bd) {
-               bd = d;
-               best = p.immutable();
-            }
-         }
-      }
-      return best;
+      BlockPos c = this.blockPosition();
+      return fr.heralisz.mammoth.dungeon.BlocsProches.plusProche(level, c.offset(-40, 2, -40), c.offset(40, 34, 40), ModBlocks.SOUL_MAW.get(), p -> p.distSqr(c));
    }
 
    /** Le fond de la gorge de la Gueule (modèle : 4,1 blocs sous l'accroche, 3,5 en arrière de sa face). */

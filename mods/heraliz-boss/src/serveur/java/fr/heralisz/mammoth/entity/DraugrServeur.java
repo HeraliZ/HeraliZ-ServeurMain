@@ -338,16 +338,9 @@ public class DraugrServeur extends Draugr {
       socket = null;
       // le piédestal, quelle que soit l'orientation de la salle : le plus proche de lui (il est au centre de la salle)
       BlockPos c = m.blockPosition();
-      double best = Double.MAX_VALUE;
-      for (BlockPos p : BlockPos.betweenClosed(c.offset(-48, -4, -48), c.offset(48, 8, 48))) {
-         if (level.getBlockState(p).is(fr.heralisz.mammoth.dungeon.ModBlocks.HEART_SOCKET.get())) {
-            double d = p.distToCenterSqr(this.position());
-            if (d < best) {
-               best = d;
-               socket = p.immutable();
-            }
-         }
-      }
+      net.minecraft.world.phys.Vec3 ici = this.position();
+      socket = fr.heralisz.mammoth.dungeon.BlocsProches.plusProche(level, c.offset(-48, -4, -48), c.offset(48, 8, 48),
+         fr.heralisz.mammoth.dungeon.ModBlocks.HEART_SOCKET.get(), p -> p.distToCenterSqr(ici));
       if (socket == null) socket = c.offset(0, 3, -8);
       face(Vec3.atCenterOf(socket));
       setState(S_RUN);

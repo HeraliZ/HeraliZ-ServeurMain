@@ -2,6 +2,7 @@ package fr.heralisz.mammoth.client;
 
 import fr.heralisz.mammoth.entity.Mammoth;
 import fr.heraliz.boss.client.HudBoss;
+import fr.heraliz.boss.client.ParTick;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -19,7 +20,14 @@ public final class Hud {
 
    private Hud() {}
 
+   /** Boss le plus proche, cherché au plus une fois par tick (barre, musique, ambiance, effets). */
+   private static final ParTick<Mammoth> BOSS = new ParTick<>(Hud::chercher);
+
    static Mammoth findBoss(Minecraft mc) {
+      return BOSS.get(mc);
+   }
+
+   private static Mammoth chercher(Minecraft mc) {
       if (mc.level == null || mc.player == null) return null;
       List<Mammoth> list = mc.level.getEntitiesOfClass(Mammoth.class, mc.player.getBoundingBox().inflate(80), e -> !e.dormant() && !(e.isDeadOrDying() && e.deathTime > Mammoth.DEATH_TICKS));
       Mammoth best = null;
@@ -38,6 +46,7 @@ public final class Hud {
       Minecraft mc = Minecraft.getInstance();
       Mammoth boss = findBoss(mc);
       boolean visible = boss != null && !Cinematic.active() && !(boss.isDeadOrDying() && boss.deathTime > 60);
+      if (BARRE.auRepos(boss, visible)) return;
       int phase = boss != null ? boss.phase() : 1;
       BARRE.dessiner(g, partial, w, boss, visible, phase, Component.translatable("hud.heralisz_mammoth.name").getString(),
          Component.translatable("hud.heralisz_mammoth.epithet").getString(), boss != null ? boss.accentColor() : 0x7AC8FF,
