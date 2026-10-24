@@ -26,6 +26,7 @@ public class RegistreMarchand extends Item {
     @Override
     public void appendHoverText(ItemStack s, @Nullable Level level, List<Component> lignes, TooltipFlag flag) {
         lignes.add(Component.translatable("item.heraliz_quetes.registre.aide1"));
+        lignes.add(Component.translatable("item.heraliz_quetes.registre.aide3"));
         lignes.add(Component.translatable("item.heraliz_quetes.registre.aide2"));
     }
 }

@@ -38,7 +38,11 @@ public class PnjServeur extends Pnj {
         super.tick();
         if (++verif % 200 != 0) return;
         Defs.Pnj def = Catalogue.pnj(pnjId());
-        if (def == null) return;
+        if (def == null) {
+            // marchand créé en jeu puis supprimé (/marchand supprimer) : ses PNJ restés dans un coin non chargé partent ici
+            if (MarchandsCrees.supprime(pnjId())) discard();
+            return;
+        }
         if (!def.nom.vide() && !def.nom.toString().equals(entityData.get(NOM))) definirNom(def.nom);
         // apparence du fichier suivie (après /quete recharger), sauf si le staff a donné la sienne au PNJ
         if (!apparencePerso() && def.apparence != null && !def.apparence.equals(apparence())) definirApparence(def.apparence, false);

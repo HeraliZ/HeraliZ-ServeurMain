@@ -49,14 +49,42 @@ final class Marchands {
         OUVERTS.clear();
     }
 
+    private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
+
+    /**
+     * Ce qui empêche ce joueur de commercer maintenant (achat, vente, échange), ou null (Quêtes 1.11.0, mêmes règles que
+     * /boutique et /trade de HeraliZ Grades) : en match, en combat, à terre, pendant le tutoriel des bases, et sur la carte
+     * (overworld) en survie : les marchands ne servent qu'au spawn. Créatif (staff qui essaie) : jamais bloqué.
+     */
+    static Texte empechement(ServerPlayer p) {
+        if (p.isCreative()) return null;
+        if (p.getPersistentData().getBoolean(DRAPEAU_MATCH) || p.level().dimension().location().getNamespace().equals("heralisz_matchs")) {
+            return Texte.cle("heraliz_quetes.marchand.regle.match");
+        }
+        if (p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis()) return Texte.cle("heraliz_quetes.marchand.regle.combat");
+        if (Ponts.aTerre(p)) return Texte.cle("heraliz_quetes.marchand.regle.a_terre");
+        if (p.level().dimension().location().toString().equals("crac:bases")) return Texte.cle("heraliz_quetes.marchand.regle.tutoriel");
+        if (p.level().dimension() == net.minecraft.world.level.Level.OVERWORLD) return Texte.cle("heraliz_quetes.marchand.regle.carte");
+        return null;
+    }
+
     /** Ouvre (ouvrir = vrai) ou met à jour l'écran du marchand. */
     static void envoyer(ServerPlayer p, Pnj ent, Defs.Pnj def, boolean ouvrir) {
         Defs.Marchand m = def.marchand;
         if (m == null) return;
+        if (ouvrir) {
+            Texte refus = empechement(p);
+            if (refus != null) {
+                Moteur.notif(p, refus, 0xFF6B6B);
+                return;
+            }
+        }
         OUVERTS.put(p.getUUID(), ent.getId());
         List<Reseau.Article> articles = new ArrayList<>();
         int[] prix = new int[Reseau.CASES], rar = new int[Reseau.CASES];
-        if (m.rachat) {
+        if (m.troc) {
+            // il ne fait que des échanges : ni articles ni prix de rachat
+        } else if (m.rachat) {
             java.util.Set<String> vendus = SaisonQuetes.vendus();
             for (int i = 0; i < Reseau.CASES; i++) {
                 ItemStack s = p.getInventory().items.get(i);
@@ -71,11 +99,11 @@ final class Marchands {
             }
         }
         Reseau.envoyer(p, new Reseau.Boutique(ent.getId(), ouvrir, def.nom.vide() ? ent.nom() : def.nom, def.role,
-                Ponts.solde(p.getUUID()), m.rachat, articles, prix, rar));
+                Ponts.solde(p.getUUID()), m.rachat && !m.troc, articles, prix, rar, m.troc, Echanges.vue(p, m)));
     }
 
     /** Le marchand que le joueur a ouvert, s'il est toujours là, à portée, et marchand ; sinon null. */
-    private static Defs.Pnj verifier(ServerPlayer p, int entite) {
+    static Defs.Pnj verifier(ServerPlayer p, int entite) {
         Integer ouvert = OUVERTS.get(p.getUUID());
         if (ouvert == null || ouvert != entite || !p.isAlive()) return null;
         Entity e = p.level().getEntity(entite);
@@ -86,7 +114,12 @@ final class Marchands {
 
     static void achat(ServerPlayer p, Reseau.Achat a) {
         Defs.Pnj def = verifier(p, a.entite());
-        if (def == null || def.marchand.rachat || a.index() < 0 || a.index() >= def.marchand.articles.size()) return;
+        if (def == null || def.marchand.rachat || def.marchand.troc || a.index() < 0 || a.index() >= def.marchand.articles.size()) return;
+        Texte refus = empechement(p);
+        if (refus != null) {
+            Moteur.notif(p, refus, 0xFF6B6B);
+            return;
+        }
         Defs.ArticleDef art = def.marchand.articles.get(a.index());
         int q = Math.max(1, Math.min(LOT_MAX, a.quantite()));
         ItemStack modele = objet(art, 1);
@@ -109,7 +142,12 @@ final class Marchands {
 
     static void vente(ServerPlayer p, Reseau.Vente v) {
         Defs.Pnj def = verifier(p, v.entite());
-        if (def == null || !def.marchand.rachat) return;
+        if (def == null || !def.marchand.rachat || def.marchand.troc) return;
+        Texte refus = empechement(p);
+        if (refus != null) {
+            Moteur.notif(p, refus, 0xFF6B6B);
+            return;
+        }
         long total = 0, horsBoutique = 0;
         int nombre = 0;
         java.util.Set<String> vendus = SaisonQuetes.vendus();
@@ -137,14 +175,15 @@ final class Marchands {
         envoyerA(p, v.entite(), def);
     }
 
-    private static void envoyerA(ServerPlayer p, int entite, Defs.Pnj def) {
+    static void envoyerA(ServerPlayer p, int entite, Defs.Pnj def) {
         if (p.level().getEntity(entite) instanceof Pnj ent) envoyer(p, ent, def, false);
     }
 
     /**
      * Prix de rachat à l'unité (0 : il ne le prend pas), pour un objet qu'aucun marchand ne vend : un objet vendu par un
      * marchand (fichiers ou changements en jeu, {@code vendus}) n'est JAMAIS racheté (23/10 : brindilles achetées 2 hérals
-     * au Bâtisseur, revendues 8 à Mila, sans limite).
+     * au Bâtisseur, revendues 8 à Mila, sans limite). Depuis la 1.11.0, {@code vendus} compte aussi les objets reçus par
+     * un échange (troc) : échanger puis revendre ne fait pas d'hérals non plus.
      */
     static long prixRachat(Defs.Marchand m, ItemStack s, java.util.Set<String> vendus) {
         if (SaisonQuetes.vendu(vendus, s)) return 0;
@@ -153,10 +192,17 @@ final class Marchands {
 
     /** Prix de la règle seule, sans regarder les ventes. La première règle dont le tag correspond fixe le prix. */
     static long prixRachat(Defs.Marchand m, ItemStack s) {
-        if (s.isEmpty() || s.getItem() instanceof ObjetQuete) return 0;
+        // objets à vie, prêtés par un match, à camo à vie, de quête : jamais rachetés (1.11.0)
+        if (s.isEmpty() || s.getItem() instanceof ObjetQuete || Echanges.interdit(s)) return 0;
         for (Defs.Regle r : m.regles) {
-            ResourceLocation rl = ResourceLocation.tryParse(r.tag().startsWith("#") ? r.tag().substring(1) : r.tag());
-            if (rl == null || !s.is(TagKey.create(Registries.ITEM, rl))) continue;
+            if (r.tag().startsWith("=")) {
+                // règle d'un seul objet (ajoutée en jeu)
+                ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
+                if (id == null || !r.tag().substring(1).equals(id.toString())) continue;
+            } else {
+                ResourceLocation rl = ResourceLocation.tryParse(r.tag().startsWith("#") ? r.tag().substring(1) : r.tag());
+                if (rl == null || !s.is(TagKey.create(Registries.ITEM, rl))) continue;
+            }
             int rang = Ponts.rarete(s);
             String nom = rang < 0 ? "commun" : rang == 5 ? "mythique" : Ponts.RARETES.get(rang);
             Long v = r.prix().get(nom);

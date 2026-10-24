@@ -143,21 +143,41 @@ final class Defs {
     record ArticleDef(String objet, String nbt, long prix) {
     }
 
-    /** Ce qu'un racheteur prend : les objets du tag, payés selon leur rareté (« commun » ... « mythique »). */
+    /**
+     * Ce qu'un racheteur prend : les objets du tag, payés selon leur rareté (« commun » ... « mythique »). Un tag qui
+     * commence par « = » vise UN objet ({@code "=minecraft:diamond"} ; clé « objet » du fichier, règle ajoutée en jeu).
+     */
     record Regle(String tag, Map<String, Long> prix) {
+    }
+
+    /** Un échange (troc, Quêtes 1.11.0) : {@code nDonne} objets donnés par le joueur contre {@code nRecu} objets reçus. */
+    record EchangeDef(String donne, String nbtDonne, int nDonne, String recu, String nbtRecu, int nRecu) {
     }
 
     static final class Marchand {
         /** « achat » : le joueur achète ses articles ; « rachat » : il rachète au joueur ce qui suit ses règles. */
         boolean rachat;
+        /** « troc » : il ne fait que des échanges (ni articles ni rachat). */
+        boolean troc;
         final List<ArticleDef> articles = new ArrayList<>();
         final List<Regle> regles = new ArrayList<>();
+        /** Ses échanges (tout marchand peut en avoir, en plus de ses ventes ou de son rachat). */
+        final List<EchangeDef> echanges = new ArrayList<>();
         Texte bouton = Texte.VIDE;
+    }
+
+    /** Quantité d'un côté d'un échange : 1 à {@code ECHANGE_MAX} (9 piles de 64). */
+    static final int ECHANGE_MAX = 576;
+
+    static int borne(long n) {
+        return (int) Math.max(1, Math.min(ECHANGE_MAX, n));
     }
 
     static Marchand marchand(JsonObject o) {
         Marchand m = new Marchand();
-        m.rachat = chaine(o, "type", "achat").equalsIgnoreCase("rachat");
+        String type = chaine(o, "type", "achat");
+        m.rachat = type.equalsIgnoreCase("rachat");
+        m.troc = type.equalsIgnoreCase("troc");
         m.bouton = Texte.json(o.get("bouton"));
         if (o.has("articles") && o.get("articles").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("articles")) {
@@ -174,7 +194,18 @@ final class Defs {
                 if (r.has("prix") && r.get("prix").isJsonObject()) {
                     for (Map.Entry<String, JsonElement> p : r.getAsJsonObject("prix").entrySet()) prix.put(p.getKey().toLowerCase(Locale.ROOT), nombre(p.getValue()));
                 }
-                m.regles.add(new Regle(chaine(r, "tag", ""), prix));
+                String objet = chaine(r, "objet", "");
+                m.regles.add(new Regle(objet.isEmpty() ? chaine(r, "tag", "") : "=" + objet, prix));
+            }
+        }
+        if (o.has("echanges") && o.get("echanges").isJsonArray()) {
+            for (JsonElement e : o.getAsJsonArray("echanges")) {
+                if (!e.isJsonObject()) continue;
+                JsonObject x = e.getAsJsonObject();
+                if (!x.has("donne") || !x.get("donne").isJsonObject() || !x.has("recoit") || !x.get("recoit").isJsonObject()) continue;
+                JsonObject d = x.getAsJsonObject("donne"), r = x.getAsJsonObject("recoit");
+                m.echanges.add(new EchangeDef(chaine(d, "objet", ""), chaine(d, "nbt", ""), borne(nombre(d.get("nombre"))),
+                        chaine(r, "objet", ""), chaine(r, "nbt", ""), borne(nombre(r.get("nombre")))));
             }
         }
         return m;

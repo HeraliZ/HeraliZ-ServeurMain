@@ -119,7 +119,7 @@ final class Commandes {
     }
 
     // ------------------------------------------------------------------ PNJ
-    private static List<Pnj> trouver(String id) {
+    static List<Pnj> trouver(String id) {
         List<Pnj> l = new ArrayList<>();
         for (ServerLevel lvl : Moteur.serveur.getAllLevels()) {
             for (Entity e : lvl.getAllEntities()) if (e instanceof Pnj p && p.pnjId().equals(id)) l.add(p);
@@ -127,12 +127,11 @@ final class Commandes {
         return l;
     }
 
-    private static int creer(CommandContext<CommandSourceStack> c, String id) throws CommandSyntaxException {
-        ServerPlayer moi = c.getSource().getPlayerOrException();
-        id = id.toLowerCase(Locale.ROOT);
+    /** Pose le PNJ {@code id} là où se tient ce joueur, tourné comme lui (null si impossible). */
+    static Pnj poser(ServerPlayer moi, String id) {
         Defs.Pnj def = Catalogue.pnj(id);
         Pnj pnj = HeralizQuetes.PNJ.get().create(moi.serverLevel());
-        if (pnj == null) return 0;
+        if (pnj == null) return null;
         pnj.moveTo(moi.getX(), moi.getY(), moi.getZ(), moi.getYRot(), 0);
         pnj.setYHeadRot(moi.getYRot());
         pnj.setYBodyRot(moi.getYRot());
@@ -144,6 +143,14 @@ final class Commandes {
             if (def.apparence != null) pnj.definirApparence(def.apparence, false);
         }
         moi.serverLevel().addFreshEntity(pnj);
+        return pnj;
+    }
+
+    private static int creer(CommandContext<CommandSourceStack> c, String id) throws CommandSyntaxException {
+        ServerPlayer moi = c.getSource().getPlayerOrException();
+        id = id.toLowerCase(Locale.ROOT);
+        Defs.Pnj def = Catalogue.pnj(id);
+        if (poser(moi, id) == null) return 0;
         int deja = trouver(id).size() - 1;
         dire(c, "heraliz_quetes.cmd.pnj_cree", "PNJ « %s » posé ici.", id);
         if (def == null) erreur(c, "heraliz_quetes.cmd.pnj_sans_fichier", "Ce PNJ (%s) n'a pas de fichier dans config/heraliz_quetes/pnj/.", id);

@@ -50,11 +50,16 @@ final class SaisonQuetes {
     }
 
     // ------------------------------------------------------------------ ventes
-    /** Identifiants des objets vendus par au moins un marchand (refait à chaque appel : les marchands changent en jeu). */
+    /**
+     * Identifiants des objets qu'on obtient d'un marchand : vendus par au moins un marchand, ou reçus par un échange
+     * (1.11.0) ; refait à chaque appel (les marchands changent en jeu). Ils ne sont jamais rachetés.
+     */
     static Set<String> vendus() {
         Set<String> s = new HashSet<>();
         for (Defs.Pnj d : Catalogue.tous()) {
-            if (d.marchand == null || d.marchand.rachat) continue;
+            if (d.marchand == null) continue;
+            for (Defs.EchangeDef e : d.marchand.echanges) s.add(e.recu());
+            if (d.marchand.rachat) continue;
             for (Defs.ArticleDef a : d.marchand.articles) s.add(a.objet());
         }
         return s;

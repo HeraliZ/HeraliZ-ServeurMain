@@ -19,6 +19,51 @@ les composants (moitié prix) ; **Jacqueline** vend tous les soins ; **le Doyen*
 vend les accessoires d'armes Commun à Rare. On leur parle, puis « Voir ce que tu vends » / « Te vendre des objets ».
 Les poser : `/pnj creer mila`, `/pnj creer jacqueline`, `/pnj creer doyen`, `/pnj creer jack`.
 
+### Créer son propre marchand, en jeu (sans fichier)
+
+Réservé aux op (niveau 4). Tout se fait en jeu, rien à écrire dans un fichier.
+
+1. **Se placer** là où le marchand doit se tenir (au spawn), tourné dans la direction où il doit regarder.
+2. **Le créer** : `/marchand nouveau <id> <rôle> <nom affiché>`, par exemple
+   `/marchand nouveau armurier_nord vendeur Viktor l'armurier`.
+   - `<id>` : un mot court, en minuscules, chiffres ou `_` (2 à 32 caractères), qui ne sert qu'aux commandes ;
+   - `<rôle>` : `vendeur` (il vend contre des hérals), `racheteur` (il achète aux joueurs contre des hérals) ou
+     `troc` (il ne fait que des échanges d'objets, sans hérals) ;
+   - `<nom affiché>` : le nom que voient les joueurs (32 caractères au plus).
+   Le marchand apparaît à vos pieds et son éditeur s'ouvre tout de suite.
+3. **Lui donner une tête** : faites votre personnage dans `/perso`, puis `/pnj apparence <id> moi` (il prend votre
+   apparence ; `aucune` pour revenir à Steve / Alex).
+4. **Régler ce qu'il propose** : prendre le Registre du marchand (`/marchand registre`) et faire un clic droit sur lui
+   (ou `/marchand editer <id>`). En bas de l'éditeur, votre barre d'objets : on clique un objet, on met un prix ou des
+   quantités, puis « Ajouter ».
+   - un vendeur, onglet « Ce qu'il vend » : objet + prix en hérals ;
+   - un racheteur, onglet « Ce qu'il rachète » : objet + prix (le même pour toutes les raretés, modifiable ensuite
+     rareté par rareté ; 0 = il ne prend pas cette rareté) ;
+   - onglet « Échanges » : **clic gauche** sur l'objet que le joueur DONNE, **clic droit** sur l'objet qu'il REÇOIT,
+     les deux quantités (1 à 576), puis « Ajouter ». Exemple : 10 ferrailles contre 1 kit de réparation. Tout
+     marchand peut avoir des échanges, même un vendeur ou un racheteur (les joueurs voient alors deux onglets).
+   - chaque ligne : ▲ pour la monter, ✕ pour la retirer, changer le chiffre puis « OK » (ou Entrée).
+5. **Autres commandes** : `/marchand nom <id> <nouveau nom>`, `/marchand role <id> <vendeur|racheteur|troc>` (ses
+   listes sont gardées), `/pnj deplacer <id>`, `/pnj creer <id>` (en poser un deuxième).
+6. **Le supprimer** : bouton « Supprimer ce marchand » de l'éditeur (cliquer deux fois), ou
+   `/marchand supprimer <id>` puis `/marchand supprimer <id> confirmer`. Ses PNJ disparaissent du monde (ceux d'un
+   coin du monde que personne n'a chargé disparaissent à son chargement).
+
+Ce qui est gardé : à la racine du serveur, dans `heraliz_quetes/pnj_jeu.json` (nom et rôle) et
+`heraliz_quetes/marchands_jeu.json` (ce qu'il vend, rachète, échange). Ces fichiers ne sont **jamais** écrasés par la
+mise en ligne et survivent aux redémarrages et aux changements de carte. Les marchands des fichiers (Mila, Jack...) se
+modifient aussi au registre ; on ne peut pas les supprimer en jeu (« Revenir au fichier » annule leurs changements).
+
+Règles décidées par le serveur (pour éviter la triche) :
+- pas de commerce en match, en combat, à terre, pendant le tutoriel des bases, ni sur la carte : seulement au spawn ;
+- un échange prend des objets **en bon état** (un objet abîmé ne compte pas) et qui ont au moins les mêmes données
+  que l'objet de l'échange ; s'il n'y a pas la place pour ce que le joueur reçoit, rien n'est échangé ;
+- jamais d'objets à vie (couteaux, skins à vie), d'objets prêtés par un match, d'armes à camo à vie ni d'objets de
+  quête, ni dans un échange, ni dans une vente, ni dans un rachat ;
+- pas d'argent infini : un objet vendu par un marchand **ou reçu par un échange** n'est jamais racheté contre des
+  hérals, et un objet reçu par un échange ne peut pas être donné dans un autre échange (pas de chaînes ni de boucles :
+  l'éditeur refuse l'échange et dit pourquoi).
+
 ## 1. Poser un PNJ
 
 Se placer à l'endroit voulu, regarder dans la direction où le PNJ doit regarder, puis :

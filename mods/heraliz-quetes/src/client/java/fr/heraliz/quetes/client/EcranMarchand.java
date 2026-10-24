@@ -20,21 +20,28 @@ import java.util.Set;
 /**
  * Écran d'un marchand (style des écrans de clan). Vendeur : une carte par article (icône, nom, rareté, prix, ACHETER ;
  * Maj + clic = 5). Racheteur : l'inventaire du joueur, on clique ce qu'on vend (prix au survol), total à droite, « Vendre
- * la sélection » ou « Tout vendre ». Prix et solde viennent du serveur, qui revérifie tout.
+ * la sélection » ou « Tout vendre ». Échanges (1.11.0, onglet à part, ou seul pour un marchand de troc) : une carte par
+ * échange (objet donné × n → objet reçu × n, combien on en a, ÉCHANGER ; Maj + clic = 5 fois). Prix, solde et échanges
+ * viennent du serveur, qui revérifie tout.
  */
 public final class EcranMarchand extends Screen {
     /** Couleurs des raretés (Commun ... Unique / Mythique). */
     private static final int[] RARETES = {0xAAAAAA, 0x5FD06E, 0x508CFF, 0xB96EF0, 0xF0BE46, 0xEB4646};
-    private static final int COLS = 4, CARTE_H = 44, CASE = 20;
+    private static final int COLS = 4, CARTE_H = 44, CASE = 20, COLS_E = 2;
 
     private Reseau.Boutique b;
     private final Set<Integer> choisies = new LinkedHashSet<>();
     private int px, py, pw, ph, defil;
     private HzButton vendreSel, vendreTout;
+    /** Onglet des échanges ouvert (toujours pour un marchand de troc). */
+    private boolean ongletEchanges;
+    /** Boutons à refaire au prochain tick (onglet changé, échanges apparus ou disparus). */
+    private boolean aRefaire;
 
     private EcranMarchand(Reseau.Boutique b) {
         super(Component.translatable("gui.heraliz_quetes.marchand"));
         this.b = b;
+        this.ongletEchanges = b.troc();
     }
 
     static void recevoir(Reseau.Boutique m) {
@@ -44,8 +51,12 @@ public final class EcranMarchand extends Screen {
             return;
         }
         if (mc.screen instanceof EcranMarchand e && e.b.entite() == m.entite()) {
+            boolean onglets = e.onglets();
             e.b = m;
             e.choisies.removeIf(c -> m.prixSlots()[c] <= 0);
+            if (m.troc()) e.ongletEchanges = true;
+            else if (m.echanges().isEmpty()) e.ongletEchanges = false;
+            if (onglets != e.onglets()) e.aRefaire = true;
             return;
         }
         if (!m.ouvrir()) return;
@@ -64,12 +75,47 @@ public final class EcranMarchand extends Screen {
         ph = Math.min(330, height - 20);
         px = (width - pw) / 2;
         py = (height - ph) / 2;
-        if (b.rachat()) {
+        vendreSel = null;
+        vendreTout = null;
+        if (onglets()) {
+            // deux onglets en haut, au milieu : ce qu'il vend (ou rachète) / ses échanges
+            int cx = px + pw / 2;
+            HzButton b1 = addRenderableWidget(new HzButton(cx - 104, py + 15, 100, 16,
+                    Component.literal(TexteClient.tr(b.rachat() ? "gui.heraliz_quetes.marchand.onglet.vendre" : "gui.heraliz_quetes.marchand.onglet.acheter")),
+                    Ui.OR, () -> changerOnglet(false)));
+            HzButton b2 = addRenderableWidget(new HzButton(cx + 4, py + 15, 100, 16,
+                    Component.literal(TexteClient.tr("gui.heraliz_quetes.marchand.onglet.echanges")), Ui.OR, () -> changerOnglet(true)));
+            (ongletEchanges ? b2 : b1).look(HzButton.Look.PRIMARY);
+        }
+        if (b.rachat() && !ongletEchanges) {
             int bx = px + pw - 190, bw = 172;
             vendreTout = addRenderableWidget(new HzButton(bx, py + ph - 56, bw, 18,
                     Component.literal(TexteClient.tr("gui.heraliz_quetes.marchand.tout")), Ui.OR, this::toutVendre));
             vendreSel = addRenderableWidget(new HzButton(bx, py + ph - 32, bw, 20,
                     Component.literal(TexteClient.tr("gui.heraliz_quetes.marchand.vendre")), Ui.OR, this::vendre).look(HzButton.Look.PRIMARY));
+        }
+    }
+
+    /** Deux onglets : un vendeur ou un racheteur qui a aussi des échanges. */
+    private boolean onglets() {
+        return !b.troc() && !b.echanges().isEmpty();
+    }
+
+    private void changerOnglet(boolean echanges) {
+        if (ongletEchanges == echanges) return;
+        ongletEchanges = echanges;
+        defil = 0;
+        choisies.clear();
+        aRefaire = true;
+        SonsUi.clic(0.5F);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (aRefaire) {
+            aRefaire = false;
+            rebuildWidgets();
         }
     }
 
@@ -128,11 +174,39 @@ public final class EcranMarchand extends Screen {
         return y >= py + 52 && y + CARTE_H <= py + ph - 20;
     }
 
+    private int carteLE() {
+        return (pw - 36 - (COLS_E - 1) * 8) / COLS_E;
+    }
+
+    private int[] posEchange(int n) {
+        int x = px + 18 + (n % COLS_E) * (carteLE() + 8), y = py + 56 + (n / COLS_E) * (CARTE_H + 8) - defil;
+        return new int[]{x, y};
+    }
+
+    /** L'échange n° n peut-il se faire (actif, et le joueur a de quoi donner) ? */
+    private static boolean faisable(Reseau.Echange x) {
+        return x.actif() && x.possede() >= x.nDonne();
+    }
+
     // ------------------------------------------------------------------ souris
     @Override
     public boolean mouseClicked(double mx, double my, int bouton) {
         if (super.mouseClicked(mx, my, bouton)) return true;
-        if (b.rachat()) {
+        if (ongletEchanges) {
+            for (int n = 0; n < b.echanges().size(); n++) {
+                int[] c = posEchange(n);
+                if (!dansListe(c[1])) continue;
+                int bx = c[0] + carteLE() - 58, by = c[1] + CARTE_H - 17;
+                if (mx >= bx && mx < bx + 52 && my >= by && my < by + 13) {
+                    Reseau.Echange x = b.echanges().get(n);
+                    if (faisable(x)) {
+                        Reseau.CANAL.sendToServer(new Reseau.Troc(b.entite(), x.index(), hasShiftDown() ? 5 : 1));
+                        SonsUi.clic(0.5F);
+                    }
+                    return true;
+                }
+            }
+        } else if (b.rachat()) {
             for (int i = 0; i < Reseau.CASES; i++) {
                 int[] c = posCase(i);
                 if (mx >= c[0] && mx < c[0] + CASE && my >= c[1] && my < c[1] + CASE) {
@@ -160,6 +234,12 @@ public final class EcranMarchand extends Screen {
 
     @Override
     public boolean mouseScrolled(double mx, double my, double d) {
+        if (ongletEchanges) {
+            int rangs = (b.echanges().size() + COLS_E - 1) / COLS_E;
+            int max = Math.max(0, rangs * (CARTE_H + 8) - (ph - 76));
+            defil = (int) Math.max(0, Math.min(max, defil - d * 26));
+            return true;
+        }
         if (b.rachat()) return false;
         int rangs = (b.articles().size() + COLS - 1) / COLS;
         int max = Math.max(0, rangs * (CARTE_H + 8) - (ph - 76));
@@ -178,9 +258,65 @@ public final class EcranMarchand extends Screen {
         Ui.right(g, f, Ui.lit(Ui.nombre(b.solde()) + " " + TexteClient.tr("gui.heraliz_quetes.marchand.herals"), Ui.BOLD), px + pw - 18, py + 15, Ui.argb(Ui.OR, 255));
         Ui.spacedRight(g, f, TexteClient.tr("gui.heraliz_quetes.marchand.solde"), Ui.SMALL, px + pw - 18, py + 28, Ui.argb(Ui.MUTED, 255), 0.6f);
         Ui.hairline(g, px + 18, px + pw - 18, py + 44, 0xFFFFFF, 30, false, true);
-        List<Component> bulle = b.rachat() ? rachat(g, f, mx, my) : achat(g, f, mx, my);
+        List<Component> bulle = ongletEchanges ? echanges(g, f, mx, my) : b.rachat() ? rachat(g, f, mx, my) : achat(g, f, mx, my);
         super.render(g, mx, my, pt);
         if (bulle != null) Ui.tooltip(g, f, bulle, mx, my, Ui.OR);
+    }
+
+    /** Une icône d'objet dans sa case (32 × 32), teintée de sa rareté. */
+    private void icone(GuiGraphics g, ItemStack s, int x, int y, int col) {
+        g.fill(x, y, x + 32, y + 32, Ui.argb(col, 40));
+        Ui.softOutline(g, x, y, 32, 32, Ui.argb(col, 170));
+        g.pose().pushPose();
+        g.pose().translate(x + 4, y + 4, 0);
+        g.pose().scale(1.5f, 1.5f, 1f);
+        g.renderItem(s, 0, 0);
+        g.pose().popPose();
+    }
+
+    private List<Component> echanges(GuiGraphics g, Font f, int mx, int my) {
+        List<Component> bulle = null;
+        int cl = carteLE();
+        if (b.echanges().isEmpty()) {
+            Ui.spaced(g, f, TexteClient.tr("gui.heraliz_quetes.marchand.echanges_vide"), Ui.SMALL, px + 18, py + 56, Ui.argb(Ui.MUTED, 255), 0.4f);
+        }
+        g.enableScissor(px, py + 50, px + pw, py + ph - 16);
+        for (int n = 0; n < b.echanges().size(); n++) {
+            Reseau.Echange x = b.echanges().get(n);
+            int[] c = posEchange(n);
+            if (c[1] + CARTE_H < py + 50 || c[1] > py + ph - 16) continue;
+            boolean visible = dansListe(c[1]), possible = faisable(x);
+            int col = couleur(x.rarete());
+            Ui.glass(g, c[0], c[1], cl, CARTE_H, 110);
+            // [donné] ×n → [reçu] ×n
+            icone(g, x.donne(), c[0] + 6, c[1] + 6, Ui.MUTED);
+            g.drawString(f, Ui.lit("×" + x.nDonne(), Ui.BOLD), c[0] + 40, c[1] + 18, Ui.argb(Ui.TEXT, 255), false);
+            Ui.centered(g, f, Ui.lit("→", Ui.BOLD), c[0] + 70, c[1] + 18, Ui.argb(Ui.OR, 255));
+            icone(g, x.recu(), c[0] + 78, c[1] + 6, col);
+            g.drawString(f, Ui.lit("×" + x.nRecu(), Ui.BOLD), c[0] + 112, c[1] + 18, Ui.argb(Ui.TEXT, 255), false);
+            // texte : ce qu'on reçoit, contre quoi, combien on en a
+            int tx = c[0] + 138, tw = cl - 138 - 6;
+            g.drawString(f, Ui.lit(Ui.ellipsis(f, x.recu().getHoverName().getString(), Ui.BOLD, tw), Ui.BOLD), tx, c[1] + 6, Ui.argb(col, 255), false);
+            String contre = TexteClient.tr("gui.heraliz_quetes.marchand.contre", x.nDonne(), x.donne().getHoverName().getString());
+            g.drawString(f, Ui.lit(Ui.ellipsis(f, contre, Ui.SMALL, tw), Ui.SMALL), tx, c[1] + 17, Ui.argb(Ui.MUTED, 255), false);
+            String etat = x.actif() ? TexteClient.tr("gui.heraliz_quetes.marchand.possede", x.possede(), x.nDonne())
+                    : TexteClient.tr("gui.heraliz_quetes.marchand.echange_coupe");
+            g.drawString(f, Ui.lit(Ui.ellipsis(f, etat, Ui.SMALL, tw - 60), Ui.SMALL), tx, c[1] + CARTE_H - 13,
+                    Ui.argb(possible ? Ui.OK : Ui.DANGER, 255), false);
+            // bouton ÉCHANGER (éteint si impossible)
+            int bx = c[0] + cl - 58, by = c[1] + CARTE_H - 17;
+            boolean survol = mx >= bx && mx < bx + 52 && my >= by && my < by + 13 && visible;
+            g.fill(bx, by, bx + 52, by + 13, possible ? Ui.argb(Ui.OR, survol ? 255 : 210) : Ui.argb(0xFFFFFF, 20));
+            Ui.spacedCentered(g, f, TexteClient.tr("gui.heraliz_quetes.marchand.echanger"), Ui.SMALL, bx + 26, by + 3,
+                    possible ? 0xFF0D0F14 : Ui.argb(Ui.MUTED, 255), 0.4f);
+            if (visible && my >= c[1] + 6 && my < c[1] + 38) {
+                if (mx >= c[0] + 6 && mx < c[0] + 38) bulle = new ArrayList<>(getTooltipFromItem(Minecraft.getInstance(), x.donne()));
+                else if (mx >= c[0] + 78 && mx < c[0] + 110) bulle = new ArrayList<>(getTooltipFromItem(Minecraft.getInstance(), x.recu()));
+            }
+        }
+        g.disableScissor();
+        Ui.spaced(g, f, TexteClient.tr("gui.heraliz_quetes.marchand.lot_echange"), Ui.SMALL, px + 18, py + ph - 12, Ui.argb(Ui.FAINT, 255), 0.4f);
+        return bulle;
     }
 
     private List<Component> achat(GuiGraphics g, Font f, int mx, int my) {

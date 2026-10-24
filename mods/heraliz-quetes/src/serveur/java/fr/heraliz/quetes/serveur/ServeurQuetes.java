@@ -49,6 +49,8 @@ public final class ServeurQuetes implements Partie {
         Reseau.ACHAT.brancher(r -> Marchands.achat(r.joueur(), r.message()));
         Reseau.VENTE.brancher(r -> Marchands.vente(r.joueur(), r.message()));
         Reseau.MODIF.brancher(r -> EditionMarchands.modif(r.joueur(), r.message()));
+        Reseau.TROC.brancher(r -> Echanges.troc(r.joueur(), r.message()));
+        Reseau.AJOUT_ECHANGE.brancher(r -> EditionMarchands.ajoutEchange(r.joueur(), r.message()));
         Reseau.CODE.brancher(r -> Moteur.code(r.joueur(), r.message().point(), r.message().code()));
 
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::demarrage);

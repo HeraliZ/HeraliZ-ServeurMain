@@ -31,7 +31,8 @@ public final class Reseau {
     private Reseau() {
     }
 
-    private static final String VERSION = "6";
+    /** 7 (Quêtes 1.11.0) : échanges (troc) et marchands créés en jeu. */
+    private static final String VERSION = "7";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -111,11 +112,23 @@ public final class Reseau {
      * articles. ouvrir = ouvrir l'écran, sinon mettre à jour celui qui est ouvert. entite -1 = fermer.
      */
     public record Boutique(int entite, boolean ouvrir, Texte nom, Texte role, long solde, boolean rachat, List<Article> articles,
-                           int[] prixSlots, int[] rarSlots) {
+                           int[] prixSlots, int[] rarSlots, boolean troc, List<Echange> echanges) {
+    }
+
+    /**
+     * Un échange proposé par un marchand (troc) : nDonne × donne contre nRecu × recu. rarete : celle de l'objet reçu ;
+     * possede : combien d'objets qui conviennent le joueur a dans son inventaire ; actif faux = échange coupé par le
+     * serveur (objet reçu par un autre échange, voir Echanges).
+     */
+    public record Echange(int index, ItemStack donne, int nDonne, ItemStack recu, int nRecu, int rarete, int possede, boolean actif) {
     }
 
     /** Achat d'un article (joueur -> serveur). */
     public record Achat(int entite, int index, int quantite) {
+    }
+
+    /** Faire un échange (joueur -> serveur), fois = 1 à 5 de suite. */
+    public record Troc(int entite, int index, int fois) {
     }
 
     /** Vente des objets de ces cases de l'inventaire (joueur -> serveur). */
@@ -145,13 +158,29 @@ public final class Reseau {
     public record ERegle(String tag, long[] prix) {
     }
 
-    /** Ouvre (ou met à jour) l'éditeur d'un marchand (serveur -> joueur). */
-    public record Edition(String pnj, Texte nom, boolean rachat, boolean modifie, List<EArticle> articles, List<ERegle> regles) {
+    /** Éditeur : un échange (objet donné et sa quantité, objet reçu et sa quantité). */
+    public record EEchange(ItemStack donne, int nDonne, ItemStack recu, int nRecu) {
     }
 
-    /** Un changement demandé dans l'éditeur (joueur -> serveur) ; le serveur revérifie les droits. */
+    /**
+     * Ouvre (ou met à jour) l'éditeur d'un marchand (serveur -> joueur). cree = marchand créé en jeu (/marchand nouveau :
+     * supprimable, pas de fichier où revenir) ; troc = il ne fait que des échanges.
+     */
+    public record Edition(String pnj, Texte nom, boolean rachat, boolean modifie, List<EArticle> articles, List<ERegle> regles,
+                          boolean cree, boolean troc, List<EEchange> echanges) {
+    }
+
+    /**
+     * Un changement demandé dans l'éditeur (joueur -> serveur) ; le serveur revérifie les droits. AJOUTER_REGLE : rarete =
+     * case de la barre d'objets (0 à 8), prix = prix de toutes les raretés ; ECH_N_DONNE / ECH_N_RECU : prix = quantité.
+     */
     public record Modif(String pnj, int type, int index, int rarete, long prix) {
-        public static final int PRIX = 0, RETIRER = 1, AJOUTER_MAIN = 2, PRIX_RACHAT = 3, REINITIALISER = 4, MONTER = 5;
+        public static final int PRIX = 0, RETIRER = 1, AJOUTER_MAIN = 2, PRIX_RACHAT = 3, REINITIALISER = 4, MONTER = 5,
+                AJOUTER_REGLE = 6, RETIRER_REGLE = 7, ECH_RETIRER = 8, ECH_MONTER = 9, ECH_N_DONNE = 10, ECH_N_RECU = 11, SUPPRIMER = 12;
+    }
+
+    /** Ajouter un échange depuis l'éditeur (joueur -> serveur) : objets de deux cases de la barre d'objets (0 à 8). */
+    public record AjoutEchange(String pnj, int caseDonne, int nDonne, int caseRecu, int nRecu) {
     }
 
     /** Message reçu par le serveur, avec le joueur qui l'envoie. */
@@ -178,6 +207,8 @@ public final class Reseau {
     public static final Crochet<Recu<Achat>> ACHAT = new Crochet<>();
     public static final Crochet<Recu<Vente>> VENTE = new Crochet<>();
     public static final Crochet<Recu<Modif>> MODIF = new Crochet<>();
+    public static final Crochet<Recu<Troc>> TROC = new Crochet<>();
+    public static final Crochet<Recu<AjoutEchange>> AJOUT_ECHANGE = new Crochet<>();
 
     private static int prochain;
 
@@ -263,6 +294,18 @@ public final class Reseau {
             b.writeVarInt(m.rarete());
             b.writeVarLong(m.prix());
         }, b -> new Modif(b.readUtf(MAX_CLE), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarLong()), MODIF);
+        versServeur(Troc.class, (m, b) -> {
+            b.writeVarInt(m.entite());
+            b.writeVarInt(m.index());
+            b.writeVarInt(m.fois());
+        }, b -> new Troc(b.readVarInt(), b.readVarInt(), b.readVarInt()), TROC);
+        versServeur(AjoutEchange.class, (m, b) -> {
+            b.writeUtf(m.pnj(), MAX_CLE);
+            b.writeVarInt(m.caseDonne());
+            b.writeVarInt(m.nDonne());
+            b.writeVarInt(m.caseRecu());
+            b.writeVarInt(m.nRecu());
+        }, b -> new AjoutEchange(b.readUtf(MAX_CLE), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt()), AJOUT_ECHANGE);
     }
 
     private static <T> void versJoueur(Class<T> c, BiConsumer<T, FriendlyByteBuf> ecrire, Function<FriendlyByteBuf, T> lire, Crochet<T> crochet) {
@@ -444,7 +487,25 @@ public final class Reseau {
             b.writeVarInt(m.prixSlots() == null || i >= m.prixSlots().length ? 0 : m.prixSlots()[i]);
             b.writeVarInt(m.rarSlots() == null || i >= m.rarSlots().length ? 0 : m.rarSlots()[i] + 1);
         }
+        b.writeBoolean(m.troc());
+        List<Echange> ech = m.echanges() == null ? List.of() : m.echanges();
+        n = Math.min(ech.size(), MAX_ECHANGES);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            Echange e = ech.get(i);
+            b.writeVarInt(e.index());
+            b.writeItem(e.donne());
+            b.writeVarInt(e.nDonne());
+            b.writeItem(e.recu());
+            b.writeVarInt(e.nRecu());
+            b.writeVarInt(e.rarete() + 1);
+            b.writeVarInt(e.possede());
+            b.writeBoolean(e.actif());
+        }
     }
+
+    /** Échanges d'un marchand, au plus. */
+    public static final int MAX_ECHANGES = 64;
 
     private static Boutique lireBoutique(FriendlyByteBuf b) {
         int e = b.readInt();
@@ -460,7 +521,14 @@ public final class Reseau {
             prix[i] = b.readVarInt();
             rar[i] = b.readVarInt() - 1;
         }
-        return new Boutique(e, ouvrir, nom, role, solde, rachat, l, prix, rar);
+        boolean troc = b.readBoolean();
+        int ne = Math.min(b.readVarInt(), MAX_ECHANGES);
+        List<Echange> ech = new ArrayList<>(ne);
+        for (int i = 0; i < ne; i++) {
+            ech.add(new Echange(b.readVarInt(), b.readItem(), b.readVarInt(), b.readItem(), b.readVarInt(), b.readVarInt() - 1, b.readVarInt(),
+                    b.readBoolean()));
+        }
+        return new Boutique(e, ouvrir, nom, role, solde, rachat, l, prix, rar, troc, ech);
     }
 
     private static void ecrirePos(FriendlyByteBuf b, List<BlockPos> l) {
@@ -498,6 +566,18 @@ public final class Reseau {
             b.writeUtf(r.tag(), MAX_CLE);
             for (int k = 0; k < 6; k++) b.writeVarLong(r.prix()[k]);
         }
+        b.writeBoolean(m.cree());
+        b.writeBoolean(m.troc());
+        List<EEchange> ech = m.echanges() == null ? List.of() : m.echanges();
+        n = Math.min(ech.size(), MAX_ECHANGES);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            EEchange x = ech.get(i);
+            b.writeItem(x.donne());
+            b.writeVarInt(x.nDonne());
+            b.writeItem(x.recu());
+            b.writeVarInt(x.nRecu());
+        }
     }
 
     private static Edition lireEdition(FriendlyByteBuf b) {
@@ -515,6 +595,10 @@ public final class Reseau {
             for (int k = 0; k < 6; k++) prix[k] = b.readVarLong();
             r.add(new ERegle(tag, prix));
         }
-        return new Edition(pnj, nom, rachat, modifie, l, r);
+        boolean cree = b.readBoolean(), troc = b.readBoolean();
+        n = Math.min(b.readVarInt(), MAX_ECHANGES);
+        List<EEchange> ech = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) ech.add(new EEchange(b.readItem(), b.readVarInt(), b.readItem(), b.readVarInt()));
+        return new Edition(pnj, nom, rachat, modifie, l, r, cree, troc, ech);
     }
 }

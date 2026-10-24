@@ -198,8 +198,16 @@ final class Dialogues {
         // 5. son commerce
         if (def.marchand != null) {
             Texte bouton = !def.marchand.bouton.vide() ? def.marchand.bouton
-                    : Texte.cle(def.marchand.rachat ? "heraliz_quetes.dialogue.vendre" : "heraliz_quetes.dialogue.acheter");
+                    : Texte.cle(def.marchand.troc ? "heraliz_quetes.dialogue.echanger"
+                    : def.marchand.rachat ? "heraliz_quetes.dialogue.vendre" : "heraliz_quetes.dialogue.acheter");
             reps.add(new Rep(bouton, 2, () -> {
+                // 1.11.0 : pas de commerce en match, en combat, à terre, au tutoriel ni sur la carte (Marchands.empechement)
+                Texte refus = Marchands.empechement(p);
+                if (refus != null) {
+                    fermer(p);
+                    Moteur.notif(p, refus, 0xFF6B6B);
+                    return;
+                }
                 SESSIONS.remove(p.getUUID());
                 Marchands.envoyer(p, ent, def, true);
             }));
