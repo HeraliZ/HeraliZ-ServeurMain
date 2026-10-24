@@ -19,7 +19,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,9 +35,13 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
  * le jeu la compte comme retiree et ne retrouve jamais d'orpheline au rechargement).
  * <p>Contrat {@code ZombieFabrique} : la cible est choisie par le jeu ({@code setTarget}) ; sans cible le zombie ne
  * fait rien de lui-meme (le jeu le conduit aux fenetres par {@code getNavigation().moveTo}) ; avec une cible il la
- * poursuit et la griffe ({@link GriffeGoal}).
+ * poursuit et la griffe ({@code GriffeGoal}, cote serveur).
  * <p>Animations (cote client) : allure synchronisee ({@link Allure}) pour la demarche, evenements d'entite pour
  * l'arrachage d'une planche, l'enjambement d'une fenetre et la sortie de terre.
+ * <p>Classe commune (docs/METHODE_CLIENT_SERVEUR.md §5.1) : etat synchronise, animations, ce que lit le rendu. L'IA
+ * (griffe), les coups recus pendant une sortie et le son du coup sont dans {@code ZombieLaboServeur} (src/serveur),
+ * creee par {@link ZbRegistres#ZOMBIE_LABO_USINE} : toujours par le type ({@link #creer}), jamais par
+ * {@code new ZombieLabo(...)}.
  */
 public class ZombieLabo extends Zombie {
     public static final int VARIANTES = 4;
@@ -66,8 +69,8 @@ public class ZombieLabo extends Zombie {
 
     /** Instants (tickCount client) des animations ponctuelles ; -1000 = jamais. */
     public int arracheDebut = -1000, enjambeDebut = -1000, sortieDebut = -1000, conduitDebut = -1000, egoutDebut = -1000, chuteDebut = -1000;
-    /** Cote serveur : fin de la sortie de terre (tickCount). */
-    private int sortieFin = -1;
+    /** Cote serveur : fin de la sortie de terre (tickCount) ; lue par {@code ZombieLaboServeur#hurt}. */
+    protected int sortieFin = -1;
     /** Phase propre (desynchronise les balancements d'une horde). */
     public final float phase;
 
@@ -79,9 +82,9 @@ public class ZombieLabo extends Zombie {
         this.phase = (float) ((this.getUUID().getLeastSignificantBits() & 0xFFFF) / 65535.0 * Math.PI * 2);
     }
 
-    /** Fabrique pratique (non ajoute au monde). */
+    /** Fabrique pratique (non ajoute au monde) : par le type, donc la version serveur dans un monde serveur. */
     public static ZombieLabo creer(Level level, Allure allure, int variante, int manche) {
-        ZombieLabo z = new ZombieLabo(ZbRegistres.ZOMBIE_LABO.get(), level);
+        ZombieLabo z = ZbRegistres.ZOMBIE_LABO.get().create(level);
         z.allure(allure);
         z.variante(variante < 0 || variante >= VARIANTES ? level.random.nextInt(VARIANTES) : variante);
         z.manche(manche);
@@ -145,9 +148,9 @@ public class ZombieLabo extends Zombie {
     }
 
     // ------------------------------------------------------------------ IA (le jeu decide, voir la Javadoc de la classe)
+    /** Neutre : aucun but de vanilla (le client n'en execute aucun) ; la griffe est ajoutee par ZombieLaboServeur. */
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(2, new GriffeGoal(this, 1.0, 20));
     }
 
     @Override
@@ -339,13 +342,6 @@ public class ZombieLabo extends Zombie {
         return Mth.clamp(t, 0, 1);
     }
 
-    @Override
-    public boolean hurt(DamageSource source, float amount) {
-        // sortie de terre : on ne peut pas encore le toucher au corps a corps (les balles, si)
-        if (sortieFin > this.tickCount && source.getDirectEntity() == source.getEntity() && source.getEntity() != null) return false;
-        return super.hurt(source, amount);
-    }
-
     // ------------------------------------------------------------------ rien de vanilla
     @Override
     protected boolean isSunSensitive() {
@@ -467,12 +463,5 @@ public class ZombieLabo extends Zombie {
     @Override
     public int getAmbientSoundInterval() {
         return 90 + this.random.nextInt(80);
-    }
-
-    @Override
-    public boolean doHurtTarget(Entity cible) {
-        boolean ok = super.doHurtTarget(cible);
-        if (ok) this.playSound(ZbSons.ZOMBIE_ATTAQUE.get(), 1.0F, 0.9F + this.random.nextFloat() * 0.2F);
-        return ok;
     }
 }

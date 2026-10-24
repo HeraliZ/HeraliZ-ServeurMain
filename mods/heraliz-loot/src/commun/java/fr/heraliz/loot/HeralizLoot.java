@@ -30,9 +30,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -133,8 +131,8 @@ public final class HeralizLoot {
         ReseauLoot.enregistrer();
         // accroupi avec un objet en main, le clic droit ouvre quand même les conteneurs (des deux côtés)
         OuvertureAccroupi.brancher();
-        // rotation du loot : réglages serveur (heraliz_loot-server.toml) ; un changement recalcule les zones (partie serveur)
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConfigLoot.SPEC);
+        // rotation du loot : réglages serveur (heraliz_loot-server.toml), enregistrés par la partie serveur
+        // (src/serveur : ConfigLoot, PartieServeur) : le jar des joueurs ne les contient pas
         // parties coupées (docs/METHODE_CLIENT_SERVEUR.md) : tables, tirages, zones, rotation, identification, commandes
         // (serveur) ; rendus, animations, écrans, sons (client)
         Parties.serveur(MODID, "fr.heraliz.loot.serveur.PartieServeur", bus);

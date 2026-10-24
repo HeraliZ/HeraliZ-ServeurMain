@@ -20,6 +20,9 @@ import fr.heralisz.matchs.moteur.net.ReceptionPaquetsMoteurServeur;
 import fr.heralisz.matchs.moteur.spectateur.Spectateurs;
 import fr.heralisz.matchs.pont.Services;
 import fr.heralisz.matchs.reseau.MatchsNet;
+import fr.heralisz.matchs.zombies.contenu.ZbRegistres;
+import fr.heralisz.matchs.zombies.contenu.entite.RodeurServeur;
+import fr.heralisz.matchs.zombies.contenu.entite.ZombieLaboServeur;
 import fr.heralisz.matchs.zombies.jeu.PartiesZombies;
 import fr.heralisz.matchs.zombies.jeu.net.ReceptionPaquetsZombiesServeur;
 import java.util.Collection;
@@ -41,13 +44,15 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * Partie serveur de HeraliZ Matchs (docs/METHODE_CLIENT_SERVEUR.md §4) : moteur des matchs (arènes, coffre, combat,
  * kits, groupes, spectateurs), ClashWar, duels et killcam, zombies (parties, manches, boîte, Pack-a-Punch, quêtes).
  * Les modules s'inscrivent par Modules.SERVEURS (écouteurs, commandes) ; ici : services des API communes, paquets
- * client -> serveur, cible d'entraînement.
+ * client -> serveur, cible d'entraînement, zombies et rôdeurs (IA, coups).
  */
 public final class PartieServeur implements fr.heralisz.matchs.pont.Partie {
     @Override
     public void init(IEventBus busMod) {
         Services.MOTEUR = new Moteur();
         Registres.CIBLE_USINE.serveur(CibleEntrainementServeur::new);
+        ZbRegistres.ZOMBIE_LABO_USINE.serveur(ZombieLaboServeur::new);
+        ZbRegistres.RODEUR_USINE.serveur(RodeurServeur::new);
         MatchsNet.RECEPTION_SERVEUR.brancher(PartieServeur::recevoir);
     }
 

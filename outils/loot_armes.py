@@ -402,7 +402,7 @@ def ecrire_raretes_imposees():
 
 def ecrire_facteurs(avant):
     """Facteur de conteneurs actifs par niveau (défaut de ConfigLoot « facteurs_actifs ») : objets par ville x FACTEUR_TOTAL."""
-    f = Path(__file__).resolve().parents[1] / "mods/heraliz-loot/src/commun/java/fr/heraliz/loot/ConfigLoot.java"
+    f = Path(__file__).resolve().parents[1] / "mods/heraliz-loot/src/serveur/java/fr/heraliz/loot/ConfigLoot.java"
     s = f.read_text(encoding="utf-8")
     vals = ", ".join(f"{min(1.0, FACTEUR_TOTAL * avant[t] / cases_moyennes(t)):.3f}" for t in sorted(CASES_POIDS))
     nouveau = re.sub(r"(// facteurs_actifs \(outils/loot_armes\.py\)\n\s*List\.of\()[^)]*(\))", lambda m: m.group(1) + vals + m.group(2), s)

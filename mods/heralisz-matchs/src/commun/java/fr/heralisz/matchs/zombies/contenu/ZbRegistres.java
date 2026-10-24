@@ -70,11 +70,14 @@ public final class ZbRegistres {
     public static final DeferredRegister<Item> OBJETS = DeferredRegister.create(ForgeRegistries.ITEMS, HeraliszMatchs.MODID);
 
     // ------------------------------------------------------------------ entites
+    /** Usines (docs/METHODE_CLIENT_SERVEUR.md §4) : versions serveur (IA, coups) branchées par la partie serveur. */
+    public static final fr.heralisz.matchs.pont.UsineEntite<ZombieLabo> ZOMBIE_LABO_USINE = new fr.heralisz.matchs.pont.UsineEntite<>(ZombieLabo::new);
+    public static final fr.heralisz.matchs.pont.UsineEntite<Rodeur> RODEUR_USINE = new fr.heralisz.matchs.pont.UsineEntite<>(Rodeur::new);
     public static final RegistryObject<EntityType<ZombieLabo>> ZOMBIE_LABO = ENTITES.register("zb_zombie",
-            () -> EntityType.Builder.<ZombieLabo>of(ZombieLabo::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+            () -> EntityType.Builder.<ZombieLabo>of(ZOMBIE_LABO_USINE, MobCategory.MONSTER).sized(0.6F, 1.95F)
                     .clientTrackingRange(10).updateInterval(2).build(HeraliszMatchs.MODID + ":zb_zombie"));
     public static final RegistryObject<EntityType<Rodeur>> RODEUR = ENTITES.register("zb_rodeur",
-            () -> EntityType.Builder.<Rodeur>of(Rodeur::new, MobCategory.MONSTER).sized(0.9F, 1.1F)
+            () -> EntityType.Builder.<Rodeur>of(RODEUR_USINE, MobCategory.MONSTER).sized(0.9F, 1.1F)
                     .clientTrackingRange(10).updateInterval(2).build(HeraliszMatchs.MODID + ":zb_rodeur"));
     public static final RegistryObject<EntityType<BonusEntite>> BONUS = ENTITES.register("zb_bonus",
             () -> EntityType.Builder.<BonusEntite>of(BonusEntite::new, MobCategory.MISC).sized(0.8F, 0.8F)

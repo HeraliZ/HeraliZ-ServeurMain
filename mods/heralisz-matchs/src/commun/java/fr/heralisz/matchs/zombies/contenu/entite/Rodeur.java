@@ -9,9 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -19,19 +17,20 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * Rodeur : creature rapide des manches speciales (MATCHS_SPEC §4, l'equivalent original des chiens de CoD) — un
  * mutant quadrupede ecorche du laboratoire N-07, yeux orange, colonne hérissée. Meme contrat que le zombie (cible
  * choisie par le jeu, aucun butin, jamais sauvegarde, sons maison) ; en plus il bondit sur sa cible a mi-distance.
  * A sa mort il se dissout en brume (particules maison), sans « poof » vanilla.
+ * <p>Classe commune (docs/METHODE_CLIENT_SERVEUR.md §5.1) : ce que lit le rendu et ce qui est vu des deux cotes. L'IA
+ * (poursuite et griffe), le bond et le son du coup sont dans {@code RodeurServeur} (src/serveur), creee par
+ * {@link ZbRegistres#RODEUR_USINE} : toujours par le type ({@link #creer}), jamais par {@code new Rodeur(...)}.
  */
 public class Rodeur extends Monster {
     public static final byte EV_APPARITION = 84;
     /** Instant (tickCount client) de l'apparition, -1000 = aucune. */
     public int apparitionDebut = -1000;
-    private int bondRecharge;
     public final float phase;
 
     public Rodeur(EntityType<? extends Monster> type, Level level) {
@@ -43,8 +42,9 @@ public class Rodeur extends Monster {
         this.phase = (float) ((this.getUUID().getLeastSignificantBits() & 0xFFFF) / 65535.0 * Math.PI * 2);
     }
 
+    /** Fabrique pratique (non ajoute au monde) : par le type, donc la version serveur dans un monde serveur. */
     public static Rodeur creer(Level level) {
-        return new Rodeur(ZbRegistres.RODEUR.get(), level);
+        return ZbRegistres.RODEUR.get().create(level);
     }
 
     public static AttributeSupplier.Builder attributs() {
@@ -58,11 +58,7 @@ public class Rodeur extends Monster {
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.3);
     }
 
-    @Override
-    protected void registerGoals() {
-        this.goalSelector.addGoal(2, new GriffeGoal(this, 1.0, 16));
-    }
-
+    /** Cote client : braises de la gueule. Le bond (cote serveur) est dans {@code RodeurServeur#tick}. */
     @Override
     public void tick() {
         super.tick();
@@ -71,19 +67,6 @@ public class Rodeur extends Monster {
             if (this.random.nextInt(6) == 0) {
                 float a = this.yBodyRot * Mth.DEG_TO_RAD;
                 this.level().addParticle(ZbRegistres.BRUME.get(), getX() - Mth.sin(a) * 0.7, getY() + 0.7, getZ() + Mth.cos(a) * 0.7, 0, 0.01, 0);
-            }
-            return;
-        }
-        if (bondRecharge > 0) bondRecharge--;
-        LivingEntity c = getTarget();
-        if (c != null && bondRecharge <= 0 && onGround()) {
-            double d2 = distanceToSqr(c);
-            if (d2 > 9 && d2 < 36 && getSensing().hasLineOfSight(c)) {
-                // bond : elan vers la cible
-                Vec3 dir = new Vec3(c.getX() - getX(), 0, c.getZ() - getZ()).normalize();
-                setDeltaMovement(dir.x * 0.9, 0.42, dir.z * 0.9);
-                bondRecharge = 50 + random.nextInt(30);
-                playSound(ZbSons.RODEUR_ATTAQUE.get(), 1.0F, 1.1F);
             }
         }
     }
@@ -191,12 +174,5 @@ public class Rodeur extends Monster {
     @Override
     public int getAmbientSoundInterval() {
         return 60 + this.random.nextInt(60);
-    }
-
-    @Override
-    public boolean doHurtTarget(Entity cible) {
-        boolean ok = super.doHurtTarget(cible);
-        if (ok) this.playSound(ZbSons.RODEUR_ATTAQUE.get(), 1.0F, 0.95F + this.random.nextFloat() * 0.1F);
-        return ok;
     }
 }
