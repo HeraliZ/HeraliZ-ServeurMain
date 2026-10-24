@@ -1,0 +1,24 @@
+# Zombies de la survie (HeraliZ Utils). Ce fichier du dépôt fait foi pour le peuplement de la carte : la mise en ligne le
+# recopie dans le monde ; la section [zombies] garde ses valeurs par défaut (remises par Forge).
+
+[peuplement]
+	actif = true
+	intervalle_secondes = 2
+	cible_nature = 6
+	cible_ville = 10
+	cible_par_valeur = 1.5
+	nuit = 1.25
+	bonus_par_joueur = 0.1
+	bonus_groupe_max = 0.4
+	cible_max = 24
+	rayon_compte = 64
+	distance_min = 24
+	distance_max = 56
+	distance_joueur_min = 20
+	part_hors_vue = 0.8
+	distance_retrait = 96
+	max_total = 1000
+	#24/10 : 45 coupait presque tout pendant l'ouverture (1 zombie posé en 5 min) ; 60 = environ 16 TPS
+	tick_max_ms = 60.0
+	suivre_doMobSpawning = false
+	bots = false

@@ -1180,7 +1180,7 @@ Knight, Kraken et Vulkhar mis de côté. Le propriétaire trouve que les boss ra
 - Petit panneau de
   verre en haut à gauche dans une zone (`ClanHud.barreZone`) : ville, libre / votre zone / tenue par [TAG], distance du
   drapeau ou « Au drapeau », état et barre pendant une capture (paquet `TerritoireHudS2C`, champ `drapeau`). Poser un
-  drapeau (`/territoire drapeau`) déplace le centre de la zone sur lui. Rien testé en jeu ;
+  drapeau (`/territoire drapeau`) déplace le centre de la zone sur lui. 24/10 (Utils 2.26.1, après l'ouverture : « presque aucun zombie », le journal disait 1 zombie posé en 5 min) : le peuplement se coupait dès que le serveur passait 45 ms par tick (souvent avec les joueurs et la pose des caisses) : `tick_max_ms` 60, 6 colonnes par essai, deux essais quand un coin est sous la moitié de sa cible, résumé du journal avec les essais ratés et les passages coupés ; réglages du peuplement dans `serveur/defaultconfigs/heraliz_zombies-server.toml` (fait foi, recopié dans le monde). Rien testé en jeu ;
 - caisses (heraliz_crates) : Vulkhar, Chevalier sans visage, Kraken et Pendentifs supprimées (Glacivore aussi), et
   plus aucun pendentif (charm) d'arme dans Tactique ; la caisse Gemme montre une gemme qui change de couleur (plus de
   couteau dans le cristal) ; hitbox = vraie forme de chaque modèle en cubes de 2 px (`python outils/formes_caisses.py`

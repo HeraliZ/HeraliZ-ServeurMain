@@ -84,7 +84,7 @@ public final class ZombiesConfig {
                 .defineInRange("distance_retrait", 96, 32, 512);
         PEUPLEMENT_MAX = b.comment("Zombies du peuplement au plus sur toute la carte.").defineInRange("max_total", 1000, 0, 100000);
         PEUPLEMENT_TICK_MAX = b.comment("Aucune nouvelle apparition tant que le serveur met plus de tant de millisecondes par tick",
-                "(moyenne ; 50 = 20 TPS tout juste). 0 : jamais coupe.").defineInRange("tick_max_ms", 45.0, 0.0, 1000.0);
+                "(moyenne ; 50 = 20 TPS tout juste). 0 : jamais coupe.").defineInRange("tick_max_ms", 60.0, 0.0, 1000.0);
         PEUPLEMENT_REGLE = b.comment("true : rien tant que la regle doMobSpawning du monde est a false. false : peuplement quand meme",
                 "(la carte de construction l'avait a false).").define("suivre_doMobSpawning", false);
         PEUPLEMENT_BOTS = b.comment("true : les bots de charge (/bots) attirent aussi des zombies.").define("bots", false);
