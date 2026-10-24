@@ -1,6 +1,5 @@
 package fr.heralisz.bunker.keycard;
 
-import fr.heralisz.bunker.keycard.client.KeycardCinematic;
 import fr.heralisz.bunker.keycard.client.KeycardSwipes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -11,7 +10,7 @@ public final class KeycardClientHooks {
       Minecraft mc = Minecraft.getInstance();
       if (mc.level == null || !(mc.level.getEntity(p.entityId()) instanceof AbstractClientPlayer swiper)) return;
       KeycardSwipes.begin(swiper, p.reader(), p.facing());                                  // geste + carte, vus par tous
-      KeycardCinematic.begin(swiper, p.reader(), p.facing(), p.granted(), p.door());       // même cinématique pour tous
+      // plus de cinématique de caméra au passage de la carte (24/10, demande du propriétaire) : chacun garde sa vue
    }
 
    private KeycardClientHooks() {}
