@@ -15,6 +15,7 @@ Réécrit les tables mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/c
   nourriture) et sont donc plus rares dans les conteneurs T1 à T7 ;
 - T7 (coffres d'événement : crash, boss…) : un peu de tout. Ses « autres » objets sont ceux du T6
   (nourriture, munitions, soins, grenades, sacs…) ; plus d'objets de Minecraft d'essai.
+- fragments des cartes d'accès (HeraliZ Bunker) : FRAGMENTS_POUR_100, ajoutés sans changer les autres poids.
 Les anciens vêtements heralisz_armor (mod retiré) sont retirés des tables. À relancer après un
 changement des raretés, des gunpacks, de l'Armurerie ou des composants.
 `--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte chaque famille.
@@ -196,6 +197,19 @@ RARETES_IMPOSEES = {
     # boîtes de munitions de TaCZ (24/10) : fer Rare, or Épique, diamant Légendaire (« Level » 0, 1, 2 ; RaretesObjets.boite)
     "tacz:ammo_box/0": "rare", "tacz:ammo_box/1": "epique", "tacz:ammo_box/2": "legendaire",
 }
+# fragments des cartes d'accès de HeraliZ Bunker (24/10, demande du propriétaire) : 4 fragments numérotés par carte, les
+# 4 DIFFÉRENTS donnent la carte (grille 2 x 2 ou clic droit). Chaque numéro est tiré à part : on peut trouver plusieurs
+# fois le même, inutile sans les trois autres (voulu). Fragments de la carte verte Rare, bleue Épique, rouge Légendaire.
+# Nombre de fragments (tous numéros) pour 100 conteneurs ouverts (vrais conteneurs, pas des parts) ; plus rare quand la
+# carte est meilleure. Ajoutés aux tables sans changer les poids des autres objets (ajouter_fragments).
+FRAGMENT = "heralisz_bunker:keycard_fragment_"
+RARETE_FRAGMENTS = {"green": "rare", "blue": "epique", "red": "legendaire"}
+FRAGMENTS_POUR_100 = {
+    "green": {2: 1.5, 3: 2.0, 4: 2.0, 5: 1.5},
+    "blue": {4: 0.8, 5: 1.2, 6: 1.5},
+    "red": {5: 0.3, 6: 0.6, 7: 4.0},
+}
+RARETES_IMPOSEES.update({f"{FRAGMENT}{c}_{n}": r for c, r in RARETE_FRAGMENTS.items() for n in range(1, 5)})
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
 COMMUN_PREFIXES = ("geckolib:item_",)
 
@@ -313,7 +327,7 @@ def familles():
 
 
 def de_famille(e):
-    return e.get("_cat") in POUR_100 or e.get("_cat") == "capsules" or e["item"].startswith((CAPSULE, KIT)) or e.get("_cat") == "kits" or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT, PLAN))
+    return e.get("_cat") in POUR_100 or e.get("_cat") in ("capsules", "fragments") or e["item"].startswith((CAPSULE, KIT, FRAGMENT)) or e.get("_cat") == "kits" or e["item"] in (ARME, ACCESSOIRE) or e["item"].startswith((ARMURE, COMPOSANT, PLAN))
 
 
 def mult_autre(e, t):
@@ -422,6 +436,26 @@ def ecrire_facteurs(avant):
         f.write_text(nouveau, encoding="utf-8")
 
 
+def ajouter_fragments(objets, t):
+    """Fragments de cartes d'accès du palier t, placés juste après la case vide. Leurs poids sont calculés sur le total
+    de la table (les poids des autres objets ne changent pas) : FRAGMENTS_POUR_100 fragments pour 100 conteneurs, en
+    comptant le nombre moyen d'objets par conteneur ; chaque numéro a la même chance."""
+    parts = {c: n / 100 / cases_moyennes(t) for c, d in FRAGMENTS_POUR_100.items() for p, n in d.items() if p == t}
+    if not parts:
+        return objets
+    q = sum(parts.values())
+    total = sum(e["poids"] for e in objets) * q / (1 - q)
+    ajout = []
+    for c, part in parts.items():
+        for n in range(1, 5):
+            e = {"item": f"{FRAGMENT}{c}_{n}", "nombre": [1, 1], "_cat": "fragments", "poids": max(1, round(total * part / q / 4))}
+            if t == 7:
+                e["rarete"] = RARETE_FRAGMENTS[c]
+            ajout.append(e)
+    i = next((k + 1 for k, e in enumerate(objets) if e.get("_cat") == "vide"), len(objets))
+    return objets[:i] + ajout + objets[i:]
+
+
 def ecrire():
     ecrire_raretes_sacs()
     ecrire_soins()
@@ -491,6 +525,7 @@ def ecrire():
             if t == 7 and r:  # la rareté inscrite ne sert qu'aux coffres T7 (animations) : sinon lue dans raretes.json
                 n["rarete"] = r
             objets.append(n)
+        objets = ajouter_fragments(objets, t)
         data["objets"] = objets
         ecrire_table(COFFRES / f"t{t}.json", data)
         print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in PARTS_FAMILLE.get((f, t), PARTS[t]))} {f}" for f in fams))
@@ -569,6 +604,7 @@ def simuler(essais=1000):
         w = [e["poids"] for e in objs]
         c = {f: Counter() for f in POUR_100}
         balles = capsules = 0
+        fragments = Counter()
         for _ in range(essais * 100):
             cp = {int(k): v for k, v in data["cases_poids"].items()}
             for _ in range(random.choices(list(cp), list(cp.values()))[0]):
@@ -580,9 +616,12 @@ def simuler(essais=1000):
                     balles += random.randint(*e["nombre"])
                 elif e["item"].startswith(CAPSULE):
                     capsules += random.randint(*e["nombre"]) * VALEUR_CAPSULE.get(e["item"][len(CAPSULE):], 0)
+                elif e["item"].startswith(FRAGMENT):
+                    fragments[e["item"][len(FRAGMENT):].split("_")[0]] += 1
         print(f"T{t} :", " | ".join(f"{sum(c[f].values()) / essais:.1f} {f} "
                                      + str({r: round(c[f][r] / essais, 2) for r in ORDRE if c[f][r]}) for f in c),
-              f"| {balles / essais:.0f} balles | {capsules / essais:.0f} capsules (valeur)")
+              f"| {balles / essais:.0f} balles | {capsules / essais:.0f} capsules (valeur)",
+              "| fragments " + str({k: round(v / essais, 2) for k, v in fragments.items()}))
 
 
 if __name__ == "__main__":
