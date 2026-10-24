@@ -54,17 +54,22 @@ ARMES = {
 }
 ARMES_EXCLUES = {"cis:at_rpg_7_lvd"}
 
-# munitions : un paquet de PAQUET balles = 1 bocal de poudre + 2 ferraille (bocal et ferraille de niveau I)
+# munitions : un paquet de PAQUET balles = MUNITION x QUANTITE_MUNITION[rareté de la munition] (bocal et ferraille de
+# niveau I). 24/10 (choix du propriétaire : « trop peu cher, déjà x2 pour les premières munitions grises, puis plus
+# cher pour les balles des armes puissantes ») : 9 mm et .45 x2, 12 g x3, 5,56 / 7,62 / .50 AE x4, .308 / .338 x6
 PAQUET = 15
 MUNITION = {"bocal_poudre": 1, "ferraille": 2}
+QUANTITE_MUNITION = {"commun": 2, "peu_commun": 3, "rare": 4, "epique": 6}
 
 # soins : Commun = 1 tissu ; au-dessus, 1 tissu + 1 alcool, au niveau de la rareté
 SOIN_COMMUN = {"tissu": 1}
 SOIN = {"tissu": 1, "alcool": 1}
 
 # accessoires et viseurs (22/10, choix du propriétaire : « ce n'est qu'un viseur ») : toujours des composants de
-# niveau I ; la quantité monte avec la rareté (Commun x1, Peu commun x1, Rare x2, Épique x3)
-QUANTITE_ACCESSOIRE = {"commun": 1, "peu_commun": 1, "rare": 2, "epique": 3}
+# niveau I ; la quantité monte avec la rareté. 24/10 (choix du propriétaire : « augmenter le prix des accessoires et
+# des viseurs, plus élevé selon la rareté, déjà x2 pour les gris ») : Commun x2, Peu commun x3, Rare x5, Épique x8
+# (avant x1, x1, x2, x3)
+QUANTITE_ACCESSOIRE = {"commun": 2, "peu_commun": 3, "rare": 5, "epique": 8}
 ACCESSOIRES = {
     "scope": ("viseurs", {"circuit_imprime": 1, "batterie": 1}),
     "muzzle": ("accessoires", {"ferraille": 2, "scotch": 1}),
@@ -135,8 +140,9 @@ def main():
     for aid, r in sorted(ra["munitions"].items()):
         if r not in NIVEAU:
             continue
+        q = QUANTITE_MUNITION[r]
         recettes[f"munitions/{aid.replace(':', '_')}"] = recette(
-            materiaux(MUNITION, "commun"), {"type": "ammo", "id": aid, "count": PAQUET, "group": f"{NS}:munitions"})
+            materiaux({c: n * q for c, n in MUNITION.items()}, "commun"), {"type": "ammo", "id": aid, "count": PAQUET, "group": f"{NS}:munitions"})
     for sid, r in sorted(ra["soins"].items()):
         if r not in NIVEAU:
             continue
