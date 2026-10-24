@@ -25,10 +25,11 @@ public final class ZombiesSurvie {
         VILLE_0, VILLE_1, VILLE_2, VILLE_3, VILLE_4, HAZMAT, ARCTIQUE, MILITAIRE, PRISONNIER;
 
         public static final int VILLES = 5;
+        /** values() recopie le tableau à chaque appel ; de() est lu à chaque image pour chaque zombie dessiné. */
+        private static final Tenue[] TOUTES = values();
 
         public static Tenue de(int i) {
-            Tenue[] v = values();
-            return v[Math.floorMod(i, v.length)];
+            return TOUTES[Math.floorMod(i, TOUTES.length)];
         }
     }
 

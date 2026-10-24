@@ -56,9 +56,13 @@ public class AnimeRenderer implements BlockEntityRenderer<AnimeBlockEntity> {
         ps.popPose();
     }
 
+    /** Grands décors (ailes, pales, flèches qui dépassent de leur tronçon) : dessinés même si le tronçon de leur bloc est
+     *  caché (sinon les ailes disparaîtraient derrière une colline alors qu'on les voit). Petits décors (lanterne,
+     *  ventilateur : 2 blocs au plus) : comme les blocs de Minecraft, pas dessinés quand leur tronçon est caché (sous terre,
+     *  derrière les murs). */
     @Override
     public boolean shouldRenderOffScreen(AnimeBlockEntity be) {
-        return true;
+        return be.genre().rayon > 2;
     }
 
     @Override

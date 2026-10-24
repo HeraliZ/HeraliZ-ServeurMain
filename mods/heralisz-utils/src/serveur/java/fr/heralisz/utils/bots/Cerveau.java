@@ -171,13 +171,16 @@ final class Cerveau {
         boolean joueurs = Bots.reglages.joueurs;
         List<LivingEntity> l = lv.getEntitiesOfClass(LivingEntity.class, new AABB(bot.blockPosition()).inflate(48),
                 e -> e != bot && e.isAlive() && !e.isSpectator() && valide(e, joueurs));
+        // la plus proche en vue : rangées par distance, la vue (un lancer de rayon) n'est testée que jusqu'à la première
+        // visible (avant : un rayon par créature plus proche que la meilleure, dans l'ordre de la liste)
         LivingEntity mieux = null;
-        double best = Double.MAX_VALUE;
-        for (LivingEntity e : l) {
-            double d = e.distanceToSqr(bot);
-            if (d < best && bot.hasLineOfSight(e)) {
-                best = d;
-                mieux = e;
+        if (!l.isEmpty()) {
+            l.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(bot)));
+            for (LivingEntity e : l) {
+                if (bot.hasLineOfSight(e)) {
+                    mieux = e;
+                    break;
+                }
             }
         }
         cible = mieux;

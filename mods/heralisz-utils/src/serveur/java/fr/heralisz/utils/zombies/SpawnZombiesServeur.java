@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -28,7 +29,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Apparition des zombies de la survie sur la carte (overworld) : un zombie de Minecraft qui apparait (naturellement ou a
@@ -127,16 +130,34 @@ public final class SpawnZombiesServeur {
     public static void arrivee(net.minecraftforge.event.entity.EntityJoinLevelEvent e) {
         if (e.getLevel().isClientSide()) return;
         // sur la carte : jamais de zombie de Minecraft (zombie, desert, villageois, noye), d'ou qu'il vienne
-        if (ZombiesConfig.ACTIF.get() && e.getLevel().dimension() == Level.OVERWORLD && !(e.getEntity() instanceof ZombieSurvie)) {
-            ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(e.getEntity().getType());
-            if (id != null && dans(ZombiesConfig.INTERDITS.get(), id)) {
-                e.setCanceled(true);
-                return;
-            }
+        if (ZombiesConfig.ACTIF.get() && e.getLevel().dimension() == Level.OVERWORLD && !(e.getEntity() instanceof ZombieSurvie)
+                && interdit(e.getEntity().getType())) {
+            e.setCanceled(true);
+            return;
         }
         if (!(e.getEntity() instanceof ZombieSurvie z) || z.tenueChoisie) return;
         Genre g = e.getLevel().dimension() == Level.OVERWORLD ? genre(z.getX(), z.getZ()) : null;
         z.tenue(tenue(g, z.getRandom()));
+    }
+
+    /** Types interdits sur la carte deja jugés (chaque entité qui arrive passe ici : balles, objets au sol, créatures) ;
+     *  vidé quand la liste du réglage change. */
+    private static final Map<EntityType<?>, Boolean> INTERDIT = new ConcurrentHashMap<>();
+    private static volatile List<? extends String> interditsLus;
+
+    private static boolean interdit(EntityType<?> type) {
+        List<? extends String> l = ZombiesConfig.INTERDITS.get();
+        if (l != interditsLus) {
+            INTERDIT.clear();
+            interditsLus = l;
+        }
+        Boolean b = INTERDIT.get(type);
+        if (b == null) {
+            ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
+            b = id != null && dans(l, id);
+            INTERDIT.put(type, b);
+        }
+        return b;
     }
 
     private static boolean dans(List<? extends String> liste, ResourceLocation id) {

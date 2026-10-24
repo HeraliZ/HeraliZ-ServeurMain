@@ -2,9 +2,13 @@ package fr.heralisz.utils.zombies;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Attaques animees des zombies de Mutants & Zombies (Crawler, Blister, Brute), sans toucher a leur jar : le serveur
@@ -44,9 +48,27 @@ public final class AttaquesZombies {
     /** Ticks de preparation du bond du Crawler (accroupi) avant le saut. */
     public static final int BOND_PREPARATION = 6;
 
+    /**
+     * Genre de chaque type d'entite deja vu (Optional.empty() : pas un zombie de Mutants & Zombies). genre() est appele a
+     * chaque tick pour chaque creature (serveur) et a chaque image pour chaque creature dessinee (joueur) : sans ce cache,
+     * une recherche dans le registre et une chaine de caracteres creee a chaque appel.
+     */
+    private static final Map<EntityType<?>, Optional<Genre>> CACHE = new ConcurrentHashMap<>();
+
     @Nullable
     public static Genre genre(Entity e) {
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
+        EntityType<?> type = e.getType();
+        Optional<Genre> g = CACHE.get(type);
+        if (g == null) {
+            g = Optional.ofNullable(calculer(type));
+            CACHE.put(type, g);
+        }
+        return g.orElse(null);
+    }
+
+    @Nullable
+    private static Genre calculer(EntityType<?> type) {
+        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
         if (id == null || !"mutantszombies".equals(id.getNamespace())) return null;
         String s = id.toString();
         for (Genre g : Genre.values()) if (g.id.equals(s)) return g;

@@ -37,6 +37,8 @@ import org.joml.Matrix4f;
 public final class Maillage {
     private static final Map<String, Maillage> CACHE = new HashMap<>();
     private static final Maillage VIDE = new Maillage(null, null, null, new Partie[0]);
+    /** Normale de la partie en cours (fil du rendu seulement) : réutilisée, plus une matrice créée par partie et par image. */
+    private static final Matrix3f NORMALE = new Matrix3f();
 
     private final RenderType type, typeTrans, typeAdd;
     private final Partie[] parties;
@@ -151,7 +153,7 @@ public final class Maillage {
         }
         ps.pushPose();
         ps.last().pose().mul(mats[i]);
-        ps.last().normal().mul(new Matrix3f(mats[i]));
+        ps.last().normal().mul(NORMALE.set(mats[i]));
         int col = p.additif ? (int) (255 * (0.12f + 0.88f * nuit)) : 255;
         p.dessiner(ps, vc, p.lumiere ? LightTexture.FULL_BRIGHT : light, t, phase, vent, col);
         ps.popPose();

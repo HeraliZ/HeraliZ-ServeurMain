@@ -15,8 +15,16 @@ public class AnimeBlockEntity extends BlockEntity {
         return getBlockState().getBlock() instanceof AnimeBlock a ? a.genre : Genre.DRAPEAU_HERALIZ;
     }
 
+    /** Boîte de rendu : demandée à chaque image pour le test de visibilité, gardée (le bloc et sa place ne changent pas). */
+    private AABB boite;
+
     @Override
     public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition).inflate(genre().rayon);
+        AABB b = boite;
+        if (b == null) {
+            b = new AABB(worldPosition).inflate(genre().rayon);
+            boite = b;
+        }
+        return b;
     }
 }
