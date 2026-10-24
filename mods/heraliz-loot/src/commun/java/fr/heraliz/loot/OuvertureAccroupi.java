@@ -116,10 +116,19 @@ public final class OuvertureAccroupi {
         return sePose(s);
     }
 
-    /** Bloc qu'on fouille, lu par la fouille avec un objet en main (client/FouilleObjetEnMain, 0.9.16). */
+    /**
+     * Bloc qu'on fouille avec un objet en main (client/FouilleObjetEnMain et FouilleServeur) : seulement nos conteneurs
+     * (loot, largage, rangements de CRac, caisse de ravitaillement des clans, 24/10). Cette demande ne passe pas par le
+     * clic de Minecraft (les plugins comme WorldGuard ne la voient pas) : pour les autres blocs (meubles, coffres de
+     * Minecraft), le clic ordinaire reste.
+     */
     public static boolean fouillable(Level l, BlockPos pos) {
-        return conteneur(l, pos, l.getBlockState(pos));
+        BlockState st = l.getBlockState(pos);
+        return NOTRES.contains(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(st.getBlock()).getNamespace())
+                && conteneur(l, pos, st);
     }
+
+    private static final java.util.Set<String> NOTRES = java.util.Set.of("heraliz_loot", "airstrike", "crac", "heralisz_clans");
 
     @Nullable
     private static Class<?> lancer() {

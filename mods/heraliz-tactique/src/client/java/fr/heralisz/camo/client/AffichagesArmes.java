@@ -20,8 +20,8 @@ import net.minecraft.world.item.ItemStack;
  */
 public final class AffichagesArmes {
    private static final HashMap<String, HashMap<String, Optional<GunDisplayInstance>>> GARDES = new HashMap<>();
-   @Nullable
-   private static ClientLevel monde;
+   /** Lien faible : le monde quitté n'est pas gardé en mémoire (déconnexion, menus). */
+   private static java.lang.ref.WeakReference<ClientLevel> monde = new java.lang.ref.WeakReference<>(null);
    private static long tick = Long.MIN_VALUE;
 
    private AffichagesArmes() {
@@ -56,8 +56,8 @@ public final class AffichagesArmes {
          return null;
       }
       long t = level.getGameTime();
-      if (level != monde || t != tick) {
-         monde = level;
+      if (level != monde.get() || t != tick) {
+         monde = new java.lang.ref.WeakReference<>(level);
          tick = t;
          GARDES.clear();
       }

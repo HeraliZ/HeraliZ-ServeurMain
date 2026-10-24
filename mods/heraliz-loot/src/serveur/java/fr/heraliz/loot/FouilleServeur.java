@@ -58,9 +58,7 @@ final class FouilleServeur {
         Vec3 v = hit.getLocation();
         if (!new AABB(pos).inflate(1.0E-4 + 0.5).contains(v)) return;
         BlockState st = sl.getBlockState(pos);
-        if (!OuvertureAccroupi.fouillable(sl, pos) || !NOTRES.contains(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(st.getBlock()).getNamespace())) {
-            return;
-        }
+        if (!OuvertureAccroupi.fouillable(sl, pos)) return;
         InteractionHand main = InteractionHand.MAIN_HAND;
         PlayerInteractEvent.RightClickBlock e = ForgeHooks.onRightClickBlock(sp, main, pos, hit);
         if (e.isCanceled() || e.getUseBlock() == Event.Result.DENY) {
@@ -70,13 +68,6 @@ final class FouilleServeur {
         InteractionResult r = st.use(sl, sp, main, hit);
         if (r.shouldSwing()) sp.swing(main, true);
     }
-
-    /**
-     * Blocs ouverts par cette demande (24/10) : nos conteneurs seulement (loot, caisse de largage, rangements de CRac).
-     * Ce chemin ne passe pas par le clic de Minecraft : les plugins (WorldGuard) ne le voient pas ; un meuble ou un coffre
-     * d'une zone protégée ne doit pas s'ouvrir par là.
-     */
-    private static final java.util.Set<String> NOTRES = java.util.Set.of("heraliz_loot", "airstrike", "crac");
 
     private static boolean aPortee(ServerPlayer sp, AABB boite) {
         Vec3 yeux = sp.getEyePosition();

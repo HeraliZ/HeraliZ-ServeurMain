@@ -54,7 +54,9 @@ public final class JambeCassee {
    }
 
    private static void saut(LivingEvent.LivingJumpEvent ev) {
-      if (!(ev.getEntity() instanceof Player p) || p.isCreative() || p.isSpectator() || !cassee(p)) {
+      // chez le joueur seulement : le serveur rejoue le saut un peu après ; renvoyer sa vitesse (hurtMarked) faisait
+      // repartir la montée au milieu du saut (on sautait plus haut avec la jambe cassée)
+      if (!(ev.getEntity() instanceof Player p) || !p.level().isClientSide || p.isCreative() || p.isSpectator() || !cassee(p)) {
          return;
       }
       Vec3 v = p.getDeltaMovement();
@@ -70,8 +72,5 @@ public final class JambeCassee {
          p.setSprinting(false);
       }
       p.setDeltaMovement(x * 0.5, v.y, z * 0.5);
-      if (!p.level().isClientSide) {
-         p.hurtMarked = true;
-      }
    }
 }
