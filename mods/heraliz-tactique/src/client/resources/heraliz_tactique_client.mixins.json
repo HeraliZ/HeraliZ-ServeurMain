@@ -15,6 +15,7 @@
     "LivingEntityReleverMixin",
     "HumanoidModelTeteRelevee",
     "BoiteBlancheJoueurMixin",
+    "BoitesDebogageToucheMixin",
     "LocalPlayerInspectMixin",
     "SonsArmeJoueurMixin"
   ],
