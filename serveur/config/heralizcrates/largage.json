@@ -37,10 +37,11 @@
       "nbt": "{AmmoId:\"tacz:45acp\"}"
     },
     {
-      "item": "heralisz_grenade:smoke_grenade",
+      "item": "heralisz_tactical:throwable",
       "count": 2,
       "weight": 50,
-      "rarity": "common"
+      "rarity": "common",
+      "nbt": "{ThrowableId:\"heralisz_grenade:smoke_grenade\"}"
     },
     {
       "item": "tacz:ammo",
@@ -50,41 +51,45 @@
       "nbt": "{AmmoId:\"tacz:308\"}"
     },
     {
-      "item": "heralisz_grenade:m67",
+      "item": "heralisz_tactical:throwable",
       "count": 2,
       "weight": 50,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "nbt": "{ThrowableId:\"heralisz_grenade:m67\"}"
     },
     {
-      "item": "heralisz_grenade:flash_grenade",
+      "item": "heralisz_tactical:throwable",
       "count": 2,
       "weight": 45,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "nbt": "{ThrowableId:\"heralisz_grenade:flash_grenade\"}"
     },
     {
-      "item": "heralisz_grenade:molotov",
+      "item": "heralisz_tactical:throwable",
       "count": 1,
       "weight": 40,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "nbt": "{ThrowableId:\"heralisz_grenade:molotov\"}"
     },
     {
-      "item": "heralisz_grenade:rgn",
+      "item": "heralisz_tactical:throwable",
       "count": 2,
       "weight": 35,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "nbt": "{ThrowableId:\"heralisz_grenade:rgn\"}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 35,
-      "rarity": "uncommon",
+      "rarity": "common",
       "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 30,
-      "rarity": "uncommon",
+      "rarity": "common",
       "nbt": "{GunId:\"tacz:m1911\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
@@ -98,7 +103,7 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 20,
-      "rarity": "rare",
+      "rarity": "epic",
       "nbt": "{GunId:\"tacz:deagle\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
@@ -119,14 +124,14 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 15,
-      "rarity": "rare",
+      "rarity": "epic",
       "nbt": "{GunId:\"tacz:vector45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 15,
-      "rarity": "rare",
+      "rarity": "epic",
       "nbt": "{GunId:\"tacz:p90\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
     },
     {
@@ -161,7 +166,7 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 8,
-      "rarity": "epic",
+      "rarity": "legendary",
       "nbt": "{GunId:\"tacz:aa12\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
     },
     {
@@ -189,7 +194,7 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 8,
-      "rarity": "epic",
+      "rarity": "legendary",
       "nbt": "{GunId:\"tacz:mk14\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
@@ -231,27 +236,21 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 3,
-      "rarity": "legendary",
+      "rarity": "epic",
       "nbt": "{GunId:\"tacz:m249\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
-    },
-    {
-      "item": "dyairdrop:flaregun0",
-      "count": 1,
-      "weight": 4,
-      "rarity": "legendary"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 1,
-      "rarity": "mythic",
+      "rarity": "legendary",
       "nbt": "{GunId:\"tacz:rpg7\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "weight": 1,
-      "rarity": "mythic",
+      "rarity": "legendary",
       "nbt": "{GunId:\"tacz:minigun\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
     }
   ]

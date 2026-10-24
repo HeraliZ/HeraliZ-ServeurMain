@@ -20,12 +20,6 @@
       "rarity": "uncommon"
     },
     {
-      "item": "minecraft:ender_pearl",
-      "count": 8,
-      "weight": 12,
-      "rarity": "uncommon"
-    },
-    {
       "item": "minecraft:fermented_spider_eye",
       "count": 4,
       "weight": 10,
@@ -62,12 +56,6 @@
       "rarity": "legendary",
       "nbt": "{Enchantments:[{id:\"minecraft:sharpness\",lvl:5s},{id:\"minecraft:bane_of_arthropods\",lvl:5s},{id:\"minecraft:unbreaking\",lvl:3s}]}",
       "name": "&4&lCrochet de la Mère"
-    },
-    {
-      "item": "minecraft:elytra",
-      "count": 1,
-      "weight": 2,
-      "rarity": "legendary"
     },
     {
       "item": "minecraft:enchanted_golden_apple",

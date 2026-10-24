@@ -59,12 +59,6 @@
       "commands": [
         "heraliz givekey {player} event 1"
       ]
-    },
-    {
-      "item": "minecraft:elytra",
-      "count": 1,
-      "weight": 2,
-      "rarity": "legendary"
     }
   ]
 }

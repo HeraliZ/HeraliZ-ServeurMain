@@ -80,19 +80,19 @@
       "rarity": "uncommon"
     },
     {
-      "item": "cfm:concrete_military",
+      "item": "cfm:green_beton",
       "count": 8,
       "weight": 25,
       "rarity": "uncommon"
     },
     {
-      "item": "cfm:metal_renforced",
+      "item": "cfm:dark_metal_2",
       "count": 8,
       "weight": 25,
       "rarity": "uncommon"
     },
     {
-      "item": "cfm:metal_fence",
+      "item": "cfm:zombie_chainlinkfence",
       "count": 6,
       "weight": 25,
       "rarity": "uncommon"
@@ -105,12 +105,6 @@
     },
     {
       "item": "cfm:arkaniaz_spotlight",
-      "count": 1,
-      "weight": 15,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "cfm:jerry_can",
       "count": 1,
       "weight": 15,
       "rarity": "uncommon"
@@ -152,13 +146,7 @@
       "rarity": "rare"
     },
     {
-      "item": "cfm:container_military_green",
-      "count": 1,
-      "weight": 10,
-      "rarity": "rare"
-    },
-    {
-      "item": "cfm:military_tent",
+      "item": "cfm:military_tent_1",
       "count": 1,
       "weight": 10,
       "rarity": "rare"
@@ -197,12 +185,6 @@
       "item": "heralisz_bunker:card_reader_blue",
       "count": 1,
       "weight": 6,
-      "rarity": "epic"
-    },
-    {
-      "item": "cfm:container_military_gunrack",
-      "count": 1,
-      "weight": 5,
       "rarity": "epic"
     },
     {

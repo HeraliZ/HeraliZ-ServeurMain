@@ -2,88 +2,102 @@
   "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add trauma <poids> <rarete>. Puis /heraliz reload.",
   "rewards": [
     {
-      "item": "heralisz_heal:ibuprofen",
+      "item": "heralisz_tactical:consumable",
       "count": 2,
       "weight": 240,
-      "rarity": "common"
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}"
     },
     {
-      "item": "heralisz_heal:condensed_milk",
+      "item": "heralisz_tactical:consumable",
       "count": 2,
       "weight": 100,
-      "rarity": "common"
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}"
     },
     {
-      "item": "heralisz_heal:vaseline",
+      "item": "heralisz_tactical:consumable",
       "count": 1,
       "weight": 90,
-      "rarity": "common"
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}"
     },
     {
-      "item": "heralisz_heal:goldenstar",
+      "item": "heralisz_tactical:consumable",
       "count": 1,
       "weight": 90,
-      "rarity": "common"
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}"
     },
     {
-      "item": "heralisz_heal:amoxycillin",
+      "item": "heralisz_tactical:consumable",
       "count": 2,
       "weight": 80,
-      "rarity": "common"
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:amoxycillin\"}"
     },
     {
-      "item": "heralisz_heal:ai2",
+      "item": "heralisz_tactical:consumable",
       "count": 1,
       "weight": 90,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}"
     },
     {
-      "item": "heralisz_heal:carfak",
+      "item": "heralisz_tactical:consumable",
       "count": 1,
       "weight": 75,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}"
     },
     {
-      "item": "heralisz_heal:blood_pack",
+      "item": "heralisz_tactical:consumable",
       "count": 1,
       "weight": 70,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}"
     },
     {
-      "item": "heralisz_heal:ibuprofen",
+      "item": "heralisz_tactical:consumable",
       "count": 5,
       "weight": 30,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}"
     },
     {
-      "item": "heralisz_heal:surv12",
+      "item": "heralisz_tactical:consumable",
       "count": 1,
       "weight": 50,
-      "rarity": "rare"
+      "rarity": "rare",
+      "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}"
     },
     {
-      "item": "heralisz_heal:cms",
+      "item": "heralisz_tactical:consumable",
       "count": 1,
       "weight": 40,
-      "rarity": "rare"
+      "rarity": "rare",
+      "nbt": "{ConsumableId:\"heralisz_heal:cms\"}"
     },
     {
-      "item": "heralisz_heal:blood_pack",
+      "item": "heralisz_tactical:consumable",
       "count": 3,
       "weight": 20,
-      "rarity": "rare"
+      "rarity": "rare",
+      "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}"
     },
     {
-      "item": "heralisz_heal:surv12",
+      "item": "heralisz_tactical:consumable",
       "count": 3,
       "weight": 12,
-      "rarity": "epic"
+      "rarity": "epic",
+      "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}"
     },
     {
-      "item": "heralisz_heal:cms",
+      "item": "heralisz_tactical:consumable",
       "count": 3,
       "weight": 10,
-      "rarity": "epic"
+      "rarity": "epic",
+      "nbt": "{ConsumableId:\"heralisz_heal:cms\"}"
     },
     {
       "item": "minecraft:totem_of_undying",
