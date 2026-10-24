@@ -382,5 +382,22 @@
   "heralisz_utils.bots.action_inconnue": "Unknown action: %s",
   "heralisz_utils.bots.etat1": "Bots: %s (%s alive), players online: %s, entities: %s",
   "heralisz_utils.bots.etat2": "Server: %s ms per tick (%s TPS), memory %s / %s MB",
-  "heralisz_utils.bots.etat3": "In %s s: %s shots, %s throws, %s heals, %s searches, %s strikes, %s supply drops, %s deaths"
+  "heralisz_utils.bots.etat3": "In %s s: %s shots, %s throws, %s heals, %s searches, %s strikes, %s supply drops, %s deaths",
+  "heralisz_utils.diag.actif": "on",
+  "heralisz_utils.diag.coupe": "off",
+  "heralisz_utils.diag.etat.ticks": "Ticks (%s min): average %s ms, 95 %% under %s ms, worst %s ms, %s TPS; %s over 50 ms",
+  "heralisz_utils.diag.etat.serveur": "Players: %s; entities: %s; loaded chunks: %s",
+  "heralisz_utils.diag.etat.monde": "%s: %s entities, %s loaded chunks",
+  "heralisz_utils.diag.etat.types": "Most numerous entities: %s",
+  "heralisz_utils.diag.etat.memoire": "Memory: %s / %s MB; garbage collector (15 min): %s ms, worst pause %s ms",
+  "heralisz_utils.diag.etat.chien": "Watchdog: %s (threshold %s ms, freeze %s ms); reports written: %s; latest: %s",
+  "heralisz_utils.diag.profil.lance": "Profile started for %s s (one sample every %s ms). Report at the end in heraliz_diag/.",
+  "heralisz_utils.diag.profil.deja": "A profile is already running (%s s left).",
+  "heralisz_utils.diag.profil.aucun": "No profile running.",
+  "heralisz_utils.diag.profil.arrete": "Profile stopped: the report is being written.",
+  "heralisz_utils.diag.profil.fini": "Profile done: heraliz_diag/%s",
+  "heralisz_utils.diag.profil.tete": "Top: %s",
+  "heralisz_utils.diag.rapports.aucun": "No report written since startup.",
+  "heralisz_utils.diag.rapports.liste": "Latest reports (heraliz_diag folder): %s",
+  "heralisz_utils.diag.essai": "Test: the server stops for %s ms (the watchdog should write a report)."
 }

@@ -43,5 +43,6 @@ public final class PartieServeur implements Partie {
         fr.heralisz.utils.inspecter.Inspecter.init();            // /inspecter (op) : inventaire, sac, coffres, base
         fr.heralisz.utils.bots.Bots.init();                      // /bots (op 4) : faux joueurs pour éprouver le serveur
         DistanceVue.init();                                      // distance de vue du serveur (heraliz_distances-server.toml)
+        fr.heralisz.utils.diag.Diag.init();                      // diagnostic : chien de garde des ticks, /diag (heraliz_diag-server.toml)
     }
 }

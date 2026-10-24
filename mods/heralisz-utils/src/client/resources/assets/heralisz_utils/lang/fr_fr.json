@@ -382,5 +382,22 @@
   "heralisz_utils.bots.action_inconnue": "Action inconnue : %s",
   "heralisz_utils.bots.etat1": "Bots : %s (%s en vie), joueurs connectés : %s, entités : %s",
   "heralisz_utils.bots.etat2": "Serveur : %s ms par tick (%s TPS), mémoire %s / %s Mo",
-  "heralisz_utils.bots.etat3": "En %s s : %s tirs, %s lancers, %s soins, %s fouilles, %s frappes, %s largages, %s morts"
+  "heralisz_utils.bots.etat3": "En %s s : %s tirs, %s lancers, %s soins, %s fouilles, %s frappes, %s largages, %s morts",
+  "heralisz_utils.diag.actif": "actif",
+  "heralisz_utils.diag.coupe": "coupé",
+  "heralisz_utils.diag.etat.ticks": "Ticks (%s min) : moyenne %s ms, 95 %% sous %s ms, pire %s ms, %s TPS ; %s au-delà de 50 ms",
+  "heralisz_utils.diag.etat.serveur": "Joueurs : %s ; entités : %s ; tronçons chargés : %s",
+  "heralisz_utils.diag.etat.monde": "%s : %s entités, %s tronçons chargés",
+  "heralisz_utils.diag.etat.types": "Entités les plus nombreuses : %s",
+  "heralisz_utils.diag.etat.memoire": "Mémoire : %s / %s Mo ; ramasse-miettes (15 min) : %s ms, pire pause %s ms",
+  "heralisz_utils.diag.etat.chien": "Chien de garde : %s (seuil %s ms, blocage %s ms) ; rapports écrits : %s ; dernier : %s",
+  "heralisz_utils.diag.profil.lance": "Profil lancé pour %s s (un échantillon toutes les %s ms). Rapport à la fin dans heraliz_diag/.",
+  "heralisz_utils.diag.profil.deja": "Un profil est déjà en cours (%s s restantes).",
+  "heralisz_utils.diag.profil.aucun": "Aucun profil en cours.",
+  "heralisz_utils.diag.profil.arrete": "Profil arrêté : le rapport est en cours d'écriture.",
+  "heralisz_utils.diag.profil.fini": "Profil fini : heraliz_diag/%s",
+  "heralisz_utils.diag.profil.tete": "En tête : %s",
+  "heralisz_utils.diag.rapports.aucun": "Aucun rapport écrit depuis le démarrage.",
+  "heralisz_utils.diag.rapports.liste": "Derniers rapports (dossier heraliz_diag) : %s",
+  "heralisz_utils.diag.essai": "Essai : le serveur s'arrête %s ms (le chien de garde doit écrire un rapport)."
 }

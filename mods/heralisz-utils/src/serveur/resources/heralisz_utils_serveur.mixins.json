@@ -4,6 +4,7 @@
   "package": "fr.heralisz.utils.serveur.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "DiagTickEntiteMixin",
     "TaczBoiteTrainMixin",
     "VehiculeConduiteMixin",
     "VehiculeSansCoffreMixin",

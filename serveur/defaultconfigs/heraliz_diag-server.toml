@@ -1,0 +1,26 @@
+# Diagnostic du serveur (HeraliZ Utils 2.27.0) : chien de garde des ticks, /diag etat, /diag profil <secondes>.
+# Rapports dans heraliz_diag/ à la racine du serveur (jamais dans le monde), lus par le workflow « Diagnostic du serveur ».
+[diag]
+	# Chien de garde des ticks et résumé dans le journal. false : seul /diag profil reste possible.
+	actif = true
+	# Un tick plus long que ce nombre de millisecondes est échantillonné (piles du fil du serveur) jusqu'à sa fin.
+	# Range: 60 ~ 10000
+	seuil_ms = 150
+	# Au-delà (ms) : rapport « blocage » à part, avec la pile entière de chaque échantillon et les piles de tous les fils.
+	# Range: 200 ~ 60000
+	blocage_ms = 2000
+	# Écart entre deux échantillons pendant un tick long (ms).
+	# Range: 2 ~ 100
+	intervalle_ms = 10
+	# Écart entre deux échantillons pendant /diag profil (ms).
+	# Range: 2 ~ 100
+	profil_intervalle_ms = 5
+	# Rapports gardés dans le dossier heraliz_diag (les plus anciens sont effacés, les blocages en dernier).
+	# Range: 5 ~ 500
+	rapports_max = 50
+	# Une ligne [diag] de résumé dans le journal toutes les N minutes (0 : jamais).
+	# Range: 0 ~ 120
+	resume_minutes = 5
+	# Ticks longs (sous le seuil de blocage) regroupés dans un même rapport pendant N secondes.
+	# Range: 5 ~ 3600
+	ecart_rapports_secondes = 60

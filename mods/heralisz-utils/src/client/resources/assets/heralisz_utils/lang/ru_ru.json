@@ -382,5 +382,22 @@
   "heralisz_utils.bots.action_inconnue": "Неизвестное действие: %s",
   "heralisz_utils.bots.etat1": "Боты: %s (живых %s), игроков онлайн: %s, сущностей: %s",
   "heralisz_utils.bots.etat2": "Сервер: %s мс на тик (%s TPS), память %s / %s МБ",
-  "heralisz_utils.bots.etat3": "За %s с: выстрелов %s, бросков %s, лечений %s, обысков %s, авиаударов %s, сбросов %s, смертей %s"
+  "heralisz_utils.bots.etat3": "За %s с: выстрелов %s, бросков %s, лечений %s, обысков %s, авиаударов %s, сбросов %s, смертей %s",
+  "heralisz_utils.diag.actif": "включён",
+  "heralisz_utils.diag.coupe": "выключен",
+  "heralisz_utils.diag.etat.ticks": "Тики (%s мин): в среднем %s мс, 95 %% меньше %s мс, худший %s мс, %s TPS; дольше 50 мс: %s",
+  "heralisz_utils.diag.etat.serveur": "Игроков: %s; сущностей: %s; загруженных чанков: %s",
+  "heralisz_utils.diag.etat.monde": "%s: сущностей %s, загруженных чанков %s",
+  "heralisz_utils.diag.etat.types": "Больше всего сущностей: %s",
+  "heralisz_utils.diag.etat.memoire": "Память: %s / %s МБ; сборщик мусора (15 мин): %s мс, худшая пауза %s мс",
+  "heralisz_utils.diag.etat.chien": "Сторож тиков: %s (порог %s мс, зависание %s мс); отчётов записано: %s; последний: %s",
+  "heralisz_utils.diag.profil.lance": "Профилирование запущено на %s с (один замер каждые %s мс). Отчёт в конце в heraliz_diag/.",
+  "heralisz_utils.diag.profil.deja": "Профилирование уже идёт (осталось %s с).",
+  "heralisz_utils.diag.profil.aucun": "Профилирование не идёт.",
+  "heralisz_utils.diag.profil.arrete": "Профилирование остановлено: отчёт записывается.",
+  "heralisz_utils.diag.profil.fini": "Профилирование окончено: heraliz_diag/%s",
+  "heralisz_utils.diag.profil.tete": "Больше всего: %s",
+  "heralisz_utils.diag.rapports.aucun": "С запуска не записано ни одного отчёта.",
+  "heralisz_utils.diag.rapports.liste": "Последние отчёты (папка heraliz_diag): %s",
+  "heralisz_utils.diag.essai": "Проверка: сервер остановится на %s мс (сторож тиков должен записать отчёт)."
 }
