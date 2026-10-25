@@ -9,7 +9,6 @@ Le côté reprend la terre du pack (dirt.png, 32 px) pour que côté et terre so
 """
 import argparse
 import os
-import math
 import random
 
 from PIL import Image
@@ -28,59 +27,35 @@ VARIANTES = {
 TEINTES = {"plaine": (0x91, 0xBD, 0x59), "forêt": (0x79, 0xC0, 0x5A), "taïga": (0x86, 0xB7, 0x83)}
 
 
-def bruit_doux(r, cellule):
-    """Bruit lisse qui se raccorde sur les bords (taches claires / sombres sur plusieurs points)."""
-    n = T // cellule
-    g = [[r.random() for _ in range(n)] for _ in range(n)]
-    out = [[0.0] * T for _ in range(T)]
-    for y in range(T):
-        for x in range(T):
-            fx, fy = x / cellule, y / cellule
-            x0, y0 = int(fx) % n, int(fy) % n
-            x1, y1 = (x0 + 1) % n, (y0 + 1) % n
-            tx, ty = fx - int(fx), fy - int(fy)
-            tx, ty = tx * tx * (3 - 2 * tx), ty * ty * (3 - 2 * ty)
-            h = g[y0][x0] * (1 - tx) + g[y0][x1] * tx
-            l = g[y1][x0] * (1 - tx) + g[y1][x1] * tx
-            out[y][x] = h * (1 - ty) + l * ty - 0.5
-    return out
-
-
 def gris_herbe(lum, contraste, graine):
-    """Dessus : fond sombre entre les brins, touffes de brins (pied sombre, pointe claire), taches douces."""
     r = random.Random(graine)
-    gros, fin = bruit_doux(r, 16), bruit_doux(r, 4)
-    v = [[lum - contraste * 0.55 + gros[y][x] * contraste * 0.9 + fin[y][x] * contraste * 0.5
-          for x in range(T)] for y in range(T)]
-    for _ in range(T * T // 5):
-        x, y = r.randrange(T), r.randrange(T)
-        longueur = r.choice((2, 2, 3, 3, 4))
-        dx = r.choice((-1, 0, 0, 0, 1))
-        eclat = r.uniform(0.6, 1.25)
-        for k in range(longueur):
-            px, py = (x + (dx if k == longueur - 1 else 0)) % T, (y - k) % T
-            t = (k + 1) / longueur
-            v[py][px] = max(v[py][px], lum - contraste * 0.3 + contraste * eclat * t)
-    for _ in range(T * T // 40):  # petits trous d'ombre au pied des touffes
-        x, y = r.randrange(T), r.randrange(T)
-        v[y][x] = lum - contraste * 1.3
     img = Image.new("RGBA", (T, T))
     for y in range(T):
         for x in range(T):
-            q = max(25, min(235, int(v[y][x])))
-            img.putpixel((x, y), (q, q, q, 255))
+            # brins : bruit par point + petits traits verticaux plus clairs / plus sombres
+            v = lum + r.gauss(0, contraste * 0.45)
+            if r.random() < 0.10:
+                v += contraste
+            if r.random() < 0.08:
+                v -= contraste
+            v = max(30, min(235, int(v)))
+            img.putpixel((x, y), (v, v, v, 255))
+    # quelques brins de 2 points de haut (lisible comme de l'herbe, pas du bruit)
+    for _ in range(T * T // 14):
+        x, y = r.randrange(T), r.randrange(T)
+        v = min(235, lum + contraste + r.randint(0, 12))
+        img.putpixel((x, y), (v, v, v, 255))
+        img.putpixel((x, (y + 1) % T), (v - 8, v - 8, v - 8, 255))
     return img
 
 
 def frange(prof, graine):
-    """Hauteur de la frange pour chaque colonne : bord de touffes, avec des brins qui pendent."""
+    """Hauteur de la frange pour chaque colonne (bord irrégulier façon vanilla)."""
     r = random.Random(graine)
     h = []
     for x in range(T):
-        base = prof + int(2.2 * math.sin(x * 0.9) + 1.4 * math.sin(x * 2.3 + 1))
-        if r.random() < 0.22:
-            base += r.randint(2, 4)  # brin qui descend sur la terre
-        h.append(max(3, base))
+        base = prof + (2 if x % 5 == 0 else 0) - (1 if x % 3 == 1 else 0)
+        h.append(max(3, base + r.choice((-2, -1, 0, 0, 1, 2))))
     return h
 
 
@@ -92,23 +67,17 @@ def faire(var):
     surcouche = Image.new("RGBA", (T, T), (0, 0, 0, 0))
     for x in range(T):
         for y in range(hs[x]):
-            q = dessus.getpixel((x, y))[0]
-            if y == 0:
-                q = min(235, q + 18)          # arête du bloc éclairée
-            elif y >= hs[x] - 1:
-                q = max(25, q - 22)           # pointe du brin dans l'ombre
-            surcouche.putpixel((x, y), (q, q, q, 255))
+            surcouche.putpixel((x, y), dessus.getpixel((x, y)))
     # côté de base (sans teinte, vu en graphismes rapides et par certains mods) : terre + frange verte foncée
     cote = terre.copy()
     vert = teinter(surcouche, TEINTES["plaine"])
     cote.alpha_composite(vert)
     # ombre douce sous la frange, sur la terre
     for x in range(T):
-        for k, f in ((0, 0.6), (1, 0.8)):
-            y = hs[x] + k
-            if y < T:
-                p = cote.getpixel((x, y))
-                cote.putpixel((x, y), tuple(int(c * f) for c in p[:3]) + (255,))
+        y = hs[x]
+        if y < T:
+            p = cote.getpixel((x, y))
+            cote.putpixel((x, y), tuple(int(c * 0.7) for c in p[:3]) + (255,))
     return dessus, cote, surcouche
 
 
