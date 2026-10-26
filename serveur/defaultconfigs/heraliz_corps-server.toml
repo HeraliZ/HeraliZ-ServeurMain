@@ -23,5 +23,5 @@
 	#Range: 2.0 ~ 16.0
 	distance_fouille = 5.0
 	#Dimensions ou aucun corps n'apparait (les matchs gerent leurs morts eux-memes)
-	dimensions_exclues = ["heralisz_matchs:arenes", "heralisz_matchs:zombies"]
+	dimensions_exclues = ["heraliz_clashwar:arenes"]
 

@@ -18,7 +18,7 @@ const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { chargerClePublique, verifierPack } = require('./signature')
 const { CompteSite, erreurDiscord } = require('./compte-site')
 const Spartan = require('./spartan')
-const { effacerDonneesJeu } = require('./effacement')
+const { effacerDonneesJeu, retirerAnciensGunpacks } = require('./effacement')
 
 // Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur ; Mac : trousseau ;
 // Linux : GNOME Keyring ou KWallet). Sans vrai chiffrement disponible, il n'est pas gardé : il faudra se reconnecter
@@ -589,6 +589,13 @@ class LauncherService {
             Config.setMaxRAM(this.config.serverId, `${settings.ramGB}G`)
             Config.save()
             const { version, loader } = await this.repair(distro, server)
+            // anciens dossiers de gunpacks (noms d'ArkaniaZ, 26/10) : retirés du dossier du jeu, jamais bloquant
+            try {
+                const r = retirerAnciensGunpacks({ dossierInstances: Config.getInstanceDirectory(), serveur: this.config.serverId })
+                if (r.erreurs.length) console.warn('[HeraliZ/gunpacks] anciens dossiers pas tous retirés', r.erreurs.map(e => e.code))
+            } catch (erreur) {
+                console.warn('[HeraliZ/gunpacks]', erreur?.message)
+            }
             this.emit('launch', 'Démarrage de Minecraft…')
             const jetonSpartan = await this.jetonSpartan()
             const pb = new ProcessBuilder(server, version, loader, profile, app.getVersion(), jetonSpartan)

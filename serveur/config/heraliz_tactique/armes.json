@@ -2,18 +2,6 @@
   "_aide": "Dégâts des armes TaCZ contre les JOUEURS (mod Tactique, serveur). « degats » : une balle (un plomb pour un fusil à pompe) à courte distance ; la baisse avec la distance et les accessoires gardent leur effet. « tete » : multiplicateur d'un tir à la tête. « plafond » (fusils à pompe) : dégâts au plus d'un tir, tous plombs. Arme absente : dégâts de TaCZ. Fichier ÉCRIT par outils/equilibrage_armes.py : changer le script et le relancer. Relu à chaque démarrage du serveur.",
   "actif": true,
   "armes": {
-    "arkaniaz_custom:vector_firmax": {
-      "famille": "smg_45",
-      "rarete": "legendaire",
-      "degats": 4.97,
-      "tete": 1.5
-    },
-    "arkaniaz_custom:vectorhy": {
-      "famille": "smg_45",
-      "rarete": "legendaire",
-      "degats": 4.97,
-      "tete": 1.5
-    },
     "tacz:aa12": {
       "famille": "pompe",
       "rarete": "legendaire",
@@ -568,12 +556,6 @@
       "degats": 4.14,
       "tete": 1.6
     },
-    "maxstuff:m82a2": {
-      "famille": "precision_50",
-      "rarete": "legendaire",
-      "degats": 23.76,
-      "tete": 2.0
-    },
     "maxstuff:m870t": {
       "famille": "pompe",
       "rarete": "rare",
@@ -683,6 +665,18 @@
       "rarete": "epique",
       "degats": 5.41,
       "tete": 1.7
+    },
+    "arkaniaz_custom:vector_firmax": {
+      "famille": "smg_45",
+      "rarete": "legendaire",
+      "degats": 4.97,
+      "tete": 1.5
+    },
+    "arkaniaz_custom:vectorhy": {
+      "famille": "smg_45",
+      "rarete": "legendaire",
+      "degats": 4.97,
+      "tete": 1.5
     },
     "heraliz_fuse:m14": {
       "famille": "fusil_308",

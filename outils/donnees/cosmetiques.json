@@ -1,0 +1,451 @@
+{
+ "_note": "Copie (26/10) du contenu des anciennes caisses Camo et Stickers : source des caisses cosmétiques écrites par outils/caisses.py. Ne pas modifier sans raison.",
+ "camos": [
+  {
+   "item": "heralisz_camo:camo_crimson",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:camo_navy",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:camo_arctic",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:camo_olive",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:camo_sand",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:camo_sakura",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:camo_carbon",
+   "rarity": "uncommon"
+  },
+  {
+   "item": "heralisz_camo:camo_woodland",
+   "rarity": "uncommon"
+  },
+  {
+   "item": "heralisz_camo:camo_digital",
+   "rarity": "uncommon"
+  },
+  {
+   "item": "heralisz_camo:camo_tiger",
+   "rarity": "uncommon"
+  },
+  {
+   "item": "heralisz_camo:camo_rust",
+   "rarity": "uncommon"
+  },
+  {
+   "item": "heralisz_camo:camo_damascus",
+   "rarity": "uncommon"
+  },
+  {
+   "item": "heralisz_camo:camo_ice",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:camo_toxic",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:camo_plasma",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:camo_circuit",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:camo_gold",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_honeycomb",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_lava",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_galaxy",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_solar",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_borealis",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_afterlife",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_bioluminescence",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_genesis",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_dark_aether",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_infestation",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_atomic",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_obsidian",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_glitch",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_amethyst",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_diamond",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_black_ice",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_orion",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_singularity",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_nexus_horizon",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_dark_matter_nuclear",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_liquid_chrome",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_dragon",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_storm",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_dark_matter",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:skinx_seraphin",
+   "rarity": "mythic"
+  },
+  {
+   "item": "heralisz_camo:skinx_chaines_enfer",
+   "rarity": "mythic"
+  },
+  {
+   "item": "heralisz_camo:skinx_texture_manquante",
+   "rarity": "mythic"
+  },
+  {
+   "item": "heralisz_camo:skinx_money_gun",
+   "rarity": "mythic"
+  },
+  {
+   "item": "heralisz_camo:skinx_surchauffe",
+   "rarity": "mythic"
+  },
+  {
+   "item": "heralisz_camo:skinx_trophee",
+   "rarity": "mythic"
+  }
+ ],
+ "stickers": [
+  {
+   "item": "heralisz_camo:sticker_ace",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_headshot",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_clutch",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_one_tap",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_no_scope",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_glhf",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_reaper",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_wolf",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_viper",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_boom",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_frag",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_skull_king",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_biohazard",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_radioactive",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_survivor",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_outbreak",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_dead_zone",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_lock_n_load",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_elite",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_phoenix",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_oni",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_kitsune",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_katana",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_volt",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_diamond",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_toxic",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_rage_quit",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_last_hp",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_rng",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_blood_money",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_wallbang",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_ggwp",
+   "rarity": "common"
+  },
+  {
+   "item": "heralisz_camo:sticker_ace_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_headshot_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_clutch_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_one_tap_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_no_scope_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_reaper_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_wolf_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_boom_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_skull_king_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_biohazard_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_phoenix_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_oni_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_kitsune_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_volt_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_diamond_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_ggwp_holo",
+   "rarity": "rare"
+  },
+  {
+   "item": "heralisz_camo:sticker_ace_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_reaper_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_wolf_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_skull_king_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_phoenix_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_oni_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_katana_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_volt_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_diamond_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_blood_money_foil",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:sticker_ace_gold",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:sticker_skull_king_gold",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:sticker_phoenix_gold",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:sticker_diamond_gold",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:sticker_ggwp_gold",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:sticker_oni_gold",
+   "rarity": "legendary"
+  }
+ ]
+}

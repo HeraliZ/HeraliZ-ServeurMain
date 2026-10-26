@@ -99,8 +99,30 @@ function effacerDonneesJeu(options) {
     return resultat
 }
 
+// Anciens dossiers de gunpacks (noms hérités d'ArkaniaZ, renommés le 26/10 ; Cislumen_Armory retiré) : le pack ne les
+// contient plus, mais le launcher ne retire jamais seul un fichier tacz qui a quitté le pack. Liste fixe, jamais un
+// dossier inconnu : seul ce qui est nommé ici, dans <instance>/tacz, est effacé (même contrôle que effacerDonneesJeu).
+const ANCIENS_GUNPACKS = ['arkaniaz_pack_0_converted', 'arkaniaz_pack_1_converted', 'arkaniaz_pack_2_converted',
+    'arkaniaz_pack_3_converted', 'arkaniaz_pack_4_converted', 'arkaniaz_pack_5_converted', 'arkaniaz_custom_converted',
+    'Cislumen_Armory']
+
+// { effaces: [chemins], erreurs: [{ chemin, code }] } ; rien hors de <dossierInstances>/<serveur>/tacz.
+function retirerAnciensGunpacks({ dossierInstances, serveur }) {
+    const resultat = { effaces: [], erreurs: [] }
+    if (typeof serveur !== 'string' || !/^[\w.-]+$/.test(serveur) || typeof dossierInstances !== 'string') return resultat
+    const tacz = path.join(dossierInstances, serveur, 'tacz')
+    for (const nom of ANCIENS_GUNPACKS) {
+        const sur = cheminSur(tacz, path.join(tacz, nom))
+        if (!sur) continue
+        const avant = resultat.erreurs.length
+        effacerSansSuivre(sur, resultat.erreurs)
+        if (resultat.erreurs.length === avant) resultat.effaces.push(sur)
+    }
+    return resultat
+}
+
 function estLien(chemin) {
     try { return fs.lstatSync(chemin).isSymbolicLink() } catch { return false }
 }
 
-module.exports = { cheminSur, effacerSansSuivre, effacerDonneesJeu, ciblesJeu, GARDER_INSTANCE }
+module.exports = { cheminSur, effacerSansSuivre, effacerDonneesJeu, ciblesJeu, retirerAnciensGunpacks, ANCIENS_GUNPACKS, GARDER_INSTANCE }

@@ -1,0 +1,18 @@
+{
+ "_note": "Conteneurs de soins de niveau 6 (soins6_...). Écrit par outils/loot_armes.py (PARTS_SOINS ; ne pas modifier à la main).",
+ "emplacements": [2, 3],
+ "objets": [
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 107921, "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}", "_cat": "soins_famille", "_base": 1905},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 132600, "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}", "_cat": "soins_famille", "_base": 1524},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 64753, "nbt": "{ConsumableId:\"heralisz_heal:amoxycillin\"}", "_cat": "soins_famille", "_base": 1143},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 99977, "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}", "_cat": "soins_famille", "_base": 952},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 80023, "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}", "_cat": "soins_famille", "_base": 762},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 66300, "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}", "_cat": "soins_famille", "_base": 762},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 74111, "nbt": "{ConsumableId:\"heralisz_heal:surv12\"}", "_cat": "soins_famille", "_base": 667},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 32348, "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}", "_cat": "soins_famille", "_base": 571},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 49682, "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}", "_cat": "soins_famille", "_base": 571},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 15889, "nbt": "{ConsumableId:\"heralisz_heal:cms\"}", "_cat": "soins_famille", "_base": 143},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 191418, "nbt": "{ConsumableId:\"heralisz_heal:bandage\"}", "_cat": "soins_famille", "_base": 2200},
+  {"item": "heralisz_tactical:consumable", "nombre": [1, 1], "poids": 84978, "nbt": "{ConsumableId:\"heralisz_heal:attelle\"}", "_cat": "soins_famille", "_base": 1500}
+ ]
+}

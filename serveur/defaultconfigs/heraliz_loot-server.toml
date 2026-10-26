@@ -6,7 +6,7 @@
 	#Part des conteneurs d'une zone qui sont actifs (0.2 = 1 sur 5), si la zone ne précise pas "actifs".
 	proportion_actifs = 0.2
 	#Facteur de la part d'actifs par niveau de zone, T1 à T7.
-	facteurs_actifs = [0.807, 0.647, 0.668, 0.695, 0.561, 0.400, 0.129]
+	facteurs_actifs = [0.932, 0.746, 0.802, 0.834, 0.714, 0.546, 0.129]
 	#Délai minimal (secondes) avant qu'un autre conteneur de la zone se remplisse quand un conteneur a été vidé.
 	delai_min_secondes = 240
 	#Délai maximal (secondes). Le délai est tiré au hasard entre le minimum et le maximum.

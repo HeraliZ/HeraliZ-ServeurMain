@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_evenements:item/3d/mallette_scellee"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_evenements:item/icon/mallette_scellee"
+    }
+  }
+}

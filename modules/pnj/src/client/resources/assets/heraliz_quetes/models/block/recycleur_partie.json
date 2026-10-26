@@ -1,0 +1,6 @@
+{
+  "credit": "HeraliZ, modules/pnj/outils/recycleur_modele.py",
+  "textures": {
+    "particle": "heraliz_quetes:block/recycleur"
+  }
+}

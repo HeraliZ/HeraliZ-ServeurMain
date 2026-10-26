@@ -1,0 +1,11 @@
+// HeraliZ Bunker : portes animées, cartes d'accès, barricades, salles à carte (code de HBM Modernized, GPL).
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    compileOnly fg.deobf("blank:player-animation-lib-forge:1.0.2")
+}

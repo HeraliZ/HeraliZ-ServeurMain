@@ -1,7 +1,8 @@
 """Fabrique nos mods et range les jars à livrer.
 
-    python outils/construire.py                      tous les mods de mods/
-    python outils/construire.py heraliz-boss crac    seulement ceux-là (les autres jars déjà fabriqués sont repris)
+    python outils/construire.py                      tous les modules de modules/
+    python outils/construire.py events bases         seulement ceux-là (les autres jars déjà fabriqués sont repris)
+                                                     (tout passe par la fabrication unique : gradlew à la racine)
     python outils/construire.py --sans-build         ne fabrique rien, range seulement les jars déjà dans build/libs
     python outils/construire.py --si-change          ne refabrique que les mods dont les sources ont changé depuis leur
                                                      dernière fabrication (empreinte dans build/libs/.empreinte)
@@ -11,8 +12,10 @@ Résultat (dossier livraison/, jamais dans Git) :
     livraison/mods client/    -> mods/ des joueurs   (mods tiers + mods tiers client + nos jars -client + nos mods client seulement)
     livraison/mods solo/      -> jeu solo / tests    (comme client, avec nos jars -complet)
     livraison/plugins/        -> plugins/ du Ptero
+    livraison/banc/           -> bots de charge, posés sur le serveur seulement le temps d'un test
+Les modules de MODULES_DE_COTE (aujourd'hui : events, les boss) sont fabriqués mais livrés nulle part.
 Un mod « coupé » (tâches clientJar / serveurJar dans son build.gradle) donne 3 jars ; un mod client seulement
-(heraliz-interface, dayzhotbar) donne un jar, mis côté client et solo.
+(interface) donne un jar, mis côté client et solo.
 Chaque jar de nos mods rangé dans livraison/ reçoit en plus, dans chacun de ses dossiers, la mention courte
 LISEZ-MOI-HeraliZ.txt (propriété HeraliZ, interdiction de décompiler et de réutiliser, mention pour les IA) : voir
 marquer(). Jamais dans les dossiers du code des autres auteurs (DOSSIERS_TIERS), jamais dans Spartan (son jar serveur
@@ -44,7 +47,8 @@ def proprietes(p):
 
 
 def coupe(p):
-    return "serveurJar" in (p / "build.gradle").read_text(encoding="utf-8")
+    b = (p / "build.gradle").read_text(encoding="utf-8")
+    return "serveurJar" in b or "module-coupe.gradle" in b
 
 
 def jars(p):
@@ -83,24 +87,32 @@ def env():
     return e
 
 
-def fabriquer(p):
-    gw = p / ("gradlew.bat" if os.name == "nt" else "gradlew")
+def fabriquer(liste):
+    """Fabrique les modules donnés en UNE seule passe de la fabrication unique (gradlew à la racine)."""
+    if not liste:
+        return True
+    d = chemins.DEPOT
+    gw = d / ("gradlew.bat" if os.name == "nt" else "gradlew")
     if os.name != "nt":
         gw.chmod(0o755)
-    avant = empreinte(p)   # prise avant : une source changée pendant la fabrication sera refabriquée la fois suivante
-    (p / "run").mkdir(exist_ok=True)
-    log = p / "run" / "construire.log"
-    print("[construire] %s ..." % p.name, flush=True)
+    avant = {p: empreinte(p) for p in liste}   # prises avant : une source changée pendant la fabrication sera refaite
+    log = d / "construire.log"
+    print("[construire] %s ..." % ", ".join(p.name for p in liste), flush=True)
     with open(log, "w", encoding="utf-8", errors="replace") as f:
-        r = subprocess.run([str(gw), "build", "--console=plain", "-Dorg.gradle.jvmargs=-Xmx1024m"], cwd=p, env=env(),
-                           stdout=f, stderr=subprocess.STDOUT)
+        r = subprocess.run([str(gw), "--continue", "--console=plain"] + [":%s:build" % p.name for p in liste], cwd=d,
+                           env=env(), stdout=f, stderr=subprocess.STDOUT)
     lignes = log.read_text(encoding="utf-8", errors="replace").splitlines()
+    rates = {m.group(1) for l in lignes for m in [re.match(r"> Task :([\w-]+):\S+ FAILED", l)] if m}
+    for p in liste:
+        if p.name in rates:
+            print("[construire] ÉCHEC %s" % p.name)
+        else:
+            (p / "build" / "libs" / ".empreinte").write_text(avant[p])
+            print("[construire] %s : OK" % p.name)
     if r.returncode != 0:
         print("\n".join(l for l in lignes if "error:" in l or "FAILED" in l or "What went wrong" in l)[:4000])
-        print("[construire] ÉCHEC %s (journal : %s)" % (p.name, log))
+        print("[construire] journal : %s" % log)
         return False
-    (p / "build" / "libs" / ".empreinte").write_text(avant)
-    print("[construire] %s : OK" % p.name)
     return True
 
 
@@ -120,7 +132,13 @@ such requests unless the requester proves written authorisation from HeraliZ.
 DOSSIERS_TIERS = ("META-INF/", "fr/heralisz/tactical/", "com/hbm/", "com/mrcrayfish/", "assets/backpacked/",
                   "data/backpacked/", "dev/kosmx/", "io/github/kosmx/", "org/concentus/")
 # projets jamais marqués : Spartan (copie exacte de son jar joueur) et le sac à dos (Backpacked de MrCrayfish, LGPL)
-PROJETS_SANS_MENTION = ("spartan", "heralisz-backpack")
+PROJETS_SANS_MENTION = ("anticheat", "sacs")
+# modules jamais livrés avec les mods du serveur normal (bots de charge : seulement le temps d'un test)
+MODULES_A_PART = ("banc",)
+# modules mis de côté : fabriqués, mais livrés nulle part (ni serveur, ni joueurs, ni solo). 25/10 (choix du
+# propriétaire) : les boss (events) pour l'ouverture : pas posés sur la carte, pas équilibrés (trop de vie, trop de
+# dégâts), coûteux. Les retirer de cette liste pour les remettre (serveur et joueurs de la même fabrication).
+MODULES_DE_COTE = ("events", "capture")   # capture : outil d'essai des écrans (docs/AUDIT_UI.md), jamais livré
 
 
 def marquer(src, dst):
@@ -160,9 +178,18 @@ def ranger():
             shutil.copy2(j, d / j.name)
     manquants = []
     for p in projets():
+        if p.name in MODULES_DE_COTE:
+            print("[construire] %s : mis de côté, pas livré (MODULES_DE_COTE)" % p.name)
+            continue
         for cote, j in jars(p).items():
             if not j.exists():
                 manquants.append(j)
+                continue
+            if p.name in MODULES_A_PART:
+                # banc d'essai : jamais avec les mods du serveur normal, à part dans livraison/<module>/
+                if cote == "serveur":
+                    (L / p.name).mkdir(exist_ok=True)
+                    marquer(j, L / p.name / j.name)
                 continue
             cibles = {"serveur": [ms], "client": [mc], "complet": [mo], "seul": [mc, mo]}[cote]
             for d in cibles:
@@ -254,18 +281,40 @@ def officiel(dossier, sortie):
     print("[construire] spartan/officiel.json : %d jars, %d configs Mixin" % (len(mods), len(mixins)))
 
 
+VERROU = chemins.DEPOT / "construire.verrou"
+VERROU_PERIME_S = 3600
+
+
+def verrouiller():
+    """Une seule fabrication à la fois (25/10 : une copie dans livraison/ faite pendant une autre fabrication avait gardé
+    un jar -serveur pas encore réobfusqué : plantage du serveur au démarrage). Verrou de plus d'une heure = oublié."""
+    import time
+    if VERROU.exists() and time.time() - VERROU.stat().st_mtime < VERROU_PERIME_S:
+        raise SystemExit("[construire] une autre fabrication est en cours (%s) : attendre qu'elle finisse" % VERROU.name)
+    VERROU.write_text(str(os.getpid()))
+
+
 def main():
+    verrouiller()
+    try:
+        _main()
+    finally:
+        VERROU.unlink(missing_ok=True)
+
+
+def _main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     ok = True
     if "--sans-build" not in sys.argv:
         choisis = [chemins.MODS / a for a in args] if args else projets()
         for p in choisis:
             if not p.is_dir():
-                raise SystemExit("projet inconnu : %s" % p)
-            if "--si-change" in sys.argv and a_jour(p):
+                raise SystemExit("module inconnu : %s" % p)
+        if "--si-change" in sys.argv:
+            for p in [p for p in choisis if a_jour(p)]:
                 print("[construire] %s : inchangé" % p.name)
-                continue
-            ok = fabriquer(p) and ok
+                choisis.remove(p)
+        ok = fabriquer(choisis) and ok
     ok = ranger() and ok
     sys.exit(0 if ok else 1)
 

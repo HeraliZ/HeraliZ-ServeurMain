@@ -1,0 +1,13 @@
+// Réanimation : joueurs à terre, réanimation, fouille, exécutions.
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    compileOnly fg.deobf("blank:curios-forge:5.14.1")
+    // kit HUD commun (polices, palette, anneau de progression : fr.heraliz.noyau.client.kit, refonte du 25/10)
+    compileOnly project(path: ':noyau', configuration: 'devComplet')
+}

@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/slab_top",
- "textures": {
-  "bottom": "heralisz_matchs:block/zombies/giant_mat/tole_larmee_0",
-  "top": "heralisz_matchs:block/zombies/giant_mat/tole_larmee_0",
-  "side": "heralisz_matchs:block/zombies/giant_mat/tole_larmee_0"
- }
-}

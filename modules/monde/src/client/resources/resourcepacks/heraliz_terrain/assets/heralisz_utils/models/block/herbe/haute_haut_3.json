@@ -1,0 +1,7 @@
+{
+ "parent": "heralisz_utils:block/herbe/haute_fleurs",
+ "textures": {
+  "cross": "minecraft:block/tall_grass_top3",
+  "overlay": "minecraft:block/tall_grass_top3_overlay"
+ }
+}

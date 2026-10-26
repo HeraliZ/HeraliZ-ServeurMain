@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:dirt",
+    "#minecraft:sand",
+    "#minecraft:base_stone_overworld",
+    "minecraft:grass_block",
+    "minecraft:gravel",
+    "minecraft:snow_block",
+    "minecraft:snow",
+    "minecraft:clay",
+    "minecraft:mud",
+    "minecraft:coarse_dirt",
+    "minecraft:podzol",
+    {"id": "heralisz_utils:sable_caillouteux", "required": false},
+    {"id": "heralisz_utils:sable_desert", "required": false},
+    {"id": "heralisz_utils:sable_desert_ombre", "required": false},
+    {"id": "heralisz_utils:terre_craquelee", "required": false},
+    {"id": "heraliz_decors:neige_tassee", "required": false},
+    {"id": "heraliz_decors:sable_tasse", "required": false}
+  ]
+}

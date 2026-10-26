@@ -1,0 +1,53 @@
+# HeraliZ Interface (joueurs seulement) : écran titre, menu Échap, touches, pack de textures imposé, barre d'objets DayZ.
+# Un jar, deux mods (chacun garde son modId et sa version).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+# ---- heraliz_interface (version 1.9.5)
+[[mods]]
+modId="heraliz_interface"
+version="1.9.5"
+displayName="HeraliZ Interface"
+authors="${mod_authors}"
+description='''Interfaces du serveur HeraliZ (client seulement) : menu Echap aux couleurs du serveur (logo, Discord, boutique, informations, options, sprint en un appui), fond floute, panneau de verre. Kit d'interface commun (police DM Sans, boutons, panneaux) reutilisable par les autres ecrans. Pack de textures du serveur integre et impose. Touches par defaut du serveur (une seule table, sans doublon) et touches inutiles cachees des Commandes.'''
+# mod client seulement : le serveur n'a pas besoin de l'avoir (et un serveur qui l'aurait n'impose rien aux clients)
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.heraliz_interface]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heraliz_interface]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# ---- dayzhotbar (version 1.5.0)
+[[mods]]
+modId="dayzhotbar"
+version="1.5.0"
+displayName="DayZ Hotbar"
+authors="${mod_authors}"
+description='''Barre des 9 emplacements facon DayZ : cases en biais, espacees, sobres. Mod client uniquement.'''
+# Client only: servers and other players do not need it.
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.dayzhotbar]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="CLIENT"
+
+[[dependencies.dayzhotbar]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="CLIENT"

@@ -28,7 +28,7 @@ LANCEUR = Path(os.environ.get("HERALIZ_LANCEUR") or _conf.get("lanceur_curseforg
 SERVEUR = Path(os.environ.get("HERALIZ_SERVEUR") or _conf.get("serveur_local") or DEPOT / "_serveur_local")
 JAVA_HOME = Path(os.environ.get("JAVA_HOME") or _conf.get("java_home") or r"C:\Program Files\Java\jdk-17")
 
-MODS = DEPOT / "mods"
+MODS = DEPOT / "modules"
 MODS_TIERS = DEPOT / "serveur" / "mods-tiers"
 MODS_TIERS_CLIENT = DEPOT / "client" / "mods-tiers"
 GECKOLIB = MODS_TIERS / "geckolib222-forge-1.20.1-4.4.7.jar"

@@ -1,15 +1,16 @@
-"""Copie le kit d'interface « style clan » (heralisz_matchs/client/kit, lui-même copié de heralisz_clans) dans un autre mod,
+"""Copie le kit d'interface « style clan » (celui du noyau, modules/noyau) dans un autre mod,
 sans dépendance de compilation : polices DM Sans (assets/<modid>/font), Ui, Echelle, HzButton, HzField, HzScroll, SonsUi.
 
     python outils/copier_kit_ui.py <dossier projet> <paquet java cible> <modid>
-    ex. python outils/copier_kit_ui.py mods/heraliz-emote fr.heraliz.emote.client.gui.kit heraliz_emote
+    ex. python outils/copier_kit_ui.py modules/emotes fr.heraliz.emote.client.gui.kit heraliz_emote
 
 Projet coupé (src/commun, src/client, src/serveur) : le kit va dans src/client (c'est de l'affichage) ; sinon src/main.
 
 - Accent : celui du clan du joueur lu par réflexion (fr.heralisz.clans.client.ClientClans.accent()) si le mod clans est
   présent, sinon l'accent neutre ; un écran peut l'imposer (Ui.forcerAccent).
 - Sons : heralisz_clans:ui_clic / ui_ouvrir / ui_fermer résolus par identifiant ; sans le mod clans, clic vanilla discret.
-- Les fichiers déjà présents sont écrasés (le kit de référence reste celui des matchs).
+- Les fichiers déjà présents sont écrasés (le kit de référence est celui du noyau).
+- Un nouveau module peut aussi dépendre du noyau et utiliser fr.heraliz.noyau.client.kit directement.
 """
 import re
 import shutil
@@ -17,8 +18,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC_KIT = ROOT / "mods/heralisz-matchs/src/client/java/fr/heralisz/matchs/client/kit"
-SRC_FONT = ROOT / "mods/heralisz-matchs/src/client/resources/assets/heralisz_matchs/font"
+SRC_KIT = ROOT / "modules/noyau/src/client/java/fr/heraliz/noyau/client/kit"
+SRC_FONT = ROOT / "modules/noyau/src/client/resources/assets/heraliz_noyau/font"
 FICHIERS = ["Ui.java", "Echelle.java", "HzButton.java", "HzField.java", "HzScroll.java", "SonsUi.java"]
 
 ACCENT_REFLEXION = '''    /** Accent impose par un ecran ou un mode, -1 = aucun. */
@@ -58,10 +59,10 @@ def main():
     dest.mkdir(parents=True, exist_ok=True)
     for nom in FICHIERS:
         t = (SRC_KIT / nom).read_text(encoding="utf-8")
-        t = t.replace("package fr.heralisz.matchs.client.kit;", f"package {paquet};")
-        t = t.replace("import fr.heralisz.matchs.HeraliszMatchs;\n", "")
-        t = re.sub(r'HeraliszMatchs\.id\("(\w+)"\)', lambda m: f'new ResourceLocation("{modid}", "{m.group(1)}")', t)
-        t = t.replace("assets/heralisz_matchs/font", f"assets/{modid}/font")
+        t = t.replace("package fr.heraliz.noyau.client.kit;", f"package {paquet};")
+        t = t.replace("import fr.heraliz.noyau.HeralizNoyau;\n", "")
+        t = re.sub(r'HeralizNoyau\.id\("(\w+)"\)', lambda m: f'new ResourceLocation("{modid}", "{m.group(1)}")', t)
+        t = t.replace("assets/heraliz_noyau/font", f"assets/{modid}/font")
         if nom == "Ui.java":
             debut = t.index("    /** Accent impose par un ecran")
             fin = t.index("    /** Impose l'accent (RGB)")
@@ -73,15 +74,15 @@ def main():
                           "    public static void clic(float volume) {\n        resoudre();\n"
                           "        if (clic == null) jouer(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), volume * 0.35F);\n"
                           "        else jouer(clic, volume);\n    }")
-        if "matchs" in t.lower():
-            print(f"[kit] attention : '{nom}' mentionne encore les matchs")
+        if "noyau" in t.lower():
+            print(f"[kit] attention : '{nom}' mentionne encore le noyau")
         (dest / nom).write_text(t, encoding="utf-8", newline="\n")
         print(f"[kit] {dest / nom}")
     fdest = projet / cote / "resources/assets" / modid / "font"
     fdest.mkdir(parents=True, exist_ok=True)
     for f in SRC_FONT.iterdir():
         if f.suffix == ".json":
-            (fdest / f.name).write_text(f.read_text(encoding="utf-8").replace("heralisz_matchs:", f"{modid}:"), encoding="utf-8")
+            (fdest / f.name).write_text(f.read_text(encoding="utf-8").replace("heraliz_noyau:", f"{modid}:"), encoding="utf-8")
         else:
             shutil.copy2(f, fdest / f.name)
         print(f"[kit] {fdest / f.name}")

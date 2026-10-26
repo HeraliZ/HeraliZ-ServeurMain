@@ -1,0 +1,54 @@
+{
+  "model": "heralisz_heal:consumable/bandage_geo",
+  "animation": "heralisz_heal:consumable/bandage",
+  "state_machine": "heralisz_heal:consumable_state_machine",
+  "texture": "heralisz_heal:consumable/bandage_uv",
+  "slot_texture": "heralisz_heal:consumable/slot/bandage",
+  "display_offset": [
+    0,
+    0.5,
+    0
+  ],
+  "transforms": {
+    "thirdperson_righthand": {
+      "translation": [
+        0,
+        -3,
+        -1
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        0,
+        -3,
+        -1
+      ]
+    },
+    "head": {
+      "translation": [
+        0,
+        6.25,
+        0
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        -1.5,
+        0
+      ]
+    },
+    "fixed": {
+      "translation": [
+        0,
+        -4.5,
+        0
+      ],
+      "scale": [
+        2,
+        2,
+        2
+      ]
+    }
+  }
+}

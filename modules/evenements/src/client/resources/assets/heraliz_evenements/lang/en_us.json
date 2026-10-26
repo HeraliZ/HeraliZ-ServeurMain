@@ -1,0 +1,23 @@
+{
+  "heraliz_evenements.chat.prefixe": "[Event] ",
+  "heraliz_evenements.chat.nom": "Event",
+  "heraliz_evenements.nom.largage": "Military airdrop",
+  "heraliz_evenements.nom.helico": "Military helicopter",
+  "heraliz_evenements.largage.annonce": "Military airdrop in %1$s min · X %2$s, Z %3$s (sector %4$s). The first clan to open the crate earns season points.",
+  "heraliz_evenements.largage.rappel": "Military airdrop in %1$s min · X %2$s, Z %3$s (sector %4$s).",
+  "heraliz_evenements.largage.approche": "Military airdrop incoming · X %1$s, Z %2$s (sector %3$s). The first clan to open the crate earns season points.",
+  "heraliz_evenements.largage.ouvert": "The airdrop in sector %s has been opened.",
+  "heraliz_evenements.largage.points": "+%s season points for your clan (airdrop).",
+  "heraliz_evenements.helico.apparition": "A military helicopter is patrolling the area… you can hear it in the distance.",
+  "heraliz_evenements.helico.crash": "A helicopter crashed in sector %s.",
+  "heraliz_evenements.helico.explose": "A helicopter exploded in mid-air in sector %s.",
+  "heraliz_evenements.helico.depart": "The helicopter is leaving.",
+  "heraliz_evenements.agenda.en_cours": "In progress: %s",
+  "heraliz_evenements.agenda.aucun": "No event planned in the next 24 hours.",
+  "heraliz_evenements.agenda.prochains": "Upcoming events: %s",
+  "item.heraliz_evenements.dossier_classe": "Classified file",
+  "item.heraliz_evenements.mallette_scellee": "Sealed briefcase",
+  "item.heraliz_evenements.disque_dur_militaire": "Military hard drive",
+  "item.heraliz_evenements.boite_noire_helico": "Helicopter Black Box",
+  "item.heraliz_evenements.objet.aide": "Event item · sell it to Mila at spawn: herals and season points for your clan."
+}

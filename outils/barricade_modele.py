@@ -2,10 +2,10 @@
 
     python outils/barricade_modele.py
 
-Écrit, dans mods/heralisz-bunker/src/client/resources/assets/heralisz_bunker/ :
+Écrit, dans modules/bunker/src/client/resources/assets/heralisz_bunker/ :
   - models/entity/wooden_barricade.bin et wooden_barricade_lod.bin : le modèle (de près, de loin), lus par BarricadeMesh ;
   - textures/entity/wooden_barricade_0.png à _3.png : les textures, de intacte (0) à très abîmée (3).
-Le modèle est décrit dans mods/heralisz-bunker/outils/BarricadeModele.java (mur de rondins couchés) ; il est construit
+Le modèle est décrit dans modules/bunker/outils/BarricadeModele.java (mur de rondins couchés) ; il est construit
 avec le moteur de maillage de HeraliZ Crates (code Java pur, sans Minecraft) et JOML, pris dans le cache de Gradle du PC
 (il y est dès qu'un mod a été fabriqué une fois) ou donné par la variable d'environnement JOML_JAR.
 Besoin : un JDK 17 (javac), Python 3.11+ avec numpy et Pillow.
@@ -23,8 +23,8 @@ DEPOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(DEPOT / "outils"))
 from formes_caisses import joml, outil  # noqa: E402
 
-CRATES = DEPOT / "mods" / "heraliz-crates" / "src"
-BUNKER = DEPOT / "mods" / "heralisz-bunker"
+CRATES = DEPOT / "modules" / "boutique" / "src"
+BUNKER = DEPOT / "modules" / "bunker"
 ASSETS = BUNKER / "src" / "client" / "resources" / "assets" / "heralisz_bunker"
 
 

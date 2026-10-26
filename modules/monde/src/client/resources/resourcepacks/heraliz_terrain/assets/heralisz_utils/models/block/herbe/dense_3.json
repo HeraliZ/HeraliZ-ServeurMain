@@ -1,0 +1,6 @@
+{
+ "parent": "heralisz_utils:block/herbe/dense",
+ "textures": {
+  "cross": "minecraft:block/grass3"
+ }
+}

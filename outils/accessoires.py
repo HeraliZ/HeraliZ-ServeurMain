@@ -85,35 +85,35 @@ EXCLUS = {
     "gucci_attachments:grip_bipod": (
         "bipied dessiné 8 à 12 px devant son point de montage : flotte devant le garde-main des armes courtes",
         ["arkaniaz:9a91", "arkaniaz:aks74u", "arkaniaz:evo3", "arkaniaz:gm6_lynx", "arkaniaz:negev", "arkaniaz:tec9",
-         "arkaniaz:ump9", "cis:at_rpg_7_lvd", "heraliz_fuse:mp7r", "heraliz_fuse:ro635v3", "maxstuff:aks74u",
+         "arkaniaz:ump9", "heraliz_fuse:mp7r", "heraliz_fuse:ro635v3", "maxstuff:aks74u",
          "maxstuff:arp", "maxstuff:g36", "maxstuff:glock_bulpup", "maxstuff:honey_badger", "maxstuff:m320t",
          "maxstuff:m870t", "maxstuff:scar_hamr", "maxstuff:vector9", "tacz:hk416d", "tacz:m4a1", "tacz:mk14",
          "tacz:scar_l", "tacz:sks_tactical", "tacz:spr15hb", "tacz:ump45", "tacz:vector45"]),
     "gucci_attachments:grip_cqr": (
         "poignée longue : traverse le chargeur ou la carcasse",
         ["arkaniaz:tec9", "arkaniaz:ump9", "arkaniaz_custom:vector_firmax", "arkaniaz_custom:vectorhy",
-         "cis:at_rpg_7_lvd", "maxstuff:m320t", "maxstuff:scar_hamr", "maxstuff:vector9", "tacz:m249", "tacz:mk14",
+         "maxstuff:m320t", "maxstuff:scar_hamr", "maxstuff:vector9", "tacz:m249", "tacz:mk14",
          "tacz:sks_tactical", "tacz:vector45"]),
     "gucci_attachments:grip_cqr_g2": (
         "poignée longue : traverse le chargeur ou la carcasse",
         ["arkaniaz:tec9", "arkaniaz:ump9", "arkaniaz_custom:vector_firmax", "arkaniaz_custom:vectorhy",
-         "cis:at_rpg_7_lvd", "maxstuff:g36", "maxstuff:m320t", "maxstuff:scar_hamr", "maxstuff:vector9",
+         "maxstuff:g36", "maxstuff:m320t", "maxstuff:scar_hamr", "maxstuff:vector9",
          "tacz:m249", "tacz:mk14", "tacz:ump45", "tacz:vector45"]),
     "tacz:grip_cqr": (
         "poignée longue : traverse le chargeur ou la carcasse",
         ["arkaniaz:aks74u", "arkaniaz:mod2", "arkaniaz:negev", "arkaniaz:pkp", "arkaniaz:tec9", "arkaniaz:ump9",
-         "arkaniaz_custom:vector_firmax", "arkaniaz_custom:vectorhy", "cis:at_rpg_7_lvd", "heraliz_fuse:mp7r",
+         "arkaniaz_custom:vector_firmax", "arkaniaz_custom:vectorhy", "heraliz_fuse:mp7r",
          "maxstuff:aks74u", "maxstuff:ar10", "maxstuff:g36", "maxstuff:glock_bulpup", "maxstuff:hk417",
          "maxstuff:honey_badger", "maxstuff:m320t", "maxstuff:mk11", "maxstuff:scar_hamr", "maxstuff:scar_pdw",
          "maxstuff:scar_sbr", "maxstuff:vector9", "tacz:hk416d", "tacz:m249", "tacz:mk14", "tacz:scar_h",
          "tacz:scar_l", "tacz:sks_tactical", "tacz:ump45", "tacz:vector45"]),
     "maxstuff:a3_grip": (
         "poignée longue : traverse le chargeur ou la carcasse",
-        ["arkaniaz:aks74u", "arkaniaz:evo3", "arkaniaz:tec9", "cis:at_rpg_7_lvd", "maxstuff:glock_bulpup",
+        ["arkaniaz:aks74u", "arkaniaz:evo3", "arkaniaz:tec9", "maxstuff:glock_bulpup",
          "tacz:m249"]),
     "maxstuff:underbarrel_chainsaw": (
         "tronçonneuse sous le canon : traverse la poignée ou le bipied de l'arme",
-        ["cis:at_rpg_7_lvd", "tacz:mk14", "tacz:spr15hb"]),
+        ["tacz:mk14", "tacz:spr15hb"]),
     "gucci_attachments:muzzle_s_fd197": (
         "silencieux à manchon : sa partie arrière traverse le chargeur hélicoïdal, sous le canon", ["arkaniaz:pp19"]),
     "maxstuff:scw_stock": (

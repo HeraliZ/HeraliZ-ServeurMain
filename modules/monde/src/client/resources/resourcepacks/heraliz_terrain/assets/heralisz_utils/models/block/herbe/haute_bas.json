@@ -1,0 +1,6 @@
+{
+ "parent": "heralisz_utils:block/herbe/haute",
+ "textures": {
+  "cross": "minecraft:block/tall_grass_bottom"
+ }
+}

@@ -1,0 +1,12 @@
+// HeraliZ Événements : le Directeur et les événements de la carte (docs/EVENEMENTS.md : contrat de tout événement).
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    // largage public : frappes aériennes du module monde (avion cargo, caisse en parachute)
+    compileOnly project(path: ':monde', configuration: 'devComplet')
+}

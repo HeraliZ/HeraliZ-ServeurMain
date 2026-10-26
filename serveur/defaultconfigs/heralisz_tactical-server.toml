@@ -71,7 +71,7 @@
 	delai_repousse_minutes = 5
 	#Dimensions où le verre ne casse jamais (spawn, arènes des matchs, zombies, bunkers des clans) : les balles le
 	#traversent ou s'y arrêtent comme avant.
-	dimensions_protegees = ["heralisz:spawn", "heralisz_matchs:arenes", "heralisz_matchs:zombies", "heralisz_bases:bunkers"]
+	dimensions_protegees = ["heralisz:spawn", "heraliz_clashwar:arenes", "heralisz_bases:bunkers"]
 	#Rayon (en blocs) autour du point d'apparition du monde (dimension minecraft:overworld) où le verre ne casse pas,
 	#sur toute la hauteur. 0 : aucun. Le spawn des joueurs est un monde à part (heralisz:spawn, dans
 	#dimensions_protegees) ; sur la carte, le point d'apparition est au milieu d'une ville (-435 1118 sur la carte v3) :

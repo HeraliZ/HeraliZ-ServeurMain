@@ -1,13 +1,15 @@
-"""Recettes de la Table d'armurier (TaCZ) : armes, munitions, soins, viseurs, accessoires, explosifs.
+"""Recettes de la Table d'armurier (TaCZ) : armes, munitions, soins, viseurs, accessoires, explosifs, divers.
 
 Écrit le gunpack serveur/tacz/heraliz_crafts (recettes, noms des onglets en trois langues), les onglets de la table
-(data/tacz/data/blocks/gun_smith_table.json du pack arkaniaz_pack_0_converted) et son filtre (recipe_filters/default.json :
+(data/tacz/data/blocks/gun_smith_table.json du pack heraliz_1_base_tacz) et son filtre (recipe_filters/default.json :
 seules les recettes de heraliz_crafts sont gardées ; les anciennes, faites avec des plans et d'anciens matériaux, ne
 servent plus). Jamais à la main : changer les tableaux ci-dessous, puis relancer `python outils/crafts.py`.
 
 Règle (choix du propriétaire, 21/10 et 22/10) : le niveau du composant donne la rareté de l'objet fabriqué :
 niveau I (Peu commun) -> objet Commun, II (Rare) -> Peu commun, III (Épique) -> Rare, IV (Légendaire) -> Épique.
 Rien de Légendaire ni d'Unique ne se fabrique ; ni fusils de précision, ni mitrailleuses, ni lance-grenades, ni RPG.
+Exceptions voulues par le propriétaire : la C4 de CRac (23/10) et, dans « Divers » (26/10), la carte d'accès rouge et les
+jumelles de désignation (Légendaires, fabrication seulement) et la munition de frappe puissante.
 Munitions : bocal de poudre du niveau de la rareté de la munition (24/10, choix du propriétaire), ferraille de niveau I.
 Raretés lues dans serveur/config/heraliz_loot/raretes.json (écrites par equilibrage_armes.py).
 """
@@ -18,8 +20,8 @@ RACINE = Path(__file__).resolve().parent.parent
 TACZ = RACINE / "serveur/tacz"
 PACK = TACZ / "heraliz_crafts"
 NS = "heraliz_crafts"
-TABLE = TACZ / "arkaniaz_pack_0_converted/data/tacz/data/blocks/gun_smith_table.json"
-FILTRE = TACZ / "arkaniaz_pack_0_converted/data/tacz/recipe_filters/default.json"
+TABLE = TACZ / "heraliz_1_base_tacz/data/tacz/data/blocks/gun_smith_table.json"
+FILTRE = TACZ / "heraliz_1_base_tacz/data/tacz/recipe_filters/default.json"
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
 C = "heraliz_composants:"
 
@@ -43,6 +45,7 @@ ONGLETS = [
      {"item": "tacz:attachment", "nbt": {"AttachmentId": "tacz:muzzle_compensator_trident"}}),
     ("explosifs", ("Explosifs", "Explosives", "Взрывчатка"), {"item": "crac:c4"}),
     ("composants", ("Composants", "Components", "Компоненты"), {"item": C + "canon_ii"}),
+    ("divers", ("Divers", "Misc", "Разное"), {"item": "airstrike:designator"}),
 ]
 
 # armes : type TaCZ -> onglet et composants (canon, ressort, kit de pièces, ferraille), au niveau de la rareté
@@ -67,11 +70,11 @@ FERRAILLE = {"commun": 4, "peu_commun": 6, "rare": 8, "epique": 12}
 SOIN_COMMUN = {"tissu": 1}
 SOIN = {"tissu": 1, "alcool": 1}
 
-# accessoires et viseurs (22/10, choix du propriétaire : « ce n'est qu'un viseur ») : toujours des composants de
-# niveau I ; la quantité monte avec la rareté. 24/10 (choix du propriétaire : « augmenter le prix des accessoires et
-# des viseurs, plus élevé selon la rareté, déjà x2 pour les gris ») : Commun x2, Peu commun x3, Rare x5, Épique x8
-# (avant x1, x1, x2, x3)
-QUANTITE_ACCESSOIRE = {"commun": 2, "peu_commun": 3, "rare": 5, "epique": 8}
+# accessoires et viseurs : même règle que les armes et les soins (26/10, demande du propriétaire : « ils ont tous le même
+# prix, quelle que soit leur rareté ») : le niveau du composant suit la rareté de l'accessoire (Commun I, Peu commun II,
+# Rare III, Épique IV), en quantité double (24/10 : « déjà x2 pour les gris »). Avant : toujours des composants de niveau
+# I, seule la quantité montait (x2, x3, x5, x8).
+QUANTITE_ACCESSOIRE = {"commun": 2, "peu_commun": 2, "rare": 2, "epique": 2}
 ACCESSOIRES = {
     "scope": ("viseurs", {"circuit_imprime": 1, "batterie": 1}),
     "muzzle": ("accessoires", {"ferraille": 2, "scotch": 1}),
@@ -82,10 +85,36 @@ ACCESSOIRES = {
 }
 
 # explosifs de CRac (seuls à abîmer les bases) : charge (Épique) en composants de niveau III, C4 (Légendaire) de niveau
-# IV (23/10, choix du propriétaire), quantités à peu près dans le rapport des dégâts (charge ~130, C4 ~300 : environ 2,3 fois)
+# IV (23/10, choix du propriétaire), quantités à peu près dans le rapport des dégâts (charge ~130, C4 ~300 : environ 2,3 fois).
+# 26/10 (demande du propriétaire) : poudre de niveau III pour la charge, IV pour la C4 (avant : niveau I, le suffixe
+# manquait) ; la charge demande 2 tissus de niveau IV (à la place de 3 tissus III)
 EXPLOSIFS = [
-    ("explosive_charge", "crac:explosive_charge", {"bocal_poudre": 3, "scotch_iii": 5, "corde": 1, "tissu_iii": 3}),
-    ("c4", "crac:c4", {"bocal_poudre": 5, "scotch_iv": 1, "corde": 2, "circuit_imprime_iv": 3}),
+    ("explosive_charge", "crac:explosive_charge", {"bocal_poudre_iii": 3, "scotch_iii": 5, "corde": 1, "tissu_iv": 2}),
+    ("c4", "crac:c4", {"bocal_poudre_iv": 5, "scotch_iv": 1, "corde": 2, "circuit_imprime_iv": 3}),
+]
+
+# divers (26/10, demande du propriétaire) : objets spéciaux, matériaux donnés par leur identifiant complet.
+# - cartes d'accès : les 4 fragments numérotés de leur couleur (même règle que le clic droit avec un fragment ; l'ancienne
+#   recette de la grille d'artisanat 2 x 2 est retirée : un seul endroit pour fabriquer) ;
+# - jumelles de désignation (Légendaire, jamais dans le loot, les caisses ni les récompenses) : composants de haut niveau et
+#   matériaux de la carte qui ont déjà une valeur (fil à souder) ; elles ne frappent rien sans munition ;
+# - munitions de frappe, 2 frappes chacune : légère (mitraillage, fumée ; composants I-II, loot T2-T3), lourde (bombes,
+#   sous-munitions, gaz ; II-III, T3-T4), spéciale (bombe guidée, napalm ; III-IV + métal renforcé, très difficile).
+F = "heralisz_bunker:keycard_fragment_"
+DIVERS = [
+    ("1_carte_verte", "heralisz_bunker:keycard_green", {F + "green_1": 1, F + "green_2": 1, F + "green_3": 1, F + "green_4": 1}),
+    ("2_carte_bleue", "heralisz_bunker:keycard_blue", {F + "blue_1": 1, F + "blue_2": 1, F + "blue_3": 1, F + "blue_4": 1}),
+    ("3_carte_rouge", "heralisz_bunker:keycard_red", {F + "red_1": 1, F + "red_2": 1, F + "red_3": 1, F + "red_4": 1}),
+    ("4_jumelles", "airstrike:designator", {C + "circuit_imprime_iv": 2, C + "batterie_iii": 2, C + "kit_pieces_iii": 2,
+                                            C + "caoutchouc_ii": 2, C + "fil_souder": 2}),
+    ("5_munition_legere", "airstrike:cartridge_light", {C + "bocal_poudre_ii": 2, C + "batterie": 2, C + "circuit_imprime": 1,
+                                                        C + "ferraille": 4}),
+    ("6_munition_lourde", "airstrike:cartridge_heavy", {C + "bocal_poudre_iii": 3, C + "circuit_imprime_ii": 2, C + "batterie_ii": 2,
+                                                        C + "ferraille_ii": 6}),
+    ("7_munition_speciale", "airstrike:cartridge_special", {C + "bocal_poudre_iv": 2, C + "circuit_imprime_iii": 2,
+                                                            C + "batterie_iii": 2, C + "ferraille_iii": 4, C + "metal_renforce": 1}),
+    # barricade en bois (26/10, demande du propriétaire ; avant : seulement dans les caisses) : planches, clous, corde
+    ("8_barricade", "heralisz_bunker:wooden_barricade", {C + "planche": 6, C + "clou": 6, C + "corde": 1}),
 ]
 
 # composants à niveaux : PAR_NIVEAU d'un niveau donnent 1 du niveau suivant, sans retour possible (23/10, choix du
@@ -107,7 +136,7 @@ def lire(p):
 def index(genre):
     out = {}
     for f in glob.glob(str(TACZ / f"*/data/*/index/{genre}/*.json")):
-        ns = f.split("/data/")[1].split("/")[0]
+        ns = f.replace("\\", "/").split("/data/")[1].split("/")[0]
         try:
             out[f"{ns}:{Path(f).stem}"] = lire(f)
         except Exception:
@@ -160,11 +189,14 @@ def main():
         onglet, compo = ACCESSOIRES[i["type"]]
         q = QUANTITE_ACCESSOIRE[r]
         recettes[f"accessoires/{aid.replace(':', '_')}"] = recette(
-            materiaux({c: n * q for c, n in compo.items()}, "commun"),
+            materiaux({c: n * q for c, n in compo.items()}, r),
             {"type": "attachment", "id": aid, "group": f"{NS}:{onglet}"})
     for nom, item, compo in EXPLOSIFS:
         recettes[f"explosifs/{nom}"] = recette(materiaux(compo, "commun"),
                                                {"type": "custom", "item": {"item": item}, "group": f"{NS}:explosifs"})
+    for nom, item, compo in DIVERS:
+        recettes[f"divers/{nom}"] = recette([{"item": {"item": i}, "count": n} for i, n in compo.items()],
+                                            {"type": "custom", "item": {"item": item}, "group": f"{NS}:divers"})
 
     niveaux = ["", "_ii", "_iii", "_iv"]
     # noms numérotés : la table range les recettes par nom, donc composant par composant, niveau par niveau
@@ -180,21 +212,23 @@ def main():
     for chemin, r in recettes.items():
         f = PACK / "data" / NS / "recipes" / f"{chemin}.json"
         f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps(r, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        f.write_text(json.dumps(r, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     (PACK / "gunpack.meta.json").write_text(json.dumps({
         "namespace": NS, "name": "HeraliZ Crafts",
         "description": "Recettes de la Table d'armurier, refaites par outils/crafts.py (pas à la main)"},
-        ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     for langue, k in (("fr_fr", 0), ("en_us", 1), ("ru_ru", 2)):
         f = PACK / "assets" / NS / "lang" / f"{langue}.json"
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(json.dumps({f"{NS}.onglet.{o}": noms[k] for o, noms, _ in ONGLETS}, ensure_ascii=False, indent=2)
-                     + "\n", encoding="utf-8")
+                     + "\n", encoding="utf-8", newline="\n")
 
     table = lire(TABLE)
     table["tabs"] = [{"id": f"{NS}:{o}", "name": f"{NS}.onglet.{o}", "icon": icone} for o, _, icone in ONGLETS]
-    TABLE.write_text(json.dumps(table, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    FILTRE.write_text(json.dumps({"whitelist": [f"^{NS}:.*$"], "blacklist": []}, indent=2) + "\n", encoding="utf-8")
+    TABLE.write_text(json.dumps(table, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    # 26/10 : aussi les recettes ajoutées en jeu au Registre de l'armurier (heraliz_tactique:atelier/...), refusées avant
+    FILTRE.write_text(json.dumps({"whitelist": [f"^{NS}:.*$", "^heraliz_tactique:atelier/.*$"], "blacklist": []}, indent=2) + "\n",
+                      encoding="utf-8", newline="\n")
 
     compte = {}
     for chemin, r in recettes.items():

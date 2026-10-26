@@ -41,9 +41,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 DEPOT = Path(__file__).resolve().parent.parent
-FOND_MOD = DEPOT / "mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte"
-POLICE = DEPOT / "mods/heraliz-extraction/src/client/resources/assets/heraliz_extraction/font/dmsans_bold.ttf"
-POLICE_FINE = DEPOT / "mods/heraliz-extraction/src/client/resources/assets/heraliz_extraction/font/dmsans_medium.ttf"
+FOND_MOD = DEPOT / "modules/monde/src/client/resources/assets/heraliz_carte/carte"
+POLICE = DEPOT / "modules/monde/src/client/resources/assets/heraliz_extraction/font/dmsans_bold.ttf"
+POLICE_FINE = DEPOT / "modules/monde/src/client/resources/assets/heraliz_extraction/font/dmsans_medium.ttf"
 GRILLE = 500
 CELLULE = 8            # blocs par case pour la couverture et la recherche de points
 IMAGE_MAX = 1400       # côté des images (pixels)

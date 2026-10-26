@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heralisz.utils.zombies.chemins",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_monde-serveur.refmap.json",
+  "mixins": [
+    "CheminsZombiesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

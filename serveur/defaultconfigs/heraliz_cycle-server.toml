@@ -1,0 +1,13 @@
+
+[cycle]
+	#Faire avancer l'heure de la carte (minecraft:overworld) : jour puis nuit, en boucle.
+	#La règle doDaylightCycle est gardée à false (remise à false au démarrage et chaque minute) : seul ce cycle
+	#écrit l'heure. false : l'heure reste comme elle est (ce mod n'y touche plus).
+	actif = true
+	#Durée du jour, en minutes réelles (du lever au coucher du soleil).
+	#Range: 1 ~ 600
+	jour_minutes = 20
+	#Durée de la nuit, en minutes réelles (du coucher au lever du soleil).
+	#Range: 1 ~ 600
+	nuit_minutes = 4
+

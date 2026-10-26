@@ -1,0 +1,30 @@
+# HeraliZ Événements : le Directeur d'événements et les événements de la carte (docs/EVENEMENTS.md).
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heraliz_evenements"
+version="${mod_version}"
+displayName="HeraliZ Événements"
+authors="${mod_authors}"
+description='''Événements de la carte (largage public…), lancés par le Directeur à heures fixes ; chacun rapporte des points de saison aux clans.'''
+[[dependencies.heraliz_evenements]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_evenements]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_evenements]]
+    modId="airstrike"
+    mandatory=true
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"

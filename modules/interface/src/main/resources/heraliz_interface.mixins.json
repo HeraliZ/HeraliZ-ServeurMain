@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.interfaces.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_interface.refmap.json",
+  "client": [
+    "EcranDeconnecteAccessor",
+    "KeyBindsListMixin",
+    "KeyMappingInterditMixin",
+    "MainEnMainInvoker",
+    "OptionsMixin",
+    "PlanchesPolicesMixin",
+    "RegardLibreMixin",
+    "TexteNetMixin",
+    "ToastsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

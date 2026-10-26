@@ -1,7 +1,0 @@
-{
- "parent": "minecraft:block/cube_column",
- "textures": {
-  "side": "heralisz_matchs:block/zombies/giant_mat/poutre_bois_cote",
-  "end": "heralisz_matchs:block/zombies/giant_mat/poutre_bois_bout"
- }
-}

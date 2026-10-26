@@ -56,7 +56,7 @@ MARGE_EFFET = 25
 RAYON_PETROLE = 150
 # voie du train (réseau de la nouvelle carte, HeraliZ Utils) : bande interdite de part et d'autre des rails
 RAIL = 20
-RESEAU = DEPOT / "mods/heralisz-utils/src/commun/resources/assets/heralisz_utils/train/reseau_v2.json"
+RESEAU = DEPOT / "modules/monde/src/commun/resources/assets/heralisz_utils/train/reseau_v2.json"
 
 COULEUR = {"grande": (230, 60, 60), "petit": (240, 140, 40), "village": (240, 200, 60), "maison": (200, 120, 230),
            "effet": (90, 200, 230), "neige": (210, 230, 255), "rail": (235, 235, 235)}

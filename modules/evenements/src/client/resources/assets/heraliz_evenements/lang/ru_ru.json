@@ -1,0 +1,23 @@
+{
+  "heraliz_evenements.chat.prefixe": "[Ивент] ",
+  "heraliz_evenements.chat.nom": "Ивент",
+  "heraliz_evenements.nom.largage": "Военный сброс",
+  "heraliz_evenements.nom.helico": "Военный вертолёт",
+  "heraliz_evenements.largage.annonce": "Военный сброс через %1$s мин · X %2$s, Z %3$s (сектор %4$s). Первый клан, открывший ящик, получит очки сезона.",
+  "heraliz_evenements.largage.rappel": "Военный сброс через %1$s мин · X %2$s, Z %3$s (сектор %4$s).",
+  "heraliz_evenements.largage.approche": "Военный сброс на подходе · X %1$s, Z %2$s (сектор %3$s). Первый клан, открывший ящик, получит очки сезона.",
+  "heraliz_evenements.largage.ouvert": "Сброс в секторе %s открыт.",
+  "heraliz_evenements.largage.points": "+%s очков сезона для твоего клана (сброс).",
+  "heraliz_evenements.helico.apparition": "Военный вертолёт патрулирует зону… его слышно издалека.",
+  "heraliz_evenements.helico.crash": "Вертолёт разбился в секторе %s.",
+  "heraliz_evenements.helico.explose": "Вертолёт взорвался в воздухе в секторе %s.",
+  "heraliz_evenements.helico.depart": "Вертолёт улетает.",
+  "heraliz_evenements.agenda.en_cours": "Сейчас идёт: %s",
+  "heraliz_evenements.agenda.aucun": "В ближайшие 24 часа ивентов нет.",
+  "heraliz_evenements.agenda.prochains": "Ближайшие ивенты: %s",
+  "item.heraliz_evenements.dossier_classe": "Секретное досье",
+  "item.heraliz_evenements.mallette_scellee": "Опечатанный кейс",
+  "item.heraliz_evenements.disque_dur_militaire": "Военный жёсткий диск",
+  "item.heraliz_evenements.boite_noire_helico": "Бортовой самописец вертолёта",
+  "item.heraliz_evenements.objet.aide": "Предмет ивента · продай Миле на спавне: гералы и очки сезона для клана."
+}

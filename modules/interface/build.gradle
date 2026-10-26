@@ -1,0 +1,62 @@
+// HeraliZ Interface : mods des joueurs seulement (un seul ensemble de sources, src/main) : écran titre, menu Échap,
+// choix de langue, touches par défaut, pack de textures imposé (heraliz_interface) et barre d'objets DayZ (dayzhotbar).
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    // Aucune configuration de lancement : le propriétaire teste lui-même en jeu.
+}
+
+repositories {
+    flatDir { dirs rootProject.file('libs') }
+}
+
+mixin {
+    add sourceSets.main, "heraliz_interface.refmap.json"
+    config "heraliz_interface.mixins.json"
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var props = [minecraft_version_range: minecraft_version_range, forge_version_range: forge_version_range,
+                 loader_version_range: loader_version_range, mod_license: mod_license, mod_authors: mod_authors]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand props
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'   : mod_id,
+                'Specification-Vendor'  : mod_authors,
+                'Specification-Version' : '1',
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': mod_version,
+                'Implementation-Vendor' : mod_authors,
+                'MixinConfigs'          : 'heraliz_interface.mixins.json'
+        ])
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

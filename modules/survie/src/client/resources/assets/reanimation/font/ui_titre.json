@@ -1,0 +1,35 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 3.0,
+        " ": 4.0
+      }
+    },
+    {
+      "type": "ttf",
+      "file": "reanimation:dmsans_bold.ttf",
+      "size": 14.0,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "ttf",
+      "size": 14.0,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        1.0
+      ],
+      "file": "reanimation:cyrillique_bold.ttf"
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

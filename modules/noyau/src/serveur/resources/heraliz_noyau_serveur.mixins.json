@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.noyau.serveur.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_noyau-serveur.refmap.json",
+  "mixins": [
+    "FaimMixin",
+    "StatsSansDisqueMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

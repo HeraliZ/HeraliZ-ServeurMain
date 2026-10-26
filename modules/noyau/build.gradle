@@ -1,0 +1,7 @@
+// Noyau HeraliZ : état du joueur (combat, à terre, en match), règles du combat, kit d'interface.
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')

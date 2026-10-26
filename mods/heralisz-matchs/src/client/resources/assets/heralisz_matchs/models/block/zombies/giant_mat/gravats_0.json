@@ -1,6 +1,0 @@
-{
- "parent": "minecraft:block/cube_all",
- "textures": {
-  "all": "heralisz_matchs:block/zombies/giant_mat/gravats_0"
- }
-}

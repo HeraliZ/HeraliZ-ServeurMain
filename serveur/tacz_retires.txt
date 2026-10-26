@@ -1439,3 +1439,28 @@ Cislumen_Armory/assets/cis/geo_models/shell/lvd_shell.json
 Cislumen_Armory/assets/cis/geo_models/gun/at_rpg_7_lvd.geo.json
 Cislumen_Armory/assets/cis/geo_models/ammo/lvd.json
 Cislumen_Armory/assets/cis/geo_models/ammo_entity/lvd.json
+heraliz_accessoires/data/cis/tacz_tags/attachments/allow_attachments/at_rpg_7_lvd.json
+heraliz_accessoires/data/maxstuff/tacz_tags/attachments/allow_attachments/m82a2.json
+
+# 26/10 : dossiers renommés (nom HeraliZ + contenu) et pack retiré : supprimer ces DOSSIERS ENTIERS du Ptero
+# (les nouveaux noms sont envoyés avec serveur/tacz ; les objets gardent leurs identifiants)
+arkaniaz_pack_0_converted/
+arkaniaz_pack_1_converted/
+arkaniaz_pack_2_converted/
+arkaniaz_pack_3_converted/
+arkaniaz_pack_4_converted/
+arkaniaz_pack_5_converted/
+arkaniaz_custom_converted/
+Cislumen_Armory/
+
+# 26/10 : maxstuff:m82a2 (TaCZ refuse de la charger)
+heraliz_6_armes_maxstuff/data/maxstuff/tacz_tags/attachments/allow_attachments/m82a2.json
+heraliz_6_armes_maxstuff/data/maxstuff/recipes/gun/m82a2.json
+heraliz_6_armes_maxstuff/data/maxstuff/index/guns/m82a2.json
+heraliz_6_armes_maxstuff/data/maxstuff/data/guns/m82a2_data.json
+heraliz_6_armes_maxstuff/assets/maxstuff/animations/m82a2.animation.json
+heraliz_6_armes_maxstuff/assets/maxstuff/textures/gun/hud/m82a2.png
+heraliz_6_armes_maxstuff/assets/maxstuff/textures/gun/slot/m82a2.png
+heraliz_6_armes_maxstuff/assets/maxstuff/textures/gun/uv/m82a2.png
+heraliz_6_armes_maxstuff/assets/maxstuff/geo_models/gun/m82a2_geo.json
+heraliz_6_armes_maxstuff/assets/maxstuff/display/guns/m82a2_display.json

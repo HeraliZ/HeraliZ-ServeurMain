@@ -1,0 +1,845 @@
+{
+  "_aide": "Tour complet des écrans (25/10, audit des écrans) : arrivée, HUD, inventaire, clan, quêtes, emotes, pings, exécutions, warps, fiche des bases, carte, menu Échap, voix, chat, soins, arme et Atelier, coffre T7, mort ; puis au spawn : caisse, Mila (dialogue, rachat, éditeur), Varga, conteneur T1, coffre perso, Table d'armurier, registre de l'armurier. Pseudo neuf conseillé (créateur de personnage). Serveur de test seulement (pose de PNJ, de blocs et d'une dalle au spawn).",
+  "depart": 140,
+  "etapes": [
+    {
+      "capture": "a00_creation_perso"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "pnj retirer mila"
+    },
+    {
+      "commande": "pnj retirer varga"
+    },
+    {
+      "commande": "gamemode survival"
+    },
+    {
+      "commande": "effect give @s minecraft:resistance 900 10 true"
+    },
+    {
+      "regard": [
+        0,
+        5
+      ]
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "a01_hud"
+    },
+    {
+      "maintenir": "key.playerlist",
+      "ticks": 40
+    },
+    {
+      "attendre": 15
+    },
+    {
+      "capture": "a02_tab"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "touche": "key.inventory"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "a03_inventaire"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "clan"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "b01_clan_sans_clan"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "clan creer"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "b02_clan_creation"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "touche": "key.heraliz_quetes.journal"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "c01_quetes_vide"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "quete donner @s varga c1_tir"
+    },
+    {
+      "commande": "quete donner @s varga c1_fouille"
+    },
+    {
+      "commande": "quete donner @s varga c1_arme"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "touche": "key.heraliz_quetes.journal"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "c02_quetes"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "c03_suivi_quete_hud"
+    },
+    {
+      "touche": "key.heraliz_emote.open_menu"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "d01_emotes"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "ecran": "fr.heraliz.ping.client.EcranReglages"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "d02_pings"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "touche": "key.reanimation.menu"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "d03_executions"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "warp"
+    },
+    {
+      "attendre_ecran": "EcranWarps",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "d04_warps"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "base info"
+    },
+    {
+      "attendre_ecran": "EcranFicheBase",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "d05_fiche_base"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "touche": "key.heraliz_carte.ouvrir"
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "e01_carte"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "ecran": "fr.heraliz.interfaces.client.EcranPause"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "e02_menu_echap"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "ecran": "fr.heraliz.interfaces.client.EcranInformations"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "e03_informations"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "ecran": "fr.heraliz.interfaces.client.EcranGraphismes"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "e03b_graphismes"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "touche": "key.caracrea.voice.settings"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "e04_voix_reglages"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "event"
+    },
+    {
+      "commande": "saison"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "touche": "key.chat"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "e05_chat_ouvert"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "e06_chat_ferme"
+    },
+    {
+      "commande": "clear @s"
+    },
+    {
+      "commande": "give @s heralisz_tactical:consumable{ConsumableId:\"heralisz_heal:carfak\"} 3"
+    },
+    {
+      "commande": "give @s tacz:modern_kinetic_gun{GunId:\"tacz:ak47\",GunCurrentAmmoCount:30,HasBulletInBarrel:1b,GunFireMode:\"AUTO\"}"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "touche": "key.hotbar.1"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "maintenir": "key.use",
+      "ticks": 50
+    },
+    {
+      "attendre": 25
+    },
+    {
+      "capture": "f01_soin_hud"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "touche": "key.hotbar.2"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "f02_arme_hud"
+    },
+    {
+      "ecran": "com.tacz.guns.client.gui.GunRefitScreen"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "f03_atelier_arme"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "heralizloot apparaitre mallette ~2 ~ ~ 600"
+    },
+    {
+      "attendre": 120
+    },
+    {
+      "bloc": [
+        "~2",
+        "~",
+        "~"
+      ]
+    },
+    {
+      "attendre": 90
+    },
+    {
+      "capture": "g01_coffre_t7_ouverture"
+    },
+    {
+      "attendre": 160
+    },
+    {
+      "capture": "g02_coffre_t7_revele"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "kill @s"
+    },
+    {
+      "attendre": 50
+    },
+    {
+      "capture": "h01_mort"
+    },
+    {
+      "reapparaitre": true
+    },
+    {
+      "attendre": 80
+    },
+    {
+      "capture": "h02_apres_reapparition"
+    },
+    {
+      "commande": "gamemode creative"
+    },
+    {
+      "commande": "execute in heralisz:spawn run fill -68 264 -5 -54 264 9 minecraft:smooth_stone"
+    },
+    {
+      "commande": "execute in heralisz:spawn run fill -68 265 -5 -54 268 9 minecraft:air"
+    },
+    {
+      "commande": "execute in heralisz:spawn run tp @s -61 265 2 0 0"
+    },
+    {
+      "attendre": 80
+    },
+    {
+      "commande": "heraliz givekey @s gemme 3"
+    },
+    {
+      "commande": "heraliz interface @s gemme"
+    },
+    {
+      "attendre_ecran": "CaseOpenScreen",
+      "max": 100
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "i01_caisse"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "pnj creer mila"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "execute in heralisz:spawn run tp @s -61 265 5 180 0"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "entite": "heraliz_quetes:pnj",
+      "nom": "Mila"
+    },
+    {
+      "attendre_ecran": "EcranDialogue",
+      "max": 100
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "j01_dialogue_mila"
+    },
+    {
+      "touche_ecran": 49
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "j02_dialogue_mila_suite"
+    },
+    {
+      "touche_ecran": 49
+    },
+    {
+      "attendre_ecran": "EcranMarchand",
+      "max": 60
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "j03_marchand_mila"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "marchand editer mila"
+    },
+    {
+      "attendre_ecran": "EcranEditionMarchand",
+      "max": 60
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "j04_edition_marchand"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "pnj creer varga"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "execute in heralisz:spawn run tp @s -61 265 8 180 0"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "entite": "heraliz_quetes:pnj",
+      "nom": "Varga"
+    },
+    {
+      "attendre_ecran": "EcranDialogue",
+      "max": 100
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "j05_dialogue_varga"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "execute in heralisz:spawn run setblock -64 265 8 heraliz_loot:t1_bac_roulant"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "bloc": [
+        -64,
+        265,
+        8
+      ]
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "k01_conteneur_t1"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "execute in heralisz:spawn run setblock -58 265 8 cfm:safe_planque_1"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "bloc": [
+        -58,
+        265,
+        8
+      ]
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "k02_coffre_perso"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "execute in heralisz:spawn run setblock -59 265 4 tacz:gun_smith_table"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "bloc": [
+        -59,
+        265,
+        4
+      ]
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "k03_table_armurier"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "armurier editer"
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "k04_registre_armurier"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "clear @s"
+    },
+    {
+      "commande": "item replace entity @s hotbar.0 with tacz:modern_kinetic_gun{GunId:\"tacz:ak47\",GunCurrentAmmoCount:0} 1"
+    },
+    {
+      "commande": "item replace entity @s hotbar.1 with tacz:attachment{AttachmentId:\"arkaniaz:1p87\"} 1"
+    },
+    {
+      "commande": "item replace entity @s hotbar.2 with tacz:ammo{AmmoId:\"tacz:762x39\"} 40"
+    },
+    {
+      "commande": "item replace entity @s hotbar.3 with heraliz_composants:ferraille 5"
+    },
+    {
+      "commande": "item replace entity @s hotbar.4 with tacz:modern_kinetic_gun{GunId:\"tacz:m1911\",GunCurrentAmmoCount:0} 1"
+    },
+    {
+      "commande": "execute in heralisz:spawn run setblock -61 265 5 heraliz_quetes:recycleur[facing=south]"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "bloc": [
+        -61,
+        265,
+        5
+      ]
+    },
+    {
+      "attendre_ecran": "EcranRecycleur",
+      "max": 80
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "r01_recycleur_vide"
+    },
+    {
+      "souris": [
+        198,
+        768
+      ]
+    },
+    {
+      "attendre": 15
+    },
+    {
+      "capture": "r02_apercu_arme"
+    },
+    {
+      "souris": [
+        396,
+        768
+      ]
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "r03_apercu_composant"
+    },
+    {
+      "souris": [
+        264,
+        768
+      ]
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "r04_apercu_viseur"
+    },
+    {
+      "clic": [
+        198,
+        768
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        198,
+        270
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        462,
+        768
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        264,
+        270
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        330,
+        768
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        330,
+        270
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "souris": [
+        1700,
+        900
+      ]
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "r05_recyclage_en_cours"
+    },
+    {
+      "attendre": 240
+    },
+    {
+      "capture": "r06_recyclage_suite"
+    },
+    {
+      "attendre": 200
+    },
+    {
+      "capture": "r07_recyclage_fin"
+    },
+    {
+      "clic": [
+        1134,
+        402
+      ]
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "r08_tout_pris"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "r09_apres_fermeture"
+    },
+    {
+      "commande": "pnj retirer mila"
+    },
+    {
+      "commande": "pnj retirer varga"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "fin": true
+    }
+  ]
+}

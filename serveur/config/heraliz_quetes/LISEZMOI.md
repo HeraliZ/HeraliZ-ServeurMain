@@ -60,9 +60,12 @@ Règles décidées par le serveur (pour éviter la triche) :
   que l'objet de l'échange ; s'il n'y a pas la place pour ce que le joueur reçoit, rien n'est échangé ;
 - jamais d'objets à vie (couteaux, skins à vie), d'objets prêtés par un match, d'armes à camo à vie ni d'objets de
   quête, ni dans un échange, ni dans une vente, ni dans un rachat ;
-- pas d'argent infini : un objet vendu par un marchand **ou reçu par un échange** n'est jamais racheté contre des
-  hérals, et un objet reçu par un échange ne peut pas être donné dans un autre échange (pas de chaînes ni de boucles :
-  l'éditeur refuse l'échange et dit pourquoi).
+- pas d'argent infini (règle du 25/10, pour toujours) : un objet qu'un marchand vend au prix P (fichier ou Registre) est
+  racheté **au plus la moitié de P** (le prix de la règle de rareté s'il est plus bas ; plus petit P si plusieurs
+  marchands le vendent), et le recycleur refuse de le recycler si, en moyenne, ça rapporterait plus que cette moitié ;
+  un objet **reçu par un échange** n'est jamais racheté ni recyclé, et ne peut pas être donné dans un autre échange (pas
+  de chaînes ni de boucles : l'éditeur refuse l'échange et dit pourquoi). Contrôle des fichiers :
+  `python outils/marchands.py --controle`.
 
 ## 1. Poser un PNJ
 
@@ -208,3 +211,9 @@ Une quête dont la dernière étape ne se fait pas chez le PNJ se termine en rev
 ```
 
 `poids` : plus il est grand, plus le modèle sort souvent. La récompense peut être un calcul (`"{n}*6+50"`).
+
+## Recycleur
+
+PNJ `recycleur` (`pnj/recycleur.json`, marchand `"type": "recyclage"`) : à poser une fois au spawn, `/pnj creer recycleur`.
+Ses règles sont dans `recyclage.json`, **écrit par `outils/recyclage.py`** (jamais à la main) ; relu par `/quete recharger`.
+

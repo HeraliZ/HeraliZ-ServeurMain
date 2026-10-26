@@ -3,7 +3,7 @@
   "materials": [
     {
       "item": {
-        "item": "heraliz_composants:bocal_poudre"
+        "item": "heraliz_composants:bocal_poudre_iii"
       },
       "count": 3
     },
@@ -21,9 +21,9 @@
     },
     {
       "item": {
-        "item": "heraliz_composants:tissu_iii"
+        "item": "heraliz_composants:tissu_iv"
       },
-      "count": 3
+      "count": 2
     }
   ],
   "result": {

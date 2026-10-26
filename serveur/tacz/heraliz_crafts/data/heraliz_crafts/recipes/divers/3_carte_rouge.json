@@ -1,0 +1,36 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heralisz_bunker:keycard_fragment_red_1"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heralisz_bunker:keycard_fragment_red_2"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heralisz_bunker:keycard_fragment_red_3"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heralisz_bunker:keycard_fragment_red_4"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "heralisz_bunker:keycard_red"
+    },
+    "group": "heraliz_crafts:divers"
+  }
+}

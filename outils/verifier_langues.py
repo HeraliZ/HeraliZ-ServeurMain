@@ -43,12 +43,12 @@ def lire(fichiers):
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     strict = "--strict" in sys.argv
-    projets = args or sorted(p.name for p in (ROOT / "mods").iterdir() if p.is_dir() and not p.name.startswith("_"))
+    projets = args or sorted(p.name for p in (ROOT / "modules").iterdir() if p.is_dir() and not p.name.startswith("_"))
     erreurs, avertissements = [], []
     for projet in projets:
         # modid -> langue -> fichiers (src/commun, src/client, src/main...)
         groupes = defaultdict(lambda: defaultdict(list))
-        for f in sorted((ROOT / "mods" / projet).glob("src/*/resources/assets/*/lang/*.json")):
+        for f in sorted((ROOT / "modules" / projet).glob("src/*/resources/assets/*/lang/*.json")):
             groupes[f.parent.parent.name][f.stem].append(f)
         for modid, langues in sorted(groupes.items()):
             ref_code = "fr_fr" if "fr_fr" in langues else "en_us" if "en_us" in langues else None

@@ -21,7 +21,7 @@ hitIndicator = true
 #载具乘客是否需为同队
 checkTeamOnEnterVehicle = true
 #手办盒是否只能收纳载具
-figureBoxOnlyCaptureVehicle = false
+figureBoxOnlyCaptureVehicle = true
 #是否启用过载机制
 overload = true
 #过载耐受倍率

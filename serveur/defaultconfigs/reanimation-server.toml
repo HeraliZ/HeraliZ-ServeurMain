@@ -53,8 +53,10 @@
 	#Armes (automatiques quand le bourreau tient l'arme) : karambit, sea_gleam, butterfly, m9, home_run
 	#Finishers : mille_coupes, singularite, courroux_ciel, souffle_dragon, zero_absolu, danse_ombres, main_joker, faille, onde_celeste,
 	#apesanteur, marionnettiste, freestyle_combo, tempete_sakura, tag_final, jugement_runique ; Noël : cadeau_surprise, sucre_d_orge, bonhomme_de_neige
-	freeExecutions = ["coup_de_grace", "frappe_orbitale", "chute_meteore", "combo_aerien", "arrache_ame", "karambit", "sea_gleam", "butterfly", "m9", "home_run"]
+	#26/10 (demande du propriétaire, bêta) : seul le premier (coup de grâce) et les exécutions des armes sont libres ; tous les
+	#autres finishers se gagnent dans les caisses Vote et Quête (objet « Finisher », clic droit = ajouté à la collection).
+	freeExecutions = ["coup_de_grace", "karambit", "sea_gleam", "butterfly", "m9", "home_run"]
 	#Les finishers (et ceux de Noël) sont accessibles à tous. Mettez false pour les vendre un par un
 	#(ils se débloquent alors avec /reanimation execution unlock <joueur> <id>, ou en les ajoutant à freeExecutions).
-	freeFinishers = true
+	freeFinishers = false
 

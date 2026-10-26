@@ -1,7 +1,7 @@
 # Méthode : fusionner des mods et séparer le client du serveur
 
 Méthode suivie par tous nos mods coupés en « affichage » (client) et « logique » (serveur). Premier groupe traité : **les
-boss** (`mods/heraliz-boss`) ; les exemples de code viennent de là (Ymirak, le mammouth : `fr.heralisz.mammoth`). Les
+boss** (`modules/events`) ; les exemples de code viennent de là (Ymirak, le mammouth : `fr.heralisz.mammoth`). Les
 règles générales du dépôt (Git, fabrication, livraison) sont dans `CLAUDE.md` à la racine.
 
 ---
@@ -51,7 +51,7 @@ Aucun remappage d'identifiant n'est nécessaire (ni permis sans l'accord du prop
 ## 2. Organisation d'un projet fusionné
 
 ```
-mods/<projet>/                      ex. mods/heraliz-boss
+mods/<projet>/                      ex. modules/events
   build.gradle  settings.gradle  gradle.properties  gradlew(.bat)  gradle/wrapper/
   libs/geckolib222-4.4.7-hzfusion.jar  (dépendances en blank:<nom>:<version unique>, voir §9)
   src/commun/java/        fr/heraliz/<groupe>/        <- mod porteur : @Mod, pont/, onglet/
@@ -498,9 +498,9 @@ HeralizBoss.ONGLET.ajouter("mammoth", "onglet.heraliz_boss.mammoth", () -> new I
 Un projet fusionné ne compile que si TOUS ses mods compilent : deux agents qui découpent deux mods en même temps dans le
 même projet se bloqueraient. Chaque agent travaille donc dans un « chantier » :
 ```
-python outils/fusion_chantier.py creer mods/heraliz-boss heralisz_mere        # -> mods/_chantier/mere
+python outils/fusion_chantier.py creer modules/events heralisz_mere        # -> mods/_chantier/mere
 PYTHONIOENCODING=utf-8 python outils/lancer.py build mods/_chantier/mere compileJava compileClientJava compileServeurJava
-python outils/fusion_chantier.py rapatrier mods/heraliz-boss heralisz_mere    # quand le chantier est propre
+python outils/fusion_chantier.py rapatrier modules/events heralisz_mere    # quand le chantier est propre
 ```
 - Le chantier = le code partagé (`fr/heraliz/*`) + ce seul mod, son bloc `[[mods]]` et celui du porteur. On n'y modifie
   pas le code partagé (si besoin, le dire au pilote) ; `rapatrier` le signale.
@@ -513,7 +513,7 @@ python outils/fusion_chantier.py rapatrier mods/heraliz-boss heralisz_mere    # 
 
 ## 15. Retours du groupe ClansEtBases (heraliz-clansetbases 2.0.0)
 
-Économie, clans, bases et tags (`mods/heraliz-clansetbases`, porteur `heraliz_clansetbases`). Pièges nouveaux :
+Économie, clans, bases et tags (`modules/clans`, porteur `heraliz_clansetbases`). Pièges nouveaux :
 
 16. **Ressource `assets/` lue par `getResourceAsStream` côté serveur** : sans elle, le serveur prend une liste de secours
     différente du client. Cas vus : `assets/heralisz_tags/tags.json` (il fixe la liste des objets `tag_*` enregistrés :
@@ -557,7 +557,7 @@ client = écrans (kit), HUD, bannières, drapeaux, sprays, touches, bancs d'essa
 ## 16. Retours du groupe Tactique (heraliz-tactique 2.0.0)
 
 Moteur `heralisz_tactical` (fork GPL-3.0 de LR Tactical), contenus `heralisz_melee` / `heralisz_heal` /
-`heralisz_grenade`, camos `heralisz_camo` (`mods/heraliz-tactique`, porteur `heraliz_tactique`). Pièges nouveaux :
+`heralisz_grenade`, camos `heralisz_camo` (`modules/armes`, porteur `heraliz_tactique`). Pièges nouveaux :
 
 23. **Mod de données sans code** (lowcodefml : melee, heal, grenade) : dans un jar javafml, chaque `[[mods]]` doit avoir
     sa classe `@Mod` -> classe vide (`fr.heralisz.melee.HeraliszMelee`) ; `pack/data` -> `src/serveur/resources`,

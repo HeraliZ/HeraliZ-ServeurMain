@@ -113,7 +113,7 @@ RARETE_ARME = {
     "arkaniaz:luger1906": "rare", "tacz:springfield1873": "rare",
     "arkaniaz:ssg_08": "epique", "maxstuff:dragonuv_svd": "epique", "tacz:aiawp": "epique",
     "arkaniaz:m200": "legendaire", "arkaniaz:aw50": "legendaire", "arkaniaz:gm6_lynx": "legendaire",
-    "arkaniaz:m82a3": "legendaire", "tacz:m95": "legendaire", "maxstuff:m82a2": "legendaire",
+    "arkaniaz:m82a3": "legendaire", "tacz:m95": "legendaire",
 }
 PLANCHER = {"pistol": "commun", "smg": "peu_commun", "shotgun": "peu_commun", "rifle": "rare", "sniper": "rare",
             "mg": "epique", "rpg": "legendaire"}

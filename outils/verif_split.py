@@ -7,7 +7,7 @@
     --embarque : contenu recopié exprès dans le jar par le build (bibliothèque relogée, sa licence) : toléré par le
             contrôle 7 (pas « en trop »). Pour un .jar : toutes ses entrées (sauf son manifeste), ex. META-INF/jarjar/ ;
             « META-INF/… » : cette entrée du jar ; sinon : le fichier à la racine.
-    ex. python outils/verif_split.py dist/fusion/heraliz_boss-2.0.1-*.jar --mods "livraison/mods client" --projet mods/heraliz-boss
+    ex. python outils/verif_split.py dist/fusion/heraliz_boss-2.0.1-*.jar --mods "livraison/mods client" --projet modules/events
     (le plus simple : python outils/verifier.py, qui lance tous les contrôles avec les bonnes options)
 
 Le côté est deviné par le nom du jar (-client / -serveur / -complet) si --cote est absent.

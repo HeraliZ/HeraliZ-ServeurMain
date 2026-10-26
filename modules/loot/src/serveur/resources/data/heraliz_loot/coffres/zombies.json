@@ -1,0 +1,619 @@
+{
+ "_note": "Écrit par outils/loot_zombies.py (jamais à la main). Un tirage par zombie compté ; minecraft:air = rien.",
+ "emplacements": [
+  1,
+  1
+ ],
+ "objets": [
+  {
+   "item": "minecraft:air",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 149600,
+   "_cat": "rien"
+  },
+  {
+   "item": "heraliz_composants:plastique",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 22857,
+   "_pour_100": 2.2857
+  },
+  {
+   "item": "heraliz_composants:planche",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 22857,
+   "_pour_100": 2.2857
+  },
+  {
+   "item": "heraliz_composants:collier_casse",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 22857,
+   "_pour_100": 2.2857
+  },
+  {
+   "item": "heraliz_composants:telephone_casse",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 22857,
+   "_pour_100": 2.2857
+  },
+  {
+   "item": "heraliz_composants:montre_cassee",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 22857,
+   "_pour_100": 2.2857
+  },
+  {
+   "item": "heraliz_composants:lunettes_cassees",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 22857,
+   "_pour_100": 2.2857
+  },
+  {
+   "item": "heraliz_composants:ampoule_grillee",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 22857,
+   "_pour_100": 2.2857
+  },
+  {
+   "item": "heraliz_composants:radio_cassee",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 20000,
+   "_pour_100": 2.0
+  },
+  {
+   "item": "heraliz_composants:briquet",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 20000,
+   "_pour_100": 2.0
+  },
+  {
+   "item": "heraliz_composants:cigarettes",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 20000,
+   "_pour_100": 2.0
+  },
+  {
+   "item": "heraliz_composants:bague_argent",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 20000,
+   "_pour_100": 2.0
+  },
+  {
+   "item": "heraliz_composants:amulette",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_composants:montre_gousset",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_composants:bague_fiancailles",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_composants:appareil_photo",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_composants:crucifix",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_composants:chronographe",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 1000,
+   "_pour_100": 0.1
+  },
+  {
+   "item": "heraliz_composants:collier_perles",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 1000,
+   "_pour_100": 0.1
+  },
+  {
+   "item": "heraliz_composants:statuette_jade",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 1000,
+   "_pour_100": 0.1
+  },
+  {
+   "item": "heraliz_composants:lingot_argent",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 1000,
+   "_pour_100": 0.1
+  },
+  {
+   "item": "heraliz_composants:canon",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 9143,
+   "_pour_100": 0.9143
+  },
+  {
+   "item": "heraliz_composants:ressort",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 9143,
+   "_pour_100": 0.9143
+  },
+  {
+   "item": "heraliz_composants:kit_pieces",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 9143,
+   "_pour_100": 0.9143
+  },
+  {
+   "item": "heraliz_composants:tissu",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 18286,
+   "_pour_100": 1.8286
+  },
+  {
+   "item": "heraliz_composants:alcool",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 9143,
+   "_pour_100": 0.9143
+  },
+  {
+   "item": "heraliz_composants:batterie",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 9143,
+   "_pour_100": 0.9143
+  },
+  {
+   "item": "heraliz_composants:circuit_imprime",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 9143,
+   "_pour_100": 0.9143
+  },
+  {
+   "item": "heraliz_composants:ferraille",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 18286,
+   "_pour_100": 1.8286
+  },
+  {
+   "item": "heraliz_composants:bocal_poudre",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 18286,
+   "_pour_100": 1.8286
+  },
+  {
+   "item": "heraliz_composants:caoutchouc",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 9143,
+   "_pour_100": 0.9143
+  },
+  {
+   "item": "heraliz_composants:scotch",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 9143,
+   "_pour_100": 0.9143
+  },
+  {
+   "item": "heraliz_composants:canon_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4000,
+   "_pour_100": 0.4
+  },
+  {
+   "item": "heraliz_composants:ressort_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4000,
+   "_pour_100": 0.4
+  },
+  {
+   "item": "heraliz_composants:kit_pieces_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4000,
+   "_pour_100": 0.4
+  },
+  {
+   "item": "heraliz_composants:tissu_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_composants:alcool_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4000,
+   "_pour_100": 0.4
+  },
+  {
+   "item": "heraliz_composants:batterie_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4000,
+   "_pour_100": 0.4
+  },
+  {
+   "item": "heraliz_composants:circuit_imprime_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4000,
+   "_pour_100": 0.4
+  },
+  {
+   "item": "heraliz_composants:ferraille_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_composants:bocal_poudre_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_composants:caoutchouc_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4000,
+   "_pour_100": 0.4
+  },
+  {
+   "item": "heraliz_composants:scotch_ii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4000,
+   "_pour_100": 0.4
+  },
+  {
+   "item": "heraliz_composants:canon_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 343,
+   "_pour_100": 0.0343
+  },
+  {
+   "item": "heraliz_composants:ressort_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 343,
+   "_pour_100": 0.0343
+  },
+  {
+   "item": "heraliz_composants:kit_pieces_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 343,
+   "_pour_100": 0.0343
+  },
+  {
+   "item": "heraliz_composants:tissu_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 686,
+   "_pour_100": 0.0686
+  },
+  {
+   "item": "heraliz_composants:alcool_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 343,
+   "_pour_100": 0.0343
+  },
+  {
+   "item": "heraliz_composants:batterie_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 343,
+   "_pour_100": 0.0343
+  },
+  {
+   "item": "heraliz_composants:circuit_imprime_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 343,
+   "_pour_100": 0.0343
+  },
+  {
+   "item": "heraliz_composants:ferraille_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 686,
+   "_pour_100": 0.0686
+  },
+  {
+   "item": "heraliz_composants:bocal_poudre_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 686,
+   "_pour_100": 0.0686
+  },
+  {
+   "item": "heraliz_composants:caoutchouc_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 343,
+   "_pour_100": 0.0343
+  },
+  {
+   "item": "heraliz_composants:scotch_iii",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 343,
+   "_pour_100": 0.0343
+  },
+  {
+   "item": "heraliz_composants:corde",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 23704,
+   "_pour_100": 2.3704
+  },
+  {
+   "item": "heraliz_composants:clou",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 35556,
+   "_pour_100": 3.5556
+  },
+  {
+   "item": "heraliz_composants:sac_ciment",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 4741,
+   "_pour_100": 0.4741
+  },
+  {
+   "item": "tacz:ammo",
+   "nombre": [
+    3,
+    15
+   ],
+   "poids": 96000,
+   "nbt": "{AmmoId:\"tacz:9mm\"}",
+   "_pour_100": 9.6
+  },
+  {
+   "item": "tacz:ammo",
+   "nombre": [
+    3,
+    15
+   ],
+   "poids": 32000,
+   "nbt": "{AmmoId:\"tacz:45acp\"}",
+   "_pour_100": 3.2
+  },
+  {
+   "item": "tacz:ammo",
+   "nombre": [
+    2,
+    15
+   ],
+   "poids": 32000,
+   "nbt": "{AmmoId:\"tacz:12g\"}",
+   "_pour_100": 3.2
+  },
+  {
+   "item": "heralisz_tactical:consumable",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 48000,
+   "nbt": "{ConsumableId:\"heralisz_heal:bandage\"}",
+   "_pour_100": 4.8
+  },
+  {
+   "item": "geckolib:food_sardines",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 26667,
+   "nbt": "{FoodState:0}",
+   "_pour_100": 2.6667
+  },
+  {
+   "item": "geckolib:food_tuna",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 26667,
+   "nbt": "{FoodState:0}",
+   "_pour_100": 2.6667
+  },
+  {
+   "item": "geckolib:food_deez",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 26667,
+   "nbt": "{FoodState:0}",
+   "_pour_100": 2.6667
+  },
+  {
+   "item": "heraliz_composants:plaque_identite",
+   "nombre": [
+    1,
+    7
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heralizcasino:jeton_1",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 8000,
+   "_pour_100": 0.8
+  },
+  {
+   "item": "heraliz_usure:kit_fortune",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 9600,
+   "_pour_100": 0.96
+  }
+ ]
+}

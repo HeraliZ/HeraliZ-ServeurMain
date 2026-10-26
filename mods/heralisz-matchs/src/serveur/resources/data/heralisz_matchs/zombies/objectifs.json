@@ -1,5 +1,0 @@
-{
-  "_doc": "Chaine d'objectifs (ZOMBIES_V2_SPEC §2). Un objectif sans objet sur la carte (pas de porte, de levier, de Pack-a-Punch, d'easter egg) est saute. Textes : ceux de la carte (objectifs[].texte_fr/texte_en) sinon zombies.jeu.objectif.<id>. 'apres' = objectif affiche une fois la chaine terminee.",
-  "chaine": ["porte", "courant", "pack_a_punch", "mystere"],
-  "apres": "survivre"
-}

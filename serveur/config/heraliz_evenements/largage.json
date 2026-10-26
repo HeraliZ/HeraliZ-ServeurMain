@@ -1,0 +1,10 @@
+{
+  "_aide": "Largage militaire. lieux : hasard (point tire sur la carte), poses (lieux du staff, /event point ajouter largage <nom>), les_deux. annonce_minutes : annonce avec les coordonnees avant l'arrivee ; rappel_minutes : second message ; avance_secondes : l'avion part ce temps avant la fin de l'annonce (passage et chute) ; marge_bordure : blocs a eviter pres de la bordure du monde ; loin_des_bases : blocs autour des bases des clans ; zone : [x1, z1, x2, z2] pour limiter le tirage (absent : toute la bordure). Relu par /event recharger.",
+  "lieux": "hasard",
+  "annonce_minutes": 6,
+  "rappel_minutes": 3,
+  "avance_secondes": 40,
+  "marge_bordure": 150,
+  "loin_des_bases": 48,
+  "essais": 40
+}

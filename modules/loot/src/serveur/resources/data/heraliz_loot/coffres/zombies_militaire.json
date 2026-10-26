@@ -1,0 +1,848 @@
+{
+ "_note": "Écrit par outils/loot_zombies.py (jamais à la main). Un tirage par zombie compté ; minecraft:air = rien.",
+ "emplacements": [
+  1,
+  1
+ ],
+ "objets": [
+  {
+   "item": "minecraft:air",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 186200,
+   "_cat": "rien"
+  },
+  {
+   "item": "heraliz_composants:plastique",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:planche",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:collier_casse",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:telephone_casse",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:montre_cassee",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:lunettes_cassees",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:ampoule_grillee",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:radio_cassee",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 16250,
+   "_pour_100": 1.625
+  },
+  {
+   "item": "heraliz_composants:briquet",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 16250,
+   "_pour_100": 1.625
+  },
+  {
+   "item": "heraliz_composants:cigarettes",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 16250,
+   "_pour_100": 1.625
+  },
+  {
+   "item": "heraliz_composants:bague_argent",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 16250,
+   "_pour_100": 1.625
+  },
+  {
+   "item": "heraliz_composants:amulette",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 10400,
+   "_pour_100": 1.04
+  },
+  {
+   "item": "heraliz_composants:montre_gousset",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 10400,
+   "_pour_100": 1.04
+  },
+  {
+   "item": "heraliz_composants:bague_fiancailles",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 10400,
+   "_pour_100": 1.04
+  },
+  {
+   "item": "heraliz_composants:appareil_photo",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 10400,
+   "_pour_100": 1.04
+  },
+  {
+   "item": "heraliz_composants:crucifix",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 10400,
+   "_pour_100": 1.04
+  },
+  {
+   "item": "heraliz_composants:chronographe",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 1625,
+   "_pour_100": 0.1625
+  },
+  {
+   "item": "heraliz_composants:collier_perles",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 1625,
+   "_pour_100": 0.1625
+  },
+  {
+   "item": "heraliz_composants:statuette_jade",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 1625,
+   "_pour_100": 0.1625
+  },
+  {
+   "item": "heraliz_composants:lingot_argent",
+   "nombre": [
+    1,
+    2
+   ],
+   "poids": 1625,
+   "_pour_100": 0.1625
+  },
+  {
+   "item": "heraliz_composants:canon",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 7429,
+   "_pour_100": 0.7429
+  },
+  {
+   "item": "heraliz_composants:ressort",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 7429,
+   "_pour_100": 0.7429
+  },
+  {
+   "item": "heraliz_composants:kit_pieces",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 7429,
+   "_pour_100": 0.7429
+  },
+  {
+   "item": "heraliz_composants:tissu",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 14857,
+   "_pour_100": 1.4857
+  },
+  {
+   "item": "heraliz_composants:alcool",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 7429,
+   "_pour_100": 0.7429
+  },
+  {
+   "item": "heraliz_composants:batterie",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 7429,
+   "_pour_100": 0.7429
+  },
+  {
+   "item": "heraliz_composants:circuit_imprime",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 7429,
+   "_pour_100": 0.7429
+  },
+  {
+   "item": "heraliz_composants:ferraille",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 14857,
+   "_pour_100": 1.4857
+  },
+  {
+   "item": "heraliz_composants:bocal_poudre",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 14857,
+   "_pour_100": 1.4857
+  },
+  {
+   "item": "heraliz_composants:caoutchouc",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 7429,
+   "_pour_100": 0.7429
+  },
+  {
+   "item": "heraliz_composants:scotch",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 7429,
+   "_pour_100": 0.7429
+  },
+  {
+   "item": "heraliz_composants:canon_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 5571,
+   "_pour_100": 0.5571
+  },
+  {
+   "item": "heraliz_composants:ressort_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 5571,
+   "_pour_100": 0.5571
+  },
+  {
+   "item": "heraliz_composants:kit_pieces_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 5571,
+   "_pour_100": 0.5571
+  },
+  {
+   "item": "heraliz_composants:tissu_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:alcool_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 5571,
+   "_pour_100": 0.5571
+  },
+  {
+   "item": "heraliz_composants:batterie_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 5571,
+   "_pour_100": 0.5571
+  },
+  {
+   "item": "heraliz_composants:circuit_imprime_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 5571,
+   "_pour_100": 0.5571
+  },
+  {
+   "item": "heraliz_composants:ferraille_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:bocal_poudre_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 11143,
+   "_pour_100": 1.1143
+  },
+  {
+   "item": "heraliz_composants:caoutchouc_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 5571,
+   "_pour_100": 0.5571
+  },
+  {
+   "item": "heraliz_composants:scotch_ii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 5571,
+   "_pour_100": 0.5571
+  },
+  {
+   "item": "heraliz_composants:canon_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 743,
+   "_pour_100": 0.0743
+  },
+  {
+   "item": "heraliz_composants:ressort_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 743,
+   "_pour_100": 0.0743
+  },
+  {
+   "item": "heraliz_composants:kit_pieces_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 743,
+   "_pour_100": 0.0743
+  },
+  {
+   "item": "heraliz_composants:tissu_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 1486,
+   "_pour_100": 0.1486
+  },
+  {
+   "item": "heraliz_composants:alcool_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 743,
+   "_pour_100": 0.0743
+  },
+  {
+   "item": "heraliz_composants:batterie_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 743,
+   "_pour_100": 0.0743
+  },
+  {
+   "item": "heraliz_composants:circuit_imprime_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 743,
+   "_pour_100": 0.0743
+  },
+  {
+   "item": "heraliz_composants:ferraille_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 1486,
+   "_pour_100": 0.1486
+  },
+  {
+   "item": "heraliz_composants:bocal_poudre_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 1486,
+   "_pour_100": 0.1486
+  },
+  {
+   "item": "heraliz_composants:caoutchouc_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 743,
+   "_pour_100": 0.0743
+  },
+  {
+   "item": "heraliz_composants:scotch_iii",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 743,
+   "_pour_100": 0.0743
+  },
+  {
+   "item": "heraliz_composants:corde",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 16250,
+   "_pour_100": 1.625
+  },
+  {
+   "item": "heraliz_composants:clou",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 16250,
+   "_pour_100": 1.625
+  },
+  {
+   "item": "heraliz_composants:sac_ciment",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 4875,
+   "_pour_100": 0.4875
+  },
+  {
+   "item": "heraliz_composants:equerres_acier",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 1625,
+   "_pour_100": 0.1625
+  },
+  {
+   "item": "tacz:ammo",
+   "nombre": [
+    4,
+    15
+   ],
+   "poids": 60667,
+   "nbt": "{AmmoId:\"tacz:9mm\"}",
+   "_pour_100": 6.0667
+  },
+  {
+   "item": "tacz:ammo",
+   "nombre": [
+    3,
+    15
+   ],
+   "poids": 60667,
+   "nbt": "{AmmoId:\"tacz:556x45\"}",
+   "_pour_100": 6.0667
+  },
+  {
+   "item": "tacz:ammo",
+   "nombre": [
+    3,
+    15
+   ],
+   "poids": 30333,
+   "nbt": "{AmmoId:\"tacz:762x39\"}",
+   "_pour_100": 3.0333
+  },
+  {
+   "item": "tacz:ammo",
+   "nombre": [
+    2,
+    15
+   ],
+   "poids": 30333,
+   "nbt": "{AmmoId:\"tacz:12g\"}",
+   "_pour_100": 3.0333
+  },
+  {
+   "item": "heralisz_tactical:consumable",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 34667,
+   "nbt": "{ConsumableId:\"heralisz_heal:bandage\"}",
+   "_pour_100": 3.4667
+  },
+  {
+   "item": "heralisz_tactical:consumable",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 17333,
+   "nbt": "{ConsumableId:\"heralisz_heal:attelle\"}",
+   "_pour_100": 1.7333
+  },
+  {
+   "item": "geckolib:food_mre",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 52000,
+   "nbt": "{FoodState:0}",
+   "_pour_100": 5.2
+  },
+  {
+   "item": "heraliz_composants:plaque_identite",
+   "nombre": [
+    1,
+    6
+   ],
+   "poids": 78000,
+   "_pour_100": 7.8
+  },
+  {
+   "item": "heralisz_tactical:throwable",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 2600,
+   "nbt": "{ThrowableId:\"heralisz_grenade:smoke_grenade\"}",
+   "_pour_100": 0.26
+  },
+  {
+   "item": "heralisz_tactical:throwable",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 2600,
+   "nbt": "{ThrowableId:\"heralisz_grenade:flash_grenade\"}",
+   "_pour_100": 0.26
+  },
+  {
+   "item": "heraliz_usure:kit_fortune",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 5850,
+   "_pour_100": 0.585
+  },
+  {
+   "item": "heraliz_usure:kit_standard",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 1950,
+   "_pour_100": 0.195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"arkaniaz:p250\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"arkaniaz:usp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"heraliz_fuse:olympia\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"maxstuff:db_50\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"maxstuff:m17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"tacz:db_long\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"tacz:db_short\",GunFireMode:\"BURST\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"tacz:m1911\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  },
+  {
+   "item": "tacz:modern_kinetic_gun",
+   "nombre": [
+    1,
+    1
+   ],
+   "poids": 195,
+   "nbt": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "_pour_100": 0.0195
+  }
+ ]
+}

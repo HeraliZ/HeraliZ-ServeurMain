@@ -1,0 +1,12 @@
+// HeraliZ Banc d'essai : bots de charge (/bots). Jamais livré avec les mods du serveur normal (livraison/banc/).
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    compileOnly project(path: ':noyau', configuration: 'devComplet')
+    compileOnly fg.deobf("blank:tacz-1.20.1:1.1.8-hotfix")
+}

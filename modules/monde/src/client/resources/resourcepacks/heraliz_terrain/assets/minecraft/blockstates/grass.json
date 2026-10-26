@@ -1,0 +1,80 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heralisz_utils:block/herbe/touffe_1",
+    "weight": 1
+   },
+   {
+    "model": "heralisz_utils:block/herbe/touffe_1",
+    "weight": 1,
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/herbe/clairsemee_1",
+    "weight": 1,
+    "y": 90
+   },
+   {
+    "model": "heralisz_utils:block/herbe/dense_1",
+    "weight": 1,
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/herbe/touffe_2",
+    "weight": 1
+   },
+   {
+    "model": "heralisz_utils:block/herbe/touffe_2",
+    "weight": 1,
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/herbe/clairsemee_2",
+    "weight": 1,
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/herbe/dense_2",
+    "weight": 1,
+    "y": 90
+   },
+   {
+    "model": "heralisz_utils:block/herbe/touffe_3",
+    "weight": 1
+   },
+   {
+    "model": "heralisz_utils:block/herbe/touffe_3",
+    "weight": 1,
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/herbe/clairsemee_3",
+    "weight": 1,
+    "y": 270
+   },
+   {
+    "model": "heralisz_utils:block/herbe/dense_3",
+    "weight": 1
+   },
+   {
+    "model": "heralisz_utils:block/herbe/touffe_4",
+    "weight": 1
+   },
+   {
+    "model": "heralisz_utils:block/herbe/touffe_4",
+    "weight": 1,
+    "y": 180
+   },
+   {
+    "model": "heralisz_utils:block/herbe/clairsemee_4",
+    "weight": 1
+   },
+   {
+    "model": "heralisz_utils:block/herbe/dense_4",
+    "weight": 1,
+    "y": 270
+   }
+  ]
+ }
+}

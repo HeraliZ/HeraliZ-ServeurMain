@@ -1,0 +1,194 @@
+{
+  "_aide": "Tour des écrans du spawn (25/10) : boutique, kits, caisse, dialogue et marchand de Mila, dialogue de Varga, éditeur du marchand, Atelier d'arme, Table d'armurier. Serveur de test seulement (pose des PNJ et d'une table au spawn). Pose une dalle de 15 x 15 sous le point de réveil (la copie de test n'a pas de sol à cet endroit).",
+  "depart": 140,
+  "etapes": [
+    {
+      "fermer": true
+    },
+    {
+      "commande": "gamemode creative"
+    },
+    {
+      "commande": "execute in heralisz:spawn run fill -68 264 -5 -54 264 9 minecraft:smooth_stone"
+    },
+    {
+      "commande": "execute in heralisz:spawn run fill -68 265 -5 -54 268 9 minecraft:air"
+    },
+    {
+      "commande": "execute in heralisz:spawn run tp @s -61 265 2 0 0"
+    },
+    {
+      "attendre": 80
+    },
+    {
+      "capture": "s00_spawn"
+    },
+    {
+      "commande": "boutique"
+    },
+    {
+      "attendre_ecran": "EcranBoutique",
+      "max": 100
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "s01_boutique"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "kit"
+    },
+    {
+      "attendre_ecran": "EcranKits",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "s02_kits"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "heraliz givekey @s gemme 3"
+    },
+    {
+      "commande": "heraliz interface @s gemme"
+    },
+    {
+      "attendre_ecran": "CaseOpenScreen",
+      "max": 100
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "s03_caisse"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "pnj creer mila"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "entite": "heraliz_quetes:pnj",
+      "nom": "Mila"
+    },
+    {
+      "attendre_ecran": "EcranDialogue",
+      "max": 100
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "s04_dialogue_mila"
+    },
+    {
+      "touche_ecran": 49
+    },
+    {
+      "attendre_ecran": "EcranMarchand",
+      "max": 60
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "s05_marchand"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "marchand editer mila"
+    },
+    {
+      "attendre_ecran": "EcranEditionMarchand",
+      "max": 60
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "s06_edition_marchand"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "item replace entity @s weapon.mainhand with tacz:modern_kinetic_gun{GunId:\"tacz:ak47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:30} 1"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "touche": "key.tacz.refit.desc"
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "s07_atelier"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "execute in heralisz:spawn run setblock -59 265 4 tacz:gun_smith_table"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "bloc": [
+        -59,
+        265,
+        4
+      ]
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "s08_table_armurier"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "fin": true
+    }
+  ]
+}

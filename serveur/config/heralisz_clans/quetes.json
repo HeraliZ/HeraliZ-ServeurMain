@@ -76,8 +76,8 @@
     "xp": 200,
     "argent": 250,
     "periode": "jour",
-    "titre_fr": "Jouer 180 minutes",
-    "titre_en": "Play 180 minutes"
+    "titre_fr": "Jouer 180 min sur la carte",
+    "titre_en": "Play 180 min on the map"
   },
   {
     "id": "j_degats_5000",
@@ -136,8 +136,8 @@
     "xp": 200,
     "argent": 250,
     "periode": "jour",
-    "titre_fr": "Parcourir 10 km",
-    "titre_en": "Travel 10 km"
+    "titre_fr": "Parcourir 10 km à pied",
+    "titre_en": "Walk 10 km"
   },
   {
     "id": "s_rodeurs_2000",
@@ -186,8 +186,8 @@
     "xp": 1500,
     "argent": 1800,
     "periode": "semaine",
-    "titre_fr": "Jouer 1 500 minutes",
-    "titre_en": "Play 1,500 minutes"
+    "titre_fr": "Jouer 1 500 min sur la carte",
+    "titre_en": "Play 1,500 min on the map"
   },
   {
     "id": "s_degats_40000",
@@ -246,7 +246,7 @@
     "xp": 1200,
     "argent": 1500,
     "periode": "semaine",
-    "titre_fr": "Parcourir 80 km",
-    "titre_en": "Travel 80 km"
+    "titre_fr": "Parcourir 80 km à pied",
+    "titre_en": "Walk 80 km"
   }
 ]

@@ -6,7 +6,7 @@
 
 Besoin de Pillow et numpy (pip install pillow numpy).
 
-Le gunpack Max Stuff (espace de noms « maxstuff », dans arkaniaz_pack_5_converted) dessine dans le coin haut-gauche
+Le gunpack Max Stuff (espace de noms « maxstuff », dans heraliz_6_armes_maxstuff) dessine dans le coin haut-gauche
 de ses icônes d'accessoires un petit badge : un carré au coin bas-droit coupé en escalier, bord violet, fond bleu nuit,
 un « M » blanc. Dans l'inventaire, il gâche l'icône (choix du propriétaire : l'enlever). Les crédits de l'auteur
 restent dans le gunpack (gunpack_info.json, CREDITS.txt) : seule la petite image change.

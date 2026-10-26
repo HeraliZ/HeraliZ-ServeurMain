@@ -1,0 +1,3615 @@
+{
+ "type": "minecraft:chest",
+ "_note": "Écrit par outils/caisses.py (largage_aerien) : ne pas modifier à la main.",
+ "pools": [
+  {
+   "rolls": 1,
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:olympia\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:db_50\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:db_long\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:db_short\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:882\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:9a91\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:an94\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:berthier\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:evo3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:g18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:gew98\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:gras1874\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:luger1906\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:python\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:ump9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:mp7r\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:ro635v3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:ak74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:arp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:colt_933\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:db_short_tactical\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:g36\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:glock_18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:glock_54\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:hk_mp5sd\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:m870t\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:mk23\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:xm177\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:ak47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:b93r\",GunFireMode:\"BURST\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:m16a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:m4a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:sks_tactical\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:springfield1873\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:type_81\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:galilace\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:mg3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:mod2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:negev\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:pkp\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:ssg_08\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:type20\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:m14\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:stakeout\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:adar2\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:ak12\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:ar57\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:ar762\",GunFireMode:\"BURST\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:aug_a2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:aug_hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:deagle_12g\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:dragonuv_svd\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:hk417\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:hk_g33\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:honey_badger\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:mk18_burst\",GunFireMode:\"BURST\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:mk47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:quatro15\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:rpk16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:rpk_74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:rpk_74m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:scar_hamr\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:scar_pdw\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:scar_sbr\",GunFireMode:\"BURST\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:sr16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:thunderbird_short\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:vector9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:z15_a\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:aiawp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:aug\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:deagle\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:g36k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:hk416d\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:hk_g3\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:m249\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:p90\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:rpk\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:scar_h\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:scar_l\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:spr15hb\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:vector45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rolls": 1,
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:olympia\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:db_50\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:db_long\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:db_short\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 30,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:882\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:9a91\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:an94\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:berthier\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:evo3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:g18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:gew98\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:gras1874\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:luger1906\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:python\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:ump9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:mp7r\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:ro635v3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:ak74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:arp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:colt_933\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:db_short_tactical\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:g36\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:glock_18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:glock_54\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:hk_mp5sd\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:m870t\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:mk23\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:xm177\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:ak47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:b93r\",GunFireMode:\"BURST\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:m16a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:m4a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:sks_tactical\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:springfield1873\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:type_81\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 11,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:galilace\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:mg3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:mod2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:negev\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:pkp\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:ssg_08\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"arkaniaz:type20\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:m14\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"heraliz_fuse:stakeout\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:adar2\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:ak12\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:ar57\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:ar762\",GunFireMode:\"BURST\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:aug_a2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:aug_hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:deagle_12g\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:dragonuv_svd\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:hk417\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:hk_g33\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:honey_badger\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:mk18_burst\",GunFireMode:\"BURST\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:mk47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:quatro15\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:rpk16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:rpk_74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:rpk_74m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:scar_hamr\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:scar_pdw\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:scar_sbr\",GunFireMode:\"BURST\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:sr16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:thunderbird_short\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:vector9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"maxstuff:z15_a\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:aiawp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:aug\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:deagle\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:g36k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:hk416d\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:hk_g3\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:m249\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:p90\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:rpk\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:scar_h\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:scar_l\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:spr15hb\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:modern_kinetic_gun",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{GunId:\"tacz:vector45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+      }
+     ]
+    }
+   ],
+   "conditions": [
+    {
+     "condition": "minecraft:random_chance",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "rolls": {
+    "type": "minecraft:uniform",
+    "min": 4,
+    "max": 5
+   },
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:canon",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:canon_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:canon_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:canon_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ressort",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ressort_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ressort_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ressort_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:kit_pieces",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:kit_pieces_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:kit_pieces_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:kit_pieces_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:tissu",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:tissu_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:tissu_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:tissu_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:alcool",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:alcool_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:alcool_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:alcool_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:batterie",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:batterie_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:batterie_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:batterie_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:circuit_imprime",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:circuit_imprime_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:circuit_imprime_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:circuit_imprime_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ferraille",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ferraille_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ferraille_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ferraille_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:caoutchouc",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:caoutchouc_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:caoutchouc_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:caoutchouc_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:scotch",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:scotch_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:scotch_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:scotch_iv",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:bocal_poudre",
+     "weight": 55,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:bocal_poudre_ii",
+     "weight": 25,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:bocal_poudre_iii",
+     "weight": 9,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:bocal_poudre_iv",
+     "weight": 2
+    }
+   ]
+  },
+  {
+   "rolls": {
+    "type": "minecraft:uniform",
+    "min": 2,
+    "max": 3
+   },
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:planches",
+     "weight": 200,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 8,
+        "max": 20
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:clou",
+     "weight": 200,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 8,
+        "max": 20
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:brindilles",
+     "weight": 140,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 10,
+        "max": 24
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:corde",
+     "weight": 100,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 5
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:sac_ciment",
+     "weight": 120,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 3,
+        "max": 8
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:pierres_taillees",
+     "weight": 100,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 3,
+        "max": 8
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:equerres_acier",
+     "weight": 60,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 5
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:fragments_metal",
+     "weight": 50,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 6
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:metal_renforce",
+     "weight": 20,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:fil_souder",
+     "weight": 10,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rolls": {
+    "type": "minecraft:uniform",
+    "min": 1,
+    "max": 3
+   },
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:collier_casse",
+     "weight": 20,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:telephone_casse",
+     "weight": 20,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:montre_cassee",
+     "weight": 20,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:lunettes_cassees",
+     "weight": 20,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:ampoule_grillee",
+     "weight": 20,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:radio_cassee",
+     "weight": 12,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:briquet",
+     "weight": 12,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:plaque_identite",
+     "weight": 12,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:cigarettes",
+     "weight": 12,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:bague_argent",
+     "weight": 12,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:amulette",
+     "weight": 6,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:montre_gousset",
+     "weight": 6,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:bague_fiancailles",
+     "weight": 6,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:appareil_photo",
+     "weight": 6,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:crucifix",
+     "weight": 6,
+     "functions": [
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:lingot_argent",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:chronographe",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:collier_perles",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:statuette_jade",
+     "weight": 2
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:diamant",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:lingot_or",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:couronne",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:idole_doree",
+     "weight": 1
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heraliz_composants:oeuf_orne",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "rolls": {
+    "type": "minecraft:uniform",
+    "min": 1,
+    "max": 2
+   },
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:throwable",
+     "weight": 4,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ThrowableId:\"heralisz_grenade:m67\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:throwable",
+     "weight": 2,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ThrowableId:\"heralisz_grenade:rgn\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:throwable",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ThrowableId:\"heralisz_grenade:flash_grenade\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:throwable",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ThrowableId:\"heralisz_grenade:smoke_grenade\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rolls": {
+    "type": "minecraft:uniform",
+    "min": 2,
+    "max": 3
+   },
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "tacz:ammo",
+     "weight": 5,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{AmmoId:\"tacz:9mm\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 20,
+        "max": 45
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:ammo",
+     "weight": 4,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{AmmoId:\"tacz:45acp\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 15,
+        "max": 35
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:ammo",
+     "weight": 5,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{AmmoId:\"tacz:556x45\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 20,
+        "max": 45
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:ammo",
+     "weight": 5,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{AmmoId:\"tacz:762x39\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 20,
+        "max": 45
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:ammo",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{AmmoId:\"tacz:12g\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 10,
+        "max": 20
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:ammo",
+     "weight": 3,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{AmmoId:\"tacz:308\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 10,
+        "max": 25
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:ammo",
+     "weight": 2,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{AmmoId:\"tacz:50ae\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 10,
+        "max": 20
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "tacz:ammo",
+     "weight": 1,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{AmmoId:\"tacz:338\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 6,
+        "max": 12
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rolls": {
+    "type": "minecraft:uniform",
+    "min": 1,
+    "max": 3
+   },
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 75,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:ai2\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 75,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:amoxycillin\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 75,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:attelle\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 75,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:goldenstar\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 2
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 67,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 67,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:blood_pack\"}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 67,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:carfak\"}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 100,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:bandage\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 100,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:condensed_milk\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 100,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:ibuprofen\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 100,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:vaseline\"}"
+      },
+      {
+       "function": "minecraft:set_count",
+       "count": {
+        "type": "minecraft:uniform",
+        "min": 1,
+        "max": 3
+       }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 50,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:cms\"}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 50,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:surv12\"}"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

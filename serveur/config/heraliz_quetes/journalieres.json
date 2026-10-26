@@ -1,0 +1,444 @@
+{
+  "_note": "Écrit par outils/quetes_journalieres.py (jamais à la main). Lu par HeraliZ Quêtes (Journalieres).",
+  "version": 1,
+  "fuseau": "Europe/Paris",
+  "difficultes": {
+    "facile": {
+      "duree_minutes": 30,
+      "quetes": [
+        {
+          "id": "f_zombies",
+          "famille": "zombies",
+          "type": "zombies",
+          "nombre": 35
+        },
+        {
+          "id": "f_zombies_melee",
+          "famille": "zombies",
+          "type": "zombies",
+          "nombre": 15,
+          "arme": "melee"
+        },
+        {
+          "id": "f_conteneurs",
+          "famille": "fouille",
+          "type": "conteneurs",
+          "nombre": 20
+        },
+        {
+          "id": "f_conteneurs_t2",
+          "famille": "fouille",
+          "type": "conteneurs",
+          "nombre": 10,
+          "palier_min": 2
+        },
+        {
+          "id": "f_vendre",
+          "famille": "commerce",
+          "type": "vendre",
+          "nombre": 300
+        },
+        {
+          "id": "f_recycler",
+          "famille": "commerce",
+          "type": "recycler",
+          "nombre": 8
+        },
+        {
+          "id": "f_livrer_recup",
+          "famille": "ressources",
+          "type": "livrer",
+          "nombre": 6,
+          "tag": "heraliz_composants:vente"
+        },
+        {
+          "id": "f_distance",
+          "famille": "exploration",
+          "type": "distance",
+          "nombre": 3000
+        },
+        {
+          "id": "f_extraction",
+          "famille": "exploration",
+          "type": "extraction",
+          "nombre": 1
+        }
+      ],
+      "recompenses": [
+        {
+          "id": "ferraille",
+          "chance": 20.0,
+          "nombre": 4,
+          "objet": "heraliz_composants:ferraille"
+        },
+        {
+          "id": "poudre",
+          "chance": 16.0,
+          "nombre": 3,
+          "objet": "heraliz_composants:bocal_poudre"
+        },
+        {
+          "id": "balles_9mm",
+          "chance": 14.0,
+          "nombre": 30,
+          "objet": "tacz:ammo",
+          "nbt": "{AmmoId:\"tacz:9mm\"}"
+        },
+        {
+          "id": "bandages",
+          "chance": 12.0,
+          "nombre": 3,
+          "objet": "heralisz_tactical:consumable",
+          "nbt": "{ConsumableId:\"heralisz_heal:bandage\"}"
+        },
+        {
+          "id": "planches",
+          "chance": 10.0,
+          "nombre": 3,
+          "objet": "heraliz_composants:planches"
+        },
+        {
+          "id": "composant_ii",
+          "chance": 9.0,
+          "nombre": 1,
+          "objet": "heraliz_composants:circuit_imprime_ii"
+        },
+        {
+          "id": "kit_fortune",
+          "chance": 7.0,
+          "nombre": 1,
+          "objet": "heraliz_usure:kit_fortune"
+        },
+        {
+          "id": "recup_rare",
+          "chance": 6.0,
+          "nombre": 1,
+          "objet": "heraliz_composants:montre_gousset"
+        },
+        {
+          "id": "fragment_vert",
+          "chance": 3.5,
+          "nombre": 1,
+          "fragment": "green"
+        },
+        {
+          "id": "arme_pc",
+          "chance": 2.0,
+          "nombre": 1,
+          "objet": "tacz:modern_kinetic_gun",
+          "nbt": "{GunId:\"tacz:cz75\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}"
+        },
+        {
+          "id": "cle_quete",
+          "chance": 0.4,
+          "nombre": 1,
+          "cle": "quete"
+        },
+        {
+          "id": "fragment_bleu",
+          "chance": 0.1,
+          "nombre": 1,
+          "fragment": "blue"
+        }
+      ]
+    },
+    "moyenne": {
+      "duree_minutes": 60,
+      "quetes": [
+        {
+          "id": "m_zombies",
+          "famille": "zombies",
+          "type": "zombies",
+          "nombre": 100
+        },
+        {
+          "id": "m_zombies_mil",
+          "famille": "zombies",
+          "type": "zombies",
+          "nombre": 25,
+          "tenue": "MILITAIRE"
+        },
+        {
+          "id": "m_conteneurs",
+          "famille": "fouille",
+          "type": "conteneurs",
+          "nombre": 60
+        },
+        {
+          "id": "m_conteneurs_t4",
+          "famille": "fouille",
+          "type": "conteneurs",
+          "nombre": 15,
+          "palier_min": 4
+        },
+        {
+          "id": "m_salle_verte",
+          "famille": "salle",
+          "type": "salle",
+          "nombre": 1,
+          "couleur": "verte"
+        },
+        {
+          "id": "m_extraction",
+          "famille": "exploration",
+          "type": "extraction",
+          "nombre": 3
+        },
+        {
+          "id": "m_distance",
+          "famille": "exploration",
+          "type": "distance",
+          "nombre": 8000
+        },
+        {
+          "id": "m_vendre",
+          "famille": "commerce",
+          "type": "vendre",
+          "nombre": 1500
+        },
+        {
+          "id": "m_livrer_ii",
+          "famille": "ressources",
+          "type": "livrer",
+          "nombre": 4,
+          "niveau": 2
+        }
+      ],
+      "recompenses": [
+        {
+          "id": "composants_ii",
+          "chance": 17.0,
+          "nombre": 3,
+          "objet": "heraliz_composants:ferraille_ii"
+        },
+        {
+          "id": "balles_556",
+          "chance": 13.0,
+          "nombre": 30,
+          "objet": "tacz:ammo",
+          "nbt": "{AmmoId:\"tacz:556x45\"}"
+        },
+        {
+          "id": "soin_rare",
+          "chance": 11.0,
+          "nombre": 1,
+          "objet": "heralisz_tactical:consumable",
+          "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}"
+        },
+        {
+          "id": "metal",
+          "chance": 10.0,
+          "nombre": 2,
+          "objet": "heraliz_composants:fragments_metal"
+        },
+        {
+          "id": "arme_rare",
+          "chance": 9.0,
+          "nombre": 1,
+          "objet": "tacz:modern_kinetic_gun",
+          "nbt": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
+        },
+        {
+          "id": "kit_standard",
+          "chance": 8.0,
+          "nombre": 1,
+          "objet": "heraliz_usure:kit_standard"
+        },
+        {
+          "id": "recup_epique",
+          "chance": 8.0,
+          "nombre": 1,
+          "objet": "heraliz_composants:chronographe"
+        },
+        {
+          "id": "composant_iii",
+          "chance": 7.0,
+          "nombre": 1,
+          "objet": "heraliz_composants:circuit_imprime_iii"
+        },
+        {
+          "id": "fragments_verts",
+          "chance": 7.0,
+          "nombre": 2,
+          "fragment": "green"
+        },
+        {
+          "id": "carte_verte",
+          "chance": 5.0,
+          "nombre": 1,
+          "objet": "heralisz_bunker:keycard_green"
+        },
+        {
+          "id": "fragment_bleu",
+          "chance": 3.0,
+          "nombre": 1,
+          "fragment": "blue"
+        },
+        {
+          "id": "cle_camo",
+          "chance": 1.5,
+          "nombre": 1,
+          "cle": "camo"
+        },
+        {
+          "id": "carte_bleue",
+          "chance": 0.5,
+          "nombre": 1,
+          "objet": "heralisz_bunker:keycard_blue"
+        }
+      ]
+    },
+    "difficile": {
+      "duree_minutes": 120,
+      "quetes": [
+        {
+          "id": "d_salle_bleue",
+          "famille": "salle",
+          "type": "salle",
+          "nombre": 1,
+          "couleur": "bleue"
+        },
+        {
+          "id": "d_zombies_mil",
+          "famille": "zombies",
+          "type": "zombies",
+          "nombre": 60,
+          "tenue": "MILITAIRE"
+        },
+        {
+          "id": "d_zombies",
+          "famille": "zombies",
+          "type": "zombies",
+          "nombre": 250
+        },
+        {
+          "id": "d_conteneurs_t5",
+          "famille": "fouille",
+          "type": "conteneurs",
+          "nombre": 10,
+          "palier_min": 5
+        },
+        {
+          "id": "d_conteneurs",
+          "famille": "fouille",
+          "type": "conteneurs",
+          "nombre": 150
+        },
+        {
+          "id": "d_pvp",
+          "famille": "pvp",
+          "type": "pvp",
+          "nombre": 3
+        },
+        {
+          "id": "d_livrer_iii",
+          "famille": "ressources",
+          "type": "livrer",
+          "nombre": 3,
+          "niveau": 3
+        },
+        {
+          "id": "d_extraction",
+          "famille": "exploration",
+          "type": "extraction",
+          "nombre": 5
+        }
+      ],
+      "recompenses": [
+        {
+          "id": "ak47",
+          "chance": 20.0,
+          "nombre": 1,
+          "objet": "tacz:modern_kinetic_gun",
+          "nbt": "{GunId:\"tacz:ak47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
+        },
+        {
+          "id": "composants_iii",
+          "chance": 14.0,
+          "nombre": 2,
+          "objet": "heraliz_composants:kit_pieces_iii"
+        },
+        {
+          "id": "metal_renforce",
+          "chance": 10.0,
+          "nombre": 2,
+          "objet": "heraliz_composants:metal_renforce"
+        },
+        {
+          "id": "balles_762",
+          "chance": 9.0,
+          "nombre": 45,
+          "objet": "tacz:ammo",
+          "nbt": "{AmmoId:\"tacz:762x39\"}"
+        },
+        {
+          "id": "arme_epique",
+          "chance": 7.0,
+          "nombre": 1,
+          "objet": "tacz:modern_kinetic_gun",
+          "nbt": "{GunId:\"tacz:scar_l\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}"
+        },
+        {
+          "id": "carte_bleue",
+          "chance": 6.0,
+          "nombre": 1,
+          "objet": "heralisz_bunker:keycard_blue"
+        },
+        {
+          "id": "kit_armurier",
+          "chance": 6.0,
+          "nombre": 1,
+          "objet": "heraliz_usure:kit_armurier"
+        },
+        {
+          "id": "carte_verte",
+          "chance": 6.0,
+          "nombre": 1,
+          "objet": "heralisz_bunker:keycard_green"
+        },
+        {
+          "id": "recup_legendaire",
+          "chance": 5.0,
+          "nombre": 1,
+          "objet": "heraliz_composants:lingot_or"
+        },
+        {
+          "id": "composant_iv",
+          "chance": 4.5,
+          "nombre": 1,
+          "objet": "heraliz_composants:circuit_imprime_iv"
+        },
+        {
+          "id": "cle_camo",
+          "chance": 5.0,
+          "nombre": 1,
+          "cle": "camo"
+        },
+        {
+          "id": "fragment_rouge",
+          "chance": 4.0,
+          "nombre": 1,
+          "fragment": "red"
+        },
+        {
+          "id": "cle_emotes",
+          "chance": 2.0,
+          "nombre": 1,
+          "cle": "spectacle"
+        },
+        {
+          "id": "cle_gemme",
+          "chance": 1.0,
+          "nombre": 1,
+          "cle": "gemme"
+        },
+        {
+          "id": "carte_rouge",
+          "chance": 0.5,
+          "nombre": 1,
+          "objet": "heralisz_bunker:keycard_red"
+        }
+      ]
+    }
+  }
+}

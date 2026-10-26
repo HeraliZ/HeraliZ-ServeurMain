@@ -58,7 +58,7 @@
 		#A remplir seulement si la voix passe par une autre adresse (ex. proxy). Exemple : voix.monserveur.fr
 		adressePublique = ""
 
-	#Matchs HeraliZ (heralisz_matchs)
+	#Matchs HeraliZ (ClashWar)
 	[voix.matchs]
 		#En match, on n'entend que les joueurs du meme match (et les groupes vocaux sont suspendus).
 		isoler = true

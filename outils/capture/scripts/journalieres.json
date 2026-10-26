@@ -1,0 +1,319 @@
+{
+  "_aide": "Quêtes du jour, onglet Divers de la Table d'armurier, butin des zombies et munitions de frappe (26/10). Joueur op 4 sur le serveur d'essai local (pseudo HzJournal, déjà op du serveur d'essai). Fenêtre 1920 x 1080, échelle 3 : clic = coordonnée du canevas x 3. Contrôles serveur lus aussi dans logs/latest.log et heraliz_quetes/journalieres.log.",
+  "depart": 160,
+  "etapes": [
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "echelle": 3
+    },
+    {
+      "commande": "gamemode survival"
+    },
+    {
+      "commande": "clear @s"
+    },
+    {
+      "commande": "heralizloot tables"
+    },
+    {
+      "commande": "heralizloot zombies simuler 100000"
+    },
+    {
+      "commande": "heralizloot zombies simuler 100000 militaire"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "touche": "key.chat"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "jq00_simulation_zombies"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "journalieres essai @s minuit"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "journalieres"
+    },
+    {
+      "attendre_ecran": "EcranJournalieres",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq01_choix"
+    },
+    {
+      "clic": [
+        960,
+        894
+      ]
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq02_propositions"
+    },
+    {
+      "clic": [
+        424,
+        546
+      ]
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq03_en_cours"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "journalieres essai @s forcer moyenne m_zombies_mil"
+    },
+    {
+      "commande": "journalieres essai @s avancer 12"
+    },
+    {
+      "commande": "journalieres"
+    },
+    {
+      "attendre_ecran": "EcranJournalieres",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq04_force_12_sur_25"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "journalieres essai @s avancer 13"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "journalieres"
+    },
+    {
+      "attendre_ecran": "EcranJournalieres",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq05_reussie"
+    },
+    {
+      "clic": [
+        543,
+        918
+      ]
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "jq06_tirage_en_cours"
+    },
+    {
+      "attendre": 110
+    },
+    {
+      "capture": "jq07_tirage_fini"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "journalieres voir @s"
+    },
+    {
+      "touche": "key.inventory"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq08_inventaire_recompense"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "journalieres"
+    },
+    {
+      "attendre_ecran": "EcranJournalieres",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq09_journee_terminee"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "journalieres essai @s minuit"
+    },
+    {
+      "commande": "journalieres"
+    },
+    {
+      "attendre_ecran": "EcranJournalieres",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq10_lendemain_choix"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "touche": "key.heraliz_quetes.journal"
+    },
+    {
+      "attendre_ecran": "EcranJournal",
+      "max": 100
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "jq11_journal_bouton"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "summon heralisz_utils:zombie_survie ~3 ~ ~ {Tags:[\"heraliz_peuple\"],NoAI:1b}"
+    },
+    {
+      "commande": "summon heralisz_utils:zombie_survie ~-3 ~ ~ {NoAI:1b}"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "damage @e[type=heralisz_utils:zombie_survie,limit=2,sort=nearest] 500 minecraft:player_attack by @s"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "heralizloot zombies stats"
+    },
+    {
+      "commande": "heralizloot zombies joueur @s"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "touche": "key.chat"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "jq12_zombies_stats"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "give @s airstrike:cartridge_light 1"
+    },
+    {
+      "commande": "give @s airstrike:designator 1"
+    },
+    {
+      "touche": "key.inventory"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "souris": [
+        960,
+        540
+      ]
+    },
+    {
+      "capture": "jq13_inventaire_frappes"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "execute in heralisz:spawn run tp @s -61 265 8 180 0"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "execute in heralisz:spawn run setblock -59 265 4 tacz:gun_smith_table"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "bloc": [
+        -59,
+        265,
+        4
+      ]
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "jq14_table_armurier"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "fin": true
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+// HeraliZ : réglages communs à tous les modules. Chaque module garde son build.gradle (trois jars -client, -serveur,
+// -complet) ; ici seulement les versions des greffons et le partage du code entre modules.
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)' apply false
+    id 'org.spongepowered.mixin' version '0.7.+' apply false
+}
+
+subprojects { p ->
+    // « devComplet » : tout le code d'un module (commun + client + serveur) en noms de développement, pour qu'un autre
+    // module compile contre lui : compileOnly project(path: ':<module>', configuration: 'devComplet').
+    // Jamais embarqué, jamais livré.
+    configurations.create('devComplet') {
+        canBeConsumed = true
+        canBeResolved = false
+    }
+    afterEvaluate {
+        if (!p.plugins.hasPlugin('java')) return
+        def devJar = p.tasks.register('devJar', Jar) {
+            archiveClassifier = 'dev'
+            destinationDirectory = p.layout.buildDirectory.dir('dev')
+            from p.sourceSets.main.output
+            ['client', 'serveur'].each { n -> if (p.sourceSets.findByName(n)) from p.sourceSets.getByName(n).output }
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+        p.artifacts.add('devComplet', devJar)
+    }
+}

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
-const { cheminSur, effacerDonneesJeu } = require('../app/assets/js/effacement')
+const { cheminSur, effacerDonneesJeu, retirerAnciensGunpacks } = require('../app/assets/js/effacement')
 
 function dossierEssai() {
     const base = fs.mkdtempSync(path.join(os.tmpdir(), 'heraliz-effacement-'))
@@ -111,5 +111,25 @@ test('effacerDonneesJeu ne touche à rien si le dossier du jeu est hors du dossi
         assert.ok(fs.existsSync(path.join(dehors, 'instances', 'heraliz-1.20.1', 'mods')))
         // nom de serveur qui sortirait du dossier des instances : ignoré
         assert.deepEqual(effacerDonneesJeu({ racine, dossierCommun: path.join(racine, 'c'), dossierInstances: path.join(racine, 'i'), serveur: '../..' }).effaces, [])
+    } finally { fs.rmSync(base, { recursive: true, force: true }) }
+})
+
+test('retirerAnciensGunpacks ne retire que les anciens dossiers nommés, dans tacz du serveur', () => {
+    const { base, racine, dehors } = dossierEssai()
+    try {
+        const tacz = path.join(racine, 'instances', 'heraliz-1.20.1', 'tacz')
+        fs.mkdirSync(path.join(tacz, 'arkaniaz_pack_0_converted', 'assets'), { recursive: true })
+        fs.writeFileSync(path.join(tacz, 'arkaniaz_pack_0_converted', 'assets', 'a.json'), '{}')
+        fs.mkdirSync(path.join(tacz, 'heraliz_1_base_tacz'), { recursive: true })
+        fs.writeFileSync(path.join(tacz, 'tacz-pre.toml'), 'x')
+        lien(dehors, path.join(tacz, 'Cislumen_Armory'))
+        const r = retirerAnciensGunpacks({ dossierInstances: path.join(racine, 'instances'), serveur: 'heraliz-1.20.1' })
+        assert.equal(fs.existsSync(path.join(tacz, 'arkaniaz_pack_0_converted')), false)
+        assert.ok(fs.existsSync(path.join(tacz, 'heraliz_1_base_tacz')))
+        assert.ok(fs.existsSync(path.join(tacz, 'tacz-pre.toml')))
+        // un lien n'est jamais suivi : ce qu'il vise reste intact
+        assert.ok(fs.existsSync(path.join(dehors, 'perso.txt')))
+        assert.equal(r.effaces.length, 1)
+        assert.deepEqual(retirerAnciensGunpacks({ dossierInstances: path.join(racine, 'instances'), serveur: '../x' }).effaces, [])
     } finally { fs.rmSync(base, { recursive: true, force: true }) }
 })

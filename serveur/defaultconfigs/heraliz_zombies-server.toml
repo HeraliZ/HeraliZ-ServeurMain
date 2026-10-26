@@ -1,0 +1,157 @@
+
+[zombies]
+	#Remplacer les zombies qui apparaissent sur la carte par les zombies HeraliZ (tenue selon l'endroit).
+	#false : zombies de Minecraft comme avant.
+	actif = true
+	#Zombies de Minecraft remplaces partout sur la carte.
+	remplaces = ["minecraft:zombie", "minecraft:husk", "minecraft:zombie_villager"]
+	#Jamais sur la carte, d'ou qu'ils viennent (apparition, commande, oeuf, deja dans le monde) :
+	#retires des leur arrivee. Les zombies remplaces par les zombies HeraliZ ne passent pas par la.
+	interdits = ["minecraft:zombie", "minecraft:husk", "minecraft:zombie_villager", "minecraft:drowned"]
+	#Remplaces en plus dans l'arctique, la prison et les zones militaires ("que des zombies arctiques").
+	#Un nom qui finit par :* vaut pour tout le mod.
+	remplaces_zones_fermees = ["mutantszombies:*"]
+	#Seulement des zombies arctiques (aussi dans les zones « froid » de HeraliZ Decors).
+	villes_arctique = ["arctique"]
+	#Seulement des prisonniers.
+	villes_prison = ["prison"]
+	#Seulement des militaires.
+	villes_militaire = ["aerodrome", "silo"]
+	#Surtout des hazmat (aussi dans les zones « gaz » et « radiation » de HeraliZ Decors).
+	villes_contaminees = ["gaz", "radio"]
+	#Part de hazmat dans une zone contaminee (le reste : zombies de ville).
+	#Range: 0.0 ~ 1.0
+	part_hazmat = 0.75
+	#Monstres au plus sur toute la carte ; au-dela, plus aucune apparition naturelle de monstre sur la carte. 0 : pas de plafond.
+	#Range: 0 ~ 100000
+	plafond_carte = 1500
+	#Monstres au plus dans un carre de 5 x 5 troncons (80 blocs) autour du point d'apparition. 0 : pas de plafond.
+	#Range: 0 ~ 10000
+	plafond_local = 0
+	#IA allegee des zombies HeraliZ : seulement les joueurs comme cibles, pas de village ni d'oeufs de tortue.
+	ia_allegee = true
+	#Tous les combien de ticks un zombie reconsidere ses objectifs (cible, errance), niveau moyen. Minecraft : 3.
+	#Range: 1 ~ 20
+	ia_rythme = 6
+	#Taille maximale d'une recherche de chemin, par rapport a Minecraft (1.0), niveau moyen.
+	#Range: 0.1 ~ 1.0
+	ia_chemins = 0.5
+	#Recherches de chemin des zombies HeraliZ par tick, sur tout le serveur. 0 : pas de budget.
+	#Range: 0 ~ 10000
+	chemins_budget = 40
+	#Un zombie qui vise la meme case qu'un autre, a 4 blocs de lui, dans la seconde, reprend son chemin.
+	chemins_partage = true
+	#Niveaux d'IA selon le joueur le plus proche (blocs) : proche (IA complete), moyen, loin, puis endormi au-dela de lod_sommeil.
+	#Range: 4 ~ 128
+	lod_proche = 16
+	#Range: 8 ~ 256
+	lod_moyen = 40
+	#Range: 16 ~ 512
+	lod_sommeil = 64
+
+#Varietes des zombies HeraliZ, tirees a leur premiere arrivee. Le reste des zombies est marcheur.
+[varietes]
+	actif = true
+	#Part de coureurs : plus rapides, moins de vie.
+	#Range: 0.0 ~ 1.0
+	part_coureurs = 0.22
+	#Part de costauds : beaucoup de vie, lents, frappent plus fort, peu de recul (plus dans les zones militaires et dangereuses).
+	#Range: 0.0 ~ 1.0
+	part_costauds = 0.08
+	#Points de vie (Minecraft : 20).
+	#Range: 1.0 ~ 1000.0
+	vie_marcheur = 30.0
+	#Range: 1.0 ~ 1000.0
+	vie_coureur = 24.0
+	#Range: 1.0 ~ 1000.0
+	vie_costaud = 60.0
+	#Vitesse (Minecraft : 0,23).
+	#Range: 0.05 ~ 1.0
+	vitesse_marcheur = 0.23
+	#Range: 0.05 ~ 1.0
+	vitesse_coureur = 0.33
+	#Range: 0.05 ~ 1.0
+	vitesse_costaud = 0.2
+	#Degats en plus d'un costaud (Minecraft : 3 par coup).
+	#Range: 0.0 ~ 20.0
+	degats_costaud = 1.5
+
+#Peuplement de la carte (25/10) : population par secteurs (nature, villes, zones posees par /zombies zone), avec une reserve
+#qui se recharge lentement ; chaque joueur n'a qu'une chance de faire apparaitre un zombie a chaque passage, loin de tout
+#joueur, jamais a la vue d'un joueur, en interieur seulement si personne n'est proche, rarement pres d'une extraction ouverte.
+[peuplement]
+	actif = true
+	#Range: 1 ~ 60
+	intervalle_secondes = 3
+	#Range: 0.0 ~ 1.0
+	chance_essai = 0.35
+	#Range: 0.0 ~ 5.0
+	nuit = 1.25
+	#Range: 16 ~ 512
+	secteur = 64
+	#Range: 0 ~ 100
+	capacite_nature = 2
+	#Range: 0 ~ 100
+	capacite_ville = 4
+	#Range: 0.0 ~ 20.0
+	capacite_par_valeur = 1.0
+	#Range: 0.1 ~ 1440.0
+	regen_nature_minutes = 8.0
+	#Range: 0.1 ~ 1440.0
+	regen_ville_minutes = 5.0
+	#Range: 8 ~ 128
+	apparition_min = 32
+	#Range: 8 ~ 160
+	apparition_max = 72
+	#Range: 0 ~ 128
+	ecart_joueur = 28
+	#Range: 0 ~ 256
+	ecart_interieur = 40
+	test_vue = true
+	#Range: 16 ~ 256
+	vue_portee = 96
+	#Range: 0.0 ~ 1.0
+	part_hors_vue = 0.8
+	#Range: 0 ~ 200
+	max_autour = 14
+	#Range: 16 ~ 160
+	max_autour_rayon = 48
+	#Range: 0 ~ 512
+	extraction_rayon = 64
+	#Range: 0.0 ~ 1.0
+	extraction_facteur = 0.3
+	#Range: 0 ~ 256
+	extraction_vide = 24
+	#Range: 32 ~ 512
+	distance_retrait = 96
+	#Range: 0 ~ 100000
+	# Banc du 25/10 (10 bots qui tirent sans arrêt, tous les zombies au même endroit) : 563 zombies = 34 ms par tick,
+	# 918 = 62 ms (trop) ; l'hébergeur est environ 2 fois plus lent par cœur que ce PC : 400 au plus pour l'ouverture, à
+	# remonter après des mesures avec de vrais joueurs (/zombies stats, /diag). Relu tout seul quand le fichier change.
+	max_total = 400
+	#Range: 0.0 ~ 1000.0
+	tick_max_ms = 45.0
+	suivre_doMobSpawning = false
+	bots = false
+
+#Bruit et sang (25/10) : tirs, explosions et joueurs blesses attirent les zombies proches sans cible.
+[stimuli]
+	actif = true
+	#Range: 0 ~ 256
+	tir = 80
+	#Range: 0 ~ 256
+	tir_silencieux = 16
+	#Range: 0 ~ 256
+	explosion = 96
+	#Range: 0 ~ 64
+	sang = 14
+	#Range: 1 ~ 200
+	max_zombies = 16
+
+#Combat juste (25/10).
+[attaques]
+	#Range: 0 ~ 50
+	attaquants_max = 3
+	#Range: 1 ~ 200
+	fenetre_ticks = 30
+	esquive = true

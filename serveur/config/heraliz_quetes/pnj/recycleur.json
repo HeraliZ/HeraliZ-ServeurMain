@@ -1,0 +1,63 @@
+{
+  "id": "recycleur",
+  "nom": {
+    "fr": "Rouille",
+    "en": "Rust",
+    "ru": "Ржавый"
+  },
+  "skin": "recycleur",
+  "apparence": {
+    "skin_tone": "beige",
+    "eye_shape": "almond",
+    "eye_color": "amber",
+    "brow_style": "straight",
+    "nose_style": "pointed",
+    "mouth_style": "smile",
+    "lip_color": "dark",
+    "hair_style": "buzz",
+    "hair_color": "black",
+    "facial_hair": "full_beard",
+    "shirt_style": "hoodie",
+    "shirt_color": "grey",
+    "shirt_color2": "black",
+    "pants_style": "cargo",
+    "pants_color": "olive",
+    "shoes_style": "boots",
+    "shoes_color": "brown",
+    "marks": [],
+    "wear": "dirty",
+    "eye_size": 3
+  },
+  "role": {
+    "fr": "Recycleur",
+    "en": "Recycler",
+    "ru": "Переработчик"
+  },
+  "ambiance": [
+    {
+      "fr": "Rien ne se perd.",
+      "en": "Nothing goes to waste.",
+      "ru": "Ничего не пропадает."
+    }
+  ],
+  "presentation": {
+    "fr": "Les poches pleines ? Donne-moi ce qui t'encombre, je le démonte. Tu récupères des composants, parfois quelques hérals. Ne t'attends pas à faire fortune.",
+    "en": "Pockets full? Give me what weighs you down, I take it apart. You get components back, sometimes a few herals. Don't expect to get rich.",
+    "ru": "Карманы полны? Отдай мне лишнее, я разберу. Получишь компоненты, иногда пару гералов. Не жди богатства."
+  },
+  "accueil": {
+    "inconnu": {
+      "fr": "Les poches pleines ? Pose ici ce qui t'encombre, je le démonte contre quelques composants.",
+      "en": "Pockets full? Drop what weighs you down here, I'll strip it for a few components.",
+      "ru": "Карманы полны? Клади сюда лишнее, разберу на компоненты."
+    },
+    "connu": {
+      "fr": "Encore des déchets ? Pose-les là.",
+      "en": "More junk? Put it there.",
+      "ru": "Опять хлам? Клади сюда."
+    }
+  },
+  "marchand": {
+    "type": "recyclage"
+  }
+}

@@ -18,7 +18,7 @@ il montre un fond neutre et un message. --installer remplace celles du mod (puis
 
 Options :
   --sortie <dossier>    où écrire les images (défaut : livraison/carte)
-  --installer           écrire dans le mod (mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte)
+  --installer           écrire dans le mod (modules/monde/src/client/resources/assets/heraliz_carte/carte)
   --dimension <id>      dimension lue (défaut minecraft:overworld, dossier region/ ; ex. heralisz_matchs:arenes)
   --pixels <n>          côté maximal de l'image entière (défaut 2048) : l'échelle (1, 2, 4... blocs par pixel) en découle
   --echelle <n>         blocs par pixel imposés (puissance de 2)
@@ -58,7 +58,7 @@ import numpy as np
 from PIL import Image
 
 DEPOT = Path(__file__).resolve().parent.parent
-DOSSIER_MOD = DEPOT / "mods/heralisz-utils/src/client/resources/assets/heraliz_carte/carte"
+DOSSIER_MOD = DEPOT / "modules/monde/src/client/resources/assets/heraliz_carte/carte"
 TUILE = 1024
 VIDE = (16, 19, 23)  # hors des chunks lus : fond sombre de l'interface
 
@@ -853,8 +853,8 @@ def regions_de(monde, dimension):
 
 def sources_defaut():
     """Textures : le pack imposé par heraliz_interface d'abord (ce que voient les joueurs), puis nos mods et les jars."""
-    out = [DEPOT / "mods/heraliz-interface/src/main/resources/resourcepacks/textures"]
-    out += sorted(p for p in DEPOT.glob("mods/*/src/*/resources") if p.is_dir())
+    out = [DEPOT / "modules/interface/src/main/resources/resourcepacks/textures"]
+    out += sorted(p for p in DEPOT.glob("modules/*/src/*/resources") if p.is_dir())
     out += sorted(DEPOT.glob("serveur/mods-tiers/*.jar")) + sorted(DEPOT.glob("client/mods-tiers/*.jar"))
     return [p for p in out if p.exists()]
 

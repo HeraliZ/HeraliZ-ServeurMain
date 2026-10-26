@@ -1,0 +1,23 @@
+{
+  "heraliz_evenements.chat.prefixe": "[Événement] ",
+  "heraliz_evenements.chat.nom": "Événement",
+  "heraliz_evenements.nom.largage": "Largage militaire",
+  "heraliz_evenements.nom.helico": "Hélicoptère militaire",
+  "heraliz_evenements.largage.annonce": "Largage militaire dans %1$s min · X %2$s, Z %3$s (secteur %4$s). Le premier clan qui ouvre la caisse gagne des points de saison.",
+  "heraliz_evenements.largage.rappel": "Largage militaire dans %1$s min · X %2$s, Z %3$s (secteur %4$s).",
+  "heraliz_evenements.largage.approche": "Largage militaire en approche · X %1$s, Z %2$s (secteur %3$s). Le premier clan qui ouvre la caisse gagne des points de saison.",
+  "heraliz_evenements.largage.ouvert": "Le largage du secteur %s a été ouvert.",
+  "heraliz_evenements.largage.points": "+%s points de saison pour ton clan (largage).",
+  "heraliz_evenements.helico.apparition": "Un hélicoptère militaire patrouille la zone… on l'entend au loin.",
+  "heraliz_evenements.helico.crash": "Un hélicoptère s'est écrasé dans le secteur %s.",
+  "heraliz_evenements.helico.explose": "Un hélicoptère a explosé en vol dans le secteur %s.",
+  "heraliz_evenements.helico.depart": "L'hélicoptère s'éloigne.",
+  "heraliz_evenements.agenda.en_cours": "En cours : %s",
+  "heraliz_evenements.agenda.aucun": "Aucun événement prévu dans les 24 prochaines heures.",
+  "heraliz_evenements.agenda.prochains": "Prochains événements : %s",
+  "item.heraliz_evenements.dossier_classe": "Dossier classé",
+  "item.heraliz_evenements.mallette_scellee": "Mallette scellée",
+  "item.heraliz_evenements.disque_dur_militaire": "Disque dur militaire",
+  "item.heraliz_evenements.boite_noire_helico": "Boîte noire d'hélicoptère",
+  "item.heraliz_evenements.objet.aide": "Objet d'événement · à revendre à Mila au spawn : hérals et points de saison pour ton clan."
+}

@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.tactique.mixin.commun",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_tactique-commun.refmap.json",
+  "mixins": [
+    "LivingEntityCrawlMixin",
+    "ShooterDataHolderMixin",
+    "TaczHitboxCorpsMixin",
+    "TaczTirsRefusesMixin",
+    "TaczVerreBalleMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

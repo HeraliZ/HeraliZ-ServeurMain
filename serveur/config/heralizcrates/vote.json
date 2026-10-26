@@ -1,70 +1,336 @@
 {
-  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add vote <poids> <rarete>. Puis /heraliz reload.",
+  "_aide": "Écrit par outils/caisses.py (ne pas modifier à la main). Chaque récompense : item, count, weight (poids du tirage), rarity, nbt, name, commands ({player} = pseudo), give_item (false = commandes seulement).",
   "rewards": [
     {
-      "item": "minecraft:experience_bottle",
-      "count": 8,
-      "weight": 20,
-      "rarity": "common"
-    },
-    {
-      "item": "minecraft:golden_carrot",
-      "count": 16,
-      "weight": 20,
-      "rarity": "common"
-    },
-    {
-      "item": "minecraft:emerald",
-      "count": 8,
-      "weight": 18,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "minecraft:iron_ingot",
-      "count": 16,
-      "weight": 15,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "minecraft:name_tag",
+      "item": "heraliz_grades:bon",
       "count": 1,
-      "weight": 10,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "minecraft:diamond",
-      "count": 2,
-      "weight": 12,
-      "rarity": "rare"
-    },
-    {
-      "item": "minecraft:ender_pearl",
-      "count": 4,
-      "weight": 10,
-      "rarity": "rare"
-    },
-    {
-      "item": "minecraft:paper",
-      "count": 1,
-      "weight": 5,
-      "rarity": "rare",
-      "name": "&b+1 Clé de Vote",
+      "weight": 22000,
+      "rarity": "common",
+      "name": "&7+30 hérals",
       "give_item": false,
       "commands": [
-        "heraliz givekey {player} vote 1"
+        "eco donner {player} 30 Caisse"
       ]
     },
     {
-      "item": "minecraft:diamond",
-      "count": 5,
-      "weight": 4,
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 14000,
+      "rarity": "common",
+      "name": "&7+50 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 50 Caisse"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 6000,
+      "rarity": "uncommon",
+      "name": "&a+100 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 100 Caisse"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 2500,
+      "rarity": "rare",
+      "name": "&9Grade Rescapé · 1 jour",
+      "give_item": false,
+      "commands": [
+        "grade acheter {player} rescape 1"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 1500,
+      "rarity": "epic",
+      "name": "&5Grade Traqueur · 1 jour",
+      "give_item": false,
+      "commands": [
+        "grade acheter {player} traqueur 1"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "legendary",
+      "name": "&6Grade Roi de la Zone · 1 jour",
+      "give_item": false,
+      "commands": [
+        "grade acheter {player} roi_de_la_zone 1"
+      ]
+    },
+    {
+      "item": "heralizcrates:camo_key",
+      "count": 1,
+      "weight": 5000,
+      "rarity": "rare",
+      "name": "&9+1 Clé Camo",
+      "give_item": false,
+      "commands": [
+        "heraliz givekey {player} camo 1"
+      ]
+    },
+    {
+      "item": "heralizcrates:spectacle_key",
+      "count": 1,
+      "weight": 3000,
+      "rarity": "epic",
+      "name": "&5+1 Clé Émotes",
+      "give_item": false,
+      "commands": [
+        "heraliz givekey {player} spectacle 1"
+      ]
+    },
+    {
+      "item": "heralizcrates:gemme_key",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "legendary",
+      "name": "&6+1 Clé Gemme",
+      "give_item": false,
+      "commands": [
+        "heraliz givekey {player} gemme 1"
+      ]
+    },
+    {
+      "item": "crac:coeur_clan",
+      "count": 1,
+      "weight": 3000,
       "rarity": "epic"
     },
     {
-      "item": "minecraft:netherite_scrap",
+      "item": "reanimation:finisher",
       "count": 1,
-      "weight": 2,
+      "nbt": "{Execution:\"frappe_orbitale\"}",
+      "weight": 2333,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"arrache_ame\"}",
+      "weight": 2333,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"apesanteur\"}",
+      "weight": 2333,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"tag_final\"}",
+      "weight": 2333,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"jugement_runique\"}",
+      "weight": 2333,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"sucre_d_orge\"}",
+      "weight": 2333,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"marionnettiste\"}",
+      "weight": 500,
       "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"singularite\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"danse_ombres\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"souffle_dragon\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"bonhomme_de_neige\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"tempete_sakura\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 2,
+      "weight": 2000,
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:bandage\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 2,
+      "weight": 2000,
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 2,
+      "weight": 2000,
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:ibuprofen\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 2,
+      "weight": 2000,
+      "rarity": "common",
+      "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}"
+    },
+    {
+      "item": "heralizcasino:jeton_1",
+      "count": 3,
+      "weight": 8000,
+      "rarity": "common"
+    },
+    {
+      "item": "heraliz_composants:alcool",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:bague_argent",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:batterie",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:bocal_poudre",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:brindilles",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:briquet",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:canon",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:caoutchouc",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:cigarettes",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:circuit_imprime",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:ferraille",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:kit_pieces",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:planches",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:plaque_identite",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:radio_cassee",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:ressort",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:scotch",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:tissu",
+      "count": 2,
+      "weight": 444,
+      "rarity": "uncommon"
     }
   ]
 }

@@ -1,0 +1,36 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:bocal_poudre_ii"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:batterie"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:circuit_imprime"
+      },
+      "count": 1
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille"
+      },
+      "count": 4
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "airstrike:cartridge_light"
+    },
+    "group": "heraliz_crafts:divers"
+  }
+}

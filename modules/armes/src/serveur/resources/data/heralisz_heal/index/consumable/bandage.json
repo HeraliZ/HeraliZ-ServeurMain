@@ -1,0 +1,19 @@
+{
+  "name": "item.heralisz_heal.bandage",
+  "tooltip": "item.heralisz_heal.bandage.desc",
+  "base_item": "heralisz_tactical:consumable",
+  "data": {
+    "use_duration": 70,
+    "cooldown": 40,
+    "cooldown_category": "heralisz_tactical:medical",
+    "stack_size": 5,
+    "max_durability": 0,
+    "draw_time": 12,
+    "put_away_time": 6,
+    "heal": 4.0,
+    "remove_effects": [
+      "geckolib:bleeding"
+    ],
+    "use_mode": "toggle"
+  }
+}

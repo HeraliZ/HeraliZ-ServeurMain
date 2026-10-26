@@ -3,7 +3,7 @@
     python outils/apercu_caisse.py <caisse> <dossier> [--temps 0,40,90,150,210] [--vue yaw,pitch,distance]
 
 Temps en ticks de l'ouverture (-1 = au repos ; repères : clé 0, déverrouillage 24, ouverture 34, roue 78 à 196, gain
-200). Le dessin est fait par mods/heraliz-crates/outils/ApercuCaisse.java (moteur logiciel, sans Minecraft) avec JOML
+200). Le dessin est fait par modules/boutique/outils/ApercuCaisse.java (moteur logiciel, sans Minecraft) avec JOML
 (cache de Gradle, ou variable JOML_JAR), comme outils/formes_caisses.py. Ce n'est pas la lumière du jeu : sert à juger
 formes, couleurs et chorégraphie avant un essai en jeu.
 """

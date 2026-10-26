@@ -1,0 +1,134 @@
+{
+  "moteur_annonce": {
+    "sounds": [
+      "heraliz_clashwar:moteur_annonce"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_annonce"
+  },
+  "moteur_victoire": {
+    "sounds": [
+      "heraliz_clashwar:moteur_victoire"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_victoire"
+  },
+  "moteur_defaite": {
+    "sounds": [
+      "heraliz_clashwar:moteur_defaite"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_defaite"
+  },
+  "moteur_finale": {
+    "sounds": [
+      "heraliz_clashwar:moteur_finale"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_finale"
+  },
+  "moteur_manche": {
+    "sounds": [
+      "heraliz_clashwar:moteur_manche"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_manche"
+  },
+  "moteur_compte": {
+    "sounds": [
+      "heraliz_clashwar:moteur_compte"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_compte"
+  },
+  "moteur_depart": {
+    "sounds": [
+      "heraliz_clashwar:moteur_depart"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_depart"
+  },
+  "moteur_elimination": {
+    "sounds": [
+      "heraliz_clashwar:moteur_elimination"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_elimination"
+  },
+  "moteur_invitation": {
+    "sounds": [
+      "heraliz_clashwar:moteur_invitation"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_invitation"
+  },
+  "moteur_choix": {
+    "sounds": [
+      "heraliz_clashwar:moteur_choix"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_choix"
+  },
+  "moteur_fin": {
+    "sounds": [
+      "heraliz_clashwar:moteur_fin"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.moteur_fin"
+  },
+  "cw_annonce": {
+    "sounds": [
+      "heraliz_clashwar:cw_annonce"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_annonce"
+  },
+  "cw_inscription": {
+    "sounds": [
+      "heraliz_clashwar:cw_inscription"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_inscription"
+  },
+  "cw_appel": {
+    "sounds": [
+      "heraliz_clashwar:cw_appel"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_appel"
+  },
+  "cw_combat": {
+    "sounds": [
+      "heraliz_clashwar:cw_combat"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_combat"
+  },
+  "cw_elimination": {
+    "sounds": [
+      "heraliz_clashwar:cw_elimination"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_elimination"
+  },
+  "cw_zone": {
+    "sounds": [
+      "heraliz_clashwar:cw_zone"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_zone"
+  },
+  "cw_victoire": {
+    "sounds": [
+      "heraliz_clashwar:cw_victoire"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_victoire"
+  },
+  "cw_defaite": {
+    "sounds": [
+      "heraliz_clashwar:cw_defaite"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_defaite"
+  },
+  "cw_finale": {
+    "sounds": [
+      "heraliz_clashwar:cw_finale"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_finale"
+  },
+  "cw_sacre": {
+    "sounds": [
+      "heraliz_clashwar:cw_sacre"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_sacre"
+  },
+  "cw_choix": {
+    "sounds": [
+      "heraliz_clashwar:cw_choix"
+    ],
+    "subtitle": "subtitles.heraliz_clashwar.cw_choix"
+  }
+}

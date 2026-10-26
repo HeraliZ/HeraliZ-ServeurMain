@@ -1,10 +1,10 @@
 # fabrication (toujours refaite à partir des sources)
 # (ancrés : des paquets Java s'appellent aussi « build »)
-/mods/*/build/
-/mods/*/run/
-/mods/*/.gradle/
-/mods/*/out/
-/mods/*/logs/
+/modules/*/build/
+/modules/*/run/
+/modules/*/.gradle/
+/modules/*/out/
+/modules/*/logs/
 /.gradle/
 /dist/
 /livraison/
@@ -15,7 +15,7 @@ __pycache__/
 /work/
 /_retires/
 /_serveur_local/
-mods/_chantier/
+/libs/*.tmp
 outils/chemins_local.json
 outils/noms_interdits.txt
 # le serveur en marche (jamais dans Git) : monde, Mohist et ses bibliothèques, données des joueurs
@@ -49,3 +49,8 @@ serveur/config/heraliz_grades/boutique_site.json
 
 # ProGuard téléchargé par outils/brouiller.py (hors Git)
 outils/brouillage/.proguard/
+/build/
+/construire.log
+/construire.verrou
+/gradle-*.log
+/modules/*/build/

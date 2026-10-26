@@ -1,0 +1,12 @@
+// Modèle de nouveau module coupé (copier ce dossier, renommer le paquet fr.heraliz.gabarit et le modId heraliz_gabarit,
+// puis ajouter le module à settings.gradle). Méthode : docs/METHODE_CLIENT_SERVEUR.md.
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    // dépendance à un autre module : compileOnly project(path: ':noyau', configuration: 'devComplet')
+}

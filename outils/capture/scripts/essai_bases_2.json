@@ -1,0 +1,353 @@
+{
+  "_aide": "Essai ciblé : escalier, rampe triangle, armoire retirée (CRac 1.24.0-beta).",
+  "depart": 160,
+  "etapes": [
+    {
+      "fermer": true
+    },
+    {
+      "commande": "gamemode creative"
+    },
+    {
+      "commande": "clear @s"
+    },
+    {
+      "commande": "effect give @s minecraft:night_vision 9999 0 true"
+    },
+    {
+      "commande": "execute in minecraft:overworld run tp @s 430 203 402 0 30"
+    },
+    {
+      "attendre": 80
+    },
+    {
+      "commande": "fill 395 199 394 485 199 410 minecraft:smooth_stone"
+    },
+    {
+      "commande": "fill 395 200 394 485 215 410 minecraft:air"
+    },
+    {
+      "commande": "time set noon"
+    },
+    {
+      "commande": "weather clear"
+    },
+    {
+      "commande": "cracbuild clear 440 201 402 60"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "cracbuild essai 400 200 400"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "commande": "gamemode survival"
+    },
+    {
+      "commande": "tp @s 440.8 201 404.6 180 15"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "e_depart_fondation_sud"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 8
+    },
+    {
+      "attendre": 8
+    },
+    {
+      "position": "e_premieres_marches"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 10
+    },
+    {
+      "attendre": 12
+    },
+    {
+      "position": "e_palier"
+    },
+    {
+      "capture": "d10_escalier_palier"
+    },
+    {
+      "regard": [
+        -90,
+        10
+      ]
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 8
+    },
+    {
+      "attendre": 8
+    },
+    {
+      "position": "e_seconde_volee"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 8
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "position": "e_haut"
+    },
+    {
+      "capture": "d11_escalier_haut"
+    },
+    {
+      "regard": [
+        90,
+        30
+      ]
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 14
+    },
+    {
+      "attendre": 16
+    },
+    {
+      "position": "e_redescente_palier"
+    },
+    {
+      "commande": "tp @s 431.0 203.0 399.6 -120 15"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "t_pose_sur_la_pente"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 4
+    },
+    {
+      "attendre": 5
+    },
+    {
+      "position": "t_monte_1"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 4
+    },
+    {
+      "attendre": 5
+    },
+    {
+      "position": "t_monte_2"
+    },
+    {
+      "capture": "d20_rampe_triangle_montee"
+    },
+    {
+      "commande": "tp @s 430.6 201.3 401.2 180 10"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "t2_bas_rampe_carree"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 8
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "position": "t2_vers_le_nord"
+    },
+    {
+      "commande": "gamemode spectator"
+    },
+    {
+      "commande": "tp @s 472.6 201.6 402.6 135 20"
+    },
+    {
+      "attendre": 25
+    },
+    {
+      "capture": "d30_armoire"
+    },
+    {
+      "commande": "execute if block 470 201 400 crac:claim_block run say ARMOIRE BAS en 470 201 400"
+    },
+    {
+      "commande": "execute if block 470 201 400 crac:claim_block_haut run say ARMOIRE HAUT en 470 201 400"
+    },
+    {
+      "commande": "execute if block 470 202 400 crac:claim_block run say ARMOIRE BAS en 470 202 400"
+    },
+    {
+      "commande": "execute if block 470 202 400 crac:claim_block_haut run say ARMOIRE HAUT en 470 202 400"
+    },
+    {
+      "commande": "execute if block 470 201 401 crac:claim_block run say ARMOIRE BAS en 470 201 401"
+    },
+    {
+      "commande": "execute if block 470 201 401 crac:claim_block_haut run say ARMOIRE HAUT en 470 201 401"
+    },
+    {
+      "commande": "execute if block 470 202 401 crac:claim_block run say ARMOIRE BAS en 470 202 401"
+    },
+    {
+      "commande": "execute if block 470 202 401 crac:claim_block_haut run say ARMOIRE HAUT en 470 202 401"
+    },
+    {
+      "commande": "execute if block 470 201 402 crac:claim_block run say ARMOIRE BAS en 470 201 402"
+    },
+    {
+      "commande": "execute if block 470 201 402 crac:claim_block_haut run say ARMOIRE HAUT en 470 201 402"
+    },
+    {
+      "commande": "execute if block 470 202 402 crac:claim_block run say ARMOIRE BAS en 470 202 402"
+    },
+    {
+      "commande": "execute if block 470 202 402 crac:claim_block_haut run say ARMOIRE HAUT en 470 202 402"
+    },
+    {
+      "commande": "execute if block 471 201 400 crac:claim_block run say ARMOIRE BAS en 471 201 400"
+    },
+    {
+      "commande": "execute if block 471 201 400 crac:claim_block_haut run say ARMOIRE HAUT en 471 201 400"
+    },
+    {
+      "commande": "execute if block 471 202 400 crac:claim_block run say ARMOIRE BAS en 471 202 400"
+    },
+    {
+      "commande": "execute if block 471 202 400 crac:claim_block_haut run say ARMOIRE HAUT en 471 202 400"
+    },
+    {
+      "commande": "execute if block 471 201 401 crac:claim_block run say ARMOIRE BAS en 471 201 401"
+    },
+    {
+      "commande": "execute if block 471 201 401 crac:claim_block_haut run say ARMOIRE HAUT en 471 201 401"
+    },
+    {
+      "commande": "execute if block 471 202 401 crac:claim_block run say ARMOIRE BAS en 471 202 401"
+    },
+    {
+      "commande": "execute if block 471 202 401 crac:claim_block_haut run say ARMOIRE HAUT en 471 202 401"
+    },
+    {
+      "commande": "execute if block 471 201 402 crac:claim_block run say ARMOIRE BAS en 471 201 402"
+    },
+    {
+      "commande": "execute if block 471 201 402 crac:claim_block_haut run say ARMOIRE HAUT en 471 201 402"
+    },
+    {
+      "commande": "execute if block 471 202 402 crac:claim_block run say ARMOIRE BAS en 471 202 402"
+    },
+    {
+      "commande": "execute if block 471 202 402 crac:claim_block_haut run say ARMOIRE HAUT en 471 202 402"
+    },
+    {
+      "commande": "execute if block 472 201 400 crac:claim_block run say ARMOIRE BAS en 472 201 400"
+    },
+    {
+      "commande": "execute if block 472 201 400 crac:claim_block_haut run say ARMOIRE HAUT en 472 201 400"
+    },
+    {
+      "commande": "execute if block 472 202 400 crac:claim_block run say ARMOIRE BAS en 472 202 400"
+    },
+    {
+      "commande": "execute if block 472 202 400 crac:claim_block_haut run say ARMOIRE HAUT en 472 202 400"
+    },
+    {
+      "commande": "execute if block 472 201 401 crac:claim_block run say ARMOIRE BAS en 472 201 401"
+    },
+    {
+      "commande": "execute if block 472 201 401 crac:claim_block_haut run say ARMOIRE HAUT en 472 201 401"
+    },
+    {
+      "commande": "execute if block 472 202 401 crac:claim_block run say ARMOIRE BAS en 472 202 401"
+    },
+    {
+      "commande": "execute if block 472 202 401 crac:claim_block_haut run say ARMOIRE HAUT en 472 202 401"
+    },
+    {
+      "commande": "execute if block 472 201 402 crac:claim_block run say ARMOIRE BAS en 472 201 402"
+    },
+    {
+      "commande": "execute if block 472 201 402 crac:claim_block_haut run say ARMOIRE HAUT en 472 201 402"
+    },
+    {
+      "commande": "execute if block 472 202 402 crac:claim_block run say ARMOIRE BAS en 472 202 402"
+    },
+    {
+      "commande": "execute if block 472 202 402 crac:claim_block_haut run say ARMOIRE HAUT en 472 202 402"
+    },
+    {
+      "commande": "setblock 470 201 400 minecraft:air"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "commande": "execute if block 470 201 400 crac:structure run say CASE 470 201 400 = MUR"
+    },
+    {
+      "commande": "execute if block 470 202 400 crac:structure run say CASE 470 202 400 = MUR"
+    },
+    {
+      "commande": "execute if block 470 202 400 crac:claim_block_haut run say HAUT RESTE"
+    },
+    {
+      "capture": "d31_armoire_retiree"
+    },
+    {
+      "commande": "tp @s 500 205 402 0 0"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "commande": "tp @s 472.6 201.6 402.6 135 20"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "d32_armoire_retiree_apres_aller_retour"
+    },
+    {
+      "touche": "key.chat"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "d33_chat"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "stop"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "fin": true
+    }
+  ]
+}
