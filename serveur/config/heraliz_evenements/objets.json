@@ -1,0 +1,24 @@
+{
+  "_aide": "Objets d'evenement a revendre (dossier classe Rare, mallette scellee Epique, disque dur militaire Legendaire ; boite noire d'helicoptere Legendaire, seulement pour l'helicoptere). prix : herals verses par le marchand racheteur (Mila). tirages : par type d'evenement, chance de chaque objet (poids) ; un evenement absent de la liste tire avec \"defaut\". Points de saison : events.points.objet_<id> de heralisz_clans/saison.json. Relu par /event recharger.",
+  "prix": {
+    "dossier_classe": 120,
+    "mallette_scellee": 300,
+    "disque_dur_militaire": 700,
+    "boite_noire_helico": 400
+  },
+  "tirages": {
+    "defaut": {
+      "dossier_classe": 65,
+      "mallette_scellee": 28,
+      "disque_dur_militaire": 7
+    },
+    "largage": {
+      "dossier_classe": 65,
+      "mallette_scellee": 28,
+      "disque_dur_militaire": 7
+    },
+    "helico": {
+      "boite_noire_helico": 100
+    }
+  }
+}

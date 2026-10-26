@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "crac:c4", "required": false},
+    {"id": "crac:explosive_charge", "required": false}
+  ]
+}

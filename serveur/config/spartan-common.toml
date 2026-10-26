@@ -12,7 +12,7 @@
 [antidupe]
 	#Objets suivis (identifiants exacts, ou « mod:* » pour tout un mod). Seuls les objets
 	#NON empilables reçoivent un numéro (un numéro empêcherait d'empiler).
-	trackedItems = ["tacz:*", "backpacked:*", "heraliz_armory:*"]
+	trackedItems = ["tacz:*", "backpacked:*", "heraliz_armory:*", "airstrike:designator"]
 	#Intervalle entre deux relevés (secondes). Un relevé lit tout en une fois (~1 ms).
 	#Range: 5 ~ 300
 	scanSeconds = 20
@@ -284,7 +284,7 @@
 	#Range: 0.1 ~ 5.0
 	verticalToleranceBlocks = 0.4
 	#Effets jamais signalés (ex : effets permanents donnés par l'armure d'un mod).
-	ignoredEffects = ["minecraft:bad_omen", "minecraft:hero_of_the_village"]
+	ignoredEffects = ["minecraft:bad_omen", "minecraft:hero_of_the_village", "heraliz_grades:bonus_loot", "minecraft:jump_boost"]
 	#Timer : jeu accéléré côté client (plus de 20 ticks par seconde). Avec les transactions, la
 	#cadence est bornée par l'horloge du serveur via les pings : ×2 vu en moins d'une seconde,
 	#×1,05 en une vingtaine de secondes, sans crédit à accumuler en restant immobile.

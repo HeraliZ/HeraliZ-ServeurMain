@@ -1,0 +1,101 @@
+{
+  "_aide": "Essai : raccord rampe carrée / triangle, témoin d'affichage de l'armoire.",
+  "depart": 160,
+  "etapes": [
+    {
+      "fermer": true
+    },
+    {
+      "commande": "gamemode creative"
+    },
+    {
+      "commande": "clear @s"
+    },
+    {
+      "commande": "effect give @s minecraft:night_vision 9999 0 true"
+    },
+    {
+      "commande": "execute in minecraft:overworld run tp @s 430 203 402 0 30"
+    },
+    {
+      "attendre": 80
+    },
+    {
+      "commande": "time set noon"
+    },
+    {
+      "commande": "weather clear"
+    },
+    {
+      "commande": "gamemode survival"
+    },
+    {
+      "commande": "tp @s 430.6 202.6 401.4 180 10"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "t2_sur_rampe_carree"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 6
+    },
+    {
+      "attendre": 8
+    },
+    {
+      "position": "t2_franchit_le_raccord"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 4
+    },
+    {
+      "attendre": 8
+    },
+    {
+      "position": "t2_sur_rampe_triangle"
+    },
+    {
+      "capture": "e10_raccord_rampes"
+    },
+    {
+      "commande": "gamemode spectator"
+    },
+    {
+      "commande": "setblock 480 200 402 crac:claim_block[facing=south]"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "tp @s 480.5 201.6 405.5 180 20"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "e20_temoin_armoire"
+    },
+    {
+      "commande": "setblock 480 200 402 minecraft:air"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "capture": "e21_temoin_armoire_retiree"
+    },
+    {
+      "commande": "stop"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "fin": true
+    }
+  ]
+}

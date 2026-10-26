@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "heraliz_quetes:block/recycleur"
+    },
+    "facing=east": {
+      "model": "heraliz_quetes:block/recycleur",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "heraliz_quetes:block/recycleur",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "heraliz_quetes:block/recycleur",
+      "y": 270
+    }
+  }
+}

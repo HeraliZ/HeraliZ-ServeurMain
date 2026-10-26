@@ -3,27 +3,27 @@
   "materials": [
     {
       "item": {
-        "item": "heraliz_composants:ferraille"
+        "item": "heraliz_composants:ferraille_iv"
       },
-      "count": 8
+      "count": 2
     },
     {
       "item": {
-        "item": "heraliz_composants:caoutchouc"
+        "item": "heraliz_composants:caoutchouc_iv"
       },
-      "count": 8
+      "count": 2
     },
     {
       "item": {
-        "item": "heraliz_composants:scotch"
+        "item": "heraliz_composants:scotch_iv"
       },
-      "count": 8
+      "count": 2
     },
     {
       "item": {
-        "item": "heraliz_composants:batterie"
+        "item": "heraliz_composants:batterie_iv"
       },
-      "count": 8
+      "count": 2
     }
   ],
   "result": {

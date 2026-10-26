@@ -1,0 +1,57 @@
+// HeraliZ : une seule fabrication pour tous les modules (modules/<nom>).
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { name = 'MinecraftForge'; url = 'https://maven.minecraftforge.net/' }
+        maven { name = 'Sponge'; url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
+}
+
+rootProject.name = 'heraliz'
+
+include 'anticheat'
+project(':anticheat').projectDir = file('modules/anticheat')
+include 'armes'
+project(':armes').projectDir = file('modules/armes')
+include 'banc'
+project(':banc').projectDir = file('modules/banc')
+include 'bases'
+project(':bases').projectDir = file('modules/bases')
+include 'boutique'
+project(':boutique').projectDir = file('modules/boutique')
+include 'bunker'
+project(':bunker').projectDir = file('modules/bunker')
+include 'capture'
+project(':capture').projectDir = file('modules/capture')
+include 'clans'
+project(':clans').projectDir = file('modules/clans')
+include 'clashwar'
+project(':clashwar').projectDir = file('modules/clashwar')
+include 'emotes'
+project(':emotes').projectDir = file('modules/emotes')
+include 'equipement'
+project(':equipement').projectDir = file('modules/equipement')
+include 'evenements'
+project(':evenements').projectDir = file('modules/evenements')
+include 'events'
+project(':events').projectDir = file('modules/events')
+include 'interface'
+project(':interface').projectDir = file('modules/interface')
+include 'loot'
+project(':loot').projectDir = file('modules/loot')
+include 'monde'
+project(':monde').projectDir = file('modules/monde')
+include 'noyau'
+project(':noyau').projectDir = file('modules/noyau')
+include 'pnj'
+project(':pnj').projectDir = file('modules/pnj')
+include 'sacs'
+project(':sacs').projectDir = file('modules/sacs')
+include 'survie'
+project(':survie').projectDir = file('modules/survie')
+include 'voix'
+project(':voix').projectDir = file('modules/voix')

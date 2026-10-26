@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "heraliz_evenements:item/icon/dossier_classe"
+  }
+}

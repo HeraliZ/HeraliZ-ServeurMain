@@ -1,0 +1,749 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "heraliz_armory:armband_black",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:armband_blue",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:armband_gray",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:armband_orange",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:armband_pink",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:armband_white",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:armband_yellow",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:barricade_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:barricade_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:barricade_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:barricade_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:barricade_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:barricade_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:barricade_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:barricade_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:belier_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:belier_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:belier_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:belier_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:belier_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:belier_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:belier_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:beton_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:beton_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:beton_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:beton_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:beton_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:beton_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:beton_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:blizzard_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:blizzard_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:blizzard_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:blizzard_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:blizzard_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:blizzard_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:blizzard_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:citadin_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:citadin_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:citadin_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:citadin_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:citadin_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:cobra_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:cobra_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:cobra_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:cobra_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:cobra_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:cobra_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:cobra_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:cobra_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:contrat_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:contrat_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:contrat_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:contrat_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:contrat_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:contrat_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:contrat_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:contrat_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:corbeau_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:corbeau_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:corbeau_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:corbeau_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:corbeau_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:corbeau_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:corbeau_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:corbeau_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:fennec_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:fennec_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:fennec_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:fennec_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:fennec_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:fennec_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:fennec_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gardien_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gardien_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gardien_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gardien_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gardien_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gardien_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gardien_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gas_mask_black",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gas_mask_military_black",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gas_mask_military_gold",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gas_mask_military_green",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gas_mask_military_purple",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gas_mask_military_red",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gas_mask_military_white",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:gas_mask_white",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_badlands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_black",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_cave",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_cherry",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_dark_forest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_desert",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_forest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_snow",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_full_swamp",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_badlands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_black",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_cave",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_cherry",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_dark_forest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_desert",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_forest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_snow",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ghillie_leafy_swamp",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:meute_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:meute_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:meute_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:meute_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:meute_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:meute_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:meute_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:meute_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nocturne_cheveche_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nocturne_effraie_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nocturne_grand_duc_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nocturne_hulotte_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nomade_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nomade_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nomade_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nomade_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nomade_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nomade_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nomade_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:nomade_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ours_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ours_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ours_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ours_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ours_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ours_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ours_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ours_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ranger_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ranger_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ranger_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ranger_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ranger_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:ranger_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rempart_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rempart_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rempart_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rempart_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rempart_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rempart_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rescape_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rescape_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rescape_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rescape_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rescape_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:rescape_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:scorpion_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:scorpion_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:scorpion_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:scorpion_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:scorpion_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:scorpion_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:scorpion_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:scorpion_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:sentinelle_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:sentinelle_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:sentinelle_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:sentinelle_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:sentinelle_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:sentinelle_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:siberie_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:siberie_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:siberie_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:siberie_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:siberie_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:siberie_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:siberie_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:vipere_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:vipere_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:vipere_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:vipere_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:vipere_knees",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:vipere_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:vipere_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:woodland_chest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:woodland_face",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:woodland_feet",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:woodland_hands",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:woodland_head",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:woodland_legs",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:woodland_vest",
+      "required": false
+    }
+  ]
+}

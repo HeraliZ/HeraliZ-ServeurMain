@@ -1,7 +1,7 @@
 """Tous les contrôles d'un coup, sur les jars fabriqués par outils/construire.py (à lancer AVANT tout envoi au Ptero).
 
     python outils/verifier.py                     tous les mods
-    python outils/verifier.py heraliz-boss crac   seulement ceux-là
+    python outils/verifier.py events bases        seulement ceux-là
     python outils/verifier.py --rapide            sans verif_reobf
     python outils/verifier.py --sans-split        sans verif_split (machine sans Minecraft en noms SRG, ex. GitHub)
 
@@ -11,6 +11,8 @@ Contrôles :
   - check_geckolib   : API de geckolib222 4.4.7 respectée, aucun GeckoLib embarqué ;
   - verif_reobf      : noms de Minecraft réobfusqués (sinon plantage au chargement) ;
   - mention          : LICENCE-HeraliZ.txt dans chaque jar de nos mods (propriété HeraliZ) ;
+  - livraison        : chaque jar de livraison/ est bien la copie du jar contrôlé (rien de copié en cours de fabrication) ;
+  - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses (outils/caisses.py) ;
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
   - accessoires      : listes communes d'accessoires TaCZ à jour (gunpack heraliz_accessoires, outils/accessoires.py) ;
   - logos            : plus de logo « M » de Max Stuff sur les icônes d'accessoires (outils/icones_sans_logo.py) ;
@@ -22,6 +24,7 @@ Contrôles :
                        dans nos sources ni dans nos jars.
 Code de sortie 1 au moindre problème.
 """
+import os
 import re
 import subprocess
 import sys
@@ -40,12 +43,12 @@ O = D / "outils"
 def options_split(p, cote):
     """Options en plus pour verif_split, propres à certains mods (contenu embarqué exprès, mod facultatif absent)."""
     o = []
-    if p.name == "caracrea":
+    if p.name == "voix":
         api = sorted(Path.home().glob(".gradle/caches/modules-2/files-2.1/de.maxhenkel.voicechat/voicechat-api/*/*/voicechat-api-*.jar"))
         if api:
             o += ["--ref", str(api[-1])]
         o += ["--embarque", "%s,LICENSE-concentus.txt" % (p / "libs/concentus-1.0.2-caracrea.jar")]
-    if p.name == "heraliz-emote":
+    if p.name == "emotes":
         jj = p / "libs/heraliz_emote-jarjar-2.5.2.jar"
         tmp = Path(tempfile.mkdtemp(prefix="hz_emote_"))
         with zipfile.ZipFile(jj) as z:
@@ -56,17 +59,22 @@ def options_split(p, cote):
                     t.write_bytes(z.read(n))
                     refs.append(str(t))
         o += ["--embarque", str(jj), "--ref", ",".join(refs)]
-    if p.name == "spartan" and cote == "serveur":
+    if p.name == "anticheat" and cote == "serveur":
         o += ["--embarque", "META-INF/spartan/client.bin"]   # copie du jar joueur (défi d'intégrité)
-    if p.name == "heralisz-matchs":
-        boss = construire.jars(chemins.MODS / "heraliz-boss")[cote]
-        curios = sorted(chemins.MODS_TIERS.glob("curios-*.jar"))
-        o += ["--ref", ",".join(str(x) for x in [boss] + curios)]
+    if p.name == "clashwar":
+        # Curios facultatif (CuriosCompat : tenue du kit, vidage au Coffre), lu seulement s'il est chargé
+        o += ["--ref", ",".join(str(x) for x in sorted(chemins.MODS_TIERS.glob("curios-*.jar")))]
+    if p.name == "monde" and cote != "serveur":
+        # gestes d'attaque sur les modèles de Mutants & Zombies : config Mixin facultative (heralisz_utils_zombies)
+        o += ["--ref", ",".join(str(x) for x in sorted(chemins.MODS_TIERS.glob("MutantsZombies-*.jar")))]
     return o
 
 
 def lancer(args):
-    r = subprocess.run([sys.executable] + args, cwd=D, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    # sortie des outils en UTF-8 (sinon, sous Windows, les accents arrivent abîmés et les lignes ne se reconnaissent plus)
+    env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
+    r = subprocess.run([sys.executable, "-X", "utf8"] + args, cwd=D, capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", env=env)
     return r.returncode, r.stdout + r.stderr
 
 
@@ -142,6 +150,39 @@ def main():
                     if "LICENCE-HeraliZ.txt" not in z.namelist():
                         print("[mention]     %s : LICENCE-HeraliZ.txt absent (le copier depuis mods/_gabarit/src/commun/resources)" % j.name)
                         erreurs += 1
+    # livraison/ = copie exacte des jars contrôlés ci-dessus (25/10 : une copie faite pendant une fabrication encore en
+    # cours avait gardé un jar -serveur pas encore réobfusqué ; les contrôles, faits sur build/libs, ne l'avaient pas vu)
+    for p in choisis:
+        if p.name in construire.MODULES_DE_COTE:
+            continue
+        for cote, j in construire.jars(p).items():
+            if not j.exists():
+                continue
+            if p.name in construire.MODULES_A_PART:
+                copies = [chemins.LIVRAISON / p.name / j.name] if cote == "serveur" else []
+            else:
+                copies = [dossier_mods[c] / j.name for c in {"serveur": ["serveur"], "client": ["client"],
+                                                             "complet": ["complet"], "seul": ["client", "complet"]}[cote]]
+            with zipfile.ZipFile(j) as z:
+                ref = {i.filename: i.CRC for i in z.infolist() if not i.filename.endswith(construire.MENTION_NOM)}
+            for c in copies:
+                if not c.exists():
+                    print("[livraison]   %s absent de %s : relancer outils/construire.py --sans-build" % (j.name, c.parent.name))
+                    erreurs += 1
+                    continue
+                with zipfile.ZipFile(c) as z:
+                    vu = {i.filename: i.CRC for i in z.infolist() if not i.filename.endswith(construire.MENTION_NOM)}
+                if vu != ref:
+                    print("[livraison]   %s/%s différent du jar fabriqué : relancer outils/construire.py --sans-build"
+                          % (c.parent.name, j.name))
+                    erreurs += 1
+    # caisses : aucun objet de Minecraft ni objet disparu (outils/caisses.py)
+    code, out = lancer([str(O / "caisses.py"), "--verifier"])
+    if code != 0:
+        for l in out.splitlines():
+            if l.startswith("[caisses]"):
+                print(l.strip())
+        erreurs += 1
     # portée du son de chaque silencieux des gunpacks (un gunpack ajouté peut en apporter un nouveau)
     code, out = lancer([str(O / "silencieux.py"), "--verifier"])
     if code != 0:

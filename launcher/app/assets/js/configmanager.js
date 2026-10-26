@@ -60,9 +60,10 @@ function resolveSelectedRAM(ram) {
     if(ram?.recommended != null) {
         return `${ram.recommended}M`
     } else {
-        // Legacy behavior
+        // HeraliZ (25/10, audit) : le pack demande 5 à 8 Go (affiché dans les réglages) ; 2 à 4 Go faisaient
+        // tourner le ramasse-miettes sans arrêt (saccades). Un réglage déjà choisi par le joueur n'est pas touché.
         const mem = os.totalmem()
-        return mem >= (8*1073741824) ? '4G' : (mem >= (6*1073741824) ? '3G' : '2G')
+        return mem >= (12*1073741824) ? '6G' : (mem >= (8*1073741824) ? '5G' : '4G')
     }
 }
 

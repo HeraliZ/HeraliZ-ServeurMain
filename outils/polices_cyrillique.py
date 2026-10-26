@@ -51,7 +51,7 @@ def traiter(fichier):
 
 
 def main():
-    modifies = [f for f in sorted(ROOT.glob("mods/*/src/*/resources/assets/*/font/*.json")) if traiter(f)]
+    modifies = [f for f in sorted(ROOT.glob("modules/*/src/*/resources/assets/*/font/*.json")) if traiter(f)]
     for f in modifies:
         print("[polices] cyrillique ajouté :", f.relative_to(ROOT))
     print("[polices] %d polices complétées" % len(modifies))

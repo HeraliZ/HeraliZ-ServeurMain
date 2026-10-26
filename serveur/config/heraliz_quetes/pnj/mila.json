@@ -88,6 +88,61 @@
           "legendaire": 200,
           "mythique": 500
         }
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "prix": {
+          "commun": 15,
+          "peu_commun": 30,
+          "rare": 60,
+          "epique": 120,
+          "legendaire": 250,
+          "mythique": 500
+        }
+      },
+      {
+        "tag": "heraliz_quetes:rachat_armures",
+        "prix": {
+          "commun": 5,
+          "peu_commun": 12,
+          "rare": 25,
+          "epique": 60,
+          "legendaire": 120,
+          "mythique": 250
+        }
+      },
+      {
+        "tag": "heraliz_quetes:rachat_sacs",
+        "prix": {
+          "commun": 8,
+          "peu_commun": 15,
+          "rare": 30,
+          "epique": 60,
+          "legendaire": 120,
+          "mythique": 250
+        }
+      },
+      {
+        "objet": "heralisz_tactical:throwable",
+        "prix": {
+          "commun": 5,
+          "peu_commun": 10,
+          "rare": 20,
+          "epique": 40,
+          "legendaire": 80,
+          "mythique": 160
+        }
+      },
+      {
+        "objet": "tacz:attachment",
+        "prix": {
+          "commun": 5,
+          "peu_commun": 10,
+          "rare": 20,
+          "epique": 50,
+          "legendaire": 100,
+          "mythique": 200
+        }
       }
     ]
   }

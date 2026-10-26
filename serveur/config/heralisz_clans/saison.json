@@ -1,10 +1,10 @@
 {
-  "_aide": "Bareme de la saison des clans (docs/SAISON_CLANS.md). pve : points par unite (vente_1000 = pour 1 000 herals vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; relu par /saison recharger.",
+  "_aide": "Bareme de la saison des clans (docs/SAISON_CLANS.md). pve : points par unite (vente_1000 = pour 1 000 herals vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; boss_coefficients : part des points du boss pour le 1er kill de ce boss par le clan dans la journee, le 2e, puis tous les suivants ; relu par /saison recharger.",
   "pve": {
     "zombie": 0.01,
     "zombie_mutant": 0.02,
     "brute": 0.5,
-    "boss": 150.0,
+    "boss": 60.0,
     "salle_verte": 5.0,
     "salle_bleue": 15.0,
     "salle_rouge": 40.0,
@@ -59,6 +59,24 @@
     "heralisz_plague:plague_bearer",
     "heralisz_sylvorn:sylvorn"
   ],
+  "boss_coefficients": [
+    1.0,
+    0.2,
+    0.0
+  ],
+  "capture": {
+    "par_valeur": 3.0,
+    "difficulte": [
+      0.8,
+      1.0,
+      1.25
+    ],
+    "prise_coef": 2.0,
+    "tenue_min_minutes": 60.0,
+    "meme_zone_heures": 12.0,
+    "meme_paire_heures": 48.0,
+    "plafond_jour_clan": 40.0
+  },
   "pvp": {
     "kill": 1.0,
     "mort": 1.0,
@@ -83,6 +101,20 @@
     "participation": 5.0,
     "multiplicateurs": {
       "clashwar": 2.0
+    },
+    "points": {
+      "largage": 8.0,
+      "objet_dossier_classe": 2.0,
+      "objet_mallette_scellee": 4.0,
+      "objet_disque_dur_militaire": 8.0,
+      "objet_boite_noire_helico": 12.0
+    },
+    "par_jour": {
+      "largage": 3,
+      "objet_dossier_classe": 5,
+      "objet_mallette_scellee": 3,
+      "objet_disque_dur_militaire": 2,
+      "objet_boite_noire_helico": 2
     }
   },
   "raid": {

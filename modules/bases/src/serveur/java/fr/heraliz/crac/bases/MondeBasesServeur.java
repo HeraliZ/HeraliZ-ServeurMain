@@ -1,0 +1,135 @@
+package fr.heraliz.crac.bases;
+
+import fr.heraliz.crac.Crac;
+import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+
+/**
+ * Le monde des bases au serveur : horloge (chaque tick : départs de /home, /rtp et /spawn, messages, tutoriel ; chaque seconde :
+ * tutoriel, protections, carrières, bordure), sa propre bordure (en Forge 1.20.1, chaque dimension reçoit celle de la
+ * carte : elle est remise chaque seconde, comme pour les arènes de HeraliZ Matchs), commandes. Créatures et seaux :
+ * {@link NatureBases}.
+ * Le monde lui-même est créé par Minecraft au démarrage (data/crac/dimension/bases.json) : rien à déposer.
+ */
+@EventBusSubscriber(modid = "crac")
+public final class MondeBasesServeur {
+    private static int ticks;
+
+    private MondeBasesServeur() {
+    }
+
+    @SubscribeEvent
+    public static void commandes(RegisterCommandsEvent e) {
+        Deplacements.commandes(e.getDispatcher());
+        Homes.commandes(e.getDispatcher());
+        CarrieresServeur.commandes(e.getDispatcher());
+        Protections.commandes(e.getDispatcher());
+        Tutoriel.commandes(e.getDispatcher());
+        EffacerBase.commandes(e.getDispatcher());
+        FicheBase.commandes(e.getDispatcher());
+    }
+
+    @SubscribeEvent
+    public static void demarre(ServerStartedEvent e) {
+        ServerLevel l = e.getServer().getLevel(MondeBases.BASES);
+        Crac.LOGGER.info("[CRac] bases des clans sur {}", l == null ? "?" : l.dimension().location());
+        ServerLevel ancien = e.getServer().getLevel(MondeBases.ANCIEN_CLE);
+        if (ancien != null) {
+            bordure(ancien);
+        }
+    }
+
+    @SubscribeEvent
+    public static void tick(TickEvent.ServerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || e.getServer() == null) {
+            return;
+        }
+        MinecraftServer s = e.getServer();
+        Deplacements.tick(s);
+        Tutoriel.tick(s);
+        if (++ticks % 20 != 0) {
+            return;
+        }
+        etape(s, "tutoriel", () -> Tutoriel.seconde(s));
+        etape(s, "protections", () -> Protections.seconde(s));
+        etape(s, "carrières", () -> CarrieresServeur.seconde(s));
+        etape(s, "bases des clans", () -> fr.heraliz.crac.heraliz.BasesClans.seconde(s));
+        // bordure propre seulement pour l'ancien monde des bases (la carte principale garde la sienne)
+        ServerLevel l = s.getLevel(MondeBases.ANCIEN_CLE);
+        if (l != null) {
+            bordure(l);
+        }
+    }
+
+    private static void etape(MinecraftServer s, String nom, Runnable r) {
+        try {
+            r.run();
+        } catch (RuntimeException ex) {
+            Crac.LOGGER.error("[CRac] monde des bases : {} en erreur", nom, ex);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------- bordure
+
+    /** Bordure propre du monde des bases : centre 0 0, taille {@code [bases] bordure} (0 = celle du jeu). */
+    static void bordure(ServerLevel l) {
+        int taille = BasesReglages.i(BasesReglages.BORDURE, 2500);
+        if (taille <= 0) {
+            return;
+        }
+        WorldBorder b = l.getWorldBorder();
+        if (b.getCenterX() == 0.0 && b.getCenterZ() == 0.0 && Math.abs(b.getSize() - taille) < 0.5) {
+            return;
+        }
+        b.setCenter(0.0, 0.0);
+        b.setSize(taille);
+        ClientboundInitializeBorderPacket p = new ClientboundInitializeBorderPacket(b);
+        for (ServerPlayer sp : l.players()) {
+            sp.connection.send(p);
+        }
+    }
+
+    private static void entree(ServerPlayer p) {
+        if (MondeBases.estAncien(p.level())) {
+            bordure(p.serverLevel());
+            p.connection.send(new ClientboundInitializeBorderPacket(p.serverLevel().getWorldBorder()));
+        }
+        CarrieresServeur.envoyer(p);
+    }
+
+    @SubscribeEvent
+    public static void connexion(PlayerEvent.PlayerLoggedInEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p) {
+            entree(p);
+        }
+    }
+
+    @SubscribeEvent
+    public static void changement(PlayerEvent.PlayerChangedDimensionEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p) {
+            entree(p);
+        }
+    }
+
+    @SubscribeEvent
+    public static void reapparition(PlayerEvent.PlayerRespawnEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p) {
+            entree(p);
+        }
+    }
+
+    @SubscribeEvent
+    public static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
+        Deplacements.oublier(e.getEntity().getUUID());
+        Tutoriel.oublier(e.getEntity().getUUID());
+    }
+}

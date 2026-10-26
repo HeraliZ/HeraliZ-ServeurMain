@@ -3,13 +3,13 @@
   "materials": [
     {
       "item": {
-        "item": "heraliz_composants:tissu_ii"
+        "item": "heraliz_composants:tissu_iii"
       },
       "count": 1
     },
     {
       "item": {
-        "item": "heraliz_composants:alcool_ii"
+        "item": "heraliz_composants:alcool_iii"
       },
       "count": 1
     }

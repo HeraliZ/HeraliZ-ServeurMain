@@ -1,0 +1,137 @@
+{
+ "id": "clashwar_usine",
+ "nom_fr": "Usine chimique",
+ "nom_en": "Chemical plant",
+ "type": "clashwar_rd",
+ "dimension": "heraliz_clashwar:arenes",
+ "taille": [
+  112,
+  36,
+  112
+ ],
+ "bornes": [
+  1,
+  0,
+  1,
+  110,
+  35,
+  110
+ ],
+ "points": {
+  "spawn_a": [
+   [
+    52.5,
+    6.0,
+    8.5,
+    0.0
+   ],
+   [
+    54.5,
+    6.0,
+    8.5,
+    0.0
+   ],
+   [
+    56.5,
+    6.0,
+    8.5,
+    0.0
+   ],
+   [
+    58.5,
+    6.0,
+    8.5,
+    0.0
+   ]
+  ],
+  "spawn_b": [
+   [
+    52.5,
+    6.0,
+    103.5,
+    180.0
+   ],
+   [
+    54.5,
+    6.0,
+    103.5,
+    180.0
+   ],
+   [
+    56.5,
+    6.0,
+    103.5,
+    180.0
+   ],
+   [
+    58.5,
+    6.0,
+    103.5,
+    180.0
+   ]
+  ],
+  "bombe_a": [
+   [
+    30.5,
+    6.0,
+    80.5,
+    -160.1
+   ]
+  ],
+  "bombe_b": [
+   [
+    81.5,
+    6.0,
+    80.5,
+    160.9
+   ]
+  ],
+  "site_a": [
+   [
+    30.5,
+    6.0,
+    80.5,
+    -160.1
+   ]
+  ],
+  "site_b": [
+   [
+    81.5,
+    6.0,
+    80.5,
+    160.9
+   ]
+  ],
+  "charge": [
+   [
+    56.5,
+    6.0,
+    10.5,
+    0.0
+   ]
+  ],
+  "spectateur": [
+   [
+    56.5,
+    28.0,
+    3.5,
+    0.0
+   ],
+   [
+    56.5,
+    28.0,
+    108.5,
+    180.0
+   ]
+  ]
+ },
+ "theme": "hangar central, citernes, tuyauteries",
+ "recherche_destruction": {
+  "attaquants": "a",
+  "defenseurs": "b",
+  "note": "V1 faite par le calcul (outils/cartes_clashwar/generer.py), à reprendre en jeu."
+ },
+ "version": 1,
+ "blocs": 86158,
+ "generateur": "mods/heralisz-matchs/outils/cartes_clashwar/generer.py"
+}

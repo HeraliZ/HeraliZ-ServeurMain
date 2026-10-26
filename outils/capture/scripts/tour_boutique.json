@@ -1,0 +1,321 @@
+{
+  "_aide": "Recycleur, kits, boutique et écrans du staff (25/10). Serveur d'essai local seulement : -Dheraliz.essai.sansAuthme=true et server-ip=127.0.0.1 (pas d'AuthMe sur un serveur Forge).",
+  "depart": 140,
+  "etapes": [
+    {
+      "fermer": true
+    },
+    {
+      "commande": "pnj retirer mila"
+    },
+    {
+      "commande": "pnj retirer varga"
+    },
+    {
+      "commande": "gamemode creative"
+    },
+    {
+      "commande": "execute in heralisz:spawn run fill -68 264 -5 -54 264 12 minecraft:smooth_stone"
+    },
+    {
+      "commande": "execute in heralisz:spawn run fill -68 265 -5 -54 268 12 minecraft:air"
+    },
+    {
+      "commande": "execute in heralisz:spawn run tp @s -61 265 2 0 0"
+    },
+    {
+      "attendre": 80
+    },
+    {
+      "commande": "clear @s"
+    },
+    {
+      "commande": "item replace entity @s hotbar.0 with tacz:modern_kinetic_gun{GunId:\"tacz:ak47\",GunCurrentAmmoCount:0} 1"
+    },
+    {
+      "commande": "item replace entity @s hotbar.1 with tacz:attachment{AttachmentId:\"arkaniaz:1p87\"} 1"
+    },
+    {
+      "commande": "item replace entity @s hotbar.2 with tacz:ammo{AmmoId:\"tacz:762x39\"} 40"
+    },
+    {
+      "commande": "item replace entity @s hotbar.3 with heraliz_composants:ferraille 5"
+    },
+    {
+      "commande": "item replace entity @s hotbar.4 with tacz:modern_kinetic_gun{GunId:\"tacz:m1911\",GunCurrentAmmoCount:0} 1"
+    },
+    {
+      "commande": "execute in heralisz:spawn run setblock -61 265 5 heraliz_quetes:recycleur[facing=south]"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "bloc": [
+        -61,
+        265,
+        5
+      ]
+    },
+    {
+      "attendre_ecran": "EcranRecycleur",
+      "max": 80
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "r01_recycleur_vide"
+    },
+    {
+      "souris": [
+        198,
+        768
+      ]
+    },
+    {
+      "attendre": 15
+    },
+    {
+      "capture": "r02_apercu_arme"
+    },
+    {
+      "souris": [
+        396,
+        768
+      ]
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "r03_apercu_composant"
+    },
+    {
+      "souris": [
+        264,
+        768
+      ]
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "r04_apercu_viseur"
+    },
+    {
+      "clic": [
+        198,
+        768
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        198,
+        270
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        462,
+        768
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        264,
+        270
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        330,
+        768
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "clic": [
+        330,
+        270
+      ]
+    },
+    {
+      "attendre": 3
+    },
+    {
+      "souris": [
+        1700,
+        900
+      ]
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "r05_recyclage_en_cours"
+    },
+    {
+      "attendre": 240
+    },
+    {
+      "capture": "r06_recyclage_suite"
+    },
+    {
+      "attendre": 200
+    },
+    {
+      "capture": "r07_recyclage_fin"
+    },
+    {
+      "clic": [
+        1134,
+        402
+      ]
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "r08_tout_pris"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "r09_apres_fermeture"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "kit"
+    },
+    {
+      "attendre_ecran": "EcranKits",
+      "max": 100
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "s01_kits"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "boutique"
+    },
+    {
+      "attendre_ecran": "EcranBoutique",
+      "max": 120
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "s02_boutique"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "grade editeur"
+    },
+    {
+      "attendre_ecran": "EcranEditeurGrades",
+      "max": 100
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "s03_editeur_grades"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "staff panel"
+    },
+    {
+      "attendre_ecran": "EcranStaff",
+      "max": 100
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "s04_panel"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "bon editeur"
+    },
+    {
+      "attendre": 60
+    },
+    {
+      "capture": "s05_bon_editeur"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "commande": "boutique abonnement"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "touche": "key.chat"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "s06_chat"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "fin": true
+    }
+  ]
+}

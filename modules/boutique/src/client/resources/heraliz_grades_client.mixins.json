@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.grades.mixin.client",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_boutique.refmap.json",
+  "client": [
+    "ChatComponentMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

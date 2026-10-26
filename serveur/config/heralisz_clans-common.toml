@@ -3,7 +3,7 @@
 [clans]
 	#Cout de creation d'un clan (hérals, HeraliZ Economie)
 	#Range: 0 ~ 9223372036854775807
-	cout_creation = 2500
+	cout_creation = 1750
 	#Heures a attendre apres avoir quitte (ou ete exclu d') un clan avant d'en rejoindre un autre
 	#Range: 0 ~ 720
 	delai_rejoindre_h = 12

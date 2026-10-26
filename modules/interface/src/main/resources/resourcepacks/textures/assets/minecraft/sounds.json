@@ -1,0 +1,150 @@
+{
+  "entity.zombie.ambient": {
+    "replace": true,
+    "subtitle": "subtitles.entity.zombie.ambient",
+    "sounds": [
+      {
+        "name": "mob/zombie/say1",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/say2",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/say3",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      }
+    ]
+  },
+  "entity.zombie.attack_iron_door": {
+    "replace": true,
+    "subtitle": "subtitles.block.generic.break",
+    "sounds": [
+      {
+        "name": "mob/zombie/metal1",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/metal2",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/metal3",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      }
+    ]
+  },
+  "entity.zombie.attack_wooden_door": {
+    "replace": true,
+    "subtitle": "subtitles.entity.zombie.attack_wooden_door",
+    "sounds": [
+      {
+        "name": "mob/zombie/wood1",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/wood2",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/wood3",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/wood4",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      }
+    ]
+  },
+  "entity.zombie.break_wooden_door": {
+    "replace": true,
+    "subtitle": "subtitles.entity.zombie.break_wooden_door",
+    "sounds": [
+      {
+        "name": "mob/zombie/woodbreak",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      }
+    ]
+  },
+  "entity.zombie.death": {
+    "replace": true,
+    "subtitle": "subtitles.entity.zombie.death",
+    "sounds": [
+      {
+        "name": "mob/zombie/death",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      }
+    ]
+  },
+  "entity.zombie.hurt": {
+    "replace": true,
+    "subtitle": "subtitles.entity.zombie.hurt",
+    "sounds": [
+      {
+        "name": "mob/zombie/hurt1",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/hurt2",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      }
+    ]
+  },
+  "entity.zombie.infect": {
+    "replace": true,
+    "subtitle": "subtitles.entity.zombie.infect",
+    "sounds": [
+      {
+        "name": "mob/zombie/infect",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      }
+    ]
+  },
+  "entity.zombie.step": {
+    "replace": true,
+    "subtitle": "subtitles.block.generic.footsteps",
+    "sounds": [
+      {
+        "name": "mob/zombie/step1",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/step2",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/step3",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/step4",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      },
+      {
+        "name": "mob/zombie/step5",
+        "volume": 0.5,
+        "attenuation_distance": 11
+      }
+    ]
+  }
+}

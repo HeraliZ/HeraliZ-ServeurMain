@@ -1,0 +1,155 @@
+// Fabrication commune des modules « coupés » (docs/METHODE_CLIENT_SERVEUR.md). Un module l'applique ainsi :
+//
+//   plugins {
+//       id 'net.minecraftforge.gradle'
+//       id 'org.spongepowered.mixin'
+//   }
+//   apply from: rootProject.file('gradle/module-coupe.gradle')
+//   dependencies { compileOnly ... }        // seulement ce qui lui est propre
+//
+// Trois ensembles de sources : commun (src/commun = sourceSets.main), client (src/client), serveur (src/serveur).
+// client et serveur voient commun, jamais l'un l'autre ; commun ne voit ni l'un ni l'autre (le compilateur l'interdit).
+// Trois jars réobfusqués : -client (commun + client), -serveur (commun + serveur), -complet (tout, pour le solo).
+// Réglages du module dans son gradle.properties : jar_name, mod_version, mod_group_id (le reste vient de la racine).
+// Configs Mixin : src/commun/resources/*.mixins.json dans les trois jars, src/client/... dans -client et -complet,
+// src/serveur/... dans -serveur et -complet. Table de correspondance : <jar_name>.refmap.json (client),
+// <jar_name>-commun.refmap.json (commun) et <jar_name>-serveur.refmap.json (serveur), si une config la cite.
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = jar_name
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    // Aucune configuration de lancement : le propriétaire teste lui-même en jeu.
+}
+
+sourceSets {
+    main {                                   // = « commun »
+        java.srcDirs = ['src/commun/java']
+        resources.srcDirs = ['src/commun/resources']
+    }
+    client {
+        java.srcDirs = ['src/client/java']
+        resources.srcDirs = ['src/client/resources']
+        compileClasspath += main.output + main.compileClasspath
+    }
+    serveur {
+        java.srcDirs = ['src/serveur/java']
+        resources.srcDirs = ['src/serveur/resources']
+        compileClasspath += main.output + main.compileClasspath
+    }
+}
+
+def configsMixin = { String dossier -> fileTree(dossier) { include '*.mixins.json' }.files.sort { it.name } }
+def mixinsCommun = configsMixin('src/commun/resources')
+def mixinsClient = configsMixin('src/client/resources')
+def mixinsServeur = configsMixin('src/serveur/resources')
+def refmapCommun = mixinsCommun.any { it.text.contains("${jar_name}-commun.refmap.json") }
+// mixins du serveur qui visent Minecraft (24/10) : table <jar_name>-serveur.refmap.json, seulement si une config la cite
+def refmapServeur = mixinsServeur.any { it.text.contains("${jar_name}-serveur.refmap.json") }
+
+mixin {
+    add sourceSets.client, "${jar_name}.refmap.json"
+    if (refmapCommun) add sourceSets.main, "${jar_name}-commun.refmap.json"
+    if (refmapServeur) add sourceSets.serveur, "${jar_name}-serveur.refmap.json"
+}
+
+repositories {
+    flatDir { dirs rootProject.file('libs'), file('libs') }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // GeckoLib = geckolib222 4.4.7 du modpack, le seul GeckoLib du serveur : compilé contre lui, JAMAIS embarqué.
+    compileOnly fg.deobf("blank:geckolib222:4.4.7")
+    clientAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    if (refmapCommun) annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    if (refmapServeur) serveurAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var props = [mod_version: mod_version, minecraft_version_range: minecraft_version_range, forge_version_range: forge_version_range,
+                 loader_version_range: loader_version_range, mod_license: mod_license, mod_authors: mod_authors]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand props
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:-removal', '-Xlint:-deprecation', '-Xmaxerrs', '1000']
+}
+
+// Compilation des mixins toujours complète (24/10) : une compilation partielle pouvait ne pas refaire la table de
+// correspondance (<jar_name>.refmap.json absente du jar : mixins non réobfusqués, plantage chez les joueurs).
+tasks.named('compileClientJava', JavaCompile).configure { options.incremental = false }
+if (refmapCommun) tasks.named('compileJava', JavaCompile).configure { options.incremental = false }
+if (refmapServeur) tasks.named('compileServeurJava', JavaCompile).configure { options.incremental = false }
+// 25/10 : une compilation lancée à part (compileClientJava seul) pouvait laisser la table absente du dossier tmp ; la
+// fabrication suivante croyait la compilation « à jour » et livrait un jar sans table. Table attendue absente = on recompile.
+def refmapClient = mixinsClient.any { it.text.contains("${jar_name}.refmap.json") }
+def tableAttendue = { String tache, String nom -> tasks.named(tache, JavaCompile).configure {
+    def table = file("build/tmp/${tache}/${nom}")
+    outputs.upToDateWhen { table.exists() }
+} }
+if (refmapClient) tableAttendue('compileClientJava', "${jar_name}.refmap.json")
+if (refmapCommun) tableAttendue('compileJava', "${jar_name}-commun.refmap.json")
+if (refmapServeur) tableAttendue('compileServeurJava', "${jar_name}-serveur.refmap.json")
+
+def manifeste = [
+        'Specification-Title'   : jar_name,
+        'Specification-Vendor'  : mod_authors,
+        'Specification-Version' : '1',
+        'Implementation-Title'  : project.name,
+        'Implementation-Version': mod_version,
+        'Implementation-Vendor' : mod_authors,
+]
+def avecMixins = { List configs -> manifeste + (configs ? ['MixinConfigs': configs*.name.join(',')] : [:]) }
+
+// -complet : commun + client + serveur (solo, profil de test)
+tasks.named('jar', Jar).configure {
+    archiveClassifier = 'complet'
+    from sourceSets.client.output
+    from sourceSets.serveur.output
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(avecMixins(mixinsCommun + mixinsClient + mixinsServeur)) }
+    finalizedBy 'reobfJar'
+}
+
+// -client : commun + client + assets (pour les joueurs)
+tasks.register('clientJar', Jar) {
+    group = 'build'
+    archiveClassifier = 'client'
+    from sourceSets.main.output
+    from sourceSets.client.output
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(avecMixins(mixinsCommun + mixinsClient)) }
+    finalizedBy 'reobfClientJar'
+}
+
+// -serveur : commun + serveur + data (pour le serveur), sans la table de correspondance du client
+tasks.register('serveurJar', Jar) {
+    group = 'build'
+    archiveClassifier = 'serveur'
+    from sourceSets.main.output
+    from sourceSets.serveur.output
+    exclude "${jar_name}.refmap.json"
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(avecMixins(mixinsCommun + mixinsServeur)) }
+    finalizedBy 'reobfServeurJar'
+}
+
+// une tâche reobf<Nom> par jar (sinon le jar garde les noms de développement et plante au chargement)
+reobf {
+    create('clientJar')
+    create('serveurJar')
+}
+
+tasks.named('build').configure { dependsOn 'clientJar', 'serveurJar' }

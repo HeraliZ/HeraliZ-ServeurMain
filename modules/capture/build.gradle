@@ -1,0 +1,8 @@
+// HeraliZ Capture : outil d'essai qui ouvre les écrans du serveur dans un client et en fait des captures (docs/AUDIT_UI.md).
+// Jamais livré : fabriqué à part (MODULES_DE_COTE de outils/construire.py), seul son jar -client sert, sur un client d'essai.
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')

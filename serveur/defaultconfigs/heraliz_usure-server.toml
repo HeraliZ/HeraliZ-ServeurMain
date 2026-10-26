@@ -12,8 +12,7 @@
     hud_autorise = true
     # Dimensions ou les armes ne s'usent pas.
     dimensions_sans_usure = [
-        "heralisz_matchs:arenes",
-        "heralisz_matchs:zombies"
+        "heraliz_clashwar:arenes"
 ]
     # Munitions des armes de corps a corps (couteaux faits en armes TaCZ) : categorie melee.
     munitions_corps_a_corps = [
@@ -89,31 +88,32 @@
         eau = 0
         silencieux = 0
 
-# Reparation avec les kits (dans l'inventaire : prendre le kit, puis clic droit sur l'arme).
+# Reparation avec les kits (clic droit avec le kit en main : atelier de reparation, 26/10).
 # perte_max_par_reparation : l'etat maximal de l'arme baisse d'autant (points de %) a chaque reparation (0 = jamais).
 # max_minimum : il ne descend jamais en dessous.
 # Par kit : gain = % d'etat rendu ; plafond = le kit ne monte pas l'arme au-dessus ; utilisations = reparations
 # par kit ; arme_ruinee = le kit peut reparer une arme ruinee.
+# 26/10 (demande du proprietaire) : fortune +7 % x 1, kit +18 % x 2, armurier +45 % x 3.
 [reparation]
     perte_max_par_reparation = 4
     max_minimum = 40
 
     [reparation.kit_fortune]
-        gain = 15
-        plafond = 65
-        utilisations = 2
-        arme_ruinee = false
+        gain = 7
+        plafond = 100
+        utilisations = 1
+        arme_ruinee = true
 
     [reparation.kit_standard]
-        gain = 35
-        plafond = 90
-        utilisations = 3
+        gain = 18
+        plafond = 100
+        utilisations = 2
         arme_ruinee = true
 
     [reparation.kit_armurier]
-        gain = 60
+        gain = 45
         plafond = 100
-        utilisations = 5
+        utilisations = 3
         arme_ruinee = true
 
 # surcharges : reglages par arme (ou groupe d'armes avec *). Le premier qui correspond s'applique (un nom
@@ -124,7 +124,6 @@
 [armes]
     surcharges = [
         "heralisz_skins:*__* = exclue",
-        "heraliz_wonder:* = exclue",
         "tacz:mk14 = categorie:dmr",
         "tacz:spr15hb = categorie:dmr",
         "maxstuff:hk417 = categorie:dmr"

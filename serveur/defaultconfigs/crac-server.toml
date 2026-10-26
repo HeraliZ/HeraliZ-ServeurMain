@@ -103,7 +103,7 @@
 [group]
 	#Maximum number of members in a group.
 	#Range: 1 ~ 64
-	maxGroupSize = 7
+	maxGroupSize = 8
 	#Maximum length of a group name.
 	#Range: 3 ~ 64
 	groupNameMaxLength = 24
@@ -234,7 +234,7 @@
 [heraliz]
 	#Dimensions where nothing of CRac can be placed (building pieces, Claim Block, sleeping bags) and where CRac
 	#leaves explosions alone: the match maps and the clan bunkers of heralisz_bases.
-	blockedDimensions = ["heralisz_matchs:arenes", "heralisz_matchs:zombies", "heralisz_bases:bunkers"]
+	blockedDimensions = ["heraliz_clashwar:arenes", "heralisz_bases:bunkers"]
 	#If true, a combat-tagged player (persistentData long heralisz:combat_jusqua, set by HeraliZ Matchs) cannot place,
 	#upgrade, repair or demolish pieces, place a Claim Block or pick up a placable until the tag ends.
 	combatBlocksBuilding = true

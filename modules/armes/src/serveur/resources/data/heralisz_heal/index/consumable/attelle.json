@@ -1,0 +1,20 @@
+{
+  "name": "item.heralisz_heal.attelle",
+  "tooltip": "item.heralisz_heal.attelle.desc",
+  "base_item": "heralisz_tactical:consumable",
+  "data": {
+    "use_duration": 70,
+    "cooldown": 40,
+    "cooldown_category": "heralisz_tactical:medical",
+    "stack_size": 3,
+    "max_durability": 0,
+    "draw_time": 12,
+    "put_away_time": 6,
+    "heal": 0.0,
+    "remove_effects": [
+      "geckolib:broken_bone",
+      "minecraft:slowness"
+    ],
+    "use_mode": "toggle"
+  }
+}

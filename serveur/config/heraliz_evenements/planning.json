@@ -1,0 +1,14 @@
+{
+  "_aide": "Planning des evenements de la carte (heure de Paris). Un creneau a heures fixes : jours (tous, lundi... dimanche) et heures (HH:MM). Ou a intervalle : toutes_les (H:MM), premier_apres (H:MM apres le demarrage si rien n'est prevu, 0:30 par defaut), reessai_apres (H:MM si le depart est refuse, 0:15 par defaut). probabilite : chance qu'il parte (1 = toujours) ; joueurs_min : joueurs en survie sur la carte au moins. Jamais pendant un ClashWar. Relu par /event recharger.",
+  "actif": true,
+  "creneaux": [
+    {
+      "evenement": "largage",
+      "toutes_les": "3:30",
+      "premier_apres": "0:30",
+      "reessai_apres": "0:15",
+      "probabilite": 1.0,
+      "joueurs_min": 4
+    }
+  ]
+}

@@ -77,6 +77,8 @@
 		l_stairs = 0.5
 		#Range: 0.05 ~ 20.0
 		ramp = 0.5
+		#Range: 0.05 ~ 20.0
+		triangle_ramp = 0.5
 
 #Costs. Format "modid:item=count" or "#tag=count". An empty list [] makes the action free.
 #An entry naming an unknown item or an empty tag blocks the action (logged at server start), it is never skipped.
@@ -97,6 +99,7 @@
 		window = ["heraliz_composants:brindilles=12"]
 		l_stairs = ["heraliz_composants:brindilles=24"]
 		ramp = ["heraliz_composants:brindilles=16"]
+		triangle_ramp = ["heraliz_composants:brindilles=8"]
 
 	#Cost to upgrade a full piece to each tier; multiplied per piece below (rounded up).
 	[cost.upgrade]
@@ -132,6 +135,8 @@
 			l_stairs = 1.0
 			#Range: 0.0 ~ 20.0
 			ramp = 1.0
+			#Range: 0.0 ~ 20.0
+			triangle_ramp = 1.0
 
 	#Items consumed by one repair, per tier.
 	[cost.repair]

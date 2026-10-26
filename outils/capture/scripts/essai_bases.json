@@ -1,0 +1,432 @@
+{
+  "_aide": "Essai des corrections de construction du 26/10 (CRac 1.24.0-beta). Serveur de test seulement : pose une dalle en l'air (x 395-485, y 199, z 394-410) puis /cracbuild essai, et joue les déplacements (positions dans capture/journal.txt).",
+  "depart": 160,
+  "etapes": [
+    {
+      "fermer": true
+    },
+    {
+      "commande": "gamemode creative"
+    },
+    {
+      "commande": "clear @s"
+    },
+    {
+      "commande": "effect give @s minecraft:night_vision 9999 0 true"
+    },
+    {
+      "commande": "execute in heralisz:spawn run fill 395 199 394 485 215 410 minecraft:air"
+    },
+    {
+      "commande": "execute in minecraft:overworld run tp @s 430 203 402 0 30"
+    },
+    {
+      "attendre": 80
+    },
+    {
+      "commande": "fill 395 199 394 485 199 410 minecraft:smooth_stone"
+    },
+    {
+      "commande": "fill 395 200 394 485 215 410 minecraft:air"
+    },
+    {
+      "commande": "gamerule fallDamage false"
+    },
+    {
+      "commande": "difficulty peaceful"
+    },
+    {
+      "commande": "time set noon"
+    },
+    {
+      "commande": "gamerule doDaylightCycle false"
+    },
+    {
+      "commande": "weather clear"
+    },
+    {
+      "commande": "cracbuild clear 440 201 402 60"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "cracbuild essai 400 200 400"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "touche": "key.chat"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "c00_parcours_chat"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "gamemode survival"
+    },
+    {
+      "commande": "tp @s 401.5 201 402.35 0 15"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "position": "s1_depart"
+    },
+    {
+      "capture": "c10_demi_mur_sous_plafond"
+    },
+    {
+      "maintenir": [
+        "key.sneak",
+        "key.forward",
+        "key.jump"
+      ],
+      "ticks": 8
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "position": "s1_saut_accroupi"
+    },
+    {
+      "maintenir": [
+        "key.sneak",
+        "key.forward"
+      ],
+      "ticks": 6
+    },
+    {
+      "attendre": 6
+    },
+    {
+      "position": "s1_sur_le_demi_mur"
+    },
+    {
+      "capture": "c11_accroupi_sur_le_demi_mur"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 15
+    },
+    {
+      "attendre": 16
+    },
+    {
+      "position": "s1_de_l_autre_cote"
+    },
+    {
+      "regard": [
+        180,
+        15
+      ]
+    },
+    {
+      "attendre": 5
+    },
+    {
+      "capture": "c12_vu_de_l_autre_cote"
+    },
+    {
+      "commande": "tp @s 412.5 201 401.5 -90 10"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "s2a_depart"
+    },
+    {
+      "maintenir": [
+        "key.forward",
+        "key.jump"
+      ],
+      "ticks": 3
+    },
+    {
+      "attendre": 18
+    },
+    {
+      "position": "s2a_sur_demi_mur_nu"
+    },
+    {
+      "commande": "tp @s 411.5 201 402.3 0 10"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "s2b_depart"
+    },
+    {
+      "maintenir": [
+        "key.forward",
+        "key.jump"
+      ],
+      "ticks": 4
+    },
+    {
+      "attendre": 22
+    },
+    {
+      "position": "s2b_sur_plancher_triangle"
+    },
+    {
+      "commande": "tp @s 421.5 202.2 400.9 0 20"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "s3_sur_le_bas_de_la_rampe"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 14
+    },
+    {
+      "attendre": 16
+    },
+    {
+      "position": "s3_haut_rampe"
+    },
+    {
+      "capture": "c30_haut_de_la_rampe"
+    },
+    {
+      "commande": "tp @s 431.0 201.6 399.6 -120 15"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "s4_bas_rampe_triangle"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 7
+    },
+    {
+      "attendre": 8
+    },
+    {
+      "position": "s4_milieu_rampe_triangle"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 5
+    },
+    {
+      "attendre": 8
+    },
+    {
+      "position": "s4_haut_rampe_triangle"
+    },
+    {
+      "capture": "c40_haut_rampe_triangle"
+    },
+    {
+      "commande": "tp @s 440.8 201.5 402.7 180 15"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "position": "s5_premiere_marche"
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 14
+    },
+    {
+      "attendre": 16
+    },
+    {
+      "position": "s5_palier"
+    },
+    {
+      "regard": [
+        -90,
+        15
+      ]
+    },
+    {
+      "maintenir": "key.forward",
+      "ticks": 14
+    },
+    {
+      "attendre": 16
+    },
+    {
+      "position": "s5_haut_escalier"
+    },
+    {
+      "capture": "c50_haut_escalier"
+    },
+    {
+      "commande": "gamemode spectator"
+    },
+    {
+      "commande": "tp @s 472.6 201.6 402.6 135 20"
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "capture": "c60_armoire_coin"
+    },
+    {
+      "commande": "setblock 470 201 400 minecraft:air"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "commande": "execute if block 470 201 400 crac:structure run say MUR REBOUCHE dans la case de l'armoire"
+    },
+    {
+      "commande": "execute if block 470 201 400 minecraft:air run say case de l'armoire VIDE"
+    },
+    {
+      "commande": "execute if block 470 201 400 crac:claim_block run say ARMOIRE ENCORE LA"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "c61_armoire_retiree"
+    },
+    {
+      "touche": "key.chat"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "capture": "c62_armoire_retiree_chat"
+    },
+    {
+      "fermer": true
+    },
+    {
+      "commande": "tp @s 424.5 205.5 397 0 40"
+    },
+    {
+      "attendre": 25
+    },
+    {
+      "capture": "c70_rampes_raccordees"
+    },
+    {
+      "commande": "tp @s 427.5 205 398 -70 40"
+    },
+    {
+      "attendre": 25
+    },
+    {
+      "capture": "c71_rampe_triangle"
+    },
+    {
+      "commande": "tp @s 441.5 204.5 406 180 35"
+    },
+    {
+      "attendre": 25
+    },
+    {
+      "capture": "c72_escalier_ouvert"
+    },
+    {
+      "commande": "tp @s 414.5 203.5 405.5 145 30"
+    },
+    {
+      "attendre": 25
+    },
+    {
+      "capture": "c73_demi_murs_bas_et_charge"
+    },
+    {
+      "commande": "tp @s 401.5 206 408 180 30"
+    },
+    {
+      "attendre": 25
+    },
+    {
+      "capture": "c74_poste1_dehors"
+    },
+    {
+      "commande": "gamemode creative"
+    },
+    {
+      "commande": "give @s crac:building_plan"
+    },
+    {
+      "commande": "setblock 448 203 401 minecraft:stone"
+    },
+    {
+      "attendre": 10
+    },
+    {
+      "plan": "ramp"
+    },
+    {
+      "commande": "tp @s 448.5 204 401.5 -90 47"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "c80_plan_rampe_sur_mur_fantome"
+    },
+    {
+      "maintenir": "key.use",
+      "ticks": 2
+    },
+    {
+      "attendre": 20
+    },
+    {
+      "commande": "gamemode spectator"
+    },
+    {
+      "commande": "tp @s 446 207 404 -120 40"
+    },
+    {
+      "attendre": 25
+    },
+    {
+      "capture": "c81_rampe_posee_sur_les_murs"
+    },
+    {
+      "commande": "gamemode creative"
+    },
+    {
+      "plan": "triangle_ramp"
+    },
+    {
+      "commande": "tp @s 431.5 203.4 402.5 180 50"
+    },
+    {
+      "attendre": 30
+    },
+    {
+      "capture": "c82_plan_rampe_triangle"
+    },
+    {
+      "commande": "stop"
+    },
+    {
+      "attendre": 40
+    },
+    {
+      "fin": true
+    }
+  ]
+}

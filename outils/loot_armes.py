@@ -1,6 +1,6 @@
 """Armes, accessoires, armures et composants dans les conteneurs de HeraliZ Loot (T1 à T7).
 
-Réécrit les tables mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json à t7.json :
+Réécrit les tables modules/loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json à t7.json :
 - quatre familles, chacune avec son nombre moyen pour 100 conteneurs ouverts (POUR_100) :
   armes TaCZ (raretés : section « armes » de serveur/config/heraliz_loot/raretes.json),
   accessoires TaCZ (section « accessoires »), pièces de l'Armurerie (section « objets » ; jamais les
@@ -15,7 +15,8 @@ Réécrit les tables mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/c
   nourriture) et sont donc plus rares dans les conteneurs T1 à T7 ;
 - T7 (coffres d'événement : crash, boss…) : un peu de tout. Ses « autres » objets sont ceux du T6
   (nourriture, munitions, soins, grenades, sacs…) ; plus d'objets de Minecraft d'essai.
-- fragments des cartes d'accès (HeraliZ Bunker) : FRAGMENTS_POUR_100, ajoutés sans changer les autres poids.
+- fragments des cartes d'accès (HeraliZ Bunker) : FRAGMENTS_POUR_100, ajoutés sans changer les autres poids ;
+- objets rares en plus (EXTRAS : fusée d'extraction Épique en T5 à T7), de la même façon.
 Les anciens vêtements heralisz_armor (mod retiré) sont retirés des tables. À relancer après un
 changement des raretés, des gunpacks, de l'Armurerie ou des composants.
 `--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte chaque famille.
@@ -25,16 +26,17 @@ from collections import Counter
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
-COFFRES = RACINE / "mods/heraliz-loot/src/serveur/resources/data/heraliz_loot/coffres"
+COFFRES = RACINE / "modules/loot/src/serveur/resources/data/heraliz_loot/coffres"
+CONFIG_COFFRES = RACINE / "serveur/config/heraliz_loot/coffres"
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
 TACZ = RACINE / "serveur/tacz"
 ARMES_JSON = RACINE / "serveur/config/heraliz_tactique/armes.json"
-COMPOSANTS_DEFS = RACINE / "mods/heraliz-composants/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
+COMPOSANTS_DEFS = RACINE / "modules/equipement/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
 
 # nombre moyen pour 100 conteneurs ouverts
 POUR_100 = {
     # 23/10 (choix du propriétaire) : armes, accessoires et armures montent petit à petit avec le palier
-    "armes":       {1: 5, 2: 7, 3: 9, 4: 11, 5: 13, 6: 15, 7: 25},
+    "armes":       {1: 5, 2: 7, 3: 9, 4: 13, 5: 16, 6: 19, 7: 25},   # 25/10 : T4 à T6 un peu plus (avant 11 / 13 / 15)
     # plans de fabrication retirés du jeu le 21/10 (système de craft à refaire) : plus de famille « plans »
     "accessoires": {1: 4, 2: 6, 3: 8, 4: 10, 5: 12, 6: 14, 7: 18},
     "armures":     {1: 11, 2: 13, 3: 15, 4: 17, 5: 19, 6: 21, 7: 27},
@@ -71,7 +73,7 @@ SACS_HORS_LOOT = ("backpack", "backpack_school", "backpack_expand1", "backpack_e
 # mêmes parts dans tous les paliers (choix du propriétaire, 22/10) : seul le nombre de sacs monte avec le palier
 PARTS_SACS = {t: {"commun": 62, "peu_commun": 24, "rare": 10, "epique": 3.5, "legendaire": 0.5} for t in range(1, 8)}  # 23/10
 PARTS_FAMILLE.update({("sacs", t): v for t, v in PARTS_SACS.items()})
-SACS_JAVA = RACINE / "mods/heralisz-backpack/src/commun/java/com/mrcrayfish/backpacked/core/ArkaniaZModItems.java"
+SACS_JAVA = RACINE / "modules/sacs/src/commun/java/com/mrcrayfish/backpacked/core/ArkaniaZModItems.java"
 # jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
 OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
 PARACHUTE = 0.19  # part du poids d'origine du parachute
@@ -106,7 +108,9 @@ CASES_POIDS = {
 # objets par ville après le changement / avant, par palier. 23/10 : 0,9 partout (« pas grand chose mais quand même ») ;
 # 24/10 (choix du propriétaire, « à l'aérodrome trop de conteneurs vides en T4-T5 ») : ×1,3 en T1-T2, ×1,5 en T3, ×2
 # en T4, ×2,2 en T5-T6 ; T7 (événements) inchangé
-FACTEUR_TOTAL = {1: 1.3, 2: 1.3, 3: 1.5, 4: 2.0, 5: 2.2, 6: 2.2, 7: 0.9}
+# 25/10 (retour d'un joueur : « très peu de caisses d'armes, même à l'aérodrome ») : encore plus de conteneurs remplis à la
+# fois, surtout en T5 et T6 (avant : 1,3 / 1,3 / 1,5 / 2,0 / 2,2 / 2,2)
+FACTEUR_TOTAL = {1: 1.5, 2: 1.5, 3: 1.8, 4: 2.4, 5: 2.8, 6: 3.0, 7: 0.9}
 # objets par conteneur avant le 23/10 au soir (mesurés sur les tables d'alors : 1 case en T1-T2, 1 à 2 en T3-T6, 1 à 3 en T7)
 OBJETS_AVANT = {1: 1.0, 2: 1.0, 3: 1.14, 4: 1.21, 5: 1.29, 6: 1.39, 7: 1.63}
 
@@ -127,11 +131,12 @@ PLAN = "heralisz_utils:plan_"
 RETIRES = ("heralisz_armor:", "simplefarming:")  # retirés des tables (mod retiré ; Simple Farming : choix du propriétaire)
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
-ARMES_EXCLUES = {"cis:at_rpg_7_lvd"}  # jamais dans le loot (choix du propriétaire)
+ARMES_EXCLUES = {"cis:at_rpg_7_lvd",  # jamais dans le loot (choix du propriétaire)
+                 "maxstuff:m82a2"}  # 25/10 : TaCZ refuse de charger cette arme (« rpm » à 0 dans le gunpack) ; elle tombait cassée
 ARMURES_EXCLUES = {"heraliz_armory:plongee_suit"}  # jamais dans le loot (23/10 : tenue de plongée pas lootable pour l'instant)
 # couteaux (skins heralisz_skins) : seulement ceux de 1, 2 ou 3 étoiles dans le loot, jamais les 4 étoiles (choix du
-# propriétaire, 23/10) ; rangs lus dans ETOILES de mods/heraliz-tactique/outils/skins_couteaux.py (non cité = 4)
-SKINS_COUTEAUX = RACINE / "mods/heraliz-tactique/outils/skins_couteaux.py"
+# propriétaire, 23/10) ; rangs lus dans ETOILES de modules/armes/outils/skins_couteaux.py (non cité = 4)
+SKINS_COUTEAUX = RACINE / "modules/armes/outils/skins_couteaux.py"
 
 
 def etoiles_couteaux():
@@ -147,7 +152,15 @@ def couteau_4_etoiles(gid, etoiles):
 COMPOSANTS_EXCLUS = {"tonnelet_poudre", "bocal_poudre_ii", "bocal_poudre_iii", "bocal_poudre_iv", "plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
 COMPOSANTS_PLUS = {"clou": 3.0, "sac_ciment": 3.0, "equerres_acier": 3.0, "bocal_poudre": 7.0, "ferraille": 9.0}  # chance multipliée dans leur rareté
 # composants ajoutés en plus dans un palier, hors raretés du palier (nombre pour 100 conteneurs)
-EN_PLUS = {7: {"clou": 2, "sac_ciment": 2}}
+# 26/10 (demande du propriétaire : « T7 trop pauvre, plus de matériaux de base ») : plus de matériaux en T7, et un peu en T5-T6
+EN_PLUS = {5: {"planches": 2, "clou": 2},
+           6: {"planches": 3, "clou": 2, "sac_ciment": 2},
+           7: {"planches": 6, "clou": 5, "sac_ciment": 4, "pierres_taillees": 3, "fragments_metal": 2, "corde": 2}}
+# munitions dans les conteneurs T1 à T7 (26/10, demande du propriétaire : « des munitions variées », plus seulement dans
+# les conteneurs de munitions) : nombre pour 100 conteneurs, et quantité = celle de munitions.json x MUNITIONS_ECHELLE
+MUNITIONS_POUR_100 = {1: 6, 2: 7, 3: 8, 4: 9, 5: 10, 6: 11, 7: 12}
+MUNITIONS_ECHELLE = {1: 0.8, 2: 0.9, 3: 1.0, 4: 1.15, 5: 1.3, 6: 1.5, 7: 1.8}
+MUNITIONS_HORS = ("tacz:40mm", "tacz:rpg_rocket", "tacz:50bmg", "Level:")  # jamais dans les conteneurs T1 à T7
 IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 # capsules du casino (HeraliZ Casino, objets heralizcasino:jeton_*), choix du propriétaire (22/10) : plus aucun héral
 # dans le casino, les capsules se trouvent sur la carte et s'échangent contre des objets à la caisse. Nombre de piles
@@ -168,7 +181,8 @@ CAPSULES = {
 # kits de réparation de HeraliZ Utils (24/10, choix du propriétaire) : ils réparent les armes ET les armures (+15 / +35 /
 # +60 %). Nombre pour 100 conteneurs, puis part de chaque kit par palier (fortune, kit, armurier) ; plus de valeur en haut.
 KIT = "heraliz_usure:"
-KITS_POUR_100 = {1: 2, 2: 2.5, 3: 3, 4: 3.5, 5: 4, 6: 4.5, 7: 5}
+# 26/10 (demande du propriétaire : « beaucoup trop nombreux ») : environ 6 fois moins (avant 2 / 2,5 / 3 / 3,5 / 4 / 4,5 / 5)
+KITS_POUR_100 = {1: 0.3, 2: 0.35, 3: 0.45, 4: 0.55, 5: 0.65, 6: 0.75, 7: 1.0}
 KITS = {
     1: [("kit_fortune", 0.85), ("kit_standard", 0.14), ("kit_armurier", 0.01)],
     2: [("kit_fortune", 0.80), ("kit_standard", 0.17), ("kit_armurier", 0.03)],
@@ -182,12 +196,18 @@ VALEUR_CAPSULE = {"jeton_1": 1, "jeton_5": 5, "jeton_10": 10}
 # soins et nourriture de nouveau dans les conteneurs T1 à T7 (choix du propriétaire, 23/10), en plus de leurs propres
 # conteneurs : nombre pour 100 conteneurs. Soins : ceux de la table soins<niveau> (niveau = palier, 6 au plus), mêmes
 # parts de rareté ; nourriture : celle de nourriture.json, toujours Commun.
-SOINS_POUR_100 = {1: 6, 2: 7, 3: 8, 4: 8, 5: 9, 6: 10, 7: 10}
+# 24/10 (choix du propriétaire) : soins moins rares, trouvables aussi hors des conteneurs de soins (environ ×1,6)
+SOINS_POUR_100 = {1: 10, 2: 11, 3: 12, 4: 13, 5: 14, 6: 15, 7: 16}
 NOURRITURE_POUR_100 = {1: 12, 2: 12, 3: 10, 4: 10, 5: 8, 6: 8, 7: 6}
 # raretés imposées dans la section « objets » de raretes.json (choix du propriétaire, 23/10). Les grenades sont toutes
 # le même objet (heralisz_tactical:throwable) : M67, RGN, flash, fumigène, molotov = Rare.
 RARETES_IMPOSEES = {
     "heralisz_tactical:throwable": "rare",
+    # objets d'événement à revendre (25/10) : du plus courant au plus rare
+    "heraliz_evenements:dossier_classe": "rare", "heraliz_evenements:mallette_scellee": "epique",
+    "heraliz_evenements:disque_dur_militaire": "legendaire",
+    # objet de l'hélicoptère abattu (25/10) : le plus disputé, Légendaire
+    "heraliz_evenements:boite_noire_helico": "legendaire",
     "ywzj_vehicle:fuel_tank": "peu_commun", "ywzj_vehicle:repair_tool": "rare", "ywzj_vehicle:parachute_pack": "epique",
     "heralizcasino:jeton_1": "commun", "heralizcasino:jeton_5": "peu_commun", "heralizcasino:jeton_10": "rare",
     # explosifs de CRac (23/10) : fabrication seulement, jamais dans le loot
@@ -196,6 +216,12 @@ RARETES_IMPOSEES = {
     "heraliz_usure:kit_fortune": "rare", "heraliz_usure:kit_standard": "epique", "heraliz_usure:kit_armurier": "legendaire",
     # boîtes de munitions de TaCZ (24/10) : fer Rare, or Épique, diamant Légendaire (« Level » 0, 1, 2 ; RaretesObjets.boite)
     "tacz:ammo_box/0": "rare", "tacz:ammo_box/1": "epique", "tacz:ammo_box/2": "legendaire",
+    # frappes aériennes (26/10, demande du propriétaire) : fabrication seulement (Table d'armurier, onglet Divers), jamais
+    # dans le loot, les caisses ni les récompenses ; jumelles Légendaires, cartouches de plus en plus chères
+    "airstrike:designator": "legendaire", "airstrike:cartridge_light": "rare", "airstrike:cartridge_heavy": "epique",
+    "airstrike:cartridge_special": "legendaire",
+    # cartes d'accès entières (26/10) : même rareté que leurs fragments
+    "heralisz_bunker:keycard_green": "rare", "heralisz_bunker:keycard_blue": "epique", "heralisz_bunker:keycard_red": "legendaire",
 }
 # fragments des cartes d'accès de HeraliZ Bunker (24/10, demande du propriétaire) : 4 fragments numérotés par carte, les
 # 4 DIFFÉRENTS donnent la carte (grille 2 x 2 ou clic droit). Chaque numéro est tiré à part : on peut trouver plusieurs
@@ -212,6 +238,14 @@ FRAGMENTS_POUR_100 = {
     "red": {5: 0.15, 6: 0.2, 7: 1.2},
 }
 RARETES_IMPOSEES.update({f"{FRAGMENT}{c}_{n}": r for c, r in RARETE_FRAGMENTS.items() for n in range(1, 5)})
+# objets rares ajoutés comme les fragments (sans changer les poids des autres) : nombre pour 100 conteneurs ouverts par
+# palier, et rareté. 25/10 (choix du propriétaire) : la fusée d'extraction (Terminal d'extraction : ouvre une zone
+# d'extraction n'importe où, à ciel ouvert) devient un loot Épique ; elle servira aussi au signal de la plateforme
+# pétrolière (docs/EVENEMENT_OIL_RIG.md).
+EXTRAS = {
+    "heraliz_extraction:extraction_terminal": ("epique", {5: 0.4, 6: 0.7, 7: 3.0}),
+}
+RARETES_IMPOSEES.update({i: r for i, (r, _) in EXTRAS.items()})
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
 COMMUN_PREFIXES = ("geckolib:item_",)
 
@@ -251,27 +285,43 @@ def lourde(gid, familles):
 
 
 def lire_json(f):
+    """JSON des gunpacks, lu comme TaCZ le lit (26/10 : commentaires // et virgules en trop acceptés ; avant, 36 armes sur
+    120 tombaient en mode SEMI avec 1 balle parce que leur fiche n'était pas du JSON strict)."""
     try:
-        return json.load(open(f, encoding="utf-8-sig"))
-    except Exception:
+        t = open(f, encoding="utf-8-sig").read()
+    except OSError:
+        return None
+    try:
+        return json.loads(t)
+    except ValueError:
+        pass
+    try:
+        t = re.sub(r'("(?:\\.|[^"\\])*")|//[^\n]*', lambda m: m.group(1) or "", t)
+        return json.loads(re.sub(r",(\s*[}\]])", r"\1", t))
+    except ValueError:
         return None
 
 
 def index_tacz(genre):
     out = {}
     for f in glob.glob(str(TACZ / f"*/data/*/index/{genre}/*.json")):
-        ns = f.split("/data/")[1].split("/")[0]
+        ns = f.replace("\\", "/").split("/data/")[1].split("/")[0]
         d = lire_json(f)
         if d is not None:
             out[ns + ":" + Path(f).stem] = d
     return out
 
 
+# balles dans le chargeur d'une arme trouvée dans un conteneur : 10 % de sa capacité, au moins 1, rien dans la chambre
+# (26/10, demande du propriétaire ; avant : chargeur plein + une balle dans la chambre)
+CHARGE_ARME = 0.10
+
+
 def armes_du_jeu():
-    """id -> nbt de l'arme prête à tirer (mode de tir, chargeur plein), d'après les gunpacks."""
+    """id -> nbt de l'arme trouvée (premier mode de tir, chargeur à CHARGE_ARME), d'après les gunpacks."""
     donnees = {}
     for f in glob.glob(str(TACZ / "*/data/*/data/guns/*.json")):
-        ns = f.split("/data/")[1].split("/")[0]
+        ns = f.replace("\\", "/").split("/data/")[1].split("/")[0]
         d = lire_json(f)
         if d is not None:
             donnees[ns + ":" + Path(f).stem] = d
@@ -281,7 +331,11 @@ def armes_du_jeu():
             continue
         d = donnees.get(i.get("data", ""), {})
         mode = (d.get("fire_mode") or ["semi"])[0].upper()
-        armes[gid] = f'{{GunId:"{gid}",GunFireMode:"{mode}",GunCurrentAmmoCount:{d.get("ammo_amount", 1)},HasBulletInBarrel:1b}}'
+        try:
+            balles = max(1, int(int(d.get("ammo_amount", 1)) * CHARGE_ARME))
+        except (TypeError, ValueError):
+            balles = 1
+        armes[gid] = f'{{GunId:"{gid}",GunFireMode:"{mode}",GunCurrentAmmoCount:{balles},HasBulletInBarrel:0b}}'
     return armes
 
 
@@ -319,13 +373,68 @@ def familles():
     for i, r in sacs().items():
         if i not in SACS_HORS_LOOT:
             ajouter("sacs", r, {"item": "backpacked:" + i, "nombre": [1, 1], "_cat": "sacs"})
-    for i, r, pile in re.findall(r'new Def\("([a-z_0-9]+)", "[^"]*", HeralizRarity\.([A-Z]+), (\d+)\)',
-                                 COMPOSANTS_DEFS.read_text(encoding="utf-8")):
+    for i, cat, r, pile in re.findall(r'new Def\("([a-z_0-9]+)", "([^"]*)", HeralizRarity\.([A-Z]+), (\d+)\)',
+                                      COMPOSANTS_DEFS.read_text(encoding="utf-8")):
         if r in RARETE_COMPOSANT and i not in COMPOSANTS_EXCLUS:
-            n = 1  # un seul exemplaire par case (seules les munitions sortent en quantité)
-            ajouter("composants", RARETE_COMPOSANT[r], {"item": COMPOSANT + i, "nombre": [1, n], "_cat": "composants"},
+            # quantité selon le palier : écrite par ecrire() (quantite_composant), la case garde ici sa sorte
+            ajouter("composants", RARETE_COMPOSANT[r], {"item": COMPOSANT + i, "nombre": [1, 1], "_cat": "composants",
+                                                        "_sorte": sorte_composant(i, cat)},
                     COMPOSANTS_PLUS.get(i, 1.0))
     return out
+
+
+# quantités des composants par case (26/10, demande du propriétaire : « trop de stacks de 1 : une balle, une ferraille,
+# un objet gris ») : (min, max, suite) par sorte, rareté et palier. suite = None : quantité tirée au hasard entre min et
+# max ; sinon chance de chaque exemplaire en plus du minimum (clé « suite » des tables, TablesCoffres) : les gros tas
+# restent rares. Composants Épiques (niveau III) : 2, 3, 4 ou 5 d'un coup est exceptionnel mais possible.
+# Sortes : « pieces » = composants de fabrication à niveaux (canon, ressort, tissu, batterie...), « base » = matériaux de
+# construction et de barricade (clous, corde, planches, ciment, métal...), « vente » = objets à revendre.
+def _q(*paliers):
+    """7 valeurs (T1 à T7) -> {palier: valeur}."""
+    return dict(zip(range(1, 8), paliers))
+
+
+QUANTITES = {
+    "pieces": {
+        "peu_commun": _q((1, 2, None), (1, 2, None), (1, 3, None), (1, 3, None), (2, 4, None), (2, 4, None), (2, 6, None)),
+        "rare": _q((1, 2, .25), (1, 2, .25), (1, 2, .3), (1, 3, .3), (1, 3, .3), (1, 3, .35), (1, 4, .35)),
+        "epique": _q((1, 3, .06), (1, 3, .06), (1, 3, .08), (1, 3, .08), (1, 5, .1), (1, 5, .12), (1, 5, .15)),
+        "legendaire": _q((1, 2, .04), (1, 2, .04), (1, 2, .05), (1, 2, .05), (1, 2, .06), (1, 3, .07), (1, 3, .1)),
+    },
+    "base": {
+        "commun": _q((2, 5, None), (2, 6, None), (3, 8, None), (3, 10, None), (4, 12, None), (5, 14, None), (8, 20, None)),
+        "peu_commun": _q((2, 5, None), (2, 6, None), (3, 8, None), (3, 10, None), (4, 12, None), (5, 14, None), (8, 20, None)),
+        "rare": _q((1, 3, None), (1, 3, None), (2, 5, None), (2, 5, None), (2, 8, None), (3, 8, None), (4, 12, None)),
+        "epique": _q((1, 2, .3), (1, 2, .3), (1, 3, .35), (1, 4, .4), (1, 4, .4), (2, 6, None), (2, 8, None)),
+        "legendaire": _q((1, 2, .15), (1, 2, .15), (1, 2, .2), (1, 3, .2), (1, 3, .25), (1, 4, .3), (1, 5, .4)),
+    },
+    "vente": {
+        "commun": _q((1, 2, None), (1, 2, None), (1, 2, None), (1, 3, None), (1, 3, None), (1, 3, None), (2, 4, None)),
+        "peu_commun": _q((1, 2, .3), (1, 2, .3), (1, 2, .3), (1, 2, None), (1, 2, None), (1, 2, None), (1, 3, None)),
+        "rare": _q((1, 1, None), (1, 1, None), (1, 2, .15), (1, 2, .15), (1, 2, .2), (1, 2, .2), (1, 2, None)),
+        "epique": _q(*[(1, 1, None)] * 6, (1, 2, .2)),
+        "legendaire": _q(*[(1, 1, None)] * 7),
+    },
+}
+
+
+def sorte_composant(i, cat):
+    if "vente" in cat:
+        return "vente"
+    if "construction" in cat or "barricades" in cat:
+        return "base"
+    return "pieces"
+
+
+def quantite_composant(e, r, t):
+    """Entrée de composant avec sa quantité du palier t (copie)."""
+    n = {k: v for k, v in e.items() if k != "_sorte"}
+    q = QUANTITES.get(e.get("_sorte", "pieces"), {}).get(r, {}).get(t)
+    if q:
+        n["nombre"] = [q[0], q[1]]
+        if q[2] is not None and q[1] > q[0]:
+            n["suite"] = q[2]
+    return n
 
 
 def de_famille(e):
@@ -353,9 +462,13 @@ def ecrire_table(f, data):
     lignes.append(" ]")
     lignes.append("}")
     f.write_text("\n".join(lignes) + "\n", encoding="utf-8")
+    # copie dans la config du serveur (24/10) : celle-là compte en jeu et se relit sans redémarrer (/heralizloot tables) ;
+    # celle du jar sert seulement si la config manque
+    CONFIG_COFFRES.mkdir(parents=True, exist_ok=True)
+    (CONFIG_COFFRES / f.name).write_text("\n".join(lignes) + "\n", encoding="utf-8")
 
 
-MELEE = RACINE / "mods/heraliz-tactique/src/serveur/resources/data/heralisz_melee/index/melee"
+MELEE = RACINE / "modules/armes/src/serveur/resources/data/heralisz_melee/index/melee"
 
 
 def melee_absente(e):
@@ -385,9 +498,27 @@ def autres_de(data):
     for e in data["objets"]:
         if e.get("_cat") == "vide" or de_famille(e) or e["item"].startswith(RETIRES + ("backpacked:",)) or hors_coffres(e) or melee_absente(e) or e.get("_cat", "").startswith("materiaux"):
             continue
+        # 25/10 : objets de EXTRAS remis par ajouter_extras à chaque passage (avant, ils s'ajoutaient une fois de plus)
+        if e.get("_cat") == "extras" or e["item"] in EXTRAS:
+            continue
         e = dict(e)
         e.setdefault("_base", e["poids"])
         out.append(e)
+    return out
+
+
+def munitions_coffres(t):
+    """Munitions des conteneurs T1 à T7 : celles de munitions.json (sans les MUNITIONS_HORS), poids relatifs (somme 1),
+    quantités x MUNITIONS_ECHELLE[t] (au moins 2 balles)."""
+    liste = json.loads((COFFRES / "munitions.json").read_text(encoding="utf-8"))["objets"]
+    liste = [e for e in liste if e["item"] == "tacz:ammo" and e.get("poids", 0) > 0 and not any(h in e.get("nbt", "") for h in MUNITIONS_HORS)]
+    s = sum(e["poids"] for e in liste)
+    out = []
+    k = MUNITIONS_ECHELLE[t]
+    for e in liste:
+        a, b = e.get("nombre", [1, 1])
+        a, b = max(2, round(a * k)), max(2, round(b * k))
+        out.append(({"item": e["item"], "nombre": [a, max(a, b)], "nbt": e["nbt"], "_cat": "munitions_coffres"}, e["poids"] / s))
     return out
 
 
@@ -424,7 +555,7 @@ def ecrire_facteurs(avant):
     l'ancienne valeur : Forge n'y remet pas un nouveau défaut)."""
     racine = Path(__file__).resolve().parents[1]
     vals = ", ".join(f"{min(1.0, FACTEUR_TOTAL[t] * avant[t] / cases_moyennes(t)):.3f}" for t in sorted(CASES_POIDS))
-    f = racine / "mods/heraliz-loot/src/serveur/java/fr/heraliz/loot/ConfigLoot.java"
+    f = racine / "modules/loot/src/serveur/java/fr/heraliz/loot/ConfigLoot.java"
     s = f.read_text(encoding="utf-8")
     nouveau = re.sub(r"(// facteurs_actifs \(outils/loot_armes\.py\)\n\s*List\.of\()[^)]*(\))", lambda m: m.group(1) + vals + m.group(2), s)
     if nouveau != s:
@@ -458,6 +589,24 @@ def ajouter_fragments(objets, t):
     return objets[:i] + ajout + objets[i:]
 
 
+def ajouter_extras(objets, t):
+    """Objets de EXTRAS du palier t, placés juste après la case vide, comme les fragments : leur poids est calculé sur le
+    total de la table pour donner le nombre voulu pour 100 conteneurs (les poids des autres objets ne changent pas)."""
+    parts = {i: d[t] / 100 / cases_moyennes(t) for i, (_, d) in EXTRAS.items() if t in d}
+    if not parts:
+        return objets
+    q = sum(parts.values())
+    total = sum(e["poids"] for e in objets) * q / (1 - q)
+    ajout = []
+    for i, part in parts.items():
+        e = {"item": i, "nombre": [1, 1], "_cat": "extras", "poids": max(1, round(total * part / q))}
+        if t == 7:
+            e["rarete"] = EXTRAS[i][0]
+        ajout.append(e)
+    k = next((k + 1 for k, e in enumerate(objets) if e.get("_cat") == "vide"), len(objets))
+    return objets[:k] + ajout + objets[k:]
+
+
 def ecrire():
     ecrire_raretes_sacs()
     ecrire_soins()
@@ -477,6 +626,10 @@ def ecrire():
         base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
         p["capsules"] = CAPSULES_POUR_100[t] / 100 / cases
         p["kits"] = KITS_POUR_100[t] / 100 / cases
+        p["munitions_t"] = MUNITIONS_POUR_100[t] / 100 / cases
+        # matériaux en plus (EN_PLUS) : comptés avec les autres parts (26/10 : ajoutés après, ils faisaient dépasser 100 %)
+        for i, n in EN_PLUS.get(t, {}).items():
+            p["plus_" + i] = n / 100 / cases
         p["soins"] = SOINS_POUR_100[t] / 100 / cases
         p["nourriture"] = NOURRITURE_POUR_100[t] / 100 / cases
         part_autres = AUTRES_POUR_100[t] / 100 / cases
@@ -496,7 +649,11 @@ def ecrire():
                     continue
                 s = sum(x for _, x in liste)
                 for e, x in liste:
+                    if f == "composants":
+                        e = quantite_composant(e, r, t)
                     rel.append((e, f, parts[r] / somme_parts * x / s, r))
+        for e, v in munitions_coffres(t):
+            rel.append((e, "munitions_t", v, None))
         for i, quantite, part in CAPSULES[t]:
             rel.append(({"item": CAPSULE + i, "nombre": quantite, "_cat": "capsules"}, "capsules", part, None))
         for i, part in KITS[t]:
@@ -506,8 +663,7 @@ def ecrire():
                 rel.append((dict(e, _cat=f), f, v, None))
         for i, n in EN_PLUS.get(t, {}).items():
             e, r = next((e, r) for r, l in fams["composants"].items() for e, _ in l if e["item"] == COMPOSANT + i)
-            p["plus_" + i] = n / 100 / cases
-            rel.append((e, "plus_" + i, 1.0, r))
+            rel.append((quantite_composant(e, r, t), "plus_" + i, 1.0, r))
         echelle = 1
         while True:
             reste = actifs * echelle / (1 - sum(p.values()))
@@ -528,6 +684,7 @@ def ecrire():
                 n["rarete"] = r
             objets.append(n)
         objets = ajouter_fragments(objets, t)
+        objets = ajouter_extras(objets, t)
         data["objets"] = objets
         ecrire_table(COFFRES / f"t{t}.json", data)
         print(f"T{t} : " + ", ".join(f"{sum(len(l) for r, l in fams[f].items() if r in PARTS_FAMILLE.get((f, t), PARTS[t]))} {f}" for f in fams))

@@ -1,0 +1,7 @@
+{
+  "whitelist": [
+    "^heraliz_crafts:.*$",
+    "^heraliz_tactique:atelier/.*$"
+  ],
+  "blacklist": []
+}

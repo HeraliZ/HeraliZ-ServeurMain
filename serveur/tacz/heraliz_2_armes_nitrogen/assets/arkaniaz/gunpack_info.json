@@ -1,0 +1,10 @@
+{
+    "version": "1.0",
+    "name": "ArkaniaZ Pack",
+    "desc": "pack du serveur HeraliZ",
+    "license": "CC BY-NC-ND 4.0",
+    "author": [
+      "HeraliZ"
+    ],
+    "date": "2024-09-11"
+  }

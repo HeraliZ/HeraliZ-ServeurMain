@@ -1,0 +1,12 @@
+// HeraliZ Boutique : grades, boutique, casino, caisses.
+// Regroupe : heraliz-grades, heraliz-casino, heraliz-crates (chaque mod garde son modId et sa version, voir src/commun/resources/META-INF/mods.toml).
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    compileOnly project(path: ':clans', configuration: 'devComplet')
+}

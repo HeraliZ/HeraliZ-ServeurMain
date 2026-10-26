@@ -1,0 +1,44 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 4.5,
+        " ": 6.0
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "heralisz_economie:font/jeton.png",
+      "ascent": 7,
+      "height": 13,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "ttf",
+      "file": "heraliz_interface:dmsans_bold.ttf",
+      "size": 16.0,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "ttf",
+      "size": 16.0,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        1.0
+      ],
+      "file": "heraliz_interface:cyrillique_bold.ttf"
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

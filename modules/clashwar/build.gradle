@@ -1,0 +1,13 @@
+// HeraliZ ClashWar : tournoi des clans (élimination au meilleur des 5 manches).
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    compileOnly project(path: ':noyau', configuration: 'devComplet')
+    compileOnly project(path: ':clans', configuration: 'devComplet')
+    compileOnly fg.deobf("blank:curios-forge:5.14.1")
+}

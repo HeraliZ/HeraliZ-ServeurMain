@@ -1,0 +1,48 @@
+
+[combat]
+	#Duree du tag de combat en secondes (degats infliges ou recus d'un autre joueur)
+	#Range: 1 ~ 300
+	tag_secondes = 15
+	#Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur)
+	mort_deconnexion = true
+	#Refuser au joueur tague (ou a terre) toute commande absente de commandes_permises_combat
+	refus_commandes = true
+	#Les operateurs (niveau 2) tagues gardent toutes leurs commandes
+	operateurs_exemptes = false
+	#Seules commandes permises au joueur tague ou a terre (racine en minuscules, sans / ni espace de noms : "tpa" couvre aussi /essentials:tpa)
+	commandes_permises_combat = ["login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "report"]
+
+[carte]
+	#Sur la carte (minecraft:overworld), en survie ou aventure, hors staff (niveau 2) : refuser toute commande absente de commandes_permises
+	actif = true
+	#Seules commandes permises sur la carte (racine en minuscules, sans / ni espace de noms)
+	commandes_permises = ["tpa", "login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "report", "home", "base", "purge", "coeur", "ping"]
+
+[diag]
+	#Rapport automatique à chaque blocage du serveur (/diag, 24/10). Ne coûte rien tant que tout va bien :
+	#un fil surveille la durée du tick et ne relève la pile du serveur que pendant un tick trop long.
+	auto = true
+	#Durée d'un tick (en ms) à partir de laquelle on parle de blocage. Un tick normal : 50 ms au plus.
+	#Range: 60 ~ 60000
+	seuil_ms = 100
+	#Prévenir les opérateurs connectés (niveau 4) à chaque blocage, dans le chat (une fois par 30 s au plus).
+	annoncer = true
+
+[recharger]
+	#/recharger (24/10) : commandes de rechargement des modules jouées l'une après l'autre, sans
+	#redémarrer ni déconnecter personne (quêtes, marchands, recycleur, caisses, casino, raretés, tables de loot,
+	#saison, territoires, Purge, zones dangereuses, ClashWar, modpack officiel de l'anticheat). Les réglages en .toml
+	#se relisent seuls quand leur fichier change.
+	commandes = ["quete recharger", "heraliz reload", "casino reload", "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger", "zones recharger", "clashwar recharger", "event recharger", "spartan officiel"]
+
+[survie]
+	#Vitesse de la faim (25/10) : la fatigue de Minecraft (course, sauts, coups, vie qui remonte) est
+	#multipliée par ce nombre. 1 : comme Minecraft ; 0,5 : la barre de faim dure deux fois plus longtemps.
+	#Range: 0.1 ~ 2.0
+	faim_facteur = 0.5
+
+[redemarrage]
+	#/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait
+	#redémarrer le serveur par le panel si son redémarrage après plantage est activé). Sinon : tâche « restart » du panel.
+	#Range: 0 ~ 255
+	code_sortie = 0

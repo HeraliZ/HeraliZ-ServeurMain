@@ -20,6 +20,139 @@
     "echanges_objets": true,
     "echanges": [
       {
+        "item": "heralizcrates:camo_key",
+        "nbt": "",
+        "jetons": 1500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralizcrates:spectacle_key",
+        "nbt": "",
+        "jetons": 2500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralizcrates:gemme_key",
+        "nbt": "",
+        "jetons": 6000,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:camo_gold",
+        "nbt": "",
+        "jetons": 800,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:camo_lava",
+        "nbt": "",
+        "jetons": 800,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:camo_galaxy",
+        "nbt": "",
+        "jetons": 800,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:camo_obsidian",
+        "nbt": "",
+        "jetons": 800,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:camo_diamond",
+        "nbt": "",
+        "jetons": 800,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:camo_dragon",
+        "nbt": "",
+        "jetons": 2500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:camo_dark_matter",
+        "nbt": "",
+        "jetons": 2500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:camo_liquid_chrome",
+        "nbt": "",
+        "jetons": 2500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:stattrack_module",
+        "nbt": "",
+        "jetons": 1200,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:sticker_ace",
+        "nbt": "",
+        "jetons": 120,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:sticker_ace_holo",
+        "nbt": "",
+        "jetons": 400,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heralisz_camo:sticker_ace_gold",
+        "nbt": "",
+        "jetons": 1500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "reanimation:finisher",
+        "nbt": "{Execution:\"chute_meteore\"}",
+        "jetons": 1500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "reanimation:finisher",
+        "nbt": "{Execution:\"tag_final\"}",
+        "jetons": 1500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "reanimation:finisher",
+        "nbt": "{Execution:\"main_joker\"}",
+        "jetons": 3500,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "reanimation:finisher",
+        "nbt": "{Execution:\"tempete_sakura\"}",
+        "jetons": 3500,
+        "achat": false,
+        "vente": true
+      },
+      {
         "item": "heraliz_composants:brindilles",
         "nbt": "",
         "jetons": 4,
@@ -37,6 +170,27 @@
         "item": "heraliz_composants:clou",
         "nbt": "",
         "jetons": 25,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heraliz_composants:pierres_taillees",
+        "nbt": "",
+        "jetons": 60,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "heraliz_composants:sac_ciment",
+        "nbt": "",
+        "jetons": 60,
+        "achat": false,
+        "vente": true
+      },
+      {
+        "item": "crac:coeur_clan",
+        "nbt": "",
+        "jetons": 4000,
         "achat": false,
         "vente": true
       },
@@ -74,23 +228,42 @@
         "jetons": 2500,
         "achat": false,
         "vente": true
-      },
-      {
-        "item": "heralizcrates:spectacle_key",
-        "nbt": "",
-        "jetons": 5000,
-        "achat": false,
-        "vente": true
       }
     ],
-    "encaissements": [],
+    "encaissements": [
+      {
+        "nom": "Grade Rescapé (jours)",
+        "commande": "grade acheter {player} rescape {amount}",
+        "jetons": 1000,
+        "montant": 1
+      },
+      {
+        "nom": "Grade Traqueur (jours)",
+        "commande": "grade acheter {player} traqueur {amount}",
+        "jetons": 1800,
+        "montant": 1
+      },
+      {
+        "nom": "Grade Roi de la Zone (jours)",
+        "commande": "grade acheter {player} roi_de_la_zone {amount}",
+        "jetons": 3000,
+        "montant": 1
+      },
+      {
+        "nom": "Émote au hasard (pas encore débloquée)",
+        "commande": "emote debloquer {player} hasard",
+        "jetons": 2000,
+        "montant": 1
+      }
+    ],
     "entree": {
       "prix": 25,
       "validite_minutes": 60,
       "expulser_fauches": true,
       "expulser_spectateurs": false,
       "delai_expulsion": 4
-    }
+    },
+    "_aide_beta": "Catalogue de la bêta (26/10) : surtout des cosmétiques (clés, camos, stickers, StatTrak, finishers, émotes), des grades à la journée et des matériaux de base ; rien pour le combat. Prix en capsules à ajuster après les premiers jours (gains réels du casino)."
   },
   "rotten": {
     "min_bet": 5,

@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.noyau.serveur.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "InstantaneRegistresMixin",
+    "MatmosServeurMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

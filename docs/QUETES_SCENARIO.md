@@ -14,7 +14,7 @@
 - 🔑 = la quête donne une **Clé de Quêtes** (`heralizcrates:quete_key`) en plus des hérals.
 - Les objets demandés sont ceux du jeu (soins, composants, objets de valeur selon leur rareté, armes, armures) ; seuls
   les objets « à aller chercher » ont leur propre modèle 3D (insigne du 7e régiment, sacoche des déserteurs, boîte
-  noire : `mods/heraliz-quetes/outils/objets.py`).
+  noire : `modules/pnj/outils/objets.py`).
 - « Fouiller » ne demande pas de revenir par une extraction : les conteneurs comptent même si on meurt ensuite.
 - La quête « Capturer un territoire avec son clan » est écrite mais **désactivée** (sautée) tant que les territoires
   de la nouvelle carte ne sont pas faits.

@@ -1,0 +1,35 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 6.0,
+        " ": 8.0
+      }
+    },
+    {
+      "type": "ttf",
+      "file": "heralisz_utils:dmsans_bold.ttf",
+      "size": 22.0,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "ttf",
+      "size": 22.0,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        1.0
+      ],
+      "file": "heralisz_utils:cyrillique_bold.ttf"
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

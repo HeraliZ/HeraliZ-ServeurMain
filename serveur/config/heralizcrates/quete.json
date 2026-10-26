@@ -1,77 +1,505 @@
 {
-  "_aide": "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). Astuce : tiens un objet en main et fais /heraliz loot add quete <poids> <rarete>. Puis /heraliz reload.",
+  "_aide": "Écrit par outils/caisses.py (ne pas modifier à la main). Chaque récompense : item, count, weight (poids du tirage), rarity, nbt, name, commands ({player} = pseudo), give_item (false = commandes seulement).",
   "rewards": [
     {
-      "item": "minecraft:experience_bottle",
-      "count": 12,
-      "weight": 20,
-      "rarity": "common"
-    },
-    {
-      "item": "minecraft:cooked_beef",
-      "count": 16,
-      "weight": 18,
-      "rarity": "common"
-    },
-    {
-      "item": "minecraft:compass",
+      "item": "heraliz_grades:bon",
       "count": 1,
-      "weight": 10,
-      "rarity": "uncommon"
+      "weight": 23000,
+      "rarity": "common",
+      "name": "&7+150 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 150 Caisse"
+      ]
     },
     {
-      "item": "minecraft:emerald",
-      "count": 12,
-      "weight": 15,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "minecraft:name_tag",
-      "count": 2,
-      "weight": 10,
-      "rarity": "uncommon"
-    },
-    {
-      "item": "minecraft:diamond",
-      "count": 3,
-      "weight": 12,
-      "rarity": "rare"
-    },
-    {
-      "item": "minecraft:golden_apple",
-      "count": 2,
-      "weight": 10,
-      "rarity": "rare"
-    },
-    {
-      "item": "minecraft:paper",
+      "item": "heraliz_grades:bon",
       "count": 1,
-      "weight": 5,
+      "weight": 10000,
+      "rarity": "uncommon",
+      "name": "&a+300 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 300 Caisse"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 4000,
       "rarity": "rare",
-      "name": "&6+1 Clé de Quêtes",
+      "name": "&9+600 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 600 Caisse"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 500,
+      "rarity": "legendary",
+      "name": "&6Grade Rescapé · 7 jours",
+      "give_item": false,
+      "commands": [
+        "grade acheter {player} rescape 7"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 300,
+      "rarity": "mythic",
+      "name": "&cGrade Traqueur · 7 jours",
+      "give_item": false,
+      "commands": [
+        "grade acheter {player} traqueur 7"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 200,
+      "rarity": "mythic",
+      "name": "&cGrade Roi de la Zone · 7 jours",
+      "give_item": false,
+      "commands": [
+        "grade acheter {player} roi_de_la_zone 7"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 2000,
+      "rarity": "rare",
+      "name": "&9Grade Rescapé · 1 jour",
+      "give_item": false,
+      "commands": [
+        "grade acheter {player} rescape 1"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "epic",
+      "name": "&5Grade Traqueur · 1 jour",
+      "give_item": false,
+      "commands": [
+        "grade acheter {player} traqueur 1"
+      ]
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"chute_meteore\"}",
+      "weight": 2800,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"combo_aerien\"}",
+      "weight": 2800,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"faille\"}",
+      "weight": 2800,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"courroux_ciel\"}",
+      "weight": 2800,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"cadeau_surprise\"}",
+      "weight": 2800,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"zero_absolu\"}",
+      "weight": 800,
+      "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"onde_celeste\"}",
+      "weight": 800,
+      "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"mille_coupes\"}",
+      "weight": 800,
+      "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"main_joker\"}",
+      "weight": 800,
+      "rarity": "legendary"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"freestyle_combo\"}",
+      "weight": 800,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 1750,
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:ai2\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 1750,
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:amoxycillin\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 1750,
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:attelle\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 1750,
+      "rarity": "uncommon",
+      "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 1333,
+      "rarity": "rare",
+      "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 1333,
+      "rarity": "rare",
+      "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}"
+    },
+    {
+      "item": "heralisz_tactical:consumable",
+      "count": 1,
+      "weight": 1333,
+      "rarity": "rare",
+      "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}"
+    },
+    {
+      "item": "heraliz_composants:alcool",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:bague_argent",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:batterie",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:bocal_poudre",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:brindilles",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:briquet",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:canon",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:caoutchouc",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:cigarettes",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:circuit_imprime",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:ferraille",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:kit_pieces",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:planches",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:plaque_identite",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:radio_cassee",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:ressort",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:scotch",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:tissu",
+      "count": 3,
+      "weight": 444,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_composants:alcool_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:amulette",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:appareil_photo",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:bague_fiancailles",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:batterie_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:bocal_poudre_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:canon_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:caoutchouc_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:circuit_imprime_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:crucifix",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:ferraille_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:kit_pieces_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:montre_gousset",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:pierres_taillees",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:ressort_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:sac_ciment",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:scotch_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heraliz_composants:tissu_ii",
+      "count": 2,
+      "weight": 278,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_green_1",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_green_2",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_green_3",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_green_4",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_blue_1",
+      "count": 1,
+      "weight": 375,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_blue_2",
+      "count": 1,
+      "weight": 375,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_blue_3",
+      "count": 1,
+      "weight": 375,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_bunker:keycard_fragment_blue_4",
+      "count": 1,
+      "weight": 375,
+      "rarity": "epic"
+    },
+    {
+      "item": "heraliz_usure:kit_fortune",
+      "count": 1,
+      "weight": 3000,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heraliz_usure:kit_standard",
+      "count": 1,
+      "weight": 1500,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralizcasino:jeton_5",
+      "count": 2,
+      "weight": 5000,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralizcrates:quete_key",
+      "count": 1,
+      "weight": 2000,
+      "rarity": "rare",
+      "name": "&9+1 Clé Quêtes",
       "give_item": false,
       "commands": [
         "heraliz givekey {player} quete 1"
       ]
-    },
-    {
-      "item": "minecraft:enchanted_book",
-      "count": 1,
-      "weight": 4,
-      "rarity": "epic",
-      "nbt": "{StoredEnchantments:[{id:\"minecraft:mending\",lvl:1s}]}"
-    },
-    {
-      "item": "minecraft:totem_of_undying",
-      "count": 1,
-      "weight": 3,
-      "rarity": "epic"
-    },
-    {
-      "item": "minecraft:netherite_ingot",
-      "count": 1,
-      "weight": 1,
-      "rarity": "legendary"
     }
   ]
 }

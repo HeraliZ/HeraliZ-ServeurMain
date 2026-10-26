@@ -1,7 +1,0 @@
-{
- "parent": "heralisz_matchs:block/zombies/giant_mat/tuyau",
- "textures": {
-  "particle": "heralisz_matchs:block/zombies/giant_mat/tube",
-  "t": "heralisz_matchs:block/zombies/giant_mat/tube"
- }
-}

@@ -1,0 +1,80 @@
+# HeraliZ Équipement : armures, combinaisons et composants : un jar, plusieurs mods (chacun garde son modId et sa version).
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+# ---- heraliz_armory (ancien projet heraliz-armory, version 0.16.1)
+[[mods]]
+modId="heraliz_armory"
+version="0.16.1"
+displayName="HeraliZ Armurerie"
+authors="${mod_authors}"
+description='''Le mod de tenues du serveur HeraliZ : tenues et armures realistes en relief (casques, cagoules, gants, gilets...), combinaisons integrales (Hazmat, grand froid, plongee), ghillies, brassards, masques a gaz et objets event. Inventaire avec le panneau des equipements (Curios) toujours ouvert.'''
+
+[[dependencies.heraliz_armory]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heraliz_armory]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heraliz_armory]]
+    modId="curios"
+    mandatory=true
+    versionRange="[5.4,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# GeckoLib (geckolib222 4.4.7 du serveur, jamais embarque) : rendu des objets repris de HeralisZ Armor (ghillies,
+# brassards, masques a gaz, objets event). Charge AVANT nous : notre fichier Curios « joueur » (replace: true) est lu
+# apres le sien dans son espace de noms (data/geckolib/curios/entities/heraliz_armory_joueur.json).
+[[dependencies.heraliz_armory]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# HeraliZ Backpack (backpacked) : facultatif, charge avant nous pour la meme raison (slot du sac « back » garde).
+[[dependencies.heraliz_armory]]
+    modId="backpacked"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# TaCZ : facultatif (tirs a la tete : seules les pieces de tete protegent).
+[[dependencies.heraliz_armory]]
+    modId="tacz"
+    mandatory=false
+    versionRange="[1.1,)"
+    ordering="NONE"
+    side="BOTH"
+
+# ---- heraliz_composants (ancien projet heraliz-composants, version 1.4.1)
+[[mods]]
+modId="heraliz_composants"
+version="1.4.1"
+displayName="HeraliZ Composants"
+authors="${mod_authors}"
+description='''Composants de survie pour HeraliZ : pièces d'armes, munitions à recharger, mécanique, électronique et matériaux de récupération.'''
+[[dependencies.heraliz_composants]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_composants]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

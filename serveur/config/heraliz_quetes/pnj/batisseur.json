@@ -70,6 +70,18 @@
       {
         "objet": "crac:building_hammer",
         "prix": 50
+      },
+      {
+        "objet": "crac:claim_block",
+        "prix": 500
+      },
+      {
+        "objet": "crac:metal_crate",
+        "prix": 150
+      },
+      {
+        "objet": "crac:coeur_clan",
+        "prix": 1000
       }
     ]
   }

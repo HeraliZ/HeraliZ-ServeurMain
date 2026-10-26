@@ -1,0 +1,7 @@
+// HeraliZ Loot : conteneurs par paliers, rotation par zones, raretés, salles à carte.
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')

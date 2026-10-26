@@ -1,0 +1,11 @@
+// CRac : bases des clans façon Rust (construction, raids, armoire, cœur de clan, Purge).
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    compileOnly project(path: ':clans', configuration: 'devComplet')
+}

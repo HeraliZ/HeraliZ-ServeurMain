@@ -3,10 +3,10 @@
     python outils/formes_caisses.py
 
 À relancer après tout changement du modèle d'une caisse (taille, pièces, cadenas) ou après l'ajout d'une caisse, puis
-refabriquer heraliz-crates. Écrit mods/heraliz-crates/src/commun/java/fr/heraliz/crates/block/CrateFormes.java (fichier
+refabriquer heraliz-crates. Écrit modules/boutique/src/commun/java/fr/heraliz/crates/block/CrateFormes.java (fichier
 généré, à envoyer dans Git avec le changement de modèle).
 
-Le calcul est fait par mods/heraliz-crates/outils/FormesCaisses.java (méthode expliquée dans le fichier) : il compile
+Le calcul est fait par modules/boutique/outils/FormesCaisses.java (méthode expliquée dans le fichier) : il compile
 seulement le code des modèles (Java pur, sans Minecraft) avec JOML, pris dans le cache de Gradle du PC (il y est dès
 que le mod a été fabriqué une fois) ou donné par la variable d'environnement JOML_JAR.
 Besoin : un JDK 17 (javac), comme pour la fabrication.
@@ -20,7 +20,7 @@ import tempfile
 from pathlib import Path
 
 DEPOT = Path(__file__).resolve().parents[1]
-PROJET = DEPOT / "mods" / "heraliz-crates"
+PROJET = DEPOT / "modules" / "boutique"
 SRC = PROJET / "src"
 SORTIE = SRC / "commun" / "java" / "fr" / "heraliz" / "crates" / "block" / "CrateFormes.java"
 

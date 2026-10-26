@@ -1,0 +1,4536 @@
+{
+ "_note": "Écrit par outils/recyclage.py : ne pas modifier à la main.",
+ "chance": 0.1,
+ "max_pieces": 2,
+ "secondes_par_objet": 3.0,
+ "herals_si_rien": [
+  1,
+  1,
+  1,
+  2,
+  3,
+  4
+ ],
+ "jamais": [
+  "heraliz_composants:alcool",
+  "heraliz_composants:alcool_ii",
+  "heraliz_composants:alcool_iii",
+  "heraliz_composants:alcool_iv",
+  "heraliz_composants:amulette",
+  "heraliz_composants:appareil_photo",
+  "heraliz_composants:bague_argent",
+  "heraliz_composants:bague_fiancailles",
+  "heraliz_composants:batterie",
+  "heraliz_composants:batterie_ii",
+  "heraliz_composants:batterie_iii",
+  "heraliz_composants:batterie_iv",
+  "heraliz_composants:bocal_poudre",
+  "heraliz_composants:bocal_poudre_ii",
+  "heraliz_composants:bocal_poudre_iii",
+  "heraliz_composants:bocal_poudre_iv",
+  "heraliz_composants:brindilles",
+  "heraliz_composants:calice",
+  "heraliz_composants:canon",
+  "heraliz_composants:canon_ii",
+  "heraliz_composants:canon_iii",
+  "heraliz_composants:canon_iv",
+  "heraliz_composants:caoutchouc",
+  "heraliz_composants:caoutchouc_ii",
+  "heraliz_composants:caoutchouc_iii",
+  "heraliz_composants:caoutchouc_iv",
+  "heraliz_composants:chronographe",
+  "heraliz_composants:cigarettes",
+  "heraliz_composants:circuit_imprime",
+  "heraliz_composants:circuit_imprime_ii",
+  "heraliz_composants:circuit_imprime_iii",
+  "heraliz_composants:circuit_imprime_iv",
+  "heraliz_composants:clou",
+  "heraliz_composants:collier_casse",
+  "heraliz_composants:collier_perles",
+  "heraliz_composants:couronne",
+  "heraliz_composants:crane_cristal",
+  "heraliz_composants:crucifix",
+  "heraliz_composants:diamant",
+  "heraliz_composants:equerres_acier",
+  "heraliz_composants:ferraille",
+  "heraliz_composants:ferraille_ii",
+  "heraliz_composants:ferraille_iii",
+  "heraliz_composants:ferraille_iv",
+  "heraliz_composants:fil_souder",
+  "heraliz_composants:fragments_metal",
+  "heraliz_composants:idole_doree",
+  "heraliz_composants:kit_pieces",
+  "heraliz_composants:kit_pieces_ii",
+  "heraliz_composants:kit_pieces_iii",
+  "heraliz_composants:kit_pieces_iv",
+  "heraliz_composants:lingot_argent",
+  "heraliz_composants:lingot_or",
+  "heraliz_composants:metal_renforce",
+  "heraliz_composants:montre_gousset",
+  "heraliz_composants:oeuf_orne",
+  "heraliz_composants:pierres_taillees",
+  "heraliz_composants:planche",
+  "heraliz_composants:planches",
+  "heraliz_composants:plaque_identite",
+  "heraliz_composants:plastique",
+  "heraliz_composants:ressort",
+  "heraliz_composants:ressort_ii",
+  "heraliz_composants:ressort_iii",
+  "heraliz_composants:ressort_iv",
+  "heraliz_composants:sac_ciment",
+  "heraliz_composants:sceptre",
+  "heraliz_composants:scotch",
+  "heraliz_composants:scotch_ii",
+  "heraliz_composants:scotch_iii",
+  "heraliz_composants:scotch_iv",
+  "heraliz_composants:statuette_jade",
+  "heraliz_composants:tissu",
+  "heraliz_composants:tissu_ii",
+  "heraliz_composants:tissu_iii",
+  "heraliz_composants:tissu_iv",
+  "heraliz_composants:tonnelet_poudre",
+  "heralizcasino:*",
+  "heralisz_bunker:keycard*",
+  "heralizcrates:*",
+  "heraliz_grades:*",
+  "airstrike:*"
+ ],
+ "regles": [
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "arkaniaz:1p87",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "arkaniaz:a3000",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "arkaniaz:m2",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "arkaniaz:m2l",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "arkaniaz:sr25s",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_anchorage",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_angled3",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_bcm",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_bipod",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_bipod1",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_bipod2",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_bipod_aio",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_bojin1",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_cqr",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_cqr_g2",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_flat",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_minivert",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_phase",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_rk1_b25u",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_rk2",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_rk6",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_td",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_vert1",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_vert2",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_vert3",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_vert6",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:grip_vg1",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:laser_hs507c",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_b_claun50",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_b_estein290",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_b_fjx",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_b_komodo",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_fr_coors2",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_fr_kx30",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_fr_wolf",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_kraken",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_pws",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_s_c784",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_s_fd197",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_s_fss5",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_s_gogol9",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_s_gsx",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_s_osprey",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_s_widemouth",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:muzzle_s_z60",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:nsic_sight",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:scope_bojin1",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:scope_holosun",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:scope_karrina",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:scope_strikefire2",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:sight_hco",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:sight_holosun_reddot",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:sight_olight_red_dot",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:sight_romeo1",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_ar1",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_ar2",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_ar3",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_bojin1",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_heavy1",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_heavy2",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_light1",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_light2",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "gucci_attachments:stock_light3",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:a3_grip",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:canted_irons",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:glaser",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:hera_cqr_stock",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:hera_cqr_stock_tan",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:loudener",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:peq15",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:retro_2x_ak",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:scope_pso1_ak",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:scw_stock",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:sight_okp7_ak",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:sight_rmr_dot_raised",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:sight_sro_dot_raised",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:speed_mag",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:supressed_brake",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:tac_laser",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:underbarrel_chainsaw",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "maxstuff:underbarrel_flashlight",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:ammo_mod_fmj",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:ammo_mod_i",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:bayonet_6h3",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:bayonet_m9",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:extended_mag_1",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:extended_mag_2",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:extended_mag_3",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_cobra",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_cqr",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_magpul_afg_2",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_osovets_black",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_rk0",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_rk1_b25u",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_rk6",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_se_5",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:caoutchouc_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_td",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_vertical_military",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:caoutchouc_iv",
+    "heraliz_composants:caoutchouc_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:grip_vertical_talon",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:laser_compact",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:caoutchouc_iv",
+    "heraliz_composants:caoutchouc_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:batterie_iv",
+    "heraliz_composants:batterie_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:laser_lopro",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:laser_nightstick",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:caoutchouc",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:laser_peq15",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:light_extended_mag_1",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:light_extended_mag_2",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:light_extended_mag_3",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_brake_cthulhu",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_brake_cyclone_d2",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_brake_pioneer",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_brake_trex",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_compensator_trident",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_silence_mirage",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_silence_phantom_s1",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_silence_ptilopsis",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_silencer_mirage",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_silencer_phantom_s1",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:muzzle_silencer_ptilopsis",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:oem_stock_light",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:oem_stock_tactical",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:scope_acog_ta31",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:scope_aug_default",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:batterie_iv",
+    "heraliz_composants:batterie_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:scope_contender",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:batterie_iv",
+    "heraliz_composants:batterie_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:scope_elcan_4x",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:batterie_iv",
+    "heraliz_composants:batterie_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:scope_hamr",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:scope_retro_2x",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_552",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_acro_pistol",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_acro_rifle",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_coyote",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_deltapoint_pistol",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_deltapoint_rifle",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_exp3",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_fastfire_pistol",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_fastfire_rifle",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_okp7",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_p90",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_pk06_pistol",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_pk06_rifle",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_rmr_dot",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_sro_dot",
+   "rend": [
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_srs_02",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_t1",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_t2",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sight_uh1",
+   "rend": [
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sniper_extended_mag_1",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sniper_extended_mag_2",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:sniper_extended_mag_3",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:stock_ak12",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:stock_carbon_bone_c5",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:stock_hk_slim_line",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:stock_m4ss",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:stock_moe",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:stock_ripstock",
+   "rend": [
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:scotch",
+    "heraliz_composants:scotch"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:stock_sba3",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "tacz:stock_tactical_ar",
+   "rend": [
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:scotch_iv"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "wmags:wmag_12g",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "wmags:wmag_556",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "wmags:wmag_762",
+   "rend": [
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "wmags:wmag_pistols",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "wmags:wmag_rpk",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:attachment",
+   "cle": "AttachmentId",
+   "valeur": "wmags:wmag_smg",
+   "rend": [
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:scotch_ii",
+    "heraliz_composants:scotch_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:686",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:882",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:9a91",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:aks74u",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:an94",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:evo3",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:g18c",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:galilace",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:mod2",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:p250",
+   "rend": [
+    "heraliz_composants:canon",
+    "heraliz_composants:ressort",
+    "heraliz_composants:kit_pieces",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:pp19",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:python",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:sr_2m",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:tec9",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:type20",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:ump9",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "arkaniaz:usp",
+   "rend": [
+    "heraliz_composants:canon",
+    "heraliz_composants:ressort",
+    "heraliz_composants:kit_pieces",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "heraliz_fuse:m14",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "heraliz_fuse:mp5_classic",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "heraliz_fuse:mp5k",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "heraliz_fuse:mp7r",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "heraliz_fuse:olympia",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "heraliz_fuse:ro635v3",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "heraliz_fuse:stakeout",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:adar2",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:ak12",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:ak74",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:aks74u",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:ar57",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:ar762",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:arp",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:aug_a2",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:colt_933",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:db_50",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:db_short_tactical",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:deagle_12g",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:g36",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:glock_18c",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:glock_54",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:glock_bulpup",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:hk417",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:hk_g33",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:hk_mp5k",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:hk_mp5sd",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:honey_badger",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:m17",
+   "rend": [
+    "heraliz_composants:canon",
+    "heraliz_composants:ressort",
+    "heraliz_composants:kit_pieces",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:m870t",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:mk18_burst",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:mk23",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:mk47",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:scar_pdw",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:scar_sbr",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:sr16",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:thunderbird_short",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:vector9",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:xm177",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "maxstuff:z15_a",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:ak47",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:aug",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:b93r",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:cz75",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:db_long",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:db_short",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:deagle",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:g36k",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:glock_17",
+   "rend": [
+    "heraliz_composants:canon",
+    "heraliz_composants:ressort",
+    "heraliz_composants:kit_pieces",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:hk416d",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:hk_g3",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:m16a1",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:m1911",
+   "rend": [
+    "heraliz_composants:canon",
+    "heraliz_composants:ressort",
+    "heraliz_composants:kit_pieces",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:m4a1",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:m870",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:p320",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:p90",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:scar_h",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:scar_l",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:sks_tactical",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:spr15hb",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:type_81",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:ump45",
+   "rend": [
+    "heraliz_composants:canon_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:ressort_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:uzi",
+   "rend": [
+    "heraliz_composants:canon_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:ressort_ii",
+    "heraliz_composants:kit_pieces_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "cle": "GunId",
+   "valeur": "tacz:vector45",
+   "rend": [
+    "heraliz_composants:canon_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:ressort_iv",
+    "heraliz_composants:kit_pieces_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv",
+    "heraliz_composants:ferraille_iv"
+   ]
+  },
+  {
+   "objet": "airstrike:designator",
+   "rend": [
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:kit_pieces_iii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:caoutchouc_ii",
+    "heraliz_composants:fil_souder",
+    "heraliz_composants:fil_souder"
+   ]
+  },
+  {
+   "objet": "airstrike:cartridge_light",
+   "rend": [
+    "heraliz_composants:bocal_poudre_ii",
+    "heraliz_composants:bocal_poudre_ii",
+    "heraliz_composants:batterie",
+    "heraliz_composants:batterie",
+    "heraliz_composants:circuit_imprime",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "airstrike:cartridge_heavy",
+   "rend": [
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:circuit_imprime_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:batterie_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii",
+    "heraliz_composants:ferraille_ii"
+   ]
+  },
+  {
+   "objet": "airstrike:cartridge_special",
+   "rend": [
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:circuit_imprime_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:batterie_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:ferraille_iii",
+    "heraliz_composants:metal_renforce"
+   ]
+  },
+  {
+   "objet": "heralisz_bunker:wooden_barricade",
+   "rend": [
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:corde"
+   ]
+  },
+  {
+   "objet": "crac:c4",
+   "rend": [
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:scotch_iv",
+    "heraliz_composants:corde",
+    "heraliz_composants:corde",
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:circuit_imprime_iv",
+    "heraliz_composants:circuit_imprime_iv"
+   ]
+  },
+  {
+   "objet": "crac:explosive_charge",
+   "rend": [
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:scotch_iii",
+    "heraliz_composants:corde",
+    "heraliz_composants:tissu_iv",
+    "heraliz_composants:tissu_iv"
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "valeur": "tacz:12g",
+   "par": 15,
+   "rend": [
+    "heraliz_composants:bocal_poudre_ii",
+    "heraliz_composants:bocal_poudre_ii",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "valeur": "tacz:308",
+   "par": 15,
+   "rend": [
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "valeur": "tacz:338",
+   "par": 15,
+   "rend": [
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:bocal_poudre_iv",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "valeur": "tacz:45acp",
+   "par": 15,
+   "rend": [
+    "heraliz_composants:bocal_poudre",
+    "heraliz_composants:bocal_poudre",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "valeur": "tacz:50ae",
+   "par": 15,
+   "rend": [
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "valeur": "tacz:556x45",
+   "par": 15,
+   "rend": [
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "valeur": "tacz:762x39",
+   "par": 15,
+   "rend": [
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:bocal_poudre_iii",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "valeur": "tacz:9mm",
+   "par": 15,
+   "rend": [
+    "heraliz_composants:bocal_poudre",
+    "heraliz_composants:bocal_poudre",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille",
+    "heraliz_composants:ferraille"
+   ]
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_ii",
+    "heraliz_composants:alcool_ii"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:ai2"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_ii",
+    "heraliz_composants:alcool_ii"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:amoxycillin"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_ii",
+    "heraliz_composants:alcool_ii"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:attelle"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_iii",
+    "heraliz_composants:alcool_iii"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:attelle_bandage"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:bandage"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_iii",
+    "heraliz_composants:alcool_iii"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:blood_pack"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_iii",
+    "heraliz_composants:alcool_iii"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:carfak"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_iv",
+    "heraliz_composants:alcool_iv"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:cms"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:condensed_milk"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_ii",
+    "heraliz_composants:alcool_ii"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:goldenstar"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:ibuprofen"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu_iv",
+    "heraliz_composants:alcool_iv"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:surv12"
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend": [
+    "heraliz_composants:tissu"
+   ],
+   "cle": "ConsumableId",
+   "valeur": "heralisz_heal:vaseline"
+  },
+  {
+   "objet": "heraliz_armory:*",
+   "rend_rarete": [
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:tissu",
+     "heraliz_composants:scotch"
+    ],
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:tissu",
+     "heraliz_composants:scotch"
+    ],
+    [
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:scotch_ii"
+    ],
+    [
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:scotch_iii"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:scotch_iv"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:scotch_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "backpacked:*",
+   "rend_rarete": [
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:tissu",
+     "heraliz_composants:scotch",
+     "heraliz_composants:caoutchouc"
+    ],
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:tissu",
+     "heraliz_composants:scotch",
+     "heraliz_composants:caoutchouc"
+    ],
+    [
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:scotch_ii",
+     "heraliz_composants:caoutchouc_ii"
+    ],
+    [
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:scotch_iii",
+     "heraliz_composants:caoutchouc_iii"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:scotch_iv",
+     "heraliz_composants:caoutchouc_iv"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:scotch_iv",
+     "heraliz_composants:caoutchouc_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heralisz_tactical:consumable",
+   "rend_rarete": [
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:alcool"
+    ],
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:alcool"
+    ],
+    [
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:alcool_ii"
+    ],
+    [
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:alcool_iii"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:alcool_iv"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:alcool_iv"
+    ]
+   ],
+   "cle": "ConsumableId"
+  },
+  {
+   "objet": "heralisz_tactical:throwable",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:bocal_poudre"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:bocal_poudre"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:bocal_poudre_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:bocal_poudre_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:bocal_poudre_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:bocal_poudre_iv"
+    ]
+   ],
+   "cle": "ThrowableId"
+  },
+  {
+   "objet": "heralisz_heal:*",
+   "rend_rarete": [
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:alcool"
+    ],
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:alcool"
+    ],
+    [
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:alcool_ii"
+    ],
+    [
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:alcool_iii"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:alcool_iv"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:alcool_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "tacz:modern_kinetic_gun",
+   "rend_rarete": [
+    [
+     "heraliz_composants:canon",
+     "heraliz_composants:ressort",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:canon",
+     "heraliz_composants:ressort",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:canon_ii",
+     "heraliz_composants:ressort_ii",
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:canon_iii",
+     "heraliz_composants:ressort_iii",
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:canon_iv",
+     "heraliz_composants:ressort_iv",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:canon_iv",
+     "heraliz_composants:ressort_iv",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ],
+   "cle": "GunId"
+  },
+  {
+   "objet": "tacz:attachment",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:kit_pieces_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:kit_pieces_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ]
+   ],
+   "cle": "AttachmentId"
+  },
+  {
+   "objet": "tacz:ammo_box",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_usure:*",
+   "rend_rarete": [
+    [
+     "heraliz_composants:kit_pieces",
+     "heraliz_composants:scotch"
+    ],
+    [
+     "heraliz_composants:kit_pieces",
+     "heraliz_composants:scotch"
+    ],
+    [
+     "heraliz_composants:kit_pieces_ii",
+     "heraliz_composants:scotch_ii"
+    ],
+    [
+     "heraliz_composants:kit_pieces_iii",
+     "heraliz_composants:scotch_iii"
+    ],
+    [
+     "heraliz_composants:kit_pieces_iv",
+     "heraliz_composants:scotch_iv"
+    ],
+    [
+     "heraliz_composants:kit_pieces_iv",
+     "heraliz_composants:scotch_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "ywzj_vehicle:fuel_tank",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:caoutchouc"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:caoutchouc"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:caoutchouc_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:caoutchouc_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:caoutchouc_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:caoutchouc_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "ywzj_vehicle:repair_tool",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:kit_pieces_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:kit_pieces_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "ywzj_vehicle:parachute_pack",
+   "rend_rarete": [
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:tissu",
+     "heraliz_composants:corde"
+    ],
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:tissu",
+     "heraliz_composants:corde"
+    ],
+    [
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:corde"
+    ],
+    [
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:corde"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:corde"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:corde"
+    ]
+   ]
+  },
+  {
+   "objet": "geckolib:item_*",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "geckolib:food_can*",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "geckolib:food_*",
+   "rend_rarete": [
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:corde",
+   "rend_rarete": [
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:tissu"
+    ],
+    [
+     "heraliz_composants:tissu",
+     "heraliz_composants:tissu"
+    ],
+    [
+     "heraliz_composants:tissu_ii",
+     "heraliz_composants:tissu_ii"
+    ],
+    [
+     "heraliz_composants:tissu_iii",
+     "heraliz_composants:tissu_iii"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:tissu_iv"
+    ],
+    [
+     "heraliz_composants:tissu_iv",
+     "heraliz_composants:tissu_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:telephone_casse",
+   "rend_rarete": [
+    [
+     "heraliz_composants:circuit_imprime",
+     "heraliz_composants:batterie"
+    ],
+    [
+     "heraliz_composants:circuit_imprime",
+     "heraliz_composants:batterie"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_ii",
+     "heraliz_composants:batterie_ii"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iii",
+     "heraliz_composants:batterie_iii"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iv",
+     "heraliz_composants:batterie_iv"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iv",
+     "heraliz_composants:batterie_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:radio_cassee",
+   "rend_rarete": [
+    [
+     "heraliz_composants:circuit_imprime",
+     "heraliz_composants:batterie",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:circuit_imprime",
+     "heraliz_composants:batterie",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_ii",
+     "heraliz_composants:batterie_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iii",
+     "heraliz_composants:batterie_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iv",
+     "heraliz_composants:batterie_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iv",
+     "heraliz_composants:batterie_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:montre_cassee",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:briquet",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:lunettes_cassees",
+   "rend_rarete": [
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:ampoule_grillee",
+   "rend_rarete": [
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ],
+    [
+     "heraliz_composants:plastique"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:plaque_recyclee",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:plaque_soudee",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:plaque_metal",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_composants:plaque_renforcee",
+   "rend_rarete": [
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_extraction:extraction_terminal",
+   "rend_rarete": [
+    [
+     "heraliz_composants:circuit_imprime",
+     "heraliz_composants:batterie"
+    ],
+    [
+     "heraliz_composants:circuit_imprime",
+     "heraliz_composants:batterie"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_ii",
+     "heraliz_composants:batterie_ii"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iii",
+     "heraliz_composants:batterie_iii"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iv",
+     "heraliz_composants:batterie_iv"
+    ],
+    [
+     "heraliz_composants:circuit_imprime_iv",
+     "heraliz_composants:batterie_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "tacz:ammo",
+   "cle": "AmmoId",
+   "par": 15,
+   "rend_rarete": [
+    [
+     "heraliz_composants:bocal_poudre",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:bocal_poudre",
+     "heraliz_composants:ferraille"
+    ],
+    [
+     "heraliz_composants:bocal_poudre_ii",
+     "heraliz_composants:ferraille_ii"
+    ],
+    [
+     "heraliz_composants:bocal_poudre_iii",
+     "heraliz_composants:ferraille_iii"
+    ],
+    [
+     "heraliz_composants:bocal_poudre_iv",
+     "heraliz_composants:ferraille_iv"
+    ],
+    [
+     "heraliz_composants:bocal_poudre_iv",
+     "heraliz_composants:ferraille_iv"
+    ]
+   ]
+  }
+ ]
+}

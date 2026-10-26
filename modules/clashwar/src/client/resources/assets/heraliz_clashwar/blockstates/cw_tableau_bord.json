@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "heraliz_clashwar:block/cw_tableau"
+    },
+    "facing=south": {
+      "model": "heraliz_clashwar:block/cw_tableau"
+    },
+    "facing=east": {
+      "model": "heraliz_clashwar:block/cw_tableau"
+    },
+    "facing=west": {
+      "model": "heraliz_clashwar:block/cw_tableau"
+    }
+  }
+}

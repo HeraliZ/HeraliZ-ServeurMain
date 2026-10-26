@@ -1,0 +1,11 @@
+{
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "heraliz_evenements:item/3d/boite_noire_helico"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "heraliz_evenements:item/icon/boite_noire_helico"
+    }
+  }
+}

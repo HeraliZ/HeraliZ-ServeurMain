@@ -236,6 +236,8 @@
           },
           "nombre": 3,
           "objet": [
+            "heralisz_heal:bandage",
+            "heralisz_heal:attelle",
             "heralisz_heal:vaseline",
             "heralisz_heal:ibuprofen",
             "heralisz_heal:condensed_milk",
@@ -372,14 +374,14 @@
       },
       "difficulte": 2,
       "demande": {
-        "fr": "Reviens par une extraction, puis paie-moi 1 000 hérals pour passer Soldat.",
-        "en": "Come back through an extraction, then pay me 1,000 herals to make Soldier.",
-        "ru": "Вернись через эвакуацию, потом заплати мне 1 000 гералов, чтобы стать Солдатом."
+        "fr": "Reviens par une extraction, puis paie-moi 1 000 hérals pour passer Recrue.",
+        "en": "Come back through an extraction, then pay me 1,000 herals to make Recruit.",
+        "ru": "Вернись через эвакуацию, потом заплати мне 1 000 гералов, чтобы стать Новобранцем."
       },
       "fin": {
-        "fr": "Bienvenue chez les Soldats. Tiens, ta Clé de Quêtes.",
-        "en": "Welcome to the Soldiers. Here, your Quest Key.",
-        "ru": "Добро пожаловать в Солдаты. Держи свой Ключ заданий."
+        "fr": "Te voilà Recrue. Tiens, ta Clé de Quêtes.",
+        "en": "You're a Recruit now. Here, your Quest Key.",
+        "ru": "Теперь ты Новобранец. Держи свой Ключ заданий."
       },
       "etapes": [
         {
@@ -548,9 +550,9 @@
       },
       "difficulte": 2,
       "demande": {
-        "fr": "Rapporte-moi 5 batteries et 5 circuits imprimés.",
-        "en": "Bring me 5 batteries and 5 circuit boards.",
-        "ru": "Принеси мне 5 батареек и 5 печатных плат."
+        "fr": "Rapporte-moi 3 batteries et 3 circuits imprimés.",
+        "en": "Bring me 3 batteries and 3 circuit boards.",
+        "ru": "Принеси мне 3 батарейки и 3 печатные платы."
       },
       "fin": {
         "fr": "La radio du camp va revivre.",
@@ -561,21 +563,21 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 5 batteries",
-            "en": "Bring back 5 batteries",
-            "ru": "Принести 5 батареек"
+            "fr": "Rapporter 3 batteries",
+            "en": "Bring back 3 batteries",
+            "ru": "Принести 3 батарейки"
           },
-          "nombre": 5,
+          "nombre": 3,
           "objet": "heraliz_composants:batterie"
         },
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 5 circuits imprimés",
-            "en": "Bring back 5 circuit boards",
-            "ru": "Принести 5 печатных плат"
+            "fr": "Rapporter 3 circuits imprimés",
+            "en": "Bring back 3 circuit boards",
+            "ru": "Принести 3 печатные платы"
           },
-          "nombre": 5,
+          "nombre": 3,
           "objet": "heraliz_composants:circuit_imprime"
         }
       ],
@@ -668,9 +670,9 @@
       },
       "difficulte": 2,
       "demande": {
-        "fr": "Rapporte-moi 5 tonnelets de poudre et 5 bocaux de poudre.",
-        "en": "Bring me 5 gunpowder kegs and 5 gunpowder jars.",
-        "ru": "Принеси мне 5 бочонков пороха и 5 банок пороха."
+        "fr": "Rapporte-moi 5 ferrailles et 5 bocaux de poudre.",
+        "en": "Bring me 5 scrap metal and 5 gunpowder jars.",
+        "ru": "Принеси мне 5 металлолома и 5 банок пороха."
       },
       "fin": {
         "fr": "De quoi refaire des munitions. Parfait.",
@@ -681,12 +683,12 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 5 tonnelets de poudre",
-            "en": "Bring back 5 gunpowder kegs",
-            "ru": "Принести 5 бочонков пороха"
+            "fr": "Rapporter 5 ferrailles",
+            "en": "Bring back 5 scrap metal",
+            "ru": "Принести 5 металлолома"
           },
           "nombre": 5,
-          "objet": "heraliz_composants:tonnelet_poudre"
+          "objet": "heraliz_composants:ferraille"
         },
         {
           "type": "donner",
@@ -713,14 +715,14 @@
       },
       "difficulte": 3,
       "demande": {
-        "fr": "Reste 30 minutes sur la carte sans mourir, puis paie-moi 3 000 hérals pour passer Caporal.",
-        "en": "Stay on the map for 30 minutes without dying, then pay me 3,000 herals to make Corporal.",
-        "ru": "Продержись на карте 30 минут и не умри, потом заплати мне 3 000 гералов, чтобы стать Капралом."
+        "fr": "Reste 30 minutes sur la carte sans mourir, puis paie-moi 3 000 hérals pour passer Soldat.",
+        "en": "Stay on the map for 30 minutes without dying, then pay me 3,000 herals to make Soldier.",
+        "ru": "Продержись на карте 30 минут и не умри, потом заплати мне 3 000 гералов, чтобы стать Солдатом."
       },
       "fin": {
-        "fr": "Caporal. Tu l'as mérité. Ta Clé de Quêtes.",
-        "en": "Corporal. You've earned it. Your Quest Key.",
-        "ru": "Капрал. Ты это заслужил. Твой Ключ заданий."
+        "fr": "Soldat. Tu l'as mérité. Ta Clé de Quêtes.",
+        "en": "Soldier. You've earned it. Your Quest Key.",
+        "ru": "Солдат. Ты это заслужил. Твой Ключ заданий."
       },
       "etapes": [
         {
@@ -833,9 +835,9 @@
       },
       "difficulte": 3,
       "demande": {
-        "fr": "Rapporte-moi 10 plaques recyclées et 5 plaques soudées.",
-        "en": "Bring me 10 recycled plates and 5 welded plates.",
-        "ru": "Принеси мне 10 самодельных пластин и 5 сварных пластин."
+        "fr": "Rapporte-moi 10 ferrailles et 3 fragments de métal.",
+        "en": "Bring me 10 scrap metal and 3 metal fragments.",
+        "ru": "Принеси мне 10 металлолома и 3 металлических обломка."
       },
       "fin": {
         "fr": "Assez pour renforcer la barricade.",
@@ -846,22 +848,22 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 10 plaques recyclées",
-            "en": "Bring back 10 recycled plates",
-            "ru": "Принести 10 самодельных пластин"
+            "fr": "Rapporter 10 ferrailles",
+            "en": "Bring back 10 scrap metal",
+            "ru": "Принести 10 металлолома"
           },
           "nombre": 10,
-          "objet": "heraliz_composants:plaque_recyclee"
+          "objet": "heraliz_composants:ferraille"
         },
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 5 plaques soudées",
-            "en": "Bring back 5 welded plates",
-            "ru": "Принести 5 сварных пластин"
+            "fr": "Rapporter 3 fragments de métal",
+            "en": "Bring back 3 metal fragments",
+            "ru": "Принести 3 металлических обломка"
           },
-          "nombre": 5,
-          "objet": "heraliz_composants:plaque_soudee"
+          "nombre": 3,
+          "objet": "heraliz_composants:fragments_metal"
         }
       ],
       "recompense": {
@@ -1064,14 +1066,14 @@
       },
       "difficulte": 3,
       "demande": {
-        "fr": "Entre dans une salle à carte verte, puis paie-moi 5 000 hérals pour passer Sergent.",
-        "en": "Enter a green keycard room, then pay me 5,000 herals to make Sergeant.",
-        "ru": "Войди в комнату с зелёной ключ-картой, потом заплати мне 5 000 гералов, чтобы стать Сержантом."
+        "fr": "Entre dans une salle à carte verte, puis paie-moi 5 000 hérals pour passer Caporal.",
+        "en": "Enter a green keycard room, then pay me 5,000 herals to make Corporal.",
+        "ru": "Войди в комнату с зелёной ключ-картой, потом заплати мне 5 000 гералов, чтобы стать Капралом."
       },
       "fin": {
-        "fr": "Sergent. Ta Clé de Quêtes.",
-        "en": "Sergeant. Your Quest Key.",
-        "ru": "Сержант. Твой Ключ заданий."
+        "fr": "Caporal. Ta Clé de Quêtes.",
+        "en": "Corporal. Your Quest Key.",
+        "ru": "Капрал. Твой Ключ заданий."
       },
       "etapes": [
         {
@@ -1332,24 +1334,25 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Appelle une frappe aérienne.",
-        "en": "Call in an airstrike.",
-        "ru": "Вызови авиаудар."
+        "fr": "L'aviation ne répond plus. Va fouiller 5 conteneurs militaires T6 (aérodrome) et récupère leur matériel.",
+        "en": "The air force isn't answering. Go search 5 T6 military containers (airfield) and recover their gear.",
+        "ru": "Авиация не отвечает. Обыщи 5 военных контейнеров T6 (аэродром) и забери снаряжение."
       },
       "fin": {
-        "fr": "Boum. Voilà comment on règle un problème.",
-        "en": "Boom. That's how you solve a problem.",
-        "ru": "Бум. Вот так решают проблемы."
+        "fr": "Avec ça, on se passera d'eux.",
+        "en": "With this, we won't need them.",
+        "ru": "С этим мы обойдёмся без них."
       },
       "etapes": [
         {
-          "type": "frappe",
+          "type": "fouiller",
           "libelle": {
-            "fr": "Appeler une frappe aérienne",
-            "en": "Call in an airstrike",
-            "ru": "Вызвать авиаудар"
+            "fr": "Fouiller 5 conteneurs T6",
+            "en": "Search 5 T6 containers",
+            "ru": "Обыскать 5 контейнеров T6"
           },
-          "nombre": 1
+          "nombre": 5,
+          "palier_min": 6
         }
       ],
       "recompense": {
@@ -1366,14 +1369,14 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Entre dans une salle à carte bleue, puis paie-moi 7 000 hérals pour passer Officier.",
-        "en": "Enter a blue keycard room, then pay me 7,000 herals to make Officer.",
-        "ru": "Войди в комнату с синей ключ-картой, потом заплати мне 7 000 гералов, чтобы стать Офицером."
+        "fr": "Entre dans une salle à carte bleue, puis paie-moi 7 000 hérals pour passer Sergent.",
+        "en": "Enter a blue keycard room, then pay me 7,000 herals to make Sergeant.",
+        "ru": "Войди в комнату с синей ключ-картой, потом заплати мне 7 000 гералов, чтобы стать Сержантом."
       },
       "fin": {
-        "fr": "Officier. Peu arrivent jusque-là. Ta Clé de Quêtes.",
-        "en": "Officer. Few make it this far. Your Quest Key.",
-        "ru": "Офицер. Мало кто доходит до этого. Твой Ключ заданий."
+        "fr": "Sergent. Peu arrivent jusque-là. Ta Clé de Quêtes.",
+        "en": "Sergeant. Few make it this far. Your Quest Key.",
+        "ru": "Сержант. Мало кто доходит до этого. Твой Ключ заданий."
       },
       "etapes": [
         {
@@ -1454,9 +1457,9 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Rapporte-moi 5 plaques en métal et 3 plaques renforcées.",
-        "en": "Bring me 5 metal plates and 3 reinforced plates.",
-        "ru": "Принеси мне 5 металлических пластин и 3 усиленные пластины."
+        "fr": "Rapporte-moi 3 métaux renforcés et 3 ferrailles II.",
+        "en": "Bring me 3 reinforced metal and 3 scrap metal II.",
+        "ru": "Принеси мне 3 укреплённого металла и 3 металлолома II."
       },
       "fin": {
         "fr": "De quoi blinder le poste de commandement.",
@@ -1467,22 +1470,22 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 5 plaques en métal",
-            "en": "Bring back 5 metal plates",
-            "ru": "Принести 5 металлических пластин"
+            "fr": "Rapporter 3 métaux renforcés",
+            "en": "Bring back 3 reinforced metal",
+            "ru": "Принести 3 укреплённого металла"
           },
-          "nombre": 5,
-          "objet": "heraliz_composants:plaque_metal"
+          "nombre": 3,
+          "objet": "heraliz_composants:metal_renforce"
         },
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 3 plaques renforcées",
-            "en": "Bring back 3 reinforced plates",
-            "ru": "Принести 3 усиленные пластины"
+            "fr": "Rapporter 3 ferrailles II",
+            "en": "Bring back 3 scrap metal II",
+            "ru": "Принести 3 металлолома II"
           },
           "nombre": 3,
-          "objet": "heraliz_composants:plaque_renforcee"
+          "objet": "heraliz_composants:ferraille_ii"
         }
       ],
       "recompense": {
@@ -1499,9 +1502,9 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Tue 10 zombies à plus de 60 mètres.",
-        "en": "Kill 10 zombies from more than 60 metres away.",
-        "ru": "Убей 10 зомби с расстояния больше 60 метров."
+        "fr": "Tue 10 zombies à plus de 40 mètres.",
+        "en": "Kill 10 zombies from more than 40 metres away.",
+        "ru": "Убей 10 зомби с расстояния больше 40 метров."
       },
       "fin": {
         "fr": "Beau tir. Très beau tir.",
@@ -1512,14 +1515,14 @@
         {
           "type": "tuer",
           "libelle": {
-            "fr": "Tuer 10 zombies à plus de 60 m",
-            "en": "Kill 10 zombies from over 60 m",
-            "ru": "Убить 10 зомби с расстояния больше 60 м"
+            "fr": "Tuer 10 zombies à plus de 40 m",
+            "en": "Kill 10 zombies from over 40 m",
+            "ru": "Убить 10 зомби с расстояния больше 40 м"
           },
           "cible": "zombies",
           "nombre": 10,
           "arme": "feu",
-          "distance_min": 60
+          "distance_min": 40
         }
       ],
       "recompense": {
@@ -1611,9 +1614,9 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Rapporte-moi 1 objet Mythique (composant ou objet de valeur).",
-        "en": "Bring me 1 Mythic item (component or valuable).",
-        "ru": "Принеси мне 1 предмет редкости «Мифический» (компонент или ценность)."
+        "fr": "Rapporte-moi 1 objet Légendaire (composant ou objet de valeur).",
+        "en": "Bring me 1 Legendary item (component or valuable).",
+        "ru": "Принеси мне 1 предмет редкости «Легендарный» (компонент или ценность)."
       },
       "fin": {
         "fr": "Je ne pensais pas que ça existait encore.",
@@ -1624,13 +1627,13 @@
         {
           "type": "donner",
           "libelle": {
-            "fr": "Rapporter 1 objet Mythique",
-            "en": "Bring back 1 Mythic item",
-            "ru": "Принести 1 предмет редкости «Мифический»"
+            "fr": "Rapporter 1 objet Légendaire",
+            "en": "Bring back 1 Legendary item",
+            "ru": "Принести 1 предмет редкости «Легендарный»"
           },
           "nombre": 1,
           "tag": "heraliz_composants:tous",
-          "rarete_min": "mythique"
+          "rarete_min": "legendaire"
         }
       ],
       "recompense": {

@@ -1,0 +1,173 @@
+package com.Spartan.serveur.compat;
+
+import com.Spartan.Spartan;
+import com.Spartan.esp.Allies;
+import com.Spartan.esp.Noise;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.ModList;
+
+/**
+ * Branchements avec les mods HeraliZ, sans dépendance de compilation (chacun est facultatif ; un mod absent ou une API
+ * changée n'empêche rien, le journal le dit) :
+ * <ul>
+ *    <li><b>alliés de l'anti-ESP</b> : coéquipiers d'un match ClashWar (même partie, même équipe, lus dans le noyau
+ *    HeraliZ), sinon membres du même clan. Jamais cachés l'un à l'autre (marqueurs, ping, HUD d'équipe) ;</li>
+ *    <li><b>voix de CaraCrea</b> : un joueur caché qui parle est envoyé aux joueurs à portée de sa voix (portée
+ *    normale ou chuchotement de la config de CaraCrea), sinon ils entendraient une voix sans personne.</li>
+ * </ul>
+ */
+public final class HeralizCompat {
+    private static final MethodHandles.Lookup L = MethodHandles.publicLookup();
+
+    private HeralizCompat() {
+    }
+
+    /** Appelé à la mise en place commune (FMLCommonSetupEvent), une fois tous les mods construits. */
+    public static void brancher() {
+        allies();
+        voix();
+    }
+
+    // ------------------------------------------------------------------ alliés
+    private static MethodHandle clanDe;
+    private static MethodHandle partieMatch;
+    private static MethodHandle equipeDe;
+
+    private static void allies() {
+        if (ModList.get().isLoaded("heralisz_clans")) {
+            clanDe = handle("fr.heralisz.clans.api.ClansApi", "clanDe", MethodType.methodType(Optional.class, UUID.class));
+        }
+        if (ModList.get().isLoaded("heraliz_noyau")) {
+            partieMatch = handle("fr.heraliz.noyau.api.Matchs", "partie", MethodType.methodType(String.class, UUID.class));
+            equipeDe = handle("fr.heraliz.noyau.api.Matchs", "equipe", MethodType.methodType(String.class, UUID.class));
+            if (partieMatch == null || equipeDe == null) {
+                partieMatch = equipeDe = null;
+            }
+        }
+        if (clanDe == null && partieMatch == null) {
+            return;
+        }
+        Allies.register(HeralizCompat::allies);
+        Spartan.LOGGER.info("[Spartan] Anti-ESP : alliés HeraliZ reconnus (clans : {}, matchs : {}).", clanDe != null, partieMatch != null);
+    }
+
+    /** Vrai si a et b ne doivent jamais être cachés l'un à l'autre. */
+    static boolean allies(ServerPlayer a, ServerPlayer b) {
+        try {
+            String ma = partieMatch == null ? null : (String) partieMatch.invoke(a.getUUID());
+            String mb = partieMatch == null ? null : (String) partieMatch.invoke(b.getUUID());
+            if (ma != null || mb != null) {
+                // en match, seules les équipes comptent (deux membres d'un clan peuvent s'affronter)
+                if (!java.util.Objects.equals(ma, mb)) {
+                    return false;
+                }
+                String ea = (String) equipeDe.invoke(a.getUUID());
+                return ea != null && ea.equals(equipeDe.invoke(b.getUUID()));
+            }
+            if (clanDe != null) {
+                Optional<?> ca = (Optional<?>) clanDe.invoke(a.getUUID());
+                return ca.isPresent() && ca.equals(clanDe.invoke(b.getUUID()));
+            }
+        } catch (Throwable t) {
+            throw new IllegalStateException(t); // signalé une fois par Allies, puis ignoré
+        }
+        return false;
+    }
+
+    // ------------------------------------------------------------------ voix de CaraCrea
+    /** Joueurs qui parlent → mode de voix : 0 chuchote, 1 parle, 2 crie (écrit par les événements de CaraCrea). */
+    private static final Map<UUID, Integer> PARLENT = new ConcurrentHashMap<>();
+    private static Supplier<Double> portee = () -> 48.0;
+    private static Supplier<Double> porteeChuchote = () -> 24.0;
+    private static Supplier<Double> porteeCri = () -> 96.0;
+
+    @SuppressWarnings("unchecked")
+    private static void voix() {
+        if (!ModList.get().isLoaded("caracrea")) {
+            return;
+        }
+        try {
+            Class<? extends Event> debut = (Class<? extends Event>) Class.forName("com.caracrea.api.voice.VoiceEvent$TalkStart");
+            Class<? extends Event> fin = (Class<? extends Event>) Class.forName("com.caracrea.api.voice.VoiceEvent$TalkStop");
+            MethodHandle joueur = L.findVirtual(Class.forName("com.caracrea.api.voice.VoiceEvent"), "getPlayer",
+                    MethodType.methodType(UUID.class));
+            MethodHandle chuchote = L.findVirtual(debut, "isWhisper", MethodType.methodType(boolean.class));
+            MethodHandle crie = cri(debut); // mode « crier » de CaraCrea 1.5 ; null avec une version plus ancienne
+            Object server = Class.forName("com.caracrea.CaraCreaConfig").getField("SERVER").get(null);
+            Object normal = server.getClass().getField("voiceRange").get(server);
+            Object bas = server.getClass().getField("whisperRange").get(server);
+            if (normal instanceof ForgeConfigSpec.DoubleValue n && bas instanceof ForgeConfigSpec.DoubleValue w) {
+                portee = n;
+                porteeChuchote = w;
+            }
+            try {
+                if (server.getClass().getField("shoutRange").get(server) instanceof ForgeConfigSpec.DoubleValue c) {
+                    porteeCri = c;
+                }
+            } catch (NoSuchFieldException ancien) {
+                porteeCri = portee; // CaraCrea sans mode crier
+            }
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, (Class<Event>) debut, e -> {
+                try {
+                    int mode = (boolean) chuchote.invoke(e) ? 0 : crie != null && (boolean) crie.invoke(e) ? 2 : 1;
+                    PARLENT.put((UUID) joueur.invoke(e), mode);
+                } catch (Throwable ignored) {
+                    // jamais casser la voix
+                }
+            });
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, (Class<Event>) fin, e -> {
+                try {
+                    PARLENT.remove((UUID) joueur.invoke(e));
+                } catch (Throwable ignored) {
+                    // jamais casser la voix
+                }
+            });
+            MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
+                if (e.phase == TickEvent.Phase.START && !PARLENT.isEmpty()) {
+                    PARLENT.forEach((id, mode) -> Noise.voice(id, mode == 0 ? porteeChuchote.get()
+                            : mode == 2 ? porteeCri.get() : portee.get()));
+                }
+            });
+            Spartan.LOGGER.info("[Spartan] Anti-ESP : voix de CaraCrea reliée (un joueur caché qui parle est montré à ceux qui l'entendent).");
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            Spartan.LOGGER.warn("[Spartan] CaraCrea : API de la voix non reconnue ({}). Un joueur caché qui parle pourrait "
+                    + "être entendu sans être vu.", e.toString());
+        }
+    }
+
+    /** {@code TalkStart.isShout()} de CaraCrea 1.5, ou null si cette version ne connaît pas le mode crier. */
+    private static MethodHandle cri(Class<?> debut) {
+        try {
+            return L.findVirtual(debut, "isShout", MethodType.methodType(boolean.class));
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
+    }
+
+    /** Oubli d'un joueur déconnecté (au cas où CaraCrea n'envoie pas TalkStop). */
+    public static void oublier(UUID joueur) {
+        PARLENT.remove(joueur);
+    }
+
+    private static MethodHandle handle(String classe, String nom, MethodType type) {
+        try {
+            return L.findStatic(Class.forName(classe), nom, type);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            Spartan.LOGGER.warn("[Spartan] {}.{} introuvable ({}) : branchement ignoré.", classe, nom, e.toString());
+            return null;
+        }
+    }
+}

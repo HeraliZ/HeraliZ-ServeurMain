@@ -1,0 +1,155 @@
+// HeraliZ Backpack (mod « backpacked ») séparé client / serveur (docs/METHODE_CLIENT_SERVEUR.md). Pas de fusion : un seul mod,
+// son modId, sa classe @Mod. Version modifiée de Backpacked 3.0.0-beta.4 de MrCrayfish, sous licence GNU LGPL 2.1 (texte
+// complet : src/commun/resources/LICENSE_Backpacked, présent dans les trois jars ; historique des modifications : NOTICE.md).
+// Trois ensembles de sources :
+//   commun  (sourceSets.main, src/commun)  : registres, objets, inventaire du sac, menus, données synchronisées (déblocages,
+//                                            pickpocket), défis, paquets, config, intégration Curios, mixins communs ;
+//   client  (src/client)                   : rendus des sacs (couches, modèles, métadonnées de modèle), écrans, toasts,
+//                                            touches, réception des paquets client, mixin du ModelBakery, assets/ ;
+//   serveur (src/serveur)                  : paquets reçus du client (ouverture, sac d'un autre joueur, personnalisation
+//                                            refusée), marchand ambulant, déblocages (connexion, ticks), ramassage auto,
+//                                            Réparateur, Pillard, sacs définis par les données, commandes, datagen, data/.
+// Trois jars réobfusqués : -client (commun + client), -serveur (commun + serveur), -complet (tout, pour le solo).
+// Construire : PYTHONIOENCODING=utf-8 python outils/lancer.py build mods/heralisz-backpack build livrer
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = jar_name
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    // transformateur d'accès d'origine (inchangé), dans les trois jars
+    accessTransformer = file('src/commun/resources/META-INF/accesstransformer.cfg')
+    // Aucune configuration de lancement : pas de client ni de serveur de dev, le propriétaire teste lui-même en jeu.
+}
+
+sourceSets {
+    main {                                   // = « commun »
+        java.srcDirs = ['src/commun/java']
+        resources.srcDirs = ['src/commun/resources']
+    }
+    client {
+        java.srcDirs = ['src/client/java']
+        resources.srcDirs = ['src/client/resources']
+        compileClasspath += main.output + main.compileClasspath
+    }
+    serveur {
+        java.srcDirs = ['src/serveur/java']
+        resources.srcDirs = ['src/serveur/resources']
+        compileClasspath += main.output + main.compileClasspath
+    }
+}
+
+// Mixins : deux tables de correspondance.
+//   - commune (backpacked.common.mixins.json, backpacked.forge.mixins.json : inventaire, interactions, défis) -> 3 jars ;
+//   - client (backpacked.client.mixins.json : ModelBakery) -> seulement -client et -complet.
+mixin {
+    add sourceSets.main, "backpacked.refmap.json"
+    add sourceSets.client, "backpacked-client.refmap.json"
+}
+
+repositories {
+    flatDir { dirs rootProject.file('libs'), file('libs') }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // Framework (MrCrayfish) et Curios : obligatoires en jeu, compilation seulement
+    compileOnly fg.deobf("blank:framework:0.7.6")
+    compileOnly fg.deobf("blank:curios-forge:5.14.1")
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    clientAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+// mods.toml et pack.mcmeta : copiés tels quels (comme l'original : version affichée 3.0.0-beta.4)
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:-removal', '-Xlint:-deprecation', '-Xmaxerrs', '1000']
+}
+
+// Tables de correspondance des mixins toujours refaites (25/10, comme gradle/module-coupe.gradle) : une compilation
+// lancée à part pouvait effacer la table du dossier tmp ; la fabrication suivante croyait la compilation « à jour » et
+// livrait un jar sans table (mixins non réobfusqués : plantage au chargement).
+def tableAttendue = { String tache, String nom -> tasks.named(tache, JavaCompile).configure {
+    options.incremental = false
+    def table = file("build/tmp/${tache}/${nom}")
+    outputs.upToDateWhen { table.exists() }
+} }
+tableAttendue('compileJava', "backpacked.refmap.json")
+tableAttendue('compileClientJava', "backpacked-client.refmap.json")
+
+// ------------------------------------------------------------------ les trois jars
+def manifeste = [
+        'Specification-Title'   : 'backpacked',
+        'Specification-Vendor'  : 'MrCrayfish, HeraliZ',
+        'Specification-Version' : '1',
+        'Implementation-Title'  : project.name,
+        'Implementation-Version': mod_version,
+        'Implementation-Vendor' : 'HeraliZ',
+]
+// Configs de mixins : communes (src/commun/resources) dans les trois jars, client (src/client/resources) dans -client et -complet.
+def mixinsCommun = ['backpacked.common.mixins.json', 'backpacked.forge.mixins.json']
+def mixinsClient = fileTree('src/client/resources') { include '*.mixins.json' }.files*.name.sort()
+def manifesteServeur = manifeste + ['MixinConfigs': mixinsCommun.join(',')]
+def manifesteClient = manifeste + ['MixinConfigs': (mixinsCommun + mixinsClient).join(',')]
+
+// -complet : commun + client + serveur (solo, profil de test)
+tasks.named('jar', Jar).configure {
+    archiveClassifier = 'complet'
+    from sourceSets.client.output
+    from sourceSets.serveur.output
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(manifesteClient) }
+    finalizedBy 'reobfJar'
+}
+
+// -client : commun + client + assets (pour les joueurs)
+tasks.register('clientJar', Jar) {
+    group = 'build'
+    archiveClassifier = 'client'
+    from sourceSets.main.output
+    from sourceSets.client.output
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(manifesteClient) }
+    finalizedBy 'reobfClientJar'
+}
+
+// -serveur : commun + serveur + data (pour le serveur) : mixins communs et leur table, sans mixin client ni sa table
+tasks.register('serveurJar', Jar) {
+    group = 'build'
+    archiveClassifier = 'serveur'
+    from sourceSets.main.output
+    from sourceSets.serveur.output
+    exclude 'backpacked-client.refmap.json'
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    manifest { attributes(manifesteServeur) }
+    finalizedBy 'reobfServeurJar'
+}
+
+// une tâche reobf<Nom> par jar (sinon le jar garde les noms de développement et plante au chargement)
+reobf {
+    create('clientJar')
+    create('serveurJar')
+}
+
+tasks.named('build').configure { dependsOn 'clientJar', 'serveurJar' }
+
+// Copie des trois jars réobfusqués dans dist/fusion/
+tasks.register('livrer', Copy) {
+    group = 'build'
+    dependsOn 'reobfJar', 'reobfClientJar', 'reobfServeurJar'
+    from(layout.buildDirectory.dir('libs')) { include "${jar_name}-${mod_version}-complet.jar", "${jar_name}-${mod_version}-client.jar", "${jar_name}-${mod_version}-serveur.jar" }
+    into rootProject.file('dist/fusion')
+}

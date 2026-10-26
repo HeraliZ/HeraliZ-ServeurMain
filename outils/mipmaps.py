@@ -29,8 +29,8 @@ from pathlib import Path
 from PIL import Image
 
 RACINE = Path(__file__).resolve().parents[1]
-PACK = RACINE / "mods" / "heraliz-interface" / "src" / "main" / "resources" / "resourcepacks" / "textures"
-PACKS_IMPOSES = [PACK, RACINE / "mods" / "heraliz-interface" / "src" / "main" / "resources" / "resourcepacks" / "herbe"]
+PACK = RACINE / "modules" / "interface" / "src" / "main" / "resources" / "resourcepacks" / "textures"
+PACKS_IMPOSES = [PACK, RACINE / "modules" / "interface" / "src" / "main" / "resources" / "resourcepacks" / "herbe"]
 ATLAS = re.compile(r"^assets/[^/]+/textures/(block|item)/.+\.png$")
 
 
@@ -103,7 +103,8 @@ def sources():
         for n in noms:
             if ATLAS.match(n):
                 vus[n] = (z.read(n), z.read(n + ".mcmeta") if n + ".mcmeta" in noms else None, ("jar", jar))
-    for p in sorted(glob.glob(str(RACINE / "mods" / "*" / "src" / "**" / "assets" / "*" / "textures" / "*" / "**" / "*.png"), recursive=True)):
+    for p in sorted(glob.glob(str(RACINE / "modules" / "*" / "src" / "**" / "assets" / "*" / "textures" / "*" / "**" / "*.png"), recursive=True)):
+        p = p.replace("\\", "/")  # chemins Windows
         if "/_gabarit/" in p or "/resourcepacks/" in p:
             continue
         rel = p[p.index("assets/"):]
@@ -112,6 +113,7 @@ def sources():
             vus[rel] = (Path(p).read_bytes(), mp.read_bytes() if mp.exists() else None, ("mod", p))
     for pack in PACKS_IMPOSES:
         for p in sorted(glob.glob(str(pack / "assets" / "*" / "textures" / "*" / "**" / "*.png"), recursive=True)):
+            p = p.replace("\\", "/")  # chemins Windows
             rel = p[p.index("assets/"):]
             if ATLAS.match(rel):
                 mp = Path(p + ".mcmeta")

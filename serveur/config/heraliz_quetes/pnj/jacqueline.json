@@ -69,6 +69,11 @@
     "articles": [
       {
         "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:bandage\"}",
+        "prix": 30
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
         "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}",
         "prix": 30
       },
@@ -94,13 +99,18 @@
       },
       {
         "objet": "heralisz_tactical:consumable",
-        "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}",
+        "nbt": "{ConsumableId:\"heralisz_heal:attelle\"}",
         "prix": 80
       },
       {
         "objet": "heralisz_tactical:consumable",
         "nbt": "{ConsumableId:\"heralisz_heal:goldenstar\"}",
         "prix": 80
+      },
+      {
+        "objet": "heralisz_tactical:consumable",
+        "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}",
+        "prix": 180
       },
       {
         "objet": "heralisz_tactical:consumable",

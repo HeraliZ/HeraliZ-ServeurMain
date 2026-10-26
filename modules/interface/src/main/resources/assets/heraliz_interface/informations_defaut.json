@@ -1,0 +1,174 @@
+{
+  "_aide": "Texte de l'ecran Informations du menu Echap (HeraliZ Interface). Modifiable librement : chaque texte existe en francais (fr), en anglais (en) et en russe (ru) ; une langue absente prend l'anglais, puis le francais. Le fichier est relu a chaque ouverture de l'ecran (pas besoin de relancer le jeu). Supprimer ce fichier le recree avec le texte d'origine.",
+  "chiffres": [
+    {
+      "valeur": "1950",
+      "fr": "Année en cours",
+      "en": "Current year",
+      "ru": "Текущий год"
+    },
+    {
+      "valeur": "30 ans",
+      "en_valeur": "30 years",
+      "ru_valeur": "30 лет",
+      "fr": "Depuis l'effondrement",
+      "en": "Since the collapse",
+      "ru": "С момента краха"
+    },
+    {
+      "valeur": "Hérals",
+      "en_valeur": "Herals",
+      "ru_valeur": "Гералы",
+      "fr": "Seule monnaie",
+      "en": "The only currency",
+      "ru": "Единственная валюта"
+    }
+  ],
+  "reperes": [
+    {
+      "annee": "1920",
+      "fr": "L'effondrement",
+      "en": "The collapse",
+      "ru": "Крах"
+    },
+    {
+      "annee": "1920 – 1949",
+      "fr": "Les années noires",
+      "en": "The dark years",
+      "ru": "Тёмные годы"
+    },
+    {
+      "annee": "1950",
+      "fr": "Aujourd'hui : survivre",
+      "en": "Today: survive",
+      "ru": "Сегодня: выжить"
+    }
+  ],
+  "histoire": {
+    "fr": [
+      "En 1920, le monde a basculé. Personne ne sait vraiment d'où est venue l'infection : en quelques semaines, les villes se sont tues et les morts se sont relevés.",
+      "Trente ans ont passé. Nous sommes en 1950 et les survivants vivent dans les ruines de l'ancien monde. Les forêts ont repris les villages, les routes sont coupées et les vieux miradors veillent encore sur ce qu'il reste.",
+      "Ici, plus personne ne paie en billets : la seule monnaie qui compte, ce sont les hérals. On les gagne en explorant, en commerçant et en combattant… et on les perd tout aussi vite.",
+      "Formez un clan, bâtissez votre base, tenez des territoires. Et surtout : restez en vie."
+    ],
+    "en": [
+      "In 1920, the world fell apart. Nobody really knows where the infection came from: within a few weeks, the cities went silent and the dead rose again.",
+      "Thirty years have passed. It is 1950 and the survivors live among the ruins of the old world. Forests have swallowed the villages, roads are cut off and the old watchtowers still stand guard over what is left.",
+      "Here, nobody pays with banknotes anymore: the only currency that matters is the heral. You earn them by exploring, trading and fighting… and you lose them just as fast.",
+      "Found a clan, build your base, hold territories. And above all: stay alive."
+    ],
+    "ru": [
+      "В 1920 году мир рухнул. Никто толком не знает, откуда пришла зараза: за несколько недель города смолкли, а мёртвые поднялись.",
+      "Прошло тридцать лет. Сейчас 1950 год, и выжившие живут среди руин старого мира. Леса поглотили деревни, дороги перерезаны, а старые вышки всё ещё стерегут то, что осталось.",
+      "Здесь больше никто не платит банкнотами: единственная валюта, которая имеет значение, — гералы. Их зарабатывают, исследуя, торгуя и сражаясь… и теряют так же быстро.",
+      "Создайте клан, постройте базу, удерживайте территории. И главное: останьтесь в живых."
+    ]
+  },
+  "commandes": [
+    {
+      "commande": "/clan",
+      "touche": "K",
+      "fr": "Ton clan : membres, banque, coffre, améliorations, territoires",
+      "en": "Your clan: members, bank, chest, upgrades, territories",
+      "ru": "Твой клан: участники, банк, сундук, улучшения, территории"
+    },
+    {
+      "commande": "/quetes",
+      "touche": "J",
+      "fr": "Journal des quêtes du Commandant Varga",
+      "en": "Commander Varga's quest log",
+      "ru": "Журнал заданий командира Варги"
+    },
+    {
+      "commande": "/home",
+      "fr": "Du spawn, retourner devant l’armoire de la base de son clan (délai de 8 min, partagé avec la réapparition à la base)",
+      "en": "From the spawn, go back to your clan base’s cupboard (8 min cooldown, shared with respawning at the base)",
+      "ru": "Со спавна вернуться к шкафу базы клана (перезарядка 8 мин, общая с возрождением на базе)"
+    },
+    {
+      "commande": "/rtp",
+      "fr": "Du spawn, partir vers un coin libre pour bâtir",
+      "en": "From spawn, go to a free spot to build",
+      "ru": "Со спавна — в свободное место для постройки"
+    },
+    {
+      "commande": "/spawn",
+      "fr": "De sa base, revenir au spawn",
+      "en": "From your base, go back to spawn",
+      "ru": "С базы — обратно на спавн"
+    },
+    {
+      "commande": "/tpa",
+      "fr": "Demander à rejoindre un joueur · /tpa accepter, /tpa refuser",
+      "en": "Ask to join a player · /tpa accepter, /tpa refuser",
+      "ru": "Попросить телепорт к игроку · /tpa accepter, /tpa refuser"
+    },
+    {
+      "commande": "/herals",
+      "fr": "Ton argent · /herals payer joueur montant, /herals classement",
+      "en": "Your money · /herals payer player amount, /herals classement",
+      "ru": "Твои деньги · /herals payer игрок сумма, /herals classement"
+    },
+    {
+      "commande": "/extractions",
+      "fr": "Les extractions ouvertes en ce moment",
+      "en": "Extractions open right now",
+      "ru": "Открытые сейчас эвакуации"
+    },
+    {
+      "commande": "/kit",
+      "fr": "Kits (Survivant pour tous, plus celui de ton grade)",
+      "en": "Kits (Survivor for everyone, plus your rank's)",
+      "ru": "Наборы (Выживший для всех и набор твоего ранга)"
+    },
+    {
+      "commande": "/boutique",
+      "fr": "Boutique en jeu, PB, abonnement",
+      "en": "In-game shop, PB, subscription",
+      "ru": "Магазин, PB, подписка"
+    },
+    {
+      "commande": "/base info",
+      "fr": "Fiche des bases : coûts, entretien, raids",
+      "en": "Bases sheet: costs, upkeep, raids",
+      "ru": "Справка по базам: стоимость, содержание, рейды"
+    },
+    {
+      "commande": "/discord lier",
+      "fr": "Lier son compte Discord",
+      "en": "Link your Discord account",
+      "ru": "Привязать аккаунт Discord"
+    }
+  ],
+  "regles": {
+    "fr": [
+      "Respect avant tout : pas d'insultes, de harcèlement ni de propos discriminatoires, en jeu comme sur le Discord.",
+      "Pas de triche : clients modifiés, x-ray, macros et exploitation de bugs sont interdits.",
+      "Un bug ? Signalez-le au staff sur le Discord au lieu de l'exploiter.",
+      "Se déconnecter en plein combat compte comme une mort.",
+      "Pas de publicité pour d'autres serveurs.",
+      "Les décisions du staff s'appliquent. En cas de désaccord, ouvrez un ticket sur le Discord."
+    ],
+    "en": [
+      "Respect first: no insults, harassment or discriminatory remarks, in game and on Discord.",
+      "No cheating: modified clients, x-ray, macros and bug exploits are forbidden.",
+      "Found a bug? Report it to the staff on Discord instead of exploiting it.",
+      "Disconnecting during a fight counts as a death.",
+      "No advertising for other servers.",
+      "Staff decisions apply. If you disagree, open a ticket on Discord."
+    ],
+    "ru": [
+      "Прежде всего уважение: никаких оскорблений, травли и дискриминационных высказываний — ни в игре, ни в Discord.",
+      "Никакого читерства: модифицированные клиенты, x-ray, макросы и использование багов запрещены.",
+      "Нашли баг? Сообщите о нём персоналу в Discord, а не используйте его.",
+      "Выход из игры во время боя засчитывается как смерть.",
+      "Никакой рекламы других серверов.",
+      "Решения персонала обязательны. Если вы не согласны, откройте тикет в Discord."
+    ]
+  },
+  "note_regles": {
+    "fr": "Règlement provisoire : la version complète est sur le Discord.",
+    "en": "Provisional rules: the full version is on Discord.",
+    "ru": "Временные правила: полная версия — в Discord."
+  }
+}

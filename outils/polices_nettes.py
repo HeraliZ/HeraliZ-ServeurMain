@@ -12,7 +12,7 @@ Gardées telles quelles (EXCLUES) : les polices de la fiche `/base info` de CRac
 entière (oversample 3), la référence de netteté.
 
 Contrôle aussi que chaque espace de noms qui a des polices est dans `NOS_ESPACES` de
-`mods/heraliz-interface/.../client/PolicesNettes.java` (sinon ses lettres ne seraient pas lissées).
+`modules/interface/.../client/PolicesNettes.java` (sinon ses lettres ne seraient pas lissées).
 """
 import json
 import re
@@ -22,11 +22,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OVERSAMPLE = 8.0
 EXCLUES = {"crac/font/ui_fiche.json", "crac/font/ui_fiche_gros.json", "crac/font/ui_fiche_mini.json"}
-POLICES_NETTES = ROOT / "mods/heraliz-interface/src/main/java/fr/heraliz/interfaces/client/PolicesNettes.java"
+POLICES_NETTES = ROOT / "modules/interface/src/main/java/fr/heraliz/interfaces/client/PolicesNettes.java"
+
+
+def cible(taille):
+    """Oversample voulu : 8, plafonné pour les grandes polices (25/10) : Minecraft range les lettres dans des planches de
+    256 x 256 points ; une lettre de taille x oversample plus grande n'y tient pas et disparaît (lettres, accents). Plafond
+    240 / taille, arrondi vers le bas (46 -> 5, 33 -> 7)."""
+    return float(max(1, min(int(OVERSAMPLE), int(240 // max(1.0, taille)))))
 
 
 def polices():
-    for p in sorted((ROOT / "mods").glob("*/src/**/assets/*/font/*.json")):
+    for p in sorted((ROOT / "modules").glob("*/src/**/assets/*/font/*.json")):
         if "build" in p.relative_to(ROOT).parts:
             continue
         yield p
@@ -47,9 +54,10 @@ def main():
             if f.get("type") != "ttf":
                 continue
             avant = float(f.get("oversample", 1.0))
-            if avant < OVERSAMPLE:
-                f["oversample"] = OVERSAMPLE
-                modifs.append(f"{f.get('file')} {avant:g} -> {OVERSAMPLE:g}")
+            voulu = cible(float(f.get("size", 11.0)))
+            if avant != voulu:
+                f["oversample"] = voulu
+                modifs.append(f"{f.get('file')} {avant:g} -> {voulu:g}")
         if modifs:
             changees += 1
             print(f"{p.relative_to(ROOT)} : " + ", ".join(modifs))

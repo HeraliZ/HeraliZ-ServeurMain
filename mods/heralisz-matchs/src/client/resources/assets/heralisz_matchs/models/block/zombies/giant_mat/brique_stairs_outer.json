@@ -1,8 +1,0 @@
-{
- "parent": "minecraft:block/outer_stairs",
- "textures": {
-  "bottom": "heralisz_matchs:block/zombies/giant_mat/brique_0",
-  "top": "heralisz_matchs:block/zombies/giant_mat/brique_0",
-  "side": "heralisz_matchs:block/zombies/giant_mat/brique_0"
- }
-}

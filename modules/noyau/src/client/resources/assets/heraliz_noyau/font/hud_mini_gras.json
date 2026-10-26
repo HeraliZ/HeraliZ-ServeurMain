@@ -1,0 +1,28 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "heraliz_noyau:dmsans_bold.ttf",
+      "size": 8.463,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "ttf",
+      "file": "heraliz_noyau:cyrillique_bold.ttf",
+      "size": 8.463,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:default"
+    }
+  ]
+}

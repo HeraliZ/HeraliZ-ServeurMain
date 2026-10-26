@@ -1,0 +1,106 @@
+{
+  "filter": "tacz:default",
+  "tabs": [
+    {
+      "id": "heraliz_crafts:munitions",
+      "name": "heraliz_crafts.onglet.munitions",
+      "icon": {
+        "item": "tacz:ammo",
+        "nbt": {
+          "AmmoId": "tacz:9mm"
+        }
+      }
+    },
+    {
+      "id": "heraliz_crafts:pistolets",
+      "name": "heraliz_crafts.onglet.pistolets",
+      "icon": {
+        "item": "tacz:modern_kinetic_gun",
+        "nbt": {
+          "GunId": "tacz:glock_17"
+        }
+      }
+    },
+    {
+      "id": "heraliz_crafts:mitraillettes",
+      "name": "heraliz_crafts.onglet.mitraillettes",
+      "icon": {
+        "item": "tacz:modern_kinetic_gun",
+        "nbt": {
+          "GunId": "tacz:uzi"
+        }
+      }
+    },
+    {
+      "id": "heraliz_crafts:fusils",
+      "name": "heraliz_crafts.onglet.fusils",
+      "icon": {
+        "item": "tacz:modern_kinetic_gun",
+        "nbt": {
+          "GunId": "tacz:ak47"
+        }
+      }
+    },
+    {
+      "id": "heraliz_crafts:pompes",
+      "name": "heraliz_crafts.onglet.pompes",
+      "icon": {
+        "item": "tacz:modern_kinetic_gun",
+        "nbt": {
+          "GunId": "tacz:m870"
+        }
+      }
+    },
+    {
+      "id": "heraliz_crafts:soins",
+      "name": "heraliz_crafts.onglet.soins",
+      "icon": {
+        "item": "heralisz_tactical:consumable",
+        "nbt": {
+          "ConsumableId": "heralisz_heal:ai2"
+        }
+      }
+    },
+    {
+      "id": "heraliz_crafts:viseurs",
+      "name": "heraliz_crafts.onglet.viseurs",
+      "icon": {
+        "item": "tacz:attachment",
+        "nbt": {
+          "AttachmentId": "tacz:scope_acog_ta31"
+        }
+      }
+    },
+    {
+      "id": "heraliz_crafts:accessoires",
+      "name": "heraliz_crafts.onglet.accessoires",
+      "icon": {
+        "item": "tacz:attachment",
+        "nbt": {
+          "AttachmentId": "tacz:muzzle_compensator_trident"
+        }
+      }
+    },
+    {
+      "id": "heraliz_crafts:explosifs",
+      "name": "heraliz_crafts.onglet.explosifs",
+      "icon": {
+        "item": "crac:c4"
+      }
+    },
+    {
+      "id": "heraliz_crafts:composants",
+      "name": "heraliz_crafts.onglet.composants",
+      "icon": {
+        "item": "heraliz_composants:canon_ii"
+      }
+    },
+    {
+      "id": "heraliz_crafts:divers",
+      "name": "heraliz_crafts.onglet.divers",
+      "icon": {
+        "item": "airstrike:designator"
+      }
+    }
+  ]
+}

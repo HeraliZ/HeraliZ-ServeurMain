@@ -1,0 +1,47 @@
+# HeraliZ ClashWar coupé en trois jars (-client, -serveur, -complet) : UN mod.
+# Ce fichier est IDENTIQUE dans les trois jars (docs/METHODE_CLIENT_SERVEUR.md).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heraliz_clashwar"
+version="${mod_version}"
+displayName="HeraliZ ClashWar"
+authors="${mod_authors}"
+description='''ClashWar, le tournoi des clans du serveur HeraliZ : elimination au meilleur des 5 manches, match pour la 3e place, podium, classement des clans. Stuff garde puis rendu, aucune vraie mort en match. Ne coute rien hors tournoi.'''
+
+[[dependencies.heraliz_clashwar]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heraliz_clashwar]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heraliz_clashwar]]
+    modId="heralisz_clans"
+    mandatory=true
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.heraliz_clashwar]]
+    modId="heralisz_economie"
+    mandatory=true
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.heraliz_clashwar]]
+    modId="heraliz_noyau"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"

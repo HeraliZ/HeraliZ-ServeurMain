@@ -7,7 +7,7 @@ name: Contrôle de branche
 on:
   push:
     branches-ignore: [main]
-    paths: ["mods/**", "serveur/**", "client/**", "outils/**", ".github/workflows/**"]
+    paths: ["modules/**", "serveur/**", "client/**", "outils/**", "libs/**", "gradle/**", "settings.gradle", "build.gradle", "gradle.properties", ".github/workflows/**"]
 
 permissions:
   contents: read
@@ -43,12 +43,12 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('mods/*/build.gradle', 'mods/*/gradle.properties') }}
+          key: gradle-${{ hashFiles('settings.gradle', 'build.gradle', 'gradle.properties', 'gradle/*.gradle', 'modules/*/build.gradle') }}
           restore-keys: gradle-
 
       - uses: actions/cache@v4
         with:
-          path: mods/*/build/libs
+          path: modules/*/build/libs
           key: jars-${{ github.sha }}
           restore-keys: jars-
 
@@ -80,5 +80,4 @@ jobs:
           path: |
             livraison/mods client/*-client.jar
             livraison/mods client/heraliz_interface-*.jar
-            livraison/mods client/dayzhotbar-*.jar
           retention-days: 3

@@ -1,0 +1,93 @@
+# HeraliZ Boutique : grades, boutique, casino, caisses : un jar, plusieurs mods (chacun garde son modId et sa version).
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+# ---- heraliz_grades (ancien projet heraliz-grades, version 2.7.2)
+[[mods]]
+modId="heraliz_grades"
+version="2.7.2"
+displayName="HeraliZ Grades"
+authors="${mod_authors}"
+description='''Grades HeraliZ (staff, boutique, Survivant), préfixes, commandes /grade (console seulement pour donner et retirer).'''
+[[dependencies.heraliz_grades]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_grades]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# ---- un bloc par mod fusionné (modId D'ORIGINE), par exemple :
+# [[mods]]
+# modId="heralisz_melee"
+# version="2.7.2"
+# displayName="HeraliZ Tactique · Mêlée"
+# authors="${mod_authors}"
+# description='''...'''
+# [[dependencies.heralisz_melee]]
+#     modId="heraliz_grades"
+#     mandatory=true
+#     versionRange="[2.7.2]"
+#     ordering="AFTER"
+#     side="BOTH"
+# (+ forge, minecraft, et les dépendances d'origine du mod : geckolib, curios...)
+
+# ---- heralizcasino (ancien projet heraliz-casino, version 2.5.1)
+[[mods]]
+modId="heralizcasino"
+version="2.5.1"
+displayName="Heraliz Casino"
+authors="${mod_authors}"
+description='''Le casino du serveur HERALIZ : machines 3D animees (machines a sous, Grande Roue, Plinko, Blackjack, Roulette, Crash, Des, Mines, Pile ou Face, Course de chevaux, Video Poker), jetons et caisse de change. La maison garde toujours l'avantage.'''
+
+[[dependencies.heralizcasino]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heralizcasino]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# HeraliZ Economie (les herals, monnaie du serveur) : facultatif. Present, la caisse vend et rachete les jetons contre
+# les herals du compte du joueur ; absent, le casino fonctionne comme avant (objets seulement).
+[[dependencies.heralizcasino]]
+    modId="heralisz_economie"
+    mandatory=false
+    versionRange="[0.1.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+# ---- heralizcrates (ancien projet heraliz-crates, version 2.21.0)
+[[mods]]
+modId="heralizcrates"
+version="2.21.0"
+displayName="Heraliz Crates"
+authors="${mod_authors}"
+description='''Caisses animées HD du serveur HERALIZ : caisses 3D (boss, vote, quêtes, événement, gemme, camos, stickers, chantier, trauma, largage, emotes), cadenas et clés 3D, roue de butin, interface d'ouverture épurée façon CS:GO (accroupi + clic droit), éditeur de butin en jeu pour les opérateurs, effets et sons custom.'''
+
+[[dependencies.heralizcrates]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.heralizcrates]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

@@ -1,0 +1,35 @@
+{
+  "_aide": "Règles lues par fr.heraliz.loot.ButinZombies. Un zombie ne donne rien s'il n'est pas né du peuplement (étiquette heraliz_peuple) ou d'une apparition naturelle (heraliz_naturel) ; s'il a été frappé surtout par autre chose qu'un joueur (chute, feu, cactus, lave...) ; s'il n'est pas tué par un vrai joueur en survie à moins de distance_max blocs ; hors de la carte. Puis, par joueur : au-delà de kills_heure_plein zombies comptés dans l'heure (moyenne glissante), les chances baissent jusqu'à chance_min à kills_heure_zero ; même chose par carré de case_blocs blocs (kills_case_plein, kills_case_zero, mémoire case_minutes).",
+  "entites": [
+    "heralisz_utils:zombie_survie"
+  ],
+  "origines": [
+    "heraliz_peuple",
+    "heraliz_naturel"
+  ],
+  "exclus": [
+    "heraliz_assaut",
+    "heraliz_banc_zombie",
+    "heraliz_bot"
+  ],
+  "tables": {
+    "MILITAIRE": "zombies_militaire",
+    "*": "zombies"
+  },
+  "part_joueur_min": 0.5,
+  "distance_max": 96,
+  "kills_heure_plein": 100,
+  "kills_heure_zero": 200,
+  "chance_min": 0.0,
+  "case_blocs": 32,
+  "case_minutes": 20,
+  "kills_case_plein": 25,
+  "kills_case_zero": 60,
+  "fragments": {
+    "green": 0.004,
+    "blue": 0.0016,
+    "red": 0.000889
+  },
+  "fragments_max_jour": 6,
+  "_fragments": "chance par zombie compté d'un fragment de chaque couleur (numéro 1 à 4 au hasard), tirée à part de la table ; référence : 4 fragments (une carte) pour {'green': 1000, 'blue': 2500, 'red': 4500} zombies"
+}
