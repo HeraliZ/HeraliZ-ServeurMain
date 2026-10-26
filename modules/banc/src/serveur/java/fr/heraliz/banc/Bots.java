@@ -133,6 +133,11 @@ public final class Bots {
                                         .then(Commands.argument("rayon", IntegerArgumentType.integer(16, 2000))
                                                 .executes(x -> Scenario.lancer(x.getSource(), IntegerArgumentType.getInteger(x, "nombre"),
                                                         IntegerArgumentType.getInteger(x, "minutes"), IntegerArgumentType.getInteger(x, "rayon")))))))
+                .then(Commands.literal("reseau").then(Commands.argument("oui", BoolArgumentType.bool()).executes(x -> {
+                    Reseau.actif = BoolArgumentType.getBool(x, "oui");
+                    ok(x, "heralisz_utils.bots.reglage", "Réglage des bots : %s = %s", "reseau", String.valueOf(Reseau.actif));
+                    return 1;
+                })))
                 .then(Commands.literal("joueurs").then(Commands.argument("oui", BoolArgumentType.bool()).executes(x -> {
                     reglages.joueurs = BoolArgumentType.getBool(x, "oui");
                     ok(x, "heralisz_utils.bots.reglage", "Réglage des bots : %s = %s", "joueurs", String.valueOf(reglages.joueurs));
@@ -216,8 +221,10 @@ public final class Bots {
                 String.format("%.1f", mspt), String.format("%.1f", tps), memo, memoMax);
         ok(x, "heralisz_utils.bots.etat3", "En %s s : %s tirs, %s lancers, %s soins, %s fouilles, %s frappes, %s largages, %s morts",
                 (long) sec, stats.tirs, stats.lancers, stats.soins, stats.fouilles, stats.frappes, stats.largages, stats.morts);
-        HeralizBanc.LOG.info("[bots] etat : {} bots, {} ms/tick, {} entites, {} tirs/{} s", BOTS.size(), String.format("%.1f", mspt), entites,
-                stats.tirs, (long) sec);
+        String net = Reseau.ligne(Reseau.relever(), sec, BOTS.size());
+        ok(x, "heralisz_utils.bots.etat4", "%s", net);
+        HeralizBanc.LOG.info("[bots] etat : {} bots, {} ms/tick, {} entites, {} tirs/{} s ; {}", BOTS.size(), String.format("%.1f", mspt), entites,
+                stats.tirs, (long) sec, net);
         stats.zero();
         return 1;
     }
@@ -414,11 +421,13 @@ public final class Bots {
             GameProfile g = new GameProfile(id, nom);
             BotJoueur b = new BotJoueur(s, place.niveau(), g);
             Connection c = new Connection(PacketFlow.SERVERBOUND);
-            // canal factice : tout paquet envoyé au bot est jeté
+            // canal factice : tout paquet envoyé au bot est mis en forme et compressé comme pour un vrai joueur, puis
+            // compté et oublié (Reseau ; /bots reseau false : jeté tout de suite)
+            Reseau.seuil = s.getCompressionThreshold();
             EmbeddedChannel canal = new EmbeddedChannel(new ChannelOutboundHandlerAdapter() {
                 @Override
                 public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-                    ReferenceCountUtil.release(msg);
+                    Reseau.recevoir(msg);
                     promise.setSuccess();
                 }
             });

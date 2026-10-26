@@ -99,6 +99,7 @@ public final class CommandeZombies {
         ok(s, t("stats.peuplement", "Peuplement : %s zombies poses ; monstres sur la carte : %s ; secteurs entames : %s",
                 Peuplement.suivis(), PlafondZombies.total(), ReservesZombies.entames()));
         ok(s, t("stats.chemins", "Chemins depuis le demarrage : %s calcules, %s partages, %s refuses (budget)", ch[0], ch[1], ch[2]));
+        ok(s, t("stats.directs", "Poursuites en ligne droite (sans calcul de chemin) : %s", ch[3]));
         ok(s, t("stats.bruit", "Bruits : %s, zombies attires : %s ; coups retenus (3 attaquants au plus) : %s",
                 st[0], st[1], JetonsAttaque.refuses()));
         ok(s, t("stats.tick", "Tick moyen : %s ms", String.format(Locale.ROOT, "%.1f", srv.getAverageTickTime())));

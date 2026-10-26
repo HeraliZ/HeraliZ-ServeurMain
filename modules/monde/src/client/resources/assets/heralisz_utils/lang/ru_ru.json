@@ -414,6 +414,7 @@
   "heralisz_utils.zombies.cmd.stats.titre": "Зомби HeraliZ: отслеживается %s (рядом %s, средне %s, далеко %s, спят %s)",
   "heralisz_utils.zombies.cmd.stats.peuplement": "Заселение: размещено зомби %s; монстров на карте: %s; затронуто секторов: %s",
   "heralisz_utils.zombies.cmd.stats.chemins": "Пути с запуска: рассчитано %s, общих %s, отклонено %s (лимит)",
+  "heralisz_utils.zombies.cmd.stats.directs": "Погони по прямой (без расчёта пути): %s",
   "heralisz_utils.zombies.cmd.stats.bruit": "Шумов: %s, привлечено зомби: %s; удержано ударов (не более 3 атакующих): %s",
   "heralisz_utils.zombies.cmd.stats.tick": "Средний тик: %s мс",
   "heralisz_utils.zombies.cmd.reserves": "Свободно / вместимость 9 секторов вокруг (по рядам, с севера на юг): %s",

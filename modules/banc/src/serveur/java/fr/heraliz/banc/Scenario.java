@@ -64,6 +64,8 @@ final class Scenario {
     private static long memMax;
     private static int entitesMax, piecesMax;
     private static long tirs, lancers, soins, fouilles, frappes, largages, morts, constructions;
+    private static long netPaquets, netBruts, netSortants, netNanos, netRates;
+    private static double netMbitMax;
     private static String profil;
 
     static void init() {
@@ -94,6 +96,9 @@ final class Scenario {
         memMax = 0;
         entitesMax = piecesMax = 0;
         tirs = lancers = soins = fouilles = frappes = largages = morts = constructions = 0;
+        netPaquets = netBruts = netSortants = netNanos = netRates = 0;
+        netMbitMax = 0;
+        Reseau.relever();
         profil = null;
         Bots.reglages.intense();
         Bots.stats.zero();
@@ -161,9 +166,16 @@ final class Scenario {
         String actions = String.format(Locale.ROOT, "%d tirs, %d lancers, %d soins, %d fouilles, %d frappes, %d largages, %d bases, %d morts",
                 st.tirs, st.lancers, st.soins, st.fouilles, st.frappes, st.largages, st.constructions, st.morts);
         st.zero();
+        long[] net = Reseau.relever();
+        netPaquets += net[0];
+        netBruts += net[1];
+        netSortants += net[2];
+        netNanos += net[3];
+        netRates += net[5];
+        netMbitMax = Math.max(netMbitMax, net[2] * 8 / 1_000_000.0 / 5.0);
         long s = (System.currentTimeMillis() - debutMs) / 1000;
-        CHRONO.add(String.format(Locale.ROOT, "%3d:%02d  %5d  %7.1f  %6.0f  %5d Mo  %8d  %7d  %s", s / 60, s % 60, Bots.vivants(), somme / 100, max, mem,
-                ent, pieces, actions));
+        CHRONO.add(String.format(Locale.ROOT, "%3d:%02d  %5d  %7.1f  %6.0f  %5d Mo  %8d  %7d  %s ; %s", s / 60, s % 60, Bots.vivants(), somme / 100, max, mem,
+                ent, pieces, actions, Reseau.ligne(net, 5.0, Bots.vivants())));
     }
 
     private static double centile(double[] tri, double p) {
@@ -193,7 +205,9 @@ final class Scenario {
         t.append("Date : ").append(LocalDateTime.now()).append('\n');
         t.append(String.format(Locale.ROOT, "Bots : %d, durée : %d min, rayon %d autour de %.0f %.0f %.0f (%s)%n", nombre, minutes, rayon,
                 centre.x, centre.y, centre.z, niveau.dimension().location()));
-        t.append("Bots sans réseau : la charge porte sur le serveur (IA, tirs, explosions, constructions, sauvegardes), pas sur la connexion.\n\n");
+        t.append(Reseau.actif
+                ? "Réseau simulé : chaque paquet envoyé aux bots est mis en forme et compressé comme pour un vrai joueur, puis compté (ni carte réseau, ni internet, ni paquets des joueurs vers le serveur).\n\n"
+                : "Bots sans réseau : la charge porte sur le serveur (IA, tirs, explosions, constructions, sauvegardes), pas sur la connexion.\n\n");
         t.append("== Résultat ==\n");
         t.append(String.format(Locale.ROOT, "Ticks : %d ; moyenne %.1f ms, médiane %.1f, 95 %% %.1f, 99 %% %.1f, max %.0f ms ; ticks de plus de 50 ms : %d (%.1f %%)%n",
                 nbTicks, moy, p50, p95, p99, max, lents, nbTicks == 0 ? 0 : 100.0 * lents / nbTicks));
@@ -202,6 +216,13 @@ final class Scenario {
         t.append(String.format(Locale.ROOT, "Mémoire au plus : %d Mo ; entités au plus : %d ; pièces de CRac au plus : %d%n", memMax, entitesMax, piecesMax));
         t.append(String.format(Locale.ROOT, "Actions : %d tirs, %d lancers (grenades, flashs, fumigènes), %d soins, %d fouilles, %d frappes aériennes, %d largages, %d bases bâties, %d morts%n",
                 tirs, lancers, soins, fouilles, frappes, largages, constructions, morts));
+        if (Reseau.actif) {
+            double sec = Math.max(1, (System.currentTimeMillis() - debutMs) / 1000.0);
+            t.append(String.format(Locale.ROOT,
+                    "Réseau : %.1f Mbit/s sortants en moyenne, %.1f au plus (sur 5 s), %.0f Ko/s par bot, %.0f paquets/s, compression %.0f %% des octets, calcul %.0f %% d'un cœur (%d fils), %d paquets ratés (fils en retard)%n",
+                    netSortants * 8 / 1_000_000.0 / sec, netMbitMax, nombre == 0 ? 0 : netSortants / 1024.0 / sec / nombre, netPaquets / sec,
+                    netBruts == 0 ? 100 : 100.0 * netSortants / netBruts, netNanos / 1e9 / sec * 100, Reseau.fils(), netRates));
+        }
         t.append("Nettoyage : bots retirés, leurs bases effacées, ").append(nettoyes).append(" entité(s) retirée(s) dans la zone.\n\n");
         t.append("== Toutes les 5 s ==\n");
         for (String l : CHRONO) t.append(l).append('\n');

@@ -414,6 +414,7 @@
   "heralisz_utils.zombies.cmd.stats.titre": "Zombies HeraliZ : %s suivis (proches %s, moyens %s, loin %s, endormis %s)",
   "heralisz_utils.zombies.cmd.stats.peuplement": "Peuplement : %s zombies poses ; monstres sur la carte : %s ; secteurs entames : %s",
   "heralisz_utils.zombies.cmd.stats.chemins": "Chemins depuis le demarrage : %s calcules, %s partages, %s refuses (budget)",
+  "heralisz_utils.zombies.cmd.stats.directs": "Poursuites en ligne droite (sans calcul de chemin) : %s",
   "heralisz_utils.zombies.cmd.stats.bruit": "Bruits : %s, zombies attires : %s ; coups retenus (3 attaquants au plus) : %s",
   "heralisz_utils.zombies.cmd.stats.tick": "Tick moyen : %s ms",
   "heralisz_utils.zombies.cmd.reserves": "Places disponibles / capacite des 9 secteurs autour (ligne par ligne, du nord au sud) : %s",

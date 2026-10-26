@@ -414,6 +414,7 @@
   "heralisz_utils.zombies.cmd.stats.titre": "HeraliZ zombies: %s tracked (near %s, mid %s, far %s, asleep %s)",
   "heralisz_utils.zombies.cmd.stats.peuplement": "Population: %s zombies placed; monsters on the map: %s; sectors in use: %s",
   "heralisz_utils.zombies.cmd.stats.chemins": "Paths since start: %s computed, %s shared, %s refused (budget)",
+  "heralisz_utils.zombies.cmd.stats.directs": "Straight-line chases (no pathfinding): %s",
   "heralisz_utils.zombies.cmd.stats.bruit": "Noises: %s, zombies drawn: %s; hits held back (3 attackers max): %s",
   "heralisz_utils.zombies.cmd.stats.tick": "Average tick: %s ms",
   "heralisz_utils.zombies.cmd.reserves": "Free places / capacity of the 9 sectors around (row by row, north to south): %s",

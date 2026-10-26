@@ -77,7 +77,11 @@ public final class Peuplement {
     private static final double COS_VUE = 0.3;
 
     private static final ReferenceOpenHashSet<ZombieSurvie> PEUPLES = new ReferenceOpenHashSet<>();
-    private static int poses, retires, refusVue, refusReserve;
+    private static int poses, retires, refusVue, refusReserve, servis, extractionsLues = -100000;
+    /** Zombies posés au plus par tick (26/10 : la création d'un zombie coûte quelques ms). */
+    private static final int POSES_PAR_TICK = 2;
+    /** Au-delà de tant de ms par tick, moins de zombies voulus autour de chaque joueur (jusqu'au quart à {@code tick_max_ms}). */
+    private static final double SEUIL_ADAPTATIF = 35.0;
     private static long prochainJournal;
 
     /** Zones VIP de la carte (HeraliZ Grades, heraliz_grades/zones_vip.json) : {minX, minZ, maxX, maxZ} avec la marge. */
@@ -109,20 +113,24 @@ public final class Peuplement {
         int t = srv.getTickCount();
         if (t % 200 == 3) lireVip(srv);
         int iv = ZombiesConfig.PEUPLEMENT_INTERVALLE.get() * 20;
-        if ((t + 13) % iv != 0) return;
+        // 26/10 : chaque joueur a son tick dans l'intervalle (avant : tous dans le même tick, d'où un pic d'apparitions
+        // toutes les 3 s avec beaucoup de joueurs) ; le retrait des zombies loin de tout joueur reste une fois par intervalle
+        boolean passage = (t + 13) % iv == 0;
         ServerLevel sl = srv.overworld();
         List<ServerPlayer> tous = sl.players();
         if (tous.isEmpty() && PEUPLES.isEmpty()) return;
         long now = System.currentTimeMillis();
-        retirerLoin(sl, tous, now);
+        if (passage) retirerLoin(sl, tous, now);
         if (!ZombiesConfig.PEUPLEMENT.get() || tous.isEmpty() || sl.getDifficulty() == Difficulty.PEACEFUL) return;
         if (ZombiesConfig.PEUPLEMENT_REGLE.get() && !sl.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) return;
         double msMax = ZombiesConfig.PEUPLEMENT_TICK_MAX.get();
         if (msMax > 0 && srv.getAverageTickTime() > msMax) return;
 
         List<ServerPlayer> peuplants = new ArrayList<>();
-        for (ServerPlayer p : tous) if (peuple(p)) peuplants.add(p);
+        int tour = t % iv;
+        for (ServerPlayer p : tous) if (Math.floorMod(p.getUUID().hashCode(), iv) == tour && peuple(p)) peuplants.add(p);
         if (peuplants.isEmpty()) return;
+        servis += peuplants.size();
         RandomSource rnd = sl.getRandom();
         for (int i = peuplants.size() - 1; i > 0; i--) {   // ordre tiré au hasard : personne n'est toujours servi en premier
             int j = rnd.nextInt(i + 1);
@@ -130,26 +138,43 @@ public final class Peuplement {
             peuplants.set(i, peuplants.get(j));
             peuplants.set(j, x);
         }
-        extractionsOuvertes(srv);
+        if (t - extractionsLues >= iv || t < extractionsLues) {
+            extractionsLues = t;
+            extractionsOuvertes(srv);
+        }
         double chance = ZombiesConfig.CHANCE_ESSAI.get() * (sl.isNight() ? ZombiesConfig.PEUPLEMENT_NUIT.get() : 1.0);
         int plafond = ZombiesConfig.PLAFOND_CARTE.get(), max = ZombiesConfig.PEUPLEMENT_MAX.get();
-        int maxAutour = ZombiesConfig.MAX_AUTOUR.get();
+        int maxAutour = maxAutour(srv.getAverageTickTime());
         double rayonAutour = ZombiesConfig.MAX_AUTOUR_RAYON.get();
+        int crees = 0;
         for (ServerPlayer p : peuplants) {
-            if (PEUPLES.size() >= max || (plafond > 0 && PlafondZombies.total() >= plafond)) break;
+            if (crees >= POSES_PAR_TICK || PEUPLES.size() >= max || (plafond > 0 && PlafondZombies.total() >= plafond)) break;
             double c = chance;
             if (pres(p.getX(), p.getZ(), ZombiesConfig.EXTRACTION_RAYON.get())) c *= ZombiesConfig.EXTRACTION_FACTEUR.get();
             if (rnd.nextDouble() >= c) continue;
             if (maxAutour > 0 && PlafondZombies.zombiesAutour(p.getX(), p.getZ(), rayonAutour) >= maxAutour) continue;
-            essayer(sl, p, tous, rnd, now);
+            if (essayer(sl, p, tous, rnd, now)) crees++;
         }
         if (now >= prochainJournal) {
             prochainJournal = now + 300_000L;
             HeraliszUtils.LOG.info("[zombies] peuplement : {} zombies suivis, {} joueurs servis, {} monstres sur la carte, {} poses et {} retires en 5 min"
                             + " ({} points refuses car vus, {} faute de place dans le secteur, {} secteurs entames)",
-                    PEUPLES.size(), peuplants.size(), PlafondZombies.total(), poses, retires, refusVue, refusReserve, ReservesZombies.entames());
+                    PEUPLES.size(), servis, PlafondZombies.total(), poses, retires, refusVue, refusReserve, ReservesZombies.entames());
             poses = retires = refusVue = refusReserve = 0;
+            servis = 0;
         }
+    }
+
+    /**
+     * Zombies au plus autour d'un joueur selon la charge (26/10) : {@code max_autour} jusqu'à {@value #SEUIL_ADAPTATIF} ms
+     * par tick, puis de moins en moins jusqu'au quart à {@code tick_max_ms} (au-delà, plus aucune apparition).
+     */
+    static int maxAutour(double msTick) {
+        int base = ZombiesConfig.MAX_AUTOUR.get();
+        double haut = Math.max(SEUIL_ADAPTATIF + 1, ZombiesConfig.PEUPLEMENT_TICK_MAX.get());
+        if (base <= 0 || msTick <= SEUIL_ADAPTATIF) return base;
+        double f = 1.0 - 0.75 * Math.min(1.0, (msTick - SEUIL_ADAPTATIF) / (haut - SEUIL_ADAPTATIF));
+        return Math.max(1, (int) Math.round(base * f));
     }
 
     /** Joueur autour duquel la carte se peuple. */
@@ -227,7 +252,7 @@ public final class Peuplement {
     // ------------------------------------------------------------------ apparition
 
     /** Un seul essai d'apparition pour ce joueur (au plus {@link #ESSAIS} colonnes regardées). */
-    private static void essayer(ServerLevel sl, ServerPlayer p, List<ServerPlayer> tous, RandomSource rnd, long now) {
+    private static boolean essayer(ServerLevel sl, ServerPlayer p, List<ServerPlayer> tous, RandomSource rnd, long now) {
         int dMin = ZombiesConfig.APPARITION_MIN.get(), dMax = Math.max(dMin, ZombiesConfig.APPARITION_MAX.get());
         double dj = ZombiesConfig.ECART_JOUEUR.get(), dj2 = dj * dj, horsVue = ZombiesConfig.PEUPLEMENT_HORS_VUE.get();
         double di = ZombiesConfig.ECART_INTERIEUR.get(), di2 = di * di;
@@ -255,7 +280,7 @@ public final class Peuplement {
                 continue;
             }
             ZombieSurvie z = ZombiesSurvie.ZOMBIE.get().create(sl);
-            if (z == null || !ReservesZombies.prendre(cle, now)) return;
+            if (z == null || !ReservesZombies.prendre(cle, now)) return false;
             ZonesZombies.Zone zone = ZonesZombies.ici(place.x, place.z);
             ZombiesSurvie.Tenue tenue = ZonesZombies.tenue(zone);
             z.tenue(tenue != null && rnd.nextDouble() < 0.85 ? tenue : SpawnZombiesServeur.tenueIci(place.x, place.z, rnd));
@@ -268,11 +293,12 @@ public final class Peuplement {
             if (sl.addFreshEntity(z)) {   // refusé par un plugin (région WorldGuard...) : la place revient
                 PlafondZombies.compter(place.x, place.z);
                 poses++;
-            } else {
-                ReservesZombies.rendre(place.x, place.z, now);
+                return true;
             }
-            return;
+            ReservesZombies.rendre(place.x, place.z, now);
+            return true;   // un zombie a été créé : compte dans la limite du tick
         }
+        return false;
     }
 
     /**
