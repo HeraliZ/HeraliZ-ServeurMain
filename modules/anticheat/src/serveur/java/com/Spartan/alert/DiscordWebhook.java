@@ -5,6 +5,7 @@ import com.Spartan.config.SpartanConfig;
 import com.Spartan.util.Text;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,56 +17,189 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
+import java.util.function.Supplier;
+import java.util.zip.GZIPOutputStream;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 
 /**
  * Envoi des alertes vers un salon Discord privé via webhook.
  *
- * L'envoi est 100 % asynchrone (sendAsync) : le thread principal du serveur
+ * L'envoi est 100 % asynchrone : chaque message entre dans une file bornée ({@value #FILE_MAX} au plus), vidée par un
+ * seul thread qui espace les envois d'environ 1 s par webhook et respecte les limites de Discord (HTTP 429 : attente
+ * retry_after, puis {@value #ESSAIS_429} nouveaux essais). Les sanctions et les bans / débans passent devant les autres
+ * messages ; file pleine : les plus anciens messages ordinaires sont abandonnés d'abord. Le thread principal du serveur
  * n'est jamais bloqué, même si Discord est lent ou injoignable.
  */
 public class DiscordWebhook {
     private static final HttpClient CLIENT = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10)).build();
     private static final int COLOR_RED = 0xE74C3C;
-    private static final int MAX_PER_MINUTE = 20; // le webhook Discord plafonne ~30/min
-    private static final ArrayDeque<Long> SENT = new ArrayDeque<>();
-    private static int dropped;
+    /** Messages en attente au plus (toutes priorités). */
+    private static final int FILE_MAX = 300;
+    /** Écart entre deux envois sur un même webhook. */
+    private static final long ECART_MS = 1000;
+    /** Nouveaux essais après un refus HTTP 429 (limite de Discord). */
+    private static final int ESSAIS_429 = 2;
+    /** Envoi sans fin depuis plus longtemps : son webhook est libéré (filet de sécurité). */
+    private static final long EN_COURS_MAX_MS = 360_000;
+    /** Pièce jointe plus grosse : compressée (gzip), sinon coupée (Discord refuse plus de 10 Mio). */
+    private static final int JOINT_MAX = 8 * 1024 * 1024;
 
-    /** Limiteur global partagé par toutes les alertes Discord. */
-    private static synchronized boolean allow() {
-        long now = System.currentTimeMillis();
-        while (!SENT.isEmpty() && now - SENT.peekFirst() > 60_000) {
-            SENT.pollFirst();
-        }
-        if (SENT.size() >= MAX_PER_MINUTE) {
-            if (++dropped % 20 == 1) {
-                Spartan.LOGGER.warn("[Spartan] Trop d'alertes Discord : {} ignorées (limite {}/min). "
-                        + "Consultez alerts.log.", dropped, MAX_PER_MINUTE);
+    /** Résultats de {@link #tester} quand rien n'a été posté (sinon : le code HTTP de Discord). */
+    public static final int NON_CONFIGURE = 0;
+    public static final int DESACTIVE = -1;
+    public static final int ECHEC = -2;
+
+    private static final ArrayDeque<Message> PRIORITAIRES = new ArrayDeque<>();
+    private static final ArrayDeque<Message> ORDINAIRES = new ArrayDeque<>();
+    /** Webhook → heure du prochain envoi permis. */
+    private static final Map<String, Long> PROCHAIN = new ConcurrentHashMap<>();
+    /** Webhook → début de l'envoi en cours (un seul à la fois par webhook). */
+    private static final Map<String, Long> EN_COURS = new ConcurrentHashMap<>();
+    private static ScheduledExecutorService envoyeur;
+    private static int perdus;
+    private static boolean annonce;
+
+    /** Message en attente : {@code envoi} le poste et rend sa fin ; {@code rappel} reçoit null s'il est abandonné. */
+    private record Message(String webhook, Supplier<CompletableFuture<?>> envoi,
+                           Consumer<HttpResponse<String>> rappel) {
+    }
+
+    /** Clé du webhook pour l'espacement des envois : son adresse sans paramètres. */
+    private static String webhook(String url) {
+        int q = url.indexOf('?');
+        return q < 0 ? url : url.substring(0, q);
+    }
+
+    /** Met un message dans la file, sans attendre : le thread d'envoi le poste dès que son webhook est libre. */
+    private static void mettreEnFile(String url, boolean prioritaire, Supplier<CompletableFuture<?>> envoi,
+                                     Consumer<HttpResponse<String>> rappel) {
+        Message m = new Message(webhook(url), envoi, rappel);
+        Message abandon = null;
+        synchronized (DiscordWebhook.class) {
+            if (PRIORITAIRES.size() + ORDINAIRES.size() >= FILE_MAX) {
+                if (!ORDINAIRES.isEmpty()) {
+                    abandon = ORDINAIRES.pollFirst();
+                } else if (prioritaire) {
+                    abandon = PRIORITAIRES.pollFirst();
+                } else {
+                    abandon = m;
+                }
+                if (++perdus % 20 == 1) {
+                    Spartan.LOGGER.warn("[Spartan] File d'envoi Discord pleine : {} message(s) abandonné(s) en tout "
+                            + "(les plus anciens d'abord). Consultez alerts.log.", perdus);
+                }
             }
-            return false;
+            if (abandon != m) {
+                (prioritaire ? PRIORITAIRES : ORDINAIRES).addLast(m);
+            }
+            if (envoyeur == null) {
+                envoyeur = Executors.newSingleThreadScheduledExecutor(r -> {
+                    Thread t = new Thread(r, "Spartan-discord");
+                    t.setDaemon(true);
+                    return t;
+                });
+                envoyeur.scheduleWithFixedDelay(DiscordWebhook::vider, 200, 200, TimeUnit.MILLISECONDS);
+            }
         }
-        SENT.addLast(now);
-        return true;
+        if (abandon != null) {
+            appeler(abandon.rappel(), null);
+        }
     }
 
-    private static void post(String url, JsonObject payload) {
-        post(url, payload, null, null);
+    /** Thread d'envoi, toutes les 200 ms : lance le plus ancien message de chaque webhook libre, prioritaires d'abord. */
+    private static void vider() {
+        try {
+            long now = System.currentTimeMillis();
+            EN_COURS.entrySet().removeIf(e -> {
+                if (now - e.getValue() <= EN_COURS_MAX_MS) {
+                    return false;
+                }
+                Spartan.LOGGER.warn("[Spartan] Envoi Discord sans réponse depuis {} s : webhook libéré.",
+                        EN_COURS_MAX_MS / 1000);
+                return true;
+            });
+            List<Message> lances = new ArrayList<>();
+            synchronized (DiscordWebhook.class) {
+                if (PRIORITAIRES.isEmpty() && ORDINAIRES.isEmpty()) {
+                    return;
+                }
+                choisir(PRIORITAIRES, now, lances);
+                choisir(ORDINAIRES, now, lances);
+            }
+            for (Message m : lances) {
+                lancer(m, now);
+            }
+        } catch (Throwable t) {
+            Spartan.LOGGER.warn("[Spartan] Envoi Discord : {}", t.toString());
+        }
     }
 
-    /** Envoi simple (cle null) ou dans le fil Discord de {@code cle} (voir FilsDiscord). */
-    private static void post(String url, JsonObject payload, String cle, String nomFil) {
-        if (!allow()) {
-            return;
+    private static void choisir(ArrayDeque<Message> file, long now, List<Message> lances) {
+        Iterator<Message> it = file.iterator();
+        while (it.hasNext()) {
+            Message m = it.next();
+            if (EN_COURS.containsKey(m.webhook()) || PROCHAIN.getOrDefault(m.webhook(), 0L) > now) {
+                continue;
+            }
+            it.remove();
+            EN_COURS.put(m.webhook(), now);
+            PROCHAIN.merge(m.webhook(), now + ECART_MS, Math::max);
+            lances.add(m);
         }
+    }
+
+    private static void lancer(Message m, long debut) {
+        CompletableFuture<?> f;
+        try {
+            f = m.envoi().get();
+        } catch (Exception e) {
+            echec(e);
+            appeler(m.rappel(), null);
+            f = CompletableFuture.completedFuture(null);
+        }
+        f.whenComplete((v, ex) -> {
+            EN_COURS.remove(m.webhook(), debut);
+            if (ex != null) {
+                echec(ex);
+            }
+        });
+    }
+
+    /** Envoi simple (cle null) ou dans le fil Discord de {@code cle} (voir FilsDiscord), par la file d'envoi. */
+    private static void post(String url, JsonObject payload, String cle, String nomFil, boolean prioritaire,
+                             Consumer<HttpResponse<String>> rappel) {
+        Consumer<HttpResponse<String>> une = unique(rappel);
         if (cle == null) {
-            requete(url, "", payload.toString(), "application/json", Duration.ofSeconds(10))
-                    .thenAccept(DiscordWebhook::refus)
-                    .exceptionally(DiscordWebhook::echec);
+            mettreEnFile(url, prioritaire, () -> requete(url, "", payload.toString(), "application/json",
+                    Duration.ofSeconds(10)).handle((r, ex) -> {
+                        if (ex != null) {
+                            echec(ex);
+                        } else {
+                            refus(r);
+                        }
+                        appeler(une, ex == null ? r : null);
+                        return null;
+                    }), une);
             return;
         }
-        FilsDiscord.envoyer(cle, nomFil, (params, nom) -> requete(url, params, avecFil(payload, nom).toString(),
-                "application/json", Duration.ofSeconds(10)));
+        mettreEnFile(url, prioritaire, () -> FilsDiscord.envoyer(cle, nomFil, (params, nom) -> requete(url, params,
+                avecFil(payload, nom).toString(), "application/json", Duration.ofSeconds(10)), une), une);
     }
 
     private static JsonObject avecFil(JsonObject payload, String nomFil) {
@@ -77,12 +211,12 @@ public class DiscordWebhook {
         return copie;
     }
 
-    private static java.util.concurrent.CompletableFuture<HttpResponse<String>> requete(String url, String params,
+    private static CompletableFuture<HttpResponse<String>> requete(String url, String params,
             String corps, String type, Duration delai) {
         return requete(url, params, HttpRequest.BodyPublishers.ofString(corps), type, delai);
     }
 
-    private static java.util.concurrent.CompletableFuture<HttpResponse<String>> requete(String url, String params,
+    private static CompletableFuture<HttpResponse<String>> requete(String url, String params,
             HttpRequest.BodyPublisher corps, String type, Duration delai) {
         String cible = url + (params.isEmpty() ? "" : (url.contains("?") ? "&" + params.substring(1) : params));
         HttpRequest req = HttpRequest.newBuilder(URI.create(cible))
@@ -90,7 +224,81 @@ public class DiscordWebhook {
                 .header("Content-Type", type)
                 .POST(corps)
                 .build();
-        return CLIENT.sendAsync(req, BodyHandlers.ofString());
+        return essayer(req, webhook(url), ESSAIS_429);
+    }
+
+    /** Envoi ; refus HTTP 429 (limite de Discord) : attente demandée, puis jusqu'à {@code restants} nouveaux essais. */
+    private static CompletableFuture<HttpResponse<String>> essayer(HttpRequest req, String webhook, int restants) {
+        return CLIENT.sendAsync(req, BodyHandlers.ofString()).thenCompose(r -> {
+            if (r.statusCode() != 429 || restants <= 0) {
+                return CompletableFuture.completedFuture(r);
+            }
+            long ms = attente429(r);
+            PROCHAIN.merge(webhook, System.currentTimeMillis() + ms + ECART_MS, Math::max);
+            Spartan.LOGGER.warn("[Spartan] Discord limite les envois (HTTP 429) : nouvel essai dans {} ms.", ms);
+            return CompletableFuture.supplyAsync(() -> req, CompletableFuture.delayedExecutor(ms, TimeUnit.MILLISECONDS))
+                    .thenCompose(x -> essayer(x, webhook, restants - 1));
+        });
+    }
+
+    /**
+     * Attente demandée par Discord après un 429 : la plus longue de l'en-tête Retry-After et du retry_after du JSON (en
+     * secondes ; une valeur énorme est lue en millisecondes, anciennes versions de l'API), entre 0,25 et 60 s.
+     */
+    private static long attente429(HttpResponse<String> r) {
+        double s = -1;
+        try {
+            s = Double.parseDouble(r.headers().firstValue("Retry-After").orElse("").trim());
+        } catch (Exception ignore) {
+            // pas d'en-tête lisible
+        }
+        try {
+            JsonObject o = JsonParser.parseString(r.body()).getAsJsonObject();
+            if (o.has("retry_after")) {
+                double v = o.get("retry_after").getAsDouble();
+                s = Math.max(s, v > 600 ? v / 1000 : v);
+            }
+        } catch (Exception ignore) {
+            // corps sans JSON
+        }
+        if (Double.isNaN(s) || s < 0) {
+            s = 2;
+        }
+        return Math.max(250L, Math.min(60_000L, (long) Math.ceil(s * 1000) + 100));
+    }
+
+    /** Code d'erreur de Discord dans le corps d'une réponse ({"code": 10003, …}) ; 0 s'il n'y en a pas. */
+    static int codeErreur(String corps) {
+        try {
+            JsonObject o = JsonParser.parseString(corps).getAsJsonObject();
+            return o.has("code") ? o.get("code").getAsInt() : 0;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /** Le rappel n'est appelé qu'une fois, même si plusieurs chemins (réponse, échec, abandon) y mènent. */
+    static Consumer<HttpResponse<String>> unique(Consumer<HttpResponse<String>> rappel) {
+        if (rappel == null) {
+            return null;
+        }
+        AtomicBoolean fait = new AtomicBoolean();
+        return r -> {
+            if (fait.compareAndSet(false, true)) {
+                rappel.accept(r);
+            }
+        };
+    }
+
+    static void appeler(Consumer<HttpResponse<String>> rappel, HttpResponse<String> r) {
+        if (rappel == null) {
+            return;
+        }
+        try {
+            rappel.accept(r);
+        } catch (Exception e) {
+            Spartan.LOGGER.warn("[Spartan] Réponse Discord mal traitée : {}", e.toString());
+        }
     }
 
     private static void refus(HttpResponse<String> resp) {
@@ -104,34 +312,64 @@ public class DiscordWebhook {
         return null;
     }
 
-    /** Envoi avec un fichier joint (multipart/form-data, format des webhooks Discord), dans le fil de {@code cle}. */
-    private static void postWithFile(String url, JsonObject payload, String fileName, byte[] file, String cle,
-                                     String nomFil) {
-        postWithFile(url, payload, fileName, file, cle, nomFil, null);
+    /** Pièce jointe prête à poster (nom, contenu, type). */
+    private record Joint(String nom, byte[] octets, String type) {
     }
 
-    private static void postWithFile(String url, JsonObject payload, String fileName, byte[] file, String cle,
-                                     String nomFil, java.util.function.Consumer<HttpResponse<String>> rappel) {
-        if (!allow()) {
-            return;
+    /**
+     * Pièce jointe de plus de 8 Mio : compressée en .gz, ou coupée avec une note si elle reste trop grosse (Discord
+     * refuse plus de 10 Mio). Appelé sur le thread d'envoi, jamais sur celui du serveur.
+     */
+    private static Joint joint(String fileName, byte[] file) {
+        String nom = fileName.replaceAll("[^A-Za-z0-9._-]", "_");
+        if (file.length <= JOINT_MAX) {
+            return new Joint(nom, file, nom.endsWith(".jpg") ? "image/jpeg" : "application/json");
         }
-        FilsDiscord.envoyer(cle, nomFil, (params, nom) -> {
-            String boundary = "spartan" + Long.toHexString(System.nanoTime())
-                    + Long.toHexString(Double.doubleToLongBits(Math.random()));
-            String safeName = fileName.replaceAll("[^A-Za-z0-9._-]", "_");
-            ByteArrayOutputStream body = new ByteArrayOutputStream(file.length + 4096);
-            Charset utf8 = StandardCharsets.UTF_8;
-            body.writeBytes(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"payload_json\"\r\n"
-                    + "Content-Type: application/json\r\n\r\n").getBytes(utf8));
-            body.writeBytes(avecFil(payload, nom).toString().getBytes(utf8));
-            body.writeBytes(("\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"files[0]\"; filename=\""
-                    + safeName + "\"\r\nContent-Type: " + (safeName.endsWith(".jpg") ? "image/jpeg" : "application/json")
-                    + "\r\n\r\n").getBytes(utf8));
-            body.writeBytes(file);
-            body.writeBytes(("\r\n--" + boundary + "--\r\n").getBytes(utf8));
-            return requete(url, params, HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()),
-                    "multipart/form-data; boundary=" + boundary, Duration.ofSeconds(20));
-        }, rappel);
+        try {
+            ByteArrayOutputStream gz = new ByteArrayOutputStream(file.length / 4);
+            try (GZIPOutputStream z = new GZIPOutputStream(gz)) {
+                z.write(file);
+            }
+            if (gz.size() <= JOINT_MAX) {
+                Spartan.LOGGER.info("[Spartan] Pièce jointe Discord {} compressée : {} -> {} octets.", nom, file.length,
+                        gz.size());
+                return new Joint(nom + ".gz", gz.toByteArray(), "application/gzip");
+            }
+        } catch (java.io.IOException e) {
+            // coupée ci-dessous
+        }
+        byte[] note = ("\n\n[Spartan] Fichier coupé à 8 Mio pour Discord (" + file.length + " octets en tout) : "
+                + "rapport complet sur le serveur, dans config/spartan/evidence/.\n").getBytes(StandardCharsets.UTF_8);
+        byte[] coupe = new byte[JOINT_MAX];
+        System.arraycopy(file, 0, coupe, 0, JOINT_MAX - note.length);
+        System.arraycopy(note, 0, coupe, JOINT_MAX - note.length, note.length);
+        Spartan.LOGGER.warn("[Spartan] Pièce jointe Discord {} trop grosse ({} octets) : coupée à 8 Mio.", nom,
+                file.length);
+        return new Joint(nom + ".coupe.txt", coupe, "text/plain; charset=utf-8");
+    }
+
+    /** Envoi avec un fichier joint (multipart/form-data, format des webhooks Discord), dans le fil de {@code cle}. */
+    private static void postWithFile(String url, JsonObject payload, String fileName, byte[] file, String cle,
+                                     String nomFil, Consumer<HttpResponse<String>> rappel) {
+        Consumer<HttpResponse<String>> une = unique(rappel);
+        mettreEnFile(url, false, () -> {
+            Joint j = joint(fileName, file);
+            return FilsDiscord.envoyer(cle, nomFil, (params, nom) -> {
+                String boundary = "spartan" + Long.toHexString(System.nanoTime())
+                        + Long.toHexString(Double.doubleToLongBits(Math.random()));
+                ByteArrayOutputStream body = new ByteArrayOutputStream(j.octets().length + 4096);
+                Charset utf8 = StandardCharsets.UTF_8;
+                body.writeBytes(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"payload_json\"\r\n"
+                        + "Content-Type: application/json\r\n\r\n").getBytes(utf8));
+                body.writeBytes(avecFil(payload, nom).toString().getBytes(utf8));
+                body.writeBytes(("\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"files[0]\"; filename=\""
+                        + j.nom() + "\"\r\nContent-Type: " + j.type() + "\r\n\r\n").getBytes(utf8));
+                body.writeBytes(j.octets());
+                body.writeBytes(("\r\n--" + boundary + "--\r\n").getBytes(utf8));
+                return requete(url, params, HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()),
+                        "multipart/form-data; boundary=" + boundary, Duration.ofSeconds(20));
+            }, une);
+        }, une);
     }
 
     /**
@@ -167,9 +405,9 @@ public class DiscordWebhook {
             payload.add("embeds", embeds);
             denyMentions(payload);
             if (file != null && fileName != null) {
-                postWithFile(url, payload, fileName, file, cleJoueur, nomJoueur);
+                postWithFile(url, payload, fileName, file, cleJoueur, nomJoueur, null);
             } else {
-                post(url, payload, cleJoueur, nomJoueur);
+                post(url, payload, cleJoueur, nomJoueur, false, null);
             }
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
@@ -247,13 +485,13 @@ public class DiscordWebhook {
             JsonObject payload = new JsonObject();
             payload.add("embeds", embeds);
             denyMentions(payload);
-            post(url, payload, cleJoueur, playerName);
+            post(url, payload, cleJoueur, playerName, false, null);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
         }
     }
 
-    /** Embed simple (bans, débans, infos staff). */
+    /** Embed simple (bans, débans, infos staff) ; bans et débans passent devant les alertes ordinaires. */
     public static void sendInfo(String title, String description, int color) {
         if (!SpartanConfig.DISCORD_ENABLED.get()) {
             return;
@@ -263,23 +501,29 @@ public class DiscordWebhook {
             return;
         }
         try {
-            JsonObject embed = new JsonObject();
-            embed.addProperty("title", Text.discord(title));
-            embed.addProperty("description", Text.discord(description));
-            embed.addProperty("color", color);
-            embed.addProperty("timestamp", Instant.now().toString());
-            JsonObject footer = new JsonObject();
-            footer.addProperty("text", "Spartan AntiCheat");
-            embed.add("footer", footer);
-            JsonArray embeds = new JsonArray();
-            embeds.add(embed);
-            JsonObject payload = new JsonObject();
-            payload.add("embeds", embeds);
-            denyMentions(payload);
-            post(url, payload, FilsDiscord.INFOS, FilsDiscord.NOM_INFOS);
+            boolean prioritaire = color == AlertManager.COLOR_BAN || color == AlertManager.COLOR_UNBAN;
+            post(url, embedSimple(title, description, color), FilsDiscord.INFOS, FilsDiscord.NOM_INFOS, prioritaire,
+                    null);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
         }
+    }
+
+    private static JsonObject embedSimple(String title, String description, int color) {
+        JsonObject embed = new JsonObject();
+        embed.addProperty("title", Text.discord(title));
+        embed.addProperty("description", Text.discord(description));
+        embed.addProperty("color", color);
+        embed.addProperty("timestamp", Instant.now().toString());
+        JsonObject footer = new JsonObject();
+        footer.addProperty("text", "Spartan AntiCheat");
+        embed.add("footer", footer);
+        JsonArray embeds = new JsonArray();
+        embeds.add(embed);
+        JsonObject payload = new JsonObject();
+        payload.add("embeds", embeds);
+        denyMentions(payload);
+        return payload;
     }
 
     /**
@@ -312,10 +556,65 @@ public class DiscordWebhook {
             JsonObject payload = new JsonObject();
             payload.add("embeds", embeds);
             denyMentions(payload);
-            post(url, payload);
+            post(url, payload, null, null, true, null);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord des sanctions invalide : {}", e.getMessage());
         }
+    }
+
+    /**
+     * /spartan discordtest : un message d'essai par le webhook des alertes (fil « Informations du staff ») et un par
+     * celui des sanctions. Chaque résultat arrive plus tard, hors du thread du serveur : code HTTP de Discord, ou
+     * {@link #NON_CONFIGURE}, {@link #DESACTIVE}, {@link #ECHEC}.
+     */
+    public static void tester(IntConsumer alertes, IntConsumer sanctions) {
+        essai(SpartanConfig.DISCORD_WEBHOOK, "Essai de l'anticheat",
+                "Message d'essai (/spartan discordtest) : les alertes du staff arrivent bien ici.",
+                FilsDiscord.INFOS, FilsDiscord.NOM_INFOS, alertes);
+        essai(SpartanConfig.DISCORD_SANCTIONS_WEBHOOK, "Essai",
+                "Message d'essai de l'anticheat : les sanctions seront annoncées dans ce salon.", null, null, sanctions);
+    }
+
+    private static void essai(ForgeConfigSpec.ConfigValue<String> reglage, String titre, String texte, String cle,
+                              String nomFil, IntConsumer resultat) {
+        if (!SpartanConfig.DISCORD_ENABLED.get()) {
+            resultat.accept(DESACTIVE);
+            return;
+        }
+        String url = SpartanConfig.secret(reglage);
+        if (url == null || url.isBlank()) {
+            resultat.accept(NON_CONFIGURE);
+            return;
+        }
+        try {
+            post(url, embedSimple(titre, texte, AlertManager.COLOR_INFO), cle, nomFil, true,
+                    r -> resultat.accept(r == null ? ECHEC : r.statusCode()));
+        } catch (Exception e) {
+            Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
+            resultat.accept(ECHEC);
+        }
+    }
+
+    /** « Alertes Discord : actif ; sanctions publiques : absent ». */
+    static String etat() {
+        boolean on = SpartanConfig.DISCORD_ENABLED.get();
+        boolean alertes = on && !SpartanConfig.secret(SpartanConfig.DISCORD_WEBHOOK).isBlank();
+        boolean sanctions = on && !SpartanConfig.secret(SpartanConfig.DISCORD_SANCTIONS_WEBHOOK).isBlank();
+        return "Alertes Discord : " + (alertes ? "actif" : "absent") + " ; sanctions publiques : "
+                + (sanctions ? "actif" : "absent");
+    }
+
+    /**
+     * Au démarrage (appelé par CapturesDiscord.demarrer) : une fois le serveur prêt, l'état des webhooks est écrit dans
+     * le journal, alerts.log et le fil « Informations du staff ».
+     */
+    static synchronized void demarrer() {
+        if (annonce) {
+            return;
+        }
+        annonce = true;
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStartedEvent.class,
+                e -> AlertManager.info(e.getServer(), "Discord", etat(), AlertManager.COLOR_INFO));
     }
 
     /** Défense en profondeur : Discord n'autorise aucune mention, même si une passait l'échappement. */

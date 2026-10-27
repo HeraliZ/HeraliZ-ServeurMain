@@ -19,6 +19,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 public final class PartieClient implements Partie {
     @Override
     public void init(IEventBus busMod) {
+        SecretsEnvironnement.effacer();
         ModMessages.RECEPTION_CLIENT.brancher(PartieClient::recevoir);
         // /spartan selfscan en solo (jar -complet) : le contrôle tourne dans ce jeu
         CollecteLocale.COLLECTEUR = (mods, jeu, thread, watch, probes, process, natives) -> ScanCollector.collect(

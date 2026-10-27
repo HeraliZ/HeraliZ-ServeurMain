@@ -69,6 +69,14 @@ public final class ScanAnalyzer {
         SENSITIVE.put("com.tacz.", "les armes TaCZ (recul, visée)");
     }
 
+    /** Bibliothèques natives d'un Java 17 normal (Windows et Linux), dossier bin / lib / server. */
+    private static final java.util.regex.Pattern JDK_NATIF = java.util.regex.Pattern.compile("^(lib)?(attach|awt|awt_xawt|awt_headless"
+            + "|dt_shmem|dt_socket|extnet|fontmanager|freetype|instrument|j2gss|j2pcsc|j2pkcs11|jaas|jabsysinfo|java"
+            + "|javaaccessbridge|javajpeg|jawt|jdwp|jimage|jli|jsig|jsound|jsvml|jvm|lcms|le|management|management_agent"
+            + "|management_ext|mlib_image|net|nio|prefs|rmi|saproc|sctp|simdsort|splashscreen|sspi_bridge|sunmscapi|syslookup"
+            + "|verify|w2k_lsa_auth|windowsaccessbridge-64|zip|msvcp140(_1|_2|_atomic_wait|_codecvt_ids)?|vcruntime140(_1)?"
+            + "|ucrtbase|concrt140)\\.(dll|so)$|^api-ms-win-[a-z0-9-]+\\.dll$|^(java|javaw)\\.exe$");
+
     /** Réglages venant de la config du serveur. */
     public record Settings(List<String> allowedAgents, List<String> blacklistedMods) {
     }
@@ -112,6 +120,10 @@ public final class ScanAnalyzer {
             if (!n.reason().isEmpty()) {
                 out.add(new Finding(Severity.SUSPECT, "dll:" + n.name().toLowerCase(Locale.ROOT),
                         "bibliothèque native chargée dans le jeu : " + n.name() + " (" + n.place() + ", " + n.reason() + ")"));
+            } else if (n.place().startsWith("%JAVA%") && !JDK_NATIF.matcher(n.name().toLowerCase(Locale.ROOT)).matches()) {
+                // une DLL glissée dans le dossier du Java du jeu (souvent celui du launcher) est chargée à la place de la vraie
+                out.add(new Finding(Severity.SUSPECT, "dll:jdk:" + n.name().toLowerCase(Locale.ROOT),
+                        "bibliothèque inconnue dans le Java du jeu : " + n.name() + " (" + n.place() + ") : DLL ajoutée au Java ?"));
             }
         }
         injection(r, out);
@@ -303,7 +315,7 @@ public final class ScanAnalyzer {
      * référence soit réapprise. Une config qui prendrait son nom pour viser autre chose
      * reste signalée.
      */
-    static boolean isSpartanOwn(ScanReport.MixinEntry m) {
+    public static boolean isSpartanOwn(ScanReport.MixinEntry m) {
         return "spartan.mixins.json".equals(m.name()) && "com.Spartan.mixin".equals(m.pkg())
                 && m.targetCount() <= OWN_MIXIN_TARGETS.size() && OWN_MIXIN_TARGETS.containsAll(m.targets());
     }

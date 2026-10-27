@@ -36,23 +36,37 @@ public final class OfficialProfile {
     private transient Set<String> hashes;
     private transient Set<String> mixinFingerprints;
     private transient Map<String, String> packages;
+    /**
+     * Modpack officiel d'avant la dernière mise à jour du fichier, encore accepté (27/10) : la mise en ligne change le
+     * pack des joueurs et ce fichier sans redémarrer le serveur ; un joueur lancé juste avant (ou juste après) ne doit
+     * pas être pris pour un tricheur. Un seul niveau (jamais de chaîne).
+     */
+    public transient OfficialProfile precedent;
 
     public boolean isEmpty() {
         return mods == null || mods.isEmpty();
     }
 
     public boolean knowsFile(String sha256) {
-        return index().hashes.contains(sha256);
+        return index().hashes.contains(sha256) || (precedent != null && precedent.index().hashes.contains(sha256));
     }
 
     /** Un jar officiel porte ce nom (pour distinguer « modifié » d'« inconnu »). */
     public boolean knowsName(String fileName) {
-        return mods.containsKey(fileName.toLowerCase(Locale.ROOT));
+        String n = fileName.toLowerCase(Locale.ROOT);
+        return mods.containsKey(n) || (precedent != null && precedent.mods.containsKey(n));
     }
 
     /** Empreinte hexadécimale d'une config Mixin (ScanReport.hex(mixinFingerprint(nom))). */
     public boolean knowsMixin(String fingerprintHex) {
-        return index().mixinFingerprints.contains(fingerprintHex);
+        return index().mixinFingerprints.contains(fingerprintHex)
+                || (precedent != null && precedent.index().mixinFingerprints.contains(fingerprintHex));
+    }
+
+    /** Empreinte de dossier mods officielle (celle-ci ou la précédente). */
+    public boolean knowsFolder(String sha256) {
+        return (!empreinteDossier.isEmpty() && empreinteDossier.equalsIgnoreCase(sha256))
+                || (precedent != null && !precedent.empreinteDossier.isEmpty() && precedent.empreinteDossier.equalsIgnoreCase(sha256));
     }
 
     /**
@@ -60,11 +74,16 @@ public final class OfficialProfile {
      * officielle avec un AUTRE paquet est une triche déguisée.
      */
     public String mixinPackage(String fingerprintHex) {
-        return index().packages.getOrDefault(fingerprintHex, "");
+        String p = index().packages.getOrDefault(fingerprintHex, "");
+        return p.isEmpty() && precedent != null ? precedent.index().packages.getOrDefault(fingerprintHex, "") : p;
     }
 
     public long[] mixinFingerprints() {
-        return index().mixinFingerprints.stream().mapToLong(h -> Long.parseUnsignedLong(h, 16)).toArray();
+        Set<String> tout = new HashSet<>(index().mixinFingerprints);
+        if (precedent != null) {
+            tout.addAll(precedent.index().mixinFingerprints);
+        }
+        return tout.stream().mapToLong(h -> Long.parseUnsignedLong(h, 16)).toArray();
     }
 
     private synchronized OfficialProfile index() {
@@ -89,7 +108,8 @@ public final class OfficialProfile {
         if (isEmpty()) {
             return "aucun modpack officiel (config/spartan/officiel.json absent)";
         }
-        return mods.size() + " jars officiels, " + mixins.size() + " configs Mixin connues (fabriqué le " + genere + ")";
+        return mods.size() + " jars officiels, " + mixins.size() + " configs Mixin connues (fabriqué le " + genere + ")"
+                + (precedent != null ? " ; le précédent (" + precedent.genere + ") reste accepté" : "");
     }
 
     /** @throws JsonParseException si le fichier est illisible */

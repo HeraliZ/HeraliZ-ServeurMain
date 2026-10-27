@@ -54,9 +54,11 @@ public final class NativeCollector {
             }
             Place place = classify(lib, env, javaHome, gameDir == null ? "" : gameDir.toAbsolutePath().toString(),
                     System.getProperty("user.home", ""), os.contains("win"));
-            if ("system".equals(place.category()) || "java".equals(place.category())) {
-                continue; // Windows / Linux et la JVM elle-même
+            if ("system".equals(place.category())) {
+                continue; // Windows / Linux
             }
+            // Java du jeu (souvent celui du launcher, dans un dossier où l'utilisateur écrit) : envoyé aussi, le serveur
+            // compare les noms aux bibliothèques d'un Java normal (une DLL glissée dans son dossier serait chargée par le jeu)
             String name = JvmCollector.fileName(lib);
             r.natives.add(new ScanReport.NativeEntry(name, place.shown(), reason(name, place, nativePatterns)));
         }

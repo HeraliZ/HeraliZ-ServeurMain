@@ -1,5 +1,6 @@
 package com.Spartan;
 
+import com.Spartan.alert.DiscordWebhook;
 import com.Spartan.check.Check;
 import com.Spartan.check.CheckManager;
 import com.Spartan.check.Mitigation;
@@ -19,6 +20,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -34,6 +36,7 @@ import net.minecraft.server.level.ServerPlayer;
  *   /spartan reference learn|add <joueur> | info | clear   client de référence (op 3)
  *   /spartan officiel        relit config/spartan/officiel.json (modpack officiel, op 3)
  *   /spartan selfscan        contrôle du serveur lui-même (diagnostic, op 3)
+ *   /spartan discordtest     un message d'essai par webhook Discord, code HTTP de chacun (op 3, console aussi)
  *   /spartan esp [joueur]    anti-ESP : coût et activité, ou ce que ce joueur reçoit des autres
  *   /spartan esp bench [n] [rayon]  coût de l'anti-ESP sur la carte avec n joueurs fictifs (op 3)
  */
@@ -175,7 +178,51 @@ public class SpartanCommand {
                     ScanManager.selfScan(src.getServer(), src::sendSystemMessage);
                     src.sendSuccess(() -> Component.literal("Autocontrôle du serveur lancé…").withStyle(ChatFormatting.AQUA), false);
                     return 1;
-                })));
+                }))
+                .then(Commands.literal("discordtest").requires(src -> src.hasPermission(3))
+                        .executes(ctx -> discordTest(ctx.getSource()))));
+    }
+
+    /** Un message d'essai par webhook Discord ; chaque résultat revient au demandeur dès que Discord a répondu. */
+    private static int discordTest(CommandSourceStack src) {
+        MinecraftServer server = src.getServer();
+        src.sendSuccess(() -> Component.translatableWithFallback("spartan.discordtest.envoi",
+                "Messages d'essai envoyés à Discord : réponse dans quelques secondes.").withStyle(ChatFormatting.AQUA), false);
+        DiscordWebhook.tester(
+                code -> server.execute(() -> src.sendSuccess(() -> Component.translatableWithFallback(
+                        "spartan.discordtest.alertes", "Webhook des alertes (fil « Informations du staff ») : %s",
+                        resultatDiscord(code)).withStyle(couleurDiscord(code)), false)),
+                code -> server.execute(() -> src.sendSuccess(() -> Component.translatableWithFallback(
+                        "spartan.discordtest.sanctions", "Webhook des sanctions publiques : %s",
+                        resultatDiscord(code)).withStyle(couleurDiscord(code)), false)));
+        return 1;
+    }
+
+    private static Component resultatDiscord(int code) {
+        if (code == DiscordWebhook.NON_CONFIGURE) {
+            return Component.translatableWithFallback("spartan.discordtest.non_configure", "non configuré");
+        }
+        if (code == DiscordWebhook.DESACTIVE) {
+            return Component.translatableWithFallback("spartan.discordtest.desactive",
+                    "désactivé (discordEnabled = false)");
+        }
+        if (code == DiscordWebhook.ECHEC) {
+            return Component.translatableWithFallback("spartan.discordtest.echec",
+                    "pas de réponse de Discord (voir le journal du serveur)");
+        }
+        if (code < 300) {
+            return Component.translatableWithFallback("spartan.discordtest.ok", "HTTP %s, message reçu par Discord",
+                    String.valueOf(code));
+        }
+        return Component.translatableWithFallback("spartan.discordtest.refus",
+                "HTTP %s, refusé par Discord (voir le journal du serveur)", String.valueOf(code));
+    }
+
+    private static ChatFormatting couleurDiscord(int code) {
+        if (code == DiscordWebhook.NON_CONFIGURE || code == DiscordWebhook.DESACTIVE) {
+            return ChatFormatting.YELLOW;
+        }
+        return code > 0 && code < 300 ? ChatFormatting.GREEN : ChatFormatting.RED;
     }
 
     private static int bench(CommandSourceStack src, int count, int radius) {

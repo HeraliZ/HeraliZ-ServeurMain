@@ -3,6 +3,7 @@ package com.Spartan.capture;
 import com.Spartan.Networks.CaptureRequestPacket;
 import com.Spartan.Networks.ModMessages;
 import com.Spartan.Spartan;
+import com.Spartan.alert.AlertManager;
 import com.Spartan.alert.DiscordWebhook;
 import com.Spartan.scan.ScanTransfer;
 import com.Spartan.util.Text;
@@ -169,6 +170,8 @@ public final class CaptureManager {
             }
         });
         Spartan.LOGGER.info("[Spartan] Capture d'écran de {} ({}) : screenshots/{}/{}", nom, raison, dossier, fichier);
+        AlertManager.journal("[Spartan] Capture d'écran de " + nom + " (" + raison + ") : screenshots/" + dossier + "/"
+                + fichier);
         Component msg = Component.literal("📷 ").withStyle(ChatFormatting.AQUA)
                 .append(Component.literal(nom).withStyle(ChatFormatting.YELLOW))
                 .append(Component.literal(" — capture d'écran reçue (" + raison + ") : screenshots/" + dossier + "/"

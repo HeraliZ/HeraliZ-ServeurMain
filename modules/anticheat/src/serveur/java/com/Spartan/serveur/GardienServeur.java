@@ -34,13 +34,17 @@ public final class GardienServeur {
     private static final class Etat {
         final long arrivee = System.currentTimeMillis();
         long dernier;
-        boolean absent, muet, silenceSignale, lectureSignalee;
+        boolean absent, muet, lectureSignalee;
+        /** Dernières alertes « Gardien muet » (rapport muet, silence) : redites toutes les 10 min, pas une seule fois. */
+        long muetA, silenceA;
         int jars;
         final Set<String> outils = new HashSet<>();
         final Set<String> invalides = new HashSet<>();
     }
 
     private static final Map<UUID, Etat> ETATS = new ConcurrentHashMap<>();
+    /** Une surveillance coupée pendant la partie est redite toutes les 10 min (avant : une fois, puis plus rien). */
+    private static final long RAPPEL_MS = 10 * 60_000L;
 
     public static void oublier(UUID id) {
         ETATS.remove(id);
@@ -61,7 +65,7 @@ public final class GardienServeur {
             return; // un jeu modifié qui inonderait le serveur de rapports
         }
         e.dernier = now;
-        e.silenceSignale = false;
+        e.silenceA = 0;
         String nom = player.getName().getString();
 
         if (detail.equals("absent")) {
@@ -80,8 +84,9 @@ public final class GardienServeur {
             return;
         }
         if (detail.startsWith("muet:")) {
-            if (!e.muet) {
+            if (!e.muet || now - e.muetA > RAPPEL_MS) {
                 e.muet = true;
+                e.muetA = now;
                 CheckManager.flag("Gardien muet", player, "le launcher ne surveille plus le jeu (" + court(detail.substring(5))
                         + ") : launcher fermé de force pendant la partie ?");
             }
@@ -158,12 +163,12 @@ public final class GardienServeur {
                 continue;
             }
             Etat e = ETATS.computeIfAbsent(p.getUUID(), u -> new Etat());
-            if (e.absent || e.silenceSignale) {
+            if (e.absent || (e.silenceA != 0 && now - e.silenceA < RAPPEL_MS)) {
                 continue;
             }
             long depuis = e.dernier == 0 ? e.arrivee + 30_000L : e.dernier;
             if (now - depuis > silence) {
-                e.silenceSignale = true;
+                e.silenceA = now;
                 CheckManager.flag("Gardien muet", p, e.dernier == 0
                         ? "aucun rapport du Gardien depuis la connexion (jeu modifié qui ne l'envoie pas ?)"
                         : "plus aucun rapport du Gardien depuis " + (now - e.dernier) / 1000 + " s (jeu ou launcher arrêté de force ?)");

@@ -24,10 +24,13 @@ import net.minecraftforge.fml.loading.FMLPaths;
  * Captures d'écran envoyées sur Discord : supprimées du salon au bout de 3 jours (demande du propriétaire, RGPD).
  * Chaque message est noté (numéro, fil, heure) dans config/spartan/captures_discord.json, puis effacé par le webhook
  * qui l'a posté (DELETE …/messages/{id}?thread_id={fil}). Vérifié au démarrage puis toutes les heures, hors du thread du
- * serveur. Message déjà effacé à la main : retiré de la liste.
+ * serveur. Message (ou fil) déjà effacé à la main : retiré de la liste. Tout autre refus (400, 403, webhook changé…) :
+ * gardé et réessayé toutes les heures, abandonné 7 jours après la date prévue (ligne dans le journal).
  */
 public final class CapturesDiscord {
     static final long DUREE_MS = 3L * 24 * 3600 * 1000;
+    /** Effacement toujours refusé si longtemps après la date prévue : abandonné. */
+    private static final long ABANDON_MS = 7L * 24 * 3600 * 1000;
     private static final HttpClient CLIENT = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     private static final List<JsonObject> LISTE = new ArrayList<>();
     private static boolean charge;
@@ -120,6 +123,7 @@ public final class CapturesDiscord {
         if (minuteur != null) {
             return;
         }
+        DiscordWebhook.demarrer(); // état des webhooks annoncé une fois le serveur prêt
         minuteur = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "Spartan-captures-discord");
             t.setDaemon(true);
@@ -145,9 +149,21 @@ public final class CapturesDiscord {
                     }
                 }
             }
+            if (vieux.isEmpty()) {
+                return;
+            }
             String base = url.contains("?") ? url.substring(0, url.indexOf('?')) : url;
+            String salon = salonDuWebhook(base);
             for (JsonObject e : vieux) {
-                if (effacer(base, e.get("id").getAsString(), e.get("fil").getAsString())) {
+                String id = e.get("id").getAsString();
+                int code = effacer(base, id, e.get("fil").getAsString(), salon);
+                boolean fini = code == EFFACE;
+                if (!fini && System.currentTimeMillis() - e.get("t").getAsLong() > DUREE_MS + ABANDON_MS) {
+                    Spartan.LOGGER.warn("[Spartan] Capture Discord {} abandonnée : toujours pas effacée 7 jours après la "
+                            + "date prévue (HTTP {}). À supprimer à la main dans le salon.", id, code);
+                    fini = true;
+                }
+                if (fini) {
                     synchronized (CapturesDiscord.class) {
                         LISTE.remove(e);
                         sauver();
@@ -162,21 +178,63 @@ public final class CapturesDiscord {
         }
     }
 
-    /** true : effacé ou déjà absent. */
-    private static boolean effacer(String base, String id, String fil) throws Exception {
-        int code = supprimer(base + "/messages/" + id + (fil.isEmpty() ? "" : "?thread_id=" + fil));
-        if (code == 400 && !fil.isEmpty()) {
-            code = supprimer(base + "/messages/" + id); // salon normal : pas de fil
+    /** Résultat de {@link #effacer} : effacé ou déjà absent (sinon : le code HTTP du refus). */
+    private static final int EFFACE = 0;
+
+    /**
+     * Efface un message. {@code salon} : salon du webhook (null si inconnu) ; un message noté dans ce salon n'est pas
+     * dans un fil. Seuls un effacement réussi et un « message / fil inconnu » de Discord comptent comme faits.
+     */
+    private static int effacer(String base, String id, String fil, String salon) throws Exception {
+        boolean dansFil = !fil.isEmpty() && !fil.equals(salon);
+        HttpResponse<String> r = supprimer(base + "/messages/" + id + (dansFil ? "?thread_id=" + fil : ""));
+        if (r.statusCode() == 400 && dansFil && salon == null) {
+            // Salon du webhook inconnu : peut-être un salon normal (pas de fil). Ici, seul un vrai effacement compte :
+            // un 404 sans fil ne prouve rien (le message est peut-être dans un fil).
+            HttpResponse<String> simple = supprimer(base + "/messages/" + id);
+            if (simple.statusCode() < 300) {
+                return EFFACE;
+            }
         }
-        if (code < 300 || code == 404) {
-            return true;
+        if (r.statusCode() < 300 || dejaAbsent(r, salon != null)) {
+            return EFFACE;
         }
-        Spartan.LOGGER.warn("[Spartan] Capture Discord {} pas effacée (HTTP {}), nouvel essai dans 1 h.", id, code);
-        return false;
+        Spartan.LOGGER.warn("[Spartan] Capture Discord {} pas effacée (HTTP {}), nouvel essai dans 1 h.", id,
+                r.statusCode());
+        return r.statusCode();
     }
 
-    private static int supprimer(String cible) throws Exception {
+    /**
+     * Déjà supprimé : 404 « Unknown Message » (10008) ou, si le salon du webhook est connu, « Unknown Channel » (10003 :
+     * fil supprimé avec le message ; sans le salon, ce pourrait être un faux fil).
+     */
+    private static boolean dejaAbsent(HttpResponse<String> r, boolean salonConnu) {
+        if (r.statusCode() != 404) {
+            return false;
+        }
+        int code = DiscordWebhook.codeErreur(r.body());
+        return code == 10008 || (salonConnu && code == 10003);
+    }
+
+    /** Salon où poste le webhook (lecture du webhook) : pour savoir si un message noté est dans un fil ; null si inconnu. */
+    private static String salonDuWebhook(String base) {
+        try {
+            HttpRequest req = HttpRequest.newBuilder(URI.create(base)).timeout(Duration.ofSeconds(15)).GET().build();
+            HttpResponse<String> r = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+            if (r.statusCode() < 300) {
+                JsonObject o = JsonParser.parseString(r.body()).getAsJsonObject();
+                return o.has("channel_id") ? o.get("channel_id").getAsString() : null;
+            }
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        } catch (Exception ignore) {
+            // inconnu : effacement prudent (voir effacer)
+        }
+        return null;
+    }
+
+    private static HttpResponse<String> supprimer(String cible) throws Exception {
         HttpRequest req = HttpRequest.newBuilder(URI.create(cible)).timeout(Duration.ofSeconds(15)).DELETE().build();
-        return CLIENT.send(req, HttpResponse.BodyHandlers.ofString()).statusCode();
+        return CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
     }
 }

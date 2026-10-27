@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
@@ -106,8 +107,13 @@ public final class ScanManager {
         return FMLPaths.CONFIGDIR.get().resolve("spartan").resolve("officiel.json");
     }
 
+    /** Date du fichier officiel lu (pour le relire tout seul quand la mise en ligne le change). */
+    private static long dateOfficiel = Long.MIN_VALUE;
+    private static long prochaineSurveillance;
+
     /** Démarrage du serveur : charge le modpack officiel et le client de référence. */
     public static void load() {
+        dateOfficiel = dateFichierOfficiel();
         official = loadOfficial();
         Path f = referenceFile();
         try {
@@ -123,9 +129,55 @@ public final class ScanManager {
 
     /** Relit config/spartan/officiel.json (après une mise à jour du modpack, sans redémarrer). */
     public static String reloadOfficial() {
-        official = loadOfficial();
-        setReference(reference);
+        dateOfficiel = dateFichierOfficiel();
+        remplacerOfficiel(loadOfficial());
         return official.summary();
+    }
+
+    /**
+     * Nouveau modpack officiel : l'ancien reste accepté (un joueur lancé juste avant la mise en ligne garde ses jars) ;
+     * un fichier vide ou illisible (envoi en cours) ne remplace jamais un modpack connu.
+     */
+    private static void remplacerOfficiel(OfficialProfile nouveau) {
+        if (nouveau.isEmpty() && !official.isEmpty()) {
+            Spartan.LOGGER.warn("[Spartan] officiel.json vide ou illisible : le modpack officiel connu est gardé.");
+            dateOfficiel = Long.MIN_VALUE; // relu au prochain passage
+            return;
+        }
+        OfficialProfile ancien = official;
+        ancien.precedent = null;
+        if (!ancien.isEmpty() && !ancien.genere.equals(nouveau.genere)) {
+            nouveau.precedent = ancien;
+        }
+        official = nouveau;
+        setReference(reference);
+    }
+
+    private static long dateFichierOfficiel() {
+        try {
+            return Files.getLastModifiedTime(officialFile()).toMillis();
+        } catch (IOException | RuntimeException e) {
+            return Long.MIN_VALUE;
+        }
+    }
+
+    /** Toutes les 10 s au plus : relit officiel.json s'il a changé (mise en ligne sans redémarrage). Fil serveur. */
+    private static void surveillerOfficiel() {
+        long now = Util.getMillis();
+        if (now < prochaineSurveillance) {
+            return;
+        }
+        prochaineSurveillance = now + 10_000L;
+        long d = dateFichierOfficiel();
+        if (d == Long.MIN_VALUE || d == dateOfficiel) {
+            return;
+        }
+        dateOfficiel = d;
+        String avant = official.genere;
+        remplacerOfficiel(loadOfficial());
+        if (!official.genere.equals(avant)) {
+            Spartan.LOGGER.info("[Spartan] Modpack officiel mis à jour sans redémarrage : {}", official.summary());
+        }
     }
 
     private static OfficialProfile loadOfficial() {
@@ -178,6 +230,7 @@ public final class ScanManager {
 
     /** À chaque tick du joueur. */
     public static void tick(ServerPlayer p) {
+        surveillerOfficiel();
         if (!SpartanConfig.SCAN_ENABLED.get()) {
             return;
         }
@@ -244,6 +297,11 @@ public final class ScanManager {
             Finding f = new Finding(Severity.SUSPECT, "noreply",
                     "le jeu ne répond plus aux contrôles d'intégrité (" + s.misses + " fois de suite) : scanner bloqué ou désactivé ?");
             alert(p, s, List.of(f), null, s.pendingTrigger, null);
+            if (s.scans == 0) {
+                // jamais un seul contrôle réussi depuis la connexion : on ne peut pas savoir ce que ce jeu a chargé
+                com.Spartan.integrity.ConformiteStricte.refuser(p, "aucune réponse aux contrôles d'intégrité depuis la connexion ("
+                        + s.misses + " demandes) : scanner bloqué ou retiré");
+            }
         }
         s.learn = Learn.NONE;
         reschedule(s);
@@ -328,6 +386,16 @@ public final class ScanManager {
         }
         if (asked) {
             notifyRequesters(s, summaryLine(s.name, verdict, findings, evidence));
+        }
+        // Jeu identique au jeu officiel, sinon refusé (règle d'accès) : seulement les écarts certains, après l'alerte
+        // (le staff a le rapport complet avec la preuve)
+        if (com.Spartan.integrity.ConformiteStricte.actif()) {
+            List<String> ecarts = com.Spartan.integrity.ConformiteStricte.ecarts(r, official,
+                    SpartanConfig.getAllowedJavaAgents(), SpartanConfig.getBlacklistedMods());
+            if (!ecarts.isEmpty()) {
+                com.Spartan.integrity.ConformiteStricte.refuser(p, String.join(" ; ", ecarts.subList(0, Math.min(4, ecarts.size())))
+                        + (ecarts.size() > 4 ? " (+" + (ecarts.size() - 4) + " autre(s))" : "") + " [" + trigger + "]");
+            }
         }
     }
 

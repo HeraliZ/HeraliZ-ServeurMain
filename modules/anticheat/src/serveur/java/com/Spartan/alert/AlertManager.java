@@ -7,6 +7,7 @@ import com.Spartan.util.Text;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import net.minecraft.ChatFormatting;
@@ -85,6 +86,13 @@ public class AlertManager {
         DiscordWebhook.sendInfo(title, message, color);
     }
 
+    /** Ligne de plus dans alerts.log (si alertLogFile), sans console ni Discord : captures d'écran… */
+    public static void journal(String line) {
+        if (SpartanConfig.ALERT_LOGFILE.get()) {
+            writeLog(line);
+        }
+    }
+
     private static final long MAX_LOG_BYTES = 10L * 1024 * 1024; // 10 Mo, puis rotation
 
     private static void writeLog(String line) {
@@ -101,7 +109,7 @@ public class AlertManager {
                     old.delete();
                     log.renameTo(old);
                 }
-                try (FileWriter w = new FileWriter(log, true)) {
+                try (FileWriter w = new FileWriter(log, StandardCharsets.UTF_8, true)) {
                     w.write(stamped);
                 }
             } catch (IOException e) {

@@ -69,6 +69,13 @@ public final class ChallengeManager {
     public static void onBuild(ServerPlayer p, String clientBuild) {
         State s = STATES.computeIfAbsent(p.getUUID(), k -> new State());
         String mine = Fingerprint.buildId();
+        if (SpartanConfig.CHECK_BUILD.get() && !mine.equals(clientBuild) && ConformiteStricte.actif()) {
+            // Mode strict : un Spartan d'une autre version ne peut pas répondre aux défis (jar modifié, ou mise à jour pas
+            // encore faite d'un côté) : refusé avec la consigne de relancer, jamais laissé sans défi.
+            ConformiteStricte.refuser(p, "Spartan d'une autre version que le serveur (client " + shortId(clientBuild)
+                    + ", serveur " + shortId(mine) + ") : jar modifié ou pas à jour", ConformiteStricte.consigneVersion());
+            return;
+        }
         if (SpartanConfig.CHECK_BUILD.get() && !mine.equals(clientBuild) && SpartanConfig.SILENT_CLIENT.get()) {
             // Détection silencieuse : on le laisse jouer, le staff est prévenu (jar modifié ou pas à jour).
             CheckManager.flag("Integrity", p, "build de Spartan différent du serveur (client " + shortId(clientBuild)
@@ -95,7 +102,8 @@ public final class ChallengeManager {
                             + ") : buildCheck=false, il n'est pas soumis aux défis d'intégrité.",
                     AlertManager.COLOR_INFO);
         }
-        s.nextAt = Util.getMillis() + randomMillis(10, 30); // premier défi rapidement
+        // premier défi rapidement (mode strict : dans les premières secondes, un jeu modifié ne joue pas longtemps)
+        s.nextAt = Util.getMillis() + (ConformiteStricte.actif() ? randomMillis(2, 6) : randomMillis(10, 30));
     }
 
     /** Appelé à chaque tick serveur pour chaque joueur. */
@@ -125,6 +133,11 @@ public final class ChallengeManager {
                 s.timeouts++;
                 // Un seul dépassement peut être un gel du client (sa réponse tardive, si
                 // elle est juste, l'efface) : on ne signale qu'au 2e de suite.
+                if (s.timeouts >= 3) {
+                    // trois défis de suite sans réponse, chacun prolongé une fois : pas un simple gel du jeu
+                    ConformiteStricte.refuser(p, "aucune réponse au défi d'intégrité (" + s.timeouts
+                            + " fois de suite) : Spartan du jeu bloqué ou retiré");
+                }
                 if (s.timeouts >= 2) {
                     CheckManager.flag("Integrity", p, "aucune réponse au défi d'intégrité (" + s.timeouts
                             + " fois de suite) : mod client bloqué ou désactivé ?");
@@ -196,6 +209,7 @@ public final class ChallengeManager {
     private static void fail(ServerPlayer p, State s) {
         s.failed++;
         CheckManager.flag("Integrity", p, "réponse fausse au défi d'intégrité : mod client modifié");
+        ConformiteStricte.refuser(p, "réponse fausse au défi d'intégrité : Spartan du jeu modifié");
         if (SpartanConfig.mayKickForClientSignal()) {
             p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.non_conforme", "[Spartan] Client non conforme."));
         }

@@ -66,6 +66,12 @@ public final class LauncherGate {
         if (tokenProblem != null && SpartanConfig.LAUNCHER_TOKEN_REQUIRED.get()) {
             AlertManager.info(p.server, "Launcher", name + " refusé : " + tokenProblem, AlertManager.COLOR_INFO);
             refuser(p);
+            return;
+        }
+        // Mode strict : un dossier mods qui n'est ni vide (launcher) ni le dossier officiel est refusé. Jamais une empreinte
+        // illisible (antivirus) : rien de certain.
+        if (hashProblem != null && hashProblem.startsWith("dossier mods")) {
+            ConformiteStricte.refuser(p, hashProblem);
         }
     }
 
@@ -92,8 +98,8 @@ public final class LauncherGate {
         // (mod ajouté, retiré, modifié ou renommé : le contrôle d'intégrité dira lequel).
         String officiel = ScanManager.official().empreinteDossier;
         // Dossier mods vide : mods chargés par le launcher depuis son propre dossier (Helios) ; jugés un par un par le
-        // contrôle d'intégrité.
-        if (allowed.isEmpty() && officiel != null && !officiel.isEmpty() && !officiel.equalsIgnoreCase(hash)
+        // contrôle d'intégrité. Le modpack d'avant la dernière mise en ligne reste accepté.
+        if (allowed.isEmpty() && officiel != null && !officiel.isEmpty() && !ScanManager.official().knowsFolder(hash)
                 && !SHA256_VIDE.equals(hash)) {
             return "dossier mods différent du modpack officiel (mod ajouté, retiré ou modifié)";
         }

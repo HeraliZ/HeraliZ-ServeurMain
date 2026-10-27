@@ -64,6 +64,10 @@ public final class ReceptionServeur {
             if (p instanceof TestPacket || p instanceof ModsPacket || p instanceof ResourcePackPacket || p instanceof BuildPacket
                     || (p instanceof ClientReportPacket c1 && !c1.type().equals("touche"))) {
                 java.util.List<Object> l = ATTENTE.computeIfAbsent(player.getUUID(), u -> new java.util.ArrayList<>());
+                // rapport du Gardien : toutes les 15 s, seul le dernier compte (sinon il remplissait la file en 4 min)
+                if (p instanceof ClientReportPacket c2 && c2.type().equals("gardien")) {
+                    l.removeIf(o -> o instanceof ClientReportPacket c3 && c3.type().equals("gardien"));
+                }
                 if (l.size() < 16) l.add(p);
             }
             return;

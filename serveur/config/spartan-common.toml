@@ -114,7 +114,7 @@
 [scan]
 	#Premier contrôle après la connexion : délai minimum (secondes).
 	#Range: 3 ~ 600
-	firstScanMinSeconds = 10
+	firstScanMinSeconds = 3
 	#Contrôles suivants : intervalle aléatoire minimum (secondes).
 	#Range: 30 ~ 86400
 	intervalMinSeconds = 90
@@ -131,7 +131,7 @@
 	classProbes = ["baritone.api.BaritoneAPI", "net.wurstclient.WurstClient", "meteordevelopment.meteorclient.MeteorClient", "meteordevelopment.orbit.EventBus", "net.ccbluex.liquidbounce.LiquidBounce", "pro.mikey.xray.XRay"]
 	#Premier contrôle après la connexion : délai maximum (secondes).
 	#Range: 3 ~ 600
-	firstScanMaxSeconds = 30
+	firstScanMaxSeconds = 8
 	#Contrôles suivants : intervalle aléatoire maximum (secondes).
 	#Range: 30 ~ 86400
 	intervalMaxSeconds = 240
@@ -243,6 +243,14 @@
 	#Vérifie que le mod du joueur est EXACTEMENT le même build que celui du serveur.
 	#Sinon : expulsion avec consigne de relancer le launcher (pas une alerte de triche).
 	buildCheck = true
+	#Jeu IDENTIQUE au jeu officiel, sinon connexion REFUSÉE (règle d'accès, comme le jeton du launcher, même
+	#en détection silencieuse). Seuls les écarts CERTAINS refusent : jar en plus, modifié ou manquant, config
+	#Mixin inconnue, mod chargé hors du launcher, agent Java / débogueur / options d'injection, jeu sans les
+	#protections du launcher, Spartan d'une autre version ou modifié (défi faux), infos ou contrôles jamais
+	#envoyés, classe d'un cheat connu. Les indices devinés (overlays, threads, DLL, programmes ouverts) restent
+	#des ALERTES. Le joueur lit seulement « relance le jeu depuis le launcher » ; le staff reçoit la raison.
+	#false : tout redevient une alerte (en cas de refus à tort, à couper ici sans redémarrer).
+	strictOfficial = true
 	#Le client signale des traces d'injection (agents Java, threads anonymes).
 	#Best-effort : un client modifié peut ne rien signaler.
 	clientIntegrity = true

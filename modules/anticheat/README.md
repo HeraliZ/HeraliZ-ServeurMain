@@ -26,6 +26,23 @@ Anticheat de HeraliZ.
 Chaque muraille franchie en laisse d'autres derrière ; et quand une détection
 tombe, l'avantage est annulé sur-le-champ.
 
+**Jeu identique au jeu officiel, sinon refusé (2.9.0, 27/10, `integrity.strictOfficial = true`)** : règle d'accès,
+comme le jeton du launcher. Seuls les écarts CERTAINS refusent la connexion (`integrity/ConformiteStricte`) : jar en
+plus, modifié ou manquant (comparés à `officiel.json`, le modpack d'avant la dernière mise en ligne restant accepté),
+config Mixin inconnue ou déguisée, mod chargé par une autre voie que le launcher, agent Java / débogueur /
+`-Xbootclasspath` / options `--fml.*` inconnues, jeu sans `DisableAttachMechanism`, mod interdit, classe d'un cheat
+connu, Spartan modifié en mémoire, Spartan d'une autre version, défi faux (ou 3 sans réponse), infos du jeu jamais
+envoyées, aucun contrôle d'intégrité réussi depuis la connexion, dossier mods ni vide ni officiel. Le joueur lit « relance
+le jeu depuis le launcher » ; le staff reçoit la raison (fil du joueur et « Informations du staff »). Les indices devinés
+(overlays, threads, DLL, programmes ouverts, code d'origine inconnue) restent des alertes. Refus à tort : passer
+`strictOfficial = false` (relu sans redémarrer). `officiel.json` est relu tout seul quand la mise en ligne le change.
+Tests : `ConformiteStricteTest`. Essayé le 27/10 sur un serveur de test avec un vrai jeu : jeu officiel accepté (défi
+réussi, contrôle propre), jeu avec un jar en plus refusé en 3 s.
+
+**Alertes Discord (2.9.0)** : file d'envoi de 300 messages (sanctions et bans d'abord), 1 message par seconde et par
+webhook, attente demandée par Discord (HTTP 429) respectée ; une erreur de Discord ne coupe plus les fils par joueur ;
+`/spartan discordtest` (op 3 ou console) envoie un message d'essai sur chaque webhook et donne la réponse de Discord.
+
 **Détection silencieuse (par défaut) :** tout ce qui vient du jeu du joueur
 (murailles 1 à 4, 7, 8) ne fait JAMAIS d'expulsion ni de ban automatique, et rien
 n'est affiché au joueur. Le staff reçoit sur Discord le pseudo, les indices et le

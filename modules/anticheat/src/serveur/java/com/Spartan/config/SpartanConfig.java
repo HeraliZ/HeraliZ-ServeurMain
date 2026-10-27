@@ -82,6 +82,7 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.BooleanValue REQUIRE_HARDENED_JVM;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ALLOWED_JAVA_AGENTS;
     public static final ForgeConfigSpec.BooleanValue CHECK_BUILD;
+    public static final ForgeConfigSpec.BooleanValue STRICT_OFFICIAL;
     public static final ForgeConfigSpec.BooleanValue CHECK_CHALLENGE;
     public static final ForgeConfigSpec.IntValue CHALLENGE_MIN_SECONDS;
     public static final ForgeConfigSpec.IntValue CHALLENGE_MAX_SECONDS;
@@ -358,6 +359,15 @@ public class SpartanConfig {
                 "Vérifie que le mod du joueur est EXACTEMENT le même build que celui du serveur.",
                 "Sinon : expulsion avec consigne de relancer le launcher (pas une alerte de triche).")
                 .define("buildCheck", true);
+        STRICT_OFFICIAL = b.comment(
+                "Jeu IDENTIQUE au jeu officiel, sinon connexion REFUSÉE (règle d'accès, comme le jeton du launcher, même",
+                "en détection silencieuse). Seuls les écarts CERTAINS refusent : jar en plus, modifié ou manquant, config",
+                "Mixin inconnue, mod chargé hors du launcher, agent Java / débogueur / options d'injection, jeu sans les",
+                "protections du launcher, Spartan d'une autre version ou modifié (défi faux), infos ou contrôles jamais",
+                "envoyés, classe d'un cheat connu. Les indices devinés (overlays, threads, DLL, programmes ouverts) restent",
+                "des ALERTES. Le joueur lit seulement « relance le jeu depuis le launcher » ; le staff reçoit la raison.",
+                "false : tout redevient une alerte (en cas de refus à tort, à couper ici sans redémarrer).")
+                .define("strictOfficial", true);
         CHECK_CHALLENGE = b.comment(
                 "Défi d'intégrité tournant : à intervalle aléatoire, le client doit prouver que son mod",
                 "n'a pas été modifié. Chaque défi est différent (nombre, variante et classes aléatoires).")
