@@ -27,13 +27,13 @@ final class VerificationStricte
 
     public static function geree(Site $site): bool
     {
-        return isset(self::API[Site::hostFromUrl((string) $site->url) ?? '']);
+        return isset(self::API[Garde::hote((string) $site->url) ?? '']);
     }
 
     /** Le site de vote a vu un vote récent depuis cette adresse IP (adresse brute de la requête, pas le bloc /64). */
     public static function aVote(Site $site, string $ip): bool
     {
-        $api = self::API[Site::hostFromUrl((string) $site->url) ?? ''] ?? null;
+        $api = self::API[Garde::hote((string) $site->url) ?? ''] ?? null;
         $cle = trim((string) $site->verification_key);
         if ($api === null || $cle === '' || $ip === '') {
             return false;

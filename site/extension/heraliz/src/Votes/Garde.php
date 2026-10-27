@@ -87,7 +87,7 @@ final class Garde
         }
 
         try {
-            $host = Site::hostFromUrl((string) $site->url);
+            $host = self::hote((string) $site->url);
             $verif = $host === null ? null : app(VoteChecker::class)->getVerificationForSite($host);
             if ($verif === null) {
                 return false;
@@ -102,6 +102,21 @@ final class Garde
         } catch (Throwable) {
             return false;
         }
+    }
+
+    /**
+     * Nom du site de vote lu dans son adresse, sans « www. » (« top-serveurs.net »), comme l'extension Vote le compare.
+     * Écrit ici : Site::hostFromUrl n'existe que depuis l'extension Vote 1.2.12, plus récente que celle du site.
+     */
+    public static function hote(string $url): ?string
+    {
+        $hote = parse_url($url, PHP_URL_HOST);
+        if (! is_string($hote) || $hote === '') {
+            return null;
+        }
+        $hote = strtolower($hote);
+
+        return str_starts_with($hote, 'www.') ? substr($hote, 4) : $hote;
     }
 
     /** Durée d'un vote sur ce site, en minutes (une fois par jour pour un site à heure fixe). */

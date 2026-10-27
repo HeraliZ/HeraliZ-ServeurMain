@@ -461,7 +461,9 @@ function votesProteges(): void
     $jeton = trim((string) getenv('HERALIZ_TOPSERVEURS_TOKEN'));
     $Garde = \Azuriom\Plugin\Heraliz\Votes\Garde::class;
     foreach ($Site::all() as $site) {
-        $hote = $Site::hostFromUrl((string) $site->url);
+        // nom du site de vote sans « www. » (Site::hostFromUrl n'existe que depuis l'extension Vote 1.2.12)
+        $hote = parse_url((string) $site->url, PHP_URL_HOST);
+        $hote = is_string($hote) && $hote !== '' ? preg_replace('/^www\./', '', strtolower($hote)) : null;
         $maj = [];
         if ($hote === 'top-serveurs.net' && $jeton !== '' && $site->verification_key !== $jeton) {
             $maj['verification_key'] = $jeton;
