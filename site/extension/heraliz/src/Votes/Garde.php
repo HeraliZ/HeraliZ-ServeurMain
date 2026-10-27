@@ -83,7 +83,7 @@ final class Garde
             return false;
         }
         if (VerificationStricte::geree($site)) {
-            return trim((string) $site->verification_key) !== '';
+            return trim((string) $site->verification_key) !== '' && ! VerificationStricte::jetonRefuse($site);
         }
 
         try {

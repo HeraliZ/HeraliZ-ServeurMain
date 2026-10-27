@@ -50,13 +50,47 @@ final class VerificationStricte
                 return true;
             }
             if ($reponse->json('error') === 'ServerNotFound') {
-                self::jetonRefuse($site);
+                self::noterJetonRefuse($site);
 
                 return false;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Le jeton enregistré a été refusé par le site de vote dans l'heure : le site passe à la protection par la page
+     * (Garde::verifiable faux, clic « Voter » exigé) au lieu de laisser les joueurs attendre une récompense qui ne viendra
+     * jamais.
+     */
+    public static function jetonRefuse(Site $site): bool
+    {
+        return Cache::has('heraliz-vote-jeton-refuse:'.$site->id);
+    }
+
+    /**
+     * Jeton accepté par le site de vote (une question pour une adresse de test) : true, false s'il est refusé, null si le
+     * site de vote ne répond pas. Pour le résumé de la mise à jour du site (reglages.php).
+     */
+    public static function jetonValide(Site $site): ?bool
+    {
+        $api = self::API[Garde::hote((string) $site->url) ?? ''] ?? null;
+        $cle = trim((string) $site->verification_key);
+        if ($api === null || $cle === '') {
+            return false;
+        }
+        try {
+            $reponse = Http::acceptJson()->timeout(8)
+                ->get(str_replace(['{cle}', '{ip}'], [rawurlencode($cle), '192.0.2.1'], $api));
+        } catch (Throwable) {
+            return null;
+        }
+        if ($reponse->json('error') === 'ServerNotFound') {
+            return false;
+        }
+
+        return is_numeric($reponse->json('code')) ? true : null;
     }
 
     /** L'adresse de la requête et celles qu'ipv6-adapter.com lui a liées (même réglage que l'extension Vote). */
@@ -82,15 +116,19 @@ final class VerificationStricte
         return array_values(array_unique(array_merge([$ip], array_slice($liees, 0, 4))));
     }
 
-    /** Jeton refusé par Top-Serveurs (« aucun serveur associé ») : aucun vote ne passe ; le staff est prévenu une fois par heure. */
-    private static function jetonRefuse(Site $site): void
+    /**
+     * Jeton refusé par Top-Serveurs (« aucun serveur associé ») : protection par la page pendant une heure (revue à
+     * chaque refus) ; le staff est prévenu une fois par heure.
+     */
+    private static function noterJetonRefuse(Site $site): void
     {
+        Cache::put('heraliz-vote-jeton-refuse:'.$site->id, true, 3600);
         if (! Cache::add('heraliz-vote-jeton:'.$site->id, true, 3600)) {
             return;
         }
-        Log::warning('HeraliZ votes : jeton refusé par '.$site->name.' : aucun vote de ce site n’est récompensé');
-        Garde::prevenirStaff('⚠️ Votes : '.$site->name.' refuse le jeton du serveur (« aucun serveur associé à ce jeton »). '
-            .'Plus aucun vote de ce site n’est récompensé : vérifier le secret GitHub TOPSERVEURS_TOKEN (ou la clé de '
-            .'vérification dans l’administration → Votes → Sites).');
+        Log::warning('HeraliZ votes : jeton refusé par '.$site->name.' : protection par la page à la place');
+        Garde::prevenirStaff('⚠️ Votes : '.$site->name.' refuse le jeton enregistré (« aucun serveur associé à ce jeton »). '
+            .'Ses votes passent à la protection par la page (clic « Voter » + anti-robot). Pour l’arrêter : corriger la clé '
+            .'de vérification dans l’administration → Votes → Sites → '.$site->name.', ou la vider.');
     }
 }
