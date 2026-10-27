@@ -114,6 +114,15 @@ public final class ConformiteStricte {
         for (String c : r.classHits) {
             out.add("classe d'un cheat connu présente : " + c);
         }
+        // Code aux noms de classes impossibles en Java compilé (caractères de contrôle) : chargé en mémoire sans fichier,
+        // trace laissée par le client de triche Doomsday le 11/10. Aucun mod honnête n'en a.
+        for (ScanReport.OriginEntry o : r.origins) {
+            if (com.Spartan.scan.ScanAnalyzer.nomImpossible(o.key())
+                    || o.classes().stream().anyMatch(com.Spartan.scan.ScanAnalyzer::nomImpossible)) {
+                out.add("code brouillé chargé en mémoire sans fichier (" + com.Spartan.scan.ScanAnalyzer.lisible(o.key()) + ")");
+                break;
+            }
+        }
         // Mods vus par Forge : fournisseur inconnu, mod interdit
         Set<String> nomsCharges = new HashSet<>();
         for (String lf : r.loadedFiles) {

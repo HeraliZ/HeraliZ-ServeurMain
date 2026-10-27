@@ -467,7 +467,7 @@ public final class ScanAnalyzer {
      * Nom de classe qu'aucun compilateur Java ne produit : caractères de contrôle (C0 / C1). Les brouilleurs de clients
      * de triche s'en servent pour rendre leur code illisible ; la JVM les accepte quand la classe est chargée à la main.
      */
-    static boolean nomImpossible(String name) {
+    public static boolean nomImpossible(String name) {
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
             if (c < 0x20 || (c >= 0x7F && c <= 0x9F)) {
@@ -478,7 +478,7 @@ public final class ScanAnalyzer {
     }
 
     /** Nom lisible dans une alerte : les caractères de contrôle deviennent \xNN. */
-    static String lisible(String name) {
+    public static String lisible(String name) {
         StringBuilder sb = new StringBuilder(name.length() + 8);
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);

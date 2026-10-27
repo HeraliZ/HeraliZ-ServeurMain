@@ -18,7 +18,8 @@ const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { chargerClePublique, verifierPack } = require('./signature')
 const { CompteSite, erreurDiscord } = require('./compte-site')
 const Spartan = require('./spartan')
-const { effacerDonneesJeu, retirerAnciensGunpacks } = require('./effacement')
+const { effacerDonneesJeu, retirerAnciensGunpacks, cheminSur, effacerSansSuivre } = require('./effacement')
+const { ecarterJarsEnTrop, controlerJava, oublierJava } = require('./integrite')
 
 // Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur ; Mac : trousseau ;
 // Linux : GNOME Keyring ou KWallet). Sans vrai chiffrement disponible, il n'est pas gardé : il faudra se reconnecter
@@ -491,13 +492,15 @@ class LauncherService {
         return new HeliosDistribution(raw, Config.getCommonDirectory(), Config.getInstanceDirectory())
     }
 
-    async ensureJava(server) {
+    // forcer : Java du jeu modifié depuis son installation (integrite.js) : jamais repris, un Java propre est téléchargé
+    async ensureJava(server, forcer = false) {
         this.emit('java', 'Recherche de Java 17…')
         const options = server.effectiveJavaOptions
-        let executable = Config.getJavaExecutable(this.config.serverId)
+        let executable = forcer ? null : Config.getJavaExecutable(this.config.serverId)
+        let installe = false
         const valid = executable && await validateSelectedJvm(ensureJavaDirIsRoot(executable), '17.x').catch(() => null)
         if (!valid) {
-            const found = await discoverBestJvmInstallation(Config.getDataDirectory(), '17.x')
+            const found = forcer ? null : await discoverBestJvmInstallation(Config.getDataDirectory(), '17.x')
             if (found) executable = javaExecFromRoot(found.path)
             else {
                 this.emit('java', 'Téléchargement de Java 17…', 0)
@@ -511,9 +514,32 @@ class LauncherService {
                 }
                 this.emit('java', 'Installation de Java 17…')
                 executable = await extractJdk(asset.path)
+                installe = true
             }
         }
         if (!await validateSelectedJvm(ensureJavaDirIsRoot(executable), '17.x')) throw new Error('Java 17 n’a pas pu être validé.')
+        // Java du jeu identique à son installation (programmes, bibliothèques, classes) : une bibliothèque ajoutée ou
+        // changée dans son dossier serait chargée par le jeu. Relevé pris à l'installation (ou au premier contrôle).
+        const racine = ensureJavaDirIsRoot(executable)
+        const releve = path.join(Config.getDataDirectory(), 'heraliz-java.json')
+        let controle = null
+        try {
+            controle = await controlerJava(racine, releve, { reprendre: installe })
+        } catch (erreur) {
+            console.warn('[HeraliZ/java] contrôle de Java impossible :', erreur?.code || erreur?.message)
+        }
+        if (controle?.etat === 'change') {
+            // jamais repris : un Java propre ou pas de partie (une erreur de téléchargement arrête le lancement)
+            console.warn('[HeraliZ/java] Java du jeu modifié depuis son installation :', controle.ecarts)
+            if (forcer) throw new Error('Le Java téléchargé pour le jeu a été modifié aussitôt : vérifie ton antivirus, puis relance.')
+            this.emit('java', 'Java du jeu modifié : réinstallation d’un Java propre…')
+            oublierJava(racine, releve)
+            const sur = cheminSur(Config.getDataDirectory(), racine)
+            if (sur) effacerSansSuivre(sur)
+            Config.setJavaExecutable(this.config.serverId, null)
+            Config.save()
+            return this.ensureJava(server, true)
+        }
         Config.setJavaExecutable(this.config.serverId, executable)
         Config.save()
     }
@@ -595,6 +621,15 @@ class LauncherService {
                 if (r.erreurs.length) console.warn('[HeraliZ/gunpacks] anciens dossiers pas tous retirés', r.erreurs.map(e => e.code))
             } catch (erreur) {
                 console.warn('[HeraliZ/gunpacks]', erreur?.message)
+            }
+            // dossier mods du jeu : le pack n'y met rien (ses mods sont dans le dossier du launcher) ; un jar posé là serait
+            // chargé par Forge : mis de côté (integrite.js), jamais bloquant
+            try {
+                const r = ecarterJarsEnTrop({ dossierInstances: Config.getInstanceDirectory(), serveur: this.config.serverId })
+                if (r.ecartes.length) console.warn('[HeraliZ/integrite] jars mis de côté du dossier mods :', r.ecartes.length)
+                if (r.erreurs.length) console.warn('[HeraliZ/integrite] jars pas tous mis de côté', r.erreurs)
+            } catch (erreur) {
+                console.warn('[HeraliZ/integrite]', erreur?.message)
             }
             this.emit('launch', 'Démarrage de Minecraft…')
             const jetonSpartan = await this.jetonSpartan()

@@ -159,6 +159,15 @@ class ConformiteStricteTest {
     }
 
     @Test
+    void codeBrouilleEnMemoireRefuseMaisCodeInconnuNormalNon() {
+        ScanReport r = ScanTestData.clean();
+        r.origins.add(new ScanReport.OriginEntry("?", List.of("a.b.C"), List.of("Render thread")));   // indice deviné
+        assertEquals(List.of(), ecarts(r));
+        r.origins.add(new ScanReport.OriginEntry("?", List.of("\u0001\u0002.\u0003"), List.of("(sans nom)")));
+        assertTrue(ecarts(r).stream().anyMatch(s -> s.contains("brouillé")), ecarts(r).toString());
+    }
+
+    @Test
     void sansModpackOfficielSeulsLesLancementsSontJuges() {
         ScanReport r = ScanTestData.clean();
         r.files.add(new ScanReport.FileEntry("mods", "x.jar", 1, "a".repeat(64)));
