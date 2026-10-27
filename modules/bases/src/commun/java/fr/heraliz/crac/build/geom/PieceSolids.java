@@ -100,9 +100,11 @@ public final class PieceSolids {
         } else if (kind.isRoof()) {
             local.add(new Prism(Footprints.local(kind.shape), -FLOOR_T, ROOF_PEAK));
         } else if (kind.isRamp()) {
-            // ramps reach their edges where they join a neighbour and stand on posts where they do not: both
+            // ramps reach their edges where they join a neighbour and are inset where they do not: both; the volume of
+            // the old posts stays reserved (27/10: posts removed) so the blocks of ramps already built do not change
             local.addAll(Rampes.collision(key, 0L));
             local.addAll(Rampes.collision(key, kind.shape == PieceKind.Shape.TRIANGLE ? Rampes.MASQUE_TRIANGLE : Rampes.MASQUE_CARRE));
+            local.addAll(Rampes.reservePoteaux(key));
         } else {
             local = local(key, 0, 0);
         }

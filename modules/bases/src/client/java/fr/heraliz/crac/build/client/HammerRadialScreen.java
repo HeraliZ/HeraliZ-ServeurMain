@@ -122,6 +122,12 @@ public class HammerRadialScreen extends RadialMenuScreen {
         if (!BuildClient.has(player, this.cost(entry))) {
             return "crac.hammer.not_enough";
         }
+        // HeraliZ (27/10) : on améliore de près (upgradeReach), le serveur le vérifie aussi
+        double r = BuildClient.upgradeReach();
+        if (!player.getAbilities().instabuild && fr.heraliz.crac.build.logic.PlacementRules.distanceYeux(player.getEyePosition(),
+            this.target.key(), fr.heraliz.crac.build.geom.PieceSolids.collisionBlocks(this.target.key())) > r + 0.3) {
+            return Txt.k("crac.hammer.trop_loin", r == Math.rint(r) ? String.valueOf((long) r) : String.valueOf(r));
+        }
         return null;
     }
 

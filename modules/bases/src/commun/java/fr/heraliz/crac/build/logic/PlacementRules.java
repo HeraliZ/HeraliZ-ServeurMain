@@ -318,6 +318,18 @@ public final class PlacementRules {
         return out;
     }
 
+    /**
+     * Distance (blocs) des yeux au point le plus proche de la pièce (sa collision fermée dans {@code blocks}) : portée de
+     * l'amélioration au marteau (HeraliZ, 27/10), même calcul chez le joueur et au serveur.
+     */
+    public static double distanceYeux(net.minecraft.world.phys.Vec3 eye, PieceKey key, List<BlockPos> blocks) {
+        double best = Double.MAX_VALUE;
+        for (AABB box : worldBoxes(key, blocks)) {
+            best = Math.min(best, box.distanceToSqr(eye));
+        }
+        return best == Double.MAX_VALUE ? best : Math.sqrt(best);
+    }
+
     /** World-space boxes of the piece's collision shape (closed state), block by block over its reserved blocks. */
     public static List<AABB> worldBoxes(PieceKey key, byte[] skirt) {
         return worldBoxes(key, PieceSolids.reservedBlocks(key, skirt));

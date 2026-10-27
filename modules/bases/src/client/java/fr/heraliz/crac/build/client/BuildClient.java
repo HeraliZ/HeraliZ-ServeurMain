@@ -56,6 +56,11 @@ public final class BuildClient {
         return config() ? BuildConfig.reach.get() : 8.0;
     }
 
+    /** Distance d'amélioration au marteau (HeraliZ, 27/10, {@code upgradeReach}), plus courte que la portée de pose. */
+    public static double upgradeReach() {
+        return config() ? BuildConfig.upgradeReach.get() : 4.0;
+    }
+
     public static Stability.Params stability() {
         return config() ? BuildConfig.stability() : Stability.Params.DEFAULT;
     }

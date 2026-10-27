@@ -36,6 +36,15 @@ public class Config {
             "If false, breaking inside ANY claim is fully blocked; raiding still works via explosives on building pieces and placables."
         )
         .define("allowBreakInClaim", false);
+    /**
+     * HeraliZ (27/10, choix du propriétaire) : dans une base, seuls les objets de la construction se posent. Un objet qui
+     * agit sur le bloc visé (barricade, mannequin, laisse, feu d'artifice...) y est refusé, sauf ceux de CRac et ceux-ci.
+     */
+    public static final ConfigValue<List<? extends String>> allowedItemsInClaims = BUILDER.comment(
+            "HeraliZ: inside a claim, an item used on a block (barricade, armor stand, lead, firework...) is refused unless it",
+            "belongs to CRac (plan, hammer, explosives) or is listed here (item ids). Blocks keep their own rule (placables only)."
+        )
+        .defineList("allowedItemsInClaims", List.of(), o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
     public static final IntValue claimRadiusL1 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 1 Claim Block.")
         .defineInRange("radiusL1", 20, 1, 512);
     public static final IntValue claimRadiusL2 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 2 Claim Block.")

@@ -263,6 +263,21 @@ public final class StructureService {
     }
 
     /**
+     * Amélioration au marteau (HeraliZ, 27/10) : yeux à {@code upgradeReach} blocs au plus du point le plus proche de la
+     * pièce (avant : la portée de pose, 8 blocs, plus 1,5 bloc de marge). Petite marge pour le retard du réseau.
+     */
+    public static boolean inUpgradeReach(Player player, Piece p) {
+        return player.getAbilities().instabuild
+            || PlacementRules.distanceYeux(player.getEyePosition(), p.key(), PieceIndex.blocksOf(p)) <= BuildConfig.upgradeReach.get() + 0.3;
+    }
+
+    /** {@code upgradeReach} lisible (« 4 », « 4.5 ») pour les messages. */
+    public static String upgradeReachText() {
+        double r = BuildConfig.upgradeReach.get();
+        return r == Math.rint(r) ? String.valueOf((long) r) : String.valueOf(r);
+    }
+
+    /**
      * Vanilla protections that the placement packet skips (it is not a vanilla block use): build height, spawn
      * protection and the world border, for every block of the piece. Null when allowed.
      */
@@ -800,7 +815,9 @@ public final class StructureService {
     public static Outcome upgrade(ServerLevel level, ServerPlayer player, Piece p, Tier target) {
         Component combat = Heraliz.combatProblem(player);
         if (combat != null) return Outcome.fail(combat);
-        if (!inReach(player, p)) return Outcome.fail("crac.build.too_far");
+        if (!inUpgradeReach(player, p)) {
+            return Outcome.fail(Component.translatable("crac.hammer.trop_loin", upgradeReachText()));
+        }
         if (!hasPrivilege(level, player, p)) return Outcome.fail("crac.build.not_yours");
         // also once the claim is gone: destroying the Claim Block or disbanding must not lift the raid block
         Claim c = claimOf(level, buildingOf(level, p));

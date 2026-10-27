@@ -23,6 +23,7 @@ public final class BuildConfig {
     public static final IntValue minStability;
     public static final IntValue demolishWindowSeconds;
     public static final DoubleValue reach;
+    public static final DoubleValue upgradeReach;
     public static final BooleanValue twigMeleeDamage;
     public static final IntValue twigMeleeHit;
     public static final IntValue repairPercent;
@@ -51,7 +52,10 @@ public final class BuildConfig {
         minStability = b.comment("Minimum stability (0-100) to place a piece.").defineInRange("minStability", 10, 1, 100);
         demolishWindowSeconds = b.comment("Seconds after placement / upgrade during which the owner can demolish a piece. -1 = always.")
             .defineInRange("demolishWindowSeconds", 600, -1, 1000000);
-        reach = b.comment("Max distance between the player's eyes and a piece to build, upgrade or repair it.").defineInRange("reach", 8.0, 2.0, 32.0);
+        reach = b.comment("Max distance between the player's eyes and a piece to build or repair it.").defineInRange("reach", 8.0, 2.0, 32.0);
+        upgradeReach = b.comment("HeraliZ (27/10): max distance (blocks) between the player's eyes and the nearest point of a piece to",
+                "upgrade it with the hammer (closer than the building reach: the player walks up to the piece).")
+            .defineInRange("upgradeReach", 4.0, 1.5, 32.0);
         discardOldBuildings = b.comment("Building data saved by an older version of the mod (v2 grid) cannot be used: by default the",
                 "buildings of such a world are left untouched (not usable, nothing saved) and an error is logged. true = copy the old",
                 "file aside (crac_buildings.dat.v2-<time>) and start with no buildings. The old structure blocks then clean themselves up.")
