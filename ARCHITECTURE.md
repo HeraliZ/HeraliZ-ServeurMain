@@ -506,3 +506,21 @@ Rien de tout cela n'a été testé en jeu.
 
 Rien de tout cela n'a été testé en jeu.
 
+**Correctifs du 27/10 (soir) : bases, combat, frappe aérienne, réanimation** (essais à faire :
+`docs/TESTS_EN_JEU_27OCT_CORRECTIFS.md` ; CRac 1.25.0-beta, canal 26)
+- **Coups et tirs à travers portes et murs** : coup de mêlée direct sur un joueur annulé si aucun point de son corps
+  n'est visible des yeux de l'attaquant (`noyau`, `CoupsAuTravers`) ; balle TaCZ sur un morceau du corps qui dépasse d'une
+  porte ou d'un mur (bras tendus, allongé) refusée si un bloc solide est entre le point touché et le corps
+  (`TaczHitboxCorpsMixin`). Chez le joueur, la balle s'arrête à l'écran sur le premier bloc touché (`TaczBalleArretMixin`).
+- **Bases** : plus de protection donnée toute seule aux nouvelles bases (`[protection] automatique = false`, anciennes
+  retirées une fois) ; dans une base, un objet qui agit sur un bloc (barricade, mannequin…) est refusé hors CRac
+  (`allowedItemsInClaims`) ; rampes sans poteaux (cases réservées inchangées) ; amélioration au marteau à 4 blocs
+  (`upgradeReach`) ; moitié de mur laissée à une armoire ou une caisse posée avant le mur dessinée par la case voisine,
+  et reprise quand un bloc posé avant le mur part ; zones interdites en rouge plan en main (`S2CZonesInterdites`) ;
+  aide au saut des montées donnée plus tôt (`SautRebord`).
+- **Frappe aérienne** : animation de recharge sur une horloge régulière (`HorlogeJumelles`) ; explosion sans le calcul
+  des blocs (27 000 à 55 000 lectures par bombe pour rien), créatures attirées lancées 3 par tick, mesures dans le journal.
+- **Réanimation** : compte à rebours visible jusqu'à la réponse du serveur, recalé tous les 5 ticks.
+- **Armes du mode Zombies** : gunpack `heraliz_wonder` resté sur le Ptero, ajouté à `serveur/tacz_retires.txt`.
+
+Rien de tout cela n'a été testé en jeu.
