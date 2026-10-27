@@ -19,12 +19,15 @@ import org.joml.Matrix4f;
 
 /**
  * HUD de celui qui réanime (refonte du 25/10, docs/HUD_REFONTE.md, maquettes {@code maquettes/hud_refonte/reanimation_*})
- * : le même anneau que les soins autour du réticule ({@link AnneauProgression}), le temps restant au centre (au-dessus
- * de {@value #CENTRE_MIN_S} s), « Réanimation de PSEUDO » dessous, puis « Bouger annule ». La progression est celle que
- * prévoit le jeu du joueur ; arrivée à 100 % avant la réponse du serveur, l'anneau passe en attente (arc clair qui tourne,
- * « Confirmation… ») au lieu de rester figé. Réponse du serveur (paquet de la victime, {@link SyncPacket#EVENT_REVIVED} ou
- * {@link SyncPacket#EVENT_INTERRUPTED}) : coche verte {@value AnneauProgression#REUSSITE_MS} ms, ou anneau rouge qui se
- * vide {@value AnneauProgression#INTERRUPTION_MS} ms. Rien ne change côté serveur (durée, distance, interruptions).
+ * : le même anneau que les soins autour du réticule ({@link AnneauProgression}), le temps restant au centre, « Réanimation
+ * de PSEUDO » dessous, puis « Bouger annule ». La progression est celle que prévoit le jeu du joueur, recalée sur le
+ * serveur en cours de route ({@link ClientDowned}) ; arrivée à 100 % avant la réponse du serveur, l'anneau passe en attente
+ * (arc clair qui tourne, « Confirmation… ») au lieu de rester figé. Réponse du serveur (paquet de la victime,
+ * {@link SyncPacket#EVENT_REVIVED} ou {@link SyncPacket#EVENT_INTERRUPTED}) : coche verte
+ * {@value AnneauProgression#REUSSITE_MS} ms, ou anneau rouge qui se vide {@value AnneauProgression#INTERRUPTION_MS} ms.
+ * Le temps restant reste au centre jusqu'à cette réponse (27/10, demande du propriétaire : il était caché sous 2 s alors
+ * que la réanimation n'était pas finie), et disparaît avec elle (finie, interrompue, annulée). Rien ne change côté serveur
+ * (durée, distance, interruptions).
  */
 public final class HudReanimateur {
     private HudReanimateur() {
@@ -32,8 +35,6 @@ public final class HudReanimateur {
 
     /** Lignes sous l'anneau (milieu des capitales, sous le centre de l'anneau), largeur maximale d'une ligne. */
     static final float LIGNE1_CY = 22f, LIGNE2_CY = 32f, LIGNE_MAX = 150f;
-    /** Temps restant affiché au centre seulement au-dessus de ce nombre de secondes. */
-    static final float CENTRE_MIN_S = 2f;
     /** Réponse du serveur attendue au plus ce temps après la fin chez le joueur (ms) ; ensuite le HUD s'efface. */
     static final int VERDICT_MS = 1500;
 
@@ -90,14 +91,20 @@ public final class HudReanimateur {
             partenaire = me.partner;
             verdictAttendu = false;
             float p = me.reviveProgress(pt);
+            // temps restant d'après le compteur recalé sur le serveur ; 0 en attente de sa réponse
+            restant = Math.max(0f, (me.reviveMax - me.reviveTicks(pt)) / 20f);
             if (p >= 1f) {
                 ANNEAU.attente(Palette.OK);
             } else {
                 ANNEAU.normal(p, Palette.OK);
-                restant = Math.max(0f, (me.reviveMax - me.revive - pt) / 20f);
             }
-        } else if (verdictAttendu && Util.getMillis() - finAction > VERDICT_MS) {
-            verdictAttendu = false;
+        } else if (verdictAttendu) {
+            if (Util.getMillis() - finAction > VERDICT_MS) {
+                verdictAttendu = false;
+            } else if (ANNEAU.etat() == AnneauProgression.Etat.NORMAL) {
+                // fin reçue, verdict du serveur pas encore là : l'anneau tourne au lieu de rester figé
+                ANNEAU.attente(Palette.OK);
+            }
         }
         boolean visible = !aTerre && (reanime || verdictAttendu || ANNEAU.enFin());
         float a = FONDU.maj(visible);
@@ -106,7 +113,7 @@ public final class HudReanimateur {
             return;
         }
         if (a <= 0f || mc.options.hideGui) return;
-        textes(mc, reanime ? restant : 0f);
+        textes(mc, reanime, restant);
 
         float cx = w / 2f, cy = h / 2f;
         Matrix4f m = g.pose().last().pose();
@@ -126,7 +133,7 @@ public final class HudReanimateur {
     }
 
     /** Textes recalculés seulement si la langue, le joueur réanimé, l'état ou le dixième de seconde affiché changent. */
-    private static void textes(Minecraft mc, float restant) {
+    private static void textes(Minecraft mc, boolean reanime, float restant) {
         String l = mc.getLanguageManager().getSelected();
         boolean nouvelleLangue = !l.equals(langue);
         langue = l;
@@ -149,8 +156,10 @@ public final class HudReanimateur {
                 default -> "hud.reanimation.move_to_cancel";
             }));
         }
-        // temps restant au centre, au dixième de seconde (virgule en français et en russe)
-        centre = e == AnneauProgression.Etat.NORMAL && restant > CENTRE_MIN_S;
+        // temps restant au centre, au dixième de seconde (virgule en français et en russe), jusqu'à la fin réelle : tant que
+        // le serveur dit que la réanimation est en cours (anneau normal ou en attente de sa réponse) ; retiré dès qu'elle
+        // est finie, interrompue ou annulée (coche, anneau rouge, fondu de sortie). Avant le 27/10 : caché sous 2 s.
+        centre = reanime && (e == AnneauProgression.Etat.NORMAL || e == AnneauProgression.Etat.ATTENTE);
         if (centre) {
             int d = (int) Math.ceil(restant * 10f);
             if (d != dixiemes || nouvelleLangue) {

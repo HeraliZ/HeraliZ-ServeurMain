@@ -43,7 +43,7 @@ final class FirstPersonRevive {
             if (me != null && me.has(16)) {
                float p = me.reviveProgress(pt);
                if (p > 0.1F && p < 0.86F) {
-                  push = Poses.pump(me.revive + pt);
+                  push = Poses.pump(me.reviveTicks(pt));
                }
             }
 
@@ -67,7 +67,7 @@ final class FirstPersonRevive {
                float var17 = event.getPartialTick();
                float p = me.reviveProgress(var17);
                float reach = smooth(p / 0.1F);
-               float push = p > 0.1F && p < 0.86F ? Poses.pump(me.revive + var17) : 0.0F;
+               float push = p > 0.1F && p < 0.86F ? Poses.pump(me.reviveTicks(var17)) : 0.0F;
                float pull = p >= 0.86F ? smooth((p - 0.86F) / 0.13999999F) : 0.0F;
                PoseStack ps = event.getPoseStack();
                MultiBufferSource buffers = event.getMultiBufferSource();
