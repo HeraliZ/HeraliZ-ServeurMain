@@ -61,6 +61,7 @@ public final class PartieServeur implements Partie {
         MachineType.TABLEAU.usine.serveur(LeaderboardBlockEntityServeur::new);
         MachineType.TABLEAU_PERDANTS.usine.serveur(LeaderboardBlockEntityServeur::new);
         MachineType.TABLEAU_PARIEURS.usine.serveur(LeaderboardBlockEntityServeur::new);
+        MachineType.ATM.usine.serveur(fr.heraliz.casino.block.entity.AtmBlockEntityServeur::new);
         for (MachineType t : MachineType.values()) {
             if (!t.usine.serveurBranche()) throw new IllegalStateException("[heralizcasino] machine sans version serveur : " + t.id);
         }

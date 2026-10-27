@@ -76,6 +76,7 @@ public final class ClientHooks {
         if (be instanceof BlackjackBlockEntity b) return new BlackjackScreen(b);
         if (be instanceof MinesBlockEntity b) return new MinesScreen(b);
         if (be instanceof CashierBlockEntity b) return new CashierScreen(b);
+        if (be instanceof fr.heraliz.casino.block.entity.AtmBlockEntity b) return new fr.heraliz.casino.client.screen.AtmScreen(b);
         if (be instanceof fr.heraliz.casino.block.entity.RpsBlockEntity b) return new fr.heraliz.casino.client.screen.RpsScreen(b);
         if (be instanceof fr.heraliz.casino.block.entity.NavalBlockEntity b) return new fr.heraliz.casino.client.screen.NavalScreen(b);
         return null;

@@ -32,18 +32,18 @@ final class CommandeCapsules {
                 })
                 .then(Commands.literal("deposer")
                         .executes(c -> {
-                            CompteCapsules.deposer(c.getSource().getPlayerOrException(), 0);
+                            CompteCapsules.deposer(c.getSource().getPlayerOrException(), 0, false);
                             return 1;
                         })
                         .then(Commands.argument("nombre", LongArgumentType.longArg(1, MAX))
                                 .executes(c -> {
-                                    CompteCapsules.deposer(c.getSource().getPlayerOrException(), LongArgumentType.getLong(c, "nombre"));
+                                    CompteCapsules.deposer(c.getSource().getPlayerOrException(), LongArgumentType.getLong(c, "nombre"), false);
                                     return 1;
                                 })))
                 .then(Commands.literal("retirer")
                         .then(Commands.argument("nombre", LongArgumentType.longArg(1, MAX))
                                 .executes(c -> {
-                                    CompteCapsules.retirer(c.getSource().getPlayerOrException(), LongArgumentType.getLong(c, "nombre"));
+                                    CompteCapsules.retirer(c.getSource().getPlayerOrException(), LongArgumentType.getLong(c, "nombre"), false);
                                     return 1;
                                 }))));
     }

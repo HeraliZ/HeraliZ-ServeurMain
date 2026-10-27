@@ -6,7 +6,7 @@ guichet (textures/machine/caisse.png et caisse_glow.png : y de 512 à 1023), jam
     python modules/boutique/outils/textures_atm.py DOSSIER --planche   en plus : planche.png (les tuiles agrandies)
 
 Les tuiles du haut (guichet) ne changent pas : elles sont relues dans l'atlas du mod. Les zones doivent rester les mêmes
-que les constantes R_* de AtmDesign.java (outils/atm/ tant que le modèle n'est pas validé). Les capsules sont reprises des
+que les constantes R_* de AtmDesign.java (src/client/.../scene/machines). Les capsules sont reprises des
 icônes des objets (textures/item/jeton_*.png). Textes en DM Sans (OFL), comme les interfaces.
 """
 import argparse
@@ -144,7 +144,8 @@ def fleche(d, cx, cy, s, bas, c):
 
 
 def ecran(w, h):
-    """Écran au repos : fond phosphore, solde en grand, deux pastilles (dépôt, retrait) ; sans mots à traduire."""
+    """Écran au repos : fond phosphore, place du solde (écrit en jeu par AtmDesign : celui du joueur qui regarde), deux
+    pastilles (dépôt, retrait) ; sans mots à traduire."""
     W, H = w * S, h * S
     im = Image.new("RGB", (W, H), (6, 18, 10))
     d = ImageDraw.Draw(im)
@@ -157,7 +158,6 @@ def ecran(w, h):
     # solde
     cap = capsule_rgba(10, 34 * S)
     im.paste(cap, (22 * S, 58 * S), cap)
-    d.text((66 * S, 75 * S), "12 450", font=police(GRAS, 40 * S), fill=vert, anchor="lm")
     d.line([(18 * S, 106 * S), (W - 18 * S, 106 * S)], fill=sombre, width=2 * S)
     # deux pastilles : dépôt (flèche vers le bas), retrait (flèche vers le haut)
     for i, (bas, c) in enumerate(((True, vert), (False, (255, 200, 90)))):
@@ -365,6 +365,11 @@ def main():
     atlas.save(sortie / "caisse.png", optimize=True)
     glow.save(sortie / "caisse_glow.png", optimize=True)
     print("écrit", sortie / "caisse.png", "et caisse_glow.png")
+    if a.installer:
+        # particules du bloc (casse, pas) : un morceau de la tôle peinte
+        p = ASSETS / "textures/block/atm_particle.png"
+        Image.fromarray(tuiles[R_PAINT][:64, :64].clip(0, 255).astype(np.uint8)).resize((16, 16), Image.LANCZOS).save(p, optimize=True)
+        print("écrit", p)
     if a.planche and a.dossier:
         bas = atlas.crop((0, 512, 1024, 1024)).resize((2048, 1024), Image.NEAREST)
         fond = Image.new("RGBA", bas.size, (40, 40, 40, 255))

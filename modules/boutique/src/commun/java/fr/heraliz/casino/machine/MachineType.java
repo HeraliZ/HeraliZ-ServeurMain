@@ -1,6 +1,7 @@
 package fr.heraliz.casino.machine;
 
 import fr.heraliz.casino.block.MachineBlockEntity;
+import fr.heraliz.casino.block.entity.AtmBlockEntity;
 import fr.heraliz.casino.block.entity.BlackjackBlockEntity;
 import fr.heraliz.casino.block.entity.CashierBlockEntity;
 import fr.heraliz.casino.block.entity.CrashBlockEntity;
@@ -65,7 +66,13 @@ public enum MachineType {
     // niche de recuperation : 4 grilles Multihold, wilds collants x2 / x3 copies d'une grille a l'autre
     // (ajoutee en dernier : les statistiques enregistrees designent les machines par leur rang)
     NICHE("la_niche", 0x6AC8FF, 0xFFB040, 10, SlotBlockEntity::new,
-            new Footprint(box(-0.4f, 0, 0.5f, 16.4f, 45, 17.4f), box(4.6f, 0, 20.6f, 11.4f, 8.6f, 27.4f)));
+            new Footprint(box(-0.4f, 0, 0.5f, 16.4f, 45, 17.4f), box(4.6f, 0, 20.6f, 11.4f, 8.6f, 27.4f))),
+    // distributeur de capsules (« ATM », 27/10) : compte de capsules du joueur, depot et retrait ; 1 bloc de large, 2 de haut
+    // (palette, bas de caisse et console, caisson de l'ecran et sa visiere, caisson lumineux, batterie sur la palette)
+    ATM("atm", 0x6CFF9A, 0xFFD36A, 10, AtmBlockEntity::new,
+            new Footprint(box(0.2f, 0, 0.4f, 15.8f, 1.5f, 15.6f), box(1.0f, 1.5f, 2.6f, 12.6f, 16.6f, 15.4f),
+                    box(1.0f, 16.6f, 2.6f, 12.6f, 27.4f, 14.0f), box(0.7f, 27.4f, 5.4f, 12.9f, 31.6f, 9.4f),
+                    box(12.8f, 1.5f, 5.4f, 15.4f, 4.6f, 10.6f)));
     /** Fabrique de l'entite de bloc. */
     @FunctionalInterface
     public interface Factory {
@@ -103,9 +110,9 @@ public enum MachineType {
         return Component.translatable("machine.heralizcasino." + id + ".desc");
     }
 
-    /** Machine de jeu (mises, statistiques, reglages) : ni la caisse ni le tableau des gagnants. */
+    /** Machine de jeu (mises, statistiques, reglages) : ni la caisse, ni le distributeur, ni le tableau des gagnants. */
     public boolean game() {
-        return this != CAISSE && !board();
+        return this != CAISSE && this != ATM && !board();
     }
 
     /** Ecran de classement. */

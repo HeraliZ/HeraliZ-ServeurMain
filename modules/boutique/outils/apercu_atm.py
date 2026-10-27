@@ -1,9 +1,9 @@
-"""Rendus du distributeur de capsules (« ATM ») hors du jeu, à valider par le propriétaire avant de le brancher (règle 6).
+"""Rendus du distributeur de capsules (« ATM ») hors du jeu (validés par le propriétaire le 27/10, puis branché dans le jeu).
 
     python modules/boutique/outils/apercu_atm.py [DOSSIER]      (par défaut : maquettes/atm_capsules/borne)
 
-Le modèle (outils/atm/AtmDesign.java) est dessiné avec le vrai moteur 3D du casino (Java pur, compilé ici avec JOML) et
-ses vraies textures (outils/textures_atm.py, dans une copie de l'atlas : rien n'est écrit dans le mod) par
+Le modèle (AtmDesign.java, dans src/client/.../scene/machines) est dessiné avec le vrai moteur 3D du casino (Java pur,
+compilé ici avec JOML) et ses vraies textures (outils/textures_atm.py, dans une copie de l'atlas : rien n'est écrit) par
 outils/ApercuMachine.java, un petit moteur logiciel. Ce n'est pas la lumière du jeu : il sert à juger formes, couleurs et
 proportions. Silhouette grise : un joueur (1,8 bloc), pour l'échelle. Besoin : un JDK 17 (javac), comme la fabrication.
 """
@@ -59,7 +59,7 @@ def main():
         sources = [str(p) for p in (RENDU / "mesh").glob("*.java")]
         sources += [str(p) for p in (RENDU / "scene").glob("*.java") if p.name != "Designs.java"]
         sources += [str(RENDU / "scene/machines/BunkerKit.java"), str(SRC / "commun/java/fr/heraliz/casino/registry/Snd.java")]
-        sources += [str(p) for p in (ICI / "atm").glob("*.java")] + [str(ICI / "ApercuMachine.java")]
+        sources += [str(RENDU / "scene/machines" / n) for n in ("AtmDesign.java", "AtmView.java")] + [str(ICI / "ApercuMachine.java")]
         classes = tmp / "classes"
         subprocess.run([fc.outil("javac"), "-nowarn", "-encoding", "UTF-8", "-d", str(classes), "-cp", jar] + sources, check=True, env=env)
         cp = os.pathsep.join([str(classes), jar])
@@ -73,7 +73,7 @@ def main():
 
 LEGENDES = {
     "1_trois_quarts": "Vue d'ensemble, à côté d'un joueur (1,8 bloc) : 1 bloc de large, 2 de haut",
-    "4_ecran_clavier": "Écran (solde du joueur), clavier, dépôt (vert), retrait (orange)",
+    "4_ecran_clavier": "Écran (solde du joueur, écrit en jeu), clavier, dépôt (vert), retrait (orange)",
     "5_depot": "Dépôt : les capsules tombent dans l'entonnoir",
     "6_retrait": "Retrait : les capsules sortent dans le bac",
 }

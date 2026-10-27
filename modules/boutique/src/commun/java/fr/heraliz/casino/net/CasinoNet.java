@@ -16,8 +16,11 @@ public final class CasinoNet {
     private CasinoNet() {
     }
 
-    /** 5 (27/10) : solde du compte de capsules (ComptePacket) ; jars joueurs et serveur de la meme fabrication. */
-    private static final String PROTOCOL = "5";
+    /**
+     * 6 (27/10) : compte de capsules (ComptePacket : solde, derniers mouvements, resultat d'une operation au distributeur) ;
+     * jars joueurs et serveur de la meme fabrication.
+     */
+    private static final String PROTOCOL = "6";
 
     /**
      * Paquets recus par le client (serveur -> client) : traitement d'affichage branche par la partie client

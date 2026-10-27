@@ -490,7 +490,17 @@ Rien de tout cela n'a été testé en jeu.
   après chaque mouvement. La caisse et l'entrée du casino prennent sur le compte ce qui manque dans l'inventaire
   (`compte.payer_caisse` de `casino.json` ; indispensable au-delà de 23 040 capsules, le plus qu'un inventaire porte) ; un
   joueur qui a des capsules sur son compte n'est pas « fauché » pour les videurs. Remis à 0 par `/wipe` et `/wipe tout`.
-  Canal du casino version 5 (`ComptePacket`). Écran et borne : maquette `maquettes/atm_capsules/`, à valider.
+  **Distributeur de capsules** (bloc `heralizcasino:atm`, machine `MachineType.ATM` ajoutée en dernier, 1 bloc de large
+  et 2 de haut ; rendus et écran validés : `maquettes/atm_capsules/`) : clic droit = écran du compte (`client/screen/
+  AtmScreen` : solde, capsules portées, 7 derniers mouvements, déposer tout / 100 / 500 / 1 000 / un nombre tapé,
+  retirer 100 / 1 000 / 5 000 / un nombre tapé) ; le serveur décide de tout (`AtmBlockEntityServeur` ->
+  `CompteCapsules.deposer|retirer(..., borne)`), résultat écrit dans l'écran (jamais dans le chat), une opération par
+  joueur toutes les 250 ms ; l'écran 3D de la borne montre le solde du joueur qui la regarde ; capsules animées dans
+  l'entonnoir ou le bac pour tous. Modèle `AtmDesign` (rendus : `outils/apercu_atm.py`), textures dans la moitié basse de
+  l'atlas du guichet, **écrites** par `outils/textures_atm.py --installer`, jamais à la main. Les 30 derniers mouvements
+  sont gardés dans le fichier du compte (clé `mouvements`). `/capsules` marche aussi à 6 blocs d'un distributeur. Canal
+  du casino version 6 (`ComptePacket` : solde, mouvements, résultat d'une opération) : jars joueurs et serveur de la même
+  fabrication.
 - **Prix de la caisse** refaits (`casino.json` ; grades à la journée, confirmés par le propriétaire : Rescapé 10 000,
   Traqueur 18 000, Roi de la Zone 30 000 le jour) ; le finisher **Main du Joker** (80 000) ne sort plus d'aucune caisse (`EXCLUSIFS_CASINO` de
   `outils/caisses.py`). Une commande de la caisse qui rend 0 (émote au hasard alors qu'il les a toutes, grade déjà à vie)

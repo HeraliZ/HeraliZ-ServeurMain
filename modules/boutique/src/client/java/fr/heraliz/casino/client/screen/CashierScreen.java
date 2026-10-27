@@ -89,8 +89,8 @@ public class CashierScreen extends MachineScreen<CashierBlockEntity> {
      */
     @Override
     protected long balance() {
-        CasinoConfig.Compte c = CasinoConfig.get().compte;
-        return super.balance() + (c.actif && c.payerCaisse ? fr.heraliz.casino.net.ComptePacket.clientSolde : 0);
+        boolean compte = fr.heraliz.casino.net.ComptePacket.clientActif && fr.heraliz.casino.net.ComptePacket.clientPaiement;
+        return super.balance() + (compte ? fr.heraliz.casino.net.ComptePacket.clientSolde : 0);
     }
 
     /** Unites du taux pour viser "target" jetons de casino (0 : tous les jetons de casino de l'inventaire). */

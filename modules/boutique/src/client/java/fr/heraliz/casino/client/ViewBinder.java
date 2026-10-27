@@ -218,6 +218,12 @@ public final class ViewBinder {
             v.lastTxType = c.lastTxType;
             v.lastTxAmount = c.lastTxAmount;
             v.rates = rates();
+        } else if (be instanceof fr.heraliz.casino.block.entity.AtmBlockEntity c && view instanceof fr.heraliz.casino.client.render.scene.machines.AtmView v) {
+            v.lastTx = c.lastTx;
+            v.lastTxType = c.lastTxType;
+            v.lastTxAmount = c.lastTxAmount;
+            // l'ecran de la borne montre le compte du joueur qui la regarde (chacun voit le sien)
+            v.solde = fr.heraliz.casino.net.ComptePacket.clientActif ? fr.heraliz.casino.net.ComptePacket.clientSolde : -1;
         }
     }
 

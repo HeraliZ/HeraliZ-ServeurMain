@@ -66,7 +66,7 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/voix`, `/caracrea` | CaraCrea | voix de proximité, personnages |
 | `/emote` | Emote | débloquer ou retirer une emote |
 | `/casino` | Casino | zones du casino, capsules, `compte voir\|donner\|retirer` (compte de capsules d'un joueur) |
-| `/capsules` | Casino (joueurs) | compte de capsules : solde, `deposer [nombre]`, `retirer <nombre>` à côté d'une caisse du casino |
+| `/capsules` | Casino (joueurs) | compte de capsules : solde, `deposer [nombre]`, `retirer <nombre>` à côté d'un distributeur de capsules (ATM) ou d'une caisse du casino (au distributeur : clic droit, son écran) |
 | `/boss <mammouth\|mere\|n07\|peste\|sylvorn> …` | Boss | arènes et réveil des boss (events) |
 | `/spartan`, `/banpc`, `/unbanpc`, `/sbaninfo` | Spartan | anticheat, ban compte + IP + PC (les autres sanctions : LiteBans) |
 

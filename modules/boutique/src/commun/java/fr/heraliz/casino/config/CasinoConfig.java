@@ -281,13 +281,14 @@ public final class CasinoConfig {
         public boolean actif = true;
         /** La caisse et l'entree du casino prennent sur le compte ce qui manque en capsules dans l'inventaire. */
         public boolean payerCaisse = true;
-        /** Depots et retraits a moins de ce nombre de blocs d'une caisse du casino (0 = partout hors de la carte). */
+        /** /capsules : depots et retraits a moins de ce nombre de blocs d'un distributeur ou d'une caisse (0 = partout hors de la carte). */
         public double distance = 6;
         /** Plafond d'un compte (capsules). */
         public long max = 1_000_000_000L;
 
-        static final String AIDE = "Compte de capsules : /capsules (solde), /capsules deposer [nombre] (rien = tout), "
-                + "/capsules retirer <nombre>, a moins de \"distance\" blocs d'une caisse du casino (0 = partout hors de la carte). "
+        static final String AIDE = "Compte de capsules : distributeur de capsules (ATM) du casino, ou /capsules (solde), /capsules deposer "
+                + "[nombre] (rien = tout), /capsules retirer <nombre>, a moins de \"distance\" blocs d'un distributeur ou d'une caisse "
+                + "(0 = partout hors de la carte). "
                 + "payer_caisse : la caisse et l'entree prennent sur le compte ce qui manque dans l'inventaire. max : plafond d'un compte.";
 
         Compte sanitized() {
@@ -420,7 +421,7 @@ public final class CasinoConfig {
     public static Object section(MachineType t, Settings s) {
         return switch (t) {
             case CAISSE -> s.caisse;
-            case TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> null;
+            case TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> null;
             case ROTTEN -> s.rotten;
             case OLYMPE -> s.portesOlympe;
             case LOUP -> s.souffleLoup;
@@ -444,7 +445,7 @@ public final class CasinoConfig {
     /** Redistribution {min, max} d'une machine avec ces reglages (null pour la caisse). */
     public static double[] rtp(MachineType t, Settings s) {
         return switch (t) {
-            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> null;
+            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> null;
             case ROTTEN -> RtpCalc.rotten(s.rotten);
             case OLYMPE -> RtpCalc.olympe(s.portesOlympe);
             case LOUP -> RtpCalc.loup(s.souffleLoup);
@@ -487,7 +488,7 @@ public final class CasinoConfig {
             case COURSE -> fr.heraliz.casino.game.Simulator.race(s.course, n, seed);
             case PIERRE_FEUILLE_CISEAUX -> fr.heraliz.casino.game.Simulator.duel(s.pierreFeuilleCiseaux);
             case BATAILLE_NAVALE -> fr.heraliz.casino.game.Simulator.duel(s.batailleNavale);
-            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> null;
+            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> null;
         };
     }
 
@@ -503,7 +504,7 @@ public final class CasinoConfig {
             case OLYMPE -> RtpCalc.report(s.portesOlympe);
             case LOUP -> RtpCalc.report(s.souffleLoup);
             case NICHE -> RtpCalc.report(s.laNiche);
-            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> null;
+            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> null;
             default -> fr.heraliz.casino.game.SimCache.get(oddsKey(t, s), () -> {
                 Settings copy = GSON.fromJson(GSON.toJson(s), Settings.class).sanitized();
                 return fr.heraliz.casino.game.Simulator.once(() -> simulate(t, copy, rounds(t), 4242));
@@ -518,7 +519,7 @@ public final class CasinoConfig {
             case OLYMPE -> RtpCalc.settled(s.portesOlympe);
             case LOUP -> RtpCalc.settled(s.souffleLoup);
             case NICHE -> RtpCalc.settled(s.laNiche);
-            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> true;
+            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> true;
             default -> fr.heraliz.casino.game.SimCache.done(oddsKey(t, s));
         };
     }

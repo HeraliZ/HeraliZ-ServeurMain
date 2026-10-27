@@ -83,7 +83,7 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                 if (!e.vente) return;
                 long chips = count * e.jetons;
                 // 27/10 : ce qui manque dans l'inventaire est pris sur le compte de capsules (CompteCapsules)
-                CompteCapsules.Paiement pay = CompteCapsules.payer(p, chips, "caisse " + e.item);
+                CompteCapsules.Paiement pay = CompteCapsules.payer(p, chips, "caisse " + objet(e));
                 if (pay == null) {
                     pasAssez(p, chips);
                     return;
@@ -93,7 +93,7 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                 if (item instanceof fr.heraliz.crates.item.CrateKeyItem k) {
                     if (!fr.heraliz.crates.cles.ComptesCles.crediter(sl.getServer(), p.getUUID(), p.getGameProfile().getName(), k.type,
                             (int) count, "casino")) {
-                        CompteCapsules.rendre(p, pay, chips, "caisse rendu " + e.item);
+                        CompteCapsules.rendre(p, pay, chips, "caisse rendu " + objet(e));
                         msg(p, Component.translatableWithFallback("message.heralizcasino.cashier.cles_indispo",
                                 "Clés indisponibles pour le moment : tes capsules sont rendues.").withStyle(ChatFormatting.RED));
                         return;
@@ -158,6 +158,11 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
             surCompte(p, pay);
             tx(1, paye);
         }
+    }
+
+    /** Objet d'un echange tel que l'historique du compte de capsules le garde : identifiant, et son NBT s'il en a un. */
+    private static String objet(CasinoConfig.Exchange e) {
+        return e.nbt == null || e.nbt.isBlank() ? e.item : e.item + " " + e.nbt.trim();
     }
 
     /** Pas assez de capsules, compte compris s'il paie aussi. */

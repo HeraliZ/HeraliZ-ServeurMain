@@ -21,7 +21,8 @@ import static fr.heraliz.casino.client.render.mesh.MeshBuilder.v;
  * bac ; plaque soudee et rivetee en bas, chaine et cadenas ; caisson lumineux « ATM » sur le dessus ; pose sur une palette,
  * alimente par une batterie de voiture. Un bloc de large, deux de haut.
  * <p>Textures : moitie basse de l'atlas du guichet (outils/textures_atm.py), et la feuille commune /recup (palette,
- * batterie, cables). PAS ENCORE DANS LE JEU : modele dessine hors du jeu (outils/apercu_atm.py) pour validation.
+ * batterie, cables). Rendus valides par le proprietaire le 27/10 (outils/apercu_atm.py, maquettes/atm_capsules/borne).
+ * L'ecran vert montre le solde du compte de capsules du joueur qui regarde (chacun voit le sien).
  */
 public final class AtmDesign extends MachineDesign<AtmView> {
     // ---- atlas du guichet, moitie basse (outils/textures_atm.py)
@@ -237,6 +238,7 @@ public final class AtmDesign extends MachineDesign<AtmView> {
         float k = s.item ? 1 : Ease.hash((int) (s.time / 4) + (int) (s.seed * 100)) > 0.96f ? 0.55f : 0.92f + 0.08f * (float) Math.sin(s.time * 0.9f);
         out.solid(p, lit, k);
         out.translucent(p, glass, 0xFFFFFF, 0.9f);
+        if (!s.item) solde(v, p, out, k);
         float t = s.item ? -1 : s.since(v.lastTx);
         if (t >= 0 && t < 80) {
             if (v.lastTxType == AtmView.DEPOT) {
@@ -265,6 +267,14 @@ public final class AtmDesign extends MachineDesign<AtmView> {
         out.billboard(p, Sprite.HALO, LED_C[0], LED_C[1], LED_C[2] + 0.3f, 0.9f, 0, 0x60FF90, 0.5f);
     }
 
+    /** Solde du joueur a droite de la capsule de l'ecran (place laissee libre par outils/textures_atm.py). */
+    private static void solde(AtmView v, Pose p, DrawList out, float k) {
+        String txt = v.solde < 0 ? "- - -" : fmt(v.solde);
+        p.push().translate(CX, SCR_Y, UP_ZF).rotX(SCR_TILT);
+        out.text(p, txt, -1.72f, 0.6f, 0.72f, fit(txt, 1.05f, 4.7f, true), 0x7CFFA8, 0.95f * k, DrawList.T_BOLD);
+        p.pop();
+    }
+
     /** Une capsule (k : 0 = 1, 1 = 5, 2 = 10), tournee de yaw puis penchee de tilt. */
     private void capsule(Pose p, DrawList out, int k, float x, float y, float z, float yaw, float tilt) {
         p.push().translate(x, y, z).rotY(yaw).rotX(tilt);
@@ -291,6 +301,7 @@ public final class AtmDesign extends MachineDesign<AtmView> {
         v.lastTx = DEMO_START + (retrait ? 90 : 10);
         v.lastTxType = retrait ? AtmView.RETRAIT : AtmView.DEPOT;
         v.lastTxAmount = 600;
+        v.solde = 12450;
         return v;
     }
 

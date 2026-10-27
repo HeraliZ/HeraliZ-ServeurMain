@@ -266,7 +266,7 @@
     "_aide_beta": "Catalogue de la bêta : surtout des cosmétiques (clés, camos, stickers, StatTrak, finishers, émotes), des grades à la journée et des matériaux de base ; rien pour le combat. Prix du 27/10 (demande du propriétaire). Le finisher Main du Joker ne s'obtient qu'ici (retiré des caisses par outils/caisses.py, EXCLUSIFS_CASINO)."
   },
   "compte": {
-    "aide": "Compte de capsules : /capsules (solde), /capsules deposer [nombre] (rien = tout), /capsules retirer <nombre>, a moins de \"distance\" blocs d'une caisse du casino (0 = partout hors de la carte). payer_caisse : la caisse et l'entree prennent sur le compte ce qui manque dans l'inventaire. max : plafond d'un compte.",
+    "aide": "Compte de capsules : /capsules (solde), /capsules deposer [nombre] (rien = tout), /capsules retirer <nombre>, au distributeur de capsules (ATM) du casino, ou a moins de \"distance\" blocs d'un distributeur ou d'une caisse (0 = partout hors de la carte). payer_caisse : la caisse et l'entree prennent sur le compte ce qui manque dans l'inventaire. max : plafond d'un compte.",
     "actif": true,
     "payer_caisse": true,
     "distance": 6.0,

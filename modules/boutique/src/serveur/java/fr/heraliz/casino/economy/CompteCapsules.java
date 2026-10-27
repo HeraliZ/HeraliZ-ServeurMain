@@ -2,9 +2,12 @@ package fr.heraliz.casino.economy;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fr.heraliz.casino.HeralizCasino;
+import fr.heraliz.casino.block.entity.AtmBlockEntity;
 import fr.heraliz.casino.block.entity.CashierBlockEntity;
 import fr.heraliz.casino.config.CasinoConfig;
 import fr.heraliz.casino.data.EcrituresFond;
@@ -38,7 +41,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -48,7 +53,7 @@ import java.util.UUID;
  * capsules dans les bases). Un nombre par joueur, garde par le serveur hors du monde (il survit aux changements de
  * carte), un petit fichier par joueur : {@code heralizcasino/comptes/<uuid>.json} a la racine du serveur.
  * <pre>
- * {"version": 1, "nom": "Pseudo", "solde": 12500}
+ * {"version": 1, "nom": "Pseudo", "solde": 12500, "mouvements": [{"t": 1793000000000, "k": "depot", "d": "", "n": 1250}]}
  * </pre>
  * Le serveur decide de tout, sur le fil serveur. Chaque changement est ecrit tout de suite, AVANT de rendre vrai (fichier
  * a cote puis mis a sa place : jamais un fichier a moitie ecrit) ; ecriture ratee : le changement est annule et
@@ -57,6 +62,9 @@ import java.util.UUID;
  * illisible n'est jamais ecrase : copie a cote ({@code .illisible.<date>}) et compte FERME jusqu'a ce que le staff le
  * repare. Jamais de solde negatif ni au-dessus du plafond ; les capsules sont deplacees, jamais copiees : depot = objets
  * retires de l'inventaire, retrait refuse sans la place pour toutes les capsules, joueur sauvegarde apres chaque mouvement.
+ * <p>Depot et retrait : au distributeur de capsules (bloc {@link AtmBlockEntity}, resultat ecrit dans son ecran), ou par
+ * {@code /capsules} a cote d'un distributeur ou de la caisse (resultat dans le chat). Les {@value #HISTORIQUE} derniers
+ * mouvements sont gardes avec le compte, pour l'ecran du distributeur (un historique illisible est oublie, jamais le solde).
  */
 public final class CompteCapsules {
     private CompteCapsules() {
@@ -64,7 +72,15 @@ public final class CompteCapsules {
 
     /** Une operation, au plus (aucun debordement possible). */
     private static final long MAX_OPERATION = 1_000_000_000_000L;
+    /** Mouvements gardes avec le compte. */
+    static final int HISTORIQUE = 30;
+    /** Ecart minimal entre deux depots ou retraits d'un meme joueur (chaque operation ecrit un fichier). */
+    private static final long ECART_MS = 250;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+
+    /** Un mouvement : heure (ms), genre, detail, capsules (+ ou -). */
+    private record Mvt(long t, String k, String d, long n) {
+    }
 
     private static final class Compte {
         final UUID uuid;
@@ -72,6 +88,8 @@ public final class CompteCapsules {
         long solde;
         /** Fichier illisible : compte ferme (jamais reecrit). */
         boolean ferme;
+        /** Derniers mouvements, le plus recent d'abord. */
+        final LinkedList<Mvt> mouvements = new LinkedList<>();
 
         Compte(UUID uuid) {
             this.uuid = uuid;
@@ -86,11 +104,15 @@ public final class CompteCapsules {
     }
 
     private static final Map<UUID, Compte> CACHE = new HashMap<>();
+    private static final Map<UUID, Long> DERNIERE = new HashMap<>();
 
     /** Une fois, au chargement de la partie serveur. */
     public static void init() {
         // oublie tout a l'arret (monde solo suivant)
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStoppedEvent.class, e -> CACHE.clear());
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStoppedEvent.class, e -> {
+            CACHE.clear();
+            DERNIERE.clear();
+        });
     }
 
     public static CasinoConfig.Compte reglages() {
@@ -127,9 +149,11 @@ public final class CompteCapsules {
                 long s = o.get("solde").getAsLong();
                 if (s < 0) throw new IllegalStateException("solde negatif : " + s);
                 c.solde = s;
+                lireMouvements(c, o);
             } catch (Exception ex) {
                 c.solde = 0;
                 c.ferme = true;
+                c.mouvements.clear();
                 HeralizCasino.LOGGER.error("[HeralizCasino] compte de capsules illisible ({}) : {} — compte FERMÉ, fichier gardé tel quel", f, ex.toString());
                 try {
                     Files.copy(f, f.resolveSibling(u + ".json.illisible." + System.currentTimeMillis()), StandardCopyOption.REPLACE_EXISTING);
@@ -141,6 +165,19 @@ public final class CompteCapsules {
         return c;
     }
 
+    /** Historique du fichier ; un mouvement illisible est oublie (ce n'est que de l'affichage, le solde fait foi). */
+    private static void lireMouvements(Compte c, JsonObject o) {
+        if (!o.has("mouvements") || !o.get("mouvements").isJsonArray()) return;
+        for (JsonElement e : o.getAsJsonArray("mouvements")) {
+            if (c.mouvements.size() >= HISTORIQUE) break;
+            try {
+                JsonObject m = e.getAsJsonObject();
+                c.mouvements.add(new Mvt(m.get("t").getAsLong(), m.get("k").getAsString(), m.has("d") ? m.get("d").getAsString() : "", m.get("n").getAsLong()));
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
     private static boolean ecrire(Compte c) {
         if (c.ferme) return false;
         try {
@@ -148,6 +185,16 @@ public final class CompteCapsules {
             o.addProperty("version", 1);
             o.addProperty("nom", c.nom);
             o.addProperty("solde", c.solde);
+            JsonArray a = new JsonArray();
+            for (Mvt m : c.mouvements) {
+                JsonObject j = new JsonObject();
+                j.addProperty("t", m.t);
+                j.addProperty("k", m.k);
+                j.addProperty("d", m.d);
+                j.addProperty("n", m.n);
+                a.add(j);
+            }
+            o.add("mouvements", a);
             Path f = fichier(c.uuid);
             Files.createDirectories(f.getParent());
             Path tmp = f.resolveSibling(c.uuid + ".json.tmp");
@@ -175,6 +222,24 @@ public final class CompteCapsules {
     }
 
     /**
+     * Genre et detail d'un mouvement, d'apres sa source : « depot », « retrait », « caisse &lt;objet [NBT]&gt; » ou
+     * « caisse &lt;encaissement&gt; », « caisse rendu ... », « entree du casino », « staff ... », « wipe » ; une source
+     * suivie de « (annule) » est un remboursement. Le nom du membre du staff n'est jamais montre au joueur.
+     */
+    static String[] motif(@Nullable String source) {
+        String s = source == null ? "" : source;
+        if (s.endsWith(" (annule)")) return new String[]{"rendu", motif(s.substring(0, s.length() - 9))[1]};
+        if (s.equals("depot")) return new String[]{"depot", ""};
+        if (s.equals("retrait")) return new String[]{"retrait", ""};
+        if (s.equals("entree du casino")) return new String[]{"entree", ""};
+        if (s.startsWith("caisse rendu ")) return new String[]{"rendu", s.substring(13)};
+        if (s.startsWith("caisse ")) return new String[]{"caisse", s.substring(7)};
+        if (s.startsWith("staff")) return new String[]{"staff", ""};
+        if (s.equals("wipe")) return new String[]{"wipe", ""};
+        return new String[]{"autre", ""};
+    }
+
+    /**
      * Change le solde de {@code delta} et ecrit le compte AVANT de rendre vrai. Faux (rien change) si le compte est ferme,
      * si le solde passerait sous 0 ou au-dessus du plafond, ou si l'ecriture echoue.
      */
@@ -187,9 +252,14 @@ public final class CompteCapsules {
         String ancienNom = c.nom;
         if (nom != null && !nom.isEmpty()) c.nom = nom;
         c.solde = apres;
+        String[] m = motif(source);
+        c.mouvements.addFirst(new Mvt(System.currentTimeMillis(), m[0], m[1], delta));
+        Mvt oublie = c.mouvements.size() > HISTORIQUE ? c.mouvements.removeLast() : null;
         if (!ecrire(c)) {
             c.solde = avant;
             c.nom = ancienNom;
+            c.mouvements.removeFirst();
+            if (oublie != null) c.mouvements.addLast(oublie);
             return false;
         }
         journal(c, delta > 0 ? "+" : "-", Math.abs(delta), source);
@@ -216,15 +286,18 @@ public final class CompteCapsules {
         return n > 0 && changer(u, nom, -n, source);
     }
 
-    /** Remise a zero (/wipe) : solde a 0. Faux si le compte est ferme ou si l'ecriture echoue. */
+    /** Remise a zero (/wipe) : solde a 0 et historique vide. Faux si le compte est ferme ou si l'ecriture echoue. */
     public static boolean remettreAZero(UUID u, String source) {
         Compte c = compte(u);
         if (c.ferme) return false;
-        if (c.solde == 0) return true;
+        if (c.solde == 0 && c.mouvements.isEmpty()) return true;
         long avant = c.solde;
+        List<Mvt> anciens = new ArrayList<>(c.mouvements);
         c.solde = 0;
+        c.mouvements.clear();
         if (!ecrire(c)) {
             c.solde = avant;
+            c.mouvements.addAll(anciens);
             return false;
         }
         journal(c, "-", avant, source);
@@ -274,8 +347,8 @@ public final class CompteCapsules {
         if (surCompte > 0) sauverJoueur(p);
     }
 
-    // ------------------------------------------------------------------ depot et retrait (commande /capsules)
-    /** Le joueur est a moins de {@code distance} blocs d'une caisse du casino (0 : partout). */
+    // ------------------------------------------------------------------ depot et retrait (distributeur, /capsules)
+    /** Le joueur est a moins de {@code distance} blocs d'un distributeur de capsules ou d'une caisse du casino (0 : partout). */
     public static boolean pres(ServerPlayer p) {
         double d = reglages().distance;
         if (d <= 0) return true;
@@ -288,26 +361,34 @@ public final class CompteCapsules {
                 LevelChunk ch = lvl.getChunkSource().getChunkNow(cx, cz);
                 if (ch == null) continue;
                 for (BlockEntity be : ch.getBlockEntities().values()) {
-                    if (be instanceof CashierBlockEntity && Vec3.atCenterOf(be.getBlockPos()).distanceToSqr(pos) <= d * d) return true;
+                    if ((be instanceof AtmBlockEntity || be instanceof CashierBlockEntity)
+                            && Vec3.atCenterOf(be.getBlockPos()).distanceToSqr(pos) <= d * d) return true;
                 }
             }
         }
         return false;
     }
 
-    /** Ouvert, et a cote d'une caisse ; sinon le joueur est prevenu. */
-    private static boolean peutOperer(ServerPlayer p) {
-        if (!actif()) {
-            dire(p, msg("ferme_partout", "Le compte de capsules est fermé pour le moment.").withStyle(ChatFormatting.RED));
-            return false;
-        }
+    /**
+     * Ouvert, pas trop vite, et a cote d'un distributeur ou d'une caisse (au distributeur, sa distance est deja verifiee) ;
+     * sinon le joueur est prevenu.
+     */
+    private static boolean peutOperer(ServerPlayer p, boolean borne) {
         if (p.isSpectator()) return false;
-        if (!ouvert(p.getUUID())) {
-            dire(p, msg("bloque", "Ton compte de capsules est bloqué : préviens le staff.").withStyle(ChatFormatting.RED));
+        long now = System.currentTimeMillis();
+        Long avant = DERNIERE.get(p.getUUID());
+        if (avant != null && now - avant >= 0 && now - avant < ECART_MS) return false;
+        DERNIERE.put(p.getUUID(), now);
+        if (!actif()) {
+            retour(p, borne, msg("ferme_partout", "Le compte de capsules est fermé pour le moment."), false);
             return false;
         }
-        if (!pres(p)) {
-            dire(p, msg("loin", "Va à la caisse du casino pour déposer ou retirer des capsules.").withStyle(ChatFormatting.RED));
+        if (!ouvert(p.getUUID())) {
+            retour(p, borne, msg("bloque", "Ton compte de capsules est bloqué : préviens le staff."), false);
+            return false;
+        }
+        if (!borne && !pres(p)) {
+            retour(p, borne, msg("loin", "Va à un distributeur de capsules (ATM) ou à la caisse du casino pour déposer ou retirer des capsules."), false);
             return false;
         }
         return true;
@@ -316,9 +397,11 @@ public final class CompteCapsules {
     /**
      * Depot de {@code demande} capsules (0 = toutes) de l'inventaire sur le compte. Sans monnaie : si les capsules du
      * joueur ne forment pas exactement ce nombre, le plus grand nombre en dessous est depose (et le joueur le sait).
+     * {@code borne} : demande du distributeur (resultat dans son ecran), sinon de /capsules (resultat dans le chat).
+     * Rend le nombre de capsules deposees (0 : rien n'a bouge).
      */
-    public static void deposer(ServerPlayer p, long demande) {
-        if (!peutOperer(p)) return;
+    public static long deposer(ServerPlayer p, long demande, boolean borne) {
+        if (!peutOperer(p, borne)) return 0;
         ChipsServeur.convertirAnciennes(p);
         Inventory inv = p.getInventory();
         long[] have = new long[Chips.VALUES.length];
@@ -334,8 +417,8 @@ public final class CompteCapsules {
             }
         }
         if (total <= 0) {
-            dire(p, msg("rien", "Tu n'as aucune capsule sur toi.").withStyle(ChatFormatting.RED));
-            return;
+            retour(p, borne, msg("rien", "Tu n'as aucune capsule sur toi."), false);
+            return 0;
         }
         long vise = demande <= 0 ? total : Math.min(demande, total);
         // les plus grosses capsules d'abord : avec 1, 5 et 10, c'est le plus grand nombre possible sous « vise »
@@ -347,18 +430,20 @@ public final class CompteCapsules {
         }
         long n = vise - rem;
         if (n <= 0) {
-            dire(p, msg("pas_monnaie", "Tes capsules ne permettent pas de déposer %s : dépose-les toutes avec /capsules deposer.",
-                    Chips.format(vise)).withStyle(ChatFormatting.RED));
-            return;
+            retour(p, borne, borne
+                    ? msg("pas_monnaie_borne", "Tes capsules ne permettent pas de déposer %s : choisis « Tout déposer ».", Chips.format(vise))
+                    : msg("pas_monnaie", "Tes capsules ne permettent pas de déposer %s : dépose-les toutes avec /capsules deposer.", Chips.format(vise)),
+                    false);
+            return 0;
         }
         if (solde(p.getUUID()) + n > reglages().max) {
-            dire(p, msg("plein", "Ton compte est plein (%s capsules au plus).", Chips.format(reglages().max)).withStyle(ChatFormatting.RED));
-            return;
+            retour(p, borne, msg("plein", "Ton compte est plein (%s capsules au plus).", Chips.format(reglages().max)), false);
+            return 0;
         }
         // le compte d'abord (ecrit sur le disque) ; ecriture ratee : rien n'a bouge
         if (!crediter(p.getUUID(), p.getGameProfile().getName(), n, "depot")) {
-            dire(p, msg("erreur", "Opération impossible pour le moment, réessaie.").withStyle(ChatFormatting.RED));
-            return;
+            retour(p, borne, msg("erreur", "Opération impossible pour le moment, réessaie."), false);
+            return 0;
         }
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);
@@ -375,29 +460,33 @@ public final class CompteCapsules {
         sauverJoueur(p);
         long s = solde(p.getUUID());
         if (demande > 0 && n < demande && n < total) {
-            dire(p, msg("depose_arrondi", "%s capsules déposées (pas de monnaie pour %s). Compte : %s capsules.",
-                    Chips.format(n), Chips.format(demande), Chips.format(s)).withStyle(ChatFormatting.GREEN));
+            retour(p, borne, msg("depose_arrondi", "%s capsules déposées (pas de monnaie pour %s). Compte : %s capsules.",
+                    Chips.format(n), Chips.format(demande), Chips.format(s)), true);
         } else {
-            dire(p, msg("depose", "%s capsules déposées. Compte : %s capsules.", Chips.format(n), Chips.format(s)).withStyle(ChatFormatting.GREEN));
+            retour(p, borne, msg("depose", "%s capsules déposées. Compte : %s capsules.", Chips.format(n), Chips.format(s)), true);
         }
+        return n;
     }
 
-    /** Retrait de {@code n} capsules du compte, refuse si elles ne tiennent pas toutes dans l'inventaire. */
-    public static void retirer(ServerPlayer p, long n) {
-        if (n <= 0 || !peutOperer(p)) return;
+    /**
+     * Retrait de {@code n} capsules du compte, refuse si elles ne tiennent pas toutes dans l'inventaire ({@code borne} :
+     * voir {@link #deposer}). Rend le nombre de capsules retirees (0 : rien n'a bouge).
+     */
+    public static long retirer(ServerPlayer p, long n, boolean borne) {
+        if (n <= 0 || !peutOperer(p, borne)) return 0;
         long s = solde(p.getUUID());
         if (s < n) {
-            dire(p, msg("pas_assez", "Ton compte n'a que %s capsules.", Chips.format(s)).withStyle(ChatFormatting.RED));
-            return;
+            retour(p, borne, msg("pas_assez", "Ton compte n'a que %s capsules.", Chips.format(s)), false);
+            return 0;
         }
         List<ItemStack> piles = ChipsServeur.stacks(n);
         if (!tiennent(p.getInventory(), piles)) {
-            dire(p, msg("place", "Pas assez de place dans ton inventaire pour %s capsules.", Chips.format(n)).withStyle(ChatFormatting.RED));
-            return;
+            retour(p, borne, msg("place", "Pas assez de place dans ton inventaire pour %s capsules.", Chips.format(n)), false);
+            return 0;
         }
         if (!debiter(p.getUUID(), p.getGameProfile().getName(), n, "retrait")) {
-            dire(p, msg("erreur", "Opération impossible pour le moment, réessaie.").withStyle(ChatFormatting.RED));
-            return;
+            retour(p, borne, msg("erreur", "Opération impossible pour le moment, réessaie."), false);
+            return 0;
         }
         Inventory inv = p.getInventory();
         for (ItemStack pile : piles) {
@@ -406,8 +495,8 @@ public final class CompteCapsules {
         }
         inv.setChanged();
         sauverJoueur(p);
-        dire(p, msg("retire", "%s capsules retirées. Compte : %s capsules.", Chips.format(n), Chips.format(solde(p.getUUID())))
-                .withStyle(ChatFormatting.GREEN));
+        retour(p, borne, msg("retire", "%s capsules retirées. Compte : %s capsules.", Chips.format(n), Chips.format(solde(p.getUUID()))), true);
+        return n;
     }
 
     /**
@@ -433,7 +522,7 @@ public final class CompteCapsules {
     }
 
     // ------------------------------------------------------------------ affichage
-    /** Envoie son solde au joueur s'il est en ligne (boutons de la caisse). */
+    /** Envoie son compte au joueur s'il est en ligne (caisse, distributeur). */
     public static void envoyer(UUID u) {
         MinecraftServer srv = ServerLifecycleHooks.getCurrentServer();
         ServerPlayer p = srv == null ? null : srv.getPlayerList().getPlayer(u);
@@ -441,7 +530,22 @@ public final class CompteCapsules {
     }
 
     public static void envoyer(ServerPlayer p) {
-        CasinoNet.sendTo(p, new ComptePacket(actif() ? solde(p.getUUID()) : 0));
+        envoyer(p, null, false);
+    }
+
+    /** Compte du joueur (solde, derniers mouvements) et, s'il y en a un, le resultat d'une operation au distributeur. */
+    public static void envoyer(ServerPlayer p, @Nullable Component message, boolean ok) {
+        Compte c = compte(p.getUUID());
+        boolean utilisable = actif() && !c.ferme;
+        List<ComptePacket.Mouvement> l = new ArrayList<>();
+        if (utilisable) {
+            long now = System.currentTimeMillis();
+            for (Mvt m : c.mouvements) {
+                if (l.size() >= ComptePacket.MAX_MOUVEMENTS) break;
+                l.add(new ComptePacket.Mouvement(m.k, m.d, m.n, Math.max(0, (now - m.t) / 1000)));
+            }
+        }
+        CasinoNet.sendTo(p, new ComptePacket(utilisable ? Math.max(0, c.solde) : 0, utilisable, paiementOuvert(), l, message, ok));
     }
 
     /** Solde et aide (commande /capsules). */
@@ -456,8 +560,8 @@ public final class CompteCapsules {
         }
         dire(p, msg("solde", "Compte de capsules : %s · sur toi : %s", Chips.format(solde(p.getUUID())), Chips.format(Chips.count(p)))
                 .withStyle(ChatFormatting.GOLD));
-        dire(p, msg("aide", "À la caisse du casino : /capsules deposer [nombre] (rien = tout), /capsules retirer <nombre>. "
-                + "La caisse prend sur ton compte ce qui manque sur toi.").withStyle(ChatFormatting.GRAY));
+        dire(p, msg("aide", "Au distributeur de capsules (ATM) du casino, ou à côté de lui ou de la caisse : /capsules deposer [nombre] "
+                + "(rien = tout), /capsules retirer <nombre>. La caisse prend sur ton compte ce qui manque sur toi.").withStyle(ChatFormatting.GRAY));
     }
 
     public static MutableComponent msg(String cle, String fr, Object... args) {
@@ -466,6 +570,12 @@ public final class CompteCapsules {
 
     private static void dire(ServerPlayer p, Component c) {
         p.sendSystemMessage(c);
+    }
+
+    /** Resultat d'une operation : dans l'ecran du distributeur, ou dans le chat (vert : fait, rouge : refuse). */
+    private static void retour(ServerPlayer p, boolean borne, MutableComponent c, boolean ok) {
+        if (borne) envoyer(p, c, ok);
+        else dire(p, c.withStyle(ok ? ChatFormatting.GREEN : ChatFormatting.RED));
     }
 
     // ------------------------------------------------------------------ sauvegarde du joueur
