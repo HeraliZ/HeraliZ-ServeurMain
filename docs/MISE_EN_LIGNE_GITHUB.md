@@ -43,7 +43,8 @@ de Mohist) ne change pas.
 - Le monde, les données des joueurs (clans, hérals, grades, quêtes…), `ops.json` et `server.properties` ne sont jamais
   touchés.
 
-Secrets GitHub : les mêmes qu'avant (Settings → Secrets and variables → Actions), rien à ajouter.
+Secrets GitHub : les mêmes qu'avant (Settings → Secrets and variables → Actions), plus `TOPSERVEURS_TOKEN` (facultatif)
+pour les votes du site (section 6).
 
 ## 4. Après l'envoi
 
@@ -73,3 +74,32 @@ Secrets GitHub : les mêmes qu'avant (Settings → Secrets and variables → Act
 
 Retirés (outils de l'ancienne carte qui ne sont plus dans le projet) : props de la carte, inventaire de la carte, monde
 du spawn, grotte, schematic, extractions, gunpacks, diagnostic CRac, test de charge. Ils restent dans l'historique Git.
+
+## 6. Votes du site protégés contre les bots (27/10)
+
+Chaque vote donne une clé, 10 hérals et 2 PB : une ferme de votes casse l'économie. L'extension HeraliZ du site
+(`site/extension/heraliz/src/Votes/`) ne laisse l'extension Vote d'Azuriom donner la récompense que :
+- à un **compte du site connecté** (plus de vote par simple pseudo : réglage remis à chaque envoi par `reglages.php`) ;
+- dont le **Discord est lié, membre et validé**, comme pour jouer, et qui a **déjà joué 10 minutes** (temps compté sur
+  les relevés d'AzLink, `TempsDeJeu` ; tant qu'AzLink n'a rien envoyé, cette règle ne s'applique pas) ;
+- avec le jeton Top-Serveurs : quand **Top-Serveurs a vu le vote** depuis la même connexion internet (vérification
+  stricte : une panne de Top-Serveurs ou un jeton refusé ne donnent rien, contrairement à l'extension Vote seule) ;
+- sans jeton (cas actuel : identifiants Top-Serveurs perdus) : seulement après un **clic « Voter » sur notre page**,
+  anti-robot **Turnstile** passé, depuis la même connexion, **20 s au moins** avant (`Votes\Clic`) ; un programme qui
+  appelle directement l'adresse de la récompense n'obtient plus rien ;
+- **une fois par connexion internet et par site** sur la durée du vote, tous comptes confondus (même bloc /64 en IPv6).
+
+Une connexion qui vote pour 3 comptes ou plus en 24 h est signalée dans le salon privé des comptes (Discord). La page de
+vote dit au joueur ce qui bloque AVANT qu'il clique (il ne gâche pas son vote sur Top-Serveurs).
+
+Sans jeton, le site ne peut pas savoir si le joueur a vraiment voté sur Top-Serveurs : un joueur en règle qui clique
+« Voter » puis ferme Top-Serveurs est quand même récompensé (comme avant). Les bots et les fermes de comptes, eux, sont
+bloqués.
+
+À régler par le propriétaire :
+- **Turnstile** (gratuit) : compte Cloudflare → Turnstile → ajouter le site `heraliz.fr` (mode « Managed ») → copier la
+  clé du site et la clé secrète dans l'administration du site → Paramètres → Sécurité → captcha « Turnstile ». Il
+  protège aussi l'inscription sur le site ; la connexion du launcher n'est pas touchée.
+- Facultatif, si le compte Top-Serveurs est un jour retrouvé : secret GitHub **`TOPSERVEURS_TOKEN`** = le jeton du
+  serveur dans le panel Top-Serveurs. Il passe par `site.yml` → `theme.sh` (environnement) → `reglages.php`, jamais
+  dans un fichier du dépôt ; chaque vote est alors vérifié auprès de Top-Serveurs.

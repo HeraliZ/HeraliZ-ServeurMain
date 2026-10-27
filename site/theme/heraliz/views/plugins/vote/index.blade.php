@@ -8,6 +8,11 @@
     $gains = $sites->flatMap(fn ($site) => $site->rewards->pluck('money'))->filter(fn ($m) => $m > 0);
     $gainCommun = $gains->isNotEmpty() && $gains->unique()->count() === 1 && $sites->every(fn ($site) => $site->rewards->isNotEmpty()) ? $gains->first() : null;
     $podium = collect([2, 1, 3])->map(fn ($rang) => $votes->get($rang));
+    // votes protégés (extension HeraliZ, Votes\Garde) : ce qui empêche ce compte de voter, montré AVANT le clic, pour
+    // qu'un joueur ne gâche pas son vote sur le site de vote pour rien
+    $Garde = \Azuriom\Plugin\Heraliz\Votes\Garde::class;
+    $gardeActive = $user !== null && class_exists($Garde);
+    $garde = $gardeActive ? rescue(fn () => $Garde::compte($user, $request), null, false) : null;
 @endphp
 
 @section('content')
@@ -62,18 +67,40 @@
                                 </button>
                             </form>
                         @else
-                            <h2 class="h4 text-uppercase">Connecte-toi pour voter</h2>
-                            <p class="texte-mute">Les récompenses arrivent sur ton compte du site.</p>
-                            <a href="{{ route('login') }}" class="btn rouge">{{ trans('auth.login') }}</a>
+                            {{-- #voteNameForm toujours présent, comme dans la page d'origine : après un vote, le script de
+                                 l'extension Vote y lit l'adresse des délais (sinon il s'arrête sur une erreur) --}}
+                            <form action="{{ route('vote.verify-user', '/') }}" id="voteNameForm">
+                                <h2 class="h4 text-uppercase">Connecte-toi pour voter</h2>
+                                <p class="texte-mute">Les récompenses arrivent sur ton compte du site.</p>
+                                <a href="{{ route('login') }}" class="btn rouge">{{ trans('auth.login') }}</a>
+                            </form>
                         @endif
                     </div>
                 </div>
 
                 <div class="@guest d-none @endguest" data-vote-step="2">
+                    @if($garde !== null)
+                        <div class="etape-vote coins mt-3 garde-vote">
+                            <h2 class="h4 text-uppercase">Avant de voter</h2>
+                            <p class="texte-mute mb-0">{{ $garde['message'] }}</p>
+                            @if($garde['lien'] !== null)
+                                <a href="{{ $garde['lien'] }}" class="btn rouge mt-3" @if(! str_starts_with($garde['lien'], url('/'))) target="_blank" rel="noopener noreferrer" @endif>{{ $garde['bouton'] }}</a>
+                            @endif
+                        </div>
+                    @endif
                     @forelse($sites as $site)
                         @php
                             $gainSite = $site->rewards->pluck('money')->filter(fn ($m) => $m > 0);
                             $delai = (int) $site->vote_delay;
+                            $prochain = $user !== null ? $site->getNextVoteTime($user, $request) : null;
+                            // connexion déjà récompensée pour un autre compte
+                            $raisonSite = $gardeActive && $garde === null && $prochain === null
+                                ? rescue(fn () => $Garde::pourSite($site, $user, $request), null, false) : null;
+                            $bloque = $garde !== null || $raisonSite !== null;
+                            // site sans vérification possible (Top-Serveurs sans jeton) : clic « Voter » noté par le site,
+                            // anti-robot compris (Votes\Clic)
+                            $avecClic = $gardeActive && ! rescue(fn () => $Garde::verifiable($site), false, false);
+                            $clics = ($clics ?? false) || ($avecClic && ! $bloque);
                         @endphp
                         <div class="mission coins">
                             <span class="num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
@@ -82,17 +109,26 @@
                                 @if($delai > 0)
                                     <div class="d">Toutes les {{ $delai >= 60 ? intdiv($delai, 60).' h'.($delai % 60 ? ' '.str_pad($delai % 60, 2, '0', STR_PAD_LEFT) : '') : $delai.' min' }}</div>
                                 @endif
+                                @if($raisonSite !== null)
+                                    <div class="d raison">{{ $raisonSite }}</div>
+                                @endif
                             </div>
                             <div class="r">
                                 @if($gainSite->isNotEmpty())
                                     <span class="gain"><span class="piece p"></span>@if($gainSite->unique()->count() > 1)jusqu’à @endif+{{ $gainSite->max() }}</span>
                                 @endif
-                                <a class="btn rouge" href="{{ $site->url }}" target="_blank" rel="noopener noreferrer"
-                                   data-vote-id="{{ $site->id }}"
-                                   data-vote-url="{{ route('vote.vote', $site) }}"
-                                   @auth data-vote-time="{{ $site->getNextVoteTime($user, $request)?->valueOf() }}" @endauth>
-                                    <span class="lab-voter">Voter</span><span class="lab-attente">Prochain vote</span><span class="vote-timer"></span>
-                                </a>
+                                @if($bloque)
+                                    {{-- sans data-vote-url : le script de l'extension Vote n'y touche pas, et le site de vote ne s'ouvre pas --}}
+                                    <span class="btn rouge disabled" aria-disabled="true"><span class="lab-attente">Indisponible</span></span>
+                                @else
+                                    <a class="btn rouge" href="{{ $site->url }}" target="_blank" rel="noopener noreferrer"
+                                       data-vote-id="{{ $site->id }}"
+                                       data-vote-url="{{ route('vote.vote', $site) }}"
+                                       @if($avecClic) data-heraliz-clic="{{ route('heraliz.vote.clic', $site) }}" @endif
+                                       @auth data-vote-time="{{ $prochain?->valueOf() }}" @endauth>
+                                        <span class="lab-voter">Voter</span><span class="lab-attente">Prochain vote</span><span class="vote-timer"></span>
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     @empty
@@ -102,6 +138,16 @@
                             <p>{{ trans('vote::messages.errors.site') }}</p>
                         </div>
                     @endforelse
+                    @php
+                        $turnstile = ($clics ?? false) ? rescue(fn () => \Azuriom\Plugin\Heraliz\Votes\Clic::turnstile(), null, false) : null;
+                    @endphp
+                    @if($turnstile !== null)
+                        {{-- anti-robot de Cloudflare : invisible tant qu'il ne demande rien au joueur --}}
+                        <div id="heraliz-turnstile" class="turnstile-vote" data-sitekey="{{ $turnstile }}"></div>
+                    @endif
+                    @if($gardeActive && $sites->isNotEmpty())
+                        <p class="note-vote">Clique sur « Voter » ici, vote sur le site qui s’ouvre, puis reviens sur cette page : la récompense arrive toute seule. Vote depuis la même connexion internet que cette page (pas en 4G si cette page est en Wi-Fi). Une récompense par connexion internet et par site.</p>
+                    @endif
                 </div>
 
                 <div class="d-none" data-vote-step="3">
@@ -182,4 +228,90 @@
 
 @push('scripts')
     @include('vote::partials._scripts')
+    @if($clics ?? false)
+        <script>
+            // Votes protégés (extension HeraliZ, Votes\Clic) : pour un site de vote sans vérification, le clic sur « Voter »
+            // est d'abord noté par le site (anti-robot Turnstile s'il est réglé), puis le site de vote s'ouvre et la page
+            // demande la récompense comme d'habitude (fonctions de vote.js de l'extension Vote).
+            (function () {
+                let jeton = null;
+                let widget = null;
+
+                function preparer() {
+                    const boite = document.getElementById('heraliz-turnstile');
+                    if (!boite || !window.turnstile || widget !== null) {
+                        return;
+                    }
+                    widget = window.turnstile.render(boite, {
+                        sitekey: boite.dataset.sitekey,
+                        theme: 'dark',
+                        appearance: 'interaction-only',
+                        'refresh-expired': 'auto',
+                        callback: function (t) { jeton = t; },
+                        'expired-callback': function () { jeton = null; },
+                        'error-callback': function () { jeton = null; },
+                    });
+                }
+
+                window.heralizTurnstile = function () {
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', preparer);
+                    } else {
+                        preparer();
+                    }
+                };
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    const boite = document.getElementById('heraliz-turnstile');
+
+                    document.querySelectorAll('[data-heraliz-clic]').forEach(function (lien) {
+                        const surClic = function (ev) {
+                            if (ev.type === 'auxclick' && ev.button !== 1) {
+                                return;
+                            }
+                            // délai pas fini, ou script de l'extension Vote absent : l'extension Vote s'en occupe
+                            if (lien.classList.contains('disabled') || typeof refreshVote !== 'function') {
+                                return;
+                            }
+                            ev.preventDefault();
+                            ev.stopImmediatePropagation();
+
+                            if (boite && !jeton) {
+                                displayVoteAlert('Vérification anti-robot en cours : réessaie dans une seconde.', 'warning');
+                                return;
+                            }
+
+                            clearVoteAlert();
+                            window.open(lien.href, '_blank', 'noopener');
+                            lien.classList.add('disabled');
+                            document.getElementById('vote-card').classList.add('voting');
+
+                            const corps = boite ? {'cf-turnstile-response': jeton} : {};
+                            jeton = null;
+                            axios.post(lien.dataset.heralizClic, corps)
+                                .then(function () {
+                                    refreshVote(lien.dataset.voteUrl);
+                                })
+                                .catch(function (erreur) {
+                                    document.getElementById('vote-card').classList.remove('voting');
+                                    lien.classList.remove('disabled');
+                                    catchVoteError(erreur);
+                                })
+                                .finally(function () {
+                                    if (widget !== null) {
+                                        window.turnstile.reset(widget);
+                                    }
+                                });
+                        };
+
+                        lien.addEventListener('click', surClic, true);
+                        lien.addEventListener('auxclick', surClic, true);
+                    });
+                });
+            })();
+        </script>
+        @if($turnstile ?? null)
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=heralizTurnstile" async defer></script>
+        @endif
+    @endif
 @endpush

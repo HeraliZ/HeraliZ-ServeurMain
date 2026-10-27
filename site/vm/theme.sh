@@ -4,7 +4,8 @@
 # (site/extension/heraliz : création de compte et double authentification depuis le launcher), extensions Boutique et
 # Votes d'Azuriom, puis site/vm/reglages.php (thème actif ; réglages de départ une seule fois : l'administration fait
 # foi). Variables écrites en tête par la mise en ligne : ARCHIVE (thème, extension, reglages.php et images des premières
-# actualités ; effacée à la fin) et DISCORD_* (secrets GitHub du Discord obligatoire, vides s'ils manquent).
+# actualités ; effacée à la fin), DISCORD_* (secrets GitHub du Discord obligatoire, vides s'ils manquent) et
+# TOPSERVEURS_TOKEN (jeton du serveur Top-Serveurs : vérification des votes ; vide s'il manque).
 set -euo pipefail
 : "${ARCHIVE:?}"
 DOSSIER=/var/www/azuriom
@@ -214,7 +215,10 @@ fi
 rm -f "$TRAVAIL/heraliz-nginx-t.avant"
 
 echo "== Réglages"
-en_site env HERALIZ_TELECHARGEMENT="$TELECHARGEMENT" HERALIZ_VALIDATION="$VALIDATION" php "$TRAVAIL/vm/reglages.php" "$DOSSIER" "$TRAVAIL/contenu"
+# jeton du serveur Top-Serveurs (vérification des votes) : secret GitHub passé à php par l'environnement (export dans ce
+# sous-shell), jamais en argument d'une commande ; reglages.php l'écrit dans le site de vote Top-Serveurs
+(export HERALIZ_TOPSERVEURS_TOKEN="${TOPSERVEURS_TOKEN:-}"
+  en_site env HERALIZ_TELECHARGEMENT="$TELECHARGEMENT" HERALIZ_VALIDATION="$VALIDATION" php "$TRAVAIL/vm/reglages.php" "$DOSSIER" "$TRAVAIL/contenu")
 en_site php artisan view:clear > /dev/null
 en_site php artisan cache:clear > /dev/null
 

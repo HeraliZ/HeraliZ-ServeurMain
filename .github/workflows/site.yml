@@ -60,6 +60,8 @@ jobs:
       DISCORD_SALON_COMPTES: ${{ secrets.DISCORD_SALON_COMPTES }}
       DISCORD_ROLES_STAFF: ${{ secrets.DISCORD_ROLES_STAFF }}
       DISCORD_INVITATION: ${{ secrets.DISCORD_INVITATION }}
+      # votes : jeton du serveur Top-Serveurs (panel Top-Serveurs), facultatif ; sans lui, protection par la page de vote
+      TOPSERVEURS_TOKEN: ${{ secrets.TOPSERVEURS_TOKEN }}
       ACTION: ${{ inputs.action || 'theme' }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -480,8 +482,9 @@ jobs:
             if [ "$ACTION" = theme ]; then
               printf 'ARCHIVE=%q\n' "$ARCHIVE"
               # secrets du Discord obligatoire (theme.sh les écrit dans storage/app/heraliz/discord.json, lisible par le site seul)
+              # et jeton Top-Serveurs (theme.sh le passe à reglages.php par l'environnement)
               for v in DISCORD_CLIENT_ID DISCORD_CLIENT_SECRET DISCORD_BOT_TOKEN DISCORD_PUBLIC_KEY DISCORD_GUILD_ID \
-                       DISCORD_SALON_COMPTES DISCORD_ROLES_STAFF DISCORD_INVITATION; do
+                       DISCORD_SALON_COMPTES DISCORD_ROLES_STAFF DISCORD_INVITATION TOPSERVEURS_TOKEN; do
                 printf '%s=%q\n' "$v" "${!v}"
               done
             fi
@@ -548,6 +551,16 @@ jobs:
             fi
             echo "- portail des développeurs Discord → OAuth2 → Redirects : \`https://heraliz.fr/heraliz/discord/retour\`"
             echo "- portail des développeurs Discord → General Information → Interactions Endpoint URL : \`https://heraliz.fr/api/heraliz/discord/interactions\`"
+            echo
+            echo "### Votes protégés contre les bots"
+            echo "- un vote ne rapporte qu'à un compte connecté, Discord lié et validé, qui a déjà joué 10 minutes, une fois par connexion internet"
+            if [ -n "$TOPSERVEURS_TOKEN" ]; then
+              echo "- Top-Serveurs : **vérification active** (jeton du secret \`TOPSERVEURS_TOKEN\`) : seul un vrai vote est récompensé"
+            else
+              echo "- Top-Serveurs : pas de jeton (secret \`TOPSERVEURS_TOKEN\`) : récompense seulement après le clic « Voter » de la page du site, anti-robot passé, au moins 20 s avant"
+            fi
+            echo "- anti-robot du bouton « Voter » : le captcha Turnstile de l'administration (Paramètres → Sécurité) ; s'il n'est pas réglé, voir l'avertissement « Votes » de l'étape « Sur la VM »"
+            echo "- une même connexion qui vote pour 3 comptes ou plus en 24 h est signalée dans le salon privé des comptes (Discord)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Résumé

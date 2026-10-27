@@ -106,6 +106,11 @@ if (setting('heraliz.site_v4') === null) {
     siteV4();
 }
 
+// votes protégés contre les bots (27/10, demande du propriétaire) : à chaque envoi, le dépôt fait foi
+if (plugins()->isEnabled('vote')) {
+    votesProteges();
+}
+
 // pages légales : créées si elles manquent, remplacées tant qu'elles n'ont pas été modifiées dans l'administration
 majPagesLegales();
 // Serveurs-Minecraft.org : un vote toutes les 24 h (1 440 min), remis à chaque envoi
@@ -358,12 +363,12 @@ function siteV4(): void
             }
         }
         if (! $Site::where('url', 'like', '%top-serveurs.net%')->exists()) {
-            $nouveau = $Site::create(colonnes('vote_sites', ['name' => 'Top-Serveurs', 'url' => 'https://top-serveurs.net/minecraft/vote/heraliz', 'vote_delay' => 120, 'has_verification' => false, 'is_enabled' => true]));
+            $nouveau = $Site::create(colonnes('vote_sites', ['name' => 'Top-Serveurs', 'url' => 'https://top-serveurs.net/minecraft/vote/heraliz', 'vote_delay' => 120, 'has_verification' => true, 'is_enabled' => true]));
             $Recompense = \Azuriom\Plugin\Vote\Models\Reward::class;
             if (method_exists($nouveau, 'rewards')) {
                 $nouveau->rewards()->sync($Recompense::pluck('id')->all());
             }
-            dire('Votes : Top-Serveurs ajouté (toutes les 2 h ; vérification à régler dans l’administration → Votes → Sites)');
+            dire('Votes : Top-Serveurs ajouté (toutes les 2 h ; jeton du serveur : secret GitHub TOPSERVEURS_TOKEN)');
         }
     }
 
@@ -435,6 +440,65 @@ function recompenseVote(): void
         dire('Votes : récompense « 1 clé vote + 10 hérals + 2 PB » créée (sites de vote à ajouter dans l’administration → Votes → Sites)');
     }
     Setting::updateSettings('heraliz.votes', now()->toDateString());
+}
+
+/**
+ * Votes protégés (règles dans Votes\Garde de l'extension HeraliZ) : vote réservé aux comptes connectés (plus de vote par
+ * simple pseudo) ; vérification de chaque site de vote cochée quand l'extension Vote sait la faire ; jeton du serveur
+ * Top-Serveurs repris du secret GitHub TOPSERVEURS_TOKEN (passé par theme.sh dans l'environnement, jamais dans le dépôt ;
+ * sans le secret, la clé déjà réglée dans l'administration est gardée). Un site sans vérification possible ne récompense
+ * qu'après le clic « Voter » de notre page, anti-robot passé (Votes\Clic de l'extension HeraliZ).
+ */
+function votesProteges(): void
+{
+    if (! setting('vote.auth-required', false)) {
+        Setting::updateSettings('vote.auth-required', true);
+    }
+    dire('Votes : réservés aux comptes du site connectés');
+
+    $Site = \Azuriom\Plugin\Vote\Models\Site::class;
+    $verifications = app(\Azuriom\Plugin\Vote\Verification\VoteChecker::class);
+    $jeton = trim((string) getenv('HERALIZ_TOPSERVEURS_TOKEN'));
+    $Garde = \Azuriom\Plugin\Heraliz\Votes\Garde::class;
+    foreach ($Site::all() as $site) {
+        // nom du site de vote sans « www. » (Site::hostFromUrl n'existe que depuis l'extension Vote 1.2.12)
+        $hote = parse_url((string) $site->url, PHP_URL_HOST);
+        $hote = is_string($hote) && $hote !== '' ? preg_replace('/^www\./', '', strtolower($hote)) : null;
+        $maj = [];
+        if ($hote === 'top-serveurs.net' && $jeton !== '' && $site->verification_key !== $jeton) {
+            $maj['verification_key'] = $jeton;
+        }
+        if (! $site->has_verification && $hote !== null && $verifications->hasVerificationForSite($hote)) {
+            $maj['has_verification'] = true;
+        }
+        if ($maj !== []) {
+            $site->update($maj);
+        }
+        if (! $site->is_enabled) {
+            continue;
+        }
+        $Stricte = \Azuriom\Plugin\Heraliz\Votes\VerificationStricte::class;
+        $valide = class_exists($Stricte) && $Stricte::geree($site) && trim((string) $site->verification_key) !== ''
+            ? $Stricte::jetonValide($site) : true;
+        if ($valide === false) {
+            dire('::warning::Votes : '.$site->name.' REFUSE la clé de vérification enregistrée (« aucun serveur associé ») : '
+                .'ses votes passent à la protection par la page (clic « Voter » + anti-robot) ; corriger ou vider la clé dans '
+                .'l’administration → Votes → Sites → '.$site->name);
+        } elseif (class_exists($Garde) && $Garde::verifiable($site->fresh())) {
+            dire('Votes : '.$site->name.' : chaque vote vérifié auprès du site de vote'
+                .($valide === null ? ' (site de vote muet pendant le test de la clé : clé pas vérifiée)' : ''));
+        } else {
+            dire('Votes : '.$site->name.' : vérification impossible'.($hote === 'top-serveurs.net' ? ' (pas de jeton Top-Serveurs)' : '')
+                .' : récompense seulement après le clic « Voter » de la page du site, anti-robot passé, au moins 20 s avant');
+        }
+    }
+
+    // anti-robot du bouton « Voter » : le Turnstile de Cloudflare réglé dans l'administration (Paramètres → Sécurité,
+    // captcha), le même qui protège l'inscription sur le site
+    $turnstile = class_exists(\Azuriom\Plugin\Heraliz\Votes\Clic::class) && \Azuriom\Plugin\Heraliz\Votes\Clic::turnstile() !== null;
+    dire($turnstile
+        ? 'Votes : anti-robot Turnstile actif sur le bouton « Voter »'
+        : '::warning::Votes : anti-robot Turnstile pas réglé (administration → Paramètres → Sécurité → captcha « Turnstile ») : un programme connecté à un compte validé peut encore cliquer « Voter » à la place du joueur');
 }
 
 function pbParVote(): void
