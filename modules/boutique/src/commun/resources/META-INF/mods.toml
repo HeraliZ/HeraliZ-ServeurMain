@@ -42,7 +42,7 @@ description='''Grades HeraliZ (staff, boutique, Survivant), préfixes, commandes
 # ---- heralizcasino (ancien projet heraliz-casino, version 2.5.1)
 [[mods]]
 modId="heralizcasino"
-version="2.5.1"
+version="2.6.0"
 displayName="Heraliz Casino"
 authors="${mod_authors}"
 description='''Le casino du serveur HERALIZ : machines 3D animees (machines a sous, Grande Roue, Plinko, Blackjack, Roulette, Crash, Des, Mines, Pile ou Face, Course de chevaux, Video Poker), jetons et caisse de change. La maison garde toujours l'avantage.'''

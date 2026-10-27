@@ -47,6 +47,7 @@ public final class CommonEventsServeur {
         sendConfig(player);
         ChipsServeur.convertirAnciennes(player);
         CasinoNet.sendTo(player, new JackpotPacket(Jackpot.get(player.getServer()).value()));
+        fr.heraliz.casino.economy.CompteCapsules.envoyer(player);
         long pending = PendingPayouts.get(player.getServer()).take(player.getUUID());
         if (pending > 0) {
             ChipsServeur.give(player, pending);

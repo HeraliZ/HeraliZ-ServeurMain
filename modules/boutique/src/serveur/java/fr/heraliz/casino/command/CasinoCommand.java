@@ -91,8 +91,10 @@ public final class CasinoCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> d) {
+        CommandeCapsules.register(d);
         d.register(Commands.literal("casino")
                 .then(ZoneCommand.build())
+                .then(CommandeCapsules.staff())
                 .then(Commands.literal("solde").executes(CasinoCommand::balance))
                 .then(Commands.literal("jetons").requires(s -> s.hasPermission(2))
                         .then(Commands.literal("donner").then(Commands.argument("joueurs", EntityArgument.players())

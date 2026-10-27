@@ -83,6 +83,16 @@ public class CashierScreen extends MachineScreen<CashierBlockEntity> {
         return PontEconomieClient.solde();
     }
 
+    /**
+     * 27/10 : la caisse prend sur le compte de capsules ce qui manque dans l'inventaire (solde envoye par le serveur, qui
+     * reverifie tout a chaque achat).
+     */
+    @Override
+    protected long balance() {
+        CasinoConfig.Compte c = CasinoConfig.get().compte;
+        return super.balance() + (c.actif && c.payerCaisse ? fr.heraliz.casino.net.ComptePacket.clientSolde : 0);
+    }
+
     /** Unites du taux pour viser "target" jetons de casino (0 : tous les jetons de casino de l'inventaire). */
     private long units(Line l, long target, boolean sell) {
         if (target <= 0) return sell ? balance() / l.chips : 0;

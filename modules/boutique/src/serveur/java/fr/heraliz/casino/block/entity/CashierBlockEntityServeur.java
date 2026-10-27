@@ -4,6 +4,7 @@ import fr.heraliz.casino.HeralizCasino;
 import fr.heraliz.casino.config.CasinoConfig;
 import fr.heraliz.casino.economy.Chips;
 import fr.heraliz.casino.economy.ChipsServeur;
+import fr.heraliz.casino.economy.CompteCapsules;
 import fr.heraliz.casino.economy.EconomieServeur;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -81,8 +82,10 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
             } else {
                 if (!e.vente) return;
                 long chips = count * e.jetons;
-                if (!ChipsServeur.take(p, chips)) {
-                    msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(chips), Chips.format(Chips.count(p))).withStyle(ChatFormatting.RED));
+                // 27/10 : ce qui manque dans l'inventaire est pris sur le compte de capsules (CompteCapsules)
+                CompteCapsules.Paiement pay = CompteCapsules.payer(p, chips, "caisse " + e.item);
+                if (pay == null) {
+                    pasAssez(p, chips);
                     return;
                 }
                 // 25/10 : une clé de caisse (ex. clé des emotes) va sur le compte de clés du joueur, jamais en objet ;
@@ -90,13 +93,14 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                 if (item instanceof fr.heraliz.crates.item.CrateKeyItem k) {
                     if (!fr.heraliz.crates.cles.ComptesCles.crediter(sl.getServer(), p.getUUID(), p.getGameProfile().getName(), k.type,
                             (int) count, "casino")) {
-                        ChipsServeur.give(p, chips);
+                        CompteCapsules.rendre(p, pay, chips, "caisse rendu " + e.item);
                         msg(p, Component.translatableWithFallback("message.heralizcasino.cashier.cles_indispo",
                                 "Clés indisponibles pour le moment : tes capsules sont rendues.").withStyle(ChatFormatting.RED));
                         return;
                     }
                     msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, ref.getHoverName())
                             .withStyle(ChatFormatting.GREEN));
+                    surCompte(p, pay);
                     tx(1, chips);
                     return;
                 }
@@ -108,6 +112,7 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                 }
                 msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, ref.getHoverName())
                         .withStyle(ChatFormatting.GREEN));
+                surCompte(p, pay);
                 tx(1, chips);
             }
         } else if (action == ACTION_CASH_CMD) {
@@ -119,25 +124,53 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
             boolean parUnite = !e.commande.contains("{amount}");
             if (parUnite) count = Math.min(count, 16);
             long chips = count * e.jetons;
-            if (!ChipsServeur.take(p, chips)) {
-                msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(chips), Chips.format(Chips.count(p))).withStyle(ChatFormatting.RED));
+            CompteCapsules.Paiement pay = CompteCapsules.payer(p, chips, "caisse " + e.nom);
+            if (pay == null) {
+                pasAssez(p, chips);
                 return;
             }
             long amount = count * e.montant;
             MinecraftServer server = sl.getServer();
             String cmd = e.commande.replace("{player}", p.getGameProfile().getName()).replace("{amount}", Long.toString(amount));
             if (cmd.startsWith("/")) cmd = cmd.substring(1);
-            for (long k = 0; k < (parUnite ? count : 1); k++) {
+            // 27/10 : une commande qui rend 0 n'a rien donné (émote au hasard alors qu'il les a toutes, grade déjà à vie...) :
+            // ces capsules-là sont rendues
+            long fois = parUnite ? count : 1, reussies = 0;
+            for (long k = 0; k < fois; k++) {
                 try {
-                    server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd);
+                    if (server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd) > 0) reussies++;
                 } catch (Exception ex) {
                     HeralizCasino.LOGGER.error("[HeralizCasino] Commande d'encaissement en erreur : {}", cmd, ex);
                 }
             }
-            msg(p, Component.translatable("message.heralizcasino.cashier.cashed", Chips.format(chips), Chips.format(amount), e.nom)
-                    .withStyle(ChatFormatting.GREEN));
-            tx(1, chips);
+            long rendu = parUnite ? (fois - reussies) * e.jetons : (reussies > 0 ? 0 : chips);
+            if (rendu > 0) {
+                CompteCapsules.rendre(p, pay, rendu, "caisse rendu " + e.nom);
+                HeralizCasino.LOGGER.info("[HeralizCasino] {} : « {} » n'a rien donné ({} fois sur {}), {} capsules rendues",
+                        p.getGameProfile().getName(), cmd, fois - reussies, fois, rendu);
+                msg(p, Component.translatableWithFallback("message.heralizcasino.cashier.rendu", "%2$s : rien n'a pu être donné, %1$s capsules rendues.",
+                        Chips.format(rendu), e.nom).withStyle(ChatFormatting.RED));
+            }
+            long paye = chips - rendu;
+            if (paye <= 0) return;
+            msg(p, Component.translatable("message.heralizcasino.cashier.cashed", Chips.format(paye),
+                    Chips.format(parUnite ? reussies * e.montant : amount), e.nom).withStyle(ChatFormatting.GREEN));
+            surCompte(p, pay);
+            tx(1, paye);
         }
+    }
+
+    /** Pas assez de capsules, compte compris s'il paie aussi. */
+    private static void pasAssez(ServerPlayer p, long chips) {
+        msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(chips), Chips.format(CompteCapsules.disponible(p)))
+                .withStyle(ChatFormatting.RED));
+    }
+
+    /** Le joueur sait quelle part a été prise sur son compte. */
+    private static void surCompte(ServerPlayer p, CompteCapsules.Paiement pay) {
+        if (pay.compte() <= 0) return;
+        msg(p, CompteCapsules.msg("paye", "Dont %s capsules prises sur ton compte (reste : %s).", Chips.format(pay.compte()),
+                Chips.format(CompteCapsules.solde(p.getUUID()))).withStyle(ChatFormatting.GRAY));
     }
 
     /**

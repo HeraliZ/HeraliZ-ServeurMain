@@ -128,35 +128,28 @@
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"zero_absolu\"}",
-      "weight": 800,
+      "weight": 1000,
       "rarity": "legendary"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"onde_celeste\"}",
-      "weight": 800,
+      "weight": 1000,
       "rarity": "legendary"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"mille_coupes\"}",
-      "weight": 800,
-      "rarity": "legendary"
-    },
-    {
-      "item": "reanimation:finisher",
-      "count": 1,
-      "nbt": "{Execution:\"main_joker\"}",
-      "weight": 800,
+      "weight": 1000,
       "rarity": "legendary"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"freestyle_combo\"}",
-      "weight": 800,
+      "weight": 1000,
       "rarity": "legendary"
     },
     {

@@ -46,24 +46,30 @@ final class CommandeEmote {
         String quoi = StringArgumentType.getString(c, "emote");
         ListeEmotes.Emote cible = null;
         if (!quoi.equals("hasard") && !quoi.equals("tout") && (cible = ListeEmotes.parId(quoi)) == null) return inconnue(c, quoi);
+        // 27/10 : rend le nombre de joueurs qui ont VRAIMENT reçu une emote (0 : rien de donné), comme « grade acheter » :
+        // la caisse du casino et la boutique en jeu remboursent quand la commande rend 0
+        int faits = 0;
         for (ServerPlayer p : joueurs) {
             String nom = p.getGameProfile().getName();
             if (quoi.equals("tout")) {
                 int n = Deblocages.toutDebloquer(p);
+                if (n > 0) faits++;
                 dire(c, Component.translatableWithFallback("heraliz_emote.cmd.tout", "%s : %s emote(s) débloquée(s)", nom, n));
             } else if (quoi.equals("hasard")) {
                 ListeEmotes.Emote e = Deblocages.debloquerAuHasard(p);
+                if (e != null) faits++;
                 dire(c, e == null
                         ? Component.translatableWithFallback("heraliz_emote.cmd.complet", "%s a déjà toutes les emotes", nom)
                         : Component.translatableWithFallback("heraliz_emote.cmd.debloquee", "%s : emote « %s » débloquée", nom, e.nom()));
             } else {
                 boolean ok = Deblocages.debloquer(p, cible.uuid());
+                if (ok) faits++;
                 dire(c, ok
                         ? Component.translatableWithFallback("heraliz_emote.cmd.debloquee", "%s : emote « %s » débloquée", nom, cible.nom())
                         : Component.translatableWithFallback("heraliz_emote.cmd.deja", "%s a déjà l'emote « %s »", nom, cible.nom()));
             }
         }
-        return joueurs.size();
+        return faits;
     }
 
     private static int retirer(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {

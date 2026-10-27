@@ -117,6 +117,9 @@ FINISHERS = {
     "rare": ["marionnettiste", "zero_absolu", "singularite", "onde_celeste", "danse_ombres", "mille_coupes",
              "souffle_dragon", "main_joker", "bonhomme_de_neige", "freestyle_combo", "tempete_sakura"],
 }
+# finishers vendus seulement à la caisse du casino (27/10, demande du propriétaire : Main du Joker, 80 000 capsules) :
+# retirés des caisses après le partage Vote / Quête, pour que les autres finishers restent dans leur caisse
+EXCLUSIFS_CASINO = ("main_joker",)
 CAISSES_BETA = {
     "camo": [
         ("camos", "common", 29, "common"), ("camos", "uncommon", 20, "uncommon"), ("camos", "rare", 13, "rare"),
@@ -224,7 +227,7 @@ def recompenses_beta(nom, lignes):
             out += _groupe([{k: v for k, v in e.items() if k not in ("weight", "rarity")} for e in spectacle if e.get("rarity") == r0], p, rar)
         elif g == "finishers":
             _, caisse, groupe, p, rar = l
-            ids = FINISHERS[groupe][(0 if caisse == "vote" else 1)::2]
+            ids = [i for i in FINISHERS[groupe][(0 if caisse == "vote" else 1)::2] if i not in EXCLUSIFS_CASINO]
             out += _groupe([{"item": "reanimation:finisher", "count": 1, "nbt": '{Execution:"%s"}' % i} for i in ids], p, rar)
         elif g == "coeur":
             _, p, rar = l

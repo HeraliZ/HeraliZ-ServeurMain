@@ -101,8 +101,8 @@ final class WipeServeur {
         auteur = src.getTextName();
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.avertir",
                 "REMISE À ZÉRO DU SERVEUR : toutes les bases, tous les clans, les hérals, la saison, le classement du ClashWar, "
-                        + "et pour chaque joueur inventaire, coffres, quêtes, personnage et tutoriel. Gardés : objets à vie, camos, "
-                        + "emotes, grades, permissions, comptes. Impossible à annuler.").withStyle(ChatFormatting.RED), false);
+                        + "et pour chaque joueur inventaire, coffres, compte de capsules, quêtes, personnage et tutoriel. Gardés : "
+                        + "objets à vie, camos, emotes, grades, permissions, comptes. Impossible à annuler.").withStyle(ChatFormatting.RED), false);
         String c = code;
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.code",
                 "Pour lancer : /wipe tout confirmer %s (valable 1 minute).", c).withStyle(ChatFormatting.GOLD), false);

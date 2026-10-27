@@ -16,7 +16,8 @@ public final class CasinoNet {
     private CasinoNet() {
     }
 
-    private static final String PROTOCOL = "4";
+    /** 5 (27/10) : solde du compte de capsules (ComptePacket) ; jars joueurs et serveur de la meme fabrication. */
+    private static final String PROTOCOL = "5";
 
     /**
      * Paquets recus par le client (serveur -> client) : traitement d'affichage branche par la partie client
@@ -70,5 +71,7 @@ public final class CasinoNet {
                 .encoder(ZonePayPacket::encode).decoder(ZonePayPacket::decode).consumerMainThread(ZonePayPacket::handle).add();
         CHANNEL.messageBuilder(ZoneCutscenePacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(ZoneCutscenePacket::encode).decoder(ZoneCutscenePacket::decode).consumerMainThread(ZoneCutscenePacket::handle).add();
+        CHANNEL.messageBuilder(ComptePacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ComptePacket::encode).decoder(ComptePacket::decode).consumerMainThread(ComptePacket::handle).add();
     }
 }

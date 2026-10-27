@@ -22,175 +22,175 @@
       {
         "item": "heralizcrates:camo_key",
         "nbt": "",
-        "jetons": 1500,
+        "jetons": 4500,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralizcrates:spectacle_key",
         "nbt": "",
-        "jetons": 2500,
+        "jetons": 10000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralizcrates:gemme_key",
         "nbt": "",
-        "jetons": 6000,
+        "jetons": 15000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:camo_gold",
         "nbt": "",
-        "jetons": 800,
+        "jetons": 6000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:camo_lava",
         "nbt": "",
-        "jetons": 800,
+        "jetons": 6000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:camo_galaxy",
         "nbt": "",
-        "jetons": 800,
+        "jetons": 6000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:camo_obsidian",
         "nbt": "",
-        "jetons": 800,
+        "jetons": 6000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:camo_diamond",
         "nbt": "",
-        "jetons": 800,
+        "jetons": 6000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:camo_dragon",
         "nbt": "",
-        "jetons": 2500,
+        "jetons": 8000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:camo_dark_matter",
         "nbt": "",
-        "jetons": 2500,
+        "jetons": 10000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:camo_liquid_chrome",
         "nbt": "",
-        "jetons": 2500,
+        "jetons": 10000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:stattrack_module",
         "nbt": "",
-        "jetons": 1200,
+        "jetons": 2500,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:sticker_ace",
         "nbt": "",
-        "jetons": 120,
+        "jetons": 500,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:sticker_ace_holo",
         "nbt": "",
-        "jetons": 400,
+        "jetons": 1000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_camo:sticker_ace_gold",
         "nbt": "",
-        "jetons": 1500,
+        "jetons": 1000,
         "achat": false,
         "vente": true
       },
       {
         "item": "reanimation:finisher",
         "nbt": "{Execution:\"chute_meteore\"}",
-        "jetons": 1500,
+        "jetons": 10000,
         "achat": false,
         "vente": true
       },
       {
         "item": "reanimation:finisher",
         "nbt": "{Execution:\"tag_final\"}",
-        "jetons": 1500,
+        "jetons": 10000,
         "achat": false,
         "vente": true
       },
       {
         "item": "reanimation:finisher",
         "nbt": "{Execution:\"main_joker\"}",
-        "jetons": 3500,
+        "jetons": 80000,
         "achat": false,
         "vente": true
       },
       {
         "item": "reanimation:finisher",
         "nbt": "{Execution:\"tempete_sakura\"}",
-        "jetons": 3500,
+        "jetons": 10000,
         "achat": false,
         "vente": true
       },
       {
         "item": "heraliz_composants:brindilles",
         "nbt": "",
-        "jetons": 4,
+        "jetons": 30,
         "achat": false,
         "vente": true
       },
       {
         "item": "heraliz_composants:planches",
         "nbt": "",
-        "jetons": 20,
+        "jetons": 60,
         "achat": false,
         "vente": true
       },
       {
         "item": "heraliz_composants:clou",
         "nbt": "",
-        "jetons": 25,
+        "jetons": 90,
         "achat": false,
         "vente": true
       },
       {
         "item": "heraliz_composants:pierres_taillees",
         "nbt": "",
-        "jetons": 60,
+        "jetons": 170,
         "achat": false,
         "vente": true
       },
       {
         "item": "heraliz_composants:sac_ciment",
         "nbt": "",
-        "jetons": 60,
+        "jetons": 220,
         "achat": false,
         "vente": true
       },
       {
         "item": "crac:coeur_clan",
         "nbt": "",
-        "jetons": 4000,
+        "jetons": 20000,
         "achat": false,
         "vente": true
       },
@@ -211,21 +211,21 @@
       {
         "item": "heralisz_tactical:consumable",
         "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}",
-        "jetons": 60,
+        "jetons": 200,
         "achat": false,
         "vente": true
       },
       {
         "item": "tacz:ammo",
         "nbt": "{AmmoId:\"tacz:9mm\"}",
-        "jetons": 3,
+        "jetons": 4,
         "achat": false,
         "vente": true
       },
       {
         "item": "heralisz_utils:document_lootbonus",
         "nbt": "",
-        "jetons": 2500,
+        "jetons": 25000,
         "achat": false,
         "vente": true
       }
@@ -252,7 +252,7 @@
       {
         "nom": "Émote au hasard (pas encore débloquée)",
         "commande": "emote debloquer {player} hasard",
-        "jetons": 2000,
+        "jetons": 22000,
         "montant": 1
       }
     ],
@@ -263,7 +263,14 @@
       "expulser_spectateurs": false,
       "delai_expulsion": 4
     },
-    "_aide_beta": "Catalogue de la bêta (26/10) : surtout des cosmétiques (clés, camos, stickers, StatTrak, finishers, émotes), des grades à la journée et des matériaux de base ; rien pour le combat. Prix en capsules à ajuster après les premiers jours (gains réels du casino)."
+    "_aide_beta": "Catalogue de la bêta : surtout des cosmétiques (clés, camos, stickers, StatTrak, finishers, émotes), des grades à la journée et des matériaux de base ; rien pour le combat. Prix du 27/10 (demande du propriétaire). Le finisher Main du Joker ne s'obtient qu'ici (retiré des caisses par outils/caisses.py, EXCLUSIFS_CASINO)."
+  },
+  "compte": {
+    "aide": "Compte de capsules : /capsules (solde), /capsules deposer [nombre] (rien = tout), /capsules retirer <nombre>, a moins de \"distance\" blocs d'une caisse du casino (0 = partout hors de la carte). payer_caisse : la caisse et l'entree prennent sur le compte ce qui manque dans l'inventaire. max : plafond d'un compte.",
+    "actif": true,
+    "payer_caisse": true,
+    "distance": 6.0,
+    "max": 1000000000
   },
   "rotten": {
     "min_bet": 5,

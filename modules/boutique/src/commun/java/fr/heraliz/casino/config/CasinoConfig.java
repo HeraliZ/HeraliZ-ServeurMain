@@ -38,6 +38,8 @@ public final class CasinoConfig {
                 + "Apres modification : /casino reload";
         public General general = new General();
         public Cashier caisse = new Cashier();
+        /** Compte de capsules des joueurs (27/10) : dépôts, retraits, paiement à la caisse et à l'entrée. */
+        public Compte compte = new Compte();
         public RottenRules rotten = new RottenRules();
         public fr.heraliz.casino.game.slot.OlympeRules portesOlympe = new fr.heraliz.casino.game.slot.OlympeRules();
         public fr.heraliz.casino.game.slot.LoupRules souffleLoup = new fr.heraliz.casino.game.slot.LoupRules();
@@ -116,7 +118,8 @@ public final class CasinoConfig {
             if (caisse.encaissements == null) caisse.encaissements = new ArrayList<>();
             caisse.entree = (caisse.entree == null ? new Entree() : caisse.entree).sanitized();
             caisse.economie = (caisse.economie == null ? new JetonsServeur() : caisse.economie).sanitized();
-            rotten = (rotten == null ? new RottenRules() : rotten).sanitized();
+            compte = (compte == null ? new Compte() : compte).sanitized();
+            rotten =(rotten == null ? new RottenRules() : rotten).sanitized();
             portesOlympe = (portesOlympe == null ? new fr.heraliz.casino.game.slot.OlympeRules() : portesOlympe).sanitized();
             souffleLoup = (souffleLoup == null ? new fr.heraliz.casino.game.slot.LoupRules() : souffleLoup).sanitized();
             laNiche = (laNiche == null ? new fr.heraliz.casino.game.slot.NicheRules() : laNiche).sanitized();
@@ -264,6 +267,33 @@ public final class CasinoConfig {
             prix = Math.max(0, Math.min(1_000_000_000L, prix));
             validiteMinutes = Math.max(0, Math.min(100_000, validiteMinutes));
             delaiExpulsion = Math.max(1, Math.min(120, delaiExpulsion));
+            return this;
+        }
+    }
+
+    /**
+     * Compte de capsules (27/10, demande du proprietaire) : chaque joueur range ses capsules sur un compte garde par le
+     * serveur, hors du monde ({@code heralizcasino/comptes/<uuid>.json} a la racine du serveur), et les reprend quand il veut.
+     */
+    public static class Compte {
+        public String aide = AIDE;
+        /** false : compte ferme (ni depot, ni retrait, ni paiement) ; les soldes restent dans leurs fichiers. */
+        public boolean actif = true;
+        /** La caisse et l'entree du casino prennent sur le compte ce qui manque en capsules dans l'inventaire. */
+        public boolean payerCaisse = true;
+        /** Depots et retraits a moins de ce nombre de blocs d'une caisse du casino (0 = partout hors de la carte). */
+        public double distance = 6;
+        /** Plafond d'un compte (capsules). */
+        public long max = 1_000_000_000L;
+
+        static final String AIDE = "Compte de capsules : /capsules (solde), /capsules deposer [nombre] (rien = tout), "
+                + "/capsules retirer <nombre>, a moins de \"distance\" blocs d'une caisse du casino (0 = partout hors de la carte). "
+                + "payer_caisse : la caisse et l'entree prennent sur le compte ce qui manque dans l'inventaire. max : plafond d'un compte.";
+
+        Compte sanitized() {
+            aide = AIDE;
+            distance = Double.isFinite(distance) ? Math.max(0, Math.min(64, distance)) : 6;
+            max = Math.max(1, Math.min(1_000_000_000_000L, max));
             return this;
         }
     }
