@@ -356,9 +356,10 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
      */
     public static Anim draw(ItemStack stack, PoseStack ps, MultiBufferSource buffers, int light, int overlay, Vector3f off,
                             Vector3f start, boolean fx) {
-        Minecraft mc = Minecraft.getInstance();
-        double now = mc.level == null ? 0 : mc.level.getGameTime() + mc.getFrameTime();
-        float p = DesignatorItem.reloadProgress(stack, now);
+        // horloge régulière du joueur (HorlogeJumelles) : le temps du monde du client est recalé chaque seconde par le
+        // serveur, l'animation sautait ou reculait d'un tick
+        double now = HorlogeJumelles.temps();
+        float p = HorlogeJumelles.recharge(stack);
         boolean reloading = p < 1f;
         StrikeType loaded = DesignatorItem.cartridge(stack);
         StrikeType old = DesignatorItem.ejected(stack);
@@ -377,8 +378,8 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
         }
         ps.popPose();
         renderScreen(ps, buffers.getBuffer(RenderType.eyes(SCREEN)), loaded, old, p, now,
-                DesignatorItem.reprogramProgress(stack, now));
-        if (reloading && fx) renderFx(ps, buffers, p, now, light);
+                HorlogeJumelles.reprogrammation(stack));
+        if (reloading && fx) renderFx(ps, buffers, p, DesignatorItem.reloadStart(stack), light);
 
         VertexConsumer vc = buffers.getBuffer(Sheets.cutoutBlockSheet());
         if (!reloading) {
@@ -507,12 +508,12 @@ public final class DesignatorRenderer extends BlockEntityWithoutLevelRenderer {
         return (h >>> 40) / (float) (1L << 24);
     }
 
-    private static void renderFx(PoseStack ps, MultiBufferSource buffers, float p, double now, int light) {
+    /** {@code seed} : heure de départ de la recharge (la même recharge jette toujours les mêmes étincelles). */
+    private static void renderFx(PoseStack ps, MultiBufferSource buffers, float p, long seed, int light) {
         float secs = DesignatorItem.RELOAD_TICKS / 20f;
         float tClick = (p - T_CLICK) * secs, tSlam = (p - T_SLAM) * secs;
         boolean click = tClick >= 0f && tClick < 0.4f, slam = tSlam >= 0f && tSlam < 0.8f;
         if (!click && !slam) return;
-        long seed = Math.round(now - p * DesignatorItem.RELOAD_TICKS);
         PoseStack.Pose pose = ps.last();
         Matrix4f inv = new Matrix4f(pose.pose()).invert();
         Vector3f cam = inv.transformPosition(new Vector3f()).mul(16f);
