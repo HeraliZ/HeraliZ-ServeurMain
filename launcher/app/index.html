@@ -134,6 +134,7 @@
             <div class="onglets" role="tablist">
                 <button class="onglet caps" role="tab" data-tab="accueil">Accueil</button>
                 <button class="onglet caps" role="tab" data-tab="reglement">Règlement</button>
+                <button class="onglet caps" role="tab" data-tab="anticheat">Anticheat</button>
                 <button class="onglet caps" role="tab" data-tab="boutique">Boutique</button>
             </div>
             <div class="droite">
@@ -178,6 +179,19 @@
                 </div>
             </div>
 
+            <div class="page page-anticheat">
+                <div class="panneau-page large">
+                    <div class="eyebrow caps">Anticheat HeraliZ · Spartan</div>
+                    <h2 class="caps">Ce que fait l’anticheat</h2>
+                    <p class="intro">Spartan protège HeraliZ contre la triche. Voici tout ce qu’il contrôle, et ce qu’il ne regarde jamais.</p>
+                    <div data-anticheat></div>
+                    <div class="boutons-ac">
+                        <button class="btn-sec" data-link="confidentialite"><svg class="i"><use href="#i-web"/></svg>Page Confidentialité</button>
+                        <button class="btn-sec" data-link="cgu"><svg class="i"><use href="#i-web"/></svg>Conditions d’utilisation</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="page page-boutique">
                 <div class="panneau-page centre">
                     <div class="eyebrow caps or">Points Boutique</div>
@@ -219,6 +233,20 @@
             </div>
         </footer>
     </section>
+
+    <!-- Ce que fait l'anticheat : onglet Anticheat et détail de la fenêtre d'accord (renderer.js). Même contenu que la page
+         Confidentialité du site (site/vm/pages_legales.php, point 3) : changer les deux ensemble. -->
+    <template id="anticheat-modele">
+        <div class="liste-ac">
+            <div class="ac"><span class="ic"><svg class="i"><use href="#i-shield"/></svg></span><div><h3>Un jeu identique au jeu officiel</h3><p>Le jeu et ses mods sont comparés, fichier par fichier, au jeu officiel de HeraliZ : empreintes des fichiers, modules de code et bibliothèques chargés, contrôles d’intégrité réguliers. <b>Un mod en plus, un fichier modifié ou du code injecté : la connexion est refusée.</b></p></div></div>
+            <div class="ac"><span class="ic"><svg class="i"><use href="#i-check"/></svg></span><div><h3>Vérifié avant chaque partie</h3><p>Le jeu ne se lance que depuis ce launcher, avec ton compte HeraliZ. Avant chaque partie, il vérifie que le Java du jeu n’a pas été modifié (sinon il en réinstalle un propre) et met de côté tout mod ajouté à la main dans le dossier du jeu : déplacé dans <b>spartan/ecartes</b>, jamais supprimé.</p></div></div>
+            <div class="ac"><span class="ic"><svg class="i"><use href="#i-memory"/></svg></span><div><h3>Le launcher veille pendant la partie</h3><p>Il reste ouvert en arrière-plan et vérifie que les fichiers du jeu ne changent pas et qu’aucun programme de triche, d’injection, de débogage ou de décompilation connu n’est ouvert (liste fixe : Cheat Engine, injecteurs, débogueurs…). <b>Seul le nom d’un programme de cette liste</b> est envoyé au serveur, jamais la liste de tes programmes ni le titre de tes fenêtres.</p></div></div>
+            <div class="ac"><span class="ic"><svg class="i"><use href="#i-eye"/></svg></span><div><h3>Captures d’écran de la fenêtre du jeu</h3><p>Seulement si tu l’as accepté au démarrage du launcher (sinon pas de partie), lors des contrôles de l’anticheat ou à la demande du staff : <b>la fenêtre de Minecraft seulement</b>, avec ce qui s’affiche par-dessus. Rien n’est enregistré sur ton ordinateur. Gardées 3 jours puis supprimées, vues seulement par les fondateurs et les administrateurs ; tu peux demander à un fondateur celles qui te concernent.</p></div></div>
+            <div class="ac"><span class="ic"><svg class="i"><use href="#i-lock"/></svg></span><div><h3>Un identifiant d’ordinateur chiffré</h3><p>Calculé à partir du matériel de ton ordinateur, puis <b>chiffré</b>. Il sert seulement à appliquer un bannissement d’ordinateur, jamais à savoir qui tu es.</p></div></div>
+            <div class="ac"><span class="ic"><svg class="i"><use href="#i-info"/></svg></span><div><h3>Ce qui n’est jamais lu</h3><p>Aucun autre fichier personnel, aucun mot de passe, aucun historique de navigation. Rien n’est contrôlé quand tu ne joues pas à HeraliZ. Les alertes et les preuves ne sont vues que par le staff.</p></div></div>
+        </div>
+        <p class="note ac-fin">Contourner, désactiver ou étudier l’anticheat pour le tromper est sanctionné comme de la triche. Les données de l’anticheat sont gardées jusqu’à 3 ans (5 ans pour un bannissement définitif).</p>
+    </template>
 
     <template id="regles-modele">
         <ol class="liste-regles">
@@ -318,7 +346,8 @@
         <h2 id="accord-title" class="caps">Autorisation de l’anticheat</h2>
         <p class="desc">Nous savons qu’un anticheat infaillible n’existe pas sur Minecraft. Pour être sûrs avant de sanctionner quelqu’un, nous vous demandons l’autorisation de pouvoir, à tout moment pendant que vous jouez sur HeraliZ, prendre une capture d’écran de votre jeu : seulement la partie de l’écran où se trouve la fenêtre de Minecraft, avec ce qui s’affiche par-dessus le jeu, jamais le reste de votre écran ni de votre ordinateur. Elle est envoyée au serveur et vue uniquement par le staff.</p>
         <p class="desc">Pendant la partie, le launcher reste aussi ouvert en arrière-plan pour surveiller le jeu : il vérifie que les fichiers du jeu ne changent pas et qu’aucun programme de triche connu (Cheat Engine, injecteurs, débogueurs…) n’est ouvert. Seul le nom d’un programme de cette liste est envoyé au serveur, jamais la liste de vos programmes ni vos fenêtres.</p>
-        <p class="desc">Sans cette autorisation, vous ne pouvez pas jouer sur HeraliZ : « Je refuse » ferme le launcher.</p>
+        <details class="ac-details"><summary>Voir tout ce que fait l’anticheat</summary><div class="defile" data-anticheat></div></details>
+        <p class="desc">Sans cette autorisation, vous ne pouvez pas jouer sur HeraliZ&nbsp;: «&nbsp;Je refuse&nbsp;» ferme le launcher.</p>
         <div class="actions-dialog"><button class="btn2" id="accord-non">Je refuse</button><button class="btn1" id="accord-oui">J’autorise</button></div>
     </dialog>
 
@@ -326,6 +355,7 @@
         <div class="eyebrow caps">Anticheat HeraliZ</div>
         <h2 id="accord-confirm-title" class="caps">Vous êtes sûr ?</h2>
         <p class="desc">Vous êtes sûr de vouloir accepter ? Pendant cette session, le staff de HeraliZ pourra prendre des captures de la fenêtre de Minecraft, avec ce qui s’affiche par-dessus le jeu, et le launcher surveillera les programmes de triche connus tant que le jeu est ouvert. Cette question vous sera reposée à chaque ouverture du launcher.</p>
+        <p id="accord-feedback" class="feedback error" role="alert"></p>
         <div class="actions-dialog"><button class="btn2" id="accord-retour">Retour</button><button class="btn1" id="accord-confirmer">Oui, j’accepte</button></div>
     </dialog>
 

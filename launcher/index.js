@@ -74,7 +74,8 @@ function createWindow() {
 
 if (!app.requestSingleInstanceLock()) app.quit()
 else {
-    app.on('second-instance', () => { if (win) { win.restore(); win.focus() } else if (app.isReady()) createWindow() })
+    // sans service (démarrage raté), jamais de fenêtre : elle n'aurait rien derrière (boutons sans effet)
+    app.on('second-instance', () => { if (win) { win.restore(); win.focus() } else if (app.isReady() && service) createWindow() })
     app.whenReady().then(() => {
         const LauncherService = require('./app/assets/js/launcher-service')
         service = new LauncherService(config, progress => {
@@ -135,6 +136,7 @@ else {
             const links = {
                 discord: config.discordUrl, inscription: pageSite('/user/register'), motdepasse: pageSite('/user/password/reset'),
                 compte: pageSite('/profile'), boutique: pageSite('/shop'), votes: pageSite('/vote'), conditions: service.etatSite?.conditions || null,
+                confidentialite: pageSite('/confidentialite'), cgu: pageSite('/cgu'),
                 telecharger: FICHIER_LAUNCHER[process.platform] ? pageSite(`/telecharger/${FICHIER_LAUNCHER[process.platform]}`) : null,
                 // panneau Discord : adresses données par le site pour ce compte (jamais par la page du launcher)
                 'discord-lier': service.lienDiscord('lier'), 'discord-invitation': service.lienDiscord('invitation')
@@ -156,6 +158,12 @@ else {
         // outils de développement du menu par défaut d'Electron. Windows et Linux : pas de menu (removeMenu).
         if (process.platform === 'darwin') Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]))
         createWindow()
+    }).catch(erreur => {
+        // un module manquant ou cassé : le dire au joueur au lieu de rester ouvert sans fenêtre (launcher 1.14.0 à 1.15.0)
+        console.error('[HeraliZ] démarrage impossible', erreur)
+        const cause = String(erreur?.message || erreur).split('\n')[0]
+        dialog.showErrorBox('HeraliZ Launcher', `Le launcher n’a pas pu démarrer (${cause}).\n\nRetélécharge-le sur heraliz.fr/telecharger puis réinstalle-le par-dessus : ton compte et ton jeu sont gardés.`)
+        app.exit(1)
     })
 }
 

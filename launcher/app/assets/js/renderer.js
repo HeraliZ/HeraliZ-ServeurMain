@@ -396,6 +396,7 @@ for (const b of document.querySelectorAll('[data-link]')) b.addEventListener('cl
 for (const b of document.querySelectorAll('.onglet[data-tab]')) b.addEventListener('click', () => showTab(b.dataset.tab))
 for (const b of document.querySelectorAll('.modale .menu button')) b.addEventListener('click', () => ouvrirPanneau(b.dataset.panneau))
 for (const zone of document.querySelectorAll('[data-regles]')) zone.append($('regles-modele').content.cloneNode(true))
+for (const zone of document.querySelectorAll('[data-anticheat]')) zone.append($('anticheat-modele').content.cloneNode(true))
 
 $('profil-bouton').addEventListener('click', event => { event.stopPropagation(); basculerMenu() })
 document.addEventListener('click', event => { if (!$('menu-profil').hidden && !event.target.closest('.profil-zone')) fermerMenu() })
@@ -763,6 +764,7 @@ function demanderAccord() {
         fenetre.addEventListener('cancel', event => event.preventDefault())
         confirmation.addEventListener('cancel', event => event.preventDefault())
         $('accord-oui').addEventListener('click', () => {
+            feedback('accord-feedback', '', true)
             fenetre.close()
             confirmation.showModal()
         })
@@ -776,7 +778,12 @@ function demanderAccord() {
                 applyState(await call(api.accordCapture(true)))
                 confirmation.close()
                 resolve(true)
-            } catch (error) { toast(error.message); $('accord-confirmer').disabled = false }
+            } catch (error) {
+                // dans la fenêtre : un message en bas de l'écran serait caché derrière elle
+                const muet = /No handler registered|Accès refusé/i.test(error.message)
+                feedback('accord-feedback', muet ? 'Le launcher ne répond pas : ferme-le complètement puis relance-le. Si ça recommence, retélécharge-le sur heraliz.fr/telecharger.' : error.message, true)
+                $('accord-confirmer').disabled = false
+            }
         })
         $('accord-non').addEventListener('click', () => { api.windowAction('close'); resolve(false) })
         fenetre.showModal()

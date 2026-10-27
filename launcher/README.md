@@ -80,7 +80,9 @@ Le jeu est lancé à part du launcher (« détaché ») : le joueur peut fermer 
 - `topo.js` : fond « carte » dessiné une fois par taille de fenêtre (rien d’animé).
 - `nouveautes.js` + `app/assets/images/nouveautes/` (images 960 × 540) : les trois nouveautés de l’accueil, la plus récente en premier.
 
-Les anciens templates EJS et scripts Helios restent comme référence dans les sources. Ils ne sont ni chargés ni inclus dans l’application construite. Le manifeste de construction énumère les fichiers actifs.
+Les anciens templates EJS et scripts Helios restent comme référence dans les sources. Ils ne sont ni chargés ni inclus dans l’application construite. Le manifeste de construction (`files` de `electron-builder.yml`) énumère les fichiers actifs : **un nouveau module, une image ou une police s’y ajoute**, sinon le launcher installé ne le trouve pas (1.14.0 à 1.15.0 : `gardien.js` et `integrite.js` oubliés, launcher planté au démarrage, à retélécharger une fois). `test/emballage.test.js` le vérifie à chaque `npm test`.
+
+L’onglet « Anticheat » et le détail de la fenêtre d’accord (`#anticheat-modele` de `index.html`) reprennent la page Confidentialité du site (`site/vm/pages_legales.php`, point 3) : changer les deux ensemble.
 
 ## Identité et doubles comptes
 

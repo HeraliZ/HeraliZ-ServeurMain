@@ -129,9 +129,9 @@ body[data-screen=principal] .ecran-principal { display: grid; animation: apparit
 .nav .onglet { position: relative; height: 34px; padding: 0 14px; display: flex; align-items: center; font-size: 12px; color: rgba(236, 238, 242, 0.55); }
 .nav .onglet:hover { color: rgba(236, 238, 242, 0.85); }
 body[data-tab=accueil] .onglet[data-tab=accueil], body[data-tab=reglement] .onglet[data-tab=reglement],
-body[data-tab=boutique] .onglet[data-tab=boutique] { color: #fff; }
+body[data-tab=anticheat] .onglet[data-tab=anticheat], body[data-tab=boutique] .onglet[data-tab=boutique] { color: #fff; }
 body[data-tab=accueil] .onglet[data-tab=accueil]::after, body[data-tab=reglement] .onglet[data-tab=reglement]::after,
-body[data-tab=boutique] .onglet[data-tab=boutique]::after {
+body[data-tab=anticheat] .onglet[data-tab=anticheat]::after, body[data-tab=boutique] .onglet[data-tab=boutique]::after {
     content: ''; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 2px; background: var(--accent); box-shadow: 0 0 10px rgba(227, 32, 27, 0.8); border-radius: 2px; }
 .nav .onglet .bientot { margin-left: 8px; font-size: 9px; letter-spacing: .14em; padding: 2px 6px 1px; border-radius: 3px; color: var(--or); background: rgba(232, 195, 106, 0.12); box-shadow: inset 0 0 0 1px rgba(232, 195, 106, 0.35); }
 .nav .droite { margin-left: auto; display: flex; align-items: center; gap: 10px; }
@@ -161,7 +161,8 @@ body[data-tab=boutique] .onglet[data-tab=boutique]::after {
 /* ---------- pages ---------- */
 .contenu { position: relative; z-index: 5; min-height: 0; }
 .page { position: absolute; inset: 0 56px; display: none; }
-body[data-tab=accueil] .page-accueil, body[data-tab=reglement] .page-reglement, body[data-tab=boutique] .page-boutique { display: flex; flex-direction: column; animation: apparition .35s var(--ease); }
+body[data-tab=accueil] .page-accueil, body[data-tab=reglement] .page-reglement, body[data-tab=anticheat] .page-anticheat,
+body[data-tab=boutique] .page-boutique { display: flex; flex-direction: column; animation: apparition .35s var(--ease); }
 
 /* accueil */
 .hero { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; max-width: 560px; padding-bottom: 8px; }
@@ -195,7 +196,7 @@ body[data-tab=accueil] .page-accueil, body[data-tab=reglement] .page-reglement, 
 .panneau-page::-webkit-scrollbar-thumb, .corps::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 3px; }
 
 /* règlement et boutique */
-.page-reglement, .page-boutique { justify-content: center; align-items: center; }
+.page-reglement, .page-anticheat, .page-boutique { justify-content: center; align-items: center; }
 .panneau-page { width: min(640px, 100%); max-height: calc(100% - 40px); overflow-y: auto; padding: 30px 32px; border-radius: 8px; position: relative;
     background: rgba(10, 12, 16, 0.8); backdrop-filter: blur(22px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 30px 80px rgba(0, 0, 0, 0.6); }
 .panneau-page::before, .formulaire::before, .modale::before, dialog.petite::before { content: ''; position: absolute; left: 30px; right: 30px; top: 0; height: 2px;
@@ -212,6 +213,36 @@ body[data-tab=accueil] .page-accueil, body[data-tab=reglement] .page-reglement, 
 .liste-regles .num { font-size: 13px; font-weight: 700; color: var(--accent2); letter-spacing: .1em; padding-top: 1px; }
 .liste-regles h3 { font-size: 13.5px; }
 .liste-regles p { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+
+/* anticheat : onglet et détail de la fenêtre d'accord (même modèle, #anticheat-modele) */
+.panneau-page.large { width: min(900px, 100%); }
+.panneau-page .intro { font-size: 14px; color: rgba(236, 238, 242, 0.86); margin-top: 8px; line-height: 1.5; }
+.liste-ac { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.liste-ac .ac { display: flex; gap: 14px; padding: 16px 18px; border-radius: 6px; background: rgba(255, 255, 255, 0.03); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+.liste-ac .ic { flex: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent2);
+    background: radial-gradient(closest-side, rgba(227, 32, 27, 0.18), rgba(227, 32, 27, 0.04)); box-shadow: inset 0 0 0 1px rgba(255, 90, 78, 0.4); }
+.liste-ac .ic svg.i { width: 18px; height: 18px; }
+.liste-ac h3 { font-size: 14px; }
+.liste-ac p { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.55; }
+.liste-ac p b { color: #fff; }
+.boutons-ac { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.boutons-ac .btn-sec { font-size: 11px; min-height: 38px; }
+.boutons-ac .btn-sec .i { width: 15px; height: 15px; }
+.ac-details { margin-top: 12px; }
+.ac-details summary { cursor: pointer; font-size: 12px; font-weight: 700; color: var(--accent2); letter-spacing: .04em; }
+.ac-details summary:hover { color: #fff; }
+.ac-details .defile { max-height: clamp(120px, calc(100vh - 590px), 260px); overflow-y: auto; margin-top: 10px; padding-right: 6px; }
+/* petite fenêtre : la fenêtre d'accord défile plutôt que de cacher ses boutons */
+#accord-dialog { max-height: calc(100vh - 24px); overflow-y: auto; }
+.ac-details .defile::-webkit-scrollbar { width: 6px; }
+.ac-details .defile::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 3px; }
+.ac-details .liste-ac { grid-template-columns: 1fr; gap: 8px; margin-top: 0; }
+.ac-details .liste-ac .ac { padding: 10px 12px; gap: 10px; }
+.ac-details .liste-ac .ic { width: 28px; height: 28px; }
+.ac-details .liste-ac .ic svg.i { width: 14px; height: 14px; }
+.ac-details .liste-ac h3 { font-size: 12.5px; }
+.ac-details .liste-ac p { font-size: 11.5px; }
+.ac-details .ac-fin { font-size: 11px; margin-top: 10px; color: var(--muted); line-height: 1.5; }
 
 /* ---------- dock ---------- */
 .dock { position: relative; z-index: 6; display: flex; align-items: center; gap: 18px; padding: 0 56px; background: linear-gradient(180deg, rgba(8, 9, 12, 0), rgba(8, 9, 12, 0.86) 34%); }
